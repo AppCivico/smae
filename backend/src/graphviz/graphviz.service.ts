@@ -13,7 +13,7 @@ export const GraphvizServiceFormat = {
     'dot_json': 'dot_json',
 };
 
-export type GraphvizServiceFormat = (typeof GraphvizServiceFormat)[keyof typeof GraphvizServiceFormat]
+export type GraphvizServiceFormat = (typeof GraphvizServiceFormat)[keyof typeof GraphvizServiceFormat];
 
 export const GraphvizContentTypeMap: Record<GraphvizServiceFormat, string> = {
     png: 'image/png',

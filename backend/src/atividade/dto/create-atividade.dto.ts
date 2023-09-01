@@ -1,5 +1,16 @@
 import { Type } from 'class-transformer';
-import { ArrayMaxSize, ArrayMinSize, IsArray, IsBoolean, IsInt, IsOptional, IsString, MaxLength, MinLength, ValidateNested } from 'class-validator';
+import {
+    ArrayMaxSize,
+    ArrayMinSize,
+    IsArray,
+    IsBoolean,
+    IsInt,
+    IsOptional,
+    IsString,
+    MaxLength,
+    MinLength,
+    ValidateNested,
+} from 'class-validator';
 
 export class AtividadeOrgaoParticipante {
     /**
@@ -93,9 +104,15 @@ export class CreateAtividadeDto {
      * ID das pessoas que são coordenadores
      * @example "[1, 2, 3]"
      */
-    @IsArray({ message: '$property| responsável(eis) na coordenadoria de projetos: precisa ser uma array, campo obrigatório' })
-    @ArrayMinSize(1, { message: '$property| responsável(eis) na coordenadoria de projetos: precisa ter pelo menos um item' })
-    @ArrayMaxSize(100, { message: '$property| responsável(eis) na coordenadoria de projetos: precisa ter no máximo 100 items' })
+    @IsArray({
+        message: '$property| responsável(eis) na coordenadoria de projetos: precisa ser uma array, campo obrigatório',
+    })
+    @ArrayMinSize(1, {
+        message: '$property| responsável(eis) na coordenadoria de projetos: precisa ter pelo menos um item',
+    })
+    @ArrayMaxSize(100, {
+        message: '$property| responsável(eis) na coordenadoria de projetos: precisa ter no máximo 100 items',
+    })
     @IsInt({ each: true, message: '$property| Cada item precisa ser um número inteiro' })
     coordenadores_cp?: number[];
 

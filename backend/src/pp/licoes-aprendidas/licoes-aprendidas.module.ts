@@ -7,6 +7,6 @@ import { LicoesAprendidasService } from './licoes-aprendidas.service';
 @Module({
     imports: [PrismaModule, ProjetoModule],
     controllers: [LicoesAprendidasController],
-    providers: [LicoesAprendidasService]
+    providers: [LicoesAprendidasService],
 })
-export class LicoesAprendidasModule { }
+export class LicoesAprendidasModule {}

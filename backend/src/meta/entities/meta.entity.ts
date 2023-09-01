@@ -1,5 +1,5 @@
-import { CronogramaAtrasoGrau } from "src/common/dto/CronogramaAtrasoGrau.dto";
-import { IdSiglaDescricao } from "src/common/dto/IdSigla.dto";
+import { CronogramaAtrasoGrau } from 'src/common/dto/CronogramaAtrasoGrau.dto';
+import { IdSiglaDescricao } from 'src/common/dto/IdSigla.dto';
 
 export class IdDesc {
     id: number;

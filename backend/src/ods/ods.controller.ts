@@ -33,7 +33,11 @@ export class OdsController {
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
     @Roles('CadastroOds.editar')
-    async update(@Param() params: FindOneParams, @Body() updateOdsDto: UpdateOdsDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
+    async update(
+        @Param() params: FindOneParams,
+        @Body() updateOdsDto: UpdateOdsDto,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<RecordWithId> {
         return await this.odsService.update(+params.id, updateOdsDto, user);
     }
 

@@ -1,4 +1,17 @@
-import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Patch, Post, Query, Res } from '@nestjs/common';
+import {
+    Body,
+    Controller,
+    Delete,
+    Get,
+    HttpCode,
+    HttpException,
+    HttpStatus,
+    Param,
+    Patch,
+    Post,
+    Query,
+    Res,
+} from '@nestjs/common';
 import { ApiBearerAuth, ApiNoContentResponse, ApiResponse, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
 import { Response } from 'express';
 import { IsPublic } from 'src/auth/decorators/is-public.decorator';
@@ -11,11 +24,22 @@ import { RecordWithId } from '../../common/dto/record-with-id.dto';
 import { CreateProjetoDocumentDto, CreateProjetoDto, CreateProjetoSeiDto } from './dto/create-projeto.dto';
 import { FilterProjetoDto } from './dto/filter-projeto.dto';
 import { UpdateProjetoDto, UpdateProjetoRegistroSeiDto } from './dto/update-projeto.dto';
-import { ListProjetoDocumento, ListProjetoDto, ListProjetoSeiDto, ProjetoDetailDto, ProjetoSeiDto } from './entities/projeto.entity';
+import {
+    ListProjetoDocumento,
+    ListProjetoDto,
+    ListProjetoSeiDto,
+    ProjetoDetailDto,
+    ProjetoSeiDto,
+} from './entities/projeto.entity';
 import { ProjetoSeiService } from './projeto.sei.service';
 import { ProjetoService } from './projeto.service';
 
-const roles: ListaDePrivilegios[] = ['Projeto.administrador', 'Projeto.administrador_no_orgao', 'SMAE.gestor_de_projeto', 'SMAE.colaborador_de_projeto'];
+const roles: ListaDePrivilegios[] = [
+    'Projeto.administrador',
+    'Projeto.administrador_no_orgao',
+    'SMAE.gestor_de_projeto',
+    'SMAE.colaborador_de_projeto',
+];
 
 @ApiTags('Projeto')
 @Controller('projeto')
@@ -23,14 +47,17 @@ export class ProjetoController {
     constructor(
         private readonly projetoService: ProjetoService,
         private readonly projetoSeiService: ProjetoSeiService
-    ) { }
+    ) {}
 
     // só o administrador do órgão pode iniciar novos projetos
     @Post()
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
     @Roles('Projeto.administrador_no_orgao')
-    async create(@Body() createProjetoDto: CreateProjetoDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
+    async create(
+        @Body() createProjetoDto: CreateProjetoDto,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<RecordWithId> {
         return await this.projetoService.create(createProjetoDto, user);
     }
 
@@ -62,7 +89,6 @@ export class ProjetoController {
         //    });
 
         return res.render('projeto-ue', { ...dados });
-
     }
 
     @Get(':id')
@@ -73,13 +99,15 @@ export class ProjetoController {
         return await this.projetoService.findOne(params.id, user, 'ReadOnly');
     }
 
-
-
     @Patch(':id')
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
     @Roles(...roles)
-    async update(@Param() params: FindOneParams, @Body() updateProjetoDto: UpdateProjetoDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
+    async update(
+        @Param() params: FindOneParams,
+        @Body() updateProjetoDto: UpdateProjetoDto,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<RecordWithId> {
         const projeto = await this.projetoService.findOne(params.id, user, 'ReadWrite');
 
         return await this.projetoService.update(projeto.id, updateProjetoDto, user);
@@ -102,7 +130,11 @@ export class ProjetoController {
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
     @Roles(...roles)
-    async upload(@Param() params: FindOneParams, @Body() createPdmDocDto: CreateProjetoDocumentDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
+    async upload(
+        @Param() params: FindOneParams,
+        @Body() createPdmDocDto: CreateProjetoDocumentDto,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<RecordWithId> {
         return await this.projetoService.append_document(params.id, createPdmDocDto, user);
     }
 
@@ -129,7 +161,11 @@ export class ProjetoController {
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
     @Roles(...roles)
-    async createSEI(@Param() params: FindOneParams, @Body() createProjetoRegistroSei: CreateProjetoSeiDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
+    async createSEI(
+        @Param() params: FindOneParams,
+        @Body() createProjetoRegistroSei: CreateProjetoSeiDto,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<RecordWithId> {
         const projeto = await this.projetoService.findOne(params.id, user, 'ReadWrite');
         return await this.projetoSeiService.append_sei(projeto, createProjetoRegistroSei, user);
     }
@@ -150,7 +186,7 @@ export class ProjetoController {
     async findOneSEI(@Param() params: FindTwoParams, @CurrentUser() user: PessoaFromJwt): Promise<ProjetoSeiDto> {
         const projeto = await this.projetoService.findOne(params.id, user, 'ReadOnly');
         const rows = await this.projetoSeiService.list_sei(projeto, user, params.id2);
-        if (!rows[0]) throw new HttpException("SEI não encontrado", 404);
+        if (!rows[0]) throw new HttpException('SEI não encontrado', 404);
         return rows[0];
     }
 
@@ -158,7 +194,11 @@ export class ProjetoController {
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
     @Roles(...roles)
-    async updateSEI(@Param() params: FindTwoParams, @Body() updateProjetoRegistroSeiDto: UpdateProjetoRegistroSeiDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
+    async updateSEI(
+        @Param() params: FindTwoParams,
+        @Body() updateProjetoRegistroSeiDto: UpdateProjetoRegistroSeiDto,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<RecordWithId> {
         const projeto = await this.projetoService.findOne(params.id, user, 'ReadWrite');
         return await this.projetoSeiService.update_sei(projeto, params.id2, updateProjetoRegistroSeiDto, user);
     }
@@ -174,6 +214,4 @@ export class ProjetoController {
         await this.projetoSeiService.remove_sei(projeto, params.id2, user);
         return null;
     }
-
-
 }

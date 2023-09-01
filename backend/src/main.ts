@@ -18,7 +18,7 @@ async function bootstrap() {
                 '\n\nTodos os endpoints que devolvem `application/json` também podem devolver CSV, utilize o' +
                 'header `Accept: text/csv` para explodir apenas as linhas, ou então `Accept: text/csv; unwind-all` (mais lento, que expande tudo) que transforma todas as arrays em items. ' +
                 '\n\nPor padrão todos os campos deep são achatados (flatten).' +
-                '\n\né possível liberar o unwind-all apenas pra quem for admin ou alguns endpoints, mas no momento está liberado para todos.',
+                '\n\né possível liberar o unwind-all apenas pra quem for admin ou alguns endpoints, mas no momento está liberado para todos.'
         )
         .addBearerAuth(
             {
@@ -26,7 +26,7 @@ async function bootstrap() {
                 scheme: 'bearer',
                 bearerFormat: 'Bearer',
             },
-            'access-token',
+            'access-token'
         )
         .setVersion('1.0')
         .addTag('Público', 'Rotas públicas')
@@ -51,7 +51,7 @@ async function bootstrap() {
             ],
             meta: true,
             msg: 'HTTP_DEBUG {{res.statusCode}} {{req.method}} {{res.responseTime}}ms {{req.url}}',
-        }),
+        })
     );
     expressWinston.requestWhitelist.push('body');
     expressWinston.responseWhitelist.push('body');

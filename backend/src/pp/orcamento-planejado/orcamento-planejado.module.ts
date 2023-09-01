@@ -8,6 +8,6 @@ import { DotacaoModule } from '../../dotacao/dotacao.module';
 @Module({
     imports: [PrismaModule, DotacaoModule, ProjetoModule],
     controllers: [OrcamentoPlanejadoController],
-    providers: [OrcamentoPlanejadoService]
+    providers: [OrcamentoPlanejadoService],
 })
-export class OrcamentoPlanejadoModule { }
+export class OrcamentoPlanejadoModule {}

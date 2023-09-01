@@ -18,4 +18,4 @@ import { GraphvizModule } from 'src/graphviz/graphviz.module';
     providers: [PPProjetosService, ProjetoService, TarefaService, TarefaUtilsService, TarefaDotTemplate],
     exports: [PPProjetosService],
 })
-export class PPProjetosModule { }
+export class PPProjetosModule {}

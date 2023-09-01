@@ -16,7 +16,13 @@ export class CronogramaEtapaController {
 
     @ApiBearerAuth('access-token')
     @Get()
-    @Roles('CadastroCronograma.editar', 'CadastroMeta.inserir', 'PDM.admin_cp', 'PDM.coordenador_responsavel_cp', 'PDM.ponto_focal')
+    @Roles(
+        'CadastroCronograma.editar',
+        'CadastroMeta.inserir',
+        'PDM.admin_cp',
+        'PDM.coordenador_responsavel_cp',
+        'PDM.ponto_focal'
+    )
     async findAll(@Query() filters: FilterCronogramaEtapaDto): Promise<ListCronogramaEtapaDto> {
         return { linhas: await this.cronogramaEtapaService.findAll(filters) };
     }

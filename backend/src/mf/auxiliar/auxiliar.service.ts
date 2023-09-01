@@ -9,23 +9,22 @@ import { AutoPreencherValorDto, EnviarParaCpDto } from './dto/auxiliar.dto';
 import { RetryPromise } from 'src/common/retryPromise';
 
 type VariavelParaEnviar = {
-    data_valor: Date,
-    variavel_id: number
+    data_valor: Date;
+    variavel_id: number;
 };
 
 @Injectable()
 export class AuxiliarService {
-
     constructor(
         @Inject(forwardRef(() => MetasService)) private readonly metasService: MetasService,
         @Inject(forwardRef(() => MfService)) private readonly mfService: MfService
-    ) { }
-
+    ) {}
 
     async auto_preencher(dto: AutoPreencherValorDto, user: PessoaFromJwt) {
         const meta_id = dto.meta_id;
         const config = await this.mfService.pessoaAcessoPdm(user);
-        if (config.metas_variaveis.includes(meta_id) === false) throw new HttpException('ID da meta não faz parte do seu perfil', 404);
+        if (config.metas_variaveis.includes(meta_id) === false)
+            throw new HttpException('ID da meta não faz parte do seu perfil', 404);
 
         // talvez isso vire parâmetros e ao buscar os ciclos antigos não precisa calcular os status
         // todo encontrar uma maneira de listar o passado sem um ciclo ativo
@@ -35,8 +34,7 @@ export class AuxiliarService {
         // só deixa enviar direto pra CP se for um ponto_focal, se não, fica false
         // mas não causa exception, pra facilitar um pouco
         let enviar_cp = false;
-        if (dto.enviar_cp && config.perfil === 'ponto_focal')
-            enviar_cp = true;
+        if (dto.enviar_cp && config.perfil === 'ponto_focal') enviar_cp = true;
 
         const ordem_series = Object.fromEntries(dados.ordem_series.map((k, i) => [k, i])) as Record<Serie, number>;
 
@@ -48,7 +46,15 @@ export class AuxiliarService {
                 const ref = mes_serie.series.at(ordem_series.Realizado);
 
                 if (ref && mes_serie.nao_preenchida && mes_serie.pode_editar)
-                    saves.push(cria_auto_preencher(dto.valor_realizado, dto.valor_realizado_acumulado, v.variavel.id, ref, enviar_cp));
+                    saves.push(
+                        cria_auto_preencher(
+                            dto.valor_realizado,
+                            dto.valor_realizado_acumulado,
+                            v.variavel.id,
+                            ref,
+                            enviar_cp
+                        )
+                    );
             }
         }
 
@@ -59,7 +65,15 @@ export class AuxiliarService {
                     if (!mes_serie.eh_corrente) continue;
                     const ref = mes_serie.series.at(ordem_series.Realizado);
                     if (ref && mes_serie.nao_preenchida && mes_serie.pode_editar)
-                        saves.push(cria_auto_preencher(dto.valor_realizado, dto.valor_realizado_acumulado, v.variavel.id, ref, enviar_cp));
+                        saves.push(
+                            cria_auto_preencher(
+                                dto.valor_realizado,
+                                dto.valor_realizado_acumulado,
+                                v.variavel.id,
+                                ref,
+                                enviar_cp
+                            )
+                        );
                 }
             }
 
@@ -72,7 +86,15 @@ export class AuxiliarService {
                         const ref = mes_serie.series.at(ordem_series.Realizado);
 
                         if (ref && mes_serie.nao_preenchida && mes_serie.pode_editar)
-                            saves.push(cria_auto_preencher(dto.valor_realizado, dto.valor_realizado_acumulado, v.variavel.id, ref, enviar_cp));
+                            saves.push(
+                                cria_auto_preencher(
+                                    dto.valor_realizado,
+                                    dto.valor_realizado_acumulado,
+                                    v.variavel.id,
+                                    ref,
+                                    enviar_cp
+                                )
+                            );
                     }
                 }
             }
@@ -81,15 +103,15 @@ export class AuxiliarService {
         // quando fiz em chama tudo em paralelo, deu muito erro de lock, pq a tx é serialize
         // então vamos só 1x e fazer os retry sozinho
         for (const save of saves) {
-            await RetryPromise(() => this.metasService.addMetaVariavelAnaliseQualitativa(save, config, user))
+            await RetryPromise(() => this.metasService.addMetaVariavelAnaliseQualitativa(save, config, user));
         }
-
     }
 
     async enviar_cp(dto: EnviarParaCpDto, user: PessoaFromJwt) {
         const meta_id = dto.meta_id;
         const config = await this.mfService.pessoaAcessoPdm(user);
-        if (config.metas_variaveis.includes(meta_id) === false) throw new HttpException('ID da meta não faz parte do seu perfil', 404);
+        if (config.metas_variaveis.includes(meta_id) === false)
+            throw new HttpException('ID da meta não faz parte do seu perfil', 404);
 
         // talvez isso vire parâmetros e ao buscar os ciclos antigos não precisa calcular os status
         // todo encontrar uma maneira de listar o passado sem um ciclo ativo
@@ -103,7 +125,10 @@ export class AuxiliarService {
         }
 
         if (!ehPontoFocal) {
-            throw new HttpException(`Não é possível enviar para cp, pois o seu perfil é ${config.perfil}, e os valores já entram conferidos.`, 400);
+            throw new HttpException(
+                `Não é possível enviar para cp, pois o seu perfil é ${config.perfil}, e os valores já entram conferidos.`,
+                400
+            );
         }
 
         const dados = await this.metasService.metaVariaveis(dto.meta_id, config, cicloFisicoAtivo, user);
@@ -118,7 +143,7 @@ export class AuxiliarService {
 
                 const ref = mes_serie.series.at(ordem_series.Realizado);
 
-                if (ref && ref.valor_nominal !== "" && mes_serie.pode_editar)
+                if (ref && ref.valor_nominal !== '' && mes_serie.pode_editar)
                     variaveisParaEnviar.push(cria_enviar_cp(v.variavel.id, dto.simular_ponto_focal, ref));
             }
         }
@@ -131,7 +156,7 @@ export class AuxiliarService {
                     if (!mes_serie.nao_enviada) continue;
 
                     const ref = mes_serie.series.at(ordem_series.Realizado);
-                    if (ref && ref.valor_nominal !== "" && mes_serie.pode_editar)
+                    if (ref && ref.valor_nominal !== '' && mes_serie.pode_editar)
                         variaveisParaEnviar.push(cria_enviar_cp(v.variavel.id, dto.simular_ponto_focal, ref));
                 }
             }
@@ -145,7 +170,7 @@ export class AuxiliarService {
 
                         const ref = mes_serie.series.at(ordem_series.Realizado);
 
-                        if (ref && ref.valor_nominal !== "" && mes_serie.pode_editar)
+                        if (ref && ref.valor_nominal !== '' && mes_serie.pode_editar)
                             variaveisParaEnviar.push(cria_enviar_cp(v.variavel.id, dto.simular_ponto_focal, ref));
                     }
                 }
@@ -154,14 +179,22 @@ export class AuxiliarService {
 
         console.log({ variaveisParaEnviar });
 
-        const analisesQuali = await Promise.all(variaveisParaEnviar.map((envio) => {
-            return RetryPromise(() => this.metasService.getMetaVariavelAnaliseQualitativa({
-                data_valor: envio.data_valor,
-                variavel_id: envio.variavel_id,
-                apenas_ultima_revisao: true,
-            }, config, user, true
-            ));
-        }));
+        const analisesQuali = await Promise.all(
+            variaveisParaEnviar.map((envio) => {
+                return RetryPromise(() =>
+                    this.metasService.getMetaVariavelAnaliseQualitativa(
+                        {
+                            data_valor: envio.data_valor,
+                            variavel_id: envio.variavel_id,
+                            apenas_ultima_revisao: true,
+                        },
+                        config,
+                        user,
+                        true
+                    )
+                );
+            })
+        );
 
         for (const quali of analisesQuali) {
             const analise = quali.analises[0];
@@ -175,21 +208,23 @@ export class AuxiliarService {
 
             if (!serie_realizado || !serie_realizadoAcc) continue;
 
-            await RetryPromise(() => this.metasService.addMetaVariavelAnaliseQualitativa({
-                data_valor: Date2YMD.fromString(serie_realizado.data_valor),
-                simular_ponto_focal: dto.simular_ponto_focal,
-                variavel_id: quali.variavel.id,
-                analise_qualitativa: analise.analise_qualitativa,
-                valor_realizado: serie_realizado.valor_nominal,
-                valor_realizado_acumulado: serie_realizadoAcc.valor_nominal,
-                enviar_para_cp: true,
-            }, config, user))
-
+            await RetryPromise(() =>
+                this.metasService.addMetaVariavelAnaliseQualitativa(
+                    {
+                        data_valor: Date2YMD.fromString(serie_realizado.data_valor),
+                        simular_ponto_focal: dto.simular_ponto_focal,
+                        variavel_id: quali.variavel.id,
+                        analise_qualitativa: analise.analise_qualitativa,
+                        valor_realizado: serie_realizado.valor_nominal,
+                        valor_realizado_acumulado: serie_realizadoAcc.valor_nominal,
+                        enviar_para_cp: true,
+                    },
+                    config,
+                    user
+                )
+            );
         }
     }
-
-
-
 }
 
 function cria_auto_preencher(
@@ -205,13 +240,17 @@ function cria_auto_preencher(
         valor_realizado: valor_realizado,
         valor_realizado_acumulado: valor_realizado_acumulado,
         variavel_id,
-        enviar_para_cp: enviar_cp
-    }
+        enviar_para_cp: enviar_cp,
+    };
 }
 
-function cria_enviar_cp(variavel_id: number, simular_ponto_focal: boolean, ref: MfSerieValorNomimal): VariavelParaEnviar {
+function cria_enviar_cp(
+    variavel_id: number,
+    simular_ponto_focal: boolean,
+    ref: MfSerieValorNomimal
+): VariavelParaEnviar {
     return {
         data_valor: Date2YMD.fromString(ref.data_valor),
         variavel_id,
-    }
+    };
 }

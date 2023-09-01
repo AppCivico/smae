@@ -19,7 +19,10 @@ export class UnidadeMedidaController {
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
     @Roles('CadastroUnidadeMedida.inserir')
-    async create(@Body() createUnidadeMedidaDto: CreateUnidadeMedidaDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
+    async create(
+        @Body() createUnidadeMedidaDto: CreateUnidadeMedidaDto,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<RecordWithId> {
         return await this.unidadeMedidaService.create(createUnidadeMedidaDto, user);
     }
 
@@ -33,7 +36,11 @@ export class UnidadeMedidaController {
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
     @Roles('CadastroUnidadeMedida.editar')
-    async update(@Param() params: FindOneParams, @Body() updateUnidadeMedidaDto: UpdateUnidadeMedidaDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
+    async update(
+        @Param() params: FindOneParams,
+        @Body() updateUnidadeMedidaDto: UpdateUnidadeMedidaDto,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<RecordWithId> {
         return await this.unidadeMedidaService.update(+params.id, updateUnidadeMedidaDto, user);
     }
 

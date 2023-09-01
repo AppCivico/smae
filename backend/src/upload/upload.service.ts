@@ -1,7 +1,7 @@
 import { HttpException, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import AdmZip from 'adm-zip';
-import { read, utils } from "xlsx";
+import { read, utils } from 'xlsx';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateUploadDto } from './dto/create-upload.dto';
@@ -13,7 +13,7 @@ import { Upload } from './entities/upload.entity';
 import { StorageService } from './storage-service';
 import { ColunasNecessarias, OrcamentoImportacaoHelpers } from 'src/importacao-orcamento/importacao-orcamento.common';
 
-const AdmZipLib = require("adm-zip");
+const AdmZipLib = require('adm-zip');
 
 interface TokenResponse {
     stream: NodeJS.ReadableStream;
@@ -37,19 +37,23 @@ export class UploadService {
     constructor(
         private readonly jwtService: JwtService,
         private readonly prisma: PrismaService,
-        private readonly storage: StorageService,
-    ) { }
+        private readonly storage: StorageService
+    ) {}
 
-    async upload(createUploadDto: CreateUploadDto, user: PessoaFromJwt, file: Express.Multer.File | { buffer: Buffer }, ip: string) {
-
+    async upload(
+        createUploadDto: CreateUploadDto,
+        user: PessoaFromJwt,
+        file: Express.Multer.File | { buffer: Buffer },
+        ip: string
+    ) {
         let originalname: string = '';
 
-        if ("size" in file) {
+        if ('size' in file) {
             if (file.size < 1) {
                 throw new HttpException('O arquivo precisa ter pelo menos 1 byte!', 400);
             }
 
-            if ("originalname" in file && createUploadDto.tipo_documento_id) {
+            if ('originalname' in file && createUploadDto.tipo_documento_id) {
                 const tipoDoc = await this.prisma.tipoDocumento.findFirst({
                     where: { id: createUploadDto.tipo_documento_id },
                     select: { extensoes: true },
@@ -59,11 +63,15 @@ export class UploadService {
                 const tipoDocExtensoes = tipoDoc.extensoes ? tipoDoc.extensoes.toLowerCase().split(',') || [] : [];
                 if (tipoDocExtensoes.length > 0) {
                     // TODO adicionar inteligência para verificar mimetype por ext?
-                    const extSomeExtExists = tipoDocExtensoes.some(ext => {
+                    const extSomeExtExists = tipoDocExtensoes.some((ext) => {
                         return file.originalname.toLocaleLowerCase().endsWith('.' + ext.trim());
                     });
 
-                    if (!extSomeExtExists) throw new HttpException(`Arquivo deve contem um das extensões: ${tipoDoc.extensoes}; Nome do arquivo: ${file.originalname}`, 400);
+                    if (!extSomeExtExists)
+                        throw new HttpException(
+                            `Arquivo deve contem um das extensões: ${tipoDoc.extensoes}; Nome do arquivo: ${file.originalname}`,
+                            400
+                        );
                 }
             }
 
@@ -83,7 +91,6 @@ export class UploadService {
                 }
 
                 await this.checkOrcamentoFile(file);
-
             } else if (createUploadDto.tipo === TipoUpload.LOGO_PDM) {
                 if (/(\.png|svg)$/i.test(file.originalname) == false) {
                     throw new HttpException('O arquivo do Logo do PDM precisa ser um arquivo SVG ou PNG', 400);
@@ -114,9 +121,12 @@ export class UploadService {
             originalname.replace(/\s/g, '-').replace(/[^\w-\.0-9_]*/gi, ''),
         ].join('/');
 
-        createUploadDto.tipo_documento_id = createUploadDto.tipo_documento_id && createUploadDto.tipo_documento_id > 0 ? createUploadDto.tipo_documento_id : null;
+        createUploadDto.tipo_documento_id =
+            createUploadDto.tipo_documento_id && createUploadDto.tipo_documento_id > 0
+                ? createUploadDto.tipo_documento_id
+                : null;
 
-        const ct = "mimetype" in file && file.mimetype ? file.mimetype : 'application/octet-stream';
+        const ct = 'mimetype' in file && file.mimetype ? file.mimetype : 'application/octet-stream';
         await this.storage.putBlob(key, file.buffer, {
             'Content-Type': ct,
             'x-user-id': user.id,
@@ -134,7 +144,7 @@ export class UploadService {
                 caminho: key,
                 nome_original: originalname,
                 mime_type: ct,
-                tamanho_bytes: "size" in file ? file.size : file.buffer.length,
+                tamanho_bytes: 'size' in file ? file.size : file.buffer.length,
                 descricao: createUploadDto.descricao,
                 tipo: String(createUploadDto.tipo),
                 tipo_documento_id: createUploadDto.tipo_documento_id,
@@ -147,18 +157,29 @@ export class UploadService {
 
     private checkShapeFile(file: Express.Multer.File) {
         if (/\.zip$/i.test(file.originalname) == false || ZipContentTypes.includes(file.mimetype) == false) {
-            throw new HttpException(`O arquivo precisa ser do tipo arquivo ZIP\n\nRecebido mimetype=${file.mimetype}, aceito apenas ${ZipContentTypes.join(', ')}\nOriginal Name=${file.originalname}, aceito apenas .zip`, 400);
+            throw new HttpException(
+                `O arquivo precisa ser do tipo arquivo ZIP\n\nRecebido mimetype=${
+                    file.mimetype
+                }, aceito apenas ${ZipContentTypes.join(', ')}\nOriginal Name=${file.originalname}, aceito apenas .zip`,
+                400
+            );
         } else if (file.size > 2097152) {
-            throw new HttpException(`O arquivo ZIP precisa ser menor que 2 Megabytes.\n Recebido ${file.size} bytes`, 400);
+            throw new HttpException(
+                `O arquivo ZIP precisa ser menor que 2 Megabytes.\n Recebido ${file.size} bytes`,
+                400
+            );
         }
 
         let totalSize = 0;
-        let hasShp = false, hasDbf = false, hasShx = false, hasCpg = false;
+        let hasShp = false,
+            hasDbf = false,
+            hasShx = false,
+            hasCpg = false;
         try {
             const zip = new AdmZipLib(file.buffer) as AdmZip;
             const entries = zip.getEntries();
 
-            entries.forEach(entry => {
+            entries.forEach((entry) => {
                 totalSize += entry.header.size;
                 const entryName = entry.entryName.toLocaleLowerCase();
                 if (entryName.endsWith('.shp')) hasShp = true;
@@ -180,10 +201,10 @@ export class UploadService {
             const errorMessage = 'O arquivo zip não contém os arquivos necessários: ' + missingExtensions.join(', ');
             throw new HttpException(errorMessage, 400);
         } else if (totalSize >= 100 * 1024 * 1024) {
-            const errorMessage = 'O tamanho total do arquivo zip após a descompactação excede 100 MB. Isso pode travar os leitores em navegador.';
+            const errorMessage =
+                'O tamanho total do arquivo zip após a descompactação excede 100 MB. Isso pode travar os leitores em navegador.';
             throw new HttpException(errorMessage, 400);
         }
-
     }
 
     private async checkOrcamentoFile(file: Express.Multer.File) {
@@ -194,7 +215,11 @@ export class UploadService {
             });
 
             if (planilia.SheetNames.length !== 1)
-                throw new Error(`deve ter apenas uma página (planilla), recebidas ${planilia.SheetNames.length}: ${planilia.SheetNames.join(', ')}`);
+                throw new Error(
+                    `deve ter apenas uma página (planilla), recebidas ${
+                        planilia.SheetNames.length
+                    }: ${planilia.SheetNames.join(', ')}`
+                );
 
             const folha = planilia.Sheets[planilia.SheetNames[0]];
             if (!folha['!ref']) throw new Error('primeira folha não definida');
@@ -203,18 +228,23 @@ export class UploadService {
 
             const colunas: string[] = Object.keys(colunasIdx);
 
-            const missingColumns = ColunasNecessarias.filter(column => !colunas.includes(column));
+            const missingColumns = ColunasNecessarias.filter((column) => !colunas.includes(column));
             if (missingColumns.length > 0) {
                 throw new Error(`Colunas não encontradas: ${missingColumns.join(', ')}`);
             }
-
         } catch (error) {
             console.log(error);
             throw new HttpException(`Não foi possivel efetuar a leitura do arquivo: ${error}`, 400);
         }
     }
 
-    async uploadReport(category: string, filename: string, buffer: Buffer, mimetype: string | undefined, user: PessoaFromJwt | null) {
+    async uploadReport(
+        category: string,
+        filename: string,
+        buffer: Buffer,
+        mimetype: string | undefined,
+        user: PessoaFromJwt | null
+    ) {
         const originalname = filename;
 
         const arquivoId = await this.nextSequence();
@@ -231,8 +261,8 @@ export class UploadService {
 
         await this.storage.putBlob(key, buffer, {
             'Content-Type': mimetype || 'application/octet-stream',
-            'x-user-id': (user ? user.id : 'sistema'),
-            'x-orgao-id': (user ? (user.orgao_id || 'sem-orgao') : 'n/a'),
+            'x-user-id': user ? user.id : 'sistema',
+            'x-orgao-id': user ? user.orgao_id || 'sem-orgao' : 'n/a',
             'x-category': category,
             'x-tipo': 'reports',
         });
@@ -269,7 +299,7 @@ export class UploadService {
                     arquivo_id: id,
                     aud: UPLOAD_AUD,
                 },
-                { expiresIn: '30d' },
+                { expiresIn: '30d' }
             ),
         } as Upload;
     }
@@ -283,7 +313,8 @@ export class UploadService {
         } catch (error) {
             console.log(error);
         }
-        if (!decoded || ![UPLOAD_AUD, DOWNLOAD_AUD].includes(decoded.aud)) throw new HttpException('upload_token inválido', 400);
+        if (!decoded || ![UPLOAD_AUD, DOWNLOAD_AUD].includes(decoded.aud))
+            throw new HttpException('upload_token inválido', 400);
 
         return decoded.arquivo_id;
     }
@@ -297,7 +328,7 @@ export class UploadService {
                     arquivo_id: id,
                     aud: DOWNLOAD_AUD,
                 },
-                { expiresIn: '30d' },
+                { expiresIn: '30d' }
             ),
         } as Download;
     }
@@ -308,9 +339,9 @@ export class UploadService {
         return this.jwtService.sign(
             {
                 arquivo_id: id,
-                aud: DOWNLOAD_AUD
+                aud: DOWNLOAD_AUD,
             },
-            { noTimestamp: true, },
+            { noTimestamp: true }
         );
     }
 
@@ -353,5 +384,4 @@ export class UploadService {
             mime_type: arquivo.mime_type || 'application/octet-stream',
         };
     }
-
 }

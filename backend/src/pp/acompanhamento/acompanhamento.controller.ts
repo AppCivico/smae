@@ -12,24 +12,36 @@ import { UpdateProjetoAcompanhamentoDto } from './dto/update-acompanhamento.dto'
 import { DetailProjetoAcompanhamentoDto, ListProjetoAcompanhamentoDto } from './entities/acompanhamento.entity';
 import { ProjetoService } from '../projeto/projeto.service';
 
-const roles: ListaDePrivilegios[] = ['Projeto.administrador', 'Projeto.administrador_no_orgao', 'SMAE.gestor_de_projeto', 'SMAE.colaborador_de_projeto'];
+const roles: ListaDePrivilegios[] = [
+    'Projeto.administrador',
+    'Projeto.administrador_no_orgao',
+    'SMAE.gestor_de_projeto',
+    'SMAE.colaborador_de_projeto',
+];
 
 @Controller('projeto')
 @ApiTags('Projeto - Acompanhamento')
 export class AcompanhamentoController {
     constructor(
         private readonly acompanhamentoService: AcompanhamentoService,
-        private readonly projetoService: ProjetoService,
-    ) { }
+        private readonly projetoService: ProjetoService
+    ) {}
 
     @Post(':id/acompanhamento')
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
     @Roles(...roles)
-    async create(@Param() params: FindOneParams, @Body() createAcompanhamentoDto: CreateProjetoAcompanhamentoDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
+    async create(
+        @Param() params: FindOneParams,
+        @Body() createAcompanhamentoDto: CreateProjetoAcompanhamentoDto,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<RecordWithId> {
         const projeto = await this.projetoService.findOne(params.id, user, 'ReadWrite');
         if (projeto.permissoes.apenas_leitura_planejamento && projeto.permissoes.sou_responsavel == false) {
-            throw new HttpException("Não é possível criar o acompanhamento, pois o seu acesso é apenas leitura e você não é o responsável do projeto.", 400);
+            throw new HttpException(
+                'Não é possível criar o acompanhamento, pois o seu acesso é apenas leitura e você não é o responsável do projeto.',
+                400
+            );
         }
         return await this.acompanhamentoService.create(params.id, createAcompanhamentoDto, user);
     }
@@ -38,10 +50,13 @@ export class AcompanhamentoController {
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
     @Roles(...roles)
-    async findAll(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt): Promise<ListProjetoAcompanhamentoDto> {
+    async findAll(
+        @Param() params: FindOneParams,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<ListProjetoAcompanhamentoDto> {
         await this.projetoService.findOne(params.id, user, 'ReadOnly');
         return {
-            linhas: await this.acompanhamentoService.findAll(params.id, user)
+            linhas: await this.acompanhamentoService.findAll(params.id, user),
         };
     }
 
@@ -49,7 +64,10 @@ export class AcompanhamentoController {
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
     @Roles(...roles)
-    async findOne(@Param() params: FindTwoParams, @CurrentUser() user: PessoaFromJwt): Promise<DetailProjetoAcompanhamentoDto> {
+    async findOne(
+        @Param() params: FindTwoParams,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<DetailProjetoAcompanhamentoDto> {
         await this.projetoService.findOne(params.id, user, 'ReadOnly');
         return await this.acompanhamentoService.findOne(params.id, params.id2, user);
     }
@@ -58,9 +76,13 @@ export class AcompanhamentoController {
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
     @Roles(...roles)
-    async update(@Param() params: FindTwoParams, @Body() dto: UpdateProjetoAcompanhamentoDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
+    async update(
+        @Param() params: FindTwoParams,
+        @Body() dto: UpdateProjetoAcompanhamentoDto,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<RecordWithId> {
         const projeto = await this.projetoService.findOne(params.id, user, 'ReadWrite');
-        return await this.acompanhamentoService.update(params.id, params.id2, dto, user)
+        return await this.acompanhamentoService.update(params.id, params.id2, dto, user);
     }
 
     @Delete(':id/acompanhamento/:id2')
@@ -72,6 +94,6 @@ export class AcompanhamentoController {
     async remove(@Param() params: FindTwoParams, @CurrentUser() user: PessoaFromJwt) {
         const projeto = await this.projetoService.findOne(params.id, user, 'ReadWrite');
         await this.acompanhamentoService.remove(params.id, params.id2, user);
-        return ''
+        return '';
     }
 }

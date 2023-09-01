@@ -20,7 +20,10 @@ export class AtividadeController {
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
     @Roles('CadastroAtividade.inserir', 'CadastroMeta.inserir')
-    async create(@Body() createAtividadeDto: CreateAtividadeDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
+    async create(
+        @Body() createAtividadeDto: CreateAtividadeDto,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<RecordWithId> {
         return await this.atividadeService.create(createAtividadeDto, user);
     }
 
@@ -36,7 +39,11 @@ export class AtividadeController {
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
     @Roles('CadastroAtividade.editar', 'CadastroMeta.inserir')
-    async update(@Param() params: FindOneParams, @Body() updateAtividadeDto: UpdateAtividadeDto, @CurrentUser() user: PessoaFromJwt) {
+    async update(
+        @Param() params: FindOneParams,
+        @Body() updateAtividadeDto: UpdateAtividadeDto,
+        @CurrentUser() user: PessoaFromJwt
+    ) {
         return await this.atividadeService.update(+params.id, updateAtividadeDto, user);
     }
 

@@ -5,7 +5,11 @@ import { DotacaoService } from '../../dotacao/dotacao.service';
 import { PrismaService } from '../../prisma/prisma.service';
 
 import { DefaultCsvOptions, FileOutput, ReportableService, UtilsService } from '../utils/utils.service';
-import { CreateRelPrevisaoCustoDto, PeriodoRelatorioPrevisaoCustoDto, SuperCreateRelPrevisaoCustoDto } from './dto/create-previsao-custo.dto';
+import {
+    CreateRelPrevisaoCustoDto,
+    PeriodoRelatorioPrevisaoCustoDto,
+    SuperCreateRelPrevisaoCustoDto,
+} from './dto/create-previsao-custo.dto';
 import { ListPrevisaoCustoDto } from './entities/previsao-custo.entity';
 
 const {
@@ -16,7 +20,11 @@ const defaultTransform = [flatten({ paths: [] })];
 
 @Injectable()
 export class PrevisaoCustoService implements ReportableService {
-    constructor(private readonly utils: UtilsService, private readonly prisma: PrismaService, private readonly dotacaoService: DotacaoService) { }
+    constructor(
+        private readonly utils: UtilsService,
+        private readonly prisma: PrismaService,
+        private readonly dotacaoService: DotacaoService
+    ) {}
 
     async create(dto: SuperCreateRelPrevisaoCustoDto): Promise<ListPrevisaoCustoDto> {
         let ano: number;
@@ -27,7 +35,7 @@ export class PrevisaoCustoService implements ReportableService {
         if (dto.portfolio_id === undefined && dto.projeto_id === undefined) {
             const { metas } = await this.utils.applyFilter(dto, { iniciativas: false, atividades: false });
 
-            filtroMetas = metas.map(r => r.id);
+            filtroMetas = metas.map((r) => r.id);
         }
 
         if (dto.periodo_ano === PeriodoRelatorioPrevisaoCustoDto.Corrente) {
@@ -63,7 +71,7 @@ export class PrevisaoCustoService implements ReportableService {
             orderBy: [{ meta_id: 'asc' }, { criado_em: 'desc' }],
         });
 
-        const list = metaOrcamentos.map(r => {
+        const list = metaOrcamentos.map((r) => {
             return {
                 ...r,
                 custo_previsto: r.custo_previsto.toFixed(2),
@@ -99,17 +107,19 @@ export class PrevisaoCustoService implements ReportableService {
             { value: 'projeto.id', label: 'ID do Projeto' },
         ];
 
-        const campos = pdm ? [
-            { value: 'meta.codigo', label: 'Código da Meta' },
-            { value: 'meta.titulo', label: 'Título da Meta' },
-            { value: 'meta.id', label: 'ID da Meta' },
-            { value: 'iniciativa.codigo', label: 'Código da ' + pdm.rotulo_iniciativa },
-            { value: 'iniciativa.titulo', label: 'Título da ' + pdm.rotulo_iniciativa },
-            { value: 'iniciativa.id', label: 'ID da ' + pdm.rotulo_iniciativa },
-            { value: 'atividade.codigo', label: 'Código da ' + pdm.rotulo_atividade },
-            { value: 'atividade.titulo', label: 'Título da ' + pdm.rotulo_atividade },
-            { value: 'atividade.id', label: 'ID da ' + pdm.rotulo_atividade },
-        ] : camposProjeto;
+        const campos = pdm
+            ? [
+                  { value: 'meta.codigo', label: 'Código da Meta' },
+                  { value: 'meta.titulo', label: 'Título da Meta' },
+                  { value: 'meta.id', label: 'ID da Meta' },
+                  { value: 'iniciativa.codigo', label: 'Código da ' + pdm.rotulo_iniciativa },
+                  { value: 'iniciativa.titulo', label: 'Título da ' + pdm.rotulo_iniciativa },
+                  { value: 'iniciativa.id', label: 'ID da ' + pdm.rotulo_iniciativa },
+                  { value: 'atividade.codigo', label: 'Código da ' + pdm.rotulo_atividade },
+                  { value: 'atividade.titulo', label: 'Título da ' + pdm.rotulo_atividade },
+                  { value: 'atividade.id', label: 'ID da ' + pdm.rotulo_atividade },
+              ]
+            : camposProjeto;
 
         if (dados.linhas.length) {
             const json2csvParser = new Parser({
@@ -124,13 +134,13 @@ export class PrevisaoCustoService implements ReportableService {
                     'ano_referencia',
                     'custo_previsto',
                     'parte_dotacao',
-                    'atualizado_em'
+                    'atualizado_em',
                 ],
             });
             const linhas = json2csvParser.parse(
-                dados.linhas.map(r => {
+                dados.linhas.map((r) => {
                     return { ...r };
-                }),
+                })
             );
             out.push({
                 name: 'previsao-custo.csv',
@@ -146,7 +156,7 @@ export class PrevisaoCustoService implements ReportableService {
                         params: params,
                         horario: Date2YMD.tzSp2UTC(new Date()),
                     }),
-                    'utf8',
+                    'utf8'
                 ),
             },
             ...out,

@@ -27,7 +27,7 @@ export class MfEtapaDto {
     @ValidateIf((object, value) => value !== null)
     @Min(0, { message: '$property| Percentual de execução precisa ser positivo ou zero' })
     @Max(100, { message: '$property| Percentual de execução máximo é 100' })
-    percentual_execucao?: number
+    percentual_execucao?: number;
 }
 
 export class AtividadesCronoRetorno {

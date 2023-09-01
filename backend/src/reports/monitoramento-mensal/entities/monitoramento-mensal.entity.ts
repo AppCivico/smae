@@ -7,7 +7,10 @@ import { MfFechamentoDto } from '../../../mf/metas/dto/mf-meta-fechamento.dto';
 import { MfRiscoDto } from '../../../mf/metas/dto/mf-meta-risco.dto';
 import { SimplifiedPainelConteudoSeries, SimplifiedSeries } from '../../../painel/dto/detalhe-painel.dto';
 
-export class RelVarlSimplifiedSeries extends IntersectionType(OmitType(SimplifiedPainelConteudoSeries, ['series'] as const), SimplifiedSeries) { }
+export class RelVarlSimplifiedSeries extends IntersectionType(
+    OmitType(SimplifiedPainelConteudoSeries, ['series'] as const),
+    SimplifiedSeries
+) {}
 
 export class IdTituloPeriodicidade {
     id: number;
@@ -28,42 +31,42 @@ export class RelMfMetas {
 }
 
 export class RelSerieVariavelDto {
-    serie: Serie
-    variavel_id: number
-    titulo: string
-    codigo: string
-    data_valor: string
-    valor_nominal: string
+    serie: Serie;
+    variavel_id: number;
+    titulo: string;
+    codigo: string;
+    data_valor: string;
+    valor_nominal: string;
 
-    atualizado_por: IdNomeExibicao | null
-    atualizado_em: string
+    atualizado_por: IdNomeExibicao | null;
+    atualizado_em: string;
 
-    conferida_por: IdNomeExibicao | null
-    conferida_em: string | null
+    conferida_por: IdNomeExibicao | null;
+    conferida_em: string | null;
 
-    conferida: boolean
-    aguarda_cp: boolean
-    aguarda_complementacao: boolean
+    conferida: boolean;
+    aguarda_cp: boolean;
+    aguarda_complementacao: boolean;
 
-    meta_id: number
-    iniciativa_id: number | null
-    atividade_id: number | null
+    meta_id: number;
+    iniciativa_id: number | null;
+    atividade_id: number | null;
 
-    codigo_meta: string
-    codigo_iniciativa: string | null
-    codigo_atividade: string | null
+    codigo_meta: string;
+    codigo_iniciativa: string | null;
+    codigo_atividade: string | null;
 
-    titulo_meta: string
-    titulo_iniciativa: string | null
-    titulo_atividad: string | null
+    titulo_meta: string;
+    titulo_iniciativa: string | null;
+    titulo_atividad: string | null;
 }
 
 export class RetMonitoramentoFisico {
-    ano: number
-    mes: number
-    ciclo_fisico_id: number
-    metas: RelMfMetas[]
-    seriesVariaveis: RelSerieVariavelDto[]
+    ano: number;
+    mes: number;
+    ciclo_fisico_id: number;
+    metas: RelMfMetas[];
+    seriesVariaveis: RelSerieVariavelDto[];
 }
 
 export class RetMonitoramentoMensal {

@@ -8,7 +8,12 @@ import { PrismaService } from '../../prisma/prisma.service';
 
 import { DefaultCsvOptions, FileOutput } from '../utils/utils.service';
 import { CreateRelMonitoramentoMensalDto } from './dto/create-monitoramento-mensal.dto';
-import { RelMfMetas, RelSerieVariavelDto, RetMonitoramentoFisico, RetMonitoramentoMensal } from './entities/monitoramento-mensal.entity';
+import {
+    RelMfMetas,
+    RelSerieVariavelDto,
+    RetMonitoramentoFisico,
+    RetMonitoramentoMensal,
+} from './entities/monitoramento-mensal.entity';
 
 const {
     Parser,
@@ -56,8 +61,8 @@ export class MonitoramentoMensalMfService {
         private readonly prisma: PrismaService,
         private readonly analiseQuali: MetasAnaliseQualiService,
         private readonly analiseRisco: MetasRiscoService,
-        private readonly fechamento: MetasFechamentoService,
-    ) { }
+        private readonly fechamento: MetasFechamentoService
+    ) {}
 
     async create_mf(dto: CreateRelMonitoramentoMensalDto, metas: number[]): Promise<RetMonitoramentoFisico | null> {
         const cf = await this.prisma.cicloFisico.findFirst({
@@ -107,7 +112,7 @@ export class MonitoramentoMensalMfService {
             mes: cf.data_ciclo.getMonth(),
             ciclo_fisico_id: cf.id,
             metas: metasOut,
-            seriesVariaveis: seriesVariaveis
+            seriesVariaveis: seriesVariaveis,
         };
     }
 
@@ -201,7 +206,7 @@ export class MonitoramentoMensalMfService {
         order by all_sv.serie, all_sv.codigo
         `;
 
-        return serieVariaveis as RelSerieVariavelDto[]
+        return serieVariaveis as RelSerieVariavelDto[];
     }
 
     async getFiles(myInput: RetMonitoramentoMensal, pdm: Pdm): Promise<FileOutput[]> {
@@ -309,9 +314,24 @@ export class MonitoramentoMensalMfService {
                 { value: 'valor_nominal', label: 'Valor Nominal' },
                 { value: 'conferida_por.nome_exibicao', label: 'Conferida Por' },
                 { value: 'conferida_em', label: 'Conferida Em' },
-                { value: (row: RelSerieVariavelDto) => { return row.conferida ? 'Sim' : 'Não' }, label: 'Conferida' },
-                { value: (row: RelSerieVariavelDto) => { return row.aguarda_cp ? 'Sim' : 'Não' }, label: 'Aguarda CP' },
-                { value: (row: RelSerieVariavelDto) => { return row.aguarda_complementacao ? 'Sim' : 'Não' }, label: 'Aguarda Complementação' },
+                {
+                    value: (row: RelSerieVariavelDto) => {
+                        return row.conferida ? 'Sim' : 'Não';
+                    },
+                    label: 'Conferida',
+                },
+                {
+                    value: (row: RelSerieVariavelDto) => {
+                        return row.aguarda_cp ? 'Sim' : 'Não';
+                    },
+                    label: 'Aguarda CP',
+                },
+                {
+                    value: (row: RelSerieVariavelDto) => {
+                        return row.aguarda_complementacao ? 'Sim' : 'Não';
+                    },
+                    label: 'Aguarda Complementação',
+                },
                 { value: 'meta_id', label: 'ID da meta' },
                 { value: 'iniciativa_id', label: 'ID da ' + pdm.rotulo_iniciativa },
                 { value: 'atividade_id', label: 'ID da ' + pdm.rotulo_atividade },

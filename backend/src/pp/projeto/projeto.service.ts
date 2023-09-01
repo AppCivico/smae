@@ -26,7 +26,7 @@ const StatusParaFase: Record<ProjetoStatus, ProjetoFase> = {
     Validado: 'Acompanhamento',
     EmAcompanhamento: 'Acompanhamento',
     Suspenso: 'Acompanhamento',
-    Fechado: 'Encerramento'
+    Fechado: 'Encerramento',
 } as const;
 
 export const ProjetoStatusParaExibicao: Record<ProjetoStatus, string> = {
@@ -37,13 +37,12 @@ export const ProjetoStatusParaExibicao: Record<ProjetoStatus, string> = {
     Validado: 'Validado',
     EmAcompanhamento: 'Em Acompanhamento',
     Suspenso: 'Suspenso',
-    Fechado: 'Concluído'
+    Fechado: 'Concluído',
 } as const;
 
-
 export class ProjetoOrgaoParticipante {
-    projeto_id: number
-    orgao_id: number
+    projeto_id: number;
+    orgao_id: number;
 }
 
 export type HtmlProjetoUe = {
@@ -55,7 +54,7 @@ export type HtmlProjetoUe = {
     dataInicio: string;
     dataTermino: string;
     custoEstimado: string;
-    fonteDeRecursos: string[]
+    fonteDeRecursos: string[];
     origem: string;
     codigoDaMeta: string | null;
     textoDaMeta: string;
@@ -64,7 +63,6 @@ export type HtmlProjetoUe = {
     orgaosEnvolvidos: string[];
 };
 
-
 @Injectable()
 export class ProjetoService {
     private readonly logger = new Logger(ProjetoService.name);
@@ -72,7 +70,7 @@ export class ProjetoService {
         private readonly prisma: PrismaService,
         private readonly portfolioService: PortfolioService,
         private readonly uploadService: UploadService
-    ) { }
+    ) {}
 
     private async processaOrigem(dto: CreateProjetoDto, currentOrigemTipo?: ProjetoOrigemTipo) {
         let meta_id: number | null = dto.meta_id ? dto.meta_id : null;
@@ -86,13 +84,11 @@ export class ProjetoService {
             await validaPdmSistema(this);
         } else if (origem_tipo === ProjetoOrigemTipo.PdmAntigo) {
             validaPdmAntigo();
-
         } else if (origem_tipo === ProjetoOrigemTipo.Outro) {
             validaOutro();
         } else {
             throw new HttpException(`origem_tipo ${origem_tipo} não é suportado`, 500);
         }
-
 
         return {
             origem_tipo,
@@ -100,15 +96,14 @@ export class ProjetoService {
             atividade_id,
             iniciativa_id,
             origem_outro,
-            meta_codigo
+            meta_codigo,
         };
 
         function validaOutro() {
             if (!origem_outro)
                 throw new HttpException('origem_outro| Deve ser enviado quando origem_tipo for Outro', 400);
 
-            if (meta_id)
-                throw new HttpException('meta_id| Não deve ser enviado caso origem_tipo seja Outro', 400);
+            if (meta_id) throw new HttpException('meta_id| Não deve ser enviado caso origem_tipo seja Outro', 400);
             if (iniciativa_id)
                 throw new HttpException('iniciativa_id| Não deve ser enviado caso origem_tipo seja Outro', 400);
             if (atividade_id)
@@ -122,17 +117,13 @@ export class ProjetoService {
 
         function validaPdmAntigo() {
             const errMsg = 'caso origem seja outro sistema de meta';
-            if (!meta_codigo)
-                throw new HttpException(`meta_codigo| Meta código deve ser enviado ${errMsg}`, 400);
+            if (!meta_codigo) throw new HttpException(`meta_codigo| Meta código deve ser enviado ${errMsg}`, 400);
             if (!origem_outro)
                 throw new HttpException(`origem_outro| Descrição da origem deve ser enviado ${errMsg}`, 400);
 
-            if (meta_id)
-                throw new HttpException(`meta_id| Meta não deve ser enviado ${errMsg}`, 400);
-            if (iniciativa_id)
-                throw new HttpException(`iniciativa_id| Iniciativa não deve ser enviado ${errMsg}`, 400);
-            if (atividade_id)
-                throw new HttpException(`atividade_id| Atividade não deve ser enviado ${errMsg}`, 400);
+            if (meta_id) throw new HttpException(`meta_id| Meta não deve ser enviado ${errMsg}`, 400);
+            if (iniciativa_id) throw new HttpException(`iniciativa_id| Iniciativa não deve ser enviado ${errMsg}`, 400);
+            if (atividade_id) throw new HttpException(`atividade_id| Atividade não deve ser enviado ${errMsg}`, 400);
 
             // força a limpeza no banco, pode ser que tenha vindo como undefined
             meta_id = atividade_id = iniciativa_id = null;
@@ -140,25 +131,43 @@ export class ProjetoService {
 
         async function validaPdmSistema(self: ProjetoService) {
             if (!atividade_id && !iniciativa_id && !meta_id)
-                throw new HttpException('meta| é obrigatório enviar meta_id|iniciativa_id|atividade_id quando origem_tipo=PdmSistema', 400);
+                throw new HttpException(
+                    'meta| é obrigatório enviar meta_id|iniciativa_id|atividade_id quando origem_tipo=PdmSistema',
+                    400
+                );
 
             if (atividade_id) {
                 self.logger.log('validando atividade_id');
-                const atv = await self.prisma.atividade.findFirstOrThrow({ where: { id: atividade_id, removido_em: null }, select: { iniciativa_id: true } });
-                const ini = await self.prisma.iniciativa.findFirstOrThrow({ where: { id: atv.iniciativa_id, removido_em: null }, select: { meta_id: true, } });
-                await self.prisma.iniciativa.findFirstOrThrow({ where: { id: ini.meta_id, removido_em: null }, select: { id: true } });
+                const atv = await self.prisma.atividade.findFirstOrThrow({
+                    where: { id: atividade_id, removido_em: null },
+                    select: { iniciativa_id: true },
+                });
+                const ini = await self.prisma.iniciativa.findFirstOrThrow({
+                    where: { id: atv.iniciativa_id, removido_em: null },
+                    select: { meta_id: true },
+                });
+                await self.prisma.iniciativa.findFirstOrThrow({
+                    where: { id: ini.meta_id, removido_em: null },
+                    select: { id: true },
+                });
 
                 iniciativa_id = atv.iniciativa_id;
                 meta_id = ini.meta_id;
             } else if (iniciativa_id) {
                 self.logger.log('validando iniciativa_id');
-                const ini = await self.prisma.iniciativa.findFirstOrThrow({ where: { id: iniciativa_id, removido_em: null }, select: { meta_id: true } });
+                const ini = await self.prisma.iniciativa.findFirstOrThrow({
+                    where: { id: iniciativa_id, removido_em: null },
+                    select: { meta_id: true },
+                });
 
                 meta_id = ini.meta_id;
                 atividade_id = null;
             } else if (meta_id) {
                 self.logger.log('validando meta_id');
-                await self.prisma.meta.findFirstOrThrow({ where: { id: meta_id, removido_em: null }, select: { id: true } });
+                await self.prisma.meta.findFirstOrThrow({
+                    where: { id: meta_id, removido_em: null },
+                    select: { id: true },
+                });
 
                 iniciativa_id = atividade_id = null;
             }
@@ -174,17 +183,23 @@ export class ProjetoService {
     }
 
     private async processaOrgaoGestor(dto: CreateProjetoDto, portfolio: PortfolioDto, checkFk: boolean) {
-        if (!dto.orgao_gestor_id)
-            return { orgao_gestor_id: undefined, responsaveis_no_orgao_gestor: undefined }
+        if (!dto.orgao_gestor_id) return { orgao_gestor_id: undefined, responsaveis_no_orgao_gestor: undefined };
 
         const orgao_gestor_id: number = +dto.orgao_gestor_id;
-        const responsaveis_no_orgao_gestor: number[] = dto.responsaveis_no_orgao_gestor ? dto.responsaveis_no_orgao_gestor : [];
+        const responsaveis_no_orgao_gestor: number[] = dto.responsaveis_no_orgao_gestor
+            ? dto.responsaveis_no_orgao_gestor
+            : [];
 
         if (checkFk) {
             //console.dir({ portfolio, orgao_gestor_id, responsaveis_no_orgao_gestor }, { depth: 44 });
             // se o banco ficou corrompido, não tem como o usuário arrumar
-            if (portfolio.orgaos.map(r => r.id).includes(orgao_gestor_id) == false)
-                throw new HttpException(`orgao_gestor_id| Órgão não faz parte do Portfolio (${portfolio.orgaos.map(r => r.sigla).join(', ')})`, 400);
+            if (portfolio.orgaos.map((r) => r.id).includes(orgao_gestor_id) == false)
+                throw new HttpException(
+                    `orgao_gestor_id| Órgão não faz parte do Portfolio (${portfolio.orgaos
+                        .map((r) => r.sigla)
+                        .join(', ')})`,
+                    400
+                );
         }
 
         // esse TODO continua existindo
@@ -226,8 +241,12 @@ export class ProjetoService {
         // começa listando todos os portfolios
         const portfolios = await this.portfolioService.findAll(user);
 
-        const portfolio = portfolios.filter(r => r.id == dto.portfolio_id)[0];
-        if (!portfolio) throw new HttpException('portfolio_id| Portfolio não está liberado para criação de projetos para seu usuário', 400);
+        const portfolio = portfolios.filter((r) => r.id == dto.portfolio_id)[0];
+        if (!portfolio)
+            throw new HttpException(
+                'portfolio_id| Portfolio não está liberado para criação de projetos para seu usuário',
+                400
+            );
 
         const { origem_tipo, meta_id, atividade_id, iniciativa_id, origem_outro } = await this.processaOrigem(dto);
         const { orgao_gestor_id, responsaveis_no_orgao_gestor } = await this.processaOrgaoGestor(dto, portfolio, true);
@@ -236,51 +255,53 @@ export class ProjetoService {
 
         if (!origem_tipo) throw new Error('origem_tipo deve estar definido no create de Projeto');
 
-        const created = await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
-            const row = await prismaTx.projeto.create({
-                data: {
-                    registrado_por: user.id,
-                    registrado_em: new Date(Date.now()),
-                    portfolio_id: dto.portfolio_id,
-                    orgao_gestor_id: orgao_gestor_id!,
-                    responsaveis_no_orgao_gestor: responsaveis_no_orgao_gestor,
+        const created = await this.prisma.$transaction(
+            async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
+                const row = await prismaTx.projeto.create({
+                    data: {
+                        registrado_por: user.id,
+                        registrado_em: new Date(Date.now()),
+                        portfolio_id: dto.portfolio_id,
+                        orgao_gestor_id: orgao_gestor_id!,
+                        responsaveis_no_orgao_gestor: responsaveis_no_orgao_gestor,
 
-                    orgaos_participantes: {
-                        createMany: {
-                            data: dto.orgaos_participantes.map(o => {
-                                return { orgao_id: o };
-                            }),
+                        orgaos_participantes: {
+                            createMany: {
+                                data: dto.orgaos_participantes.map((o) => {
+                                    return { orgao_id: o };
+                                }),
+                            },
                         },
+                        orgao_responsavel_id: dto.orgao_responsavel_id,
+                        responsavel_id: dto.responsavel_id,
+                        nome: dto.nome,
+                        resumo: dto.resumo,
+                        previsao_inicio: dto.previsao_inicio,
+                        previsao_termino: dto.previsao_termino,
+                        tolerancia_atraso: dto.tolerancia_atraso,
+
+                        origem_tipo: origem_tipo,
+                        origem_outro: origem_outro,
+                        meta_id: meta_id,
+                        iniciativa_id: iniciativa_id,
+                        atividade_id: atividade_id,
+
+                        previsao_custo: dto.previsao_custo,
+                        escopo: dto.escopo,
+                        principais_etapas: dto.principais_etapas,
+
+                        objetivo: '',
+                        objeto: '',
+                        publico_alvo: '',
+                        status: 'Registrado',
+                        fase: StatusParaFase['Registrado'],
                     },
-                    orgao_responsavel_id: dto.orgao_responsavel_id,
-                    responsavel_id: dto.responsavel_id,
-                    nome: dto.nome,
-                    resumo: dto.resumo,
-                    previsao_inicio: dto.previsao_inicio,
-                    previsao_termino: dto.previsao_termino,
-                    tolerancia_atraso: dto.tolerancia_atraso,
+                    select: { id: true },
+                });
 
-                    origem_tipo: origem_tipo,
-                    origem_outro: origem_outro,
-                    meta_id: meta_id,
-                    iniciativa_id: iniciativa_id,
-                    atividade_id: atividade_id,
-
-                    previsao_custo: dto.previsao_custo,
-                    escopo: dto.escopo,
-                    principais_etapas: dto.principais_etapas,
-
-                    objetivo: '',
-                    objeto: '',
-                    publico_alvo: '',
-                    status: 'Registrado',
-                    fase: StatusParaFase['Registrado'],
-                },
-                select: { id: true },
-            });
-
-            return row;
-        });
+                return row;
+            }
+        );
 
         return created;
     }
@@ -289,13 +310,16 @@ export class ProjetoService {
         const permissionsSet: Prisma.Enumerable<Prisma.ProjetoWhereInput> = this.getProjetoWhereSet(user, true);
         return await this.prisma.projeto.findMany({
             where: {
-                AND: permissionsSet.length > 0 ? [
-                    {
-                        AND: permissionsSet
-                    }
-                ] : undefined,
+                AND:
+                    permissionsSet.length > 0
+                        ? [
+                              {
+                                  AND: permissionsSet,
+                              },
+                          ]
+                        : undefined,
             },
-            select: { id: true }
+            select: { id: true },
         });
     }
 
@@ -312,11 +336,14 @@ export class ProjetoService {
                 arquivado: filters.arquivado,
                 status: filters.status ? { in: filters.status } : undefined,
                 portfolio_id: filters.portfolio_id,
-                AND: permissionsSet.length > 0 ? [
-                    {
-                        AND: permissionsSet
-                    }
-                ] : undefined,
+                AND:
+                    permissionsSet.length > 0
+                        ? [
+                              {
+                                  AND: permissionsSet,
+                              },
+                          ]
+                        : undefined,
             },
             select: {
                 id: true,
@@ -370,10 +397,10 @@ export class ProjetoService {
                     },
                 },
                 portfolio: {
-                    select: { id: true, titulo: true }
+                    select: { id: true, titulo: true },
                 },
             },
-            orderBy: { codigo: 'asc' }
+            orderBy: { codigo: 'asc' },
         });
 
         for (const row of rows) {
@@ -410,7 +437,7 @@ export class ProjetoService {
             {
                 removido_em: null,
                 portfolio: { removido_em: null },
-            }
+            },
         ];
         if (!user) return permissionsSet;
 
@@ -420,26 +447,28 @@ export class ProjetoService {
             this.logger.debug('roles Projeto.administrador, ver todos os projetos');
             // nenhum filtro
         } else if (user.hasSomeRoles(['Projeto.administrador_no_orgao'])) {
-            this.logger.debug(`roles Projeto.administrador_no_orgao, ver todos os projetos do portfolio. com orgao ${user.orgao_id}`);
+            this.logger.debug(
+                `roles Projeto.administrador_no_orgao, ver todos os projetos do portfolio. com orgao ${user.orgao_id}`
+            );
             permissionsSet.push({
                 portfolio: {
                     orgaos: {
                         some: {
-                            orgao_id: user.orgao_id
-                        }
-                    }
-                }
+                            orgao_id: user.orgao_id,
+                        },
+                    },
+                },
             });
         } else if (user.hasSomeRoles(['SMAE.gestor_de_projeto'])) {
             this.logger.debug(`roles SMAE.gestor_de_projeto, ver todos responsaveis_no_orgao_gestor ${user.id}`);
             permissionsSet.push({
-                responsaveis_no_orgao_gestor: { has: user.id }
+                responsaveis_no_orgao_gestor: { has: user.id },
             });
         } else if (user.hasSomeRoles(['SMAE.colaborador_de_projeto'])) {
             this.logger.debug(`roles SMAE.colaborador_de_projeto, ver apenas responsavel_id ${user.id}`);
 
             permissionsSet.push({
-                responsavel_id: user.id
+                responsavel_id: user.id,
             });
         } else {
             throw new HttpException('Sem permissões para acesso aos projetos.', 400);
@@ -449,7 +478,6 @@ export class ProjetoService {
     }
 
     async getDadosProjetoUe(id: number, user: PessoaFromJwt | undefined): Promise<HtmlProjetoUe> {
-
         const projeto = await this.findOne(id, user, 'ReadOnly');
 
         const fonte_recursos: string[] = [];
@@ -463,13 +491,13 @@ export class ProjetoService {
                 const rows: {
                     codigo: string;
                     descricao: string;
-                }[] = await this.prisma.$queryRaw`select codigo, descricao from sof_entidades_linhas where col = 'fonte_recursos'
+                }[] = await this.prisma
+                    .$queryRaw`select codigo, descricao from sof_entidades_linhas where col = 'fonte_recursos'
 
                 and ano = ${fr.fonte_recurso_ano}::int
                 and codigo = ${fr.fonte_recurso_cod_sof}::varchar`;
 
-                if (rows[0])
-                    fonte_recursos.push(rows[0].codigo + ' - ' + rows[0].descricao);
+                if (rows[0]) fonte_recursos.push(rows[0].codigo + ' - ' + rows[0].descricao);
             }
         }
 
@@ -478,31 +506,29 @@ export class ProjetoService {
             nomeDoProjeto: projeto.nome,
             statusDoProjeto: ProjetoStatusParaExibicao[projeto.status],
             descricaoDoProjeto: projeto.resumo,
-            orgaoResponsavel: projeto.orgao_responsavel ? [
-                projeto.orgao_responsavel.sigla + ' - ' + projeto.orgao_responsavel.descricao
-            ] : [],
+            orgaoResponsavel: projeto.orgao_responsavel
+                ? [projeto.orgao_responsavel.sigla + ' - ' + projeto.orgao_responsavel.descricao]
+                : [],
             responsavelPeloProjeto: projeto.responsavel ? projeto.responsavel.nome_exibicao : '-',
             dataInicio: Date2YMD.dbDateToDMY(projeto.previsao_inicio),
             dataTermino: Date2YMD.dbDateToDMY(projeto.previsao_termino),
             custoEstimado: projeto.previsao_custo ? fc.toString(projeto.previsao_custo) : '-',
             fonteDeRecursos: fonte_recursos,
-            origem:
-                projeto.origem_tipo == 'Outro'
-                    ? projeto.origem_outro || ''
-                    : 'Programa de Metas',
+            origem: projeto.origem_tipo == 'Outro' ? projeto.origem_outro || '' : 'Programa de Metas',
             codigoDaMeta: projeto.meta ? projeto.meta.codigo : projeto.meta_codigo,
             textoDaMeta: projeto.meta ? projeto.meta.titulo : '',
             escopo: projeto.escopo ? projeto.escopo.split('\n\n') : [],
             etapas: projeto.principais_etapas ? projeto.principais_etapas.split('\n\n') : [],
-            orgaosEnvolvidos: projeto.orgaos_participantes.map(r => r.sigla + ' - ' + r.descricao),
+            orgaosEnvolvidos: projeto.orgaos_participantes.map((r) => r.sigla + ' - ' + r.descricao),
         };
-
-
     }
     // na fase de execução, o responsavel só vai poder mudar as datas do realizado da tarefa
     // o órgão gestor continua podendo preencher os dados realizado
-    async findOne(id: number, user: PessoaFromJwt | undefined, readonly: ReadOnlyBooleanType<true> | ReadOnlyBooleanType<false>): Promise<ProjetoDetailDto> {
-
+    async findOne(
+        id: number,
+        user: PessoaFromJwt | undefined,
+        readonly: ReadOnlyBooleanType<true> | ReadOnlyBooleanType<false>
+    ): Promise<ProjetoDetailDto> {
         console.log({ id, user, readonly });
 
         const permissionsSet: Prisma.Enumerable<Prisma.ProjetoWhereInput> = this.getProjetoWhereSet(user, false);
@@ -510,11 +536,14 @@ export class ProjetoService {
             where: {
                 id: id,
                 removido_em: null,
-                AND: permissionsSet.length > 0 ? [
-                    {
-                        AND: permissionsSet
-                    }
-                ] : undefined,
+                AND:
+                    permissionsSet.length > 0
+                        ? [
+                              {
+                                  AND: permissionsSet,
+                              },
+                          ]
+                        : undefined,
             },
             select: {
                 id: true,
@@ -565,8 +594,8 @@ export class ProjetoService {
                         id: true,
                         titulo: true,
                         nivel_maximo_tarefa: true,
-                        orcamento_execucao_disponivel_meses: true
-                    }
+                        orcamento_execucao_disponivel_meses: true,
+                    },
                 },
                 orgao_gestor: {
                     select: {
@@ -632,8 +661,8 @@ export class ProjetoService {
                         pdm_id: true,
                         codigo: true,
                         titulo: true,
-                        id: true
-                    }
+                        id: true,
+                    },
                 },
                 selecionado_em: true,
                 em_planejamento_em: true,
@@ -650,15 +679,15 @@ export class ProjetoService {
             where: { id: { in: projeto.responsaveis_no_orgao_gestor } },
             select: {
                 id: true,
-                nome_exibicao: true
-            }
+                nome_exibicao: true,
+            },
         });
 
         return {
             ...projeto,
             responsaveis_no_orgao_gestor: responsaveis_no_orgao_gestor,
             permissoes: permissoes,
-            orgaos_participantes: projeto.orgaos_participantes.map(o => {
+            orgaos_participantes: projeto.orgaos_participantes.map((o) => {
                 return {
                     id: o.orgao.id,
                     sigla: o.orgao.sigla,
@@ -668,14 +697,13 @@ export class ProjetoService {
         };
     }
 
-
     private async calcPermissions(
         projeto: {
             arquivado: boolean;
             status: ProjetoStatus;
             id: number;
-            responsaveis_no_orgao_gestor: number[],
-            responsavel_id: number | null
+            responsaveis_no_orgao_gestor: number[];
+            responsavel_id: number | null;
         },
         user: PessoaFromJwt | undefined,
         readonly: ReadOnlyBooleanType<true> | ReadOnlyBooleanType<false>
@@ -723,23 +751,26 @@ export class ProjetoService {
             if (user.hasSomeRoles(['Projeto.administrador_no_orgao', 'Projeto.administrador'])) {
                 pessoaPodeEscrever = true;
             } else if (
-                user.hasSomeRoles(['SMAE.gestor_de_projeto'])
-                && projeto.responsaveis_no_orgao_gestor.includes(+user.id)
+                user.hasSomeRoles(['SMAE.gestor_de_projeto']) &&
+                projeto.responsaveis_no_orgao_gestor.includes(+user.id)
             ) {
                 pessoaPodeEscrever = true;
             } else if (
-                user.hasSomeRoles(['SMAE.colaborador_de_projeto'])
-                && projeto.responsavel_id
-                && projeto.responsavel_id == +user.id
+                user.hasSomeRoles(['SMAE.colaborador_de_projeto']) &&
+                projeto.responsavel_id &&
+                projeto.responsavel_id == +user.id
             ) {
-                pessoaPodeEscrever = (['Registrado', 'Selecionado', 'EmPlanejamento'] as ProjetoStatus[]).includes(projeto.status);
+                pessoaPodeEscrever = (['Registrado', 'Selecionado', 'EmPlanejamento'] as ProjetoStatus[]).includes(
+                    projeto.status
+                );
                 // mesmo não podendo escrever, ele ainda é o responsável, ele pode fazer algumas escritas (do realizado, no cronograma)
                 permissoes.sou_responsavel = true;
-                this.logger.debug(`entrou em pessoa pode escrever pessoaPodeEscrever=${pessoaPodeEscrever} sou_responsavel=${permissoes.sou_responsavel}`);
+                this.logger.debug(
+                    `entrou em pessoa pode escrever pessoaPodeEscrever=${pessoaPodeEscrever} sou_responsavel=${permissoes.sou_responsavel}`
+                );
             } else {
                 throw new HttpException('Não foi possível calcular a permissão de acesso para o projeto.', 400);
             }
-
         } else {
             // user null == sistema puxando o relatório, então se precisar só mudar pra pessoaPodeEscrever=true
         }
@@ -770,12 +801,14 @@ export class ProjetoService {
             }
 
             if (pessoaPodeEscrever) {
-
                 switch (projeto.status) {
-                    case 'Registrado': permissoes.acao_selecionar = true; break;
+                    case 'Registrado':
+                        permissoes.acao_selecionar = true;
+                        break;
                     case 'Selecionado':
                         permissoes.status_permitidos.push('Registrado');
-                        permissoes.acao_iniciar_planejamento = true; break;
+                        permissoes.acao_iniciar_planejamento = true;
+                        break;
                     case 'EmPlanejamento':
                         permissoes.status_permitidos.push('Selecionado');
                         permissoes.status_permitidos.push('Registrado');
@@ -785,13 +818,15 @@ export class ProjetoService {
                         permissoes.status_permitidos.push('EmPlanejamento');
                         permissoes.status_permitidos.push('Selecionado');
                         permissoes.status_permitidos.push('Registrado');
-                        permissoes.acao_validar = true; break;
+                        permissoes.acao_validar = true;
+                        break;
                     case 'Validado':
                         permissoes.status_permitidos.push('Planejado');
                         permissoes.status_permitidos.push('EmPlanejamento');
                         permissoes.status_permitidos.push('Selecionado');
                         permissoes.status_permitidos.push('Registrado');
-                        permissoes.acao_iniciar = true; break;
+                        permissoes.acao_iniciar = true;
+                        break;
                     case 'EmAcompanhamento':
                         permissoes.status_permitidos.push('Validado');
                         permissoes.status_permitidos.push('Planejado');
@@ -807,7 +842,8 @@ export class ProjetoService {
                         permissoes.status_permitidos.push('EmPlanejamento');
                         permissoes.status_permitidos.push('Selecionado');
                         permissoes.status_permitidos.push('Registrado');
-                        permissoes.acao_cancelar = permissoes.acao_reiniciar = true; break;
+                        permissoes.acao_cancelar = permissoes.acao_reiniciar = true;
+                        break;
                     case 'Fechado':
                         permissoes.status_permitidos.push('EmAcompanhamento');
                         permissoes.status_permitidos.push('Validado');
@@ -815,13 +851,13 @@ export class ProjetoService {
                         permissoes.status_permitidos.push('EmPlanejamento');
                         permissoes.status_permitidos.push('Selecionado');
                         permissoes.status_permitidos.push('Registrado');
-                        permissoes.acao_arquivar = true; break;
+                        permissoes.acao_arquivar = true;
+                        break;
                 }
-
             }
         }
 
-        if (user && (readonly === 'ReadWrite' && pessoaPodeEscrever == false)) {
+        if (user && readonly === 'ReadWrite' && pessoaPodeEscrever == false) {
             throw new HttpException('Você não pode mais executar ações neste projeto.', 400);
         }
 
@@ -829,7 +865,6 @@ export class ProjetoService {
     }
 
     async update(projetoId: number, dto: UpdateProjetoDto, user: PessoaFromJwt): Promise<RecordWithId> {
-
         //if (dto.codigo) throw new HttpException('codigo| O campo código não deve ser enviado.', 400);
 
         // aqui é feito a verificação se esse usuário pode realmente acessar esse recurso
@@ -853,7 +888,7 @@ export class ProjetoService {
         let origem_outro: string | null | undefined = undefined;
         let meta_codigo: string | null | undefined = undefined;
 
-        if ("origem_tipo" in dto && dto.origem_tipo) {
+        if ('origem_tipo' in dto && dto.origem_tipo) {
             const origemVerification = await this.processaOrigem(dto as any, projeto.origem_tipo);
 
             origem_tipo = origemVerification.origem_tipo;
@@ -866,14 +901,21 @@ export class ProjetoService {
 
         const portfolios = await this.portfolioService.findAll(user);
 
-        const portfolio = portfolios.filter(r => r.id == projeto.portfolio_id)[0];
-        if (!portfolio) throw new HttpException('portfolio_id| Portfolio não está liberado para o seu usuário editar', 400);
+        const portfolio = portfolios.filter((r) => r.id == projeto.portfolio_id)[0];
+        if (!portfolio)
+            throw new HttpException('portfolio_id| Portfolio não está liberado para o seu usuário editar', 400);
 
-        const edit = dto.responsaveis_no_orgao_gestor ? {
-            orgao_gestor_id: projeto.orgao_gestor.id,
-            responsaveis_no_orgao_gestor: dto.responsaveis_no_orgao_gestor
-        } : {};
-        const { orgao_gestor_id, responsaveis_no_orgao_gestor } = await this.processaOrgaoGestor(edit as any, portfolio, false);
+        const edit = dto.responsaveis_no_orgao_gestor
+            ? {
+                  orgao_gestor_id: projeto.orgao_gestor.id,
+                  responsaveis_no_orgao_gestor: dto.responsaveis_no_orgao_gestor,
+              }
+            : {};
+        const { orgao_gestor_id, responsaveis_no_orgao_gestor } = await this.processaOrgaoGestor(
+            edit as any,
+            portfolio,
+            false
+        );
 
         // orgao_responsavel_id
 
@@ -931,43 +973,41 @@ export class ProjetoService {
                     coordenador_ue: dto.coordenador_ue,
                     tolerancia_atraso: dto.tolerancia_atraso,
 
-                    orgaos_participantes: dto.orgaos_participantes !== undefined ? {
-                        createMany: {
-                            data: dto.orgaos_participantes!.map(o => {
-                                return { orgao_id: o };
-                            }),
-                        },
-                    } : undefined,
-
-                }
+                    orgaos_participantes:
+                        dto.orgaos_participantes !== undefined
+                            ? {
+                                  createMany: {
+                                      data: dto.orgaos_participantes!.map((o) => {
+                                          return { orgao_id: o };
+                                      }),
+                                  },
+                              }
+                            : undefined,
+                },
             });
 
             // se já passou da fase do planejamento, então sim pode verificar se há necessidade de gerar
             // ou atualizar o código
-            if (projeto.em_planejamento_em !== null && (
-                (dto.meta_id && projeto.meta_id != dto.meta_id)
-                ||
-                (dto.origem_outro && projeto.origem_outro != dto.origem_outro)
-                ||
-                (dto.origem_tipo && projeto.origem_tipo != dto.origem_tipo)
-                ||
-                (dto.meta_codigo && projeto.meta_codigo != dto.meta_codigo)
-                ||
-                (dto.orgao_responsavel_id && (projeto.orgao_responsavel?.id || 0) != dto.orgao_responsavel_id)
-                ||
-                (!projeto.codigo && projeto.selecionado_em && projeto.orgao_responsavel && projeto.orgao_responsavel.id)
-            )) {
+            if (
+                projeto.em_planejamento_em !== null &&
+                ((dto.meta_id && projeto.meta_id != dto.meta_id) ||
+                    (dto.origem_outro && projeto.origem_outro != dto.origem_outro) ||
+                    (dto.origem_tipo && projeto.origem_tipo != dto.origem_tipo) ||
+                    (dto.meta_codigo && projeto.meta_codigo != dto.meta_codigo) ||
+                    (dto.orgao_responsavel_id && (projeto.orgao_responsavel?.id || 0) != dto.orgao_responsavel_id) ||
+                    (!projeto.codigo &&
+                        projeto.selecionado_em &&
+                        projeto.orgao_responsavel &&
+                        projeto.orgao_responsavel.id))
+            ) {
                 const codigo = await this.geraProjetoCodigo(projeto.id, prismaTx);
                 if (codigo != projeto.codigo)
                     await prismaTx.projeto.update({ where: { id: projeto.id }, data: { codigo: codigo } });
             }
-
-
         });
 
         return { id: projetoId };
     }
-
 
     async geraProjetoCodigo(id: number, prismaTx: Prisma.TransactionClient): Promise<string | undefined> {
         // buscar o ano baseado em 'selecionado_em'
@@ -979,17 +1019,17 @@ export class ProjetoService {
                 portfolio_id: true,
                 orgao_responsavel: {
                     select: {
-                        sigla: true
-                    }
+                        sigla: true,
+                    },
                 },
                 meta: {
                     select: {
                         codigo: true,
-                    }
+                    },
                 },
                 meta_codigo: true,
                 origem_tipo: true,
-            }
+            },
         });
 
         if (!projeto.selecionado_em)
@@ -1004,22 +1044,25 @@ export class ProjetoService {
 
         const buscaExistente = await prismaTx.projetoNumeroSequencial.findFirst({
             where: {
-                projeto_id: id
-            }
+                projeto_id: id,
+            },
         });
 
         if (buscaExistente) {
             anoSequencia = buscaExistente.ano;
             sequencial = buscaExistente.valor;
-            this.logger.debug(`Projeto não deve mudar de ano, nem portfolio. Mantendo sequencial e ano anteriores. Mantendo sequencial ${sequencial}`);
+            this.logger.debug(
+                `Projeto não deve mudar de ano, nem portfolio. Mantendo sequencial e ano anteriores. Mantendo sequencial ${sequencial}`
+            );
         } else {
             this.logger.debug(`Gerando novo sequencial para o portfolio ${projeto.portfolio_id} em ${anoSequencia}.`);
-            sequencial = await prismaTx.projetoNumeroSequencial.count({
-                where: {
-                    portfolio_id: projeto.portfolio_id,
-                    ano: anoSequencia
-                },
-            }) + 1;
+            sequencial =
+                (await prismaTx.projetoNumeroSequencial.count({
+                    where: {
+                        portfolio_id: projeto.portfolio_id,
+                        ano: anoSequencia,
+                    },
+                })) + 1;
             this.logger.debug(`=> Registrando sequencial ${sequencial}.`);
 
             await prismaTx.projetoNumeroSequencial.create({
@@ -1027,8 +1070,8 @@ export class ProjetoService {
                     projeto_id: projeto.id,
                     portfolio_id: projeto.portfolio_id,
                     ano: anoSequencia,
-                    valor: sequencial
-                }
+                    valor: sequencial,
+                },
             });
         }
 
@@ -1118,7 +1161,8 @@ export class ProjetoService {
             const rows: {
                 codigo: string;
                 descricao: string;
-            }[] = await this.prisma.$queryRaw`select codigo, descricao from sof_entidades_linhas where col = 'fonte_recursos'
+            }[] = await this.prisma
+                .$queryRaw`select codigo, descricao from sof_entidades_linhas where col = 'fonte_recursos'
             and ano = ${ano}::int
             and codigo = ANY(${codigos}::varchar[])`;
             if (!resultsFonte[ano]) resultsFonte[ano] = {};
@@ -1131,10 +1175,14 @@ export class ProjetoService {
         for (const fr of dto.fonte_recursos!) {
             const valor_nominal = fr.valor_nominal !== undefined ? fr.valor_nominal : null;
             const valor_percentual = fr.valor_percentual !== undefined ? fr.valor_percentual : null;
-            if (valor_nominal == null && valor_percentual == null) throw new HttpException('Valor Percentual e Valor Nominal não podem ser ambos nulos', 400);
+            if (valor_nominal == null && valor_percentual == null)
+                throw new HttpException('Valor Percentual e Valor Nominal não podem ser ambos nulos', 400);
 
             if (resultsFonte[fr.fonte_recurso_ano][fr.fonte_recurso_cod_sof] == undefined) {
-                throw new HttpException(`Fonte de recurso ${fr.fonte_recurso_cod_sof} não foi encontrada para o ano ${fr.fonte_recurso_ano}.`, 400);
+                throw new HttpException(
+                    `Fonte de recurso ${fr.fonte_recurso_cod_sof} não foi encontrada para o ano ${fr.fonte_recurso_ano}.`,
+                    400
+                );
             }
 
             if ('id' in fr && fr.id) {

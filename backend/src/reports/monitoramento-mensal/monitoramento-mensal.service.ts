@@ -4,7 +4,11 @@ import { PainelService } from '../../painel/painel.service';
 import { PrismaService } from '../../prisma/prisma.service';
 import { DefaultCsvOptions, FileOutput, ReportableService, UtilsService } from '../utils/utils.service';
 import { CreateRelMonitoramentoMensalDto } from './dto/create-monitoramento-mensal.dto';
-import { RelPainelDetalhe, RelVarlSimplifiedSeries, RetMonitoramentoMensal } from './entities/monitoramento-mensal.entity';
+import {
+    RelPainelDetalhe,
+    RelVarlSimplifiedSeries,
+    RetMonitoramentoMensal,
+} from './entities/monitoramento-mensal.entity';
 import { MonitoramentoMensalMfService } from './monitoramento-mensal-mf.service';
 
 const {
@@ -19,7 +23,7 @@ export class MonitoramentoMensalService implements ReportableService {
         private readonly utils: UtilsService,
         private readonly prisma: PrismaService,
         private readonly painel: PainelService,
-        private readonly mmMf: MonitoramentoMensalMfService,
+        private readonly mmMf: MonitoramentoMensalMfService
     ) {}
 
     async create(dto: CreateRelMonitoramentoMensalDto): Promise<RetMonitoramentoMensal> {
@@ -29,7 +33,7 @@ export class MonitoramentoMensalService implements ReportableService {
 
         console.log(metas);
 
-        const metasArr = metas.map(r => r.id);
+        const metasArr = metas.map((r) => r.id);
 
         const paineis_ret: RelPainelDetalhe[] = [];
         for (const painel of dto.paineis) {
@@ -45,7 +49,7 @@ export class MonitoramentoMensalService implements ReportableService {
                 if (r.series) {
                     console.log(r);
                     for (const s of r.series) {
-                        if (!s.Previsto && !s.PrevistoAcumulado && !s.Realizado && !s.RealizadoAcumulado) continue
+                        if (!s.Previsto && !s.PrevistoAcumulado && !s.Realizado && !s.RealizadoAcumulado) continue;
 
                         linhas.push({
                             meta_id: r.meta_id,
@@ -108,14 +112,14 @@ export class MonitoramentoMensalService implements ReportableService {
             { value: 'atividade_codigo', label: 'Código da ' + pdm.rotulo_atividade },
             { value: 'atividade_titulo', label: 'Título da ' + pdm.rotulo_atividade },
             { value: 'atividade_id', label: 'ID da ' + pdm.rotulo_atividade },
-            { value: 'variavel_id', label: 'ID da Variável'},
-            { value: 'variavel_codigo', label: 'Código da Variável'},
-            { value: 'variavel_titulo', label: 'Título da Variável'},
-            { value: 'data', label: 'Data'},
-            { value: 'Previsto', label: 'Previsto'},
-            { value: 'PrevistoAcumulado', label: 'PrevistoAcumulado'},
-            { value: 'Realizado', label: 'Realizado'},
-            { value: 'RealizadoAcumulado', label: 'RealizadoAcumulado'},
+            { value: 'variavel_id', label: 'ID da Variável' },
+            { value: 'variavel_codigo', label: 'Código da Variável' },
+            { value: 'variavel_titulo', label: 'Título da Variável' },
+            { value: 'data', label: 'Data' },
+            { value: 'Previsto', label: 'Previsto' },
+            { value: 'PrevistoAcumulado', label: 'PrevistoAcumulado' },
+            { value: 'Realizado', label: 'Realizado' },
+            { value: 'RealizadoAcumulado', label: 'RealizadoAcumulado' },
         ];
 
         for (const painel of dados.paineis) {
@@ -129,7 +133,14 @@ export class MonitoramentoMensalService implements ReportableService {
 
             const linhas = json2csvParser.parse(painel.linhas);
             out.push({
-                name: 'painel-' + painel.painel.nome.replace(/\s/g, '-').replace(/[^a-z0-9-\._]/g, '') + '.' + painel.painel.id + '.' + painel.painel.periodicidade + '.csv',
+                name:
+                    'painel-' +
+                    painel.painel.nome.replace(/\s/g, '-').replace(/[^a-z0-9-\._]/g, '') +
+                    '.' +
+                    painel.painel.id +
+                    '.' +
+                    painel.painel.periodicidade +
+                    '.csv',
                 buffer: Buffer.from(linhas, 'utf8'),
             });
         }
@@ -142,7 +153,7 @@ export class MonitoramentoMensalService implements ReportableService {
                         params: params,
                         horario: Date2YMD.tzSp2UTC(new Date()),
                     }),
-                    'utf8',
+                    'utf8'
                 ),
             },
             ...out,

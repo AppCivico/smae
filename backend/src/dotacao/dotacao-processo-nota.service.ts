@@ -14,24 +14,34 @@ export class DotacaoProcessoNotaService {
         private readonly prisma: PrismaService,
         private readonly sof: SofApiService,
         private readonly dotacaoService: DotacaoService
-    ) { }
+    ) {}
 
     async valorRealizadoNotaEmpenho(dto: AnoDotacaoNotaEmpenhoDto): Promise<ValorRealizadoNotaEmpenhoDto[]> {
         this.logger.debug(`valorRealizadoNotaEmpenho: ${JSON.stringify(dto)}`);
         const mes = dto.mes ? dto.mes : this.sof.mesMaisRecenteDoAno(dto.ano);
 
         if (dto.nota_empenho.includes('/' + dto.ano) == false) {
-            throw new HttpException('Utilize sempre o parâmetro "ano" igual ao ano embutido no digito da nota de empenho', 400);
+            throw new HttpException(
+                'Utilize sempre o parâmetro "ano" igual ao ano embutido no digito da nota de empenho',
+                400
+            );
         }
 
         // sempre sincroniza, pois pode haver mais de uma dotação no processo e não sabemos
         // quando elas aparecem
         const list = await this.sincronizarNotaEmpenhoRealizado(dto, mes);
-        if (list.length > 1) throw new HttpException('Era esperado apenas um retorno de Dotação na busca por Nota de Empenho. Necessária atualização do SMAE', 400);
+        if (list.length > 1)
+            throw new HttpException(
+                'Era esperado apenas um retorno de Dotação na busca por Nota de Empenho. Necessária atualização do SMAE',
+                400
+            );
         return list;
     }
 
-    private async sincronizarNotaEmpenhoRealizado(dto: AnoDotacaoNotaEmpenhoDto, mes: number): Promise<ValorRealizadoNotaEmpenhoDto[]> {
+    private async sincronizarNotaEmpenhoRealizado(
+        dto: AnoDotacaoNotaEmpenhoDto,
+        mes: number
+    ): Promise<ValorRealizadoNotaEmpenhoDto[]> {
         const now = new Date(Date.now());
         dto.nota_empenho = FormataNotaEmpenho(dto.nota_empenho);
 
@@ -112,22 +122,24 @@ export class DotacaoProcessoNotaService {
                         isolationLevel: 'Serializable',
                         maxWait: 15000,
                         timeout: 60000,
-                    },
+                    }
                 );
             }
         } catch (error) {
             if (error instanceof SofError)
                 throw new HttpException(
                     'No momento, o serviço SOF está indisponível, e não é possível criar um Processo manualmente nesta versão do SMAE.\n\nTente novamente mais tarde',
-                    400,
+                    400
                 );
             throw error;
         }
 
-        this.logger.debug(`> dotacaoProcessoNota.findMany: ${JSON.stringify({
-            ano_referencia: dto.ano,
-            dotacao_processo_nota: dto.nota_empenho,
-        })}`);
+        this.logger.debug(
+            `> dotacaoProcessoNota.findMany: ${JSON.stringify({
+                ano_referencia: dto.ano,
+                dotacao_processo_nota: dto.nota_empenho,
+            })}`
+        );
 
         const dbList = await this.prisma.dotacaoProcessoNota.findMany({
             where: {
@@ -174,9 +186,13 @@ export class DotacaoProcessoNotaService {
         return list;
     }
 
-    async get_smae_soma_valor_realizado(dotacao: string, processo: string, dto: AnoDotacaoNotaEmpenhoDto): Promise<{
-        smae_soma_valor_empenho: string,
-        smae_soma_valor_liquidado: string,
+    async get_smae_soma_valor_realizado(
+        dotacao: string,
+        processo: string,
+        dto: AnoDotacaoNotaEmpenhoDto
+    ): Promise<{
+        smae_soma_valor_empenho: string;
+        smae_soma_valor_liquidado: string;
     }> {
         let smae_soma_valor_empenho: string = '0.00';
         let smae_soma_valor_liquidado: string = '0.00';
@@ -192,9 +208,9 @@ export class DotacaoProcessoNotaService {
                         dotacao_processo: processo,
                         dotacao_processo_nota: dto.nota_empenho,
                         pdm_id: dto.pdm_id,
-                    }
+                    },
                 },
-                select: { soma_valor_empenho: true, soma_valor_liquidado: true }
+                select: { soma_valor_empenho: true, soma_valor_liquidado: true },
             });
             if (qr) {
                 smae_soma_valor_empenho = qr.soma_valor_empenho.toFixed(2);
@@ -209,9 +225,9 @@ export class DotacaoProcessoNotaService {
                         dotacao_processo: processo,
                         dotacao_processo_nota: dto.nota_empenho,
                         portfolio_id: dto.portfolio_id,
-                    }
+                    },
                 },
-                select: { soma_valor_empenho: true, soma_valor_liquidado: true }
+                select: { soma_valor_empenho: true, soma_valor_liquidado: true },
             });
             if (qr) {
                 smae_soma_valor_empenho = qr.soma_valor_empenho.toFixed(2);
@@ -224,5 +240,4 @@ export class DotacaoProcessoNotaService {
             smae_soma_valor_liquidado,
         };
     }
-
 }

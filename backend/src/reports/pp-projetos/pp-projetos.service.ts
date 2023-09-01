@@ -188,7 +188,7 @@ export class PPProjetosService implements ReportableService {
         private readonly prisma: PrismaService,
         private readonly projetoService: ProjetoService,
         private readonly tarefasService: TarefaService,
-        private readonly tarefasUtilsService: TarefaUtilsService,
+        private readonly tarefasUtilsService: TarefaUtilsService
     ) {}
 
     async create(dto: CreateRelProjetosDto): Promise<PPProjetosRelatorioDto> {
@@ -322,7 +322,7 @@ export class PPProjetosService implements ReportableService {
                         params: params,
                         horario: Date2YMD.tzSp2UTC(new Date()),
                     }),
-                    'utf8',
+                    'utf8'
                 ),
             },
             ...out,
@@ -436,7 +436,7 @@ export class PPProjetosService implements ReportableService {
     }
 
     private convertRowsProjetos(input: RetornoDbProjeto[]): RelProjetosDto[] {
-        return input.map(db => {
+        return input.map((db) => {
             return {
                 id: db.id,
                 portfolio_id: db.portfolio_id,
@@ -560,14 +560,18 @@ export class PPProjetosService implements ReportableService {
 
     private async convertRowsCronograma(input: RetornoDbCronograma[]): Promise<RelProjetosCronogramaDto[]> {
         return await Promise.all(
-            input.map(async db => {
+            input.map(async (db) => {
                 interface dependenciaRow {
                     id: number;
                     tipo: string;
                     latencia: number;
                 }
 
-                const projetoDetail: ProjetoDetailDto = await this.projetoService.findOne(db.projeto_id, undefined, 'ReadOnly');
+                const projetoDetail: ProjetoDetailDto = await this.projetoService.findOne(
+                    db.projeto_id,
+                    undefined,
+                    'ReadOnly'
+                );
                 const tarefasHierarquia = await this.tarefasService.tarefasHierarquia(projetoDetail);
                 return {
                     projeto_id: db.projeto_id,
@@ -588,7 +592,7 @@ export class PPProjetosService implements ReportableService {
                     dependencias: db.dependencias
                         ? db.dependencias
                               .split('/')
-                              .map(e => {
+                              .map((e) => {
                                   const row: dependenciaRow = JSON.parse(e);
 
                                   const hierarquia = tarefasHierarquia[row.id];
@@ -607,7 +611,7 @@ export class PPProjetosService implements ReportableService {
                           }
                         : null,
                 };
-            }),
+            })
         );
     }
 
@@ -644,7 +648,7 @@ export class PPProjetosService implements ReportableService {
     }
 
     private convertRowsRiscos(input: RetornoDbRiscos[]): RelProjetosRiscosDto[] {
-        return input.map(db => {
+        return input.map((db) => {
             let riscoCalc;
             if (db.impacto && db.probabilidade) riscoCalc = RiscoCalc.getResult(db.impacto, db.probabilidade);
 
@@ -696,7 +700,7 @@ export class PPProjetosService implements ReportableService {
     }
 
     private convertRowsPlanosAcao(input: RetornoDbPlanosAcao[]): RelProjetosPlanoAcaoDto[] {
-        return input.map(db => {
+        return input.map((db) => {
             return {
                 projeto_id: db.projeto_id,
                 projeto_codigo: db.projeto_codigo,
@@ -728,13 +732,18 @@ export class PPProjetosService implements ReportableService {
         ${whereCond.whereString}
         `;
 
-        const data: RetornoDbPlanosAcaoMonitoramentos[] = await this.prisma.$queryRawUnsafe(sql, ...whereCond.queryParams);
+        const data: RetornoDbPlanosAcaoMonitoramentos[] = await this.prisma.$queryRawUnsafe(
+            sql,
+            ...whereCond.queryParams
+        );
 
         out.push(...this.convertRowsPlanosAcaoMonitoramento(data));
     }
 
-    private convertRowsPlanosAcaoMonitoramento(input: RetornoDbPlanosAcaoMonitoramentos[]): RelProjetosPlanoAcaoMonitoramentosDto[] {
-        return input.map(db => {
+    private convertRowsPlanosAcaoMonitoramento(
+        input: RetornoDbPlanosAcaoMonitoramentos[]
+    ): RelProjetosPlanoAcaoMonitoramentosDto[] {
+        return input.map((db) => {
             return {
                 projeto_id: db.projeto_id,
                 projeto_codigo: db.projeto_codigo,
@@ -768,7 +777,7 @@ export class PPProjetosService implements ReportableService {
     }
 
     private convertRowsLicoesAprendidas(input: RetornoDbLicoesAprendidas[]): RelProjetosLicoesAprendidasDto[] {
-        return input.map(db => {
+        return input.map((db) => {
             return {
                 projeto_id: db.projeto_id,
                 projeto_codigo: db.projeto_codigo,
@@ -817,7 +826,7 @@ export class PPProjetosService implements ReportableService {
     }
 
     private convertRowsAcompanhamentos(input: RetornoDbAcompanhamentos[]): RelProjetosAcompanhamentosDto[] {
-        return input.map(db => {
+        return input.map((db) => {
             return {
                 projeto_id: db.projeto_id,
                 projeto_codigo: db.projeto_codigo,

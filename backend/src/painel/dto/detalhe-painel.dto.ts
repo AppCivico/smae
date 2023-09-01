@@ -27,17 +27,17 @@ export class SimplifiedPainelConteudoSeries {
     variavel_codigo?: string | null;
     variavel_titulo?: string | null;
 
-    meta_id: number
-    meta_codigo: string
-    meta_titulo: string
+    meta_id: number;
+    meta_codigo: string;
+    meta_titulo: string;
 
-    iniciativa_id?: number | null
-    iniciativa_codigo?: string | null
-    iniciativa_titulo?: string | null
+    iniciativa_id?: number | null;
+    iniciativa_codigo?: string | null;
+    iniciativa_titulo?: string | null;
 
-    atividade_id?: number | null
-    atividade_codigo?: string | null
-    atividade_titulo?: string | null
+    atividade_id?: number | null;
+    atividade_codigo?: string | null;
+    atividade_titulo?: string | null;
 
     series: SimplifiedSeries[] | undefined;
 }

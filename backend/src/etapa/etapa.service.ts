@@ -17,7 +17,7 @@ export class EtapaService {
     constructor(
         private readonly prisma: PrismaService,
         private readonly cronogramaEtapaService: CronogramaEtapaService
-    ) { }
+    ) {}
 
     async create(cronogramaId: number, createEtapaDto: CreateEtapaDto, user: PessoaFromJwt) {
         if (!user.hasSomeRoles(['CadastroMeta.inserir'])) {
@@ -31,41 +31,59 @@ export class EtapaService {
         delete createEtapaDto.ordem;
         delete (createEtapaDto as any).responsaveis;
 
-        if (createEtapaDto.inicio_previsto && createEtapaDto.termino_previsto && createEtapaDto.inicio_previsto > createEtapaDto.termino_previsto)
+        if (
+            createEtapaDto.inicio_previsto &&
+            createEtapaDto.termino_previsto &&
+            createEtapaDto.inicio_previsto > createEtapaDto.termino_previsto
+        )
             throw new HttpException('inicio_previsto| Não pode ser maior que termino_previsto', 400);
 
-        if (createEtapaDto.inicio_real && createEtapaDto.termino_real && createEtapaDto.inicio_real > createEtapaDto.termino_real)
+        if (
+            createEtapaDto.inicio_real &&
+            createEtapaDto.termino_real &&
+            createEtapaDto.inicio_real > createEtapaDto.termino_real
+        )
             throw new HttpException('inicio_real| Não pode ser maior que termino_real', 400);
 
-        if (createEtapaDto.termino_previsto && createEtapaDto.inicio_previsto && createEtapaDto.termino_previsto < createEtapaDto.inicio_previsto)
+        if (
+            createEtapaDto.termino_previsto &&
+            createEtapaDto.inicio_previsto &&
+            createEtapaDto.termino_previsto < createEtapaDto.inicio_previsto
+        )
             throw new HttpException('termino_previsto| Não pode ser menor que inicio_previsto', 400);
 
-        if (createEtapaDto.termino_real && createEtapaDto.inicio_real && createEtapaDto.termino_real < createEtapaDto.inicio_real)
+        if (
+            createEtapaDto.termino_real &&
+            createEtapaDto.inicio_real &&
+            createEtapaDto.termino_real < createEtapaDto.inicio_real
+        )
             throw new HttpException('termino_real| Não pode ser menor que inicio_real', 400);
 
-        const created = await this.prisma.$transaction(async (prisma: Prisma.TransactionClient): Promise<RecordWithId> => {
-            const etapa = await prisma.etapa.create({
-                data: {
-                    criado_por: user.id,
-                    criado_em: new Date(Date.now()),
-                    ...createEtapaDto,
-                    cronograma_id: cronogramaId,
-                    responsaveis: undefined,
-                },
-                select: { id: true },
-            });
+        const created = await this.prisma.$transaction(
+            async (prisma: Prisma.TransactionClient): Promise<RecordWithId> => {
+                const etapa = await prisma.etapa.create({
+                    data: {
+                        criado_por: user.id,
+                        criado_em: new Date(Date.now()),
+                        ...createEtapaDto,
+                        cronograma_id: cronogramaId,
+                        responsaveis: undefined,
+                    },
+                    select: { id: true },
+                });
 
-            await prisma.etapaResponsavel.createMany({
-                data: await this.buildEtapaResponsaveis(etapa.id, responsaveis),
-            });
+                await prisma.etapaResponsavel.createMany({
+                    data: await this.buildEtapaResponsaveis(etapa.id, responsaveis),
+                });
 
-            return etapa;
-        });
+                return etapa;
+            }
+        );
 
         const dadosUpsertCronogramaEtapa: UpdateCronogramaEtapaDto = {
             cronograma_id: cronogramaId,
             etapa_id: created.id,
-            ordem: ordem
+            ordem: ordem,
         };
         await this.cronogramaEtapaService.update(dadosUpsertCronogramaEtapa, user);
 
@@ -113,7 +131,7 @@ export class EtapaService {
         });
 
         for (const etapa of etapas) {
-            const cronograma_etapa = etapa.CronogramaEtapa.filter(r => {
+            const cronograma_etapa = etapa.CronogramaEtapa.filter((r) => {
                 return r.cronograma_id === cronogramaId;
             });
 
@@ -157,33 +175,48 @@ export class EtapaService {
                     termino_real: true,
                     responsaveis: {
                         select: {
-                            pessoa_id: true
+                            pessoa_id: true,
                         },
-                        orderBy: { pessoa_id: 'asc' }
-                    }
-                }
+                        orderBy: { pessoa_id: 'asc' },
+                    },
+                },
             });
 
-            if (self.n_filhos_imediatos && updateEtapaDto.percentual_execucao && updateEtapaDto.percentual_execucao != self.percentual_execucao)
+            if (
+                self.n_filhos_imediatos &&
+                updateEtapaDto.percentual_execucao &&
+                updateEtapaDto.percentual_execucao != self.percentual_execucao
+            )
                 throw new HttpException('percentual_execucao| Não pode ser enviado pois há dependentes.', 400);
 
-            if (self.n_filhos_imediatos &&
-                (updateEtapaDto.inicio_previsto && updateEtapaDto.inicio_previsto.getTime() != self.inicio_previsto?.getTime() ||
-                    updateEtapaDto.inicio_real && updateEtapaDto.inicio_real.getTime() != self.inicio_real?.getTime() ||
-                    updateEtapaDto.termino_previsto && updateEtapaDto.termino_previsto.getTime() != self.termino_previsto?.getTime() ||
-                    updateEtapaDto.termino_real && updateEtapaDto.termino_real.getTime() != self.termino_real?.getTime()
-                )
-            ) throw new HttpException('Datas não podem ser modificadas pois há dependentes.', 400);
+            if (
+                self.n_filhos_imediatos &&
+                ((updateEtapaDto.inicio_previsto &&
+                    updateEtapaDto.inicio_previsto.getTime() != self.inicio_previsto?.getTime()) ||
+                    (updateEtapaDto.inicio_real &&
+                        updateEtapaDto.inicio_real.getTime() != self.inicio_real?.getTime()) ||
+                    (updateEtapaDto.termino_previsto &&
+                        updateEtapaDto.termino_previsto.getTime() != self.termino_previsto?.getTime()) ||
+                    (updateEtapaDto.termino_real &&
+                        updateEtapaDto.termino_real.getTime() != self.termino_real?.getTime()))
+            )
+                throw new HttpException('Datas não podem ser modificadas pois há dependentes.', 400);
 
-            const terminoPrevisto: Date | null = updateEtapaDto.termino_previsto ? updateEtapaDto.termino_previsto : self.termino_previsto;
+            const terminoPrevisto: Date | null = updateEtapaDto.termino_previsto
+                ? updateEtapaDto.termino_previsto
+                : self.termino_previsto;
             if (updateEtapaDto.inicio_previsto && terminoPrevisto && updateEtapaDto.inicio_previsto > terminoPrevisto)
                 throw new HttpException('inicio_previsto| Não pode ser maior que termino_previsto', 400);
 
-            const terminoReal: Date | null = updateEtapaDto.termino_real ? updateEtapaDto.termino_real : self.termino_real;
+            const terminoReal: Date | null = updateEtapaDto.termino_real
+                ? updateEtapaDto.termino_real
+                : self.termino_real;
             if (updateEtapaDto.inicio_real && terminoReal && updateEtapaDto.inicio_real > terminoReal)
                 throw new HttpException('inicio_real| Não pode ser maior que termino_real', 400);
 
-            const inicioPrevisto: Date | null = updateEtapaDto.inicio_previsto ? updateEtapaDto.inicio_previsto : self.inicio_previsto;
+            const inicioPrevisto: Date | null = updateEtapaDto.inicio_previsto
+                ? updateEtapaDto.inicio_previsto
+                : self.inicio_previsto;
             if (updateEtapaDto.termino_previsto && inicioPrevisto && updateEtapaDto.termino_previsto < inicioPrevisto)
                 throw new HttpException('termino_previsto| Não pode ser menor que inicio_previsto', 400);
 
@@ -203,8 +236,7 @@ export class EtapaService {
             });
 
             if (Array.isArray(responsaveis)) {
-
-                const currentVersion = self.responsaveis.map(r => r.pessoa_id).join(',');
+                const currentVersion = self.responsaveis.map((r) => r.pessoa_id).join(',');
                 const newVersionStr = responsaveis.sort((a, b) => a - b).join(',');
 
                 if (currentVersion !== newVersionStr) {
@@ -224,12 +256,14 @@ export class EtapaService {
                                     etapa_id: etapa.id,
                                 },
                                 update: {},
-                            }),
+                            })
                         );
                     }
                     await Promise.all(promises);
                 } else {
-                    this.logger.debug(`responsaveis continuam iguais, banco não será chamado para evitar recalc da trigger`);
+                    this.logger.debug(
+                        `responsaveis continuam iguais, banco não será chamado para evitar recalc da trigger`
+                    );
                 }
             }
 
@@ -257,7 +291,7 @@ export class EtapaService {
 
             const cronogramas = await prismaTx.cronogramaEtapa.findMany({
                 where: { etapa_id: id },
-                select: { id: true }
+                select: { id: true },
             });
 
             for (const cronograma of cronogramas) {
@@ -266,7 +300,10 @@ export class EtapaService {
         });
     }
 
-    async buildEtapaResponsaveis(etapaId: number, responsaveis: number[]): Promise<Prisma.EtapaResponsavelCreateManyInput[]> {
+    async buildEtapaResponsaveis(
+        etapaId: number,
+        responsaveis: number[]
+    ): Promise<Prisma.EtapaResponsavelCreateManyInput[]> {
         const arr: Prisma.EtapaResponsavelCreateManyInput[] = [];
         for (const pessoaId of responsaveis) {
             arr.push({

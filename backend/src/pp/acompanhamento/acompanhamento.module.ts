@@ -7,6 +7,6 @@ import { AcompanhamentoService } from './acompanhamento.service';
 @Module({
     imports: [PrismaModule, ProjetoModule],
     controllers: [AcompanhamentoController],
-    providers: [AcompanhamentoService]
+    providers: [AcompanhamentoService],
 })
-export class AcompanhamentoModule { }
+export class AcompanhamentoModule {}

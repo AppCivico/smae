@@ -4,7 +4,9 @@ import { IsArray, IsBoolean, IsNumber, IsOptional, ValidateIf, ValidateNested } 
 import { RecordWithId } from '../../common/dto/record-with-id.dto';
 import { CreatePainelConteudoDto } from './create-painel-conteudo.dto';
 
-export class UpdatePainelConteudoVisualizacaoDto extends PartialType(OmitType(CreatePainelConteudoDto, ['meta_id', 'mostrar_indicador', 'painel_id'])) {}
+export class UpdatePainelConteudoVisualizacaoDto extends PartialType(
+    OmitType(CreatePainelConteudoDto, ['meta_id', 'mostrar_indicador', 'painel_id'])
+) {}
 
 export class UpdatePainelConteudoDetalheDto {
     @IsBoolean()

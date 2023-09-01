@@ -6,12 +6,8 @@ import { AcaoController } from './acao.controller';
 import { AcaoService } from './acao.service';
 
 @Module({
-    imports: [
-        PrismaModule,
-        forwardRef(() => ProjetoModule),
-        forwardRef(() => ReportsModule),
-    ],
+    imports: [PrismaModule, forwardRef(() => ProjetoModule), forwardRef(() => ReportsModule)],
     controllers: [AcaoController],
     providers: [AcaoService],
 })
-export class AcaoModule { }
+export class AcaoModule {}

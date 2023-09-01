@@ -34,7 +34,11 @@ export class RegiaoController {
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
     @Roles('CadastroRegiao.editar')
-    async update(@Param() params: FindOneParams, @Body() updateRegiaoDto: UpdateRegiaoDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
+    async update(
+        @Param() params: FindOneParams,
+        @Body() updateRegiaoDto: UpdateRegiaoDto,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<RecordWithId> {
         return await this.regiaoService.update(+params.id, updateRegiaoDto, user);
     }
 

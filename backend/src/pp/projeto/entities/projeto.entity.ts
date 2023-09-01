@@ -1,4 +1,3 @@
-
 import { ApiProperty, PickType } from '@nestjs/swagger';
 import { CategoriaProcessoSei, ProjetoFase, ProjetoOrigemTipo, ProjetoStatus } from '@prisma/client';
 import { IdCodTituloDto } from 'src/common/dto/IdCodTitulo.dto';
@@ -13,11 +12,11 @@ export class ProjetoDto {
     @ApiProperty({ enum: ProjetoStatus, enumName: 'ProjetoStatus' })
     status: ProjetoStatus;
     orgao_responsavel: IdSiglaDescricao | null;
-    arquivado: boolean
-    eh_prioritario: boolean
+    arquivado: boolean;
+    eh_prioritario: boolean;
     meta: IdCodTituloDto | null;
-    codigo: string | null
-    portfolio: IdTituloDto
+    codigo: string | null;
+    portfolio: IdTituloDto;
 }
 
 export class ListProjetoDto {
@@ -25,84 +24,84 @@ export class ListProjetoDto {
 }
 
 export class ProjetoPermissoesDto {
-    acao_arquivar: boolean
-    acao_restaurar: boolean
-    acao_selecionar: boolean
-    acao_iniciar_planejamento: boolean
-    acao_finalizar_planejamento: boolean
-    acao_validar: boolean
-    acao_iniciar: boolean
-    acao_suspender: boolean
-    acao_reiniciar: boolean
-    acao_cancelar: boolean
-    acao_terminar: boolean
-    campo_premissas: boolean
-    campo_restricoes: boolean
-    campo_codigo: boolean
-    campo_data_aprovacao: boolean
-    campo_data_revisao: boolean
-    campo_versao: boolean
+    acao_arquivar: boolean;
+    acao_restaurar: boolean;
+    acao_selecionar: boolean;
+    acao_iniciar_planejamento: boolean;
+    acao_finalizar_planejamento: boolean;
+    acao_validar: boolean;
+    acao_iniciar: boolean;
+    acao_suspender: boolean;
+    acao_reiniciar: boolean;
+    acao_cancelar: boolean;
+    acao_terminar: boolean;
+    campo_premissas: boolean;
+    campo_restricoes: boolean;
+    campo_codigo: boolean;
+    campo_data_aprovacao: boolean;
+    campo_data_revisao: boolean;
+    campo_versao: boolean;
 
-    campo_nao_escopo: boolean
-    campo_objeto: boolean
-    campo_objetivo: boolean
-    campo_publico_alvo: boolean
-    campo_secretario_executivo: boolean
-    campo_secretario_responsavel: boolean
-    campo_coordenador_ue: boolean
+    campo_nao_escopo: boolean;
+    campo_objeto: boolean;
+    campo_objetivo: boolean;
+    campo_publico_alvo: boolean;
+    campo_secretario_executivo: boolean;
+    campo_secretario_responsavel: boolean;
+    campo_coordenador_ue: boolean;
     /**
      * Campo que fica TRUE quando o usuário já não tem mais o acesso total de edição
      * por exemplo, após a fase do planejamento,
      * o usuário responsável pode fazer edição no realizado, mas não pode incluir novas tarefas
-    */
-    apenas_leitura_planejamento: boolean
-    sou_responsavel: boolean
+     */
+    apenas_leitura_planejamento: boolean;
+    sou_responsavel: boolean;
 
     @ApiProperty({ enum: ProjetoStatus, enumName: 'ProjetoStatus' })
-    status_permitidos: ProjetoStatus[]
+    status_permitidos: ProjetoStatus[];
 }
 
 export class ProjetoMetaDetailDto {
     /**
      * @example "0"
-    */
-    id: number
+     */
+    id: number;
 
     /**
      * @example "string"
-    */
-    codigo: string
+     */
+    codigo: string;
 
     /**
      * @example "string"
-    */
-    titulo: string
+     */
+    titulo: string;
 
     /**
      * @example "0"
-    */
-    pdm_id: number
+     */
+    pdm_id: number;
 }
 
 export class ProjetoSeiDto {
-    id: number
+    id: number;
     @ApiProperty({ enum: CategoriaProcessoSei, enumName: 'CategoriaProcessoSei' })
-    categoria: CategoriaProcessoSei
-    processo_sei: string
-    descricao: string | null
-    link: string | null
-    criador: IdNomeExibicao | null
+    categoria: CategoriaProcessoSei;
+    processo_sei: string;
+    descricao: string | null;
+    link: string | null;
+    criador: IdNomeExibicao | null;
 }
 
 export class ListProjetoSeiDto {
-    linhas: ProjetoSeiDto[]
+    linhas: ProjetoSeiDto[];
 }
 
 export class IdTituloNivelMaxDto {
     id: number;
     titulo: string;
-    nivel_maximo_tarefa: number
-    orcamento_execucao_disponivel_meses: number[]
+    nivel_maximo_tarefa: number;
+    orcamento_execucao_disponivel_meses: number[];
 }
 
 export class ProjetoDetailDto {
@@ -113,12 +112,12 @@ export class ProjetoDetailDto {
     nome: string;
     /**
      * @example "EmAcompanhamento"
-    */
+     */
     @ApiProperty({ enum: ProjetoStatus, enumName: 'ProjetoStatus' })
     status: ProjetoStatus;
     /**
      * @example "Acompanhamento"
-    */
+     */
     @ApiProperty({ enum: ProjetoFase, enumName: 'ProjetoFase' })
     fase: ProjetoFase;
     resumo: string;
@@ -133,7 +132,7 @@ export class ProjetoDetailDto {
     previsao_duracao: number | null;
     previsao_termino: Date | null;
     projecao_termino: Date | null;
-    percentual_concluido: number | null
+    percentual_concluido: number | null;
 
     realizado_inicio: Date | null;
     realizado_termino: Date | null;
@@ -158,34 +157,32 @@ export class ProjetoDetailDto {
     fonte_recursos: ProjetoRecursos[] | null;
     origem_tipo: ProjetoOrigemTipo;
     origem_outro: string | null;
-    meta_codigo: string | null
+    meta_codigo: string | null;
 
-    selecionado_em: Date | null
-    em_planejamento_em: Date | null
+    selecionado_em: Date | null;
+    em_planejamento_em: Date | null;
 
-    data_aprovacao: Date | null
-    data_revisao: Date | null
-    versao: string | null
+    data_aprovacao: Date | null;
+    data_revisao: Date | null;
+    versao: string | null;
 
-    eh_prioritario: boolean
-    arquivado: boolean
+    eh_prioritario: boolean;
+    arquivado: boolean;
 
-    secretario_executivo: string | null
-    secretario_responsavel: string | null
-    coordenador_ue: string | null
+    secretario_executivo: string | null;
+    secretario_responsavel: string | null;
+    coordenador_ue: string | null;
 
-    meta: ProjetoMetaDetailDto | null
+    meta: ProjetoMetaDetailDto | null;
     // responsaveis_no_orgao_gestor:
 
-    responsaveis_no_orgao_gestor: IdNomeExibicao[]
-    permissoes: ProjetoPermissoesDto
+    responsaveis_no_orgao_gestor: IdNomeExibicao[];
+    permissoes: ProjetoPermissoesDto;
 
-    ano_orcamento: number[]
+    ano_orcamento: number[];
 }
 
-export class ProjetoMVPDto extends PickType(ProjetoDetailDto, ['id', 'portfolio_id']) {
-
-}
+export class ProjetoMVPDto extends PickType(ProjetoDetailDto, ['id', 'portfolio_id']) {}
 
 export class ProjetoPremissa {
     id: number;

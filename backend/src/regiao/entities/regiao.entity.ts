@@ -9,9 +9,7 @@ export class Regiao {
     parente?: RegiaoPai;
 }
 
-export class RegiaoPai extends PartialType(OmitType(Regiao, ['parente_id', 'parente'])) { }
+export class RegiaoPai extends PartialType(OmitType(Regiao, ['parente_id', 'parente'])) {}
 
 // região sem o parent, mas com o parent_id
-export class RegiaoBasica extends OmitType(Regiao, ['parente']) {
-
-}
+export class RegiaoBasica extends OmitType(Regiao, ['parente']) {}

@@ -1,4 +1,16 @@
-import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Patch, Post, Query } from '@nestjs/common';
+import {
+    Body,
+    Controller,
+    Delete,
+    Get,
+    HttpCode,
+    HttpException,
+    HttpStatus,
+    Param,
+    Patch,
+    Post,
+    Query,
+} from '@nestjs/common';
 import { ApiBearerAuth, ApiNoContentResponse, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { Roles } from '../auth/decorators/roles.decorator';
@@ -10,7 +22,12 @@ import { CreatePainelDto } from './dto/create-painel.dto';
 import { DetailPainelVisualizacaoDto, PainelConteudoSerie } from './dto/detalhe-painel.dto';
 import { FilterPainelDaMetaDto, FilterPainelDto } from './dto/filter-painel.dto';
 import { ListPainelDto } from './dto/list-painel.dto';
-import { PainelConteudoDetalheUpdateRet, PainelConteudoUpsertRet, UpdatePainelConteudoDetalheDto, UpdatePainelConteudoVisualizacaoDto } from './dto/update-painel-conteudo.dto';
+import {
+    PainelConteudoDetalheUpdateRet,
+    PainelConteudoUpsertRet,
+    UpdatePainelConteudoDetalheDto,
+    UpdatePainelConteudoVisualizacaoDto,
+} from './dto/update-painel-conteudo.dto';
 import { UpdatePainelDto } from './dto/update-painel.dto';
 import { PainelDto } from './entities/painel.entity';
 import { PainelService } from './painel.service';
@@ -18,7 +35,7 @@ import { PainelService } from './painel.service';
 @ApiTags('Painel')
 @Controller('painel')
 export class PainelController {
-    constructor(private readonly painelService: PainelService) { }
+    constructor(private readonly painelService: PainelService) {}
 
     @Post()
     @ApiBearerAuth('access-token')
@@ -35,25 +52,31 @@ export class PainelController {
         // Este boolean indica que não é para realizar restrição por Grupo de Paineis
         // Neste endpoint será retornado todos os paineis, independente do grupo do painel e do usuário.
         const restringirGrupos: boolean = false;
-        
+
         return { linhas: await this.painelService.findAll(filters, restringirGrupos, user) };
     }
 
     @Get('/painel-da-meta')
     @ApiBearerAuth('access-token')
     @Roles('CadastroPainel.visualizar')
-    async findPaineisDaMeta(@Query() filters: FilterPainelDaMetaDto, @CurrentUser() user: PessoaFromJwt): Promise<ListPainelDto> {
+    async findPaineisDaMeta(
+        @Query() filters: FilterPainelDaMetaDto,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<ListPainelDto> {
         if (!filters.meta_id) throw new HttpException('meta_id| Deve ser enviado', 400);
         const restringirGrupos: boolean = true;
 
         return {
-            linhas: await this.painelService.findAll({
-                ...filters,
-                ativo: true
-            }, restringirGrupos, user)
+            linhas: await this.painelService.findAll(
+                {
+                    ...filters,
+                    ativo: true,
+                },
+                restringirGrupos,
+                user
+            ),
         };
     }
-
 
     @ApiBearerAuth('access-token')
     @Get(':id')
@@ -66,7 +89,11 @@ export class PainelController {
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
     @Roles('CadastroPainel.editar', 'CadastroMeta.inserir')
-    async update(@Param() params: FindOneParams, @Body() updatePainelDto: UpdatePainelDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
+    async update(
+        @Param() params: FindOneParams,
+        @Body() updatePainelDto: UpdatePainelDto,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<RecordWithId> {
         return await this.painelService.update(+params.id, updatePainelDto, user);
     }
 
@@ -88,7 +115,7 @@ export class PainelController {
     async createConteudo(
         @Param() params: FindOneParams,
         @Body() createConteudoDto: CreateParamsPainelConteudoDto,
-        @CurrentUser() user: PessoaFromJwt,
+        @CurrentUser() user: PessoaFromJwt
     ): Promise<PainelConteudoUpsertRet> {
         return await this.painelService.createConteudo(+params.id, createConteudoDto, user);
     }
@@ -103,15 +130,29 @@ export class PainelController {
     @ApiBearerAuth('access-token')
     @Patch(':id/conteudo/:id2/visualizacao')
     @Roles('CadastroPainel.editar', 'CadastroMeta.inserir')
-    async updateConteudoVisualizacao(@Param() params: FindTwoParams, @Body() updatePainelConteudoDto: UpdatePainelConteudoVisualizacaoDto): Promise<RecordWithId> {
-        return await this.painelService.updatePainelConteudoVisualizacao(+params.id, +params.id2, updatePainelConteudoDto);
+    async updateConteudoVisualizacao(
+        @Param() params: FindTwoParams,
+        @Body() updatePainelConteudoDto: UpdatePainelConteudoVisualizacaoDto
+    ): Promise<RecordWithId> {
+        return await this.painelService.updatePainelConteudoVisualizacao(
+            +params.id,
+            +params.id2,
+            updatePainelConteudoDto
+        );
     }
 
     @ApiBearerAuth('access-token')
     @Patch(':id/conteudo/:id2/detalhes')
     @Roles('CadastroPainel.editar', 'CadastroMeta.inserir')
-    async updateConteudoDetalhe(@Param() params: FindTwoParams, @Body() updatePainelConteudoDetalhesDto: UpdatePainelConteudoDetalheDto): Promise<PainelConteudoDetalheUpdateRet> {
-        return await this.painelService.updatePainelConteudoDetalhes(+params.id, +params.id2, updatePainelConteudoDetalhesDto);
+    async updateConteudoDetalhe(
+        @Param() params: FindTwoParams,
+        @Body() updatePainelConteudoDetalhesDto: UpdatePainelConteudoDetalheDto
+    ): Promise<PainelConteudoDetalheUpdateRet> {
+        return await this.painelService.updatePainelConteudoDetalhes(
+            +params.id,
+            +params.id2,
+            updatePainelConteudoDetalhesDto
+        );
     }
 
     @ApiBearerAuth('access-token')

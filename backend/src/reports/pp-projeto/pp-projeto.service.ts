@@ -9,7 +9,13 @@ import { ProjetoService, ProjetoStatusParaExibicao } from '../../pp/projeto/proj
 import { PrismaService } from '../../prisma/prisma.service';
 import { DefaultCsvOptions, FileOutput, ReportableService } from '../utils/utils.service';
 import { CreateRelProjetoDto } from './dto/create-previsao-custo.dto';
-import { PPProjetoRelatorioDto, RelProjetoCronogramaDto, RelProjetoPlanoAcaoDto, RelProjetoRelatorioDto, RelProjetoRiscoDto } from './entities/previsao-custo.entity';
+import {
+    PPProjetoRelatorioDto,
+    RelProjetoCronogramaDto,
+    RelProjetoPlanoAcaoDto,
+    RelProjetoRelatorioDto,
+    RelProjetoRiscoDto,
+} from './entities/previsao-custo.entity';
 
 const {
     Parser,
@@ -24,7 +30,7 @@ export class PPProjetoService implements ReportableService {
         private readonly projetoService: ProjetoService,
         private readonly riscoService: RiscoService,
         private readonly planoAcaoService: PlanoAcaoService,
-        private readonly tarefaService: TarefaService,
+        private readonly tarefaService: TarefaService
     ) {}
 
     async create(dto: CreateRelProjetoDto): Promise<PPProjetoRelatorioDto> {
@@ -81,12 +87,14 @@ export class PPProjetoService implements ReportableService {
             orgao_responsavel_sigla: projetoRow.orgao_responsavel ? projetoRow.orgao_responsavel.sigla : null,
             orgao_responsavel_descricao: projetoRow.orgao_responsavel ? projetoRow.orgao_responsavel.descricao : null,
             meta: projetoRow.meta,
-            responsaveis_no_orgao_gestor: projetoRow.responsaveis_no_orgao_gestor.length ? projetoRow.responsaveis_no_orgao_gestor.map(e => e.nome_exibicao).join('|') : null,
+            responsaveis_no_orgao_gestor: projetoRow.responsaveis_no_orgao_gestor.length
+                ? projetoRow.responsaveis_no_orgao_gestor.map((e) => e.nome_exibicao).join('|')
+                : null,
 
             fonte_recursos: projetoRow.fonte_recursos
                 ? (
                       await Promise.all(
-                          projetoRow.fonte_recursos.map(async e => {
+                          projetoRow.fonte_recursos.map(async (e) => {
                               let valor: string;
 
                               class queryRet {
@@ -103,20 +111,22 @@ export class PPProjetoService implements ReportableService {
                               }
 
                               return `${nome_fonte[0].descricao}: ${valor}`;
-                          }),
+                          })
                       )
                   ).join('|')
                 : null,
 
-            premissas: projetoRow.premissas ? projetoRow.premissas.map(e => e.premissa).join('|') : null,
-            restricoes: projetoRow.restricoes ? projetoRow.restricoes.map(e => e.restricao).join('|') : null,
-            orgaos_participantes: projetoRow.orgaos_participantes ? projetoRow.orgaos_participantes.map(e => e.sigla).join('|') : null,
+            premissas: projetoRow.premissas ? projetoRow.premissas.map((e) => e.premissa).join('|') : null,
+            restricoes: projetoRow.restricoes ? projetoRow.restricoes.map((e) => e.restricao).join('|') : null,
+            orgaos_participantes: projetoRow.orgaos_participantes
+                ? projetoRow.orgaos_participantes.map((e) => e.sigla).join('|')
+                : null,
         };
 
         const tarefasHierarquia = await this.tarefaService.tarefasHierarquia(projetoRow);
 
         const tarefasRows = await this.tarefaService.findAll(dto.projeto_id, undefined, {});
-        const tarefasOut: RelProjetoCronogramaDto[] = tarefasRows.linhas.map(e => {
+        const tarefasOut: RelProjetoCronogramaDto[] = tarefasRows.linhas.map((e) => {
             return {
                 hirearquia: tarefasHierarquia[e.id],
                 tarefa: e.tarefa,
@@ -128,7 +138,7 @@ export class PPProjetoService implements ReportableService {
         });
 
         const riscoRows = await this.riscoService.findAll(dto.projeto_id, undefined);
-        const riscosOut: RelProjetoRiscoDto[] = riscoRows.map(e => {
+        const riscosOut: RelProjetoRiscoDto[] = riscoRows.map((e) => {
             return {
                 codigo: e.codigo,
                 titulo: e.titulo,
@@ -143,7 +153,7 @@ export class PPProjetoService implements ReportableService {
         });
 
         const planoAcaoRows = await this.planoAcaoService.findAll(dto.projeto_id, { risco_id: undefined }, undefined);
-        const planoAcaoOut: RelProjetoPlanoAcaoDto[] = planoAcaoRows.map(e => {
+        const planoAcaoOut: RelProjetoPlanoAcaoDto[] = planoAcaoRows.map((e) => {
             return {
                 codigo_risco: e.projeto_risco.codigo,
                 contramedida: e.contramedida,
@@ -171,7 +181,8 @@ export class PPProjetoService implements ReportableService {
             transforms: defaultTransform,
         });
 
-        if (dados.detail.status) (dados.detail as any)['status-traduzido'] = ProjetoStatusParaExibicao[dados.detail.status];
+        if (dados.detail.status)
+            (dados.detail as any)['status-traduzido'] = ProjetoStatusParaExibicao[dados.detail.status];
 
         const linhas = json2csvParser.parse([dados.detail]);
 
@@ -272,7 +283,7 @@ export class PPProjetoService implements ReportableService {
                     id: dados.detail.id,
                     nome: dados.detail.nome!,
                 },
-                'svg',
+                'svg'
             );
 
             out.push({
@@ -289,7 +300,7 @@ export class PPProjetoService implements ReportableService {
                         horario: Date2YMD.tzSp2UTC(new Date()),
                         uploads: uploads,
                     }),
-                    'utf8',
+                    'utf8'
                 ),
             },
             ...out,

@@ -1,5 +1,25 @@
-import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, ParseArrayPipe, Patch, Post, Query } from '@nestjs/common';
-import { ApiBearerAuth, ApiNoContentResponse, ApiNotFoundResponse, ApiProduces, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
+import {
+    Body,
+    Controller,
+    Delete,
+    Get,
+    HttpCode,
+    HttpException,
+    HttpStatus,
+    Param,
+    ParseArrayPipe,
+    Patch,
+    Post,
+    Query,
+} from '@nestjs/common';
+import {
+    ApiBearerAuth,
+    ApiNoContentResponse,
+    ApiNotFoundResponse,
+    ApiProduces,
+    ApiTags,
+    ApiUnauthorizedResponse,
+} from '@nestjs/swagger';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
@@ -27,7 +47,12 @@ export class MetaController {
 
     @ApiBearerAuth('access-token')
     @Get()
-    @ApiProduces('application/json', 'text/csv', 'text/csv; unwind-all', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+    @ApiProduces(
+        'application/json',
+        'text/csv',
+        'text/csv; unwind-all',
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    )
     @ApiUnauthorizedResponse({ description: 'Precisa: CadastroMeta.listar' })
     @Roles('CadastroMeta.listar')
     async findAll(@Query() filters: FilterMetaDto, @CurrentUser() user: PessoaFromJwt): Promise<ListMetaDto> {
@@ -38,7 +63,9 @@ export class MetaController {
     @Get('iniciativas-atividades')
     @ApiUnauthorizedResponse({ description: 'Precisa: CadastroMeta.listar' })
     @Roles('CadastroMeta.listar')
-    async buscaMetasIniciativaAtividades(@Query('meta_ids', new ParseArrayPipe({ items: Number, separator: ',' })) ids: number[]): Promise<ListDadosMetaIniciativaAtividadesDto> {
+    async buscaMetasIniciativaAtividades(
+        @Query('meta_ids', new ParseArrayPipe({ items: Number, separator: ',' })) ids: number[]
+    ): Promise<ListDadosMetaIniciativaAtividadesDto> {
         return { linhas: await this.metaService.buscaMetasIniciativaAtividades(ids) };
     }
 
@@ -58,7 +85,11 @@ export class MetaController {
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse({ description: 'Precisa: CadastroMeta.editar ou CadastroMeta.inserir' })
     @Roles('CadastroMeta.editar', 'CadastroMeta.inserir')
-    async update(@Param() params: FindOneParams, @Body() updateMetaDto: UpdateMetaDto, @CurrentUser() user: PessoaFromJwt) {
+    async update(
+        @Param() params: FindOneParams,
+        @Body() updateMetaDto: UpdateMetaDto,
+        @CurrentUser() user: PessoaFromJwt
+    ) {
         return await this.metaService.update(+params.id, updateMetaDto, user);
     }
 

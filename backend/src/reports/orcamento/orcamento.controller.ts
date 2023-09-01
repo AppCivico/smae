@@ -14,7 +14,9 @@ export class OrcamentoController {
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
     @Roles('Reports.executar')
-    async create(@Body() createOrcamentoExecutadoDto: PdmCreateOrcamentoExecutadoDto): Promise<ListOrcamentoExecutadoDto> {
+    async create(
+        @Body() createOrcamentoExecutadoDto: PdmCreateOrcamentoExecutadoDto
+    ): Promise<ListOrcamentoExecutadoDto> {
         return await this.orcamentoExecutadoService.create(createOrcamentoExecutadoDto);
     }
 }

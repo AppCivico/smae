@@ -28,6 +28,6 @@ import { JwtModule } from '@nestjs/jwt';
         }),
     ],
     controllers: [ImportacaoOrcamentoController],
-    providers: [ImportacaoOrcamentoService]
+    providers: [ImportacaoOrcamentoService],
 })
-export class ImportacaoOrcamentoModule { }
+export class ImportacaoOrcamentoModule {}

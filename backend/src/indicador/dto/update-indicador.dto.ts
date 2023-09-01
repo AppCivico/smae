@@ -1,6 +1,16 @@
 import { OmitType, PartialType } from '@nestjs/swagger';
 import { Transform, Type } from 'class-transformer';
-import { ArrayMaxSize, IsBoolean, IsInt, IsNumberString, IsOptional, IsString, Matches, ValidateIf, ValidateNested } from 'class-validator';
+import {
+    ArrayMaxSize,
+    IsBoolean,
+    IsInt,
+    IsNumberString,
+    IsOptional,
+    IsString,
+    Matches,
+    ValidateIf,
+    ValidateNested,
+} from 'class-validator';
 import { CreateIndicadorDto } from './create-indicador.dto';
 
 export class FormulaVariaveis {
@@ -9,7 +19,9 @@ export class FormulaVariaveis {
      * @example "_1159"
      */
     @IsString({ message: '$property| precisa ser uma string' })
-    @Matches(/^_[0-9]{1,8}$/, { message: '$property| Inválido, precisa começar com _ e ter entre 1 até 8 dígitos numéricos' })
+    @Matches(/^_[0-9]{1,8}$/, {
+        message: '$property| Inválido, precisa começar com _ e ter entre 1 até 8 dígitos numéricos',
+    })
     referencia: string;
 
     /**
@@ -111,9 +123,14 @@ export class UpdateIndicadorDto extends OmitType(PartialType(CreateIndicadorDto)
      */
     // maxDecimalPlaces: 30 nao existe isso nesse cara, só tem no IsNumber, mas se usar o transform,
     // o javascript vai perder a precisao na hora do casting pra float
-    @IsNumberString({}, { message: '$property| Precisa ser um número com até 35 dígitos antes do ponto, e até 30 dígitos após, enviado em formato String' })
+    @IsNumberString(
+        {},
+        {
+            message:
+                '$property| Precisa ser um número com até 35 dígitos antes do ponto, e até 30 dígitos após, enviado em formato String',
+        }
+    )
     @ValidateIf((object, value) => value !== null)
     @IsOptional()
     acumulado_valor_base?: number | null;
-
 }

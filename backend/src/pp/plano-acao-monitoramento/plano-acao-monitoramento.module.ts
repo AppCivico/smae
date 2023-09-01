@@ -7,6 +7,6 @@ import { PlanoAcaoMonitoramentoService } from './plano-acao-monitoramento.servic
 @Module({
     imports: [PrismaModule, ProjetoModule],
     controllers: [PlanoAcaoMonitoramentoController],
-    providers: [PlanoAcaoMonitoramentoService]
+    providers: [PlanoAcaoMonitoramentoService],
 })
-export class PlanoAcaoMonitoramentoModule { }
+export class PlanoAcaoMonitoramentoModule {}

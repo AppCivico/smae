@@ -4,9 +4,8 @@ import { ProjetoProxyPdmMetaDto } from './entities/projeto.proxy-pdm-meta.entity
 
 @Injectable()
 export class ProjetoProxyPdmMetasService {
-    constructor(private readonly prisma: PrismaService,) { }
+    constructor(private readonly prisma: PrismaService) {}
     async findAll(): Promise<ProjetoProxyPdmMetaDto[]> {
-
         const rows = await this.prisma.pdm.findMany({
             orderBy: [{ ativo: 'desc' }, { atualizado_em: 'desc' }],
             select: {
@@ -15,15 +14,15 @@ export class ProjetoProxyPdmMetasService {
                 ativo: true,
                 Meta: {
                     where: {
-                        removido_em: null
+                        removido_em: null,
                     },
                     orderBy: [{ codigo: 'asc' }, { atualizado_em: 'desc' }],
                     select: {
                         id: true,
                         codigo: true,
-                        titulo: true
-                    }
-                }
+                        titulo: true,
+                    },
+                },
             },
         });
 
@@ -32,9 +31,8 @@ export class ProjetoProxyPdmMetasService {
                 id: r.id,
                 nome: r.nome,
                 ativo: r.ativo,
-                metas: r.Meta
-            }
+                metas: r.Meta,
+            };
         });
     }
-
 }

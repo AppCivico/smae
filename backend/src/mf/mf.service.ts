@@ -7,16 +7,16 @@ import { CicloAtivoDto } from './metas/dto/mf-meta.dto';
 
 @Injectable()
 export class MfService {
-    constructor(private readonly prisma: PrismaService) { }
+    constructor(private readonly prisma: PrismaService) {}
 
     async pessoaAcessoPdm(user: PessoaFromJwt): Promise<PessoaAcessoPdm> {
         const perfil = await this.prisma.pessoaAcessoPdm.findUnique({ where: { pessoa_id: user.id } });
         if (!perfil) throw new HttpException('Faltando pessoaAcessoPdm', 404);
 
         // apenas pra ter certeza, mas eu acredito que o Prisma já faz isso sozinho
-        perfil.cronogramas_etapas = perfil.cronogramas_etapas.map(n => +n);
-        perfil.metas_cronograma = perfil.metas_cronograma.map(n => +n);
-        perfil.metas_variaveis = perfil.metas_variaveis.map(n => +n);
+        perfil.cronogramas_etapas = perfil.cronogramas_etapas.map((n) => +n);
+        perfil.metas_cronograma = perfil.metas_cronograma.map((n) => +n);
+        perfil.metas_variaveis = perfil.metas_variaveis.map((n) => +n);
 
         // TODO conferir se o ciclo é o mesmo do pdm-ativo, se n for, tem algo ruim
 
@@ -39,7 +39,7 @@ export class MfService {
         });
         if (!cicloAtivo) {
             let detail = '';
-            const pdmAtivo = await this.prisma.pdm.findFirst({ where: { ativo: true, } });
+            const pdmAtivo = await this.prisma.pdm.findFirst({ where: { ativo: true } });
             if (pdmAtivo) {
                 const ultimaFase = await this.prisma.cicloFisicoFase.findFirst({
                     where: {
@@ -48,9 +48,7 @@ export class MfService {
                     orderBy: { data_inicio: 'desc' },
                     take: 1,
                 });
-                if (ultimaFase)
-                    detail += ` Última fase do ciclo acabou em ${Date2YMD.toString(ultimaFase.data_fim)}.`;
-
+                if (ultimaFase) detail += ` Última fase do ciclo acabou em ${Date2YMD.toString(ultimaFase.data_fim)}.`;
             } else {
                 detail += ' Não há Programa de Metas ativo no momento.';
             }
@@ -82,7 +80,7 @@ export class MfService {
             pessoa: {
                 nome_exibicao: string;
             };
-        }[],
+        }[]
     ): {
         orgaos_responsaveis: string[];
         orgaos_participantes: string[];

@@ -26,7 +26,7 @@ export function ReportValidatorOf(property: string, validationOptions?: Validati
                         throw new BadRequestException(
                             validations.reduce((acc, curr) => {
                                 return [...acc, ...Object.values(curr.constraints as any)];
-                            }, []),
+                            }, [])
                         );
                     }
 

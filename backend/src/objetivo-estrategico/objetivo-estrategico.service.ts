@@ -14,13 +14,13 @@ export class ObjetivoEstrategicoService {
     async create(createObjetivoEstrategicoDto: CreateObjetivoEstrategicoDto, user: PessoaFromJwt) {
         const created = await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient) => {
             const descricaoExists = await prismaTx.tema.count({
-                where: { 
+                where: {
                     pdm_id: createObjetivoEstrategicoDto.pdm_id,
                     descricao: {
                         equals: createObjetivoEstrategicoDto.descricao,
-                        mode: 'insensitive'   
-                    }
-                }
+                        mode: 'insensitive',
+                    },
+                },
             });
             if (descricaoExists) throw new HttpException('descricao| Já existe um Tema com esta descrição.', 400);
 
@@ -52,7 +52,7 @@ export class ObjetivoEstrategicoService {
                 descricao: true,
                 pdm_id: true,
             },
-            orderBy: { descricao: 'asc' }
+            orderBy: { descricao: 'asc' },
         });
         return listActive;
     }
@@ -60,37 +60,40 @@ export class ObjetivoEstrategicoService {
     async update(id: number, updateObjetivoEstrategicoDto: UpdateObjetivoEstrategicoDto, user: PessoaFromJwt) {
         delete updateObjetivoEstrategicoDto.pdm_id; // nao deixa editar o PDM
 
-        const updated = await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
-            if (updateObjetivoEstrategicoDto.descricao) {
-                const self = await prismaTx.tema.findFirstOrThrow({
-                    where: { id },
-                    select: { pdm_id: true }
+        const updated = await this.prisma.$transaction(
+            async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
+                if (updateObjetivoEstrategicoDto.descricao) {
+                    const self = await prismaTx.tema.findFirstOrThrow({
+                        where: { id },
+                        select: { pdm_id: true },
+                    });
+
+                    const descricaoExists = await prismaTx.tema.count({
+                        where: {
+                            pdm_id: self.pdm_id,
+                            descricao: {
+                                equals: updateObjetivoEstrategicoDto.descricao,
+                                mode: 'insensitive',
+                            },
+                        },
+                    });
+                    if (descricaoExists)
+                        throw new HttpException('descricao| Já existe um Tema com esta descrição.', 400);
+                }
+
+                const tema = await this.prisma.tema.update({
+                    where: { id: id },
+                    data: {
+                        atualizado_por: user.id,
+                        atualizado_em: new Date(Date.now()),
+                        ...updateObjetivoEstrategicoDto,
+                    },
+                    select: { id: true },
                 });
 
-                const descricaoExists = await prismaTx.tema.count({
-                    where: { 
-                        pdm_id: self.pdm_id,
-                        descricao: {
-                            equals: updateObjetivoEstrategicoDto.descricao,
-                            mode: 'insensitive'   
-                        }
-                    }
-                });
-                if (descricaoExists) throw new HttpException('descricao| Já existe um Tema com esta descrição.', 400);
+                return tema;
             }
-
-            const tema = await this.prisma.tema.update({
-                where: { id: id },
-                data: {
-                    atualizado_por: user.id,
-                    atualizado_em: new Date(Date.now()),
-                    ...updateObjetivoEstrategicoDto,
-                },
-                select: { id: true }
-            });
-
-            return tema;
-        });
+        );
 
         return updated;
     }

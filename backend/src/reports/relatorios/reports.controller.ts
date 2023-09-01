@@ -18,7 +18,7 @@ import { ReportsService } from './reports.service';
 @ApiTags('Relatórios')
 @Controller('relatorios')
 export class ReportsController {
-    constructor(private readonly reportsService: ReportsService, private readonly uploadService: UploadService) { }
+    constructor(private readonly reportsService: ReportsService, private readonly uploadService: UploadService) {}
 
     @Post()
     @ApiBearerAuth('access-token')
@@ -38,7 +38,9 @@ export class ReportsController {
             (dto.parametros as any)['periodo'],
             (dto.parametros as any)['semestre'],
             DateTime.local({ zone: SYSTEM_TIMEZONE }).toISO() + '.zip',
-        ].filter(r => r).join('-');
+        ]
+            .filter((r) => r)
+            .join('-');
         const files = await this.reportsService.runReport(dto);
         const zipBuffer = await this.reportsService.zipFiles(files);
 

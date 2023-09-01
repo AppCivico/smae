@@ -1,5 +1,15 @@
 import { Type } from 'class-transformer';
-import { ArrayMaxSize, ArrayMinSize, IsArray, IsEmail, IsInt, IsOptional, IsString, MaxLength, MinLength } from 'class-validator';
+import {
+    ArrayMaxSize,
+    ArrayMinSize,
+    IsArray,
+    IsEmail,
+    IsInt,
+    IsOptional,
+    IsString,
+    MaxLength,
+    MinLength,
+} from 'class-validator';
 
 export class CreatePessoaDto {
     /**

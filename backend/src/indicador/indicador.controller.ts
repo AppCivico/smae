@@ -1,5 +1,12 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post, Query } from '@nestjs/common';
-import { ApiBearerAuth, ApiExtraModels, ApiNoContentResponse, ApiOperation, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
+import {
+    ApiBearerAuth,
+    ApiExtraModels,
+    ApiNoContentResponse,
+    ApiOperation,
+    ApiTags,
+    ApiUnauthorizedResponse,
+} from '@nestjs/swagger';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
@@ -22,7 +29,10 @@ export class IndicadorController {
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
     @Roles('CadastroIndicador.inserir', 'CadastroMeta.inserir')
-    async create(@Body() createIndicadorDto: CreateIndicadorDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
+    async create(
+        @Body() createIndicadorDto: CreateIndicadorDto,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<RecordWithId> {
         return await this.indicadorService.create(createIndicadorDto, user);
     }
 
@@ -37,7 +47,11 @@ export class IndicadorController {
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
     @Roles('CadastroIndicador.editar', 'CadastroMeta.inserir')
-    async update(@Param() params: FindOneParams, @Body() updateIndicadorDto: UpdateIndicadorDto, @CurrentUser() user: PessoaFromJwt) {
+    async update(
+        @Param() params: FindOneParams,
+        @Body() updateIndicadorDto: UpdateIndicadorDto,
+        @CurrentUser() user: PessoaFromJwt
+    ) {
         return await this.indicadorService.update(+params.id, updateIndicadorDto, user);
     }
 
@@ -60,9 +74,14 @@ export class IndicadorController {
     @Roles('CadastroIndicador.editar', 'CadastroMeta.inserir', 'CadastroMeta.listar')
     @ApiOperation({
         summary: 'Recebe o ID do indicador como parâmetro',
-        description: 'Filtros só podem ser usados encurtar os períodos do indicador, não é possível puxar dados fora dos períodos existentes (será ignorado)',
+        description:
+            'Filtros só podem ser usados encurtar os períodos do indicador, não é possível puxar dados fora dos períodos existentes (será ignorado)',
     })
-    async getSeriePrevistoRealizado(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt, @Query() filters: FilterIndicadorSerieDto): Promise<ListSeriesAgrupadas> {
+    async getSeriePrevistoRealizado(
+        @Param() params: FindOneParams,
+        @CurrentUser() user: PessoaFromJwt,
+        @Query() filters: FilterIndicadorSerieDto
+    ): Promise<ListSeriesAgrupadas> {
         return await this.indicadorService.getSeriesIndicador(params.id, user, filters || {});
     }
 }

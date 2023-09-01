@@ -1,5 +1,27 @@
-import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Patch, Post, Query, Res } from '@nestjs/common';
-import { ApiBearerAuth, ApiBody, ApiExtraModels, ApiNoContentResponse, ApiResponse, ApiTags, ApiUnauthorizedResponse, refs } from '@nestjs/swagger';
+import {
+    Body,
+    Controller,
+    Delete,
+    Get,
+    HttpCode,
+    HttpException,
+    HttpStatus,
+    Param,
+    Patch,
+    Post,
+    Query,
+    Res,
+} from '@nestjs/common';
+import {
+    ApiBearerAuth,
+    ApiBody,
+    ApiExtraModels,
+    ApiNoContentResponse,
+    ApiResponse,
+    ApiTags,
+    ApiUnauthorizedResponse,
+    refs,
+} from '@nestjs/swagger';
 import { plainToClass } from 'class-transformer';
 import { Response } from 'express';
 import { CurrentUser } from '../../auth/decorators/current-user.decorator';
@@ -15,21 +37,27 @@ import { DependenciasDatasDto, ListTarefaDto, TarefaDetailDto } from './entities
 import { TarefaService } from './tarefa.service';
 import { GraphvizContentTypeMap } from 'src/graphviz/graphviz.service';
 
-const roles: ListaDePrivilegios[] = ['Projeto.administrador', 'Projeto.administrador_no_orgao', 'SMAE.gestor_de_projeto', 'SMAE.colaborador_de_projeto'];
+const roles: ListaDePrivilegios[] = [
+    'Projeto.administrador',
+    'Projeto.administrador_no_orgao',
+    'SMAE.gestor_de_projeto',
+    'SMAE.colaborador_de_projeto',
+];
 
 @Controller('projeto')
 @ApiTags('Projeto - Tarefas')
 export class TarefaController {
-    constructor(
-        private readonly tarefaService: TarefaService,
-        private readonly projetoService: ProjetoService,
-    ) { }
+    constructor(private readonly tarefaService: TarefaService, private readonly projetoService: ProjetoService) {}
 
     @Post(':id/tarefa')
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
     @Roles(...roles)
-    async create(@Param() params: FindOneParams, @Body() dto: CreateTarefaDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
+    async create(
+        @Param() params: FindOneParams,
+        @Body() dto: CreateTarefaDto,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<RecordWithId> {
         const projeto = await this.projetoService.findOne(params.id, user, 'ReadWrite');
 
         return await this.tarefaService.create(projeto.id, dto, user);
@@ -39,7 +67,11 @@ export class TarefaController {
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
     @Roles(...roles)
-    async findAll(@Param() params: FindOneParams, @Query() filter: FilterPPTarefa, @CurrentUser() user: PessoaFromJwt): Promise<ListTarefaDto> {
+    async findAll(
+        @Param() params: FindOneParams,
+        @Query() filter: FilterPPTarefa,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<ListTarefaDto> {
         const tarefasProj = await this.tarefaService.findAll(params.id, user, filter);
 
         return {
@@ -57,7 +89,7 @@ export class TarefaController {
         @Param() params: FindOneParams,
         @Query() filter: FilterEAPDto,
         @CurrentUser() user: PessoaFromJwt,
-        @Res() res: Response,
+        @Res() res: Response
     ): Promise<void> {
         const formato = filter.formato ?? 'png';
         const projeto = await this.projetoService.findOne(params.id, user, 'ReadOnly');
@@ -79,14 +111,10 @@ export class TarefaController {
     @ApiUnauthorizedResponse()
     @Roles(...roles)
     @ApiResponse({ status: 200, description: 'Responde com Record<ID_TAREFA, HIERARQUIA_NO_CRONOGRAMA>' })
-    async getTarefasHierarquia(
-        @Param() params: FindOneParams,
-        @CurrentUser() user: PessoaFromJwt
-    ) {
+    async getTarefasHierarquia(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt) {
         const projeto = await this.projetoService.findOne(params.id, user, 'ReadOnly');
         return await this.tarefaService.tarefasHierarquia(projeto);
     }
-
 
     @Get(':id/tarefa/:id2')
     @ApiBearerAuth('access-token')
@@ -105,7 +133,11 @@ export class TarefaController {
     @ApiBody({
         schema: { oneOf: refs(UpdateTarefaDto, UpdateTarefaRealizadoDto) },
     })
-    async update(@Param() params: FindTwoParams, @Body() dto: UpdateTarefaDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
+    async update(
+        @Param() params: FindTwoParams,
+        @Body() dto: UpdateTarefaDto,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<RecordWithId> {
         if (dto.atualizacao_do_realizado) {
             const projeto = await this.projetoService.findOne(params.id, user, 'ReadOnly');
             console.log(`dto.atualizacao_do_realizado=true`);
@@ -113,9 +145,11 @@ export class TarefaController {
             console.log(`after plainToClass UpdateTarefaRealizadoDto ${JSON.stringify(dto)}`);
             console.log(dto);
 
-
             if (projeto.permissoes.apenas_leitura_planejamento && projeto.permissoes.sou_responsavel == false) {
-                throw new HttpException("Não é possível editar o realizado da tarefa, pois o seu acesso é apenas leitura e você não é o responsável do projeto.", 400);
+                throw new HttpException(
+                    'Não é possível editar o realizado da tarefa, pois o seu acesso é apenas leitura e você não é o responsável do projeto.',
+                    400
+                );
             }
 
             return await this.tarefaService.update(projeto.id, params.id2, dto, user);
@@ -143,7 +177,11 @@ export class TarefaController {
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
     @Roles(...roles)
-    async calcula_dependencias_tarefas(@Param() params: FindOneParams, @Body() dto: CheckDependenciasDto, @CurrentUser() user: PessoaFromJwt): Promise<DependenciasDatasDto> {
+    async calcula_dependencias_tarefas(
+        @Param() params: FindOneParams,
+        @Body() dto: CheckDependenciasDto,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<DependenciasDatasDto> {
         const projeto = await this.projetoService.findOne(params.id, user, 'ReadWrite');
 
         const result = await this.tarefaService.calcula_dependencias_tarefas(projeto.id, dto, user);
@@ -151,5 +189,4 @@ export class TarefaController {
 
         return result;
     }
-
 }

@@ -7,6 +7,5 @@ export class ProjetoProxyPdmMetaDto {
 }
 
 export class ListProjetoProxyPdmMetaDto {
-    linhas: ProjetoProxyPdmMetaDto[]
+    linhas: ProjetoProxyPdmMetaDto[];
 }
-

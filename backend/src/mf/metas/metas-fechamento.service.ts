@@ -8,7 +8,7 @@ import { FechamentoDto, FilterFechamentoDto, MfListFechamentoDto } from './../me
 
 @Injectable()
 export class MetasFechamentoService {
-    constructor(private readonly prisma: PrismaService) { }
+    constructor(private readonly prisma: PrismaService) {}
 
     private async carregaCicloPorId(ciclo_fisico_id: number) {
         const ret = await this.prisma.cicloFisico.findFirst({
@@ -24,7 +24,11 @@ export class MetasFechamentoService {
         return ret;
     }
 
-    async getMetaFechamento(dto: FilterFechamentoDto, config: PessoaAcessoPdm | null, user: PessoaFromJwt | null): Promise<MfListFechamentoDto> {
+    async getMetaFechamento(
+        dto: FilterFechamentoDto,
+        config: PessoaAcessoPdm | null,
+        user: PessoaFromJwt | null
+    ): Promise<MfListFechamentoDto> {
         const analisesResult = await this.prisma.metaCicloFisicoFechamento.findMany({
             where: {
                 ciclo_fisico_id: dto.ciclo_fisico_id,
@@ -48,7 +52,7 @@ export class MetasFechamentoService {
         });
 
         return {
-            fechamentos: analisesResult.map(r => {
+            fechamentos: analisesResult.map((r) => {
                 return {
                     comentario: r.comentario || '',
                     referencia_data: Date2YMD.toString(r.referencia_data),

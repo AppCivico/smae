@@ -15,7 +15,8 @@ export class TipoOrgaoService {
                 removido_em: null,
             },
         });
-        if (similarExists > 0) throw new HttpException('descricao| Descrição igual ou semelhante já existe em outro registro ativo', 400);
+        if (similarExists > 0)
+            throw new HttpException('descricao| Descrição igual ou semelhante já existe em outro registro ativo', 400);
 
         const created = await this.prisma.tipoOrgao.create({
             data: {
@@ -35,7 +36,7 @@ export class TipoOrgaoService {
                 removido_em: null,
             },
             select: { id: true, descricao: true },
-            orderBy: { descricao: 'asc' }
+            orderBy: { descricao: 'asc' },
         });
 
         return listActive;
@@ -53,7 +54,11 @@ export class TipoOrgaoService {
                     NOT: { id: id },
                 },
             });
-            if (similarExists > 0) throw new HttpException('descricao| Descrição igual ou semelhante já existe em outro registro ativo', 400);
+            if (similarExists > 0)
+                throw new HttpException(
+                    'descricao| Descrição igual ou semelhante já existe em outro registro ativo',
+                    400
+                );
         }
 
         await this.prisma.tipoOrgao.update({
@@ -75,7 +80,8 @@ export class TipoOrgaoService {
         const existsDown = await this.prisma.orgao.count({
             where: { tipo_orgao_id: id, removido_em: null },
         });
-        if (existsDown > 0) throw new HttpException(`Não é possível remover: Há ${existsDown} órgão(ãos) dependentes.`, 400);
+        if (existsDown > 0)
+            throw new HttpException(`Não é possível remover: Há ${existsDown} órgão(ãos) dependentes.`, 400);
 
         const created = await this.prisma.tipoOrgao.updateMany({
             where: { id: id },

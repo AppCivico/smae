@@ -9,7 +9,7 @@ import { JOB_LISTA_SOF_LOCK } from 'src/common/dto/locks';
 @Injectable()
 export class SofEntidadeService {
     private readonly logger = new Logger(SofEntidadeService.name);
-    constructor(private readonly prisma: PrismaService, private readonly sof: SofApiService) { }
+    constructor(private readonly prisma: PrismaService, private readonly sof: SofApiService) {}
 
     async findByYear(ano: number) {
         const dados = await this.prisma.sofEntidade.findFirst({ where: { ano: ano } });
@@ -66,7 +66,7 @@ export class SofEntidadeService {
                 maxWait: 30000,
                 timeout: 60 * 1000 * 15,
                 isolationLevel: 'Serializable',
-            },
+            }
         );
     }
 
@@ -87,7 +87,11 @@ export class SofEntidadeService {
                 dados: data,
             },
         });
-        this.logger.log(`Atualização SOF concluída em ${Math.round((Date.now() - before) / 1000)} segundos, atualizando MV sof_entidades_linhas`);
+        this.logger.log(
+            `Atualização SOF concluída em ${Math.round(
+                (Date.now() - before) / 1000
+            )} segundos, atualizando MV sof_entidades_linhas`
+        );
 
         try {
             await this.prisma.$queryRaw`refresh materialized view sof_entidades_linhas;`;

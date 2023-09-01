@@ -10,14 +10,9 @@ import { ProjetoSeiService } from './projeto.sei.service';
 import { ProjetoService } from './projeto.service';
 
 @Module({
-    imports: [
-        PrismaModule,
-        MetaModule,
-        UploadModule,
-        PortfolioModule
-    ],
+    imports: [PrismaModule, MetaModule, UploadModule, PortfolioModule],
     controllers: [ProjetoController, ProjetoProxyPdmMetasController],
     providers: [ProjetoService, ProjetoProxyPdmMetasService, ProjetoSeiService],
-    exports: [ProjetoService]
+    exports: [ProjetoService],
 })
-export class ProjetoModule { }
+export class ProjetoModule {}

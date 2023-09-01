@@ -13,4 +13,4 @@ import { PPStatusService } from './pp-status.service';
     providers: [PPStatusService, ProjetoService],
     exports: [PPStatusService],
 })
-export class PPStatusModule { }
+export class PPStatusModule {}

@@ -3,7 +3,12 @@ import { Prisma } from '@prisma/client';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { RecordWithId } from '../common/dto/record-with-id.dto';
 import { PrismaService } from '../prisma/prisma.service';
-import { CreateMetaDto, DadosCodTituloIniciativaDto, DadosCodTituloMetaDto, MetaOrgaoParticipante } from './dto/create-meta.dto';
+import {
+    CreateMetaDto,
+    DadosCodTituloIniciativaDto,
+    DadosCodTituloMetaDto,
+    MetaOrgaoParticipante,
+} from './dto/create-meta.dto';
 import { FilterMetaDto } from './dto/filter-meta.dto';
 import { UpdateMetaDto } from './dto/update-meta.dto';
 import { IdNomeExibicao, Meta, MetaOrgao, MetaTag } from './entities/meta.entity';
@@ -28,8 +33,8 @@ export class MetaService {
     constructor(
         private readonly prisma: PrismaService,
         private readonly cronogramaEtapaService: CronogramaEtapaService,
-        private readonly uploadService: UploadService,
-    ) { }
+        private readonly uploadService: UploadService
+    ) {}
 
     async create(createMetaDto: CreateMetaDto, user: PessoaFromJwt) {
         // TODO: verificar se todos os membros de createMetaDto.coordenadores_cp estão ativos
@@ -51,8 +56,8 @@ export class MetaService {
                     where: {
                         removido_em: null,
                         pdm_id: createMetaDto.pdm_id,
-                        codigo: { equals: createMetaDto.codigo, mode: 'insensitive' }
-                    }
+                        codigo: { equals: createMetaDto.codigo, mode: 'insensitive' },
+                    },
                 });
                 if (codigoJaEmUso > 0) throw new HttpException('codigo| Já existe meta com este código', 400);
 
@@ -60,8 +65,8 @@ export class MetaService {
                     where: {
                         removido_em: null,
                         pdm_id: createMetaDto.pdm_id,
-                        titulo: { equals: createMetaDto.titulo, mode: 'insensitive' }
-                    }
+                        titulo: { equals: createMetaDto.titulo, mode: 'insensitive' },
+                    },
                 });
                 if (tituloJaEmUso > 0) throw new HttpException('titulo| Já existe meta com este título', 400);
 
@@ -106,7 +111,7 @@ export class MetaService {
             {
                 maxWait: 5000,
                 timeout: 100000,
-            },
+            }
         );
 
         return created;
@@ -126,7 +131,11 @@ export class MetaService {
         return arr;
     }
 
-    async buildMetaResponsaveis(metaId: number, orgaos_participantes: MetaOrgaoParticipante[], coordenadores_cp: number[]): Promise<Prisma.MetaResponsavelCreateManyInput[]> {
+    async buildMetaResponsaveis(
+        metaId: number,
+        orgaos_participantes: MetaOrgaoParticipante[],
+        coordenadores_cp: number[]
+    ): Promise<Prisma.MetaResponsavelCreateManyInput[]> {
         const arr: Prisma.MetaResponsavelCreateManyInput[] = [];
 
         for (const orgao of orgaos_participantes) {
@@ -164,7 +173,10 @@ export class MetaService {
         return arr;
     }
 
-    async buildOrgaosParticipantes(metaId: number, orgaos_participantes: MetaOrgaoParticipante[]): Promise<Prisma.MetaOrgaoCreateManyInput[]> {
+    async buildOrgaosParticipantes(
+        metaId: number,
+        orgaos_participantes: MetaOrgaoParticipante[]
+    ): Promise<Prisma.MetaOrgaoCreateManyInput[]> {
         const arr: Prisma.MetaOrgaoCreateManyInput[] = [];
 
         const orgaoVisto: Record<number, boolean> = {};
@@ -192,7 +204,7 @@ export class MetaService {
         const permissionsSet: Prisma.Enumerable<Prisma.MetaWhereInput> = [
             {
                 removido_em: null,
-            }
+            },
         ];
         if (!user) return permissionsSet;
         if (isBi && user.hasSomeRoles(['SMAE.acesso_bi'])) return permissionsSet;
@@ -204,7 +216,6 @@ export class MetaService {
         // lá no front que está fazendo o filtro pra descobrir os painel que tme a meta e
         // depois o busca a serie do painel-conteúdo correspondente
 
-
         let filterIdIn: undefined | number[] = undefined;
         if (!user.hasSomeRoles(['CadastroMeta.inserir'])) {
             // logo, é um tecnico_cp
@@ -214,7 +225,7 @@ export class MetaService {
         if (filterIdIn) {
             this.logger.debug('Filtrando apenas getMetasOndeSouResponsavel');
             permissionsSet.push({
-                id: { in: filterIdIn }
+                id: { in: filterIdIn },
             });
         }
 
@@ -226,28 +237,32 @@ export class MetaService {
 
         return await this.prisma.meta.findMany({
             where: {
-                AND: permissionsSet.length > 0 ? [
-                    {
-                        AND: permissionsSet
-                    }
-                ] : undefined,
+                AND:
+                    permissionsSet.length > 0
+                        ? [
+                              {
+                                  AND: permissionsSet,
+                              },
+                          ]
+                        : undefined,
             },
-            select: { id: true }
+            select: { id: true },
         });
-
     }
 
     async findAll(filters: FilterMetaDto | undefined = undefined, user: PessoaFromJwt) {
-
         const permissionsSet = await this.getMetasPermissionSet(user, false);
 
         const listActive = await this.prisma.meta.findMany({
             where: {
-                AND: permissionsSet.length > 0 ? [
-                    {
-                        AND: permissionsSet
-                    }
-                ] : undefined,
+                AND:
+                    permissionsSet.length > 0
+                        ? [
+                              {
+                                  AND: permissionsSet,
+                              },
+                          ]
+                        : undefined,
                 pdm_id: filters?.pdm_id,
                 id: filters?.id,
             },
@@ -283,13 +298,13 @@ export class MetaService {
                             select: {
                                 id: true,
                                 descricao: true,
-                                arquivo_icone_id: true
+                                arquivo_icone_id: true,
                             },
                         },
                     },
                     orderBy: {
-                        tag: { descricao: 'asc' }
-                    }
+                        tag: { descricao: 'asc' },
+                    },
                 },
                 cronograma: {
                     take: 1,
@@ -299,9 +314,9 @@ export class MetaService {
                         inicio_previsto: true,
                         inicio_real: true,
                         termino_previsto: true,
-                        termino_real: true
-                    }
-                }
+                        termino_real: true,
+                    },
+                },
             },
         });
         const ret: Meta[] = [];
@@ -320,18 +335,16 @@ export class MetaService {
 
             for (const responsavel of dbMeta.meta_responsavel) {
                 if (responsavel.coordenador_responsavel_cp) {
-
                     // só coloca a pessoa 1x
-                    if (coordenadores_cp.filter(r => r.id == responsavel.pessoa.id).length == 0)
+                    if (coordenadores_cp.filter((r) => r.id == responsavel.pessoa.id).length == 0)
                         coordenadores_cp.push({
                             id: responsavel.pessoa.id,
                             nome_exibicao: responsavel.pessoa.nome_exibicao,
                         });
-
                 } else {
                     const orgao = orgaos[responsavel.orgao.id];
 
-                    if (orgao.participantes.filter(r => r.id == responsavel.pessoa.id).length == 0)
+                    if (orgao.participantes.filter((r) => r.id == responsavel.pessoa.id).length == 0)
                         orgao.participantes.push(responsavel.pessoa);
                 }
             }
@@ -350,13 +363,15 @@ export class MetaService {
 
                 let cronogramaAtraso: string | null = null;
                 if (cronograma) {
-                    const cronogramaEtapaRet = await this.cronogramaEtapaService.findAll({ cronograma_id: cronograma.id });
+                    const cronogramaEtapaRet = await this.cronogramaEtapaService.findAll({
+                        cronograma_id: cronograma.id,
+                    });
                     cronogramaAtraso = await this.cronogramaEtapaService.getAtrasoMaisSevero(cronogramaEtapaRet);
                 }
                 metaCronograma = {
                     id: cronograma ? cronograma.id : null,
-                    atraso_grau: cronogramaAtraso
-                }
+                    atraso_grau: cronogramaAtraso,
+                };
             }
 
             ret.push({
@@ -374,7 +389,7 @@ export class MetaService {
                 coordenadores_cp: coordenadores_cp,
                 orgaos_participantes: Object.values(orgaos),
                 tags: tags,
-                cronograma: metaCronograma
+                cronograma: metaCronograma,
             });
         }
 
@@ -388,7 +403,7 @@ export class MetaService {
 
         const loadMeta = await this.prisma.meta.findFirstOrThrow({
             where: { id, removido_em: null },
-            select: { pdm_id: true }
+            select: { pdm_id: true },
         });
 
         const op = updateMetaDto.orgaos_participantes;
@@ -397,21 +412,20 @@ export class MetaService {
         delete updateMetaDto.orgaos_participantes;
         delete updateMetaDto.coordenadores_cp;
         delete updateMetaDto.tags;
-        if (cp && !op) throw new HttpException('é necessário enviar orgaos_participantes para alterar coordenadores_cp', 400);
+        if (cp && !op)
+            throw new HttpException('é necessário enviar orgaos_participantes para alterar coordenadores_cp', 400);
 
         await this.prisma.$transaction(
             async (prisma: Prisma.TransactionClient): Promise<RecordWithId> => {
                 // Verificação de código da Meta.
                 if (updateMetaDto.codigo) {
-
-
                     const codigoJaEmUso = await prisma.meta.count({
                         where: {
                             removido_em: null,
                             pdm_id: loadMeta.pdm_id,
                             codigo: updateMetaDto.codigo,
-                            id: { not: id }
-                        }
+                            id: { not: id },
+                        },
                     });
                     if (codigoJaEmUso) throw new HttpException('codigo| Já existe outra meta com este código', 400);
                 }
@@ -422,8 +436,8 @@ export class MetaService {
                             removido_em: null,
                             pdm_id: loadMeta.pdm_id,
                             titulo: { equals: updateMetaDto.titulo, mode: 'insensitive' },
-                            id: { not: id }
-                        }
+                            id: { not: id },
+                        },
                     });
                     if (tituloJaEmUso > 0) throw new HttpException('titulo| Já existe outra meta com este título', 400);
                 }
@@ -471,7 +485,8 @@ export class MetaService {
 
                 if (tags == null || tags) {
                     await prisma.metaTag.deleteMany({ where: { meta_id: id } });
-                    if (Array.isArray(tags) && tags.length) await prisma.metaTag.createMany({ data: await this.buildTags(meta.id, tags) });
+                    if (Array.isArray(tags) && tags.length)
+                        await prisma.metaTag.createMany({ data: await this.buildTags(meta.id, tags) });
                 }
 
                 return meta;
@@ -479,7 +494,7 @@ export class MetaService {
             {
                 maxWait: 5000,
                 timeout: 100000,
-            },
+            }
         );
 
         return { id };
@@ -512,8 +527,8 @@ export class MetaService {
             if (children_with_op > 0) orgaos_in_use.push(orgao.orgao_id);
         }
 
-        const orgaos_to_be_created = orgaos_participantes.map(x => x.orgao_id);
-        const orgaos_match = orgaos_in_use.some(x => orgaos_to_be_created.includes(x));
+        const orgaos_to_be_created = orgaos_participantes.map((x) => x.orgao_id);
+        const orgaos_match = orgaos_in_use.some((x) => orgaos_to_be_created.includes(x));
 
         // if (!orgaos_match)
         // throw new HttpException('Existem órgãos em uso em filhos (Iniciativa/Etapa), remova-os primeiro.', 400);
@@ -555,21 +570,23 @@ export class MetaService {
             await user.assertHasMetaRespAccess(id, this.prisma.pessoaAcessoPdm);
         }
 
-        return await this.prisma.$transaction(async (prisma: Prisma.TransactionClient): Promise<Prisma.BatchPayload> => {
-            const removed = await prisma.meta.updateMany({
-                where: { id: id, removido_em: null },
-                data: {
-                    removido_por: user.id,
-                    removido_em: new Date(Date.now()),
-                },
-            });
+        return await this.prisma.$transaction(
+            async (prisma: Prisma.TransactionClient): Promise<Prisma.BatchPayload> => {
+                const removed = await prisma.meta.updateMany({
+                    where: { id: id, removido_em: null },
+                    data: {
+                        removido_por: user.id,
+                        removido_em: new Date(Date.now()),
+                    },
+                });
 
-            // Caso a Meta seja removida, é necessário remover relacionamentos com Painel
-            // public.painel_conteudo e public.painel_conteudo_detalhe
-            await prisma.painelConteudo.deleteMany({ where: { meta_id: id } });
+                // Caso a Meta seja removida, é necessário remover relacionamentos com Painel
+                // public.painel_conteudo e public.painel_conteudo_detalhe
+                await prisma.painelConteudo.deleteMany({ where: { meta_id: id } });
 
-            return removed;
-        });
+                return removed;
+            }
+        );
     }
 
     async buscaMetasIniciativaAtividades(metas: number[]): Promise<DadosCodTituloMetaDto[]> {
