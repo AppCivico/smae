@@ -366,9 +366,18 @@ DECLARE
     v_tmp_termino_calc boolean;
     v_tmp_duracao_calc boolean;
 
+    --rows_affected INTEGER;
     r record;
 BEGIN
 
+--DO $$
+--BEGIN
+--    IF current_setting('myvars.my_trigger_depth', true) IS NULL THEN
+--        EXECUTE 'SET myvars.my_trigger_depth = 1';
+--    ELSE
+--        EXECUTE 'SET myvars.my_trigger_depth = ' || (current_setting('myvars.my_trigger_depth')::int + 1);
+--    END IF;
+--END $$;
     -- apenas em modificações no primeiro nivel, recalcular o projeto diretamente
     IF NEW.tarefa_pai_id IS NULL THEN
         PERFORM atualiza_calendario_projeto(NEW.projeto_id);
@@ -377,19 +386,28 @@ BEGIN
     -- se tem dependentes, agora depois de atualizado o valor, precisa propagar essa informação para as tarefas
     -- dependentes
 
+--    RAISE NOTICE '%', current_setting('myvars.my_trigger_depth', true) || '| ->> indo atras das dependencias ordem_topologica_inicio_planejado para TAREFA ' || NEW.id::text;
+
     FOR r IN
         select
-            td.tarefa_id,
-            inicio_planejado,
-            termino_planejado,
-            duracao_planejado
+            t.id as tarefa_id,
+            t.inicio_planejado,
+            t.termino_planejado,
+            t.duracao_planejado
         from (
-            select tarefa_id
-            from tarefa_dependente
-            where dependencia_tarefa_id = NEW.id
-            and tipo in ('termina_pro_inicio', 'inicia_pro_inicio')
-        ) td join tarefa t on td.tarefa_id = t.id
-        --order by t.ordem_topologica_inicio_planejado desc
+            SELECT ARRAY(
+                -- trata o caso quando o ID é zero, é a propria task
+                SELECT CASE WHEN ot = 0 THEN d.tarefa_id ELSE ot END
+                FROM unnest(x.ordem_topologica_inicio_planejado) WITH ORDINALITY AS a(ot, idx)
+                ORDER BY a.idx DESC -- inverte a ordem
+            ) AS ordem_topologica_inicio_planejado
+            FROM tarefa_dependente d
+            JOIN tarefa x on d.tarefa_id = x.id
+            WHERE dependencia_tarefa_id = NEW.id
+            AND tipo in ('termina_pro_inicio', 'inicia_pro_inicio')
+        ) AS td
+        JOIN LATERAL unnest(td.ordem_topologica_inicio_planejado) AS u(id) ON TRUE
+        JOIN tarefa t ON t.id = u.id
     LOOP
         SELECT
             calcula_dependencias_tarefas(
@@ -401,7 +419,7 @@ BEGIN
         where tarefa_id = r.tarefa_id
         and tipo in ('termina_pro_inicio', 'inicia_pro_inicio');
 
-        RAISE NOTICE '->> calcula_dependencias_tarefas %', v_tmp::text || ' ' || ROW_TO_JSON(r)::text;
+--        RAISE NOTICE '%', current_setting('myvars.my_trigger_depth', true) || '| ->> calcula_dependencias_tarefas ' || v_tmp::text || ' ' || ROW_TO_JSON(r)::text;
 
         v_tmp_inicio_calc := (v_tmp->>'inicio_planejado_calculado')::boolean;
         v_tmp_termino_calc := (v_tmp->>'termino_planejado_calculado')::boolean;
@@ -418,7 +436,7 @@ BEGIN
             )
         ) into v_tmp;
 
-        RAISE NOTICE '->> infere_data_inicio_ou_termino %', v_tmp::text;
+--        RAISE NOTICE '%', current_setting('myvars.my_trigger_depth', true) || '->> infere_data_inicio_ou_termino ' || v_tmp::text;
 
         update tarefa me
         set
@@ -432,22 +450,32 @@ BEGIN
             (inicio_planejado IS DISTINCT FROM (v_tmp->>'inicio_planejado')::date) OR
             (termino_planejado IS DISTINCT FROM (v_tmp->>'termino_planejado')::date)
         );
+--        GET DIAGNOSTICS rows_affected = ROW_COUNT;
+--        RAISE NOTICE '%', current_setting('myvars.my_trigger_depth', true) || '->> Rows Affected: ' || rows_affected || ' on task ' || r.tarefa_id::text;
 
     END LOOP;
 
     FOR r IN
-        select
-            td.tarefa_id,
-            inicio_planejado,
-            termino_planejado,
-            duracao_planejado
-        from (
-            select tarefa_id
-            from tarefa_dependente
-            where dependencia_tarefa_id = NEW.id
-            and tipo not in ('termina_pro_inicio', 'inicia_pro_inicio')
-        ) td join tarefa t on td.tarefa_id = t.id
-        --order by t.ordem_topologica_termino_planejado desc
+        SELECT
+            t.id as tarefa_id,
+            t.inicio_planejado,
+            t.termino_planejado,
+            t.duracao_planejado
+        FROM (
+            SELECT ARRAY(
+                -- trata o caso quando o ID é zero, é a propria task
+                SELECT CASE WHEN ot = 0 THEN d.tarefa_id ELSE ot END
+                FROM unnest(x.ordem_topologica_termino_planejado) WITH ORDINALITY AS a(ot, idx)
+                ORDER BY a.idx DESC -- inverte a ordem
+            ) AS ordem_topologica_termino_planejado
+            FROM tarefa_dependente d
+            JOIN tarefa x ON d.tarefa_id = x.id
+            WHERE dependencia_tarefa_id = NEW.id
+            AND tipo NOT IN ('termina_pro_inicio', 'inicia_pro_inicio')
+        ) AS td
+        -- JOIN laeral mantem a ordem
+        JOIN LATERAL unnest(td.ordem_topologica_termino_planejado) AS u(id) ON TRUE
+        JOIN tarefa t ON t.id = u.id
     LOOP
         SELECT
             calcula_dependencias_tarefas(
@@ -459,7 +487,7 @@ BEGIN
         where tarefa_id = r.tarefa_id
         and tipo not in ('termina_pro_inicio', 'inicia_pro_inicio');
 
-        RAISE NOTICE '->> calcula_dependencias_tarefas %', v_tmp::text || ' ' || ROW_TO_JSON(r)::text;
+        --RAISE NOTICE '->> calcula_dependencias_tarefas %', v_tmp::text || ' ' || ROW_TO_JSON(r)::text;
 
         v_tmp_inicio_calc := (v_tmp->>'inicio_planejado_calculado')::boolean;
         v_tmp_termino_calc := (v_tmp->>'termino_planejado_calculado')::boolean;
@@ -476,7 +504,7 @@ BEGIN
             )
         ) into v_tmp;
 
-        RAISE NOTICE '->> infere_data_inicio_ou_termino %', v_tmp::text;
+        --RAISE NOTICE '->> infere_data_inicio_ou_termino %', v_tmp::text;
 
         update tarefa me
         set
@@ -756,6 +784,12 @@ BEGIN
         );
 
     END IF;
+
+--DO $$
+--BEGIN
+    --EXECUTE 'SET myvars.my_trigger_depth = ' || (current_setting('myvars.my_trigger_depth')::int - 1);
+--END $$;
+
 
     RETURN NEW;
 END;
