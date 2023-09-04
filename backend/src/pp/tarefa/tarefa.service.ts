@@ -372,7 +372,6 @@ export class TarefaService {
             // e não terminou ainda (se já terminou, já temos a data de projeção no loop anterior
             if (tarefa.dependencias.length === 0 || tarefa.n_filhos_imediatos !== 0 || tarefa.termino_real) continue;
 
-            this.logger.verbose(`em busca das deps da task ${tarefa.id}`);
             let dataInicioMax: DateTime | undefined;
             let dataTerminoMax: DateTime | undefined;
 
@@ -383,33 +382,19 @@ export class TarefaService {
                 let depDateInicio: DateTime | undefined;
                 let depDateTermino: DateTime | undefined;
 
-                this.logger.verbose(
-                    `task ${tarefa.id} tem dep com ${depTarefa.id} do tipo ${dependencia.tipo} - ${JSON.stringify(
-                        depTarefa
-                    )}`
-                );
-
-                // tem um bug aqui, quando o projecao_termino ta null, é pq ainda não foi feito o calculo dele
-                // estou subindo um 'meio fix' usando o termino planejado
-                // mas precisa repensar no codigo todo pra realmente arrumar isso
                 switch (dependencia.tipo) {
                     case TarefaDependenteTipo.termina_pro_inicio:
                         depDateInicio = depTarefa.termino_real
                             ? DateTime.fromJSDate(depTarefa.termino_real)
                             : depTarefa.projecao_termino
                             ? depTarefa.projecao_termino
-                            : depTarefa.termino_planejado
-                            ? DateTime.fromJSDate(depTarefa.termino_planejado)
                             : hoje;
-
                         break;
                     case TarefaDependenteTipo.inicia_pro_inicio:
                         depDateInicio = depTarefa.inicio_real
                             ? DateTime.fromJSDate(depTarefa.inicio_real)
                             : depTarefa.projecao_inicio
                             ? depTarefa.projecao_inicio
-                            : depTarefa.inicio_planejado
-                            ? DateTime.fromJSDate(depTarefa.inicio_planejado)
                             : hoje;
                         break;
                     case TarefaDependenteTipo.inicia_pro_termino:
@@ -417,8 +402,6 @@ export class TarefaService {
                             ? DateTime.fromJSDate(depTarefa.inicio_real)
                             : depTarefa.projecao_inicio
                             ? depTarefa.projecao_inicio
-                            : depTarefa.inicio_planejado
-                            ? DateTime.fromJSDate(depTarefa.inicio_planejado)
                             : hoje;
                         break;
                     case TarefaDependenteTipo.termina_pro_termino:
@@ -426,13 +409,10 @@ export class TarefaService {
                             ? DateTime.fromJSDate(depTarefa.termino_real)
                             : depTarefa.projecao_termino
                             ? depTarefa.projecao_termino
-                            : depTarefa.termino_planejado
-                            ? DateTime.fromJSDate(depTarefa.termino_planejado)
                             : hoje;
                         break;
                 }
 
-                this.logger.verbose('pre calc' + JSON.stringify({ depDateInicio, depDateTermino }));
                 // então vamos setar o inicio estimado, usando o máximo (pois o inicio é após o termino de todas as deps)
                 // se a data de termino ficar menor que hoje, usar hoje
                 if (depDateInicio) {
@@ -450,7 +430,6 @@ export class TarefaService {
                         dataTerminoMax = depDateTermino;
                     }
                 }
-                this.logger.verbose('pos calc' + JSON.stringify({ depDateInicio, depDateTermino }));
             }
 
             // se deu pra chegar numa data de termino, usa ela
