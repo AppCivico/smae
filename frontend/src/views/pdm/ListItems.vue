@@ -336,7 +336,7 @@ function abreEdicaoOrcamento(id) {
                         <td>
                           <a
                             v-if="subitem.icone"
-                            :href="baseUrl + '/download/ ' + subitem?.icone"
+                            :href="baseUrl + '/download/' + subitem?.icone"
                             download
                           >
                             <img
@@ -394,13 +394,13 @@ function abreEdicaoOrcamento(id) {
                       <tr>
                         <td>
                           <a
-                            :href="baseUrl + '/download/ ' + subitem?.arquivo?.download_token"
+                            :href="baseUrl + '/download/' + subitem?.arquivo?.download_token"
                             download
                           >{{ subitem?.arquivo?.nome_original ?? '-' }}</a>
                         </td>
                         <td>
                           <a
-                            :href="baseUrl + '/download/ ' + subitem?.arquivo?.download_token"
+                            :href="baseUrl + '/download/' + subitem?.arquivo?.download_token"
                             download
                           >{{ subitem?.arquivo?.descricao ?? '-' }}</a>
                         </td>
