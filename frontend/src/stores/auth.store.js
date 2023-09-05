@@ -88,12 +88,10 @@ export const useAuthStore = defineStore({
     },
     logout() {
       this.requestS.post(`${baseUrl}/sair`);
-      this.user = null;
-      this.token = null;
-      this.permissions = null;
-      this.reducedtoken = null;
       localStorage.removeItem('user');
       localStorage.removeItem('token');
+      localStorage.removeItem('permissions');
+      this.$reset();
       router.push('/login');
     },
     setPermissions() {
