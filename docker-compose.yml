@@ -37,8 +37,10 @@ services:
       MB_DB_USER: postgres
       MB_DB_PASS: password
       MB_DB_HOST: metadb_postgres
+      MB_SITE_URL: "${MB_SITE_URL}"
     networks:
       - postgres
+      - metadb_web
       - metadb_postgres
     healthcheck:
       test: curl --fail -I http://localhost:3000/api/health || exit 1
@@ -206,8 +208,10 @@ services:
       dockerfile: frontend/Dockerfile
     networks:
       - api
+      - metadb_web
     depends_on:
       - smae_api
+      - metabase
     restart: unless-stopped
     environment:
       VITE_API_URL: "${VITE_API_URL}"
@@ -271,6 +275,7 @@ networks:
   api_orcamento:
   smtp:
   metadb_postgres:
+  metadb_web:
   api_sei:
 
 volumes:
