@@ -1,7 +1,13 @@
 import { randomBytes } from 'crypto';
 
 export function MathRandom(max: number = 1): number {
-    const buffer = randomBytes(8); // using 8 bytes (64 bits)
-    const float = buffer.readDoubleBE(0);
-    return Math.abs(float / Number.MAX_SAFE_INTEGER) * max; // ou não, 53 bits... node js...
+    // Gera ainda 8 bytes, mas instancia como BigInt
+    const bigint = BigInt(`0x${randomBytes(8).toString('hex')}`);
+
+    // converte pra um float [0, 1) (nunca é 1, mas pode ser zero)
+    // limpa os últimos 12-bits do bigint pq o javascript n sabe fazer conta float depois disso
+    // 2**52 (0x10000000000000) é o maior número safe do JS power of 2
+    const float = Number(bigint >> BigInt(12)) / 0x10000000000000;
+
+    return float * max;
 }
