@@ -5,7 +5,9 @@ import { useRoute } from 'vue-router';
 
 const route = useRoute();
 const authStore = useAuthStore();
-authStore.getDados();
+if (authStore.estouAutenticada) {
+  authStore.getDados();
+}
 </script>
 
 <template>
