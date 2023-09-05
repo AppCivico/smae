@@ -134,7 +134,7 @@ export const useAuthStore = defineStore({
       ];
 
       for (const c in a) {
-        if (per[a[c]] && !per[a[c]]['listar'] && !per[a[c]]['visualizar']) {
+        if (per[a[c]] && !per[a[c]].listar && !per[a[c]].visualizar) {
           per.algumAdmin = 1;
           break;
         }
