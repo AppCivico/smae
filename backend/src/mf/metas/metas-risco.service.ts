@@ -5,7 +5,7 @@ import { Date2YMD } from '../../common/date2ymd';
 import { RecordWithId } from '../../common/dto/record-with-id.dto';
 import { PrismaService } from '../../prisma/prisma.service';
 import { FilterRiscoDto, MfListRiscoDto, RiscoDto } from './../metas/dto/mf-meta-risco.dto';
-import DOMPurify from 'dompurify';
+import { HtmlSanitize } from '../../common/html-sanitizer';
 
 @Injectable()
 export class MetasRiscoService {
@@ -87,8 +87,8 @@ export class MetasRiscoService {
                 },
             });
 
-            dto.ponto_de_atencao = DOMPurify.sanitize(dto.ponto_de_atencao);
-            dto.detalhamento = DOMPurify.sanitize(dto.detalhamento);
+            dto.ponto_de_atencao = HtmlSanitize(dto.ponto_de_atencao)!;
+            dto.detalhamento = HtmlSanitize(dto.detalhamento)!;
 
             const cfq = await prismaTxn.metaCicloFisicoRisco.create({
                 data: {
