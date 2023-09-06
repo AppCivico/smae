@@ -5,7 +5,7 @@ import { RecordWithId } from 'src/common/dto/record-with-id.dto';
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import { PrismaService } from '../../prisma/prisma.service';
 
-import { HtmlSanitize } from '../../common/html-sanitizer';
+import { HtmlSanitizer } from '../../common/html-sanitizer';
 import { CreateProjetoAcompanhamentoDto } from './dto/create-acompanhamento.dto';
 import { UpdateProjetoAcompanhamentoDto } from './dto/update-acompanhamento.dto';
 import {
@@ -27,7 +27,7 @@ export class AcompanhamentoService {
             async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
                 const now = new Date(Date.now());
 
-                dto.detalhamento = HtmlSanitize(dto.detalhamento);
+                dto.detalhamento = HtmlSanitizer(dto.detalhamento);
 
                 const acompanhamento = await prismaTx.projetoAcompanhamento.create({
                     data: {
@@ -213,7 +213,7 @@ export class AcompanhamentoService {
             select: { id: true },
         });
 
-        dto.detalhamento = HtmlSanitize(dto.detalhamento);
+        dto.detalhamento = HtmlSanitizer(dto.detalhamento);
 
         const updated = await this.prisma.$transaction(
             async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
