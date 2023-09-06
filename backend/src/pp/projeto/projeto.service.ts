@@ -16,7 +16,6 @@ import { CreateProjetoDocumentDto, CreateProjetoDto } from './dto/create-projeto
 import { FilterProjetoDto } from './dto/filter-projeto.dto';
 import { UpdateProjetoDocumentDto, UpdateProjetoDto } from './dto/update-projeto.dto';
 import { ProjetoDetailDto, ProjetoDocumentoDto, ProjetoDto, ProjetoPermissoesDto } from './entities/projeto.entity';
-import DOMPurify from 'dompurify';
 
 import { HtmlSanitizer } from '../../common/html-sanitizer';
 
