@@ -77,6 +77,7 @@ export class MetasFechamentoService {
             await prismaTxn.metaCicloFisicoFechamento.updateMany({
                 where: {
                     ciclo_fisico_id: dto.ciclo_fisico_id,
+                    meta_id: dto.meta_id,
                     ultima_revisao: true,
                 },
                 data: {
