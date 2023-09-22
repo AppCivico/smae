@@ -9,6 +9,7 @@ const winston = require('winston'),
 
 async function bootstrap() {
     const app = await NestFactory.create<NestExpressApplication>(AppModule);
+    app.setGlobalPrefix('api');
 
     const config = new DocumentBuilder()
         .setTitle('SMAE - OpenAPI file')
