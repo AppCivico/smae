@@ -72,6 +72,21 @@ export class OrcamentoRealizadoService {
                     throw new HttpException('Erro interno: nota, processo ou dotação está null', 500);
                 }
 
+                const countExisting = await prismaTxn.orcamentoRealizado.count({
+                    where: {
+                        projeto_id: projeto.id,
+                        dotacao,
+                        processo: processo,
+                        nota_empenho: nota_empenho,
+                    },
+                });
+                if (countExisting) {
+                    throw new HttpException(
+                        `Já existe um registro com a mesma dotação/processo e/ou nota de empenho associado no projeto.`,
+                        400
+                    );
+                }
+
                 const orcamentoRealizado = await prismaTxn.orcamentoRealizado.create({
                     data: {
                         criado_por: user.id,
