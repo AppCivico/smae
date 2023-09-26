@@ -244,6 +244,10 @@ export class MetasService {
             }
         }
 
+        // dessa forma ta fácil mudar pra código
+        // TODO: conferir se vai ficar por titulo ou por codigo
+        seriesDaX.sort((a, b) => a.variavel.titulo.localeCompare(b.variavel.titulo));
+
         return {
             totais: {
                 aguarda_complementacao,
@@ -312,7 +316,6 @@ export class MetasService {
 
         const cicloFase = indicadorMeta.meta.ciclo_fase?.ciclo_fase ? indicadorMeta.meta.ciclo_fase?.ciclo_fase : '';
 
-        // ordernar pela codigo da variavel
         const retorno: RetornoMetaVariaveisDto = {
             perfil: config.perfil,
             ordem_series: calcSerieVariaveis.ordem_series,
