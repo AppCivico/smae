@@ -223,6 +223,22 @@ export class OrcamentoRealizadoService {
                     },
                 });
 
+                const countExisting = await prismaTxn.orcamentoRealizado.count({
+                    where: {
+                        projeto_id: projeto.id,
+                        dotacao: updated.dotacao,
+                        processo: updated.processo,
+                        nota_empenho: updated.nota_empenho,
+                        id: { not: updated.id },
+                    },
+                });
+                if (countExisting) {
+                    throw new HttpException(
+                        `Já existe um outro registro com a mesma dotação/processo e/ou nota de empenho associado no projeto.`,
+                        400
+                    );
+                }
+
                 return updated;
             },
             {
