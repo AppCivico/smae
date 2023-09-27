@@ -4,7 +4,7 @@ import { IdCodTituloDto } from 'src/common/dto/IdCodTitulo.dto';
 import { IdNomeExibicao } from 'src/common/dto/IdNomeExibicao.dto';
 import { IdSiglaDescricao } from 'src/common/dto/IdSigla.dto';
 import { IdTituloDto } from '../../../common/dto/IdTitulo.dto';
-import { TipoDocumento } from '../../../tipo-documento/entities/tipo-documento.entity';
+import { TipoDocumentoDto } from '../../../tipo-documento/entities/tipo-documento.entity';
 
 export class ProjetoDto {
     id: number;
@@ -207,7 +207,7 @@ export class ProjetoDocumentoDto {
         id: number;
         descricao: string | null;
         tamanho_bytes: number;
-        TipoDocumento: TipoDocumento | null;
+        TipoDocumento: TipoDocumentoDto | null;
         nome_original: string;
         download_token?: string;
     };

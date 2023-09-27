@@ -61,6 +61,8 @@ async function bootstrap() {
     app.setBaseViewsDir(join(__dirname, '..', 'templates'));
     app.setViewEngine('ejs');
 
+    app.enableShutdownHooks()
+
     if (process.env.ENABLE_CORS) app.enableCors();
 
     await app.listen(process.env.PORT || 3001, '0.0.0.0');

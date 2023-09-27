@@ -1,6 +1,7 @@
 import { INestApplication, Injectable, OnModuleInit } from '@nestjs/common';
-import { Prisma, PrismaClient, UnwrapTuple } from '@prisma/client';
+import { Prisma, PrismaClient } from '@prisma/client';
 import { RetryPromise } from '../common/retryPromise';
+import { UnwrapTuple } from '@prisma/client/runtime/library';
 
 class PrismaServiceBase extends PrismaClient implements OnModuleInit {
     constructor() {
@@ -37,11 +38,6 @@ class PrismaServiceBase extends PrismaClient implements OnModuleInit {
         });
     }
 
-    async enableShutdownHooks(app: INestApplication) {
-        this.$on('beforeExit', async () => {
-            await app.close();
-        });
-    }
 }
 
 @Injectable()
