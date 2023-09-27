@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 
-export class TipoDocumento {
+export class TipoDocumentoDto {
     @ApiProperty({ description: 'ID' })
     id?: number;
     @ApiProperty({ description: 'Extensões aceitas' })

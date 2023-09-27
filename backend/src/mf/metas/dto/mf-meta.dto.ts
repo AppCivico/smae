@@ -1,10 +1,11 @@
 import { ApiProperty, OmitType } from '@nestjs/swagger';
-import { CicloFase, Periodicidade, Serie, TipoDocumento } from '@prisma/client';
+import { CicloFase, Periodicidade, Serie } from '@prisma/client';
 import { Transform, Type } from 'class-transformer';
 import { IsBoolean, IsNumber, IsNumberString, IsOptional, IsString, ValidateIf } from 'class-validator';
 import { IsOnlyDate } from '../../../common/decorators/IsDateOnly';
 
 import { IdCodTituloDto } from '../../../common/dto/IdCodTitulo.dto';
+import { TipoDocumentoDto } from '../../../tipo-documento/entities/tipo-documento.entity';
 import { SerieValorNomimal } from '../../../variavel/entities/variavel.entity';
 
 export class FilterMfMetasDto {
@@ -330,15 +331,19 @@ export class DetailAnaliseQualitativaDto {
     id: number;
 }
 
+export class ArquivoVariavelAnaliseQualitativaDocumentoArquivoDto {
+    id: number;
+    descricao: string | null;
+    tamanho_bytes: number;
+    // TODO verificar se no frontend está usando isso, pois estamos voltando todos as col do banco,
+    // não só o que está documentado no DTO
+    TipoDocumento: TipoDocumentoDto | null;
+    nome_original: string;
+    download_token?: string;
+}
+
 export class ArquivoVariavelAnaliseQualitativaDocumentoDto {
-    arquivo: {
-        id: number;
-        descricao: string | null;
-        tamanho_bytes: number;
-        TipoDocumento: TipoDocumento | null;
-        nome_original: string;
-        download_token?: string;
-    };
+    arquivo: ArquivoVariavelAnaliseQualitativaDocumentoArquivoDto;
     id: number;
     criado_em: Date;
     criador: {
