@@ -143,7 +143,7 @@ export class MetaOrcamentoService {
         }
 
         const meta = await this.prisma.meta.findFirst({
-            where: { id: { equals: dto.meta_id }, removido_em: null },
+            where: { id: meta_id, removido_em: null },
             select: { pdm_id: true, id: true },
         });
         if (!meta) throw new HttpException('meta não encontrada', 400);
