@@ -95,7 +95,6 @@ export class OrcamentoPlanejadoService {
             where: { id: +id, removido_em: null },
         });
         if (!orcamentoPlanejado) throw new HttpException('Orçamento planejado não encontrado', 404);
-        console.log(dto);
 
         const { meta_id, iniciativa_id, atividade_id } = await this.validaMetaIniAtv(dto);
         if (!user.hasSomeRoles(['CadastroMeta.orcamento', 'PDM.admin_cp'])) {
