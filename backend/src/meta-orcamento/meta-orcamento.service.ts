@@ -47,10 +47,29 @@ export class MetaOrcamentoService {
         if (!anoCount) throw new HttpException('Ano de referencia não encontrado, verifique se está ativo no PDM', 400);
 
         const created = await this.prisma.$transaction(
-            async (prisma: Prisma.TransactionClient): Promise<RecordWithId> => {
+            async (prismaTxn: Prisma.TransactionClient): Promise<RecordWithId> => {
                 const now = new Date(Date.now());
 
-                const metaOrcamento = await prisma.orcamentoPrevisto.create({
+                const countExisting = await prismaTxn.orcamentoPrevisto.count({
+                    where: {
+                        meta_id,
+                        iniciativa_id,
+                        atividade_id,
+                        parte_dotacao: dto.parte_dotacao,
+                        removido_em: null,
+                        versao_anterior_id: null,
+                    },
+                });
+                if (countExisting) {
+                    // TODO puxar o rotulo do PDM
+                    const categoria = atividade_id ? 'atividade' : iniciativa_id ? 'iniciativa' : 'meta';
+                    throw new HttpException(
+                        `Já existe um registro com a mesma dotação orçamentária associada na ${categoria}.`,
+                        400
+                    );
+                }
+
+                const metaOrcamento = await prismaTxn.orcamentoPrevisto.create({
                     data: {
                         criado_por: user.id,
                         criado_em: now,
@@ -163,10 +182,10 @@ export class MetaOrcamentoService {
         if (!anoCount) throw new HttpException('Ano de referencia não encontrado, verifique se está ativo no PDM', 400);
 
         const new_id = await this.prisma.$transaction(
-            async (prisma: Prisma.TransactionClient): Promise<number> => {
+            async (prismaTxn: Prisma.TransactionClient): Promise<number> => {
                 const now = new Date(Date.now());
 
-                const metaOrcamento = await prisma.orcamentoPrevisto.update({
+                const metaOrcamento = await prismaTxn.orcamentoPrevisto.update({
                     where: {
                         id: +id,
                     },
@@ -189,7 +208,7 @@ export class MetaOrcamentoService {
                     },
                 });
 
-                const metaOrcamentoAtualizado = await prisma.orcamentoPrevisto.create({
+                const metaOrcamentoAtualizado = await prismaTxn.orcamentoPrevisto.create({
                     data: {
                         versao_anterior_id: metaOrcamento.id,
 
@@ -204,8 +223,28 @@ export class MetaOrcamentoService {
 
                         criado_por: user.id,
                     },
-                    select: { id: true },
+                    select: { id: true, parte_dotacao: true },
                 });
+
+                const countExisting = await prismaTxn.orcamentoPrevisto.count({
+                    where: {
+                        meta_id,
+                        iniciativa_id,
+                        atividade_id,
+                        parte_dotacao: metaOrcamentoAtualizado.parte_dotacao,
+                        NOT: { id: metaOrcamentoAtualizado.id },
+                        removido_em: null,
+                        versao_anterior_id: null,
+                    },
+                });
+                if (countExisting) {
+                    // TODO puxar o rotulo do PDM
+                    const categoria = atividade_id ? 'atividade' : iniciativa_id ? 'iniciativa' : 'meta';
+                    throw new HttpException(
+                        `Já existe um registro com a mesma dotação orçamentária associada na ${categoria}.`,
+                        400
+                    );
+                }
 
                 return metaOrcamentoAtualizado.id;
             },
