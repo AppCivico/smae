@@ -3,16 +3,15 @@ import { Prisma } from '@prisma/client';
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import { RecordWithId } from '../../common/dto/record-with-id.dto';
 import { DotacaoService } from '../../dotacao/dotacao.service';
+import { OrcamentoPrevistoEhZeroStatusDto } from '../../meta-orcamento/dto/meta-orcamento.dto';
 import { PrismaService } from '../../prisma/prisma.service';
 import {
     CreateOrcamentoPrevistoDto,
     FilterOrcamentoPrevistoDto,
     ProjetoUpdateOrcamentoPrevistoZeradoDto,
+    UpdateOrcamentoPrevistoDto,
 } from './dto/create-orcamento-previsto.dto';
 import { OrcamentoPrevistoDto } from './entities/orcamento-previsto.entity';
-import { UpdateOrcamentoPrevistoDto } from './dto/create-orcamento-previsto.dto';
-import { CurrentUser } from '../../auth/decorators/current-user.decorator';
-import { OrcamentoPrevistoEhZeroStatusDto } from '../../meta-orcamento/dto/meta-orcamento.dto';
 
 export class ProjetoOrcamentoUpdatedRet {
     id: number;
@@ -30,6 +29,21 @@ export class OrcamentoPrevistoService {
             async (prismaTxn: Prisma.TransactionClient): Promise<RecordWithId> => {
                 const now = new Date(Date.now());
 
+                const countExisting = await prismaTxn.orcamentoPrevisto.count({
+                    where: {
+                        projeto_id,
+                        parte_dotacao: dto.parte_dotacao,
+                        removido_em: null,
+                        ano_referencia: dto.ano_referencia,
+                    },
+                });
+                if (countExisting) {
+                    throw new HttpException(
+                        `Já existe um registro com a mesma dotação orçamentária associada no projeto.`,
+                        400
+                    );
+                }
+
                 const metaOrcamento = await prismaTxn.orcamentoPrevisto.create({
                     data: {
                         criado_por: user.id,
@@ -43,20 +57,6 @@ export class OrcamentoPrevistoService {
                     },
                     select: { id: true },
                 });
-
-                const countExisting = await prismaTxn.orcamentoPrevisto.count({
-                    where: {
-                        projeto_id,
-                        parte_dotacao: dto.parte_dotacao,
-                        removido_em: null,
-                    },
-                });
-                if (countExisting) {
-                    throw new HttpException(
-                        `Já existe um registro com a mesma dotação orçamentária associada no projeto.`,
-                        400
-                    );
-                }
 
                 return metaOrcamento;
             },
@@ -162,7 +162,7 @@ export class OrcamentoPrevistoService {
 
                         criado_por: user.id,
                     },
-                    select: { id: true, parte_dotacao: true },
+                    select: { id: true, parte_dotacao: true, ano_referencia: true },
                 });
 
                 const countExisting = await prismaTxn.orcamentoPrevisto.count({
@@ -172,6 +172,7 @@ export class OrcamentoPrevistoService {
                         NOT: { id: metaOrcamentoAtualizado.id },
                         removido_em: null,
                         versao_anterior_id: null,
+                        ano_referencia: metaOrcamentoAtualizado.ano_referencia,
                     },
                 });
                 if (countExisting) {
