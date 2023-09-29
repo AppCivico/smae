@@ -28,6 +28,20 @@ export class OrcamentoPlanejadoService {
             async (prismaTxn: Prisma.TransactionClient): Promise<RecordWithId> => {
                 const now = new Date(Date.now());
 
+                const countExisting = await prismaTxn.orcamentoPlanejado.count({
+                    where: {
+                        projeto_id,
+                        dotacao: dto.dotacao,
+                        removido_em: null,
+                    },
+                });
+                if (countExisting) {
+                    throw new HttpException(
+                        `Já existe um registro com a mesma dotação orçamentária associada no projeto.`,
+                        400
+                    );
+                }
+
                 const orcamentoPlanejado = await prismaTxn.orcamentoPlanejado.create({
                     data: {
                         criado_por: user.id,
@@ -105,7 +119,7 @@ export class OrcamentoPlanejadoService {
                         400
                     );
 
-                await prismaTxn.orcamentoPlanejado.update({
+                const updated = await prismaTxn.orcamentoPlanejado.update({
                     where: {
                         id: orcamentoPlanejadoTx.id,
                     },
@@ -113,6 +127,21 @@ export class OrcamentoPlanejadoService {
                         valor_planejado: dto.valor_planejado,
                     },
                 });
+
+                const countExisting = await prismaTxn.orcamentoPlanejado.count({
+                    where: {
+                        projeto_id,
+                        dotacao: updated.dotacao,
+                        NOT: { id: updated.id },
+                        removido_em: null,
+                    },
+                });
+                if (countExisting) {
+                    throw new HttpException(
+                        `Já existe um registro com a mesma dotação orçamentária associada no projeto.`,
+                        400
+                    );
+                }
 
                 // dispara a trigger
                 await prismaTxn.dotacaoPlanejado.update({

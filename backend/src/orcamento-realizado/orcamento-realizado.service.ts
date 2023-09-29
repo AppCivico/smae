@@ -95,6 +95,7 @@ export class OrcamentoRealizadoService {
                         dotacao,
                         processo: processo,
                         nota_empenho: nota_empenho,
+                        removido_em: null,
                     },
                 });
                 if (countExisting) {
@@ -278,6 +279,7 @@ export class OrcamentoRealizadoService {
                         processo: updated.processo,
                         nota_empenho: updated.nota_empenho,
                         id: { not: updated.id },
+                        removido_em: null,
                     },
                 });
                 if (countExisting) {
