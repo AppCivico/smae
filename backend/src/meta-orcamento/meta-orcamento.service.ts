@@ -58,6 +58,7 @@ export class MetaOrcamentoService {
                         parte_dotacao: dto.parte_dotacao,
                         removido_em: null,
                         versao_anterior_id: null,
+                        ano_referencia: dto.ano_referencia,
                     },
                 });
                 if (countExisting) {
@@ -223,7 +224,7 @@ export class MetaOrcamentoService {
 
                         criado_por: user.id,
                     },
-                    select: { id: true, parte_dotacao: true },
+                    select: { id: true, parte_dotacao: true, ano_referencia: true },
                 });
 
                 const countExisting = await prismaTxn.orcamentoPrevisto.count({
@@ -235,6 +236,7 @@ export class MetaOrcamentoService {
                         NOT: { id: metaOrcamentoAtualizado.id },
                         removido_em: null,
                         versao_anterior_id: null,
+                        ano_referencia: metaOrcamentoAtualizado.ano_referencia,
                     },
                 });
                 if (countExisting) {
