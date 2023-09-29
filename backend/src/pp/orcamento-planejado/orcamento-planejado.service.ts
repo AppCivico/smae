@@ -32,6 +32,7 @@ export class OrcamentoPlanejadoService {
                     where: {
                         projeto_id,
                         dotacao: dto.dotacao,
+                        ano_referencia: dto.ano_referencia,
                         removido_em: null,
                     },
                 });
@@ -133,6 +134,7 @@ export class OrcamentoPlanejadoService {
                         projeto_id,
                         dotacao: updated.dotacao,
                         NOT: { id: updated.id },
+                        ano_referencia: updated.ano_referencia,
                         removido_em: null,
                     },
                 });
