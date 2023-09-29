@@ -135,7 +135,6 @@ export class OrcamentoPrevistoService {
                 const metaOrcamento = await prismaTxn.orcamentoPrevisto.update({
                     where: {
                         id: +id,
-                        projeto_id,
                     },
                     data: {
                         atualizado_em: now,
