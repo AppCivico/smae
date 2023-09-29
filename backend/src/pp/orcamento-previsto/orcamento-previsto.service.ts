@@ -51,6 +51,7 @@ export class OrcamentoPrevistoService {
 
                         projeto_id,
                         ano_referencia: dto.ano_referencia,
+                        ultima_revisao: true,
 
                         custo_previsto: dto.custo_previsto,
                         parte_dotacao: dto.parte_dotacao,
@@ -78,7 +79,7 @@ export class OrcamentoPrevistoService {
             where: {
                 ano_referencia: filters?.ano_referencia,
                 removido_em: null,
-                versao_anterior_id: null,
+                ultima_revisao: true,
                 projeto_id,
                 meta_id: null,
             },
@@ -134,12 +135,12 @@ export class OrcamentoPrevistoService {
                 const metaOrcamento = await prismaTxn.orcamentoPrevisto.update({
                     where: {
                         id: +id,
+                        projeto_id,
                     },
                     data: {
-                        projeto_id,
-
                         atualizado_em: now,
                         atualizado_por: user.id,
+                        ultima_revisao: false,
                     },
                     select: {
                         id: true,
@@ -153,6 +154,7 @@ export class OrcamentoPrevistoService {
                     data: {
                         versao_anterior_id: metaOrcamento.id,
 
+                        ultima_revisao: true,
                         projeto_id,
 
                         ano_referencia: metaOrcamento.ano_referencia,
@@ -171,7 +173,7 @@ export class OrcamentoPrevistoService {
                         parte_dotacao: metaOrcamentoAtualizado.parte_dotacao,
                         NOT: { id: metaOrcamentoAtualizado.id },
                         removido_em: null,
-                        versao_anterior_id: null,
+                        ultima_revisao: true,
                         ano_referencia: metaOrcamentoAtualizado.ano_referencia,
                     },
                 });
@@ -263,7 +265,7 @@ export class OrcamentoPrevistoService {
                     where: {
                         projeto_id: projeto_id,
                         removido_em: null,
-                        versao_anterior_id: null,
+                        ultima_revisao: true,
                         ano_referencia: dto.ano_referencia,
                     },
                 });
