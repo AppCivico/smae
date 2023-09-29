@@ -57,7 +57,7 @@ export class MetaOrcamentoService {
                         atividade_id,
                         parte_dotacao: dto.parte_dotacao,
                         removido_em: null,
-                        versao_anterior_id: null,
+                        ultima_revisao: true,
                         ano_referencia: dto.ano_referencia,
                     },
                 });
@@ -75,6 +75,7 @@ export class MetaOrcamentoService {
                         criado_por: user.id,
                         criado_em: now,
 
+                        ultima_revisao: true,
                         meta_id: meta_id,
                         iniciativa_id,
                         atividade_id,
@@ -112,7 +113,7 @@ export class MetaOrcamentoService {
                 AND: [{ meta_id: filters?.meta_id }, { meta_id: filterIdIn ? { in: filterIdIn } : undefined }],
                 ano_referencia: filters?.ano_referencia,
                 removido_em: null,
-                versao_anterior_id: null,
+                ultima_revisao: true,
                 meta_id: { not: null },
             },
             select: {
@@ -189,14 +190,12 @@ export class MetaOrcamentoService {
                 const metaOrcamento = await prismaTxn.orcamentoPrevisto.update({
                     where: {
                         id: +id,
+                        meta_id: meta_id!,
                     },
                     data: {
-                        meta_id: meta_id!,
-                        iniciativa_id,
-                        atividade_id,
-
                         atualizado_em: now,
                         atualizado_por: user.id,
+                        ultima_revisao: false,
                     },
                     select: {
                         id: true,
@@ -216,6 +215,7 @@ export class MetaOrcamentoService {
                         meta_id,
                         iniciativa_id,
                         atividade_id,
+                        ultima_revisao: true,
 
                         ano_referencia: metaOrcamento.ano_referencia,
 
@@ -235,7 +235,7 @@ export class MetaOrcamentoService {
                         parte_dotacao: metaOrcamentoAtualizado.parte_dotacao,
                         NOT: { id: metaOrcamentoAtualizado.id },
                         removido_em: null,
-                        versao_anterior_id: null,
+                        ultima_revisao: true,
                         ano_referencia: metaOrcamentoAtualizado.ano_referencia,
                     },
                 });
@@ -330,7 +330,7 @@ export class MetaOrcamentoService {
                     where: {
                         meta_id: dto.meta_id,
                         removido_em: null,
-                        versao_anterior_id: null,
+                        ultima_revisao: true,
                         ano_referencia: dto.ano_referencia,
                     },
                 });

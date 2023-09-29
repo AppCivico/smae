@@ -1853,6 +1853,8 @@ model OrcamentoPrevisto {
     atividade_id       Int?
     versao_anterior_id Int? @unique
 
+    ultima_revisao Boolean @default(false)
+
     ano_referencia Int
 
     criado_em  DateTime @default(now()) @db.Timestamptz(6)
