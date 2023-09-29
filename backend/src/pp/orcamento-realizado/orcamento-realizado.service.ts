@@ -79,6 +79,7 @@ export class OrcamentoRealizadoService {
                         processo: processo,
                         nota_empenho: nota_empenho,
                         removido_em: null,
+                        ano_referencia: dto.ano_referencia,
                     },
                 });
                 if (countExisting) {
@@ -232,6 +233,7 @@ export class OrcamentoRealizadoService {
                         nota_empenho: updated.nota_empenho,
                         id: { not: updated.id },
                         removido_em: null,
+                        ano_referencia: updated.ano_referencia,
                     },
                 });
                 if (countExisting) {

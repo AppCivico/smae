@@ -48,6 +48,25 @@ export class OrcamentoPlanejadoService {
             async (prismaTxn: Prisma.TransactionClient): Promise<RecordWithId> => {
                 const now = new Date(Date.now());
 
+                const countExisting = await prismaTxn.orcamentoPlanejado.count({
+                    where: {
+                        meta_id,
+                        iniciativa_id,
+                        atividade_id,
+                        dotacao: dto.dotacao,
+                        ano_referencia: dto.ano_referencia,
+                        removido_em: null,
+                    },
+                });
+                if (countExisting) {
+                    // TODO puxar o rotulo do PDM
+                    const categoria = atividade_id ? 'atividade' : iniciativa_id ? 'iniciativa' : 'meta';
+                    throw new HttpException(
+                        `Já existe um registro com a mesma dotação orçamentária associada na ${categoria}.`,
+                        400
+                    );
+                }
+
                 const orcamentoPlanejado = await prismaTxn.orcamentoPlanejado.create({
                     data: {
                         criado_por: user.id,
@@ -71,24 +90,6 @@ export class OrcamentoPlanejadoService {
                         'Operação não pode ser realizada no momento. Dotação deixou de existir no meio da atualização.',
                         400
                     );
-
-                const countExisting = await prismaTxn.orcamentoPlanejado.count({
-                    where: {
-                        meta_id,
-                        iniciativa_id,
-                        atividade_id,
-                        dotacao: orcamentoPlanejado.dotacao,
-                        removido_em: null,
-                    },
-                });
-                if (countExisting) {
-                    // TODO puxar o rotulo do PDM
-                    const categoria = atividade_id ? 'atividade' : iniciativa_id ? 'iniciativa' : 'meta';
-                    throw new HttpException(
-                        `Já existe um registro com a mesma dotação orçamentária associada na ${categoria}.`,
-                        400
-                    );
-                }
 
                 // dispara a trigger
                 await prismaTxn.dotacaoPlanejado.update({
@@ -173,7 +174,7 @@ export class OrcamentoPlanejadoService {
                         atividade_id,
                         valor_planejado: dto.valor_planejado,
                     },
-                    select: { id: true, dotacao: true },
+                    select: { id: true, dotacao: true, ano_referencia: true },
                 });
 
                 const countExisting = await prismaTxn.orcamentoPlanejado.count({
@@ -183,6 +184,7 @@ export class OrcamentoPlanejadoService {
                         atividade_id,
                         dotacao: updated.dotacao,
                         NOT: { id: updated.id },
+                        ano_referencia: updated.ano_referencia,
                         removido_em: null,
                     },
                 });
