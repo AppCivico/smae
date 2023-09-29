@@ -65,7 +65,7 @@ export class OrcamentoPlanejadoController {
         };
     }
 
-    @Patch(':id/orcamento-previsto/:id2')
+    @Patch(':id/orcamento-planejado/:id2')
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
     @Roles('Projeto.orcamento')
