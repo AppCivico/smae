@@ -1,4 +1,3 @@
-import { requestS } from '@/helpers';
 import { defineStore } from 'pinia';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
@@ -23,7 +22,7 @@ export const useAtividadesStore = defineStore({
         if (!this.Atividades[iniciativa_id]?.length) {
           this.Atividades[iniciativa_id] = { loading: true };
         }
-        const r = await requestS.get(`${baseUrl}/atividade?iniciativa_id=${iniciativa_id}`);
+        const r = await this.requestS.get(`${baseUrl}/atividade?iniciativa_id=${iniciativa_id}`);
 
         this.Atividades[iniciativa_id] = r.linhas.map((x) => {
           x.compoe_indicador_iniciativa = x.compoe_indicador_iniciativa ? '1' : false;
@@ -53,16 +52,16 @@ export const useAtividadesStore = defineStore({
       }
     },
     async insert(params) {
-      const r = await requestS.post(`${baseUrl}/atividade`, params);
+      const r = await this.requestS.post(`${baseUrl}/atividade`, params);
       if (r.id) return r.id;
       return false;
     },
     async update(id, params) {
-      if (await requestS.patch(`${baseUrl}/atividade/${id}`, params)) return true;
+      if (await this.requestS.patch(`${baseUrl}/atividade/${id}`, params)) return true;
       return false;
     },
     async delete(iniciativa_id, atividade_id) {
-      if (await requestS.delete(`${baseUrl}/atividade/${atividade_id}`)) {
+      if (await this.requestS.delete(`${baseUrl}/atividade/${atividade_id}`)) {
         this.Atividades[iniciativa_id] = {};
         this.getAll(iniciativa_id);
         return true;
