@@ -73,7 +73,7 @@ if (!Atividades.value[iniciativa_id]) AtividadesStore.getAll(iniciativa_id);
 
           <div class="mr2">
             <div class="t12 uc w700 mb05 tamarelo">
-              Órgãos responsáveis
+              Órgão responsável
             </div>
             <div class="t13">
               {{ órgãosResponsáveisNaIniciativaEmFoco.map(x => x.orgao.descricao).join(', ') }}
