@@ -1,7 +1,7 @@
 <script setup>
 import { default as LinhaRealizado } from '@/components/orcamento/LinhaRealizado.vue';
 import formataValor from '@/helpers/formataValor';
-import { useOrcamentosStore } from '@/stores';
+import { useOrcamentosStore } from '@/stores/orcamentos.store';
 import { storeToRefs } from 'pinia';
 import agrupaFilhos from './helpers/agrupaFilhos';
 import somaItems from './helpers/somaItems';
