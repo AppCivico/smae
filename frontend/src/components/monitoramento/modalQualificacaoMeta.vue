@@ -1,7 +1,7 @@
 <script setup>
 import { requestS } from '@/helpers';
 import {
-  useAlertStore, useCiclosStore, useDocumentTypesStore, useEditModalStore
+  useAlertStore, useCiclosStore, useDocumentTypesStore, useEditModalStore,
 } from '@/stores';
 import { storeToRefs } from 'pinia';
 import { Field, Form } from 'vee-validate';
