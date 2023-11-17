@@ -324,6 +324,7 @@ function vazio(s) {
                     >
                       <small class="niveis-pais">{{ index + 1 }}.{{ rrindex + 1 }}.</small>{{ rrrindex + 1 }}
                     </span>
+                    <span>{{ rrr.titulo }}</span>
                   </div>
                   <div class="ml1 f1">
                     {{ rrr.inicio_previsto }}
