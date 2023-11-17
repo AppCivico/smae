@@ -2,7 +2,7 @@
 import { default as modalComplementacao } from '@/components/monitoramento/modalComplementacao.vue';
 import { default as modalRealizado } from '@/components/monitoramento/modalRealizado.vue';
 import {
-  useAlertStore, useAuthStore, useCiclosStore, useEditModalStore, useSideBarStore
+  useAlertStore, useAuthStore, useCiclosStore, useEditModalStore, useSideBarStore,
 } from '@/stores';
 import { storeToRefs } from 'pinia';
 import { useRoute } from 'vue-router';

@@ -3,7 +3,9 @@ import { Dashboard } from '@/components';
 import { useAuthStore, useEditModalStore, useRegionsStore } from '@/stores';
 import { default as AddEditRegions } from '@/views/regions/AddEdit.vue';
 import { storeToRefs } from 'pinia';
-import { onMounted, onUpdated, reactive, ref } from 'vue';
+import {
+  onMounted, onUpdated, reactive, ref,
+} from 'vue';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 const editModalStore = useEditModalStore();
