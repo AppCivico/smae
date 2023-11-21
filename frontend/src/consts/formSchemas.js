@@ -60,6 +60,7 @@ export const acompanhamento = object()
   .shape({
     acompanhamentos: array()
       .label('Encaminhamentos')
+      .nullable()
       .of(
         object()
           .shape({
