@@ -72,6 +72,7 @@ async function checkClose() {
   alertStore.confirm('Deseja sair sem salvar as alterações?', () => {
     editModalStore.$reset();
     alertStore.$reset();
+    router.push(`${currentEdit}`);
   });
 }
 function acumular(períodoAComparar, valorDoMês) {
