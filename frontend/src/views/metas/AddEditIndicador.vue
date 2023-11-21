@@ -108,7 +108,8 @@ const { singleIndicadores } = storeToRefs(IndicadoresStore);
 const VariaveisStore = useVariaveisStore();
 const { Variaveis } = storeToRefs(VariaveisStore);
 
-let title = 'Adicionar Indicador';
+const { título } = route.meta;
+
 const regionalizavel = ref(singleIndicadores.value.regionalizavel);
 
 const formula = ref('');
@@ -438,8 +439,6 @@ function monitorarSetas(e) {
 }
 
 if (indicador_id) {
-  title = 'Editar Indicador';
-
   Promise.all([
     IndicadoresStore.getById(indicador_id),
     VariaveisStore.getAll(indicador_id),
@@ -471,7 +470,7 @@ if (indicador_id) {
 <template>
   <Dashboard>
     <div class="flex spacebetween center">
-      <h1>{{ title }}</h1>
+      <h1>{{ typeof título === 'function' ? título() : título }}</h1>
       <hr class="ml2 f1">
       <button
         class="btn round ml2"
