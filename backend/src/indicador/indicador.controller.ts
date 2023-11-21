@@ -19,12 +19,18 @@ import { FilterIndicadorDto, FilterIndicadorSerieDto } from './dto/filter-indica
 import { ListIndicadorDto } from './dto/list-indicador.dto';
 import { UpdateIndicadorDto } from './dto/update-indicador.dto';
 import { IndicadorService } from './indicador.service';
+import { CreateIndicadorFormulaCompostaDto } from './dto/create-indicador.formula-composta.dto';
+import { IndicadorFormulaCompostaService } from './indicador.formula-composta.service';
 
 @ApiTags('Indicador')
 @Controller('')
 export class IndicadorController {
-    constructor(private readonly indicadorService: IndicadorService) {}
+    constructor(
+        private readonly indicadorService: IndicadorService,
+        private readonly indicadorFormulaCompostaService: IndicadorFormulaCompostaService
+    ) {}
 
+    // Nota para 2023: não me lembro o motivo de liberar pra quem pode meta, poder criar indicador
     @Post('indicador')
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
@@ -83,5 +89,18 @@ export class IndicadorController {
         @Query() filters: FilterIndicadorSerieDto
     ): Promise<ListSeriesAgrupadas> {
         return await this.indicadorService.getSeriesIndicador(params.id, user, filters || {});
+    }
+
+    @Post('indicador/:id/formula-composta')
+    @ApiBearerAuth('access-token')
+    @ApiUnauthorizedResponse()
+    @Roles('CadastroIndicador.inserir', 'CadastroMeta.inserir')
+    async create_fc(
+        @Param() params: FindOneParams,
+        @Body() createIndicadorDto: CreateIndicadorFormulaCompostaDto,
+
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<RecordWithId> {
+        return await this.indicadorFormulaCompostaService.create(params.id, createIndicadorDto, user);
     }
 }

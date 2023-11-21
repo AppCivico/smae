@@ -224,7 +224,8 @@ export class IndicadorService {
         return created;
     }
 
-    private async validateVariaveis(
+    // deixa de ser private, o FormulaComposta usa pra conferir se tudo faz parte do indicador
+    async validateVariaveis(
         formula_variaveis: FormulaVariaveis[] | null | undefined,
         indicador_id: number,
         formula: string
@@ -300,6 +301,12 @@ export class IndicadorService {
         }
 
         return formula_compilada;
+    }
+
+    async findOne(indicador_id: number, user: PessoaFromJwt): Promise<Indicador | null> {
+        const list = await this.findAll({ id: indicador_id }, user);
+
+        return list.length ? list[0] : null;
     }
 
     async findAll(filters: FilterIndicadorDto | undefined = undefined, user: PessoaFromJwt): Promise<Indicador[]> {
