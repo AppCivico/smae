@@ -1,7 +1,9 @@
 <script setup>
 import auxiliarDePreenchimento from '@/components/AuxiliarDePreenchimento.vue';
 import { router } from '@/router';
-import { useAlertStore, useEditModalStore, useVariaveisStore } from '@/stores';
+import { useAlertStore } from '@/stores/alert.store';
+import { useEditModalStore } from '@/stores/editModal.store';
+import { useVariaveisStore } from '@/stores/variaveis.store';
 import { storeToRefs } from 'pinia';
 import { nextTick, ref, toRaw } from 'vue';
 import { useRoute } from 'vue-router';
@@ -58,7 +60,7 @@ async function onSubmit(el) {
         msg = 'Valores salvos com sucesso!';
         VariaveisStore.getValores(var_id);
         alertStore.success(msg);
-        editModalStore.clear();
+        editModalStore.$reset();
         router.push(`${currentEdit}`);
       }
     }
@@ -68,8 +70,8 @@ async function onSubmit(el) {
 }
 async function checkClose() {
   alertStore.confirm('Deseja sair sem salvar as alterações?', () => {
-    editModalStore.clear();
-    alertStore.clear();
+    editModalStore.$reset();
+    alertStore.$reset();
   });
 }
 function acumular(períodoAComparar, valorDoMês) {
