@@ -401,6 +401,10 @@ export class ProjetoService {
                 portfolio: {
                     select: { id: true, titulo: true },
                 },
+
+                acompanhamento_tipo: {
+                    select: {id: true, nome: true}
+                }
             },
             orderBy: { codigo: 'asc' },
         });
@@ -428,6 +432,10 @@ export class ProjetoService {
                 arquivado: row.arquivado,
                 eh_prioritario: row.eh_prioritario,
                 codigo: row.codigo,
+                acompanhamento_tipo: row.acompanhamento_tipo ? {
+                    id: row.acompanhamento_tipo.id,
+                    nome: row.acompanhamento_tipo.nome
+                } : null
             });
         }
 
