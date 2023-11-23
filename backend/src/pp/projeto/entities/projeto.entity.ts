@@ -5,6 +5,7 @@ import { IdNomeExibicao } from 'src/common/dto/IdNomeExibicao.dto';
 import { IdSiglaDescricao } from 'src/common/dto/IdSigla.dto';
 import { IdTituloDto } from '../../../common/dto/IdTitulo.dto';
 import { TipoDocumentoDto } from '../../../tipo-documento/entities/tipo-documento.entity';
+import { IdNomeDto } from 'src/common/dto/IdNome.dto';
 
 export class ProjetoDto {
     id: number;
@@ -17,6 +18,7 @@ export class ProjetoDto {
     meta: IdCodTituloDto | null;
     codigo: string | null;
     portfolio: IdTituloDto;
+    acompanhamento_tipo: IdNomeDto | null
 }
 
 export class ListProjetoDto {
