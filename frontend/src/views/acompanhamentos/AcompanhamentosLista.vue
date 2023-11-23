@@ -75,6 +75,8 @@ vue/singleline-html-element-content-newline -->
       <col class="col--data">
       <col>
       <col>
+      <col>
+      <col>
       <col class="col--botão-de-ação">
     </colgroup>
 
@@ -84,7 +86,10 @@ vue/singleline-html-element-content-newline -->
           {{ schema.fields['data_registro'].spec.label }}
         </th>
         <th class="tl">
-          {{ schema.fields['participantes'].spec.label }}
+          {{ schema.fields['acompanhamento_tipo'].spec.label }}
+        </th>
+        <th class="tl">
+          {{ schema.fields['pauta'].spec.label }}
         </th>
         <th class="tl">
           {{ schema.fields['detalhamento'].spec.label }}
@@ -116,7 +121,10 @@ vue/singleline-html-element-content-newline -->
           </router-link>
         </th>
         <td>
-          {{ linha.participantes }}
+          {{ linha.acompanhamento_tipo?.nome ? linha.acompanhamento_tipo.nome : '-' }}
+        </td>
+        <td>
+          {{ linha.pauta }}
         </td>
         <td>
           {{ linha.detalhamento }}
