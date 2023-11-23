@@ -1088,7 +1088,8 @@ p {
   }
 }
 
-.alerta-de-atraso {
+.alerta-de-atraso,
+.alerta-de-paralisação {
   position: relative;
   cursor: help;
 
@@ -1103,7 +1104,9 @@ p {
     right: -2px;
     background-color: currentColor;
   }
+}
 
+.alerta-de-atraso {
   &.alerta-de-atraso--neutro::after {}
 
   &.alerta-de-atraso--moderado::after {
@@ -1119,6 +1122,12 @@ p {
   &.alerta-de-atraso--concluido::after {
     content: '';
     color: @verde;
+  }
+}
+.alerta-de-paralisação {
+  &::after {
+    content: '';
+    color: @vermelho;
   }
 }
 .etapa {
