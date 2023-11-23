@@ -206,6 +206,9 @@ model Pessoa {
     OrcamentoPrevistoZeradoQRemovi OrcamentoPrevistoZerado[] @relation("Removedor")
     ImportacaoLog                  ImportacaoOrcamento[]
 
+    TiposAcompanhamentoQueCriei AcompanhamentoTipo[] @relation("Criador")
+    TiposAcompanhamentoQueRemovi AcompanhamentoTipo[] @relation("Removedor")
+
     @@index([email])
     @@map("pessoa")
 }
@@ -2553,6 +2556,14 @@ model Projeto {
 model AcompanhamentoTipo {
     id   Int @id @default(autoincrement())
     nome String
+
+    criado_por Int?
+    criado_em  DateTime?
+    removido_em DateTime?
+    removido_por Int?
+
+    criador   Pessoa?  @relation("Criador", fields: [criado_por], references: [id])
+    removedor Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
 
     projetos Projeto[]
 
