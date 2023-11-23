@@ -1,9 +1,17 @@
+import LoadingComponent from '@/components/LoadingComponent.vue';
 import dateToField from '@/helpers/dateToField';
 import { useAcompanhamentosStore } from '@/stores/acompanhamentos.store.ts';
+import { useProjetosStore } from '@/stores/projetos.store.ts';
 import AcompanhamentosCriarEditar from '@/views/acompanhamentos/AcompanhamentosCriarEditar.vue';
 import AcompanhamentosItem from '@/views/acompanhamentos/AcompanhamentosItem.vue';
 import AcompanhamentosLista from '@/views/acompanhamentos/AcompanhamentosLista.vue';
 import AcompanhamentosRaiz from '@/views/acompanhamentos/AcompanhamentosRaiz.vue';
+import { defineAsyncComponent } from 'vue';
+
+const AcompanhamentosResumo = defineAsyncComponent({
+  loader: () => import('@/views/acompanhamentos/AcompanhamentosResumo.vue'),
+  loadingComponent: LoadingComponent,
+});
 
 export default {
   path: 'acompanhamentos',
@@ -24,7 +32,7 @@ export default {
       path: '',
       component: AcompanhamentosLista,
       meta: {
-        título: 'Acompanhamento de projeto',
+        título: 'Acompanhamento do projeto',
         títuloParaMenu: 'Acompanhamento do projeto',
 
         rotasParaMigalhasDePão: [
@@ -89,6 +97,31 @@ export default {
               'acompanhamentosListar',
               'acompanhamentosEditar',
             ],
+          },
+        },
+
+        {
+          path: 'resumo',
+          name: 'acompanhamentosResumo',
+          component: AcompanhamentosResumo,
+          props: ({ params }) => ({
+            ...params,
+            projetoId: Number.parseInt(params.projetoId, 10) || undefined,
+            acompanhamentoId: Number.parseInt(params.acompanhamentoId, 10) || undefined,
+          }),
+          meta: {
+            título: () => {
+              let título = useAcompanhamentosStore()?.emFoco?.data_registro
+                ? `Acompanhamento ${dateToField(useAcompanhamentosStore()?.emFoco?.data_registro)}`
+                : 'Resumo de acompanhamento';
+
+              if (useProjetosStore()?.emFoco?.nome) {
+                título = `${título} do projeto ${useProjetosStore()?.emFoco?.nome}`;
+              }
+
+              return título;
+            },
+            títuloParaMenu: 'Resumo',
           },
         },
       ],

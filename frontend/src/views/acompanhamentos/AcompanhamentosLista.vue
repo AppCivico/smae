@@ -102,9 +102,19 @@ vue/singleline-html-element-content-newline -->
       class="tablemain"
     >
       <tr>
-        <td>
-          {{ dateToField(linha.data_registro) }}
-        </td>
+        <th>
+          <router-link
+            :to="{
+              name: 'acompanhamentosResumo',
+              params: {
+                projetoId: projetoId,
+                acompanhamentoId: linha.id,
+              }
+            }"
+          >
+            {{ dateToField(linha.data_registro) }}
+          </router-link>
+        </th>
         <td>
           {{ linha.participantes }}
         </td>
@@ -128,9 +138,7 @@ vue/singleline-html-element-content-newline -->
             }}</router-link><template v-if="k < linha.risco.length - 1">, </template>
           </template>
         </td>
-        <td
-          class="center"
-        >
+        <td class="center">
           <router-link
             :to="{
               name: 'acompanhamentosEditar',
