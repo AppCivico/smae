@@ -2393,6 +2393,9 @@ model Projeto {
     iniciativa Iniciativa? @relation(fields: [iniciativa_id], references: [id])
     atividade  Atividade?  @relation(fields: [atividade_id], references: [id])
 
+    acompanhanmento_tipo_id Int?
+    acompanhamento_tipo AcompanhamentoTipo? @relation(fields: [acompanhanmento_tipo_id], references: [id])
+
     codigo           String? // abre apenas depois de priorizado
     previsao_custo   Float?
     nome             String
@@ -2545,6 +2548,16 @@ model Projeto {
 
     @@index([removido_em])
     @@map("projeto")
+}
+
+model AcompanhamentoTipo {
+    id   Int @id @default(autoincrement())
+    nome String
+
+    projetos Projeto[]
+
+    @@unique([nome])
+    @@map("acompanhamento_tipo")
 }
 
 enum ProjetoMotivoRelatorio {

@@ -265,6 +265,7 @@ export class ProjetoService {
                         portfolio_id: dto.portfolio_id,
                         orgao_gestor_id: orgao_gestor_id!,
                         responsaveis_no_orgao_gestor: responsaveis_no_orgao_gestor,
+                        acompanhanmento_tipo_id: dto.acompanhamento_tipo_id,
 
                         orgaos_participantes: {
                             createMany: {
@@ -665,6 +666,14 @@ export class ProjetoService {
                         id: true,
                     },
                 },
+
+                acompanhamento_tipo: {
+                    select: {
+                        id: true,
+                        nome: true
+                    }
+                },
+
                 selecionado_em: true,
                 em_planejamento_em: true,
                 percentual_atraso: true,
