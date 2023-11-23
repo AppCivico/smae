@@ -18,7 +18,7 @@ const {
   <div class="flex spacebetween center mb2">
     <h1
       :class="{
-        'alerta-de-paralisacao': emFoco?.cronograma_paralisado,
+        'alerta-de-paralisação': emFoco?.cronograma_paralisado,
       }"
       :title="emFoco?.cronograma_paralisado
         ? schema.fields.cronograma_paralisado.spec.label
