@@ -20,12 +20,11 @@ const alertStore = useAlertStore();
 
 async function excluirTipo(id) {
   alertStore.confirmAction('Deseja mesmo remover esse item?', async () => {
-    console.debug('id', id);
-    // if (await tiposDeAtendimentoStore.excluirItem(id)) {
-    //   tiposDeAtendimentoStore.$reset();
-    //   tiposDeAtendimentoStore.buscarTudo();
-    //   alertStore.success('Tipo removido.');
-    // }
+    if (await tiposDeAtendimentoStore.excluirItem(id)) {
+      tiposDeAtendimentoStore.$reset();
+      tiposDeAtendimentoStore.buscarTudo();
+      alertStore.success('Tipo removido.');
+    }
   }, 'Remover');
 }
 
