@@ -65,6 +65,10 @@ model Pessoa {
     PDMQueDesativei Pdm[] @relation("Desativador")
     PDMQueAtualizei Pdm[] @relation("Atualizador")
 
+    FormulaCompostaQueCriei     FormulaComposta[] @relation("Criador")
+    FormulaCompostaQueDesativei FormulaComposta[] @relation("Removedor")
+    FormulaCompostaQueAtualizei FormulaComposta[] @relation("Atualizador")
+
     OEQueCriei     Tema[] @relation("Criador")
     OEQueDesativei Tema[] @relation("Removedor")
     OEQueAtualizei Tema[] @relation("Atualizador")
@@ -202,9 +206,10 @@ model Pessoa {
     PlanosDeAcaoQueRemovi PlanoAcao[] @relation("Removedor")
     PlanosDeAcaoQueEditei PlanoAcao[] @relation("Atualizador")
 
-    OrcamentoPrevistoZeradoQCriei  OrcamentoPrevistoZerado[] @relation("Criador")
-    OrcamentoPrevistoZeradoQRemovi OrcamentoPrevistoZerado[] @relation("Removedor")
+    OrcamentoPrevistoZeradoQCriei  OrcamentoPrevistoZerado[]  @relation("Criador")
+    OrcamentoPrevistoZeradoQRemovi OrcamentoPrevistoZerado[]  @relation("Removedor")
     ImportacaoLog                  ImportacaoOrcamento[]
+    IndicadorFormulaComposta       IndicadorFormulaComposta[] @relation("Desativador")
 
     TiposAcompanhamentoQueCriei AcompanhamentoTipo[] @relation("Criador")
     TiposAcompanhamentoQueRemovi AcompanhamentoTipo[] @relation("Removedor")
@@ -858,14 +863,17 @@ model Indicador {
     complemento           String?
     casas_decimais        Int?          @db.SmallInt
 
-    atualizador             Pessoa?                    @relation("Atualizador", fields: [atualizado_por], references: [id])
-    criador                 Pessoa?                    @relation("Criador", fields: [criado_por], references: [id])
-    removedor               Pessoa?                    @relation("Removedor", fields: [removido_por], references: [id])
-    IndicadorVariavelOrigem IndicadorVariavel[]        @relation("Origem")
-    IndicadorVariavel       IndicadorVariavel[]        @relation("FK")
-    SerieIndicador          SerieIndicador[]
-    formula_variaveis       IndicadorFormulaVariavel[]
-    painel_conteudo         PainelConteudo[]
+    atualizador                   Pessoa?                         @relation("Atualizador", fields: [atualizado_por], references: [id])
+    criador                       Pessoa?                         @relation("Criador", fields: [criado_por], references: [id])
+    removedor                     Pessoa?                         @relation("Removedor", fields: [removido_por], references: [id])
+    IndicadorVariavelOrigem       IndicadorVariavel[]             @relation("Origem")
+    IndicadorVariavel             IndicadorVariavel[]             @relation("FK")
+    SerieIndicador                SerieIndicador[]
+    formula_variaveis             IndicadorFormulaVariavel[]
+    painel_conteudo               PainelConteudo[]
+    FormulaCompostaOrigem         IndicadorFormulaComposta[]      @relation("Origem")
+    FormulaComposta               IndicadorFormulaComposta[]      @relation("FK")
+    IndicadorFormulaCompostaEmUso IndicadorFormulaCompostaEmUso[]
 
     @@index([meta_id])
     @@index([iniciativa_id])
@@ -885,6 +893,21 @@ model IndicadorFormulaVariavel {
 
     @@unique([indicador_id, referencia])
     @@map("indicador_formula_variavel")
+}
+
+model IndicadorFormulaCompostaEmUso {
+    /// tabela de controle, apenas para o sistema encontrar rapidamente quais indicadores
+    // ele necessita atualizar ou não deixar apagar a formula composta
+    id Int @id @default(autoincrement())
+
+    indicador_id Int
+    indicador    Indicador @relation(fields: [indicador_id], references: [id])
+
+    formula_composta_id Int
+    formula_composta    FormulaComposta @relation(fields: [formula_composta_id], references: [id])
+
+    @@index([formula_composta_id])
+    @@map("indicador_formula_composta_em_uso")
 }
 
 enum Serie {
@@ -926,6 +949,46 @@ model VariavelResponsavel {
     @@index([pessoa_id])
     @@index([variavel_id])
     @@map("variavel_responsavel")
+}
+
+model FormulaComposta {
+    id Int @id @default(autoincrement())
+
+    titulo String
+
+    formula           String
+    formula_compilada String?
+
+    criado_por     Int?
+    criado_em      DateTime @default(now()) @db.Timestamptz(6)
+    atualizado_por Int?
+    atualizado_em  DateTime @default(now()) @db.Timestamptz(6)
+
+    removido_por Int?
+    removido_em  DateTime? @db.Timestamptz(6)
+
+    atualizador                   Pessoa?                         @relation("Atualizador", fields: [atualizado_por], references: [id])
+    criador                       Pessoa?                         @relation("Criador", fields: [criado_por], references: [id])
+    removedor                     Pessoa?                         @relation("Removedor", fields: [removido_por], references: [id])
+    FormulaCompostaVariavel       FormulaCompostaVariavel[]
+    IndicadorFormulaComposta      IndicadorFormulaComposta[]
+    IndicadorFormulaCompostaEmUso IndicadorFormulaCompostaEmUso[]
+
+    @@map("formula_composta")
+}
+
+model FormulaCompostaVariavel {
+    id                   Int             @id @default(autoincrement())
+    referencia           String
+    formula_composta_id  Int
+    formula_composta     FormulaComposta @relation(fields: [formula_composta_id], references: [id])
+    variavel_id          Int
+    variavel             Variavel        @relation(fields: [variavel_id], references: [id])
+    janela               Int
+    usar_serie_acumulada Boolean         @default(false)
+
+    @@unique([formula_composta_id, referencia])
+    @@map("formula_composta_variavel")
 }
 
 model Variavel {
@@ -971,8 +1034,9 @@ model Variavel {
     VariavelCicloFisicoDocumento   VariavelCicloFisicoDocumento[]
     PedidoComplementacao           PedidoComplementacao[]
 
-    removido_por Int?
-    removido_em  DateTime? @db.Timestamptz(6)
+    removido_por            Int?
+    removido_em             DateTime?                 @db.Timestamptz(6)
+    FormulaCompostaVariavel FormulaCompostaVariavel[]
 
     @@index([regiao_id])
     @@map("variavel")
@@ -1000,6 +1064,28 @@ model IndicadorVariavel {
     @@index([variavel_id], map: "idx_indicador_variavel_variavel")
     @@index([indicador_id], map: "idx_indicador_variavel_indicador")
     @@map("indicador_variavel")
+}
+
+model IndicadorFormulaComposta {
+    id Int @id @default(autoincrement())
+
+    indicador_id Int
+    indicador    Indicador @relation("FK", fields: [indicador_id], references: [id])
+
+    formula_composta_id Int
+    formula_composta    FormulaComposta @relation(fields: [formula_composta_id], references: [id])
+
+    indicador_origem_id Int?
+    indicador_origem    Indicador? @relation("Origem", fields: [indicador_origem_id], references: [id])
+
+    desativado     Boolean   @default(false)
+    desativado_em  DateTime?
+    desativado_por Int?
+    desativador    Pessoa?   @relation("Desativador", fields: [desativado_por], references: [id])
+
+    @@index([formula_composta_id], map: "idx_indicador_fc_formula_composta_id")
+    @@index([indicador_id], map: "idx_indicador_fc_indicador_id")
+    @@map("indicador_formula_composta")
 }
 
 // valores calculados pelo sistema, deixar vazio por enquanto Lucas

@@ -10,7 +10,7 @@ import {
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
-import { FindOneParams } from '../common/decorators/find-params';
+import { FindOneParams, FindTwoParams } from '../common/decorators/find-params';
 import { RecordWithId } from '../common/dto/record-with-id.dto';
 import { ListSeriesAgrupadas } from '../variavel/dto/list-variavel.dto';
 import { SerieIndicadorValorNominal, SerieValorNomimal } from '../variavel/entities/variavel.entity';
@@ -19,12 +19,23 @@ import { FilterIndicadorDto, FilterIndicadorSerieDto } from './dto/filter-indica
 import { ListIndicadorDto } from './dto/list-indicador.dto';
 import { UpdateIndicadorDto } from './dto/update-indicador.dto';
 import { IndicadorService } from './indicador.service';
+import {
+    CreateIndicadorFormulaCompostaDto,
+    UpdateIndicadorFormulaCompostaDto,
+} from './dto/create-indicador.formula-composta.dto';
+import { IndicadorFormulaCompostaService } from './indicador.formula-composta.service';
+import { ListIndicadorFormulaCompostaItemDto } from './dto/list-indicador.formula-composta.dto';
 
 @ApiTags('Indicador')
 @Controller('')
 export class IndicadorController {
-    constructor(private readonly indicadorService: IndicadorService) {}
+    constructor(
+        private readonly indicadorService: IndicadorService,
+        private readonly indicadorFormulaCompostaService: IndicadorFormulaCompostaService
+    ) {}
 
+    // Nota para 2023: não me lembro o motivo de liberar pra quem pode meta, poder criar indicador
+    // reposta: meta ta dentro do indicador, logo, se pode meta, tem que poder indicador
     @Post('indicador')
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
@@ -83,5 +94,54 @@ export class IndicadorController {
         @Query() filters: FilterIndicadorSerieDto
     ): Promise<ListSeriesAgrupadas> {
         return await this.indicadorService.getSeriesIndicador(params.id, user, filters || {});
+    }
+
+    @Post('indicador/:id/formula-composta')
+    @ApiBearerAuth('access-token')
+    @ApiUnauthorizedResponse()
+    @Roles('CadastroIndicador.inserir', 'CadastroMeta.inserir')
+    async create_fc(
+        @Param() params: FindOneParams,
+        @Body() createIndicadorDto: CreateIndicadorFormulaCompostaDto,
+
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<RecordWithId> {
+        return await this.indicadorFormulaCompostaService.create(params.id, createIndicadorDto, user);
+    }
+
+    @Get('indicador/:id/formula-composta')
+    @ApiBearerAuth('access-token')
+    @ApiUnauthorizedResponse()
+    @Roles('CadastroIndicador.inserir', 'CadastroMeta.inserir')
+    async list_fc(
+        @Param() params: FindOneParams,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<ListIndicadorFormulaCompostaItemDto> {
+        return { rows: await this.indicadorFormulaCompostaService.findAll(params.id, user) };
+    }
+
+    @Patch('indicador/:id/formula-composta/:id2')
+    @ApiBearerAuth('access-token')
+    @ApiUnauthorizedResponse()
+    @Roles('CadastroIndicador.inserir', 'CadastroMeta.inserir')
+    @ApiNoContentResponse()
+    @HttpCode(HttpStatus.ACCEPTED)
+    async patch_fc(
+        @Param() params: FindTwoParams,
+        @Body() dto: UpdateIndicadorFormulaCompostaDto,
+        @CurrentUser() user: PessoaFromJwt
+    ) {
+        return await this.indicadorFormulaCompostaService.update(params.id, params.id2, dto, user);
+    }
+
+    @Delete('indicador/:id/formula-composta/:id2')
+    @ApiBearerAuth('access-token')
+    @ApiUnauthorizedResponse()
+    @Roles('CadastroIndicador.inserir', 'CadastroMeta.inserir')
+    @ApiNoContentResponse()
+    @HttpCode(HttpStatus.ACCEPTED)
+    async delete_fc(@Param() params: FindTwoParams, @CurrentUser() user: PessoaFromJwt) {
+        await this.indicadorFormulaCompostaService.remove(params.id, params.id2, user);
+        return '';
     }
 }

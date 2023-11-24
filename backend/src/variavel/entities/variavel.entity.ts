@@ -12,22 +12,18 @@ export class IdTitulo {
     titulo: string;
 }
 
+export class IndicadorVariavelOrigemDto {
+    id: number;
+    titulo: string;
+    meta: IdTitulo | null;
+    iniciativa: IdTitulo | null;
+    atividade: IdTitulo | null;
+}
+
 export class IndicadorVariavel {
     desativado: boolean;
-    indicador: {
-        id: number;
-        titulo: string;
-        meta: IdTitulo | null;
-        iniciativa: IdTitulo | null;
-        atividade: IdTitulo | null;
-    };
-    indicador_origem: {
-        id: number;
-        titulo: string;
-        meta: IdTitulo | null;
-        iniciativa: IdTitulo | null;
-        atividade: IdTitulo | null;
-    } | null;
+    indicador: IndicadorVariavelOrigemDto;
+    indicador_origem: IndicadorVariavelOrigemDto | null;
 }
 
 export class IdNomeExibicao {
