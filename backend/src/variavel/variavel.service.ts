@@ -176,7 +176,7 @@ export class VariavelService {
                     await prisma.indicadorVariavel.create({ data: data });
                 }
 
-                // atividade tbm compoe a meta, então precisa levar essa variavel para lá também
+                // atividade tbm compõe a meta, então precisa levar essa variavel para lá também
                 // 'recursão' manual
                 if (atividade.iniciativa.compoe_indicador_meta) {
                     this.logger.log(

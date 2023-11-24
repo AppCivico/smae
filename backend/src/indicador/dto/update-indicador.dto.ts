@@ -73,6 +73,9 @@ export class UpdateIndicadorDto extends OmitType(PartialType(CreateIndicadorDto)
      * Funções com 2 parâmetros (sempre obrigatórios):
      *   `ROUND(expr, precision)`, `POWER(a, raisedToPower)`, `LOG(base, toLogOfBase)`, `NULLIF(expr, ifNullValue)`, `DIV(expr, expr)`, `MOD(expr, expr)`
      *
+     * Fórmula composta
+     *
+     *  `@_1` onde 1 é o ID da formula Fórmula Composta (não é o ID da FK, no caso do Fórmula Composta herdadas)
      *
      * Operações:
      *
@@ -91,7 +94,7 @@ export class UpdateIndicadorDto extends OmitType(PartialType(CreateIndicadorDto)
      *
      * A referência não pode ser repetida entre o mesmo indicador.
      *
-     * @example "CEIL($_1 + $_2) / 100.4 * POWER($_2 + LN($_1), 1) * FLOOR(1- 1 / 2) + LOG(2, 4)"
+     * @example "CEIL($_1 + $_2) / 100.4 * POWER($_2 + LN($_1), 1) * FLOOR(1- 1 / 2) + LOG(2, 4) + @_1"
      */
     @IsOptional()
     @IsString({ message: '$property| Precisa ser um texto de formula válido' })
@@ -104,7 +107,7 @@ export class UpdateIndicadorDto extends OmitType(PartialType(CreateIndicadorDto)
     @IsOptional()
     @ValidateNested({ each: true })
     @Type(() => FormulaVariaveis)
-    @ArrayMaxSize(100000, { message: 'Váriaveis de expressão precisa ter no máximo 100000 items' })
+    @ArrayMaxSize(100000, { message: 'Variáveis de expressão precisa ter no máximo 100000 items' })
     formula_variaveis?: FormulaVariaveis[];
 
     /**
