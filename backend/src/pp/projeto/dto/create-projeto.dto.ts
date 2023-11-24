@@ -105,15 +105,6 @@ export class CreateProjetoDto {
     meta_codigo?: string | null;
 
     /**
-     * acompanhamento_tipo_id
-     */
-    @IsOptional()
-    @IsInt({ message: '$property| atividade_id precisa ser positivo' })
-    @Transform((a: any) => (a.value === null ? null : +a.value))
-    @ValidateIf((object, value) => value !== null)
-    acompanhamento_tipo_id?: number | null
-
-    /**
      * ID dos órgãos participantes do projeto
      * @example "[]"
      */

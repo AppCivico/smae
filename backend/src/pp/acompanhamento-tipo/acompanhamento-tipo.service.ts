@@ -7,6 +7,7 @@ import { PrismaService } from '../../prisma/prisma.service';
 
 import { AcompanhamentoTipo } from './entities/acompanhament-tipo.entities.dto';
 import { CreateTipoAcompanhamentoDto } from './dto/create-acompanhamento-tipo.dto';
+import { UpdateAcompanhamentoTipoDto } from './dto/update-acompanhamento-tipo.dto';
 
 @Injectable()
 export class AcompanhamentoTipoService {
@@ -38,6 +39,18 @@ export class AcompanhamentoTipoService {
         })
 
         return acompanhamentoTipoRows
+    }
+
+    async update(id: number, dto: UpdateAcompanhamentoTipoDto, user: PessoaFromJwt) {
+        return await this.prisma.acompanhamentoTipo.update({
+            where: {id},
+            data: {
+                nome: dto.nome,
+                atualizado_em: new Date(Date.now()),
+                atualizado_por: user.id
+            },
+            select: { id: true }
+        });
     }
 
     async remove(id: number, user: PessoaFromJwt) {

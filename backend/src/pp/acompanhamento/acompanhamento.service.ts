@@ -32,6 +32,7 @@ export class AcompanhamentoService {
                 const acompanhamento = await prismaTx.projetoAcompanhamento.create({
                     data: {
                         projeto_id: projeto_id,
+                        acompanhanmento_tipo_id: dto.acompanhamento_tipo_id,
                         ...{
                             ...dto,
                             risco: undefined,
@@ -94,6 +95,11 @@ export class AcompanhamentoService {
                 detalhamento: true,
                 pauta: true,
 
+                acompanhamento_tipo: {
+                    where: { removido_em: null },
+                    select: { id: true, nome: true }
+                },
+
                 ProjetoAcompanhamentoItem: {
                     orderBy: { ordem: 'asc' },
                 },
@@ -118,6 +124,10 @@ export class AcompanhamentoService {
                 participantes: a.participantes,
                 detalhamento: a.detalhamento,
                 pauta: a.pauta,
+                acompanhamento_tipo: a.acompanhamento_tipo ? {
+                    id: a.acompanhamento_tipo.id,
+                    nome: a.acompanhamento_tipo.nome
+                } : null,
 
                 acompanhamentos: a.ProjetoAcompanhamentoItem.map(this.renderAcompanhamento),
 
@@ -160,6 +170,11 @@ export class AcompanhamentoService {
 
                 cronograma_paralisado: true,
 
+                acompanhamento_tipo: {
+                    where: { removido_em: null },
+                    select: { id: true, nome: true }
+                },
+
                 ProjetoAcompanhamentoItem: {
                     orderBy: { ordem: 'asc' },
                 },
@@ -193,6 +208,11 @@ export class AcompanhamentoService {
             cronograma_paralisado: projetoAcompanhamento.cronograma_paralisado,
 
             acompanhamentos: projetoAcompanhamento.ProjetoAcompanhamentoItem.map(this.renderAcompanhamento),
+
+            acompanhamento_tipo: projetoAcompanhamento.acompanhamento_tipo ? {
+                id: projetoAcompanhamento.acompanhamento_tipo.id,
+                nome: projetoAcompanhamento.acompanhamento_tipo.nome
+            } : null,
 
             risco: projetoAcompanhamento.ProjetoAcompanhamentoRisco.map((r) => {
                 return {

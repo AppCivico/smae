@@ -18,7 +18,6 @@ export class ProjetoDto {
     meta: IdCodTituloDto | null;
     codigo: string | null;
     portfolio: IdTituloDto;
-    acompanhamento_tipo: IdNomeDto | null
 }
 
 export class ListProjetoDto {
@@ -182,11 +181,6 @@ export class ProjetoDetailDto {
     permissoes: ProjetoPermissoesDto;
 
     ano_orcamento: number[];
-
-    acompanhamento_tipo: {
-        id: number,
-        nome: string
-    } | null
 }
 
 export class ProjetoMVPDto extends PickType(ProjetoDetailDto, ['id', 'portfolio_id']) {}
