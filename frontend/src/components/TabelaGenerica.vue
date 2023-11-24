@@ -51,7 +51,7 @@ const temCabeçalho = computed(() => props.colunas.some((x) => x.etiqueta));
             :is="(coluna.éCabeçalho || item.éCabeçalho) ? 'th' : 'td'"
             v-for="coluna, i in colunas"
             :key="`cel__${i}--${item.id}`"
-            :class="item.classe"
+            :class="item.classe || undefined"
           >
             <a
               v-if="item[coluna.nomeDaPropriedade]?.href"
@@ -63,6 +63,7 @@ const temCabeçalho = computed(() => props.colunas.some((x) => x.etiqueta));
             <router-link
               v-else-if="item[coluna.nomeDaPropriedade]?.rota"
               :to="item[coluna.nomeDaPropriedade].rota"
+              :title="item[coluna.nomeDaPropriedade]?.texto || coluna.texto || undefined"
             >
               <svg
                 v-if="item[coluna.nomeDaPropriedade]?.svgId || coluna.svgId"
@@ -81,7 +82,7 @@ const temCabeçalho = computed(() => props.colunas.some((x) => x.etiqueta));
               v-else-if="item[coluna.nomeDaPropriedade]?.ação"
               class="like-a__text addlink"
               :arial-label="item[coluna.nomeDaPropriedade]?.texto || undefined"
-              :title="item[coluna.nomeDaPropriedade]?.texto || undefined"
+              :title="item[coluna.nomeDaPropriedade]?.texto || coluna.texto || undefined"
               @click="() => item[coluna.nomeDaPropriedade]?.ação()"
             >
               <svg
