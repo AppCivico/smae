@@ -5,7 +5,7 @@ import LabelFromYup from '@/components/LabelFromYup.vue';
 import requestS from '@/helpers/requestS.ts';
 import { createPinia } from 'pinia';
 import { createApp, markRaw } from 'vue';
-import type { Router } from 'vue-router';
+import type { RouteLocationNormalizedLoaded, Router } from 'vue-router';
 import App from './App.vue';
 import { router } from './router';
 
@@ -25,19 +25,15 @@ declare module 'pinia' {
   export interface PiniaCustomProperties {
     requestS: RequestS;
     router: Router;
-    route: Router['currentRoute'];
-  }
-  export interface PiniaCustomStateProperties {
-    route: Router['currentRoute'];
+    route: RouteLocationNormalizedLoaded;
   }
 }
 
-pinia.use(({ store }) => {
-  // eslint-disable-next-line no-param-reassign
-  store.route = router.currentRoute;
-  return { requestS: markRaw(requestS) };
-});
-
+pinia.use(() => ({
+  router: markRaw(router),
+  route: (markRaw(router).currentRoute) as unknown as RouteLocationNormalizedLoaded,
+  requestS: markRaw(requestS),
+}));
 app.directive('ScrollLockDebug', {
   beforeMount: (el, binding) => {
     el.classList.add('debug');
