@@ -265,7 +265,6 @@ export class ProjetoService {
                         portfolio_id: dto.portfolio_id,
                         orgao_gestor_id: orgao_gestor_id!,
                         responsaveis_no_orgao_gestor: responsaveis_no_orgao_gestor,
-                        acompanhanmento_tipo_id: dto.acompanhamento_tipo_id,
 
                         orgaos_participantes: {
                             createMany: {
@@ -402,10 +401,6 @@ export class ProjetoService {
                     select: { id: true, titulo: true },
                 },
 
-                acompanhamento_tipo: {
-                    where: { removido_em: null },
-                    select: {id: true, nome: true}
-                }
             },
             orderBy: { codigo: 'asc' },
         });
@@ -433,10 +428,6 @@ export class ProjetoService {
                 arquivado: row.arquivado,
                 eh_prioritario: row.eh_prioritario,
                 codigo: row.codigo,
-                acompanhamento_tipo: row.acompanhamento_tipo ? {
-                    id: row.acompanhamento_tipo.id,
-                    nome: row.acompanhamento_tipo.nome
-                } : null
             });
         }
 
@@ -674,14 +665,6 @@ export class ProjetoService {
                         titulo: true,
                         id: true,
                     },
-                },
-
-                acompanhamento_tipo: {
-                    where: { removido_em: null },
-                    select: {
-                        id: true,
-                        nome: true
-                    }
                 },
 
                 selecionado_em: true,
