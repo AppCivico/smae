@@ -109,7 +109,7 @@ export class ProjetoSeiService {
             },
             data: {
                 ...dto,
-                atualizado_em: new Date(),
+                atualizado_em: new Date(Date.now()),
                 atualizado_por: user.id,
             },
         });
@@ -136,7 +136,7 @@ export class ProjetoSeiService {
                 id: seiID,
             },
             data: {
-                removido_em: new Date(),
+                removido_em: new Date(Date.now()),
                 removido_por: user.id,
             },
         });

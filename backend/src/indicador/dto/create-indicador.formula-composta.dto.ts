@@ -1,6 +1,7 @@
 import { Type } from 'class-transformer';
-import { ArrayMaxSize, IsString, MaxLength, ValidateIf, ValidateNested } from 'class-validator';
+import { ArrayMaxSize, IsString, MaxLength, ValidateNested } from 'class-validator';
 import { FormulaVariaveis } from './update-indicador.dto';
+import { IntersectionType, OmitType, PartialType, PickType } from '@nestjs/swagger';
 
 export class CreateIndicadorFormulaCompostaDto {
     /**
@@ -28,3 +29,9 @@ export class CreateIndicadorFormulaCompostaDto {
     @ArrayMaxSize(100000, { message: 'Variáveis de expressão precisa ter no máximo 100000 items' })
     formula_variaveis: FormulaVariaveis[];
 }
+
+// query dois campos required, menos todos os outros, que podem entrar como Patch
+export class UpdateIndicadorFormulaCompostaDto extends IntersectionType(
+    PartialType(OmitType(CreateIndicadorFormulaCompostaDto, ['formula', 'formula_variaveis'] as const)),
+    PickType(CreateIndicadorFormulaCompostaDto, ['formula', 'formula_variaveis'] as const)
+) {}

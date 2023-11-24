@@ -4,22 +4,18 @@ import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { RecordWithId } from '../common/dto/record-with-id.dto';
 import { PrismaService } from '../prisma/prisma.service';
 import { VariavelService } from '../variavel/variavel.service';
-import { CreateIndicadorFormulaCompostaDto } from './dto/create-indicador.formula-composta.dto';
-import { UpdateIndicadorDto } from './dto/update-indicador.dto';
+import {
+    CreateIndicadorFormulaCompostaDto,
+    UpdateIndicadorFormulaCompostaDto,
+} from './dto/create-indicador.formula-composta.dto';
 import { IndicadorFormulaCompostaDto } from './entities/indicador.formula-composta.entity';
 import { IndicadorService } from './indicador.service';
-
-const FP = require('../../public/js/formula_parser.js');
 
 @Injectable()
 export class IndicadorFormulaCompostaService {
     private readonly logger = new Logger(IndicadorFormulaCompostaService.name);
 
-    constructor(
-        private readonly prisma: PrismaService,
-        private readonly indicadorService: IndicadorService,
-        private readonly variavelService: VariavelService
-    ) {}
+    constructor(private readonly prisma: PrismaService, private readonly indicadorService: IndicadorService) {}
 
     async create(indicador_id: number, dto: CreateIndicadorFormulaCompostaDto, user: PessoaFromJwt) {
         const indicador = await this.indicadorService.findOne(indicador_id, user);
@@ -42,14 +38,20 @@ export class IndicadorFormulaCompostaService {
                         titulo: dto.titulo,
                         formula: dto.formula,
                         formula_compilada: formula_compilada,
-                        criado_em: new Date(),
+                        criado_em: new Date(Date.now()),
                         criado_por: user.id,
                         IndicadorFormulaComposta: {
                             create: {
                                 indicador_id: indicador.id,
                             },
                         },
+                        FormulaCompostaVariavel: {
+                            createMany: {
+                                data: dto.formula_variaveis,
+                            },
+                        },
                     },
+                    select: { id: true },
                 });
 
                 await this.resyncFormulaComposta(indicador, ifc.id, prismaTx);
@@ -66,15 +68,193 @@ export class IndicadorFormulaCompostaService {
         const indicador = await this.indicadorService.findOne(indicador_id, user);
         if (indicador === null) throw new HttpException('Indicador não encontrado', 404);
 
-        throw '';
+        const rows = await this.prisma.formulaComposta.findMany({
+            where: {
+                removido_em: null,
+                IndicadorFormulaComposta: {
+                    some: {
+                        indicador_id: indicador_id,
+                    },
+                },
+            },
+            select: {
+                id: true,
+                titulo: true,
+                formula: true,
+                FormulaCompostaVariavel: true,
+                IndicadorFormulaComposta: {
+                    where: {
+                        indicador_id: indicador_id,
+                    },
+                    select: {
+                        indicador_origem: {
+                            select: {
+                                id: true,
+                                titulo: true,
+                                codigo: true,
+                                atividade: {
+                                    select: { codigo: true, titulo: true, id: true },
+                                },
+                                iniciativa: {
+                                    select: { codigo: true, titulo: true, id: true },
+                                },
+                                meta: {
+                                    select: { codigo: true, titulo: true, id: true },
+                                },
+                            },
+                        },
+                    },
+                },
+            },
+        });
+
+        return rows.map((r) => {
+            return {
+                id: r.id,
+                titulo: r.titulo,
+                formula: r.formula,
+                formula_variaveis: r.FormulaCompostaVariavel,
+                indicador_origem: r.IndicadorFormulaComposta[0].indicador_origem,
+            };
+        });
     }
 
-    async update(id: number, updateIndicadorDto: UpdateIndicadorDto, user: PessoaFromJwt) {
-        throw '';
+    async update(
+        indicador_id: number,
+        id: number,
+        dto: UpdateIndicadorFormulaCompostaDto,
+        user: PessoaFromJwt
+    ): Promise<RecordWithId> {
+        const indicador = await this.indicadorService.findOne(indicador_id, user);
+        if (indicador === null) throw new HttpException('Indicador não encontrado', 404);
+
+        const formula_compilada = await this.indicadorService.validateVariaveis(
+            dto.formula_variaveis,
+            indicador.id,
+            dto.formula
+        );
+        console.log({ indicador, dto, formula_compilada });
+
+        return await this.prisma.$transaction(
+            async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
+                const self = await prismaTx.formulaComposta.findFirstOrThrow({
+                    where: {
+                        id: id,
+                        removido_em: null,
+                        IndicadorFormulaComposta: {
+                            some: {
+                                indicador_id: indicador_id,
+                            },
+                        },
+                    },
+                    select: { id: true, formula_compilada: true },
+                });
+
+                await prismaTx.formulaComposta.update({
+                    where: { id: self.id },
+                    data: {
+                        atualizado_em: new Date(Date.now()),
+                        atualizado_por: user.id,
+                        ...{ ...dto, formula_variaveis: undefined },
+                    },
+                });
+
+                // pensando bem, isso aqui nem é 100% necessário, nem aqui, nem nas variaveis
+                // só é necessário em update do indicador
+                await this.resyncFormulaComposta(indicador, self.id, prismaTx);
+
+                if (self.formula_compilada != formula_compilada) {
+                    // vai precisar atualizar os outros dados em cada indicador
+                    // por enquanto, não precisa fazer nada
+
+                    await prismaTx.formulaCompostaVariavel.deleteMany({
+                        where: {
+                            formula_composta_id: self.id,
+                        },
+                    });
+                    await prismaTx.formulaCompostaVariavel.createMany({
+                        data: dto.formula_variaveis.map((fv) => {
+                            return {
+                                formula_composta_id: self.id,
+                                ...fv,
+                            };
+                        }),
+                    });
+                }
+
+                return self;
+            },
+            {
+                isolationLevel: 'ReadCommitted',
+                maxWait: 60 * 1000,
+                timeout: 120 * 1000,
+            }
+        );
     }
 
-    async remove(id: number, user: PessoaFromJwt) {
-        throw '';
+    async remove(indicador_id: number, id: number, user: PessoaFromJwt): Promise<void> {
+        const indicador = await this.indicadorService.findOne(indicador_id, user);
+        if (indicador === null) throw new HttpException('Indicador não encontrado', 404);
+
+        return await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient): Promise<void> => {
+            const self = await prismaTx.formulaComposta.findFirstOrThrow({
+                where: {
+                    id: id,
+                    removido_em: null,
+                    IndicadorFormulaComposta: {
+                        some: {
+                            indicador_id: indicador_id,
+                        },
+                    },
+                },
+                select: { id: true },
+            });
+
+            console.log(self);
+
+            const indicadoresEmUso = await prismaTx.indicadorFormulaCompostaEmUso.findMany({
+                where: { formula_composta_id: self.id },
+                orderBy: [
+                    {
+                        indicador: { codigo: 'asc' },
+                    },
+                ],
+                select: {
+                    indicador: {
+                        select: {
+                            codigo: true,
+                            titulo: true,
+                        },
+                    },
+                },
+            });
+            if (indicadoresEmUso.length) {
+                throw new HttpException(
+                    `Não é possível remover a fórmula composta, está em uso em ${
+                        indicadoresEmUso.length
+                    } indicadores: ${indicadoresEmUso
+                        .map((i) => `${i.indicador.codigo} - ${i.indicador.titulo}`)
+                        .join(', ')}`,
+                    400
+                );
+            }
+
+            await prismaTx.formulaComposta.update({
+                where: {
+                    id: self.id,
+                },
+                data: {
+                    removido_em: new Date(Date.now()),
+                    removido_por: user.id,
+                },
+            });
+
+            await prismaTx.indicadorFormulaComposta.deleteMany({
+                where: {
+                    formula_composta_id: self.id,
+                },
+            });
+        });
     }
 
     async resyncFormulaComposta(

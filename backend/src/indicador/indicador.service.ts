@@ -239,7 +239,7 @@ export class IndicadorService {
                 throw new HttpException(`formula| formula não foi entendida: ${formula}\n${error}`, 400);
             }
 
-            for (const match of formula_compilada.matchAll(/\$[A-Z]+\b/g)) {
+            for (const match of formula_compilada.matchAll(/\$_\d+\b/g)) {
                 const referencia = match[0].replace('$', '');
                 if (!neededRefs[referencia]) neededRefs[referencia] = 0;
                 neededRefs[referencia]++;
