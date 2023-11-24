@@ -42,6 +42,14 @@ const podeAcessarGrupos = computed(() => perm?.CadastroGrupoPaineis?.inserir
           >
             Portfolios
           </router-link>
+
+          <router-link
+            v-if="perm?.Projeto?.administrar_portfolios"
+            :to="{ name: 'tipoDeAcompanhamentoListar' }"
+            :class="{ active: parentPage == 'portfolio' }"
+          >
+            Tipos de acompanhamento
+          </router-link>
         </div>
       </template>
       <template

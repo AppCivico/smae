@@ -1,3 +1,6 @@
+import { defineAsyncComponent } from 'vue';
+
+import LoadingComponent from '@/components/LoadingComponent.vue';
 import { default as SubmenuConfig } from '@/components/SubmenuConfig.vue';
 import { Administracao } from '@/views';
 import {
@@ -36,6 +39,21 @@ import {
   AddEditUsers,
   ListUsers,
 } from '@/views/users';
+
+const TiposDeAcompanhamentoLista = defineAsyncComponent({
+  loader: () => import('@/views/tiposDeAcompanhamento/TiposLista.vue'),
+  loadingComponent: LoadingComponent,
+});
+
+const TiposDeAcompanhamentoCriarEditar = defineAsyncComponent({
+  loader: () => import('@/views/tiposDeAcompanhamento/TipoCriarEditar.vue'),
+  loadingComponent: LoadingComponent,
+});
+
+const TiposDeAcompanhamentoRaiz = defineAsyncComponent({
+  loader: () => import('@/views/tiposDeAcompanhamento/TiposRaiz.vue'),
+  loadingComponent: LoadingComponent,
+});
 
 export default [
   {
@@ -465,6 +483,7 @@ export default [
       },
     ],
   },
+
   {
     path: '/portfolios',
     component: PortfoliosRaiz,
@@ -504,6 +523,50 @@ export default [
 
         meta: {
           título: 'Editar portfolio',
+        },
+      },
+    ],
+  },
+
+  {
+    path: '/tipos-de-acompanhamento',
+    component: TiposDeAcompanhamentoRaiz,
+    meta: {
+      requerAutenticação: true,
+      title: 'Tipos de acompanhamento',
+    },
+    props: {
+      submenu: SubmenuConfig,
+    },
+
+    children: [
+      {
+        name: 'tipoDeAcompanhamentoListar',
+        path: '',
+        component: TiposDeAcompanhamentoLista,
+        meta: {
+          título: 'Tipos de acompanhamento',
+        },
+      },
+      {
+        name: 'tipoDeAcompanhamentoCriar',
+        path: 'novo',
+        component: TiposDeAcompanhamentoCriarEditar,
+        meta: {
+          título: 'Novo tipo de acompanhamento',
+        },
+      },
+      {
+        path: ':tipoDeAtendimentoId',
+        name: 'tipoDeAcompanhamentoEditar',
+        component: TiposDeAcompanhamentoCriarEditar,
+        props: ({ params }) => ({
+          ...params,
+          ...{ tipoDeAtendimentoId: Number.parseInt(params.tipoDeAtendimentoId, 10) || undefined },
+        }),
+
+        meta: {
+          título: 'Editar tipo de acompanhamento',
         },
       },
     ],
