@@ -96,7 +96,6 @@ export class AcompanhamentoService {
                 pauta: true,
 
                 acompanhamento_tipo: {
-                    where: { removido_em: null },
                     select: { id: true, nome: true }
                 },
 
@@ -171,7 +170,6 @@ export class AcompanhamentoService {
                 cronograma_paralisado: true,
 
                 acompanhamento_tipo: {
-                    where: { removido_em: null },
                     select: { id: true, nome: true }
                 },
 
