@@ -213,7 +213,6 @@ model Pessoa {
 
     TiposAcompanhamentoQueCriei AcompanhamentoTipo[] @relation("Criador")
     TiposAcompanhamentoQueAtualizei AcompanhamentoTipo[] @relation("Atualizador")
-    TiposAcompanhamentoQueRemovi AcompanhamentoTipo[] @relation("Removedor")
 
     @@index([email])
     @@map("pessoa")
@@ -2645,12 +2644,9 @@ model AcompanhamentoTipo {
     criado_em  DateTime?
     atualizado_por Int?
     atualizado_em DateTime?
-    removido_em DateTime?
-    removido_por Int?
 
     criador   Pessoa?  @relation("Criador", fields: [criado_por], references: [id])
     atualizador Pessoa? @relation("Atualizador", fields: [atualizado_por], references: [id])
-    removedor Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
 
     acompanhamentos ProjetoAcompanhamento[]
 
@@ -3068,7 +3064,7 @@ model ProjetoAcompanhamento {
     projeto    Projeto @relation(fields: [projeto_id], references: [id])
 
     acompanhanmento_tipo_id Int?
-    acompanhamento_tipo AcompanhamentoTipo? @relation(fields: [acompanhanmento_tipo_id], references: [id])
+    acompanhamento_tipo AcompanhamentoTipo? @relation(fields: [acompanhanmento_tipo_id], references: [id], onDelete: SetNull)
 
     data_registro DateTime @db.Date()
     participantes String
