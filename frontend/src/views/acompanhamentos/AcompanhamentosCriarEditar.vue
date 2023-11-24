@@ -6,6 +6,7 @@ import truncate from '@/helpers/truncate';
 import { useAcompanhamentosStore } from '@/stores/acompanhamentos.store.ts';
 import { useAlertStore } from '@/stores/alert.store';
 import { useRiscosStore } from '@/stores/riscos.store.ts';
+import { useTiposDeAcompanhamentoStore } from '@/stores/tiposDeAcompanhamento.store.ts';
 import { storeToRefs } from 'pinia';
 import {
   ErrorMessage,
@@ -18,6 +19,7 @@ import { useRoute, useRouter } from 'vue-router';
 const acompanhamentosStore = useAcompanhamentosStore();
 const alertStore = useAlertStore();
 const riscosStore = useRiscosStore();
+const tiposDeAcompanhamentoStore = useTiposDeAcompanhamentoStore();
 const router = useRouter();
 const route = useRoute();
 
@@ -132,6 +134,59 @@ function excluirAcompanhamento(id) {
           name="data_registro"
         />
       </div>
+
+      <div class="f1 mb1">
+        <LabelFromYup
+          name="acompanhamento_tipo"
+          :schema="schema"
+        />
+        <Field
+          id="acompanhamento_tipo"
+          name="acompanhamento_tipo"
+          :arial-label="schema.fields.acompanhamento_tipo.spec.label"
+          maxlength="2"
+          class="inputtext light mb1"
+          as="select"
+          :disabled="tiposDeAcompanhamentoStore?.chamadasPendentes?.lista"
+          :class="{
+            error: errors['acompanhamento_tipo'],
+            loading: tiposDeAcompanhamentoStore?.chamadasPendentes?.lista
+          }"
+        >
+          <option :value="0">
+            Selecionar
+          </option>
+          <option
+            v-for="item in tiposDeAcompanhamentoStore?.lista || []"
+            :key="item.id"
+            :value="item.id"
+            :title="item.nome"
+          >
+            {{ item.nome }}
+          </option>
+        </Field>
+        <ErrorMessage
+          name="acompanhamento_tipo"
+          class="error-msg"
+        />
+      </div>
+
+      <div class="f1 mb1 mt1">
+        <label class="block mt1">
+          <Field
+            name="cronograma_paralisado"
+            type="checkbox"
+            :value="true"
+            class="inputcheckbox"
+          />
+          <span :class="{ 'error': errors.cronograma_paralisado }">
+            {{ schema.fields.cronograma_paralisado.spec.label }}
+          </span>
+        </label>
+      </div>
+    </div>
+
+    <div class="flex g2 mb1">
       <div class="f2 mb1">
         <LabelFromYup
           name="participantes"
@@ -262,21 +317,6 @@ function excluirAcompanhamento(id) {
           name="pontos_atencao"
           class="error-msg"
         />
-      </div>
-    </div>
-    <div class="g2 mb2">
-      <div class="f05 mb1 mt1">
-        <label class="block mt1">
-          <Field
-            name="cronograma_paralisado"
-            type="checkbox"
-            :value="true"
-            class="inputcheckbox"
-          />
-          <span :class="{ 'error': errors.cronograma_paralisado }">
-            {{ schema.fields.cronograma_paralisado.spec.label }}
-          </span>
-        </label>
       </div>
     </div>
 

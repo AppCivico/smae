@@ -71,19 +71,16 @@ export const acompanhamento = object()
               .label('Encaminhamento')
               .max(50000)
               .min(1)
-              .required()
-              .typeError('${label} inválido'),
+              .required(),
             responsavel: string()
               .label('Responsável')
               .nullable(),
             prazo_encaminhamento: date()
               .label('Prazo para encaminhamento')
-              .nullable()
-              .typeError('${label} inválido'),
+              .nullable(),
             prazo_realizado: date()
               .label('Data de realização')
-              .nullable()
-              .typeError('${label} inválido'),
+              .nullable(),
           }),
       ),
     cronograma_paralisado: boolean()
@@ -1045,6 +1042,13 @@ export const tag = object()
       .required(),
     pdm_id: string(),
     upload_icone: string().nullable(),
+  });
+
+export const tipoDeAcompanhamento = object()
+  .shape({
+    nome: string()
+      .label('Nome')
+      .required(),
   });
 
 export const usuário = object()

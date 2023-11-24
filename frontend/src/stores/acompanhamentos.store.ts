@@ -1,5 +1,5 @@
 /* eslint-disable import/no-extraneous-dependencies */
-import { DetailProjetoAcompanhamentoDto, ListProjetoAcompanhamentoDto, RiscoIdCod } from '@/../../backend/src/pp/acompanhamento/entities/acompanhamento.entity.ts';
+import type { DetailProjetoAcompanhamentoDto, ListProjetoAcompanhamentoDto, RiscoIdCod } from '@/../../backend/src/pp/acompanhamento/entities/acompanhamento.entity';
 
 import dateTimeToDate from '@/helpers/dateTimeToDate';
 import { defineStore } from 'pinia';
@@ -47,7 +47,6 @@ export const useAcompanhamentosStore = defineStore('acompanhamentos', {
     async buscarTudo(params = {}, projetoId = 0): Promise<void> {
       this.chamadasPendentes.lista = true;
       this.chamadasPendentes.emFoco = true;
-
       try {
         const { linhas } = await this.requestS.get(`${baseUrl}/projeto/${projetoId || this.route.params.projetoId}/acompanhamento`, params);
 
@@ -101,6 +100,7 @@ export const useAcompanhamentosStore = defineStore('acompanhamentos', {
       ...emFoco,
       data_registro: dateTimeToDate(emFoco?.data_registro) || null,
       risco: emFoco?.risco?.map((x: RiscoIdCod) => x.id) || null,
+      acompanhamento_tipo: emFoco?.acompanhamento_tipo?.id || null,
       acompanhamentos: !Array.isArray(emFoco?.acompanhamentos)
         ? null
         : emFoco?.acompanhamentos.map((x) => ({
