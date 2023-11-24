@@ -47,7 +47,8 @@ async function onSubmit(_, { controlledValues }) {
     if (resposta) {
       alertStore.success(msg);
       tiposDeAcompanhamentoStore.$reset();
-      router.push({ name: 'acompanhamentosListar' });
+      tiposDeAcompanhamentoStore.buscarTudo();
+      router.push({ name: 'tipoDeAcompanhamentoListar' });
     }
   } catch (error) {
     alertStore.error(error);
@@ -55,11 +56,11 @@ async function onSubmit(_, { controlledValues }) {
 }
 
 function excluirTipoDeAcompanhamento(id) {
-  useAlertStore().confirmAction('Deseja mesmo remover esse item?', async () => {
-    if (await tiposDeAcompanhamentoStore().excluirItem(id)) {
-      tiposDeAcompanhamentoStore().$reset();
-      tiposDeAcompanhamentoStore().buscarTudo();
-      useAlertStore().success('Acompanhamento removido.');
+  alertStore.confirmAction('Todos os acompanhamentos associados perderão seu tipo. Deseja mesmo remover esse item?', async () => {
+    if (await tiposDeAcompanhamentoStore.excluirItem(id)) {
+      tiposDeAcompanhamentoStore.$reset();
+      tiposDeAcompanhamentoStore.buscarTudo();
+      alertStore.success('Acompanhamento removido.');
 
       const rotaDeEscape = route.meta?.rotaDeEscape;
 
