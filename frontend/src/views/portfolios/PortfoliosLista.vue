@@ -1,7 +1,7 @@
 <script setup>
-import {
-  useAlertStore, useOrgansStore, usePortfolioStore
-} from '@/stores';
+import { useAlertStore } from '@/stores/alert.store';
+import { useOrgansStore } from '@/stores/organs.store';
+import { usePortfolioStore } from '@/stores/portfolios.store.ts';
 import { storeToRefs } from 'pinia';
 import { useRoute } from 'vue-router';
 
