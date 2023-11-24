@@ -72,11 +72,11 @@ async function onSubmit(_, { controlledValues }) {
 }
 
 function excluirAcompanhamento(id) {
-  useAlertStore().confirmAction('Deseja mesmo remover esse item?', async () => {
+  alertStore.confirmAction('Deseja mesmo remover esse item?', async () => {
     if (await useAcompanhamentosStore().excluirItem(id)) {
       useAcompanhamentosStore().$reset();
       useAcompanhamentosStore().buscarTudo();
-      useAlertStore().success('Acompanhamento removido.');
+      alertStore.success('Acompanhamento removido.');
 
       const rotaDeEscape = route.meta?.rotaDeEscape;
 
