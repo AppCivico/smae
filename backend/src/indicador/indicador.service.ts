@@ -224,7 +224,8 @@ export class IndicadorService {
         return created;
     }
 
-    private async validateVariaveis(
+    // deixa de ser private, o FormulaComposta usa pra conferir se tudo faz parte do indicador
+    async validateVariaveis(
         formula_variaveis: FormulaVariaveis[] | null | undefined,
         indicador_id: number,
         formula: string
@@ -238,7 +239,7 @@ export class IndicadorService {
                 throw new HttpException(`formula| formula não foi entendida: ${formula}\n${error}`, 400);
             }
 
-            for (const match of formula_compilada.matchAll(/\$[A-Z]+\b/g)) {
+            for (const match of formula_compilada.matchAll(/\$_\d+\b/g)) {
                 const referencia = match[0].replace('$', '');
                 if (!neededRefs[referencia]) neededRefs[referencia] = 0;
                 neededRefs[referencia]++;
@@ -300,6 +301,12 @@ export class IndicadorService {
         }
 
         return formula_compilada;
+    }
+
+    async findOne(indicador_id: number, user: PessoaFromJwt): Promise<Indicador | null> {
+        const list = await this.findAll({ id: indicador_id }, user);
+
+        return list.length ? list[0] : null;
     }
 
     async findAll(filters: FilterIndicadorDto | undefined = undefined, user: PessoaFromJwt): Promise<Indicador[]> {

@@ -120,7 +120,7 @@ export class ReportsService {
                 tipo: tipo && tipo.length ? tipo : null,
                 parametros: parametros,
                 criado_por: user ? user.id : null,
-                criado_em: new Date(),
+                criado_em: new Date(Date.now()),
             },
             select: { id: true },
         });
@@ -219,7 +219,7 @@ export class ReportsService {
                 id: id,
             },
             data: {
-                removido_em: new Date(),
+                removido_em: new Date(Date.now()),
                 removido_por: user.id,
             },
         });
