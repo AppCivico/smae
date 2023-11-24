@@ -101,9 +101,6 @@ function excluirAcompanhamento(id) {
     </h1>
 
     <hr class="ml2 f1">
-    <MenuDeMudançaDeStatusDeAcompanhamento
-      v-if="emFoco?.id"
-    />
 
     <CheckClose />
   </div>
