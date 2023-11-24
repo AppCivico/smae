@@ -1,5 +1,7 @@
 <script setup>
-defineProps({
+import { computed } from 'vue';
+
+const props = defineProps({
   colunas: {
     type: Array,
     required: true,
@@ -17,16 +19,18 @@ defineProps({
     default: () => { },
   },
 });
+
+const temCabeçalho = computed(() => props.colunas.some((x) => x.etiqueta));
 </script>
 <template>
   <table class="tablemain">
     <col
       v-for="coluna, i in colunas"
       :key="`col__${i}`"
-      :class="coluna.classe || null"
+      :class="coluna.classe || undefined"
     >
 
-    <thead>
+    <thead v-if="temCabeçalho">
       <tr>
         <th
           v-for="coluna, i in colunas"
@@ -44,25 +48,46 @@ defineProps({
           :key="item.id"
         >
           <component
-            :is="coluna.éCabeçalho ? 'th' : 'td'"
+            :is="(coluna.éCabeçalho || item.éCabeçalho) ? 'th' : 'td'"
             v-for="coluna, i in colunas"
             :key="`cel__${i}--${item.id}`"
+            :class="item.classe"
           >
             <a
-              v-if="item[coluna.nome]?.href"
-              :href="item[coluna.nome].href"
-              :download="item[coluna.nome].download || null"
+              v-if="item[coluna.nomeDaPropriedade]?.href"
+              :href="item[coluna.nomeDaPropriedade].href"
+              :download="item[coluna.nomeDaPropriedade].download || undefined"
             >
-              {{ item[coluna.nome].texto ?? item[coluna.nome] }}
+              {{ item[coluna.nomeDaPropriedade].texto ?? item[coluna.nomeDaPropriedade] }}
             </a>
             <router-link
-              v-else-if="item[coluna.nome]?.rota"
-              :to="item[coluna.nome].rota"
+              v-else-if="item[coluna.nomeDaPropriedade]?.rota"
+              :to="item[coluna.nomeDaPropriedade].rota"
             >
-              {{ item[coluna.nome].texto ?? item[coluna.nome] }}
+              {{ item[coluna.nomeDaPropriedade].texto
+                ?? coluna.texto
+                ?? item[coluna.nomeDaPropriedade] }}
             </router-link>
+            <button
+              v-else-if="item[coluna.nomeDaPropriedade]?.ação"
+              class="like-a__text addlink"
+              :arial-label="item[coluna.nomeDaPropriedade]?.texto || undefined"
+              :title="item[coluna.nomeDaPropriedade]?.texto || undefined"
+              @click="() => item[coluna.nomeDaPropriedade]?.ação()"
+            >
+              <svg
+                v-if="item[coluna.nomeDaPropriedade]?.svgId || coluna.svgId"
+                width="20"
+                height="20"
+              >
+                <use :xlink:href="`#i_${item[coluna.nomeDaPropriedade]?.svgId || coluna.svgId}`" />
+              </svg>
+              <template v-else>
+                {{ item[coluna.nomeDaPropriedade]?.texto ?? coluna.texto }}
+              </template>
+            </button>
             <template v-else>
-              {{ item[coluna.nome] }}
+              {{ item[coluna.nomeDaPropriedade] }}
             </template>
           </component>
         </tr>

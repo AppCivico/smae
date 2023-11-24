@@ -13,28 +13,28 @@ const {
 const route = useRoute();
 const colunas = [
   {
-    nome: 'arquivo',
+    nomeDaPropriedade: 'arquivo',
     etiqueta: 'Arquivo original',
     classe: '',
   },
   {
-    nome: 'saida_arquivo',
+    nomeDaPropriedade: 'saida_arquivo',
     etiqueta: 'Arquivo processado',
     classe: '',
   },
   {
-    nome: 'status',
+    nomeDaPropriedade: 'status',
     etiqueta: 'Status',
     classe: '',
   },
 
   {
-    nome: 'criado_por',
+    nomeDaPropriedade: 'criado_por',
     etiqueta: 'enviado por',
     classe: '',
   },
   {
-    nome: 'criado_em',
+    nomeDaPropriedade: 'criado_em',
     classe: 'col--minimum',
   },
 ];
