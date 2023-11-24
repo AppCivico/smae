@@ -1,21 +1,54 @@
-import MenuSecundário from '@/components/MenuSecundario.vue';
+import LoadingComponent from '@/components/LoadingComponent.vue';
 import { useProjetosStore } from '@/stores/projetos.store.ts';
-import DialogWrapper from '@/views/DialogWrapper.vue';
-import ProjetoEnviarArquivo from '@/views/projetos/ProjetoEnviarArquivo.vue';
-import ProjetosCriarEditar from '@/views/projetos/ProjetosCriarEditar.vue';
-import ProjetosDocumentos from '@/views/projetos/ProjetosDocumentos.vue';
-import ProjetosEstruturaAnalitica from '@/views/projetos/ProjetosEstruturaAnalitica.vue';
-import ProjetosGantt from '@/views/projetos/ProjetosGantt.vue';
-import ProjetosItem from '@/views/projetos/ProjetosItem.vue';
-import ProjetosLista from '@/views/projetos/ProjetosLista.vue';
 import ProjetosRaiz from '@/views/projetos/ProjetosRaiz.vue';
-import ProjetosResumo from '@/views/projetos/ProjetosResumo.vue';
+import { defineAsyncComponent } from 'vue';
 import acompanhamentos from './acompanhamentos';
 import licoesAprendidas from './licoesAprendidas';
 import processos from './processos';
 import projetosOrcamentos from './projetos.orcamentos';
 import riscos from './riscos';
 import tarefas from './tarefas';
+
+const MenuSecundário = defineAsyncComponent({
+  loader: () => import('@/components/MenuSecundario.vue'),
+  loadingComponent: LoadingComponent,
+});
+const DialogWrapper = defineAsyncComponent({
+  loader: () => import('@/views/DialogWrapper.vue'),
+  loadingComponent: LoadingComponent,
+});
+const ProjetoEnviarArquivo = defineAsyncComponent({
+  loader: () => import('@/views/projetos/ProjetoEnviarArquivo.vue'),
+  loadingComponent: LoadingComponent,
+});
+const ProjetosCriarEditar = defineAsyncComponent({
+  loader: () => import('@/views/projetos/ProjetosCriarEditar.vue'),
+  loadingComponent: LoadingComponent,
+});
+const ProjetosDocumentos = defineAsyncComponent({
+  loader: () => import('@/views/projetos/ProjetosDocumentos.vue'),
+  loadingComponent: LoadingComponent,
+});
+const ProjetosEstruturaAnalitica = defineAsyncComponent({
+  loader: () => import('@/views/projetos/ProjetosEstruturaAnalitica.vue'),
+  loadingComponent: LoadingComponent,
+});
+const ProjetosGantt = defineAsyncComponent({
+  loader: () => import('@/views/projetos/ProjetosGantt.vue'),
+  loadingComponent: LoadingComponent,
+});
+const ProjetosItem = defineAsyncComponent({
+  loader: () => import('@/views/projetos/ProjetosItem.vue'),
+  loadingComponent: LoadingComponent,
+});
+const ProjetosLista = defineAsyncComponent({
+  loader: () => import('@/views/projetos/ProjetosLista.vue'),
+  loadingComponent: LoadingComponent,
+});
+const ProjetosResumo = defineAsyncComponent({
+  loader: () => import('@/views/projetos/ProjetosResumo.vue'),
+  loadingComponent: LoadingComponent,
+});
 
 export default {
   path: '/projetos',
@@ -206,7 +239,9 @@ export default {
             projetoId: Number.parseInt(params.projetoId, 10) || undefined,
           }),
           meta: {
-            título: () => useProjetosStore()?.emFoco?.nome || 'Resumo',
+            título: () => (useProjetosStore()?.emFoco?.nome
+              ? `Resumo do projeto ${useProjetosStore()?.emFoco?.nome}`
+              : 'Resumo de projeto'),
             títuloParaMenu: 'Resumo',
           },
         },
