@@ -64,9 +64,18 @@ const temCabeçalho = computed(() => props.colunas.some((x) => x.etiqueta));
               v-else-if="item[coluna.nomeDaPropriedade]?.rota"
               :to="item[coluna.nomeDaPropriedade].rota"
             >
-              {{ item[coluna.nomeDaPropriedade].texto
-                ?? coluna.texto
-                ?? item[coluna.nomeDaPropriedade] }}
+              <svg
+                v-if="item[coluna.nomeDaPropriedade]?.svgId || coluna.svgId"
+                width="20"
+                height="20"
+              >
+                <use :xlink:href="`#i_${item[coluna.nomeDaPropriedade]?.svgId || coluna.svgId}`" />
+              </svg>
+              <template v-else>
+                {{ item[coluna.nomeDaPropriedade].texto
+                  ?? coluna.texto
+                  ?? item[coluna.nomeDaPropriedade] }}
+              </template>
             </router-link>
             <button
               v-else-if="item[coluna.nomeDaPropriedade]?.ação"
