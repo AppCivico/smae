@@ -11,18 +11,17 @@ const authStore = useAuthStore();
 const { permissions } = storeToRefs(authStore);
 const perm = permissions.value;
 
-const tiposDeAtendimentoStore = useTiposDeAcompanhamentoStore();
+const tiposDeAcompanhamentoStore = useTiposDeAcompanhamentoStore();
 const {
   lista, chamadasPendentes, erro,
-} = storeToRefs(tiposDeAtendimentoStore);
+} = storeToRefs(tiposDeAcompanhamentoStore);
 
 const alertStore = useAlertStore();
 
 async function excluirTipo(id) {
-  alertStore.confirmAction('Deseja mesmo remover esse item?', async () => {
-    if (await tiposDeAtendimentoStore.excluirItem(id)) {
-      tiposDeAtendimentoStore.$reset();
-      tiposDeAtendimentoStore.buscarTudo();
+  alertStore.confirmAction('Todos os acompanhamentos associados perderão seu tipo. Deseja mesmo remover esse item?', async () => {
+    if (await tiposDeAcompanhamentoStore.excluirItem(id)) {
+      tiposDeAcompanhamentoStore.buscarTudo();
       alertStore.success('Tipo removido.');
     }
   }, 'Remover');
@@ -93,5 +92,21 @@ const listaPreparada = computed(() => lista.value.map((x) => ({
       :chamadas-pendentes="chamadasPendentes"
       class="mb1"
     />
+
+    <div
+      v-if="chamadasPendentes?.lista"
+      class="spinner"
+    >
+      Carregando
+    </div>
+
+    <div
+      v-if="erro"
+      class="error p1"
+    >
+      <div class="error-msg">
+        {{ erro }}
+      </div>
+    </div>
   </Dashboard>
 </template>
