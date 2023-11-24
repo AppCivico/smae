@@ -88,8 +88,7 @@ export const acompanhamento = object()
       .nullable(),
     data_registro: date()
       .label('Data do registro')
-      .required()
-      .typeError('${label} inválida'),
+      .required(),
     detalhamento_status: string()
       .label('Detalhamento do status')
       .max(50000)
@@ -186,8 +185,7 @@ export const etapa = object()
       .label('Execução')
       .max(100)
       .min(0)
-      .nullable()
-      .typeError('Formato inválido'),
+      .nullable(),
     peso: number()
       .integer()
       .label('Ponderador')
@@ -229,18 +227,15 @@ export const execuçãoOrçamentária = object()
               .label('Mês Ref.')
               .max(12)
               .min(1)
-              .required()
-              .typeError('${label} inválido'),
+              .required(),
             valor_empenho: number()
               .label('Valor empenho')
               .min(0)
-              .required()
-              .typeError('${label} inválido'),
+              .required(),
             valor_liquidado: number()
               .label('Valor liquidado')
               .min(0)
-              .required()
-              .typeError('${label} inválido'),
+              .required(),
           }),
       ),
   });
@@ -262,8 +257,7 @@ export const fase = object()
       .label('Execução')
       .max(100)
       .min(0)
-      .nullable()
-      .typeError('Formato inválido'),
+      .nullable(),
     peso: number()
       .integer()
       .label('Ponderador')
@@ -327,8 +321,7 @@ export const liçãoAprendida = object()
       .required(),
     data_registro: date()
       .label('Data do registro')
-      .required()
-      .typeError('${label} inválida'),
+      .required(),
     descricao: string()
       .label('O que foi feito')
       .required()
@@ -349,8 +342,7 @@ export const monitoramentoDePlanoDeAção = object()
     descricao: string()
       .required(),
     data_afericao: date()
-      .required()
-      .typeError('Data inválida'),
+      .required(),
   });
 
 export const novaSenha = object()
@@ -378,19 +370,16 @@ export const planoDeAção = object()
       .label('Custo da contra-medida')
       .min(0)
       .nullable()
-      .transform((v) => (v === '' || Number.isNaN(v) ? null : v))
-      .typeError('${label} inválido'),
+      .transform((v) => (v === '' || Number.isNaN(v) ? null : v)),
     custo_percentual: number()
       .label('% do custo do projeto')
       .max(100)
       .min(0)
       .nullable()
-      .transform((v) => (v === '' || Number.isNaN(v) ? null : v))
-      .typeError('${label} inválida'),
+      .transform((v) => (v === '' || Number.isNaN(v) ? null : v)),
     data_termino: date()
       .label('Data de término efetivo')
-      .nullable()
-      .typeError('Data inválida'),
+      .nullable(),
     medidas_de_contingencia: string()
       .label('Medidas de contingência')
       .max(50000),
@@ -400,8 +389,7 @@ export const planoDeAção = object()
       .required(),
     prazo_contramedida: date()
       .label('Data de término previsto')
-      .required()
-      .typeError('Data inválida'),
+      .required(),
     responsavel: string()
       .label('Responsável')
       .required()
@@ -412,8 +400,7 @@ export const portfolio = object({
   data_criacao: date()
     .label('Data de criação')
     .nullable()
-    .min(new Date(2003, 0, 1))
-    .typeError('Data inválida'),
+    .min(new Date(2003, 0, 1)),
   descricao: string()
     .label('Descrição')
     .min(0)
@@ -467,13 +454,11 @@ export const projeto = object()
     data_aprovacao: date()
       .label('Data de aprovação')
       .nullable()
-      .min(new Date(2003, 0, 1))
-      .typeError('Data inválida'),
+      .min(new Date(2003, 0, 1)),
     data_revisao: date()
       .label('Data de revisão')
       .nullable()
-      .min(new Date(2003, 0, 1))
-      .typeError('Data inválida'),
+      .min(new Date(2003, 0, 1)),
     escopo: string()
       .label('Escopo')
       .max(50000),
@@ -580,17 +565,14 @@ export const projeto = object()
     previsao_custo: number()
       .label('Previsão de custos')
       .min(0)
-      .required('Previsão de custo é obrigatória')
-      .typeError('${label} inválida'),
+      .required('Previsão de custo é obrigatória'),
     previsao_inicio: date()
       .label('Previsão de início')
-      .nullable()
-      .typeError('${label} inválida'),
+      .nullable(),
     previsao_termino: date()
       .label('Previsão de término')
       .min(ref('previsao_inicio'), 'Precisa ser posterior à data de início')
-      .nullable()
-      .typeError('Data inválida'),
+      .nullable(),
     principais_etapas: string()
       .label('Principais etapas')
       .max(50000),
@@ -681,8 +663,7 @@ export const relatórioDePrevisãoDeCustoPdM = object()
         .required(),
       pdm_id: string()
         .label('PDM')
-        .required()
-        .typeError('${label} inválido'),
+        .required(),
       tags: array()
         .label('Tags')
         .nullable(),
@@ -699,14 +680,12 @@ export const relatórioDePrevisãoDeCustoPortfolio = object()
         .label('Portfolio')
         .min(1, '${label} é obrigatório')
         .required()
-        .transform((v) => (v === '' || Number.isNaN(v) ? null : v))
-        .typeError('${label} inválido'),
+        .transform((v) => (v === '' || Number.isNaN(v) ? null : v)),
       projeto_id: number()
         .label('Projeto')
         .min(1, '${label} é obrigatório')
         .nullable()
-        .transform((v) => (v === null || Number.isNaN(v) ? null : v))
-        .typeError('${label} inválido'),
+        .transform((v) => (v === null || Number.isNaN(v) ? null : v)),
       periodo_ano: mixed()
         .label('Período')
         .oneOf(['Corrente', 'Anterior'])
@@ -722,14 +701,12 @@ export const relatórioDeProjeto = object({
     portfolio_id: number()
       .label('Portfolio')
       .required()
-      .transform((v) => (v === '' || Number.isNaN(v) ? null : v))
-      .typeError('${label} inválido'),
+      .transform((v) => (v === '' || Number.isNaN(v) ? null : v)),
     projeto_id: number()
       .label('Projeto')
       .min(1, '${label} é obrigatório')
       .required()
-      .transform((v) => (v === '' || Number.isNaN(v) ? null : v))
-      .typeError('${label} inválido'),
+      .transform((v) => (v === '' || Number.isNaN(v) ? null : v)),
   }),
   salvar_arquivo: boolean(),
 });
@@ -741,8 +718,7 @@ export const relatórioDeStatus = object({
     portfolio_id: number()
       .label('Portfolio')
       .required()
-      .transform((v) => (v === '' || Number.isNaN(v) ? null : v))
-      .typeError('${label} inválido'),
+      .transform((v) => (v === '' || Number.isNaN(v) ? null : v)),
   }),
   salvar_arquivo: boolean(),
 });
@@ -759,8 +735,7 @@ export const relatórioDePortfolio = object({
     portfolio_id: number()
       .label('Portfolio')
       .transform((v) => (v === '' || Number.isNaN(v) ? null : v))
-      .required()
-      .typeError('${label} inválido'),
+      .required(),
     status: mixed()
       .label('Status')
       .nullable()
@@ -837,8 +812,7 @@ export const relatórioOrçamentárioPortfolio = object({
       .label('Portfolio')
       .min(1, '${label} é obrigatório')
       .required()
-      .transform((v) => (v === '' || Number.isNaN(v) ? null : v))
-      .typeError('${label} inválido'),
+      .transform((v) => (v === '' || Number.isNaN(v) ? null : v)),
     inicio: string()
       .label('Início')
       .required()
@@ -895,8 +869,8 @@ export const risco = object()
       .label('Código')
       .default(1)
       .min(1)
-      .required()
-      .typeError('${label} inválido'),
+      .nullable()
+      .required(),
     consequencia: string()
       .label('Consequências')
       .nullable(),
@@ -915,8 +889,7 @@ export const risco = object()
       .nullable(),
     registrado_em: date()
       .label('Data de registro')
-      .required()
-      .typeError('${label} inválida'),
+      .required(),
     risco_tarefa_outros: string()
       .label('Outras tarefas afetadas')
       .nullable(),
@@ -979,11 +952,9 @@ export const tarefa = object()
       .nullable(),
     inicio_planejado: date()
       .label('Previsão de início')
-      .nullable()
-      .typeError('Data inválida'),
+      .nullable(),
     inicio_real: date()
       .label('Data de início real')
-      .typeError('Data inválida')
       .when('atualizacao_do_realizado', (atualizacaoDoRealizado, field) => (atualizacaoDoRealizado
         ? field.required()
         : field.nullable())),
@@ -1005,7 +976,6 @@ export const tarefa = object()
       .min(0)
       .max(100)
       .transform((v) => (v === '' || Number.isNaN(v) ? null : v))
-      .typeError('Valor inválido')
       .when('atualizacao_do_realizado', (atualizacaoDoRealizado, field) => (atualizacaoDoRealizado
         ? field.required()
         : field.nullable())),
@@ -1026,13 +996,11 @@ export const tarefa = object()
     termino_planejado: date()
       .label('Previsão de término')
       .min(ref('inicio_planejado'), 'Precisa ser posterior à data de início')
-      .nullable()
-      .typeError('Data inválida'),
+      .nullable(),
     termino_real: date()
       .label('Data de término real')
       .min(ref('inicio_real'), 'Precisa ser posterior à data de início')
-      .nullable()
-      .typeError('Data inválida'),
+      .nullable(),
   });
 
 export const tag = object()
