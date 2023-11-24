@@ -9,6 +9,7 @@ import { RecordWithId } from '../../common/dto/record-with-id.dto';
 import { CreateTipoAcompanhamentoDto } from './dto/create-acompanhamento-tipo.dto';
 import { ListAcompanhamentoTipoDto } from './entities/acompanhament-tipo.entities.dto';
 import { AcompanhamentoTipoService } from './acompanhamento-tipo.service';
+import { UpdateAcompanhamentoTipoDto } from './dto/update-acompanhamento-tipo.dto';
 
 const roles: ListaDePrivilegios[] = [
     'Projeto.administrador',
@@ -43,6 +44,20 @@ export class AcompanhamentoTipoController {
         return {
             linhas: await this.acompanhamentoTipoService.findAll(user),
         };
+    }
+
+    @Patch(':id')
+    @ApiBearerAuth('access-token')
+    @ApiUnauthorizedResponse()
+    @Roles(...roles)
+    @ApiNoContentResponse()
+    @HttpCode(HttpStatus.ACCEPTED)
+    async update(
+        @Param() params: FindOneParams,
+        @Body() dto: UpdateAcompanhamentoTipoDto,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<RecordWithId> {
+        return await this.acompanhamentoTipoService.update(params.id, dto, user);
     }
 
     @Delete(':id')
