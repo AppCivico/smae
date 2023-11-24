@@ -29,9 +29,6 @@ export class AcompanhamentoTipoService {
 
     async findAll(user: PessoaFromJwt): Promise<AcompanhamentoTipo[]> {
         const acompanhamentoTipoRows = await this.prisma.acompanhamentoTipo.findMany({
-            where: {
-                removido_em: null
-            },
             select: {
                 id: true,
                 nome: true
@@ -54,14 +51,10 @@ export class AcompanhamentoTipoService {
     }
 
     async remove(id: number, user: PessoaFromJwt) {
-        return await this.prisma.acompanhamentoTipo.updateMany({
+        return await this.prisma.acompanhamentoTipo.deleteMany({
             where: {
                 id
-            },
-            data: {
-                removido_em: new Date(Date.now()),
-                removido_por: user.id,
-            },
+            }
         });
     }
 }
