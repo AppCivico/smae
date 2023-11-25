@@ -8,7 +8,7 @@
 \s+                   /* skip whitespace */
 [0-9]+("."[0-9]+)?\b  return 'NUMBER'
 \$\_[0-9]{1,8}\b      return 'VARIABLE'
-@_[0-9]{1,8}\b        return 'COMPOSABLE'
+\@\_[0-9]{1,8}\b      return 'COMPOSABLE'
 "*"                   return '*'
 "/"                   return '/'
 "-"                   return '-'
