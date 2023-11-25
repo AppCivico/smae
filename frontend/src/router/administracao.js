@@ -554,6 +554,7 @@ export default [
         component: TiposDeAcompanhamentoCriarEditar,
         meta: {
           título: 'Novo tipo de acompanhamento',
+          rotaDeEscape: 'tipoDeAcompanhamentoListar',
         },
       },
       {
@@ -567,6 +568,7 @@ export default [
 
         meta: {
           título: 'Editar tipo de acompanhamento',
+          rotaDeEscape: 'tipoDeAcompanhamentoListar',
         },
       },
     ],
