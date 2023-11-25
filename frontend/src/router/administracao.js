@@ -534,6 +534,7 @@ export default [
     meta: {
       requerAutenticação: true,
       title: 'Tipos de acompanhamento',
+      rotaPrescindeDeChave: true,
     },
     props: {
       submenu: SubmenuConfig,

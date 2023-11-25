@@ -9,9 +9,13 @@ if (authStore.estouAutenticada) {
   authStore.getDados();
 }
 </script>
-
 <template>
-  <router-view :key="route.fullPath" />
+  <!-- vamos avançar até essa chave ser desnecessária para o sistema todo -->
+  <router-view v-if="$route.meta.rotaPrescindeDeChave" />
+  <router-view
+    v-else
+    :key="route.fullPath"
+  />
   <SideBar />
   <EditModal />
   <Alert />
