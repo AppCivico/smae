@@ -627,6 +627,8 @@ model Regiao {
     codigo     Int?
     parente_id Int?
 
+    // pdm_codigo_regiao String?
+
     arquivo_shapefile_id Int?
     ArquivoShapefile     Arquivo? @relation(fields: [arquivo_shapefile_id], references: [id])
 
