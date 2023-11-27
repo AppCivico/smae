@@ -59,7 +59,7 @@ export class CreatePortfolioDto {
     @IsOptional()
     @IsInt({ message: '$property| Precisa ser um número inteiro' })
     @Min(1)
-    @Max(3)
+    @Max(4)
     @Transform(({ value }: any) => +value)
     nivel_regionalizacao?: number;
 }
