@@ -30,6 +30,9 @@ declare module 'pinia' {
     router: Router;
     route: RouteLocationNormalizedLoaded;
   }
+  export interface PiniaCustomStateProperties {
+    route: RouteLocationNormalizedLoaded;
+  }
 }
 
 pinia.use(() => ({
