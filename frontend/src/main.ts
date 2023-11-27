@@ -10,6 +10,9 @@ import App from './App.vue';
 import { router } from './router';
 
 const app = createApp(App);
+
+app.config.globalProperties.habilitarBeta = import.meta.env.VITE_HABILITAR_BETA || false;
+
 const pinia = createPinia();
 
 interface RequestS {
