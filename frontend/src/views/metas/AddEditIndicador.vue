@@ -15,9 +15,6 @@ import { onMounted, onUpdated, ref } from 'vue';
 import { useRoute } from 'vue-router';
 import getCaretPosition from './auxiliares/getCaretPosition.ts';
 
-// eslint-disable-next-line import/no-extraneous-dependencies
-const { formula_parser: formulaParser } = await import('@/../../common/formula_parser');
-
 const editModalStore = useEditModalStore();
 const alertStore = useAlertStore();
 const route = useRoute();
@@ -156,8 +153,8 @@ onUpdated(() => { start(); });
 // Formula
 async function validadeFormula(f) {
   try {
-    if (typeof formulaParser !== 'undefined') {
-      formulaParser.parse(f.toLocaleUpperCase());
+    if (typeof window.formula_parser !== 'undefined') {
+      window.formula_parser.parse(f.toLocaleUpperCase());
       return false;
     }
   } catch (e) {
