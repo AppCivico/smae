@@ -291,6 +291,12 @@ export class ProjetoService {
                         escopo: dto.escopo,
                         principais_etapas: dto.principais_etapas,
 
+                        regiao_id: dto.regiao_id,
+                        logradouro_tipo: dto.logradouro_tipo,
+                        logradouro_nome: dto.logradouro_nome,
+                        logradouro_numero: dto.logradouro_numero,
+                        logradouro_cep: dto.logradouro_cep,
+
                         objetivo: '',
                         objeto: '',
                         publico_alvo: '',
