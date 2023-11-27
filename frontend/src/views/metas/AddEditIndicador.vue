@@ -16,7 +16,7 @@ import { useRoute } from 'vue-router';
 import getCaretPosition from './auxiliares/getCaretPosition.ts';
 
 // eslint-disable-next-line import/no-extraneous-dependencies
-const { formula_parser: formulaParser } = await import('@/../../backend/src/public/js/formula_parser');
+const { formula_parser: formulaParser } = await import('@/../../common/formula_parser');
 
 const editModalStore = useEditModalStore();
 const alertStore = useAlertStore();
