@@ -11,6 +11,7 @@ export class PortfolioOneDto {
     id: number;
     titulo: string;
     nivel_maximo_tarefa: number;
+    nivel_regionalizacao: number;
     orgaos: number[];
     descricao: string;
     data_criacao: Date | null;
