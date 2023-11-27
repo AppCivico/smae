@@ -275,6 +275,11 @@ export class AcompanhamentoService {
 
                 await this.atualizaProjeto(prismaTx, projeto_id, now);
 
+                // TODO: corrigir nome do campo no schema
+                // foi criado com typo
+                const acompanhamento_tipo_id = dto.acompanhamento_tipo_id;
+                delete dto.acompanhamento_tipo_id;
+
                 return await prismaTx.projetoAcompanhamento.update({
                     where: {
                         id,
@@ -284,7 +289,7 @@ export class AcompanhamentoService {
                             ...dto,
                             risco: undefined,
                             acompanhamentos: undefined,
-                            acompanhanmento_tipo_id: dto.acompanhamento_tipo_id
+                            acompanhanmento_tipo_id: acompanhamento_tipo_id
                         },
                         atualizado_em: now,
                         atualizado_por: user.id,
