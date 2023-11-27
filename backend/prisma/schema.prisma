@@ -213,6 +213,7 @@ model Pessoa {
 
     TiposAcompanhamentoQueCriei AcompanhamentoTipo[] @relation("Criador")
     TiposAcompanhamentoQueAtualizei AcompanhamentoTipo[] @relation("Atualizador")
+    TiposAcompanhamentoQueRemovi AcompanhamentoTipo[] @relation("Removedor")
 
     @@index([email])
     @@map("pessoa")
@@ -644,6 +645,7 @@ model Regiao {
     RegioesAbaixo Regiao[]   @relation("Parente")
     Variavel      Variavel[]
     Etapa         Etapa[]
+    Projetos      Projeto[]
 
     @@index([parente_id])
     @@map("regiao")
@@ -2398,6 +2400,7 @@ model Portfolio {
     removido_em    DateTime? @db.Timestamptz(6)
 
     nivel_maximo_tarefa Int @default(5) @db.SmallInt
+    nivel_regionalizacao Int @default(1) @db.SmallInt
 
     orcamento_execucao_disponivel_meses Int[] @default([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12])
 
@@ -2481,6 +2484,14 @@ model Projeto {
     meta       Meta?       @relation(fields: [meta_id], references: [id])
     iniciativa Iniciativa? @relation(fields: [iniciativa_id], references: [id])
     atividade  Atividade?  @relation(fields: [atividade_id], references: [id])
+
+    regiao_id Int?
+    regiao    Regiao? @relation(fields: [regiao_id], references: [id])
+
+    logradouro_tipo String?
+    logradouro_nome String?
+    logradouro_numero String?
+    logradouro_cep String?
 
     codigo           String? // abre apenas depois de priorizado
     previsao_custo   Float?
@@ -2644,13 +2655,15 @@ model AcompanhamentoTipo {
     criado_em  DateTime?
     atualizado_por Int?
     atualizado_em DateTime?
+    removido_por Int?
+    removido_em DateTime?
 
     criador   Pessoa?  @relation("Criador", fields: [criado_por], references: [id])
     atualizador Pessoa? @relation("Atualizador", fields: [atualizado_por], references: [id])
+    removedor Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
 
     acompanhamentos ProjetoAcompanhamento[]
 
-    @@unique([nome])
     @@map("acompanhamento_tipo")
 }
 

@@ -667,11 +667,22 @@ export class ProjetoService {
                     },
                 },
 
+                regiao: {
+                    select: {
+                        id: true,
+                        descricao: true,
+                    }
+                },
+
                 selecionado_em: true,
                 em_planejamento_em: true,
                 percentual_atraso: true,
                 status_cronograma: true,
                 ano_orcamento: true,
+                logradouro_tipo: true,
+                logradouro_nome: true,
+                logradouro_numero: true,
+                logradouro_cep: true,
             },
         });
         if (!projeto) throw new HttpException('Projeto não encontrado ou sem permissão para acesso', 400);
