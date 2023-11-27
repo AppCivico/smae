@@ -207,6 +207,7 @@ export class PortfolioService {
                         descricao: dto.descricao,
                         data_criacao: dto.data_criacao,
                         orcamento_execucao_disponivel_meses: dto.orcamento_execucao_disponivel_meses,
+                        nivel_regionalizacao: dto.nivel_regionalizacao
                     },
                     select: { id: true },
                 });
