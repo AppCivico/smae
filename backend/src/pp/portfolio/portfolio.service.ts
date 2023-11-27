@@ -33,6 +33,7 @@ export class PortfolioService {
                         descricao: dto.descricao,
                         data_criacao: dto.data_criacao,
                         orcamento_execucao_disponivel_meses: dto.orcamento_execucao_disponivel_meses,
+                        nivel_regionalizacao: dto.nivel_regionalizacao
                     },
                     select: { id: true },
                 });
@@ -90,6 +91,7 @@ export class PortfolioService {
                 descricao: true,
                 data_criacao: true,
                 orcamento_execucao_disponivel_meses: true,
+                nivel_regionalizacao: true,
             },
         });
 
@@ -124,6 +126,7 @@ export class PortfolioService {
                 id: true,
                 titulo: true,
                 nivel_maximo_tarefa: true,
+                nivel_regionalizacao: true,
                 orgaos: {
                     select: {
                         orgao: {

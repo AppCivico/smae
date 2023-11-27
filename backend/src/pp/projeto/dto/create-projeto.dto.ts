@@ -197,6 +197,37 @@ export class CreateProjetoDto {
     @IsString()
     @MaxLength(50000)
     principais_etapas: string;
+
+    @IsOptional()
+    @IsInt({ message: '$property| regiao_id precisa ser inteiro' })
+    @Transform((a: any) => (a.value === null ? null : +a.value))
+    @ValidateIf((object, value) => value !== null)
+    regiao_id?: number;
+
+    @IsOptional()
+    @IsString()
+    @ValidateIf((object, value) => value !== null)
+    @MaxLength(1024)
+    logradouro_tipo?: string;
+
+    @IsOptional()
+    @IsString()
+    @ValidateIf((object, value) => value !== null)
+    @MaxLength(1024)
+    logradouro_nome?: string;
+
+    @IsOptional()
+    @IsString()
+    @ValidateIf((object, value) => value !== null)
+    @MaxLength(1024)
+    logradouro_numero?: string;
+
+    @IsOptional()
+    @IsString()
+    @ValidateIf((object, value) => value !== null)
+    @MaxLength(1024)
+    logradouro_cep?: string;
+
 }
 
 export class CreateProjetoDocumentDto {

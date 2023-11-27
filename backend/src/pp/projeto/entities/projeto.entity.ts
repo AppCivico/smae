@@ -6,6 +6,7 @@ import { IdSiglaDescricao } from 'src/common/dto/IdSigla.dto';
 import { IdTituloDto } from '../../../common/dto/IdTitulo.dto';
 import { TipoDocumentoDto } from '../../../tipo-documento/entities/tipo-documento.entity';
 import { IdNomeDto } from 'src/common/dto/IdNome.dto';
+import { IdDesc } from 'src/atividade/entities/atividade.entity';
 
 export class ProjetoDto {
     id: number;
@@ -181,6 +182,12 @@ export class ProjetoDetailDto {
     permissoes: ProjetoPermissoesDto;
 
     ano_orcamento: number[];
+
+    regiao: IdDesc | null;
+    logradouro_tipo: string | null;
+    logradouro_nome: string | null;
+    logradouro_numero: string | null;
+    logradouro_cep: string | null;
 }
 
 export class ProjetoMVPDto extends PickType(ProjetoDetailDto, ['id', 'portfolio_id']) {}
