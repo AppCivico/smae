@@ -58,7 +58,7 @@ addMethod(mixed, 'inArray', function _(arrayValue, message = '${path} not found 
 
 export const acompanhamento = object()
   .shape({
-    acompanhamento_tipo: string()
+    acompanhamento_tipo_id: string()
       .label('Tipo de acompanhamento')
       .nullable(),
     acompanhamentos: array()

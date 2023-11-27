@@ -86,7 +86,7 @@ vue/singleline-html-element-content-newline -->
           {{ schema.fields['data_registro'].spec.label }}
         </th>
         <th class="tl">
-          {{ schema.fields['acompanhamento_tipo'].spec.label }}
+          {{ schema.fields['acompanhamento_tipo_id'].spec.label }}
         </th>
         <th class="tl">
           {{ schema.fields['pauta'].spec.label }}

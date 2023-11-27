@@ -52,7 +52,7 @@ const {
     <div class="flex g2 mb1">
       <div class="f0 mb1">
         <dt class="t12 uc w700 mb05 tamarelo">
-          {{ schema.fields.acompanhamento_tipo.spec.label }}
+          {{ schema.fields.acompanhamento_tipo_id.spec.label }}
         </dt>
         <dd class="t13">
           {{ emFoco?.acompanhamento_tipo?.nome || '-' }}
