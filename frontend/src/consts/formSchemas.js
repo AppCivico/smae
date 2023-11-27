@@ -411,6 +411,11 @@ export const portfolio = object({
     .min(1)
     .max(32)
     .required(),
+  nivel_regionalizacao: number()
+    .label('Nível de regionalização')
+    .min(1)
+    .max(4)
+    .required(),
   orcamento_execucao_disponivel_meses: array()
     .label('Meses disponíveis para orçamento')
     .required(),

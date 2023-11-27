@@ -3,6 +3,7 @@ import AutocompleteField from '@/components/AutocompleteField2.vue';
 import CheckClose from '@/components/CheckClose.vue';
 import { portfolio as schema } from '@/consts/formSchemas';
 import months from '@/consts/months';
+import níveisRegionalização from '@/consts/niveisRegionalizacao';
 import { useAlertStore } from '@/stores/alert.store';
 import { useOrgansStore } from '@/stores/organs.store';
 import { usePortfolioStore } from '@/stores/portfolios.store.ts';
@@ -149,6 +150,31 @@ if (props.portfolioId) {
         />
         <ErrorMessage
           name="nivel_maximo_tarefa"
+          class="error-msg"
+        />
+      </div>
+
+      <div class="f1 mb1">
+        <LabelFromYup
+          name="nivel_regionalizacao"
+          :schema="schema"
+        />
+        <Field
+          name="nivel_regionalizacao"
+          as="select"
+          class="inputtext light mb1"
+          :class="{ 'error': errors.nivel_regionalizacao }"
+        >
+          <option
+            v-for="nível in níveisRegionalização"
+            :key="nível.id"
+            :value="nível.id"
+          >
+            {{ nível.nome }}
+          </option>
+        </Field>
+        <ErrorMessage
+          name="nivel_regionalizacao"
           class="error-msg"
         />
       </div>
