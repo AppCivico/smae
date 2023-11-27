@@ -27,9 +27,6 @@ import {
   AddEditPdM,
   ListPdM,
 } from '@/views/pdm';
-import PortfoliosCriarEditar from '@/views/portfolios/PortfoliosCriarEditar.vue';
-import PortfoliosLista from '@/views/portfolios/PortfoliosLista.vue';
-import PortfoliosRaiz from '@/views/portfolios/PortfoliosRaiz.vue';
 import { ListRegions } from '@/views/regions';
 import {
   AddEditResources,
@@ -40,16 +37,27 @@ import {
   ListUsers,
 } from '@/views/users';
 
+const PortfoliosCriarEditar = defineAsyncComponent({
+  loader: () => import('@/views/portfolios/PortfoliosCriarEditar.vue'),
+  loadingComponent: LoadingComponent,
+});
+const PortfoliosLista = defineAsyncComponent({
+  loader: () => import('@/views/portfolios/PortfoliosLista.vue'),
+  loadingComponent: LoadingComponent,
+});
+const PortfoliosRaiz = defineAsyncComponent({
+  loader: () => import('@/views/portfolios/PortfoliosRaiz.vue'),
+  loadingComponent: LoadingComponent,
+});
+
 const TiposDeAcompanhamentoLista = defineAsyncComponent({
   loader: () => import('@/views/tiposDeAcompanhamento/TiposLista.vue'),
   loadingComponent: LoadingComponent,
 });
-
 const TiposDeAcompanhamentoCriarEditar = defineAsyncComponent({
   loader: () => import('@/views/tiposDeAcompanhamento/TipoCriarEditar.vue'),
   loadingComponent: LoadingComponent,
 });
-
 const TiposDeAcompanhamentoRaiz = defineAsyncComponent({
   loader: () => import('@/views/tiposDeAcompanhamento/TiposRaiz.vue'),
   loadingComponent: LoadingComponent,
@@ -490,6 +498,7 @@ export default [
     meta: {
       requerAutenticação: true,
       title: 'Portfolios',
+      rotaPrescindeDeChave: true,
     },
     props: {
       submenu: SubmenuConfig,

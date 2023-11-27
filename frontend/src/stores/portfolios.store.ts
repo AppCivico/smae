@@ -95,8 +95,10 @@ export const usePortfolioStore = defineStore('portfolios', {
     itemParaEdição: ({ emFoco }) => ({
       ...emFoco,
       nivel_maximo_tarefa: emFoco?.nivel_maximo_tarefa || 5,
+      nivel_regionalizacao: emFoco?.nivel_regionalizacao || 1,
       data_criacao: emFoco?.data_criacao ? dateTimeToDate(emFoco?.data_criacao) : null,
-      orcamento_execucao_disponivel_meses: Array.isArray(emFoco?.orcamento_execucao_disponivel_meses)
+      orcamento_execucao_disponivel_meses: emFoco?.orcamento_execucao_disponivel_meses
+        && Array.isArray(emFoco.orcamento_execucao_disponivel_meses)
         ? emFoco.orcamento_execucao_disponivel_meses
         : range(1, 13),
     }),
