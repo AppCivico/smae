@@ -29,10 +29,15 @@ export class AcompanhamentoService {
 
                 dto.detalhamento = HtmlSanitizer(dto.detalhamento);
 
+                // TODO: corrigir nome do campo no schema
+                // foi criado com typo
+                const acompanhamento_tipo_id = dto.acompanhamento_tipo_id;
+                delete dto.acompanhamento_tipo_id;
+
                 const acompanhamento = await prismaTx.projetoAcompanhamento.create({
                     data: {
                         projeto_id: projeto_id,
-                        acompanhanmento_tipo_id: dto.acompanhamento_tipo_id,
+                        acompanhanmento_tipo_id: acompanhamento_tipo_id,
                         ...{
                             ...dto,
                             risco: undefined,
