@@ -137,23 +137,23 @@ function excluirAcompanhamento(id) {
 
       <div class="f1 mb1">
         <LabelFromYup
-          name="acompanhamento_tipo"
+          name="acompanhamento_tipo_id"
           :schema="schema"
         />
         <Field
-          id="acompanhamento_tipo"
-          name="acompanhamento_tipo"
-          :arial-label="schema.fields.acompanhamento_tipo.spec.label"
+          id="acompanhamento_tipo_id"
+          name="acompanhamento_tipo_id"
+          :arial-label="schema.fields.acompanhamento_tipo_id.spec.label"
           maxlength="2"
           class="inputtext light mb1"
           as="select"
           :disabled="tiposDeAcompanhamentoStore?.chamadasPendentes?.lista"
           :class="{
-            error: errors['acompanhamento_tipo'],
+            error: errors['acompanhamento_tipo_id'],
             loading: tiposDeAcompanhamentoStore?.chamadasPendentes?.lista
           }"
         >
-          <option :value="0">
+          <option :value="null">
             Selecionar
           </option>
           <option
@@ -166,7 +166,7 @@ function excluirAcompanhamento(id) {
           </option>
         </Field>
         <ErrorMessage
-          name="acompanhamento_tipo"
+          name="acompanhamento_tipo_id"
           class="error-msg"
         />
       </div>

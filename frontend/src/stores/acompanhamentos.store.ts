@@ -100,7 +100,7 @@ export const useAcompanhamentosStore = defineStore('acompanhamentos', {
       ...emFoco,
       data_registro: dateTimeToDate(emFoco?.data_registro) || null,
       risco: emFoco?.risco?.map((x: RiscoIdCod) => x.id) || null,
-      acompanhamento_tipo: emFoco?.acompanhamento_tipo?.id || null,
+      acompanhamento_tipo_id: emFoco?.acompanhamento_tipo?.id || null,
       acompanhamentos: !Array.isArray(emFoco?.acompanhamentos)
         ? null
         : emFoco?.acompanhamentos.map((x) => ({
