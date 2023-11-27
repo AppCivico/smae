@@ -703,15 +703,15 @@ export class PdmService {
             anoVistos.push(r.ano_referencia);
             if (r.id === null) {
                 const created_orcamento_config = await this.prisma.$transaction(
-                    async (prisma: Prisma.TransactionClient) => {
-                        await this.prisma.pdmOrcamentoConfig.deleteMany({
+                    async (prismaTx: Prisma.TransactionClient) => {
+                        await prismaTx.pdmOrcamentoConfig.deleteMany({
                             where: {
                                 ano_referencia: r.ano_referencia,
                                 pdm_id: pdm_id,
                             },
                         });
 
-                        return await this.prisma.pdmOrcamentoConfig.create({
+                        return await prismaTx.pdmOrcamentoConfig.create({
                             data: {
                                 ano_referencia: r.ano_referencia,
                                 pdm_id: pdm_id,
