@@ -1,7 +1,7 @@
-const flatten = (data) => data.reduce(
-  (acc, cur) => (cur.children?.length
-    ? acc.concat([{ ...cur, children: undefined }], flatten(cur.children))
-    : acc.concat([{ ...cur, children: undefined }])),
+const flatten = (data, childPropertyName = 'children') => data.reduce(
+  (acc, cur) => (cur[childPropertyName]?.length
+    ? acc.concat([{ ...cur, [childPropertyName]: undefined }], flatten(cur[childPropertyName]))
+    : acc.concat([{ ...cur, [childPropertyName]: undefined }])),
   [],
 );
 
