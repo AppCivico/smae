@@ -991,6 +991,12 @@ export class ProjetoService {
                     coordenador_ue: dto.coordenador_ue,
                     tolerancia_atraso: dto.tolerancia_atraso,
 
+                    regiao_id: dto.regiao_id,
+                    logradouro_cep: dto.logradouro_cep,
+                    logradouro_nome: dto.logradouro_nome,
+                    logradouro_numero: dto.logradouro_numero,
+                    logradouro_tipo: dto.logradouro_tipo,
+
                     orgaos_participantes:
                         dto.orgaos_participantes !== undefined
                             ? {
