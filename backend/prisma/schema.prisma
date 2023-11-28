@@ -211,9 +211,9 @@ model Pessoa {
     ImportacaoLog                  ImportacaoOrcamento[]
     IndicadorFormulaComposta       IndicadorFormulaComposta[] @relation("Desativador")
 
-    TiposAcompanhamentoQueCriei AcompanhamentoTipo[] @relation("Criador")
+    TiposAcompanhamentoQueCriei     AcompanhamentoTipo[] @relation("Criador")
     TiposAcompanhamentoQueAtualizei AcompanhamentoTipo[] @relation("Atualizador")
-    TiposAcompanhamentoQueRemovi AcompanhamentoTipo[] @relation("Removedor")
+    TiposAcompanhamentoQueRemovi    AcompanhamentoTipo[] @relation("Removedor")
 
     @@index([email])
     @@map("pessoa")
@@ -666,6 +666,7 @@ model Arquivo {
     tamanho_bytes                   Int
     descricao                       String?
     tipo_documento_id               Int?
+    diretorio_caminho               String?
     TipoDocumento                   TipoDocumento?                    @relation(fields: [tipo_documento_id], references: [id])
     Tag                             Tag[]
     Regiao                          Regiao[]
@@ -680,6 +681,17 @@ model Arquivo {
     ImportacaoLogOutput ImportacaoOrcamento[] @relation("output")
 
     @@map("arquivo")
+}
+
+model Diretorio {
+    id      Int    @id @default(autoincrement())
+    caminho String
+
+    projeto_id Int?
+    projeto    Projeto? @relation(fields: [projeto_id], references: [id])
+
+    @@index([projeto_id])
+    @@map("diretorio")
 }
 
 model ArquivoDocumento {
@@ -2401,7 +2413,7 @@ model Portfolio {
     removido_por   Int?
     removido_em    DateTime? @db.Timestamptz(6)
 
-    nivel_maximo_tarefa Int @default(5) @db.SmallInt
+    nivel_maximo_tarefa  Int @default(5) @db.SmallInt
     nivel_regionalizacao Int @default(1) @db.SmallInt
 
     orcamento_execucao_disponivel_meses Int[] @default([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12])
@@ -2490,10 +2502,10 @@ model Projeto {
     regiao_id Int?
     regiao    Regiao? @relation(fields: [regiao_id], references: [id])
 
-    logradouro_tipo String?
-    logradouro_nome String?
+    logradouro_tipo   String?
+    logradouro_nome   String?
     logradouro_numero String?
-    logradouro_cep String?
+    logradouro_cep    String?
 
     codigo           String? // abre apenas depois de priorizado
     previsao_custo   Float?
@@ -2644,25 +2656,26 @@ model Projeto {
     OrcamentoPlanejado        OrcamentoPlanejado[]
     OrcamentoRealizado        OrcamentoRealizado[]
     OrcamentoPlanejadoZerado  OrcamentoPrevistoZerado[]
+    Diretorio                 Diretorio[]
 
     @@index([removido_em])
     @@map("projeto")
 }
 
 model AcompanhamentoTipo {
-    id   Int @id @default(autoincrement())
+    id   Int    @id @default(autoincrement())
     nome String
 
-    criado_por Int?
-    criado_em  DateTime?
+    criado_por     Int?
+    criado_em      DateTime?
     atualizado_por Int?
-    atualizado_em DateTime?
-    removido_por Int?
-    removido_em DateTime?
+    atualizado_em  DateTime?
+    removido_por   Int?
+    removido_em    DateTime?
 
-    criador   Pessoa?  @relation("Criador", fields: [criado_por], references: [id])
+    criador     Pessoa? @relation("Criador", fields: [criado_por], references: [id])
     atualizador Pessoa? @relation("Atualizador", fields: [atualizado_por], references: [id])
-    removedor Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
+    removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
 
     acompanhamentos ProjetoAcompanhamento[]
 
@@ -3079,7 +3092,7 @@ model ProjetoAcompanhamento {
     projeto    Projeto @relation(fields: [projeto_id], references: [id])
 
     acompanhanmento_tipo_id Int?
-    acompanhamento_tipo AcompanhamentoTipo? @relation(fields: [acompanhanmento_tipo_id], references: [id], onDelete: SetNull)
+    acompanhamento_tipo     AcompanhamentoTipo? @relation(fields: [acompanhanmento_tipo_id], references: [id], onDelete: SetNull)
 
     data_registro DateTime @db.Date()
     participantes String

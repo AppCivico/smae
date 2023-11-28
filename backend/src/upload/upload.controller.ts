@@ -1,6 +1,6 @@
-import { Body, Controller, Get, Param, Post, Query, Res, UploadedFile, UseInterceptors } from '@nestjs/common';
+import { Body, Controller, Get, Param, Patch, Post, Query, Res, UploadedFile, UseInterceptors } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { ApiBearerAuth, ApiConsumes, ApiOkResponse, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiConsumes, ApiNoContentResponse, ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { Response } from 'express';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { IsPublic } from '../auth/decorators/is-public.decorator';
@@ -10,6 +10,7 @@ import { CreateUploadDto } from './dto/create-upload.dto';
 import { DownloadOptions } from './dto/download-options';
 import { Upload } from './entities/upload.entity';
 import { UploadService } from './upload.service';
+import { PatchDiretorioDto } from './dto/diretorio.dto';
 
 @Controller('')
 @ApiTags('Upload')
@@ -52,5 +53,15 @@ export class UploadController {
         });
 
         data.stream.pipe(res);
+    }
+
+    @Patch('diretorio/:token')
+    @IsPublic()
+    @ApiNoContentResponse({
+        description: 'Configura diretório virtual do arquivo',
+        type: '',
+    })
+    async patch_dir(@Query() dto: PatchDiretorioDto, @Param('token') uploadOrDlToken: string): Promise<void> {
+        await this.uploadService.updateDir(dto, uploadOrDlToken);
     }
 }
