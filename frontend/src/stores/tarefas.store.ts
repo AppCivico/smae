@@ -4,10 +4,9 @@ import { ListTarefaDto, TarefaDetailDto, TarefaItemDto } from '@/../../backend/s
 
 import createDataTree from '@/helpers/createDataTree';
 import dateTimeToDate from '@/helpers/dateTimeToDate';
+import flatten from '@/helpers/flatDataTree';
 import { defineStore } from 'pinia';
 import { useProjetosStore } from './projetos.store';
-
-import flatten from '@/helpers/flatDataTree';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
@@ -175,8 +174,8 @@ export const useTarefasStore = defineStore('tarefas', {
 
         return [
           ...this.tarefasComHierarquia.map((x) => ({ ...x, parentId: x.tarefa_pai_id || projeto.id })),
-          projeto
-        ]
+          projeto,
+        ];
       }
       return [];
     },
