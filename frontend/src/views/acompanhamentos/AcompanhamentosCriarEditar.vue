@@ -153,9 +153,7 @@ function excluirAcompanhamento(id) {
             loading: tiposDeAcompanhamentoStore?.chamadasPendentes?.lista
           }"
         >
-          <option :value="null">
-            Selecionar
-          </option>
+          <option :value="null" />
           <option
             v-for="item in tiposDeAcompanhamentoStore?.lista || []"
             :key="item.id"
