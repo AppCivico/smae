@@ -7,16 +7,13 @@ import dinheiro from '@/helpers/dinheiro';
 import subtractDates from '@/helpers/subtractDates';
 import truncate from '@/helpers/truncate';
 import { useDotaçãoStore } from '@/stores/dotacao.store.ts';
-import { usePortfolioStore } from '@/stores/portfolios.store.ts';
 import { useProjetosStore } from '@/stores/projetos.store.ts';
 import { storeToRefs } from 'pinia';
-import { watch } from 'vue';
 
 const DotaçãoStore = useDotaçãoStore();
-
-const { DotaçãoSegmentos, FontesDeRecursosPorAnoPorCódigo } = storeToRefs(DotaçãoStore);
-const portfolioStore = usePortfolioStore();
 const projetosStore = useProjetosStore();
+
+const { FontesDeRecursosPorAnoPorCódigo } = storeToRefs(DotaçãoStore);
 const {
   chamadasPendentes, emFoco, erro,
 } = storeToRefs(projetosStore);
@@ -27,26 +24,7 @@ defineProps({
     default: 0,
   },
 });
-
-watch(() => emFoco.value, () => {
-  if (Array.isArray(emFoco?.value?.fonte_recursos)) {
-    emFoco.value.fonte_recursos.forEach((fonte) => {
-      if (fonte.fonte_recurso_ano) {
-        if (!Array.isArray(DotaçãoSegmentos?.value?.[fonte.fonte_recurso_ano]?.fonte_recursos)) {
-          DotaçãoStore.getDotaçãoSegmentos(fonte.fonte_recurso_ano);
-        }
-      }
-    });
-  }
-});
-
-function iniciar() {
-  portfolioStore.buscarTudo();
-}
-
-iniciar();
 </script>
-
 <template>
   <div class="flex spacebetween center mb2">
     <h1>{{ emFoco?.nome }}</h1>
