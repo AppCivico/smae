@@ -200,9 +200,7 @@ export class CreateProjetoDto {
 
     @IsOptional()
     @IsInt({ message: '$property| regiao_id precisa ser inteiro' })
-    @Transform((a: any) => (a.value === null ? null : +a.value))
-    @ValidateIf((object, value) => value !== null)
-    regiao_id?: number;
+    regiao_id?: number | null;
 
     @IsOptional()
     @IsString()
