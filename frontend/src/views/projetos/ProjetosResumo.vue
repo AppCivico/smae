@@ -321,12 +321,10 @@ defineProps({
           {{ schema.fields['responsaveis_no_orgao_gestor'].spec.label }}
         </dt>
         <dd class="t13">
-          <template
-            v-for="item in emFoco?.responsaveis_no_orgao_gestor"
-            :key="item"
-          >
-            {{ item.nome_exibicao || item }},
-          </template>
+          {{ emFoco?.responsaveis_no_orgao_gestor
+            && Array.isArray(emFoco.responsaveis_no_orgao_gestor)
+            ? emFoco?.responsaveis_no_orgao_gestor?.map((x) => x.nome_exibicao || x).join(', ')
+            : '-' }}
         </dd>
       </dl>
     </div>
