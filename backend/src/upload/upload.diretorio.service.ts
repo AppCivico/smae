@@ -61,7 +61,18 @@ export class UploadDiretorioService {
     }
 
     normalizaCaminho(caminho: string): string {
-        return caminho.replace(/\/+/g, '/').replace(/\/+$/, '');
+        // Replace non-standard spaces with standard space (0x20)
+        let cleanedPath = caminho.replace(/\s+/g, ' ');
+        // Normalize Unicode expansion
+        cleanedPath = cleanedPath.normalize('NFC');
+
+        // Replace reserved or special characters
+        cleanedPath = caminho.replace(/[<>:"\\|?*]/g, '_');
+
+        // Replace backslashes with forward slashes (for cross-platform compatibility)
+        cleanedPath = cleanedPath.replace(/\\/g, '/');
+
+        return cleanedPath.replace(/\/+/g, '/').replace(/\/+$/, '');
     }
 
     async listAll(filters: FilterDiretorioDto): Promise<DiretorioItemDto[]> {
