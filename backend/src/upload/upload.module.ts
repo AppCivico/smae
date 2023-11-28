@@ -4,6 +4,8 @@ import { PrismaModule } from '../prisma/prisma.module';
 import { StorageService } from './storage-service';
 import { UploadController } from './upload.controller';
 import { UploadService } from './upload.service';
+import { UploadDiretorioController } from './upload.diretorio.controller';
+import { UploadDiretorioService } from './upload.diretorio.service';
 
 @Module({
     imports: [
@@ -13,8 +15,8 @@ import { UploadService } from './upload.service';
             signOptions: {},
         }),
     ],
-    controllers: [UploadController],
-    providers: [UploadService, StorageService],
+    controllers: [UploadController, UploadDiretorioController],
+    providers: [UploadService, StorageService, UploadDiretorioService],
     exports: [UploadService],
 })
 export class UploadModule {}
