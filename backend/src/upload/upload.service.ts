@@ -309,7 +309,7 @@ export class UploadService {
 
     // aceita tanto um token de upload ou de download
     // eu não acho bom, mas convencido fazer isso pra atrapalhar menos o form do frontend
-    checkUploadToken(token: string): number {
+    checkUploadOrDownloadToken(token: string): number {
         let decoded: UploadBody | null = null;
         try {
             decoded = this.jwtService.decode(token) as UploadBody;
@@ -390,7 +390,7 @@ export class UploadService {
 
     async updateDir(dto: PatchDiretorioDto, uploadOrDlToken: string): Promise<void> {
         const arquivo = await this.prisma.arquivo.findFirst({
-            where: { id: this.checkDownloadToken(uploadOrDlToken) },
+            where: { id: this.checkUploadOrDownloadToken(uploadOrDlToken) },
             select: { id: true },
         });
 

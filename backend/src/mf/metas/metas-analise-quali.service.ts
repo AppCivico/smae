@@ -119,7 +119,7 @@ export class MetasAnaliseQualiService {
         const ciclo = await this.carregaCicloPorId(dto.ciclo_fisico_id);
 
         const id = await this.prisma.$transaction(async (prismaTxn: Prisma.TransactionClient): Promise<number> => {
-            const uploadId = this.uploadService.checkUploadToken(dto.upload_token);
+            const uploadId = this.uploadService.checkUploadOrDownloadToken(dto.upload_token);
 
             const cfq = await prismaTxn.metaCicloFisicoAnaliseDocumento.create({
                 data: {

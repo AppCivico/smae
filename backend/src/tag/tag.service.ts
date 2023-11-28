@@ -24,7 +24,7 @@ export class TagService {
 
         let uploadId: number | null = null;
         if (createTagDto.upload_icone) {
-            uploadId = this.uploadService.checkUploadToken(createTagDto.upload_icone);
+            uploadId = this.uploadService.checkUploadOrDownloadToken(createTagDto.upload_icone);
         }
         delete createTagDto.upload_icone;
 
@@ -79,7 +79,7 @@ export class TagService {
         if (updateTagDto.upload_icone === null || updateTagDto.upload_icone === '') {
             uploadId = null;
         } else if (updateTagDto.upload_icone) {
-            uploadId = this.uploadService.checkUploadToken(updateTagDto.upload_icone);
+            uploadId = this.uploadService.checkUploadOrDownloadToken(updateTagDto.upload_icone);
         }
         delete updateTagDto.upload_icone;
 
