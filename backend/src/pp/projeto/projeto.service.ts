@@ -406,7 +406,6 @@ export class ProjetoService {
                 portfolio: {
                     select: { id: true, titulo: true },
                 },
-
             },
             orderBy: { codigo: 'asc' },
         });
@@ -677,7 +676,7 @@ export class ProjetoService {
                     select: {
                         id: true,
                         descricao: true,
-                    }
+                    },
                 },
 
                 selecionado_em: true,
@@ -1257,6 +1256,8 @@ export class ProjetoService {
         await this.findOne(projetoId, user, 'ReadWrite');
 
         const arquivoId = this.uploadService.checkUploadToken(createPdmDocDto.upload_token);
+        if (createPdmDocDto.diretorio_caminho)
+            this.uploadService.updateDir({ caminho: createPdmDocDto.diretorio_caminho }, createPdmDocDto.upload_token);
 
         const arquivo = await this.prisma.projetoDocumento.create({
             data: {
@@ -1298,6 +1299,7 @@ export class ProjetoService {
                         TipoDocumento: true,
                         descricao: true,
                         nome_original: true,
+                        diretorio_caminho: true,
                     },
                 },
             },

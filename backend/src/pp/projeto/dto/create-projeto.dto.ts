@@ -225,7 +225,6 @@ export class CreateProjetoDto {
     @ValidateIf((object, value) => value !== null)
     @MaxLength(1024)
     logradouro_cep?: string;
-
 }
 
 export class CreateProjetoDocumentDto {
@@ -234,6 +233,10 @@ export class CreateProjetoDocumentDto {
      */
     @IsString({ message: '$property| upload_token do documento' })
     upload_token: string;
+
+    @IsString()
+    @IsOptional()
+    diretorio_caminho?: string;
 }
 
 export class CreateProjetoSeiDto {

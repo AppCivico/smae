@@ -218,6 +218,7 @@ export class ProjetoDocumentoDto {
         TipoDocumento: TipoDocumentoDto | null;
         nome_original: string;
         download_token?: string;
+        diretorio_caminho: string | null;
     };
     id: number;
 }
