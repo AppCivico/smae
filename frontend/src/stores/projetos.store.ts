@@ -236,6 +236,7 @@ export const useProjetosStore = defineStore('projetos', {
       principais_etapas: emFoco?.principais_etapas || '',
       realizado_inicio: dateTimeToDate(emFoco?.realizado_inicio),
       realizado_termino: dateTimeToDate(emFoco?.realizado_termino),
+      regiao_id: emFoco?.regiao?.id || null,
       responsavel_id: emFoco?.responsavel?.id || null,
       resumo: emFoco?.resumo || '',
       orgaos_participantes: emFoco?.orgaos_participantes?.map((x) => x.id) || null,
