@@ -207,4 +207,32 @@ export class UpdateProjetoDto extends OmitType(PartialType(CreateProjetoDto), ['
         message: '$property| Precisa ser um dos seguintes valores: ' + Object.values(ProjetoStatus).join(', '),
     })
     status?: ProjetoStatus;
+
+    @IsOptional()
+    @IsInt({ message: '$property| regiao_id precisa ser inteiro' })
+    regiao_id?: number | null;
+
+    @IsOptional()
+    @IsString()
+    @ValidateIf((object, value) => value !== null)
+    @MaxLength(1024)
+    logradouro_tipo?: string | null;
+
+    @IsOptional()
+    @IsString()
+    @ValidateIf((object, value) => value !== null)
+    @MaxLength(1024)
+    logradouro_nome?: string | null;
+
+    @IsOptional()
+    @IsString()
+    @ValidateIf((object, value) => value !== null)
+    @MaxLength(1024)
+    logradouro_numero?: string | null;
+
+    @IsOptional()
+    @IsString()
+    @ValidateIf((object, value) => value !== null)
+    @MaxLength(1024)
+    logradouro_cep?: string | null;
 }
