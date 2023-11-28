@@ -2,6 +2,10 @@
 import { computed } from 'vue';
 
 const props = defineProps({
+  caption: {
+    type: String,
+    default: '',
+  },
   colunas: {
     type: Array,
     required: true,
@@ -24,6 +28,9 @@ const temCabeçalho = computed(() => props.colunas.some((x) => x.etiqueta));
 </script>
 <template>
   <table class="tablemain">
+    <caption v-if="caption">
+      {{ caption }}
+    </caption>
     <col
       v-for="coluna, i in colunas"
       :key="`col__${i}`"
@@ -36,6 +43,10 @@ const temCabeçalho = computed(() => props.colunas.some((x) => x.etiqueta));
           v-for="coluna, i in colunas"
           :key="`header__${i}`"
         >
+          <!--
+            vamos usar `etiqueta` e reservar a propriedade `texto` para padrão nas células
+            Assim, podemos ter coluna sem cabeçalho
+           -->
           {{ coluna.etiqueta || null }}
         </th>
       </tr>
@@ -44,19 +55,20 @@ const temCabeçalho = computed(() => props.colunas.some((x) => x.etiqueta));
     <tbody>
       <template v-if="lista.length">
         <tr
-          v-for="item in lista"
-          :key="item.id"
+          v-for="item, idx in lista"
+          :key="item.id ?? idx"
+          :class="item.classe || undefined"
         >
           <component
             :is="(coluna.éCabeçalho || item.éCabeçalho) ? 'th' : 'td'"
             v-for="coluna, i in colunas"
             :key="`cel__${i}--${item.id}`"
-            :class="item.classe || undefined"
+            :class="item[coluna.nomeDaPropriedade]?.classe || undefined"
           >
             <a
               v-if="item[coluna.nomeDaPropriedade]?.href"
               :href="item[coluna.nomeDaPropriedade].href"
-              :download="item[coluna.nomeDaPropriedade].download || undefined"
+              :download="item[coluna.nomeDaPropriedade].download ?? undefined"
             >
               {{ item[coluna.nomeDaPropriedade].texto ?? item[coluna.nomeDaPropriedade] }}
             </a>
