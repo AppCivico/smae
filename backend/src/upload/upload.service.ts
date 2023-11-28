@@ -12,6 +12,8 @@ import { UploadBody } from './entities/upload.body';
 import { Upload } from './entities/upload.entity';
 import { StorageService } from './storage-service';
 import { ColunasNecessarias, OrcamentoImportacaoHelpers } from 'src/importacao-orcamento/importacao-orcamento.common';
+import { PatchDiretorioDto } from './dto/diretorio.dto';
+import { UploadDiretorioService } from './upload.diretorio.service';
 
 const AdmZipLib = require('adm-zip');
 
@@ -37,7 +39,8 @@ export class UploadService {
     constructor(
         private readonly jwtService: JwtService,
         private readonly prisma: PrismaService,
-        private readonly storage: StorageService
+        private readonly storage: StorageService,
+        private readonly uploadDiretorio: UploadDiretorioService
     ) {}
 
     async upload(
@@ -383,5 +386,36 @@ export class UploadService {
             nome: arquivo.nome_original,
             mime_type: arquivo.mime_type || 'application/octet-stream',
         };
+    }
+
+    async updateDir(dto: PatchDiretorioDto, uploadOrDlToken: string): Promise<void> {
+        const arquivo = await this.prisma.arquivo.findFirst({
+            where: { id: this.checkDownloadToken(uploadOrDlToken) },
+            select: { id: true },
+        });
+
+        if (!arquivo) throw new HttpException('Arquivo não encontrado', 400);
+
+        await this.prisma.arquivo.update({
+            where: { id: arquivo.id },
+            data: {
+                diretorio_caminho: this.uploadDiretorio.normalizaCaminho(dto.caminho),
+            },
+        });
+
+        // SRP foi viajar
+        // precisa saber se o arquivo é de algum projeto, se não, não tem como colocar no contexto certo
+        const projeto = await this.prisma.projetoDocumento.findFirst({
+            where: {
+                arquivo_id: arquivo.id,
+            },
+            select: { id: true },
+        });
+        if (projeto) {
+            await this.uploadDiretorio.create({
+                caminho: dto.caminho,
+                projeto_id: projeto.id,
+            });
+        }
     }
 }
