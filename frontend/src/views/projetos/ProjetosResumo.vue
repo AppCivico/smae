@@ -85,6 +85,60 @@ iniciar();
         </dd>
       </dl>
     </div>
+
+    <hr class="mb1 f1">
+
+    <div class="mb1">
+      <h3 class="label mt2 mb1legend">
+        Logradouro
+      </h3>
+
+      <div class="flex g2 mb1 flexwrap">
+        <dl class="f1 mb1">
+          <dt class="t12 uc w700 mb05 tamarelo">
+            {{ schema.fields['regiao_id'].spec.label }}
+          </dt>
+          <dd class="t13">
+            {{ emFoco?.regiao?.descricao || '-' }}
+          </dd>
+        </dl>
+        <dl class="f1 mb1">
+          <dt class="t12 uc w700 mb05 tamarelo">
+            CEP
+          </dt>
+          <dd class="t13">
+            {{ emFoco?.logradouro_cep || '-' }}
+          </dd>
+        </dl>
+        <dl class="f1 mb1">
+          <dt class="t12 uc w700 mb05 tamarelo">
+            Tipo
+          </dt>
+          <dd class="t13">
+            {{ emFoco?.logradouro_tipo || '-' }}
+          </dd>
+        </dl>
+        <dl class="f2 mb1">
+          <dt class="t12 uc w700 mb05 tamarelo">
+            Nome
+          </dt>
+          <dd class="t13">
+            {{ emFoco?.logradouro_nome || '-' }}
+          </dd>
+        </dl>
+        <dl class="f1 mb1">
+          <dt class="t12 uc w700 mb05 tamarelo">
+            Número
+          </dt>
+          <dd class="t13">
+            {{ emFoco?.logradouro_numero || '-' }}
+          </dd>
+        </dl>
+      </div>
+    </div>
+
+    <hr class="mb1 f1">
+
     <div class="flex g2">
       <dl class="f1 mb1">
         <dt class="t12 uc w700 mb05 tamarelo">
