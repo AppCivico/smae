@@ -1,4 +1,5 @@
 import createDataTree from '@/helpers/createDataTree.ts';
+import flatten from '@/helpers/flatDataTree';
 import { defineStore } from 'pinia';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
@@ -149,6 +150,26 @@ export const useRegionsStore = defineStore({
       } catch (error) {
         this.tempRegions = { error };
       }
+    },
+  },
+  getters: {
+    regiõesEmLista: (({ regions }) => (regions && Array.isArray(regions) ? flatten(regions) : [])),
+    regiõesPorNível() {
+      return this.regiõesEmLista.reduce((acc, cur) => ({
+        ...acc,
+        [cur.nivel]: [
+          ...(acc[cur.nivel] || []),
+          cur,
+        ],
+      }), {});
+    },
+    regiõesPorNívelOrdenadas() {
+      return Object.keys(this.regiõesPorNível)
+        .reduce((acc, cur) => ({
+          ...acc,
+          [cur]: this.regiõesPorNível[cur]
+            .sort((a, b) => a.descricao.localeCompare(b.descricao)),
+        }), {});
     },
   },
 });
