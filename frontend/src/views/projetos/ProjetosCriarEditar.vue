@@ -224,7 +224,8 @@ async function onSubmit(_, { controlledValues: valores }) {
         };
 
       alertStore.success(msg);
-      projetosStore.$reset();
+      emFoco.value = null;
+      projetosStore.buscarItem(props.projetoId);
       router.push(rotaApósSalvamento);
     }
   } catch (error) {
@@ -233,14 +234,6 @@ async function onSubmit(_, { controlledValues: valores }) {
 }
 
 function iniciar() {
-  if (!portfolioStore.lista?.length) {
-    portfolioStore.buscarTudo();
-  }
-
-  if (!Array.isArray(regions) || !regions.length) {
-    RegionsStore.getAll();
-  }
-
   buscarPossíveisGestores();
   buscarPossíveisResponsáveis();
 
@@ -255,12 +248,6 @@ function iniciar() {
   if (emFoco.value?.meta_id) {
     buscarMetaSimplificada(emFoco.value?.meta_id);
   }
-
-  if (Array.isArray(emFoco.value?.fonte_recursos) && emFoco.value.fonte_recursos.length) {
-    emFoco.value.fonte_recursos.forEach((x) => {
-      BuscarDotaçãoParaAno(x.fonte_recurso_ano);
-    });
-  }
 }
 
 function excluirProjeto(id) {
@@ -271,7 +258,7 @@ function excluirProjeto(id) {
       useAlertStore().success('Projeto removido.');
 
       // essa é uma exceção. Há duas rotas de escape possíveis:
-      // - após a criaação / edição de um projeto
+      // - após a criação / edição de um projeto
       // - após a sua exclusão
       router.push({ name: 'projetosListar' });
     }
