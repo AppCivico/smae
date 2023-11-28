@@ -984,7 +984,7 @@ export class MetasService {
         }
 
         const id = await this.prisma.$transaction(async (prismaTxn: Prisma.TransactionClient): Promise<number> => {
-            const uploadId = this.uploadService.checkUploadToken(dto.upload_token);
+            const uploadId = this.uploadService.checkUploadOrDownloadToken(dto.upload_token);
 
             const cfq = await prismaTxn.variavelCicloFisicoDocumento.create({
                 data: {

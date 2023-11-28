@@ -91,7 +91,7 @@ export class ImportacaoOrcamentoService {
     ) {}
 
     async create(dto: CreateImportacaoOrcamentoDto, user: PessoaFromJwt): Promise<RecordWithId> {
-        const arquivo_id = this.uploadService.checkUploadToken(dto.upload);
+        const arquivo_id = this.uploadService.checkUploadOrDownloadToken(dto.upload);
 
         const created = await this.prisma.$transaction(
             async (prismaTxn: Prisma.TransactionClient): Promise<RecordWithId> => {

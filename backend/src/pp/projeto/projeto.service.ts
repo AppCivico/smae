@@ -1255,9 +1255,9 @@ export class ProjetoService {
         // aqui é feito a verificação se esse usuário pode realmente acessar esse recurso
         await this.findOne(projetoId, user, 'ReadWrite');
 
-        const arquivoId = this.uploadService.checkUploadToken(createPdmDocDto.upload_token);
+        const arquivoId = this.uploadService.checkUploadOrDownloadToken(createPdmDocDto.upload_token);
         if (createPdmDocDto.diretorio_caminho)
-            this.uploadService.updateDir({ caminho: createPdmDocDto.diretorio_caminho }, createPdmDocDto.upload_token);
+            await this.uploadService.updateDir({ caminho: createPdmDocDto.diretorio_caminho }, createPdmDocDto.upload_token);
 
         const arquivo = await this.prisma.projetoDocumento.create({
             data: {

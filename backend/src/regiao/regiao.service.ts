@@ -58,7 +58,7 @@ export class RegiaoService {
 
         let uploadId: number | null = null;
         if (createRegiaoDto.upload_shapefile) {
-            uploadId = this.uploadService.checkUploadToken(createRegiaoDto.upload_shapefile);
+            uploadId = this.uploadService.checkUploadOrDownloadToken(createRegiaoDto.upload_shapefile);
         }
         delete createRegiaoDto.upload_shapefile;
 
@@ -147,7 +147,7 @@ export class RegiaoService {
             // remove o arquivo
             uploadId = null;
         } else if (updateRegiaoDto.upload_shapefile) {
-            uploadId = this.uploadService.checkUploadToken(updateRegiaoDto.upload_shapefile);
+            uploadId = this.uploadService.checkUploadOrDownloadToken(updateRegiaoDto.upload_shapefile);
         }
         delete updateRegiaoDto.upload_shapefile;
 
