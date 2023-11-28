@@ -41,7 +41,7 @@ export class PdmService {
 
         let arquivo_logo_id: undefined | number;
         if (createPdmDto.upload_logo) {
-            arquivo_logo_id = this.uploadService.checkUploadToken(createPdmDto.upload_logo);
+            arquivo_logo_id = this.uploadService.checkUploadOrDownloadToken(createPdmDto.upload_logo);
         }
 
         delete createPdmDto.upload_logo;
@@ -191,7 +191,7 @@ export class PdmService {
         // se enviar vazio, transformar em null para limpar o logo
         if (updatePdmDto.upload_logo == '') updatePdmDto.upload_logo = null;
         if (updatePdmDto.upload_logo) {
-            arquivo_logo_id = this.uploadService.checkUploadToken(updatePdmDto.upload_logo);
+            arquivo_logo_id = this.uploadService.checkUploadOrDownloadToken(updatePdmDto.upload_logo);
         } else if (updatePdmDto.upload_logo === null) {
             arquivo_logo_id = null;
         }
@@ -326,7 +326,7 @@ export class PdmService {
         const pdm = await this.prisma.pdm.count({ where: { id: pdm_id } });
         if (!pdm) throw new HttpException('PDM não encontrado', 404);
 
-        const arquivoId = this.uploadService.checkUploadToken(createPdmDocDto.upload_token);
+        const arquivoId = this.uploadService.checkUploadOrDownloadToken(createPdmDocDto.upload_token);
 
         const arquivo = await this.prisma.arquivoDocumento.create({
             data: {
