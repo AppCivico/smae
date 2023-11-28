@@ -508,6 +508,18 @@ export const projeto = object()
       ),
     iniciativa_id: number()
       .nullable(),
+    logradouro_cep: string()
+      .label('CEP do logradouro')
+      .max(1024),
+    logradouro_nome: string()
+      .label('Nome de logradouro')
+      .max(1024),
+    logradouro_numero: string()
+      .label('Número de logradouro')
+      .max(1024),
+    logradouro_tipo: string()
+      .label('Tipo de logradouro')
+      .max(1024),
     meta_codigo: string()
       .nullable(),
     meta_id: number()
@@ -581,6 +593,9 @@ export const projeto = object()
     principais_etapas: string()
       .label('Principais etapas')
       .max(50000),
+    regiao_id: number()
+      .label('Região')
+      .nullable(),
     responsaveis_no_orgao_gestor: array()
       .label('Responsável')
       .nullable(),

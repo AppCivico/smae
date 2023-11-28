@@ -5,6 +5,7 @@ import MaskedFloatInput from '@/components/MaskedFloatInput.vue';
 import MenuDeMudançaDeStatusDeProjeto from '@/components/projetos/MenuDeMudançaDeStatusDeProjeto.vue';
 import { projeto as schema } from '@/consts/formSchemas';
 import statuses from '@/consts/projectStatuses';
+import tiposDeLogradouro from '@/consts/tiposDeLogradouro';
 import arrayToValueAndLabel from '@/helpers/arrayToValueAndLabel';
 import requestS from '@/helpers/requestS.ts';
 import truncate from '@/helpers/truncate';
@@ -13,12 +14,16 @@ import { useDotaçãoStore } from '@/stores/dotacao.store.ts';
 import { useOrgansStore } from '@/stores/organs.store';
 import { usePortfolioStore } from '@/stores/portfolios.store.ts';
 import { useProjetosStore } from '@/stores/projetos.store.ts';
+import { useRegionsStore } from '@/stores/regions.store';
 import { storeToRefs } from 'pinia';
 import {
   ErrorMessage, Field, FieldArray, Form,
 } from 'vee-validate';
 import { computed, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+
+const RegionsStore = useRegionsStore();
+const { regions, regiõesPorNívelOrdenadas } = storeToRefs(RegionsStore);
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
@@ -86,6 +91,16 @@ const órgãosDisponíveisNessePortfolio = (idDoPortfólio) => portfolioStore
 const iniciativasPorId = computed(() => (Array.isArray(metaSimplificada.value?.iniciativas)
   ? metaSimplificada.value.iniciativas.reduce((acc, cur) => ({ ...acc, [cur.id]: cur }), {})
   : {}));
+
+const regiõesDisponíveisNoPortfolio = (idDoPortfólio = 0) => {
+  const nívelRegionalização = !idDoPortfólio
+    ? 0
+    : portfolioStore.portfoliosPorId[idDoPortfólio]?.nivel_regionalizacao || 0;
+
+  return !nívelRegionalização
+    ? []
+    : regiõesPorNívelOrdenadas.value[nívelRegionalização] || [];
+};
 
 const possíveisOrigens = [
   {
@@ -222,6 +237,10 @@ function iniciar() {
     portfolioStore.buscarTudo();
   }
 
+  if (!Array.isArray(regions) || !regions.length) {
+    RegionsStore.getAll();
+  }
+
   buscarPossíveisGestores();
   buscarPossíveisResponsáveis();
 
@@ -301,6 +320,7 @@ watch(emFoco, () => {
           class="inputtext light mb1"
           :class="{ error: errors.portfolio_id, loading: portfolioStore.chamadasPendentes.lista }"
           :disabled="!!portfolioId || !!projetoId"
+          @change="() => setFieldValue('regiao_id', 0)"
         >
           <option :value="0">
             Selecionar
@@ -393,6 +413,130 @@ watch(emFoco, () => {
           class="error-msg mb1"
           name="status"
         />
+      </div>
+    </div>
+
+    <div class="mb1">
+      <legend class="label mt2 mb1legend">
+        Logradouro
+      </legend>
+
+      <div class="flex g2">
+        <div class="f1 mb1">
+          <LabelFromYup
+            class="tc300"
+            name="regiao_id"
+            :schema="schema"
+          />
+          <Field
+            name="regiao_id"
+            as="select"
+            class="inputtext light mb1"
+            :class="{
+              error: errors.regiao_id,
+              loading: ÓrgãosStore.organs.loading,
+            }"
+            :disabled="!regiõesDisponíveisNoPortfolio(values.portfolio_id).length"
+            @change="() => {
+              setFieldValue('logradouro_cep', '');
+              setFieldValue('logradouro_tipo', '');
+              setFieldValue('logradouro_nome', '')
+              setFieldValue('logradouro_numero', '')
+            }"
+          >
+            <option :value="0">
+              Selecionar
+            </option>
+            <option
+              v-for="item in
+                regiõesDisponíveisNoPortfolio(values.portfolio_id) || []"
+              :key="item.id"
+              :value="item.id"
+              :title="item.descricao?.length > 36 ? item.descricao : null"
+            >
+              {{ truncate(item.descricao, 36) }}
+            </option>
+          </Field>
+
+          <ErrorMessage
+            name="regiao_id"
+            class="error-msg"
+          />
+        </div>
+
+        <div class="f1 mb1">
+          <label class="label tc300">
+            CEP
+          </label>
+          <Field
+            name="logradouro_cep"
+            type="text"
+            class="inputtext light mb1"
+            :disabled="!values.regiao_id"
+          />
+          <ErrorMessage
+            class="error-msg mb1"
+            name="logradouro_cep"
+          />
+        </div>
+
+        <div class="f1 mb1">
+          <label class="label tc300">
+            Tipo
+          </label>
+          <Field
+            name="logradouro_tipo"
+            type="text"
+            class="inputtext light mb1"
+            :disabled="!values.regiao_id"
+            as="select"
+          >
+            <option :value="null" />
+            <option
+              v-for="item in tiposDeLogradouro"
+              :key="item"
+              :value="item"
+            >
+              {{ item }}
+            </option>
+          </Field>
+          <ErrorMessage
+            class="error-msg mb1"
+            name="logradouro_tipo"
+          />
+        </div>
+      </div>
+      <div class="flex g2">
+        <div class="f2 mb1">
+          <label class="label tc300">
+            Nome
+          </label>
+          <Field
+            name="logradouro_nome"
+            type="text"
+            class="inputtext light mb1"
+            :disabled="!values.regiao_id"
+          />
+          <ErrorMessage
+            class="error-msg mb1"
+            name="logradouro_nome"
+          />
+        </div>
+        <div class="f1 mb1">
+          <label class="label tc300">
+            Número
+          </label>
+          <Field
+            name="logradouro_numero"
+            type="text"
+            class="inputtext light mb1"
+            :disabled="!values.regiao_id"
+          />
+          <ErrorMessage
+            class="error-msg mb1"
+            name="logradouro_numero"
+          />
+        </div>
       </div>
     </div>
 
