@@ -370,10 +370,7 @@ defineProps({
     Encerramento do projeto
   </h2>
 
-  <table
-    v-if="['Suspenso', 'Fechado'].indexOf(emFoco?.status) !== -1"
-    class="tablemain"
-  >
+  <table class="tablemain">
     <colgroup>
       <col>
       <col>
