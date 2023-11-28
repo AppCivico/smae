@@ -47,7 +47,7 @@ const colunas = [
 const listaFiltradaPorTermoDeBusca = ref([]);
 
 const listaPreparada = computed(() => lista.value.map((x) => ({
-  ...x,
+  nome: x.nome,
   editar: {
     rota: {
       name: 'tipoDeAcompanhamentoEditar',
