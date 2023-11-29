@@ -2464,8 +2464,10 @@ model ProjetoRegistroSei {
     categoria    CategoriaProcessoSei
     processo_sei String
 
-    descricao String?
-    link      String?
+    descricao   String?
+    link        String?
+    comentarios String?
+    observacoes String?
 
     // Link, descrição, metadados
     registro_sei_info   Json    @default("{}")
