@@ -67,7 +67,7 @@ export class UploadDiretorioService {
         cleanedPath = cleanedPath.normalize('NFC');
 
         // Replace reserved or special characters
-        cleanedPath = caminho.replace(/[<>:"\\|?*]/g, '_');
+        cleanedPath = cleanedPath.replace(/[<>:"\\|?*]/g, '_');
 
         // Replace backslashes with forward slashes (for cross-platform compatibility)
         cleanedPath = cleanedPath.replace(/\\/g, '/');
