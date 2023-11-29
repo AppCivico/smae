@@ -45,7 +45,8 @@ export class UploadDiretorioService {
                     dirExiting.add(dir.caminho);
                 }
 
-                const clean = this.normalizaCaminho(dto.caminho);
+                let clean = this.normalizaCaminho(dto.caminho);
+                clean = clean.substring(0, clean.length - 1); //tira a barra do final
                 const parts = clean.split('/');
                 let currentPath = '';
 
@@ -74,7 +75,7 @@ export class UploadDiretorioService {
 
         if (!cleanedPath.startsWith('/')) cleanedPath = '/' + cleanedPath;
 
-        return cleanedPath.replace(/\/+/g, '/').replace(/\/+$/, '');
+        return cleanedPath.replace(/\/+/g, '/').replace(/\/+$/, '') + '/';
     }
 
     async listAll(filters: FilterDiretorioDto): Promise<DiretorioItemDto[]> {
