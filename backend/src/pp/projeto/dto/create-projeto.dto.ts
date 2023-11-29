@@ -278,4 +278,16 @@ export class CreateProjetoSeiDto {
         { message: '$property| O link um precisa ter o protocolo HTTP ou HTTPS, um TLD válido.' }
     )
     link: string;
+
+    @IsOptional()
+    @IsString()
+    @ValidateIf((object, value) => value !== null)
+    @MaxLength(1024)
+    comentarios?: string;
+
+    @IsOptional()
+    @IsString()
+    @ValidateIf((object, value) => value !== null)
+    @MaxLength(1024)
+    observacoes?: string;
 }

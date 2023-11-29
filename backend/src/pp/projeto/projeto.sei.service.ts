@@ -59,6 +59,8 @@ export class ProjetoSeiService {
                 processo_sei: true,
                 descricao: true,
                 link: true,
+                comentarios: true,
+                observacoes: true,
                 criador: { select: { id: true, nome_exibicao: true } },
             },
             orderBy: [{ criado_em: 'desc' }],
