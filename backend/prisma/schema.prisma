@@ -907,6 +907,7 @@ model IndicadorFormulaVariavel {
     janela               Int
     usar_serie_acumulada Boolean   @default(false)
 
+    @@index([variavel_id])
     @@unique([indicador_id, referencia])
     @@map("indicador_formula_variavel")
 }
@@ -1003,6 +1004,7 @@ model FormulaCompostaVariavel {
     janela               Int
     usar_serie_acumulada Boolean         @default(false)
 
+    @@index([variavel_id])
     @@unique([formula_composta_id, referencia])
     @@map("formula_composta_variavel")
 }
