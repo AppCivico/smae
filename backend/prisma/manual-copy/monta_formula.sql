@@ -13,6 +13,10 @@ DECLARE
     r record;
     _p1 date;
     _p2 date;
+
+    _formula_composta_refs int[];
+    _temp_table_ref INT;
+    _compiled_formula TEXT;
 BEGIN
     _count_conferencia := 0;
     --
@@ -30,6 +34,31 @@ BEGIN
 
     _formula := _formula || ' ';
 
+    WITH cte AS (
+        SELECT DISTINCT sub.matches[1] AS fc_id
+        FROM (SELECT regexp_matches(_formula, '@_[0-9]{1,8}', 'g') AS matches) AS sub
+    )
+    SELECT array_agg(replace(fc_id, '@_', '')::int)::int[] INTO _formula_composta_refs
+    FROM cte;
+
+    IF _formula_composta_refs IS NOT NULL THEN
+        FOREACH _temp_table_ref IN ARRAY _formula_composta_refs
+        LOOP
+            -- usa o formula_compilada de cada uma delas
+            SELECT NULLIF(TRIM(formula_compilada), '') INTO _compiled_formula
+            FROM formula_composta
+            WHERE id = _temp_table_ref;
+
+            -- vai que tem uma formula em branco, n pode ficar um @_ solto aqui, entao vai entrar algo no lugar
+            IF _compiled_formula IS NOT NULL THEN
+                _formula := replace(_formula, '@_' || _temp_table_ref::text, '(' || _compiled_formula || ')');
+            ELSE
+                _formula := replace(_formula, '@_' || _temp_table_ref::text, '');
+            END IF;
+
+        END LOOP;
+    END IF;
+
     -- extrai as variaveis (apenas as referencias unicas)
     WITH cte AS (
         SELECT DISTINCT unnest(regexp_matches(_formula, '\$_[0-9]{1,8}\y', 'g')) AS x
@@ -38,7 +67,7 @@ BEGIN
         array_agg(replace(x, '$', '')) INTO _referencias
     FROM cte;
 
-    SELECT count(1) into _referencias_count from indicador_formula_variavel ifv
+    SELECT count(1) into _referencias_count from view_indicador_formula_variavel_e_composta ifv
     WHERE ifv.indicador_id = pIndicador_id AND ifv.referencia = ANY(_referencias);
 
     --RAISE NOTICE '';
@@ -47,7 +76,7 @@ BEGIN
 
     IF (_referencias_count != array_length(_referencias, 1)) THEN
         RAISE NOTICE 'Formula inválida, há referencias faltando na indicador_formula_variavel, referencias = %', _referencias::text || ', existentes ' || (
-            SELECT ARRAY_AGG(referencia) from indicador_formula_variavel ifv
+            SELECT ARRAY_AGG(referencia) from view_indicador_formula_variavel_e_composta ifv
                 WHERE ifv.indicador_id = pIndicador_id
         )::text;
         RETURN null;
@@ -76,7 +105,7 @@ BEGIN
                     pSerie
                 end as serie_escolhida
             FROM
-                indicador_formula_variavel ifv
+                view_indicador_formula_variavel_e_composta ifv
                 JOIN variavel v ON v.id = ifv.variavel_id
             WHERE
                 ifv.indicador_id = pIndicador_id
@@ -145,7 +174,7 @@ BEGIN
             --RAISE NOTICE '_formula %',  _formula || ' -- REPLACE A '|| r.referencia::text;
 
             _formula := regexp_replace(_formula, '\$' || r.referencia || '\y', 'round(' || _valor::text || ', ' || r.casas_decimais || ') ', 'g');
-        ELSEIF r.janela >= 1 THEN
+        ELSEIF r.janela > 1 THEN
 
              select
                 pPeriodo,
