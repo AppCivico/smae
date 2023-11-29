@@ -405,16 +405,16 @@ export class UploadService {
 
         // SRP foi viajar
         // precisa saber se o arquivo é de algum projeto, se não, não tem como colocar no contexto certo
-        const projeto = await this.prisma.projetoDocumento.findFirst({
+        const projetoDoc = await this.prisma.projetoDocumento.findFirst({
             where: {
                 arquivo_id: arquivo.id,
             },
-            select: { id: true },
+            select: { projeto_id: true },
         });
-        if (projeto) {
+        if (projetoDoc) {
             await this.uploadDiretorio.create({
                 caminho: dto.caminho,
-                projeto_id: projeto.id,
+                projeto_id: projetoDoc.projeto_id,
             });
         }
     }
