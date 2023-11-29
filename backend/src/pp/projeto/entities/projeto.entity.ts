@@ -93,6 +93,8 @@ export class ProjetoSeiDto {
     descricao: string | null;
     link: string | null;
     criador: IdNomeExibicao | null;
+    comentarios: string | null;
+    observacoes: string | null
 }
 
 export class ListProjetoSeiDto {
