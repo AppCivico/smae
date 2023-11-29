@@ -72,6 +72,8 @@ export class UploadDiretorioService {
         // Replace backslashes with forward slashes (for cross-platform compatibility)
         cleanedPath = cleanedPath.replace(/\\/g, '/');
 
+        if (!cleanedPath.startsWith('/')) cleanedPath = '/' + cleanedPath;
+
         return cleanedPath.replace(/\/+/g, '/').replace(/\/+$/, '');
     }
 
