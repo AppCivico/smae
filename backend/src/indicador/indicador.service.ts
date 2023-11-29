@@ -232,6 +232,7 @@ export class IndicadorService {
     ): Promise<string> {
         let formula_compilada = '';
         const neededRefs: Record<string, number> = {};
+        const neededFCs: Record<number, number> = {};
         if (formula) {
             try {
                 formula_compilada = FP.parse(formula.toLocaleUpperCase());
@@ -243,6 +244,12 @@ export class IndicadorService {
                 const referencia = match[0].replace('$', '');
                 if (!neededRefs[referencia]) neededRefs[referencia] = 0;
                 neededRefs[referencia]++;
+            }
+
+            for (const match of formula_compilada.matchAll(/\@_\d+\b/g)) {
+                const referencia = +match[0].replace('@_', '');
+                if (!neededFCs[referencia]) neededFCs[referencia] = 0;
+                neededFCs[referencia]++;
             }
         }
 
@@ -295,6 +302,23 @@ export class IndicadorService {
             if (!uniqueRef[neededRef]) {
                 throw new HttpException(
                     `formula_variaveis| Referencia ${neededRef} enviada na formula não foi declarada nas variáveis.`,
+                    400
+                );
+            }
+        }
+
+        for (const formulaCompostaId of Object.keys(neededFCs)) {
+            const formulaCompostaCount = await this.prisma.formulaComposta.count({
+                where: {
+                    removido_em: null,
+                    id: +formulaCompostaId,
+                    IndicadorFormulaComposta: { some: { indicador_id: indicador_id } },
+                },
+            });
+
+            if (!formulaCompostaCount) {
+                throw new HttpException(
+                    `formula_variaveis| Referencia de fórmula composta @_${formulaCompostaId} enviada na formula não foi encontrada no indicador.`,
                     400
                 );
             }
@@ -354,7 +378,7 @@ export class IndicadorService {
         return listActive;
     }
 
-    async update(id: number, updateIndicadorDto: UpdateIndicadorDto, user: PessoaFromJwt) {
+    async update(id: number, dto: UpdateIndicadorDto, user: PessoaFromJwt) {
         const indicadorSelectData = {
             id: true,
             formula_compilada: true,
@@ -385,13 +409,13 @@ export class IndicadorService {
                 throw new HttpException('Sem permissão para editar indicador para a meta', 400);
         }
 
-        console.log('updateIndicadorDto', updateIndicadorDto);
+        console.log('updateIndicadorDto', dto);
 
-        const formula_variaveis = updateIndicadorDto.formula_variaveis;
-        delete updateIndicadorDto.formula_variaveis;
-        let formula: string = updateIndicadorDto.formula ? updateIndicadorDto.formula : '';
+        let formula_variaveis = dto.formula_variaveis;
+        delete dto.formula_variaveis;
+        let formula: string = dto.formula ? dto.formula : '';
         const antigaFormulaCompilada = indicador.formula_compilada || '';
-        if (updateIndicadorDto.formula_variaveis && !updateIndicadorDto.formula) {
+        if (dto.formula_variaveis && !dto.formula) {
             formula = antigaFormulaCompilada;
         }
 
@@ -401,7 +425,7 @@ export class IndicadorService {
             throw new HttpException(`É necessário enviar o parâmetro formula quando enviar formula_variaveis`, 400);
         }
 
-        const formula_compilada: string = await this.validateVariaveis(formula_variaveis, id, formula);
+        let formula_compilada: string = await this.validateVariaveis(formula_variaveis, id, formula);
         console.log({ formula_variaveis });
 
         // TODO rever isso aqui, pq não ta usando pra nada
@@ -410,18 +434,16 @@ export class IndicadorService {
         //this.logger.debug({ oldVersion });
 
         await this.prisma.$transaction(
-            async (prisma: Prisma.TransactionClient): Promise<RecordWithId> => {
-                const indicador = await prisma.indicador.update({
+            async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
+                const indicador = await prismaTx.indicador.update({
                     where: { id: id },
                     data: {
                         atualizado_por: user.id,
                         atualizado_em: new Date(Date.now()),
-                        ...(updateIndicadorDto as any), // hack pra enganar o TS que quer validar o campo que já apagamos (formula_variaveis)
+                        ...(dto as any), // hack pra enganar o TS que quer validar o campo que já apagamos (formula_variaveis)
                         formula_compilada: formula_compilada,
                         acumulado_usa_formula:
-                            updateIndicadorDto.acumulado_usa_formula === null
-                                ? undefined
-                                : updateIndicadorDto.acumulado_usa_formula,
+                            dto.acumulado_usa_formula === null ? undefined : dto.acumulado_usa_formula,
                     },
                     select: indicadorSelectData,
                 });
@@ -430,26 +452,41 @@ export class IndicadorService {
                 //this.logger.debug({ oldVersion, newVersion });
 
                 if (formula_variaveis) {
-                    await prisma.indicadorFormulaVariavel.deleteMany({
+                    formula_variaveis = formula_variaveis;
+                    ({ formula, formula_compilada } = await this.trocaReferencias(
+                        formula_variaveis,
+                        formula,
+                        indicador.id,
+                        formula_compilada,
+                        prismaTx
+                    ));
+
+                    await prismaTx.indicadorFormulaVariavel.deleteMany({
                         where: { indicador_id: indicador.id },
                     });
-                    await prisma.indicadorFormulaVariavel.createMany({
-                        data: formula_variaveis.map((fv) => {
-                            return {
-                                usar_serie_acumulada: fv.usar_serie_acumulada,
-                                indicador_id: indicador.id,
-                                janela: fv.janela === 0 ? 1 : fv.janela,
-                                variavel_id: fv.variavel_id,
-                                referencia: fv.referencia,
-                            };
+                    await Promise.all([
+                        prismaTx.indicador.update({
+                            where: { id: indicador.id },
+                            data: { formula, formula_compilada },
                         }),
-                    });
+                        prismaTx.indicadorFormulaVariavel.createMany({
+                            data: formula_variaveis.map((fv) => {
+                                return {
+                                    usar_serie_acumulada: fv.usar_serie_acumulada,
+                                    indicador_id: indicador.id,
+                                    janela: fv.janela,
+                                    variavel_id: fv.variavel_id,
+                                    referencia: fv.referencia,
+                                };
+                            }),
+                        }),
+                    ]);
                 }
 
                 //if (!(oldVersion === newVersion)) {
                 //this.logger.log(`Indicador mudou, recalculando tudo... ${oldVersion} => ${newVersion}`);
                 this.logger.log(`Indicador recalculando...`);
-                await prisma.$queryRaw`select monta_serie_indicador(${indicador.id}::int, null, null, null)`;
+                await prismaTx.$queryRaw`select monta_serie_indicador(${indicador.id}::int, null, null, null)`;
                 //}
 
                 return indicador;
@@ -673,31 +710,31 @@ export class IndicadorService {
                 if (existeValor.Previsto) {
                     seriesExistentes.push(existeValor.Previsto);
                 } else {
-                    seriesExistentes.push(this.buildNonExistingSerieValor(periodoYMD, 'Previsto'));
+                    seriesExistentes.push(this.buildNonExistingSerieValor(periodoYMD)); // 'Previsto'
                 }
 
                 if (existeValor.PrevistoAcumulado) {
                     seriesExistentes.push(existeValor.PrevistoAcumulado);
                 } else {
-                    seriesExistentes.push(this.buildNonExistingSerieValor(periodoYMD, 'PrevistoAcumulado'));
+                    seriesExistentes.push(this.buildNonExistingSerieValor(periodoYMD)); // 'PrevistoAcumulado'
                 }
 
                 if (existeValor.Realizado) {
                     seriesExistentes.push(existeValor.Realizado);
                 } else {
-                    seriesExistentes.push(this.buildNonExistingSerieValor(periodoYMD, 'Realizado'));
+                    seriesExistentes.push(this.buildNonExistingSerieValor(periodoYMD)); // 'Realizado'
                 }
 
                 if (existeValor.RealizadoAcumulado) {
                     seriesExistentes.push(existeValor.RealizadoAcumulado);
                 } else {
-                    seriesExistentes.push(this.buildNonExistingSerieValor(periodoYMD, 'RealizadoAcumulado'));
+                    seriesExistentes.push(this.buildNonExistingSerieValor(periodoYMD)); // 'RealizadoAcumulado'
                 }
             } else {
-                seriesExistentes.push(this.buildNonExistingSerieValor(periodoYMD, 'Previsto'));
-                seriesExistentes.push(this.buildNonExistingSerieValor(periodoYMD, 'PrevistoAcumulado'));
-                seriesExistentes.push(this.buildNonExistingSerieValor(periodoYMD, 'Realizado'));
-                seriesExistentes.push(this.buildNonExistingSerieValor(periodoYMD, 'RealizadoAcumulado'));
+                seriesExistentes.push(this.buildNonExistingSerieValor(periodoYMD)); // 'Previsto'
+                seriesExistentes.push(this.buildNonExistingSerieValor(periodoYMD)); // 'PrevistoAcumulado'
+                seriesExistentes.push(this.buildNonExistingSerieValor(periodoYMD)); // 'Realizado'
+                seriesExistentes.push(this.buildNonExistingSerieValor(periodoYMD)); // 'RealizadoAcumulado'
             }
 
             result.linhas.push({
@@ -711,10 +748,83 @@ export class IndicadorService {
         return result;
     }
 
-    private buildNonExistingSerieValor(periodo: DateYMD, serie: Serie): SerieIndicadorValorNominal {
+    private buildNonExistingSerieValor(periodo: DateYMD): SerieIndicadorValorNominal {
         return {
             data_valor: periodo,
             valor_nominal: '',
         };
+    }
+
+    async trocaReferencias(
+        formula_variaveis: FormulaVariaveis[],
+        formula: string,
+        indicador_id: number,
+        formula_compilada: string,
+        prismaTx: Prisma.TransactionClient
+    ) {
+        const allReferences = new Set(await this.listReferenciasIndicador(prismaTx, indicador_id));
+
+        // começa no 0, vai aumentando isso vai usando os slots 'em branco'
+        // isso pq se não, o numero iria aumentar pra sempre que alguém salvasse mudando a formula
+        let highestNumericReference = 1;
+
+        let anyChanged: boolean = false;
+        for (const newReference of formula_variaveis) {
+            let updatedReference = newReference.referencia;
+
+            while (allReferences.has(updatedReference)) {
+                highestNumericReference += 1;
+                updatedReference = `_${highestNumericReference}`;
+            }
+
+            if (updatedReference != newReference.referencia) {
+                this.logger.debug(`Trocando referência ${newReference.referencia} => ${updatedReference}`);
+
+                const regex = new RegExp(`\\$${newReference.referencia}\\b`, 'g');
+                formula = formula.replace(regex, `$${updatedReference}`);
+
+                allReferences.add(updatedReference);
+                newReference.referencia = updatedReference;
+                anyChanged = true;
+            }
+        }
+
+        if (anyChanged) {
+            this.logger.debug(`Revalidando referencias...`);
+            formula_compilada = await this.validateVariaveis(formula_variaveis, indicador_id, formula);
+        } else {
+            this.logger.debug(`Nenhuma troca de referência realizada.`);
+        }
+        return { formula, formula_compilada };
+    }
+
+    private async listReferenciasIndicador(
+        prismaTx: Prisma.TransactionClient,
+        indicador_id: number
+    ): Promise<string[]> {
+        const variaveis = await prismaTx.indicadorFormulaVariavel.findMany({
+            distinct: ['referencia'],
+            select: { 'referencia': true },
+            where: {
+                indicador_id: indicador_id,
+            },
+        });
+
+        const formulaCompostas = await prismaTx.formulaCompostaVariavel.findMany({
+            distinct: ['referencia'],
+            select: { 'referencia': true },
+            where: {
+                formula_composta: {
+                    removido_em: null,
+                    IndicadorFormulaComposta: {
+                        some: {
+                            indicador_id: indicador_id,
+                        },
+                    },
+                },
+            },
+        });
+
+        return [...variaveis.map((r) => r.referencia), ...formulaCompostas.map((r) => r.referencia)];
     }
 }

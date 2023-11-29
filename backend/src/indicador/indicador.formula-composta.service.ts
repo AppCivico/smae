@@ -9,8 +9,6 @@ import {
 } from './dto/create-indicador.formula-composta.dto';
 import { IndicadorFormulaCompostaDto } from './entities/indicador.formula-composta.entity';
 import { IndicadorService } from './indicador.service';
-import { Indicador } from './entities/indicador.entity';
-import { FormulaVariaveis } from './dto/update-indicador.dto';
 
 @Injectable()
 export class IndicadorFormulaCompostaService {
@@ -52,12 +50,11 @@ export class IndicadorFormulaCompostaService {
                 const formula_variaveis = dto.formula_variaveis;
 
                 let formula;
-                ({ formula, formula_compilada } = await this.trocaReferencias(
+                ({ formula, formula_compilada } = await this.indicadorService.trocaReferencias(
                     formula_variaveis,
                     dto.formula,
                     indicador_id,
                     formula_compilada,
-                    indicador,
                     prismaTx
                 ));
 
@@ -90,80 +87,6 @@ export class IndicadorFormulaCompostaService {
         );
 
         return created;
-    }
-
-    private async trocaReferencias(
-        formula_variaveis: FormulaVariaveis[],
-        formula: string,
-        indicador_id: number,
-        formula_compilada: string,
-        indicador: Indicador,
-        prismaTx: Prisma.TransactionClient
-    ) {
-        const allReferences = new Set(await this.listReferenciasIndicador(prismaTx, indicador_id));
-
-        // começa no 0, vai aumentando isso vai usando os slots 'em branco'
-        // isso pq se não, o numero iria aumentar pra sempre que alguém salvasse mudando a formula
-        let highestNumericReference = 1;
-
-        let anyChanged: boolean = false;
-        for (const newReference of formula_variaveis) {
-            let updatedReference = newReference.referencia;
-
-            while (allReferences.has(updatedReference)) {
-                highestNumericReference += 1;
-                updatedReference = `_${highestNumericReference}`;
-            }
-
-            if (updatedReference != newReference.referencia) {
-                this.logger.debug(`Trocando referência ${newReference.referencia} => ${updatedReference}`);
-
-                const regex = new RegExp(`\\$${newReference.referencia}\\b`, 'g');
-                formula = formula.replace(regex, `$${updatedReference}`);
-
-                allReferences.add(updatedReference);
-                newReference.referencia = updatedReference;
-                anyChanged = true;
-            }
-        }
-
-        if (anyChanged) {
-            this.logger.debug(`Revalidando referencias...`);
-            formula_compilada = await this.indicadorService.validateVariaveis(formula_variaveis, indicador.id, formula);
-        } else {
-            this.logger.debug(`Nenhuma troca referência não realizada.`);
-        }
-        return { formula, formula_compilada };
-    }
-
-    private async listReferenciasIndicador(
-        prismaTx: Prisma.TransactionClient,
-        indicador_id: number
-    ): Promise<string[]> {
-        const variaveis = await prismaTx.indicadorFormulaVariavel.findMany({
-            distinct: ['referencia'],
-            select: { 'referencia': true },
-            where: {
-                indicador_id: indicador_id,
-            },
-        });
-
-        const formulaCompostas = await prismaTx.formulaCompostaVariavel.findMany({
-            distinct: ['referencia'],
-            select: { 'referencia': true },
-            where: {
-                formula_composta: {
-                    removido_em: null,
-                    IndicadorFormulaComposta: {
-                        some: {
-                            indicador_id: indicador_id,
-                        },
-                    },
-                },
-            },
-        });
-
-        return [...variaveis.map((r) => r.referencia), ...formulaCompostas.map((r) => r.referencia)];
     }
 
     private checkFormulaCompostaRecursion(dto: { formula: string }) {
@@ -290,12 +213,11 @@ export class IndicadorFormulaCompostaService {
                 if (self.formula_compilada != formula_compilada) {
                     let formula;
                     const formula_variaveis = dto.formula_variaveis;
-                    ({ formula, formula_compilada } = await this.trocaReferencias(
+                    ({ formula, formula_compilada } = await this.indicadorService.trocaReferencias(
                         formula_variaveis,
                         dto.formula,
                         indicador_id,
                         formula_compilada,
-                        indicador,
                         prismaTx
                     ));
 
