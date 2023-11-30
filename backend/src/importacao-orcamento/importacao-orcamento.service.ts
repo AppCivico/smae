@@ -548,6 +548,8 @@ export class ImportacaoOrcamentoService {
                         if (typeof col2row[columnName] === 'number') {
                             col2row[columnName] = toFixed2ButString(col2row[columnName]);
                         }
+                    } else if (cellValue !== '' && columnName === 'processo') {
+                        col2row[columnName] = `${cellValue}`;
                     } else if (cellValue !== '') {
                         col2row[columnName] = cellValue;
                     } else {
