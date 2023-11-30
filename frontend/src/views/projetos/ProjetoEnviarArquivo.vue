@@ -10,7 +10,7 @@ import {
 import { useProjetosStore } from '@/stores/projetos.store.ts';
 import { storeToRefs } from 'pinia';
 import { Field, Form } from 'vee-validate';
-import { reactive } from 'vue';
+import { reactive, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
@@ -24,9 +24,10 @@ const { tempDocumentTypes } = storeToRefs(documentTypesStore);
 documentTypesStore.clear();
 documentTypesStore.filterDocumentTypes();
 
-const { chamadasPendentes, erro } = storeToRefs(projetosStore);
+const { chamadasPendentes, erro, diretóriosConsolidados } = storeToRefs(projetosStore);
 
 const curfile = reactive({});
+const diretorioCaminho = ref('');
 
 async function onSubmit(values) {
   const carga = values;
@@ -41,12 +42,17 @@ async function onSubmit(values) {
 
     const u = await requestS.upload(`${baseUrl}/upload`, formData);
     if (u.upload_token) {
-      if (await projetosStore.enviarArquivo({ upload_token: u.upload_token })) {
+      if (await projetosStore.enviarArquivo({
+        upload_token: u.upload_token,
+        diretorio_caminho: diretorioCaminho.value,
+      })) {
         alertStore.success('Item adicionado com sucesso!');
 
         const rotaDeEscape = route.meta?.rotaDeEscape;
-        console.debug('rotaDeEscape', rotaDeEscape);
         curfile.loading = false;
+
+        projetosStore.buscarDiretórios();
+        projetosStore.buscarArquivos();
 
         if (rotaDeEscape) {
           router.push(typeof rotaDeEscape === 'string' ? { name: rotaDeEscape } : rotaDeEscape);
@@ -77,8 +83,11 @@ function addFile(e) {
   </div>
   <template v-if="!(chamadasPendentes?.arquivos?.loading || erro) && !curfile?.loading">
     <Form
-      v-slot="{ errors, isSubmitting }"
+      v-slot="{ errors, isSubmitting, values }"
       :validation-schema="schema"
+      :initial-values="{
+        diretorio_caminho: route.query?.diretorio_caminho
+      }"
       @submit="onSubmit"
     >
       <div class="flex g2">
@@ -126,6 +135,35 @@ function addFile(e) {
       </div>
 
       <div class="flex g2 mb2">
+        <div class="f1">
+          <LabelFromYup
+            name="diretorio_caminho"
+            :schema="schema"
+          />
+          <Field
+            v-model="diretorioCaminho"
+            name="diretorio_caminho"
+            class="inputtext light mb1"
+            list="diretóriosConsolidados"
+            autocomplete="off"
+            :class="{ 'error': errors.diretorio_caminho }"
+            @update:model-value="() => values.diretorio_caminho =
+              values.diretorio_caminho.trim()"
+          />
+          <ErrorMessage
+            class="error-msg"
+            name="diretorio_caminho"
+          />
+        </div>
+
+        <datalist id="diretóriosConsolidados">
+          <option
+            v-for="diretório in diretóriosConsolidados"
+            :key="diretório"
+            :value="diretório"
+          />
+        </datalist>
+
         <div class="f1">
           <LabelFromYup
             name="arquivo"

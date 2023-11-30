@@ -9,6 +9,7 @@ import {
   ProjetoPermissoesDto,
 } from '@/../../backend/src/pp/projeto/entities/projeto.entity';
 import { ListProjetoProxyPdmMetaDto } from '@/../../backend/src/pp/projeto/entities/projeto.proxy-pdm-meta.entity';
+import { DiretorioItemDto } from '@/../../backend/src/upload/dto/diretorio.dto';
 import dateTimeToDate from '@/helpers/dateTimeToDate';
 import { defineStore } from 'pinia';
 
@@ -25,13 +26,16 @@ interface ChamadasPendentes {
   metaSimplificada: boolean;
   mudarStatus: boolean;
   arquivos: boolean;
+  diretórios: boolean;
 }
 
 interface Estado {
   lista: Lista;
   emFoco: ProjetoDetailDto | null;
-  chamadasPendentes: ChamadasPendentes;
   arquivos: ListProjetoDocumento['linhas'] | [];
+  diretórios: DiretorioItemDto[];
+
+  chamadasPendentes: ChamadasPendentes;
 
   permissões: ProjetoPermissoesDto | null;
   pdmsSimplificados: PdmsSimplificados;
@@ -44,6 +48,7 @@ export const useProjetosStore = defineStore('projetos', {
     lista: [],
     emFoco: null,
     arquivos: [],
+    diretórios: [],
 
     chamadasPendentes: {
       lista: true,
@@ -52,6 +57,7 @@ export const useProjetosStore = defineStore('projetos', {
       metaSimplificada: false,
       mudarStatus: false,
       arquivos: false,
+      diretórios: true,
     },
 
     permissões: null,
@@ -114,6 +120,19 @@ export const useProjetosStore = defineStore('projetos', {
       }
       this.chamadasPendentes.lista = false;
       this.chamadasPendentes.emFoco = false;
+    },
+
+    async buscarDiretórios(idDoProjeto = 0): Promise<void> {
+      this.chamadasPendentes.diretórios = true;
+      try {
+        const { linhas } = await this.requestS.get(`${baseUrl}/diretorio`, { projeto_id: idDoProjeto || this.route.params.projetoId });
+
+        this.diretórios = linhas;
+      } catch (erro: unknown) {
+        this.erro = erro;
+      }
+
+      this.chamadasPendentes.diretórios = false;
     },
 
     async excluirItem(id: Number): Promise<boolean> {
@@ -192,7 +211,6 @@ export const useProjetosStore = defineStore('projetos', {
         this.arquivos = this.arquivos.filter((x) => x.id !== id);
         this.chamadasPendentes.arquivos = false;
 
-        console.debug('this.chamadasPendentes.arquivos', this.chamadasPendentes.arquivos);
         return true;
       } catch (erro) {
         this.erro = erro;
@@ -205,9 +223,7 @@ export const useProjetosStore = defineStore('projetos', {
       this.chamadasPendentes.arquivos = true;
 
       try {
-        let resposta;
-
-        resposta = await this.requestS.post(`${baseUrl}/projeto/${idDoProjeto || this.route.params.projetoId}/documento`, params);
+        const resposta = await this.requestS.post(`${baseUrl}/projeto/${idDoProjeto || this.route.params.projetoId}/documento`, params);
 
         this.chamadasPendentes.arquivos = false;
         return resposta;
@@ -273,5 +289,12 @@ export const useProjetosStore = defineStore('projetos', {
 
       return órgãos;
     },
+
+    diretóriosConsolidados: ({ diretórios, arquivos }): string[] => arquivos
+      .reduce((acc: DiretorioItemDto['caminho'][], cur) => (cur.arquivo?.diretorio_caminho
+        && acc.indexOf(cur.arquivo.diretorio_caminho) === -1
+        ? acc.concat([cur.arquivo.diretorio_caminho])
+        : acc), diretórios.map((x) => x.caminho))
+      .sort((a, b) => a.localeCompare(b)),
   },
 });

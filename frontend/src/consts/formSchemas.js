@@ -126,15 +126,17 @@ export const acompanhamento = object()
 
 export const arquivo = object()
   .shape({
-    descricao: string()
-      .label('Descrição')
-      .required('Preencha a descrição'),
-    tipo_documento_id: string()
-      .label('Tipo de Documento')
-      .required(),
     arquivo: string()
       .label('Arquivo')
       .required('Selecione um arquivo'),
+    descricao: string()
+      .label('Descrição')
+      .required('Preencha a descrição'),
+    diretorio_caminho: string()
+      .label('Inserir em pasta existente'),
+    tipo_documento_id: string()
+      .label('Tipo de Documento')
+      .required(),
   });
 
 export const autenticação = object()
