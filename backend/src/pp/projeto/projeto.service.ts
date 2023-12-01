@@ -14,7 +14,7 @@ import { PortfolioDto } from '../portfolio/entities/portfolio.entity';
 import { PortfolioService } from '../portfolio/portfolio.service';
 import { CreateProjetoDocumentDto, CreateProjetoDto } from './dto/create-projeto.dto';
 import { FilterProjetoDto } from './dto/filter-projeto.dto';
-import { UpdateProjetoDto } from './dto/update-projeto.dto';
+import { UpdateProjetoDocumentDto, UpdateProjetoDto } from './dto/update-projeto.dto';
 import { ProjetoDetailDto, ProjetoDocumentoDto, ProjetoDto, ProjetoPermissoesDto } from './entities/projeto.entity';
 
 import { HtmlSanitizer } from '../../common/html-sanitizer';
@@ -1303,6 +1303,33 @@ export class ProjetoService {
                     },
                 },
             },
+        });
+    }
+
+    async updateDocumento(projetoId: number, documentoId: number, dto: UpdateProjetoDocumentDto, user: PessoaFromJwt) {
+        const documento = await this.prisma.projetoDocumento.findFirstOrThrow({
+            where: {
+                id: documentoId,
+                projeto_id: projetoId,
+                removido_em: null
+            },
+            select: {
+                arquivo: {
+                    select: {
+                        id: true
+                    }
+                }
+            }
+        });
+
+        return await this.prisma.arquivo.update({
+            where: { id: documento.arquivo.id },
+            data: {
+                descricao: dto.descricao,
+                atualizado_por: user.id,
+                atualizado_em: new Date(Date.now())
+            },
+            select: { id: true }
         });
     }
 

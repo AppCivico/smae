@@ -90,6 +90,7 @@ model Pessoa {
     RegiaoQueAtualizei Regiao[] @relation("Atualizador")
 
     ArquivoQueCriei Arquivo[] @relation("Criador")
+    ArquivosQueAtualizei Arquivo[] @relation("Atualizador")
 
     ArquivoDocQueCriei     ArquivoDocumento[] @relation("Criador")
     ArquivoDocQueDesativei ArquivoDocumento[] @relation("Removedor")
@@ -660,6 +661,9 @@ model Arquivo {
     criador                         Pessoa?                           @relation("Criador", fields: [criado_por], references: [id])
     criado_por                      Int?
     criado_em                       DateTime                          @default(now()) @db.Timestamptz(6)
+    atualizador                     Pessoa?                           @relation("Atualizador", fields: [atualizado_por], references: [id])
+    atualizado_por                  Int?
+    atualizado_em                   DateTime?
     caminho                         String
     nome_original                   String
     mime_type                       String?

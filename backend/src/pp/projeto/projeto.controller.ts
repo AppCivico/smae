@@ -22,7 +22,7 @@ import { FindOneParams, FindTwoParams } from '../../common/decorators/find-param
 import { RecordWithId } from '../../common/dto/record-with-id.dto';
 import { CreateProjetoDocumentDto, CreateProjetoDto, CreateProjetoSeiDto } from './dto/create-projeto.dto';
 import { FilterProjetoDto } from './dto/filter-projeto.dto';
-import { UpdateProjetoDto, UpdateProjetoRegistroSeiDto } from './dto/update-projeto.dto';
+import { UpdateProjetoDocumentDto, UpdateProjetoDto, UpdateProjetoRegistroSeiDto } from './dto/update-projeto.dto';
 import {
     ListProjetoDocumento,
     ListProjetoDto,
@@ -143,6 +143,19 @@ export class ProjetoController {
     @Roles(...roles)
     async download(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt): Promise<ListProjetoDocumento> {
         return { linhas: await this.projetoService.list_document(params.id, user) };
+    }
+
+    @Patch(':id/documento/:id2')
+    @ApiBearerAuth('access-token')
+    @ApiUnauthorizedResponse()
+    @Roles(...roles)
+    async updateDocumento(
+        @Param() params: FindTwoParams,
+        @Body() dto: UpdateProjetoDocumentDto,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<RecordWithId> {
+        const projeto = await this.projetoService.findOne(params.id, user, 'ReadWrite');
+        return await this.projetoService.updateDocumento(params.id, params.id2, dto, user);
     }
 
     @Delete(':id/documento/:id2')
