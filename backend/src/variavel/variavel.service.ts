@@ -1,6 +1,6 @@
 import { HttpException, Injectable, Logger } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { Prisma, Serie } from '@prisma/client';
+import { Periodicidade, Prisma, Serie } from '@prisma/client';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { Date2YMD, DateYMD } from '../common/date2ymd';
 import { RecordWithId } from '../common/dto/record-with-id.dto';
@@ -12,7 +12,7 @@ import {
     SerieUpsert,
     ValidatedUpsert,
 } from './dto/batch-serie-upsert.dto';
-import { CreateVariavelDto } from './dto/create-variavel.dto';
+import { CreateGeradorVariavelDto, CreateVariavelDto } from './dto/create-variavel.dto';
 import { FilterVariavelDto } from './dto/filter-variavel.dto';
 import { ListSeriesAgrupadas } from './dto/list-variavel.dto';
 import { UpdateVariavelDto } from './dto/update-variavel.dto';
@@ -20,6 +20,14 @@ import { SerieValorNomimal, SerieValorPorPeriodo, ValorSerieExistente } from './
 
 const InicioFimErrMsg =
     'Inicio/Fim da medição da variável não pode ser nulo quando a periodicidade da variável é diferente do indicador';
+
+type IndicadorInfo = {
+    id: number;
+    iniciativa_id: number | null;
+    atividade_id: number | null;
+    meta_id: number | null;
+    periodicidade?: Periodicidade;
+};
 
 @Injectable()
 export class VariavelService {
@@ -48,20 +56,137 @@ export class VariavelService {
         // se a região existe e está ativa, se é do mesmo nível que foi escolhido no indicador
         // se não vier, conferir se o indicador realmente não é por região
 
-        const meta_id = await this.getMetaIdDoIndicador(createVariavelDto.indicador_id!, this.prisma);
-        if (!user.hasSomeRoles(['CadastroIndicador.inserir', 'PDM.admin_cp'])) {
-            const filterIdIn = await user.getMetasOndeSouResponsavel(this.prisma.metaResponsavel);
-            if (filterIdIn.includes(meta_id) === false)
-                throw new HttpException('Sem permissão para criar variável nesta meta', 400);
-        }
+        await this.checkPermissions(createVariavelDto, user);
 
         const responsaveis = createVariavelDto.responsaveis!;
         const indicador_id = createVariavelDto.indicador_id!;
         delete createVariavelDto.responsaveis;
         delete createVariavelDto.indicador_id;
+        const indicador = await this.loadIndicador(indicador_id);
 
+        this.fixIndicadorInicioFim(createVariavelDto, indicador);
+
+        const created = await this.prisma.$transaction(
+            async (prismaThx: Prisma.TransactionClient): Promise<RecordWithId> => {
+                return await this.performVariavelSave(
+                    prismaThx,
+                    createVariavelDto,
+                    indicador_id,
+                    indicador,
+                    responsaveis
+                );
+            }
+        );
+
+        return { id: created.id };
+    }
+
+    async create_region_generated(dto: CreateGeradorVariavelDto, user: PessoaFromJwt): Promise<RecordWithId[]> {
+        const regions = await this.prisma.regiao.findMany({
+            where: { id: { in: dto.regioes }, pdm_codigo_sufixo: { not: null }, removido_em: null },
+            select: { nivel: true },
+        });
+        if (regions.length != dto.regioes.length)
+            throw new HttpException('Todas as regiões precisam ter um sufixo configurado código', 400);
+
+        const porNivel: Record<number, number> = {};
+        for (const r of regions) {
+            if (!porNivel[r.nivel]) porNivel[r.nivel] = 0;
+            porNivel[r.nivel]++;
+        }
+        if (Object.keys(porNivel).length != 1)
+            throw new HttpException('Todas as regiões precisam ser do mesmo nível', 400);
+
+        await this.checkPermissions(dto, user);
+
+        const responsaveis = dto.responsaveis!;
+        const indicador_id = dto.indicador_id!;
+        delete dto.responsaveis;
+        delete dto.indicador_id;
+        const indicador = await this.loadIndicador(indicador_id);
+
+        this.fixIndicadorInicioFim(dto, indicador);
+
+        const created = await this.prisma.$transaction(
+            async (prismaThx: Prisma.TransactionClient): Promise<RecordWithId[]> => {
+                const ids: number[] = [];
+
+                const regions = await this.prisma.regiao.findMany({
+                    where: { id: { in: dto.regioes }, pdm_codigo_sufixo: { not: null }, removido_em: null },
+                    select: { pdm_codigo_sufixo: true, id: true },
+                });
+
+                for (const regiao of regions) {
+                    const variavel = await this.performVariavelSave(
+                        prismaThx,
+                        {
+                            ...dto,
+                            codigo: dto.prefixo_codigo + regiao.pdm_codigo_sufixo,
+                            regiao_id: regiao.id
+                        },
+                        indicador_id,
+                        indicador,
+                        responsaveis
+                    );
+                    ids.push(variavel.id);
+                }
+
+                return ids.map((n) => ({ id: n }));
+            }
+        );
+
+        return created;
+    }
+
+    private async performVariavelSave(
+        prismaThx: Prisma.TransactionClient,
+        createVariavelDto: CreateVariavelDto,
+        indicador_id: number,
+        indicador: IndicadorInfo,
+        responsaveis: number[]
+    ) {
+        const variavel = await prismaThx.variavel.create({
+            data: {
+                ...createVariavelDto,
+
+                indicador_variavel: {
+                    create: {
+                        indicador_id: indicador_id,
+                    },
+                },
+            },
+            select: { id: true },
+        });
+
+        await this.resyncIndicadorVariavel(indicador, variavel.id, prismaThx);
+
+        await prismaThx.variavelResponsavel.createMany({
+            data: await this.buildVarResponsaveis(variavel.id, responsaveis),
+        });
+
+        await this.recalc_variaveis_acumulada([variavel.id], prismaThx);
+
+        return variavel;
+    }
+
+    private async fixIndicadorInicioFim(
+        createVariavelDto: CreateVariavelDto | CreateGeradorVariavelDto,
+        indicador: IndicadorInfo
+    ) {
         if (createVariavelDto.atraso_meses === undefined) createVariavelDto.atraso_meses = 1;
+        if (createVariavelDto.periodicidade === indicador.periodicidade) {
+            createVariavelDto.fim_medicao = null;
+            createVariavelDto.inicio_medicao = null;
+        } else {
+            ['inicio_medicao', 'fim_medicao'].forEach((e: 'inicio_medicao' | 'fim_medicao') => {
+                if (!createVariavelDto[e]) {
+                    throw new HttpException(`${e}| ${InicioFimErrMsg}`, 400);
+                }
+            });
+        }
+    }
 
+    private async loadIndicador(indicador_id: number) {
         const indicador = await this.prisma.indicador.findFirst({
             where: { id: indicador_id },
             select: {
@@ -73,57 +198,22 @@ export class VariavelService {
             },
         });
         if (!indicador) throw new HttpException('Indicador não encontrado', 400);
-
-        if (createVariavelDto.periodicidade === indicador.periodicidade) {
-            createVariavelDto.fim_medicao = null;
-            createVariavelDto.inicio_medicao = null;
-        } else {
-            ['inicio_medicao', 'fim_medicao'].forEach((e: 'inicio_medicao' | 'fim_medicao') => {
-                if (!createVariavelDto[e]) {
-                    throw new HttpException(`${e}| ${InicioFimErrMsg}`, 400);
-                }
-            });
-        }
-
-        const created = await this.prisma.$transaction(
-            async (prismaThx: Prisma.TransactionClient): Promise<RecordWithId> => {
-                const variavel = await prismaThx.variavel.create({
-                    data: {
-                        ...createVariavelDto,
-                        indicador_variavel: {
-                            create: {
-                                indicador_id: indicador_id,
-                            },
-                        },
-                    },
-                    select: { id: true },
-                });
-
-                await this.resyncIndicadorVariavel(indicador, variavel.id, prismaThx);
-
-                await prismaThx.variavelResponsavel.createMany({
-                    data: await this.buildVarResponsaveis(variavel.id, responsaveis),
-                });
-
-                await this.recalc_variaveis_acumulada([variavel.id], prismaThx);
-
-                return variavel;
-            }
-        );
-
-        return { id: created.id };
+        return indicador;
     }
 
-    async resyncIndicadorVariavel(
-        indicador: {
-            id: number;
-            iniciativa_id: number | null;
-            atividade_id: number | null;
-            meta_id: number | null;
-        },
-        variavel_id: number,
-        prisma: Prisma.TransactionClient
+    private async checkPermissions(
+        createVariavelDto: CreateVariavelDto | CreateGeradorVariavelDto,
+        user: PessoaFromJwt
     ) {
+        const meta_id = await this.getMetaIdDoIndicador(createVariavelDto.indicador_id!, this.prisma);
+        if (!user.hasSomeRoles(['CadastroIndicador.inserir', 'PDM.admin_cp'])) {
+            const filterIdIn = await user.getMetasOndeSouResponsavel(this.prisma.metaResponsavel);
+            if (filterIdIn.includes(meta_id) === false)
+                throw new HttpException('Sem permissão para criar variável nesta meta', 400);
+        }
+    }
+
+    async resyncIndicadorVariavel(indicador: IndicadorInfo, variavel_id: number, prisma: Prisma.TransactionClient) {
         await prisma.indicadorVariavel.deleteMany({
             where: {
                 variavel_id: variavel_id,
