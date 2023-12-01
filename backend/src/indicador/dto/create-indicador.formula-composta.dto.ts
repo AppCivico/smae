@@ -1,9 +1,10 @@
 import { Type } from 'class-transformer';
-import { ArrayMaxSize, IsString, MaxLength, ValidateNested } from 'class-validator';
+import { ArrayMaxSize, IsBoolean, IsInt, IsOptional, IsString, MaxLength, ValidateNested } from 'class-validator';
 import { FormulaVariaveis } from './update-indicador.dto';
 import { IntersectionType, OmitType, PartialType, PickType } from '@nestjs/swagger';
+import { CreateIndicadorDto } from './create-indicador.dto';
 
-export class CreateIndicadorFormulaCompostaDto {
+export class CreateIndicadorFormulaCompostaDto extends PickType(CreateIndicadorDto, ['nivel_regionalizacao']) {
     /**
      * Titulo
      */
@@ -28,6 +29,9 @@ export class CreateIndicadorFormulaCompostaDto {
     @Type(() => FormulaVariaveis)
     @ArrayMaxSize(100000, { message: 'Variáveis de expressão precisa ter no máximo 100000 items' })
     formula_variaveis: FormulaVariaveis[];
+
+    @IsBoolean()
+    mostrar_monitoramento: boolean;
 }
 
 // query dois campos required, menos todos os outros, que podem entrar como Patch

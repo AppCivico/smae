@@ -112,6 +112,8 @@ export class IndicadorFormulaCompostaService {
                 titulo: true,
                 formula: true,
                 FormulaCompostaVariavel: true,
+                mostrar_monitoramento: true,
+                nivel_regionalizacao: true,
                 IndicadorFormulaComposta: {
                     where: {
                         indicador_id: indicador_id,
@@ -143,6 +145,8 @@ export class IndicadorFormulaCompostaService {
                 id: r.id,
                 titulo: r.titulo,
                 formula: r.formula,
+                mostrar_monitoramento: r.mostrar_monitoramento,
+                nivel_regionalizacao: r.nivel_regionalizacao,
                 formula_variaveis: r.FormulaCompostaVariavel,
                 indicador_origem: r.IndicadorFormulaComposta[0].indicador_origem,
             };

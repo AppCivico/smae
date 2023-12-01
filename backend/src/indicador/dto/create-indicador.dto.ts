@@ -50,6 +50,7 @@ export class CreateIndicadorDto {
     @IsOptional()
     @IsInt({ message: '$property| nivel_regionalizacao precisa ser um número ou null' })
     @ValidateIf((object, value) => value !== null)
+    @Min(1)
     @Type(() => Number)
     nivel_regionalizacao?: number | null;
 

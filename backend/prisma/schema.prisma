@@ -907,8 +907,8 @@ model IndicadorFormulaVariavel {
     janela               Int
     usar_serie_acumulada Boolean   @default(false)
 
-    @@index([variavel_id])
     @@unique([indicador_id, referencia])
+    @@index([variavel_id])
     @@map("indicador_formula_variavel")
 }
 
@@ -981,6 +981,9 @@ model FormulaComposta {
     atualizado_por Int?
     atualizado_em  DateTime @default(now()) @db.Timestamptz(6)
 
+    nivel_regionalizacao Int?
+    mostrar_monitoramento Boolean @default(false)
+
     removido_por Int?
     removido_em  DateTime? @db.Timestamptz(6)
 
@@ -1004,8 +1007,8 @@ model FormulaCompostaVariavel {
     janela               Int
     usar_serie_acumulada Boolean         @default(false)
 
-    @@index([variavel_id])
     @@unique([formula_composta_id, referencia])
+    @@index([variavel_id])
     @@map("formula_composta_variavel")
 }
 
