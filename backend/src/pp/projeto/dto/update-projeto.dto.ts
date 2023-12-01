@@ -208,3 +208,10 @@ export class UpdateProjetoDto extends OmitType(PartialType(CreateProjetoDto), ['
     })
     status?: ProjetoStatus;
 }
+
+export class UpdateProjetoDocumentDto {
+    @IsOptional()
+    @IsString()
+    @ValidateIf((object, value) => value !== null)
+    descricao?: string | null;
+}
