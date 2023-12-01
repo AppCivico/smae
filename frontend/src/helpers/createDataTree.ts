@@ -3,6 +3,7 @@
  *
  * @param {*} dataset
  * @param {string} [parentPropertyName='parentId']
+ * @param {string} [childrenPropertyName='children']
  * @return {*}
  * @link https://stackoverflow.com/a/40732240/15425845
  */
@@ -13,7 +14,7 @@ export default (dataset: any[], parentPropertyName: string = 'parentId', childre
   });
 
   const dataTree: any[] = [];
-  dataset.forEach((aData: { [x: string]: string | number; id: string | number }) => {
+  dataset.forEach((aData: { [x: string]: any; id: string | number }) => {
     if (aData[parentPropertyName]) {
       hashTable[aData[parentPropertyName]][childrenPropertyName].push(hashTable[aData.id]);
     } else {
