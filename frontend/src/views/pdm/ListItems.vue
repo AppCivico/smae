@@ -131,7 +131,7 @@ function abreEdicaoOrcamento(id) {
               </td>
               <td>{{ item.descricao }}</td>
               <td>{{ item.prefeito }}</td>
-              <td>{{ item.ativo ? ' S i m ' : 'Não' }}</td>
+              <td>{{ item.ativo ? 'Sim' : 'Não' }}</td>
               <td style="text-align: right;">
                 <a
                   v-if="perm?.CadastroPdm?.editar"
