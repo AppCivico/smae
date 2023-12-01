@@ -627,7 +627,7 @@ model Regiao {
     codigo     Int?
     parente_id Int?
 
-    // pdm_codigo_regiao String?
+    pdm_codigo_sufixo String?
 
     arquivo_shapefile_id Int?
     ArquivoShapefile     Arquivo? @relation(fields: [arquivo_shapefile_id], references: [id])
@@ -981,7 +981,7 @@ model FormulaComposta {
     atualizado_por Int?
     atualizado_em  DateTime @default(now()) @db.Timestamptz(6)
 
-    nivel_regionalizacao Int?
+    nivel_regionalizacao  Int?
     mostrar_monitoramento Boolean @default(false)
 
     removido_por Int?

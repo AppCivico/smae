@@ -4,9 +4,9 @@ import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { FindOneParams } from '../common/decorators/find-params';
-import { RecordWithId } from '../common/dto/record-with-id.dto';
+import { BatchRecordWithId, RecordWithId } from '../common/dto/record-with-id.dto';
 import { BatchSerieUpsert } from './dto/batch-serie-upsert.dto';
-import { CreateVariavelDto } from './dto/create-variavel.dto';
+import { CreateGeradorVariavelDto, CreateVariavelDto } from './dto/create-variavel.dto';
 import { FilterVariavelDto } from './dto/filter-variavel.dto';
 import { ListSeriesAgrupadas, ListVariavelDto } from './dto/list-variavel.dto';
 import { UpdateVariavelDto } from './dto/update-variavel.dto';
@@ -83,5 +83,16 @@ export class VariavelController {
         @CurrentUser() user: PessoaFromJwt
     ): Promise<ListSeriesAgrupadas> {
         return await this.variavelService.getSeriePrevistoRealizado(params.id);
+    }
+
+    @Post('indicador-variavel/gerador-regionalizado')
+    @ApiBearerAuth('access-token')
+    @ApiUnauthorizedResponse()
+    @Roles('CadastroIndicador.inserir')
+    async create_generated(
+        @Body() dto: CreateGeradorVariavelDto,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<BatchRecordWithId> {
+        return { ids: await this.variavelService.create_region_generated(dto, user) };
     }
 }

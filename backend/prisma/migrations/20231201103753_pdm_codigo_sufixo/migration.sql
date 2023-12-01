@@ -1,0 +1,35 @@
+-- AlterTable
+ALTER TABLE "regiao" ADD COLUMN     "pdm_codigo_sufixo" TEXT;
+
+update regiao set pdm_codigo_sufixo = 'SUBCL' where nivel = 3 and descricao = 'Campo Limpo';
+update regiao set pdm_codigo_sufixo = 'SUBMB' where nivel = 3 and descricao = E'M\'Boi Mirim';
+update regiao set pdm_codigo_sufixo = 'SUBCS' where nivel = 3 and descricao = 'Capela do Socorro';
+update regiao set pdm_codigo_sufixo = 'SUBCT' where nivel = 3 and descricao = 'Cidade Tiradentes';
+update regiao set pdm_codigo_sufixo = 'SUBPJ' where nivel = 3 and descricao = 'Pirituba/Jaraguá';
+update regiao set pdm_codigo_sufixo = 'SUBFO' where nivel = 3 and descricao = 'Freguesia/Brasilândia';
+update regiao set pdm_codigo_sufixo = 'SUBCV' where nivel = 3 and descricao = 'Casa Verde/Cachoeirinha';
+update regiao set pdm_codigo_sufixo = 'SUBST' where nivel = 3 and descricao = 'Santana/Tucuruvi';
+update regiao set pdm_codigo_sufixo = 'SUBJT' where nivel = 3 and descricao = 'Jaçanã/Tremembé';
+update regiao set pdm_codigo_sufixo = 'SUBMG' where nivel = 3 and descricao = 'Vila Maria/Vila Guilherme';
+update regiao set pdm_codigo_sufixo = 'SUBPE' where nivel = 3 and descricao = 'Penha';
+update regiao set pdm_codigo_sufixo = 'SUBEM' where nivel = 3 and descricao = 'Ermelino Matarazzo';
+update regiao set pdm_codigo_sufixo = 'SUBMP' where nivel = 3 and descricao = 'São Miguel Paulista';
+update regiao set pdm_codigo_sufixo = 'SUBIT' where nivel = 3 and descricao = 'Itaim Paulista';
+update regiao set pdm_codigo_sufixo = 'SUBIQ' where nivel = 3 and descricao = 'Itaquera';
+update regiao set pdm_codigo_sufixo = 'SUBG'  where nivel = 3 and descricao = 'Guaianases';
+update regiao set pdm_codigo_sufixo = 'SUBLA' where nivel = 3 and descricao = 'Lapa';
+update regiao set pdm_codigo_sufixo = 'SUBSE' where nivel = 3 and descricao = 'Sé';
+update regiao set pdm_codigo_sufixo = 'SUBMO' where nivel = 3 and descricao = 'Mooca';
+update regiao set pdm_codigo_sufixo = 'SUBAF' where nivel = 3 and descricao = 'Aricanduva/Formosa/Carrão';
+update regiao set pdm_codigo_sufixo = 'SUBSM' where nivel = 3 and descricao = 'São Mateus';
+update regiao set pdm_codigo_sufixo = 'SUBVP' where nivel = 3 and descricao = 'Vila Prudente';
+update regiao set pdm_codigo_sufixo = 'SUBIP' where nivel = 3 and descricao = 'Ipiranga';
+update regiao set pdm_codigo_sufixo = 'SUBVM' where nivel = 3 and descricao = 'Vila Mariana';
+update regiao set pdm_codigo_sufixo = 'SUBBT' where nivel = 3 and descricao = 'Butantã';
+update regiao set pdm_codigo_sufixo = 'SUBPI' where nivel = 3 and descricao = 'Pinheiros';
+update regiao set pdm_codigo_sufixo = 'SUBAD' where nivel = 3 and descricao = 'Cidade Ademar';
+update regiao set pdm_codigo_sufixo = 'SUBPA' where nivel = 3 and descricao = 'Parelheiros';
+update regiao set pdm_codigo_sufixo = 'SUBJA' where nivel = 3 and descricao = 'Jabaquara';
+update regiao set pdm_codigo_sufixo = 'SUBSA' where nivel = 3 and descricao = 'Santo Amaro';
+update regiao set pdm_codigo_sufixo = 'SUBPR' where nivel = 3 and descricao = 'Perus/Anhanguera';
+update regiao set pdm_codigo_sufixo = 'SUBSP' where nivel = 3 and descricao = 'Sapopemba';
