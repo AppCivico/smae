@@ -1,11 +1,11 @@
-import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post, Query } from '@nestjs/common';
 import { ApiBearerAuth, ApiNoContentResponse, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { FindOneParams } from '../common/decorators/find-params';
 import { RecordWithId } from '../common/dto/record-with-id.dto';
-import { CreateRegiaoDto } from './dto/create-regiao.dto';
+import { CreateRegiaoDto, FilterRegiaoDto } from './dto/create-regiao.dto';
 import { DetalheRegiaoDto } from './dto/detalhe-regiao.dto';
 import { ListRegiaoDto } from './dto/list-regiao.dto';
 import { UpdateRegiaoDto } from './dto/update-regiao.dto';
@@ -26,8 +26,8 @@ export class RegiaoController {
 
     @ApiBearerAuth('access-token')
     @Get()
-    async findAll(): Promise<ListRegiaoDto> {
-        return { linhas: await this.regiaoService.findAll() };
+    async findAll(@Query() filters: FilterRegiaoDto): Promise<ListRegiaoDto> {
+        return { linhas: await this.regiaoService.findAll(filters) };
     }
 
     @Patch(':id')
