@@ -36,128 +36,130 @@ const éPossívelAbrir = (item) => !item.children?.length
 </script>
 
 <template>
-  <ul
-    v-if="listaDeDiretórios.length || temArquivos"
-    v-show="exibirConteúdo"
-    class="arvore-de-arquivos"
-  >
-    <li
-      v-for="item, i in listaDeDiretórios"
-      :key="`diretorio--${item.id || i}`"
-      class="arvore-de-arquivos__item arvore-de-arquivos__item--diretorio"
+  <Transition name="fade">
+    <ul
+      v-if="listaDeDiretórios.length || temArquivos"
+      v-show="exibirConteúdo"
+      class="arvore-de-arquivos"
     >
-      <span class="arvore-de-arquivos__linha">
-        <label
-          class="like-a__text arvore-de-arquivos__abrir mr1"
-          :class="{
-            'arvore-de-arquivos__abrir--desabilitada': éPossívelAbrir(item)
-          }"
-        >
-          <input
-            v-model="fecharFilha"
-            hidden
-            type="checkbox"
-            :value="item.id"
-            :disabled="éPossívelAbrir(item)"
-          >
-          <svg
-            title="fechar/abrir lista de arquivos"
-            width="20"
-            height="20"
-          ><use
-            :xlink:href="fecharFilha.includes(item.id)
-              || éPossívelAbrir(item)
-              ? '#i_folder'
-              : '#i_folder-open'"
-          /></svg>
-        </label>
-
-        <strong class="arvore-de-arquivos__nome">
-          {{ item.id }}
-        </strong>
-
-        <router-link
-          class="like-a__text arvore-de-arquivos__adicionar"
-          :aria-label="`adicionar arquivo em ${item.caminho}`"
-          :to="{
-            name: 'projetosNovoDocumento',
-            query: {
-              diretorio_caminho: item.caminho
-            }
-          }"
-        >
-          <svg
-            width="20"
-            height="20"
-          ><use xlink:href="#i_+" /></svg>
-        </router-link>
-      </span>
-
-      <ArvoreDeArquivos
-        :key="`diretorio--${item.id || i}__arvore`"
-        :aninhado="true"
-        :lista-de-diretórios="item.children"
-        :tem-arquivos="!!arquivosAgrupadosPorCaminho?.[item.caminho]?.length"
-        :arquivos-agrupados-por-caminho="arquivosAgrupadosPorCaminho"
-        :exibir-conteúdo="!fecharFilha.includes(item.id)"
-        @apagar="($params) => $emit('apagar', $params)"
-        @editar="($params) => $emit('editar', $params)"
+      <li
+        v-for="item, i in listaDeDiretórios"
+        :key="`diretorio--${item.id || i}`"
+        class="arvore-de-arquivos__item arvore-de-arquivos__item--diretorio"
       >
-        <template v-if="arquivosAgrupadosPorCaminho?.[item.caminho]">
-          <li
-            v-for="arquivo, j in arquivosAgrupadosPorCaminho[item.caminho]"
-            :key="`diretorio--${item.id || i}__arquivo--${arquivo.id || j}`"
-            class="arvore-de-arquivos__item arvore-de-arquivos__item--arquivo"
+        <span class="arvore-de-arquivos__linha">
+          <label
+            class="like-a__text arvore-de-arquivos__abrir mr1"
+            :class="{
+              'arvore-de-arquivos__abrir--desabilitada': éPossívelAbrir(item)
+            }"
           >
-            <span class="arvore-de-arquivos__linha">
-              <component
-                :is="arquivo?.arquivo?.download_token ? 'a' : 'span'"
-                :href="arquivo?.arquivo?.download_token
-                  ? baseUrl + '/download/' + arquivo?.arquivo?.download_token
-                  : undefined"
-                download
-                class="arvore-de-arquivos__nome"
-              >
-                {{ arquivo?.arquivo?.nome_original ?? '-' }}
-              </component>
+            <input
+              v-model="fecharFilha"
+              hidden
+              type="checkbox"
+              :value="item.id"
+              :disabled="éPossívelAbrir(item)"
+            >
+            <svg
+              title="fechar/abrir lista de arquivos"
+              width="20"
+              height="20"
+            ><use
+              :xlink:href="fecharFilha.includes(item.id)
+                || éPossívelAbrir(item)
+                ? '#i_folder'
+                : '#i_folder-open'"
+            /></svg>
+          </label>
 
-              <small
-                v-if="arquivo?.arquivo?.descricao"
-                class="arvore-de-arquivos__descricao ml1"
-              >
-                {{ arquivo?.arquivo?.descricao }}
-              </small>
-              <!--
-              <button
-                type="button"
-                class="like-a__text arvore-de-arquivos__editar"
-                aria-label="editar"
-                @click="$emit('editar', arquivo?.id)"
-              >
-                <svg
-                  width="20"
-                  height="20"
-                ><use xlink:href="#i_edit" /></svg>
-              </button>
-              -->
-              <button
-                type="button"
-                class="like-a__text arvore-de-arquivos__apagar"
-                aria-label="apagar"
-                @click="$emit('apagar', arquivo?.id)"
-              >
-                <svg
-                  width="20"
-                  height="20"
-                ><use xlink:href="#i_waste" /></svg>
-              </button>
-            </span>
-          </li>
-        </template>
-      </ArvoreDeArquivos>
-    </li>
-    <slot />
-  </ul>
+          <strong class="arvore-de-arquivos__nome">
+            {{ item.id }}
+          </strong>
+
+          <router-link
+            class="like-a__text arvore-de-arquivos__adicionar"
+            :aria-label="`adicionar arquivo em ${item.caminho}`"
+            :to="{
+              name: 'projetosNovoDocumento',
+              query: {
+                diretorio_caminho: item.caminho
+              }
+            }"
+          >
+            <svg
+              width="20"
+              height="20"
+            ><use xlink:href="#i_+" /></svg>
+          </router-link>
+        </span>
+
+        <ArvoreDeArquivos
+          :key="`diretorio--${item.id || i}__arvore`"
+          :aninhado="true"
+          :lista-de-diretórios="item.children"
+          :tem-arquivos="!!arquivosAgrupadosPorCaminho?.[item.caminho]?.length"
+          :arquivos-agrupados-por-caminho="arquivosAgrupadosPorCaminho"
+          :exibir-conteúdo="!fecharFilha.includes(item.id)"
+          @apagar="($params) => $emit('apagar', $params)"
+          @editar="($params) => $emit('editar', $params)"
+        >
+          <template v-if="arquivosAgrupadosPorCaminho?.[item.caminho]">
+            <li
+              v-for="arquivo, j in arquivosAgrupadosPorCaminho[item.caminho]"
+              :key="`diretorio--${item.id || i}__arquivo--${arquivo.id || j}`"
+              class="arvore-de-arquivos__item arvore-de-arquivos__item--arquivo"
+            >
+              <span class="arvore-de-arquivos__linha">
+                <component
+                  :is="arquivo?.arquivo?.download_token ? 'a' : 'span'"
+                  :href="arquivo?.arquivo?.download_token
+                    ? baseUrl + '/download/' + arquivo?.arquivo?.download_token
+                    : undefined"
+                  download
+                  class="arvore-de-arquivos__nome"
+                >
+                  {{ arquivo?.arquivo?.nome_original ?? '-' }}
+                </component>
+
+                <small
+                  v-if="arquivo?.arquivo?.descricao"
+                  class="arvore-de-arquivos__descricao ml1"
+                >
+                  {{ arquivo?.arquivo?.descricao }}
+                </small>
+                <!--
+                <button
+                  type="button"
+                  class="like-a__text arvore-de-arquivos__editar"
+                  aria-label="editar"
+                  @click="$emit('editar', arquivo?.id)"
+                >
+                  <svg
+                    width="20"
+                    height="20"
+                  ><use xlink:href="#i_edit" /></svg>
+                </button>
+                -->
+                <button
+                  type="button"
+                  class="like-a__text arvore-de-arquivos__apagar"
+                  aria-label="apagar"
+                  @click="$emit('apagar', arquivo?.id)"
+                >
+                  <svg
+                    width="20"
+                    height="20"
+                  ><use xlink:href="#i_waste" /></svg>
+                </button>
+              </span>
+            </li>
+          </template>
+        </ArvoreDeArquivos>
+      </li>
+      <slot />
+    </ul>
+  </Transition>
 </template>
 <style lang="less" scoped>
 .arvore-de-arquivos {
