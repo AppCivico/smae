@@ -75,6 +75,11 @@ export class VariavelService {
                     indicador,
                     responsaveis
                 );
+            },
+            {
+                isolationLevel: 'Serializable',
+                maxWait: 60 * 1000,
+                timeout: 120 * 1000,
             }
         );
 
@@ -135,6 +140,11 @@ export class VariavelService {
                 }
 
                 return ids.map((n) => ({ id: n }));
+            },
+            {
+                isolationLevel: 'Serializable',
+                maxWait: 60 * 1000,
+                timeout: 120 * 1000,
             }
         );
 
