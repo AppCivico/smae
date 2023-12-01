@@ -116,13 +116,16 @@ export class VariavelService {
                     select: { pdm_codigo_sufixo: true, id: true },
                 });
 
+                const prefixo = dto.prefixo_codigo;
+                delete (dto as any).regioes;
+                delete (dto as any).prefixo_codigo;
                 for (const regiao of regions) {
                     const variavel = await this.performVariavelSave(
                         prismaThx,
                         {
                             ...dto,
-                            codigo: dto.prefixo_codigo + regiao.pdm_codigo_sufixo,
-                            regiao_id: regiao.id
+                            codigo: prefixo + regiao.pdm_codigo_sufixo,
+                            regiao_id: regiao.id,
                         },
                         indicador_id,
                         indicador,
