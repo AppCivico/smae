@@ -1,8 +1,9 @@
+import { ApiProperty, IntersectionType, OmitType, PartialType, PickType } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { ArrayMaxSize, IsBoolean, IsInt, IsOptional, IsString, MaxLength, ValidateNested } from 'class-validator';
-import { FormulaVariaveis } from './update-indicador.dto';
-import { IntersectionType, OmitType, PartialType, PickType } from '@nestjs/swagger';
+import { ArrayMaxSize, IsBoolean, IsEnum, IsString, MaxLength, ValidateNested } from 'class-validator';
+import { CreateGeradorVariavelDto } from '../../variavel/dto/create-variavel.dto';
 import { CreateIndicadorDto } from './create-indicador.dto';
+import { FormulaVariaveis } from './update-indicador.dto';
 
 export class CreateIndicadorFormulaCompostaDto extends PickType(CreateIndicadorDto, ['nivel_regionalizacao']) {
     /**
@@ -38,4 +39,37 @@ export class CreateIndicadorFormulaCompostaDto extends PickType(CreateIndicadorD
 export class UpdateIndicadorFormulaCompostaDto extends IntersectionType(
     PartialType(OmitType(CreateIndicadorFormulaCompostaDto, ['formula', 'formula_variaveis'] as const)),
     PickType(CreateIndicadorFormulaCompostaDto, ['formula', 'formula_variaveis'] as const)
+) {}
+
+export const OperacaoPadraoDto = {
+    'Soma': 'Soma',
+    'Subtração': 'Subtração',
+    'Divisão': 'Divisão',
+    'Multiplicação': 'Multiplicação',
+    'Média Aritmética': 'Média Aritmética',
+} as const;
+
+export type OperacaoPadraoDto = (typeof OperacaoPadraoDto)[keyof typeof OperacaoPadraoDto];
+// ta em ordem alfa, mas eu acho que vão pedir pra mudar, pq faz mais sentido Soma / Média Aritmética, depois os outros
+export const OperacaoSuportadaOrdem: OperacaoPadraoDto[] = [
+    'Divisão',
+    'Média Aritmética',
+    'Multiplicação',
+    'Soma',
+    'Subtração',
+];
+
+export class GeneratorFormulaCompostaFormDto extends IntersectionType(
+    PickType(CreateIndicadorFormulaCompostaDto, ['titulo'] as const),
+    PickType(CreateIndicadorFormulaCompostaDto, ['nivel_regionalizacao'] as const),
+    PickType(CreateGeradorVariavelDto, ['regioes', 'prefixo_codigo'] as const),
+    PickType(FormulaVariaveis, ['janela', 'usar_serie_acumulada'] as const)
+) {
+    @IsEnum(OperacaoPadraoDto)
+    @ApiProperty({ enum: OperacaoPadraoDto, enumName: 'OperacaoPadraoDto' })
+    operacao: OperacaoPadraoDto;
+}
+
+export class FilterFormulaCompostaFormDto extends IntersectionType(
+    PickType(CreateGeradorVariavelDto, ['prefixo_codigo'] as const)
 ) {}

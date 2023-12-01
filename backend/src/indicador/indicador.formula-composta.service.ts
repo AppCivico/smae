@@ -5,9 +5,15 @@ import { RecordWithId } from '../common/dto/record-with-id.dto';
 import { PrismaService } from '../prisma/prisma.service';
 import {
     CreateIndicadorFormulaCompostaDto,
+    FilterFormulaCompostaFormDto,
+    GeneratorFormulaCompostaFormDto,
+    OperacaoPadraoDto,
     UpdateIndicadorFormulaCompostaDto,
 } from './dto/create-indicador.formula-composta.dto';
-import { IndicadorFormulaCompostaDto } from './entities/indicador.formula-composta.entity';
+import {
+    GeneratorFormulaCompostaReturnDto,
+    IndicadorFormulaCompostaDto,
+} from './entities/indicador.formula-composta.entity';
 import { IndicadorService } from './indicador.service';
 
 @Injectable()
@@ -462,5 +468,92 @@ export class IndicadorFormulaCompostaService {
                 }
             }
         }
+    }
+
+    async geradorFormula(
+        indicador_id: number,
+        dto: GeneratorFormulaCompostaFormDto,
+        user: PessoaFromJwt
+    ): Promise<GeneratorFormulaCompostaReturnDto> {
+        const indicador = await this.indicadorService.findOne(indicador_id, user);
+        if (indicador === null) throw new HttpException('Indicador não encontrado', 404);
+
+        const variaveis = await this.extractVariables(dto, indicador_id, dto.regioes);
+
+        if (variaveis.length == 0)
+            throw new HttpException(
+                'É necessário pelo menos 1 variável, mas nenhuma foi encontrada com o prefixo informado.',
+                400
+            );
+
+        if (variaveis.length != dto.regioes.length)
+            throw new HttpException(
+                'Alguma região selecionada não possui mais uma variável que atenda aos critérios; por favor, repita a pesquisa.',
+                400
+            );
+
+        const ret: GeneratorFormulaCompostaReturnDto = {
+            formula: '',
+            formula_variaveis: [],
+            mostrar_monitoramento: false,
+            titulo: dto.titulo,
+            nivel_regionalizacao: null,
+        };
+
+        const operacoes: Record<OperacaoPadraoDto, string> = {
+            'Média Aritmética': '+',
+            'Divisão': '/',
+            'Multiplicação': '*',
+            'Soma': '+',
+            'Subtração': '-',
+        } as const;
+
+        let i = 1;
+        for (const variavel of variaveis) {
+            ret.formula += '$_' + i + ' ' + operacoes[dto.operacao] + ' ';
+            ret.formula_variaveis.push({
+                janela: dto.janela,
+                referencia: '_' + i,
+                usar_serie_acumulada: dto.usar_serie_acumulada,
+                variavel_id: variavel.id,
+            });
+            i++;
+
+            const nivel = variavel.regiao?.nivel;
+            if (nivel && ret.nivel_regionalizacao == null) ret.nivel_regionalizacao = nivel;
+            if (nivel && ret.nivel_regionalizacao != nivel) {
+                throw new HttpException('Todas as variáveis precisam estar no mesmo nível de região.', 400);
+            }
+        }
+        if (ret.formula) ret.formula = ret.formula.substring(0, ret.formula.length - 3); // tira a operação e os espaços
+
+        if (dto.operacao == 'Média Aritmética') {
+            ret.formula = '(' + ret.formula + ')' + ' / ' + variaveis.length;
+        }
+
+        return ret;
+    }
+
+    async contaVariavelPrefixo(
+        indicador_id: number,
+        dto: FilterFormulaCompostaFormDto,
+        user: PessoaFromJwt
+    ): Promise<number> {
+        const indicador = await this.indicadorService.findOne(indicador_id, user);
+        if (indicador === null) throw new HttpException('Indicador não encontrado', 404);
+
+        return (await this.extractVariables(dto, indicador_id, null)).length;
+    }
+
+    private async extractVariables(dto: FilterFormulaCompostaFormDto, indicador_id: number, regioes: number[] | null) {
+        return await this.prisma.variavel.findMany({
+            where: {
+                codigo: { startsWith: dto.prefixo_codigo, mode: 'insensitive' },
+                removido_em: null,
+                indicador_variavel: { some: { indicador_id } },
+                regiao_id: regioes == null ? { not: null } : { in: regioes },
+            },
+            select: { id: true, codigo: true, regiao: { select: { nivel: true } } },
+        });
     }
 }

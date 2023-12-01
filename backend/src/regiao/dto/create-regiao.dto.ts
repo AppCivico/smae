@@ -1,4 +1,5 @@
-import { Type } from 'class-transformer';
+import { PartialType, PickType } from '@nestjs/swagger';
+import { Transform, Type } from 'class-transformer';
 import { IsInt, IsOptional, IsString, Max, MaxLength, Min, ValidateIf } from 'class-validator';
 
 export class CreateRegiaoDto {
@@ -35,6 +36,7 @@ export class CreateRegiaoDto {
     @IsOptional()
     @IsInt({ message: '$property| Precisa ser nulo ou o ID' })
     @ValidateIf((object, value) => value !== null)
+    @Transform((a: any) => a.value === '' ? undefined : +a.value)
     parente_id: number | undefined;
 
     /**
@@ -45,3 +47,5 @@ export class CreateRegiaoDto {
     @IsString({ message: '$property| upload_token de um arquivo de Shapefile' })
     upload_shapefile?: string | null;
 }
+
+export class FilterRegiaoDto extends PartialType(PickType(CreateRegiaoDto, ['nivel', 'parente_id'])) {}
