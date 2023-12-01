@@ -1,4 +1,4 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, OmitType } from '@nestjs/swagger';
 import { Periodicidade } from '@prisma/client';
 import { Transform, Type } from 'class-transformer';
 import {
@@ -12,6 +12,7 @@ import {
     IsOptional,
     IsString,
     Max,
+    MaxLength,
     Min,
     ValidateIf,
 } from 'class-validator';
@@ -97,6 +98,7 @@ export class CreateVariavelDto {
     ano_base?: number | null;
 
     @IsString()
+    @MaxLength(60)
     codigo: string;
 
     /**
@@ -122,4 +124,16 @@ export class CreateVariavelDto {
     @Type(() => Number)
     @Min(0)
     atraso_meses?: number;
+}
+
+export class CreateGeradorVariavelDto extends OmitType(CreateVariavelDto, ['codigo']) {
+    @IsString()
+    @MaxLength(60)
+    prefixo_codigo: string;
+
+    @IsArray({ message: '$property| tag(s): precisa ser uma array.' })
+    @ArrayMinSize(1, { message: '$property| tag(s): precisa ter pelo menos um item' })
+    @ArrayMaxSize(1000, { message: '$property| tag(s): precisa ter no máximo 1000 items' })
+    @IsInt({ each: true, message: '$property| Cada item precisa ser um número inteiro' })
+    regioes: number[];
 }
