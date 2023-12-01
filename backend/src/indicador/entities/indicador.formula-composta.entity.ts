@@ -6,6 +6,8 @@ export class IndicadorFormulaCompostaDto {
     titulo: string;
     formula: string | null;
     formula_variaveis: FormulaVariaveis[];
+    nivel_regionalizacao: number | null;
+    mostrar_monitoramento: boolean;
     // pensar que provavelmente o frontend vai querer uma coluna pra saber se é herdada ou não, então fica aqui
-    indicador_origem: IndicadorVariavelOrigemDto | null
+    indicador_origem: IndicadorVariavelOrigemDto | null;
 }
