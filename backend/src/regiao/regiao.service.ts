@@ -2,7 +2,7 @@ import { HttpException, Injectable } from '@nestjs/common';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { PrismaService } from '../prisma/prisma.service';
 import { UploadService } from '../upload/upload.service';
-import { CreateRegiaoDto } from './dto/create-regiao.dto';
+import { CreateRegiaoDto, FilterRegiaoDto } from './dto/create-regiao.dto';
 import { UpdateRegiaoDto } from './dto/update-regiao.dto';
 
 @Injectable()
@@ -75,10 +75,12 @@ export class RegiaoService {
         return created;
     }
 
-    async findAll() {
+    async findAll(filters: FilterRegiaoDto) {
         const listActive = await this.prisma.regiao.findMany({
             where: {
                 removido_em: null,
+                nivel: filters.nivel,
+                parente_id: filters.parente_id,
             },
             orderBy: [{ nivel: 'asc' }, { parente_id: 'asc' }],
             select: {

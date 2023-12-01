@@ -1,4 +1,5 @@
 import { IndicadorVariavelOrigemDto } from '../../variavel/entities/variavel.entity';
+import { CreateIndicadorFormulaCompostaDto } from '../dto/create-indicador.formula-composta.dto';
 import { FormulaVariaveis } from '../dto/update-indicador.dto';
 
 export class IndicadorFormulaCompostaDto {
@@ -10,4 +11,10 @@ export class IndicadorFormulaCompostaDto {
     mostrar_monitoramento: boolean;
     // pensar que provavelmente o frontend vai querer uma coluna pra saber se é herdada ou não, então fica aqui
     indicador_origem: IndicadorVariavelOrigemDto | null;
+}
+
+// na vdd, só pra ter um nome diferente, pq ela precisa retornar tudo o que é necessário pra criar
+export class GeneratorFormulaCompostaReturnDto extends CreateIndicadorFormulaCompostaDto {
+
+
 }

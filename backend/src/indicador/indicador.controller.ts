@@ -15,16 +15,19 @@ import { RecordWithId } from '../common/dto/record-with-id.dto';
 import { ListSeriesAgrupadas } from '../variavel/dto/list-variavel.dto';
 import { SerieIndicadorValorNominal, SerieValorNomimal } from '../variavel/entities/variavel.entity';
 import { CreateIndicadorDto } from './dto/create-indicador.dto';
-import { FilterIndicadorDto, FilterIndicadorSerieDto } from './dto/filter-indicador.dto';
-import { ListIndicadorDto } from './dto/list-indicador.dto';
-import { UpdateIndicadorDto } from './dto/update-indicador.dto';
-import { IndicadorService } from './indicador.service';
 import {
     CreateIndicadorFormulaCompostaDto,
+    FilterFormulaCompostaFormDto,
+    GeneratorFormulaCompostaFormDto,
     UpdateIndicadorFormulaCompostaDto,
 } from './dto/create-indicador.formula-composta.dto';
-import { IndicadorFormulaCompostaService } from './indicador.formula-composta.service';
+import { FilterIndicadorDto, FilterIndicadorSerieDto } from './dto/filter-indicador.dto';
+import { ListIndicadorDto } from './dto/list-indicador.dto';
 import { ListIndicadorFormulaCompostaItemDto } from './dto/list-indicador.formula-composta.dto';
+import { UpdateIndicadorDto } from './dto/update-indicador.dto';
+import { GeneratorFormulaCompostaReturnDto } from './entities/indicador.formula-composta.entity';
+import { IndicadorFormulaCompostaService } from './indicador.formula-composta.service';
+import { IndicadorService } from './indicador.service';
 
 @ApiTags('Indicador')
 @Controller('')
@@ -143,5 +146,29 @@ export class IndicadorController {
     async delete_fc(@Param() params: FindTwoParams, @CurrentUser() user: PessoaFromJwt) {
         await this.indicadorFormulaCompostaService.remove(params.id, params.id2, user);
         return '';
+    }
+
+    @Get('indicador/:id/auxiliar-formula-composta/variavel')
+    @ApiBearerAuth('access-token')
+    @ApiUnauthorizedResponse()
+    @Roles('CadastroIndicador.inserir', 'CadastroMeta.inserir')
+    async auxiliar_formula_composta_variavel(
+        @Param() params: FindOneParams,
+        @Query() dto: FilterFormulaCompostaFormDto,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<number> {
+        return await this.indicadorFormulaCompostaService.contaVariavelPrefixo(params.id, dto, user);
+    }
+
+    @Patch('indicador/:id/auxiliar-formula-composta')
+    @ApiBearerAuth('access-token')
+    @ApiUnauthorizedResponse()
+    @Roles('CadastroIndicador.inserir', 'CadastroMeta.inserir')
+    async auxiliar_formula_composta(
+        @Param() params: FindOneParams,
+        @Body() dto: GeneratorFormulaCompostaFormDto,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<GeneratorFormulaCompostaReturnDto> {
+        return await this.indicadorFormulaCompostaService.geradorFormula(params.id, dto, user);
     }
 }
