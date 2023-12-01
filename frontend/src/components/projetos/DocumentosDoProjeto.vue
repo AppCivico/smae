@@ -1,17 +1,48 @@
 <script setup>
+import LocalFilter from '@/components/LocalFilter.vue';
+import TabelaGenérica from '@/components/TabelaGenerica.vue';
+import createDataTree from '@/helpers/createDataTree.ts';
 import { useAlertStore } from '@/stores/alert.store';
 import { useProjetosStore } from '@/stores/projetos.store.ts';
 import { storeToRefs } from 'pinia';
-
-const baseUrl = `${import.meta.env.VITE_API_URL}`;
+import { computed, ref } from 'vue';
+import ArvoreDeArquivos from './ArvoreDeArquivos.vue';
 
 const alertStore = useAlertStore();
 const projetosStore = useProjetosStore();
 const {
   chamadasPendentes,
   arquivos,
+  diretóriosConsolidados,
   erro,
 } = storeToRefs(projetosStore);
+
+const árvoreDeDiretórios = computed(() => createDataTree(
+  diretóriosConsolidados.value
+    .reduce((acc, cur) => acc.concat(
+      cur.replace('/', '')
+        .split('/')
+        .map((segmento, index, segmentos) => ({
+          id: segmento || '/',
+          pai: !segmento ? null : (segmentos[index - 1] || '/'),
+          caminho: segmento ? `${cur.split(segmento)[0] + segmento}/` : '/',
+        }))
+        .filter((x) => !acc.some((y) => y.id === x.id)),
+    ), []),
+  'pai',
+) || []);
+
+const listaFiltradaPorTermoDeBusca = ref([]);
+
+const arquivosAgrupadosPorCaminho = computed(() => listaFiltradaPorTermoDeBusca.value
+  .reduce((acc, cur) => {
+    const caminho = (cur?.arquivo?.diretorio_caminho || '/');
+
+    acc[caminho] = !acc[caminho]
+      ? [cur]
+      : acc[caminho].concat([cur]);
+    return acc;
+  }, {}) || {});
 
 function excluirArquivo(id) {
   alertStore.confirmAction('Deseja remover o arquivo?', () => {
@@ -20,77 +51,26 @@ function excluirArquivo(id) {
 }
 
 function iniciar() {
+  projetosStore.buscarDiretórios();
   projetosStore.buscarArquivos();
 }
 
 iniciar();
 </script>
-
 <template>
-  <table
-    v-if="arquivos.length"
-    class="tablemain mb1"
-  >
-    <caption>
-      Lista de documentos
-    </caption>
-    <col>
-    <col>
-    <col class="col--botão-de-ação">
-    <thead>
-      <tr>
-        <th>Arquivo</th>
-        <th>Descrição</th>
-        <th />
-      </tr>
-    </thead>
-    <tbody>
-      <template
-        v-for="item in arquivos"
-        :key="item.id"
-      >
-        <tr>
-          <td
-            class="cell--minimum"
-            :class="{ loading: chamadasPendentes.arquivos }"
-          >
-            <a
-              :href="baseUrl + '/download/' + item?.arquivo?.download_token"
-              download
-            >
-              {{ item?.arquivo?.nome_original ?? '-' }}
-            </a>
-          </td>
-          <td
-            :class="{ loading: chamadasPendentes.arquivos }"
-          >
-            <a
-              :href="baseUrl + '/download/' + item?.arquivo?.download_token"
-              download
-            >
-              {{ item?.arquivo?.descricao ?? '-' }}
-            </a>
-          </td>
-          <td>
-            <button
-              class="like-a__text"
-              type="button"
-              :disabled="chamadasPendentes.arquivos"
-              @click="excluirArquivo(item.id)"
-            >
-              <svg
-                width="20"
-                height="20"
-                arial-label="excluir"
-              >
-                <use xlink:href="#i_remove" />
-              </svg>
-            </button>
-          </td>
-        </tr>
-      </template>
-    </tbody>
-  </table>
+  <div class="flex center mb2 spacebetween">
+    <LocalFilter
+      v-model="listaFiltradaPorTermoDeBusca"
+      :lista="arquivos"
+    />
+  </div>
+
+  <ArvoreDeArquivos
+    :lista-de-diretórios="árvoreDeDiretórios"
+    class="mb1 arvore-de-arquivos--raiz"
+    :arquivos-agrupados-por-caminho="arquivosAgrupadosPorCaminho"
+    @apagar="($params) => excluirArquivo($params)"
+  />
 
   <router-link
     :to="{
