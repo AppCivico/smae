@@ -219,11 +219,17 @@ export const useProjetosStore = defineStore('projetos', {
       }
     },
 
-    async enviarArquivo(params = {}, idDoProjeto = 0): Promise<boolean> {
+    async associarArquivo(params = {}, id = 0, idDoProjeto = 0): Promise<boolean> {
       this.chamadasPendentes.arquivos = true;
 
       try {
-        const resposta = await this.requestS.post(`${baseUrl}/projeto/${idDoProjeto || this.route.params.projetoId}/documento`, params);
+        let resposta;
+
+        if (id) {
+          resposta = await this.requestS.patch(`${baseUrl}/projeto/${idDoProjeto || this.route.params.projetoId}/documento/${id}`, params);
+        } else {
+          resposta = await this.requestS.post(`${baseUrl}/projeto/${idDoProjeto || this.route.params.projetoId}/documento`, params);
+        }
 
         this.chamadasPendentes.arquivos = false;
         return resposta;
@@ -260,6 +266,9 @@ export const useProjetosStore = defineStore('projetos', {
       // eslint-disable-next-line max-len
       responsaveis_no_orgao_gestor: emFoco?.responsaveis_no_orgao_gestor?.map((x) => x.id) || null,
     }),
+
+    arquivosPorId: ({ arquivos }: Estado) => arquivos
+      .reduce((acc, cur) => ({ ...acc, [cur.id]: cur }), {}),
 
     pdmsPorId: ({ pdmsSimplificados }: Estado) => pdmsSimplificados
       .reduce((acc, cur) => ({ ...acc, [cur.id]: cur }), {}),
