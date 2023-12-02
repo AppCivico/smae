@@ -83,7 +83,7 @@ function request(method: Method, upload = false) {
           requestOptions.body = JSON.stringify(params);
         } else {
           // requestOptions.headers['Content-Type'] = 'multipart/form-data';
-          requestOptions.body = params;
+          requestOptions.body = params as FormData;
         }
         break;
     }
