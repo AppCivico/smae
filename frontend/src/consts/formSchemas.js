@@ -1,7 +1,6 @@
 /* eslint-disable no-template-curly-in-string */
 import regEx from '@/consts/patterns';
 import {
-  addMethod,
   array,
   boolean,
   date,
@@ -43,18 +42,6 @@ setLocale({
 });
 
 // https://github.com/jquense/yup/issues/384#issuecomment-442958997
-addMethod(mixed, 'inArray', function _(arrayValue, message = '${path} not found in ${arrayValue}') {
-  return this.test({
-    message,
-    name: 'inArray',
-    exclusive: true,
-    params: { arrayValue },
-    test(value) {
-      return (this.resolve(arrayValue) || [])
-        .includes(value);
-    },
-  });
-});
 
 export const acompanhamento = object()
   .shape({
