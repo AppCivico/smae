@@ -3,6 +3,10 @@ import { useAlertStore } from '@/stores/alert.store';
 import { useRoute, useRouter } from 'vue-router';
 
 const props = defineProps({
+  formulárioSujo: {
+    type: Boolean,
+    default: true,
+  },
   rotaDeEscape: {
     type: String,
     default: '',
@@ -40,7 +44,11 @@ async function checkClose() {
     caminhoParaSaída = route.matched[parentRoutePosition].path;
   }
 
-  alertStore.confirm('Deseja sair sem salvar as alterações?', caminhoParaSaída);
+  if (props.sujo) {
+    alertStore.confirm('Deseja sair sem salvar as alterações?', caminhoParaSaída);
+  } else {
+    router.push(caminhoParaSaída);
+  }
 }
 </script>
 <template>
