@@ -124,19 +124,23 @@ export const acompanhamento = object()
       ),
   });
 
-export const arquivo = object()
+export const arquivo = (semEnvio) => object()
   .shape({
     arquivo: string()
       .label('Arquivo')
-      .required('Selecione um arquivo'),
+      .when('semEnvioDeArquivo', ((_, field) => ((semEnvio)
+        ? field.notRequired()
+        : field.required('Selecione um arquivo')))),
     descricao: string()
       .label('Descrição')
-      .required('Preencha a descrição'),
+      .required(),
     diretorio_caminho: string()
-      .label('Inserir em pasta existente'),
+      .label('Pasta ou caminho'),
     tipo_documento_id: string()
       .label('Tipo de Documento')
-      .required(),
+      .when('semEnvioDeArquivo', ((_, field) => ((semEnvio)
+        ? field.notRequired()
+        : field.required()))),
   });
 
 export const autenticação = object()
