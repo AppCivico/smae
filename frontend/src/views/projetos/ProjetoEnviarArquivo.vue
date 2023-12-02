@@ -1,7 +1,7 @@
 <script setup>
 import CheckClose from '@/components/CheckClose.vue';
 import LabelFromYup from '@/components/LabelFromYup.vue';
-import { arquivo as schema } from '@/consts/formSchemas';
+import { arquivo as schemaDoFormulário } from '@/consts/formSchemas';
 import requestS from '@/helpers/requestS.ts';
 import {
   useAlertStore,
@@ -9,8 +9,10 @@ import {
 } from '@/stores';
 import { useProjetosStore } from '@/stores/projetos.store.ts';
 import { storeToRefs } from 'pinia';
-import { Field, Form } from 'vee-validate';
-import { reactive, ref } from 'vue';
+import { Field, useForm } from 'vee-validate';
+import {
+  computed, reactive, watch,
+} from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
@@ -24,54 +26,83 @@ const { tempDocumentTypes } = storeToRefs(documentTypesStore);
 documentTypesStore.clear();
 documentTypesStore.filterDocumentTypes();
 
-const { chamadasPendentes, erro, diretóriosConsolidados } = storeToRefs(projetosStore);
+const {
+  arquivosPorId, chamadasPendentes, erro, diretóriosConsolidados,
+} = storeToRefs(projetosStore);
 
 const curfile = reactive({});
-const diretorioCaminho = ref('');
 
-async function onSubmit(values) {
+const arquivo = computed(() => arquivosPorId.value?.[route.params?.arquivoId]?.arquivo);
+const éEdição = !!route.params?.arquivoId;
+const schema = computed(() => schemaDoFormulário(éEdição));
+const arquivoParaEdição = computed(() => ({
+  arquivo_id: arquivo.value?.id,
+  upload_token: arquivo.value?.download_token,
+  descricao: arquivo.value?.descricao,
+  tipo_documento_id: arquivo.value?.TipoDocumento?.id,
+  diretorio_caminho: arquivo.value?.diretorio_caminho || route.query?.diretorio_caminho,
+}));
+
+const {
+  errors, handleSubmit, isSubmitting, meta, resetForm, values,
+} = useForm({
+  validationSchema: schema.value,
+  initialValues: arquivoParaEdição.value,
+});
+// PRA-FAZER: simplificar o gerenciamento de valores
+const onSubmit = handleSubmit.withControlled(async () => {
   const carga = values;
-
   try {
     curfile.loading = true;
-    carga.tipo = 'DOCUMENTO';
-    const formData = new FormData();
-    Object.entries(carga).forEach((x) => {
-      formData.append(x[0], x[1]);
-    });
 
-    const u = await requestS.upload(`${baseUrl}/upload`, formData);
-    if (u.upload_token) {
-      if (await projetosStore.enviarArquivo({
-        upload_token: u.upload_token,
-        diretorio_caminho: diretorioCaminho.value,
-      })) {
-        alertStore.success('Item adicionado com sucesso!');
+    const dadosDeAssociação = {
+      diretorio_caminho: values.diretorio_caminho,
+      upload_token: arquivoParaEdição.value.download_token,
+    };
 
-        const rotaDeEscape = route.meta?.rotaDeEscape;
-        curfile.loading = false;
+    if (!éEdição) {
+      carga.tipo = 'DOCUMENTO';
+      const formData = new FormData();
+      Object.entries(carga).forEach((x) => {
+        formData.append(x[0], x[1]);
+      });
+      const u = await requestS.upload(`${baseUrl}/upload`, formData);
 
-        projetosStore.buscarDiretórios();
-        projetosStore.buscarArquivos();
-
-        if (rotaDeEscape) {
-          router.push(typeof rotaDeEscape === 'string' ? { name: rotaDeEscape } : rotaDeEscape);
-        }
-      }
+      dadosDeAssociação.upload_token = u.upload_token;
     } else {
-      curfile.loading = false;
+      dadosDeAssociação.descricao = values.descricao;
     }
+
+    if (await projetosStore.associarArquivo(dadosDeAssociação, route.params?.arquivoId)) {
+      alertStore.success(éEdição ? 'Arquivo atualizado!' : 'Arquivo associado!');
+
+      const rotaDeEscape = route.meta?.rotaDeEscape;
+      curfile.loading = false;
+
+      projetosStore.buscarDiretórios();
+      projetosStore.buscarArquivos();
+
+      if (rotaDeEscape) {
+        router.push(typeof rotaDeEscape === 'string' ? { name: rotaDeEscape } : rotaDeEscape);
+      }
+    }
+
+    curfile.loading = false;
   } catch (error) {
     alertStore.error(error);
     curfile.loading = false;
   }
-}
+});
 
 function addFile(e) {
   const { files } = e.target;
   curfile.name = files[0].name;
   [curfile.file] = files;
 }
+
+watch(arquivoParaEdição, (novosValores) => {
+  resetForm({ values: novosValores });
+});
 </script>
 
 <template>
@@ -79,15 +110,11 @@ function addFile(e) {
     <h2>{{ $route.meta.título || 'Adicionar arquivo' }}</h2>
     <hr class="ml2 f1">
 
-    <CheckClose />
+    <CheckClose :formulário-sujo="meta.dirty" />
   </div>
+
   <template v-if="!(chamadasPendentes?.arquivos?.loading || erro) && !curfile?.loading">
-    <Form
-      v-slot="{ errors, isSubmitting, values }"
-      :validation-schema="schema"
-      :initial-values="{
-        diretorio_caminho: route.query?.diretorio_caminho
-      }"
+    <form
       @submit="onSubmit"
     >
       <div class="flex g2">
@@ -106,14 +133,21 @@ function addFile(e) {
             {{ errors.descricao }}
           </div>
         </div>
-        <div class="f1">
+        <div
+          v-if="!values.arquivo_id"
+          class="f1"
+        >
           <LabelFromYup
             name="tipo_documento_id"
             :schema="schema"
-          />
+          >
+            {{ schema.fields.tipo_documento_id.spec.label }}
+            <span class="tvermelho">*</span>
+          </LabelFromYup>
           <Field
             name="tipo_documento_id"
             as="select"
+            :disabled="!!values.arquivo_id"
             class="inputtext light mb1"
             :class="{ 'error': errors.tipo_documento_id }"
           >
@@ -137,18 +171,19 @@ function addFile(e) {
       <div class="flex g2 mb2">
         <div class="f1">
           <LabelFromYup
-            name="diretorio_caminho"
             :schema="schema"
-          />
+            name="diretorio_caminho"
+          >
+            {{ schema.fields.diretorio_caminho.spec.label }}
+            <small class="t13 tc500 lc">(níveis representados por <code>/</code>)</small>
+          </LabelFromYup>
           <Field
-            v-model="diretorioCaminho"
+            id="diretorio_caminho"
             name="diretorio_caminho"
             class="inputtext light mb1"
             list="diretóriosConsolidados"
             autocomplete="off"
             :class="{ 'error': errors.diretorio_caminho }"
-            @update:model-value="() => values.diretorio_caminho =
-              values.diretorio_caminho.trim()"
           />
           <ErrorMessage
             class="error-msg"
@@ -164,21 +199,29 @@ function addFile(e) {
           />
         </datalist>
 
-        <div class="f1">
+        <div
+          v-if="!values.arquivo_id"
+          class="f1"
+        >
           <LabelFromYup
             name="arquivo"
             :schema="schema"
-          />
+          >
+            {{ schema.fields.arquivo.spec.label }}
+            <span class="tvermelho">*</span>
+          </LabelFromYup>
           <label
             v-if="!curfile.name"
             class="addlink"
             :class="{ 'error': errors.arquivo }"
+            tabindex="0"
           ><svg
             width="20"
             height="20"
           ><use xlink:href="#i_+" /></svg><span>Selecionar arquivo</span><input
             type="file"
             :onchange="addFile"
+            :disabled="!!values.arquivo_id"
             style="display:none;"
           ></label>
 
@@ -201,6 +244,9 @@ function addFile(e) {
           </div>
         </div>
       </div>
+
+      <FormErrorsList :errors="errors" />
+
       <div class="flex spacebetween center mb2">
         <hr class="mr2 f1">
         <button
@@ -214,7 +260,7 @@ function addFile(e) {
         </button>
         <hr class="ml2 f1">
       </div>
-    </Form>
+    </form>
   </template>
   <template v-if="chamadasPendentes?.arquivos">
     <span class="spinner">Carregando</span>

@@ -310,6 +310,26 @@ export default {
                 },
               ],
             },
+            {
+              path: ':arquivoId',
+              component: DialogWrapper,
+              props: ({ params }) => ({
+                ...params,
+                arquivoId: Number.parseInt(params.arquivoId, 10) || undefined,
+              }),
+              meta: {
+                rotaDeEscape: 'projetosDocumentos',
+                título: 'Editar documento do projeto',
+                títuloParaMenu: 'Editar documento',
+              },
+              children: [
+                {
+                  path: '',
+                  name: 'projetosEditarDocumento',
+                  component: ProjetoEnviarArquivo,
+                },
+              ],
+            },
           ],
         },
 

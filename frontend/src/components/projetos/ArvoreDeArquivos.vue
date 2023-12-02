@@ -128,19 +128,23 @@ const éPossívelAbrir = (item) => !item.children?.length
                 >
                   {{ arquivo?.arquivo?.descricao }}
                 </small>
-                <!--
-                <button
-                  type="button"
+
+                <router-link
                   class="like-a__text arvore-de-arquivos__editar"
-                  aria-label="editar"
-                  @click="$emit('editar', arquivo?.id)"
+                  :aria-label="`editar propriedades de ${arquivo?.arquivo?.nome_original}`"
+                  :to="{
+                    name: 'projetosEditarDocumento',
+                    params: {
+                      arquivoId: arquivo?.id
+                    },
+                  }"
                 >
                   <svg
                     width="20"
                     height="20"
                   ><use xlink:href="#i_edit" /></svg>
-                </button>
-                -->
+                </router-link>
+
                 <button
                   type="button"
                   class="like-a__text arvore-de-arquivos__apagar"
