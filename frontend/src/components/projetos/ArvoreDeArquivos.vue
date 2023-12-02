@@ -249,6 +249,7 @@ const éPossívelAbrir = (item) => !item.children?.length
     flex-basis: 0;
     flex-grow: 1;
     color: @c600;
+    min-width: 11em;
   }
 
   .arvore-de-arquivos__abrir {
