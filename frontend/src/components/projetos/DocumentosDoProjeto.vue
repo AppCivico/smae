@@ -1,6 +1,5 @@
 <script setup>
 import LocalFilter from '@/components/LocalFilter.vue';
-import TabelaGenérica from '@/components/TabelaGenerica.vue';
 import createDataTree from '@/helpers/createDataTree.ts';
 import { useAlertStore } from '@/stores/alert.store';
 import { useProjetosStore } from '@/stores/projetos.store.ts';
