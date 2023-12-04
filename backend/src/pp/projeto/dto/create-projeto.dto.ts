@@ -248,9 +248,11 @@ export class CreateProjetoDocumentDto {
     @ValidateIf((object, value) => value !== null)
     data?: Date;
 
+    // TODO: este campo aqui será obrigatório, porém mantendo como opcional por motivos de sincronia com o desenvolvimento de front.
+    @IsOptional()
     @IsString()
     @MaxLength(2048)
-    descricao: string;
+    descricao?: string;
 }
 
 export class CreateProjetoSeiDto {
