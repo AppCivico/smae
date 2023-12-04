@@ -217,12 +217,15 @@ export class ProjetoDocumentoDto {
         id: number;
         descricao: string | null;
         tamanho_bytes: number;
-        TipoDocumento: TipoDocumentoDto | null;
         nome_original: string;
         download_token?: string;
         diretorio_caminho: string | null;
+        data: Date | null;
+        TipoDocumento: TipoDocumentoDto | null;
     };
     id: number;
+    descricao: string | null;
+    data: Date | null;
 }
 
 export class ListProjetoDocumento {

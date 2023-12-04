@@ -671,6 +671,7 @@ model Arquivo {
     descricao                       String?
     tipo_documento_id               Int?
     diretorio_caminho               String?
+    data                            DateTime?                           
     TipoDocumento                   TipoDocumento?                    @relation(fields: [tipo_documento_id], references: [id])
     Tag                             Tag[]
     Regiao                          Regiao[]
@@ -2811,6 +2812,8 @@ model ProjetoDocumento {
 
     projeto Projeto @relation(fields: [projeto_id], references: [id])
     arquivo Arquivo @relation(fields: [arquivo_id], references: [id])
+
+    descricao String?
 
     criado_por     Int?
     criado_em      DateTime  @default(now()) @db.Timestamptz(6)

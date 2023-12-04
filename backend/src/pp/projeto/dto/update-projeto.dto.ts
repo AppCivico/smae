@@ -224,4 +224,10 @@ export class UpdateProjetoDocumentDto {
     @IsString()
     @ValidateIf((object, value) => value !== null)
     descricao?: string | null;
+
+    @IsOptional()
+    @IsOnlyDate()
+    @Type(() => Date)
+    @ValidateIf((object, value) => value !== null)
+    data?: Date | null;
 }
