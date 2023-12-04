@@ -1,15 +1,24 @@
 <script setup>
-import { computed } from 'vue'
+import { computed } from 'vue';
 
-const props = defineProps(['active','classes']);
-let active = computed(()=>props.active);
+const props = defineProps(['active', 'classes']);
+const active = computed(() => props.active);
 </script>
 
 <template>
-    <div class="editModal-wrap" :style="{display: active?'':'none'}">
-        <div class="overlay" @click="$emit('close')"></div>
-        <div class="editModal small" :class="props.classes">
-            <slot />
-        </div>
+  <div
+    class="editModal-wrap"
+    :style="{ display: active ? '' : 'none' }"
+  >
+    <div
+      class="overlay"
+      @click="$emit('close')"
+    />
+    <div
+      class="editModal small"
+      :class="props.classes"
+    >
+      <slot />
     </div>
+  </div>
 </template>
