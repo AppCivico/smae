@@ -1251,27 +1251,38 @@ export class ProjetoService {
         return;
     }
 
-    async append_document(projetoId: number, createPdmDocDto: CreateProjetoDocumentDto, user: PessoaFromJwt) {
+    async append_document(projetoId: number, dto: CreateProjetoDocumentDto, user: PessoaFromJwt) {
         // aqui é feito a verificação se esse usuário pode realmente acessar esse recurso
         await this.findOne(projetoId, user, 'ReadWrite');
 
-        const arquivoId = this.uploadService.checkUploadOrDownloadToken(createPdmDocDto.upload_token);
-        if (createPdmDocDto.diretorio_caminho)
-            await this.uploadService.updateDir({ caminho: createPdmDocDto.diretorio_caminho }, createPdmDocDto.upload_token);
+        const arquivoId = this.uploadService.checkUploadOrDownloadToken(dto.upload_token);
+        if (dto.diretorio_caminho)
+            await this.uploadService.updateDir({ caminho: dto.diretorio_caminho }, dto.upload_token);
 
-        const arquivo = await this.prisma.projetoDocumento.create({
-            data: {
-                criado_em: new Date(Date.now()),
-                criado_por: user.id,
-                arquivo_id: arquivoId,
-                projeto_id: projetoId,
-            },
-            select: {
-                id: true,
-            },
+        const documento = await this.prisma.$transaction(
+            async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
+                if (dto.data) {
+                    await prismaTx.arquivo.update({
+                        where: { id: arquivoId },
+                        data: { data: dto.data }
+                    });
+                }
+
+                return await prismaTx.projetoDocumento.create({
+                    data: {
+                        criado_em: new Date(Date.now()),
+                        criado_por: user.id,
+                        arquivo_id: arquivoId,
+                        projeto_id: projetoId,
+                        descricao: dto.descricao
+                    },
+                    select: {
+                        id: true,
+                    },
+                });
         });
 
-        return { id: arquivo.id };
+        return { id: documento.id };
     }
 
     async list_document(projetoId: number, user: PessoaFromJwt) {
@@ -1287,11 +1298,12 @@ export class ProjetoService {
     }
 
     private async findAllDocumentos(projetoId: number): Promise<ProjetoDocumentoDto[]> {
-        return await this.prisma.projetoDocumento.findMany({
+        const documentosDB = await this.prisma.projetoDocumento.findMany({
             where: { projeto_id: projetoId, removido_em: null },
             orderBy: { criado_em: 'asc' },
             select: {
                 id: true,
+                descricao: true,
                 arquivo: {
                     select: {
                         id: true,
@@ -1300,10 +1312,31 @@ export class ProjetoService {
                         descricao: true,
                         nome_original: true,
                         diretorio_caminho: true,
+                        data: true
                     },
                 },
             },
         });
+
+        const documentosRet: ProjetoDocumentoDto[] = documentosDB.map(d => {
+            return {
+                id: d.id,
+                // TODO: Esta data no futuro, talvez, será na table de relacionamento 'ProjetoDocumento' e não direto no arquivo.
+                data: d.arquivo.data,
+                descricao: d.descricao,
+                arquivo: {
+                    id: d.arquivo.id,
+                    tamanho_bytes: d.arquivo.tamanho_bytes,
+                    descricao: d.arquivo.descricao,
+                    nome_original: d.arquivo.nome_original,
+                    diretorio_caminho: d.arquivo.diretorio_caminho,
+                    data: d.arquivo.data,
+                    TipoDocumento: d.arquivo.TipoDocumento,
+                }
+            }
+        });
+
+        return documentosRet;
     }
 
     async updateDocumento(projetoId: number, documentoId: number, dto: UpdateProjetoDocumentDto, user: PessoaFromJwt) {
@@ -1311,15 +1344,30 @@ export class ProjetoService {
         if (dto.diretorio_caminho)
             await this.uploadService.updateDir({ caminho: dto.diretorio_caminho }, dto.upload_token);
 
-        return await this.prisma.arquivo.update({
-            where: { id: arquivoId },
-            data: {
-                descricao: dto.descricao,
-                atualizado_por: user.id,
-                atualizado_em: new Date(Date.now())
-            },
-            select: { id: true }
+        const documento = await this.prisma.$transaction(
+            async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
+                if (dto.data) {
+                    await prismaTx.arquivo.update({
+                        where: { id: arquivoId },
+                        data: { data: dto.data }
+                    });
+                }
+
+                return await this.prisma.projetoDocumento.update({
+                    where: {
+                        id: documentoId,
+                        projeto_id: projetoId
+                    },
+                    data: {
+                        descricao: dto.descricao,
+                        atualizado_por: user.id,
+                        atualizado_em: new Date(Date.now())
+                    },
+                    select: { id: true }
+                });
         });
+
+        return {id: documento.id}
     }
 
     async remove_document(projetoId: number, projetoDocId: number, user: PessoaFromJwt) {

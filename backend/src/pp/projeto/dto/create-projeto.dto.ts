@@ -237,6 +237,20 @@ export class CreateProjetoDocumentDto {
     @IsString()
     @IsOptional()
     diretorio_caminho?: string;
+
+    /**
+     * data ou null
+     * @example "2020-01-01"
+     */
+    @IsOptional()
+    @IsOnlyDate()
+    @Type(() => Date)
+    @ValidateIf((object, value) => value !== null)
+    data?: Date;
+
+    @IsString()
+    @MaxLength(2048)
+    descricao: string;
 }
 
 export class CreateProjetoSeiDto {
