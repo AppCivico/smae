@@ -19,6 +19,7 @@ import { storeToRefs } from 'pinia';
 import { Field, Form } from 'vee-validate';
 import { onMounted, onUpdated, ref } from 'vue';
 import { useRoute } from 'vue-router';
+import TabelaDeVariaveis from '@/components/metas/TabelaDeVariaveis.vue';
 import getCaretPosition from './auxiliares/getCaretPosition.ts';
 
 const editModalStore = useEditModalStore();
@@ -90,10 +91,6 @@ const parentVar = atividade_id ?? iniciativa_id ?? meta_id ?? false;
 const parentField = atividade_id ? 'atividade_id' : iniciativa_id ? 'iniciativa_id' : meta_id ? 'meta_id' : false;
 const props = defineProps(['group']);
 
-const authStore = useAuthStore();
-const { permissions } = storeToRefs(authStore);
-const perm = permissions.value;
-
 const MetasStore = useMetasStore();
 const { activePdm, singleMeta } = storeToRefs(MetasStore);
 MetasStore.getById(meta_id);
@@ -117,6 +114,14 @@ const { título } = route.meta;
 
 const regionalizavel = ref(singleIndicadores.value.regionalizavel);
 
+const abas = ref({
+  TabelaDeVariaveis: {
+    componente: TabelaDeVariaveis,
+    etiqueta: 'Variáveis',
+  },
+});
+const abaCorrente = ref('TabelaDeVariaveis');
+
 const formula = ref('');
 const formulaInput = ref(null);
 const variaveisFormulaModal = ref(0);
@@ -139,17 +144,6 @@ function start() {
     });
   }
   if (props.group === 'retroativos') editModalStore.modal(AddEditRealizado, props);
-}
-
-function permitirEdição(indicadorVariavel) {
-  if (!indicadorVariavel) {
-    return true;
-  }
-  if (Array.isArray(indicadorVariavel)
-    && indicadorVariavel.findIndex((x) => x.indicador_origem) === -1) {
-    return true;
-  }
-  return false;
 }
 
 onMounted(() => { start(); });
@@ -250,20 +244,6 @@ async function checkDelete(id) {
       }, 'Remover');
     }
   }
-}
-
-async function apagarVariável(id) {
-  alertStore.confirmAction('Deseja mesmo remover esse item?', async () => {
-    try {
-      if (await VariaveisStore.delete(id)) {
-        VariaveisStore.clear();
-        VariaveisStore.getAll(indicador_id);
-        alertStore.success('Item removido!');
-      }
-    } catch (error) {
-      alertStore.error(error);
-    }
-  }, 'Remover');
 }
 
 async function checkClose() {
@@ -1047,120 +1027,40 @@ if (indicador_id) {
     </template>
 
     <div v-if="indicador_id">
-      <div class="t12 uc w700 mb2">
-        Variáveis
-      </div>
-      <template v-if="Variaveis[indicador_id]?.loading">
-        <span class="spinner">Carregando</span>
-      </template>
-      <table
-        v-if="!Variaveis[indicador_id]?.loading"
-        class="tablemain mb1"
-      >
-        <thead>
-          <tr>
-            <th style="width:13.3%;">
-              Título
-            </th>
-            <th style="width:13.3%;">
-              Valor base
-            </th>
-            <th style="width:13.3%;">
-              Unidade
-            </th>
-            <th style="width:13.3%;">
-              Peso
-            </th>
-            <th style="width:13.3%;">
-              Casas decimais
-            </th>
-            <th style="width:13.3%;">
-              Região
-            </th>
-            <th style="width:20%" />
-          </tr>
-        </thead>
-        <tr
-          v-for="v in Variaveis[indicador_id]"
-          :key="v.id"
+      <ul class="flex">
+        <li
+          v-for="aba in Object.keys(abas)"
+          :key="aba"
         >
-          <td>{{ v.titulo }}</td>
-          <td>{{ v.valor_base }}</td>
-          <td>{{ v.unidade_medida?.sigla }}</td>
-          <td>{{ v.peso }}</td>
-          <td>{{ v.casas_decimais }}</td>
-          <td>{{ v.regiao?.descricao ?? '-' }}</td>
-          <td style="white-space: nowrap; text-align: right;">
-            <button
-              class="like-a__link tipinfo tprimary"
-              :disabled="!permitirEdição(v.indicador_variavel)"
-              @click="apagarVariável(v.id)"
-            >
-              <svg
-                width="20"
-                height="20"
-              ><use xlink:href="#i_remove" /></svg><div>Apagar</div>
-            </button>
-            <router-link
-              :to="`${parentlink}/indicadores/${indicador_id}/variaveis/novo/${v.id}`"
-              class="tipinfo tprimary ml1"
-            >
-              <svg
-                width="20"
-                height="20"
-              ><use xlink:href="#i_copy" /></svg><div>Duplicar</div>
-            </router-link>
-            <router-link
-              v-if="permitirEdição(v.indicador_variavel)"
-              :to="`${parentlink}/indicadores/${indicador_id}/variaveis/${v.id}`"
-              class="tipinfo tprimary ml1"
-            >
-              <svg
-                width="20"
-                height="20"
-              ><use xlink:href="#i_edit" /></svg><div>Editar</div>
-            </router-link>
-            <button
-              v-else
-              disabled
-              class="like-a__link tipinfo tprimary ml1"
-            >
-              <svg
-                width="20"
-                height="20"
-              ><use xlink:href="#i_edit" /></svg><div>Editar</div>
-            </button>
-            <router-link
-              :to="`${parentlink}/indicadores/${indicador_id}/variaveis/${v.id}/valores`"
-              class="tipinfo tprimary ml1"
-            >
-              <svg
-                width="20"
-                height="20"
-              ><use xlink:href="#i_valores" /></svg><div>Valores Previstos e Acumulados</div>
-            </router-link>
-            <router-link
-              v-if="perm.CadastroPessoa?.administrador"
-              :to="`${parentlink}/indicadores/${indicador_id}/variaveis/${v.id}/retroativos`"
-              class="tipinfo tprimary ml1"
-            >
-              <svg
-                width="20"
-                height="20"
-              ><use xlink:href="#i_check" /></svg><div>Valores Realizados Retroativos</div>
-            </router-link>
-          </td>
-        </tr>
-      </table>
-      <router-link
-        :to="`${parentlink}/indicadores/${indicador_id}/variaveis/novo`"
-        class="addlink"
-      >
-        <svg
-          width="20"
-          height="20"
-        ><use xlink:href="#i_+" /></svg> <span>Adicionar variável</span>
-      </router-link>
+          <component
+            :is="Object.keys(abas).length === 1 ? 'span' : 'button'"
+            class="like-a__link t16 w700 mr2 mb2"
+            type="button"
+            :class="{
+              tc300: abaCorrente !== aba
+            }"
+            :value="aba"
+            @click="($event) => {
+              Object.keys(abas).length === 1
+                ? null
+                : abaCorrente = $event.target.value
+            }"
+          >
+            {{ abas[aba].etiqueta }}
+          </component>
+        </li>
+      </ul>
+
+      <hr class="mt2 mb2">
+
+      <div class="aba">
+        <component
+          :is="abas[abaCorrente]?.componente"
+          v-if="!Variaveis[indicador_id]?.loading"
+          :variáveis="Variaveis[indicador_id]"
+          :parentlink="parentlink"
+        />
+      </div>
     </div>
 
     <template v-if="indicador_id && singleIndicadores.id && indicador_id == singleIndicadores.id">
