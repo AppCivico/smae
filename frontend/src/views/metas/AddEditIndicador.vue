@@ -111,7 +111,7 @@ const IndicadoresStore = useIndicadoresStore();
 const { singleIndicadores } = storeToRefs(IndicadoresStore);
 
 const VariaveisStore = useVariaveisStore();
-const { Variaveis } = storeToRefs(VariaveisStore);
+const { Variaveis, variáveisCompostasPorReferência } = storeToRefs(VariaveisStore);
 
 const { título } = route.meta;
 
@@ -310,14 +310,33 @@ function labelPeriodo(p, m) {
   return 'Mês corrente';
 }
 function formatFormula(p) {
-  const regex = /\$_[\d]{0,5}/gm;
+  const regex = /[$@]_[\d]{0,5}/gm;
   const inuse = [];
   const fórmulaLimpa = formula.value.replace(regex, (m) => {
     let r = m;
-    if (variaveisFormula[m]) {
-      inuse.push(m);
-      let n = variaveisFormula[m].variavel_id;
+
+    if (variaveisFormula[m] || variáveisCompostasPorReferência.value?.[m]) {
+      const tipoDeVariável = variáveisCompostasPorReferência.value?.[m]
+        ? 'composta'
+        : 'padrão';
+
       let t = '';
+      let n;
+
+      switch (tipoDeVariável) {
+        // eslint-disable-next-line no-lone-blocks
+        case 'composta': {
+          // as variáveis compostas não são montadas com chave de posição, mas
+          // por ID.
+          const variávelComposta = variáveisCompostasPorReferência.value?.[m];
+          n = variávelComposta.titulo;
+          t = variávelComposta.titulo;
+        }
+          break;
+
+        default:
+          inuse.push(m);
+          n = variaveisFormula[m].variavel_id;
       if (Variaveis.value[indicador_id]?.length) {
         const v = Variaveis.value[indicador_id]
           .find((x) => x.id == variaveisFormula[m].variavel_id);
@@ -325,6 +344,8 @@ function formatFormula(p) {
           n = `${v.codigo} - ${v.titulo}`;
           t = labelPeriodo(variaveisFormula[m].periodo, variaveisFormula[m].meses);
         }
+          }
+          break;
       }
 
       r = ` <span class="v" contenteditable="false" data-id="${m}" data-var="${n}" title="${t}" >${m}</span> `;
@@ -444,6 +465,8 @@ function monitorarSetas(e) {
 }
 
 if (indicador_id) {
+  VariaveisStore.getAllCompound(indicador_id);
+
   Promise.all([
     IndicadoresStore.getById(indicador_id),
     VariaveisStore.getAll(indicador_id),

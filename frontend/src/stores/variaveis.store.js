@@ -7,6 +7,7 @@ export const useVariaveisStore = defineStore({
   id: 'Variaveis',
   state: () => ({
     Variaveis: {},
+    variáveisCompostas: {},
     singleVariaveis: {},
     Valores: {},
   }),
@@ -39,6 +40,22 @@ export const useVariaveisStore = defineStore({
         this.Variaveis[indicador_id] = { error };
       }
     },
+
+    async getAllCompound(indicadorId) {
+      try {
+        if (!indicadorId) {
+          throw new Error('Indicador inválido');
+        }
+        if (!this.variáveisCompostas[indicadorId]?.length) {
+          this.variáveisCompostas[indicadorId] = { loading: true };
+        }
+        const r = await this.requestS.get(`${baseUrl}/indicador/${indicadorId}/formula-composta`);
+        this.variáveisCompostas[indicadorId] = r.rows;
+      } catch (error) {
+        this.variáveisCompostas[indicadorId] = { error };
+      }
+    },
+
     async getById(indicador_id, var_id) {
       try {
         if (!indicador_id) throw 'Indicador inválido';
@@ -88,5 +105,20 @@ export const useVariaveisStore = defineStore({
       const { var_id: varId } = this.route.params;
       return Valores[varId]?.linhas || [];
     },
+
+    variáveisCompostasPorReferência: ({ variáveisCompostas }) => Object.keys(variáveisCompostas)
+      .reduce((acc, cur) => {
+        console.debug('cur', cur);
+        console.debug('variáveisCompostas[cur]', variáveisCompostas[cur]);
+        if (Array.isArray(variáveisCompostas[cur])) {
+          variáveisCompostas[cur].forEach((x) => {
+            if (!acc[x.id]) {
+              acc[`@_${x.id}`] = x;
+            }
+          });
+        }
+
+        return acc;
+      }, {}),
   },
 });
