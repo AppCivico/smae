@@ -3,6 +3,7 @@ import CheckClose from '@/components/CheckClose.vue';
 import LabelFromYup from '@/components/LabelFromYup.vue';
 import { arquivo as schemaDoFormulário } from '@/consts/formSchemas';
 import requestS from '@/helpers/requestS.ts';
+import dateTimeToDate from '@/helpers/dateTimeToDate';
 import {
   useAlertStore,
   useDocumentTypesStore,
@@ -39,7 +40,7 @@ const arquivoParaEdição = computed(() => ({
   arquivo_id: arquivo.value?.id,
   upload_token: arquivo.value?.download_token,
   descricao: arquivo.value?.descricao || '',
-  data: arquivo.value?.data || null,
+  data: dateTimeToDate(arquivo.value?.data) || null,
   diretorio_caminho: arquivo.value?.diretorio_caminho || route.query?.diretorio_caminho,
 }));
 
