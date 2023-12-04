@@ -1,5 +1,6 @@
 import responseDownload from '@/helpers/responseDownload';
-import { useAlertStore, useAuthStore } from '@/stores';
+import { useAlertStore } from '@/stores/alert.store';
+import { useAuthStore } from '@/stores/auth.store';
 
 type Method = 'GET' | 'POST' | 'UPLOAD' | 'PUT' | 'PATCH' | 'DELETE';
 
