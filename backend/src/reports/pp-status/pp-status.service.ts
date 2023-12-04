@@ -119,6 +119,8 @@ export class PPStatusService implements ReportableService {
             };
         });
 
+        console.log(projetoStatusOut);
+
         return {
             linhas: projetoStatusOut,
         };
