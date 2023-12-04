@@ -65,6 +65,13 @@ iniciar();
     />
   </div>
 
+  <div
+    v-if="chamadasPendentes?.arquivos"
+    class="spinner mb1"
+  >
+    Carregando
+  </div>
+
   <ArvoreDeArquivos
     :lista-de-diretórios="árvoreDeDiretórios"
     class="mb1 arvore-de-arquivos--raiz"
@@ -87,16 +94,16 @@ iniciar();
     Adicionar arquivo
   </router-link>
 
-  <div
-    v-if="chamadasPendentes?.arquivos"
-    class="spinner"
-  >
-    Carregando
-  </div>
-
   <router-view v-slot="{ Component }">
     <component :is="Component" />
   </router-view>
+
+  <div
+    v-if="chamadasPendentes?.arquivos"
+    class="spinner mb1"
+  >
+    Carregando
+  </div>
 
   <div
     v-if="erro"
