@@ -33,6 +33,7 @@ export class AcompanhamentoTipoService {
     async findAll(user: PessoaFromJwt): Promise<AcompanhamentoTipo[]> {
         const acompanhamentoTipoRows = await this.prisma.acompanhamentoTipo.findMany({
             where: {removido_em: null},
+            orderBy: { nome: 'asc' },
             select: {
                 id: true,
                 nome: true
