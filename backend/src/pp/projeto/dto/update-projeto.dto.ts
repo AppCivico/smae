@@ -214,7 +214,7 @@ export class UpdateProjetoDocumentDto {
      * Token para encontrar documento
      */
     @IsString({ message: '$property| upload_token do documento' })
-    upload_token: string;
+    download_token: string;
 
     @IsString()
     @IsOptional()
