@@ -22,14 +22,10 @@ export class PPStatusService implements ReportableService {
     constructor(private readonly prisma: PrismaService) {}
 
     async create(dto: CreateRelProjetoStatusDto): Promise<PPProjetoStatusRelatorioDto> {
-        console.log(dto.portfolio_id);
-        console.log(dto.portfolio_id);
-        console.log(dto.portfolio_id);
-        console.log(dto.portfolio_id);
-        console.log(dto.portfolio_id);
         if (!dto.portfolio_id) throw new HttpException('Faltando portfolio_id', 400);
         const projetoRows = await this.prisma.projeto.findMany({
             where: {
+                id: dto.portfolio_id,
                 portfolio_id: dto.portfolio_id,
                 removido_em: null,
             },
@@ -60,6 +56,12 @@ export class PPStatusService implements ReportableService {
                 ProjetoAcompanhamento: {
                     take: 1,
                     orderBy: { data_registro: 'desc' },
+                    where: {
+                        data_registro: {
+                            gte: dto.periodo_inicio,
+                            lte: dto.periodo_fim,
+                        }
+                    },
                     select: {
                         detalhamento_status: true,
                         pontos_atencao: true,
