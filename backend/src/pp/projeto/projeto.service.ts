@@ -1307,23 +1307,12 @@ export class ProjetoService {
     }
 
     async updateDocumento(projetoId: number, documentoId: number, dto: UpdateProjetoDocumentDto, user: PessoaFromJwt) {
-        const documento = await this.prisma.projetoDocumento.findFirstOrThrow({
-            where: {
-                id: documentoId,
-                projeto_id: projetoId,
-                removido_em: null
-            },
-            select: {
-                arquivo: {
-                    select: {
-                        id: true
-                    }
-                }
-            }
-        });
+        const arquivoId = this.uploadService.checkUploadOrDownloadToken(dto.upload_token);
+        if (dto.diretorio_caminho)
+            await this.uploadService.updateDir({ caminho: dto.diretorio_caminho }, dto.upload_token);
 
         return await this.prisma.arquivo.update({
-            where: { id: documento.arquivo.id },
+            where: { id: arquivoId },
             data: {
                 descricao: dto.descricao,
                 atualizado_por: user.id,
