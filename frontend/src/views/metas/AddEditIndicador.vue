@@ -24,10 +24,9 @@ import getCaretPosition from './auxiliares/getCaretPosition.ts';
 const editModalStore = useEditModalStore();
 const alertStore = useAlertStore();
 const route = useRoute();
-const { meta_id } = route.params;
-const { iniciativa_id } = route.params;
-const { atividade_id } = route.params;
-const { indicador_id } = route.params;
+const {
+  meta_id, iniciativa_id, atividade_id, indicador_id,
+} = route.params;
 
 const funções = [
   {
