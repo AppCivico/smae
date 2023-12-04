@@ -1305,7 +1305,7 @@ export class ProjetoService {
     private async findAllDocumentos(projetoId: number): Promise<ProjetoDocumentoDto[]> {
         const documentosDB = await this.prisma.projetoDocumento.findMany({
             where: { projeto_id: projetoId, removido_em: null },
-            orderBy: { criado_em: 'asc' },
+            orderBy: { descricao: 'asc' },
             select: {
                 id: true,
                 descricao: true,
