@@ -426,14 +426,23 @@ export const portfolio = object({
 
 export const processo = object()
   .shape({
+    comentarios: string()
+      .label('Comentários')
+      .max(1024)
+      .nullable(),
     descricao: string()
       .label('Descrição')
       .max(2000)
       .nullable(),
     link: string()
       .label('Link')
+      .nullable()
       .max(2000)
       .url(),
+    observacoes: string()
+      .label('Observações')
+      .max(1024)
+      .nullable(),
     processo_sei: string()
       .label('Processo SEI')
       .max(19)
