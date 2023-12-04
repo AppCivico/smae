@@ -58,6 +58,19 @@ app.directive('ScrollLockDebug', {
   },
 });
 
+app.directive('focus', {
+  mounted: async (el, binding) => {
+    const { modifiers, value } = binding;
+
+    if (!!value || value === undefined) {
+      el.focus();
+      if (modifiers.select && el instanceof HTMLInputElement) {
+        el.select();
+      }
+    }
+  },
+});
+
 app.component('FormErrorsList', FormErrorsList);
 app.component('LabelFromYup', LabelFromYup);
 
