@@ -1,0 +1,152 @@
+<script setup>
+import { useAlertStore } from '@/stores/alert.store';
+import { useAuthStore } from '@/stores/auth.store';
+import { useVariaveisStore } from '@/stores/variaveis.store';
+import { useRoute } from 'vue-router';
+import { storeToRefs } from 'pinia';
+
+const alertStore = useAlertStore();
+const authStore = useAuthStore();
+const VariaveisStore = useVariaveisStore();
+
+const route = useRoute();
+const { indicador_id: indicadorId } = route.params;
+
+const { permissions } = storeToRefs(authStore);
+
+defineProps({
+  parentlink: {
+    type: String,
+    required: true,
+  },
+  variáveis: {
+    type: Array,
+    default: () => [],
+  },
+});
+
+async function apagarVariável(id) {
+  alertStore.confirmAction('Deseja mesmo remover esse item?', async () => {
+    try {
+      if (await VariaveisStore.delete(id)) {
+        VariaveisStore.clear();
+        VariaveisStore.getAll(indicadorId);
+        alertStore.success('Item removido!');
+      }
+    } catch (error) {
+      alertStore.error(error);
+    }
+  }, 'Remover');
+}
+
+function permitirEdição(indicadorVariavel) {
+  if (!indicadorVariavel) {
+    return true;
+  }
+  if (Array.isArray(indicadorVariavel)
+    && indicadorVariavel.findIndex((x) => x.indicador_origem) === -1) {
+    return true;
+  }
+  return false;
+}
+</script>
+<template>
+  <table
+    class="tablemain mb1"
+  >
+    <thead>
+      <tr>
+        <th style="width:13.3%;">
+          Título
+        </th>
+        <th style="width:13.3%;">
+          Valor base
+        </th>
+        <th style="width:13.3%;">
+          Unidade
+        </th>
+        <th style="width:13.3%;">
+          Peso
+        </th>
+        <th style="width:13.3%;">
+          Casas decimais
+        </th>
+        <th style="width:13.3%;">
+          Região
+        </th>
+        <th style="width:20%" />
+      </tr>
+    </thead>
+    <tr
+      v-for="v in variáveis"
+      :key="v.id"
+    >
+      <td>{{ v.titulo }}</td>
+      <td>{{ v.valor_base }}</td>
+      <td>{{ v.unidade_medida?.sigla }}</td>
+      <td>{{ v.peso }}</td>
+      <td>{{ v.casas_decimais }}</td>
+      <td>{{ v.regiao?.descricao ?? '-' }}</td>
+      <td style="white-space: nowrap; text-align: right;">
+        <button
+          class="like-a__link tipinfo tprimary"
+          :disabled="!permitirEdição(v.indicador_variavel)"
+          @click="apagarVariável(v.id)"
+        >
+          <svg
+            width="20"
+            height="20"
+          ><use xlink:href="#i_remove" /></svg><div>Apagar</div>
+        </button>
+        <router-link
+          :to="`${parentlink}/indicadores/${indicadorId}/variaveis/novo/${v.id}`"
+          class="tipinfo tprimary ml1"
+        >
+          <svg
+            width="20"
+            height="20"
+          ><use xlink:href="#i_copy" /></svg><div>Duplicar</div>
+        </router-link>
+        <router-link
+          v-if="permitirEdição(v.indicador_variavel)"
+          :to="`${parentlink}/indicadores/${indicadorId}/variaveis/${v.id}`"
+          class="tipinfo tprimary ml1"
+        >
+          <svg
+            width="20"
+            height="20"
+          ><use xlink:href="#i_edit" /></svg><div>Editar</div>
+        </router-link>
+        <button
+          v-else
+          disabled
+          class="like-a__link tipinfo tprimary ml1"
+        >
+          <svg
+            width="20"
+            height="20"
+          ><use xlink:href="#i_edit" /></svg><div>Editar</div>
+        </button>
+        <router-link
+          :to="`${parentlink}/indicadores/${indicadorId}/variaveis/${v.id}/valores`"
+          class="tipinfo tprimary ml1"
+        >
+          <svg
+            width="20"
+            height="20"
+          ><use xlink:href="#i_valores" /></svg><div>Valores Previstos e Acumulados</div>
+        </router-link>
+        <router-link
+          v-if="permissions.CadastroPessoa?.administrador"
+          :to="`${parentlink}/indicadores/${indicadorId}/variaveis/${v.id}/retroativos`"
+          class="tipinfo tprimary ml1"
+        >
+          <svg
+            width="20"
+            height="20"
+          ><use xlink:href="#i_check" /></svg><div>Valores Realizados Retroativos</div>
+        </router-link>
+      </td>
+    </tr>
+  </table>
+</template>
