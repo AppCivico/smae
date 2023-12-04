@@ -44,7 +44,7 @@ async function checkClose() {
     caminhoParaSaída = route.matched[parentRoutePosition].path;
   }
 
-  if (props.sujo) {
+  if (props.formulárioSujo) {
     alertStore.confirm('Deseja sair sem salvar as alterações?', caminhoParaSaída);
   } else {
     router.push(caminhoParaSaída);
