@@ -300,10 +300,12 @@ export const useProjetosStore = defineStore('projetos', {
     },
 
     diretóriosConsolidados: ({ diretórios, arquivos }): string[] => arquivos
-      .reduce((acc: DiretorioItemDto['caminho'][], cur) => (cur.arquivo?.diretorio_caminho
-        && acc.indexOf(cur.arquivo.diretorio_caminho) === -1
-        ? acc.concat([cur.arquivo.diretorio_caminho])
-        : acc), diretórios.map((x) => x.caminho))
+      .reduce((acc: DiretorioItemDto['caminho'][], cur) => {
+        const caminho = cur.arquivo.diretorio_caminho || '/';
+        return acc.indexOf(caminho) === -1
+          ? acc.concat([caminho])
+          : acc;
+      }, diretórios.map((x) => x.caminho))
       .sort((a, b) => a.localeCompare(b)),
   },
 });
