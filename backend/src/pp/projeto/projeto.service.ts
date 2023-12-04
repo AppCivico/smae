@@ -1268,13 +1268,18 @@ export class ProjetoService {
                     });
                 }
 
+                const arquivo = await prismaTx.arquivo.findFirstOrThrow({
+                    where: { id: arquivoId },
+                    select: { descricao: true }
+                });
+
                 return await prismaTx.projetoDocumento.create({
                     data: {
                         criado_em: new Date(Date.now()),
                         criado_por: user.id,
                         arquivo_id: arquivoId,
                         projeto_id: projetoId,
-                        descricao: dto.descricao
+                        descricao: dto.descricao || arquivo.descricao
                     },
                     select: {
                         id: true,
