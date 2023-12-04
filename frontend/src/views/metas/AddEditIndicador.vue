@@ -337,13 +337,13 @@ function formatFormula(p) {
         default:
           inuse.push(m);
           n = variaveisFormula[m].variavel_id;
-      if (Variaveis.value[indicador_id]?.length) {
-        const v = Variaveis.value[indicador_id]
-          .find((x) => x.id == variaveisFormula[m].variavel_id);
-        if (v) {
-          n = `${v.codigo} - ${v.titulo}`;
-          t = labelPeriodo(variaveisFormula[m].periodo, variaveisFormula[m].meses);
-        }
+          if (Variaveis.value[indicador_id]?.length) {
+            const v = Variaveis.value[indicador_id]
+              .find((x) => x.id == variaveisFormula[m].variavel_id);
+            if (v) {
+              n = `${v.codigo} - ${v.titulo}`;
+              t = labelPeriodo(variaveisFormula[m].periodo, variaveisFormula[m].meses);
+            }
           }
           break;
       }
