@@ -1169,7 +1169,7 @@ if (indicador_id) {
         class="btn amarelo big"
         @click="checkDelete(singleIndicadores.id)"
       >
-        Remover item
+        Remover indicador
       </button>
     </template>
   </Dashboard>
