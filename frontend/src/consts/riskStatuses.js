@@ -4,5 +4,5 @@ export default {
   Estatico: 'Estático',
   Diminuindo: 'Diminuindo',
   SobControle: 'Sob controle',
-  Fechado: 'Fechado',
+  ConcluiHdo: 'Concluído',
 };

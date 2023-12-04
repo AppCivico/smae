@@ -89,7 +89,7 @@ model Pessoa {
     RegiaoQueDesativei Regiao[] @relation("Removedor")
     RegiaoQueAtualizei Regiao[] @relation("Atualizador")
 
-    ArquivoQueCriei Arquivo[] @relation("Criador")
+    ArquivoQueCriei      Arquivo[] @relation("Criador")
     ArquivosQueAtualizei Arquivo[] @relation("Atualizador")
 
     ArquivoDocQueCriei     ArquivoDocumento[] @relation("Criador")
@@ -671,7 +671,7 @@ model Arquivo {
     descricao                       String?
     tipo_documento_id               Int?
     diretorio_caminho               String?
-    data                            DateTime?                           
+    data                            DateTime?
     TipoDocumento                   TipoDocumento?                    @relation(fields: [tipo_documento_id], references: [id])
     Tag                             Tag[]
     Regiao                          Regiao[]
@@ -3048,7 +3048,7 @@ enum StatusRisco {
     Estatico
     Diminuindo
     SobControle
-    Fechado
+    ConcluiHdo @map("Fechado")
 }
 
 // desenhado no MER como Monitoramento_Risco
