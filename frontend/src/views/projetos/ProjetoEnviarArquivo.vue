@@ -38,8 +38,8 @@ const schema = computed(() => schemaDoFormulário(éEdição));
 const arquivoParaEdição = computed(() => ({
   arquivo_id: arquivo.value?.id,
   upload_token: arquivo.value?.download_token,
-  descricao: arquivo.value?.descricao,
-  tipo_documento_id: arquivo.value?.TipoDocumento?.id,
+  descricao: arquivo.value?.descricao || '',
+  data: arquivo.value?.data || null,
   diretorio_caminho: arquivo.value?.diretorio_caminho || route.query?.diretorio_caminho,
 }));
 
@@ -47,18 +47,13 @@ const {
   errors, handleSubmit, isSubmitting, meta, resetForm, values,
 } = useForm({
   validationSchema: schema.value,
-  initialValues: arquivoParaEdição.value,
+  initialValues: arquivoParaEdição,
 });
 // PRA-FAZER: simplificar o gerenciamento de valores
 const onSubmit = handleSubmit.withControlled(async () => {
-  const carga = values;
+  const carga = { ...values };
   try {
     curfile.loading = true;
-
-    const dadosDeAssociação = {
-      diretorio_caminho: values.diretorio_caminho,
-      upload_token: arquivoParaEdição.value.upload_token,
-    };
 
     if (!éEdição) {
       carga.tipo = 'DOCUMENTO';
@@ -68,12 +63,10 @@ const onSubmit = handleSubmit.withControlled(async () => {
       });
       const u = await requestS.upload(`${baseUrl}/upload`, formData);
 
-      dadosDeAssociação.upload_token = u.upload_token;
-    } else {
-      dadosDeAssociação.descricao = values.descricao;
+      carga.upload_token = u.upload_token;
     }
 
-    if (await projetosStore.associarArquivo(dadosDeAssociação, route.params?.arquivoId)) {
+    if (await projetosStore.associarArquivo(carga, route.params?.arquivoId)) {
       alertStore.success(éEdição ? 'Arquivo atualizado!' : 'Arquivo associado!');
 
       const rotaDeEscape = route.meta?.rotaDeEscape;
@@ -124,8 +117,9 @@ watch(arquivoParaEdição, (novosValores) => {
             :schema="schema"
           />
           <Field
+            v-focus
             name="descricao"
-            type="text"
+            as="textarea"
             class="inputtext light mb1"
             :class="{ 'error': errors.descricao }"
           />
@@ -133,6 +127,25 @@ watch(arquivoParaEdição, (novosValores) => {
             {{ errors.descricao }}
           </div>
         </div>
+      </div>
+
+      <div class="flex g2">
+        <div class="f1">
+          <LabelFromYup
+            name="data"
+            :schema="schema"
+          />
+          <Field
+            name="data"
+            type="date"
+            class="inputtext light mb1"
+            :class="{ 'error': errors.data }"
+          />
+          <div class="error-msg">
+            {{ errors.data }}
+          </div>
+        </div>
+
         <div
           v-if="!values.arquivo_id"
           class="f1"

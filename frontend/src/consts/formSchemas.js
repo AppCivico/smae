@@ -118,6 +118,9 @@ export const arquivo = (semEnvio) => object()
       .when('semEnvioDeArquivo', ((_, field) => ((semEnvio)
         ? field.notRequired()
         : field.required('Selecione um arquivo')))),
+    data: date()
+      .label('Data')
+      .nullable(),
     descricao: string()
       .label('Descrição')
       .required(),

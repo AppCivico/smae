@@ -1,5 +1,7 @@
 <script setup>
 import { ref } from 'vue';
+import dateToField from '@/helpers/dateToField';
+import truncate from '@/helpers/truncate';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
@@ -117,16 +119,17 @@ const éPossívelAbrir = (item) => !item.children?.length
                     ? baseUrl + '/download/' + arquivo?.arquivo?.download_token
                     : undefined"
                   download
-                  class="arvore-de-arquivos__nome"
+                  class="arvore-de-arquivos__descricao"
+                  :title="`${arquivo?.arquivo?.nome_original} -- ${arquivo?.arquivo?.descricao}`"
                 >
-                  {{ arquivo?.arquivo?.nome_original ?? '-' }}
+                  {{ truncate(arquivo?.arquivo?.descricao, 300) }}
                 </component>
 
                 <small
-                  v-if="arquivo?.arquivo?.descricao"
-                  class="arvore-de-arquivos__descricao ml1"
+                  v-if="arquivo?.arquivo?.data"
+                  class="arvore-de-arquivos__data ml1"
                 >
-                  {{ arquivo?.arquivo?.descricao }}
+                  {{ dateToField(arquivo?.arquivo?.data) }}
                 </small>
 
                 <router-link
@@ -250,6 +253,14 @@ const éPossívelAbrir = (item) => !item.children?.length
     flex-grow: 1;
     color: @c600;
     min-width: 11em;
+  }
+
+  .arvore-de-arquivos__data {
+    margin-right: calc(20px + 2rem);
+    flex-basis: 0;
+    flex-grow: 1;
+    white-space: nowrap;
+    max-width: min-content;
   }
 
   .arvore-de-arquivos__abrir {
