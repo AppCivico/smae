@@ -71,6 +71,10 @@ export class PPStatusService implements ReportableService {
             },
         });
 
+        console.log('==================');
+        console.log(projetoRows);
+        console.log('==================');
+
         const projetoStatusOut: RelProjetoStatusRelatorioDto[] = projetoRows.map((p) => {
             let cronograma: string;
             const acompanhamento = p.ProjetoAcompanhamento[0];
