@@ -10,8 +10,14 @@ import { storeToRefs } from 'pinia';
 import {
   ErrorMessage,
   Field,
-  Form
+  Form,
+  useForm,
+  useIsFormDirty,
 } from 'vee-validate';
+import {
+  computed, reactive, watch,
+} from 'vue';
+
 import { useRoute, useRouter } from 'vue-router';
 
 const alertStore = useAlertStore();
@@ -42,7 +48,14 @@ const props = defineProps({
   },
 });
 
-async function onSubmit(_, { controlledValues: carga }) {
+const {
+  errors, handleSubmit, isSubmitting, resetForm, values: carga,
+} = useForm({
+  initialValues: itemParaEdição,
+  validationSchema: schema,
+});
+
+const onSubmit = handleSubmit.withControlled(async () => {
   try {
     const msg = props.processoId
       ? 'Dados salvos com sucesso!'
@@ -60,7 +73,7 @@ async function onSubmit(_, { controlledValues: carga }) {
   } catch (error) {
     alertStore.error(error);
   }
-}
+});
 
 function excluirProcesso(id) {
   useAlertStore().confirmAction('Deseja mesmo remover esse item?', async () => {
@@ -88,7 +101,15 @@ function iniciar() {
   }
 }
 
+const formulárioSujo = useIsFormDirty();
+
 iniciar();
+
+watch(itemParaEdição, (novosValores) => {
+  resetForm({ values: novosValores });
+});
+
+resetForm();
 </script>
 <template>
   <div class="flex spacebetween center mb2">
@@ -107,15 +128,12 @@ iniciar();
       v-if="emFoco?.id"
     />
 
-    <CheckClose />
+    <CheckClose :formulário-sujo="formulárioSujo" />
   </div>
 
-  <Form
+  <form
     v-if="!processoId || emFoco"
-    v-slot="{ errors, isSubmitting }"
     :disabled="chamadasPendentes.emFoco"
-    :initial-values="itemParaEdição"
-    :validation-schema="schema"
     @submit="onSubmit"
   >
     <div class="flex g2 mb1">
@@ -145,7 +163,6 @@ iniciar();
         />
         <Field
           name="link"
-          required
           type="url"
           class="inputtext light mb1"
           :class="{
@@ -181,6 +198,46 @@ iniciar();
         />
       </div>
     </div>
+    <div class="flex g2">
+      <div class="f1 mb1">
+        <LabelFromYup
+          name="comentarios"
+          :schema="schema"
+        />
+        <Field
+          name="comentarios"
+          as="textarea"
+          rows="5"
+          class="inputtext light mb1"
+          maxlength="1024"
+          :class="{ 'error': errors.comentarios }"
+        />
+        <ErrorMessage
+          name="comentarios"
+          class="error-msg"
+        />
+      </div>
+    </div>
+    <div class="flex g2">
+      <div class="f1 mb1">
+        <LabelFromYup
+          name="observacoes"
+          :schema="schema"
+        />
+        <Field
+          name="observacoes"
+          as="textarea"
+          rows="5"
+          class="inputtext light mb1"
+          maxlength="1024"
+          :class="{ 'error': errors.observacoes }"
+        />
+        <ErrorMessage
+          name="observacoes"
+          class="error-msg"
+        />
+      </div>
+    </div>
 
     <FormErrorsList :errors="errors" />
 
@@ -197,7 +254,7 @@ iniciar();
       </button>
       <hr class="ml2 f1">
     </div>
-  </Form>
+  </form>
 
   <div
     v-if="chamadasPendentes?.emFoco"
