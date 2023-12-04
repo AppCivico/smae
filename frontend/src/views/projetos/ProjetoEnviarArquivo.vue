@@ -57,7 +57,7 @@ const onSubmit = handleSubmit.withControlled(async () => {
 
     const dadosDeAssociação = {
       diretorio_caminho: values.diretorio_caminho,
-      upload_token: arquivoParaEdição.value.download_token,
+      upload_token: arquivoParaEdição.value.upload_token,
     };
 
     if (!éEdição) {
