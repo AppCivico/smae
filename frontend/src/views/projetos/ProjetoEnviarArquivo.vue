@@ -9,7 +9,7 @@ import {
 } from '@/stores';
 import { useProjetosStore } from '@/stores/projetos.store.ts';
 import { storeToRefs } from 'pinia';
-import { Field, useForm } from 'vee-validate';
+import { Field, useForm, useIsFormDirty } from 'vee-validate';
 import {
   computed, reactive, watch,
 } from 'vue';
@@ -44,7 +44,7 @@ const arquivoParaEdição = computed(() => ({
 }));
 
 const {
-  errors, handleSubmit, isSubmitting, meta, resetForm, values,
+  errors, handleSubmit, isSubmitting, resetForm, values,
 } = useForm({
   validationSchema: schema.value,
   initialValues: arquivoParaEdição,
@@ -93,6 +93,8 @@ function addFile(e) {
   [curfile.file] = files;
 }
 
+const formulárioSujo = useIsFormDirty();
+
 watch(arquivoParaEdição, (novosValores) => {
   resetForm({ values: novosValores });
 });
@@ -103,7 +105,7 @@ watch(arquivoParaEdição, (novosValores) => {
     <h2>{{ $route.meta.título || 'Adicionar arquivo' }}</h2>
     <hr class="ml2 f1">
 
-    <CheckClose :formulário-sujo="meta.dirty" />
+    <CheckClose :formulário-sujo="formulárioSujo" />
   </div>
 
   <template v-if="!(chamadasPendentes?.arquivos?.loading || erro) && !curfile?.loading">
