@@ -1,4 +1,3 @@
-import { requestS } from '@/helpers';
 import dateToField from '@/helpers/dateToField';
 import { defineStore } from 'pinia';
 
@@ -23,8 +22,10 @@ export const useVariaveisStore = defineStore({
     async getAll(indicador_id) {
       try {
         if (!indicador_id) throw 'Indicador inválido';
-        if (!this.Variaveis[indicador_id]?.length) this.Variaveis[indicador_id] = { loading: true };
-        const r = await requestS.get(`${baseUrl}/indicador-variavel?remover_desativados=true&indicador_id=${indicador_id}`);
+        if (!this.Variaveis[indicador_id]?.length) {
+          this.Variaveis[indicador_id] = { loading: true };
+        }
+        const r = await this.requestS.get(`${baseUrl}/indicador-variavel?remover_desativados=true&indicador_id=${indicador_id}`);
         this.Variaveis[indicador_id] = r.linhas.map((x) => {
           x.orgao_id = x.orgao?.id ?? null;
           x.regiao_id = x.regiao?.id ?? null;
@@ -46,37 +47,39 @@ export const useVariaveisStore = defineStore({
         if (!this.Variaveis[indicador_id]?.length) {
           await this.getAll(indicador_id);
         }
-        this.singleVariaveis = this.Variaveis[indicador_id].length ? this.Variaveis[indicador_id].find((u) => u.id == var_id) : {};
+        this.singleVariaveis = this.Variaveis[indicador_id].length
+          ? this.Variaveis[indicador_id].find((u) => u.id == var_id)
+          : {};
         return true;
       } catch (error) {
         this.singleVariaveis = { error };
       }
     },
     async insert(params) {
-      const r = await requestS.post(`${baseUrl}/indicador-variavel`, params);
+      const r = await this.requestS.post(`${baseUrl}/indicador-variavel`, params);
       if (r.id) return r.id;
       return false;
     },
     async update(id, params) {
-      if (await requestS.patch(`${baseUrl}/indicador-variavel/${id}`, params)) return true;
+      if (await this.requestS.patch(`${baseUrl}/indicador-variavel/${id}`, params)) return true;
       return false;
     },
     async delete(id) {
-      if (await requestS.delete(`${baseUrl}/indicador-variavel/${id}`)) return true;
+      if (await this.requestS.delete(`${baseUrl}/indicador-variavel/${id}`)) return true;
       return false;
     },
     async getValores(id) {
       try {
         if (!id) throw 'Variável inválida';
         this.Valores[id] = { loading: true };
-        const r = await requestS.get(`${baseUrl}/indicador-variavel/${id}/serie`);
+        const r = await this.requestS.get(`${baseUrl}/indicador-variavel/${id}/serie`);
         this.Valores[id] = r;
       } catch (error) {
         this.Valores[id] = { error };
       }
     },
     async updateValores(params) {
-      if (await requestS.patch(`${baseUrl}/indicador-variavel-serie`, params)) return true;
+      if (await this.requestS.patch(`${baseUrl}/indicador-variavel-serie`, params)) return true;
       return false;
     },
   },
