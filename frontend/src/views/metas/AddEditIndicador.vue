@@ -3,9 +3,15 @@ import { Dashboard, SmallModal } from '@/components';
 import { indicador as schema } from '@/consts/formSchemas';
 import fieldToDate from '@/helpers/fieldToDate';
 import { router } from '@/router';
-import {
-  useAlertStore, useAtividadesStore, useAuthStore, useEditModalStore, useIndicadoresStore, useIniciativasStore, useMetasStore, useVariaveisStore,
-} from '@/stores';
+
+import { useAlertStore } from '@/stores/alert.store';
+import { useAtividadesStore } from '@/stores/atividades.store';
+import { useEditModalStore } from '@/stores/editModal.store';
+import { useIndicadoresStore } from '@/stores/indicadores.store';
+import { useIniciativasStore } from '@/stores/iniciativas.store';
+import { useMetasStore } from '@/stores/metas.store';
+import { useVariaveisStore } from '@/stores/variaveis.store';
+
 import { default as AddEditRealizado } from '@/views/metas/AddEditRealizado.vue';
 import { default as AddEditValores } from '@/views/metas/AddEditValores.vue';
 import { default as AddEditVariavel } from '@/views/metas/AddEditVariavel.vue';
