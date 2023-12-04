@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { ProjetoFase, ProjetoStatus, StatusRisco } from '@prisma/client';
+import { ProjetoStatus, StatusRisco } from '@prisma/client';
 import { IdSiglaDescricao } from 'src/common/dto/IdSigla.dto';
 import { ProjetoPremissa, ProjetoRecursos, ProjetoRestricoes } from 'src/pp/projeto/entities/projeto.entity';
 import { IdNomeExibicao } from 'src/variavel/entities/variavel.entity';
@@ -66,6 +66,7 @@ export class RelProjetosRiscosDto {
     codigo: string;
     titulo: string;
     data_registro: string;
+    @ApiProperty({ enum: StatusRisco, enumName: 'StatusRisco' })
     status_risco: StatusRisco;
     descricao: string | null;
     causa: string | null;
