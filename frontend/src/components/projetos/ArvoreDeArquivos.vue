@@ -211,12 +211,6 @@ const éPossívelAbrir = (item) => !item.children?.length
       left: 0;
     }
 
-    // &:hover {
-    //   &:after {
-    //     color: @laranja;
-    //   }
-    // }
-
     .arvore-de-arquivos__item {
       padding-left: 1em;
 
@@ -226,12 +220,6 @@ const éPossívelAbrir = (item) => !item.children?.length
 
   &.arvore-de-arquivos--raiz {
     position: relative;
-
-    // > .arvore-de-arquivos__item > .arvore-de-arquivos > .arvore-de-arquivos__item {
-    //   &:nth-child(even) {
-    //     background-color: @c50;
-    //   }
-    // }
   }
 
   .arvore-de-arquivos__linha {
