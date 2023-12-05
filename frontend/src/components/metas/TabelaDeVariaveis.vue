@@ -97,22 +97,31 @@ function permitirEdição(indicadorVariavel) {
     <thead>
       <tr>
         <th style="width:13.3%;">
+          Código
+        </th>
+        <th style="width:13.3%;">
           Título
+        </th>
+        <th style="width:13.3%;">
+          Nível de regionalização
         </th>
         <th style="width:13.3%;">
           Valor base
         </th>
         <th style="width:13.3%;">
-          Unidade
+          Periodicidade
         </th>
         <th style="width:13.3%;">
-          Peso
+          Unidade
         </th>
         <th style="width:13.3%;">
           Casas decimais
         </th>
         <th style="width:13.3%;">
-          Região
+          Atraso meses
+        </th>
+        <th style="width:13.3%;">
+          Acumulativa
         </th>
         <th style="width:20%" />
       </tr>
@@ -121,12 +130,15 @@ function permitirEdição(indicadorVariavel) {
       v-for="v in variáveis"
       :key="v.id"
     >
+      <td>{{ v.codigo }}</td>
       <td>{{ v.titulo }}</td>
+      <td>{{ v.regiao ? níveisRegionalização.find(e => e.id == v.regiao.nivel).nome : '-' }}</td>
       <td>{{ v.valor_base }}</td>
+      <td>{{ v.periodicidade }}</td>
       <td>{{ v.unidade_medida?.sigla }}</td>
-      <td>{{ v.peso }}</td>
       <td>{{ v.casas_decimais }}</td>
-      <td>{{ v.regiao?.descricao ?? '-' }}</td>
+      <td>{{ v.atraso_meses }}</td>
+      <td>{{ v.acumulativa ? 'Sim' : 'Não' }}</td>
       <td style="white-space: nowrap; text-align: right;">
         <button
           class="like-a__link tipinfo tprimary"
