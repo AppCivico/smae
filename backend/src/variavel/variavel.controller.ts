@@ -72,6 +72,18 @@ export class VariavelController {
         return;
     }
 
+    // manter antes da proxima rota
+    @Post('indicador-variavel/gerador-regionalizado')
+    @ApiBearerAuth('access-token')
+    @ApiUnauthorizedResponse()
+    @Roles('CadastroIndicador.inserir')
+    async create_generated(
+        @Body() dto: CreateGeradorVariavelDto,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<BatchRecordWithId> {
+        return { ids: await this.variavelService.create_region_generated(dto, user) };
+    }
+
     @ApiExtraModels(SerieValorNomimal, SerieIndicadorValorNominal)
     @ApiTags('Indicador')
     @Get('indicador-variavel/:id/serie')
@@ -85,14 +97,4 @@ export class VariavelController {
         return await this.variavelService.getSeriePrevistoRealizado(params.id);
     }
 
-    @Post('indicador-variavel/gerador-regionalizado')
-    @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles('CadastroIndicador.inserir')
-    async create_generated(
-        @Body() dto: CreateGeradorVariavelDto,
-        @CurrentUser() user: PessoaFromJwt
-    ): Promise<BatchRecordWithId> {
-        return { ids: await this.variavelService.create_region_generated(dto, user) };
-    }
 }
