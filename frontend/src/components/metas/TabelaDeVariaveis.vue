@@ -56,6 +56,23 @@ function permitirEdição(indicadorVariavel) {
 }
 </script>
 <template>
+  <nav>
+    <ul class="flex justifyleft mb1">
+      <li class="mr1">
+        <router-link
+          :to="`${parentlink}/indicadores/${indicadorId}/variaveis/novo`"
+          class="addlink"
+        >
+          <span>Adicionar variável</span>
+          <svg
+            width="20"
+            height="20"
+          ><use xlink:href="#i_+" /></svg>
+        </router-link>
+      </li>
+    </ul>
+  </nav>
+
   <table
     class="tablemain mb1"
   >
