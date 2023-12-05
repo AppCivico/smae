@@ -15,10 +15,10 @@ export class CreateRelProjetoStatusDto {
     @IsOptional()
     @IsOnlyDate()
     @Type(() => Date)
-    periodo_inicio?: Date;
+    periodo_inicio?: Date | null;
 
     @IsOptional()
     @IsOnlyDate()
     @Type(() => Date)
-    periodo_fim?: Date;
+    periodo_fim?: Date | null;
 }
