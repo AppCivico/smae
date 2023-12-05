@@ -159,6 +159,20 @@ export class VariavelService {
         indicador: IndicadorInfo,
         responsaveis: number[]
     ) {
+        const jaEmUso = await prismaThx.variavel.count({
+            where: {
+                removido_em: null,
+                codigo: createVariavelDto.codigo,
+                indicador_variavel: {
+                    some: {
+                        indicador_id: indicador_id,
+                    },
+                },
+            },
+        });
+        if (jaEmUso > 0)
+            throw new HttpException(`Código ${createVariavelDto.codigo} já está em uso no indicador.`, 400);
+
         const variavel = await prismaThx.variavel.create({
             data: {
                 ...createVariavelDto,
@@ -575,6 +589,21 @@ export class VariavelService {
             if (filterIdIn.includes(meta_id) === false)
                 throw new HttpException('Sem permissão para criar variável nesta meta', 400);
         }
+
+        const jaEmUso = await this.prisma.variavel.count({
+            where: {
+                removido_em: null,
+                codigo: updateVariavelDto.codigo,
+                NOT: { id: variavelId },
+                indicador_variavel: {
+                    some: {
+                        indicador_id: selfIdicadorVariavel.indicador_id,
+                    },
+                },
+            },
+        });
+        if (jaEmUso > 0)
+            throw new HttpException(`Código ${updateVariavelDto.codigo} já está em uso no indicador.`, 400);
 
         const oldValorBase = selfIdicadorVariavel.variavel.valor_base;
         // e com o indicador verdadeiro, temos os dados para recalcular os niveis
