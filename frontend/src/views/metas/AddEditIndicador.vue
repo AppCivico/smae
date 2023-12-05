@@ -20,6 +20,7 @@ import { Field, Form } from 'vee-validate';
 import { onMounted, onUpdated, ref } from 'vue';
 import { useRoute } from 'vue-router';
 import TabelaDeVariaveis from '@/components/metas/TabelaDeVariaveis.vue';
+import TabelaDeVariaveisCompostas from '@/components/metas/TabelaDeVariaveisCompostas.vue';
 import getCaretPosition from './auxiliares/getCaretPosition.ts';
 
 const editModalStore = useEditModalStore();
@@ -119,6 +120,10 @@ const abas = ref({
     componente: TabelaDeVariaveis,
     etiqueta: 'Variáveis',
   },
+  TabelaDeVariaveisCompostas: {
+    componente: TabelaDeVariaveisCompostas,
+    etiqueta: 'Variáveis Compostas'
+  }
 });
 const abaCorrente = ref('TabelaDeVariaveis');
 
