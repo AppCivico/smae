@@ -309,15 +309,14 @@ function formatFormula(p) {
       let n;
 
       switch (tipoDeVariável) {
-        // eslint-disable-next-line no-lone-blocks
         case 'composta': {
           // as variáveis compostas não são montadas com chave de posição, mas
           // por ID.
           const variávelComposta = variáveisCompostasPorReferência.value?.[m];
           n = variávelComposta.titulo;
           t = variávelComposta.titulo;
-        }
           break;
+        }
 
         default:
           inuse.push(m);
