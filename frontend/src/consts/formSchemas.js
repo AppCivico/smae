@@ -740,9 +740,23 @@ export const relatórioDeStatus = object({
   fonte: string()
     .required(),
   parametros: object({
+    periodo_inicio: date()
+      .label('Início do período')
+      .min(new Date(2003, 0, 1))
+      .nullable()
+      .transform((v) => (!v ? null : v)),
+    periodo_fim: date()
+      .label('Final do período')
+      .min(new Date(2003, 0, 1))
+      .nullable()
+      .transform((v) => (!v ? null : v)),
     portfolio_id: number()
       .label('Portfolio')
       .required()
+      .min(1, '${label} é obrigatório'),
+    projeto_id: number()
+      .label('Projeto')
+      .nullable()
       .transform((v) => (v === '' || Number.isNaN(v) ? null : v)),
   }),
   salvar_arquivo: boolean(),
