@@ -3,6 +3,7 @@ import LabelFromYup from '@/components/LabelFromYup.vue';
 import { relatórioDeStatus as schema } from '@/consts/formSchemas';
 import { useAlertStore } from '@/stores/alert.store';
 import { usePortfolioStore } from '@/stores/portfolios.store.ts';
+import { useProjetosStore } from '@/stores/projetos.store.ts';
 import { useRelatoriosStore } from '@/stores/relatorios.store.ts';
 import { Field, Form } from 'vee-validate';
 import { useRoute, useRouter } from 'vue-router';
@@ -10,6 +11,7 @@ import CheckClose from '../../components/CheckClose.vue';
 
 const alertStore = useAlertStore();
 const portfolioStore = usePortfolioStore();
+const projetosStore = useProjetosStore();
 const relatoriosStore = useRelatoriosStore();
 const route = useRoute();
 const router = useRouter();
@@ -18,6 +20,9 @@ const initialValues = {
   fonte: 'ProjetoStatus',
   parametros: {
     portfolio_id: null,
+    projeto_id: null,
+    periodo_inicio: null,
+    periodo_fim: null,
   },
   salvar_arquivo: false,
 };
@@ -45,6 +50,7 @@ async function onSubmit(values) {
 }
 
 portfolioStore.buscarTudo();
+projetosStore.buscarTudo();
 </script>
 
 <template>
@@ -75,6 +81,7 @@ portfolioStore.buscarTudo();
             loading: portfolioStore.chamadasPendentes.lista
           }"
           :disabled="portfolioStore.chamadasPendentes.lista"
+          @change="setFieldValue('parametros.projeto_id', null)"
         >
           <option :value="0">
             Selecionar
@@ -87,8 +94,101 @@ portfolioStore.buscarTudo();
             {{ item.id }} - {{ item.titulo }}
           </option>
         </Field>
-        <div class="error-msg">
+        <div
+          v-if="errors['parametros.portfolio_id']"
+          class="error-msg"
+        >
           {{ errors['parametros.portfolio_id'] }}
+        </div>
+      </div>
+
+      <div class="f1">
+        <LabelFromYup
+          name="projeto_id"
+          :schema="schema.fields.parametros"
+        />
+        <Field
+          name="parametros.projeto_id"
+          as="select"
+          class="inputtext light
+          mb1"
+          :class="{
+            error: errors['parametros.projeto_id'],
+            loading: projetosStore.chamadasPendentes.lista
+          }"
+          :disabled="projetosStore.chamadasPendentes.lista
+            || !projetosStore.projetosPorPortfolio?.[values.parametros.portfolio_id]?.length"
+        >
+          <option :value="null">
+            Selecionar
+          </option>
+          <option
+            v-for="item in (!values.parametros.portfolio_id
+              ? projetosStore.lista
+              : projetosStore.projetosPorPortfolio[values.parametros.portfolio_id] || []
+            )"
+            :key="item.id"
+            :value="item.id"
+          >
+            {{ item.id }} - {{ item.nome }}
+          </option>
+        </Field>
+        <div
+          v-if="errors['parametros.projeto_id']"
+          class="error-msg"
+        >
+          {{ errors['parametros.projeto_id'] }}
+        </div>
+      </div>
+    </div>
+
+    <div class="flex g2 mb2">
+      <div class="f1">
+        <LabelFromYup
+          name="periodo_inicio"
+          :schema="schema.fields.parametros"
+        />
+        <Field
+          id="periodo_inicio"
+          name="parametros.periodo_inicio"
+          type="date"
+          class="inputtext light mb1"
+          :class="{ 'error': errors['parametros.periodo_inicio'] }"
+          @update:model-value="() => {
+            if (values.parametros.periodo_inicio === '') {
+              setFieldValue('parametros.periodo_inicio', null);
+            }
+          }"
+        />
+        <div
+          v-if="errors['parametros.periodo_inicio']"
+          class="error-msg"
+        >
+          {{ errors['parametros.periodo_inicio'] }}
+        </div>
+      </div>
+      <div class="f1">
+        <LabelFromYup
+          name="periodo_fim"
+          :schema="schema.fields.parametros"
+        />
+        <Field
+          id="periodo_fim"
+          name="parametros.periodo_fim"
+          type="date"
+          class="inputtext light mb1"
+          :class="{ 'error': errors['parametros.periodo_fim'] }"
+          @update:model-value="() => {
+            if (values.parametros.periodo_fim === '') {
+              setFieldValue('parametros.periodo_fim', null);
+            }
+          }"
+        />
+        <div
+          v-if="errors['parametros.periodo_fim']"
+          class="error-msg"
+        >
+          {{ errors['parametros.periodo_fim'] }}
         </div>
       </div>
     </div>
@@ -105,8 +205,11 @@ portfolioStore.buscarTudo();
           <span :class="{ 'error': errors.salvar_arquivo }">Salvar relatório no sistema</span>
         </label>
       </div>
-      <div class="error-msg">
-        {{ errors.salvar_arquivo }}
+      <div
+        v-if="errors['salvar_arquivo']"
+        class="error-msg"
+      >
+        {{ errors['salvar_arquivo'] }}
       </div>
     </div>
 
