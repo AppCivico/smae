@@ -1324,7 +1324,6 @@ export class ProjetoService {
         const documentosRet: ProjetoDocumentoDto[] = documentosDB.map(d => {
             return {
                 id: d.id,
-                // TODO: Esta data no futuro, talvez, será na table de relacionamento 'ProjetoDocumento' e não direto no arquivo.
                 data: d.data,
                 descricao: d.descricao,
                 arquivo: {
