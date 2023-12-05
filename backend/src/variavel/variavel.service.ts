@@ -454,6 +454,7 @@ export class VariavelService {
                         descricao: true,
                         parente_id: true,
                         codigo: true,
+                        pdm_codigo_sufixo: true
                     },
                 },
                 indicador_variavel: {
