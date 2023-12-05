@@ -450,9 +450,8 @@ function monitorarSetas(e) {
 }
 
 if (indicador_id) {
-  VariaveisStore.getAllCompound(indicador_id);
-
   Promise.all([
+    VariaveisStore.getAllCompound(indicador_id),
     IndicadoresStore.getById(indicador_id),
     VariaveisStore.getAll(indicador_id),
   ]).then(() => {
