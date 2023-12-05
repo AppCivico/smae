@@ -61,7 +61,7 @@ projetosStore.buscarTudo();
   </div>
 
   <Form
-    v-slot="{ errors, isSubmitting, values }"
+    v-slot="{ errors, isSubmitting, setFieldValue, values }"
     :validation-schema="schema"
     :initial-values="initialValues"
     @submit="onSubmit"
