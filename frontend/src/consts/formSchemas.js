@@ -1090,7 +1090,7 @@ export const usuário = object()
       .required('Selecione ao menos uma permissão'),
   });
 
-export const variável = (singleIndicadores) => object()
+export const variável = (singleIndicadores, éGeraçãoApenas) => object()
   .shape({
     acumulativa: string()
       .nullable(),
@@ -1121,8 +1121,14 @@ export const variável = (singleIndicadores) => object()
       .required('Preencha a periodicidade'),
     regiao_id: string()
       .nullable()
-      .test('regiao_id', 'Selecione uma região', (value) => !singleIndicadores?.value?.regionalizavel
-      || value),
+      .when('regiao_id_test', ((_, field) => ((!singleIndicadores?.value?.regionalizavel || éGeraçãoApenas)
+        ? field.notRequired()
+        : field.required('Selecione uma região')))),
+    regioes: array()
+      .label('Regiões')
+      .when('regioes_test', ((_, field) => ((!singleIndicadores?.value?.regionalizavel || !éGeraçãoApenas)
+        ? field.notRequired()
+        : field.min(1, 'Selecione ao menos uma região')))),
     responsaveis: array()
       .nullable(),
     titulo: string()

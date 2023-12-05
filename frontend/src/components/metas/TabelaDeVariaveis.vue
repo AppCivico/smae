@@ -70,6 +70,24 @@ function permitirEdição(indicadorVariavel) {
           ><use xlink:href="#i_+" /></svg>
         </router-link>
       </li>
+
+      <li class="mr1">
+        <router-link
+          :to="{
+            name: 'geradorDeVariáveis',
+            params: {
+              indicador_id: indicadorId
+            }
+          }"
+          class="addlink"
+        >
+          <span>Gerar variáveis</span>
+          <svg
+            width="20"
+            height="20"
+          ><use xlink:href="#i_+" /></svg>
+        </router-link>
+      </li>
     </ul>
   </nav>
 

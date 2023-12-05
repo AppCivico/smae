@@ -72,6 +72,10 @@ export const useVariaveisStore = defineStore({
         this.singleVariaveis = { error };
       }
     },
+    async gerar(params) {
+      if (await this.requestS.post(`${baseUrl}/indicador-variavel/gerador-regionalizado`, params)) return true;
+      return false;
+    },
     async insert(params) {
       const r = await this.requestS.post(`${baseUrl}/indicador-variavel`, params);
       if (r.id) return r.id;
@@ -112,8 +116,6 @@ export const useVariaveisStore = defineStore({
 
     variáveisCompostasPorReferência: ({ variáveisCompostas }) => Object.keys(variáveisCompostas)
       .reduce((acc, cur) => {
-        console.debug('cur', cur);
-        console.debug('variáveisCompostas[cur]', variáveisCompostas[cur]);
         if (Array.isArray(variáveisCompostas[cur])) {
           variáveisCompostas[cur].forEach((x) => {
             if (!acc[x.id]) {
