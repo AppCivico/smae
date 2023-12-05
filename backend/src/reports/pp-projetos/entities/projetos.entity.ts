@@ -66,8 +66,7 @@ export class RelProjetosRiscosDto {
     codigo: string;
     titulo: string;
     data_registro: string;
-    @ApiProperty({ enum: StatusRisco, enumName: 'StatusRisco' })
-    status_risco: StatusRisco;
+    status_risco: string;
     descricao: string | null;
     causa: string | null;
     consequencia: string | null;

@@ -68,6 +68,7 @@ export class RelProjetoRiscoDto {
     impacto_descricao: string | null;
     grau: number | null;
     grau_descricao: string | null;
+    status: string;
 }
 
 export class RelProjetoPlanoAcaoDto {

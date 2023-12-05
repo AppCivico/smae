@@ -3,7 +3,12 @@ import { Date2YMD } from '../../common/date2ymd';
 import { ProjetoService, ProjetoStatusParaExibicao } from '../../pp/projeto/projeto.service';
 import { PrismaService } from '../../prisma/prisma.service';
 
-import { ProjetoFase, ProjetoStatus, StatusRisco } from '@prisma/client';
+import { ProjetoStatus, StatusRisco } from '@prisma/client';
+import { RiscoCalc } from 'src/common/RiscoCalc';
+import { ProjetoDetailDto } from 'src/pp/projeto/entities/projeto.entity';
+import { TarefaService } from 'src/pp/tarefa/tarefa.service';
+import { TarefaUtilsService } from 'src/pp/tarefa/tarefa.service.utils';
+import { ProjetoRiscoStatus } from '../../pp/risco/entities/risco.entity';
 import { DefaultCsvOptions, FileOutput, ReportableService } from '../utils/utils.service';
 import { CreateRelProjetosDto } from './dto/create-projetos.dto';
 import {
@@ -16,10 +21,6 @@ import {
     RelProjetosPlanoAcaoMonitoramentosDto,
     RelProjetosRiscosDto,
 } from './entities/projetos.entity';
-import { RiscoCalc } from 'src/common/RiscoCalc';
-import { ProjetoDetailDto } from 'src/pp/projeto/entities/projeto.entity';
-import { TarefaService } from 'src/pp/tarefa/tarefa.service';
-import { TarefaUtilsService } from 'src/pp/tarefa/tarefa.service.utils';
 
 const {
     Parser,
@@ -658,7 +659,7 @@ export class PPProjetosService implements ReportableService {
                 codigo: db.codigo,
                 titulo: db.titulo,
                 data_registro: db.data_registro,
-                status_risco: db.status_risco,
+                status_risco: ProjetoRiscoStatus[db.status_risco],
                 descricao: db.descricao ? db.descricao : null,
                 causa: db.causa ? db.causa : null,
                 consequencia: db.consequencia ? db.consequencia : null,

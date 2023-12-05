@@ -16,6 +16,7 @@ import {
     RelProjetoRelatorioDto,
     RelProjetoRiscoDto,
 } from './entities/previsao-custo.entity';
+import { ProjetoRiscoStatus } from '../../pp/risco/entities/risco.entity';
 
 const {
     Parser,
@@ -149,6 +150,7 @@ export class PPProjetoService implements ReportableService {
                 impacto_descricao: e.impacto_descricao,
                 grau: e.grau,
                 grau_descricao: e.grau_descricao,
+                status: ProjetoRiscoStatus[e.status_risco]
             };
         });
 
