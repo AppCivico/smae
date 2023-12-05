@@ -123,7 +123,7 @@ export class VariavelService {
 
                 const prefixo = dto.codigo;
                 delete (dto as any).regioes;
-                delete (dto as any).prefixo_codigo;
+                delete (dto as any).codigo;
                 for (const regiao of regions) {
                     const variavel = await this.performVariavelSave(
                         prismaThx,
