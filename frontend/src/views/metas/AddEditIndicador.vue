@@ -360,68 +360,115 @@ function editFormula(e) {
   currentCaretPos = getCaretPosition(f);
   formula.value = v;
 
-  if (e.data == '$') {
-    document.execCommand('insertText', false, 'xxx');
-    newVariavel();
+  switch (true) {
+    case e.data === '$':
+    case e.data === '@':
+      document.execCommand('insertText', false, 'xxx');
+      newVariavel(e.data);
+      break;
 
+    default:
     // vamos adicionar um espaço após cada operador para facilitar a leitura e
     // prevenir erros de análise da fórmula
-  } else if (operadores.includes(e.data)) {
-    document.execCommand('insertText', false, ' ');
+      if (operadores.includes(e.data)) {
+        document.execCommand('insertText', false, ' ');
+      }
+      break;
   }
 }
 function trackClickFormula(e) {
   const id = e.target?.dataset?.id;
+
   if (id) {
+    // PRA-FAZER: permitir edição de variável composta
+    if (id[0] === '@') {
+      // eslint-disable-next-line no-alert
+      return window.alert('Variáveis compostas não editáveis! Apague e crie uma nova.');
+    }
     editVariavel(id);
   }
   currentCaretPos = getCaretPosition(e.target);
 }
-function chamarInserçãoDeVariável() {
+function chamarInserçãoDeVariável(caracterDefinidor) {
   formula.value = formulaInput.value.innerText;
 
   setCaret(formulaInput.value, currentCaretPos);
-  document.execCommand('insertText', false, '$xxx');
+  document.execCommand('insertText', false, `${caracterDefinidor}xxx`);
 
-  newVariavel();
+  newVariavel(caracterDefinidor);
 }
-function newVariavel() {
-  const últimoÍndiceDisponívelParaVariávelEmFórmula = Object
-    .keys(variaveisFormula)
-    .map((x) => Number(x.replace('$_', '')))
-    .reduce((a, b) => Math.max(a, b), -Infinity);
+function newVariavel(caracterDefinidor = '$') {
+  switch (caracterDefinidor) {
+    case '@':
+      variaveisFormulaModal.value = 2;
+      break;
 
-  const next = últimoÍndiceDisponívelParaVariávelEmFórmula === -Infinity
-    ? '$_1'
-    : `$_${últimoÍndiceDisponívelParaVariávelEmFórmula + 1}`;
-  fieldsVariaveis.value = {
-    id: next,
-  };
-  fieldsVariaveis.value.periodo = 1;
-  formatFormula(next);
-  variaveisFormulaModal.value = 1;
-}
-function editVariavel(id) {
-  if (variaveisFormula[id]) {
-    fieldsVariaveis.value = variaveisFormula[id];
-    variaveisFormulaModal.value = 1;
+    default: {
+      const últimoÍndiceDisponívelParaVariávelEmFórmula = Object
+        .keys(variaveisFormula)
+        .map((x) => Number(x.replace('$_', '')))
+        .reduce((a, b) => Math.max(a, b), -Infinity);
+
+      const next = últimoÍndiceDisponívelParaVariávelEmFórmula === -Infinity
+        ? '$_1'
+        : `$_${últimoÍndiceDisponívelParaVariávelEmFórmula + 1}`;
+      fieldsVariaveis.value = {
+        id: next,
+      };
+      fieldsVariaveis.value.periodo = 1;
+      formatFormula(next);
+      variaveisFormulaModal.value = 1;
+      break;
+    }
   }
 }
-function saveVar(e) {
-  const nova = !variaveisFormula[fieldsVariaveis.value.id];
-  variaveisFormula[fieldsVariaveis.value.id] = fieldsVariaveis.value;
+function editVariavel(id) {
+  const caracterDefinidor = id[0];
+  switch (caracterDefinidor) {
+    case '@':
+      fieldsVariaveis.value = variáveisCompostasPorReferência.value?.[id];
+      variaveisFormulaModal.value = 2;
+      break;
+
+    default:
+      if (variaveisFormula[id]) {
+        fieldsVariaveis.value = variaveisFormula[id];
+        variaveisFormulaModal.value = 1;
+      }
+      break;
+  }
+}
+
+function saveVar(tipoDeVariável) {
+  let variávelId = fieldsVariaveis.value.id;
+  let caracterDefinidor = '$';
+  let nova = false;
+
+  switch (tipoDeVariável) {
+    case 'composta':
+      caracterDefinidor = '@';
+      variávelId = `${caracterDefinidor}_${variávelId}`;
+
+      nova = variáveisCompostasPorReferência.value[variávelId];
+      break;
+
+    default:
+      nova = !variaveisFormula[variávelId];
+      break;
+  }
+  variaveisFormula[variávelId] = fieldsVariaveis.value;
   variaveisFormulaModal.value = 0;
   if (nova) {
     const v = formula.value;
-    const i = v.indexOf('$xxx');
-    const { id } = fieldsVariaveis.value;
-    formula.value = [v.slice(0, i), id, v.slice(i + 4)].join('');
+    const i = v.indexOf(`${caracterDefinidor}xxx`);
+    formula.value = [v.slice(0, i), variávelId, v.slice(i + 4)].join('');
   }
-  formatFormula(fieldsVariaveis.value.id);
+  formatFormula(variávelId);
 }
+
 function cancelVar() {
   const v = formula.value;
-  const i = v.indexOf('$xxx');
+  const i = v.search(/[$@]xxx/);
   if (i !== -1) formula.value = [v.slice(0, i), v.slice(i + 4)].join('');
   formatFormula(fieldsVariaveis.value.id);
   variaveisFormulaModal.value = 0;
@@ -843,8 +890,12 @@ if (indicador_id) {
           <div class="formula">
             <span
               class="v"
-              @click="chamarInserçãoDeVariável"
+              @click="chamarInserçãoDeVariável('$')"
             >Variável</span>
+            <span
+              class="v"
+              @click="chamarInserçãoDeVariável('@')"
+            >Variável composta</span>
             <span
               v-for="(item, index) in funções"
               :key="index"
@@ -911,9 +962,10 @@ if (indicador_id) {
         </div>
       </Form>
       <template v-if="indicador_id && !Variaveis[indicador_id]?.loading">
+        <!-- modal para variáveis comuns -->
         <SmallModal
-          :active="variaveisFormulaModal"
-          @close="() => { variaveisFormulaModal = !variaveisFormulaModal; }"
+          :active="variaveisFormulaModal === 1"
+          @close="() => { variaveisFormulaModal = 0; }"
         >
           <form @submit.prevent="saveVar">
             <h2 class="mb2">
@@ -989,6 +1041,51 @@ if (indicador_id) {
               </p>
             </template>
 
+            <div class="tc">
+              <a
+                class="btn outline bgnone tcprimary"
+                @click="cancelVar()"
+              >Cancelar</a>
+              <button class="ml1 btn">
+                Salvar
+              </button>
+            </div>
+          </form>
+        </SmallModal>
+
+        <!-- modal para variáveis compostas -->
+        <SmallModal
+          :active="variaveisFormulaModal === 2"
+          @close="() => { variaveisFormulaModal = 0; }"
+        >
+          <form @submit.prevent="saveVar('composta')">
+            <h2 class="mb2">
+              Adicionar Variável Composta
+            </h2>
+            <input
+              v-model="fieldsVariaveis.id"
+              type="hidden"
+              name="id"
+              class="inputtext light mb1"
+            >
+            <label class="label">Variável</label>
+            <select
+              v-if="Array.isArray(variáveisCompostas[indicador_id])"
+              v-model="fieldsVariaveis.id"
+              class="inputtext light mb1"
+              name="id"
+            >
+              <option value>
+                Selecionar
+              </option>
+              <option
+                v-for="v in variáveisCompostas[indicador_id]"
+                :key="v.id"
+                :value="v.id"
+              >
+                {{ v.titulo }}
+              </option>
+            </select>
             <div class="tc">
               <a
                 class="btn outline bgnone tcprimary"
