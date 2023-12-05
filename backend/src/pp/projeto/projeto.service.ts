@@ -1261,12 +1261,6 @@ export class ProjetoService {
 
         const documento = await this.prisma.$transaction(
             async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
-                if (dto.data) {
-                    await prismaTx.arquivo.update({
-                        where: { id: arquivoId },
-                        data: { data: dto.data }
-                    });
-                }
 
                 const arquivo = await prismaTx.arquivo.findFirstOrThrow({
                     where: { id: arquivoId },
@@ -1279,7 +1273,8 @@ export class ProjetoService {
                         criado_por: user.id,
                         arquivo_id: arquivoId,
                         projeto_id: projetoId,
-                        descricao: dto.descricao || arquivo.descricao
+                        descricao: dto.descricao || arquivo.descricao,
+                        data: dto.data
                     },
                     select: {
                         id: true,
@@ -1307,10 +1302,12 @@ export class ProjetoService {
             where: { projeto_id: projetoId, removido_em: null },
             orderBy: {
                 descricao: 'asc',
+                data: 'asc'
             },
             select: {
                 id: true,
                 descricao: true,
+                data: true,
                 arquivo: {
                     select: {
                         id: true,
@@ -1319,7 +1316,6 @@ export class ProjetoService {
                         descricao: true,
                         nome_original: true,
                         diretorio_caminho: true,
-                        data: true
                     },
                 },
             },
@@ -1329,7 +1325,7 @@ export class ProjetoService {
             return {
                 id: d.id,
                 // TODO: Esta data no futuro, talvez, será na table de relacionamento 'ProjetoDocumento' e não direto no arquivo.
-                data: d.arquivo.data,
+                data: d.data,
                 descricao: d.descricao,
                 arquivo: {
                     id: d.arquivo.id,
@@ -1337,7 +1333,7 @@ export class ProjetoService {
                     descricao: d.arquivo.descricao,
                     nome_original: d.arquivo.nome_original,
                     diretorio_caminho: d.arquivo.diretorio_caminho,
-                    data: d.arquivo.data,
+                    data: d.data,
                     TipoDocumento: d.arquivo.TipoDocumento,
                 }
             }
@@ -1353,12 +1349,6 @@ export class ProjetoService {
 
         const documento = await this.prisma.$transaction(
             async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
-                if (dto.data) {
-                    await prismaTx.arquivo.update({
-                        where: { id: arquivoId },
-                        data: { data: dto.data }
-                    });
-                }
 
                 return await this.prisma.projetoDocumento.update({
                     where: {
@@ -1367,6 +1357,7 @@ export class ProjetoService {
                     },
                     data: {
                         descricao: dto.descricao,
+                        data: dto.data,
                         atualizado_por: user.id,
                         atualizado_em: new Date(Date.now())
                     },
