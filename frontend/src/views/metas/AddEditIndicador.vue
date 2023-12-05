@@ -408,7 +408,6 @@ function editVariavel(id) {
   }
 }
 function saveVar(e) {
-  e.preventDefault();
   const nova = !variaveisFormula[fieldsVariaveis.value.id];
   variaveisFormula[fieldsVariaveis.value.id] = fieldsVariaveis.value;
   variaveisFormulaModal.value = 0;
@@ -916,7 +915,7 @@ if (indicador_id) {
           :active="variaveisFormulaModal"
           @close="() => { variaveisFormulaModal = !variaveisFormulaModal; }"
         >
-          <form @submit="saveVar">
+          <form @submit.prevent="saveVar">
             <h2 class="mb2">
               Adicionar Variável
             </h2>
