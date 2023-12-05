@@ -121,7 +121,7 @@ export class VariavelService {
                     select: { pdm_codigo_sufixo: true, id: true },
                 });
 
-                const prefixo = dto.prefixo_codigo;
+                const prefixo = dto.codigo;
                 delete (dto as any).regioes;
                 delete (dto as any).prefixo_codigo;
                 for (const regiao of regions) {
