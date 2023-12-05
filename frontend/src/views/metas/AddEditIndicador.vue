@@ -108,7 +108,7 @@ const IndicadoresStore = useIndicadoresStore();
 const { singleIndicadores } = storeToRefs(IndicadoresStore);
 
 const VariaveisStore = useVariaveisStore();
-const { Variaveis, variáveisCompostasPorReferência } = storeToRefs(VariaveisStore);
+const { Variaveis, variáveisCompostasPorReferência, variáveisCompostas } = storeToRefs(VariaveisStore);
 
 const { título } = route.meta;
 
@@ -1058,6 +1058,7 @@ if (indicador_id) {
           :is="abas[abaCorrente]?.componente"
           v-if="!Variaveis[indicador_id]?.loading"
           :variáveis="Variaveis[indicador_id]"
+          :variáveisCompostas="variáveisCompostas[indicador_id]"
           :parentlink="parentlink"
         />
       </div>
