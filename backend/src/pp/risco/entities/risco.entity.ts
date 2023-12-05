@@ -1,13 +1,14 @@
 import { StatusRisco } from '@prisma/client';
 import { PlanoAcao } from 'src/pp/plano-de-acao/entities/plano-acao.entity';
 
-export const ProjetoRiscoStatus: Record<StatusRisco, string> = {
+export const ProjetoRiscoStatus: Record<StatusRisco | string, string> = {
     SemInformacao: 'Sem informação',
     Aumentando: 'Aumentando',
     Estatico: 'Estático',
     Diminuindo: 'Diminuindo',
     SobControle: 'Sob controle',
     ConcluiHdo: 'Concluído',
+    Fechado: 'Concluído', // versão que está no banco de dados
 } as const;
 
 export class ProjetoRisco {
