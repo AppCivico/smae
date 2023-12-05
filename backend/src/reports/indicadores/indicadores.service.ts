@@ -501,6 +501,7 @@ export class IndicadoresService implements ReportableService {
             id: regiao_by_id[regiao_id].id,
             nivel: regiao_by_id[regiao_id].nivel,
             parente_id: regiao_by_id[regiao_id].parente_id,
+            pdm_codigo_sufixo: regiao_by_id[regiao_id].pdm_codigo_sufixo
         };
     }
 }
