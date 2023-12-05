@@ -85,6 +85,10 @@ export const useVariaveisStore = defineStore({
       if (await this.requestS.delete(`${baseUrl}/indicador-variavel/${id}`)) return true;
       return false;
     },
+    async deleteCompound(indicador_id, formula_composta_id) {
+      if (await this.requestS.delete(`${baseUrl}/indicador/${indicador_id}/formula-composta/${formula_composta_id}`)) return true;
+      return false;
+    },
     async getValores(id) {
       try {
         if (!id) throw 'Variável inválida';
