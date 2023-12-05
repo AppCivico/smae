@@ -62,7 +62,7 @@ export const OperacaoSuportadaOrdem: OperacaoPadraoDto[] = [
 export class GeneratorFormulaCompostaFormDto extends IntersectionType(
     PickType(CreateIndicadorFormulaCompostaDto, ['titulo'] as const),
     PickType(CreateIndicadorFormulaCompostaDto, ['nivel_regionalizacao'] as const),
-    PickType(CreateGeradorVariavelDto, ['regioes', 'prefixo_codigo'] as const),
+    PickType(CreateGeradorVariavelDto, ['regioes', 'codigo'] as const),
     PickType(FormulaVariaveis, ['janela', 'usar_serie_acumulada'] as const)
 ) {
     @IsEnum(OperacaoPadraoDto)
@@ -71,5 +71,5 @@ export class GeneratorFormulaCompostaFormDto extends IntersectionType(
 }
 
 export class FilterFormulaCompostaFormDto extends IntersectionType(
-    PickType(CreateGeradorVariavelDto, ['prefixo_codigo'] as const)
+    PickType(CreateGeradorVariavelDto, ['codigo'] as const)
 ) {}
