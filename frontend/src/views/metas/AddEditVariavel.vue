@@ -28,6 +28,8 @@ const { iniciativa_id } = route.params;
 const { atividade_id } = route.params;
 const { indicador_id } = route.params;
 
+const { funçãoDaTela } = route.meta;
+
 const { var_id } = route.params;
 const { copy_id } = route.params;
 
@@ -52,7 +54,7 @@ const { singleVariaveis } = storeToRefs(VariaveisStore);
 VariaveisStore.clearEdit();
 
 const RegionsStore = useRegionsStore();
-const { regions, tempRegions } = storeToRefs(RegionsStore);
+const { regions, regiõesPorNívelOrdenadas, tempRegions } = storeToRefs(RegionsStore);
 if (!regions.length) RegionsStore.getAll();
 
 if (!resources.length) {
@@ -67,6 +69,7 @@ const level2 = ref(null);
 const level3 = ref(null);
 const regiao_id_mount = ref(null);
 const periodicidade = ref(null);
+const regioes = ref([]);
 
 const virtualParent = ref({});
 
@@ -136,7 +139,7 @@ const virtualParent = ref({});
   }
 })();
 
-const schema = computed(() => variável(singleIndicadores));
+const schema = computed(() => variável(singleIndicadores, true));
 
 async function onSubmit(values) {
   try {
@@ -149,7 +152,11 @@ async function onSubmit(values) {
     values.indicador_id = Number(indicador_id);
 
     values.orgao_id = Number(values.orgao_id);
-    values.regiao_id = singleIndicadores.value.regionalizavel ? Number(values.regiao_id) : null;
+
+    if (funçãoDaTela !== 'gerar') {
+      values.regiao_id = singleIndicadores.value.regionalizavel ? Number(values.regiao_id) : null;
+    }
+
     values.unidade_medida_id = Number(values.unidade_medida_id);
     values.ano_base = Number(values.ano_base) ?? null;
     values.casas_decimais = Number(values.casas_decimais);
@@ -166,11 +173,16 @@ async function onSubmit(values) {
         msg = 'Dados salvos com sucesso!';
         rota = currentEdit;
       }
+    } else if (funçãoDaTela === 'gerar') {
+      r = await VariaveisStore.gerar(values);
+      msg = 'Variáveis geradas!';
+      rota = currentEdit;
     } else {
       r = await VariaveisStore.insert(values);
       msg = 'Item adicionado com sucesso!';
       rota = `${currentEdit}/variaveis/${r}/valores`;
     }
+
     if (r) {
       VariaveisStore.clear();
       VariaveisStore.getAll(indicador_id);
@@ -259,7 +271,9 @@ function fieldToDate(d) {
     >
       <div class="flex g2">
         <div class="f0">
-          <label class="label">Código <span class="tvermelho">*</span></label>
+          <label class="label">
+            Código <span class="tvermelho">*</span>
+          </label>
           <Field
             name="codigo"
             type="text"
@@ -414,6 +428,7 @@ function fieldToDate(d) {
           <Field
             name="casas_decimais"
             type="number"
+            min="0"
             class="inputtext light mb1"
             :class="{ 'error': errors.casas_decimais }"
           />
@@ -527,9 +542,53 @@ function fieldToDate(d) {
         >
       </div>
 
-      <div v-if="singleIndicadores.regionalizavel && regions">
-        <label class="label">Região <span class="tvermelho">*</span></label>
+      <div
+        v-if="funçãoDaTela === 'gerar'"
+        class="mb1"
+      >
+        <div class="flex spacebetween center mb2">
+          <legend class="label mt2 mb1">
+            Regiões abrangidas
+          </legend>
+          <hr class="ml2 f1">
+          <button
+            class="ml2 like-a__text"
+            type="button"
+            @click="() => regioes = []"
+          >
+            <svg
+              width="12"
+              height="12"
+            ><use xlink:href="#i_x" /></svg>
+            Limpar seleção
+          </button>
+        </div>
 
+        <div class="flex flexwrap g1 lista-de-opções">
+          <label
+            v-for="r in regiõesPorNívelOrdenadas?.[singleIndicadores.nivel_regionalizacao]"
+            :key="r.id"
+            class="tc600 lista-de-opções__item"
+            :title="!r.pdm_codigo_sufixo ? 'Região sem código de sufixo' : undefined"
+          >
+            <Field
+              v-model="regioes"
+              name="regioes"
+              :value="r.id"
+              type="checkbox"
+              class="inputcheckbox"
+              :disabled="!r.pdm_codigo_sufixo"
+              :class="{ 'error': errors['parametros.tipo'] }"
+            />
+            <span>
+              {{ r.descricao }}
+            </span>
+          </label>
+        </div>
+      </div>
+
+      <div v-else-if="singleIndicadores.regionalizavel && regions">
+        <label class="label">Região <span class="tvermelho">*</span></label>
         <template v-if="singleIndicadores.nivel_regionalizacao >= 2">
           <select
             v-model="level1"
@@ -547,6 +606,7 @@ function fieldToDate(d) {
               {{ r.descricao }}
             </option>
           </select>
+
           <template
             v-if="singleIndicadores.nivel_regionalizacao >= 3 && level1
               !== null"
@@ -567,6 +627,7 @@ function fieldToDate(d) {
                 {{ rr.descricao }}
               </option>
             </select>
+
             <template
               v-if="singleIndicadores.nivel_regionalizacao == 4 &&
                 level2 !== null"
@@ -617,6 +678,8 @@ function fieldToDate(d) {
         </div>
       </div>
 
+      <FormErrorsList :errors="errors" />
+
       <div class="flex spacebetween center mb2">
         <hr class="mr2 f1">
         <button
@@ -640,3 +703,15 @@ function fieldToDate(d) {
     </div>
   </template>
 </template>
+
+<style lang="less">
+.lista-de-opções {}
+
+.lista-de-opções__item {
+  flex-basis: 20%;
+  flex-grow: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+</style>

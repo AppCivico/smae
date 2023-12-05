@@ -54,7 +54,16 @@ export default {
       meta: { título: 'Editar Indicador' },
       props: { submenu: SubmenuMetas },
     },
+
     { path: ':meta_id/indicadores/:indicador_id/variaveis/novo', component: AddEditIndicador, props: { group: 'variaveis', submenu: SubmenuMetas } },
+    {
+      path: ':meta_id/indicadores/:indicador_id/variaveis/gerar',
+      name: 'geradorDeVariáveis',
+      meta: { funçãoDaTela: 'gerar' },
+      component: AddEditIndicador,
+      props: { group: 'variaveis', submenu: SubmenuMetas },
+    },
+
     { path: ':meta_id/indicadores/:indicador_id/variaveis/novo/:copy_id', component: AddEditIndicador, props: { group: 'variaveis', submenu: SubmenuMetas } },
     { path: ':meta_id/indicadores/:indicador_id/variaveis/:var_id', component: AddEditIndicador, props: { group: 'variaveis', submenu: SubmenuMetas } },
     { path: ':meta_id/indicadores/:indicador_id/variaveis/:var_id/valores', component: AddEditIndicador, props: { group: 'valores', submenu: SubmenuMetas } },
