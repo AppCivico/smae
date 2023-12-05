@@ -575,14 +575,14 @@ export class VariavelService {
         // TODO: verificar se todos os membros de createVariavelDto.responsaveis estão ativos e sao realmente do orgão createVariavelDto.orgao_id
 
         // buscando apenas pelo indicador pai verdadeiro desta variavel
-        const selfIdicadorVariavel = await this.prisma.indicadorVariavel.findFirst({
+        const selfIndicadorVariavel = await this.prisma.indicadorVariavel.findFirst({
             where: { variavel_id: variavelId, indicador_origem_id: null },
             select: { indicador_id: true, variavel: { select: { valor_base: true, periodicidade: true } } },
         });
-        if (!selfIdicadorVariavel)
+        if (!selfIndicadorVariavel)
             throw new HttpException('Variavel não encontrada, confira se você está no indicador base', 400);
 
-        const meta_id = await this.getMetaIdDoIndicador(selfIdicadorVariavel.indicador_id, this.prisma);
+        const meta_id = await this.getMetaIdDoIndicador(selfIndicadorVariavel.indicador_id, this.prisma);
         // OBS: como que chega aqui sem ser pela controller? na controller pede pelo [CadastroIndicador.editar]
         if (!user.hasSomeRoles(['CadastroIndicador.editar', 'PDM.admin_cp'])) {
             const filterIdIn = await user.getMetasOndeSouResponsavel(this.prisma.metaResponsavel);
@@ -597,7 +597,7 @@ export class VariavelService {
                 NOT: { id: variavelId },
                 indicador_variavel: {
                     some: {
-                        indicador_id: selfIdicadorVariavel.indicador_id,
+                        indicador_id: selfIndicadorVariavel.indicador_id,
                     },
                 },
             },
@@ -605,10 +605,10 @@ export class VariavelService {
         if (jaEmUso > 0)
             throw new HttpException(`Código ${updateVariavelDto.codigo} já está em uso no indicador.`, 400);
 
-        const oldValorBase = selfIdicadorVariavel.variavel.valor_base;
+        const oldValorBase = selfIndicadorVariavel.variavel.valor_base;
         // e com o indicador verdadeiro, temos os dados para recalcular os niveis
         const indicador = await this.prisma.indicador.findFirst({
-            where: { id: selfIdicadorVariavel.indicador_id },
+            where: { id: selfIndicadorVariavel.indicador_id },
             select: {
                 id: true,
                 iniciativa_id: true,
@@ -619,7 +619,7 @@ export class VariavelService {
         });
         if (!indicador) throw new HttpException('Indicador não encontrado', 400);
 
-        let oldValue = selfIdicadorVariavel.variavel.periodicidade;
+        let oldValue = selfIndicadorVariavel.variavel.periodicidade;
         if (updateVariavelDto.periodicidade) oldValue = updateVariavelDto.periodicidade;
 
         if (oldValue === indicador.periodicidade) {
