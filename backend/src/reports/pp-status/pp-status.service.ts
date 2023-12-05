@@ -76,7 +76,7 @@ export class PPStatusService implements ReportableService {
         console.log('==================');
 
         if (projetoRows.length == 0)
-            throw new Error('Não há linhas para estas condições.')
+            throw new HttpException('Não há linhas para estas condições.', 400)
 
         const projetoStatusOut: RelProjetoStatusRelatorioDto[] = projetoRows.map((p) => {
             let cronograma: string;
