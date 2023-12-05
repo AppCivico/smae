@@ -118,7 +118,7 @@ export class VariavelService {
 
                 const regions = await this.prisma.regiao.findMany({
                     where: { id: { in: dto.regioes }, pdm_codigo_sufixo: { not: null }, removido_em: null },
-                    select: { pdm_codigo_sufixo: true, descricao: true, , id: true },
+                    select: { pdm_codigo_sufixo: true, descricao: true, id: true },
                 });
 
                 const prefixo = dto.codigo;
@@ -455,7 +455,7 @@ export class VariavelService {
                         descricao: true,
                         parente_id: true,
                         codigo: true,
-                        pdm_codigo_sufixo: true
+                        pdm_codigo_sufixo: true,
                     },
                 },
                 indicador_variavel: {
