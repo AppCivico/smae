@@ -25,7 +25,7 @@ export class PPStatusService implements ReportableService {
         if (!dto.portfolio_id) throw new HttpException('Faltando portfolio_id', 400);
         const projetoRows = await this.prisma.projeto.findMany({
             where: {
-                id: dto.projeto_id != null ? dto.projeto_id : undefined,
+                id: dto.projeto_id ? dto.projeto_id : undefined,
                 portfolio_id: dto.portfolio_id,
                 removido_em: null,
             },
@@ -58,8 +58,8 @@ export class PPStatusService implements ReportableService {
                     orderBy: { data_registro: 'desc' },
                     where: {
                         data_registro: {
-                            gte: dto.periodo_inicio != null ? dto.periodo_inicio : undefined,
-                            lte: dto.periodo_fim != null ? dto.periodo_fim : undefined,
+                            gte: dto.periodo_inicio ? dto.periodo_inicio : undefined,
+                            lte: dto.periodo_fim ? dto.periodo_fim : undefined,
                         }
                     },
                     select: {
