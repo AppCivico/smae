@@ -127,9 +127,12 @@ export class CreateVariavelDto {
 }
 
 export class CreateGeradorVariavelDto extends OmitType(CreateVariavelDto, ['codigo']) {
+    /**
+     * prefixo que será adicionado em vários
+     */
     @IsString()
     @MaxLength(60)
-    prefixo_codigo: string;
+    codigo: string;
 
     @IsArray({ message: '$property| tag(s): precisa ser uma array.' })
     @ArrayMinSize(1, { message: '$property| tag(s): precisa ter pelo menos um item' })

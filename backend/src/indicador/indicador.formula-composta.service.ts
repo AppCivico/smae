@@ -548,7 +548,7 @@ export class IndicadorFormulaCompostaService {
     private async extractVariables(dto: FilterFormulaCompostaFormDto, indicador_id: number, regioes: number[] | null) {
         return await this.prisma.variavel.findMany({
             where: {
-                codigo: { startsWith: dto.prefixo_codigo, mode: 'insensitive' },
+                codigo: { startsWith: dto.codigo, mode: 'insensitive' },
                 removido_em: null,
                 indicador_variavel: { some: { indicador_id } },
                 regiao_id: regioes == null ? { not: null } : { in: regioes },
