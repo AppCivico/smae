@@ -87,15 +87,15 @@ export class VariavelService {
     }
 
     async create_region_generated(dto: CreateGeradorVariavelDto, user: PessoaFromJwt): Promise<RecordWithId[]> {
-        const regions = await this.prisma.regiao.findMany({
+        const regioesDb = await this.prisma.regiao.findMany({
             where: { id: { in: dto.regioes }, pdm_codigo_sufixo: { not: null }, removido_em: null },
             select: { nivel: true },
         });
-        if (regions.length != dto.regioes.length)
-            throw new HttpException('Todas as regiões precisam ter um sufixo configurado código', 400);
+        if (regioesDb.length != dto.regioes.length)
+            throw new HttpException('Todas as regiões precisam ter um código de sufixo configurado', 400);
 
         const porNivel: Record<number, number> = {};
-        for (const r of regions) {
+        for (const r of regioesDb) {
             if (!porNivel[r.nivel]) porNivel[r.nivel] = 0;
             porNivel[r.nivel]++;
         }
@@ -118,7 +118,7 @@ export class VariavelService {
 
                 const regions = await this.prisma.regiao.findMany({
                     where: { id: { in: dto.regioes }, pdm_codigo_sufixo: { not: null }, removido_em: null },
-                    select: { pdm_codigo_sufixo: true, id: true },
+                    select: { pdm_codigo_sufixo: true, descricao: true, , id: true },
                 });
 
                 const prefixo = dto.codigo;
@@ -129,6 +129,7 @@ export class VariavelService {
                         prismaThx,
                         {
                             ...dto,
+                            titulo: dto.titulo + ' ' + regiao.descricao,
                             codigo: prefixo + regiao.pdm_codigo_sufixo,
                             regiao_id: regiao.id,
                         },
