@@ -58,8 +58,8 @@ export class PPStatusService implements ReportableService {
                     orderBy: { data_registro: 'desc' },
                     where: {
                         data_registro: {
-                            gte: dto.periodo_inicio,
-                            lte: dto.periodo_fim,
+                            gte: dto.periodo_inicio != null ? dto.periodo_inicio : undefined,
+                            lte: dto.periodo_fim != null ? dto.periodo_fim : undefined,
                         }
                     },
                     select: {
