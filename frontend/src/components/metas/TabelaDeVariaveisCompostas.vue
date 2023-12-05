@@ -87,7 +87,7 @@ function permitirEdição(indicadorVariavel) {
             height="20"
           ><use xlink:href="#i_remove" /></svg><div>Apagar</div>
         </button>
-        <router-link
+        <!-- <router-link
           :to="`${parentlink}/indicadores/${indicadorId}/variaveis/novo/${v.id}`"
           class="tipinfo tprimary ml1"
         >
@@ -134,7 +134,7 @@ function permitirEdição(indicadorVariavel) {
             width="20"
             height="20"
           ><use xlink:href="#i_check" /></svg><div>Valores Realizados Retroativos</div>
-        </router-link>
+        </router-link> -->
       </td>
     </tr>
   </table>
