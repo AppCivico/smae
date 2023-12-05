@@ -1307,7 +1307,6 @@ export class ProjetoService {
             where: { projeto_id: projetoId, removido_em: null },
             orderBy: {
                 descricao: 'asc',
-                arquivo: { data: 'asc' }
             },
             select: {
                 id: true,
