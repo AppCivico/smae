@@ -659,7 +659,7 @@ export class PPProjetosService implements ReportableService {
                 codigo: db.codigo,
                 titulo: db.titulo,
                 data_registro: db.data_registro,
-                status_risco: ProjetoRiscoStatus[db.status_risco],
+                status_risco: ProjetoRiscoStatus[db.status_risco] || db.status_risco,
                 descricao: db.descricao ? db.descricao : null,
                 causa: db.causa ? db.causa : null,
                 consequencia: db.consequencia ? db.consequencia : null,
