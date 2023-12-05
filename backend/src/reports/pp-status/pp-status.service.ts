@@ -25,7 +25,7 @@ export class PPStatusService implements ReportableService {
         if (!dto.portfolio_id) throw new HttpException('Faltando portfolio_id', 400);
         const projetoRows = await this.prisma.projeto.findMany({
             where: {
-                id: dto.projeto_id,
+                id: dto.projeto_id != null ? dto.projeto_id : undefined,
                 portfolio_id: dto.portfolio_id,
                 removido_em: null,
             },
