@@ -2799,6 +2799,10 @@ model ProjetoFonteRecurso {
     valor_percentual Float?
     valor_nominal    Float?
 
+    requer_revisao_sof Boolean  @default(false)
+    criado_em          DateTime @default(now())
+    atualizado_em      DateTime @default(now())
+
     @@index([projeto_id])
     @@map("projeto_fonte_recurso")
 }
@@ -3048,7 +3052,7 @@ enum StatusRisco {
     Estatico
     Diminuindo
     SobControle
-    ConcluiHdo @map("Fechado")
+    ConcluiHdo    @map("Fechado")
 }
 
 // desenhado no MER como Monitoramento_Risco

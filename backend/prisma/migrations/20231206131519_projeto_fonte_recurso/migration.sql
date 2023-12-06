@@ -1,0 +1,4 @@
+-- AlterTable
+ALTER TABLE "projeto_fonte_recurso" ADD COLUMN     "atualizado_em" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+ADD COLUMN     "criado_em" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+ADD COLUMN     "requer_revisao_sof" BOOLEAN NOT NULL DEFAULT false;
