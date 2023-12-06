@@ -39,7 +39,6 @@ async function apagarVariável(id) {
     }
   }, 'Remover');
 }
-
 function permitirEdição(indicadorVariavel) {
   if (!indicadorVariavel) {
     return true;
@@ -52,40 +51,6 @@ function permitirEdição(indicadorVariavel) {
 }
 </script>
 <template>
-  <nav>
-    <ul class="flex justifyleft mb1">
-      <li class="mr1">
-        <router-link
-          :to="`${parentlink}/indicadores/${indicadorId}/variaveis/novo`"
-          class="addlink"
-        >
-          <span>Adicionar variável</span>
-          <svg
-            width="20"
-            height="20"
-          ><use xlink:href="#i_+" /></svg>
-        </router-link>
-      </li>
-
-      <li class="mr1">
-        <router-link
-          :to="{
-            name: 'geradorDeVariáveis',
-            params: {
-              indicador_id: indicadorId
-            }
-          }"
-          class="addlink"
-        >
-          <span>Gerar variáveis</span>
-          <svg
-            width="20"
-            height="20"
-          ><use xlink:href="#i_+" /></svg>
-        </router-link>
-      </li>
-    </ul>
-  </nav>
 
   <table
     class="tablemain mb1"
@@ -123,7 +88,7 @@ function permitirEdição(indicadorVariavel) {
       </tr>
     </thead>
     <tr
-      v-for="v in variáveis"
+      v-for="v in VariaveisStore.variaveisEmUso"
       :key="v.id"
     >
       <td>{{ v.codigo }}</td>
