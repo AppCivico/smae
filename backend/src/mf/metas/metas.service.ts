@@ -31,6 +31,7 @@ import {
     VariavelQtdeDto,
 } from './dto/mf-meta.dto';
 import { MathRandom } from '../../common/math-random';
+import { FormulaVariaveis } from 'src/indicador/dto/update-indicador.dto';
 
 type DadosCiclo = { variavelParticipa: boolean; id: number; ativo: boolean; meta_esta_na_coleta: boolean };
 
@@ -52,6 +53,7 @@ type VariavelDetalhe = {
             meta_id?: number | null;
         };
     }[];
+    variavel_formula_composta: FormulaVariaveis[] | null;
 };
 
 type SerieseTotais = {
@@ -239,6 +241,7 @@ export class MetasService {
 
                 seriesDaX.push({
                     variavel: { id: variavel.id, codigo: variavel.codigo, titulo: variavel.titulo },
+                    variavel_formula_composta: variavel.variavel_formula_composta,
                     series: seriesPorVariavel[+varId],
                 });
             }
@@ -876,11 +879,21 @@ export class MetasService {
                         },
                     },
                 },
+                FormulaCompostaVariavel: {
+                    select: {
+                        id: true,
+                        variavel_id: true,
+                        formula_composta_id: true,
+                        referencia: true,
+                        janela: true,
+                        usar_serie_acumulada: true,
+                    }
+                }
             },
         });
 
         for (const r of variaveis_da_meta) {
-            map[r.id] = r;
+            map[r.id] = {...r, variavel_formula_composta: r.FormulaCompostaVariavel};
         }
 
         const variaveis_da_iniciativa = await this.prisma.variavel.findMany({
@@ -917,10 +930,20 @@ export class MetasService {
                         },
                     },
                 },
+                FormulaCompostaVariavel: {
+                    select: {
+                        id: true,
+                        formula_composta_id: true,
+                        referencia: true,
+                        janela: true,
+                        usar_serie_acumulada: true,
+                        variavel_id: true
+                    }
+                }
             },
         });
         for (const r of variaveis_da_iniciativa) {
-            map[r.id] = r;
+            map[r.id] = {...r, variavel_formula_composta: r.FormulaCompostaVariavel};
         }
 
         const variaveis_da_atividade = await this.prisma.variavel.findMany({
@@ -959,10 +982,20 @@ export class MetasService {
                         },
                     },
                 },
+                FormulaCompostaVariavel: {
+                    select: {
+                        id: true,
+                        formula_composta_id: true,
+                        referencia: true,
+                        janela: true,
+                        usar_serie_acumulada: true,
+                        variavel_id: true
+                    }
+                }
             },
         });
         for (const r of variaveis_da_atividade) {
-            map[r.id] = r;
+            map[r.id] = {...r, variavel_formula_composta: r.FormulaCompostaVariavel};
         }
 
         return map;
