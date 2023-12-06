@@ -1227,6 +1227,7 @@ export class ProjetoService {
                         fonte_recurso_cod_sof: fr.fonte_recurso_cod_sof,
                         valor_nominal: valor_nominal,
                         valor_percentual: valor_percentual,
+                        atualizado_em: new Date(Date.now()),
                     },
                 });
                 keepIds.push(fr.id);
