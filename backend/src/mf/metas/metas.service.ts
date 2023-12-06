@@ -28,6 +28,7 @@ import {
     VariavelComplementacaoDto,
     VariavelComSeries,
     VariavelConferidaDto,
+    VariavelFormulaComposta,
     VariavelQtdeDto,
 } from './dto/mf-meta.dto';
 import { MathRandom } from '../../common/math-random';
@@ -53,7 +54,7 @@ type VariavelDetalhe = {
             meta_id?: number | null;
         };
     }[];
-    variavel_formula_composta: FormulaVariaveis[] | null;
+    variavel_formula_composta: VariavelFormulaComposta[] | null;
 };
 
 type SerieseTotais = {
@@ -880,13 +881,21 @@ export class MetasService {
                     },
                 },
                 FormulaCompostaVariavel: {
+                    where: {
+                        formula_composta: {
+                            removido_em: null,
+                            mostrar_monitoramento: true
+                        }
+                    },
                     select: {
                         id: true,
-                        variavel_id: true,
-                        formula_composta_id: true,
                         referencia: true,
-                        janela: true,
-                        usar_serie_acumulada: true,
+                        formula_composta: {
+                            select: {
+                                id: true,
+                                titulo: true
+                            }
+                        }
                     }
                 }
             },
@@ -931,13 +940,21 @@ export class MetasService {
                     },
                 },
                 FormulaCompostaVariavel: {
+                    where: {
+                        formula_composta: {
+                            removido_em: null,
+                            mostrar_monitoramento: true
+                        }
+                    },
                     select: {
                         id: true,
-                        formula_composta_id: true,
                         referencia: true,
-                        janela: true,
-                        usar_serie_acumulada: true,
-                        variavel_id: true
+                        formula_composta: {
+                            select: {
+                                id: true,
+                                titulo: true
+                            }
+                        }
                     }
                 }
             },
@@ -983,13 +1000,21 @@ export class MetasService {
                     },
                 },
                 FormulaCompostaVariavel: {
+                    where: {
+                        formula_composta: {
+                            removido_em: null,
+                            mostrar_monitoramento: true
+                        }
+                    },
                     select: {
                         id: true,
-                        formula_composta_id: true,
                         referencia: true,
-                        janela: true,
-                        usar_serie_acumulada: true,
-                        variavel_id: true
+                        formula_composta: {
+                            select: {
+                                id: true,
+                                titulo: true
+                            }
+                        }
                     }
                 }
             },
