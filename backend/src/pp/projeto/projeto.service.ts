@@ -1178,7 +1178,7 @@ export class ProjetoService {
 
             if (anoLookup > anoCorrente) anoLookup = anoCorrente;
 
-            if (!byYearFonte[anoLookup]) byYearFonte[fr.fonte_recurso_ano] = {};
+            if (!byYearFonte[anoLookup]) byYearFonte[anoLookup] = {};
             if (!byYearFonte[anoLookup][fr.fonte_recurso_cod_sof])
                 byYearFonte[anoLookup][fr.fonte_recurso_cod_sof] = true;
         }
