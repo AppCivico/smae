@@ -10,6 +10,7 @@ export const useVariaveisStore = defineStore({
     // A sua criação é, mas a alteração não!
     Variaveis: {},
     variáveisCompostas: {},
+    variáveisEmUso: {},
     singleVariaveis: {},
     variáveisPorCódigo: {},
     operaçõesParaVariávelComposta: {},
@@ -144,6 +145,33 @@ export const useVariaveisStore = defineStore({
     valoresEmFoco({ Valores }) {
       const { var_id: varId } = this.route.params;
       return Valores[varId]?.linhas || [];
+    },
+
+    variaveisEmUso() {
+      const indicadorId = this.route.params.indicador_id
+
+      let variaveisSimples   = this.$state.Variaveis[indicadorId];
+      let variaveisCompostas = this.$state.variáveisCompostas[indicadorId];
+
+      variaveisSimples = Array.isArray(variaveisSimples) ? variaveisSimples.filter(v => {
+        return v.indicador_variavel.some( iv => !iv.desativado)
+      }) : [];
+      
+      variaveisCompostas = Array.isArray(variaveisCompostas) ?
+      variaveisCompostas
+        .map( (row) => row.formula_variaveis )
+        .reduce((unique, item) => {
+          return unique.some(obj => obj.variavel_id === item.variavel_id) ? unique : [...unique, item];
+        }, [])
+        .map( (row) => {
+          return this.$state.Variaveis[indicadorId].find((v) => v.id == row[0].variavel_id)
+        })
+      : [];
+
+      const variaveisEmUso = [...new Set([...variaveisSimples, ...variaveisCompostas])];
+      variaveisEmUso.sort((a, b) => { return a.codigo.localeCompare(b.codigo) });
+
+      return variaveisEmUso
     },
 
     variáveisCompostasPorReferência: ({ variáveisCompostas }) => Object.keys(variáveisCompostas)
