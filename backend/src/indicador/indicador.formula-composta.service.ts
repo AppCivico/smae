@@ -127,6 +127,9 @@ export class IndicadorFormulaCompostaService {
                     },
                 },
             },
+            orderBy: {
+                titulo: 'asc',
+            },
             select: {
                 id: true,
                 titulo: true,
