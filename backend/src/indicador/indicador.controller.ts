@@ -11,7 +11,7 @@ import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { FindOneParams, FindTwoParams } from '../common/decorators/find-params';
-import { RecordWithId } from '../common/dto/record-with-id.dto';
+import { BatchRecordWithId, RecordWithId } from '../common/dto/record-with-id.dto';
 import { ListSeriesAgrupadas } from '../variavel/dto/list-variavel.dto';
 import { SerieIndicadorValorNominal, SerieValorNomimal } from '../variavel/entities/variavel.entity';
 import { CreateIndicadorDto } from './dto/create-indicador.dto';
@@ -169,7 +169,7 @@ export class IndicadorController {
         @Param() params: FindOneParams,
         @Body() dto: GeneratorFormulaCompostaFormDto,
         @CurrentUser() user: PessoaFromJwt
-    ): Promise<GeneratorFormulaCompostaReturnDto> {
+    ): Promise<BatchRecordWithId> {
         return await this.indicadorFormulaCompostaService.geradorFormula(params.id, dto, user);
     }
 }
