@@ -488,7 +488,7 @@ export class IndicadorFormulaCompostaService {
                 400
             );
 
-        if (variaveis.length != dto.regioes.length)
+        if (variaveis.filter((r) => r.regiao !== null).length != dto.regioes.length)
             throw new HttpException(
                 'Alguma região selecionada não possui mais uma variável que atenda aos critérios; por favor, repita a pesquisa.',
                 400
@@ -548,17 +548,27 @@ export class IndicadorFormulaCompostaService {
 
         return {
             operacoes: OperacaoSuportadaOrdem,
-            variaveis: rows.map((r) => {
-                return {
-                    id: r.id,
-                    codigo: r.codigo,
-                    regiao: {
-                        descricao: r.regiao!.descricao,
-                        nivel: r.regiao!.nivel,
-                        id: r.regiao!.id,
-                    },
-                };
-            }),
+            variaveis: rows
+                .filter((r) => r.regiao !== null)
+                .map((r) => {
+                    return {
+                        id: r.id,
+                        codigo: r.codigo,
+                        regiao: {
+                            descricao: r.regiao!.descricao,
+                            nivel: r.regiao!.nivel,
+                            id: r.regiao!.id,
+                        },
+                    };
+                }),
+            variaveis_sem_regiao: rows
+                .filter((r) => r.regiao === null)
+                .map((r) => {
+                    return {
+                        id: r.id,
+                        codigo: r.codigo,
+                    };
+                }),
         };
     }
 
@@ -568,8 +578,7 @@ export class IndicadorFormulaCompostaService {
                 codigo: { startsWith: dto.codigo, mode: 'insensitive' },
                 removido_em: null,
                 indicador_variavel: { some: { indicador_id } },
-                // não me volte sem região, vai dar tilt no contaVariavelPrefixo que espera que sempre volte com regiões
-                regiao_id: regioes == null ? { not: null } : { in: regioes },
+                regiao_id: regioes == null ? undefined : { in: regioes },
             },
             select: { id: true, codigo: true, regiao: { select: { nivel: true, id: true, descricao: true } } },
         });
