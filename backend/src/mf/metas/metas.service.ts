@@ -32,7 +32,6 @@ import {
     VariavelQtdeDto,
 } from './dto/mf-meta.dto';
 import { MathRandom } from '../../common/math-random';
-import { FormulaVariaveis } from 'src/indicador/dto/update-indicador.dto';
 
 type DadosCiclo = { variavelParticipa: boolean; id: number; ativo: boolean; meta_esta_na_coleta: boolean };
 
@@ -890,6 +889,8 @@ export class MetasService {
                     select: {
                         id: true,
                         referencia: true,
+                        janela: true,
+                        usar_serie_acumulada: true,
                         formula_composta: {
                             select: {
                                 id: true,
