@@ -40,7 +40,7 @@ export const useVariaveisStore = defineStore({
           x.inicio_medicao = dateToField(x.inicio_medicao).slice(3, 10);
           x.fim_medicao = dateToField(x.fim_medicao).slice(3, 10);
           return x;
-        });
+        }).sort((a, b) => { return a.codigo.localeCompare(b.codigo) });
       } catch (error) {
         this.Variaveis[indicador_id] = { error };
       }
