@@ -9,6 +9,7 @@ import { TipoDocumentoDto } from '../../../tipo-documento/entities/tipo-document
 import { SerieValorNomimal } from '../../../variavel/entities/variavel.entity';
 import { IndicadorFormulaCompostaDto } from 'src/indicador/entities/indicador.formula-composta.entity';
 import { FormulaVariaveis } from 'src/indicador/dto/update-indicador.dto';
+import { IdTituloDto } from 'src/common/dto/IdTitulo.dto';
 
 export class FilterMfMetasDto {
     /**
@@ -107,8 +108,14 @@ export type Status = keyof VariavelQtdeDto;
 
 export class VariavelComSeries {
     variavel: IdCodTituloDto;
-    variavel_formula_composta: FormulaVariaveis[] | null;
+    variavel_formula_composta: VariavelFormulaComposta[] | null;
     series: MfSeriesAgrupadas[];
+}
+
+export class VariavelFormulaComposta {
+    id: number;
+    referencia: string;
+    formula_composta: IdTituloDto;
 }
 
 export class MfSerieValorNomimal extends OmitType(SerieValorNomimal, ['referencia', 'ha_conferencia_pendente']) {}
