@@ -5,6 +5,7 @@ import { Date2YMD, DateYMD, SYSTEM_TIMEZONE } from '../common/date2ymd';
 import { PrismaService } from '../prisma/prisma.service';
 import { SofApiService } from '../sof-api/sof-api.service';
 import { JOB_LISTA_SOF_LOCK } from 'src/common/dto/locks';
+import { DateTime } from 'luxon';
 
 @Injectable()
 export class SofEntidadeService {
@@ -12,8 +13,15 @@ export class SofEntidadeService {
     constructor(private readonly prisma: PrismaService, private readonly sof: SofApiService) {}
 
     async findByYear(ano: number) {
-        const dados = await this.prisma.sofEntidade.findFirst({ where: { ano: ano } });
-        if (!dados) throw new HttpException(`Não há dados para ${ano}`, 400);
+        let dados = await this.prisma.sofEntidade.findFirst({ where: { ano: ano } });
+        const thisYear = DateTime.local({ locale: SYSTEM_TIMEZONE }).year;
+        if (!dados) {
+            if (ano > thisYear) {
+                dados = await this.prisma.sofEntidade.findFirst({ where: { ano: thisYear } });
+            }
+        }
+
+        if (!dados) throw new HttpException(`Não há dados para ${thisYear} (buscado inicialmente por ${ano})`, 400);
 
         return {
             atualizado_em: Date2YMD.toString(dados.atualizado_em),
