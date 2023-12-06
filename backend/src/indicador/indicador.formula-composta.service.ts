@@ -6,6 +6,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import {
     CreateIndicadorFormulaCompostaDto,
     FilterFormulaCompostaFormDto,
+    FilterFormulaCompostaReturnDto,
     GeneratorFormulaCompostaFormDto,
     OperacaoPadraoDto,
     UpdateIndicadorFormulaCompostaDto,
@@ -538,11 +539,25 @@ export class IndicadorFormulaCompostaService {
         indicador_id: number,
         dto: FilterFormulaCompostaFormDto,
         user: PessoaFromJwt
-    ): Promise<number> {
+    ): Promise<FilterFormulaCompostaReturnDto> {
         const indicador = await this.indicadorService.findOne(indicador_id, user);
         if (indicador === null) throw new HttpException('Indicador não encontrado', 404);
 
-        return (await this.extractVariables(dto, indicador_id, null)).length;
+        const rows = await this.extractVariables(dto, indicador_id, null);
+
+        return {
+            variaveis: rows.map((r) => {
+                return {
+                    id: r.id,
+                    codigo: r.codigo,
+                    regiao: {
+                        descricao: r.regiao!.descricao,
+                        nivel: r.regiao!.nivel,
+                        id: r.regiao!.id,
+                    },
+                };
+            }),
+        };
     }
 
     private async extractVariables(dto: FilterFormulaCompostaFormDto, indicador_id: number, regioes: number[] | null) {
@@ -551,9 +566,10 @@ export class IndicadorFormulaCompostaService {
                 codigo: { startsWith: dto.codigo, mode: 'insensitive' },
                 removido_em: null,
                 indicador_variavel: { some: { indicador_id } },
+                // não me volte sem região, vai dar tilt no contaVariavelPrefixo que espera que sempre volte com regiões
                 regiao_id: regioes == null ? { not: null } : { in: regioes },
             },
-            select: { id: true, codigo: true, regiao: { select: { nivel: true } } },
+            select: { id: true, codigo: true, regiao: { select: { nivel: true, id: true, descricao: true } } },
         });
     }
 }
