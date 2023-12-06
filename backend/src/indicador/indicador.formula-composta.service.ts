@@ -1,7 +1,7 @@
 import { HttpException, Injectable, Logger } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
-import { RecordWithId } from '../common/dto/record-with-id.dto';
+import { BatchRecordWithId, RecordWithId } from '../common/dto/record-with-id.dto';
 import { PrismaService } from '../prisma/prisma.service';
 import {
     CreateIndicadorFormulaCompostaDto,
@@ -17,6 +17,7 @@ import {
     IndicadorFormulaCompostaDto,
 } from './entities/indicador.formula-composta.entity';
 import { IndicadorService } from './indicador.service';
+import { Indicador } from './entities/indicador.entity';
 
 @Injectable()
 export class IndicadorFormulaCompostaService {
@@ -39,62 +40,73 @@ export class IndicadorFormulaCompostaService {
 
         const created = await this.prisma.$transaction(
             async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
-                const sameTitle = await prismaTx.formulaComposta.count({
-                    where: {
-                        removido_em: null,
-                        titulo: {
-                            mode: 'insensitive',
-                            equals: dto.titulo,
-                        },
-                        IndicadorFormulaComposta: {
-                            some: {
-                                indicador_id: indicador_id,
-                            },
-                        },
-                    },
-                });
-                if (sameTitle) throw new HttpException('Já existe uma fórmula composta com o mesmo título', 400);
-
-                const formula_variaveis = dto.formula_variaveis;
-
-                let formula;
-                ({ formula, formula_compilada } = await this.indicadorService.trocaReferencias(
-                    formula_variaveis,
-                    dto.formula,
-                    indicador_id,
-                    formula_compilada,
-                    prismaTx
-                ));
-
-                const ifc = await prismaTx.formulaComposta.create({
-                    data: {
-                        titulo: dto.titulo,
-                        formula: formula,
-                        formula_compilada: formula_compilada,
-                        criado_em: new Date(Date.now()),
-                        criado_por: user.id,
-                        IndicadorFormulaComposta: {
-                            create: {
-                                indicador_id: indicador.id,
-                            },
-                        },
-                        FormulaCompostaVariavel: {
-                            createMany: {
-                                data: formula_variaveis,
-                            },
-                        },
-                    },
-                    select: { id: true },
-                });
-
-                await this.resyncFormulaComposta(indicador, ifc.id, prismaTx);
-
-                return ifc;
+                return await this.performCreate(prismaTx, dto, indicador_id, formula_compilada, user, indicador);
             },
             { isolationLevel: 'Serializable', maxWait: 30000 }
         );
 
         return created;
+    }
+
+    private async performCreate(
+        prismaTx: Prisma.TransactionClient,
+        dto: CreateIndicadorFormulaCompostaDto,
+        indicador_id: number,
+        formula_compilada: string,
+        user: PessoaFromJwt,
+        indicador: Indicador
+    ) {
+        const sameTitle = await prismaTx.formulaComposta.count({
+            where: {
+                removido_em: null,
+                titulo: {
+                    mode: 'insensitive',
+                    equals: dto.titulo,
+                },
+                IndicadorFormulaComposta: {
+                    some: {
+                        indicador_id: indicador_id,
+                    },
+                },
+            },
+        });
+        if (sameTitle) throw new HttpException('Já existe uma fórmula composta com o mesmo título', 400);
+
+        const formula_variaveis = dto.formula_variaveis;
+
+        let formula;
+        ({ formula, formula_compilada } = await this.indicadorService.trocaReferencias(
+            formula_variaveis,
+            dto.formula,
+            indicador_id,
+            formula_compilada,
+            prismaTx
+        ));
+
+        const ifc = await prismaTx.formulaComposta.create({
+            data: {
+                titulo: dto.titulo,
+                formula: formula,
+                formula_compilada: formula_compilada,
+                criado_em: new Date(Date.now()),
+                criado_por: user.id,
+                IndicadorFormulaComposta: {
+                    create: {
+                        indicador_id: indicador.id,
+                    },
+                },
+                FormulaCompostaVariavel: {
+                    createMany: {
+                        data: formula_variaveis,
+                    },
+                },
+            },
+            select: { id: true },
+        });
+
+        await this.resyncFormulaComposta(indicador, ifc.id, prismaTx);
+
+        return ifc;
     }
 
     private checkFormulaCompostaRecursion(dto: { formula: string }) {
@@ -476,11 +488,11 @@ export class IndicadorFormulaCompostaService {
         indicador_id: number,
         dto: GeneratorFormulaCompostaFormDto,
         user: PessoaFromJwt
-    ): Promise<GeneratorFormulaCompostaReturnDto> {
+    ): Promise<BatchRecordWithId> {
         const indicador = await this.indicadorService.findOne(indicador_id, user);
         if (indicador === null) throw new HttpException('Indicador não encontrado', 404);
 
-        const variaveis = await this.extractVariables(dto, indicador_id, dto.regioes);
+        const variaveis = await this.extractVariables(dto, indicador_id, null);
 
         if (variaveis.length == 0)
             throw new HttpException(
@@ -488,18 +500,122 @@ export class IndicadorFormulaCompostaService {
                 400
             );
 
-        if (variaveis.filter((r) => r.regiao !== null).length != dto.regioes.length)
-            throw new HttpException(
-                'Alguma região selecionada não possui mais uma variável que atenda aos critérios; por favor, repita a pesquisa.',
-                400
-            );
+        const ret: BatchRecordWithId = { ids: [] };
 
-        const ret: GeneratorFormulaCompostaReturnDto = {
+        if (!dto.nivel_regionalizacao) throw new HttpException('É necessário informar o nível de regionalização', 400);
+
+        await this.prisma.$transaction(
+            async (prismaTx: Prisma.TransactionClient): Promise<void> => {
+                const todoList: CreateIndicadorFormulaCompostaDto[] = [];
+                for (const regiaoId of dto.regioes) {
+                    const regiao = await this.prisma.regiao.findFirstOrThrow({
+                        where: { id: regiaoId, removido_em: null },
+                        select: { id: true, descricao: true, nivel: true },
+                    });
+                    if (regiao.nivel != dto.nivel_regionalizacao)
+                        throw new HttpException(
+                            'Todas as regiões informadas precisam ter o nível de regionalização informado.',
+                            400
+                        );
+
+                    const buscaFilhos: { filho_id: number }[] = await this.buscaFilhosRegiao(
+                        prismaTx,
+                        regiaoId,
+                        indicador
+                    );
+
+                    if (!buscaFilhos.length) {
+                        throw new HttpException(
+                            `Não foi encontrada nenhuma região do nível ${indicador.nivel_regionalizacao} para região ${regiao.descricao} (nível ${regiao.nivel})`,
+                            400
+                        );
+                    }
+
+                    const variaveis = await this.extractVariables(
+                        dto,
+                        indicador_id,
+                        buscaFilhos.map((r) => r.filho_id)
+                    );
+                    if (!variaveis.length) {
+                        throw new HttpException(
+                            `Não foi encontrada nenhum variavel com o prefixo no nível ${indicador.nivel_regionalizacao} para região ${regiao.descricao} (nível ${regiao.nivel})`,
+                            400
+                        );
+                    }
+
+                    todoList.push(
+                        this.montaFormulaCompostaParaRegioes(
+                            {
+                                ...dto,
+                                titulo: dto.titulo + ' ' + regiao.descricao,
+                                regioes: variaveis.filter((r) => r !== null).map((r) => r.regiao!.id),
+                            },
+                            variaveis
+                        )
+                    );
+                }
+
+                this.logger.verbose(`Criando formula compostas... ${JSON.stringify(todoList)}...`);
+
+                for (const todo of todoList) {
+                    const formula_compilada = await this.indicadorService.validateVariaveis(
+                        todo.formula_variaveis,
+                        indicador.id,
+                        todo.formula
+                    );
+
+                    const row = await this.performCreate(
+                        prismaTx,
+                        todo,
+                        indicador_id,
+                        formula_compilada,
+                        user,
+                        indicador
+                    );
+
+                    ret.ids.push(row);
+                }
+            },
+            { isolationLevel: 'Serializable', maxWait: 30000 * 5 }
+        );
+
+        return ret;
+    }
+
+    private async buscaFilhosRegiao(
+        prismaTx: Prisma.TransactionClient,
+        regiaoId: number,
+        indicador: Indicador
+    ): Promise<{ filho_id: number }[]> {
+        return await prismaTx.$queryRaw`
+        WITH RECURSIVE regiao_path AS (
+                SELECT id, parente_id, nivel::int
+                FROM regiao m
+                WHERE m.id = ${regiaoId}::int
+                and m.removido_em is null
+            UNION ALL
+                SELECT t.id, t.parente_id, t.nivel
+                FROM regiao t
+                JOIN regiao_path tp ON tp.id = t.parente_id
+                and t.removido_em is null
+          )
+          SELECT
+            a.id as filho_id
+          FROM regiao_path a join regiao b on b.id=a.id
+          WHERE a.nivel = ${indicador.nivel_regionalizacao}::int;
+        `;
+    }
+
+    private montaFormulaCompostaParaRegioes(
+        dto: GeneratorFormulaCompostaFormDto,
+        variaveis: { id: number; codigo: string; regiao: { id: number; descricao: string; nivel: number } | null }[]
+    ): CreateIndicadorFormulaCompostaDto {
+        const ret: CreateIndicadorFormulaCompostaDto = {
             formula: '',
             formula_variaveis: [],
             mostrar_monitoramento: false,
             titulo: dto.titulo,
-            nivel_regionalizacao: null,
+            nivel_regionalizacao: dto.nivel_regionalizacao!,
         };
 
         const operacoes: Record<OperacaoPadraoDto, string> = {
@@ -520,19 +636,12 @@ export class IndicadorFormulaCompostaService {
                 variavel_id: variavel.id,
             });
             i++;
-
-            const nivel = variavel.regiao?.nivel;
-            if (nivel && ret.nivel_regionalizacao == null) ret.nivel_regionalizacao = nivel;
-            if (nivel && ret.nivel_regionalizacao != nivel) {
-                throw new HttpException('Todas as variáveis precisam estar no mesmo nível de região.', 400);
-            }
         }
         if (ret.formula) ret.formula = ret.formula.substring(0, ret.formula.length - 3); // tira a operação e os espaços
 
         if (dto.operacao == 'Média Aritmética') {
             ret.formula = '(' + ret.formula + ')' + ' / ' + variaveis.length;
         }
-
         return ret;
     }
 
