@@ -6,9 +6,13 @@ const baseUrl = `${import.meta.env.VITE_API_URL}`;
 export const useVariaveisStore = defineStore({
   id: 'Variaveis',
   state: () => ({
+    // atentar que propriedades aninhadas não são reativas.
+    // A sua criação é, mas a alteração não!
     Variaveis: {},
     variáveisCompostas: {},
     singleVariaveis: {},
+    variáveisPorCódigo: {},
+    operaçõesParaVariávelComposta: {},
     Valores: {},
   }),
   actions: {
@@ -51,6 +55,34 @@ export const useVariaveisStore = defineStore({
         }
         const r = await this.requestS.get(`${baseUrl}/indicador/${indicadorId}/formula-composta`);
         this.variáveisCompostas[indicadorId] = r.rows;
+      } catch (error) {
+        this.variáveisCompostas[indicadorId] = { error };
+      }
+    },
+
+    async getAuxiliares(código, indicadorId) {
+      try {
+        if (!código) {
+          throw new Error('Código inválido');
+        }
+
+        if (!this.variáveisPorCódigo[código]?.length) {
+          this.variáveisPorCódigo[código] = { loading: true };
+        }
+
+        if (!this.operaçõesParaVariávelComposta?.length) {
+          this.operaçõesParaVariávelComposta = { loading: true };
+        }
+
+        const { operacoes, variaveis } = await this.requestS.get(`${baseUrl}/indicador/${indicadorId || this.route.params.indicador_id}/auxiliar-formula-composta/variavel`, { codigo: código });
+
+        if (Array.isArray(operacoes)) {
+          this.operaçõesParaVariávelComposta = operacoes;
+        }
+
+        if (Array.isArray(variaveis)) {
+          this.variáveisPorCódigo[código] = variaveis;
+        }
       } catch (error) {
         this.variáveisCompostas[indicadorId] = { error };
       }
@@ -120,6 +152,22 @@ export const useVariaveisStore = defineStore({
           variáveisCompostas[cur].forEach((x) => {
             if (!acc[x.id]) {
               acc[`@_${x.id}`] = x;
+            }
+          });
+        }
+
+        return acc;
+      }, {}),
+
+    regiõesNasVariáveisPorCódigo: ({ variáveisPorCódigo }) => Object.keys(variáveisPorCódigo)
+      .reduce((acc, cur) => {
+        if (Array.isArray(variáveisPorCódigo[cur])) {
+          if (!acc[cur]) {
+            acc[cur] = [];
+          }
+          variáveisPorCódigo[cur].forEach((x) => {
+            if (x.regiao && x.regiao.id) {
+              acc[cur].push(x.regiao.id);
             }
           });
         }
