@@ -18,6 +18,7 @@ import { CreateIndicadorDto } from './dto/create-indicador.dto';
 import {
     CreateIndicadorFormulaCompostaDto,
     FilterFormulaCompostaFormDto,
+    FilterFormulaCompostaReturnDto,
     GeneratorFormulaCompostaFormDto,
     UpdateIndicadorFormulaCompostaDto,
 } from './dto/create-indicador.formula-composta.dto';
@@ -156,7 +157,7 @@ export class IndicadorController {
         @Param() params: FindOneParams,
         @Query() dto: FilterFormulaCompostaFormDto,
         @CurrentUser() user: PessoaFromJwt
-    ): Promise<number> {
+    ): Promise<FilterFormulaCompostaReturnDto> {
         return await this.indicadorFormulaCompostaService.contaVariavelPrefixo(params.id, dto, user);
     }
 

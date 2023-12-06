@@ -70,6 +70,27 @@ export class GeneratorFormulaCompostaFormDto extends IntersectionType(
     operacao: OperacaoPadraoDto;
 }
 
-export class FilterFormulaCompostaFormDto extends IntersectionType(
-    PickType(CreateGeradorVariavelDto, ['codigo'] as const)
-) {}
+export class FilterFormulaCompostaFormDto {
+    /**
+     * prefixo que será pesquisado nas variaveis
+     */
+    @IsString()
+    @MaxLength(60)
+    codigo: string;
+}
+
+export class FormulaCompostaRegiaoDto {
+    id: number;
+    descricao: string;
+    nivel: number;
+}
+
+export class FormulaCompostaVariaveisComRegiaoDto {
+    id: number;
+    codigo: string;
+    regiao: FormulaCompostaRegiaoDto;
+}
+
+export class FilterFormulaCompostaReturnDto {
+    variaveis: FormulaCompostaVariaveisComRegiaoDto[];
+}
