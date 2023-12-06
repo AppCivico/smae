@@ -1,19 +1,14 @@
 <script setup>
 import { useAlertStore } from '@/stores/alert.store';
-import { useAuthStore } from '@/stores/auth.store';
 import { useVariaveisStore } from '@/stores/variaveis.store';
 import { useRoute } from 'vue-router';
-import { storeToRefs } from 'pinia';
 import níveisRegionalização from '@/consts/niveisRegionalizacao';
 
 const alertStore = useAlertStore();
-const authStore = useAuthStore();
 const VariaveisStore = useVariaveisStore();
 
 const route = useRoute();
 const { indicador_id: indicadorId } = route.params;
-
-const { permissions } = storeToRefs(authStore);
 
 defineProps({
   parentlink: {
@@ -74,7 +69,11 @@ function permitirEdição(indicadorVariavel) {
       :key="v.id"
     >
       <td>{{ v.titulo }}</td>
-      <td>{{ v.nivel_regionalizacao ? níveisRegionalização.find(e => e.id == v.nivel_regionalizacao).nome : '-' }}</td>
+      <td>
+        {{ v.nivel_regionalizacao
+          ? níveisRegionalização.find(e => e.id == v.nivel_regionalizacao).nome
+          : '-' }}
+      </td>
       <td>{{ v.mostrar_monitoramento ? 'Sim' : 'Não' }}</td>
       <td style="white-space: nowrap; text-align: right;">
         <button
