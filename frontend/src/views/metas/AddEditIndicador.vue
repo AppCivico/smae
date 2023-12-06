@@ -21,6 +21,7 @@ import { onMounted, onUpdated, ref } from 'vue';
 import { useRoute } from 'vue-router';
 import TabelaDeVariaveis from '@/components/metas/TabelaDeVariaveis.vue';
 import TabelaDeVariaveisCompostas from '@/components/metas/TabelaDeVariaveisCompostas.vue';
+import TabelaDeVariaveisEmUso from '@/components/metas/TabelaDeVariaveisEmUso.vue'
 import getCaretPosition from './auxiliares/getCaretPosition.ts';
 
 const editModalStore = useEditModalStore();
@@ -109,7 +110,7 @@ const IndicadoresStore = useIndicadoresStore();
 const { singleIndicadores } = storeToRefs(IndicadoresStore);
 
 const VariaveisStore = useVariaveisStore();
-const { Variaveis, variáveisCompostasPorReferência, variáveisCompostas } = storeToRefs(VariaveisStore);
+const { Variaveis, variáveisCompostasPorReferência, variáveisCompostas, variáveisEmUso } = storeToRefs(VariaveisStore);
 
 const { título } = route.meta;
 
@@ -123,6 +124,10 @@ const abas = ref({
   TabelaDeVariaveisCompostas: {
     componente: TabelaDeVariaveisCompostas,
     etiqueta: 'Variáveis Compostas'
+  },
+  TabelaDeVariaveisEmUso: {
+    componente: TabelaDeVariaveisEmUso,
+    etiqueta: 'Variáveis em Uso'
   }
 });
 const abaCorrente = ref('TabelaDeVariaveis');
