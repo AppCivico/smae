@@ -1171,11 +1171,16 @@ export class ProjetoService {
         if (Array.isArray(dto.fonte_recursos) == false) return;
 
         const byYearFonte: Record<string, Record<string, boolean>> = {};
+        const anoCorrente = DateTime.local({ locale: SYSTEM_TIMEZONE }).year;
 
         for (const fr of dto.fonte_recursos!) {
-            if (!byYearFonte[fr.fonte_recurso_ano]) byYearFonte[fr.fonte_recurso_ano] = {};
-            if (!byYearFonte[fr.fonte_recurso_ano][fr.fonte_recurso_cod_sof])
-                byYearFonte[fr.fonte_recurso_ano][fr.fonte_recurso_cod_sof] = true;
+            let anoLookup = fr.fonte_recurso_ano;
+
+            if (anoLookup > anoCorrente) anoLookup = anoCorrente;
+
+            if (!byYearFonte[anoLookup]) byYearFonte[fr.fonte_recurso_ano] = {};
+            if (!byYearFonte[anoLookup][fr.fonte_recurso_cod_sof])
+                byYearFonte[anoLookup][fr.fonte_recurso_cod_sof] = true;
         }
 
         const resultsFonte: Record<string, Record<string, string>> = {};
@@ -1201,9 +1206,12 @@ export class ProjetoService {
             if (valor_nominal == null && valor_percentual == null)
                 throw new HttpException('Valor Percentual e Valor Nominal não podem ser ambos nulos', 400);
 
-            if (resultsFonte[fr.fonte_recurso_ano][fr.fonte_recurso_cod_sof] == undefined) {
+            let anoLookup = fr.fonte_recurso_ano;
+            if (anoLookup > anoCorrente) anoLookup = anoCorrente;
+
+            if (resultsFonte[anoLookup][fr.fonte_recurso_cod_sof] == undefined) {
                 throw new HttpException(
-                    `Fonte de recurso ${fr.fonte_recurso_cod_sof} não foi encontrada para o ano ${fr.fonte_recurso_ano}.`,
+                    `Fonte de recurso ${fr.fonte_recurso_cod_sof} não foi encontrada para o ano ${anoLookup} (original ${fr.fonte_recurso_ano}).`,
                     400
                 );
             }
@@ -1261,10 +1269,9 @@ export class ProjetoService {
 
         const documento = await this.prisma.$transaction(
             async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
-
                 const arquivo = await prismaTx.arquivo.findFirstOrThrow({
                     where: { id: arquivoId },
-                    select: { descricao: true }
+                    select: { descricao: true },
                 });
 
                 return await prismaTx.projetoDocumento.create({
@@ -1274,13 +1281,14 @@ export class ProjetoService {
                         arquivo_id: arquivoId,
                         projeto_id: projetoId,
                         descricao: dto.descricao || arquivo.descricao,
-                        data: dto.data
+                        data: dto.data,
                     },
                     select: {
                         id: true,
                     },
                 });
-        });
+            }
+        );
 
         return { id: documento.id };
     }
@@ -1300,10 +1308,7 @@ export class ProjetoService {
     private async findAllDocumentos(projetoId: number): Promise<ProjetoDocumentoDto[]> {
         const documentosDB = await this.prisma.projetoDocumento.findMany({
             where: { projeto_id: projetoId, removido_em: null },
-            orderBy: [
-                { descricao: 'asc' } ,
-                { data: 'asc' }
-            ],
+            orderBy: [{ descricao: 'asc' }, { data: 'asc' }],
             select: {
                 id: true,
                 descricao: true,
@@ -1321,7 +1326,7 @@ export class ProjetoService {
             },
         });
 
-        const documentosRet: ProjetoDocumentoDto[] = documentosDB.map(d => {
+        const documentosRet: ProjetoDocumentoDto[] = documentosDB.map((d) => {
             return {
                 id: d.id,
                 data: d.data,
@@ -1334,8 +1339,8 @@ export class ProjetoService {
                     diretorio_caminho: d.arquivo.diretorio_caminho,
                     data: d.data,
                     TipoDocumento: d.arquivo.TipoDocumento,
-                }
-            }
+                },
+            };
         });
 
         return documentosRet;
@@ -1348,23 +1353,23 @@ export class ProjetoService {
 
         const documento = await this.prisma.$transaction(
             async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
-
                 return await this.prisma.projetoDocumento.update({
                     where: {
                         id: documentoId,
-                        projeto_id: projetoId
+                        projeto_id: projetoId,
                     },
                     data: {
                         descricao: dto.descricao,
                         data: dto.data,
                         atualizado_por: user.id,
-                        atualizado_em: new Date(Date.now())
+                        atualizado_em: new Date(Date.now()),
                     },
-                    select: { id: true }
+                    select: { id: true },
                 });
-        });
+            }
+        );
 
-        return {id: documento.id}
+        return { id: documento.id };
     }
 
     async remove_document(projetoId: number, projetoDocId: number, user: PessoaFromJwt) {
