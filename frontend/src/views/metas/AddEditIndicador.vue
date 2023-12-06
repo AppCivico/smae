@@ -448,8 +448,8 @@ function saveVar(tipoDeVariável) {
     case 'composta':
       caracterDefinidor = '@';
       variávelId = `${caracterDefinidor}_${variávelId}`;
-
-      nova = variáveisCompostasPorReferência.value[variávelId];
+      // PRA-FAZER: procurar uma maneira de identificar variáveis já em uso
+      nova = true;
       break;
 
     default:
