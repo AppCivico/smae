@@ -9,6 +9,7 @@ import {
     FilterFormulaCompostaReturnDto,
     GeneratorFormulaCompostaFormDto,
     OperacaoPadraoDto,
+    OperacaoSuportadaOrdem,
     UpdateIndicadorFormulaCompostaDto,
 } from './dto/create-indicador.formula-composta.dto';
 import {
@@ -546,6 +547,7 @@ export class IndicadorFormulaCompostaService {
         const rows = await this.extractVariables(dto, indicador_id, null);
 
         return {
+            operacoes: OperacaoSuportadaOrdem,
             variaveis: rows.map((r) => {
                 return {
                     id: r.id,
