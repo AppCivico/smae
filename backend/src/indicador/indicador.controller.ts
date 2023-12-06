@@ -161,7 +161,7 @@ export class IndicadorController {
         return await this.indicadorFormulaCompostaService.contaVariavelPrefixo(params.id, dto, user);
     }
 
-    @Patch('indicador/:id/auxiliar-formula-composta')
+    @Post('indicador/:id/gerador-formula-composta')
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
     @Roles('CadastroIndicador.inserir', 'CadastroMeta.inserir')
