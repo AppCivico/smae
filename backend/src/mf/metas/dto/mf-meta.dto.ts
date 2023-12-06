@@ -1,5 +1,5 @@
 import { ApiProperty, OmitType } from '@nestjs/swagger';
-import { CicloFase, Periodicidade, Serie } from '@prisma/client';
+import { CicloFase, FormulaComposta, Periodicidade, Serie } from '@prisma/client';
 import { Transform, Type } from 'class-transformer';
 import { IsBoolean, IsNumber, IsNumberString, IsOptional, IsString, ValidateIf } from 'class-validator';
 import { IsOnlyDate } from '../../../common/decorators/IsDateOnly';
@@ -7,6 +7,8 @@ import { IsOnlyDate } from '../../../common/decorators/IsDateOnly';
 import { IdCodTituloDto } from '../../../common/dto/IdCodTitulo.dto';
 import { TipoDocumentoDto } from '../../../tipo-documento/entities/tipo-documento.entity';
 import { SerieValorNomimal } from '../../../variavel/entities/variavel.entity';
+import { IndicadorFormulaCompostaDto } from 'src/indicador/entities/indicador.formula-composta.entity';
+import { FormulaVariaveis } from 'src/indicador/dto/update-indicador.dto';
 
 export class FilterMfMetasDto {
     /**
@@ -105,6 +107,7 @@ export type Status = keyof VariavelQtdeDto;
 
 export class VariavelComSeries {
     variavel: IdCodTituloDto;
+    variavel_formula_composta: FormulaVariaveis[] | null;
     series: MfSeriesAgrupadas[];
 }
 
