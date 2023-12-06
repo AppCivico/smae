@@ -91,8 +91,14 @@ export class FormulaCompostaVariaveisComRegiaoDto {
     regiao: FormulaCompostaRegiaoDto;
 }
 
+export class FormulaCompostaVariaveisSemRegiaoDto {
+    id: number;
+    codigo: string;
+}
+
 export class FilterFormulaCompostaReturnDto {
     variaveis: FormulaCompostaVariaveisComRegiaoDto[];
+    variaveis_sem_regiao: FormulaCompostaVariaveisSemRegiaoDto[];
 
     @ApiProperty({ enum: OperacaoPadraoDto, enumName: 'OperacaoPadraoDto', isArray: true })
     operacoes: OperacaoPadraoDto[];
