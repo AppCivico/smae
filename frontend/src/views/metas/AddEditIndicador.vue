@@ -893,7 +893,7 @@ if (indicador_id) {
               @click="chamarInserçãoDeVariável('$')"
             >Variável</span>
             <span
-              class="v"
+              class="v vc"
               @click="chamarInserçãoDeVariável('@')"
             >Variável composta</span>
             <span
