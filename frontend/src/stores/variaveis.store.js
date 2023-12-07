@@ -39,7 +39,7 @@ export const useVariaveisStore = defineStore({
           x.inicio_medicao = dateToField(x.inicio_medicao).slice(3, 10);
           x.fim_medicao = dateToField(x.fim_medicao).slice(3, 10);
           return x;
-        }).sort((a, b) => { return a.codigo.localeCompare(b.codigo) });
+        }).sort((a, b) => a.codigo.localeCompare(b.codigo));
       } catch (error) {
         this.Variaveis[indicador_id] = { error };
       }
@@ -151,30 +151,28 @@ export const useVariaveisStore = defineStore({
     },
 
     variaveisEmUso() {
-      const indicadorId = this.route.params.indicador_id
+      const indicadorId = this.route.params.indicador_id;
 
-      let variaveisSimples   = this.$state.Variaveis[indicadorId];
+      let variaveisSimples = this.$state.Variaveis[indicadorId];
       let variaveisCompostas = this.$state.variáveisCompostas[indicadorId];
 
-      variaveisSimples = Array.isArray(variaveisSimples) ? variaveisSimples.filter(v => {
-        return v.indicador_variavel.some( iv => !iv.desativado)
-      }) : [];
-      
-      variaveisCompostas = Array.isArray(variaveisCompostas) ?
-      variaveisCompostas
-        .map( (row) => row.formula_variaveis )
-        .reduce((unique, item) => {
-          return unique.some(obj => obj.variavel_id === item.variavel_id) ? unique : [...unique, item];
-        }, [])
-        .map( (row) => {
-          return this.$state.Variaveis[indicadorId].find((v) => v.id == row[0].variavel_id)
-        })
-      : [];
+      variaveisSimples = Array.isArray(variaveisSimples)
+        ? variaveisSimples.filter((v) => v.indicador_variavel.some((iv) => !iv.desativado))
+        : [];
+
+      variaveisCompostas = Array.isArray(variaveisCompostas)
+        ? variaveisCompostas
+          .map((row) => row.formula_variaveis)
+          .reduce((unique, item) => (unique.some((obj) => obj.variavel_id === item.variavel_id)
+            ? unique
+            : [...unique, item]), [])
+          .map((row) => this.$state.Variaveis[indicadorId].find((v) => v.id == row[0].variavel_id))
+        : [];
 
       const variaveisEmUso = [...new Set([...variaveisSimples, ...variaveisCompostas])];
-      variaveisEmUso.sort((a, b) => { return a.codigo.localeCompare(b.codigo) });
+      variaveisEmUso.sort((a, b) => a.codigo.localeCompare(b.codigo));
 
-      return variaveisEmUso
+      return variaveisEmUso;
     },
 
     variáveisCompostasPorReferência: ({ variáveisCompostas }) => Object.keys(variáveisCompostas)
