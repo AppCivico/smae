@@ -583,7 +583,7 @@ if (indicador_id) {
         <div v-if="indicador_id && !Variaveis[indicador_id]?.loading">
           <EditorDeFormula
             v-model="formula"
-            v-model:variaveisFormula="variaveisFormula"
+            v-model:variaveis-formula="variaveisFormula"
             :variáveis-do-indicador="Array.isArray(Variaveis[indicador_id])
               ? Variaveis[indicador_id]
               : []"

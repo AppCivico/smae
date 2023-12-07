@@ -2,7 +2,7 @@
 import SmallModal from '@/components/SmallModal.vue';
 import getCaretPosition from '@/helpers/getCaretPosition.ts';
 import {
-computed, onMounted, onUpdated, ref,
+  computed, onMounted, onUpdated, ref,
 } from 'vue';
 
 const props = defineProps({
@@ -26,7 +26,7 @@ const props = defineProps({
 
 const emit = defineEmits([
   'update:modelValue',
-  'update:variaveisFormula',
+  'update:variaveis-formula',
 ]);
 
 const funções = [
@@ -100,23 +100,7 @@ const formula = computed({
   set(value) {
     emit('update:modelValue', value);
 
-    // const formulaVariaveis = Object.values(variaveisFormula)
-    //   .map((x) => {
-    //     if (!x.id) {
-    //       console.debug('x', x);
-    //     }
-    //     return {
-    //       referencia: x.id.substring(1),
-    //       janela: x.periodo == 0 ? x.meses : x.periodo == -1 ? x.meses * -1 : 1,
-    //       variavel_id: x.variavel_id,
-    //       usar_serie_acumulada: !!x.usar_serie_acumulada,
-
-    //     };
-    //   })
-    //   .filter((x) => value.indexOf(x.referencia) !== -1);
-    // emit('update:variaveisFormula', formulaVariaveis);
-
-    emit('update:variaveisFormula', variaveisFormula);
+    emit('update:variaveis-formula', variaveisFormula);
   },
 });
 
@@ -222,6 +206,7 @@ function formatFormula(p) {
   }
 }
 function newVariavel(caracterDefinidor = '$') {
+  fieldsVariaveis.value = {};
   switch (caracterDefinidor) {
     case '@':
       variaveisFormulaModal.value = 2;
@@ -308,23 +293,22 @@ function chamarInserçãoDeVariável(caracterDefinidor) {
 }
 
 function saveVar(tipoDeVariável) {
-  let variávelId = fieldsVariaveis.value.id;
+  const variávelId = fieldsVariaveis.value.id;
   let caracterDefinidor = '$';
   let nova = false;
 
   switch (tipoDeVariável) {
     case 'composta':
       caracterDefinidor = '@';
-      variávelId = `${caracterDefinidor}_${variávelId}`;
       // PRA-FAZER: procurar uma maneira de identificar variáveis já em uso
       nova = true;
       break;
 
     default:
       nova = !variaveisFormula[variávelId];
+      variaveisFormula[variávelId] = fieldsVariaveis.value;
       break;
   }
-  variaveisFormula[variávelId] = fieldsVariaveis.value;
   variaveisFormulaModal.value = 0;
   if (nova) {
     const v = formula.value;
@@ -562,10 +546,14 @@ onUpdated(() => {
         <option value>
           Selecionar
         </option>
+        <!--
+        para manter o objeto de modo semalhante ao das variáveis comuns,
+        vamos combinar o ID com o caracterDefinidor
+        -->
         <option
           v-for="v in variáveisCompostas"
           :key="v.id"
-          :value="v.id"
+          :value="`@_${v.id}`"
         >
           {{ v.titulo }}
         </option>
