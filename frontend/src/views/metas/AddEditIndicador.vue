@@ -3,11 +3,6 @@ import { Dashboard } from '@/components';
 import { indicador as schema } from '@/consts/formSchemas';
 import fieldToDate from '@/helpers/fieldToDate';
 import { router } from '@/router';
-import LoadingComponent from '@/components/LoadingComponent.vue';
-import {
-  defineAsyncComponent, onMounted, onUpdated, ref,
-} from 'vue';
-
 import { useAlertStore } from '@/stores/alert.store';
 import { useAtividadesStore } from '@/stores/atividades.store';
 import { useEditModalStore } from '@/stores/editModal.store';
@@ -22,15 +17,12 @@ import { default as AddEditVariavel } from '@/views/metas/AddEditVariavel.vue';
 import { storeToRefs } from 'pinia';
 import { Field, Form } from 'vee-validate';
 import { useRoute } from 'vue-router';
+import { onMounted, onUpdated, ref } from 'vue';
+import GerarVariaveisCompostas from '@/views/metas/GerarVariaveisCompostas.vue';
 import TabelaDeVariaveis from '@/components/metas/TabelaDeVariaveis.vue';
 import TabelaDeVariaveisCompostas from '@/components/metas/TabelaDeVariaveisCompostas.vue';
 import TabelaDeVariaveisEmUso from '@/components/metas/TabelaDeVariaveisEmUso.vue';
 import EditorDeFormula from '@/components/metas/EditorDeFormula.vue';
-
-const GerarVariaveisCompostas = defineAsyncComponent({
-  loader: () => import('@/views/metas/GerarVariaveisCompostas.vue'),
-  loadingComponent: LoadingComponent,
-});
 
 const editModalStore = useEditModalStore();
 const alertStore = useAlertStore();
