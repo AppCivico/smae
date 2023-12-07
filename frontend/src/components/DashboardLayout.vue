@@ -1,6 +1,7 @@
 <script setup>
 import { Nav } from '@/components';
-import { useAuthStore, useEditModalStore } from '@/stores';
+import { useAuthStore } from '@/stores/auth.store';
+import { useEditModalStore } from '@/stores/editModal.store';
 import { storeToRefs } from 'pinia';
 
 const editModalStore = useEditModalStore();

@@ -23,7 +23,7 @@ import { computed, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
 const RegionsStore = useRegionsStore();
-const { regions, regiõesPorNívelOrdenadas } = storeToRefs(RegionsStore);
+const { regiõesPorNívelOrdenadas } = storeToRefs(RegionsStore);
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 

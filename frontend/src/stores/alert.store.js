@@ -20,7 +20,7 @@ export const useAlertStore = defineStore({
         message, callback, type: 'confirmAction', label: label ?? 'OK', fallback: fallback ?? false,
       };
     },
-    clear() { // TODO: remover função desnecessária. Pode-se usar `.reset();`
+    clear() { // TODO: remover função desnecessária. Pode-se usar `.$reset();`
       this.alert = null;
     },
   },
