@@ -3,6 +3,10 @@ import { Dashboard, SmallModal } from '@/components';
 import { indicador as schema } from '@/consts/formSchemas';
 import fieldToDate from '@/helpers/fieldToDate';
 import { router } from '@/router';
+import LoadingComponent from '@/components/LoadingComponent.vue';
+import {
+  defineAsyncComponent, onMounted, onUpdated, ref,
+} from 'vue';
 
 import { useAlertStore } from '@/stores/alert.store';
 import { useAtividadesStore } from '@/stores/atividades.store';
@@ -17,12 +21,15 @@ import { default as AddEditValores } from '@/views/metas/AddEditValores.vue';
 import { default as AddEditVariavel } from '@/views/metas/AddEditVariavel.vue';
 import { storeToRefs } from 'pinia';
 import { Field, Form } from 'vee-validate';
-import { onMounted, onUpdated, ref } from 'vue';
 import { useRoute } from 'vue-router';
 import TabelaDeVariaveis from '@/components/metas/TabelaDeVariaveis.vue';
 import TabelaDeVariaveisCompostas from '@/components/metas/TabelaDeVariaveisCompostas.vue';
 import TabelaDeVariaveisEmUso from '@/components/metas/TabelaDeVariaveisEmUso.vue'
 import getCaretPosition from './auxiliares/getCaretPosition.ts';
+const GerarVariaveisCompostas = defineAsyncComponent({
+  loader: () => import('@/views/metas/GerarVariaveisCompostas.vue'),
+  loadingComponent: LoadingComponent,
+});
 
 const editModalStore = useEditModalStore();
 const alertStore = useAlertStore();
@@ -147,13 +154,15 @@ function start() {
       ...props,
       checkClose: () => {
         alertStore.confirm('Deseja sair sem salvar as alterações?', () => {
-          editModalStore.clear();
-          alertStore.clear();
+          editModalStore.$reset();
+          alertStore.$reset();
         });
       },
     });
   }
   if (props.group === 'retroativos') editModalStore.modal(AddEditRealizado, props);
+  if (props.group === 'gerar-compostas') editModalStore.modal(GerarVariaveisCompostas, props);
+  if (!props.group) editModalStore.$reset();
 }
 
 onMounted(() => { start(); });
@@ -782,8 +791,6 @@ if (indicador_id) {
               <Field
                 v-slot="{ field }"
                 name="regionalizavel"
-                type="checkbox"
-                :value="true"
               >
                 <input
                   type="checkbox"
@@ -1162,7 +1169,7 @@ if (indicador_id) {
           :is="abas[abaCorrente]?.componente"
           v-if="!Variaveis[indicador_id]?.loading"
           :variáveis="Variaveis[indicador_id]"
-          :variáveisCompostas="variáveisCompostas[indicador_id]"
+          :variáveis-compostas="variáveisCompostas[indicador_id]"
           :parentlink="parentlink"
         />
       </div>
