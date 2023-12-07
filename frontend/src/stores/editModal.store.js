@@ -13,7 +13,7 @@ export const useEditModalStore = defineStore({
         type: classes,
       };
     },
-    clear() { // TODO: remover função desnecessária. Pode-se usar `.reset();`
+    clear() { // TODO: remover função desnecessária. Pode-se usar `.$reset();`
       this.editModal = null;
     },
   },
