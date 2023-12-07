@@ -117,7 +117,9 @@ const IndicadoresStore = useIndicadoresStore();
 const { singleIndicadores } = storeToRefs(IndicadoresStore);
 
 const VariaveisStore = useVariaveisStore();
-const { Variaveis, variáveisCompostasPorReferência, variáveisCompostas, variáveisEmUso } = storeToRefs(VariaveisStore);
+const {
+  Variaveis, variáveisCompostasPorReferência, variáveisCompostas,
+} = storeToRefs(VariaveisStore);
 
 const { título } = route.meta;
 

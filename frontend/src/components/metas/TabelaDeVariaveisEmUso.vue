@@ -20,10 +20,6 @@ defineProps({
     type: String,
     required: true,
   },
-  variáveis: {
-    type: Array,
-    default: () => [],
-  },
 });
 
 async function apagarVariável(id) {
@@ -51,7 +47,6 @@ function permitirEdição(indicadorVariavel) {
 }
 </script>
 <template>
-
   <table
     class="tablemain mb1"
   >
