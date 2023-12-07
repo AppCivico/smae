@@ -47,6 +47,28 @@ function permitirEdição(indicadorVariavel) {
 }
 </script>
 <template>
+  <nav>
+    <ul class="flex justifyleft mb1">
+      <li class="mr1">
+        <router-link
+          :to="{
+            name: 'geradorDeVariáveisCompostas',
+            params: {
+              indicador_id: indicadorId
+            }
+          }"
+          class="addlink"
+        >
+          <span>Gerar variáveis</span>
+          <svg
+            width="20"
+            height="20"
+          ><use xlink:href="#i_+" /></svg>
+        </router-link>
+      </li>
+    </ul>
+  </nav>
+
   <table
     class="tablemain mb1"
   >

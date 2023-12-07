@@ -272,6 +272,55 @@ export const fase = object()
       .required('Preencha o título'),
   });
 
+export const geraçãoDeVariávelComposta = (tiposDeOperações = []) => object()
+  .shape({
+    codigo: string()
+      .label('Código prefixo')
+      .required(),
+    janela: number()
+      .integer()
+      .label('Meses')
+      .when('tipo_de_janela', ((tipoDeJanela, field) => {
+        switch (tipoDeJanela) {
+          case 'meses_anteriores':
+            return field
+              .negative('${label} não pode ser zero nem vazio');
+          case 'media':
+            return field
+              .min(1);
+          case 'mes_corrente':
+            return field
+              .max(1)
+              .min(1);
+          default:
+            return field;
+        }
+      })),
+    nivel_regionalizacao: number()
+      .label('Nível de regionalização')
+      .min(1, 'Selecione Nível de regionalização'),
+    operacao: mixed()
+      .label('Operação')
+      .oneOf(tiposDeOperações, 'A operação escolhida é inválida')
+      .required(),
+    regioes: array()
+      .label('Regiões')
+      .min(1, 'Selecione ao menos uma região'),
+    usar_serie_acumulada: boolean()
+      .label('Utilizar valores acumulados'),
+    tipo_de_janela: mixed()
+      .label('Padrão de uso')
+      .oneOf([
+        'meses_anteriores',
+        'media',
+        'mes_corrente',
+      ], 'O tipo escolhido é inválido')
+      .required(),
+    titulo: string()
+      .label('Título')
+      .required(),
+  });
+
 export const indicador = object()
   .shape({
     acumulado_valor_base: number()
