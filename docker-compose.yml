@@ -3,7 +3,7 @@ services:
   db:
     container_name: "${PG_CONTAINER_NAME}"
     # will change to postgres:12.16-bullseye
-    image: postgres:14-bullseye
+    image: timescale/timescaledb:latest-pg14
     environment:
       POSTGRES_PASSWORD: "smae"
       POSTGRES_USER: "smae"
