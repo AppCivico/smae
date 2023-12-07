@@ -109,6 +109,10 @@ export const useVariaveisStore = defineStore({
       if (await this.requestS.post(`${baseUrl}/indicador-variavel/gerador-regionalizado`, params)) return true;
       return false;
     },
+    async gerarCompostas(params, indicadorId) {
+      if (await this.requestS.post(`${baseUrl}/indicador/${indicadorId || this.route.params.indicador_id}/gerador-formula-composta`, params)) return true;
+      return false;
+    },
     async insert(params) {
       const r = await this.requestS.post(`${baseUrl}/indicador-variavel`, params);
       if (r.id) return r.id;

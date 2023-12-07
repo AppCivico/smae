@@ -1,4 +1,5 @@
 import { default as SubmenuMetas } from '@/components/SubmenuMetas.vue';
+
 import {
   AddEditAtividade,
   AddEditCronograma,
@@ -51,17 +52,29 @@ export default {
     {
       path: ':meta_id/indicadores/:indicador_id',
       component: AddEditIndicador,
+      name: 'indicadorDaMeta',
       meta: { título: 'Editar Indicador' },
       props: { submenu: SubmenuMetas },
     },
 
     { path: ':meta_id/indicadores/:indicador_id/variaveis/novo', component: AddEditIndicador, props: { group: 'variaveis', submenu: SubmenuMetas } },
+
     {
       path: ':meta_id/indicadores/:indicador_id/variaveis/gerar',
       name: 'geradorDeVariáveis',
       meta: { funçãoDaTela: 'gerar' },
       component: AddEditIndicador,
       props: { group: 'variaveis', submenu: SubmenuMetas },
+    },
+
+    {
+      path: ':meta_id/indicadores/:indicador_id/variaveis/gerar-composta',
+      name: 'geradorDeVariáveisCompostas',
+      meta: {
+        rotaDeEscape: 'indicadorDaMeta',
+      },
+      component: AddEditIndicador,
+      props: { group: 'gerar-compostas', submenu: SubmenuMetas },
     },
 
     { path: ':meta_id/indicadores/:indicador_id/variaveis/novo/:copy_id', component: AddEditIndicador, props: { group: 'variaveis', submenu: SubmenuMetas } },
