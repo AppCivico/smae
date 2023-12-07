@@ -25,7 +25,7 @@ import { useRoute } from 'vue-router';
 import TabelaDeVariaveis from '@/components/metas/TabelaDeVariaveis.vue';
 import TabelaDeVariaveisCompostas from '@/components/metas/TabelaDeVariaveisCompostas.vue';
 import TabelaDeVariaveisEmUso from '@/components/metas/TabelaDeVariaveisEmUso.vue';
-import getCaretPosition from './auxiliares/getCaretPosition.ts';
+import getCaretPosition from '@/helpers/getCaretPosition.ts';
 
 const GerarVariaveisCompostas = defineAsyncComponent({
   loader: () => import('@/views/metas/GerarVariaveisCompostas.vue'),
