@@ -1,7 +1,5 @@
 <script setup>
 import { liçãoAprendida as schema } from '@/consts/formSchemas';
-import dateToField from '@/helpers/dateToField';
-import { useAcompanhamentosStore } from '@/stores/acompanhamentos.store.ts';
 import { useLiçõesAprendidasStore } from '@/stores/licoesAprendidas.store';
 import { useRiscosStore } from '@/stores/riscos.store.ts';
 import { storeToRefs } from 'pinia';
@@ -80,17 +78,6 @@ const {
     <div class="flex g2">
       <div class="f1 mb1">
         <dt class="t12 uc w700 mb05 tamarelo">
-          {{ schema.fields.observacao.spec.label }}
-        </dt>
-        <dd class="t13">
-          {{ emFoco?.observacao || '-' }}
-        </dd>
-      </div>
-    </div>
-
-    <div class="flex g2">
-      <div class="f1 mb1">
-        <dt class="t12 uc w700 mb05 tamarelo">
           {{ schema.fields.resultado.spec.label }}
         </dt>
         <dd class="t13">
@@ -98,7 +85,17 @@ const {
         </dd>
       </div>
     </div>
-
+    
+    <div class="flex g2">
+      <div class="f1 mb1">
+        <dt class="t12 uc w700 mb05 tamarelo">
+          {{ schema.fields.observacao.spec.label }}
+        </dt>
+        <dd class="t13">
+          {{ emFoco?.observacao || '-' }}
+        </dd>
+      </div>
+    </div>
 
   </div>
 
