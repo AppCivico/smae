@@ -4,7 +4,7 @@ import LabelFromYup from '@/components/LabelFromYup.vue';
 // @ts-ignore
 import requestS from '@/helpers/requestS.ts';
 import { createPinia } from 'pinia';
-import { createApp, markRaw } from 'vue';
+import { createApp, markRaw, nextTick } from 'vue';
 import type { RouteLocationNormalizedLoaded, Router } from 'vue-router';
 import App from './App.vue';
 import { router } from './router';
@@ -63,6 +63,7 @@ app.directive('focus', {
     const { modifiers, value } = binding;
 
     if (!!value || value === undefined) {
+      await nextTick();
       el.focus();
       if (modifiers.select && el instanceof HTMLInputElement) {
         el.select();
