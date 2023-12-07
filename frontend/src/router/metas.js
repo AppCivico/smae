@@ -62,7 +62,10 @@ export default {
     {
       path: ':meta_id/indicadores/:indicador_id/variaveis/gerar',
       name: 'geradorDeVariáveis',
-      meta: { funçãoDaTela: 'gerar' },
+      meta: {
+        funçãoDaTela: 'gerar',
+        rotaDeEscape: 'indicadorDaMeta',
+      },
       component: AddEditIndicador,
       props: { group: 'variaveis', submenu: SubmenuMetas },
     },

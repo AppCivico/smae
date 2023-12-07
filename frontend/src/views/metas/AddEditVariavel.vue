@@ -198,7 +198,14 @@ async function checkClose() {
   alertStore.confirm('Deseja sair sem salvar as alterações?', () => {
     editModalStore.clear();
     alertStore.clear();
-    router.go(-1);
+    if (route.meta.rotaDeEscape) {
+      router.push({
+        name: route.meta.rotaDeEscape,
+        params: route.params,
+      });
+    } else {
+      router.go(-1);
+    }
   });
 }
 function lastlevel() {
