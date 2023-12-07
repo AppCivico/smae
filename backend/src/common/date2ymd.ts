@@ -40,7 +40,10 @@ export class Date2YMD {
     // converte uma data, considerando SP (-0300) para date-time UTC
     static tzSp2UTC(data: string | Date): string {
         const str = typeof data == 'string' ? data : Date2YMD.toString(data);
-        return DateTime.fromISO(str, { zone: SYSTEM_TIMEZONE }).setZone('UTC').toISO();
+        const tryConvert = DateTime.fromISO(str, { zone: SYSTEM_TIMEZONE }).setZone('UTC').toISO();
+
+        if (tryConvert == null) throw new Error(`invalid date "${data}", cannot convert parse.`);
+        return tryConvert;
     }
 
     static incDaysFromISO(data: Date, days: number): Date {

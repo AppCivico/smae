@@ -27,6 +27,11 @@ $ cp .env.example .env
 
 Editar arquivo `.env` de acordo com a configuração.
 
+Se for um banco de dados novo, e de produção, use o comando `cloak generate` para gerar uma nova chave master para os campos criptografados.
+
+Caso prefira, também é possível utilizar o site https://cloak.47ng.com/ para gerar as chaves.
+
+
 > caso `npm run start:dev` não carregar o arquivo .env automaticamente, exportar antes de subir o comando
 
 
