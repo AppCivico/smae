@@ -24,8 +24,9 @@ import { Field, Form } from 'vee-validate';
 import { useRoute } from 'vue-router';
 import TabelaDeVariaveis from '@/components/metas/TabelaDeVariaveis.vue';
 import TabelaDeVariaveisCompostas from '@/components/metas/TabelaDeVariaveisCompostas.vue';
-import TabelaDeVariaveisEmUso from '@/components/metas/TabelaDeVariaveisEmUso.vue'
+import TabelaDeVariaveisEmUso from '@/components/metas/TabelaDeVariaveisEmUso.vue';
 import getCaretPosition from './auxiliares/getCaretPosition.ts';
+
 const GerarVariaveisCompostas = defineAsyncComponent({
   loader: () => import('@/views/metas/GerarVariaveisCompostas.vue'),
   loadingComponent: LoadingComponent,
@@ -132,12 +133,12 @@ const abas = ref({
   },
   TabelaDeVariaveisCompostas: {
     componente: TabelaDeVariaveisCompostas,
-    etiqueta: 'Variáveis Compostas'
+    etiqueta: 'Variáveis Compostas',
   },
   TabelaDeVariaveisEmUso: {
     componente: TabelaDeVariaveisEmUso,
-    etiqueta: 'Variáveis em Uso'
-  }
+    etiqueta: 'Variáveis em Uso',
+  },
 });
 const abaCorrente = ref('TabelaDeVariaveis');
 
