@@ -3,12 +3,14 @@ import { computed } from 'vue';
 
 const props = defineProps(['active', 'classes']);
 const active = computed(() => props.active);
+
+defineEmits(['close']);
 </script>
 
 <template>
   <div
+    v-if="active"
     class="editModal-wrap"
-    :style="{ display: active ? '' : 'none' }"
   >
     <div
       class="overlay"
