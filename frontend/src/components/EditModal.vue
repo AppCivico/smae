@@ -1,7 +1,8 @@
 <script setup>
-import { storeToRefs } from 'pinia';
 import { router } from '@/router';
-import { useEditModalStore, useAlertStore } from '@/stores';
+import { useAlertStore } from '@/stores/alert.store';
+import { useEditModalStore } from '@/stores/editModal.store';
+import { storeToRefs } from 'pinia';
 
 const alertStore = useAlertStore();
 const editModalStore = useEditModalStore();
