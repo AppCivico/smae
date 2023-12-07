@@ -3197,3 +3197,24 @@ model ImportacaoOrcamento {
     @@index([criado_em, portfolio_id])
     @@map("importacao_orcamento")
 }
+
+model api_request_log {
+    created_at  DateTime @default(now()) @db.Timestamp(6)
+    cf_ray      String
+    request_num Int
+
+    ip                  String @db.Inet
+    response_time       Int
+    response_size       Int
+    req_method          String
+    req_path            String
+    req_host            String
+    req_headers         String? /// @encrypted?mode=strict
+    req_query           String? /// @encrypted?mode=strict
+    req_body            String? /// @encrypted?mode=strict
+    req_body_size       Int?
+    res_code            Int    @db.SmallInt
+    created_pessoa_id   Int?
+
+    @@unique([created_at, cf_ray, request_num])
+}

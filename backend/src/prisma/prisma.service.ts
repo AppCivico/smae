@@ -2,6 +2,7 @@ import { INestApplication, Injectable, OnModuleInit } from '@nestjs/common';
 import { Prisma, PrismaClient } from '@prisma/client';
 import { RetryPromise } from '../common/retryPromise';
 import { UnwrapTuple } from '@prisma/client/runtime/library';
+import { fieldEncryptionMiddleware } from 'prisma-field-encryption';
 
 class PrismaServiceBase extends PrismaClient implements OnModuleInit {
     constructor() {
@@ -25,6 +26,9 @@ class PrismaServiceBase extends PrismaClient implements OnModuleInit {
                 },
             ],
         });
+        // ta deprecated, mas o extensions ta um caos no nestjs:
+        // ver https://github.com/prisma/prisma/issues/18628
+        this.$use(fieldEncryptionMiddleware());
     }
 
     async onModuleInit() {
