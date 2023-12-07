@@ -3,6 +3,14 @@ import liçõesAprendidasCriarEditar from '@/views/licoesAprendidas/LicoesAprend
 import liçõesAprendidasItem from '@/views/licoesAprendidas/LicoesAprendidasItem.vue';
 import liçõesAprendidasLista from '@/views/licoesAprendidas/LicoesAprendidasLista.vue';
 import liçõesAprendidasRaiz from '@/views/licoesAprendidas/LicoesAprendidasRaiz.vue';
+import { useProjetosStore } from '@/stores/projetos.store.ts';
+import LoadingComponent from '@/components/LoadingComponent.vue';
+import { defineAsyncComponent } from 'vue';
+
+const licoesAprendidasResumo = defineAsyncComponent({
+  loader: () => import('@/views/licoesAprendidas/LicoesAprendidasResumo.vue'),
+  loadingComponent: LoadingComponent,
+});
 
 export default {
   path: 'licoes-aprendidas',
@@ -85,6 +93,31 @@ export default {
               'liçõesAprendidasListar',
               'liçõesAprendidasEditar',
             ],
+          },
+        },
+
+        {
+          path: 'resumo',
+          name: 'liçõesAprendidasResumo',
+          component: licoesAprendidasResumo,
+          props: ({ params }) => ({
+            ...params,
+            projetoId: Number.parseInt(params.projetoId, 10) || undefined,
+            licaoAprendidaId: Number.parseInt(params.licaoAprendidaId, 10) || undefined,
+          }),
+          meta: {
+            título: () => {
+              let título = useLiçõesAprendidasStore()?.emFoco?.data_registro
+                ? `Acompanhamento ${dateToField(useLiçõesAprendidasStore()?.emFoco?.data_registro)}`
+                : 'Resumo de licão aprendida';
+
+              if (useProjetosStore()?.emFoco?.nome) {
+                título = `${título} do projeto ${useProjetosStore()?.emFoco?.nome}`;
+              }
+
+              return título;
+            },
+            títuloParaMenu: 'Resumo',
           },
         },
       ],

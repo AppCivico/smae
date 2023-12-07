@@ -104,7 +104,17 @@ iniciar();
           {{ linha.sequencial }}
         </td>
         <td class="cell--data">
-          {{ dateToField(linha.data_registro) }}
+            <router-link
+            :to="{
+              name: 'liçõesAprendidasResumo',
+              params: {
+                projetoId: projetoId,
+                licaoAprendidaId: linha.id,
+              }
+            }"
+            >
+            {{ dateToField(linha.data_registro) }}
+            </router-link>
         </td>
         <th>
           {{ linha.contexto }}
