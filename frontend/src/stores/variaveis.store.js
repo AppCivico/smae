@@ -10,7 +10,6 @@ export const useVariaveisStore = defineStore({
     // A sua criação é, mas a alteração não!
     Variaveis: {},
     variáveisCompostas: {},
-    variáveisEmUso: {},
     singleVariaveis: {},
     variáveisPorCódigo: {},
     operaçõesParaVariávelComposta: {},
