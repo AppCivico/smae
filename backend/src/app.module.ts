@@ -73,6 +73,7 @@ import { ProjetoOrcamentoModule } from './reports/projeto-orcamento/projeto-orca
 import { ImportacaoOrcamentoModule } from './importacao-orcamento/importacao-orcamento.module';
 import { TrimPipe } from './common/pipes/trim-pipe';
 import { AcompanhamentoTipoModule } from './pp/acompanhamento-tipo/acompanhamento-tipo.module';
+import { RequestLogModule } from './request_log/request_log.module';
 
 @Module({
     imports: [
@@ -148,7 +149,7 @@ import { AcompanhamentoTipoModule } from './pp/acompanhamento-tipo/acompanhament
         ProjetoPrevisaoCustoModule,
         ProjetoOrcamentoModule,
         ImportacaoOrcamentoModule, // carregar depois do OrcamentoPrevistoModule
-        AcompanhamentoTipoModule
+        AcompanhamentoTipoModule, RequestLogModule
     ],
     controllers: [AppController],
     providers: [
