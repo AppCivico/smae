@@ -187,7 +187,7 @@ const menuFiltrado = router.options.routes
   bottom: 0;
   background: @primary;
   color: @amarelo;
-  z-index: 11;
+  z-index: 110;
   .transition();
   a {
     font-weight: 700;
