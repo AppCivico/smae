@@ -106,7 +106,7 @@ const formula = computed({
 
 const variáveisCompostasPorReferência = computed(() => props.variáveisCompostas
   .reduce((acc, cur) => {
-    if (!acc[cur.id]) {
+    if (!acc[`@_${cur.id}`]) {
       acc[`@_${cur.id}`] = cur;
     }
 
