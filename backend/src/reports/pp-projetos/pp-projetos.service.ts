@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Date2YMD } from '../../common/date2ymd';
+import { Date2YMD, SYSTEM_TIMEZONE } from '../../common/date2ymd';
 import { ProjetoService, ProjetoStatusParaExibicao } from '../../pp/projeto/projeto.service';
 import { PrismaService } from '../../prisma/prisma.service';
 
@@ -21,6 +21,7 @@ import {
     RelProjetosPlanoAcaoMonitoramentosDto,
     RelProjetosRiscosDto,
 } from './entities/projetos.entity';
+import { DateTime } from 'luxon';
 
 const {
     Parser,
@@ -367,6 +368,7 @@ export class PPProjetosService implements ReportableService {
     }
 
     private async queryDataProjetos(whereCond: WhereCond, out: RelProjetosDto[]) {
+        const anoCorrente = DateTime.local({ locale: SYSTEM_TIMEZONE }).year;
         const sql = `SELECT
             projeto.id,
             projeto.portfolio_id,
@@ -422,7 +424,9 @@ export class PPProjetosService implements ReportableService {
         FROM projeto
           LEFT JOIN portfolio ON portfolio.id = projeto.portfolio_id
           LEFT JOIN projeto_fonte_recurso r ON r.projeto_id = projeto.id
-          LEFT JOIN sof_entidades_linhas sof ON sof.codigo = r.fonte_recurso_cod_sof AND sof.ano = r.fonte_recurso_ano AND sof.col = 'fonte_recursos'
+          LEFT JOIN sof_entidades_linhas sof ON sof.codigo = r.fonte_recurso_cod_sof
+            AND sof.ano = ( case when r.fonte_recurso_ano > ${anoCorrente} then anoCorrente else r.fonte_recurso_ano end )
+            AND sof.col = 'fonte_recursos'
           LEFT JOIN projeto_premissa pp ON pp.projeto_id = projeto.id
           LEFT JOIN projeto_restricao pr ON pr.projeto_id = projeto.id
           LEFT JOIN projeto_orgao_participante po ON po.projeto_id = projeto.id
