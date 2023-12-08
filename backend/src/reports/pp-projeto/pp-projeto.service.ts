@@ -4,7 +4,7 @@ import { PlanoAcaoService } from 'src/pp/plano-de-acao/plano-de-acao.service';
 import { ProjetoDetailDto } from 'src/pp/projeto/entities/projeto.entity';
 import { RiscoService } from 'src/pp/risco/risco.service';
 import { TarefaService } from 'src/pp/tarefa/tarefa.service';
-import { Date2YMD } from '../../common/date2ymd';
+import { Date2YMD, SYSTEM_TIMEZONE } from '../../common/date2ymd';
 import { ProjetoService, ProjetoStatusParaExibicao } from '../../pp/projeto/projeto.service';
 import { PrismaService } from '../../prisma/prisma.service';
 import { DefaultCsvOptions, FileOutput, ReportableService } from '../utils/utils.service';
@@ -17,6 +17,7 @@ import {
     RelProjetoRiscoDto,
 } from './entities/previsao-custo.entity';
 import { ProjetoRiscoStatus } from '../../pp/risco/entities/risco.entity';
+import { DateTime } from 'luxon';
 
 const {
     Parser,
@@ -37,6 +38,7 @@ export class PPProjetoService implements ReportableService {
     async create(dto: CreateRelProjetoDto): Promise<PPProjetoRelatorioDto> {
         const projetoRow: ProjetoDetailDto = await this.projetoService.findOne(dto.projeto_id, undefined, 'ReadOnly');
 
+        const anoCorrente = DateTime.local({ locale: SYSTEM_TIMEZONE }).year;
         const detail: RelProjetoRelatorioDto = {
             id: projetoRow.id,
             arquivado: projetoRow.arquivado,
@@ -102,8 +104,11 @@ export class PPProjetoService implements ReportableService {
                                   descricao: string;
                               }
 
+                              let ano = e.fonte_recurso_ano;
+                              if (ano > anoCorrente) ano = anoCorrente;
+
                               const nome_fonte: queryRet[] = await this.prisma
-                                  .$queryRaw`SELECT descricao FROM sof_entidades_linhas WHERE codigo = ${e.fonte_recurso_cod_sof} AND ano = ${e.fonte_recurso_ano} AND col = 'fonte_recursos'`;
+                                  .$queryRaw`SELECT descricao FROM sof_entidades_linhas WHERE codigo = ${e.fonte_recurso_cod_sof} AND ano = ${ano} AND col = 'fonte_recursos'`;
 
                               if (e.valor_nominal) {
                                   valor = e.valor_nominal.toString();
@@ -150,7 +155,7 @@ export class PPProjetoService implements ReportableService {
                 impacto_descricao: e.impacto_descricao,
                 grau: e.grau,
                 grau_descricao: e.grau_descricao,
-                status: ProjetoRiscoStatus[e.status_risco]
+                status: ProjetoRiscoStatus[e.status_risco],
             };
         });
 
