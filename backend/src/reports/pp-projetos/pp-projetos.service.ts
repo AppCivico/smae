@@ -425,7 +425,7 @@ export class PPProjetosService implements ReportableService {
           LEFT JOIN portfolio ON portfolio.id = projeto.portfolio_id
           LEFT JOIN projeto_fonte_recurso r ON r.projeto_id = projeto.id
           LEFT JOIN sof_entidades_linhas sof ON sof.codigo = r.fonte_recurso_cod_sof
-            AND sof.ano = ( case when r.fonte_recurso_ano > ${anoCorrente} then anoCorrente else r.fonte_recurso_ano end )
+            AND sof.ano = ( case when r.fonte_recurso_ano > ${anoCorrente}::int then ${anoCorrente}::int else r.fonte_recurso_ano end )
             AND sof.col = 'fonte_recursos'
           LEFT JOIN projeto_premissa pp ON pp.projeto_id = projeto.id
           LEFT JOIN projeto_restricao pr ON pr.projeto_id = projeto.id
