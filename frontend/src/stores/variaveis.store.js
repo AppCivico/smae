@@ -179,7 +179,7 @@ export const useVariaveisStore = defineStore({
       .reduce((acc, cur) => {
         if (Array.isArray(variáveisCompostas[cur])) {
           variáveisCompostas[cur].forEach((x) => {
-            if (!acc[x.id]) {
+            if (!acc[`@_${x.id}`]) {
               acc[`@_${x.id}`] = x;
             }
           });
