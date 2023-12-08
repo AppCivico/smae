@@ -17,12 +17,14 @@ import { default as AddEditVariavel } from '@/views/metas/AddEditVariavel.vue';
 import { storeToRefs } from 'pinia';
 import { Field, Form } from 'vee-validate';
 import { useRoute } from 'vue-router';
-import { onMounted, onUpdated, ref } from 'vue';
+import {
+  onMounted, onUpdated, ref, unref,
+} from 'vue';
 import GerarVariaveisCompostas from '@/views/metas/GerarVariaveisCompostas.vue';
+import EditorDeFormula from '@/components/metas/EditorDeFormula.vue';
 import TabelaDeVariaveis from '@/components/metas/TabelaDeVariaveis.vue';
 import TabelaDeVariaveisCompostas from '@/components/metas/TabelaDeVariaveisCompostas.vue';
 import TabelaDeVariaveisEmUso from '@/components/metas/TabelaDeVariaveisEmUso.vue';
-import EditorDeFormula from '@/components/metas/EditorDeFormula.vue';
 
 const editModalStore = useEditModalStore();
 const alertStore = useAlertStore();
@@ -78,7 +80,7 @@ const abas = ref({
 const abaCorrente = ref('TabelaDeVariaveis');
 
 const formula = ref('');
-let variaveisFormula = {};
+const variaveisFormula = ref([]);
 const errFormula = ref('');
 
 function start() {
@@ -157,12 +159,7 @@ async function onSubmit(values) {
         }
       }
 
-      values.formula_variaveis = Object.values(variaveisFormula).map((x) => ({
-        referencia: x.id.substring(1),
-        janela: x.periodo == 0 ? x.meses : x.periodo == -1 ? x.meses * -1 : 1,
-        variavel_id: x.variavel_id,
-        usar_serie_acumulada: !!x.usar_serie_acumulada,
-      })).filter((x) => values.formula.indexOf(x.referencia) != -1);
+      values.formula_variaveis = unref(variaveisFormula);
 
       if (singleIndicadores.value.id) {
         r = await IndicadoresStore.update(singleIndicadores.value.id, values);
@@ -222,16 +219,6 @@ if (indicador_id) {
   ]).then(() => {
     if (singleIndicadores.value.formula) {
       formula.value = singleIndicadores.value.formula;
-      variaveisFormula = {};
-      singleIndicadores.value.formula_variaveis.forEach((x) => {
-        variaveisFormula[`$${x.referencia}`] = {
-          id: `$${x.referencia}`,
-          periodo: x.janela < 0 ? -1 : x.janela > 1 ? 0 : 1,
-          meses: Math.abs(x.janela),
-          variavel_id: x.variavel_id,
-          usar_serie_acumulada: x.usar_serie_acumulada,
-        };
-      });
     }
   });
 } else if (atividade_id) {
