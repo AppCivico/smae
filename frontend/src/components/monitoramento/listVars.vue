@@ -1,24 +1,18 @@
 <script setup>
-import { useCiclosStore } from '@/stores';
+import { useCiclosStore } from '@/stores/ciclos.store';
+import dateToTitle from '@/helpers/dateToTitle';
 
 const CiclosStore = useCiclosStore();
-const props = defineProps(['parent', 'list', 'indexes', 'editPeriodo', 'abrePeriodo']);
+defineProps(['parent', 'list', 'indexes', 'editPeriodo', 'abrePeriodo']);
 function openParent(e) {
   e.target.closest('.accordeon').classList.toggle('active');
-}
-function dateToTitle(d) {
-  const dd = d ? new Date(d) : false;
-  if (!dd) return d;
-  const month = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'][dd.getUTCMonth()];
-  const year = dd.getUTCFullYear();
-  return `${month}/${year}`;
 }
 </script>
 <template>
   <div
     v-for="v in list"
     :key="v.variavel.id"
-    class="accordeon active p1"
+    class="accordeon active mb2"
   >
     <div
       class="flex mb1"
@@ -30,13 +24,16 @@ function dateToTitle(d) {
         height="8"
       ><use xlink:href="#i_down" /></svg></span>
       <h4 class="t1 mb0">
-        {{ v.variavel.codigo }} {{ v.variavel.titulo }}
+        {{ v.variavel.titulo }}
       </h4>
     </div>
     <div class="content">
-      <table class="tablemain fix">
+      <table class="tablemain fix no-zebra">
         <thead>
           <tr>
+            <th style="width: 25%">
+              Código
+            </th>
             <th style="width: 25%">
               Mês/Ano
             </th>
@@ -55,23 +52,6 @@ function dateToTitle(d) {
             <th style="width: 50px" />
           </tr>
         </thead>
-        <tr v-if="v.series[0]?.pode_editar">
-          <td
-            colspan="200"
-            class="tc"
-          >
-            <a
-              v-if="editPeriodo"
-              class="tprimary addlink"
-              @click="editPeriodo(parent, v.variavel.id, v.series[0].periodo)"
-            >
-              <svg
-                width="20"
-                height="20"
-              ><use xlink:href="#i_+" /></svg> <span>Adicionar {{ dateToTitle(v.series[0].periodo) }}</span>
-            </a>
-          </td>
-        </tr>
         <tr
           v-for="val in v.series"
           :key="val.periodo"
@@ -80,10 +60,9 @@ function dateToTitle(d) {
             bgs1: val.aguarda_complementacao,
           }"
         >
+          <td>{{ v.variavel.codigo }}</td>
           <td @click="abrePeriodo(parent, v.variavel.id, val.periodo)">
-            <div class="flex center">
-              <div class="farol i1" /> <span>{{ dateToTitle(val.periodo) }}</span>
-            </div>
+            {{ dateToTitle(val.periodo) }}
           </td>
           <td @click="abrePeriodo(parent, v.variavel.id, val.periodo)">
             {{ val.series[indexes.indexOf('Previsto')]?.valor_nominal ?? '-' }}

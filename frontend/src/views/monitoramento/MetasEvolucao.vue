@@ -1,8 +1,10 @@
 <script setup>
+import agrupadorDeVariáveis from '@/helpers/agrupadorDeVariaveis';
 import { Dashboard } from '@/components';
 import auxiliarDePreenchimento from '@/components/AuxiliarDePreenchimento.vue';
 import { default as countVars } from '@/components/monitoramento/countVars.vue';
 import { default as listVars } from '@/components/monitoramento/listVars.vue';
+import listCompostas from '@/components/monitoramento/listCompostas.vue';
 import { default as modalAnaliseRisco } from '@/components/monitoramento/modalAnaliseRisco.vue';
 import { default as modalFechamento } from '@/components/monitoramento/modalFechamento.vue';
 import { default as modalQualificacaoMeta } from '@/components/monitoramento/modalQualificacaoMeta.vue';
@@ -11,9 +13,12 @@ import { default as sidebarRealizado } from '@/components/monitoramento/sidebarR
 import { auxiliarDePreenchimentoDeEvoluçãoDeMeta as schema } from '@/consts/formSchemas';
 import dateToField from '@/helpers/dateToField';
 import { router } from '@/router';
-import {
-  useAlertStore, useAuthStore, useCiclosStore, useEditModalStore, usePdMStore, useSideBarStore,
-} from '@/stores';
+import { useAlertStore } from '@/stores/alert.store';
+import { useAuthStore } from '@/stores/auth.store';
+import { useCiclosStore } from '@/stores/ciclos.store';
+import { useEditModalStore } from '@/stores/editModal.store';
+import { usePdMStore } from '@/stores/pdm.store';
+import { useSideBarStore } from '@/stores/sideBar.store';
 import { storeToRefs } from 'pinia';
 import { ErrorMessage, Field, Form } from 'vee-validate';
 import { useRoute } from 'vue-router';
@@ -526,9 +531,16 @@ iniciar();
         <countVars :list="MetaVars.meta.totais" />
         <div
           v-if="MetaVars.meta.indicador"
-          style="border: 1px solid #E3E5E8; border-top: 8px solid #F2890D;"
+          class="mb4"
         >
-          <div class="p1">
+          <header
+            class="p1 mb3"
+            style="
+            border-top: 8px solid #F2890D;
+            border-right: 1px solid #E3E5E8;
+            border-left: 1px solid #E3E5E8;
+          "
+          >
             <div class="flex center g2">
               <a class="flex center f1 g2">
                 <svg
@@ -546,10 +558,19 @@ iniciar();
                 </h2>
               </a>
             </div>
-          </div>
+          </header>
+
+          <listCompostas
+            :parent="MetaVars.meta"
+            :list="agrupadorDeVariáveis(MetaVars?.meta?.variaveis).compostas"
+            :indexes="MetaVars.ordem_series"
+            :edit-periodo="editPeriodo"
+            :abre-periodo="abrePeriodo"
+          />
+
           <listVars
             :parent="MetaVars.meta"
-            :list="MetaVars.meta.variaveis"
+            :list="agrupadorDeVariáveis(MetaVars?.meta?.variaveis).órfãs"
             :indexes="MetaVars.ordem_series"
             :edit-periodo="editPeriodo"
             :abre-periodo="abrePeriodo"
@@ -567,8 +588,8 @@ iniciar();
             :key="ini.iniciativa.id"
           >
             <countVars :list="ini.totais" />
-            <div class="board_variavel mb2">
-              <header class="p1">
+            <div class="mb4">
+              <header class="board_variavel mb3 p1">
                 <div class="flex center g2 mb1">
                   <a
                     class="f0"
@@ -587,9 +608,18 @@ iniciar();
                   </a>
                 </div>
               </header>
+
+              <listCompostas
+                :parent="ini"
+                :list="agrupadorDeVariáveis(ini.variaveis).compostas"
+                :indexes="MetaVars.ordem_series"
+                :edit-periodo="editPeriodo"
+                :abre-periodo="abrePeriodo"
+              />
+
               <listVars
                 :parent="ini"
-                :list="ini.variaveis"
+                :list="agrupadorDeVariáveis(ini.variaveis).órfãs"
                 :indexes="MetaVars.ordem_series"
                 :edit-periodo="editPeriodo"
                 :abre-periodo="abrePeriodo"
@@ -608,8 +638,8 @@ iniciar();
               :key="ati.atividade.id"
             >
               <countVars :list="ati.totais" />
-              <div class="board_variavel mb2">
-                <header class="p1">
+              <div class="mb4">
+                <header class="board_variavel mb3 p1">
                   <div class="flex center g2 mb1">
                     <a
                       class="f0"
@@ -628,9 +658,18 @@ iniciar();
                     </a>
                   </div>
                 </header>
+
+                <listCompostas
+                  :parent="ati"
+                  :list="agrupadorDeVariáveis(ati.variaveis).compostas"
+                  :indexes="MetaVars.ordem_series"
+                  :edit-periodo="editPeriodo"
+                  :abre-periodo="abrePeriodo"
+                />
+
                 <listVars
                   :parent="ati"
-                  :list="ati.variaveis"
+                  :list="agrupadorDeVariáveis(ati.variaveis).órfãs"
                   :indexes="MetaVars.ordem_series"
                   :edit-periodo="editPeriodo"
                   :abre-periodo="abrePeriodo"

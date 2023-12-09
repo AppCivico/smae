@@ -446,6 +446,10 @@ p {
   margin-bottom: 2rem !important;
 }
 
+.mb3 {
+  margin-bottom: 3rem !important;
+}
+
 .mb4 {
   margin-bottom: 4rem !important;
 }
@@ -760,8 +764,9 @@ p {
 }
 
 .board_variavel {
-  border: 1px solid @c100;
   border-top: 8px solid @c100;
+  border-right: 1px solid @c100;
+  border-left: 1px solid @c100;
   position: relative;
 
   &:before {
@@ -1641,6 +1646,13 @@ p {
       .tablemain {
         background: @c50;
       }
+    }
+  }
+
+  &.no-zebra {
+    tr,
+    tz {
+      background: @branco;
     }
   }
 
