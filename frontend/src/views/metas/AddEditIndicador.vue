@@ -25,6 +25,7 @@ import GerarVariaveisCompostas from '@/views/metas/GerarVariaveisCompostas.vue';
 import EditorDeFormula from '@/components/metas/EditorDeFormula.vue';
 import TabelaDeVariaveis from '@/components/metas/TabelaDeVariaveis.vue';
 import TabelaDeVariaveisCompostas from '@/components/metas/TabelaDeVariaveisCompostas.vue';
+import TabelaDeVariaveisCompostasEmUso from '@/components/metas/TabelaDeVariaveisCompostasEmUso.vue';
 import TabelaDeVariaveisEmUso from '@/components/metas/TabelaDeVariaveisEmUso.vue';
 
 const editModalStore = useEditModalStore();
@@ -57,7 +58,7 @@ const { singleIndicadores } = storeToRefs(IndicadoresStore);
 
 const VariaveisStore = useVariaveisStore();
 const {
-  Variaveis, variáveisCompostas,
+  Variaveis, variáveisCompostas, variáveisCompostasEmUso
 } = storeToRefs(VariaveisStore);
 
 const { título } = route.meta;
@@ -77,6 +78,10 @@ const abas = ref({
     componente: TabelaDeVariaveisEmUso,
     etiqueta: 'Variáveis em Uso',
   },
+  TabelaDeVariaveisCompostasEmUso: {
+    componente: TabelaDeVariaveisCompostasEmUso,
+    etiqueta: 'Variáveis compostas em uso'
+  }
 });
 const abaCorrente = ref('TabelaDeVariaveis');
 
@@ -229,6 +234,7 @@ function maskMonth(el) {
 if (indicador_id) {
   Promise.all([
     VariaveisStore.getAllCompound(indicador_id),
+    VariaveisStore.getAllCompoundInUse(indicador_id),
     IndicadoresStore.getById(indicador_id),
     VariaveisStore.getAll(indicador_id),
   ]).then(() => {
@@ -709,6 +715,7 @@ if (indicador_id) {
           :indicador-regionalizavel="!!singleIndicadores?.regionalizavel"
           :variáveis="Variaveis[indicador_id]"
           :variáveis-compostas="variáveisCompostas[indicador_id]"
+          :variáveis-compostas-em-uso="variáveisCompostasEmUso[indicador_id]"
           :parentlink="parentlink"
         />
       </div>

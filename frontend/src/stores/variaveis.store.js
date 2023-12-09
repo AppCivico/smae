@@ -10,6 +10,7 @@ export const useVariaveisStore = defineStore({
     // A sua criação é, mas a alteração não!
     Variaveis: {},
     variáveisCompostas: {},
+    variáveisCompostasEmUso: {},
     singleVariaveis: {},
     variáveisPorCódigo: {},
     operaçõesParaVariávelComposta: {},
@@ -57,6 +58,22 @@ export const useVariaveisStore = defineStore({
         this.variáveisCompostas[indicadorId] = r.rows;
       } catch (error) {
         this.variáveisCompostas[indicadorId] = { error };
+      }
+    },
+
+    async getAllCompoundInUse(indicadorId) {
+      try {
+        if (!indicadorId) {
+          throw new Error('Indicador inválido');
+        }
+        if (!this.variáveisCompostasEmUso[indicadorId]?.length) {
+          this.variáveisCompostasEmUso[indicadorId] = { loading: true };
+        }
+        const r = await this.requestS.get(`${baseUrl}/indicador/${indicadorId}/formula-composta-em-uso`);
+        this.variáveisCompostasEmUso[indicadorId] = r.rows;
+      } catch (error) {
+        console.log(error)
+        this.variáveisCompostasEmUso[indicadorId] = { error };
       }
     },
 
