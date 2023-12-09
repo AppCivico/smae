@@ -29,7 +29,7 @@ export class AuxiliarService {
         // talvez isso vire parâmetros e ao buscar os ciclos antigos não precisa calcular os status
         // todo encontrar uma maneira de listar o passado sem um ciclo ativo
         const cicloFisicoAtivo = await this.mfService.cicloFisicoAtivo();
-        const dados = await this.metasService.metaVariaveis(dto.meta_id, config, cicloFisicoAtivo, user);
+        const dados = await this.metasService.metaVariaveis(dto.meta_id, config, cicloFisicoAtivo, user, false);
 
         // só deixa enviar direto pra CP se for um ponto_focal, se não, fica false
         // mas não causa exception, pra facilitar um pouco
@@ -131,7 +131,7 @@ export class AuxiliarService {
             );
         }
 
-        const dados = await this.metasService.metaVariaveis(dto.meta_id, config, cicloFisicoAtivo, user);
+        const dados = await this.metasService.metaVariaveis(dto.meta_id, config, cicloFisicoAtivo, user, false);
 
         const ordem_series = Object.fromEntries(dados.ordem_series.map((k, i) => [k, i])) as Record<Serie, number>;
 

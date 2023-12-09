@@ -85,9 +85,10 @@ export class MetasController {
         if (opts.simular_ponto_focal && config.perfil !== 'ponto_focal') {
             config.perfil = 'ponto_focal';
         }
+        const mesAnterior = opts.mes_anterior !== undefined ? opts.mes_anterior : false;
 
         return {
-            ...(await this.metasService.metaVariaveis(params.id, config, cicloFisicoAtivo, user)),
+            ...(await this.metasService.metaVariaveis(params.id, config, cicloFisicoAtivo, user, mesAnterior)),
             requestInfo: { queryTook: Date.now() - start },
         };
     }

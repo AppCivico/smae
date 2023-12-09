@@ -30,6 +30,14 @@ export class FilterMfVariaveis {
     @IsBoolean()
     @Transform(({ value }: any) => value === 'true')
     simular_ponto_focal?: boolean;
+
+    /**
+     * se deve retornar o mes anterior ou apenas o mês corrente
+     **/
+    @IsOptional()
+    @IsBoolean()
+    @Transform(({ value }: any) => value === 'true')
+    mes_anterior?: boolean;
 }
 
 export class MfMetaAgrupadaDto {

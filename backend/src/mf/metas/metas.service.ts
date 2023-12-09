@@ -266,7 +266,8 @@ export class MetasService {
         meta_id: number,
         config: PessoaAcessoPdm,
         cicloFisicoAtivo: CicloAtivoDto,
-        user: PessoaFromJwt
+        user: PessoaFromJwt,
+        mesAnterior: boolean
     ): Promise<RetornoMetaVariaveisDto> {
         const dadosMetas: DadosMetaIndicadores[] = await this.buscaMetaIndicadores(meta_id);
         const variaveisMeta = await this.getVariaveisMeta(meta_id, config.variaveis);
@@ -314,7 +315,8 @@ export class MetasService {
             variaveisMeta,
             config,
             cicloFisicoAtivo,
-            metaEstaFaseColeta
+            metaEstaFaseColeta,
+            mesAnterior
         );
 
         const cicloFase = indicadorMeta.meta.ciclo_fase?.ciclo_fase ? indicadorMeta.meta.ciclo_fase?.ciclo_fase : '';
@@ -502,14 +504,15 @@ export class MetasService {
         map: VariavelDetalhePorID,
         config: PessoaAcessoPdm,
         ciclo: CicloAtivoDto,
-        metaEstaFaseColeta: boolean
+        metaEstaFaseColeta: boolean,
+        mesAnterior: boolean
     ): Promise<{
         ordem_series: Serie[];
         seriesPorVariavel: Record<number, MfSeriesAgrupadas[]>;
     }> {
         const [statusVariaveisCorrente, buscaSerieValoresResult] = await Promise.all([
             this.statusVariaveisDb(map, ciclo),
-            this.buscaSeriesValores(map, ciclo),
+            this.buscaSeriesValores(map, ciclo, mesAnterior),
         ]);
 
         const statusPorVariavel: Record<number, (typeof statusVariaveisCorrente)[0] | null> = {};
@@ -542,7 +545,7 @@ export class MetasService {
         }
 
         const ordem_series: Serie[] = ['Previsto', 'PrevistoAcumulado', 'Realizado', 'RealizadoAcumulado'];
-        shuffleArray(ordem_series); // garante que o consumidor não está usando os valores das series cegamente
+        if (!process.env.DISABLE_SHUFFLE) shuffleArray(ordem_series); // garante que o consumidor não está usando os valores das series cegamente
 
         const seriesPorVariavel: Record<number, MfSeriesAgrupadas[]> = {};
         for (const r of seriesVariavel) {
@@ -556,8 +559,17 @@ export class MetasService {
             }
 
             const anterior: SerieValorNomimal[] = [];
-            for (const serie of ordem_series) {
-                this.pushSerieVariavel(anterior, porVariavelIdDataSerie, variavel.id, r.data_anterior, false, serie);
+            if (mesAnterior) {
+                for (const serie of ordem_series) {
+                    this.pushSerieVariavel(
+                        anterior,
+                        porVariavelIdDataSerie,
+                        variavel.id,
+                        r.data_anterior,
+                        false,
+                        serie
+                    );
+                }
             }
 
             const permissoes = this.calculaPermissoesSerieCorrente(
@@ -584,13 +596,16 @@ export class MetasService {
                     nao_enviada: permissoes.nao_enviada,
                     nao_preenchida: nao_preenchida,
                 },
-                {
+            ];
+
+            if (mesAnterior) {
+                seriesPorVariavel[variavel.id].push({
                     eh_corrente: false,
                     periodo: r.data_anterior,
                     series: anterior,
                     pode_editar: config.perfil !== 'ponto_focal',
-                },
-            ];
+                });
+            }
         }
 
         return {
@@ -702,7 +717,7 @@ export class MetasService {
         }
     }
 
-    private async buscaSeriesValores(map: VariavelDetalhePorID, ciclo: CicloAtivoDto) {
+    private async buscaSeriesValores(map: VariavelDetalhePorID, ciclo: CicloAtivoDto, mesAnterior: boolean) {
         const seriesVariavel: { data_corrente: string; data_anterior: string; variavel_id: number }[] = await this
             .prisma.$queryRaw`select
             (cte.data - (atraso_meses || 'month')::interval)::date::text as data_corrente,
@@ -720,10 +735,12 @@ export class MetasService {
                 variavel_id: variavel.variavel_id,
                 data_valor: Date2YMD.fromString(variavel.data_anterior),
             });
-            conditions.push({
-                variavel_id: variavel.variavel_id,
-                data_valor: Date2YMD.fromString(variavel.data_corrente),
-            });
+
+            if (mesAnterior)
+                conditions.push({
+                    variavel_id: variavel.variavel_id,
+                    data_valor: Date2YMD.fromString(variavel.data_corrente),
+                });
         }
 
         return {
@@ -883,8 +900,8 @@ export class MetasService {
                     where: {
                         formula_composta: {
                             removido_em: null,
-                            mostrar_monitoramento: true
-                        }
+                            mostrar_monitoramento: true,
+                        },
                     },
                     select: {
                         id: true,
@@ -894,16 +911,16 @@ export class MetasService {
                         formula_composta: {
                             select: {
                                 id: true,
-                                titulo: true
-                            }
-                        }
-                    }
-                }
+                                titulo: true,
+                            },
+                        },
+                    },
+                },
             },
         });
 
         for (const r of variaveis_da_meta) {
-            map[r.id] = {...r, variavel_formula_composta: r.FormulaCompostaVariavel};
+            map[r.id] = { ...r, variavel_formula_composta: r.FormulaCompostaVariavel };
         }
 
         const variaveis_da_iniciativa = await this.prisma.variavel.findMany({
@@ -944,8 +961,8 @@ export class MetasService {
                     where: {
                         formula_composta: {
                             removido_em: null,
-                            mostrar_monitoramento: true
-                        }
+                            mostrar_monitoramento: true,
+                        },
                     },
                     select: {
                         id: true,
@@ -953,15 +970,15 @@ export class MetasService {
                         formula_composta: {
                             select: {
                                 id: true,
-                                titulo: true
-                            }
-                        }
-                    }
-                }
+                                titulo: true,
+                            },
+                        },
+                    },
+                },
             },
         });
         for (const r of variaveis_da_iniciativa) {
-            map[r.id] = {...r, variavel_formula_composta: r.FormulaCompostaVariavel};
+            map[r.id] = { ...r, variavel_formula_composta: r.FormulaCompostaVariavel };
         }
 
         const variaveis_da_atividade = await this.prisma.variavel.findMany({
@@ -1004,8 +1021,8 @@ export class MetasService {
                     where: {
                         formula_composta: {
                             removido_em: null,
-                            mostrar_monitoramento: true
-                        }
+                            mostrar_monitoramento: true,
+                        },
                     },
                     select: {
                         id: true,
@@ -1013,15 +1030,15 @@ export class MetasService {
                         formula_composta: {
                             select: {
                                 id: true,
-                                titulo: true
-                            }
-                        }
-                    }
-                }
+                                titulo: true,
+                            },
+                        },
+                    },
+                },
             },
         });
         for (const r of variaveis_da_atividade) {
-            map[r.id] = {...r, variavel_formula_composta: r.FormulaCompostaVariavel};
+            map[r.id] = { ...r, variavel_formula_composta: r.FormulaCompostaVariavel };
         }
 
         return map;
