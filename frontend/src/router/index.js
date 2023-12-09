@@ -1,4 +1,5 @@
 import qs from 'qs';
+import { watch } from 'vue';
 import { createRouter, createWebHistory } from 'vue-router';
 
 // Stores
@@ -82,21 +83,23 @@ router.beforeEach(async (r) => {
     authStore.returnUrl = r.fullPath;
     return '/login';
   }
-  if (r.path == '/nova-senha' && !authStore.reducedtoken) {
+  if (r.path === '/nova-senha' && !authStore.reducedtoken) {
     return '/login';
   }
 });
 
-router.beforeEach((to, from, next) => {
+router.afterEach((to) => {
   const { título } = to.meta;
 
   if (título) {
-    document.title = `${typeof título === 'function'
-      ? título()
-      : título} | SMAE`;
+    if (typeof título === 'function') {
+      watch(() => título(), (novoValor) => {
+        document.title = novoValor ? `${novoValor} | SMAE` : 'SMAE';
+      }, { immediate: true });
+    } else if (título) {
+      document.title = `${título} | SMAE`;
+    }
   } else if (document.title !== 'SMAE') {
     document.title = 'SMAE';
   }
-
-  next();
 });
