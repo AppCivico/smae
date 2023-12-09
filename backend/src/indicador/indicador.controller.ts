@@ -26,7 +26,7 @@ import { FilterIndicadorDto, FilterIndicadorSerieDto } from './dto/filter-indica
 import { ListIndicadorDto } from './dto/list-indicador.dto';
 import { ListIndicadorFormulaCompostaItemDto } from './dto/list-indicador.formula-composta.dto';
 import { UpdateIndicadorDto } from './dto/update-indicador.dto';
-import { GeneratorFormulaCompostaReturnDto } from './entities/indicador.formula-composta.entity';
+import { GeneratorFormulaCompostaReturnDto, ListIndicadorFormulaCompostaEmUsoDto } from './entities/indicador.formula-composta.entity';
 import { IndicadorFormulaCompostaService } from './indicador.formula-composta.service';
 import { IndicadorService } from './indicador.service';
 
@@ -122,6 +122,17 @@ export class IndicadorController {
         @CurrentUser() user: PessoaFromJwt
     ): Promise<ListIndicadorFormulaCompostaItemDto> {
         return { rows: await this.indicadorFormulaCompostaService.findAll(params.id, user) };
+    }
+
+    @Get('indicador/:id/formula-composta-em-uso')
+    @ApiBearerAuth('access-token')
+    @ApiUnauthorizedResponse()
+    @Roles('CadastroIndicador.inserir', 'CadastroMeta.inserir')
+    async listFcEmUso(
+        @Param() params: FindOneParams,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<ListIndicadorFormulaCompostaEmUsoDto> {
+        return { rows: await this.indicadorService.listFormulaCompostaEmUso(params.id, user) };
     }
 
     @Patch('indicador/:id/formula-composta/:id2')

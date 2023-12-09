@@ -15,6 +15,7 @@ import { CreateIndicadorDto } from './dto/create-indicador.dto';
 import { FilterIndicadorDto, FilterIndicadorSerieDto } from './dto/filter-indicador.dto';
 import { FormulaVariaveis, UpdateIndicadorDto } from './dto/update-indicador.dto';
 import { Indicador } from './entities/indicador.entity';
+import { IndicadorFormulaCompostaEmUsoDto } from './entities/indicador.formula-composta.entity';
 
 const FP = require('../../public/js/formula_parser.js');
 
@@ -224,7 +225,7 @@ export class IndicadorService {
         return created;
     }
 
-    private async getFormulaCompostasEmUsoId(indicadorId: number, formula: string | null): Promise<number[]> {
+    private async extractFormulaCompostasEmUsoId(indicadorId: number, formula: string | null): Promise<number[]> {
         let formula_compilada = '';
         const neededFCs: Record<number, number> = {};
         if (formula) {
@@ -256,6 +257,31 @@ export class IndicadorService {
         }
 
         return ret
+    }
+
+    async listFormulaCompostaEmUso(id: number, user: PessoaFromJwt): Promise<IndicadorFormulaCompostaEmUsoDto[]> {
+        const fcEmUso = await this.prisma.indicadorFormulaCompostaEmUso.findMany({
+            where: { indicador_id: id },
+            select: {
+                formula_composta_id: true,
+                formula_composta: {
+                    select: {
+                        titulo: true,
+                        nivel_regionalizacao: true,
+                        mostrar_monitoramento: true
+                    }
+                }
+            }
+        });
+
+        return fcEmUso.map(e => {
+            return {
+                formula_composta_id: e.formula_composta_id,
+                titulo: e.formula_composta.titulo,
+                nivel_regionalizacao: e.formula_composta.nivel_regionalizacao,
+                mostrar_monitoramento: e.formula_composta.mostrar_monitoramento,
+            }
+        }) 
     }
 
     // deixa de ser private, o FormulaComposta usa pra conferir se tudo faz parte do indicador
@@ -527,7 +553,7 @@ export class IndicadorService {
                 if (dto.formula) {
                     await prismaTx.indicadorFormulaCompostaEmUso.deleteMany({ where: { indicador_id: indicador.id } });
 
-                    const formulasCompostasEmUso = await this.getFormulaCompostasEmUsoId(indicador.id, dto.formula);
+                    const formulasCompostasEmUso = await this.extractFormulaCompostasEmUsoId(indicador.id, dto.formula);
 
                     if (formulasCompostasEmUso.length) {
                         await prismaTx.indicadorFormulaCompostaEmUso.createMany({
