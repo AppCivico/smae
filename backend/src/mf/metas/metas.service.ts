@@ -1287,148 +1287,21 @@ export class MetasService {
                 // isolation lock
                 await prismaTxn.variavel.findFirst({ where: { id: dto.variavel_id }, select: { id: true } });
 
-                let needRecalc = false;
-                for (const campo of CamposRealizado) {
-                    const valor_nominal = dto[campo] === null ? '' : dto[campo];
-                    if (valor_nominal === undefined) continue;
-
-                    const existeValor = await prismaTxn.serieVariavel.findFirst({
-                        where: {
-                            variavel_id: dto.variavel_id,
-                            serie: CamposRealizadoParaSerie[campo],
-                            data_valor: dto.data_valor,
-                        },
-                        select: { id: true, valor_nominal: true, ciclo_fisico_id: true },
-                    });
-
-                    if (existeValor && valor_nominal === '') {
-                        // existe o valor, mas é pra remover, então bora
-                        needRecalc = true;
-
-                        await prismaTxn.serieVariavel.delete({
-                            where: {
-                                id: existeValor.id,
-                            },
-                        });
-                    } else if (!existeValor && valor_nominal !== '') {
-                        // valor não existe, entao vamos criar
-                        needRecalc = true;
-
-                        await prismaTxn.serieVariavel.create({
-                            data: {
-                                variavel_id: dto.variavel_id,
-                                serie: CamposRealizadoParaSerie[campo],
-                                data_valor: dto.data_valor,
-                                valor_nominal: valor_nominal,
-                                atualizado_em: now,
-                                atualizado_por: user.id,
-                                ciclo_fisico_id: dadosCiclo.id,
-                                conferida: ehPontoFocal ? false : true,
-                            },
-                        });
-                    } else if (existeValor && valor_nominal !== '') {
-                        const valorModificado = existeValor.valor_nominal.toString() !== valor_nominal;
-                        // se os valores mudaram, ou se faltava o ciclo_fisico_id
-                        if (valorModificado || existeValor.ciclo_fisico_id === null) {
-                            needRecalc = true;
-
-                            await prismaTxn.serieVariavel.update({
-                                where: { id: existeValor.id },
-                                data: {
-                                    valor_nominal: valor_nominal,
-                                    atualizado_em: now,
-                                    atualizado_por: user.id,
-                                    ciclo_fisico_id: dadosCiclo.id,
-                                    conferida: valorModificado ? (ehPontoFocal ? false : true) : undefined,
-                                },
-                            });
-                        }
-                    }
-                }
+                let needRecalc = await this.atualizaSerieVariaveis(dto, prismaTxn, now, user, dadosCiclo, ehPontoFocal);
                 if (needRecalc) {
                     await this.variavelService.recalc_variaveis_acumulada([dto.variavel_id], prismaTxn);
                     await this.variavelService.recalc_indicador_usando_variaveis([dto.variavel_id], prismaTxn);
                 }
 
-                await prismaTxn.variavelCicloFisicoQualitativo.updateMany({
-                    where: {
-                        ciclo_fisico_id: dadosCiclo.id,
-                        variavel_id: dto.variavel_id,
-                        ultima_revisao: true,
-                    },
-                    data: {
-                        ultima_revisao: false,
-                    },
-                });
-
-                const cfq = await prismaTxn.variavelCicloFisicoQualitativo.create({
-                    data: {
-                        ciclo_fisico_id: dadosCiclo.id,
-                        variavel_id: dto.variavel_id,
-                        ultima_revisao: true,
-                        criado_por: user.id,
-                        criado_em: now,
-                        referencia_data: dto.data_valor,
-                        analise_qualitativa: dto.analise_qualitativa,
-                        meta_id: meta_id,
-                        enviado_para_cp: dto.enviar_para_cp === true,
-                    },
-                    select: { id: true },
-                });
-
-                if (dto.enviar_para_cp) {
-                    await prismaTxn.pedidoComplementacao.updateMany({
-                        where: {
-                            ciclo_fisico_id: dadosCiclo.id,
-                            variavel_id: dto.variavel_id,
-                            ultima_revisao: true,
-                            atendido: false,
-                        },
-                        data: {
-                            atendido_em: now,
-                            atendido: true,
-                            atendido_por: user.id,
-                        },
-                    });
-
-                    await this.removeStatusVariavel(prismaTxn, dto, dadosCiclo);
-                    await prismaTxn.statusVariavelCicloFisico.create({
-                        data: {
-                            variavel_id: dto.variavel_id,
-                            ciclo_fisico_id: dadosCiclo.id,
-                            aguarda_cp: true,
-                            meta_id: meta_id,
-                        },
-                    });
-                } else {
-                    if (ehPontoFocal == false) {
-                        // limpa o pedido de complementacao, se existir
-                        await prismaTxn.pedidoComplementacao.updateMany({
-                            where: {
-                                ciclo_fisico_id: dadosCiclo.id,
-                                variavel_id: dto.variavel_id,
-                                ultima_revisao: true,
-                                atendido: false,
-                            },
-                            data: {
-                                atendido_em: now,
-                                atendido: true,
-                                atendido_por: user.id,
-                            },
-                        });
-
-                        await this.removeStatusVariavel(prismaTxn, dto, dadosCiclo);
-                        // ja marca como conferida, nao há aguarda CP para os admins
-                        await prismaTxn.statusVariavelCicloFisico.create({
-                            data: {
-                                variavel_id: dto.variavel_id,
-                                ciclo_fisico_id: dadosCiclo.id,
-                                meta_id: meta_id,
-                                conferida: true,
-                            },
-                        });
-                    }
-                }
+                const cfq = await this.atualizaStatusVariavelCicloFisico(
+                    prismaTxn,
+                    dadosCiclo,
+                    dto,
+                    user,
+                    now,
+                    meta_id,
+                    ehPontoFocal
+                );
 
                 await this.mfService.invalidaStatusIndicador(prismaTxn, dadosCiclo.id, meta_id);
 
@@ -1442,6 +1315,166 @@ export class MetasService {
         );
 
         return { id: id };
+    }
+
+    private async atualizaSerieVariaveis(
+        dto: VariavelAnaliseQualitativaDto,
+        prismaTxn: Prisma.TransactionClient,
+        now: Date,
+        user: PessoaFromJwt,
+        dadosCiclo: DadosCiclo,
+        ehPontoFocal: boolean
+    ) {
+        let needRecalc = false;
+        for (const campo of CamposRealizado) {
+            const valor_nominal = dto[campo] === null ? '' : dto[campo];
+            if (valor_nominal === undefined) continue;
+
+            const existeValor = await prismaTxn.serieVariavel.findFirst({
+                where: {
+                    variavel_id: dto.variavel_id,
+                    serie: CamposRealizadoParaSerie[campo],
+                    data_valor: dto.data_valor,
+                },
+                select: { id: true, valor_nominal: true, ciclo_fisico_id: true },
+            });
+
+            if (existeValor && valor_nominal === '') {
+                // existe o valor, mas é pra remover, então bora
+                needRecalc = true;
+
+                await prismaTxn.serieVariavel.delete({
+                    where: {
+                        id: existeValor.id,
+                    },
+                });
+            } else if (!existeValor && valor_nominal !== '') {
+                // valor não existe, então vamos criar
+                needRecalc = true;
+
+                await prismaTxn.serieVariavel.create({
+                    data: {
+                        variavel_id: dto.variavel_id,
+                        serie: CamposRealizadoParaSerie[campo],
+                        data_valor: dto.data_valor,
+                        valor_nominal: valor_nominal,
+                        atualizado_em: now,
+                        atualizado_por: user.id,
+                        ciclo_fisico_id: dadosCiclo.id,
+                        conferida: ehPontoFocal ? false : true,
+                    },
+                });
+            } else if (existeValor && valor_nominal !== '') {
+                const valorModificado = existeValor.valor_nominal.toString() !== valor_nominal;
+                // se os valores mudaram, ou se faltava o ciclo_fisico_id
+                if (valorModificado || existeValor.ciclo_fisico_id === null) {
+                    needRecalc = true;
+
+                    await prismaTxn.serieVariavel.update({
+                        where: { id: existeValor.id },
+                        data: {
+                            valor_nominal: valor_nominal,
+                            atualizado_em: now,
+                            atualizado_por: user.id,
+                            ciclo_fisico_id: dadosCiclo.id,
+                            conferida: valorModificado ? (ehPontoFocal ? false : true) : undefined,
+                        },
+                    });
+                }
+            }
+        }
+        return needRecalc;
+    }
+
+    private async atualizaStatusVariavelCicloFisico(
+        prismaTxn: Prisma.TransactionClient,
+        dadosCiclo: DadosCiclo,
+        dto: VariavelAnaliseQualitativaDto,
+        user: PessoaFromJwt,
+        now: Date,
+        meta_id: number,
+        ehPontoFocal: boolean
+    ) {
+        await prismaTxn.variavelCicloFisicoQualitativo.updateMany({
+            where: {
+                ciclo_fisico_id: dadosCiclo.id,
+                variavel_id: dto.variavel_id,
+                ultima_revisao: true,
+            },
+            data: {
+                ultima_revisao: false,
+            },
+        });
+
+        const cfq = await prismaTxn.variavelCicloFisicoQualitativo.create({
+            data: {
+                ciclo_fisico_id: dadosCiclo.id,
+                variavel_id: dto.variavel_id,
+                ultima_revisao: true,
+                criado_por: user.id,
+                criado_em: now,
+                referencia_data: dto.data_valor,
+                analise_qualitativa: dto.analise_qualitativa,
+                meta_id: meta_id,
+                enviado_para_cp: dto.enviar_para_cp === true,
+            },
+            select: { id: true },
+        });
+
+        if (dto.enviar_para_cp) {
+            await prismaTxn.pedidoComplementacao.updateMany({
+                where: {
+                    ciclo_fisico_id: dadosCiclo.id,
+                    variavel_id: dto.variavel_id,
+                    ultima_revisao: true,
+                    atendido: false,
+                },
+                data: {
+                    atendido_em: now,
+                    atendido: true,
+                    atendido_por: user.id,
+                },
+            });
+
+            await this.removeStatusVariavel(prismaTxn, dto, dadosCiclo);
+            await prismaTxn.statusVariavelCicloFisico.create({
+                data: {
+                    variavel_id: dto.variavel_id,
+                    ciclo_fisico_id: dadosCiclo.id,
+                    aguarda_cp: true,
+                    meta_id: meta_id,
+                },
+            });
+        } else {
+            if (ehPontoFocal == false) {
+                // limpa o pedido de complementacao, se existir
+                await prismaTxn.pedidoComplementacao.updateMany({
+                    where: {
+                        ciclo_fisico_id: dadosCiclo.id,
+                        variavel_id: dto.variavel_id,
+                        ultima_revisao: true,
+                        atendido: false,
+                    },
+                    data: {
+                        atendido_em: now,
+                        atendido: true,
+                        atendido_por: user.id,
+                    },
+                });
+
+                await this.removeStatusVariavel(prismaTxn, dto, dadosCiclo);
+                // ja marca como conferida, nao há aguarda CP para os admins
+                await prismaTxn.statusVariavelCicloFisico.create({
+                    data: {
+                        variavel_id: dto.variavel_id,
+                        ciclo_fisico_id: dadosCiclo.id,
+                        meta_id: meta_id,
+                        conferida: true,
+                    },
+                });
+            }
+        }
+        return cfq;
     }
 
     async getMetaVariavelAnaliseQualitativa(
