@@ -2,7 +2,7 @@
 import SmallModal from '@/components/SmallModal.vue';
 import getCaretPosition from '@/helpers/getCaretPosition.ts';
 import {
-  computed, onMounted, onUpdated, ref, watch,
+  computed, nextTick, onUpdated, ref, watch,
 } from 'vue';
 
 const props = defineProps({
@@ -355,9 +355,15 @@ function monitorarSetas(e) {
   }
 }
 
-// formatando após o render porque precisa-se do DOM pronto
-onMounted(() => {
-  variaveisFormula.value = props.variáveisEmUso.reduce((acc, cur) => {
+// formatando após cada atualização porque não há reatividade real
+onUpdated(async () => {
+  formatFormula();
+  await nextTick();
+  setCaret(formulaInput.value, currentCaretPos);
+});
+
+watch(() => props.variáveisEmUso, async (novoValor) => {
+  variaveisFormula = novoValor.reduce((acc, cur) => {
     let período = 1;
 
     if (cur.janela < 0) {
@@ -376,13 +382,13 @@ onMounted(() => {
     return acc;
   }, {});
 
+  await nextTick();
   formatFormula();
-});
+}, { immediate: true });
 
-// formatando após cada atualização porque não há reatividade real
-onUpdated(() => {
+watch(props.variáveisCompostas, async () => {
+  await nextTick();
   formatFormula();
-  setCaret(formulaInput.value, currentCaretPos);
 });
 </script>
 <template>
