@@ -224,6 +224,40 @@ export class IndicadorService {
         return created;
     }
 
+    private async getFormulaCompostasEmUsoId(indicadorId: number, formula: string | null): Promise<number[]> {
+        let formula_compilada = '';
+        const neededFCs: Record<number, number> = {};
+        if (formula) {
+            try {
+                formula_compilada = FP.parse(formula.toLocaleUpperCase());
+            } catch (error) {
+                throw new HttpException(`formula| formula não foi entendida: ${formula}\n${error}`, 400);
+            }
+    
+            for (const match of formula_compilada.matchAll(/\@_\d+\b/g)) {
+                const referencia = +match[0].replace('@_', '');
+                if (!neededFCs[referencia]) neededFCs[referencia] = 0;
+                neededFCs[referencia]++;
+            }
+        }
+
+        const ret: number[] = [];
+        for (const formulaCompostaId of Object.keys(neededFCs)) {
+            const formulaComposta = await this.prisma.formulaComposta.findFirstOrThrow({
+                where: {
+                    removido_em: null,
+                    id: +formulaCompostaId,
+                    IndicadorFormulaComposta: { some: { indicador_id: indicadorId } },
+                },
+                select: { id: true }
+            });
+
+            ret.push(formulaComposta.id)
+        }
+
+        return ret
+    }
+
     // deixa de ser private, o FormulaComposta usa pra conferir se tudo faz parte do indicador
     async validateVariaveis(
         formula_variaveis: FormulaVariaveis[] | null | undefined,
@@ -488,6 +522,24 @@ export class IndicadorService {
                 this.logger.log(`Indicador recalculando...`);
                 await prismaTx.$queryRaw`select monta_serie_indicador(${indicador.id}::int, null, null, null)`;
                 //}
+
+                // Populando rows da tabela IndicadorFormulaCompostaEmUso
+                if (dto.formula) {
+                    await prismaTx.indicadorFormulaCompostaEmUso.deleteMany({ where: { indicador_id: indicador.id } });
+
+                    const formulasCompostasEmUso = await this.getFormulaCompostasEmUsoId(indicador.id, dto.formula);
+
+                    if (formulasCompostasEmUso.length) {
+                        await prismaTx.indicadorFormulaCompostaEmUso.createMany({
+                            data: formulasCompostasEmUso.map( formulaCompostaId => {
+                                return {
+                                    indicador_id: indicador.id,
+                                    formula_composta_id: formulaCompostaId
+                                }
+                            })
+                        });
+                    }
+                }
 
                 return indicador;
             },
