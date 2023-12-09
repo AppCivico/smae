@@ -116,14 +116,8 @@ export type Status = keyof VariavelQtdeDto;
 
 export class VariavelComSeries {
     variavel: IdCodTituloDto;
-    variavel_formula_composta: VariavelFormulaComposta[] | null;
+    variavel_formula_composta: IdTituloDto[] | null;
     series: MfSeriesAgrupadas[];
-}
-
-export class VariavelFormulaComposta {
-    id: number;
-    referencia: string;
-    formula_composta: IdTituloDto;
 }
 
 export class MfSerieValorNomimal extends OmitType(SerieValorNomimal, ['referencia', 'ha_conferencia_pendente']) {}
