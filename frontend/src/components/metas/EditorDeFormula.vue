@@ -89,7 +89,7 @@ const operadores = funções.map((x) => x.operador);
 const formulaInput = ref(null);
 const variaveisFormulaModal = ref(0);
 const fieldsVariaveis = ref({});
-const variaveisFormula = ref({});
+let variaveisFormula = {};
 let currentCaretPos = -1;
 const errFormula = ref('');
 
@@ -99,19 +99,18 @@ const formula = computed({
   },
   set(value) {
     emit('update:modelValue', value);
+
+    const listaDeVariáveisNaFórmula = Object.values(variaveisFormula)
+      .map((x) => ({
+        referencia: x.id.substring(1),
+        janela: (x.periodo === 0 || x.periodo === -1) ? x.meses * -1 : 1,
+        variavel_id: x.variavel_id,
+        usar_serie_acumulada: !!x.usar_serie_acumulada,
+      }))
+      .filter((x) => value.indexOf(x.referencia) !== -1);
+
+    emit('update:variaveis-formula', listaDeVariáveisNaFórmula);
   },
-});
-
-const listaDeVariáveisNaFórmula = computed(() => Object.values(variaveisFormula.value)
-  .map((x) => ({
-    referencia: x.id.substring(1),
-    janela: (x.periodo === 0 || x.periodo === -1) ? x.meses * -1 : 1,
-    variavel_id: x.variavel_id,
-    usar_serie_acumulada: !!x.usar_serie_acumulada,
-  })).filter((x) => formula.value.indexOf(x.referencia) !== -1));
-
-watch(listaDeVariáveisNaFórmula, (novoValor) => {
-  emit('update:variaveis-formula', novoValor);
 });
 
 const variáveisCompostasPorReferência = computed(() => props.variáveisCompostas
@@ -155,10 +154,11 @@ function labelPeriodo(p, m) {
 function formatFormula(p) {
   const regex = /[$@]_[\d]{0,5}/gm;
   const inuse = [];
+
   const fórmulaLimpa = formula.value.replace(regex, (m) => {
     let r = m;
 
-    if (variaveisFormula.value[m] || variáveisCompostasPorReferência.value?.[m]) {
+    if (variaveisFormula[m] || variáveisCompostasPorReferência.value?.[m]) {
       const tipoDeVariável = variáveisCompostasPorReferência.value?.[m]
         ? 'composta'
         : 'padrão';
@@ -178,15 +178,15 @@ function formatFormula(p) {
 
         default:
           inuse.push(m);
-          n = variaveisFormula.value[m].variavel_id;
+          n = variaveisFormula[m].variavel_id;
           if (props.variáveisDoIndicador?.length) {
             const v = props.variáveisDoIndicador
-              .find((x) => x.id === variaveisFormula.value[m].variavel_id);
+              .find((x) => x.id === variaveisFormula[m].variavel_id);
             if (v) {
               n = `${v.codigo} - ${v.titulo}`;
               t = labelPeriodo(
-                variaveisFormula.value[m].periodo,
-                variaveisFormula.value[m].meses,
+                variaveisFormula[m].periodo,
+                variaveisFormula[m].meses,
               );
             }
           }
@@ -198,8 +198,8 @@ function formatFormula(p) {
     return r;
   });
 
-  Object.entries(variaveisFormula.value).forEach((k) => {
-    if (inuse.indexOf(k) === -1) delete variaveisFormula.value[k];
+  Object.entries(variaveisFormula).forEach((k) => {
+    if (inuse.indexOf(k) === -1) delete variaveisFormula[k];
   });
 
   formulaInput.value.innerHTML = `${fórmulaLimpa} `.replace(/\s+/g, ' ');
@@ -224,7 +224,7 @@ function newVariavel(caracterDefinidor = '$') {
 
     default: {
       const últimoÍndiceDisponívelParaVariávelEmFórmula = Object
-        .keys(variaveisFormula.value)
+        .keys(variaveisFormula)
         .map((x) => Number(x.replace('$_', '')))
         .reduce((a, b) => Math.max(a, b), -Infinity);
 
@@ -272,8 +272,8 @@ function editVariavel(id) {
       break;
 
     default:
-      if (variaveisFormula.value[id]) {
-        fieldsVariaveis.value = variaveisFormula.value[id];
+      if (variaveisFormula[id]) {
+        fieldsVariaveis.value = variaveisFormula[id];
         variaveisFormulaModal.value = 1;
       }
       break;
@@ -314,8 +314,8 @@ function saveVar(tipoDeVariável) {
       break;
 
     default:
-      nova = !variaveisFormula.value[variávelId];
-      variaveisFormula.value[variávelId] = fieldsVariaveis.value;
+      nova = !variaveisFormula[variávelId];
+      variaveisFormula[variávelId] = fieldsVariaveis.value;
       break;
   }
   variaveisFormulaModal.value = 0;
