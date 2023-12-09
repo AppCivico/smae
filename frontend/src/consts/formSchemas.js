@@ -1187,3 +1187,19 @@ export const variável = (singleIndicadores, éGeraçãoApenas) => object()
     valor_base: string()
       .required('Preencha o valor base'),
   });
+
+export const variávelComposta = object()
+  .shape({
+    formula: string()
+      .label('Fórmula')
+      .required(),
+    formula_variaveis: array()
+      .label('Variáveis')
+      .required(),
+    mostrar_monitoramento: boolean()
+      .label('Utilizar esta variável composta no ciclo de monitoramento')
+      .required(),
+    titulo: string()
+      .label('Título')
+      .required(),
+  });

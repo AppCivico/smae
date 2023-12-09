@@ -75,8 +75,8 @@ const onSubmit = handleSubmit.withControlled(async () => {
       if (route.meta.rotaDeEscape) {
         router.push({
           name: route.meta.rotaDeEscape,
-          // ao que parece, os parâmetros só não são necessários se a rota
-          // corrente e a de destino forem aninhadas
+          // ao que parece, os parâmetros só não são necessários
+          // se a rota corrente e a de destino forem aninhadas
           params: route.params,
         });
       }
@@ -104,7 +104,7 @@ if (String(singleIndicadores.value?.id) !== String(indicadorId)) {
 </script>
 <template>
   <div class="flex spacebetween center mb2">
-    <h2>Auxiliar de variável composta</h2>
+    <h2>{{ $route.meta.título }}</h2>
     <hr class="ml2 f1">
 
     <CheckClose

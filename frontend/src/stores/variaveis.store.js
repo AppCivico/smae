@@ -143,6 +143,20 @@ export const useVariaveisStore = defineStore({
       if (await this.requestS.patch(`${baseUrl}/indicador-variavel-serie`, params)) return true;
       return false;
     },
+
+    async salvarVariávelComposta(params = {}, id = 0, indicadorId = 0) {
+      try {
+        if (id) {
+          await this.requestS.patch(`${baseUrl}/indicador/${indicadorId || this.route.params.indicador_id}/formula-composta/${id}`, params);
+        } else {
+          await this.requestS.post(`${baseUrl}/indicador/${indicadorId || this.route.params.indicador_id}/formula-composta`, params);
+        }
+
+        return true;
+      } catch (erro) {
+        return false;
+      }
+    },
   },
   getters: {
     valoresEmFoco({ Valores }) {
