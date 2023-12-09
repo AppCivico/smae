@@ -13,6 +13,17 @@ export class IndicadorFormulaCompostaDto {
     indicador_origem: IndicadorVariavelOrigemDto | null;
 }
 
+export class IndicadorFormulaCompostaEmUsoDto {
+    formula_composta_id: number;
+    titulo: string;
+    nivel_regionalizacao: number | null;
+    mostrar_monitoramento: boolean;
+}
+
+export class ListIndicadorFormulaCompostaEmUsoDto {
+    rows: IndicadorFormulaCompostaEmUsoDto[]
+}
+
 // na vdd, só pra ter um nome diferente, pq ela precisa retornar tudo o que é necessário pra criar
 export class GeneratorFormulaCompostaReturnDto extends CreateIndicadorFormulaCompostaDto {
 
