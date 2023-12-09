@@ -219,10 +219,14 @@ function newVariavel(caracterDefinidor = '$') {
   fieldsVariaveis.value = {};
   switch (caracterDefinidor) {
     case '@':
+      // PRA-FAZER: botar uma alerta de que não há variáveis disponíveis
+      if (!props.variáveisCompostas.length) return;
       variaveisFormulaModal.value = 2;
       break;
 
     default: {
+      // PRA-FAZER: botar uma alerta de que não há variáveis disponíveis
+      if (!props.variáveisDoIndicador.length) return;
       const últimoÍndiceDisponívelParaVariávelEmFórmula = Object
         .keys(variaveisFormula)
         .map((x) => Number(x.replace('$_', '')))
@@ -421,18 +425,18 @@ watch(props.variáveisCompostas, async () => {
       <span
         v-if="variáveisDoIndicador.length"
         class="v"
-        @click="chamarInserçãoDeVariável('$')"
+        @click="() => { chamarInserçãoDeVariável(' $') }"
       >Variável</span>
       <span
         v-if="variáveisCompostas.length"
         class="v vc"
-        @click="chamarInserçãoDeVariável('@')"
+        @click="() => { chamarInserçãoDeVariável(' @') }"
       >Variável composta</span>
       <span
         v-for="(item, index) in funções"
         :key="index"
         class="op"
-        @click="addFunction(item.operador)"
+        @click="() => addFunction(item.operador)"
       >{{ item.etiqueta }}</span>
     </div>
 
