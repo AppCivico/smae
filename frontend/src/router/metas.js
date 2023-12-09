@@ -61,29 +61,45 @@ export default {
 
     {
       path: ':meta_id/indicadores/:indicador_id/variaveis/gerar',
-      name: 'geradorDeVariáveis',
+      component: AddEditIndicador,
+      props: { group: 'variaveis', submenu: SubmenuMetas },
       meta: {
         funçãoDaTela: 'gerar',
         rotaDeEscape: 'indicadorDaMeta',
       },
-      component: AddEditIndicador,
-      props: { group: 'variaveis', submenu: SubmenuMetas },
-    },
-
-    {
-      path: ':meta_id/indicadores/:indicador_id/variaveis/gerar-composta',
-      name: 'geradorDeVariáveisCompostas',
-      meta: {
-        rotaDeEscape: 'indicadorDaMeta',
-      },
-      component: AddEditIndicador,
-      props: { group: 'gerar-compostas', submenu: SubmenuMetas },
+      name: 'geradorDeVariáveis',
     },
 
     { path: ':meta_id/indicadores/:indicador_id/variaveis/novo/:copy_id', component: AddEditIndicador, props: { group: 'variaveis', submenu: SubmenuMetas } },
     { path: ':meta_id/indicadores/:indicador_id/variaveis/:var_id', component: AddEditIndicador, props: { group: 'variaveis', submenu: SubmenuMetas } },
     { path: ':meta_id/indicadores/:indicador_id/variaveis/:var_id/valores', component: AddEditIndicador, props: { group: 'valores', submenu: SubmenuMetas } },
     { path: ':meta_id/indicadores/:indicador_id/variaveis/:var_id/retroativos', component: AddEditIndicador, props: { group: 'retroativos', submenu: SubmenuMetas } },
+
+    // /////////////////////////////////////////////////////////////////////////
+    // Variáveis compostas
+    // /////////////////////////////////////////////////////////////////////////
+    {
+      path: ':meta_id/indicadores/:indicador_id/variaveis-compostas/novo',
+      component: AddEditIndicador,
+      props: { group: 'criar-ou-editar-variaveis-compostas', submenu: SubmenuMetas },
+      meta: { rotaDeEscape: 'indicadorDaMeta', título: 'Nova variável composta' },
+    },
+    {
+      path: ':meta_id/indicadores/:indicador_id/variaveis-compostas/gerar',
+      component: AddEditIndicador,
+      props: { group: 'gerar-compostas', submenu: SubmenuMetas },
+      name: 'geradorDeVariáveisCompostas',
+      meta: { funçãoDaTela: 'gerar', rotaDeEscape: 'indicadorDaMeta', título: 'Auxiliar de variável composta' },
+    },
+    {
+      path: ':meta_id/indicadores/:indicador_id/variaveis-compostas/:var_id',
+      component: AddEditIndicador,
+      props: { group: 'criar-ou-editar-variaveis-compostas', submenu: SubmenuMetas },
+      name: 'editarVariáveisCompostas',
+      meta: { rotaDeEscape: 'indicadorDaMeta', título: 'Editar variável composta' },
+    },
+    // /////////////////////////////////////////////////////////////////////////
+
     { path: ':meta_id/painel', component: SinglePainelMeta, props: { submenu: SubmenuMetas } },
     { path: ':meta_id/evolucao', component: SingleEvolucao, props: { submenu: SubmenuMetas } },
     { path: ':meta_id/evolucao/:indicador_id', component: SingleEvolucao, props: { submenu: SubmenuMetas } },
