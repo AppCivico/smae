@@ -706,7 +706,7 @@ if (indicador_id) {
         <component
           :is="abas[abaCorrente]?.componente"
           v-if="!Variaveis[indicador_id]?.loading"
-          :indicador-regionalizavel="regionalizavel"
+          :indicador-regionalizavel="!!singleIndicadores?.regionalizavel"
           :variáveis="Variaveis[indicador_id]"
           :variáveis-compostas="variáveisCompostas[indicador_id]"
           :parentlink="parentlink"

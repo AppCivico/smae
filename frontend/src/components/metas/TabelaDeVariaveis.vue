@@ -27,7 +27,7 @@ defineProps({
   indicadorRegionalizavel: {
     type: Boolean,
     required: true,
-  }
+  },
 });
 
 async function apagarVariável(id) {
