@@ -1,7 +1,7 @@
-import { ApiProperty, OmitType } from '@nestjs/swagger';
+import { ApiProperty, OmitType, PickType } from '@nestjs/swagger';
 import { CicloFase, FormulaComposta, Periodicidade, Serie } from '@prisma/client';
 import { Transform, Type } from 'class-transformer';
-import { IsBoolean, IsNumber, IsNumberString, IsOptional, IsString, ValidateIf } from 'class-validator';
+import { IsBoolean, IsNumber, IsNumberString, IsOptional, IsString, ValidateIf, ValidateNested } from 'class-validator';
 import { IsOnlyDate } from '../../../common/decorators/IsDateOnly';
 
 import { IdCodTituloDto } from '../../../common/dto/IdCodTitulo.dto';
@@ -301,6 +301,18 @@ export class VariavelAnaliseQualitativaDto {
     @IsOptional()
     @IsBoolean()
     simular_ponto_focal: boolean;
+}
+
+export class VariavelAnaliseQualitativaParaLoteDto extends OmitType(VariavelAnaliseQualitativaDto, [
+    'simular_ponto_focal',
+]) {}
+
+export class VariavelAnaliseQualitativaEmLoteDto extends PickType(VariavelAnaliseQualitativaDto, [
+    'simular_ponto_focal',
+]) {
+    @ValidateNested({ each: true })
+    @Type(() => VariavelAnaliseQualitativaParaLoteDto)
+    linhas: VariavelAnaliseQualitativaParaLoteDto[];
 }
 
 export class FilterVariavelAnaliseQualitativaDto {

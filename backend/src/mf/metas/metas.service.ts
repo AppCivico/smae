@@ -2,7 +2,7 @@ import { HttpException, Injectable } from '@nestjs/common';
 import { CicloFase, PessoaAcessoPdm, Prisma, Serie } from '@prisma/client';
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import { Date2YMD, DateYMD } from '../../common/date2ymd';
-import { RecordWithId } from '../../common/dto/record-with-id.dto';
+import { BatchRecordWithId, RecordWithId } from '../../common/dto/record-with-id.dto';
 import { PrismaService } from '../../prisma/prisma.service';
 import { UploadService } from '../../upload/upload.service';
 import { IdTitulo, SerieValorNomimal } from '../../variavel/entities/variavel.entity';
@@ -25,6 +25,7 @@ import {
     RetornoMetaVariaveisDto,
     VariavelAnaliseQualitativaDocumentoDto,
     VariavelAnaliseQualitativaDto,
+    VariavelAnaliseQualitativaEmLoteDto,
     VariavelComplementacaoDto,
     VariavelComSeries,
     VariavelConferidaDto,
@@ -1240,6 +1241,46 @@ export class MetasService {
         user: PessoaFromJwt
     ): Promise<RecordWithId> {
         const now = new Date(Date.now());
+        const { dadosCiclo, ehPontoFocal, meta_id } = await this.buscaDadosCiclo(dto, config);
+
+        // o trabalho pra montar um SerieJwt não faz sentido
+        // então vamos operar diretamente na SerieVariavel
+        const id = await this.prisma.$transaction(
+            async (prismaTxn: Prisma.TransactionClient): Promise<number> => {
+                // isolation lock
+                await prismaTxn.variavel.findFirst({ where: { id: dto.variavel_id }, select: { id: true } });
+
+                let needRecalc = await this.atualizaSerieVariaveis(dto, prismaTxn, now, user, dadosCiclo, ehPontoFocal);
+                if (needRecalc) {
+                    await this.variavelService.recalc_variaveis_acumulada([dto.variavel_id], prismaTxn);
+                    await this.variavelService.recalc_indicador_usando_variaveis([dto.variavel_id], prismaTxn);
+                }
+
+                const cfq = await this.atualizaStatusVariavelCicloFisico(
+                    prismaTxn,
+                    dadosCiclo,
+                    dto,
+                    user,
+                    now,
+                    meta_id,
+                    ehPontoFocal
+                );
+
+                await this.mfService.invalidaStatusIndicador(prismaTxn, dadosCiclo.id, meta_id);
+
+                return cfq.id;
+            },
+            {
+                isolationLevel: 'Serializable',
+                maxWait: 15000,
+                timeout: 25000,
+            }
+        );
+
+        return { id: id };
+    }
+
+    private async buscaDadosCiclo(dto: VariavelAnaliseQualitativaDto, config: PessoaAcessoPdm) {
         const dateYMD = Date2YMD.toString(dto.data_valor);
         const meta_id = await this.variavelService.getMetaIdDaVariavel(dto.variavel_id, this.prisma);
 
@@ -1279,42 +1320,96 @@ export class MetasService {
                 400
             );
         }
+        return { dadosCiclo, ehPontoFocal, meta_id };
+    }
 
-        // o trabalho pra montar um SerieJwt não faz sentido
-        // então vamos operar diretamente na SerieVariavel
-        const id = await this.prisma.$transaction(
-            async (prismaTxn: Prisma.TransactionClient): Promise<number> => {
+    async addMetaVariavelAnaliseQualitativaEmLote(
+        dto: VariavelAnaliseQualitativaEmLoteDto,
+        config: PessoaAcessoPdm,
+        user: PessoaFromJwt
+    ): Promise<BatchRecordWithId> {
+        const now = new Date(Date.now());
+
+        const batchResultados: {
+            dadosCiclo: DadosCiclo;
+            ehPontoFocal: boolean;
+            meta_id: number;
+        }[] = [];
+
+        for (const linha of dto.linhas) {
+            const { dadosCiclo, ehPontoFocal, meta_id } = await this.buscaDadosCiclo(
+                {
+                    simular_ponto_focal: dto.simular_ponto_focal,
+                    ...linha,
+                },
+                config
+            );
+
+            batchResultados.push({ dadosCiclo, ehPontoFocal, meta_id });
+        }
+
+        // se não deu nenhuma exception no loop acima, então segue com a transaction pro banco
+
+        const updatedIds = await this.prisma.$transaction(
+            async (prismaTxn: Prisma.TransactionClient): Promise<BatchRecordWithId> => {
                 // isolation lock
-                await prismaTxn.variavel.findFirst({ where: { id: dto.variavel_id }, select: { id: true } });
 
-                let needRecalc = await this.atualizaSerieVariaveis(dto, prismaTxn, now, user, dadosCiclo, ehPontoFocal);
-                if (needRecalc) {
-                    await this.variavelService.recalc_variaveis_acumulada([dto.variavel_id], prismaTxn);
-                    await this.variavelService.recalc_indicador_usando_variaveis([dto.variavel_id], prismaTxn);
+                let needRecalcVars: number[] = [];
+                let batchResult: BatchRecordWithId = { ids: [] };
+
+                for (let i = 0; i < dto.linhas.length; i++) {
+                    const linha = dto.linhas[i];
+
+                    const { dadosCiclo, ehPontoFocal, meta_id } = batchResultados[i];
+
+                    await prismaTxn.variavel.findFirst({ where: { id: linha.variavel_id }, select: { id: true } });
+
+                    let needRecalc = await this.atualizaSerieVariaveis(
+                        {
+                            simular_ponto_focal: dto.simular_ponto_focal,
+                            ...linha,
+                        },
+                        prismaTxn,
+                        now,
+                        user,
+                        dadosCiclo,
+                        ehPontoFocal
+                    );
+                    if (needRecalc) needRecalcVars.push(linha.variavel_id);
+
+                    const cfq = await this.atualizaStatusVariavelCicloFisico(
+                        prismaTxn,
+                        dadosCiclo,
+                        {
+                            simular_ponto_focal: dto.simular_ponto_focal,
+                            ...linha,
+                        },
+                        user,
+                        now,
+                        meta_id,
+                        ehPontoFocal
+                    );
+
+                    batchResult.ids.push(cfq);
+
+                    await this.mfService.invalidaStatusIndicador(prismaTxn, dadosCiclo.id, meta_id);
                 }
 
-                const cfq = await this.atualizaStatusVariavelCicloFisico(
-                    prismaTxn,
-                    dadosCiclo,
-                    dto,
-                    user,
-                    now,
-                    meta_id,
-                    ehPontoFocal
-                );
+                if (needRecalcVars.length > 0) {
+                    await this.variavelService.recalc_variaveis_acumulada(needRecalcVars, prismaTxn);
+                    await this.variavelService.recalc_indicador_usando_variaveis(needRecalcVars, prismaTxn);
+                }
 
-                await this.mfService.invalidaStatusIndicador(prismaTxn, dadosCiclo.id, meta_id);
-
-                return cfq.id;
+                return batchResult;
             },
             {
                 isolationLevel: 'Serializable',
                 maxWait: 15000,
-                timeout: 25000,
+                timeout: 25000 * 5,
             }
         );
 
-        return { id: id };
+        return updatedIds;
     }
 
     private async atualizaSerieVariaveis(

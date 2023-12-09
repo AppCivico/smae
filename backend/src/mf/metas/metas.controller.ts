@@ -15,7 +15,7 @@ import { CurrentUser } from '../../auth/decorators/current-user.decorator';
 import { Roles } from '../../auth/decorators/roles.decorator';
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import { FindOneParams } from '../../common/decorators/find-params';
-import { RecordWithId } from '../../common/dto/record-with-id.dto';
+import { BatchRecordWithId, RecordWithId } from '../../common/dto/record-with-id.dto';
 import { MfService } from '../mf.service';
 import {
     CicloFaseDto,
@@ -28,6 +28,7 @@ import {
     RetornoMetaVariaveisDto,
     VariavelAnaliseQualitativaDocumentoDto,
     VariavelAnaliseQualitativaDto,
+    VariavelAnaliseQualitativaEmLoteDto,
     VariavelComplementacaoDto,
     VariavelConferidaDto,
 } from './dto/mf-meta.dto';
@@ -213,5 +214,26 @@ export class MetasController {
         await this.metasService.mudarMetaCicloFase(params.id, dto, config, cicloFisicoAtivo, user);
 
         return '';
+    }
+
+    @ApiBearerAuth('access-token')
+    @Patch('variaveis/analise-qualitativa-em-lote')
+    @Roles('PDM.admin_cp', 'PDM.tecnico_cp', 'PDM.ponto_focal')
+    @ApiExtraModels(RecordWithId, RequestInfoDto)
+    @ApiOkResponse({
+        schema: { allOf: refs(RecordWithId, RequestInfoDto) },
+    })
+    async AddMetaVariavelAnaliseQualitativaEmLote(
+        @Body() dto: VariavelAnaliseQualitativaEmLoteDto,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<BatchRecordWithId & RequestInfoDto> {
+        const start = Date.now();
+        const config = await this.mfService.pessoaAcessoPdm(user);
+        // mesma coisa, pra editar um ciclo, vamos precisar de
+
+        return {
+            ...(await this.metasService.addMetaVariavelAnaliseQualitativaEmLote(dto, config, user)),
+            requestInfo: { queryTook: Date.now() - start },
+        };
     }
 }
