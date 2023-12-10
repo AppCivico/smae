@@ -174,6 +174,12 @@ export const useCiclosStore = defineStore({
         this.MetaVars = { error };
       }
     },
+
+    async salvarVariáveisCompostasEmLote(params) {
+      if (await this.requestS.patch(`${baseUrl}/mf/metas/variaveis/analise-qualitativa-em-lote`, params)) return true;
+      return false;
+    },
+
     async getAnalise(id, periodo) {
       this.SingleAnalise = { loading: true };
       try {
@@ -425,5 +431,13 @@ export const useCiclosStore = defineStore({
       if (await this.requestS.patch(`${baseUrl}/mf/metas/cronograma/etapa/${id}`, params)) return true;
       return false;
     },
+  },
+  getters: {
+    índiceDeSériesEmMetaVars: ({ MetaVars }) => (Array.isArray(MetaVars?.ordem_series)
+      ? MetaVars.ordem_series.reduce((acc, cur, index) => {
+        acc[cur] = index;
+        return acc;
+      }, {})
+      : {}),
   },
 });

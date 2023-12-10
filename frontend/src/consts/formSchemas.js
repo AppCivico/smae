@@ -1203,3 +1203,33 @@ export const variávelComposta = object()
       .label('Título')
       .required(),
   });
+
+export const valoresRealizadoEmLote = object()
+  .shape({
+    linhas: array()
+      .label('Variáveis compostas')
+      .min(1)
+      .of(
+        object()
+          .shape({
+            analise_qualitativa: string(),
+            data_valor: date()
+              .label('')
+              .required(),
+            enviar_para_cp: boolean()
+              .label('Enviar para CP')
+              .required(),
+            valor_realizado: number()
+              .label('Valor realizado')
+              .min(0)
+              .nullable(),
+            valor_realizado_acumulado: number()
+              .label('Valor acumulado')
+              .min(0)
+              .nullable(),
+            variavel_id: number()
+              .min(1)
+              .required(),
+          }),
+      ),
+  });
