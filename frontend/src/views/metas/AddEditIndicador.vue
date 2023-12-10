@@ -74,14 +74,14 @@ const abas = ref({
     componente: TabelaDeVariaveisCompostas,
     etiqueta: 'Variáveis Compostas',
   },
+  TabelaDeVariaveisCompostasEmUso: {
+    componente: TabelaDeVariaveisCompostasEmUso,
+    etiqueta: 'Variáveis compostas em uso'
+  },
   TabelaDeVariaveisEmUso: {
     componente: TabelaDeVariaveisEmUso,
     etiqueta: 'Variáveis em Uso',
   },
-  TabelaDeVariaveisCompostasEmUso: {
-    componente: TabelaDeVariaveisCompostasEmUso,
-    etiqueta: 'Variáveis compostas em uso'
-  }
 });
 const abaCorrente = ref('TabelaDeVariaveis');
 
