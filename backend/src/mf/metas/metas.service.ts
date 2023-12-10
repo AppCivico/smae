@@ -15,10 +15,13 @@ import {
     CicloFaseDto,
     FilterMfMetasDto,
     FilterVariavelAnaliseQualitativaDto,
+    FilterVariavelAnaliseQualitativaEmLoteDto,
     IniciativasRetorno,
     MfAvancarFasesDto,
     MfFasesPermissoesDto,
     MfListVariavelAnaliseQualitativaDto,
+    MfListVariavelAnaliseQualitativaEmLoteDto,
+    MfListVariavelAnaliseQualitativaReducedDto,
     MfMetaDto,
     MfSeriesAgrupadas,
     MfSerieValorNomimal,
@@ -69,6 +72,7 @@ function shuffleArray(array: any[]) {
     }
 }
 
+const TEMPO_EXPIRACAO_ARQUIVO = '180 minutes';
 type VariavelDetalhePorID = Record<number, VariavelDetalhe>;
 
 @Injectable()
@@ -151,7 +155,6 @@ export class MetasService {
                 true: 'Metas fechadas',
             },
         };
-        console.log(params.ciclo_fase);
 
         const metasStatusPorMeta: Record<number, boolean> = {};
         if (metaStatus) {
@@ -821,7 +824,7 @@ export class MetasService {
     }
 
     private async getIniciativas(meta_id: number, dadosMeta: DadosMetaIndicadores[]) {
-        console.log({ dadosMeta, ini: dadosMeta.filter((r) => r.iniciativa_id !== null).map((r) => r.indicador_id) });
+        //console.log({ dadosMeta, ini: dadosMeta.filter((r) => r.iniciativa_id !== null).map((r) => r.indicador_id) });
 
         return await this.prisma.iniciativa.findMany({
             where: {
@@ -1583,31 +1586,7 @@ export class MetasService {
 
         const dadosCiclo = await this.capturaDadosCicloVariavel(dateYMD, dto.variavel_id, meta_id);
 
-        const variavel = await this.prisma.variavel.findFirstOrThrow({
-            where: {
-                id: dto.variavel_id,
-            },
-            select: {
-                id: true,
-                codigo: true,
-                titulo: true,
-                unidade_medida: {
-                    select: {
-                        sigla: true,
-                        descricao: true,
-                    },
-                },
-                regiao: {
-                    select: {
-                        id: true,
-                        descricao: true,
-                    },
-                },
-                casas_decimais: true,
-                acumulativa: true,
-                periodicidade: true,
-            },
-        });
+        const variavel = await this.carregaVariavel(dto);
 
         const ordem_series: Serie[] = ['Previsto', 'PrevistoAcumulado', 'Realizado', 'RealizadoAcumulado'];
         shuffleArray(ordem_series); // garante que o consumidor não está usando os valores das series cegamente
@@ -1645,7 +1624,166 @@ export class MetasService {
             };
         });
 
-        const analisesResult = await this.prisma.variavelCicloFisicoQualitativo.findMany({
+        const analisesResult = await this.buscaAnalisesQualitativas(dadosCiclo, dto);
+
+        const arquivosResult = apenasSV ? [] : await this.buscaArquivos(dadosCiclo, dto);
+
+        const pedido = apenasSV ? null : await this.buscaPedidoComplementacao(dadosCiclo, dto);
+
+        return {
+            ultimoPedidoComplementacao: pedido
+                ? {
+                      pedido: pedido.pedido || '',
+                      criado_em: pedido.criado_em,
+                      id: pedido.id,
+                      criador: { nome_exibicao: pedido.pessoaCriador.nome_exibicao },
+                      atendido: pedido.atendido,
+                  }
+                : null,
+            arquivos: arquivosResult.map((r) => {
+                return {
+                    id: r.id,
+                    criador: { nome_exibicao: r.pessoaCriador.nome_exibicao },
+                    criado_em: r.criado_em,
+                    arquivo: {
+                        ...r.arquivo,
+                        ...this.uploadService.getDownloadToken(r.arquivo.id, TEMPO_EXPIRACAO_ARQUIVO),
+                    },
+                };
+            }),
+            analises: analisesResult.map((r) => {
+                return {
+                    analise_qualitativa: r.analise_qualitativa || '',
+                    ultima_revisao: r.ultima_revisao,
+                    criado_em: r.criado_em,
+                    meta_id: r.meta_id,
+                    enviado_para_cp: r.enviado_para_cp,
+                    id: r.id,
+                    criador: { nome_exibicao: r.pessoaCriador.nome_exibicao },
+                };
+            }),
+            ordem_series: ordem_series,
+            series: series,
+            variavel: variavel,
+        };
+    }
+
+    async getMetaVariavelAnaliseQualitativaEmLote(
+        dto: FilterVariavelAnaliseQualitativaEmLoteDto,
+        config: PessoaAcessoPdm,
+        user: PessoaFromJwt
+    ): Promise<MfListVariavelAnaliseQualitativaEmLoteDto> {
+        const ret: MfListVariavelAnaliseQualitativaReducedDto[] = [];
+
+        for (const linha of dto.linhas) {
+            const meta_id = await this.variavelService.getMetaIdDaVariavel(linha.variavel_id, this.prisma);
+            const dateYMD = Date2YMD.toString(linha.data_valor);
+            const dadosCiclo = await this.capturaDadosCicloVariavel(dateYMD, linha.variavel_id, meta_id);
+
+            const variavel = await this.carregaVariavel({ variavel_id: linha.variavel_id });
+
+            const analisesResult = await this.buscaAnalisesQualitativas(dadosCiclo, {
+                variavel_id: linha.variavel_id,
+                apenas_ultima_revisao: true,
+            });
+
+            const arquivosResult = await this.buscaArquivos(dadosCiclo, { variavel_id: linha.variavel_id });
+
+            const pedido = await this.buscaPedidoComplementacao(dadosCiclo, { variavel_id: linha.variavel_id });
+
+            ret.push({
+                variavel: variavel,
+                ultimoPedidoComplementacao: pedido
+                    ? {
+                          pedido: pedido.pedido || '',
+                          criado_em: pedido.criado_em,
+                          id: pedido.id,
+                          criador: { nome_exibicao: pedido.pessoaCriador.nome_exibicao },
+                          atendido: pedido.atendido,
+                      }
+                    : null,
+                arquivos: arquivosResult.map((r) => {
+                    return {
+                        id: r.id,
+                        criador: { nome_exibicao: r.pessoaCriador.nome_exibicao },
+                        criado_em: r.criado_em,
+                        arquivo: {
+                            ...r.arquivo,
+                            ...this.uploadService.getDownloadToken(r.arquivo.id, TEMPO_EXPIRACAO_ARQUIVO),
+                        },
+                    };
+                }),
+                analises: analisesResult.map((r) => {
+                    return {
+                        analise_qualitativa: r.analise_qualitativa || '',
+                        ultima_revisao: r.ultima_revisao,
+                        criado_em: r.criado_em,
+                        meta_id: r.meta_id,
+                        enviado_para_cp: r.enviado_para_cp,
+                        id: r.id,
+                        criador: { nome_exibicao: r.pessoaCriador.nome_exibicao },
+                    };
+                }),
+            });
+        }
+
+        return { linhas: ret };
+    }
+
+    private async buscaPedidoComplementacao(dadosCiclo: DadosCiclo, dto: { variavel_id: number }) {
+        return await this.prisma.pedidoComplementacao.findFirst({
+            where: {
+                ciclo_fisico_id: dadosCiclo.id,
+                variavel_id: dto.variavel_id,
+                ultima_revisao: true,
+            },
+            select: {
+                ultima_revisao: true,
+                pedido: true,
+                atendido: true,
+                criado_em: true,
+                pessoaCriador: {
+                    select: { nome_exibicao: true },
+                },
+                id: true,
+            },
+        });
+    }
+
+    private async buscaArquivos(dadosCiclo: DadosCiclo, dto: { variavel_id: number }) {
+        return await this.prisma.variavelCicloFisicoDocumento.findMany({
+            where: {
+                ciclo_fisico_id: dadosCiclo.id,
+                variavel_id: dto.variavel_id,
+                removido_em: null,
+            },
+            orderBy: {
+                criado_em: 'desc',
+            },
+            select: {
+                criado_em: true,
+                pessoaCriador: {
+                    select: { nome_exibicao: true },
+                },
+                id: true,
+                arquivo: {
+                    select: {
+                        id: true,
+                        tamanho_bytes: true,
+                        TipoDocumento: true,
+                        descricao: true,
+                        nome_original: true,
+                    },
+                },
+            },
+        });
+    }
+
+    private async buscaAnalisesQualitativas(
+        dadosCiclo: DadosCiclo,
+        dto: { variavel_id: number; apenas_ultima_revisao?: boolean }
+    ) {
+        return await this.prisma.variavelCicloFisicoQualitativo.findMany({
             where: {
                 ciclo_fisico_id: dadosCiclo.id,
                 variavel_id: dto.variavel_id,
@@ -1666,89 +1804,34 @@ export class MetasService {
                 id: true,
             },
         });
+    }
 
-        const arquivosResult = apenasSV
-            ? []
-            : await this.prisma.variavelCicloFisicoDocumento.findMany({
-                  where: {
-                      ciclo_fisico_id: dadosCiclo.id,
-                      variavel_id: dto.variavel_id,
-                      removido_em: null,
-                  },
-                  orderBy: {
-                      criado_em: 'desc',
-                  },
-                  select: {
-                      criado_em: true,
-                      pessoaCriador: {
-                          select: { nome_exibicao: true },
-                      },
-                      id: true,
-                      arquivo: {
-                          select: {
-                              id: true,
-                              tamanho_bytes: true,
-                              TipoDocumento: true,
-                              descricao: true,
-                              nome_original: true,
-                          },
-                      },
-                  },
-              });
-
-        const pedido = apenasSV
-            ? null
-            : await this.prisma.pedidoComplementacao.findFirst({
-                  where: {
-                      ciclo_fisico_id: dadosCiclo.id,
-                      variavel_id: dto.variavel_id,
-                      ultima_revisao: true,
-                  },
-                  select: {
-                      ultima_revisao: true,
-                      pedido: true,
-                      atendido: true,
-                      criado_em: true,
-                      pessoaCriador: {
-                          select: { nome_exibicao: true },
-                      },
-                      id: true,
-                  },
-              });
-
-        return {
-            ultimoPedidoComplementacao: pedido
-                ? {
-                      pedido: pedido.pedido || '',
-                      criado_em: pedido.criado_em,
-                      id: pedido.id,
-                      criador: { nome_exibicao: pedido.pessoaCriador.nome_exibicao },
-                      atendido: pedido.atendido,
-                  }
-                : null,
-            arquivos: arquivosResult.map((r) => {
-                return {
-                    id: r.id,
-                    criador: { nome_exibicao: r.pessoaCriador.nome_exibicao },
-                    criado_em: r.criado_em,
-                    arquivo: { ...r.arquivo, ...this.uploadService.getDownloadToken(r.arquivo.id, '180 minutes') },
-                };
-            }),
-            analises: analisesResult.map((r) => {
-                return {
-                    analise_qualitativa: r.analise_qualitativa || '',
-                    ultima_revisao: r.ultima_revisao,
-                    criado_em: r.criado_em,
-                    meta_id: r.meta_id,
-                    enviado_para_cp: r.enviado_para_cp,
-                    id: r.id,
-                    criador: { nome_exibicao: r.pessoaCriador.nome_exibicao },
-                };
-            }),
-            ordem_series: ordem_series,
-            series: series,
-            variavel: variavel,
-        };
+    private async carregaVariavel(dto: { variavel_id: number }) {
+        return await this.prisma.variavel.findFirstOrThrow({
+            where: {
+                id: dto.variavel_id,
+            },
+            select: {
+                id: true,
+                codigo: true,
+                titulo: true,
+                unidade_medida: {
+                    select: {
+                        sigla: true,
+                        descricao: true,
+                    },
+                },
+                regiao: {
+                    select: {
+                        id: true,
+                        descricao: true,
+                    },
+                },
+                casas_decimais: true,
+                acumulativa: true,
+                periodicidade: true,
+            },
+        });
     }
 
     private async capturaDadosCicloVariavel(dateYMD: string, variavel_id: number, meta_id: number) {
@@ -1772,7 +1855,7 @@ export class MetasService {
             and cf.pdm_id = (select pdm_id from meta where id = ${meta_id})
         `;
         const dadosCiclo = dadosCicloResult[0];
-        console.log(dadosCiclo);
+
         if (!dadosCiclo) throw new HttpException(`Ciclo não encontrado no PDM`, 404);
         if (!dadosCiclo.variavelParticipa)
             throw new HttpException(
