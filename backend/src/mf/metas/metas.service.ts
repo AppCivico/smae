@@ -16,6 +16,7 @@ import {
     FilterMfMetasDto,
     FilterVariavelAnaliseQualitativaDto,
     FilterVariavelAnaliseQualitativaEmLoteDto,
+    FilterVariavelAnaliseQualitativaUltimaRevisaoDto,
     IniciativasRetorno,
     MfAvancarFasesDto,
     MfFasesPermissoesDto,
@@ -1582,11 +1583,7 @@ export class MetasService {
         apenasSV: boolean = false
     ): Promise<MfListVariavelAnaliseQualitativaDto> {
         const dateYMD = Date2YMD.toString(dto.data_valor);
-        const meta_id = await this.variavelService.getMetaIdDaVariavel(dto.variavel_id, this.prisma);
-
-        const dadosCiclo = await this.capturaDadosCicloVariavel(dateYMD, dto.variavel_id, meta_id);
-
-        const variavel = await this.carregaVariavel(dto);
+        const linha = await this.processLinha(dto, !!dto.apenas_ultima_revisao);
 
         const ordem_series: Serie[] = ['Previsto', 'PrevistoAcumulado', 'Realizado', 'RealizadoAcumulado'];
         shuffleArray(ordem_series); // garante que o consumidor não está usando os valores das series cegamente
@@ -1624,13 +1621,50 @@ export class MetasService {
             };
         });
 
-        const analisesResult = await this.buscaAnalisesQualitativas(dadosCiclo, dto);
+        return {
+            ...linha,
+            ordem_series: ordem_series,
+            series: series,
+        };
+    }
 
-        const arquivosResult = apenasSV ? [] : await this.buscaArquivos(dadosCiclo, dto);
+    async getMetaVariavelAnaliseQualitativaEmLote(
+        dto: FilterVariavelAnaliseQualitativaEmLoteDto,
+        config: PessoaAcessoPdm,
+        user: PessoaFromJwt
+    ): Promise<MfListVariavelAnaliseQualitativaEmLoteDto> {
+        const promises: Promise<MfListVariavelAnaliseQualitativaReducedDto>[] = [];
 
-        const pedido = apenasSV ? null : await this.buscaPedidoComplementacao(dadosCiclo, dto);
+        for (const linha of dto.linhas) {
+            promises.push(this.processLinha(linha, true));
+        }
+
+        const ret = await Promise.all(promises);
+
+        return { linhas: ret };
+    }
+
+    private async processLinha(
+        linha: FilterVariavelAnaliseQualitativaUltimaRevisaoDto,
+        apenas_ultima_revisao: boolean
+    ): Promise<MfListVariavelAnaliseQualitativaReducedDto> {
+        const meta_id = await this.variavelService.getMetaIdDaVariavel(linha.variavel_id, this.prisma);
+        const dateYMD = Date2YMD.toString(linha.data_valor);
+        const dadosCiclo = await this.capturaDadosCicloVariavel(dateYMD, linha.variavel_id, meta_id);
+
+        const variavel = await this.carregaVariavel({ variavel_id: linha.variavel_id });
+
+        const [analisesResult, arquivosResult, pedido] = await Promise.all([
+            this.buscaAnalisesQualitativas(dadosCiclo, {
+                variavel_id: linha.variavel_id,
+                apenas_ultima_revisao,
+            }),
+            this.buscaArquivos(dadosCiclo, { variavel_id: linha.variavel_id }),
+            this.buscaPedidoComplementacao(dadosCiclo, { variavel_id: linha.variavel_id }),
+        ]);
 
         return {
+            variavel: variavel,
             ultimoPedidoComplementacao: pedido
                 ? {
                       pedido: pedido.pedido || '',
@@ -1662,72 +1696,7 @@ export class MetasService {
                     criador: { nome_exibicao: r.pessoaCriador.nome_exibicao },
                 };
             }),
-            ordem_series: ordem_series,
-            series: series,
-            variavel: variavel,
         };
-    }
-
-    async getMetaVariavelAnaliseQualitativaEmLote(
-        dto: FilterVariavelAnaliseQualitativaEmLoteDto,
-        config: PessoaAcessoPdm,
-        user: PessoaFromJwt
-    ): Promise<MfListVariavelAnaliseQualitativaEmLoteDto> {
-        const ret: MfListVariavelAnaliseQualitativaReducedDto[] = [];
-
-        for (const linha of dto.linhas) {
-            const meta_id = await this.variavelService.getMetaIdDaVariavel(linha.variavel_id, this.prisma);
-            const dateYMD = Date2YMD.toString(linha.data_valor);
-            const dadosCiclo = await this.capturaDadosCicloVariavel(dateYMD, linha.variavel_id, meta_id);
-
-            const variavel = await this.carregaVariavel({ variavel_id: linha.variavel_id });
-
-            const analisesResult = await this.buscaAnalisesQualitativas(dadosCiclo, {
-                variavel_id: linha.variavel_id,
-                apenas_ultima_revisao: true,
-            });
-
-            const arquivosResult = await this.buscaArquivos(dadosCiclo, { variavel_id: linha.variavel_id });
-
-            const pedido = await this.buscaPedidoComplementacao(dadosCiclo, { variavel_id: linha.variavel_id });
-
-            ret.push({
-                variavel: variavel,
-                ultimoPedidoComplementacao: pedido
-                    ? {
-                          pedido: pedido.pedido || '',
-                          criado_em: pedido.criado_em,
-                          id: pedido.id,
-                          criador: { nome_exibicao: pedido.pessoaCriador.nome_exibicao },
-                          atendido: pedido.atendido,
-                      }
-                    : null,
-                arquivos: arquivosResult.map((r) => {
-                    return {
-                        id: r.id,
-                        criador: { nome_exibicao: r.pessoaCriador.nome_exibicao },
-                        criado_em: r.criado_em,
-                        arquivo: {
-                            ...r.arquivo,
-                            ...this.uploadService.getDownloadToken(r.arquivo.id, TEMPO_EXPIRACAO_ARQUIVO),
-                        },
-                    };
-                }),
-                analises: analisesResult.map((r) => {
-                    return {
-                        analise_qualitativa: r.analise_qualitativa || '',
-                        ultima_revisao: r.ultima_revisao,
-                        criado_em: r.criado_em,
-                        meta_id: r.meta_id,
-                        enviado_para_cp: r.enviado_para_cp,
-                        id: r.id,
-                        criador: { nome_exibicao: r.pessoaCriador.nome_exibicao },
-                    };
-                }),
-            });
-        }
-
-        return { linhas: ret };
     }
 
     private async buscaPedidoComplementacao(dadosCiclo: DadosCiclo, dto: { variavel_id: number }) {
