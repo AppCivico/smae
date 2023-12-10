@@ -246,7 +246,6 @@ export class VariavelAnaliseQualitativaDto {
      * data_valor
      * @example YYYY-MM-DD
      */
-    @IsOptional()
     @IsOnlyDate()
     @Type(() => Date)
     data_valor: Date;
@@ -299,6 +298,29 @@ export class VariavelAnaliseQualitativaDto {
     @IsOptional()
     @IsBoolean()
     simular_ponto_focal?: boolean;
+}
+
+export class FormulaCompostaAnaliseQualitativaDto extends OmitType(VariavelAnaliseQualitativaDto, [
+    'variavel_id',
+    'simular_ponto_focal',
+    'valor_realizado',
+    'valor_realizado_acumulado',
+    'data_valor',
+]) {
+    /**
+     * data_ciclo do ciclo, apenas pra conferencia que é o mesmo que foi carregado na tela
+     * @example YYYY-MM-DD
+     */
+    @IsOnlyDate()
+    @Type(() => Date)
+    data_ciclo: Date;
+
+    /**
+     * formula_composta_id
+     * @example "1"
+     */
+    @IsNumber()
+    formula_composta_id: number;
 }
 
 export class VariavelAnaliseQualitativaParaLoteDto extends OmitType(VariavelAnaliseQualitativaDto, [
@@ -459,4 +481,43 @@ export class VariavelAnaliseQualitativaDocumentoDto {
      */
     @IsString({ message: '$property| upload_token de um arquivo' })
     upload_token: string;
+}
+
+export class FilterFormulaCompostaAnaliseQualitativaDto {
+    /**
+     * data_valor
+     * @example YYYY-MM-DD
+     */
+    @IsOptional()
+    @IsOnlyDate()
+    @Type(() => Date)
+    data_ciclo: Date;
+
+    /**
+     * formula_composta_id
+     * @example "1"
+     */
+    @IsNumber()
+    @Transform(({ value }: any) => +value)
+    formula_composta_id: number;
+
+    /**
+     * trazer apenas a analise mais recente?
+     * @example "true"
+     */
+    @IsBoolean()
+    @IsOptional()
+    @Transform(({ value }: any) => value === 'true')
+    apenas_ultima_revisao?: boolean;
+}
+
+export class MfListFormulaCompostaAnaliseQualitativaDto {
+    formula_composta: {
+        id: number;
+        titulo: string;
+    };
+
+    //arquivos: ArquivoVariavelAnaliseQualitativaDocumentoDto[];
+
+    analises: DetailAnaliseQualitativaDto[];
 }

@@ -1,4 +1,4 @@
-import { HttpException, Injectable } from '@nestjs/common';
+import { BadRequestException, HttpException, Injectable } from '@nestjs/common';
 import { CicloFase, PessoaAcessoPdm, Prisma, Serie } from '@prisma/client';
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import { Date2YMD, DateYMD } from '../../common/date2ymd';
@@ -13,13 +13,16 @@ import {
     CamposRealizadoParaSerie,
     CicloAtivoDto,
     CicloFaseDto,
+    FilterFormulaCompostaAnaliseQualitativaDto,
     FilterMfMetasDto,
     FilterVariavelAnaliseQualitativaDto,
     FilterVariavelAnaliseQualitativaEmLoteDto,
     FilterVariavelAnaliseQualitativaUltimaRevisaoDto,
+    FormulaCompostaAnaliseQualitativaDto,
     IniciativasRetorno,
     MfAvancarFasesDto,
     MfFasesPermissoesDto,
+    MfListFormulaCompostaAnaliseQualitativaDto,
     MfListVariavelAnaliseQualitativaDto,
     MfListVariavelAnaliseQualitativaEmLoteDto,
     MfListVariavelAnaliseQualitativaReducedDto,
@@ -1901,5 +1904,126 @@ export class MetasService {
                 atualizado_por: user.id,
             },
         });
+    }
+
+    async addMetaFormulaCompostaAnaliseQualitativa(
+        dto: FormulaCompostaAnaliseQualitativaDto,
+        config: PessoaAcessoPdm,
+        cicloAtivo: CicloAtivoDto,
+        user: PessoaFromJwt
+    ): Promise<RecordWithId> {
+        const now = new Date(Date.now());
+
+        if (dto.data_ciclo.toISOString() != cicloAtivo.data_ciclo.toISOString())
+            throw new BadRequestException(`Você só pode enviar análises para o ciclo ativo, ${cicloAtivo.data_ciclo.toISOString()}`);
+
+        const meta_id = await this.variavelService.getMetaIdDaFormulaComposta(dto.formula_composta_id, this.prisma);
+
+        const id = await this.prisma.$transaction(
+            async (prismaTxn: Prisma.TransactionClient): Promise<number> => {
+                // se salvar o mesmo form, exatamente igual, não gera outro registro
+                const alreadyExists = await prismaTxn.formulaCompostaCicloFisicoQualitativo.findFirst({
+                    where: {
+                        ciclo_fisico_id: cicloAtivo.id,
+                        formula_composta_id: dto.formula_composta_id,
+                        meta_id: meta_id,
+                        analise_qualitativa: dto.analise_qualitativa || '',
+                        enviado_para_cp: !!dto.enviar_para_cp,
+                        criado_por: user.id,
+                        removido_em: null,
+                        ultima_revisao: true,
+                    },
+                });
+                if (alreadyExists) return alreadyExists.id;
+
+                await prismaTxn.formulaCompostaCicloFisicoQualitativo.updateMany({
+                    where: {
+                        ciclo_fisico_id: cicloAtivo.id,
+                        formula_composta_id: dto.formula_composta_id,
+                        meta_id: meta_id,
+                        removido_em: null,
+                        ultima_revisao: true,
+                    },
+                    data: {
+                        ultima_revisao: false,
+                    },
+                });
+                const cfq = await prismaTxn.formulaCompostaCicloFisicoQualitativo.create({
+                    data: {
+                        ciclo_fisico_id: cicloAtivo.id,
+                        formula_composta_id: dto.formula_composta_id,
+                        meta_id: meta_id,
+                        ultima_revisao: true,
+                        criado_por: user.id,
+                        criado_em: now,
+                        enviado_para_cp: !!dto.enviar_para_cp,
+                        referencia_data: cicloAtivo.data_ciclo,
+                        analise_qualitativa: dto.analise_qualitativa || '',
+                    },
+                });
+
+                return cfq.id;
+            },
+            {
+                isolationLevel: 'Serializable',
+                maxWait: 15000,
+                timeout: 25000,
+            }
+        );
+
+        return { id: id };
+    }
+
+    async getMetaFormulaCompostaAnaliseQualitativa(
+        dto: FilterFormulaCompostaAnaliseQualitativaDto,
+        config: PessoaAcessoPdm,
+        user: PessoaFromJwt
+    ): Promise<MfListFormulaCompostaAnaliseQualitativaDto> {
+        const formula_composta = await this.prisma.formulaComposta.findFirstOrThrow({
+            where: {
+                removido_em: null,
+                id: dto.formula_composta_id,
+            },
+            select: { id: true, titulo: true },
+        });
+
+        const analisesResult = await this.prisma.formulaCompostaCicloFisicoQualitativo.findMany({
+            where: {
+                referencia_data: dto.data_ciclo,
+                formula_composta_id: formula_composta.id,
+                ultima_revisao: dto.apenas_ultima_revisao ? true : undefined,
+            },
+            orderBy: {
+                criado_em: 'desc',
+            },
+            select: {
+                ultima_revisao: true,
+                analise_qualitativa: true,
+                criado_em: true,
+                meta_id: true,
+                enviado_para_cp: true,
+                pessoaCriador: {
+                    select: { nome_exibicao: true },
+                },
+                id: true,
+            },
+        });
+
+        const ret: MfListFormulaCompostaAnaliseQualitativaDto = {
+            formula_composta: { id: formula_composta.id, titulo: formula_composta.titulo },
+            analises: analisesResult.map((r) => {
+                return {
+                    analise_qualitativa: r.analise_qualitativa || '',
+                    ultima_revisao: r.ultima_revisao,
+                    criado_em: r.criado_em,
+                    meta_id: r.meta_id,
+                    enviado_para_cp: r.enviado_para_cp,
+                    id: r.id,
+                    criador: { nome_exibicao: r.pessoaCriador.nome_exibicao },
+                };
+            }),
+        };
+
+        return ret;
     }
 }

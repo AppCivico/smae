@@ -1135,6 +1135,52 @@ export class VariavelService {
         return result[0].meta_id;
     }
 
+    async getMetaIdDaFormulaComposta(
+        formula_composta_id: number,
+        prismaTxn: Prisma.TransactionClient
+    ): Promise<number> {
+        const result: {
+            meta_id: number;
+        }[] = await prismaTxn.$queryRaw`
+            select coalesce(
+
+                -- busca pela diretamente na meta
+                (
+                    select m.id
+                    from meta m
+                    join indicador i on i.meta_id = m.id and i.removido_em is null
+                    join indicador_formula_composta fc on fc.indicador_id = i.id and fc.desativado=false and fc.indicador_origem_id is null
+                    where fc.formula_composta_id = ${formula_composta_id}::int
+                    and i.removido_em is null
+                ),
+                (
+                    select m.id
+                    from meta m
+                    join iniciativa _i on _i.meta_id = m.id
+                    join indicador i on  i.iniciativa_id = _i.id
+                    join indicador_formula_composta fc on fc.indicador_id = i.id and fc.desativado=false and fc.indicador_origem_id is null
+                    where fc.formula_composta_id = ${formula_composta_id}::int
+                    and i.removido_em is null
+                ),
+                (
+                    select m.id
+                    from meta m
+                    join iniciativa _i on _i.meta_id = m.id
+                    join atividade _a on _a.iniciativa_id = _i.id
+                    join indicador i on  i.atividade_id = _a.id
+                    join indicador_formula_composta fc on fc.indicador_id = i.id and fc.desativado=false and fc.indicador_origem_id is null
+                    where fc.formula_composta_id = ${formula_composta_id}::int
+                    and i.removido_em is null
+                )
+            ) as meta_id
+        `;
+        console.log(result);
+
+        if (!result[0].meta_id)
+            throw `getMetaIdDaFormulaComposta: nenhum resultado para formula_composta ${formula_composta_id}`;
+        return result[0].meta_id;
+    }
+
     async getMetaIdDoIndicador(indicador_id: number, prismaTxn: Prisma.TransactionClient): Promise<number> {
         const result: {
             meta_id: number;
