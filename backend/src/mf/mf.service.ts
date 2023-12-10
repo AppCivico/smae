@@ -6,7 +6,8 @@ import { PrismaService } from '../prisma/prisma.service';
 import { CicloAtivoDto } from './metas/dto/mf-meta.dto';
 import { sleepFor } from '../common/sleepFor';
 
-const erroSemPerfil = () => {
+const erroSemPerfil = (logger: Logger) => {
+    logger.verbose(`nenhum perfil encontrado`);
     return new HttpException(
         'Você não possui um perfil de acesso para monitoramento no momento ou o perfil está sendo modificado. Por favor, tente novamente em alguns segundos.',
         404
@@ -23,12 +24,16 @@ export class MfService {
         let perfil = await this.prisma.pessoaAcessoPdm.findUnique({ where: { pessoa_id: user.id } });
         if (!perfil) {
             let isValid = await this.prisma.pessoaAcessoPdmValido.findUnique({ where: { pessoa_id: user.id } });
-            if (isValid) throw erroSemPerfil();
+            this.logger.verbose(
+                `Perfil não encontrado para usuário ${user.id}, informação é ${isValid ? 'valida' : 'não válida'}`
+            );
+            if (isValid) throw erroSemPerfil(this.logger);
 
             const maxAttempts = 4; // tenta calcular 4x, se continuar sem perfil, não difícil ser transação apagando a linha em sequencia
             let attempts: number = maxAttempts;
 
             while (attempts > 0) {
+                this.logger.verbose(`recalcando perfil para ${user.id}, tentativa ${attempts} de ${maxAttempts}...`);
                 attempts--;
                 try {
                     await this.prisma.$queryRaw`select pessoa_acesso_pdm(${user.id}::int);`;
@@ -36,8 +41,10 @@ export class MfService {
                     isValid = await this.prisma.pessoaAcessoPdmValido.findUnique({ where: { pessoa_id: user.id } });
 
                     // se ta valido, carrega o perfil
-                    if (isValid)
+                    if (isValid) {
                         perfil = await this.prisma.pessoaAcessoPdm.findUnique({ where: { pessoa_id: user.id } });
+                        if (perfil) this.logger.verbose(`perfil calculado em ${attempts} tentativa(s)`);
+                    }
 
                     // se encontrou perfil, para o loop
                     if (isValid && perfil) break;
@@ -55,10 +62,10 @@ export class MfService {
             }
 
             // se não tem perfil ainda, já esgotou todas as tentativas, da erro
-            if (isValid && !perfil) throw erroSemPerfil();
+            if (isValid && !perfil) throw erroSemPerfil(this.logger);
         }
 
-        if (!perfil) throw erroSemPerfil();
+        if (!perfil) throw erroSemPerfil(this.logger);
 
         // apenas pra ter certeza, mas eu acredito que o Prisma já faz isso sozinho
         perfil.cronogramas_etapas = perfil.cronogramas_etapas.map((n) => +n);
