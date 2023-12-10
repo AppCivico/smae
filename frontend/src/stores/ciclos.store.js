@@ -11,6 +11,7 @@ export const useCiclosStore = defineStore({
     MetasCiclos: {},
     SingleMeta: {},
     MetaVars: {},
+    dadosExtrasDeVariáveis: [],
     SingleAnalise: {},
     SingleMetaAnalise: {},
     SingleMetaAnaliseDocs: {},
@@ -172,6 +173,18 @@ export const useCiclosStore = defineStore({
         this.MetaVars = r;
       } catch (error) {
         this.MetaVars = { error };
+      }
+    },
+
+    async buscarAnaliseQualitativa(params) {
+      this.dadosExtrasDeVariáveis = { loading: true };
+      try {
+        const r = await this.requestS.post(`${baseUrl}/mf/metas/variaveis/busca-analise-qualitativa`, params);
+        if (Array.isArray(r.linhas)) {
+          this.dadosExtrasDeVariáveis = r.linhas;
+        }
+      } catch (error) {
+        this.dadosExtrasDeVariáveis = { error };
       }
     },
 
@@ -436,6 +449,18 @@ export const useCiclosStore = defineStore({
     índiceDeSériesEmMetaVars: ({ MetaVars }) => (Array.isArray(MetaVars?.ordem_series)
       ? MetaVars.ordem_series.reduce((acc, cur, index) => {
         acc[cur] = index;
+        return acc;
+      }, {})
+      : {}),
+    dadosExtrasPorVariávelId: ({ dadosExtrasDeVariáveis }) => (Array.isArray(dadosExtrasDeVariáveis)
+      ? dadosExtrasDeVariáveis.reduce((acc, cur) => {
+        console.debug('cur', cur);
+        if (cur.variavel?.id && !acc[cur.variavel.id]) {
+          acc[cur.variavel.id] = {
+            ...cur.variavel,
+            ...cur,
+          };
+        }
         return acc;
       }, {})
       : {}),
