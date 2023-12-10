@@ -33,7 +33,9 @@ const pr = defineProps(['props']);
 const { props } = pr;
 
 const CiclosStore = useCiclosStore();
-const { índiceDeSériesEmMetaVars, dadosExtrasPorVariávelId } = storeToRefs(CiclosStore);
+const {
+  índiceDeSériesEmMetaVars, dadosExtrasDeComposta, dadosExtrasPorVariávelId, MetaVars,
+} = storeToRefs(CiclosStore);
 
 const linhasAbertas = ref([]);
 const valorPadrãoParaAnáliseQualitativa = ref('');
@@ -50,6 +52,11 @@ const variáveisComSuasDatas = computed(() => (Array.isArray(props.variávelComp
   : []));
 
 const valoresIniciais = computed(() => ({
+  composta: {
+    data_ciclo: MetaVars.value.data_ciclo,
+    formula_composta_id: props.variávelComposta?.id,
+    analise_qualitativa: dadosExtrasDeComposta.value?.analises?.[0]?.analise_qualitativa || '',
+  },
   linhas: !Array.isArray(props.variávelComposta?.variaveis)
     ? [{
       analise_qualitativa: '',
@@ -84,16 +91,20 @@ const {
 
 const onSubmit = handleSubmit.withControlled(async () => {
   try {
-    console.debug('carga', carga);
+    const [primeira, segunda] = await Promise.all([
+      CiclosStore.salvarVariáveisCompostasEmLote({ linhas: carga.linhas }),
+      CiclosStore.salvarVariávelComposta(carga.composta),
+    ]);
 
-    const r = await CiclosStore.salvarVariáveisCompostasEmLote(carga);
-    const msg = 'Dados salvos com sucesso!';
-
-    if (r === true) {
-      editModalStore.clear();
-      alertStore.success(msg);
-      CiclosStore.getMetaVars(meta_id);
+    if (!primeira || !segunda) {
+      throw new Error('Nem todos os dados foram salvos!');
     }
+
+    const msg = 'Dados salvos!';
+
+    editModalStore.clear();
+    alertStore.success(msg);
+    CiclosStore.getMetaVars(meta_id);
   } catch (error) {
     alertStore.error(error);
   }
@@ -147,9 +158,18 @@ watch(valoresIniciais, (novoValor) => {
 
 // BUG-CONHECIDO: deve acabar rodando apenas uma vez por causa da perda de
 // reatividade na explosão das props. Precisa-se corrigir isso!
+watch(() => props.variávelComposta, (novoValor) => {
+  if (novoValor?.id) {
+    CiclosStore.buscarDadosExtrasDeComposta({
+      data_ciclo: MetaVars.value.data_ciclo,
+      formula_composta_id: novoValor.id,
+    });
+  }
+}, { immediate: true });
+
 watch(variáveisComSuasDatas, (novoValor) => {
   if (novoValor.length) {
-    CiclosStore.buscarAnaliseQualitativa({ linhas: novoValor });
+    CiclosStore.buscarDadosExtrasDeVariáveis({ linhas: novoValor });
   }
 }, { immediate: true });
 </script>
@@ -194,69 +214,92 @@ watch(variáveisComSuasDatas, (novoValor) => {
     {{ props.variávelComposta?.titulo }}
   </h3>
 
-  <auxiliarDePreenchimento>
-    <div class="flex g2 end mb1">
-      <div class="f1">
-        <label class="label">Realizados</label>
-        <input
-          v-model="valorPadrãoParaRealizado"
-          type="number"
-          min="0"
-          class="inputtext light mb1"
-        >
-      </div>
-      <div class="f1">
-        <label class="label">Acumulados</label>
-        <input
-          v-model="valorPadrãoParaRealizadoAcumulado"
-          type="number"
-          min="0"
-          class="inputtext light mb1"
-        >
-      </div>
-    </div>
-
-    <div class="flex g2 end mb1">
-      <div class="f1">
-        <label class="label">Análise qualitativa</label>
-        <textarea
-          v-model="valorPadrãoParaAnáliseQualitativa"
-          class="inputtext light mb1"
-        />
-      </div>
-    </div>
-
-    <div class="flex g2 mb1 center">
-      <hr class="f1">
-      <button
-        type="button"
-        class="f0 btn bgnone outline tcprimary"
-        @click="preencher('vazios')"
-      >
-        Preencher vazios
-      </button>
-      <button
-        type="button"
-        class="f0 btn bgnone outline tcprimary"
-        @click="preencher('todos')"
-      >
-        Preencher todos
-      </button>
-      <button
-        type="reset"
-        class="f0 pl0 pr0 btn bgnone"
-        @click.prevent="restaurarFormulário"
-      >
-        &times; restaurar
-      </button>
-      <hr class="f1">
-    </div>
-  </auxiliarDePreenchimento>
-
   <form
     :disabled="isSubmitting"
     @submit="onSubmit"
   >
+    <div class="flex mb1">
+      <div class="f1">
+        <label class="label tc300">Análise qualitativa</label>
+        <Field
+          name="composta.analise_qualitativa"
+          as="textarea"
+          :value="composta?.analise_qualitativa"
+          rows="3"
+          class="inputtext light mb1"
+          :class="{ 'error': errors['composta.analise_qualitativa'] }"
+        />
+
+        <ErrorMessage
+          class="error-msg mb1"
+          name="composta.analise_qualitativa"
+        />
+      </div>
+    </div>
+
+    <h4 class="mb1">
+      Valores de variáveis componentes
+    </h4>
+
+    <auxiliarDePreenchimento>
+      <div class="flex g2 end mb1">
+        <div class="f1">
+          <label class="label">Realizados</label>
+          <input
+            v-model="valorPadrãoParaRealizado"
+            type="number"
+            min="0"
+            class="inputtext light mb1"
+          >
+        </div>
+        <div class="f1">
+          <label class="label">Acumulados</label>
+          <input
+            v-model="valorPadrãoParaRealizadoAcumulado"
+            type="number"
+            min="0"
+            class="inputtext light mb1"
+          >
+        </div>
+      </div>
+
+      <div class="flex g2 end mb1">
+        <div class="f1">
+          <label class="label">Análise qualitativa</label>
+          <textarea
+            v-model="valorPadrãoParaAnáliseQualitativa"
+            class="inputtext light mb1"
+          />
+        </div>
+      </div>
+
+      <div class="flex g2 mb1 center">
+        <hr class="f1">
+        <button
+          type="button"
+          class="f0 btn bgnone outline tcprimary"
+          @click="preencher('vazios')"
+        >
+          Preencher vazios
+        </button>
+        <button
+          type="button"
+          class="f0 btn bgnone outline tcprimary"
+          @click="preencher('todos')"
+        >
+          Preencher todos
+        </button>
+        <button
+          type="reset"
+          class="f0 pl0 pr0 btn bgnone"
+          @click.prevent="restaurarFormulário"
+        >
+          &times; restaurar
+        </button>
+        <hr class="f1">
+      </div>
+    </auxiliarDePreenchimento>
+
     <table class="tablemain no-zebra mb1">
       <thead>
         <th />
@@ -281,7 +324,7 @@ watch(variáveisComSuasDatas, (novoValor) => {
             <td class="accordeon">
               <label
                 class="center like-a__text"
-                aria-label="exibir análie qualitativa"
+                aria-label="exibir análise qualitativa"
                 style="min-width:13px; min-height:13px"
               >
                 <input
