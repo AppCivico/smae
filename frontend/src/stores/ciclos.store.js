@@ -12,6 +12,7 @@ export const useCiclosStore = defineStore({
     SingleMeta: {},
     MetaVars: {},
     dadosExtrasDeVariáveis: [],
+    dadosExtrasDeComposta: {},
     SingleAnalise: {},
     SingleMetaAnalise: {},
     SingleMetaAnaliseDocs: {},
@@ -176,7 +177,7 @@ export const useCiclosStore = defineStore({
       }
     },
 
-    async buscarAnaliseQualitativa(params) {
+    async buscarDadosExtrasDeVariáveis(params) {
       this.dadosExtrasDeVariáveis = { loading: true };
       try {
         const r = await this.requestS.post(`${baseUrl}/mf/metas/variaveis/busca-analise-qualitativa`, params);
@@ -188,8 +189,24 @@ export const useCiclosStore = defineStore({
       }
     },
 
+    async buscarDadosExtrasDeComposta(params) {
+      this.dadosExtrasDeComposta = { loading: true };
+      try {
+        const r = await this.requestS.get(`${baseUrl}/mf/metas/formula-composta/analise-qualitativa`, params);
+
+        this.dadosExtrasDeComposta = r;
+      } catch (error) {
+        this.dadosExtrasDeComposta = { error };
+      }
+    },
+
     async salvarVariáveisCompostasEmLote(params) {
       if (await this.requestS.patch(`${baseUrl}/mf/metas/variaveis/analise-qualitativa-em-lote`, params)) return true;
+      return false;
+    },
+
+    async salvarVariávelComposta(params) {
+      if (await this.requestS.patch(`${baseUrl}/mf/metas/formula-composta/analise-qualitativa`, params)) return true;
       return false;
     },
 
@@ -454,7 +471,6 @@ export const useCiclosStore = defineStore({
       : {}),
     dadosExtrasPorVariávelId: ({ dadosExtrasDeVariáveis }) => (Array.isArray(dadosExtrasDeVariáveis)
       ? dadosExtrasDeVariáveis.reduce((acc, cur) => {
-        console.debug('cur', cur);
         if (cur.variavel?.id && !acc[cur.variavel.id]) {
           acc[cur.variavel.id] = {
             ...cur.variavel,
