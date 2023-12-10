@@ -64,16 +64,15 @@ const onSubmit = handleSubmit.withControlled(async () => {
       // VariaveisStore.$reset();
       VariaveisStore.getAllCompound(indicadorId);
       alertStore.success(msg);
-      // editModalStore.$reset();
-      if (route.meta.rotaDeEscape) {
-        console.debug('route.meta.rotaDeEscape', route.meta.rotaDeEscape);
+      editModalStore.$reset();
 
-        // router.push({
-        //   name: route.meta.rotaDeEscape,
-        //   // ao que parece, os parâmetros só não são necessários
-        //   // se a rota corrente e a de destino forem aninhadas
-        //   params: route.params,
-        // });
+      if (route.meta.rotaDeEscape) {
+        router.push({
+          name: route.meta.rotaDeEscape,
+          // ao que parece, os parâmetros só não são necessários
+          // se a rota corrente e a de destino forem aninhadas
+          params: route.params,
+        });
       }
     }
   } catch (error) {
