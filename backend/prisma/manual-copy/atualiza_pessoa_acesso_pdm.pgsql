@@ -359,7 +359,7 @@ CREATE OR REPLACE FUNCTION f_recalc_acesso_pessoas() RETURNS trigger AS $emp_sta
 BEGIN
     DELETE FROM pessoa_acesso_pdm_valido;
     DELETE FROM pessoa_acesso_pdm;
-    RETURN NEW;
+    RETURN NULL;
 END;
 $emp_stamp$ LANGUAGE plpgsql;
 
