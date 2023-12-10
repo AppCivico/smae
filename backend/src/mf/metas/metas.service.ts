@@ -331,6 +331,7 @@ export class MetasService {
         const cicloFase = indicadorMeta.meta.ciclo_fase?.ciclo_fase ? indicadorMeta.meta.ciclo_fase?.ciclo_fase : '';
 
         const retorno: RetornoMetaVariaveisDto = {
+            data_ciclo: cicloFisicoAtivo.data_ciclo.toISOString().substring(0, 10),
             perfil: config.perfil,
             ordem_series: calcSerieVariaveis.ordem_series,
             meta: {
