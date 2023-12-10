@@ -69,8 +69,7 @@ BEGIN
         variaveis,
         cronogramas_etapas,
         data_ciclo,
-        perfil,
-        congelado
+        perfil
     )
     WITH variaveis_pdm as (
         select
@@ -345,8 +344,7 @@ BEGIN
         (select coalesce(array_agg(distinct variavel_id), '{}'::int[]) from variaveis_visiveis) as variaveis,
         (select coalesce(array_agg(distinct etapa_id), '{}'::int[]) from cronogramas_etapas) as cronogramas_etapas,
         vCiclo as ciclo,
-        vPerfil as perfil,
-        false as congelado
+        vPerfil as perfil
     where (select count(1) from pessoa_acesso_pdm x where x.pessoa_id = pPessoa_id) = 0; -- just in case
 
     return 'ok';
