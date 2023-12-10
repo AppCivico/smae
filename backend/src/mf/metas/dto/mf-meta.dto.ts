@@ -1,7 +1,7 @@
 import { ApiProperty, OmitType, PickType } from '@nestjs/swagger';
 import { CicloFase, Periodicidade, Serie } from '@prisma/client';
 import { Transform, Type } from 'class-transformer';
-import { IsBoolean, IsNumber, IsNumberString, IsOptional, IsString, ValidateIf, ValidateNested } from 'class-validator';
+import { IsArray, IsBoolean, IsNumber, IsNumberString, IsOptional, IsString, ValidateIf, ValidateNested } from 'class-validator';
 import { IsOnlyDate } from '../../../common/decorators/IsDateOnly';
 
 import { IdTituloDto } from 'src/common/dto/IdTitulo.dto';
@@ -334,6 +334,7 @@ export class VariavelAnaliseQualitativaEmLoteDto extends PickType(VariavelAnalis
 ]) {
     @ValidateNested({ each: true })
     @Type(() => VariavelAnaliseQualitativaParaLoteDto)
+    @IsArray()
     linhas: VariavelAnaliseQualitativaParaLoteDto[];
 }
 
@@ -380,6 +381,7 @@ export class FilterVariavelAnaliseQualitativaUltimaRevisaoDto extends PickType(F
 export class FilterVariavelAnaliseQualitativaEmLoteDto {
     @ValidateNested({ each: true })
     @Type(() => FilterVariavelAnaliseQualitativaUltimaRevisaoDto)
+    @IsArray()
     linhas: FilterVariavelAnaliseQualitativaUltimaRevisaoDto[];
 }
 
