@@ -43,7 +43,8 @@ export class MfService {
                     // se ta valido, carrega o perfil
                     if (isValid) {
                         perfil = await this.prisma.pessoaAcessoPdm.findUnique({ where: { pessoa_id: user.id } });
-                        if (perfil) this.logger.verbose(`perfil calculado em ${attempts} tentativa(s)`);
+                        if (perfil)
+                            this.logger.verbose(`perfil calculado em ${maxAttempts - attempts + 1} tentativa(s)`);
                     }
 
                     // se encontrou perfil, para o loop
