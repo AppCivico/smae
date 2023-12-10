@@ -734,13 +734,13 @@ export class MetasService {
         for (const variavel of seriesVariavel) {
             conditions.push({
                 variavel_id: variavel.variavel_id,
-                data_valor: Date2YMD.fromString(variavel.data_anterior),
+                data_valor: Date2YMD.fromString(variavel.data_corrente),
             });
 
             if (mesAnterior)
                 conditions.push({
                     variavel_id: variavel.variavel_id,
-                    data_valor: Date2YMD.fromString(variavel.data_corrente),
+                    data_valor: Date2YMD.fromString(variavel.data_anterior),
                 });
         }
 
