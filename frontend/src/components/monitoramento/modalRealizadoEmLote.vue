@@ -28,15 +28,26 @@ const { meta_id } = route.params;
 
 // PRA-FAZER: remover as prop desnecessárias
 const pr = defineProps(['props']);
+// BUG-CONHECIDO: explodir as props as fazem perder reatividade. Já que esse modal
+// não tem rota, é provável, mas não garantido, que não dê problemas.
 const { props } = pr;
 
 const CiclosStore = useCiclosStore();
-const { índiceDeSériesEmMetaVars } = storeToRefs(CiclosStore);
+const { índiceDeSériesEmMetaVars, dadosExtrasPorVariávelId } = storeToRefs(CiclosStore);
 
 const linhasAbertas = ref([]);
 const valorPadrãoParaAnáliseQualitativa = ref('');
 const valorPadrãoParaRealizado = ref(null);
 const valorPadrãoParaRealizadoAcumulado = ref(null);
+
+const variáveisComSuasDatas = computed(() => (Array.isArray(props.variávelComposta?.variaveis)
+  ? props.variávelComposta.variaveis.reduce((acc, cur) => acc.concat(
+    cur.series.map((y) => ({
+      data_valor: y.periodo,
+      variavel_id: cur.variavel.id,
+    })),
+  ), [])
+  : []));
 
 const valoresIniciais = computed(() => ({
   linhas: !Array.isArray(props.variávelComposta?.variaveis)
@@ -50,13 +61,14 @@ const valoresIniciais = computed(() => ({
     }]
     : props.variávelComposta.variaveis.reduce((acc, cur) => acc.concat(
       cur.series.map((y) => ({
-        analise_qualitativa: '',
+        analise_qualitativa: dadosExtrasPorVariávelId.value?.[cur.variavel.id]?.analises?.[0]?.analise_qualitativa || '',
         codigo: cur.variavel.codigo,
         data_valor: y.periodo,
         enviar_para_cp: false,
         titulo: cur.variavel.titulo,
-        valor_realizado_acumulado:
-          y.series[índiceDeSériesEmMetaVars.value.RealizadoAcumulado]?.valor_nominal,
+        valor_realizado_acumulado: !dadosExtrasPorVariávelId.value?.[cur.variavel.id]?.acumulativa
+          ? y.series[índiceDeSériesEmMetaVars.value.RealizadoAcumulado]?.valor_nominal
+          : undefined,
         valor_realizado: y.series[índiceDeSériesEmMetaVars.value.Realizado]?.valor_nominal,
         variavel_id: cur.variavel.id,
       })),
@@ -132,6 +144,14 @@ function restaurarFormulário() {
 watch(valoresIniciais, (novoValor) => {
   resetForm({ values: novoValor });
 });
+
+// BUG-CONHECIDO: deve acabar rodando apenas uma vez por causa da perda de
+// reatividade na explosão das props. Precisa-se corrigir isso!
+watch(variáveisComSuasDatas, (novoValor) => {
+  if (novoValor.length) {
+    CiclosStore.buscarAnaliseQualitativa({ linhas: novoValor });
+  }
+}, { immediate: true });
 </script>
 <template>
   <div class="flex spacebetween center mb2">
@@ -242,8 +262,12 @@ watch(valoresIniciais, (novoValor) => {
         <th />
         <th>código</th>
         <th>Referência</th>
-        <th>realizado</th>
-        <th>Realizado acumulado</th>
+        <th class="cell--number">
+          Realizado
+        </th>
+        <th class="cell--number">
+          Realizado acumulado
+        </th>
       </thead>
       <FieldArray
         v-slot="{ fields }"
@@ -291,7 +315,7 @@ watch(valoresIniciais, (novoValor) => {
             <td>
               {{ dateToField(field.value.data_valor) }}
             </td>
-            <td>
+            <td class="cell--number">
               <Field
                 :name="`linhas[${idx}].valor_realizado`"
                 type="number"
@@ -310,8 +334,9 @@ watch(valoresIniciais, (novoValor) => {
                 :name="`linhas[${idx}].valor_realizado`"
               />
             </td>
-            <td>
+            <td class="cell--number">
               <Field
+                v-if="!dadosExtrasPorVariávelId[field.value.variavel_id]?.acumulativa"
                 :name="`linhas[${idx}].valor_realizado_acumulado`"
                 type="number"
                 :value="field.valor_realizado_acumulado"
@@ -324,6 +349,9 @@ watch(valoresIniciais, (novoValor) => {
                   }
                 }"
               />
+              <template v-else>
+                -
+              </template>
               <ErrorMessage
                 class="error-msg mt1"
                 :name="`linhas[${idx}].valor_realizado_acumulado`"

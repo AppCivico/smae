@@ -3,7 +3,14 @@ import { useCiclosStore } from '@/stores/ciclos.store';
 import dateToTitle from '@/helpers/dateToTitle';
 
 const CiclosStore = useCiclosStore();
-defineProps(['parent', 'list', 'indexes', 'editPeriodo', 'abrePeriodo']);
+defineProps([
+  'parent',
+  'list',
+  'indexes',
+  'editPeriodo',
+  'abrePeriodo',
+  'editPeriodoEmLote',
+]);
 function openParent(e) {
   e.target.closest('.accordeon').classList.toggle('active');
 }
@@ -15,7 +22,7 @@ function openParent(e) {
     class="accordeon active mb2"
   >
     <div
-      class="flex mb1"
+      class="flex spacebetween center mb1"
       @click="openParent"
     >
       <span class="t0"><svg
@@ -26,7 +33,16 @@ function openParent(e) {
       <h4 class="t1 mb0">
         {{ c.titulo }}
       </h4>
+      <hr class="ml2 f1">
+      <button
+        type="button"
+        class="ml2 btn"
+        @click.stop="editPeriodoEmLote(parent, c, { apenasVazias: true })"
+      >
+        Ações em lote
+      </button>
     </div>
+
     <div class="content">
       <table class="tablemain no-zebra fix">
         <thead>
