@@ -9,6 +9,7 @@ import { default as modalAnaliseRisco } from '@/components/monitoramento/modalAn
 import { default as modalFechamento } from '@/components/monitoramento/modalFechamento.vue';
 import { default as modalQualificacaoMeta } from '@/components/monitoramento/modalQualificacaoMeta.vue';
 import { default as modalRealizado } from '@/components/monitoramento/modalRealizado.vue';
+import modalRealizadoEmLote from '@/components/monitoramento/modalRealizadoEmLote.vue';
 import { default as sidebarRealizado } from '@/components/monitoramento/sidebarRealizado.vue';
 import { auxiliarDePreenchimentoDeEvoluçãoDeMeta as schema } from '@/consts/formSchemas';
 import dateToField from '@/helpers/dateToField';
@@ -73,6 +74,14 @@ function editPeriodo(parent, var_id, periodo) {
     parent, var_id, periodo, checkClose,
   });
 }
+
+function editPeriodoEmLote(parent, variávelComposta, params) {
+  editModalStore.clear();
+  editModalStore.modal(modalRealizadoEmLote, {
+    parent, variávelComposta, params, checkClose,
+  });
+}
+
 function abrePeriodo(parent, var_id, periodo) {
   SideBarStore.clear();
   SideBarStore.modal(sidebarRealizado, { parent, var_id, periodo });
@@ -565,6 +574,7 @@ iniciar();
             :list="agrupadorDeVariáveis(MetaVars?.meta?.variaveis).compostas"
             :indexes="MetaVars.ordem_series"
             :edit-periodo="editPeriodo"
+            :edit-periodo-em-lote="editPeriodoEmLote"
             :abre-periodo="abrePeriodo"
           />
 
@@ -614,6 +624,7 @@ iniciar();
                 :list="agrupadorDeVariáveis(ini.variaveis).compostas"
                 :indexes="MetaVars.ordem_series"
                 :edit-periodo="editPeriodo"
+                :edit-periodo-em-lote="editPeriodoEmLote"
                 :abre-periodo="abrePeriodo"
               />
 
@@ -664,6 +675,7 @@ iniciar();
                   :list="agrupadorDeVariáveis(ati.variaveis).compostas"
                   :indexes="MetaVars.ordem_series"
                   :edit-periodo="editPeriodo"
+                  :edit-periodo-em-lote="editPeriodoEmLote"
                   :abre-periodo="abrePeriodo"
                 />
 
