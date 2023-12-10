@@ -2,10 +2,12 @@ import { BadRequestException, HttpException, Injectable } from '@nestjs/common';
 import { CicloFase, PessoaAcessoPdm, Prisma, Serie } from '@prisma/client';
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import { Date2YMD, DateYMD } from '../../common/date2ymd';
+import { IdTituloDto } from '../../common/dto/IdTitulo.dto';
 import { BatchRecordWithId, RecordWithId } from '../../common/dto/record-with-id.dto';
+import { MathRandom } from '../../common/math-random';
 import { PrismaService } from '../../prisma/prisma.service';
 import { UploadService } from '../../upload/upload.service';
-import { IdTitulo, SerieValorNomimal } from '../../variavel/entities/variavel.entity';
+import { SerieValorNomimal } from '../../variavel/entities/variavel.entity';
 import { VariavelService } from '../../variavel/variavel.service';
 import { MfService } from './../mf.service';
 import {
@@ -18,6 +20,7 @@ import {
     FilterVariavelAnaliseQualitativaDto,
     FilterVariavelAnaliseQualitativaEmLoteDto,
     FilterVariavelAnaliseQualitativaUltimaRevisaoDto,
+    FormulaCompostaAnaliseQualitativaDocumentoDto,
     FormulaCompostaAnaliseQualitativaDto,
     IniciativasRetorno,
     MfAvancarFasesDto,
@@ -27,19 +30,17 @@ import {
     MfListVariavelAnaliseQualitativaEmLoteDto,
     MfListVariavelAnaliseQualitativaReducedDto,
     MfMetaDto,
-    MfSeriesAgrupadas,
     MfSerieValorNomimal,
+    MfSeriesAgrupadas,
     RetornoMetaVariaveisDto,
     VariavelAnaliseQualitativaDocumentoDto,
     VariavelAnaliseQualitativaDto,
     VariavelAnaliseQualitativaEmLoteDto,
-    VariavelComplementacaoDto,
     VariavelComSeries,
+    VariavelComplementacaoDto,
     VariavelConferidaDto,
     VariavelQtdeDto,
 } from './dto/mf-meta.dto';
-import { MathRandom } from '../../common/math-random';
-import { IdTituloDto } from '../../common/dto/IdTitulo.dto';
 
 type DadosCiclo = { variavelParticipa: boolean; id: number; ativo: boolean; meta_esta_na_coleta: boolean };
 
@@ -1915,7 +1916,9 @@ export class MetasService {
         const now = new Date(Date.now());
 
         if (dto.data_ciclo.toISOString() != cicloAtivo.data_ciclo.toISOString())
-            throw new BadRequestException(`Você só pode enviar análises para o ciclo ativo, ${cicloAtivo.data_ciclo.toISOString()}`);
+            throw new BadRequestException(
+                `Você só pode enviar análises para o ciclo ativo, ${cicloAtivo.data_ciclo.toISOString()}`
+            );
 
         const meta_id = await this.variavelService.getMetaIdDaFormulaComposta(dto.formula_composta_id, this.prisma);
 
@@ -2009,6 +2012,33 @@ export class MetasService {
             },
         });
 
+        const arquivosResult = await this.prisma.formulaCompostaCicloFisicoDocumento.findMany({
+            where: {
+                referencia_data: dto.data_ciclo,
+                formula_composta_id: formula_composta.id,
+                removido_em: null,
+            },
+            orderBy: {
+                criado_em: 'desc',
+            },
+            select: {
+                criado_em: true,
+                pessoaCriador: {
+                    select: { nome_exibicao: true },
+                },
+                id: true,
+                arquivo: {
+                    select: {
+                        id: true,
+                        tamanho_bytes: true,
+                        TipoDocumento: true,
+                        descricao: true,
+                        nome_original: true,
+                    },
+                },
+            },
+        });
+
         const ret: MfListFormulaCompostaAnaliseQualitativaDto = {
             formula_composta: { id: formula_composta.id, titulo: formula_composta.titulo },
             analises: analisesResult.map((r) => {
@@ -2022,8 +2052,56 @@ export class MetasService {
                     criador: { nome_exibicao: r.pessoaCriador.nome_exibicao },
                 };
             }),
+            arquivos: arquivosResult.map((r) => {
+                return {
+                    id: r.id,
+                    criador: { nome_exibicao: r.pessoaCriador.nome_exibicao },
+                    criado_em: r.criado_em,
+                    arquivo: {
+                        ...r.arquivo,
+                        ...this.uploadService.getDownloadToken(r.arquivo.id, TEMPO_EXPIRACAO_ARQUIVO),
+                    },
+                };
+            }),
         };
 
         return ret;
+    }
+
+    async addMetaFormulaCompostaAnaliseQualitativaDocumento(
+        dto: FormulaCompostaAnaliseQualitativaDocumentoDto,
+        config: PessoaAcessoPdm,
+        cicloAtivo: CicloAtivoDto,
+        user: PessoaFromJwt
+    ): Promise<RecordWithId> {
+        const now = new Date(Date.now());
+
+        if (dto.data_ciclo.toISOString() != cicloAtivo.data_ciclo.toISOString())
+            throw new BadRequestException(
+                `Você só pode enviar análises para o ciclo ativo, ${cicloAtivo.data_ciclo.toISOString()}`
+            );
+
+        const meta_id = await this.variavelService.getMetaIdDaFormulaComposta(dto.formula_composta_id, this.prisma);
+
+        const id = await this.prisma.$transaction(async (prismaTxn: Prisma.TransactionClient): Promise<number> => {
+            const uploadId = this.uploadService.checkUploadOrDownloadToken(dto.upload_token);
+
+            const cfq = await prismaTxn.formulaCompostaCicloFisicoDocumento.create({
+                data: {
+                    ciclo_fisico_id: cicloAtivo.id,
+                    formula_composta_id: dto.formula_composta_id,
+                    criado_por: user.id,
+                    criado_em: now,
+                    referencia_data: dto.data_ciclo,
+                    meta_id: meta_id,
+                    arquivo_id: uploadId,
+                },
+                select: { id: true },
+            });
+
+            return cfq.id;
+        });
+
+        return { id: id };
     }
 }

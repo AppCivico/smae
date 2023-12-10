@@ -34,6 +34,7 @@ import {
     FilterVariavelAnaliseQualitativaDto,
     FilterVariavelAnaliseQualitativaEmLoteDto,
     FilterVariavelAnaliseQualitativaUltimaRevisaoDto,
+    FormulaCompostaAnaliseQualitativaDocumentoDto,
     FormulaCompostaAnaliseQualitativaDto,
     ListMfMetasDto,
     MfListFormulaCompostaAnaliseQualitativaDto,
@@ -322,4 +323,26 @@ export class MetasController {
             requestInfo: { queryTook: Date.now() - start },
         };
     }
+
+    @ApiBearerAuth('access-token')
+    @Patch('formula-composta/analise-qualitativa/documento')
+    @Roles('PDM.admin_cp', 'PDM.tecnico_cp', 'PDM.ponto_focal')
+    @ApiExtraModels(RecordWithId, RequestInfoDto)
+    @ApiOkResponse({
+        schema: { allOf: refs(RecordWithId, RequestInfoDto) },
+    })
+    async AddMetaFormulaCompostaAnaliseQualitativaDocumento(
+        @Body() dto: FormulaCompostaAnaliseQualitativaDocumentoDto,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<RecordWithId & RequestInfoDto> {
+        const start = Date.now();
+        const config = await this.mfService.pessoaAcessoPdm(user);
+        const cicloFisicoAtivo = await this.mfService.cicloFisicoAtivo();
+
+        return {
+            ...(await this.metasService.addMetaFormulaCompostaAnaliseQualitativaDocumento(dto, config, cicloFisicoAtivo, user)),
+            requestInfo: { queryTook: Date.now() - start },
+        };
+    }
+
 }
