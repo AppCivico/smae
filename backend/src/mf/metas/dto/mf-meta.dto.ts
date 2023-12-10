@@ -8,6 +8,7 @@ import { IdTituloDto } from 'src/common/dto/IdTitulo.dto';
 import { IdCodTituloDto } from '../../../common/dto/IdCodTitulo.dto';
 import { TipoDocumentoDto } from '../../../tipo-documento/entities/tipo-documento.entity';
 import { SerieValorNomimal } from '../../../variavel/entities/variavel.entity';
+import { DateYMD } from '../../../common/date2ymd';
 
 export class FilterMfMetasDto {
     /**
@@ -160,6 +161,7 @@ export type MfAvancarFasesDto = CicloFase[];
 
 export class RetornoMetaVariaveisDto {
     perfil: string;
+    data_ciclo: DateYMD;
 
     meta: {
         indicador: IdCodTituloDto | null;
