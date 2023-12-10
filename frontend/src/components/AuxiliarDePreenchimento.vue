@@ -23,8 +23,6 @@ function openParent(e) {
   </div>
 </template>
 <style lang="less">
-@import '@/_less/variables.less';
-
 .auxiliar-de-preenchimento {
   color: @c400;
   transition-property: color;
