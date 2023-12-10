@@ -29,7 +29,8 @@ DROP FUNCTION f_trigger_recalc_acesso_pessoa();
 CREATE OR REPLACE FUNCTION f_recalc_acesso_pessoas() RETURNS trigger AS $emp_stamp$
 BEGIN
     DELETE FROM pessoa_acesso_pdm_valido;
-    RETURN NEW;
+    DELETE FROM pessoa_acesso_pdm;
+    RETURN NULL;
 END;
 $emp_stamp$ LANGUAGE plpgsql;
 
