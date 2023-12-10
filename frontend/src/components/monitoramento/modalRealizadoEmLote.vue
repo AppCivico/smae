@@ -78,7 +78,7 @@ const onSubmit = handleSubmit.withControlled(async () => {
     const msg = 'Dados salvos com sucesso!';
 
     if (r === true) {
-      // editModalStore.clear();
+      editModalStore.clear();
       alertStore.success(msg);
       CiclosStore.getMetaVars(meta_id);
     }
@@ -364,7 +364,7 @@ watch(valoresIniciais, (novoValor) => {
         Salvar
       </button>
       <button
-        v-if="perm.PDM?.ponto_focal !== 'sobral'"
+        v-if="perm.PDM?.ponto_focal"
         class="btn big"
         type="button"
         :disabled="isSubmitting"
