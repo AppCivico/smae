@@ -3,6 +3,7 @@ import { Type } from 'class-transformer';
 import {
     ArrayMaxSize,
     ArrayMinSize,
+    IsArray,
     IsInt,
     IsNumber,
     IsOptional,
@@ -130,6 +131,7 @@ export class CreateOrcamentoRealizadoDto {
     @Type(() => CreateOrcamentoRealizadoItemDto)
     @ArrayMinSize(1)
     @ArrayMaxSize(1024) // talvez seja 12, 1 pra cada mês
+    @IsArray()
     itens: CreateOrcamentoRealizadoItemDto[];
 }
 

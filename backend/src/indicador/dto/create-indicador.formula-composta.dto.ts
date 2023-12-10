@@ -1,6 +1,6 @@
 import { ApiProperty, IntersectionType, OmitType, PartialType, PickType } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
-import { ArrayMaxSize, IsBoolean, IsEnum, IsString, MaxLength, ValidateNested } from 'class-validator';
+import { ArrayMaxSize, IsArray, IsBoolean, IsEnum, IsString, MaxLength, ValidateNested } from 'class-validator';
 import { CreateGeradorVariavelDto } from '../../variavel/dto/create-variavel.dto';
 import { CreateIndicadorDto } from './create-indicador.dto';
 import { FormulaVariaveis } from './update-indicador.dto';
@@ -29,6 +29,7 @@ export class CreateIndicadorFormulaCompostaDto extends PickType(CreateIndicadorD
     @ValidateNested({ each: true })
     @Type(() => FormulaVariaveis)
     @ArrayMaxSize(100000, { message: 'Variáveis de expressão precisa ter no máximo 100000 items' })
+    @IsArray()
     formula_variaveis: FormulaVariaveis[];
 
     @IsBoolean()
