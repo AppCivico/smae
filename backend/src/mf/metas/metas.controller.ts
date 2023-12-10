@@ -28,12 +28,15 @@ import { BatchRecordWithId, RecordWithId } from '../../common/dto/record-with-id
 import { MfService } from '../mf.service';
 import {
     CicloFaseDto,
+    FilterFormulaCompostaAnaliseQualitativaDto,
     FilterMfMetasDto,
     FilterMfVariaveis,
     FilterVariavelAnaliseQualitativaDto,
     FilterVariavelAnaliseQualitativaEmLoteDto,
     FilterVariavelAnaliseQualitativaUltimaRevisaoDto,
+    FormulaCompostaAnaliseQualitativaDto,
     ListMfMetasDto,
+    MfListFormulaCompostaAnaliseQualitativaDto,
     MfListVariavelAnaliseQualitativaDto,
     MfListVariavelAnaliseQualitativaEmLoteDto,
     MfListVariavelAnaliseQualitativaReducedDto,
@@ -276,5 +279,47 @@ export class MetasController {
         await this.metasService.mudarMetaCicloFase(params.id, dto, config, cicloFisicoAtivo, user);
 
         return '';
+    }
+
+
+    @ApiBearerAuth('access-token')
+    @Patch('formula-composta/analise-qualitativa')
+    @Roles('PDM.admin_cp', 'PDM.tecnico_cp', 'PDM.ponto_focal')
+    @ApiExtraModels(RecordWithId, RequestInfoDto)
+    @ApiOkResponse({
+        schema: { allOf: refs(RecordWithId, RequestInfoDto) },
+    })
+    async AddMetaFormulaCompostaAnaliseQualitativa(
+        @Body() dto: FormulaCompostaAnaliseQualitativaDto,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<RecordWithId & RequestInfoDto> {
+        const start = Date.now();
+        const config = await this.mfService.pessoaAcessoPdm(user);
+        const cicloFisicoAtivo = await this.mfService.cicloFisicoAtivo();
+
+        return {
+            ...(await this.metasService.addMetaFormulaCompostaAnaliseQualitativa(dto, config, cicloFisicoAtivo, user)),
+            requestInfo: { queryTook: Date.now() - start },
+        };
+    }
+
+    @ApiBearerAuth('access-token')
+    @Get('formula-composta/analise-qualitativa')
+    @Roles('PDM.admin_cp', 'PDM.tecnico_cp', 'PDM.ponto_focal')
+    @ApiExtraModels(MfListFormulaCompostaAnaliseQualitativaDto, RequestInfoDto)
+    @ApiOkResponse({
+        schema: { allOf: refs(MfListFormulaCompostaAnaliseQualitativaDto, RequestInfoDto) },
+    })
+    async GetMetaFormulaCompostaAnaliseQualitativa(
+        @Query() dto: FilterFormulaCompostaAnaliseQualitativaDto,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<MfListFormulaCompostaAnaliseQualitativaDto & RequestInfoDto> {
+        const start = Date.now();
+        const config = await this.mfService.pessoaAcessoPdm(user);
+
+        return {
+            ...(await this.metasService.getMetaFormulaCompostaAnaliseQualitativa(dto, config, user)),
+            requestInfo: { queryTook: Date.now() - start },
+        };
     }
 }

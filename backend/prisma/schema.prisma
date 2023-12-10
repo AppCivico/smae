@@ -166,6 +166,11 @@ model Pessoa {
     MetaCicloFisicoFechamentoCriador        MetaCicloFisicoFechamento[]      @relation("criador")
     MetaCicloFisicoFechamentoRemovedor      MetaCicloFisicoFechamento[]      @relation("removedor")
 
+    FormulaCompostaCicloFisicoQualitativoCriador   FormulaCompostaCicloFisicoQualitativo[] @relation("criador")
+    FormulaCompostaCicloFisicoQualitativoRemovedor FormulaCompostaCicloFisicoQualitativo[] @relation("removedor")
+    FormulaCompostaCicloFisicoDocumentoCriador     FormulaCompostaCicloFisicoDocumento[]   @relation("criador")
+    FormulaCompostaCicloFisicoDocumentoRemovedor   FormulaCompostaCicloFisicoDocumento[]   @relation("removedor")
+
     MetaCicloFisicoRiscoCriador              MetaCicloFisicoRisco[]            @relation("criador")
     MetaCicloFisicoRiscoRemovedor            MetaCicloFisicoRisco[]            @relation("removedor")
     MetaCicloFisicoAnaliseDocumentoCriador   MetaCicloFisicoAnaliseDocumento[] @relation("criador")
@@ -682,8 +687,9 @@ model Arquivo {
     Relatorio                       Relatorio[]
     projeto_documentos              ProjetoDocumento[]
 
-    ImportacaoLogInput  ImportacaoOrcamento[] @relation("input")
-    ImportacaoLogOutput ImportacaoOrcamento[] @relation("output")
+    ImportacaoLogInput                  ImportacaoOrcamento[]                 @relation("input")
+    ImportacaoLogOutput                 ImportacaoOrcamento[]                 @relation("output")
+    FormulaCompostaCicloFisicoDocumento FormulaCompostaCicloFisicoDocumento[]
 
     @@map("arquivo")
 }
@@ -767,21 +773,23 @@ model Meta {
     iniciativa       Iniciativa[]
     meta_tag         MetaTag[]
 
-    cronograma                      Cronograma[]
-    painel_conteudo                 PainelConteudo[]
-    StatusMetaCicloFisico           StatusMetaCicloFisico[]
-    StatusVariavelCicloFisico       StatusVariavelCicloFisico[]
-    VariavelCicloFisicoQualitativo  VariavelCicloFisicoQualitativo[]
-    VariavelCicloFisicoDocumento    VariavelCicloFisicoDocumento[]
-    MetaCicloFisicoAnalise          MetaCicloFisicoAnalise[]
-    MetaCicloFisicoAnaliseDocumento MetaCicloFisicoAnaliseDocumento[]
-    MetaCicloFisicoRisco            MetaCicloFisicoRisco[]
-    MetaCicloFisicoFechamento       MetaCicloFisicoFechamento[]
-    MetaOrcamento                   OrcamentoPrevisto[]
-    OrcamentoPlanejado              OrcamentoPlanejado[]
-    OrcamentoRealizado              OrcamentoRealizado[]
-    projetos                        Projeto[]
-    OrcamentoPlanejadoZerado        OrcamentoPrevistoZerado[]
+    cronograma                            Cronograma[]
+    painel_conteudo                       PainelConteudo[]
+    StatusMetaCicloFisico                 StatusMetaCicloFisico[]
+    StatusVariavelCicloFisico             StatusVariavelCicloFisico[]
+    VariavelCicloFisicoQualitativo        VariavelCicloFisicoQualitativo[]
+    VariavelCicloFisicoDocumento          VariavelCicloFisicoDocumento[]
+    MetaCicloFisicoAnalise                MetaCicloFisicoAnalise[]
+    MetaCicloFisicoAnaliseDocumento       MetaCicloFisicoAnaliseDocumento[]
+    MetaCicloFisicoRisco                  MetaCicloFisicoRisco[]
+    MetaCicloFisicoFechamento             MetaCicloFisicoFechamento[]
+    MetaOrcamento                         OrcamentoPrevisto[]
+    OrcamentoPlanejado                    OrcamentoPlanejado[]
+    OrcamentoRealizado                    OrcamentoRealizado[]
+    projetos                              Projeto[]
+    OrcamentoPlanejadoZerado              OrcamentoPrevistoZerado[]
+    FormulaCompostaCicloFisicoQualitativo FormulaCompostaCicloFisicoQualitativo[]
+    FormulaCompostaCicloFisicoDocumento   FormulaCompostaCicloFisicoDocumento[]
 
     @@index([pdm_id])
     @@map("meta")
@@ -992,12 +1000,14 @@ model FormulaComposta {
     removido_por Int?
     removido_em  DateTime? @db.Timestamptz(6)
 
-    atualizador                   Pessoa?                         @relation("Atualizador", fields: [atualizado_por], references: [id])
-    criador                       Pessoa?                         @relation("Criador", fields: [criado_por], references: [id])
-    removedor                     Pessoa?                         @relation("Removedor", fields: [removido_por], references: [id])
-    FormulaCompostaVariavel       FormulaCompostaVariavel[]
-    IndicadorFormulaComposta      IndicadorFormulaComposta[]
-    IndicadorFormulaCompostaEmUso IndicadorFormulaCompostaEmUso[]
+    atualizador                           Pessoa?                                 @relation("Atualizador", fields: [atualizado_por], references: [id])
+    criador                               Pessoa?                                 @relation("Criador", fields: [criado_por], references: [id])
+    removedor                             Pessoa?                                 @relation("Removedor", fields: [removido_por], references: [id])
+    FormulaCompostaVariavel               FormulaCompostaVariavel[]
+    IndicadorFormulaComposta              IndicadorFormulaComposta[]
+    IndicadorFormulaCompostaEmUso         IndicadorFormulaCompostaEmUso[]
+    FormulaCompostaCicloFisicoQualitativo FormulaCompostaCicloFisicoQualitativo[]
+    FormulaCompostaCicloFisicoDocumento   FormulaCompostaCicloFisicoDocumento[]
 
     @@map("formula_composta")
 }
@@ -1660,20 +1670,22 @@ model CicloFisico {
     CicloFaseAtual      CicloFisicoFase? @relation("atual", fields: [ciclo_fase_atual_id], references: [id])
     ativo               Boolean          @default(false)
 
-    acordar_ciclo_em                DateTime?
-    acordar_ciclo_errmsg            String?
-    acordar_ciclo_executou_em       DateTime?
-    fases                           CicloFisicoFase[]                 @relation("fk")
-    metas                           Meta[]
-    StatusMetaCicloFisico           StatusMetaCicloFisico[]
-    StatusVariavelCicloFisico       StatusVariavelCicloFisico[]
-    VariavelCicloFisicoQualitativo  VariavelCicloFisicoQualitativo[]
-    VariavelCicloFisicoDocumento    VariavelCicloFisicoDocumento[]
-    PedidoComplementacao            PedidoComplementacao[]
-    MetaCicloFisicoAnalise          MetaCicloFisicoAnalise[]
-    MetaCicloFisicoAnaliseDocumento MetaCicloFisicoAnaliseDocumento[]
-    MetaCicloFisicoRisco            MetaCicloFisicoRisco[]
-    MetaCicloFisicoFechamento       MetaCicloFisicoFechamento[]
+    acordar_ciclo_em                      DateTime?
+    acordar_ciclo_errmsg                  String?
+    acordar_ciclo_executou_em             DateTime?
+    fases                                 CicloFisicoFase[]                       @relation("fk")
+    metas                                 Meta[]
+    StatusMetaCicloFisico                 StatusMetaCicloFisico[]
+    StatusVariavelCicloFisico             StatusVariavelCicloFisico[]
+    VariavelCicloFisicoQualitativo        VariavelCicloFisicoQualitativo[]
+    VariavelCicloFisicoDocumento          VariavelCicloFisicoDocumento[]
+    PedidoComplementacao                  PedidoComplementacao[]
+    MetaCicloFisicoAnalise                MetaCicloFisicoAnalise[]
+    MetaCicloFisicoAnaliseDocumento       MetaCicloFisicoAnaliseDocumento[]
+    MetaCicloFisicoRisco                  MetaCicloFisicoRisco[]
+    MetaCicloFisicoFechamento             MetaCicloFisicoFechamento[]
+    FormulaCompostaCicloFisicoQualitativo FormulaCompostaCicloFisicoQualitativo[]
+    FormulaCompostaCicloFisicoDocumento   FormulaCompostaCicloFisicoDocumento[]
 
     @@index([pdm_id])
     @@index([data_ciclo])
@@ -1852,6 +1864,64 @@ model VariavelCicloFisicoQualitativo {
 
     @@index([meta_id, ultima_revisao])
     @@map("variavel_ciclo_fisico_qualitativo")
+}
+
+model FormulaCompostaCicloFisicoQualitativo {
+    id                  Int @id @default(autoincrement())
+    meta_id             Int
+    ciclo_fisico_id     Int
+    formula_composta_id Int
+
+    referencia_data DateTime @db.Date /// data do ciclo
+
+    analise_qualitativa String?
+    // no momento não há regra de negocio que usa esse campo, só guarda o status de qual botão foi clicado
+    // não tem processo de perdir revisão apenas de uma formula-composta
+    enviado_para_cp     Boolean
+
+    criado_em  DateTime @default(now()) @db.Timestamptz(6)
+    criado_por Int
+
+    ultima_revisao Boolean
+
+    removido_em  DateTime?
+    removido_por Int?
+
+    ciclo_fisico     CicloFisico     @relation(fields: [ciclo_fisico_id], references: [id])
+    meta             Meta            @relation(fields: [meta_id], references: [id])
+    formula_composta FormulaComposta @relation(fields: [formula_composta_id], references: [id])
+    pessoaCriador    Pessoa          @relation("criador", fields: [criado_por], references: [id])
+    pessoaRemovedor  Pessoa?         @relation("removedor", fields: [removido_por], references: [id])
+
+    @@index([meta_id, ultima_revisao])
+    @@map("formula_composta_ciclo_fisico_qualitativo")
+}
+
+model FormulaCompostaCicloFisicoDocumento {
+    id                  Int @id @default(autoincrement())
+    meta_id             Int
+    ciclo_fisico_id     Int
+    formula_composta_id Int
+
+    referencia_data DateTime @db.Date /// data do ciclo
+
+    arquivo_id Int
+    arquivo    Arquivo @relation(fields: [arquivo_id], references: [id])
+
+    criado_em  DateTime @default(now()) @db.Timestamptz(6)
+    criado_por Int
+
+    removido_em  DateTime?
+    removido_por Int?
+
+    ciclo_fisico     CicloFisico     @relation(fields: [ciclo_fisico_id], references: [id])
+    meta             Meta            @relation(fields: [meta_id], references: [id])
+    formula_composta FormulaComposta @relation(fields: [formula_composta_id], references: [id])
+    pessoaCriador    Pessoa          @relation("criador", fields: [criado_por], references: [id])
+    pessoaRemovedor  Pessoa?         @relation("removedor", fields: [removido_por], references: [id])
+
+    @@index([ciclo_fisico_id, formula_composta_id])
+    @@map("formula_composta_ciclo_fisico_documento")
 }
 
 model PedidoComplementacao {
