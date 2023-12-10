@@ -1580,10 +1580,10 @@ export class MetasService {
         dto: FilterVariavelAnaliseQualitativaDto,
         config: PessoaAcessoPdm,
         user: PessoaFromJwt,
-        apenasSV: boolean = false
+        fastlane: boolean = false
     ): Promise<MfListVariavelAnaliseQualitativaDto> {
         const dateYMD = Date2YMD.toString(dto.data_valor);
-        const linha = await this.processLinha(dto, !!dto.apenas_ultima_revisao);
+        const linha = await this.processLinha(dto, !!dto.apenas_ultima_revisao, fastlane);
 
         const ordem_series: Serie[] = ['Previsto', 'PrevistoAcumulado', 'Realizado', 'RealizadoAcumulado'];
         shuffleArray(ordem_series); // garante que o consumidor não está usando os valores das series cegamente
@@ -1636,7 +1636,7 @@ export class MetasService {
         const promises: Promise<MfListVariavelAnaliseQualitativaReducedDto>[] = [];
 
         for (const linha of dto.linhas) {
-            promises.push(this.processLinha(linha, true));
+            promises.push(this.processLinha(linha, true, false));
         }
 
         const ret = await Promise.all(promises);
@@ -1646,7 +1646,8 @@ export class MetasService {
 
     private async processLinha(
         linha: FilterVariavelAnaliseQualitativaUltimaRevisaoDto,
-        apenas_ultima_revisao: boolean
+        apenas_ultima_revisao: boolean,
+        fastlane: boolean
     ): Promise<MfListVariavelAnaliseQualitativaReducedDto> {
         const meta_id = await this.variavelService.getMetaIdDaVariavel(linha.variavel_id, this.prisma);
         const dateYMD = Date2YMD.toString(linha.data_valor);
@@ -1655,12 +1656,14 @@ export class MetasService {
         const variavel = await this.carregaVariavel({ variavel_id: linha.variavel_id });
 
         const [analisesResult, arquivosResult, pedido] = await Promise.all([
-            this.buscaAnalisesQualitativas(dadosCiclo, {
-                variavel_id: linha.variavel_id,
-                apenas_ultima_revisao,
-            }),
-            this.buscaArquivos(dadosCiclo, { variavel_id: linha.variavel_id }),
-            this.buscaPedidoComplementacao(dadosCiclo, { variavel_id: linha.variavel_id }),
+            fastlane
+                ? null
+                : this.buscaAnalisesQualitativas(dadosCiclo, {
+                      variavel_id: linha.variavel_id,
+                      apenas_ultima_revisao,
+                  }),
+            fastlane ? null : this.buscaArquivos(dadosCiclo, { variavel_id: linha.variavel_id }),
+            fastlane ? null : this.buscaPedidoComplementacao(dadosCiclo, { variavel_id: linha.variavel_id }),
         ]);
 
         return {
@@ -1674,28 +1677,32 @@ export class MetasService {
                       atendido: pedido.atendido,
                   }
                 : null,
-            arquivos: arquivosResult.map((r) => {
-                return {
-                    id: r.id,
-                    criador: { nome_exibicao: r.pessoaCriador.nome_exibicao },
-                    criado_em: r.criado_em,
-                    arquivo: {
-                        ...r.arquivo,
-                        ...this.uploadService.getDownloadToken(r.arquivo.id, TEMPO_EXPIRACAO_ARQUIVO),
-                    },
-                };
-            }),
-            analises: analisesResult.map((r) => {
-                return {
-                    analise_qualitativa: r.analise_qualitativa || '',
-                    ultima_revisao: r.ultima_revisao,
-                    criado_em: r.criado_em,
-                    meta_id: r.meta_id,
-                    enviado_para_cp: r.enviado_para_cp,
-                    id: r.id,
-                    criador: { nome_exibicao: r.pessoaCriador.nome_exibicao },
-                };
-            }),
+            arquivos: arquivosResult
+                ? arquivosResult.map((r) => {
+                      return {
+                          id: r.id,
+                          criador: { nome_exibicao: r.pessoaCriador.nome_exibicao },
+                          criado_em: r.criado_em,
+                          arquivo: {
+                              ...r.arquivo,
+                              ...this.uploadService.getDownloadToken(r.arquivo.id, TEMPO_EXPIRACAO_ARQUIVO),
+                          },
+                      };
+                  })
+                : [],
+            analises: analisesResult
+                ? analisesResult.map((r) => {
+                      return {
+                          analise_qualitativa: r.analise_qualitativa || '',
+                          ultima_revisao: r.ultima_revisao,
+                          criado_em: r.criado_em,
+                          meta_id: r.meta_id,
+                          enviado_para_cp: r.enviado_para_cp,
+                          id: r.id,
+                          criador: { nome_exibicao: r.pessoaCriador.nome_exibicao },
+                      };
+                  })
+                : [],
         };
     }
 
