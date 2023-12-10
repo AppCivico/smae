@@ -1,15 +1,13 @@
 import { ApiProperty, OmitType, PickType } from '@nestjs/swagger';
-import { CicloFase, FormulaComposta, Periodicidade, Serie } from '@prisma/client';
+import { CicloFase, Periodicidade, Serie } from '@prisma/client';
 import { Transform, Type } from 'class-transformer';
 import { IsBoolean, IsNumber, IsNumberString, IsOptional, IsString, ValidateIf, ValidateNested } from 'class-validator';
 import { IsOnlyDate } from '../../../common/decorators/IsDateOnly';
 
+import { IdTituloDto } from 'src/common/dto/IdTitulo.dto';
 import { IdCodTituloDto } from '../../../common/dto/IdCodTitulo.dto';
 import { TipoDocumentoDto } from '../../../tipo-documento/entities/tipo-documento.entity';
 import { SerieValorNomimal } from '../../../variavel/entities/variavel.entity';
-import { IndicadorFormulaCompostaDto } from 'src/indicador/entities/indicador.formula-composta.entity';
-import { FormulaVariaveis } from 'src/indicador/dto/update-indicador.dto';
-import { IdTituloDto } from 'src/common/dto/IdTitulo.dto';
 
 export class FilterMfMetasDto {
     /**
@@ -300,7 +298,7 @@ export class VariavelAnaliseQualitativaDto {
      **/
     @IsOptional()
     @IsBoolean()
-    simular_ponto_focal: boolean;
+    simular_ponto_focal?: boolean;
 }
 
 export class VariavelAnaliseQualitativaParaLoteDto extends OmitType(VariavelAnaliseQualitativaDto, [
