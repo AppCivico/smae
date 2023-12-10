@@ -190,7 +190,7 @@ export class AuxiliarService {
                         },
                         config,
                         user,
-                        true
+                        true // não precisamos do arquivos, nem de nada, só os valores da série
                     )
                 );
             })
