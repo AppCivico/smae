@@ -19,6 +19,10 @@ defineProps({
     type: Array,
     default: () => [],
   },
+  indicadorRegionalizavel: {
+    type: Boolean,
+    required: true,
+  },
 });
 
 async function apagarVariável(id) {
@@ -58,7 +62,9 @@ function permitirEdição(indicadorVariavel) {
         </router-link>
       </li>
       <li class="mr1">
-        <router-link :to="{
+        <router-link
+          v-if="indicadorRegionalizavel"
+          :to="{
           name: 'geradorDeVariáveisCompostas',
           params: {
             indicador_id: indicadorId
