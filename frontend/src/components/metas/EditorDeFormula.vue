@@ -224,7 +224,7 @@ function newVariavel(caracterDefinidor = '$') {
       variaveisFormulaModal.value = 2;
       break;
 
-    default: {
+    case '$': {
       // PRA-FAZER: botar uma alerta de que não há variáveis disponíveis
       if (!props.variáveisDoIndicador.length) return;
       const últimoÍndiceDisponívelParaVariávelEmFórmula = Object
@@ -243,6 +243,9 @@ function newVariavel(caracterDefinidor = '$') {
       variaveisFormulaModal.value = 1;
       break;
     }
+
+    default:
+      throw new Error(`caractere definidor desconhecido:${caracterDefinidor}`);
   }
 }
 function editFormula(e) {
@@ -425,12 +428,12 @@ watch(props.variáveisCompostas, async () => {
       <span
         v-if="variáveisDoIndicador.length"
         class="v"
-        @click="() => { chamarInserçãoDeVariável(' $') }"
+        @click="() => chamarInserçãoDeVariável('$')"
       >Variável</span>
       <span
         v-if="variáveisCompostas.length"
         class="v vc"
-        @click="() => { chamarInserçãoDeVariável(' @') }"
+        @click="() => chamarInserçãoDeVariável('@')"
       >Variável composta</span>
       <span
         v-for="(item, index) in funções"
