@@ -8,9 +8,18 @@ import {
     HttpStatus,
     Param,
     Patch,
+    Post,
     Query,
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiExtraModels, ApiNoContentResponse, ApiOkResponse, ApiTags, refs } from '@nestjs/swagger';
+import {
+    ApiBearerAuth,
+    ApiExtraModels,
+    ApiNoContentResponse,
+    ApiOkResponse,
+    ApiOperation,
+    ApiTags,
+    refs,
+} from '@nestjs/swagger';
 import { CurrentUser } from '../../auth/decorators/current-user.decorator';
 import { Roles } from '../../auth/decorators/roles.decorator';
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
@@ -22,8 +31,12 @@ import {
     FilterMfMetasDto,
     FilterMfVariaveis,
     FilterVariavelAnaliseQualitativaDto,
+    FilterVariavelAnaliseQualitativaEmLoteDto,
+    FilterVariavelAnaliseQualitativaUltimaRevisaoDto,
     ListMfMetasDto,
     MfListVariavelAnaliseQualitativaDto,
+    MfListVariavelAnaliseQualitativaEmLoteDto,
+    MfListVariavelAnaliseQualitativaReducedDto,
     RequestInfoDto,
     RetornoMetaVariaveisDto,
     VariavelAnaliseQualitativaDocumentoDto,
@@ -116,6 +129,27 @@ export class MetasController {
     }
 
     @ApiBearerAuth('access-token')
+    @Patch('variaveis/analise-qualitativa-em-lote')
+    @Roles('PDM.admin_cp', 'PDM.tecnico_cp', 'PDM.ponto_focal')
+    @ApiExtraModels(RecordWithId, RequestInfoDto)
+    @ApiOkResponse({
+        schema: { allOf: refs(RecordWithId, RequestInfoDto) },
+    })
+    async AddMetaVariavelAnaliseQualitativaEmLote(
+        @Body() dto: VariavelAnaliseQualitativaEmLoteDto,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<BatchRecordWithId & RequestInfoDto> {
+        const start = Date.now();
+        const config = await this.mfService.pessoaAcessoPdm(user);
+        // mesma coisa, pra editar um ciclo, vamos precisar de
+
+        return {
+            ...(await this.metasService.addMetaVariavelAnaliseQualitativaEmLote(dto, config, user)),
+            requestInfo: { queryTook: Date.now() - start },
+        };
+    }
+
+    @ApiBearerAuth('access-token')
     @Get('variaveis/analise-qualitativa')
     @Roles('PDM.admin_cp', 'PDM.tecnico_cp', 'PDM.ponto_focal')
     @ApiExtraModels(MfListVariavelAnaliseQualitativaDto, RequestInfoDto)
@@ -131,6 +165,34 @@ export class MetasController {
 
         return {
             ...(await this.metasService.getMetaVariavelAnaliseQualitativa(dto, config, user)),
+            requestInfo: { queryTook: Date.now() - start },
+        };
+    }
+
+    @ApiBearerAuth('access-token')
+    @Post('variaveis/busca-analise-qualitativa')
+    @Roles('PDM.admin_cp', 'PDM.tecnico_cp', 'PDM.ponto_focal')
+    @ApiExtraModels(
+        MfListVariavelAnaliseQualitativaEmLoteDto,
+        MfListVariavelAnaliseQualitativaReducedDto,
+        RequestInfoDto
+    )
+    @ApiOkResponse({
+        schema: { allOf: refs(MfListVariavelAnaliseQualitativaEmLoteDto, RequestInfoDto) },
+    })
+    @ApiOperation({
+        summary:
+            'Retorna informações das variaveis, última análise qualitativa e arquivos em lote, não retorna série valores',
+    })
+    async BuscaMetaVariavelAnaliseQualitativaEmLote(
+        @Body() dto: FilterVariavelAnaliseQualitativaEmLoteDto,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<MfListVariavelAnaliseQualitativaEmLoteDto & RequestInfoDto> {
+        const start = Date.now();
+        const config = await this.mfService.pessoaAcessoPdm(user);
+
+        return {
+            ...(await this.metasService.getMetaVariavelAnaliseQualitativaEmLote(dto, config, user)),
             requestInfo: { queryTook: Date.now() - start },
         };
     }
@@ -214,26 +276,5 @@ export class MetasController {
         await this.metasService.mudarMetaCicloFase(params.id, dto, config, cicloFisicoAtivo, user);
 
         return '';
-    }
-
-    @ApiBearerAuth('access-token')
-    @Patch('variaveis/analise-qualitativa-em-lote')
-    @Roles('PDM.admin_cp', 'PDM.tecnico_cp', 'PDM.ponto_focal')
-    @ApiExtraModels(RecordWithId, RequestInfoDto)
-    @ApiOkResponse({
-        schema: { allOf: refs(RecordWithId, RequestInfoDto) },
-    })
-    async AddMetaVariavelAnaliseQualitativaEmLote(
-        @Body() dto: VariavelAnaliseQualitativaEmLoteDto,
-        @CurrentUser() user: PessoaFromJwt
-    ): Promise<BatchRecordWithId & RequestInfoDto> {
-        const start = Date.now();
-        const config = await this.mfService.pessoaAcessoPdm(user);
-        // mesma coisa, pra editar um ciclo, vamos precisar de
-
-        return {
-            ...(await this.metasService.addMetaVariavelAnaliseQualitativaEmLote(dto, config, user)),
-            requestInfo: { queryTook: Date.now() - start },
-        };
     }
 }

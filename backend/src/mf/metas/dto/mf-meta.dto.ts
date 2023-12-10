@@ -343,6 +343,24 @@ export class FilterVariavelAnaliseQualitativaDto {
     apenas_ultima_revisao?: boolean;
 }
 
+export class FilterVariavelAnaliseQualitativaUltimaRevisaoDto extends PickType(FilterVariavelAnaliseQualitativaDto, [
+    'variavel_id',
+]) {
+    /**
+     * data_valor (required)
+     * @example YYYY-MM-DD
+     */
+    @IsOnlyDate()
+    @Type(() => Date)
+    data_valor: Date;
+}
+
+export class FilterVariavelAnaliseQualitativaEmLoteDto {
+    @ValidateNested({ each: true })
+    @Type(() => FilterVariavelAnaliseQualitativaUltimaRevisaoDto)
+    linhas: FilterVariavelAnaliseQualitativaUltimaRevisaoDto[];
+}
+
 export class DetailAnaliseQualitativaDto {
     analise_qualitativa: string;
     ultima_revisao: boolean;
@@ -410,6 +428,15 @@ export class MfListVariavelAnaliseQualitativaDto {
 
     ordem_series: Serie[];
     series: MfSerieValorNomimal[];
+}
+
+export class MfListVariavelAnaliseQualitativaReducedDto extends OmitType(MfListVariavelAnaliseQualitativaDto, [
+    'ordem_series',
+    'series',
+]) {}
+
+export class MfListVariavelAnaliseQualitativaEmLoteDto {
+    linhas: MfListVariavelAnaliseQualitativaReducedDto[];
 }
 
 export class VariavelAnaliseQualitativaDocumentoDto {
