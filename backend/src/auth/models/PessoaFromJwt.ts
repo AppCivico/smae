@@ -28,11 +28,11 @@ export class PessoaFromJwt extends PessoaFromJwtBase {
     ): Promise<number[]> {
         if (!this.privilegios) return [];
 
-        const metas = await metaResponsavel.findMany({
+        const metas: { meta_id: number }[] = await metaResponsavel.findMany({
             where: { pessoa_id: this.id },
             select: { meta_id: true },
         });
 
-        return (metas as { meta_id: number }[]).map((r) => r.meta_id);
+        return metas.map((r) => r.meta_id);
     }
 }
