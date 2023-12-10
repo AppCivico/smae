@@ -1,17 +1,64 @@
-import { HttpException, Injectable } from '@nestjs/common';
+import { HttpException, Injectable, Logger } from '@nestjs/common';
 import { PessoaAcessoPdm, Prisma } from '@prisma/client';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { Date2YMD } from '../common/date2ymd';
 import { PrismaService } from '../prisma/prisma.service';
 import { CicloAtivoDto } from './metas/dto/mf-meta.dto';
+import { sleepFor } from '../common/sleepFor';
+
+const erroSemPerfil = () => {
+    return new HttpException(
+        'Você não possui um perfil de acesso para monitoramento no momento ou o perfil está sendo modificado. Por favor, tente novamente em alguns segundos.',
+        404
+    );
+};
 
 @Injectable()
 export class MfService {
+    private readonly logger = new Logger(MfService.name);
+
     constructor(private readonly prisma: PrismaService) {}
 
     async pessoaAcessoPdm(user: PessoaFromJwt): Promise<PessoaAcessoPdm> {
-        const perfil = await this.prisma.pessoaAcessoPdm.findUnique({ where: { pessoa_id: user.id } });
-        if (!perfil) throw new HttpException('Faltando pessoaAcessoPdm', 404);
+        let perfil = await this.prisma.pessoaAcessoPdm.findUnique({ where: { pessoa_id: user.id } });
+        if (!perfil) {
+            let isValid = await this.prisma.pessoaAcessoPdmValido.findUnique({ where: { pessoa_id: user.id } });
+            if (isValid) throw erroSemPerfil();
+
+            const maxAttempts = 4; // tenta calcular 4x, se continuar sem perfil, não difícil ser transação apagando a linha em sequencia
+            let attempts: number = maxAttempts;
+
+            while (attempts > 0) {
+                attempts--;
+                try {
+                    await this.prisma.$queryRaw`select pessoa_acesso_pdm(${user.id}::int);`;
+
+                    isValid = await this.prisma.pessoaAcessoPdmValido.findUnique({ where: { pessoa_id: user.id } });
+
+                    // se ta valido, carrega o perfil
+                    if (isValid)
+                        perfil = await this.prisma.pessoaAcessoPdm.findUnique({ where: { pessoa_id: user.id } });
+
+                    // se encontrou perfil, para o loop
+                    if (isValid && perfil) break;
+                } catch (error) {
+                    this.logger.error(`Erro durante calculo do perfil: ${error}`);
+
+                    // joga o erro pra cima, pra dar erro 500 e alguém ficar sabendo
+                    if (attempts == 0) throw error;
+                }
+
+                if (attempts > 0) {
+                    const sleepDuration = Math.pow(2, maxAttempts - attempts) * 1000; // Exponential backoff
+                    await sleepFor(sleepDuration);
+                }
+            }
+
+            // se não tem perfil ainda, já esgotou todas as tentativas, da erro
+            if (isValid && !perfil) throw erroSemPerfil();
+        }
+
+        if (!perfil) throw erroSemPerfil();
 
         // apenas pra ter certeza, mas eu acredito que o Prisma já faz isso sozinho
         perfil.cronogramas_etapas = perfil.cronogramas_etapas.map((n) => +n);

@@ -212,9 +212,10 @@ model Pessoa {
     ImportacaoLog                  ImportacaoOrcamento[]
     IndicadorFormulaComposta       IndicadorFormulaComposta[] @relation("Desativador")
 
-    TiposAcompanhamentoQueCriei     AcompanhamentoTipo[] @relation("Criador")
-    TiposAcompanhamentoQueAtualizei AcompanhamentoTipo[] @relation("Atualizador")
-    TiposAcompanhamentoQueRemovi    AcompanhamentoTipo[] @relation("Removedor")
+    TiposAcompanhamentoQueCriei     AcompanhamentoTipo[]   @relation("Criador")
+    TiposAcompanhamentoQueAtualizei AcompanhamentoTipo[]   @relation("Atualizador")
+    TiposAcompanhamentoQueRemovi    AcompanhamentoTipo[]   @relation("Removedor")
+    PessoaAcessoPdmValido           PessoaAcessoPdmValido?
 
     @@index([email])
     @@map("pessoa")
@@ -1707,14 +1708,21 @@ model PessoaAcessoPdm {
     data_ciclo DateTime? @db.Date
     perfil     String
 
-    // se o valor estiver congelado, para debug, não vamos recalcular as permissões
-    // exceto se for mudança de ciclo, nesse caso, vai recacular anyway
-    congelado Boolean
-
     pessoa Pessoa @relation(fields: [pessoa_id], references: [id])
 
     @@index([pessoa_id])
     @@map("pessoa_acesso_pdm")
+}
+
+// diz se as linhas no pessoa_acesso_pdm estão válidas ou não
+model PessoaAcessoPdmValido {
+    id        Int @id @default(autoincrement())
+    pessoa_id Int @unique
+
+    pessoa Pessoa @relation(fields: [pessoa_id], references: [id])
+
+    @@index([pessoa_id])
+    @@map("pessoa_acesso_pdm_valido")
 }
 
 model MetaCicloFisicoAnalise {
