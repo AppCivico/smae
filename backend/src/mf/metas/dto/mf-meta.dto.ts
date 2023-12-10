@@ -393,7 +393,7 @@ export class DetailAnaliseQualitativaDto {
     id: number;
 }
 
-export class ArquivoVariavelAnaliseQualitativaDocumentoArquivoDto {
+export class ArquivoVariavelOuFcAnaliseQualitativaDocumentoArquivoDto {
     id: number;
     descricao: string | null;
     tamanho_bytes: number;
@@ -404,8 +404,8 @@ export class ArquivoVariavelAnaliseQualitativaDocumentoArquivoDto {
     download_token?: string;
 }
 
-export class ArquivoVariavelAnaliseQualitativaDocumentoDto {
-    arquivo: ArquivoVariavelAnaliseQualitativaDocumentoArquivoDto;
+export class ArquivoVariavelOuFcAnaliseQualitativaDocumentoDto {
+    arquivo: ArquivoVariavelOuFcAnaliseQualitativaDocumentoArquivoDto;
     id: number;
     criado_em: Date;
     criador: {
@@ -441,7 +441,7 @@ export class MfListVariavelAnaliseQualitativaDto {
         periodicidade: Periodicidade;
     };
 
-    arquivos: ArquivoVariavelAnaliseQualitativaDocumentoDto[];
+    arquivos: ArquivoVariavelOuFcAnaliseQualitativaDocumentoDto[];
 
     ultimoPedidoComplementacao: DetailPedidoComplementacaoDto | null;
     analises: DetailAnaliseQualitativaDto[];
@@ -517,7 +517,31 @@ export class MfListFormulaCompostaAnaliseQualitativaDto {
         titulo: string;
     };
 
-    //arquivos: ArquivoVariavelAnaliseQualitativaDocumentoDto[];
+    arquivos: ArquivoVariavelOuFcAnaliseQualitativaDocumentoDto[];
 
     analises: DetailAnaliseQualitativaDto[];
+}
+
+export class FormulaCompostaAnaliseQualitativaDocumentoDto {
+    /**
+     * data_valor
+     * @example YYYY-MM-DD
+     */
+    @IsOptional()
+    @IsOnlyDate()
+    @Type(() => Date)
+    data_ciclo: Date;
+
+    /**
+     * formula_composta_id
+     * @example "1"
+     */
+    @IsNumber()
+    formula_composta_id: number;
+
+    /**
+     * Upload do Documento
+     */
+    @IsString({ message: '$property| upload_token de um arquivo' })
+    upload_token: string;
 }

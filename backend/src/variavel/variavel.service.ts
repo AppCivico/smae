@@ -1143,7 +1143,6 @@ export class VariavelService {
             meta_id: number;
         }[] = await prismaTxn.$queryRaw`
             select coalesce(
-
                 -- busca pela diretamente na meta
                 (
                     select m.id
