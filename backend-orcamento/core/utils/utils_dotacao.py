@@ -144,12 +144,5 @@ def validacao_dotacao(dotacao):
         try:
             int(item)
         except ValueError:
-<<<<<<< HEAD
-<<<<<<< HEAD
             raise ValueError(f'Codigo de dotação não numérica {dotacao} para posição {posit}')
-=======
-            raise ValueError(f'Codigo de dotação não numérica {dotacao} para posição {posit}')
->>>>>>> cc1f3b89 (Truncate dotacao apos 9 partes)
-=======
-            raise ValueError(f'Codigo de dotação não numérica {dotacao} para posição {posit}')
->>>>>>> 34cf5ee3 (Update from SOF)
+
