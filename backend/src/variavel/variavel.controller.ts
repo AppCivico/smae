@@ -96,5 +96,4 @@ export class VariavelController {
     ): Promise<ListSeriesAgrupadas> {
         return await this.variavelService.getSeriePrevistoRealizado(params.id);
     }
-
 }

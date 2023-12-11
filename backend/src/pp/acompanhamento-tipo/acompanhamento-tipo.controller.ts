@@ -21,7 +21,7 @@ const roles: ListaDePrivilegios[] = [
 @Controller('acompanhamento-tipo')
 @ApiTags('Acompanhamento - Tipo')
 export class AcompanhamentoTipoController {
-    constructor( private readonly acompanhamentoTipoService: AcompanhamentoTipoService ) {}
+    constructor(private readonly acompanhamentoTipoService: AcompanhamentoTipoService) {}
 
     @Post('')
     @ApiBearerAuth('access-token')
@@ -38,9 +38,7 @@ export class AcompanhamentoTipoController {
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
     @Roles(...roles)
-    async findAll(
-        @CurrentUser() user: PessoaFromJwt
-    ): Promise<ListAcompanhamentoTipoDto> {
+    async findAll(@CurrentUser() user: PessoaFromJwt): Promise<ListAcompanhamentoTipoDto> {
         return {
             linhas: await this.acompanhamentoTipoService.findAll(user),
         };

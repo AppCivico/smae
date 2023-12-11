@@ -1264,7 +1264,14 @@ export class MetasService {
                 // isolation lock
                 await prismaTxn.variavel.findFirst({ where: { id: dto.variavel_id }, select: { id: true } });
 
-                let needRecalc = await this.atualizaSerieVariaveis(dto, prismaTxn, now, user, dadosCiclo, ehPontoFocal);
+                const needRecalc = await this.atualizaSerieVariaveis(
+                    dto,
+                    prismaTxn,
+                    now,
+                    user,
+                    dadosCiclo,
+                    ehPontoFocal
+                );
                 if (needRecalc) {
                     await this.variavelService.recalc_variaveis_acumulada([dto.variavel_id], prismaTxn);
                     await this.variavelService.recalc_indicador_usando_variaveis([dto.variavel_id], prismaTxn);
@@ -1370,8 +1377,8 @@ export class MetasService {
             async (prismaTxn: Prisma.TransactionClient): Promise<BatchRecordWithId> => {
                 // isolation lock
 
-                let needRecalcVars: number[] = [];
-                let batchResult: BatchRecordWithId = { ids: [] };
+                const needRecalcVars: number[] = [];
+                const batchResult: BatchRecordWithId = { ids: [] };
 
                 for (let i = 0; i < dto.linhas.length; i++) {
                     const linha = dto.linhas[i];
@@ -1380,7 +1387,7 @@ export class MetasService {
 
                     await prismaTxn.variavel.findFirst({ where: { id: linha.variavel_id }, select: { id: true } });
 
-                    let needRecalc = await this.atualizaSerieVariaveis(
+                    const needRecalc = await this.atualizaSerieVariaveis(
                         {
                             simular_ponto_focal: dto.simular_ponto_focal,
                             ...linha,
@@ -1593,7 +1600,7 @@ export class MetasService {
         dto: FilterVariavelAnaliseQualitativaDto,
         config: PessoaAcessoPdm,
         user: PessoaFromJwt,
-        fastlane: boolean = false
+        fastlane = false
     ): Promise<MfListVariavelAnaliseQualitativaDto> {
         const dateYMD = Date2YMD.toString(dto.data_valor);
         const linha = await this.processLinha(dto, !!dto.apenas_ultima_revisao, fastlane, config);

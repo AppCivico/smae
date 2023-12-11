@@ -102,7 +102,7 @@ export class TarefaUtilsService {
     }
 
     tarefaDependenteTipoSigla(tipo: string): string {
-        let ret: string = '';
+        let ret = '';
 
         switch (tipo) {
             case 'inicia_pro_inicio':

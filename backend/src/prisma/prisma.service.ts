@@ -44,9 +44,7 @@ class PrismaServiceBase extends PrismaClient implements OnModuleInit {
             console.log(`${e.query} ${e.params} took ${e.duration}ms`);
         });
     }
-
 }
-
 
 @Injectable()
 export class PrismaService extends PrismaServiceBase {

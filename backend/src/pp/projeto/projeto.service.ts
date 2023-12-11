@@ -79,7 +79,7 @@ export class ProjetoService {
         let atividade_id: number | null = dto.atividade_id ? dto.atividade_id : null;
         let origem_outro: string | null = dto.origem_outro ? dto.origem_outro : null;
         let meta_codigo: string | null = dto.meta_codigo ? dto.meta_codigo : null;
-        let origem_tipo: ProjetoOrigemTipo = dto.origem_tipo;
+        const origem_tipo: ProjetoOrigemTipo = dto.origem_tipo;
 
         if (origem_tipo === ProjetoOrigemTipo.PdmSistema) {
             await validaPdmSistema(this);

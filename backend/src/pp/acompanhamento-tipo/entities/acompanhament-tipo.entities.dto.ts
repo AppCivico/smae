@@ -6,4 +6,3 @@ export class AcompanhamentoTipo {
 export class ListAcompanhamentoTipoDto {
     linhas: AcompanhamentoTipo[];
 }
-

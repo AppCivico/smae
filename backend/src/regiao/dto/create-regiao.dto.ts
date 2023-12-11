@@ -36,7 +36,7 @@ export class CreateRegiaoDto {
     @IsOptional()
     @IsInt({ message: '$property| Precisa ser nulo ou o ID' })
     @ValidateIf((object, value) => value !== null)
-    @Transform((a: any) => a.value === '' ? undefined : +a.value)
+    @Transform((a: any) => (a.value === '' ? undefined : +a.value))
     parente_id: number | undefined;
 
     /**

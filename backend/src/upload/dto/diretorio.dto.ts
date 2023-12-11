@@ -10,12 +10,12 @@ export class DiretorioDto {
     caminho: string;
 }
 
-export class DiretorioItemDto  {
+export class DiretorioItemDto {
     id: number;
     caminho: string;
 }
 
-export class PatchDiretorioDto  {
+export class PatchDiretorioDto {
     @IsString()
     @MaxLength(2000)
     caminho: string;

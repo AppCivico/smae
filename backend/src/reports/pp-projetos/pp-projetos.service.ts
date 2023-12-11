@@ -363,7 +363,7 @@ export class PPProjetosService implements ReportableService {
 
         whereConditions.push(`projeto.removido_em IS NULL`);
 
-        let whereString = whereConditions.length > 0 ? 'WHERE ' + whereConditions.join(' AND ') : '';
+        const whereString = whereConditions.length > 0 ? 'WHERE ' + whereConditions.join(' AND ') : '';
         return { whereString, queryParams };
     }
 

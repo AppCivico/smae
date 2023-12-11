@@ -91,7 +91,7 @@ export class RegiaoService {
                 parente_id: true,
                 arquivo_shapefile_id: true,
                 shapefile: true,
-                pdm_codigo_sufixo: true
+                pdm_codigo_sufixo: true,
             },
         });
 
@@ -206,7 +206,7 @@ export class RegiaoService {
                 codigo: true,
                 parente_id: true,
                 shapefile: true,
-                pdm_codigo_sufixo: true
+                pdm_codigo_sufixo: true,
             },
         });
         if (!first) throw new HttpException('Região não encontrada', 404);

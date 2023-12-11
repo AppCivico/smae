@@ -1,4 +1,4 @@
-import { IdNomeDto } from "src/common/dto/IdNome.dto";
+import { IdNomeDto } from 'src/common/dto/IdNome.dto';
 
 export class ProjetoAcompanhamentoRowDto {
     encaminhamento: string | null;
@@ -34,7 +34,7 @@ export class DetailProjetoAcompanhamentoDto {
     cronograma_paralisado: boolean;
     risco: RiscoIdCod[] | null;
     pauta: string | null;
-    acompanhamento_tipo: IdNomeDto | null
+    acompanhamento_tipo: IdNomeDto | null;
 
     acompanhamentos: ProjetoAcompanhamentoRowDto[];
 }

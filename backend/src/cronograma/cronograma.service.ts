@@ -81,7 +81,7 @@ export class CronogramaService {
             orderBy: { criado_em: 'desc' },
         });
 
-        let ret = [];
+        const ret = [];
         for (const row of rows) {
             let cronogramaAtraso: string | null = null;
             const cronogramaEtapaRet = await this.cronogramaEtapaService.findAll({ cronograma_id: row.id });

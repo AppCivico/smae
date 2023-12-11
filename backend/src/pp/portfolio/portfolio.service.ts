@@ -33,7 +33,7 @@ export class PortfolioService {
                         descricao: dto.descricao,
                         data_criacao: dto.data_criacao,
                         orcamento_execucao_disponivel_meses: dto.orcamento_execucao_disponivel_meses,
-                        nivel_regionalizacao: dto.nivel_regionalizacao
+                        nivel_regionalizacao: dto.nivel_regionalizacao,
                     },
                     select: { id: true },
                 });
@@ -196,18 +196,24 @@ export class PortfolioService {
         // Portfolio possui nivel de regionalização, pois os Projetos podem ser ligados a regiões.
         // Caso o Portfolio já possua projetos com regiões, deve ser bloqueado o update de nivel de regionalização
         if (dto.nivel_regionalizacao) {
-            const self = await this.prisma.portfolio.findFirstOrThrow({ where: {id}, select: { nivel_regionalizacao: true } });
+            const self = await this.prisma.portfolio.findFirstOrThrow({
+                where: { id },
+                select: { nivel_regionalizacao: true },
+            });
 
             const projetosComRegiao = await this.prisma.projeto.count({
                 where: {
                     portfolio_id: id,
                     removido_em: null,
-                    NOT: [{ regiao_id: null }]
-                }
+                    NOT: [{ regiao_id: null }],
+                },
             });
 
             if (projetosComRegiao > 0 && dto.nivel_regionalizacao != self.nivel_regionalizacao)
-              throw new HttpException('Não é possível modificar nível de regionalização, pois existem Projetos com regiões.', 400);
+                throw new HttpException(
+                    'Não é possível modificar nível de regionalização, pois existem Projetos com regiões.',
+                    400
+                );
         }
 
         // conferir se todos os órgãos que estão saindo realmente nao estão em uso em nenhum projeto ativo
@@ -224,7 +230,7 @@ export class PortfolioService {
                         descricao: dto.descricao,
                         data_criacao: dto.data_criacao,
                         orcamento_execucao_disponivel_meses: dto.orcamento_execucao_disponivel_meses,
-                        nivel_regionalizacao: dto.nivel_regionalizacao
+                        nivel_regionalizacao: dto.nivel_regionalizacao,
                     },
                     select: { id: true },
                 });

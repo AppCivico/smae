@@ -250,13 +250,13 @@ export class IndicadorService {
                     id: +formulaCompostaId,
                     IndicadorFormulaComposta: { some: { indicador_id: indicadorId } },
                 },
-                select: { id: true }
+                select: { id: true },
             });
 
-            ret.push(formulaComposta.id)
+            ret.push(formulaComposta.id);
         }
 
-        return ret
+        return ret;
     }
 
     async listFormulaCompostaEmUso(id: number, user: PessoaFromJwt): Promise<IndicadorFormulaCompostaEmUsoDto[]> {
@@ -268,21 +268,20 @@ export class IndicadorService {
                     select: {
                         titulo: true,
                         nivel_regionalizacao: true,
-                        mostrar_monitoramento: true
-                    }
-                }
-            }
+                        mostrar_monitoramento: true,
+                    },
+                },
+            },
         });
 
-        return fcEmUso.map(e => {
+        return fcEmUso.map((e) => {
             return {
                 formula_composta_id: e.formula_composta_id,
                 titulo: e.formula_composta.titulo,
                 nivel_regionalizacao: e.formula_composta.nivel_regionalizacao,
                 mostrar_monitoramento: e.formula_composta.mostrar_monitoramento,
-            }
-
-        })
+            };
+        });
     }
 
     // deixa de ser private, o FormulaComposta usa pra conferir se tudo faz parte do indicador
@@ -472,7 +471,7 @@ export class IndicadorService {
 
         console.log('updateIndicadorDto', dto);
 
-        let formula_variaveis = dto.formula_variaveis;
+        const formula_variaveis = dto.formula_variaveis;
         delete dto.formula_variaveis;
         let formula: string = dto.formula ? dto.formula : '';
         const antigaFormulaCompilada = indicador.formula_compilada || '';
@@ -557,12 +556,12 @@ export class IndicadorService {
 
                     if (formulasCompostasEmUso.length) {
                         await prismaTx.indicadorFormulaCompostaEmUso.createMany({
-                            data: formulasCompostasEmUso.map( formulaCompostaId => {
+                            data: formulasCompostasEmUso.map((formulaCompostaId) => {
                                 return {
                                     indicador_id: indicador.id,
-                                    formula_composta_id: formulaCompostaId
-                                }
-                            })
+                                    formula_composta_id: formulaCompostaId,
+                                };
+                            }),
                         });
                     }
                 }
@@ -846,7 +845,7 @@ export class IndicadorService {
         // isso pq se não, o numero iria aumentar pra sempre que alguém salvasse mudando a formula
         let highestNumericReference = 1;
 
-        let anyChanged: boolean = false;
+        let anyChanged = false;
         for (const newReference of formula_variaveis) {
             let updatedReference = newReference.referencia;
 

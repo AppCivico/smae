@@ -461,7 +461,7 @@ export class IndicadoresService implements ReportableService {
         let regiao_nivel_3: number | null = null;
         let regiao_nivel_2: number | null = null;
         let regiao_nivel_1: number | null = null;
-        let regiao_id: number = db.regiao_id;
+        const regiao_id: number = db.regiao_id;
 
         const regiao = regiao_by_id[regiao_id];
         if (regiao) {
@@ -501,7 +501,7 @@ export class IndicadoresService implements ReportableService {
             id: regiao_by_id[regiao_id].id,
             nivel: regiao_by_id[regiao_id].nivel,
             parente_id: regiao_by_id[regiao_id].parente_id,
-            pdm_codigo_sufixo: regiao_by_id[regiao_id].pdm_codigo_sufixo
+            pdm_codigo_sufixo: regiao_by_id[regiao_id].pdm_codigo_sufixo,
         };
     }
 }

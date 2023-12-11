@@ -26,7 +26,7 @@ function escapeDotLabel(inputString: string): string {
     };
 
     // usando regexp, sorry, vim do perl!
-    const escapeRegex: RegExp = /([\\\"\n\r\t\{\}<>|])/g;
+    const escapeRegex = /([\\\"\n\r\t\{\}<>|])/g;
 
     return inputString.replace(escapeRegex, (match: string) => {
         return escapeCharacters[match] || match;

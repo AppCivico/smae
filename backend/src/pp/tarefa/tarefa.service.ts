@@ -293,7 +293,7 @@ export class TarefaService {
     }
 
     async calculaAtrasoProjeto(tarefasOrig: TarefaItemDbDto[], projeto: ProjetoDetailDto): Promise<ListTarefaListDto> {
-        let ret: ListTarefaListDto = {
+        const ret: ListTarefaListDto = {
             linhas: [],
             projeto: projeto,
         };
@@ -635,11 +635,11 @@ export class TarefaService {
         let atraso_projeto: number | null = null;
         let percentual_atraso: number | null = null;
         let projecao_termino: Date | null = null;
-        let em_atraso: boolean = false;
+        let em_atraso = false;
 
         // TODO ver como pensar se ta concluído, provavelmente contar se todas as tarefas tem data de termino,
         // ou se o status do projeto é fechado
-        let status_cronograma: string = 'Em dia';
+        let status_cronograma = 'Em dia';
         if (projeto.realizado_termino != null) {
             status_cronograma = 'Concluído';
         } else {
@@ -1281,6 +1281,7 @@ export class TarefaService {
 
         this.logger.debug(`Iniciando validação do grafo...`);
 
+        // eslint-disable-next-line
         const self = this;
         function novaDependencias(tarefaId: string, depsId: string[], recursionLevel: number): void {
             const prefix = '='.repeat(recursionLevel + 1);
@@ -1475,7 +1476,7 @@ export class TarefaService {
         }
 
         const nivel1 = rows.filter((row) => row.tarefa_pai_id === null);
-        let resul: Record<string, string> = {};
+        const resul: Record<string, string> = {};
         nivel1.forEach((r) => {
             resul[r.id] = `${r.numero}`;
             Object.assign(resul, buscaFilhos(r.id, `${r.numero}`));

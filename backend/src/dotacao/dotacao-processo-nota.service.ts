@@ -194,8 +194,8 @@ export class DotacaoProcessoNotaService {
         smae_soma_valor_empenho: string;
         smae_soma_valor_liquidado: string;
     }> {
-        let smae_soma_valor_empenho: string = '0.00';
-        let smae_soma_valor_liquidado: string = '0.00';
+        let smae_soma_valor_empenho = '0.00';
+        let smae_soma_valor_liquidado = '0.00';
 
         dto.nota_empenho = FormataNotaEmpenho(dto.nota_empenho);
 
