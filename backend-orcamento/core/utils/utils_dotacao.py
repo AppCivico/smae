@@ -97,9 +97,6 @@ class ReconstructDotacao:
 
         fonte = resp['codFonteRecurso'] or self.solve_fonte(resp['txtDescricaoFonteRecurso'])
 
-
-        fonte = resp['codFonteRecurso'] or self.solve_fonte(resp['txtDescricaoFonteRecurso'])
-
         estrutura = [
             resp['codOrgao'],
             resp['codUnidade'],
