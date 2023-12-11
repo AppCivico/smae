@@ -234,7 +234,7 @@ export class IndicadorService {
             } catch (error) {
                 throw new HttpException(`formula| formula não foi entendida: ${formula}\n${error}`, 400);
             }
-    
+ 
             for (const match of formula_compilada.matchAll(/\@_\d+\b/g)) {
                 const referencia = +match[0].replace('@_', '');
                 if (!neededFCs[referencia]) neededFCs[referencia] = 0;
@@ -281,7 +281,8 @@ export class IndicadorService {
                 nivel_regionalizacao: e.formula_composta.nivel_regionalizacao,
                 mostrar_monitoramento: e.formula_composta.mostrar_monitoramento,
             }
-        }) 
+ 
+        })  
     }
 
     // deixa de ser private, o FormulaComposta usa pra conferir se tudo faz parte do indicador

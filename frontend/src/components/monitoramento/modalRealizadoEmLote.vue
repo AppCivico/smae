@@ -87,6 +87,7 @@ const valoresIniciais = computed(() => ({
           titulo: cur.variavel.titulo,
           valor_realizado_acumulado: !dadosExtrasPorVariávelId.value?.[cur.variavel.id]?.acumulativa
             ? y.series[índiceDeSériesEmMetaVars.value.RealizadoAcumulado]?.valor_nominal
+
             : null,
           valor_realizado: y.series[índiceDeSériesEmMetaVars.value.Realizado]?.valor_nominal
             ?? null,
@@ -312,7 +313,9 @@ watch(variáveisComSuasDatas, (novoValor) => {
           rows="3"
           class="inputtext light mb1"
           :class="{ 'error': errors['composta.analise_qualitativa'] }"
+
           :disabled="ediçãoProibidaApósConferência"
+
         />
 
         <ErrorMessage
@@ -367,7 +370,9 @@ watch(variáveisComSuasDatas, (novoValor) => {
                 v-if="subitem.id"
                 type="button"
                 class="like-a__text tprimary"
+
                 :disabled="ediçãoProibidaApósConferência"
+
                 @click="deleteArquivo(subitem.id)"
               >
                 <svg
