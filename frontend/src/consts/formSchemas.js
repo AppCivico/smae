@@ -1231,7 +1231,6 @@ export const valoresRealizadoEmLote = object()
       }),
     linhas: array()
       .label('Variáveis compostas')
-      .min(1)
       .of(
         object()
           .shape({
