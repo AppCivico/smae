@@ -1435,6 +1435,8 @@ export class MetasService {
         dadosCiclo: DadosCiclo,
         ehPontoFocal: boolean
     ) {
+        // known issue, o ponto focal está podendo editar os valores do "pode_editar: false"
+        // mesmo depois de já enviado pra CP se chamar o endpoint direto e for dentro do ciclo
         let needRecalc = false;
         for (const campo of CamposRealizado) {
             const valor_nominal = dto[campo] === null ? '' : dto[campo];
