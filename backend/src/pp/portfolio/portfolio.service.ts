@@ -201,6 +201,7 @@ export class PortfolioService {
             const projetosComRegiao = await this.prisma.projeto.count({
                 where: {
                     portfolio_id: id,
+                    removido_em: null,
                     NOT: [{ regiao_id: null }]
                 }
             });
