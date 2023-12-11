@@ -76,20 +76,22 @@ const valoresIniciais = computed(() => ({
       valor_realizado: 0,
       variavel_id: 0,
     }]
-    : props.variávelComposta.variaveis.reduce((acc, cur) => acc.concat(
-      cur.series.map((y) => ({
-        analise_qualitativa: dadosExtrasPorVariávelId.value?.[cur.variavel.id]?.analises?.[0]?.analise_qualitativa || '',
-        codigo: cur.variavel.codigo,
-        data_valor: y.periodo,
-        enviar_para_cp: false,
-        titulo: cur.variavel.titulo,
-        valor_realizado_acumulado: !dadosExtrasPorVariávelId.value?.[cur.variavel.id]?.acumulativa
-          ? y.series[índiceDeSériesEmMetaVars.value.RealizadoAcumulado]?.valor_nominal
-          : undefined,
-        valor_realizado: y.series[índiceDeSériesEmMetaVars.value.Realizado]?.valor_nominal,
-        variavel_id: cur.variavel.id,
-      })),
-    ), []),
+    : props.variávelComposta.variaveis.reduce((acc, cur) => (cur.series[0]?.pode_editar
+      ? acc.concat(
+        cur.series.map((y) => ({
+          analise_qualitativa: dadosExtrasPorVariávelId.value?.[cur.variavel.id]?.analises?.[0]?.analise_qualitativa || '',
+          codigo: cur.variavel.codigo,
+          data_valor: y.periodo,
+          enviar_para_cp: false,
+          titulo: cur.variavel.titulo,
+          valor_realizado_acumulado: !dadosExtrasPorVariávelId.value?.[cur.variavel.id]?.acumulativa
+            ? y.series[índiceDeSériesEmMetaVars.value.RealizadoAcumulado]?.valor_nominal
+            : undefined,
+          valor_realizado: y.series[índiceDeSériesEmMetaVars.value.Realizado]?.valor_nominal,
+          variavel_id: cur.variavel.id,
+        })),
+      )
+      : acc), []),
 }));
 
 const {
