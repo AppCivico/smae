@@ -73,8 +73,8 @@ const valoresIniciais = computed(() => ({
       analise_qualitativa: '',
       data_valor: null,
       enviar_para_cp: false,
-      valor_realizado_acumulado: 0,
-      valor_realizado: 0,
+      valor_realizado_acumulado: '0',
+      valor_realizado: '0',
       variavel_id: 0,
     }]
     : props.variávelComposta.variaveis.reduce((acc, cur) => (cur.series[0]?.pode_editar
@@ -233,6 +233,14 @@ function addFile(e) {
   virtualUpload.value.name = files[0].name;
   virtualUpload.value.file = files[0];
 }
+
+const configuraçãoDeCasasDecimais = ((variávelId) => {
+  const númeroDeCasas = dadosExtrasPorVariávelId.value?.[variávelId]?.variavel.casas_decimais || 0;
+
+  return !númeroDeCasas
+    ? 1
+    : `0.${'0'.repeat(númeroDeCasas - 1)}1`;
+});
 
 watch(valoresIniciais, (novoValor) => {
   resetForm({ values: novoValor });
@@ -521,13 +529,18 @@ watch(variáveisComSuasDatas, (novoValor) => {
                 :name="`linhas[${idx}].valor_realizado`"
                 type="number"
                 :value="field.value.valor_realizado"
-                :step="1"
+                :step="configuraçãoDeCasasDecimais(field.value.variavel_id)"
                 min="0"
                 class="inputtext light"
                 :class="{ 'error': errors[`linhas[${idx}].valor_realizado`] }"
                 @update:model-value="() => {
                   if (carga.linhas[idx].valor_realizado === '') {
                     setFieldValue(`linhas[${idx}].valor_realizado`, null);
+                  } else if (carga.linhas[idx].valor_realizado !== null) {
+                    setFieldValue(
+                      `linhas[${idx}].valor_realizado`,
+                      String(carga.linhas[idx].valor_realizado)
+                    );
                   }
                 }"
               />
@@ -542,13 +555,18 @@ watch(variáveisComSuasDatas, (novoValor) => {
                 :name="`linhas[${idx}].valor_realizado_acumulado`"
                 type="number"
                 :value="field.valor_realizado_acumulado"
-                :step="1"
+                :step="configuraçãoDeCasasDecimais(field.value.variavel_id)"
                 min="0"
                 class="inputtext light"
                 :class="{ 'error': errors[`linhas[${idx}].valor_realizado_acumulado`] }"
                 @update:model-value="() => {
                   if (carga.linhas[idx].valor_realizado_acumulado === '') {
                     setFieldValue(`linhas[${idx}].valor_realizado_acumulado`, null);
+                  } else if (carga.linhas[idx].valor_realizado_acumulado !== null) {
+                    setFieldValue(
+                      `linhas[${idx}].valor_realizado_acumulado`,
+                      String(carga.linhas[idx].valor_realizado_acumulado)
+                    );
                   }
                 }"
               />
