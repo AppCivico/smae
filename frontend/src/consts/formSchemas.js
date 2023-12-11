@@ -1246,10 +1246,12 @@ export const valoresRealizadoEmLote = object()
               .required(),
             valor_realizado: number()
               .label('Valor realizado')
-              .nullable(),
+              .nullable()
+              .transform((v) => (v === '' || Number.isNaN(v) ? null : v)),
             valor_realizado_acumulado: number()
               .label('Valor acumulado')
-              .nullable(),
+              .nullable()
+              .transform((v) => (v === '' || Number.isNaN(v) ? null : v)),
             variavel_id: number()
               .min(1)
               .required(),
