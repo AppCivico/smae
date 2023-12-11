@@ -9,7 +9,7 @@ export const SYSTEM_TIMEZONE = 'America/Sao_Paulo';
 export class Date2YMD {
     static toString(d: Date): DateYMD {
         if (!(d instanceof Date)) throw 'called toString on non-date object';
-        if (!d == null) throw 'called DateYMD.toString on null value';
+        if (d == null) throw 'called DateYMD.toString on null value';
         if (!d) throw 'called DateYMD.toString on undefined value';
 
         const str = d.toISOString();
