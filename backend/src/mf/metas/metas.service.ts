@@ -2105,4 +2105,28 @@ export class MetasService {
 
         return { id: id };
     }
+
+    async deleteMetaFormulaCompostaAnaliseQualitativaDocumento(
+        id: number,
+        config: PessoaAcessoPdm,
+        cicloAtivo: CicloAtivoDto,
+        user: PessoaFromJwt
+    ) {
+        const now = new Date(Date.now());
+        const arquivo = await this.prisma.formulaCompostaCicloFisicoDocumento.findFirst({
+            where: {
+                id: id,
+                ciclo_fisico_id: cicloAtivo.id,
+                removido_em: null,
+            },
+        });
+        if (!arquivo) throw new HttpException('404', 404);
+
+        const meta_id = await this.variavelService.getMetaIdDaFormulaComposta(arquivo.formula_composta_id, this.prisma);
+
+        await this.prisma.variavelCicloFisicoDocumento.updateMany({
+            where: { id: id, meta_id, removido_em: null },
+            data: { removido_em: now, removido_por: user.id },
+        });
+    }
 }
