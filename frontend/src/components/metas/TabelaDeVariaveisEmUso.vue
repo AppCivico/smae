@@ -1,6 +1,7 @@
 <script setup>
 import { useAlertStore } from '@/stores/alert.store';
 import { useAuthStore } from '@/stores/auth.store';
+import { useIndicadoresStore } from '@/stores/indicadores.store';
 import { useVariaveisStore } from '@/stores/variaveis.store';
 import { useRoute } from 'vue-router';
 import { storeToRefs } from 'pinia';
@@ -8,7 +9,10 @@ import níveisRegionalização from '@/consts/niveisRegionalizacao';
 
 const alertStore = useAlertStore();
 const authStore = useAuthStore();
+const IndicadoresStore = useIndicadoresStore();
 const VariaveisStore = useVariaveisStore();
+
+const { singleIndicadores } = storeToRefs(IndicadoresStore);
 
 const route = useRoute();
 const { indicador_id: indicadorId } = route.params;
@@ -82,79 +86,81 @@ function permitirEdição(indicadorVariavel) {
         <th style="width:20%" />
       </tr>
     </thead>
-    <tr
-      v-for="v in VariaveisStore.variaveisEmUso"
-      :key="v.id"
-    >
-      <td>{{ v.codigo }}</td>
-      <td>{{ v.titulo }}</td>
-      <td>{{ v.regiao ? níveisRegionalização.find(e => e.id == v.regiao.nivel).nome : '-' }}</td>
-      <td>{{ v.valor_base }}</td>
-      <td>{{ v.periodicidade }}</td>
-      <td>{{ v.unidade_medida?.sigla }}</td>
-      <td>{{ v.casas_decimais }}</td>
-      <td>{{ v.atraso_meses }}</td>
-      <td>{{ v.acumulativa ? 'Sim' : 'Não' }}</td>
-      <td style="white-space: nowrap; text-align: right;">
-        <button
-          class="like-a__link tipinfo tprimary"
-          :disabled="!permitirEdição(v.indicador_variavel)"
-          @click="apagarVariável(v.id)"
-        >
-          <svg
-            width="20"
-            height="20"
-          ><use xlink:href="#i_remove" /></svg><div>Apagar</div>
-        </button>
-        <router-link
-          :to="`${parentlink}/indicadores/${indicadorId}/variaveis/novo/${v.id}`"
-          class="tipinfo tprimary ml1"
-        >
-          <svg
-            width="20"
-            height="20"
-          ><use xlink:href="#i_copy" /></svg><div>Duplicar</div>
-        </router-link>
-        <router-link
-          v-if="permitirEdição(v.indicador_variavel)"
-          :to="`${parentlink}/indicadores/${indicadorId}/variaveis/${v.id}`"
-          class="tipinfo tprimary ml1"
-        >
-          <svg
-            width="20"
-            height="20"
-          ><use xlink:href="#i_edit" /></svg><div>Editar</div>
-        </router-link>
-        <button
-          v-else
-          disabled
-          class="like-a__link tipinfo tprimary ml1"
-        >
-          <svg
-            width="20"
-            height="20"
-          ><use xlink:href="#i_edit" /></svg><div>Editar</div>
-        </button>
-        <router-link
-          :to="`${parentlink}/indicadores/${indicadorId}/variaveis/${v.id}/valores`"
-          class="tipinfo tprimary ml1"
-        >
-          <svg
-            width="20"
-            height="20"
-          ><use xlink:href="#i_valores" /></svg><div>Valores Previstos e Acumulados</div>
-        </router-link>
-        <router-link
-          v-if="permissions.CadastroPessoa?.administrador"
-          :to="`${parentlink}/indicadores/${indicadorId}/variaveis/${v.id}/retroativos`"
-          class="tipinfo tprimary ml1"
-        >
-          <svg
-            width="20"
-            height="20"
-          ><use xlink:href="#i_check" /></svg><div>Valores Realizados Retroativos</div>
-        </router-link>
-      </td>
-    </tr>
+    <tbody v-if="Array.isArray(singleIndicadores.formula_variaveis)">
+      <tr
+        v-for="v in singleIndicadores.formula_variaveis"
+        :key="v.id"
+      >
+        <td>{{ v.codigo }}</td>
+        <td>{{ v.titulo }}</td>
+        <td>{{ v.regiao ? níveisRegionalização.find(e => e.id == v.regiao.nivel).nome : '-' }}</td>
+        <td>{{ v.valor_base }}</td>
+        <td>{{ v.periodicidade }}</td>
+        <td>{{ v.unidade_medida?.sigla }}</td>
+        <td>{{ v.casas_decimais }}</td>
+        <td>{{ v.atraso_meses }}</td>
+        <td>{{ v.acumulativa ? 'Sim' : 'Não' }}</td>
+        <td style="white-space: nowrap; text-align: right;">
+          <button
+            class="like-a__link tipinfo tprimary"
+            :disabled="!permitirEdição(v.indicador_variavel)"
+            @click="apagarVariável(v.id)"
+          >
+            <svg
+              width="20"
+              height="20"
+            ><use xlink:href="#i_remove" /></svg><div>Apagar</div>
+          </button>
+          <router-link
+            :to="`${parentlink}/indicadores/${indicadorId}/variaveis/novo/${v.id}`"
+            class="tipinfo tprimary ml1"
+          >
+            <svg
+              width="20"
+              height="20"
+            ><use xlink:href="#i_copy" /></svg><div>Duplicar</div>
+          </router-link>
+          <router-link
+            v-if="permitirEdição(v.indicador_variavel)"
+            :to="`${parentlink}/indicadores/${indicadorId}/variaveis/${v.id}`"
+            class="tipinfo tprimary ml1"
+          >
+            <svg
+              width="20"
+              height="20"
+            ><use xlink:href="#i_edit" /></svg><div>Editar</div>
+          </router-link>
+          <button
+            v-else
+            disabled
+            class="like-a__link tipinfo tprimary ml1"
+          >
+            <svg
+              width="20"
+              height="20"
+            ><use xlink:href="#i_edit" /></svg><div>Editar</div>
+          </button>
+          <router-link
+            :to="`${parentlink}/indicadores/${indicadorId}/variaveis/${v.id}/valores`"
+            class="tipinfo tprimary ml1"
+          >
+            <svg
+              width="20"
+              height="20"
+            ><use xlink:href="#i_valores" /></svg><div>Valores Previstos e Acumulados</div>
+          </router-link>
+          <router-link
+            v-if="permissions.CadastroPessoa?.administrador"
+            :to="`${parentlink}/indicadores/${indicadorId}/variaveis/${v.id}/retroativos`"
+            class="tipinfo tprimary ml1"
+          >
+            <svg
+              width="20"
+              height="20"
+            ><use xlink:href="#i_check" /></svg><div>Valores Realizados Retroativos</div>
+          </router-link>
+        </td>
+      </tr>
+    </tbody>
   </table>
 </template>

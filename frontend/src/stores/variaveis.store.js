@@ -72,7 +72,6 @@ export const useVariaveisStore = defineStore({
         const r = await this.requestS.get(`${baseUrl}/indicador/${indicadorId}/formula-composta-em-uso`);
         this.variáveisCompostasEmUso[indicadorId] = r.rows;
       } catch (error) {
-        console.log(error)
         this.variáveisCompostasEmUso[indicadorId] = { error };
       }
     },
@@ -179,18 +178,6 @@ export const useVariaveisStore = defineStore({
     valoresEmFoco({ Valores }) {
       const { var_id: varId } = this.route.params;
       return Valores[varId]?.linhas || [];
-    },
-
-    variaveisEmUso() {
-      const indicadorId = this.route.params.indicador_id;
-
-      let variaveisSimples = this.$state.Variaveis[indicadorId];
-
-      variaveisSimples = Array.isArray(variaveisSimples)
-        ? variaveisSimples.filter((v) => v.indicador_variavel.some((iv) => !iv.desativado))
-        : [];
-
-      return variaveisSimples;
     },
 
     variáveisCompostasPorReferência: ({ variáveisCompostas }) => Object.keys(variáveisCompostas)
