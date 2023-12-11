@@ -1320,14 +1320,15 @@ export class MetasService {
             where: {
                 variavel_id: dto.variavel_id,
                 ciclo_fisico_id: dadosCiclo.id,
+                meta_id: meta_id, // nem tão importante assim, pois a variavel já é de só um indicador -> meta
             },
             select: { aguarda_complementacao: true },
         });
 
         if (
             ehPontoFocal &&
-            dadosCiclo.meta_esta_na_coleta == false &&
-            (!status || status.aguarda_complementacao == false)
+            ((status && status.aguarda_complementacao === false) ||
+                (!status && dadosCiclo.meta_esta_na_coleta === false))
         ) {
             throw new HttpException(
                 'Você não pode enviar valores fora da fase de Coleta se não há pedido de complementação',
@@ -1435,8 +1436,6 @@ export class MetasService {
         dadosCiclo: DadosCiclo,
         ehPontoFocal: boolean
     ) {
-        // known issue, o ponto focal está podendo editar os valores do "pode_editar: false"
-        // mesmo depois de já enviado pra CP se chamar o endpoint direto e for dentro do ciclo
         let needRecalc = false;
         for (const campo of CamposRealizado) {
             const valor_nominal = dto[campo] === null ? '' : dto[campo];
@@ -1511,6 +1510,7 @@ export class MetasService {
             where: {
                 ciclo_fisico_id: dadosCiclo.id,
                 variavel_id: dto.variavel_id,
+                meta_id: meta_id,
                 ultima_revisao: true,
             },
             data: {
@@ -1661,7 +1661,7 @@ export class MetasService {
         linha: FilterVariavelAnaliseQualitativaUltimaRevisaoDto,
         apenas_ultima_revisao: boolean,
         fastlane: boolean,
-        config: PessoaAcessoPdm,
+        config: PessoaAcessoPdm
     ): Promise<MfListVariavelAnaliseQualitativaReducedDto> {
         const meta_id = await this.variavelService.getMetaIdDaVariavel(linha.variavel_id, this.prisma);
         this.verificaPermissaoMeta(config, meta_id);
@@ -2000,7 +2000,7 @@ export class MetasService {
                 removido_em: null,
                 id: dto.formula_composta_id,
             },
-            select: { id: true, titulo: true, },
+            select: { id: true, titulo: true },
         });
 
         const analisesResult = await this.prisma.formulaCompostaCicloFisicoQualitativo.findMany({
