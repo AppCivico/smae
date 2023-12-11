@@ -71,10 +71,6 @@ export class PPStatusService implements ReportableService {
             },
         });
 
-        console.log('==================');
-        console.log(projetoRows);
-        console.log('==================');
-
         if (projetoRows.length == 0)
             throw new HttpException('Não há linhas para estas condições.', 400)
 
