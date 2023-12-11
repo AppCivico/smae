@@ -66,6 +66,7 @@ const valoresIniciais = computed(() => ({
     data_ciclo: MetaVars.value.data_ciclo,
     formula_composta_id: props.variávelComposta?.id,
     analise_qualitativa: dadosExtrasDeComposta.value?.analises?.[0]?.analise_qualitativa || '',
+    enviar_para_cp: dadosExtrasDeComposta.value?.analises?.[0]?.enviado_para_cp || false,
   },
   linhas: !Array.isArray(props.variávelComposta?.variaveis)
     ? [{
@@ -131,6 +132,8 @@ function submeterAoCP() {
   alertStore.confirmAction(
     'Deseja submeter as informações? Após o envio, os dados só poderão ser editados pela coordenadoria de planejamento ou em caso de solicitação de complementação.',
     () => {
+      setFieldValue('composta.enviar_para_cp', true);
+
       carga.linhas.forEach((_x, i) => {
         setFieldValue(`linhas[${i}].enviar_para_cp`, true);
       });
