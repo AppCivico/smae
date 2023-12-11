@@ -58,12 +58,10 @@ const { singleIndicadores } = storeToRefs(IndicadoresStore);
 
 const VariaveisStore = useVariaveisStore();
 const {
-  Variaveis, variáveisCompostas, variáveisCompostasEmUso
+  Variaveis, variáveisCompostas, variáveisCompostasEmUso,
 } = storeToRefs(VariaveisStore);
 
 const { título } = route.meta;
-
-const regionalizavel = ref(singleIndicadores.value.regionalizavel);
 
 const abas = ref({
   TabelaDeVariaveis: {
@@ -76,7 +74,7 @@ const abas = ref({
   },
   TabelaDeVariaveisCompostasEmUso: {
     componente: TabelaDeVariaveisCompostasEmUso,
-    etiqueta: 'Variáveis compostas em uso'
+    etiqueta: 'Variáveis compostas em uso',
   },
   TabelaDeVariaveisEmUso: {
     componente: TabelaDeVariaveisEmUso,
@@ -454,10 +452,10 @@ if (indicador_id) {
           <div class="mb1">
             <label class="block">
               <Field
-                v-model="regionalizavel"
                 name="regionalizavel"
                 type="checkbox"
-                value="1"
+                :value="true"
+                :unchecked-value="false"
                 class="inputcheckbox"
               /><span :class="{ 'error': errors.regionalizavel }">Indicador regionalizável</span>
             </label>
@@ -466,12 +464,11 @@ if (indicador_id) {
             </div>
           </div>
           <div
-            v-if="regionalizavel"
+            v-if="values.regionalizavel"
             class=""
           >
             <label class="label">Nível de regionalização <span class="tvermelho">*</span></label>
             <Field
-              v-model="nivel_regionalizacao"
               name="nivel_regionalizacao"
               as="select"
               class="inputtext light mb1"
@@ -502,19 +499,14 @@ if (indicador_id) {
           <div class="mb1">
             <label class="flex">
               <Field
-                v-slot="{ field }"
                 name="regionalizavel"
-              >
-                <input
-                  type="checkbox"
-                  name="regionalizavel"
-                  v-bind="field"
-                  :value="true"
-                  class="inputcheckbox"
-                  disabled
-                >
-                <span>Indicador regionalizável</span>
-              </Field>
+                type="checkbox"
+                :value="true"
+                :unchecked-value="false"
+                class="inputcheckbox"
+                disabled
+              />
+              <span>Indicador regionalizável</span>
               <div class="tipinfo ml1">
                 <svg
                   width="20"
@@ -531,7 +523,6 @@ if (indicador_id) {
           <div v-if="singleIndicadores.nivel_regionalizacao">
             <label class="label">Nível de regionalização <span class="tvermelho">*</span></label>
             <Field
-              v-model="nivel_regionalizacao"
               name="nivel_regionalizacao"
               disabled
               as="select"
