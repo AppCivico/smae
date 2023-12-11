@@ -101,6 +101,11 @@ const {
   validationSchema: schema,
 });
 
+const permitirSubmissãoAoCP = computed(() => Array.isArray(carga.linhas)
+  && !carga.linhas
+    .find((x) => (x.valor_realizado_acumulado !== undefined && !x.valor_realizado_acumulado)
+      || !x.valor_realizado));
+
 const onSubmit = handleSubmit.withControlled(async () => {
   try {
     const [primeira, segunda] = await Promise.all([
@@ -584,7 +589,7 @@ watch(variáveisComSuasDatas, (novoValor) => {
         v-if="MetaVars.perfil === 'ponto_focal'"
         class="btn big"
         type="button"
-        :disabled="isSubmitting"
+        :disabled="isSubmitting || !permitirSubmissãoAoCP"
         @click="submeterAoCP"
       >
         Salvar e submeter
