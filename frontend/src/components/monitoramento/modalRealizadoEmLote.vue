@@ -496,6 +496,7 @@ watch(variáveisComSuasDatas, (novoValor) => {
                 type="number"
                 :value="field.value.valor_realizado"
                 :step="1"
+                min="0"
                 class="inputtext light"
                 :class="{ 'error': errors[`linhas[${idx}].valor_realizado`] }"
                 @update:model-value="() => {
@@ -516,6 +517,7 @@ watch(variáveisComSuasDatas, (novoValor) => {
                 type="number"
                 :value="field.valor_realizado_acumulado"
                 :step="1"
+                min="0"
                 class="inputtext light"
                 :class="{ 'error': errors[`linhas[${idx}].valor_realizado_acumulado`] }"
                 @update:model-value="() => {

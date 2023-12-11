@@ -1244,11 +1244,9 @@ export const valoresRealizadoEmLote = object()
               .required(),
             valor_realizado: number()
               .label('Valor realizado')
-              .min(0)
               .nullable(),
             valor_realizado_acumulado: number()
               .label('Valor acumulado')
-              .min(0)
               .nullable(),
             variavel_id: number()
               .min(1)
