@@ -1,20 +1,25 @@
 <script setup>
 import auxiliarDePreenchimento from '@/components/AuxiliarDePreenchimento.vue';
 import dateToField from '@/helpers/dateToField';
+import requestS from '@/helpers/requestS.ts';
 import { useAlertStore } from '@/stores/alert.store';
 import { useAuthStore } from '@/stores/auth.store';
 import { useCiclosStore } from '@/stores/ciclos.store';
+import { useDocumentTypesStore } from '@/stores/documentTypes.store';
 import { useEditModalStore } from '@/stores/editModal.store';
 import { storeToRefs } from 'pinia';
-import { valoresRealizadoEmLote as schema } from '@/consts/formSchemas';
+import { valoresRealizadoEmLote as schema, arquivoSimples as uploadSchema } from '@/consts/formSchemas';
 import {
   Field,
   FieldArray,
+  Form,
   ErrorMessage,
   useForm,
 } from 'vee-validate';
 import { computed, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
+
+const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
 const editModalStore = useEditModalStore();
 const alertStore = useAlertStore();
@@ -22,6 +27,11 @@ const alertStore = useAlertStore();
 const authStore = useAuthStore();
 const { permissions } = storeToRefs(authStore);
 const perm = permissions.value;
+
+const documentTypesStore = useDocumentTypesStore();
+const { tempDocumentTypes } = storeToRefs(documentTypesStore);
+documentTypesStore.clear();
+documentTypesStore.filterDocumentTypes();
 
 const route = useRoute();
 const { meta_id } = route.params;
@@ -111,7 +121,6 @@ const onSubmit = handleSubmit.withControlled(async () => {
 });
 
 function submeterAoCP() {
-  console.debug(95);
   alertStore.confirmAction(
     'Deseja submeter as informações? Após o envio, os dados só poderão ser editados pela coordenadoria de planejamento ou em caso de solicitação de complementação.',
     () => {
@@ -152,6 +161,64 @@ function preencher(quais) {
 function restaurarFormulário() {
   resetForm();
 }
+
+const virtualUpload = ref({});
+async function addArquivo(values) {
+  try {
+    let msg;
+    let r;
+
+    virtualUpload.value.loading = true;
+    values.tipo = 'DOCUMENTO';
+    const formData = new FormData();
+
+    Object.entries(values).forEach((x) => {
+      formData.append(x[0], x[1]);
+    });
+
+    const u = await requestS.upload(`${baseUrl}/upload`, formData);
+
+    if (u.upload_token) {
+      r = await CiclosStore.addArquivoComposta({
+        data_ciclo: MetaVars.value.data_ciclo,
+        formula_composta_id: props.variávelComposta?.id,
+        upload_token: u.upload_token,
+      }, values);
+      if (r === true) {
+        msg = 'Item adicionado com sucesso!';
+        alertStore.success(msg);
+        virtualUpload.value = {};
+
+        CiclosStore.buscarDadosExtrasDeComposta({
+          data_ciclo: MetaVars.value.data_ciclo,
+          formula_composta_id: props.variávelComposta?.id,
+        });
+      }
+    } else {
+      virtualUpload.value.loading = false;
+    }
+  } catch (error) {
+    alertStore.error(error);
+    virtualUpload.value.loading = false;
+  }
+}
+function deleteArquivo(id) {
+  alertStore.confirmAction('Deseja remover o arquivo?', async () => {
+    await CiclosStore.deleteArquivoComposta(id);
+
+    CiclosStore.buscarDadosExtrasDeComposta({
+      data_ciclo: MetaVars.value.data_ciclo,
+      formula_composta_id: props.variávelComposta?.id,
+    });
+  }, 'Remover');
+}
+
+function addFile(e) {
+  const { files } = e.target;
+  virtualUpload.value.name = files[0].name;
+  virtualUpload.value.file = files[0];
+}
+
 watch(valoresIniciais, (novoValor) => {
   resetForm({ values: novoValor });
 });
@@ -236,6 +303,71 @@ watch(variáveisComSuasDatas, (novoValor) => {
         />
       </div>
     </div>
+
+    <!-- PRA-FAZER: extrair para um componente que receba a lista via props
+      e emita os cliques nos botões -->
+    <table class="tablemain mb1">
+      <thead>
+        <tr>
+          <th style="width: 30%">
+            Documento comprobatório
+          </th>
+          <th style="width: 60%">
+            Descrição
+          </th>
+          <th style="width: 10%" />
+        </tr>
+      </thead>
+      <tbody>
+        <template
+          v-for="subitem in dadosExtrasDeComposta.arquivos"
+          :key="subitem.id"
+        >
+          <tr>
+            <td>
+              <a
+                v-if="subitem?.arquivo?.download_token"
+                :href="baseUrl + '/download/' + subitem?.arquivo?.download_token"
+                download
+              >{{ subitem?.arquivo?.nome_original ?? '-' }}</a>
+              <template v-else>
+                {{ subitem?.arquivo?.nome_original ?? '-' }}
+              </template>
+            </td>
+            <td>
+              <a
+                v-if="subitem?.arquivo?.download_token"
+                :href="baseUrl + '/download/' + subitem?.arquivo?.download_token"
+                download
+              >{{ subitem?.arquivo?.descricao ?? '-' }}</a>
+              <template v-else>
+                {{ subitem?.arquivo?.descricao ?? '-' }}
+              </template>
+            </td>
+            <td style="white-space: nowrap; text-align: right;">
+              <button
+                v-if="subitem.id"
+                type="button"
+                class="like-a__text tprimary"
+                @click="deleteArquivo(subitem.id)"
+              >
+                <svg
+                  width="20"
+                  height="20"
+                ><use xlink:href="#i_remove" /></svg>
+              </button>
+            </td>
+          </tr>
+        </template>
+      </tbody>
+    </table>
+    <a
+      class="addlink mb1"
+      @click="virtualUpload.open = 1;"
+    ><svg
+      width="20"
+      height="20"
+    ><use xlink:href="#i_+" /></svg> <span>Adicionar documentos comprobatórios</span></a>
 
     <h4 class="mb1">
       Valores de variáveis componentes
@@ -446,4 +578,113 @@ watch(variáveisComSuasDatas, (novoValor) => {
       <hr class="ml2 f1">
     </div>
   </form>
+
+  <div
+    v-if="virtualUpload.open"
+    class="editModal-wrap"
+  >
+    <div
+      class="overlay"
+      @click="virtualUpload.open = false"
+    />
+    <div class="editModal">
+      <div>
+        <template v-if="virtualUpload?.loading">
+          <span class="spinner">Enviando o arquivo</span>
+        </template>
+        <Form
+          v-else
+          v-slot="{ errors, isSubmitting }"
+          :validation-schema="uploadSchema"
+          @submit="addArquivo"
+        >
+          <div class="flex g2">
+            <div class="f1">
+              <label class="label">Descrição <span class="tvermelho">*</span></label>
+              <Field
+                v-model="virtualUpload.descricao"
+                name="descricao"
+                type="text"
+                class="inputtext light mb1"
+                :class="{ 'error': errors.descricao }"
+              />
+              <div class="error-msg">
+                {{ errors.descricao }}
+              </div>
+            </div>
+            <div class="f1">
+              <label class="label">Tipo de Documento <span class="tvermelho">*</span></label>
+              <Field
+                v-model="virtualUpload.tipo_documento_id"
+                name="tipo_documento_id"
+                as="select"
+                class="inputtext light mb1"
+                :class="{ 'error': errors.tipo_documento_id }"
+              >
+                <option value="">
+                  Selecione
+                </option>
+                <option
+                  v-for="d in tempDocumentTypes"
+                  :key="d.id"
+                  :value="d.id"
+                >
+                  {{ d.titulo }}
+                </option>
+              </Field>
+              <div class="error-msg">
+                {{ errors.tipo_documento_id }}
+              </div>
+            </div>
+          </div>
+          <div class="flex g2 mb2">
+            <div class="f1">
+              <label class="label">Arquivo</label>
+
+              <label
+                v-if="!virtualUpload.name"
+                class="addlink"
+                :class="{ 'error': errors.arquivo }"
+              ><svg
+                width="20"
+                height="20"
+              ><use xlink:href="#i_+" /></svg><span>Selecionar arquivo</span><input
+                type="file"
+                :onchange="addFile"
+                style="display:none;"
+              ></label>
+
+              <div v-else-if="virtualUpload.name">
+                <span>{{ virtualUpload?.name?.slice(0, 30) }}</span> <a
+                  class="addlink"
+                  @click="virtualUpload.name = ''"
+                ><svg
+                  width="20"
+                  height="20"
+                ><use xlink:href="#i_remove" /></svg></a>
+              </div>
+              <Field
+                v-model="virtualUpload.file"
+                name="arquivo"
+                type="hidden"
+              />
+              <div class="error-msg">
+                {{ errors.arquivo }}
+              </div>
+            </div>
+          </div>
+          <div class="flex spacebetween center mb2">
+            <hr class="mr2 f1">
+            <button
+              class="btn big"
+              :disabled="isSubmitting"
+            >
+              Salvar
+            </button>
+            <hr class="ml2 f1">
+          </div>
+        </Form>
+      </div>
+    </div>
+  </div>
 </template>

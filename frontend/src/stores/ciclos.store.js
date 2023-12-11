@@ -256,6 +256,25 @@ export const useCiclosStore = defineStore({
         return false;
       }
     },
+
+    // Não atualizar direto na lista porque ela já está muito bagunçada!
+    async addArquivoComposta(params) {
+      try {
+        const { id = 0 } = await this.requestS.patch(`${baseUrl}/mf/metas/formula-composta/analise-qualitativa/documento/`, params);
+
+        if (id) {
+          return true;
+        }
+        return false;
+      } catch (error) {
+        return false;
+      }
+    },
+
+    async deleteArquivoComposta(id) {
+      return !!await this.requestS.delete(`${baseUrl}/mf/metas/formula-composta/analise-qualitativa/documento/${id}`);
+    },
+
     async conferir(params) {
       if (await this.requestS.patch(`${baseUrl}/mf/metas/variaveis/conferida`, params)) return true;
       return false;
