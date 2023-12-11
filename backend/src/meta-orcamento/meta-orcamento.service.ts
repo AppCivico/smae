@@ -190,6 +190,7 @@ export class MetaOrcamentoService {
                 const metaOrcamento = await prismaTxn.orcamentoPrevisto.update({
                     where: {
                         id: +id,
+                        meta_id: meta_id!,
                     },
                     data: {
                         atualizado_em: now,

@@ -87,8 +87,10 @@ const valoresIniciais = computed(() => ({
           titulo: cur.variavel.titulo,
           valor_realizado_acumulado: !dadosExtrasPorVariávelId.value?.[cur.variavel.id]?.acumulativa
             ? y.series[índiceDeSériesEmMetaVars.value.RealizadoAcumulado]?.valor_nominal
-            : undefined,
-          valor_realizado: y.series[índiceDeSériesEmMetaVars.value.Realizado]?.valor_nominal,
+
+            : null,
+          valor_realizado: y.series[índiceDeSériesEmMetaVars.value.Realizado]?.valor_nominal
+            ?? null,
           variavel_id: cur.variavel.id,
         })),
       )
@@ -106,6 +108,9 @@ const permitirSubmissãoAoCP = computed(() => Array.isArray(carga.linhas)
   && !carga.linhas
     .find((x) => (x.valor_realizado_acumulado !== undefined && !x.valor_realizado_acumulado)
       || !x.valor_realizado));
+
+const ediçãoProibidaApósConferência = computed(() => MetaVars.perfil === 'ponto_focal'
+  && dadosExtrasDeComposta.value?.analises?.[0]?.enviado_para_cp);
 
 const onSubmit = handleSubmit.withControlled(async () => {
   try {
@@ -308,6 +313,9 @@ watch(variáveisComSuasDatas, (novoValor) => {
           rows="3"
           class="inputtext light mb1"
           :class="{ 'error': errors['composta.analise_qualitativa'] }"
+
+          :disabled="ediçãoProibidaApósConferência"
+
         />
 
         <ErrorMessage
@@ -362,6 +370,9 @@ watch(variáveisComSuasDatas, (novoValor) => {
                 v-if="subitem.id"
                 type="button"
                 class="like-a__text tprimary"
+
+                :disabled="ediçãoProibidaApósConferência"
+
                 @click="deleteArquivo(subitem.id)"
               >
                 <svg
@@ -375,6 +386,7 @@ watch(variáveisComSuasDatas, (novoValor) => {
       </tbody>
     </table>
     <a
+      v-if="!ediçãoProibidaApósConferência"
       class="addlink mb1"
       @click="virtualUpload.open = 1;"
     ><svg
