@@ -1,7 +1,7 @@
 export class SplitString {
     static splitString(inputString: string, length: number): string {
-        let splitArray: string[] = [];
-        let splitIndex: number = 0;
+        const splitArray: string[] = [];
+        let splitIndex = 0;
 
         while (splitIndex < inputString.length) {
             let cutIndex = splitIndex + length;

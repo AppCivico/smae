@@ -15,7 +15,9 @@ export class AcompanhamentoTipoService {
     constructor(private readonly prisma: PrismaService) {}
 
     async create(dto: CreateTipoAcompanhamentoDto, user: PessoaFromJwt): Promise<RecordWithId> {
-        const tipoJaExiste = await this.prisma.acompanhamentoTipo.count({ where: { nome: dto.nome, removido_em: null } });
+        const tipoJaExiste = await this.prisma.acompanhamentoTipo.count({
+            where: { nome: dto.nome, removido_em: null },
+        });
         if (tipoJaExiste) throw new Error('Já existe um tipo de acompanhamento com este nome.');
 
         const acompanhamentoTipo = await this.prisma.acompanhamentoTipo.create({
@@ -24,34 +26,34 @@ export class AcompanhamentoTipoService {
                 criado_em: new Date(Date.now()),
                 criado_por: user.id,
             },
-            select: { id: true }
-        })
+            select: { id: true },
+        });
 
-        return { id: acompanhamentoTipo.id }
+        return { id: acompanhamentoTipo.id };
     }
 
     async findAll(user: PessoaFromJwt): Promise<AcompanhamentoTipo[]> {
         const acompanhamentoTipoRows = await this.prisma.acompanhamentoTipo.findMany({
-            where: {removido_em: null},
+            where: { removido_em: null },
             orderBy: { nome: 'asc' },
             select: {
                 id: true,
-                nome: true
-            }
-        })
+                nome: true,
+            },
+        });
 
-        return acompanhamentoTipoRows
+        return acompanhamentoTipoRows;
     }
 
     async update(id: number, dto: UpdateAcompanhamentoTipoDto, user: PessoaFromJwt) {
         return await this.prisma.acompanhamentoTipo.update({
-            where: {id},
+            where: { id },
             data: {
                 nome: dto.nome,
                 atualizado_em: new Date(Date.now()),
-                atualizado_por: user.id
+                atualizado_por: user.id,
             },
-            select: { id: true }
+            select: { id: true },
         });
     }
 
@@ -60,18 +62,18 @@ export class AcompanhamentoTipoService {
             // Limpando ligação com rows de Acompanhamento
             await prismaTx.projetoAcompanhamento.updateMany({
                 where: { acompanhanmento_tipo_id: id },
-                data: { acompanhanmento_tipo_id: null }
+                data: { acompanhanmento_tipo_id: null },
             });
 
             return await prismaTx.acompanhamentoTipo.update({
-                where: {id},
+                where: { id },
                 data: {
                     removido_por: user.id,
-                    removido_em: new Date(Date.now())
-                }
-            })
+                    removido_em: new Date(Date.now()),
+                },
+            });
         });
-        
-        return ;
+
+        return;
     }
 }

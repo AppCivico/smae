@@ -337,7 +337,7 @@ export class RiscoService {
                         });
 
                         const updates = [];
-                        let primeiraRow: boolean = true;
+                        let primeiraRow = true;
                         for (const row of riscosAbaixo) {
                             if (primeiraRow && row.codigo != dto.codigo) break;
 

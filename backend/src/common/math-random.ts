@@ -1,6 +1,6 @@
 import { randomBytes } from 'crypto';
 
-export function MathRandom(max: number = 1): number {
+export function MathRandom(max = 1): number {
     // Gera ainda 8 bytes, mas instancia como BigInt
     const bigint = BigInt(`0x${randomBytes(8).toString('hex')}`);
 

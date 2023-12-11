@@ -9,7 +9,7 @@ let request_num = 1;
 @Injectable()
 export class LoggerMiddleware implements NestMiddleware {
     private logger = new Logger('HTTP');
-    private logOnDb: boolean = false;
+    private logOnDb = false;
     private logSkipUrl: string[] = ['/ping'];
 
     constructor(private readonly prisma: PrismaService) {

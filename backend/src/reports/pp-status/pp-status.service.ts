@@ -60,7 +60,7 @@ export class PPStatusService implements ReportableService {
                         data_registro: {
                             gte: dto.periodo_inicio ? dto.periodo_inicio : undefined,
                             lte: dto.periodo_fim ? dto.periodo_fim : undefined,
-                        }
+                        },
                     },
                     select: {
                         detalhamento_status: true,
@@ -71,8 +71,7 @@ export class PPStatusService implements ReportableService {
             },
         });
 
-        if (projetoRows.length == 0)
-            throw new HttpException('Não há linhas para estas condições.', 400)
+        if (projetoRows.length == 0) throw new HttpException('Não há linhas para estas condições.', 400);
 
         const projetoStatusOut: RelProjetoStatusRelatorioDto[] = projetoRows.map((p) => {
             let cronograma: string;

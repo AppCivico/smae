@@ -1,16 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Transform, Type } from 'class-transformer';
-import {
-    IsInt,
-    IsOptional,
-    IsString,
-    Matches,
-    Max,
-    MaxLength,
-    Min,
-    Validate,
-    ValidateIf
-} from 'class-validator';
+import { IsInt, IsOptional, IsString, Matches, Max, MaxLength, Min, Validate, ValidateIf } from 'class-validator';
 import { EitherPdmOrPortfolio } from 'src/common/dto/EitherPdmOrPortfolio';
 
 export const PROCESSO_REGEXP = /^(?:\d{4}\.?\d{4}\/?\d{7}\-?\d|\d{4}\-?\d\.?\d{3}\.?\d{3}\-?\d)$/;

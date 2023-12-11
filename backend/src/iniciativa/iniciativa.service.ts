@@ -423,7 +423,7 @@ export class IniciativaService {
             async (prisma: Prisma.TransactionClient): Promise<Prisma.BatchPayload> => {
                 // Antes de remover a Iniciativa, deve ser verificada a Meta para garantir de que não há variaveis em uso
                 if (self.compoe_indicador_meta) {
-                    let has_vars_in_use: boolean = false;
+                    let has_vars_in_use = false;
 
                     for (const indicador of self.Indicador) {
                         if (indicador.IndicadorVariavel.length > 0) has_vars_in_use = true;

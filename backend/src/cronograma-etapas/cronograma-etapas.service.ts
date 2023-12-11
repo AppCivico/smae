@@ -495,7 +495,7 @@ export class CronogramaEtapaService {
                     dto.ordem &&
                     ((self && dto.ordem != self.ordem) || (!self && dto.ordem != nivelOrdemForUpsert.ordem))
                 ) {
-                    let rows = await prisma.cronogramaEtapa.findMany({
+                    const rows = await prisma.cronogramaEtapa.findMany({
                         where: {
                             cronograma_id: dto.cronograma_id,
                             nivel: cronogramaEtapa.nivel,
@@ -693,7 +693,6 @@ export class CronogramaEtapaService {
         const hoje = DateTime.local({ zone: SYSTEM_TIMEZONE }).startOf('day');
 
         let diff: number;
-        let atraso: number | null;
         if (inicio_real) {
             if (termino_previsto == null) {
                 console.warn(
@@ -712,7 +711,7 @@ export class CronogramaEtapaService {
             diff = hoje.diff(DateTime.fromJSDate(inicio_previsto)).as('days');
         }
 
-        atraso = diff <= 0 ? null : Math.floor(Math.abs(diff));
+        const atraso = diff <= 0 ? null : Math.floor(Math.abs(diff));
         return atraso;
     }
 

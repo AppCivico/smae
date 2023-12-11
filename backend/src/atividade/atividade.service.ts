@@ -463,7 +463,7 @@ export class AtividadeService {
 
         // Antes de remover a Atividade, deve ser verificada a Iniciativa para garantir de que não há variaveis em uso
         if (self.compoe_indicador_iniciativa) {
-            let has_vars_in_use: boolean = false;
+            let has_vars_in_use = false;
 
             for (const indicador of self.Indicador) {
                 if (indicador.IndicadorVariavel.length > 0) has_vars_in_use = true;

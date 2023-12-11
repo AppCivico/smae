@@ -49,7 +49,7 @@ export class UploadService {
         file: Express.Multer.File | { buffer: Buffer },
         ip: string
     ) {
-        let originalname: string = '';
+        let originalname = '';
 
         if ('size' in file) {
             if (file.size < 1) {
@@ -195,7 +195,7 @@ export class UploadService {
         }
 
         if (!hasShp || !hasDbf || !hasShx || !hasCpg) {
-            let missingExtensions = [];
+            const missingExtensions = [];
             if (!hasShp) missingExtensions.push('.shp');
             if (!hasDbf) missingExtensions.push('.dbf');
             if (!hasShx) missingExtensions.push('.shx');

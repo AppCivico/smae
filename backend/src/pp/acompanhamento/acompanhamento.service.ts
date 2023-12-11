@@ -101,7 +101,7 @@ export class AcompanhamentoService {
                 pauta: true,
 
                 acompanhamento_tipo: {
-                    select: { id: true, nome: true }
+                    select: { id: true, nome: true },
                 },
 
                 ProjetoAcompanhamentoItem: {
@@ -128,10 +128,12 @@ export class AcompanhamentoService {
                 participantes: a.participantes,
                 detalhamento: a.detalhamento,
                 pauta: a.pauta,
-                acompanhamento_tipo: a.acompanhamento_tipo ? {
-                    id: a.acompanhamento_tipo.id,
-                    nome: a.acompanhamento_tipo.nome
-                } : null,
+                acompanhamento_tipo: a.acompanhamento_tipo
+                    ? {
+                          id: a.acompanhamento_tipo.id,
+                          nome: a.acompanhamento_tipo.nome,
+                      }
+                    : null,
 
                 acompanhamentos: a.ProjetoAcompanhamentoItem.map(this.renderAcompanhamento),
 
@@ -175,7 +177,7 @@ export class AcompanhamentoService {
                 cronograma_paralisado: true,
 
                 acompanhamento_tipo: {
-                    select: { id: true, nome: true }
+                    select: { id: true, nome: true },
                 },
 
                 ProjetoAcompanhamentoItem: {
@@ -212,10 +214,12 @@ export class AcompanhamentoService {
 
             acompanhamentos: projetoAcompanhamento.ProjetoAcompanhamentoItem.map(this.renderAcompanhamento),
 
-            acompanhamento_tipo: projetoAcompanhamento.acompanhamento_tipo ? {
-                id: projetoAcompanhamento.acompanhamento_tipo.id,
-                nome: projetoAcompanhamento.acompanhamento_tipo.nome
-            } : null,
+            acompanhamento_tipo: projetoAcompanhamento.acompanhamento_tipo
+                ? {
+                      id: projetoAcompanhamento.acompanhamento_tipo.id,
+                      nome: projetoAcompanhamento.acompanhamento_tipo.nome,
+                  }
+                : null,
 
             risco: projetoAcompanhamento.ProjetoAcompanhamentoRisco.map((r) => {
                 return {
@@ -294,7 +298,7 @@ export class AcompanhamentoService {
                             ...dto,
                             risco: undefined,
                             acompanhamentos: undefined,
-                            acompanhanmento_tipo_id: acompanhamento_tipo_id
+                            acompanhanmento_tipo_id: acompanhamento_tipo_id,
                         },
                         atualizado_em: now,
                         atualizado_por: user.id,

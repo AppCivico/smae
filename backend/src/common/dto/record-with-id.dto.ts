@@ -3,5 +3,5 @@ export class RecordWithId {
 }
 
 export class BatchRecordWithId {
-    ids: RecordWithId[]
+    ids: RecordWithId[];
 }

@@ -574,7 +574,7 @@ export class PdmService {
     }
 
     private async cicloFisicoAtualizaFase(cf: CicloFisicoResumo, fase_corrente: CicloFisicoFase) {
-        let pdm_id = cf.pdm_id;
+        const pdm_id = cf.pdm_id;
         let ciclo_fisico_id = fase_corrente.ciclo_fisico_id;
 
         await this.prisma.$transaction(async (prismaTxn: Prisma.TransactionClient) => {

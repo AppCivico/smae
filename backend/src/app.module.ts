@@ -149,7 +149,8 @@ import { RequestLogModule } from './request_log/request_log.module';
         ProjetoPrevisaoCustoModule,
         ProjetoOrcamentoModule,
         ImportacaoOrcamentoModule, // carregar depois do OrcamentoPrevistoModule
-        AcompanhamentoTipoModule, RequestLogModule
+        AcompanhamentoTipoModule,
+        RequestLogModule,
     ],
     controllers: [AppController],
     providers: [

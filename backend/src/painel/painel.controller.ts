@@ -51,7 +51,7 @@ export class PainelController {
     async findAll(@Query() filters: FilterPainelDto, @CurrentUser() user: PessoaFromJwt): Promise<ListPainelDto> {
         // Este boolean indica que não é para realizar restrição por Grupo de Paineis
         // Neste endpoint será retornado todos os paineis, independente do grupo do painel e do usuário.
-        const restringirGrupos: boolean = false;
+        const restringirGrupos = false;
 
         return { linhas: await this.painelService.findAll(filters, restringirGrupos, user) };
     }
@@ -64,7 +64,7 @@ export class PainelController {
         @CurrentUser() user: PessoaFromJwt
     ): Promise<ListPainelDto> {
         if (!filters.meta_id) throw new HttpException('meta_id| Deve ser enviado', 400);
-        const restringirGrupos: boolean = true;
+        const restringirGrupos = true;
 
         return {
             linhas: await this.painelService.findAll(

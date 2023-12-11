@@ -32,7 +32,7 @@ export class DotacaoService {
     getAcaoOrcamentaria(dotacao: string | null): TipoAcaoOrcamentaria {
         let acao_orcamentaria: TipoAcaoOrcamentaria = '';
         if (dotacao) {
-            let parts = dotacao.split('.');
+            const parts = dotacao.split('.');
             if (parts.length > 6) {
                 const antesDoPonto = +parts[5];
                 acao_orcamentaria = antesDoPonto % 2 == 0 ? 'custeio' : 'investimento';
@@ -351,7 +351,7 @@ export class DotacaoService {
     }
 
     async get_smae_soma_valor_planejado(dto: AnoDotacaoDto): Promise<string> {
-        let valor: string = '0.00';
+        let valor = '0.00';
         if (dto.pdm_id) {
             const qr = await this.prisma.pdmDotacaoPlanejado.findUnique({
                 where: {
@@ -437,8 +437,8 @@ export class DotacaoService {
         smae_soma_valor_empenho: string;
         smae_soma_valor_liquidado: string;
     }> {
-        let smae_soma_valor_empenho: string = '0.00';
-        let smae_soma_valor_liquidado: string = '0.00';
+        let smae_soma_valor_empenho = '0.00';
+        let smae_soma_valor_liquidado = '0.00';
 
         if (dto.pdm_id) {
             const qr = await this.prisma.pdmDotacaoRealizado.findUnique({

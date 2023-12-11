@@ -476,8 +476,8 @@ export class ImportacaoOrcamentoService {
         const outputSheet = utils.aoa_to_sheet(aoaWithHeader);
         utils.book_append_sheet(outputXLSX, outputSheet, sheetName);
 
-        let projetosIds: number[] = [];
-        let metasIds: number[] = [];
+        const projetosIds: number[] = [];
+        const metasIds: number[] = [];
 
         // se foi criado sem dono, pode todos Meta|Projeto, os metodos foram findAllIds
         // foram adaptados pra retornar todos os ids dos items não removidos
@@ -511,7 +511,7 @@ export class ImportacaoOrcamentoService {
             job.pdm_id
         );
 
-        let {
+        const {
             iniciativasIds,
             atividadesIds,
             iniciativasCodigos2Ids,
@@ -523,12 +523,12 @@ export class ImportacaoOrcamentoService {
             atividadesCodigos2Ids: Record<string, number>;
         } = await this.carregaIniciativaAtiv(metasIds);
 
-        let linhas_importadas: number = 0;
-        let linhas_recusadas: number = 0;
+        let linhas_importadas = 0;
+        let linhas_recusadas = 0;
 
         for (let rowIndex = range.s.r + 1; rowIndex <= range.e.r; rowIndex++) {
             const row = [];
-            let col2row: any = {};
+            const col2row: any = {};
 
             [...ColunasNecessarias, ...OutrasColumns].forEach((columnName) => {
                 const colIndex = colunaHeaderIndex[columnName];
@@ -662,10 +662,10 @@ export class ImportacaoOrcamentoService {
     }
 
     private async carregaIniciativaAtiv(metasIds: number[]) {
-        let iniciativasIds: number[] = [];
-        let atividadesIds: number[] = [];
-        let iniciativasCodigos2Ids: Record<string, number> = {};
-        let atividadesCodigos2Ids: Record<string, number> = {};
+        const iniciativasIds: number[] = [];
+        const atividadesIds: number[] = [];
+        const iniciativasCodigos2Ids: Record<string, number> = {};
+        const atividadesCodigos2Ids: Record<string, number> = {};
         if (metasIds.length > 0) {
             const iniciativas = await this.prisma.iniciativa.findMany({
                 where: {
@@ -878,7 +878,7 @@ export class ImportacaoOrcamentoService {
         let id: number | undefined = undefined;
         let itens: CreateOrcamentoRealizadoItemDto[] = [];
 
-        let adicionar_item_mes: boolean = true;
+        let adicionar_item_mes = true;
         if (params.eh_metas) {
             if (!meta_id) return 'Linha inválida: faltando meta_id';
 

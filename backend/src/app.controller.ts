@@ -26,8 +26,8 @@ export class AppController {
     }
 
     async recordPerformance(delayTime: number) {
-        let executionTimes: number[] = [];
-        let start = Date.now();
+        const executionTimes: number[] = [];
+        const start = Date.now();
 
         await this.prisma.$transaction(async (prismaTx) => {
             while (Date.now() - start < 10000) {
@@ -43,11 +43,11 @@ export class AppController {
 
         executionTimes.sort((a, b) => a - b);
 
-        let min = executionTimes[0];
-        let max = executionTimes[executionTimes.length - 1];
-        let p50 = percentile(50, executionTimes);
-        let p99 = percentile(99, executionTimes);
-        let p999 = percentile(99.9, executionTimes);
+        const min = executionTimes[0];
+        const max = executionTimes[executionTimes.length - 1];
+        const p50 = percentile(50, executionTimes);
+        const p99 = percentile(99, executionTimes);
+        const p999 = percentile(99.9, executionTimes);
 
         return { min, max, p50, p99, p999, executionTimes: executionTimes.length };
     }

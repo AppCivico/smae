@@ -32,7 +32,7 @@ export class IndicadorFormulaCompostaService {
         this.checkFormulaCompostaRecursion(dto);
 
         // se alguém apagar durante o create, ta buscando bug
-        let formula_compilada = await this.indicadorService.validateVariaveis(
+        const formula_compilada = await this.indicadorService.validateVariaveis(
             dto.formula_variaveis,
             indicador.id,
             dto.formula

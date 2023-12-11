@@ -7,7 +7,7 @@ export class Regiao {
     nivel: number;
     parente_id: number | null;
     parente?: RegiaoPai;
-    pdm_codigo_sufixo: string | null
+    pdm_codigo_sufixo: string | null;
 }
 
 export class RegiaoPai extends PartialType(OmitType(Regiao, ['parente_id', 'parente'])) {}
