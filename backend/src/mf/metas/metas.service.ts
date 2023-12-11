@@ -2136,7 +2136,7 @@ export class MetasService {
         const meta_id = await this.variavelService.getMetaIdDaFormulaComposta(arquivo.formula_composta_id, this.prisma);
         this.verificaPermissaoMeta(config, meta_id);
 
-        await this.prisma.variavelCicloFisicoDocumento.updateMany({
+        await this.prisma.formulaCompostaCicloFisicoDocumento.updateMany({
             where: { id: id, meta_id, removido_em: null },
             data: { removido_em: now, removido_por: user.id },
         });
