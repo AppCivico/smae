@@ -1,4 +1,3 @@
-import { router } from '@/router';
 import { useAlertStore } from '@/stores/alert.store';
 import { defineStore } from 'pinia';
 
@@ -20,7 +19,7 @@ export const useAuthStore = defineStore({
 
         if (token.reduced_access_token) {
           this.reducedtoken = token.reduced_access_token;
-          router.push('/nova-senha');
+          this.router.push('/nova-senha');
           return;
         }
         this.token = token.access_token;
@@ -29,9 +28,9 @@ export const useAuthStore = defineStore({
         await this.getDados();
 
         if (this.permissions?.SMAE?.loga_direto_na_analise) {
-          router.push({ name: 'análises' });
+          this.router.push({ name: 'análises' });
         } else {
-          router.push(this.returnUrl || '/');
+          this.router.push(this.returnUrl || '/');
         }
       } catch (error) {
         const alertStore = useAlertStore();
@@ -55,7 +54,7 @@ export const useAuthStore = defineStore({
         await this.requestS.post(`${baseUrl}/solicitar-nova-senha`, { email: username });
         const alertStore = useAlertStore();
         alertStore.success('Uma senha temporária foi enviada para o seu e-mail.');
-        router.push('/login');
+        this.router.push('/login');
       } catch (error) {
         const alertStore = useAlertStore();
         alertStore.error(error);
@@ -64,7 +63,7 @@ export const useAuthStore = defineStore({
     async passwordRebuilt(password) {
       try {
         if (!this.reducedtoken) {
-          router.push('/login');
+          this.router.push('/login');
           return;
         }
         const token = await this.requestS.post(`${baseUrl}/escrever-nova-senha`, { reduced_access_token: this.reducedtoken, senha: password });
@@ -80,7 +79,7 @@ export const useAuthStore = defineStore({
 
         const alertStore = useAlertStore();
         alertStore.success('Senha salva com sucesso. Bem-vindo!');
-        router.push(this.returnUrl || '/');
+        this.router.push(this.returnUrl || '/');
       } catch (error) {
         const alertStore = useAlertStore();
         alertStore.error(error);
@@ -92,7 +91,7 @@ export const useAuthStore = defineStore({
       localStorage.removeItem('token');
       localStorage.removeItem('permissions');
       this.$reset();
-      router.push('/login');
+      this.router.push('/login');
     },
     setPermissions() {
       const per = {};
