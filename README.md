@@ -83,3 +83,4 @@ Veja os detalhes do metabase+SMAE em [metabase.md](metabase.md) ou a documentaç
 # Licença
 
 [Licença Pública Geral Affero GNU](LICENSE)
+
