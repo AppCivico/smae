@@ -87,10 +87,8 @@ const valoresIniciais = computed(() => ({
           titulo: cur.variavel.titulo,
           valor_realizado_acumulado: !dadosExtrasPorVariávelId.value?.[cur.variavel.id]?.acumulativa
             ? y.series[índiceDeSériesEmMetaVars.value.RealizadoAcumulado]?.valor_nominal
-
-            : null,
-          valor_realizado: y.series[índiceDeSériesEmMetaVars.value.Realizado]?.valor_nominal
-            ?? null,
+            : undefined,
+          valor_realizado: y.series[índiceDeSériesEmMetaVars.value.Realizado]?.valor_nominal,
           variavel_id: cur.variavel.id,
         })),
       )
