@@ -1,4 +1,4 @@
-import { HttpException, Injectable, Logger } from '@nestjs/common';
+import { BadRequestException, HttpException, Injectable, Logger } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { Periodicidade, Prisma, Serie } from '@prisma/client';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
@@ -49,12 +49,7 @@ export class VariavelService {
     }
 
     async create(createVariavelDto: CreateVariavelDto, user: PessoaFromJwt) {
-        // TODO: verificar se o indicador existe e esta ativo
         // TODO: verificar se todos os membros de createVariavelDto.responsaveis estão ativos e sao realmente do orgão createVariavelDto.orgao_id
-        // TODO: verificar se o createVariavelDto.periodicidade é a mesma do indicador (por enquanto)
-        // TODO: verificar se veio região:
-        // se a região existe e está ativa, se é do mesmo nível que foi escolhido no indicador
-        // se não vier, conferir se o indicador realmente não é por região
 
         await this.checkPermissions(createVariavelDto, user);
 
@@ -68,6 +63,18 @@ export class VariavelService {
 
         const created = await this.prisma.$transaction(
             async (prismaThx: Prisma.TransactionClient): Promise<RecordWithId> => {
+                if (indicador.regionalizavel && createVariavelDto.regiao_id) {
+                    const regiao = await this.prisma.regiao.findFirstOrThrow({
+                        where: { id: createVariavelDto.regiao_id },
+                        select: { nivel: true },
+                    });
+
+                    if (regiao.nivel != indicador.nivel_regionalizacao)
+                        throw new BadRequestException(
+                            `O nível da região (${regiao.nivel}) precisa ser igual ao do indicador (${indicador.nivel_regionalizacao})`
+                        );
+                }
+
                 return await this.performVariavelSave(
                     prismaThx,
                     createVariavelDto,
@@ -216,13 +223,15 @@ export class VariavelService {
 
     private async loadIndicador(indicador_id: number) {
         const indicador = await this.prisma.indicador.findFirst({
-            where: { id: indicador_id },
+            where: { id: indicador_id, removido_em: null },
             select: {
                 id: true,
                 iniciativa_id: true,
                 atividade_id: true,
                 meta_id: true,
                 periodicidade: true,
+                regionalizavel: true,
+                nivel_regionalizacao: true,
             },
         });
         if (!indicador) throw new HttpException('Indicador não encontrado', 400);

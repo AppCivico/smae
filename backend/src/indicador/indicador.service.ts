@@ -384,6 +384,8 @@ export class IndicadorService {
             }
         }
 
+        // TODO adicionar limpeza de formula_variaveis que não tiveram as referencias usadas
+
         return formula_compilada;
     }
 
