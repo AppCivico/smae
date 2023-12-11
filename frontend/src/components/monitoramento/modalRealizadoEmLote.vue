@@ -564,6 +564,13 @@ watch(variáveisComSuasDatas, (novoValor) => {
 
     <FormErrorsList :errors="errors" />
 
+    <p
+      v-if="MetaVars.perfil !== 'ponto_focal'"
+      class="tc mb1 w700 tamarelo"
+    >
+      Alterações salvas serão consideradas conferidas por você.
+    </p>
+
     <div class="flex spacebetween center mb2">
       <hr class="mr2 f1">
       <button
