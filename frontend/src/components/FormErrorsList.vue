@@ -12,7 +12,7 @@ defineProps({
     class="form-errors-report"
   >
     <p class="form-errors-report__message">
-      Please correct the following errors:
+      Por favor, corrija os erros seguintes:
     </p>
     <ul class="form-errors-report__list">
       <li
@@ -27,8 +27,6 @@ defineProps({
   </div>
 </template>
 <style lang="less">
-@import "@/_less/variables.less";
-
 .form-errors-report {
   font-style: italic;
   line-height: 1.5;
