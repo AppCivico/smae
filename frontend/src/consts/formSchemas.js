@@ -1224,6 +1224,9 @@ export const valoresRealizadoEmLote = object()
         data_ciclo: date()
           .label('Data do registro do valor da variável')
           .required(),
+        enviar_para_cp: boolean()
+          .label('Enviar composta para CP')
+          .required(),
         formula_composta_id: number()
           .label('ID da fórmula composta')
           .min(1)
