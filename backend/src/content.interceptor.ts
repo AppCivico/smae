@@ -37,7 +37,7 @@ export class ContentInterceptor implements NestInterceptor {
                     case csvType:
                     case xslx:
                         res.header(contType, csvType);
-                        const json2csvParser = new Parser({ undefined, transforms: linhasTransforms });
+                        const json2csvParser = new Parser({ transforms: linhasTransforms });
                         data = json2csvParser.parse(data);
 
                         if (content === xslx) {
@@ -60,7 +60,7 @@ export class ContentInterceptor implements NestInterceptor {
                         break;
                     case csvUnwindAll:
                         res.header(contType, csvType);
-                        const json2csvParserAll = new Parser({ undefined, transforms: allTransforms });
+                        const json2csvParserAll = new Parser({ transforms: allTransforms });
                         data = json2csvParserAll.parse(data);
                         break;
 
