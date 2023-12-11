@@ -202,6 +202,7 @@ async function addArquivo(values) {
         CiclosStore.buscarDadosExtrasDeComposta({
           data_ciclo: MetaVars.value.data_ciclo,
           formula_composta_id: props.variávelComposta?.id,
+          apenas_ultima_revisao: true,
         });
       }
     } else {
@@ -219,6 +220,7 @@ function deleteArquivo(id) {
     CiclosStore.buscarDadosExtrasDeComposta({
       data_ciclo: MetaVars.value.data_ciclo,
       formula_composta_id: props.variávelComposta?.id,
+      apenas_ultima_revisao: true,
     });
   }, 'Remover');
 }
@@ -240,6 +242,7 @@ watch(() => props.variávelComposta, (novoValor) => {
     CiclosStore.buscarDadosExtrasDeComposta({
       data_ciclo: MetaVars.value.data_ciclo,
       formula_composta_id: novoValor.id,
+      apenas_ultima_revisao: true,
     });
   }
 }, { immediate: true });
