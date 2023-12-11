@@ -2,10 +2,7 @@ import { Injectable, OnModuleInit } from '@nestjs/common';
 import { Prisma, PrismaClient } from '@prisma/client';
 import { UnwrapTuple } from '@prisma/client/runtime/library';
 import { fieldEncryptionMiddleware } from 'prisma-field-encryption';
-
 import { RetryPromise } from '../common/retryPromise';
-import { UnwrapTuple } from '@prisma/client/runtime/library';
-import { fieldEncryptionMiddleware } from 'prisma-field-encryption';
 
 class PrismaServiceBase extends PrismaClient implements OnModuleInit {
     constructor() {
