@@ -10,6 +10,7 @@ import { Field, Form } from 'vee-validate';
 import { ref } from 'vue';
 import { useRoute } from 'vue-router';
 import * as Yup from 'yup';
+import { arquivoSimples as uploadSchema } from '@/consts/formSchemas';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
@@ -107,11 +108,7 @@ function dateToDate(d) {
 }
 
 const virtualUpload = ref({});
-const uploadSchema = Yup.object().shape({
-  descricao: Yup.string().required('Preencha a descrição'),
-  tipo_documento_id: Yup.string().nullable(),
-  arquivo: Yup.string().required('Selecione um arquivo'),
-});
+
 async function addArquivo(values) {
   try {
     let msg;

@@ -133,6 +133,18 @@ export const arquivo = (semEnvio) => object()
         : field.required()))),
   });
 
+export const arquivoSimples = object()
+  .shape({
+    arquivo: string()
+      .label('Arquivo')
+      .required(),
+    descricao: string()
+      .label('Descrição')
+      .required(),
+    tipo_documento_id: string()
+      .nullable(),
+  });
+
 export const autenticação = object()
   .shape({
     username: string()
