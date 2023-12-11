@@ -574,7 +574,7 @@ watch(variáveisComSuasDatas, (novoValor) => {
         Salvar
       </button>
       <button
-        v-if="perm.PDM?.ponto_focal"
+        v-if="MetaVars.perfil === 'ponto_focal'"
         class="btn big"
         type="button"
         :disabled="isSubmitting"
