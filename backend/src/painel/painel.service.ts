@@ -102,7 +102,7 @@ export class PainelService {
         let ativo = filters?.ativo;
 
         // por padrão filtra apenas os ativos (acho que é pra remover esse padrão)
-        if (typeof ativo === undefined) {
+        if (typeof ativo === 'undefined') {
             ativo = true;
         }
 
