@@ -38,7 +38,7 @@ export class GrupoPaineisService {
         const ativo = filters?.ativo;
 
         let searchCond;
-        if (typeof ativo === undefined) {
+        if (typeof ativo === 'undefined') {
             searchCond = { removido_em: null };
         } else {
             searchCond = {
