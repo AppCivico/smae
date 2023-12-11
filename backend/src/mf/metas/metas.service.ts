@@ -1058,6 +1058,7 @@ export class MetasService {
         const now = new Date(Date.now());
         const dateYMD = Date2YMD.toString(dto.data_valor);
         const meta_id = await this.variavelService.getMetaIdDaVariavel(dto.variavel_id, this.prisma);
+        this.verificaPermissaoMeta(config, meta_id);
 
         const dadosCiclo = await this.capturaDadosCicloVariavel(dateYMD, dto.variavel_id, meta_id);
 
@@ -1099,6 +1100,7 @@ export class MetasService {
         const now = new Date(Date.now());
         const dateYMD = Date2YMD.toString(arquivo.referencia_data);
         const meta_id = await this.variavelService.getMetaIdDaVariavel(arquivo.variavel_id, this.prisma);
+        this.verificaPermissaoMeta(config, meta_id);
 
         const dadosCiclo = await this.capturaDadosCicloVariavel(dateYMD, arquivo.variavel_id, meta_id);
 
@@ -1116,6 +1118,7 @@ export class MetasService {
         const now = new Date(Date.now());
         const dateYMD = Date2YMD.toString(dto.data_valor);
         const meta_id = await this.variavelService.getMetaIdDaVariavel(dto.variavel_id, this.prisma);
+        this.verificaPermissaoMeta(config, meta_id);
 
         const dadosCiclo = await this.capturaDadosCicloVariavel(dateYMD, dto.variavel_id, meta_id);
         if (config.perfil == 'ponto_focal') {
@@ -1196,6 +1199,7 @@ export class MetasService {
         const now = new Date(Date.now());
         const dateYMD = Date2YMD.toString(dto.data_valor);
         const meta_id = await this.variavelService.getMetaIdDaVariavel(dto.variavel_id, this.prisma);
+        this.verificaPermissaoMeta(config, meta_id);
 
         const dadosCiclo = await this.capturaDadosCicloVariavel(dateYMD, dto.variavel_id, meta_id);
         if (config.perfil == 'ponto_focal') {
@@ -1251,6 +1255,7 @@ export class MetasService {
     ): Promise<RecordWithId> {
         const now = new Date(Date.now());
         const { dadosCiclo, ehPontoFocal, meta_id } = await this.buscaDadosCiclo(dto, config);
+        this.verificaPermissaoMeta(config, meta_id);
 
         // o trabalho pra montar um SerieJwt não faz sentido
         // então vamos operar diretamente na SerieVariavel
@@ -1353,6 +1358,7 @@ export class MetasService {
                 },
                 config
             );
+            this.verificaPermissaoMeta(config, meta_id);
 
             batchResultados.push({ dadosCiclo, ehPontoFocal, meta_id });
         }
@@ -1588,7 +1594,7 @@ export class MetasService {
         fastlane: boolean = false
     ): Promise<MfListVariavelAnaliseQualitativaDto> {
         const dateYMD = Date2YMD.toString(dto.data_valor);
-        const linha = await this.processLinha(dto, !!dto.apenas_ultima_revisao, fastlane);
+        const linha = await this.processLinha(dto, !!dto.apenas_ultima_revisao, fastlane, config);
 
         const ordem_series: Serie[] = ['Previsto', 'PrevistoAcumulado', 'Realizado', 'RealizadoAcumulado'];
         shuffleArray(ordem_series); // garante que o consumidor não está usando os valores das series cegamente
@@ -1641,7 +1647,7 @@ export class MetasService {
         const promises: Promise<MfListVariavelAnaliseQualitativaReducedDto>[] = [];
 
         for (const linha of dto.linhas) {
-            promises.push(this.processLinha(linha, true, false));
+            promises.push(this.processLinha(linha, true, false, config));
         }
 
         const ret = await Promise.all(promises);
@@ -1652,9 +1658,11 @@ export class MetasService {
     private async processLinha(
         linha: FilterVariavelAnaliseQualitativaUltimaRevisaoDto,
         apenas_ultima_revisao: boolean,
-        fastlane: boolean
+        fastlane: boolean,
+        config: PessoaAcessoPdm,
     ): Promise<MfListVariavelAnaliseQualitativaReducedDto> {
         const meta_id = await this.variavelService.getMetaIdDaVariavel(linha.variavel_id, this.prisma);
+        this.verificaPermissaoMeta(config, meta_id);
         const dateYMD = Date2YMD.toString(linha.data_valor);
         const dadosCiclo = await this.capturaDadosCicloVariavel(dateYMD, linha.variavel_id, meta_id);
 
@@ -1872,6 +1880,7 @@ export class MetasService {
         });
         if (!meta) throw new HttpException('Meta não encontrada', 404);
         if (!meta.ciclo_fase) throw new HttpException('Meta não tem uma fase de atualmente', 404);
+        this.verificaPermissaoMeta(config, meta_id);
 
         const cicloFase = await this.prisma.cicloFisicoFase.findFirst({
             where: {
@@ -1922,6 +1931,7 @@ export class MetasService {
             );
 
         const meta_id = await this.variavelService.getMetaIdDaFormulaComposta(dto.formula_composta_id, this.prisma);
+        this.verificaPermissaoMeta(config, meta_id);
 
         const id = await this.prisma.$transaction(
             async (prismaTxn: Prisma.TransactionClient): Promise<number> => {
@@ -1988,7 +1998,7 @@ export class MetasService {
                 removido_em: null,
                 id: dto.formula_composta_id,
             },
-            select: { id: true, titulo: true },
+            select: { id: true, titulo: true, },
         });
 
         const analisesResult = await this.prisma.formulaCompostaCicloFisicoQualitativo.findMany({
@@ -2083,6 +2093,7 @@ export class MetasService {
             );
 
         const meta_id = await this.variavelService.getMetaIdDaFormulaComposta(dto.formula_composta_id, this.prisma);
+        this.verificaPermissaoMeta(config, meta_id);
 
         const id = await this.prisma.$transaction(async (prismaTxn: Prisma.TransactionClient): Promise<number> => {
             const uploadId = this.uploadService.checkUploadOrDownloadToken(dto.upload_token);
@@ -2123,10 +2134,28 @@ export class MetasService {
         if (!arquivo) throw new HttpException('404', 404);
 
         const meta_id = await this.variavelService.getMetaIdDaFormulaComposta(arquivo.formula_composta_id, this.prisma);
+        this.verificaPermissaoMeta(config, meta_id);
 
         await this.prisma.variavelCicloFisicoDocumento.updateMany({
             where: { id: id, meta_id, removido_em: null },
             data: { removido_em: now, removido_por: user.id },
         });
+    }
+
+    private verificaPermissaoMeta(
+        config: {
+            id: number;
+            pessoa_id: number;
+            metas_cronograma: number[];
+            metas_variaveis: number[];
+            variaveis: number[];
+            cronogramas_etapas: number[];
+            data_ciclo: Date | null;
+            perfil: string;
+        },
+        meta_id: number
+    ) {
+        if (config.metas_variaveis.includes(meta_id) === false)
+            throw new BadRequestException('Você não pode editar esta meta');
     }
 }
