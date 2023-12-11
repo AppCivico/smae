@@ -204,8 +204,7 @@ if (variávelId) {
         :unchecked-value="false"
         :class="{ 'error': errors.mostrar_monitoramento }"
       />
-      <span>Utilizar a fórmula no cálculo da série
-        acumulada</span>
+      <span>Utilizar como agrupamento na coleta de dados</span>
     </label>
 
     <FormErrorsList :errors="errors" />
