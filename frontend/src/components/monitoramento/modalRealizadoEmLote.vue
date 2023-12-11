@@ -432,22 +432,25 @@ watch(variáveisComSuasDatas, (novoValor) => {
       </div>
     </auxiliarDePreenchimento>
 
-    <table class="tablemain no-zebra mb1">
-      <thead>
-        <th />
-        <th>código</th>
-        <th>Referência</th>
-        <th class="cell--number">
-          Realizado
-        </th>
-        <th class="cell--number">
-          Realizado acumulado
-        </th>
-      </thead>
-      <FieldArray
-        v-slot="{ fields }"
-        name="linhas"
+    <FieldArray
+      v-slot="{ fields }"
+      name="linhas"
+    >
+      <table
+        v-if="fields.length"
+        class="tablemain no-zebra mb1"
       >
+        <thead>
+          <th />
+          <th>código</th>
+          <th>Referência</th>
+          <th class="cell--number">
+            Realizado
+          </th>
+          <th class="cell--number">
+            Realizado acumulado
+          </th>
+        </thead>
         <tbody
           v-for="(field, idx) in fields"
           :key="idx"
@@ -554,8 +557,8 @@ watch(variáveisComSuasDatas, (novoValor) => {
             </td>
           </tr>
         </tbody>
-      </FieldArray>
-    </table>
+      </table>
+    </FieldArray>
 
     <FormErrorsList :errors="errors" />
 
