@@ -46,7 +46,7 @@ import {
     VariavelAnaliseQualitativaDto,
     VariavelAnaliseQualitativaEmLoteDto,
     VariavelComplementacaoDto,
-    VariavelConferidaDto
+    VariavelConferidaDto,
 } from './dto/mf-meta.dto';
 
 import { MetasService } from './metas.service';
@@ -281,7 +281,6 @@ export class MetasController {
         return '';
     }
 
-
     @ApiBearerAuth('access-token')
     @Patch('formula-composta/analise-qualitativa')
     @Roles('PDM.admin_cp', 'PDM.tecnico_cp', 'PDM.ponto_focal')
@@ -339,7 +338,12 @@ export class MetasController {
         const cicloFisicoAtivo = await this.mfService.cicloFisicoAtivo();
 
         return {
-            ...(await this.metasService.addMetaFormulaCompostaAnaliseQualitativaDocumento(dto, config, cicloFisicoAtivo, user)),
+            ...(await this.metasService.addMetaFormulaCompostaAnaliseQualitativaDocumento(
+                dto,
+                config,
+                cicloFisicoAtivo,
+                user
+            )),
             requestInfo: { queryTook: Date.now() - start },
         };
     }
@@ -357,7 +361,12 @@ export class MetasController {
 
         const cicloFisicoAtivo = await this.mfService.cicloFisicoAtivo();
 
-        await this.metasService.deleteMetaFormulaCompostaAnaliseQualitativaDocumento(params.id, config, cicloFisicoAtivo, user);
+        await this.metasService.deleteMetaFormulaCompostaAnaliseQualitativaDocumento(
+            params.id,
+            config,
+            cicloFisicoAtivo,
+            user
+        );
 
         return '';
     }
