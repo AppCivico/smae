@@ -5,6 +5,7 @@ import { useIndicadoresStore } from '@/stores/indicadores.store';
 import { useVariaveisStore } from '@/stores/variaveis.store';
 import { useRoute } from 'vue-router';
 import { storeToRefs } from 'pinia';
+import { computed } from 'vue';
 import níveisRegionalização from '@/consts/niveisRegionalizacao';
 
 const alertStore = useAlertStore();
@@ -25,6 +26,12 @@ defineProps({
     required: true,
   },
 });
+
+const variáveisConsolidadas = computed(() => (
+  Array.isArray(singleIndicadores?.value?.formula_variaveis)
+    ? singleIndicadores.value.formula_variaveis
+      .map((x) => VariaveisStore?.variáveisPorId?.[x.variavel_id] || x)
+    : []));
 
 async function apagarVariável(id) {
   alertStore.confirmAction('Deseja mesmo remover esse item?', async () => {
@@ -86,9 +93,9 @@ function permitirEdição(indicadorVariavel) {
         <th style="width:20%" />
       </tr>
     </thead>
-    <tbody v-if="Array.isArray(singleIndicadores.formula_variaveis)">
+    <tbody>
       <tr
-        v-for="v in singleIndicadores.formula_variaveis"
+        v-for="v in variáveisConsolidadas"
         :key="v.id"
       >
         <td>{{ v.codigo }}</td>

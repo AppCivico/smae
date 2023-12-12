@@ -180,6 +180,19 @@ export const useVariaveisStore = defineStore({
       return Valores[varId]?.linhas || [];
     },
 
+    variáveisPorId: ({ Variaveis }) => Object.keys(Variaveis)
+      .reduce((acc, cur) => {
+        if (Array.isArray(Variaveis[cur])) {
+          Variaveis[cur].forEach((x) => {
+            if (!acc[x.id]) {
+              acc[x.id] = x;
+            }
+          });
+        }
+
+        return acc;
+      }, {}),
+
     variáveisCompostasPorReferência: ({ variáveisCompostas }) => Object.keys(variáveisCompostas)
       .reduce((acc, cur) => {
         if (Array.isArray(variáveisCompostas[cur])) {
