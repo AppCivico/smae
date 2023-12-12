@@ -394,7 +394,7 @@ export class RiscoService {
     }
 
     async remove(projeto_id: number, projeto_risco_id: number, user: PessoaFromJwt) {
-        const deleted = await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient) => {
+        await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient) => {
             // Deve ser verificado o status
             const valoresAceitaveis: ProjetoStatus[] = [
                 ProjetoStatus.Registrado,

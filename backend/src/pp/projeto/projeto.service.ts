@@ -73,7 +73,7 @@ export class ProjetoService {
         private readonly uploadService: UploadService
     ) {}
 
-    private async processaOrigem(dto: CreateProjetoDto, currentOrigemTipo?: ProjetoOrigemTipo) {
+    private async processaOrigem(dto: CreateProjetoDto) {
         let meta_id: number | null = dto.meta_id ? dto.meta_id : null;
         let iniciativa_id: number | null = dto.iniciativa_id ? dto.iniciativa_id : null;
         let atividade_id: number | null = dto.atividade_id ? dto.atividade_id : null;
@@ -906,7 +906,7 @@ export class ProjetoService {
         let meta_codigo: string | null | undefined = undefined;
 
         if ('origem_tipo' in dto && dto.origem_tipo) {
-            const origemVerification = await this.processaOrigem(dto as any, projeto.origem_tipo);
+            const origemVerification = await this.processaOrigem(dto as any);
 
             origem_tipo = origemVerification.origem_tipo;
             meta_id = origemVerification.meta_id;

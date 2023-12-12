@@ -67,7 +67,7 @@ export class RiscoController {
         @Body() updateRiscoDto: UpdateRiscoDto,
         @CurrentUser() user: PessoaFromJwt
     ): Promise<RecordWithId> {
-        const projeto = await this.projetoService.findOne(params.id, user, 'ReadWrite');
+        await this.projetoService.findOne(params.id, user, 'ReadWrite');
         return await this.riscoService.update(params.id2, updateRiscoDto, user);
     }
 
