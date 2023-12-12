@@ -225,26 +225,17 @@ export class IndicadorService {
         return created;
     }
 
-    private async extractFormulaCompostasEmUsoId(indicadorId: number, formula: string | null): Promise<number[]> {
-        let formula_compilada = '';
+    private async checkFormulaCompostasEmUsoId(
+        indicadorId: number,
+        formula_compilada: string,
+        prismaTx: Prisma.TransactionClient
+    ): Promise<number[]> {
         const neededFCs: Record<number, number> = {};
-        if (formula) {
-            try {
-                formula_compilada = FP.parse(formula.toLocaleUpperCase());
-            } catch (error) {
-                throw new HttpException(`formula| formula não foi entendida: ${formula}\n${error}`, 400);
-            }
-
-            for (const match of formula_compilada.matchAll(/\@_\d+\b/g)) {
-                const referencia = +match[0].replace('@_', '');
-                if (!neededFCs[referencia]) neededFCs[referencia] = 0;
-                neededFCs[referencia]++;
-            }
-        }
+        this.extractFormulaCompostaFromFormula(formula_compilada, neededFCs);
 
         const ret: number[] = [];
         for (const formulaCompostaId of Object.keys(neededFCs)) {
-            const formulaComposta = await this.prisma.formulaComposta.findFirstOrThrow({
+            const formulaComposta = await prismaTx.formulaComposta.findFirstOrThrow({
                 where: {
                     removido_em: null,
                     id: +formulaCompostaId,
@@ -257,6 +248,22 @@ export class IndicadorService {
         }
 
         return ret;
+    }
+
+    private extractFormulaCompostaFromFormula(formula_compilada: string, neededFCs: Record<number, number>) {
+        for (const match of formula_compilada.matchAll(/\@_\d+\b/g)) {
+            const referencia = +match[0].replace('@_', '');
+            if (!neededFCs[referencia]) neededFCs[referencia] = 0;
+            neededFCs[referencia]++;
+        }
+    }
+
+    private extractVariavelFromFormula(formula_compilada: string, neededRefs: Record<string, number>) {
+        for (const match of formula_compilada.matchAll(/\$_\d+\b/g)) {
+            const referencia = match[0].replace('$', '');
+            if (!neededRefs[referencia]) neededRefs[referencia] = 0;
+            neededRefs[referencia]++;
+        }
     }
 
     async listFormulaCompostaEmUso(id: number, user: PessoaFromJwt): Promise<IndicadorFormulaCompostaEmUsoDto[]> {
@@ -300,17 +307,8 @@ export class IndicadorService {
                 throw new HttpException(`formula| formula não foi entendida: ${formula}\n${error}`, 400);
             }
 
-            for (const match of formula_compilada.matchAll(/\$_\d+\b/g)) {
-                const referencia = match[0].replace('$', '');
-                if (!neededRefs[referencia]) neededRefs[referencia] = 0;
-                neededRefs[referencia]++;
-            }
-
-            for (const match of formula_compilada.matchAll(/\@_\d+\b/g)) {
-                const referencia = +match[0].replace('@_', '');
-                if (!neededFCs[referencia]) neededFCs[referencia] = 0;
-                neededFCs[referencia]++;
-            }
+            this.extractVariavelFromFormula(formula_compilada, neededRefs);
+            this.extractFormulaCompostaFromFormula(formula_compilada, neededFCs);
         }
 
         const uniqueRef: Record<string, boolean> = {};
@@ -488,7 +486,6 @@ export class IndicadorService {
         }
 
         let formula_compilada: string = await this.validateVariaveis(formula_variaveis, id, formula);
-        console.log({ formula_variaveis });
 
         // TODO rever isso aqui, pq não ta usando pra nada
         // pq ta errado a logica (salvando sempre)
@@ -550,13 +547,16 @@ export class IndicadorService {
                 await prismaTx.$queryRaw`select monta_serie_indicador(${indicador.id}::int, null, null, null)`;
                 //}
 
-                // Populando rows da tabela IndicadorFormulaCompostaEmUso
-                if (dto.formula) {
-                    await prismaTx.indicadorFormulaCompostaEmUso.deleteMany({ where: { indicador_id: indicador.id } });
+                await prismaTx.indicadorFormulaCompostaEmUso.deleteMany({ where: { indicador_id: indicador.id } });
+                if (formula_compilada) {
+                    // Populando rows da tabela IndicadorFormulaCompostaEmUso
+                    const formulasCompostasEmUso = await this.checkFormulaCompostasEmUsoId(
+                        indicador.id,
+                        formula_compilada,
+                        prismaTx
+                    );
 
-                    const formulasCompostasEmUso = await this.extractFormulaCompostasEmUsoId(indicador.id, dto.formula);
-
-                    if (formulasCompostasEmUso.length) {
+                    if (formulasCompostasEmUso.length)
                         await prismaTx.indicadorFormulaCompostaEmUso.createMany({
                             data: formulasCompostasEmUso.map((formulaCompostaId) => {
                                 return {
@@ -565,7 +565,6 @@ export class IndicadorService {
                                 };
                             }),
                         });
-                    }
                 }
 
                 return indicador;
@@ -841,6 +840,15 @@ export class IndicadorService {
         formula_compilada: string,
         prismaTx: Prisma.TransactionClient
     ) {
+        const variaveisRefs: Record<string, number> = {};
+        this.extractVariavelFromFormula(formula, variaveisRefs);
+        const variaveisEmUso = new Set(Object.keys(variaveisRefs));
+
+        // troca os valores sem trocar a referencia
+        const fvEmUso = formula_variaveis.filter((item) => variaveisEmUso.has(item.referencia));
+        formula_variaveis.length = 0;
+        formula_variaveis.push(...fvEmUso);
+
         const allReferences = new Set(await this.listReferenciasIndicador(prismaTx, indicador_id));
 
         // começa no 0, vai aumentando isso vai usando os slots 'em branco'
