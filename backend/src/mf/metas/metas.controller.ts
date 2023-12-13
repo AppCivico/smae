@@ -47,6 +47,7 @@ import {
     VariavelAnaliseQualitativaEmLoteDto,
     VariavelComplementacaoDto,
     VariavelConferidaDto,
+    VariavelPedidoComplementacaoEmLoteDto,
 } from './dto/mf-meta.dto';
 
 import { MetasService } from './metas.service';
@@ -258,6 +259,20 @@ export class MetasController {
         const config = await this.mfService.pessoaAcessoPdm(user);
 
         await this.metasService.addVariavelPedidoComplementacao(dto, config, user);
+
+        return '';
+    }
+
+
+    @ApiBearerAuth('access-token')
+    @Patch('variaveis/complemento')
+    @Roles('PDM.admin_cp', 'PDM.tecnico_cp', 'PDM.ponto_focal')
+    @ApiNoContentResponse()
+    @HttpCode(HttpStatus.NO_CONTENT)
+    async AddVariavelPedidoComplementacaoEmLote(@Body() dto: VariavelPedidoComplementacaoEmLoteDto, @CurrentUser() user: PessoaFromJwt) {
+        const config = await this.mfService.pessoaAcessoPdm(user);
+
+        await this.metasService.addVariavelPedidoComplementacaoEmLote(dto, config, user);
 
         return '';
     }
