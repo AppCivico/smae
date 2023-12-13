@@ -39,6 +39,7 @@ import {
     VariavelComSeries,
     VariavelComplementacaoDto,
     VariavelConferidaDto,
+    VariavelPedidoComplementacaoEmLoteDto,
     VariavelQtdeDto,
 } from './dto/mf-meta.dto';
 
@@ -1201,6 +1202,73 @@ export class MetasService {
         const meta_id = await this.variavelService.getMetaIdDaVariavel(dto.variavel_id, this.prisma);
         this.verificaPermissaoMeta(config, meta_id);
 
+        const dadosCiclo = await this.verificaPermissaoPedidoComplementacao(dateYMD, dto, meta_id, config);
+
+        await this.prisma.$transaction(async (prismaTxn: Prisma.TransactionClient) => {
+            await this.performPedidoComplementacao(prismaTxn, dadosCiclo, dto, user, now, meta_id);
+        });
+    }
+
+    private async performPedidoComplementacao(
+        prismaTxn: Prisma.TransactionClient,
+        dadosCiclo: DadosCiclo,
+        dto: VariavelComplementacaoDto,
+        user: PessoaFromJwt,
+        now: Date,
+        meta_id: number
+    ) {
+        await prismaTxn.pedidoComplementacao.updateMany({
+            where: {
+                ciclo_fisico_id: dadosCiclo.id,
+                variavel_id: dto.variavel_id,
+                ultima_revisao: true,
+            },
+            data: {
+                ultima_revisao: false,
+            },
+        });
+
+        await prismaTxn.pedidoComplementacao.create({
+            data: {
+                ciclo_fisico_id: dadosCiclo.id,
+                variavel_id: dto.variavel_id,
+                pedido: dto.pedido,
+                ultima_revisao: true,
+                criado_por: user.id,
+                criado_em: now,
+                atendido: false,
+            },
+        });
+
+        await this.removeStatusVariavel(prismaTxn, dto, dadosCiclo);
+        await prismaTxn.statusVariavelCicloFisico.create({
+            data: {
+                ciclo_fisico_id: dadosCiclo.id,
+                variavel_id: dto.variavel_id,
+                meta_id: meta_id,
+                aguarda_cp: false,
+                aguarda_complementacao: true,
+            },
+        });
+
+        await this.mfService.invalidaStatusIndicador(prismaTxn, dadosCiclo.id, meta_id);
+    }
+
+    private async verificaPermissaoPedidoComplementacao(
+        dateYMD: string,
+        dto: VariavelComplementacaoDto,
+        meta_id: number,
+        config: {
+            id: number;
+            pessoa_id: number;
+            metas_cronograma: number[];
+            metas_variaveis: number[];
+            variaveis: number[];
+            cronogramas_etapas: number[];
+            data_ciclo: Date | null;
+            perfil: string;
+        }
+    ) {
         const dadosCiclo = await this.capturaDadosCicloVariavel(dateYMD, dto.variavel_id, meta_id);
         if (config.perfil == 'ponto_focal') {
             throw new HttpException('Você não pode pedir por complementação', 400);
@@ -1208,43 +1276,37 @@ export class MetasService {
         if (!dadosCiclo.ativo) {
             throw new HttpException('Não é possível solicitar complementação para ciclos não ativos.', 400);
         }
+        return dadosCiclo;
+    }
+
+    async addVariavelPedidoComplementacaoEmLote(
+        dto: VariavelPedidoComplementacaoEmLoteDto,
+        config: PessoaAcessoPdm,
+        user: PessoaFromJwt
+    ): Promise<void> {
+        const now = new Date(Date.now());
+
+        const batchResultados: {
+            dadosCiclo: DadosCiclo;
+            meta_id: number;
+        }[] = [];
+
+        for (const linha of dto.linhas) {
+            const dateYMD = Date2YMD.toString(linha.data_valor);
+            const meta_id = await this.variavelService.getMetaIdDaVariavel(linha.variavel_id, this.prisma);
+            const dadosCiclo = await this.verificaPermissaoPedidoComplementacao(dateYMD, linha, meta_id, config);
+
+            this.verificaPermissaoMeta(config, meta_id);
+
+            batchResultados.push({ dadosCiclo, meta_id });
+        }
 
         await this.prisma.$transaction(async (prismaTxn: Prisma.TransactionClient) => {
-            await prismaTxn.pedidoComplementacao.updateMany({
-                where: {
-                    ciclo_fisico_id: dadosCiclo.id,
-                    variavel_id: dto.variavel_id,
-                    ultima_revisao: true,
-                },
-                data: {
-                    ultima_revisao: false,
-                },
-            });
-
-            await prismaTxn.pedidoComplementacao.create({
-                data: {
-                    ciclo_fisico_id: dadosCiclo.id,
-                    variavel_id: dto.variavel_id,
-                    pedido: dto.pedido,
-                    ultima_revisao: true,
-                    criado_por: user.id,
-                    criado_em: now,
-                    atendido: false,
-                },
-            });
-
-            await this.removeStatusVariavel(prismaTxn, dto, dadosCiclo);
-            await prismaTxn.statusVariavelCicloFisico.create({
-                data: {
-                    ciclo_fisico_id: dadosCiclo.id,
-                    variavel_id: dto.variavel_id,
-                    meta_id: meta_id,
-                    aguarda_cp: false,
-                    aguarda_complementacao: true,
-                },
-            });
-
-            await this.mfService.invalidaStatusIndicador(prismaTxn, dadosCiclo.id, meta_id);
+            for (let i = 0; i < dto.linhas.length; i++) {
+                const linha = dto.linhas[i];
+                const { dadosCiclo, meta_id } = batchResultados[i];
+                await this.performPedidoComplementacao(prismaTxn, dadosCiclo, linha, user, now, meta_id);
+            }
         });
     }
 

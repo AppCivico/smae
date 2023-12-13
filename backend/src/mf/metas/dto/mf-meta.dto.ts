@@ -347,6 +347,13 @@ export class VariavelAnaliseQualitativaEmLoteDto extends PickType(VariavelAnalis
     linhas: VariavelAnaliseQualitativaParaLoteDto[];
 }
 
+export class VariavelPedidoComplementacaoEmLoteDto {
+    @ValidateNested({ each: true })
+    @Type(() => VariavelComplementacaoDto)
+    @IsArray()
+    linhas: VariavelComplementacaoDto[];
+}
+
 export class FilterVariavelAnaliseQualitativaDto {
     /**
      * data_valor
