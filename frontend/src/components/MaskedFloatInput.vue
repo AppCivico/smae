@@ -44,6 +44,7 @@ const typedValue = computed({
   <input
     v-model="typedValue"
     type="text"
+    inputmode="numeric"
     :name="name"
   >
 </template>
