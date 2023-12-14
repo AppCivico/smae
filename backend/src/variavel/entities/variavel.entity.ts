@@ -6,6 +6,7 @@ import { DateYMD } from '../../common/date2ymd';
 import { OrgaoResumo } from '../../orgao/entities/orgao.entity';
 import { Regiao } from '../../regiao/entities/regiao.entity';
 import { UnidadeMedida } from '../../unidade-medida/entities/unidade-medida.entity';
+import { VariavelResumo } from '../dto/list-variavel.dto';
 
 export class IdTitulo {
     id: number;
@@ -104,6 +105,11 @@ export class SeriesAgrupadas {
      * @example "Fevereiro 2021"
      */
     periodo: string;
+
+    /**
+     * opcional - volta no get formula serie da formula composta
+     */
+    variavel?: VariavelResumo;
 
     @ApiProperty({
         type: 'array',

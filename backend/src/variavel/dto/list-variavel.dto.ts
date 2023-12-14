@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Periodicidade, Serie } from '@prisma/client';
-import { SeriesAgrupadas, Variavel } from '../../variavel/entities/variavel.entity';
+import { IdTitulo, SeriesAgrupadas, Variavel } from '../../variavel/entities/variavel.entity';
 
 export class ListVariavelDto {
     linhas: Variavel[];
@@ -28,8 +28,16 @@ export class VariavelResumo {
 
 export class ListSeriesAgrupadas {
     linhas: SeriesAgrupadas[];
-    /* opcional - nao volta na serie de indicadores */
+    /**
+     * opcional - nao volta na serie de indicadores
+     */
     variavel?: VariavelResumo;
+
+    /**
+     * opcional - volta apenas na formula composta
+     */
+    formula_composta?: IdTitulo;
+
     /**
      * contextualiza qual a ordem que as séries serão apresentadas dentro de SeriesAgrupadas
      * @example "["Previsto", "PrevistoAcumulado", "Realizado", "RealizadoAcumulado"]"
