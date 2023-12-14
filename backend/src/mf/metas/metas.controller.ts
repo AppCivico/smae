@@ -265,7 +265,7 @@ export class MetasController {
 
 
     @ApiBearerAuth('access-token')
-    @Patch('variaveis/complemento')
+    @Patch('variaveis/complemento-em-lote')
     @Roles('PDM.admin_cp', 'PDM.tecnico_cp', 'PDM.ponto_focal')
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.NO_CONTENT)
