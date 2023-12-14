@@ -36,9 +36,9 @@ async function checkClose() {
 
   if (rotaDeEscape) {
     const propriedadesDaRota = {
-      ...(typeof rotaDeEscape === 'string' ? { name: rotaDeEscape } : rotaDeEscape),
       params: route.params,
       query: route.query,
+      ...(typeof rotaDeEscape === 'string' ? { name: rotaDeEscape } : rotaDeEscape),
     };
 
     caminhoParaSaída = router.resolve(propriedadesDaRota)?.fullPath
@@ -51,20 +51,19 @@ async function checkClose() {
     caminhoParaSaída = route.matched[parentRoutePosition].path;
   }
 
-  if (props.formulárioSujo) {
-    const destino = props.apenasModal
-      ? () => {
-        editModalStore.clear();
-        alertStore.clear();
-      }
-      : caminhoParaSaída;
+  const destino = () => {
+    editModalStore.$reset();
+    alertStore.$reset();
 
+    if (!props.apenasModal) {
+      router.push(caminhoParaSaída);
+    }
+  };
+
+  if (props.formulárioSujo) {
     alertStore.confirm('Deseja sair sem salvar as alterações?', destino);
-  } else if (props.apenasModal) {
-    editModalStore.clear();
-    alertStore.clear();
   } else {
-    router.push(caminhoParaSaída);
+    destino();
   }
 }
 </script>
