@@ -1,5 +1,7 @@
 <script setup>
-import { useAlertStore, useCiclosStore, useEditModalStore } from '@/stores';
+import { useAlertStore } from '@/stores/alert.store';
+import { useCiclosStore } from '@/stores/ciclos.store';
+import { useEditModalStore } from '@/stores/editModal.store';
 import { storeToRefs } from 'pinia';
 import { Field, Form } from 'vee-validate';
 import * as Yup from 'yup';

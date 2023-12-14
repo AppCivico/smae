@@ -1,6 +1,7 @@
 <script setup>
 import { default as EvolucaoGraph } from '@/components/EvolucaoGraph.vue';
-import { useAuthStore, useIndicadoresStore } from '@/stores';
+import { useAuthStore } from '@/stores/auth.store';
+import { useIndicadoresStore } from '@/stores/indicadores.store';
 import { storeToRefs } from 'pinia';
 
 const authStore = useAuthStore();
