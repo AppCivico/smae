@@ -520,7 +520,7 @@ watch(variáveisComSuasDatas, (novoValor) => {
                 :value="field.value.variavel_id"
                 type="hidden"
               />
-              {{ field.value.codigo }}
+              <strong>{{ field.value.codigo }}</strong> - {{ field.value.titulo }}
             </td>
             <td>
               {{ dateToField(field.value.data_valor) }}
