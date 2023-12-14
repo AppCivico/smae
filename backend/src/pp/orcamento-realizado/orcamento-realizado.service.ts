@@ -27,8 +27,8 @@ const fk_nota = (row: { dotacao: string; dotacao_processo: string; dotacao_proce
 export class OrcamentoRealizadoService {
     liberarValoresMaioresQueSof: boolean;
     constructor(private readonly prisma: PrismaService, private readonly dotacaoService: DotacaoService) {
-        // deixar desligado a verificação
-        this.liberarValoresMaioresQueSof = true;
+        // deixar ligado a verificação
+        this.liberarValoresMaioresQueSof = false;
     }
 
     async create(
