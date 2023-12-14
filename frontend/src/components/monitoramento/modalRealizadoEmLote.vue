@@ -1,9 +1,9 @@
 <script setup>
 import auxiliarDePreenchimento from '@/components/AuxiliarDePreenchimento.vue';
+import CheckClose from '@/components/CheckClose.vue';
 import dateToField from '@/helpers/dateToField';
 import requestS from '@/helpers/requestS.ts';
 import { useAlertStore } from '@/stores/alert.store';
-import { useAuthStore } from '@/stores/auth.store';
 import { useCiclosStore } from '@/stores/ciclos.store';
 import { useDocumentTypesStore } from '@/stores/documentTypes.store';
 import { useEditModalStore } from '@/stores/editModal.store';
@@ -24,10 +24,6 @@ const baseUrl = `${import.meta.env.VITE_API_URL}`;
 const editModalStore = useEditModalStore();
 const alertStore = useAlertStore();
 
-const authStore = useAuthStore();
-const { permissions } = storeToRefs(authStore);
-const perm = permissions.value;
-
 const documentTypesStore = useDocumentTypesStore();
 const { tempDocumentTypes } = storeToRefs(documentTypesStore);
 documentTypesStore.clear();
@@ -38,7 +34,7 @@ const { meta_id } = route.params;
 
 // PRA-FAZER: remover as prop desnecessárias
 const pr = defineProps(['props']);
-// BUG-CONHECIDO: explodir as props as fazem perder reatividade. Já que esse modal
+// BUG-CONHECIDO: explodir as props as faz perder reatividade. Já que esse modal
 // não tem rota, é provável, mas não garantido, que não dê problemas.
 const { props } = pr;
 
@@ -270,16 +266,8 @@ watch(variáveisComSuasDatas, (novoValor) => {
   <div class="flex spacebetween center mb2">
     <h2>Edição de valores realizados em lote</h2>
     <hr class="ml2 f1">
-    <span>
-      <!-- PRA-FAZER: trocar por componente -->
-      <button
-        class="btn round ml2"
-        @click="props.checkClose"
-      ><svg
-        width="12"
-        height="12"
-      ><use xlink:href="#i_x" /></svg></button>
-    </span>
+
+    <CheckClose :apenas-modal="true" />
   </div>
 
   <div class="flex center mb2">
@@ -552,7 +540,8 @@ watch(variáveisComSuasDatas, (novoValor) => {
             </td>
             <td class="cell--number">
               <Field
-                v-if="!dadosExtrasPorVariávelId[field.value.variavel_id]?.acumulativa"
+                v-if="dadosExtrasPorVariávelId[field.value.variavel_id]
+                  && !dadosExtrasPorVariávelId[field.value.variavel_id]?.acumulativa"
                 :name="`linhas[${idx}].valor_realizado_acumulado`"
                 type="number"
                 :value="field.valor_realizado_acumulado"
