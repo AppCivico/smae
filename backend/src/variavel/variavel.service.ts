@@ -18,6 +18,11 @@ import { ListSeriesAgrupadas } from './dto/list-variavel.dto';
 import { UpdateVariavelDto } from './dto/update-variavel.dto';
 import { SerieValorNomimal, SerieValorPorPeriodo, ValorSerieExistente } from './entities/variavel.entity';
 
+/**
+ * ordem que é populado na função populaSeriesExistentes, usada no serviço do VariavelFormulaCompostaService
+ */
+export const ORDEM_SERIES_RETORNO: Serie[] = ['Previsto', 'PrevistoAcumulado', 'Realizado', 'RealizadoAcumulado'];
+
 const InicioFimErrMsg =
     'Inicio/Fim da medição da variável não pode ser nulo quando a periodicidade da variável é diferente do indicador';
 
@@ -752,13 +757,18 @@ export class VariavelService {
         return indicador;
     }
 
-    async getValorSerieExistente(variavelId: number, series: Serie[]): Promise<ValorSerieExistente[]> {
+    async getValorSerieExistente(
+        variavelId: number,
+        series: Serie[],
+        data_valor: Date | undefined
+    ): Promise<ValorSerieExistente[]> {
         return await this.prisma.serieVariavel.findMany({
             where: {
                 variavel_id: variavelId,
                 serie: {
                     in: series,
                 },
+                data_valor: data_valor,
             },
             select: {
                 valor_nominal: true,
@@ -803,12 +813,7 @@ export class VariavelService {
         });
         const variavel = indicadorVariavelRelList[0].variavel;
 
-        const valoresExistentes = await this.getValorSerieExistente(variavelId, [
-            'Previsto',
-            'PrevistoAcumulado',
-            'Realizado',
-            'RealizadoAcumulado',
-        ]);
+        const valoresExistentes = await this.getValorSerieExistente(variavelId, ORDEM_SERIES_RETORNO, undefined);
         const porPeriodo = this.getValorSerieExistentePorPeriodo(valoresExistentes, variavelId);
 
         const result: ListSeriesAgrupadas = {
@@ -819,72 +824,86 @@ export class VariavelService {
                 acumulativa: variavel.acumulativa,
             },
             linhas: [],
-            ordem_series: ['Previsto', 'PrevistoAcumulado', 'Realizado', 'RealizadoAcumulado'],
+            ordem_series: ORDEM_SERIES_RETORNO,
         };
 
         // TODO bloquear acesso ao token pra quem não tiver o CadastroIndicador.inserir
 
         const todosPeriodos = await this.gerarPeriodoVariavelEntreDatas(variavel.id);
         for (const periodoYMD of todosPeriodos) {
-            const seriesExistentes: SerieValorNomimal[] = [];
-
-            const existeValor = porPeriodo[periodoYMD];
-            if (
-                existeValor &&
-                (existeValor.Previsto ||
-                    existeValor.PrevistoAcumulado ||
-                    existeValor.Realizado ||
-                    existeValor.RealizadoAcumulado)
-            ) {
-                if (existeValor.Previsto) {
-                    seriesExistentes.push(existeValor.Previsto);
-                } else {
-                    seriesExistentes.push(this.buildNonExistingSerieValor(periodoYMD, variavelId, 'Previsto'));
-                }
-
-                if (existeValor.PrevistoAcumulado) {
-                    seriesExistentes.push(this.referencia_boba(variavel.acumulativa, existeValor.PrevistoAcumulado));
-                } else {
-                    seriesExistentes.push(
-                        this.referencia_boba(
-                            variavel.acumulativa,
-                            this.buildNonExistingSerieValor(periodoYMD, variavelId, 'PrevistoAcumulado')
-                        )
-                    );
-                }
-
-                if (existeValor.Realizado) {
-                    seriesExistentes.push(existeValor.Realizado);
-                } else {
-                    seriesExistentes.push(this.buildNonExistingSerieValor(periodoYMD, variavelId, 'Realizado'));
-                }
-
-                if (existeValor.RealizadoAcumulado) {
-                    seriesExistentes.push(this.referencia_boba(variavel.acumulativa, existeValor.RealizadoAcumulado));
-                } else {
-                    seriesExistentes.push(
-                        this.referencia_boba(
-                            variavel.acumulativa,
-                            this.buildNonExistingSerieValor(periodoYMD, variavelId, 'RealizadoAcumulado')
-                        )
-                    );
-                }
-            } else {
-                seriesExistentes.push(this.buildNonExistingSerieValor(periodoYMD, variavelId, 'Previsto'));
-                seriesExistentes.push(this.buildNonExistingSerieValor(periodoYMD, variavelId, 'PrevistoAcumulado'));
-                seriesExistentes.push(this.buildNonExistingSerieValor(periodoYMD, variavelId, 'Realizado'));
-                seriesExistentes.push(this.buildNonExistingSerieValor(periodoYMD, variavelId, 'RealizadoAcumulado'));
-            }
+            const seriesExistentes: SerieValorNomimal[] = this.populaSeriesExistentes(
+                porPeriodo,
+                periodoYMD,
+                variavelId,
+                variavel
+            );
 
             result.linhas.push({
                 periodo: periodoYMD.substring(0, 4 + 2 + 1),
-                // TODO: botar o label de acordo com a periodicidade"
                 agrupador: periodoYMD.substring(0, 4),
                 series: seriesExistentes,
             });
         }
 
         return result;
+    }
+
+    populaSeriesExistentes(
+        porPeriodo: SerieValorPorPeriodo,
+        periodoYMD: string,
+        variavelId: number,
+        variavel: { acumulativa: boolean }
+    ) {
+        const seriesExistentes: SerieValorNomimal[] = [];
+
+        const existeValor = porPeriodo[periodoYMD];
+        if (
+            existeValor &&
+            (existeValor.Previsto ||
+                existeValor.PrevistoAcumulado ||
+                existeValor.Realizado ||
+                existeValor.RealizadoAcumulado)
+        ) {
+            if (existeValor.Previsto) {
+                seriesExistentes.push(existeValor.Previsto);
+            } else {
+                seriesExistentes.push(this.buildNonExistingSerieValor(periodoYMD, variavelId, 'Previsto'));
+            }
+
+            if (existeValor.PrevistoAcumulado) {
+                seriesExistentes.push(this.referencia_boba(variavel.acumulativa, existeValor.PrevistoAcumulado));
+            } else {
+                seriesExistentes.push(
+                    this.referencia_boba(
+                        variavel.acumulativa,
+                        this.buildNonExistingSerieValor(periodoYMD, variavelId, 'PrevistoAcumulado')
+                    )
+                );
+            }
+
+            if (existeValor.Realizado) {
+                seriesExistentes.push(existeValor.Realizado);
+            } else {
+                seriesExistentes.push(this.buildNonExistingSerieValor(periodoYMD, variavelId, 'Realizado'));
+            }
+
+            if (existeValor.RealizadoAcumulado) {
+                seriesExistentes.push(this.referencia_boba(variavel.acumulativa, existeValor.RealizadoAcumulado));
+            } else {
+                seriesExistentes.push(
+                    this.referencia_boba(
+                        variavel.acumulativa,
+                        this.buildNonExistingSerieValor(periodoYMD, variavelId, 'RealizadoAcumulado')
+                    )
+                );
+            }
+        } else {
+            seriesExistentes.push(this.buildNonExistingSerieValor(periodoYMD, variavelId, 'Previsto'));
+            seriesExistentes.push(this.buildNonExistingSerieValor(periodoYMD, variavelId, 'PrevistoAcumulado'));
+            seriesExistentes.push(this.buildNonExistingSerieValor(periodoYMD, variavelId, 'Realizado'));
+            seriesExistentes.push(this.buildNonExistingSerieValor(periodoYMD, variavelId, 'RealizadoAcumulado'));
+        }
+        return seriesExistentes;
     }
 
     private referencia_boba(varServerSideAcumulativa: boolean, sv: SerieValorNomimal): SerieValorNomimal {
