@@ -69,7 +69,7 @@ export class OrcamentoRealizadoService {
 
                 const soma_valor_empenho = dto.itens.sort((a, b) => b.mes - a.mes)[0].valor_empenho;
                 const soma_valor_liquidado = dto.itens.sort((a, b) => b.mes - a.mes)[0].valor_liquidado;
-                const mes_correte = dto.itens.sort((a, b) => b.mes - a.mes)[0].mes;
+                const mes_corrente = dto.itens.sort((a, b) => b.mes - a.mes)[0].mes;
 
                 if (nota_empenho) {
                     mes_utilizado = await this.atualizaNotaEmpenho(
@@ -131,7 +131,7 @@ export class OrcamentoRealizadoService {
                                             valor_liquidado: item.valor_liquidado,
                                             mes: item.mes,
                                             data_referencia: new Date([dto.ano_referencia, item.mes, '01'].join('-')),
-                                            mes_corrente: item.mes == mes_correte,
+                                            mes_corrente: item.mes == mes_corrente,
                                         };
                                     }
                                 ),
