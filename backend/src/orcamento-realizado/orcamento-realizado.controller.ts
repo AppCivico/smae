@@ -4,7 +4,7 @@ import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { FindOneParams } from '../common/decorators/find-params';
-import { RecordWithId } from '../common/dto/record-with-id.dto';
+import { BatchRecordWithId, RecordWithId } from '../common/dto/record-with-id.dto';
 import {
     CreateOrcamentoRealizadoDto,
     FilterOrcamentoRealizadoDto,
@@ -51,6 +51,17 @@ export class OrcamentoRealizadoController {
         return { linhas: await this.orcamentoRealizadoService.findAll(filters, user) };
     }
 
+    @Delete('em-lote')
+    @ApiBearerAuth('access-token')
+    @ApiUnauthorizedResponse()
+    @Roles('CadastroMeta.orcamento', 'PDM.tecnico_cp', 'PDM.admin_cp')
+    @ApiNoContentResponse()
+    @HttpCode(HttpStatus.ACCEPTED)
+    async removeEmLote(@Body() params: BatchRecordWithId, @CurrentUser() user: PessoaFromJwt) {
+        await this.orcamentoRealizadoService.removeEmLote(params, user);
+        return '';
+    }
+
     @Delete(':id')
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
@@ -61,4 +72,6 @@ export class OrcamentoRealizadoController {
         await this.orcamentoRealizadoService.remove(+params.id, user);
         return '';
     }
+
+
 }
