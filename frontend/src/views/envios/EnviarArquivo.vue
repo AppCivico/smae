@@ -44,7 +44,7 @@ function onSubmit(values) {
     requestS.upload(`${baseUrl}/upload`, formData)
       .then(async ({ upload_token: uploadToken }) => {
         if (uploadToken) {
-          await importaçõesStore.enviarArquivo({
+          await importaçõesStore.associarArquivo({
             ...values,
             upload: uploadToken,
           });
