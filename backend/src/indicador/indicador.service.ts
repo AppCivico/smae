@@ -150,7 +150,7 @@ export class IndicadorService {
 
                 const meta_id = await this.variavelService.getMetaIdDoIndicador(indicador.id, prisma);
                 if (!user.hasSomeRoles(['CadastroMeta.inserir'])) {
-                    const filterIdIn = await user.getMetasOndeSouResponsavel(this.prisma.metaResponsavel);
+                    const filterIdIn = await user.getMetasOndeSouResponsavel(this.prisma.view_meta_pessoa_responsavel);
                     // vai dar rollback, mas ai n repete o codigo pelo menos
                     if (filterIdIn.includes(meta_id) === false)
                         throw new HttpException('Sem permissão para criar indicador para a meta', 400);
@@ -464,7 +464,7 @@ export class IndicadorService {
 
         const meta_id = await this.variavelService.getMetaIdDoIndicador(indicador.id, this.prisma);
         if (!user.hasSomeRoles(['CadastroMeta.inserir'])) {
-            const filterIdIn = await user.getMetasOndeSouResponsavel(this.prisma.metaResponsavel);
+            const filterIdIn = await user.getMetasOndeSouResponsavel(this.prisma.view_meta_pessoa_responsavel);
             if (filterIdIn.includes(meta_id) === false)
                 throw new HttpException('Sem permissão para editar indicador para a meta', 400);
         }
@@ -612,7 +612,7 @@ export class IndicadorService {
     async remove(id: number, user: PessoaFromJwt) {
         const meta_id = await this.variavelService.getMetaIdDoIndicador(id, this.prisma);
         if (!user.hasSomeRoles(['CadastroMeta.inserir'])) {
-            const filterIdIn = await user.getMetasOndeSouResponsavel(this.prisma.metaResponsavel);
+            const filterIdIn = await user.getMetasOndeSouResponsavel(this.prisma.view_meta_pessoa_responsavel);
             if (filterIdIn.includes(meta_id) === false)
                 throw new HttpException('Sem permissão para remover indicador para a meta', 400);
         }
@@ -748,7 +748,7 @@ export class IndicadorService {
 
         const meta_id = await this.variavelService.getMetaIdDoIndicador(indicador.id, this.prisma);
         if (!user.hasSomeRoles(['CadastroMeta.inserir'])) {
-            const filterIdIn = await user.getMetasOndeSouResponsavel(this.prisma.metaResponsavel);
+            const filterIdIn = await user.getMetasOndeSouResponsavel(this.prisma.view_meta_pessoa_responsavel);
             if (filterIdIn.includes(meta_id) === false)
                 throw new HttpException('Sem permissão para visualizar serie do indicador para a meta', 400);
         }

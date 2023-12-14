@@ -30,10 +30,7 @@ export class MetaOrcamentoService {
         const { meta_id, iniciativa_id, atividade_id } = await this.orcamentoPlanejado.validaMetaIniAtv(dto);
         if (!user.hasSomeRoles(['CadastroMeta.orcamento', 'PDM.admin_cp'])) {
             // logo, é um tecnico_cp
-            const filterIdIn = await user.getMetasOndeSouResponsavel(this.prisma.metaResponsavel);
-            if (filterIdIn.includes(meta_id) == false) {
-                throw new HttpException('Sem permissão para editar orçamento', 400);
-            }
+            await user.assertHasMetaRespNaCpOrcamento(meta_id, this.prisma.view_meta_pessoa_responsavel_na_cp);
         }
 
         const meta = await this.prisma.meta.findFirstOrThrow({
@@ -157,10 +154,7 @@ export class MetaOrcamentoService {
 
         if (!user.hasSomeRoles(['CadastroMeta.orcamento', 'PDM.admin_cp'])) {
             // logo, é um tecnico_cp
-            const filterIdIn = await user.getMetasOndeSouResponsavel(this.prisma.metaResponsavel);
-            if (filterIdIn.includes(meta_id) == false) {
-                throw new HttpException('Sem permissão para editar orçamento', 400);
-            }
+            await user.assertHasMetaRespNaCpOrcamento(meta_id, this.prisma.view_meta_pessoa_responsavel_na_cp);
         }
 
         const meta = await this.prisma.meta.findFirst({
@@ -268,10 +262,10 @@ export class MetaOrcamentoService {
 
         if (!user.hasSomeRoles(['CadastroMeta.orcamento', 'PDM.admin_cp'])) {
             // logo, é um tecnico_cp
-            const filterIdIn = await user.getMetasOndeSouResponsavel(this.prisma.metaResponsavel);
-            if (filterIdIn.includes(metaOrcamento.meta_id) == false) {
-                throw new HttpException('Sem permissão para remover orçamento', 400);
-            }
+            await user.assertHasMetaRespNaCpOrcamento(
+                metaOrcamento.meta_id,
+                this.prisma.view_meta_pessoa_responsavel_na_cp
+            );
         }
 
         const now = new Date(Date.now());
@@ -312,7 +306,7 @@ export class MetaOrcamentoService {
         const now = new Date(Date.now());
         await this.prisma.$transaction(async (prismaTxn: Prisma.TransactionClient) => {
             // apaga/remove todas versões anteriores não removidas
-            await this.prisma.orcamentoPrevistoZerado.updateMany({
+            await prismaTxn.orcamentoPrevistoZerado.updateMany({
                 where: {
                     meta_id: dto.meta_id,
                     ano_referencia: dto.ano_referencia,
@@ -326,7 +320,7 @@ export class MetaOrcamentoService {
 
             // se é pra considerar zero, cria uma nova linha
             if (dto.considerar_zero) {
-                const count = await this.prisma.orcamentoPrevisto.count({
+                const count = await prismaTxn.orcamentoPrevisto.count({
                     where: {
                         meta_id: dto.meta_id,
                         removido_em: null,
@@ -340,7 +334,7 @@ export class MetaOrcamentoService {
                         400
                     );
 
-                await this.prisma.orcamentoPrevistoZerado.create({
+                await prismaTxn.orcamentoPrevistoZerado.create({
                     data: {
                         meta_id: dto.meta_id,
                         ano_referencia: dto.ano_referencia,
