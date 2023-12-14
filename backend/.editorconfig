@@ -13,3 +13,8 @@ max_line_length = 120
 indent_style = space
 indent_size = 2
 charset = utf-8
+
+[**.eslintrc.js*]
+indent_style = space
+indent_size = 2
+charset = utf-8

@@ -16,9 +16,17 @@ export class PessoaFromJwt extends PessoaFromJwtBase {
     }
 
     public async assertHasMetaRespAccess(meta_id: number, metaResponsavel: any) {
-        const varOuCrono = await this.getMetasOndeSouResponsavel(metaResponsavel);
-        if (varOuCrono.includes(+meta_id) == false) {
+        const metas = await this.getMetasOndeSouResponsavel(metaResponsavel);
+        if (metas.includes(+meta_id) == false) {
             throw new HttpException(`Seu perfil no momento não pode acessar a meta ${meta_id}`, 400);
+        }
+        return;
+    }
+
+    public async assertHasMetaRespNaCpOrcamento(meta_id: number, metaResponsavel: any) {
+        const metas = await this.getMetasOndeSouResponsavel(metaResponsavel);
+        if (metas.includes(+meta_id) == false) {
+            throw new HttpException(`Sem permissão para editar o orçamento na meta, necessário ser responsável na coordenadoria de planejamento`, 400);
         }
         return;
     }

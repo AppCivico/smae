@@ -104,8 +104,6 @@ model Pessoa {
     MetaQueDesativei Meta[] @relation("Desativador")
     MetaQueAtualizei Meta[] @relation("Atualizador")
 
-    MetasQueSouResp MetaResponsavel[] @relation("MetaPessoaResp")
-
     IndicadorQueCriei     Indicador[] @relation("Criador")
     IndicadorQueRemovi    Indicador[] @relation("Removedor")
     IndicadorQueAtualizei Indicador[] @relation("Atualizador")
@@ -217,10 +215,13 @@ model Pessoa {
     ImportacaoLog                  ImportacaoOrcamento[]
     IndicadorFormulaComposta       IndicadorFormulaComposta[] @relation("Desativador")
 
-    TiposAcompanhamentoQueCriei     AcompanhamentoTipo[]   @relation("Criador")
-    TiposAcompanhamentoQueAtualizei AcompanhamentoTipo[]   @relation("Atualizador")
-    TiposAcompanhamentoQueRemovi    AcompanhamentoTipo[]   @relation("Removedor")
+    TiposAcompanhamentoQueCriei     AcompanhamentoTipo[]                 @relation("Criador")
+    TiposAcompanhamentoQueAtualizei AcompanhamentoTipo[]                 @relation("Atualizador")
+    TiposAcompanhamentoQueRemovi    AcompanhamentoTipo[]                 @relation("Removedor")
     PessoaAcessoPdmValido           PessoaAcessoPdmValido?
+    MetasQueSouResp                 view_meta_pessoa_responsavel[]
+    MetasQueSouRespNaCp             view_meta_pessoa_responsavel_na_cp[]
+    MetasQueSouRespOuNao            MetaResponsavel[]                    @relation("MetaPessoaResp")
 
     @@index([email])
     @@map("pessoa")
@@ -831,8 +832,7 @@ model MetaResponsavel {
     orgao_id  Int
     orgao     Orgao  @relation(fields: [orgao_id], references: [id])
 
-    // TODO: arrumar o nome desta coluna, palavra 'coordenador'.
-    coordenador_responsavel_cp Boolean // @map("coorderandor_responsavel_cp")
+    coordenador_responsavel_cp Boolean
 
     @@index([pessoa_id])
     @@index([meta_id])
@@ -3321,4 +3321,24 @@ view view_api_request_log {
     created_pessoa_id Int?
 
     @@unique([created_at, cf_ray, request_num])
+}
+
+// view que já faz o join dos registros da meta_orgao onde responsavel=true
+view view_meta_pessoa_responsavel {
+    id Int @id @default(autoincrement())
+
+    meta_id   Int
+    pessoa_id Int
+    pessoa    Pessoa @relation(fields: [pessoa_id], references: [id])
+    orgao_id  Int
+}
+
+// view que já faz o join o filtro onde coordenador_responsavel_cp=true
+view view_meta_pessoa_responsavel_na_cp {
+    id Int @id @default(autoincrement())
+
+    meta_id   Int
+    pessoa_id Int
+    pessoa    Pessoa @relation(fields: [pessoa_id], references: [id])
+    orgao_id  Int
 }

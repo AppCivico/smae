@@ -26,10 +26,7 @@ export class OrcamentoPlanejadoService {
         const { meta_id, iniciativa_id, atividade_id } = await this.validaMetaIniAtv(dto);
         if (!user.hasSomeRoles(['CadastroMeta.orcamento', 'PDM.admin_cp'])) {
             // logo, é um tecnico_cp
-            const filterIdIn = await user.getMetasOndeSouResponsavel(this.prisma.metaResponsavel);
-            if (filterIdIn.includes(meta_id) == false) {
-                throw new HttpException('Sem permissão para editar orçamento', 400);
-            }
+            await user.assertHasMetaRespNaCpOrcamento(meta_id, this.prisma.view_meta_pessoa_responsavel_na_cp);
         }
 
         const meta = await this.prisma.meta.findFirst({
@@ -118,10 +115,7 @@ export class OrcamentoPlanejadoService {
         const { meta_id, iniciativa_id, atividade_id } = await this.validaMetaIniAtv(dto);
         if (!user.hasSomeRoles(['CadastroMeta.orcamento', 'PDM.admin_cp'])) {
             // logo, é um tecnico_cp
-            const filterIdIn = await user.getMetasOndeSouResponsavel(this.prisma.metaResponsavel);
-            if (filterIdIn.includes(meta_id) == false) {
-                throw new HttpException('Sem permissão para editar orçamento', 400);
-            }
+            await user.assertHasMetaRespNaCpOrcamento(meta_id, this.prisma.view_meta_pessoa_responsavel_na_cp);
         }
 
         const meta = await this.prisma.meta.findFirstOrThrow({
@@ -251,7 +245,7 @@ export class OrcamentoPlanejadoService {
         let filterIdIn: undefined | number[] = undefined;
         if (!user.hasSomeRoles(['CadastroMeta.orcamento', 'PDM.admin_cp'])) {
             // logo, é um tecnico_cp
-            filterIdIn = await user.getMetasOndeSouResponsavel(this.prisma.metaResponsavel);
+            filterIdIn = await user.getMetasOndeSouResponsavel(this.prisma.view_meta_pessoa_responsavel_na_cp);
         }
 
         const meta = await this.prisma.meta.findFirst({
@@ -389,10 +383,10 @@ export class OrcamentoPlanejadoService {
 
         if (!user.hasSomeRoles(['CadastroMeta.orcamento', 'PDM.admin_cp'])) {
             // logo, é um tecnico_cp
-            const filterIdIn = await user.getMetasOndeSouResponsavel(this.prisma.metaResponsavel);
-            if (filterIdIn.includes(orcamentoPlanejado.meta_id) == false) {
-                throw new HttpException('Sem permissão para editar orçamento', 400);
-            }
+            await user.assertHasMetaRespNaCpOrcamento(
+                orcamentoPlanejado.meta_id,
+                this.prisma.view_meta_pessoa_responsavel_na_cp
+            );
         }
 
         const now = new Date(Date.now());
