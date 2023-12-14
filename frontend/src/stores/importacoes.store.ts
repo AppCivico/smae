@@ -85,7 +85,7 @@ export const useImportaçõesStore = defineStore('importações', {
       this.chamadasPendentes.portfoliosPermitidos = false;
     },
 
-    async enviarArquivo(params = {}): Promise<boolean> {
+    async associarArquivo(params = {}): Promise<boolean> {
       this.chamadasPendentes.arquivos = true;
 
       try {
