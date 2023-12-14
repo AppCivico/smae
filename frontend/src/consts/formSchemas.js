@@ -415,6 +415,27 @@ export const novaSenha = object()
       .oneOf([ref('password'), null], 'Senhas não coincidem'),
   });
 
+export const perdidoDeComplementação = object()
+  .shape({
+    pedido: string()
+      .label('Pedido de complementação')
+      .required(),
+    linhas: array()
+      .label('Variáveis compostas')
+      .min(1)
+      .of(
+        object()
+          .shape({
+            data_valor: date()
+              .label('Data do registro do valor da variável')
+              .required(),
+            variavel_id: number()
+              .min(1)
+              .required(),
+          }),
+      ),
+  });
+
 export const planoDeAção = object()
   .shape({
     contato_do_responsavel: string()

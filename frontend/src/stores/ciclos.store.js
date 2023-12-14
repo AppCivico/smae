@@ -284,6 +284,11 @@ export const useCiclosStore = defineStore({
       return false;
     },
 
+    async solicitarComplementaçãoEmLote(params) {
+      if (await this.requestS.patch(`${baseUrl}/mf/metas/variaveis/complemento-em-lote`, params)) return true;
+      return false;
+    },
+
     // Meta
     async getMetaAnalise(ciclo_id, meta_id) {
       this.SingleMetaAnalise = { loading: true };

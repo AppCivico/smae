@@ -1,8 +1,12 @@
 <script setup>
 import { useCiclosStore } from '@/stores/ciclos.store';
 import dateToTitle from '@/helpers/dateToTitle';
+import modalComplementacaoEmLote from '@/components/monitoramento/modalComplementacaoEmLote.vue';
+import { useEditModalStore } from '@/stores/editModal.store';
 
 const CiclosStore = useCiclosStore();
+const editModalStore = useEditModalStore();
+
 defineProps([
   'parent',
   'list',
@@ -11,6 +15,14 @@ defineProps([
   'abrePeriodo',
   'editPeriodoEmLote',
 ]);
+
+function abrirModalComplemetacao(parent, variávelComposta, params) {
+  editModalStore.clear();
+  editModalStore.modal(modalComplementacaoEmLote, {
+    parent, variávelComposta, params,
+  });
+}
+
 function openParent(e) {
   e.target.closest('.accordeon').classList.toggle('active');
 }
@@ -34,6 +46,13 @@ function openParent(e) {
         {{ c.titulo }}
       </h4>
       <hr class="ml2 f1">
+      <button
+        type="button"
+        class="ml2 btn"
+        @click.stop="abrirModalComplemetacao(parent, c, { apenasVazias: true })"
+      >
+        Solicitar complementação
+      </button>
       <button
         type="button"
         class="ml2 btn"
