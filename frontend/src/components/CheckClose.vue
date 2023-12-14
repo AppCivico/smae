@@ -1,8 +1,15 @@
 <script setup>
+import { useEditModalStore } from '@/stores/editModal.store';
 import { useAlertStore } from '@/stores/alert.store';
 import { useRoute, useRouter } from 'vue-router';
 
+const editModalStore = useEditModalStore();
+
 const props = defineProps({
+  apenasModal: {
+    type: Boolean,
+    default: false,
+  },
   formulárioSujo: {
     type: Boolean,
     default: true,
@@ -45,7 +52,17 @@ async function checkClose() {
   }
 
   if (props.formulárioSujo) {
-    alertStore.confirm('Deseja sair sem salvar as alterações?', caminhoParaSaída);
+    const destino = props.apenasModal
+      ? () => {
+        editModalStore.clear();
+        alertStore.clear();
+      }
+      : caminhoParaSaída;
+
+    alertStore.confirm('Deseja sair sem salvar as alterações?', destino);
+  } else if (props.apenasModal) {
+    editModalStore.clear();
+    alertStore.clear();
   } else {
     router.push(caminhoParaSaída);
   }
