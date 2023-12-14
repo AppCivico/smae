@@ -222,8 +222,11 @@ export class OrcamentoService implements ReportableService {
 
                 where op.ano_referencia >= ${ano_ini}::int
                 and op.ano_referencia <= ${ano_fim}::int
-                and op.removido_em is null
                 and op.id = ANY(${search.map((r) => r.id)}::int[])
+                and op.removido_em is null
+                and m.removido_em is null
+                and mi.removido_em is null
+                and ma.removido_em is null
             )
             select
                 dp.ano_referencia as plan_dotacao_ano_utilizado,
@@ -247,7 +250,7 @@ export class OrcamentoService implements ReportableService {
                 previsoes.projeto_nome,
                 previsoes.projeto_nome,
 
-                to_char_numeric(sum(previsoes.plan_valor_planejado)::numeric) as plan_valor_planejado,
+                to_char_numeric((previsoes.plan_valor_planejado)::numeric) as plan_valor_planejado,
                 count(1) as total_registros
             from previsoes
             left join dotacao_planejado dp ON previsoes.dotacao = dp.dotacao AND previsoes.ano = dp.ano_referencia
@@ -458,6 +461,7 @@ export class OrcamentoService implements ReportableService {
                 left join projeto p on p.id = o.projeto_id
 
                 where i.id = ANY(${search.map((r) => r.id)}::int[])
+                and i.mes_corrente = true
             )
             select
                 dp.ano_referencia as plan_dotacao_ano_utilizado,
