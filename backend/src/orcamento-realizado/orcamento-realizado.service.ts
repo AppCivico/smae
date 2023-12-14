@@ -1,7 +1,7 @@
-import { HttpException, Injectable } from '@nestjs/common';
+import { BadRequestException, HttpException, Injectable } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
-import { RecordWithId } from '../common/dto/record-with-id.dto';
+import { BatchRecordWithId, RecordWithId } from '../common/dto/record-with-id.dto';
 import { DotacaoService } from '../dotacao/dotacao.service';
 import { OrcamentoPlanejadoService } from '../orcamento-planejado/orcamento-planejado.service';
 import { PrismaService } from '../prisma/prisma.service';
@@ -14,7 +14,9 @@ import { OrcamentoRealizado } from './entities/orcamento-realizado.entity';
 import { FormataNotaEmpenho } from '../common/FormataNotaEmpenho';
 import { TrataDotacaoGrande } from '../sof-api/sof-api.service';
 
-const FRASE_FIM = ' Revise os valores ou utilize o botão "Validar Via SOF" para atualizar os valores';
+export const MAX_BATCH_SIZE = parseInt(process.env.MAX_LINHAS_REMOVIDAS_ORCAMENTO_EM_LOTE || '', 10) || 10;
+
+export const FRASE_FIM = ' Revise os valores ou utilize o botão "Validar Via SOF" para atualizar os valores';
 
 type PartialOrcamentoRealizadoDto = {
     ano_referencia: number;
@@ -867,7 +869,47 @@ export class OrcamentoRealizadoService {
         return rows;
     }
 
+    async removeEmLote(params: BatchRecordWithId, user: PessoaFromJwt) {
+        const now = new Date(Date.now());
+
+        if (params.ids.length > MAX_BATCH_SIZE)
+            throw new BadRequestException(`Máximo permitido é de ${MAX_BATCH_SIZE} remoções de uma vez`);
+
+        const checkPermissions = params.ids.map((linha) => this.verificaPermissaoDelete(linha.id, user));
+
+        await Promise.all(checkPermissions);
+
+        await this.prisma.$transaction(
+            async (prismaTxn: Prisma.TransactionClient) => {
+                for (const linha of params.ids) {
+                    await this.performDelete(prismaTxn, linha.id, now, user);
+                }
+            },
+            {
+                isolationLevel: 'Serializable',
+            }
+        );
+
+        return;
+    }
+
     async remove(id: number, user: PessoaFromJwt) {
+        await this.verificaPermissaoDelete(id, user);
+
+        const now = new Date(Date.now());
+
+        await this.prisma.$transaction(
+            async (prismaTxn: Prisma.TransactionClient) => {
+                await this.performDelete(prismaTxn, id, now, user);
+                return;
+            },
+            {
+                isolationLevel: 'Serializable',
+            }
+        );
+    }
+
+    private async verificaPermissaoDelete(id: number, user: PessoaFromJwt) {
         const orcamentoRealizado = await this.prisma.orcamentoRealizado.findFirst({
             where: { id: +id, removido_em: null },
         });
@@ -881,76 +923,66 @@ export class OrcamentoRealizadoService {
                 throw new HttpException('Sem permissão para remover orçamento', 400);
             }
         }
+    }
 
-        const now = new Date(Date.now());
+    private async performDelete(prismaTxn: Prisma.TransactionClient, id: number, now: Date, user: PessoaFromJwt) {
+        const linhasAfetadas = await prismaTxn.orcamentoRealizado.updateMany({
+            where: { id: +id, removido_em: null }, // nao apagar duas vezes
+            data: { removido_em: now, removido_por: user.id },
+        });
 
-        await this.prisma.$transaction(
-            async (prismaTxn: Prisma.TransactionClient) => {
-                const linhasAfetadas = await prismaTxn.orcamentoRealizado.updateMany({
-                    where: { id: +id, removido_em: null }, // nao apagar duas vezes
-                    data: { removido_em: now, removido_por: user.id },
+        if (linhasAfetadas.count == 1) {
+            const orcRealizado = await prismaTxn.orcamentoRealizado.findUniqueOrThrow({ where: { id: +id } });
+
+            if (orcRealizado.nota_empenho) {
+                const notaTx = await prismaTxn.dotacaoProcessoNota.findUnique({
+                    where: {
+                        ano_referencia_dotacao_dotacao_processo_dotacao_processo_nota: {
+                            ano_referencia: orcRealizado.ano_referencia,
+                            dotacao: orcRealizado.dotacao,
+                            dotacao_processo: orcRealizado.processo!,
+                            dotacao_processo_nota: orcRealizado.nota_empenho,
+                        },
+                    },
                 });
+                if (!notaTx) throw new HttpException('Nota-Empenho não foi foi encontrado no banco de dados', 400);
 
-                if (linhasAfetadas.count == 1) {
-                    const orcRealizado = await prismaTxn.orcamentoRealizado.findUniqueOrThrow({ where: { id: +id } });
+                await prismaTxn.dotacaoProcessoNota.update({
+                    where: { id: notaTx.id },
+                    data: { id: notaTx.id },
+                });
+            } else if (orcRealizado.processo) {
+                const processoTx = await prismaTxn.dotacaoProcesso.findUnique({
+                    where: {
+                        ano_referencia_dotacao_dotacao_processo: {
+                            ano_referencia: orcRealizado.ano_referencia,
+                            dotacao: orcRealizado.dotacao,
+                            dotacao_processo: orcRealizado.processo,
+                        },
+                    },
+                });
+                if (!processoTx) throw new HttpException('Processo não foi foi encontrado no banco de dados', 400);
 
-                    if (orcRealizado.nota_empenho) {
-                        const notaTx = await prismaTxn.dotacaoProcessoNota.findUnique({
-                            where: {
-                                ano_referencia_dotacao_dotacao_processo_dotacao_processo_nota: {
-                                    ano_referencia: orcRealizado.ano_referencia,
-                                    dotacao: orcRealizado.dotacao,
-                                    dotacao_processo: orcRealizado.processo!,
-                                    dotacao_processo_nota: orcRealizado.nota_empenho,
-                                },
-                            },
-                        });
-                        if (!notaTx)
-                            throw new HttpException('Nota-Empenho não foi foi encontrado no banco de dados', 400);
+                await prismaTxn.dotacaoProcesso.update({
+                    where: { id: processoTx.id },
+                    data: { id: processoTx.id },
+                });
+            } else if (orcRealizado.dotacao) {
+                const processoTx = await prismaTxn.dotacaoRealizado.findUnique({
+                    where: {
+                        ano_referencia_dotacao: {
+                            ano_referencia: orcRealizado.ano_referencia,
+                            dotacao: orcRealizado.dotacao,
+                        },
+                    },
+                });
+                if (!processoTx) throw new HttpException('Dotação não foi foi encontrado no banco de dados', 400);
 
-                        await prismaTxn.dotacaoProcessoNota.update({
-                            where: { id: notaTx.id },
-                            data: { id: notaTx.id },
-                        });
-                    } else if (orcRealizado.processo) {
-                        const processoTx = await prismaTxn.dotacaoProcesso.findUnique({
-                            where: {
-                                ano_referencia_dotacao_dotacao_processo: {
-                                    ano_referencia: orcRealizado.ano_referencia,
-                                    dotacao: orcRealizado.dotacao,
-                                    dotacao_processo: orcRealizado.processo,
-                                },
-                            },
-                        });
-                        if (!processoTx)
-                            throw new HttpException('Processo não foi foi encontrado no banco de dados', 400);
-
-                        await prismaTxn.dotacaoProcesso.update({
-                            where: { id: processoTx.id },
-                            data: { id: processoTx.id },
-                        });
-                    } else if (orcRealizado.dotacao) {
-                        const processoTx = await prismaTxn.dotacaoRealizado.findUnique({
-                            where: {
-                                ano_referencia_dotacao: {
-                                    ano_referencia: orcRealizado.ano_referencia,
-                                    dotacao: orcRealizado.dotacao,
-                                },
-                            },
-                        });
-                        if (!processoTx)
-                            throw new HttpException('Dotação não foi foi encontrado no banco de dados', 400);
-
-                        await prismaTxn.dotacaoRealizado.update({
-                            where: { id: processoTx.id },
-                            data: { id: processoTx.id },
-                        });
-                    }
-                }
-            },
-            {
-                isolationLevel: 'Serializable',
+                await prismaTxn.dotacaoRealizado.update({
+                    where: { id: processoTx.id },
+                    data: { id: processoTx.id },
+                });
             }
-        );
+        }
     }
 }

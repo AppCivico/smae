@@ -21,7 +21,7 @@ import {
     UpdatePPOrcamentoRealizadoDto,
 } from './dto/create-orcamento-realizado.dto';
 import { CurrentUser } from '../../auth/decorators/current-user.decorator';
-import { RecordWithId } from '../../common/dto/record-with-id.dto';
+import { BatchRecordWithId, RecordWithId } from '../../common/dto/record-with-id.dto';
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import { ProjetoService } from '../projeto/projeto.service';
 import { FindOneParams, FindTwoParams } from '../../common/decorators/find-params';
@@ -76,6 +76,26 @@ export class OrcamentoRealizadoController {
             throw new HttpException('Não é possível criar o orçamento no modo apenas leitura.', 400);
         }
         return await this.orcamentoRealizadoService.update(projeto, params.id2, createMetaDto, user);
+    }
+
+    @Delete(':id/orcamento-realizado/em-lote')
+    @ApiBearerAuth('access-token')
+    @ApiUnauthorizedResponse()
+    @Roles('CadastroMeta.orcamento', 'PDM.tecnico_cp', 'PDM.admin_cp')
+    @ApiNoContentResponse()
+    @HttpCode(HttpStatus.ACCEPTED)
+    async removeEmLote(
+        @Param() paramProj: FindOneParams,
+        @Body() paramIds: BatchRecordWithId,
+        @CurrentUser() user: PessoaFromJwt
+    ) {
+        const projeto = await this.projetoService.findOne(paramProj.id, user, 'ReadWrite');
+        if (projeto.permissoes.apenas_leitura_planejamento) {
+            throw new HttpException('Não é possível criar o orçamento no modo apenas leitura.', 400);
+        }
+
+        await this.orcamentoRealizadoService.removeEmLote(paramIds, user);
+        return '';
     }
 
     @Delete(':id/orcamento-realizado/:id2')
