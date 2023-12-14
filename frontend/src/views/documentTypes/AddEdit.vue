@@ -1,7 +1,8 @@
 <script setup>
 import { Dashboard } from '@/components';
 import { router } from '@/router';
-import { useAlertStore, useDocumentTypesStore } from '@/stores';
+import { useAlertStore } from '@/stores/alert.store';
+import { useDocumentTypesStore } from '@/stores/documentTypes.store';
 import { storeToRefs } from 'pinia';
 import { Field, Form } from 'vee-validate';
 import { useRoute } from 'vue-router';

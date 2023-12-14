@@ -4,7 +4,7 @@ import months from '@/consts/months';
 import dinheiro from '@/helpers/dinheiro';
 import retornarQuaisOsRecentesDosItens from '@/helpers/retornarQuaisOsMaisRecentesDosItensDeOrcamento';
 import toFloat from '@/helpers/toFloat';
-import { useOrcamentosStore } from '@/stores';
+import { useOrcamentosStore } from '@/stores/orcamentos.store';
 import { useMetasStore } from '@/stores/metas.store';
 import { useProjetosStore } from '@/stores/projetos.store.ts';
 import { range } from 'lodash';
