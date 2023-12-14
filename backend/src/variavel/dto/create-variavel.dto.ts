@@ -92,6 +92,10 @@ export class CreateVariavelDto {
     acumulativa: boolean;
 
     @IsOptional()
+    @IsBoolean({ message: '$property| Precisa ser um boolean' })
+    mostrar_monitoramento: boolean;
+
+    @IsOptional()
     @IsInt({ message: '$property| ano_base precisa ser numérico' })
     @ValidateIf((object, value) => value !== null)
     @Type(() => Number)

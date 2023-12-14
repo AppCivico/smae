@@ -1044,6 +1044,8 @@ model Variavel {
 
     codigo String
 
+    mostrar_monitoramento Boolean @default(true)
+
     // ficam null quando a Periodicidade é a mesma do indicador
     // quando for diferente, é necessário preencher para saber qual é o mês de base
     inicio_medicao DateTime? @db.Date()
