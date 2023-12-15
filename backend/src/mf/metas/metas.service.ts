@@ -225,8 +225,7 @@ export class MetasService {
         map: VariavelDetalhePorID,
         seriesPorVariavel: Record<number, MfSeriesAgrupadas[]>,
         fieldName: 'meta_id' | 'iniciativa_id' | 'atividade_id',
-        fieldMatch: number,
-        cicloFisicoAtivo: CicloAtivoDto
+        fieldMatch: number
     ): SerieseTotais {
         const seriesDaX: VariavelComSeries[] = [];
         let aguarda_complementacao = 0;
@@ -342,8 +341,7 @@ export class MetasService {
                     variaveisMeta,
                     calcSerieVariaveis.seriesPorVariavel,
                     'meta_id',
-                    meta_id,
-                    cicloFisicoAtivo
+                    meta_id
                 ),
                 ...this.mfService.extraiResponsaveis(indicadorMeta.meta.meta_responsavel),
                 id: meta_id,
@@ -377,8 +375,7 @@ export class MetasService {
                     variaveisMeta,
                     calcSerieVariaveis.seriesPorVariavel,
                     'iniciativa_id',
-                    iniciativa.id,
-                    cicloFisicoAtivo
+                    iniciativa.id
                 ),
             };
 
@@ -401,8 +398,7 @@ export class MetasService {
                         variaveisMeta,
                         calcSerieVariaveis.seriesPorVariavel,
                         'atividade_id',
-                        atividade.id,
-                        cicloFisicoAtivo
+                        atividade.id
                     ),
                 };
 
