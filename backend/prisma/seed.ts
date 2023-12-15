@@ -128,6 +128,10 @@ const PrivConfig: Record<ListaDeModulos, false | [ListaDePrivilegios, string][]>
         ],
         ['CadastroMeta.editar', 'Editar Metas que for responsável'],
         ['CadastroMeta.remover', 'Remover Metas que for responsável'],
+        [
+            'CadastroMeta.administrador_orcamento',
+            'Atualizar a Execução Orçamentária de todas as metas e desmarcar orçamento realizado como concluído',
+        ],
         ['CadastroMeta.orcamento', 'Atualizar a Execução Orçamentária que for responsável'],
         ['CadastroMeta.listar', 'Lista metas, iniciativas e atividades'],
     ],
@@ -193,7 +197,7 @@ const PrivConfig: Record<ListaDeModulos, false | [ListaDePrivilegios, string][]>
     ],
 };
 
-let todosPrivilegios: ListaDePrivilegios[] = [];
+const todosPrivilegios: ListaDePrivilegios[] = [];
 
 for (const codModulo in PrivConfig) {
     const privilegio = PrivConfig[codModulo];
@@ -268,6 +272,7 @@ const PerfilAcessoConfig: {
             'No monitoramento, pode visualizar e editar dados de todas as metas, em todos os ciclos. Gerenciar parcialmente as metas e PDM.',
         privilegios: [
             'PDM.admin_cp',
+            'CadastroMeta.administrador_orcamento',
             'CadastroPdm.editar',
             'CadastroMacroTema.inserir',
             'CadastroMacroTema.editar',
@@ -552,7 +557,7 @@ async function atualizar_perfil_acesso() {
                 },
             });
         } else {
-            let perfilAcesso = await ensurePerfilAcessoExists(perfilAcessoConf);
+            const perfilAcesso = await ensurePerfilAcessoExists(perfilAcessoConf);
 
             for (const codPriv of perfilAcessoConf.privilegios) {
                 await criaPrivComPerfilDeAcesso(codPriv, perfilAcesso);

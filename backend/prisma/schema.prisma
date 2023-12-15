@@ -223,6 +223,7 @@ model Pessoa {
     MetasQueSouRespNaCp             view_meta_pessoa_responsavel_na_cp[]
     MetasQueSouRespOuNao            MetaResponsavel[]                    @relation("MetaPessoaResp")
     PdmOrcamentoRealizadoConfig     PdmOrcamentoRealizadoConfig[]
+    view_meta_responsavel_orcamento view_meta_responsavel_orcamento[]
 
     @@index([email])
     @@map("pessoa")
@@ -2047,7 +2048,7 @@ model PdmOrcamentoRealizadoConfig {
     meta_id        Int
     meta           Meta @relation(fields: [meta_id], references: [id])
 
-    ultima_revisao Boolean @default(false)
+    ultima_revisao Boolean?
 
     atualizado_em  DateTime
     atualizado_por Int
@@ -3362,4 +3363,14 @@ view view_meta_pessoa_responsavel_na_cp {
     pessoa_id Int
     pessoa    Pessoa @relation(fields: [pessoa_id], references: [id])
     orgao_id  Int
+}
+
+// view que já faz o join da view_meta_pessoa_responsavel + tbm a pessoa tem o privilegio
+// CadastroMeta.orcamento ou CadastroMeta.administrador_orcamento
+view view_meta_responsavel_orcamento {
+    id Int @id @default(autoincrement())
+
+    meta_id   Int
+    pessoa_id Int
+    pessoa    Pessoa @relation(fields: [pessoa_id], references: [id])
 }
