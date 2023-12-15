@@ -892,7 +892,8 @@ export class OrcamentoRealizadoService {
     }
 
     async orcamentoConcluido(dto: PatchOrcamentoRealizadoConcluidoDto, user: PessoaFromJwt) {
-        if (!user.hasSomeRoles(['CadastroMeta.orcamento', 'PDM.admin_cp'])) {
+        const isAdmin = user.hasSomeRoles(['CadastroMeta.orcamento', 'PDM.admin_cp']);
+        if (!isAdmin) {
             // logo, é um tecnico_cp
             await user.assertHasMetaRespNaMetaOrcamento(dto.meta_id, this.prisma.view_meta_pessoa_responsavel);
         }
@@ -908,7 +909,7 @@ export class OrcamentoRealizadoService {
         });
 
         // só CP pode mudar depois de congelado
-        if (configAtual && configAtual.execucao_concluida) {
+        if (configAtual && configAtual.execucao_concluida && !isAdmin) {
             await user.assertHasMetaRespNaCpOrcamento(dto.meta_id, this.prisma.view_meta_pessoa_responsavel_na_cp);
         }
 
@@ -919,7 +920,7 @@ export class OrcamentoRealizadoService {
                 where: {
                     ano_referencia: dto.ano_referencia,
                     meta_id: dto.meta_id,
-                    ultima_revisao: true,
+                    ultima_revisao: null,
                 },
                 data: { ultima_revisao: false },
             });

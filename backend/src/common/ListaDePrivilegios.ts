@@ -47,6 +47,7 @@ export type ListaDePrivilegios =
     | 'CadastroMeta.editar'
     | 'CadastroMeta.remover'
     | 'CadastroMeta.orcamento'
+    | 'CadastroMeta.administrador_orcamento'
     | 'CadastroIndicador.inserir'
     | 'CadastroIndicador.editar'
     | 'CadastroIndicador.remover'
