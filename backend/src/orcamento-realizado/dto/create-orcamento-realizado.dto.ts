@@ -4,6 +4,7 @@ import {
     ArrayMaxSize,
     ArrayMinSize,
     IsArray,
+    IsBoolean,
     IsInt,
     IsNumber,
     IsOptional,
@@ -200,4 +201,25 @@ export class FilterOrcamentoRealizadoDto {
 
 export class ListOrcamentoRealizadoDto {
     linhas: OrcamentoRealizado[];
+}
+
+export class PatchOrcamentoRealizadoConcluidoDto {
+    /**
+     * meta_id
+     * @example "42"
+     */
+    @IsOptional()
+    @IsInt({ message: '$property| meta_id precisa ser positivo' })
+    meta_id: number;
+
+    /**
+     * Sempre é necessário passar o ano_referencia eg: 2022
+     * @example ""
+     */
+    @IsInt({ message: '$property| ano_referencia precisa ser positivo' })
+    ano_referencia: number;
+
+    @IsOptional()
+    @IsBoolean({ message: '$property| concluído precisa ser um boolean' })
+    concluido: boolean;
 }
