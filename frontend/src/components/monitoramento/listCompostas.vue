@@ -1,8 +1,11 @@
 <script setup>
-import { useCiclosStore } from '@/stores/ciclos.store';
 import dateToTitle from '@/helpers/dateToTitle';
 import modalComplementacaoEmLote from '@/components/monitoramento/modalComplementacaoEmLote.vue';
+import { useAuthStore } from '@/stores/auth.store';
+import { useCiclosStore } from '@/stores/ciclos.store';
 import { useEditModalStore } from '@/stores/editModal.store';
+
+const { temPermissãoPara } = useAuthStore();
 
 const CiclosStore = useCiclosStore();
 const editModalStore = useEditModalStore();
@@ -16,7 +19,7 @@ defineProps([
   'editPeriodoEmLote',
 ]);
 
-function abrirModalComplemetacao(parent, variávelComposta, params) {
+function abrirModalComplementação(parent, variávelComposta, params) {
   editModalStore.clear();
   editModalStore.modal(modalComplementacaoEmLote, {
     parent, variávelComposta, params,
@@ -47,9 +50,10 @@ function openParent(e) {
       </h4>
       <hr class="ml2 f1">
       <button
+        v-if="temPermissãoPara(['PDM.admin_cp', 'PDM.tecnico_cp'])"
         type="button"
         class="ml2 btn"
-        @click.stop="abrirModalComplemetacao(parent, c, { apenasVazias: true })"
+        @click.stop="abrirModalComplementação(parent, c, { apenasVazias: true })"
       >
         Solicitar complementação
       </button>
