@@ -9,6 +9,7 @@ import {
     CreateOrcamentoRealizadoDto,
     FilterOrcamentoRealizadoDto,
     ListOrcamentoRealizadoDto,
+    PatchOrcamentoRealizadoConcluidoDto,
     UpdateOrcamentoRealizadoDto,
 } from './dto/create-orcamento-realizado.dto';
 import { OrcamentoRealizadoService } from './orcamento-realizado.service';
@@ -51,6 +52,17 @@ export class OrcamentoRealizadoController {
         return { linhas: await this.orcamentoRealizadoService.findAll(filters, user) };
     }
 
+    @Patch('orcamento-concluido')
+    @ApiBearerAuth('access-token')
+    @ApiUnauthorizedResponse()
+    @Roles('CadastroMeta.orcamento', 'PDM.tecnico_cp', 'PDM.admin_cp')
+    @ApiNoContentResponse()
+    @HttpCode(HttpStatus.ACCEPTED)
+    async orcamentoConcluido(@Body() params: PatchOrcamentoRealizadoConcluidoDto, @CurrentUser() user: PessoaFromJwt) {
+        await this.orcamentoRealizadoService.orcamentoConcluido(params, user);
+        return '';
+    }
+
     @Delete('em-lote')
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
@@ -72,6 +84,4 @@ export class OrcamentoRealizadoController {
         await this.orcamentoRealizadoService.remove(+params.id, user);
         return '';
     }
-
-
 }

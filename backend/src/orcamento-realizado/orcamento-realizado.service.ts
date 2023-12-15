@@ -8,6 +8,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import {
     CreateOrcamentoRealizadoDto,
     FilterOrcamentoRealizadoDto,
+    PatchOrcamentoRealizadoConcluidoDto,
     UpdateOrcamentoRealizadoDto,
 } from './dto/create-orcamento-realizado.dto';
 import { OrcamentoRealizado } from './entities/orcamento-realizado.entity';
@@ -888,6 +889,53 @@ export class OrcamentoRealizadoService {
         );
 
         return;
+    }
+
+    async orcamentoConcluido(dto: PatchOrcamentoRealizadoConcluidoDto, user: PessoaFromJwt) {
+        if (!user.hasSomeRoles(['CadastroMeta.orcamento', 'PDM.admin_cp'])) {
+            // logo, é um tecnico_cp
+            await user.assertHasMetaRespNaMetaOrcamento(dto.meta_id, this.prisma.view_meta_pessoa_responsavel);
+        }
+
+        const configAtual = await this.prisma.pdmOrcamentoRealizadoConfig.findUnique({
+            where: {
+                meta_id_ano_referencia_ultima_revisao: {
+                    ultima_revisao: true,
+                    ano_referencia: dto.ano_referencia,
+                    meta_id: dto.meta_id,
+                },
+            },
+        });
+
+        // só CP pode mudar depois de congelado
+        if (configAtual && configAtual.execucao_concluida) {
+            await user.assertHasMetaRespNaCpOrcamento(dto.meta_id, this.prisma.view_meta_pessoa_responsavel_na_cp);
+        }
+
+        const now = new Date(Date.now());
+
+        await this.prisma.$transaction(async (prismaTxn: Prisma.TransactionClient) => {
+            await prismaTxn.pdmOrcamentoRealizadoConfig.updateMany({
+                where: {
+                    ano_referencia: dto.ano_referencia,
+                    meta_id: dto.meta_id,
+                    ultima_revisao: true,
+                },
+                data: { ultima_revisao: false },
+            });
+
+            await prismaTxn.pdmOrcamentoRealizadoConfig.create({
+                data: {
+                    ano_referencia: dto.ano_referencia,
+                    execucao_concluida: dto.concluido,
+                    meta_id: dto.meta_id,
+                    atualizado_em: now,
+                    atualizado_por: user.id,
+                    ultima_revisao: true,
+                },
+            });
+            return;
+        });
     }
 
     async remove(id: number, user: PessoaFromJwt) {

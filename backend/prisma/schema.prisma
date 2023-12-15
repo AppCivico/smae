@@ -222,6 +222,7 @@ model Pessoa {
     MetasQueSouResp                 view_meta_pessoa_responsavel[]
     MetasQueSouRespNaCp             view_meta_pessoa_responsavel_na_cp[]
     MetasQueSouRespOuNao            MetaResponsavel[]                    @relation("MetaPessoaResp")
+    PdmOrcamentoRealizadoConfig     PdmOrcamentoRealizadoConfig[]
 
     @@index([email])
     @@map("pessoa")
@@ -791,6 +792,7 @@ model Meta {
     OrcamentoPlanejadoZerado              OrcamentoPrevistoZerado[]
     FormulaCompostaCicloFisicoQualitativo FormulaCompostaCicloFisicoQualitativo[]
     FormulaCompostaCicloFisicoDocumento   FormulaCompostaCicloFisicoDocumento[]
+    PdmOrcamentoRealizadoConfig           PdmOrcamentoRealizadoConfig[]
 
     @@index([pdm_id])
     @@map("meta")
@@ -2036,6 +2038,25 @@ model PdmOrcamentoConfig {
 
     @@index([pdm_id])
     @@map("meta_orcamento_config")
+}
+
+model PdmOrcamentoRealizadoConfig {
+    id Int @id @default(autoincrement())
+
+    ano_referencia Int
+    meta_id        Int
+    meta           Meta @relation(fields: [meta_id], references: [id])
+
+    ultima_revisao Boolean @default(false)
+
+    atualizado_em  DateTime
+    atualizado_por Int
+    atualizador    Pessoa   @relation(fields: [atualizado_por], references: [id])
+
+    execucao_concluida Boolean @default(false)
+
+    @@unique([meta_id, ano_referencia, ultima_revisao])
+    @@map("pdm_orcamento_realizado_config")
 }
 
 model OrcamentoPrevisto {
