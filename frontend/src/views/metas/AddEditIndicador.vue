@@ -15,6 +15,7 @@ import { default as AddEditRealizado } from '@/views/metas/AddEditRealizado.vue'
 import { default as AddEditValores } from '@/views/metas/AddEditValores.vue';
 import { default as AddEditVariavel } from '@/views/metas/AddEditVariavel.vue';
 import AddEditVariavelComposta from '@/views/metas/AddEditVariavelComposta.vue';
+import AddEditValoresComposta from '@/views/metas/AddEditValoresComposta.vue';
 import { storeToRefs } from 'pinia';
 import { Field, Form } from 'vee-validate';
 import { useRoute } from 'vue-router';
@@ -105,6 +106,10 @@ function start() {
       break;
     case 'retroativos':
       editModalStore.modal(AddEditRealizado, props);
+      break;
+    case 'compostas-valores':
+    case 'compostas-retroativos':
+      editModalStore.modal(AddEditValoresComposta, props);
       break;
     case 'gerar-compostas':
       editModalStore.modal(GerarVariaveisCompostas, props);
