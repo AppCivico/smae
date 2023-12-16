@@ -2,6 +2,7 @@
 import auxiliarDePreenchimento from '@/components/AuxiliarDePreenchimento.vue';
 import CheckClose from '@/components/CheckClose.vue';
 import dateToField from '@/helpers/dateToField';
+import geradorDeAtributoStep from '@/helpers/geradorDeAtributoStep';
 import requestS from '@/helpers/requestS.ts';
 import { useAlertStore } from '@/stores/alert.store';
 import { useCiclosStore } from '@/stores/ciclos.store';
@@ -231,14 +232,6 @@ function addFile(e) {
   virtualUpload.value.name = files[0].name;
   virtualUpload.value.file = files[0];
 }
-
-const configuraçãoDeCasasDecimais = ((variávelId) => {
-  const númeroDeCasas = dadosExtrasPorVariávelId.value?.[variávelId]?.variavel.casas_decimais || 0;
-
-  return !númeroDeCasas
-    ? 1
-    : `0.${'0'.repeat(númeroDeCasas - 1)}1`;
-});
 
 watch(valoresIniciais, (novoValor) => {
   resetForm({ values: novoValor });
@@ -518,7 +511,9 @@ watch(variáveisComSuasDatas, (novoValor) => {
                 :name="`linhas[${idx}].valor_realizado`"
                 type="number"
                 :value="field.value.valor_realizado"
-                :step="configuraçãoDeCasasDecimais(field.value.variavel_id)"
+                :step="geradorDeAtributoStep(
+                  dadosExtrasPorVariávelId.value?.[field.value.variavel_id]?.variavel.casas_decimais
+                )"
                 min="0"
                 class="inputtext light"
                 :class="{ 'error': errors[`linhas[${idx}].valor_realizado`] }"
@@ -545,7 +540,9 @@ watch(variáveisComSuasDatas, (novoValor) => {
                 :name="`linhas[${idx}].valor_realizado_acumulado`"
                 type="number"
                 :value="field.valor_realizado_acumulado"
-                :step="configuraçãoDeCasasDecimais(field.value.variavel_id)"
+                :step="geradorDeAtributoStep(
+                  dadosExtrasPorVariávelId.value?.[field.value.variavel_id]?.variavel.casas_decimais
+                )"
                 min="0"
                 class="inputtext light"
                 :class="{ 'error': errors[`linhas[${idx}].valor_realizado_acumulado`] }"
