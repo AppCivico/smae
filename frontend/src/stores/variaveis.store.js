@@ -15,6 +15,8 @@ export const useVariaveisStore = defineStore({
     variáveisPorCódigo: {},
     operaçõesParaVariávelComposta: {},
     Valores: {},
+    PeríodosAbrangidosPorVariável: {},
+    sériesDaVariávelComposta: {},
   }),
   actions: {
     clear() {
@@ -173,12 +175,57 @@ export const useVariaveisStore = defineStore({
         return false;
       }
     },
+
+    async buscarPeríodosDeVariávelDeFórmula(id = this.route.params.var_id) {
+      try {
+        this.PeríodosAbrangidosPorVariável = { loading: true };
+        const r = await this.requestS.get(`${baseUrl}/formula-variavel/${id}/periodos`);
+
+        if (Array.isArray(r.linhas)) {
+          this.PeríodosAbrangidosPorVariável = r.linhas;
+        }
+      } catch (error) {
+        this.PeríodosAbrangidosPorVariável = { error };
+      }
+    },
+
+    async buscarSériesDeVariávelDeFórmula(período, id = this.route.params.var_id) {
+      try {
+        this.sériesDaVariávelComposta = { loading: true };
+
+        const r = await this.requestS.get(`${baseUrl}/formula-variavel/${id}/series`, { periodo: período });
+
+        this.sériesDaVariávelComposta = r;
+      } catch (error) {
+        this.sériesDaVariávelComposta = { error };
+      }
+    },
   },
   getters: {
     valoresEmFoco({ Valores }) {
       const { var_id: varId } = this.route.params;
       return Valores[varId]?.linhas || [];
     },
+
+    sériesDeCompostaParaEdição: (({ sériesDaVariávelComposta }) => {
+      const base = {
+        Previsto: [],
+        PrevistoAcumulado: [],
+        Realizado: [],
+        RealizadoAcumulado: [],
+      };
+      return Array.isArray(sériesDaVariávelComposta.linhas)
+        ? sériesDaVariávelComposta.linhas.reduce((acc, cur) => {
+          cur.series.forEach((x, i) => {
+            acc[sériesDaVariávelComposta.ordem_series[i]].push({
+              referencia: x.referencia,
+              valor: x.valor_nominal,
+            });
+          });
+          return acc;
+        }, base)
+        : base;
+    }),
 
     variáveisPorId: ({ Variaveis }) => Object.keys(Variaveis)
       .reduce((acc, cur) => {

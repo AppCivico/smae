@@ -98,6 +98,22 @@ export default {
       name: 'editarVariáveisCompostas',
       meta: { rotaDeEscape: 'indicadorDaMeta', título: 'Editar variável composta' },
     },
+
+    {
+      path: ':meta_id/indicadores/:indicador_id/variaveis-compostas/:var_id/valores',
+      component: AddEditIndicador,
+      name: 'valoresPrevistosCompostas',
+      props: { group: 'compostas-valores', submenu: SubmenuMetas },
+      meta: { rotaDeEscape: 'indicadorDaMeta', título: 'Editar valores previstos', tipoDeValor: 'previsto' },
+    },
+    {
+      path: ':meta_id/indicadores/:indicador_id/variaveis-compostas/:var_id/retroativos',
+      component: AddEditIndicador,
+      name: 'valoresRealizadosCompostas',
+      props: { group: 'compostas-retroativos', submenu: SubmenuMetas },
+      meta: { rotaDeEscape: 'indicadorDaMeta', título: 'Editar valores realizados', tipoDeValor: 'realizado' },
+    },
+
     // /////////////////////////////////////////////////////////////////////////
 
     { path: ':meta_id/painel', component: SinglePainelMeta, props: { submenu: SubmenuMetas } },

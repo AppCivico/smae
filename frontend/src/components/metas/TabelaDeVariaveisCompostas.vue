@@ -2,10 +2,15 @@
 import { useAlertStore } from '@/stores/alert.store';
 import { useVariaveisStore } from '@/stores/variaveis.store';
 import { useRoute } from 'vue-router';
+import { useAuthStore } from '@/stores/auth.store';
 import níveisRegionalização from '@/consts/niveisRegionalizacao';
+import { storeToRefs } from 'pinia';
 
+const authStore = useAuthStore();
 const alertStore = useAlertStore();
 const VariaveisStore = useVariaveisStore();
+
+const { permissions } = storeToRefs(authStore);
 
 const route = useRoute();
 const { indicador_id: indicadorId } = route.params;
@@ -54,9 +59,15 @@ function permitirEdição(indicadorVariavel) {
   <nav>
     <ul class="flex justifyleft mb1">
       <li class="mr1">
-        <router-link :to="`${parentlink}/indicadores/${indicadorId}/variaveis-compostas/novo`" class="addlink">
+        <router-link
+          :to="`${parentlink}/indicadores/${indicadorId}/variaveis-compostas/novo`"
+          class="addlink"
+        >
           <span>Adicionar variável</span>
-          <svg width="20" height="20">
+          <svg
+            width="20"
+            height="20"
+          >
             <use xlink:href="#i_+" />
           </svg>
         </router-link>
@@ -65,13 +76,18 @@ function permitirEdição(indicadorVariavel) {
         <router-link
           v-if="indicadorRegionalizavel"
           :to="{
-          name: 'geradorDeVariáveisCompostas',
-          params: {
-            indicador_id: indicadorId
-          }
-        }" class="addlink">
+            name: 'geradorDeVariáveisCompostas',
+            params: {
+              indicador_id: indicadorId
+            }
+          }"
+          class="addlink"
+        >
           <span>Gerar variáveis</span>
-          <svg width="20" height="20">
+          <svg
+            width="20"
+            height="20"
+          >
             <use xlink:href="#i_+" />
           </svg>
         </router-link>
@@ -94,7 +110,10 @@ function permitirEdição(indicadorVariavel) {
         <th style="width:20%" />
       </tr>
     </thead>
-    <tr v-for="v in variáveisCompostas" :key="v.id">
+    <tr
+      v-for="v in variáveisCompostas"
+      :key="v.id"
+    >
       <td>{{ v.titulo }}</td>
       <td>
         {{ v.nivel_regionalizacao
@@ -103,16 +122,27 @@ function permitirEdição(indicadorVariavel) {
       </td>
       <td>{{ v.mostrar_monitoramento ? 'Sim' : 'Não' }}</td>
       <td style="white-space: nowrap; text-align: right;">
-        <button class="like-a__link tipinfo tprimary" :disabled="!permitirEdição(v.indicador_variavel)"
-          @click="apagarVariável(v.id)">
-          <svg width="20" height="20">
+        <button
+          class="like-a__link tipinfo tprimary"
+          :disabled="!permitirEdição(v.indicador_variavel)"
+          @click="apagarVariável(v.id)"
+        >
+          <svg
+            width="20"
+            height="20"
+          >
             <use xlink:href="#i_remove" />
           </svg>
           <div>Apagar</div>
         </button>
-        <router-link :to="`${parentlink}/indicadores/${indicadorId}/variaveis-compostas/${v.id}`"
-          class="tipinfo tprimary ml1">
-          <svg width="20" height="20">
+        <router-link
+          :to="`${parentlink}/indicadores/${indicadorId}/variaveis-compostas/${v.id}`"
+          class="tipinfo tprimary ml1"
+        >
+          <svg
+            width="20"
+            height="20"
+          >
             <use xlink:href="#i_edit" />
           </svg>
           <div>Editar</div>
@@ -145,9 +175,15 @@ function permitirEdição(indicadorVariavel) {
             width="20"
             height="20"
           ><use xlink:href="#i_edit" /></svg><div>Editar</div>
-        </button>
+        </button> -->
         <router-link
-          :to="`${parentlink}/indicadores/${indicadorId}/variaveis/${v.id}/valores`"
+          :to="{
+            name: 'valoresPrevistosCompostas',
+            params: {
+              indicador_id: indicadorId,
+              var_id: v.id,
+            },
+          }"
           class="tipinfo tprimary ml1"
         >
           <svg
@@ -156,15 +192,20 @@ function permitirEdição(indicadorVariavel) {
           ><use xlink:href="#i_valores" /></svg><div>Valores Previstos e Acumulados</div>
         </router-link>
         <router-link
-          v-if="permissions.CadastroPessoa?.administrador"
-          :to="`${parentlink}/indicadores/${indicadorId}/variaveis/${v.id}/retroativos`"
+          :to="{
+            name: 'valoresRealizadosCompostas',
+            params: {
+              indicador_id: indicadorId,
+              var_id: v.id,
+            },
+          }"
           class="tipinfo tprimary ml1"
         >
           <svg
             width="20"
             height="20"
           ><use xlink:href="#i_check" /></svg><div>Valores Realizados Retroativos</div>
-        </router-link> -->
+        </router-link>
       </td>
     </tr>
   </table>
