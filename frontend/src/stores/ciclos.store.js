@@ -1,5 +1,6 @@
 import { usePdMStore } from '@/stores/pdm.store';
 import { defineStore } from 'pinia';
+import retornarPosiçõesPorValor from '@/helpers/retornarPosiçõesPorValor';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
@@ -487,12 +488,8 @@ export const useCiclosStore = defineStore({
     },
   },
   getters: {
-    índiceDeSériesEmMetaVars: ({ MetaVars }) => (Array.isArray(MetaVars?.ordem_series)
-      ? MetaVars.ordem_series.reduce((acc, cur, index) => {
-        acc[cur] = index;
-        return acc;
-      }, {})
-      : {}),
+    índiceDeSériesEmMetaVars: ({ MetaVars }) => retornarPosiçõesPorValor(MetaVars?.ordem_series),
+
     dadosExtrasPorVariávelId: ({ dadosExtrasDeVariáveis }) => (Array.isArray(dadosExtrasDeVariáveis)
       ? dadosExtrasDeVariáveis.reduce((acc, cur) => {
         if (cur.variavel?.id && !acc[cur.variavel.id]) {
