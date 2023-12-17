@@ -678,35 +678,35 @@ if (indicador_id) {
       :meta-dados-por-id="dadosExtrasDeAbas"
       class="mt2 mb2"
     >
-      <template #TabelaDeVariaveis="{ éCorrente }">
+      <template #TabelaDeVariaveis="{ estáAberta }">
         <TabelaDeVariaveis
-          v-if="!Variaveis[indicador_id]?.loading && éCorrente"
+          v-if="!Variaveis[indicador_id]?.loading && estáAberta"
           :indicador-regionalizavel="!!singleIndicadores?.regionalizavel"
           :variáveis="Variaveis[indicador_id]"
           :parentlink="parentlink"
         />
       </template>
 
-      <template #TabelaDeVariaveisCompostas="{ éCorrente }">
+      <template #TabelaDeVariaveisCompostas="{ estáAberta }">
         <TabelaDeVariaveisCompostas
-          v-if="!Variaveis[indicador_id]?.loading && éCorrente"
+          v-if="!Variaveis[indicador_id]?.loading && estáAberta"
           :indicador-regionalizavel="!!singleIndicadores?.regionalizavel"
           :variáveis-compostas="variáveisCompostas[indicador_id]"
           :parentlink="parentlink"
         />
       </template>
 
-      <template #TabelaDeVariaveisCompostasEmUso="{ éCorrente }">
+      <template #TabelaDeVariaveisCompostasEmUso="{ estáAberta }">
         <TabelaDeVariaveisCompostasEmUso
-          v-if="!Variaveis[indicador_id]?.loading && éCorrente"
+          v-if="!Variaveis[indicador_id]?.loading && estáAberta"
           :variáveis-compostas-em-uso="variáveisCompostasEmUso[indicador_id]"
           :parentlink="parentlink"
         />
       </template>
 
-      <template #TabelaDeVariaveisEmUso="{ éCorrente }">
+      <template #TabelaDeVariaveisEmUso="{ estáAberta }">
         <TabelaDeVariaveisEmUso
-          v-if="!Variaveis[indicador_id]?.loading && éCorrente"
+          v-if="!Variaveis[indicador_id]?.loading && estáAberta"
           :parentlink="parentlink"
         />
       </template>
