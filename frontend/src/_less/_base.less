@@ -1652,7 +1652,19 @@ p {
   &.no-zebra {
     tr,
     tz {
-      background: @branco;
+      background: transparent;
+    }
+  }
+
+  &.horizontal-lines {
+    border-collapse: separate;
+
+    tbody > tr,
+    tr + tr {
+      td,
+      th {
+        border-top: 1px solid @c100;
+      }
     }
   }
 
@@ -1773,7 +1785,7 @@ p {
 
 .tablepreinfo {
   padding: .75em 1em;
-  .bgc50;
+  border-bottom: 1px solid @c100;
 }
 
 .tagsmall {
