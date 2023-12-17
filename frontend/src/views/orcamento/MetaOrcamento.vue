@@ -23,6 +23,7 @@ const perm = permissions.value;
 const editModalStore = useEditModalStore();
 
 const props = defineProps(['area', 'title']);
+
 const SimpleOrcamento = props.area == 'Realizado' ? SimpleOrcamentoRealizado : props.area == 'Planejado' ? SimpleOrcamentoPlanejado : SimpleOrcamentoCusteio;
 
 const route = useRoute();

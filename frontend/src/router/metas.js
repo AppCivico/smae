@@ -142,6 +142,9 @@ export default {
       redirect: (to) => `${to.path}/custo`,
       component: MetaOrçamentoRaiz,
       props: { submenu: SubmenuMetas },
+      meta: {
+        rotaPrescindeDeChave: false,
+      },
       children: [
         {
           path: 'custo',
