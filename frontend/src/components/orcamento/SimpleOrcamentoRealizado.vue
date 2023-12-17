@@ -47,7 +47,7 @@ const { OrcamentoRealizado } = storeToRefs(OrcamentosStore);
             </th>
             <th>Empenho</th>
             <th>Liquidação</th>
-            <th>Registros</th>
+            <th>Atualizado em</th>
             <th style="width: 50px" />
           </tr>
         </thead>

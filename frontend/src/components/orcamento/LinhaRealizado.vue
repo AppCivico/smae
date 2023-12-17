@@ -1,5 +1,6 @@
 <script setup>
 import formataValor from '@/helpers/formataValor';
+import mêsDoÚltimoItem from './helpers/mêsDoÚltimoItem';
 
 defineProps(['group', 'permissao', 'parentlink']);
 
@@ -23,7 +24,7 @@ const alemDoLiquidado = (x) => Number(x.smae_soma_valor_liquidado) > Number(x.va
     <td :class="{'tvermelho': alemDoLiquidado(item)}">
       {{ formataValor(item?.soma_valor_liquidado) }}
     </td>
-    <td>{{ item?.itens.length }}</td>
+    <td>{{ !item?.itens.length ? '-' : mêsDoÚltimoItem(item.itens) || '-' }}</td>
     <td style="white-space: nowrap; text-align: right">
       <router-link
         v-if="permissao && ($route.meta?.rotaParaEdição || parentlink)"
