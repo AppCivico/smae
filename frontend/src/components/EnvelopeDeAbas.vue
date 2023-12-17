@@ -15,7 +15,7 @@ const props = defineProps({
   },
 });
 
-const abaCorrente = computed(() => route.hash.replace('#', ''));
+const abaAberta = computed(() => route.hash.replace('#', ''));
 const dadosConsolidadosPorId = computed(() => Object.keys(slots).reduce((acc, cur) => {
   acc[cur] = {
     aberta: props.metaDadosPorId?.[cur]?.aberta,
@@ -32,13 +32,12 @@ function iniciar() {
   const idDaAbaPadrão = Object.keys(slots).find((x) => dadosConsolidadosPorId.value[x]?.aberta);
   const dadosDaAbaPadrão = dadosConsolidadosPorId.value[idDaAbaPadrão];
 
-  const abaHash = dadosDaAbaPadrão?.hash
-    || dadosDaAbaPadrão?.id
-    || kebabCase(Object.keys(slots)[0]);
+  const hashDaAbaPadrão = dadosDaAbaPadrão?.hash
+    || dadosDaAbaPadrão?.id;
 
-  if (abaHash && !abaCorrente.value) {
+  if (hashDaAbaPadrão && !abaAberta.value) {
     router.replace({
-      hash: `#${abaHash}`,
+      hash: `#${hashDaAbaPadrão}`,
     });
   }
 }
@@ -57,7 +56,7 @@ iniciar();
           <router-link
             class="like-a__link t24 w700"
             :class="{
-              tc300: abaCorrente !== dadosConsolidadosPorId[nomeDaAba].hash
+              tc300: abaAberta !== dadosConsolidadosPorId[nomeDaAba].hash
             }"
             :to="{
               hash: `#${dadosConsolidadosPorId[nomeDaAba].hash}`
@@ -71,14 +70,14 @@ iniciar();
 
     <div
       v-for="(_slot, nomeDaAba, i) in slots"
-      v-show="(!abaCorrente && i === 0) || (abaCorrente === dadosConsolidadosPorId[nomeDaAba].hash)"
+      v-show="(!abaAberta && i === 0) || (abaAberta === dadosConsolidadosPorId[nomeDaAba].hash)"
       :id="dadosConsolidadosPorId[nomeDaAba].id"
       :key="nomeDaAba"
       class="abas__conteúdo"
     >
       <slot
         :name="nomeDaAba"
-        :é-corrente="abaCorrente === dadosConsolidadosPorId[nomeDaAba].hash"
+        :está-aberta="abaAberta === dadosConsolidadosPorId[nomeDaAba].hash"
       />
     </div>
   </div>
