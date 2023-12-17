@@ -68,18 +68,22 @@ iniciar();
       </ul>
     </nav>
 
-    <div
+    <Transition
       v-for="(_slot, nomeDaAba, i) in slots"
-      v-show="(!abaAberta && i === 0) || (abaAberta === dadosConsolidadosPorId[nomeDaAba].hash)"
-      :id="dadosConsolidadosPorId[nomeDaAba].id"
       :key="nomeDaAba"
-      class="abas__conteúdo"
+      name="slide"
     >
-      <slot
-        :name="nomeDaAba"
-        :está-aberta="abaAberta === dadosConsolidadosPorId[nomeDaAba].hash"
-      />
-    </div>
+      <div
+        v-show="(!abaAberta && i === 0) || (abaAberta === dadosConsolidadosPorId[nomeDaAba].hash)"
+        :id="dadosConsolidadosPorId[nomeDaAba].id"
+        class="abas__conteúdo"
+      >
+        <slot
+          :name="nomeDaAba"
+          :está-aberta="abaAberta === dadosConsolidadosPorId[nomeDaAba].hash"
+        />
+      </div>
+    </Transition>
   </div>
 </template>
 <style lang="less">
