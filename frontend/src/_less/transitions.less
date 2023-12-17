@@ -123,3 +123,24 @@
 .fade-leave-to {
   opacity: 0;
 }
+
+.slide-enter-active,
+.slide-leave-active {
+  transition: transform .4s ease-in-out;
+  transform-origin: top;
+}
+
+.slide-enter-from,
+.slide-leave-to {
+  transform: scaleY(0);
+}
+
+.slide-enter-from,
+.slide-enter-to {
+  transition-delay: 0.4s;
+}
+
+.slide-leave-from,
+.slide-leave-to {
+  transition-delay: 0s;
+}
