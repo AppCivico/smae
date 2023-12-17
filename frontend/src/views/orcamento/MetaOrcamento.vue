@@ -40,17 +40,23 @@ const parentLabel = ref(atividade_id ? '-' : iniciativa_id ? '-' : meta_id ? 'Me
 const OrcamentosStore = useOrcamentosStore();
 OrcamentosStore.clear();
 
+const orçamentosEmOrdemDecrescente = computed(() => (Array.isArray(activePdm.value.orcamento_config)
+  ? activePdm.value.orcamento_config
+    // adicionando uma chave para ser usada como Object.key
+    // porque números causam sua reordenação
+    .map((x) => ({ ...x, chave: `_${x.ano_referencia}` }))
+    .sort((a, b) => b.ano_referencia - a.ano_referencia)
+  : []));
 const anoCorrente = new Date().getUTCFullYear();
-const dadosExtrasDeAbas = computed(() => (Array.isArray(activePdm.value.orcamento_config)
-  ? activePdm.value.orcamento_config.reduce((acc, cur) => {
-    if (Number(anoCorrente) === Number(cur.ano_referencia)) {
-      acc[cur.ano_referencia] = {
-        aberta: true,
-      };
-    }
-    return acc;
-  }, {})
-  : {}));
+const dadosExtrasDeAbas = computed(() => orçamentosEmOrdemDecrescente.value.reduce((acc, cur) => {
+  acc[`_${cur.ano_referencia}`] = {
+    etiqueta: cur.ano_referencia,
+  };
+  if (Number(anoCorrente) === Number(cur.ano_referencia)) {
+    acc[`_${cur.ano_referencia}`].aberta = true;
+  }
+  return acc;
+}, {}));
 
 (async () => {
   await MetasStore.getPdM();
@@ -88,14 +94,14 @@ onUpdated(() => { start(); });
   </div>
 
   <EnvelopeDeAbas
-    v-if="Array.isArray(activePdm.orcamento_config)"
+    v-if="orçamentosEmOrdemDecrescente.length"
     class="boards"
     :meta-dados-por-id="dadosExtrasDeAbas"
   >
     <template
-      v-for="orc in activePdm.orcamento_config"
-      #[orc.ano_referencia]
-      :key="orc.ano_referencia"
+      v-for="orc in orçamentosEmOrdemDecrescente"
+      #[orc.chave]
+      :key="orc.chave"
     >
       <SimpleOrcamento
         :meta_id="meta_id"
@@ -104,6 +110,7 @@ onUpdated(() => { start(); });
       />
     </template>
   </EnvelopeDeAbas>
+
   <template v-else-if="activePdm.error">
     <div class="error p1">
       <p class="error-msg">
