@@ -22,8 +22,9 @@ import { useRoute } from 'vue-router';
 import {
   onMounted, onUpdated, ref, unref,
 } from 'vue';
-import GerarVariaveisCompostas from '@/views/metas/GerarVariaveisCompostas.vue';
 import EditorDeFormula from '@/components/metas/EditorDeFormula.vue';
+import EnvelopeDeAbas from '@/components/EnvelopeDeAbas.vue';
+import GerarVariaveisCompostas from '@/views/metas/GerarVariaveisCompostas.vue';
 import TabelaDeVariaveis from '@/components/metas/TabelaDeVariaveis.vue';
 import TabelaDeVariaveisCompostas from '@/components/metas/TabelaDeVariaveisCompostas.vue';
 import TabelaDeVariaveisCompostasEmUso from '@/components/metas/TabelaDeVariaveisCompostasEmUso.vue';
@@ -64,25 +65,21 @@ const {
 
 const { título } = route.meta;
 
-const abas = ref({
+const dadosExtrasDeAbas = {
   TabelaDeVariaveis: {
-    componente: TabelaDeVariaveis,
     etiqueta: 'Variáveis',
   },
   TabelaDeVariaveisCompostas: {
-    componente: TabelaDeVariaveisCompostas,
     etiqueta: 'Variáveis Compostas',
   },
   TabelaDeVariaveisCompostasEmUso: {
-    componente: TabelaDeVariaveisCompostasEmUso,
     etiqueta: 'Variáveis compostas em uso',
+    aberta: true,
   },
   TabelaDeVariaveisEmUso: {
-    componente: TabelaDeVariaveisEmUso,
     etiqueta: 'Variáveis em Uso',
   },
-});
-const abaCorrente = ref('TabelaDeVariaveis');
+};
 
 const formula = ref('');
 const variaveisFormula = ref([]);
@@ -677,45 +674,43 @@ if (indicador_id) {
       </div>
     </template>
 
-    <div v-if="indicador_id">
-      <ul class="flex">
-        <li
-          v-for="aba in Object.keys(abas)"
-          :key="aba"
-        >
-          <component
-            :is="Object.keys(abas).length === 1 ? 'span' : 'button'"
-            class="like-a__link t16 w700 mr2 mb2"
-            type="button"
-            :class="{
-              tc300: abaCorrente !== aba
-            }"
-            :value="aba"
-            @click="($event) => {
-              Object.keys(abas).length === 1
-                ? null
-                : abaCorrente = $event.target.value
-            }"
-          >
-            {{ abas[aba].etiqueta }}
-          </component>
-        </li>
-      </ul>
-
-      <hr class="mt2 mb2">
-
-      <div class="aba">
-        <component
-          :is="abas[abaCorrente]?.componente"
-          v-if="!Variaveis[indicador_id]?.loading"
+    <EnvelopeDeAbas
+      :meta-dados-por-id="dadosExtrasDeAbas"
+      class="mt2 mb2"
+    >
+      <template #TabelaDeVariaveis="{ éCorrente }">
+        <TabelaDeVariaveis
+          v-if="!Variaveis[indicador_id]?.loading && éCorrente"
           :indicador-regionalizavel="!!singleIndicadores?.regionalizavel"
           :variáveis="Variaveis[indicador_id]"
+          :parentlink="parentlink"
+        />
+      </template>
+
+      <template #TabelaDeVariaveisCompostas="{ éCorrente }">
+        <TabelaDeVariaveisCompostas
+          v-if="!Variaveis[indicador_id]?.loading && éCorrente"
+          :indicador-regionalizavel="!!singleIndicadores?.regionalizavel"
           :variáveis-compostas="variáveisCompostas[indicador_id]"
+          :parentlink="parentlink"
+        />
+      </template>
+
+      <template #TabelaDeVariaveisCompostasEmUso="{ éCorrente }">
+        <TabelaDeVariaveisCompostasEmUso
+          v-if="!Variaveis[indicador_id]?.loading && éCorrente"
           :variáveis-compostas-em-uso="variáveisCompostasEmUso[indicador_id]"
           :parentlink="parentlink"
         />
-      </div>
-    </div>
+      </template>
+
+      <template #TabelaDeVariaveisEmUso="{ éCorrente }">
+        <TabelaDeVariaveisEmUso
+          v-if="!Variaveis[indicador_id]?.loading && éCorrente"
+          :parentlink="parentlink"
+        />
+      </template>
+    </EnvelopeDeAbas>
 
     <template v-if="indicador_id && singleIndicadores.id && indicador_id == singleIndicadores.id">
       <hr class="mt2 mb2">
