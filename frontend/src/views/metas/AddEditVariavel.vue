@@ -55,7 +55,6 @@ VariaveisStore.clearEdit();
 
 const RegionsStore = useRegionsStore();
 const { regions, regiõesPorNívelOrdenadas, tempRegions } = storeToRefs(RegionsStore);
-if (!regions.length) RegionsStore.getAll();
 
 if (!resources.length) {
   resourcesStore.getAll();
@@ -73,73 +72,32 @@ const regioes = ref([]);
 
 const virtualParent = ref({});
 
-(async () => {
-  if (atividade_id) {
-    if (atividade_id) await AtividadesStore.getById(iniciativa_id, atividade_id);
-    lastParent.value = singleAtividade.value;
-  } else if (iniciativa_id) {
-    if (iniciativa_id) await IniciativasStore.getById(meta_id, iniciativa_id);
-    lastParent.value = singleIniciativa.value;
-  } else {
-    if (!singleMeta.value?.id || singleMeta.value.id != meta_id) await MetasStore.getById(meta_id);
-    lastParent.value = singleMeta.value;
-  }
-
-  if (indicador_id && (!singleIndicadores?.id || singleIndicadores.id != indicador_id)) await IndicadoresStore.getById(indicador_id);
-  periodicidade.value = singleIndicadores.value.periodicidade;
-
-  if (var_id) {
-    title = 'Editar variável';
-    if (!singleVariaveis.value.id) {
-      await VariaveisStore.getById(indicador_id, var_id);
-
-      responsaveisArr.value.participantes = singleVariaveis.value?.responsaveis.map((x) => x.id) ?? [];
-      orgao_id.value = singleVariaveis.value?.orgao_id;
-      periodicidade.value = singleVariaveis.value.periodicidade;
-
-      if (singleVariaveis.value?.regiao_id) {
-        if (singleVariaveis.value.regiao_id) {
-          await RegionsStore.filterRegions({ id: singleVariaveis.value.regiao_id });
-          level1.value = tempRegions.value[0]?.children[0].index ?? null;
-          level2.value = tempRegions.value[0]?.children[0]?.children[0].index ?? null;
-          level3.value = tempRegions.value[0]?.children[0]?.children[0]?.children[0].index ?? null;
-        }
-      }
-    }
-  } else if (copy_id) {
-    if (!singleVariaveis.value.id) {
-      await VariaveisStore.getById(indicador_id, copy_id);
-
-      responsaveisArr.value.participantes = singleVariaveis.value?.responsaveis.map((x) => x.id) ?? [];
-      orgao_id.value = singleVariaveis.value?.orgao_id;
-
-      if (singleVariaveis.value?.regiao_id) {
-        if (singleVariaveis.value.regiao_id) {
-          await RegionsStore.filterRegions({ id: singleVariaveis.value.regiao_id });
-
-          level1.value = tempRegions.value[0]?.children[0].index ?? null;
-          level2.value = tempRegions.value[0]?.children[0]?.children[0].index ?? null;
-          level3.value = tempRegions.value[0]?.children[0]?.children[0]?.children[0].index ?? null;
-
-          virtualParent.value.regiao_id = singleVariaveis.value.regiao_id;
-        }
-      }
-      virtualParent.value.acumulativa = singleVariaveis.value.acumulativa;
-      virtualParent.value.casas_decimais = singleVariaveis.value.casas_decimais;
-      virtualParent.value.atraso_meses = singleVariaveis.value.atraso_meses ?? 1;
-      virtualParent.value.orgao_id = singleVariaveis.value.orgao_id;
-      virtualParent.value.periodicidade = singleVariaveis.value.periodicidade;
-      periodicidade.value = singleVariaveis.value.periodicidade;
-      virtualParent.value.responsaveis = singleVariaveis.value.responsaveis;
-      virtualParent.value.unidade_medida_id = singleVariaveis.value.unidade_medida_id;
-      virtualParent.value.valor_base = singleVariaveis.value.valor_base;
-    }
-  } else {
-    virtualParent.value.atraso_meses = 1;
-  }
-})();
-
 const schema = computed(() => variável(singleIndicadores, true));
+
+const regiõesDisponíveis = computed(() => (Array.isArray(regiõesPorNívelOrdenadas.value?.[
+  singleIndicadores.value.nivel_regionalizacao
+])
+  ? regiõesPorNívelOrdenadas.value[singleIndicadores.value.nivel_regionalizacao]
+  : []));
+
+const idsDasRegiõesVálidas = computed(() => regiõesDisponíveis.value
+  .reduce((acc, cur) => {
+    if (cur.pdm_codigo_sufixo) {
+      acc.push(cur.id);
+    }
+    return acc;
+  }, []));
+
+const estãoTodasAsRegiõesSelecionadas = computed({
+  get() {
+    return regioes.value?.length === idsDasRegiõesVálidas.value.length;
+  },
+  set(novoValor) {
+    regioes.value = novoValor
+      ? idsDasRegiõesVálidas.value
+      : [];
+  },
+});
 
 async function onSubmit(values) {
   try {
@@ -250,6 +208,81 @@ function fieldToDate(d) {
   }
   return null;
 }
+
+(async () => {
+  regioes.value = [];
+
+  if (atividade_id) {
+    if (atividade_id) await AtividadesStore.getById(iniciativa_id, atividade_id);
+    lastParent.value = singleAtividade.value;
+  } else if (iniciativa_id) {
+    if (iniciativa_id) await IniciativasStore.getById(meta_id, iniciativa_id);
+    lastParent.value = singleIniciativa.value;
+  } else {
+    if (!singleMeta.value?.id || singleMeta.value.id != meta_id) await MetasStore.getById(meta_id);
+    lastParent.value = singleMeta.value;
+  }
+
+  if (indicador_id && (!singleIndicadores?.id || singleIndicadores.id != indicador_id)) await IndicadoresStore.getById(indicador_id);
+  periodicidade.value = singleIndicadores.value.periodicidade;
+
+  if (var_id) {
+    title = 'Editar variável';
+    if (!singleVariaveis.value.id) {
+      await VariaveisStore.getById(indicador_id, var_id);
+
+      responsaveisArr.value.participantes = singleVariaveis.value?.responsaveis.map((x) => x.id) ?? [];
+      orgao_id.value = singleVariaveis.value?.orgao_id;
+      periodicidade.value = singleVariaveis.value.periodicidade;
+
+      if (singleVariaveis.value?.regiao_id) {
+        if (singleVariaveis.value.regiao_id) {
+          await RegionsStore.filterRegions({ id: singleVariaveis.value.regiao_id });
+          level1.value = tempRegions.value[0]?.children[0].index ?? null;
+          level2.value = tempRegions.value[0]?.children[0]?.children[0].index ?? null;
+          level3.value = tempRegions.value[0]?.children[0]?.children[0]?.children[0].index ?? null;
+        }
+      }
+    }
+  } else if (copy_id) {
+    if (!singleVariaveis.value.id) {
+      await VariaveisStore.getById(indicador_id, copy_id);
+
+      responsaveisArr.value.participantes = singleVariaveis.value?.responsaveis.map((x) => x.id) ?? [];
+      orgao_id.value = singleVariaveis.value?.orgao_id;
+
+      if (singleVariaveis.value?.regiao_id) {
+        if (singleVariaveis.value.regiao_id) {
+          await RegionsStore.filterRegions({ id: singleVariaveis.value.regiao_id });
+
+          level1.value = tempRegions.value[0]?.children[0].index ?? null;
+          level2.value = tempRegions.value[0]?.children[0]?.children[0].index ?? null;
+          level3.value = tempRegions.value[0]?.children[0]?.children[0]?.children[0].index ?? null;
+
+          virtualParent.value.regiao_id = singleVariaveis.value.regiao_id;
+        }
+      }
+      virtualParent.value.acumulativa = singleVariaveis.value.acumulativa;
+      virtualParent.value.casas_decimais = singleVariaveis.value.casas_decimais;
+      virtualParent.value.atraso_meses = singleVariaveis.value.atraso_meses ?? 1;
+      virtualParent.value.orgao_id = singleVariaveis.value.orgao_id;
+      virtualParent.value.periodicidade = singleVariaveis.value.periodicidade;
+      periodicidade.value = singleVariaveis.value.periodicidade;
+      virtualParent.value.responsaveis = singleVariaveis.value.responsaveis;
+      virtualParent.value.unidade_medida_id = singleVariaveis.value.unidade_medida_id;
+      virtualParent.value.valor_base = singleVariaveis.value.valor_base;
+    }
+  } else {
+    virtualParent.value.atraso_meses = 1;
+  }
+
+  if (!regions.length) {
+    await RegionsStore.getAll();
+  }
+
+  estãoTodasAsRegiõesSelecionadas.value = true;
+})();
+
 </script>
 <template>
   <div class="flex spacebetween center mb2">
@@ -558,22 +591,26 @@ function fieldToDate(d) {
             Regiões abrangidas
           </legend>
           <hr class="ml2 f1">
-          <button
-            class="ml2 like-a__text"
-            type="button"
-            @click="() => regioes = []"
-          >
-            <svg
-              width="12"
-              height="12"
-            ><use xlink:href="#i_x" /></svg>
-            Limpar seleção
-          </button>
+          <label class="ml2">
+            <input
+              v-model="estãoTodasAsRegiõesSelecionadas"
+              type="checkbox"
+              name=""
+              :value="true"
+              class="inputcheckbox interruptor"
+            >
+            <span v-if="estãoTodasAsRegiõesSelecionadas">
+              Limpar seleção
+            </span>
+            <span v-else>
+              Selecionar todas
+            </span>
+          </label>
         </div>
 
         <div class="flex flexwrap g1 lista-de-opções">
           <label
-            v-for="r in regiõesPorNívelOrdenadas?.[singleIndicadores.nivel_regionalizacao]"
+            v-for="r in regiõesDisponíveis"
             :key="r.id"
             class="tc600 lista-de-opções__item"
             :title="!r.pdm_codigo_sufixo ? 'Região sem código de sufixo' : undefined"
