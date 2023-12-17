@@ -24,16 +24,7 @@ function restringirAZero() {
 
 </script>
 <template>
-  <div class="board_indicador mb2">
-    <header class="p1">
-      <div class="flex center g2">
-        <div class="flex center f1">
-          <h2 class="mt1 mb1 ml1">
-            {{ config.ano_referencia }}
-          </h2>
-        </div>
-      </div>
-    </header>
+  <div class="mb2">
     <div>
       <div class="tablepreinfo">
         <div class="flex spacebetween">
@@ -54,7 +45,7 @@ function restringirAZero() {
 
       <table
         v-if="OrcamentoCusteio[ano]?.length || previstoEhZero[ano]"
-        class="tablemain fix"
+        class="tablemain fix no-zebra horizontal-lines"
       >
         <thead>
           <tr>
