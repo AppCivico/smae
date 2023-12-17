@@ -12,16 +12,7 @@ const OrcamentosStore = useOrcamentosStore();
 const { OrcamentoPlanejado } = storeToRefs(OrcamentosStore);
 </script>
 <template>
-  <div class="board_indicador mb2">
-    <header class="p1">
-      <div class="flex center g2">
-        <div class="flex center f1">
-          <h2 class="mt1 mb1 ml1">
-            {{ config.ano_referencia }}
-          </h2>
-        </div>
-      </div>
-    </header>
+  <div class="mb2">
     <div>
       <div class="tablepreinfo">
         <div class="t12 lh1 w700 mb05">
@@ -44,7 +35,7 @@ const { OrcamentoPlanejado } = storeToRefs(OrcamentosStore);
 
       <table
         v-if="OrcamentoPlanejado[ano]?.length"
-        class="tablemain fix"
+        class="tablemain fix no-zebra horizontal-lines"
       >
         <thead>
           <tr>
