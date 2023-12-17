@@ -2,8 +2,11 @@
 import { default as SimpleOrcamentoCusteio } from '@/components/orcamento/SimpleOrcamentoCusteio.vue';
 import { default as SimpleOrcamentoPlanejado } from '@/components/orcamento/SimpleOrcamentoPlanejado.vue';
 import { default as SimpleOrcamentoRealizado } from '@/components/orcamento/SimpleOrcamentoRealizado.vue';
+import EnvelopeDeAbas from '@/components/EnvelopeDeAbas.vue';
 import { storeToRefs } from 'pinia';
-import { onMounted, onUpdated, ref } from 'vue';
+import {
+  computed, onMounted, onUpdated, ref,
+} from 'vue';
 import { useRoute } from 'vue-router';
 
 import {
@@ -36,6 +39,18 @@ const parentLabel = ref(atividade_id ? '-' : iniciativa_id ? '-' : meta_id ? 'Me
 
 const OrcamentosStore = useOrcamentosStore();
 OrcamentosStore.clear();
+
+const anoCorrente = new Date().getUTCFullYear();
+const dadosExtrasDeAbas = computed(() => (Array.isArray(activePdm.value.orcamento_config)
+  ? activePdm.value.orcamento_config.reduce((acc, cur) => {
+    if (Number(anoCorrente) === Number(cur.ano_referencia)) {
+      acc[cur.ano_referencia] = {
+        aberta: true,
+      };
+    }
+    return acc;
+  }, {})
+  : {}));
 
 (async () => {
   await MetasStore.getPdM();
@@ -72,79 +87,28 @@ onUpdated(() => { start(); });
     <hr class="ml2 f1">
   </div>
 
-  <div class="boards">
-    <template v-if="activePdm.id">
-      <template v-if="fs = activePdm.orcamento_config.filter(x => x.ano_referencia == new Date().getUTCFullYear())">
-        <h2
-          v-if="fs.length"
-          class="mb2"
-        >
-          Ano corrente
-        </h2>
-        <template
-          v-for="orc in fs"
-          :key="orc.ano_referencia"
-        >
-          <SimpleOrcamento
-            :meta_id="meta_id"
-            :config="orc"
-            :parentlink="parentlink"
-          />
-        </template>
-      </template>
-
-      <template v-if="fs = activePdm.orcamento_config.filter(x => x.ano_referencia > new Date().getUTCFullYear()).sort((a, b) => b.ano_referencia - a.ano_referencia)">
-        <h2
-          v-if="fs.length"
-          class="mb2"
-        >
-          Próximos anos
-        </h2>
-        <template
-          v-for="orc in fs"
-          :key="orc.ano_referencia"
-        >
-          <SimpleOrcamento
-            :meta_id="meta_id"
-            :config="orc"
-            :parentlink="parentlink"
-          />
-        </template>
-      </template>
-      <template v-if="fs = activePdm.orcamento_config.filter(x => x.ano_referencia < new Date().getUTCFullYear()).sort((a, b) => b.ano_referencia - a.ano_referencia)">
-        <h2
-          v-if="fs.length"
-          class="mb2"
-        >
-          Anos anteriores
-        </h2>
-        <template
-          v-for="orc in fs"
-          :key="orc.ano_referencia"
-        >
-          <SimpleOrcamento
-            :meta_id="meta_id"
-            :config="orc"
-            :parentlink="parentlink"
-          />
-        </template>
-      </template>
+  <EnvelopeDeAbas
+    v-if="Array.isArray(activePdm.orcamento_config)"
+    class="boards"
+    :meta-dados-por-id="dadosExtrasDeAbas"
+  >
+    <template
+      v-for="orc in activePdm.orcamento_config"
+      #[orc.ano_referencia]
+      :key="orc.ano_referencia"
+    >
+      <SimpleOrcamento
+        :meta_id="meta_id"
+        :config="orc"
+        :parentlink="parentlink"
+      />
     </template>
-    <template v-else-if="activePdm.loading">
-      <div class="p1">
-        <span>Carregando</span> <svg
-          class="ml1 ib"
-          width="20"
-          height="20"
-        ><use xlink:href="#i_spin" /></svg>
-      </div>
-    </template>
-    <template v-else-if="activePdm.error">
-      <div class="error p1">
-        <p class="error-msg">
-          Error: {{ activePdm.error }}
-        </p>
-      </div>
-    </template>
-  </div>
+  </EnvelopeDeAbas>
+  <template v-else-if="activePdm.error">
+    <div class="error p1">
+      <p class="error-msg">
+        Error: {{ activePdm.error }}
+      </p>
+    </div>
+  </template>
 </template>
