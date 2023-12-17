@@ -1,9 +1,7 @@
 <script setup>
 import { Alert, EditModal, SideBar } from '@/components';
 import { useAuthStore } from '@/stores/auth.store';
-import { useRoute } from 'vue-router';
 
-const route = useRoute();
 const authStore = useAuthStore();
 if (authStore.estouAutenticada) {
   authStore.getDados();
@@ -14,7 +12,7 @@ if (authStore.estouAutenticada) {
   <router-view v-if="$route.meta.rotaPrescindeDeChave ?? habilitarBeta" />
   <router-view
     v-else
-    :key="route.fullPath"
+    :key="$route.path"
   />
   <SideBar />
   <EditModal />
