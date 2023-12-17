@@ -39,6 +39,27 @@ VariaveisStore.clearEdit();
 const RegionsStore = useRegionsStore();
 const { regions, regiõesPorNívelOrdenadas } = storeToRefs(RegionsStore);
 
+const nívelDeRegionalização = ref(0);
+const regiões = ref(0);
+
+const regiõesDisponíveis = computed(() => (Array.isArray(regiõesPorNívelOrdenadas.value?.[
+  nívelDeRegionalização.value
+])
+  ? regiõesPorNívelOrdenadas.value[nívelDeRegionalização.value]
+  : []));
+
+const estãoTodasAsRegiõesSelecionadas = computed({
+  get() {
+    return regiões.value?.length === regiõesDisponíveis.value.length;
+  },
+  set(novoValor) {
+    console.debug('novoValor', novoValor);
+    regiões.value = novoValor
+      ? regiõesDisponíveis.value.map((x) => x.id)
+      : [];
+  },
+});
+
 const valoresIniciais = {
   codigo: '',
   janela: 1,
@@ -159,12 +180,13 @@ if (String(singleIndicadores.value?.id) !== String(indicadorId)) {
       </label>
       <Field
         id="nivel_regionalizacao"
+        v-model="nívelDeRegionalização"
         name="nivel_regionalizacao"
         as="select"
         class="inputtext light"
         :class="{ 'error': errors.nivel_regionalizacao }"
         :disabled="typeof singleIndicadores?.nivel_regionalizacao !== 'number'"
-        @change="() => resetField('regioes', { value: [] })"
+        @change="estãoTodasAsRegiõesSelecionadas = true"
       >
         <option
           :value="0"
@@ -192,17 +214,21 @@ if (String(singleIndicadores.value?.id) !== String(indicadorId)) {
           Regiões
         </legend>
         <hr class="ml2 f1">
-        <button
-          class="ml2 like-a__text"
-          type="button"
-          @click="() => resetField('regioes', { value: [] })"
-        >
-          <svg
-            width="12"
-            height="12"
-          ><use xlink:href="#i_x" /></svg>
-          Limpar seleção
-        </button>
+        <label class="ml2">
+          <input
+            v-model="estãoTodasAsRegiõesSelecionadas"
+            type="checkbox"
+            name=""
+            :value="true"
+            class="inputcheckbox interruptor"
+          >
+          <span v-if="estãoTodasAsRegiõesSelecionadas">
+            Limpar seleção
+          </span>
+          <span v-else>
+            Selecionar todas
+          </span>
+        </label>
       </div>
 
       <div
@@ -215,6 +241,7 @@ if (String(singleIndicadores.value?.id) !== String(indicadorId)) {
           class="tc600 lista-de-opções__item"
         >
           <Field
+            v-model="regiões"
             name="regioes"
             :value="r.id"
             type="checkbox"
