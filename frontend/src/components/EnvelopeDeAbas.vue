@@ -71,6 +71,7 @@ iniciar();
     <Transition
       v-for="(_slot, nomeDaAba, i) in slots"
       :key="nomeDaAba"
+      appear
       name="slide"
     >
       <div
