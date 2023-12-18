@@ -8,6 +8,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import {
     CreateOrcamentoRealizadoDto,
     FilterOrcamentoRealizadoDto,
+    OrcamentoRealizadoStatusConcluidoDto,
     PatchOrcamentoRealizadoConcluidoDto,
     UpdateOrcamentoRealizadoDto,
 } from './dto/create-orcamento-realizado.dto';
@@ -891,6 +892,23 @@ export class OrcamentoRealizadoService {
         return;
     }
 
+    async statusConcluido(meta_id: number, ano_referencia: number): Promise<OrcamentoRealizadoStatusConcluidoDto> {
+        const configAtual = await this.getStatusConcluido({ meta_id, ano_referencia });
+
+        if (configAtual)
+            return {
+                concluido: configAtual.execucao_concluida,
+                concluido_em: configAtual.execucao_concluida ? configAtual.atualizado_em : null,
+                concluido_por: configAtual.execucao_concluida ? configAtual.atualizador : null,
+            };
+
+        return {
+            concluido: false,
+            concluido_em: null,
+            concluido_por: null,
+        };
+    }
+
     async orcamentoConcluido(dto: PatchOrcamentoRealizadoConcluidoDto, user: PessoaFromJwt) {
         const isAdmin = user.hasSomeRoles(['CadastroMeta.orcamento', 'PDM.admin_cp']);
         if (!isAdmin) {
@@ -898,15 +916,7 @@ export class OrcamentoRealizadoService {
             await user.assertHasMetaRespNaMetaOrcamento(dto.meta_id, this.prisma.view_meta_pessoa_responsavel);
         }
 
-        const configAtual = await this.prisma.pdmOrcamentoRealizadoConfig.findUnique({
-            where: {
-                meta_id_ano_referencia_ultima_revisao: {
-                    ultima_revisao: true,
-                    ano_referencia: dto.ano_referencia,
-                    meta_id: dto.meta_id,
-                },
-            },
-        });
+        const configAtual = await this.getStatusConcluido(dto);
 
         // só CP pode mudar depois de congelado
         if (configAtual && configAtual.execucao_concluida && !isAdmin) {
@@ -920,9 +930,9 @@ export class OrcamentoRealizadoService {
                 where: {
                     ano_referencia: dto.ano_referencia,
                     meta_id: dto.meta_id,
-                    ultima_revisao: null,
+                    ultima_revisao: true,
                 },
-                data: { ultima_revisao: false },
+                data: { ultima_revisao: null },
             });
 
             await prismaTxn.pdmOrcamentoRealizadoConfig.create({
@@ -936,6 +946,23 @@ export class OrcamentoRealizadoService {
                 },
             });
             return;
+        });
+    }
+
+    private async getStatusConcluido(dto: { ano_referencia: number; meta_id: number }) {
+        return await this.prisma.pdmOrcamentoRealizadoConfig.findUnique({
+            where: {
+                meta_id_ano_referencia_ultima_revisao: {
+                    ultima_revisao: true,
+                    ano_referencia: dto.ano_referencia,
+                    meta_id: dto.meta_id,
+                },
+            },
+            include: {
+                atualizador: {
+                    select: { id: true, nome_exibicao: true },
+                },
+            },
         });
     }
 

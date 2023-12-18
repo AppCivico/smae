@@ -18,6 +18,7 @@ import {
 } from 'class-validator';
 import { PROCESSO_DESCRIPTION, PROCESSO_MESSAGE, PROCESSO_REGEXP } from '../../dotacao/dto/dotacao.dto';
 import { OrcamentoRealizado } from '../entities/orcamento-realizado.entity';
+import { IdNomeExibicao } from '../../variavel/entities/variavel.entity';
 
 export class CreateOrcamentoRealizadoItemDto {
     /**
@@ -199,8 +200,15 @@ export class FilterOrcamentoRealizadoDto {
     atividade_id?: number | null;
 }
 
+export class OrcamentoRealizadoStatusConcluidoDto {
+    concluido: boolean;
+    concluido_por: IdNomeExibicao | null;
+    concluido_em: Date | null;
+}
+
 export class ListOrcamentoRealizadoDto {
     linhas: OrcamentoRealizado[];
+    concluido: OrcamentoRealizadoStatusConcluidoDto;
 }
 
 export class PatchOrcamentoRealizadoConcluidoDto {
