@@ -3,6 +3,7 @@ import { Periodicidade, Polaridade } from '@prisma/client';
 import { Transform, Type } from 'class-transformer';
 import { IsBoolean, IsEnum, IsInt, IsOptional, IsString, Max, MaxLength, Min, ValidateIf } from 'class-validator';
 import { IsOnlyDate } from '../../common/decorators/IsDateOnly';
+import { MAX_CASAS_DECIMAIS } from '../../variavel/dto/create-variavel.dto';
 
 export class CreateIndicadorDto {
     /**
@@ -106,7 +107,7 @@ export class CreateIndicadorDto {
 
     @IsInt({ message: '$property| $property inválido' })
     @Min(0, { message: '$property| casas_decimais tem valor mínimo de zero' })
-    @Max(30, { message: '$property| casas_decimais tem valor máximo de 30' })
+    @Max(MAX_CASAS_DECIMAIS, { message: `$property| casas_decimais tem valor máximo de ${MAX_CASAS_DECIMAIS}` })
     @Transform((a: any) => (a.value === '' ? undefined : +a.value))
     @ValidateIf((object, value) => value !== null)
     casas_decimais: number | null;
