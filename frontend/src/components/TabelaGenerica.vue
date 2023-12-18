@@ -20,7 +20,7 @@ const props = defineProps({
   },
   chamadasPendentes: {
     type: Object,
-    default: () => { },
+    default: () => ({}),
   },
 });
 
