@@ -60,7 +60,10 @@ export class OrcamentoRealizadoController {
         @Query() filters: FilterOrcamentoRealizadoDto,
         @CurrentUser() user: PessoaFromJwt
     ): Promise<ListOrcamentoRealizadoDto> {
-        return { linhas: await this.orcamentoRealizadoService.findAll(filters, user) };
+        return {
+            linhas: await this.orcamentoRealizadoService.findAll(filters, user),
+            concluido: await this.orcamentoRealizadoService.statusConcluido(filters.meta_id, filters.ano_referencia)
+        };
     }
 
     @Delete('em-lote')
