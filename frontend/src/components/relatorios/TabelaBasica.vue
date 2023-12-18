@@ -17,12 +17,12 @@ const localizeDate = (d) => dateToDate(d, { timeStyle: 'short' });
 const props = defineProps({
   etiquetasParaParâmetros: {
     type: Object,
-    default: () => { },
+    default: () => ({}),
   },
 
   etiquetasParaValoresDeParâmetros: {
     type: Object,
-    default: () => { },
+    default: () => ({}),
   },
 });
 
