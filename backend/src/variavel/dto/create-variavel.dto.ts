@@ -18,6 +18,10 @@ import {
 } from 'class-validator';
 import { IsOnlyDate } from '../../common/decorators/IsDateOnly';
 
+// o js ta bugando depois de 13, ta criado com decimal até 30, pg nativamente vai até 1000 sem recompilar.
+// precisa mudar o js pra usar Decimail.js ou Math.js pra usar mais casas se precisar
+export const MAX_CASAS_DECIMAIS = 12;
+
 export class CreateVariavelDto {
     /**
      * ID do indicador (é required para criar já o relacionamento)
@@ -70,7 +74,7 @@ export class CreateVariavelDto {
 
     @IsInt({ message: '$property| $property inválido' })
     @Min(0, { message: '$property| casas_decimais tem valor mínimo de zero' })
-    @Max(30, { message: '$property| casas_decimais tem valor máximo de 30' })
+    @Max(MAX_CASAS_DECIMAIS, { message: `$property| casas_decimais tem valor máximo de ${MAX_CASAS_DECIMAIS}` })
     @Transform((a: any) => (a.value === '' ? undefined : +a.value))
     casas_decimais: number;
 
