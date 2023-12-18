@@ -1,6 +1,6 @@
 <script setup>
 import formataValor from '@/helpers/formataValor';
-import mêsDoÚltimoItem from './helpers/mêsDoÚltimoItem';
+import mêsDoÚltimoItem from './helpers/mesDoUltimoItem';
 
 defineProps(['group', 'permissao', 'parentlink']);
 
