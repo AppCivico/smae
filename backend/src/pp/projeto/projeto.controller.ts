@@ -154,7 +154,7 @@ export class ProjetoController {
         @Body() dto: UpdateProjetoDocumentDto,
         @CurrentUser() user: PessoaFromJwt
     ): Promise<RecordWithId> {
-        const projeto = await this.projetoService.findOne(params.id, user, 'ReadWrite');
+        await this.projetoService.findOne(params.id, user, 'ReadWrite');
         return await this.projetoService.updateDocumento(params.id, params.id2, dto, user);
     }
 

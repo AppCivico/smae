@@ -17,7 +17,7 @@ export class EitherPdmOrPortfolio implements ValidatorConstraintInterface {
         return ok;
     }
 
-    defaultMessage(args: ValidationArguments) {
+    defaultMessage(_args: ValidationArguments) {
         return '$property| É necessário obrigatoriamente enviar pdm_id ou portfolio_id.';
     }
 }

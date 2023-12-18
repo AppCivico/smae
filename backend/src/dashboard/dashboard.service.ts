@@ -1,12 +1,10 @@
 import { Inject, Injectable, forwardRef } from '@nestjs/common';
+import { sign } from 'jsonwebtoken';
 import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { DashboardItemDto, DashboardOptionDto, RetornoLinhasDashboardLinhasDto } from './entities/dashboard.entity';
-
-import { sign } from 'jsonwebtoken';
 import { MetaService } from '../meta/meta.service';
 import { ProjetoService } from '../pp/projeto/projeto.service';
-import { DashboardLinhasDto } from './entities/dashboard.entity';
+import { DashboardOptionDto, RetornoLinhasDashboardLinhasDto } from './entities/dashboard.entity';
 
 @Injectable()
 export class DashboardService {

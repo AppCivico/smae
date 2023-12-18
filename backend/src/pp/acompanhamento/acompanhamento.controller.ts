@@ -6,11 +6,11 @@ import { Roles } from '../../auth/decorators/roles.decorator';
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import { FindOneParams, FindTwoParams } from '../../common/decorators/find-params';
 import { RecordWithId } from '../../common/dto/record-with-id.dto';
+import { ProjetoService } from '../projeto/projeto.service';
 import { AcompanhamentoService } from './acompanhamento.service';
 import { CreateProjetoAcompanhamentoDto } from './dto/create-acompanhamento.dto';
 import { UpdateProjetoAcompanhamentoDto } from './dto/update-acompanhamento.dto';
 import { DetailProjetoAcompanhamentoDto, ListProjetoAcompanhamentoDto } from './entities/acompanhamento.entity';
-import { ProjetoService } from '../projeto/projeto.service';
 
 const roles: ListaDePrivilegios[] = [
     'Projeto.administrador',
@@ -81,7 +81,7 @@ export class AcompanhamentoController {
         @Body() dto: UpdateProjetoAcompanhamentoDto,
         @CurrentUser() user: PessoaFromJwt
     ): Promise<RecordWithId> {
-        const projeto = await this.projetoService.findOne(params.id, user, 'ReadWrite');
+        await this.projetoService.findOne(params.id, user, 'ReadWrite');
         return await this.acompanhamentoService.update(params.id, params.id2, dto, user);
     }
 
@@ -92,7 +92,7 @@ export class AcompanhamentoController {
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.ACCEPTED)
     async remove(@Param() params: FindTwoParams, @CurrentUser() user: PessoaFromJwt) {
-        const projeto = await this.projetoService.findOne(params.id, user, 'ReadWrite');
+        await this.projetoService.findOne(params.id, user, 'ReadWrite');
         await this.acompanhamentoService.remove(params.id, params.id2, user);
         return '';
     }

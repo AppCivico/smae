@@ -1,15 +1,9 @@
 import { HttpException, Injectable } from '@nestjs/common';
 import { Date2YMD } from '../../common/date2ymd';
-import { ProjetoService } from '../../pp/projeto/projeto.service';
 import { PrismaService } from '../../prisma/prisma.service';
-
 import { DefaultCsvOptions, FileOutput, ReportableService } from '../utils/utils.service';
-import { RiscoService } from 'src/pp/risco/risco.service';
-import { PlanoAcaoService } from 'src/pp/plano-de-acao/plano-de-acao.service';
-import { TarefaService } from 'src/pp/tarefa/tarefa.service';
-import { PPProjetoStatusRelatorioDto, RelProjetoStatusRelatorioDto } from './entities/projeto-status.dto';
-import { stat } from 'fs';
 import { CreateRelProjetoStatusDto } from './dto/create-projeto-status.dto';
+import { PPProjetoStatusRelatorioDto, RelProjetoStatusRelatorioDto } from './entities/projeto-status.dto';
 
 const {
     Parser,

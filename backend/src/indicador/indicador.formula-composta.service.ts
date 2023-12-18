@@ -12,12 +12,11 @@ import {
     OperacaoSuportadaOrdem,
     UpdateIndicadorFormulaCompostaDto,
 } from './dto/create-indicador.formula-composta.dto';
+import { Indicador } from './entities/indicador.entity';
 import {
-    GeneratorFormulaCompostaReturnDto,
-    IndicadorFormulaCompostaDto,
+    IndicadorFormulaCompostaDto
 } from './entities/indicador.formula-composta.entity';
 import { IndicadorService } from './indicador.service';
-import { Indicador } from './entities/indicador.entity';
 
 @Injectable()
 export class IndicadorFormulaCompostaService {

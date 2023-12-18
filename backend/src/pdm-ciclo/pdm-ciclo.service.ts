@@ -146,9 +146,9 @@ export class PdmCicloService {
             }
         }
 
-        await this.prisma.$transaction(async (prisma: Prisma.TransactionClient) => {
+        await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient) => {
             if (cicloAnterior) {
-                await this.prisma.cicloFisicoFase.updateMany({
+                await prismaTx.cicloFisicoFase.updateMany({
                     where: { ciclo_fisico_id: cicloAnterior.id, ciclo_fase: 'Fechamento' },
                     data: {
                         data_fim: Date2YMD.incDaysFromISO(dto.inicio_coleta, -1),
@@ -157,7 +157,7 @@ export class PdmCicloService {
             }
 
             if (cicloSucessor) {
-                await this.prisma.cicloFisicoFase.updateMany({
+                await prismaTx.cicloFisicoFase.updateMany({
                     where: { ciclo_fisico_id: cicloSucessor.id, ciclo_fase: 'Coleta' },
                     data: {
                         data_inicio: Date2YMD.incDaysFromISO(dto.fechamento, 1),
@@ -165,21 +165,21 @@ export class PdmCicloService {
                 });
             }
 
-            await this.prisma.cicloFisicoFase.updateMany({
+            await prismaTx.cicloFisicoFase.updateMany({
                 where: { ciclo_fisico_id: cicloEscolhido.id, ciclo_fase: 'Coleta' },
                 data: {
                     data_inicio: dto.inicio_coleta,
                     data_fim: Date2YMD.incDaysFromISO(dto.inicio_qualificacao, -1),
                 },
             });
-            await this.prisma.cicloFisicoFase.updateMany({
+            await prismaTx.cicloFisicoFase.updateMany({
                 where: { ciclo_fisico_id: cicloEscolhido.id, ciclo_fase: 'Analise' },
                 data: {
                     data_inicio: dto.inicio_qualificacao,
                     data_fim: Date2YMD.incDaysFromISO(dto.inicio_analise_risco, -1),
                 },
             });
-            await this.prisma.cicloFisicoFase.updateMany({
+            await prismaTx.cicloFisicoFase.updateMany({
                 where: { ciclo_fisico_id: cicloEscolhido.id, ciclo_fase: 'Risco' },
                 data: {
                     data_inicio: dto.inicio_analise_risco,
@@ -187,7 +187,7 @@ export class PdmCicloService {
                 },
             });
 
-            await this.prisma.cicloFisicoFase.updateMany({
+            await prismaTx.cicloFisicoFase.updateMany({
                 where: { ciclo_fisico_id: cicloEscolhido.id, ciclo_fase: 'Fechamento' },
                 data: {
                     data_inicio: dto.inicio_fechamento,

@@ -247,7 +247,7 @@ export class OrcamentoPrevistoService {
         const now = new Date(Date.now());
         await this.prisma.$transaction(async (prismaTxn: Prisma.TransactionClient) => {
             // apaga/remove todas versões anteriores não removidas
-            await this.prisma.orcamentoPrevistoZerado.updateMany({
+            await prismaTxn.orcamentoPrevistoZerado.updateMany({
                 where: {
                     projeto_id: projeto_id,
                     ano_referencia: dto.ano_referencia,
@@ -261,7 +261,7 @@ export class OrcamentoPrevistoService {
 
             // se é pra considerar zero, cria uma nova linha
             if (dto.considerar_zero) {
-                const count = await this.prisma.orcamentoPrevisto.count({
+                const count = await prismaTxn.orcamentoPrevisto.count({
                     where: {
                         projeto_id: projeto_id,
                         removido_em: null,
@@ -275,7 +275,7 @@ export class OrcamentoPrevistoService {
                         400
                     );
 
-                await this.prisma.orcamentoPrevistoZerado.create({
+                await prismaTxn.orcamentoPrevistoZerado.create({
                     data: {
                         projeto_id: projeto_id,
                         ano_referencia: dto.ano_referencia,

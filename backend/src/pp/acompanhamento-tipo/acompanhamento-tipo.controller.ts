@@ -1,15 +1,15 @@
-import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Patch, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post } from '@nestjs/common';
 import { ApiBearerAuth, ApiNoContentResponse, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
 import { ListaDePrivilegios } from 'src/common/ListaDePrivilegios';
 import { CurrentUser } from '../../auth/decorators/current-user.decorator';
 import { Roles } from '../../auth/decorators/roles.decorator';
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
-import { FindOneParams, FindTwoParams } from '../../common/decorators/find-params';
+import { FindOneParams } from '../../common/decorators/find-params';
 import { RecordWithId } from '../../common/dto/record-with-id.dto';
-import { CreateTipoAcompanhamentoDto } from './dto/create-acompanhamento-tipo.dto';
-import { ListAcompanhamentoTipoDto } from './entities/acompanhament-tipo.entities.dto';
 import { AcompanhamentoTipoService } from './acompanhamento-tipo.service';
+import { CreateTipoAcompanhamentoDto } from './dto/create-acompanhamento-tipo.dto';
 import { UpdateAcompanhamentoTipoDto } from './dto/update-acompanhamento-tipo.dto';
+import { ListAcompanhamentoTipoDto } from './entities/acompanhament-tipo.entities.dto';
 
 const roles: ListaDePrivilegios[] = [
     'Projeto.administrador',
