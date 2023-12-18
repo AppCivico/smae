@@ -24,10 +24,7 @@ export class OrcamentoPlanejadoService {
         if (!dotacao) throw new HttpException('Dotação/projeto não foi ainda não foi importada no banco de dados', 400);
 
         const { meta_id, iniciativa_id, atividade_id } = await this.validaMetaIniAtv(dto);
-        if (!user.hasSomeRoles(['CadastroMeta.orcamento', 'PDM.admin_cp'])) {
-            // logo, é um tecnico_cp
-            await user.assertHasMetaRespNaCpOrcamento(meta_id, this.prisma.view_meta_pessoa_responsavel_na_cp);
-        }
+        await user.verificaPermissaoOrcamentoNaMeta(meta_id, this.prisma);
 
         const meta = await this.prisma.meta.findFirst({
             where: { id: meta_id, removido_em: null },
@@ -113,10 +110,7 @@ export class OrcamentoPlanejadoService {
         if (!orcamentoPlanejado) throw new HttpException('Orçamento planejado não encontrado', 404);
 
         const { meta_id, iniciativa_id, atividade_id } = await this.validaMetaIniAtv(dto);
-        if (!user.hasSomeRoles(['CadastroMeta.orcamento', 'PDM.admin_cp'])) {
-            // logo, é um tecnico_cp
-            await user.assertHasMetaRespNaCpOrcamento(meta_id, this.prisma.view_meta_pessoa_responsavel_na_cp);
-        }
+        await user.verificaPermissaoOrcamentoNaMeta(meta_id, this.prisma);
 
         const meta = await this.prisma.meta.findFirstOrThrow({
             where: { id: meta_id, removido_em: null },
@@ -243,10 +237,8 @@ export class OrcamentoPlanejadoService {
 
     async findAll(filters: FilterOrcamentoPlanejadoDto, user: PessoaFromJwt): Promise<OrcamentoPlanejado[]> {
         let filterIdIn: undefined | number[] = undefined;
-        if (!user.hasSomeRoles(['CadastroMeta.orcamento', 'PDM.admin_cp'])) {
-            // logo, é um tecnico_cp
-            filterIdIn = await user.getMetasOndeSouResponsavel(this.prisma.view_meta_pessoa_responsavel_na_cp);
-        }
+        if (!user.hasSomeRoles(['CadastroMeta.administrador_orcamento']))
+            filterIdIn = await user.getMetaIdsFromAnyModel(this.prisma.view_meta_responsavel_orcamento);
 
         const meta = await this.prisma.meta.findFirst({
             where: { id: filters.meta_id, removido_em: null },
@@ -381,13 +373,7 @@ export class OrcamentoPlanejadoService {
         if (!orcamentoPlanejado || orcamentoPlanejado.meta_id === null)
             throw new HttpException('Orçamento planejado não encontrado', 404);
 
-        if (!user.hasSomeRoles(['CadastroMeta.orcamento', 'PDM.admin_cp'])) {
-            // logo, é um tecnico_cp
-            await user.assertHasMetaRespNaCpOrcamento(
-                orcamentoPlanejado.meta_id,
-                this.prisma.view_meta_pessoa_responsavel_na_cp
-            );
-        }
+        await user.verificaPermissaoOrcamentoNaMeta(orcamentoPlanejado.meta_id, this.prisma);
 
         const now = new Date(Date.now());
 

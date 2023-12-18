@@ -43,10 +43,7 @@ export class OrcamentoRealizadoService {
     async create(dto: CreateOrcamentoRealizadoDto, user: PessoaFromJwt): Promise<RecordWithId> {
         const { meta_id, iniciativa_id, atividade_id } = await this.orcamentoPlanejado.validaMetaIniAtv(dto);
 
-        if (!user.hasSomeRoles(['CadastroMeta.orcamento', 'PDM.admin_cp'])) {
-            // logo, é um tecnico_cp
-            await user.assertHasMetaRespNaCpOrcamento(meta_id, this.prisma.view_meta_pessoa_responsavel_na_cp);
-        }
+        await user.verificaPermissaoOrcamentoNaMeta(meta_id, this.prisma);
 
         const meta = await this.prisma.meta.findFirstOrThrow({
             where: { id: meta_id, removido_em: null },
@@ -160,15 +157,8 @@ export class OrcamentoRealizadoService {
         });
         if (!orcamentoRealizado || orcamentoRealizado.meta_id === null)
             throw new HttpException('Orçamento realizado não encontrado', 404);
-        console.log(dto);
 
-        if (!user.hasSomeRoles(['CadastroMeta.orcamento', 'PDM.admin_cp'])) {
-            // logo, é um tecnico_cp
-            await user.assertHasMetaRespNaCpOrcamento(
-                orcamentoRealizado.meta_id,
-                this.prisma.view_meta_pessoa_responsavel_na_cp
-            );
-        }
+        await user.verificaPermissaoOrcamentoNaMeta(orcamentoRealizado.meta_id, this.prisma);
 
         const { meta_id, iniciativa_id, atividade_id } = await this.orcamentoPlanejado.validaMetaIniAtv(dto);
 
@@ -597,10 +587,8 @@ export class OrcamentoRealizadoService {
 
     async findAll(filters: FilterOrcamentoRealizadoDto, user: PessoaFromJwt): Promise<OrcamentoRealizado[]> {
         let filterIdIn: undefined | number[] = undefined;
-        if (!user.hasSomeRoles(['CadastroMeta.orcamento', 'PDM.admin_cp'])) {
-            // logo, é um tecnico_cp
-            filterIdIn = await user.getMetasOndeSouResponsavel(this.prisma.view_meta_pessoa_responsavel_na_cp);
-        }
+        if (!user.hasSomeRoles(['CadastroMeta.administrador_orcamento']))
+            filterIdIn = await user.getMetaIdsFromAnyModel(this.prisma.view_meta_responsavel_orcamento);
 
         const meta = await this.prisma.meta.findFirst({
             where: { id: filters.meta_id, removido_em: null },
@@ -874,7 +862,10 @@ export class OrcamentoRealizadoService {
         if (params.ids.length > MAX_BATCH_SIZE)
             throw new BadRequestException(`Máximo permitido é de ${MAX_BATCH_SIZE} remoções de uma vez`);
 
-        const checkPermissions = params.ids.map((linha) => this.verificaPermissaoDelete(linha.id, user));
+        // pra executar em lote, precisa ser CP
+        const checkPermissions = params.ids.map((linha) =>
+            this.verificaPermissaoDelete(linha.id, user, 'verificaPermissaoOrcamentoNaMetaRespNaCp')
+        );
 
         await Promise.all(checkPermissions);
 
@@ -910,17 +901,14 @@ export class OrcamentoRealizadoService {
     }
 
     async orcamentoConcluido(dto: PatchOrcamentoRealizadoConcluidoDto, user: PessoaFromJwt) {
-        const isAdmin = user.hasSomeRoles(['CadastroMeta.orcamento', 'PDM.admin_cp']);
-        if (!isAdmin) {
-            // logo, é um tecnico_cp
-            await user.assertHasMetaRespNaMetaOrcamento(dto.meta_id, this.prisma.view_meta_pessoa_responsavel);
-        }
+        const isAdmin = user.hasSomeRoles(['CadastroMeta.administrador_orcamento']);
+        await user.verificaPermissaoOrcamentoNaMeta(dto.meta_id, this.prisma);
 
         const configAtual = await this.getStatusConcluido(dto);
 
         // só CP pode mudar depois de congelado
         if (configAtual && configAtual.execucao_concluida && !isAdmin) {
-            await user.assertHasMetaRespNaCpOrcamento(dto.meta_id, this.prisma.view_meta_pessoa_responsavel_na_cp);
+            await user.verificaPermissaoOrcamentoNaMetaRespNaCp(dto.meta_id, this.prisma);
         }
 
         const now = new Date(Date.now());
@@ -967,7 +955,7 @@ export class OrcamentoRealizadoService {
     }
 
     async remove(id: number, user: PessoaFromJwt) {
-        await this.verificaPermissaoDelete(id, user);
+        await this.verificaPermissaoDelete(id, user, 'verificaPermissaoOrcamentoNaMeta');
 
         const now = new Date(Date.now());
 
@@ -982,20 +970,18 @@ export class OrcamentoRealizadoService {
         );
     }
 
-    private async verificaPermissaoDelete(id: number, user: PessoaFromJwt) {
+    private async verificaPermissaoDelete(
+        id: number,
+        user: PessoaFromJwt,
+        func: 'verificaPermissaoOrcamentoNaMeta' | 'verificaPermissaoOrcamentoNaMetaRespNaCp'
+    ) {
         const orcamentoRealizado = await this.prisma.orcamentoRealizado.findFirst({
             where: { id: +id, removido_em: null },
         });
         if (!orcamentoRealizado || orcamentoRealizado.meta_id === null)
             throw new HttpException('Orçamento realizado não encontrado', 404);
 
-        if (!user.hasSomeRoles(['CadastroMeta.orcamento', 'PDM.admin_cp'])) {
-            // logo, é um tecnico_cp
-            await user.assertHasMetaRespNaCpOrcamento(
-                orcamentoRealizado.meta_id,
-                this.prisma.view_meta_pessoa_responsavel_na_cp
-            );
-        }
+        await user[func](orcamentoRealizado.meta_id, this.prisma);
     }
 
     private async performDelete(prismaTxn: Prisma.TransactionClient, id: number, now: Date, user: PessoaFromJwt) {
