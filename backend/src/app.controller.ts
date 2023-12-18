@@ -1,6 +1,8 @@
-import { Controller, Get, HttpException, Query } from '@nestjs/common';
-import { IsPublic } from './auth/decorators/is-public.decorator';
+import { Controller, Get } from '@nestjs/common';
+import { ApiBearerAuth } from '@nestjs/swagger';
 import * as percentile from 'percentile';
+import { IsPublic } from './auth/decorators/is-public.decorator';
+import { Roles } from './auth/decorators/roles.decorator';
 import { PrismaService } from './prisma/prisma.service';
 
 @Controller()
@@ -13,12 +15,10 @@ export class AppController {
         return 'pong';
     }
 
-    @IsPublic()
+    @ApiBearerAuth('access-token')
+    @Roles('SMAE.superadmin')
     @Get('/performance-check')
-    async performanceCheck(@Query() query: Record<string, string>) {
-        if (query.token !== process.env.HEALTH_CHECK_TOKEN)
-            throw new HttpException('mismatched HEALTH_CHECK_TOKEN', 401);
-
+    async performanceCheck() {
         return {
             unloaded: await this.recordPerformance(30),
             loaded: await this.recordPerformance(0),
