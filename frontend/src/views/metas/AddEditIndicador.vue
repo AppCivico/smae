@@ -67,16 +67,20 @@ const { título } = route.meta;
 
 const dadosExtrasDeAbas = {
   TabelaDeVariaveis: {
+    id: 'variaveis',
     etiqueta: 'Variáveis',
   },
   TabelaDeVariaveisCompostas: {
+    id: 'variaveis-compostas',
     etiqueta: 'Variáveis Compostas',
   },
   TabelaDeVariaveisCompostasEmUso: {
+    id: 'variaveis-compostas-em-uso',
     etiqueta: 'Variáveis compostas em uso',
     aberta: true,
   },
   TabelaDeVariaveisEmUso: {
+    id: 'variaveis-em-uso',
     etiqueta: 'Variáveis em Uso',
   },
 };
