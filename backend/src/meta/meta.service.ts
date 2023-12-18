@@ -218,7 +218,7 @@ export class MetaService {
         let filterIdIn: undefined | number[] = undefined;
         if (!user.hasSomeRoles(['CadastroMeta.inserir'])) {
             // logo, é um tecnico_cp
-            filterIdIn = await user.getMetasOndeSouResponsavel(this.prisma.view_meta_pessoa_responsavel);
+            filterIdIn = await user.getMetaIdsFromAnyModel(this.prisma.view_meta_pessoa_responsavel);
         }
 
         if (filterIdIn) {
@@ -397,7 +397,7 @@ export class MetaService {
 
     async update(id: number, updateMetaDto: UpdateMetaDto, user: PessoaFromJwt) {
         if (!user.hasSomeRoles(['CadastroMeta.inserir'])) {
-            await user.assertHasMetaRespAccess(id, this.prisma.metaResponsavel);
+            await user.assertHasMetaRespAccess(id, this.prisma);
         }
 
         const loadMeta = await this.prisma.meta.findFirstOrThrow({
@@ -568,7 +568,7 @@ export class MetaService {
     async remove(id: number, user: PessoaFromJwt) {
         if (!user.hasSomeRoles(['CadastroMeta.inserir'])) {
             // logo, só pode editar se for responsável
-            await user.assertHasMetaRespAccess(id, this.prisma.metaResponsavel);
+            await user.assertHasMetaRespAccess(id, this.prisma);
         }
 
         return await this.prisma.$transaction(

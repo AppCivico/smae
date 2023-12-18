@@ -249,7 +249,7 @@ export class VariavelService {
     ) {
         const meta_id = await this.getMetaIdDoIndicador(createVariavelDto.indicador_id!, this.prisma);
         if (!user.hasSomeRoles(['CadastroIndicador.inserir', 'PDM.admin_cp'])) {
-            const filterIdIn = await user.getMetasOndeSouResponsavel(this.prisma.view_meta_pessoa_responsavel);
+            const filterIdIn = await user.getMetaIdsFromAnyModel(this.prisma.view_meta_pessoa_responsavel);
             if (filterIdIn.includes(meta_id) === false)
                 throw new HttpException('Sem permissão para criar variável nesta meta', 400);
         }
@@ -599,7 +599,7 @@ export class VariavelService {
         const meta_id = await this.getMetaIdDoIndicador(selfIndicadorVariavel.indicador_id, this.prisma);
         // OBS: como que chega aqui sem ser pela controller? na controller pede pelo [CadastroIndicador.editar]
         if (!user.hasSomeRoles(['CadastroIndicador.editar', 'PDM.admin_cp'])) {
-            const filterIdIn = await user.getMetasOndeSouResponsavel(this.prisma.view_meta_pessoa_responsavel);
+            const filterIdIn = await user.getMetaIdsFromAnyModel(this.prisma.view_meta_pessoa_responsavel);
             if (filterIdIn.includes(meta_id) === false)
                 throw new HttpException('Sem permissão para criar variável nesta meta', 400);
         }

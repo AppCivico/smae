@@ -28,10 +28,7 @@ export class MetaOrcamentoService {
 
     async create(dto: CreateMetaOrcamentoDto, user: PessoaFromJwt): Promise<RecordWithId> {
         const { meta_id, iniciativa_id, atividade_id } = await this.orcamentoPlanejado.validaMetaIniAtv(dto);
-        if (!user.hasSomeRoles(['CadastroMeta.orcamento', 'PDM.admin_cp'])) {
-            // logo, é um tecnico_cp
-            await user.assertHasMetaRespNaCpOrcamento(meta_id, this.prisma.view_meta_pessoa_responsavel_na_cp);
-        }
+        await user.verificaPermissaoOrcamentoNaMeta(meta_id, this.prisma);
 
         const meta = await this.prisma.meta.findFirstOrThrow({
             where: { id: meta_id, removido_em: null },
@@ -100,10 +97,9 @@ export class MetaOrcamentoService {
 
     async findAll(filters: FilterMetaOrcamentoDto, user: PessoaFromJwt): Promise<MetaOrcamento[]> {
         let filterIdIn: undefined | number[] = undefined;
-        if (!user.hasSomeRoles(['CadastroMeta.orcamento', 'PDM.admin_cp'])) {
-            // logo, é um tecnico_cp
-            filterIdIn = await user.getMetasOndeSouResponsavel(this.prisma.metaResponsavel);
-        }
+
+        if (!user.hasSomeRoles(['CadastroMeta.administrador_orcamento']))
+            filterIdIn = await user.getMetaIdsFromAnyModel(this.prisma.view_meta_responsavel_orcamento);
 
         const metaOrcamentos = await this.prisma.orcamentoPrevisto.findMany({
             where: {
@@ -152,10 +148,7 @@ export class MetaOrcamentoService {
 
         const { meta_id, iniciativa_id, atividade_id } = await this.orcamentoPlanejado.validaMetaIniAtv(dto);
 
-        if (!user.hasSomeRoles(['CadastroMeta.orcamento', 'PDM.admin_cp'])) {
-            // logo, é um tecnico_cp
-            await user.assertHasMetaRespNaCpOrcamento(meta_id, this.prisma.view_meta_pessoa_responsavel_na_cp);
-        }
+        await user.verificaPermissaoOrcamentoNaMeta(meta_id, this.prisma);
 
         const meta = await this.prisma.meta.findFirst({
             where: { id: meta_id, removido_em: null },
@@ -260,13 +253,7 @@ export class MetaOrcamentoService {
         if (!metaOrcamento || metaOrcamento.meta_id == null)
             throw new HttpException('meta orçamento não encontrada', 400);
 
-        if (!user.hasSomeRoles(['CadastroMeta.orcamento', 'PDM.admin_cp'])) {
-            // logo, é um tecnico_cp
-            await user.assertHasMetaRespNaCpOrcamento(
-                metaOrcamento.meta_id,
-                this.prisma.view_meta_pessoa_responsavel_na_cp
-            );
-        }
+        await user.verificaPermissaoOrcamentoNaMeta(metaOrcamento.meta_id, this.prisma);
 
         const now = new Date(Date.now());
         await this.prisma.orcamentoPrevisto.updateMany({
