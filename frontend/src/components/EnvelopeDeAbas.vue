@@ -15,12 +15,14 @@ const props = defineProps({
   },
 });
 
-const abaAberta = computed(() => route.hash.replace('#', ''));
+const abaAberta = computed(() => route.query.aba);
 const dadosConsolidadosPorId = computed(() => Object.keys(slots).reduce((acc, cur) => {
   acc[cur] = {
     aberta: props.metaDadosPorId?.[cur]?.aberta,
     etiqueta: props.metaDadosPorId?.[cur]?.etiqueta || cur,
-    hash: props.metaDadosPorId?.[cur]?.hash || kebabCase(cur),
+    hash: props.metaDadosPorId?.[cur]?.hash
+      || props.metaDadosPorId?.[cur]?.id
+      || kebabCase(cur),
     id: props.metaDadosPorId?.[cur]?.id
       || props.metaDadosPorId?.[cur]?.hash
       || kebabCase(cur),
@@ -34,10 +36,14 @@ function iniciar() {
 
   const hashDaAbaPadrão = dadosDaAbaPadrão?.hash
     || dadosDaAbaPadrão?.id;
-
+  // PRA-FAZER: conferir se um hash correspondente
+  // a uma aba inexistente está em uso
   if (hashDaAbaPadrão && !abaAberta.value) {
     router.replace({
-      hash: `#${hashDaAbaPadrão}`,
+      query: {
+        ...route.query,
+        aba: hashDaAbaPadrão,
+      },
     });
   }
 }
@@ -59,7 +65,10 @@ iniciar();
               tc300: abaAberta !== dadosConsolidadosPorId[nomeDaAba].hash
             }"
             :to="{
-              hash: `#${dadosConsolidadosPorId[nomeDaAba].hash}`
+              query: {
+                ...$route.query,
+                aba: dadosConsolidadosPorId[nomeDaAba].hash,
+              }
             }"
           >
             {{ dadosConsolidadosPorId[nomeDaAba].etiqueta }}
