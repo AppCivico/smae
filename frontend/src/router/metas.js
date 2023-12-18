@@ -143,6 +143,8 @@ export default {
       component: MetaOrçamentoRaiz,
       props: { submenu: SubmenuMetas },
       meta: {
+        // como o componente é compartilhado, ele deveria
+        // se atualizar em mudanças de rota
         rotaPrescindeDeChave: false,
       },
       children: [
