@@ -60,7 +60,14 @@ export class VariavelFormulaCompostaService {
 
         const listaVariaveis = await this.prisma.variavel.findMany({
             where: { id: { in: variaveis }, removido_em: null },
-            select: { id: true, acumulativa: true, casas_decimais: true, periodicidade: true },
+            select: {
+                id: true,
+                acumulativa: true,
+                casas_decimais: true,
+                periodicidade: true,
+                codigo: true,
+                titulo: true,
+            },
         });
 
         const promises = variaveis.map(async (variavelId) => {

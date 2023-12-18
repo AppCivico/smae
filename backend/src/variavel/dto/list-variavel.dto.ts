@@ -24,6 +24,9 @@ export class VariavelResumo {
     periodicidade: Periodicidade;
 
     acumulativa: boolean;
+
+    codigo: string;
+    titulo: string;
 }
 
 export class ListSeriesAgrupadas {
