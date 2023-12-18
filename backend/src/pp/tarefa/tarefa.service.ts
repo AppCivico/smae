@@ -1,11 +1,18 @@
 import { HttpException, Injectable, Logger } from '@nestjs/common';
+import { Cron } from '@nestjs/schedule';
 import { Prisma, TarefaDependente, TarefaDependenteTipo } from '@prisma/client';
-import { plainToInstance, Type } from 'class-transformer';
-
+import { Type, plainToInstance } from 'class-transformer';
+import { Graph } from 'graphlib'; // ta os types de da lib "graphlib" que é por enquanto pure-js
+import { DateTime } from 'luxon';
+import { GraphvizService, GraphvizServiceFormat } from 'src/graphviz/graphviz.service';
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
+import { CalculaAtraso } from '../../common/CalculaAtraso';
+import { Date2YMD, SYSTEM_TIMEZONE } from '../../common/date2ymd';
+import { JOB_PP_TAREFA_ATRASO_LOCK } from '../../common/dto/locks';
 import { RecordWithId } from '../../common/dto/record-with-id.dto';
 import { PrismaService } from '../../prisma/prisma.service';
 import { ProjetoDetailDto } from '../projeto/entities/projeto.entity';
+import { ProjetoService } from '../projeto/projeto.service';
 import { CheckDependenciasDto, CreateTarefaDto, FilterPPTarefa, TarefaDependenciaDto } from './dto/create-tarefa.dto';
 import { UpdateTarefaDto, UpdateTarefaRealizadoDto } from './dto/update-tarefa.dto';
 import {
@@ -15,18 +22,9 @@ import {
     TarefaItemDbDto,
     TarefaItemProjetadoDto,
 } from './entities/tarefa.entity';
+import { TarefaDotTemplate } from './tarefa.dot.template';
 import { TarefaUtilsService } from './tarefa.service.utils';
 
-// ta os types de da lib "graphlib" que é por enquanto pure-js
-import { Cron } from '@nestjs/schedule';
-import { Graph } from 'graphlib';
-import { DateTime } from 'luxon';
-import { CalculaAtraso } from '../../common/CalculaAtraso';
-import { Date2YMD, SYSTEM_TIMEZONE } from '../../common/date2ymd';
-import { JOB_PP_TAREFA_ATRASO_LOCK } from '../../common/dto/locks';
-import { ProjetoService } from '../projeto/projeto.service';
-import { GraphvizService, GraphvizServiceFormat } from 'src/graphviz/graphviz.service';
-import { TarefaDotTemplate } from './tarefa.dot.template';
 // e temos um fork mais atualizado por esse projeto, @dagrejs
 const graphlib = require('@dagrejs/graphlib');
 
@@ -225,7 +223,7 @@ export class TarefaService {
     async findAll(
         projetoId: number,
         user: PessoaFromJwt | undefined,
-        filter: FilterPPTarefa
+        _filter: FilterPPTarefa
     ): Promise<ListTarefaListDto> {
         const projeto = await this.projetoService.findOne(projetoId, user, 'ReadOnly');
 

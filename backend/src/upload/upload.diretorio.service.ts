@@ -1,9 +1,7 @@
 import { HttpException, Injectable } from '@nestjs/common';
-import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
-import { RecordWithId } from '../common/dto/record-with-id.dto';
+import { Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { DiretorioDto, DiretorioItemDto, FilterDiretorioDto } from './dto/diretorio.dto';
-import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class UploadDiretorioService {

@@ -1193,7 +1193,6 @@ export class PainelService {
         let window_start: DateTime = start;
         let window_end: DateTime | null = null;
 
-        let i = 0;
         while (window_start < end) {
             if (periodicidade === Periodicidade.Semestral) {
                 window_start = window_end
@@ -1216,8 +1215,7 @@ export class PainelService {
             });
 
             window_start = window_end;
-            i++;
-        }
+         }
 
         return series_template;
     }

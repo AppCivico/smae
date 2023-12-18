@@ -1,9 +1,8 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Query } from '@nestjs/common';
 import { ApiBearerAuth, ApiNoContentResponse, ApiTags } from '@nestjs/swagger';
+import { FindOneParams } from '../common/decorators/find-params';
 import { DiretorioDto, FilterDiretorioDto, ListDiretorioDto } from './dto/diretorio.dto';
 import { UploadDiretorioService } from './upload.diretorio.service';
-import { FindOneParams } from '../common/decorators/find-params';
-import { IsPublic } from '../auth/decorators/is-public.decorator';
 
 @Controller('diretorio')
 @ApiTags('Upload')

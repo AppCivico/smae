@@ -1,13 +1,10 @@
-import { HttpException, Injectable, Logger } from '@nestjs/common';
-import { Prisma, ProjetoAcompanhamentoItem } from '@prisma/client';
+import { Injectable, Logger } from '@nestjs/common';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
-
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import { PrismaService } from '../../prisma/prisma.service';
-
-import { AcompanhamentoTipo } from './entities/acompanhament-tipo.entities.dto';
 import { CreateTipoAcompanhamentoDto } from './dto/create-acompanhamento-tipo.dto';
 import { UpdateAcompanhamentoTipoDto } from './dto/update-acompanhamento-tipo.dto';
+import { AcompanhamentoTipo } from './entities/acompanhament-tipo.entities.dto';
 
 @Injectable()
 export class AcompanhamentoTipoService {
@@ -58,7 +55,7 @@ export class AcompanhamentoTipoService {
     }
 
     async remove(id: number, user: PessoaFromJwt) {
-        const updated = await this.prisma.$transaction(async (prismaTx) => {
+        await this.prisma.$transaction(async (prismaTx) => {
             // Limpando ligação com rows de Acompanhamento
             await prismaTx.projetoAcompanhamento.updateMany({
                 where: { acompanhanmento_tipo_id: id },

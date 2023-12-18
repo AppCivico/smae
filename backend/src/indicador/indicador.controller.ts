@@ -27,8 +27,7 @@ import { ListIndicadorDto } from './dto/list-indicador.dto';
 import { ListIndicadorFormulaCompostaItemDto } from './dto/list-indicador.formula-composta.dto';
 import { UpdateIndicadorDto } from './dto/update-indicador.dto';
 import {
-    GeneratorFormulaCompostaReturnDto,
-    ListIndicadorFormulaCompostaEmUsoDto,
+    ListIndicadorFormulaCompostaEmUsoDto
 } from './entities/indicador.formula-composta.entity';
 import { IndicadorFormulaCompostaService } from './indicador.formula-composta.service';
 import { IndicadorService } from './indicador.service';

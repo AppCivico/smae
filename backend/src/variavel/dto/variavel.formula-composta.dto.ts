@@ -1,6 +1,5 @@
-import { IsString } from 'class-validator';
-import { IsOnlyDate } from '../../common/decorators/IsDateOnly';
 import { Type } from 'class-transformer';
+import { IsOnlyDate } from '../../common/decorators/IsDateOnly';
 
 export class PeriodoFormulaCompostaDto {
     periodo: string;

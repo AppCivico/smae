@@ -1,5 +1,5 @@
 import { Type } from 'class-transformer';
-import { IsIn, IsInt, IsNumber, IsOptional, IsString, Max, MaxLength, Min, ValidateIf } from 'class-validator';
+import { IsInt, IsNumber, IsOptional, IsString, Max, MaxLength, Min, ValidateIf } from 'class-validator';
 import { IsOnlyDate } from 'src/common/decorators/IsDateOnly';
 
 export class CreatePlanoAcaoDto {
