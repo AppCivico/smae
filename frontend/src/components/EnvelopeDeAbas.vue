@@ -104,6 +104,7 @@ iniciar();
     padding-right: 2rem;
     display: flex;
     align-items: center;
+    text-wrap: balance;
   }
 
   > li + li {
