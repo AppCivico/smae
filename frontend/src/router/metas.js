@@ -57,12 +57,7 @@ export default {
       props: { submenu: SubmenuMetas },
     },
 
-    {
-      path: ':meta_id/indicadores/:indicador_id/variaveis/novo',
-      component: AddEditIndicador,
-      props: { group: 'variaveis', submenu: SubmenuMetas },
-      name: 'novaVariável',
-    },
+    { path: ':meta_id/indicadores/:indicador_id/variaveis/novo', component: AddEditIndicador, props: { group: 'variaveis', submenu: SubmenuMetas } },
 
     {
       path: ':meta_id/indicadores/:indicador_id/variaveis/gerar',
@@ -87,7 +82,6 @@ export default {
       path: ':meta_id/indicadores/:indicador_id/variaveis-compostas/novo',
       component: AddEditIndicador,
       props: { group: 'criar-ou-editar-variaveis-compostas', submenu: SubmenuMetas },
-      name: 'novaVariávelComposta',
       meta: { rotaDeEscape: 'indicadorDaMeta', título: 'Nova variável composta' },
     },
     {
