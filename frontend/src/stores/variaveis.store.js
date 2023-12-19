@@ -223,7 +223,7 @@ export const useVariaveisStore = defineStore({
             });
           });
           return acc;
-        }, base)
+        }, { ...base })
         : base;
     }),
 
