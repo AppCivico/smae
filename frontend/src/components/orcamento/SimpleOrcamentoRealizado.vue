@@ -3,6 +3,7 @@ import { default as LinhaRealizado } from '@/components/orcamento/LinhaRealizado
 import formataValor from '@/helpers/formataValor';
 import { useOrcamentosStore } from '@/stores/orcamentos.store';
 import { storeToRefs } from 'pinia';
+import { computed } from 'vue';
 import agrupaFilhos from './helpers/agrupaFilhos';
 import somaItems from './helpers/somaItems';
 
@@ -10,6 +11,17 @@ const props = defineProps(['parentlink', 'config']);
 const ano = props.config.ano_referencia;
 const OrcamentosStore = useOrcamentosStore();
 const { OrcamentoRealizado } = storeToRefs(OrcamentosStore);
+
+const somasDaMeta = computed(() => (Array.isArray(OrcamentoRealizado.value[ano])
+  ? OrcamentoRealizado.value[ano].reduce((acc, cur) => {
+    if (!cur.iniciativa && !cur.atividade) {
+      acc.soma_valor_empenho += Number.parseFloat(cur.soma_valor_empenho) || 0;
+      acc.soma_valor_liquidado += Number.parseFloat(cur.soma_valor_liquidado) || 0;
+    }
+    return acc;
+  }, { soma_valor_empenho: 0, soma_valor_liquidado: 0 })
+  : { soma_valor_empenho: 0, soma_valor_liquidado: 0 }));
+
 </script>
 <template>
   <div class="mb2">
@@ -53,6 +65,23 @@ const { OrcamentoRealizado } = storeToRefs(OrcamentosStore);
         </thead>
         <template v-if="groups = agrupaFilhos(OrcamentoRealizado[ano])">
           <tbody>
+            <tr>
+              <td class="tc600 w700 pl1">
+                <strong>Totais da meta</strong>
+              </td>
+              <td class="w700">
+                {{ somasDaMeta.soma_valor_empenho
+                  ? formataValor(somasDaMeta.soma_valor_empenho)
+                  : '-' }}
+              </td>
+              <td class="w700">
+                {{ somasDaMeta.soma_valor_liquidado
+                  ? formataValor(somasDaMeta.soma_valor_liquidado)
+                  : '-' }}
+              </td>
+              <td />
+              <td />
+            </tr>
             <LinhaRealizado
               :group="groups"
               :permissao="config.execucao_disponivel"
@@ -60,7 +89,10 @@ const { OrcamentoRealizado } = storeToRefs(OrcamentosStore);
             />
           </tbody>
 
-          <template v-for="(g,k) in groups.filhos">
+          <template
+            v-for="(g, k) in groups.filhos"
+            :key="k"
+          >
             <tbody>
               <tr>
                 <td class="tc600 w700 pl1">
@@ -89,11 +121,18 @@ const { OrcamentoRealizado } = storeToRefs(OrcamentosStore);
                 :parentlink="parentlink"
               />
             </tbody>
-            <template v-for="(gg, kk) in g.filhos">
+            <template
+              v-for="(gg, kk) in g.filhos"
+              :key="kk"
+            >
               <tbody>
                 <tr>
                   <td class="tc600 w700 pl2">
                     <span class="flex center"><svg
+                      class="arrow f0 mr1"
+                      width="8"
+                      height="13"
+                    ><use xlink:href="#i_right" /></svg><svg
                       class="arrow f0 mr1"
                       width="8"
                       height="13"
