@@ -60,7 +60,10 @@ function permitirEdição(indicadorVariavel) {
     <ul class="flex justifyleft mb1">
       <li class="mr1">
         <router-link
-          :to="`${parentlink}/indicadores/${indicadorId}/variaveis-compostas/novo`"
+          :to="{
+            path: `${parentlink}/indicadores/${indicadorId}/variaveis-compostas/novo`,
+            query: $route.query,
+          }"
           class="addlink"
         >
           <span>Adicionar variável</span>
@@ -76,7 +79,7 @@ function permitirEdição(indicadorVariavel) {
         <router-link
           v-if="indicadorRegionalizavel"
           :to="{
-            name: 'geradorDeVariáveisCompostas',
+            path: `${parentlink}/indicadores/${indicadorId}/variaveis-compostas/gerar`,
             params: {
               indicador_id: indicadorId
             }
@@ -136,7 +139,10 @@ function permitirEdição(indicadorVariavel) {
           <div>Apagar</div>
         </button>
         <router-link
-          :to="`${parentlink}/indicadores/${indicadorId}/variaveis-compostas/${v.id}`"
+          :to="{
+            path: `${parentlink}/indicadores/${indicadorId}/variaveis-compostas/${v.id}`,
+            query: $route.query,
+          }"
           class="tipinfo tprimary ml1"
         >
           <svg
@@ -148,7 +154,10 @@ function permitirEdição(indicadorVariavel) {
           <div>Editar</div>
         </router-link>
         <!-- <router-link
-          :to="`${parentlink}/indicadores/${indicadorId}/variaveis/novo/${v.id}`"
+          :to="{
+            path: `${parentlink}/indicadores/${indicadorId}/variaveis/novo/${v.id}`
+            query: $route.query,
+          }"
           class="tipinfo tprimary ml1"
         >
           <svg
@@ -158,7 +167,10 @@ function permitirEdição(indicadorVariavel) {
         </router-link>
         <router-link
           v-if="permitirEdição(v.indicador_variavel)"
-          :to="`${parentlink}/indicadores/${indicadorId}/variaveis/${v.id}`"
+          :to="{
+            path: `${parentlink}/indicadores/${indicadorId}/variaveis/${v.id}`,
+            query: $route.query,
+          }"
           class="tipinfo tprimary ml1"
         >
           <svg
@@ -178,11 +190,8 @@ function permitirEdição(indicadorVariavel) {
         </button> -->
         <router-link
           :to="{
-            name: 'valoresPrevistosCompostas',
-            params: {
-              indicador_id: indicadorId,
-              var_id: v.id,
-            },
+            path: `${parentlink}/indicadores/${indicadorId}/variaveis-compostas/${v.id}/valores`,
+            query: $route.query,
           }"
           class="tipinfo tprimary ml1"
         >
@@ -193,7 +202,7 @@ function permitirEdição(indicadorVariavel) {
         </router-link>
         <router-link
           :to="{
-            name: 'valoresRealizadosCompostas',
+            path: `${parentlink}/indicadores/${indicadorId}/variaveis-compostas/${v.id}/retroativos`,
             params: {
               indicador_id: indicadorId,
               var_id: v.id,

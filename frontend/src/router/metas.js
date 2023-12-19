@@ -25,6 +25,17 @@ import {
 } from '@/views/orcamento';
 import MetaOrçamentoRaiz from '@/views/orcamento/MetaOrçamentoRaiz.vue';
 
+// ░█▀█░▀█▀░█▀▀░█▀█░█▀▀░█▀█░█▀█
+// ░█▀█░░█░░█▀▀░█░█░█░░░█▀█░█░█
+// ░▀░▀░░▀░░▀▀▀░▀░▀░▀▀▀░▀░▀░▀▀▀
+// Devido ao reuso de componentes em rotas aninhadas sem definição de recursão,
+// **cuidado** ao usar `rotasDeEscape` e rotas nomeadas! Pode ser necessário
+// definí-las inúmeras vezes, para os casos de:
+//
+// - `/meta/:meta_id`
+// - `/meta/:meta_id/iniciativas/:iniciativa_id`
+// - `/meta/:meta_id/iniciativas/:iniciativa_id/atividades/:atividade_id`
+
 export default {
   path: '/metas',
   children: [
@@ -67,7 +78,6 @@ export default {
         funçãoDaTela: 'gerar',
         rotaDeEscape: 'indicadorDaMeta',
       },
-      name: 'geradorDeVariáveis',
     },
 
     { path: ':meta_id/indicadores/:indicador_id/variaveis/novo/:copy_id', component: AddEditIndicador, props: { group: 'variaveis', submenu: SubmenuMetas } },
@@ -88,28 +98,24 @@ export default {
       path: ':meta_id/indicadores/:indicador_id/variaveis-compostas/gerar',
       component: AddEditIndicador,
       props: { group: 'gerar-compostas', submenu: SubmenuMetas },
-      name: 'geradorDeVariáveisCompostas',
       meta: { funçãoDaTela: 'gerar', rotaDeEscape: 'indicadorDaMeta', título: 'Auxiliar de variável composta' },
     },
     {
       path: ':meta_id/indicadores/:indicador_id/variaveis-compostas/:var_id',
       component: AddEditIndicador,
       props: { group: 'criar-ou-editar-variaveis-compostas', submenu: SubmenuMetas },
-      name: 'editarVariáveisCompostas',
       meta: { rotaDeEscape: 'indicadorDaMeta', título: 'Editar variável composta' },
     },
 
     {
       path: ':meta_id/indicadores/:indicador_id/variaveis-compostas/:var_id/valores',
       component: AddEditIndicador,
-      name: 'valoresPrevistosCompostas',
       props: { group: 'compostas-valores', submenu: SubmenuMetas },
       meta: { rotaDeEscape: 'indicadorDaMeta', título: 'Editar valores previstos', tipoDeValor: 'previsto' },
     },
     {
       path: ':meta_id/indicadores/:indicador_id/variaveis-compostas/:var_id/retroativos',
       component: AddEditIndicador,
-      name: 'valoresRealizadosCompostas',
       props: { group: 'compostas-retroativos', submenu: SubmenuMetas },
       meta: { rotaDeEscape: 'indicadorDaMeta', título: 'Editar valores realizados', tipoDeValor: 'realizado' },
     },
@@ -235,6 +241,11 @@ export default {
         { path: ':iniciativa_id/indicadores/:indicador_id', component: AddEditIndicador, props: { submenu: SubmenuMetas } },
         { path: ':iniciativa_id/indicadores/:indicador_id/variaveis/novo', component: AddEditIndicador, props: { group: 'variaveis', submenu: SubmenuMetas } },
         { path: ':iniciativa_id/indicadores/:indicador_id/variaveis/novo/:copy_id', component: AddEditIndicador, props: { group: 'variaveis', submenu: SubmenuMetas } },
+
+        {
+          path: ':iniciativa_id/indicadores/:indicador_id/variaveis/gerar', component: AddEditIndicador, props: { group: 'variaveis', submenu: SubmenuMetas }, meta: { funçãoDaTela: 'gerar' },
+        },
+
         { path: ':iniciativa_id/indicadores/:indicador_id/variaveis/:var_id', component: AddEditIndicador, props: { group: 'variaveis', submenu: SubmenuMetas } },
         { path: ':iniciativa_id/indicadores/:indicador_id/variaveis/:var_id/valores', component: AddEditIndicador, props: { group: 'valores', submenu: SubmenuMetas } },
         { path: ':iniciativa_id/indicadores/:indicador_id/variaveis/:var_id/retroativos', component: AddEditIndicador, props: { group: 'retroativos', submenu: SubmenuMetas } },
@@ -266,6 +277,14 @@ export default {
             { path: ':atividade_id/indicadores/novo', component: AddEditIndicador, props: { submenu: SubmenuMetas } },
             { path: ':atividade_id/indicadores/:indicador_id', component: AddEditIndicador, props: { submenu: SubmenuMetas } },
             { path: ':atividade_id/indicadores/:indicador_id/variaveis/novo', component: AddEditIndicador, props: { group: 'variaveis', submenu: SubmenuMetas } },
+
+            {
+              path: ':atividade_id/indicadores/:indicador_id/variaveis/gerar',
+              component: AddEditIndicador,
+              props: { group: 'variaveis', submenu: SubmenuMetas },
+              meta: { funçãoDaTela: 'gerar' },
+            },
+
             { path: ':atividade_id/indicadores/:indicador_id/variaveis/novo/:copy_id', component: AddEditIndicador, props: { group: 'variaveis', submenu: SubmenuMetas } },
             { path: ':atividade_id/indicadores/:indicador_id/variaveis/:var_id', component: AddEditIndicador, props: { group: 'variaveis', submenu: SubmenuMetas } },
             { path: ':atividade_id/indicadores/:indicador_id/variaveis/:var_id/valores', component: AddEditIndicador, props: { group: 'valores', submenu: SubmenuMetas } },
