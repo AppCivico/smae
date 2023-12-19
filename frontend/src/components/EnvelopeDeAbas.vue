@@ -8,6 +8,10 @@ const router = useRouter();
 const slots = useSlots();
 
 const props = defineProps({
+  nomeDaRotaRaiz: {
+    type: String,
+    default: '',
+  },
   metaDadosPorId: {
     type: Object,
     required: false,
@@ -40,6 +44,8 @@ function iniciar() {
   // a uma aba inexistente está em uso
   if (hashDaAbaPadrão && !abaAberta.value) {
     router.replace({
+      name: props.nomeDaRotaRaiz || route.name,
+      params: route.params,
       query: {
         ...route.query,
         aba: hashDaAbaPadrão,
@@ -65,6 +71,8 @@ iniciar();
               tc300: abaAberta !== dadosConsolidadosPorId[nomeDaAba].hash
             }"
             :to="{
+              name: nomeDaRotaRaiz || $route.name,
+              params: $route.params,
               query: {
                 ...$route.query,
                 aba: dadosConsolidadosPorId[nomeDaAba].hash,
