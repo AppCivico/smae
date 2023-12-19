@@ -44,7 +44,7 @@ function iniciar() {
   // a uma aba inexistente está em uso
   if (hashDaAbaPadrão && !abaAberta.value) {
     router.replace({
-      name: props.nomeDaRotaRaiz || route.name,
+      name: props.nomeDaRotaRaiz || route.meta.rotaDeEscape || route.name,
       params: route.params,
       query: {
         ...route.query,
@@ -71,7 +71,7 @@ iniciar();
               tc300: abaAberta !== dadosConsolidadosPorId[nomeDaAba].hash
             }"
             :to="{
-              name: nomeDaRotaRaiz || $route.name,
+              name: nomeDaRotaRaiz || $route.meta.rotaDeEscape || $route.name,
               params: $route.params,
               query: {
                 ...$route.query,
