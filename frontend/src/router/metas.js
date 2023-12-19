@@ -29,7 +29,7 @@ import MetaOrçamentoRaiz from '@/views/orcamento/MetaOrçamentoRaiz.vue';
 // ░█▀█░░█░░█▀▀░█░█░█░░░█▀█░█░█
 // ░▀░▀░░▀░░▀▀▀░▀░▀░▀▀▀░▀░▀░▀▀▀
 // Devido ao reuso de componentes em rotas aninhadas sem definição de recursão,
-// **cuidado** ao usar `rotasDeEscape` e rotas nomeadas! Pode ser necessário
+// **cuidado** ao usar `rotaDeEscape` e rotas nomeadas! Pode ser necessário
 // definí-las inúmeras vezes, para os casos de:
 //
 // - `/meta/:meta_id`
@@ -326,7 +326,7 @@ export default {
               path: ':atividade_id/indicadores/:indicador_id/variaveis/gerar',
               component: AddEditIndicador,
               props: { group: 'variaveis', submenu: SubmenuMetas },
-              meta: { funçãoDaTela: 'gerar' },
+              meta: { funçãoDaTela: 'gerar', rotaDeEscape: 'indicadorDaAtividade' },
             },
 
             { path: ':atividade_id/indicadores/:indicador_id/variaveis/novo/:copy_id', component: AddEditIndicador, props: { group: 'variaveis', submenu: SubmenuMetas } },
