@@ -93,7 +93,7 @@ function permitirEdição(indicadorVariavel) {
         <th style="width:20%" />
       </tr>
     </thead>
-    <tbody v-if="Array.isArray(variáveisConsolidadas)">
+    <tbody>
       <tr
         v-for="v in variáveisConsolidadas"
         :key="v.id"
