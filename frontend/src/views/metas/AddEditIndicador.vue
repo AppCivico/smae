@@ -679,6 +679,7 @@ if (indicador_id) {
     </template>
 
     <EnvelopeDeAbas
+      nome-da-rota-raiz="indicadorDaMeta"
       :meta-dados-por-id="dadosExtrasDeAbas"
       class="mt2 mb2"
     >
