@@ -72,6 +72,7 @@ const onSubmit = handleSubmit.withControlled(async () => {
           // ao que parece, os parâmetros só não são necessários
           // se a rota corrente e a de destino forem aninhadas
           params: route.params,
+          query: route.query,
         });
       }
     }

@@ -160,6 +160,7 @@ async function checkClose() {
       router.push({
         name: route.meta.rotaDeEscape,
         params: route.params,
+        query: route.query,
       });
     } else {
       router.go(-1);
