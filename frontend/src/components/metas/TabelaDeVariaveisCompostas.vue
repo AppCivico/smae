@@ -60,11 +60,7 @@ function permitirEdição(indicadorVariavel) {
     <ul class="flex justifyleft mb1">
       <li class="mr1">
         <router-link
-          :to="{
-            name: 'novaVariávelComposta',
-            params: $route.params,
-            query: $route.query,
-          }"
+          :to="`${parentlink}/indicadores/${indicadorId}/variaveis-compostas/novo`"
           class="addlink"
         >
           <span>Adicionar variável</span>
@@ -81,8 +77,9 @@ function permitirEdição(indicadorVariavel) {
           v-if="indicadorRegionalizavel"
           :to="{
             name: 'geradorDeVariáveisCompostas',
-            params: $route.params,
-            query: $route.query
+            params: {
+              indicador_id: indicadorId
+            }
           }"
           class="addlink"
         >
