@@ -16,10 +16,6 @@ const route = useRoute();
 const { indicador_id: indicadorId } = route.params;
 
 defineProps({
-  parentlink: {
-    type: String,
-    required: true,
-  },
   variáveisCompostas: {
     type: Array,
     default: () => [],
@@ -139,7 +135,14 @@ function permitirEdição(indicadorVariavel) {
           <div>Apagar</div>
         </button>
         <router-link
-          :to="`${parentlink}/indicadores/${indicadorId}/variaveis-compostas/${v.id}`"
+          :to="{
+            name: 'editarVariáveisCompostas',
+            params: {
+              ...$route.params,
+              var_id: v.id,
+            },
+            query: $route.query,
+          }"
           class="tipinfo tprimary ml1"
         >
           <svg
@@ -183,9 +186,10 @@ function permitirEdição(indicadorVariavel) {
           :to="{
             name: 'valoresPrevistosCompostas',
             params: {
-              indicador_id: indicadorId,
+              ...$route.params,
               var_id: v.id,
             },
+            query: $route.query,
           }"
           class="tipinfo tprimary ml1"
         >
@@ -198,9 +202,10 @@ function permitirEdição(indicadorVariavel) {
           :to="{
             name: 'valoresRealizadosCompostas',
             params: {
-              indicador_id: indicadorId,
+              ...$route.params,
               var_id: v.id,
             },
+            query: $route.query,
           }"
           class="tipinfo tprimary ml1"
         >

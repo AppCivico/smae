@@ -35,6 +35,8 @@ const {
 } = storeToRefs(VariaveisStore);
 
 const período = ref('');
+
+const modoDePreenchimento = ref('valor_nominal'); // ou `valor_acumulado`
 const valorPadrão = ref(0);
 
 const valoresIniciais = computed(() => {
@@ -56,6 +58,20 @@ const {
 });
 
 const formulárioSujo = useIsFormDirty();
+
+
+const acumulados = ref([]);
+
+const atualizarAPartirDoAcumulado = ((valorFornecido, índice) => {
+  const acumuladoOriginal = sériesDeCompostaParaEdição.value?.[`${route.meta.tipoDoValor}Acumulado`]?.[índice]?.valor
+    || 0;
+  const puroOriginal = sériesDeCompostaParaEdição.value?.[route.meta.tipoDoValor]?.[índice]?.valor
+    || 0;
+
+  const diferença = acumuladoOriginal - puroOriginal;
+  const novoAcumulado = Number.parseFloat(valorFornecido.replace(/\D/, '')) || 0;
+  setFieldValue(`valores[${índice}].valor`, novoAcumulado - diferença);
+});
 const onSubmit = handleSubmit.withControlled(async () => {
   try {
     const msg = 'Valores salvos!';
@@ -89,6 +105,12 @@ VariaveisStore.buscarPeríodosDeVariávelDeFórmula(varId);
 
 watch(valoresIniciais, (novoValor) => {
   resetForm(novoValor);
+}, { immediate: true });
+
+watch(() => sériesDeCompostaParaEdição.value?.[`${route.meta.tipoDoValor}Acumulado`], (novoValor) => {
+  if (Array.isArray(novoValor)) {
+    acumulados.value = novoValor;
+  }
 }, { immediate: true });
 
 watch(período, (novoValor) => {
@@ -163,6 +185,24 @@ watch(período, (novoValor) => {
             &times; limpar tudo
           </button>
         </div>
+        <hr class="mb2 f1">
+
+        <div class="flex">
+          <label class="f1">
+            <input
+              v-model="modoDePreenchimento"
+              type="radio"
+              class="inputcheckbox"
+              value="valor_nominal"
+            ><span>Preencher por valor nominal</span></label>
+          <label class="f1">
+            <input
+              v-model="modoDePreenchimento"
+              type="radio"
+              class="inputcheckbox"
+              value="valor_acumulado"
+            ><span>Preencher por valor acumulado</span></label>
+        </div>
       </auxiliarDePreenchimento>
 
       <hr class="mb2 f1">
@@ -187,7 +227,10 @@ watch(período, (novoValor) => {
               <th>Código</th>
               <th>Título</th>
               <th>
-                Realizado
+                Valor
+              </th>
+              <th>
+                Valor acumulado
               </th>
             </thead>
             <tbody
@@ -217,11 +260,25 @@ watch(período, (novoValor) => {
                     min="0"
                     class="inputtext light"
                     :class="{ 'error': errors[`valores[${idx}].valor`] }"
+                    :disabled="modoDePreenchimento !== 'valor_nominal'"
                   />
                   <ErrorMessage
                     class="error-msg mt1"
                     :name="`valores[${idx}].valor`"
                   />
+                </td>
+                <td>
+                  <input
+                    type="number"
+                    :v-model="acumulados[idx]"
+                    :step="geradorDeAtributoStep(
+                      sériesDaVariávelComposta.linhas?.[idx]?.variavel?.casas_decimais
+                    )"
+                    min="0"
+                    class="inputtext light"
+                    :disabled="modoDePreenchimento !== 'valor_acumulado'"
+                    @input="($event) => atualizarAPartirDoAcumulado($event.target.value, idx)"
+                  >
                 </td>
               </tr>
             </tbody>
