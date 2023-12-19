@@ -66,7 +66,7 @@ iniciar();
           class="pt1 pb1"
         >
           <router-link
-            class="like-a__link t24 w700"
+            class="abas__link like-a__link t24 w700"
             :class="{
               tc300: abaAberta !== dadosConsolidadosPorId[nomeDaAba].hash
             }"
@@ -112,6 +112,9 @@ iniciar();
     padding-right: 2rem;
     display: flex;
     align-items: center;
+    flex-basis: 0;
+    flex-grow: 1;
+    min-width: 0;
     text-wrap: balance;
   }
 
@@ -119,5 +122,12 @@ iniciar();
     border-left: 1px solid @c400;
     padding-left: 2rem;
   }
+}
+
+.abas__link {
+  text-overflow: ellipsis;
+  display: block;
+  min-width: 0;
+  overflow: hidden;
 }
 </style>
