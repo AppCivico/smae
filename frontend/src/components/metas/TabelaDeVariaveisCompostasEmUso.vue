@@ -11,10 +11,6 @@ const route = useRoute();
 const { indicador_id: indicadorId } = route.params;
 
 defineProps({
-  parentlink: {
-    type: String,
-    required: true,
-  },
   variáveisCompostasEmUso: {
     type: Array,
     default: () => [],
@@ -47,7 +43,6 @@ function permitirEdição(indicadorVariavel) {
 }
 </script>
 <template>
-
   <table class="tablemain mb1">
     <thead>
       <tr>
@@ -63,7 +58,10 @@ function permitirEdição(indicadorVariavel) {
         <th style="width:20%" />
       </tr>
     </thead>
-    <tr v-for="v in variáveisCompostasEmUso" :key="v.id">
+    <tr
+      v-for="v in variáveisCompostasEmUso"
+      :key="v.id"
+    >
       <td>{{ v.titulo }}</td>
       <td>
         {{ v.nivel_regionalizacao
@@ -72,16 +70,34 @@ function permitirEdição(indicadorVariavel) {
       </td>
       <td>{{ v.mostrar_monitoramento ? 'Sim' : 'Não' }}</td>
       <td style="white-space: nowrap; text-align: right;">
-        <button class="like-a__link tipinfo tprimary" :disabled="!permitirEdição(v.indicador_variavel)"
-          @click="apagarVariável(v.id)">
-          <svg width="20" height="20">
+        <button
+          class="like-a__link tipinfo tprimary"
+          :disabled="!permitirEdição(v.indicador_variavel)"
+          @click="apagarVariável(v.id)"
+        >
+          <svg
+            width="20"
+            height="20"
+          >
             <use xlink:href="#i_remove" />
           </svg>
           <div>Apagar</div>
         </button>
-        <router-link :to="`${parentlink}/indicadores/${indicadorId}/variaveis-compostas/${v.id}`"
-          class="tipinfo tprimary ml1">
-          <svg width="20" height="20">
+        <router-link
+          :to="{
+            name: 'editarVariáveisCompostas',
+            params: {
+              ...$route.params,
+              var_id: v.formula_composta_id,
+            },
+            query: $route.query,
+          }"
+          class="tipinfo tprimary ml1"
+        >
+          <svg
+            width="20"
+            height="20"
+          >
             <use xlink:href="#i_edit" />
           </svg>
           <div>Editar</div>
