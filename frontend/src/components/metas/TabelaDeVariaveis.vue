@@ -155,7 +155,14 @@ function permitirEdição(indicadorVariavel) {
           ><use xlink:href="#i_remove" /></svg><div>Apagar</div>
         </button>
         <router-link
-          :to="`${parentlink}/indicadores/${indicadorId}/variaveis/novo/${v.id}`"
+          :to="{
+            name: 'duplicarVariável',
+            params: {
+              ...$route.params,
+              var_id: v.id,
+            },
+            query: $route.query,
+          }"
           class="tipinfo tprimary ml1"
         >
           <svg
@@ -165,7 +172,14 @@ function permitirEdição(indicadorVariavel) {
         </router-link>
         <router-link
           v-if="permitirEdição(v.indicador_variavel)"
-          :to="`${parentlink}/indicadores/${indicadorId}/variaveis/${v.id}`"
+          :to="{
+            name: 'editarVariável',
+            params: {
+              ...$route.params,
+              var_id: v.id,
+            },
+            query: $route.query,
+          }"
           class="tipinfo tprimary ml1"
         >
           <svg
@@ -184,7 +198,14 @@ function permitirEdição(indicadorVariavel) {
           ><use xlink:href="#i_edit" /></svg><div>Editar</div>
         </button>
         <router-link
-          :to="`${parentlink}/indicadores/${indicadorId}/variaveis/${v.id}/valores`"
+          :to="{
+            name: 'valoresPrevistos',
+            params: {
+              ...$route.params,
+              var_id: v.id,
+            },
+            query: $route.query,
+          }"
           class="tipinfo tprimary ml1"
         >
           <svg
@@ -194,7 +215,14 @@ function permitirEdição(indicadorVariavel) {
         </router-link>
         <router-link
           v-if="permissions.CadastroPessoa?.administrador"
-          :to="`${parentlink}/indicadores/${indicadorId}/variaveis/${v.id}/retroativos`"
+          :to="{
+            name: 'valoresRealizados',
+            params: {
+              ...$route.params,
+              var_id: v.id,
+            },
+            query: $route.query,
+          }"
           class="tipinfo tprimary ml1"
         >
           <svg
