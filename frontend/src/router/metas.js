@@ -64,7 +64,9 @@ export default {
       path: ':meta_id/indicadores/:indicador_id',
       component: AddEditIndicador,
       name: 'indicadorDaMeta',
-      meta: { título: 'Editar Indicador' },
+      meta: {
+        título: 'Editar Indicador',
+      },
       props: { submenu: SubmenuMetas },
     },
 
@@ -238,17 +240,57 @@ export default {
         { path: 'editar/:iniciativa_id', component: AddEditIniciativa, props: { submenu: SubmenuMetas } },
         { path: ':iniciativa_id', component: SingleIniciativa, props: { submenu: SubmenuMetas } },
         { path: ':iniciativa_id/indicadores/novo', component: AddEditIndicador, props: { submenu: SubmenuMetas } },
-        { path: ':iniciativa_id/indicadores/:indicador_id', component: AddEditIndicador, props: { submenu: SubmenuMetas } },
+        {
+          path: ':iniciativa_id/indicadores/:indicador_id', component: AddEditIndicador, props: { submenu: SubmenuMetas }, name: 'indicadorDaIniciativa',
+        },
         { path: ':iniciativa_id/indicadores/:indicador_id/variaveis/novo', component: AddEditIndicador, props: { group: 'variaveis', submenu: SubmenuMetas } },
         { path: ':iniciativa_id/indicadores/:indicador_id/variaveis/novo/:copy_id', component: AddEditIndicador, props: { group: 'variaveis', submenu: SubmenuMetas } },
 
         {
-          path: ':iniciativa_id/indicadores/:indicador_id/variaveis/gerar', component: AddEditIndicador, props: { group: 'variaveis', submenu: SubmenuMetas }, meta: { funçãoDaTela: 'gerar' },
+          path: ':iniciativa_id/indicadores/:indicador_id/variaveis/gerar', component: AddEditIndicador, props: { group: 'variaveis', submenu: SubmenuMetas }, meta: { funçãoDaTela: 'gerar', rotaDeEscape: 'indicadorDaIniciativa' },
         },
 
         { path: ':iniciativa_id/indicadores/:indicador_id/variaveis/:var_id', component: AddEditIndicador, props: { group: 'variaveis', submenu: SubmenuMetas } },
         { path: ':iniciativa_id/indicadores/:indicador_id/variaveis/:var_id/valores', component: AddEditIndicador, props: { group: 'valores', submenu: SubmenuMetas } },
         { path: ':iniciativa_id/indicadores/:indicador_id/variaveis/:var_id/retroativos', component: AddEditIndicador, props: { group: 'retroativos', submenu: SubmenuMetas } },
+
+        // /////////////////////////////////////////////////////////////////////////
+        // Variáveis compostas
+        // /////////////////////////////////////////////////////////////////////////
+        {
+          path: ':iniciativa_id/indicadores/:indicador_id/variaveis-compostas/novo',
+          component: AddEditIndicador,
+          props: { group: 'criar-ou-editar-variaveis-compostas', submenu: SubmenuMetas },
+          meta: { rotaDeEscape: 'indicadorDaIniciativa', título: 'Nova variável composta' },
+        },
+        {
+          path: ':iniciativa_id/indicadores/:indicador_id/variaveis-compostas/gerar',
+          component: AddEditIndicador,
+          props: { group: 'gerar-compostas', submenu: SubmenuMetas },
+          meta: { funçãoDaTela: 'gerar', rotaDeEscape: 'indicadorDaIniciativa', título: 'Auxiliar de variável composta' },
+        },
+        {
+          path: ':iniciativa_id/indicadores/:indicador_id/variaveis-compostas/:var_id',
+          component: AddEditIndicador,
+          props: { group: 'criar-ou-editar-variaveis-compostas', submenu: SubmenuMetas },
+          meta: { rotaDeEscape: 'indicadorDaIniciativa', título: 'Editar variável composta' },
+        },
+
+        {
+          path: ':iniciativa_id/indicadores/:indicador_id/variaveis-compostas/:var_id/valores',
+          component: AddEditIndicador,
+          props: { group: 'compostas-valores', submenu: SubmenuMetas },
+          meta: { rotaDeEscape: 'indicadorDaIniciativa', título: 'Editar valores previstos', tipoDeValor: 'previsto' },
+        },
+        {
+          path: ':iniciativa_id/indicadores/:indicador_id/variaveis-compostas/:var_id/retroativos',
+          component: AddEditIndicador,
+          props: { group: 'compostas-retroativos', submenu: SubmenuMetas },
+          meta: { rotaDeEscape: 'indicadorDaIniciativa', título: 'Editar valores realizados', tipoDeValor: 'realizado' },
+        },
+
+        // /////////////////////////////////////////////////////////////////////////
+
         { path: ':iniciativa_id/evolucao', component: SingleEvolucao, props: { submenu: SubmenuMetas } },
         { path: ':iniciativa_id/evolucao/:indicador_id', component: SingleEvolucao, props: { submenu: SubmenuMetas } },
         { path: ':iniciativa_id/evolucao/:indicador_id/variaveis/novo', component: SingleEvolucao, props: { group: 'variaveis', submenu: SubmenuMetas } },
@@ -275,7 +317,9 @@ export default {
             { path: 'editar/:atividade_id', component: AddEditAtividade, props: { submenu: SubmenuMetas } },
             { path: ':atividade_id', component: SingleAtividade, props: { submenu: SubmenuMetas } },
             { path: ':atividade_id/indicadores/novo', component: AddEditIndicador, props: { submenu: SubmenuMetas } },
-            { path: ':atividade_id/indicadores/:indicador_id', component: AddEditIndicador, props: { submenu: SubmenuMetas } },
+            {
+              path: ':atividade_id/indicadores/:indicador_id', component: AddEditIndicador, props: { submenu: SubmenuMetas }, name: 'indicadorDaAtividade',
+            },
             { path: ':atividade_id/indicadores/:indicador_id/variaveis/novo', component: AddEditIndicador, props: { group: 'variaveis', submenu: SubmenuMetas } },
 
             {
@@ -289,6 +333,45 @@ export default {
             { path: ':atividade_id/indicadores/:indicador_id/variaveis/:var_id', component: AddEditIndicador, props: { group: 'variaveis', submenu: SubmenuMetas } },
             { path: ':atividade_id/indicadores/:indicador_id/variaveis/:var_id/valores', component: AddEditIndicador, props: { group: 'valores', submenu: SubmenuMetas } },
             { path: ':atividade_id/indicadores/:indicador_id/variaveis/:var_id/retroativos', component: AddEditIndicador, props: { group: 'retroativos', submenu: SubmenuMetas } },
+
+            // /////////////////////////////////////////////////////////////////////////
+            // Variáveis compostas
+            // /////////////////////////////////////////////////////////////////////////
+            // PRA-FAZER: organizar essas rotas para remover esse código duplicado
+            {
+              path: ':atividade_id/indicadores/:indicador_id/variaveis-compostas/novo',
+              component: AddEditIndicador,
+              props: { group: 'criar-ou-editar-variaveis-compostas', submenu: SubmenuMetas },
+              meta: { rotaDeEscape: 'indicadorDaAtividade', título: 'Nova variável composta' },
+            },
+            {
+              path: ':atividade_id/indicadores/:indicador_id/variaveis-compostas/gerar',
+              component: AddEditIndicador,
+              props: { group: 'gerar-compostas', submenu: SubmenuMetas },
+              meta: { funçãoDaTela: 'gerar', rotaDeEscape: 'indicadorDaAtividade', título: 'Auxiliar de variável composta' },
+            },
+            {
+              path: ':atividade_id/indicadores/:indicador_id/variaveis-compostas/:var_id',
+              component: AddEditIndicador,
+              props: { group: 'criar-ou-editar-variaveis-compostas', submenu: SubmenuMetas },
+              meta: { rotaDeEscape: 'indicadorDaAtividade', título: 'Editar variável composta' },
+            },
+
+            {
+              path: ':atividade_id/indicadores/:indicador_id/variaveis-compostas/:var_id/valores',
+              component: AddEditIndicador,
+              props: { group: 'compostas-valores', submenu: SubmenuMetas },
+              meta: { rotaDeEscape: 'indicadorDaAtividade', título: 'Editar valores previstos', tipoDeValor: 'previsto' },
+            },
+            {
+              path: ':atividade_id/indicadores/:indicador_id/variaveis-compostas/:var_id/retroativos',
+              component: AddEditIndicador,
+              props: { group: 'compostas-retroativos', submenu: SubmenuMetas },
+              meta: { rotaDeEscape: 'indicadorDaAtividade', título: 'Editar valores realizados', tipoDeValor: 'realizado' },
+            },
+
+            // /////////////////////////////////////////////////////////////////////////
+
             { path: ':atividade_id/evolucao', component: SingleEvolucao, props: { submenu: SubmenuMetas } },
             { path: ':atividade_id/evolucao/:indicador_id', component: SingleEvolucao, props: { submenu: SubmenuMetas } },
             { path: ':atividade_id/evolucao/:indicador_id/variaveis/novo', component: SingleEvolucao, props: { group: 'variaveis', submenu: SubmenuMetas } },
