@@ -47,7 +47,6 @@ function permitirEdição(indicadorVariavel) {
 }
 </script>
 <template>
-
   <table class="tablemain mb1">
     <thead>
       <tr>
@@ -63,7 +62,10 @@ function permitirEdição(indicadorVariavel) {
         <th style="width:20%" />
       </tr>
     </thead>
-    <tr v-for="v in variáveisCompostasEmUso" :key="v.id">
+    <tr
+      v-for="v in variáveisCompostasEmUso"
+      :key="v.id"
+    >
       <td>{{ v.titulo }}</td>
       <td>
         {{ v.nivel_regionalizacao
@@ -72,22 +74,39 @@ function permitirEdição(indicadorVariavel) {
       </td>
       <td>{{ v.mostrar_monitoramento ? 'Sim' : 'Não' }}</td>
       <td style="white-space: nowrap; text-align: right;">
-        <button class="like-a__link tipinfo tprimary" :disabled="!permitirEdição(v.indicador_variavel)"
-          @click="apagarVariável(v.id)">
-          <svg width="20" height="20">
+        <button
+          class="like-a__link tipinfo tprimary"
+          :disabled="!permitirEdição(v.indicador_variavel)"
+          @click="apagarVariável(v.id)"
+        >
+          <svg
+            width="20"
+            height="20"
+          >
             <use xlink:href="#i_remove" />
           </svg>
           <div>Apagar</div>
         </button>
-        <router-link :to="`${parentlink}/indicadores/${indicadorId}/variaveis-compostas/${v.id}`"
-          class="tipinfo tprimary ml1">
-          <svg width="20" height="20">
+        <router-link
+          :to="{
+            path: `${parentlink}/indicadores/${indicadorId}/variaveis-compostas/${v.id}`,
+            query: $route.query,
+          }"
+          class="tipinfo tprimary ml1"
+        >
+          <svg
+            width="20"
+            height="20"
+          >
             <use xlink:href="#i_edit" />
           </svg>
           <div>Editar</div>
         </router-link>
         <!-- <router-link
-          :to="`${parentlink}/indicadores/${indicadorId}/variaveis/novo/${v.id}`"
+          :to="{
+            path: `${parentlink}/indicadores/${indicadorId}/variaveis/novo/${v.id}`,
+            query: $route.query,
+          }"
           class="tipinfo tprimary ml1"
         >
           <svg
@@ -97,7 +116,10 @@ function permitirEdição(indicadorVariavel) {
         </router-link>
         <router-link
           v-if="permitirEdição(v.indicador_variavel)"
-          :to="`${parentlink}/indicadores/${indicadorId}/variaveis/${v.id}`"
+          :to="{
+            path: `${parentlink}/indicadores/${indicadorId}/variaveis/${v.id}`,
+            query: $route.query,
+          }"
           class="tipinfo tprimary ml1"
         >
           <svg
@@ -116,7 +138,10 @@ function permitirEdição(indicadorVariavel) {
           ><use xlink:href="#i_edit" /></svg><div>Editar</div>
         </button>
         <router-link
-          :to="`${parentlink}/indicadores/${indicadorId}/variaveis/${v.id}/valores`"
+          :to="{
+            path: `${parentlink}/indicadores/${indicadorId}/variaveis/${v.id}/valores`,
+            query: $route.query,
+          }"
           class="tipinfo tprimary ml1"
         >
           <svg
@@ -126,7 +151,10 @@ function permitirEdição(indicadorVariavel) {
         </router-link>
         <router-link
           v-if="permissions.CadastroPessoa?.administrador"
-          :to="`${parentlink}/indicadores/${indicadorId}/variaveis/${v.id}/retroativos`"
+          :to="{
+            path: `${parentlink}/indicadores/${indicadorId}/variaveis/${v.id}/retroativos`,
+            query: $route.query,
+          }"
           class="tipinfo tprimary ml1"
         >
           <svg
