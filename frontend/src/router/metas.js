@@ -75,10 +75,30 @@ export default {
       name: 'geradorDeVariáveis',
     },
 
-    { path: ':meta_id/indicadores/:indicador_id/variaveis/novo/:copy_id', component: AddEditIndicador, props: { group: 'variaveis', submenu: SubmenuMetas } },
-    { path: ':meta_id/indicadores/:indicador_id/variaveis/:var_id', component: AddEditIndicador, props: { group: 'variaveis', submenu: SubmenuMetas } },
-    { path: ':meta_id/indicadores/:indicador_id/variaveis/:var_id/valores', component: AddEditIndicador, props: { group: 'valores', submenu: SubmenuMetas } },
-    { path: ':meta_id/indicadores/:indicador_id/variaveis/:var_id/retroativos', component: AddEditIndicador, props: { group: 'retroativos', submenu: SubmenuMetas } },
+    {
+      path: ':meta_id/indicadores/:indicador_id/variaveis/novo/:copy_id',
+      component: AddEditIndicador,
+      props: { group: 'variaveis', submenu: SubmenuMetas },
+      name: 'duplicarVariável',
+    },
+    {
+      path: ':meta_id/indicadores/:indicador_id/variaveis/:var_id',
+      component: AddEditIndicador,
+      props: { group: 'variaveis', submenu: SubmenuMetas },
+      name: 'editarVariável',
+    },
+    {
+      path: ':meta_id/indicadores/:indicador_id/variaveis/:var_id/valores',
+      component: AddEditIndicador,
+      props: { group: 'valores', submenu: SubmenuMetas },
+      name: 'valoresPrevistos',
+    },
+    {
+      path: ':meta_id/indicadores/:indicador_id/variaveis/:var_id/retroativos',
+      component: AddEditIndicador,
+      props: { group: 'retroativos', submenu: SubmenuMetas },
+      name: 'valoresRealizados',
+    },
 
     // /////////////////////////////////////////////////////////////////////////
     // Variáveis compostas
