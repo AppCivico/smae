@@ -198,7 +198,7 @@ function formatFormula(p) {
     return r;
   });
 
-  Object.entries(variaveisFormula).forEach((k) => {
+  Object.keys(variaveisFormula).forEach((k) => {
     if (inuse.indexOf(k) === -1) delete variaveisFormula[k];
   });
 
@@ -322,7 +322,10 @@ async function saveVar(tipoDeVariável) {
 
     default:
       nova = !variaveisFormula[variávelId];
-      variaveisFormula[variávelId] = fieldsVariaveis.value;
+
+      if (nova) {
+        variaveisFormula[variávelId] = fieldsVariaveis.value;
+      }
       break;
   }
   variaveisFormulaModal.value = 0;
@@ -571,7 +574,7 @@ watch(() => props.variáveisCompostas, async () => {
           Selecionar
         </option>
         <!--
-        para manter o objeto de modo semalhante ao das variáveis comuns,
+        para manter o objeto de modo semelhante ao das variáveis comuns,
         vamos combinar o ID com o caracterDefinidor
         -->
         <option
