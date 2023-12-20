@@ -43,7 +43,8 @@ export class DotacaoService {
 
     async orcadoProjeto(dto: AnoParteDotacaoDto): Promise<OrcadoProjetoDto> {
         try {
-            const mesMaisAtual = this.sof.mesMaisRecenteDoAno(dto.ano);
+            // custeio é planejamento, de certa forma
+            const mesMaisAtual = this.sof.mesMaisRecenteDoAno(dto.ano, 'planejado');
             const r = await this.sof.orcadoProjeto({
                 ano: dto.ano,
                 mes: mesMaisAtual,
@@ -311,7 +312,7 @@ export class DotacaoService {
             },
         });
 
-        const mesMaisAtual = this.sof.mesMaisRecenteDoAno(dto.ano);
+        const mesMaisAtual = this.sof.mesMaisRecenteDoAno(dto.ano, 'planejado');
 
         if (dotacaoExistente && dotacaoExistente.informacao_valida && dotacaoExistente.mes_utilizado == mesMaisAtual) {
             return {
@@ -391,7 +392,7 @@ export class DotacaoService {
             },
         });
 
-        const mesMaisAtual = this.sof.mesMaisRecenteDoAno(dto.ano);
+        const mesMaisAtual = this.sof.mesMaisRecenteDoAno(dto.ano, 'realizado');
 
         if (
             dotacaoRealizadoExistente &&

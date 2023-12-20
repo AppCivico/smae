@@ -66,9 +66,9 @@ export class DotacaoCrontabService {
     async atualizaDotacoes(ano_corrente: number) {
         // como não tem usar o date-trunc no sincronizado_em, vou usar 20h no lugar de 24h
         const ontem = DateTime.now().minus({ hour: 20 }).toJSDate();
-        const mesMaisAtual = this.sof.mesMaisRecenteDoAno(ano_corrente);
 
         {
+            const mesMaisAtual = this.sof.mesMaisRecenteDoAno(ano_corrente, 'realizado');
             // realizado
             const dotacaoRealizadoAtualizar = await this.prisma.dotacaoRealizado.findMany({
                 where: {
@@ -163,6 +163,7 @@ export class DotacaoCrontabService {
         }
 
         {
+            const mesMaisAtual = this.sof.mesMaisRecenteDoAno(ano_corrente, 'planejado');
             // planejado
             const dotacaoPlanejadoAtualizar = await this.prisma.dotacaoPlanejado.findMany({
                 where: {

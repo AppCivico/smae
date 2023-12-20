@@ -121,14 +121,19 @@ export class SofApiService {
     /**
      * recebe um ano, retorna o mês mais recente, desde q não esteja no futuro
      **/
-    mesMaisRecenteDoAno(ano: number): number {
+    mesMaisRecenteDoAno(ano: number, tipo: 'planejado' | 'realizado'): number {
         const nowSp = DateTime.local({ zone: SYSTEM_TIMEZONE });
 
         const anoCorrente = nowSp.year;
         if (anoCorrente == +ano) return nowSp.month;
 
-        if (+ano > anoCorrente)
+        if (+ano > anoCorrente) {
+            // se está planejando, volta o mes de janeiro do ano futuro
+            if (tipo == 'planejado') return 1;
+
+            // realizado continua dando erro
             throw new HttpException('Não é possível buscar por realizado ou planejado no futuro', 400);
+        }
 
         return 12; // mes mais recente do ano pesquisado
     }
