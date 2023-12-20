@@ -3,9 +3,12 @@ import CheckClose from '@/components/CheckClose.vue';
 import ItensRealizado from '@/components/orcamento/ItensRealizado.vue';
 import { execuçãoOrçamentária as schema } from '@/consts/formSchemas';
 import retornarQuaisOsRecentesDosItens from '@/helpers/retornarQuaisOsMaisRecentesDosItensDeOrcamento';
-import {
-  useAlertStore, useAtividadesStore, useIniciativasStore, useMetasStore, useOrcamentosStore,
-} from '@/stores';
+import { useAlertStore } from '@/stores/alert.store';
+import { useAtividadesStore } from '@/stores/atividades.store';
+import { useIniciativasStore } from '@/stores/iniciativas.store';
+import { useMetasStore } from '@/stores/metas.store';
+import { useOrcamentosStore } from '@/stores/orcamentos.store';
+
 import { useDotaçãoStore } from '@/stores/dotacao.store.ts';
 import { storeToRefs } from 'pinia';
 import { Field, Form } from 'vee-validate';
