@@ -2339,6 +2339,7 @@ model OrcamentoPlanejado {
     @@index([ano_referencia, meta_id])
     @@index([ano_referencia, iniciativa_id])
     @@index([ano_referencia, atividade_id])
+    @@index([ano_referencia, dotacao])
     @@map("orcamento_planejado")
 }
 
@@ -2424,6 +2425,7 @@ model OrcamentoRealizado {
     @@index([projeto_id])
     @@index([ano_referencia, projeto_id])
     @@index([ano_referencia, meta_id])
+    @@index([ano_referencia, dotacao])
     @@map("orcamento_realizado")
 }
 
