@@ -156,9 +156,15 @@ async function onSubmit(values) {
     if (r == true) {
       alertStore.success(msg);
       if (route.meta?.rotaDeEscape) {
-        router.push({ name: route.meta.rotaDeEscape });
+        router.push({
+          name: route.meta.rotaDeEscape,
+          query: route.query,
+        });
       } else {
-        await router.push(`${parentlink}/orcamento/realizado`);
+        await router.push({
+          path: `${parentlink}/orcamento/realizado`,
+          query: route.query,
+        });
       }
     }
   } catch (error) {
@@ -170,9 +176,15 @@ async function checkDelete(id) {
   alertStore.confirmAction('Deseja mesmo remover esse item?', async () => {
     if (await OrcamentosStore.deleteOrcamentoRealizado(id, route.params.projetoId)) {
       if (parentlink) {
-        router.push(`${parentlink}/orcamento/realizado`);
+        router.push({
+          path: `${parentlink}/orcamento/realizado`,
+          query: route.query,
+        });
       } else if (route.meta?.rotaDeEscape) {
-        router.push({ name: route.meta.rotaDeEscape });
+        router.push({
+          name: route.meta.rotaDeEscape,
+          query: route.query,
+        });
       }
     }
   }, 'Remover');
