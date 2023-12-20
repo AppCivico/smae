@@ -29,8 +29,15 @@ const alemDoLiquidado = (x) => Number(x.smae_soma_valor_liquidado) > Number(x.va
       <router-link
         v-if="permissao && ($route.meta?.rotaParaEdição || parentlink)"
         :to="$route.meta?.rotaParaEdição
-          ? { name: $route.meta.rotaParaEdição, params: { ano: item.ano_referencia, id: item.id } }
-          : `${parentlink}/orcamento/realizado/${item.ano_referencia}/${item.id}`"
+          ? {
+            name: $route.meta.rotaParaEdição,
+            params: { ano: item.ano_referencia, id: item.id },
+            query: $route.query
+          }
+          : {
+            path: `${parentlink}/orcamento/realizado/${item.ano_referencia}/${item.id}`,
+            query: $route.query,
+          }"
         class="tprimary"
       >
         <svg
