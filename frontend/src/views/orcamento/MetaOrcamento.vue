@@ -9,12 +9,11 @@ import {
 } from 'vue';
 import { useRoute } from 'vue-router';
 
-import {
-  useAlertStore,
-  useAuthStore,
-  useEditModalStore,
-  useMetasStore, useOrcamentosStore,
-} from '@/stores';
+import { useAlertStore } from '@/stores/alert.store';
+import { useAuthStore } from '@/stores/auth.store';
+import { useEditModalStore } from '@/stores/editModal.store';
+import { useMetasStore } from '@/stores/metas.store';
+import { useOrcamentosStore } from '@/stores/orcamentos.store';
 
 const alertStore = useAlertStore();
 const authStore = useAuthStore();

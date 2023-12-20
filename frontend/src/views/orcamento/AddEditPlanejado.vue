@@ -1,6 +1,8 @@
 <script setup>
 import CheckClose from '@/components/CheckClose.vue';
-import { useAlertStore, useMetasStore, useOrcamentosStore } from '@/stores';
+import { useAlertStore } from '@/stores/alert.store';
+import { useMetasStore } from '@/stores/metas.store';
+import { useOrcamentosStore } from '@/stores/orcamentos.store';
 import { useDotaçãoStore } from '@/stores/dotacao.store.ts';
 import { useProjetosStore } from '@/stores/projetos.store.ts';
 import { storeToRefs } from 'pinia';
