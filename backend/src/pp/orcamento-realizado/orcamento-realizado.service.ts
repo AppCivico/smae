@@ -119,6 +119,22 @@ export class OrcamentoRealizadoService {
                     select: { id: true },
                 });
 
+                if (this.liberarValoresMaioresQueSof == false) {
+                    if (nota_empenho) {
+                        await this.atualizaNotaEmpenho(
+                            projeto.portfolio_id,
+                            prismaTxn,
+                            dotacao,
+                            processo,
+                            nota_empenho
+                        );
+                    } else if (processo) {
+                        await this.atualizaProcesso(projeto.portfolio_id, prismaTxn, dto, dotacao, processo);
+                    } else if (dotacao) {
+                        await this.atualizaDotacao(projeto.portfolio_id, prismaTxn, dto, dotacao);
+                    }
+                }
+
                 return orcamentoRealizado;
             },
             {

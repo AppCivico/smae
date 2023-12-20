@@ -139,6 +139,17 @@ export class OrcamentoRealizadoService {
                     select: { id: true },
                 });
 
+                if (this.liberarValoresMaioresQueSof == false) {
+                    // chama de novo após o update, vai disparar o erro se ultrapassar o limite
+                    if (nota_empenho) {
+                        await this.atualizaNotaEmpenho(meta.pdm_id, prismaTxn, dotacao, processo, nota_empenho);
+                    } else if (processo) {
+                        await this.atualizaProcesso(meta.pdm_id, prismaTxn, dto, dotacao, processo);
+                    } else if (dotacao) {
+                        await this.atualizaDotacao(meta.pdm_id, prismaTxn, dto, dotacao);
+                    }
+                }
+
                 return orcamentoRealizado;
             },
             {
