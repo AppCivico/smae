@@ -1109,19 +1109,37 @@ export class VariavelService {
 
     async recalc_indicador_usando_variaveis(variaveis: number[], prismaTxn: Prisma.TransactionClient) {
         this.logger.log(`called recalc_indicador_usando_variaveis (${JSON.stringify(variaveis)})`);
-        const indicadores = await prismaTxn.indicadorFormulaVariavel.findMany({
+        const indicadoresFv = await prismaTxn.indicadorFormulaVariavel.findMany({
             where: {
                 variavel_id: { in: variaveis },
             },
             distinct: ['indicador_id'],
-            select: {
-                indicador_id: true,
-            },
+            select: { indicador_id: true },
         });
-        this.logger.log(`query.indicadores => ${JSON.stringify(indicadores)}`);
-        for (const row of indicadores) {
-            this.logger.log(`Recalculando indicador ... ${row.indicador_id}`);
-            await prismaTxn.$queryRaw`select monta_serie_indicador(${row.indicador_id}::int, null, null, null)`;
+        const indicadoresFC = await prismaTxn.indicador.findMany({
+            where: {
+                removido_em: null,
+                FormulaComposta: {
+                    some: {
+                        formula_composta: {
+                            removido_em: null,
+                            FormulaCompostaVariavel: {
+                                some: { variavel_id: { in: variaveis } },
+                            },
+                        },
+                    },
+                },
+            },
+            select: { id: true },
+        });
+        const uniqueIndicadores = Array.from(
+            new Set([...indicadoresFC.map((r) => r.id), ...indicadoresFv.map((r) => r.indicador_id)])
+        );
+
+        this.logger.log(`query.indicadores => ${uniqueIndicadores.join(',')}`);
+        for (const indicador_id of uniqueIndicadores) {
+            this.logger.log(`Recalculando indicador ... ${indicador_id}`);
+            await prismaTxn.$queryRaw`select monta_serie_indicador(${indicador_id}::int, null, null, null)`;
         }
     }
 
