@@ -68,7 +68,7 @@ iniciar();
           class="pt1 pb1"
         >
           <router-link
-            class="abas__link like-a__link t24 w700"
+            class="abas__link like-a__link t20 w700"
             :class="{
               tc300: abaAberta !== dadosConsolidadosPorId[nomeDaAba].hash
             }"
