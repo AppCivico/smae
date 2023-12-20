@@ -131,9 +131,13 @@ async function onSubmit(values) {
       if (route.meta?.rotaDeEscape) {
         router.push({
           name: route.meta.rotaDeEscape,
+          query: route.query,
         });
       } else {
-        await router.push(`${parentlink}/orcamento/planejado`);
+        await router.push({
+          path: `${parentlink}/orcamento/planejado`,
+          query: route.query,
+        });
       }
     }
   } catch (error) {
@@ -145,9 +149,15 @@ async function checkDelete(id) {
   alertStore.confirmAction('Deseja mesmo remover esse item?', async () => {
     if (await OrcamentosStore.deleteOrcamentoPlanejado(id, route.params.projetoId)) {
       if (parentlink) {
-        router.push(`${parentlink}/orcamento`);
+        router.push({
+          path: `${parentlink}/orcamento`,
+          query: route.query,
+        });
       } else if (route.meta?.rotaDeEscape) {
-        router.push({ name: route.meta.rotaDeEscape });
+        router.push({
+          name: route.meta.rotaDeEscape,
+          query: route.query,
+        });
       }
     }
   }, 'Remover');
