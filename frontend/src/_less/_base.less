@@ -1637,7 +1637,6 @@ p {
 
   tr,
   tz {
-    display: table-row;
     border-bottom: 1px solid @c100;
 
     &:nth-of-type(even) {
@@ -1647,6 +1646,10 @@ p {
         background: @c50;
       }
     }
+  }
+
+  tz {
+    display: table-row;
   }
 
   &.no-zebra {
