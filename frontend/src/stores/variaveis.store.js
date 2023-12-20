@@ -213,15 +213,21 @@ export const useVariaveisStore = defineStore({
         PrevistoAcumulado: [],
         Realizado: [],
         RealizadoAcumulado: [],
+        DiferençaPrevisto: [],
+        DiferençaRealizado: [],
       };
       return Array.isArray(sériesDaVariávelComposta.linhas)
-        ? sériesDaVariávelComposta.linhas.reduce((acc, cur) => {
-          cur.series.forEach((x, i) => {
-            acc[sériesDaVariávelComposta.ordem_series[i]].push({
+        ? sériesDaVariávelComposta.linhas.reduce((acc, cur, i) => {
+          cur.series.forEach((x, j) => {
+            acc[sériesDaVariávelComposta.ordem_series[j]].push({
               referencia: x.referencia,
-              valor: x.valor_nominal,
+              valor: Number.parseFloat(x.valor_nominal),
             });
           });
+
+          acc.DiferençaPrevisto.push(acc.PrevistoAcumulado[i].valor - acc.Previsto[i].valor);
+          acc.DiferençaRealizado.push(acc.RealizadoAcumulado[i].valor - acc.Realizado[i].valor);
+
           return acc;
         }, { ...base })
         : base;
