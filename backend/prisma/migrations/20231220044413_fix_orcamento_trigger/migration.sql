@@ -1,3 +1,8 @@
+-- CreateIndex
+CREATE INDEX "orcamento_realizado_ano_referencia_dotacao_idx" ON "orcamento_realizado"("ano_referencia", "dotacao");
+
+CREATE INDEX "orcamento_planejado_ano_referencia_dotacao_idx" ON "orcamento_planejado"("ano_referencia", "dotacao");
+
 CREATE OR REPLACE FUNCTION f_tgr_update_soma_dotacao()
     RETURNS TRIGGER
     AS $$
@@ -65,13 +70,6 @@ BEGIN
 END;
 $$
 LANGUAGE plpgsql;
-
-CREATE TRIGGER tgr_dotacao_change
-AFTER INSERT OR UPDATE -- sempre que tem um delete, tem um insert logo em seguida, que vai arrumar o banco
-ON dotacao_planejado
-FOR EACH ROW
-EXECUTE FUNCTION f_tgr_update_soma_dotacao();
-
 
 CREATE OR REPLACE FUNCTION f_tgr_update_soma_dotacao_realizado()
     RETURNS TRIGGER
@@ -284,45 +282,5 @@ $$
 LANGUAGE plpgsql;
 
 
-CREATE TRIGGER tgr_dotacao_change_realizado
-AFTER INSERT OR UPDATE
-ON orcamento_realizado
-FOR EACH ROW
-EXECUTE FUNCTION f_tgr_update_soma_dotacao_realizado();
-
-
-CREATE OR REPLACE FUNCTION f_tgr_update_ano_projeto_trigger()
-    RETURNS TRIGGER
-    AS $$
-BEGIN
-    PERFORM atualiza_ano_orcamento_projeto(new.projeto_id);
-
-    RETURN NEW;
-END;
-$$
-LANGUAGE plpgsql;
-
-CREATE TRIGGER tgr_ano_orcamento_projeto_realizado
-AFTER INSERT OR UPDATE
-ON orcamento_realizado
-FOR EACH ROW
-EXECUTE FUNCTION f_tgr_update_ano_projeto_trigger();
-
-CREATE TRIGGER tgr_ano_orcamento_projeto_previsto
-AFTER INSERT OR UPDATE
-ON meta_orcamento
-FOR EACH ROW
-EXECUTE FUNCTION f_tgr_update_ano_projeto_trigger();
-
-CREATE TRIGGER tgr_ano_orcamento_projeto_planejado
-AFTER INSERT OR UPDATE
-ON orcamento_planejado
-FOR EACH ROW
-EXECUTE FUNCTION f_tgr_update_ano_projeto_trigger();
-
-CREATE TRIGGER tgr_ano_orcamento_projeto_tarefa
-AFTER INSERT OR UPDATE
-ON tarefa
-FOR EACH ROW
-EXECUTE FUNCTION f_tgr_update_ano_projeto_trigger();
-
+update orcamento_realizado set id=id;
+update orcamento_planejado set id=id;
