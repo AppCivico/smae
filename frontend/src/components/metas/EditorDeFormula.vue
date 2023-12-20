@@ -473,7 +473,7 @@ watch(() => props.variáveisCompostas, async () => {
       <label class="label">Variável</label>
       <select
         v-model="fieldsVariaveis.variavel_id"
-        v-focus
+        v-focus="variaveisFormulaModal === 1"
         class="inputtext light mb1"
         name="variavel_id"
       >
@@ -566,7 +566,7 @@ watch(() => props.variáveisCompostas, async () => {
       <select
         v-if="Array.isArray(variáveisCompostas)"
         v-model="fieldsVariaveis.id"
-        v-focus
+        v-focus="variaveisFormulaModal === 2"
         class="inputtext light mb1"
         name="id"
       >
