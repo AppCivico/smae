@@ -70,17 +70,14 @@ export class OrcamentoRealizadoService {
                 const mes_corrente = dto.itens.sort((a, b) => b.mes - a.mes)[0].mes;
 
                 if (nota_empenho) {
-                    mes_utilizado = await this.atualizaNotaEmpenho(
-                        meta.pdm_id,
-                        prismaTxn,
-                        dotacao,
-                        processo,
-                        nota_empenho
-                    );
+                    const notaEmpenhoTx = await this.buscaNotaEmpenho(prismaTxn, nota_empenho, dotacao, processo);
+                    mes_utilizado = notaEmpenhoTx.mes_utilizado;
                 } else if (processo) {
-                    mes_utilizado = await this.atualizaProcesso(meta.pdm_id, prismaTxn, dto, dotacao, processo);
+                    const processoTx = await this.buscaProcesso(prismaTxn, dto, dotacao, processo);
+                    mes_utilizado = processoTx.mes_utilizado;
                 } else if (dotacao) {
-                    mes_utilizado = await this.atualizaDotacao(meta.pdm_id, prismaTxn, dto, dotacao);
+                    const dotacaoTx = await this.buscaDotacao(prismaTxn, dto, dotacao);
+                    mes_utilizado = dotacaoTx.mes_utilizado;
                 } else {
                     throw new HttpException('Erro interno: nota, processo ou dotação está null', 500);
                 }
@@ -139,15 +136,13 @@ export class OrcamentoRealizadoService {
                     select: { id: true },
                 });
 
-                if (this.liberarValoresMaioresQueSof == false) {
-                    // chama de novo após o update, vai disparar o erro se ultrapassar o limite
-                    if (nota_empenho) {
-                        await this.atualizaNotaEmpenho(meta.pdm_id, prismaTxn, dotacao, processo, nota_empenho);
-                    } else if (processo) {
-                        await this.atualizaProcesso(meta.pdm_id, prismaTxn, dto, dotacao, processo);
-                    } else if (dotacao) {
-                        await this.atualizaDotacao(meta.pdm_id, prismaTxn, dto, dotacao);
-                    }
+                // chama após o update, vai disparar o erro se ultrapassar o limite
+                if (nota_empenho) {
+                    await this.atualizaNotaEmpenho(meta.pdm_id, prismaTxn, dotacao, processo, nota_empenho);
+                } else if (processo) {
+                    await this.atualizaProcesso(meta.pdm_id, prismaTxn, dto, dotacao, processo);
+                } else if (dotacao) {
+                    await this.atualizaDotacao(meta.pdm_id, prismaTxn, dto, dotacao);
                 }
 
                 return orcamentoRealizado;
@@ -205,33 +200,6 @@ export class OrcamentoRealizadoService {
                         where: { id: orcRealizado.id },
                         data: { dotacao: dotacao_edit },
                     });
-                }
-
-                if (orcRealizado.nota_empenho) {
-                    await this.atualizaNotaEmpenho(
-                        meta.pdm_id,
-                        prismaTxn,
-                        orcRealizado.dotacao,
-                        orcRealizado.processo,
-                        orcRealizado.nota_empenho
-                    );
-                } else if (orcRealizado.processo) {
-                    await this.atualizaProcesso(
-                        meta.pdm_id,
-                        prismaTxn,
-                        { ano_referencia: orcRealizado.ano_referencia },
-                        orcRealizado.dotacao,
-                        orcRealizado.processo
-                    );
-                } else if (orcRealizado.dotacao) {
-                    await this.atualizaDotacao(
-                        meta.pdm_id,
-                        prismaTxn,
-                        { ano_referencia: orcRealizado.ano_referencia },
-                        orcRealizado.dotacao
-                    );
-                } else {
-                    throw new HttpException('Erro interno: nota, processo ou dotação está null', 500);
                 }
 
                 await prismaTxn.orcamentoRealizadoItem.updateMany({
@@ -295,6 +263,31 @@ export class OrcamentoRealizadoService {
                     );
                 }
 
+                if (orcRealizado.nota_empenho) {
+                    await this.atualizaNotaEmpenho(
+                        meta.pdm_id,
+                        prismaTxn,
+                        orcRealizado.dotacao,
+                        orcRealizado.processo,
+                        orcRealizado.nota_empenho
+                    );
+                } else if (orcRealizado.processo) {
+                    await this.atualizaProcesso(
+                        meta.pdm_id,
+                        prismaTxn,
+                        { ano_referencia: orcRealizado.ano_referencia },
+                        orcRealizado.dotacao,
+                        orcRealizado.processo
+                    );
+                } else if (orcRealizado.dotacao) {
+                    await this.atualizaDotacao(
+                        meta.pdm_id,
+                        prismaTxn,
+                        { ano_referencia: orcRealizado.ano_referencia },
+                        orcRealizado.dotacao
+                    );
+                }
+
                 return updated;
             },
             {
@@ -318,20 +311,7 @@ export class OrcamentoRealizadoService {
             dotacao,
         });
 
-        const dotacaoTx = await prismaTxn.dotacaoRealizado.findUnique({
-            where: {
-                ano_referencia_dotacao: {
-                    ano_referencia: dto.ano_referencia,
-                    dotacao: dotacao,
-                },
-            },
-        });
-
-        if (!dotacaoTx)
-            throw new HttpException(
-                'Operação não pode ser realizada no momento. Dotação deixou de existir durante a atualização.',
-                400
-            );
+        const dotacaoTx = await this.buscaDotacao(prismaTxn, dto, dotacao);
         const mes_utilizado = dotacaoTx.mes_utilizado;
 
         await prismaTxn.dotacaoRealizado.update({
@@ -347,6 +327,8 @@ export class OrcamentoRealizadoService {
             },
         });
 
+        console.log(novo_valor);
+
         if (
             novo_valor &&
             this.liberarValoresMaioresQueSof === false &&
@@ -355,9 +337,8 @@ export class OrcamentoRealizadoService {
             throw new HttpException(
                 `Novo valor de empenho no SMAE (${novo_valor.soma_valor_empenho.toFixed(
                     2
-                )}) seria maior do que o valor de empenho para a Dotação-Processo (${dotacaoTx.empenho_liquido.toFixed(
-                    2
-                )}).` + FRASE_FIM,
+                )}) seria maior do que o valor de empenho para a Dotação (${dotacaoTx.empenho_liquido.toFixed(2)}).` +
+                    FRASE_FIM,
                 400
             );
         }
@@ -370,14 +351,35 @@ export class OrcamentoRealizadoService {
             throw new HttpException(
                 `Novo valor de liquidado no SMAE (${novo_valor.soma_valor_liquidado.toFixed(
                     2
-                )}) seria maior do que o valor liquidado para a Dotação-Processo (${dotacaoTx.valor_liquidado.toFixed(
-                    2
-                )}).` + FRASE_FIM,
+                )}) seria maior do que o valor liquidado para a Dotação (${dotacaoTx.valor_liquidado.toFixed(2)}).` +
+                    FRASE_FIM,
                 400
             );
         }
 
         return mes_utilizado;
+    }
+
+    private async buscaDotacao(
+        prismaTxn: Prisma.TransactionClient,
+        dto: PartialOrcamentoRealizadoDto,
+        dotacao: string
+    ) {
+        const dotacaoTx = await prismaTxn.dotacaoRealizado.findUnique({
+            where: {
+                ano_referencia_dotacao: {
+                    ano_referencia: dto.ano_referencia,
+                    dotacao: dotacao,
+                },
+            },
+        });
+
+        if (!dotacaoTx)
+            throw new HttpException(
+                'Operação não pode ser realizada no momento. Dotação deixou de existir durante a atualização.',
+                400
+            );
+        return dotacaoTx;
     }
 
     private async atualizaProcesso(
@@ -387,21 +389,7 @@ export class OrcamentoRealizadoService {
         dotacao: string,
         processo: string
     ) {
-        const processoTx = await prismaTxn.dotacaoProcesso.findUnique({
-            where: {
-                ano_referencia_dotacao_dotacao_processo: {
-                    ano_referencia: dto.ano_referencia,
-                    dotacao: dotacao,
-                    dotacao_processo: processo,
-                },
-            },
-            select: { empenho_liquido: true, valor_liquidado: true, id: true, mes_utilizado: true },
-        });
-        if (!processoTx)
-            throw new HttpException(
-                'Operação não pode ser realizada no momento. Nota-Empenho deixou de existir durante a atualização.',
-                400
-            );
+        const processoTx = await this.buscaProcesso(prismaTxn, dto, dotacao, processo);
         const mes_utilizado = processoTx.mes_utilizado;
 
         await prismaTxn.dotacaoProcesso.update({
@@ -451,6 +439,30 @@ export class OrcamentoRealizadoService {
         return mes_utilizado;
     }
 
+    private async buscaProcesso(
+        prismaTxn: Prisma.TransactionClient,
+        dto: PartialOrcamentoRealizadoDto,
+        dotacao: string,
+        processo: string
+    ) {
+        const processoTx = await prismaTxn.dotacaoProcesso.findUnique({
+            where: {
+                ano_referencia_dotacao_dotacao_processo: {
+                    ano_referencia: dto.ano_referencia,
+                    dotacao: dotacao,
+                    dotacao_processo: processo,
+                },
+            },
+            select: { empenho_liquido: true, valor_liquidado: true, id: true, mes_utilizado: true },
+        });
+        if (!processoTx)
+            throw new HttpException(
+                'Operação não pode ser realizada no momento. Nota-Empenho deixou de existir durante a atualização.',
+                400
+            );
+        return processoTx;
+    }
+
     private getAnoNota(nota_empenho: string): number {
         return +nota_empenho.split('/')[1];
     }
@@ -462,27 +474,7 @@ export class OrcamentoRealizadoService {
         processo: string | null,
         nota_empenho: string
     ) {
-        const notaEmpenhoTx = await prismaTxn.dotacaoProcessoNota.findUnique({
-            where: {
-                ano_referencia_dotacao_dotacao_processo_dotacao_processo_nota: {
-                    // no serviço dotacao-processo-nota.service.ts é chamado com o ano da nota e não
-                    // realmente o ano da referencia
-                    // se for pra valores de consumo diferente pra mesma nota, então será necessário
-                    // alterar o frontend e também a validação na função valorRealizadoNotaEmpenho
-                    // vai deixar de existir
-                    ano_referencia: this.getAnoNota(nota_empenho),
-                    dotacao: dotacao,
-                    dotacao_processo: processo!,
-                    dotacao_processo_nota: nota_empenho,
-                },
-            },
-            select: { empenho_liquido: true, valor_liquidado: true, id: true, mes_utilizado: true },
-        });
-        if (!notaEmpenhoTx)
-            throw new HttpException(
-                'Operação não pode ser realizada no momento. Nota-Empenho deixou de existir durante a atualização.',
-                400
-            );
+        const notaEmpenhoTx = await this.buscaNotaEmpenho(prismaTxn, nota_empenho, dotacao, processo);
         const mes_utilizado = notaEmpenhoTx.mes_utilizado;
 
         await prismaTxn.dotacaoProcessoNota.update({
@@ -531,6 +523,36 @@ export class OrcamentoRealizadoService {
         }
 
         return mes_utilizado;
+    }
+
+    private async buscaNotaEmpenho(
+        prismaTxn: Prisma.TransactionClient,
+        nota_empenho: string,
+        dotacao: string,
+        processo: string | null
+    ) {
+        const notaEmpenhoTx = await prismaTxn.dotacaoProcessoNota.findUnique({
+            where: {
+                ano_referencia_dotacao_dotacao_processo_dotacao_processo_nota: {
+                    // no serviço dotacao-processo-nota.service.ts é chamado com o ano da nota e não
+                    // realmente o ano da referencia
+                    // se for pra valores de consumo diferente pra mesma nota, então será necessário
+                    // alterar o frontend e também a validação na função valorRealizadoNotaEmpenho
+                    // vai deixar de existir
+                    ano_referencia: this.getAnoNota(nota_empenho),
+                    dotacao: dotacao,
+                    dotacao_processo: processo!,
+                    dotacao_processo_nota: nota_empenho,
+                },
+            },
+            select: { empenho_liquido: true, valor_liquidado: true, id: true, mes_utilizado: true },
+        });
+        if (!notaEmpenhoTx)
+            throw new HttpException(
+                'Operação não pode ser realizada no momento. Nota-Empenho deixou de existir durante a atualização.',
+                400
+            );
+        return notaEmpenhoTx;
     }
 
     async validaDotProcNota(
