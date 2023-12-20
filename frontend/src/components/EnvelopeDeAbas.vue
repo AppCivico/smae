@@ -18,7 +18,9 @@ const props = defineProps({
     default: () => ({}),
   },
 });
-
+// PRA-FAZER: um registro secundário da aba aberta em paralelo à query na rota
+// para cobrir todas as bases. Infelizmente, não adiantará muito enquanto houver
+// chaves de rota no componente raiz. Ver `App.vue`.
 const abaAberta = computed(() => route.query.aba);
 const dadosConsolidadosPorId = computed(() => Object.keys(slots).reduce((acc, cur) => {
   acc[cur] = {
