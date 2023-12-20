@@ -1,6 +1,7 @@
 <script setup>
-import auxiliarDePreenchimento from '@/components/AuxiliarDePreenchimento.vue';
+// import auxiliarDePreenchimento from '@/components/AuxiliarDePreenchimento.vue';
 import dateToTitle from '@/helpers/dateToTitle';
+import sentenceCase from '@/helpers/sentenceCase';
 import geradorDeAtributoStep from '@/helpers/geradorDeAtributoStep';
 import { router } from '@/router';
 import { useAlertStore } from '@/stores/alert.store';
@@ -34,19 +35,22 @@ const {
   sériesDaVariávelComposta,
 } = storeToRefs(VariaveisStore);
 
+const tipoDeValor = computed(() => (route.meta.tipoDeValor
+  ? sentenceCase(route.meta.tipoDeValor)
+  : 'Previsto'));
+
 const período = ref('');
 
 const modoDePreenchimento = ref('valor_nominal'); // ou `valor_acumulado`
-const valorPadrão = ref(0);
+// const valorPadrão = ref(0);
 
 const valoresIniciais = computed(() => {
-  switch (route.meta.tipoDeValor) {
-    case 'previsto':
-      return { valores: sériesDeCompostaParaEdição.value.Previsto };
-    case 'realizado':
-      return { valores: sériesDeCompostaParaEdição.value.Realizado };
+  switch (tipoDeValor.value) {
+    case 'Previsto':
+    case 'Realizado':
+      return { valores: sériesDeCompostaParaEdição.value[tipoDeValor.value] };
     default:
-      throw new Error(`\`tipoDeValor\` inválido para essa rota: \`${route.meta.tipoDeValor}\`. Deveria ser: \`previsto\` ou \`realizado\`.`);
+      throw new Error(`\`tipoDeValor\` inválido para essa rota: \`${tipoDeValor.value}\`. Deveria ser: \`previsto\` ou \`realizado\`.`);
   }
 });
 
@@ -62,16 +66,19 @@ const formulárioSujo = useIsFormDirty();
 const acumulados = ref([]);
 
 const atualizarAPartirDoAcumulado = ((valorFornecido, índice) => {
-  const acumuladoOriginal = sériesDeCompostaParaEdição.value?.[`${route.meta.tipoDoValor}Acumulado`]?.[índice]?.valor
-    || 0;
-  const puroOriginal = sériesDeCompostaParaEdição.value?.[route.meta.tipoDoValor]?.[índice]?.valor
-    || 0;
-
-  const diferença = acumuladoOriginal - puroOriginal;
+  const diferença = sériesDeCompostaParaEdição.value?.[`Diferença${tipoDeValor.value}`][índice];
   const novoAcumulado = Number.parseFloat(valorFornecido.replace(/\D/, '')) || 0;
 
   setFieldValue(`valores[${índice}].valor`, novoAcumulado - diferença);
 });
+
+const atualizarAPartirDoValorPuro = ((valorFornecido, índice) => {
+  const diferença = sériesDeCompostaParaEdição.value?.[`Diferença${tipoDeValor.value}`][índice];
+  const novoPuro = Number.parseFloat(valorFornecido.replace(/\D/, '')) || 0;
+
+  acumulados.value[índice].valor = novoPuro + diferença;
+});
+
 const onSubmit = handleSubmit.withControlled(async () => {
   try {
     const msg = 'Valores salvos!';
@@ -87,19 +94,20 @@ const onSubmit = handleSubmit.withControlled(async () => {
   }
 });
 
-function preencherVaziosCom() {
-  carga.valores.forEach((x, i) => {
-    if (x.valor === undefined || x.valor === '') {
-      setFieldValue(`valores[${i}].valor`, valorPadrão.value);
-    }
-  });
-}
+// function preencherVaziosCom() {
+//   // sobral, mudar isso de acordo com o tipoDeValor
+//   carga.valores.forEach((x, i) => {
+//     if (x.valor === undefined || x.valor === '') {
+//       setFieldValue(`valores[${i}].valor`, valorPadrão.value);
+//     }
+//   });
+// }
 
-function limparFormulário() {
-  carga.valores.forEach((_x, i) => {
-    resetField(`valores[${i}].valor`, { value: undefined });
-  });
-}
+// function limparFormulário() {
+//   carga.valores.forEach((_x, i) => {
+//     resetField(`valores[${i}].valor`, { value: undefined });
+//   });
+// }
 
 VariaveisStore.buscarPeríodosDeVariávelDeFórmula(varId);
 
@@ -107,9 +115,9 @@ watch(valoresIniciais, (novoValor) => {
   resetForm(novoValor);
 }, { immediate: true });
 
-watch(() => sériesDeCompostaParaEdição.value?.[`${route.meta.tipoDoValor}Acumulado`], (novoValor) => {
-  if (Array.isArray(novoValor)) {
-    acumulados.value = novoValor;
+watch(sériesDeCompostaParaEdição, (novoValor) => {
+  if (Array.isArray(novoValor?.[`${tipoDeValor.value}Acumulado`])) {
+    acumulados.value = [...novoValor[`${tipoDeValor.value}Acumulado`]];
   }
 }, { immediate: true });
 
@@ -129,11 +137,7 @@ watch(período, (novoValor) => {
       && varId"
   >
     <div class="label mb2">
-      Valores
-      <!--
-        e acumulados
-      -->
-      para cada variável <span class="tvermelho">*</span>
+      Valores e acumulados para cada variável <span class="tvermelho">*</span>
     </div>
 
     <div class="flex center g1 mb1">
@@ -159,54 +163,57 @@ watch(período, (novoValor) => {
     </div>
 
     <template v-if="período">
-      <auxiliarDePreenchimento>
-        <div class="flex g2 end mb1">
-          <div class="f1">
-            <label class="label">Valor a aplicar</label>
-            <input
-              v-model="valorPadrão"
-              type="number"
-              min="0"
-              class="inputtext light mb1"
+      <!--
+        <auxiliarDePreenchimento>
+          <div class="flex g2 end mb1">
+            <div class="f1">
+              <label class="label">Valor a aplicar</label>
+              <input
+                v-model="valorPadrão"
+                type="number"
+                min="0"
+                class="inputtext light mb1"
+              >
+            </div>
+            <button
+              type="button"
+              class="f0 mb1 btn bgnone outline tcprimary"
+              :disabled="valorPadrão === ''"
+              @click="preencherVaziosCom"
             >
+              Preencher vazios
+            </button>
+
+            <button
+              type="reset"
+              form="form"
+              class="f0 mb1 pl0 pr0 btn bgnone"
+              @click="limparFormulário"
+            >
+              &times; limpar tudo
+            </button>
           </div>
-          <button
-            type="button"
-            class="f0 mb1 btn bgnone outline tcprimary"
-            :disabled="valorPadrão === ''"
-            @click="preencherVaziosCom"
-          >
-            Preencher vazios
-          </button>
+        </auxiliarDePreenchimento>
+      -->
 
-          <button
-            type="reset"
-            form="form"
-            class="f0 mb1 pl0 pr0 btn bgnone"
-            @click="limparFormulário"
-          >
-            &times; limpar tudo
-          </button>
-        </div>
-        <hr class="mb2 f1">
+      <hr class="mb2 f1">
 
-        <div class="flex">
-          <label class="f1">
-            <input
-              v-model="modoDePreenchimento"
-              type="radio"
-              class="inputcheckbox"
-              value="valor_nominal"
-            ><span>Preencher por valor nominal</span></label>
-          <label class="f1">
-            <input
-              v-model="modoDePreenchimento"
-              type="radio"
-              class="inputcheckbox"
-              value="valor_acumulado"
-            ><span>Preencher por valor acumulado</span></label>
-        </div>
-      </auxiliarDePreenchimento>
+      <div class="flex mb2">
+        <label class="f1">
+          <input
+            v-model="modoDePreenchimento"
+            type="radio"
+            class="inputcheckbox"
+            value="valor_nominal"
+          ><span>Preencher por valor nominal</span></label>
+        <label class="f1">
+          <input
+            v-model="modoDePreenchimento"
+            type="radio"
+            class="inputcheckbox"
+            value="valor_acumulado"
+          ><span>Preencher por valor acumulado</span></label>
+      </div>
 
       <hr class="mb2 f1">
 
@@ -236,11 +243,14 @@ watch(período, (novoValor) => {
                 Valor acumulado
               </th>
             </thead>
-            <tbody
+            <template
               v-for="(field, idx) in fields"
               :key="idx"
             >
-              <tr>
+              <tr
+                :hidden="modoDePreenchimento === 'valor_acumulado'
+                  && !sériesDaVariávelComposta.linhas?.[idx]?.variavel?.acumulativa"
+              >
                 <th>
                   {{ sériesDaVariávelComposta.linhas?.[idx]?.variavel?.codigo || '-' }}
                 </th>
@@ -264,6 +274,9 @@ watch(período, (novoValor) => {
                     class="inputtext light"
                     :class="{ 'error': errors[`valores[${idx}].valor`] }"
                     :disabled="modoDePreenchimento !== 'valor_nominal'"
+                    @input="($event) => {
+                      atualizarAPartirDoValorPuro($event.target.value, idx)
+                    }"
                   />
                   <ErrorMessage
                     class="error-msg mt1"
@@ -272,19 +285,26 @@ watch(período, (novoValor) => {
                 </td>
                 <td>
                   <input
+                    v-if="sériesDaVariávelComposta.linhas?.[idx]?.variavel?.acumulativa"
                     type="number"
-                    :v-model="acumulados[idx]"
+                    :value="acumulados[idx].valor"
                     :step="geradorDeAtributoStep(
                       sériesDaVariávelComposta.linhas?.[idx]?.variavel?.casas_decimais
                     )"
                     min="0"
                     class="inputtext light"
                     :disabled="modoDePreenchimento !== 'valor_acumulado'"
-                    @input="($event) => atualizarAPartirDoAcumulado($event.target.value, idx)"
+                    @input="($event) => {
+                      acumulados[idx].valor = $event.target.value;
+                      atualizarAPartirDoAcumulado($event.target.value, idx);
+                    }"
                   >
+                  <template v-else>
+                    -
+                  </template>
                 </td>
               </tr>
-            </tbody>
+            </template>
           </table>
         </FieldArray>
 
