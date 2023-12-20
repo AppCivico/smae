@@ -193,14 +193,16 @@ function formatFormula(p) {
           break;
       }
 
-      r = ` <span class="v" contenteditable="false" data-id="${m}" data-var="${n}" title="${t}" >${m}</span> `;
+      r = ` <span class="v" contenteditable="false" data-id="${m}" data-var="${n}" title="${t}">${m}</span> `;
     }
     return r;
   });
-
-  Object.keys(variaveisFormula).forEach((k) => {
-    if (inuse.indexOf(k) === -1) delete variaveisFormula[k];
-  });
+  // há um problema de assincronicidade aqui. Nem sempre a lista de variáveis e
+  // a fórmula estão prontas ao mesmo tempo. Aí ficam variáveis sem formatar
+  // porque não estão prontas. Vamos deixar essa limpeza com o backend por enquanto.
+  // Object.keys(variaveisFormula).forEach((k) => {
+  //   if (inuse.indexOf(k) === -1) delete variaveisFormula[k];
+  // });
 
   formulaInput.value.innerHTML = `${fórmulaLimpa} `.replace(/\s+/g, ' ');
 
