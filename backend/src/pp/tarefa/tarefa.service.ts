@@ -1424,7 +1424,7 @@ export class TarefaService {
         // order by random pra se tiver algum projeto com erro 500, ainda vai eventualmente
         // processar a maioria eventualmente, limite pra não pra não estourar o tempo do lock
         const projetos: { id: number }[] = await this.prisma.$queryRaw`SELECT id from projeto
-        WHERE tarefas_proximo_recalculo < NOW() ORDER BY random() LIMIT 10`;
+        WHERE tarefas_proximo_recalculo < NOW() and removido_em is null ORDER BY random() LIMIT 10`;
 
         const amanha = DateTime.local({ zone: SYSTEM_TIMEZONE }).startOf('day').plus({ day: 1 });
         for (const projeto of projetos) {
