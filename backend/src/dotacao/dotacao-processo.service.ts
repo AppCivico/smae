@@ -15,7 +15,7 @@ export class DotacaoProcessoService {
     ) {}
 
     async valorRealizadoProcesso(dto: AnoDotacaoProcessoDto): Promise<ValorRealizadoProcessoDto[]> {
-        const mesMaisAtual = this.sof.mesMaisRecenteDoAno(dto.ano);
+        const mesMaisAtual = this.sof.mesMaisRecenteDoAno(dto.ano, 'realizado');
 
         // sempre sincroniza, pois pode haver mais de uma dotação no processo e não sabemos
         // quando elas aparecem

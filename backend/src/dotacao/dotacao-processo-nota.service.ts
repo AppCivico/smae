@@ -18,7 +18,7 @@ export class DotacaoProcessoNotaService {
 
     async valorRealizadoNotaEmpenho(dto: AnoDotacaoNotaEmpenhoDto): Promise<ValorRealizadoNotaEmpenhoDto[]> {
         this.logger.debug(`valorRealizadoNotaEmpenho: ${JSON.stringify(dto)}`);
-        const mes = dto.mes ? dto.mes : this.sof.mesMaisRecenteDoAno(dto.ano);
+        const mes = dto.mes ? dto.mes : this.sof.mesMaisRecenteDoAno(dto.ano, 'realizado');
 
         if (dto.nota_empenho.includes('/' + dto.ano) == false) {
             throw new HttpException(
