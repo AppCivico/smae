@@ -2,7 +2,7 @@
 import SmallModal from '@/components/SmallModal.vue';
 import getCaretPosition from '@/helpers/getCaretPosition.ts';
 import {
-  computed, nextTick, onUpdated, ref, watch,
+  computed, nextTick, onMounted, onUpdated, ref, watch,
 } from 'vue';
 
 const props = defineProps({
@@ -308,7 +308,7 @@ function chamarInserçãoDeVariável(caracterDefinidor) {
 
   newVariavel(caracterDefinidor);
 }
-function saveVar(tipoDeVariável) {
+async function saveVar(tipoDeVariável) {
   const variávelId = fieldsVariaveis.value.id;
   let caracterDefinidor = '$';
   let nova = false;
@@ -330,6 +330,8 @@ function saveVar(tipoDeVariável) {
     const v = formula.value;
     const i = v.indexOf(`${caracterDefinidor}xxx`);
     formula.value = [v.slice(0, i), variávelId, v.slice(i + 4)].join('');
+    // aguardar a atualização da fórmula antes de formatá-la
+    await nextTick;
   }
 
   formatFormula(variávelId);
@@ -369,8 +371,8 @@ onUpdated(async () => {
   setCaret(formulaInput.value, currentCaretPos);
 });
 
-watch(() => props.variáveisEmUso, async (novoValor) => {
-  variaveisFormula = novoValor.reduce((acc, cur) => {
+onMounted(async () => {
+  variaveisFormula = props.variáveisEmUso.reduce((acc, cur) => {
     let período = 1;
 
     if (cur.janela < 0) {
@@ -391,9 +393,9 @@ watch(() => props.variáveisEmUso, async (novoValor) => {
 
   await nextTick();
   formatFormula();
-}, { immediate: true });
+});
 
-watch(props.variáveisCompostas, async () => {
+watch(() => props.variáveisCompostas, async () => {
   await nextTick();
   formatFormula();
 });
