@@ -138,11 +138,11 @@ export class OrcamentoRealizadoService {
 
                 // chama após o update, vai disparar o erro se ultrapassar o limite
                 if (nota_empenho) {
-                    await this.atualizaNotaEmpenho(meta.pdm_id, prismaTxn, dotacao, processo, nota_empenho);
+                    await this.verificaNotaEmpenho(meta.pdm_id, prismaTxn, dotacao, processo, nota_empenho);
                 } else if (processo) {
-                    await this.atualizaProcesso(meta.pdm_id, prismaTxn, dto, dotacao, processo);
+                    await this.verificaProcesso(meta.pdm_id, prismaTxn, dto, dotacao, processo);
                 } else if (dotacao) {
-                    await this.atualizaDotacao(meta.pdm_id, prismaTxn, dto, dotacao);
+                    await this.verificaDotacao(meta.pdm_id, prismaTxn, dto, dotacao);
                 }
 
                 return orcamentoRealizado;
@@ -264,7 +264,7 @@ export class OrcamentoRealizadoService {
                 }
 
                 if (orcRealizado.nota_empenho) {
-                    await this.atualizaNotaEmpenho(
+                    await this.verificaNotaEmpenho(
                         meta.pdm_id,
                         prismaTxn,
                         orcRealizado.dotacao,
@@ -272,7 +272,7 @@ export class OrcamentoRealizadoService {
                         orcRealizado.nota_empenho
                     );
                 } else if (orcRealizado.processo) {
-                    await this.atualizaProcesso(
+                    await this.verificaProcesso(
                         meta.pdm_id,
                         prismaTxn,
                         { ano_referencia: orcRealizado.ano_referencia },
@@ -280,7 +280,7 @@ export class OrcamentoRealizadoService {
                         orcRealizado.processo
                     );
                 } else if (orcRealizado.dotacao) {
-                    await this.atualizaDotacao(
+                    await this.verificaDotacao(
                         meta.pdm_id,
                         prismaTxn,
                         { ano_referencia: orcRealizado.ano_referencia },
@@ -300,7 +300,7 @@ export class OrcamentoRealizadoService {
         return updated;
     }
 
-    private async atualizaDotacao(
+    private async verificaDotacao(
         pdm_id: number,
         prismaTxn: Prisma.TransactionClient,
         dto: PartialOrcamentoRealizadoDto,
@@ -314,6 +314,7 @@ export class OrcamentoRealizadoService {
         const dotacaoTx = await this.buscaDotacao(prismaTxn, dto, dotacao);
         const mes_utilizado = dotacaoTx.mes_utilizado;
 
+        // muda um recurso em comum, pra criar o lock no serialize
         await prismaTxn.dotacaoRealizado.update({
             where: { id: dotacaoTx.id },
             data: { id: dotacaoTx.id },
@@ -326,8 +327,6 @@ export class OrcamentoRealizadoService {
                 pdm_id: pdm_id,
             },
         });
-
-        console.log(novo_valor);
 
         if (
             novo_valor &&
@@ -382,7 +381,7 @@ export class OrcamentoRealizadoService {
         return dotacaoTx;
     }
 
-    private async atualizaProcesso(
+    private async verificaProcesso(
         pdm_id: number,
         prismaTxn: Prisma.TransactionClient,
         dto: PartialOrcamentoRealizadoDto,
@@ -467,7 +466,7 @@ export class OrcamentoRealizadoService {
         return +nota_empenho.split('/')[1];
     }
 
-    private async atualizaNotaEmpenho(
+    private async verificaNotaEmpenho(
         pdm_id: number,
         prismaTxn: Prisma.TransactionClient,
         dotacao: string,
@@ -1039,10 +1038,8 @@ export class OrcamentoRealizadoService {
                 });
                 if (!notaTx) throw new HttpException('Nota-Empenho não foi foi encontrado no banco de dados', 400);
 
-                await prismaTxn.dotacaoProcessoNota.update({
-                    where: { id: notaTx.id },
-                    data: { id: notaTx.id },
-                });
+                // não tem trigger nessa table, não há o que reprocessar
+                // await prismaTxn.dotacaoProcessoNota.update({ where: { id: notaTx.id }, data: { id: notaTx.id } });
             } else if (orcRealizado.processo) {
                 const processoTx = await prismaTxn.dotacaoProcesso.findUnique({
                     where: {
@@ -1055,10 +1052,8 @@ export class OrcamentoRealizadoService {
                 });
                 if (!processoTx) throw new HttpException('Processo não foi foi encontrado no banco de dados', 400);
 
-                await prismaTxn.dotacaoProcesso.update({
-                    where: { id: processoTx.id },
-                    data: { id: processoTx.id },
-                });
+                // não tem trigger nessa table, não há o que reprocessar
+                // await prismaTxn.dotacaoProcesso.update({ where: { id: processoTx.id }, data: { id: processoTx.id } });
             } else if (orcRealizado.dotacao) {
                 const processoTx = await prismaTxn.dotacaoRealizado.findUnique({
                     where: {
@@ -1070,10 +1065,8 @@ export class OrcamentoRealizadoService {
                 });
                 if (!processoTx) throw new HttpException('Dotação não foi foi encontrado no banco de dados', 400);
 
-                await prismaTxn.dotacaoRealizado.update({
-                    where: { id: processoTx.id },
-                    data: { id: processoTx.id },
-                });
+                // não tem trigger nessa table, não há o que reprocessar
+                // await prismaTxn.dotacaoRealizado.update({ where: { id: processoTx.id }, data: { id: processoTx.id } });
             }
         }
     }
