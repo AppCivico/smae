@@ -84,7 +84,7 @@ emit('update:modelValue', prefixoEscolhido.value);
 
 <template>
   <form
-    class="f1 search"
+    class="f1"
     @submit.prevent
   >
     <label
