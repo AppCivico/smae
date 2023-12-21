@@ -2,13 +2,32 @@
 import dateToField from '@/helpers/dateToField';
 import formataValor from '@/helpers/formataValor';
 
-defineProps(['group', 'permissao', 'parentlink']);
+defineProps({
+  group: {
+    type: Array,
+    required: true,
+  },
+  permissao: {
+    type: Boolean,
+    required: true,
+  },
+  parentlink: {
+    type: String,
+    required: true,
+  },
+  órgãoEUnidadeSelecionados: {
+    type: String,
+    default: '',
+  },
+});
 </script>
 
 <template>
   <tr
     v-for="item in group.items"
     :key="item.id"
+    :hidden="!!órgãoEUnidadeSelecionados
+      && item?.parte_dotacao.indexOf(órgãoEUnidadeSelecionados) !== 0"
   >
     <td style="word-break: break-all;">
       {{ item?.parte_dotacao }}
