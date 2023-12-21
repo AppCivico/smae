@@ -13,6 +13,8 @@ const ano = props.config.ano_referencia;
 const OrcamentosStore = useOrcamentosStore();
 const { OrcamentoRealizado } = storeToRefs(OrcamentosStore);
 
+const órgãoEUnidadeSelecionados = ref('');
+
 const somasDaMeta = computed(() => (Array.isArray(OrcamentoRealizado.value[ano])
   ? OrcamentoRealizado.value[ano].reduce((acc, cur) => {
     if (!cur.iniciativa && !cur.atividade) {
@@ -22,7 +24,6 @@ const somasDaMeta = computed(() => (Array.isArray(OrcamentoRealizado.value[ano])
     return acc;
   }, { soma_valor_empenho: 0, soma_valor_liquidado: 0 })
   : { soma_valor_empenho: 0, soma_valor_liquidado: 0 }));
-
 </script>
 <template>
   <div class="mb2">
