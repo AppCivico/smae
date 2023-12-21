@@ -732,7 +732,6 @@ export class ImportacaoOrcamentoService {
 
         if (row.nota_empenho && row.processo) return 'Linhas inválida: nota empenho ou enviar processo';
         if (row.nota_empenho && row.dotacao) return 'Linhas inválida: nota empenho ou enviar dotação';
-        if (row.processo && row.dotacao) return 'Linhas inválida: enviar processo ou dotação';
 
         if (!row.dotacao && !row.processo && !row.nota_empenho)
             return 'Linhas inválida: é necessário pelo menos dotação, processo ou nota de empenho';
@@ -842,11 +841,21 @@ export class ImportacaoOrcamentoService {
                 });
 
                 if (processo.length === 0) return 'Linha inválida: processo não encontrado';
-                if (processo.length !== 1)
-                    return `Linha inválida: ${processo.length} dotações encontradas pelo processo, cadastre pelo sistema`;
 
-                dotacao = processo[0].dotacao;
-                dotacao_processo = processo[0].processo;
+                const dotacoes = processo.map((r) => r.dotacao).join(', ');
+                if (row.dotacao) {
+                    const rDotacao = processo.filter((r) => r.dotacao == row.dotacao)[0];
+                    if (!rDotacao)
+                        return `Linha inválida: dotação informada não foi encontrada. Dotações retornadas: ${dotacoes}`;
+
+                    dotacao = rDotacao.dotacao;
+                    dotacao_processo = rDotacao.processo;
+                } else if (processo.length == 1) {
+                    dotacao = processo[0].dotacao;
+                    dotacao_processo = processo[0].processo;
+                } else {
+                    return `Linha inválida: ${processo.length} dotações encontradas, dotações retornadas: ${dotacoes}`;
+                }
             } catch (error) {
                 if (error instanceof HttpException) return `Linha inválida: ${error.message}`;
 
