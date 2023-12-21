@@ -1095,7 +1095,7 @@ model VariavelSuspensaoLog {
 
     pessoa_id   Int
     pessoa      Pessoa @relation(fields: [pessoa_id], references: [id])
-    
+
     suspendida   Boolean
     criado_em DateTime @db.Timestamptz(6)
 
@@ -3413,9 +3413,9 @@ view view_meta_pessoa_responsavel_na_cp {
 // view que já faz o join da view_meta_pessoa_responsavel + tbm a pessoa tem o privilegio
 // CadastroMeta.orcamento ou CadastroMeta.administrador_orcamento
 view view_meta_responsavel_orcamento {
-    id Int @id @default(autoincrement())
-
     meta_id   Int
     pessoa_id Int
     pessoa    Pessoa @relation(fields: [pessoa_id], references: [id])
+
+    @@unique([meta_id, pessoa_id])
 }
