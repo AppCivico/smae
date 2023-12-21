@@ -651,15 +651,48 @@ export class VariavelService {
             const responsaveis = updateVariavelDto.responsaveis;
             delete updateVariavelDto.responsaveis;
 
+            const suspendida: boolean | undefined = updateVariavelDto.suspendida;
+            delete updateVariavelDto.suspendida;
+
+            if (suspendida == true) {
+                const self = await prismaTxn.variavel.findFirstOrThrow({ where: {id: variavelId}, select: {mostrar_monitoramento: true} });
+
+                // Caso a variável já esteja com mostrar_monitoramento == true, ou esteja sendo modificada agora para true.
+                // E o boolean de suspendida seja enviado como true, mostrar_monitoramento deve ser false.
+                if ( self.mostrar_monitoramento || updateVariavelDto.mostrar_monitoramento )
+                  updateVariavelDto.mostrar_monitoramento = false;
+            }
+
             const updated = await prismaTxn.variavel.update({
                 where: { id: variavelId },
                 data: {
                     ...updateVariavelDto,
+                    suspendida_em: suspendida ? new Date(Date.now()) : null
                 },
                 select: {
+                    mostrar_monitoramento: true,
                     valor_base: true,
                 },
             });
+
+            if (suspendida != undefined) {
+                await prismaTxn.variavelSuspensaoLog.upsert({
+                    where: {
+                        variavel_id: variavelId
+                    },
+                    update: {
+                        pessoa_id: user.id,
+                        suspendida: suspendida,
+                        criado_em: new Date(Date.now())
+                    },
+                    create: {
+                        variavel_id: variavelId,
+                        pessoa_id: user.id,
+                        suspendida: suspendida,
+                        criado_em: new Date(Date.now())
+                    }
+                });
+            }
 
             if (responsaveis) {
                 await this.resyncIndicadorVariavel(indicador, variavelId, prismaTxn);
@@ -678,6 +711,120 @@ export class VariavelService {
         });
 
         return { id: variavelId };
+    }
+
+    async processVariaveisSuspensas(prismaTx: Prisma.TransactionClient): Promise<number[]> {
+        return await prismaTx.$queryRaw`
+            WITH jobs AS (
+                SELECT
+                    v.id as variavel_id,
+                    v.atraso_meses * '-1 month'::interval as atraso_meses,
+                    v.acumulativa as v_acumulativa,
+                    v.suspendida_em,
+                    cf.id AS cf_corrente_id,
+                    cf.data_ciclo AS cf_corrente_data_ciclo,
+                    s.serie AS serie,
+                    pdm.id as pdm_id
+                FROM variavel v
+                INNER JOIN indicador_variavel iv ON iv.variavel_id = v.id
+                INNER JOIN indicador i ON iv.indicador_id = i.id
+                LEFT JOIN meta m ON i.meta_id = m.id
+                LEFT JOIN iniciativa ini ON i.iniciativa_id = ini.id
+                LEFT JOIN meta m2 ON ini.meta_id = m2.id
+                LEFT JOIN atividade a ON i.atividade_id = a.id
+                LEFT JOIN iniciativa ini2 ON a.iniciativa_id = ini2.id
+                LEFT JOIN meta m3 ON ini2.meta_id = m3.id
+                INNER JOIN pdm  
+                    ON CASE
+                        WHEN m.id IS NOT NULL THEN m.pdm_id = pdm.id
+                        WHEN m2.id IS NOT NULL THEN m2.pdm_id = pdm.id
+                        WHEN m3.id IS NOT NULL THEN m3.pdm_id = pdm.id
+                    END 
+                JOIN ciclo_fisico cf ON
+                    cf.pdm_id = pdm.id
+                    AND cf.data_ciclo > v.suspendida_em
+                    AND cf.data_ciclo <= now()
+                CROSS JOIN (
+                    SELECT unnest(enum_range(NULL::"Serie")) serie
+                ) s
+                LEFT JOIN variavel_suspensa_controle vsc ON vsc.ciclo_fisico_corrente_id = cf.id AND vsc.variavel_id = v.id AND vsc.serie = s.serie
+                WHERE s.serie IN ('Realizado', 'RealizadoAcumulado')
+                AND vsc.id IS NULL
+                ORDER BY cf.id
+            ),
+            lookup_valores AS (
+                SELECT 
+                    j.variavel_id,
+                    j.atraso_meses,
+                    j.v_acumulativa,
+                    j.suspendida_em,
+                    j.cf_corrente_id,
+                    j.cf_corrente_data_ciclo,
+                    j.serie,
+                    cf.id AS cf_base_id,
+                    CASE WHEN v_acumulativa THEN 0::decimal 
+                    ELSE 
+                        -- não faz muito sentido não ter valor acumulado, mas se estiver faltando, é pq alguem apagou do banco na mão
+                        CASE WHEN sv.valor_nominal IS NULL AND j.serie = 'RealizadoAcumulado' THEN 0 ELSE sv.valor_nominal END 
+                    END AS valor 
+                FROM jobs j 
+                JOIN ciclo_fisico cf ON cf.pdm_id = j.pdm_id AND cf.data_ciclo = date_trunc('month', j.suspendida_em)
+                LEFT JOIN serie_variavel sv ON sv.variavel_id = j.variavel_id 
+                    AND sv.data_valor = date_trunc('month', j.suspendida_em) + j.atraso_meses
+                    AND sv.serie = j.serie   
+                ORDER BY j.cf_corrente_data_ciclo
+            ),
+            lookup_existentes AS (
+                SELECT 
+                    j.cf_corrente_id,
+                    j.variavel_id, 
+                    j.serie,
+                    sv.valor_nominal,
+                    sv.id as sv_id
+                FROM jobs j 
+                
+                LEFT JOIN serie_variavel sv ON sv.variavel_id = j.variavel_id 
+                    AND sv.data_valor = j.cf_corrente_data_ciclo + j.atraso_meses
+                    AND sv.serie = j.serie   
+                
+            ),
+            delete_values AS (
+                DELETE FROM serie_variavel WHERE id IN (SELECT sv_id FROM lookup_existentes)
+            ),
+            insert_values AS (
+                INSERT INTO serie_variavel (variavel_id, serie, data_valor, valor_nominal, ciclo_fisico_id)
+                SELECT 
+                    lv.variavel_id, 
+                    lv.serie, 
+                    lv.cf_corrente_data_ciclo + lv.atraso_meses,
+                    lv.valor,
+                    lv.cf_corrente_id    
+                FROM lookup_valores lv 
+                WHERE lv.valor IS NOT NULL 
+            ),
+            insert_control AS (
+                INSERT INTO variavel_suspensa_controle (variavel_id, serie, ciclo_fisico_base_id, ciclo_fisico_corrente_id, valor_antigo, valor_novo, processado_em)
+                SELECT 
+                    lv.variavel_id, 
+                    lv.serie, 
+                    lv.cf_base_id,
+                    lv.cf_corrente_id,
+                    le.valor_nominal,
+                    lv.valor,
+                    now()
+                FROM lookup_valores lv 
+                LEFT JOIN lookup_existentes le ON le.variavel_id = lv.variavel_id AND lv.serie = le.serie AND lv.cf_corrente_id = le.cf_corrente_id
+            ),
+            must_update_indicators AS (
+                SELECT 
+                    lv.variavel_id
+                FROM lookup_valores lv 
+                GROUP BY 1
+            )
+            SELECT 
+                array_agg(variavel_id) as variaveis
+            FROM must_update_indicators
+        ` 
     }
 
     async remove(variavelId: number, user: PessoaFromJwt) {

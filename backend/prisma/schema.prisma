@@ -225,6 +225,8 @@ model Pessoa {
     PdmOrcamentoRealizadoConfig     PdmOrcamentoRealizadoConfig[]
     view_meta_responsavel_orcamento view_meta_responsavel_orcamento[]
 
+    variavel_suspensa_log VariavelSuspensaoLog[]
+
     @@index([email])
     @@map("pessoa")
 }
@@ -1048,6 +1050,7 @@ model Variavel {
     codigo String
 
     mostrar_monitoramento Boolean @default(true)
+    suspendida_em DateTime?       @db.Timestamptz(6)
 
     // ficam null quando a Periodicidade é a mesma do indicador
     // quando for diferente, é necessário preencher para saber qual é o mês de base
@@ -1079,8 +1082,45 @@ model Variavel {
     removido_em             DateTime?                 @db.Timestamptz(6)
     FormulaCompostaVariavel FormulaCompostaVariavel[]
 
+    suspensao_log VariavelSuspensaoLog[]
+    suspensao_controle VariavelSuspensaControle[]
+
     @@index([regiao_id])
     @@map("variavel")
+}
+
+model VariavelSuspensaoLog {
+    variavel_id Int @unique
+    variavel    Variavel @relation(fields: [variavel_id], references: [id])
+
+    pessoa_id   Int
+    pessoa      Pessoa @relation(fields: [pessoa_id], references: [id])
+    
+    suspendida   Boolean
+    criado_em DateTime @db.Timestamptz(6)
+
+    @@map("variavel_suspensao_log")
+}
+
+model VariavelSuspensaControle {
+    id                       Int @id @default(autoincrement())
+    variavel_id              Int
+    variavel                 Variavel @relation(fields: [variavel_id], references: [id])
+
+    ciclo_fisico_base_id     Int
+    ciclo_fisico_corrente_id Int
+
+    ciclo_fisico_base     CicloFisico @relation("CicloFisicoBase", fields: [ciclo_fisico_base_id], references: [id])
+    ciclo_fisico_corrente CicloFisico @relation("CicloFisicoCorrente", fields: [ciclo_fisico_corrente_id], references: [id])
+
+    serie                    Serie
+    valor_antigo             Decimal?  @db.Decimal(65, 30)
+    valor_novo               Decimal?  @db.Decimal(65, 30)
+
+    processado_em DateTime @db.Timestamptz(6)
+
+    @@unique([variavel_id, ciclo_fisico_corrente_id, serie])
+    @@map("variavel_suspensa_controle")
 }
 
 // cria relacionamento com um indicador (ou iniciativa que ainda nao existe) com a variavel
@@ -1691,6 +1731,9 @@ model CicloFisico {
     MetaCicloFisicoFechamento             MetaCicloFisicoFechamento[]
     FormulaCompostaCicloFisicoQualitativo FormulaCompostaCicloFisicoQualitativo[]
     FormulaCompostaCicloFisicoDocumento   FormulaCompostaCicloFisicoDocumento[]
+
+    VariaveisSuspensasCicloBase VariavelSuspensaControle[] @relation("CicloFisicoBase")
+    VariaveisSuspensasCicloCorrente VariavelSuspensaControle[] @relation("CicloFisicoCorrente")
 
     @@index([pdm_id])
     @@index([data_ciclo])

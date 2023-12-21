@@ -7,10 +7,13 @@ import { TagService } from '../tag/tag.service';
 import { UploadModule } from '../upload/upload.module';
 import { PdmController } from './pdm.controller';
 import { PdmService } from './pdm.service';
+import { VariavelService } from 'src/variavel/variavel.service';
+import { VariavelModule } from 'src/variavel/variavel.module';
+import { JwtService } from '@nestjs/jwt';
 
 @Module({
     imports: [PrismaModule, UploadModule],
     controllers: [PdmController],
-    providers: [PdmService, ObjetivoEstrategicoService, SubTemaService, EixoService, TagService],
+    providers: [PdmService, ObjetivoEstrategicoService, SubTemaService, EixoService, TagService, VariavelService, JwtService],
 })
 export class PdmModule {}

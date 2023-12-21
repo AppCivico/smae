@@ -16,6 +16,7 @@ import { UpdatePdmOrcamentoConfigDto } from './dto/update-pdm-orcamento-config.d
 import { UpdatePdmDto } from './dto/update-pdm.dto';
 import { ListPdm } from './entities/list-pdm.entity';
 import { PdmDocument } from './entities/pdm-document.entity';
+import { VariavelService } from 'src/variavel/variavel.service';
 
 type CicloFisicoResumo = {
     id: number;
@@ -28,7 +29,11 @@ type CicloFisicoResumo = {
 @Injectable()
 export class PdmService {
     private readonly logger = new Logger(PdmService.name);
-    constructor(private readonly prisma: PrismaService, private readonly uploadService: UploadService) {}
+    constructor(
+        private readonly prisma: PrismaService,
+        private readonly uploadService: UploadService,
+        private readonly variavelService: VariavelService
+    ) {}
 
     async create(createPdmDto: CreatePdmDto, user: PessoaFromJwt) {
         const similarExists = await this.prisma.pdm.count({
@@ -405,6 +410,13 @@ export class PdmService {
                 while (1) {
                     const keepGoing = await this.verificaCiclosPendentes(locked[0].now_ymd);
                     if (!keepGoing) break;
+                }
+
+                const varsSuspensas = await this.variavelService.processVariaveisSuspensas(prisma);
+            
+                if (varsSuspensas.length) {
+                    await this.variavelService.recalc_variaveis_acumulada(varsSuspensas, prisma);
+                    await this.variavelService.recalc_indicador_usando_variaveis(varsSuspensas, prisma);
                 }
             },
             {
