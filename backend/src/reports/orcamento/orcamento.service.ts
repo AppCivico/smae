@@ -352,6 +352,7 @@ export class OrcamentoService implements ReportableService {
 
                 where i.id = ANY(${search.map((r) => r.id)}::int[])
                 and i.mes_corrente = TRUE
+                and o.removido_em IS NULLL
             ), analitico as (
             select
                 dp.ano_referencia as plan_dotacao_ano_utilizado,
