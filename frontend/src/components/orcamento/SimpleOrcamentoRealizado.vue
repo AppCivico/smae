@@ -26,19 +26,32 @@ const somasDaMeta = computed(() => (Array.isArray(OrcamentoRealizado.value[ano])
 <template>
   <div class="mb2">
     <div>
-      <div class="tablepreinfo">
-        <div class="t12 lh1 w700 mb05">
-          Execução orçamentária
+      <div class="tablepreinfo flex center">
+        <div class="f2">
+          <div class="t12 lh1 w700 mb05">
+            Execução orçamentária
+          </div>
+          <div
+            v-if="OrcamentoRealizado[ano]?.length"
+            class="t12 lh1 w700"
+          >
+            <span class="tc300">Empenho:</span>
+            {{ formataValor(somaItems(OrcamentoRealizado[ano], 'soma_valor_empenho')) }}
+            <span class="ml1 tc300">Liquidação:</span>
+            {{ formataValor(somaItems(OrcamentoRealizado[ano], 'soma_valor_liquidado')) }}
+          </div>
         </div>
-        <div
-          v-if="OrcamentoRealizado[ano]?.length"
-          class="t12 lh1 w700"
-        >
-          <span class="tc300">Empenho:</span>
-          {{ formataValor(somaItems(OrcamentoRealizado[ano], 'soma_valor_empenho')) }}
-          <span class="ml1 tc300">Liquidação:</span>
-          {{ formataValor(somaItems(OrcamentoRealizado[ano], 'soma_valor_liquidado')) }}
-        </div>
+
+        <label class="ml2">
+          <input
+            type="checkbox"
+            name="plano-concluído"
+            class="interruptor"
+          >
+          <span>
+            Concluído
+          </span>
+        </label>
       </div>
 
       <div
