@@ -107,7 +107,7 @@ const onSubmit = handleSubmit.withControlled(async () => {
 VariaveisStore.buscarPeríodosDeVariávelDeFórmula(varId);
 
 watch(valoresIniciais, (novoValor) => {
-  resetForm(novoValor);
+  resetForm({ values: novoValor });
 }, { immediate: true });
 
 watch(sériesDeCompostaParaEdição, (novoValor) => {
