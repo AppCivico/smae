@@ -15,6 +15,10 @@ const { OrcamentoRealizado } = storeToRefs(OrcamentosStore);
 
 const órgãoEUnidadeSelecionados = ref('');
 
+const groups = computed(() => (Array.isArray(OrcamentoRealizado.value[ano])
+  ? agrupaFilhos(OrcamentoRealizado.value[ano])
+  : null));
+
 const somasDaMeta = computed(() => (Array.isArray(OrcamentoRealizado.value[ano])
   ? OrcamentoRealizado.value[ano].reduce((acc, cur) => {
     if (!cur.iniciativa && !cur.atividade) {
@@ -85,7 +89,7 @@ const somasDaMeta = computed(() => (Array.isArray(OrcamentoRealizado.value[ano])
             <th style="width: 50px" />
           </tr>
         </thead>
-        <template v-if="groups = agrupaFilhos(OrcamentoRealizado[ano])">
+        <template v-if="groups">
           <tbody>
             <tr>
               <td class="tc600 w700 pl1">
