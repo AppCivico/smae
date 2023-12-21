@@ -4,9 +4,11 @@ import dateToField from '@/helpers/dateToField';
 import formataValor from '@/helpers/formataValor';
 import { useAlertStore, useOrcamentosStore } from '@/stores';
 import { storeToRefs } from 'pinia';
+import { ref } from 'vue';
 import agrupaFilhos from './helpers/agrupaFilhos';
 import maiorData from './helpers/maiorData';
 import somaItems from './helpers/somaItems';
+import FiltroPorORgaoEUnidade from './FiltroPorORgaoEUnidade.vue';
 
 const alertStore = useAlertStore();
 const props = defineProps(['parentlink', 'config']);
@@ -15,6 +17,8 @@ const OrcamentosStore = useOrcamentosStore();
 const {
   OrcamentoCusteio, previstoEhZero, previstoEhZeroCriadoPor, previstoEhZeroCriadoEm,
 } = storeToRefs(OrcamentosStore);
+
+const órgãoEUnidadeSelecionados = ref('');
 
 function restringirAZero() {
   alertStore.confirmAction(`Deseja mesmo informar que não há orçamento reservado para o ano de ${ano}?`, () => {
@@ -26,6 +30,14 @@ function restringirAZero() {
 <template>
   <div class="mb2">
     <div>
+      <FiltroPorORgaoEUnidade
+        v-model="órgãoEUnidadeSelecionados"
+        :ano="ano"
+        :lista="Array.isArray(OrcamentoCusteio[ano])
+          ? OrcamentoCusteio[ano]
+          : []"
+      />
+
       <div class="tablepreinfo">
         <div class="flex spacebetween">
           <div class="flex center">
@@ -109,6 +121,7 @@ function restringirAZero() {
         <template v-if="groups = agrupaFilhos(OrcamentoCusteio[ano])">
           <tbody>
             <LinhaCusteio
+              :órgão-e-unidade-selecionados="órgãoEUnidadeSelecionados"
               :group="groups"
               :permissao="config.previsao_custo_disponivel"
               :parentlink="parentlink"
@@ -132,6 +145,7 @@ function restringirAZero() {
                 <td />
               </tr>
               <LinhaCusteio
+                :órgão-e-unidade-selecionados="órgãoEUnidadeSelecionados"
                 :group="g"
                 :permissao="config.previsao_custo_disponivel"
                 :parentlink="parentlink"
@@ -155,6 +169,7 @@ function restringirAZero() {
                   <td />
                 </tr>
                 <LinhaCusteio
+                  :órgão-e-unidade-selecionados="órgãoEUnidadeSelecionados"
                   :group="gg"
                   :permissao="config.previsao_custo_disponivel"
                   :parentlink="parentlink"

@@ -3,17 +3,28 @@ import { default as LinhaPlanejado } from '@/components/orcamento/LinhaPlanejado
 import formataValor from '@/helpers/formataValor';
 import { useOrcamentosStore } from '@/stores/orcamentos.store';
 import { storeToRefs } from 'pinia';
+import { ref } from 'vue';
 import agrupaFilhos from './helpers/agrupaFilhos';
 import somaItems from './helpers/somaItems';
+import FiltroPorORgaoEUnidade from './FiltroPorORgaoEUnidade.vue';
 
 const props = defineProps(['parentlink', 'config']);
 const ano = props.config.ano_referencia;
 const OrcamentosStore = useOrcamentosStore();
 const { OrcamentoPlanejado } = storeToRefs(OrcamentosStore);
+
+const órgãoEUnidadeSelecionados = ref('');
 </script>
 <template>
   <div class="mb2">
     <div>
+      <FiltroPorORgaoEUnidade
+        v-model="órgãoEUnidadeSelecionados"
+        :ano="ano"
+        :lista="Array.isArray(OrcamentoPlanejado[ano])
+          ? OrcamentoPlanejado[ano]
+          : []"
+      />
       <div class="tablepreinfo">
         <div class="t12 lh1 w700 mb05">
           Orçamento Planejado
@@ -59,6 +70,7 @@ const { OrcamentoPlanejado } = storeToRefs(OrcamentosStore);
         <template v-if="groups = agrupaFilhos(OrcamentoPlanejado[ano])">
           <tbody>
             <LinhaPlanejado
+              :órgão-e-unidade-selecionados="órgãoEUnidadeSelecionados"
               :group="groups"
               :permissao="config.previsao_custo_disponivel"
               :parentlink="parentlink"
@@ -80,6 +92,7 @@ const { OrcamentoPlanejado } = storeToRefs(OrcamentosStore);
                 <td />
               </tr>
               <LinhaPlanejado
+                :órgão-e-unidade-selecionados="órgãoEUnidadeSelecionados"
                 :group="g"
                 :permissao="config.previsao_custo_disponivel"
                 :parentlink="parentlink"
@@ -100,6 +113,7 @@ const { OrcamentoPlanejado } = storeToRefs(OrcamentosStore);
                   <td />
                 </tr>
                 <LinhaPlanejado
+                  :órgão-e-unidade-selecionados="órgãoEUnidadeSelecionados"
                   :group="gg"
                   :permissao="config.previsao_custo_disponivel"
                   :parentlink="parentlink"

@@ -3,9 +3,10 @@ import { default as LinhaRealizado } from '@/components/orcamento/LinhaRealizado
 import formataValor from '@/helpers/formataValor';
 import { useOrcamentosStore } from '@/stores/orcamentos.store';
 import { storeToRefs } from 'pinia';
-import { computed } from 'vue';
+import { ref, computed } from 'vue';
 import agrupaFilhos from './helpers/agrupaFilhos';
 import somaItems from './helpers/somaItems';
+import FiltroPorORgaoEUnidade from './FiltroPorORgaoEUnidade.vue';
 
 const props = defineProps(['parentlink', 'config']);
 const ano = props.config.ano_referencia;
@@ -26,6 +27,13 @@ const somasDaMeta = computed(() => (Array.isArray(OrcamentoRealizado.value[ano])
 <template>
   <div class="mb2">
     <div>
+      <FiltroPorORgaoEUnidade
+        v-model="órgãoEUnidadeSelecionados"
+        :ano="ano"
+        :lista="Array.isArray(OrcamentoRealizado[ano])
+          ? OrcamentoRealizado[ano]
+          : []"
+      />
       <div class="tablepreinfo flex center">
         <div class="f2">
           <div class="t12 lh1 w700 mb05">
@@ -96,6 +104,7 @@ const somasDaMeta = computed(() => (Array.isArray(OrcamentoRealizado.value[ano])
               <td />
             </tr>
             <LinhaRealizado
+              :órgão-e-unidade-selecionados="órgãoEUnidadeSelecionados"
               :group="groups"
               :permissao="config.execucao_disponivel"
               :parentlink="parentlink"
@@ -129,6 +138,7 @@ const somasDaMeta = computed(() => (Array.isArray(OrcamentoRealizado.value[ano])
                 <td />
               </tr>
               <LinhaRealizado
+                :órgão-e-unidade-selecionados="órgãoEUnidadeSelecionados"
                 :group="g"
                 :permissao="config.previsao_custo_disponivel"
                 :parentlink="parentlink"
@@ -165,6 +175,7 @@ const somasDaMeta = computed(() => (Array.isArray(OrcamentoRealizado.value[ano])
                   <td />
                 </tr>
                 <LinhaRealizado
+                  :órgão-e-unidade-selecionados="órgãoEUnidadeSelecionados"
                   :group="gg"
                   :permissao="config.previsao_custo_disponivel"
                   :parentlink="parentlink"
