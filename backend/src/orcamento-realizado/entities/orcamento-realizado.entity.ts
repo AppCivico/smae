@@ -12,6 +12,7 @@ export class OrcamentoRealizado {
     iniciativa: IdCodTituloDto | null;
     ano_referencia: number;
     dotacao: string;
+    dotacao_complemento: string | null;
     projeto_atividade: string;
     processo: string | null;
     nota_empenho: string | null;
