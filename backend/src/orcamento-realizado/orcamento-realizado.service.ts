@@ -14,7 +14,7 @@ import {
 } from './dto/create-orcamento-realizado.dto';
 import { OrcamentoRealizado } from './entities/orcamento-realizado.entity';
 import { FormataNotaEmpenho } from '../common/FormataNotaEmpenho';
-import { TrataDotacaoGrande } from '../sof-api/sof-api.service';
+import { ExtraiComplementoDotacao, TrataDotacaoGrande } from '../sof-api/sof-api.service';
 
 export const MAX_BATCH_SIZE = parseInt(process.env.MAX_LINHAS_REMOVIDAS_ORCAMENTO_EM_LOTE || '', 10) || 10;
 
@@ -44,6 +44,9 @@ export class OrcamentoRealizadoService {
     }
 
     async create(dto: CreateOrcamentoRealizadoDto, user: PessoaFromJwt): Promise<RecordWithId> {
+        const dotacao_complemento = ExtraiComplementoDotacao(dto);
+        dto.dotacao = TrataDotacaoGrande(dto.dotacao);
+
         const { meta_id, iniciativa_id, atividade_id } = await this.orcamentoPlanejado.validaMetaIniAtv(dto);
 
         await user.verificaPermissaoOrcamentoNaMeta(meta_id, this.prisma);
@@ -91,8 +94,9 @@ export class OrcamentoRealizadoService {
                         iniciativa_id,
                         atividade_id,
                         dotacao,
-                        processo: processo,
-                        nota_empenho: nota_empenho,
+                        dotacao_complemento,
+                        processo,
+                        nota_empenho,
                         removido_em: null,
                         ano_referencia: dto.ano_referencia,
                     },
@@ -250,6 +254,7 @@ export class OrcamentoRealizadoService {
                         iniciativa_id,
                         atividade_id,
                         dotacao: updated.dotacao,
+                        dotacao_complemento: updated.dotacao_complemento,
                         processo: updated.processo,
                         nota_empenho: updated.nota_empenho,
                         id: { not: updated.id },
@@ -611,6 +616,7 @@ export class OrcamentoRealizadoService {
                 soma_valor_liquidado: true,
                 ano_referencia: true,
                 dotacao: true,
+                dotacao_complemento: true,
                 nota_empenho: true,
                 processo: true,
                 criado_em: true,
@@ -826,6 +832,7 @@ export class OrcamentoRealizadoService {
                 criado_em: orcaRealizado.criado_em,
                 criador: orcaRealizado.criador,
                 dotacao: orcaRealizado.dotacao,
+                dotacao_complemento: orcaRealizado.dotacao_complemento,
                 nota_empenho: orcaRealizado.nota_empenho,
                 processo: orcaRealizado.processo,
                 soma_valor_empenho: orcaRealizado.soma_valor_empenho.toFixed(2),

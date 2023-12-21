@@ -108,6 +108,15 @@ export function TrataDotacaoGrande(dotacao: string): string {
     return dotacao;
 }
 
+export function ExtraiComplementoDotacao(row: { dotacao: string; dotacao_complemento?: string | null }): string | null {
+    // prioridade na dotação
+    if (row.dotacao.length == 48) return row.dotacao.substring(36);
+    // depois no campo extra
+    if (row.dotacao_complemento) return row.dotacao_complemento;
+    // se não continua null
+    return null;
+}
+
 @Injectable()
 export class SofApiService {
     private got: Got;

@@ -5,7 +5,7 @@ import { FormataNotaEmpenho } from '../../common/FormataNotaEmpenho';
 import { BatchRecordWithId, RecordWithId } from '../../common/dto/record-with-id.dto';
 import { DotacaoService } from '../../dotacao/dotacao.service';
 import { PrismaService } from '../../prisma/prisma.service';
-import { TrataDotacaoGrande } from '../../sof-api/sof-api.service';
+import { ExtraiComplementoDotacao, TrataDotacaoGrande } from '../../sof-api/sof-api.service';
 import { ProjetoMVPDto } from '../projeto/entities/projeto.entity';
 import {
     CreatePPOrcamentoRealizadoDto,
@@ -40,6 +40,9 @@ export class OrcamentoRealizadoService {
         dto: CreatePPOrcamentoRealizadoDto,
         user: PessoaFromJwt
     ): Promise<RecordWithId> {
+        const dotacao_complemento = ExtraiComplementoDotacao(dto);
+        dto.dotacao = TrataDotacaoGrande(dto.dotacao);
+
         const { dotacao, processo, nota_empenho } = await this.validaDotProcNota(dto);
 
         console.log({ dotacao, processo, nota_empenho });
@@ -70,8 +73,9 @@ export class OrcamentoRealizadoService {
                     where: {
                         projeto_id: projeto.id,
                         dotacao,
-                        processo: processo,
-                        nota_empenho: nota_empenho,
+                        dotacao_complemento,
+                        processo,
+                        nota_empenho,
                         removido_em: null,
                         ano_referencia: dto.ano_referencia,
                     },
@@ -555,6 +559,7 @@ export class OrcamentoRealizadoService {
                 soma_valor_liquidado: true,
                 ano_referencia: true,
                 dotacao: true,
+                dotacao_complemento: true,
                 nota_empenho: true,
                 processo: true,
                 criado_em: true,
@@ -770,6 +775,7 @@ export class OrcamentoRealizadoService {
                 criado_em: orcaRealizado.criado_em,
                 criador: orcaRealizado.criador,
                 dotacao: orcaRealizado.dotacao,
+                dotacao_complemento: orcaRealizado.dotacao_complemento,
                 nota_empenho: orcaRealizado.nota_empenho,
                 processo: orcaRealizado.processo,
                 soma_valor_empenho: orcaRealizado.soma_valor_empenho.toFixed(2),

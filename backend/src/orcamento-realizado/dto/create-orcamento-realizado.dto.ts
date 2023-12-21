@@ -93,15 +93,28 @@ export class CreateOrcamentoRealizadoDto {
     ano_referencia: number;
 
     /**
-     * dotacao: esperado exatamente
+     * dotacao: esperado exatamente a dotação com 35 ou 48 dígitos (cheia)
      * @example "00.00.00.000.0000.0.000.00000000.00"
      */
     @Type(() => String) // fazendo cast pra texto sempre, já que tem a mask
-    @MaxLength(40)
-    @Matches(/^\d{2}\.\d{2}\.\d{2}\.\d{3}\.\d{4}\.\d\.\d{3}\.\d{8}\.\d{2}$/, {
-        message: 'Dotação não está no formato esperado: 00.00.00.000.0000.0.000.00000000.00',
+    @MaxLength(48)
+    @Matches(/^\d{2}\.\d{2}\.\d{2}\.\d{3}\.\d{4}\.\d\.\d{3}\.\d{8}\.\d{2}(?:\d{1}\.\d{3}\.\d{4}\.\d{1})?$/, {
+        message:
+            'Dotação não está no formato esperado: 00.00.00.000.0000.0.000.00000000.00 ou 00.00.00.000.0000.0.000.00000000.00.0.000.0000.0',
     })
     dotacao: string;
+
+    /**
+     * dotacao_complemento: esperado exatamente
+     * @example "0.000.0000.0"
+     */
+    @IsOptional()
+    @Type(() => String) // fazendo cast pra texto sempre, já que tem a mask
+    @MaxLength(12)
+    @Matches(/^\d{1}\.\d{3}\.\d{4}\.\d{1}$/, {
+        message: 'Dotação Complemento não está no formato esperado: 0.000.0000.0',
+    })
+    dotacao_complemento?: string | null;
 
     @IsOptional()
     @Type(() => String) // fazendo cast pra texto sempre, já que tem a mask
