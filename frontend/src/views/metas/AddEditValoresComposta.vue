@@ -6,6 +6,7 @@ import geradorDeAtributoStep from '@/helpers/geradorDeAtributoStep';
 import { useAlertStore } from '@/stores/alert.store';
 import { useVariaveisStore } from '@/stores/variaveis.store';
 import { storeToRefs } from 'pinia';
+import { cloneDeep } from 'lodash';
 import {
   computed, ref, watch,
 } from 'vue';
@@ -83,6 +84,7 @@ const onSubmit = handleSubmit.withControlled(async () => {
 
     if (r) {
       alertStore.success(msg);
+      resetForm({ values: cloneDeep(carga) });
     }
   } catch (error) {
     alertStore.error(error);
@@ -103,6 +105,22 @@ const onSubmit = handleSubmit.withControlled(async () => {
 //     resetField(`valores[${i}].valor`, { value: undefined });
 //   });
 // }
+
+function atualizarPeríodo(evento) {
+  const { value: valor } = evento.target;
+
+  if (formulárioSujo.value) {
+    alertStore.confirmAction('Deseja sair sem salvar as alterações?', () => {
+      período.value = valor;
+    }, 'OK', () => {
+      // eslint-disable-next-line no-param-reassign
+      evento.target.value = período.value;
+      alertStore.clear();
+    });
+  } else {
+    período.value = valor;
+  }
+}
 
 VariaveisStore.buscarPeríodosDeVariávelDeFórmula(varId);
 
@@ -142,8 +160,8 @@ watch(período, (novoValor) => {
 
       <div class="f2 mr1">
         <select
-          v-model="período"
           class="inputtext light"
+          @change="($event) => atualizarPeríodo($event)"
         >
           <option value="" />
           <option
