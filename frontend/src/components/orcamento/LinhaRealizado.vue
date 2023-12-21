@@ -2,7 +2,24 @@
 import formataValor from '@/helpers/formataValor';
 import mêsDoÚltimoItem from './helpers/mesDoUltimoItem';
 
-defineProps(['group', 'permissao', 'parentlink']);
+defineProps({
+  group: {
+    type: Array,
+    required: true,
+  },
+  permissao: {
+    type: Boolean,
+    required: true,
+  },
+  parentlink: {
+    type: String,
+    required: true,
+  },
+  órgãoEUnidadeSelecionados: {
+    type: String,
+    default: '',
+  },
+});
 
 const alemDoEmpenhado = (x) => Number(x.smae_soma_valor_empenho) > Number(x.empenho_liquido);
 const alemDoLiquidado = (x) => Number(x.smae_soma_valor_liquidado) > Number(x.valor_liquidado);
@@ -11,6 +28,8 @@ const alemDoLiquidado = (x) => Number(x.smae_soma_valor_liquidado) > Number(x.va
   <tr
     v-for="item in group.items"
     :key="item.id"
+    :hidden="!!órgãoEUnidadeSelecionados
+      && item?.dotacao.indexOf(órgãoEUnidadeSelecionados) !== 0"
   >
     <td style="word-break: break-all;">
       {{ item?.dotacao }}

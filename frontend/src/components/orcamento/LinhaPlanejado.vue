@@ -1,5 +1,22 @@
 <script setup>
-defineProps(['group', 'permissao', 'parentlink']);
+defineProps({
+  group: {
+    type: Array,
+    required: true,
+  },
+  permissao: {
+    type: Boolean,
+    required: true,
+  },
+  parentlink: {
+    type: String,
+    required: true,
+  },
+  órgãoEUnidadeSelecionados: {
+    type: String,
+    default: '',
+  },
+});
 function formataValor(d) {
   return Number(d).toLocaleString('pt-BR', {
     style: 'currency',
@@ -11,6 +28,8 @@ function formataValor(d) {
   <tr
     v-for="item in group.items"
     :key="item.id"
+    :hidden="!!órgãoEUnidadeSelecionados
+      && item?.dotacao.indexOf(órgãoEUnidadeSelecionados) !== 0"
   >
     <td style="word-break: break-all;">
       {{ item?.dotacao }}
