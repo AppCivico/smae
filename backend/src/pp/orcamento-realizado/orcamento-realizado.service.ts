@@ -210,6 +210,7 @@ export class OrcamentoRealizadoService {
                     where: {
                         projeto_id: projeto.id,
                         dotacao: updated.dotacao,
+                        dotacao_complemento: updated.dotacao_complemento,
                         processo: updated.processo,
                         nota_empenho: updated.nota_empenho,
                         id: { not: updated.id },
