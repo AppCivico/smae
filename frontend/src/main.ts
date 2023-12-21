@@ -4,14 +4,21 @@ import LabelFromYup from '@/components/LabelFromYup.vue';
 // @ts-ignore
 import requestS from '@/helpers/requestS.ts';
 import { createPinia } from 'pinia';
-import { createApp, markRaw, nextTick } from 'vue';
+import {
+  createApp, markRaw, nextTick, provide,
+} from 'vue';
 import type { RouteLocationNormalizedLoaded, Router } from 'vue-router';
 import App from './App.vue';
 import { router } from './router';
 
 const app = createApp(App);
 
-app.config.globalProperties.habilitarBeta = import.meta.env.VITE_HABILITAR_BETA || false;
+app.config.globalProperties.gblHabilitarBeta = import.meta.env.VITE_HABILITAR_BETA || false;
+app.config.globalProperties.gblLimiteDeSeleçãoSimultânea = Number.parseInt(
+  import.meta.env.VITE_LIMITE_SELECAO,
+  10,
+)
+  || 0;
 
 const pinia = createPinia();
 

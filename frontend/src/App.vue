@@ -9,7 +9,7 @@ if (authStore.estouAutenticada) {
 </script>
 <template>
   <!-- vamos avançar até essa chave ser desnecessária para o sistema todo -->
-  <router-view v-if="$route.meta.rotaPrescindeDeChave ?? habilitarBeta" />
+  <router-view v-if="$route.meta.rotaPrescindeDeChave ?? gblHabilitarBeta" />
   <router-view
     v-else
     :key="$route.path"

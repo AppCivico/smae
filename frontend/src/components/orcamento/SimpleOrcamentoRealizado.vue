@@ -1,23 +1,45 @@
 <script setup>
 import { default as LinhaRealizado } from '@/components/orcamento/LinhaRealizado.vue';
+import { useAuthStore } from '@/stores/auth.store';
 import formataValor from '@/helpers/formataValor';
+import { useAlertStore } from '@/stores/alert.store';
 import { useOrcamentosStore } from '@/stores/orcamentos.store';
 import { storeToRefs } from 'pinia';
-import { ref, computed } from 'vue';
+import { computed, ref, watch } from 'vue';
 import agrupaFilhos from './helpers/agrupaFilhos';
 import somaItems from './helpers/somaItems';
 import FiltroPorORgaoEUnidade from './FiltroPorORgaoEUnidade.vue';
 
+const emit = defineEmits(['apagar', 'editar']);
+
+// PRA-FAZER: tornar globalmente disponível. Ver `main.ts`.
+const gblLimiteDeSeleçãoSimultânea = Number.parseInt(
+  import.meta.env.VITE_LIMITE_SELECAO,
+  10,
+)
+  || 0;
+
 const props = defineProps(['parentlink', 'config']);
 const ano = props.config.ano_referencia;
+
+const alertStore = useAlertStore();
+const { temPermissãoPara } = useAuthStore();
 const OrcamentosStore = useOrcamentosStore();
 const { OrcamentoRealizado } = storeToRefs(OrcamentosStore);
 
 const órgãoEUnidadeSelecionados = ref('');
+const linhasSelecionadas = ref([]);
 
 const groups = computed(() => (Array.isArray(OrcamentoRealizado.value[ano])
   ? agrupaFilhos(OrcamentoRealizado.value[ano])
   : null));
+
+const filhosOrdenados = computed(() => (Array.isArray(OrcamentoRealizado.value[ano])
+  ? [...OrcamentoRealizado.value[ano]]
+    .sort((a, b) => (a.meta?.id || 0) - (b.meta?.id || 0)
+      || (a.iniciativa?.id || 0) - (b.iniciativa?.id || 0)
+      || (a.atividade?.id || 0) - (b.atividade?.id || 0))
+  : []));
 
 const somasDaMeta = computed(() => (Array.isArray(OrcamentoRealizado.value[ano])
   ? OrcamentoRealizado.value[ano].reduce((acc, cur) => {
@@ -28,6 +50,61 @@ const somasDaMeta = computed(() => (Array.isArray(OrcamentoRealizado.value[ano])
     return acc;
   }, { soma_valor_empenho: 0, soma_valor_liquidado: 0 })
   : { soma_valor_empenho: 0, soma_valor_liquidado: 0 }));
+
+function selecionarTodasAsLinhas() {
+  const idsParaSelecionar = [...linhasSelecionadas.value];
+  const limite = gblLimiteDeSeleçãoSimultânea
+    ? Math.min(gblLimiteDeSeleçãoSimultânea, filhosOrdenados.value.length)
+    : filhosOrdenados.value.length;
+
+  if (linhasSelecionadas.value.length < limite) {
+    let i = linhasSelecionadas.value.length;
+
+    while (i < limite) {
+      const próximoItemSelecionável = filhosOrdenados.value
+        .find((x) => idsParaSelecionar.indexOf(x.id) === -1);
+      if (próximoItemSelecionável) {
+        idsParaSelecionar.push(próximoItemSelecionável.id);
+      }
+
+      i += 1;
+    }
+    linhasSelecionadas.value = idsParaSelecionar;
+  } else {
+    linhasSelecionadas.value = [];
+  }
+}
+
+async function excluirEmLote(ids) {
+  const carga = { ids: ids.map((x) => ({ id: x })) };
+  let pergunta = 'Deseja mesmo remover esses itens?';
+  let mensagem = 'Itens removidos';
+
+  if (ids.length === 1) {
+    pergunta = 'Deseja mesmo remover esse item?';
+    mensagem = 'Item removido';
+  }
+
+  alertStore.confirmAction(pergunta, async () => {
+    try {
+      if (await OrcamentosStore.deleteOrcamentosRealizadosEmLote(carga)) {
+        emit('apagar', ids);
+        órgãoEUnidadeSelecionados.value = '';
+        linhasSelecionadas.value = [];
+        alertStore.success(mensagem);
+      }
+    } catch (error) {
+      alertStore.error(error);
+    }
+  }, 'Remover');
+}
+
+watch(órgãoEUnidadeSelecionados, (novoValor) => {
+  if (novoValor) {
+    linhasSelecionadas.value = [];
+  }
+});
+
 </script>
 <template>
   <div class="mb2">
@@ -65,6 +142,16 @@ const somasDaMeta = computed(() => (Array.isArray(OrcamentoRealizado.value[ano])
             Concluído
           </span>
         </label>
+
+        <button
+          v-if="temPermissãoPara(['PDM.admin_cp', 'PDM.tecnico_cp'])"
+          type="button"
+          class="ml2 btn bgnone outline"
+          :disabled="!linhasSelecionadas.length"
+          @click="() => excluirEmLote(linhasSelecionadas)"
+        >
+          excluir de montão
+        </button>
       </div>
 
       <div
@@ -78,6 +165,15 @@ const somasDaMeta = computed(() => (Array.isArray(OrcamentoRealizado.value[ano])
         v-if="config.execucao_disponivel"
         class="tablemain fix no-zebra horizontal-lines"
       >
+        <col>
+        <col>
+        <col>
+        <col>
+        <col>
+        <col
+          v-if="temPermissãoPara(['PDM.admin_cp', 'PDM.tecnico_cp'])"
+          class="col--botão-de-ação"
+        >
         <thead>
           <tr>
             <th style="width: 50%">
@@ -87,6 +183,25 @@ const somasDaMeta = computed(() => (Array.isArray(OrcamentoRealizado.value[ano])
             <th>Liquidação</th>
             <th>Atualizado em</th>
             <th style="width: 50px" />
+            <th v-if="temPermissãoPara(['PDM.admin_cp', 'PDM.tecnico_cp'])">
+              <button
+                type="button"
+                class="like-a__text"
+                :disabled="!filhosOrdenados.length"
+                :aria-label="gblLimiteDeSeleçãoSimultânea
+                  ? `Selecionar ${gblLimiteDeSeleçãoSimultânea} itens`
+                  : 'Selecionar tudo'"
+                :title="gblLimiteDeSeleçãoSimultânea
+                  ? `Selecionar ${gblLimiteDeSeleçãoSimultânea} itens`
+                  : 'Selecionar tudo'"
+                @click="selecionarTodasAsLinhas"
+              >
+                <svg
+                  width="20"
+                  height="20"
+                ><use xlink:href="#i_waste" /></svg>
+              </button>
+            </th>
           </tr>
         </thead>
         <template v-if="groups">
@@ -107,8 +222,10 @@ const somasDaMeta = computed(() => (Array.isArray(OrcamentoRealizado.value[ano])
               </td>
               <td />
               <td />
+              <td v-if="temPermissãoPara(['PDM.admin_cp', 'PDM.tecnico_cp'])" />
             </tr>
             <LinhaRealizado
+              v-model="linhasSelecionadas"
               :órgão-e-unidade-selecionados="órgãoEUnidadeSelecionados"
               :group="groups"
               :permissao="config.execucao_disponivel"
@@ -141,8 +258,10 @@ const somasDaMeta = computed(() => (Array.isArray(OrcamentoRealizado.value[ano])
                 </td>
                 <td />
                 <td />
+                <td v-if="temPermissãoPara(['PDM.admin_cp', 'PDM.tecnico_cp'])" />
               </tr>
               <LinhaRealizado
+                v-model="linhasSelecionadas"
                 :órgão-e-unidade-selecionados="órgãoEUnidadeSelecionados"
                 :group="g"
                 :permissao="config.previsao_custo_disponivel"
@@ -178,8 +297,10 @@ const somasDaMeta = computed(() => (Array.isArray(OrcamentoRealizado.value[ano])
                   </td>
                   <td />
                   <td />
+                  <td v-if="temPermissãoPara(['PDM.admin_cp', 'PDM.tecnico_cp'])" />
                 </tr>
                 <LinhaRealizado
+                  v-model="linhasSelecionadas"
                   :órgão-e-unidade-selecionados="órgãoEUnidadeSelecionados"
                   :group="gg"
                   :permissao="config.previsao_custo_disponivel"
