@@ -3,9 +3,7 @@
 import dateToTitle from '@/helpers/dateToTitle';
 import sentenceCase from '@/helpers/sentenceCase';
 import geradorDeAtributoStep from '@/helpers/geradorDeAtributoStep';
-import { router } from '@/router';
 import { useAlertStore } from '@/stores/alert.store';
-import { useEditModalStore } from '@/stores/editModal.store';
 import { useVariaveisStore } from '@/stores/variaveis.store';
 import { storeToRefs } from 'pinia';
 import {
@@ -21,7 +19,6 @@ import {
 } from 'vee-validate';
 import CheckClose from '@/components/CheckClose.vue';
 
-const editModalStore = useEditModalStore();
 const alertStore = useAlertStore();
 
 const route = useRoute();
@@ -86,8 +83,6 @@ const onSubmit = handleSubmit.withControlled(async () => {
 
     if (r) {
       alertStore.success(msg);
-      editModalStore.$reset();
-      router.push({ name: route.meta.rotaDeEscape, params: route.params });
     }
   } catch (error) {
     alertStore.error(error);
