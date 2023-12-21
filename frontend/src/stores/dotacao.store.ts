@@ -34,7 +34,10 @@ export const useDotaçãoStore = defineStore('dotação', {
   actions: {
     async getDotaçãoSegmentos(ano: number) {
       try {
-        if (this.DotaçãoSegmentos?.[ano]?.atualizado_em !== new Date().toISOString().substring(0, 10)) {
+        if (
+          this.DotaçãoSegmentos?.[ano]?.atualizado_em !== new Date()
+            .toISOString().substring(0, 10)
+        ) {
           this.chamadasPendentes.segmentos = true;
         }
 
@@ -103,6 +106,20 @@ export const useDotaçãoStore = defineStore('dotação', {
       return Object.keys(DotaçãoSegmentos).reduce((acc: any, cur) => {
         acc[cur] = DotaçãoSegmentos[cur]
           .fonte_recursos?.reduce((acc2, cur2) => ({ ...acc2, [cur2.codigo]: cur2 }), {});
+        return acc;
+      }, {});
+    },
+    ÓrgãosPorAnoPorCódigo({ DotaçãoSegmentos }) {
+      return Object.keys(DotaçãoSegmentos).reduce((acc: any, cur) => {
+        acc[cur] = DotaçãoSegmentos[cur]
+          .orgaos?.reduce((acc2, cur2) => ({ ...acc2, [cur2.codigo]: cur2 }), {});
+        return acc;
+      }, {});
+    },
+    UnidadesPorAnoPorCódigo({ DotaçãoSegmentos }) {
+      return Object.keys(DotaçãoSegmentos).reduce((acc: any, cur) => {
+        acc[cur] = DotaçãoSegmentos[cur]
+          .unidades?.reduce((acc2, cur2) => ({ ...acc2, [cur2.codigo]: cur2 }), {});
         return acc;
       }, {});
     },
