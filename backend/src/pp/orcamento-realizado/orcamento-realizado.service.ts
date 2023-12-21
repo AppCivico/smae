@@ -13,7 +13,11 @@ import {
     UpdatePPOrcamentoRealizadoDto,
 } from './dto/create-orcamento-realizado.dto';
 import { PPOrcamentoRealizado } from './entities/orcamento-realizado.entity';
-import { FRASE_FIM, MAX_BATCH_SIZE } from '../../orcamento-realizado/orcamento-realizado.service';
+import {
+    FRASE_ERRO_EMPENHO,
+    FRASE_ERRO_LIQUIDADO,
+    MAX_BATCH_SIZE,
+} from '../../orcamento-realizado/orcamento-realizado.service';
 
 type PartialOrcamentoRealizadoDto = {
     ano_referencia: number;
@@ -286,14 +290,7 @@ export class OrcamentoRealizadoService {
             this.liberarValoresMaioresQueSof === false &&
             novo_valor.soma_valor_empenho.greaterThan(dotacaoTx.empenho_liquido)
         ) {
-            throw new HttpException(
-                `Novo valor de empenho no SMAE (${novo_valor.soma_valor_empenho.toFixed(
-                    2
-                )}) seria maior do que o valor de empenho para a Dotação-Processo (${dotacaoTx.empenho_liquido.toFixed(
-                    2
-                )}).` + FRASE_FIM,
-                400
-            );
+            throw new HttpException(FRASE_ERRO_EMPENHO, 400);
         }
 
         if (
@@ -301,14 +298,7 @@ export class OrcamentoRealizadoService {
             this.liberarValoresMaioresQueSof === false &&
             novo_valor.soma_valor_liquidado.greaterThan(dotacaoTx.valor_liquidado)
         ) {
-            throw new HttpException(
-                `Novo valor de liquidado no SMAE (${novo_valor.soma_valor_liquidado.toFixed(
-                    2
-                )}) seria maior do que o valor liquidado para a Dotação-Processo (${dotacaoTx.valor_liquidado.toFixed(
-                    2
-                )}).` + FRASE_FIM,
-                400
-            );
+            throw new HttpException(FRASE_ERRO_LIQUIDADO, 400);
         }
 
         return mes_utilizado;
@@ -366,14 +356,7 @@ export class OrcamentoRealizadoService {
             this.liberarValoresMaioresQueSof === false &&
             novo_valor.soma_valor_empenho.greaterThan(processoTx.empenho_liquido)
         ) {
-            throw new HttpException(
-                `Novo valor de empenho no SMAE (${novo_valor.soma_valor_empenho.toFixed(
-                    2
-                )}) seria maior do que o valor de empenho para a Dotação-Processo (${processoTx.empenho_liquido.toFixed(
-                    2
-                )}).` + FRASE_FIM,
-                400
-            );
+            throw new HttpException(FRASE_ERRO_EMPENHO, 400);
         }
 
         if (
@@ -381,14 +364,7 @@ export class OrcamentoRealizadoService {
             this.liberarValoresMaioresQueSof === false &&
             novo_valor.soma_valor_liquidado.greaterThan(processoTx.valor_liquidado)
         ) {
-            throw new HttpException(
-                `Novo valor de liquidado no SMAE (${novo_valor.soma_valor_liquidado.toFixed(
-                    2
-                )}) seria maior do que o valor liquidado para a Dotação-Processo (${processoTx.valor_liquidado.toFixed(
-                    2
-                )}).` + FRASE_FIM,
-                400
-            );
+            throw new HttpException(FRASE_ERRO_LIQUIDADO, 400);
         }
 
         return mes_utilizado;
@@ -452,14 +428,7 @@ export class OrcamentoRealizadoService {
             this.liberarValoresMaioresQueSof === false &&
             novo_valor.soma_valor_empenho.greaterThan(notaEmpenhoTx.empenho_liquido)
         ) {
-            throw new HttpException(
-                `Novo valor de empenho no SMAE (${novo_valor.soma_valor_empenho.toFixed(
-                    2
-                )}) seria maior do que o valor de empenho para a Nota-Empenho (${notaEmpenhoTx.empenho_liquido.toFixed(
-                    2
-                )}).` + FRASE_FIM,
-                400
-            );
+            throw new HttpException(FRASE_ERRO_EMPENHO, 400);
         }
 
         if (
@@ -467,14 +436,7 @@ export class OrcamentoRealizadoService {
             this.liberarValoresMaioresQueSof === false &&
             novo_valor.soma_valor_liquidado.greaterThan(notaEmpenhoTx.valor_liquidado)
         ) {
-            throw new HttpException(
-                `Novo valor de liquidado no SMAE (${novo_valor.soma_valor_liquidado.toFixed(
-                    2
-                )}) seria maior do que o valor liquidado para a Nota-Empenho (${notaEmpenhoTx.valor_liquidado.toFixed(
-                    2
-                )}).` + FRASE_FIM,
-                400
-            );
+            throw new HttpException(FRASE_ERRO_LIQUIDADO, 400);
         }
 
         return mes_utilizado;
