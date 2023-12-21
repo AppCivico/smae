@@ -58,7 +58,7 @@ const dadosExtrasDeAbas = computed(() => orçamentosEmOrdemDecrescente.value.red
   return acc;
 }, {}));
 
-(async () => {
+async function start() {
   await MetasStore.getPdM();
   if (atividade_id) parentLabel.value = activePdm.value.rotulo_atividade;
   else if (iniciativa_id) parentLabel.value = activePdm.value.rotulo_iniciativa;
@@ -75,12 +75,9 @@ const dadosExtrasDeAbas = computed(() => orçamentosEmOrdemDecrescente.value.red
       }
     });
   }
-})();
-
-function start() {
 }
-onMounted(() => { start(); });
-onUpdated(() => { start(); });
+
+start();
 </script>
 <template>
   <div class="flex spacebetween center mb2">
@@ -107,6 +104,7 @@ onUpdated(() => { start(); });
         :meta_id="meta_id"
         :config="orc"
         :parentlink="parentlink"
+        @apagar="start"
       />
     </template>
   </EnvelopeDeAbas>

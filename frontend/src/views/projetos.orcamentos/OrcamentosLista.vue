@@ -108,6 +108,7 @@ iniciar();
             :projeto-id="projetoId"
             :config="orc"
             :rota-para-adição="rotaParaAdição"
+            @apagar="iniciar"
           />
         </template>
       </template>

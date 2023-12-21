@@ -1,8 +1,12 @@
 <script setup>
+import { computed } from 'vue';
 import formataValor from '@/helpers/formataValor';
+import { useAuthStore } from '@/stores/auth.store';
 import mêsDoÚltimoItem from './helpers/mesDoUltimoItem';
 
-defineProps({
+const { temPermissãoPara } = useAuthStore();
+
+const props = defineProps({
   group: {
     type: Array,
     required: true,
@@ -19,10 +23,25 @@ defineProps({
     type: String,
     default: '',
   },
+  modelValue: {
+    type: Array,
+    default: () => [],
+  },
 });
+
+const emit = defineEmits(['update:modelValue']);
 
 const alemDoEmpenhado = (x) => Number(x.smae_soma_valor_empenho) > Number(x.empenho_liquido);
 const alemDoLiquidado = (x) => Number(x.smae_soma_valor_liquidado) > Number(x.valor_liquidado);
+
+const linhasEscolhidas = computed({
+  get() {
+    return props.modelValue;
+  },
+  set(id) {
+    emit('update:modelValue', id);
+  },
+});
 </script>
 <template>
   <tr
@@ -43,7 +62,11 @@ const alemDoLiquidado = (x) => Number(x.smae_soma_valor_liquidado) > Number(x.va
     <td :class="{'tvermelho': alemDoLiquidado(item)}">
       {{ formataValor(item?.soma_valor_liquidado) }}
     </td>
-    <td>{{ !item?.itens.length ? '-' : mêsDoÚltimoItem(item.itens) || '-' }}</td>
+    <td>
+      {{ !item?.itens.length
+        ? '-'
+        : mêsDoÚltimoItem(item.itens) || '-' }}
+    </td>
     <td style="white-space: nowrap; text-align: right">
       <router-link
         v-if="permissao && ($route.meta?.rotaParaEdição || parentlink)"
@@ -64,6 +87,16 @@ const alemDoLiquidado = (x) => Number(x.smae_soma_valor_liquidado) > Number(x.va
           height="20"
         ><use xlink:href="#i_edit" /></svg>
       </router-link>
+    </td>
+    <td v-if="temPermissãoPara(['PDM.admin_cp', 'PDM.tecnico_cp'])">
+      <input
+        v-model="linhasEscolhidas"
+        :disabled="linhasEscolhidas.length === gblLimiteDeSeleçãoSimultânea
+          && linhasEscolhidas.indexOf(item.id) === -1"
+        :value="item.id"
+        type="checkbox"
+        class=""
+      >
     </td>
   </tr>
 </template>

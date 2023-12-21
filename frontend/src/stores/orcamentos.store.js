@@ -245,6 +245,14 @@ export const useOrcamentosStore = defineStore({
       if (await this.requestS.delete(`${baseUrl}/${segmento1}/${id}`)) return true;
       return false;
     },
+    async deleteOrcamentosRealizadosEmLote(ids, projetoId = 0) {
+      const segmento1 = projetoId
+        ? `projeto/${projetoId}/orcamento-realizado/em-lote`
+        : 'orcamento-realizado/em-lote';
+
+      if (await this.requestS.delete(`${baseUrl}/${segmento1}/`, ids)) return true;
+      return false;
+    },
   },
 
   getters: {
