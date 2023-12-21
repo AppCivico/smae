@@ -118,6 +118,7 @@ iniciar();
     flex-grow: 1;
     min-width: 0;
     text-wrap: balance;
+    max-width: max-content;
   }
 
   > li + li {
