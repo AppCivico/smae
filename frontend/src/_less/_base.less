@@ -1377,6 +1377,47 @@ p {
   }
 }
 
+.interruptor {
+  box-sizing: border-box;
+  appearance: none;
+  height: 1.428571rem;
+  width: 2.857143rem;
+  color: @c50;
+  border-radius: 999em;
+  background-color: currentColor;
+  cursor: pointer;
+  vertical-align: text-bottom;
+
+  &::before {
+    background: @branco;
+    color: @c100;
+    content: "";
+    border-radius: 999em;
+    margin-right: 50%;
+    margin-left: 0;
+    display: block;
+    transition-property: margin;
+    transition-duration: 300ms;
+    border: 5px solid currentColor;
+    height: 0.714286rem;
+    // width: 1.428571rem;
+  }
+
+  &:checked {
+    &::before {
+      color: @amarelo;
+      margin-left: 50%;
+      margin-right: 0;
+    }
+  }
+
+  &:active {
+    &::before {
+      color: @laranja;
+      margin: 0;
+    }
+  }
+}
 .inputtext {
   display: block;
   width: 100%;
