@@ -31,7 +31,10 @@ emit('update:modelValue', props.lista);
 </script>
 
 <template>
-  <form class="f1 search busca-livre">
+  <form
+    class="f1 search busca-livre"
+    @submit.prevent
+  >
     <label class="label tc300">Busca livre</label>
     <input
       v-model="termoDeBusca"
