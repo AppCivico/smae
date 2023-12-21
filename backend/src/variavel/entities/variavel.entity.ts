@@ -53,6 +53,8 @@ export class Variavel {
     atraso_meses: number;
     inicio_medicao: string | null;
     fim_medicao: string | null;
+    suspendida: boolean;
+    mostrar_monitoramento: boolean;
 }
 
 export class SerieValorNomimal {

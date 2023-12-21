@@ -459,6 +459,8 @@ export class VariavelService {
                 fim_medicao: true,
                 inicio_medicao: true,
                 atraso_meses: true,
+                suspendida_em: true,
+                mostrar_monitoramento: true,
                 unidade_medida: {
                     select: {
                         id: true,
@@ -579,6 +581,7 @@ export class VariavelService {
                 variavel_responsavel: undefined,
                 indicador_variavel: indicador_variavel,
                 responsaveis: responsaveis,
+                suspendida: row.suspendida_em ? true : false
             };
         });
 
