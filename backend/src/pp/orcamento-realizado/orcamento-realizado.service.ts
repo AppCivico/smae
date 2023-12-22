@@ -794,6 +794,8 @@ export class OrcamentoRealizadoService {
                         valor_liquidado: item.valor_liquidado.toFixed(2),
                     };
                 }),
+                // sem regra por enquanto, sempre pode editar tudo
+                pode_editar: true,
             });
         }
 
