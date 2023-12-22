@@ -494,37 +494,18 @@ function fieldToDate(d) {
           </div>
         </div>
       </div>
-      <div class="flex flexwrap g1">
-        <div class="mb2 mt1">
-          <label class="block">
-            <Field
-              v-model="acumulativa"
-              name="acumulativa"
-              type="checkbox"
-              value="1"
-              class="inputcheckbox"
-            /><span :class="{ 'error': errors.acumulativa }">Variável acumulativa</span>
-          </label>
-          <div class="error-msg">
-            {{ errors.acumulativa }}
-          </div>
-        </div>
-        <div
-          v-if="var_id"
-          class="mb2 mt1"
-        >
-          <label class="block">
-            <Field
-              v-model="suspendida"
-              name="suspendida"
-              type="checkbox"
-              :value="true"
-              class="inputcheckbox"
-            /><span :class="{ 'error': errors.suspendida }">Suspendar variável e retirar do monitoramento físico</span>
-          </label>
-          <div class="error-msg">
-            {{ errors.suspendida }}
-          </div>
+      <div class="mb2 mt1">
+        <label class="block">
+          <Field
+            v-model="acumulativa"
+            name="acumulativa"
+            type="checkbox"
+            value="1"
+            class="inputcheckbox"
+          /><span :class="{ 'error': errors.acumulativa }">Variável acumulativa</span>
+        </label>
+        <div class="error-msg">
+          {{ errors.acumulativa }}
         </div>
       </div>
       <div v-if="lastParent?.orgaos_participantes?.length">
@@ -738,6 +719,24 @@ function fieldToDate(d) {
         />
         <div class="error-msg">
           {{ errors.regiao_id }}
+        </div>
+      </div>
+
+      <div
+        v-if="var_id"
+        class="mb2 mt1"
+      >
+        <label class="block">
+          <Field
+            v-model="suspendida"
+            name="suspendida"
+            type="checkbox"
+            :value="true"
+            class="inputcheckbox"
+          /><span :class="{ 'error': errors.suspendida }">Suspendar variável e retirar do monitoramento físico</span>
+        </label>
+        <div class="error-msg">
+          {{ errors.suspendida }}
         </div>
       </div>
 
