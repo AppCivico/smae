@@ -237,7 +237,7 @@ async function checkClose() {
           class=""
         >
           <div class="mb1">
-            <label class="flex">
+            <label class="flex center">
               <Field
                 v-slot="{ field }"
                 name="regionalizavel"
