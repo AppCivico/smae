@@ -1213,6 +1213,8 @@ export const variável = (singleIndicadores, éGeraçãoApenas) => object()
         : field.min(1, 'Selecione ao menos uma região')))),
     responsaveis: array()
       .nullable(),
+    suspendida: boolean()
+      .nullable(),
     titulo: string()
       .required('Preencha o título'),
     unidade_medida_id: string()
