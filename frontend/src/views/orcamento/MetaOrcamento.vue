@@ -135,6 +135,7 @@ start();
       >
         <template #cabeçalho="{ ano }">
           <label
+            v-if="!!OrcamentoRealizadoConclusão[ano]?.pode_editar"
             class="conclusão-de-plano__label ml2"
             :class="{ loading: conclusãoPendente }"
           >

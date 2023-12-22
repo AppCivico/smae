@@ -19,6 +19,10 @@ const props = defineProps({
     type: String,
     required: true,
   },
+  exibirCheckboxDeSeleção: {
+    type: Boolean,
+    default: false,
+  },
   órgãoEUnidadeSelecionados: {
     type: String,
     default: '',
@@ -67,7 +71,10 @@ const linhasEscolhidas = computed({
         ? '-'
         : mêsDoÚltimoItem(item.itens) || '-' }}
     </td>
-    <td style="white-space: nowrap; text-align: right">
+    <td
+      v-if="item.pode_editar"
+      style="white-space: nowrap; text-align: right"
+    >
       <router-link
         v-if="permissao && ($route.meta?.rotaParaEdição || parentlink)"
         :to="$route.meta?.rotaParaEdição
@@ -88,7 +95,7 @@ const linhasEscolhidas = computed({
         ><use xlink:href="#i_edit" /></svg>
       </router-link>
     </td>
-    <td v-if="temPermissãoPara(['PDM.admin_cp', 'PDM.tecnico_cp'])">
+    <td v-if="exibirCheckboxDeSeleção">
       <input
         v-model="linhasEscolhidas"
         :disabled="linhasEscolhidas.length === gblLimiteDeSeleçãoSimultânea
