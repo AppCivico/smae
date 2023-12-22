@@ -62,7 +62,7 @@ export class OrcamentoRealizadoController {
     ): Promise<ListOrcamentoRealizadoDto> {
         return {
             linhas: await this.orcamentoRealizadoService.findAll(filters, user),
-            concluido: await this.orcamentoRealizadoService.statusConcluido(filters.meta_id, filters.ano_referencia)
+            concluido: await this.orcamentoRealizadoService.statusConcluido(filters.meta_id, filters.ano_referencia, user)
         };
     }
 

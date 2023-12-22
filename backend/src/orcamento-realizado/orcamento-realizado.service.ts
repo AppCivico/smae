@@ -885,21 +885,38 @@ export class OrcamentoRealizadoService {
         return;
     }
 
-    async statusConcluido(meta_id: number, ano_referencia: number): Promise<OrcamentoRealizadoStatusConcluidoDto> {
+    async statusConcluido(
+        meta_id: number,
+        ano_referencia: number,
+        user: PessoaFromJwt
+    ): Promise<OrcamentoRealizadoStatusConcluidoDto> {
         const configAtual = await this.getStatusConcluido({ meta_id, ano_referencia });
 
-        if (configAtual)
-            return {
-                concluido: configAtual.execucao_concluida,
-                concluido_em: configAtual.execucao_concluida ? configAtual.atualizado_em : null,
-                concluido_por: configAtual.execucao_concluida ? configAtual.atualizador : null,
-            };
+        const isAdmin = user.hasSomeRoles(['CadastroMeta.administrador_orcamento']);
 
-        return {
+        const ret: OrcamentoRealizadoStatusConcluidoDto = {
             concluido: false,
+            pode_editar: true, // todo mundo pode editar os registros que não existem ainda
             concluido_em: null,
             concluido_por: null,
         };
+
+        if (configAtual) {
+            ret.concluido = configAtual.execucao_concluida;
+            if (ret.concluido) {
+                ret.concluido_em = configAtual.atualizado_em;
+                ret.concluido_por = configAtual.atualizador;
+
+                // se não for admin, e está concluido, então pra poder editar,
+                // precisa verificar se está na lista de responsável na CP
+                if (isAdmin) {
+                    const metasOk = await user.getMetaIdsFromAnyModel(this.prisma.view_meta_pessoa_responsavel_na_cp);
+                    ret.pode_editar = metasOk.includes(+meta_id);
+                }
+            }
+        }
+
+        return ret;
     }
 
     async orcamentoConcluido(dto: PatchOrcamentoRealizadoConcluidoDto, user: PessoaFromJwt) {
