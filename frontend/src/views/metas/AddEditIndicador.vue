@@ -508,7 +508,7 @@ if (indicador_id) {
           class=""
         >
           <div class="mb1">
-            <label class="flex">
+            <label class="flex center">
               <Field
                 name="regionalizavel"
                 type="checkbox"
