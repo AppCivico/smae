@@ -1,6 +1,5 @@
 <script setup>
 import { default as LinhaRealizado } from '@/components/orcamento/LinhaRealizado.vue';
-import { useAuthStore } from '@/stores/auth.store';
 import formataValor from '@/helpers/formataValor';
 import { useAlertStore } from '@/stores/alert.store';
 import { useOrcamentosStore } from '@/stores/orcamentos.store';
@@ -20,9 +19,8 @@ const props = defineProps(['parentlink', 'config']);
 const ano = props.config.ano_referencia;
 
 const alertStore = useAlertStore();
-const { temPermissãoPara } = useAuthStore();
 const OrcamentosStore = useOrcamentosStore();
-const { OrcamentoRealizado } = storeToRefs(OrcamentosStore);
+const { OrcamentoRealizado, OrcamentoRealizadoPermissões } = storeToRefs(OrcamentosStore);
 
 const órgãoEUnidadeSelecionados = ref('');
 const linhasSelecionadas = ref([]);
@@ -52,6 +50,9 @@ const somasDaMeta = computed(() => (Array.isArray(OrcamentoRealizado.value[ano])
   }, { soma_valor_empenho: 0, soma_valor_liquidado: 0 })
   : { soma_valor_empenho: 0, soma_valor_liquidado: 0 }));
 
+const podeExcluirEmLote = computed(() => !!OrcamentoRealizadoPermissões
+  .value[ano]?.pode_excluir_lote);
+
 function selecionarTodasAsLinhas() {
   const idsParaSelecionar = [...linhasSelecionadas.value];
 
@@ -64,9 +65,9 @@ function selecionarTodasAsLinhas() {
       if (próximoItemSelecionável) {
         idsParaSelecionar.push(próximoItemSelecionável.id);
       }
-
       i += 1;
     }
+
     linhasSelecionadas.value = idsParaSelecionar;
   } else {
     linhasSelecionadas.value = [];
@@ -136,7 +137,7 @@ watch(órgãoEUnidadeSelecionados, (novoValor) => {
         />
 
         <button
-          v-if="temPermissãoPara(['PDM.admin_cp', 'PDM.tecnico_cp'])"
+          v-if="podeExcluirEmLote"
           type="button"
           class="ml2 btn with-icon bgnone tcprimary p0"
           :disabled="!linhasSelecionadas.length"
@@ -165,9 +166,9 @@ watch(órgãoEUnidadeSelecionados, (novoValor) => {
         <col>
         <col>
         <col>
-        <col>
+        <col v-if="OrcamentoRealizadoPermissões[ano]?.pode_editar">
         <col
-          v-if="temPermissãoPara(['PDM.admin_cp', 'PDM.tecnico_cp'])"
+          v-if="podeExcluirEmLote"
           class="col--botão-de-ação"
         >
         <thead>
@@ -178,8 +179,11 @@ watch(órgãoEUnidadeSelecionados, (novoValor) => {
             <th>Empenho</th>
             <th>Liquidação</th>
             <th>Atualizado em</th>
-            <th style="width: 50px" />
-            <th v-if="temPermissãoPara(['PDM.admin_cp', 'PDM.tecnico_cp'])">
+            <th
+              v-if="OrcamentoRealizadoPermissões[ano]?.pode_editar"
+              style="width: 50px"
+            />
+            <th v-if="podeExcluirEmLote">
               <input
                 type="checkbox"
                 class="like-a__text"
@@ -216,14 +220,15 @@ watch(órgãoEUnidadeSelecionados, (novoValor) => {
                   : '-' }}
               </td>
               <td />
-              <td />
-              <td v-if="temPermissãoPara(['PDM.admin_cp', 'PDM.tecnico_cp'])" />
+              <td v-if="OrcamentoRealizadoPermissões[ano]?.pode_editar" />
+              <td v-if="podeExcluirEmLote" />
             </tr>
             <LinhaRealizado
               v-model="linhasSelecionadas"
               :órgão-e-unidade-selecionados="órgãoEUnidadeSelecionados"
               :group="groups"
               :permissao="config.execucao_disponivel"
+              :exibir-checkbox-de-seleção="podeExcluirEmLote"
               :parentlink="parentlink"
             />
           </tbody>
@@ -252,14 +257,15 @@ watch(órgãoEUnidadeSelecionados, (novoValor) => {
                     : '-' }}
                 </td>
                 <td />
-                <td />
-                <td v-if="temPermissãoPara(['PDM.admin_cp', 'PDM.tecnico_cp'])" />
+                <td v-if="OrcamentoRealizadoPermissões[ano]?.pode_editar" />
+                <td v-if="podeExcluirEmLote" />
               </tr>
               <LinhaRealizado
                 v-model="linhasSelecionadas"
                 :órgão-e-unidade-selecionados="órgãoEUnidadeSelecionados"
                 :group="g"
                 :permissao="config.previsao_custo_disponivel"
+                :exibir-checkbox-de-seleção="podeExcluirEmLote"
                 :parentlink="parentlink"
               />
             </tbody>
@@ -291,14 +297,15 @@ watch(órgãoEUnidadeSelecionados, (novoValor) => {
                       : '-' }}
                   </td>
                   <td />
-                  <td />
-                  <td v-if="temPermissãoPara(['PDM.admin_cp', 'PDM.tecnico_cp'])" />
+                  <td v-if="OrcamentoRealizadoPermissões[ano]?.pode_editar" />
+                  <td v-if="podeExcluirEmLote" />
                 </tr>
                 <LinhaRealizado
                   v-model="linhasSelecionadas"
                   :órgão-e-unidade-selecionados="órgãoEUnidadeSelecionados"
                   :group="gg"
                   :permissao="config.previsao_custo_disponivel"
+                  :exibir-checkbox-de-seleção="podeExcluirEmLote"
                   :parentlink="parentlink"
                 />
               </tbody>
