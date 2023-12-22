@@ -5,7 +5,7 @@ import LabelFromYup from '@/components/LabelFromYup.vue';
 import requestS from '@/helpers/requestS.ts';
 import { createPinia } from 'pinia';
 import {
-  createApp, markRaw, nextTick, provide,
+  createApp, markRaw, nextTick,
 } from 'vue';
 import type { RouteLocationNormalizedLoaded, Router } from 'vue-router';
 import App from './App.vue';
@@ -18,7 +18,7 @@ app.config.globalProperties.gblLimiteDeSeleçãoSimultânea = Number.parseInt(
   import.meta.env.VITE_LIMITE_SELECAO,
   10,
 )
-  || 0;
+  || undefined;
 
 const pinia = createPinia();
 
