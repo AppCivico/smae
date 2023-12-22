@@ -1,6 +1,15 @@
 <script setup>
 import { Alert, EditModal, SideBar } from '@/components';
 import { useAuthStore } from '@/stores/auth.store';
+import { provide } from 'vue'
+
+const gblLimiteDeSeleçãoSimultânea = Number.parseInt(
+  import.meta.env.VITE_LIMITE_SELECAO,
+  10,
+)
+  || undefined;
+
+provide('gblLimiteDeSeleçãoSimultânea', gblLimiteDeSeleçãoSimultânea);
 
 const authStore = useAuthStore();
 if (authStore.estouAutenticada) {

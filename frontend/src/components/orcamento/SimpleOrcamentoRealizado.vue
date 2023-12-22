@@ -5,19 +5,16 @@ import formataValor from '@/helpers/formataValor';
 import { useAlertStore } from '@/stores/alert.store';
 import { useOrcamentosStore } from '@/stores/orcamentos.store';
 import { storeToRefs } from 'pinia';
-import { computed, ref, watch } from 'vue';
+import {
+  computed, ref, watch, inject,
+} from 'vue';
 import agrupaFilhos from './helpers/agrupaFilhos';
 import somaItems from './helpers/somaItems';
 import FiltroPorOrgaoEUnidade from './FiltroPorOrgaoEUnidade.vue';
 
-const emit = defineEmits(['apagar', 'editar']);
+const gblLimiteDeSeleçãoSimultânea = inject('gblLimiteDeSeleçãoSimultânea');
 
-// PRA-FAZER: tornar globalmente disponível. Ver `main.ts`.
-const gblLimiteDeSeleçãoSimultânea = Number.parseInt(
-  import.meta.env.VITE_LIMITE_SELECAO,
-  10,
-)
-  || undefined;
+const emit = defineEmits(['apagar', 'editar']);
 
 const props = defineProps(['parentlink', 'config']);
 const ano = props.config.ano_referencia;
