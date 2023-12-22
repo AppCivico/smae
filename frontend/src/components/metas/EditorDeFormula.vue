@@ -373,7 +373,11 @@ function monitorarSetas(e) {
 onUpdated(async () => {
   formatFormula();
   await nextTick();
-  setCaret(formulaInput.value, currentCaretPos);
+
+  if (document.activeElement === formulaInput.value) {
+    // necessário para mover o cursor para o final
+    setCaret(formulaInput.value, currentCaretPos);
+  }
 });
 
 onMounted(async () => {
