@@ -335,17 +335,32 @@ watch(órgãoEUnidadeSelecionados, (novoValor) => {
             </template>
             <template v-else>
               <li>
-                <router-link :to="`${parentlink}/orcamento/realizado/${ano}/dotacao`">
+                <router-link
+                  :to="{
+                    path: `${parentlink}/orcamento/realizado/${ano}/dotacao`,
+                    query: $route.query
+                  }"
+                >
                   Dotação
                 </router-link>
               </li>
               <li>
-                <router-link :to="`${parentlink}/orcamento/realizado/${ano}/processo`">
+                <router-link
+                  :to="{
+                    path: `${parentlink}/orcamento/realizado/${ano}/processo`,
+                    query: $route.query
+                  }"
+                >
                   Processo
                 </router-link>
               </li>
               <li>
-                <router-link :to="`${parentlink}/orcamento/realizado/${ano}/nota`">
+                <router-link
+                  :to="{
+                    path: `${parentlink}/orcamento/realizado/${ano}/nota`,
+                    query: $route.query
+                  }"
+                >
                   Nota de empenho
                 </router-link>
               </li>
