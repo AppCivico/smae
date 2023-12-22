@@ -61,7 +61,10 @@ async function onSubmit(el) {
         VariaveisStore.getValores(var_id);
         alertStore.success(msg);
         editModalStore.$reset();
-        router.push(`${currentEdit}`);
+        router.push({
+          path: `${currentEdit}`,
+          query: route.query,
+        });
       }
     }
   } catch (error) {
@@ -72,7 +75,10 @@ async function checkClose() {
   alertStore.confirm('Deseja sair sem salvar as alterações?', () => {
     editModalStore.$reset();
     alertStore.$reset();
-    router.push(`${currentEdit}`);
+    router.push({
+      path: `${currentEdit}`,
+      query: route.query,
+    });
   });
 }
 function acumular(períodoAComparar, valorDoMês) {
