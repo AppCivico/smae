@@ -37,7 +37,13 @@ const parent_id = atividade_id ?? iniciativa_id ?? meta_id ?? false;
 const parent_field = atividade_id ? 'atividade_id' : iniciativa_id ? 'iniciativa_id' : meta_id ? 'meta_id' : false;
 const parentLabel = ref(atividade_id ? '-' : iniciativa_id ? '-' : meta_id ? 'Meta' : false);
 
+const conclusãoPendente = ref(false);
+const campoPlanoConcluído = ref(null);
+
 const OrcamentosStore = useOrcamentosStore();
+
+const { OrcamentoRealizadoConclusão } = storeToRefs(OrcamentosStore);
+
 OrcamentosStore.clear();
 
 const orçamentosEmOrdemDecrescente = computed(() => (Array.isArray(activePdm.value.orcamento_config)
@@ -57,6 +63,27 @@ const dadosExtrasDeAbas = computed(() => orçamentosEmOrdemDecrescente.value.red
   }
   return acc;
 }, {}));
+
+async function concluirOrçamento(valor, metaId, ano) {
+  const carga = {
+    meta_id: metaId,
+    ano_referencia: ano,
+    concluido: valor,
+  };
+  conclusãoPendente.value = true;
+  try {
+    const resultado = await OrcamentosStore.closeOrcamentoRealizado(carga);
+    console.debug('resultado', resultado);
+    OrcamentoRealizadoConclusão.value[ano].concluido = resultado
+      ? valor
+      : !valor;
+  } catch (error) {
+    OrcamentoRealizadoConclusão.value[ano].concluido = !valor;
+  } finally {
+    conclusãoPendente.value = false;
+    campoPlanoConcluído.value.checked = !!OrcamentoRealizadoConclusão.value[ano].concluido;
+  }
+}
 
 async function start() {
   await MetasStore.getPdM();
@@ -105,7 +132,35 @@ start();
         :config="orc"
         :parentlink="parentlink"
         @apagar="start"
-      />
+      >
+        <template #cabeçalho="{ ano }">
+          <label
+            class="conclusão-de-plano__label ml2"
+            :class="{ loading: conclusãoPendente }"
+          >
+            <input
+              ref="campoPlanoConcluído"
+              type="checkbox"
+              name="plano-concluído"
+              class="interruptor"
+              :checked="OrcamentoRealizadoConclusão[ano]?.concluido"
+              @change="($event) => {
+                concluirOrçamento(
+                  $event.target.checked, Number($route.params.meta_id), ano
+                );
+              }"
+            >
+            <template
+              v-if="OrcamentoRealizadoConclusão[ano]?.concluido"
+            >
+              Concluído
+            </template>
+            <template v-else>
+              Concluir
+            </template>
+          </label>
+        </template>
+      </SimpleOrcamento>
     </template>
   </EnvelopeDeAbas>
 

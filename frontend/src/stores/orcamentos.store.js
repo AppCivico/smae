@@ -9,6 +9,7 @@ export const useOrcamentosStore = defineStore({
     OrcamentoCusteio: {},
     OrcamentoPlanejado: {},
     OrcamentoRealizado: {},
+    OrcamentoRealizadoConclusão: {},
 
     previstoEhZero: {},
     previstoEhZeroCriadoPor: {},
@@ -82,6 +83,10 @@ export const useOrcamentosStore = defineStore({
         this.OrcamentoRealizado[ano] = { loading: true };
         const r = await this.requestS.get(`${baseUrl}/orcamento-realizado/`, params);
         this.OrcamentoRealizado[ano] = r.linhas ? r.linhas : r;
+
+        if (r.concluido) {
+          this.OrcamentoRealizadoConclusão[ano] = r.concluido;
+        }
       } catch (error) {
         this.OrcamentoRealizado[ano] = { error };
       }
@@ -227,6 +232,10 @@ export const useOrcamentosStore = defineStore({
         : 'orcamento-realizado';
 
       if (await this.requestS.patch(`${baseUrl}/${segmento1}/${id}`, params)) return true;
+      return false;
+    },
+    async closeOrcamentoRealizado(params) {
+      if (await this.requestS.patch(`${baseUrl}/orcamento-realizado/orcamento-concluido`, params)) return true;
       return false;
     },
     async insertOrcamentoRealizado(params) {

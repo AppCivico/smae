@@ -25,7 +25,7 @@ const ano = props.config.ano_referencia;
 const alertStore = useAlertStore();
 const { temPermissãoPara } = useAuthStore();
 const OrcamentosStore = useOrcamentosStore();
-const { OrcamentoRealizado } = storeToRefs(OrcamentosStore);
+const { OrcamentoRealizado, OrcamentoRealizadoConclusão } = storeToRefs(OrcamentosStore);
 
 const órgãoEUnidadeSelecionados = ref('');
 const linhasSelecionadas = ref([]);
@@ -132,16 +132,10 @@ watch(órgãoEUnidadeSelecionados, (novoValor) => {
           </div>
         </div>
 
-        <label class="ml2">
-          <input
-            type="checkbox"
-            name="plano-concluído"
-            class="interruptor"
-          >
-          <span>
-            Concluído
-          </span>
-        </label>
+        <slot
+          name="cabeçalho"
+          :ano="ano"
+        />
 
         <button
           v-if="temPermissãoPara(['PDM.admin_cp', 'PDM.tecnico_cp'])"
