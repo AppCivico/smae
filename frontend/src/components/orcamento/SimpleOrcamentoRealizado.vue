@@ -22,7 +22,7 @@ const ano = props.config.ano_referencia;
 const alertStore = useAlertStore();
 const { temPermissãoPara } = useAuthStore();
 const OrcamentosStore = useOrcamentosStore();
-const { OrcamentoRealizado, OrcamentoRealizadoConclusão } = storeToRefs(OrcamentosStore);
+const { OrcamentoRealizado } = storeToRefs(OrcamentosStore);
 
 const órgãoEUnidadeSelecionados = ref('');
 const linhasSelecionadas = ref([]);
