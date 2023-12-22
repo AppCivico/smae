@@ -217,6 +217,7 @@ export class OrcamentoRealizadoStatusConcluidoDto {
     concluido: boolean;
     concluido_por: IdNomeExibicao | null;
     concluido_em: Date | null;
+    pode_editar: boolean;
 }
 
 export class ListOrcamentoRealizadoDto {
