@@ -17,7 +17,7 @@ const gblLimiteDeSeleçãoSimultânea = Number.parseInt(
   import.meta.env.VITE_LIMITE_SELECAO,
   10,
 )
-  || 0;
+  || undefined;
 
 const props = defineProps(['parentlink', 'config']);
 const ano = props.config.ano_referencia;
