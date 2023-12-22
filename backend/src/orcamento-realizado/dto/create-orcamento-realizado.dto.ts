@@ -220,9 +220,15 @@ export class OrcamentoRealizadoStatusConcluidoDto {
     pode_editar: boolean;
 }
 
+export class OrcamentoRealizadoStatusPermissoesDto {
+    pode_editar: boolean;
+    pode_excluir_lote: boolean;
+}
+
 export class ListOrcamentoRealizadoDto {
     linhas: OrcamentoRealizado[];
     concluido: OrcamentoRealizadoStatusConcluidoDto;
+    permissoes: OrcamentoRealizadoStatusPermissoesDto;
 }
 
 export class PatchOrcamentoRealizadoConcluidoDto {

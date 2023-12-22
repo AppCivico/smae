@@ -891,7 +891,7 @@ export class ImportacaoOrcamentoService {
         if (params.eh_metas) {
             if (!meta_id) return 'Linha inválida: faltando meta_id';
 
-            const existeNaMeta = await this.pdmOrcResService.findAll(
+            const existeNaMetaResult = await this.pdmOrcResService.findAllWithPermissions(
                 {
                     ano_referencia: row.ano_referencia,
                     meta_id,
@@ -903,6 +903,7 @@ export class ImportacaoOrcamentoService {
                 },
                 user
             );
+            const existeNaMeta = existeNaMetaResult.linhas;
 
             const maisRecente = existeNaMeta.at(-1);
             if (maisRecente) {

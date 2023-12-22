@@ -35,4 +35,6 @@ export class OrcamentoRealizado {
     itens: OrcamentoRealizadoItem[];
 
     execucao_disponivel_meses: number[];
+
+    pode_editar: boolean
 }
