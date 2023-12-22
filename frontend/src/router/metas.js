@@ -57,16 +57,12 @@ export default {
     {
       path: ':meta_id/indicadores/novo',
       component: AddEditIndicador,
-      meta: { título: 'Adicionar Indicador' },
       props: { submenu: SubmenuMetas },
     },
     {
       path: ':meta_id/indicadores/:indicador_id',
       component: AddEditIndicador,
       name: 'indicadorDaMeta',
-      meta: {
-        título: 'Editar Indicador',
-      },
       props: { submenu: SubmenuMetas },
     },
 

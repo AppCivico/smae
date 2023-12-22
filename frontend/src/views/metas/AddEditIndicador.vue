@@ -258,7 +258,12 @@ if (indicador_id) {
 <template>
   <Dashboard>
     <div class="flex spacebetween center">
-      <h1>{{ typeof título === 'function' ? título() : título }}</h1>
+      <h1 v-if="indicador_id">
+        Editar Indicador
+      </h1>
+      <h1 v-else>
+        Adicionar Indicador
+      </h1>
       <hr class="ml2 f1">
       <button
         class="btn round ml2"
