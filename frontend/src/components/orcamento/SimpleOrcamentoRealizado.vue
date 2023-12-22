@@ -41,6 +41,10 @@ const filhosOrdenados = computed(() => (Array.isArray(OrcamentoRealizado.value[a
       || (a.atividade?.id || 0) - (b.atividade?.id || 0))
   : []));
 
+const limiteDeSeleção = computed(() => (gblLimiteDeSeleçãoSimultânea > 0
+  ? Math.min(gblLimiteDeSeleçãoSimultânea, filhosOrdenados.value.length)
+  : filhosOrdenados.value.length));
+
 const somasDaMeta = computed(() => (Array.isArray(OrcamentoRealizado.value[ano])
   ? OrcamentoRealizado.value[ano].reduce((acc, cur) => {
     if (!cur.iniciativa && !cur.atividade) {
@@ -53,14 +57,11 @@ const somasDaMeta = computed(() => (Array.isArray(OrcamentoRealizado.value[ano])
 
 function selecionarTodasAsLinhas() {
   const idsParaSelecionar = [...linhasSelecionadas.value];
-  const limite = gblLimiteDeSeleçãoSimultânea
-    ? Math.min(gblLimiteDeSeleçãoSimultânea, filhosOrdenados.value.length)
-    : filhosOrdenados.value.length;
 
-  if (linhasSelecionadas.value.length < limite) {
+  if (linhasSelecionadas.value.length < limiteDeSeleção.value) {
     let i = linhasSelecionadas.value.length;
 
-    while (i < limite) {
+    while (i < limiteDeSeleção.value) {
       const próximoItemSelecionável = filhosOrdenados.value
         .find((x) => idsParaSelecionar.indexOf(x.id) === -1);
       if (próximoItemSelecionável) {
@@ -140,11 +141,15 @@ watch(órgãoEUnidadeSelecionados, (novoValor) => {
         <button
           v-if="temPermissãoPara(['PDM.admin_cp', 'PDM.tecnico_cp'])"
           type="button"
-          class="ml2 btn bgnone outline"
+          class="ml2 btn with-icon bgnone tcprimary p0"
           :disabled="!linhasSelecionadas.length"
           @click="() => excluirEmLote(linhasSelecionadas)"
         >
-          excluir de montão
+          <svg
+            width="20"
+            height="20"
+          ><use xlink:href="#i_waste" /></svg>
+          excluir
         </button>
       </div>
 
@@ -178,23 +183,22 @@ watch(órgãoEUnidadeSelecionados, (novoValor) => {
             <th>Atualizado em</th>
             <th style="width: 50px" />
             <th v-if="temPermissãoPara(['PDM.admin_cp', 'PDM.tecnico_cp'])">
-              <button
-                type="button"
+              <input
+                type="checkbox"
                 class="like-a__text"
+                :indeterminate.prop="linhasSelecionadas.length
+                  && linhasSelecionadas.length !== limiteDeSeleção"
+                :checked="linhasSelecionadas.length
+                  && linhasSelecionadas.length === limiteDeSeleção"
                 :disabled="!filhosOrdenados.length"
                 :aria-label="gblLimiteDeSeleçãoSimultânea
-                  ? `Selecionar ${gblLimiteDeSeleçãoSimultânea} itens`
+                  ? `Selecionar ${gblLimiteDeSeleçãoSimultânea - linhasSelecionadas.length} itens`
                   : 'Selecionar tudo'"
                 :title="gblLimiteDeSeleçãoSimultânea
-                  ? `Selecionar ${gblLimiteDeSeleçãoSimultânea} itens`
+                  ? `Selecionar ${gblLimiteDeSeleçãoSimultânea - linhasSelecionadas.length} itens`
                   : 'Selecionar tudo'"
-                @click="selecionarTodasAsLinhas"
+                @change="selecionarTodasAsLinhas"
               >
-                <svg
-                  width="20"
-                  height="20"
-                ><use xlink:href="#i_waste" /></svg>
-              </button>
             </th>
           </tr>
         </thead>
