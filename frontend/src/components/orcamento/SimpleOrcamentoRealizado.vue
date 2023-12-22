@@ -8,7 +8,7 @@ import { storeToRefs } from 'pinia';
 import { computed, ref, watch } from 'vue';
 import agrupaFilhos from './helpers/agrupaFilhos';
 import somaItems from './helpers/somaItems';
-import FiltroPorORgaoEUnidade from './FiltroPorORgaoEUnidade.vue';
+import FiltroPorOrgaoEUnidade from './FiltroPorOrgaoEUnidade.vue';
 
 const emit = defineEmits(['apagar', 'editar']);
 
@@ -109,7 +109,7 @@ watch(órgãoEUnidadeSelecionados, (novoValor) => {
 <template>
   <div class="mb2">
     <div>
-      <FiltroPorORgaoEUnidade
+      <FiltroPorOrgaoEUnidade
         v-model="órgãoEUnidadeSelecionados"
         :ano="ano"
         :lista="Array.isArray(OrcamentoRealizado[ano])

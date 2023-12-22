@@ -8,7 +8,7 @@ import { ref } from 'vue';
 import agrupaFilhos from './helpers/agrupaFilhos';
 import maiorData from './helpers/maiorData';
 import somaItems from './helpers/somaItems';
-import FiltroPorORgaoEUnidade from './FiltroPorORgaoEUnidade.vue';
+import FiltroPorOrgaoEUnidade from './FiltroPorOrgaoEUnidade.vue';
 
 const alertStore = useAlertStore();
 const props = defineProps(['parentlink', 'config']);
@@ -30,7 +30,7 @@ function restringirAZero() {
 <template>
   <div class="mb2">
     <div>
-      <FiltroPorORgaoEUnidade
+      <FiltroPorOrgaoEUnidade
         v-model="órgãoEUnidadeSelecionados"
         :ano="ano"
         :lista="Array.isArray(OrcamentoCusteio[ano])
