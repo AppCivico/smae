@@ -60,14 +60,11 @@ watch(emFoco, () => {
 
 iniciar();
 </script>
-<script>
-// use normal <script> to declare options
-export default {
-  inheritAttrs: false,
-};
-</script>
 <template>
-  <div class="t12 uc w700 tamarelo">
+  <div
+    v-bind="$attrs"
+    class="t12 uc w700 tamarelo"
+  >
     <small class="lc">Portfolio</small>
     {{ portfolioStore.portfoliosPorId[projetosStore?.emFoco?.portfolio_id]?.titulo }}
   </div>

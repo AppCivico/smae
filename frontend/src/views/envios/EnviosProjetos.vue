@@ -7,14 +7,11 @@ if (!importaçõesStore.portfoliosPermitidos.length) {
   importaçõesStore.buscarPortfolios();
 }
 </script>
-<script>
-// use normal <script> to declare options
-export default {
-  inheritAttrs: false,
-};
-</script>
 <template>
-  <div class="flex spacebetween center mb2">
+  <div
+    v-bind="$attrs"
+    class="flex spacebetween center mb2"
+  >
     <h1>
       {{ typeof $route?.meta?.título === 'function'
         ? $route.meta.título()
