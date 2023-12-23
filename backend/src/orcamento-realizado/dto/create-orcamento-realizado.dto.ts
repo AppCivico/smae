@@ -98,7 +98,7 @@ export class CreateOrcamentoRealizadoDto {
      */
     @Type(() => String) // fazendo cast pra texto sempre, já que tem a mask
     @MaxLength(48)
-    @Matches(/^\d{2}\.\d{2}\.\d{2}\.\d{3}\.\d{4}\.\d\.\d{3}\.\d{8}\.\d{2}(?:\d{1}\.\d{3}\.\d{4}\.\d{1})?$/, {
+    @Matches(/^\d{2}\.\d{2}\.\d{2}\.\d{3}\.\d{4}\.\d\.\d{3}\.\d{8}\.\d{2}(?:\.\d{1}\.\d{3}\.\d{4}\.\d{1})?$/, {
         message:
             'Dotação não está no formato esperado: 00.00.00.000.0000.0.000.00000000.00 ou 00.00.00.000.0000.0.000.00000000.00.0.000.0000.0',
     })
