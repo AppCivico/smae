@@ -17,7 +17,7 @@ import {
     FRASE_ERRO_EMPENHO,
     FRASE_ERRO_LIQUIDADO,
     MAX_BATCH_SIZE,
-    verificaValorEmpenhoMaiorLiq,
+    verificaValorLiqEmpenhoMaiorEmp,
 } from '../../orcamento-realizado/orcamento-realizado.service';
 
 type PartialOrcamentoRealizadoDto = {
@@ -50,7 +50,7 @@ export class OrcamentoRealizadoService {
         const soma_valor_empenho = dto.itens.sort((a, b) => b.mes - a.mes)[0].valor_empenho;
         const soma_valor_liquidado = dto.itens.sort((a, b) => b.mes - a.mes)[0].valor_liquidado;
         const mes_correte = dto.itens.sort((a, b) => b.mes - a.mes)[0].mes;
-        verificaValorEmpenhoMaiorLiq(soma_valor_empenho, soma_valor_liquidado);
+        verificaValorLiqEmpenhoMaiorEmp(soma_valor_empenho, soma_valor_liquidado);
 
         const created = await this.prisma.$transaction(
             async (prismaTxn: Prisma.TransactionClient): Promise<RecordWithId> => {
@@ -155,7 +155,7 @@ export class OrcamentoRealizadoService {
         const nova_soma_valor_empenho = dto.itens.sort((a, b) => b.mes - a.mes)[0].valor_empenho;
         const nova_soma_valor_liquidado = dto.itens.sort((a, b) => b.mes - a.mes)[0].valor_liquidado;
         const mes_corrente = dto.itens.sort((a, b) => b.mes - a.mes)[0].mes;
-        verificaValorEmpenhoMaiorLiq(nova_soma_valor_empenho, nova_soma_valor_liquidado);
+        verificaValorLiqEmpenhoMaiorEmp(nova_soma_valor_empenho, nova_soma_valor_liquidado);
 
         const updated = await this.prisma.$transaction(
             async (prismaTxn: Prisma.TransactionClient): Promise<RecordWithId> => {
