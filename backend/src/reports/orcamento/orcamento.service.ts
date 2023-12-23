@@ -24,6 +24,7 @@ class RetornoRealizadoDb {
     plan_valor_planejado: string | null;
     plan_dotacao_sincronizado_em: Date | null;
     dotacao: string;
+    dotacao_complemento: string | null;
     processo: string | null;
     nota_empenho: string | null;
     dotacao_valor_empenhado: string;
@@ -213,18 +214,15 @@ export class OrcamentoService implements ReportableService {
                     p.nome as projeto_nome
 
                 from orcamento_planejado op
-                left join meta m on m.id = op.meta_id
-                left join iniciativa mi on mi.id = op.iniciativa_id
-                left join atividade ma on ma.id = op.atividade_id
-                left join projeto p on p.id = op.projeto_id
+                left join meta m on m.id = op.meta_id and m.removido_em IS NULL
+                left join iniciativa mi on mi.id = op.iniciativa_id and mi.removido_em IS NULL
+                left join atividade ma on ma.id = op.atividade_id and ma.removido_em IS NULL
+                left join projeto p on p.id = op.projeto_id and p.removido_em IS NULL
 
                 where op.ano_referencia >= ${ano_ini}::int
                 and op.ano_referencia <= ${ano_fim}::int
                 and op.id = ANY(${search.map((r) => r.id)}::int[])
-                and op.removido_em is null
-                and m.removido_em is null
-                and mi.removido_em is null
-                and ma.removido_em is null
+                and op.removido_em IS NULL
             )
             select
                 dp.ano_referencia as plan_dotacao_ano_utilizado,
@@ -289,14 +287,14 @@ export class OrcamentoService implements ReportableService {
                     p.nome as projeto_nome
 
                 from orcamento_planejado op
-                left join meta m on m.id = op.meta_id
-                left join iniciativa mi on mi.id = op.iniciativa_id
-                left join atividade ma on ma.id = op.atividade_id
-                left join projeto p on p.id = op.projeto_id
+                left join meta m on m.id = op.meta_id and m.removido_em IS NULL
+                left join iniciativa mi on mi.id = op.iniciativa_id and mi.removido_em IS NULL
+                left join atividade ma on ma.id = op.atividade_id and ma.removido_em IS NULL
+                left join projeto p on p.id = op.projeto_id and p.removido_em IS NULL
 
                 where op.ano_referencia >= ${ano_ini}::int
                 and op.ano_referencia <= ${ano_fim}::int
-                and op.removido_em is null
+                and op.removido_em IS NULL
                 and op.id = ANY(${search.map((r) => r.id)}::int[])
             )
             select
@@ -317,7 +315,8 @@ export class OrcamentoService implements ReportableService {
         return await this.prisma.$queryRaw`
             with custos as (
                 select
-                o.dotacao,
+                    o.dotacao,
+                    o.dotacao_complemento,
                     o.processo,
                     o.nota_empenho,
                     i.valor_empenho as smae_valor_empenhado,
@@ -345,14 +344,15 @@ export class OrcamentoService implements ReportableService {
 
                 from orcamento_realizado_item i
                 join orcamento_realizado o on o.id = i.orcamento_realizado_id
-                left join meta m on m.id = o.meta_id
-                left join iniciativa mi on mi.id = o.iniciativa_id
-                left join atividade ma on ma.id = o.atividade_id
-                left join projeto p on p.id = o.projeto_id
+                left join meta m on m.id = o.meta_id and m.removido_em IS NULL
+                left join iniciativa mi on mi.id = o.iniciativa_id and mi.removido_em IS NULL
+                left join atividade ma on ma.id = o.atividade_id and ma.removido_em IS NULL
+                left join projeto p on p.id = o.projeto_id and p.removido_em IS NULL
 
                 where i.id = ANY(${search.map((r) => r.id)}::int[])
                 and i.mes_corrente = TRUE
-                and o.removido_em IS NULLL
+                and i.sobrescrito_em IS NULL
+                and o.removido_em IS NULL
             ), analitico as (
             select
                 dp.ano_referencia as plan_dotacao_ano_utilizado,
@@ -391,6 +391,7 @@ export class OrcamentoService implements ReportableService {
                 plan_valor_planejado,
                 plan_dotacao_sincronizado_em,
                 dotacao,
+                dotacao_complemento,
                 processo,
                 nota_empenho,
                 dotacao_valor_empenhado,
@@ -412,11 +413,11 @@ export class OrcamentoService implements ReportableService {
                 projeto_nome,
                 '' as ano,
                 '' as mes,
-                to_char_numeric(sum (smae_valor_empenhado)::numeric) as smae_valor_empenhado,
-                to_char_numeric(sum (smae_valor_liquidado)::numeric) as smae_valor_liquidado,
+                to_char_numeric(sum(smae_valor_empenhado)::numeric) as smae_valor_empenhado,
+                to_char_numeric(sum(smae_valor_liquidado)::numeric) as smae_valor_liquidado,
                 count(1) as total_registros
             FROM analitico
-            GROUP BY 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27
+            GROUP BY 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28
             order by analitico.dotacao, analitico.processo, analitico.nota_empenho, 1, 2
             `;
     }
@@ -426,6 +427,7 @@ export class OrcamentoService implements ReportableService {
             with custos as (
                 select
                     o.dotacao,
+                    o.dotacao_complemento,
                     o.processo,
                     o.nota_empenho,
                     to_char_numeric(i.valor_empenho::numeric) as smae_valor_empenhado,
@@ -454,13 +456,15 @@ export class OrcamentoService implements ReportableService {
 
                 from orcamento_realizado_item i
                 join orcamento_realizado o on o.id = i.orcamento_realizado_id
-                left join meta m on m.id = o.meta_id
-                left join iniciativa mi on mi.id = o.iniciativa_id
-                left join atividade ma on ma.id = o.atividade_id
-                left join projeto p on p.id = o.projeto_id
+                left join meta m on m.id = o.meta_id and m.removido_em IS NULL
+                left join iniciativa mi on mi.id = o.iniciativa_id and mi.removido_em IS NULL
+                left join atividade ma on ma.id = o.atividade_id and ma.removido_em IS NULL
+                left join projeto p on p.id = o.projeto_id and p.removido_em IS NULL
 
                 where i.id = ANY(${search.map((r) => r.id)}::int[])
                 and i.mes_corrente = true
+                and i.sobrescrito_em IS NULL
+                and o.removido_em IS NULL
             )
             select
                 dp.ano_referencia as plan_dotacao_ano_utilizado,
@@ -556,7 +560,7 @@ export class OrcamentoService implements ReportableService {
             projeto: db.projeto_id ? { codigo: db.projeto_codigo, nome: db.projeto_nome!, id: +db.projeto_id } : null,
 
             acao_orcamentaria: this.dotacaoService.getAcaoOrcamentaria(db.dotacao),
-            dotacao: db.dotacao,
+            dotacao: `${db.dotacao}${db.dotacao_complemento ?? ''}`,
             processo: db.processo,
             nota_empenho: db.nota_empenho,
 
