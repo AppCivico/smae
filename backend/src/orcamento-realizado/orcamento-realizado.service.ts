@@ -123,6 +123,7 @@ export class OrcamentoRealizadoService {
                         mes_utilizado: mes_utilizado,
                         ano_referencia: dto.ano_referencia,
                         dotacao,
+                        dotacao_complemento,
                         processo: processo,
                         nota_empenho: nota_empenho,
                         soma_valor_empenho,
@@ -210,6 +211,7 @@ export class OrcamentoRealizadoService {
 
                 const orcRealizado = await prismaTxn.orcamentoRealizado.findUniqueOrThrow({ where: { id: +id } });
 
+                // trata um caso legacy onde a dotação no banco estava salva completa num campo só
                 const dotacao_edit = TrataDotacaoGrande(orcRealizado.dotacao);
                 if (orcRealizado.dotacao != dotacao_edit) {
                     orcRealizado.dotacao = dotacao_edit;
