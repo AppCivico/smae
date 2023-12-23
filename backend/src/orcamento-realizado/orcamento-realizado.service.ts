@@ -71,7 +71,7 @@ export class OrcamentoRealizadoService {
         const soma_valor_liquidado = dto.itens.sort((a, b) => b.mes - a.mes)[0].valor_liquidado;
         const mes_corrente = dto.itens.sort((a, b) => b.mes - a.mes)[0].mes;
 
-        verificaValorEmpenhoMaiorLiq(soma_valor_empenho, soma_valor_liquidado);
+        verificaValorLiqEmpenhoMaiorEmp(soma_valor_empenho, soma_valor_liquidado);
 
         const created = await this.prisma.$transaction(
             async (prismaTxn: Prisma.TransactionClient): Promise<RecordWithId> => {
@@ -202,7 +202,7 @@ export class OrcamentoRealizadoService {
         const nova_soma_valor_empenho = dto.itens.sort((a, b) => b.mes - a.mes)[0].valor_empenho;
         const nova_soma_valor_liquidado = dto.itens.sort((a, b) => b.mes - a.mes)[0].valor_liquidado;
         const mes_corrente = dto.itens.sort((a, b) => b.mes - a.mes)[0].mes;
-        verificaValorEmpenhoMaiorLiq(nova_soma_valor_empenho, nova_soma_valor_liquidado);
+        verificaValorLiqEmpenhoMaiorEmp(nova_soma_valor_empenho, nova_soma_valor_liquidado);
 
         const updated = await this.prisma.$transaction(
             async (prismaTxn: Prisma.TransactionClient): Promise<RecordWithId> => {
@@ -1117,7 +1117,7 @@ export class OrcamentoRealizadoService {
     }
 }
 
-export function verificaValorEmpenhoMaiorLiq(soma_valor_empenho: number, soma_valor_liquidado: number) {
-    if (soma_valor_empenho > soma_valor_liquidado)
-        throw new BadRequestException('O valor de empenho não pode ser maior do que valor liquidado.');
+export function verificaValorLiqEmpenhoMaiorEmp(soma_valor_empenho: number, soma_valor_liquidado: number) {
+    if (soma_valor_liquidado > soma_valor_empenho)
+        throw new BadRequestException('O valor liquidado não pode ser maior do que valor empenhado.');
 }
