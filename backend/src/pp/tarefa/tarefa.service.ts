@@ -69,7 +69,7 @@ export class TarefaService {
         } else if (dto.tarefa_pai_id !== null) {
             const pai = await this.prisma.tarefa.findFirst({
                 where: { removido_em: null, id: dto.tarefa_pai_id, projeto_id: projetoId },
-                select: { id: true, nivel: true, numero: true, descricao: true },
+                select: { id: true, nivel: true, numero: true, tarefa: true },
             });
             if (!pai) throw new HttpException(`Tarefa pai (${dto.tarefa_pai_id}) não foi encontrada no projeto.`, 400);
             if (pai.nivel != dto.nivel - 1)
@@ -198,13 +198,13 @@ export class TarefaService {
         return { id: created.id };
     }
 
-    private async verificaPaiTemDependencias(pai: { id: number; descricao: string; numero: number; nivel: number }) {
+    private async verificaPaiTemDependencias(pai: { id: number; tarefa: string; numero: number; nivel: number }) {
         const qtdeDeps = await this.prisma.tarefaDependente.count({
             where: { tarefa_id: pai.id },
         });
         if (qtdeDeps > 0)
             throw new BadRequestException(
-                `Remova as dependências da tarefa "${pai.descricao}" (nível ${pai.nivel}, número ${pai.numero}) antes de criar tarefas subordinadas`
+                `Não é possível criar a tarefa. Remova primeiro as dependências da tarefa "${pai.tarefa}" (nível ${pai.nivel}, número ${pai.numero}) antes de criar tarefas subordinadas.`
             );
     }
 
@@ -959,7 +959,7 @@ export class TarefaService {
                                       id: dto.tarefa_pai_id,
                                       projeto_id: projetoId,
                                   },
-                                  select: { nivel: true, id: true, numero: true, descricao: true },
+                                  select: { nivel: true, id: true, numero: true, tarefa: true },
                               })
                             : null;
 
