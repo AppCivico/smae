@@ -96,6 +96,7 @@ export class OrcamentoRealizadoService {
                         mes_utilizado: mes_utilizado,
                         ano_referencia: dto.ano_referencia,
                         dotacao,
+                        dotacao_complemento,
                         processo: processo,
                         nota_empenho: nota_empenho,
                         soma_valor_empenho,
@@ -161,6 +162,7 @@ export class OrcamentoRealizadoService {
             async (prismaTxn: Prisma.TransactionClient): Promise<RecordWithId> => {
                 const now = new Date(Date.now());
 
+                // trata um caso legacy onde a dotação no banco estava salva completa num campo só
                 const dotacao_edit = TrataDotacaoGrande(orcamentoRealizado.dotacao);
                 if (orcamentoRealizado.dotacao != dotacao_edit) {
                     orcamentoRealizado.dotacao = dotacao_edit;
