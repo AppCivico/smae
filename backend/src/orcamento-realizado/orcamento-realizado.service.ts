@@ -67,15 +67,16 @@ export class OrcamentoRealizadoService {
         const { dotacao, processo, nota_empenho } = await this.validaDotProcNota(dto);
 
         console.log({ dotacao, processo, nota_empenho });
+        const soma_valor_empenho = dto.itens.sort((a, b) => b.mes - a.mes)[0].valor_empenho;
+        const soma_valor_liquidado = dto.itens.sort((a, b) => b.mes - a.mes)[0].valor_liquidado;
+        const mes_corrente = dto.itens.sort((a, b) => b.mes - a.mes)[0].mes;
+
+        verificaValorEmpenhoMaiorLiq(soma_valor_empenho, soma_valor_liquidado);
 
         const created = await this.prisma.$transaction(
             async (prismaTxn: Prisma.TransactionClient): Promise<RecordWithId> => {
                 const now = new Date(Date.now());
                 let mes_utilizado: number;
-
-                const soma_valor_empenho = dto.itens.sort((a, b) => b.mes - a.mes)[0].valor_empenho;
-                const soma_valor_liquidado = dto.itens.sort((a, b) => b.mes - a.mes)[0].valor_liquidado;
-                const mes_corrente = dto.itens.sort((a, b) => b.mes - a.mes)[0].mes;
 
                 if (nota_empenho) {
                     const notaEmpenhoTx = await this.buscaNotaEmpenho(prismaTxn, nota_empenho, dotacao, processo);
@@ -198,13 +199,14 @@ export class OrcamentoRealizadoService {
         if (!anoCount)
             throw new HttpException('Ano de referencia não encontrado ou não está com a execução liberada', 400);
 
+        const nova_soma_valor_empenho = dto.itens.sort((a, b) => b.mes - a.mes)[0].valor_empenho;
+        const nova_soma_valor_liquidado = dto.itens.sort((a, b) => b.mes - a.mes)[0].valor_liquidado;
+        const mes_corrente = dto.itens.sort((a, b) => b.mes - a.mes)[0].mes;
+        verificaValorEmpenhoMaiorLiq(nova_soma_valor_empenho, nova_soma_valor_liquidado);
+
         const updated = await this.prisma.$transaction(
             async (prismaTxn: Prisma.TransactionClient): Promise<RecordWithId> => {
                 const now = new Date(Date.now());
-
-                const nova_soma_valor_empenho = dto.itens.sort((a, b) => b.mes - a.mes)[0].valor_empenho;
-                const nova_soma_valor_liquidado = dto.itens.sort((a, b) => b.mes - a.mes)[0].valor_liquidado;
-                const mes_corrente = dto.itens.sort((a, b) => b.mes - a.mes)[0].mes;
 
                 const orcRealizado = await prismaTxn.orcamentoRealizado.findUniqueOrThrow({ where: { id: +id } });
 
@@ -1113,4 +1115,9 @@ export class OrcamentoRealizadoService {
             }
         }
     }
+}
+
+export function verificaValorEmpenhoMaiorLiq(soma_valor_empenho: number, soma_valor_liquidado: number) {
+    if (soma_valor_empenho > soma_valor_liquidado)
+        throw new BadRequestException('O valor de empenho não pode ser maior do que valor liquidado');
 }

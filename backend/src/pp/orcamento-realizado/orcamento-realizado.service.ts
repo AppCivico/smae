@@ -17,6 +17,7 @@ import {
     FRASE_ERRO_EMPENHO,
     FRASE_ERRO_LIQUIDADO,
     MAX_BATCH_SIZE,
+    verificaValorEmpenhoMaiorLiq,
 } from '../../orcamento-realizado/orcamento-realizado.service';
 
 type PartialOrcamentoRealizadoDto = {
@@ -46,15 +47,15 @@ export class OrcamentoRealizadoService {
         const { dotacao, processo, nota_empenho } = await this.validaDotProcNota(dto);
 
         console.log({ dotacao, processo, nota_empenho });
+        const soma_valor_empenho = dto.itens.sort((a, b) => b.mes - a.mes)[0].valor_empenho;
+        const soma_valor_liquidado = dto.itens.sort((a, b) => b.mes - a.mes)[0].valor_liquidado;
+        const mes_correte = dto.itens.sort((a, b) => b.mes - a.mes)[0].mes;
+        verificaValorEmpenhoMaiorLiq(soma_valor_empenho, soma_valor_liquidado);
 
         const created = await this.prisma.$transaction(
             async (prismaTxn: Prisma.TransactionClient): Promise<RecordWithId> => {
                 const now = new Date(Date.now());
                 let mes_utilizado: number;
-
-                const soma_valor_empenho = dto.itens.sort((a, b) => b.mes - a.mes)[0].valor_empenho;
-                const soma_valor_liquidado = dto.itens.sort((a, b) => b.mes - a.mes)[0].valor_liquidado;
-                const mes_correte = dto.itens.sort((a, b) => b.mes - a.mes)[0].mes;
 
                 if (nota_empenho) {
                     const notaEmpenhoTx = await this.buscaNotaEmpenho(prismaTxn, nota_empenho, dotacao, processo);
@@ -151,6 +152,11 @@ export class OrcamentoRealizadoService {
         if (!orcamentoRealizado) throw new HttpException('Orçamento realizado não encontrado', 404);
         console.log(dto);
 
+        const nova_soma_valor_empenho = dto.itens.sort((a, b) => b.mes - a.mes)[0].valor_empenho;
+        const nova_soma_valor_liquidado = dto.itens.sort((a, b) => b.mes - a.mes)[0].valor_liquidado;
+        const mes_corrente = dto.itens.sort((a, b) => b.mes - a.mes)[0].mes;
+        verificaValorEmpenhoMaiorLiq(nova_soma_valor_empenho, nova_soma_valor_liquidado);
+
         const updated = await this.prisma.$transaction(
             async (prismaTxn: Prisma.TransactionClient): Promise<RecordWithId> => {
                 const now = new Date(Date.now());
@@ -163,10 +169,6 @@ export class OrcamentoRealizadoService {
                         data: { dotacao: dotacao_edit },
                     });
                 }
-
-                const nova_soma_valor_empenho = dto.itens.sort((a, b) => b.mes - a.mes)[0].valor_empenho;
-                const nova_soma_valor_liquidado = dto.itens.sort((a, b) => b.mes - a.mes)[0].valor_liquidado;
-                const mes_corrente = dto.itens.sort((a, b) => b.mes - a.mes)[0].mes;
 
                 const orcRealizado = await prismaTxn.orcamentoRealizado.findUniqueOrThrow({ where: { id: +id } });
 
