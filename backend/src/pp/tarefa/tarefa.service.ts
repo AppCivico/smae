@@ -1,4 +1,4 @@
-import { HttpException, Injectable, Logger } from '@nestjs/common';
+import { BadRequestException, HttpException, Injectable, Logger } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
 import { Prisma, TarefaDependente, TarefaDependenteTipo } from '@prisma/client';
 import { Type, plainToInstance } from 'class-transformer';
@@ -69,7 +69,7 @@ export class TarefaService {
         } else if (dto.tarefa_pai_id !== null) {
             const pai = await this.prisma.tarefa.findFirst({
                 where: { removido_em: null, id: dto.tarefa_pai_id, projeto_id: projetoId },
-                select: { nivel: true },
+                select: { id: true, nivel: true, numero: true, descricao: true },
             });
             if (!pai) throw new HttpException(`Tarefa pai (${dto.tarefa_pai_id}) não foi encontrada no projeto.`, 400);
             if (pai.nivel != dto.nivel - 1)
@@ -77,6 +77,8 @@ export class TarefaService {
                     `Nível (${dto.nivel}) inválido para ser filho imediato da tarefa pai enviada (nível ${pai.nivel}).`,
                     400
                 );
+
+            await this.verificaPaiTemDependencias(pai);
         }
 
         const created = await this.prisma.$transaction(
@@ -194,6 +196,16 @@ export class TarefaService {
         );
 
         return { id: created.id };
+    }
+
+    private async verificaPaiTemDependencias(pai: { id: number; descricao: string; numero: number; nivel: number }) {
+        const qtdeDeps = await this.prisma.tarefaDependente.count({
+            where: { tarefa_id: pai.id },
+        });
+        if (qtdeDeps > 0)
+            throw new BadRequestException(
+                `Remova as dependências da tarefa "${pai.descricao}" (nível ${pai.nivel}, número ${pai.numero}) antes de criar tarefas subordinadas`
+            );
     }
 
     async calcInfereDataPeloPeriodo(
@@ -947,9 +959,11 @@ export class TarefaService {
                                       id: dto.tarefa_pai_id,
                                       projeto_id: projetoId,
                                   },
-                                  select: { nivel: true, id: true },
+                                  select: { nivel: true, id: true, numero: true, descricao: true },
                               })
                             : null;
+
+                        if (novoPai) await this.verificaPaiTemDependencias(novoPai);
 
                         if (dto.tarefa_pai_id && novoPai == null)
                             throw new HttpException(
