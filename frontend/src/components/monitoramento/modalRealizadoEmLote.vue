@@ -439,7 +439,7 @@ watch(variáveisComSuasDatas, (novoValor) => {
           class="f0 pl0 pr0 btn bgnone"
           @click.prevent="restaurarFormulário"
         >
-          &times; restaurar
+          &excl; restaurar
         </button>
         <hr class="f1">
       </div>
