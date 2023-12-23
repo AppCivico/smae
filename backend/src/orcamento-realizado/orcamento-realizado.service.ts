@@ -1119,5 +1119,5 @@ export class OrcamentoRealizadoService {
 
 export function verificaValorEmpenhoMaiorLiq(soma_valor_empenho: number, soma_valor_liquidado: number) {
     if (soma_valor_empenho > soma_valor_liquidado)
-        throw new BadRequestException('O valor de empenho não pode ser maior do que valor liquidado');
+        throw new BadRequestException('O valor de empenho não pode ser maior do que valor liquidado.');
 }
