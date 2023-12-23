@@ -28,6 +28,7 @@ import { RetryPromise } from 'src/common/retryPromise';
 import { PaginatedDto } from '../common/dto/paginated.dto';
 import { JwtService } from '@nestjs/jwt';
 import { PortfolioDto } from '../pp/portfolio/entities/portfolio.entity';
+import { TrataDotacaoGrande } from '../sof-api/sof-api.service';
 const XLSX_ZAHL_PAYLOAD = require('xlsx/dist/xlsx.zahl');
 
 class NextPageTokenJwtBody {
@@ -844,7 +845,8 @@ export class ImportacaoOrcamentoService {
 
                 const dotacoes = processo.map((r) => r.dotacao).join(', ');
                 if (row.dotacao) {
-                    const rDotacao = processo.filter((r) => r.dotacao == row.dotacao)[0];
+                    const rowDotacao = TrataDotacaoGrande(row.dotacao);
+                    const rDotacao = processo.filter((r) => TrataDotacaoGrande(r.dotacao) == rowDotacao)[0];
                     if (!rDotacao)
                         return `Linha inválida: dotação informada não foi encontrada. Dotações retornadas: ${dotacoes}`;
 
