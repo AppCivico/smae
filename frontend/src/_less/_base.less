@@ -1352,11 +1352,14 @@ p {
   cursor: pointer;
   vertical-align: text-bottom;
 
-  &:checked {
-  }
-
   &:hover {
     background-color: fadeout(@amarelo, 80%);
+  }
+
+  &:checked {
+    &:hover {
+      background-color: fadeout(@amarelo, 35%);
+    }
   }
 
   &:focus {
@@ -1371,6 +1374,10 @@ p {
 
   + span {
     margin-left: .5rem;
+
+    label > & {
+      cursor: pointer;
+    }
   }
 }
 
@@ -1378,6 +1385,11 @@ input[type='checkbox'] {
   .input-checkbox-and-radio;
 
   border-radius: 4px;
+
+  &:hover {
+    background-image: url("@{u}check--amarelo.svg");
+    background-color: fadeout(@amarelo, 80%);
+  }
 
   &:checked {
     background-image: url("@{u}check.svg");
@@ -1387,11 +1399,6 @@ input[type='checkbox'] {
   &:indeterminate {
     background-image: url("@{u}line8.svg");
     background-color: currentColor;
-  }
-
-  &:hover {
-    background-image: url("@{u}check--amarelo.svg");
-    background-color: fadeout(@amarelo, 80%);
   }
 
   &:disabled {
@@ -1451,6 +1458,10 @@ input[type='radio'] {
 
   &:checked {
     border-width: 5px;
+
+    &:hover {
+      background-color: fadeout(@amarelo, 80%);
+    }
   }
 }
 
