@@ -80,37 +80,9 @@ BEGIN
 
     END IF;
 
-    select array_agg(cronograma_id)
-    into vCronograma
-    from (
-        select
-            im.id as cronograma_id
-        from meta m
-        join cronograma im on im.meta_id = m.id and im.removido_em is null
-        where m.id = pMetaId
-        and m.ativo = TRUE
-        and m.removido_em is null
-            UNION ALL
-        select
-            ii.id as cronograma_id
-        from meta m
-        join iniciativa i on i.meta_id = m.id and i.removido_em is null
-        join cronograma ii on ii.iniciativa_id = i.id and ii.removido_em is null
-        where m.id = pMetaId
-        and m.ativo = TRUE
-        and m.removido_em is null
-            UNION ALL
-        select
-            ia.id as cronograma_id
-        from meta m
-        join iniciativa i on i.meta_id = m.id and i.removido_em is null
-        join atividade a on a.iniciativa_id = i.id and a.removido_em is null
-        join cronograma ia on ia.atividade_id = a.id and ia.removido_em is null
-        where m.id = pMetaId
-        and m.ativo = TRUE
-        and m.removido_em is null
-    ) x;
-
+    select array_agg(cronograma_id) into vCronograma
+    from view_meta_cronograma
+    where meta_id = pMetaId;
 
     select
         max(
@@ -122,30 +94,31 @@ BEGIN
      as status into vStatusCrono
     from etapa e
     join (
-        select b.id, (select count(1) from etapa x where x.etapa_pai_id = b.id) as filhos
+        select b.id, (select count(1) from etapa x where x.etapa_pai_id = b.id and x.removido_em is null) as filhos
         from  cronograma_etapa a
-        join etapa b on b.id = a.etapa_id
+        join etapa b on b.id = a.etapa_id and b.removido_em is null
         where a.cronograma_id = ANY(vCronograma) and a.inativo = false
-        and etapa_pai_id is null
+        and b.etapa_pai_id is null
 
-        union all
+            union all
 
-        select fase.id, (select count(1) from etapa x where x.etapa_pai_id = fase.id) as filhos
+        select fase.id, (select count(1) from etapa x where x.etapa_pai_id = fase.id and x.removido_em is null) as filhos
         from  cronograma_etapa a
-        join etapa e on e.id = a.etapa_id
-        join etapa fase on fase.etapa_pai_id = e.id
+        join etapa e on e.id = a.etapa_id and e.removido_em is null
+        join etapa fase on fase.etapa_pai_id = e.id and fase.removido_em is null
+        where a.cronograma_id = ANY(vCronograma) and a.inativo = false
+        and e.etapa_pai_id is null
+
+            union all
+
+        select subfase.id, (select count(1) from etapa x where x.etapa_pai_id = subfase.id and x.removido_em is null) as filhos
+        from  cronograma_etapa a
+        join etapa e on e.id = a.etapa_id and e.removido_em is null
+        join etapa fase on fase.etapa_pai_id = e.id and fase.removido_em is null
+        join etapa subfase on subfase.etapa_pai_id = fase.id and subfase.removido_em is null
         where a.cronograma_id = ANY(vCronograma) and a.inativo = false
         and e.etapa_pai_id is null
 
-        union all
-
-        select subfase.id, (select count(1) from etapa x where x.etapa_pai_id = subfase.id) as filhos
-        from  cronograma_etapa a
-        join etapa e on e.id = a.etapa_id
-        join etapa fase on fase.etapa_pai_id = e.id
-        join etapa subfase on subfase.etapa_pai_id = fase.id
-        where a.cronograma_id = ANY(vCronograma) and a.inativo = false
-        and e.etapa_pai_id is null
     ) sub on sub.id = e.id and sub.filhos = 0;
 
 
