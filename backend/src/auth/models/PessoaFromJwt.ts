@@ -28,7 +28,7 @@ export class PessoaFromJwt extends PessoaFromJwtBase {
         const isAdmin = this.hasSomeRoles(['CadastroMeta.administrador_orcamento']);
         if (isAdmin) return;
 
-        const metas = await prisma.view_meta_responsavel_orcamento.findMany({
+        const metas = await prisma.view_meta_pessoa_responsavel_na_cp.findMany({
             where: { pessoa_id: this.id },
             select: { meta_id: true },
         });
