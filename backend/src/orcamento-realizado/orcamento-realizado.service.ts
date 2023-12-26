@@ -619,6 +619,9 @@ export class OrcamentoRealizadoService {
         const metasRespCp = isAdmin
             ? []
             : await user.getMetaIdsFromAnyModel(this.prisma.view_meta_pessoa_responsavel_na_cp);
+
+        console.log(metasRespCp);
+
         const status = await this.statusConcluido(filters.meta_id, filters.ano_referencia, user, metasRespCp);
         const permissoes: OrcamentoRealizadoStatusPermissoesDto = {
             pode_editar: status.concluido ? isAdmin : true,
@@ -958,9 +961,7 @@ export class OrcamentoRealizadoService {
 
                 // se não for admin, e está concluido, então pra poder editar,
                 // precisa verificar se está na lista de responsável na CP
-                if (isAdmin) {
-                    ret.pode_editar = metasOk.includes(+meta_id);
-                }
+                if (!isAdmin) ret.pode_editar = metasOk.includes(+meta_id);
             }
         }
 
