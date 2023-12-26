@@ -64,27 +64,6 @@ const dadosExtrasDeAbas = computed(() => orçamentosEmOrdemDecrescente.value.red
   return acc;
 }, {}));
 
-async function concluirOrçamento(valor, metaId, ano) {
-  const carga = {
-    meta_id: metaId,
-    ano_referencia: ano,
-    concluido: valor,
-  };
-  conclusãoPendente.value = true;
-  try {
-    const resultado = await OrcamentosStore.closeOrcamentoRealizado(carga);
-    console.debug('resultado', resultado);
-    OrcamentoRealizadoConclusão.value[ano].concluido = resultado
-      ? valor
-      : !valor;
-  } catch (error) {
-    OrcamentoRealizadoConclusão.value[ano].concluido = !valor;
-  } finally {
-    conclusãoPendente.value = false;
-    campoPlanoConcluído.value.checked = !!OrcamentoRealizadoConclusão.value[ano].concluido;
-  }
-}
-
 async function start() {
   await MetasStore.getPdM();
   if (atividade_id) parentLabel.value = activePdm.value.rotulo_atividade;
@@ -101,6 +80,34 @@ async function start() {
         OrcamentosStore.getOrcamentoCusteioById(meta_id, x.ano_referencia);
       }
     });
+  }
+}
+
+async function concluirOrçamento(valor, metaId, ano) {
+  const carga = {
+    meta_id: metaId,
+    ano_referencia: ano,
+    concluido: valor,
+  };
+  conclusãoPendente.value = true;
+
+  try {
+    const resultado = await OrcamentosStore.closeOrcamentoRealizado(carga);
+
+    // Mudar estado do botão enquanto a nova requisição não chega
+    OrcamentoRealizadoConclusão.value[ano].concluido = resultado
+      ? valor
+      : !valor;
+  } catch (error) {
+    OrcamentoRealizadoConclusão.value[ano].concluido = !valor;
+  } finally {
+    // recarregar o ano inteiro do orçamento para atualizar as permissões, que
+    // podem ter mudado como resultado dessa ação ou de edição por um terceiro,
+    // o que causou um possível erro
+    await start();
+
+    conclusãoPendente.value = false;
+    campoPlanoConcluído.value.checked = !!OrcamentoRealizadoConclusão.value[ano].concluido;
   }
 }
 
