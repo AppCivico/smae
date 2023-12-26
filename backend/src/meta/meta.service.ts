@@ -15,6 +15,7 @@ import {
 import { FilterMetaDto } from './dto/filter-meta.dto';
 import { UpdateMetaDto } from './dto/update-meta.dto';
 import { IdNomeExibicao, Meta, MetaOrgao, MetaTag } from './entities/meta.entity';
+import { Iniciativa } from 'src/variavel/entities/variavel.entity';
 
 type DadosMetaIniciativaAtividadesDto = {
     tipo: string;
@@ -507,27 +508,28 @@ export class MetaService {
         const orgaos_in_use: number[] = [];
 
         for (const orgao of orgaos_participantes) {
-            const children_with_op = await this.prisma.iniciativa.count({
+            const iniciativaOrgaoCount = await this.prisma.iniciativaOrgao.count({
                 where: {
-                    meta_id: meta_id,
-                    iniciativa_orgao: {
-                        some: {
-                            orgao_id: orgao.orgao_id,
-                        },
-                    },
-                    atividade: {
-                        some: {
-                            atividade_orgao: {
-                                some: {
-                                    orgao_id: orgao.orgao_id,
-                                },
-                            },
-                        },
-                    },
-                },
+                    orgao_id: orgao.orgao_id,
+                    iniciativa: {
+                        meta_id: meta_id
+                    }
+                }
             });
 
-            if (children_with_op > 0) orgaos_in_use.push(orgao.orgao_id);
+            const atividadeOrgaoCount = await this.prisma.atividadeOrgao.count({
+                where: {
+                    orgao_id: orgao.orgao_id,
+                    atividade: {
+                        iniciativa: {
+                            meta_id: meta_id
+                        }
+                    }
+                }
+            });
+
+            if ( iniciativaOrgaoCount > 0 || atividadeOrgaoCount > 0 )
+                orgaos_in_use.push(orgao.orgao_id);
         }
 
         const orgaos_to_be_created = orgaos_participantes.map((x) => x.orgao_id);
