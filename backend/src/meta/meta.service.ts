@@ -468,7 +468,7 @@ export class MetaService {
                     });
 
                     if (cp) {
-                        await this.checkHasResponsaveisChildren(meta.id, cp);
+                        // await this.checkHasResponsaveisChildren(meta.id, cp);
 
                         await prisma.metaResponsavel.deleteMany({
                             where: {
