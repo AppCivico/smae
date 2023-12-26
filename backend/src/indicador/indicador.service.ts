@@ -842,15 +842,22 @@ export class IndicadorService {
     ) {
         const variaveisRefs: Record<string, number> = {};
         this.extractVariavelFromFormula(formula, variaveisRefs);
+        this.logger.verbose(`extractVariavelFromFormula: ${JSON.stringify(variaveisRefs)}`);
+
         const variaveisEmUso = new Set(Object.keys(variaveisRefs));
+
+        this.logger.verbose(`variaveisEmUso: ${JSON.stringify(variaveisEmUso)}`);
 
         // troca os valores sem trocar a referencia
         const fvEmUso = formula_variaveis.filter((item) => variaveisEmUso.has(item.referencia));
         formula_variaveis.length = 0;
         formula_variaveis.push(...fvEmUso);
 
+        this.logger.verbose(`formula_variaveis: ${JSON.stringify(formula_variaveis)}`);
+
         const allReferences = new Set(await this.listReferenciasIndicador(prismaTx, indicador_id));
 
+        this.logger.verbose(`allReferences: ${JSON.stringify(allReferences)}`);
         // começa no 0, vai aumentando isso vai usando os slots 'em branco'
         // isso pq se não, o numero iria aumentar pra sempre que alguém salvasse mudando a formula
         let highestNumericReference = 1;
@@ -876,12 +883,16 @@ export class IndicadorService {
             }
         }
 
+        this.logger.verbose(`anyChanged: ${JSON.stringify(anyChanged)}`);
         if (anyChanged) {
             this.logger.debug(`Revalidando referencias...`);
             formula_compilada = await this.validateVariaveis(formula_variaveis, indicador_id, formula);
         } else {
             this.logger.debug(`Nenhuma troca de referência realizada.`);
         }
+
+        this.logger.verbose(`new formula_variaveis: ${JSON.stringify(formula_variaveis)}`, formula, formula_compilada);
+
         return { formula, formula_compilada };
     }
 
