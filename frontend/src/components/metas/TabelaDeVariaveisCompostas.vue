@@ -77,7 +77,8 @@ function permitirEdição(indicadorVariavel) {
             path: `${parentlink}/indicadores/${indicadorId}/variaveis-compostas/gerar`,
             params: {
               indicador_id: indicadorId
-            }
+            },
+            query: $route.query,
           }"
           class="addlink"
         >
