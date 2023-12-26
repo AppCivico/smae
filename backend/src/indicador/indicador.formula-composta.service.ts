@@ -74,6 +74,7 @@ export class IndicadorFormulaCompostaService {
         const formula_variaveis = dto.formula_variaveis;
 
         let formula;
+        console.log('chamando trocaReferencias...');
         ({ formula, formula_compilada } = await this.indicadorService.trocaReferencias(
             formula_variaveis,
             dto.formula,
@@ -236,39 +237,39 @@ export class IndicadorFormulaCompostaService {
                 // só é necessário em update do indicador
                 await this.resyncFormulaComposta(indicador, self.id, prismaTx);
 
-                if (self.formula_compilada != formula_compilada) {
-                    let formula;
-                    const formula_variaveis = dto.formula_variaveis;
-                    ({ formula, formula_compilada } = await this.indicadorService.trocaReferencias(
-                        formula_variaveis,
-                        dto.formula,
-                        indicador_id,
-                        formula_compilada,
-                        prismaTx
-                    ));
+                // essa parte aqui se torna 100% obrigatória pois não da para saber no que mexeram na formula
+                let formula;
+                const formula_variaveis = dto.formula_variaveis;
+                ({ formula, formula_compilada } = await this.indicadorService.trocaReferencias(
+                    formula_variaveis,
+                    dto.formula,
+                    indicador_id,
+                    formula_compilada,
+                    prismaTx
+                ));
 
-                    // vai precisar atualizar os outros dados em cada indicador
-                    // por enquanto, não precisa fazer nada
+                // vai precisar atualizar os outros dados em cada indicador
+                // por enquanto, não precisa fazer nada
 
-                    await prismaTx.formulaCompostaVariavel.deleteMany({
-                        where: { formula_composta_id: self.id },
-                    });
+                await prismaTx.formulaCompostaVariavel.deleteMany({
+                    where: { formula_composta_id: self.id },
+                });
 
-                    await Promise.all([
-                        prismaTx.formulaComposta.update({
-                            where: { id: self.id },
-                            data: { formula, formula_compilada },
+                await Promise.all([
+                    prismaTx.formulaComposta.update({
+                        where: { id: self.id },
+                        data: { formula, formula_compilada },
+                    }),
+                    prismaTx.formulaCompostaVariavel.createMany({
+                        data: formula_variaveis.map((fv) => {
+                            return {
+                                formula_composta_id: self.id,
+                                ...fv,
+                            };
                         }),
-                        prismaTx.formulaCompostaVariavel.createMany({
-                            data: formula_variaveis.map((fv) => {
-                                return {
-                                    formula_composta_id: self.id,
-                                    ...fv,
-                                };
-                            }),
-                        }),
-                    ]);
-                }
+                    }),
+                ]);
+
 
                 return self;
             },
