@@ -64,7 +64,7 @@ function permitirEdição(indicadorVariavel) {
     </thead>
     <tr
       v-for="v in variáveisCompostasEmUso"
-      :key="v.id"
+      :key="v.formula_composta_id"
     >
       <td>{{ v.titulo }}</td>
       <td>
@@ -89,7 +89,7 @@ function permitirEdição(indicadorVariavel) {
         </button>
         <router-link
           :to="{
-            path: `${parentlink}/indicadores/${indicadorId}/variaveis-compostas/${v.id}`,
+            path: `${parentlink}/indicadores/${indicadorId}/variaveis-compostas/${v.formula_composta_id}`,
             query: $route.query,
           }"
           class="tipinfo tprimary ml1"
