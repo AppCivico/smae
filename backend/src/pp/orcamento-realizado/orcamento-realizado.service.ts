@@ -347,7 +347,9 @@ export class OrcamentoRealizadoService {
         dotacao: string,
         processo: string
     ) {
+        console.log('buscaProcesso', dto, dotacao, processo);
         const processoTx = await this.buscaProcesso(prismaTxn, dto, dotacao, processo);
+        console.log(processoTx)
         const mes_utilizado = processoTx.mes_utilizado;
 
         // muda um recurso em comum, pra criar o lock no serialize
@@ -364,12 +366,14 @@ export class OrcamentoRealizadoService {
                 portfolio_id: portfolio_id,
             },
         });
+        console.log(novo_valor)
 
         if (
             novo_valor &&
             this.liberarValoresMaioresQueSof === false &&
             novo_valor.soma_valor_empenho.greaterThan(processoTx.empenho_liquido)
         ) {
+            console.log('entrou no exception 1')
             throw new HttpException(FRASE_ERRO_EMPENHO, 400);
         }
 
@@ -378,6 +382,7 @@ export class OrcamentoRealizadoService {
             this.liberarValoresMaioresQueSof === false &&
             novo_valor.soma_valor_liquidado.greaterThan(processoTx.valor_liquidado)
         ) {
+            console.log('entrou no exception 2')
             throw new HttpException(FRASE_ERRO_LIQUIDADO, 400);
         }
 
@@ -445,11 +450,13 @@ export class OrcamentoRealizadoService {
             throw new HttpException(FRASE_ERRO_EMPENHO, 400);
         }
 
+        console.log('novo_valor', novo_valor, notaEmpenhoTx)
         if (
             novo_valor &&
             this.liberarValoresMaioresQueSof === false &&
             novo_valor.soma_valor_liquidado.greaterThan(notaEmpenhoTx.valor_liquidado)
         ) {
+            console.log('entrou no this.liberarValoresMaioresQueSof novo_valor.soma_valor_liquidado notaEmpenhoTx.valor_liquidado')
             throw new HttpException(FRASE_ERRO_LIQUIDADO, 400);
         }
 
