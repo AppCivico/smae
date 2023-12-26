@@ -849,7 +849,7 @@ export class ImportacaoOrcamentoService {
                 if (processo.length === 0) return 'Linha inválida: processo não encontrado';
 
                 const dotacoes = processo.map((r) => r.dotacao).join(', ');
-                this.logger.verbose(`dotacoes encontradas: ${dotacoes}, row: ${JSON.stringify(row)}`);
+                this.logger.verbose(`dotações encontradas: ${dotacoes}`);
                 if (row.dotacao) {
                     // pega a dotação completa antes de jogar fora
                     dotacao_complemento = ExtraiComplementoDotacao({ dotacao: row.dotacao, dotacao_complemento: null });
@@ -902,7 +902,7 @@ export class ImportacaoOrcamentoService {
         // joga fora os dígitos extra da dotação
         dotacao = TrataDotacaoGrande(dotacao);
 
-        this.logger.verbose(`dotacao_complemento: ${dotacao_complemento}, dot: ${dotacao}`)
+        this.logger.debug(`dotacao_complemento: ${dotacao_complemento}, dotação: ${dotacao}`);
 
         let id: number | undefined = undefined;
         let itens: CreateOrcamentoRealizadoItemDto[] = [];
@@ -982,8 +982,6 @@ export class ImportacaoOrcamentoService {
                     item.valor_liquidado = row.valor_liquidado;
                 }
             }
-
-            this.logger.verbose(`envio: ${JSON.stringify({ adicionar_item_mes, itens, maisRecente })}`);
         }
 
         if (adicionar_item_mes)
@@ -993,6 +991,7 @@ export class ImportacaoOrcamentoService {
                 valor_liquidado: row.valor_liquidado,
             });
 
+        this.logger.verbose(`request: ${JSON.stringify({ adicionar_item_mes, itens })}`);
         try {
             const upsertFunction = async () => {
                 if (params.eh_metas) {
