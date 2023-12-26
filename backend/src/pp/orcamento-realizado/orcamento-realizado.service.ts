@@ -553,14 +553,15 @@ export class OrcamentoRealizadoService {
         filters: FilterPPOrcamentoRealizadoDto,
         user: PessoaFromJwt
     ): Promise<PPOrcamentoRealizado[]> {
+
         const queryRows = await this.prisma.orcamentoRealizado.findMany({
             where: {
                 removido_em: null,
-                dotacao: filters?.dotacao,
+                dotacao: filters.dotacao,
                 dotacao_complemento: filters.dotacao_complemento,
                 projeto_id: projeto.id,
-                processo: filters?.processo,
-                nota_empenho: filters?.nota_empenho,
+                processo: filters.processo,
+                nota_empenho: filters.nota_empenho,
                 ano_referencia: filters.ano_referencia, // obrigatório para que o 'join' com a dotação seja feito sem complicações
             },
             select: {
@@ -583,6 +584,7 @@ export class OrcamentoRealizadoService {
             },
             orderBy: [{ meta_id: 'asc' }, { iniciativa_id: 'asc' }, { atividade_id: 'asc' }, { id: 'asc' }],
         });
+        console.log('queryRows', queryRows)
 
         const notaEncontradas: Record<string, boolean> = {};
         const anoNotas: Record<string, boolean> = {};
