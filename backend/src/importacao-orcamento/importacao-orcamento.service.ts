@@ -956,6 +956,7 @@ export class ImportacaoOrcamentoService {
                 {
                     ano_referencia: row.ano_referencia,
                     dotacao,
+                    dotacao_complemento,
                     nota_empenho: dotacao_processo_nota,
                     processo: dotacao_processo,
                 },
