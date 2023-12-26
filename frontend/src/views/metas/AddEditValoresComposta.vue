@@ -67,7 +67,7 @@ const formulárioSujo = useIsFormDirty();
 const acumulados = computed(() => (Array.isArray(carga.valores)
   ? carga.valores.map((x, i) => ({
     referencia: sériesDeCompostaParaEdição.value[`${tipoDeValor.value}Acumulado`][i].referencia,
-    valor: Number.parseInt(x.valor, 10) + sériesDeCompostaParaEdição.value[`Diferença${tipoDeValor.value}`][i],
+    valor: Number.parseFloat(x.valor || 0) + sériesDeCompostaParaEdição.value[`Diferença${tipoDeValor.value}`][i],
   }))
   : []));
 
@@ -97,7 +97,7 @@ const onSubmit = handleSubmit.withControlled(async () => {
 
 function preencherVaziosCom() {
   carga.valores.forEach((x, i) => {
-    if (x.valor === undefined || x.valor === '') {
+    if (!x.valor && x.valor !== 0) {
       switch (modoDePreenchimento.value) {
         case 'valor_nominal':
           setFieldValue(`valores[${i}].valor`, valorPadrão.value);

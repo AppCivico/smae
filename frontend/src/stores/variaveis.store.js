@@ -221,7 +221,7 @@ export const useVariaveisStore = defineStore({
           cur.series.forEach((x, j) => {
             acc[sériesDaVariávelComposta.ordem_series[j]].push({
               referencia: x.referencia,
-              valor: Number.parseFloat(x.valor_nominal),
+              valor: Number.parseFloat(x.valor_nominal) || '',
             });
           });
 
