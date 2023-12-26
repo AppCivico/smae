@@ -554,6 +554,7 @@ export class OrcamentoRealizadoService {
         user: PessoaFromJwt
     ): Promise<PPOrcamentoRealizado[]> {
 
+        console.log(filters)
         const queryRows = await this.prisma.orcamentoRealizado.findMany({
             where: {
                 removido_em: null,
