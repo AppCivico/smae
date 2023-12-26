@@ -485,10 +485,10 @@ export class ImportacaoOrcamentoService {
         const user = await this.authService.pessoaJwtFromId(job.criado_por);
 
         if (job.portfolio_id) {
-            const projetosDoUser = await this.projetoService.findAllIds(user);
+            const projetosDoUser = await this.projetoService.findAllIds(user, job.portfolio_id);
             projetosIds.push(...projetosDoUser.map((r) => r.id));
         } else if (job.pdm_id) {
-            const metasDoUser = await this.metaService.findAllIds(user);
+            const metasDoUser = await this.metaService.findAllIds(user, job.pdm_id);
 
             metasIds.push(...metasDoUser.map((r) => r.id));
         }

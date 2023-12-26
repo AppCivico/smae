@@ -232,11 +232,15 @@ export class MetaService {
         return permissionsSet;
     }
 
-    async findAllIds(user: PessoaFromJwt | undefined): Promise<{ id: number }[]> {
+    async findAllIds(
+        user: PessoaFromJwt | undefined,
+        pdm_id: number | undefined = undefined
+    ): Promise<{ id: number }[]> {
         const permissionsSet = await this.getMetasPermissionSet(user, true);
 
         return await this.prisma.meta.findMany({
             where: {
+                pdm_id,
                 AND:
                     permissionsSet.length > 0
                         ? [
@@ -407,8 +411,8 @@ export class MetaService {
         });
 
         const op = updateMetaDto.orgaos_participantes;
-        // let pois na implementação atual essa array pode ser modificada para remover 
-        let cp = updateMetaDto.coordenadores_cp;
+        // let pois na implementação atual essa array pode ser modificada para remover
+        const cp = updateMetaDto.coordenadores_cp;
         const tags = updateMetaDto.tags;
         delete updateMetaDto.orgaos_participantes;
         delete updateMetaDto.coordenadores_cp;
