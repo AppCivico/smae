@@ -568,7 +568,7 @@ export class OrcamentoService implements ReportableService {
             projeto: db.projeto_id ? { codigo: db.projeto_codigo, nome: db.projeto_nome!, id: +db.projeto_id } : null,
 
             acao_orcamentaria: this.dotacaoService.getAcaoOrcamentaria(db.dotacao),
-            dotacao: `${db.dotacao}${db.dotacao_complemento ?? ''}`,
+            dotacao: `${db.dotacao}${db.dotacao_complemento ? '.' + db.dotacao_complemento : ''}`,
             processo: db.processo,
             nota_empenho: db.nota_empenho,
 
