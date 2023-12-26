@@ -12,7 +12,7 @@ import { useOrcamentosStore } from '@/stores/orcamentos.store';
 import { useDotaçãoStore } from '@/stores/dotacao.store.ts';
 import { storeToRefs } from 'pinia';
 import { Field, Form } from 'vee-validate';
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
 const alertStore = useAlertStore();
@@ -57,6 +57,20 @@ const d_programa = ref('');
 const d_projetoatividade = ref('');
 const d_contadespesa = ref('');
 const d_fonte = ref('');
+
+const complemento = computed(() => {
+  if (currentEdit.value.dotacao_complemento) {
+    const partes = currentEdit.value.dotacao_complemento.split('.');
+
+    return {
+      exercicio: partes[0],
+      fonte: partes[1],
+      acompanhamento: `${partes[2]}.${partes[3]}`,
+    };
+  }
+
+  return null;
+});
 
 (async () => {
   /* await */ DotaçãoStore.getDotaçãoSegmentos(ano);
@@ -218,6 +232,7 @@ function validaPartes(a) {
 
     <CheckClose />
   </div>
+
   <h3 class="mb2">
     <strong>{{ ano }}</strong> - {{ parent_item.codigo }} - {{ parent_item.titulo }}
   </h3>
@@ -406,6 +421,39 @@ function validaPartes(a) {
                 ? `${it.codigo} - ${it.descricao}`
                 : '' }}
             </div>
+          </div>
+        </div>
+
+        <div
+          v-if="complemento"
+          class="flex g2 mb2"
+        >
+          <div class="f1">
+            <label class="label tc300">Exercício da Fonte de Recurso</label>
+            <input
+              class="inputtext light mb1 disabled"
+              type="text"
+              :value="complemento.exercicio"
+              disabled
+            >
+          </div>
+          <div class="f1">
+            <label class="label tc300">Fonte</label>
+            <input
+              class="inputtext light mb1 disabled"
+              type="text"
+              :value="complemento.fonte"
+              disabled
+            >
+          </div>
+          <div class="f1">
+            <label class="label tc300">Código de Acompanhamento da Execução Orçamentária</label>
+            <input
+              class="inputtext light mb1 disabled"
+              type="text"
+              :value="complemento.acompanhamento"
+              disabled
+            >
           </div>
         </div>
       </template>
