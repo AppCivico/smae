@@ -156,7 +156,6 @@ export class OrcamentoRealizadoService {
             where: { id: +id, removido_em: null, projeto_id: projeto.id },
         });
         if (!orcamentoRealizado) throw new HttpException('Orçamento realizado não encontrado', 404);
-        console.log(dto);
 
         const nova_soma_valor_empenho = dto.itens.sort((a, b) => b.mes - a.mes)[0].valor_empenho;
         const nova_soma_valor_liquidado = dto.itens.sort((a, b) => b.mes - a.mes)[0].valor_liquidado;
@@ -234,6 +233,7 @@ export class OrcamentoRealizadoService {
                     );
                 }
 
+                console.log('this.liberarValoresMaioresQueSof', this.liberarValoresMaioresQueSof);
                 // chama após o update, vai disparar o erro se ultrapassar o limite
                 if (orcRealizado.nota_empenho) {
                     await this.verificaNotaEmpenho(
@@ -554,7 +554,6 @@ export class OrcamentoRealizadoService {
         user: PessoaFromJwt
     ): Promise<PPOrcamentoRealizado[]> {
 
-        console.log(filters)
         const queryRows = await this.prisma.orcamentoRealizado.findMany({
             where: {
                 removido_em: null,
@@ -585,7 +584,6 @@ export class OrcamentoRealizadoService {
             },
             orderBy: [{ meta_id: 'asc' }, { iniciativa_id: 'asc' }, { atividade_id: 'asc' }, { id: 'asc' }],
         });
-        console.log('queryRows', queryRows)
 
         const notaEncontradas: Record<string, boolean> = {};
         const anoNotas: Record<string, boolean> = {};
