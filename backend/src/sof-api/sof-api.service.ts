@@ -151,9 +151,9 @@ export class SofApiService {
     onModuleInit() {
         this.got = got.extend({
             prefixUrl: this.SOF_API_PREFIX,
-            timeout: 60 * 1000,
+            timeout: 20 * 1000,
             retry: {
-                limit: 3,
+                limit: 2,
                 methods: ['GET', 'PUT', 'HEAD', 'DELETE', 'OPTIONS', 'TRACE', 'POST'],
                 statusCodes: [408, 413, 429, 500, 502, 503, 521, 522, 524],
             },
