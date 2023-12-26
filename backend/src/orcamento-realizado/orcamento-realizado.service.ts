@@ -649,6 +649,7 @@ export class OrcamentoRealizadoService {
             where: {
                 removido_em: null,
                 dotacao: filters.dotacao,
+                dotacao_complemento: filters.dotacao_complemento,
                 AND: [{ meta_id: filters.meta_id }, { meta_id: filterIdIn ? { in: filterIdIn } : undefined }],
                 processo: filters.processo,
                 nota_empenho: filters.nota_empenho,

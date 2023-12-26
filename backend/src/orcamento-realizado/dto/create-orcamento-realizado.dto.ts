@@ -174,6 +174,11 @@ export class FilterOrcamentoRealizadoDto {
     @IsString()
     dotacao?: string;
 
+    @IsOptional()
+    @IsString()
+    @ValidateIf((object, value) => value !== null)
+    dotacao_complemento?: string | null;
+
     /**
      * Filtrar por processo
      * @example ""

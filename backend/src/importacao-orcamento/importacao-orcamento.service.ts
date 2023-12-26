@@ -28,7 +28,7 @@ import { RetryPromise } from 'src/common/retryPromise';
 import { PaginatedDto } from '../common/dto/paginated.dto';
 import { JwtService } from '@nestjs/jwt';
 import { PortfolioDto } from '../pp/portfolio/entities/portfolio.entity';
-import { TrataDotacaoGrande } from '../sof-api/sof-api.service';
+import { ExtraiComplementoDotacao, TrataDotacaoGrande } from '../sof-api/sof-api.service';
 const XLSX_ZAHL_PAYLOAD = require('xlsx/dist/xlsx.zahl');
 
 class NextPageTokenJwtBody {
@@ -809,6 +809,7 @@ export class ImportacaoOrcamentoService {
         }
 
         let dotacao: string | undefined = undefined;
+        let dotacao_complemento: string | null = null;
         let dotacao_processo: string | undefined = undefined;
         let dotacao_processo_nota: string | undefined = undefined;
 
@@ -890,6 +891,9 @@ export class ImportacaoOrcamentoService {
 
         if (!dotacao) return 'Erro: faltando dotacao';
 
+        dotacao = TrataDotacaoGrande(dotacao);
+        dotacao_complemento = ExtraiComplementoDotacao({ dotacao: dotacao, dotacao_complemento: null });
+
         let id: number | undefined = undefined;
         let itens: CreateOrcamentoRealizadoItemDto[] = [];
 
@@ -902,6 +906,7 @@ export class ImportacaoOrcamentoService {
                     ano_referencia: row.ano_referencia,
                     meta_id,
                     dotacao,
+                    dotacao_complemento,
                     nota_empenho: dotacao_processo_nota !== undefined ? dotacao_processo_nota : null,
                     processo: dotacao_processo !== undefined ? dotacao_processo : null,
                     atividade_id: atividade_id !== undefined ? atividade_id : null,
