@@ -541,11 +541,7 @@ export class IndicadorService {
                     ]);
                 }
 
-                //if (!(oldVersion === newVersion)) {
-                //this.logger.log(`Indicador mudou, recalculando tudo... ${oldVersion} => ${newVersion}`);
-                this.logger.log(`Indicador recalculando...`);
-                await prismaTx.$queryRaw`select monta_serie_indicador(${indicador.id}::int, null, null, null)`;
-                //}
+                await this.recalcIndicador(prismaTx, indicador.id);
 
                 await prismaTx.indicadorFormulaCompostaEmUso.deleteMany({ where: { indicador_id: indicador.id } });
                 if (formula_compilada) {
@@ -577,6 +573,11 @@ export class IndicadorService {
         );
 
         return { id };
+    }
+
+    async recalcIndicador(prismaTx: Prisma.TransactionClient, indicador_id: number) {
+        this.logger.log(`Indicador recalculando...`);
+        await prismaTx.$queryRaw`select monta_serie_indicador(${indicador_id}::int, null, null, null)`;
     }
 
     private static getIndicadorHash(indicador: {

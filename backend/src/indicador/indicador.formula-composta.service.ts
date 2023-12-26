@@ -13,9 +13,7 @@ import {
     UpdateIndicadorFormulaCompostaDto,
 } from './dto/create-indicador.formula-composta.dto';
 import { Indicador } from './entities/indicador.entity';
-import {
-    IndicadorFormulaCompostaDto
-} from './entities/indicador.formula-composta.entity';
+import { IndicadorFormulaCompostaDto } from './entities/indicador.formula-composta.entity';
 import { IndicadorService } from './indicador.service';
 
 @Injectable()
@@ -74,7 +72,6 @@ export class IndicadorFormulaCompostaService {
         const formula_variaveis = dto.formula_variaveis;
 
         let formula;
-        console.log('chamando trocaReferencias...');
         ({ formula, formula_compilada } = await this.indicadorService.trocaReferencias(
             formula_variaveis,
             dto.formula,
@@ -270,6 +267,7 @@ export class IndicadorFormulaCompostaService {
                     }),
                 ]);
 
+                await this.indicadorService.recalcIndicador(prismaTx, indicador.id);
 
                 return self;
             },
@@ -298,8 +296,6 @@ export class IndicadorFormulaCompostaService {
                 },
                 select: { id: true },
             });
-
-            console.log(self);
 
             const indicadoresEmUso = await prismaTx.indicadorFormulaCompostaEmUso.findMany({
                 where: { formula_composta_id: self.id },
