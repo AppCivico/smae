@@ -203,10 +203,7 @@ function permitirEdição(indicadorVariavel) {
         <router-link
           :to="{
             path: `${parentlink}/indicadores/${indicadorId}/variaveis-compostas/${v.id}/retroativos`,
-            params: {
-              indicador_id: indicadorId,
-              var_id: v.id,
-            },
+            query: $route.query,
           }"
           class="tipinfo tprimary ml1"
         >
