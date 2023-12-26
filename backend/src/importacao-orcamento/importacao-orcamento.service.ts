@@ -705,6 +705,7 @@ export class ImportacaoOrcamentoService {
     async processaRow(col2row: any, params: ProcessaLinhaParams, user: PessoaFromJwt): Promise<string> {
         const row = plainToInstance(LinhaCsvInputDto, col2row);
         const validations = await validate(row);
+        this.logger.verbose(`processing row ${JSON.stringify(row)}: ${JSON.stringify(validations)}`);
         if (validations.length) {
             let response =
                 'Linha inválida: ' +
@@ -844,6 +845,7 @@ export class ImportacaoOrcamentoService {
                 if (processo.length === 0) return 'Linha inválida: processo não encontrado';
 
                 const dotacoes = processo.map((r) => r.dotacao).join(', ');
+                this.logger.verbose(`dotacoes encontradas: ${dotacoes}`);
                 if (row.dotacao) {
                     const rowDotacao = TrataDotacaoGrande(row.dotacao);
                     const rDotacao = processo.filter((r) => TrataDotacaoGrande(r.dotacao) == rowDotacao)[0];
@@ -852,6 +854,8 @@ export class ImportacaoOrcamentoService {
 
                     dotacao = rDotacao.dotacao;
                     dotacao_processo = rDotacao.processo;
+
+                    this.logger.verbose(`match: ${dotacao}`);
                 } else if (processo.length == 1) {
                     dotacao = processo[0].dotacao;
                     dotacao_processo = processo[0].processo;
@@ -962,6 +966,8 @@ export class ImportacaoOrcamentoService {
                     item.valor_liquidado = row.valor_liquidado;
                 }
             }
+
+            this.logger.verbose(`envio: ${JSON.stringify({ adicionar_item_mes, itens, maisRecente })}`);
         }
 
         if (adicionar_item_mes)

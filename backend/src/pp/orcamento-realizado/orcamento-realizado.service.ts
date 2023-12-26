@@ -42,6 +42,11 @@ export class OrcamentoRealizadoService {
         user: PessoaFromJwt
     ): Promise<RecordWithId> {
         const dotacao_complemento = ExtraiComplementoDotacao(dto);
+        console.log(
+            'create orcamento pp ExtraiComplementoDotacaoExtraiComplementoDotacaoExtraiComplementoDotacaoExtraiComplementoDotacao',
+            dto,
+            dotacao_complemento
+        );
         dto.dotacao = TrataDotacaoGrande(dto.dotacao);
 
         const { dotacao, processo, nota_empenho } = await this.validaDotProcNota(dto);
