@@ -372,6 +372,7 @@ export class OrcamentoService implements ReportableService {
             from custos
             left join orcamento_planejado op ON custos.processo IS NULL
                 AND ( custos.dotacao = op.dotacao AND custos.ano = op.ano_referencia)
+                AND op.removido_em is null
             left join dotacao_planejado dp ON custos.processo IS NULL
                 AND ( custos.dotacao = dp.dotacao AND custos.ano = dp.ano_referencia)
 
@@ -484,6 +485,7 @@ export class OrcamentoService implements ReportableService {
             from custos
             left join orcamento_planejado op ON custos.processo IS NULL
                 AND ( custos.dotacao = op.dotacao AND custos.ano = op.ano_referencia)
+                AND op.removido_em IS NULL
             left join dotacao_planejado dp ON custos.processo IS NULL
                 AND ( custos.dotacao = dp.dotacao AND custos.ano = dp.ano_referencia)
 
