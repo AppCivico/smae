@@ -313,10 +313,14 @@ export class ProjetoService {
         return created;
     }
 
-    async findAllIds(user: PessoaFromJwt | undefined): Promise<{ id: number }[]> {
+    async findAllIds(
+        user: PessoaFromJwt | undefined,
+        portfolio_id: number | undefined = undefined
+    ): Promise<{ id: number }[]> {
         const permissionsSet: Prisma.Enumerable<Prisma.ProjetoWhereInput> = this.getProjetoWhereSet(user, true);
         return await this.prisma.projeto.findMany({
             where: {
+                portfolio_id,
                 AND:
                     permissionsSet.length > 0
                         ? [
