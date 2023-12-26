@@ -406,7 +406,8 @@ export class MetaService {
         });
 
         const op = updateMetaDto.orgaos_participantes;
-        const cp = updateMetaDto.coordenadores_cp;
+        // let pois na implementação atual essa array pode ser modificada para remover 
+        let cp = updateMetaDto.coordenadores_cp;
         const tags = updateMetaDto.tags;
         delete updateMetaDto.orgaos_participantes;
         delete updateMetaDto.coordenadores_cp;
@@ -469,6 +470,9 @@ export class MetaService {
                         //e ai toda vez que vai salvando, ele vai dando mais um insert no orgão
                         // acho que o mais facil é trocar o createMany pra um create que verifica o count de cada orgao
                         const responsaveis_to_be_kept = await this.checkHasResponsaveisChildren(meta.id, cp);
+                        // if (responsaveis_to_be_kept.length) {
+                        //     cp.filter
+                        // }
 
                         await prisma.metaResponsavel.deleteMany({
                             where: {
@@ -529,10 +533,8 @@ export class MetaService {
         const orgaos_to_be_created = orgaos_participantes.map((x) => x.orgao_id);
         const orgaos_match = orgaos_in_use.some((x) => orgaos_to_be_created.includes(x));
 
-        this.logger.verbose(`checkHasOrgaosParticipantesChildren ${JSON.stringify(orgaos_match)}`);
-        // TODO check this exception!
-        // if (!orgaos_match)
-        // throw new HttpException('Existem órgãos em uso em filhos (Iniciativa/Etapa), remova-os primeiro.', 400);
+        if (!orgaos_match)
+            throw new HttpException('Existem órgãos em uso em filhos (Iniciativa/Etapa), remova-os primeiro.', 400);
     }
 
     private async checkHasResponsaveisChildren(meta_id: number, coordenadores_cp: number[]): Promise<number[]> {
