@@ -153,41 +153,6 @@ function permitirEdição(indicadorVariavel) {
           </svg>
           <div>Editar</div>
         </router-link>
-        <!-- <router-link
-          :to="{
-            path: `${parentlink}/indicadores/${indicadorId}/variaveis/novo/${v.id}`
-            query: $route.query,
-          }"
-          class="tipinfo tprimary ml1"
-        >
-          <svg
-            width="20"
-            height="20"
-          ><use xlink:href="#i_copy" /></svg><div>Duplicar</div>
-        </router-link>
-        <router-link
-          v-if="permitirEdição(v.indicador_variavel)"
-          :to="{
-            path: `${parentlink}/indicadores/${indicadorId}/variaveis/${v.id}`,
-            query: $route.query,
-          }"
-          class="tipinfo tprimary ml1"
-        >
-          <svg
-            width="20"
-            height="20"
-          ><use xlink:href="#i_edit" /></svg><div>Editar</div>
-        </router-link>
-        <button
-          v-else
-          disabled
-          class="like-a__link tipinfo tprimary ml1"
-        >
-          <svg
-            width="20"
-            height="20"
-          ><use xlink:href="#i_edit" /></svg><div>Editar</div>
-        </button> -->
         <router-link
           :to="{
             path: `${parentlink}/indicadores/${indicadorId}/variaveis-compostas/${v.id}/valores`,
