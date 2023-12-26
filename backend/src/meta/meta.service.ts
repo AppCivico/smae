@@ -505,21 +505,21 @@ export class MetaService {
     }
 
     private async checkHasOrgaosParticipantesChildren(meta_id: number, orgaos_participantes: MetaOrgaoParticipante[]) {
-        const orgaos_in_use: number[] = [];
+        const orgaos_to_be_created = orgaos_participantes.map((x) => x.orgao_id);
 
-        for (const orgao of orgaos_participantes) {
-            const iniciativaOrgaoCount = await this.prisma.iniciativaOrgao.count({
-                where: {
-                    orgao_id: orgao.orgao_id,
-                    iniciativa: {
-                        meta_id: meta_id
-                    }
-                }
-            });
+        const currentOrgaos = await this.prisma.metaOrgao.findMany({
+            where: { meta_id },
+            select: {
+                orgao_id: true
+            }
+        });
+        
+        const deletedOrgaos = currentOrgaos.map(o => o.orgao_id).filter(x => orgaos_to_be_created.indexOf(x) === -1);
 
+        for (const orgao_id of deletedOrgaos) {
             const atividadeOrgaoCount = await this.prisma.atividadeOrgao.count({
                 where: {
-                    orgao_id: orgao.orgao_id,
+                    orgao_id: orgao_id,
                     atividade: {
                         iniciativa: {
                             meta_id: meta_id
@@ -527,18 +527,20 @@ export class MetaService {
                     }
                 }
             });
+            if (atividadeOrgaoCount > 0)
+                throw new HttpException('Existe órgão em uso em Atividade, remova-o primeiro no nível de Atividade.', 400);
 
-            if ( iniciativaOrgaoCount > 0 || atividadeOrgaoCount > 0 )
-                orgaos_in_use.push(orgao.orgao_id);
-        }
-
-        const orgaos_to_be_created = orgaos_participantes.map((x) => x.orgao_id);
-        console.log('==========================');
-        console.log(orgaos_in_use);
-        console.log(orgaos_to_be_created);
-        console.log('==========================');
-        if ( !orgaos_in_use.every(x => orgaos_to_be_created.includes(x) ) )
-            throw new HttpException('Existem órgãos em uso em filhos (Iniciativa/Etapa), remova-os primeiro.', 400);
+            const iniciativaOrgaoCount = await this.prisma.iniciativaOrgao.count({
+                where: {
+                    orgao_id: orgao_id,
+                    iniciativa: {
+                        meta_id: meta_id
+                    }
+                }
+            });
+            if (iniciativaOrgaoCount > 0)
+                throw new HttpException('Existe órgão em uso em Iniciativa, remova-o primeiro no nível de Iniciativa.', 400);
+        }   
     }
 
     private async checkHasResponsaveisChildren(meta_id: number, coordenadores_cp: number[]): Promise<number[]> {
