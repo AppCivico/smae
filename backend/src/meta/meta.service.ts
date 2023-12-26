@@ -15,7 +15,6 @@ import {
 import { FilterMetaDto } from './dto/filter-meta.dto';
 import { UpdateMetaDto } from './dto/update-meta.dto';
 import { IdNomeExibicao, Meta, MetaOrgao, MetaTag } from './entities/meta.entity';
-import { Iniciativa } from 'src/variavel/entities/variavel.entity';
 
 type DadosMetaIniciativaAtividadesDto = {
     tipo: string;
@@ -411,7 +410,6 @@ export class MetaService {
         });
 
         const op = updateMetaDto.orgaos_participantes;
-        // let pois na implementação atual essa array pode ser modificada para remover
         const cp = updateMetaDto.coordenadores_cp;
         const tags = updateMetaDto.tags;
         delete updateMetaDto.orgaos_participantes;
@@ -470,19 +468,11 @@ export class MetaService {
                     });
 
                     if (cp) {
-                        // TODO tem um bug aqui:
-                        //na hora que edita removendo um orgão da meta, ele confere se há algum filho (iniciativa, atividade) com aquele orgão, se tem, ele mantem o orgão salvo
-                        //e ai toda vez que vai salvando, ele vai dando mais um insert no orgão
-                        // acho que o mais facil é trocar o createMany pra um create que verifica o count de cada orgao
-                        const responsaveis_to_be_kept = await this.checkHasResponsaveisChildren(meta.id, cp);
-                        // if (responsaveis_to_be_kept.length) {
-                        //     cp.filter
-                        // }
+                        await this.checkHasResponsaveisChildren(meta.id, cp);
 
                         await prisma.metaResponsavel.deleteMany({
                             where: {
-                                meta_id: id,
-                                pessoa_id: { notIn: responsaveis_to_be_kept },
+                                meta_id: id
                             },
                         });
                         await prisma.metaResponsavel.createMany({
@@ -547,34 +537,40 @@ export class MetaService {
         }   
     }
 
-    private async checkHasResponsaveisChildren(meta_id: number, coordenadores_cp: number[]): Promise<number[]> {
-        const responsaveis_in_use: number[] = [];
+    private async checkHasResponsaveisChildren(meta_id: number, coordenadores_cp: number[]) {
+        const currentCoordenadores = await this.prisma.metaResponsavel.findMany({
+            where: { meta_id },
+            select: {
+                pessoa_id: true
+            }
+        });
+        const deletedPessoas = currentCoordenadores.map(c => c.pessoa_id).filter(x => coordenadores_cp.indexOf(x) === -1);
 
-        for (const resp of coordenadores_cp) {
-            const children_with_cr = await this.prisma.iniciativa.count({
+        for (const resp of deletedPessoas) {
+            const atividadePessoaCount = await this.prisma.atividadeResponsavel.count({
                 where: {
-                    meta_id: meta_id,
-                    iniciativa_responsavel: {
-                        some: {
-                            pessoa_id: resp,
-                        },
-                    },
+                    pessoa_id: resp,
                     atividade: {
-                        some: {
-                            atividade_responsavel: {
-                                some: {
-                                    pessoa_id: resp,
-                                },
-                            },
-                        },
-                    },
-                },
+                        iniciativa: {
+                            meta_id: meta_id,
+                        }
+                    }
+                }
             });
+            if (atividadePessoaCount > 0)
+                throw new HttpException('Coordenador em uso em Atividade, remova-o primeiro no nível de Atividade.', 400);
 
-            if (children_with_cr > 0) responsaveis_in_use.push(resp);
+            const iniciativaPessoaCount = await this.prisma.iniciativaResponsavel.count({
+                where: {
+                    pessoa_id: resp,
+                    iniciativa: {
+                        meta_id: meta_id,
+                    }
+                }
+            });
+            if (iniciativaPessoaCount > 0)
+                throw new HttpException('Coordenador em uso em Iniciativa, remova-o primeiro no nível de Iniciativa.', 400);
         }
-
-        return responsaveis_in_use;
     }
 
     async remove(id: number, user: PessoaFromJwt) {
