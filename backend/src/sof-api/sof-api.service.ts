@@ -109,6 +109,7 @@ export function TrataDotacaoGrande(dotacao: string): string {
 }
 
 export function ExtraiComplementoDotacao(row: { dotacao: string; dotacao_complemento?: string | null }): string | null {
+    row.dotacao = row.dotacao.trim();
     // prioridade na dotação
     if (row.dotacao.length == 48) return row.dotacao.substring(36);
     // depois no campo extra
