@@ -531,7 +531,10 @@ export class MetaService {
         }
 
         const orgaos_to_be_created = orgaos_participantes.map((x) => x.orgao_id);
-
+        console.log('==========================');
+        console.log(orgaos_in_use);
+        console.log(orgaos_to_be_created);
+        console.log('==========================');
         if ( !orgaos_in_use.every(x => orgaos_to_be_created.includes(x) ) )
             throw new HttpException('Existem órgãos em uso em filhos (Iniciativa/Etapa), remova-os primeiro.', 400);
     }
