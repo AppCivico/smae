@@ -55,7 +55,7 @@ const linhasEscolhidas = computed({
       && item?.dotacao.indexOf(órgãoEUnidadeSelecionados) !== 0"
   >
     <td style="word-break: break-all;">
-      {{ item?.dotacao }}
+      {{ item?.dotacao }}{{ item?.dotacao_complemento ? '.' + item.dotacao_complemento : '' }}
       {{ item?.processo ? '/ ' + item.processo : '' }}
       {{ item?.nota_empenho ? ' / ' + item.nota_empenho : '' }}
     </td>
