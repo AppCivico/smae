@@ -2,15 +2,10 @@
 import { useAlertStore } from '@/stores/alert.store';
 import { useVariaveisStore } from '@/stores/variaveis.store';
 import { useRoute } from 'vue-router';
-import { useAuthStore } from '@/stores/auth.store';
 import níveisRegionalização from '@/consts/niveisRegionalizacao';
-import { storeToRefs } from 'pinia';
 
-const authStore = useAuthStore();
 const alertStore = useAlertStore();
 const VariaveisStore = useVariaveisStore();
-
-const { permissions } = storeToRefs(authStore);
 
 const route = useRoute();
 const { indicador_id: indicadorId } = route.params;
