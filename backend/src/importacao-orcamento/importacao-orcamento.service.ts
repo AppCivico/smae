@@ -827,6 +827,9 @@ export class ImportacaoOrcamentoService {
                 if (ne.length === 0) return 'Linha inválida: nota empenho não encontrada';
 
                 dotacao = ne[0].dotacao;
+                // se um dia a gente começar a voltar o tamanho completo no SOF, já ficaria preparado aqui
+                dotacao_complemento = ExtraiComplementoDotacao({ dotacao: dotacao, dotacao_complemento: null });
+
                 dotacao_processo = ne[0].processo;
                 dotacao_processo_nota = ne[0].nota_empenho;
             } catch (error) {
@@ -848,6 +851,9 @@ export class ImportacaoOrcamentoService {
                 const dotacoes = processo.map((r) => r.dotacao).join(', ');
                 this.logger.verbose(`dotacoes encontradas: ${dotacoes}`);
                 if (row.dotacao) {
+                    // pega a dotação completa antes de jogar fora
+                    dotacao_complemento = ExtraiComplementoDotacao({ dotacao: row.dotacao, dotacao_complemento: null });
+
                     const rowDotacao = TrataDotacaoGrande(row.dotacao);
                     const rDotacao = processo.filter((r) => TrataDotacaoGrande(r.dotacao) == rowDotacao)[0];
                     if (!rDotacao)
@@ -869,6 +875,8 @@ export class ImportacaoOrcamentoService {
                 return `Erro no processamento do processo: ${error}`;
             }
         } else if (row.dotacao) {
+            // pega a dotação completa antes de jogar fora
+            dotacao_complemento = ExtraiComplementoDotacao({ dotacao: row.dotacao, dotacao_complemento: null });
             try {
                 const dotacaoRet = await this.dotacaoService.valorRealizadoDotacao({
                     ano: row.ano_referencia,
@@ -891,8 +899,8 @@ export class ImportacaoOrcamentoService {
 
         if (!dotacao) return 'Erro: faltando dotacao';
 
+        // joga fora os dígitos extra da dotação
         dotacao = TrataDotacaoGrande(dotacao);
-        dotacao_complemento = ExtraiComplementoDotacao({ dotacao: dotacao, dotacao_complemento: null });
 
         let id: number | undefined = undefined;
         let itens: CreateOrcamentoRealizadoItemDto[] = [];
@@ -1001,6 +1009,7 @@ export class ImportacaoOrcamentoService {
                             {
                                 ano_referencia: row.ano_referencia,
                                 dotacao: dotacao!,
+                                dotacao_complemento,
                                 processo: dotacao_processo,
                                 nota_empenho: dotacao_processo_nota,
                                 itens,
@@ -1033,6 +1042,7 @@ export class ImportacaoOrcamentoService {
                             {
                                 ano_referencia: row.ano_referencia,
                                 dotacao: dotacao!,
+                                dotacao_complemento,
                                 processo: dotacao_processo,
                                 nota_empenho: dotacao_processo_nota,
                                 itens,
