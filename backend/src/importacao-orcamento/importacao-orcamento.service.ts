@@ -849,7 +849,7 @@ export class ImportacaoOrcamentoService {
                 if (processo.length === 0) return 'Linha inválida: processo não encontrado';
 
                 const dotacoes = processo.map((r) => r.dotacao).join(', ');
-                this.logger.verbose(`dotacoes encontradas: ${dotacoes}`);
+                this.logger.verbose(`dotacoes encontradas: ${dotacoes}, row: ${JSON.stringify(row)}`);
                 if (row.dotacao) {
                     // pega a dotação completa antes de jogar fora
                     dotacao_complemento = ExtraiComplementoDotacao({ dotacao: row.dotacao, dotacao_complemento: null });
@@ -901,6 +901,8 @@ export class ImportacaoOrcamentoService {
 
         // joga fora os dígitos extra da dotação
         dotacao = TrataDotacaoGrande(dotacao);
+
+        this.logger.verbose(`dotacao_complemento: ${dotacao_complemento}, dot: ${dotacao}`)
 
         let id: number | undefined = undefined;
         let itens: CreateOrcamentoRealizadoItemDto[] = [];
