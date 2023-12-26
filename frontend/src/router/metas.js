@@ -90,32 +90,55 @@ export default {
       path: ':meta_id/indicadores/:indicador_id/variaveis-compostas/novo',
       component: AddEditIndicador,
       props: { group: 'criar-ou-editar-variaveis-compostas', submenu: SubmenuMetas },
-      meta: { rotaDeEscape: 'indicadorDaMeta', título: 'Nova variável composta' },
+      meta: {
+        rotaDeEscape: 'indicadorDaMeta',
+        título: 'Nova variável composta',
+        rotaPrescindeDeChave: true,
+      },
     },
     {
       path: ':meta_id/indicadores/:indicador_id/variaveis-compostas/gerar',
       component: AddEditIndicador,
       props: { group: 'gerar-compostas', submenu: SubmenuMetas },
-      meta: { funçãoDaTela: 'gerar', rotaDeEscape: 'indicadorDaMeta', título: 'Auxiliar de variável composta' },
+      meta: {
+        funçãoDaTela: 'gerar',
+        rotaDeEscape: 'indicadorDaMeta',
+        título: 'Auxiliar de variável composta',
+        rotaPrescindeDeChave: true,
+      },
     },
     {
       path: ':meta_id/indicadores/:indicador_id/variaveis-compostas/:var_id',
       component: AddEditIndicador,
       props: { group: 'criar-ou-editar-variaveis-compostas', submenu: SubmenuMetas },
-      meta: { rotaDeEscape: 'indicadorDaMeta', título: 'Editar variável composta' },
+      meta: {
+        rotaDeEscape: 'indicadorDaMeta',
+        título: 'Editar variável composta',
+        rotaPrescindeDeChave: true,
+      },
     },
 
     {
       path: ':meta_id/indicadores/:indicador_id/variaveis-compostas/:var_id/valores',
       component: AddEditIndicador,
       props: { group: 'compostas-valores', submenu: SubmenuMetas },
-      meta: { rotaDeEscape: 'indicadorDaMeta', título: 'Editar valores previstos', tipoDeValor: 'previsto' },
+      meta: {
+        rotaDeEscape: 'indicadorDaMeta',
+        título: 'Editar valores previstos',
+        tipoDeValor: 'previsto',
+        rotaPrescindeDeChave: true,
+      },
     },
     {
       path: ':meta_id/indicadores/:indicador_id/variaveis-compostas/:var_id/retroativos',
       component: AddEditIndicador,
       props: { group: 'compostas-retroativos', submenu: SubmenuMetas },
-      meta: { rotaDeEscape: 'indicadorDaMeta', título: 'Editar valores realizados', tipoDeValor: 'realizado' },
+      meta: {
+        rotaDeEscape: 'indicadorDaMeta',
+        título: 'Editar valores realizados',
+        tipoDeValor: 'realizado',
+        rotaPrescindeDeChave: true,
+      },
     },
 
     // /////////////////////////////////////////////////////////////////////////
@@ -257,32 +280,55 @@ export default {
           path: ':iniciativa_id/indicadores/:indicador_id/variaveis-compostas/novo',
           component: AddEditIndicador,
           props: { group: 'criar-ou-editar-variaveis-compostas', submenu: SubmenuMetas },
-          meta: { rotaDeEscape: 'indicadorDaIniciativa', título: 'Nova variável composta' },
+          meta: {
+            rotaDeEscape: 'indicadorDaIniciativa',
+            título: 'Nova variável composta',
+            rotaPrescindeDeChave: true,
+          },
         },
         {
           path: ':iniciativa_id/indicadores/:indicador_id/variaveis-compostas/gerar',
           component: AddEditIndicador,
           props: { group: 'gerar-compostas', submenu: SubmenuMetas },
-          meta: { funçãoDaTela: 'gerar', rotaDeEscape: 'indicadorDaIniciativa', título: 'Auxiliar de variável composta' },
+          meta: {
+            funçãoDaTela: 'gerar',
+            rotaDeEscape: 'indicadorDaIniciativa',
+            título: 'Auxiliar de variável composta',
+            rotaPrescindeDeChave: true,
+          },
         },
         {
           path: ':iniciativa_id/indicadores/:indicador_id/variaveis-compostas/:var_id',
           component: AddEditIndicador,
           props: { group: 'criar-ou-editar-variaveis-compostas', submenu: SubmenuMetas },
-          meta: { rotaDeEscape: 'indicadorDaIniciativa', título: 'Editar variável composta' },
+          meta: {
+            rotaDeEscape: 'indicadorDaIniciativa',
+            título: 'Editar variável composta',
+            rotaPrescindeDeChave: true,
+          },
         },
 
         {
           path: ':iniciativa_id/indicadores/:indicador_id/variaveis-compostas/:var_id/valores',
           component: AddEditIndicador,
           props: { group: 'compostas-valores', submenu: SubmenuMetas },
-          meta: { rotaDeEscape: 'indicadorDaIniciativa', título: 'Editar valores previstos', tipoDeValor: 'previsto' },
+          meta: {
+            rotaDeEscape: 'indicadorDaIniciativa',
+            título: 'Editar valores previstos',
+            tipoDeValor: 'previsto',
+            rotaPrescindeDeChave: true,
+          },
         },
         {
           path: ':iniciativa_id/indicadores/:indicador_id/variaveis-compostas/:var_id/retroativos',
           component: AddEditIndicador,
           props: { group: 'compostas-retroativos', submenu: SubmenuMetas },
-          meta: { rotaDeEscape: 'indicadorDaIniciativa', título: 'Editar valores realizados', tipoDeValor: 'realizado' },
+          meta: {
+            rotaDeEscape: 'indicadorDaIniciativa',
+            título: 'Editar valores realizados',
+            tipoDeValor: 'realizado',
+            rotaPrescindeDeChave: true,
+          },
         },
 
         // /////////////////////////////////////////////////////////////////////////
@@ -338,32 +384,55 @@ export default {
               path: ':atividade_id/indicadores/:indicador_id/variaveis-compostas/novo',
               component: AddEditIndicador,
               props: { group: 'criar-ou-editar-variaveis-compostas', submenu: SubmenuMetas },
-              meta: { rotaDeEscape: 'indicadorDaAtividade', título: 'Nova variável composta' },
+              meta: {
+                rotaDeEscape: 'indicadorDaAtividade',
+                título: 'Nova variável composta',
+                rotaPrescindeDeChave: true,
+              },
             },
             {
               path: ':atividade_id/indicadores/:indicador_id/variaveis-compostas/gerar',
               component: AddEditIndicador,
               props: { group: 'gerar-compostas', submenu: SubmenuMetas },
-              meta: { funçãoDaTela: 'gerar', rotaDeEscape: 'indicadorDaAtividade', título: 'Auxiliar de variável composta' },
+              meta: {
+                funçãoDaTela: 'gerar',
+                rotaDeEscape: 'indicadorDaAtividade',
+                título: 'Auxiliar de variável composta',
+                rotaPrescindeDeChave: true,
+              },
             },
             {
               path: ':atividade_id/indicadores/:indicador_id/variaveis-compostas/:var_id',
               component: AddEditIndicador,
               props: { group: 'criar-ou-editar-variaveis-compostas', submenu: SubmenuMetas },
-              meta: { rotaDeEscape: 'indicadorDaAtividade', título: 'Editar variável composta' },
+              meta: {
+                rotaDeEscape: 'indicadorDaAtividade',
+                título: 'Editar variável composta',
+                rotaPrescindeDeChave: true,
+              },
             },
 
             {
               path: ':atividade_id/indicadores/:indicador_id/variaveis-compostas/:var_id/valores',
               component: AddEditIndicador,
               props: { group: 'compostas-valores', submenu: SubmenuMetas },
-              meta: { rotaDeEscape: 'indicadorDaAtividade', título: 'Editar valores previstos', tipoDeValor: 'previsto' },
+              meta: {
+                rotaDeEscape: 'indicadorDaAtividade',
+                título: 'Editar valores previstos',
+                tipoDeValor: 'previsto',
+                rotaPrescindeDeChave: true,
+              },
             },
             {
               path: ':atividade_id/indicadores/:indicador_id/variaveis-compostas/:var_id/retroativos',
               component: AddEditIndicador,
               props: { group: 'compostas-retroativos', submenu: SubmenuMetas },
-              meta: { rotaDeEscape: 'indicadorDaAtividade', título: 'Editar valores realizados', tipoDeValor: 'realizado' },
+              meta: {
+                rotaDeEscape: 'indicadorDaAtividade',
+                título: 'Editar valores realizados',
+                tipoDeValor: 'realizado',
+                rotaPrescindeDeChave: true,
+              },
             },
 
             // /////////////////////////////////////////////////////////////////////////
