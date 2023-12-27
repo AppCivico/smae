@@ -1202,15 +1202,9 @@ export const variável = (singleIndicadores, éGeraçãoApenas) => object()
     periodicidade: string()
       .required('Preencha a periodicidade'),
     regiao_id: string()
-      .nullable()
-      .when('regiao_id_test', ((_, field) => ((!singleIndicadores?.value?.regionalizavel || éGeraçãoApenas)
-        ? field.notRequired()
-        : field.required('Selecione uma região')))),
+      .nullable(),
     regioes: array()
-      .label('Regiões')
-      .when('regioes_test', ((_, field) => ((!singleIndicadores?.value?.regionalizavel || !éGeraçãoApenas)
-        ? field.notRequired()
-        : field.min(1, 'Selecione ao menos uma região')))),
+      .label('Regiões'),
     responsaveis: array()
       .nullable(),
     suspendida: boolean()
