@@ -115,6 +115,7 @@ watch(órgãoEUnidadeSelecionados, (novoValor) => {
       </header>
 
       <FiltroPorOrgaoEUnidade
+        v-if="OrcamentoRealizado[ano]?.length > 1"
         v-model="órgãoEUnidadeSelecionados"
         :ano="ano"
         :lista="Array.isArray(OrcamentoRealizado[ano])

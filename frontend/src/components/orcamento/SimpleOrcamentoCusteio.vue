@@ -37,6 +37,7 @@ function restringirAZero() {
       </header>
 
       <FiltroPorOrgaoEUnidade
+        v-if="OrcamentoCusteio[ano]?.length > 1"
         v-model="órgãoEUnidadeSelecionados"
         :ano="ano"
         :lista="Array.isArray(OrcamentoCusteio[ano])
