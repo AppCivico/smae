@@ -25,6 +25,7 @@ const órgãoEUnidadeSelecionados = ref('');
       </header>
 
       <FiltroPorOrgaoEUnidade
+        v-if="OrcamentoPlanejado[ano]?.length > 1"
         v-model="órgãoEUnidadeSelecionados"
         :ano="ano"
         :lista="Array.isArray(OrcamentoPlanejado[ano])
