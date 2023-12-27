@@ -99,7 +99,6 @@ const linhasEscolhidas = computed({
           && linhasEscolhidas.indexOf(item.id) === -1"
         :value="item.id"
         type="checkbox"
-        class=""
       >
     </td>
   </tr>
