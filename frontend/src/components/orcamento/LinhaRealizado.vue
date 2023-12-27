@@ -48,8 +48,6 @@ const linhasEscolhidas = computed({
   <tr
     v-for="item in group.items"
     :key="item.id"
-    :hidden="!!órgãoEUnidadeSelecionados
-      && item?.dotacao.indexOf(órgãoEUnidadeSelecionados) !== 0"
   >
     <td style="word-break: break-all;">
       {{ item?.dotacao }}{{ item?.dotacao_complemento ? '.' + item.dotacao_complemento : '' }}

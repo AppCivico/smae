@@ -3,7 +3,7 @@ import { default as LinhaPlanejado } from '@/components/orcamento/LinhaPlanejado
 import formataValor from '@/helpers/formataValor';
 import { useOrcamentosStore } from '@/stores/orcamentos.store';
 import { storeToRefs } from 'pinia';
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 import agrupaFilhos from './helpers/agrupaFilhos';
 import somaItems from './helpers/somaItems';
 import FiltroPorOrgaoEUnidade from './FiltroPorOrgaoEUnidade.vue';
@@ -14,6 +14,17 @@ const OrcamentosStore = useOrcamentosStore();
 const { OrcamentoPlanejado } = storeToRefs(OrcamentosStore);
 
 const órgãoEUnidadeSelecionados = ref('');
+
+const linhasFiltradas = computed(() => (Array.isArray(OrcamentoPlanejado.value[ano]) && órgãoEUnidadeSelecionados.value !== ''
+  ? OrcamentoPlanejado.value[ano]
+    .filter((x) => x.dotacao?.indexOf(órgãoEUnidadeSelecionados.value) === 0)
+  : OrcamentoPlanejado.value[ano] || []));
+
+const groups = computed(() => agrupaFilhos(linhasFiltradas.value));
+
+const somaDasLinhas = computed(() => ({
+  valor_planejado: formataValor(somaItems(linhasFiltradas.value, 'valor_planejado')),
+}));
 </script>
 <template>
   <div class="mb2">
@@ -37,10 +48,10 @@ const órgãoEUnidadeSelecionados = ref('');
           Orçamento Planejado
         </div>
         <div
-          v-if="OrcamentoPlanejado[ano]?.length"
+          v-if="linhasFiltradas?.length"
           class="t12 lh1 w700"
         >
-          <span class="tc300">Planejado total:</span> <span class="tvermelho">{{ formataValor(somaItems(OrcamentoPlanejado[ano], 'valor_planejado')) }}</span>
+          <span class="tc300">Planejado total:</span> <span class="tvermelho">{{ somaDasLinhas.valor_planejado }}</span>
         </div>
       </div>
 
@@ -52,7 +63,7 @@ const órgãoEUnidadeSelecionados = ref('');
       </div>
 
       <table
-        v-if="OrcamentoPlanejado[ano]?.length"
+        v-if="linhasFiltradas?.length"
         class="tablemain fix no-zebra horizontal-lines"
       >
         <thead>
@@ -74,7 +85,7 @@ const órgãoEUnidadeSelecionados = ref('');
             <th style="width: 50px" />
           </tr>
         </thead>
-        <template v-if="groups = agrupaFilhos(OrcamentoPlanejado[ano])">
+        <template v-if="groups">
           <tbody>
             <LinhaPlanejado
               :órgão-e-unidade-selecionados="órgãoEUnidadeSelecionados"
