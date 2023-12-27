@@ -85,6 +85,7 @@ export class IndicadorFormulaCompostaService {
                 titulo: dto.titulo,
                 formula: formula,
                 formula_compilada: formula_compilada,
+                nivel_regionalizacao: dto.nivel_regionalizacao,
                 criado_em: new Date(Date.now()),
                 criado_por: user.id,
                 IndicadorFormulaComposta: {
