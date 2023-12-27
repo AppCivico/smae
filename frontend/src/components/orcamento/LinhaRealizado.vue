@@ -1,10 +1,7 @@
 <script setup>
 import { computed } from 'vue';
 import formataValor from '@/helpers/formataValor';
-import { useAuthStore } from '@/stores/auth.store';
 import mêsDoÚltimoItem from './helpers/mesDoUltimoItem';
-
-const { temPermissãoPara } = useAuthStore();
 
 const props = defineProps({
   group: {
