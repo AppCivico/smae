@@ -48,6 +48,22 @@ $ npm run start:dev
 $ npm run start:prod
 ```
 
+## Reset do banco / reiniciando a session
+
+    npm run db:reset
+
+    npm run db:seed
+
+### Fazer o login após o reset com o user/pass padrão:
+
+    curl -X 'POST' \
+      'http://localhost:3002/api/login' \
+      -H 'accept: application/json' \
+      -H 'Content-Type: application/json' \
+      -d '{
+      "email": "superadmin@admin.com",
+      "senha": "!286!QDM7H"
+    }'
 
 
 ## License

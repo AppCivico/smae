@@ -35,10 +35,31 @@ class PrismaServiceBase extends PrismaClient implements OnModuleInit {
         await this.$connect();
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
-        this.$on('query', async (e) => {
-            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-            // @ts-ignore
-            console.log(`${e.query} ${e.params} took ${e.duration}ms`);
+        this.$on('query', async (e: any) => {
+            // se ta diferente de 1, entao ta ligado sempre
+            // já faz o log
+            if (process.env.INTERNAL_DISABLE_QUERY_LOG !== '1') {
+                console.log(`${e.query} ${e.params}`);
+            } else {
+                // aqui apenas algumas queries que não queremos o log
+                // as outras queries, se por acaso acontecer de ter um evento
+                // entre o await a mudança do INTERNAL_DISABLE_QUERY_LOG
+                // esse if vai pegar pra tratar
+                const query = e.query as string;
+
+                if (
+                    query &&
+                    query !== 'BEGIN' &&
+                    query !== 'COMMIT' &&
+                    query !== 'SET TRANSACTION ISOLATION LEVEL READ COMMITTED' &&
+                    /(?:pg_try_advisory_xact_lock|task_queue|org_device_activation_data_pending_sync_queue)/.test(
+                        query
+                    ) !== true
+                )
+                    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                    // @ts-ignore
+                    console.log(`${e.query} ${e.params} took ${e.duration}ms`);
+            }
         });
     }
 }

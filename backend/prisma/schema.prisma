@@ -250,6 +250,8 @@ model Pessoa {
     view_pessoa_gestor_de_projeto      view_pessoa_gestor_de_projeto[]
     view_pessoa_colaborador_de_projeto view_pessoa_colaborador_de_projeto[]
 
+    task_queue task_queue[]
+
     @@index([email])
     @@map("pessoa")
 }
@@ -3649,4 +3651,41 @@ model PortfolioGrupoPortfolio {
     removedor Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
 
     @@map("portfolio_grupo_portfolio")
+}
+
+enum task_type {
+    echo
+    refresh_mv
+}
+
+enum task_status {
+    pending
+    running
+    completed
+    errored
+}
+
+model task_queue {
+    id Int @id @default(autoincrement())
+
+    type   task_type
+    status task_status @default(pending)
+    params Json        @default("{}")
+
+    output Json @default("{}")
+
+    pessoa_id Int?
+    criador   Pessoa? @relation(fields: [pessoa_id], references: [id])
+
+    criado_em   DateTime  @default(now()) @db.Timestamp(6)
+    iniciou_em  DateTime? @db.Timestamp(6)
+    terminou_em DateTime? @db.Timestamp(6)
+    removido_em DateTime? @db.Timestamp(6)
+
+    trabalhou_em DateTime? @db.Timestamp(6)
+
+    erro_em       DateTime? @db.Timestamp(6)
+    erro_messagem String?
+
+    @@index([status])
 }

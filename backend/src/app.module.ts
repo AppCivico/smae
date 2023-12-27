@@ -83,6 +83,7 @@ import { GrupoPortfolioModule } from './pp/grupo-portfolio/grupo-portfolio.modul
 (BigInt.prototype as any).toJSON = function () {
     return this.toString();
 };
+import { TaskModule } from './task/task.module';
 
 @Module({
     imports: [
@@ -161,6 +162,7 @@ import { GrupoPortfolioModule } from './pp/grupo-portfolio/grupo-portfolio.modul
         AcompanhamentoTipoModule,
         RequestLogModule,
         GrupoPortfolioModule,
+        TaskModule,
     ],
     controllers: [AppController],
     providers: [
