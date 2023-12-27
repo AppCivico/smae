@@ -26,8 +26,6 @@ defineProps({
   <tr
     v-for="item in group.items"
     :key="item.id"
-    :hidden="!!órgãoEUnidadeSelecionados
-      && item?.parte_dotacao.indexOf(órgãoEUnidadeSelecionados) !== 0"
   >
     <td style="word-break: break-all;">
       {{ item?.parte_dotacao }}

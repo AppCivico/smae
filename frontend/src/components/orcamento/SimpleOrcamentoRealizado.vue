@@ -25,12 +25,15 @@ const { OrcamentoRealizado, OrcamentoRealizadoPermissões } = storeToRefs(Orcame
 const órgãoEUnidadeSelecionados = ref('');
 const linhasSelecionadas = ref([]);
 
-const groups = computed(() => (Array.isArray(OrcamentoRealizado.value[ano])
-  ? agrupaFilhos(OrcamentoRealizado.value[ano])
-  : null));
+const linhasFiltradas = computed(() => (Array.isArray(OrcamentoRealizado.value[ano]) && órgãoEUnidadeSelecionados.value !== ''
+  ? OrcamentoRealizado.value[ano]
+    .filter((x) => x.dotacao?.indexOf(órgãoEUnidadeSelecionados.value) === 0)
+  : OrcamentoRealizado.value[ano] || []));
 
-const filhosOrdenados = computed(() => (Array.isArray(OrcamentoRealizado.value[ano])
-  ? [...OrcamentoRealizado.value[ano]]
+const groups = computed(() => agrupaFilhos(linhasFiltradas.value));
+
+const filhosOrdenados = computed(() => (Array.isArray(linhasFiltradas.value)
+  ? [...linhasFiltradas.value]
     .sort((a, b) => (a.meta?.id || 0) - (b.meta?.id || 0)
       || (a.iniciativa?.id || 0) - (b.iniciativa?.id || 0)
       || (a.atividade?.id || 0) - (b.atividade?.id || 0))
@@ -40,15 +43,24 @@ const limiteDeSeleção = computed(() => (gblLimiteDeSeleçãoSimultânea > 0
   ? Math.min(gblLimiteDeSeleçãoSimultânea, filhosOrdenados.value.length)
   : filhosOrdenados.value.length));
 
-const somasDaMeta = computed(() => (Array.isArray(OrcamentoRealizado.value[ano])
-  ? OrcamentoRealizado.value[ano].reduce((acc, cur) => {
+const somasDaMeta = computed(() => (Array.isArray(linhasFiltradas.value)
+  ? linhasFiltradas.value.reduce((acc, cur) => {
+    if (acc === null) {
+      acc = { soma_valor_empenho: 0, soma_valor_liquidado: 0 };
+    }
+
     if (!cur.iniciativa && !cur.atividade) {
       acc.soma_valor_empenho += Number.parseFloat(cur.soma_valor_empenho) || 0;
       acc.soma_valor_liquidado += Number.parseFloat(cur.soma_valor_liquidado) || 0;
     }
     return acc;
-  }, { soma_valor_empenho: 0, soma_valor_liquidado: 0 })
-  : { soma_valor_empenho: 0, soma_valor_liquidado: 0 }));
+  }, null)
+  : null));
+
+const somaDasLinhas = computed(() => ({
+  soma_valor_empenho: formataValor(somaItems(linhasFiltradas.value, 'soma_valor_empenho')),
+  soma_valor_liquidado: formataValor(somaItems(linhasFiltradas.value, 'soma_valor_liquidado')),
+}));
 
 const podeExcluirEmLote = computed(() => !!OrcamentoRealizadoPermissões
   .value[ano]?.pode_excluir_lote);
@@ -122,19 +134,20 @@ watch(órgãoEUnidadeSelecionados, (novoValor) => {
           ? OrcamentoRealizado[ano]
           : []"
       />
+
       <div class="tablepreinfo flex center">
         <div class="f2">
           <div class="t12 lh1 w700 mb05">
             Execução orçamentária
           </div>
           <div
-            v-if="OrcamentoRealizado[ano]?.length"
+            v-if="linhasFiltradas?.length"
             class="t12 lh1 w700"
           >
             <span class="tc300">Empenho:</span>
-            {{ formataValor(somaItems(OrcamentoRealizado[ano], 'soma_valor_empenho')) }}
+            {{ somaDasLinhas.soma_valor_empenho }}
             <span class="ml1 tc300">Liquidação:</span>
-            {{ formataValor(somaItems(OrcamentoRealizado[ano], 'soma_valor_liquidado')) }}
+            {{ somaDasLinhas.soma_valor_liquidado }}
           </div>
         </div>
 
@@ -213,19 +226,25 @@ watch(órgãoEUnidadeSelecionados, (novoValor) => {
         <template v-if="groups">
           <tbody>
             <tr>
-              <td class="tc600 w700 pl1">
-                <strong>Totais da meta</strong>
-              </td>
-              <td class="w700">
-                {{ somasDaMeta.soma_valor_empenho
-                  ? formataValor(somasDaMeta.soma_valor_empenho)
-                  : '-' }}
-              </td>
-              <td class="w700">
-                {{ somasDaMeta.soma_valor_liquidado
-                  ? formataValor(somasDaMeta.soma_valor_liquidado)
-                  : '-' }}
-              </td>
+              <template v-if="somasDaMeta">
+                <td class="tc600 w700 pl1">
+                  <strong>Totais da meta</strong>
+                </td>
+                <td class="w700">
+                  {{ somasDaMeta.soma_valor_empenho
+                    ? formataValor(somasDaMeta.soma_valor_empenho)
+                    : '-' }}
+                </td>
+                <td class="w700">
+                  {{ somasDaMeta.soma_valor_liquidado
+                    ? formataValor(somasDaMeta.soma_valor_liquidado)
+                    : '-' }}
+                </td>
+              </template>
+              <td
+                v-else
+                colspan="3"
+              />
               <td />
               <td v-if="OrcamentoRealizadoPermissões[ano]?.pode_editar" />
               <td v-if="podeExcluirEmLote" />

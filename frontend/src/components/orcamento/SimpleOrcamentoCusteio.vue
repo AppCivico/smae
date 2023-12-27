@@ -4,7 +4,7 @@ import dateToField from '@/helpers/dateToField';
 import formataValor from '@/helpers/formataValor';
 import { useAlertStore, useOrcamentosStore } from '@/stores';
 import { storeToRefs } from 'pinia';
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 import agrupaFilhos from './helpers/agrupaFilhos';
 import maiorData from './helpers/maiorData';
 import somaItems from './helpers/somaItems';
@@ -19,6 +19,17 @@ const {
 } = storeToRefs(OrcamentosStore);
 
 const órgãoEUnidadeSelecionados = ref('');
+
+const linhasFiltradas = computed(() => (Array.isArray(OrcamentoCusteio.value[ano]) && órgãoEUnidadeSelecionados.value !== ''
+  ? OrcamentoCusteio.value[ano]
+    .filter((x) => x.parte_dotacao?.indexOf(órgãoEUnidadeSelecionados.value) === 0)
+  : OrcamentoCusteio.value[ano] || []));
+
+const groups = computed(() => agrupaFilhos(linhasFiltradas.value));
+
+const somaDasLinhas = computed(() => ({
+  custo_previsto: formataValor(somaItems(linhasFiltradas.value, 'custo_previsto')),
+}));
 
 function restringirAZero() {
   alertStore.confirmAction(`Deseja mesmo informar que não há orçamento reservado para o ano de ${ano}?`, () => {
@@ -63,7 +74,7 @@ function restringirAZero() {
       </div>
 
       <table
-        v-if="OrcamentoCusteio[ano]?.length || previstoEhZero[ano]"
+        v-if="linhasFiltradas?.length || previstoEhZero[ano]"
         class="tablemain fix no-zebra horizontal-lines"
       >
         <thead>
@@ -98,17 +109,17 @@ function restringirAZero() {
           </tr>
           <tr v-else>
             <td>
-              {{ formataValor(somaItems(OrcamentoCusteio[ano], 'custo_previsto')) }}
+              {{ somaDasLinhas.custo_previsto }}
             </td>
             <td>
-              {{ dateToField(maiorData(OrcamentoCusteio[ano], 'atualizado_em')) }}
+              {{ dateToField(maiorData(linhasFiltradas, 'atualizado_em')) }}
             </td>
             <th style="width: 50px" />
           </tr>
         </tbody>
       </table>
       <table
-        v-if="OrcamentoCusteio[ano]?.length"
+        v-if="linhasFiltradas?.length"
         class="tablemain fix"
       >
         <thead>
@@ -125,7 +136,7 @@ function restringirAZero() {
             <th style="width: 50px" />
           </tr>
         </thead>
-        <template v-if="groups = agrupaFilhos(OrcamentoCusteio[ano])">
+        <template v-if="groups">
           <tbody>
             <LinhaCusteio
               :órgão-e-unidade-selecionados="órgãoEUnidadeSelecionados"
@@ -212,7 +223,7 @@ function restringirAZero() {
         </span>
 
         <button
-          v-if="!OrcamentoCusteio[ano]?.length && !previstoEhZero[ano]"
+          v-if="!linhasFiltradas?.length && !previstoEhZero[ano]"
           type="button"
           class="like-a__text addlink mt1 mb1"
           @click="restringirAZero"
