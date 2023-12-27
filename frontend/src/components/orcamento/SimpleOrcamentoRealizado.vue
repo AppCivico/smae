@@ -108,6 +108,12 @@ watch(órgãoEUnidadeSelecionados, (novoValor) => {
 <template>
   <div class="mb2">
     <div>
+      <header>
+        <h3 class="mb1 w700">
+          {{ config.ano_referencia }}
+        </h3>
+      </header>
+
       <FiltroPorOrgaoEUnidade
         v-model="órgãoEUnidadeSelecionados"
         :ano="ano"
