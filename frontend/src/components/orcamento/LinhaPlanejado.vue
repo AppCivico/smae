@@ -1,7 +1,7 @@
 <script setup>
 defineProps({
   group: {
-    type: Array,
+    type: Object,
     required: true,
   },
   permissao: {
@@ -10,7 +10,7 @@ defineProps({
   },
   parentlink: {
     type: String,
-    required: true,
+    default: '',
   },
   órgãoEUnidadeSelecionados: {
     type: String,

@@ -8,7 +8,7 @@ const { temPermissãoPara } = useAuthStore();
 
 const props = defineProps({
   group: {
-    type: Array,
+    type: Object,
     required: true,
   },
   permissao: {
@@ -17,7 +17,7 @@ const props = defineProps({
   },
   parentlink: {
     type: String,
-    required: true,
+    default: '',
   },
   exibirCheckboxDeSeleção: {
     type: Boolean,

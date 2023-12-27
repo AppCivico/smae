@@ -4,7 +4,7 @@ import formataValor from '@/helpers/formataValor';
 
 defineProps({
   group: {
-    type: Array,
+    type: Object,
     required: true,
   },
   permissao: {
@@ -13,7 +13,7 @@ defineProps({
   },
   parentlink: {
     type: String,
-    required: true,
+    default: '',
   },
   órgãoEUnidadeSelecionados: {
     type: String,
