@@ -130,15 +130,15 @@ export class PessoaService {
         };
 
         this.logger.log(`escreverNovaSenhaById: ${pessoaId}`);
-        const updated = await this.prisma.$transaction(async (prisma: Prisma.TransactionClient): Promise<any> => {
-            const updatePassword = await this.prisma.pessoa.updateMany({
+        const updated = await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient): Promise<any> => {
+            const updatePassword = await prismaTx.pessoa.updateMany({
                 where: { id: pessoaId },
                 data: data,
             });
             if (updatePassword.count == 1) {
                 if (!keepSession) {
                     this.logger.log(`escreverNovaSenhaById: sucesso, removendo sessões anteriores`);
-                    await this.#invalidarTodasSessoesAtivas(pessoaId, prisma);
+                    await this.invalidarTodasSessoesAtivas(pessoaId, prismaTx);
                 }
                 return true;
             }
@@ -860,17 +860,46 @@ export class PessoaService {
         return pessoa[0];
     }
 
-    async newSessionForPessoa(id: number): Promise<number> {
-        const pessoaSessao = await this.prisma.pessoaSessaoAtiva.create({ data: { pessoa_id: id } });
-        return pessoaSessao.id;
+    async newSessionForPessoa(id: number, ip: string): Promise<number> {
+        return await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient) => {
+            const pessoaSessao = await prismaTx.pessoaSessaoAtiva.create({ data: { pessoa_id: id } });
+
+            await prismaTx.pessoaSessao.create({
+                data: {
+                    criado_ip: ip,
+                    pessoa_id: id,
+                    id: pessoaSessao.id,
+                    criado_em: new Date(Date.now()),
+                },
+            });
+
+            return pessoaSessao.id;
+        });
     }
 
-    async invalidarSessao(id: number) {
-        await this.prisma.pessoaSessaoAtiva.delete({ where: { id: id } });
+    async invalidarSessao(id: number, ip: string) {
+        await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient) => {
+            await prismaTx.pessoaSessao.update({
+                where: { id: id },
+                data: {
+                    removido_em: new Date(Date.now()),
+                    removido_ip: ip,
+                },
+            });
+
+            await prismaTx.pessoaSessaoAtiva.delete({ where: { id: id } });
+        });
     }
 
-    async #invalidarTodasSessoesAtivas(pessoaId: number, prisma: Prisma.TransactionClient) {
-        await prisma.pessoaSessaoAtiva.deleteMany({ where: { pessoa_id: pessoaId } });
+    private async invalidarTodasSessoesAtivas(pessoaId: number, prismaTx: Prisma.TransactionClient) {
+        await prismaTx.pessoaSessao.updateMany({
+            where: { pessoa_id: pessoaId, removido_em: null },
+            data: {
+                removido_em: new Date(Date.now()),
+            },
+        });
+
+        await prismaTx.pessoaSessaoAtiva.deleteMany({ where: { pessoa_id: pessoaId } });
     }
 
     #generateRndPass(pLength: number) {
@@ -953,7 +982,7 @@ export class PessoaService {
         if (!isPasswordValid) throw new BadRequestException('senha_corrente| Senha atual não confere');
 
         if (!(await this.escreverNovaSenhaById(user.id, novaSenhaDto.senha_nova, true))) {
-            throw new BadRequestException('senha não pode ser alterada no momento');
+            throw new BadRequestException('Senha não pode ser alterada no momento');
         }
     }
 }
