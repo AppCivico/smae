@@ -75,6 +75,14 @@ import { TrimPipe } from './common/pipes/trim-pipe';
 import { AcompanhamentoTipoModule } from './pp/acompanhamento-tipo/acompanhamento-tipo.module';
 import { RequestLogModule } from './request_log/request_log.module';
 
+// Hacks pro JS
+/*
+ * Convert all BigInt into strings just to be safe
+ */
+(BigInt.prototype as any).toJSON = function () {
+    return this.toString();
+};
+
 @Module({
     imports: [
         ConfigModule.forRoot(),

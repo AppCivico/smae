@@ -107,11 +107,48 @@ export class AppController {
             where: { desativado: false },
         });
         const pessoaSessaoAtiva = await this.prisma.pessoaSessaoAtiva.count({});
+        const pessoaOnline = await this.prisma.$queryRaw`
+            SELECT
+                count(distinct pessoa_id) FILTER (WHERE criado_em > now() - '10 minutes'::interval) as "10min",
+                count(distinct pessoa_id) AS "24hours"
+            FROM pessoa_atividade_log
+            WHERE criado_em >= now() - '24 Hours'::interval
+        `;
+
+        // busca os últimos 7 dias, quebra por 10 min,
+        // conta users distintos
+        // ordena por dia mais "ativo" dos últimos 7 dias
+        const stats7days = await this.prisma.$queryRaw`
+            WITH daily_counts AS (
+                SELECT
+                    DATE_TRUNC('day', criado_em) AS day,
+                    FLOOR(EXTRACT(EPOCH FROM criado_em) / 600) AS interval_start,
+                    pessoa_id
+                FROM pessoa_atividade_log
+                WHERE criado_em >= now() - '7 days'::interval
+            )
+            , interval_users AS (
+                SELECT
+                    day,
+                    interval_start,
+                    COUNT(DISTINCT pessoa_id) AS users_10min
+                FROM daily_counts
+                GROUP BY 1, 2
+            )
+            SELECT
+                day::date::varchar as "day",
+                MAX(users_10min)::int AS "max_users_10_min"
+            FROM interval_users
+            GROUP BY 1
+            ORDER BY 2 DESC
+        `;
 
         return {
-            pessoaCount,
-            pessoaAtivo,
-            totalLogin: pessoaSessaoAtiva,
+            qtde_pessoas: pessoaCount,
+            qtde_ativo: pessoaAtivo,
+            qtde_sessoes_ativas: pessoaSessaoAtiva,
+            qtde_users_online: pessoaOnline,
+            stats: stats7days,
         };
     }
 }
