@@ -173,7 +173,7 @@ export const custeio = object()
       .required('Preencha o investimento.'),
     parte_dotacao: string()
       .required('Preencha a dotação.')
-      .matches(regEx.dotação, 'Formato inválido'),
+      .matches(regEx.dotaçãoComCuringas, 'Formato inválido'),
   });
 
 export const etapa = object()
