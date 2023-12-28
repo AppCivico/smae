@@ -862,18 +862,22 @@ export class PessoaService {
 
     async newSessionForPessoa(id: number, ip: string): Promise<number> {
         return await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient) => {
-            const pessoaSessao = await prismaTx.pessoaSessaoAtiva.create({ data: { pessoa_id: id } });
-
-            await prismaTx.pessoaSessao.create({
+            const pessoaSessao = await prismaTx.pessoaSessao.create({
                 data: {
                     criado_ip: ip,
                     pessoa_id: id,
-                    id: pessoaSessao.id,
                     criado_em: new Date(Date.now()),
                 },
             });
 
-            return pessoaSessao.id;
+            const pessoaSessaoAtiva = await prismaTx.pessoaSessaoAtiva.create({
+                data: {
+                    id: pessoaSessao.id,
+                    pessoa_id: id,
+                },
+            });
+
+            return pessoaSessaoAtiva.id;
         });
     }
 
