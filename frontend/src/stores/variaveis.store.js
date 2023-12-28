@@ -219,9 +219,13 @@ export const useVariaveisStore = defineStore({
       return Array.isArray(sériesDaVariávelComposta.linhas)
         ? sériesDaVariávelComposta.linhas.reduce((acc, cur, i) => {
           cur.series.forEach((x, j) => {
+            const valorNominal = Number.parseFloat(x.valor_nominal);
+
             acc[sériesDaVariávelComposta.ordem_series[j]].push({
               referencia: x.referencia,
-              valor: Number.parseFloat(x.valor_nominal) ?? '',
+              valor: Number.isNaN(valorNominal)
+                ? ''
+                : valorNominal,
             });
           });
 
