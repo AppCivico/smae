@@ -97,6 +97,13 @@ export class VariavelFormulaCompostaService {
 
         await Promise.all(promises);
 
+        result.linhas.sort((a, b) => {
+            if (a.variavel && b.variavel) {
+                return a.variavel.titulo.localeCompare(b.variavel.titulo);
+            }
+            return a.periodo.localeCompare(b.periodo);
+        });
+
         return result;
     }
 }
