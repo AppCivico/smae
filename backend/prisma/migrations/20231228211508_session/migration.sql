@@ -27,6 +27,9 @@ CREATE INDEX "pessoa_sessao_pessoa_id_idx" ON "pessoa_sessao"("pessoa_id");
 -- CreateIndex
 CREATE INDEX "pessoa_atividade_log_criado_em_idx" ON "pessoa_atividade_log"("criado_em");
 
+insert into pessoa_sessao (id, pessoa_id, criado_em, criado_ip)
+select id, pessoa_id, now(), '0.0.0.0' from pessoa_sessao_ativa;
+
 -- AddForeignKey
 ALTER TABLE "pessoa_sessao_ativa" ADD CONSTRAINT "pessoa_sessao_ativa_id_fkey" FOREIGN KEY ("id") REFERENCES "pessoa_sessao"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
@@ -39,8 +42,6 @@ ALTER TABLE "pessoa_atividade_log" ADD CONSTRAINT "pessoa_atividade_log_pessoa_i
 -- AddForeignKey
 ALTER TABLE "pessoa_atividade_log" ADD CONSTRAINT "pessoa_atividade_log_pessoa_sessao_id_fkey" FOREIGN KEY ("pessoa_sessao_id") REFERENCES "pessoa_sessao"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
-insert into pessoa_sessao (id, pessoa_id, criado_em, criado_ip)
-select id, pessoa_id, now(), '0.0.0.0' from pessoa_sessao_ativa;
 
 CREATE OR REPLACE FUNCTION f_insere_log_atividade(
     p_pessoa_id INTEGER,
