@@ -1,11 +1,11 @@
 import { OmitType } from '@nestjs/swagger';
-import { Transform } from 'class-transformer';
+import { Transform, TransformFnParams } from 'class-transformer';
 import { IsDateString, IsInt, IsOptional, IsString, Max, MaxLength, Min } from 'class-validator';
 
 export class FilterRequestLogDto {
     @IsOptional()
     @IsInt()
-    @Transform((a: any) => (a.value === '' ? undefined : +a.value))
+    @Transform((a: TransformFnParams) => (a.value === '' ? undefined : +a.value))
     created_pessoa_id?: number;
 
     @IsOptional()
@@ -22,7 +22,7 @@ export class FilterRequestLogDto {
     @IsInt()
     @Max(599) // HTTP status codes range from 100 to 599
     @Min(100)
-    @Transform((a: any) => (a.value === '' ? undefined : +a.value))
+    @Transform((a: TransformFnParams) => (a.value === '' ? undefined : +a.value))
     res_code?: number;
 
     @IsOptional()
@@ -50,7 +50,7 @@ export class FilterRequestLogDto {
     @IsInt()
     @Max(500)
     @Min(1)
-    @Transform((a: any) => (a.value === '' ? undefined : +a.value))
+    @Transform((a: TransformFnParams) => (a.value === '' ? undefined : +a.value))
     ipp?: number;
 }
 

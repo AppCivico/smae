@@ -55,7 +55,7 @@ export class FilterPessoaDto {
     /*
     versão alternativa para aceitar números negativos, e vazio como undefined caso seja adicionado @IsOptional()
     @IsNumber()
-    @Transform((a: any) => a.value === '' ? undefined : +a.value)
+    @Transform((a: TransformFnParams) => a.value === '' ? undefined : +a.value)
     XXXX?: number;
     */
 }

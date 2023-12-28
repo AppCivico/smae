@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { ProjetoStatus } from '@prisma/client';
-import { Transform } from 'class-transformer';
+import { Transform, TransformFnParams } from 'class-transformer';
 import { ArrayMaxSize, ArrayMinSize, IsArray, IsBoolean, IsEnum, IsNumber, IsOptional } from 'class-validator';
 
 export class FilterProjetoDto {
@@ -35,7 +35,7 @@ export class FilterProjetoDto {
      **/
     @IsOptional()
     @IsNumber()
-    @Transform((a: any) => (a.value === null ? null : +a.value))
+    @Transform((a: TransformFnParams) => (a.value === null ? null : +a.value))
     orgao_responsavel_id?: number;
 
     /**
@@ -43,6 +43,6 @@ export class FilterProjetoDto {
      **/
     @IsOptional()
     @IsNumber()
-    @Transform((a: any) => (a.value === null ? null : +a.value))
+    @Transform((a: TransformFnParams) => (a.value === null ? null : +a.value))
     portfolio_id?: number;
 }

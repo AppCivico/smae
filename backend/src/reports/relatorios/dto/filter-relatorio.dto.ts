@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { FonteRelatorio } from '@prisma/client';
-import { Transform } from 'class-transformer';
+import { Transform, TransformFnParams } from 'class-transformer';
 import { IsEnum, IsInt, IsOptional, IsString, Max, MaxLength, Min } from 'class-validator';
 
 export class FilterRelatorioDto {
@@ -40,6 +40,6 @@ export class FilterRelatorioDto {
     @IsInt()
     @Max(500)
     @Min(1)
-    @Transform((a: any) => (a.value === '' ? undefined : +a.value))
+    @Transform((a: TransformFnParams) => (a.value === '' ? undefined : +a.value))
     ipp?: number;
 }

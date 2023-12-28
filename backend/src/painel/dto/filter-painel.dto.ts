@@ -1,4 +1,4 @@
-import { Transform } from 'class-transformer';
+import { Transform, TransformFnParams } from 'class-transformer';
 import { IsBoolean, IsNumber, IsOptional } from 'class-validator';
 
 export class FilterPainelDto {
@@ -9,7 +9,7 @@ export class FilterPainelDto {
 
     @IsOptional()
     @IsNumber()
-    @Transform((a: any) => (a.value === '' ? undefined : +a.value))
+    @Transform((a: TransformFnParams) => (a.value === '' ? undefined : +a.value))
     meta_id?: number;
 }
 
