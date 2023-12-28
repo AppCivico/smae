@@ -415,6 +415,14 @@ export const novaSenha = object()
       .oneOf([ref('password'), null], 'Senhas não coincidem'),
   });
 
+export const orçamentoRealizado = object()
+  .shape({
+    dotacao: string()
+      .label('Dotação')
+      .matches(regEx.dotaçãoComComplemento)
+      .required(),
+  });
+
 export const perdidoDeComplementação = object()
   .shape({
     pedido: string()
