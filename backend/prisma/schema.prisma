@@ -226,6 +226,8 @@ model Pessoa {
     view_meta_responsavel_orcamento view_meta_responsavel_orcamento[]
 
     variavel_suspensa_log VariavelSuspensaoLog[]
+    PessoaSessao          PessoaSessao[]
+    PessoaAtividadeLog    PessoaAtividadeLog[]
 
     @@index([email])
     @@map("pessoa")
@@ -327,6 +329,8 @@ model PessoaSessaoAtiva {
     id        Int    @id @default(autoincrement())
     pessoa_id Int
     pessoa    Pessoa @relation(fields: [pessoa_id], references: [id])
+
+    pessoa_sessao PessoaSessao @relation(fields: [id], references: [id])
 
     @@map("pessoa_sessao_ativa")
 }
@@ -3421,3 +3425,41 @@ view view_meta_responsavel_orcamento {
 
     @@unique([meta_id, pessoa_id])
 }
+
+// isso aqui estava faltando, era pra ter desde o inicio, cada login/logout
+model PessoaSessao {
+    id Int @id @default(autoincrement())
+
+    pessoa_id Int
+    pessoa    Pessoa @relation(fields: [pessoa_id], references: [id])
+
+    criado_em DateTime
+    criado_ip String   @db.Inet
+
+    removido_em DateTime?
+    removido_ip String?   @db.Inet
+
+    PessoaSessaoAtiva  PessoaSessaoAtiva[]
+    PessoaAtividadeLog PessoaAtividadeLog[]
+
+    @@index([pessoa_id])
+    @@map("pessoa_sessao")
+}
+
+// tracking de quem está "online" no sistema, não é pra saber o que fez ou não
+model PessoaAtividadeLog {
+    id Int @id @default(autoincrement())
+
+    pessoa_id Int
+    pessoa    Pessoa @relation(fields: [pessoa_id], references: [id])
+    ip        String @db.Inet
+
+    pessoa_sessao_id Int
+    pessoa_sessao    PessoaSessao @relation(fields: [pessoa_sessao_id], references: [id])
+
+    criado_em DateTime
+
+    @@index([criado_em])
+    @@map("pessoa_atividade_log")
+}
+

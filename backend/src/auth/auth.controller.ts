@@ -22,6 +22,7 @@ import { LoginRequestBody } from './models/LoginRequestBody.dto';
 import { PerfilDeAcessoLinhaDto } from './models/PerfilDeAcesso.dto';
 import { ReducedAccessToken } from './models/ReducedAccessToken';
 import { SolicitarNovaSenhaRequestBody } from './models/SolicitarNovaSenhaRequestBody.dto';
+import { IpAddress } from '../common/decorators/current-ip';
 
 @Controller()
 export class AuthController {
@@ -37,8 +38,11 @@ export class AuthController {
     @ApiOkResponse({
         schema: { oneOf: refs(AccessToken, ReducedAccessToken) },
     })
-    async login(@Request() req: AuthRequestLogin): Promise<AccessToken | ReducedAccessToken> {
-        return this.authService.login(req.user);
+    async login(
+        @Request() req: AuthRequestLogin,
+        @IpAddress() ipAddress: string
+    ): Promise<AccessToken | ReducedAccessToken> {
+        return this.authService.login(req.user, ipAddress);
     }
 
     @ApiTags('Minha Conta')
@@ -47,8 +51,8 @@ export class AuthController {
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
     @ApiNoContentResponse()
-    async logout(@CurrentUser() user: Pessoa) {
-        await this.authService.logout(user);
+    async logout(@CurrentUser() user: Pessoa, @IpAddress() ipAddress: string) {
+        await this.authService.logout(user, ipAddress);
         return '';
     }
 
@@ -57,8 +61,8 @@ export class AuthController {
     @HttpCode(HttpStatus.OK)
     @IsPublic()
     @ApiBody({ type: EscreverNovaSenhaRequestBody })
-    async escreverNovaSenha(@Body() body: EscreverNovaSenhaRequestBody) {
-        return this.authService.escreverNovaSenha(body);
+    async escreverNovaSenha(@Body() body: EscreverNovaSenhaRequestBody, @IpAddress() ipAddress: string) {
+        return this.authService.escreverNovaSenha(body, ipAddress);
     }
 
     @ApiTags('Público')

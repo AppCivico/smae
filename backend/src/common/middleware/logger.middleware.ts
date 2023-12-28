@@ -38,6 +38,9 @@ export class LoggerMiddleware implements NestMiddleware {
             } else {
                 this.logger.log(`${method} ${url} ${statusCode} returning ${contentLength} bytes in ${took} ms`);
             }
+            const ipAddress = extractIpAddress(request);
+
+            if (request.user && request.user instanceof PessoaFromJwt) this.logAtividade(request.user, ipAddress);
 
             if (!this.logOnDb) return;
             if (this.logSkipUrl.includes(url)) return;
@@ -52,7 +55,7 @@ export class LoggerMiddleware implements NestMiddleware {
                             request_num: request_num++,
                             created_at: new Date(),
                             cf_ray: this.getHeaderCfRay(request),
-                            ip: extractIpAddress(request),
+                            ip: ipAddress,
                             req_body: this.getBody(request),
                             req_method: method,
                             req_headers: this.getHeadersParamFromReq(request),
@@ -152,5 +155,13 @@ export class LoggerMiddleware implements NestMiddleware {
         if (Object.keys(copy).length == 0) return null;
 
         return JSON.stringify(copy);
+    }
+
+    logAtividade(user: PessoaFromJwt, ip: string) {
+        try {
+            this.prisma.$executeRaw`SELECT f_insere_log_atividade(${user.id}::int, ${ip}, ${user.session_id}::int);`;
+        } catch (error) {
+            this.logger.error(error);
+        }
     }
 }

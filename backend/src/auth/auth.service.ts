@@ -16,7 +16,7 @@ import { PessoaFromJwt } from './models/PessoaFromJwt';
 export class AuthService {
     constructor(private readonly jwtService: JwtService, private readonly pessoaService: PessoaService) {}
 
-    async login(pessoa: Pessoa): Promise<AccessToken | ReducedAccessToken> {
+    async login(pessoa: Pessoa, ip: string): Promise<AccessToken | ReducedAccessToken> {
         if (pessoa.senha_bloqueada) {
             const payload: JwtReducedAccessToken = {
                 aud: 'resetPass',
@@ -32,11 +32,11 @@ export class AuthService {
             throw new BadRequestException('email| Conta não está mais ativa.');
         }
 
-        return this.criarSession(pessoa.id as number);
+        return this.criarSession(pessoa.id as number, ip);
     }
 
-    async criarSession(pessoaId: number) {
-        const sessaoId = await this.pessoaService.newSessionForPessoa(pessoaId);
+    async criarSession(pessoaId: number, ip: string) {
+        const sessaoId = await this.pessoaService.newSessionForPessoa(pessoaId, ip);
         const payload: JwtPessoaPayload = {
             sid: sessaoId,
             iat: Date.now(),
@@ -48,8 +48,8 @@ export class AuthService {
         } as AccessToken;
     }
 
-    async logout(pessoa: Pessoa) {
-        await this.pessoaService.invalidarSessao(pessoa.session_id as number);
+    async logout(pessoa: Pessoa, ip: string) {
+        await this.pessoaService.invalidarSessao(pessoa.session_id as number, ip);
     }
 
     async pessoaPeloEmailSenha(email: string, senhaInformada: string): Promise<Pessoa> {
@@ -123,7 +123,7 @@ export class AuthService {
         return await this.pessoaService.listaPerfilAcesso();
     }
 
-    async escreverNovaSenha(body: EscreverNovaSenhaRequestBody) {
+    async escreverNovaSenha(body: EscreverNovaSenhaRequestBody, ip: string) {
         let result: JwtReducedAccessToken;
         try {
             result = this.jwtService.verify(body.reduced_access_token, {
@@ -135,7 +135,7 @@ export class AuthService {
 
         const updated = await this.pessoaService.escreverNovaSenhaById(result.pessoaId, body.senha);
         if (updated) {
-            return this.criarSession(result.pessoaId);
+            return this.criarSession(result.pessoaId, ip);
         } else {
             throw new BadRequestException('reduced_access_token| a senha já foi atualizada!');
         }
