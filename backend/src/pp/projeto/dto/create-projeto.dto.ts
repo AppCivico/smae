@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { ProjetoOrigemTipo } from '@prisma/client';
-import { Transform, Type } from 'class-transformer';
+import { Transform, TransformFnParams, Type } from 'class-transformer';
 import {
     ArrayMaxSize,
     ArrayMinSize,
@@ -77,7 +77,7 @@ export class CreateProjetoDto {
      */
     @IsOptional()
     @IsInt({ message: '$property| meta_id precisa ser positivo' })
-    @Transform((a: any) => (a.value === null ? null : +a.value))
+    @Transform((a: TransformFnParams) => (a.value === null ? null : +a.value))
     @ValidateIf((object, value) => value !== null)
     meta_id?: number | null;
 
@@ -86,7 +86,7 @@ export class CreateProjetoDto {
      */
     @IsOptional()
     @IsInt({ message: '$property| iniciativa_id precisa ser positivo' })
-    @Transform((a: any) => (a.value === null ? null : +a.value))
+    @Transform((a: TransformFnParams) => (a.value === null ? null : +a.value))
     @ValidateIf((object, value) => value !== null)
     iniciativa_id?: number | null;
 
@@ -95,7 +95,7 @@ export class CreateProjetoDto {
      */
     @IsOptional()
     @IsInt({ message: '$property| atividade_id precisa ser positivo' })
-    @Transform((a: any) => (a.value === null ? null : +a.value))
+    @Transform((a: TransformFnParams) => (a.value === null ? null : +a.value))
     @ValidateIf((object, value) => value !== null)
     atividade_id?: number | null;
 
@@ -118,7 +118,7 @@ export class CreateProjetoDto {
      * dentro dos órgãos participantes, qual é o órgão responsável
      */
     @IsInt({ message: '$property| orgao_responsavel_id precisa ser inteiro' })
-    @Transform((a: any) => (a.value === null ? null : +a.value))
+    @Transform((a: TransformFnParams) => (a.value === null ? null : +a.value))
     @ValidateIf((object, value) => value !== null)
     orgao_responsavel_id: number | null;
 
@@ -126,7 +126,7 @@ export class CreateProjetoDto {
      * ID da pessoa responsável [pelo planejamento, são as pessoas filtradas pelo filtro `colaborador_de_projeto=true`]
      */
     @IsInt({ message: '$property| responsavel_id precisa ser inteiro' })
-    @Transform((a: any) => (a.value === null ? null : +a.value))
+    @Transform((a: TransformFnParams) => (a.value === null ? null : +a.value))
     @ValidateIf((object, value) => value !== null)
     responsavel_id: number | null;
 
@@ -178,7 +178,7 @@ export class CreateProjetoDto {
         { message: '$property| Custo até duas casas decimais' }
     )
     @Min(0, { message: '$property| Custo precisa ser positivo' })
-    @Transform((a: any) => (a.value === null ? null : +a.value))
+    @Transform((a: TransformFnParams) => (a.value === null ? null : +a.value))
     @ValidateIf((object, value) => value !== null)
     previsao_custo: number | null;
 

@@ -1,6 +1,6 @@
 import { ApiProperty, OmitType, PartialType } from '@nestjs/swagger';
 import { ProjetoStatus } from '@prisma/client';
-import { Transform, Type } from 'class-transformer';
+import { Transform, TransformFnParams, Type } from 'class-transformer';
 import {
     IsArray,
     IsEnum,
@@ -23,7 +23,7 @@ export class PPfonteRecursoDto {
      */
     @IsOptional()
     @IsNumber()
-    @Transform((a: any) => (a.value === undefined ? undefined : +a.value))
+    @Transform((a: TransformFnParams) => (a.value === undefined ? undefined : +a.value))
     id?: number;
 
     /**
@@ -36,14 +36,14 @@ export class PPfonteRecursoDto {
     @IsInt()
     @Max(3000)
     @Min(2003)
-    @Transform((a: any) => +a.value)
+    @Transform((a: TransformFnParams) => +a.value)
     fonte_recurso_ano: number;
 
     @IsNumber(
         { maxDecimalPlaces: 2, allowInfinity: false, allowNaN: false },
         { message: '$property| até duas casas decimais' }
     )
-    @Transform((a: any) => (a.value === null ? null : +a.value))
+    @Transform((a: TransformFnParams) => (a.value === null ? null : +a.value))
     @ValidateIf((object, value) => value !== null)
     valor_percentual?: number | null;
 
@@ -51,7 +51,7 @@ export class PPfonteRecursoDto {
         { maxDecimalPlaces: 2, allowInfinity: false, allowNaN: false },
         { message: '$property| até duas casas decimais' }
     )
-    @Transform((a: any) => (a.value === null ? null : +a.value))
+    @Transform((a: TransformFnParams) => (a.value === null ? null : +a.value))
     @ValidateIf((object, value) => value !== null)
     valor_nominal?: number | null;
 }
@@ -100,7 +100,7 @@ export class UpdateProjetoRegistroSeiDto extends PartialType(CreateProjetoSeiDto
 //    @IsOptional()
 //    @IsNumber({ maxDecimalPlaces: 2, allowInfinity: false, allowNaN: false }, { message: '$property| Custo até duas casas decimais' })
 //    @Min(0, { message: '$property| Custo precisa ser positivo' })
-//    @Transform((a: any) => (a.value === null ? null : +a.value))
+//    @Transform((a: TransformFnParams) => (a.value === null ? null : +a.value))
 //    @ValidateIf((object, value) => value !== null)
 //    realizado_custo?: number
 

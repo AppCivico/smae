@@ -1,6 +1,6 @@
 import { ApiProperty, OmitType } from '@nestjs/swagger';
 import { Periodicidade } from '@prisma/client';
-import { Transform, Type } from 'class-transformer';
+import { Transform, TransformFnParams, Type } from 'class-transformer';
 import {
     ArrayMaxSize,
     ArrayMinSize,
@@ -75,7 +75,7 @@ export class CreateVariavelDto {
     @IsInt({ message: '$property| $property inválido' })
     @Min(0, { message: '$property| casas_decimais tem valor mínimo de zero' })
     @Max(MAX_CASAS_DECIMAIS, { message: `$property| casas_decimais tem valor máximo de ${MAX_CASAS_DECIMAIS}` })
-    @Transform((a: any) => (a.value === '' ? undefined : +a.value))
+    @Transform((a: TransformFnParams) => (a.value === '' ? undefined : +a.value))
     casas_decimais: number;
 
     /**

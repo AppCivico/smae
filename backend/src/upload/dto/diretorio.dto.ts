@@ -1,9 +1,9 @@
-import { Transform } from 'class-transformer';
+import { Transform, TransformFnParams } from 'class-transformer';
 import { IsInt, IsString, MaxLength } from 'class-validator';
 
 export class DiretorioDto {
     @IsInt()
-    @Transform((a: any) => (a.value === '' ? undefined : +a.value))
+    @Transform((a: TransformFnParams) => (a.value === '' ? undefined : +a.value))
     projeto_id: number;
 
     @IsString()
@@ -23,7 +23,7 @@ export class PatchDiretorioDto {
 
 export class FilterDiretorioDto {
     @IsInt()
-    @Transform((a: any) => (a.value === '' ? undefined : +a.value))
+    @Transform((a: TransformFnParams) => (a.value === '' ? undefined : +a.value))
     projeto_id: number;
 }
 

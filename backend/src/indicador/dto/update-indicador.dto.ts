@@ -1,5 +1,5 @@
 import { OmitType, PartialType } from '@nestjs/swagger';
-import { Transform, Type } from 'class-transformer';
+import { Transform, TransformFnParams, Type } from 'class-transformer';
 import {
     ArrayMaxSize,
     IsBoolean,
@@ -36,7 +36,7 @@ export class FormulaVariaveis {
      * 0 será convertido para 1 automaticamente
      */
     @IsInt({ message: '$property| descrição: Precisa ser um número' })
-    @Transform((a: any) => (+a.value === 0 ? 1 : +a.value))
+    @Transform((a: TransformFnParams) => (+a.value === 0 ? 1 : +a.value))
     janela: number;
 
     /**

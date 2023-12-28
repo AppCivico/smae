@@ -1,5 +1,5 @@
 import { PartialType, PickType } from '@nestjs/swagger';
-import { Transform, Type } from 'class-transformer';
+import { Transform, TransformFnParams, Type } from 'class-transformer';
 import { IsInt, IsOptional, IsString, Max, MaxLength, Min, ValidateIf } from 'class-validator';
 
 export class CreateRegiaoDto {
@@ -36,7 +36,7 @@ export class CreateRegiaoDto {
     @IsOptional()
     @IsInt({ message: '$property| Precisa ser nulo ou o ID' })
     @ValidateIf((object, value) => value !== null)
-    @Transform((a: any) => (a.value === '' ? undefined : +a.value))
+    @Transform((a: TransformFnParams) => (a.value === '' ? undefined : +a.value))
     parente_id: number | undefined;
 
     /**
