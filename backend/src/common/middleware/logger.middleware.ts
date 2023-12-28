@@ -158,10 +158,11 @@ export class LoggerMiddleware implements NestMiddleware {
     }
 
     logAtividade(user: PessoaFromJwt, ip: string) {
-        try {
-            this.prisma.$executeRaw`SELECT f_insere_log_atividade(${user.id}::int, ${ip}, ${user.session_id}::int);`;
-        } catch (error) {
-            this.logger.error(error);
-        }
+        this.prisma
+            .$executeRaw`SELECT f_insere_log_atividade(${user.id}::int, ${ip}::INET, ${user.session_id}::int);`.catch(
+            (e) => {
+                this.logger.log(e);
+            }
+        );
     }
 }
