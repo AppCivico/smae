@@ -17,7 +17,17 @@ export class AppController {
 
     @ApiBearerAuth('access-token')
     @Roles('SMAE.superadmin')
-    @Get('/performance-check')
+    @Get('/system/usage')
+    async systemUsage() {
+        return {
+            arquivos: await this.getFileUsage(),
+            pessoas: await this.getPessoaUsage(),
+        };
+    }
+
+    @ApiBearerAuth('access-token')
+    @Roles('SMAE.superadmin')
+    @Get('/system/performance-check')
     async performanceCheck() {
         return {
             unloaded: await this.recordPerformance(30),
@@ -50,5 +60,58 @@ export class AppController {
         const p999 = percentile(99.9, executionTimes);
 
         return { min, max, p50, p99, p999, executionTimes: executionTimes.length };
+    }
+
+    async getFileUsage(): Promise<any> {
+        const fileStats = await this.prisma.arquivo.groupBy({
+            by: ['mime_type'],
+            _sum: {
+                'tamanho_bytes': true,
+            },
+            _count: {
+                _all: true,
+            },
+        });
+
+        // Sort by size in descending order
+        fileStats.sort((a, b) => {
+            if (b._sum.tamanho_bytes !== null && a._sum.tamanho_bytes !== null)
+                return b._sum.tamanho_bytes - a._sum.tamanho_bytes;
+            return b._count._all - a._count._all;
+        });
+
+        // Convert bytes to megabytes (MB) and create a new array of objects
+        const perMimeType = fileStats.map((stats) => ({
+            mime_type: stats.mime_type,
+            count: stats._count._all,
+            tamanho_bytes: stats._sum.tamanho_bytes,
+            tamanho_mb: stats._sum.tamanho_bytes ? (stats._sum.tamanho_bytes / (1024 * 1024)).toFixed(2) : null,
+        }));
+
+        // Calculate total count and total size
+        const totalCount = fileStats.reduce((acc, stats) => acc + stats._count._all, 0);
+        const totalSizeBytes = fileStats.reduce((acc, stats) => acc + (stats._sum.tamanho_bytes || 0), 0);
+        const totalSizeMB = (totalSizeBytes / (1024 * 1024)).toFixed(2);
+
+        return {
+            total_count: totalCount,
+            total_tamanho_bytes: totalSizeBytes,
+            total_tamanho_mb: totalSizeMB,
+            mime_type: perMimeType,
+        };
+    }
+
+    async getPessoaUsage(): Promise<any> {
+        const pessoaCount = await this.prisma.pessoa.count();
+        const pessoaAtivo = await this.prisma.pessoa.count({
+            where: { desativado: false },
+        });
+        const pessoaSessaoAtiva = await this.prisma.pessoaSessaoAtiva.count({});
+
+        return {
+            pessoaCount,
+            pessoaAtivo,
+            totalLogin: pessoaSessaoAtiva,
+        };
     }
 }
