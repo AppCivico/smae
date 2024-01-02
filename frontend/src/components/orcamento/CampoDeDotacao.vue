@@ -69,11 +69,10 @@ const largurasDeCampo = {
     complementoFonte: 3,
     complementoAcompanhamento: 6,
   },
-
-};
-const largurasDeCampoComoLista = {
-  dotação: Object.values(largurasDeCampo.dotação),
-  complemento: Object.values(largurasDeCampo.complemento),
+  dotaçãoEComplemento: {
+    apenasDotação: 36,
+    comComplemento: 46,
+  },
 };
 
 const órgão = ref('');
@@ -89,7 +88,7 @@ const complementoExercício = ref('');
 const complementoFonte = ref('');
 const complementoAcompanhamento = ref('');
 
-const dotação = computed({
+const valorDaDotação = computed({
   get() {
     return props.modelValue;
   },
@@ -99,7 +98,7 @@ const dotação = computed({
   },
 });
 
-const complemento = computed({
+const valorDoComplemento = computed({
   get() {
     return props.complemento;
   },
@@ -109,32 +108,86 @@ const complemento = computed({
 });
 
 const dotaçãoEComplemento = computed({
-  get: () => (complemento.value
-    ? `${dotação.value}.${complemento.value}`
-    : dotação.value),
+  get: () => (props.complemento
+    ? `${props.modelValue}.${props.complemento}`
+    : props.modelValue),
   set(valor) {
-    const v = valor.split('.');
+    let valorLimpo = String(valor).replace(/([^0-9*])/g, '');
 
-    órgão.value = v[0] !== undefined ? v[0] : '';
-    unidade.value = v[1] !== undefined ? v[1] : '';
-    função.value = v[2] !== undefined ? v[2] : '';
-    subFunção.value = v[3] !== undefined ? v[3] : '';
-    programa.value = v[4] !== undefined ? v[4] : '';
-    projetoAtividade.value = v[5] !== undefined ? v[5] : '';
+    if (props.complemento !== false) {
+      valorLimpo = valorLimpo.slice(0, 35);
+    } else {
+      valorLimpo = valorLimpo.slice(0, 27);
+    }
 
-    if (v[6] !== undefined) {
-      projetoAtividade.value += `.${v[6]}`;
+    if (valorLimpo.length) {
+      órgão.value = valorLimpo.slice(0, 2);
+    } else {
+      órgão.value = '';
+    }
 
-      contaDespesa.value = v[7] !== undefined ? v[7] : '';
-      fonte.value = v[8] !== undefined ? v[8] : '';
+    if (valorLimpo.length >= 2) {
+      unidade.value = valorLimpo.slice(2, 4);
+    } else {
+      unidade.value = '';
+    }
 
-      complementoExercício.value = v[9] !== undefined ? v[9] : '';
-      complementoFonte.value = v[10] !== undefined ? v[10] : '';
-      complementoAcompanhamento.value = v[11] !== undefined ? v[11] : '';
+    if (valorLimpo.length >= 4) {
+      função.value = valorLimpo.slice(4, 6);
+    } else {
+      função.value = '';
+    }
 
-      if (v[12] !== undefined) {
-        complementoAcompanhamento.value += `.${v[12]}`;
+    if (valorLimpo.length >= 6) {
+      subFunção.value = valorLimpo.slice(6, 9);
+    } else {
+      subFunção.value = '';
+    }
+
+    if (valorLimpo.length >= 9) {
+      programa.value = valorLimpo.slice(9, 13);
+    } else {
+      programa.value = '';
+    }
+
+    if (valorLimpo.length >= 13) {
+      if (valorLimpo.charAt(14)) {
+        projetoAtividade.value = `${valorLimpo.charAt(13)}.${valorLimpo.slice(14, 17)}`;
+      } else {
+        projetoAtividade.value = valorLimpo.charAt(13);
       }
+    } else {
+      projetoAtividade.value = '';
+    }
+
+    if (valorLimpo.length >= 17) {
+      contaDespesa.value = valorLimpo.slice(17, 25);
+    } else {
+      contaDespesa.value = '';
+    }
+
+    if (valorLimpo.length >= 25) {
+      fonte.value = valorLimpo.slice(25, 27);
+    } else {
+      fonte.value = '';
+    }
+
+    if (valorLimpo.length >= 27) {
+      complementoExercício.value = valorLimpo.slice(27, 28);
+    } else {
+      complementoExercício.value = '';
+    }
+
+    if (valorLimpo.length >= 28) {
+      complementoFonte.value = valorLimpo.slice(28, 31);
+    } else {
+      complementoFonte.value = '';
+    }
+
+    if (valorLimpo.length >= 31) {
+      complementoAcompanhamento.value = valorLimpo.slice(31, 35);
+    } else {
+      complementoAcompanhamento.value = '';
     }
   },
 });
@@ -165,17 +218,6 @@ function mascararCódigos(evt, alémDoBásico = []) {
   }
 }
 
-function mascararAcompanhamento(evt) {
-  const teclasPermitidas = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '.'];
-
-  if (!teclasPermitidas.includes(evt.key) || (evt.key === '.' && evt.target.value.length)) {
-    evt.preventDefault();
-  } else if (evt.target.value.length === 4) {
-    // eslint-disable-next-line no-param-reassign
-    evt.target.value += '.';
-  }
-}
-
 if (!DotaçãoSegmentos.value[ano]?.atualizado_em && !chamadasPendentes.value.segmentos) {
   DotaçãoStore.getDotaçãoSegmentos(ano);
 }
@@ -191,11 +233,7 @@ watch([
       : novosValores[i];
     i += 1;
   }
-
-  if (novosValores[i - 1]?.length === largurasDeCampoComoLista.dotação[i - 1] && i < 7) {
-    novoValor += '.';
-  }
-  dotação.value = novoValor;
+  valorDaDotação.value = novoValor;
 });
 
 watch([
@@ -209,11 +247,7 @@ watch([
       : novosValores[i];
     i += 1;
   }
-
-  if (novosValores[i - 1]?.length === largurasDeCampoComoLista.complemento[i - 1] && i < 3) {
-    novoValor += '.';
-  }
-  complemento.value = novoValor;
+  valorDoComplemento.value = novoValor;
 });
 </script>
 <template>
@@ -225,16 +259,18 @@ watch([
       >Dotação <span class="tvermelho">*</span></label>
       <input
         id="campo-de-dotação"
-        v-model="dotaçãoEComplemento"
+        v-model.trim="dotaçãoEComplemento"
         name="dotaçãoEComplemento"
         type="text"
         class="inputtext light mb1"
-        maxlength="49"
+        :maxlength="props.complemento === false
+          ? largurasDeCampo.dotaçãoEComplemento.apenasDotação
+          : largurasDeCampo.dotaçãoEComplemento.comComplemento"
         :class="{
           error: errors?.dotacao || respostaDoSof.informacao_valida === false,
           loading: respostaDoSof.loading
         }"
-        @keypress="($event) => mascararCódigos($event, ['*', '.'])"
+        @keypress="($event) => mascararCódigos($event, ['*'])"
       >
 
       <ErrorMessage
@@ -424,9 +460,9 @@ watch([
           <option
             v-for="i in DotaçãoSegmentos[ano].projetos_atividades"
             :key="i.codigo"
-            :value="i.codigo.slice(0, 1) + '.' + i.codigo.slice(1)"
+            :value="i.codigo.charAt(0) + '.' + i.codigo.slice(1)"
           >
-            {{ i.codigo + ' - ' + i.descricao }}
+            {{ i.codigo.charAt(0) + '.' + i.codigo.slice(1) + ' - ' + i.descricao }}
           </option>
         </select>
         <div
@@ -453,7 +489,6 @@ watch([
           inputmode="numeric"
           type="text"
           class="inputtext light mb1"
-          @keypress="mascararCódigos"
         >
       </div>
       <div class="f1">
@@ -487,7 +522,7 @@ watch([
     </div>
 
     <div
-      v-if="complemento !== false"
+      v-if="props.complemento !== false"
       class="flex g2 mb2"
     >
       <div class="f1">
@@ -555,7 +590,7 @@ watch([
           :minlength="largurasDeCampo.complemento.complementoAcompanhamento"
           patter="\d{3}\.\d"
           name="complementoAcompanhamento"
-          @keypress="mascararAcompanhamento"
+          @keypress="mascararCódigos"
         >
       </div>
     </div>
