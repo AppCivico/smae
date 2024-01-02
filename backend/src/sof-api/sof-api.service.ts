@@ -111,7 +111,8 @@ export function TrataDotacaoGrande(dotacao: string): string {
 export function ExtraiComplementoDotacao(row: { dotacao: string; dotacao_complemento?: string | null }): string | null {
     row.dotacao = row.dotacao.trim();
     // prioridade na dotação
-    if (row.dotacao.length == 48) return row.dotacao.substring(36);
+    // era pra ser só 46, mas já tem alguns registros salvos com 48
+    if (row.dotacao.length == 48 || row.dotacao.length == 46) return row.dotacao.substring(36);
     // depois no campo extra
     if (row.dotacao_complemento) return row.dotacao_complemento;
     // se não continua null
@@ -259,10 +260,10 @@ export class SofApiService {
     ): Promise<SuccessEmpenhosResponse> {
         interface ResDataObj {
             [dotacao: string]: {
-              dotacao: string;
-              processo: string;
-              empenho_liquido: number;
-              val_liquidado: number;
+                dotacao: string;
+                processo: string;
+                empenho_liquido: number;
+                val_liquidado: number;
             };
         }
 
@@ -274,14 +275,14 @@ export class SofApiService {
                 })
                 .json();
             this.logger.debug(`resposta: ${JSON.stringify(response)}`);
-            
+
             if ('metadados' in response && response.metadados.sucess && endpoint.includes('v1/empenhos/')) {
                 const processedData = (response as SuccessEmpenhosResponse).data.reduce((row: ResDataObj, d) => {
                     const dotacao = TrataDotacaoGrande(d.dotacao);
                     const processo = String(d.processo);
                     const empenho_liquido = Number(d.empenho_liquido);
                     const val_liquidado = Number(d.val_liquidado);
-                
+
                     if (row[dotacao]) {
                         row[dotacao].empenho_liquido += empenho_liquido;
                         row[dotacao].val_liquidado += val_liquidado;
@@ -293,10 +294,10 @@ export class SofApiService {
                             val_liquidado,
                         };
                     }
-                
+
                     return row;
                 }, {} as ResDataObj);
-                
+
                 return {
                     data: Object.values(processedData),
                     metadados: response.metadados,
