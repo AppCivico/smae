@@ -243,8 +243,8 @@ function montaDotacao(a) {
           <div class="t13 tc500">
             Obrigatório informar os campos <strong>Órgão</strong>,
             <strong>Unidade</strong>, <strong>Função</strong>,
-            <strong>Projeto/Atividade</strong> e <strong>Fonte</strong>, os
-            demais são opcionais, por exemplo,
+            <strong>Projeto/Atividade</strong> e <strong>Fonte</strong>. Os
+            demais são opcionais. Por exemplo:
             <var>98.22.15.122.****.5.287.********.08</var>
           </div>
         </div>
@@ -572,10 +572,10 @@ function montaDotacao(a) {
       </div>
     </Form>
   </template>
-  <template v-if="OrcamentoCusteio[ano] && OrcamentoCusteio[ano][0]?.id">
+  <template v-if="currentEdit.id">
     <button
       class="btn amarelo big"
-      @click="checkDelete(OrcamentoCusteio[ano][0].id)"
+      @click="checkDelete(currentEdit.id)"
     >
       Remover item
     </button>
