@@ -41,6 +41,9 @@ export class DotacaoService {
         return acao_orcamentaria;
     }
 
+    /**
+     * @deprecated pois não é usado no sistema
+    /**/
     async orcadoProjeto(dto: AnoParteDotacaoDto): Promise<OrcadoProjetoDto> {
         try {
             // custeio é planejamento, de certa forma
@@ -568,10 +571,10 @@ export class DotacaoService {
     async sincronizarDotacaoPlanejado(dto: AnoDotacaoDto, mes: number) {
         const now = new Date(Date.now());
         try {
-            const r = await this.sof.orcadoProjeto({
+            const r = await this.sof.orcadoDotacao({
                 ano: dto.ano,
                 mes: mes,
-                ...this.getDotacaoOrgaoUnidadeProjFonte(dto.dotacao),
+                dotacao: dto.dotacao,
             });
 
             // na teoria só volta 1 item

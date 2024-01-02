@@ -25,7 +25,8 @@ export class DotacaoController {
 
     @ApiTags('Orçamento - Planejado')
     @ApiOperation({
-        summary: 'Consulta SOF para receber empenho para incluir Orçamento Planejado',
+        summary:
+            'Consulta SOF para receber empenho para incluir Orçamento Planejado (proxy para v1/orcado/orcado_dotacao)',
         description:
             'Realiza a busca e cache dos dados da dotação, utilizando sempre o mês de janeiro como referencia para o empenho.\n\n' +
             'Caso o SOF esteja com problemas (offline), ainda é salvo um registro, onde preenchimento do planejado poderá ser utilizado\n\n' +
@@ -91,7 +92,9 @@ export class DotacaoController {
     @Patch('orcado-projeto')
     @ApiBearerAuth('access-token')
     @ApiOperation({
-        summary: 'Consulta SOF fazendo o parse da dotação parcial, retornando Orçamento Inicial/Atualizado e saldo',
+        deprecated: true,
+        summary:
+            'Consulta SOF fazendo o parse da dotação parcial, retornando Orçamento Inicial/Atualizado e saldo (proxy para v1/orcado/orcado_projeto)',
         description: 'Não salva nenhum retorno no banco.',
     })
     async orcadoProjeto(@Body() dto: AnoParteDotacaoDto): Promise<OrcadoProjetoDto> {
