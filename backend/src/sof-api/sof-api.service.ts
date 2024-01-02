@@ -257,7 +257,7 @@ export class SofApiService {
         endpoint: string,
         input: InputDotacao | InputProcesso | InputNotaEmpenho
     ): Promise<SuccessEmpenhosResponse> {
-        interface resDataObj {
+        interface ResDataObj {
             [dotacao: string]: {
               dotacao: string;
               processo: string;
@@ -276,7 +276,7 @@ export class SofApiService {
             this.logger.debug(`resposta: ${JSON.stringify(response)}`);
             
             if ('metadados' in response && response.metadados.sucess && endpoint.includes('v1/empenhos/')) {
-                const processedData = (response as SuccessEmpenhosResponse).data.reduce((row: resDataObj, d) => {
+                const processedData = (response as SuccessEmpenhosResponse).data.reduce((row: ResDataObj, d) => {
                     const dotacao = TrataDotacaoGrande(d.dotacao);
                     const processo = String(d.processo);
                     const empenho_liquido = Number(d.empenho_liquido);
@@ -295,7 +295,7 @@ export class SofApiService {
                     }
                 
                     return row;
-                }, {} as resDataObj);
+                }, {} as ResDataObj);
                 
                 return {
                     data: Object.values(processedData),
