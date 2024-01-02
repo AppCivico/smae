@@ -176,6 +176,10 @@ export const custeio = object()
       .matches(regEx.dotaçãoComCuringas, 'Formato inválido'),
   });
 
+export const dotação = string()
+  .label('Dotação')
+  .matches(regEx.dotaçãoComComplemento);
+
 export const etapa = object()
   .shape({
     descricao: string()

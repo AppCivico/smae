@@ -4,7 +4,7 @@ import {
 } from 'vue';
 import { useDotaçãoStore } from '@/stores/dotacao.store.ts';
 import { storeToRefs } from 'pinia';
-import { orçamentoRealizado as schema } from '@/consts/formSchemas';
+import { dotação as schema } from '@/consts/formSchemas';
 import { useMetasStore } from '@/stores/metas.store';
 import { useProjetosStore } from '@/stores/projetos.store.ts';
 import { ErrorMessage, useField } from 'vee-validate';
@@ -35,7 +35,7 @@ const emit = defineEmits([
 ]);
 
 const name = toRef(props, 'name');
-const { handleChange } = useField(name, undefined, {
+const { errors, handleChange, validate } = useField(name, schema, {
   initialValue: props.value,
 });
 
@@ -140,17 +140,19 @@ const dotaçãoEComplemento = computed({
 });
 
 async function validarDota() {
-  try {
-    respostaDoSof.value = { loading: true };
-    await schema.validate({ dotacao: dota.value, valor_empenho: 1, valor_liquidado: 1 });
+  const { valid } = await validate();
 
-    const params = route.params.projetoId
-      ? { portfolio_id: ProjetoStore.emFoco.portfolio_id }
-      : { pdm_id: activePdm.value.id };
-    respostaDoSof.value = await DotaçãoStore
-      .getDotaçãoRealizado(dota.value, ano, params);
-  } catch (error) {
-    respostaDoSof.value = error;
+  if (valid) {
+    try {
+      respostaDoSof.value = { loading: true };
+      const params = route.params.projetoId
+        ? { portfolio_id: ProjetoStore.emFoco.portfolio_id }
+        : { pdm_id: activePdm.value.id };
+      respostaDoSof.value = await DotaçãoStore
+        .getDotaçãoRealizado(dota.value, ano, params);
+    } catch (error) {
+      respostaDoSof.value = error;
+    }
   }
 }
 
