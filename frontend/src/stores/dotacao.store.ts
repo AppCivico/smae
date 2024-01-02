@@ -116,10 +116,10 @@ export const useDotaçãoStore = defineStore('dotação', {
         return acc;
       }, {});
     },
-    UnidadesPorAnoPorCódigo({ DotaçãoSegmentos }) {
+    UnidadesPorAnoPorCódigoComposto({ DotaçãoSegmentos }) {
       return Object.keys(DotaçãoSegmentos).reduce((acc: any, cur) => {
         acc[cur] = DotaçãoSegmentos[cur]
-          .unidades?.reduce((acc2, cur2) => ({ ...acc2, [cur2.codigo]: cur2 }), {});
+          .unidades?.reduce((acc2, cur2) => ({ ...acc2, [`${cur2.cod_orgao}.${cur2.codigo}`]: cur2 }), {});
         return acc;
       }, {});
     },

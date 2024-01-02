@@ -24,7 +24,7 @@ const DotaçãoStore = useDotaçãoStore();
 const {
   DotaçãoSegmentos,
   ÓrgãosPorAnoPorCódigo,
-  UnidadesPorAnoPorCódigo,
+  UnidadesPorAnoPorCódigoComposto,
 } = storeToRefs(DotaçãoStore);
 
 const prefixoEscolhido = computed({
@@ -42,7 +42,7 @@ const listaDeOpções = computed(() => props.lista
       ? cur.parte_dotacao.split('.')
       : cur.dotacao.split('.');
     const nomeDoÓrgão = ÓrgãosPorAnoPorCódigo.value?.[props.ano]?.[idDoÓrgão]?.descricao;
-    const nomeDaUnidade = UnidadesPorAnoPorCódigo.value?.[props.ano]?.[idDaUnidade]?.descricao;
+    const nomeDaUnidade = UnidadesPorAnoPorCódigoComposto.value?.[props.ano]?.[`${idDoÓrgão}.${idDaUnidade}`]?.descricao;
 
     const chave = [idDoÓrgão, idDaUnidade].join('.');
 
@@ -54,7 +54,7 @@ const listaDeOpções = computed(() => props.lista
       };
 
       if (nomeDoÓrgão) {
-        acc[idDoÓrgão].etiqueta += ` - ${nomeDoÓrgão} `;
+        acc[idDoÓrgão].etiqueta += ` - ${nomeDoÓrgão}`;
       }
     }
 
