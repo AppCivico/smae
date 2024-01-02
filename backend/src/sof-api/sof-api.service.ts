@@ -276,7 +276,8 @@ export class SofApiService {
                 .json();
             this.logger.debug(`resposta: ${JSON.stringify(response)}`);
 
-            if ('metadados' in response && response.metadados.sucess && endpoint.includes('v1/empenhos/')) {
+            // busca por nota e por processo deve continuar da forma que estava,
+            if ('metadados' in response && response.metadados.sucess && endpoint.includes('v1/empenhos/dotacao')) {
                 const processedData = (response as SuccessEmpenhosResponse).data.reduce((row: ResDataObj, d) => {
                     const dotacao = TrataDotacaoGrande(d.dotacao);
                     const processo = String(d.processo);

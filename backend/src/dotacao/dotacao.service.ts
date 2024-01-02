@@ -383,24 +383,26 @@ export class DotacaoService {
     }
 
     async valorRealizadoDotacao(dto: AnoDotacaoDto): Promise<ValorRealizadoDotacaoDto[]> {
-        const dotacaoRealizadoExistente = await this.prisma.dotacaoRealizado.findUnique({
-            where: {
-                ano_referencia_dotacao: {
-                    ano_referencia: dto.ano,
-                    dotacao: dto.dotacao,
-                },
-            },
-        });
-
         const mesMaisAtual = this.sof.mesMaisRecenteDoAno(dto.ano, 'realizado');
 
-        if (
-            dotacaoRealizadoExistente &&
-            dotacaoRealizadoExistente.informacao_valida &&
-            dotacaoRealizadoExistente.mes_utilizado == mesMaisAtual
-        ) {
-            return [await this.renderDotacaoRealizado(dotacaoRealizadoExistente, dto)];
-        }
+        // desativando temporariamente o cache da busca do empenho, apos a alteração que faz a busca + soma
+        //        const dotacaoRealizadoExistente = await this.prisma.dotacaoRealizado.findUnique({
+        //            where: {
+        //                ano_referencia_dotacao: {
+        //                    ano_referencia: dto.ano,
+        //                    dotacao: dto.dotacao,
+        //                },
+        //            },
+        //        });
+        //
+        //
+        //        if (
+        //            dotacaoRealizadoExistente &&
+        //            dotacaoRealizadoExistente.informacao_valida &&
+        //            dotacaoRealizadoExistente.mes_utilizado == mesMaisAtual
+        //        ) {
+        //            return [await this.renderDotacaoRealizado(dotacaoRealizadoExistente, dto)];
+        //        }
 
         await this.sincronizarDotacaoRealizado(dto, mesMaisAtual);
 
