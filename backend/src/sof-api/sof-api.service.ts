@@ -257,6 +257,15 @@ export class SofApiService {
         endpoint: string,
         input: InputDotacao | InputProcesso | InputNotaEmpenho
     ): Promise<SuccessEmpenhosResponse> {
+        interface resDataObj {
+            [dotacao: string]: {
+              dotacao: string;
+              processo: string;
+              empenho_liquido: number;
+              val_liquidado: number;
+            };
+        }
+
         this.logger.debug(`chamando ${endpoint} com ${JSON.stringify(input)}`);
         try {
             const response: ApiResponse = await this.got
@@ -265,16 +274,31 @@ export class SofApiService {
                 })
                 .json();
             this.logger.debug(`resposta: ${JSON.stringify(response)}`);
+            
             if ('metadados' in response && response.metadados.sucess && endpoint.includes('v1/empenhos/')) {
-                return {
-                    data: (response as SuccessEmpenhosResponse).data.map((d) => {
-                        return {
-                            dotacao: TrataDotacaoGrande(d.dotacao),
-                            processo: String(d.processo),
-                            empenho_liquido: Number(d.empenho_liquido),
-                            val_liquidado: Number(d.val_liquidado),
+                const processedData = (response as SuccessEmpenhosResponse).data.reduce((row: resDataObj, d) => {
+                    const dotacao = TrataDotacaoGrande(d.dotacao);
+                    const processo = String(d.processo);
+                    const empenho_liquido = Number(d.empenho_liquido);
+                    const val_liquidado = Number(d.val_liquidado);
+                
+                    if (row[dotacao]) {
+                        row[dotacao].empenho_liquido += empenho_liquido;
+                        row[dotacao].val_liquidado += val_liquidado;
+                    } else {
+                        row[dotacao] = {
+                            dotacao,
+                            processo,
+                            empenho_liquido,
+                            val_liquidado,
                         };
-                    }),
+                    }
+                
+                    return row;
+                }, {} as resDataObj);
+                
+                return {
+                    data: Object.values(processedData),
                     metadados: response.metadados,
                 };
             }
