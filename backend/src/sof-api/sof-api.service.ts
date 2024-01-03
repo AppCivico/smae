@@ -362,7 +362,14 @@ export class SofApiService {
                 };
             } else if ('metadados' in response && response.metadados.sucess) {
                 return {
-                    data: (response as SuccessEmpenhosResponse).data,
+                    data: (response as SuccessEmpenhosResponse).data.map((r) => {
+                        return {
+                            dotacao: TrataDotacaoGrande(r.dotacao),
+                            processo: String(r.processo),
+                            empenho_liquido: Number(r.empenho_liquido),
+                            val_liquidado: Number(r.val_liquidado),
+                        };
+                    }),
                     metadados: response.metadados,
                 };
             }
