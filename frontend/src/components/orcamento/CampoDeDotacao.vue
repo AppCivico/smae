@@ -88,23 +88,36 @@ const complementoExercício = ref('');
 const complementoFonte = ref('');
 const complementoAcompanhamento = ref('');
 
-const valorDaDotação = computed({
-  get() {
-    return props.modelValue;
-  },
-  set(valor) {
-    handleChange(valor);
-    emit('update:modelValue', valor);
-  },
+const valorDaDotação = computed(() => {
+  const campos = [
+    órgão, unidade, função, subFunção, programa, projetoAtividade, contaDespesa, fonte,
+  ];
+  let valor = '';
+
+  let i = 0;
+  while (campos[i]?.value) {
+    valor += i > 0
+      ? `.${campos[i].value}`
+      : campos[i].value;
+    i += 1;
+  }
+  return valor;
 });
 
-const valorDoComplemento = computed({
-  get() {
-    return props.complemento;
-  },
-  set(valor) {
-    emit('update:complemento', valor);
-  },
+const valorDoComplemento = computed(() => {
+  const campos = [
+    complementoExercício, complementoFonte, complementoAcompanhamento,
+  ];
+  let valor = '';
+
+  let i = 0;
+  while (campos[i]?.value) {
+    valor += i > 0
+      ? `.${campos[i].value}`
+      : campos[i].value;
+    i += 1;
+  }
+  return valor;
 });
 
 const dotaçãoEComplemento = computed({
@@ -222,33 +235,14 @@ if (!DotaçãoSegmentos.value[ano]?.atualizado_em && !chamadasPendentes.value.se
   DotaçãoStore.getDotaçãoSegmentos(ano);
 }
 
-watch([
-  órgão, unidade, função, subFunção, programa, projetoAtividade, contaDespesa, fonte,
-], (novosValores) => {
-  let novoValor = '';
-  let i = 0;
-  while (novosValores[i]) {
-    novoValor = novoValor
-      ? `${novoValor}.${novosValores[i]}`
-      : novosValores[i];
-    i += 1;
-  }
-  valorDaDotação.value = novoValor;
-});
+watch(valorDaDotação, (novoValor) => {
+  handleChange(novoValor);
+  emit('update:modelValue', novoValor);
+}, { immediate: true });
 
-watch([
-  complementoExercício, complementoFonte, complementoAcompanhamento,
-], (novosValores) => {
-  let novoValor = '';
-  let i = 0;
-  while (novosValores[i]) {
-    novoValor = novoValor
-      ? `${novoValor}.${novosValores[i]}`
-      : novosValores[i];
-    i += 1;
-  }
-  valorDoComplemento.value = novoValor;
-});
+watch(valorDoComplemento, (novoValor) => {
+  emit('update:complemento', novoValor);
+}, { immediate: true });
 </script>
 <template>
   <div class="flex center g2">
