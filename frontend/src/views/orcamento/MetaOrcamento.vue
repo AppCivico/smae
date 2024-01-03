@@ -83,32 +83,36 @@ async function start() {
   }
 }
 
-async function concluirOrçamento(valor, metaId, ano) {
-  const carga = {
-    meta_id: metaId,
-    ano_referencia: ano,
-    concluido: valor,
-  };
-  conclusãoPendente.value = true;
+async function concluirOrçamento(evento, metaId, ano) {
+  const valor = !OrcamentoRealizadoConclusão.value[ano].concluido;
 
-  try {
-    const resultado = await OrcamentosStore.closeOrcamentoRealizado(carga);
+  alertStore.confirmAction('Somente a coordenadoria poderá desfazer essa ação. Tem certeza?', async () => {
+    const carga = {
+      meta_id: metaId,
+      ano_referencia: ano,
+      concluido: valor,
+    };
 
-    // Mudar estado do botão enquanto a nova requisição não chega
-    OrcamentoRealizadoConclusão.value[ano].concluido = resultado
-      ? valor
-      : !valor;
-  } catch (error) {
-    OrcamentoRealizadoConclusão.value[ano].concluido = !valor;
-  } finally {
-    // recarregar o ano inteiro do orçamento para atualizar as permissões, que
-    // podem ter mudado como resultado dessa ação ou de edição por um terceiro,
-    // o que causou um possível erro
-    await start();
+    conclusãoPendente.value = true;
+    try {
+      const resultado = await OrcamentosStore.closeOrcamentoRealizado(carga);
 
-    conclusãoPendente.value = false;
-    campoPlanoConcluído.value.checked = !!OrcamentoRealizadoConclusão.value[ano].concluido;
-  }
+      // Mudar mensagem junto ao botão enquanto a nova requisição não chega
+      OrcamentoRealizadoConclusão.value[ano].concluido = resultado
+        ? valor
+        : !valor;
+    } catch (error) {
+      evento.preventDefault();
+    } finally {
+      await start();
+
+      conclusãoPendente.value = false;
+      campoPlanoConcluído.value.checked = !!OrcamentoRealizadoConclusão.value[ano].concluido;
+    }
+  }, 'Concluir', () => {
+    evento.preventDefault();
+    alertStore.$reset();
+  });
 }
 
 start();
@@ -152,9 +156,9 @@ start();
               name="plano-concluído"
               class="interruptor"
               :checked="OrcamentoRealizadoConclusão[ano]?.concluido"
-              @change="($event) => {
+              @click.prevent="($event) => {
                 concluirOrçamento(
-                  $event.target.checked, Number($route.params.meta_id), ano
+                  $event, Number($route.params.meta_id), ano
                 );
               }"
             >
