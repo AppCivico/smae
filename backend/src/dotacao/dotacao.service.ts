@@ -1,7 +1,7 @@
 import { HttpException, Injectable } from '@nestjs/common';
 import { DotacaoRealizado, Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
-import { SofApiService, SofError } from '../sof-api/sof-api.service';
+import { SofApiService, SofError, TrataDotacaoGrande } from '../sof-api/sof-api.service';
 import { AnoDotacaoDto, AnoParteDotacaoDto } from './dto/dotacao.dto';
 import { OrcadoProjetoDto, ValorPlanejadoDto, ValorRealizadoDotacaoDto } from './entities/dotacao.entity';
 
@@ -488,7 +488,7 @@ export class DotacaoService {
         const now = new Date(Date.now());
         try {
             const r = await this.sof.empenhoDotacao({
-                dotacao: dto.dotacao,
+                dotacao: TrataDotacaoGrande(dto.dotacao),
                 ano: dto.ano,
                 mes: mes,
             });
