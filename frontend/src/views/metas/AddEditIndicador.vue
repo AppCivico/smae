@@ -411,7 +411,7 @@ if (indicador_id) {
                 disabled
                 :class="{ 'error': errors.periodicidade }"
               />
-              <div class="tipinfo right ml1">
+              <div class="tipinfo left ml1">
                 <svg
                   width="20"
                   height="20"
