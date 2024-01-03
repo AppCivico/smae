@@ -1,5 +1,5 @@
 import { ApiProperty, OmitType } from '@nestjs/swagger';
-import { Type } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
 import {
     ArrayMaxSize,
     ArrayMinSize,
@@ -114,6 +114,8 @@ export class CreateOrcamentoRealizadoDto {
     @Matches(/^\d{1}\.\d{3}\.\d{4}\.\d{1}$/, {
         message: 'Dotação Complemento não está no formato esperado: 0.000.0000.0',
     })
+    @ValidateIf((object, value) => value !== null)
+    @Transform(({ value }: any) => (value === "" ? null : value))
     dotacao_complemento?: string | null;
 
     @IsOptional()
