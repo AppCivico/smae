@@ -50,7 +50,6 @@ const { ano } = route.params;
 
 const { DotaçãoSegmentos, chamadasPendentes } = storeToRefs(DotaçãoStore);
 
-const dota = ref('');
 const respostaDoSof = ref({});
 
 const largurasDeCampo = {
@@ -215,7 +214,7 @@ async function validarDota() {
         ? { portfolio_id: ProjetoStore.emFoco.portfolio_id }
         : { pdm_id: activePdm.value.id };
       respostaDoSof.value = await DotaçãoStore
-        .getDotaçãoRealizado(dota.value, ano, params);
+        .getDotaçãoRealizado(valorDaDotação.value, ano, params);
     } catch (error) {
       respostaDoSof.value = error;
     }
