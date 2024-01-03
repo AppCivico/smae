@@ -1,8 +1,6 @@
 <script setup>
 import CheckClose from '@/components/CheckClose.vue';
 import ItensRealizado from '@/components/orcamento/ItensRealizado.vue';
-import dinheiro from '@/helpers/dinheiro';
-import toFloat from '@/helpers/toFloat';
 import { orçamentoRealizado as schema } from '@/consts/formSchemas';
 import { useAlertStore } from '@/stores/alert.store';
 import { useMetasStore } from '@/stores/metas.store';
@@ -131,37 +129,10 @@ export default {
       @submit="onSubmit"
     >
       <CampoDeDotacao
+        v-model:respostasof="respostasof"
         v-model:complemento="complemento"
         v-model="dota"
       />
-
-      <table
-        v-if="respostasof.projeto_atividade != undefined"
-        class="tablemain mb4"
-      >
-        <thead>
-          <tr>
-            <th style="width: 25%">
-              Nome do projeto/atividade
-            </th>
-            <th style="width: 25%">
-              Empenho SOF
-            </th>
-            <th style="width: 25%">
-              Liquidação SOF
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td class="w700">
-              {{ respostasof.projeto_atividade }}
-            </td>
-            <td>R$ {{ dinheiro(toFloat(respostasof.empenho_liquido)) }}</td>
-            <td>R$ {{ dinheiro(toFloat(respostasof.valor_liquidado)) }}</td>
-          </tr>
-        </tbody>
-      </table>
 
       <Field
         v-if="$route.params.projetoId"
