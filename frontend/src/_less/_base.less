@@ -31,6 +31,8 @@ body {
   z-index: 10;
   position: relative;
   min-height: 100vh;
+  // para capturar a posição das tooltips
+  transform: translate(0, 0);
 }
 
 /* Gerais */
@@ -1962,9 +1964,10 @@ input[type='radio'] {
   display: inline-block;
   vertical-align: middle;
   color: @marrom;
-  position: relative;
 
-  >div {
+  > div {
+      // posicionado em relação ao primeiro ancestral que defina um contexto.
+      // No caso, deve ser `#dashboard`.
     position: fixed;
     transform: translateY(calc(-100% - 20px - 0.5rem)) translateX(calc(-50% + 10px));
     width: max-content;
@@ -1997,18 +2000,28 @@ input[type='radio'] {
   }
 
   &.right {
-    >div {
-      transform: translateX(2rem);
+    > div {
+        transform: translateY(calc(-100% - 20px - 0.5rem)) translateX(-0.85rem);
 
       &:before {
-        left: auto;
-        right: 2rem;
+        left: 1rem;
+        right: auto;
       }
     }
   }
 
+    &.left {
+      > div {
+        transform: translateY(calc(-100% - 20px - 0.5rem)) translateX(calc(-100% + 2.15rem));
+  
+        &:before {
+          right: 1rem;
+          left: auto;
+        }
+      }
+    }
   &:hover {
-    >div {
+    > div {
       display: block;
     }
   }
