@@ -23,11 +23,13 @@ if (authStore.estouAutenticada) {
     v-else
     :key="$route.path"
   />
-  <SideBar />
-  <EditModal />
-  <Alert />
-</template>
 
+  <Teleport to="body">
+    <SideBar />
+    <EditModal />
+    <Alert />
+  </Teleport>
+</template>
 <style lang="less">
 @import url("@/_less/style.less");
 </style>

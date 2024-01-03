@@ -461,145 +461,147 @@ watch(() => props.variáveisCompostas, async () => {
     </p>
   </div>
 
-  <!-- modal para variáveis comuns -->
-  <SmallModal
-    :active="variaveisFormulaModal === 1"
-    @close="() => { variaveisFormulaModal = 0; }"
-  >
-    <form @submit.prevent="saveVar">
-      <h2 class="mb2">
-        Adicionar Variável
-      </h2>
-      <input
-        v-model="fieldsVariaveis.id"
-        type="hidden"
-        name="id"
-        class="inputtext light mb1"
-      >
-      <label class="label">Variável</label>
-      <select
-        v-model="fieldsVariaveis.variavel_id"
-        v-focus="variaveisFormulaModal === 1"
-        class="inputtext light mb1"
-        name="variavel_id"
-      >
-        <option
-          value
-          :selected="!fieldsVariaveis.variavel_id"
-        >
-          Selecionar
-        </option>
-        <option
-          v-for="v in variáveisDoIndicador"
-          :key="v.id"
-          :value="v.id"
-        >
-          {{ v.codigo }} - {{ v.titulo }}
-        </option>
-      </select>
-      <label class="block mb1"><input
-        v-model="fieldsVariaveis.periodo"
-        type="radio"
-        class="inputcheckbox"
-        value="1"
-      ><span>Mês corrente</span></label>
-      <label class="block mb1"><input
-        v-model="fieldsVariaveis.periodo"
-        type="radio"
-        class="inputcheckbox"
-        value="0"
-      ><span>Média</span></label>
-      <label class="block mb1"><input
-        v-model="fieldsVariaveis.periodo"
-        type="radio"
-        class="inputcheckbox"
-        value="-1"
-      ><span>Mês anterior</span></label>
-
-      <label class="block mt2 mb2"><input
-        v-model="fieldsVariaveis.usar_serie_acumulada"
-        type="checkbox"
-        class="inputcheckbox"
-        value="1"
-      ><span>Utilizar valores acumulados</span></label>
-
-      <template v-if="fieldsVariaveis.periodo != 1">
-        <label class="label">Meses</label>
+  <Teleport to="body">
+    <!-- modal para variáveis comuns -->
+    <SmallModal
+      :active="variaveisFormulaModal === 1"
+      @close="() => { variaveisFormulaModal = 0; }"
+    >
+      <form @submit.prevent="saveVar">
+        <h2 class="mb2">
+          Adicionar Variável
+        </h2>
         <input
-          v-model="fieldsVariaveis.meses"
-          type="number"
-          name="meses"
-          min="1"
-          required
+          v-model="fieldsVariaveis.id"
+          type="hidden"
+          name="id"
           class="inputtext light mb1"
         >
-
-        <p class="t300 tc500">
-          Para uma média móvel, insira o numero de meses considerados.<br>
-          Para ”mês anterior”, indique quantos meses atrás em relação ao mês
-          corrente está o valor da variável.
-        </p>
-      </template>
-
-      <div class="tc">
-        <a
-          class="btn outline bgnone tcprimary"
-          @click="cancelVar()"
-        >Cancelar</a>
-        <button class="ml1 btn">
-          Salvar
-        </button>
-      </div>
-    </form>
-  </SmallModal>
-
-  <!-- modal para variáveis compostas -->
-  <SmallModal
-    :active="variaveisFormulaModal === 2"
-    @close="() => { variaveisFormulaModal = 0; }"
-  >
-    <form @submit.prevent="saveVar('composta')">
-      <h2 class="mb2">
-        Adicionar Variável Composta
-      </h2>
-      <input
-        v-model="fieldsVariaveis.id"
-        type="hidden"
-        name="id"
-        class="inputtext light mb1"
-      >
-      <label class="label">Variável</label>
-      <select
-        v-if="Array.isArray(variáveisCompostas)"
-        v-model="fieldsVariaveis.id"
-        v-focus="variaveisFormulaModal === 2"
-        class="inputtext light mb1"
-        name="id"
-      >
-        <option value>
-          Selecionar
-        </option>
-        <!--
-        para manter o objeto de modo semelhante ao das variáveis comuns,
-        vamos combinar o ID com o caracterDefinidor
-        -->
-        <option
-          v-for="v in variáveisCompostas"
-          :key="v.id"
-          :value="`@_${v.id}`"
+        <label class="label">Variável</label>
+        <select
+          v-model="fieldsVariaveis.variavel_id"
+          v-focus="variaveisFormulaModal === 1"
+          class="inputtext light mb1"
+          name="variavel_id"
         >
-          {{ v.titulo }}
-        </option>
-      </select>
-      <div class="tc">
-        <a
-          class="btn outline bgnone tcprimary"
-          @click="cancelVar()"
-        >Cancelar</a>
-        <button class="ml1 btn">
-          Salvar
-        </button>
-      </div>
-    </form>
-  </SmallModal>
+          <option
+            value
+            :selected="!fieldsVariaveis.variavel_id"
+          >
+            Selecionar
+          </option>
+          <option
+            v-for="v in variáveisDoIndicador"
+            :key="v.id"
+            :value="v.id"
+          >
+            {{ v.codigo }} - {{ v.titulo }}
+          </option>
+        </select>
+        <label class="block mb1"><input
+          v-model="fieldsVariaveis.periodo"
+          type="radio"
+          class="inputcheckbox"
+          value="1"
+        ><span>Mês corrente</span></label>
+        <label class="block mb1"><input
+          v-model="fieldsVariaveis.periodo"
+          type="radio"
+          class="inputcheckbox"
+          value="0"
+        ><span>Média</span></label>
+        <label class="block mb1"><input
+          v-model="fieldsVariaveis.periodo"
+          type="radio"
+          class="inputcheckbox"
+          value="-1"
+        ><span>Mês anterior</span></label>
+  
+        <label class="block mt2 mb2"><input
+          v-model="fieldsVariaveis.usar_serie_acumulada"
+          type="checkbox"
+          class="inputcheckbox"
+          value="1"
+        ><span>Utilizar valores acumulados</span></label>
+  
+        <template v-if="fieldsVariaveis.periodo != 1">
+          <label class="label">Meses</label>
+          <input
+            v-model="fieldsVariaveis.meses"
+            type="number"
+            name="meses"
+            min="1"
+            required
+            class="inputtext light mb1"
+          >
+  
+          <p class="t300 tc500">
+            Para uma média móvel, insira o numero de meses considerados.<br>
+            Para ”mês anterior”, indique quantos meses atrás em relação ao mês
+            corrente está o valor da variável.
+          </p>
+        </template>
+  
+        <div class="tc">
+          <a
+            class="btn outline bgnone tcprimary"
+            @click="cancelVar()"
+          >Cancelar</a>
+          <button class="ml1 btn">
+            Salvar
+          </button>
+        </div>
+      </form>
+    </SmallModal>
+
+    <!-- modal para variáveis compostas -->
+    <SmallModal
+      :active="variaveisFormulaModal === 2"
+      @close="() => { variaveisFormulaModal = 0; }"
+    >
+      <form @submit.prevent="saveVar('composta')">
+        <h2 class="mb2">
+          Adicionar Variável Composta
+        </h2>
+        <input
+          v-model="fieldsVariaveis.id"
+          type="hidden"
+          name="id"
+          class="inputtext light mb1"
+        >
+        <label class="label">Variável</label>
+        <select
+          v-if="Array.isArray(variáveisCompostas)"
+          v-model="fieldsVariaveis.id"
+          v-focus="variaveisFormulaModal === 2"
+          class="inputtext light mb1"
+          name="id"
+        >
+          <option value>
+            Selecionar
+          </option>
+          <!--
+          para manter o objeto de modo semelhante ao das variáveis comuns,
+          vamos combinar o ID com o caracterDefinidor
+          -->
+          <option
+            v-for="v in variáveisCompostas"
+            :key="v.id"
+            :value="`@_${v.id}`"
+          >
+            {{ v.titulo }}
+          </option>
+        </select>
+        <div class="tc">
+          <a
+            class="btn outline bgnone tcprimary"
+            @click="cancelVar()"
+          >Cancelar</a>
+          <button class="ml1 btn">
+            Salvar
+          </button>
+        </div>
+      </form>
+    </SmallModal>
+  </Teleport>
 </template>
