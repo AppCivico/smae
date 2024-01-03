@@ -116,7 +116,7 @@ export class CreateOrcamentoRealizadoDto {
     })
     @ValidateIf((object, value) => value !== null)
     @Transform((a: TransformFnParams) => {
-        if (a.value === "") {
+        if (a.value === "" || a.value === null) {
             return null;
         } else {
             if (/\.\d$/.test(a.value)) {
