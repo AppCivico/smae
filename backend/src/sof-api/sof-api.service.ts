@@ -360,6 +360,11 @@ export class SofApiService {
                     data: Object.values(processedData),
                     metadados: response.metadados,
                 };
+            } else if ('metadados' in response && response.metadados.sucess) {
+                return {
+                    data: (response as SuccessEmpenhosResponse).data,
+                    metadados: response.metadados,
+                };
             }
 
             throw new Error(`Serviço SOF retornou dados desconhecidos: ${JSON.stringify(response)}`);
