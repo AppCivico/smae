@@ -9,6 +9,8 @@ import { useMetasStore } from '@/stores/metas.store';
 import { useProjetosStore } from '@/stores/projetos.store.ts';
 import { ErrorMessage, useField } from 'vee-validate';
 import { useRoute } from 'vue-router';
+import dinheiro from '@/helpers/dinheiro';
+import toFloat from '@/helpers/toFloat';
 
 const props = defineProps({
   complemento: {
@@ -22,6 +24,10 @@ const props = defineProps({
     type: String,
     required: true,
   },
+  respostasof: {
+    type: Object,
+    default: () => ({}),
+  },
   // necessária para que o vee-validate não se perca
   name: {
     type: String,
@@ -32,6 +38,7 @@ const props = defineProps({
 const emit = defineEmits([
   'update:modelValue',
   'update:complemento',
+  'update:respostasof',
 ]);
 
 const name = toRef(props, 'name');
@@ -49,8 +56,6 @@ const { activePdm } = storeToRefs(MetasStore);
 const { ano } = route.params;
 
 const { DotaçãoSegmentos, chamadasPendentes } = storeToRefs(DotaçãoStore);
-
-const respostaDoSof = ref({});
 
 const largurasDeCampo = {
   dotação: {
@@ -209,14 +214,15 @@ async function validarDota() {
 
   if (valid) {
     try {
-      respostaDoSof.value = { loading: true };
+      emit('update:respostasof', { loading: true });
       const params = route.params.projetoId
         ? { portfolio_id: ProjetoStore.emFoco.portfolio_id }
         : { pdm_id: activePdm.value.id };
-      respostaDoSof.value = await DotaçãoStore
+      const respostaDoSof = await DotaçãoStore
         .getDotaçãoRealizado(valorDaDotação.value, ano, params);
+      emit('update:respostasof', respostaDoSof);
     } catch (error) {
-      respostaDoSof.value = error;
+      emit('update:respostasof', error);
     }
   }
 }
@@ -260,8 +266,8 @@ watch(valorDoComplemento, (novoValor) => {
           ? largurasDeCampo.dotaçãoEComplemento.apenasDotação
           : largurasDeCampo.dotaçãoEComplemento.comComplemento"
         :class="{
-          error: errors?.dotacao || respostaDoSof.informacao_valida === false,
-          loading: respostaDoSof.loading
+          error: errors?.dotacao || respostasof.informacao_valida === false,
+          loading: respostasof.loading
         }"
         @keypress="($event) => mascararCódigos($event, ['*'])"
       >
@@ -271,13 +277,13 @@ watch(valorDoComplemento, (novoValor) => {
         :name="name"
       />
       <div
-        v-if="respostaDoSof.loading"
+        v-if="respostasof.loading"
         class="t13 mb1 tc300"
       >
         Aguardando resposta do SOF
       </div>
       <div
-        v-if="respostaDoSof.informacao_valida === false"
+        v-if="respostasof.informacao_valida === false"
         class="t13 mb1 tvermelho"
       >
         Dotação não encontrada
@@ -597,6 +603,34 @@ watch(valorDoComplemento, (novoValor) => {
       Validar via SOF
     </button>
   </div>
+
+  <table
+    v-if="respostasof.projeto_atividade != undefined"
+    class="tablemain mb4"
+  >
+    <thead>
+      <tr>
+        <th style="width: 25%">
+          Nome do projeto/atividade
+        </th>
+        <th style="width: 25%">
+          Empenho SOF
+        </th>
+        <th style="width: 25%">
+          Liquidação SOF
+        </th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="w700">
+          {{ respostasof.projeto_atividade }}
+        </td>
+        <td>R$ {{ dinheiro(toFloat(respostasof.empenho_liquido)) }}</td>
+        <td>R$ {{ dinheiro(toFloat(respostasof.valor_liquidado)) }}</td>
+      </tr>
+    </tbody>
+  </table>
 </template>
 <style lang="less">
 .error-msg {
