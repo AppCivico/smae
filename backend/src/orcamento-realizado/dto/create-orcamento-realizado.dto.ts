@@ -1,5 +1,5 @@
 import { ApiProperty, OmitType } from '@nestjs/swagger';
-import { Transform, Type } from 'class-transformer';
+import { Transform, TransformFnParams, Type } from 'class-transformer';
 import {
     ArrayMaxSize,
     ArrayMinSize,
@@ -115,7 +115,7 @@ export class CreateOrcamentoRealizadoDto {
         message: 'Dotação Complemento não está no formato esperado: 0.000.0000.0',
     })
     @ValidateIf((object, value) => value !== null)
-    @Transform(({ value }: any) => (value === "" ? null : value))
+    @Transform((a: TransformFnParams) => (a.value === "" ? null : a.value))
     dotacao_complemento?: string | null;
 
     @IsOptional()
