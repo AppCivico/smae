@@ -2564,7 +2564,7 @@ enum ProjetoStatus {
 
 model Portfolio {
     id      Int              @id @default(autoincrement())
-    titulo  String           @unique
+    titulo  String
     Projeto Projeto[]
     orgaos  PortfolioOrgao[]
 
