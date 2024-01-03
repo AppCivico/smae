@@ -111,22 +111,11 @@ export class CreateOrcamentoRealizadoDto {
     @IsOptional()
     @Type(() => String) // fazendo cast pra texto sempre, já que tem a mask
     @MaxLength(12)
-    @Matches(/^\d{1}\.\d{3}\.\d{4}(\.\d{1})?$/, {
+    @Matches(/^\d{1}\.\d{3}\.\d{4}$/, {
         message: 'Dotação Complemento não está no formato esperado: 0.000.0000',
     })
     @ValidateIf((object, value) => value !== null)
-    @Transform((a: TransformFnParams) => {
-        if (a.value === "" || a.value === null) {
-            return null;
-        } else {
-            if (/\.\d$/.test(a.value)) {
-                // Caso seja enviado o último dígito (ex: ".0"), remover.
-                return a.value.slice(0, -2);
-            } else {
-                return a.value;
-            }
-        }
-    })
+    @Transform((a: TransformFnParams) => (a.value === "" ? null : a.value))
     dotacao_complemento?: string | null;
 
     @IsOptional()
