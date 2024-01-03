@@ -4,7 +4,7 @@ import { Prisma } from '@prisma/client';
 import { DateTime } from 'luxon';
 import { SYSTEM_TIMEZONE } from 'src/common/date2ymd';
 import { JOB_DOTACAO_SOF_LOCK } from 'src/common/dto/locks';
-import { SofApiService } from 'src/sof-api/sof-api.service';
+import { SofApiService, TrataDotacaoGrande } from 'src/sof-api/sof-api.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { DotacaoProcessoNotaService } from './dotacao-processo-nota.service';
 import { DotacaoProcessoService } from './dotacao-processo.service';
@@ -88,7 +88,7 @@ export class DotacaoCrontabService {
                         this.dotacao.sincronizarDotacaoRealizado(
                             {
                                 ano: dotacao.ano_referencia,
-                                dotacao: dotacao.dotacao,
+                                dotacao: TrataDotacaoGrande(dotacao.dotacao),
                                 pdm_id: undefined,
                                 portfolio_id: undefined,
                             },
