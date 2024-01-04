@@ -389,7 +389,7 @@ watch(variáveisComSuasDatas, (novoValor) => {
     <auxiliarDePreenchimento>
       <div class="flex g2 end mb1">
         <div class="f1">
-          <label class="label">Realizados</label>
+          <label class="label">Valores realizados</label>
           <input
             v-model="valorPadrãoParaRealizado"
             type="number"
@@ -398,7 +398,7 @@ watch(variáveisComSuasDatas, (novoValor) => {
           >
         </div>
         <div class="f1">
-          <label class="label">Acumulados</label>
+          <label class="label">Valores realizados acumulados</label>
           <input
             v-model="valorPadrãoParaRealizadoAcumulado"
             type="number"
@@ -458,10 +458,10 @@ watch(variáveisComSuasDatas, (novoValor) => {
           <th>código</th>
           <th>Referência</th>
           <th class="cell--number">
-            Realizado
+            Valor Realizado
           </th>
           <th class="cell--number">
-            Realizado acumulado
+            Valor Realizado Acumulado
           </th>
         </thead>
         <tbody
