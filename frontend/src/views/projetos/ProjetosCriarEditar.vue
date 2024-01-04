@@ -551,7 +551,6 @@ watch(emFoco, () => {
 
           <Field
             name="logradouro_tipo"
-            type="text"
             class="inputtext light mb1"
             :disabled="!values.regiao_id"
             as="select"
