@@ -34,10 +34,20 @@ export class AcompanhamentoService {
                 const acompanhamento_tipo_id = dto.acompanhamento_tipo_id;
                 delete dto.acompanhamento_tipo_id;
 
+                // Definindo a ordem do acompanhamento.
+                // A ordem leva em consideração acompanhentos removidos.
+                const rowAnterior = await prismaTx.projetoAcompanhamento.findFirstOrThrow({
+                    where: { projeto_id: projeto_id },
+                    select: { ordem: true },
+                    orderBy: { ordem: 'desc' }
+                });
+                const ordemAcompanhamento: number = rowAnterior.ordem + 1;
+
                 const acompanhamento = await prismaTx.projetoAcompanhamento.create({
                     data: {
                         projeto_id: projeto_id,
                         acompanhanmento_tipo_id: acompanhamento_tipo_id,
+                        ordem: ordemAcompanhamento,
                         ...{
                             ...dto,
                             risco: undefined,
@@ -64,13 +74,17 @@ export class AcompanhamentoService {
                 if (Array.isArray(dto.acompanhamentos) && dto.acompanhamentos.length) {
                     await prismaTx.projetoAcompanhamentoItem.createMany({
                         data: dto.acompanhamentos.map((r, i) => {
+                            const ordemEncaminhamento: number = i + 1;
+                            const numeroIdentificador: string = ordemAcompanhamento + '.' + ordemEncaminhamento;
+
                             return {
                                 encaminhamento: r.encaminhamento,
                                 prazo_encaminhamento: r.prazo_encaminhamento,
                                 prazo_realizado: r.prazo_realizado,
                                 responsavel: r.responsavel,
                                 projeto_acompanhamento_id: acompanhamento.id,
-                                ordem: i + 1,
+                                ordem: ordemEncaminhamento,
+                                numero_identificador: numeroIdentificador
                             };
                         }),
                     });
@@ -91,7 +105,7 @@ export class AcompanhamentoService {
                 projeto_id: projetoId,
                 removido_em: null,
             },
-            orderBy: [{ criado_em: 'desc' }],
+            orderBy: [{ ordem: 'desc' }],
             select: {
                 id: true,
                 data_registro: true,
@@ -99,6 +113,7 @@ export class AcompanhamentoService {
 
                 detalhamento: true,
                 pauta: true,
+                ordem: true,
 
                 acompanhamento_tipo: {
                     select: { id: true, nome: true },
@@ -128,6 +143,7 @@ export class AcompanhamentoService {
                 participantes: a.participantes,
                 detalhamento: a.detalhamento,
                 pauta: a.pauta,
+                ordem: a.ordem,
                 acompanhamento_tipo: a.acompanhamento_tipo
                     ? {
                           id: a.acompanhamento_tipo.id,
@@ -153,6 +169,8 @@ export class AcompanhamentoService {
             prazo_encaminhamento: r.prazo_encaminhamento ? r.prazo_encaminhamento : null,
             prazo_realizado: r.prazo_realizado ? r.prazo_realizado : null,
             responsavel: r.responsavel,
+            ordem: r.ordem,
+            numero_identificador: r.numero_identificador
         };
     }
 
@@ -237,7 +255,7 @@ export class AcompanhamentoService {
                 removido_em: null,
                 projeto_id: projeto_id,
             },
-            select: { id: true },
+            select: { id: true, ordem: true },
         });
 
         dto.detalhamento = HtmlSanitizer(dto.detalhamento);
@@ -262,20 +280,25 @@ export class AcompanhamentoService {
                 }
 
                 if (dto.acompanhamentos !== undefined) {
+                    
                     await prismaTx.projetoAcompanhamentoItem.deleteMany({
                         where: { projeto_acompanhamento_id: self.id },
                     });
-
+                    
                     if (Array.isArray(dto.acompanhamentos) && dto.acompanhamentos.length) {
                         await prismaTx.projetoAcompanhamentoItem.createMany({
                             data: dto.acompanhamentos.map((r, i) => {
+                                const ordemEncaminhamento = i + 1;
+                                const numeroIdentificador: string = self.ordem + '.' + ordemEncaminhamento;
+                                
                                 return {
                                     encaminhamento: r.encaminhamento,
                                     prazo_encaminhamento: r.prazo_encaminhamento,
                                     prazo_realizado: r.prazo_realizado,
                                     responsavel: r.responsavel,
                                     projeto_acompanhamento_id: self.id,
-                                    ordem: i + 1,
+                                    ordem: ordemEncaminhamento,
+                                    numero_identificador: numeroIdentificador
                                 };
                             }),
                         });
