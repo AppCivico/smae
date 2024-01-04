@@ -8,25 +8,34 @@ const alertStore = useAlertStore();
 const editModalStore = useEditModalStore();
 const { editModal } = storeToRefs(editModalStore);
 async function checkClose() {
-    if(editModal.value.props?.checkClose){
-        editModal.value.props.checkClose();
-    }else{
-        alertStore.confirm('Deseja sair sem salvar as alterações?',()=>{ 
-            router.go(-1);
-            editModalStore.clear(); 
-            alertStore.clear(); 
-        });
-    }
+  if (editModal.value.props?.checkClose) {
+    editModal.value.props.checkClose();
+  } else {
+    alertStore.confirm('Deseja sair sem salvar as alterações?', () => {
+      router.go(-1);
+      editModalStore.clear();
+      alertStore.clear();
+    });
+  }
 }
 </script>
 
 <template>
-    <div v-if="editModal" class="editModal-wrap">
-        <div class="overlay" @click="checkClose"></div>
-        <div class="editModal" :class="editModal.type">
-            <div>
-                <editModal.content :props="editModal.props" />
-            </div>
-        </div>
+  <div
+    v-if="editModal"
+    class="editModal-wrap"
+  >
+    <div
+      class="overlay"
+      @click="checkClose"
+    />
+    <div
+      class="editModal"
+      :class="editModal.type"
+    >
+      <div>
+        <editModal.content :props="editModal.props" />
+      </div>
     </div>
+  </div>
 </template>
