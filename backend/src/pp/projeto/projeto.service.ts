@@ -15,7 +15,7 @@ import { PortfolioService } from '../portfolio/portfolio.service';
 import { CreateProjetoDocumentDto, CreateProjetoDto } from './dto/create-projeto.dto';
 import { FilterProjetoDto } from './dto/filter-projeto.dto';
 import { UpdateProjetoDocumentDto, UpdateProjetoDto } from './dto/update-projeto.dto';
-import { ProjetoDetailDto, ProjetoDocumentoDto, ProjetoDto, ProjetoPermissoesDto } from './entities/projeto.entity';
+import { ProjetoDetailDto, ProjetoDocumentoDto, ProjetoDto, ProjetoMetaDetailDto, ProjetoPermissoesDto } from './entities/projeto.entity';
 
 import { HtmlSanitizer } from '../../common/html-sanitizer';
 
@@ -676,6 +676,45 @@ export class ProjetoService {
                     },
                 },
 
+                iniciativa: {
+                    select: {
+                        id: true,
+                        codigo: true,
+                        titulo: true,
+                        meta: {
+                            select: {
+                                id: true,
+                                codigo: true,
+                                titulo: true,
+                                pdm_id: true
+                            }
+                        }
+                    }
+                },
+
+                atividade: {
+                    select: {
+                        id: true,
+                        codigo: true,
+                        titulo: true,
+                        iniciativa: {
+                            select: {
+                                id: true,
+                                codigo: true,
+                                titulo: true,
+                                meta: {
+                                    select: {
+                                        id: true,
+                                        codigo: true,
+                                        titulo: true,
+                                        pdm_id: true
+                                    }
+                                }
+                            }
+                        },
+                    }
+                },
+
                 regiao: {
                     select: {
                         id: true,
@@ -698,6 +737,47 @@ export class ProjetoService {
 
         const permissoes = await this.calcPermissions(projeto, user, readonly);
 
+        let meta: ProjetoMetaDetailDto | null = projeto.meta ? projeto.meta : null;
+        
+        let iniciativa: IdCodTituloDto | null = null;
+        let atividade: IdCodTituloDto | null = null;
+
+        if (projeto.iniciativa) {
+            iniciativa = {
+                id: projeto.iniciativa.id,
+                codigo: projeto.iniciativa.codigo,
+                titulo: projeto.iniciativa.titulo
+            };
+
+            meta = {
+                id: projeto.iniciativa.meta.id,
+                codigo: projeto.iniciativa.meta.codigo,
+                titulo: projeto.iniciativa.meta.titulo,
+                pdm_id: projeto.iniciativa.meta.pdm_id,
+            };
+        }
+
+        if (projeto.atividade) {
+            atividade = {
+                id: projeto.atividade.id,
+                codigo: projeto.atividade.codigo,
+                titulo: projeto.atividade.titulo
+            };
+
+            iniciativa = {
+                id: projeto.atividade.iniciativa.id,
+                codigo: projeto.atividade.iniciativa.codigo,
+                titulo: projeto.atividade.iniciativa.titulo
+            };
+
+            meta = {
+                id: projeto.atividade.iniciativa.meta.id,
+                codigo: projeto.atividade.iniciativa.meta.codigo,
+                titulo: projeto.atividade.iniciativa.meta.titulo,
+                pdm_id: projeto.atividade.iniciativa.meta.pdm_id,
+            };
+        }
+
         const responsaveis_no_orgao_gestor = await this.prisma.pessoa.findMany({
             where: { id: { in: projeto.responsaveis_no_orgao_gestor } },
             select: {
@@ -708,6 +788,9 @@ export class ProjetoService {
 
         return {
             ...projeto,
+            meta: meta,
+            iniciativa: iniciativa,
+            atividade: atividade,
             responsaveis_no_orgao_gestor: responsaveis_no_orgao_gestor,
             permissoes: permissoes,
             orgaos_participantes: projeto.orgaos_participantes.map((o) => {
