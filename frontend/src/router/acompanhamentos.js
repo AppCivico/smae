@@ -113,7 +113,7 @@ export default {
             título: () => {
               let título = useAcompanhamentosStore()?.emFoco?.data_registro
                 ? `Acompanhamento ${dateToField(useAcompanhamentosStore()?.emFoco?.data_registro)}`
-                : 'Resumo de acompanhamento';
+                : 'Resumo do acompanhamento';
 
               if (useProjetosStore()?.emFoco?.nome) {
                 título = `${título} do projeto ${useProjetosStore()?.emFoco?.nome}`;
