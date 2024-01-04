@@ -56,7 +56,7 @@ defineProps({
       </dl>
       <dl class="f1 mb1">
         <dt class="t12 uc w700 mb05 tamarelo">
-          Status
+          {{ schema.fields.status.spec.label }}
         </dt>
         <dd class="t13">
           {{ statuses[emFoco?.status] || emFoco?.status }}
@@ -68,13 +68,13 @@ defineProps({
 
     <div class="mb1">
       <h3 class="label mt2 mb1legend">
-        Logradouro
+        Localização
       </h3>
 
       <div class="flex g2 mb1 flexwrap">
         <dl class="f1 mb1">
           <dt class="t12 uc w700 mb05 tamarelo">
-            {{ schema.fields['regiao_id'].spec.label }}
+            {{ schema.fields.regiao_id.spec.label }}
           </dt>
           <dd class="t13">
             {{ emFoco?.regiao?.descricao || '-' }}
@@ -82,7 +82,7 @@ defineProps({
         </dl>
         <dl class="f1 mb1">
           <dt class="t12 uc w700 mb05 tamarelo">
-            CEP
+            {{ schema.fields.logradouro_cep.spec.label }}
           </dt>
           <dd class="t13">
             {{ emFoco?.logradouro_cep || '-' }}
@@ -90,7 +90,7 @@ defineProps({
         </dl>
         <dl class="f1 mb1">
           <dt class="t12 uc w700 mb05 tamarelo">
-            Tipo
+            {{ schema.fields.logradouro_tipo.spec.label }}
           </dt>
           <dd class="t13">
             {{ emFoco?.logradouro_tipo || '-' }}
@@ -98,7 +98,7 @@ defineProps({
         </dl>
         <dl class="f2 mb1">
           <dt class="t12 uc w700 mb05 tamarelo">
-            Nome
+            {{ schema.fields.logradouro_nome.spec.label }}
           </dt>
           <dd class="t13">
             {{ emFoco?.logradouro_nome || '-' }}
@@ -106,7 +106,7 @@ defineProps({
         </dl>
         <dl class="f1 mb1">
           <dt class="t12 uc w700 mb05 tamarelo">
-            Número
+            {{ schema.fields.logradouro_numero.spec.label }}
           </dt>
           <dd class="t13">
             {{ emFoco?.logradouro_numero || '-' }}
@@ -120,7 +120,7 @@ defineProps({
     <div class="flex g2">
       <dl class="f1 mb1">
         <dt class="t12 uc w700 mb05 tamarelo">
-          {{ schema.fields['resumo'].spec.label }}
+          {{ schema.fields.resumo.spec.label }}
         </dt>
         <dd class="t13">
           {{ emFoco?.resumo || '-' }}
@@ -131,7 +131,7 @@ defineProps({
     <div class="flex g2">
       <dl class="f1 mb1">
         <dt class="t12 uc w700 mb05 tamarelo">
-          {{ schema.fields['objetivo'].spec.label }}
+          {{ schema.fields.objetivo.spec.label }}
         </dt>
         <dd
           class="t13"
@@ -143,7 +143,7 @@ defineProps({
     <div class="flex g2">
       <dl class="f1 mb1">
         <dt class="t12 uc w700 mb05 tamarelo">
-          {{ schema.fields['objeto'].spec.label }}
+          {{ schema.fields.objeto.spec.label }}
         </dt>
         <dd
           class="t13"
@@ -155,7 +155,7 @@ defineProps({
     <div class="flex g2">
       <dl class="f1 mb1">
         <dt class="t12 uc w700 mb05 tamarelo">
-          {{ schema.fields['publico_alvo'].spec.label }}
+          {{ schema.fields.publico_alvo.spec.label }}
         </dt>
         <dd
           class="t13"
@@ -167,7 +167,7 @@ defineProps({
     <div class="flex g2">
       <dl class="f1 mb1">
         <dt class="t12 uc w700 mb05 tamarelo">
-          {{ schema.fields['premissas'].spec.label }}
+          {{ schema.fields.premissas.spec.label }}
         </dt>
         <dd class="t13">
           <ul>
@@ -188,7 +188,7 @@ defineProps({
     <div class="flex g2">
       <dl class="f1 mb1">
         <dt class="t12 uc w700 mb05 tamarelo">
-          {{ schema.fields['restricoes'].spec.label }}
+          {{ schema.fields.restricoes.spec.label }}
         </dt>
         <dd class="t13">
           <ul>
@@ -209,7 +209,7 @@ defineProps({
     <div class="flex g2">
       <dl class="f1 mb1">
         <dt class="t12 uc w700 mb05 tamarelo">
-          {{ schema.fields['escopo'].spec.label }}
+          {{ schema.fields.escopo.spec.label }}
         </dt>
         <dd class="t13">
           {{ emFoco?.escopo || '-' }}
@@ -220,7 +220,7 @@ defineProps({
     <div class="flex g2">
       <dl class="f1 mb1">
         <dt class="t12 uc w700 mb05 tamarelo">
-          {{ schema.fields['nao_escopo'].spec.label }}
+          {{ schema.fields.nao_escopo.spec.label }}
         </dt>
         <dd
           class="t13"
@@ -232,7 +232,7 @@ defineProps({
     <hr class="mb1 f1">
 
     <h2>
-      {{ schema.fields['fonte_recursos'].spec.label }}
+      {{ schema.fields.fonte_recursos.spec.label }}
     </h2>
 
     <div class="flex g2 mb2">
@@ -310,7 +310,7 @@ defineProps({
     <div class="flex g2">
       <dl class="f1 mb1">
         <dt class="t12 uc w700 mb05 tamarelo">
-          {{ schema.fields['orgao_gestor_id'].spec.label }}
+          {{ schema.fields.orgao_gestor_id.spec.label }}
         </dt>
         <dd class="t13">
           {{ emFoco?.orgao_gestor.sigla }} - {{ emFoco?.orgao_gestor.descricao }}
@@ -318,7 +318,7 @@ defineProps({
       </dl>
       <dl class="f1 mb1">
         <dt class="t12 uc w700 mb05 tamarelo">
-          {{ schema.fields['responsaveis_no_orgao_gestor'].spec.label }}
+          {{ schema.fields.responsaveis_no_orgao_gestor.spec.label }}
         </dt>
         <dd class="t13">
           {{ emFoco?.responsaveis_no_orgao_gestor
@@ -331,7 +331,7 @@ defineProps({
     <div class="flex g2">
       <dl class="f1 mb1">
         <dt class="t12 uc w700 mb05 tamarelo">
-          {{ schema.fields['orgao_responsavel_id'].spec.label }}
+          {{ schema.fields.orgao_responsavel_id.spec.label }}
         </dt>
         <dd class="t13">
           {{ emFoco?.orgao_responsavel?.sigla }} - {{ emFoco?.orgao_responsavel?.descricao }}
@@ -350,7 +350,7 @@ defineProps({
     <div class="flex g2">
       <dl class="f1 mb1">
         <dt class="t12 uc w700 mb05 tamarelo">
-          {{ schema.fields['orgaos_participantes'].spec.label }}
+          {{ schema.fields.orgaos_participantes.spec.label }}
         </dt>
         <dd class="t13">
           <template

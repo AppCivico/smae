@@ -405,7 +405,7 @@ watch(emFoco, () => {
 
     <div class="mb1">
       <legend class="label mt2 mb1legend">
-        Logradouro
+        Localização
       </legend>
 
       <div class="flex g2">
@@ -452,9 +452,13 @@ watch(emFoco, () => {
         </div>
 
         <div class="f1 mb1">
-          <label class="label tc300">
-            CEP
-          </label>
+          <LabelFromYup
+            :schema="schema"
+            name="logradouro_cep"
+            as="legend"
+            class="label tc300"
+          />
+
           <Field
             name="logradouro_cep"
             type="text"
@@ -468,9 +472,13 @@ watch(emFoco, () => {
         </div>
 
         <div class="f1 mb1">
-          <label class="label tc300">
-            Tipo
-          </label>
+          <LabelFromYup
+            :schema="schema"
+            name="logradouro_tipo"
+            as="legend"
+            class="label tc300"
+          />
+
           <Field
             name="logradouro_tipo"
             type="text"
@@ -495,9 +503,12 @@ watch(emFoco, () => {
       </div>
       <div class="flex g2">
         <div class="f2 mb1">
-          <label class="label tc300">
-            Nome
-          </label>
+          <LabelFromYup
+            :schema="schema"
+            name="logradouro_nome"
+            as="legend"
+            class="label tc300"
+          />
           <Field
             name="logradouro_nome"
             type="text"
@@ -510,9 +521,12 @@ watch(emFoco, () => {
           />
         </div>
         <div class="f1 mb1">
-          <label class="label tc300">
-            Número
-          </label>
+          <LabelFromYup
+            :schema="schema"
+            name="logradouro_numero"
+            as="legend"
+            class="label tc300"
+          />
           <Field
             name="logradouro_numero"
             type="text"

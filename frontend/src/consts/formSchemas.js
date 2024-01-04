@@ -608,19 +608,19 @@ export const projeto = object()
     iniciativa_id: number()
       .nullable(),
     logradouro_cep: string()
-      .label('CEP do logradouro')
+      .label('CEP')
       .max(1024)
       .nullable(),
     logradouro_nome: string()
-      .label('Nome de logradouro')
+      .label('Logradouro')
       .max(1024)
       .nullable(),
     logradouro_numero: string()
-      .label('Número de logradouro')
+      .label('Número')
       .max(1024)
       .nullable(),
     logradouro_tipo: string()
-      .label('Tipo de logradouro')
+      .label('Tipo')
       .max(1024)
       .nullable(),
     meta_codigo: string()
