@@ -26,7 +26,7 @@ const {
     >
       {{ typeof route?.meta?.título === 'function'
         ? route.meta.título()
-        : route?.meta?.título || 'Resumo de acompanhamento' }}
+        : route?.meta?.título || 'Resumo do acompanhamento' }}
     </h1>
 
     <hr class="ml2 f1">
