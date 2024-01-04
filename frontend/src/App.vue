@@ -1,7 +1,7 @@
 <script setup>
 import { Alert, EditModal, SideBar } from '@/components';
 import { useAuthStore } from '@/stores/auth.store';
-import { provide } from 'vue'
+import { provide } from 'vue';
 
 const gblLimiteDeSeleçãoSimultânea = Number.parseInt(
   import.meta.env.VITE_LIMITE_SELECAO,
@@ -24,8 +24,9 @@ if (authStore.estouAutenticada) {
     :key="$route.path"
   />
 
+  <SideBar />
+
   <Teleport to="body">
-    <SideBar />
     <EditModal />
     <Alert />
   </Teleport>
