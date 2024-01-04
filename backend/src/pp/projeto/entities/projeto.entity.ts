@@ -177,6 +177,8 @@ export class ProjetoDetailDto {
     coordenador_ue: string | null;
 
     meta: ProjetoMetaDetailDto | null;
+    iniciativa: IdCodTituloDto | null;
+    atividade: IdCodTituloDto | null;
     // responsaveis_no_orgao_gestor:
 
     responsaveis_no_orgao_gestor: IdNomeExibicao[];
