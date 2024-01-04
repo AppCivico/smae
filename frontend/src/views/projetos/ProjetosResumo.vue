@@ -347,7 +347,10 @@ defineProps({
       </dl>
     </div>
 
-    <div class="flex g2">
+    <div
+      v-if="emFoco?.orgaos_participantes?.length"
+      class="flex g2"
+    >
       <dl class="f1 mb1">
         <dt class="t12 uc w700 mb05 tamarelo">
           {{ schema.fields.orgaos_participantes.spec.label }}
