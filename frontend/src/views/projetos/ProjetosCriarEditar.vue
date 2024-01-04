@@ -403,6 +403,76 @@ watch(emFoco, () => {
       </div>
     </div>
 
+    <div class="flex g2">
+      <div class="f1 mb1">
+        <LabelFromYup
+          name="resumo"
+          :schema="schema"
+        />
+        <Field
+          name="resumo"
+          as="textarea"
+          rows="5"
+          class="inputtext light mb1"
+          maxlength="500"
+          :class="{ 'error': errors.resumo }"
+        />
+        <ErrorMessage
+          name="resumo"
+          class="error-msg"
+        />
+      </div>
+    </div>
+
+    <div class="flex g2">
+      <div class="f1 mb1">
+        <LabelFromYup
+          name="escopo"
+          :schema="schema"
+        >
+          Escopo
+          <small class="t13 tc500">(o que será entregue no projeto)</small>
+        </LabelFromYup>
+        <Field
+          name="escopo"
+          as="textarea"
+          rows="5"
+          class="inputtext light mb1"
+          :class="{ 'error': errors.escopo }"
+        />
+        <ErrorMessage
+          name="escopo"
+          class="error-msg"
+        />
+      </div>
+
+      <div
+        v-if="projetoId"
+        class="f1 mb1"
+      >
+        <LabelFromYup
+          name="nao_escopo"
+          :schema="schema"
+        >
+          Não escopo
+          <small class="t13 tc500">(o que <strong>não</strong> será entregue no projeto)</small>
+        </LabelFromYup>
+
+        <Field
+          name="nao_escopo"
+          as="textarea"
+          rows="5"
+          class="inputtext light mb1"
+          :class="{ 'error': errors.nao_escopo }"
+          :disabled="!permissões?.campo_nao_escopo"
+        />
+        <ErrorMessage
+          name="nao_escopo"
+          class="error-msg"
+        />
+      </div>
+    </div>
+
     <div class="mb1">
       <legend class="label mt2 mb1legend">
         Localização
@@ -538,76 +608,6 @@ watch(emFoco, () => {
             name="logradouro_numero"
           />
         </div>
-      </div>
-    </div>
-
-    <div class="flex g2">
-      <div class="f1 mb1">
-        <LabelFromYup
-          name="resumo"
-          :schema="schema"
-        />
-        <Field
-          name="resumo"
-          as="textarea"
-          rows="5"
-          class="inputtext light mb1"
-          maxlength="500"
-          :class="{ 'error': errors.resumo }"
-        />
-        <ErrorMessage
-          name="resumo"
-          class="error-msg"
-        />
-      </div>
-    </div>
-
-    <div class="flex g2">
-      <div class="f1 mb1">
-        <LabelFromYup
-          name="escopo"
-          :schema="schema"
-        >
-          Escopo
-          <small class="t13 tc500">(o que será entregue no projeto)</small>
-        </LabelFromYup>
-        <Field
-          name="escopo"
-          as="textarea"
-          rows="5"
-          class="inputtext light mb1"
-          :class="{ 'error': errors.escopo }"
-        />
-        <ErrorMessage
-          name="escopo"
-          class="error-msg"
-        />
-      </div>
-
-      <div
-        v-if="projetoId"
-        class="f1 mb1"
-      >
-        <LabelFromYup
-          name="nao_escopo"
-          :schema="schema"
-        >
-          Não escopo
-          <small class="t13 tc500">(o que <strong>não</strong> será entregue no projeto)</small>
-        </LabelFromYup>
-
-        <Field
-          name="nao_escopo"
-          as="textarea"
-          rows="5"
-          class="inputtext light mb1"
-          :class="{ 'error': errors.nao_escopo }"
-          :disabled="!permissões?.campo_nao_escopo"
-        />
-        <ErrorMessage
-          name="nao_escopo"
-          class="error-msg"
-        />
       </div>
     </div>
 

@@ -66,57 +66,6 @@ defineProps({
 
     <hr class="mb1 f1">
 
-    <div class="mb1">
-      <h3 class="label mt2 mb1legend">
-        Localização
-      </h3>
-
-      <div class="flex g2 mb1 flexwrap">
-        <dl class="f1 mb1">
-          <dt class="t12 uc w700 mb05 tamarelo">
-            {{ schema.fields.regiao_id.spec.label }}
-          </dt>
-          <dd class="t13">
-            {{ emFoco?.regiao?.descricao || '-' }}
-          </dd>
-        </dl>
-        <dl class="f1 mb1">
-          <dt class="t12 uc w700 mb05 tamarelo">
-            {{ schema.fields.logradouro_cep.spec.label }}
-          </dt>
-          <dd class="t13">
-            {{ emFoco?.logradouro_cep || '-' }}
-          </dd>
-        </dl>
-        <dl class="f1 mb1">
-          <dt class="t12 uc w700 mb05 tamarelo">
-            {{ schema.fields.logradouro_tipo.spec.label }}
-          </dt>
-          <dd class="t13">
-            {{ emFoco?.logradouro_tipo || '-' }}
-          </dd>
-        </dl>
-        <dl class="f2 mb1">
-          <dt class="t12 uc w700 mb05 tamarelo">
-            {{ schema.fields.logradouro_nome.spec.label }}
-          </dt>
-          <dd class="t13">
-            {{ emFoco?.logradouro_nome || '-' }}
-          </dd>
-        </dl>
-        <dl class="f1 mb1">
-          <dt class="t12 uc w700 mb05 tamarelo">
-            {{ schema.fields.logradouro_numero.spec.label }}
-          </dt>
-          <dd class="t13">
-            {{ emFoco?.logradouro_numero || '-' }}
-          </dd>
-        </dl>
-      </div>
-    </div>
-
-    <hr class="mb1 f1">
-
     <div class="flex g2">
       <dl class="f1 mb1">
         <dt class="t12 uc w700 mb05 tamarelo">
@@ -227,6 +176,57 @@ defineProps({
           v-html="emFoco?.nao_escopo || '-'"
         />
       </dl>
+    </div>
+
+    <hr class="mb1 f1">
+
+    <div class="mb1">
+      <h3 class="label mt2 mb1legend">
+        Localização
+      </h3>
+
+      <div class="flex g2 mb1 flexwrap">
+        <dl class="f1 mb1">
+          <dt class="t12 uc w700 mb05 tamarelo">
+            {{ schema.fields.regiao_id.spec.label }}
+          </dt>
+          <dd class="t13">
+            {{ emFoco?.regiao?.descricao || '-' }}
+          </dd>
+        </dl>
+        <dl class="f1 mb1">
+          <dt class="t12 uc w700 mb05 tamarelo">
+            {{ schema.fields.logradouro_cep.spec.label }}
+          </dt>
+          <dd class="t13">
+            {{ emFoco?.logradouro_cep || '-' }}
+          </dd>
+        </dl>
+        <dl class="f1 mb1">
+          <dt class="t12 uc w700 mb05 tamarelo">
+            {{ schema.fields.logradouro_tipo.spec.label }}
+          </dt>
+          <dd class="t13">
+            {{ emFoco?.logradouro_tipo || '-' }}
+          </dd>
+        </dl>
+        <dl class="f2 mb1">
+          <dt class="t12 uc w700 mb05 tamarelo">
+            {{ schema.fields.logradouro_nome.spec.label }}
+          </dt>
+          <dd class="t13">
+            {{ emFoco?.logradouro_nome || '-' }}
+          </dd>
+        </dl>
+        <dl class="f1 mb1">
+          <dt class="t12 uc w700 mb05 tamarelo">
+            {{ schema.fields.logradouro_numero.spec.label }}
+          </dt>
+          <dd class="t13">
+            {{ emFoco?.logradouro_numero || '-' }}
+          </dd>
+        </dl>
+      </div>
     </div>
 
     <hr class="mb1 f1">
