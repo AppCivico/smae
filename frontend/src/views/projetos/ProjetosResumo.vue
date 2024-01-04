@@ -33,7 +33,7 @@ defineProps({
 
     <template v-if="emFoco?.id && !emFoco.arquivado">
       <router-link
-        :to="{ name: 'projetosEditar', params:{ projetoId: emFoco.id }}"
+        :to="{ name: 'projetosEditar', params: { projetoId: emFoco.id } }"
         class="btn big ml2"
       >
         Editar
@@ -48,7 +48,7 @@ defineProps({
         class="f1 mb1"
       >
         <dt class="t12 uc w700 mb05 tamarelo">
-          {{ schema.fields['codigo'].spec.label }}
+          {{ schema.fields.codigo.spec.label }}
         </dt>
         <dd class="t13">
           {{ emFoco?.codigo }}
@@ -109,6 +109,18 @@ defineProps({
         <dd
           class="t13"
           v-html="emFoco?.publico_alvo || '-'"
+        />
+      </dl>
+    </div>
+
+    <div class="flex g2">
+      <dl class="f1 mb1">
+        <dt class="t12 uc w700 mb05 tamarelo">
+          {{ schema.fields.principais_etapas.spec.label }}
+        </dt>
+        <dd
+          class="t13"
+          v-html="emFoco?.principais_etapas || '-'"
         />
       </dl>
     </div>
@@ -304,64 +316,218 @@ defineProps({
       </table>
     </div>
 
-    <h2>
-      Órgãos
-    </h2>
-    <div class="flex g2">
-      <dl class="f1 mb1">
-        <dt class="t12 uc w700 mb05 tamarelo">
-          {{ schema.fields.orgao_gestor_id.spec.label }}
-        </dt>
-        <dd class="t13">
-          {{ emFoco?.orgao_gestor.sigla }} - {{ emFoco?.orgao_gestor.descricao }}
-        </dd>
-      </dl>
-      <dl class="f1 mb1">
-        <dt class="t12 uc w700 mb05 tamarelo">
-          {{ schema.fields.responsaveis_no_orgao_gestor.spec.label }}
-        </dt>
-        <dd class="t13">
-          {{ emFoco?.responsaveis_no_orgao_gestor
-            && Array.isArray(emFoco.responsaveis_no_orgao_gestor)
-            ? emFoco?.responsaveis_no_orgao_gestor?.map((x) => x.nome_exibicao || x).join(', ')
-            : '-' }}
-        </dd>
-      </dl>
+    <div>
+      <h2>
+        Órgãos
+      </h2>
+      <div class="flex g2">
+        <dl class="f1 mb1">
+          <dt class="t12 uc w700 mb05 tamarelo">
+            {{ schema.fields.orgao_gestor_id.spec.label }}
+          </dt>
+          <dd class="t13">
+            {{ emFoco?.orgao_gestor.sigla }} - {{ emFoco?.orgao_gestor.descricao }}
+          </dd>
+        </dl>
+        <dl class="f1 mb1">
+          <dt class="t12 uc w700 mb05 tamarelo">
+            {{ schema.fields.responsaveis_no_orgao_gestor.spec.label }}
+          </dt>
+          <dd class="t13">
+            {{ emFoco?.responsaveis_no_orgao_gestor
+              && Array.isArray(emFoco.responsaveis_no_orgao_gestor)
+              ? emFoco?.responsaveis_no_orgao_gestor?.map((x) => x.nome_exibicao || x).join(', ')
+              : '-' }}
+          </dd>
+        </dl>
+      </div>
+      <div class="flex g2">
+        <dl class="f1 mb1">
+          <dt class="t12 uc w700 mb05 tamarelo">
+            {{ schema.fields.orgao_responsavel_id.spec.label }}
+          </dt>
+          <dd class="t13">
+            {{ emFoco?.orgao_responsavel?.sigla }} - {{ emFoco?.orgao_responsavel?.descricao }}
+          </dd>
+        </dl>
+        <dl class="f1 mb1">
+          <dt class="t12 uc w700 mb05 tamarelo">
+            Responsável
+          </dt>
+          <dd class="t13">
+            {{ emFoco?.responsavel?.nome_exibicao || emFoco?.responsavel_id || '-' }}
+          </dd>
+        </dl>
+      </div>
+
+      <div
+        v-if="emFoco?.orgaos_participantes?.length"
+        class="flex g2"
+      >
+        <dl class="f1 mb1">
+          <dt class="t12 uc w700 mb05 tamarelo">
+            {{ schema.fields.orgaos_participantes.spec.label }}
+          </dt>
+          <dd class="t13">
+            <template
+              v-for="item in emFoco?.orgaos_participantes"
+              :key="item.id"
+            >
+              {{ item.sigla }} - {{ item.descricao }},
+            </template>
+          </dd>
+        </dl>
+      </div>
     </div>
-    <div class="flex g2">
+
+    <div>
+      <h2>{{ schema.fields.origem_tipo.spec.label }}</h2>
+
+      <dl
+        v-if="emFoco?.origem_tipo !== 'PdmSistema'"
+        class="mb1"
+      >
+        <dt
+          v-if="emFoco?.meta_codigo"
+          class="t12 uc w700 mb05 tamarelo"
+        >
+          Meta {{ emFoco.meta_codigo }} do PdM Antigo
+        </dt>
+
+        <dt
+          v-else
+          class="t12 uc w700 mb05 tamarelo"
+        >
+          Fora do PdM
+        </dt>
+
+        <dd class="t13">
+          {{ emFoco?.origem_outro || '-' }}
+        </dd>
+      </dl>
+
+      <div
+        v-else
+        class="flex g2"
+      >
+        <dl
+          v-if="emFoco?.meta_id"
+          class="f1 mb1"
+        >
+          <dt class="t12 uc w700 mb05 tamarelo">
+            Meta Vinculada
+          </dt>
+          <dd
+            v-if="emFoco?.meta?.codigo && emFoco?.meta?.titulo"
+            class="t13"
+          >
+            {{ emFoco.meta?.codigo }} - {{ emFoco?.meta?.titulo }}
+          </dd>
+          <dd
+            v-else
+            class="t13"
+          >
+            {{ emFoco.meta_id }}
+          </dd>
+        </dl>
+
+        <dl
+          v-if="emFoco?.iniciativa_id"
+          class="f1 mb1"
+        >
+          <dt class="t12 uc w700 mb05 tamarelo">
+            Iniciativa vinculada
+          </dt>
+          <dd
+            v-if="emFoco?.iniciativa?.codigo && emFoco?.iniciativa?.titulo"
+            class="t13"
+          >
+            {{ emFoco.iniciativa?.codigo }} - {{ emFoco?.iniciativa?.titulo }}
+          </dd>
+          <dd
+            v-else
+            class="t13"
+          >
+            {{ emFoco.iniciativa_id }}
+          </dd>
+        </dl>
+        <dl
+          v-if="emFoco?.atividade_id"
+          class="f1 mb1"
+        >
+          <dt class="t12 uc w700 mb05 tamarelo">
+            Atividade vinculada
+          </dt>
+          <dd
+            v-if="emFoco?.atividade?.codigo && emFoco?.atividade?.titulo"
+            class="t13"
+          >
+            {{ emFoco.atividade?.codigo }} - {{ emFoco?.atividade?.titulo }}
+          </dd>
+          <dd
+            v-else
+            class="t13"
+          >
+            {{ emFoco.atividade_id }}
+          </dd>
+        </dl>
+      </div>
+    </div>
+
+    <hr class="mb1 f1">
+
+    <!------------------------------------------------------------------------->
+
+    <div class="flex g2 mb1 flexwrap">
       <dl class="f1 mb1">
         <dt class="t12 uc w700 mb05 tamarelo">
-          {{ schema.fields.orgao_responsavel_id.spec.label }}
+          {{ schema.fields.coordenador_ue.spec.label }}
         </dt>
         <dd class="t13">
-          {{ emFoco?.orgao_responsavel?.sigla }} - {{ emFoco?.orgao_responsavel?.descricao }}
+          {{ emFoco?.coordenador_ue || '-' }}
         </dd>
       </dl>
       <dl class="f1 mb1">
         <dt class="t12 uc w700 mb05 tamarelo">
-          Responsável
+          {{ schema.fields.secretario_executivo.spec.label }}
         </dt>
         <dd class="t13">
-          {{ emFoco?.responsavel?.nome_exibicao || emFoco?.responsavel_id || '-' }}
+          {{ emFoco?.secretario_executivo || '-' }}
+        </dd>
+      </dl>
+      <dl class="f1 mb1">
+        <dt class="t12 uc w700 mb05 tamarelo">
+          {{ schema.fields.secretario_responsavel.spec.label }}
+        </dt>
+        <dd class="t13">
+          {{ emFoco?.secretario_responsavel || '-' }}
         </dd>
       </dl>
     </div>
 
-    <div
-      v-if="emFoco?.orgaos_participantes?.length"
-      class="flex g2"
-    >
+    <div class="flex g2 mb1 flexwrap">
       <dl class="f1 mb1">
         <dt class="t12 uc w700 mb05 tamarelo">
-          {{ schema.fields.orgaos_participantes.spec.label }}
+          {{ schema.fields.versao.spec.label }}
         </dt>
         <dd class="t13">
-          <template
-            v-for="item in emFoco?.orgaos_participantes"
-            :key="item.id"
-          >
-            {{ item.sigla }} - {{ item.descricao }},
-          </template>
+          {{ emFoco?.versao || '-' }}
+        </dd>
+      </dl>
+      <dl class="f1 mb1">
+        <dt class="t12 uc w700 mb05 tamarelo">
+          {{ schema.fields.data_aprovacao.spec.label }}
+        </dt>
+        <dd class="t13">
+          {{ emFoco?.data_aprovacao ? dateToField(emFoco.data_aprovacao) : '-' }}
+        </dd>
+      </dl>
+      <dl class="f1 mb1">
+        <dt class="t12 uc w700 mb05 tamarelo">
+          {{ schema.fields.data_revisao.spec.label }}
+        </dt>
+        <dd class="t13">
+          {{ emFoco?.data_revisao ? dateToField(emFoco.data_revisao) : '-' }}
         </dd>
       </dl>
     </div>
