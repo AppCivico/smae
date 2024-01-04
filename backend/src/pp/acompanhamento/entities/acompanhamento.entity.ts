@@ -5,6 +5,8 @@ export class ProjetoAcompanhamentoRowDto {
     responsavel: string | null;
     prazo_encaminhamento: Date | null;
     prazo_realizado: Date | null;
+    ordem: number;
+    numero_identificador: string;
 }
 
 export class ProjetoAcompanhamento {
@@ -14,6 +16,7 @@ export class ProjetoAcompanhamento {
     detalhamento: string | null;
     risco: RiscoIdCod[] | null;
     acompanhamento_tipo: IdNomeDto | null;
+    ordem: number;
 
     pauta: string | null;
     acompanhamentos: ProjetoAcompanhamentoRowDto[];
