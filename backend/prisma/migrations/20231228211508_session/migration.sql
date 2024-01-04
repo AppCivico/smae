@@ -31,7 +31,7 @@ insert into pessoa_sessao (id, pessoa_id, criado_em, criado_ip)
 select id, pessoa_id, now(), '0.0.0.0' from pessoa_sessao_ativa;
 
 -- sincroniza o ID da pessoa_sessao com o pessoa_sessao_ativa (que não vai mais usar a sequencia dela)
-SELECT setval('pessoa_sessao_id_seq', nextval('pessoa_sessao_ativa_id_seq') - 1, false);
+SELECT setval('pessoa_sessao_id_seq', nextval('pessoa_sessao_ativa_id_seq') + 10000, false);
 
 -- AddForeignKey
 ALTER TABLE "pessoa_sessao_ativa" ADD CONSTRAINT "pessoa_sessao_ativa_id_fkey" FOREIGN KEY ("id") REFERENCES "pessoa_sessao"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
