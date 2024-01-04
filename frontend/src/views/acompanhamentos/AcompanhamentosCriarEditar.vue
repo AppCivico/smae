@@ -332,6 +332,10 @@ function excluirAcompanhamento(id) {
           :key="`acompanhamentos--${field.key}`"
           class="mb2"
         >
+          <Field
+            :name="`acompanhamentos[${idx}].numero_identificador`"
+            type="hidden"
+          />
           <div class="flex g2 mb1">
             <div class="f1 mb1">
               <LabelFromYup
