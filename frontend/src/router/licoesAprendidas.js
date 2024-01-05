@@ -4,6 +4,7 @@ import liçõesAprendidasItem from '@/views/licoesAprendidas/LicoesAprendidasIte
 import liçõesAprendidasLista from '@/views/licoesAprendidas/LicoesAprendidasLista.vue';
 import liçõesAprendidasRaiz from '@/views/licoesAprendidas/LicoesAprendidasRaiz.vue';
 import { useProjetosStore } from '@/stores/projetos.store.ts';
+import dateToField from '@/helpers/dateToField';
 import LoadingComponent from '@/components/LoadingComponent.vue';
 import { defineAsyncComponent } from 'vue';
 
@@ -109,7 +110,7 @@ export default {
             título: () => {
               let título = useLiçõesAprendidasStore()?.emFoco?.data_registro
                 ? `Acompanhamento ${dateToField(useLiçõesAprendidasStore()?.emFoco?.data_registro)}`
-                : 'Resumo de licão aprendida';
+                : 'Resumo de lição aprendida';
 
               if (useProjetosStore()?.emFoco?.nome) {
                 título = `${título} do projeto ${useProjetosStore()?.emFoco?.nome}`;
