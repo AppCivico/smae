@@ -425,27 +425,6 @@ watch(emFoco, () => {
     </div>
 
     <div class="flex g2">
-      <div class="f1 mb1">
-        <LabelFromYup
-          name="escopo"
-          :schema="schema"
-        >
-          Escopo
-          <small class="t13 tc500">(o que será entregue no projeto)</small>
-        </LabelFromYup>
-        <Field
-          name="escopo"
-          as="textarea"
-          rows="5"
-          class="inputtext light mb1"
-          :class="{ 'error': errors.escopo }"
-        />
-        <ErrorMessage
-          name="escopo"
-          class="error-msg"
-        />
-      </div>
-
       <div
         v-if="projetoId"
         class="f1 mb1"

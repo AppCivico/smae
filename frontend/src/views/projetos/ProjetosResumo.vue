@@ -170,17 +170,6 @@ defineProps({
     <div class="flex g2">
       <dl class="f1 mb1">
         <dt class="t12 uc w700 mb05 tamarelo">
-          {{ schema.fields.escopo.spec.label }}
-        </dt>
-        <dd class="t13">
-          {{ emFoco?.escopo || '-' }}
-        </dd>
-      </dl>
-    </div>
-
-    <div class="flex g2">
-      <dl class="f1 mb1">
-        <dt class="t12 uc w700 mb05 tamarelo">
           {{ schema.fields.nao_escopo.spec.label }}
         </dt>
         <dd
