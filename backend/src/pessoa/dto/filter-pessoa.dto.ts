@@ -4,8 +4,9 @@ import { IsBoolean, IsEmail, IsInt, IsOptional } from 'class-validator';
 
 export class FilterPessoaDto {
     /**
-     * Filtrar pessoa com privilegio PDM.coordenador_responsavel_cp?
-     *  true filtra quem tem a PDM.coordenador_responsavel_cp; false filtra quem não tem
+     * Filtrar pessoa com privilegio `PDM.coordenador_responsavel_cp` ?
+     *
+     *  true filtra quem tem a `PDM.coordenador_responsavel_cp`; false filtra quem não tem
      * @example "true"
      */
     @IsOptional()
@@ -21,6 +22,7 @@ export class FilterPessoaDto {
 
     /**
      * Filtrar por órgão?
+     *
      * @example "1"
      */
     @IsOptional()
@@ -33,8 +35,9 @@ export class FilterPessoaDto {
     email?: string;
 
     /**
-     * Filtrar pessoa com privilegio SMAE.gestor_de_projeto?
-     *  true filtra quem tem a SMAE.gestor_de_projeto; false filtra quem não tem
+     * Filtrar pessoa com privilegio `SMAE.gestor_de_projeto` ?
+     *
+     *  true filtra quem tem a `SMAE.gestor_de_projeto`; false filtra quem não tem
      * @example "true"
      */
     @IsOptional()
@@ -43,8 +46,9 @@ export class FilterPessoaDto {
     gestor_de_projeto?: boolean;
 
     /**
-     * Filtrar pessoa com privilegio SMAE.colaborador_de_projeto?
-     *  true filtra quem tem a SMAE.colaborador_de_projeto; false filtra quem não tem
+     * Filtrar pessoa com privilegio `SMAE.colaborador_de_projeto` ?
+     *
+     *  true filtra quem tem a `SMAE.colaborador_de_projeto`; false filtra quem não tem
      * @example "true"
      */
     @IsOptional()
@@ -52,10 +56,14 @@ export class FilterPessoaDto {
     @Transform(({ value }: any) => value === 'true')
     colaborador_de_projeto?: boolean;
 
-    /*
-    versão alternativa para aceitar números negativos, e vazio como undefined caso seja adicionado @IsOptional()
-    @IsNumber()
-    @Transform((a: TransformFnParams) => a.value === '' ? undefined : +a.value)
-    XXXX?: number;
-    */
+    /**
+     * Filtrar pessoa com privilegio `SMAE.espectador_de_projeto` ?
+     *
+     *  true filtra quem tem a `SMAE.espectador_de_projeto`; false filtra quem não tem
+     * @example "true"
+     */
+    @IsOptional()
+    @IsBoolean()
+    @Transform(({ value }: any) => value === 'true')
+    espectador_de_projeto?: boolean;
 }

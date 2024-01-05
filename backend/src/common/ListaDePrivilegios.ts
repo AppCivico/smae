@@ -82,5 +82,8 @@ export type ListaDePrivilegios =
     | 'Projeto.administrador'
     | 'Reports.dashboard_pdm'
     | 'Reports.dashboard_portfolios'
+    | 'CadastroGrupoPortfolio.administrador_no_orgao'
+    | 'CadastroGrupoPortfolio.administrador'
     | 'SMAE.loga_direto_na_analise'
+    | 'SMAE.espectador_de_projeto'
     | 'SMAE.acesso_bi';

@@ -25,6 +25,7 @@ const ModuloDescricao: Record<string, string> = {
     CadastroCicloFisico: 'Cadastro de Ciclos Físicos',
     CadastroPainel: 'Cadastro de Painéis',
     CadastroGrupoPaineis: 'Cadastro de Grupos de Painéis',
+    CadastroGrupoPortfolio: 'Cadastro de Grupos de Portfólio',
     Config: 'Configurações do Sistema',
     Reports: 'Relatórios',
     Projeto: 'Cadastro de Projetos',
@@ -42,6 +43,11 @@ const PrivConfig: Record<ListaDeModulos, false | [ListaDePrivilegios, string][]>
     CadastroEixo: false,
     CadastroObjetivoEstrategico: false,
     CadastroEtapa: false,
+
+    CadastroGrupoPortfolio: [
+        ['CadastroGrupoPortfolio.administrador', 'Gerenciar Grupo de Portfólio de qualquer órgão'],
+        ['CadastroGrupoPortfolio.administrador_no_orgao', 'Gerenciar Grupo de Portfólio do órgão em que pertence'],
+    ],
 
     CadastroFonteRecurso: [
         ['CadastroFonteRecurso.inserir', 'Inserir Fonte de Recurso'],
@@ -186,6 +192,7 @@ const PrivConfig: Record<ListaDeModulos, false | [ListaDePrivilegios, string][]>
         ['Projeto.administrador', 'Acesso total aos projetos'],
         ['Projeto.administrador_no_orgao', 'Acesso total aos projetos com o portfólio do órgão em que pertence'],
         ['Projeto.orcamento', 'Atualizar a Execução Orçamentária que for responsável'],
+        ['SMAE.espectador_de_projeto', '(Projeto) Participante de Grupos de Portfólio'],
         ['SMAE.gestor_de_projeto', '(Projeto) Gestor de Projeto'],
         ['SMAE.colaborador_de_projeto', '(Projeto) Colaborador de projeto'],
     ],
@@ -349,7 +356,10 @@ const PerfilAcessoConfig: {
     {
         nome: 'Administrador de Portfólio',
         descricao: 'Gerenciar os Portfólios',
-        privilegios: ['Projeto.administrar_portfolios'],
+        privilegios: [
+            'Projeto.administrar_portfolios',
+            'CadastroGrupoPortfolio.administrador', // verificar se vamos criar um novo perfil para essa
+        ],
     },
     {
         nome: 'Gestor de Projetos no Órgão',
@@ -358,6 +368,7 @@ const PerfilAcessoConfig: {
             'Reports.executar', // TODO remoer, afinal, precisa dos filtros no reports
             'Projeto.administrador_no_orgao',
             'Reports.dashboard_portfolios',
+            'CadastroGrupoPortfolio.administrador_no_orgao', // verificar se vamos criar um novo perfil para essa tbm
         ],
     },
     {
@@ -388,6 +399,11 @@ const PerfilAcessoConfig: {
             'Reports.dashboard_pdm',
             'Reports.dashboard_portfolios',
         ],
+    },
+    {
+        nome: 'Consulta multissetorial',
+        descricao: 'Pode participar como leitor em portfólio e projetos',
+        privilegios: ['SMAE.espectador_de_projeto'],
     },
     removerNomePerfil('Técnico CP'),
     removerNomePerfil('Orçamento'),
