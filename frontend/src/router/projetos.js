@@ -233,7 +233,7 @@ export default {
         },
 
         {
-          path: 'resumo',
+          path: 'escopo',
           name: 'projetosResumo',
           component: ProjetosResumo,
           props: ({ params }) => ({
@@ -242,9 +242,9 @@ export default {
           }),
           meta: {
             título: () => (useProjetosStore()?.emFoco?.nome
-              ? `Resumo do projeto ${useProjetosStore()?.emFoco?.nome}`
-              : 'Resumo de projeto'),
-            títuloParaMenu: 'Resumo',
+              ? `Escopo do projeto ${useProjetosStore()?.emFoco?.nome}`
+              : 'Escopo de projeto'),
+            títuloParaMenu: 'Escopo',
           },
         },
 
