@@ -350,7 +350,7 @@ export class DotacaoService {
             val_orcado_inicial: dotacaoPlanejado.val_orcado_inicial.toFixed(2),
             saldo_disponivel: dotacaoPlanejado.saldo_disponivel.toFixed(2),
             informacao_valida: dotacaoPlanejado.informacao_valida,
-            smae_soma_valor_planejado: await this.get_smae_soma_valor_planejado(dto),
+            smae_soma_valor_planejado: await this.get_smae_soma_valor_planejado({ ...dto, dotacao: dotacao }),
             mes_utilizado: dotacaoPlanejado.mes_utilizado,
             projeto_atividade: await this.getOneProjetoAtividade(dto.ano, dotacao),
         };
@@ -425,7 +425,7 @@ export class DotacaoService {
             },
         });
 
-        return [await this.renderDotacaoRealizado(dotacaoRealizado, dto)];
+        return [await this.renderDotacaoRealizado(dotacaoRealizado, { ...dto, dotacao: dotacao })];
     }
 
     private async renderDotacaoRealizado(
