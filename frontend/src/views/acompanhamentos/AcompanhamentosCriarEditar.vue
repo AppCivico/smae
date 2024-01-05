@@ -338,12 +338,23 @@ function excluirAcompanhamento(id) {
           />
           <div class="flex g2 mb1">
             <div class="f1 mb1">
-              <LabelFromYup
-                name="encaminhamento"
+              <label
                 :for="`acompanhamentos[${idx}].encaminhamento`"
                 class="tc300"
-                :schema="schema.fields.acompanhamentos.innerType"
-              />
+              >
+                <template v-if="field.value?.numero_identificador">
+                  {{ schema.fields.acompanhamentos.innerType.fields.encaminhamento.spec.label }}
+                  {{ field.value.numero_identificador }}
+                </template>
+                <template v-else>
+                  Novo
+                  {{ schema.fields.acompanhamentos.innerType.fields.encaminhamento.spec.label }}
+                </template>
+              &nbsp;<span
+                v-if="schema.fields.acompanhamentos.innerType.fields.encaminhamento.spec.presence === 'required'"
+                class="tvermelho"
+              >*</span>
+              </label>
               <Field
                 :id="`acompanhamentos[${idx}].encaminhamento`"
                 :name="`acompanhamentos[${idx}].encaminhamento`"

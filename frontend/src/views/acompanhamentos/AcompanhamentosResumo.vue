@@ -128,52 +128,53 @@ const {
       v-if="emFoco?.acompanhamentos?.length"
       class="g2 mb2"
     >
-      <h2 class="label mt2 mb1">
+      <h2 class="label mt2 mb2">
         {{ schema.fields.acompanhamentos.spec.label }}
       </h2>
 
       <div
         v-for="(acompanhamento, idx) in emFoco.acompanhamentos"
         :key="`acompanhamentos--${idx}`"
-        class="mb2"
+        class="mb1"
       >
         <div class="flex g2 mb1">
           <div class="f1 mb1 t13">
+            <strong>{{ acompanhamento?.numero_identificador }}</strong> -
             {{ acompanhamento?.encaminhamento || '-' }}
           </div>
-        </div>
 
-        <div class="flex g2 mb1">
-          <div class="f2 mb1">
-            <dt class="t12 uc w700 mb05 tamarelo">
-              {{ schema.fields.acompanhamentos.innerType.fields.responsavel.spec.label }}
-            </dt>
+          <div class="flex flexwrap g2 f1 mb1">
+            <div class="f2 mb1">
+              <dt class="t12 uc w700 mb05 tamarelo">
+                {{ schema.fields.acompanhamentos.innerType.fields.responsavel.spec.label }}
+              </dt>
 
-            <dd class="t13">
-              {{ acompanhamento?.responsavel || '-' }}
-            </dd>
-          </div>
-          <div class="f1 mb1">
-            <dt class="t12 uc w700 mb05 tamarelo">
-              {{ schema.fields.acompanhamentos.innerType.fields.prazo_encaminhamento.spec.label }}
-            </dt>
+              <dd class="t13">
+                {{ acompanhamento?.responsavel || '-' }}
+              </dd>
+            </div>
+            <div class="f1 mb1">
+              <dt class="t12 uc w700 mb05 tamarelo">
+                {{ schema.fields.acompanhamentos.innerType.fields.prazo_encaminhamento.spec.label }}
+              </dt>
 
-            <dd class="t13">
-              {{ acompanhamento?.prazo_encaminhamento
-                ? dateToField(acompanhamento?.prazo_encaminhamento)
-                : '-' }}
-            </dd>
-          </div>
-          <div class="f1 mb1">
-            <dt class="t12 uc w700 mb05 tamarelo">
-              {{ schema.fields.acompanhamentos.innerType.fields.prazo_realizado.spec.label }}
-            </dt>
+              <dd class="t13">
+                {{ acompanhamento?.prazo_encaminhamento
+                  ? dateToField(acompanhamento?.prazo_encaminhamento)
+                  : '-' }}
+              </dd>
+            </div>
+            <div class="f1 mb1">
+              <dt class="t12 uc w700 mb05 tamarelo">
+                {{ schema.fields.acompanhamentos.innerType.fields.prazo_realizado.spec.label }}
+              </dt>
 
-            <dd class="t13">
-              {{ acompanhamento?.prazo_realizado
-                ? dateToField(acompanhamento?.prazo_realizado)
-                : '-' }}
-            </dd>
+              <dd class="t13">
+                {{ acompanhamento?.prazo_realizado
+                  ? dateToField(acompanhamento?.prazo_realizado)
+                  : '-' }}
+              </dd>
+            </div>
           </div>
         </div>
       </div>
