@@ -1,4 +1,4 @@
-import { HttpException, Injectable } from '@nestjs/common';
+import { BadRequestException, HttpException, Injectable } from '@nestjs/common';
 import { DotacaoRealizado, Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { SofApiService, SofError, TrataDotacaoGrande } from '../sof-api/sof-api.service';
@@ -306,11 +306,13 @@ export class DotacaoService {
     }
 
     async valorPlanejado(dto: AnoDotacaoDto): Promise<ValorPlanejadoDto> {
+        const dotacao = TrataDotacaoGrande(dto.dotacao);
+
         const dotacaoExistente = await this.prisma.dotacaoPlanejado.findUnique({
             where: {
                 ano_referencia_dotacao: {
                     ano_referencia: dto.ano,
-                    dotacao: dto.dotacao,
+                    dotacao: dotacao,
                 },
             },
         });
@@ -327,7 +329,7 @@ export class DotacaoService {
                 informacao_valida: dotacaoExistente.informacao_valida,
                 smae_soma_valor_planejado: await this.get_smae_soma_valor_planejado(dto),
                 mes_utilizado: dotacaoExistente.mes_utilizado,
-                projeto_atividade: await this.getOneProjetoAtividade(dto.ano, dto.dotacao),
+                projeto_atividade: await this.getOneProjetoAtividade(dto.ano, dotacao),
             };
         }
 
@@ -338,7 +340,7 @@ export class DotacaoService {
         const dotacaoPlanejado = await this.prisma.dotacaoPlanejado.findFirstOrThrow({
             where: {
                 ano_referencia: dto.ano,
-                dotacao: dto.dotacao,
+                dotacao: dotacao,
             },
         });
 
@@ -350,11 +352,14 @@ export class DotacaoService {
             informacao_valida: dotacaoPlanejado.informacao_valida,
             smae_soma_valor_planejado: await this.get_smae_soma_valor_planejado(dto),
             mes_utilizado: dotacaoPlanejado.mes_utilizado,
-            projeto_atividade: await this.getOneProjetoAtividade(dto.ano, dto.dotacao),
+            projeto_atividade: await this.getOneProjetoAtividade(dto.ano, dotacao),
         };
     }
 
     async get_smae_soma_valor_planejado(dto: AnoDotacaoDto): Promise<string> {
+        if (dto.dotacao.length > 35)
+            throw new BadRequestException('Método get_smae_soma_valor_planejado espera dotação curta!');
+
         let valor = '0.00';
         if (dto.pdm_id) {
             const qr = await this.prisma.pdmDotacaoPlanejado.findUnique({
@@ -388,6 +393,8 @@ export class DotacaoService {
     async valorRealizadoDotacao(dto: AnoDotacaoDto): Promise<ValorRealizadoDotacaoDto[]> {
         const mesMaisAtual = this.sof.mesMaisRecenteDoAno(dto.ano, 'realizado');
 
+        const dotacao = TrataDotacaoGrande(dto.dotacao);
+
         // desativando temporariamente o cache da busca do empenho, apos a alteração que faz a busca + soma
         //        const dotacaoRealizadoExistente = await this.prisma.dotacaoRealizado.findUnique({
         //            where: {
@@ -407,13 +414,13 @@ export class DotacaoService {
         //            return [await this.renderDotacaoRealizado(dotacaoRealizadoExistente, dto)];
         //        }
 
-        await this.sincronizarDotacaoRealizado(dto, mesMaisAtual);
+        await this.sincronizarDotacaoRealizado({ ...dto, dotacao: dotacao }, mesMaisAtual);
 
         const dotacaoRealizado = await this.prisma.dotacaoRealizado.findUniqueOrThrow({
             where: {
                 ano_referencia_dotacao: {
                     ano_referencia: dto.ano,
-                    dotacao: dto.dotacao,
+                    dotacao: dotacao,
                 },
             },
         });
@@ -443,6 +450,9 @@ export class DotacaoService {
         smae_soma_valor_empenho: string;
         smae_soma_valor_liquidado: string;
     }> {
+        if (dto.dotacao.length > 35)
+            throw new BadRequestException('Método get_smae_soma_valor_realizado espera dotação curta!');
+
         let smae_soma_valor_empenho = '0.00';
         let smae_soma_valor_liquidado = '0.00';
 
@@ -485,10 +495,13 @@ export class DotacaoService {
     }
 
     async sincronizarDotacaoRealizado(dto: AnoDotacaoDto, mes: number) {
+        if (dto.dotacao.length > 35)
+            throw new BadRequestException('Método sincronizarDotacaoRealizado espera dotação curta!');
+
         const now = new Date(Date.now());
         try {
             const r = await this.sof.empenhoDotacao({
-                dotacao: TrataDotacaoGrande(dto.dotacao),
+                dotacao: dto.dotacao,
                 ano: dto.ano,
                 mes: mes,
             });
@@ -569,6 +582,9 @@ export class DotacaoService {
     }
 
     async sincronizarDotacaoPlanejado(dto: AnoDotacaoDto, mes: number) {
+        if (dto.dotacao.length > 35)
+            throw new BadRequestException('Método sincronizarDotacaoPlanejado espera dotação curta!');
+
         const now = new Date(Date.now());
         try {
             const r = await this.sof.orcadoDotacao({
