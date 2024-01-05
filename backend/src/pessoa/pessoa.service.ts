@@ -676,7 +676,7 @@ export class PessoaService {
             },
             where: {
                 NOT: { pessoa_fisica_id: null },
-                AND: [...filtrosExtra],
+                AND: filtrosExtra,
                 pessoa_fisica: {
                     orgao_id: filters?.orgao_id,
                 },
@@ -705,8 +705,8 @@ export class PessoaService {
         return listFixed;
     }
 
-    private filtrosPrivilegios(filters: FilterPessoaDto | undefined): object[] {
-        const extraFilter: object[] = [];
+    private filtrosPrivilegios(filters: FilterPessoaDto | undefined): Prisma.PessoaWhereInput[] {
+        const extraFilter: Prisma.PessoaWhereInput[] = [];
 
         if (filters?.coordenador_responsavel_cp) {
             this.logger.log('filtrando apenas coordenador_responsavel_cp');
@@ -807,6 +807,42 @@ export class PessoaService {
                                 some: {
                                     privilegio: {
                                         codigo: 'SMAE.colaborador_de_projeto',
+                                    },
+                                },
+                            },
+                        },
+                    },
+                },
+            });
+        }
+
+        if (filters?.espectador_de_projeto) {
+            this.logger.log('filtrando apenas espectador_de_projeto');
+            extraFilter.push({
+                PessoaPerfil: {
+                    some: {
+                        perfil_acesso: {
+                            perfil_privilegio: {
+                                some: {
+                                    privilegio: {
+                                        codigo: 'SMAE.espectador_de_projeto',
+                                    },
+                                },
+                            },
+                        },
+                    },
+                },
+            });
+        } else if (filters?.espectador_de_projeto === false) {
+            this.logger.log('filtrando quem não é espectador_de_projeto');
+            extraFilter.push({
+                PessoaPerfil: {
+                    none: {
+                        perfil_acesso: {
+                            perfil_privilegio: {
+                                some: {
+                                    privilegio: {
+                                        codigo: 'SMAE.espectador_de_projeto',
                                     },
                                 },
                             },

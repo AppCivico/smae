@@ -8,7 +8,7 @@ import { RecordWithId } from '../common/dto/record-with-id.dto';
 import { CreatePessoaDto } from './dto/create-pessoa.dto';
 import { DetalhePessoaDto } from './dto/detalhe-pessoa.dto';
 import { FilterPessoaDto } from './dto/filter-pessoa.dto';
-import { ListPessoaDto } from './dto/list-pessoa.dto';
+import { ListPessoaDto, ListPessoaReducedDto } from './dto/list-pessoa.dto';
 import { UpdatePessoaDto } from './dto/update-pessoa.dto';
 import { PessoaService } from './pessoa.service';
 
@@ -41,6 +41,37 @@ export class PessoaController {
     )
     async findAll(@Query() filters: FilterPessoaDto): Promise<ListPessoaDto> {
         return { linhas: await this.pessoaService.findAll(filters) };
+    }
+
+    @ApiBearerAuth('access-token')
+    @Get('reduzido')
+    @Roles(
+        'CadastroPessoa.inserir',
+        'CadastroPessoa.editar',
+        'CadastroPessoa.inativar',
+        'PDM.admin_cp',
+        'PDM.tecnico_cp',
+        'PDM.ponto_focal',
+        'SMAE.colaborador_de_projeto',
+        'SMAE.gestor_de_projeto',
+        'SMAE.espectador_de_projeto',
+        'Projeto.administrador',
+        'Projeto.administrador_no_orgao',
+        'CadastroGrupoPortfolio.administrador',
+        'CadastroGrupoPortfolio.administrador_no_orgao'
+    )
+    async findAllReduced(@Query() filters: FilterPessoaDto): Promise<ListPessoaReducedDto> {
+        const list = await this.pessoaService.findAll(filters);
+
+        return {
+            linhas: list.map((r) => {
+                return {
+                    id: r.id,
+                    nome_exibicao: r.nome_exibicao,
+                    orgao_id: r.orgao_id,
+                };
+            }),
+        };
     }
 
     @Patch(':id')
