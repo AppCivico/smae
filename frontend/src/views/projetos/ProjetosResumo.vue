@@ -154,10 +154,11 @@ defineProps({
         <dd class="t13">
           <ul>
             <li v-if="!emFoco?.restricoes?.length">
-              {{ '-' }}
+              -
             </li>
             <li
               v-for="item in emFoco?.restricoes"
+              v-else
               :key="item.id"
             >
               {{ item.restricao }}
