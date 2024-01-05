@@ -1,11 +1,9 @@
 <script setup>
 import { liçãoAprendida as schema } from '@/consts/formSchemas';
-import { useLiçõesAprendidasStore } from '@/stores/licoesAprendidas.store';
-import { useRiscosStore } from '@/stores/riscos.store.ts';
+import { useLiçõesAprendidasStore } from '@/stores/licoesAprendidas.store.ts';
 import { storeToRefs } from 'pinia';
 
 const licoesAprendidasStore = useLiçõesAprendidasStore();
-const riscosStore = useRiscosStore();
 
 const {
   chamadasPendentes,
@@ -85,7 +83,7 @@ const {
         </dd>
       </div>
     </div>
-    
+
     <div class="flex g2">
       <div class="f1 mb1">
         <dt class="t12 uc w700 mb05 tamarelo">
