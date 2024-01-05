@@ -312,6 +312,8 @@ export const geraçãoDeVariávelComposta = (tiposDeOperações = []) => object(
             return field;
         }
       })),
+    mostrar_monitoramento: boolean()
+      .nullable(),
     nivel_regionalizacao: number()
       .label('Nível de regionalização')
       .min(1, 'Selecione Nível de regionalização'),
