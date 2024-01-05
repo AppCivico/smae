@@ -563,9 +563,6 @@ export const projeto = object()
       .label('Data de revisão')
       .nullable()
       .min(new Date(2003, 0, 1)),
-    escopo: string()
-      .label('Escopo')
-      .max(50000),
     fonte_recursos: array()
       .label('Fontes de recursos')
       .nullable()
