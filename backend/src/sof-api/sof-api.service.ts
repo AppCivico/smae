@@ -106,7 +106,8 @@ export type InputProcesso = {
 
 export function TrataDotacaoGrande(dotacao: string): string {
     // trata o caso de dotação grandes
-    // "14.10.16.482.3002.3.354.44905100.02.1.700.0769"
+    // "14.10.16.482.3002.3.354.44905100.02.1.700.0769"   // registros do SOF vem assim
+    // "84.11.10.301.3003.5.204.44905100.01.2.634.1225.1" // planilha do setoriais vem assim
     //  ->
     // "14.10.16.482.3002.3.354.44905100.02"
     if (dotacao.length > 35) return dotacao.split('.').splice(0, 9).join('.');
@@ -117,7 +118,7 @@ export function TrataDotacaoGrande(dotacao: string): string {
 export function ExtraiComplementoDotacao(row: { dotacao: string; dotacao_complemento?: string | null }): string | null {
     row.dotacao = row.dotacao.trim();
     // prioridade na dotação
-    // era pra ser só 46, mas já tem alguns registros salvos com 48
+    // era pra ser só 48, vamos aceitar tbm salvar com 46
     if (row.dotacao.length == 48 || row.dotacao.length == 46) return row.dotacao.substring(36);
     // depois no campo extra
     if (row.dotacao_complemento) return row.dotacao_complemento;

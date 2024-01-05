@@ -93,29 +93,31 @@ export class CreateOrcamentoRealizadoDto {
     ano_referencia: number;
 
     /**
-     * dotacao: esperado exatamente a dotação com 35 ou 46 dígitos (cheia)
+     * dotacao: esperado exatamente a dotação com 35 ou 46/48 dígitos (cheia)
+     *
      * @example "00.00.00.000.0000.0.000.00000000.00"
      */
     @Type(() => String) // fazendo cast pra texto sempre, já que tem a mask
-    @MaxLength(46)
-    @Matches(/^\d{2}\.\d{2}\.\d{2}\.\d{3}\.\d{4}\.\d\.\d{3}\.\d{8}\.\d{2}(?:\.\d{1}\.\d{3}\.\d{4})?$/, {
+    @MaxLength(100)
+    @Matches(/^\d{2}\.\d{2}\.\d{2}\.\d{3}\.\d{4}\.\d\.\d{3}\.\d{8}\.\d{2}(?:\.\d{1}\.\d{3}\.\d{4})?(?:\.\d{1})?$/, {
         message:
-            'Dotação não está no formato esperado: 00.00.00.000.0000.0.000.00000000.00 ou 00.00.00.000.0000.0.000.00000000.00.0.000.0000',
+            'Dotação não está no formato esperado: 00.00.00.000.0000.0.000.00000000.00, 00.00.00.000.0000.0.000.00000000.00.0.000.0000 ou 00.00.00.000.0000.0.000.00000000.00.0.000.0000.0',
     })
     dotacao: string;
 
     /**
-     * dotacao_complemento: esperado exatamente
+     * dotacao_complemento: esperado exatamente `0.000.0000.0` ou `0.000.0000`
+     *
      * @example "0.000.0000.0"
      */
     @IsOptional()
     @Type(() => String) // fazendo cast pra texto sempre, já que tem a mask
-    @MaxLength(12)
-    @Matches(/^\d{1}\.\d{3}\.\d{4}$/, {
-        message: 'Dotação Complemento não está no formato esperado: 0.000.0000',
+    @MaxLength(100)
+    @Matches(/^\d{1}\.\d{3}\.\d{4}(\.\d{1})?$/, {
+        message: 'Dotação Complemento não está no formato esperado: 0.000.0000 ou 0.000.0000.0',
     })
     @ValidateIf((object, value) => value !== null)
-    @Transform((a: TransformFnParams) => (a.value === "" ? null : a.value))
+    @Transform((a: TransformFnParams) => (a.value === '' ? null : a.value))
     dotacao_complemento?: string | null;
 
     @IsOptional()
