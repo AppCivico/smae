@@ -8,7 +8,6 @@ import { useAtividadesStore } from '@/stores/atividades.store';
 import { useIniciativasStore } from '@/stores/iniciativas.store';
 import { useMetasStore } from '@/stores/metas.store';
 import { useOrcamentosStore } from '@/stores/orcamentos.store';
-
 import { useDotaçãoStore } from '@/stores/dotacao.store.ts';
 import { storeToRefs } from 'pinia';
 import { Field, Form } from 'vee-validate';
@@ -224,6 +223,12 @@ function validaPartes(a) {
   }
 }
 
+</script>
+<script>
+// use normal <script> to declare options
+export default {
+  inheritAttrs: false,
+};
 </script>
 <template>
   <div class="flex spacebetween center">

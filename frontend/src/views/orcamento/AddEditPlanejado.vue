@@ -241,6 +241,12 @@ async function validarDota() {
   }
 }
 </script>
+<script>
+// use normal <script> to declare options
+export default {
+  inheritAttrs: false,
+};
+</script>
 <template>
   <div class="flex spacebetween center">
     <h1>Adicionar dotação</h1>

@@ -117,6 +117,12 @@ async function concluirOrçamento(evento, metaId, ano) {
 
 start();
 </script>
+<script>
+// use normal <script> to declare options
+export default {
+  inheritAttrs: false,
+};
+</script>
 <template>
   <div class="flex spacebetween center mb2">
     <div>
