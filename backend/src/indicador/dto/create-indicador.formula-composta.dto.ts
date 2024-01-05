@@ -10,7 +10,7 @@ export class CreateIndicadorFormulaCompostaDto extends PickType(CreateIndicadorD
      * Titulo
      */
     @IsString({ message: '$property| Precisa ser alfanumérico' })
-    @MaxLength(60, { message: '$property| código 60 caracteres' })
+    @MaxLength(1000, { message: '$property| título pode ter até 1000 caracteres' })
     titulo: string;
 
     /**
