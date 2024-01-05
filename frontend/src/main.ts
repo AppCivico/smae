@@ -1,5 +1,6 @@
 import FormErrorsList from '@/components/FormErrorsList.vue';
 import LabelFromYup from '@/components/LabelFromYup.vue';
+import TítuloDePágina from '@/components/TituloDaPagina.vue';
 // usamos o `.ts` aqui para não entrar em conflito com a versão JS ainda usada
 // @ts-ignore
 import requestS from '@/helpers/requestS.ts';
@@ -81,6 +82,7 @@ app.directive('focus', {
 
 app.component('FormErrorsList', FormErrorsList);
 app.component('LabelFromYup', LabelFromYup);
+app.component('TítuloDePágina', TítuloDePágina);
 
 app.use(pinia);
 app.use(router);
