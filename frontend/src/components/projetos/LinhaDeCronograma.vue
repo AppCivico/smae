@@ -181,7 +181,7 @@ export default {
     >
       <router-link
         v-if="linha.nivel < nivelMaximoTarefa || nivelMaximoTarefa === -1"
-        :hidden="!oProjetoÉPrioritário"
+        :hidden="!oProjetoÉPrioritário || linha.dependencias?.length"
         :title="`Criar tarefa filha de ${linha.hierarquia}`"
         :to="{
           name: 'tarefasCriar',
