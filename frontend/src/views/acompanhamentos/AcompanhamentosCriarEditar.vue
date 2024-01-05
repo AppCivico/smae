@@ -20,6 +20,7 @@ const acompanhamentosStore = useAcompanhamentosStore();
 const alertStore = useAlertStore();
 const riscosStore = useRiscosStore();
 const tiposDeAcompanhamentoStore = useTiposDeAcompanhamentoStore();
+
 const router = useRouter();
 const route = useRoute();
 
@@ -85,6 +86,10 @@ function excluirAcompanhamento(id) {
       }
     }
   }, 'Remover');
+}
+
+if (!riscosStore?.lista?.length) {
+  riscosStore.buscarTudo();
 }
 </script>
 <template>

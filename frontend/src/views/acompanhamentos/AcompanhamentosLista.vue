@@ -8,8 +8,6 @@ import { storeToRefs } from 'pinia';
 import { computed, ref } from 'vue';
 import { useRoute } from 'vue-router';
 
-const riscosStore = useRiscosStore();
-
 const acompanhamentosStore = useAcompanhamentosStore();
 const {
   chamadasPendentes, erro, lista,
@@ -75,27 +73,19 @@ vue/singleline-html-element-content-newline -->
       <col class="col--data">
       <col>
       <col>
-      <col>
-      <col>
       <col class="col--botão-de-ação">
     </colgroup>
 
     <thead>
       <tr class="pl3 center mb05 tc300 w700 t12 uc">
         <th>
-          {{ schema.fields['data_registro'].spec.label }}
+          {{ schema.fields.data_registro.spec.label }}
         </th>
         <th class="tl">
-          {{ schema.fields['acompanhamento_tipo_id'].spec.label }}
+          {{ schema.fields.acompanhamento_tipo_id.spec.label }}
         </th>
         <th class="tl">
-          {{ schema.fields['pauta'].spec.label }}
-        </th>
-        <th class="tl">
-          {{ schema.fields['detalhamento'].spec.label }}
-        </th>
-        <th class="tl">
-          {{ schema.fields['risco'].spec.label }}
+          {{ schema.fields.pauta.spec.label }}
         </th>
         <th />
       </tr>
@@ -125,26 +115,6 @@ vue/singleline-html-element-content-newline -->
         </td>
         <td>
           {{ linha.pauta }}
-        </td>
-        <td>
-          {{ linha.detalhamento }}
-        </td>
-        <td>
-          <template
-            v-for="item, k in linha.risco"
-            :key="k"
-          >
-            <router-link
-              :to="{
-                name: 'planosDeAçãoListar',
-                params: {
-                  riscoId: item.id
-                }
-              }"
-            >{{
-              riscosStore.riscosPorId[item.id]?.codigo
-            }}</router-link><template v-if="k < linha.risco.length - 1">, </template>
-          </template>
         </td>
         <td class="center">
           <router-link
