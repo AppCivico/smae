@@ -94,7 +94,17 @@ iniciar();
     >
       <tr>
         <td class="cell--number">
-          {{ formatProcesso(linha.processo_sei) }}
+          <router-link
+            :to="{
+              name: 'processosResumo',
+              params: {
+                projetoId: projetoId,
+                processoId: linha.id,
+              }
+            }"
+          >
+            {{ formatProcesso(linha.processo_sei) }}
+          </router-link>
         </td>
         <th>
           {{ linha.descricao }}
