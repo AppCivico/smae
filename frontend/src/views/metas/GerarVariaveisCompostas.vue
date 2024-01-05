@@ -53,7 +53,6 @@ const estãoTodasAsRegiõesSelecionadas = computed({
     return regiões.value?.length === regiõesDisponíveis.value.length;
   },
   set(novoValor) {
-    console.debug('novoValor', novoValor);
     regiões.value = novoValor
       ? regiõesDisponíveis.value.map((x) => x.id)
       : [];
@@ -63,6 +62,7 @@ const estãoTodasAsRegiõesSelecionadas = computed({
 const valoresIniciais = {
   codigo: '',
   janela: 1,
+  mostrar_monitoramento: false,
   nivel_regionalizacao: 0,
   // regioes: [],
   tipo_de_janela: 'mes_corrente',
@@ -381,6 +381,18 @@ if (String(singleIndicadores.value?.id) !== String(indicadorId)) {
         </div>
       </div>
     </div>
+
+    <label class="block mt2 mb2">
+      <Field
+        name="mostrar_monitoramento"
+        type="checkbox"
+        class="inputcheckbox"
+        :value="true"
+        :unchecked-value="false"
+        :class="{ 'error': errors.mostrar_monitoramento }"
+      />
+      <span>Utilizar como agrupamento na coleta de dados</span>
+    </label>
 
     <FormErrorsList :errors="errors" />
 
