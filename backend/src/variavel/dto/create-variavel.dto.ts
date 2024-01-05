@@ -56,7 +56,7 @@ export class CreateVariavelDto {
     regiao_id?: number;
 
     @IsString()
-    @MaxLength(1000, { message: '$property| título pode ter até 1000 caracteres' })
+    @MaxLength(256, { message: '$property| título pode ter até 1000 caracteres' })
     titulo: string;
 
     /**
