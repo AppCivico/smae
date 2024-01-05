@@ -81,6 +81,33 @@ a svg {
   max-width: none;
 }
 
+fieldset {
+  padding: 0;
+  border: 0;
+  padding-top: 1rem;
+  padding-bottom: 1rem;
+  margin-bottom: 1rem;
+  clear: both;
+
+  + fieldset {
+    border-top: 1px solid @c100;
+  }
+
+  legend {
+    display: block;
+    width: 100%;
+    width: fit-content;
+    float: left;
+    clear: left;
+
+    + .addlink,
+    + * {
+      display: block;
+      clear: left;
+    }
+  }
+}
+
 svg {
   &.blue {
     fill: @marrom;
@@ -2013,7 +2040,7 @@ input[type='radio'] {
     &.left {
       > div {
         transform: translateY(calc(-100% - 20px - 0.5rem)) translateX(calc(-100% + 2.15rem));
-  
+
         &:before {
           right: 1rem;
           left: auto;
