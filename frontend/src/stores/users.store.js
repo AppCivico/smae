@@ -51,7 +51,7 @@ export const useUsersStore = defineStore({
       try {
         if (this.usersCoord.loading) return;
         this.usersCoord = { loading: true };
-        const r = await this.requestS.get(`${baseUrl}/pessoa?coorderandor_responsavel_cp=true`);
+        const r = await this.requestS.get(`${baseUrl}/pessoa/reduzido?coordenador_responsavel_cp=true`);
         this.usersCoord = r.linhas;
       } catch (error) {
         this.usersCoord = { error };
