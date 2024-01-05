@@ -76,18 +76,8 @@ defineProps({
         </dd>
       </dl>
     </div>
+
     <hr class="mb1 f1">
-    <div class="flex g2">
-      <dl class="f1 mb1">
-        <dt class="t12 uc w700 mb05 tamarelo">
-          {{ schema.fields.objetivo.spec.label }}
-        </dt>
-        <dd
-          class="t13"
-          v-html="emFoco?.objetivo || '-'"
-        />
-      </dl>
-    </div>
 
     <div class="flex g2">
       <dl class="f1 mb1">
@@ -100,7 +90,17 @@ defineProps({
         />
       </dl>
     </div>
-
+    <div class="flex g2">
+      <dl class="f1 mb1">
+        <dt class="t12 uc w700 mb05 tamarelo">
+          {{ schema.fields.objetivo.spec.label }}
+        </dt>
+        <dd
+          class="t13"
+          v-html="emFoco?.objetivo || '-'"
+        />
+      </dl>
+    </div>
     <div class="flex g2">
       <dl class="f1 mb1">
         <dt class="t12 uc w700 mb05 tamarelo">
@@ -109,18 +109,6 @@ defineProps({
         <dd
           class="t13"
           v-html="emFoco?.publico_alvo || '-'"
-        />
-      </dl>
-    </div>
-
-    <div class="flex g2">
-      <dl class="f1 mb1">
-        <dt class="t12 uc w700 mb05 tamarelo">
-          {{ schema.fields.principais_etapas.spec.label }}
-        </dt>
-        <dd
-          class="t13"
-          v-html="emFoco?.principais_etapas || '-'"
         />
       </dl>
     </div>
@@ -165,6 +153,18 @@ defineProps({
             </li>
           </ul>
         </dd>
+      </dl>
+    </div>
+
+    <div class="flex g2">
+      <dl class="f1 mb1">
+        <dt class="t12 uc w700 mb05 tamarelo">
+          {{ schema.fields.principais_etapas.spec.label }}
+        </dt>
+        <dd
+          class="t13"
+          v-html="emFoco?.principais_etapas || '-'"
+        />
       </dl>
     </div>
 
@@ -307,70 +307,6 @@ defineProps({
     </div>
 
     <div>
-      <h2>
-        Órgãos
-      </h2>
-      <div class="flex g2">
-        <dl class="f1 mb1">
-          <dt class="t12 uc w700 mb05 tamarelo">
-            {{ schema.fields.orgao_gestor_id.spec.label }}
-          </dt>
-          <dd class="t13">
-            {{ emFoco?.orgao_gestor.sigla }} - {{ emFoco?.orgao_gestor.descricao }}
-          </dd>
-        </dl>
-        <dl class="f1 mb1">
-          <dt class="t12 uc w700 mb05 tamarelo">
-            {{ schema.fields.responsaveis_no_orgao_gestor.spec.label }}
-          </dt>
-          <dd class="t13">
-            {{ emFoco?.responsaveis_no_orgao_gestor
-              && Array.isArray(emFoco.responsaveis_no_orgao_gestor)
-              ? emFoco?.responsaveis_no_orgao_gestor?.map((x) => x.nome_exibicao || x).join(', ')
-              : '-' }}
-          </dd>
-        </dl>
-      </div>
-      <div class="flex g2">
-        <dl class="f1 mb1">
-          <dt class="t12 uc w700 mb05 tamarelo">
-            {{ schema.fields.orgao_responsavel_id.spec.label }}
-          </dt>
-          <dd class="t13">
-            {{ emFoco?.orgao_responsavel?.sigla }} - {{ emFoco?.orgao_responsavel?.descricao }}
-          </dd>
-        </dl>
-        <dl class="f1 mb1">
-          <dt class="t12 uc w700 mb05 tamarelo">
-            Responsável
-          </dt>
-          <dd class="t13">
-            {{ emFoco?.responsavel?.nome_exibicao || emFoco?.responsavel_id || '-' }}
-          </dd>
-        </dl>
-      </div>
-
-      <div
-        v-if="emFoco?.orgaos_participantes?.length"
-        class="flex g2"
-      >
-        <dl class="f1 mb1">
-          <dt class="t12 uc w700 mb05 tamarelo">
-            {{ schema.fields.orgaos_participantes.spec.label }}
-          </dt>
-          <dd class="t13">
-            <template
-              v-for="item in emFoco?.orgaos_participantes"
-              :key="item.id"
-            >
-              {{ item.sigla }} - {{ item.descricao }},
-            </template>
-          </dd>
-        </dl>
-      </div>
-    </div>
-
-    <div>
       <h2>{{ schema.fields.origem_tipo.spec.label }}</h2>
 
       <dl
@@ -464,9 +400,110 @@ defineProps({
       </div>
     </div>
 
+    <hr class="mt2 mb2 f1">
+
+    <div class="flex g2 mb1 flexwrap">
+      <dl class="f1 mb1">
+        <dt class="t12 uc w700 mb05 tamarelo">
+          {{ schema.fields.previsao_inicio.spec.label }}
+        </dt>
+        <dd class="t13">
+          {{ emFoco?.previsao_inicio ? dateToField(emFoco.previsao_inicio) : '-' }}
+        </dd>
+      </dl>
+      <dl class="f1 mb1">
+        <dt class="t12 uc w700 mb05 tamarelo">
+          {{ schema.fields.previsao_termino.spec.label }}
+        </dt>
+        <dd class="t13">
+          {{ emFoco?.previsao_termino ? dateToField(emFoco.previsao_termino) : '-' }}
+        </dd>
+      </dl>
+      <dl class="f1 mb1">
+        <dt class="t12 uc w700 mb05 tamarelo">
+          {{ schema.fields.tolerancia_atraso.spec.label }}
+        </dt>
+        <dd class="t13">
+          {{ emFoco?.tolerancia_atraso || '-' }}
+        </dd>
+      </dl>
+      <dl class="f2 mb1">
+        <dt class="t12 uc w700 mb05 tamarelo">
+          {{ schema.fields.previsao_custo.spec.label }}
+        </dt>
+        <dd class="t13">
+          {{ emFoco?.previsao_custo || '-' }}
+        </dd>
+      </dl>
+    </div>
+
     <hr class="mb1 f1">
 
-    <!------------------------------------------------------------------------->
+    <div>
+      <h2>
+        Órgãos
+      </h2>
+      <div class="flex g2">
+        <dl class="f1 mb1">
+          <dt class="t12 uc w700 mb05 tamarelo">
+            {{ schema.fields.orgao_gestor_id.spec.label }}
+          </dt>
+          <dd class="t13">
+            {{ emFoco?.orgao_gestor.sigla }} - {{ emFoco?.orgao_gestor.descricao }}
+          </dd>
+        </dl>
+        <dl class="f1 mb1">
+          <dt class="t12 uc w700 mb05 tamarelo">
+            {{ schema.fields.responsaveis_no_orgao_gestor.spec.label }}
+          </dt>
+          <dd class="t13">
+            {{ emFoco?.responsaveis_no_orgao_gestor
+              && Array.isArray(emFoco.responsaveis_no_orgao_gestor)
+              ? emFoco?.responsaveis_no_orgao_gestor?.map((x) => x.nome_exibicao || x).join(', ')
+              : '-' }}
+          </dd>
+        </dl>
+      </div>
+      <div class="flex g2">
+        <dl class="f1 mb1">
+          <dt class="t12 uc w700 mb05 tamarelo">
+            {{ schema.fields.orgao_responsavel_id.spec.label }}
+          </dt>
+          <dd class="t13">
+            {{ emFoco?.orgao_responsavel?.sigla }} - {{ emFoco?.orgao_responsavel?.descricao }}
+          </dd>
+        </dl>
+        <dl class="f1 mb1">
+          <dt class="t12 uc w700 mb05 tamarelo">
+            Responsável
+          </dt>
+          <dd class="t13">
+            {{ emFoco?.responsavel?.nome_exibicao || emFoco?.responsavel_id || '-' }}
+          </dd>
+        </dl>
+      </div>
+
+      <div
+        v-if="emFoco?.orgaos_participantes?.length"
+        class="flex g2"
+      >
+        <dl class="f1 mb1">
+          <dt class="t12 uc w700 mb05 tamarelo">
+            {{ schema.fields.orgaos_participantes.spec.label }}
+          </dt>
+          <dd class="t13">
+            <template
+              v-for="item in emFoco?.orgaos_participantes"
+              :key="item.id"
+            >
+              {{ item.sigla }} - {{ item.descricao }},
+            </template>
+          </dd>
+        </dl>
+      </div>
+    </div>
+
+    <hr class="mb1 f1">
 
     <div class="flex g2 mb1 flexwrap">
       <dl class="f1 mb1">
@@ -523,105 +560,107 @@ defineProps({
     </div>
   </div>
 
-  <hr class="mb1 f1">
+  <template v-if="emFoco?.status === 'Fechado'">
+    <hr class="mb1 f1">
 
-  <h2>
-    Encerramento do projeto
-  </h2>
+    <h2>
+      Encerramento do projeto
+    </h2>
 
-  <table class="tablemain">
-    <colgroup>
-      <col>
-      <col>
-      <col>
-      <col>
-    </colgroup>
+    <table class="tablemain">
+      <colgroup>
+        <col>
+        <col>
+        <col>
+        <col>
+      </colgroup>
 
-    <thead>
-      <tr class="pl3 center mb05 tc300 w700 t12 uc">
-        <th />
-        <th class="tr">
-          Planejado
-        </th>
-        <th class="tr">
-          Realizado
-        </th>
-        <th class="tr">
-          Desvio
-        </th>
-      </tr>
-    </thead>
+      <thead>
+        <tr class="pl3 center mb05 tc300 w700 t12 uc">
+          <th />
+          <th class="tr">
+            Planejado
+          </th>
+          <th class="tr">
+            Realizado
+          </th>
+          <th class="tr">
+            Desvio
+          </th>
+        </tr>
+      </thead>
 
-    <tbody>
-      <tr>
-        <th>
-          Data de início
-        </th>
-        <td class="tr">
-          {{ emFoco?.previsao_inicio ? dateToField(emFoco.previsao_inicio) : '-' }}
-        </td>
-        <td class="tr">
-          {{ emFoco?.realizado_inicio ? dateToField(emFoco.realizado_inicio) : '-' }}
-        </td>
-        <td class="cell--number">
-          {{ emFoco?.realizado_inicio && emFoco?.previsao_inicio
-            ? `${subtractDates(emFoco.realizado_inicio, emFoco.previsao_inicio)} dias`
-            : '-' }}
-        </td>
-      </tr>
+      <tbody>
+        <tr>
+          <th>
+            Data de início
+          </th>
+          <td class="tr">
+            {{ emFoco?.previsao_inicio ? dateToField(emFoco.previsao_inicio) : '-' }}
+          </td>
+          <td class="tr">
+            {{ emFoco?.realizado_inicio ? dateToField(emFoco.realizado_inicio) : '-' }}
+          </td>
+          <td class="cell--number">
+            {{ emFoco?.realizado_inicio && emFoco?.previsao_inicio
+              ? `${subtractDates(emFoco.realizado_inicio, emFoco.previsao_inicio)} dias`
+              : '-' }}
+          </td>
+        </tr>
 
-      <tr>
-        <th>
-          Data de término
-        </th>
-        <td class="tr">
-          {{ emFoco?.previsao_termino ? dateToField(emFoco.previsao_termino) : '-' }}
-        </td>
-        <td class="tr">
-          {{ emFoco?.realizado_termino ? dateToField(emFoco.realizado_termino) : '-' }}
-        </td>
-        <td class="cell--number">
-          {{ emFoco?.realizado_termino && emFoco?.previsao_termino
-            ? `${subtractDates(emFoco.realizado_termino, emFoco.previsao_termino)} dias`
-            : '-' }}
-        </td>
-      </tr>
+        <tr>
+          <th>
+            Data de término
+          </th>
+          <td class="tr">
+            {{ emFoco?.previsao_termino ? dateToField(emFoco.previsao_termino) : '-' }}
+          </td>
+          <td class="tr">
+            {{ emFoco?.realizado_termino ? dateToField(emFoco.realizado_termino) : '-' }}
+          </td>
+          <td class="cell--number">
+            {{ emFoco?.realizado_termino && emFoco?.previsao_termino
+              ? `${subtractDates(emFoco.realizado_termino, emFoco.previsao_termino)} dias`
+              : '-' }}
+          </td>
+        </tr>
 
-      <tr>
-        <th>
-          Duração
-        </th>
-        <td class="cell--number">
-          {{ emFoco?.previsao_duracao ? `${emFoco.previsao_duracao} dias` : '-' }}
-        </td>
-        <td class="cell--number">
-          {{ emFoco?.realizado_duracao ? `${emFoco.realizado_duracao} dias` : '-' }}
-        </td>
-        <td class="cell--number">
-          {{ emFoco?.realizado_duracao && emFoco?.previsao_duracao
-            ? `${emFoco.realizado_duracao - emFoco.previsao_duracao} dias`
-            : '-' }}
-        </td>
-      </tr>
+        <tr>
+          <th>
+            Duração
+          </th>
+          <td class="cell--number">
+            {{ emFoco?.previsao_duracao ? `${emFoco.previsao_duracao} dias` : '-' }}
+          </td>
+          <td class="cell--number">
+            {{ emFoco?.realizado_duracao ? `${emFoco.realizado_duracao} dias` : '-' }}
+          </td>
+          <td class="cell--number">
+            {{ emFoco?.realizado_duracao && emFoco?.previsao_duracao
+              ? `${emFoco.realizado_duracao - emFoco.previsao_duracao} dias`
+              : '-' }}
+          </td>
+        </tr>
 
-      <tr>
-        <th>
-          Custo
-        </th>
-        <td class="cell--number">
-          {{ emFoco?.previsao_custo ? `R$ ${dinheiro(emFoco.previsao_custo)}` : '-' }}
-        </td>
-        <td class="cell--number">
-          {{ emFoco?.realizado_custo ? `R$ ${dinheiro(emFoco.realizado_custo)}` : '-' }}
-        </td>
-        <td class="cell--number">
-          {{ emFoco?.realizado_custo && emFoco?.previsao_custo
-            ? `R$ ${dinheiro(emFoco.realizado_custo - emFoco.previsao_custo)}`
-            : '-' }}
-        </td>
-      </tr>
-    </tbody>
-  </table>
+        <tr>
+          <th>
+            Custo
+          </th>
+          <td class="cell--number">
+            {{ emFoco?.previsao_custo ? `R$ ${dinheiro(emFoco.previsao_custo)}` : '-' }}
+          </td>
+          <td class="cell--number">
+            {{ emFoco?.realizado_custo ? `R$ ${dinheiro(emFoco.realizado_custo)}` : '-' }}
+          </td>
+          <td class="cell--number">
+            {{ emFoco?.realizado_custo && emFoco?.previsao_custo
+              ? `R$ ${dinheiro(emFoco.realizado_custo - emFoco.previsao_custo)}`
+              : '-' }}
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </template>
 
   <span
     v-if="chamadasPendentes?.emFoco"
