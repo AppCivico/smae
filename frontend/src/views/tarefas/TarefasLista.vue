@@ -57,8 +57,8 @@ iniciar();
         <dd class="t13 dado-estimado">
           {{
             projetoEmFoco?.previsao_inicio
-            ? dateToField(projetoEmFoco.previsao_inicio)
-            : '--/--/----'
+              ? dateToField(projetoEmFoco.previsao_inicio)
+              : '--/--/----'
           }}
         </dd>
       </div>
@@ -69,8 +69,8 @@ iniciar();
         <dd class="t13 dado-estimado">
           {{
             projetoEmFoco?.previsao_termino
-            ? dateToField(projetoEmFoco.previsao_termino)
-            : '--/--/----'
+              ? dateToField(projetoEmFoco.previsao_termino)
+              : '--/--/----'
           }}
         </dd>
       </div>
@@ -81,8 +81,8 @@ iniciar();
         <dd class="t13 dado-efetivo">
           {{
             projetoEmFoco?.realizado_inicio
-            ? dateToField(projetoEmFoco.realizado_inicio)
-            : '--/--/----'
+              ? dateToField(projetoEmFoco.realizado_inicio)
+              : '--/--/----'
           }}
         </dd>
       </div>
@@ -93,8 +93,8 @@ iniciar();
         <dd class="t13 dado-efetivo">
           {{
             projetoEmFoco?.realizado_termino
-            ? dateToField(projetoEmFoco.realizado_termino)
-            : '--/--/----'
+              ? dateToField(projetoEmFoco.realizado_termino)
+              : '--/--/----'
           }}
         </dd>
       </div>
