@@ -16,7 +16,7 @@ const {
 </script>
 <template>
   <div class="flex spacebetween center mb2">
-    <h1
+    <TítuloDePágina
       :class="{
         'alerta-de-paralisação': emFoco?.cronograma_paralisado,
       }"
@@ -24,10 +24,8 @@ const {
         ? schema.fields.cronograma_paralisado.spec.label
         : undefined"
     >
-      {{ typeof route?.meta?.título === 'function'
-        ? route.meta.título()
-        : route?.meta?.título || 'Resumo do acompanhamento' }}
-    </h1>
+      Resumo do acompanhamento
+    </TítuloDePágina>
 
     <hr class="ml2 f1">
 

@@ -39,12 +39,10 @@ iniciar();
   <!-- eslint-disable vue/multiline-html-element-content-newline
 vue/singleline-html-element-content-newline -->
   <div class="flex spacebetween center mb2">
-    <h1>
-      {{ typeof route?.meta?.título === 'function'
-        ? route.meta.título()
-        : route?.meta?.título
-        || 'Acompanhamentos' }}
-    </h1>
+    <TítuloDePágina>
+      Acompanhamentos
+    </TítuloDePágina>
+
     <hr class="ml2 f1">
 
     <div class="ml2">
