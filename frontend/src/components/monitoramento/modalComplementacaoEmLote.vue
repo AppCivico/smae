@@ -1,5 +1,4 @@
 <script setup>
-import CheckClose from '@/components/CheckClose.vue';
 import { useAlertStore } from '@/stores/alert.store';
 import { useCiclosStore } from '@/stores/ciclos.store';
 import { useEditModalStore } from '@/stores/editModal.store';

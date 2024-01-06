@@ -1,5 +1,4 @@
 <script setup>
-import CheckClose from '@/components/CheckClose.vue';
 import EditorDeFormula from '@/components/metas/EditorDeFormula.vue';
 import { variávelComposta as schema } from '@/consts/formSchemas';
 import { router } from '@/router';

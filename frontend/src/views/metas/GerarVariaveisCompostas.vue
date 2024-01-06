@@ -1,5 +1,4 @@
 <script setup>
-import CheckClose from '@/components/CheckClose.vue';
 import AbsoluteNumberInput from '@/components/AbsoluteNumberInput.vue';
 import { geraçãoDeVariávelComposta } from '@/consts/formSchemas';
 import { router } from '@/router';

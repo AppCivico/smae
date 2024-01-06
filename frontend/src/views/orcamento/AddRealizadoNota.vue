@@ -1,5 +1,4 @@
 <script setup>
-import CheckClose from '@/components/CheckClose.vue';
 import ItensRealizado from '@/components/orcamento/ItensRealizado.vue';
 import { useAlertStore } from '@/stores/alert.store';
 import { useAtividadesStore } from '@/stores/atividades.store';

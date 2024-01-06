@@ -1,5 +1,4 @@
 <script setup>
-import CheckClose from '@/components/CheckClose.vue';
 import ItensRealizado from '@/components/orcamento/ItensRealizado.vue';
 import patterns from '@/consts/patterns';
 import formatProcesso from '@/helpers/formatProcesso';

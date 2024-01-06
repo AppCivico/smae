@@ -17,7 +17,6 @@ import {
   useForm,
   useIsFormDirty,
 } from 'vee-validate';
-import CheckClose from '@/components/CheckClose.vue';
 
 const alertStore = useAlertStore();
 

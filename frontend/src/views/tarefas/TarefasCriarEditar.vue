@@ -1,5 +1,4 @@
 <script setup>
-import CheckClose from '@/components/CheckClose.vue';
 import MaskedFloatInput from '@/components/MaskedFloatInput.vue';
 import dependencyTypes from '@/consts/dependencyTypes';
 import { tarefa as schema } from '@/consts/formSchemas';
@@ -13,10 +12,10 @@ import { useTarefasStore } from '@/stores/tarefas.store.ts';
 import { isEqual } from 'lodash';
 import { storeToRefs } from 'pinia';
 import {
-ErrorMessage,
-Field,
-FieldArray,
-Form,
+  ErrorMessage,
+  Field,
+  FieldArray,
+  Form,
 } from 'vee-validate';
 import { computed, ref, watch } from 'vue';
 import { useRouter } from 'vue-router';

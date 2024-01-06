@@ -1,5 +1,4 @@
 <script setup>
-import CheckClose from '@/components/CheckClose.vue';
 import MaskedFloatInput from '@/components/MaskedFloatInput.vue';
 import { tarefa as schema } from '@/consts/formSchemas';
 import addToDates from '@/helpers/addToDates';

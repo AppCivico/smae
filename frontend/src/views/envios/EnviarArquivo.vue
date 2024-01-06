@@ -1,5 +1,4 @@
 <script setup>
-import CheckClose from '@/components/CheckClose.vue';
 import LabelFromYup from '@/components/LabelFromYup.vue';
 import requestS from '@/helpers/requestS.ts';
 import { useAlertStore } from '@/stores/alert.store';

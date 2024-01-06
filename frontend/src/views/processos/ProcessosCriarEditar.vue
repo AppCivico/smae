@@ -1,6 +1,5 @@
 <script setup>
 // eslint-disable-next-line import/no-extraneous-dependencies
-import CheckClose from '@/components/CheckClose.vue';
 import { processo as schema } from '@/consts/formSchemas';
 import formatProcesso from '@/helpers/formatProcesso';
 import { useAlertStore } from '@/stores/alert.store';

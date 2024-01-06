@@ -1,6 +1,5 @@
 <script setup>
 import auxiliarDePreenchimento from '@/components/AuxiliarDePreenchimento.vue';
-import CheckClose from '@/components/CheckClose.vue';
 import dateToField from '@/helpers/dateToField';
 import geradorDeAtributoStep from '@/helpers/geradorDeAtributoStep';
 import requestS from '@/helpers/requestS.ts';
