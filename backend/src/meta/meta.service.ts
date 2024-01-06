@@ -309,17 +309,23 @@ export class MetaService {
                         tag: { descricao: 'asc' },
                     },
                 },
-                cronograma: {
-                    take: 1,
-                    orderBy: { criado_em: 'asc' },
-                    select: {
-                        id: true,
-                        inicio_previsto: true,
-                        inicio_real: true,
-                        termino_previsto: true,
-                        termino_real: true,
-                    },
-                },
+                cronograma:
+                    filters?.id !== undefined
+                        ? {
+                              where: {
+                                  removido_em: null,
+                              },
+                              take: 1,
+                              orderBy: { criado_em: 'asc' },
+                              select: {
+                                  id: true,
+                                  inicio_previsto: true,
+                                  inicio_real: true,
+                                  termino_previsto: true,
+                                  termino_real: true,
+                              },
+                          }
+                        : undefined,
             },
         });
         const ret: Meta[] = [];
@@ -361,7 +367,7 @@ export class MetaService {
             }
 
             let metaCronograma: CronogramaAtrasoGrau | null = null;
-            if (dbMeta.cronograma) {
+            if (dbMeta.cronograma && filters?.id !== undefined) {
                 const cronograma = dbMeta.cronograma[0];
 
                 let cronogramaAtraso: string | null = null;
@@ -472,7 +478,7 @@ export class MetaService {
 
                         await prisma.metaResponsavel.deleteMany({
                             where: {
-                                meta_id: id
+                                meta_id: id,
                             },
                         });
                         await prisma.metaResponsavel.createMany({
@@ -504,11 +510,13 @@ export class MetaService {
         const currentOrgaos = await this.prisma.metaOrgao.findMany({
             where: { meta_id },
             select: {
-                orgao_id: true
-            }
+                orgao_id: true,
+            },
         });
-        
-        const deletedOrgaos = currentOrgaos.map(o => o.orgao_id).filter(x => orgaos_to_be_created.indexOf(x) === -1);
+
+        const deletedOrgaos = currentOrgaos
+            .map((o) => o.orgao_id)
+            .filter((x) => orgaos_to_be_created.indexOf(x) === -1);
 
         for (const orgao_id of deletedOrgaos) {
             const atividadeOrgaoCount = await this.prisma.atividadeOrgao.count({
@@ -516,35 +524,43 @@ export class MetaService {
                     orgao_id: orgao_id,
                     atividade: {
                         iniciativa: {
-                            meta_id: meta_id
-                        }
-                    }
-                }
+                            meta_id: meta_id,
+                        },
+                    },
+                },
             });
             if (atividadeOrgaoCount > 0)
-                throw new HttpException('Existe órgão em uso em Atividade, remova-o primeiro no nível de Atividade.', 400);
+                throw new HttpException(
+                    'Existe órgão em uso em Atividade, remova-o primeiro no nível de Atividade.',
+                    400
+                );
 
             const iniciativaOrgaoCount = await this.prisma.iniciativaOrgao.count({
                 where: {
                     orgao_id: orgao_id,
                     iniciativa: {
-                        meta_id: meta_id
-                    }
-                }
+                        meta_id: meta_id,
+                    },
+                },
             });
             if (iniciativaOrgaoCount > 0)
-                throw new HttpException('Existe órgão em uso em Iniciativa, remova-o primeiro no nível de Iniciativa.', 400);
-        }   
+                throw new HttpException(
+                    'Existe órgão em uso em Iniciativa, remova-o primeiro no nível de Iniciativa.',
+                    400
+                );
+        }
     }
 
     private async checkHasResponsaveisChildren(meta_id: number, coordenadores_cp: number[]) {
         const currentCoordenadores = await this.prisma.metaResponsavel.findMany({
             where: { meta_id },
             select: {
-                pessoa_id: true
-            }
+                pessoa_id: true,
+            },
         });
-        const deletedPessoas = currentCoordenadores.map(c => c.pessoa_id).filter(x => coordenadores_cp.indexOf(x) === -1);
+        const deletedPessoas = currentCoordenadores
+            .map((c) => c.pessoa_id)
+            .filter((x) => coordenadores_cp.indexOf(x) === -1);
 
         for (const resp of deletedPessoas) {
             const atividadePessoaCount = await this.prisma.atividadeResponsavel.count({
@@ -553,23 +569,29 @@ export class MetaService {
                     atividade: {
                         iniciativa: {
                             meta_id: meta_id,
-                        }
-                    }
-                }
+                        },
+                    },
+                },
             });
             if (atividadePessoaCount > 0)
-                throw new HttpException('Coordenador em uso em Atividade, remova-o primeiro no nível de Atividade.', 400);
+                throw new HttpException(
+                    'Coordenador em uso em Atividade, remova-o primeiro no nível de Atividade.',
+                    400
+                );
 
             const iniciativaPessoaCount = await this.prisma.iniciativaResponsavel.count({
                 where: {
                     pessoa_id: resp,
                     iniciativa: {
                         meta_id: meta_id,
-                    }
-                }
+                    },
+                },
             });
             if (iniciativaPessoaCount > 0)
-                throw new HttpException('Coordenador em uso em Iniciativa, remova-o primeiro no nível de Iniciativa.', 400);
+                throw new HttpException(
+                    'Coordenador em uso em Iniciativa, remova-o primeiro no nível de Iniciativa.',
+                    400
+                );
         }
     }
 
