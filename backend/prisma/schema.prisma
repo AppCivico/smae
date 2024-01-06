@@ -1,6 +1,6 @@
 generator client {
     provider        = "prisma-client-js"
-    previewFeatures = ["views"]
+    previewFeatures = ["views", "relationJoins"]
 }
 
 datasource db {
@@ -3245,7 +3245,7 @@ model ProjetoAcompanhamentoItem {
     projeto_acompanhamento    ProjetoAcompanhamento @relation(fields: [projeto_acompanhamento_id], references: [id])
 
     // Campo para facilitar busca direto no banco e retorno da API.
-    // Definição do campo: ordemProjetoAcompanhamento + '.' + ordemProjetoAcompanhamentoItem 
+    // Definição do campo: ordemProjetoAcompanhamento + '.' + ordemProjetoAcompanhamentoItem
     numero_identificador String
 
     encaminhamento       String?
@@ -3269,7 +3269,7 @@ model ProjetoAcompanhamento {
     acompanhanmento_tipo_id Int?
     acompanhamento_tipo     AcompanhamentoTipo? @relation(fields: [acompanhanmento_tipo_id], references: [id], onDelete: SetNull)
 
-    ordem Int @db.SmallInt 
+    ordem Int @db.SmallInt
 
     data_registro DateTime @db.Date()
     participantes String
@@ -3468,4 +3468,3 @@ model PessoaAtividadeLog {
     @@index([criado_em])
     @@map("pessoa_atividade_log")
 }
-
