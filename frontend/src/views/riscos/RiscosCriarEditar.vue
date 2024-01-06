@@ -89,14 +89,12 @@ iniciar();
 </script>
 <template>
   <div class="flex spacebetween center mb2">
-    <h1>
-      {{ typeof route?.meta?.título === 'function'
-        ? route.meta.título()
-        : route?.meta?.título
-          || (riscoId ? 'Risco' : 'Novo risco') }}
-    </h1>
+    <TítuloDePágina>
+      {{ riscoId ? 'Risco' : 'Novo risco' }}
+    </TítuloDePágina>
 
     <hr class="ml2 f1">
+
     <MenuDeMudançaDeStatusDeRisco
       v-if="emFoco?.id"
     />

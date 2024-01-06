@@ -13,11 +13,9 @@ const {
 </script>
 <template>
   <div class="flex spacebetween center mb2">
-    <h1>
-      {{ typeof route?.meta?.título === 'function'
-        ? route.meta.título()
-        : route?.meta?.título || 'Resumo de lição aprendida' }}
-    </h1>
+    <TítuloDePágina>
+      Resumo de lição aprendida
+    </TítuloDePágina>
 
     <hr class="ml2 f1">
 

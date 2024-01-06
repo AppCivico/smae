@@ -55,11 +55,9 @@ iniciar();
   <Dashboard>
     <div class="flex spacebetween center flexwrap">
       <header>
-        <h1>
-          {{ typeof route?.meta?.título === 'function'
-            ? $route.meta.título()
-            : $route?.meta?.título || 'Análise' }}
-        </h1>
+        <TítuloDePágina>
+          Análise
+        </TítuloDePágina>
       </header>
     </div>
 

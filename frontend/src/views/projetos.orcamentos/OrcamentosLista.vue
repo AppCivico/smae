@@ -79,11 +79,10 @@ iniciar();
 </script>
 <template>
   <div class="flex spacebetween center mb2">
-    <h1>
-      {{ typeof route?.meta?.título === 'function'
-        ? route.meta.título()
-        : route?.meta?.título || 'Orçamentos' }}
-    </h1>
+    <TítuloDePágina>
+      Orçamentos
+    </TítuloDePágina>
+
     <hr class="ml2 f1">
   </div>
 

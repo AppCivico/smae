@@ -69,12 +69,12 @@ const listasAgrupadas = computed(() => listaFiltradaPorTermoDeBusca.value?.reduc
 </script>
 <template>
   <div class="flex spacebetween center mb2">
-    <h1>
-      {{ typeof route?.meta?.título === 'function'
-        ? route.meta.título()
-        : route?.meta?.título || 'Projetos' }}
-    </h1>
+    <TítuloDePágina>
+      Projetos
+    </TítuloDePágina>
+
     <hr class="ml2 f1">
+
     <router-link
       :to="{ name: 'projetosCriar' }"
       class="btn big ml1"
