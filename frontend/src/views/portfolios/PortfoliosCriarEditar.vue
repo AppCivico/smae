@@ -1,6 +1,5 @@
 <script setup>
 import AutocompleteField from '@/components/AutocompleteField2.vue';
-import CheckClose from '@/components/CheckClose.vue';
 import { portfolio as schema } from '@/consts/formSchemas';
 import months from '@/consts/months';
 import níveisRegionalização from '@/consts/niveisRegionalizacao';

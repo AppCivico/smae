@@ -1,5 +1,4 @@
 <script setup>
-import CheckClose from '@/components/CheckClose.vue';
 import { custeio as schema } from '@/consts/formSchemas';
 import dinheiro from '@/helpers/dinheiro';
 import toFloat from '@/helpers/toFloat';

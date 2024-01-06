@@ -1,5 +1,4 @@
 <script setup>
-import CheckClose from '@/components/CheckClose.vue';
 import MaskedFloatInput from '@/components/MaskedFloatInput.vue';
 import { planoDeAção as schema } from '@/consts/formSchemas';
 import { useAlertStore } from '@/stores/alert.store';

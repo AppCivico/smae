@@ -1,6 +1,5 @@
 <script setup>
 // eslint-disable-next-line import/no-extraneous-dependencies
-import CheckClose from '@/components/CheckClose.vue';
 import { liçãoAprendida as schema } from '@/consts/formSchemas';
 import truncate from '@/helpers/truncate';
 import { useAlertStore } from '@/stores/alert.store';

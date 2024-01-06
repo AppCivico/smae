@@ -1,5 +1,4 @@
 <script setup>
-import CheckClose from '@/components/CheckClose.vue';
 import LabelFromYup from '@/components/LabelFromYup.vue';
 import { arquivo as schemaDoFormulário } from '@/consts/formSchemas';
 import requestS from '@/helpers/requestS.ts';

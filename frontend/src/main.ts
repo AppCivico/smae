@@ -1,3 +1,4 @@
+import CheckClose from '@/components/CheckClose.vue';
 import FormErrorsList from '@/components/FormErrorsList.vue';
 import LabelFromYup from '@/components/LabelFromYup.vue';
 import TítuloDePágina from '@/components/TituloDaPagina.vue';
@@ -80,6 +81,7 @@ app.directive('focus', {
   },
 });
 
+app.component('CheckClose', CheckClose);
 app.component('FormErrorsList', FormErrorsList);
 app.component('LabelFromYup', LabelFromYup);
 app.component('TítuloDePágina', TítuloDePágina);
