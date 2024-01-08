@@ -299,9 +299,9 @@ export class AcompanhamentoService {
 
                 if (dto.acompanhamentos !== undefined && Array.isArray(dto.acompanhamentos) && dto.acompanhamentos.length) {
                     const encaminhamentosRemovidosId: number[] = self.ProjetoAcompanhamentoItem
-                        .filter(e => !e.removido_em) // Encaminhamentos já removidos são inlcuidos na query para manter consistencia de campo "ordem".
+                        // .filter(e => !e.removido_em) // Encaminhamentos já removidos são inlcuidos na query para manter consistencia de campo "ordem".
                         .filter(a => {
-                            !dto.acompanhamentos?.filter(e => typeof e.id != undefined).map(x => x.id).includes(a.id)
+                            !dto.acompanhamentos?.map(x => x.id).includes(a.id)
                         }).map(a => a.id);
                     console.log('encaminhamentosRemovidosId');
                     console.log(encaminhamentosRemovidosId);
