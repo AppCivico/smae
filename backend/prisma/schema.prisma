@@ -225,9 +225,20 @@ model Pessoa {
     PdmOrcamentoRealizadoConfig     PdmOrcamentoRealizadoConfig[]
     view_meta_responsavel_orcamento view_meta_responsavel_orcamento[]
 
-    variavel_suspensa_log VariavelSuspensaoLog[]
-    PessoaSessao          PessoaSessao[]
-    PessoaAtividadeLog    PessoaAtividadeLog[]
+    variavel_suspensa_log      VariavelSuspensaoLog[]
+    PessoaSessao               PessoaSessao[]
+    PessoaAtividadeLog         PessoaAtividadeLog[]
+    GrupoPortfolioQueCriei     GrupoPortfolio[]       @relation("Criador")
+    GrupoPortfolioQueAtualizei GrupoPortfolio[]       @relation("Atualizador")
+    GrupoPortfoliQueRemovi     GrupoPortfolio[]       @relation("Removedor")
+
+    ProjetoGrupoPortfolioQueCriei  ProjetoGrupoPortfolio[] @relation("Criador")
+    ProjetoGrupoPortfolioQueRemovi ProjetoGrupoPortfolio[] @relation("Removedor")
+
+    PortfolioGrupoPortfolioQueCriei   PortfolioGrupoPortfolio[]          @relation("Criador")
+    PortfolioGrupoPortfolioQueRemovi  PortfolioGrupoPortfolio[]          @relation("Removedor")
+    GrupoPortfolioPessoa              GrupoPortfolioPessoa[]
+    view_pessoa_espectador_de_projeto view_pessoa_espectador_de_projeto?
 
     @@index([email])
     @@map("pessoa")
@@ -273,8 +284,10 @@ model Orgao {
     projetos_participando  ProjetoOrgaoParticipante[]
     projetos_geridos       Projeto[]                  @relation("orgao_gestor")
 
-    PortifolioOrgao   PortfolioOrgao[]
-    orgao_responsavel Projeto[]        @relation("orgao_responsavel")
+    PortifolioOrgao      PortfolioOrgao[]
+    orgao_responsavel    Projeto[]              @relation("orgao_responsavel")
+    GrupoPortfolio       GrupoPortfolio[]
+    GrupoPortfolioPessoa GrupoPortfolioPessoa[]
 
     @@map("orgao")
 }
@@ -2594,6 +2607,7 @@ model Portfolio {
     PortfolioDotacaoProcesso     PortfolioDotacaoProcesso[]
     PortfolioDotacaoProcessoNota PortfolioDotacaoProcessoNota[]
     ImportacaoLog                ImportacaoOrcamento[]
+    PortfolioGrupoPortfolio      PortfolioGrupoPortfolio[]
 
     @@map("portfolio")
 }
@@ -2821,6 +2835,7 @@ model Projeto {
     OrcamentoRealizado        OrcamentoRealizado[]
     OrcamentoPlanejadoZerado  OrcamentoPrevistoZerado[]
     Diretorio                 Diretorio[]
+    ProjetoGrupoPortfolio     ProjetoGrupoPortfolio[]
 
     @@index([removido_em])
     @@map("projeto")
@@ -3467,4 +3482,100 @@ model PessoaAtividadeLog {
 
     @@index([criado_em])
     @@map("pessoa_atividade_log")
+}
+
+// view que já faz o join das pessoas tem o privilegio SMAE.espectador_de_projeto
+// tbm faz um WHERE orgao_id is not null
+view view_pessoa_espectador_de_projeto {
+    pessoa_id Int
+    pessoa    Pessoa @relation(fields: [pessoa_id], references: [id])
+
+    orgao_id Int
+
+    @@unique([pessoa_id])
+}
+
+model GrupoPortfolio {
+    id Int @id @default(autoincrement())
+
+    titulo String
+
+    criado_por     Int
+    criado_em      DateTime  @default(now()) @db.Timestamptz(6)
+    atualizado_por Int?
+    atualizado_em  DateTime  @default(now()) @db.Timestamptz(6)
+    removido_por   Int?
+    removido_em    DateTime? @db.Timestamptz(6)
+
+    criador     Pessoa  @relation("Criador", fields: [criado_por], references: [id])
+    atualizador Pessoa? @relation("Atualizador", fields: [atualizado_por], references: [id])
+    removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
+
+    orgao_id                Int
+    orgao                   Orgao                     @relation(fields: [orgao_id], references: [id])
+    ProjetoGrupoPortfolio   ProjetoGrupoPortfolio[]
+    PortfolioGrupoPortfolio PortfolioGrupoPortfolio[]
+    GrupoPortfolioPessoa    GrupoPortfolioPessoa[]
+
+    @@index([titulo])
+    @@map("grupo_portfolio")
+}
+
+model GrupoPortfolioPessoa {
+    id Int @id @default(autoincrement())
+
+    grupo_portfolio_id Int
+
+    orgao_id  Int
+    pessoa_id Int
+
+    criado_por Int
+    criado_em  DateTime @default(now()) @db.Timestamptz(6)
+
+    removido_por Int?
+    removido_em  DateTime? @db.Timestamptz(6)
+
+    grupo_portfolio GrupoPortfolio @relation(fields: [grupo_portfolio_id], references: [id])
+    pessoa          Pessoa         @relation(fields: [pessoa_id], references: [id])
+    orgao           Orgao          @relation(fields: [orgao_id], references: [id])
+
+    @@map("grupo_portfolio_pessoa")
+}
+
+model ProjetoGrupoPortfolio {
+    id Int @id @default(autoincrement())
+
+    projeto_id         Int
+    grupo_portfolio_id Int
+    projeto            Projeto        @relation(fields: [projeto_id], references: [id])
+    GrupoPortfolio     GrupoPortfolio @relation(fields: [grupo_portfolio_id], references: [id])
+
+    criado_por   Int
+    criado_em    DateTime  @default(now()) @db.Timestamptz(6)
+    removido_por Int?
+    removido_em  DateTime? @db.Timestamptz(6)
+
+    criador   Pessoa  @relation("Criador", fields: [criado_por], references: [id])
+    removedor Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
+
+    @@map("projeto_grupo_portfolio")
+}
+
+model PortfolioGrupoPortfolio {
+    id Int @id @default(autoincrement())
+
+    portfolio_id       Int
+    grupo_portfolio_id Int
+    portfolio          Portfolio      @relation(fields: [portfolio_id], references: [id])
+    GrupoPortfolio     GrupoPortfolio @relation(fields: [grupo_portfolio_id], references: [id])
+
+    criado_por   Int
+    criado_em    DateTime  @default(now()) @db.Timestamptz(6)
+    removido_por Int?
+    removido_em  DateTime? @db.Timestamptz(6)
+
+    criador   Pessoa  @relation("Criador", fields: [criado_por], references: [id])
+    removedor Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
+
+    @@map("portfolio_grupo_portfolio")
 }

@@ -738,7 +738,7 @@ export class ProjetoService {
         const permissoes = await this.calcPermissions(projeto, user, readonly);
 
         let meta: ProjetoMetaDetailDto | null = projeto.meta ? projeto.meta : null;
-        
+
         let iniciativa: IdCodTituloDto | null = null;
         let atividade: IdCodTituloDto | null = null;
 
