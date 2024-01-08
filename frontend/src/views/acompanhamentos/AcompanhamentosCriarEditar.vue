@@ -337,7 +337,7 @@ if (!riscosStore?.lista?.length) {
           class="mb2"
         >
           <Field
-            :name="`acompanhamentos[${idx}].numero_identificador`"
+            :name="`acompanhamentos[${idx}].id`"
             type="hidden"
           />
           <div class="flex g2 mb1">
