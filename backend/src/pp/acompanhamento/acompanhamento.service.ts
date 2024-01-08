@@ -304,7 +304,7 @@ export class AcompanhamentoService {
                             const foo = dto.acompanhamentos?.map(x => x.id).includes(a.id);
                             console.log('dentro do filter');
                             console.log(foo);
-                            !dto.acompanhamentos?.map(x => x.id).includes(a.id)
+                            return !dto.acompanhamentos?.map(x => x.id).includes(a.id)
                         }).map(a => a.id);
                     console.log('encaminhamentosRemovidosId');
                     console.log(encaminhamentosRemovidosId);
