@@ -312,11 +312,7 @@ export class AcompanhamentoService {
                     console.log(dto.acompanhamentos);
                     let ordemEncaminhamento: number | null = null;
                     await prismaTx.projetoAcompanhamentoItem.createMany({
-                        data: dto.acompanhamentos.filter(e => {
-                            console.log('typeof');
-                            console.log(typeof e.id);
-                            return typeof e.id === undefined
-                        }).map((r) => {
+                        data: dto.acompanhamentos.filter(e => e.id == undefined).map((r) => {
                             console.log('dentro do map');
                             console.log(r);
                             ordemEncaminhamento = ordemEncaminhamento ? ordemEncaminhamento + 1 : self.ProjetoAcompanhamentoItem[self.ProjetoAcompanhamentoItem.length - 1].ordem + 1;
@@ -339,8 +335,8 @@ export class AcompanhamentoService {
                     const encaminhamentosAtualizados = dto.acompanhamentos.filter(e => {
                         const encaminhamentoExistente = self.ProjetoAcompanhamentoItem.find(ee => ee.id == e.id);
                         if (encaminhamentoExistente) {
-                            console.log(encaminhamentoExistente);
-                            console.log('existe')
+                            // console.log(encaminhamentoExistente);
+                            // console.log('existe')
                         }
 
                         return e.id && encaminhamentoExistente &&
