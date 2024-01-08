@@ -32,3 +32,19 @@ FROM
     join public.pessoa pessoa on pessoa.id = pp.pessoa_id AND pessoa.desativado = false
 WHERE mo.responsavel AND p.codigo in ('CadastroMeta.orcamento', 'CadastroMeta.administrador_orcamento' )
 group by 1, 2
+
+CREATE OR REPLACE VIEW view_pessoa_espectador_de_projeto AS
+SELECT
+    p.id as pessoa_id,
+    pf.orgao_id
+FROM
+    pessoa p
+    join pessoa_fisica pf on pf.id = p.pessoa_fisica_id
+    join pessoa_perfil pp on pp.pessoa_id = p.id
+    join perfil_acesso pa on pp.perfil_acesso_id = pa.id
+    join perfil_privilegio priv on priv.perfil_acesso_id = pa.id
+    join privilegio px on px.id = priv.privilegio_id
+WHERE px.codigo in ('SMAE.espectador_de_projeto' )
+AND p.desativado = false
+and pf.orgao_id is not null
+group by 1, 2;
