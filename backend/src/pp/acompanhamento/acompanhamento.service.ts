@@ -315,6 +315,8 @@ export class AcompanhamentoService {
                         data: dto.acompanhamentos.filter(e => e.id == undefined).map((r) => {
                             console.log('dentro do map');
                             console.log(r);
+                            console.log(self.ProjetoAcompanhamentoItem[self.ProjetoAcompanhamentoItem.length - 1])
+                            console.log(self.ProjetoAcompanhamentoItem);
                             ordemEncaminhamento = ordemEncaminhamento ? ordemEncaminhamento + 1 : self.ProjetoAcompanhamentoItem[self.ProjetoAcompanhamentoItem.length - 1].ordem + 1;
                             const numeroIdentificador: string = self.ordem + '.' + ordemEncaminhamento;
                             
