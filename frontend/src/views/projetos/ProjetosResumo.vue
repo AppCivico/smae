@@ -432,7 +432,7 @@ defineProps({
           {{ schema.fields.previsao_custo.spec.label }}
         </dt>
         <dd class="t13">
-          {{ emFoco?.previsao_custo || '-' }}
+          {{ emFoco?.previsao_custo ? `R$ ${dinheiro(emFoco.previsao_custo)}` : '-' }}
         </dd>
       </dl>
     </div>
