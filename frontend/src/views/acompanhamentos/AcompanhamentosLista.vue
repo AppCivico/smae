@@ -93,11 +93,12 @@ vue/singleline-html-element-content-newline -->
     </thead>
 
     <tbody
-      v-for="linha in listaFiltrada"
-      :key="linha.id"
       class="tablemain"
     >
-      <tr>
+      <tr
+        v-for="linha in listaFiltrada"
+        :key="linha.id"
+      >
         <th>
           <router-link
             :to="{
