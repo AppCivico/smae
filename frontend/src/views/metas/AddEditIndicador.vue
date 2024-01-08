@@ -63,8 +63,6 @@ const {
   Variaveis, variáveisCompostas, variáveisCompostasEmUso,
 } = storeToRefs(VariaveisStore);
 
-const { título } = route.meta;
-
 const dadosExtrasDeAbas = {
   TabelaDeVariaveis: {
     id: 'variaveis',
@@ -660,10 +658,10 @@ if (indicador_id) {
     <template v-if="singleIndicadores?.loading">
       <span class="spinner">Carregando</span>
     </template>
-    <template v-if="singleIndicadores?.error || error">
+    <template v-if="singleIndicadores?.error">
       <div class="error p1">
         <div class="error-msg">
-          {{ singleIndicadores.error ?? error }}
+          {{ singleIndicadores.error }}
         </div>
       </div>
     </template>
