@@ -75,9 +75,6 @@ function permitirEdição(indicadorVariavel) {
           v-if="indicadorRegionalizavel"
           :to="{
             path: `${parentlink}/indicadores/${indicadorId}/variaveis-compostas/gerar`,
-            params: {
-              indicador_id: indicadorId
-            },
             query: $route.query,
           }"
           class="addlink"
