@@ -1,6 +1,7 @@
 import { IdNomeDto } from 'src/common/dto/IdNome.dto';
 
 export class ProjetoAcompanhamentoRowDto {
+    id: number;
     encaminhamento: string | null;
     responsavel: string | null;
     prazo_encaminhamento: Date | null;

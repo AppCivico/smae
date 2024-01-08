@@ -165,6 +165,7 @@ export class AcompanhamentoService {
 
     renderAcompanhamento(r: ProjetoAcompanhamentoItem): ProjetoAcompanhamentoRowDto {
         return {
+            id: r.id,
             encaminhamento: r.encaminhamento,
             prazo_encaminhamento: r.prazo_encaminhamento ? r.prazo_encaminhamento : null,
             prazo_realizado: r.prazo_realizado ? r.prazo_realizado : null,
