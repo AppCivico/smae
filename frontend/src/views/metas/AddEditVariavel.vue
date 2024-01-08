@@ -443,7 +443,6 @@ function fieldToDate(d) {
         <div class="f2">
           <label class="label">Unidade <span class="tvermelho">*</span></label>
           <Field
-            v-model="unidade_medida_id"
             name="unidade_medida_id"
             as="select"
             class="inputtext light mb1"
@@ -497,7 +496,6 @@ function fieldToDate(d) {
       <div class="mb2 mt1">
         <label class="block">
           <Field
-            v-model="acumulativa"
             name="acumulativa"
             type="checkbox"
             value="1"
@@ -773,10 +771,10 @@ function fieldToDate(d) {
   <template v-if="singleVariaveis?.loading || lastParent?.loading">
     <span class="spinner">Carregando</span>
   </template>
-  <template v-if="singleVariaveis?.error || lastParent?.error || error">
+  <template v-if="singleVariaveis?.error || lastParent?.error">
     <div class="error p1">
       <div class="error-msg">
-        {{ singleVariaveis.error ?? lastParent?.error ?? error }}
+        {{ singleVariaveis.error ?? lastParent?.error }}
       </div>
     </div>
   </template>
