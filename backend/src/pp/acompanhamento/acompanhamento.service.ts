@@ -310,26 +310,6 @@ export class AcompanhamentoService {
                         }
                     });
 
-                    let ordemEncaminhamento: number | null = null;
-                    await prismaTx.projetoAcompanhamentoItem.createMany({
-                        data: dto.acompanhamentos.filter(e => !e.id).map((r) => {
-                            ordemEncaminhamento = ordemEncaminhamento ? ordemEncaminhamento + 1 : self.ProjetoAcompanhamentoItem[self.ProjetoAcompanhamentoItem.length - 1].ordem + 1;
-                            const numeroIdentificador: string = self.ordem + '.' + ordemEncaminhamento;
-                            
-                            return {
-                                encaminhamento: r.encaminhamento,
-                                prazo_encaminhamento: r.prazo_encaminhamento,
-                                prazo_realizado: r.prazo_realizado,
-                                responsavel: r.responsavel,
-                                projeto_acompanhamento_id: self.id,
-                                ordem: ordemEncaminhamento,
-                                numero_identificador: numeroIdentificador,
-                                criado_em: new Date(Date.now()),
-                                criado_por: user.id
-                            };
-                        }),
-                    });
-
                     const encaminhamentosAtualizados = dto.acompanhamentos.filter(e => {
                         const encaminhamentoExistente = self.ProjetoAcompanhamentoItem.find(ee => ee.id == e.id);
 
@@ -353,6 +333,28 @@ export class AcompanhamentoService {
                             }
                         })
                     }
+
+                    console.log(dto.acompanhamentos);
+                    let ordemEncaminhamento: number | null = null;
+                    await prismaTx.projetoAcompanhamentoItem.createMany({
+                        data: dto.acompanhamentos.filter(e => typeof e.id == undefined).map((r) => {
+                            ordemEncaminhamento = ordemEncaminhamento ? ordemEncaminhamento + 1 : self.ProjetoAcompanhamentoItem[self.ProjetoAcompanhamentoItem.length - 1].ordem + 1;
+                            const numeroIdentificador: string = self.ordem + '.' + ordemEncaminhamento;
+                            
+                            return {
+                                encaminhamento: r.encaminhamento,
+                                prazo_encaminhamento: r.prazo_encaminhamento,
+                                prazo_realizado: r.prazo_realizado,
+                                responsavel: r.responsavel,
+                                projeto_acompanhamento_id: self.id,
+                                ordem: ordemEncaminhamento,
+                                numero_identificador: numeroIdentificador,
+                                criado_em: new Date(Date.now()),
+                                criado_por: user.id
+                            };
+                        }),
+                    });
+
                 }
 
                 await this.atualizaProjeto(prismaTx, projeto_id, now);
