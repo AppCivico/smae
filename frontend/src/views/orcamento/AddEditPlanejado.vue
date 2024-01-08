@@ -1,4 +1,6 @@
 <script setup>
+import dinheiro from '@/helpers/dinheiro';
+import toFloat from '@/helpers/toFloat';
 import { useAlertStore } from '@/stores/alert.store';
 import { useMetasStore } from '@/stores/metas.store';
 import { useOrcamentosStore } from '@/stores/orcamentos.store';
@@ -167,12 +169,7 @@ function maskFloat(el) {
   el.target.value = dinheiro(Number(el.target.value.replace(/[\D]/g, '')) / 100);
   el.target?._vei?.onChange(el);
 }
-function dinheiro(v) {
-  return new Intl.NumberFormat('pt-BR', { minimumFractionDigits: 2 }).format(Number(v));
-}
-function toFloat(v) {
-  return isNaN(v) || String(v).indexOf(',') !== -1 ? Number(String(v).replace(/[^0-9\,]/g, '').replace(',', '.')) : Math.round(Number(v) * 100) / 100;
-}
+
 function maskDotacao(el) {
   // caret.value = el.target.selectionStart;
   const kC = event.keyCode;
