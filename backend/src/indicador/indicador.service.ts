@@ -23,7 +23,10 @@ const FP = require('../../public/js/formula_parser.js');
 export class IndicadorService {
     private readonly logger = new Logger(IndicadorService.name);
 
-    constructor(private readonly prisma: PrismaService, private readonly variavelService: VariavelService) {}
+    constructor(
+        private readonly prisma: PrismaService,
+        private readonly variavelService: VariavelService
+    ) {}
 
     async create(createIndicadorDto: CreateIndicadorDto, user: PessoaFromJwt) {
         console.log({ createIndicadorDto });
@@ -856,9 +859,12 @@ export class IndicadorService {
 
         this.logger.verbose(`formula_variaveis: ${JSON.stringify(formula_variaveis)}`);
 
-        const allReferences = new Set(await this.listReferenciasIndicador(prismaTx, indicador_id));
+        const emUsoNoDb = await this.listReferenciasIndicador(prismaTx, indicador_id);
+        const emUsoNaFormula = formula_variaveis.map((r) => r.referencia);
 
-        this.logger.verbose(`allReferences: ${JSON.stringify(allReferences)}`);
+        const allReferences = new Set([...emUsoNoDb, ...emUsoNaFormula]);
+
+        this.logger.verbose(`Referencias já ocupadas: ${JSON.stringify(allReferences.entries())}`);
         // começa no 0, vai aumentando isso vai usando os slots 'em branco'
         // isso pq se não, o numero iria aumentar pra sempre que alguém salvasse mudando a formula
         let highestNumericReference = 1;
