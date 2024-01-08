@@ -698,7 +698,9 @@ if (indicador_id) {
         <TabelaDeVariaveisCompostas
           v-if="!Variaveis[indicador_id]?.loading && estáAberta"
           :indicador-regionalizavel="!!singleIndicadores?.regionalizavel"
-          :variáveis-compostas="variáveisCompostas[indicador_id]"
+          :variáveis-compostas="Array.isArray(variáveisCompostas[indicador_id])
+            ? variáveisCompostas[indicador_id]
+            : []"
           :parentlink="parentlink"
         />
       </template>
