@@ -16,7 +16,7 @@ const roles: ListaDePrivilegios[] = [
     'CadastroGrupoPortfolio.administrador_no_orgao',
 ];
 
-@ApiTags('Projeto - Grupo Portfólio')
+@ApiTags('Portfólio')
 @Controller('grupo-portfolio')
 export class GrupoPortfolioController {
     constructor(private readonly grupoPortfolioService: GrupoPortfolioService) {}
