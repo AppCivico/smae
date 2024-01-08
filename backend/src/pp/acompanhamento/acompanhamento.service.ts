@@ -301,6 +301,9 @@ export class AcompanhamentoService {
                     const encaminhamentosRemovidosId: number[] = self.ProjetoAcompanhamentoItem
                         // .filter(e => !e.removido_em) // Encaminhamentos já removidos são inlcuidos na query para manter consistencia de campo "ordem".
                         .filter(a => {
+                            const foo = dto.acompanhamentos?.map(x => x.id).includes(a.id);
+                            console.log('dentro do filter');
+                            console.log(foo);
                             !dto.acompanhamentos?.map(x => x.id).includes(a.id)
                         }).map(a => a.id);
                     console.log('encaminhamentosRemovidosId');
