@@ -242,6 +242,11 @@ if (indicador_id) {
   ]).then(() => {
     if (singleIndicadores.value.formula) {
       formula.value = singleIndicadores.value.formula;
+
+      // PRA-FAZER: corrigir reatividade e **não** usar essa gambiarra
+      if (Array.isArray(singleIndicadores.value.formula_variaveis)) {
+        variaveisFormula.value = singleIndicadores.value.formula_variaveis;
+      }
     }
   });
 } else if (atividade_id) {
