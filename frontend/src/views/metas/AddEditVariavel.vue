@@ -102,43 +102,45 @@ const estãoTodasAsRegiõesSelecionadas = computed({
 });
 
 async function onSubmit(values) {
+  const carga = values;
+
   try {
     let msg;
     let r;
 
     if (!responsaveisArr.value.participantes.length) throw 'Selecione ao menos um responsável';
 
-    values.acumulativa = !!values.acumulativa;
-    values.indicador_id = Number(indicador_id);
+    carga.acumulativa = !!carga.acumulativa;
+    carga.indicador_id = Number(indicador_id);
 
-    values.orgao_id = Number(values.orgao_id);
+    carga.orgao_id = Number(carga.orgao_id);
 
     if (funçãoDaTela !== 'gerar') {
-      values.regiao_id = singleIndicadores.value.regionalizavel ? Number(values.regiao_id) : null;
+      carga.regiao_id = singleIndicadores.value.regionalizavel ? Number(carga.regiao_id) : null;
     }
 
-    values.unidade_medida_id = Number(values.unidade_medida_id);
-    values.ano_base = Number(values.ano_base) ?? null;
-    values.casas_decimais = Number(values.casas_decimais);
-    values.atraso_meses = values.atraso_meses ? Number(values.atraso_meses) : 1;
-    values.responsaveis = responsaveisArr.value.participantes;
+    carga.unidade_medida_id = Number(carga.unidade_medida_id);
+    carga.ano_base = Number(carga.ano_base) ?? null;
+    carga.casas_decimais = Number(carga.casas_decimais);
+    carga.atraso_meses = carga.atraso_meses ? Number(carga.atraso_meses) : 1;
+    carga.responsaveis = responsaveisArr.value.participantes;
 
-    values.inicio_medicao = fieldToDate(values.inicio_medicao);
-    values.fim_medicao = fieldToDate(values.fim_medicao);
+    carga.inicio_medicao = fieldToDate(carga.inicio_medicao);
+    carga.fim_medicao = fieldToDate(carga.fim_medicao);
 
     let rota = false;
     if (var_id) {
       if (singleVariaveis.value.id == var_id) {
-        r = await VariaveisStore.update(var_id, values);
+        r = await VariaveisStore.update(var_id, carga);
         msg = 'Dados salvos com sucesso!';
         rota = currentEdit;
       }
     } else if (funçãoDaTela === 'gerar') {
-      r = await VariaveisStore.gerar(values);
+      r = await VariaveisStore.gerar(carga);
       msg = 'Variáveis geradas!';
       rota = currentEdit;
     } else {
-      r = await VariaveisStore.insert(values);
+      r = await VariaveisStore.insert(carga);
       msg = 'Item adicionado com sucesso!';
       rota = `${currentEdit}/variaveis/${r}/valores`;
     }
@@ -171,9 +173,23 @@ async function checkClose() {
 }
 function lastlevel() {
   let r;
-  if (singleIndicadores.value.nivel_regionalizacao == 2 && level1.value !== null) { r = regions.value[0].children[level1.value].id; }
-  if (singleIndicadores.value.nivel_regionalizacao == 3 && level1.value !== null && level2.value !== null) { r = regions.value[0].children[level1.value].children[level2.value].id; }
-  if (singleIndicadores.value.nivel_regionalizacao == 4 && level1.value !== null && level2.value !== null && level3.value !== null) { r = regions.value[0].children[level1.value].children[level2.value].children[level3.value].id; }
+  if (singleIndicadores.value.nivel_regionalizacao == 2 && level1.value !== null) {
+    r = regions.value[0].children[level1.value].id;
+  }
+  if (
+    singleIndicadores.value.nivel_regionalizacao == 3
+    && level1.value !== null
+    && level2.value !== null
+  ) {
+    r = regions.value[0].children[level1.value].children[level2.value].id;
+  }
+  if (
+    singleIndicadores.value.nivel_regionalizacao == 4
+    && level1.value !== null
+    && level2.value !== null && level3.value !== null
+  ) {
+    r = regions.value[0].children[level1.value].children[level2.value].children[level3.value].id;
+  }
   regiao_id_mount.value = r;
 }
 function pushId(e, id) {
@@ -187,7 +203,8 @@ function buscaCoord(e, parent, item) {
   e.preventDefault();
   e.stopPropagation();
   if (e.keyCode === 13) {
-    const i = parent.find((x) => !item.participantes.includes(x.id) && x.nome_exibicao.toLowerCase().includes(item.busca.toLowerCase()));
+    const i = parent
+      .find((x) => !item.participantes.includes(x.id) && x.nome_exibicao.toLowerCase().includes(item.busca.toLowerCase()));
     if (i) pushId(item.participantes, i.id);
     item.busca = '';
   }
@@ -197,17 +214,25 @@ function buscaCoord(e, parent, item) {
   regioes.value = [];
 
   if (atividade_id) {
-    if (atividade_id) await AtividadesStore.getById(iniciativa_id, atividade_id);
+    if (atividade_id) {
+      await AtividadesStore.getById(iniciativa_id, atividade_id);
+    }
     lastParent.value = singleAtividade.value;
   } else if (iniciativa_id) {
-    if (iniciativa_id) await IniciativasStore.getById(meta_id, iniciativa_id);
+    if (iniciativa_id) {
+      await IniciativasStore.getById(meta_id, iniciativa_id);
+    }
     lastParent.value = singleIniciativa.value;
   } else {
-    if (!singleMeta.value?.id || singleMeta.value.id != meta_id) await MetasStore.getById(meta_id);
+    if (!singleMeta.value?.id || singleMeta.value.id != meta_id) {
+      await MetasStore.getById(meta_id);
+    }
     lastParent.value = singleMeta.value;
   }
 
-  if (indicador_id && (!singleIndicadores?.id || singleIndicadores.id != indicador_id)) await IndicadoresStore.getById(indicador_id);
+  if (indicador_id && (!singleIndicadores?.id || singleIndicadores.id != indicador_id)) {
+    await IndicadoresStore.getById(indicador_id);
+  }
   periodicidade.value = singleIndicadores.value.periodicidade;
 
   if (var_id) {
@@ -215,7 +240,8 @@ function buscaCoord(e, parent, item) {
     if (!singleVariaveis.value.id) {
       await VariaveisStore.getById(indicador_id, var_id);
 
-      responsaveisArr.value.participantes = singleVariaveis.value?.responsaveis.map((x) => x.id) ?? [];
+      responsaveisArr.value.participantes = singleVariaveis.value?.responsaveis
+        .map((x) => x.id) ?? [];
       orgao_id.value = singleVariaveis.value?.orgao_id;
       periodicidade.value = singleVariaveis.value.periodicidade;
 
@@ -232,7 +258,8 @@ function buscaCoord(e, parent, item) {
     if (!singleVariaveis.value.id) {
       await VariaveisStore.getById(indicador_id, copy_id);
 
-      responsaveisArr.value.participantes = singleVariaveis.value?.responsaveis.map((x) => x.id) ?? [];
+      responsaveisArr.value.participantes = singleVariaveis.value?.responsaveis
+        .map((x) => x.id) ?? [];
       orgao_id.value = singleVariaveis.value?.orgao_id;
 
       if (singleVariaveis.value?.regiao_id) {
@@ -730,7 +757,9 @@ function buscaCoord(e, parent, item) {
             type="checkbox"
             :value="true"
             class="inputcheckbox"
-          /><span :class="{ 'error': errors.suspendida }">Suspendar variável e retirar do monitoramento físico</span>
+          /><span :class="{ 'error': errors.suspendida }">
+            Suspender variável e retirar do monitoramento físico
+          </span>
         </label>
         <div class="error-msg">
           {{ errors.suspendida }}
