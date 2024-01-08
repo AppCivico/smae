@@ -313,8 +313,12 @@ export class AcompanhamentoService {
 
                     const encaminhamentosAtualizados = dto.acompanhamentos.filter(e => {
                         const encaminhamentoExistente = self.ProjetoAcompanhamentoItem.find(ee => ee.id == e.id);
+                        if (encaminhamentoExistente) {
+                            console.log(encaminhamentoExistente);
+                            console.log('existe')
+                        }
 
-                        e.id && encaminhamentoExistente &&
+                        return e.id && encaminhamentoExistente &&
                         // Detectando se houve mudança em algum campo do encaminhamento.
                         (
                             e.encaminhamento != encaminhamentoExistente.encaminhamento ||
