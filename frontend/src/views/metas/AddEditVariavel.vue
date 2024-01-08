@@ -488,7 +488,7 @@ function buscaCoord(e, parent, item) {
         </div>
         <div class="f2">
           <label class="label">
-            Defasagem da medição (Meses) <span class="tvermelho">*</span>
+            Defasagem da medição (Meses)&nbsp;<span class="tvermelho">*</span>
           </label>
           <Field
             name="atraso_meses"
@@ -517,7 +517,7 @@ function buscaCoord(e, parent, item) {
         </div>
       </div>
       <div v-if="lastParent?.orgaos_participantes?.length">
-        <label class="label">Orgão responsável <span class="tvermelho">*</span></label>
+        <label class="label">Órgão responsável <span class="tvermelho">*</span></label>
         <Field
           v-if="lastParent?.id"
           v-model="orgao_id"
