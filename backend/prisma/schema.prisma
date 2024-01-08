@@ -1070,6 +1070,8 @@ model Variavel {
 
     codigo String
 
+    supraregional Boolean @default(false)
+
     mostrar_monitoramento Boolean   @default(true)
     suspendida_em         DateTime? @db.Timestamptz(6)
 

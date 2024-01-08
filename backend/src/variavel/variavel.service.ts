@@ -185,6 +185,7 @@ export class VariavelService {
         if (jaEmUso > 0)
             throw new HttpException(`Código ${createVariavelDto.codigo} já está em uso no indicador.`, 400);
 
+
         const variavel = await prismaThx.variavel.create({
             data: {
                 ...createVariavelDto,
