@@ -1222,6 +1222,11 @@ export const variável = (singleIndicadores, éGeraçãoApenas) => object()
       .label('Regiões'),
     responsaveis: array()
       .nullable(),
+    supraregional: boolean()
+      .label('Incluir variável supra regional')
+      .when('éGeraçãoApenas', ((_, field) => ((éGeraçãoApenas)
+        ? field.required()
+        : field.nullable()))),
     suspendida: boolean()
       .nullable(),
     titulo: string()

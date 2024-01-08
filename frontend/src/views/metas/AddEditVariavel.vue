@@ -72,7 +72,7 @@ const regioes = ref([]);
 
 const virtualParent = ref({});
 
-const schema = computed(() => variável(singleIndicadores, true));
+const schema = computed(() => variável(singleIndicadores, funçãoDaTela === 'gerar'));
 
 const regiõesDisponíveis = computed(() => (Array.isArray(regiõesPorNívelOrdenadas.value?.[
   singleIndicadores.value.nivel_regionalizacao
@@ -628,6 +628,22 @@ function fieldToDate(d) {
               {{ r.descricao }}
             </span>
           </label>
+        </div>
+
+        <div class="mb2 mt2">
+          <label class="block">
+            <Field
+              name="supraregional"
+              type="checkbox"
+              :value="true"
+              class="inputcheckbox"
+            /><span :class="{ 'error': errors.supraregional }">
+              Incluir variável supra regional
+            </span>
+          </label>
+          <div class="error-msg">
+            {{ errors.supraregional }}
+          </div>
         </div>
       </div>
 
