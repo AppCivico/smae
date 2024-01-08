@@ -53,8 +53,10 @@ export class GrupoPortfolioController {
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.ACCEPTED)
     async remove(@Param() id: FindOneParams, @CurrentUser() user: PessoaFromJwt) {
-        return await this.grupoPortfolioService.remove(id.id, user);
+        await this.grupoPortfolioService.remove(id.id, user);
 
         return '';
     }
+
+    // TODO criar visão que retorna a lista onde o grupo-port está sendo usado em projetos | portfólios
 }
