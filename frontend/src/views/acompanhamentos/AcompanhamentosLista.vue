@@ -70,6 +70,7 @@ vue/singleline-html-element-content-newline -->
       <col class="col--data">
       <col>
       <col>
+      <col class="col--number">
       <col class="col--botão-de-ação">
     </colgroup>
 
@@ -83,6 +84,9 @@ vue/singleline-html-element-content-newline -->
         </th>
         <th class="tl">
           {{ schema.fields.pauta.spec.label }}
+        </th>
+        <th class="cell--number">
+          {{ schema.fields.acompanhamentos.spec.label }}
         </th>
         <th />
       </tr>
@@ -112,6 +116,9 @@ vue/singleline-html-element-content-newline -->
         </td>
         <td>
           {{ linha.pauta }}
+        </td>
+        <td class="cell--number">
+          {{ linha.acompanhamentos.length ?? 0 }}
         </td>
         <td class="center">
           <router-link
