@@ -298,7 +298,9 @@ export class AcompanhamentoService {
                 }
 
                 if (dto.acompanhamentos !== undefined && Array.isArray(dto.acompanhamentos) && dto.acompanhamentos.length) {
-                    const encaminhamentosRemovidosId: number[] = self.ProjetoAcompanhamentoItem.filter(a => { return !dto.acompanhamentos?.map(x => x.id).includes(a.id) }).map(a => a.id);
+                    const encaminhamentosRemovidosId: number[] = self.ProjetoAcompanhamentoItem
+                        .filter(e => !e.removido_em)
+                        .filter(a => { return !dto.acompanhamentos?.map(x => x.id).includes(a.id) }).map(a => a.id);
                     await prismaTx.projetoAcompanhamentoItem.updateMany({
                         where: { id: { in: encaminhamentosRemovidosId } },
                         data: {
