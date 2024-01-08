@@ -2,6 +2,7 @@
 import { Dashboard } from '@/components';
 import { indicador as schema } from '@/consts/formSchemas';
 import fieldToDate from '@/helpers/fieldToDate';
+import maskMonth from '@/helpers/maskMonth';
 import { router } from '@/router';
 import { useAlertStore } from '@/stores/alert.store';
 import { useAtividadesStore } from '@/stores/atividades.store';
@@ -220,17 +221,6 @@ async function checkDelete(id) {
 
 async function checkClose() {
   alertStore.confirm('Deseja sair sem salvar as alterações?', parentlink);
-}
-function maskMonth(el) {
-  const kC = event.keyCode;
-  let data = el.target.value.replace(/[^0-9/]/g, '');
-  if (kC != 8 && kC != 46) {
-    if (data.length == 2) {
-      el.target.value = data += '/';
-    } else {
-      el.target.value = data;
-    }
-  }
 }
 
 if (indicador_id) {
