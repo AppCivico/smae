@@ -6,7 +6,7 @@ import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import { PrismaService } from '../../prisma/prisma.service';
 
 import { HtmlSanitizer } from '../../common/html-sanitizer';
-import { CreateProjetoAcompanhamentoDto } from './dto/create-acompanhamento.dto';
+import { CreateProjetoAcompanhamentoDto, ProjetoAcompanhamentoDto } from './dto/create-acompanhamento.dto';
 import { UpdateProjetoAcompanhamentoDto } from './dto/update-acompanhamento.dto';
 import {
     DetailProjetoAcompanhamentoDto,
@@ -199,6 +199,7 @@ export class AcompanhamentoService {
                 },
 
                 ProjetoAcompanhamentoItem: {
+                    where: { removido_em: null },
                     orderBy: { ordem: 'asc' },
                 },
 
@@ -255,7 +256,22 @@ export class AcompanhamentoService {
                 removido_em: null,
                 projeto_id: projeto_id,
             },
-            select: { id: true, ordem: true },
+            select: {
+                id: true,
+                ordem: true,
+                ProjetoAcompanhamentoItem: {
+                    orderBy: { ordem: 'desc' },
+                    select: {
+                        id: true,
+                        ordem: true,
+                        encaminhamento: true,
+                        responsavel: true,
+                        prazo_encaminhamento: true,
+                        prazo_realizado: true,
+                        removido_em: true,
+                    }
+                }
+            },
         });
 
         dto.detalhamento = HtmlSanitizer(dto.detalhamento);
@@ -279,29 +295,63 @@ export class AcompanhamentoService {
                         });
                 }
 
-                if (dto.acompanhamentos !== undefined) {
-                    
-                    await prismaTx.projetoAcompanhamentoItem.deleteMany({
-                        where: { projeto_acompanhamento_id: self.id },
+                if (dto.acompanhamentos !== undefined && Array.isArray(dto.acompanhamentos) && dto.acompanhamentos.length) {
+                    const encaminhamentosRemovidosId: number[] = self.ProjetoAcompanhamentoItem
+                        .filter(e => !e.removido_em) // Encaminhamentos já removidos são inlcuidos na query para manter consistencia de campo "ordem".
+                        .filter(a => {
+                            !dto.acompanhamentos?.filter(e => e.id).map(x => x.id).includes(a.id)
+                        }).map(a => a.id);
+
+                    await prismaTx.projetoAcompanhamentoItem.updateMany({
+                        where: { id: { in: encaminhamentosRemovidosId } },
+                        data: {
+                            removido_em: new Date(Date.now()),
+                            removido_por: user.id
+                        }
                     });
-                    
-                    if (Array.isArray(dto.acompanhamentos) && dto.acompanhamentos.length) {
-                        await prismaTx.projetoAcompanhamentoItem.createMany({
-                            data: dto.acompanhamentos.map((r, i) => {
-                                const ordemEncaminhamento = i + 1;
-                                const numeroIdentificador: string = self.ordem + '.' + ordemEncaminhamento;
-                                
-                                return {
-                                    encaminhamento: r.encaminhamento,
-                                    prazo_encaminhamento: r.prazo_encaminhamento,
-                                    prazo_realizado: r.prazo_realizado,
-                                    responsavel: r.responsavel,
-                                    projeto_acompanhamento_id: self.id,
-                                    ordem: ordemEncaminhamento,
-                                    numero_identificador: numeroIdentificador
-                                };
-                            }),
-                        });
+
+                    let ordemEncaminhamento: number | null = null;
+                    await prismaTx.projetoAcompanhamentoItem.createMany({
+                        data: dto.acompanhamentos.filter(e => !e.id).map((r) => {
+                            ordemEncaminhamento = ordemEncaminhamento ? ordemEncaminhamento + 1 : self.ProjetoAcompanhamentoItem[self.ProjetoAcompanhamentoItem.length - 1].ordem + 1;
+                            const numeroIdentificador: string = self.ordem + '.' + ordemEncaminhamento;
+                            
+                            return {
+                                encaminhamento: r.encaminhamento,
+                                prazo_encaminhamento: r.prazo_encaminhamento,
+                                prazo_realizado: r.prazo_realizado,
+                                responsavel: r.responsavel,
+                                projeto_acompanhamento_id: self.id,
+                                ordem: ordemEncaminhamento,
+                                numero_identificador: numeroIdentificador,
+                                criado_em: new Date(Date.now()),
+                                criado_por: user.id
+                            };
+                        }),
+                    });
+
+                    const encaminhamentosAtualizados = dto.acompanhamentos.filter(e => {
+                        const encaminhamentoExistente = self.ProjetoAcompanhamentoItem.find(ee => ee.id == e.id);
+
+                        e.id && encaminhamentoExistente &&
+                        // Detectando se houve mudança em algum campo do encaminhamento.
+                        (
+                            e.encaminhamento != encaminhamentoExistente.encaminhamento ||
+                            e.responsavel != encaminhamentoExistente.responsavel ||
+                            e.prazo_encaminhamento != encaminhamentoExistente.prazo_encaminhamento ||
+                            e.prazo_realizado != encaminhamentoExistente.prazo_realizado
+                        )
+                    });
+
+                    for (const encaminhamentoAtualizado of encaminhamentosAtualizados) {
+                        await prismaTx.projetoAcompanhamentoItem.update({
+                            where: { id: encaminhamentoAtualizado.id },
+                            data: {
+                                ...encaminhamentoAtualizado,
+                                atualizado_em: new Date(Date.now()),
+                                atualizado_por: user.id
+                            }
+                        })
                     }
                 }
 

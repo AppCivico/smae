@@ -210,6 +210,10 @@ model Pessoa {
     PlanosDeAcaoQueRemovi PlanoAcao[] @relation("Removedor")
     PlanosDeAcaoQueEditei PlanoAcao[] @relation("Atualizador")
 
+    EncaminhamentosQueCriei ProjetoAcompanhamentoItem[] @relation("Criador")
+    EncaminhamentosQueRemovi ProjetoAcompanhamentoItem[] @relation("Removedor")
+    EncaminhamentosQueEditei ProjetoAcompanhamentoItem[] @relation("Atualizador")
+
     OrcamentoPrevistoZeradoQCriei  OrcamentoPrevistoZerado[]  @relation("Criador")
     OrcamentoPrevistoZeradoQRemovi OrcamentoPrevistoZerado[]  @relation("Removedor")
     ImportacaoLog                  ImportacaoOrcamento[]
@@ -3269,6 +3273,20 @@ model ProjetoAcompanhamentoItem {
     prazo_realizado      DateTime? @db.Date()
 
     ordem Int @db.SmallInt
+
+    // Campos de criação aceitam null, pois versão inicial foi feita sem estes timestamps.
+    criado_em  DateTime? @default(now()) @db.Timestamptz(6)
+    criado_por Int? 
+
+    removido_em  DateTime?
+    removido_por Int?
+
+    atualizado_em  DateTime?
+    atualizado_por Int?
+
+    criador     Pessoa?  @relation("Criador", fields: [criado_por], references: [id])
+    atualizador Pessoa? @relation("Atualizador", fields: [atualizado_por], references: [id])
+    removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
 
     @@index([projeto_acompanhamento_id])
     @@map("projeto_acompanhamento_item")

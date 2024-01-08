@@ -15,6 +15,12 @@ import {
 import { IsOnlyDate } from 'src/common/decorators/IsDateOnly';
 
 export class ProjetoAcompanhamentoDto {
+    @IsOptional()
+    @IsInt({ message: '$property| id precisa ser positivo' })
+    @Transform((a: TransformFnParams) => (a.value === null ? null : +a.value))
+    @ValidateIf((object, value) => value !== null)
+    id?: number;
+
     @IsString()
     @MinLength(1)
     @MaxLength(50000)
