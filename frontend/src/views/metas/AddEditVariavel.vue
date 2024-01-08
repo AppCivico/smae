@@ -1,5 +1,7 @@
 <script setup>
 import { variável } from '@/consts/formSchemas';
+import fieldToDate from '@/helpers/fieldToDate';
+import maskMonth from '@/helpers/maskMonth';
 import truncate from '@/helpers/truncate';
 import { router } from '@/router';
 import { useAlertStore } from '@/stores/alert.store';
@@ -189,25 +191,6 @@ function buscaCoord(e, parent, item) {
     if (i) pushId(item.participantes, i.id);
     item.busca = '';
   }
-}
-function maskMonth(el) {
-  const kC = event.keyCode;
-  let data = el.target.value.replace(/[^0-9/]/g, '');
-  if (kC != 8 && kC != 46) {
-    if (data.length == 2) {
-      el.target.value = data += '/';
-    } else {
-      el.target.value = data;
-    }
-  }
-}
-function fieldToDate(d) {
-  if (d) {
-    if (d.length == 6) { d = `01/0${d}`; } else if (d.length == 7) { d = `01/${d}`; }
-    const x = d.split('/');
-    return (x.length == 3) ? new Date(Date.UTC(x[2], x[1] - 1, x[0])).toISOString().substring(0, 10) : null;
-  }
-  return null;
 }
 
 (async () => {
