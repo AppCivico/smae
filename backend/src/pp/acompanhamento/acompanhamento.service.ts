@@ -313,11 +313,7 @@ export class AcompanhamentoService {
                     let ordemEncaminhamento: number | null = null;
                     await prismaTx.projetoAcompanhamentoItem.createMany({
                         data: dto.acompanhamentos.filter(e => e.id == undefined).map((r) => {
-                            console.log('dentro do map');
-                            console.log(r);
-                            console.log(self.ProjetoAcompanhamentoItem[self.ProjetoAcompanhamentoItem.length - 1])
-                            console.log(self.ProjetoAcompanhamentoItem);
-                            ordemEncaminhamento = ordemEncaminhamento ? ordemEncaminhamento + 1 : self.ProjetoAcompanhamentoItem[self.ProjetoAcompanhamentoItem.length - 1].ordem + 1;
+                            ordemEncaminhamento = ordemEncaminhamento ? ordemEncaminhamento + 1 : self.ProjetoAcompanhamentoItem[0].ordem + 1;
                             const numeroIdentificador: string = self.ordem + '.' + ordemEncaminhamento;
                             
                             return {
@@ -336,19 +332,16 @@ export class AcompanhamentoService {
 
                     const encaminhamentosAtualizados = dto.acompanhamentos.filter(e => {
                         const encaminhamentoExistente = self.ProjetoAcompanhamentoItem.find(ee => ee.id == e.id);
-                        if (encaminhamentoExistente) {
-                            // console.log(encaminhamentoExistente);
-                            // console.log('existe')
-                        }
-
-                        return e.id && encaminhamentoExistente &&
-                        // Detectando se houve mudança em algum campo do encaminhamento.
-                        (
+                        if (encaminhamentoExistente && (
                             e.encaminhamento != encaminhamentoExistente.encaminhamento ||
                             e.responsavel != encaminhamentoExistente.responsavel ||
                             e.prazo_encaminhamento != encaminhamentoExistente.prazo_encaminhamento ||
-                            e.prazo_realizado != encaminhamentoExistente.prazo_realizado
-                        )
+                            e.prazo_realizado != encaminhamentoExistente.prazo_realizado )
+                        ) {
+                            return true
+                        } else {
+                            return false;
+                        }
                     });
 
                     for (const encaminhamentoAtualizado of encaminhamentosAtualizados) {
