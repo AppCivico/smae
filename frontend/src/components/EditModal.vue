@@ -21,21 +21,25 @@ async function checkClose() {
 </script>
 
 <template>
-  <div
+  <Teleport
     v-if="editModal"
-    class="editModal-wrap"
+    to="body"
   >
     <div
-      class="overlay"
-      @click="checkClose"
-    />
-    <div
-      class="editModal"
-      :class="editModal.type"
+      class="editModal-wrap"
     >
-      <div>
-        <editModal.content :props="editModal.props" />
+      <div
+        class="overlay"
+        @click="checkClose"
+      />
+      <div
+        class="editModal"
+        :class="editModal.type"
+      >
+        <div>
+          <editModal.content :props="editModal.props" />
+        </div>
       </div>
     </div>
-  </div>
+  </Teleport>
 </template>
