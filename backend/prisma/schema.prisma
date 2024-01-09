@@ -210,9 +210,13 @@ model Pessoa {
     PlanosDeAcaoQueRemovi PlanoAcao[] @relation("Removedor")
     PlanosDeAcaoQueEditei PlanoAcao[] @relation("Atualizador")
 
-    EncaminhamentosQueCriei ProjetoAcompanhamentoItem[] @relation("Criador")
+    EncaminhamentosQueCriei  ProjetoAcompanhamentoItem[] @relation("Criador")
     EncaminhamentosQueRemovi ProjetoAcompanhamentoItem[] @relation("Removedor")
     EncaminhamentosQueEditei ProjetoAcompanhamentoItem[] @relation("Atualizador")
+
+    ProjetoEquipeQueEstou  ProjetoEquipe[] @relation("fk")
+    ProjetoEquipeQueRemovi ProjetoEquipe[] @relation("Removedor")
+    ProjetoEquipeQueCriei  ProjetoEquipe[] @relation("Criador")
 
     OrcamentoPrevistoZeradoQCriei  OrcamentoPrevistoZerado[]  @relation("Criador")
     OrcamentoPrevistoZeradoQRemovi OrcamentoPrevistoZerado[]  @relation("Removedor")
@@ -243,6 +247,7 @@ model Pessoa {
     PortfolioGrupoPortfolioQueRemovi  PortfolioGrupoPortfolio[]          @relation("Removedor")
     GrupoPortfolioPessoa              GrupoPortfolioPessoa[]
     view_pessoa_espectador_de_projeto view_pessoa_espectador_de_projeto?
+    view_pessoa_gestor_de_projeto     view_pessoa_gestor_de_projeto[]
 
     @@index([email])
     @@map("pessoa")
@@ -292,6 +297,7 @@ model Orgao {
     orgao_responsavel    Projeto[]              @relation("orgao_responsavel")
     GrupoPortfolio       GrupoPortfolio[]
     GrupoPortfolioPessoa GrupoPortfolioPessoa[]
+    ProjetoEquipe        ProjetoEquipe[]
 
     @@map("orgao")
 }
@@ -2842,9 +2848,31 @@ model Projeto {
     OrcamentoPlanejadoZerado  OrcamentoPrevistoZerado[]
     Diretorio                 Diretorio[]
     ProjetoGrupoPortfolio     ProjetoGrupoPortfolio[]
+    ProjetoEquipe             ProjetoEquipe[]
 
     @@index([removido_em])
     @@map("projeto")
+}
+
+model ProjetoEquipe {
+    id Int @id @default(autoincrement())
+
+    projeto_id   Int
+    pessoa_id    Int
+    orgao_id     Int
+    criado_por   Int
+    criado_em    DateTime
+    removido_por Int?
+    removido_em  DateTime?
+
+    orgao     Orgao   @relation(fields: [orgao_id], references: [id])
+    projeto   Projeto @relation(fields: [projeto_id], references: [id])
+    pessoa    Pessoa  @relation("fk", fields: [pessoa_id], references: [id])
+    criador   Pessoa  @relation("Criador", fields: [criado_por], references: [id])
+    removedor Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
+
+    @@index([projeto_id])
+    @@map("projeto_equipe")
 }
 
 model AcompanhamentoTipo {
@@ -3278,7 +3306,7 @@ model ProjetoAcompanhamentoItem {
 
     // Campos de criação aceitam null, pois versão inicial foi feita sem estes timestamps.
     criado_em  DateTime? @default(now()) @db.Timestamptz(6)
-    criado_por Int? 
+    criado_por Int?
 
     removido_em  DateTime?
     removido_por Int?
@@ -3286,7 +3314,7 @@ model ProjetoAcompanhamentoItem {
     atualizado_em  DateTime?
     atualizado_por Int?
 
-    criador     Pessoa?  @relation("Criador", fields: [criado_por], references: [id])
+    criador     Pessoa? @relation("Criador", fields: [criado_por], references: [id])
     atualizador Pessoa? @relation("Atualizador", fields: [atualizado_por], references: [id])
     removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
 
@@ -3513,6 +3541,16 @@ view view_pessoa_espectador_de_projeto {
     orgao_id Int
 
     @@unique([pessoa_id])
+}
+
+// view que já faz o join das pessoas tem o privilegio SMAE.gestor_de_projeto
+// tbm faz um WHERE orgao_id is not null
+view view_pessoa_gestor_de_projeto {
+    pessoa_id Int
+    pessoa    Pessoa @relation(fields: [pessoa_id], references: [id])
+    orgao_id  Int
+
+    @@unique([orgao_id, pessoa_id])
 }
 
 model GrupoPortfolio {
