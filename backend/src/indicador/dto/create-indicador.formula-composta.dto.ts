@@ -63,6 +63,7 @@ export const OperacaoSuportadaOrdem: OperacaoPadraoDto[] = [
 export class GeneratorFormulaCompostaFormDto extends IntersectionType(
     PickType(CreateIndicadorFormulaCompostaDto, ['titulo'] as const),
     PickType(CreateIndicadorFormulaCompostaDto, ['nivel_regionalizacao'] as const),
+    PickType(CreateIndicadorFormulaCompostaDto, ['mostrar_monitoramento'] as const),
     PickType(CreateGeradorVariavelDto, ['regioes', 'codigo'] as const),
     PickType(FormulaVariaveis, ['janela', 'usar_serie_acumulada'] as const)
 ) {
