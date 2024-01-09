@@ -1,26 +1,34 @@
 <script setup>
-import { computed } from 'vue';
-
-const props = defineProps(['active', 'classes']);
-const active = computed(() => props.active);
-
+const props = defineProps({
+  active: {
+    type: Boolean,
+    required: true,
+  },
+});
 defineEmits(['close']);
 </script>
-
+<script>
+// use normal <script> to declare options
+export default {
+  inheritAttrs: false,
+};
+</script>
 <template>
-  <div
-    v-if="active"
-    class="editModal-wrap"
-  >
+  <Teleport to="body">
     <div
-      class="overlay"
-      @click="$emit('close')"
-    />
-    <div
-      class="editModal small"
-      :class="props.classes"
+      v-if="props.active"
+      class="editModal-wrap"
     >
-      <slot />
+      <div
+        class="overlay"
+        @click="$emit('close')"
+      />
+      <div
+        class="editModal small"
+        v-bind="$attrs"
+      >
+        <slot />
+      </div>
     </div>
-  </div>
+  </Teleport>
 </template>
