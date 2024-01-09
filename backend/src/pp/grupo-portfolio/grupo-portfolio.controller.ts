@@ -30,6 +30,9 @@ export class GrupoPortfolioController {
     }
 
     @Get()
+    @ApiBearerAuth('access-token')
+    @ApiUnauthorizedResponse()
+    @Roles(...roles, 'SMAE.espectador_de_projeto', 'SMAE.gestor_de_projeto', 'SMAE.gestor_de_projeto')
     async findAll(@Query() filter: FilterGrupoPortfolioDto): Promise<ListGrupoPortfolioDto> {
         return { linhas: await this.grupoPortfolioService.findAll(filter) };
     }
