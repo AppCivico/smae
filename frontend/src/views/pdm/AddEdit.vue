@@ -169,7 +169,7 @@ async function uploadshape(e) {
           class="flex g2 mb2"
         >
           <div class="f1">
-            <label class="block mb1 interruptorcheckbox">
+            <label class="block mb1">
               <Field
                 name="ativo"
                 type="checkbox"
@@ -219,14 +219,18 @@ async function uploadshape(e) {
             v-if="!curfile.loading && !curfile.name"
             class="addlink"
           ><svg
-            width="20"
-            height="20"
-          ><use xlink:href="#i_+" /></svg> <span>Adicionar arquivo ( formatos SVG ou PNG até 2mb) *</span><input
-            type="file"
-            accept=".svg,.png"
-            :onchange="uploadshape"
-            style="display:none;"
-          ></label>
+             width="20"
+             height="20"
+           ><use xlink:href="#i_+" /></svg>
+            <span>
+              Adicionar arquivo (formatos SVG ou PNG até 2mb)&nbsp;<span class="tvermelho">*</span>
+            </span>
+            <input
+              type="file"
+              accept=".svg,.png"
+              :onchange="uploadshape"
+              style="display:none;"
+            ></label>
 
           <div
             v-else-if="curfile.loading"

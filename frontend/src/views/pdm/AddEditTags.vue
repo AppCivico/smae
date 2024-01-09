@@ -211,14 +211,18 @@ async function uploadshape(e) {
           v-if="!curfile.loading && !curfile.name"
           class="addlink"
         ><svg
-          width="20"
-          height="20"
-        ><use xlink:href="#i_+" /></svg> <span>Adicionar arquivo ( formatos SVG ou PNG até 2mb) *</span><input
-          type="file"
-          accept=".svg,.png"
-          :onchange="uploadshape"
-          style="display:none;"
-        ></label>
+           width="20"
+           height="20"
+         ><use xlink:href="#i_+" /></svg>
+          <span>
+            Adicionar arquivo (formatos SVG ou PNG até 2mb)&nbsp;<span class="tvermelho">*</span>
+          </span>
+          <input
+            type="file"
+            accept=".svg,.png"
+            :onchange="uploadshape"
+            style="display:none;"
+          ></label>
 
         <div
           v-else-if="curfile.loading"
