@@ -299,7 +299,7 @@ export class PortfolioService {
         });
 
         for (const grupoPortId of dto.grupo_portfolio) {
-            if (prevVersions.filter((r) => r.grupo_portfolio_id == grupoPortId)) continue;
+            if (prevVersions.filter((r) => r.grupo_portfolio_id == grupoPortId)[0]) continue;
 
             const gp = await prismaTx.grupoPortfolio.findFirstOrThrow({
                 where: {
@@ -321,7 +321,7 @@ export class PortfolioService {
 
         for (const prevPortRow of prevVersions) {
             // pula as que continuam na lista
-            if (dto.grupo_portfolio.filter((r) => r == prevPortRow.grupo_portfolio_id)) continue;
+            if (dto.grupo_portfolio.filter((r) => r == prevPortRow.grupo_portfolio_id)[0]) continue;
 
             // remove o relacionamento
             await prismaTx.portfolioGrupoPortfolio.update({
