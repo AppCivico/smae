@@ -20,6 +20,8 @@ const props = defineProps({
   },
 });
 
+const emit = defineEmits(['close']);
+
 const route = useRoute();
 const router = useRouter();
 const alertStore = useAlertStore();
@@ -52,6 +54,8 @@ async function checkClose() {
   }
 
   const destino = () => {
+    emit('close');
+
     editModalStore.$reset();
     alertStore.$reset();
 
