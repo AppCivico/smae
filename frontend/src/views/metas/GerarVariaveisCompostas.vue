@@ -130,10 +130,6 @@ if (String(singleIndicadores.value?.id) !== String(indicadorId)) {
 
     <CheckClose
       :formulário-sujo="formulárioSujo"
-      @close="() => {
-        editModalStore.$reset();
-        alertStore.$reset();
-      }"
     />
   </div>
 
@@ -416,11 +412,11 @@ if (String(singleIndicadores.value?.id) !== String(indicadorId)) {
   >Carregando</span>
 
   <div
-    v-if="singleVariaveis?.error || lastParent?.error || error"
+    v-if="singleVariaveis?.error || lastParent?.error"
     class="error p1"
   >
     <div class="error-msg">
-      {{ singleVariaveis.error ?? lastParent?.error ?? error }}
+      {{ singleVariaveis.error ?? lastParent?.error }}
     </div>
   </div>
 </template>

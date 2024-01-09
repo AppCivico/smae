@@ -109,10 +109,6 @@ if (variávelId) {
 
     <CheckClose
       :formulário-sujo="formulárioSujo"
-      @close="() => {
-        editModalStore.$reset();
-        alertStore.$reset();
-      }"
     />
   </div>
 

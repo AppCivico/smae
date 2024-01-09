@@ -336,7 +336,7 @@ async function saveVar(tipoDeVariável) {
     const i = v.indexOf(`${caracterDefinidor}xxx`);
     formula.value = [v.slice(0, i), variávelId, v.slice(i + 4)].join('');
     // aguardar a atualização da fórmula antes de formatá-la
-    await nextTick;
+    nextTick;
   }
 
   formatFormula(variávelId);
