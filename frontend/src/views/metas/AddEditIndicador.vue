@@ -26,6 +26,7 @@ import {
 import EditorDeFormula from '@/components/metas/EditorDeFormula.vue';
 import EnvelopeDeAbas from '@/components/EnvelopeDeAbas.vue';
 import GerarVariaveisCompostas from '@/views/metas/GerarVariaveisCompostas.vue';
+import SmallModal from '@/components/SmallModal.vue';
 import TabelaDeVariaveis from '@/components/metas/TabelaDeVariaveis.vue';
 import TabelaDeVariaveisCompostas from '@/components/metas/TabelaDeVariaveisCompostas.vue';
 import TabelaDeVariaveisCompostasEmUso from '@/components/metas/TabelaDeVariaveisCompostasEmUso.vue';
@@ -88,6 +89,8 @@ const formula = ref('');
 const variaveisFormula = ref([]);
 const errFormula = ref('');
 
+// PRA-FAZER: extrair todos os modais das props, porque componentes inteiros
+// dentro de variáveis reativas comprometem performance
 function start() {
   switch (props.group) {
     case 'variaveis':
@@ -111,9 +114,9 @@ function start() {
     case 'compostas-retroativos':
       editModalStore.modal(AddEditValoresComposta, props);
       break;
-    case 'gerar-compostas':
-      editModalStore.modal(GerarVariaveisCompostas, props);
-      break;
+    // case 'gerar-compostas':
+    //   editModalStore.modal(GerarVariaveisCompostas, props);
+    //   break;
     case 'criar-ou-editar-variaveis-compostas':
       editModalStore.modal(AddEditVariavelComposta, props);
       break;
@@ -247,9 +250,14 @@ if (indicador_id) {
   IndicadoresStore.getAll(meta_id, 'meta_id');
 }
 </script>
-
+<script>
+// use normal <script> to declare options
+export default {
+  inheritAttrs: false,
+};
+</script>
 <template>
-  <Dashboard>
+  <Dashboard v-bind="$attrs">
     <div class="flex spacebetween center">
       <h1 v-if="indicador_id">
         Editar Indicador
@@ -726,4 +734,21 @@ if (indicador_id) {
       </button>
     </template>
   </Dashboard>
+  <SmallModal
+    :active="props.group === 'gerar-compostas'"
+    @close="() => {
+      editModalStore.$reset();
+      if ($route.meta.rotaDeEscape) {
+        $router.push({
+          name: $route.meta.rotaDeEscape,
+          // ao que parece, os parâmetros só não são necessários
+          // se a rota corrente e a de destino forem aninhadas
+          params: $route.params,
+          query: $route.query,
+        });
+      }
+    }"
+  >
+    <GerarVariaveisCompostas />
+  </SmallModal>
 </template>
