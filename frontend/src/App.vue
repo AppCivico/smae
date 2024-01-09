@@ -26,10 +26,8 @@ if (authStore.estouAutenticada) {
 
   <SideBar />
 
-  <Teleport to="body">
-    <EditModal />
-    <Alert />
-  </Teleport>
+  <EditModal />
+  <Alert />
 </template>
 <style lang="less">
 @import url("@/_less/style.less");
