@@ -136,7 +136,6 @@ export class GrupoPortfolioService {
             orderBy: { titulo: 'asc' },
         });
 
-        console.log(rows, filter.retornar_uso);
         // os dois any abaixo são por causa que o Prisma não gera a tipagem por causa do ternário do filter.retornar_uso
         return rows.map((r) => {
             return {
