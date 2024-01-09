@@ -10,7 +10,7 @@ import { UpdatePortfolioDto } from './dto/update-portfolio.dto';
 import { ListPortfolioDto, PortfolioOneDto } from './entities/portfolio.entity';
 import { PortfolioService } from './portfolio.service';
 
-@ApiTags('Portfolio')
+@ApiTags('Portfólio')
 @Controller('portfolio')
 export class PortfolioController {
     constructor(private readonly portfolioService: PortfolioService) {}
