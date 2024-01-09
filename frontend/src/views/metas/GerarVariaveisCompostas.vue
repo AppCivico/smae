@@ -38,32 +38,12 @@ VariaveisStore.clearEdit();
 const RegionsStore = useRegionsStore();
 const { regions, regiõesPorNívelOrdenadas } = storeToRefs(RegionsStore);
 
-const nívelDeRegionalização = ref(0);
-const regiões = ref(0);
-
-const regiõesDisponíveis = computed(() => (Array.isArray(regiõesPorNívelOrdenadas.value?.[
-  nívelDeRegionalização.value
-])
-  ? regiõesPorNívelOrdenadas.value[nívelDeRegionalização.value]
-  : []));
-
-const estãoTodasAsRegiõesSelecionadas = computed({
-  get() {
-    return regiões.value?.length === regiõesDisponíveis.value.length;
-  },
-  set(novoValor) {
-    regiões.value = novoValor
-      ? regiõesDisponíveis.value.map((x) => x.id)
-      : [];
-  },
-});
-
 const valoresIniciais = {
   codigo: '',
   janela: 1,
   mostrar_monitoramento: false,
   nivel_regionalizacao: 0,
-  // regioes: [],
+  regioes: [],
   tipo_de_janela: 'mes_corrente',
   titulo: '',
   usar_serie_acumulada: false,
@@ -74,13 +54,41 @@ const schema = computed(() => (Array.isArray(operaçõesParaVariávelComposta.va
   : geraçãoDeVariávelComposta()));
 
 const {
-  errors, handleSubmit, isSubmitting, resetField, values,
+  errors, handleSubmit, isSubmitting, /* setFieldValue, */resetField, values,
 } = useForm({
   initialValues: valoresIniciais,
   validationSchema: schema,
 });
 
 const formulárioSujo = useIsFormDirty();
+
+const nívelDeRegionalização = ref(0);
+const regiões = ref([]);
+
+const regiõesDisponíveis = computed(() => (Array.isArray(regiõesPorNívelOrdenadas.value?.[
+  nívelDeRegionalização.value
+])
+  ? regiõesPorNívelOrdenadas.value[nívelDeRegionalização.value]
+  : []));
+
+const estãoTodasAsRegiõesSelecionadas = computed({
+  get() {
+    return values.regioes?.length
+      && values.regioes?.length === regiõesDisponíveis.value.length;
+  },
+  // set(novoValor) {
+  //   setFieldValue('regioes', (novoValor
+  //     ? regiõesDisponíveis.value.map((x) => x.id)
+  //     : []));
+  // },
+  // PRA-FAZER: Atualizar a vee-validate para poder usar o código recomendado:
+  // usando `setFieldValue()`
+  set(novoValor) {
+    values.regioes = novoValor
+      ? regiõesDisponíveis.value.map((x) => x.id)
+      : [];
+  },
+});
 
 const onSubmit = handleSubmit.withControlled(async () => {
   try {
@@ -122,6 +130,12 @@ if (!regions.length) {
 if (String(singleIndicadores.value?.id) !== String(indicadorId)) {
   IndicadoresStore.getById(indicadorId);
 }
+</script>
+<script>
+// use normal <script> to declare options
+export default {
+  inheritAttrs: false,
+};
 </script>
 <template>
   <div class="flex spacebetween center mb2">
@@ -182,7 +196,7 @@ if (String(singleIndicadores.value?.id) !== String(indicadorId)) {
         class="inputtext light"
         :class="{ 'error': errors.nivel_regionalizacao }"
         :disabled="typeof singleIndicadores?.nivel_regionalizacao !== 'number'"
-        @change="estãoTodasAsRegiõesSelecionadas = true"
+        @change="estãoTodasAsRegiõesSelecionadas = false"
       >
         <option
           :value="0"
@@ -214,14 +228,20 @@ if (String(singleIndicadores.value?.id) !== String(indicadorId)) {
           <input
             v-model="estãoTodasAsRegiõesSelecionadas"
             type="checkbox"
-            name=""
-            :value="true"
+            :disabled="!regiõesDisponíveis.length"
             class="inputcheckbox interruptor"
+            aria-labelledby="selecionar-todas-as-regiões"
           >
-          <span v-if="estãoTodasAsRegiõesSelecionadas">
+          <span
+            v-if="estãoTodasAsRegiõesSelecionadas"
+            id="selecionar-todas-as-regiões"
+          >
             Limpar seleção
           </span>
-          <span v-else>
+          <span
+            v-else
+            id="selecionar-todas-as-regiões"
+          >
             Selecionar todas
           </span>
         </label>
