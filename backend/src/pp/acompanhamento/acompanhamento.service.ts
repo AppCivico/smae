@@ -313,7 +313,15 @@ export class AcompanhamentoService {
                     let ordemEncaminhamento: number | null = null;
                     await prismaTx.projetoAcompanhamentoItem.createMany({
                         data: dto.acompanhamentos.filter(e => e.id == undefined).map((r) => {
-                            ordemEncaminhamento = ordemEncaminhamento ? ordemEncaminhamento + 1 : self.ProjetoAcompanhamentoItem[0].ordem + 1;
+                            if (ordemEncaminhamento) {
+                                ordemEncaminhamento = ordemEncaminhamento + 1
+                            } else if (self.ProjetoAcompanhamentoItem[0]) {
+                                ordemEncaminhamento = self.ProjetoAcompanhamentoItem[0].ordem + 1
+                            } else {
+                                // Primeira row.
+                                ordemEncaminhamento = 1;
+                            }
+
                             const numeroIdentificador: string = self.ordem + '.' + ordemEncaminhamento;
 
                             return {
