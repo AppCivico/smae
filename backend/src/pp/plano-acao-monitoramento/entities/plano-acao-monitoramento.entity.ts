@@ -1,4 +1,4 @@
-import { IdNomeExibicao } from '../../../variavel/entities/variavel.entity';
+import { IdNomeExibicaoDto } from '../../../common/dto/IdNomeExibicao.dto';
 
 export class PlanoAcaoMonitoramentoDto {
     id: number;
@@ -6,7 +6,7 @@ export class PlanoAcaoMonitoramentoDto {
     data_afericao: Date;
     descricao: string;
     criado_em: Date;
-    criador: IdNomeExibicao;
+    criador: IdNomeExibicaoDto;
     ultima_revisao: boolean;
 }
 

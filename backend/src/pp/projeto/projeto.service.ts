@@ -1,4 +1,4 @@
-import { HttpException, Injectable, Logger } from '@nestjs/common';
+import { BadRequestException, HttpException, Injectable, Logger } from '@nestjs/common';
 import { Prisma, ProjetoFase, ProjetoOrigemTipo, ProjetoStatus } from '@prisma/client';
 import { DateTime } from 'luxon';
 import { IdCodTituloDto } from 'src/common/dto/IdCodTitulo.dto';
@@ -15,7 +15,13 @@ import { PortfolioService } from '../portfolio/portfolio.service';
 import { CreateProjetoDocumentDto, CreateProjetoDto } from './dto/create-projeto.dto';
 import { FilterProjetoDto } from './dto/filter-projeto.dto';
 import { UpdateProjetoDocumentDto, UpdateProjetoDto } from './dto/update-projeto.dto';
-import { ProjetoDetailDto, ProjetoDocumentoDto, ProjetoDto, ProjetoMetaDetailDto, ProjetoPermissoesDto } from './entities/projeto.entity';
+import {
+    ProjetoDetailDto,
+    ProjetoDocumentoDto,
+    ProjetoDto,
+    ProjetoMetaDetailDto,
+    ProjetoPermissoesDto,
+} from './entities/projeto.entity';
 
 import { HtmlSanitizer } from '../../common/html-sanitizer';
 
@@ -686,10 +692,10 @@ export class ProjetoService {
                                 id: true,
                                 codigo: true,
                                 titulo: true,
-                                pdm_id: true
-                            }
-                        }
-                    }
+                                pdm_id: true,
+                            },
+                        },
+                    },
                 },
 
                 atividade: {
@@ -707,12 +713,12 @@ export class ProjetoService {
                                         id: true,
                                         codigo: true,
                                         titulo: true,
-                                        pdm_id: true
-                                    }
-                                }
-                            }
+                                        pdm_id: true,
+                                    },
+                                },
+                            },
                         },
-                    }
+                    },
                 },
 
                 regiao: {
@@ -746,7 +752,7 @@ export class ProjetoService {
             iniciativa = {
                 id: projeto.iniciativa.id,
                 codigo: projeto.iniciativa.codigo,
-                titulo: projeto.iniciativa.titulo
+                titulo: projeto.iniciativa.titulo,
             };
 
             meta = {
@@ -761,13 +767,13 @@ export class ProjetoService {
             atividade = {
                 id: projeto.atividade.id,
                 codigo: projeto.atividade.codigo,
-                titulo: projeto.atividade.titulo
+                titulo: projeto.atividade.titulo,
             };
 
             iniciativa = {
                 id: projeto.atividade.iniciativa.id,
                 codigo: projeto.atividade.iniciativa.codigo,
-                titulo: projeto.atividade.iniciativa.titulo
+                titulo: projeto.atividade.iniciativa.titulo,
             };
 
             meta = {
@@ -1023,6 +1029,8 @@ export class ProjetoService {
 
         // orgao_responsavel_id
 
+        const now = new Date(Date.now());
+
         await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient) => {
             await this.upsertPremissas(dto, prismaTx, projetoId);
             await this.upsertRestricoes(dto, prismaTx, projetoId);
@@ -1114,9 +1122,84 @@ export class ProjetoService {
                 if (codigo != projeto.codigo)
                     await prismaTx.projeto.update({ where: { id: projeto.id }, data: { codigo: codigo } });
             }
+
+            await this.upsertGrupoPort(prismaTx, projeto, dto, now, user);
         });
 
         return { id: projetoId };
+    }
+
+    private async upsertGrupoPort(
+        prismaTx: Prisma.TransactionClient,
+        projeto: ProjetoDetailDto,
+        dto: UpdateProjetoDto,
+        now: Date,
+        user: PessoaFromJwt
+    ) {
+        if (!Array.isArray(dto.grupo_portfolio)) return;
+
+        const prevVersions = await prismaTx.projetoGrupoPortfolio.findMany({
+            where: {
+                removido_em: null,
+                projeto_id: projeto.id,
+            },
+            include: {
+                GrupoPortfolio: {
+                    select: { orgao_id: true },
+                },
+            },
+        });
+
+        for (const grupoPortId of dto.grupo_portfolio) {
+            if (prevVersions.filter((r) => r.grupo_portfolio_id == grupoPortId)) continue;
+
+            const gp = await prismaTx.grupoPortfolio.findFirstOrThrow({
+                where: {
+                    removido_em: null,
+                    id: grupoPortId,
+                },
+                select: { id: true, orgao_id: true },
+            });
+
+            if (!user.hasSomeRoles(['Projeto.administrador'])) {
+                if (!user.hasSomeRoles(['Projeto.administrador_no_orgao']) || user.orgao_id != gp.orgao_id)
+                    throw new BadRequestException('Sem permissão para adicionar grupo de portfólio no projeto.');
+            }
+
+            await prismaTx.projetoGrupoPortfolio.create({
+                data: {
+                    grupo_portfolio_id: gp.id,
+                    criado_em: now,
+                    criado_por: user.id,
+                    projeto_id: projeto.id,
+                },
+            });
+        }
+
+        for (const prevPortRow of prevVersions) {
+            // pula as que continuam na lista
+            if (dto.grupo_portfolio.filter((r) => r == prevPortRow.grupo_portfolio_id)) continue;
+
+            if (!user.hasSomeRoles(['Projeto.administrador'])) {
+                if (
+                    !user.hasSomeRoles(['Projeto.administrador_no_orgao']) ||
+                    user.orgao_id != prevPortRow.GrupoPortfolio.orgao_id
+                )
+                    throw new BadRequestException('Sem permissão para remover grupo de portfólio no projeto.');
+            }
+
+            // remove o relacionamento
+            await prismaTx.projetoGrupoPortfolio.update({
+                where: {
+                    id: prevPortRow.id,
+                    removido_em: null,
+                },
+                data: {
+                    removido_em: now,
+                    removido_por: user.id,
+                },
+            });
+        }
     }
 
     async geraProjetoCodigo(id: number, prismaTx: Prisma.TransactionClient): Promise<string | undefined> {

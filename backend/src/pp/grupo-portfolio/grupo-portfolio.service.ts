@@ -101,16 +101,43 @@ export class GrupoPortfolioService {
                         },
                     },
                 },
+
+                ProjetoGrupoPortfolio: {
+                    include: {
+                        projeto: {
+                            select: {
+                                id: true,
+                                nome: true,
+                                codigo: true,
+                            },
+                        },
+                    },
+                },
+                PortfolioGrupoPortfolio: filter.retornar_uso
+                    ? {
+                          include: {
+                              portfolio: {
+                                  select: {
+                                      id: true,
+                                      titulo: true,
+                                  },
+                              },
+                          },
+                      }
+                    : undefined,
             },
             orderBy: { titulo: 'asc' },
         });
 
+        // os dois any abaixo são por causa que o Prisma não gera a tipagem por causa do ternário do filter.retornar_uso
         return rows.map((r) => {
             return {
                 id: r.id,
                 titulo: r.titulo,
                 criado_em: r.criado_em,
                 orgao_id: r.orgao_id,
+                portfolios: filter.retornar_uso ? r.PortfolioGrupoPortfolio.map((p: any) => p.portfolio) : [],
+                projetos: filter.retornar_uso ? r.ProjetoGrupoPortfolio.map((p: any) => p.projeto) : [],
                 participantes: r.GrupoPortfolioPessoa.map((p) => p.pessoa),
             };
         });

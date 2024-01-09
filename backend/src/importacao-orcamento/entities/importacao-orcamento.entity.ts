@@ -7,7 +7,7 @@ import {
     CreateOrcamentoRealizadoDto,
     CreateOrcamentoRealizadoItemDto,
 } from 'src/orcamento-realizado/dto/create-orcamento-realizado.dto';
-import { IdNomeExibicao } from 'src/variavel/entities/variavel.entity';
+import { IdNomeExibicaoDto } from '../../common/dto/IdNomeExibicao.dto';
 
 export class InOutArquivoDto {
     token: string;
@@ -22,7 +22,7 @@ export class ImportacaoOrcamentoDto {
     saida_arquivo: InOutArquivoDto | null;
     pdm: IdNomeDto | null;
     portfolio: IdTituloDto | null;
-    criado_por: IdNomeExibicao;
+    criado_por: IdNomeExibicaoDto;
     criado_em: Date;
     processado_em: Date | null;
     processado_errmsg: string | null;

@@ -2,7 +2,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { ProjetoStatus } from '@prisma/client';
 import { IdSiglaDescricao } from 'src/common/dto/IdSigla.dto';
 import { ProjetoPremissa, ProjetoRecursos, ProjetoRestricoes } from 'src/pp/projeto/entities/projeto.entity';
-import { IdNomeExibicao } from 'src/variavel/entities/variavel.entity';
+import { IdNomeExibicaoDto } from '../../../common/dto/IdNomeExibicao.dto';
 
 export class RelProjetosDto {
     id: number;
@@ -31,7 +31,7 @@ export class RelProjetosDto {
     orgao_participante: IdSiglaDescricao;
     orgao_gestor: IdSiglaDescricao;
     orgao_responsavel: IdSiglaDescricao | null;
-    responsavel: IdNomeExibicao | null;
+    responsavel: IdNomeExibicaoDto | null;
     premissa: ProjetoPremissa | null;
     restricao: ProjetoRestricoes | null;
     fonte_recurso: ProjetoRecursos | null;
@@ -56,7 +56,7 @@ export class RelProjetosCronogramaDto {
     custo_real: number | null;
     dependencias: string | null;
 
-    responsavel: IdNomeExibicao | null;
+    responsavel: IdNomeExibicaoDto | null;
     atraso: number | null;
 }
 

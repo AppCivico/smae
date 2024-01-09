@@ -1,11 +1,11 @@
-import { IdCodNome } from 'src/common/dto/IdCodNome.dto';
+import { IdCodNomeDto } from 'src/common/dto/IdCodNome.dto';
 import { IdCodTituloDto } from '../../../common/dto/IdCodTitulo.dto';
 
 export class RelPrevisaoCustoDto {
     meta: IdCodTituloDto | null;
     iniciativa: IdCodTituloDto | null;
     atividade: IdCodTituloDto | null;
-    projeto: IdCodNome | null;
+    projeto: IdCodNomeDto | null;
 
     custo_previsto: string;
     projeto_atividade: string;

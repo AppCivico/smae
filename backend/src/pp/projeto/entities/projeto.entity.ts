@@ -2,7 +2,7 @@ import { ApiProperty, PickType } from '@nestjs/swagger';
 import { CategoriaProcessoSei, ProjetoFase, ProjetoOrigemTipo, ProjetoStatus } from '@prisma/client';
 import { IdDesc } from 'src/atividade/entities/atividade.entity';
 import { IdCodTituloDto } from 'src/common/dto/IdCodTitulo.dto';
-import { IdNomeExibicao } from 'src/common/dto/IdNomeExibicao.dto';
+import { IdNomeExibicaoDto } from 'src/common/dto/IdNomeExibicao.dto';
 import { IdSiglaDescricao } from 'src/common/dto/IdSigla.dto';
 import { IdTituloDto } from '../../../common/dto/IdTitulo.dto';
 import { TipoDocumentoDto } from '../../../tipo-documento/entities/tipo-documento.entity';
@@ -91,7 +91,7 @@ export class ProjetoSeiDto {
     processo_sei: string;
     descricao: string | null;
     link: string | null;
-    criador: IdNomeExibicao | null;
+    criador: IdNomeExibicaoDto | null;
     comentarios: string | null;
     observacoes: string | null;
 }
@@ -154,7 +154,7 @@ export class ProjetoDetailDto {
     principais_etapas: string;
     orgao_gestor: IdSiglaDescricao;
     orgao_responsavel: IdSiglaDescricao | null;
-    responsavel: IdNomeExibicao | null;
+    responsavel: IdNomeExibicaoDto | null;
     premissas: ProjetoPremissa[] | null;
     restricoes: ProjetoRestricoes[] | null;
     fonte_recursos: ProjetoRecursos[] | null;
@@ -181,7 +181,7 @@ export class ProjetoDetailDto {
     atividade: IdCodTituloDto | null;
     // responsaveis_no_orgao_gestor:
 
-    responsaveis_no_orgao_gestor: IdNomeExibicao[];
+    responsaveis_no_orgao_gestor: IdNomeExibicaoDto[];
     permissoes: ProjetoPermissoesDto;
 
     ano_orcamento: number[];

@@ -16,9 +16,9 @@ import {
     ValidateIf,
     ValidateNested,
 } from 'class-validator';
+import { IdNomeExibicaoDto } from '../../common/dto/IdNomeExibicao.dto';
 import { PROCESSO_DESCRIPTION, PROCESSO_MESSAGE, PROCESSO_REGEXP } from '../../dotacao/dto/dotacao.dto';
 import { OrcamentoRealizado } from '../entities/orcamento-realizado.entity';
-import { IdNomeExibicao } from '../../variavel/entities/variavel.entity';
 
 export class CreateOrcamentoRealizadoItemDto {
     /**
@@ -224,7 +224,7 @@ export class FilterOrcamentoRealizadoDto {
 
 export class OrcamentoRealizadoStatusConcluidoDto {
     concluido: boolean;
-    concluido_por: IdNomeExibicao | null;
+    concluido_por: IdNomeExibicaoDto | null;
     concluido_em: Date | null;
     pode_editar: boolean;
 }

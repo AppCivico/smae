@@ -1,9 +1,9 @@
 import { OmitType, PartialType } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { IsBoolean, IsInt, IsNumber, IsOptional, Min } from 'class-validator';
+import { IdNomeExibicaoDto } from '../../common/dto/IdNomeExibicao.dto';
 import { ParteDotacaoDto } from '../../dotacao/dto/dotacao.dto';
 import { MetaOrcamento } from '../entities/meta-orcamento.entity';
-import { IdNomeExibicao } from '../../variavel/entities/variavel.entity';
 
 export class CreateMetaOrcamentoDto extends ParteDotacaoDto {
     /**
@@ -77,7 +77,7 @@ export class FilterMetaOrcamentoDto {
 
 export class OrcamentoPrevistoEhZeroStatusDto {
     previsto_eh_zero: boolean;
-    previsto_eh_zero_criado_por: IdNomeExibicao | null;
+    previsto_eh_zero_criado_por: IdNomeExibicaoDto | null;
     previsto_eh_zero_criado_em: Date | null;
 }
 

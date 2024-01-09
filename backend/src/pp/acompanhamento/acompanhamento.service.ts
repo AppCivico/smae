@@ -6,7 +6,7 @@ import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import { PrismaService } from '../../prisma/prisma.service';
 
 import { HtmlSanitizer } from '../../common/html-sanitizer';
-import { CreateProjetoAcompanhamentoDto, ProjetoAcompanhamentoDto } from './dto/create-acompanhamento.dto';
+import { CreateProjetoAcompanhamentoDto } from './dto/create-acompanhamento.dto';
 import { UpdateProjetoAcompanhamentoDto } from './dto/update-acompanhamento.dto';
 import {
     DetailProjetoAcompanhamentoDto,
@@ -315,7 +315,7 @@ export class AcompanhamentoService {
                         data: dto.acompanhamentos.filter(e => e.id == undefined).map((r) => {
                             ordemEncaminhamento = ordemEncaminhamento ? ordemEncaminhamento + 1 : self.ProjetoAcompanhamentoItem[0].ordem + 1;
                             const numeroIdentificador: string = self.ordem + '.' + ordemEncaminhamento;
-                            
+
                             return {
                                 encaminhamento: r.encaminhamento,
                                 prazo_encaminhamento: r.prazo_encaminhamento,

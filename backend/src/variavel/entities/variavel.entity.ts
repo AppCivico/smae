@@ -3,33 +3,25 @@ import { Periodicidade, Serie } from '@prisma/client';
 import { Decimal } from '@prisma/client/runtime/library';
 import { IsString } from 'class-validator';
 import { DateYMD } from '../../common/date2ymd';
+import { IdNomeExibicaoDto } from '../../common/dto/IdNomeExibicao.dto';
+import { IdTituloDto } from '../../common/dto/IdTitulo.dto';
 import { OrgaoResumo } from '../../orgao/entities/orgao.entity';
 import { Regiao } from '../../regiao/entities/regiao.entity';
 import { UnidadeMedida } from '../../unidade-medida/entities/unidade-medida.entity';
 import { VariavelResumo } from '../dto/list-variavel.dto';
 
-export class IdTitulo {
-    id: number;
-    titulo: string;
-}
-
 export class IndicadorVariavelOrigemDto {
     id: number;
     titulo: string;
-    meta: IdTitulo | null;
-    iniciativa: IdTitulo | null;
-    atividade: IdTitulo | null;
+    meta: IdTituloDto | null;
+    iniciativa: IdTituloDto | null;
+    atividade: IdTituloDto | null;
 }
 
 export class IndicadorVariavel {
     desativado: boolean;
     indicador: IndicadorVariavelOrigemDto;
     indicador_origem: IndicadorVariavelOrigemDto | null;
-}
-
-export class IdNomeExibicao {
-    id: number;
-    nome_exibicao: string;
 }
 
 export class Variavel {
@@ -47,7 +39,7 @@ export class Variavel {
     orgao: OrgaoResumo;
     regiao: Regiao | null;
     indicador_variavel: IndicadorVariavel[];
-    responsaveis?: IdNomeExibicao[];
+    responsaveis?: IdNomeExibicaoDto[];
     ano_base?: number | null;
     codigo: string;
     atraso_meses: number;
