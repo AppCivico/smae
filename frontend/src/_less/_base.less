@@ -1590,46 +1590,6 @@ input[type='radio'] {
   }
 }
 
-.interruptorcheckbox {
-  span {
-    .t12;
-    line-height: 1;
-    .w900;
-    .uc;
-    .br(200px);
-    display: inline-block;
-    padding: .75em 1.5em;
-    text-align: center;
-    border: 0;
-    outline: 0;
-    letter-spacing: .05em;
-    color: @c300;
-    cursor: pointer;
-    .transition;
-
-    &:last-child {
-      background: @primary;
-      color: @amarelo;
-    }
-  }
-
-  input {
-    display: none;
-
-    &:checked {
-      +span {
-        background: @primary;
-        color: @amarelo;
-
-        +span {
-          background: none;
-          color: @c300;
-        }
-      }
-    }
-  }
-}
-
 .label {
   display: block;
   .t12;
