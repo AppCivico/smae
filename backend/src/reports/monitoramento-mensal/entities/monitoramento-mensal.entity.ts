@@ -1,7 +1,7 @@
 import { IntersectionType, OmitType } from '@nestjs/swagger';
 import { Periodicidade, Serie } from '@prisma/client';
 import { IdCodTituloDto } from '../../../common/dto/IdCodTitulo.dto';
-import { IdNomeExibicao } from '../../../common/dto/IdNomeExibicao.dto';
+import { IdNomeExibicaoDto } from '../../../common/dto/IdNomeExibicao.dto';
 import { MfAnaliseQualitativaDto } from '../../../mf/metas/dto/mf-meta-analise-quali.dto';
 import { MfFechamentoDto } from '../../../mf/metas/dto/mf-meta-fechamento.dto';
 import { MfRiscoDto } from '../../../mf/metas/dto/mf-meta-risco.dto';
@@ -38,10 +38,10 @@ export class RelSerieVariavelDto {
     data_valor: string;
     valor_nominal: string;
 
-    atualizado_por: IdNomeExibicao | null;
+    atualizado_por: IdNomeExibicaoDto | null;
     atualizado_em: string;
 
-    conferida_por: IdNomeExibicao | null;
+    conferida_por: IdNomeExibicaoDto | null;
     conferida_em: string | null;
 
     conferida: boolean;

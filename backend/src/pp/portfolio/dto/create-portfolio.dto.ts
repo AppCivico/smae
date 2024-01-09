@@ -62,4 +62,11 @@ export class CreatePortfolioDto {
     @Max(4)
     @Transform(({ value }: any) => +value)
     nivel_regionalizacao?: number;
+
+    @IsOptional()
+    @IsArray()
+    @IsInt({ message: '$property| Precisa ser uma lista de inteiros', each: true })
+    @Max(1000, { each: true })
+    @Transform(({ value }: any) => +value)
+    grupo_portfolio?: number[];
 }

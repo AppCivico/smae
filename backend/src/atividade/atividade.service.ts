@@ -8,9 +8,10 @@ import { VariavelService } from '../variavel/variavel.service';
 import { AtividadeOrgaoParticipante, CreateAtividadeDto } from './dto/create-atividade.dto';
 import { FilterAtividadeDto } from './dto/filter-atividade.dto';
 import { UpdateAtividadeDto } from './dto/update-atividade.dto';
-import { Atividade, AtividadeOrgao, IdNomeExibicao } from './entities/atividade.entity';
+import { Atividade, AtividadeOrgao } from './entities/atividade.entity';
 import { CronogramaAtrasoGrau } from 'src/common/dto/CronogramaAtrasoGrau.dto';
 import { CronogramaEtapaService } from 'src/cronograma-etapas/cronograma-etapas.service';
+import { IdNomeExibicaoDto } from '../common/dto/IdNomeExibicao.dto';
 
 @Injectable()
 export class AtividadeService {
@@ -249,7 +250,7 @@ export class AtividadeService {
 
         const ret: Atividade[] = [];
         for (const dbAtividade of listActive) {
-            const coordenadores_cp: IdNomeExibicao[] = [];
+            const coordenadores_cp: IdNomeExibicaoDto[] = [];
             const orgaos: Record<number, AtividadeOrgao> = {};
 
             for (const orgao of dbAtividade.atividade_orgao) {

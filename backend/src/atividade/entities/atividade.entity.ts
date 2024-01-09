@@ -1,20 +1,16 @@
-import { IdSiglaDescricao } from 'src/common/dto/IdSigla.dto';
 import { CronogramaAtrasoGrau } from 'src/common/dto/CronogramaAtrasoGrau.dto';
+import { IdSiglaDescricao } from 'src/common/dto/IdSigla.dto';
+import { IdNomeExibicaoDto } from '../../common/dto/IdNomeExibicao.dto';
 
 export class IdDesc {
     id: number;
     descricao: string;
 }
 
-export class IdNomeExibicao {
-    id: number;
-    nome_exibicao: string;
-}
-
 export class AtividadeOrgao {
     orgao: IdSiglaDescricao;
     responsavel: boolean;
-    participantes: IdNomeExibicao[];
+    participantes: IdNomeExibicaoDto[];
 }
 
 export class Atividade {
@@ -26,7 +22,7 @@ export class Atividade {
     contexto: string | null;
     complemento: string | null;
     orgaos_participantes: AtividadeOrgao[];
-    coordenadores_cp: IdNomeExibicao[];
+    coordenadores_cp: IdNomeExibicaoDto[];
     compoe_indicador_iniciativa: boolean;
     ativo: boolean;
     cronograma: CronogramaAtrasoGrau | null;

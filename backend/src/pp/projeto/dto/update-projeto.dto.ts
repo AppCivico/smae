@@ -207,6 +207,13 @@ export class UpdateProjetoDto extends OmitType(PartialType(CreateProjetoDto), ['
         message: '$property| Precisa ser um dos seguintes valores: ' + Object.values(ProjetoStatus).join(', '),
     })
     status?: ProjetoStatus;
+
+    @IsOptional()
+    @IsArray()
+    @IsInt({ message: '$property| Precisa ser uma lista de inteiros', each: true })
+    @Max(1000, { each: true })
+    @Transform(({ value }: any) => +value)
+    grupo_portfolio?: number[];
 }
 
 export class UpdateProjetoDocumentDto {
