@@ -213,6 +213,17 @@ export class UpdateProjetoDto extends OmitType(PartialType(CreateProjetoDto), ['
     @IsInt({ message: '$property| Precisa ser uma lista de inteiros', each: true })
     @Max(1000, { each: true })
     grupo_portfolio?: number[];
+
+    /**
+     * “Equipe” pessoas que terão permissão para editar o projeto (mesmos privilégios do gerente de projeto)
+     *
+     * Ao salvar, o banco calcula automaticamente o órgão da pessoa, se mudar de órgão, o privilégio é perdido.
+     */
+    @IsOptional()
+    @IsArray()
+    @IsInt({ message: '$property| Precisa ser uma lista de inteiros', each: true })
+    @Max(1000, { each: true })
+    equipe?: number[];
 }
 
 export class UpdateProjetoDocumentDto {

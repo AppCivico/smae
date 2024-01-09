@@ -296,9 +296,7 @@ export class PessoaService {
             dto.email.endsWith('@' + this.#matchEmailRFObrigatorio)
         ) {
             throw new HttpException(
-                `registro_funcionario| Registro de funcionário obrigatório para e-mails terminando @${
-                    this.#matchEmailRFObrigatorio
-                }`,
+                `registro_funcionario| Registro de funcionário obrigatório para e-mails terminando @${this.#matchEmailRFObrigatorio}`,
                 400
             );
         }
@@ -376,6 +374,17 @@ export class PessoaService {
         this.verificarCPFObrigatorio(updatePessoaDto);
         this.verificarRFObrigatorio(updatePessoaDto);
 
+        const self = await this.prisma.pessoa.findFirstOrThrow({
+            where: {
+                id: pessoaId,
+            },
+            include: {
+                pessoa_fisica: true,
+            },
+        });
+
+        const now = new Date(Date.now());
+
         await this.prisma.$transaction(
             async (prismaTx: Prisma.TransactionClient) => {
                 const emailExists = updatePessoaDto.email
@@ -432,6 +441,40 @@ export class PessoaService {
                     await prismaTx.pessoaGrupoPainel.deleteMany({ where: { pessoa_id: pessoaId } });
                 }
 
+                if (
+                    updatePessoaDto.orgao_id &&
+                    self.pessoa_fisica &&
+                    self.pessoa_fisica.orgao_id &&
+                    self.pessoa_fisica.orgao_id != updatePessoaDto.orgao_id
+                ) {
+                    this.logger.log(
+                        `Trocou de órgão: removendo relacionamentos de grupoPortfolioPessoa no órgão antigo.`
+                    );
+
+                    await prismaTx.grupoPortfolioPessoa.updateMany({
+                        where: {
+                            pessoa_id: self.id,
+                            orgao_id: self.pessoa_fisica.orgao_id,
+                            removido_em: null,
+                        },
+                        data: {
+                            removido_em: now,
+                        },
+                    });
+
+                    this.logger.log(`Trocou de órgão: removendo relacionamentos de projetoEquipe no órgão antigo.`);
+                    await prismaTx.projetoEquipe.updateMany({
+                        where: {
+                            pessoa_id: self.id,
+                            orgao_id: self.pessoa_fisica.orgao_id,
+                            removido_em: null,
+                        },
+                        data: {
+                            removido_em: now,
+                        },
+                    });
+                }
+
                 await prismaTx.pessoa.update({
                     where: {
                         id: pessoaId,
@@ -469,7 +512,7 @@ export class PessoaService {
                             desativado: true,
                             desativado_motivo: updatePessoaDto.desativado_motivo,
                             desativado_por: Number(user.id),
-                            desativado_em: new Date(Date.now()),
+                            desativado_em: now,
                         },
                     });
                 } else if (updatePessoaDto.desativado === false) {
@@ -482,8 +525,8 @@ export class PessoaService {
                             desativado_por: null,
                             desativado_em: null,
                             desativado_motivo: null,
-                            atualizado_por: Number(user.id),
-                            atualizado_em: new Date(Date.now()),
+                            atualizado_por: user.id,
+                            atualizado_em: now,
                         },
                     });
                 } else {
@@ -492,8 +535,8 @@ export class PessoaService {
                             id: pessoaId,
                         },
                         data: {
-                            atualizado_por: Number(user.id),
-                            atualizado_em: new Date(Date.now()),
+                            atualizado_por: user.id,
+                            atualizado_em: now,
                         },
                     });
                 }

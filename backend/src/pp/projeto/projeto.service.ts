@@ -1124,6 +1124,7 @@ export class ProjetoService {
             }
 
             await this.upsertGrupoPort(prismaTx, projeto, dto, now, user);
+            await this.upsertEquipe(prismaTx, projeto, dto, now, user);
         });
 
         return { id: projetoId };
@@ -1190,6 +1191,76 @@ export class ProjetoService {
             await prismaTx.projetoGrupoPortfolio.update({
                 where: {
                     id: prevPortRow.id,
+                    removido_em: null,
+                },
+                data: {
+                    removido_em: now,
+                    removido_por: user.id,
+                },
+            });
+        }
+    }
+
+    private async upsertEquipe(
+        prismaTx: Prisma.TransactionClient,
+        projeto: ProjetoDetailDto,
+        dto: UpdateProjetoDto,
+        now: Date,
+        user: PessoaFromJwt
+    ) {
+        if (!Array.isArray(dto.equipe)) return;
+
+        const prevVersions = await prismaTx.projetoEquipe.findMany({
+            where: {
+                removido_em: null,
+                projeto_id: projeto.id,
+            },
+        });
+
+        for (const pessoaId of dto.equipe) {
+            if (prevVersions.filter((r) => r.pessoa_id == pessoaId)[0]) continue;
+
+            const pessoaComPerm = await prismaTx.view_pessoa_gestor_de_projeto.findFirst({
+                where: {
+                    pessoa_id: pessoaId,
+                },
+                select: { pessoa_id: true, orgao_id: true },
+            });
+
+            if (!pessoaComPerm)
+                throw new BadRequestException(
+                    `Pessoa id ${pessoaId} não foi encontrada ou não tem o privilégio necessário.`
+                );
+
+            if (!user.hasSomeRoles(['Projeto.administrador'])) {
+                if (!user.hasSomeRoles(['Projeto.administrador_no_orgao']) || user.orgao_id != pessoaComPerm.orgao_id)
+                    throw new BadRequestException('Sem permissão para adicionar grupo de portfólio no projeto.');
+            }
+
+            await prismaTx.projetoEquipe.create({
+                data: {
+                    pessoa_id: pessoaComPerm.pessoa_id,
+                    orgao_id: pessoaComPerm.orgao_id,
+                    criado_em: now,
+                    criado_por: user.id,
+                    projeto_id: projeto.id,
+                },
+            });
+        }
+
+        for (const prevEquipeRow of prevVersions) {
+            // pula as que continuam na lista
+            if (dto.equipe.filter((r) => r == prevEquipeRow.pessoa_id)[0]) continue;
+
+            if (!user.hasSomeRoles(['Projeto.administrador'])) {
+                if (!user.hasSomeRoles(['Projeto.administrador_no_orgao']) || user.orgao_id != prevEquipeRow.orgao_id)
+                    throw new BadRequestException('Sem permissão para remover a pessoa da equipe do projeto.');
+            }
+
+            // remove o relacionamento
+            await prismaTx.projetoEquipe.update({
+                where: {
+                    id: prevEquipeRow.id,
                     removido_em: null,
                 },
                 data: {
