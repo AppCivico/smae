@@ -152,6 +152,20 @@ export class VariavelService {
                     ids.push(variavel.id);
                 }
 
+                if (dto.supraregional) {
+                    await this.performVariavelSave(
+                        prismaThx,
+                        {
+                            ...dto,
+                            titulo: dto.titulo,
+                            codigo: prefixo,
+                        },
+                        indicador_id,
+                        indicador,
+                        responsaveis
+                    );
+                }
+
                 return ids.map((n) => ({ id: n }));
             },
             {
