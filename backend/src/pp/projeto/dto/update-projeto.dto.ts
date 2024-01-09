@@ -212,7 +212,6 @@ export class UpdateProjetoDto extends OmitType(PartialType(CreateProjetoDto), ['
     @IsArray()
     @IsInt({ message: '$property| Precisa ser uma lista de inteiros', each: true })
     @Max(1000, { each: true })
-    @Transform(({ value }: any) => +value)
     grupo_portfolio?: number[];
 }
 
