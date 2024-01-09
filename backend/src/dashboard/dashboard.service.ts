@@ -30,15 +30,19 @@ export class DashboardService {
             if (config === false) continue;
 
             if (config && (config as any)['params'] && (config as any)['params']['projetos_ids']) {
-                if (memory['projetos_ids'] === undefined)
+                if (memory['projetos_ids'] === undefined) {
                     memory['projetos_ids'] = (await this.projetoService.findAllIds(user)).map((p) => p.id);
+                    if (memory['projetos_ids'].length == 0) memory['projetos_ids'] = [-1];
+                }
 
                 (config as any)['params']['projetos_ids'] = memory['projetos_ids'];
             }
 
             if (config && (config as any)['params'] && (config as any)['params']['metas_ids']) {
-                if (memory['metas_ids'] === undefined)
+                if (memory['metas_ids'] === undefined) {
                     memory['metas_ids'] = (await this.metaService.findAllIds(user)).map((p) => p.id);
+                    if (memory['metas_ids'].length == 0) memory['metas_ids'] = [-1];
+                }
 
                 (config as any)['params']['metas_ids'] = memory['metas_ids'];
             }
