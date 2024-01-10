@@ -450,24 +450,29 @@ export class ProjetoService {
     }
 
     private getProjetoWhereSet(user: PessoaFromJwt | undefined, isBi: boolean) {
-        const permissionsSet: Prisma.Enumerable<Prisma.ProjetoWhereInput> = [
+        const permissionsBaseSet: Prisma.Enumerable<Prisma.ProjetoWhereInput> = [
             {
                 removido_em: null,
                 portfolio: { removido_em: null },
             },
         ];
-        if (!user) return permissionsSet;
+        if (!user) return permissionsBaseSet;
 
-        if (isBi && user.hasSomeRoles(['SMAE.acesso_bi'])) return permissionsSet;
+        if (isBi && user.hasSomeRoles(['SMAE.acesso_bi'])) return permissionsBaseSet;
 
         if (user.hasSomeRoles(['Projeto.administrador'])) {
             this.logger.debug('roles Projeto.administrador, ver todos os projetos');
-            // nenhum filtro
-        } else if (user.hasSomeRoles(['Projeto.administrador_no_orgao'])) {
-            this.logger.debug(
-                `roles Projeto.administrador_no_orgao, ver todos os projetos do portfolio. com orgao ${user.orgao_id}`
+            // nenhum filtro para o administrador
+            return permissionsBaseSet;
+        }
+
+        const waterfallSet: Prisma.Enumerable<Prisma.ProjetoWhereInput> = [];
+
+        if (user.hasSomeRoles(['Projeto.administrador_no_orgao'])) {
+            this.logger.verbose(
+                `Adicionando ver todos os projetos do portfolio com orgao ${user.orgao_id} (Projeto.administrador_no_orgao)`
             );
-            permissionsSet.push({
+            waterfallSet.push({
                 portfolio: {
                     orgaos: {
                         some: {
@@ -476,22 +481,86 @@ export class ProjetoService {
                     },
                 },
             });
-        } else if (user.hasSomeRoles(['SMAE.gestor_de_projeto'])) {
-            this.logger.debug(`roles SMAE.gestor_de_projeto, ver todos responsaveis_no_orgao_gestor ${user.id}`);
-            permissionsSet.push({
-                responsaveis_no_orgao_gestor: { has: user.id },
-            });
-        } else if (user.hasSomeRoles(['SMAE.colaborador_de_projeto'])) {
-            this.logger.debug(`roles SMAE.colaborador_de_projeto, ver apenas responsavel_id ${user.id}`);
-
-            permissionsSet.push({
-                responsavel_id: user.id,
-            });
-        } else {
-            throw new HttpException('Sem permissões para acesso aos projetos.', 400);
         }
 
-        return permissionsSet;
+        if (user.hasSomeRoles(['SMAE.gestor_de_projeto'])) {
+            this.logger.verbose(
+                `Adicionando projetos onde responsaveis_no_orgao_gestor contém ${user.id} (SMAE.gestor_de_projeto)`
+            );
+            waterfallSet.push({ responsaveis_no_orgao_gestor: { has: user.id } });
+
+            this.logger.verbose(
+                `Adicionar ver projetos onde equipe contém pessoa_id=${user.id} (SMAE.gestor_de_projeto)`
+            );
+
+            waterfallSet.push({
+                ProjetoEquipe: {
+                    some: {
+                        removido_em: null,
+                        pessoa_id: user.id,
+                    },
+                },
+            });
+        }
+
+        if (user.hasSomeRoles(['SMAE.colaborador_de_projeto'])) {
+            this.logger.verbose(`Adicionar ver projetos onde responsavel_id=${user.id} (SMAE.colaborador_de_projeto)`);
+            waterfallSet.push({ responsavel_id: user.id });
+        }
+
+        if (user.hasSomeRoles(['SMAE.espectador_de_projeto'])) {
+            this.logger.verbose(
+                `Adicionar ver projetos e portfolios que participam dos grupo-portfolios contendo pessoa_id=${user.id} (SMAE.espectador_de_projeto)`
+            );
+            waterfallSet.push({
+                OR: [
+                    // ou o projeto ta num grupo com a pessoa
+                    {
+                        ProjetoGrupoPortfolio: {
+                            some: {
+                                GrupoPortfolio: {
+                                    removido_em: null,
+                                    GrupoPortfolioPessoa: {
+                                        some: {
+                                            removido_em: null,
+                                            pessoa_id: user.id,
+                                        },
+                                    },
+                                },
+                            },
+                        },
+                    },
+                    // ou o port ta num grupo-port que tem essa pessoa
+                    {
+                        portfolio: {
+                            removido_em: null,
+                            PortfolioGrupoPortfolio: {
+                                some: {
+                                    GrupoPortfolio: {
+                                        removido_em: null,
+                                        GrupoPortfolioPessoa: {
+                                            some: {
+                                                pessoa_id: user.id,
+                                                removido_em: null,
+                                            },
+                                        },
+                                    },
+                                },
+                            },
+                        },
+                    },
+                ],
+            });
+        }
+
+        // pelo menos uma das condições deveria ser verdadeira
+        if (waterfallSet.length == 0) throw new HttpException('Sem permissões para acesso aos projetos.', 400);
+
+        permissionsBaseSet.push({
+            OR: waterfallSet,
+        });
+
+        return permissionsBaseSet;
     }
 
     async getDadosProjetoUe(id: number, user: PessoaFromJwt | undefined): Promise<HtmlProjetoUe> {
