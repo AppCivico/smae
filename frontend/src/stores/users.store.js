@@ -11,7 +11,7 @@ export const useUsersStore = defineStore({
     users: {},
     user: {},
     temp: {},
-    usersCoord: {},
+    pessoasSimplificadas: {},
   }),
   actions: {
     clear() {
@@ -19,7 +19,7 @@ export const useUsersStore = defineStore({
       this.users = {};
       this.user = {};
       this.temp = {};
-      this.usersCoord = {};
+      this.pessoasSimplificadas = {};
     },
     async register(user) {
       await this.requestS.post(`${baseUrl}/pessoa`, user);
@@ -47,14 +47,14 @@ export const useUsersStore = defineStore({
         this.user = { error };
       }
     },
-    async getCoord() {
+    async buscarPessoasSimplificadas(params) {
       try {
-        if (this.usersCoord.loading) return;
-        this.usersCoord = { loading: true };
-        const r = await this.requestS.get(`${baseUrl}/pessoa/reduzido?coordenador_responsavel_cp=true`);
-        this.usersCoord = r.linhas;
+        if (this.pessoasSimplificadas.loading) return;
+        this.pessoasSimplificadas = { loading: true };
+        const r = await this.requestS.get(`${baseUrl}/pessoa/reduzido`, params);
+        this.pessoasSimplificadas = r.linhas;
       } catch (error) {
-        this.usersCoord = { error };
+        this.pessoasSimplificadas = { error };
       }
     },
     async update(id, params) {

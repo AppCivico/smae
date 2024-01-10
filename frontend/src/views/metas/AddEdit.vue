@@ -58,7 +58,7 @@ const { tempTags } = storeToRefs(TagsStore);
 const OrgansStore = useOrgansStore();
 
 const UserStore = useUsersStore();
-const { usersCoord } = storeToRefs(UserStore);
+const { pessoasSimplificadas } = storeToRefs(UserStore);
 
 (async () => {
   if (meta_id) await MetasStore.getById(meta_id);
@@ -69,7 +69,7 @@ const { usersCoord } = storeToRefs(UserStore);
   SubtemaStore.filterByPdm(activePdm.value.id);
   TagsStore.filterByPdm(activePdm.value.id);
   OrgansStore.getAllOrganResponsibles();
-  UserStore.getCoord();
+  UserStore.buscarPessoasSimplificadas({ coordenador_responsavel_cp: true });
 
   if (singleMeta.value.id) {
     if (singleMeta.value?.tema?.id) singleMeta.value.tema_id = singleMeta.value.tema.id;
@@ -514,12 +514,12 @@ function filterResponsible(orgao_id) {
         </label>
         <div class="flex">
           <div
-            v-if="usersCoord.length"
+            v-if="pessoasSimplificadas.length"
             class="f1"
           >
             <AutocompleteField
               :controlador="coordenadores_cp"
-              :grupo="usersCoord"
+              :grupo="pessoasSimplificadas"
               label="nome_exibicao"
             />
           </div>
