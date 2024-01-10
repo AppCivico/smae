@@ -227,6 +227,7 @@ export class AcompanhamentoService {
 
             detalhamento: projetoAcompanhamento.detalhamento,
             pauta: projetoAcompanhamento.pauta,
+            ordedm: projetoAcompanhamento.ordem,
 
             observacao: projetoAcompanhamento.observacao,
             detalhamento_status: projetoAcompanhamento.detalhamento_status,
