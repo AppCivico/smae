@@ -54,6 +54,9 @@ export class ProjetoPermissoesDto {
      * Campo que fica TRUE quando o usuário já não tem mais o acesso total de edição
      * por exemplo, após a fase do planejamento,
      * o usuário responsável pode fazer edição no realizado, mas não pode incluir novas tarefas
+     *
+     * Os usuários que tiverem esse campo TRUE mas sou_responsavel=false, são os usuários espectadores,
+     * que só podem visualizar e nunca editar nem mesmo o realizado
      */
     apenas_leitura_planejamento: boolean;
     sou_responsavel: boolean;
@@ -105,6 +108,11 @@ export class IdTituloNivelMaxDto {
     titulo: string;
     nivel_maximo_tarefa: number;
     orcamento_execucao_disponivel_meses: number[];
+}
+
+export class ProjetoEquipeItemDto {
+    orgao_id: number;
+    pessoa: IdNomeExibicaoDto;
 }
 
 export class ProjetoDetailDto {
@@ -176,6 +184,7 @@ export class ProjetoDetailDto {
     secretario_responsavel: string | null;
     coordenador_ue: string | null;
 
+    equipe: ProjetoEquipeItemDto[];
     meta: ProjetoMetaDetailDto | null;
     iniciativa: IdCodTituloDto | null;
     atividade: IdCodTituloDto | null;

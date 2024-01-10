@@ -19,12 +19,14 @@ import {
     ProjetoDetailDto,
     ProjetoDocumentoDto,
     ProjetoDto,
+    ProjetoEquipeItemDto,
     ProjetoMetaDetailDto,
     ProjetoPermissoesDto,
 } from './entities/projeto.entity';
 
 import { HtmlSanitizer } from '../../common/html-sanitizer';
 
+const FASES_LIBERAR_COLABORADOR: ProjetoStatus[] = ['Registrado', 'Selecionado', 'EmPlanejamento'];
 const StatusParaFase: Record<ProjetoStatus, ProjetoFase> = {
     Registrado: 'Registro',
     Selecionado: 'Planejamento',
@@ -494,7 +496,7 @@ export class ProjetoService {
             );
 
             waterfallSet.push({
-                ProjetoEquipe: {
+                equipe: {
                     some: {
                         removido_em: null,
                         pessoa_id: user.id,
@@ -683,6 +685,23 @@ export class ProjetoService {
                         titulo: true,
                         nivel_maximo_tarefa: true,
                         orcamento_execucao_disponivel_meses: true,
+                        orgaos: {
+                            select: {
+                                orgao_id: true,
+                            },
+                        },
+                    },
+                },
+                equipe: {
+                    where: { removido_em: null },
+                    select: {
+                        pessoa: {
+                            select: {
+                                id: true,
+                                nome_exibicao: true,
+                            },
+                        },
+                        orgao_id: true,
                     },
                 },
                 orgao_gestor: {
@@ -864,7 +883,12 @@ export class ProjetoService {
         });
 
         return {
-            ...projeto,
+            ...{
+                ...projeto,
+                portfolio: {
+                    ...{ ...projeto.portfolio, orgaos: undefined },
+                },
+            },
             meta: meta,
             iniciativa: iniciativa,
             atividade: atividade,
@@ -884,6 +908,12 @@ export class ProjetoService {
         projeto: {
             arquivado: boolean;
             status: ProjetoStatus;
+            portfolio: {
+                orgaos: {
+                    orgao_id: number;
+                }[];
+            };
+            equipe: ProjetoEquipeItemDto[];
             id: number;
             responsaveis_no_orgao_gestor: number[];
             responsavel_id: number | null;
@@ -930,30 +960,9 @@ export class ProjetoService {
         }
 
         let pessoaPodeEscrever = false;
+
         if (user) {
-            if (user.hasSomeRoles(['Projeto.administrador_no_orgao', 'Projeto.administrador'])) {
-                pessoaPodeEscrever = true;
-            } else if (
-                user.hasSomeRoles(['SMAE.gestor_de_projeto']) &&
-                projeto.responsaveis_no_orgao_gestor.includes(+user.id)
-            ) {
-                pessoaPodeEscrever = true;
-            } else if (
-                user.hasSomeRoles(['SMAE.colaborador_de_projeto']) &&
-                projeto.responsavel_id &&
-                projeto.responsavel_id == +user.id
-            ) {
-                pessoaPodeEscrever = (['Registrado', 'Selecionado', 'EmPlanejamento'] as ProjetoStatus[]).includes(
-                    projeto.status
-                );
-                // mesmo não podendo escrever, ele ainda é o responsável, ele pode fazer algumas escritas (do realizado, no cronograma)
-                permissoes.sou_responsavel = true;
-                this.logger.debug(
-                    `entrou em pessoa pode escrever pessoaPodeEscrever=${pessoaPodeEscrever} sou_responsavel=${permissoes.sou_responsavel}`
-                );
-            } else {
-                throw new HttpException('Não foi possível calcular a permissão de acesso para o projeto.', 400);
-            }
+            pessoaPodeEscrever = this.calcPessoaPodeEscrever(user, pessoaPodeEscrever, projeto, permissoes);
         } else {
             // user null == sistema puxando o relatório, então se precisar só mudar pra pessoaPodeEscrever=true
         }
@@ -1045,6 +1054,99 @@ export class ProjetoService {
         }
 
         return permissoes;
+    }
+
+    private calcPessoaPodeEscrever(
+        user: PessoaFromJwt,
+        pessoaPodeEscrever: boolean,
+        projeto: {
+            arquivado: boolean;
+            status: ProjetoStatus;
+            portfolio: {
+                orgaos: {
+                    orgao_id: number;
+                }[];
+            };
+            equipe: ProjetoEquipeItemDto[];
+            id: number;
+            responsaveis_no_orgao_gestor: number[];
+            responsavel_id: number | null;
+        },
+        permissoes: ProjetoPermissoesDto
+    ) {
+        const anyPerm = user.hasSomeRoles([
+            'Projeto.administrador',
+            'SMAE.gestor_de_projeto',
+            'Projeto.administrador_no_orgao',
+            'SMAE.colaborador_de_projeto',
+        ]);
+        if (!anyPerm) throw new HttpException('Não foi possível calcular a permissão de acesso para o projeto.', 400);
+
+        if (user.hasSomeRoles(['Projeto.administrador'])) {
+            // admin pode tudo, nem precisa testar mais coisas
+
+            this.logger.verbose(
+                `Pode escrever pois está na lista de responsável no órgão gestor (SMAE.gestor_de_projeto)`
+            );
+            return true;
+        }
+
+        // começa pelo mais barato
+        if (user.hasSomeRoles(['SMAE.gestor_de_projeto']) && projeto.responsaveis_no_orgao_gestor.includes(+user.id)) {
+            if (pessoaPodeEscrever)
+                this.logger.verbose(
+                    `Pode escrever pois está na lista de responsável no órgão gestor (SMAE.gestor_de_projeto)`
+                );
+
+            return true;
+        }
+
+        // testa agora com um reduce, já ta carregado anyway
+        if (user.hasSomeRoles(['Projeto.administrador_no_orgao'])) {
+            // precisa ter o órgão no portfólio
+            pessoaPodeEscrever = projeto.portfolio.orgaos.filter((r) => r.orgao_id == user.orgao_id)[0] != undefined;
+
+            if (pessoaPodeEscrever) {
+                this.logger.verbose(`pode escrever pois faz parte do órgão (Projeto.administrador_no_orgao)`);
+                return true;
+            }
+        }
+
+        if (user.hasSomeRoles(['SMAE.colaborador_de_projeto'])) {
+            const ehResp = projeto.responsavel_id && projeto.responsavel_id == +user.id;
+            const ehEquipe = projeto.equipe.filter((r) => r.pessoa.id == user.id)[0] != undefined;
+
+            if (ehResp || ehEquipe) {
+                pessoaPodeEscrever = FASES_LIBERAR_COLABORADOR.includes(projeto.status);
+                // mesmo não podendo escrever, ele ainda é o responsável, ele pode fazer algumas escritas (do realizado, no cronograma)
+                permissoes.sou_responsavel = true;
+            }
+
+            this.logger.verbose(
+                `pessoa pode escrever: pessoaPodeEscrever=${pessoaPodeEscrever} sou_responsavel=${permissoes.sou_responsavel} ehResp: ${ehResp} ehEquipe: ${ehEquipe}`
+            );
+
+            if (ehResp) {
+                if (pessoaPodeEscrever)
+                    this.logger.verbose(
+                        `pode escrever pois é responsavel e está em FASES_LIBERAR_COLABORADOR (SMAE.colaborador_de_projeto)`
+                    );
+                else this.logger.verbose(`não pode escrever mas ainda é o é responsavel (SMAE.colaborador_de_projeto)`);
+            }
+
+            if (ehEquipe) {
+                if (pessoaPodeEscrever)
+                    this.logger.verbose(
+                        `pode escrever pois está na equipe e está em FASES_LIBERAR_COLABORADOR (SMAE.colaborador_de_projeto)`
+                    );
+                else
+                    this.logger.verbose(
+                        `não pode escrever mas está na equipe então é responsável (SMAE.colaborador_de_projeto)`
+                    );
+            }
+        }
+
+        return pessoaPodeEscrever;
     }
 
     async update(projetoId: number, dto: UpdateProjetoDto, user: PessoaFromJwt): Promise<RecordWithId> {
@@ -1291,7 +1393,7 @@ export class ProjetoService {
         for (const pessoaId of dto.equipe) {
             if (prevVersions.filter((r) => r.pessoa_id == pessoaId)[0]) continue;
 
-            const pessoaComPerm = await prismaTx.view_pessoa_gestor_de_projeto.findFirst({
+            const pessoaComPerm = await prismaTx.view_pessoa_colaborador_de_projeto.findFirst({
                 where: {
                     pessoa_id: pessoaId,
                 },
