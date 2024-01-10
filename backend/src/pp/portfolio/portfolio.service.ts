@@ -114,11 +114,18 @@ export class PortfolioService {
                 data_criacao: true,
                 orcamento_execucao_disponivel_meses: true,
                 nivel_regionalizacao: true,
+                PortfolioGrupoPortfolio: {
+                    where: { removido_em: null },
+                    select: {
+                        grupo_portfolio_id: true,
+                    },
+                },
             },
         });
 
         return {
-            ...r,
+            ...{ ...r, PortfolioGrupoPortfolio: undefined },
+            grupo_portfolio: r.PortfolioGrupoPortfolio.map((rr) => rr.grupo_portfolio_id),
             orgaos: r.orgaos.map((rr) => rr.orgao_id),
         };
     }
