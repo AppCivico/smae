@@ -520,7 +520,7 @@ function filterResponsible(orgao_id) {
             <AutocompleteField
               :controlador="coordenadores_cp"
               :grupo="usersCoord"
-              label="nome_completo"
+              label="nome_exibicao"
             />
           </div>
         </div>
