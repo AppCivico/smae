@@ -63,7 +63,7 @@ const props = defineProps({
 
 const portfolioId = Number.parseInt(route.query.portfolio_id, 10) || undefined;
 const possíveisGestores = ref([]);
-const possíveisResponsáveis = ref([]);
+const possíveisColaboradores = ref([]);
 
 const possíveisGestoresPorÓrgãoId = computed(() => possíveisGestores.value
   .reduce((acc, cur) => {
@@ -74,7 +74,7 @@ const possíveisGestoresPorÓrgãoId = computed(() => possíveisGestores.value
     return acc;
   }, {}));
 
-const possíveisResponsáveisPorÓrgãoId = computed(() => possíveisResponsáveis.value
+const possíveisResponsáveisPorÓrgãoId = computed(() => possíveisColaboradores.value
   .reduce((acc, cur) => {
     if (!acc[cur.orgao_id]) {
       acc[cur.orgao_id] = [];
@@ -161,12 +161,12 @@ async function buscarPossíveisGestores() {
   }
 }
 
-async function buscarPossíveisResponsáveis() {
+async function buscarPossíveisColaboradores() {
   try {
     const { linhas } = await requestS.get(`${baseUrl}/pessoa`, { colaborador_de_projeto: true });
 
     if (Array.isArray(linhas)) {
-      possíveisResponsáveis.value = linhas;
+      possíveisColaboradores.value = linhas;
     } else {
       throw new Error('Lista de Responsáveis fora do formato esperado');
     }
@@ -234,7 +234,7 @@ async function onSubmit(_, { controlledValues: valores }) {
 
 function iniciar() {
   buscarPossíveisGestores();
-  buscarPossíveisResponsáveis();
+  buscarPossíveisColaboradores();
 
   ÓrgãosStore.getAllOrganResponsibles().finally(() => {
     chamadasPendentes.value.emFoco = false;
@@ -1317,7 +1317,9 @@ watch(emFoco, () => {
             type="text"
             :value="emFoco.orgao_gestor.sigla + ' - ' + truncate(emFoco.orgao_gestor.descricao, 36)"
             class="inputtext light mb1"
-            :title="emFoco.orgao_gestor.descricao?.length > 36 ? emFoco.orgao_gestor.descricao : null"
+            :title="emFoco.orgao_gestor.descricao?.length > 36
+              ? emFoco.orgao_gestor.descricao
+              : null"
             disabled
           >
           <ErrorMessage
