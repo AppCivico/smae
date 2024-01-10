@@ -243,11 +243,12 @@ model Pessoa {
     ProjetoGrupoPortfolioQueCriei  ProjetoGrupoPortfolio[] @relation("Criador")
     ProjetoGrupoPortfolioQueRemovi ProjetoGrupoPortfolio[] @relation("Removedor")
 
-    PortfolioGrupoPortfolioQueCriei   PortfolioGrupoPortfolio[]          @relation("Criador")
-    PortfolioGrupoPortfolioQueRemovi  PortfolioGrupoPortfolio[]          @relation("Removedor")
-    GrupoPortfolioPessoa              GrupoPortfolioPessoa[]
-    view_pessoa_espectador_de_projeto view_pessoa_espectador_de_projeto?
-    view_pessoa_gestor_de_projeto     view_pessoa_gestor_de_projeto[]
+    PortfolioGrupoPortfolioQueCriei    PortfolioGrupoPortfolio[]            @relation("Criador")
+    PortfolioGrupoPortfolioQueRemovi   PortfolioGrupoPortfolio[]            @relation("Removedor")
+    GrupoPortfolioPessoa               GrupoPortfolioPessoa[]
+    view_pessoa_espectador_de_projeto  view_pessoa_espectador_de_projeto?
+    view_pessoa_gestor_de_projeto      view_pessoa_gestor_de_projeto[]
+    view_pessoa_colaborador_de_projeto view_pessoa_colaborador_de_projeto[]
 
     @@index([email])
     @@map("pessoa")
@@ -2848,7 +2849,7 @@ model Projeto {
     OrcamentoPlanejadoZerado  OrcamentoPrevistoZerado[]
     Diretorio                 Diretorio[]
     ProjetoGrupoPortfolio     ProjetoGrupoPortfolio[]
-    ProjetoEquipe             ProjetoEquipe[]
+    equipe                    ProjetoEquipe[]
 
     @@index([removido_em])
     @@map("projeto")
@@ -3546,6 +3547,16 @@ view view_pessoa_espectador_de_projeto {
 // view que já faz o join das pessoas tem o privilegio SMAE.gestor_de_projeto
 // tbm faz um WHERE orgao_id is not null
 view view_pessoa_gestor_de_projeto {
+    pessoa_id Int
+    pessoa    Pessoa @relation(fields: [pessoa_id], references: [id])
+    orgao_id  Int
+
+    @@unique([orgao_id, pessoa_id])
+}
+
+// view que já faz o join das pessoas tem o privilegio SMAE.colaborador_de_projeto
+// tbm faz um WHERE orgao_id is not null
+view view_pessoa_colaborador_de_projeto {
     pessoa_id Int
     pessoa    Pessoa @relation(fields: [pessoa_id], references: [id])
     orgao_id  Int
