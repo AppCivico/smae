@@ -704,6 +704,12 @@ export class ProjetoService {
                         orgao_id: true,
                     },
                 },
+                ProjetoGrupoPortfolio: {
+                    where: { removido_em: null },
+                    select: {
+                        grupo_portfolio_id: true,
+                    },
+                },
                 orgao_gestor: {
                     select: {
                         id: true,
@@ -884,10 +890,11 @@ export class ProjetoService {
 
         return {
             ...{
-                ...projeto,
+                ...{ ...projeto, ProjetoGrupoPortfolio: undefined },
                 portfolio: {
                     ...{ ...projeto.portfolio, orgaos: undefined },
                 },
+                grupo_portfolio: projeto.ProjetoGrupoPortfolio.map((r) => r.grupo_portfolio_id),
             },
             meta: meta,
             iniciativa: iniciativa,
