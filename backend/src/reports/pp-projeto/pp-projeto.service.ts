@@ -11,13 +11,16 @@ import { DefaultCsvOptions, FileOutput, ReportableService } from '../utils/utils
 import { CreateRelProjetoDto } from './dto/create-previsao-custo.dto';
 import {
     PPProjetoRelatorioDto,
+    RelProjetoAcompanhamentoDto,
     RelProjetoCronogramaDto,
+    RelProjetoEncaminhamentoDto,
     RelProjetoPlanoAcaoDto,
     RelProjetoRelatorioDto,
     RelProjetoRiscoDto,
 } from './entities/previsao-custo.entity';
 import { ProjetoRiscoStatus } from '../../pp/risco/entities/risco.entity';
 import { DateTime } from 'luxon';
+import { AcompanhamentoService } from 'src/pp/acompanhamento/acompanhamento.service';
 
 const {
     Parser,
@@ -32,7 +35,8 @@ export class PPProjetoService implements ReportableService {
         private readonly projetoService: ProjetoService,
         private readonly riscoService: RiscoService,
         private readonly planoAcaoService: PlanoAcaoService,
-        private readonly tarefaService: TarefaService
+        private readonly tarefaService: TarefaService,
+        private readonly acompanhamentoService: AcompanhamentoService
     ) {}
 
     async create(dto: CreateRelProjetoDto): Promise<PPProjetoRelatorioDto> {
@@ -170,11 +174,45 @@ export class PPProjetoService implements ReportableService {
             };
         });
 
+        const acompanhamentoRows = await this.acompanhamentoService.findAll(dto.projeto_id, undefined);
+        const acompanhamentoOut: RelProjetoAcompanhamentoDto[] = acompanhamentoRows.map(a => {
+            return {
+                id: a.id,
+                acompanhamento_tipo: a.acompanhamento_tipo ? a.acompanhamento_tipo.nome : null,
+                ordem: a.ordem,
+                data_registro: a.data_registro,
+                participantes: a.participantes,
+                detalhamento: a.detalhamento,
+                observacao: a.observacao,
+                detalhamento_status: a.detalhamento_status,
+                pontos_atencao: a.pontos_atencao,
+                pauta: a.pauta,
+                cronograma_paralisado: a.cronograma_paralisado,
+            }
+        });
+
+        // Encaminhamentos são retornados já junto com os acompanhamentos
+        const encaminhamentoOut: RelProjetoEncaminhamentoDto[] = acompanhamentoRows.flatMap(a => {
+            return a.acompanhamentos.map(e => {
+                return {
+                    acompanhamento_id: a.id,
+                    numero_identificador: e.numero_identificador,
+                    ordem: e.ordem,
+                    encaminhamento: e.encaminhamento,
+                    responsavel: e.responsavel,
+                    prazo_encaminhamento: e.prazo_encaminhamento,
+                    prazo_realizado: e.prazo_realizado
+                }
+            })
+        });
+
         return {
             detail: detail,
             cronograma: tarefasOut,
             riscos: riscosOut,
             planos_acao: planoAcaoOut,
+            acompanhamentos: acompanhamentoOut,
+            encaminhamentos: encaminhamentoOut
         };
     }
 
@@ -206,6 +244,30 @@ export class PPProjetoService implements ReportableService {
             const linhas = json2csvParser.parse(dados.cronograma);
             out.push({
                 name: 'cronograma.csv',
+                buffer: Buffer.from(linhas, 'utf8'),
+            });
+        }
+
+        if (dados.acompanhamentos.length) {
+            const json2csvParser = new Parser({
+                ...DefaultCsvOptions,
+                transforms: defaultTransform,
+            });
+            const linhas = json2csvParser.parse(dados.acompanhamentos);
+            out.push({
+                name: 'acompanhamentos.csv',
+                buffer: Buffer.from(linhas, 'utf8'),
+            });
+        }
+
+        if (dados.encaminhamentos.length) {
+            const json2csvParser = new Parser({
+                ...DefaultCsvOptions,
+                transforms: defaultTransform,
+            });
+            const linhas = json2csvParser.parse(dados.encaminhamentos);
+            out.push({
+                name: 'encaminhamentos.csv',
                 buffer: Buffer.from(linhas, 'utf8'),
             });
         }

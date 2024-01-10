@@ -14,7 +14,11 @@ export class ProjetoAcompanhamento {
     id: number;
     data_registro: Date;
     participantes: string;
+    observacao: string | null;
+    detalhamento_status: string | null;
     detalhamento: string | null;
+    pontos_atencao: string | null;
+    cronograma_paralisado: boolean;
     risco: RiscoIdCod[] | null;
     acompanhamento_tipo: IdNomeDto | null;
     ordem: number;

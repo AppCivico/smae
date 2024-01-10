@@ -99,7 +99,7 @@ export class AcompanhamentoService {
         return { id: created.id };
     }
 
-    async findAll(projetoId: number, user: PessoaFromJwt): Promise<ProjetoAcompanhamento[]> {
+    async findAll(projetoId: number, user: PessoaFromJwt | undefined): Promise<ProjetoAcompanhamento[]> {
         const projetoAcompanhamento = await this.prisma.projetoAcompanhamento.findMany({
             where: {
                 projeto_id: projetoId,
@@ -110,10 +110,13 @@ export class AcompanhamentoService {
                 id: true,
                 data_registro: true,
                 participantes: true,
-
+                observacao: true,
                 detalhamento: true,
+                detalhamento_status: true,
+                pontos_atencao: true,
                 pauta: true,
                 ordem: true,
+                cronograma_paralisado: true,
 
                 acompanhamento_tipo: {
                     select: { id: true, nome: true },
@@ -145,6 +148,10 @@ export class AcompanhamentoService {
                 detalhamento: a.detalhamento,
                 pauta: a.pauta,
                 ordem: a.ordem,
+                observacao: a.observacao,
+                pontos_atencao: a.pontos_atencao,
+                detalhamento_status: a.detalhamento_status,
+                cronograma_paralisado: a.cronograma_paralisado,
                 acompanhamento_tipo: a.acompanhamento_tipo
                     ? {
                           id: a.acompanhamento_tipo.id,

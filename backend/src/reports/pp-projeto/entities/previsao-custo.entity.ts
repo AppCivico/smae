@@ -79,9 +79,35 @@ export class RelProjetoPlanoAcaoDto {
     responsavel: string | null;
 }
 
+export class RelProjetoAcompanhamentoDto {
+    id: number
+    acompanhamento_tipo: string | null;
+    ordem: number;
+    data_registro: Date | null
+    participantes: string;
+    detalhamento: string | null;
+    observacao: string | null;
+    detalhamento_status: string | null;
+    pontos_atencao: string | null;
+    pauta: string | null;
+    cronograma_paralisado: boolean;
+}
+
+export class RelProjetoEncaminhamentoDto {
+    acompanhamento_id: number;
+    numero_identificador: string;
+    ordem: number;
+    encaminhamento: string | null;
+    responsavel: string | null;
+    prazo_encaminhamento: Date | null;
+    prazo_realizado: Date | null;
+}
+
 export class PPProjetoRelatorioDto {
     detail: RelProjetoRelatorioDto;
     cronograma: RelProjetoCronogramaDto[];
     riscos: RelProjetoRiscoDto[];
     planos_acao: RelProjetoPlanoAcaoDto[];
+    acompanhamentos: RelProjetoAcompanhamentoDto[];
+    encaminhamentos: RelProjetoEncaminhamentoDto[];
 }
