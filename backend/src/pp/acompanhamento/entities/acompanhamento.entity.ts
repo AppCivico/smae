@@ -31,6 +31,7 @@ export class DetailProjetoAcompanhamentoDto {
     id: number;
     data_registro: Date;
     participantes: string;
+    ordem: number;
     detalhamento: string | null;
     observacao: string | null;
     detalhamento_status: string | null;
