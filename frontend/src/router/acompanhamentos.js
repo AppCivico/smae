@@ -1,7 +1,6 @@
 import LoadingComponent from '@/components/LoadingComponent.vue';
 import dateToField from '@/helpers/dateToField';
 import { useAcompanhamentosStore } from '@/stores/acompanhamentos.store.ts';
-import { useProjetosStore } from '@/stores/projetos.store.ts';
 import AcompanhamentosCriarEditar from '@/views/acompanhamentos/AcompanhamentosCriarEditar.vue';
 import AcompanhamentosItem from '@/views/acompanhamentos/AcompanhamentosItem.vue';
 import AcompanhamentosLista from '@/views/acompanhamentos/AcompanhamentosLista.vue';
@@ -110,17 +109,7 @@ export default {
             acompanhamentoId: Number.parseInt(params.acompanhamentoId, 10) || undefined,
           }),
           meta: {
-            título: () => {
-              let título = useAcompanhamentosStore()?.emFoco?.data_registro
-                ? `Acompanhamento ${dateToField(useAcompanhamentosStore()?.emFoco?.data_registro)}`
-                : 'Resumo do acompanhamento';
-
-              if (useProjetosStore()?.emFoco?.nome) {
-                título = `${título} do projeto ${useProjetosStore()?.emFoco?.nome}`;
-              }
-
-              return título;
-            },
+            título: 'Resumo do acompanhamento',
             títuloParaMenu: 'Resumo',
           },
         },
