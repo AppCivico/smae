@@ -15,6 +15,8 @@ import { PlanoAcaoModule } from 'src/pp/plano-de-acao/plano-de-acao.module';
 import { TarefaUtilsService } from 'src/pp/tarefa/tarefa.service.utils';
 import { GraphvizModule } from 'src/graphviz/graphviz.module';
 import { TarefaDotTemplate } from 'src/pp/tarefa/tarefa.dot.template';
+import { AcompanhamentoModule } from 'src/pp/acompanhamento/acompanhamento.module';
+import { AcompanhamentoService } from 'src/pp/acompanhamento/acompanhamento.service';
 
 @Module({
     imports: [
@@ -26,6 +28,7 @@ import { TarefaDotTemplate } from 'src/pp/tarefa/tarefa.dot.template';
         TarefaModule,
         PlanoAcaoModule,
         GraphvizModule,
+        AcompanhamentoModule
     ],
     controllers: [PPProjetoController],
     providers: [
@@ -36,6 +39,7 @@ import { TarefaDotTemplate } from 'src/pp/tarefa/tarefa.dot.template';
         PlanoAcaoService,
         TarefaUtilsService,
         TarefaDotTemplate,
+        AcompanhamentoService
     ],
     exports: [PPProjetoService],
 })
