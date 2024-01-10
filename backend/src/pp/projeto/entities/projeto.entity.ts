@@ -185,6 +185,7 @@ export class ProjetoDetailDto {
     coordenador_ue: string | null;
 
     equipe: ProjetoEquipeItemDto[];
+    grupo_portfolio: number[];
     meta: ProjetoMetaDetailDto | null;
     iniciativa: IdCodTituloDto | null;
     atividade: IdCodTituloDto | null;
