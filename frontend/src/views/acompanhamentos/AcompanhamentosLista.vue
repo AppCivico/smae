@@ -67,6 +67,7 @@ vue/singleline-html-element-content-newline -->
     class="tabela-de-etapas"
   >
     <colgroup>
+      <col class="col--number">
       <col class="col--data">
       <col>
       <col>
@@ -76,7 +77,10 @@ vue/singleline-html-element-content-newline -->
 
     <thead>
       <tr class="pl3 center mb05 tc300 w700 t12 uc">
-        <th>
+        <th class="cell-number">
+          Número
+        </th>
+        <th class="cell--data">
           {{ schema.fields.data_registro.spec.label }}
         </th>
         <th class="tl">
@@ -99,7 +103,20 @@ vue/singleline-html-element-content-newline -->
         v-for="linha in listaFiltrada"
         :key="linha.id"
       >
-        <th>
+        <th class="cell--number">
+          <router-link
+            :to="{
+              name: 'acompanhamentosResumo',
+              params: {
+                projetoId: projetoId,
+                acompanhamentoId: linha.id,
+              }
+            }"
+          >
+            {{ linha.ordem }}
+          </router-link>
+        </th>
+        <th class="cell--data">
           <router-link
             :to="{
               name: 'acompanhamentosResumo',
