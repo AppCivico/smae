@@ -541,15 +541,15 @@ function filterResponsible(orgao_id) {
     <template v-if="singleMeta?.loading||!oktogo">
       <span class="spinner">Carregando</span>
     </template>
-    <template v-if="singleMeta?.error || error">
+    <template v-if="singleMeta?.error">
       <div class="error p1">
         <div class="error-msg">
-          {{ singleMeta.error ?? error }}
+          {{ singleMeta.error }}
         </div>
       </div>
     </template>
 
-    <template v-if="meta_id&&singleMeta.id&&meta_id==singleMeta.id">
+    <template v-if="meta_id && singleMeta.id && meta_id == singleMeta.id">
       <hr class="mt2 mb2">
       <button
         class="btn amarelo big"
