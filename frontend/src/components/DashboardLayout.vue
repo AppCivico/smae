@@ -10,7 +10,12 @@ const props = defineProps(['submenu', 'parentPage']);
 const authStore = useAuthStore();
 const { user } = storeToRefs(authStore);
 </script>
-
+<script>
+// use normal <script> to declare options
+export default {
+  inheritAttrs: false,
+};
+</script>
 <template>
   <Nav :activate="props?.submenu?.__name" />
   <component
