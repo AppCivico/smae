@@ -16,6 +16,7 @@ export class PortfolioOneDto {
     descricao: string;
     data_criacao: Date | null;
     orcamento_execucao_disponivel_meses: number[];
+    grupo_portfolio: number[];
 }
 
 export class ListPortfolioDto {
