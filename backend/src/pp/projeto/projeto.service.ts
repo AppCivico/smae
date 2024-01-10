@@ -569,11 +569,13 @@ export class ProjetoService {
         const fonte_recursos: string[] = [];
 
         if (projeto.fonte_recursos) {
-            // como é o relatorio é 1 projeto por vez
+            // como é o relatório é 1 projeto por vez
             // e não imagino que cada projeto via ter muitas fontes de recurso, vou fazer 1
             // query pra cada item
 
             for (const fr of projeto.fonte_recursos) {
+                // TODO eu acho que aqui ta faltando o check pra quando a fonte do recurso > ano corrente
+                // buscar o ano corrente
                 const rows: {
                     codigo: string;
                     descricao: string;
