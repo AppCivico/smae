@@ -188,6 +188,7 @@ export class AcompanhamentoService {
                 data_registro: true,
                 participantes: true,
                 detalhamento: true,
+                ordem: true,
 
                 observacao: true,
                 detalhamento_status: true,
