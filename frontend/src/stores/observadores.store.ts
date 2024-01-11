@@ -22,8 +22,8 @@ export const useObservadoresStore = defineStore('observadores', {
     emFoco: null,
 
     chamadasPendentes: {
-      lista: true,
-      emFoco: true,
+      lista: false,
+      emFoco: false,
     },
     erro: null,
   }),
