@@ -6,7 +6,7 @@ import { computed } from 'vue';
 
 const projetosStore = useProjetosStore();
 const {
-  chamadasPendentes, emFoco, permissões,
+  chamadasPendentes, emFoco,
 } = storeToRefs(projetosStore);
 
 const ações = [
@@ -56,7 +56,7 @@ const ações = [
   },
 ];
 
-const açõesPermitidas = computed(() => ações.filter((x) => !!permissões?.value?.[`acao_${x.ação}`]));
+const açõesPermitidas = computed(() => ações.filter((x) => !!emFoco.permissoes?.value?.[`acao_${x.ação}`]));
 
 async function mudarStatus(id, { nome, ação }) {
   useAlertStore()

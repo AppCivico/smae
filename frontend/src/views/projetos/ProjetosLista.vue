@@ -4,10 +4,14 @@ import LocalFilter from '@/components/LocalFilter.vue';
 import TabelaDeProjetos from '@/components/projetos/TabelaDeProjetos.vue';
 import statuses from '@/consts/projectStatuses';
 import arrayToValueAndLabel from '@/helpers/arrayToValueAndLabel';
+import { useAuthStore } from '@/stores/auth.store';
 import { useProjetosStore } from '@/stores/projetos.store.ts';
 import { storeToRefs } from 'pinia';
 import { computed, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+
+const authStore = useAuthStore();
+const { temPermissãoPara } = storeToRefs(authStore);
 
 const projetosStore = useProjetosStore();
 const {
@@ -76,6 +80,7 @@ const listasAgrupadas = computed(() => listaFiltradaPorTermoDeBusca.value?.reduc
     <hr class="ml2 f1">
 
     <router-link
+      v-if="temPermissãoPara('Projeto.administrador_no_orgao')"
       :to="{ name: 'projetosCriar' }"
       class="btn big ml1"
     >
