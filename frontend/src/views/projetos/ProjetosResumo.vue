@@ -559,7 +559,6 @@ if (!Array.isArray(organs.value) || !organs.value.length) {
     <hr class="mb1 f1">
 
     <div class="flex g2 mb1 flexwrap">
-      </dl>
       <dl class="f1 mb1">
         <dt class="t12 uc w700 mb05 tamarelo">
           {{ schema.fields.secretario_executivo.spec.label }}
