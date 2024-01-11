@@ -42,13 +42,15 @@ const roles: ListaDePrivilegios[] = [
     'Projeto.administrador_no_orgao',
     'SMAE.gestor_de_projeto',
     'SMAE.colaborador_de_projeto',
-    'SMAE.espectador_de_projeto'
 ];
 
 @Controller('projeto')
 @ApiTags('Projeto - Tarefas')
 export class TarefaController {
-    constructor(private readonly tarefaService: TarefaService, private readonly projetoService: ProjetoService) {}
+    constructor(
+        private readonly tarefaService: TarefaService,
+        private readonly projetoService: ProjetoService
+    ) {}
 
     @Post(':id/tarefa')
     @ApiBearerAuth('access-token')
@@ -67,7 +69,7 @@ export class TarefaController {
     @Get(':id/tarefa')
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
-    @Roles(...roles)
+    @Roles(...roles, 'SMAE.espectador_de_projeto')
     async findAll(
         @Param() params: FindOneParams,
         @Query() filter: FilterPPTarefa,
@@ -110,7 +112,7 @@ export class TarefaController {
     @Get(':id/tarefas-hierarquia')
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
-    @Roles(...roles)
+    @Roles(...roles, 'SMAE.espectador_de_projeto')
     @ApiResponse({ status: 200, description: 'Responde com Record<ID_TAREFA, HIERARQUIA_NO_CRONOGRAMA>' })
     async getTarefasHierarquia(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt) {
         const projeto = await this.projetoService.findOne(params.id, user, 'ReadOnly');
