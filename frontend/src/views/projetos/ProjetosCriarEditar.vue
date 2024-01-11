@@ -1406,9 +1406,7 @@ watch(emFoco, () => {
             :schema="schema"
             name="responsavel_id"
             class="tc300"
-          >
-            Responsável
-          </LabelFromYup>
+          />
           <Field
             name="responsavel_id"
             as="select"
@@ -1497,24 +1495,6 @@ watch(emFoco, () => {
       v-if="projetoId"
       class="flex g2 mb1"
     >
-      <div class="f1 mb1">
-        <LabelFromYup
-          :schema="schema"
-          name="coordenador_ue"
-        />
-
-        <Field
-          name="coordenador_ue"
-          type="text"
-          class="inputtext light mb1"
-          :disabled="!permissões?.campo_coordenador_ue"
-        />
-        <ErrorMessage
-          class="error-msg mb1"
-          name="coordenador_ue"
-        />
-      </div>
-
       <div class="f1 mb1">
         <LabelFromYup
           :schema="schema"
