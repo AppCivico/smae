@@ -68,8 +68,7 @@ const metasPorId = {};
             :to="{
               name: 'projetosResumo',
               params: {
-                projetoId: item.id,
-                portfolioId: item.portfolio.id || item.portfolio,
+                projetoId: item.id
               }
             }"
           >
