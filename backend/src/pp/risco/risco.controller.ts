@@ -45,7 +45,7 @@ export class RiscoController {
     @Get(':id/risco')
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
-    @Roles(...roles)
+    @Roles(...roles, ...PROJETO_READONLY_ROLES)
     async findAll(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt): Promise<ListProjetoRiscoDto> {
         const projeto = await this.projetoService.findOne(params.id, user, 'ReadOnly');
         return {
