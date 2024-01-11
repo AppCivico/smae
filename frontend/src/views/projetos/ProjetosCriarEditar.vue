@@ -1471,6 +1471,29 @@ watch(emFoco, () => {
     </fieldset>
 
     <div
+      v-show="projetoId"
+      class="flex g2"
+    >
+      <div class="f1 mb1">
+        <LabelFromYup
+          name="equipe"
+          :schema="schema"
+        />
+
+        <CampoDePessoasComBuscaPorOrgao
+          v-model="values.equipe"
+          name="equipe"
+          :pessoas="possíveisColaboradores"
+          :pronto-para-montagem="montarCampoEstático"
+        />
+        <ErrorMessage
+          name="equipe"
+          class="error-msg"
+        />
+      </div>
+    </div>
+
+    <div
       v-if="projetoId"
       class="flex g2 mb1"
     >
@@ -1593,29 +1616,6 @@ watch(emFoco, () => {
       </div>
     </div>
 
-    <div
-      v-show="projetoId"
-      class="flex g2"
-    >
-      <div class="f1 mb1">
-        <LabelFromYup
-          name="equipe"
-          :schema="schema"
-        />
-
-        <CampoDePessoasComBuscaPorOrgao
-          v-model="values.equipe"
-          name="equipe"
-          :órgãos-permitidos="values.orgaos_participantes"
-          :pessoas="possíveisColaboradores"
-          :pronto-para-montagem="montarCampoEstático"
-        />
-        <ErrorMessage
-          name="equipe"
-          class="error-msg"
-        />
-      </div>
-    </div>
     <FormErrorsList :errors="errors" />
 
     <div class="flex spacebetween center mb2">

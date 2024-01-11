@@ -524,35 +524,6 @@ if (!Array.isArray(organs.value) || !organs.value.length) {
 
     <hr class="mb1 f1">
 
-    <div class="flex g2 mb1 flexwrap">
-      <dl class="f1 mb1">
-        <dt class="t12 uc w700 mb05 tamarelo">
-          {{ schema.fields.coordenador_ue.spec.label }}
-        </dt>
-        <dd class="t13">
-          {{ emFoco?.coordenador_ue || '-' }}
-        </dd>
-      </dl>
-      <dl class="f1 mb1">
-        <dt class="t12 uc w700 mb05 tamarelo">
-          {{ schema.fields.secretario_executivo.spec.label }}
-        </dt>
-        <dd class="t13">
-          {{ emFoco?.secretario_executivo || '-' }}
-        </dd>
-      </dl>
-      <dl class="f1 mb1">
-        <dt class="t12 uc w700 mb05 tamarelo">
-          {{ schema.fields.secretario_responsavel.spec.label }}
-        </dt>
-        <dd class="t13">
-          {{ emFoco?.secretario_responsavel || '-' }}
-        </dd>
-      </dl>
-    </div>
-
-    <hr class="mb1 f1">
-
     <div class="mb1">
       <h2>
         {{ schema.fields.equipe.spec.label }}
@@ -583,6 +554,35 @@ if (!Array.isArray(organs.value) || !organs.value.length) {
           </dd>
         </dl>
       </div>
+    </div>
+
+    <hr class="mb1 f1">
+
+    <div class="flex g2 mb1 flexwrap">
+      <dl class="f1 mb1">
+        <dt class="t12 uc w700 mb05 tamarelo">
+          {{ schema.fields.coordenador_ue.spec.label }}
+        </dt>
+        <dd class="t13">
+          {{ emFoco?.coordenador_ue || '-' }}
+        </dd>
+      </dl>
+      <dl class="f1 mb1">
+        <dt class="t12 uc w700 mb05 tamarelo">
+          {{ schema.fields.secretario_executivo.spec.label }}
+        </dt>
+        <dd class="t13">
+          {{ emFoco?.secretario_executivo || '-' }}
+        </dd>
+      </dl>
+      <dl class="f1 mb1">
+        <dt class="t12 uc w700 mb05 tamarelo">
+          {{ schema.fields.secretario_responsavel.spec.label }}
+        </dt>
+        <dd class="t13">
+          {{ emFoco?.secretario_responsavel || '-' }}
+        </dd>
+      </dl>
     </div>
 
     <hr class="mb1 f1">
