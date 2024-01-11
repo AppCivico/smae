@@ -1,22 +1,11 @@
-import {
-    Body,
-    Controller,
-    Delete,
-    Get,
-    HttpCode,
-    HttpException,
-    HttpStatus,
-    Logger,
-    Param,
-    Patch,
-    Post,
-    Query,
-} from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Logger, Param, Patch, Post, Query } from '@nestjs/common';
 import { ApiBearerAuth, ApiNoContentResponse, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
 import { CurrentUser } from '../../auth/decorators/current-user.decorator';
 import { Roles } from '../../auth/decorators/roles.decorator';
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import { FindOneParams, FindTwoParams } from '../../common/decorators/find-params';
+import { RecordWithId } from '../../common/dto/record-with-id.dto';
+import { ProjetoService } from '../projeto/projeto.service';
 import {
     CreateOrcamentoPrevistoDto,
     FilterOrcamentoPrevistoDto,
@@ -25,8 +14,6 @@ import {
     UpdateOrcamentoPrevistoDto,
 } from './dto/create-orcamento-previsto.dto';
 import { OrcamentoPrevistoService } from './orcamento-previsto.service';
-import { RecordWithId } from '../../common/dto/record-with-id.dto';
-import { ProjetoService } from '../projeto/projeto.service';
 
 @Controller('projeto')
 @ApiTags('Projeto - Orçamento (Custeio e Investimento)')
@@ -49,10 +36,7 @@ export class OrcamentoPrevistoController {
     ): Promise<RecordWithId> {
         this.logger.debug('create orçamento previsto projeto');
 
-        const projeto = await this.projetoService.findOne(params.id, user, 'ReadWrite');
-        if (projeto.permissoes.apenas_leitura) {
-            throw new HttpException('Não é possível criar o orçamento no modo apenas leitura.', 400);
-        }
+        await this.projetoService.findOne(params.id, user, 'ReadWriteTeam');
 
         return await this.metaOrcamentoService.create(+params.id, createMetaDto, user);
     }
@@ -88,10 +72,7 @@ export class OrcamentoPrevistoController {
     ) {
         this.logger.debug('zerado orçamento previsto projeto');
 
-        const projeto = await this.projetoService.findOne(+params.id, user, 'ReadWrite');
-        if (projeto.permissoes.apenas_leitura) {
-            throw new HttpException('Não é possível editar o orçamento no modo apenas leitura.', 400);
-        }
+        await this.projetoService.findOne(+params.id, user, 'ReadWriteTeam');
 
         await this.metaOrcamentoService.patchZerado(+params.id, updateZeradoDto, user);
         return '';
@@ -109,10 +90,7 @@ export class OrcamentoPrevistoController {
     ): Promise<void> {
         this.logger.debug('patch orçamento previsto projeto');
 
-        const projeto = await this.projetoService.findOne(+params.id, user, 'ReadWrite');
-        if (projeto.permissoes.apenas_leitura) {
-            throw new HttpException('Não é possível editar o orçamento no modo apenas leitura.', 400);
-        }
+        await this.projetoService.findOne(+params.id, user, 'ReadWriteTeam');
 
         await this.metaOrcamentoService.update(+params.id, +params.id2, updateMetaDto, user);
     }
@@ -126,10 +104,7 @@ export class OrcamentoPrevistoController {
     async remove(@Param() params: FindTwoParams, @CurrentUser() user: PessoaFromJwt) {
         this.logger.debug('remove orçamento previsto projeto');
 
-        const projeto = await this.projetoService.findOne(params.id, user, 'ReadWrite');
-        if (projeto.permissoes.apenas_leitura) {
-            throw new HttpException('Não é possível editar o orçamento no modo apenas leitura.', 400);
-        }
+        await this.projetoService.findOne(params.id, user, 'ReadWriteTeam');
 
         await this.metaOrcamentoService.remove(+params.id, +params.id2, user);
         return '';

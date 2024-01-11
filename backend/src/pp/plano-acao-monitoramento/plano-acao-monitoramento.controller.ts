@@ -4,20 +4,20 @@ import {
     Delete,
     Get,
     HttpCode,
-    HttpException,
     HttpStatus,
     Param,
     Patch,
     Post,
-    Query,
+    Query
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiNoContentResponse, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
 import { CurrentUser } from '../../auth/decorators/current-user.decorator';
 import { Roles } from '../../auth/decorators/roles.decorator';
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
+import { ListaDePrivilegios } from '../../common/ListaDePrivilegios';
 import { FindOneParams, FindTwoParams } from '../../common/decorators/find-params';
 import { RecordWithId } from '../../common/dto/record-with-id.dto';
-import { ListaDePrivilegios } from '../../common/ListaDePrivilegios';
+import { ProjetoService } from '../projeto/projeto.service';
 import {
     CreatePlanoAcaoMonitoramentoDto,
     FilterPlanoAcaoMonitoramentoDto,
@@ -25,13 +25,12 @@ import {
 } from './dto/create-plano-acao-monitoramento.dto';
 import { ListPlanoAcaoMonitoramentoDto } from './entities/plano-acao-monitoramento.entity';
 import { PlanoAcaoMonitoramentoService } from './plano-acao-monitoramento.service';
-import { ProjetoService } from '../projeto/projeto.service';
+import { PROJETO_READONLY_ROLES } from '../projeto/projeto.controller';
 
 const roles: ListaDePrivilegios[] = [
     'Projeto.administrador',
     'Projeto.administrador_no_orgao',
-    'SMAE.gestor_de_projeto',
-    'SMAE.colaborador_de_projeto',
+    ...PROJETO_READONLY_ROLES
 ];
 
 @Controller('projeto')
@@ -51,10 +50,7 @@ export class PlanoAcaoMonitoramentoController {
         @Body() dto: CreatePlanoAcaoMonitoramentoDto,
         @CurrentUser() user: PessoaFromJwt
     ): Promise<RecordWithId> {
-        const projeto = await this.projetoService.findOne(params.id, user, 'ReadWrite');
-        if (projeto.permissoes.apenas_leitura) {
-            throw new HttpException('Não é possível criar o monitoramento no modo apenas leitura.', 400);
-        }
+        await this.projetoService.findOne(params.id, user, 'ReadWriteTeam');
 
         return await this.planoAcaoMonitoramentoService.create(params.id, dto, user);
     }
@@ -83,10 +79,7 @@ export class PlanoAcaoMonitoramentoController {
         @Body() dto: UpdatePlanoAcaoMonitoramentoDto,
         @CurrentUser() user: PessoaFromJwt
     ): Promise<RecordWithId> {
-        const projeto = await this.projetoService.findOne(params.id, user, 'ReadWrite');
-        if (projeto.permissoes.apenas_leitura) {
-            throw new HttpException('Não é possível editar o monitoramento no modo apenas leitura.', 400);
-        }
+        await this.projetoService.findOne(params.id, user, 'ReadWriteTeam');
 
         return await this.planoAcaoMonitoramentoService.update(params.id, params.id2, dto, user);
     }
@@ -98,10 +91,7 @@ export class PlanoAcaoMonitoramentoController {
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.ACCEPTED)
     async remove(@Param() params: FindTwoParams, @CurrentUser() user: PessoaFromJwt) {
-        const projeto = await this.projetoService.findOne(params.id, user, 'ReadWrite');
-        if (projeto.permissoes.apenas_leitura) {
-            throw new HttpException('Não é possível remover o monitoramento no modo apenas leitura.', 400);
-        }
+        await this.projetoService.findOne(params.id, user, 'ReadWrite');
 
         await this.planoAcaoMonitoramentoService.remove(params.id, params.id2, user);
         return '';

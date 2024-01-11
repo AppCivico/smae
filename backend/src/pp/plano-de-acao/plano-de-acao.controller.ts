@@ -1,29 +1,32 @@
-import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Patch, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post } from '@nestjs/common';
 import { ApiBearerAuth, ApiNoContentResponse, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
 import { CurrentUser } from '../../auth/decorators/current-user.decorator';
 import { Roles } from '../../auth/decorators/roles.decorator';
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
+import { ListaDePrivilegios } from '../../common/ListaDePrivilegios';
 import { FindOneParams, FindTwoParams } from '../../common/decorators/find-params';
 import { RecordWithId } from '../../common/dto/record-with-id.dto';
-import { ListaDePrivilegios } from '../../common/ListaDePrivilegios';
 import { ListPlanoAcaoDto, PlanoAcaoDetailDto } from '../plano-de-acao/entities/plano-acao.entity';
 import { ProjetoService } from '../projeto/projeto.service';
 import { CreatePlanoAcaoDto } from './dto/create-plano-acao.dto';
 import { FilterPlanoAcaoDto } from './dto/filter-plano-acao.dto';
 import { UpdatePlanoAcaoDto } from './dto/update-plano-acao.dto';
 import { PlanoAcaoService } from './plano-de-acao.service';
+import { PROJETO_READONLY_ROLES } from '../projeto/projeto.controller';
 
 const roles: ListaDePrivilegios[] = [
     'Projeto.administrador',
     'Projeto.administrador_no_orgao',
-    'SMAE.gestor_de_projeto',
-    'SMAE.colaborador_de_projeto',
+    ...PROJETO_READONLY_ROLES
 ];
 
 @Controller('projeto')
 @ApiTags('Projeto - Risco')
 export class PlanoAcaoController {
-    constructor(private readonly planoAcaoService: PlanoAcaoService, private readonly projetoService: ProjetoService) {}
+    constructor(
+        private readonly planoAcaoService: PlanoAcaoService,
+        private readonly projetoService: ProjetoService
+    ) {}
 
     @Post(':id/plano-de-acao')
     @ApiBearerAuth('access-token')
@@ -34,10 +37,7 @@ export class PlanoAcaoController {
         @Body() dto: CreatePlanoAcaoDto,
         @CurrentUser() user: PessoaFromJwt
     ): Promise<RecordWithId> {
-        const projeto = await this.projetoService.findOne(params.id, user, 'ReadWrite');
-        if (projeto.permissoes.apenas_leitura) {
-            throw new HttpException('Não é possível criar plano de ação em modo de leitura', 400);
-        }
+        await this.projetoService.findOne(params.id, user, 'ReadWrite');
 
         return await this.planoAcaoService.create(params.id, dto, user);
     }
@@ -75,10 +75,7 @@ export class PlanoAcaoController {
         @Body() updatePlanoAcaoDto: UpdatePlanoAcaoDto,
         @CurrentUser() user: PessoaFromJwt
     ): Promise<RecordWithId> {
-        const projeto = await this.projetoService.findOne(params.id, user, 'ReadWrite');
-        if (projeto.permissoes.apenas_leitura) {
-            throw new HttpException('Não é possível editar plano de ação em modo de leitura', 400);
-        }
+        await this.projetoService.findOne(params.id, user, 'ReadWrite');
 
         return await this.planoAcaoService.update(params.id2, updatePlanoAcaoDto, user);
     }
@@ -90,10 +87,7 @@ export class PlanoAcaoController {
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.ACCEPTED)
     async remove(@Param() params: FindTwoParams, @CurrentUser() user: PessoaFromJwt) {
-        const projeto = await this.projetoService.findOne(params.id, user, 'ReadWrite');
-        if (projeto.permissoes.apenas_leitura) {
-            throw new HttpException('Não é possível remover plano de ação em modo de leitura', 400);
-        }
+        await this.projetoService.findOne(params.id, user, 'ReadWrite');
 
         await this.planoAcaoService.remove(params.id2, user);
         return '';

@@ -142,6 +142,7 @@ export class TarefaController {
         @CurrentUser() user: PessoaFromJwt
     ): Promise<RecordWithId> {
         if (dto.atualizacao_do_realizado) {
+            // acessa como read-only pra personalizar a mensagem de erro, caso aconteça
             const projeto = await this.projetoService.findOne(params.id, user, 'ReadOnly');
             console.log(`dto.atualizacao_do_realizado=true`);
             dto = plainToClass(UpdateTarefaRealizadoDto, dto, { excludeExtraneousValues: true });

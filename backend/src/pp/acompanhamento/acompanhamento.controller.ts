@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Patch, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post } from '@nestjs/common';
 import { ApiBearerAuth, ApiNoContentResponse, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
 import { ListaDePrivilegios } from 'src/common/ListaDePrivilegios';
 import { CurrentUser } from '../../auth/decorators/current-user.decorator';
@@ -11,12 +11,13 @@ import { AcompanhamentoService } from './acompanhamento.service';
 import { CreateProjetoAcompanhamentoDto } from './dto/create-acompanhamento.dto';
 import { UpdateProjetoAcompanhamentoDto } from './dto/update-acompanhamento.dto';
 import { DetailProjetoAcompanhamentoDto, ListProjetoAcompanhamentoDto } from './entities/acompanhamento.entity';
+import { PROJETO_READONLY_ROLES } from '../projeto/projeto.controller';
 
 const roles: ListaDePrivilegios[] = [
     'Projeto.administrador',
     'Projeto.administrador_no_orgao',
-    'SMAE.gestor_de_projeto',
-    'SMAE.colaborador_de_projeto',
+    ...PROJETO_READONLY_ROLES
+
 ];
 
 @Controller('projeto')
@@ -36,13 +37,8 @@ export class AcompanhamentoController {
         @Body() createAcompanhamentoDto: CreateProjetoAcompanhamentoDto,
         @CurrentUser() user: PessoaFromJwt
     ): Promise<RecordWithId> {
-        const projeto = await this.projetoService.findOne(params.id, user, 'ReadWrite');
-        if (projeto.permissoes.apenas_leitura && projeto.permissoes.sou_responsavel == false) {
-            throw new HttpException(
-                'Não é possível criar o acompanhamento, pois o seu acesso é apenas leitura e você não é o responsável do projeto.',
-                400
-            );
-        }
+        await this.projetoService.findOne(params.id, user, 'ReadWriteTeam');
+
         return await this.acompanhamentoService.create(params.id, createAcompanhamentoDto, user);
     }
 
@@ -81,7 +77,7 @@ export class AcompanhamentoController {
         @Body() dto: UpdateProjetoAcompanhamentoDto,
         @CurrentUser() user: PessoaFromJwt
     ): Promise<RecordWithId> {
-        await this.projetoService.findOne(params.id, user, 'ReadWrite');
+        await this.projetoService.findOne(params.id, user, 'ReadWriteTeam');
         return await this.acompanhamentoService.update(params.id, params.id2, dto, user);
     }
 
@@ -92,7 +88,7 @@ export class AcompanhamentoController {
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.ACCEPTED)
     async remove(@Param() params: FindTwoParams, @CurrentUser() user: PessoaFromJwt) {
-        await this.projetoService.findOne(params.id, user, 'ReadWrite');
+        await this.projetoService.findOne(params.id, user, 'ReadWriteTeam');
         await this.acompanhamentoService.remove(params.id, params.id2, user);
         return '';
     }

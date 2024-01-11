@@ -11,12 +11,8 @@ import { CreateTipoAcompanhamentoDto } from './dto/create-acompanhamento-tipo.dt
 import { UpdateAcompanhamentoTipoDto } from './dto/update-acompanhamento-tipo.dto';
 import { ListAcompanhamentoTipoDto } from './entities/acompanhament-tipo.entities.dto';
 
-const roles: ListaDePrivilegios[] = [
-    'Projeto.administrador',
-    'Projeto.administrador_no_orgao',
-    'SMAE.gestor_de_projeto',
-    'SMAE.colaborador_de_projeto',
-];
+// provavelmente não é pra PROJETO_READONLY_ROLES criar esse tipo de objeto, conferir com o Lucas/FGV
+const roles: ListaDePrivilegios[] = ['Projeto.administrador', 'Projeto.administrador_no_orgao'];
 
 @Controller('acompanhamento-tipo')
 @ApiTags('Acompanhamento - Tipo')

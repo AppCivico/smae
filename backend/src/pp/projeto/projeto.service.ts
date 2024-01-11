@@ -617,7 +617,7 @@ export class ProjetoService {
     async findOne(
         id: number,
         user: PessoaFromJwt | undefined,
-        readonly: ReadOnlyBooleanType<true> | ReadOnlyBooleanType<false>
+        readonly: ReadOnlyBooleanType
     ): Promise<ProjetoDetailDto> {
         console.log({ id, user, readonly });
 
@@ -926,7 +926,7 @@ export class ProjetoService {
             responsavel_id: number | null;
         },
         user: PessoaFromJwt | undefined,
-        readonly: ReadOnlyBooleanType<true> | ReadOnlyBooleanType<false>
+        readonly: ReadOnlyBooleanType
     ): Promise<ProjetoPermissoesDto> {
         const permissoes: ProjetoPermissoesDto = {
             acao_arquivar: false,
@@ -1057,7 +1057,14 @@ export class ProjetoService {
         }
 
         if (user && readonly === 'ReadWrite' && pessoaPodeEscrever == false) {
-            throw new HttpException('Você não pode mais executar ações neste projeto.', 400);
+            throw new HttpException('Você não pode executar a ação no projeto.', 400);
+        } else if (
+            user &&
+            readonly === 'ReadWriteTeam' &&
+            pessoaPodeEscrever == false &&
+            permissoes.sou_responsavel == false
+        ) {
+            throw new HttpException('Você não pode executar está a ação no projeto sem participar da equipe.', 400);
         }
 
         // se não pode escrever, logo, não pode ter nenhum campo ou acao habilitada

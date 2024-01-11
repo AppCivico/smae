@@ -33,7 +33,7 @@ export class RiscoController {
         @Body() dto: CreateRiscoDto,
         @CurrentUser() user: PessoaFromJwt
     ): Promise<RecordWithId> {
-        const projeto = await this.projetoService.findOne(params.id, user, 'ReadWrite');
+        const projeto = await this.projetoService.findOne(params.id, user, 'ReadWriteTeam');
 
         return await this.riscoService.create(projeto.id, dto, user);
     }
@@ -67,7 +67,7 @@ export class RiscoController {
         @Body() updateRiscoDto: UpdateRiscoDto,
         @CurrentUser() user: PessoaFromJwt
     ): Promise<RecordWithId> {
-        await this.projetoService.findOne(params.id, user, 'ReadWrite');
+        await this.projetoService.findOne(params.id, user, 'ReadWriteTeam');
         return await this.riscoService.update(params.id2, updateRiscoDto, user);
     }
 
@@ -78,7 +78,8 @@ export class RiscoController {
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.ACCEPTED)
     async remove(@Param() params: FindTwoParams, @CurrentUser() user: PessoaFromJwt) {
-        const projeto = await this.projetoService.findOne(params.id, user, 'ReadWrite');
+        // Verificar se a equipe vai poder remover o risco (e editar tbm)
+        const projeto = await this.projetoService.findOne(params.id, user, 'ReadWriteTeam');
         await this.riscoService.remove(projeto.id, params.id2, user);
         return '';
     }

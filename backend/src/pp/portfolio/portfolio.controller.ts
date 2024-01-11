@@ -9,6 +9,7 @@ import { CreatePortfolioDto } from './dto/create-portfolio.dto';
 import { UpdatePortfolioDto } from './dto/update-portfolio.dto';
 import { ListPortfolioDto, PortfolioOneDto } from './entities/portfolio.entity';
 import { PortfolioService } from './portfolio.service';
+import { PROJETO_READONLY_ROLES } from '../projeto/projeto.controller';
 
 @ApiTags('Portfólio')
 @Controller('portfolio')
@@ -33,9 +34,7 @@ export class PortfolioController {
         'Projeto.administrar_portfolios',
         'Projeto.administrador',
         'Projeto.administrador_no_orgao',
-        'SMAE.gestor_de_projeto',
-        'SMAE.colaborador_de_projeto',
-        'SMAE.espectador_de_projeto'
+        ...PROJETO_READONLY_ROLES
     )
     async findAll(@CurrentUser() user: PessoaFromJwt): Promise<ListPortfolioDto> {
         return {
@@ -46,12 +45,7 @@ export class PortfolioController {
     @Get(':id')
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
-    @Roles(
-        'Projeto.administrar_portfolios',
-        'Projeto.administrador_no_orgao',
-        'SMAE.gestor_de_projeto',
-        'SMAE.colaborador_de_projeto'
-    )
+    @Roles('Projeto.administrar_portfolios', 'Projeto.administrador_no_orgao', ...PROJETO_READONLY_ROLES)
     async findOne(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt): Promise<PortfolioOneDto> {
         return await this.portfolioService.findOne(params.id, user);
     }
