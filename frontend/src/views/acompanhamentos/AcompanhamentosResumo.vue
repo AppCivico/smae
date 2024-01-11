@@ -4,8 +4,10 @@ import dateToField from '@/helpers/dateToField';
 import { useAcompanhamentosStore } from '@/stores/acompanhamentos.store.ts';
 import { useRiscosStore } from '@/stores/riscos.store.ts';
 import { storeToRefs } from 'pinia';
+import { useProjetosStore } from '@/stores/projetos.store.ts';
 
 const acompanhamentosStore = useAcompanhamentosStore();
+const projetosStore = useProjetosStore();
 const riscosStore = useRiscosStore();
 
 const {
@@ -13,6 +15,10 @@ const {
   emFoco,
   erro,
 } = storeToRefs(acompanhamentosStore);
+
+const {
+  permissõesDoProjetoEmFoco,
+} = storeToRefs(projetosStore);
 </script>
 <template>
   <div class="flex spacebetween center mb2">
@@ -30,7 +36,9 @@ const {
     <hr class="ml2 f1">
 
     <router-link
-      v-if="emFoco?.id"
+      v-if="emFoco?.id
+        && (!permissõesDoProjetoEmFoco.apenas_leitura
+          || permissõesDoProjetoEmFoco.sou_responsavel)"
       :to="{
         name: 'acompanhamentosEditar', params: {
           acompanhamentoId: emFoco.id,
