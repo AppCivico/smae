@@ -20,6 +20,12 @@ const {
   permissõesDoProjetoEmFoco,
 } = storeToRefs(projetosStore);
 </script>
+<script>
+// use normal <script> to declare options
+export default {
+  inheritAttrs: false,
+};
+</script>
 <template>
   <div class="flex spacebetween center mb2">
     <TítuloDePágina

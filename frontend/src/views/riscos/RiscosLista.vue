@@ -39,6 +39,12 @@ const listaFiltrada = computed(() => (!statusVisível.value && !grauVisível.val
 
 iniciar();
 </script>
+<script>
+// use normal <script> to declare options
+export default {
+  inheritAttrs: false,
+};
+</script>
 <template>
   <div class="flex spacebetween center mb2">
     <TítuloDePágina>
