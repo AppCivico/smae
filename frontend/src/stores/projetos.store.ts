@@ -37,7 +37,6 @@ interface Estado {
 
   chamadasPendentes: ChamadasPendentes;
 
-  permissões: ProjetoPermissoesDto | null;
   pdmsSimplificados: PdmsSimplificados;
   metaSimplificada: MetaSimplificada;
   erro: null | unknown;
@@ -60,8 +59,6 @@ export const useProjetosStore = defineStore('projetos', {
       diretórios: true,
     },
 
-    permissões: null,
-
     pdmsSimplificados: [],
     metaSimplificada: [],
     erro: null,
@@ -71,11 +68,7 @@ export const useProjetosStore = defineStore('projetos', {
       this.chamadasPendentes.emFoco = true;
       try {
         const resposta = await this.requestS.get(`${baseUrl}/projeto/${id}`, params);
-        this.emFoco = {
-          ...resposta,
-          permissoes: undefined,
-        };
-        this.permissões = resposta.permissoes;
+        this.emFoco = resposta;
       } catch (erro: unknown) {
         this.erro = erro;
       }
@@ -275,6 +268,10 @@ export const useProjetosStore = defineStore('projetos', {
 
     projetosPorId: ({ lista }: Estado) => lista
       .reduce((acc, cur) => ({ ...acc, [cur.id]: cur }), {}),
+
+    permissõesDoProjetoEmFoco: ({ emFoco }: Estado) => (typeof emFoco?.permissoes === 'object'
+      ? emFoco.permissoes
+      : {}),
 
     projetosPorPortfolio: ({ lista }: Estado): { [k: number | string]: ProjetoDto[] } => lista
       .reduce((acc: any, cur: ProjetoDto) => {

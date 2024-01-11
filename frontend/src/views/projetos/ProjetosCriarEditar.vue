@@ -47,7 +47,6 @@ const {
   emFoco,
   erro,
   itemParaEdição,
-  permissões,
   pdmsSimplificados,
   pdmsPorId,
   metaSimplificada,
@@ -360,7 +359,7 @@ watch(emFoco, () => {
           type="text"
           class="inputtext light mb1"
           maxlength="20"
-          :disabled="!permissões?.campo_codigo"
+          :disabled="!emFoco?.permissoes?.campo_codigo"
         />
         <ErrorMessage
           class="error-msg mb1"
@@ -397,7 +396,7 @@ watch(emFoco, () => {
           as="select"
           class="inputtext light mb1"
           :class="{ error: errors.status }"
-          :disabled="!permissões.status_permitidos?.length"
+          :disabled="!emFoco?.permissoes.status_permitidos?.length"
         >
           <option
             :value="null"
@@ -408,7 +407,7 @@ watch(emFoco, () => {
             v-for="item in listaDeStatuses"
             :key="item.valor"
             :value="item.valor"
-            :disabled="permissões.status_permitidos?.indexOf(item.valor) === -1"
+            :disabled="emFoco?.permissoes.status_permitidos?.indexOf(item.valor) === -1"
           >
             {{ item.etiqueta }}
           </option>
@@ -454,7 +453,7 @@ watch(emFoco, () => {
             rows="5"
             class="inputtext light mb1"
             :class="{ 'error': errors.objeto }"
-            :disabled="!permissões?.campo_objeto"
+            :disabled="!emFoco?.permissoes?.campo_objeto"
           />
           <ErrorMessage
             name="objeto"
@@ -475,7 +474,7 @@ watch(emFoco, () => {
             rows="5"
             class="inputtext light mb1"
             :class="{ 'error': errors.objetivo }"
-            :disabled="!permissões?.campo_objetivo"
+            :disabled="!emFoco?.permissoes?.campo_objetivo"
           />
           <ErrorMessage
             name="objetivo"
@@ -496,7 +495,7 @@ watch(emFoco, () => {
             rows="5"
             class="inputtext light mb1"
             :class="{ 'error': errors.publico_alvo }"
-            :disabled="!permissões?.campo_publico_alvo"
+            :disabled="!emFoco?.permissoes?.campo_publico_alvo"
           />
           <ErrorMessage
             name="publico_alvo"
@@ -681,7 +680,7 @@ watch(emFoco, () => {
           rows="5"
           class="inputtext light mb1"
           :class="{ 'error': errors.nao_escopo }"
-          :disabled="!permissões?.campo_nao_escopo"
+          :disabled="!emFoco?.permissoes?.campo_nao_escopo"
         />
         <ErrorMessage
           name="nao_escopo"
@@ -1518,7 +1517,7 @@ watch(emFoco, () => {
           name="secretario_executivo"
           type="text"
           class="inputtext light mb1"
-          :disabled="!permissões?.campo_secretario_executivo"
+          :disabled="!emFoco?.permissoes?.campo_secretario_executivo"
         />
         <ErrorMessage
           class="error-msg mb1"
@@ -1535,7 +1534,7 @@ watch(emFoco, () => {
           name="secretario_responsavel"
           type="text"
           class="inputtext light mb1"
-          :disabled="!permissões?.campo_secretario_responsavel"
+          :disabled="!emFoco?.permissoes?.campo_secretario_responsavel"
         />
         <ErrorMessage
           class="error-msg mb1"
@@ -1549,7 +1548,7 @@ watch(emFoco, () => {
       class="flex g2"
     >
       <div
-        :disabled="!permissões?.campo_versao"
+        :disabled="!emFoco?.permissoes?.campo_versao"
         class="f1 mb1"
       >
         <LabelFromYup
@@ -1569,7 +1568,7 @@ watch(emFoco, () => {
       </div>
 
       <div
-        :disabled="!permissões?.campo_data_aprovacao"
+        :disabled="!emFoco?.permissoes?.campo_data_aprovacao"
         class="f1 mb1"
       >
         <LabelFromYup
@@ -1589,7 +1588,7 @@ watch(emFoco, () => {
         />
       </div>
       <div
-        :disabled="!permissões?.campo_data_revisao"
+        :disabled="!emFoco?.permissoes?.campo_data_revisao"
         class="f1 mb1"
       >
         <LabelFromYup
@@ -1675,7 +1674,7 @@ watch(emFoco, () => {
   </div>
 
   <button
-    v-if="emFoco?.id && !permissões?.apenas_leitura_planejamento"
+    v-if="emFoco?.id && !emFoco?.permissoes?.apenas_leitura"
     class="btn amarelo big"
     @click="excluirProjeto(emFoco.id)"
   >
