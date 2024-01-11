@@ -34,7 +34,8 @@ export class PortfolioController {
         'Projeto.administrador',
         'Projeto.administrador_no_orgao',
         'SMAE.gestor_de_projeto',
-        'SMAE.colaborador_de_projeto'
+        'SMAE.colaborador_de_projeto',
+        'SMAE.espectador_de_projeto'
     )
     async findAll(@CurrentUser() user: PessoaFromJwt): Promise<ListPortfolioDto> {
         return {
