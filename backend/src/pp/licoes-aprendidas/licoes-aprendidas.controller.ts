@@ -77,10 +77,8 @@ export class LicoesAprendidasController {
         @Body() dto: UpdateLicoesAprendidasDto,
         @CurrentUser() user: PessoaFromJwt
     ): Promise<RecordWithId> {
-        const projeto = await this.projetoService.findOne(params.id, user, 'ReadWrite');
-        if (projeto.permissoes.apenas_leitura) {
-            throw new HttpException('Não é possível editar as lições aprendidas em modo de leitura', 400);
-        }
+        await this.projetoService.findOne(params.id, user, 'ReadWrite');
+
         return await this.licoesAprendidasService.update(params.id, params.id2, dto, user);
     }
 
@@ -91,10 +89,7 @@ export class LicoesAprendidasController {
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.ACCEPTED)
     async remove(@Param() params: FindTwoParams, @CurrentUser() user: PessoaFromJwt) {
-        const projeto = await this.projetoService.findOne(params.id, user, 'ReadWrite');
-        if (projeto.permissoes.apenas_leitura) {
-            throw new HttpException('Não é possível remover as lições aprendidas em modo de leitura', 400);
-        }
+        await this.projetoService.findOne(params.id, user, 'ReadWrite');
 
         await this.licoesAprendidasService.remove(params.id, params.id2, user);
         return '';
