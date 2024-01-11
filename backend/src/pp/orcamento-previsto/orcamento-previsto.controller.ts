@@ -50,7 +50,7 @@ export class OrcamentoPrevistoController {
         this.logger.debug('create orçamento previsto projeto');
 
         const projeto = await this.projetoService.findOne(params.id, user, 'ReadWrite');
-        if (projeto.permissoes.apenas_leitura_planejamento) {
+        if (projeto.permissoes.apenas_leitura) {
             throw new HttpException('Não é possível criar o orçamento no modo apenas leitura.', 400);
         }
 
@@ -89,7 +89,7 @@ export class OrcamentoPrevistoController {
         this.logger.debug('zerado orçamento previsto projeto');
 
         const projeto = await this.projetoService.findOne(+params.id, user, 'ReadWrite');
-        if (projeto.permissoes.apenas_leitura_planejamento) {
+        if (projeto.permissoes.apenas_leitura) {
             throw new HttpException('Não é possível editar o orçamento no modo apenas leitura.', 400);
         }
 
@@ -110,7 +110,7 @@ export class OrcamentoPrevistoController {
         this.logger.debug('patch orçamento previsto projeto');
 
         const projeto = await this.projetoService.findOne(+params.id, user, 'ReadWrite');
-        if (projeto.permissoes.apenas_leitura_planejamento) {
+        if (projeto.permissoes.apenas_leitura) {
             throw new HttpException('Não é possível editar o orçamento no modo apenas leitura.', 400);
         }
 
@@ -127,7 +127,7 @@ export class OrcamentoPrevistoController {
         this.logger.debug('remove orçamento previsto projeto');
 
         const projeto = await this.projetoService.findOne(params.id, user, 'ReadWrite');
-        if (projeto.permissoes.apenas_leitura_planejamento) {
+        if (projeto.permissoes.apenas_leitura) {
             throw new HttpException('Não é possível editar o orçamento no modo apenas leitura.', 400);
         }
 

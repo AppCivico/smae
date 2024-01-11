@@ -44,7 +44,7 @@ export class OrcamentoRealizadoController {
         @CurrentUser() user: PessoaFromJwt
     ): Promise<RecordWithId> {
         const projeto = await this.projetoService.findOne(params.id, user, 'ReadWrite');
-        if (projeto.permissoes.apenas_leitura_planejamento) {
+        if (projeto.permissoes.apenas_leitura) {
             throw new HttpException('Não é possível criar o orçamento no modo apenas leitura.', 400);
         }
         return await this.orcamentoRealizadoService.create(projeto, createMetaDto, user);
@@ -72,7 +72,7 @@ export class OrcamentoRealizadoController {
         @CurrentUser() user: PessoaFromJwt
     ): Promise<RecordWithId> {
         const projeto = await this.projetoService.findOne(params.id, user, 'ReadWrite');
-        if (projeto.permissoes.apenas_leitura_planejamento) {
+        if (projeto.permissoes.apenas_leitura) {
             throw new HttpException('Não é possível criar o orçamento no modo apenas leitura.', 400);
         }
         return await this.orcamentoRealizadoService.update(projeto, params.id2, createMetaDto, user);
@@ -90,7 +90,7 @@ export class OrcamentoRealizadoController {
         @CurrentUser() user: PessoaFromJwt
     ) {
         const projeto = await this.projetoService.findOne(paramProj.id, user, 'ReadWrite');
-        if (projeto.permissoes.apenas_leitura_planejamento) {
+        if (projeto.permissoes.apenas_leitura) {
             throw new HttpException('Não é possível criar o orçamento no modo apenas leitura.', 400);
         }
 
@@ -106,7 +106,7 @@ export class OrcamentoRealizadoController {
     @HttpCode(HttpStatus.ACCEPTED)
     async remove(@Param() params: FindTwoParams, @CurrentUser() user: PessoaFromJwt) {
         const projeto = await this.projetoService.findOne(params.id, user, 'ReadWrite');
-        if (projeto.permissoes.apenas_leitura_planejamento) {
+        if (projeto.permissoes.apenas_leitura) {
             throw new HttpException('Não é possível criar o orçamento no modo apenas leitura.', 400);
         }
         await this.orcamentoRealizadoService.remove(+params.id2, user);

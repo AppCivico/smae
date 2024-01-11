@@ -58,7 +58,7 @@ export class ProjetoPermissoesDto {
      * Os usuários que tiverem esse campo TRUE mas sou_responsavel=false, são os usuários espectadores,
      * que só podem visualizar e nunca editar nem mesmo o realizado
      */
-    apenas_leitura_planejamento: boolean;
+    apenas_leitura: boolean;
     sou_responsavel: boolean;
 
     @ApiProperty({ enum: ProjetoStatus, enumName: 'ProjetoStatus' })
