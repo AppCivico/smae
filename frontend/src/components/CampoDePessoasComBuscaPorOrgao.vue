@@ -230,10 +230,6 @@ watch(() => props.prontoParaMontagem, () => {
       Não há pessoas com o perfil necessário nos órgãos disponíveis.
     </div>
 
-    <pre>props.modelValue:{{ props.modelValue }}</pre>
-
-    <pre>órgãosEPessoas:{{ órgãosEPessoas }}</pre>
-    <pre>listaDeÓrgãos:{{ listaDeÓrgãos }}</pre>
-    <pre>mapaDeÓrgãos:{{ mapaDeÓrgãos }}</pre>
+    <pre v-ScrollLockDebug>props.modelValue:{{ props.modelValue }}</pre>
   </div>
 </template>
