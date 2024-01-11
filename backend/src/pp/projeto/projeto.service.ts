@@ -1086,6 +1086,7 @@ export class ProjetoService {
             'SMAE.gestor_de_projeto',
             'Projeto.administrador_no_orgao',
             'SMAE.colaborador_de_projeto',
+            'SMAE.espectador_de_projeto',
         ]);
         if (!anyPerm) throw new HttpException('Não foi possível calcular a permissão de acesso para o projeto.', 400);
 
