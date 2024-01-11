@@ -102,7 +102,6 @@ export default {
       >
         <option
           value=""
-          :selected="!!status"
         >
           qualquer
         </option>
