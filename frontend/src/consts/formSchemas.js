@@ -551,9 +551,6 @@ export const projeto = object()
   .shape({
     atividade_id: number()
       .nullable(),
-    coordenador_ue: string()
-      .label('Gerente do projeto')
-      .nullable(),
     codigo: string()
       .label('Código')
       .nullable(),
@@ -707,10 +704,10 @@ export const projeto = object()
       .label('Região')
       .nullable(),
     responsaveis_no_orgao_gestor: array()
-      .label('Responsável')
+      .label('Responsáveis pelo acompanhamento')
       .nullable(),
     responsavel_id: number()
-      .label('Responsável no órgão')
+      .label('Gerente do projeto')
       .nullable(),
     restricoes: array()
       .label('Restrições')

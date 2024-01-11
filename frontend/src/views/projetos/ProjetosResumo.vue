@@ -494,7 +494,7 @@ if (!Array.isArray(organs.value) || !organs.value.length) {
         </dl>
         <dl class="f1 mb1">
           <dt class="t12 uc w700 mb05 tamarelo">
-            Responsável
+            {{ schema.fields.responsavel_id.spec.label }}
           </dt>
           <dd class="t13">
             {{ emFoco?.responsavel?.nome_exibicao || emFoco?.responsavel_id || '-' }}
@@ -559,13 +559,6 @@ if (!Array.isArray(organs.value) || !organs.value.length) {
     <hr class="mb1 f1">
 
     <div class="flex g2 mb1 flexwrap">
-      <dl class="f1 mb1">
-        <dt class="t12 uc w700 mb05 tamarelo">
-          {{ schema.fields.coordenador_ue.spec.label }}
-        </dt>
-        <dd class="t13">
-          {{ emFoco?.coordenador_ue || '-' }}
-        </dd>
       </dl>
       <dl class="f1 mb1">
         <dt class="t12 uc w700 mb05 tamarelo">
