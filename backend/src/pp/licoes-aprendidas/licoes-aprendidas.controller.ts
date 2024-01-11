@@ -38,7 +38,7 @@ export class LicoesAprendidasController {
         @CurrentUser() user: PessoaFromJwt
     ): Promise<RecordWithId> {
         const projeto = await this.projetoService.findOne(params.id, user, 'ReadWrite');
-        if (projeto.permissoes.apenas_leitura_planejamento) {
+        if (projeto.permissoes.apenas_leitura) {
             throw new HttpException('Não é possível criar as lições aprendidas em modo de leitura', 400);
         }
         return await this.licoesAprendidasService.create(params.id, createLicoesAprendidasDto, user);
@@ -78,7 +78,7 @@ export class LicoesAprendidasController {
         @CurrentUser() user: PessoaFromJwt
     ): Promise<RecordWithId> {
         const projeto = await this.projetoService.findOne(params.id, user, 'ReadWrite');
-        if (projeto.permissoes.apenas_leitura_planejamento) {
+        if (projeto.permissoes.apenas_leitura) {
             throw new HttpException('Não é possível editar as lições aprendidas em modo de leitura', 400);
         }
         return await this.licoesAprendidasService.update(params.id, params.id2, dto, user);
@@ -92,7 +92,7 @@ export class LicoesAprendidasController {
     @HttpCode(HttpStatus.ACCEPTED)
     async remove(@Param() params: FindTwoParams, @CurrentUser() user: PessoaFromJwt) {
         const projeto = await this.projetoService.findOne(params.id, user, 'ReadWrite');
-        if (projeto.permissoes.apenas_leitura_planejamento) {
+        if (projeto.permissoes.apenas_leitura) {
             throw new HttpException('Não é possível remover as lições aprendidas em modo de leitura', 400);
         }
 

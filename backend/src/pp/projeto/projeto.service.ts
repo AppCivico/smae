@@ -953,7 +953,7 @@ export class ProjetoService {
             campo_secretario_responsavel: false,
             campo_coordenador_ue: false,
             campo_nao_escopo: false,
-            apenas_leitura_planejamento: true,
+            apenas_leitura: true,
             sou_responsavel: false,
             status_permitidos: [],
         };
@@ -974,7 +974,7 @@ export class ProjetoService {
             // user null == sistema puxando o relatório, então se precisar só mudar pra pessoaPodeEscrever=true
         }
 
-        permissoes.apenas_leitura_planejamento = pessoaPodeEscrever == false;
+        permissoes.apenas_leitura = pessoaPodeEscrever == false;
 
         if (projeto.arquivado == false) {
             // se já saiu da fase de registro, então está liberado preencher o campo

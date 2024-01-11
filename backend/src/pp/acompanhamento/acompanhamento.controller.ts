@@ -37,7 +37,7 @@ export class AcompanhamentoController {
         @CurrentUser() user: PessoaFromJwt
     ): Promise<RecordWithId> {
         const projeto = await this.projetoService.findOne(params.id, user, 'ReadWrite');
-        if (projeto.permissoes.apenas_leitura_planejamento && projeto.permissoes.sou_responsavel == false) {
+        if (projeto.permissoes.apenas_leitura && projeto.permissoes.sou_responsavel == false) {
             throw new HttpException(
                 'Não é possível criar o acompanhamento, pois o seu acesso é apenas leitura e você não é o responsável do projeto.',
                 400

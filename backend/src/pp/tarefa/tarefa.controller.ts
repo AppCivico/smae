@@ -145,7 +145,7 @@ export class TarefaController {
             console.log(`after plainToClass UpdateTarefaRealizadoDto ${JSON.stringify(dto)}`);
             console.log(dto);
 
-            if (projeto.permissoes.apenas_leitura_planejamento && projeto.permissoes.sou_responsavel == false) {
+            if (projeto.permissoes.apenas_leitura && projeto.permissoes.sou_responsavel == false) {
                 throw new HttpException(
                     'Não é possível editar o realizado da tarefa, pois o seu acesso é apenas leitura e você não é o responsável do projeto.',
                     400

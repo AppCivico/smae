@@ -52,7 +52,7 @@ export class PlanoAcaoMonitoramentoController {
         @CurrentUser() user: PessoaFromJwt
     ): Promise<RecordWithId> {
         const projeto = await this.projetoService.findOne(params.id, user, 'ReadWrite');
-        if (projeto.permissoes.apenas_leitura_planejamento) {
+        if (projeto.permissoes.apenas_leitura) {
             throw new HttpException('Não é possível criar o monitoramento no modo apenas leitura.', 400);
         }
 
@@ -84,7 +84,7 @@ export class PlanoAcaoMonitoramentoController {
         @CurrentUser() user: PessoaFromJwt
     ): Promise<RecordWithId> {
         const projeto = await this.projetoService.findOne(params.id, user, 'ReadWrite');
-        if (projeto.permissoes.apenas_leitura_planejamento) {
+        if (projeto.permissoes.apenas_leitura) {
             throw new HttpException('Não é possível editar o monitoramento no modo apenas leitura.', 400);
         }
 
@@ -99,7 +99,7 @@ export class PlanoAcaoMonitoramentoController {
     @HttpCode(HttpStatus.ACCEPTED)
     async remove(@Param() params: FindTwoParams, @CurrentUser() user: PessoaFromJwt) {
         const projeto = await this.projetoService.findOne(params.id, user, 'ReadWrite');
-        if (projeto.permissoes.apenas_leitura_planejamento) {
+        if (projeto.permissoes.apenas_leitura) {
             throw new HttpException('Não é possível remover o monitoramento no modo apenas leitura.', 400);
         }
 
