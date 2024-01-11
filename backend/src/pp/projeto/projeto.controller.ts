@@ -38,7 +38,7 @@ const roles: ListaDePrivilegios[] = [
     'Projeto.administrador_no_orgao',
     'SMAE.gestor_de_projeto',
     'SMAE.colaborador_de_projeto',
-    'SAME.SMAE.espectador_de_projeto'
+    'SMAE.espectador_de_projeto'
 ];
 
 @ApiTags('Projeto')
