@@ -498,6 +498,14 @@ export const portfolio = object({
     .min(0)
     .max(2040)
     .required(),
+  grupo_portfolio: array()
+    .label('Grupos de observadores')
+    .nullable()
+    .of(
+      number()
+        .label('Pessoa')
+        .required(),
+    ),
   nivel_maximo_tarefa: number()
     .label('Nível máximo de aninhamento de tarefas')
     .min(1)
