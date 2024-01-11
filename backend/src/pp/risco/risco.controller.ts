@@ -11,6 +11,7 @@ import { CreateRiscoDto } from './dto/create-risco.dto';
 import { UpdateRiscoDto } from './dto/update-risco.dto';
 import { ListProjetoRiscoDto, ProjetoRiscoDetailDto } from './entities/risco.entity';
 import { RiscoService } from './risco.service';
+import { PROJETO_READONLY_ROLES } from '../projeto/projeto.controller';
 
 const roles: ListaDePrivilegios[] = [
     'Projeto.administrador',
@@ -22,7 +23,10 @@ const roles: ListaDePrivilegios[] = [
 @Controller('projeto')
 @ApiTags('Projeto - Risco')
 export class RiscoController {
-    constructor(private readonly riscoService: RiscoService, private readonly projetoService: ProjetoService) {}
+    constructor(
+        private readonly riscoService: RiscoService,
+        private readonly projetoService: ProjetoService
+    ) {}
 
     @Post(':id/risco')
     @ApiBearerAuth('access-token')
@@ -52,7 +56,7 @@ export class RiscoController {
     @Get(':id/risco/:id2')
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
-    @Roles(...roles)
+    @Roles(...roles, ...PROJETO_READONLY_ROLES)
     async findOne(@Param() params: FindTwoParams, @CurrentUser() user: PessoaFromJwt): Promise<ProjetoRiscoDetailDto> {
         const projeto = await this.projetoService.findOne(params.id, user, 'ReadOnly');
         return await this.riscoService.findOne(projeto.id, params.id2, user);
