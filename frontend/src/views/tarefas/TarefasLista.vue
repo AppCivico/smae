@@ -13,6 +13,7 @@ const {
 } = storeToRefs(tarefasStore);
 
 const projetoEmFoco = computed(() => tarefasStore?.extra?.projeto);
+const apenasLeitura = computed(() => !!projetoEmFoco.value?.permissoes?.apenas_leitura);
 
 // eslint-disable-next-line max-len
 const nívelMáximoPermitido = computed(() => tarefasStore?.extra?.portfolio?.nivel_maximo_tarefa || 0);
@@ -30,13 +31,22 @@ async function iniciar() {
 
 iniciar();
 </script>
+<script>
+// use normal <script> to declare options
+export default {
+  inheritAttrs: false,
+};
+</script>
 <template>
   <div class="flex spacebetween center mb2">
-    <h1>{{ route?.meta?.título || 'Cronograma' }}</h1>
+    <TítuloDePágina>
+      Cronograma
+    </TítuloDePágina>
+
     <hr class="ml2 f1">
 
     <div
-      v-if="projetoEmFoco?.eh_prioritario"
+      v-if="projetoEmFoco?.eh_prioritario && !apenasLeitura"
       class="ml2"
     >
       <router-link
@@ -196,9 +206,11 @@ iniciar();
       <col>
       <col>
 
-      <col class="col--botão-de-ação">
-      <col class="col--botão-de-ação">
-      <col class="col--botão-de-ação">
+      <template v-if="!apenasLeitura">
+        <col class="col--botão-de-ação">
+        <col class="col--botão-de-ação">
+        <col class="col--botão-de-ação">
+      </template>
     </colgroup>
 
     <thead>
@@ -223,9 +235,11 @@ iniciar();
           Custo <small>(R$)</small>
         </th>
         <th />
-        <th />
-        <th />
-        <th />
+        <template v-if="!apenasLeitura">
+          <th />
+          <th />
+          <th />
+        </template>
       </tr>
       <tr class="pl3 center mb05 tc300 w700 t12 uc">
         <th />
@@ -257,9 +271,11 @@ iniciar();
         <th class="cell--number">
           Atraso
         </th>
-        <th />
-        <th />
-        <th />
+        <template v-if="!apenasLeitura">
+          <th />
+          <th />
+          <th />
+        </template>
       </tr>
     </thead>
 
