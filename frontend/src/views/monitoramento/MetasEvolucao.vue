@@ -144,7 +144,6 @@ async function submeterACoordenadoriaDePlanejamento() {
     const msg = 'Dados salvos com sucesso!';
     const r = await CiclosStore.submeterACoordenadoriaDePlanejamento({
       meta_id: Number(meta_id),
-      simular_ponto_focal: true,
     });
 
     if (r) {
@@ -214,8 +213,9 @@ iniciar();
             </li>
           </ul>
         </div>
+
         <button
-          v-if="perm.PDM?.ponto_focal && MetaVars.botao_enviar_cp"
+          v-if="MetaVars.perfil === 'ponto_focal' && MetaVars.botao_enviar_cp"
           class="btn big ml2"
           :disabled="chamadasPendentes.submeterACoordenadoriaDePlanejamento"
           @click="submeterACoordenadoriaDePlanejamento()"
