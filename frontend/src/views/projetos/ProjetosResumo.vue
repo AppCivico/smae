@@ -22,7 +22,7 @@ const {
   chamadasPendentes, emFoco, erro,
 } = storeToRefs(projetosStore);
 
-const equipeAgrupadaPorÓrgão = computed(() => (Array.isArray(emFoco.value.equipe)
+const equipeAgrupadaPorÓrgão = computed(() => (Array.isArray(emFoco.value?.equipe)
   ? emFoco.value.equipe.reduce((acc, cur) => {
     if (!acc[`_${cur.orgao_id}`]) {
       acc[`_${cur.orgao_id}`] = { id: cur.orgao_id, pessoas: [] };
