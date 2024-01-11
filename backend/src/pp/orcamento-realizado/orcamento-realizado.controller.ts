@@ -1,30 +1,18 @@
-import {
-    Body,
-    Controller,
-    Delete,
-    Get,
-    HttpCode,
-    HttpException,
-    HttpStatus,
-    Param,
-    Patch,
-    Post,
-    Query,
-} from '@nestjs/common';
-import { OrcamentoRealizadoService } from './orcamento-realizado.service';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post, Query } from '@nestjs/common';
 import { ApiBearerAuth, ApiNoContentResponse, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
+import { CurrentUser } from '../../auth/decorators/current-user.decorator';
 import { Roles } from '../../auth/decorators/roles.decorator';
+import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
+import { FindOneParams, FindTwoParams } from '../../common/decorators/find-params';
+import { BatchRecordWithId, RecordWithId } from '../../common/dto/record-with-id.dto';
+import { ProjetoService } from '../projeto/projeto.service';
 import {
     CreatePPOrcamentoRealizadoDto,
     FilterPPOrcamentoRealizadoDto,
     ListPPOrcamentoRealizadoDto,
     UpdatePPOrcamentoRealizadoDto,
 } from './dto/create-orcamento-realizado.dto';
-import { CurrentUser } from '../../auth/decorators/current-user.decorator';
-import { BatchRecordWithId, RecordWithId } from '../../common/dto/record-with-id.dto';
-import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
-import { ProjetoService } from '../projeto/projeto.service';
-import { FindOneParams, FindTwoParams } from '../../common/decorators/find-params';
+import { OrcamentoRealizadoService } from './orcamento-realizado.service';
 
 @ApiTags('Projeto - Orçamento (Realizado)')
 @Controller('projeto')
@@ -43,10 +31,8 @@ export class OrcamentoRealizadoController {
         @Body() createMetaDto: CreatePPOrcamentoRealizadoDto,
         @CurrentUser() user: PessoaFromJwt
     ): Promise<RecordWithId> {
-        const projeto = await this.projetoService.findOne(params.id, user, 'ReadWrite');
-        if (projeto.permissoes.apenas_leitura) {
-            throw new HttpException('Não é possível criar o orçamento no modo apenas leitura.', 400);
-        }
+        const projeto = await this.projetoService.findOne(params.id, user, 'ReadWriteTeam');
+
         return await this.orcamentoRealizadoService.create(projeto, createMetaDto, user);
     }
 
@@ -71,10 +57,8 @@ export class OrcamentoRealizadoController {
         @Body() createMetaDto: UpdatePPOrcamentoRealizadoDto,
         @CurrentUser() user: PessoaFromJwt
     ): Promise<RecordWithId> {
-        const projeto = await this.projetoService.findOne(params.id, user, 'ReadWrite');
-        if (projeto.permissoes.apenas_leitura) {
-            throw new HttpException('Não é possível criar o orçamento no modo apenas leitura.', 400);
-        }
+        const projeto = await this.projetoService.findOne(params.id, user, 'ReadWriteTeam');
+
         return await this.orcamentoRealizadoService.update(projeto, params.id2, createMetaDto, user);
     }
 
@@ -89,10 +73,7 @@ export class OrcamentoRealizadoController {
         @Body() paramIds: BatchRecordWithId,
         @CurrentUser() user: PessoaFromJwt
     ) {
-        const projeto = await this.projetoService.findOne(paramProj.id, user, 'ReadWrite');
-        if (projeto.permissoes.apenas_leitura) {
-            throw new HttpException('Não é possível criar o orçamento no modo apenas leitura.', 400);
-        }
+        await this.projetoService.findOne(paramProj.id, user, 'ReadWriteTeam');
 
         await this.orcamentoRealizadoService.removeEmLote(paramIds, user);
         return '';
@@ -105,10 +86,8 @@ export class OrcamentoRealizadoController {
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.ACCEPTED)
     async remove(@Param() params: FindTwoParams, @CurrentUser() user: PessoaFromJwt) {
-        const projeto = await this.projetoService.findOne(params.id, user, 'ReadWrite');
-        if (projeto.permissoes.apenas_leitura) {
-            throw new HttpException('Não é possível criar o orçamento no modo apenas leitura.', 400);
-        }
+        await this.projetoService.findOne(params.id, user, 'ReadWriteTeam');
+
         await this.orcamentoRealizadoService.remove(+params.id2, user);
         return '';
     }

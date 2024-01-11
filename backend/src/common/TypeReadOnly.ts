@@ -1,1 +1,1 @@
-export type ReadOnlyBooleanType<T extends boolean> = T extends true ? 'ReadOnly' : 'ReadWrite';
+export type ReadOnlyBooleanType = 'ReadOnly' | 'ReadWrite' | 'ReadWriteTeam';

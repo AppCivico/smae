@@ -33,12 +33,16 @@ import {
 import { ProjetoSeiService } from './projeto.sei.service';
 import { ProjetoService } from './projeto.service';
 
+export const PROJETO_READONLY_ROLES: ListaDePrivilegios[] = [
+    'SMAE.gestor_de_projeto',
+    'SMAE.colaborador_de_projeto',
+    'SMAE.espectador_de_projeto',
+];
+
 const roles: ListaDePrivilegios[] = [
     'Projeto.administrador',
     'Projeto.administrador_no_orgao',
-    'SMAE.gestor_de_projeto',
-    'SMAE.colaborador_de_projeto',
-    'SMAE.espectador_de_projeto'
+    ...PROJETO_READONLY_ROLES,
 ];
 
 @ApiTags('Projeto')
@@ -135,6 +139,8 @@ export class ProjetoController {
         @Body() createPdmDocDto: CreateProjetoDocumentDto,
         @CurrentUser() user: PessoaFromJwt
     ): Promise<RecordWithId> {
+        await this.projetoService.findOne(params.id, user, 'ReadWriteTeam');
+
         return await this.projetoService.append_document(params.id, createPdmDocDto, user);
     }
 
@@ -155,7 +161,7 @@ export class ProjetoController {
         @Body() dto: UpdateProjetoDocumentDto,
         @CurrentUser() user: PessoaFromJwt
     ): Promise<RecordWithId> {
-        await this.projetoService.findOne(params.id, user, 'ReadWrite');
+        await this.projetoService.findOne(params.id, user, 'ReadWriteTeam');
         return await this.projetoService.updateDocumento(params.id, params.id2, dto, user);
     }
 
@@ -166,6 +172,7 @@ export class ProjetoController {
     @ApiResponse({ description: 'sucesso ao remover', status: 204 })
     @HttpCode(HttpStatus.NO_CONTENT)
     async removerDownload(@Param() params: FindTwoParams, @CurrentUser() user: PessoaFromJwt) {
+        await this.projetoService.findOne(params.id, user, 'ReadWriteTeam');
         await this.projetoService.remove_document(params.id, params.id2, user);
         return null;
     }
@@ -179,7 +186,7 @@ export class ProjetoController {
         @Body() createProjetoRegistroSei: CreateProjetoSeiDto,
         @CurrentUser() user: PessoaFromJwt
     ): Promise<RecordWithId> {
-        const projeto = await this.projetoService.findOne(params.id, user, 'ReadWrite');
+        const projeto = await this.projetoService.findOne(params.id, user, 'ReadWriteTeam');
         return await this.projetoSeiService.append_sei(projeto, createProjetoRegistroSei, user);
     }
 
@@ -212,7 +219,7 @@ export class ProjetoController {
         @Body() updateProjetoRegistroSeiDto: UpdateProjetoRegistroSeiDto,
         @CurrentUser() user: PessoaFromJwt
     ): Promise<RecordWithId> {
-        const projeto = await this.projetoService.findOne(params.id, user, 'ReadWrite');
+        const projeto = await this.projetoService.findOne(params.id, user, 'ReadWriteTeam');
         return await this.projetoSeiService.update_sei(projeto, params.id2, updateProjetoRegistroSeiDto, user);
     }
 
@@ -223,7 +230,7 @@ export class ProjetoController {
     @ApiResponse({ description: 'sucesso ao remover', status: 204 })
     @HttpCode(HttpStatus.NO_CONTENT)
     async removeSEI(@Param() params: FindTwoParams, @CurrentUser() user: PessoaFromJwt) {
-        const projeto = await this.projetoService.findOne(params.id, user, 'ReadWrite');
+        const projeto = await this.projetoService.findOne(params.id, user, 'ReadWriteTeam');
         await this.projetoSeiService.remove_sei(projeto, params.id2, user);
         return null;
     }

@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, HttpCode, HttpException, HttpStatus, Param, Patch, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post } from '@nestjs/common';
 import { ApiBearerAuth, ApiNoContentResponse, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
 import { CurrentUser } from '../../auth/decorators/current-user.decorator';
 import { Roles } from '../../auth/decorators/roles.decorator';
@@ -7,17 +7,17 @@ import { FindOneParams, FindTwoParams } from '../../common/decorators/find-param
 import { RecordWithId } from '../../common/dto/record-with-id.dto';
 
 import { ListaDePrivilegios } from 'src/common/ListaDePrivilegios';
+import { ProjetoService } from '../projeto/projeto.service';
 import { CreateLicoesApreendidasDto } from './dto/create-licoes-aprendidas.dto';
 import { UpdateLicoesAprendidasDto } from './dto/update-licoes-aprendidas.dto';
 import { LicaoAprendida, ListLicoesAprendidasDto } from './entities/licoes-aprendidas.entity';
 import { LicoesAprendidasService } from './licoes-aprendidas.service';
-import { ProjetoService } from '../projeto/projeto.service';
+import { PROJETO_READONLY_ROLES } from '../projeto/projeto.controller';
 
 const roles: ListaDePrivilegios[] = [
     'Projeto.administrador',
     'Projeto.administrador_no_orgao',
-    'SMAE.gestor_de_projeto',
-    'SMAE.colaborador_de_projeto',
+    ...PROJETO_READONLY_ROLES
 ];
 
 @Controller('projeto')
@@ -37,10 +37,8 @@ export class LicoesAprendidasController {
         @Body() createLicoesAprendidasDto: CreateLicoesApreendidasDto,
         @CurrentUser() user: PessoaFromJwt
     ): Promise<RecordWithId> {
-        const projeto = await this.projetoService.findOne(params.id, user, 'ReadWrite');
-        if (projeto.permissoes.apenas_leitura) {
-            throw new HttpException('Não é possível criar as lições aprendidas em modo de leitura', 400);
-        }
+        await this.projetoService.findOne(params.id, user, 'ReadWriteTeam');
+
         return await this.licoesAprendidasService.create(params.id, createLicoesAprendidasDto, user);
     }
 
@@ -77,7 +75,7 @@ export class LicoesAprendidasController {
         @Body() dto: UpdateLicoesAprendidasDto,
         @CurrentUser() user: PessoaFromJwt
     ): Promise<RecordWithId> {
-        await this.projetoService.findOne(params.id, user, 'ReadWrite');
+        await this.projetoService.findOne(params.id, user, 'ReadWriteTeam');
 
         return await this.licoesAprendidasService.update(params.id, params.id2, dto, user);
     }
@@ -89,7 +87,7 @@ export class LicoesAprendidasController {
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.ACCEPTED)
     async remove(@Param() params: FindTwoParams, @CurrentUser() user: PessoaFromJwt) {
-        await this.projetoService.findOne(params.id, user, 'ReadWrite');
+        await this.projetoService.findOne(params.id, user, 'ReadWriteTeam');
 
         await this.licoesAprendidasService.remove(params.id, params.id2, user);
         return '';

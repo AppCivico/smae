@@ -10,6 +10,7 @@ import { CreateGrupoPortfolioDto } from './dto/create-grupo-portfolio.dto';
 import { UpdateGrupoPortfolioDto } from './dto/update-grupo-portfolio.dto';
 import { FilterGrupoPortfolioDto, ListGrupoPortfolioDto } from './entities/grupo-portfolio.entity';
 import { GrupoPortfolioService } from './grupo-portfolio.service';
+import { PROJETO_READONLY_ROLES } from '../projeto/projeto.controller';
 
 const roles: ListaDePrivilegios[] = [
     'CadastroGrupoPortfolio.administrador',
@@ -32,7 +33,7 @@ export class GrupoPortfolioController {
     @Get()
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
-    @Roles(...roles, 'SMAE.espectador_de_projeto', 'SMAE.gestor_de_projeto', 'SMAE.gestor_de_projeto')
+    @Roles(...roles, ...PROJETO_READONLY_ROLES)
     async findAll(@Query() filter: FilterGrupoPortfolioDto): Promise<ListGrupoPortfolioDto> {
         return { linhas: await this.grupoPortfolioService.findAll(filter) };
     }
