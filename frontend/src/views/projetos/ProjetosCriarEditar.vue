@@ -38,7 +38,7 @@ const portfolioStore = usePortfolioStore();
 const projetosStore = useProjetosStore();
 const {
   lista: gruposDeObservadores,
-  chamadasPendentes: { lista: gruposDeObservadoresPendentes },
+  chamadasPendentes: gruposDeObservadoresPendentes,
   erro: erroNosDadosDeObservadores,
 } = storeToRefs(observadoresStore);
 
@@ -1619,15 +1619,15 @@ watch(emFoco, () => {
         />
 
         <AutocompleteField
-          :disabled="gruposDeObservadoresPendentes"
+          :disabled="gruposDeObservadoresPendentes.lista"
           name="grupo_portfolio"
           :controlador="{
             busca: '',
             participantes: values.grupo_portfolio || []
           }"
           :class="{
-            error: errors.grupo_portfolio,
-            loading: portfolioStore.chamadasPendentes.lista
+            error: erroNosDadosDeObservadores,
+            loading: gruposDeObservadoresPendentes.lista
           }"
           :grupo="gruposDeObservadores"
           label="titulo"
