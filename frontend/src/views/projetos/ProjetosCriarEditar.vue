@@ -702,8 +702,8 @@ watch(emFoco, () => {
             @change="() => {
               setFieldValue('logradouro_cep', '');
               setFieldValue('logradouro_tipo', '');
-              setFieldValue('logradouro_nome', '')
-              setFieldValue('logradouro_numero', '')
+              setFieldValue('logradouro_nome', '');
+              setFieldValue('logradouro_numero', '');
             }"
           >
             <option :value="0">
@@ -976,12 +976,12 @@ watch(emFoco, () => {
             as="select"
             class="inputtext light mb1"
             :class="{ 'error': errors.origem_tipo }"
-            @change="
+            @change="() => {
               buscarDadosParaOrigens($event);
-            setFieldValue('meta_id', null);
-            setFieldValue('meta_codigo', null);
-            setFieldValue('origem_outro', null);
-            "
+              setFieldValue('meta_id', null);
+              setFieldValue('meta_codigo', null);
+              setFieldValue('origem_outro', null);
+            }"
           >
             <option value="">
               Selecionar
