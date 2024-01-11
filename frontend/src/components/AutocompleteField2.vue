@@ -89,6 +89,7 @@ export default {
   <template v-if="grupo?.length">
     <div class="suggestion search">
       <input
+        v-bind="$attrs"
         v-model="control.busca"
         type="text"
         class="inputtext light mb05"
@@ -104,10 +105,17 @@ export default {
             type="button"
             class="like-a__text"
             tabindex="1"
-            :title="r.nome || r.titulo || r.descricao || r.nome_completo || null"
+            :title="r.nome || r.titulo || r.descricao || r.nome_completo || undefined"
             @click="pushId(control.participantes, r.id)"
           >
-            {{ r[label] }}
+            <template v-if="r[label]">
+              {{ r[label] }}
+            </template>
+            <pre
+              v-else
+              v-ScrollLockDebug
+            >id {{ r.id }} sem valor para `r[{{ label
+            }}]`, valor da prop `label`!</pre>
           </button>
         </li>
       </ul>
@@ -126,6 +134,7 @@ export default {
   <template v-else>
     <div class="search">
       <input
+        v-bind="$attrs"
         type="text"
         disabled
         class="inputtext light mb05"
