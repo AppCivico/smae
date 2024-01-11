@@ -1491,6 +1491,8 @@ watch(emFoco, () => {
       </div>
     </div>
 
+    <pre v-ScrollLockDebug>values.equipe:{{ values.equipe }}</pre>
+
     <div
       v-if="projetoId"
       class="flex g2 mb1"
