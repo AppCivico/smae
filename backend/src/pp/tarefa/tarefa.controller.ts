@@ -122,7 +122,7 @@ export class TarefaController {
     @Get(':id/tarefa/:id2')
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
-    @Roles(...roles)
+    @Roles(...roles, 'SMAE.espectador_de_projeto')
     async findOne(@Param() params: FindTwoParams, @CurrentUser() user: PessoaFromJwt): Promise<TarefaDetailDto> {
         const projeto = await this.projetoService.findOne(params.id, user, 'ReadOnly');
         return await this.tarefaService.findOne(projeto, params.id2, user);
