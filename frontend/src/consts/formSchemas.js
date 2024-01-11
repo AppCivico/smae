@@ -570,6 +570,14 @@ export const projeto = object()
           .label('Pessoa')
           .required(),
       ),
+    grupo_portfolio: array()
+      .label('Grupos de observadores')
+      .nullable()
+      .of(
+        number()
+          .label('Pessoa')
+          .required(),
+      ),
     fonte_recursos: array()
       .label('Fontes de recursos')
       .nullable()
@@ -827,6 +835,7 @@ export const relatórioDeProjeto = object({
   parametros: object({
     portfolio_id: number()
       .label('Portfolio')
+      .min(1, '${label} é obrigatório')
       .required()
       .transform((v) => (v === '' || Number.isNaN(v) ? null : v)),
     projeto_id: number()

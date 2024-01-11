@@ -11,6 +11,7 @@ import requestS from '@/helpers/requestS.ts';
 import truncate from '@/helpers/truncate';
 import { useAlertStore } from '@/stores/alert.store';
 import { useDotaçãoStore } from '@/stores/dotacao.store.ts';
+import { useObservadoresStore } from '@/stores/observadores.store.ts';
 import { useOrgansStore } from '@/stores/organs.store';
 import { usePortfolioStore } from '@/stores/portfolios.store.ts';
 import { useProjetosStore } from '@/stores/projetos.store.ts';
@@ -32,8 +33,15 @@ const listaDeStatuses = arrayToValueAndLabel(statuses);
 const ÓrgãosStore = useOrgansStore();
 const DotaçãoStore = useDotaçãoStore();
 const alertStore = useAlertStore();
+const observadoresStore = useObservadoresStore();
 const portfolioStore = usePortfolioStore();
 const projetosStore = useProjetosStore();
+const {
+  lista: gruposDeObservadores,
+  chamadasPendentes: { lista: gruposDeObservadoresPendentes },
+  erro: erroNosDadosDeObservadores,
+} = storeToRefs(observadoresStore);
+
 const {
   chamadasPendentes,
   emFoco,
@@ -239,6 +247,10 @@ async function onSubmit(_, { controlledValues: valores }) {
 function iniciar() {
   buscarPossíveisGestores();
   buscarPossíveisColaboradores();
+
+  if (emFoco.value?.portfolio_id) {
+    observadoresStore.buscarTudo();
+  }
 
   ÓrgãosStore.getAllOrganResponsibles().finally(() => {
     chamadasPendentes.value.emFoco = false;
@@ -1595,6 +1607,46 @@ watch(emFoco, () => {
           name="data_revisao"
           class="error-msg"
         />
+      </div>
+    </div>
+
+    <div class="flex g2">
+      <div class="f1 mb1">
+        <LabelFromYup
+          name="grupo_portfolio"
+          :schema="schema"
+          class="tc300"
+        />
+
+        <AutocompleteField
+          :disabled="gruposDeObservadoresPendentes"
+          name="grupo_portfolio"
+          :controlador="{
+            busca: '',
+            participantes: values.grupo_portfolio || []
+          }"
+          :class="{
+            error: errors.grupo_portfolio,
+            loading: portfolioStore.chamadasPendentes.lista
+          }"
+          :grupo="gruposDeObservadores"
+          label="titulo"
+        />
+        <ErrorMessage
+          name="grupo_portfolio"
+          class="error-msg"
+        />
+      </div>
+    </div>
+
+    <pre v-ScrollLockDebug>values.grupo_portfolio:{{ values.grupo_portfolio }}</pre>
+
+    <div
+      v-if="erroNosDadosDeObservadores"
+      class="error p1"
+    >
+      <div class="error-msg">
+        {{ erroNosDadosDeObservadores }}
       </div>
     </div>
 
