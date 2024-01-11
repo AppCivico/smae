@@ -1,0 +1,232 @@
+<script setup>
+import AutocompleteField from '@/components/AutocompleteField2.vue';
+import truncate from '@/helpers/truncate';
+import { useOrgansStore } from '@/stores/organs.store';
+import { useUsersStore } from '@/stores/users.store';
+import { storeToRefs } from 'pinia';
+import { useField } from 'vee-validate';
+import {
+  computed, onMounted, ref, watch,
+} from 'vue';
+
+const props = defineProps({
+  modelValue: {
+    type: Array,
+    required: true,
+  },
+  órgãosPermitidos: {
+    type: Array,
+    default: () => [],
+  },
+  pessoas: {
+    type: Array,
+    default: () => [],
+  },
+  prontoParaMontagem: {
+    type: Boolean,
+    required: true,
+  },
+  // necessária para que o vee-validate não se perca
+  name: {
+    type: String,
+    default: '',
+  },
+});
+
+const emit = defineEmits(['update:modelValue']);
+
+const ÓrgãosStore = useOrgansStore();
+const { organs } = storeToRefs(ÓrgãosStore);
+
+const usersStore = useUsersStore();
+const { pessoasSimplificadas } = storeToRefs(usersStore);
+
+const pessoasPorId = computed(() => (Array.isArray(props.pessoas)
+  ? props.pessoas.reduce((acc, cur) => {
+    acc[cur.id] = cur;
+    return acc;
+  }, {})
+  : {}));
+
+const pessoasPorÓrgão = computed(() => (Array.isArray(props.pessoas)
+  ? props.pessoas.reduce((acc, cur) => {
+    if (!acc[cur.orgao_id]) {
+      acc[cur.orgao_id] = [];
+    }
+    acc[cur.orgao_id].push(cur);
+    return acc;
+  }, {})
+  : {}));
+
+const { handleChange } = useField(props.name, undefined, {
+  initialValue: props.modelValue,
+});
+
+const órgãosDisponíveis = computed(() => {
+  const órgãos = Array.isArray(organs.value) ? organs.value : [];
+
+  return (props.órgãosPermitidos.length && órgãos
+    ? órgãos.filter((x) => props.órgãosPermitidos.indexOf(x.id) !== -1)
+    : órgãos).filter((x) => !!pessoasPorÓrgão.value[x.id]?.length);
+});
+
+// usar lista para manter a ordem
+const listaDeÓrgãos = ref([]);
+
+// usar mapa para simplificar a conferência de órgãos já em uso
+const mapaDeÓrgãos = computed(() => listaDeÓrgãos.value
+  .reduce((acc, cur) => ({ ...acc, [cur.id]: true }), {}));
+
+const órgãosEPessoas = computed(() => props.modelValue.reduce((acc, cur) => {
+  const chave = pessoasPorId.value[cur]?.orgao_id;
+
+  if (!acc[chave]) {
+    acc[chave] = {
+      órgão: pessoasPorId.value[cur]?.orgao_id,
+      pessoas: [],
+    };
+  }
+
+  acc[chave].pessoas.push(cur);
+
+  return acc;
+}, {}));
+
+function removerLinha(índice) {
+  const novoValor = Object.keys(órgãosEPessoas.value)
+    .reduce((acc, cur) => (listaDeÓrgãos.value[índice].id === órgãosEPessoas.value[cur].órgão
+      ? acc
+      : acc.concat(órgãosEPessoas.value[cur].pessoas)), []);
+
+  listaDeÓrgãos.value.splice(índice, 1);
+  handleChange(novoValor);
+  emit('update:modelValue', novoValor);
+}
+
+function adicionarLinha() {
+  listaDeÓrgãos.value.push({ id: 0 });
+}
+
+function adicionarPessoas(pessoas, índice) {
+  const novoValor = listaDeÓrgãos.value
+    .reduce((acc, cur) => (listaDeÓrgãos.value[índice].id === órgãosEPessoas.value[cur.id]?.órgão
+      || !órgãosEPessoas.value[cur.id]
+      ? acc.concat(pessoas)
+      : acc.concat(órgãosEPessoas.value[cur.id].pessoas)
+    ), []);
+
+  handleChange(novoValor);
+  emit('update:modelValue', novoValor);
+}
+
+async function montar() {
+  if (props.prontoParaMontagem) {
+    if (!Array.isArray(organs.value) || !organs.value.length) {
+      ÓrgãosStore.getAll();
+    }
+
+    if (!Array.isArray(pessoasSimplificadas.value) || !pessoasSimplificadas.value.length) {
+      await usersStore.buscarPessoasSimplificadas();
+    }
+
+    listaDeÓrgãos.value = Object.values(props.modelValue.reduce((acc, cur) => {
+      // usando reduce e um mapa para evitar o trabalho de remover duplicatas
+      const chaveDoÓrgão = `_${pessoasPorId.value[cur]?.orgao_id}`;
+      if (!acc[chaveDoÓrgão]) {
+        acc[chaveDoÓrgão] = { id: pessoasPorId.value[cur]?.orgao_id };
+      }
+      return acc;
+    }, {}));
+  }
+}
+
+// assistindo mounted apenas para facilitar o desenvolvimento
+onMounted(() => {
+  montar();
+});
+
+watch(() => props.prontoParaMontagem, () => {
+  montar();
+}, { immediate: true });
+</script>
+<template>
+  <div class="campo-de-pessoas">
+    <div
+      v-for="(item, idx) in listaDeÓrgãos"
+      :key="item.id"
+      class="flex g1 mb1"
+    >
+      <div class="f1">
+        <label
+          :for="`órgão--${idx}`"
+          class="label tc300"
+        >Órgão</label>
+        <select
+          :id="`órgão--${idx}`"
+          v-model="listaDeÓrgãos[idx].id"
+          class="inputtext light"
+          :disabled="órgãosEPessoas[item.id]?.pessoas.length"
+        >
+          <option value="" />
+          <option
+            v-for="órgão in órgãosDisponíveis"
+            :key="`${item.órgão}__órgão--${órgão.id}`"
+            :value="órgão.id"
+            :title="órgão.descricao?.length > 36 ? órgão.descricao : undefined"
+            :disabled="mapaDeÓrgãos[órgão.id] && listaDeÓrgãos[idx].id !== órgão.id"
+          >
+            {{ órgão.id }} - {{ órgão.sigla }} - {{ truncate(órgão.descricao, 36) }}
+          </option>
+        </select>
+      </div>
+
+      <div class="f2">
+        <label
+          :for="`pessoas--${idx}`"
+          class="label tc300"
+        >Pessoas</label>
+        <AutocompleteField
+          :id="`pessoas--${idx}`"
+          :controlador="{
+            busca: '',
+            participantes: órgãosEPessoas[item.id]?.pessoas || []
+          }"
+          :model-value="órgãosEPessoas[item.id]?.pessoas"
+          :grupo="pessoasPorÓrgão[listaDeÓrgãos[idx].id] || []"
+          label="nome_exibicao"
+          @change="($newValue) => { adicionarPessoas($newValue, idx); }"
+        />
+      </div>
+
+      <button
+        class="like-a__text addlink"
+        arial-label="excluir"
+        title="excluir"
+        @click="removerLinha(idx)"
+      >
+        <svg
+          width="20"
+          height="20"
+        ><use xlink:href="#i_remove" /></svg>
+      </button>
+    </div>
+
+    <button
+      class="like-a__text addlink"
+      type="button"
+      :disabled="órgãosDisponíveis.length === listaDeÓrgãos.length"
+      @click="adicionarLinha"
+    >
+      <svg
+        width="20"
+        height="20"
+      ><use xlink:href="#i_+" /></svg>Adicionar órgão
+    </button>
+
+    <pre>props.modelValue:{{ props.modelValue }}</pre>
+
+    <pre>órgãosEPessoas:{{ órgãosEPessoas }}</pre>
+    <pre>listaDeÓrgãos:{{ listaDeÓrgãos }}</pre>
+    <pre>mapaDeÓrgãos:{{ mapaDeÓrgãos }}</pre>
+  </div>
+</template>
