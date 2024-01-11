@@ -2348,6 +2348,22 @@ caption {
   font-weight: inherit;
 }
 
+.listaComoTexto {
+  li {
+    display: inline;
+
+    &::after {
+      content: ', ';
+    }
+
+    &:last-child {
+      &::after {
+        content: none;
+      }
+    }
+  }
+}
+
 .genealogia {
   .pl2;
 
