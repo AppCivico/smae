@@ -82,8 +82,8 @@ export class RelProjetoPlanoAcaoDto {
 export class RelProjetoAcompanhamentoDto {
     id: number
     acompanhamento_tipo: string | null;
-    ordem: number;
-    data_registro: Date | null
+    numero: number;
+    data_registro: string | null
     participantes: string;
     detalhamento: string | null;
     observacao: string | null;
@@ -91,16 +91,16 @@ export class RelProjetoAcompanhamentoDto {
     pontos_atencao: string | null;
     pauta: string | null;
     cronograma_paralisado: boolean;
+    riscos: string | null;
 }
 
 export class RelProjetoEncaminhamentoDto {
     acompanhamento_id: number;
-    numero_identificador: string;
-    ordem: number;
+    numero_encaminhamento: string;
     encaminhamento: string | null;
     responsavel: string | null;
-    prazo_encaminhamento: Date | null;
-    prazo_realizado: Date | null;
+    prazo_encaminhamento: string | null;
+    prazo_realizado: string | null;
 }
 
 export class PPProjetoRelatorioDto {

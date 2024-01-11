@@ -179,8 +179,8 @@ export class PPProjetoService implements ReportableService {
             return {
                 id: a.id,
                 acompanhamento_tipo: a.acompanhamento_tipo ? a.acompanhamento_tipo.nome : null,
-                ordem: a.ordem,
-                data_registro: a.data_registro,
+                numero: a.ordem,
+                data_registro: Date2YMD.toStringOrNull(a.data_registro),
                 participantes: a.participantes,
                 detalhamento: a.detalhamento,
                 observacao: a.observacao,
@@ -188,6 +188,7 @@ export class PPProjetoService implements ReportableService {
                 pontos_atencao: a.pontos_atencao,
                 pauta: a.pauta,
                 cronograma_paralisado: a.cronograma_paralisado,
+                riscos: a.risco ? a.risco.map(r => r.codigo).join('|') : null
             }
         });
 
@@ -196,12 +197,11 @@ export class PPProjetoService implements ReportableService {
             return a.acompanhamentos.map(e => {
                 return {
                     acompanhamento_id: a.id,
-                    numero_identificador: e.numero_identificador,
-                    ordem: e.ordem,
+                    numero_encaminhamento: e.numero_identificador,
                     encaminhamento: e.encaminhamento,
                     responsavel: e.responsavel,
-                    prazo_encaminhamento: e.prazo_encaminhamento,
-                    prazo_realizado: e.prazo_realizado
+                    prazo_encaminhamento: Date2YMD.toStringOrNull(e.prazo_encaminhamento),
+                    prazo_realizado: Date2YMD.toStringOrNull(e.prazo_realizado)
                 }
             })
         });
