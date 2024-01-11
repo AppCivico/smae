@@ -64,8 +64,7 @@ function removeParticipante(item, p) {
 }
 function pushId(e, id) {
   e.push(id);
-  e = [...new Set(e)];
-  emit('change', e);
+  emit('change', [...new Set(e)]);
 }
 function buscar(e, item, g, label) {
   e.preventDefault();
