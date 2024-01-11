@@ -38,6 +38,12 @@ const listaFiltrada = computed(() => (!statusVisível.value && !grauVisível.val
 
 iniciar();
 </script>
+<script>
+// use normal <script> to declare options
+export default {
+  inheritAttrs: false,
+};
+</script>
 <template>
   <!-- eslint-disable-next-line max-len -->
   <!-- eslint-disable vue/multiline-html-element-content-newline
