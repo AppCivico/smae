@@ -1,5 +1,11 @@
 <script setup>
+import { useAuthStore } from '@/stores/auth.store';
+import { storeToRefs } from 'pinia';
+
 import statuses from '@/consts/projectStatuses';
+
+const authStore = useAuthStore();
+const { temPermissãoPara } = storeToRefs(authStore);
 
 const props = defineProps({
   erro: {
@@ -30,7 +36,10 @@ const metasPorId = {};
       <col>
       <col>
       <col>
-      <col class="col--botão-de-ação">
+      <col
+        v-if="temPermissãoPara('Projeto.administrador_no_orgao')"
+        class="col--botão-de-ação"
+      >
     </colgroup>
     <thead>
       <tr>
@@ -46,7 +55,7 @@ const metasPorId = {};
         <th>
           Status
         </th>
-        <th />
+        <th v-if="temPermissãoPara('Projeto.administrador_no_orgao')" />
       </tr>
     </thead>
     <tbody>
@@ -85,7 +94,7 @@ const metasPorId = {};
         <td>
           {{ statuses[item.status] || item.status }}
         </td>
-        <td>
+        <td v-if="temPermissãoPara('Projeto.administrador_no_orgao')">
           <router-link
             v-if="!item.arquivado"
             :to="{
@@ -105,17 +114,17 @@ const metasPorId = {};
         </td>
       </tr>
       <tr v-if="pendente">
-        <td colspan="5">
+        <td :colspan="temPermissãoPara('Projeto.administrador_no_orgao') ? 5 : 4">
           Carregando
         </td>
       </tr>
       <tr v-else-if="erro">
-        <td colspan="5">
+        <td :colspan="temPermissãoPara('Projeto.administrador_no_orgao') ? 5 : 4">
           Erro: {{ erro }}
         </td>
       </tr>
       <tr v-else-if="!lista.length">
-        <td colspan="5">
+        <td :colspan="temPermissãoPara('Projeto.administrador_no_orgao') ? 5 : 4">
           Nenhum resultado encontrado.
         </td>
       </tr>

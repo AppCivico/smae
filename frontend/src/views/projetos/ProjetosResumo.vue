@@ -50,14 +50,13 @@ if (!Array.isArray(organs.value) || !organs.value.length) {
     <hr class="ml2 f1">
     <MenuDeMudançaDeStatusDeProjeto />
 
-    <template v-if="emFoco?.id && !emFoco.arquivado">
-      <router-link
-        :to="{ name: 'projetosEditar', params: { projetoId: emFoco.id } }"
-        class="btn big ml2"
-      >
-        Editar
-      </router-link>
-    </template>
+    <router-link
+      v-if="emFoco?.id && !emFoco?.arquivado && !emFoco?.permissoes?.apenas_leitura"
+      :to="{ name: 'projetosEditar', params: { projetoId: emFoco.id } }"
+      class="btn big ml2"
+    >
+      Editar
+    </router-link>
   </div>
 
   <div class="boards">
