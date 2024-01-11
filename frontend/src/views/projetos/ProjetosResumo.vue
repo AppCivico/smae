@@ -7,16 +7,31 @@ import dinheiro from '@/helpers/dinheiro';
 import subtractDates from '@/helpers/subtractDates';
 import truncate from '@/helpers/truncate';
 import { useDotaçãoStore } from '@/stores/dotacao.store.ts';
+import { useOrgansStore } from '@/stores/organs.store';
 import { useProjetosStore } from '@/stores/projetos.store.ts';
+import { computed } from 'vue';
 import { storeToRefs } from 'pinia';
 
 const DotaçãoStore = useDotaçãoStore();
+const ÓrgãosStore = useOrgansStore();
 const projetosStore = useProjetosStore();
 
 const { FontesDeRecursosPorAnoPorCódigo } = storeToRefs(DotaçãoStore);
+const { organs, órgãosPorId } = storeToRefs(ÓrgãosStore);
 const {
   chamadasPendentes, emFoco, erro,
 } = storeToRefs(projetosStore);
+
+const equipeAgrupadaPorÓrgão = computed(() => (Array.isArray(emFoco.value.equipe)
+  ? emFoco.value.equipe.reduce((acc, cur) => {
+    if (!acc[`_${cur.orgao_id}`]) {
+      acc[`_${cur.orgao_id}`] = { id: cur.orgao_id, pessoas: [] };
+    }
+    acc[`_${cur.orgao_id}`].pessoas.push(cur.pessoa);
+
+    return acc;
+  }, {})
+  : {}));
 
 defineProps({
   projetoId: {
@@ -24,6 +39,10 @@ defineProps({
     default: 0,
   },
 });
+
+if (!Array.isArray(organs.value) || !organs.value.length) {
+  ÓrgãosStore.getAll();
+}
 </script>
 <template>
   <div class="flex spacebetween center mb2">
@@ -531,6 +550,42 @@ defineProps({
         </dd>
       </dl>
     </div>
+
+    <hr class="mb1 f1">
+
+    <div class="mb1">
+      <h2>
+        {{ schema.fields.equipe.spec.label }}
+      </h2>
+      <div class="flex g2 mb1 flexwrap">
+        <dl
+          v-for="(órgão, key) in equipeAgrupadaPorÓrgão"
+          :key="key"
+          class="f1"
+        >
+          <dt class="t12 uc w700 mb05 tamarelo">
+            {{ órgãosPorId[órgão.id]
+              ? `${órgãosPorId[órgão.id].sigla} - ${órgãosPorId[órgão.id].descricao}`
+              : órgão.id }}
+          </dt>
+          <dd class="t13">
+            <ul class="listaComoTexto">
+              <li v-if="!órgão.pessoas?.length">
+                {{ '-' }}
+              </li>
+              <li
+                v-for="item in órgão.pessoas"
+                :key="item.id"
+              >
+                {{ item.nome_exibicao }}
+              </li>
+            </ul>
+          </dd>
+        </dl>
+      </div>
+    </div>
+
+    <hr class="mb1 f1">
 
     <div class="flex g2 mb1 flexwrap">
       <dl class="f1 mb1">

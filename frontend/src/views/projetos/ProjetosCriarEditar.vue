@@ -1,5 +1,6 @@
 <script setup>
 import AutocompleteField from '@/components/AutocompleteField2.vue';
+import CampoDePessoasComBuscaPorOrgao from '@/components/CampoDePessoasComBuscaPorOrgao.vue';
 import MaskedFloatInput from '@/components/MaskedFloatInput.vue';
 import MenuDeMudançaDeStatusDeProjeto from '@/components/projetos/MenuDeMudançaDeStatusDeProjeto.vue';
 import { projeto as schema } from '@/consts/formSchemas';
@@ -60,6 +61,9 @@ const props = defineProps({
     default: 0,
   },
 });
+
+// necessário por causa de 🤬
+const montarCampoEstático = ref(false);
 
 const portfolioId = Number.parseInt(route.query.portfolio_id, 10) || undefined;
 const possíveisGestores = ref([]);
@@ -247,6 +251,8 @@ function iniciar() {
   if (emFoco.value?.meta_id) {
     buscarMetaSimplificada(emFoco.value?.meta_id);
   }
+
+  montarCampoEstático.value = true;
 }
 
 function excluirProjeto(id) {
@@ -1587,6 +1593,29 @@ watch(emFoco, () => {
       </div>
     </div>
 
+    <div
+      v-show="projetoId"
+      class="flex g2"
+    >
+      <div class="f1 mb1">
+        <LabelFromYup
+          name="equipe"
+          :schema="schema"
+        />
+
+        <CampoDePessoasComBuscaPorOrgao
+          v-model="values.equipe"
+          name="equipe"
+          :órgãos-permitidos="values.orgaos_participantes"
+          :pessoas="possíveisColaboradores"
+          :pronto-para-montagem="montarCampoEstático"
+        />
+        <ErrorMessage
+          name="equipe"
+          class="error-msg"
+        />
+      </div>
+    </div>
     <FormErrorsList :errors="errors" />
 
     <div class="flex spacebetween center mb2">
