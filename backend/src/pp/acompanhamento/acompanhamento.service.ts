@@ -371,6 +371,18 @@ export class AcompanhamentoService {
                             }
                         })
                     }
+                } else {
+                    // Verifica se existem encaminhamentos criados e caso existam, remover.
+                    // Pois não foi enviada array de acompanhamentos
+                    if (self.ProjetoAcompanhamentoItem.length) {
+                        await prismaTx.projetoAcompanhamentoItem.updateMany({
+                            where: { projeto_acompanhamento_id: self.id },
+                            data: {
+                                removido_em: new Date(Date.now()),
+                                removido_por: user.id
+                            }
+                        });
+                    }
                 }
 
                 await this.atualizaProjeto(prismaTx, projeto_id, now);
