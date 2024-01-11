@@ -3,6 +3,7 @@ import LocalFilter from '@/components/LocalFilter.vue';
 import { acompanhamento as schema } from '@/consts/formSchemas';
 import dateToField from '@/helpers/dateToField';
 import { useAcompanhamentosStore } from '@/stores/acompanhamentos.store.ts';
+import { useProjetosStore } from '@/stores/projetos.store.ts';
 import { storeToRefs } from 'pinia';
 import { computed, ref } from 'vue';
 import { useRoute } from 'vue-router';
@@ -11,6 +12,10 @@ const acompanhamentosStore = useAcompanhamentosStore();
 const {
   chamadasPendentes, erro, lista,
 } = storeToRefs(acompanhamentosStore);
+const projetosStore = useProjetosStore();
+const {
+  permissõesDoProjetoEmFoco,
+} = storeToRefs(projetosStore);
 
 const route = useRoute();
 const projetoId = route?.params?.projetoId;
@@ -44,7 +49,11 @@ vue/singleline-html-element-content-newline -->
 
     <hr class="ml2 f1">
 
-    <div class="ml2">
+    <div
+      v-if="!permissõesDoProjetoEmFoco.apenas_leitura
+        || permissõesDoProjetoEmFoco.sou_responsavel"
+      class="ml2"
+    >
       <router-link
         :to="{ name: 'acompanhamentosCriar' }"
         class="btn"
@@ -72,7 +81,11 @@ vue/singleline-html-element-content-newline -->
       <col>
       <col>
       <col class="col--number">
-      <col class="col--botão-de-ação">
+      <col
+        v-if="!permissõesDoProjetoEmFoco.apenas_leitura
+          || permissõesDoProjetoEmFoco.sou_responsavel"
+        class="col--botão-de-ação"
+      >
     </colgroup>
 
     <thead>
@@ -92,7 +105,10 @@ vue/singleline-html-element-content-newline -->
         <th class="cell--number">
           {{ schema.fields.acompanhamentos.spec.label }}
         </th>
-        <th />
+        <th
+          v-if="!permissõesDoProjetoEmFoco.apenas_leitura
+            || permissõesDoProjetoEmFoco.sou_responsavel"
+        />
       </tr>
     </thead>
 
@@ -138,7 +154,11 @@ vue/singleline-html-element-content-newline -->
         <td class="cell--number">
           {{ linha.acompanhamentos.length ?? 0 }}
         </td>
-        <td class="center">
+        <td
+          v-if="!permissõesDoProjetoEmFoco.apenas_leitura
+            || permissõesDoProjetoEmFoco.sou_responsavel"
+          class="center"
+        >
           <router-link
             :to="{
               name: 'acompanhamentosEditar',
