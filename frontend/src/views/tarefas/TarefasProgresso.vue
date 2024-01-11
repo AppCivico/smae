@@ -63,7 +63,10 @@ async function onSubmit(_, { controlledValues: carga }) {
 
     <hr class="ml2 f1">
 
-    <div class="ml2">
+    <div
+      v-if="!emFoco?.projeto?.permissoes?.apenas_leitura"
+      class="ml2"
+    >
       <router-link
         :to="{
           name: 'tarefasEditar',
@@ -89,11 +92,9 @@ async function onSubmit(_, { controlledValues: carga }) {
           Início previsto
         </dt>
         <dd class="t13">
-          {{
-            emFoco?.inicio_planejado
+          {{ emFoco?.inicio_planejado
             ? dateToField(emFoco.inicio_planejado)
-            : '--/--/----'
-          }}
+            : '--/--/----' }}
         </dd>
       </div>
       <div class="mr2">
@@ -101,11 +102,9 @@ async function onSubmit(_, { controlledValues: carga }) {
           Término previsto
         </dt>
         <dd class="t13">
-          {{
-            emFoco?.termino_planejado
+          {{ emFoco?.termino_planejado
             ? dateToField(emFoco.termino_planejado)
-            : '--/--/----'
-          }}
+            : '--/--/----' }}
         </dd>
       </div>
       <div class="mr2">
