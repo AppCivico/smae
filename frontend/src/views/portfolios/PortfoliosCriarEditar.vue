@@ -4,6 +4,7 @@ import { portfolio as schema } from '@/consts/formSchemas';
 import months from '@/consts/months';
 import níveisRegionalização from '@/consts/niveisRegionalizacao';
 import { useAlertStore } from '@/stores/alert.store';
+import { useObservadoresStore } from '@/stores/observadores.store.ts';
 import { useOrgansStore } from '@/stores/organs.store';
 import { usePortfolioStore } from '@/stores/portfolios.store.ts';
 import { storeToRefs } from 'pinia';
@@ -20,11 +21,17 @@ const props = defineProps({
 });
 
 const alertStore = useAlertStore();
+const observadoresStore = useObservadoresStore();
 const ÓrgãosStore = useOrgansStore();
 const portfolioStore = usePortfolioStore();
 const mesesDisponíveis = months.map((x, i) => ({ nome: x, id: i + 1 }));
 const { chamadasPendentes, erro, itemParaEdição } = storeToRefs(portfolioStore);
 const { órgãosComoLista } = storeToRefs(ÓrgãosStore);
+const {
+  lista: gruposDeObservadores,
+  chamadasPendentes: gruposDeObservadoresPendentes,
+  erro: erroNosDadosDeObservadores,
+} = storeToRefs(observadoresStore);
 
 portfolioStore.$reset();
 
@@ -57,6 +64,8 @@ if (props.portfolioId) {
 ÓrgãosStore.getAll().finally(() => {
   chamadasPendentes.value.emFoco = false;
 });
+
+observadoresStore.buscarTudo();
 </script>
 
 <template>
@@ -221,6 +230,46 @@ if (props.portfolioId) {
         name="orcamento_execucao_disponivel_meses"
         class="error-msg"
       />
+    </div>
+
+    <div class="flex g2">
+      <div class="f1 mb1">
+        <LabelFromYup
+          name="grupo_portfolio"
+          :schema="schema"
+          class="tc300"
+        />
+
+        <AutocompleteField
+          :disabled="gruposDeObservadoresPendentes.lista"
+          name="grupo_portfolio"
+          :controlador="{
+            busca: '',
+            participantes: values.grupo_portfolio || []
+          }"
+          :class="{
+            error: erroNosDadosDeObservadores,
+            loading: gruposDeObservadoresPendentes.lista
+          }"
+          :grupo="gruposDeObservadores"
+          label="titulo"
+        />
+        <ErrorMessage
+          name="grupo_portfolio"
+          class="error-msg"
+        />
+      </div>
+    </div>
+
+    <pre v-ScrollLockDebug>values.grupo_portfolio:{{ values.grupo_portfolio }}</pre>
+
+    <div
+      v-if="erroNosDadosDeObservadores"
+      class="error p1"
+    >
+      <div class="error-msg">
+        {{ erroNosDadosDeObservadores }}
+      </div>
     </div>
 
     <FormErrorsList :errors="errors" />
