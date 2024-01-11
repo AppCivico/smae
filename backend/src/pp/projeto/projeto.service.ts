@@ -1060,6 +1060,15 @@ export class ProjetoService {
             throw new HttpException('Você não pode mais executar ações neste projeto.', 400);
         }
 
+        // se não pode escrever, logo, não pode ter nenhum campo ou acao habilitada
+        if (pessoaPodeEscrever == false) {
+            for (const key in permissoes) {
+                if (key.startsWith('campo_') || key.startsWith('acao_')) {
+                    (permissoes as any)[key] = false;
+                }
+            }
+        }
+
         return permissoes;
     }
 
