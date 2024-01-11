@@ -565,6 +565,14 @@ export const projeto = object()
       .label('Data de revisão')
       .nullable()
       .min(new Date(2003, 0, 1)),
+    equipe: array()
+      .label('Equipe')
+      .nullable()
+      .of(
+        number()
+          .label('Pessoa')
+          .required(),
+      ),
     fonte_recursos: array()
       .label('Fontes de recursos')
       .nullable()
