@@ -401,7 +401,7 @@ const PerfilAcessoConfig: {
         ],
     },
     {
-        nome: atualizarNomePerfil('Espectador de projetos', ['Consulta multissetorial']),
+        nome: atualizarNomePerfil('Observador de projetos', ['Espectador de projetos', 'Consulta multissetorial']),
         descricao: 'Pode participar como leitor em portfólio e projetos',
         privilegios: ['SMAE.espectador_de_projeto'],
     },
