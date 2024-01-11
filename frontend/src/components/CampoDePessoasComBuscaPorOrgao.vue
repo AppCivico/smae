@@ -223,6 +223,13 @@ watch(() => props.prontoParaMontagem, () => {
       ><use xlink:href="#i_+" /></svg>Adicionar órgão
     </button>
 
+    <div
+      v-if="prontoParaMontagem && !órgãosDisponíveis.length"
+      class="error p1 error-msg"
+    >
+      Não há pessoas com o perfil necessário nos órgãos disponíveis.
+    </div>
+
     <pre>props.modelValue:{{ props.modelValue }}</pre>
 
     <pre>órgãosEPessoas:{{ órgãosEPessoas }}</pre>
