@@ -1,15 +1,26 @@
 <script setup>
 import { liçãoAprendida as schema } from '@/consts/formSchemas';
 import { useLiçõesAprendidasStore } from '@/stores/licoesAprendidas.store.ts';
+import { useProjetosStore } from '@/stores/projetos.store.ts';
 import { storeToRefs } from 'pinia';
 
 const licoesAprendidasStore = useLiçõesAprendidasStore();
-
 const {
   chamadasPendentes,
   emFoco,
   erro,
 } = storeToRefs(licoesAprendidasStore);
+
+const projetosStore = useProjetosStore();
+const {
+  permissõesDoProjetoEmFoco,
+} = storeToRefs(projetosStore);
+</script>
+<script>
+// use normal <script> to declare options
+export default {
+  inheritAttrs: false,
+};
 </script>
 <template>
   <div class="flex spacebetween center mb2">
@@ -20,7 +31,9 @@ const {
     <hr class="ml2 f1">
 
     <router-link
-      v-if="emFoco?.id"
+      v-if="emFoco?.id
+        && (!permissõesDoProjetoEmFoco.apenas_leitura
+          || permissõesDoProjetoEmFoco.sou_responsavel)"
       :to="{
         name: 'liçõesAprendidasEditar', params: {
           licaoAprendidaId: emFoco.id,
@@ -38,7 +51,6 @@ const {
     class="boards"
   >
     <div class="flex g2 mb1">
-
       <div class="f2 mb1">
         <dt class="t12 uc w700 mb05 tamarelo">
           {{ schema.fields.responsavel.spec.label }}
@@ -92,7 +104,6 @@ const {
         </dd>
       </div>
     </div>
-
   </div>
 
   <div
