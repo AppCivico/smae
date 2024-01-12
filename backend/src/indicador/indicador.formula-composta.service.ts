@@ -614,7 +614,7 @@ export class IndicadorFormulaCompostaService {
         const ret: CreateIndicadorFormulaCompostaDto = {
             formula: '',
             formula_variaveis: [],
-            mostrar_monitoramento: false,
+            mostrar_monitoramento: dto.mostrar_monitoramento,
             titulo: dto.titulo,
             nivel_regionalizacao: dto.nivel_regionalizacao!,
         };
