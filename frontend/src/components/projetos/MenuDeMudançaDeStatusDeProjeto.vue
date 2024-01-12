@@ -56,7 +56,7 @@ const ações = [
   },
 ];
 
-const açõesPermitidas = computed(() => ações.filter((x) => !!emFoco.permissoes?.value?.[`acao_${x.ação}`]));
+const açõesPermitidas = computed(() => ações.filter((x) => !!emFoco.value?.permissoes?.[`acao_${x.ação}`]));
 
 async function mudarStatus(id, { nome, ação }) {
   useAlertStore()
