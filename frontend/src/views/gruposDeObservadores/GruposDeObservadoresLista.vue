@@ -146,17 +146,17 @@ if (!Array.isArray(organs) || !organs.length) {
         </td>
       </tr>
       <tr v-if="chamadasPendentes.lista">
-        <td colspan="6">
+        <td colspan="7">
           Carregando
         </td>
       </tr>
       <tr v-else-if="erro">
-        <td colspan="6">
+        <td colspan="7">
           Erro: {{ erro }}
         </td>
       </tr>
       <tr v-else-if="!lista.length">
-        <td colspan="6">
+        <td colspan="7">
           Nenhum resultado encontrado.
         </td>
       </tr>
