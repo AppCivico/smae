@@ -24,12 +24,20 @@ defineProps({
     :for="name || $attrs.for || null"
   >
     <slot>
-      <template v-if="schema">
-        {{ schema.fields[name].spec.label }}
-      </template>&nbsp;<span
-        v-if="schema.fields[name].spec.presence === 'required'"
-        class="tvermelho"
-      >*</span>
+      <pre
+        v-if="!schema.fields[name]"
+        v-ScrollLockDebug
+      >
+        Etiqueta não encontrada para `{{ name }}`
+      </pre>
+      <template v-else>
+        <template v-if="schema">
+          {{ schema.fields[name]?.spec.label }}
+        </template>&nbsp;<span
+          v-if="schema.fields[name].spec.presence === 'required'"
+          class="tvermelho"
+        >*</span>
+      </template>
     </slot>
   </component>
 </template>
