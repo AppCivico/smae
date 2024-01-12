@@ -35,13 +35,13 @@ export class AcompanhamentoService {
                 delete dto.acompanhamento_tipo_id;
 
                 // Definindo a ordem do acompanhamento.
-                // A ordem leva em consideração acompanhentos removidos.
-                const rowAnterior = await prismaTx.projetoAcompanhamento.findFirstOrThrow({
+                // A ordem leva em consideração acompanhamentos removidos.
+                const rowAnterior = await prismaTx.projetoAcompanhamento.findFirst({
                     where: { projeto_id: projeto_id },
                     select: { ordem: true },
-                    orderBy: { ordem: 'desc' }
+                    orderBy: { ordem: 'desc' },
                 });
-                const ordemAcompanhamento: number = rowAnterior.ordem + 1;
+                const ordemAcompanhamento: number = rowAnterior ? rowAnterior.ordem + 1 : 1;
 
                 const acompanhamento = await prismaTx.projetoAcompanhamento.create({
                     data: {
@@ -84,7 +84,7 @@ export class AcompanhamentoService {
                                 responsavel: r.responsavel,
                                 projeto_acompanhamento_id: acompanhamento.id,
                                 ordem: ordemEncaminhamento,
-                                numero_identificador: numeroIdentificador
+                                numero_identificador: numeroIdentificador,
                             };
                         }),
                     });
@@ -93,6 +93,9 @@ export class AcompanhamentoService {
                 await this.atualizaProjeto(prismaTx, projeto_id, now);
 
                 return { id: acompanhamento.id };
+            },
+            {
+                isolationLevel: 'Serializable',
             }
         );
 
@@ -179,7 +182,7 @@ export class AcompanhamentoService {
             prazo_realizado: r.prazo_realizado ? r.prazo_realizado : null,
             responsavel: r.responsavel,
             ordem: r.ordem,
-            numero_identificador: r.numero_identificador
+            numero_identificador: r.numero_identificador,
         };
     }
 
@@ -280,8 +283,8 @@ export class AcompanhamentoService {
                         prazo_encaminhamento: true,
                         prazo_realizado: true,
                         removido_em: true,
-                    }
-                }
+                    },
+                },
             },
         });
 
@@ -306,56 +309,67 @@ export class AcompanhamentoService {
                         });
                 }
 
-                if (dto.acompanhamentos !== undefined && Array.isArray(dto.acompanhamentos) && dto.acompanhamentos.length) {
-                    const encaminhamentosRemovidosId: number[] = self.ProjetoAcompanhamentoItem
-                        .filter(e => !e.removido_em)
-                        .filter(a => { return !dto.acompanhamentos?.map(x => x.id).includes(a.id) }).map(a => a.id);
+                if (
+                    dto.acompanhamentos !== undefined &&
+                    Array.isArray(dto.acompanhamentos) &&
+                    dto.acompanhamentos.length
+                ) {
+                    const encaminhamentosRemovidosId: number[] = self.ProjetoAcompanhamentoItem.filter(
+                        (e) => !e.removido_em
+                    )
+                        .filter((a) => {
+                            return !dto.acompanhamentos?.map((x) => x.id).includes(a.id);
+                        })
+                        .map((a) => a.id);
                     await prismaTx.projetoAcompanhamentoItem.updateMany({
                         where: { id: { in: encaminhamentosRemovidosId } },
                         data: {
                             removido_em: new Date(Date.now()),
-                            removido_por: user.id
-                        }
+                            removido_por: user.id,
+                        },
                     });
 
                     console.log(dto.acompanhamentos);
                     let ordemEncaminhamento: number | null = null;
                     await prismaTx.projetoAcompanhamentoItem.createMany({
-                        data: dto.acompanhamentos.filter(e => e.id == undefined).map((r) => {
-                            if (ordemEncaminhamento) {
-                                ordemEncaminhamento = ordemEncaminhamento + 1
-                            } else if (self.ProjetoAcompanhamentoItem[0]) {
-                                ordemEncaminhamento = self.ProjetoAcompanhamentoItem[0].ordem + 1
-                            } else {
-                                // Primeira row.
-                                ordemEncaminhamento = 1;
-                            }
+                        data: dto.acompanhamentos
+                            .filter((e) => e.id == undefined)
+                            .map((r) => {
+                                if (ordemEncaminhamento) {
+                                    ordemEncaminhamento = ordemEncaminhamento + 1;
+                                } else if (self.ProjetoAcompanhamentoItem[0]) {
+                                    ordemEncaminhamento = self.ProjetoAcompanhamentoItem[0].ordem + 1;
+                                } else {
+                                    // Primeira row.
+                                    ordemEncaminhamento = 1;
+                                }
 
-                            const numeroIdentificador: string = self.ordem + '.' + ordemEncaminhamento;
+                                const numeroIdentificador: string = self.ordem + '.' + ordemEncaminhamento;
 
-                            return {
-                                encaminhamento: r.encaminhamento,
-                                prazo_encaminhamento: r.prazo_encaminhamento,
-                                prazo_realizado: r.prazo_realizado,
-                                responsavel: r.responsavel,
-                                projeto_acompanhamento_id: self.id,
-                                ordem: ordemEncaminhamento,
-                                numero_identificador: numeroIdentificador,
-                                criado_em: new Date(Date.now()),
-                                criado_por: user.id
-                            };
-                        }),
+                                return {
+                                    encaminhamento: r.encaminhamento,
+                                    prazo_encaminhamento: r.prazo_encaminhamento,
+                                    prazo_realizado: r.prazo_realizado,
+                                    responsavel: r.responsavel,
+                                    projeto_acompanhamento_id: self.id,
+                                    ordem: ordemEncaminhamento,
+                                    numero_identificador: numeroIdentificador,
+                                    criado_em: new Date(Date.now()),
+                                    criado_por: user.id,
+                                };
+                            }),
                     });
 
-                    const encaminhamentosAtualizados = dto.acompanhamentos.filter(e => {
-                        const encaminhamentoExistente = self.ProjetoAcompanhamentoItem.find(ee => ee.id == e.id);
-                        if (encaminhamentoExistente && (
-                            e.encaminhamento != encaminhamentoExistente.encaminhamento ||
-                            e.responsavel != encaminhamentoExistente.responsavel ||
-                            e.prazo_encaminhamento != encaminhamentoExistente.prazo_encaminhamento ||
-                            e.prazo_realizado != encaminhamentoExistente.prazo_realizado )
+                    const encaminhamentosAtualizados = dto.acompanhamentos.filter((e) => {
+                        const encaminhamentoExistente = self.ProjetoAcompanhamentoItem.find((ee) => ee.id == e.id);
+                        if (
+                            encaminhamentoExistente &&
+                            (e.encaminhamento != encaminhamentoExistente.encaminhamento ||
+                                e.responsavel != encaminhamentoExistente.responsavel ||
+                                e.prazo_encaminhamento != encaminhamentoExistente.prazo_encaminhamento ||
+                                e.prazo_realizado != encaminhamentoExistente.prazo_realizado)
                         ) {
-                            return true
+                            return true;
                         } else {
                             return false;
                         }
@@ -367,9 +381,9 @@ export class AcompanhamentoService {
                             data: {
                                 ...encaminhamentoAtualizado,
                                 atualizado_em: new Date(Date.now()),
-                                atualizado_por: user.id
-                            }
-                        })
+                                atualizado_por: user.id,
+                            },
+                        });
                     }
                 } else {
                     // Verifica se existem encaminhamentos criados e caso existam, remover.
@@ -379,8 +393,8 @@ export class AcompanhamentoService {
                             where: { projeto_acompanhamento_id: self.id },
                             data: {
                                 removido_em: new Date(Date.now()),
-                                removido_por: user.id
-                            }
+                                removido_por: user.id,
+                            },
                         });
                     }
                 }
