@@ -14,6 +14,7 @@ const {
   arquivos,
   diretóriosConsolidados,
   erro,
+  permissõesDoProjetoEmFoco,
 } = storeToRefs(projetosStore);
 
 const ordenadoPor = ref('descricao');
@@ -118,6 +119,8 @@ iniciar();
   <ArvoreDeArquivos
     :lista-de-diretórios="árvoreDeDiretórios"
     class="mb1 arvore-de-arquivos--raiz"
+    :apenas-leitura="permissõesDoProjetoEmFoco.apenas_leitura
+      || !permissõesDoProjetoEmFoco.sou_responsavel"
     :arquivos-agrupados-por-caminho="arquivosAgrupadosPorCaminho"
     @apagar="($params) => excluirArquivo($params)"
   />
