@@ -489,19 +489,6 @@ export class ProjetoService {
                 `Adicionando projetos onde responsaveis_no_orgao_gestor contém ${user.id} (SMAE.gestor_de_projeto)`
             );
             waterfallSet.push({ responsaveis_no_orgao_gestor: { has: user.id } });
-
-            this.logger.verbose(
-                `Adicionar ver projetos onde equipe contém pessoa_id=${user.id} (SMAE.gestor_de_projeto)`
-            );
-
-            waterfallSet.push({
-                equipe: {
-                    some: {
-                        removido_em: null,
-                        pessoa_id: user.id,
-                    },
-                },
-            });
         }
 
         if (user.hasSomeRoles(['SMAE.colaborador_de_projeto'])) {
