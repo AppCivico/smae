@@ -420,8 +420,7 @@ iniciar();
   </div>
 
   <button
-    v-if="emFoco?.id"
-    :disabled="emFoco?.edicao_limitada"
+    v-if="emFoco?.id && !emFoco?.edicao_limitada"
     class="btn amarelo big"
     @click="excluirRisco(emFoco.id)"
   >
