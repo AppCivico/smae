@@ -507,6 +507,18 @@ export class ProjetoService {
         if (user.hasSomeRoles(['SMAE.colaborador_de_projeto'])) {
             this.logger.verbose(`Adicionar ver projetos onde responsavel_id=${user.id} (SMAE.colaborador_de_projeto)`);
             waterfallSet.push({ responsavel_id: user.id });
+
+            this.logger.verbose(
+                `Adicionar ver projetos onde equipe contém pessoa_id=${user.id} (SMAE.colaborador_de_projeto)`
+            );
+            waterfallSet.push({
+                equipe: {
+                    some: {
+                        removido_em: null,
+                        pessoa_id: user.id,
+                    },
+                },
+            });
         }
 
         if (user.hasSomeRoles(['SMAE.espectador_de_projeto'])) {
