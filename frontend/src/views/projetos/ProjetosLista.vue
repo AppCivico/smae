@@ -159,9 +159,13 @@ const listasAgrupadas = computed(() => listaFiltradaPorTermoDeBusca.value?.reduc
       <div class="flex flexwrap g2">
         <details
           v-for="item in Object.keys(listasAgrupadas)"
+          :id="`portfolio--${listasAgrupadas[item].id}`"
           :key="item"
           class="board board--flex f100"
-          :open="Object.keys(listasAgrupadas).length === 1 ? true : null"
+          :open="Object.keys(listasAgrupadas).length === 1
+            || $route.hash === `#portfolio--${listasAgrupadas[item].id}`
+            ? true
+            : null"
         >
           <summary>
             <h2>{{ listasAgrupadas[item].titulo }}</h2>

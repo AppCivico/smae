@@ -91,7 +91,14 @@ if (!Array.isArray(organs) || !organs.length) {
               v-for="portfolio in item.portfolios"
               :key="portfolio.id"
             >
-              {{ portfolio.titulo }}
+              <router-link
+                :to="{
+                  name: 'projetosListar',
+                  hash: `#portfolio--${portfolio.id}`
+                }"
+              >
+                {{ portfolio.titulo }}
+              </router-link>
             </li>
           </ul>
         </td>
