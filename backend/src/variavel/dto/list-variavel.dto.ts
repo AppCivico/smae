@@ -13,6 +13,7 @@ export class VariavelResumo {
      * @example "1"
      */
     id: number;
+    suspendida: boolean;
     /***
      * quantas cadas decimais são esperadas no envio/retorno
      * @example "11"

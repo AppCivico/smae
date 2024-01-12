@@ -10,7 +10,10 @@ import { ORDEM_SERIES_RETORNO, VariavelService } from './variavel.service';
 @Injectable()
 export class VariavelFormulaCompostaService {
     private readonly logger = new Logger(VariavelFormulaCompostaService.name);
-    constructor(private readonly variavelService: VariavelService, private readonly prisma: PrismaService) {}
+    constructor(
+        private readonly variavelService: VariavelService,
+        private readonly prisma: PrismaService
+    ) {}
 
     async getFormulaCompostaPeriodos(formula_composta_id: number): Promise<PeriodoFormulaCompostaDto[]> {
         const { formula_composta, variaveis } = await this.buscaVariaveisDaFormulaComposta(formula_composta_id);
@@ -67,6 +70,7 @@ export class VariavelFormulaCompostaService {
                 periodicidade: true,
                 codigo: true,
                 titulo: true,
+                suspendida_em: true,
             },
         });
 
@@ -91,7 +95,10 @@ export class VariavelFormulaCompostaService {
                 periodo: periodoYMD.substring(0, 4 + 2 + 1),
                 agrupador: periodoYMD.substring(0, 4),
                 series: seriesExistentes,
-                variavel: variavel,
+                variavel: {
+                    ...{ ...variavel, suspendida_em: undefined },
+                    suspendida: variavel.suspendida_em ? true : false,
+                },
             });
         });
 
