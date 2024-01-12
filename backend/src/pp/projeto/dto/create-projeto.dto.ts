@@ -9,6 +9,7 @@ import {
     IsInt,
     IsNumber,
     IsOptional,
+    IsPositive,
     IsString,
     IsUrl,
     Matches,
@@ -16,6 +17,7 @@ import {
     Min,
     MinLength,
     ValidateIf,
+    isPositive,
 } from 'class-validator';
 import { IsOnlyDate } from 'src/common/decorators/IsDateOnly';
 
@@ -192,6 +194,7 @@ export class CreateProjetoDto {
 
     @IsOptional()
     @IsInt({ message: '$property| regiao_id precisa ser inteiro' })
+    @Transform((a: TransformFnParams) => (a.value === null || a.value === 0 ? null : +a.value))
     regiao_id?: number | null;
 
     @IsOptional()
