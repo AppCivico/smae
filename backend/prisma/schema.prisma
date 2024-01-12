@@ -3332,7 +3332,7 @@ model ProjetoAcompanhamento {
     projeto_id Int
     projeto    Projeto @relation(fields: [projeto_id], references: [id])
 
-    acompanhanmento_tipo_id Int?
+    acompanhanmento_tipo_id Int? // TODO fixo typo
     acompanhamento_tipo     AcompanhamentoTipo? @relation(fields: [acompanhanmento_tipo_id], references: [id], onDelete: SetNull)
 
     ordem Int @db.SmallInt
