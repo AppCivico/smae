@@ -51,7 +51,7 @@ const ProjetosResumo = defineAsyncComponent({
 });
 
 const GruposDeObservadoresCriarEditar = defineAsyncComponent({
-  loader: () => import('@/views/grupos-de-observadores/GruposDeObservadoresCriarEditar.vue'),
+  loader: () => import('@/views/gruposDeObservadores/GruposDeObservadoresCriarEditar.vue'),
   loadingComponent: LoadingComponent,
 });
 const GruposDeObservadoresLista = defineAsyncComponent({

@@ -32,9 +32,11 @@ export const useObservadoresStore = defineStore('observadores', {
       this.chamadasPendentes.emFoco = true;
       try {
         const resposta = await this.requestS.get(`${baseUrl}/grupo-portfolio/`, { id, ...params });
-        this.emFoco = {
-          ...resposta,
-        };
+        this.emFoco = Array.isArray(resposta.linhas) && resposta.linhas[0]
+          ? resposta.linhas[0]
+          : {
+            ...resposta,
+          };
       } catch (erro: unknown) {
         this.erro = erro;
       }
