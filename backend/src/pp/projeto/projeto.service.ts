@@ -1732,7 +1732,7 @@ export class ProjetoService {
 
     async list_document(projetoId: number, user: PessoaFromJwt) {
         // aqui é feito a verificação se esse usuário pode realmente acessar esse recurso
-        await this.findOne(projetoId, user, 'ReadWrite');
+        await this.findOne(projetoId, user, 'ReadOnly');
 
         const arquivos: ProjetoDocumentoDto[] = await this.findAllDocumentos(projetoId);
         for (const item of arquivos) {
