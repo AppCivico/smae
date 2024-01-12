@@ -9,15 +9,13 @@ import {
     IsInt,
     IsNumber,
     IsOptional,
-    IsPositive,
     IsString,
     IsUrl,
     Matches,
     MaxLength,
     Min,
     MinLength,
-    ValidateIf,
-    isPositive,
+    ValidateIf
 } from 'class-validator';
 import { IsOnlyDate } from 'src/common/decorators/IsDateOnly';
 
