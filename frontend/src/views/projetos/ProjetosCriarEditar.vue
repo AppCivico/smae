@@ -987,7 +987,7 @@ watch(emFoco, () => {
             as="select"
             class="inputtext light mb1"
             :class="{ 'error': errors.origem_tipo }"
-            @change="() => {
+            @change="($event) => {
               buscarDadosParaOrigens($event);
               setFieldValue('meta_id', null);
               setFieldValue('meta_codigo', null);
