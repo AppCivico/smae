@@ -3,6 +3,7 @@ import { processo as schema } from '@/consts/formSchemas';
 import formatProcesso from '@/helpers/formatProcesso';
 import { storeToRefs } from 'pinia';
 import { useProcessosStore } from '@/stores/processos.store.ts';
+import { useProjetosStore } from '@/stores/projetos.store.ts';
 
 const processosStore = useProcessosStore();
 const {
@@ -10,6 +11,11 @@ const {
   emFoco,
   erro,
 } = storeToRefs(processosStore);
+
+const projetosStore = useProjetosStore();
+const {
+  permissõesDoProjetoEmFoco,
+} = storeToRefs(projetosStore);
 </script>
 <script>
 // use normal <script> to declare options
@@ -26,7 +32,9 @@ export default {
     <hr class="ml2 f1">
 
     <router-link
-      v-if="emFoco?.id"
+      v-if="emFoco?.id
+        && (!permissõesDoProjetoEmFoco.apenas_leitura
+          || permissõesDoProjetoEmFoco.sou_responsavel)"
       :to="{
         name: 'processosEditar',
         params: $route.params
