@@ -377,6 +377,19 @@ export const indicador = object()
       .required('Preencha o título'),
   });
 
+export const grupoDeObservadores = object({
+  participantes: array()
+    .label('participantes')
+    .required(),
+  orgao_id: number()
+    .label('Órgão')
+    .min(1, 'Selecione um órgão responsável')
+    .nullable(),
+  titulo: string()
+    .label('Nome')
+    .required(),
+});
+
 export const liçãoAprendida = object()
   .shape({
     contexto: string()
