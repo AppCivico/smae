@@ -10,6 +10,10 @@ const props = defineProps({
     type: Boolean,
     default: false,
   },
+  apenasLeitura: {
+    type: Boolean,
+    default: false,
+  },
   arquivosAgrupadosPorCaminho: {
     type: Object,
     default: () => { },
@@ -80,6 +84,7 @@ const éPossívelAbrir = (item) => !item.children?.length
           </strong>
 
           <router-link
+            v-if="!apenasLeitura"
             class="like-a__text arvore-de-arquivos__adicionar"
             :aria-label="`adicionar arquivo em ${item.caminho}`"
             :to="{
@@ -103,6 +108,7 @@ const éPossívelAbrir = (item) => !item.children?.length
           :tem-arquivos="!!arquivosAgrupadosPorCaminho?.[item.caminho]?.length"
           :arquivos-agrupados-por-caminho="arquivosAgrupadosPorCaminho"
           :exibir-conteúdo="!fecharFilha.includes(item.id)"
+          :apenas-leitura="apenasLeitura"
           @apagar="($params) => $emit('apagar', $params)"
           @editar="($params) => $emit('editar', $params)"
         >
@@ -133,6 +139,7 @@ const éPossívelAbrir = (item) => !item.children?.length
                 </small>
 
                 <router-link
+                  v-if="!apenasLeitura"
                   class="like-a__text arvore-de-arquivos__editar"
                   :aria-label="`editar propriedades de ${arquivo?.arquivo?.nome_original}`"
                   :to="{
@@ -149,6 +156,7 @@ const éPossívelAbrir = (item) => !item.children?.length
                 </router-link>
 
                 <button
+                  v-if="!apenasLeitura"
                   type="button"
                   class="like-a__text arvore-de-arquivos__apagar"
                   aria-label="apagar"
