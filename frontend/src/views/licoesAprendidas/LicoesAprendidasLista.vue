@@ -3,6 +3,7 @@ import LocalFilter from '@/components/LocalFilter.vue';
 import { liçãoAprendida as schema } from '@/consts/formSchemas';
 import dateToField from '@/helpers/dateToField';
 import { useLiçõesAprendidasStore } from '@/stores/licoesAprendidas.store.ts';
+import { useProjetosStore } from '@/stores/projetos.store.ts';
 import { storeToRefs } from 'pinia';
 import { computed, ref } from 'vue';
 import { useRoute } from 'vue-router';
@@ -11,6 +12,11 @@ const licoesaprendidasStore = useLiçõesAprendidasStore();
 const {
   chamadasPendentes, erro, lista,
 } = storeToRefs(licoesaprendidasStore);
+
+const projetosStore = useProjetosStore();
+const {
+  permissõesDoProjetoEmFoco,
+} = storeToRefs(projetosStore);
 
 const route = useRoute();
 const projetoId = route?.params?.projetoId;
@@ -34,6 +40,12 @@ const listaFiltrada = computed(() => (!statusVisível.value && !grauVisível.val
 
 iniciar();
 </script>
+<script>
+// use normal <script> to declare options
+export default {
+  inheritAttrs: false,
+};
+</script>
 <template>
   <div class="flex spacebetween center mb2">
     <TítuloDePágina>
@@ -42,7 +54,11 @@ iniciar();
 
     <hr class="ml2 f1">
 
-    <div class="ml2">
+    <div
+      v-if="!permissõesDoProjetoEmFoco.apenas_leitura
+        || permissõesDoProjetoEmFoco.sou_responsavel"
+      class="ml2"
+    >
       <router-link
         :to="{ name: 'liçõesAprendidasCriar' }"
         class="btn"
@@ -70,7 +86,11 @@ iniciar();
       <col>
       <col>
       <col>
-      <col class="col--botão-de-ação">
+      <col
+        v-if="!permissõesDoProjetoEmFoco.apenas_leitura
+          || permissõesDoProjetoEmFoco.sou_responsavel"
+        class="col--botão-de-ação"
+      >
     </colgroup>
 
     <thead>
@@ -88,7 +108,10 @@ iniciar();
         <th class="tl">
           {{ schema.fields['observacao'].spec.label }}
         </th>
-        <th />
+        <th
+          v-if="!permissõesDoProjetoEmFoco.apenas_leitura
+            || permissõesDoProjetoEmFoco.sou_responsavel"
+        />
       </tr>
     </thead>
 
@@ -144,6 +167,8 @@ iniciar();
           {{ linha.observacao }}
         </td>
         <td
+          v-if="!permissõesDoProjetoEmFoco.apenas_leitura
+            || permissõesDoProjetoEmFoco.sou_responsavel"
           class="center"
         >
           <router-link
