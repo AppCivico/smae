@@ -7,9 +7,15 @@ import { useObservadoresStore } from '@/stores/observadores.store.ts';
 import { useOrgansStore } from '@/stores/organs.store';
 import { useUsersStore } from '@/stores/users.store';
 import { storeToRefs } from 'pinia';
-import { ErrorMessage, Field, Form } from 'vee-validate';
+import {
+  ErrorMessage,
+  Field,
+  Form,
+  useForm,
+  useIsFormDirty,
+} from 'vee-validate';
 import { useRoute, useRouter } from 'vue-router';
-import { ref } from 'vue';
+import { ref, watch } from 'vue';
 
 const router = useRouter();
 const route = useRoute();
@@ -24,7 +30,9 @@ const alertStore = useAlertStore();
 const observadoresStore = useObservadoresStore();
 const ÓrgãosStore = useOrgansStore();
 
-const { chamadasPendentes, erro, itemParaEdição } = storeToRefs(observadoresStore);
+const {
+  chamadasPendentes, emFoco, erro, itemParaEdição,
+} = storeToRefs(observadoresStore);
 const { órgãosComoLista } = storeToRefs(ÓrgãosStore);
 
 // necessário por causa de 🤬
@@ -33,11 +41,14 @@ const montarCampoEstático = ref(false);
 const UserStore = useUsersStore();
 const { pessoasSimplificadas } = storeToRefs(UserStore);
 
-UserStore.buscarPessoasSimplificadas({ espectador_de_projeto: true });
+const {
+  errors, handleSubmit, isSubmitting, resetForm, values,
+} = useForm({
+  initialValues: itemParaEdição,
+  validationSchema: schema,
+});
 
-observadoresStore.$reset();
-
-async function onSubmit(values) {
+const onSubmit = handleSubmit.withControlled(async () => {
   try {
     let r;
     const msg = props.grupoDeObservadoresId
@@ -57,37 +68,43 @@ async function onSubmit(values) {
   } catch (error) {
     alertStore.error(error);
   }
-}
+});
 
 async function iniciar() {
+  observadoresStore.$reset();
+  UserStore.buscarPessoasSimplificadas({ espectador_de_projeto: true });
+
   if (props.grupoDeObservadoresId) {
     await observadoresStore.buscarItem(props.grupoDeObservadoresId);
   }
 
-  montarCampoEstático.value = true;
-
   ÓrgãosStore.getAll().finally(() => {
     chamadasPendentes.value.emFoco = false;
   });
+
+  resetForm();
+
+  montarCampoEstático.value = true;
 }
 
+const formulárioSujo = useIsFormDirty();
 iniciar();
+
+watch(itemParaEdição, (novosValores) => {
+  resetForm({ values: novosValores });
+});
 </script>
 
 <template>
   <div class="flex spacebetween center mb2">
     <h1>{{ route?.meta?.título || 'Portfolios' }}</h1>
     <hr class="ml2 f1">
-    <CheckClose />
+    <CheckClose :formulário-sujo="formulárioSujo" />
   </div>
 
-  <pre v-ScrollLockDebug>itemParaEdição:{{ itemParaEdição }}</pre>
-
-  <Form
-    v-if="órgãosComoLista?.length"
-    v-slot="{ errors, isSubmitting, values }"
-    :validation-schema="schema"
-    :initial-values="itemParaEdição"
+  <form
+    v-if="!grupoDeObservadoresId || emFoco"
+    :disabled="chamadasPendentes.emFoco"
     @submit="onSubmit"
   >
     <div class="flex g2 mb1">
@@ -182,7 +199,7 @@ iniciar();
       </button>
       <hr class="ml2 f1">
     </div>
-  </Form>
+  </form>
 
   <span
     v-if="chamadasPendentes?.emFoco"
