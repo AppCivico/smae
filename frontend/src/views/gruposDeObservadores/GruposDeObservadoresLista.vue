@@ -50,6 +50,7 @@ if (!Array.isArray(organs) || !organs.length) {
   <table class="tablemain">
     <col>
     <col>
+    <col class="col--number">
     <col>
     <col>
     <col class="col--botão-de-ação">
@@ -61,6 +62,9 @@ if (!Array.isArray(organs) || !organs.length) {
         </th>
         <th>
           Órgão
+        </th>
+        <th class="cell--number">
+          Nº de participantes
         </th>
         <th>Portfolios</th>
         <th>Projetos</th>
@@ -74,6 +78,9 @@ if (!Array.isArray(organs) || !organs.length) {
         <td>{{ item.titulo }}</td>
         <td>
           {{ órgãosPorId[item.orgao_id]?.sigla || item.id }}
+        </td>
+        <td class="cell--number">
+          {{ item.participantes?.length ?? '-' }}
         </td>
         <td>
           <ul>
