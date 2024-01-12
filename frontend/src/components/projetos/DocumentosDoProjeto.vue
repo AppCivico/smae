@@ -120,7 +120,7 @@ iniciar();
     :lista-de-diretórios="árvoreDeDiretórios"
     class="mb1 arvore-de-arquivos--raiz"
     :apenas-leitura="permissõesDoProjetoEmFoco.apenas_leitura
-      || !permissõesDoProjetoEmFoco.sou_responsavel"
+      && !permissõesDoProjetoEmFoco.sou_responsavel"
     :arquivos-agrupados-por-caminho="arquivosAgrupadosPorCaminho"
     @apagar="($params) => excluirArquivo($params)"
   />
