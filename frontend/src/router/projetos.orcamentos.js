@@ -19,6 +19,9 @@ export default {
   redirect: () => ({ name: 'ProjetoOrçamentoCusto' }),
   meta: {
     título: 'Orçamentos',
+    restringirÀsPermissões: [
+      'Projeto.orcamento',
+    ],
     rotasParaMigalhasDePão: [
       'projetosListar',
       'projetosResumo',
