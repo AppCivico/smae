@@ -8,18 +8,23 @@ import dateToField from '@/helpers/dateToField';
 import dinheiro from '@/helpers/dinheiro';
 import requestS from '@/helpers/requestS.ts';
 import { usePlanosDeAçãoStore } from '@/stores/planosDeAcao.store.ts';
+import { useProjetosStore } from '@/stores/projetos.store.ts';
+
 import { usePortfolioStore } from '@/stores/portfolios.store.ts';
 import { useRiscosStore } from '@/stores/riscos.store.ts';
 import { useTarefasStore } from '@/stores/tarefas.store.ts';
 import { storeToRefs } from 'pinia';
 import { ref } from 'vue';
-import { useRoute } from 'vue-router';
 
-const route = useRoute();
 const planosDeAçãoStore = usePlanosDeAçãoStore();
 const portfolioStore = usePortfolioStore();
+const projetosStore = useProjetosStore();
 const riscosStore = useRiscosStore();
 const tarefasStore = useTarefasStore();
+
+const {
+  permissõesDoProjetoEmFoco,
+} = storeToRefs(projetosStore);
 const {
   chamadasPendentes, emFoco, erro,
 } = storeToRefs(riscosStore);
@@ -82,23 +87,20 @@ iniciar();
       >
         Risco prioritário
       </div>
-
-      <h1>
-        {{
-          typeof route?.meta?.título === 'function'
-          ? route.meta.título()
-          : route?.meta?.título
-        }}
-      </h1>
+      <TítuloDePágina />
     </div>
 
     <hr class="ml2 f1">
     <MenuDeMudançaDeStatusDeRisco
-      v-if="emFoco?.id"
+      v-if="emFoco?.id
+        && (!permissõesDoProjetoEmFoco.apenas_leitura
+          || permissõesDoProjetoEmFoco.sou_responsavel)"
     />
 
     <router-link
-      v-if="emFoco?.id"
+      v-if="emFoco?.id
+        && (!permissõesDoProjetoEmFoco.apenas_leitura
+          || permissõesDoProjetoEmFoco.sou_responsavel)"
       :to="{ name: 'riscosEditar', params: { riscoId: emFoco?.id } }"
       class="btn big ml2"
     >
@@ -191,8 +193,16 @@ iniciar();
         <col class="col--data">
         <col class="col--number">
         <col class="col--number">
-        <col class="col--botão-de-ação">
-        <col class="col--botão-de-ação">
+        <col
+          v-if="!permissõesDoProjetoEmFoco.apenas_leitura
+            || permissõesDoProjetoEmFoco.sou_responsavel"
+          class="col--botão-de-ação"
+        >
+        <col
+          v-if="!permissõesDoProjetoEmFoco.apenas_leitura
+            || permissõesDoProjetoEmFoco.sou_responsavel"
+          class="col--botão-de-ação"
+        >
       </colgroup>
 
       <thead>
@@ -212,8 +222,14 @@ iniciar();
         <th class="cell--number tr">
           % custo projeto
         </th>
-        <th />
-        <th />
+        <th
+          v-if="!permissõesDoProjetoEmFoco.apenas_leitura
+            || permissõesDoProjetoEmFoco.sou_responsavel"
+        />
+        <th
+          v-if="!permissõesDoProjetoEmFoco.apenas_leitura
+            || permissõesDoProjetoEmFoco.sou_responsavel"
+        />
       </thead>
 
       <tbody
@@ -268,7 +284,11 @@ iniciar();
           <td class="cell--number">
             {{ typeof item.custo_percentual === 'number' ? item.custo_percentual + '%' : '-' }}
           </td>
-          <td class="center">
+          <td
+            v-if="!permissõesDoProjetoEmFoco.apenas_leitura
+              || permissõesDoProjetoEmFoco.sou_responsavel"
+            class="center"
+          >
             <router-link
               :to="{
                 name: 'planosDeAçãoMonitoramento',
@@ -284,7 +304,11 @@ iniciar();
               ><use xlink:href="#i_+" /></svg>
             </router-link>
           </td>
-          <td class="center">
+          <td
+            v-if="!permissõesDoProjetoEmFoco.apenas_leitura
+              || permissõesDoProjetoEmFoco.sou_responsavel"
+            class="center"
+          >
             <router-link
               :to="{
                 name: 'planosDeAçãoEditar',
@@ -304,7 +328,12 @@ iniciar();
         <tr
           v-if="linhasAbertas.includes(item.id)"
         >
-          <td colspan="8">
+          <td
+            :colspan="!permissõesDoProjetoEmFoco.apenas_leitura
+              || permissõesDoProjetoEmFoco.sou_responsavel
+              ? 8
+              : 6"
+          >
             <table
               v-if="linhas[item.id]"
               class="tablemain"
@@ -331,7 +360,10 @@ iniciar();
       </tbody>
     </table>
 
-    <p>
+    <p
+      v-if="!permissõesDoProjetoEmFoco.apenas_leitura
+        || permissõesDoProjetoEmFoco.sou_responsavel"
+    >
       <router-link
         :to="{
           name: 'planosDeAçãoCriar'

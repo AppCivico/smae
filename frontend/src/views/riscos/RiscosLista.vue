@@ -6,10 +6,16 @@ import { risco as schema } from '@/consts/formSchemas';
 import statuses from '@/consts/riskStatuses';
 import arrayToValueAndLabel from '@/helpers/arrayToValueAndLabel';
 import dateToField from '@/helpers/dateToField';
+import { useProjetosStore } from '@/stores/projetos.store.ts';
 import { useRiscosStore } from '@/stores/riscos.store.ts';
 import { storeToRefs } from 'pinia';
 import { computed, ref } from 'vue';
 import { useRoute } from 'vue-router';
+
+const projetosStore = useProjetosStore();
+const {
+  permissõesDoProjetoEmFoco,
+} = storeToRefs(projetosStore);
 
 const riscosStore = useRiscosStore();
 const {
@@ -53,7 +59,11 @@ export default {
 
     <hr class="ml2 f1">
 
-    <div class="ml2">
+    <div
+      v-if="!permissõesDoProjetoEmFoco.apenas_leitura
+        || permissõesDoProjetoEmFoco.sou_responsavel"
+      class="ml2"
+    >
       <router-link
         :to="{ name: 'riscosCriar' }"
         class="btn"
@@ -128,7 +138,11 @@ export default {
       <col class="col--minimum">
       <col style="width: 8em">
       <col style="width: 9em">
-      <col class="col--botão-de-ação">
+      <col
+        v-if="!permissõesDoProjetoEmFoco.apenas_leitura
+          || permissõesDoProjetoEmFoco.sou_responsavel"
+        class="col--botão-de-ação"
+      >
     </colgroup>
 
     <thead>
@@ -154,7 +168,10 @@ export default {
         <th class="tl">
           Status
         </th>
-        <th />
+        <th
+          v-if="!permissõesDoProjetoEmFoco.apenas_leitura
+            || permissõesDoProjetoEmFoco.sou_responsavel"
+        />
       </tr>
     </thead>
 
@@ -210,6 +227,8 @@ export default {
           {{ statuses[linha.status_risco] }}
         </td>
         <td
+          v-if="!permissõesDoProjetoEmFoco.apenas_leitura
+            || permissõesDoProjetoEmFoco.sou_responsavel"
           class="center"
         >
           <router-link
