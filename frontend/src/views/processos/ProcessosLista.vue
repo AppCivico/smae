@@ -3,6 +3,7 @@ import LocalFilter from '@/components/LocalFilter.vue';
 import { processo as schema } from '@/consts/formSchemas';
 import formatProcesso from '@/helpers/formatProcesso';
 import { useProcessosStore } from '@/stores/processos.store.ts';
+import { useProjetosStore } from '@/stores/projetos.store.ts';
 import { storeToRefs } from 'pinia';
 import { computed, ref } from 'vue';
 import { useRoute } from 'vue-router';
@@ -11,6 +12,12 @@ const processosStore = useProcessosStore();
 const {
   chamadasPendentes, erro, lista,
 } = storeToRefs(processosStore);
+
+const projetosStore = useProjetosStore();
+
+const {
+  permissõesDoProjetoEmFoco,
+} = storeToRefs(projetosStore);
 
 const route = useRoute();
 const projetoId = route?.params?.projetoId;
@@ -43,6 +50,8 @@ iniciar();
 
     <div class="ml2">
       <router-link
+        v-if="!permissõesDoProjetoEmFoco.apenas_leitura
+          || permissõesDoProjetoEmFoco.sou_responsavel"
         :to="{ name: 'processosCriar' }"
         class="btn"
       >
@@ -67,7 +76,11 @@ iniciar();
       <col class="col--minimum">
       <col>
       <col class="col--minimum">
-      <col class="col--botão-de-ação">
+      <col
+        v-if="!permissõesDoProjetoEmFoco.apenas_leitura
+          || permissõesDoProjetoEmFoco.sou_responsavel"
+        class="col--botão-de-ação"
+      >
     </colgroup>
 
     <thead>
@@ -81,7 +94,10 @@ iniciar();
         <th class="center">
           {{ schema.fields['link'].spec.label }}
         </th>
-        <th />
+        <th
+          v-if="!permissõesDoProjetoEmFoco.apenas_leitura
+            || permissõesDoProjetoEmFoco.sou_responsavel"
+        />
       </tr>
     </thead>
 
@@ -116,7 +132,11 @@ iniciar();
             link processo
           </a>
         </td>
-        <td class="center">
+        <td
+          v-if="!permissõesDoProjetoEmFoco.apenas_leitura
+            || permissõesDoProjetoEmFoco.sou_responsavel"
+          class="center"
+        >
           <router-link
             v-if="linha.categoria === 'Manual'"
             :to="{
