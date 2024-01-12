@@ -183,14 +183,6 @@ export class CreateProjetoDto {
     previsao_custo: number | null;
 
     /**
-     * escopo
-     * @example "..."
-     */
-    @IsString()
-    @MaxLength(50000)
-    escopo: string;
-
-    /**
      * principais_etapas
      * @example "1. doing xpto\n2. doing zoo"
      */
