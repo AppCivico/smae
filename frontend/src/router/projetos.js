@@ -59,7 +59,7 @@ const GruposDeObservadoresLista = defineAsyncComponent({
   loadingComponent: LoadingComponent,
 });
 const GruposDeObservadoresRaiz = defineAsyncComponent({
-  loader: () => import('@/views/grupos-de-observadores/GruposDeObservadoresRaiz.vue'),
+  loader: () => import('@/views/gruposDeObservadores/GruposDeObservadoresRaiz.vue'),
   loadingComponent: LoadingComponent,
 });
 
