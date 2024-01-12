@@ -1,11 +1,14 @@
 import { Injectable } from '@nestjs/common';
+import { DateTime } from 'luxon';
 import { Stream2Buffer } from 'src/common/helpers/Stream2Buffer';
+import { AcompanhamentoService } from 'src/pp/acompanhamento/acompanhamento.service';
 import { PlanoAcaoService } from 'src/pp/plano-de-acao/plano-de-acao.service';
 import { ProjetoDetailDto } from 'src/pp/projeto/entities/projeto.entity';
 import { RiscoService } from 'src/pp/risco/risco.service';
 import { TarefaService } from 'src/pp/tarefa/tarefa.service';
 import { Date2YMD, SYSTEM_TIMEZONE } from '../../common/date2ymd';
 import { ProjetoService, ProjetoStatusParaExibicao } from '../../pp/projeto/projeto.service';
+import { ProjetoRiscoStatus } from '../../pp/risco/entities/risco.entity';
 import { PrismaService } from '../../prisma/prisma.service';
 import { DefaultCsvOptions, FileOutput, ReportableService } from '../utils/utils.service';
 import { CreateRelProjetoDto } from './dto/create-previsao-custo.dto';
@@ -18,9 +21,6 @@ import {
     RelProjetoRelatorioDto,
     RelProjetoRiscoDto,
 } from './entities/previsao-custo.entity';
-import { ProjetoRiscoStatus } from '../../pp/risco/entities/risco.entity';
-import { DateTime } from 'luxon';
-import { AcompanhamentoService } from 'src/pp/acompanhamento/acompanhamento.service';
 
 const {
     Parser,
@@ -70,7 +70,6 @@ export class PPProjetoService implements ReportableService {
             realizado_inicio: Date2YMD.toStringOrNull(projetoRow.realizado_inicio),
             realizado_termino: Date2YMD.toStringOrNull(projetoRow.realizado_termino),
             realizado_custo: projetoRow.realizado_custo,
-            escopo: projetoRow.escopo,
             nao_escopo: projetoRow.nao_escopo,
             principais_etapas: projetoRow.principais_etapas,
             responsavel_id: projetoRow.responsavel ? projetoRow.responsavel.id : null,
