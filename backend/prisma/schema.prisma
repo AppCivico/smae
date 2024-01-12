@@ -2742,8 +2742,10 @@ model Projeto {
 
     // Fase=Registro
     resumo            String // campo livre
-    escopo            String?
-    principais_etapas String // read-only apos Fase=Registro
+    escopo            String? @ignore
+    principais_etapas String?
+
+    principais_etapas_antigo String? @ignore // valor do antigo principais_etapas read-only apos Fase=Registro
 
     // Fase=Planejamento
     nao_escopo String? /// HTML

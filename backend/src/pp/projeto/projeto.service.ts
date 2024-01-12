@@ -67,7 +67,7 @@ export type HtmlProjetoUe = {
     origem: string;
     codigoDaMeta: string | null;
     textoDaMeta: string;
-    escopo: string[];
+    //escopo: string[];
     etapas: string[];
     orgaosEnvolvidos: string[];
 };
@@ -296,7 +296,6 @@ export class ProjetoService {
                         atividade_id: atividade_id,
 
                         previsao_custo: dto.previsao_custo,
-                        escopo: dto.escopo,
                         principais_etapas: dto.principais_etapas,
 
                         regiao_id: dto.regiao_id,
@@ -607,7 +606,7 @@ export class ProjetoService {
             origem: projeto.origem_tipo == 'Outro' ? projeto.origem_outro || '' : 'Programa de Metas',
             codigoDaMeta: projeto.meta ? projeto.meta.codigo : projeto.meta_codigo,
             textoDaMeta: projeto.meta ? projeto.meta.titulo : '',
-            escopo: projeto.escopo ? projeto.escopo.split('\n\n') : [],
+            //escopo: projeto.escopo ? projeto.escopo.split('\n\n') : [],
             etapas: projeto.principais_etapas ? projeto.principais_etapas.split('\n\n') : [],
             orgaosEnvolvidos: projeto.orgaos_participantes.map((r) => r.sigla + ' - ' + r.descricao),
         };
@@ -663,7 +662,6 @@ export class ProjetoService {
                 realizado_inicio: true,
                 realizado_termino: true,
                 realizado_custo: true,
-                escopo: true,
                 nao_escopo: true,
                 principais_etapas: true,
                 responsaveis_no_orgao_gestor: true,
@@ -1264,7 +1262,6 @@ export class ProjetoService {
                     previsao_inicio: dto.previsao_inicio,
                     previsao_termino: dto.previsao_termino,
                     previsao_custo: dto.previsao_custo,
-                    escopo: dto.escopo,
                     principais_etapas: dto.principais_etapas,
                     versao: dto.versao,
                     data_aprovacao: dto.data_aprovacao,

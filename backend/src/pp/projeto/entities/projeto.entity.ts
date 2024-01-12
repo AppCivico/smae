@@ -156,10 +156,14 @@ export class ProjetoDetailDto {
     status_cronograma: string | null;
     realizado_duracao: number | null;
 
-    escopo: string | null;
     nao_escopo: string | null;
     orgaos_participantes: IdSiglaDescricao[];
-    principais_etapas: string;
+    /**
+     * ganhou o valor do campo "escopo", e agora pode ser null
+     *
+     * @example ""
+     */
+    principais_etapas: string | null;
     orgao_gestor: IdSiglaDescricao;
     orgao_responsavel: IdSiglaDescricao | null;
     responsavel: IdNomeExibicaoDto | null;
