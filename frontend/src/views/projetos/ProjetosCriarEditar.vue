@@ -235,7 +235,7 @@ async function onSubmit(_, { controlledValues: valores }) {
 
       alertStore.success(msg);
       emFoco.value = null;
-      projetosStore.buscarItem(props.projetoId);
+      projetosStore.buscarItem(props.projetoId || resposta.id);
       router.push(rotaApósSalvamento);
     }
   } catch (error) {
