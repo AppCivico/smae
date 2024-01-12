@@ -28,6 +28,7 @@ export default {
       'OrcamentosRaiz',
     ],
     requerAutenticação: true,
+    rotaPrescindeDeChave: false,
   },
 
   children: [
