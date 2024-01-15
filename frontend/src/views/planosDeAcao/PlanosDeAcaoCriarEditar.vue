@@ -60,6 +60,7 @@ async function onSubmit(_, { controlledValues: carga }) {
     if (resposta) {
       alertStore.success(msg);
       planosDeAçãoStore.$reset();
+      planosDeAçãoStore.buscarTudo();
       router.push({ name: 'planosDeAçãoListar' });
     }
   } catch (error) {
@@ -69,9 +70,9 @@ async function onSubmit(_, { controlledValues: carga }) {
 
 function excluirPlanoDeAção(id) {
   useAlertStore().confirmAction('Deseja mesmo remover esse item?', async () => {
-    if (await usePlanosDeAçãoStore().excluirItem(id)) {
-      usePlanosDeAçãoStore().$reset();
-      usePlanosDeAçãoStore().buscarTudo();
+    if (await planosDeAçãoStore.excluirItem(id)) {
+      planosDeAçãoStore.$reset();
+      planosDeAçãoStore.buscarTudo();
       useAlertStore().success('Risco removido.');
 
       const rotaDeEscape = route.meta?.rotaDeEscape;
