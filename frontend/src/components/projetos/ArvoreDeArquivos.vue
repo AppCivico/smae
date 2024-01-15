@@ -126,9 +126,9 @@ const éPossívelAbrir = (item) => !item.children?.length
                     : undefined"
                   download
                   class="arvore-de-arquivos__descricao"
-                  :title="`${arquivo?.arquivo?.nome_original} -- ${arquivo?.arquivo?.descricao}`"
+                  :title="`${arquivo?.arquivo?.nome_original} -- ${arquivo?.descricao}`"
                 >
-                  {{ truncate(arquivo?.arquivo?.descricao, 300) }}
+                  {{ truncate(arquivo?.descricao, 300) }}
                 </component>
 
                 <small
