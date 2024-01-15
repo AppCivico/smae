@@ -1,4 +1,4 @@
-import { HttpException, Inject, Injectable, forwardRef } from '@nestjs/common';
+import { HttpException, Inject, Injectable, Logger, forwardRef } from '@nestjs/common';
 import { Serie } from '@prisma/client';
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import { Date2YMD } from '../../common/date2ymd';
@@ -15,6 +15,7 @@ type VariavelParaEnviar = {
 
 @Injectable()
 export class AuxiliarService {
+    private readonly logger = new Logger(AuxiliarService.name);
     constructor(
         @Inject(forwardRef(() => MetasService)) private readonly metasService: MetasService,
         @Inject(forwardRef(() => MfService)) private readonly mfService: MfService
@@ -131,8 +132,8 @@ export class AuxiliarService {
             );
         }
 
+        this.logger.debug('Buscando valores correntes...');
         const dados = await this.metasService.metaVariaveis(dto.meta_id, config, cicloFisicoAtivo, user, false);
-
         const ordem_series = Object.fromEntries(dados.ordem_series.map((k, i) => [k, i])) as Record<Serie, number>;
 
         const variaveisParaEnviar: VariavelParaEnviar[] = [];
@@ -142,7 +143,6 @@ export class AuxiliarService {
                 if (!mes_serie.nao_enviada) continue;
 
                 const ref = mes_serie.series.at(ordem_series.Realizado);
-
                 if (ref && ref.valor_nominal !== '' && mes_serie.pode_editar)
                     variaveisParaEnviar.push(cria_enviar_cp(v.variavel.id, dto.simular_ponto_focal, ref));
             }
@@ -169,7 +169,6 @@ export class AuxiliarService {
                         if (!mes_serie.nao_enviada) continue;
 
                         const ref = mes_serie.series.at(ordem_series.Realizado);
-
                         if (ref && ref.valor_nominal !== '' && mes_serie.pode_editar)
                             variaveisParaEnviar.push(cria_enviar_cp(v.variavel.id, dto.simular_ponto_focal, ref));
                     }
@@ -177,7 +176,8 @@ export class AuxiliarService {
             }
         }
 
-        console.log({ variaveisParaEnviar });
+        this.logger.verbose(JSON.stringify(variaveisParaEnviar));
+        this.logger.debug('Carregando analise quáli correntes...');
 
         const analisesQuali = await Promise.all(
             variaveisParaEnviar.map((envio) => {
@@ -196,17 +196,29 @@ export class AuxiliarService {
             })
         );
 
+        this.logger.verbose(JSON.stringify(analisesQuali));
+
+        this.logger.debug('Submetendo para CP...');
         for (const quali of analisesQuali) {
             const analise = quali.analises[0];
-            if (!analise) continue;
-            console.log({ analise }, { series: quali.series, ordem_series: quali.ordem_series });
+            if (!analise) {
+                this.logger.warn(`Pulando quáli ${JSON.stringify(quali)} pois está sem analise[0]`);
+                continue;
+            }
 
             const ordem_series = Object.fromEntries(quali.ordem_series.map((k, i) => [k, i])) as Record<Serie, number>;
 
             const serie_realizado = quali.series.at(ordem_series.Realizado);
             const serie_realizadoAcc = quali.series.at(ordem_series.RealizadoAcumulado);
 
-            if (!serie_realizado || !serie_realizadoAcc) continue;
+            const skip = !serie_realizado || !serie_realizadoAcc;
+
+            if (skip) {
+                this.logger.warn(
+                    `Pulando quáli ${JSON.stringify(quali)} pois está sem serie_realizado | serie_realizadoAcc`
+                );
+                continue;
+            }
 
             await RetryPromise(() =>
                 this.metasService.addMetaVariavelAnaliseQualitativa(

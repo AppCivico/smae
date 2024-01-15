@@ -337,12 +337,7 @@ export class MetasService {
             meta: {
                 indicador: indicadorMeta,
                 iniciativas: [],
-                ...this.extraiVariaveis(
-                    variaveisMeta,
-                    calcSerieVariaveis.seriesPorVariavel,
-                    'meta_id',
-                    meta_id
-                ),
+                ...this.extraiVariaveis(variaveisMeta, calcSerieVariaveis.seriesPorVariavel, 'meta_id', meta_id),
                 ...this.mfService.extraiResponsaveis(indicadorMeta.meta.meta_responsavel),
                 id: meta_id,
                 titulo: indicadorMeta.meta.titulo,
@@ -679,8 +674,8 @@ export class MetasService {
                     ? status.aguarda_complementacao
                         ? true
                         : status.aguarda_cp || status.conferida
-                        ? false
-                        : metaEstaFaseColeta
+                          ? false
+                          : metaEstaFaseColeta
                     : metaEstaFaseColeta,
             };
         } else {
@@ -1736,12 +1731,12 @@ export class MetasService {
         const variavel = await this.carregaVariavel({ variavel_id: linha.variavel_id });
 
         const [analisesResult, arquivosResult, pedido] = await Promise.all([
-            fastlane
-                ? null
-                : this.buscaAnalisesQualitativas(dadosCiclo, {
-                      variavel_id: linha.variavel_id,
-                      apenas_ultima_revisao,
-                  }),
+            // analise qualitativa não pode ficar no fastlane, pois é usado no submeter em lote (que usa o fastlane)
+            // e não quer os arquivos nem pedido complementação
+            this.buscaAnalisesQualitativas(dadosCiclo, {
+                variavel_id: linha.variavel_id,
+                apenas_ultima_revisao,
+            }),
             fastlane ? null : this.buscaArquivos(dadosCiclo, { variavel_id: linha.variavel_id }),
             fastlane ? null : this.buscaPedidoComplementacao(dadosCiclo, { variavel_id: linha.variavel_id }),
         ]);
