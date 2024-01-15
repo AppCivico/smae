@@ -244,7 +244,7 @@ export class RiscoService {
             ProjetoStatus.Selecionado,
             ProjetoStatus.EmPlanejamento,
         ];
-        const edicaoLimitada: boolean = valoresStatusAceitaveis.includes(projetoRisco.projeto.status) ? true : false;
+        const edicaoLimitada: boolean = !valoresStatusAceitaveis.includes(projetoRisco.projeto.status);
 
         return {
             ...projetoRisco,
@@ -395,14 +395,7 @@ export class RiscoService {
 
     async remove(projeto_id: number, projeto_risco_id: number, user: PessoaFromJwt) {
         await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient) => {
-            // Deve ser verificado o status
-            const valoresAceitaveis: ProjetoStatus[] = [
-                ProjetoStatus.Registrado,
-                ProjetoStatus.Selecionado,
-                ProjetoStatus.EmPlanejamento,
-            ];
-
-            const self = await prismaTx.projetoRisco.findFirstOrThrow({
+            await prismaTx.projetoRisco.findFirstOrThrow({
                 where: {
                     id: projeto_risco_id,
                     projeto_id: projeto_id,
@@ -414,20 +407,16 @@ export class RiscoService {
                 },
             });
 
-            if (valoresAceitaveis.includes(self.projeto.status)) {
-                return await this.prisma.projetoRisco.updateMany({
-                    where: {
-                        id: projeto_risco_id,
-                        projeto_id: projeto_id,
-                    },
-                    data: {
-                        removido_em: new Date(Date.now()),
-                        removido_por: user.id,
-                    },
-                });
-            } else {
-                throw new HttpException('Status do Projeto não permite deleção de Risco.', 400);
-            }
+            return await this.prisma.projetoRisco.updateMany({
+                where: {
+                    id: projeto_risco_id,
+                    projeto_id: projeto_id,
+                },
+                data: {
+                    removido_em: new Date(Date.now()),
+                    removido_por: user.id,
+                },
+            });
         });
     }
 }
