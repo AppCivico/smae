@@ -37,7 +37,10 @@ type IndicadorInfo = {
 @Injectable()
 export class VariavelService {
     private readonly logger = new Logger(VariavelService.name);
-    constructor(private readonly jwtService: JwtService, private readonly prisma: PrismaService) {}
+    constructor(
+        private readonly jwtService: JwtService,
+        private readonly prisma: PrismaService
+    ) {}
 
     async buildVarResponsaveis(
         variableId: number,
@@ -79,6 +82,9 @@ export class VariavelService {
                             `O nível da região (${regiao.nivel}) precisa ser igual ao do indicador (${indicador.nivel_regionalizacao})`
                         );
                 }
+
+                if (!indicador.regionalizavel && createVariavelDto.regiao_id)
+                    throw new BadRequestException(`Indicador sem regionalização, não é possível enviar região.`);
 
                 return await this.performVariavelSave(
                     prismaThx,
@@ -198,7 +204,6 @@ export class VariavelService {
         });
         if (jaEmUso > 0)
             throw new HttpException(`Código ${createVariavelDto.codigo} já está em uso no indicador.`, 400);
-
 
         const variavel = await prismaThx.variavel.create({
             data: {
@@ -609,7 +614,10 @@ export class VariavelService {
         // buscando apenas pelo indicador pai verdadeiro desta variavel
         const selfIndicadorVariavel = await this.prisma.indicadorVariavel.findFirst({
             where: { variavel_id: variavelId, indicador_origem_id: null },
-            select: { indicador_id: true, variavel: { select: { valor_base: true, periodicidade: true, supraregional: true } } },
+            select: {
+                indicador_id: true,
+                variavel: { select: { valor_base: true, periodicidade: true, supraregional: true } },
+            },
         });
         if (!selfIndicadorVariavel)
             throw new HttpException('Variavel não encontrada, confira se você está no indicador base', 400);
@@ -667,7 +675,8 @@ export class VariavelService {
 
         // Quando a variável é supraregional, está sendo enviado regiao_id = 0
         // Portanto tratando para não dar problema com a FK no Prisma.
-        if ( updateVariavelDto.regiao_id == 0 && selfIndicadorVariavel.variavel.supraregional == true ) delete updateVariavelDto.regiao_id;
+        if (updateVariavelDto.regiao_id == 0 && selfIndicadorVariavel.variavel.supraregional == true)
+            delete updateVariavelDto.regiao_id;
 
         await this.prisma.$transaction(async (prismaTxn: Prisma.TransactionClient) => {
             const responsaveis = updateVariavelDto.responsaveis;
