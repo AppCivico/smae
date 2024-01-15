@@ -8,6 +8,7 @@ import {
 import { default as AddEditRealizado } from '@/views/metas/AddEditRealizado.vue';
 import { default as AddEditValores } from '@/views/metas/AddEditValores.vue';
 import { default as AddEditVariavel } from '@/views/metas/AddEditVariavel.vue';
+import dateToField from '@/helpers/dateToField';
 import { storeToRefs } from 'pinia';
 import { onMounted, onUpdated, ref } from 'vue';
 import { useRoute } from 'vue-router';
@@ -223,11 +224,22 @@ onUpdated(() => { start(); });
                       d="M23.5455 18.091H20.8182V23.5456H23.5455V18.091Z"
                       fill="currentColor"
                     /> </svg>
-                    <h2 class="mt1 mb1 ml1">
+                    <h2 class="mt1 mb1 ml1 f1">
                       {{ v.titulo }}
                     </h2>
+                    <div
+                      v-if="v.suspendida"
+                      class="tipinfo left"
+                    >
+                      <svg
+                        width="24"
+                        height="24"
+                      ><use xlink:href="#i_alert" /></svg><div>
+                        Suspensa do monitoramento físico em {{ dateToField(v.suspendida_em) }}
+                      </div>
+                    </div>
                   </div>
-                  <div class="f0" />
+
                   <div
                     v-if="perm?.CadastroIndicador?.editar"
                     class="f0 dropbtn right"

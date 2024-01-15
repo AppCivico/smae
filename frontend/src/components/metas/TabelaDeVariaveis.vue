@@ -4,6 +4,7 @@ import { useAuthStore } from '@/stores/auth.store';
 import { useVariaveisStore } from '@/stores/variaveis.store';
 import { useRoute } from 'vue-router';
 import { storeToRefs } from 'pinia';
+import dateToField from '@/helpers/dateToField';
 import níveisRegionalização from '@/consts/niveisRegionalizacao';
 
 const alertStore = useAlertStore();
@@ -96,50 +97,82 @@ function permitirEdição(indicadorVariavel) {
   <table
     class="tablemain mb1"
   >
+    <col>
+    <col>
+    <col>
+    <col class="col--number">
+    <col>
+    <col>
+    <col class="col--number">
+    <col class="col--number">
+    <col>
+    <col class="col--minimum">
+
     <thead>
       <tr>
-        <th style="width:13.3%;">
+        <th>
           Código
         </th>
-        <th style="width:13.3%;">
+        <th>
           Título
         </th>
-        <th style="width:13.3%;">
+        <th>
           Nível de regionalização
         </th>
-        <th style="width:13.3%;">
+        <th class="cell--number">
           Valor base
         </th>
-        <th style="width:13.3%;">
+        <th>
           Periodicidade
         </th>
-        <th style="width:13.3%;">
+        <th>
           Unidade
         </th>
-        <th style="width:13.3%;">
+        <th class="cell--number">
           Casas decimais
         </th>
-        <th style="width:13.3%;">
+        <th class="cell--number">
           Atraso meses
         </th>
-        <th style="width:13.3%;">
+        <th>
           Acumulativa
         </th>
-        <th style="width:20%" />
+        <th />
       </tr>
     </thead>
     <tr
       v-for="v in variáveis"
       :key="v.id"
     >
-      <td>{{ v.codigo }}</td>
+      <td class="cell--nowrap">
+        <span
+          v-if="v.suspendida"
+          class="tipinfo right"
+        >
+          <svg
+            width="24"
+            height="24"
+          ><use xlink:href="#i_alert" /></svg><div>
+            Suspensa do monitoramento físico em {{ dateToField(v.suspendida_em) }}
+          </div>
+        </span>
+        {{ v.codigo }}
+      </td>
       <td>{{ v.titulo }}</td>
       <td>{{ v.regiao ? níveisRegionalização.find(e => e.id == v.regiao.nivel).nome : '-' }}</td>
-      <td>{{ v.valor_base }}</td>
+      <td class="cell--number">
+        {{ v.valor_base }}
+      </td>
       <td>{{ v.periodicidade }}</td>
-      <td>{{ v.unidade_medida?.sigla }}</td>
-      <td>{{ v.casas_decimais }}</td>
-      <td>{{ v.atraso_meses }}</td>
+      <td>
+        {{ v.unidade_medida?.sigla }}
+      </td>
+      <td class="cell--number">
+        {{ v.casas_decimais }}
+      </td>
+      <td class="cell--number">
+        {{ v.atraso_meses }}
+      </td>
       <td>{{ v.acumulativa ? 'Sim' : 'Não' }}</td>
       <td style="white-space: nowrap; text-align: right;">
         <button
