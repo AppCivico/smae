@@ -2268,10 +2268,14 @@ caption {
   .col--minimum;
 }
 
+.cell--nowrap {
+  white-space: nowrap;
+}
+
 .cell--minimum {
   .col--minimum;
 
-  white-space: nowrap;
+  .cell--nowrap;
 }
 
 .col--dataHora {
@@ -2288,8 +2292,8 @@ caption {
 }
 
 .cell--number {
+  .cell--nowrap;
   text-align: right !important;
-  white-space: nowrap;
 
   thead & {
     white-space: normal;
