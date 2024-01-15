@@ -74,7 +74,7 @@ const regioes = ref([]);
 
 const virtualParent = ref({});
 
-const schema = computed(() => variável(singleIndicadores, funçãoDaTela === 'gerar'));
+const schema = computed(() => variável(singleIndicadores));
 
 const regiõesDisponíveis = computed(() => (Array.isArray(regiõesPorNívelOrdenadas.value?.[
   singleIndicadores.value.nivel_regionalizacao
@@ -763,7 +763,7 @@ export default {
             :value="true"
             class="inputcheckbox"
           /><span :class="{ 'error': errors.suspendida }">
-            Suspender variável e retirar do monitoramento físico
+            {{ schema.fields.suspendida.spec.label }}
           </span>
         </label>
         <div class="error-msg">
