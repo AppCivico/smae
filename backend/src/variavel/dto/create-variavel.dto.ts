@@ -135,8 +135,10 @@ export class CreateVariavelDto {
     @Min(0)
     atraso_meses?: number;
 
+    @IsOptional()
     @IsBoolean()
-    supraregional: boolean;
+    @ValidateIf((object, value) => value !== null)
+    supraregional?: boolean;
 }
 
 export class CreateGeradorVariavelDto extends OmitType(CreateVariavelDto, ['codigo']) {

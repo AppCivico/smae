@@ -59,6 +59,8 @@ export class VariavelService {
     async create(createVariavelDto: CreateVariavelDto, user: PessoaFromJwt) {
         // TODO: verificar se todos os membros de createVariavelDto.responsaveis estão ativos e sao realmente do orgão createVariavelDto.orgao_id
 
+        if (createVariavelDto.supraregional === null) delete createVariavelDto.supraregional;
+
         await this.checkPermissions(createVariavelDto, user);
 
         const responsaveis = createVariavelDto.responsaveis!;
