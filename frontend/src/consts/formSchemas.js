@@ -379,10 +379,10 @@ export const indicador = object()
 
 export const grupoDeObservadores = object({
   participantes: array()
-    .label('participantes')
+    .label('Participantes')
     .required(),
   orgao_id: number()
-    .label('Órgão')
+    .label('Órgão responsável')
     .min(1, 'Selecione um órgão responsável')
     .nullable(),
   titulo: string()
