@@ -52,6 +52,7 @@ export class CreateVariavelDto {
     @IsOptional()
     @IsInt({ message: '$property| região é opcional via (null) ou precisa ser um numérico' })
     @ValidateIf((object, value) => value !== null)
+    @Transform(({ value }: any) => (String(value) === '0' || value === null ? null : +value))
     @Type(() => Number)
     regiao_id?: number;
 
