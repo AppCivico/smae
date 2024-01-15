@@ -66,6 +66,7 @@ const GruposDeObservadoresRaiz = defineAsyncComponent({
 export default {
   path: '/projetos',
   component: ProjetosRaiz,
+  redirect: '/projetos/todos',
   props: {
     submenu: MenuSecundário,
   },
@@ -95,7 +96,7 @@ export default {
   children: [
     {
       name: 'projetosListar',
-      path: '',
+      path: 'todos',
       component: ProjetosLista,
       meta: {
         título: 'Portfólios',
