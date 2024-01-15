@@ -1694,7 +1694,7 @@ export class ProjetoService {
 
     async append_document(projetoId: number, dto: CreateProjetoDocumentDto, user: PessoaFromJwt) {
         // aqui é feito a verificação se esse usuário pode realmente acessar esse recurso
-        await this.findOne(projetoId, user, 'ReadWrite');
+        await this.findOne(projetoId, user, 'ReadWriteTeam');
 
         const arquivoId = this.uploadService.checkUploadOrDownloadToken(dto.upload_token);
         if (dto.diretorio_caminho)
@@ -1807,7 +1807,7 @@ export class ProjetoService {
 
     async remove_document(projetoId: number, projetoDocId: number, user: PessoaFromJwt) {
         // aqui é feito a verificação se esse usuário pode realmente acessar esse recurso
-        await this.findOne(projetoId, user, 'ReadWrite');
+        await this.findOne(projetoId, user, 'ReadWriteTeam');
 
         await this.prisma.projetoDocumento.updateMany({
             where: { projeto_id: projetoId, removido_em: null, id: projetoDocId },
