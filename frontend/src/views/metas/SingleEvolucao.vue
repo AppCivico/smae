@@ -2,9 +2,12 @@
 import { Dashboard } from '@/components';
 import { default as EvolucaoGraph } from '@/components/EvolucaoGraph.vue';
 import { default as GruposDeSerie } from '@/components/metas/GruposDeSerie.vue';
-import {
-  useAlertStore, useAuthStore, useEditModalStore, useIndicadoresStore, useMetasStore, useVariaveisStore,
-} from '@/stores';
+import { useAlertStore } from '@/stores/alert.store';
+import { useAuthStore } from '@/stores/auth.store';
+import { useEditModalStore } from '@/stores/editModal.store';
+import { useIndicadoresStore } from '@/stores/indicadores.store';
+import { useMetasStore } from '@/stores/metas.store';
+import { useVariaveisStore } from '@/stores/variaveis.store';
 import { default as AddEditRealizado } from '@/views/metas/AddEditRealizado.vue';
 import { default as AddEditValores } from '@/views/metas/AddEditValores.vue';
 import { default as AddEditVariavel } from '@/views/metas/AddEditVariavel.vue';
