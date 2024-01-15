@@ -5,6 +5,7 @@ import AutocompleteField from '@/components/AutocompleteField2.vue';
 import MenuDeMudançaDeStatusDeRisco from '@/components/riscos/MenuDeMudançaDeStatusDeRisco.vue';
 import { risco as schema } from '@/consts/formSchemas';
 import { useAlertStore } from '@/stores/alert.store';
+import { useProjetosStore } from '@/stores/projetos.store.ts';
 import { useRiscosStore } from '@/stores/riscos.store.ts';
 import { useTarefasStore } from '@/stores/tarefas.store.ts';
 import { storeToRefs } from 'pinia';
@@ -16,6 +17,7 @@ import {
 import { useRoute, useRouter } from 'vue-router';
 
 const alertStore = useAlertStore();
+const projetosStore = useProjetosStore();
 const riscosStore = useRiscosStore();
 const tarefasStore = useTarefasStore();
 const router = useRouter();
@@ -27,6 +29,10 @@ const {
   erro,
   itemParaEdição,
 } = storeToRefs(riscosStore);
+
+const {
+  permissõesDoProjetoEmFoco,
+} = storeToRefs(projetosStore);
 
 const {
   tarefasOrdenadas,
@@ -420,7 +426,9 @@ iniciar();
   </div>
 
   <button
-    v-if="emFoco?.id && !emFoco?.edicao_limitada"
+    v-if="emFoco?.id
+      && (!permissõesDoProjetoEmFoco.apenas_leitura
+        || permissõesDoProjetoEmFoco.sou_responsavel)"
     class="btn amarelo big"
     @click="excluirRisco(emFoco.id)"
   >
