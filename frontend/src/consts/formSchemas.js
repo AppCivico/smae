@@ -1222,7 +1222,7 @@ export const usuário = object()
       .required('Selecione ao menos uma permissão'),
   });
 
-export const variável = (singleIndicadores, éGeraçãoApenas) => object()
+export const variável = (singleIndicadores) => object()
   .shape({
     acumulativa: string()
       .nullable(),
@@ -1259,9 +1259,7 @@ export const variável = (singleIndicadores, éGeraçãoApenas) => object()
       .nullable(),
     supraregional: boolean()
       .label('Incluir variável supra regional')
-      .when('éGeraçãoApenas', ((_, field) => ((éGeraçãoApenas)
-        ? field.required()
-        : field.nullable()))),
+      .nullable(),
     suspendida: boolean()
       .nullable(),
     titulo: string()
