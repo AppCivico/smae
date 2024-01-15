@@ -670,13 +670,7 @@ export class MetasService {
                 todasConferidas: todasConferidas,
                 ha_valor: existeSerieValorRealizado,
                 nao_enviada: nao_enviada,
-                pode_editar: status
-                    ? status.aguarda_complementacao
-                        ? true
-                        : status.aguarda_cp || status.conferida
-                          ? false
-                          : metaEstaFaseColeta
-                    : metaEstaFaseColeta,
+                pode_editar: calcPodeEditarPontoFocal(),
             };
         } else {
             return {
@@ -685,6 +679,16 @@ export class MetasService {
                 nao_enviada: nao_enviada,
                 pode_editar: true,
             };
+        }
+
+        function calcPodeEditarPontoFocal(): Boolean {
+            if (!status) return metaEstaFaseColeta;
+
+            if (status.aguarda_complementacao) return true;
+
+            if (status.aguarda_cp || status.conferida) return false;
+
+            return metaEstaFaseColeta;
         }
     }
 
