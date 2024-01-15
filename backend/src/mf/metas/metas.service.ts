@@ -681,7 +681,7 @@ export class MetasService {
             };
         }
 
-        function calcPodeEditarPontoFocal(): Boolean {
+        function calcPodeEditarPontoFocal(): boolean {
             if (!status) return metaEstaFaseColeta;
 
             if (status.aguarda_complementacao) return true;
