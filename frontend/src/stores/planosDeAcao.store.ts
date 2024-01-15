@@ -107,7 +107,12 @@ export const usePlanosDeAçãoStore = defineStore('planosDeAção', {
       custo: emFoco?.custo || null,
       custo_percentual: emFoco?.custo_percentual || null,
       orgao_id: emFoco?.orgao?.id || 0,
-      prazo_contramedida: emFoco?.prazo_contramedida ? dateTimeToDate(emFoco.prazo_contramedida) : null,
+      prazo_contramedida: emFoco?.prazo_contramedida
+        ? dateTimeToDate(emFoco.prazo_contramedida)
+        : null,
+      data_termino: emFoco?.data_termino
+        ? dateTimeToDate(emFoco.data_termino)
+        : null,
       projeto_risco_id: Number(route?.params?.riscoId),
     }),
   },
