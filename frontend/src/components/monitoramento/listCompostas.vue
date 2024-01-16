@@ -58,7 +58,7 @@ function openParent(e) {
         Solicitar complementação
       </button>
       <button
-        v-if="c.variaveis?.series?.some((x) => x.pode_editar === true)"
+        v-if="c.variaveis.some((x) => x?.series.some((y) => y.pode_editar === true))"
         type="button"
         class="ml2 btn"
         @click.stop="editPeriodoEmLote(parent, c, { apenasVazias: true })"
