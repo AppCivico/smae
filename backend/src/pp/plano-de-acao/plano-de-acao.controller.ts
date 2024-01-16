@@ -37,7 +37,7 @@ export class PlanoAcaoController {
         @Body() dto: CreatePlanoAcaoDto,
         @CurrentUser() user: PessoaFromJwt
     ): Promise<RecordWithId> {
-        await this.projetoService.findOne(params.id, user, 'ReadWrite');
+        await this.projetoService.findOne(params.id, user, 'ReadWriteTeam');
 
         return await this.planoAcaoService.create(params.id, dto, user);
     }
@@ -75,7 +75,7 @@ export class PlanoAcaoController {
         @Body() updatePlanoAcaoDto: UpdatePlanoAcaoDto,
         @CurrentUser() user: PessoaFromJwt
     ): Promise<RecordWithId> {
-        await this.projetoService.findOne(params.id, user, 'ReadWrite');
+        await this.projetoService.findOne(params.id, user, 'ReadWriteTeam');
 
         return await this.planoAcaoService.update(params.id2, updatePlanoAcaoDto, user);
     }
@@ -87,7 +87,7 @@ export class PlanoAcaoController {
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.ACCEPTED)
     async remove(@Param() params: FindTwoParams, @CurrentUser() user: PessoaFromJwt) {
-        await this.projetoService.findOne(params.id, user, 'ReadWrite');
+        await this.projetoService.findOne(params.id, user, 'ReadWriteTeam');
 
         await this.planoAcaoService.remove(params.id2, user);
         return '';
