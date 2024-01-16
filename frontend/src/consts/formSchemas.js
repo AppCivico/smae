@@ -1261,6 +1261,7 @@ export const variável = (singleIndicadores) => object()
       .label('Incluir variável supra regional')
       .nullable(),
     suspendida: boolean()
+      .label('Suspender variável e retirar do monitoramento físico')
       .nullable(),
     titulo: string()
       .required('Preencha o título'),
