@@ -350,7 +350,8 @@ export class MetasService {
         };
         delete (indicadorMeta as any).meta;
 
-        if (retorno.meta.totais.nao_enviadas > 0 && config.perfil === 'ponto_focal') retorno.botao_enviar_cp = true;
+        if (this.calcPodeEnviarCp(retorno.meta.totais) && config.perfil === 'ponto_focal')
+            retorno.botao_enviar_cp = true;
 
         // busca apenas iniciativas que tem nas variaveis
         const iniciativas = await this.getIniciativas(meta_id, dadosMetas);
@@ -374,7 +375,7 @@ export class MetasService {
                 ),
             };
 
-            if (retornoIniciativa.totais.nao_enviadas > 0 && config.perfil === 'ponto_focal')
+            if (this.calcPodeEnviarCp(retornoIniciativa.totais) && config.perfil === 'ponto_focal')
                 retorno.botao_enviar_cp = true;
 
             let atividadesComVarCount = retornoIniciativa.variaveis.length;
@@ -401,7 +402,8 @@ export class MetasService {
                     retornoIniciativa.atividades.push(atv);
                     atividadesComVarCount++;
 
-                    if (atv.totais.nao_enviadas > 0 && config.perfil === 'ponto_focal') retorno.botao_enviar_cp = true;
+                    if (this.calcPodeEnviarCp(atv.totais) && config.perfil === 'ponto_focal')
+                        retorno.botao_enviar_cp = true;
                 }
             }
 
@@ -409,6 +411,10 @@ export class MetasService {
         }
 
         return retorno;
+    }
+
+    private calcPodeEnviarCp(totais: { nao_enviadas: number; aguarda_complementacao: number }) {
+        return totais.nao_enviadas > 0 || totais.aguarda_complementacao > 0;
     }
 
     private calculaPermissoesFase(cicloFase: CicloFase, perfil: string): MfFasesPermissoesDto {
@@ -638,14 +644,7 @@ export class MetasService {
                 ? true
                 : false;
 
-        // se ja foi conferida, ou se já aguarda CP, claramente já foi enviada
-        // verifica se já foi enviada (se ta conferida, já foi enviada alguma vez)
-        // se ta aguardando_cp, tbm já foi enviado
-        // se tem valor, então suponhamos que não foi enviada ainda mas já foi preenchida
-        const nao_enviada =
-            (status && status.conferida === true) || (status && status.aguarda_cp === true)
-                ? false
-                : existeSerieValorRealizado;
+        const nao_enviada = calcNaoEnviada();
 
         let todasConferidas = true;
         let existeValorRealizado = false;
@@ -679,6 +678,20 @@ export class MetasService {
                 nao_enviada: nao_enviada,
                 pode_editar: true,
             };
+        }
+
+        function calcNaoEnviada(): boolean {
+            // se não tem status, nunca teve envio pela tela do Monitoramento/PDM,
+            // vamos trabalhar o status pela existência do valor da serie Realizado
+            // então suponhamos que não foi enviada ainda mas já foi preenchida
+            if (!status) return existeSerieValorRealizado;
+
+            // se aguarda complementação, não ta enviada
+            if (status.aguarda_complementacao) return true;
+
+            // se ja foi conferida, ou se já aguarda CP, claramente já foi enviada
+            // verifica se já foi enviada (se ta conferida, já foi enviada alguma vez)
+            return status.conferida === true || status.aguarda_cp === true;
         }
 
         function calcPodeEditarPontoFocal(): boolean {
