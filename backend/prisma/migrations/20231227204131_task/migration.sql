@@ -18,7 +18,7 @@ CREATE TABLE "task_queue" (
     "removido_em" TIMESTAMP(6),
     "trabalhou_em" TIMESTAMP(6),
     "erro_em" TIMESTAMP(6),
-    "erro_messagem" TEXT,
+    "erro_mensagem" TEXT,
 
     CONSTRAINT "task_queue_pkey" PRIMARY KEY ("id")
 );
