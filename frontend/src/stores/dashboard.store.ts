@@ -1,7 +1,9 @@
 import { defineStore } from 'pinia';
 
 // eslint-disable-next-line import/no-extraneous-dependencies
-import { DashboardItemComOpcoesDto, DashboardItemDto, DashboardLinhasDto, DashboardOptionDto } from '@/../../backend/src/dashboard/entities/dashboard.entity';
+import {
+  DashboardItemComOpcoesDto, DashboardItemDto, DashboardLinhasDto, DashboardOptionDto,
+} from '@/../../backend/src/dashboard/entities/dashboard.entity';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
@@ -46,7 +48,7 @@ export const useDashboardStore = defineStore('dashboard', {
 
       return (!id
         ? undefined
-        : lista.find(x => x.id === Number(id))
+        : lista.find((x) => x.id === Number(id))
       ) || null;
     },
 
@@ -62,6 +64,6 @@ export const useDashboardStore = defineStore('dashboard', {
       const { dashboardEmFoco, opçãoEmFoco } = this;
 
       return opçãoEmFoco?.url || dashboardEmFoco?.url || '';
-    }
+    },
   },
 });
