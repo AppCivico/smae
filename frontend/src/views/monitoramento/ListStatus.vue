@@ -1,6 +1,8 @@
 <script setup>
 import { Dashboard } from '@/components';
-import { useAuthStore, useCiclosStore, usePdMStore } from '@/stores';
+import { useAuthStore } from '@/stores/auth.store';
+import { useCiclosStore } from '@/stores/ciclos.store';
+import { usePdMStore } from '@/stores/pdm.store';
 import { storeToRefs } from 'pinia';
 import { ref } from 'vue';
 

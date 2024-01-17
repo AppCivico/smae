@@ -6,7 +6,9 @@ import { storeToRefs } from 'pinia';
 import { Dashboard } from '@/components';
 import { useRoute } from 'vue-router';
 import { default as AddEditCiclo } from '@/views/monitoramento/AddEditCiclo.vue';
-import { useAuthStore, useEditModalStore, useCiclosStore } from '@/stores';
+import { useAuthStore } from '@/stores/auth.store';
+import { useCiclosStore } from '@/stores/ciclos.store';
+import { useEditModalStore } from '@/stores/editModal.store';
 
 const route = useRoute();
 const { ciclo_id } = route.params;
