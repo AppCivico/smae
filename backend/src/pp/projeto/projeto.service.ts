@@ -518,6 +518,7 @@ export class ProjetoService {
                     {
                         ProjetoGrupoPortfolio: {
                             some: {
+                                removido_em: null,
                                 GrupoPortfolio: {
                                     removido_em: null,
                                     GrupoPortfolioPessoa: {
