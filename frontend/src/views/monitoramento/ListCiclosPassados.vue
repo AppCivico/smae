@@ -2,7 +2,8 @@
 import { ref, reactive } from 'vue';
 import { storeToRefs } from 'pinia';
 import { Dashboard } from '@/components';
-import { useAuthStore, useCiclosStore } from '@/stores';
+import { useAuthStore } from '@/stores/auth.store';
+import { useCiclosStore } from '@/stores/ciclos.store';
 
 const authStore = useAuthStore();
 const { permissions } = storeToRefs(authStore);
