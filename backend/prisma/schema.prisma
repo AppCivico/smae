@@ -3685,7 +3685,7 @@ model task_queue {
     trabalhou_em DateTime? @db.Timestamp(6)
 
     erro_em       DateTime? @db.Timestamp(6)
-    erro_messagem String?
+    erro_mensagem String?
 
     @@index([status])
 }

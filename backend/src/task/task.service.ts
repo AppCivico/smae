@@ -130,7 +130,7 @@ export class TaskService {
             iniciou_em: r.iniciou_em?.toISOString() ?? null,
             terminou_em: r.terminou_em?.toISOString() ?? null,
             erro_em: r.erro_em?.toISOString() ?? null,
-            erro_mensagem: r.erro_messagem,
+            erro_mensagem: r.erro_mensagem,
         };
     }
 
@@ -159,7 +159,7 @@ export class TaskService {
                         terminou_em: new Date(),
                         output: asObj,
                         erro_em: null,
-                        erro_messagem: null,
+                        erro_mensagem: null,
                     },
                 });
             }
@@ -263,7 +263,7 @@ export class TaskService {
                         data: {
                             status: 'errored',
                             erro_em: new Date(),
-                            erro_messagem: `${e}`,
+                            erro_mensagem: `${e}`,
                         },
                     });
 
@@ -274,7 +274,6 @@ export class TaskService {
     }
 
     async handleActiveJobs() {
-        // só processa a cada 32 vezes do outro loop
         // 64 * 250 = 16s
         if (++this.running_job_counter % 64 !== 0) return;
         this.running_job_counter = 0;
@@ -304,7 +303,7 @@ export class TaskService {
                 },
                 data: {
                     status: 'errored',
-                    erro_messagem: 'worked timed-out',
+                    erro_mensagem: 'worked timed-out',
                 },
             }),
         ]);
