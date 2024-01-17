@@ -126,6 +126,8 @@ iniciar();
   />
 
   <router-link
+    v-if="!permissõesDoProjetoEmFoco.apenas_leitura
+      || permissõesDoProjetoEmFoco.sou_responsavel"
     :to="{
       name: 'projetosNovoDocumento'
     }"

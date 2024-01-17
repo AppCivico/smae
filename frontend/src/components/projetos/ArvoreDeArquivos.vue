@@ -40,7 +40,6 @@ const éPossívelAbrir = (item) => !item.children?.length
   && !props.arquivosAgrupadosPorCaminho?.[item.caminho]?.length;
 
 </script>
-
 <template>
   <Transition name="fade">
     <ul
