@@ -8,6 +8,10 @@ const router = useRouter();
 const slots = useSlots();
 
 const props = defineProps({
+  nomeDaChaveDeAbas: {
+    type: String,
+    default: 'aba',
+  },
   nomeDaRotaRaiz: {
     type: String,
     default: '',
@@ -21,7 +25,7 @@ const props = defineProps({
 // PRA-FAZER: um registro secundário da aba aberta em paralelo à query na rota
 // para cobrir todas as bases. Infelizmente, não adiantará muito enquanto houver
 // chaves de rota no componente raiz. Ver `App.vue`.
-const abaAberta = computed(() => route.query.aba);
+const abaAberta = computed(() => route.query[props.nomeDaChaveDeAbas]);
 const dadosConsolidadosPorId = computed(() => Object.keys(slots).reduce((acc, cur) => {
   acc[cur] = {
     aberta: props.metaDadosPorId?.[cur]?.aberta,
@@ -50,7 +54,7 @@ function iniciar() {
       params: route.params,
       query: {
         ...route.query,
-        aba: hashDaAbaPadrão,
+        [props.nomeDaChaveDeAbas]: hashDaAbaPadrão,
       },
     });
   }
@@ -77,7 +81,7 @@ iniciar();
               params: $route.params,
               query: {
                 ...$route.query,
-                aba: dadosConsolidadosPorId[nomeDaAba].hash,
+                [nomeDaChaveDeAbas]: dadosConsolidadosPorId[nomeDaAba].hash,
               }
             }"
           >
