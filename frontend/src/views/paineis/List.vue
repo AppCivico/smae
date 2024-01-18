@@ -1,6 +1,8 @@
 <script setup>
 import { Dashboard } from '@/components';
-import { useAuthStore, useMetasStore, usePaineisStore } from '@/stores';
+import { useAuthStore } from '@/stores/auth.store';
+import { useMetasStore } from '@/stores/metas.store';
+import { usePaineisStore } from '@/stores/paineis.store';
 import { storeToRefs } from 'pinia';
 import { ref } from 'vue';
 
