@@ -18,6 +18,7 @@ export class ProjetoDto {
     meta: IdCodTituloDto | null;
     codigo: string | null;
     portfolio: IdTituloDto;
+    portfolios_compartilhados: IdTituloDto[];
 }
 
 export class ListProjetoDto {
@@ -199,6 +200,8 @@ export class ProjetoDetailDto {
     permissoes: ProjetoPermissoesDto;
 
     ano_orcamento: number[];
+
+    portfolios_compartilhados: IdTituloDto[] | null;
 
     regiao: IdDesc | null;
     logradouro_tipo: string | null;
