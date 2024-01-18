@@ -196,7 +196,7 @@ export default {
         class="inputtext light"
         :class="{ 'error': errors.nivel_regionalizacao }"
         :disabled="typeof singleIndicadores?.nivel_regionalizacao !== 'number'"
-        @change="estãoTodasAsRegiõesSelecionadas = false"
+        @change="() => { estãoTodasAsRegiõesSelecionadas = true; }"
       >
         <option
           :value="0"
