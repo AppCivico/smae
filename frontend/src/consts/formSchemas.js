@@ -733,7 +733,7 @@ export const projeto = object()
       .label('Região')
       .nullable(),
     responsaveis_no_orgao_gestor: array()
-      .label('Responsáveis pelo acompanhamento')
+      .label('Responsável pelo acompanhamento')
       .nullable(),
     responsavel_id: number()
       .label('Gerente do projeto')
