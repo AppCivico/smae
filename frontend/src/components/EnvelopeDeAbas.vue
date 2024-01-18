@@ -111,7 +111,11 @@ iniciar();
   </div>
 </template>
 <style lang="less">
-.abas__navegação {}
+.abas__navegação {
+  max-width: max-content;
+  margin-left: auto;
+  margin-right: auto;
+}
 
 .abas__lista {
   > li {
