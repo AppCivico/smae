@@ -237,6 +237,7 @@ onUpdated(() => { start(); });
                       <svg
                         width="24"
                         height="24"
+                        color="#F2890D"
                       ><use xlink:href="#i_alert" /></svg><div>
                         Suspensa do monitoramento físico em {{ dateToField(v.suspendida_em) }}
                       </div>
