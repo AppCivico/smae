@@ -29,6 +29,17 @@ export class CreateProjetoDto {
     portfolio_id: number;
 
     /**
+     * IDs de Portfolios que também terão "acesso" ao projeto
+     * @example "[]"
+     */
+    @IsArray({ message: '$property| precisa ser um array' })
+    @ArrayMinSize(0, { message: '$property| precisa ter um item' })
+    @ArrayMaxSize(100, { message: '$property| precisa ter no máximo 100 items' })
+    @IsInt({ each: true, message: '$property| Cada item precisa ser um número inteiro' })
+    @ValidateIf((object, value) => value !== null)
+    portfolios_compartilhados?: number[] |null;
+
+    /**
      * ID do órgão gestor
      * @example 0
      */

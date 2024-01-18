@@ -250,6 +250,10 @@ model Pessoa {
     view_pessoa_gestor_de_projeto      view_pessoa_gestor_de_projeto[]
     view_pessoa_colaborador_de_projeto view_pessoa_colaborador_de_projeto[]
 
+    projetosCompartilhadosEmPortfolioQueCriei PortfolioProjetoCompartilhado[] @relation("Criador")
+    projetosCompartilhadosEmPortfolioQueRemovi PortfolioProjetoCompartilhado[] @relation("Removedor")
+    projetosCompartilhadosEmPortfolioQueAtualizei PortfolioProjetoCompartilhado[] @relation("Atualizador")
+
     task_queue task_queue[]
 
     @@index([email])
@@ -2623,6 +2627,7 @@ model Portfolio {
     PortfolioDotacaoProcessoNota PortfolioDotacaoProcessoNota[]
     ImportacaoLog                ImportacaoOrcamento[]
     PortfolioGrupoPortfolio      PortfolioGrupoPortfolio[]
+    projetosCompartilhados       PortfolioProjetoCompartilhado[]
 
     @@map("portfolio")
 }
@@ -2683,6 +2688,8 @@ model Projeto {
     id           Int       @id @default(autoincrement())
     portfolio_id Int
     portfolio    Portfolio @relation(fields: [portfolio_id], references: [id])
+
+    portfolios_compartilhados PortfolioProjetoCompartilhado[]
 
     meta_id       Int?
     iniciativa_id Int?
@@ -2857,6 +2864,33 @@ model Projeto {
 
     @@index([removido_em])
     @@map("projeto")
+}
+
+model PortfolioProjetoCompartilhado {
+    id Int @id @default(autoincrement())
+
+    portfolio_id Int
+    portfolio Portfolio @relation(fields: [portfolio_id], references: [id])
+
+    projeto_id Int
+    projeto Projeto @relation(fields: [projeto_id], references: [id])
+
+    criado_por Int
+    criado_em DateTime
+    removido_por Int?
+    removido_em DateTime?
+    
+    // Colunas de atualização não são utilizadas por agora.
+    // Mas se pedirem para dados adicionais neste relacionamento
+    // Já teremos estes campos prontos.
+    atualizado_por Int?
+    atualizado_em DateTime?
+
+    criador   Pessoa  @relation("Criador", fields: [criado_por], references: [id])
+    removedor Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
+    atualizador Pessoa? @relation("Atualizador", fields: [atualizado_por], references: [id])
+
+    @@map("portfolio_projeto_compartilhado")
 }
 
 model ProjetoEquipe {

@@ -260,9 +260,20 @@ export class ProjetoService {
         const { origem_tipo, meta_id, atividade_id, iniciativa_id, origem_outro } = await this.processaOrigem(dto);
         const { orgao_gestor_id, responsaveis_no_orgao_gestor } = await this.processaOrgaoGestor(dto, portfolio, true);
 
-        console.log(dto);
-
         if (!origem_tipo) throw new Error('origem_tipo deve estar definido no create de Projeto');
+
+        if (dto.portfolios_compartilhados?.length) {
+            // Os portfolios compartilhados obrigatoriamente devem possuir ao menos um órgão em comum.
+            const portfoliosCompartilhados = portfolios.filter(p =>  dto.portfolios_compartilhados?.some(x => x == p.id));
+
+            for (const portfolioCompartilhado of portfoliosCompartilhados) {
+                if (!portfolioCompartilhado.orgaos.some(pco => { return portfolio.orgaos.includes(pco) }))
+                    throw new HttpException(
+                        'portfolios_compartilhados| Portfolio compartilhado deve conter ao menos um órgão em comum com o Portfolio principal.',
+                        400
+                    );
+            }
+        }
 
         const created = await this.prisma.$transaction(
             async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
@@ -309,6 +320,18 @@ export class ProjetoService {
                         publico_alvo: '',
                         status: 'Registrado',
                         fase: StatusParaFase['Registrado'],
+
+                        portfolios_compartilhados: {
+                            createMany: {
+                                data: dto.portfolios_compartilhados? dto.portfolios_compartilhados.map(pc => {
+                                    return {
+                                        portfolio_id: pc,
+                                        criado_em: new Date(Date.now()),
+                                        criado_por: user.id
+                                    }
+                                }) : []
+                            }
+                        }
                     },
                     select: { id: true },
                 });
@@ -417,6 +440,16 @@ export class ProjetoService {
                 portfolio: {
                     select: { id: true, titulo: true },
                 },
+                portfolios_compartilhados: {
+                    where: { removido_em: null },
+                    select: {
+                        portfolio: {
+                            select: {
+                                id: true, titulo: true
+                            }
+                        }
+                    }
+                }
             },
             orderBy: { codigo: 'asc' },
         });
@@ -444,6 +477,12 @@ export class ProjetoService {
                 arquivado: row.arquivado,
                 eh_prioritario: row.eh_prioritario,
                 codigo: row.codigo,
+                portfolios_compartilhados: row.portfolios_compartilhados.map(pc => {
+                    return {
+                        id: pc.portfolio.id,
+                        titulo: pc.portfolio.titulo
+                    }
+                })
             });
         }
 
@@ -832,6 +871,15 @@ export class ProjetoService {
                 logradouro_nome: true,
                 logradouro_numero: true,
                 logradouro_cep: true,
+
+                portfolios_compartilhados: {
+                    where: { removido_em: null },
+                    select: {
+                        portfolio: {
+                            select: { id: true, titulo: true }
+                        }
+                    }
+                }
             },
         });
         if (!projeto) throw new HttpException('Projeto não encontrado ou sem permissão para acesso', 400);
@@ -907,6 +955,10 @@ export class ProjetoService {
                     descricao: o.orgao.descricao,
                 };
             }),
+
+            portfolios_compartilhados: projeto.portfolios_compartilhados ? projeto.portfolios_compartilhados.map(pc => {
+                return { id: pc.portfolio.id, titulo: pc.portfolio.titulo }
+            }) : null
         };
     }
 
@@ -1223,8 +1275,6 @@ export class ProjetoService {
             false
         );
 
-        // orgao_responsavel_id
-
         const now = new Date(Date.now());
 
         await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient) => {
@@ -1239,6 +1289,36 @@ export class ProjetoService {
             dto.objetivo = HtmlSanitizer(dto.objetivo);
             dto.publico_alvo = HtmlSanitizer(dto.publico_alvo);
             dto.nao_escopo = HtmlSanitizer(dto.nao_escopo);
+
+            if (dto.portfolios_compartilhados?.length) {
+                const { deletedPC, createdPC } = this.checkDiffPortfoliosCompartilhados(projeto.portfolios_compartilhados?.map(pc => pc.id), dto.portfolios_compartilhados);
+    
+                if (deletedPC.length) {
+                    await prismaTx.portfolioProjetoCompartilhado.updateMany({
+                        where: {
+                            portfolio_id: {in: deletedPC},
+                            projeto_id: projetoId
+                        },
+                        data: {
+                            removido_em: now,
+                            removido_por: user.id
+                        }
+                    })
+                };
+
+                if (createdPC.length) {
+                    await prismaTx.portfolioProjetoCompartilhado.createMany({
+                        data: createdPC.map(cpc => {
+                            return {
+                                projeto_id: projetoId,
+                                portfolio_id: cpc,
+                                criado_em: now,
+                                criado_por: user.id
+                            }
+                        })
+                    })
+                }
+            }
 
             await prismaTx.projeto.update({
                 where: { id: projetoId },
@@ -1323,6 +1403,28 @@ export class ProjetoService {
         });
 
         return { id: projetoId };
+    }
+
+    private checkDiffPortfoliosCompartilhados(currentPortCompartilhados: number[] | undefined, newPortCompartilhados: number[]) {
+        let deleted: number[] = [];
+        let created: number[] = [];
+
+        if (!currentPortCompartilhados) {
+            created = newPortCompartilhados;
+        } else {
+            deleted = currentPortCompartilhados.filter(cpc => {
+                return !newPortCompartilhados.find(npc => npc == cpc)
+            });
+    
+            created = newPortCompartilhados.filter(npc => {
+                return !currentPortCompartilhados.find(cpc => cpc == npc)
+            });
+        }
+
+        return {
+            deletedPC: deleted,
+            createdPC: created,
+        }
     }
 
     private async upsertGrupoPort(
