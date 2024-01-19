@@ -43,7 +43,12 @@ const dadosParaFiltros = computed(() => {
   if (Array.isArray(Metas.value)) {
     Metas.value.forEach((x) => {
       metas[x.id] = x;
+      metas[x.id].órgãos = [];
+      metas[x.id].pessoas = [];
+
       x.orgaos_participantes.forEach((y) => {
+        metas[x.id].órgãos.push(y.orgao.id);
+
         if (!órgãos[y.orgao.id]) {
           órgãos[y.orgao.id] = { ...y.orgao, pessoas: {} };
         }
@@ -56,6 +61,7 @@ const dadosParaFiltros = computed(() => {
 
         if (y.responsavel) {
           y.participantes.forEach((z) => {
+            metas[x.id].pessoas.push(z.id);
             if (!responsáveis[z.id]) {
               responsáveis[z.id] = { ...z, órgãos: {} };
             }
@@ -166,12 +172,11 @@ if (!Array.isArray(Metas.value) || !Metas.value.length) {
                 >Meta</label>
                 <select
                   id="filtro-de-meta"
+                  :disabled="!dadosParaFiltros.metas.length"
                   class="inputtext light mb1"
                   name="filtro-de-meta"
                   @change="({ target }) => {
                     atualizarFiltro('meta', target.value);
-                    atualizarFiltro('orgao', undefined);
-                    atualizarFiltro('responsavel', undefined);
                   }"
                 >
                   <option :value="undefined" />
@@ -181,6 +186,10 @@ if (!Array.isArray(Metas.value) || !Metas.value.length) {
                     :selected="Number($route.query.meta) === item.id"
                     :value="item.id"
                     :title="item.titulo?.length > 36 ? item.titulo : undefined"
+                    :hidden="($route.query.responsavel
+                      && !item.pessoas.includes(Number($route.query.responsavel)))
+                      || ($route.query.orgao
+                        && !item.órgãos.includes(Number($route.query.orgao)))"
                   >
                     {{ item.codigo }} - {{ truncate(item.titulo, 36) }}
                   </option>
@@ -196,7 +205,9 @@ if (!Array.isArray(Metas.value) || !Metas.value.length) {
                   class="inputtext light mb1"
                   name="filtro-de-orgao"
                   :disabled="!dadosParaFiltros.órgãos.length || $route.query.meta"
-                  @change="({ target }) => atualizarFiltro('orgao', target.value)"
+                  @change="({ target }) => {
+                    atualizarFiltro('orgao', target.value);
+                  }"
                 >
                   <option :value="undefined" />
                   <option
@@ -222,7 +233,9 @@ if (!Array.isArray(Metas.value) || !Metas.value.length) {
                   class="inputtext light mb1"
                   name="filtro-de-responsavel"
                   :disabled="!dadosParaFiltros.responsáveis.length || $route.query.meta"
-                  @change="({ target }) => atualizarFiltro('responsavel', target.value)"
+                  @change="({ target }) => {
+                    atualizarFiltro('responsavel', target.value);
+                  }"
                 >
                   <option :value="undefined" />
                   <option
