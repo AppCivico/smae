@@ -172,6 +172,7 @@ export const useProjetosStore = defineStore('projetos', {
         }
 
         this.chamadasPendentes.emFoco = false;
+        this.erro = null;
         return resposta;
       } catch (erro) {
         this.erro = erro;
@@ -244,6 +245,7 @@ export const useProjetosStore = defineStore('projetos', {
       orgao_gestor_id: emFoco?.orgao_gestor?.id || null,
       origem_outro: emFoco?.origem_outro || '',
       pdm_escolhido: emFoco?.meta?.pdm_id || null,
+      portfolios_compartilhados: emFoco?.portfolios_compartilhados?.map((x) => x.id) || null,
       previsao_custo: emFoco?.previsao_custo || 0,
       previsao_inicio: dateTimeToDate(emFoco?.previsao_inicio) || null,
       previsao_termino: dateTimeToDate(emFoco?.previsao_termino) || null,
