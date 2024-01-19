@@ -66,10 +66,20 @@ const listasAgrupadas = computed(() => listaFiltradaPorTermoDeBusca.value?.reduc
   if (!acc[cur.portfolio.id]) {
     acc[cur.portfolio.id] = { ...cur.portfolio, lista: [] };
   }
+
+  if (Array.isArray(cur.portfolios_compartilhados)) {
+    cur.portfolios_compartilhados.forEach((x) => {
+      if (!acc[x.id]) {
+        acc[x.id] = { ...x, lista: [] };
+      }
+      acc[x.id].lista.push(cur);
+    });
+  }
+
   acc[cur.portfolio.id].lista.push(cur);
+
   return acc;
 }, {}) || {});
-
 </script>
 <template>
   <div class="flex spacebetween center mb2">
