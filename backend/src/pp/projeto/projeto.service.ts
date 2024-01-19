@@ -265,14 +265,7 @@ export class ProjetoService {
         if (dto.portfolios_compartilhados?.length) {
             // Os portfolios compartilhados obrigatoriamente devem possuir ao menos um órgão em comum.
             const portfoliosCompartilhados = portfolios.filter(p =>  dto.portfolios_compartilhados?.some(x => x == p.id));
-
-            for (const portfolioCompartilhado of portfoliosCompartilhados) {
-                if (!portfolioCompartilhado.orgaos.some(pco => { return portfolio.orgaos.includes(pco) }))
-                    throw new HttpException(
-                        'portfolios_compartilhados| Portfolio compartilhado deve conter ao menos um órgão em comum com o Portfolio principal.',
-                        400
-                    );
-            }
+            await this.checkPortCompartilhadoOrgaos(portfolio, portfoliosCompartilhados);
         }
 
         const created = await this.prisma.$transaction(
@@ -341,6 +334,16 @@ export class ProjetoService {
         );
 
         return created;
+    }
+
+    private async checkPortCompartilhadoOrgaos(portPrincipal: PortfolioDto, portCompartilhados: PortfolioDto[]) {
+        for (const portfolioCompartilhado of portCompartilhados) {
+            if (!portfolioCompartilhado.orgaos.some(pco => { return portPrincipal.orgaos.includes(pco) }))
+                throw new HttpException(
+                    'portfolios_compartilhados| Portfolio compartilhado deve conter ao menos um órgão em comum com o Portfolio principal.',
+                    400
+                );
+        }
     }
 
     async findAllIds(
@@ -1291,6 +1294,9 @@ export class ProjetoService {
             dto.nao_escopo = HtmlSanitizer(dto.nao_escopo);
 
             if (dto.portfolios_compartilhados?.length) {
+                const portfoliosCompartilhados = portfolios.filter(p =>  dto.portfolios_compartilhados?.some(x => x == p.id));
+                await this.checkPortCompartilhadoOrgaos(portfolio, portfoliosCompartilhados);
+                
                 const { deletedPC, createdPC } = this.checkDiffPortfoliosCompartilhados(projeto.portfolios_compartilhados?.map(pc => pc.id), dto.portfolios_compartilhados);
     
                 if (deletedPC.length) {
