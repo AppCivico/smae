@@ -429,7 +429,6 @@ function filterResponsible(orgao_id) {
             </div>
             <div style="flex-basis: 30px;">
               <a
-                v-if="index"
                 class="addlink mt1"
                 @click="removeOrgao(orgaos_participantes,index)"
               ><svg
