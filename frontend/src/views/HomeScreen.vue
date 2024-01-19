@@ -179,7 +179,7 @@ if (!Array.isArray(Metas.value) || !Metas.value.length) {
                     atualizarFiltro('meta', target.value);
                   }"
                 >
-                  <option :value="undefined" />
+                  <option value="" />
                   <option
                     v-for="item in dadosParaFiltros.metas"
                     :key="item.id"
@@ -209,7 +209,7 @@ if (!Array.isArray(Metas.value) || !Metas.value.length) {
                     atualizarFiltro('orgao', target.value);
                   }"
                 >
-                  <option :value="undefined" />
+                  <option value="" />
                   <option
                     v-for="item in dadosParaFiltros.órgãos"
                     :key="item.id"
@@ -237,7 +237,7 @@ if (!Array.isArray(Metas.value) || !Metas.value.length) {
                     atualizarFiltro('responsavel', target.value);
                   }"
                 >
-                  <option :value="undefined" />
+                  <option value="" />
                   <option
                     v-for="item in dadosParaFiltros.responsáveis"
                     :key="item.id"
