@@ -338,6 +338,9 @@ export class ProjetoService {
 
     private async checkPortCompartilhadoOrgaos(portPrincipal: PortfolioDto, portCompartilhados: PortfolioDto[]) {
         for (const portfolioCompartilhado of portCompartilhados) {
+            if (portfolioCompartilhado.id == portPrincipal.id)
+                throw new HttpException('portfolios_compartilhados| Portfolio compartilhado deve ser diferente do Portfolio principal.', 400);
+
             if (!portfolioCompartilhado.orgaos.map(o => o.id).some(pco => { return portPrincipal.orgaos.map(o => o.id).includes(pco) }))
                 throw new HttpException(
                     'portfolios_compartilhados| Portfolio compartilhado deve conter ao menos um órgão em comum com o Portfolio principal.',
