@@ -75,6 +75,15 @@ const montarCampoEstático = ref(false);
 const portfolioId = Number.parseInt(route.query.portfolio_id, 10) || undefined;
 const possíveisGestores = ref([]);
 const possíveisColaboradores = ref([]);
+const portfóliosDisponíveis = computed(() => {
+  const órgãosDoPortfólioCorrente = portfolioStore.portfoliosPorId[emFoco.value.portfolio_id].orgaos
+    .map((x) => x.id);
+
+  return portfolioStore.lista
+    .filter((x) => x.id !== emFoco.value.portfolio_id
+      // limitar portfólios disponíveis aqueles com órgãos em comum com o principal
+      && x.orgaos.some((y) => órgãosDoPortfólioCorrente.includes(y.id)));
+});
 
 const possíveisGestoresPorÓrgãoId = computed(() => possíveisGestores.value
   .reduce((acc, cur) => {
@@ -415,6 +424,36 @@ watch(emFoco, () => {
         <ErrorMessage
           class="error-msg mb1"
           name="status"
+        />
+      </div>
+    </div>
+
+    <div
+      v-if="projetoId"
+      class="flex g2 mb1"
+    >
+      <div class="f1 mb1">
+        <LabelFromYup
+          name="portfolios_compartilhados"
+          :schema="schema"
+        />
+
+        <AutocompleteField
+          name="portfolios_compartilhados"
+          :controlador="{
+            busca: '',
+            participantes: values.portfolios_compartilhados || []
+          }"
+          :grupo="portfóliosDisponíveis"
+          :class="{
+            error: errors.portfolios_compartilhados,
+            loading: portfolioStore.chamadasPendentes.lista
+          }"
+          label="titulo"
+        />
+        <ErrorMessage
+          name="portfolios_compartilhados"
+          class="error-msg"
         />
       </div>
     </div>
