@@ -82,24 +82,24 @@ const listasAgrupadas = computed(() => listaFiltradaPorTermoDeBusca.value?.reduc
 }, {}) || {});
 </script>
 <template>
-  <div class="flex spacebetween center mb2">
+  <div class="flex spacebetween center mb2 g2">
     <TítuloDePágina>
       Projetos
     </TítuloDePágina>
 
-    <hr class="ml2 f1">
+    <hr class="f1">
 
     <router-link
       v-if="temPermissãoPara('Projeto.administrador_no_orgao')"
       :to="{ name: 'projetosCriar' }"
-      class="btn big ml1"
+      class="btn big"
     >
       Novo projeto
     </router-link>
   </div>
 
-  <div class="flex center mb2 spacebetween">
-    <div class="f1 mr1">
+  <div class="flex center mb2 spacebetween g2">
+    <div class="f1">
       <label class="label tc300">Filtrar por status</label>
       <AutocompleteField
         name="orgaos"
@@ -112,37 +112,45 @@ const listasAgrupadas = computed(() => listaFiltradaPorTermoDeBusca.value?.reduc
         })"
       />
     </div>
-    <hr class="ml2 f1">
-    <router-link
-      v-show="route.name !== 'projetosListarArquivados'"
-      :to="{
-        name: 'projetosListarArquivados',
-        query: route.query,
-      }"
-      class="btn bgnone outline ml1"
-    >
-      Arquivados
-    </router-link>
-    <router-link
-      v-show="route.name !== 'projetosListarPrioritários'"
-      :to="{
-        name: 'projetosListarPrioritários',
-        query: route.query,
-      }"
-      class="btn bgnone outline ml1"
-    >
-      Ativos
-    </router-link>
-    <router-link
-      v-show="route.name !== 'projetosListar'"
-      :to="{
-        name: 'projetosListar',
-        query: route.query,
-      }"
-      class="btn bgnone outline ml1"
-    >
-      Todos
-    </router-link>
+    <hr class="f1">
+    <nav class="flex g1">
+      <router-link
+        :to="{
+          name: 'projetosListarArquivados',
+          query: route.query,
+        }"
+        :class="{
+          tcamarelo: route.name === 'projetosListarArquivados'
+        }"
+        class="btn bgnone outline tcprimary"
+      >
+        Arquivados
+      </router-link>
+      <router-link
+        :to="{
+          name: 'projetosListarPrioritários',
+          query: route.query,
+        }"
+        :class="{
+          tcamarelo: route.name === 'projetosListarPrioritários'
+        }"
+        class="btn bgnone outline tcprimary"
+      >
+        Ativos
+      </router-link>
+      <router-link
+        :to="{
+          name: 'projetosListar',
+          query: route.query,
+        }"
+        :class="{
+          tcamarelo: route.name === 'projetosListar'
+        }"
+        class="btn bgnone outline tcprimary"
+      >
+        Todos
+      </router-link>
+    </nav>
   </div>
 
   <div class="flex center mb2 spacebetween">
