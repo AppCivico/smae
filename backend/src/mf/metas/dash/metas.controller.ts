@@ -31,9 +31,10 @@ export class MfDashMetasController {
         const start = Date.now();
         const config = await this.mfService.pessoaAcessoPdm(user);
         const cicloFisicoAtivo = await this.mfService.cicloFisicoAtivo();
+        const metas = await this.metasDashService.metas(config, cicloFisicoAtivo.id, params);
 
         return {
-            ...(await this.metasDashService.metas(config, cicloFisicoAtivo.id, params)),
+            ...metas,
             requestInfo: { queryTook: Date.now() - start },
         };
     }
