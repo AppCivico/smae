@@ -19,6 +19,7 @@ WHERE
     mr.coordenador_responsavel_cp;
 
 
+-- TODO rever essas views, pois existem tbm os relacionamentos de iniciativa e atividade
 CREATE OR REPLACE VIEW view_meta_responsavel_orcamento AS
 SELECT
     mr.meta_id, mr.pessoa_id
@@ -31,7 +32,7 @@ FROM
     join privilegio p on p.id = priv.privilegio_id
     join public.pessoa pessoa on pessoa.id = pp.pessoa_id AND pessoa.desativado = false
 WHERE mo.responsavel AND p.codigo in ('CadastroMeta.orcamento', 'CadastroMeta.administrador_orcamento' )
-group by 1, 2
+group by 1, 2;
 
 CREATE OR REPLACE VIEW view_pessoa_espectador_de_projeto AS
 SELECT

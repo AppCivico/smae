@@ -830,6 +830,8 @@ model Meta {
     FormulaCompostaCicloFisicoQualitativo FormulaCompostaCicloFisicoQualitativo[]
     FormulaCompostaCicloFisicoDocumento   FormulaCompostaCicloFisicoDocumento[]
     PdmOrcamentoRealizadoConfig           PdmOrcamentoRealizadoConfig[]
+    MetaStatusConsolidadoCf               MetaStatusConsolidadoCf[]
+    ViewMetaPessoaResponsavelNaCp         view_meta_pessoa_responsavel_na_cp[]
 
     @@index([pdm_id])
     @@map("meta")
@@ -1770,6 +1772,7 @@ model CicloFisico {
 
     VariaveisSuspensasCicloBase     VariavelSuspensaControle[] @relation("CicloFisicoBase")
     VariaveisSuspensasCicloCorrente VariavelSuspensaControle[] @relation("CicloFisicoCorrente")
+    MetaStatusConsolidadoCf         MetaStatusConsolidadoCf[]
 
     @@index([pdm_id])
     @@index([data_ciclo])
@@ -3521,6 +3524,7 @@ view view_meta_pessoa_responsavel_na_cp {
     meta_id   Int
     pessoa_id Int
     pessoa    Pessoa @relation(fields: [pessoa_id], references: [id])
+    meta      Meta   @relation(fields: [meta_id], references: [id])
     orgao_id  Int
 }
 
@@ -3723,3 +3727,41 @@ model task_queue {
 
     @@index([status])
 }
+
+model feature_flag {
+    id Int @id @default(autoincrement())
+
+    panorama Boolean @default(false)
+    mf_v2    Boolean @default(false)
+}
+
+model MetaStatusConsolidadoCf {
+    meta_id Int @id
+
+    meta Meta @relation(fields: [meta_id], references: [id])
+
+    ciclo_fisico_id Int
+    ciclo_fisico    CicloFisico @relation(fields: [ciclo_fisico_id], references: [id])
+
+    variaveis_total                     Int[]
+    variaveis_preenchidas               Int[]
+    variaveis_enviadas                  Int[]
+    variaveis_conferidas                Int[]
+    variaveis_aguardando_cp             Int[]
+    variaveis_aguardando_complementacao Int[]
+    cronograma_total                    Int[]
+    cronograma_preenchido               Int[]
+    orcamento_total                     Int[]
+    orcamento_preenchido                Int[]
+
+    analise_qualitativa_enviada Boolean
+    risco_enviado               Boolean
+    fechamento_enviado          Boolean
+
+    pendente_cp Boolean
+
+    atualizado_em DateTime
+
+    @@map("meta_status_consolidado_cf")
+}
+
