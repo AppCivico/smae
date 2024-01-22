@@ -1,15 +1,16 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
-import { MetaStatusConsolidadoCf, PessoaAcessoPdm } from '@prisma/client';
+import { MetaStatusConsolidadoCf } from '@prisma/client';
 import { IdCodTituloDto } from '../../../common/dto/IdCodTitulo.dto';
 import { PrismaService } from '../../../prisma/prisma.service';
 import { FilterMfDashMetasDto, ListMfDashMetasDto } from './dto/metas.dto';
+import { MfPessoaAcessoPdm } from '../../mf.service';
 
 @Injectable()
 export class MfDashMetasService {
     constructor(private readonly prisma: PrismaService) {}
 
     async metas(
-        config: PessoaAcessoPdm,
+        config: MfPessoaAcessoPdm,
         cicloFisicoId: number,
         params: FilterMfDashMetasDto
     ): Promise<ListMfDashMetasDto> {

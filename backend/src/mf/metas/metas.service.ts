@@ -1,5 +1,5 @@
 import { BadRequestException, HttpException, Injectable } from '@nestjs/common';
-import { CicloFase, PessoaAcessoPdm, Prisma, Serie } from '@prisma/client';
+import { CicloFase, Prisma, Serie } from '@prisma/client';
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import { Date2YMD, DateYMD } from '../../common/date2ymd';
 import { IdTituloDto } from '../../common/dto/IdTitulo.dto';
@@ -9,7 +9,7 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { UploadService } from '../../upload/upload.service';
 import { SerieValorNomimal } from '../../variavel/entities/variavel.entity';
 import { VariavelService } from '../../variavel/variavel.service';
-import { MfService } from './../mf.service';
+import { MfService, MfPessoaAcessoPdm } from './../mf.service';
 import {
     CamposRealizado,
     CamposRealizadoParaSerie,
@@ -90,7 +90,7 @@ export class MetasService {
         private readonly mfService: MfService
     ) {}
 
-    async metas(config: PessoaAcessoPdm, cicloAtivoId: number, params: FilterMfMetasDto): Promise<MfMetaDto[]> {
+    async metas(config: MfPessoaAcessoPdm, cicloAtivoId: number, params: FilterMfMetasDto): Promise<MfMetaDto[]> {
         const rows = await this.prisma.meta.findMany({
             where: {
                 id: { in: [...config.metas_cronograma, ...config.metas_variaveis] },
@@ -273,7 +273,7 @@ export class MetasService {
 
     async metaVariaveis(
         meta_id: number,
-        config: PessoaAcessoPdm,
+        config: MfPessoaAcessoPdm,
         cicloFisicoAtivo: CicloAtivoDto,
         user: PessoaFromJwt,
         mesAnterior: boolean
@@ -510,7 +510,7 @@ export class MetasService {
 
     private async calcSerieVariaveis(
         map: VariavelDetalhePorID,
-        config: PessoaAcessoPdm,
+        config: MfPessoaAcessoPdm,
         ciclo: CicloAtivoDto,
         metaEstaFaseColeta: boolean,
         mesAnterior: boolean
@@ -623,7 +623,7 @@ export class MetasService {
     }
 
     private calculaPermissoesSerieCorrente(
-        config: PessoaAcessoPdm,
+        config: MfPessoaAcessoPdm,
         status: {
             aguarda_complementacao: boolean;
             aguarda_cp: boolean;
@@ -1061,7 +1061,7 @@ export class MetasService {
 
     async addMetaVariavelAnaliseQualitativaDocumento(
         dto: VariavelAnaliseQualitativaDocumentoDto,
-        config: PessoaAcessoPdm,
+        config: MfPessoaAcessoPdm,
         user: PessoaFromJwt
     ): Promise<RecordWithId> {
         const now = new Date(Date.now());
@@ -1097,7 +1097,7 @@ export class MetasService {
         return { id: id };
     }
 
-    async deleteMetaVariavelAnaliseQualitativaDocumento(id: number, config: PessoaAcessoPdm, user: PessoaFromJwt) {
+    async deleteMetaVariavelAnaliseQualitativaDocumento(id: number, config: MfPessoaAcessoPdm, user: PessoaFromJwt) {
         const arquivo = await this.prisma.variavelCicloFisicoDocumento.findFirst({
             where: {
                 id: id,
@@ -1123,7 +1123,7 @@ export class MetasService {
         });
     }
 
-    async addVariavelConferida(dto: VariavelConferidaDto, config: PessoaAcessoPdm, user: PessoaFromJwt) {
+    async addVariavelConferida(dto: VariavelConferidaDto, config: MfPessoaAcessoPdm, user: PessoaFromJwt) {
         const now = new Date(Date.now());
         const dateYMD = Date2YMD.toString(dto.data_valor);
         const meta_id = await this.variavelService.getMetaIdDaVariavel(dto.variavel_id, this.prisma);
@@ -1202,7 +1202,7 @@ export class MetasService {
 
     async addVariavelPedidoComplementacao(
         dto: VariavelComplementacaoDto,
-        config: PessoaAcessoPdm,
+        config: MfPessoaAcessoPdm,
         user: PessoaFromJwt
     ) {
         const now = new Date(Date.now());
@@ -1289,7 +1289,7 @@ export class MetasService {
 
     async addVariavelPedidoComplementacaoEmLote(
         dto: VariavelPedidoComplementacaoEmLoteDto,
-        config: PessoaAcessoPdm,
+        config: MfPessoaAcessoPdm,
         user: PessoaFromJwt
     ): Promise<void> {
         const now = new Date(Date.now());
@@ -1320,7 +1320,7 @@ export class MetasService {
 
     async addMetaVariavelAnaliseQualitativa(
         dto: VariavelAnaliseQualitativaDto,
-        config: PessoaAcessoPdm,
+        config: MfPessoaAcessoPdm,
         user: PessoaFromJwt
     ): Promise<RecordWithId> {
         const now = new Date(Date.now());
@@ -1371,7 +1371,7 @@ export class MetasService {
         return { id: id };
     }
 
-    private async buscaDadosCiclo(dto: VariavelAnaliseQualitativaDto, config: PessoaAcessoPdm) {
+    private async buscaDadosCiclo(dto: VariavelAnaliseQualitativaDto, config: MfPessoaAcessoPdm) {
         const dateYMD = Date2YMD.toString(dto.data_valor);
         const meta_id = await this.variavelService.getMetaIdDaVariavel(dto.variavel_id, this.prisma);
 
@@ -1417,7 +1417,7 @@ export class MetasService {
 
     async addMetaVariavelAnaliseQualitativaEmLote(
         dto: VariavelAnaliseQualitativaEmLoteDto,
-        config: PessoaAcessoPdm,
+        config: MfPessoaAcessoPdm,
         user: PessoaFromJwt
     ): Promise<BatchRecordWithId> {
         const now = new Date(Date.now());
@@ -1668,7 +1668,7 @@ export class MetasService {
 
     async getMetaVariavelAnaliseQualitativa(
         dto: FilterVariavelAnaliseQualitativaDto,
-        config: PessoaAcessoPdm,
+        config: MfPessoaAcessoPdm,
         user: PessoaFromJwt,
         fastlane = false
     ): Promise<MfListVariavelAnaliseQualitativaDto> {
@@ -1720,7 +1720,7 @@ export class MetasService {
 
     async getMetaVariavelAnaliseQualitativaEmLote(
         dto: FilterVariavelAnaliseQualitativaEmLoteDto,
-        config: PessoaAcessoPdm,
+        config: MfPessoaAcessoPdm,
         user: PessoaFromJwt
     ): Promise<MfListVariavelAnaliseQualitativaEmLoteDto> {
         const promises: Promise<MfListVariavelAnaliseQualitativaReducedDto>[] = [];
@@ -1738,7 +1738,7 @@ export class MetasService {
         linha: FilterVariavelAnaliseQualitativaUltimaRevisaoDto,
         apenas_ultima_revisao: boolean,
         fastlane: boolean,
-        config: PessoaAcessoPdm
+        config: MfPessoaAcessoPdm
     ): Promise<MfListVariavelAnaliseQualitativaReducedDto> {
         const meta_id = await this.variavelService.getMetaIdDaVariavel(linha.variavel_id, this.prisma);
         this.verificaPermissaoMeta(config, meta_id);
@@ -1936,7 +1936,7 @@ export class MetasService {
     async mudarMetaCicloFase(
         meta_id: number,
         dto: CicloFaseDto,
-        config: PessoaAcessoPdm,
+        config: MfPessoaAcessoPdm,
         cf: CicloAtivoDto,
         user: PessoaFromJwt
     ) {
@@ -1998,7 +1998,7 @@ export class MetasService {
 
     async addMetaFormulaCompostaAnaliseQualitativa(
         dto: FormulaCompostaAnaliseQualitativaDto,
-        config: PessoaAcessoPdm,
+        config: MfPessoaAcessoPdm,
         cicloAtivo: CicloAtivoDto,
         user: PessoaFromJwt
     ): Promise<RecordWithId> {
@@ -2069,7 +2069,7 @@ export class MetasService {
 
     async getMetaFormulaCompostaAnaliseQualitativa(
         dto: FilterFormulaCompostaAnaliseQualitativaDto,
-        config: PessoaAcessoPdm,
+        config: MfPessoaAcessoPdm,
         user: PessoaFromJwt
     ): Promise<MfListFormulaCompostaAnaliseQualitativaDto> {
         const formula_composta = await this.prisma.formulaComposta.findFirstOrThrow({
@@ -2160,7 +2160,7 @@ export class MetasService {
 
     async addMetaFormulaCompostaAnaliseQualitativaDocumento(
         dto: FormulaCompostaAnaliseQualitativaDocumentoDto,
-        config: PessoaAcessoPdm,
+        config: MfPessoaAcessoPdm,
         cicloAtivo: CicloAtivoDto,
         user: PessoaFromJwt
     ): Promise<RecordWithId> {
@@ -2198,7 +2198,7 @@ export class MetasService {
 
     async deleteMetaFormulaCompostaAnaliseQualitativaDocumento(
         id: number,
-        config: PessoaAcessoPdm,
+        config: MfPessoaAcessoPdm,
         cicloAtivo: CicloAtivoDto,
         user: PessoaFromJwt
     ) {

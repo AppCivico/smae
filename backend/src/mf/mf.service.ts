@@ -3,7 +3,7 @@ import { PessoaAcessoPdm, Prisma } from '@prisma/client';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { Date2YMD } from '../common/date2ymd';
 import { PrismaService } from '../prisma/prisma.service';
-import { CicloAtivoDto } from './metas/dto/mf-meta.dto';
+import { CicloAtivoDto, MfPerfilDto } from './metas/dto/mf-meta.dto';
 import { sleepFor } from '../common/sleepFor';
 
 const erroSemPerfil = (logger: Logger) => {
@@ -14,13 +14,15 @@ const erroSemPerfil = (logger: Logger) => {
     );
 };
 
+export type MfPessoaAcessoPdm = PessoaAcessoPdm & { perfil: MfPerfilDto };
+
 @Injectable()
 export class MfService {
     private readonly logger = new Logger(MfService.name);
 
     constructor(private readonly prisma: PrismaService) {}
 
-    async pessoaAcessoPdm(user: PessoaFromJwt): Promise<PessoaAcessoPdm> {
+    async pessoaAcessoPdm(user: PessoaFromJwt): Promise<MfPessoaAcessoPdm> {
         let perfil = await this.prisma.pessoaAcessoPdm.findUnique({ where: { pessoa_id: user.id } });
         if (!perfil) {
             let isValid = await this.prisma.pessoaAcessoPdmValido.findUnique({ where: { pessoa_id: user.id } });
@@ -74,7 +76,10 @@ export class MfService {
 
         // TODO conferir se o ciclo é o mesmo do pdm-ativo, se n for, tem algo ruim
 
-        return perfil;
+        return {
+            ...perfil,
+            perfil: perfil.perfil as MfPerfilDto,
+        };
     }
 
     async cicloFisicoAtivo(): Promise<CicloAtivoDto> {

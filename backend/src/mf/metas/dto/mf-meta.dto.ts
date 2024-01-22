@@ -19,6 +19,14 @@ import { TipoDocumentoDto } from '../../../tipo-documento/entities/tipo-document
 import { SerieValorNomimal } from '../../../variavel/entities/variavel.entity';
 import { DateYMD } from '../../../common/date2ymd';
 
+export const MfPerfilDto = {
+    'ponto_focal': 'ponto_focal',
+    'tecnico_cp': 'tecnico_cp',
+    'admin_cp': 'admin_cp',
+} as const;
+
+export type MfPerfilDto = (typeof MfPerfilDto)[keyof typeof MfPerfilDto];
+
 export class FilterMfMetasDto {
     /**
      * Qual ciclo usar para calcular o status (exceto Coleta, que o status é sempre em branco)
@@ -73,7 +81,8 @@ export class ListMfMetasAgrupadasDto {
     linhas: MfMetaAgrupadaDto[];
     @ApiProperty({ enum: ['Status', 'Fase'] })
     agrupador: string;
-    perfil: string;
+    @ApiProperty({ enum: MfPerfilDto, enumName: 'MfPerfilDto' })
+    perfil: MfPerfilDto;
     ciclo_ativo: CicloAtivoDto;
 }
 
@@ -99,7 +108,8 @@ export class MfMetaDto {
 
 export class ListMfMetasDto {
     linhas: MfMetaDto[];
-    perfil: string;
+    @ApiProperty({ enum: MfPerfilDto, enumName: 'MfPerfilDto' })
+    perfil: MfPerfilDto;
     ciclo_ativo: CicloAtivoDto;
 }
 
@@ -169,7 +179,8 @@ export class MfFasesPermissoesDto {
 export type MfAvancarFasesDto = CicloFase[];
 
 export class RetornoMetaVariaveisDto {
-    perfil: string;
+    @ApiProperty({ enum: MfPerfilDto, enumName: 'MfPerfilDto' })
+    perfil: MfPerfilDto;
     data_ciclo: DateYMD;
 
     meta: {
