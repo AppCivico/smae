@@ -99,9 +99,9 @@ watch([
       <nav class="flex g1 flexwrap">
         <router-link
           :to="{ query: { ...$route.query, visao: 'pessoal' } }"
-          class="btn bgnone outline ml1"
+          class="btn bgnone outline tcprimary"
           :class="{
-            tcprimary: $route.query.visao === 'pessoal'
+            tcamarelo: $route.query.visao !== 'pessoal'
           }"
         >
           Visão pessoal
@@ -109,9 +109,9 @@ watch([
 
         <router-link
           :to="{ query: { ...$route.query, visao: 'geral' } }"
-          class="btn bgnone outline ml1"
+          class="btn bgnone outline tcprimary"
           :class="{
-            tcprimary: $route.query.visao === 'geral'
+            tcamarelo: $route.query.visao !== 'geral'
           }"
         >
           Visão geral
