@@ -1,5 +1,10 @@
 import { defineStore } from 'pinia';
 
+// eslint-disable-next-line import/no-extraneous-dependencies
+import {
+  ListMfDashMetasDto,
+} from '@/../../backend/src/mf/metas/dash/dto/metas.dto';
+
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
 type Lista = [];
@@ -11,9 +16,11 @@ interface ChamadasPendentes {
 }
 
 interface Estado {
-  listaDePendentes: [];
-  listaDeAtualizadas: [];
-  listaDeAtrasadas: [];
+  listaDePendentes: ListMfDashMetasDto['pendentes'];
+  listaDeAtualizadas: ListMfDashMetasDto['atualizadas'];
+  listaDeAtrasadas: ListMfDashMetasDto['atrasadas'];
+
+  perfil: ListMfDashMetasDto['perfil'];
 
   chamadasPendentes: ChamadasPendentes;
   erro: null | unknown;
@@ -27,6 +34,8 @@ export const usePanoramaStore = defineStore('panorama', {
     listaDeAtualizadas: [],
     listaDeAtrasadas: [],
 
+    perfil: '',
+
     chamadasPendentes: {
       pendentes: false,
       atualizadas: false,
@@ -37,27 +46,56 @@ export const usePanoramaStore = defineStore('panorama', {
   }),
 
   actions: {
-    async buscarTudo(tipoDaLista: TipoDeLista, params = {}): Promise<void> {
-      if (['pendentes', 'atualizadas', 'atrasadas'].indexOf(tipoDaLista) === -1) {
-        throw new Error(`Tipo de lista inválido: \`${tipoDaLista}\``);
+    async buscarTudo(pdmId: number, tipoDaLista: TipoDeLista, params = {}): Promise<void> {
+      const tipoDeRetorno = {
+        retornar_pendentes: false,
+        retornar_atualizadas: false,
+        retornar_atrasadas: false,
+      };
+
+      switch (tipoDaLista) {
+        case 'pendentes':
+          tipoDeRetorno.retornar_pendentes = true;
+          break;
+        case 'atualizadas':
+          tipoDeRetorno.retornar_atualizadas = true;
+          break;
+        case 'atrasadas':
+          tipoDeRetorno.retornar_atrasadas = true;
+          break;
+
+        default:
+          throw new Error(`Tipo de lista inválido: \`${tipoDaLista}\``);
       }
 
       this.chamadasPendentes[tipoDaLista] = true;
 
       try {
-        const { linhas } = await this.requestS.get(`${baseUrl}/panorama`, params);
+        const resposta:ListMfDashMetasDto = await this.requestS.get(`${baseUrl}/mf/panorama/metas`, { pdm_id: pdmId, ...params, ...tipoDeRetorno });
+
+        this.perfil = resposta.perfil;
+
+        this.listaDePendentes = [];
+        this.listaDeAtualizadas = [];
+        this.listaDeAtrasadas = [];
 
         switch (tipoDaLista) {
           case 'pendentes':
-            this.listaDePendentes = linhas;
+            this.listaDePendentes = Array.isArray(resposta[tipoDaLista])
+              ? resposta[tipoDaLista]
+              : [];
             break;
 
           case 'atualizadas':
-            this.listaDeAtualizadas = linhas;
+            this.listaDeAtualizadas = Array.isArray(resposta[tipoDaLista])
+              ? resposta[tipoDaLista]
+              : [];
             break;
 
           case 'atrasadas':
-            this.listaDeAtrasadas = linhas;
+            this.listaDeAtrasadas = Array.isArray(resposta[tipoDaLista])
+              ? resposta[tipoDaLista]
+              : [];
             break;
 
           default:
