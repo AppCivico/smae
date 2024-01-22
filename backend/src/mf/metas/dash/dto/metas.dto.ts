@@ -2,6 +2,8 @@ import { Transform, TransformFnParams } from 'class-transformer';
 import { IsArray, IsBoolean, IsInt, IsOptional } from 'class-validator';
 import { NumberArrayTransform } from '../../../../auth/transforms/number-array.error';
 import { IdCodTituloDto } from '../../../../common/dto/IdCodTitulo.dto';
+import { ApiProperty } from '@nestjs/swagger';
+import { MfPerfilDto } from '../../dto/mf-meta.dto';
 
 export class MfMetaVariavelCount {
     total: number;
@@ -48,7 +50,8 @@ export class ListMfDashMetasDto {
     pendentes: MfDashMetaPendenteDto[] | null;
     atualizadas: MfDashMetaAtualizadasDto[] | null;
     atrasadas: MfDashMetaAtrasadaDto[] | null;
-    perfil: string;
+    @ApiProperty({ enum: MfPerfilDto, enumName: 'MfPerfilDto' })
+    perfil: MfPerfilDto;
 }
 
 export class FilterMfDashMetasDto {
