@@ -29,9 +29,19 @@ export class MfDashMetaPendenteDto extends IdCodTituloDto {
     cronograma: MfMetaCronogramaCount;
     orcamento: MfMetaOrcamentoCount;
 
-    analise_qualitativa_enviada: boolean;
-    risco_enviado: boolean;
-    fechamento_enviado: boolean;
+    /**
+     * analise qualitativa no ciclo fisico foi enviada ou não, se nulo é por que não chegou ainda na fase
+     */
+    analise_qualitativa_enviada: boolean | null;
+    /**
+     * risco no ciclo fisico foi enviada ou não, se nulo é por que não chegou ainda na fase
+     */
+    risco_enviado: boolean | null;
+
+    /**
+     * fechamento no ciclo fisico foi enviada ou não, se nulo é por que não chegou ainda na fase
+     */
+    fechamento_enviado: boolean | null;
 }
 
 export class MfMetaAtrasoItemDto {
