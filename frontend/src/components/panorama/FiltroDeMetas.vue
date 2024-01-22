@@ -29,22 +29,22 @@ const dadosParaFiltros = computed(() => {
           órgãos[y.orgao.id] = { ...y.orgao, pessoas: {} };
         }
 
-        y.participantes.forEach((z) => {
+        x.coordenadores_cp.forEach((z) => {
           if (!órgãos[y.orgao.id].pessoas[z.id]) {
             órgãos[y.orgao.id].pessoas[z.id] = true;
           }
         });
       });
 
-      x.coordenadores_cp.forEach((z) => {
-        metas[x.id].pessoas.push(z.id);
-        if (!coordenadoresCp[z.id]) {
-          coordenadoresCp[z.id] = { ...z, órgãosEnvolvidosEmMetas: {} };
+      x.coordenadores_cp.forEach((y) => {
+        metas[x.id].pessoas.push(y.id);
+        if (!coordenadoresCp[y.id]) {
+          coordenadoresCp[y.id] = { ...y, órgãosEnvolvidosEmMetas: {} };
         }
 
-        x.orgaos_participantes.forEach((y) => {
-          if (!coordenadoresCp[z.id].órgãosEnvolvidosEmMetas[y.orgao.id]) {
-            coordenadoresCp[z.id].órgãosEnvolvidosEmMetas[y.orgao.id] = true;
+        x.orgaos_participantes.forEach((z) => {
+          if (!coordenadoresCp[y.id].órgãosEnvolvidosEmMetas[z.orgao.id]) {
+            coordenadoresCp[y.id].órgãosEnvolvidosEmMetas[z.orgao.id] = true;
           }
         });
       });
