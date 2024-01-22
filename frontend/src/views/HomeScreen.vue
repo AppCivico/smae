@@ -1,13 +1,17 @@
 <script setup>
-import truncate from '@/helpers/truncate';
 import EnvelopeDeAbas from '@/components/EnvelopeDeAbas.vue';
+import FiltroDeMetas from '@/components/panorama/FiltroDeMetas.vue';
+import LegendaPadrão from '@/components/panorama/LegendaPadrao.vue';
+import MetaNormal from '@/components/panorama/MetaNormal.vue';
+import MetaAtrasada from '@/components/panorama/MetaAtrasada.vue';
 import { storeToRefs } from 'pinia';
 import { Dashboard } from '@/components';
 import { useAuthStore } from '@/stores/auth.store';
 import { usePanoramaStore } from '@/stores/panorama.store.ts';
-import { computed, ref } from 'vue';
+import { watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useMetasStore } from '@/stores/metas.store';
+import LoadingComponent from '@/components/LoadingComponent.vue';
 
 const route = useRoute();
 const router = useRouter();
@@ -15,9 +19,17 @@ const router = useRouter();
 const authStore = useAuthStore();
 const MetasStore = useMetasStore();
 const { user, temPermissãoPara } = storeToRefs(authStore);
-const { Metas } = storeToRefs(MetasStore);
+const { Metas, activePdm } = storeToRefs(MetasStore);
 
 const panoramaStore = usePanoramaStore();
+const {
+  listaDePendentes,
+  listaDeAtualizadas,
+  listaDeAtrasadas,
+  perfil,
+  chamadasPendentes,
+  erro,
+} = storeToRefs(panoramaStore);
 
 const dadosExtrasDeAbas = {
   TabelaDeVariaveis: {
@@ -34,86 +46,50 @@ const dadosExtrasDeAbas = {
     aberta: true,
   },
 };
+const statusesVálidos = ['pendentes', 'atualizadas', 'atrasadas'];
 
-const dadosParaFiltros = computed(() => {
-  const órgãos = {};
-  const responsáveis = {};
-  const metas = {};
-
-  if (Array.isArray(Metas.value)) {
-    Metas.value.forEach((x) => {
-      metas[x.id] = x;
-      metas[x.id].órgãos = [];
-      metas[x.id].pessoas = [];
-
-      x.orgaos_participantes.forEach((y) => {
-        metas[x.id].órgãos.push(y.orgao.id);
-
-        if (!órgãos[y.orgao.id]) {
-          órgãos[y.orgao.id] = { ...y.orgao, pessoas: {} };
-        }
-
-        y.participantes.forEach((z) => {
-          if (!órgãos[y.orgao.id].pessoas[z.id]) {
-            órgãos[y.orgao.id].pessoas[z.id] = true;
-          }
-        });
-
-        if (y.responsavel) {
-          y.participantes.forEach((z) => {
-            metas[x.id].pessoas.push(z.id);
-            if (!responsáveis[z.id]) {
-              responsáveis[z.id] = { ...z, órgãos: {} };
-            }
-            // aceitando a mesma pessoa em mais de um órgão
-            if (!responsáveis[z.id].órgãos[y.orgao.id]) {
-              responsáveis[z.id].órgãos[y.orgao.id] = true;
-            }
-          });
-        }
-      });
+async function iniciar() {
+  if (!route.query.visao) {
+    router.replace({
+      query: {
+        ...route.query,
+        visao: 'pessoal',
+      },
     });
   }
 
-  return {
-    metas: Object.values(metas)
-      .sort((a, b) => a.titulo.localeCompare(b.titulo)),
-    órgãos: Object.values(órgãos)
-      .map((x) => ({ ...x, pessoas: Object.keys(x.pessoas) }))
-      .sort((a, b) => a.sigla.localeCompare(b.sigla)),
-    responsáveis: Object.values(responsáveis)
-      .map((x) => ({ ...x, órgãos: Object.keys(x.órgãos) }))
-      .sort((a, b) => a.nome_exibicao.localeCompare(b.nome_exibicao)),
-  };
-});
+  if (statusesVálidos.indexOf(route.query.status) === -1) {
+    router.replace({
+      query: {
+        ...route.query,
+        status: statusesVálidos[0],
+      },
+    });
+  }
 
-function atualizarFiltro(chave, valor) {
-  router.push({
-    query: {
-      ...route.query,
-      [chave]: valor || undefined,
-    },
-  });
+  if (!activePdm.value.id) {
+    await MetasStore.getPdM(activePdm.value.id);
+  }
+
+  panoramaStore.buscarTudo(activePdm.value.id, route.query.status);
 }
 
-if (!route.query.visao) {
-  router.replace({
-    query: {
-      ...route.query,
-      visao: 'pessoal',
-    },
-  });
-}
-
-if (!Array.isArray(Metas.value) || !Metas.value.length) {
-  MetasStore.getAll();
-}
-
-// panoramaStore.buscarTudo();
+watch([
+  () => route.query.meta,
+  () => route.query.coordenadores_cp,
+  () => route.query.orgao,
+  () => route.query.status,
+], () => {
+  iniciar();
+}, { immediate: true });
 </script>
 <template>
   <Dashboard>
-    <header class="flex center mb2 spacebetween g1">
+    <header class="flex center mb2 spacebetween g1 flexwrap">
+      <div class="t12 uc w700 tamarelo f100">
+        Programa de metas
+      </div>
+
       <TítuloDePágina class="f1">
         Quadro de atividades
       </TítuloDePágina>
@@ -143,222 +119,57 @@ if (!Array.isArray(Metas.value) || !Metas.value.length) {
       </nav>
     </header>
 
-    <pre v-ScrollLockDebug>dadosParaFiltros.responsáveis:
-    {{ dadosParaFiltros.responsáveis }}</pre>
-    <pre v-ScrollLockDebug>dadosParaFiltros.órgãos:
-    {{ dadosParaFiltros.órgãos }}</pre>
-    <pre v-ScrollLockDebug>Metas:{{ Metas }}</pre>
-    <pre v-ScrollLockDebug>$route.query:{{ $route.query }}</pre>
-
     <div class="flex flexwrap g2">
-      <div class="flex flexwrap f4 g1">
-        <div
-          class="mb1 f1"
-        >
-          <Transition name="fade">
-            <form
-              v-if="$route.query.visao !== 'pessoal'"
-              class="mb2"
-              @submit.prevent
-            >
-              <legend class="tprimary mb1 w700 t16">
-                Filtros
-              </legend>
+      <div class="mb1 f1">
+        <Transition name="fade">
+          <FiltroDeMetas v-if="perfil && perfil !== 'ponto_focal'" />
+        </Transition>
 
-              <div class="mb1">
-                <label
-                  for="filtro-de-meta"
-                  class="label tc300"
-                >Meta</label>
-                <select
-                  id="filtro-de-meta"
-                  :disabled="!dadosParaFiltros.metas.length"
-                  class="inputtext light mb1"
-                  name="filtro-de-meta"
-                  @change="({ target }) => {
-                    atualizarFiltro('meta', target.value);
-                  }"
-                >
-                  <option value="" />
-                  <option
-                    v-for="item in dadosParaFiltros.metas"
-                    :key="item.id"
-                    :selected="Number($route.query.meta) === item.id"
-                    :value="item.id"
-                    :title="item.titulo?.length > 36 ? item.titulo : undefined"
-                    :hidden="($route.query.responsavel
-                      && !item.pessoas.includes(Number($route.query.responsavel)))
-                      || ($route.query.orgao
-                        && !item.órgãos.includes(Number($route.query.orgao)))"
-                  >
-                    {{ item.codigo }} - {{ truncate(item.titulo, 36) }}
-                  </option>
-                </select>
-              </div>
-              <div class="mb1">
-                <label
-                  for="filtro-de-orgao"
-                  class="label tc300"
-                >Órgão</label>
-                <select
-                  id="filtro-de-orgao"
-                  class="inputtext light mb1"
-                  name="filtro-de-orgao"
-                  :disabled="!dadosParaFiltros.órgãos.length || $route.query.meta"
-                  @change="({ target }) => {
-                    atualizarFiltro('orgao', target.value);
-                  }"
-                >
-                  <option value="" />
-                  <option
-                    v-for="item in dadosParaFiltros.órgãos"
-                    :key="item.id"
-                    :selected="Number($route.query.orgao) === item.id"
-                    :value="item.id"
-                    :hidden="$route.query.responsavel
-                      && !item.pessoas.includes($route.query.responsavel)"
-                    :title="item.descricao?.length > 36 ? item.descricao : undefined"
-                  >
-                    {{ item.sigla }} - {{ truncate(item.descricao, 36) }}
-                  </option>
-                </select>
-              </div>
-              <div class="mb1">
-                <label
-                  for="filtro-de-responsavel"
-                  class="label tc300"
-                >Responsável</label>
-                <select
-                  id="filtro-de-responsavel"
-                  class="inputtext light mb1"
-                  name="filtro-de-responsavel"
-                  :disabled="!dadosParaFiltros.responsáveis.length || $route.query.meta"
-                  @change="({ target }) => {
-                    atualizarFiltro('responsavel', target.value);
-                  }"
-                >
-                  <option value="" />
-                  <option
-                    v-for="item in dadosParaFiltros.responsáveis"
-                    :key="item.id"
-                    :selected="Number($route.query.responsavel) === item.id"
-                    :value="item.id"
-                    :hidden="$route.query.orgao
-                      && !item.órgãos.includes($route.query.orgao)"
-                  >
-                    {{ item.nome_exibicao }}
-                  </option>
-                </select>
-              </div>
-            </form>
-          </Transition>
-
-          <div class="mb1">
-            <h2 class="mb1 w700 t16">
-              Legenda
-            </h2>
-            <dl>
-              <div class="flex g1 mb1 center">
-                <dt>
-                  <svg
-                    width="24"
-                    height="24"
-                    color="#EE3B2B"
-                  ><use xlink:href="#i_clock" /></svg>
-                </dt>
-                <dd class="f2">
-                  Conferência
-                </dd>
-              </div>
-              <div class="flex g1 mb1 center">
-                <dt>
-                  <svg
-                    width="24"
-                    height="24"
-                    color="#EE3B2B"
-                  ><use xlink:href="#i_alert" /></svg>
-                </dt>
-                <dd class="f2">
-                  Complementação
-                </dd>
-              </div>
-              <div class="flex g1 mb1 center">
-                <dt>
-                  <svg
-                    width="24"
-                    height="24"
-                  ><use xlink:href="#i_calendar" /></svg>
-                </dt>
-                <dd class="f2">
-                  Cronograma
-                </dd>
-              </div>
-              <div class="flex g1 mb1 center">
-                <dt>
-                  <svg
-                    width="24"
-                    height="24"
-                  ><use xlink:href="#i_$" /></svg>
-                </dt>
-                <dd class="f2">
-                  Orçamento
-                </dd>
-              </div>
-              <div class="flex g1 mb1 center">
-                <dt>
-                  <svg
-                    width="24"
-                    height="24"
-                  ><use xlink:href="#i_iniciativa" /></svg>
-                </dt>
-                <dd class="f2">
-                  Qualificação
-                </dd>
-              </div>
-              <div class="flex g1 mb1 center">
-                <dt>
-                  <svg
-                    width="24"
-                    height="24"
-                  ><use xlink:href="#i_binoculars" /></svg>
-                </dt>
-                <dd class="f2">
-                  Análise de Risco
-                </dd>
-              </div>
-              <div class="flex g1 mb1 center">
-                <dt>
-                  <svg
-                    width="24"
-                    height="24"
-                  ><use xlink:href="#i_check" /></svg>
-                </dt>
-                <dd class="f2">
-                  Fechamento
-                </dd>
-              </div>
-            </dl>
-          </div>
-        </div>
-
-        <EnvelopeDeAbas
-          :meta-dados-por-id="dadosExtrasDeAbas"
-          nome-da-chave-de-abas="status"
-          class="mb1 f4"
-        >
-          <template #pendentes="{ estáAberta }">
-            aba de pendentes
-          </template>
-
-          <template #atualizadas="{ estáAberta }">
-            aba de atualizadas
-          </template>
-
-          <template #atrasadas="{ estáAberta }">
-            aba de atrasadas
-          </template>
-        </EnvelopeDeAbas>
+        <LegendaPadrão
+          v-if="perfil"
+          :perfil="perfil"
+        />
       </div>
+
+      <EnvelopeDeAbas
+        :meta-dados-por-id="dadosExtrasDeAbas"
+        nome-da-chave-de-abas="status"
+        class="mb1 f3"
+      >
+        <template #pendentes>
+          <LoadingComponent v-if="chamadasPendentes.pendentes" />
+          <MetaNormal
+            v-for="(item, i) in listaDePendentes"
+            v-else
+            :key="i"
+            :meta="item"
+            :perfil="perfil"
+            class="mb2"
+          />
+        </template>
+
+        <template #atualizadas>
+          <LoadingComponent v-if="chamadasPendentes.atualizadas" />
+          <MetaNormal
+            v-for="(item, i) in listaDeAtualizadas"
+            v-else
+            :key="i"
+            :meta="item"
+            :perfil="perfil"
+            class="mb2"
+          />
+        </template>
+
+        <template #atrasadas>
+          <LoadingComponent v-if="chamadasPendentes.pendentes" />
+          <MetaAtrasada
+            v-for="(_item, i) in [...Array(10).keys()]"
+            v-else
+            :key="i"
+            class="mb2"
+          />
+        </template>
+      </EnvelopeDeAbas>
 
       <div class="mb1 card-shadow f1 p15 calendario">
         <h2 class="w400 t20 tc tamarelo calendario__titulo mb1">
@@ -399,6 +210,15 @@ if (!Array.isArray(Metas.value) || !Metas.value.length) {
             </dd>
           </div>
         </dl>
+      </div>
+    </div>
+
+    <div
+      v-if="erro"
+      class="error p1"
+    >
+      <div class="error-msg">
+        {{ erro }}
       </div>
     </div>
   </Dashboard>
