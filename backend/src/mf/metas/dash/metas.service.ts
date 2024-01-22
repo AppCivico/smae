@@ -2,7 +2,12 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { MetaStatusConsolidadoCf } from '@prisma/client';
 import { IdCodTituloDto } from '../../../common/dto/IdCodTitulo.dto';
 import { PrismaService } from '../../../prisma/prisma.service';
-import { FilterMfDashMetasDto, ListMfDashMetasDto } from './dto/metas.dto';
+import {
+    FilterMfDashMetasDto,
+    ListMfDashMetasDto,
+    MfDashMetaAtualizadasDto,
+    MfDashMetaPendenteDto,
+} from './dto/metas.dto';
 import { MfPessoaAcessoPdm } from '../../mf.service';
 
 @Injectable()
@@ -40,7 +45,9 @@ export class MfDashMetasService {
         if (params.coordenadores_cp || params.orgaos || params.metas) {
             metas = await this.aplicaFiltroMetas(params, metas);
         }
-        const renderStatus = (r: { meta: IdCodTituloDto } & MetaStatusConsolidadoCf) => {
+        const renderStatus = (
+            r: { meta: IdCodTituloDto } & MetaStatusConsolidadoCf
+        ): MfDashMetaPendenteDto | MfDashMetaAtualizadasDto => {
             return {
                 id: r.meta.id,
                 codigo: r.meta.codigo,
