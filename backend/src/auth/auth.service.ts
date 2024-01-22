@@ -11,10 +11,15 @@ import { JwtReducedAccessToken } from './models/JwtReducedAccessToken';
 import { ReducedAccessToken } from './models/ReducedAccessToken';
 import { SolicitarNovaSenhaRequestBody } from './models/SolicitarNovaSenhaRequestBody.dto';
 import { PessoaFromJwt } from './models/PessoaFromJwt';
+import { FeatureFlagService } from '../feature-flag/feature-flag.service';
 
 @Injectable()
 export class AuthService {
-    constructor(private readonly jwtService: JwtService, private readonly pessoaService: PessoaService) {}
+    constructor(
+        private readonly jwtService: JwtService,
+        private readonly pessoaService: PessoaService,
+        private readonly featureFlagService: FeatureFlagService
+    ) {}
 
     async login(pessoa: Pessoa, ip: string): Promise<AccessToken | ReducedAccessToken> {
         if (pessoa.senha_bloqueada) {
@@ -81,6 +86,7 @@ export class AuthService {
             modulos: modPriv.modulos,
             privilegios: modPriv.privilegios,
             orgao_id: pessoa.pessoa_fisica?.orgao_id,
+            flags: await this.featureFlagService.featureFlag(),
         });
     }
 
@@ -96,6 +102,7 @@ export class AuthService {
             modulos: modPriv.modulos,
             privilegios: modPriv.privilegios,
             orgao_id: pessoa.pessoa_fisica?.orgao_id,
+            flags: await this.featureFlagService.featureFlag(),
         });
     }
 

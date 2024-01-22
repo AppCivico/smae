@@ -1,4 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { FeatureFlagDto } from './FeatureFlagDto';
+
 export class PessoaFromJwtBase {
     @ApiProperty({ description: 'ID da Pessoa' })
     id: number;
@@ -14,4 +16,6 @@ export class PessoaFromJwtBase {
     modulos: string[];
 
     orgao_id: undefined | number;
+
+    flags: FeatureFlagDto;
 }

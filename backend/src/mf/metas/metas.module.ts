@@ -18,6 +18,8 @@ import { MetasRiscoService } from './../metas/metas-risco.service';
 import { MetasController } from './../metas/metas.controller';
 import { MetasService } from './../metas/metas.service';
 import { MfModule } from './../mf.module';
+import { MfDashMetasController } from './dash/metas.controller';
+import { MfDashMetasService } from './dash/metas.service';
 
 @Module({
     imports: [
@@ -35,6 +37,7 @@ import { MfModule } from './../mf.module';
         MetasRiscoController,
         MetasFechamentoController,
         MetasCronogramaController,
+        MfDashMetasController
     ],
     providers: [
         MetasService,
@@ -44,6 +47,7 @@ import { MfModule } from './../mf.module';
         CronogramaService,
         CronogramaEtapaService,
         MetasCronogramaService,
+        MfDashMetasService
     ],
     exports: [MetasAnaliseQualiService, MetasRiscoService, MetasFechamentoService, MetasService],
 })

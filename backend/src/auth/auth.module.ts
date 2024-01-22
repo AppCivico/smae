@@ -9,11 +9,13 @@ import { LoginValidationMiddleware } from './middlewares/login-validation.middle
 import { SolicitarNovaSenhaValidationMiddleware } from './middlewares/solicitar-nova-senha-validation.middleware';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { LocalStrategy } from './strategies/local.strategy';
+import { FeatureFlagModule } from '../feature-flag/feature-flag.module';
 
 @Module({
     imports: [
         PessoaModule,
         PassportModule,
+        FeatureFlagModule,
         JwtModule.register({
             secret: process.env.SESSION_JWT_SECRET,
             signOptions: { expiresIn: '30d' },

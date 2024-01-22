@@ -84,6 +84,7 @@ import { GrupoPortfolioModule } from './pp/grupo-portfolio/grupo-portfolio.modul
     return this.toString();
 };
 import { TaskModule } from './task/task.module';
+import { FeatureFlagModule } from './feature-flag/feature-flag.module';
 
 @Module({
     imports: [
@@ -163,6 +164,7 @@ import { TaskModule } from './task/task.module';
         RequestLogModule,
         GrupoPortfolioModule,
         TaskModule,
+        FeatureFlagModule,
     ],
     controllers: [AppController],
     providers: [
