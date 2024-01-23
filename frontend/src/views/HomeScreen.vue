@@ -4,6 +4,7 @@ import FiltroDeMetas from '@/components/panorama/FiltroDeMetas.vue';
 import LegendaPadrão from '@/components/panorama/LegendaPadrao.vue';
 import MetaNormal from '@/components/panorama/MetaNormal.vue';
 import MetaAtrasada from '@/components/panorama/MetaAtrasada.vue';
+import CalendárioDoPdM from '@/components/panorama/CalendarioDoPdM.vue';
 import { storeToRefs } from 'pinia';
 import { Dashboard } from '@/components';
 import { useAuthStore } from '@/stores/auth.store';
@@ -178,44 +179,8 @@ watch([
       </EnvelopeDeAbas>
 
       <div class="mb1 card-shadow f1 p15 calendario">
-        <h2 class="w400 t20 tc tamarelo calendario__titulo mb1">
-          Setembro
-        </h2>
-
-        <dl class="calendario__lista">
-          <div class="flex calendario__item center mb1">
-            <dt class="f1 t20 tamarelo calendario__intervalo">
-              01 - 15
-            </dt>
-            <dd class="f2 t12 w700 tprimary calendario__evento">
-              Coleta de Dados
-            </dd>
-          </div>
-          <div class="flex calendario__item center mb1">
-            <dt class="f1 t20 tamarelo calendario__intervalo">
-              16 - 19
-            </dt>
-            <dd class="f2 t12 w700 tprimary calendario__evento">
-              Qualificação
-            </dd>
-          </div>
-          <div class="flex calendario__item calendario__item--destaque center mb1">
-            <dt class="f1 t20 tamarelo calendario__intervalo">
-              20 - 22
-            </dt>
-            <dd class="f2 t12 w700 tprimary calendario__evento">
-              Análise de Risco
-            </dd>
-          </div>
-          <div class="flex calendario__item center mb1">
-            <dt class="f1 t20 tamarelo calendario__intervalo">
-              23 - 30
-            </dt>
-            <dd class="f2 t12 w700 tprimary calendario__evento">
-              Fechamento
-            </dd>
-          </div>
-        </dl>
+        <LoadingComponent v-if="activePdm.loading" />
+        <CalendárioDoPdM :pdm="activePdm" />
       </div>
     </div>
 
