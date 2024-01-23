@@ -7,7 +7,7 @@ function dateToDate(d, options = {}) {
 
 export const dateToYear = (date, format = 'numeric') => dateToDate(date, { dateStyle: undefined, year: format });
 
-export const dateToMonth = (date, format = 'short') => dateToDate(date, { dateStyle: undefined, month: format });
+export const dateToMonth = (date, format = 'numeric') => dateToDate(date, { dateStyle: undefined, month: format });
 
 export const dateToDay = (date, format = 'numeric') => dateToDate(date, { dateStyle: undefined, day: format });
 
