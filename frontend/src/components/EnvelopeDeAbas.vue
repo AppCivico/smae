@@ -115,6 +115,7 @@ iniciar();
   max-width: max-content;
   margin-left: auto;
   margin-right: auto;
+  text-transform: uppercase;
 }
 
 .abas__lista {
