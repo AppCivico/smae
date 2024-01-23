@@ -206,6 +206,7 @@ defineProps({
 
 .meta__variável {
   border-left: 1px solid;
+  flex-basis: 0;
 
   &:first-child {
     border-left: 0;
