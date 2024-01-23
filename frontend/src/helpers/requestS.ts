@@ -1,3 +1,4 @@
+import qs from 'qs';
 import responseDownload from '@/helpers/responseDownload';
 import { useAlertStore } from '@/stores/alert.store';
 import { useAuthStore } from '@/stores/auth.store';
@@ -67,11 +68,7 @@ function request(method: Method, upload = false) {
     switch (method) {
       case 'GET':
         if (params && Object.keys(params).length) {
-          Object.keys(params)
-            // eslint-disable-next-line no-param-reassign
-            .forEach((key) => params[key] === undefined && delete params[key]);
-
-          urlFinal += `?${new URLSearchParams(params).toString()}`;
+          urlFinal += `?${qs.stringify(params, { indices: false })}`;
         }
         break;
 
