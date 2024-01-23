@@ -30,7 +30,7 @@ defineProps({
                 dateToMonth(fase.data_inicio) !== dateToMonth(pdm?.ciclo_fisico_ativo.data_ciclo)
             }"
           >
-            {{ dateToDay(fase.data_inicio) }}
+            {{ dateToDay(fase.data_inicio, '2-digit') }}
           </span> &ndash; <span
             class="calendario__dia"
             :class="{
@@ -38,7 +38,7 @@ defineProps({
                 dateToMonth(fase.data_fim) !== dateToMonth(pdm?.ciclo_fisico_ativo.data_ciclo)
             }"
           >
-            {{ dateToDay(fase.data_fim) }}
+            {{ dateToDay(fase.data_fim, '2-digit') }}
           </span>
         </dt>
         <dd class="f2 t12 w700 tprimary calendario__evento">
@@ -55,5 +55,9 @@ defineProps({
 
 .calendario__dia--foraDoMês {
   color: fuchsia;
+}
+
+.calendario__intervalo {
+  font-variant-numeric: tabular-nums;
 }
 </style>
