@@ -20,6 +20,8 @@ export class MfDashMetasService {
         params: FilterMfDashMetasDto
     ): Promise<ListMfDashMetasDto> {
         const ehPontoFocal = config.perfil === 'ponto_focal';
+
+        console.log(ehPontoFocal, config);
         if (params.visao_geral && ehPontoFocal)
             throw new BadRequestException('O seu perfil não pode utilizar a função de visão geral.');
 
@@ -40,11 +42,8 @@ export class MfDashMetasService {
         };
 
         // padrão é puxar as metas do perfil da pessoa
-        let metas = [...config.metas_cronograma, ...config.metas_variaveis];
+        const metas = await this.aplicaFiltroMetas(params, [...config.metas_cronograma, ...config.metas_variaveis]);
 
-        if (params.coordenadores_cp || params.orgaos || params.metas) {
-            metas = await this.aplicaFiltroMetas(params, metas);
-        }
         const renderStatus = (
             r: { meta: IdCodTituloDto } & MetaStatusConsolidadoCf
         ): MfDashMetaPendenteDto | MfDashMetaAtualizadasDto => {
@@ -121,7 +120,7 @@ export class MfDashMetasService {
                 ViewMetaPessoaResponsavelNaCp: params.coordenadores_cp
                     ? {
                           some: {
-                              id: { in: params.coordenadores_cp },
+                              pessoa_id: { in: params.coordenadores_cp },
                           },
                       }
                     : undefined,
@@ -129,7 +128,7 @@ export class MfDashMetasService {
                 meta_orgao: params.orgaos
                     ? {
                           some: {
-                              id: { in: params.orgaos },
+                              orgao_id: { in: params.orgaos },
                           },
                       }
                     : undefined,
