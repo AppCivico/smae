@@ -77,6 +77,7 @@ BEGIN
         select
             v.variavel_id,
             sv.conferida
+            -- todo join na status_variavel_ciclo_fisico
         from cte_variaveis v
         join serie_variavel sv on sv.variavel_id = v.variavel_id and sv.serie = 'Realizado'
             and sv.data_valor = v_data_ciclo + v.atraso
@@ -126,13 +127,25 @@ BEGIN
             and ciclo_fisico_id = pCicloFisicoIdAtual
     ) into v_fechamento_enviado;
 
+    -- Redefinir variáveis se não estiver na fase correspondente
+    IF v_fase NOT IN ('Analise', 'Risco', 'Fechamento') THEN
+        v_analise_qualitativa_enviada := null;
+    END IF;
+
+    IF v_fase NOT IN ('Risco', 'Fechamento') THEN
+        v_risco_enviado := null;
+    END IF;
+
+    IF v_fase NOT IN ('Fechamento') THEN
+        v_fechamento_enviado := null;
+    END IF;
 
     v_pendente_cp := false;
 
     IF (v_fase != 'Coleta' AND (
-               (NOT v_fechamento_enviado          AND v_fase = 'Fechamento'                       )
-            OR (NOT v_risco_enviado               AND v_fase IN ('Risco', 'Fechamento')           )
-            OR (NOT v_analise_qualitativa_enviada AND v_fase IN ('Analise', 'Risco', 'Fechamento'))
+               (v_fase = 'Fechamento' AND COALESCE(v_fechamento_enviado, false) = false)
+            OR (v_fase IN ('Risco', 'Fechamento') AND COALESCE(v_risco_enviado, false) = false)
+            OR (v_fase IN ('Analise', 'Risco', 'Fechamento') AND COALESCE(v_analise_qualitativa_enviada, false) = false)
         )
     ) THEN
         v_pendente_cp := true;
@@ -205,5 +218,5 @@ $$
 LANGUAGE plpgsql;
 
 
-select atualiza_meta_status_consolidado(154, 630);
-select * from meta_status_consolidado_cf;
+select atualiza_meta_status_consolidado(31, (select id from ciclo_fisico where ativo));
+select * from meta_status_consolidado_cf where meta_id=31;
