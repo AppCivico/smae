@@ -195,7 +195,7 @@ defineProps({
     </div>
   </article>
 </template>
-<style lang="less">
+<style lang="less" scoped>
 .meta__icones-lista {}
 
 .meta__icones-item {}
