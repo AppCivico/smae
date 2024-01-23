@@ -1,9 +1,5 @@
 <script setup>
-import dateToDate from '@/helpers/dateToDate';
-
-const dateToMonth = (date) => dateToDate(date, { dateStyle: undefined, month: 'short' });
-const dateToYear = (date) => dateToDate(date, { dateStyle: undefined, year: 'numeric' });
-
+import { dateToMonth, dateToYear } from '@/helpers/dateToDate';
 </script>
 <template>
   <article
