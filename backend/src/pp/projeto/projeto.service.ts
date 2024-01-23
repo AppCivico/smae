@@ -596,6 +596,31 @@ export class ProjetoService {
                             },
                         },
                     },
+                    // Ou portfolios compartilhados
+                    {
+                        portfolios_compartilhados: {
+                            some: {
+                                removido_em: null,
+                                portfolio: {
+                                    removido_em: null,
+                                    PortfolioGrupoPortfolio: {
+                                        some: {
+                                            removido_em: null,
+                                            GrupoPortfolio: {
+                                                removido_em: null,
+                                                GrupoPortfolioPessoa: {
+                                                    some: {
+                                                        pessoa_id: user.id,
+                                                        removido_em: null,
+                                                    },
+                                                },
+                                            },
+                                        },
+                                    },
+                                }
+                            }
+                        }
+                    }
                 ],
             });
         }

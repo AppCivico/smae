@@ -101,11 +101,15 @@ when p.status = 'Validado' then  5
 when p.status = 'EmAcompanhamento' then  6
 when p.status = 'Suspenso' then   6
 when p.status = 'Fechado' then  7
-end as "numero_status"
-
+end as "numero_status",
+array_agg(po.titulo) as portfolios_compartilhados
 
 from projeto p
+left join portfolio_projeto_compartilhado ppc on ppc.projeto_id = p.id
+left join portfolio po on po.id = ppc.portfolio_id
 where p.removido_em IS NULL
+and ppc.removido_em IS NULL
+group by p.id, p.portfolio_id, p.status, previsao_custo, realizado_custo
 order by p.status, p.codigo;
 -- isso vai garantir a ordem do enum (Registrado, Selecionado, EmPlanejamento, Planejado, Validado, EmAcompanhamento, Suspenso, Fechado)
 -- e depois o código
