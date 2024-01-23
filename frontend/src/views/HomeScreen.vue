@@ -79,7 +79,7 @@ async function iniciar() {
 }
 
 watch([
-  () => route.query.meta,
+  () => route.query.metas,
   () => route.query.coordenadores_cp,
   () => route.query.orgaos,
   () => route.query.status,
