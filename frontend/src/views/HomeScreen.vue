@@ -77,7 +77,7 @@ async function iniciar() {
 watch([
   () => route.query.meta,
   () => route.query.coordenadores_cp,
-  () => route.query.orgao,
+  () => route.query.orgaos,
   () => route.query.status,
 ], () => {
   iniciar();
