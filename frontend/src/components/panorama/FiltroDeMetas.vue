@@ -1,4 +1,5 @@
 <script setup>
+import AutocompleteField from '@/components/AutocompleteField2.vue';
 import truncate from '@/helpers/truncate';
 import { useRoute, useRouter } from 'vue-router';
 import { useMetasStore } from '@/stores/metas.store';
@@ -21,12 +22,14 @@ const dadosParaFiltros = computed(() => {
       metas[x.id] = { ...x };
       metas[x.id].órgãos = [];
       metas[x.id].pessoas = [];
+      metas[x.id].etiqueta = `${x.codigo} - ${truncate(x.titulo, 36)}`;
 
       x.orgaos_participantes.forEach((y) => {
         metas[x.id].órgãos.push(y.orgao.id);
 
         if (!órgãos[y.orgao.id]) {
           órgãos[y.orgao.id] = { ...y.orgao, pessoas: {} };
+          órgãos[y.orgao.id].etiqueta = `${y.orgao.sigla} - ${truncate(y.orgao.descricao, 36)}`;
         }
 
         x.coordenadores_cp.forEach((z) => {
@@ -63,6 +66,40 @@ const dadosParaFiltros = computed(() => {
   };
 });
 
+const valoresSelecionados = computed(() => {
+  const {
+    coordenadores_cp: coordenadoresCp = [],
+    metas = [],
+    orgaos: órgãos = [],
+  } = route.query;
+
+  return {
+    coordenadoresCp: (Array.isArray(coordenadoresCp)
+      ? coordenadoresCp
+      : [coordenadoresCp]).map((x) => Number(x)),
+    metas: (Array.isArray(metas)
+      ? metas
+      : [metas]).map((x) => Number(x)),
+    órgãos: (Array.isArray(órgãos)
+      ? órgãos
+      : [órgãos]).map((x) => Number(x)),
+  };
+});
+
+const filtrosLimpos = computed(() => ({
+  metas: dadosParaFiltros.value.metas,
+  órgãos: valoresSelecionados.value.coordenadoresCp.length
+    ? dadosParaFiltros.value.órgãos
+      .filter((x) => x.pessoas.some((y) => valoresSelecionados.value.coordenadoresCp
+        .indexOf(Number(y)) !== -1))
+    : dadosParaFiltros.value.órgãos,
+  coordenadoresCp: valoresSelecionados.value.órgãos.length
+    ? dadosParaFiltros.value.coordenadoresCp
+      .filter((x) => x.órgãosEnvolvidosEmMetas.some((y) => valoresSelecionados.value.órgãos
+        .indexOf(Number(y)) !== -1))
+    : dadosParaFiltros.value.coordenadoresCp,
+}));
+
 function atualizarFiltro(chave, valor) {
   router.replace({
     query: {
@@ -90,85 +127,48 @@ if (!Array.isArray(Metas.value) || !Metas.value.length) {
         for="filtro-de-metas"
         class="label tc300"
       >Metas</label>
-      <select
+      <AutocompleteField
         id="filtro-de-metas"
         :disabled="!dadosParaFiltros.metas.length"
         class="inputtext light mb1"
         name="filtro-de-metas"
-        @change="({ target }) => {
-          atualizarFiltro('metas', target.value);
-        }"
-      >
-        <option value="" />
-        <option
-          v-for="item in dadosParaFiltros.metas"
-          :key="item.id"
-          :selected="Number($route.query.metas) === item.id"
-          :value="item.id"
-          :title="item.titulo?.length > 36 ? item.titulo : undefined"
-          :hidden="($route.query.coordenadores_cp
-            && !item.pessoas.includes(Number($route.query.coordenadores_cp)))
-            || ($route.query.orgaos
-              && !item.órgãos.includes(Number($route.query.orgaos)))"
-        >
-          {{ item.codigo }} - {{ truncate(item.titulo, 36) }}
-        </option>
-      </select>
+        :controlador="{ busca: '', participantes: valoresSelecionados.metas || [] }"
+        :grupo="filtrosLimpos.metas"
+        label="etiqueta"
+        @change="(valor) => { atualizarFiltro('metas', valor); }"
+      />
     </div>
     <div class="mb1">
       <label
         for="filtro-de-orgaos"
         class="label tc300"
       >Órgão</label>
-      <select
+      <AutocompleteField
         id="filtro-de-orgaos"
         class="inputtext light mb1"
         name="filtro-de-orgaos"
         :disabled="!dadosParaFiltros.órgãos.length || $route.query.meta"
-        @change="({ target }) => {
-          atualizarFiltro('orgaos', target.value);
-        }"
-      >
-        <option value="" />
-        <option
-          v-for="item in dadosParaFiltros.órgãos"
-          :key="item.id"
-          :selected="Number($route.query.orgaos) === item.id"
-          :value="item.id"
-          :hidden="$route.query.coordenadores_cp
-            && !item.pessoas.includes($route.query.coordenadores_cp)"
-          :title="item.descricao?.length > 36 ? item.descricao : undefined"
-        >
-          {{ item.sigla }} - {{ truncate(item.descricao, 36) }}
-        </option>
-      </select>
+        :controlador="{ busca: '', participantes: valoresSelecionados.órgãos || [] }"
+        :grupo="filtrosLimpos.órgãos"
+        label="etiqueta"
+        @change="(valor) => { atualizarFiltro('orgaos', valor); }"
+      />
     </div>
     <div class="mb1">
       <label
         for="filtro-de-coordenadores-cp"
         class="label tc300"
-      >Responsável</label>
-      <select
+      >Coordenadores</label>
+      <AutocompleteField
         id="filtro-de-coordenadores-cp"
         class="inputtext light mb1"
         name="filtro-de-coordenadores-cp"
         :disabled="!dadosParaFiltros.coordenadoresCp.length || $route.query.meta"
-        @change="({ target }) => {
-          atualizarFiltro('coordenadores_cp', target.value);
-        }"
-      >
-        <option value="" />
-        <option
-          v-for="item in dadosParaFiltros.coordenadoresCp"
-          :key="item.id"
-          :selected="Number($route.query.coordenadores_cp) === item.id"
-          :value="item.id"
-          :hidden="$route.query.orgaos
-            && !item.órgãosEnvolvidosEmMetas.includes($route.query.orgaos)"
-        >
-          {{ item.nome_exibicao }}
-        </option>
-      </select>
+        :controlador="{ busca: '', participantes: valoresSelecionados.coordenadoresCp || [] }"
+        :grupo="filtrosLimpos.coordenadoresCp"
+        label="nome_exibicao"
+        @change="(valor) => { atualizarFiltro('coordenadores_cp', valor); }"
+      />
     </div>
   </form>
 </template>
