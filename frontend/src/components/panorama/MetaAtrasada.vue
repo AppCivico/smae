@@ -172,7 +172,7 @@ import { dateToMonth, dateToYear } from '@/helpers/dateToDate';
     </div>
   </article>
 </template>
-<style lang="less">
+<style lang="less" scoped>
 .meta__lista-de-eventos {
   position: relative;
 

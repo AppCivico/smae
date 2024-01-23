@@ -48,7 +48,7 @@ defineProps({
     </dl>
   </template>
 </template>
-<style lang="less">
+<style lang="less" scoped>
 .calendario__titulo {
   text-transform: capitalize;
 }
