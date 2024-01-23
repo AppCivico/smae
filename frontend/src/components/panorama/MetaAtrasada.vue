@@ -17,7 +17,7 @@ import { dateToMonth, dateToYear } from '@/helpers/dateToDate';
           <ul class="meta__lista-de-eventos">
             <li class="meta__item_do_ano br999 pl05 pr05 ib mr05 mb05">
               <span class="meta__mês">
-                {{ dateToMonth('2024/04/01') }}
+                {{ dateToMonth('2024/04/01', 'short') }}
               </span>
               <span class="meta__numero-de-variaveis">
                 12
@@ -26,7 +26,7 @@ import { dateToMonth, dateToYear } from '@/helpers/dateToDate';
             </li>
             <li class="meta__item_do_ano br999 pl05 pr05 ib mr05 mb05">
               <span class="meta__mês">
-                {{ dateToMonth('2024/04/01') }}
+                {{ dateToMonth('2024/04/01', 'short') }}
               </span>
               <span class="meta__numero-de-variaveis">
                 12
@@ -35,7 +35,7 @@ import { dateToMonth, dateToYear } from '@/helpers/dateToDate';
             </li>
             <li class="meta__item_do_ano br999 pl05 pr05 ib mr05 mb05">
               <span class="meta__mês">
-                {{ dateToMonth('2024/04/01') }}
+                {{ dateToMonth('2024/04/01', 'short') }}
               </span>
               <span class="meta__numero-de-variaveis">
                 12
@@ -44,7 +44,7 @@ import { dateToMonth, dateToYear } from '@/helpers/dateToDate';
             </li>
             <li class="meta__item_do_ano br999 pl05 pr05 ib mr05 mb05">
               <span class="meta__mês">
-                {{ dateToMonth('2024/04/01') }}
+                {{ dateToMonth('2024/04/01', 'short') }}
               </span>
               <span class="meta__numero-de-variaveis">
                 12
@@ -53,7 +53,7 @@ import { dateToMonth, dateToYear } from '@/helpers/dateToDate';
             </li>
             <li class="meta__item_do_ano br999 pl05 pr05 ib mr05 mb05">
               <span class="meta__mês">
-                {{ dateToMonth('2024/04/01') }}
+                {{ dateToMonth('2024/04/01', 'short') }}
               </span>
               <span class="meta__numero-de-variaveis">
                 12
@@ -62,7 +62,7 @@ import { dateToMonth, dateToYear } from '@/helpers/dateToDate';
             </li>
             <li class="meta__item_do_ano br999 pl05 pr05 ib mr05 mb05">
               <span class="meta__mês">
-                {{ dateToMonth('2024/04/01') }}
+                {{ dateToMonth('2024/04/01', 'short') }}
               </span>
               <span class="meta__numero-de-variaveis">
                 12
@@ -71,7 +71,7 @@ import { dateToMonth, dateToYear } from '@/helpers/dateToDate';
             </li>
             <li class="meta__item_do_ano br999 pl05 pr05 ib mr05 mb05">
               <span class="meta__mês">
-                {{ dateToMonth('2024/04/01') }}
+                {{ dateToMonth('2024/04/01', 'short') }}
               </span>
               <span class="meta__numero-de-variaveis">
                 12
@@ -80,7 +80,7 @@ import { dateToMonth, dateToYear } from '@/helpers/dateToDate';
             </li>
             <li class="meta__item_do_ano br999 pl05 pr05 ib mr05 mb05">
               <span class="meta__mês">
-                {{ dateToMonth('2024/04/01') }}
+                {{ dateToMonth('2024/04/01', 'short') }}
               </span>
               <span class="meta__numero-de-variaveis">
                 12
@@ -89,7 +89,7 @@ import { dateToMonth, dateToYear } from '@/helpers/dateToDate';
             </li>
             <li class="meta__item_do_ano br999 pl05 pr05 ib mr05 mb05">
               <span class="meta__mês">
-                {{ dateToMonth('2024/04/01') }}
+                {{ dateToMonth('2024/04/01', 'short') }}
               </span>
               <span class="meta__numero-de-variaveis">
                 12
@@ -98,7 +98,7 @@ import { dateToMonth, dateToYear } from '@/helpers/dateToDate';
             </li>
             <li class="meta__item_do_ano br999 pl05 pr05 ib mr05 mb05">
               <span class="meta__mês">
-                {{ dateToMonth('2024/04/01') }}
+                {{ dateToMonth('2024/04/01', 'short') }}
               </span>
               <span class="meta__numero-de-variaveis">
                 12
@@ -107,7 +107,7 @@ import { dateToMonth, dateToYear } from '@/helpers/dateToDate';
             </li>
             <li class="meta__item_do_ano br999 pl05 pr05 ib mr05 mb05">
               <span class="meta__mês">
-                {{ dateToMonth('2024/04/01') }}
+                {{ dateToMonth('2024/04/01', 'short') }}
               </span>
               <span class="meta__numero-de-variaveis">
                 12
@@ -116,7 +116,7 @@ import { dateToMonth, dateToYear } from '@/helpers/dateToDate';
             </li>
             <li class="meta__item_do_ano br999 pl05 pr05 ib mr05 mb05">
               <span class="meta__mês">
-                {{ dateToMonth('2024/04/01') }}
+                {{ dateToMonth('2024/04/01', 'short') }}
               </span>
               <span class="meta__numero-de-variaveis">
                 12
@@ -132,7 +132,7 @@ import { dateToMonth, dateToYear } from '@/helpers/dateToDate';
           <ul class="meta__lista-de-eventos">
             <li class="meta__item_do_ano br999 pl05 pr05 ib mr05 mb05">
               <span class="meta__mês">
-                {{ dateToMonth('2024/04/01') }}
+                {{ dateToMonth('2024/04/01', 'short') }}
               </span>
               <span class="meta__numero-de-variaveis">
                 12
@@ -141,7 +141,7 @@ import { dateToMonth, dateToYear } from '@/helpers/dateToDate';
             </li>
             <li class="meta__item_do_ano br999 pl05 pr05 ib mr05 mb05">
               <span class="meta__mês">
-                {{ dateToMonth('2024/04/01') }}
+                {{ dateToMonth('2024/04/01', 'short') }}
               </span>
               <span class="meta__numero-de-variaveis">
                 12
@@ -150,7 +150,7 @@ import { dateToMonth, dateToYear } from '@/helpers/dateToDate';
             </li>
             <li class="meta__item_do_ano br999 pl05 pr05 ib mr05 mb05">
               <span class="meta__mês">
-                {{ dateToMonth('2024/04/01') }}
+                {{ dateToMonth('2024/04/01', 'short') }}
               </span>
               <span class="meta__numero-de-variaveis">
                 12
@@ -159,7 +159,7 @@ import { dateToMonth, dateToYear } from '@/helpers/dateToDate';
             </li>
             <li class="meta__item_do_ano br999 pl05 pr05 ib mr05 mb05">
               <span class="meta__mês">
-                {{ dateToMonth('2024/04/01') }}
+                {{ dateToMonth('2024/04/01', 'short') }}
               </span>
               <span class="meta__numero-de-variaveis">
                 12
