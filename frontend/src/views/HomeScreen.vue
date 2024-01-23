@@ -179,7 +179,7 @@ watch([
       </EnvelopeDeAbas>
 
       <div class="mb1 card-shadow f1 p15 calendario">
-        <LoadingComponent v-if="activePdm.loading" />
+        <LoadingComponent v-if="activePdm?.loading" />
         <CalendárioDoPdM :pdm="activePdm" />
       </div>
     </div>
