@@ -20,7 +20,7 @@ interface Estado {
   listaDeAtualizadas: ListMfDashMetasDto['atualizadas'];
   listaDeAtrasadas: ListMfDashMetasDto['atrasadas'];
 
-  perfil: ListMfDashMetasDto['perfil'];
+  perfil: ListMfDashMetasDto['perfil'] | '';
 
   chamadasPendentes: ChamadasPendentes;
   erro: null | unknown;
