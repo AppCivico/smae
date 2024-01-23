@@ -15,102 +15,118 @@ defineProps({
 });
 </script>
 <template>
-  <div class="mb1">
-    <h2 class="mb1 w700 t16">
+  <div class="legenda-padrão mb1">
+    <h2 class="legenda-padrão__título mb1 w700 t16">
       Legenda
     </h2>
-    <dl>
+    <dl class="legenda-padrão__lista">
       <div
         v-if="perfil !== 'ponto_focal'"
-        class="flex g1 mb1 center"
+        class="legenda-padrão__item flex g1 mb1 center"
       >
-        <dt>
+        <dt class="legenda-padrão__ícone f0">
           <svg
             width="24"
             height="24"
             color="#EE3B2B"
           ><use xlink:href="#i_clock" /></svg>
         </dt>
-        <dd class="f2">
+        <dd class="legenda-padrão__descrição f2">
           Conferência
         </dd>
       </div>
-      <div class="flex g1 mb1 center">
-        <dt>
+      <div class="legenda-padrão__item flex g1 mb1 center">
+        <dt class="legenda-padrão__ícone f0">
           <svg
             width="24"
             height="24"
             color="#EE3B2B"
           ><use xlink:href="#i_alert" /></svg>
         </dt>
-        <dd class="f2">
+        <dd class="legenda-padrão__descrição f2">
           Complementação
         </dd>
       </div>
-      <div class="flex g1 mb1 center">
-        <dt>
+      <div class="legenda-padrão__item flex g1 mb1 center">
+        <dt class="legenda-padrão__ícone f0">
           <svg
             width="24"
             height="24"
           ><use xlink:href="#i_calendar" /></svg>
         </dt>
-        <dd class="f2">
+        <dd class="legenda-padrão__descrição f2">
           Cronograma
         </dd>
       </div>
-      <div class="flex g1 mb1 center">
-        <dt>
+      <div class="legenda-padrão__item flex g1 mb1 center">
+        <dt class="legenda-padrão__ícone f0">
           <svg
             width="24"
             height="24"
           ><use xlink:href="#i_$" /></svg>
         </dt>
-        <dd class="f2">
+        <dd class="legenda-padrão__descrição f2">
           Orçamento
         </dd>
       </div>
       <div
         v-if="perfil !== 'ponto_focal'"
-        class="flex g1 mb1 center"
+        class="legenda-padrão__item flex g1 mb1 center"
       >
-        <dt>
+        <dt class="legenda-padrão__ícone f0">
           <svg
             width="24"
             height="24"
           ><use xlink:href="#i_iniciativa" /></svg>
         </dt>
-        <dd class="f2">
+        <dd class="legenda-padrão__descrição f2">
           Qualificação
         </dd>
       </div>
       <div
         v-if="perfil !== 'ponto_focal'"
-        class="flex g1 mb1 center"
+        class="legenda-padrão__item flex g1 mb1 center"
       >
-        <dt>
+        <dt class="legenda-padrão__ícone f0">
           <svg
             width="24"
             height="24"
           ><use xlink:href="#i_binoculars" /></svg>
         </dt>
-        <dd class="f2">
+        <dd class="legenda-padrão__descrição f2">
           Análise de Risco
         </dd>
       </div>
       <div
         v-if="perfil !== 'ponto_focal'"
-        class="flex g1 mb1 center"
+        class="legenda-padrão__item flex g1 mb1 center"
       >
-        <dt>
+        <dt class="legenda-padrão__ícone f0">
           <svg
             width="24"
             height="24"
           ><use xlink:href="#i_check" /></svg>
         </dt>
-        <dd class="f2">
+        <dd class="legenda-padrão__descrição f2">
           Fechamento
         </dd>
       </div>
     </dl>
   </div>
 </template>
+<style lang="less">
+.legenda-padrão {}
+
+.legenda-padrão__título {}
+
+.legenda-padrão__lista {}
+
+.legenda-padrão__item {}
+
+.legenda-padrão__ícone {}
+
+.legenda-padrão__descrição {
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+</style>
