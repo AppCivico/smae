@@ -65,9 +65,9 @@ defineProps({
         >
           <svg
             class="meta__icone"
-            :class="meta.cronograma?.preenchido < meta.cronograma?.total
-              ? 'fracasso'
-              : 'sucesso'"
+            :class="{
+              sucesso: meta.cronograma?.preenchido === meta.cronograma?.total
+            }"
             width="24"
             height="24"
           ><use xlink:href="#i_calendar" /></svg><div>Cronograma</div>
@@ -78,9 +78,9 @@ defineProps({
         >
           <svg
             class="meta__icone"
-            :class="meta.orcamento?.preenchido < meta.orcamento?.total
-              ? 'fracasso'
-              : 'sucesso'"
+            :class="{
+              sucesso: meta.orcamento?.preenchido === meta.orcamento?.total
+            }"
             width="24"
             height="24"
           ><use xlink:href="#i_$" /></svg><div>Orçamento</div>
@@ -91,9 +91,9 @@ defineProps({
         >
           <svg
             class="meta__icone"
-            :class="meta.analise_qualitativa_enviada
-              ? 'sucesso'
-              : 'fracasso'"
+            :class="{
+              sucesso: meta.analise_qualitativa_enviada
+            }"
             width="24"
             height="24"
           ><use xlink:href="#i_iniciativa" /></svg><div>Qualificação</div>
@@ -104,9 +104,9 @@ defineProps({
         >
           <svg
             class="meta__icone"
-            :class="meta.risco_enviado
-              ? 'sucesso'
-              : 'fracasso'"
+            :class="{
+              sucesso: meta.risco_enviado
+            }"
             width="24"
             height="24"
           ><use xlink:href="#i_binoculars" /></svg><div>Análise de Risco</div>
@@ -117,9 +117,9 @@ defineProps({
         >
           <svg
             class="meta__icone"
-            :class="meta.fechamento_enviado
-              ? 'sucesso'
-              : 'fracasso'"
+            :class="{
+              sucesso: meta.fechamento_enviado
+            }"
             width="24"
             height="24"
           ><use xlink:href="#i_check" /></svg><div>Fechamento</div>
@@ -131,14 +131,16 @@ defineProps({
         class="meta__lista-de-variáveis flex"
       >
         <div class="meta__variável pl1 pr1">
-          <dt>{{ meta.variaveis.total }}</dt>
+          <dt class="w700">
+            {{ meta.variaveis.total }}
+          </dt>
           <dd>variáveis</dd>
         </div>
         <div
           v-if="meta.variaveis.aguardando_complementacao"
           class="meta__variável pl1 pr1"
         >
-          <dt class="fracasso">
+          <dt class="w700 fracasso">
             {{ meta.variaveis.aguardando_complementacao }}
           </dt>
           <dd>
@@ -150,9 +152,10 @@ defineProps({
           class="meta__variável pl1 pr1"
         >
           <dt
-            :class="meta.variaveis.conferidas < meta.variaveis.total
-              ? 'fracasso'
-              : 'sucesso'"
+            class="w700"
+            :class="{
+              sucesso: meta.variaveis.conferidas === meta.variaveis.total
+            }"
           >
             {{ meta.variaveis.conferidas }}
           </dt>
@@ -168,9 +171,10 @@ defineProps({
             class="meta__variável pl1 pr1"
           >
             <dt
-              :class="meta.variaveis.enviadas < meta.variaveis.total
-                ? 'fracasso'
-                : 'sucesso'"
+              class="w700"
+              :class="{
+                sucesso: meta.variaveis.enviadas === meta.variaveis.total
+              }"
             >
               {{ meta.variaveis.enviadas }}
             </dt>
@@ -182,9 +186,10 @@ defineProps({
             class="meta__variável pl1 pr1"
           >
             <dt
-              :class="meta.variaveis.preenchidas < meta.variaveis.total
-                ? 'fracasso'
-                : 'sucesso'"
+              class="w700"
+              :class="{
+                sucesso: meta.variaveis.preenchidas === meta.variaveis.total
+              }"
             >
               {{ meta.variaveis.preenchidas }}
             </dt>
@@ -223,5 +228,9 @@ defineProps({
 
 .alerta {
   color: @amarelo;
+}
+
+.neutro {
+  color: currentColor;
 }
 </style>
