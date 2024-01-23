@@ -71,7 +71,11 @@ async function iniciar() {
     await MetasStore.getPdM(activePdm.value.id);
   }
 
-  panoramaStore.buscarTudo(activePdm.value.id, route.query.status);
+  panoramaStore.buscarTudo(activePdm.value.id, route.query.status, {
+    metas: route.query.metas,
+    coordenadores_cp: route.query.coordenadores_cp,
+    orgaos: route.query.orgaos,
+  });
 }
 
 watch([
