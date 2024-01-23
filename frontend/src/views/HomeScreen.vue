@@ -105,7 +105,7 @@ watch([
           :to="{ query: { ...$route.query, visao: 'pessoal' } }"
           class="btn bgnone outline tcprimary"
           :class="{
-            tcamarelo: $route.query.visao !== 'pessoal'
+            tcamarelo: $route.query.visao === 'pessoal'
           }"
         >
           Visão pessoal
@@ -115,7 +115,7 @@ watch([
           :to="{ query: { ...$route.query, visao: 'geral' } }"
           class="btn bgnone outline tcprimary"
           :class="{
-            tcamarelo: $route.query.visao !== 'geral'
+            tcamarelo: $route.query.visao === 'geral'
           }"
         >
           Visão geral
