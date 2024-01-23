@@ -16,6 +16,17 @@ defineProps({
         ].indexOf(valor) > -1;
     },
   },
+  visão: {
+    type: String,
+    default: 'pessoal',
+    validator(valor) {
+      return typeof valor === 'string'
+        && [
+          'geral',
+          'pessoal',
+        ].indexOf(valor) > -1;
+    },
+  },
 });
 </script>
 <template>
@@ -135,17 +146,6 @@ defineProps({
           </dd>
         </div>
         <div
-          v-if="meta.variaveis.aguardando_cp"
-          class="meta__variável pl1 pr1"
-        >
-          <dt class="alerta">
-            {{ meta.variaveis.aguardando_cp }}
-          </dt>
-          <dd>
-            aguardando CP
-          </dd>
-        </div>
-        <div
           v-if="meta.variaveis.conferidas"
           class="meta__variável pl1 pr1"
         >
@@ -158,32 +158,39 @@ defineProps({
           </dt>
           <dd>conferidas</dd>
         </div>
-        <div
-          v-if="meta.variaveis.enviadas"
-          class="meta__variável pl1 pr1"
+
+        <template
+          v-if="(visão === 'pessoal' && perfil === 'ponto_focal')
+            || (visão === 'geral' && perfil === 'admin_cp')"
         >
-          <dt
-            :class="meta.variaveis.enviadas < meta.variaveis.total
-              ? 'fracasso'
-              : 'sucesso'"
+          <div
+            v-if="meta.variaveis.enviadas"
+            class="meta__variável pl1 pr1"
           >
-            {{ meta.variaveis.enviadas }}
-          </dt>
-          <dd>enviadas</dd>
-        </div>
-        <div
-          v-if="meta.variaveis.preenchidas"
-          class="meta__variável pl1 pr1"
-        >
-          <dt
-            :class="meta.variaveis.preenchidas < meta.variaveis.total
-              ? 'fracasso'
-              : 'sucesso'"
+            <dt
+              :class="meta.variaveis.enviadas < meta.variaveis.total
+                ? 'fracasso'
+                : 'sucesso'"
+            >
+              {{ meta.variaveis.enviadas }}
+            </dt>
+            <dd>enviadas</dd>
+          </div>
+
+          <div
+            v-if="meta.variaveis.preenchidas"
+            class="meta__variável pl1 pr1"
           >
-            {{ meta.variaveis.preenchidas }}
-          </dt>
-          <dd>preenchidas</dd>
-        </div>
+            <dt
+              :class="meta.variaveis.preenchidas < meta.variaveis.total
+                ? 'fracasso'
+                : 'sucesso'"
+            >
+              {{ meta.variaveis.preenchidas }}
+            </dt>
+            <dd>preenchidas</dd>
+          </div>
+        </template>
       </dl>
     </div>
   </article>

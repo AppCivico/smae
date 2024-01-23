@@ -148,6 +148,7 @@ watch([
             :key="i"
             :meta="item"
             :perfil="perfil"
+            :visão="$route.query.visao"
             class="mb2"
           />
         </template>
@@ -160,6 +161,7 @@ watch([
             :key="i"
             :meta="item"
             :perfil="perfil"
+            :visão="$route.query.visao"
             class="mb2"
           />
         </template>
