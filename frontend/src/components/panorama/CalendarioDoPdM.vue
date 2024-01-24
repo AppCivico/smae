@@ -9,7 +9,10 @@ defineProps({
 });
 </script>
 <template>
-  <template v-if="Array.isArray(pdm?.ciclo_fisico_ativo?.fases)">
+  <div
+    v-if="Array.isArray(pdm?.ciclo_fisico_ativo?.fases)"
+    class="calendario"
+  >
     <h2 class="w400 t20 tc tamarelo calendario__titulo mb1">
       {{ dateToMonth(pdm?.ciclo_fisico_ativo.data_ciclo, 'long') }}
     </h2>
@@ -46,18 +49,61 @@ defineProps({
         </dd>
       </div>
     </dl>
-  </template>
+  </div>
 </template>
 <style lang="less" scoped>
+.calendario {}
+
 .calendario__titulo {
+  border-bottom: 1px solid @c200;
+  margin-bottom: 1rem;
+  padding-bottom: 1rem;
   text-transform: capitalize;
+}
+
+.calendario__lista {}
+
+.calendario__item {}
+
+.calendario__item--destaque {
+  border-radius: 4px;
+  outline: 1px solid @amarelo;
+  outline-offset: 8px;
+}
+
+.calendario__intervalo {
+  display: flex;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+
+  &:after {
+    content: '';
+    display: block;
+    flex-grow: 1;
+    border-bottom: 1px solid @c100;
+    height: 0;
+    margin-top: auto;
+    margin-bottom: auto;
+    margin-left: 1rem;
+  }
+}
+
+.calendario__evento {
+  display: flex;
+
+  &:before {
+    content: '';
+    display: block;
+    flex-grow: 1;
+    border-bottom: 1px solid @c100;
+    height: 0;
+    margin-top: auto;
+    margin-right: 1rem;
+    margin-bottom: auto;
+  }
 }
 
 .calendario__dia--foraDoMês {
   color: @c300;
-}
-
-.calendario__intervalo {
-  font-variant-numeric: tabular-nums;
 }
 </style>

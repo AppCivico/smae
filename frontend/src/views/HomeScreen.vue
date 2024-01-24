@@ -127,7 +127,7 @@ watch([
       </nav>
     </header>
 
-    <div class="flex flexwrap g2">
+    <div class="flex flexwrap g2 start">
       <div class="mb1 f1">
         <Transition name="fade">
           <FiltroDeMetas v-if="perfil && perfil !== 'ponto_focal'" />
@@ -206,7 +206,7 @@ watch([
         </template>
       </EnvelopeDeAbas>
 
-      <div class="mb1 card-shadow f1 p15 calendario">
+      <div class="mb1 card-shadow f1 p15">
         <LoadingComponent v-if="activePdm?.loading" />
         <CalendárioDoPdM :pdm="activePdm" />
       </div>
@@ -222,53 +222,3 @@ watch([
     </div>
   </Dashboard>
 </template>
-<style lang="less">
-.calendario {}
-
-.calendario__titulo {
-  border-bottom: 1px solid @c200;
-  margin-bottom: 1rem;
-  padding-bottom: 1rem;
-}
-
-.calendario__lista {}
-
-.calendario__item {}
-
-.calendario__item--destaque {
-  border-radius: 4px;
-  outline: 1px solid @amarelo;
-  outline-offset: 8px;
-}
-
-.calendario__intervalo {
-  display: flex;
-  white-space: nowrap;
-
-  &:after {
-    content: '';
-    display: block;
-    flex-grow: 1;
-    border-bottom: 1px solid @c200;
-    height: 0;
-    margin-top: auto;
-    margin-bottom: auto;
-    margin-left: 1rem;
-  }
-}
-
-.calendario__evento {
-  display: flex;
-
-  &:before {
-    content: '';
-    display: block;
-    flex-grow: 1;
-    border-bottom: 1px solid @c200;
-    height: 0;
-    margin-top: auto;
-    margin-right: 1rem;
-    margin-bottom: auto;
-  }
-}
-</style>
