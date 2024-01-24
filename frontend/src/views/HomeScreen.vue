@@ -12,16 +12,16 @@ import { useAuthStore } from '@/stores/auth.store';
 import { usePanoramaStore } from '@/stores/panorama.store.ts';
 import { watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { useMetasStore } from '@/stores/metas.store';
+import { usePdMStore } from '@/stores/pdm.store';
 import LoadingComponent from '@/components/LoadingComponent.vue';
 
 const route = useRoute();
 const router = useRouter();
 
 const authStore = useAuthStore();
-const MetasStore = useMetasStore();
+const PdmStore = usePdMStore();
 const { user, temPermissãoPara } = storeToRefs(authStore);
-const { activePdm } = storeToRefs(MetasStore);
+const { activePdm } = storeToRefs(PdmStore);
 
 const panoramaStore = usePanoramaStore();
 const {
@@ -70,7 +70,7 @@ async function iniciar() {
   }
 
   if (!activePdm.value.id) {
-    await MetasStore.getPdM(activePdm.value.id);
+    await PdmStore.getActive();
   }
 
   panoramaStore.buscarTudo(activePdm.value.id, route.query.status, {
