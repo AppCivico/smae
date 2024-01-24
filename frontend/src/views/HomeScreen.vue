@@ -138,6 +138,7 @@ watch([
           <LegendaPadrão
             v-else
             :perfil="perfil"
+            :status="$route.query.status"
           />
         </template>
       </div>

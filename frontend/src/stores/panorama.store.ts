@@ -35,7 +35,9 @@ export const usePanoramaStore = defineStore('panorama', {
     perfil: '',
 
     chamadasPendentes: {
-      lista: false,
+      // usando `true` por padrão para, em conjunto com o tamanho da lista,
+      // identificar se a primeira chamada já ocorreu
+      lista: true,
     },
 
     erro: null,

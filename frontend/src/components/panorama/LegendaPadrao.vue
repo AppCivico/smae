@@ -12,6 +12,18 @@ defineProps({
         ].indexOf(valor) > -1;
     },
   },
+  status: {
+    type: String,
+    default: 'pessoal',
+    validator(valor) {
+      return typeof valor === 'string'
+        && [
+          'atrasadas',
+          'atualizadas',
+          'pendentes',
+        ].indexOf(valor) > -1;
+    },
+  },
 });
 </script>
 <template>
@@ -21,7 +33,7 @@ defineProps({
     </h2>
     <dl class="legenda-padrão__lista">
       <div
-        v-if="perfil !== 'ponto_focal'"
+        v-if="status !== 'atualizadas' && perfil !== 'ponto_focal'"
         class="legenda-padrão__item flex g1 mb1 center"
       >
         <dt class="legenda-padrão__ícone f0">
@@ -35,7 +47,10 @@ defineProps({
           Conferência
         </dd>
       </div>
-      <div class="legenda-padrão__item flex g1 mb1 center">
+      <div
+        v-if="status !== 'atualizadas'"
+        class="legenda-padrão__item flex g1 mb1 center"
+      >
         <dt class="legenda-padrão__ícone f0">
           <svg
             width="24"
