@@ -78,21 +78,21 @@ const lista = computed(() => {
     <h2 class="meta__título w900 t14 spacebetween uc br8">
       {{ meta.codigo }} - {{ meta.titulo }}
     </h2>
-    <div class="meta__meta-dados flex flexwrap spacebetween g1">
+    <div class="meta__meta-dados">
       <ul class="meta__lista-de-anos flex g2 flexwrap start">
         <li
           v-for="item in lista"
           :key="item.ano"
-          class="meta__ano flex f1 g1 mt025 mb025"
+          class="meta__ano flex g1 mt025 mb025"
         >
           <span class="meta__ano-valor tamarelo flex center tc t12">
             {{ item.ano }}
           </span>
-          <ul class="meta__lista-de-eventos flex g05">
+          <ul class="meta__lista-de-eventos flex flexwrap g05">
             <li
               v-for="subItem in item.valores"
               :key="subItem.mês"
-              class="meta__item-do-ano br999 pl05 ib pr05 t11"
+              class="meta__item-do-ano br999 pl05 pr05 t11"
               :class="subItem.classe"
             >
               <span class="meta__mês">
@@ -100,15 +100,17 @@ const lista = computed(() => {
               </span>
               <span
                 v-if="subItem.variáveis"
-                class="meta__numero-de-variaveis"
+                class="meta__numero-de-variaveis tipinfo"
               >
                 {{ subItem.variáveis }}
+                <div>{{ subItem.variáveis }} variáveis</div>
               </span>
               <span
                 v-if="subItem.orçamentos"
-                class="meta__orcamento"
+                class="meta__orcamento tipinfo"
               >
                 $
+                <div>há orçamentos em atraso</div>
               </span>
             </li>
           </ul>
@@ -132,21 +134,28 @@ const lista = computed(() => {
   }
 }
 
+.meta__ano {
+  flex-basis: calc(50% - 1rem);
+  min-width: 10rem;
+  flex-shrink: 0;
+  flex-grow: 1;
+}
+
 .meta__item-do-ano {
   background: @cinza-claro-azulado;
   white-space: nowrap;
 
   span + span {
+    margin-left: 0.25em;
+
     &::before {
-      content: ' | ';
-      color: @c500;
+      content: '| ';
+      color: @c300;
     }
   }
 }
 
-.meta__mês {
-  font-variant-numeric: tabular-nums;
-}
+.meta__mês {}
 
 .meta__numero-de-variaveis {
   font-variant-numeric: tabular-nums;
