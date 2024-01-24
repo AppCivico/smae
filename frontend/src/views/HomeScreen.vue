@@ -92,7 +92,7 @@ watch([
 <template>
   <Dashboard>
     <header class="flex center mb2 spacebetween g1 flexwrap">
-      <div class="t12 uc w700 tamarelo f100">
+      <div class="t12 uc w700 tamarelo fb100">
         Programa de metas
       </div>
 
