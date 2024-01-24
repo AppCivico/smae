@@ -96,7 +96,7 @@ watch([
         Programa de metas
       </div>
 
-      <TítuloDePágina class="f1">
+      <TítuloDePágina>
         Quadro de atividades
       </TítuloDePágina>
 
@@ -109,6 +109,7 @@ watch([
           :class="{
             tcamarelo: $route.query.visao === 'pessoal'
           }"
+          :aria-current="$route.query.visao === 'pessoal' ? 'page' : undefined"
         >
           Visão pessoal
         </router-link>
@@ -119,6 +120,7 @@ watch([
           :class="{
             tcamarelo: $route.query.visao === 'geral'
           }"
+          :aria-current="$route.query.visao === 'geral' ? 'page' : undefined"
         >
           Visão geral
         </router-link>
