@@ -54,7 +54,7 @@ defineProps({
 }
 
 .calendario__dia--foraDoMês {
-  color: fuchsia;
+  color: @c300;
 }
 
 .calendario__intervalo {
