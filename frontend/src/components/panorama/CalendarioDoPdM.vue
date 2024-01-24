@@ -18,36 +18,39 @@ defineProps({
     </h2>
 
     <dl class="calendario__lista">
-      <div
-        v-for="fase in
-          pdm.ciclo_fisico_ativo.fases "
+      <template
+        v-for="fase in pdm.ciclo_fisico_ativo.fases "
         :key="fase.id"
-        class="flex calendario__item center mb1"
-        :class="{ 'calendario__item--destaque': fase.fase_corrente }"
       >
-        <dt class="f1 t20 tamarelo calendario__intervalo">
-          <span
-            class="calendario__dia"
-            :class="{
-              'calendario__dia--foraDoMês':
-                dateToMonth(fase.data_inicio) !== dateToMonth(pdm?.ciclo_fisico_ativo.data_ciclo)
-            }"
-          >
-            {{ dateToDay(fase.data_inicio, '2-digit') }}
-          </span> &ndash; <span
-            class="calendario__dia"
-            :class="{
-              'calendario__dia--foraDoMês':
-                dateToMonth(fase.data_fim) !== dateToMonth(pdm?.ciclo_fisico_ativo.data_ciclo)
-            }"
-          >
-            {{ dateToDay(fase.data_fim, '2-digit') }}
-          </span>
-        </dt>
-        <dd class="f2 t12 w700 tprimary calendario__evento">
-          {{ fase.ciclo_fase }}
-        </dd>
-      </div>
+        <div
+          v-if="perfil !== 'ponto_focal' || fase.ciclo_fase === 'Coleta'"
+          class="flex calendario__item center mb1"
+          :class="{ 'calendario__item--destaque': fase.fase_corrente }"
+        >
+          <dt class="f1 t20 tamarelo calendario__intervalo">
+            <span
+              class="calendario__dia"
+              :class="{
+                'calendario__dia--foraDoMês':
+                  dateToMonth(fase.data_inicio) !== dateToMonth(pdm?.ciclo_fisico_ativo.data_ciclo)
+              }"
+            >
+              {{ dateToDay(fase.data_inicio, '2-digit') }}
+            </span> &ndash; <span
+              class="calendario__dia"
+              :class="{
+                'calendario__dia--foraDoMês':
+                  dateToMonth(fase.data_fim) !== dateToMonth(pdm?.ciclo_fisico_ativo.data_ciclo)
+              }"
+            >
+              {{ dateToDay(fase.data_fim, '2-digit') }}
+            </span>
+          </dt>
+          <dd class="f2 t12 w700 tprimary calendario__evento">
+            {{ fase.ciclo_fase }}
+          </dd>
+        </div>
+      </template>
     </dl>
   </div>
 </template>
