@@ -21,7 +21,7 @@ const router = useRouter();
 const authStore = useAuthStore();
 const MetasStore = useMetasStore();
 const { user, temPermissãoPara } = storeToRefs(authStore);
-const { Metas, activePdm } = storeToRefs(MetasStore);
+const { activePdm } = storeToRefs(MetasStore);
 
 const panoramaStore = usePanoramaStore();
 const {
