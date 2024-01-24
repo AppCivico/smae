@@ -128,7 +128,7 @@ defineProps({
 
       <dl
         v-if="meta.variaveis?.total"
-        class="meta__lista-de-variáveis flex"
+        class="meta__lista-de-variáveis flex fb0"
       >
         <div class="meta__variável pl1 pr1">
           <dt class="w700">
