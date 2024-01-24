@@ -1,3 +1,6 @@
+/**
+ * @link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/DateTimeFormat/DateTimeFormat#options
+ */
 function dateToDate(d, options = {}) {
   const dd = d ? new Date(d) : false;
   if (!dd) return d;
