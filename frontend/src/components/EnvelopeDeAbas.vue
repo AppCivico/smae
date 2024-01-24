@@ -84,6 +84,9 @@ iniciar();
                 [nomeDaChaveDeAbas]: dadosConsolidadosPorId[nomeDaAba].hash,
               }
             }"
+            :aria-current="abaAberta === dadosConsolidadosPorId[nomeDaAba].hash
+              ? 'page'
+              : undefined"
           >
             {{ dadosConsolidadosPorId[nomeDaAba].etiqueta }}
           </router-link>
