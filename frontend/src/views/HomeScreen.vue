@@ -1,6 +1,7 @@
 <script setup>
 import EnvelopeDeAbas from '@/components/EnvelopeDeAbas.vue';
 import FiltroDeMetas from '@/components/panorama/FiltroDeMetas.vue';
+import LegendaDeAtrasadas from '@/components/panorama/LegendaDeAtrasadas.vue';
 import LegendaPadrão from '@/components/panorama/LegendaPadrao.vue';
 import MetaNormal from '@/components/panorama/MetaNormal.vue';
 import MetaAtrasada from '@/components/panorama/MetaAtrasada.vue';
@@ -130,10 +131,15 @@ watch([
           <FiltroDeMetas v-if="perfil && perfil !== 'ponto_focal'" />
         </Transition>
 
-        <LegendaPadrão
-          v-if="perfil"
-          :perfil="perfil"
-        />
+        <template v-if="perfil">
+          <LegendaDeAtrasadas
+            v-if="$route.query.status === 'atrasadas'"
+          />
+          <LegendaPadrão
+            v-else
+            :perfil="perfil"
+          />
+        </template>
       </div>
 
       <EnvelopeDeAbas
