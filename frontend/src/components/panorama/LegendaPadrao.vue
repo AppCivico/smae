@@ -32,36 +32,42 @@ defineProps({
       Legenda
     </h2>
     <dl class="legenda-padrão__lista">
-      <div
-        v-if="status !== 'atualizadas' && perfil !== 'ponto_focal'"
-        class="legenda-padrão__item flex g1 mb1 center"
-      >
-        <dt class="legenda-padrão__ícone f0">
-          <svg
-            width="24"
-            height="24"
-            color="#EE3B2B"
-          ><use xlink:href="#i_clock" /></svg>
-        </dt>
-        <dd class="legenda-padrão__descrição f2">
-          Conferência
-        </dd>
-      </div>
-      <div
-        v-if="status !== 'atualizadas'"
-        class="legenda-padrão__item flex g1 mb1 center"
-      >
-        <dt class="legenda-padrão__ícone f0">
-          <svg
-            width="24"
-            height="24"
-            color="#EE3B2B"
-          ><use xlink:href="#i_alert" /></svg>
-        </dt>
-        <dd class="legenda-padrão__descrição f2">
-          Complementação
-        </dd>
-      </div>
+      <Transition name="fade">
+        <div
+          v-if="status !== 'atualizadas' && perfil !== 'ponto_focal'"
+          class="legenda-padrão__item flex g1 mb1 center"
+        >
+          <dt class="legenda-padrão__ícone f0">
+            <svg
+              width="24"
+              height="24"
+              color="#EE3B2B"
+            ><use xlink:href="#i_clock" /></svg>
+          </dt>
+          <dd class="legenda-padrão__descrição f2">
+            Conferência
+          </dd>
+        </div>
+      </Transition>
+
+      <Transition name="fade">
+        <div
+          v-if="status !== 'atualizadas'"
+          class="legenda-padrão__item flex g1 mb1 center"
+        >
+          <dt class="legenda-padrão__ícone f0">
+            <svg
+              width="24"
+              height="24"
+              color="#EE3B2B"
+            ><use xlink:href="#i_alert" /></svg>
+          </dt>
+          <dd class="legenda-padrão__descrição f2">
+            Complementação
+          </dd>
+        </div>
+      </Transition>
+
       <div class="legenda-padrão__item flex g1 mb1 center">
         <dt class="legenda-padrão__ícone f0">
           <svg
@@ -84,48 +90,57 @@ defineProps({
           Orçamento
         </dd>
       </div>
-      <div
-        v-if="perfil !== 'ponto_focal'"
-        class="legenda-padrão__item flex g1 mb1 center"
-      >
-        <dt class="legenda-padrão__ícone f0">
-          <svg
-            width="24"
-            height="24"
-          ><use xlink:href="#i_iniciativa" /></svg>
-        </dt>
-        <dd class="legenda-padrão__descrição f2">
-          Qualificação
-        </dd>
-      </div>
-      <div
-        v-if="perfil !== 'ponto_focal'"
-        class="legenda-padrão__item flex g1 mb1 center"
-      >
-        <dt class="legenda-padrão__ícone f0">
-          <svg
-            width="24"
-            height="24"
-          ><use xlink:href="#i_binoculars" /></svg>
-        </dt>
-        <dd class="legenda-padrão__descrição f2">
-          Análise de Risco
-        </dd>
-      </div>
-      <div
-        v-if="perfil !== 'ponto_focal'"
-        class="legenda-padrão__item flex g1 mb1 center"
-      >
-        <dt class="legenda-padrão__ícone f0">
-          <svg
-            width="24"
-            height="24"
-          ><use xlink:href="#i_check" /></svg>
-        </dt>
-        <dd class="legenda-padrão__descrição f2">
-          Fechamento
-        </dd>
-      </div>
+
+      <Transition name="fade">
+        <div
+          v-if="perfil !== 'ponto_focal'"
+          class="legenda-padrão__item flex g1 mb1 center"
+        >
+          <dt class="legenda-padrão__ícone f0">
+            <svg
+              width="24"
+              height="24"
+            ><use xlink:href="#i_iniciativa" /></svg>
+          </dt>
+          <dd class="legenda-padrão__descrição f2">
+            Qualificação
+          </dd>
+        </div>
+      </Transition>
+
+      <Transition name="fade">
+        <div
+          v-if="perfil !== 'ponto_focal'"
+          class="legenda-padrão__item flex g1 mb1 center"
+        >
+          <dt class="legenda-padrão__ícone f0">
+            <svg
+              width="24"
+              height="24"
+            ><use xlink:href="#i_binoculars" /></svg>
+          </dt>
+          <dd class="legenda-padrão__descrição f2">
+            Análise de Risco
+          </dd>
+        </div>
+      </Transition>
+
+      <Transition name="fade">
+        <div
+          v-if="perfil !== 'ponto_focal'"
+          class="legenda-padrão__item flex g1 mb1 center"
+        >
+          <dt class="legenda-padrão__ícone f0">
+            <svg
+              width="24"
+              height="24"
+            ><use xlink:href="#i_check" /></svg>
+          </dt>
+          <dd class="legenda-padrão__descrição f2">
+            Fechamento
+          </dd>
+        </div>
+      </Transition>
     </dl>
   </div>
 </template>
