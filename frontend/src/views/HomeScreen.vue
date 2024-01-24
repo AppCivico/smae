@@ -148,7 +148,7 @@ watch([
         class="mb1 f3"
       >
         <template #pendentes>
-          <LoadingComponent v-if="chamadasPendentes.pendentes" />
+          <LoadingComponent v-if="chamadasPendentes.lista" />
           <MetaNormal
             v-for="(item, i) in listaDePendentes"
             v-else
@@ -161,7 +161,7 @@ watch([
         </template>
 
         <template #atualizadas>
-          <LoadingComponent v-if="chamadasPendentes.atualizadas" />
+          <LoadingComponent v-if="chamadasPendentes.lista" />
           <MetaNormal
             v-for="(item, i) in listaDeAtualizadas"
             v-else
@@ -174,7 +174,7 @@ watch([
         </template>
 
         <template #atrasadas>
-          <LoadingComponent v-if="chamadasPendentes.pendentes" />
+          <LoadingComponent v-if="chamadasPendentes.lista" />
           <MetaAtrasada
             v-for="(item, i) in listaDeAtrasadas"
             v-else

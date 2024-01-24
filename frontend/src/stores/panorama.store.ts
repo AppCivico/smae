@@ -10,9 +10,7 @@ const baseUrl = `${import.meta.env.VITE_API_URL}`;
 type Lista = [];
 
 interface ChamadasPendentes {
-  pendentes: boolean;
-  atualizadas: boolean;
-  atrasadas: boolean;
+  lista: boolean;
 }
 
 interface Estado {
@@ -37,9 +35,7 @@ export const usePanoramaStore = defineStore('panorama', {
     perfil: '',
 
     chamadasPendentes: {
-      pendentes: false,
-      atualizadas: false,
-      atrasadas: false,
+      lista: false,
     },
 
     erro: null,
@@ -68,7 +64,7 @@ export const usePanoramaStore = defineStore('panorama', {
           throw new Error(`Tipo de lista inválido: \`${tipoDaLista}\``);
       }
 
-      this.chamadasPendentes[tipoDaLista] = true;
+      this.chamadasPendentes.lista = true;
 
       try {
         const resposta:ListMfDashMetasDto = await this.requestS.get(`${baseUrl}/mf/panorama/metas`, { pdm_id: pdmId, ...params, ...tipoDeRetorno });
@@ -104,7 +100,7 @@ export const usePanoramaStore = defineStore('panorama', {
       } catch (erro: unknown) {
         this.erro = erro;
       }
-      this.chamadasPendentes[tipoDaLista] = false;
+      this.chamadasPendentes.lista = false;
     },
   },
 });
