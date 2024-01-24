@@ -79,20 +79,20 @@ export const usePanoramaStore = defineStore('panorama', {
 
         switch (tipoDaLista) {
           case 'pendentes':
-            this.listaDePendentes = Array.isArray(resposta[tipoDaLista])
-              ? resposta[tipoDaLista]
+            this.listaDePendentes = Array.isArray(resposta.pendentes)
+              ? resposta.pendentes
               : [];
             break;
 
           case 'atualizadas':
-            this.listaDeAtualizadas = Array.isArray(resposta[tipoDaLista])
-              ? resposta[tipoDaLista]
+            this.listaDeAtualizadas = Array.isArray(resposta.atualizadas)
+              ? resposta.atualizadas
               : [];
             break;
 
           case 'atrasadas':
-            this.listaDeAtrasadas = Array.isArray(resposta[tipoDaLista])
-              ? resposta[tipoDaLista]
+            this.listaDeAtrasadas = Array.isArray(resposta.atrasadas)
+              ? resposta.atrasadas
               : [];
             break;
 
