@@ -196,6 +196,24 @@ watch([
 
         <template #atrasadas>
           <LoadingComponent v-if="chamadasPendentes.lista" />
+
+          <div
+            v-else-if="!listaDeAtrasadas.length"
+            class="celebrate flex column center tc600 w700 mb1"
+          >
+            <svg
+              width="107"
+              height="107"
+              fill="#f7c234"
+            ><use xlink:href="#i_celebrate" /></svg>
+            <p class="t20 mb0">
+              Bom trabalho!
+            </p>
+            <p class="mb0">
+              Você não possui atrasos!
+            </p>
+          </div>
+
           <MetaAtrasada
             v-for="(item, i) in listaDeAtrasadas"
             v-else
