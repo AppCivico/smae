@@ -65,7 +65,8 @@ BEGIN
 
             case when v_fase = 'Coleta' then
                 svcf.id is not null
-            ELSE true END AS enviada
+            ELSE true END AS enviada,
+            svcf.conferida
 
         from mv_variavel_pdm iv
         join variavel v on v.id = iv.variavel_id
@@ -76,8 +77,7 @@ BEGIN
     cte_variaveis_preenchidas as (
         select
             v.variavel_id,
-            sv.conferida
-            -- todo join na status_variavel_ciclo_fisico
+            sv.conferida as conferida_com_valor
         from cte_variaveis v
         join serie_variavel sv on sv.variavel_id = v.variavel_id and sv.serie = 'Realizado'
             and sv.data_valor = v_data_ciclo + v.atraso
@@ -86,7 +86,14 @@ BEGIN
         coalesce(array_agg(v.variavel_id), '{}'::int[]) as v_total,
         coalesce((select array_agg(variavel_id) from cte_variaveis_preenchidas), '{}'::int[]) as v_variaveis_preenchidas,
         coalesce(array_agg(v.variavel_id) filter (where enviada), '{}'::int[]) as v_enviada,
-        coalesce( (select array_agg(variavel_id) from cte_variaveis_preenchidas where conferida), '{}'::int[]) as v_variaveis_conferidas,
+        coalesce(
+                (
+                    select array_agg(variavel_id) from (
+                        select me.variavel_id from cte_variaveis_preenchidas me where me.conferida_com_valor
+                            UNION -- não muda pra union all, deixa com union pra fazer o distinct
+                        select me.variavel_id from cte_variaveis me where me.conferida
+                ) x
+        ), '{}'::int[]) as v_variaveis_conferidas,
         --coalesce( array_agg(v.variavel_id) filter (where aguarda_cp) , '{}'::int[]) as v_aguarda_cp,
         coalesce( array_agg(v.variavel_id) filter (where aguarda_complementacao) , '{}'::int[]) as v_aguarda_complementacao
 
@@ -218,5 +225,5 @@ $$
 LANGUAGE plpgsql;
 
 
-select atualiza_meta_status_consolidado(31, (select id from ciclo_fisico where ativo));
-select * from meta_status_consolidado_cf where meta_id=31;
+select atualiza_meta_status_consolidado(144, (select id from ciclo_fisico where ativo));
+select * from meta_status_consolidado_cf where meta_id=144;

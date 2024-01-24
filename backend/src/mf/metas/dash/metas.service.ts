@@ -73,13 +73,19 @@ export class MfDashMetasService {
             };
         };
 
+        let listaMetasPendentesPf: number[] = [];
+        if ((params.retornar_pendentes || params.retornar_atualizadas) && ehPontoFocal)
+            listaMetasPendentesPf = await this.metasPendentePontoFocal(config.pessoa_id);
+
         if (params.retornar_pendentes) {
             const pendentes = await this.prisma.metaStatusConsolidadoCf.findMany({
                 where: {
                     ciclo_fisico_id: cicloFisicoId,
                     meta_id: metas ? { in: metas } : undefined,
 
-                    pendente_cp: ehPontoFocal ? true : undefined,
+                    pendente_cp: ehPontoFocal ? undefined : true,
+
+                    AND: ehPontoFocal ? [{ meta_id: { in: listaMetasPendentesPf } }] : undefined,
                 },
                 include: {
                     meta: {
@@ -96,7 +102,9 @@ export class MfDashMetasService {
                     ciclo_fisico_id: cicloFisicoId,
                     meta_id: metas ? { in: metas } : undefined,
 
-                    pendente_cp: ehPontoFocal ? false : undefined,
+                    pendente_cp: ehPontoFocal ? undefined : false,
+
+                    AND: ehPontoFocal ? [{ meta_id: { notIn: listaMetasPendentesPf } }] : undefined,
                 },
                 include: {
                     meta: {
@@ -138,5 +146,56 @@ export class MfDashMetasService {
 
         metas = filterMetas.map((r) => r.id);
         return metas;
+    }
+
+    private async metasPendentePontoFocal(pessoaId: number): Promise<number[]> {
+        const metasPendentes: { meta_id: number }[] = await this.prisma.$queryRaw`
+        SELECT
+            msc.meta_id
+        FROM
+            pessoa_acesso_pdm pap
+            CROSS JOIN meta_status_consolidado_cf msc
+            CROSS JOIN LATERAL (
+                -- pra cada elemento da variaveis_total, cruza com o acesso
+                SELECT
+                    array_agg(element) AS variaveis_ponto_focal
+                FROM
+                    unnest(msc.variaveis_total) AS element
+                WHERE
+                    element = ANY (pap.variaveis)
+            ) AS pf
+        WHERE
+            pap.pessoa_id = ${pessoaId}::int
+        AND
+        (
+            (
+            -- se tem alguma variavel aguardando aguarda_complementacao, match
+              ARRAY(SELECT DISTINCT UNNEST(msc.variaveis_aguardando_complementacao))
+                && -- operador overlap/sobreposição
+              ARRAY(SELECT DISTINCT UNNEST(pap.variaveis))
+            )
+            OR
+            (
+                CASE
+                -- se não tem nenhuma, não é pra dar como pendente
+                WHEN cardinality(pf.variaveis_ponto_focal) = 0 THEN
+                    FALSE
+                    -- se tem algum item, pra cada um deles, inverte o resultado do bool_and
+                WHEN cardinality(pf.variaveis_ponto_focal) > 0 THEN
+                    NOT (
+                        -- retorna TRUE se todos os verificados estão no set dos enviados
+                        SELECT
+                            bool_and(element = ANY (msc.variaveis_enviadas))
+                        FROM
+                            unnest(pf.variaveis_ponto_focal) AS element)
+                        -- se o banco usar químicos ruins e voltar um negativo, o default é false
+                    ELSE
+                        FALSE
+                END
+            )
+        )
+    `;
+
+        return metasPendentes.map((r) => r.meta_id);
     }
 }
