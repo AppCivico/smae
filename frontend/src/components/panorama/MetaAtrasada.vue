@@ -1,5 +1,5 @@
 <script setup>
-import dateToDate, { dateToMonth, dateToYear } from '@/helpers/dateToDate';
+import { dateToMonth } from '@/helpers/dateToDate';
 import { computed } from 'vue';
 
 const props = defineProps({
