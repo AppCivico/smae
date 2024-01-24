@@ -179,7 +179,7 @@ const listasAgrupadas = computed(() => listaFiltradaPorTermoDeBusca.value?.reduc
           v-for="item in Object.keys(listasAgrupadas)"
           :id="`portfolio--${listasAgrupadas[item].id}`"
           :key="item"
-          class="board board--flex f100"
+          class="board board--flex fb100"
           :open="Object.keys(listasAgrupadas).length === 1
             || $route.hash === `#portfolio--${listasAgrupadas[item].id}`
             ? true

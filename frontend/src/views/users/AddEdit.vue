@@ -92,7 +92,7 @@ async function checkClose() {
     >
       <hr class="mb1">
       <details
-        class="f100 mb1"
+        class="fb100 mb1"
         :open="user.responsavel_pelos_projetos?.length === 1 ? true : null"
       >
         <summary>
