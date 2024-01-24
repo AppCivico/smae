@@ -1,170 +1,115 @@
 <script setup>
-import { dateToMonth, dateToYear } from '@/helpers/dateToDate';
+import dateToDate, { dateToMonth, dateToYear } from '@/helpers/dateToDate';
+import { computed } from 'vue';
+
+const props = defineProps({
+  meta: {
+    type: Object,
+    required: true,
+  },
+});
+
+const lista = computed(() => {
+  const combinações = {};
+  const {
+    atrasos_variavel: atrasosVariável = [],
+    atrasos_orcamento: atrasosOrçamento = [],
+  } = props.meta;
+
+  atrasosVariável.forEach((x) => {
+    const [ano, mês] = x.data.split('-');
+    if (!combinações[ano]) {
+      combinações[ano] = {};
+    }
+    if (!combinações[ano][mês]) {
+      combinações[ano][mês] = {
+        mês: dateToMonth(x.data, 'short'),
+        orçamentos: true,
+        variáveis: 0,
+      };
+    }
+    combinações[ano][mês].variáveis += x.total;
+  });
+
+  atrasosOrçamento.forEach((x) => {
+    const [ano, mês] = x.data.split('-');
+    if (!combinações[ano]) {
+      combinações[ano] = {};
+    }
+    if (!combinações[ano][mês]) {
+      combinações[ano][mês] = {
+        mês: dateToMonth(x.data, 'short'),
+        orçamentos: true,
+        variáveis: 0,
+      };
+    }
+    combinações[ano][mês].orçamentos = !!x.total;
+  });
+
+  return Object.keys(combinações).reduce((acc, cur) => {
+    const ano = {
+      ano: cur,
+      valores: Object.values(combinações[cur])
+        .map((x) => {
+          let classe = '';
+          if (x.orçamentos && x.variáveis) {
+            classe = 'meta__item-do-ano--mês-variáveis-orçamento';
+          } else if (x.orçamentos) {
+            classe = 'meta__item-do-ano--mês-orçamento';
+          } else if (x.variáveis) {
+            classe = 'meta__item-do-ano--mês-variáveis';
+          }
+          return {
+            ...x,
+            classe,
+          };
+        }),
+    };
+
+    return acc.concat([ano]);
+  }, []);
+});
+
 </script>
 <template>
   <article
     class="meta bgc50 p1 br6"
   >
     <h2 class="meta__título w900 t14 spacebetween uc br8">
-      Meta 10 - Manter a fila por vaga em creche zerada
+      {{ meta.codigo }} - {{ meta.titulo }}
     </h2>
     <div class="meta__meta-dados flex flexwrap spacebetween g1">
-      <ul class="meta__lista-de-anos flex flexwrap start">
-        <li class="meta__ano flex f1 g1">
-          <span class="meta__ano-valor tamarelo flex center tc">
-            {{ dateToYear('2023/01/01') }}
+      <ul class="meta__lista-de-anos flex g2 flexwrap start">
+        <li
+          v-for="item in lista"
+          :key="item.ano"
+          class="meta__ano flex f1 g1 mt025 mb025"
+        >
+          <span class="meta__ano-valor tamarelo flex center tc t12">
+            {{ item.ano }}
           </span>
-          <ul class="meta__lista-de-eventos">
-            <li class="meta__item_do_ano br999 pl05 pr05 ib mr05 mb05">
+          <ul class="meta__lista-de-eventos flex g05">
+            <li
+              v-for="subItem in item.valores"
+              :key="subItem.mês"
+              class="meta__item-do-ano br999 pl05 ib pr05 t11"
+              :class="subItem.classe"
+            >
               <span class="meta__mês">
-                {{ dateToMonth('2024/04/01', 'short') }}
+                {{ subItem.mês }}
               </span>
-              <span class="meta__numero-de-variaveis">
-                12
+              <span
+                v-if="subItem.variáveis"
+                class="meta__numero-de-variaveis"
+              >
+                {{ subItem.variáveis }}
               </span>
-              <span class="meta__orcamento">$</span>
-            </li>
-            <li class="meta__item_do_ano br999 pl05 pr05 ib mr05 mb05">
-              <span class="meta__mês">
-                {{ dateToMonth('2024/04/01', 'short') }}
+              <span
+                v-if="subItem.orçamentos"
+                class="meta__orcamento"
+              >
+                $
               </span>
-              <span class="meta__numero-de-variaveis">
-                12
-              </span>
-              <span class="meta__orcamento">$</span>
-            </li>
-            <li class="meta__item_do_ano br999 pl05 pr05 ib mr05 mb05">
-              <span class="meta__mês">
-                {{ dateToMonth('2024/04/01', 'short') }}
-              </span>
-              <span class="meta__numero-de-variaveis">
-                12
-              </span>
-              <span class="meta__orcamento">$</span>
-            </li>
-            <li class="meta__item_do_ano br999 pl05 pr05 ib mr05 mb05">
-              <span class="meta__mês">
-                {{ dateToMonth('2024/04/01', 'short') }}
-              </span>
-              <span class="meta__numero-de-variaveis">
-                12
-              </span>
-              <span class="meta__orcamento">$</span>
-            </li>
-            <li class="meta__item_do_ano br999 pl05 pr05 ib mr05 mb05">
-              <span class="meta__mês">
-                {{ dateToMonth('2024/04/01', 'short') }}
-              </span>
-              <span class="meta__numero-de-variaveis">
-                12
-              </span>
-              <span class="meta__orcamento">$</span>
-            </li>
-            <li class="meta__item_do_ano br999 pl05 pr05 ib mr05 mb05">
-              <span class="meta__mês">
-                {{ dateToMonth('2024/04/01', 'short') }}
-              </span>
-              <span class="meta__numero-de-variaveis">
-                12
-              </span>
-              <span class="meta__orcamento">$</span>
-            </li>
-            <li class="meta__item_do_ano br999 pl05 pr05 ib mr05 mb05">
-              <span class="meta__mês">
-                {{ dateToMonth('2024/04/01', 'short') }}
-              </span>
-              <span class="meta__numero-de-variaveis">
-                12
-              </span>
-              <span class="meta__orcamento">$</span>
-            </li>
-            <li class="meta__item_do_ano br999 pl05 pr05 ib mr05 mb05">
-              <span class="meta__mês">
-                {{ dateToMonth('2024/04/01', 'short') }}
-              </span>
-              <span class="meta__numero-de-variaveis">
-                12
-              </span>
-              <span class="meta__orcamento">$</span>
-            </li>
-            <li class="meta__item_do_ano br999 pl05 pr05 ib mr05 mb05">
-              <span class="meta__mês">
-                {{ dateToMonth('2024/04/01', 'short') }}
-              </span>
-              <span class="meta__numero-de-variaveis">
-                12
-              </span>
-              <span class="meta__orcamento">$</span>
-            </li>
-            <li class="meta__item_do_ano br999 pl05 pr05 ib mr05 mb05">
-              <span class="meta__mês">
-                {{ dateToMonth('2024/04/01', 'short') }}
-              </span>
-              <span class="meta__numero-de-variaveis">
-                12
-              </span>
-              <span class="meta__orcamento">$</span>
-            </li>
-            <li class="meta__item_do_ano br999 pl05 pr05 ib mr05 mb05">
-              <span class="meta__mês">
-                {{ dateToMonth('2024/04/01', 'short') }}
-              </span>
-              <span class="meta__numero-de-variaveis">
-                12
-              </span>
-              <span class="meta__orcamento">$</span>
-            </li>
-            <li class="meta__item_do_ano br999 pl05 pr05 ib mr05 mb05">
-              <span class="meta__mês">
-                {{ dateToMonth('2024/04/01', 'short') }}
-              </span>
-              <span class="meta__numero-de-variaveis">
-                12
-              </span>
-              <span class="meta__orcamento">$</span>
-            </li>
-          </ul>
-        </li>
-        <li class="meta__ano flex f1 g1">
-          <span class="meta__ano-valor tamarelo flex center tc">
-            {{ dateToYear('2022/01/01') }}
-          </span>
-          <ul class="meta__lista-de-eventos">
-            <li class="meta__item_do_ano br999 pl05 pr05 ib mr05 mb05">
-              <span class="meta__mês">
-                {{ dateToMonth('2024/04/01', 'short') }}
-              </span>
-              <span class="meta__numero-de-variaveis">
-                12
-              </span>
-              <span class="meta__orcamento">$</span>
-            </li>
-            <li class="meta__item_do_ano br999 pl05 pr05 ib mr05 mb05">
-              <span class="meta__mês">
-                {{ dateToMonth('2024/04/01', 'short') }}
-              </span>
-              <span class="meta__numero-de-variaveis">
-                12
-              </span>
-              <span class="meta__orcamento">$</span>
-            </li>
-            <li class="meta__item_do_ano br999 pl05 pr05 ib mr05 mb05">
-              <span class="meta__mês">
-                {{ dateToMonth('2024/04/01', 'short') }}
-              </span>
-              <span class="meta__numero-de-variaveis">
-                12
-              </span>
-              <span class="meta__orcamento">$</span>
-            </li>
-            <li class="meta__item_do_ano br999 pl05 pr05 ib mr05 mb05">
-              <span class="meta__mês">
-                {{ dateToMonth('2024/04/01', 'short') }}
-              </span>
-              <span class="meta__numero-de-variaveis">
-                12
-              </span>
-              <span class="meta__orcamento">$</span>
             </li>
           </ul>
         </li>
@@ -187,13 +132,35 @@ import { dateToMonth, dateToYear } from '@/helpers/dateToDate';
   }
 }
 
-.meta__item_do_ano {
+.meta__item-do-ano {
   background: @cinza-claro-azulado;
+  white-space: nowrap;
 
   span + span {
     &::before {
       content: ' | ';
+      color: @c500;
     }
   }
+}
+
+.meta__mês {
+  font-variant-numeric: tabular-nums;
+}
+
+.meta__numero-de-variaveis {
+  font-variant-numeric: tabular-nums;
+}
+
+.meta__item-do-ano--mês-orçamento {
+  background-color: @bege-claro;
+}
+
+.meta__item-do-ano--mês-variáveis {
+  background-color: @cinza-claro-azulado;
+}
+
+.meta__item-do-ano--mês-variáveis-orçamento {
+  background-color: @cinza-claro-avermelhado;
 }
 </style>

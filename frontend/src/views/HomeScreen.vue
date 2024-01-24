@@ -170,9 +170,10 @@ watch([
         <template #atrasadas>
           <LoadingComponent v-if="chamadasPendentes.pendentes" />
           <MetaAtrasada
-            v-for="(_item, i) in [...Array(10).keys()]"
+            v-for="(item, i) in listaDeAtrasadas"
             v-else
             :key="i"
+            :meta="item"
             class="mb2"
           />
         </template>
