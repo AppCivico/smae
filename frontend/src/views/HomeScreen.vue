@@ -133,7 +133,10 @@ watch([
           <FiltroDeMetas v-if="perfil && perfil !== 'ponto_focal'" />
         </Transition>
 
-        <template v-if="perfil">
+        <Transition
+          v-if="perfil"
+          name="fade"
+        >
           <LegendaDeAtrasadas
             v-if="$route.query.status === 'atrasadas'"
           />
@@ -142,7 +145,7 @@ watch([
             :perfil="perfil"
             :status="$route.query.status"
           />
-        </template>
+        </Transition>
       </div>
 
       <EnvelopeDeAbas
