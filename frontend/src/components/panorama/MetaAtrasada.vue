@@ -142,6 +142,7 @@ const lista = computed(() => {
   min-width: 10rem;
   flex-shrink: 0;
   flex-grow: 1;
+  max-width: max-content;
 }
 
 .meta__item-do-ano {
@@ -159,7 +160,6 @@ const lista = computed(() => {
 }
 
 .meta__mês {}
-
 .meta__numero-de-variaveis {
   font-variant-numeric: tabular-nums;
 }
