@@ -275,7 +275,7 @@ left join variavel_ciclo_fisico_qualitativo as vcfq on
     -- mas qualquer coisa, fazer um join na variaveis, trazer a referencia data_valor original da serie
     -- pra fazer esse cruzamento
     date_trunc('month', vcfq.criado_em AT TIME ZONE 'America/Sao_Paulo')
-         = vm.data_referencia and vcfq.variavel_id = vm.variavel_id and vcfq.removido_em is null and vcfq.ultima_revisao = true
+         = vm.data_referencia and vcfq.variavel_id = vm.variavel_id and vcfq.removido_em is null AND vcfq.ultima_revisao = true
 group by 1, 2, 3, 4;
 
 --
@@ -311,7 +311,7 @@ left join variavel_ciclo_fisico_qualitativo as vcfq on
     -- mas qualquer coisa, fazer um join na variaveis, trazer a referencia data_valor original da serie
     -- pra fazer esse cruzamento
     date_trunc('month', vcfq.criado_em AT TIME ZONE 'America/Sao_Paulo')
-         = vm.data_referencia and vcfq.variavel_id = vm.variavel_id and vcfq.removido_em is null
+         = vm.data_referencia and vcfq.variavel_id = vm.variavel_id and vcfq.removido_em is null AND vcfq.ultima_revisao = true
 group by 1, 2, 3, 4, 5;
 
 -- função usada pra normalizar os dados da query de auto-complete do orgão do sof
