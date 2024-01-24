@@ -114,7 +114,10 @@ if (!Array.isArray(Metas.value) || !Metas.value.length) {
 }
 </script>
 <template>
+  <LoadingComponent v-if="Metas?.loading" />
+
   <form
+    v-else
     class="mb2"
     @submit.prevent
   >
