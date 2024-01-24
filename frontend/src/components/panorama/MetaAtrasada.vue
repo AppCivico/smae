@@ -21,14 +21,14 @@ const lista = computed(() => {
     if (!combinações[ano]) {
       combinações[ano] = {};
     }
-    if (!combinações[ano][mês]) {
-      combinações[ano][mês] = {
+    if (!combinações[ano][`_${mês}`]) {
+      combinações[ano][`_${mês}`] = {
         mês: dateToMonth(x.data, 'short'),
         orçamentos: false,
         variáveis: 0,
       };
     }
-    combinações[ano][mês].variáveis += x.total;
+    combinações[ano][`_${mês}`].variáveis += x.total;
   });
 
   atrasosOrçamento.forEach((x) => {
@@ -36,38 +36,40 @@ const lista = computed(() => {
     if (!combinações[ano]) {
       combinações[ano] = {};
     }
-    if (!combinações[ano][mês]) {
-      combinações[ano][mês] = {
+    if (!combinações[ano][`_${mês}`]) {
+      combinações[ano][`_${mês}`] = {
         mês: dateToMonth(x.data, 'short'),
         orçamentos: false,
         variáveis: 0,
       };
     }
-    combinações[ano][mês].orçamentos = !!x.total;
+    combinações[ano][`_${mês}`].orçamentos = !!x.total;
   });
 
-  return Object.keys(combinações).reduce((acc, cur) => {
-    const ano = {
-      ano: cur,
-      valores: Object.values(combinações[cur])
-        .map((x) => {
-          let classe = '';
-          if (x.orçamentos && x.variáveis) {
-            classe = 'meta__item-do-ano--mês-variáveis-orçamento';
-          } else if (x.orçamentos) {
-            classe = 'meta__item-do-ano--mês-orçamento';
-          } else if (x.variáveis) {
-            classe = 'meta__item-do-ano--mês-variáveis';
-          }
-          return {
-            ...x,
-            classe,
-          };
-        }),
-    };
+  return Object.keys(combinações)
+    .sort((a, b) => b - a)
+    .reduce((acc, cur) => {
+      const ano = {
+        ano: cur,
+        valores: Object.values(combinações[cur])
+          .map((x) => {
+            let classe = '';
+            if (x.orçamentos && x.variáveis) {
+              classe = 'meta__item-do-ano--mês-variáveis-orçamento';
+            } else if (x.orçamentos) {
+              classe = 'meta__item-do-ano--mês-orçamento';
+            } else if (x.variáveis) {
+              classe = 'meta__item-do-ano--mês-variáveis';
+            }
+            return {
+              ...x,
+              classe,
+            };
+          }),
+      };
 
-    return acc.concat([ano]);
-  }, []);
+      return acc.concat([ano]);
+    }, []);
 });
 
 </script>
@@ -78,6 +80,7 @@ const lista = computed(() => {
     <h2 class="meta__título w900 t14 spacebetween uc br8">
       {{ meta.codigo }} - {{ meta.titulo }}
     </h2>
+
     <div class="meta__meta-dados">
       <ul class="meta__lista-de-anos flex g2 flexwrap start">
         <li
