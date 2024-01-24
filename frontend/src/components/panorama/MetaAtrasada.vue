@@ -24,7 +24,7 @@ const lista = computed(() => {
     if (!combinações[ano][mês]) {
       combinações[ano][mês] = {
         mês: dateToMonth(x.data, 'short'),
-        orçamentos: true,
+        orçamentos: false,
         variáveis: 0,
       };
     }
@@ -39,7 +39,7 @@ const lista = computed(() => {
     if (!combinações[ano][mês]) {
       combinações[ano][mês] = {
         mês: dateToMonth(x.data, 'short'),
-        orçamentos: true,
+        orçamentos: false,
         variáveis: 0,
       };
     }
