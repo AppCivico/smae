@@ -4,18 +4,20 @@ import { NumberArrayTransform } from '../../../../auth/transforms/number-array.e
 import { IdCodTituloDto } from '../../../../common/dto/IdCodTitulo.dto';
 import { ApiProperty } from '@nestjs/swagger';
 import { MfPerfilDto } from '../../dto/mf-meta.dto';
+import { VariavelResumo } from '../../../../variavel/dto/list-variavel.dto';
 
 export class MfMetaVariavelCount {
-    total: number;
-    preenchidas: number;
-    enviadas: number;
-    conferidas: number;
-    aguardando_complementacao: number;
+    total: number | number[];
+    preenchidas: number | number[];
+    enviadas: number | number[];
+    conferidas: number | number[];
+    aguardando_complementacao: number | number[];
+    detalhes: VariavelResumo[] | null;
 }
 
 export class MfMetaCronogramaCount {
-    total: number;
-    preenchido: number;
+    total: number | number[];
+    preenchido: number | number[];
 }
 
 export class MfMetaOrcamentoCount {
@@ -87,6 +89,11 @@ export class FilterMfDashMetasDto {
     @IsBoolean()
     @Transform(({ value }: any) => value === 'true')
     retornar_atrasadas?: boolean;
+
+    @IsOptional()
+    @IsBoolean()
+    @Transform(({ value }: any) => value === 'true')
+    retornar_detalhes?: boolean;
 
     @IsOptional()
     @IsArray()
