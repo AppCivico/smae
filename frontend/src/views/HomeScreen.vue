@@ -15,6 +15,22 @@ import { useRoute, useRouter } from 'vue-router';
 import { usePdMStore } from '@/stores/pdm.store';
 import LoadingComponent from '@/components/LoadingComponent.vue';
 
+const dadosExtrasDeAbas = {
+  TabelaDeVariaveis: {
+    id: 'variaveis',
+    etiqueta: 'Variáveis',
+  },
+  TabelaDeVariaveisCompostas: {
+    id: 'variaveis-compostas',
+    etiqueta: 'Variáveis Compostas',
+  },
+  TabelaDeVariaveisCompostasEmUso: {
+    id: 'variaveis-compostas-em-uso',
+    etiqueta: 'Variáveis compostas em uso',
+    aberta: true,
+  },
+};
+const statusesVálidos = ['pendentes', 'atualizadas', 'atrasadas'];
 const visãoPadrão = 'pessoal';
 
 const route = useRoute();
@@ -32,23 +48,6 @@ const {
   chamadasPendentes,
   erro,
 } = storeToRefs(panoramaStore);
-
-const dadosExtrasDeAbas = {
-  TabelaDeVariaveis: {
-    id: 'variaveis',
-    etiqueta: 'Variáveis',
-  },
-  TabelaDeVariaveisCompostas: {
-    id: 'variaveis-compostas',
-    etiqueta: 'Variáveis Compostas',
-  },
-  TabelaDeVariaveisCompostasEmUso: {
-    id: 'variaveis-compostas-em-uso',
-    etiqueta: 'Variáveis compostas em uso',
-    aberta: true,
-  },
-};
-const statusesVálidos = ['pendentes', 'atualizadas', 'atrasadas'];
 
 async function iniciar() {
   if (!route.query.visao) {
