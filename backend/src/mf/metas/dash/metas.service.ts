@@ -203,7 +203,7 @@ export class MfDashMetasService {
                 r.cronograma.detalhes = [];
 
             if (Array.isArray(r.cronograma.atraso_inicio))
-                r.cronograma.detalhes!.push(...r.cronograma.atraso_inicio.map((v) => variaveisById[v.toString()]));
+                r.cronograma.detalhes!.push(...r.cronograma.atraso_inicio.map((v) => etapasById[v.toString()]));
 
             if (Array.isArray(r.cronograma.atraso_fim))
                 r.cronograma.detalhes!.push(...r.cronograma.atraso_fim.map((v) => etapasById[v.toString()]));

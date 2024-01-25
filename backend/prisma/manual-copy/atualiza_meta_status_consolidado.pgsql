@@ -223,7 +223,7 @@ BEGIN
         v_cronograma_total,
         v_cronograma_atraso_ini,
         v_cronograma_atraso_fim
-    from tmp_data e;
+    from (select distinct x.id, x.status from tmp_data x) e;
 
 
     --
