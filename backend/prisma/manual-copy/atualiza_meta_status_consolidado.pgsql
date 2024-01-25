@@ -24,6 +24,10 @@ v_pendente_cp BOOLEAN;
 
 v_debug varchar;
 
+vCronograma int[];
+v_cronograma_total int[];
+v_cronograma_atraso_ini int[];
+v_cronograma_atraso_fim int[];
 
 
 BEGIN
@@ -170,6 +174,57 @@ BEGIN
     END IF;
 
 
+    select array_agg(cronograma_id) into vCronograma
+    from view_meta_cronograma
+    where meta_id = pMetaId;
+
+    WITH tmp_data AS (
+        select
+            e.id,
+            case
+                when inicio_previsto < now() and inicio_real is null then 1
+                when termino_previsto < now() and termino_real is null then 2
+            else 0
+            end as status
+        from etapa e
+        join (
+            select b.id, (select count(1) from etapa x where x.etapa_pai_id = b.id and x.removido_em is null) as filhos
+            from  cronograma_etapa a
+            join etapa b on b.id = a.etapa_id and b.removido_em is null
+            where a.cronograma_id = ANY(vCronograma) and a.inativo = false
+            and b.etapa_pai_id is null
+
+                  union all
+
+            select fase.id, (select count(1) from etapa x where x.etapa_pai_id = fase.id and x.removido_em is null) as filhos
+            from  cronograma_etapa a
+            join etapa e on e.id = a.etapa_id and e.removido_em is null
+            join etapa fase on fase.etapa_pai_id = e.id and fase.removido_em is null
+            where a.cronograma_id = ANY(vCronograma) and a.inativo = false
+            and e.etapa_pai_id is null
+
+                union all
+
+            select subfase.id, (select count(1) from etapa x where x.etapa_pai_id = subfase.id and x.removido_em is null) as filhos
+            from  cronograma_etapa a
+            join etapa e on e.id = a.etapa_id and e.removido_em is null
+            join etapa fase on fase.etapa_pai_id = e.id and fase.removido_em is null
+            join etapa subfase on subfase.etapa_pai_id = fase.id and subfase.removido_em is null
+            where a.cronograma_id = ANY(vCronograma) and a.inativo = false
+            and e.etapa_pai_id is null
+
+        ) sub on sub.id = e.id and sub.filhos = 0
+    )
+    select
+        array_agg(e.id) as total,
+        array_agg(e.id) filter (where "status" = 1) as atraso_inicio,
+        array_agg(e.id) filter (where "status" = 2) as atraso_fim
+            into
+        v_cronograma_total,
+        v_cronograma_atraso_ini,
+        v_cronograma_atraso_fim
+    from tmp_data e;
+
 
     --
     delete from meta_status_consolidado_cf where meta_id = pMetaId;
@@ -184,7 +239,8 @@ BEGIN
         variaveis_conferidas,
         variaveis_aguardando_complementacao,
         cronograma_total,
-        cronograma_preenchido,
+        cronograma_atraso_fim,
+        cronograma_atraso_inicio,
         orcamento_total,
         orcamento_preenchido,
 
@@ -204,11 +260,11 @@ BEGIN
         v_variaveis_enviadas,
         v_variaveis_conferidas,
         v_variaveis_aguardando_complementacao,
+        v_cronograma_total,
+        v_cronograma_atraso_ini,
+        v_cronograma_atraso_fim,
         '{}'::int[],
         '{}'::int[],
-        '{}'::int[],
-        '{}'::int[],
-
         v_analise_qualitativa_enviada,
         v_risco_enviado,
         v_fechamento_enviado,
@@ -225,5 +281,5 @@ $$
 LANGUAGE plpgsql;
 
 
-select atualiza_meta_status_consolidado(144, (select id from ciclo_fisico where ativo));
-select * from meta_status_consolidado_cf where meta_id=144;
+select atualiza_meta_status_consolidado(202, (select id from ciclo_fisico where ativo));
+select * from meta_status_consolidado_cf where meta_id=202;
