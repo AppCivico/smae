@@ -56,7 +56,7 @@ const dadosParaFiltros = computed(() => {
 
   return {
     metas: Object.values(metas)
-      .sort((a, b) => a.titulo.localeCompare(b.titulo)),
+      .sort((a, b) => a.codigo - b.codigo),
     órgãos: Object.values(órgãos)
       .map((x) => ({ ...x, pessoas: Object.keys(x.pessoas) }))
       .sort((a, b) => a.sigla.localeCompare(b.sigla)),
