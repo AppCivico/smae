@@ -163,6 +163,7 @@ export class OrcamentoService implements ReportableService {
             for (const r of resultadosPlanejados) {
                 retPlanejado.push(this.convertPlanejadoRow(r));
             }
+
         } else if (dto.tipo == 'Consolidado' && search.length > 0) {
             const resultados: RetornoRealizadoDb[] = await this.queryConsolidadoExecutado(search);
 

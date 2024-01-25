@@ -250,8 +250,8 @@ model Pessoa {
     view_pessoa_gestor_de_projeto      view_pessoa_gestor_de_projeto[]
     view_pessoa_colaborador_de_projeto view_pessoa_colaborador_de_projeto[]
 
-    projetosCompartilhadosEmPortfolioQueCriei PortfolioProjetoCompartilhado[] @relation("Criador")
-    projetosCompartilhadosEmPortfolioQueRemovi PortfolioProjetoCompartilhado[] @relation("Removedor")
+    projetosCompartilhadosEmPortfolioQueCriei     PortfolioProjetoCompartilhado[] @relation("Criador")
+    projetosCompartilhadosEmPortfolioQueRemovi    PortfolioProjetoCompartilhado[] @relation("Removedor")
     projetosCompartilhadosEmPortfolioQueAtualizei PortfolioProjetoCompartilhado[] @relation("Atualizador")
 
     task_queue task_queue[]
@@ -2873,24 +2873,24 @@ model PortfolioProjetoCompartilhado {
     id Int @id @default(autoincrement())
 
     portfolio_id Int
-    portfolio Portfolio @relation(fields: [portfolio_id], references: [id])
+    portfolio    Portfolio @relation(fields: [portfolio_id], references: [id])
 
     projeto_id Int
-    projeto Projeto @relation(fields: [projeto_id], references: [id])
+    projeto    Projeto @relation(fields: [projeto_id], references: [id])
 
-    criado_por Int
-    criado_em DateTime
+    criado_por   Int
+    criado_em    DateTime
     removido_por Int?
-    removido_em DateTime?
+    removido_em  DateTime?
 
     // Colunas de atualização não são utilizadas por agora.
     // Mas se pedirem para dados adicionais neste relacionamento
     // Já teremos estes campos prontos.
     atualizado_por Int?
-    atualizado_em DateTime?
+    atualizado_em  DateTime?
 
-    criador   Pessoa  @relation("Criador", fields: [criado_por], references: [id])
-    removedor Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
+    criador     Pessoa  @relation("Criador", fields: [criado_por], references: [id])
+    removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
     atualizador Pessoa? @relation("Atualizador", fields: [atualizado_por], references: [id])
 
     @@map("portfolio_projeto_compartilhado")
@@ -3747,10 +3747,10 @@ model MetaStatusConsolidadoCf {
     variaveis_preenchidas               Int[]
     variaveis_enviadas                  Int[]
     variaveis_conferidas                Int[]
-    variaveis_aguardando_cp             Int[]
     variaveis_aguardando_complementacao Int[]
     cronograma_total                    Int[]
-    cronograma_preenchido               Int[]
+    cronograma_atraso_fim               Int[]
+    cronograma_atraso_inicio            Int[]
     orcamento_total                     Int[]
     orcamento_preenchido                Int[]
 
@@ -3764,4 +3764,3 @@ model MetaStatusConsolidadoCf {
 
     @@map("meta_status_consolidado_cf")
 }
-

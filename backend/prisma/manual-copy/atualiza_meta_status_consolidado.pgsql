@@ -169,6 +169,8 @@ BEGIN
 
     END IF;
 
+
+
     --
     delete from meta_status_consolidado_cf where meta_id = pMetaId;
     --
