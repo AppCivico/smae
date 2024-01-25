@@ -9,7 +9,6 @@ import MetaAtrasada from '@/components/panorama/MetaAtrasada.vue';
 import CalendárioDoPdM from '@/components/panorama/CalendarioDoPdM.vue';
 import { storeToRefs } from 'pinia';
 import { Dashboard } from '@/components';
-import { useAuthStore } from '@/stores/auth.store';
 import { usePanoramaStore } from '@/stores/panorama.store.ts';
 import { watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
@@ -21,9 +20,7 @@ const visãoPadrão = 'pessoal';
 const route = useRoute();
 const router = useRouter();
 
-const authStore = useAuthStore();
 const PdmStore = usePdMStore();
-const { user, temPermissãoPara } = storeToRefs(authStore);
 const { activePdm } = storeToRefs(PdmStore);
 
 const panoramaStore = usePanoramaStore();
