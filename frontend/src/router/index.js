@@ -18,6 +18,7 @@ import {
   MonitoramentoMetas,
   MonitoramentoMetasCronograma,
 } from '@/views/monitoramento';
+import MonitoramentosRaiz from '@/views/monitoramento/MonitoramentosRaiz.vue';
 import administracao from './administracao';
 import análise from './analise';
 import envios from './envios';
@@ -45,9 +46,20 @@ export const router = createRouter({
     {
       path: '/monitoramento',
       children: [
-        { path: '', redirect: '/monitoramento/evolucao' },
+        {
+          path: '',
+          component: MonitoramentosRaiz,
+          // redirect definido no componente porque o VueRouter não aceita que
+          // ele seja definido como função que pode **ou não** retornar uma rota
+          props: { submenu: SubmenuMonitoramento, parentPage: 'fases' },
+        },
         { path: 'fases', component: ListMonitoramentoMetas, props: { submenu: SubmenuMonitoramento, parentPage: 'fases' } },
-        { path: 'evolucao', component: ListMonitoramentoMetasEvolucao, props: { submenu: SubmenuMonitoramento, parentPage: 'evolucao' } },
+        {
+          name: 'monitoramentoDeEvoluçãoDeMetas',
+          path: 'evolucao',
+          component: ListMonitoramentoMetasEvolucao,
+          props: { submenu: SubmenuMonitoramento, parentPage: 'evolucao' },
+        },
         { path: 'evolucao/:meta_id', component: MonitoramentoMetas, props: { submenu: SubmenuMonitoramento, parentPage: 'evolucao' } },
         { path: 'cronograma', component: ListMonitoramentoMetasCronograma, props: { submenu: SubmenuMonitoramento, parentPage: 'cronograma' } },
         { path: 'cronograma/:meta_id', component: MonitoramentoMetasCronograma, props: { submenu: SubmenuMonitoramento, parentPage: 'cronograma' } },
