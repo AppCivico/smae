@@ -94,45 +94,47 @@ defineProps({
             height="24"
           ><use xlink:href="#i_$" /></svg><div>Orçamento</div>
         </li>
-        <li
-          v-if="meta.analise_qualitativa_enviada !== null"
-          class="meta__icones-item tipinfo"
-        >
-          <svg
-            class="meta__icone"
-            :class="{
-              sucesso: meta.analise_qualitativa_enviada
-            }"
-            width="24"
-            height="24"
-          ><use xlink:href="#i_iniciativa" /></svg><div>Qualificação</div>
-        </li>
-        <li
-          v-if="meta.risco_enviado !== null"
-          class="meta__icones-item tipinfo"
-        >
-          <svg
-            class="meta__icone"
-            :class="{
-              sucesso: meta.risco_enviado
-            }"
-            width="24"
-            height="24"
-          ><use xlink:href="#i_binoculars" /></svg><div>Análise de Risco</div>
-        </li>
-        <li
-          v-if="meta.fechamento_enviado !== null"
-          class="meta__icones-item tipinfo"
-        >
-          <svg
-            class="meta__icone"
-            :class="{
-              sucesso: meta.fechamento_enviado
-            }"
-            width="24"
-            height="24"
-          ><use xlink:href="#i_check" /></svg><div>Fechamento</div>
-        </li>
+        <template v-if="perfil !== 'ponto_focal'">
+          <li
+            v-if="meta.analise_qualitativa_enviada !== null"
+            class="meta__icones-item tipinfo"
+          >
+            <svg
+              class="meta__icone"
+              :class="{
+                sucesso: meta.analise_qualitativa_enviada
+              }"
+              width="24"
+              height="24"
+            ><use xlink:href="#i_iniciativa" /></svg><div>Qualificação</div>
+          </li>
+          <li
+            v-if="meta.risco_enviado !== null"
+            class="meta__icones-item tipinfo"
+          >
+            <svg
+              class="meta__icone"
+              :class="{
+                sucesso: meta.risco_enviado
+              }"
+              width="24"
+              height="24"
+            ><use xlink:href="#i_binoculars" /></svg><div>Análise de Risco</div>
+          </li>
+          <li
+            v-if="meta.fechamento_enviado !== null"
+            class="meta__icones-item tipinfo"
+          >
+            <svg
+              class="meta__icone"
+              :class="{
+                sucesso: meta.fechamento_enviado
+              }"
+              width="24"
+              height="24"
+            ><use xlink:href="#i_check" /></svg><div>Fechamento</div>
+          </li>
+        </template>
       </ul>
 
       <dl
@@ -157,7 +159,7 @@ defineProps({
           </dd>
         </div>
         <div
-          v-if="meta.variaveis.conferidas"
+          v-if="perfil !== 'ponto_focal' && meta.variaveis.conferidas"
           class="meta__variável pl1 pr1"
         >
           <dt
