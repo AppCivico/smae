@@ -46,6 +46,7 @@ export class MfDashMetaPendenteDto extends IdCodTituloDto {
      * fechamento no ciclo fisico foi enviada ou não, se nulo é por que não chegou ainda na fase
      */
     fechamento_enviado: boolean | null;
+    atualizado_em: Date
 }
 
 export class MfMetaAtrasoItemDto {
