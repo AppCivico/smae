@@ -19,6 +19,10 @@ class Arr {
         const setA = new Set(a);
         return b.filter((element) => setA.has(element));
     }
+    static removeFrom(a: number[], b: number[]): number[] {
+        const setB = new Set(b);
+        return a.filter((element) => !setB.has(element));
+    }
 }
 
 @Injectable()
@@ -31,6 +35,8 @@ export class MfDashMetasService {
         params: FilterMfDashMetasDto
     ): Promise<ListMfDashMetasDto> {
         const ehPontoFocal = config.perfil === 'ponto_focal';
+
+        const retornar_detalhes = !!params.retornar_detalhes;
 
         console.log(ehPontoFocal, config);
         if (params.visao_geral && ehPontoFocal)
@@ -58,6 +64,12 @@ export class MfDashMetasService {
         const renderStatus = (
             r: { meta: IdCodTituloDto } & MetaStatusConsolidadoCf
         ): MfDashMetaPendenteDto | MfDashMetaAtualizadasDto => {
+            const cronoTotal = Arr.intersection(r.cronograma_total, config.cronogramas_etapas);
+            const cronoPendente = Arr.mergeUnique(
+                Arr.intersection(r.cronograma_atraso_fim, config.cronogramas_etapas),
+                Arr.intersection(r.cronograma_atraso_inicio, config.cronogramas_etapas)
+            );
+
             return {
                 id: r.meta.id,
                 codigo: r.meta.codigo,
@@ -66,21 +78,23 @@ export class MfDashMetasService {
                 fechamento_enviado: r.fechamento_enviado,
                 risco_enviado: r.risco_enviado,
                 variaveis: {
-                    aguardando_complementacao: Arr.intersection(r.variaveis_aguardando_complementacao, config.variaveis)
-                        .length,
-                    conferidas: Arr.intersection(r.variaveis_conferidas, config.variaveis).length,
-                    enviadas: Arr.intersection(r.variaveis_enviadas, config.variaveis).length,
-                    preenchidas: Arr.intersection(r.variaveis_preenchidas, config.variaveis).length,
-                    total: Arr.intersection(r.variaveis_total, config.variaveis).length,
+                    aguardando_complementacao: this.buildItem(
+                        r.variaveis_aguardando_complementacao,
+                        config.variaveis,
+                        config,
+                        retornar_detalhes
+                    ),
+                    conferidas: this.buildItem(r.variaveis_conferidas, config.variaveis, config, retornar_detalhes),
+                    enviadas: this.buildItem(r.variaveis_enviadas, config.variaveis, config, retornar_detalhes),
+                    preenchidas: this.buildItem(r.variaveis_preenchidas, config.variaveis, config, retornar_detalhes),
+                    total: this.buildItem(r.variaveis_total, config.variaveis, config, retornar_detalhes),
+                    detalhes: null,
                 },
                 cronograma: {
-                    preenchido:
-                        Arr.intersection(r.cronograma_total, config.cronogramas_etapas).length -
-                        Arr.mergeUnique(
-                            Arr.intersection(r.cronograma_atraso_fim, config.cronogramas_etapas),
-                            Arr.intersection(r.cronograma_atraso_inicio, config.cronogramas_etapas)
-                        ).length,
-                    total: r.cronograma_total.length,
+                    preenchido: retornar_detalhes
+                        ? Arr.removeFrom(cronoTotal, cronoPendente)
+                        : cronoTotal.length - cronoPendente.length,
+                    total: retornar_detalhes ? cronoTotal : cronoTotal.length,
                 },
                 orcamento: {
                     preenchido: r.orcamento_preenchido.length,
@@ -132,6 +146,20 @@ export class MfDashMetasService {
         }
 
         return ret;
+    }
+
+    private buildItem(
+        metaItem: number[],
+        userItem: number[],
+        config: MfPessoaAcessoPdm,
+        detalhes: boolean
+    ): number | number[] {
+        // não precisa de nenhum filtro para admin_cp, pode voltar diretamente a lista da esquerda
+        if (config.perfil == 'admin_cp') return detalhes ? metaItem : metaItem.length;
+
+        const list = Arr.intersection(metaItem, userItem);
+
+        return detalhes ? list : list.length;
     }
 
     private async aplicaFiltroMetas(params: FilterMfDashMetasDto, metas: number[]) {
