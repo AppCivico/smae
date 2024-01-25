@@ -69,6 +69,13 @@ export class MfDashMetasService {
                 Arr.intersection(r.cronograma_atraso_fim, config.cronogramas_etapas),
                 Arr.intersection(r.cronograma_atraso_inicio, config.cronogramas_etapas)
             );
+            // só retorna etapas separadas se for com detalhes
+            const cronoAF = retornar_detalhes
+                ? this.buildItem(r.cronograma_atraso_fim, config.cronogramas_etapas, config, retornar_detalhes)
+                : null;
+            const cronoAI = retornar_detalhes
+                ? this.buildItem(r.cronograma_atraso_inicio, config.cronogramas_etapas, config, retornar_detalhes)
+                : null;
 
             return {
                 id: r.meta.id,
@@ -91,10 +98,11 @@ export class MfDashMetasService {
                     detalhes: null,
                 },
                 cronograma: {
-                    preenchido: retornar_detalhes
-                        ? Arr.removeFrom(cronoTotal, cronoPendente)
-                        : cronoTotal.length - cronoPendente.length,
-                    total: retornar_detalhes ? cronoTotal : cronoTotal.length,
+                    preenchido: cronoTotal.length - cronoPendente.length,
+                    total: cronoTotal.length,
+                    atraso_fim: cronoAF,
+                    atraso_inicio: cronoAI,
+                    detalhes: null,
                 },
                 orcamento: {
                     preenchido: r.orcamento_preenchido.length,
@@ -124,6 +132,7 @@ export class MfDashMetasService {
                 },
             });
             ret.pendentes = pendentes.map(renderStatus);
+            if (retornar_detalhes) await this.populaDetalhes(ret.pendentes);
         }
 
         if (params.retornar_atualizadas) {
@@ -143,9 +152,59 @@ export class MfDashMetasService {
                 },
             });
             ret.atualizadas = atualizadas.map(renderStatus);
+            if (retornar_detalhes) await this.populaDetalhes(ret.atualizadas);
         }
 
         return ret;
+    }
+
+    private async populaDetalhes(list: MfDashMetaPendenteDto[] | MfDashMetaAtualizadasDto[]) {
+        const variaveis: number[] = [];
+        const etapas: number[] = [];
+        for (const r of list) {
+            if (Array.isArray(r.variaveis.total)) variaveis.push(...r.variaveis.total);
+            if (Array.isArray(r.cronograma.atraso_fim)) etapas.push(...r.cronograma.atraso_fim);
+            if (Array.isArray(r.cronograma.atraso_inicio)) etapas.push(...r.cronograma.atraso_inicio);
+        }
+
+        const variaveisDb = await this.prisma.variavel.findMany({
+            where: { id: { in: variaveis } },
+            select: { id: true, titulo: true, codigo: true },
+        });
+        const variaveisById = variaveisDb.reduce(
+            (acc, item) => {
+                acc[item.id.toString()] = item;
+                return acc;
+            },
+            {} as Record<string, (typeof variaveisDb)[0]>
+        );
+
+        const etapasDb = await this.prisma.etapa.findMany({
+            where: { id: { in: etapas } },
+            select: { id: true, titulo: true },
+        });
+
+        const etapasById = etapasDb.reduce(
+            (acc, item) => {
+                acc[item.id.toString()] = item;
+                return acc;
+            },
+            {} as Record<string, (typeof etapasDb)[0]>
+        );
+
+        for (const r of list) {
+            if (Array.isArray(r.variaveis.total))
+                r.variaveis.detalhes = r.variaveis.total.map((v) => variaveisById[v.toString()]);
+
+            if (Array.isArray(r.cronograma.atraso_inicio) || Array.isArray(r.cronograma.atraso_fim))
+                r.cronograma.detalhes = [];
+
+            if (Array.isArray(r.cronograma.atraso_inicio))
+                r.cronograma.detalhes!.push(...r.cronograma.atraso_inicio.map((v) => variaveisById[v.toString()]));
+
+            if (Array.isArray(r.cronograma.atraso_fim))
+                r.cronograma.detalhes!.push(...r.cronograma.atraso_fim.map((v) => etapasById[v.toString()]));
+        }
     }
 
     private buildItem(
