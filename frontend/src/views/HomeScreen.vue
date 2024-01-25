@@ -79,6 +79,7 @@ async function iniciar() {
     metas: route.query.metas,
     coordenadores_cp: route.query.coordenadores_cp,
     orgaos: route.query.orgaos,
+    visao_geral: route.query.visao === 'geral',
   });
 }
 
