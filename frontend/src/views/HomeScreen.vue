@@ -13,7 +13,6 @@ import { usePanoramaStore } from '@/stores/panorama.store.ts';
 import { watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { usePdMStore } from '@/stores/pdm.store';
-import LoadingComponent from '@/components/LoadingComponent.vue';
 
 const dadosExtrasDeAbas = {
   TabelaDeVariaveis: {
@@ -229,14 +228,9 @@ watch([
       </div>
     </div>
 
-    <div
-      v-if="erro"
-      class="error p1"
-    >
-      <div class="error-msg">
-        {{ erro }}
-      </div>
-    </div>
+    <ErrorComponent v-if="erro">
+      {{ erro }}
+    </ErrorComponent>
   </Dashboard>
 </template>
 <style lang="less">
