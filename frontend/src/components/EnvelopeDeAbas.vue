@@ -8,6 +8,17 @@ const router = useRouter();
 const slots = useSlots();
 
 const props = defineProps({
+  alinhamento: {
+    type: String,
+    default: 'centro',
+    validator(valor) {
+      return [
+        'centro',
+        'direita',
+        'esquerda',
+      ].indexOf(valor) > -1;
+    },
+  },
   nomeDaChaveDeAbas: {
     type: String,
     default: 'aba',
@@ -64,7 +75,10 @@ iniciar();
 </script>
 <template>
   <div class="abas">
-    <nav class="abas__navegação mb3">
+    <nav
+      class="abas__navegação mb3"
+      :class="`abas__navegação--${alinhamento}`"
+    >
       <ul class="abas__lista flex">
         <li
           v-for="nomeDaAba in Object.keys(slots)"
@@ -119,6 +133,16 @@ iniciar();
   margin-left: auto;
   margin-right: auto;
   text-transform: uppercase;
+}
+
+.abas__navegação--esquerda {
+  margin-left: 0;
+  margin-right: auto;
+}
+
+.abas__navegação--direita {
+  margin-left: auto;
+  margin-right: 0;
 }
 
 .abas__lista {
