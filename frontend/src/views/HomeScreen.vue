@@ -85,10 +85,11 @@ async function iniciar() {
 }
 
 watch([
-  () => route.query.metas,
   () => route.query.coordenadores_cp,
+  () => route.query.metas,
   () => route.query.orgaos,
   () => route.query.status,
+  () => route.query.visao,
 ], () => {
   iniciar();
 }, { immediate: true });
