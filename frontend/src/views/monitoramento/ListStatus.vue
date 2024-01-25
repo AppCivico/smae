@@ -5,6 +5,8 @@ import { useCiclosStore } from '@/stores/ciclos.store';
 import { usePdMStore } from '@/stores/pdm.store';
 import { storeToRefs } from 'pinia';
 import { ref } from 'vue';
+import dateToField from '@/helpers/dateToField';
+import dateToTitle from '@/helpers/dateToTitle';
 
 const authStore = useAuthStore();
 const { permissions } = storeToRefs(authStore);
@@ -36,18 +38,6 @@ const chaves = [];
     }, Object.create(null))
     : MetasCiclos.value;
 })();
-
-function dateToField(d) {
-  const dd = d ? new Date(d) : false;
-  return (dd) ? dd.toLocaleString('pt-BR', { dateStyle: 'short', timeZone: 'UTC' }) : '';
-}
-function dateToTitle(d) {
-  const dd = d ? new Date(d) : false;
-  if (!dd) return d;
-  const month = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'][dd.getUTCMonth()];
-  const year = dd.getUTCFullYear();
-  return `${month} ${year}`;
-}
 </script>
 <template>
   <Dashboard>
