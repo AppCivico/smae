@@ -200,10 +200,10 @@ export class MfDashMetasService {
                 r.variaveis.detalhes = r.variaveis.total.map((v) => variaveisById[v.toString()]);
 
             // inicializando a array vazia
-            const arrUnion = [];
+            let arrUnion = [];
 
             if (Array.isArray(r.cronograma.atraso_inicio)) arrUnion.push(...r.cronograma.atraso_inicio);
-            if (Array.isArray(r.cronograma.atraso_fim)) arrUnion.push(...r.cronograma.atraso_fim);
+            if (Array.isArray(r.cronograma.atraso_fim)) arrUnion = Arr.mergeUnique(arrUnion, r.cronograma.atraso_fim);
 
             r.cronograma.detalhes = arrUnion.map((v) => etapasById[v.toString()]);
         }
