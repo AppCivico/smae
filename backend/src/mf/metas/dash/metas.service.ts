@@ -199,14 +199,13 @@ export class MfDashMetasService {
             if (Array.isArray(r.variaveis.total))
                 r.variaveis.detalhes = r.variaveis.total.map((v) => variaveisById[v.toString()]);
 
-            if (Array.isArray(r.cronograma.atraso_inicio) || Array.isArray(r.cronograma.atraso_fim))
-                r.cronograma.detalhes = [];
+            // inicializando a array vazia
+            const arrUnion = [];
 
-            if (Array.isArray(r.cronograma.atraso_inicio))
-                r.cronograma.detalhes!.push(...r.cronograma.atraso_inicio.map((v) => etapasById[v.toString()]));
+            if (Array.isArray(r.cronograma.atraso_inicio)) arrUnion.push(...r.cronograma.atraso_inicio);
+            if (Array.isArray(r.cronograma.atraso_fim)) arrUnion.push(...r.cronograma.atraso_fim);
 
-            if (Array.isArray(r.cronograma.atraso_fim))
-                r.cronograma.detalhes!.push(...r.cronograma.atraso_fim.map((v) => etapasById[v.toString()]));
+            r.cronograma.detalhes = arrUnion.map((v) => etapasById[v.toString()]);
         }
     }
 
