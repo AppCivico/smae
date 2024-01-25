@@ -10,6 +10,17 @@ import {
 } from './dto/metas.dto';
 import { MfPessoaAcessoPdm } from '../../mf.service';
 
+class Arr {
+    static mergeUnique(a: number[], b: number[]): number[] {
+        const uniqueSet = new Set([...a, ...b]);
+        return Array.from(uniqueSet);
+    }
+    static intersection(a: number[], b: number[]): number[] {
+        const setA = new Set(a);
+        return b.filter((element) => setA.has(element));
+    }
+}
+
 @Injectable()
 export class MfDashMetasService {
     constructor(private readonly prisma: PrismaService) {}
@@ -55,14 +66,20 @@ export class MfDashMetasService {
                 fechamento_enviado: r.fechamento_enviado,
                 risco_enviado: r.risco_enviado,
                 variaveis: {
-                    aguardando_complementacao: r.variaveis_aguardando_complementacao.length,
-                    conferidas: r.variaveis_conferidas.length,
-                    enviadas: r.variaveis_enviadas.length,
-                    preenchidas: r.variaveis_preenchidas.length,
-                    total: r.variaveis_total.length,
+                    aguardando_complementacao: Arr.intersection(r.variaveis_aguardando_complementacao, config.variaveis)
+                        .length,
+                    conferidas: Arr.intersection(r.variaveis_conferidas, config.variaveis).length,
+                    enviadas: Arr.intersection(r.variaveis_enviadas, config.variaveis).length,
+                    preenchidas: Arr.intersection(r.variaveis_preenchidas, config.variaveis).length,
+                    total: Arr.intersection(r.variaveis_total, config.variaveis).length,
                 },
                 cronograma: {
-                    preenchido: r.cronograma_atraso_fim.length - r.cronograma_atraso_inicio.length, // not really
+                    preenchido:
+                        Arr.intersection(r.cronograma_total, config.cronogramas_etapas).length -
+                        Arr.mergeUnique(
+                            Arr.intersection(r.cronograma_atraso_fim, config.cronogramas_etapas),
+                            Arr.intersection(r.cronograma_atraso_inicio, config.cronogramas_etapas)
+                        ).length,
                     total: r.cronograma_total.length,
                 },
                 orcamento: {
@@ -191,6 +208,20 @@ export class MfDashMetasService {
                     ELSE
                         FALSE
                 END
+            )
+            OR
+            (
+            -- se tem alguma cronograma atrasado no inicio
+              ARRAY(SELECT DISTINCT UNNEST(msc.cronograma_atraso_inicio))
+                && -- operador overlap/sobreposição
+              ARRAY(SELECT DISTINCT UNNEST(pap.cronogramas_etapas))
+            )
+            OR
+            (
+            -- se tem alguma cronograma atrasado no fim
+              ARRAY(SELECT DISTINCT UNNEST(msc.cronograma_atraso_fim))
+                && -- operador overlap/sobreposição
+              ARRAY(SELECT DISTINCT UNNEST(pap.cronogramas_etapas))
             )
         )
     `;
