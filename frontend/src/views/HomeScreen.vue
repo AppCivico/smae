@@ -235,6 +235,7 @@ watch([
       <div class="mb1 card-shadow f1 p15">
         <LoadingComponent v-if="activePdm?.loading || !perfil" />
         <CalendárioDoPdM
+          v-else
           :pdm="activePdm"
           :perfil="perfil"
         />
