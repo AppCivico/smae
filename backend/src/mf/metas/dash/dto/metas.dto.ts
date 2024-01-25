@@ -1,10 +1,10 @@
+import { ApiProperty } from '@nestjs/swagger';
 import { Transform, TransformFnParams } from 'class-transformer';
 import { IsArray, IsBoolean, IsInt, IsOptional } from 'class-validator';
 import { NumberArrayTransform } from '../../../../auth/transforms/number-array.error';
 import { IdCodTituloDto } from '../../../../common/dto/IdCodTitulo.dto';
-import { ApiProperty } from '@nestjs/swagger';
+import { IdTituloOrNullDto } from '../../../../common/dto/IdTitulo.dto';
 import { MfPerfilDto } from '../../dto/mf-meta.dto';
-import { VariavelResumo } from '../../../../variavel/dto/list-variavel.dto';
 
 export class MfMetaVariavelCount {
     total: number | number[];
@@ -12,12 +12,15 @@ export class MfMetaVariavelCount {
     enviadas: number | number[];
     conferidas: number | number[];
     aguardando_complementacao: number | number[];
-    detalhes: VariavelResumo[] | null;
+    detalhes: IdCodTituloDto[] | null;
 }
 
 export class MfMetaCronogramaCount {
-    total: number | number[];
-    preenchido: number | number[];
+    total: number;
+    preenchido: number;
+    atraso_fim: number | number[] | null;
+    atraso_inicio: number | number[] | null;
+    detalhes: IdTituloOrNullDto[] | null;
 }
 
 export class MfMetaOrcamentoCount {
