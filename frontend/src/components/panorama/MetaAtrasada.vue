@@ -78,7 +78,16 @@ const lista = computed(() => {
     class="meta bgc50 p1 br6"
   >
     <h2 class="meta__título w900 t14 spacebetween uc br8">
-      {{ meta.codigo }} - {{ meta.titulo }}
+      <router-link
+        :to="{
+          name: 'meta',
+          params: {
+            meta_id: meta.id
+          }
+        }"
+      >
+        {{ meta.codigo }} - {{ meta.titulo }}
+      </router-link>
     </h2>
 
     <div class="meta__meta-dados">

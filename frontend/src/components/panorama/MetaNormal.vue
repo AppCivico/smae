@@ -34,7 +34,16 @@ defineProps({
     class="meta bgc50 p1 br6"
   >
     <h2 class="meta__título w900 t14 spacebetween uc br8">
-      {{ meta.titulo }}
+      <router-link
+        :to="{
+          name: 'meta',
+          params: {
+            meta_id: meta.id
+          }
+        }"
+      >
+        {{ meta.codigo }} - {{ meta.titulo }}
+      </router-link>
     </h2>
     <div class="meta__meta-dados flex flexwrap spacebetween tc g1">
       <ul class="meta__icones-lista flex g1">
