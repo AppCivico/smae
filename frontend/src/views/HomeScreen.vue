@@ -133,7 +133,7 @@ watch([
     </header>
 
     <div class="flex flexwrap g2 start">
-      <div class="mb1 f1">
+      <div class="legenda-e-filtro mb1 f1">
         <Transition name="fade">
           <FiltroDeMetas v-if="perfil && perfil !== 'ponto_focal'" />
         </Transition>
@@ -251,3 +251,11 @@ watch([
     </div>
   </Dashboard>
 </template>
+<style lang="less">
+.legenda-e-filtro {
+  @media screen and (min-width: 51.25em) {
+    //820px
+    margin-top: 7em;
+  }
+}
+</style>
