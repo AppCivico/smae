@@ -832,6 +832,8 @@ model Meta {
     PdmOrcamentoRealizadoConfig           PdmOrcamentoRealizadoConfig[]
     MetaStatusConsolidadoCf               MetaStatusConsolidadoCf[]
     ViewMetaPessoaResponsavelNaCp         view_meta_pessoa_responsavel_na_cp[]
+    MetaStatusAtrasoConsolidadoMes        MetaStatusAtrasoConsolidadoMes[]
+    MetaStatusAtrasoVariavel              MetaStatusAtrasoVariavel[]
 
     @@index([pdm_id])
     @@map("meta")
@@ -1120,8 +1122,9 @@ model Variavel {
     removido_em             DateTime?                 @db.Timestamptz(6)
     FormulaCompostaVariavel FormulaCompostaVariavel[]
 
-    suspensao_log      VariavelSuspensaoLog[]
-    suspensao_controle VariavelSuspensaControle[]
+    suspensao_log            VariavelSuspensaoLog[]
+    suspensao_controle       VariavelSuspensaControle[]
+    MetaStatusAtrasoVariavel MetaStatusAtrasoVariavel[]
 
     @@index([regiao_id])
     @@map("variavel")
@@ -3763,4 +3766,30 @@ model MetaStatusConsolidadoCf {
     atualizado_em DateTime
 
     @@map("meta_status_consolidado_cf")
+}
+
+model MetaStatusAtrasoConsolidadoMes {
+    meta_id Int
+    mes     DateTime @db.Date
+
+    meta Meta @relation(fields: [meta_id], references: [id])
+
+    variaveis_atrasadas Int
+    orcamento_atrasados Int
+
+    @@id([meta_id, mes])
+    @@map("meta_status_atraso_consolidado_mes")
+}
+
+model MetaStatusAtrasoVariavel {
+    meta_id Int
+    meta    Meta @relation(fields: [meta_id], references: [id])
+
+    variavel_id Int
+    variavel    Variavel @relation(fields: [variavel_id], references: [id])
+
+    meses_atrasados DateTime[] @db.Date
+
+    @@id([meta_id, variavel_id])
+    @@map("meta_status_atraso_variavel")
 }
