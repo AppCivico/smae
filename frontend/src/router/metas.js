@@ -53,7 +53,12 @@ export default {
     { path: 'temas/:id', component: ListMetasGroup, props: { type: 'list', group: 'tema', parentPage: 'metas' } },
     { path: 'temas/:tema_id/novo', component: AddEditMetas, props: { type: 'novo', group: 'tema', parentPage: 'metas' } },
     { path: 'tags/:id', component: ListMetasGroup, props: { type: 'list', group: 'tags', parentPage: 'metas' } },
-    { path: ':meta_id', component: SingleMeta, props: { submenu: SubmenuMetas } },
+    {
+      path: ':meta_id',
+      name: 'meta',
+      component: SingleMeta,
+      props: { submenu: SubmenuMetas },
+    },
     {
       path: ':meta_id/indicadores/novo',
       component: AddEditIndicador,
