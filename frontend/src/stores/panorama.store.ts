@@ -67,6 +67,7 @@ export const usePanoramaStore = defineStore('panorama', {
       }
 
       this.chamadasPendentes.lista = true;
+      this.erro = null;
 
       try {
         const resposta:ListMfDashMetasDto = await this.requestS.get(`${baseUrl}/mf/panorama/metas`, { pdm_id: pdmId, ...params, ...tipoDeRetorno });
