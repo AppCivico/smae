@@ -28,6 +28,7 @@ vCronograma int[];
 v_cronograma_total int[];
 v_cronograma_atraso_ini int[];
 v_cronograma_atraso_fim int[];
+v_dont_care int;
 
 
 BEGIN
@@ -285,7 +286,7 @@ BEGIN
         FROM serie_variavel sv
         JOIN mv_variavel_pdm mvp ON sv.variavel_id = mvp.variavel_id
         JOIN variavel v on v.id = sv.variavel_id
-        WHERE sv.serie = 'PrevistoAcumulado' AND mvp.meta_id = 202
+        WHERE sv.serie = 'PrevistoAcumulado' AND mvp.meta_id = pMetaId
         and sv.data_valor < date_trunc('month', (now() - ( v.atraso_meses || ' month')::interval) at time zone 'America/Sao_Paulo')
     ), late_vars as (
         SELECT p.variavel_id, p.data_valor, p.meta_id
@@ -319,7 +320,7 @@ BEGIN
             x.meta_id, x.variavel_id, x.meses
         from late_per_var x
     )
-    select 1;
+    select 1 into v_dont_care;
 
     --
     RETURN v_debug;
