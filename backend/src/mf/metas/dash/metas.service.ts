@@ -56,14 +56,13 @@ export class MfDashMetasService {
                 risco_enviado: r.risco_enviado,
                 variaveis: {
                     aguardando_complementacao: r.variaveis_aguardando_complementacao.length,
-                    aguardando_cp: r.variaveis_aguardando_cp.length,
                     conferidas: r.variaveis_conferidas.length,
                     enviadas: r.variaveis_enviadas.length,
                     preenchidas: r.variaveis_preenchidas.length,
                     total: r.variaveis_total.length,
                 },
                 cronograma: {
-                    preenchido: r.cronograma_preenchido.length,
+                    preenchido: r.cronograma_atraso_fim.length - r.cronograma_atraso_inicio.length, // not really
                     total: r.cronograma_total.length,
                 },
                 orcamento: {
