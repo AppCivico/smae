@@ -108,6 +108,7 @@ export class MfDashMetasService {
                     preenchido: r.orcamento_preenchido.length,
                     total: r.orcamento_total.length,
                 },
+                atualizado_em: r.atualizado_em,
             };
         };
 
