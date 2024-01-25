@@ -1,5 +1,6 @@
 <script setup>
 import EnvelopeDeAbas from '@/components/EnvelopeDeAbas.vue';
+import FeedbackEmptyList from '@/components/FeedbackEmptyList.vue';
 import FiltroDeMetas from '@/components/panorama/FiltroDeMetas.vue';
 import LegendaDeAtrasadas from '@/components/panorama/LegendaDeAtrasadas.vue';
 import LegendaPadrão from '@/components/panorama/LegendaPadrao.vue';
@@ -162,22 +163,12 @@ watch([
         <template #pendentes>
           <LoadingComponent v-if="chamadasPendentes.lista" />
 
-          <div
+          <FeedbackEmptyList
             v-else-if="!listaDePendentes.length"
-            class="celebrate flex column center tc600 w700 mb1"
-          >
-            <svg
-              width="107"
-              height="107"
-              fill="#f7c234"
-            ><use xlink:href="#i_celebrate" /></svg>
-            <p class="t20 mb0">
-              Bom trabalho!
-            </p>
-            <p class="mb0">
-              Você não possui pendências!
-            </p>
-          </div>
+            título="Bom trabalho!"
+            tipo="positivo"
+            mensagem="Você não possui pendências!"
+          />
 
           <MetaNormal
             v-for="(item, i) in listaDePendentes"
@@ -192,6 +183,14 @@ watch([
 
         <template #atualizadas>
           <LoadingComponent v-if="chamadasPendentes.lista" />
+
+          <FeedbackEmptyList
+            v-else-if="!listaDeAtualizadas.length"
+            tipo="negativo"
+            título="Você ainda não possui atividades atualizadas!"
+            mensagem="Complete pendências para visualizar-las aqui."
+          />
+
           <MetaNormal
             v-for="(item, i) in listaDeAtualizadas"
             v-else
@@ -206,22 +205,12 @@ watch([
         <template #atrasadas>
           <LoadingComponent v-if="chamadasPendentes.lista" />
 
-          <div
+          <FeedbackEmptyList
             v-else-if="!listaDeAtrasadas.length"
-            class="celebrate flex column center tc600 w700 mb1"
-          >
-            <svg
-              width="107"
-              height="107"
-              fill="#f7c234"
-            ><use xlink:href="#i_celebrate" /></svg>
-            <p class="t20 mb0">
-              Bom trabalho!
-            </p>
-            <p class="mb0">
-              Você não possui atrasos!
-            </p>
-          </div>
+            título="Bom trabalho!"
+            tipo="positivo"
+            mensagem="Você não possui atrasos!"
+          />
 
           <MetaAtrasada
             v-for="(item, i) in listaDeAtrasadas"
