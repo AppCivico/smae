@@ -273,6 +273,53 @@ BEGIN
 
         now()
     );
+    --
+    -- calculando atrasados
+    --
+
+    DELETE FROM meta_status_atraso_consolidado_mes WHERE meta_id = pMetaId;
+    DELETE FROM meta_status_atraso_variavel WHERE meta_id = pMetaId;
+
+    WITH foreseen as (
+        SELECT sv.variavel_id, sv.data_valor, mvp.meta_id
+        FROM serie_variavel sv
+        JOIN mv_variavel_pdm mvp ON sv.variavel_id = mvp.variavel_id
+        JOIN variavel v on v.id = sv.variavel_id
+        WHERE sv.serie = 'PrevistoAcumulado' AND mvp.meta_id = 202
+        and sv.data_valor < date_trunc('month', (now() - ( v.atraso_meses || ' month')::interval) at time zone 'America/Sao_Paulo')
+    ), late_vars as (
+        SELECT p.variavel_id, p.data_valor, p.meta_id
+        FROM foreseen p
+        LEFT JOIN serie_variavel sv ON sv.data_valor = p.data_valor AND p.variavel_id = sv.variavel_id
+            AND sv.serie='Realizado'
+            AND sv.conferida = TRUE
+
+        WHERE sv.id IS NULL
+    ), late_per_month as (
+        select
+            meta_id, data_valor, count(1) as qtde
+        from late_vars
+        group by 1, 2
+    ),
+    late_per_var as (
+        select
+            meta_id, variavel_id, array_agg(data_valor) as meses
+        from late_vars
+        group by 1, 2
+    ),
+    insert_per_month AS (
+        insert into meta_status_atraso_consolidado_mes (meta_id, mes, variaveis_atrasadas, orcamento_atrasados)
+        select
+            x.meta_id, x.data_valor, x.qtde, 0
+        from late_per_month x
+    ),
+    insert_per_var AS (
+        insert into meta_status_atraso_variavel (meta_id, variavel_id, meses_atrasados)
+        select
+            x.meta_id, x.variavel_id, x.meses
+        from late_per_var x
+    )
+    select 1;
 
     --
     RETURN v_debug;
