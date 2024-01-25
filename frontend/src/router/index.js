@@ -30,7 +30,12 @@ export const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   linkActiveClass: 'active',
   routes: [
-    { path: '/', component: Home, props: { submenu: false } },
+    {
+      path: '/',
+      name: 'panorama',
+      component: Home,
+      props: { submenu: false },
+    },
     { path: '/login', component: Login },
     { path: '/esqueci-minha-senha', component: LostPassword },
     { path: '/nova-senha', component: NewPassword },
