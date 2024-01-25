@@ -15,6 +15,8 @@ import { useRoute, useRouter } from 'vue-router';
 import { usePdMStore } from '@/stores/pdm.store';
 import LoadingComponent from '@/components/LoadingComponent.vue';
 
+const visãoPadrão = 'pessoal';
+
 const route = useRoute();
 const router = useRouter();
 
@@ -55,7 +57,7 @@ async function iniciar() {
     router.replace({
       query: {
         ...route.query,
-        visao: 'pessoal',
+        visao: visãoPadrão,
       },
     });
   }
@@ -102,7 +104,10 @@ watch([
 
       <hr class="f1">
 
-      <nav class="flex g1 flexwrap">
+      <nav
+        v-if="perfil && perfil !== 'ponto_focal'"
+        class="flex g1 flexwrap"
+      >
         <router-link
           :to="{ query: { ...$route.query, visao: 'pessoal' } }"
           class="btn bgnone outline tcprimary"
