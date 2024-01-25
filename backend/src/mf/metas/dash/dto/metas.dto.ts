@@ -10,7 +10,6 @@ export class MfMetaVariavelCount {
     preenchidas: number;
     enviadas: number;
     conferidas: number;
-    aguardando_cp: number;
     aguardando_complementacao: number;
 }
 
