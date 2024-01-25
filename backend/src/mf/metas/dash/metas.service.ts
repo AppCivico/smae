@@ -130,6 +130,7 @@ export class MfDashMetasService {
                         select: { id: true, codigo: true, titulo: true },
                     },
                 },
+                orderBy: [{ meta: { codigo: 'asc' } }],
             });
             ret.pendentes = pendentes.map(renderStatus);
             if (retornar_detalhes) await this.populaDetalhes(ret.pendentes);
@@ -150,6 +151,7 @@ export class MfDashMetasService {
                         select: { id: true, codigo: true, titulo: true },
                     },
                 },
+                orderBy: [{ meta: { codigo: 'asc' } }],
             });
             ret.atualizadas = atualizadas.map(renderStatus);
             if (retornar_detalhes) await this.populaDetalhes(ret.atualizadas);
