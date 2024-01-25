@@ -6,6 +6,18 @@ defineProps({
     type: Object,
     required: true,
   },
+  perfil: {
+    type: String,
+    default: 'PdM',
+    validator(valor) {
+      return typeof valor === 'string'
+        && [
+          'admin_cp',
+          'ponto_focal',
+          'tecnico_cp',
+        ].indexOf(valor) > -1;
+    },
+  },
 });
 </script>
 <template>
