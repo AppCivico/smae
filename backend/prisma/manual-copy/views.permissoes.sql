@@ -8,15 +8,17 @@ FROM
 WHERE
     mo.responsavel;
 
-CREATE OR REPLACE VIEW view_meta_pessoa_responsavel_na_cp AS
-SELECT
-    mr.*
-FROM
-    meta_responsavel mr
-    JOIN meta_orgao mo ON mo.orgao_id = mr.orgao_id
-        AND mr.meta_id = mo.meta_id
-WHERE
-    mr.coordenador_responsavel_cp;
+CREATE OR REPLACE VIEW public.view_meta_pessoa_responsavel_na_cp AS
+ SELECT mr.id,
+    mr.meta_id,
+    mr.pessoa_id,
+    pf.orgao_id,
+    mr.coordenador_responsavel_cp
+   FROM meta_responsavel mr
+      join pessoa p on mr.pessoa_id = p.id
+     JOIN pessoa_fisica pf ON pf.id = p.pessoa_fisica_id
+  WHERE mr.coordenador_responsavel_cp and pf.orgao_id is not null;
+
 
 
 -- TODO rever essas views, pois existem tbm os relacionamentos de iniciativa e atividade
