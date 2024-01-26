@@ -133,7 +133,10 @@ watch([
     <div class="flex flexwrap g2 start">
       <div class="legenda-e-filtro mb1 f1">
         <Transition name="fade">
-          <FiltroDeMetas v-if="perfil && perfil !== 'ponto_focal'" />
+          <FiltroDeMetas
+            v-if="perfil && perfil !== 'ponto_focal'
+              && $route.query.visao === 'geral'"
+          />
         </Transition>
 
         <Transition
