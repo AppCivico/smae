@@ -1,5 +1,5 @@
 <template>
-  <div class="legenda-atrasadas mb1">
+  <div class="legenda-atrasadas">
     <h2 class="legenda-atrasadas__título mb1 w700 t16">
       Legenda
     </h2>
