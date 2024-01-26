@@ -34,7 +34,6 @@ const {
   listaDePendentes,
   listaDeAtualizadas,
   listaDeAtrasadas,
-  perfil,
   chamadasPendentes,
   erro,
 } = storeToRefs(panoramaStore);
