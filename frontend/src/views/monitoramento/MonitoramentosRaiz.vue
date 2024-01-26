@@ -35,7 +35,7 @@ const {
   listaDePendentes,
   listaDeAtualizadas,
   listaDeAtrasadas,
-  variáveisPorId,
+  detalhesPorId,
   erro,
 } = storeToRefs(panoramaStore);
 const PdMStore = usePdMStore();
@@ -218,8 +218,8 @@ watch([
       readonly
       cols="30"
       rows="10"
-    >variáveisPorId:
-{{ variáveisPorId }}
+    >detalhesPorId:
+{{ detalhesPorId }}
 </textarea>
 
     <ErrorComponent v-if="erro">

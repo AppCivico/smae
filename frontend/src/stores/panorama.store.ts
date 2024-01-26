@@ -1,23 +1,29 @@
 import { defineStore } from 'pinia';
 
 // eslint-disable-next-line import/no-extraneous-dependencies
-import {
-  ListMfDashMetasDto, MfMetaVariavelCount, MfMetaCronogramaCount,
-} from '@/../../backend/src/mf/metas/dash/dto/metas.dto';
+import { ListMfDashMetasDto } from '@/../../backend/src/mf/metas/dash/dto/metas.dto';
+// eslint-disable-next-line import/no-extraneous-dependencies
+import { IdCodTituloDto } from '@/../../backend/src/common/dto/IdCodTitulo.dto';
+// eslint-disable-next-line import/no-extraneous-dependencies
+import { IdTituloOrNullDto } from '@/../../backend/src/common/dto/IdTitulo.dto';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
-type ListaDeVariáveis = MfMetaVariavelCount['detalhes'] | MfMetaCronogramaCount['detalhes'];
-
-type VariáveisPorId = {
-  [key: string]: ListaDeVariáveis;
+type DetalhesPorId = {
+  tarefas: {
+    [key: string]: IdTituloOrNullDto;
+  };
+  variáveis:
+  {
+    [key: string]: IdCodTituloDto;
+  };
 };
 
-interface ChamadasPendentes {
+type ChamadasPendentes = {
   lista: boolean;
-}
+};
 
-interface Estado {
+type Estado = {
   listaDePendentes: ListMfDashMetasDto['pendentes'];
   listaDeAtualizadas: ListMfDashMetasDto['atualizadas'];
   listaDeAtrasadas: ListMfDashMetasDto['atrasadas'];
@@ -26,7 +32,7 @@ interface Estado {
 
   chamadasPendentes: ChamadasPendentes;
   erro: null | unknown;
-}
+};
 
 type TipoDeLista = 'pendentes' | 'atualizadas' | 'atrasadas';
 
@@ -111,22 +117,38 @@ export const usePanoramaStore = defineStore('panorama', {
     },
   },
   getters: {
-    variáveisPorId: (({ listaDePendentes, listaDeAtualizadas, listaDeAtrasadas }) => {
-      const mapaDeVariáveis:VariáveisPorId = {};
+    detalhesPorId: (({ listaDePendentes, listaDeAtualizadas }) => {
+      const mapaDeDetalhes:DetalhesPorId = {
+        tarefas: {},
+        variáveis: {},
+      };
 
-      [listaDePendentes, listaDeAtualizadas, listaDeAtrasadas]
+      [listaDePendentes, listaDeAtualizadas]
         .forEach((lista) => {
           lista?.forEach((meta) => {
-            if (Array.isArray(meta.variaveis?.detalhes)) {
-              meta.variaveis.detalhes.forEach((variável) => {
-                if (!mapaDeVariáveis[meta.id]) {
-                  mapaDeVariáveis[meta.id] = variável;
+            if (meta?.cronograma && Array.isArray(meta.cronograma?.detalhes)) {
+              meta.cronograma.detalhes.forEach((tarefa:IdTituloOrNullDto) => {
+                if (!mapaDeDetalhes.tarefas[tarefa.id]) {
+                  // usando cópias para evitar que uma nova chamada à API apague
+                  // uma referência usada em alguma outra situação. Não deve
+                  // acontecer, mas... Who knows?
+                  mapaDeDetalhes.tarefas[tarefa.id] = { ...tarefa };
+                }
+              });
+            }
+            if (meta?.variaveis && Array.isArray(meta.variaveis?.detalhes)) {
+              meta.variaveis.detalhes.forEach((variável:IdCodTituloDto) => {
+                if (!mapaDeDetalhes.variáveis[meta.id]) {
+                  // usando cópias para evitar que uma nova chamada à API apague
+                  // uma referência usada em alguma outra situação. Não deve
+                  // acontecer, mas... Who knows?
+                  mapaDeDetalhes.variáveis[meta.id] = { ...variável };
                 }
               });
             }
           });
         });
-      return mapaDeVariáveis;
+      return mapaDeDetalhes;
     }),
   },
 });
