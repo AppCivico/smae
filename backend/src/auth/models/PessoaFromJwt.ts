@@ -16,6 +16,12 @@ export class PessoaFromJwt extends PessoaFromJwtBase {
         return anyRequiredRole.some((role) => this.privilegios.includes(role));
     }
 
+    public cloneWithRoles(anyRequiredRole: ListaDePrivilegios[]): PessoaFromJwt {
+        const fakeUser = new PessoaFromJwt(this);
+        fakeUser.privilegios.push(...anyRequiredRole);
+        return fakeUser;
+    }
+
     public async assertHasMetaRespAccess(meta_id: number, prisma: Prisma.TransactionClient) {
         const metas = await this.getMetaIdsFromAnyModel(prisma.view_meta_pessoa_responsavel);
         if (!metas.includes(+meta_id))
