@@ -92,6 +92,14 @@ function dateToTitle(d) {
       </router-link>
     </div>
     <div class="subpadding">
+      <h2>Monitoramento</h2>
+      <div class="links-container mb2">
+        <router-link to="/monitoramento">
+          Ciclo vigente
+        </router-link>
+      </div>
+    </div>
+    <div class="subpadding">
       <h2>Ciclo vigente</h2>
       <div class="links-container mb2">
         <router-link to="/monitoramento/fases">
