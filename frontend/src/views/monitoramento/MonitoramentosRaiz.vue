@@ -37,7 +37,8 @@ const {
   listaDePendentes,
   listaDeAtualizadas,
   listaDeAtrasadas,
-  detalhesPorId,
+  tarefasPorId,
+  variáveisPorId,
   erro,
 } = storeToRefs(panoramaStore);
 const PdMStore = usePdMStore();
@@ -222,15 +223,23 @@ watch([
       readonly
       cols="30"
       rows="10"
-    >detalhesPorId:
-{{ detalhesPorId }}
+    >tarefasPorId:
+{{ tarefasPorId }}
+</textarea>
+
+    <textarea
+      readonly
+      cols="30"
+      rows="10"
+    >variáveisPorId:
+{{ variáveisPorId }}
 </textarea>
 
     <pre>
-Object.keys(detalhesPorId.tarefas).length: {{ Object.keys(detalhesPorId.tarefas).length }}
+Object.keys(tarefasPorId).length: {{ Object.keys(tarefasPorId).length }}
 </pre>
     <pre>
-Object.keys(detalhesPorId.variáveis).length: {{ Object.keys(detalhesPorId.variáveis).length }}
+Object.keys(variáveisPorId).length: {{ Object.keys(variáveisPorId).length }}
 </pre>
 
     <ErrorComponent v-if="erro">
