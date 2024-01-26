@@ -71,12 +71,16 @@ async function iniciar() {
     await PdmStore.getActive();
   }
 
-  panoramaStore.buscarTudo(activePdm.value.id, route.query.status, {
-    metas: route.query.metas,
-    coordenadores_cp: route.query.coordenadores_cp,
-    orgaos: route.query.orgaos,
-    visao_geral: route.query.visao === 'geral',
-  });
+  const filtros = route.query.visao === 'geral'
+    ? {
+      metas: route.query.metas,
+      coordenadores_cp: route.query.coordenadores_cp,
+      orgaos: route.query.orgaos,
+      visao_geral: true,
+    }
+    : undefined;
+
+  panoramaStore.buscarTudo(activePdm.value.id, route.query.status, filtros);
 }
 
 watch([
