@@ -2,12 +2,16 @@ import { defineStore } from 'pinia';
 
 // eslint-disable-next-line import/no-extraneous-dependencies
 import {
-  ListMfDashMetasDto,
+  ListMfDashMetasDto, MfMetaVariavelCount, MfMetaCronogramaCount,
 } from '@/../../backend/src/mf/metas/dash/dto/metas.dto';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
-type Lista = [];
+type ListaDeVariáveis = MfMetaVariavelCount['detalhes'] | MfMetaCronogramaCount['detalhes'];
+
+type VariáveisPorId = {
+  [key: string]: ListaDeVariáveis;
+};
 
 interface ChamadasPendentes {
   lista: boolean;
@@ -105,5 +109,24 @@ export const usePanoramaStore = defineStore('panorama', {
       }
       this.chamadasPendentes.lista = false;
     },
+  },
+  getters: {
+    variáveisPorId: (({ listaDePendentes, listaDeAtualizadas, listaDeAtrasadas }) => {
+      const mapaDeVariáveis:VariáveisPorId = {};
+
+      [listaDePendentes, listaDeAtualizadas, listaDeAtrasadas]
+        .forEach((lista) => {
+          lista?.forEach((meta) => {
+            if (Array.isArray(meta.variaveis?.detalhes)) {
+              meta.variaveis.detalhes.forEach((variável) => {
+                if (!mapaDeVariáveis[meta.id]) {
+                  mapaDeVariáveis[meta.id] = variável;
+                }
+              });
+            }
+          });
+        });
+      return mapaDeVariáveis;
+    }),
   },
 });
