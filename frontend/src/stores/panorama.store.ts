@@ -9,16 +9,6 @@ import { IdTituloOrNullDto } from '@/../../backend/src/common/dto/IdTitulo.dto';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
-type DetalhesPorId = {
-  tarefas: {
-    [key: string]: IdTituloOrNullDto;
-  };
-  variáveis:
-  {
-    [key: string]: IdCodTituloDto;
-  };
-};
-
 type ChamadasPendentes = {
   lista: boolean;
 };
@@ -27,6 +17,13 @@ type Estado = {
   listaDePendentes: ListMfDashMetasDto['pendentes'];
   listaDeAtualizadas: ListMfDashMetasDto['atualizadas'];
   listaDeAtrasadas: ListMfDashMetasDto['atrasadas'];
+
+  tarefasPorId: {
+    [key: string]: IdTituloOrNullDto;
+  };
+  variáveisPorId: {
+    [key: string]: IdCodTituloDto;
+  };
 
   perfil: ListMfDashMetasDto['perfil'] | '';
 
@@ -41,6 +38,9 @@ export const usePanoramaStore = defineStore('panorama', {
     listaDePendentes: [],
     listaDeAtualizadas: [],
     listaDeAtrasadas: [],
+
+    tarefasPorId: {},
+    variáveisPorId: {},
 
     perfil: '',
 
@@ -84,67 +84,58 @@ export const usePanoramaStore = defineStore('panorama', {
 
         this.perfil = resposta.perfil;
 
+        let lista:ListMfDashMetasDto['pendentes'] | ListMfDashMetasDto['atualizadas'] = [];
+
         switch (tipoDaLista) {
           case 'pendentes':
-            this.listaDePendentes = Array.isArray(resposta.pendentes)
-              ? resposta.pendentes
-              : [];
+            if (Array.isArray(resposta.pendentes)) {
+              this.listaDePendentes = resposta.pendentes;
+              lista = resposta.pendentes;
+            }
             break;
 
           case 'atualizadas':
-            this.listaDeAtualizadas = Array.isArray(resposta.atualizadas)
-              ? resposta.atualizadas
-              : [];
+            if (Array.isArray(resposta.atualizadas)) {
+              this.listaDeAtualizadas = resposta.atualizadas;
+              lista = resposta.atualizadas;
+            }
             break;
 
           case 'atrasadas':
-            this.listaDeAtrasadas = Array.isArray(resposta.atrasadas)
-              ? resposta.atrasadas
-              : [];
+            if (Array.isArray(resposta.atrasadas)) {
+              this.listaDeAtrasadas = resposta.atrasadas;
             break;
 
           default:
             break;
         }
+
+        lista.forEach((meta) => {
+          if (Array.isArray(meta.cronograma?.detalhes)) {
+            meta.cronograma.detalhes.forEach((tarefa:IdTituloOrNullDto) => {
+              if (!this.tarefasPorId[tarefa.id]) {
+                // usando cópias para evitar que uma nova chamada à API apague
+                // uma referência usada em alguma outra situação. Não deve
+                // acontecer, mas... Who knows?
+                this.tarefasPorId[tarefa.id] = { ...tarefa };
+              }
+            });
+          }
+          if (Array.isArray(meta.variaveis?.detalhes)) {
+            meta.variaveis.detalhes.forEach((variável:IdCodTituloDto) => {
+              if (!this.variáveisPorId[meta.id]) {
+                // usando cópias para evitar que uma nova chamada à API apague
+                // uma referência usada em alguma outra situação. Não deve
+                // acontecer, mas... Who knows?
+                this.variáveisPorId[meta.id] = { ...variável };
+              }
+            });
+          }
+        });
       } catch (erro: unknown) {
         this.erro = erro;
       }
       this.chamadasPendentes.lista = false;
     },
-  },
-  getters: {
-    detalhesPorId: (({ listaDePendentes, listaDeAtualizadas }) => {
-      const mapaDeDetalhes:DetalhesPorId = {
-        tarefas: {},
-        variáveis: {},
-      };
-
-      [listaDePendentes, listaDeAtualizadas]
-        .forEach((lista) => {
-          lista?.forEach((meta) => {
-            if (Array.isArray(meta.cronograma?.detalhes)) {
-              meta.cronograma.detalhes.forEach((tarefa:IdTituloOrNullDto) => {
-                if (!mapaDeDetalhes.tarefas[tarefa.id]) {
-                  // usando cópias para evitar que uma nova chamada à API apague
-                  // uma referência usada em alguma outra situação. Não deve
-                  // acontecer, mas... Who knows?
-                  mapaDeDetalhes.tarefas[tarefa.id] = { ...tarefa };
-                }
-              });
-            }
-            if (Array.isArray(meta.variaveis?.detalhes)) {
-              meta.variaveis.detalhes.forEach((variável:IdCodTituloDto) => {
-                if (!mapaDeDetalhes.variáveis[meta.id]) {
-                  // usando cópias para evitar que uma nova chamada à API apague
-                  // uma referência usada em alguma outra situação. Não deve
-                  // acontecer, mas... Who knows?
-                  mapaDeDetalhes.variáveis[meta.id] = { ...variável };
-                }
-              });
-            }
-          });
-        });
-      return mapaDeDetalhes;
-    }),
   },
 });
