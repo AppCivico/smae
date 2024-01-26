@@ -150,11 +150,13 @@ watch([
         >
           <LegendaDeAtrasadas
             v-if="$route.query.status === 'atrasadas'"
+            class="mb1"
           />
           <LegendaPadrão
             v-else
             :perfil="perfil"
             :status="$route.query.status"
+            class="mb1"
           />
         </Transition>
       </div>

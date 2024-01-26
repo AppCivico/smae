@@ -27,7 +27,7 @@ defineProps({
 });
 </script>
 <template>
-  <div class="legenda-padrão mb1">
+  <div class="legenda-padrão">
     <h2 class="legenda-padrão__título mb1 w700 t16">
       Legenda
     </h2>
