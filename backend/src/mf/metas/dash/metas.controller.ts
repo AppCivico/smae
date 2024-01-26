@@ -8,13 +8,17 @@ import { MfService } from '../../mf.service';
 import { RequestInfoDto } from '../dto/mf-meta.dto';
 import { FilterMfDashMetasDto, ListMfDashMetasDto } from './dto/metas.dto';
 import { MfDashMetasService } from './metas.service';
+import { ListMetaDto } from '../../../meta/dto/list-meta.dto';
+import { MetaService } from '../../../meta/meta.service';
+import { FilterMetaDto } from '../../../meta/dto/filter-meta.dto';
 
 @ApiTags('Monitoramento Fisico - Metas e variáveis')
 @Controller('panorama')
 export class MfDashMetasController {
     constructor(
         private readonly mfService: MfService,
-        private readonly metasDashService: MfDashMetasService
+        private readonly metasDashService: MfDashMetasService,
+        private readonly metaService: MetaService
     ) {}
 
     @Get('metas')
@@ -37,5 +41,12 @@ export class MfDashMetasController {
             ...metas,
             requestInfo: { queryTook: Date.now() - start },
         };
+    }
+
+    @Get('filtros-metas')
+    @ApiBearerAuth('access-token')
+    @Roles('PDM.admin_cp', 'PDM.tecnico_cp', 'PDM.ponto_focal')
+    async filtroMetas(@Query() filters: FilterMetaDto, @CurrentUser() user: PessoaFromJwt): Promise<ListMetaDto> {
+        return { linhas: await this.metaService.findAll(filters, user.cloneWithRoles(['SMAE.acesso_bi'])) };
     }
 }

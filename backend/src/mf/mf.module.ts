@@ -1,10 +1,11 @@
 import { Module } from '@nestjs/common';
+import { MetaModule } from '../meta/meta.module';
 import { PrismaModule } from '../prisma/prisma.module';
-import { MfService } from './mf.service';
 import { AuxiliarModule } from './auxiliar/auxiliar.module';
+import { MfService } from './mf.service';
 // mf=monitoramento fisico
 @Module({
-    imports: [PrismaModule, AuxiliarModule],
+    imports: [PrismaModule, AuxiliarModule, MetaModule],
     providers: [MfService],
     exports: [MfService],
 })
