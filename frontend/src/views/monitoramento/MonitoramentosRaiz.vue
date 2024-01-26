@@ -1,6 +1,8 @@
 <script setup>
 import EnvelopeDeAbas from '@/components/EnvelopeDeAbas.vue';
 import FeedbackEmptyList from '@/components/FeedbackEmptyList.vue';
+import LegendaDeVariáveis from '@/components/monitoramento/LegendaDeVariaveis.vue';
+import LegendaDeTarefas from '@/components/monitoramento/LegendaDeTarefas.vue';
 import { Dashboard } from '@/components';
 import { useRoute, useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/auth.store';
@@ -147,6 +149,9 @@ watch([
       </div>
     </header>
 
+    <LegendaDeVariáveis class="legenda legenda--variáveis" />
+    <LegendaDeTarefas class="legenda legenda--tarefas" />
+
     <EnvelopeDeAbas
       :meta-dados-por-id="dadosExtrasDeAbas"
       nome-da-chave-de-abas="status"
@@ -234,3 +239,21 @@ Object.keys(detalhesPorId.variáveis).length: {{ Object.keys(detalhesPorId.vari�
     </ErrorComponent>
   </Dashboard>
 </template>
+<style lang="less" scoped>
+.legenda {
+  margin-right: 0;
+  margin-left: auto;
+}
+
+.legenda h2 {
+  text-align: center;
+}
+
+.legenda--variáveis {
+  max-width: 20em;
+}
+
+.legenda--tarefas {
+  max-width: 40em;
+}
+</style>
