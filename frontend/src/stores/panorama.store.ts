@@ -84,10 +84,6 @@ export const usePanoramaStore = defineStore('panorama', {
 
         this.perfil = resposta.perfil;
 
-        this.listaDePendentes = [];
-        this.listaDeAtualizadas = [];
-        this.listaDeAtrasadas = [];
-
         switch (tipoDaLista) {
           case 'pendentes':
             this.listaDePendentes = Array.isArray(resposta.pendentes)
@@ -126,7 +122,7 @@ export const usePanoramaStore = defineStore('panorama', {
       [listaDePendentes, listaDeAtualizadas]
         .forEach((lista) => {
           lista?.forEach((meta) => {
-            if (meta?.cronograma && Array.isArray(meta.cronograma?.detalhes)) {
+            if (Array.isArray(meta.cronograma?.detalhes)) {
               meta.cronograma.detalhes.forEach((tarefa:IdTituloOrNullDto) => {
                 if (!mapaDeDetalhes.tarefas[tarefa.id]) {
                   // usando cópias para evitar que uma nova chamada à API apague
@@ -136,7 +132,7 @@ export const usePanoramaStore = defineStore('panorama', {
                 }
               });
             }
-            if (meta?.variaveis && Array.isArray(meta.variaveis?.detalhes)) {
+            if (Array.isArray(meta.variaveis?.detalhes)) {
               meta.variaveis.detalhes.forEach((variável:IdCodTituloDto) => {
                 if (!mapaDeDetalhes.variáveis[meta.id]) {
                   // usando cópias para evitar que uma nova chamada à API apague

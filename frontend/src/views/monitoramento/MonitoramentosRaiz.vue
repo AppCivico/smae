@@ -222,6 +222,13 @@ watch([
 {{ detalhesPorId }}
 </textarea>
 
+    <pre>
+Object.keys(detalhesPorId.tarefas).length: {{ Object.keys(detalhesPorId.tarefas).length }}
+</pre>
+    <pre>
+Object.keys(detalhesPorId.variáveis).length: {{ Object.keys(detalhesPorId.variáveis).length }}
+</pre>
+
     <ErrorComponent v-if="erro">
       {{ erro }}
     </ErrorComponent>
