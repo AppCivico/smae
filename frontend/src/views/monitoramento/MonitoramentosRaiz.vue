@@ -11,7 +11,7 @@ import { usePdMStore } from '@/stores/pdm.store';
 import { storeToRefs } from 'pinia';
 import dateToField from '@/helpers/dateToField';
 import dateToTitle from '@/helpers/dateToTitle';
-import { watch } from 'vue';
+import { computed, watch } from 'vue';
 
 const dadosExtrasDeAbas = {
   TabelaDeVariaveis: {
@@ -46,6 +46,10 @@ const { activePdm } = storeToRefs(PdMStore);
 const authStore = useAuthStore();
 const route = useRoute();
 const router = useRouter();
+
+const faseCorrente = computed(() => (Array.isArray(activePdm.value?.ciclo_fisico_ativo?.fases)
+  ? activePdm.value.ciclo_fisico_ativo.fases.find((x) => x.fase_corrente)
+  : null));
 
 if (!authStore.temPermissãoPara(['PDM.admin_cp', 'PDM.tecnico_cp'])) {
   router.replace({
@@ -107,19 +111,14 @@ watch([
       <hr class="f1">
 
       <div class="fb100 flex flexwrap spacebetween center g1 mb1">
-        <template v-if="activePdm?.ciclo_fisico_ativo">
-          <p
-            v-for="c in activePdm.ciclo_fisico_ativo.fases.filter(x => x.fase_corrente)"
-            :key="c.id"
-            class="t24 mb0"
-          >
-            Etapa atual: {{ c.ciclo_fase }}
-            - de <strong>{{ dateToField(c.data_inicio) }}</strong>
-            até <strong>{{ dateToField(c.data_fim) }}</strong>
-          </p>
-        </template>
-
-        <hr class="f1">
+        <p
+          v-if="faseCorrente"
+          class="t24 mb0"
+        >
+          Etapa atual: {{ faseCorrente.ciclo_fase }}
+          - de <strong>{{ dateToField(faseCorrente.data_inicio) }}</strong>
+          até <strong>{{ dateToField(faseCorrente.data_fim) }}</strong>
+        </p>
 
         <nav
           class="flex g1 flexwrap"
