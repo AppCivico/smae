@@ -14,8 +14,8 @@
       <div>
         <dt>
           <svg
-            width="10"
-            height="18"
+            width="24"
+            height="24"
           ><use xlink:href="#i_$" /></svg>
         </dt>
         <dd>i_$</dd>
@@ -32,8 +32,8 @@
       <div>
         <dt>
           <svg
-            width="12"
-            height="14"
+            width="20"
+            height="20"
           ><use xlink:href="#i_atividade" /></svg>
         </dt>
         <dd>i_atividade</dd>
@@ -59,11 +59,29 @@
       <div>
         <dt>
           <svg
+            width="20"
+            height="20"
+          ><use xlink:href="#i_celebrate" /></svg>
+        </dt>
+        <dd>i_celebrate</dd>
+      </div>
+      <div>
+        <dt>
+          <svg
             width="24"
             height="24"
           ><use xlink:href="#i_check" /></svg>
         </dt>
         <dd>i_check</dd>
+      </div>
+      <div>
+        <dt>
+          <svg
+            width="24"
+            height="24"
+          ><use xlink:href="#i_circle" /></svg>
+        </dt>
+        <dd>i_circle</dd>
       </div>
       <div>
         <dt>
@@ -140,8 +158,8 @@
       <div>
         <dt>
           <svg
-            width="28"
-            height="28"
+            width="20"
+            height="20"
           ><use xlink:href="#i_indicador" /></svg>
         </dt>
         <dd>i_indicador</dd>
@@ -149,8 +167,8 @@
       <div>
         <dt>
           <svg
-            width="32"
-            height="38"
+            width="20"
+            height="20"
           ><use xlink:href="#i_iniciativa" /></svg>
         </dt>
         <dd>i_iniciativa</dd>
@@ -181,6 +199,15 @@
           ><use xlink:href="#i_remove" /></svg>
         </dt>
         <dd>i_remove</dd>
+      </div>
+      <div>
+        <dt>
+          <svg
+            width="20"
+            height="20"
+          ><use xlink:href="#i_report" /></svg>
+        </dt>
+        <dd>i_report</dd>
       </div>
       <div>
         <dt>
