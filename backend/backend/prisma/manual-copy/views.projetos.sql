@@ -102,14 +102,21 @@ when p.status = 'EmAcompanhamento' then  6
 when p.status = 'Suspenso' then   6
 when p.status = 'Fechado' then  7
 end as "numero_status",
-array_agg(po.titulo) as portfolios_compartilhados
+array_agg(distinct po.titulo) as portfolios_compartilhados
 
 from projeto p
-left join portfolio_projeto_compartilhado ppc on ppc.projeto_id = p.id
-left join portfolio po on po.id = ppc.portfolio_id
+left join (
+    select ppc.projeto_id, po.titulo
+    from portfolio_projeto_compartilhado ppc
+    join portfolio po on po.id = ppc.portfolio_id
+    where ppc.removido_em IS NULL
+    union all
+    select p.id as projeto_id, po.titulo
+    from projeto p
+    join portfolio po on po.id = p.portfolio_id
+) po on po.projeto_id = p.id
 where p.removido_em IS NULL
-and ppc.removido_em IS NULL
-group by p.id, p.portfolio_id, p.status, previsao_custo, realizado_custo
+group by p.id
 order by p.status, p.codigo;
 -- isso vai garantir a ordem do enum (Registrado, Selecionado, EmPlanejamento, Planejado, Validado, EmAcompanhamento, Suspenso, Fechado)
 -- e depois o código
