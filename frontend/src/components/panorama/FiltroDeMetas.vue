@@ -118,7 +118,6 @@ if (!Array.isArray(Metas.value) || !Metas.value.length) {
 
   <form
     v-else
-    class="mb2"
     @submit.prevent
   >
     <legend class="tprimary mb1 w700 t16">

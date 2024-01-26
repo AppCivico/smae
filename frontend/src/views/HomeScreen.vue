@@ -136,6 +136,7 @@ watch([
           <FiltroDeMetas
             v-if="perfil && perfil !== 'ponto_focal'
               && $route.query.visao === 'geral'"
+            class="mb2"
           />
         </Transition>
 
