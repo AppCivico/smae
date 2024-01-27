@@ -52,14 +52,6 @@ const faseCorrente = computed(() => (Array.isArray(activePdm.value?.ciclo_fisico
   ? activePdm.value.ciclo_fisico_ativo.fases.find((x) => x.fase_corrente)
   : null));
 
-if (!authStore.temPermissãoPara(['PDM.admin_cp', 'PDM.tecnico_cp'])) {
-  router.replace({
-    name: 'monitoramentoDeEvoluçãoDeMetas',
-    hash: route.hash?.indexOf('#') === 0 ? route.hash : undefined,
-    query: route.query,
-  });
-}
-
 async function iniciar() {
   if (!route.query.filtro) {
     router.replace({
@@ -85,6 +77,14 @@ async function iniciar() {
 
   panoramaStore.buscarTudo(activePdm.value.id, route.query.status, {
     retornar_detalhes: true,
+  });
+}
+
+if (!authStore.temPermissãoPara(['PDM.admin_cp', 'PDM.tecnico_cp'])) {
+  router.replace({
+    name: 'monitoramentoDeEvoluçãoDeMetas',
+    hash: route.hash?.indexOf('#') === 0 ? route.hash : undefined,
+    query: route.query,
   });
 }
 
