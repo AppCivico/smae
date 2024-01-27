@@ -123,11 +123,11 @@ export const usePanoramaStore = defineStore('panorama', {
           }
           if (Array.isArray(meta.variaveis?.detalhes)) {
             meta.variaveis.detalhes.forEach((variável:IdCodTituloDto) => {
-              if (!this.variáveisPorId[meta.id]) {
+              if (!this.variáveisPorId[variável.id]) {
                 // usando cópias para evitar que uma nova chamada à API apague
                 // uma referência usada em alguma outra situação. Não deve
                 // acontecer, mas... Who knows?
-                this.variáveisPorId[meta.id] = { ...variável };
+                this.variáveisPorId[variável.id] = { ...variável };
               }
             });
           }
