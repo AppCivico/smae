@@ -114,11 +114,11 @@ const listaDeAtualizadas = computed(() => {
 });
 
 async function iniciar() {
-  if (!route.query.filtro) {
+  if (!route.query.exibir) {
     router.replace({
       query: {
         ...route.query,
-        filtro: filtroPadrão,
+        exibir: filtroPadrão,
       },
     });
   }
@@ -151,7 +151,7 @@ if (!authStore.temPermissãoPara(['PDM.admin_cp', 'PDM.tecnico_cp'])) {
 
 watch([
   () => route.query.status,
-  () => route.query.filtro,
+  () => route.query.exibir,
 ], () => {
   iniciar();
 }, { immediate: true });
@@ -186,23 +186,23 @@ watch([
           class="flex g1 flexwrap"
         >
           <router-link
-            :to="{ query: { ...$route.query, filtro: 'variavel' } }"
+            :to="{ query: { ...$route.query, exibir: 'variaveis' } }"
             class="btn bgnone outline tcprimary"
             :class="{
-              tcamarelo: $route.query.filtro === 'variavel'
+              tcamarelo: $route.query.exibir === 'variaveis'
             }"
-            :aria-current="$route.query.filtro === 'variavel' ? 'page' : undefined"
+            :aria-current="$route.query.exibir === 'variaveis' ? 'page' : undefined"
           >
             por Variável
           </router-link>
 
           <router-link
-            :to="{ query: { ...$route.query, filtro: 'cronograma' } }"
+            :to="{ query: { ...$route.query, exibir: 'tarefas' } }"
             class="btn bgnone outline tcprimary"
             :class="{
-              tcamarelo: $route.query.filtro === 'cronograma'
+              tcamarelo: $route.query.exibir === 'tarefas'
             }"
-            :aria-current="$route.query.filtro === 'cronograma' ? 'page' : undefined"
+            :aria-current="$route.query.exibir === 'tarefas' ? 'page' : undefined"
           >
             por Cronograma
           </router-link>
