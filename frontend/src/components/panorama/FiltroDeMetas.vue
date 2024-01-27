@@ -2,12 +2,16 @@
 import AutocompleteField from '@/components/AutocompleteField2.vue';
 import truncate from '@/helpers/truncate';
 import { useRoute, useRouter } from 'vue-router';
-import { useMetasStore } from '@/stores/metas.store';
 import { storeToRefs } from 'pinia';
 import { computed } from 'vue';
+import { usePanoramaStore } from '@/stores/panorama.store.ts';
+import { usePdMStore } from '@/stores/pdm.store';
 
-const MetasStore = useMetasStore();
-const { Metas } = storeToRefs(MetasStore);
+const panoramaStore = usePanoramaStore();
+const { dadosParaFiltro, chamadasPendentes } = storeToRefs(panoramaStore);
+
+const PdmStore = usePdMStore();
+const { activePdm } = storeToRefs(PdmStore);
 
 const route = useRoute();
 const router = useRouter();
@@ -17,8 +21,8 @@ const dadosParaFiltros = computed(() => {
   const coordenadoresCp = {};
   const metas = {};
 
-  if (Array.isArray(Metas.value)) {
-    Metas.value.forEach((x) => {
+  if (Array.isArray(dadosParaFiltro.value)) {
+    dadosParaFiltro.value.forEach((x) => {
       metas[x.id] = { ...x };
       metas[x.id].órgãos = [];
       metas[x.id].pessoas = [];
@@ -109,12 +113,18 @@ function atualizarFiltro(chave, valor) {
   });
 }
 
-if (!Array.isArray(Metas.value) || !Metas.value.length) {
-  MetasStore.getAll();
+async function iniciar() {
+  if (!activePdm.value.id) {
+    await PdmStore.getActive();
+  }
+
+  panoramaStore.buscarFiltro({ pdm_id: activePdm.value.id });
 }
+
+iniciar();
 </script>
 <template>
-  <LoadingComponent v-if="Metas?.loading" />
+  <LoadingComponent v-if="chamadasPendentes.filtro" />
 
   <form
     v-else
