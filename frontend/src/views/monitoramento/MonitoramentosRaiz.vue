@@ -3,6 +3,7 @@ import EnvelopeDeAbas from '@/components/EnvelopeDeAbas.vue';
 import FeedbackEmptyList from '@/components/FeedbackEmptyList.vue';
 import LegendaDeVariáveis from '@/components/monitoramento/LegendaDeVariaveis.vue';
 import LegendaDeTarefas from '@/components/monitoramento/LegendaDeTarefas.vue';
+import truncate from '@/helpers/truncate';
 import { Dashboard } from '@/components';
 import { useRoute, useRouter } from 'vue-router';
 import { useAuthStore } from '@/stores/auth.store';
@@ -34,9 +35,8 @@ const statusesVálidos = ['pendentes', 'atualizadas', 'atrasadas'];
 const panoramaStore = usePanoramaStore();
 const {
   chamadasPendentes,
-  listaDePendentes,
-  listaDeAtualizadas,
   listaDeAtrasadas,
+  perfil,
   tarefasPorId,
   variáveisPorId,
   erro,
@@ -51,6 +51,67 @@ const router = useRouter();
 const faseCorrente = computed(() => (Array.isArray(activePdm.value?.ciclo_fisico_ativo?.fases)
   ? activePdm.value.ciclo_fisico_ativo.fases.find((x) => x.fase_corrente)
   : null));
+
+//  pendentes:
+//    para o ponto focal:
+//      - total - enviadas + aguardando complementação
+//    para os outros:
+//      - total - conferidas + aguardando complementação
+//  atualizadas
+//    ponto focal:
+//      - todas as conferidas
+//    para os outros:
+//      - todas as enviadas
+
+const listaDePendentes = computed(() => {
+  if (!perfil.value) return [];
+
+  const aRemover = perfil.value === 'ponto_focal'
+    ? 'enviadas'
+    : 'conferidas';
+  return panoramaStore.listaDePendentes.map((x) => ({
+    id: x.id,
+    código: x.codigo,
+    título: x.titulo,
+    variáveis: x.variaveis?.total?.reduce((acc, cur) => {
+      const manter = x.variaveis.aguardando_complementacao.includes(cur);
+      const remover = !x.variaveis[aRemover].includes(cur);
+      return (manter || remover)
+        ? acc.concat([{
+          id: cur,
+          código: variáveisPorId.value[cur]?.codigo || '',
+          título: variáveisPorId.value[cur]?.titulo || '',
+          aguardaComplementação: manter,
+          aguardaConferência: x.variaveis.conferidas.includes(cur),
+          aguardaEnvio: x.variaveis.enviadas.includes(cur),
+          aguardaPreenchimento: x.variaveis.preenchidas.includes(cur),
+        }])
+        : acc;
+    }, []),
+  }));
+});
+
+const listaDeAtualizadas = computed(() => {
+  if (!perfil.value) return [];
+
+  const aUsar = perfil.value === 'ponto_focal'
+    ? 'conferidas'
+    : 'enviadas';
+  return panoramaStore.listaDeAtualizadas.map((x) => ({
+    id: x.id,
+    código: x.codigo,
+    título: x.titulo,
+    variáveis: x.variaveis?.[aUsar]?.map((y) => ({
+      id: y,
+      código: variáveisPorId.value[y]?.codigo || '',
+      título: variáveisPorId.value[y]?.titulo || '',
+      aguardaComplementação: x.variaveis.aguardando_complementacao.includes(y),
+      aguardaConferência: x.variaveis.conferidas.includes(y),
+      aguardaEnvio: x.variaveis.enviadas.includes(y),
+      aguardaPreenchimento: x.variaveis.preenchidas.includes(y),
+    })),
+  }));
+});
 
 async function iniciar() {
   if (!route.query.filtro) {
@@ -168,14 +229,36 @@ watch([
           mensagem="Você não possui pendências!"
         />
 
-        <textarea
-          v-else
-          readonly
-          cols="30"
-          rows="10"
-        >listaDePendentes:
-{{ listaDePendentes }}
-</textarea>
+        <ul v-else>
+          <li
+            v-for="meta in listaDePendentes"
+            :key="meta.id"
+          >
+            {{ meta.código }} - {{ meta.título }}
+            <ul
+              v-if="meta.variáveis.length"
+            >
+              <li
+                v-for="variável in meta.variáveis"
+                :key="variável.id"
+                :title="variável.título?.length > 36
+                  ? variável.título
+                  : undefined"
+                class="ml2"
+              >
+                {{ variável.código || variável.id }} - {{
+                  truncate(variável.título, 36) }}
+
+                <small>
+                  (<code>aguardaComplementação:&nbsp;{{ variável.aguardaComplementação }}</code>)
+                  (<code>aguardaConferência:&nbsp;{{ variável.aguardaConferência }}</code>)
+                  (<code>aguardaEnvio:&nbsp;{{ variável.aguardaEnvio }}</code>)
+                  (<code>aguardaPreenchimento:&nbsp;{{ variável.aguardaPreenchimento }}</code>)
+                </small>
+              </li>
+            </ul>
+          </li>
+        </ul>
       </template>
 
       <template #atualizadas>
@@ -188,14 +271,36 @@ watch([
           mensagem="Complete pendências para visualizar-las aqui."
         />
 
-        <textarea
-          v-else
-          readonly
-          cols="30"
-          rows="10"
-        >listaDeAtualizadas:
-{{ listaDeAtualizadas }}
-</textarea>
+        <ul v-else>
+          <li
+            v-for="meta in listaDeAtualizadas"
+            :key="meta.id"
+          >
+            {{ meta.código }} - {{ meta.título }}
+            <ul
+              v-if="meta.variáveis.length"
+            >
+              <li
+                v-for="variável in meta.variáveis"
+                :key="variável.id"
+                :title="variável.título?.length > 36
+                  ? variável.título
+                  : undefined"
+                class="ml2"
+              >
+                {{ variável.código || variável.id }} - {{
+                  truncate(variável.título, 36) }}
+
+                <small>
+                  (<code>aguardaComplementação:&nbsp;{{ variável.aguardaComplementação }}</code>)
+                  (<code>aguardaConferência:&nbsp;{{ variável.aguardaConferência }}</code>)
+                  (<code>aguardaEnvio:&nbsp;{{ variável.aguardaEnvio }}</code>)
+                  (<code>aguardaPreenchimento:&nbsp;{{ variável.aguardaPreenchimento }}</code>)
+                </small>
+              </li>
+            </ul>
+          </li>
+        </ul>
       </template>
 
       <template #atrasadas>
@@ -218,29 +323,6 @@ watch([
 </textarea>
       </template>
     </EnvelopeDeAbas>
-
-    <textarea
-      readonly
-      cols="30"
-      rows="10"
-    >tarefasPorId:
-{{ tarefasPorId }}
-</textarea>
-
-    <textarea
-      readonly
-      cols="30"
-      rows="10"
-    >variáveisPorId:
-{{ variáveisPorId }}
-</textarea>
-
-    <pre>
-Object.keys(tarefasPorId).length: {{ Object.keys(tarefasPorId).length }}
-</pre>
-    <pre>
-Object.keys(variáveisPorId).length: {{ Object.keys(variáveisPorId).length }}
-</pre>
 
     <ErrorComponent v-if="erro">
       {{ erro }}
