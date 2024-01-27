@@ -59,12 +59,21 @@ export class MfDashMetaAtrasadaDto extends IdCodTituloDto {
     atrasos_orcamento: MfMetaAtrasoItemDto[];
 }
 
+export class MfMetaAtrasoDetalheItemDto extends IdCodTituloDto {
+    meses: string[]
+}
+
+export class MfDashMetaAtrasadaDetalhesDto extends IdCodTituloDto {
+    atrasos_variavel: MfMetaAtrasoDetalheItemDto[];
+}
+
 export class MfDashMetaAtualizadasDto extends MfDashMetaPendenteDto {}
 
 export class ListMfDashMetasDto {
     pendentes: MfDashMetaPendenteDto[] | null;
     atualizadas: MfDashMetaAtualizadasDto[] | null;
     atrasadas: MfDashMetaAtrasadaDto[] | null;
+    atrasadas_detalhes: MfDashMetaAtrasadaDetalhesDto[] | null;
     @ApiProperty({ enum: MfPerfilDto, enumName: 'MfPerfilDto' })
     perfil: MfPerfilDto;
 }

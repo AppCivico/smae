@@ -6,9 +6,10 @@ import { MfPessoaAcessoPdm } from '../../mf.service';
 import {
     FilterMfDashMetasDto,
     ListMfDashMetasDto,
+    MfDashMetaAtrasadaDetalhesDto,
     MfDashMetaAtrasadaDto,
     MfDashMetaAtualizadasDto,
-    MfDashMetaPendenteDto
+    MfDashMetaPendenteDto,
 } from './dto/metas.dto';
 
 class Arr {
@@ -56,6 +57,7 @@ export class MfDashMetasService {
             atrasadas: null,
             pendentes: null,
             atualizadas: null,
+            atrasadas_detalhes: null,
             perfil: config.perfil,
         };
 
@@ -159,7 +161,7 @@ export class MfDashMetasService {
             if (retornar_detalhes) await this.populaDetalhes(ret.atualizadas);
         }
 
-        if (params.retornar_atrasadas) {
+        if (params.retornar_atrasadas && !params.retornar_detalhes) {
             const atrasadas = await this.prisma.metaStatusAtrasoConsolidadoMes.findMany({
                 where: {
                     meta_id: { in: metas },
@@ -199,6 +201,45 @@ export class MfDashMetasService {
                         total: r.orcamento_atrasados,
                     });
                 }
+            }
+        }
+
+        if (params.retornar_atrasadas && params.retornar_detalhes) {
+            const atrasadas = await this.prisma.metaStatusAtrasoVariavel.findMany({
+                where: {
+                    meta_id: { in: metas },
+                },
+                include: {
+                    meta: {
+                        select: { id: true, codigo: true, titulo: true },
+                    },
+                    variavel: {
+                        select: { id: true, codigo: true, titulo: true },
+                    },
+                },
+            });
+
+            ret.atrasadas_detalhes = [];
+
+            const referencias: Record<number, MfDashMetaAtrasadaDetalhesDto> = {};
+
+            for (const r of atrasadas) {
+                if (!referencias[r.meta_id]) {
+                    referencias[r.meta_id] = {
+                        atrasos_variavel: [],
+                        codigo: r.meta.codigo,
+                        id: r.meta.id,
+                        titulo: r.meta.titulo,
+                    };
+                    ret.atrasadas_detalhes.push(referencias[r.meta_id]);
+                }
+
+                referencias[r.meta_id].atrasos_variavel.push({
+                    codigo: r.variavel.codigo,
+                    id: r.variavel.id,
+                    titulo: r.variavel.titulo,
+                    meses: r.meses_atrasados.map((r) => r.toISOString().substring(0, 10)),
+                });
             }
         }
 
