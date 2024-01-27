@@ -229,14 +229,20 @@ watch([
           mensagem="Você não possui pendências!"
         />
 
-        <ul v-else>
+        <ul
+          v-else
+          class="uc w700"
+        >
           <li
             v-for="meta in listaDePendentes"
             :key="meta.id"
           >
-            {{ meta.código }} - {{ meta.título }}
+            <span class="block mb1 bgc50 p1">
+              {{ meta.código }} - {{ meta.título }}
+            </span>
             <ul
               v-if="meta.variáveis.length"
+              class="pl2"
             >
               <li
                 v-for="variável in meta.variáveis"
@@ -244,12 +250,45 @@ watch([
                 :title="variável.título?.length > 36
                   ? variável.título
                   : undefined"
-                class="ml2"
+                class="mb1 bgc50 p1"
               >
+                <svg
+                  v-if="variável.aguardaPreenchimento"
+                  title="Aguarda preenchimento"
+                  class="ib mr1"
+                  width="20"
+                  height="20"
+                  color="#ee3b2b"
+                ><use xlink:href="#i_circle" /></svg>
+                <svg
+                  v-else-if="variável.aguardaComplementação"
+                  title="Aguarda coleta"
+                  class="ib mr1"
+                  width="20"
+                  height="20"
+                  color="#4c626d"
+                ><use xlink:href="#i_circle" /></svg>
+                <svg
+                  v-else-if="variável.aguardaConferência"
+                  title="Aguarda complementação"
+                  class="ib mr1"
+                  width="20"
+                  height="20"
+                  color="#4c626d"
+                ><use xlink:href="#i_alert" /></svg>
+                <svg
+                  v-else-if="variável.aguardaEnvio"
+                  title="Aguarda envio"
+                  class="ib mr1"
+                  width="20"
+                  height="20"
+                  color="#f2890d"
+                ><use xlink:href="#i_circle" /></svg>
+
                 {{ variável.código || variável.id }} - {{
                   truncate(variável.título, 36) }}
 
-                <small>
+                <small v-ScrollLockDebug>
                   (<code>aguardaComplementação:&nbsp;{{ variável.aguardaComplementação }}</code>)
                   (<code>aguardaConferência:&nbsp;{{ variável.aguardaConferência }}</code>)
                   (<code>aguardaEnvio:&nbsp;{{ variável.aguardaEnvio }}</code>)
