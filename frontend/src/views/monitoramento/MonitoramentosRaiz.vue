@@ -29,7 +29,7 @@ const dadosExtrasDeAbas = {
     aberta: true,
   },
 };
-const filtroPadrão = 'pessoal';
+const exibiçãoPadrão = 'variaveis';
 const statusesVálidos = ['pendentes', 'atualizadas', 'atrasadas'];
 
 const panoramaStore = usePanoramaStore();
@@ -120,7 +120,7 @@ async function iniciar() {
     router.replace({
       query: {
         ...route.query,
-        exibir: filtroPadrão,
+        exibir: exibiçãoPadrão,
       },
     });
   }
