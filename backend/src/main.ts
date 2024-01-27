@@ -39,6 +39,7 @@ async function bootstrap() {
     SwaggerModule.setup('api', app, document, {
         swaggerOptions: {
             persistAuthorization: true,
+            filter: '',
             docExpansion: 'list', // none
         },
     });

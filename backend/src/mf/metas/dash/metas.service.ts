@@ -2,13 +2,14 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { MetaStatusConsolidadoCf } from '@prisma/client';
 import { IdCodTituloDto } from '../../../common/dto/IdCodTitulo.dto';
 import { PrismaService } from '../../../prisma/prisma.service';
+import { MfPessoaAcessoPdm } from '../../mf.service';
 import {
     FilterMfDashMetasDto,
     ListMfDashMetasDto,
+    MfDashMetaAtrasadaDto,
     MfDashMetaAtualizadasDto,
-    MfDashMetaPendenteDto,
+    MfDashMetaPendenteDto
 } from './dto/metas.dto';
-import { MfPessoaAcessoPdm } from '../../mf.service';
 
 class Arr {
     static mergeUnique(a: number[], b: number[]): number[] {
@@ -120,7 +121,7 @@ export class MfDashMetasService {
             const pendentes = await this.prisma.metaStatusConsolidadoCf.findMany({
                 where: {
                     ciclo_fisico_id: cicloFisicoId,
-                    meta_id: metas ? { in: metas } : undefined,
+                    meta_id: { in: metas },
 
                     pendente_cp: ehPontoFocal ? undefined : true,
 
@@ -156,6 +157,49 @@ export class MfDashMetasService {
             });
             ret.atualizadas = atualizadas.map(renderStatus);
             if (retornar_detalhes) await this.populaDetalhes(ret.atualizadas);
+        }
+
+        if (params.retornar_atrasadas) {
+            const atrasadas = await this.prisma.metaStatusAtrasoConsolidadoMes.findMany({
+                where: {
+                    meta_id: { in: metas },
+                },
+                include: {
+                    meta: {
+                        select: { id: true, codigo: true, titulo: true },
+                    },
+                },
+            });
+
+            ret.atrasadas = [];
+
+            const referencias: Record<number, MfDashMetaAtrasadaDto> = {};
+
+            for (const r of atrasadas) {
+                if (!referencias[r.meta_id]) {
+                    referencias[r.meta_id] = {
+                        atrasos_orcamento: [],
+                        atrasos_variavel: [],
+                        codigo: r.meta.codigo,
+                        id: r.meta.id,
+                        titulo: r.meta.titulo,
+                    };
+                    ret.atrasadas.push(referencias[r.meta_id]);
+                }
+
+                if (r.variaveis_atrasadas > 0) {
+                    referencias[r.meta_id].atrasos_variavel.push({
+                        data: r.mes,
+                        total: r.variaveis_atrasadas,
+                    });
+                }
+                if (r.orcamento_atrasados > 0) {
+                    referencias[r.meta_id].atrasos_orcamento.push({
+                        data: r.mes,
+                        total: r.orcamento_atrasados,
+                    });
+                }
+            }
         }
 
         return ret;
@@ -223,7 +267,7 @@ export class MfDashMetasService {
         return detalhes ? list : list.length;
     }
 
-    private async aplicaFiltroMetas(params: FilterMfDashMetasDto, metas: number[]) {
+    private async aplicaFiltroMetas(params: FilterMfDashMetasDto, metas: number[]): Promise<number[]> {
         const filterMetas = await this.prisma.meta.findMany({
             where: {
                 removido_em: null,
