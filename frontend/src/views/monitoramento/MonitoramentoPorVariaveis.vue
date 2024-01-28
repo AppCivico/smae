@@ -66,7 +66,7 @@ watch(() => route.query.status, () => {
 }, { immediate: true });
 </script>
 <template>
-  <LegendaDeVariáveis class="legenda legenda--variáveis" />
+  <LegendaDeVariáveis class="legenda legenda--variáveis mb2" />
   <EnvelopeDeAbas
     :meta-dados-por-id="dadosExtrasDeAbas"
     nome-da-chave-de-abas="status"
