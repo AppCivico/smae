@@ -51,8 +51,6 @@ export const router = createRouter({
         {
           path: '',
           component: MonitoramentosRaiz,
-          // redirect definido no componente porque o VueRouter não aceita que
-          // ele seja definido como função que pode **ou não** retornar uma rota
           props: { submenu: SubmenuMonitoramento, parentPage: 'fases' },
           redirect: { name: 'monitoramentoPorVariáveis' },
 
