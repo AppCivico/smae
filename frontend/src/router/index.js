@@ -19,6 +19,8 @@ import {
   MonitoramentoMetasCronograma,
 } from '@/views/monitoramento';
 import MonitoramentosRaiz from '@/views/monitoramento/MonitoramentosRaiz.vue';
+import MonitoramentosVariáveis from '@/views/monitoramento/MonitoramentoPorVariaveis.vue';
+import MonitoramentosTarefas from '@/views/monitoramento/MonitoramentoPorTarefas.vue';
 import administracao from './administracao';
 import análise from './analise';
 import envios from './envios';
@@ -52,6 +54,26 @@ export const router = createRouter({
           // redirect definido no componente porque o VueRouter não aceita que
           // ele seja definido como função que pode **ou não** retornar uma rota
           props: { submenu: SubmenuMonitoramento, parentPage: 'fases' },
+          redirect: { name: 'monitoramentoPorVariáveis' },
+
+          children: [
+            {
+              path: 'variaveis',
+              name: 'monitoramentoPorVariáveis',
+              component: MonitoramentosVariáveis,
+              meta: {
+                rotaPrescindeDeChave: true,
+              },
+            },
+            {
+              path: 'tarefas',
+              name: 'monitoramentoPorTarefas',
+              component: MonitoramentosTarefas,
+              meta: {
+                rotaPrescindeDeChave: true,
+              },
+            },
+          ],
         },
         { path: 'fases', component: ListMonitoramentoMetas, props: { submenu: SubmenuMonitoramento, parentPage: 'fases' } },
         {
