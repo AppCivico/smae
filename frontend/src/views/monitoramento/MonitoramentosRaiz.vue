@@ -3,6 +3,7 @@ import EnvelopeDeAbas from '@/components/EnvelopeDeAbas.vue';
 import FeedbackEmptyList from '@/components/FeedbackEmptyList.vue';
 import LegendaDeVariáveis from '@/components/monitoramento/LegendaDeVariaveis.vue';
 import LegendaDeTarefas from '@/components/monitoramento/LegendaDeTarefas.vue';
+import ListaComVariáveisAtrasadas from '@/components/monitoramento/ListaComVariaveisAtrasadas.vue';
 import truncate from '@/helpers/truncate';
 import { Dashboard } from '@/components';
 import { useRoute, useRouter } from 'vue-router';
@@ -35,7 +36,7 @@ const statusesVálidos = ['pendentes', 'atualizadas', 'atrasadas'];
 const panoramaStore = usePanoramaStore();
 const {
   chamadasPendentes,
-  listaDeAtrasadas,
+  listaDeAtrasadasComDetalhes,
   perfil,
   tarefasPorId,
   variáveisPorId,
@@ -220,107 +221,153 @@ watch([
         class="mb1 f3"
         alinhamento="esquerda"
       >
-        <template #pendentes>
-          <LoadingComponent v-if="chamadasPendentes.lista" />
+        <template #pendentes="{ estáAberta }">
+          <template v-if="estáAberta">
+            <LoadingComponent v-if="chamadasPendentes.lista" />
 
-          <FeedbackEmptyList
-            v-else-if="!listaDePendentes.length"
-            título="Bom trabalho!"
-            tipo="positivo"
-            mensagem="Você não possui pendências!"
-          />
+            <FeedbackEmptyList
+              v-else-if="!listaDePendentes.length"
+              título="Bom trabalho!"
+              tipo="positivo"
+              mensagem="Você não possui pendências!"
+            />
 
-          <ul
-            v-else
-            class="uc w700"
-          >
-            <li
-              v-for="meta in listaDePendentes"
-              :key="meta.id"
+            <ul
+              v-else
+              class="uc w700"
             >
-              <span class="block mb1 bgc50 br6 p1 flex start">
-                <button
-                  class="like-a__text addlink ib f0"
-                  :arial-label="idDoItemAberto === meta.id
-                    ? `fechar variáveis da meta ${meta.código}`
-                    : `abrir variáveis da meta ${meta.código}`"
-                  :title="idDoItemAberto === meta.id
-                    ? `fechar variáveis da meta ${meta.código}`
-                    : `abrir variáveis da meta ${meta.código}`"
-                  type="button"
-                  :disabled="!meta.variáveis.length"
-                  @click="idDoItemAberto = idDoItemAberto !== meta.id
-                    ? meta.id
-                    : 0"
-                >
-                  <svg
-                    width="13"
-                    height="13"
-                  ><use
-                    :xlink:href="idDoItemAberto === meta.id ? '#i_down' : '#i_right'"
-                  /></svg>
-                </button>
-                {{ meta.código }} - {{ meta.título }}
-              </span>
-              <Transition
-                v-if="meta.variáveis.length"
-                name="fade"
+              <li
+                v-for="meta in listaDePendentes"
+                :key="meta.id"
               >
+                <span class="block mb1 bgc50 br6 p1 flex start">
+                  <button
+                    class="like-a__text addlink ib f0"
+                    :arial-label="idDoItemAberto === meta.id
+                      ? `fechar variáveis da meta ${meta.código}`
+                      : `abrir variáveis da meta ${meta.código}`"
+                    :title="idDoItemAberto === meta.id
+                      ? `fechar variáveis da meta ${meta.código}`
+                      : `abrir variáveis da meta ${meta.código}`"
+                    type="button"
+                    :disabled="!meta.variáveis.length"
+                    @click="idDoItemAberto = idDoItemAberto !== meta.id
+                      ? meta.id
+                      : 0"
+                  >
+                    <svg
+                      width="13"
+                      height="13"
+                    ><use
+                      :xlink:href="idDoItemAberto === meta.id ? '#i_down' : '#i_right'"
+                    /></svg>
+                  </button>
+                  {{ meta.código }} - {{ meta.título }}
+                </span>
+                <Transition
+                  v-if="meta.variáveis.length"
+                  name="fade"
+                >
+                  <ul
+                    v-if="idDoItemAberto === meta.id"
+                    class="pl2"
+                  >
+                    <li
+                      v-for="variável in meta.variáveis"
+                      :key="variável.id"
+                      class="mb1 bgc50 br6 p1 flex start"
+                    >
+                      <span
+                        v-if="variável.aguardaPreenchimento"
+                        class="tipinfo ib mr1 f0"
+                      >
+                        <svg
+                          width="20"
+                          height="20"
+                          color="#f2890d"
+                        ><use xlink:href="#i_alert" /></svg>
+                        <div>Aguarda preenchimento</div>
+                      </span>
+                      <span
+                        v-else-if="variável.aguardaComplementação"
+                        class="tipinfo ib mr1 f0"
+                      >
+                        <svg
+                          width="20"
+                          height="20"
+                          color="#ee3b2b"
+                        ><use xlink:href="#i_alert" /></svg>
+                        <div>Aguarda coleta</div>
+                      </span>
+                      <span
+                        v-else-if="variável.aguardaConferência"
+                        class="tipinfo ib mr1 f0"
+                      >
+                        <svg
+                          width="20"
+                          height="20"
+                          color="#4c626d"
+                        ><use xlink:href="#i_alert" /></svg>
+                        <div>Aguarda complementação</div>
+                      </span>
+                      <span
+                        v-else-if="variável.aguardaEnvio"
+                        class="tipinfo ib mr1 f0"
+                      >
+                        <svg
+                          width="20"
+                          height="20"
+                          color="#f2890d"
+                        ><use xlink:href="#i_circle" /></svg>
+                        <div>Aguarda envio</div>
+                      </span>
+                      {{ variável.código || variável.id }} - {{ variável.título }}
+                      <small v-ScrollLockDebug>
+                        (<code>aguardaComplementação:&nbsp;{{ variável.aguardaComplementação }}</code>)
+                        (<code>aguardaConferência:&nbsp;{{ variável.aguardaConferência }}</code>)
+                        (<code>aguardaEnvio:&nbsp;{{ variável.aguardaEnvio }}</code>)
+                        (<code>aguardaPreenchimento:&nbsp;{{ variável.aguardaPreenchimento }}</code>)
+                      </small>
+                    </li>
+                  </ul>
+                </Transition>
+              </li>
+            </ul>
+          </template>
+        </template>
+
+        <template #atualizadas="{ estáAberta }">
+          <template v-if="estáAberta">
+            <LoadingComponent v-if="chamadasPendentes.lista" />
+
+            <FeedbackEmptyList
+              v-else-if="!listaDeAtualizadas.length"
+              tipo="negativo"
+              título="Você ainda não possui atividades atualizadas!"
+              mensagem="Complete pendências para visualizar-las aqui."
+            />
+
+            <ul v-else>
+              <li
+                v-for="meta in listaDeAtualizadas"
+                :key="meta.id"
+              >
+                {{ meta.código }} - {{ meta.título }}
                 <ul
-                  v-if="idDoItemAberto === meta.id"
-                  class="pl2"
+                  v-if="meta.variáveis.length"
                 >
                   <li
                     v-for="variável in meta.variáveis"
                     :key="variável.id"
-                    class="mb1 bgc50 br6 p1 flex start"
+                    :title="variável.título?.length > 36
+                      ? variável.título
+                      : undefined"
+                    class="ml2"
                   >
-                    <span
-                      v-if="variável.aguardaPreenchimento"
-                      class="tipinfo ib mr1 f0"
-                    >
-                      <svg
-                        width="20"
-                        height="20"
-                        color="#f2890d"
-                      ><use xlink:href="#i_alert" /></svg>
-                      <div>Aguarda preenchimento</div>
-                    </span>
-                    <span
-                      v-else-if="variável.aguardaComplementação"
-                      class="tipinfo ib mr1 f0"
-                    >
-                      <svg
-                        width="20"
-                        height="20"
-                        color="#ee3b2b"
-                      ><use xlink:href="#i_alert" /></svg>
-                      <div>Aguarda coleta</div>
-                    </span>
-                    <span
-                      v-else-if="variável.aguardaConferência"
-                      class="tipinfo ib mr1 f0"
-                    >
-                      <svg
-                        width="20"
-                        height="20"
-                        color="#4c626d"
-                      ><use xlink:href="#i_alert" /></svg>
-                      <div>Aguarda complementação</div>
-                    </span>
-                    <span
-                      v-else-if="variável.aguardaEnvio"
-                      class="tipinfo ib mr1 f0"
-                    >
-                      <svg
-                        width="20"
-                        height="20"
-                        color="#f2890d"
-                      ><use xlink:href="#i_circle" /></svg>
-                      <div>Aguarda envio</div>
-                    </span>
-                    {{ variável.código || variável.id }} - {{ variável.título }}
-                    <small v-ScrollLockDebug>
+                    {{ variável.código || variável.id }} - {{
+                      truncate(variável.título, 36) }}
+
+                    <small>
                       (<code>aguardaComplementação:&nbsp;{{ variável.aguardaComplementação }}</code>)
                       (<code>aguardaConferência:&nbsp;{{ variável.aguardaConferência }}</code>)
                       (<code>aguardaEnvio:&nbsp;{{ variável.aguardaEnvio }}</code>)
@@ -328,71 +375,35 @@ watch([
                     </small>
                   </li>
                 </ul>
-              </Transition>
-            </li>
-          </ul>
+              </li>
+            </ul>
+          </template>
         </template>
 
-        <template #atualizadas>
-          <LoadingComponent v-if="chamadasPendentes.lista" />
+        <template #atrasadas="{ estáAberta }">
+          <template v-if="estáAberta">
+            <LoadingComponent v-if="chamadasPendentes.lista" />
 
-          <FeedbackEmptyList
-            v-else-if="!listaDeAtualizadas.length"
-            tipo="negativo"
-            título="Você ainda não possui atividades atualizadas!"
-            mensagem="Complete pendências para visualizar-las aqui."
-          />
+            <FeedbackEmptyList
+              v-else-if="!listaDeAtrasadasComDetalhes.length"
+              título="Bom trabalho!"
+              tipo="positivo"
+              mensagem="Você não possui atrasos!"
+            />
 
-          <ul v-else>
-            <li
-              v-for="meta in listaDeAtualizadas"
-              :key="meta.id"
-            >
-              {{ meta.código }} - {{ meta.título }}
-              <ul
-                v-if="meta.variáveis.length"
-              >
-                <li
-                  v-for="variável in meta.variáveis"
-                  :key="variável.id"
-                  :title="variável.título?.length > 36
-                    ? variável.título
-                    : undefined"
-                  class="ml2"
-                >
-                  {{ variável.código || variável.id }} - {{
-                    truncate(variável.título, 36) }}
+            <ListaComVariáveisAtrasadas
+              v-else
+              :lista="listaDeAtrasadasComDetalhes"
+            />
 
-                  <small>
-                    (<code>aguardaComplementação:&nbsp;{{ variável.aguardaComplementação }}</code>)
-                    (<code>aguardaConferência:&nbsp;{{ variável.aguardaConferência }}</code>)
-                    (<code>aguardaEnvio:&nbsp;{{ variável.aguardaEnvio }}</code>)
-                    (<code>aguardaPreenchimento:&nbsp;{{ variável.aguardaPreenchimento }}</code>)
-                  </small>
-                </li>
-              </ul>
-            </li>
-          </ul>
-        </template>
-
-        <template #atrasadas>
-          <LoadingComponent v-if="chamadasPendentes.lista" />
-
-          <FeedbackEmptyList
-            v-else-if="!listaDeAtrasadas.length"
-            título="Bom trabalho!"
-            tipo="positivo"
-            mensagem="Você não possui atrasos!"
-          />
-
-          <textarea
-            v-else
-            readonly
-            cols="30"
-            rows="10"
-          >listaDeAtrasadas:
-  {{ listaDeAtrasadas }}
-  </textarea>
+            <textarea
+              readonly
+              cols="30"
+              rows="10"
+            >listaDeAtrasadasComDetalhes:
+    {{ listaDeAtrasadasComDetalhes }}
+    </textarea>
+          </template>
         </template>
       </EnvelopeDeAbas>
     </template>

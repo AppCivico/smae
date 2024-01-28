@@ -6,6 +6,7 @@ import { ListMfDashMetasDto } from '@/../../backend/src/mf/metas/dash/dto/metas.
 import { IdCodTituloDto } from '@/../../backend/src/common/dto/IdCodTitulo.dto';
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { IdTituloOrNullDto } from '@/../../backend/src/common/dto/IdTitulo.dto';
+// eslint-disable-next-line import/no-extraneous-dependencies
 import { ListMetaDto } from '@/../../backend/src/meta/dto/list-meta.dto';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
@@ -19,6 +20,7 @@ type Estado = {
   listaDePendentes: ListMfDashMetasDto['pendentes'];
   listaDeAtualizadas: ListMfDashMetasDto['atualizadas'];
   listaDeAtrasadas: ListMfDashMetasDto['atrasadas'];
+  listaDeAtrasadasComDetalhes: ListMfDashMetasDto['atrasadas_detalhes'];
 
   dadosParaFiltro: ListMetaDto['linhas'];
 
@@ -50,6 +52,7 @@ export const usePanoramaStore = defineStore('panorama', {
     listaDePendentes: [],
     listaDeAtualizadas: [],
     listaDeAtrasadas: [],
+    listaDeAtrasadasComDetalhes: [],
 
     dadosParaFiltro: [],
 
@@ -123,8 +126,8 @@ export const usePanoramaStore = defineStore('panorama', {
 
         let lista:ListMfDashMetasDto['pendentes'] | ListMfDashMetasDto['atualizadas'] = [];
 
-        switch (tipoDaLista) {
-          case 'pendentes':
+        switch (true) {
+          case tipoDaLista === 'pendentes':
             if (Array.isArray(resposta.pendentes)) {
               this.listaDePendentes = resposta.pendentes;
               lista = resposta.pendentes;
@@ -133,7 +136,7 @@ export const usePanoramaStore = defineStore('panorama', {
             }
             break;
 
-          case 'atualizadas':
+          case tipoDaLista === 'atualizadas':
             if (Array.isArray(resposta.atualizadas)) {
               this.listaDeAtualizadas = resposta.atualizadas;
               lista = resposta.atualizadas;
@@ -142,7 +145,17 @@ export const usePanoramaStore = defineStore('panorama', {
             }
             break;
 
-          case 'atrasadas':
+          case tipoDaLista === 'atrasadas' && params.retornar_detalhes:
+            if (Array.isArray(resposta.atrasadas_detalhes)) {
+              this.listaDeAtrasadasComDetalhes = resposta.atrasadas_detalhes.length
+                ? resposta.atrasadas_detalhes
+                : atrasadasComDetalhes.atrasadas_detalhes;
+            } else {
+              throw new Error('Propriedade `atrasadas_detalhes` não é um array!');
+            }
+            break;
+
+          case tipoDaLista === 'atrasadas':
             if (Array.isArray(resposta.atrasadas)) {
               this.listaDeAtrasadas = resposta.atrasadas;
             } else {
