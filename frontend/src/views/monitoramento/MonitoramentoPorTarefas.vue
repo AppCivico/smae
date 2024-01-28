@@ -3,7 +3,7 @@ import LegendaDeTarefas from '@/components/monitoramento/LegendaDeTarefas.vue';
 </script>
 <template>
   <div>
-    <LegendaDeTarefas class="legenda legenda--tarefas" />
+    <LegendaDeTarefas class="legenda legenda--tarefas mb2" />
   </div>
 </template>
 <style lang="less" scoped>
