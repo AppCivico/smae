@@ -66,12 +66,11 @@ watch(() => route.query.status, () => {
 }, { immediate: true });
 </script>
 <template>
-  <LegendaDeVariáveis class="legenda legenda--variáveis mb2" />
+  <LegendaDeVariáveis class="legenda legenda--variáveis" />
   <EnvelopeDeAbas
     :meta-dados-por-id="dadosExtrasDeAbas"
     nome-da-chave-de-abas="status"
     class="mb1 f3"
-    alinhamento="esquerda"
   >
     <template #pendentes="{ estáAberta }">
       <template v-if="estáAberta">
@@ -119,17 +118,3 @@ watch(() => route.query.status, () => {
     </template>
   </EnvelopeDeAbas>
 </template>
-<style lang="less" scoped>
-.legenda {
-  margin-right: 0;
-  margin-left: auto;
-}
-
-.legenda h2 {
-  text-align: center;
-}
-
-.legenda--variáveis {
-  max-width: 20em;
-}
-</style>
