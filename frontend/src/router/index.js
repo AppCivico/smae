@@ -59,7 +59,9 @@ export const router = createRouter({
           path: '',
           component: MonitoramentosRaiz,
           props: { submenu: SubmenuMonitoramento, parentPage: 'fases' },
-          redirect: { name: 'monitoramentoPorVariáveis' },
+          redirect: () => (useAuthStore()?.user?.flags?.mf_v2
+            ? { name: 'monitoramentoPorVariáveis' }
+            : { name: 'monitoramentoDeEvoluçãoDeMetas' }),
 
           children: [
             {

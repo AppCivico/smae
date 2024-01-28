@@ -9,7 +9,7 @@ import { useRoute } from 'vue-router';
 const props = defineProps(['parentPage']);
 
 const authStore = useAuthStore();
-const { permissions } = storeToRefs(authStore);
+const { permissions, user } = storeToRefs(authStore);
 const perm = permissions.value;
 
 const route = useRoute();
@@ -57,15 +57,13 @@ function dateToTitle(d) {
       class="breadcrumbmenu"
     >
       <router-link :to="`/monitoramento/${parentPage}`">
-        <span>{{
-          activePdm?.ciclo_fisico_ativo?.data_ciclo
+        <span>{{ activePdm?.ciclo_fisico_ativo?.data_ciclo
           ? dateToTitle(activePdm.ciclo_fisico_ativo.data_ciclo)
-          : 'Ciclo ativo'
-        }}</span>
+          : 'Ciclo ativo' }}</span>
       </router-link>
 
       <router-link
-        v-if="meta_id&&CurrentMeta.meta?.id"
+        v-if="meta_id && CurrentMeta.meta?.id"
         :to="`/monitoramento/${parentPage}/${meta_id}`"
       >
         <span>Meta {{ CurrentMeta.meta?.codigo }} {{ CurrentMeta.meta?.titulo }}</span>
@@ -91,7 +89,11 @@ function dateToTitle(d) {
         </span>
       </router-link>
     </div>
-    <div class="subpadding">
+
+    <div
+      v-if="user?.flags?.mf_v2"
+      class="subpadding"
+    >
       <h2>Monitoramento</h2>
       <div class="links-container mb2">
         <router-link to="/monitoramento">
@@ -99,7 +101,11 @@ function dateToTitle(d) {
         </router-link>
       </div>
     </div>
-    <div class="subpadding">
+
+    <div
+      v-else
+      class="subpadding"
+    >
       <h2>Ciclo vigente</h2>
       <div class="links-container mb2">
         <router-link to="/monitoramento/fases">
