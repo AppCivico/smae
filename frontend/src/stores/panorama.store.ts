@@ -148,9 +148,7 @@ export const usePanoramaStore = defineStore('panorama', {
 
           case tipoDaLista === 'atrasadas' && params.retornar_detalhes:
             if (Array.isArray(resposta.atrasadas_detalhes)) {
-              this.listaDeAtrasadasComDetalhes = resposta.atrasadas_detalhes.length
-                ? resposta.atrasadas_detalhes
-                : atrasadasComDetalhes.atrasadas_detalhes;
+              this.listaDeAtrasadasComDetalhes = resposta.atrasadas_detalhes;
             } else {
               throw new Error('Propriedade `atrasadas_detalhes` não é um array!');
             }
