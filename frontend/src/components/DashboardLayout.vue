@@ -22,11 +22,12 @@ export default {
     :is="submenu"
     :parent-page="parentPage"
   />
-  <section
+  <main
     v-if="user"
     id="dashboard"
     :class="{ 'edit-modal': editModal }"
+    v-bind="$attrs"
   >
     <slot />
-  </section>
+  </main>
 </template>
