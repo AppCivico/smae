@@ -5,17 +5,25 @@ import { usePdMStore } from '@/stores/pdm.store';
 import { storeToRefs } from 'pinia';
 import { ref } from 'vue';
 import { useRoute } from 'vue-router';
+import dateToTitle from '@/helpers/dateToTitle';
 
-const props = defineProps(['parentPage']);
+defineProps({
+  parentPage: {
+    type: String,
+    default: '',
+  },
+});
 
 const authStore = useAuthStore();
 const { permissions, user } = storeToRefs(authStore);
 const perm = permissions.value;
 
 const route = useRoute();
-const { meta_id } = route.params;
-const { iniciativa_id } = route.params;
-const { atividade_id } = route.params;
+const {
+  meta_id: metaId,
+  iniciativa_id: iniciativaId,
+  atividade_id: atividadeId,
+} = route.params;
 
 const PdMStore = usePdMStore();
 const { activePdm } = storeToRefs(PdMStore);
@@ -26,34 +34,25 @@ const { SingleMeta } = storeToRefs(CiclosStore);
 const CurrentMeta = ref('');
 const CurrentIniciativa = ref('');
 const CurrentAtividade = ref('');
-if (meta_id) {
+if (metaId) {
   (async () => {
-    await CiclosStore.getMetaById(meta_id);
+    await CiclosStore.getMetaById(metaId);
     CurrentMeta.value = SingleMeta.value;
-    if (iniciativa_id) {
+    if (iniciativaId) {
       CurrentIniciativa.value = CurrentMeta.value?.meta?.iniciativas
-        .find((x) => x.iniciativa.id == iniciativa_id);
+        .find((x) => x.iniciativa.id === Number(iniciativaId));
     }
-    if (atividade_id) {
+    if (atividadeId) {
       CurrentAtividade.value = CurrentIniciativa.value?.atividades
-        .find((x) => x.atividade.id == atividade_id);
+        .find((x) => x.atividade.id === Number(atividadeId));
     }
   })();
 }
-
-function dateToTitle(d) {
-  const dd = d ? new Date(d) : false;
-  if (!dd) return d;
-  const month = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'][dd.getUTCMonth()];
-  const year = dd.getUTCFullYear();
-  return `${month} ${year}`;
-}
-
 </script>
 <template>
   <div id="submenu">
     <div
-      v-if="meta_id"
+      v-if="metaId"
       class="breadcrumbmenu"
     >
       <router-link :to="`/monitoramento/${parentPage}`">
@@ -63,14 +62,14 @@ function dateToTitle(d) {
       </router-link>
 
       <router-link
-        v-if="meta_id && CurrentMeta.meta?.id"
-        :to="`/monitoramento/${parentPage}/${meta_id}`"
+        v-if="metaId && CurrentMeta.meta?.id"
+        :to="`/monitoramento/${parentPage}/${metaId}`"
       >
         <span>Meta {{ CurrentMeta.meta?.codigo }} {{ CurrentMeta.meta?.titulo }}</span>
       </router-link>
       <router-link
-        v-if="iniciativa_id && activePdm.possui_iniciativa && CurrentIniciativa.iniciativa?.id"
-        :to="`/monitoramento/${parentPage}/${meta_id}/${iniciativa_id}`"
+        v-if="iniciativaId && activePdm.possui_iniciativa && CurrentIniciativa.iniciativa?.id"
+        :to="`/monitoramento/${parentPage}/${metaId}/${iniciativaId}`"
       >
         <span>
           {{ activePdm.rotulo_iniciativa }}
@@ -79,8 +78,8 @@ function dateToTitle(d) {
         </span>
       </router-link>
       <router-link
-        v-if="atividade_id && activePdm.possui_atividade && CurrentAtividade.atividade?.id"
-        :to="`/monitoramento/${parentPage}/${meta_id}/${iniciativa_id}/${atividade_id}`"
+        v-if="atividadeId && activePdm.possui_atividade && CurrentAtividade.atividade?.id"
+        :to="`/monitoramento/${parentPage}/${metaId}/${iniciativaId}/${atividadeId}`"
       >
         <span>
           {{ activePdm.rotulo_atividade }}
@@ -117,9 +116,20 @@ function dateToTitle(d) {
         <router-link to="/monitoramento/cronograma">
           Coleta - Cronograma
         </router-link>
-        <!-- <router-link v-if="perm.PDM?.admin_cp||perm.PDM?.tecnico_cp" class="disabled" to="/monitoramento/">Qualificação</router-link>
-                <router-link v-if="perm.PDM?.admin_cp||perm.PDM?.tecnico_cp" class="disabled" to="/monitoramento/">Análise de risco</router-link>
-                <router-link v-if="perm.PDM?.admin_cp||perm.PDM?.tecnico_cp" class="disabled" to="/monitoramento/">Fechamento</router-link> -->
+        <!--
+          <router-link v-if="perm.PDM?.admin_cp||perm.PDM?.tecnico_cp" class="disabled"
+          to="/monitoramento/">
+            Qualificação
+          </router-link>
+          <router-link v-if="perm.PDM?.admin_cp||perm.PDM?.tecnico_cp" class="disabled"
+          to="/monitoramento/">
+            Análise de risco
+          </router-link>
+          <router-link v-if="perm.PDM?.admin_cp||perm.PDM?.tecnico_cp" class="disabled"
+          to="/monitoramento/">
+            Fechamento
+          </router-link>
+        -->
       </div>
       <template
         v-if="perm.CadastroCicloFisico
