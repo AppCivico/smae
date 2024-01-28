@@ -1,22 +1,23 @@
 <script setup>
 import dateToTitle from '@/helpers/dateToTitle';
 import { ref } from 'vue';
+import { usePanoramaStore } from '@/stores/panorama.store.ts';
+
+import { storeToRefs } from 'pinia';
+
+const panoramaStore = usePanoramaStore();
+const {
+  listaDeAtrasadasComDetalhes,
+} = storeToRefs(panoramaStore);
 
 const idDoItemAberto = ref(0);
-
-defineProps({
-  lista: {
-    type: Array,
-    default: () => [],
-  },
-});
 </script>
 <template>
   <ul
     class="lista uc w700"
   >
     <li
-      v-for="meta in lista"
+      v-for="meta in listaDeAtrasadasComDetalhes"
       :key="meta.id"
       class="lista_item"
     >
