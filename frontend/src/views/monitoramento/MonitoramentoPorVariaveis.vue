@@ -45,7 +45,7 @@ const dadosExtrasDeAbas = {
 
 async function iniciar() {
   if (statusesVálidos.indexOf(route.query.status) === -1) {
-    router.replace({
+    await router.replace({
       query: {
         ...route.query,
         status: statusesVálidos[0],
