@@ -21,6 +21,7 @@ import {
 import MonitoramentosRaiz from '@/views/monitoramento/MonitoramentosRaiz.vue';
 import MonitoramentosVariáveis from '@/views/monitoramento/MonitoramentoPorVariaveis.vue';
 import MonitoramentosTarefas from '@/views/monitoramento/MonitoramentoPorTarefas.vue';
+import Panorama from '@/views/Panorama.vue';
 import administracao from './administracao';
 import análise from './analise';
 import envios from './envios';
@@ -35,8 +36,14 @@ export const router = createRouter({
   routes: [
     {
       path: '/',
-      name: 'panorama',
+      name: 'home',
       component: Home,
+      props: { submenu: false },
+    },
+    {
+      path: '/panorama',
+      name: 'panorama',
+      component: Panorama,
       props: { submenu: false },
     },
     { path: '/login', component: Login },
