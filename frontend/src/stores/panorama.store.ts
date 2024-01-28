@@ -8,6 +8,8 @@ import { IdCodTituloDto } from '@/../../backend/src/common/dto/IdCodTitulo.dto';
 import { IdTituloOrNullDto } from '@/../../backend/src/common/dto/IdTitulo.dto';
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { ListMetaDto } from '@/../../backend/src/meta/dto/list-meta.dto';
+// eslint-disable-next-line import/no-extraneous-dependencies
+import { RequestInfoDto } from '@/../../backend/src/mf/metas/dto/mf-meta.dto';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
