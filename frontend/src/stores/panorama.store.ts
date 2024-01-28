@@ -117,7 +117,6 @@ export const usePanoramaStore = defineStore('panorama', {
             break;
 
           default:
-            console.trace();
             throw new Error(`Tipo de lista inválido: \`${tipoDaLista}\``);
         }
 
