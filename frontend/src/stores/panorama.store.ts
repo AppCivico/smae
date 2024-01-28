@@ -95,31 +95,32 @@ export const usePanoramaStore = defineStore('panorama', {
       tipoDaLista: TipoDeLista,
       params:Parâmetros = {},
     ): Promise<void> {
-      const tipoDeRetorno = {
-        retornar_pendentes: false,
-        retornar_atualizadas: false,
-        retornar_atrasadas: false,
-      };
-
-      switch (tipoDaLista) {
-        case 'pendentes':
-          tipoDeRetorno.retornar_pendentes = true;
-          break;
-        case 'atualizadas':
-          tipoDeRetorno.retornar_atualizadas = true;
-          break;
-        case 'atrasadas':
-          tipoDeRetorno.retornar_atrasadas = true;
-          break;
-
-        default:
-          throw new Error(`Tipo de lista inválido: \`${tipoDaLista}\``);
-      }
-
       this.chamadasPendentes.lista = true;
       this.erro = null;
 
       try {
+        const tipoDeRetorno = {
+          retornar_pendentes: false,
+          retornar_atualizadas: false,
+          retornar_atrasadas: false,
+        };
+
+        switch (tipoDaLista) {
+          case 'pendentes':
+            tipoDeRetorno.retornar_pendentes = true;
+            break;
+          case 'atualizadas':
+            tipoDeRetorno.retornar_atualizadas = true;
+            break;
+          case 'atrasadas':
+            tipoDeRetorno.retornar_atrasadas = true;
+            break;
+
+          default:
+            console.trace();
+            throw new Error(`Tipo de lista inválido: \`${tipoDaLista}\``);
+        }
+
         const resposta:ListMfDashMetasDto = await this.requestS.get(`${baseUrl}/mf/panorama/metas`, { pdm_id: pdmId, ...params, ...tipoDeRetorno });
 
         this.perfil = resposta.perfil;
