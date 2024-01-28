@@ -42,7 +42,7 @@ if (!authStore.temPermissãoPara(['PDM.admin_cp', 'PDM.tecnico_cp'])) {
 iniciar();
 </script>
 <template>
-  <Dashboard>
+  <Dashboard class="página-de-monitoramento">
     <header class="flex center mb2 spacebetween g1 flexwrap">
       <div class="t12 uc w700 tamarelo fb100">
         Ciclo vigente
@@ -102,3 +102,50 @@ iniciar();
     </ErrorComponent>
   </Dashboard>
 </template>
+<style lang="less">
+.página-de-monitoramento {
+  .legenda {
+    margin-bottom: 2rem;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .legenda h2 {
+    text-align: center;
+  }
+
+  .legenda__lista {
+    justify-content: center;
+  }
+
+  .legenda--variáveis {
+    max-width: 20em;
+  }
+
+  .legenda--tarefas {
+    max-width: 40em;
+  }
+
+  //1180px
+  @media screen and (min-width: 73.75em) {
+    .legenda {
+      margin-right: 0;
+      margin-left: auto;
+      margin-bottom: -3rem;
+    }
+
+    .legenda h2 {
+      text-align: right;
+    }
+
+    .legenda__lista {
+      justify-content: flex-end;
+    }
+
+    .abas__navegação {
+      margin-left: 0;
+      margin-right: auto;
+    }
+  }
+}
+</style>
