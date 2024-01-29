@@ -46,7 +46,7 @@ export class MfDashMetaPendenteDto extends IdCodTituloDto {
      * fechamento no ciclo fisico foi enviada ou não, se nulo é por que não chegou ainda na fase
      */
     fechamento_enviado: boolean | null;
-    atualizado_em: Date
+    atualizado_em: Date;
 }
 
 export class MfMetaAtrasoItemDto {
@@ -60,7 +60,7 @@ export class MfDashMetaAtrasadaDto extends IdCodTituloDto {
 }
 
 export class MfMetaAtrasoDetalheItemDto extends IdCodTituloDto {
-    meses: string[]
+    meses: string[];
 }
 
 export class MfDashMetaAtrasadaDetalhesDto extends IdCodTituloDto {
@@ -125,4 +125,23 @@ export class FilterMfDashMetasDto {
     @IsInt({ each: true })
     @Transform(NumberArrayTransform)
     coordenadores_cp?: number[];
+}
+
+export class FilterMfDashEtapasDto {
+    @IsOptional()
+    @IsArray()
+    @IsInt({ each: true })
+    @Transform(NumberArrayTransform)
+    etapas_ids?: number[];
+}
+
+export class MfDashEtapaHierarquiaDto {
+    etapas_id: number;
+    meta_id: number;
+    iniciativa_id: number | null;
+    atividade_id: number | null;
+}
+
+export class ListMfDashEtapaHierarquiaDto {
+    linhas: MfDashEtapaHierarquiaDto[];
 }
