@@ -217,8 +217,12 @@ export class MetaService {
 
         let filterIdIn: undefined | number[] = undefined;
         if (!user.hasSomeRoles(['CadastroMeta.inserir'])) {
-            // logo, é um tecnico_cp
-            filterIdIn = await user.getMetaIdsFromAnyModel(this.prisma.view_meta_pessoa_responsavel_na_cp);
+            if (user.hasSomeRoles(['PDM.tecnico_cp'])) {
+                // logo, é um tecnico_cp
+                filterIdIn = await user.getMetaIdsFromAnyModel(this.prisma.view_meta_pessoa_responsavel_na_cp);
+            } else if (user.hasSomeRoles(['PDM.ponto_focal'])) {
+                filterIdIn = await user.getMetaIdsFromAnyModel(this.prisma.view_meta_pessoa_responsavel);
+            }
         }
 
         if (filterIdIn) {
