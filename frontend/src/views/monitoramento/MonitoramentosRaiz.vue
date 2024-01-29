@@ -90,6 +90,7 @@ if (!activePdm.value.id) {
     margin-bottom: 2rem;
     margin-left: auto;
     margin-right: auto;
+    max-width: 40em;
   }
 
   .legenda h2 {
@@ -98,14 +99,6 @@ if (!activePdm.value.id) {
 
   .legenda__lista {
     justify-content: center;
-  }
-
-  .legenda--variáveis {
-    max-width: 20em;
-  }
-
-  .legenda--tarefas {
-    max-width: 40em;
   }
 
   //1180px
