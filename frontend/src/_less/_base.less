@@ -165,6 +165,59 @@ details[open] summary {
   }
 }
 
+.accordion-opener {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+
+  + label {
+    cursor: pointer;
+
+    &::before {
+      width: 1.5em;
+      height: 1.5em;
+      content: '';
+      border-radius: 4px;
+      background-repeat: no-repeat;
+      background-position: 50% 75%;
+      background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="13" height="8" fill="none"><path fill="%23F7C234" d="M10.294 1.294a1 1 0 1 1 1.414 1.414l-5 5a1 1 0 0 1-1.414 0l-5-5a1 1 0 0 1 1.413-1.415l4.294 4.294 4.293-4.293Z" /></svg>');
+    }
+  }
+
+  &:focus + label,
+  + label:hover,
+  + label:focus {
+    &::before {
+      background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="13" height="8" fill="none"><path fill="%233B5881" d="M10.294 1.294a1 1 0 1 1 1.414 1.414l-5 5a1 1 0 0 1-1.414 0l-5-5a1 1 0 0 1 1.413-1.415l4.294 4.294 4.293-4.293Z" /></svg>');
+    }
+  }
+
+  &:focus + label,
+  + label:focus {
+    &::before {
+      outline: 1.5px solid @c600;
+    }
+  }
+
+  &:checked {
+    + label {
+      &::before {
+        background-position: 50% 100%;
+        background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="8" height="13" fill="none"><path fill="%233B5881" d="M-.206 1.206A1 1 0 1 1 1.208-.208l5 5a1 1 0 0 1 0 1.414l-5 5A1 1 0 0 1-.207 9.794L4.087 5.5-.206 1.207Z" /></svg>');
+      }
+    }
+
+    &:focus + label,
+    + label:hover,
+    + label:focus {
+      &::before {
+        background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="8" height="13" fill="none"><path fill="%23F7C234" d="M-.206 1.206A1 1 0 1 1 1.208-.208l5 5a1 1 0 0 1 0 1.414l-5 5A1 1 0 0 1-.207 9.794L4.087 5.5-.206 1.207Z" /></svg>');
+      }
+    }
+  }
+}
+
 .lc {
   text-transform: lowercase;
 }
