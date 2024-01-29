@@ -8,8 +8,6 @@ import { IdCodTituloDto } from '@/../../backend/src/common/dto/IdCodTitulo.dto';
 import { IdTituloOrNullDto } from '@/../../backend/src/common/dto/IdTitulo.dto';
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { ListMetaDto } from '@/../../backend/src/meta/dto/list-meta.dto';
-// eslint-disable-next-line import/no-extraneous-dependencies
-import { RequestInfoDto } from '@/../../backend/src/mf/metas/dto/mf-meta.dto';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
@@ -37,7 +35,6 @@ type Estado = {
 
   chamadasPendentes: ChamadasPendentes;
   erro: null | unknown;
-  requestInfo: RequestInfoDto | null;
 };
 
 type TipoDeLista = 'pendentes' | 'atualizadas' | 'atrasadas';
@@ -72,15 +69,12 @@ export const usePanoramaStore = defineStore('panorama', {
     },
 
     erro: null,
-
-    requestInfo: null,
   }),
 
   actions: {
     async buscarFiltro(params = {}) {
       this.chamadasPendentes.filtro = true;
       this.erro = null;
-      this.requestInfo = null;
 
       try {
         const { linhas }:ListMetaDto = await this.requestS.get(`${baseUrl}/mf/panorama/filtros-metas`, params);
@@ -127,10 +121,6 @@ export const usePanoramaStore = defineStore('panorama', {
         }
 
         const resposta:ListMfDashMetasDto = await this.requestS.get(`${baseUrl}/mf/panorama/metas`, { pdm_id: pdmId, ...params, ...tipoDeRetorno });
-
-        if (resposta.requestInfo) {
-          this.requestInfo = resposta.requestInfo;
-        }
 
         this.perfil = resposta.perfil;
 

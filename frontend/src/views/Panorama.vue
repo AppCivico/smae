@@ -46,7 +46,6 @@ const {
   perfil,
   chamadasPendentes,
   erro,
-  requestInfo,
 } = storeToRefs(panoramaStore);
 
 async function iniciar() {
@@ -135,7 +134,6 @@ watch([
       </nav>
     </header>
 
-    <pre v-ScrollLockDebug="requestInfo">{{ requestInfo }}</pre>
 
     <div class="flex flexwrap g2 start">
       <div class="legenda-e-filtro mb1 f1">
