@@ -296,7 +296,7 @@ BEGIN
 
     IF (v_orcamento_pendente) THEN
         v_pendente_cp := true;
-    END;
+    END IF;
 
     --
     delete from meta_status_consolidado_cf where meta_id = pMetaId;

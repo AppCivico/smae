@@ -362,7 +362,7 @@ export class MfDashMetasService {
             msc.meta_id
         FROM
             pessoa_acesso_pdm pap
-            JOIN meta_status_consolidado_cf msc ON pap.variaveis && msc.variaveis_total
+            JOIN meta_status_consolidado_cf msc ON (msc.meta_id = ANY(pap.metas_variaveis) OR msc.meta_id = ANY(pap.metas_cronograma))
             CROSS JOIN LATERAL (
                 -- pra cada elemento da variaveis_total, cruza com o acesso
                 SELECT
