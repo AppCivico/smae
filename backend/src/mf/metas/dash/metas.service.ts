@@ -4,8 +4,10 @@ import { IdCodTituloDto } from '../../../common/dto/IdCodTitulo.dto';
 import { PrismaService } from '../../../prisma/prisma.service';
 import { MfPessoaAcessoPdm } from '../../mf.service';
 import {
+    FilterMfDashEtapasDto,
     FilterMfDashMetasDto,
     ListMfDashMetasDto,
+    MfDashEtapaHierarquiaDto,
     MfDashMetaAtrasadaDetalhesDto,
     MfDashMetaAtrasadaDto,
     MfDashMetaAtualizadasDto,
@@ -426,5 +428,24 @@ export class MfDashMetasService {
     `;
 
         return metasPendentes.map((r) => r.meta_id);
+    }
+
+    async etapaHierarquia(filters: FilterMfDashEtapasDto): Promise<MfDashEtapaHierarquiaDto[]> {
+        const metasPendentes: MfDashEtapaHierarquiaDto[] = await this.prisma.$queryRaw`
+            select
+                b.id as etapa_id,
+                m1.id as meta_id,
+                i1.id as iniciativa_id,
+                a1.id as atividade_id
+            from etapa b
+            join cronograma c on c.id = b.cronograma_id
+            left join atividade a1 on c.atividade_id is not null and a1.id = c.atividade_id
+            left join iniciativa i1 on i1.id = coalesce( c.iniciativa_id, a1.iniciativa_id )
+            join meta m1 on m1.id = coalesce( c.meta_id, i1.meta_id )
+            where  b.removido_em is null
+            ${filters.etapas_ids ? `and b.id IN (${filters.etapas_ids})` : ''};
+        `;
+
+        return metasPendentes;
     }
 }
