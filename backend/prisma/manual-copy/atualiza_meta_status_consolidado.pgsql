@@ -29,6 +29,7 @@ v_cronograma_total int[];
 v_cronograma_atraso_ini int[];
 v_cronograma_atraso_fim int[];
 v_dont_care int;
+v_orcamento_pendente BOOLEAN;
 
 v_orc_total int[];
 v_orc_preenchido int[];
@@ -244,6 +245,7 @@ BEGIN
                   AND atualizado_em >= (CURRENT_DATE - INTERVAL '3 months')::date
                   AND ultima_revisao = true
                   AND execucao_concluida = true
+                  AND meta_id = pMetaId
               ) THEN 1
               WHEN EXISTS (
                 SELECT 1
@@ -252,6 +254,7 @@ BEGIN
                   AND atualizado_em < (CURRENT_DATE - INTERVAL '3 months')::date
                   AND ultima_revisao = true
                   AND execucao_concluida = true
+                  AND meta_id = pMetaId
               ) THEN 1
               ELSE 0
             END
@@ -285,6 +288,15 @@ BEGIN
       v_orc_preenchido
     from cte_calc;
 
+    v_orcamento_pendente = NOT ARRAY(
+        SELECT unnest(v_orc_total)
+            EXCEPT
+        SELECT unnest(v_orc_preenchido)
+    ) = ARRAY[]::int[];
+
+    IF (v_orcamento_pendente) THEN
+        v_pendente_cp := true;
+    END;
 
     --
     delete from meta_status_consolidado_cf where meta_id = pMetaId;
@@ -309,6 +321,7 @@ BEGIN
         fechamento_enviado,
 
         pendente_cp,
+        orcamento_pendente,
 
         atualizado_em
 
@@ -330,6 +343,7 @@ BEGIN
         v_fechamento_enviado,
 
         v_pendente_cp,
+        v_orcamento_pendente,
 
         now()
     );

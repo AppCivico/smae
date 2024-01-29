@@ -3762,6 +3762,7 @@ model MetaStatusConsolidadoCf {
     fechamento_enviado          Boolean?
 
     pendente_cp Boolean
+    orcamento_pendente Boolean @default(false)
 
     atualizado_em DateTime
 
