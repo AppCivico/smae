@@ -431,7 +431,8 @@ export class MfDashMetasService {
     }
 
     async etapaHierarquia(filters: FilterMfDashEtapasDto): Promise<MfDashEtapaHierarquiaDto[]> {
-        const metasPendentes: MfDashEtapaHierarquiaDto[] = await this.prisma.$queryRaw`
+        // confiando no DTO pra validar que só chegou array de number
+        const metasPendentes: MfDashEtapaHierarquiaDto[] = await this.prisma.$queryRawUnsafe(`
             select
                 b.id as etapa_id,
                 m1.id as meta_id,
@@ -443,8 +444,8 @@ export class MfDashMetasService {
             left join iniciativa i1 on i1.id = coalesce( c.iniciativa_id, a1.iniciativa_id )
             join meta m1 on m1.id = coalesce( c.meta_id, i1.meta_id )
             where  b.removido_em is null
-            ${filters.etapas_ids ? `and b.id IN (${filters.etapas_ids})` : ''};
-        `;
+            ${filters.etapas_ids ? `and b.id IN (${filters.etapas_ids.join(',')})` : ''}
+        `);
 
         return metasPendentes;
     }
