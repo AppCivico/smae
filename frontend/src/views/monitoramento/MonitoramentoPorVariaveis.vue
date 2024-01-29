@@ -87,21 +87,6 @@ watch(() => route.query.status, () => {
       </template>
     </template>
 
-    <template #atualizadas="{ estáAberta }">
-      <template v-if="estáAberta">
-        <LoadingComponent v-if="chamadasPendentes.lista" />
-
-        <FeedbackEmptyList
-          v-else-if="!listaDeAtualizadas.length"
-          tipo="negativo"
-          título="Você ainda não possui atividades atualizadas!"
-          mensagem="Complete pendências para visualizar-las aqui."
-        />
-
-        <ListaDeAtualizadas v-else />
-      </template>
-    </template>
-
     <template #atrasadas="{ estáAberta }">
       <template v-if="estáAberta">
         <LoadingComponent v-if="chamadasPendentes.lista" />
@@ -114,6 +99,21 @@ watch(() => route.query.status, () => {
         />
 
         <ListaDeAtrasadas v-else />
+      </template>
+    </template>
+
+    <template #atualizadas="{ estáAberta }">
+      <template v-if="estáAberta">
+        <LoadingComponent v-if="chamadasPendentes.lista" />
+
+        <FeedbackEmptyList
+          v-else-if="!listaDeAtualizadas.length"
+          tipo="negativo"
+          título="Você ainda não possui atividades atualizadas!"
+          mensagem="Complete pendências para visualizar-las aqui."
+        />
+
+        <ListaDeAtualizadas v-else />
       </template>
     </template>
   </EnvelopeDeAbas>
