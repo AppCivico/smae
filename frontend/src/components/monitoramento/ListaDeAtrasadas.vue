@@ -10,7 +10,7 @@ const {
   listaDeAtrasadasComDetalhes,
 } = storeToRefs(panoramaStore);
 
-const idDoItemAberto = ref(0);
+const idsDosItensAbertos = ref([]);
 </script>
 <template>
   <ul
@@ -21,36 +21,32 @@ const idDoItemAberto = ref(0);
       :key="meta.id"
       class="lista_item"
     >
-      <span class="block mb1 bgc50 br6 p1 flex start">
-        <button
-          class="like-a__text addlink ib f0"
-          :arial-label="idDoItemAberto === meta.id
-            ? `fechar variáveis da meta ${meta.codigo}`
-            : `abrir variáveis da meta ${meta.codigo}`"
-          :title="idDoItemAberto === meta.id
-            ? `fechar variáveis da meta ${meta.codigo}`
-            : `abrir variáveis da meta ${meta.codigo}`"
-          type="button"
-          :disabled="!meta.atrasos_variavel.length"
-          @click="idDoItemAberto = idDoItemAberto !== meta.id
-            ? meta.id
-            : 0"
-        >
-          <svg
-            width="13"
-            height="13"
-          ><use
-            :xlink:href="idDoItemAberto === meta.id ? '#i_down' : '#i_right'"
-          /></svg>
-        </button>
+      <input
+        :id="`atrasada--${meta.id}`"
+        v-model="idsDosItensAbertos"
+        type="checkbox"
+        :value="meta.id"
+        :arial-label="idsDosItensAbertos.includes(meta.id)
+          ? `fechar variáveis da meta ${meta.codigo}`
+          : `abrir variáveis da meta ${meta.codigo}`"
+        :title="idsDosItensAbertos.includes(meta.id)
+          ? `fechar variáveis da meta ${meta.codigo}`
+          : `abrir variáveis da meta ${meta.codigo}`"
+        :disabled="!meta.atrasos_variavel.length"
+        class="accordion-opener"
+      >
+      <label
+        :for="`atrasada--${meta.id}`"
+        class="block mb1 bgc50 br6 p1 flex start"
+      >
         {{ meta.codigo }} - {{ meta.titulo }}
-      </span>
+      </label>
       <Transition
         v-if="meta.atrasos_variavel.length"
         name="fade"
       >
         <ul
-          v-if="idDoItemAberto === meta.id"
+          v-if="idsDosItensAbertos.includes(meta.id)"
           class="pl2"
         >
           <li
