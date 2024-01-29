@@ -9,7 +9,7 @@ const props = defineProps({
   },
 });
 
-const lista = computed(() => {
+const mesesPorAno = computed(() => {
   const combinações = {};
   const {
     atrasos_variavel: atrasosVariável = [],
@@ -93,7 +93,7 @@ const lista = computed(() => {
     <div class="meta__meta-dados">
       <ul class="meta__lista-de-anos flex g2 flexwrap start">
         <li
-          v-for="item in lista"
+          v-for="item in mesesPorAno"
           :key="item.ano"
           class="meta__ano flex g1 mt025 mb025"
         >
