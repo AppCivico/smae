@@ -22,6 +22,7 @@ const {
   listaDeAtrasadasComDetalhes,
   listaDeAtualizadas,
   listaDePendentes,
+  perfil,
 } = storeToRefs(panoramaStore);
 
 const PdMStore = usePdMStore();
@@ -66,7 +67,14 @@ watch(() => route.query.status, () => {
 }, { immediate: true });
 </script>
 <template>
-  <LegendaDeVariáveis class="legenda legenda--variáveis" />
+  <Transition name="fade">
+    <LegendaDeVariáveis
+      v-if="perfil && $route.query.status === 'pendentes'"
+      class="legenda legenda--variáveis"
+      :perfil="perfil"
+    />
+  </Transition>
+
   <EnvelopeDeAbas
     :meta-dados-por-id="dadosExtrasDeAbas"
     nome-da-chave-de-abas="status"
