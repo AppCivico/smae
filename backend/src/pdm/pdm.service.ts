@@ -412,8 +412,9 @@ export class PdmService {
                     if (!keepGoing) break;
                 }
 
+                // TODO isso aqui não volta um ARRAY de number não, volta um {"variaveis": []}
                 const varsSuspensas = await this.variavelService.processVariaveisSuspensas(prisma);
-            
+
                 if (varsSuspensas.length) {
                     await this.variavelService.recalc_variaveis_acumulada(varsSuspensas, prisma);
                     await this.variavelService.recalc_indicador_usando_variaveis(varsSuspensas, prisma);

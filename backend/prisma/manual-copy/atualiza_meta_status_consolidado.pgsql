@@ -383,7 +383,7 @@ BEGIN
     ),
     late_per_var as (
         select
-            meta_id, variavel_id, array_agg(data_valor) as meses
+            meta_id, variavel_id, array_agg(data_valor ORDER BY data_valor) as meses
         from late_vars
         group by 1, 2
     ),
