@@ -77,7 +77,7 @@ iniciar();
             class="btn bgnone outline tcprimary"
             exact-active-class="tcamarelo"
           >
-            por Variável
+            variáveis
           </router-link>
 
           <router-link
@@ -87,7 +87,7 @@ iniciar();
             class="btn bgnone outline tcprimary"
             exact-active-class="tcamarelo"
           >
-            por Cronograma
+            cronograma
           </router-link>
         </nav>
       </div>
