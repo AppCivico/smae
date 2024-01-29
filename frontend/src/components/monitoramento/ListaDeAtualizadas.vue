@@ -33,7 +33,8 @@ const listaDeAtualizadas = computed(() => {
       aguardaConferência: x.variaveis.conferidas.includes(y),
       aguardaEnvio: x.variaveis.enviadas.includes(y),
       aguardaPreenchimento: x.variaveis.preenchidas.includes(y),
-    })),
+    }))
+      .sort((a, b) => a.código.localeCompare(b.código)),
   }));
 });
 </script>

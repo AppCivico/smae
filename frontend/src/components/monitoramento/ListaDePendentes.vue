@@ -41,7 +41,9 @@ const lista = computed(() => {
           aguardaPreenchimento: x.variaveis.preenchidas.includes(cur),
         }])
         : acc;
-    }, []),
+    }, [])
+      .sort((a, b) => a.código.localeCompare(b.código))
+    ,
   }));
 });
 </script>
