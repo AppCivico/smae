@@ -11,7 +11,6 @@ import {
     MfDashMetaAtualizadasDto,
     MfDashMetaPendenteDto,
 } from './dto/metas.dto';
-import { PessoaFromJwt } from '../../../auth/models/PessoaFromJwt';
 
 class Arr {
     static mergeUnique(a: number[], b: number[]): number[] {
@@ -354,8 +353,7 @@ export class MfDashMetasService {
             select: { id: true },
         });
 
-        metas = filterMetas.map((r) => r.id);
-        return metas;
+        return filterMetas.map((r) => r.id);
     }
 
     private async metasPendentePontoFocal(pessoaId: number): Promise<number[]> {
