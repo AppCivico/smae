@@ -328,7 +328,7 @@ export class MfDashMetasService {
                           { id: { in: metas } },
                           {
                               ViewMetaPessoaResponsavelNaCp:
-                                  config.perfil == 'admin_cp'
+                                  config.perfil == 'admin_cp' && !params.retornar_detalhes
                                       ? {
                                             some: {
                                                 pessoa_id: config.pessoa_id,
