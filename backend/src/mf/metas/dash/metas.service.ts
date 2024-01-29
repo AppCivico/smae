@@ -362,7 +362,7 @@ export class MfDashMetasService {
             msc.meta_id
         FROM
             pessoa_acesso_pdm pap
-            CROSS JOIN meta_status_consolidado_cf msc
+            JOIN meta_status_consolidado_cf msc ON pap.variaveis && msc.variaveis_total
             CROSS JOIN LATERAL (
                 -- pra cada elemento da variaveis_total, cruza com o acesso
                 SELECT
@@ -376,6 +376,8 @@ export class MfDashMetasService {
             pap.pessoa_id = ${pessoaId}::int
         AND
         (
+            msc.orcamento_pendente = TRUE
+            OR
             (
             -- se tem alguma variavel aguardando aguarda_complementacao, match
               ARRAY(SELECT DISTINCT UNNEST(msc.variaveis_aguardando_complementacao))
