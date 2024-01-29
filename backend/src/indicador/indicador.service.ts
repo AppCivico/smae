@@ -467,7 +467,8 @@ export class IndicadorService {
 
         const meta_id = await this.variavelService.getMetaIdDoIndicador(indicador.id, this.prisma);
         if (!user.hasSomeRoles(['CadastroMeta.inserir'])) {
-            const filterIdIn = await user.getMetaIdsFromAnyModel(this.prisma.view_meta_pessoa_responsavel);
+            // quem é da CP pode editar
+            const filterIdIn = await user.getMetaIdsFromAnyModel(this.prisma.view_meta_pessoa_responsavel_na_cp);
             if (filterIdIn.includes(meta_id) === false)
                 throw new HttpException('Sem permissão para editar indicador para a meta', 400);
         }
