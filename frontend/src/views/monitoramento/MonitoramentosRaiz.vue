@@ -1,7 +1,5 @@
 <script setup>
 import { Dashboard } from '@/components';
-import { useRoute, useRouter } from 'vue-router';
-import { useAuthStore } from '@/stores/auth.store';
 import { usePanoramaStore } from '@/stores/panorama.store.ts';
 import { usePdMStore } from '@/stores/pdm.store';
 import { storeToRefs } from 'pinia';
@@ -17,29 +15,13 @@ const {
 const PdMStore = usePdMStore();
 const { activePdm } = storeToRefs(PdMStore);
 
-const authStore = useAuthStore();
-const route = useRoute();
-const router = useRouter();
-
 const faseCorrente = computed(() => (Array.isArray(activePdm.value?.ciclo_fisico_ativo?.fases)
   ? activePdm.value.ciclo_fisico_ativo.fases.find((x) => x.fase_corrente)
   : null));
 
-async function iniciar() {
-  if (!activePdm.value.id) {
-    await PdMStore.getActive();
-  }
+if (!activePdm.value.id) {
+  PdMStore.getActive();
 }
-
-if (!authStore.temPermissãoPara(['PDM.admin_cp', 'PDM.tecnico_cp'])) {
-  router.replace({
-    name: 'monitoramentoDeEvoluçãoDeMetas',
-    hash: route.hash?.indexOf('#') === 0 ? route.hash : undefined,
-    query: route.query,
-  });
-}
-
-iniciar();
 </script>
 <template>
   <Dashboard class="página-de-monitoramento">
