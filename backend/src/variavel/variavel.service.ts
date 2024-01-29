@@ -1269,8 +1269,11 @@ export class VariavelService {
 
                 const variaveisMod = Object.keys(variaveisModificadas).map((e) => +e);
                 this.logger.log(`Variáveis modificadas: ${JSON.stringify(variaveisMod)}`);
-                await this.recalc_variaveis_acumulada(variaveisMod, prismaTxn);
-                await this.recalc_indicador_usando_variaveis(variaveisMod, prismaTxn);
+
+                if (Array.isArray(variaveisMod)) {
+                    await this.recalc_variaveis_acumulada(variaveisMod, prismaTxn);
+                    await this.recalc_indicador_usando_variaveis(variaveisMod, prismaTxn);
+                }
             },
             {
                 isolationLevel: 'Serializable',

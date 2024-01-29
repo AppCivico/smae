@@ -30,6 +30,8 @@ v_cronograma_atraso_ini int[];
 v_cronograma_atraso_fim int[];
 v_dont_care int;
 
+v_orc_total int[];
+v_orc_preenchido int[];
 
 BEGIN
     v_debug := '';
@@ -226,6 +228,63 @@ BEGIN
         v_cronograma_atraso_fim
     from (select distinct x.id, x.status from tmp_data x) e;
 
+    WITH cte_execucao_concluida AS (
+      SELECT
+        ano_referencia,
+        CASE
+          -- se já passou 1 ano, considera que só 1 registro como concluido já ta ok
+          WHEN ano_referencia < EXTRACT(YEAR FROM CURRENT_TIMESTAMP AT TIME ZONE 'America/Sao_Paulo') THEN 1
+          -- se o ano for igual, o ano interior precisa de um registro nos últimos 3 meses (dezembro, por exemplo fica ok até março)
+          WHEN ano_referencia = EXTRACT(YEAR FROM CURRENT_TIMESTAMP AT TIME ZONE 'America/Sao_Paulo') THEN
+            CASE
+              WHEN EXISTS (
+                SELECT 1
+                FROM pdm_orcamento_realizado_config
+                WHERE ano_referencia = EXTRACT(YEAR FROM CURRENT_TIMESTAMP AT TIME ZONE 'America/Sao_Paulo') - 1
+                  AND atualizado_em >= (CURRENT_DATE - INTERVAL '3 months')::date
+                  AND ultima_revisao = true
+                  AND execucao_concluida = true
+              ) THEN 1
+              WHEN EXISTS (
+                SELECT 1
+                FROM pdm_orcamento_realizado_config
+                WHERE ano_referencia = EXTRACT(YEAR FROM CURRENT_TIMESTAMP AT TIME ZONE 'America/Sao_Paulo')
+                  AND atualizado_em < (CURRENT_DATE - INTERVAL '3 months')::date
+                  AND ultima_revisao = true
+                  AND execucao_concluida = true
+              ) THEN 1
+              ELSE 0
+            END
+          ELSE 0
+        END AS executado
+      FROM pdm_orcamento_realizado_config
+      WHERE meta_id = pMetaId
+      AND ultima_revisao = true
+      AND execucao_concluida = true
+    ),
+    cte_calc AS (
+      SELECT
+        p.ano_referencia,
+        COALESCE(ec.executado, 0) AS executado
+      FROM (
+         -- todos os anos do PDM, menos os futuros
+        SELECT
+            extract('year' from gs.gs::date) as ano_referencia
+        FROM pdm x
+        JOIN meta b ON b.pdm_id = x.id AND b.id = pMetaId
+        CROSS JOIN generate_series( x.data_inicio, x.data_fim, '1 year'::interval) gs
+        WHERE extract('year' from gs.gs::date) <= EXTRACT(YEAR FROM CURRENT_TIMESTAMP AT TIME ZONE 'America/Sao_Paulo')
+      ) p
+      LEFT JOIN cte_execucao_concluida ec ON p.ano_referencia = ec.ano_referencia
+    )
+    select
+      coalesce(array_agg(ano_referencia), '{}'::int[]) as total,
+      coalesce(array_agg(ano_referencia) filter (where executado=1), '{}'::int[]) as orcamento_preenchido
+        into
+      v_orc_total,
+      v_orc_preenchido
+    from cte_calc;
+
 
     --
     delete from meta_status_consolidado_cf where meta_id = pMetaId;
@@ -264,8 +323,8 @@ BEGIN
         v_cronograma_total,
         v_cronograma_atraso_ini,
         v_cronograma_atraso_fim,
-        '{}'::int[],
-        '{}'::int[],
+        v_orc_total,
+        v_orc_preenchido,
         v_analise_qualitativa_enviada,
         v_risco_enviado,
         v_fechamento_enviado,
@@ -302,6 +361,26 @@ BEGIN
         from late_vars
         group by 1, 2
     ),
+    late_per_month_orc as (
+        select
+            data_valor, 1 as qtde_orcamento
+        from (
+            select (unnest(orcamento_total)::text || '-01-01')::date as data_valor
+            from meta_status_consolidado_cf cf where cf.meta_id = pMetaId
+                    EXCEPT
+            select (unnest(orcamento_preenchido)::text || '-01-01')::date as data_valor
+            from meta_status_consolidado_cf cf where cf.meta_id = pMetaId
+        ) subq
+    ),
+    late_per_month_joined as (
+        SELECT
+            pMetaId as meta_id,
+            COALESCE(cte1.data_valor, cte2.data_valor) AS data_valor,
+            COALESCE(cte1.qtde, 0) AS qtde,
+            COALESCE(cte2.qtde_orcamento, 0) AS qtde_orcamento
+        FROM late_per_month cte1
+        FULL OUTER JOIN late_per_month_orc cte2 ON cte1.data_valor = cte2.data_valor
+    ),
     late_per_var as (
         select
             meta_id, variavel_id, array_agg(data_valor) as meses
@@ -311,8 +390,8 @@ BEGIN
     insert_per_month AS (
         insert into meta_status_atraso_consolidado_mes (meta_id, mes, variaveis_atrasadas, orcamento_atrasados)
         select
-            x.meta_id, x.data_valor, x.qtde, 0
-        from late_per_month x
+            x.meta_id, x.data_valor, x.qtde, x.qtde_orcamento
+        from late_per_month_joined x
     ),
     insert_per_var AS (
         insert into meta_status_atraso_variavel (meta_id, variavel_id, meses_atrasados)
@@ -329,5 +408,5 @@ $$
 LANGUAGE plpgsql;
 
 
-select atualiza_meta_status_consolidado(202, (select id from ciclo_fisico where ativo));
-select * from meta_status_consolidado_cf where meta_id=202;
+--select atualiza_meta_status_consolidado(202, (select id from ciclo_fisico where ativo));
+--select * from meta_status_consolidado_cf where meta_id=202;
