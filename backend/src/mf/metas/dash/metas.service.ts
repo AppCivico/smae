@@ -11,6 +11,7 @@ import {
     MfDashMetaAtualizadasDto,
     MfDashMetaPendenteDto,
 } from './dto/metas.dto';
+import { PessoaFromJwt } from '../../../auth/models/PessoaFromJwt';
 
 class Arr {
     static mergeUnique(a: number[], b: number[]): number[] {
@@ -62,7 +63,7 @@ export class MfDashMetasService {
         };
 
         // padrão é puxar as metas do perfil da pessoa
-        const metas = await this.aplicaFiltroMetas(params, [...config.metas_cronograma, ...config.metas_variaveis]);
+        const metas = await this.aplicaFiltroMetas(params, config);
 
         const renderStatus = (
             r: { meta: IdCodTituloDto } & MetaStatusConsolidadoCf
@@ -172,8 +173,8 @@ export class MfDashMetasService {
                     },
                 },
                 orderBy: {
-                    mes: 'asc'
-                }
+                    mes: 'asc',
+                },
             });
 
             ret.atrasadas = [];
@@ -311,11 +312,27 @@ export class MfDashMetasService {
         return detalhes ? list : list.length;
     }
 
-    private async aplicaFiltroMetas(params: FilterMfDashMetasDto, metas: number[]): Promise<number[]> {
+    private async aplicaFiltroMetas(params: FilterMfDashMetasDto, config: MfPessoaAcessoPdm): Promise<number[]> {
+        const metas = [...config.metas_cronograma, ...config.metas_variaveis];
+
         const filterMetas = await this.prisma.meta.findMany({
             where: {
                 removido_em: null,
-                AND: params.visao_geral ? undefined : [{ id: { in: metas } }],
+                AND: params.visao_geral
+                    ? undefined
+                    : [
+                          { id: { in: metas } },
+                          {
+                              ViewMetaPessoaResponsavelNaCp:
+                                  config.perfil == 'admin_cp'
+                                      ? {
+                                            some: {
+                                                pessoa_id: config.pessoa_id,
+                                            },
+                                        }
+                                      : undefined,
+                          },
+                      ],
                 id: params.metas ? { in: params.metas } : undefined,
 
                 ViewMetaPessoaResponsavelNaCp: params.coordenadores_cp
