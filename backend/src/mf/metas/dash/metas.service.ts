@@ -171,6 +171,9 @@ export class MfDashMetasService {
                         select: { id: true, codigo: true, titulo: true },
                     },
                 },
+                orderBy: {
+                    mes: 'asc'
+                }
             });
 
             ret.atrasadas = [];
