@@ -4,10 +4,10 @@
       Legenda
     </h2>
 
-    <ul class="legenda-atrasadas__lista">
+    <ul class="legenda-atrasadas__lista flex flexwrap g05">
       <li
         class="legenda-atrasadas__item legenda-atrasadas__item--mês-orçamento
-        br999 pl05 pr05 ib mr05 mb05 t11"
+        br999 pl05 pr05 ib t11"
       >
         <span class="legenda-atrasada__dado legenda-atrasada__dado--mês">
           mês
@@ -18,7 +18,7 @@
       </li>
       <li
         class="legenda-atrasadas__item legenda-atrasadas__item--mês-variáveis
-        br999 pl05 pr05 ib mr05 mt025 mb025 t11"
+        br999 pl05 pr05 ib t11"
       >
         <span class="legenda-atrasada__dado legenda-atrasada__dado--mês">
           mês
@@ -29,7 +29,7 @@
       </li>
       <li
         class="legenda-atrasadas__item legenda-atrasadas__item--mês-variáveis-orçamento
-      br999 pl05 pr05 ib mr05 mt025 mb025 t11"
+      br999 pl05 pr05 ib t11"
       >
         <span class="legenda-atrasada__dado legenda-atrasada__dado--mês">
           mês
