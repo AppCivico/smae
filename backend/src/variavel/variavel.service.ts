@@ -750,7 +750,7 @@ export class VariavelService {
     }
 
     async processVariaveisSuspensas(prismaTx: Prisma.TransactionClient): Promise<number[]> {
-        return await prismaTx.$queryRaw`
+        const suspensas: { variaveis: number[] }[] = await prismaTx.$queryRaw`
             WITH jobs AS (
                 SELECT
                     v.id as variavel_id,
@@ -861,6 +861,10 @@ export class VariavelService {
                 array_agg(variavel_id) as variaveis
             FROM must_update_indicators
         `;
+
+        console.log('must_update_indicators: suspensas=', suspensas);
+        if (suspensas[0]) return suspensas[0].variaveis;
+        return [];
     }
 
     async remove(variavelId: number, user: PessoaFromJwt) {
