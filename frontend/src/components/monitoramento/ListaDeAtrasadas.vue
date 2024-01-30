@@ -57,11 +57,17 @@ const idsDosItensAbertos = ref([]);
             :key="variável.id"
             class="mb1"
           >
-            <span
+            <router-link
               class="bgc50 br6 p1 block"
+              :to="{
+                name: 'monitoramentoDeEvoluçãoDeMetaEspecífica',
+                params: {
+                  meta_id: meta.id
+                }
+              }"
             >
               {{ variável.codigo || variável.id }} - {{ variável.titulo }}
-            </span>
+            </router-link>
             <ul
               v-if="variável?.meses?.length"
               class="flex g025 mt05 mb1 flexwrap justifyleft"

@@ -60,7 +60,16 @@ const listaDeAtualizadas = computed(() => {
         :for="`atualizada--${meta.id}`"
         class="block mb1 bgc50 br6 p1 g1 flex center"
       >
-        {{ meta.código }} - {{ meta.título }}
+        <router-link
+          :to="{
+            name: 'monitoramentoDeEvoluçãoDeMetaEspecífica',
+            params: {
+              meta_id: meta.id
+            }
+          }"
+        >
+          {{ meta.código }} - {{ meta.título }}
+        </router-link>
         <small v-ScrollLockDebug>
           (<code>meta.atualizado_em:&nbsp;{{ meta.atualizado_em }}</code>)
         </small>
