@@ -90,7 +90,12 @@ export const router = createRouter({
           component: ListMonitoramentoMetasEvolucao,
           props: { submenu: SubmenuMonitoramento, parentPage: 'evolucao' },
         },
-        { path: 'evolucao/:meta_id', component: MonitoramentoMetas, props: { submenu: SubmenuMonitoramento, parentPage: 'evolucao' } },
+        {
+          name: 'monitoramentoDeEvoluçãoDeMetaEspecífica',
+          path: 'evolucao/:meta_id',
+          component: MonitoramentoMetas,
+          props: { submenu: SubmenuMonitoramento, parentPage: 'evolucao' },
+        },
         { path: 'cronograma', component: ListMonitoramentoMetasCronograma, props: { submenu: SubmenuMonitoramento, parentPage: 'cronograma' } },
         { path: 'cronograma/:meta_id', component: MonitoramentoMetasCronograma, props: { submenu: SubmenuMonitoramento, parentPage: 'cronograma' } },
         { path: 'cronograma/:meta_id/editar/:cron_id/:etapa_id', component: MonitoramentoMetasCronograma, props: { submenu: SubmenuMonitoramento, parentPage: 'cronograma' } },

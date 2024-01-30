@@ -176,7 +176,16 @@ const lista = computed(() => {
               ><use xlink:href="#i_circle" /></svg>
               <div>Aguarda envio</div>
             </span>
-            {{ variável.código || variável.id }} - {{ variável.título }}
+            <router-link
+              :to="{
+                name: 'monitoramentoDeEvoluçãoDeMetaEspecífica',
+                params: {
+                  meta_id: meta.id
+                }
+              }"
+            >
+              {{ variável.código || variável.id }} - {{ variável.título }}
+            </router-link>
             <small v-ScrollLockDebug>
               (<code>aguardaComplementação:&nbsp;{{ variável.aguardaComplementação }}</code>)
               (<code>aguardaConferência:&nbsp;{{ variável.aguardaConferência }}</code>)
