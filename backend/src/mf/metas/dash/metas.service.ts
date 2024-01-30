@@ -384,7 +384,7 @@ export class MfDashMetasService {
         AND
         (
             -- não considera o orçamento na tela de detalhes (monitoramento)
-            ( CASE WHEN ${retornarDetalhes}::boolean = THEN FALSE ELSE msc.orcamento_pendente END )
+            ( CASE WHEN ${retornarDetalhes}::boolean THEN FALSE ELSE msc.orcamento_pendente END )
             OR
             (
             -- se tem alguma variavel aguardando aguarda_complementacao, match
