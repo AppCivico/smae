@@ -31,6 +31,8 @@ const listaDeAtualizadas = computed(() => {
     fechamentoEnviado: x.fechamento_enviado,
     analiseQualitativaEnviada: x.analise_qualitativa_enviada,
 
+    atualizadoEm: x.atualizado_em,
+
     variáveis: x.variaveis?.[aUsar]?.map((y) => ({
       id: y,
       código: variáveisPorId.value[y]?.codigo || '',
@@ -113,7 +115,7 @@ const listaDeAtualizadas = computed(() => {
             {{ meta.código }} - {{ meta.título }}
           </router-link>
           <small v-ScrollLockDebug>
-            (<code>meta.atualizado_em:&nbsp;{{ meta.atualizado_em }}</code>)
+            (<code>meta.atualizado_em:&nbsp;{{ meta.atualizadoEm }}</code>)
           </small>
         </span>
       </li>
