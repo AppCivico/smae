@@ -140,9 +140,6 @@ const lista = computed(() => {
         {{ meta.código }} - {{ meta.título }}
         <small v-ScrollLockDebug>
           (<code>meta.atualizado_em:&nbsp;{{ meta.atualizado_em }}</code>)
-          (<code>analiseQualitativaEnviada:&nbsp;{{ analiseQualitativaEnviada }}</code>)
-          (<code>riscoEnviado:&nbsp;{{ riscoEnviado }}</code>)
-          (<code>fechamentoEnviado:&nbsp;{{ fechamentoEnviado }}</code>)
         </small>
       </label>
       <Transition
