@@ -1,4 +1,11 @@
 <script setup>
+import { storeToRefs } from 'pinia';
+import { useAuthStore } from '@/stores/auth.store';
+
+const authStore = useAuthStore();
+
+const { temPermissãoPara } = storeToRefs(authStore);
+
 defineProps({
   meta: {
     type: Object,
@@ -34,10 +41,8 @@ defineProps({
     <h2 class="meta__título w900 t14 spacebetween uc br8">
       <router-link
         :to="{
-          name: 'meta',
-          params: {
-            meta_id: meta.id
-          }
+          name: 'monitoramentoPorVariáveis',
+          query: $route.query,
         }"
       >
         {{ meta.codigo }} - {{ meta.titulo }}
@@ -51,50 +56,91 @@ defineProps({
       <ul class="meta__icones-lista flex g1">
         <li
           v-if="meta.variaveis?.conferidas < meta.variaveis?.total && perfil !== 'ponto_focal'"
-          class="meta__icones-item tipinfo"
+          class="meta__icones-item"
         >
-          <svg
-            class="meta__icone fracasso"
-            width="24"
-            height="24"
-          ><use xlink:href="#i_clock" /></svg><div>Conferência</div>
+          <router-link
+            :to="{
+              name: 'monitoramentoDeEvoluçãoDeMetaEspecífica',
+              params: {
+                meta_id: meta.id
+              }
+            }"
+            class="tipinfo"
+          >
+            <svg
+              class="meta__icone fracasso"
+              width="24"
+              height="24"
+            ><use xlink:href="#i_clock" /></svg><div>Conferência</div>
+          </router-link>
         </li>
         <li
           v-if="meta.variaveis?.aguardando_complementacao"
-          class="meta__icones-item tipinfo"
+          class="meta__icones-item"
         >
-          <svg
-            class="meta__icone fracasso"
-            width="24"
-            height="24"
-            color="#EE3B2B"
-          ><use xlink:href="#i_alert" /></svg><div>Complementação</div>
+          <router-link
+            :to="{
+              name: 'monitoramentoDeEvoluçãoDeMetaEspecífica',
+              params: {
+                meta_id: meta.id
+              }
+            }"
+            class="tipinfo"
+          >
+            <svg
+              class="meta__icone fracasso"
+              width="24"
+              height="24"
+              color="#EE3B2B"
+            ><use xlink:href="#i_alert" /></svg><div>Complementação</div>
+          </router-link>
         </li>
         <li
           v-if="meta.cronograma?.total"
-          class="meta__icones-item tipinfo"
+          class="meta__icones-item"
         >
-          <svg
-            class="meta__icone"
-            :class="{
-              sucesso: meta.cronograma?.preenchido === meta.cronograma?.total
+          <router-link
+            :to="{
+              name: 'monitoramentoDeEvoluçãoDeMetaEspecífica',
+              params: {
+                meta_id: meta.id
+              }
             }"
-            width="24"
-            height="24"
-          ><use xlink:href="#i_calendar" /></svg><div>Cronograma</div>
+            class="tipinfo"
+          >
+            <svg
+              class="meta__icone"
+              :class="{
+                sucesso: meta.cronograma?.preenchido === meta.cronograma?.total
+              }"
+              width="24"
+              height="24"
+            ><use xlink:href="#i_calendar" /></svg><div>Cronograma</div>
+          </router-link>
         </li>
         <li
           v-if="meta.orcamento?.total"
-          class="meta__icones-item tipinfo"
+          class="meta__icones-item"
         >
-          <svg
-            class="meta__icone"
-            :class="{
-              sucesso: meta.orcamento?.preenchido === meta.orcamento?.total
+          <component
+            :is="temPermissãoPara('CadastroMeta.orcamento') ? 'router-link' : 'span'"
+            :to="{
+              name: 'MetaOrcamentoRealizado',
+              params: {
+                meta_id: meta.id
+              }
             }"
-            width="24"
-            height="24"
-          ><use xlink:href="#i_$" /></svg><div>Orçamento</div>
+            class="tipinfo"
+          >
+            <svg
+              class="meta__icone"
+              :class="{
+                sucesso: meta.orcamento?.preenchido === meta.orcamento?.total
+              }"
+              width="24"
+              height="24"
+            ><use xlink:href="#i_$" /></svg><div>Orçamento</div>
+          </component>
         </li>
         <template v-if="perfil !== 'ponto_focal'">
           <li
