@@ -42,6 +42,7 @@ const lista = computed(() => listaDePendentes.value
       id: cur.id,
       código: cur.codigo,
       título: cur.titulo,
+      atualizadoEm: cur.atualizado_em,
       cronogramas: cur.cronograma.detalhes.map((y) => ({
         ...y,
         caminho: gerarURL(y.id),
@@ -91,7 +92,7 @@ const lista = computed(() => listaDePendentes.value
           {{ meta.código }} - {{ meta.título }}
 
           <small v-ScrollLockDebug>
-            (<code>meta.atualizado_em:&nbsp;{{ meta.atualizado_em }}</code>)
+            (<code>meta.atualizado_em:&nbsp;{{ meta.atualizadoEm }}</code>)
           </small>
         </label>
         <Transition
