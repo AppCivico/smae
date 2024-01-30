@@ -10,7 +10,6 @@ import { computed } from 'vue';
 const panoramaStore = usePanoramaStore();
 const {
   erro,
-  requestInfo,
 } = storeToRefs(panoramaStore);
 const PdMStore = usePdMStore();
 const { activePdm } = storeToRefs(PdMStore);
@@ -74,8 +73,6 @@ if (!activePdm.value.id) {
         </nav>
       </div>
     </header>
-
-    <pre v-ScrollLockDebug="requestInfo">{{ requestInfo }}</pre>
 
     <RouterView />
 
