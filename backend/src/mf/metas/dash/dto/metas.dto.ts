@@ -146,7 +146,7 @@ export class FilterMfDashEtapasDto {
 }
 
 export class MfDashEtapaHierarquiaDto {
-    etapas_id: number;
+    etapa_id: number;
     meta_id: number;
     iniciativa_id: number | null;
     atividade_id: number | null;
