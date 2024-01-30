@@ -10,7 +10,7 @@ const authStore = useAuthStore();
 const { user, temPermissãoPara } = storeToRefs(authStore);
 
 if (user.value?.flags?.panorama) {
-  if (temPermissãoPara(['PDM.admin_cp', 'PDM.tecnico_cp', 'PDM.ponto_focal'])) {
+  if (temPermissãoPara.value(['PDM.admin_cp', 'PDM.tecnico_cp', 'PDM.ponto_focal'])) {
     router.replace({
       name: 'panorama',
     });
