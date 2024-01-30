@@ -79,8 +79,14 @@ const lista = computed(() => {
         class="block mb1 bgc50 br6 p1 g1 flex center"
       >
         <template v-if="perfil !== 'ponto_focal'">
-          <span
+          <router-link
             v-if="meta.analiseQualitativaEnviada !== null"
+            :to="{
+              name: 'monitoramentoDeEvoluçãoDeMetaEspecífica',
+              params: {
+                meta_id: meta.id
+              }
+            }"
             class="f0 tipinfo"
           >
             <svg
@@ -91,9 +97,15 @@ const lista = computed(() => {
               width="24"
               height="24"
             ><use xlink:href="#i_iniciativa" /></svg><div>Qualificação</div>
-          </span>
-          <span
+          </router-link>
+          <router-link
             v-if="meta.riscoEnviado !== null"
+            :to="{
+              name: 'monitoramentoDeEvoluçãoDeMetaEspecífica',
+              params: {
+                meta_id: meta.id
+              }
+            }"
             class="f0 tipinfo"
           >
             <svg
@@ -104,9 +116,15 @@ const lista = computed(() => {
               width="24"
               height="24"
             ><use xlink:href="#i_binoculars" /></svg><div>Análise de Risco</div>
-          </span>
-          <span
+          </router-link>
+          <router-link
             v-if="meta.fechamentoEnviado !== null"
+            :to="{
+              name: 'monitoramentoDeEvoluçãoDeMetaEspecífica',
+              params: {
+                meta_id: meta.id
+              }
+            }"
             class="f0 tipinfo"
           >
             <svg
@@ -117,7 +135,7 @@ const lista = computed(() => {
               width="24"
               height="24"
             ><use xlink:href="#i_check" /></svg><div>Fechamento</div>
-          </span>
+          </router-link>
         </template>
         {{ meta.código }} - {{ meta.título }}
         <small v-ScrollLockDebug>
