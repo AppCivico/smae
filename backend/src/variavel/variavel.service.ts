@@ -762,14 +762,14 @@ export class VariavelService {
                     s.serie AS serie,
                     pdm.id as pdm_id
                 FROM variavel v
-                INNER JOIN indicador_variavel iv ON iv.variavel_id = v.id
-                INNER JOIN indicador i ON iv.indicador_id = i.id
-                LEFT JOIN meta m ON i.meta_id = m.id
-                LEFT JOIN iniciativa ini ON i.iniciativa_id = ini.id
-                LEFT JOIN meta m2 ON ini.meta_id = m2.id
-                LEFT JOIN atividade a ON i.atividade_id = a.id
-                LEFT JOIN iniciativa ini2 ON a.iniciativa_id = ini2.id
-                LEFT JOIN meta m3 ON ini2.meta_id = m3.id
+                INNER JOIN indicador_variavel iv ON iv.variavel_id = v.id AND iv.indicador_origem_id is null
+                INNER JOIN indicador i ON iv.indicador_id = i.id AND i.removido_em is null
+                LEFT JOIN meta m ON i.meta_id = m.id AND i.removido_em is null
+                LEFT JOIN iniciativa ini ON i.iniciativa_id = ini.id AND ini.removido_em is null
+                LEFT JOIN meta m2 ON ini.meta_id = m2.id AND m2.removido_em is null
+                LEFT JOIN atividade a ON i.atividade_id = a.id AND a.removido_em is null
+                LEFT JOIN iniciativa ini2 ON a.iniciativa_id = ini2.id AND ini2.removido_em is null
+                LEFT JOIN meta m3 ON ini2.meta_id = m3.id AND m3.removido_em is null
                 INNER JOIN pdm
                     ON CASE
                         WHEN m.id IS NOT NULL THEN m.pdm_id = pdm.id
