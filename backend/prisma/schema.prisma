@@ -3100,13 +3100,13 @@ model Tarefa {
     id Int @id @default(autoincrement())
 
     projeto_id    Int
-    orgao_id      Int
+    orgao_id      Int?
     tarefa_pai_id Int?
 
     projeto    Projeto  @relation(fields: [projeto_id], references: [id])
     tarefa_pai Tarefa?  @relation("tarefa_pai", fields: [tarefa_pai_id], references: [id])
     filhos     Tarefa[] @relation("tarefa_pai")
-    orgao      Orgao    @relation(fields: [orgao_id], references: [id])
+    orgao      Orgao?    @relation(fields: [orgao_id], references: [id])
 
     tarefa    String // 60 chars
     descricao String

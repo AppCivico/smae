@@ -1963,7 +1963,7 @@ export class ProjetoService {
             if (tarefasCount > 0) throw new HttpException('Projeto já possui tarefas.', 400);
 
             // TODO verificar órgãos
-            await prismaTx.$queryRaw`SELECT * FROM clone_projeto_tarefas(${dto.projeto_fonte_id}, ${projetoId}, ${dto.orgao_id});`
+            await prismaTx.$queryRaw`CALL clone_projeto_tarefas(${dto.projeto_fonte_id}, ${projetoId});`
         }
     }
 

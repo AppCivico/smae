@@ -7,7 +7,7 @@ import { TarefaDependenciaDto } from '../dto/create-tarefa.dto';
 
 export class TarefaItemDto {
     id: number;
-    orgao: IdSiglaDescricao;
+    orgao: IdSiglaDescricao | null;
     nivel: number;
     numero: number;
     tarefa_pai_id: number | null;
