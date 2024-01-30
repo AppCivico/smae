@@ -77,6 +77,47 @@ const lista = computed(() => {
         :for="`pendente--${meta.id}`"
         class="block mb1 bgc50 br6 p1 g1 flex center"
       >
+        <template v-if="perfil !== 'ponto_focal'">
+          <span
+            v-if="meta.analiseQualitativaEnviada !== null"
+            class="f0 tipinfo"
+          >
+            <svg
+              class="meta__icone"
+              :color="meta.analiseQualitativaEnviada
+                ? '#8ec122'
+                : '#ee3b2b'"
+              width="24"
+              height="24"
+            ><use xlink:href="#i_iniciativa" /></svg><div>Qualificação</div>
+          </span>
+          <span
+            v-if="meta.riscoEnviado !== null"
+            class="f0 tipinfo"
+          >
+            <svg
+              class="meta__icone"
+              :color="meta.riscoEnviado
+                ? '#8ec122'
+                : '#ee3b2b'"
+              width="24"
+              height="24"
+            ><use xlink:href="#i_binoculars" /></svg><div>Análise de Risco</div>
+          </span>
+          <span
+            v-if="meta.fechamentoEnviado !== null"
+            class="f0 tipinfo"
+          >
+            <svg
+              class="meta__icone"
+              :color="meta.fechamentoEnviado
+                ? '#8ec122'
+                : '#ee3b2b'"
+              width="24"
+              height="24"
+            ><use xlink:href="#i_check" /></svg><div>Fechamento</div>
+          </span>
+        </template>
         {{ meta.código }} - {{ meta.título }}
         <small v-ScrollLockDebug>
           (<code>meta.atualizado_em:&nbsp;{{ meta.atualizado_em }}</code>)
