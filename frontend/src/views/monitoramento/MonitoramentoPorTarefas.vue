@@ -7,7 +7,8 @@ import { storeToRefs } from 'pinia';
 
 const panoramaStore = usePanoramaStore();
 const {
-  listaDePendentes,
+  tarefasPorId,
+  ancestraisPorEtapa,
 } = storeToRefs(panoramaStore);
 
 const PdMStore = usePdMStore();
@@ -18,9 +19,18 @@ async function iniciar() {
     await PdMStore.getActive();
   }
 
-  panoramaStore.buscarTudo(activePdm.value.id, 'pendentes', {
+  await panoramaStore.buscarTudo(activePdm.value.id, 'pendentes', {
     retornar_detalhes: true,
   });
+
+  const tarefasCujosAncestraisBuscar = Object.keys(tarefasPorId.value)
+    .filter((x) => !ancestraisPorEtapa.value[x]);
+  console.debug('tarefasCujosAncestraisBuscar', tarefasCujosAncestraisBuscar);
+  if (tarefasCujosAncestraisBuscar.length < 300) {
+    panoramaStore.buscarAncestraisDeEtapas(tarefasCujosAncestraisBuscar);
+  } else {
+    panoramaStore.buscarAncestraisDeEtapas();
+  }
 }
 iniciar();
 </script>

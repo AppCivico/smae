@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia';
 
 // eslint-disable-next-line import/no-extraneous-dependencies
-import { ListMfDashMetasDto } from '@/../../backend/src/mf/metas/dash/dto/metas.dto';
+import { ListMfDashMetasDto, ListMfDashEtapaHierarquiaDto } from '@/../../backend/src/mf/metas/dash/dto/metas.dto';
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { IdCodTituloDto } from '@/../../backend/src/common/dto/IdCodTitulo.dto';
 // eslint-disable-next-line import/no-extraneous-dependencies
@@ -14,6 +14,7 @@ const baseUrl = `${import.meta.env.VITE_API_URL}`;
 type ChamadasPendentes = {
   filtro: boolean;
   lista: boolean;
+  ancestrais: boolean;
 };
 
 type Estado = {
@@ -23,6 +24,10 @@ type Estado = {
   listaDeAtrasadasComDetalhes: ListMfDashMetasDto['atrasadas_detalhes'];
 
   dadosParaFiltro: ListMetaDto['linhas'];
+
+  ancestraisPorEtapa: {
+    [key:string]: ListMfDashEtapaHierarquiaDto['linhas'][0];
+  };
 
   tarefasPorId: {
     [key: string]: IdTituloOrNullDto;
@@ -56,6 +61,8 @@ export const usePanoramaStore = defineStore('panorama', {
 
     dadosParaFiltro: [],
 
+    ancestraisPorEtapa: {},
+
     tarefasPorId: {},
     variáveisPorId: {},
 
@@ -66,12 +73,35 @@ export const usePanoramaStore = defineStore('panorama', {
       // identificar se a primeira chamada já ocorreu
       lista: true,
       filtro: true,
+      ancestrais: true,
     },
 
     erro: null,
   }),
 
   actions: {
+    async buscarAncestraisDeEtapas(idsDeEtapas = []) {
+      this.chamadasPendentes.ancestrais = true;
+      this.erro = null;
+
+      try {
+        const { linhas }:ListMfDashEtapaHierarquiaDto = await this.requestS.get(`${baseUrl}/mf/panorama/etapa-hierarquia`, { etapas_ids: idsDeEtapas.length ? idsDeEtapas : undefined });
+
+        if (Array.isArray(linhas)) {
+          linhas.forEach((x) => {
+            if (!this.ancestraisPorEtapa[x.etapa_id]) {
+              this.ancestraisPorEtapa[x.etapa_id] = { ...x };
+            }
+          });
+        } else {
+          throw new Error('Propriedade `linhas` não é um array!');
+        }
+      } catch (erro: unknown) {
+        this.erro = erro;
+      }
+      this.chamadasPendentes.ancestrais = false;
+    },
+
     async buscarFiltro(params = {}) {
       this.chamadasPendentes.filtro = true;
       this.erro = null;
