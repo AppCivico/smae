@@ -87,6 +87,10 @@ const mesesPorAno = computed(() => {
         }"
       >
         {{ meta.codigo }} - {{ meta.titulo }}
+
+        <small v-ScrollLockDebug>
+          (<code>meta.atualizado_em:&nbsp;{{ meta.atualizado_em }}</code>)
+        </small>
       </router-link>
     </h2>
 
