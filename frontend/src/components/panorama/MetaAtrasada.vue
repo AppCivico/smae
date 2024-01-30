@@ -80,10 +80,8 @@ const mesesPorAno = computed(() => {
     <h2 class="meta__título w900 t14 spacebetween uc br8">
       <router-link
         :to="{
-          name: 'meta',
-          params: {
-            meta_id: meta.id
-          }
+          name: 'monitoramentoPorVariáveis',
+          query: $route.query,
         }"
       >
         {{ meta.codigo }} - {{ meta.titulo }}
