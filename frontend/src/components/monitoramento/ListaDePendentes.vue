@@ -34,6 +34,8 @@ const listaDePendentes = computed(() => {
     fechamentoEnviado: x.fechamento_enviado,
     analiseQualitativaEnviada: x.analise_qualitativa_enviada,
 
+    atualizadoEm: x.atualizado_em,
+
     variáveis: x.variaveis?.total?.reduce((acc, cur) => {
       const manter = x.variaveis.aguardando_complementacao.includes(cur);
       const remover = !x.variaveis[aRemover].includes(cur);
@@ -150,8 +152,11 @@ const listaDePendentes = computed(() => {
             </router-link>
           </template>
           {{ meta.código }} - {{ meta.título }}
-          <small v-ScrollLockDebug>
-            (<code>meta.atualizado_em:&nbsp;{{ meta.atualizado_em }}</code>)
+          <small
+            v-if="meta.atualizadoEm"
+            v-ScrollLockDebug
+          >
+            (<code>meta.atualizado_em:&nbsp;{{ meta.atualizadoEm }}</code>)
           </small>
         </label>
         <Transition
