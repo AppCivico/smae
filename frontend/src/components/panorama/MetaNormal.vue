@@ -149,51 +149,10 @@ defineProps({
           </dt>
           <dd>variáveis</dd>
         </div>
-        <div
-          v-if="meta.variaveis.aguardando_complementacao"
-          class="meta__variável pl1 pr1"
-        >
-          <dt class="w700 fracasso">
-            {{ meta.variaveis.aguardando_complementacao }}
-          </dt>
-          <dd>
-            aguardando complementação
-          </dd>
-        </div>
-        <div
-          v-if="perfil !== 'ponto_focal' && meta.variaveis.conferidas"
-          class="meta__variável pl1 pr1"
-        >
-          <dt
-            class="w700"
-            :class="{
-              sucesso: meta.variaveis.conferidas === meta.variaveis.total
-            }"
-          >
-            {{ meta.variaveis.conferidas }}
-          </dt>
-          <dd>conferidas</dd>
-        </div>
-
         <template
           v-if="(visão === 'pessoal' && perfil === 'ponto_focal')
             || (visão === 'geral' && perfil === 'admin_cp')"
         >
-          <div
-            v-if="meta.variaveis.enviadas"
-            class="meta__variável pl1 pr1"
-          >
-            <dt
-              class="w700"
-              :class="{
-                sucesso: meta.variaveis.enviadas === meta.variaveis.total
-              }"
-            >
-              {{ meta.variaveis.enviadas }}
-            </dt>
-            <dd>enviadas</dd>
-          </div>
-
           <div
             v-if="meta.variaveis.preenchidas"
             class="meta__variável pl1 pr1"
@@ -208,7 +167,46 @@ defineProps({
             </dt>
             <dd>preenchidas</dd>
           </div>
+          <div
+            v-if="meta.variaveis.enviadas"
+            class="meta__variável pl1 pr1"
+          >
+            <dt
+              class="w700"
+              :class="{
+                sucesso: meta.variaveis.enviadas === meta.variaveis.total
+              }"
+            >
+              {{ meta.variaveis.enviadas }}
+            </dt>
+            <dd>enviadas</dd>
+          </div>
         </template>
+        <div
+          v-if="perfil !== 'ponto_focal' && meta.variaveis.conferidas"
+          class="meta__variável pl1 pr1"
+        >
+          <dt
+            class="w700"
+            :class="{
+              sucesso: meta.variaveis.conferidas === meta.variaveis.total
+            }"
+          >
+            {{ meta.variaveis.conferidas }}
+          </dt>
+          <dd>conferidas</dd>
+        </div>
+        <div
+          v-if="meta.variaveis.aguardando_complementacao"
+          class="meta__variável pl1 pr1"
+        >
+          <dt class="w700 fracasso">
+            {{ meta.variaveis.aguardando_complementacao }}
+          </dt>
+          <dd>
+            aguardando complementação
+          </dd>
+        </div>
       </dl>
     </div>
   </article>
