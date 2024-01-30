@@ -248,3 +248,11 @@ export class UpdateProjetoDocumentDto {
     @ValidateIf((object, value) => value !== null)
     data?: Date | null;
 }
+
+export class CloneProjetoTarefasDto {
+    @IsInt()
+    projeto_fonte_id: number
+
+    @IsInt()
+    orgao_id: number
+}

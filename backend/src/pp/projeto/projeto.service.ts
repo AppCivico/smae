@@ -14,7 +14,7 @@ import { PortfolioDto } from '../portfolio/entities/portfolio.entity';
 import { PortfolioService } from '../portfolio/portfolio.service';
 import { CreateProjetoDocumentDto, CreateProjetoDto } from './dto/create-projeto.dto';
 import { FilterProjetoDto } from './dto/filter-projeto.dto';
-import { UpdateProjetoDocumentDto, UpdateProjetoDto } from './dto/update-projeto.dto';
+import { CloneProjetoTarefasDto, UpdateProjetoDocumentDto, UpdateProjetoDto } from './dto/update-projeto.dto';
 import {
     ProjetoDetailDto,
     ProjetoDocumentoDto,
@@ -1955,4 +1955,16 @@ export class ProjetoService {
             },
         });
     }
+
+    async cloneTarefas(projetoId: number, dto: CloneProjetoTarefasDto, user: PessoaFromJwt) {
+
+        async (prismaTx: Prisma.TransactionClient) => {
+            const tarefasCount = await prismaTx.tarefa.count({where: { projeto_id: projetoId, removido_em: null }});
+            if (tarefasCount > 0) throw new HttpException('Projeto já possui tarefas.', 400);
+
+            // TODO verificar órgãos
+            await prismaTx.$queryRaw`SELECT * FROM clone_projeto_tarefas(${dto.projeto_fonte_id}, ${projetoId}, ${dto.orgao_id});`
+        }
+    }
+
 }
