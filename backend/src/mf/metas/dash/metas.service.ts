@@ -119,7 +119,7 @@ export class MfDashMetasService {
 
         let listaMetasPendentesPf: number[] = [];
         if ((params.retornar_pendentes || params.retornar_atualizadas) && ehPontoFocal)
-            listaMetasPendentesPf = await this.metasPendentePontoFocal(config.pessoa_id);
+            listaMetasPendentesPf = await this.metasPendentePontoFocal(config.pessoa_id, retornar_detalhes);
 
         if (params.retornar_pendentes) {
             const pendentes = await this.prisma.metaStatusConsolidadoCf.findMany({
@@ -363,7 +363,7 @@ export class MfDashMetasService {
         return filterMetas.map((r) => r.id);
     }
 
-    private async metasPendentePontoFocal(pessoaId: number): Promise<number[]> {
+    private async metasPendentePontoFocal(pessoaId: number, retornarDetalhes: boolean): Promise<number[]> {
         const metasPendentes: { meta_id: number }[] = await this.prisma.$queryRaw`
         SELECT
             msc.meta_id
@@ -383,7 +383,8 @@ export class MfDashMetasService {
             pap.pessoa_id = ${pessoaId}::int
         AND
         (
-            msc.orcamento_pendente = TRUE
+            -- não considera o orçamento na tela de detalhes (monitoramento)
+            ( CASE WHEN ${retornarDetalhes}::boolean = THEN FALSE ELSE msc.orcamento_pendente END )
             OR
             (
             -- se tem alguma variavel aguardando aguarda_complementacao, match
