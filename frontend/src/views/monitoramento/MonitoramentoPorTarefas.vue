@@ -25,7 +25,7 @@ async function iniciar() {
 
   const tarefasCujosAncestraisBuscar = Object.keys(tarefasPorId.value)
     .filter((x) => !ancestraisPorEtapa.value[x]);
-  console.debug('tarefasCujosAncestraisBuscar', tarefasCujosAncestraisBuscar);
+
   if (tarefasCujosAncestraisBuscar.length < 300) {
     panoramaStore.buscarAncestraisDeEtapas(tarefasCujosAncestraisBuscar);
   } else {
