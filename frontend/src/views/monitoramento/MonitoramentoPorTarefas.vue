@@ -21,6 +21,8 @@ async function iniciar() {
 
   await panoramaStore.buscarTudo(activePdm.value.id, 'pendentes', {
     retornar_detalhes: true,
+    filtro_ponto_focal_cronograma: true,
+    filtro_ponto_focal_variavel: false,
   });
 
   const tarefasCujosAncestraisBuscar = Object.keys(tarefasPorId.value)

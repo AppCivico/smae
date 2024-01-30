@@ -24,7 +24,7 @@ const lista = computed(() => {
     ? 'enviadas'
     : 'conferidas';
 
-  const listaCompleta = listaDePendentes.value.map((x) => ({
+  return listaDePendentes.value.map((x) => ({
     id: x.id,
     código: x.codigo,
     título: x.titulo,
@@ -45,10 +45,6 @@ const lista = computed(() => {
     }, [])
       .sort((a, b) => a.código.localeCompare(b.código)),
   }));
-
-  return perfil.value === 'ponto_focal'
-    ? listaCompleta.filter((x) => x.variáveis?.length)
-    : listaCompleta;
 });
 </script>
 <template>
