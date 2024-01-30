@@ -59,6 +59,8 @@ async function iniciar() {
   }
   panoramaStore.buscarTudo(activePdm.value.id, route.query.status, {
     retornar_detalhes: true,
+    filtro_ponto_focal_cronograma: false,
+    filtro_ponto_focal_variavel: true,
   });
 }
 
