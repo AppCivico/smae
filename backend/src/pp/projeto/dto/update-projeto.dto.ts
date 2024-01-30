@@ -252,7 +252,4 @@ export class UpdateProjetoDocumentDto {
 export class CloneProjetoTarefasDto {
     @IsInt()
     projeto_fonte_id: number
-
-    @IsInt()
-    orgao_id: number
 }
