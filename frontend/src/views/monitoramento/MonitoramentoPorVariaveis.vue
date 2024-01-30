@@ -1,6 +1,5 @@
 <script setup>
 import EnvelopeDeAbas from '@/components/EnvelopeDeAbas.vue';
-import FeedbackEmptyList from '@/components/FeedbackEmptyList.vue';
 import LegendaDeVariáveis from '@/components/monitoramento/LegendaDeVariaveis.vue';
 import ListaDeAtrasadas from '@/components/monitoramento/ListaDeAtrasadas.vue';
 import ListaDeAtualizadas from '@/components/monitoramento/ListaDeAtualizadas.vue';
@@ -18,10 +17,6 @@ const statusesVálidos = ['pendentes', 'atualizadas', 'atrasadas'];
 
 const panoramaStore = usePanoramaStore();
 const {
-  chamadasPendentes,
-  listaDeAtrasadasComDetalhes,
-  listaDeAtualizadas,
-  listaDePendentes,
   perfil,
 } = storeToRefs(panoramaStore);
 
@@ -83,48 +78,15 @@ watch(() => route.query.status, () => {
     class="mb1 f3"
   >
     <template #pendentes="{ estáAberta }">
-      <template v-if="estáAberta">
-        <LoadingComponent v-if="chamadasPendentes.lista" />
-
-        <FeedbackEmptyList
-          v-else-if="!listaDePendentes.length"
-          título="Bom trabalho!"
-          tipo="positivo"
-          mensagem="Você não possui pendências!"
-        />
-
-        <ListaDePendentes v-else />
-      </template>
+      <ListaDePendentes v-if="estáAberta" />
     </template>
 
     <template #atrasadas="{ estáAberta }">
-      <template v-if="estáAberta">
-        <LoadingComponent v-if="chamadasPendentes.lista" />
-
-        <FeedbackEmptyList
-          v-else-if="!listaDeAtrasadasComDetalhes.length"
-          título="Bom trabalho!"
-          tipo="positivo"
-          mensagem="Você não possui atrasos!"
-        />
-
-        <ListaDeAtrasadas v-else />
-      </template>
+      <ListaDeAtrasadas v-if="estáAberta" />
     </template>
 
     <template #atualizadas="{ estáAberta }">
-      <template v-if="estáAberta">
-        <LoadingComponent v-if="chamadasPendentes.lista" />
-
-        <FeedbackEmptyList
-          v-else-if="!listaDeAtualizadas.length"
-          tipo="negativo"
-          título="Você ainda não possui atividades atualizadas!"
-          mensagem="Complete pendências para visualizar-las aqui."
-        />
-
-        <ListaDeAtualizadas v-else />
-      </template>
+      <ListaDeAtualizadas v-if="estáAberta" />
     </template>
   </EnvelopeDeAbas>
 </template>

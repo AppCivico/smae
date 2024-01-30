@@ -1,4 +1,5 @@
 <script setup>
+import FeedbackEmptyList from '@/components/FeedbackEmptyList.vue';
 import { computed, ref } from 'vue';
 import { storeToRefs } from 'pinia';
 import { usePanoramaStore } from '@/stores/panorama.store.ts';
@@ -7,6 +8,7 @@ const panoramaStore = usePanoramaStore();
 const {
   listaDePendentes,
   ancestraisPorEtapa,
+  chamadasPendentes,
 } = storeToRefs(panoramaStore);
 
 const idsDosItensAbertos = ref([]);
@@ -50,101 +52,113 @@ const lista = computed(() => listaDePendentes.value
     : acc), []));
 </script>
 <template>
-  <ul
-    class="uc w700"
-  >
-    <li
-      v-for="meta in lista"
-      :key="meta.id"
-    >
-      <input
-        :id="`cronograma--${meta.id}`"
-        v-model="idsDosItensAbertos"
-        type="checkbox"
-        :value="meta.id"
-        :arial-label="idsDosItensAbertos.includes(meta.id)
-          ? `fechar tarefas da meta ${meta.código}`
-          : `abrir tarefas da meta ${meta.código}`"
-        :title="idsDosItensAbertos.includes(meta.id)
-          ? `fechar tarefas da meta ${meta.código}`
-          : `abrir tarefas da meta ${meta.código}`"
-        :disabled="!meta.cronogramas.length"
-        class="accordion-opener"
-      >
-      <label
-        :for="`cronograma--${meta.id}`"
-        class="block mb1 bgc50 br6 p1 g1 flex center"
-      >
-        {{ meta.código }} - {{ meta.título }}
+  <Transition name="fade">
+    <LoadingComponent v-if="chamadasPendentes.lista" />
 
-        <small v-ScrollLockDebug>
-          (<code>meta.atualizado_em:&nbsp;{{ meta.atualizado_em }}</code>)
-        </small>
-      </label>
-      <Transition
-        name="expand"
+    <FeedbackEmptyList
+      v-else-if="!lista.length"
+      título="Bom trabalho!"
+      tipo="positivo"
+      mensagem="Você não possui pendências!"
+    />
+
+    <ul
+      v-else
+      class="uc w700"
+    >
+      <li
+        v-for="meta in lista"
+        :key="meta.id"
       >
-        <ul
-          v-if="idsDosItensAbertos.includes(meta.id)"
-          class="pl2"
+        <input
+          :id="`cronograma--${meta.id}`"
+          v-model="idsDosItensAbertos"
+          type="checkbox"
+          :value="meta.id"
+          :arial-label="idsDosItensAbertos.includes(meta.id)
+            ? `fechar tarefas da meta ${meta.código}`
+            : `abrir tarefas da meta ${meta.código}`"
+          :title="idsDosItensAbertos.includes(meta.id)
+            ? `fechar tarefas da meta ${meta.código}`
+            : `abrir tarefas da meta ${meta.código}`"
+          :disabled="!meta.cronogramas.length"
+          class="accordion-opener"
         >
-          <li
-            v-for="tarefa in meta.cronogramas"
-            :key="tarefa.id"
-            class="mb1 bgc50 br6 p1 flex start"
+        <label
+          :for="`cronograma--${meta.id}`"
+          class="block mb1 bgc50 br6 p1 g1 flex center"
+        >
+          {{ meta.código }} - {{ meta.título }}
+
+          <small v-ScrollLockDebug>
+            (<code>meta.atualizado_em:&nbsp;{{ meta.atualizado_em }}</code>)
+          </small>
+        </label>
+        <Transition
+          name="expand"
+        >
+          <ul
+            v-if="idsDosItensAbertos.includes(meta.id)"
+            class="pl2"
           >
-            <span
-              v-if="(tarefa.inícioPendente && tarefa.términoPendente) || 1"
-              class="tipinfo ib mr1 f0 lista__ícone lista__ícone--duplo"
+            <li
+              v-for="tarefa in meta.cronogramas"
+              :key="tarefa.id"
+              class="mb1 bgc50 br6 p1 flex start"
             >
-              <svg
-                width="20"
-                height="20"
-                color="#e47d0f"
-              ><use xlink:href="#i_circle" /></svg>
-              <svg
-                width="20"
-                height="20"
-                color="#4074bf"
-              ><use xlink:href="#i_circle" /></svg>
-              <div>Início e Término pendentes</div>
-            </span>
-            <span
-              v-else-if="tarefa.inícioPendente"
-              class="tipinfo ib mr1 f0"
-            >
-              <svg
-                width="22"
-                height="22"
-                color="#e47d0f"
-              ><use xlink:href="#i_circle" /></svg>
-              <div>Início pendente</div>
-            </span>
-            <span
-              v-else-if="tarefa.términoPendente"
-              class="tipinfo ib mr1 f0"
-            >
-              <svg
-                width="22"
-                height="22"
-                color="#4074bf"
-              ><use xlink:href="#i_circle" /></svg>
-              <div>Término pendente</div>
-            </span>
-            <router-link
-              v-if="tarefa.caminho"
-              :to="tarefa.caminho"
-            >
-              {{ tarefa.código || tarefa.id }} - {{ tarefa.titulo }}
-            </router-link>
-            <template v-else>
-              {{ tarefa.código || tarefa.id }} - {{ tarefa.titulo }}
-            </template>
-          </li>
-        </ul>
-      </Transition>
-    </li>
-  </ul>
+              <span
+                v-if="(tarefa.inícioPendente && tarefa.términoPendente) || 1"
+                class="tipinfo ib mr1 f0 lista__ícone lista__ícone--duplo"
+              >
+                <svg
+                  width="20"
+                  height="20"
+                  color="#e47d0f"
+                ><use xlink:href="#i_circle" /></svg>
+                <svg
+                  width="20"
+                  height="20"
+                  color="#4074bf"
+                ><use xlink:href="#i_circle" /></svg>
+                <div>Início e Término pendentes</div>
+              </span>
+              <span
+                v-else-if="tarefa.inícioPendente"
+                class="tipinfo ib mr1 f0"
+              >
+                <svg
+                  width="22"
+                  height="22"
+                  color="#e47d0f"
+                ><use xlink:href="#i_circle" /></svg>
+                <div>Início pendente</div>
+              </span>
+              <span
+                v-else-if="tarefa.términoPendente"
+                class="tipinfo ib mr1 f0"
+              >
+                <svg
+                  width="22"
+                  height="22"
+                  color="#4074bf"
+                ><use xlink:href="#i_circle" /></svg>
+                <div>Término pendente</div>
+              </span>
+              <router-link
+                v-if="tarefa.caminho"
+                :to="tarefa.caminho"
+              >
+                {{ tarefa.código || tarefa.id }} - {{ tarefa.titulo }}
+              </router-link>
+              <template v-else>
+                {{ tarefa.código || tarefa.id }} - {{ tarefa.titulo }}
+              </template>
+            </li>
+          </ul>
+        </Transition>
+      </li>
+    </ul>
+  </Transition>
 </template>
 <style lang="less">
 .lista__ícone--duplo {

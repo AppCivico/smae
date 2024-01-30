@@ -1,4 +1,5 @@
 <script setup>
+import FeedbackEmptyList from '@/components/FeedbackEmptyList.vue';
 import { computed } from 'vue';
 import { storeToRefs } from 'pinia';
 import { usePanoramaStore } from '@/stores/panorama.store.ts';
@@ -7,6 +8,7 @@ const panoramaStore = usePanoramaStore();
 const {
   perfil,
   variáveisPorId,
+  chamadasPendentes,
 } = storeToRefs(panoramaStore);
 //  atualizadas
 //    ponto focal:
@@ -39,69 +41,82 @@ const listaDeAtualizadas = computed(() => {
 });
 </script>
 <template>
-  <ul class="uc w700">
-    <li
-      v-for="meta in listaDeAtualizadas"
-      :key="meta.id"
+  <Transition name="fade">
+    <LoadingComponent v-if="chamadasPendentes.lista" />
+
+    <FeedbackEmptyList
+      v-else-if="!listaDeAtualizadas.length"
+      tipo="negativo"
+      título="Você ainda não possui atividades atualizadas!"
+      mensagem="Complete pendências para visualizar-las aqui."
+    />
+    <ul
+      v-else
+      class="uc w700"
     >
-      <span
-        class="block mb1 bgc50 br6 p1 g1 flex center"
+      <li
+        v-for="meta in listaDeAtualizadas"
+        :key="meta.id"
       >
-        <template v-if="perfil !== 'ponto_focal'">
-          <span
-            v-if="meta.analiseQualitativaEnviada !== null"
-            class="f0 tipinfo"
-          >
-            <svg
-              class="meta__icone"
-              :color="meta.analiseQualitativaEnviada
-                ? '#8ec122'
-                : '#ee3b2b'"
-              width="24"
-              height="24"
-            ><use xlink:href="#i_iniciativa" /></svg><div>Qualificação</div>
-          </span>
-          <span
-            v-if="meta.riscoEnviado !== null"
-            class="f0 tipinfo"
-          >
-            <svg
-              class="meta__icone"
-              :color="meta.riscoEnviado
-                ? '#8ec122'
-                : '#ee3b2b'"
-              width="24"
-              height="24"
-            ><use xlink:href="#i_binoculars" /></svg><div>Análise de Risco</div>
-          </span>
-          <span
-            v-if="meta.fechamentoEnviado !== null"
-            class="f0 tipinfo"
-          >
-            <svg
-              class="meta__icone"
-              :color="meta.fechamentoEnviado
-                ? '#8ec122'
-                : '#ee3b2b'"
-              width="24"
-              height="24"
-            ><use xlink:href="#i_check" /></svg><div>Fechamento</div>
-          </span>
-        </template>
-        <router-link
-          :to="{
-            name: 'monitoramentoDeEvoluçãoDeMetaEspecífica',
-            params: {
-              meta_id: meta.id
-            }
-          }"
+        <span
+          class="block mb1 bgc50 br6 p1 g1 flex center"
         >
-          {{ meta.código }} - {{ meta.título }}
-        </router-link>
-        <small v-ScrollLockDebug>
-          (<code>meta.atualizado_em:&nbsp;{{ meta.atualizado_em }}</code>)
-        </small>
-      </span>
-    </li>
-  </ul>
+          <template v-if="perfil !== 'ponto_focal'">
+            <span
+              v-if="meta.analiseQualitativaEnviada !== null"
+              class="f0 tipinfo"
+            >
+              <svg
+                class="meta__icone"
+                :color="meta.analiseQualitativaEnviada
+                  ? '#8ec122'
+                  : '#ee3b2b'"
+                width="24"
+                height="24"
+              ><use xlink:href="#i_iniciativa" /></svg><div>Qualificação</div>
+            </span>
+            <span
+              v-if="meta.riscoEnviado !== null"
+              class="f0 tipinfo"
+            >
+              <svg
+                class="meta__icone"
+                :color="meta.riscoEnviado
+                  ? '#8ec122'
+                  : '#ee3b2b'"
+                width="24"
+                height="24"
+              ><use xlink:href="#i_binoculars" /></svg><div>Análise de Risco</div>
+            </span>
+            <span
+              v-if="meta.fechamentoEnviado !== null"
+              class="f0 tipinfo"
+            >
+              <svg
+                class="meta__icone"
+                :color="meta.fechamentoEnviado
+                  ? '#8ec122'
+                  : '#ee3b2b'"
+                width="24"
+                height="24"
+              ><use xlink:href="#i_check" /></svg><div>Fechamento</div>
+            </span>
+          </template>
+          <router-link
+            :to="{
+              name: 'monitoramentoDeEvoluçãoDeMetaEspecífica',
+              params: {
+                meta_id: meta.id
+              }
+            }"
+          >
+            {{ meta.código }} - {{ meta.título }}
+          </router-link>
+          <small v-ScrollLockDebug>
+            (<code>meta.atualizado_em:&nbsp;{{ meta.atualizado_em }}</code>)
+          </small>
+        </span>
+      </li>
+    </ul>
+  </Transition>
 </template>
