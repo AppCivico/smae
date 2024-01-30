@@ -74,6 +74,9 @@ const lista = computed(() => {
         class="block mb1 bgc50 br6 p1 g1 flex center"
       >
         {{ meta.código }} - {{ meta.título }}
+        <small v-ScrollLockDebug>
+          (<code>meta.atualizado_em:&nbsp;{{ meta.atualizado_em }}</code>)
+        </small>
       </label>
       <Transition
         v-if="meta.variáveis.length"

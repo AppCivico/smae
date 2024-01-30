@@ -45,6 +45,9 @@ const listaDeAtualizadas = computed(() => {
       :key="meta.id"
     >
       {{ meta.código }} - {{ meta.título }}
+      <small v-ScrollLockDebug>
+        (<code>meta.atualizado_em:&nbsp;{{ meta.atualizado_em }}</code>)
+      </small>
       <ul
         v-if="meta.variáveis.length"
       >
