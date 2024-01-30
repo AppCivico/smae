@@ -10,9 +10,9 @@ import CalendárioDoPdM from '@/components/panorama/CalendarioDoPdM.vue';
 import { storeToRefs } from 'pinia';
 import { Dashboard } from '@/components';
 import { usePanoramaStore } from '@/stores/panorama.store.ts';
+import { usePdMStore } from '@/stores/pdm.store';
 import { watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { usePdMStore } from '@/stores/pdm.store';
 
 const dadosExtrasDeAbas = {
   TabelaDeVariaveis: {
@@ -133,7 +133,6 @@ watch([
         </router-link>
       </nav>
     </header>
-
 
     <div class="flex flexwrap g2 start">
       <div class="legenda-e-filtro mb1 f1">
