@@ -276,7 +276,12 @@ BEGIN
         FROM pdm x
         JOIN meta b ON b.pdm_id = x.id AND b.id = pMetaId
         CROSS JOIN generate_series( x.data_inicio, x.data_fim, '1 year'::interval) gs
-        WHERE extract('year' from gs.gs::date) <= EXTRACT(YEAR FROM CURRENT_TIMESTAMP AT TIME ZONE 'America/Sao_Paulo')
+        WHERE extract('year' from gs.gs::date) < EXTRACT(YEAR FROM CURRENT_TIMESTAMP AT TIME ZONE 'America/Sao_Paulo')
+        OR
+            (
+                extract('year' from gs.gs::date) = EXTRACT(YEAR FROM CURRENT_TIMESTAMP AT TIME ZONE 'America/Sao_Paulo')
+            AND extract('month' from gs.gs::date) > 3
+            )
       ) p
       LEFT JOIN cte_execucao_concluida ec ON p.ano_referencia = ec.ano_referencia
     )
