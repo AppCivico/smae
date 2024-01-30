@@ -28,6 +28,11 @@ const lista = computed(() => {
     id: x.id,
     código: x.codigo,
     título: x.titulo,
+
+    riscoEnviado: x.risco_enviado,
+    fechamentoEnviado: x.fechamento_enviado.risco_enviado,
+    analiseQualitativaEnviada: x.analise_qualitativa_enviada.risco_enviado,
+
     variáveis: x.variaveis?.total?.reduce((acc, cur) => {
       const manter = x.variaveis.aguardando_complementacao.includes(cur);
       const remover = !x.variaveis[aRemover].includes(cur);
@@ -117,6 +122,9 @@ const lista = computed(() => {
         {{ meta.código }} - {{ meta.título }}
         <small v-ScrollLockDebug>
           (<code>meta.atualizado_em:&nbsp;{{ meta.atualizado_em }}</code>)
+          (<code>analiseQualitativaEnviada:&nbsp;{{ analiseQualitativaEnviada }}</code>)
+          (<code>riscoEnviado:&nbsp;{{ riscoEnviado }}</code>)
+          (<code>fechamentoEnviado:&nbsp;{{ fechamentoEnviado }}</code>)
         </small>
       </label>
       <Transition
