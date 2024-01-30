@@ -22,7 +22,7 @@ import { FindOneParams, FindTwoParams } from '../../common/decorators/find-param
 import { RecordWithId } from '../../common/dto/record-with-id.dto';
 import { CreateProjetoDocumentDto, CreateProjetoDto, CreateProjetoSeiDto } from './dto/create-projeto.dto';
 import { FilterProjetoDto } from './dto/filter-projeto.dto';
-import { UpdateProjetoDocumentDto, UpdateProjetoDto, UpdateProjetoRegistroSeiDto } from './dto/update-projeto.dto';
+import { CloneProjetoTarefasDto, UpdateProjetoDocumentDto, UpdateProjetoDto, UpdateProjetoRegistroSeiDto } from './dto/update-projeto.dto';
 import {
     ListProjetoDocumento,
     ListProjetoDto,
@@ -234,4 +234,17 @@ export class ProjetoController {
         await this.projetoSeiService.remove_sei(projeto, params.id2, user);
         return null;
     }
+
+    @Post(':id/clone-tarefas')
+    @ApiBearerAuth('access-token')
+    @ApiUnauthorizedResponse()
+    @Roles(...roles)
+    async cloneTarefas(
+        @Param() params: FindOneParams,
+        @Body() cloneProjetoTarefasdto: CloneProjetoTarefasDto,
+        @CurrentUser() user: PessoaFromJwt
+    ) {
+        await this.projetoService.cloneTarefas(params.id, cloneProjetoTarefasdto, user);
+    }
+    
 }
