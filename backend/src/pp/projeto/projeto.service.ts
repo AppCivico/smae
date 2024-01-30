@@ -1958,7 +1958,7 @@ export class ProjetoService {
 
     async cloneTarefas(projetoId: number, dto: CloneProjetoTarefasDto, user: PessoaFromJwt) {
 
-        await this.prisma.$queryRaw`CALL clone_projeto_tarefas(${dto.projeto_fonte_id}, ${projetoId});`
+        await this.prisma.$queryRaw`CALL clone_projeto_tarefas(${dto.projeto_fonte_id}::int, ${projetoId}::int);`
     }
 
 }
