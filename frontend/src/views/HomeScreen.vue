@@ -7,12 +7,14 @@ import { useRouter } from 'vue-router';
 const router = useRouter();
 
 const authStore = useAuthStore();
-const { user } = storeToRefs(authStore);
+const { user, temPermissãoPara } = storeToRefs(authStore);
 
 if (user.value?.flags?.panorama) {
-  router.replace({
-    name: 'panorama',
-  });
+  if (temPermissãoPara(['PDM.admin_cp', 'PDM.tecnico_cp', 'PDM.ponto_focal'])) {
+    router.replace({
+      name: 'panorama',
+    });
+  }
 }
 </script>
 <template>
