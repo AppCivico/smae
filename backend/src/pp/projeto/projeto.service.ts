@@ -1958,13 +1958,7 @@ export class ProjetoService {
 
     async cloneTarefas(projetoId: number, dto: CloneProjetoTarefasDto, user: PessoaFromJwt) {
 
-        async (prismaTx: Prisma.TransactionClient) => {
-            const tarefasCount = await prismaTx.tarefa.count({where: { projeto_id: projetoId, removido_em: null }});
-            if (tarefasCount > 0) throw new HttpException('Projeto já possui tarefas.', 400);
-
-            // TODO verificar órgãos
-            await prismaTx.$queryRaw`CALL clone_projeto_tarefas(${dto.projeto_fonte_id}, ${projetoId});`
-        }
+        await this.prisma.$queryRaw`CALL clone_projeto_tarefas(${dto.projeto_fonte_id}, ${projetoId});`
     }
 
 }
