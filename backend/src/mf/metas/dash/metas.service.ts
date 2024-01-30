@@ -119,7 +119,7 @@ export class MfDashMetasService {
 
         let listaMetasPendentesPf: number[] = [];
         if ((params.retornar_pendentes || params.retornar_atualizadas) && ehPontoFocal)
-            listaMetasPendentesPf = await this.metasPendentePontoFocal(config.pessoa_id, retornar_detalhes);
+            listaMetasPendentesPf = await this.metasPendentePontoFocal(config.pessoa_id, params);
 
         if (params.retornar_pendentes) {
             const pendentes = await this.prisma.metaStatusConsolidadoCf.findMany({
@@ -363,7 +363,14 @@ export class MfDashMetasService {
         return filterMetas.map((r) => r.id);
     }
 
-    private async metasPendentePontoFocal(pessoaId: number, retornarDetalhes: boolean): Promise<number[]> {
+    private async metasPendentePontoFocal(pessoaId: number, params: FilterMfDashMetasDto): Promise<number[]> {
+        const retornar_detalhes = !!params.retornar_detalhes;
+
+        if (params.filtro_ponto_focal_variavel === undefined) params.filtro_ponto_focal_variavel = true;
+
+        const pf_cronograma = !!params.filtro_ponto_focal_cronograma;
+        const pf_variavel = !!params.filtro_ponto_focal_variavel;
+
         const metasPendentes: { meta_id: number }[] = await this.prisma.$queryRaw`
         SELECT
             msc.meta_id
@@ -384,46 +391,60 @@ export class MfDashMetasService {
         AND
         (
             -- não considera o orçamento na tela de detalhes (monitoramento)
-            ( CASE WHEN ${retornarDetalhes}::boolean THEN FALSE ELSE msc.orcamento_pendente END )
-            OR
             (
-            -- se tem alguma variavel aguardando aguarda_complementacao, match
-              ARRAY(SELECT DISTINCT UNNEST(msc.variaveis_aguardando_complementacao))
-                && -- operador overlap/sobreposição
-              ARRAY(SELECT DISTINCT UNNEST(pap.variaveis))
+                CASE WHEN ${retornar_detalhes}::boolean THEN FALSE ELSE msc.orcamento_pendente END
             )
-            OR
+                OR
             (
-                CASE
-                -- se não tem nenhuma, não é pra dar como pendente
-                WHEN cardinality(pf.variaveis_ponto_focal) = 0 THEN
+                CASE WHEN ${pf_variavel}::boolean THEN
+                    (
+                    -- se tem alguma variavel aguardando aguarda_complementacao, match
+                      ARRAY(SELECT DISTINCT UNNEST(msc.variaveis_aguardando_complementacao))
+                        && -- operador overlap/sobreposição
+                      ARRAY(SELECT DISTINCT UNNEST(pap.variaveis))
+                    )
+                        OR
+                    (
+                        CASE
+                        -- se não tem nenhuma, não é pra dar como pendente
+                        WHEN cardinality(pf.variaveis_ponto_focal) = 0 THEN
+                            FALSE
+                            -- se tem algum item, pra cada um deles, inverte o resultado do bool_and
+                        WHEN cardinality(pf.variaveis_ponto_focal) > 0 THEN
+                            NOT (
+                                -- retorna TRUE se todos os verificados estão no set dos enviados
+                                SELECT
+                                    bool_and(element = ANY (msc.variaveis_enviadas))
+                                FROM
+                                    unnest(pf.variaveis_ponto_focal) AS element)
+                                -- se o banco usar químicos ruins e voltar um negativo, o default é false
+                            ELSE
+                                FALSE
+                        END
+                    )
+                ELSE
                     FALSE
-                    -- se tem algum item, pra cada um deles, inverte o resultado do bool_and
-                WHEN cardinality(pf.variaveis_ponto_focal) > 0 THEN
-                    NOT (
-                        -- retorna TRUE se todos os verificados estão no set dos enviados
-                        SELECT
-                            bool_and(element = ANY (msc.variaveis_enviadas))
-                        FROM
-                            unnest(pf.variaveis_ponto_focal) AS element)
-                        -- se o banco usar químicos ruins e voltar um negativo, o default é false
-                    ELSE
-                        FALSE
                 END
             )
-            OR
+                OR
             (
-            -- se tem alguma cronograma atrasado no inicio
-              ARRAY(SELECT DISTINCT UNNEST(msc.cronograma_atraso_inicio))
-                && -- operador overlap/sobreposição
-              ARRAY(SELECT DISTINCT UNNEST(pap.cronogramas_etapas))
-            )
-            OR
-            (
-            -- se tem alguma cronograma atrasado no fim
-              ARRAY(SELECT DISTINCT UNNEST(msc.cronograma_atraso_fim))
-                && -- operador overlap/sobreposição
-              ARRAY(SELECT DISTINCT UNNEST(pap.cronogramas_etapas))
+                CASE WHEN ${pf_cronograma}::boolean THEN
+                    (
+                    -- se tem alguma cronograma atrasado no inicio
+                      ARRAY(SELECT DISTINCT UNNEST(msc.cronograma_atraso_inicio))
+                        && -- operador overlap/sobreposição
+                      ARRAY(SELECT DISTINCT UNNEST(pap.cronogramas_etapas))
+                    )
+                        OR
+                    (
+                    -- se tem alguma cronograma atrasado no fim
+                      ARRAY(SELECT DISTINCT UNNEST(msc.cronograma_atraso_fim))
+                        && -- operador overlap/sobreposição
+                      ARRAY(SELECT DISTINCT UNNEST(pap.cronogramas_etapas))
+                    )
+                ELSE
+                    false
+                END
             )
         )
     `;
