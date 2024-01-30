@@ -23,7 +23,8 @@ const lista = computed(() => {
   const aRemover = perfil.value === 'ponto_focal'
     ? 'enviadas'
     : 'conferidas';
-  return listaDePendentes.value.map((x) => ({
+
+  const listaCompleta = listaDePendentes.value.map((x) => ({
     id: x.id,
     código: x.codigo,
     título: x.titulo,
@@ -42,9 +43,12 @@ const lista = computed(() => {
         }])
         : acc;
     }, [])
-      .sort((a, b) => a.código.localeCompare(b.código))
-    ,
+      .sort((a, b) => a.código.localeCompare(b.código)),
   }));
+
+  return perfil.value === 'ponto_focal'
+    ? listaCompleta.filter((x) => x.variáveis?.length)
+    : listaCompleta;
 });
 </script>
 <template>
