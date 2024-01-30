@@ -1,5 +1,5 @@
 <script setup>
-import { computed, ref } from 'vue';
+import { computed } from 'vue';
 import { storeToRefs } from 'pinia';
 import { usePanoramaStore } from '@/stores/panorama.store.ts';
 
@@ -8,9 +8,6 @@ const {
   perfil,
   variáveisPorId,
 } = storeToRefs(panoramaStore);
-
-const idsDosItensAbertos = ref([]);
-
 //  atualizadas
 //    ponto focal:
 //      - todas as conferidas
@@ -27,6 +24,11 @@ const listaDeAtualizadas = computed(() => {
     id: x.id,
     código: x.codigo,
     título: x.titulo,
+
+    riscoEnviado: x.risco_enviado,
+    fechamentoEnviado: x.fechamento_enviado.risco_enviado,
+    analiseQualitativaEnviada: x.analise_qualitativa_enviada.risco_enviado,
+
     variáveis: x.variaveis?.[aUsar]?.map((y) => ({
       id: y,
       código: variáveisPorId.value[y]?.codigo || '',
@@ -42,24 +44,50 @@ const listaDeAtualizadas = computed(() => {
       v-for="meta in listaDeAtualizadas"
       :key="meta.id"
     >
-      <input
-        :id="`atualizada--${meta.id}`"
-        v-model="idsDosItensAbertos"
-        type="checkbox"
-        :value="meta.id"
-        :arial-label="idsDosItensAbertos.includes(meta.id)
-          ? `fechar variáveis da meta ${meta.código}`
-          : `abrir variáveis da meta ${meta.código}`"
-        :title="idsDosItensAbertos.includes(meta.id)
-          ? `fechar variáveis da meta ${meta.código}`
-          : `abrir variáveis da meta ${meta.código}`"
-        :disabled="!meta.variáveis.length"
-        class="accordion-opener"
-      >
-      <label
-        :for="`atualizada--${meta.id}`"
+      <span
         class="block mb1 bgc50 br6 p1 g1 flex center"
       >
+        <template v-if="perfil !== 'ponto_focal'">
+          <span
+            v-if="meta.analiseQualitativaEnviada !== null"
+            class="f0 tipinfo"
+          >
+            <svg
+              class="meta__icone"
+              :color="meta.analiseQualitativaEnviada
+                ? '#8ec122'
+                : '#ee3b2b'"
+              width="24"
+              height="24"
+            ><use xlink:href="#i_iniciativa" /></svg><div>Qualificação</div>
+          </span>
+          <span
+            v-if="meta.riscoEnviado !== null"
+            class="f0 tipinfo"
+          >
+            <svg
+              class="meta__icone"
+              :color="meta.riscoEnviado
+                ? '#8ec122'
+                : '#ee3b2b'"
+              width="24"
+              height="24"
+            ><use xlink:href="#i_binoculars" /></svg><div>Análise de Risco</div>
+          </span>
+          <span
+            v-if="meta.fechamentoEnviado !== null"
+            class="f0 tipinfo"
+          >
+            <svg
+              class="meta__icone"
+              :color="meta.fechamentoEnviado
+                ? '#8ec122'
+                : '#ee3b2b'"
+              width="24"
+              height="24"
+            ><use xlink:href="#i_check" /></svg><div>Fechamento</div>
+          </span>
+        </template>
         <router-link
           :to="{
             name: 'monitoramentoDeEvoluçãoDeMetaEspecífica',
@@ -73,24 +101,7 @@ const listaDeAtualizadas = computed(() => {
         <small v-ScrollLockDebug>
           (<code>meta.atualizado_em:&nbsp;{{ meta.atualizado_em }}</code>)
         </small>
-      </label>
-      <Transition
-        v-if="meta.variáveis.length"
-        name="fade"
-      >
-        <ul
-          v-if="idsDosItensAbertos.includes(meta.id)"
-          class="pl2"
-        >
-          <li
-            v-for="variável in meta.variáveis"
-            :key="variável.id"
-            class="mb1 bgc50 br6 p1 flex start"
-          >
-            {{ variável.código || variável.id }} - {{ variável.título }}
-          </li>
-        </ul>
-      </Transition>
+      </span>
     </li>
   </ul>
 </template>
