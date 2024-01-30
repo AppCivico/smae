@@ -1,13 +1,14 @@
 <script setup>
+import FeedbackEmptyList from '@/components/FeedbackEmptyList.vue';
 import { computed, ref } from 'vue';
 import { storeToRefs } from 'pinia';
 import { usePanoramaStore } from '@/stores/panorama.store.ts';
 
 const panoramaStore = usePanoramaStore();
 const {
-  listaDePendentes,
   perfil,
   variáveisPorId,
+  chamadasPendentes,
 } = storeToRefs(panoramaStore);
 
 const idsDosItensAbertos = ref([]);
@@ -17,14 +18,14 @@ const idsDosItensAbertos = ref([]);
 //      - total - enviadas + aguardando complementação
 //    para os outros:
 //      - total - conferidas + aguardando complementação
-const lista = computed(() => {
+const listaDePendentes = computed(() => {
   if (!perfil.value) return [];
 
   const aRemover = perfil.value === 'ponto_focal'
     ? 'enviadas'
     : 'conferidas';
 
-  return listaDePendentes.value.map((x) => ({
+  return panoramaStore.listaDePendentes.map((x) => ({
     id: x.id,
     código: x.codigo,
     título: x.titulo,
@@ -53,171 +54,183 @@ const lista = computed(() => {
 });
 </script>
 <template>
-  <ul
-    class="uc w700"
-  >
-    <li
-      v-for="meta in lista"
-      :key="meta.id"
+  <Transition name="fade">
+    <LoadingComponent v-if="chamadasPendentes.lista" />
+
+    <FeedbackEmptyList
+      v-else-if="!listaDePendentes.length"
+      título="Bom trabalho!"
+      tipo="positivo"
+      mensagem="Você não possui pendências!"
+    />
+
+    <ul
+      v-else
+      class="uc w700"
     >
-      <input
-        :id="`pendente--${meta.id}`"
-        v-model="idsDosItensAbertos"
-        type="checkbox"
-        :value="meta.id"
-        :arial-label="idsDosItensAbertos.includes(meta.id)
-          ? `fechar variáveis da meta ${meta.código}`
-          : `abrir variáveis da meta ${meta.código}`"
-        :title="idsDosItensAbertos.includes(meta.id)
-          ? `fechar variáveis da meta ${meta.código}`
-          : `abrir variáveis da meta ${meta.código}`"
-        :disabled="!meta.variáveis.length"
-        class="accordion-opener"
+      <li
+        v-for="meta in listaDePendentes"
+        :key="meta.id"
       >
-      <label
-        :for="`pendente--${meta.id}`"
-        class="block mb1 bgc50 br6 p1 g1 flex center"
-      >
-        <template v-if="perfil !== 'ponto_focal'">
-          <router-link
-            v-if="meta.analiseQualitativaEnviada !== null"
-            :to="{
-              name: 'monitoramentoDeEvoluçãoDeMetaEspecífica',
-              params: {
-                meta_id: meta.id
-              }
-            }"
-            class="f0 tipinfo"
-          >
-            <svg
-              class="meta__icone"
-              :color="meta.analiseQualitativaEnviada
-                ? '#8ec122'
-                : '#ee3b2b'"
-              width="24"
-              height="24"
-            ><use xlink:href="#i_iniciativa" /></svg><div>Qualificação</div>
-          </router-link>
-          <router-link
-            v-if="meta.riscoEnviado !== null"
-            :to="{
-              name: 'monitoramentoDeEvoluçãoDeMetaEspecífica',
-              params: {
-                meta_id: meta.id
-              }
-            }"
-            class="f0 tipinfo"
-          >
-            <svg
-              class="meta__icone"
-              :color="meta.riscoEnviado
-                ? '#8ec122'
-                : '#ee3b2b'"
-              width="24"
-              height="24"
-            ><use xlink:href="#i_binoculars" /></svg><div>Análise de Risco</div>
-          </router-link>
-          <router-link
-            v-if="meta.fechamentoEnviado !== null"
-            :to="{
-              name: 'monitoramentoDeEvoluçãoDeMetaEspecífica',
-              params: {
-                meta_id: meta.id
-              }
-            }"
-            class="f0 tipinfo"
-          >
-            <svg
-              class="meta__icone"
-              :color="meta.fechamentoEnviado
-                ? '#8ec122'
-                : '#ee3b2b'"
-              width="24"
-              height="24"
-            ><use xlink:href="#i_check" /></svg><div>Fechamento</div>
-          </router-link>
-        </template>
-        {{ meta.código }} - {{ meta.título }}
-        <small v-ScrollLockDebug>
-          (<code>meta.atualizado_em:&nbsp;{{ meta.atualizado_em }}</code>)
-        </small>
-      </label>
-      <Transition
-        v-if="meta.variáveis.length"
-        name="fade"
-      >
-        <ul
-          v-if="idsDosItensAbertos.includes(meta.id)"
-          class="pl2"
+        <input
+          :id="`pendente--${meta.id}`"
+          v-model="idsDosItensAbertos"
+          type="checkbox"
+          :value="meta.id"
+          :arial-label="idsDosItensAbertos.includes(meta.id)
+            ? `fechar variáveis da meta ${meta.código}`
+            : `abrir variáveis da meta ${meta.código}`"
+          :title="idsDosItensAbertos.includes(meta.id)
+            ? `fechar variáveis da meta ${meta.código}`
+            : `abrir variáveis da meta ${meta.código}`"
+          :disabled="!meta.variáveis.length"
+          class="accordion-opener"
         >
-          <li
-            v-for="variável in meta.variáveis"
-            :key="variável.id"
-            class="mb1 bgc50 br6 p1 flex start"
-          >
-            <span
-              v-if="variável.aguardaPreenchimento"
-              class="tipinfo ib mr1 f0"
-            >
-              <svg
-                width="20"
-                height="20"
-                color="#f2890d"
-              ><use xlink:href="#i_alert" /></svg>
-              <div>Aguarda preenchimento</div>
-            </span>
-            <span
-              v-else-if="variável.aguardaComplementação"
-              class="tipinfo ib mr1 f0"
-            >
-              <svg
-                width="20"
-                height="20"
-                color="#ee3b2b"
-              ><use xlink:href="#i_alert" /></svg>
-              <div>Aguarda coleta</div>
-            </span>
-            <span
-              v-else-if="variável.aguardaConferência"
-              class="tipinfo ib mr1 f0"
-            >
-              <svg
-                width="20"
-                height="20"
-                color="#4c626d"
-              ><use xlink:href="#i_alert" /></svg>
-              <div>Aguarda complementação</div>
-            </span>
-            <span
-              v-else-if="variável.aguardaEnvio"
-              class="tipinfo ib mr1 f0"
-            >
-              <svg
-                width="20"
-                height="20"
-                color="#f2890d"
-              ><use xlink:href="#i_circle" /></svg>
-              <div>Aguarda envio</div>
-            </span>
+        <label
+          :for="`pendente--${meta.id}`"
+          class="block mb1 bgc50 br6 p1 g1 flex center"
+        >
+          <template v-if="perfil !== 'ponto_focal'">
             <router-link
+              v-if="meta.analiseQualitativaEnviada !== null"
               :to="{
                 name: 'monitoramentoDeEvoluçãoDeMetaEspecífica',
                 params: {
                   meta_id: meta.id
                 }
               }"
+              class="f0 tipinfo"
             >
-              {{ variável.código || variável.id }} - {{ variável.título }}
+              <svg
+                class="meta__icone"
+                :color="meta.analiseQualitativaEnviada
+                  ? '#8ec122'
+                  : '#ee3b2b'"
+                width="24"
+                height="24"
+              ><use xlink:href="#i_iniciativa" /></svg><div>Qualificação</div>
             </router-link>
-            <small v-ScrollLockDebug>
-              (<code>aguardaComplementação:&nbsp;{{ variável.aguardaComplementação }}</code>)
-              (<code>aguardaConferência:&nbsp;{{ variável.aguardaConferência }}</code>)
-              (<code>aguardaEnvio:&nbsp;{{ variável.aguardaEnvio }}</code>)
-              (<code>aguardaPreenchimento:&nbsp;{{ variável.aguardaPreenchimento }}</code>)
-            </small>
-          </li>
-        </ul>
-      </Transition>
-    </li>
-  </ul>
+            <router-link
+              v-if="meta.riscoEnviado !== null"
+              :to="{
+                name: 'monitoramentoDeEvoluçãoDeMetaEspecífica',
+                params: {
+                  meta_id: meta.id
+                }
+              }"
+              class="f0 tipinfo"
+            >
+              <svg
+                class="meta__icone"
+                :color="meta.riscoEnviado
+                  ? '#8ec122'
+                  : '#ee3b2b'"
+                width="24"
+                height="24"
+              ><use xlink:href="#i_binoculars" /></svg><div>Análise de Risco</div>
+            </router-link>
+            <router-link
+              v-if="meta.fechamentoEnviado !== null"
+              :to="{
+                name: 'monitoramentoDeEvoluçãoDeMetaEspecífica',
+                params: {
+                  meta_id: meta.id
+                }
+              }"
+              class="f0 tipinfo"
+            >
+              <svg
+                class="meta__icone"
+                :color="meta.fechamentoEnviado
+                  ? '#8ec122'
+                  : '#ee3b2b'"
+                width="24"
+                height="24"
+              ><use xlink:href="#i_check" /></svg><div>Fechamento</div>
+            </router-link>
+          </template>
+          {{ meta.código }} - {{ meta.título }}
+          <small v-ScrollLockDebug>
+            (<code>meta.atualizado_em:&nbsp;{{ meta.atualizado_em }}</code>)
+          </small>
+        </label>
+        <Transition
+          v-if="meta.variáveis.length"
+          name="fade"
+        >
+          <ul
+            v-if="idsDosItensAbertos.includes(meta.id)"
+            class="pl2"
+          >
+            <li
+              v-for="variável in meta.variáveis"
+              :key="variável.id"
+              class="mb1 bgc50 br6 p1 flex start"
+            >
+              <span
+                v-if="variável.aguardaPreenchimento"
+                class="tipinfo ib mr1 f0"
+              >
+                <svg
+                  width="20"
+                  height="20"
+                  color="#f2890d"
+                ><use xlink:href="#i_alert" /></svg>
+                <div>Aguarda preenchimento</div>
+              </span>
+              <span
+                v-else-if="variável.aguardaComplementação"
+                class="tipinfo ib mr1 f0"
+              >
+                <svg
+                  width="20"
+                  height="20"
+                  color="#ee3b2b"
+                ><use xlink:href="#i_alert" /></svg>
+                <div>Aguarda coleta</div>
+              </span>
+              <span
+                v-else-if="variável.aguardaConferência"
+                class="tipinfo ib mr1 f0"
+              >
+                <svg
+                  width="20"
+                  height="20"
+                  color="#4c626d"
+                ><use xlink:href="#i_alert" /></svg>
+                <div>Aguarda complementação</div>
+              </span>
+              <span
+                v-else-if="variável.aguardaEnvio"
+                class="tipinfo ib mr1 f0"
+              >
+                <svg
+                  width="20"
+                  height="20"
+                  color="#f2890d"
+                ><use xlink:href="#i_circle" /></svg>
+                <div>Aguarda envio</div>
+              </span>
+              <router-link
+                :to="{
+                  name: 'monitoramentoDeEvoluçãoDeMetaEspecífica',
+                  params: {
+                    meta_id: meta.id
+                  }
+                }"
+              >
+                {{ variável.código || variável.id }} - {{ variável.título }}
+              </router-link>
+              <small v-ScrollLockDebug>
+                (<code>aguardaComplementação:&nbsp;{{ variável.aguardaComplementação }}</code>)
+                (<code>aguardaConferência:&nbsp;{{ variável.aguardaConferência }}</code>)
+                (<code>aguardaEnvio:&nbsp;{{ variável.aguardaEnvio }}</code>)
+                (<code>aguardaPreenchimento:&nbsp;{{ variável.aguardaPreenchimento }}</code>)
+              </small>
+            </li>
+          </ul>
+        </Transition>
+      </li>
+    </ul>
+  </Transition>
 </template>
