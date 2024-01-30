@@ -6,9 +6,28 @@ import { usePanoramaStore } from '@/stores/panorama.store.ts';
 const panoramaStore = usePanoramaStore();
 const {
   listaDePendentes,
+  ancestraisPorEtapa,
 } = storeToRefs(panoramaStore);
 
 const idsDosItensAbertos = ref([]);
+
+const gerarURL = (etapaId) => {
+  let caminho = '';
+
+  if (ancestraisPorEtapa.value[etapaId]?.meta_id) {
+    caminho += `/metas/${ancestraisPorEtapa.value[etapaId]?.meta_id}`;
+  }
+
+  if (ancestraisPorEtapa.value[etapaId]?.iniciativa_id) {
+    caminho += `/iniciativas/${ancestraisPorEtapa.value[etapaId].iniciativa_id}`;
+  }
+
+  if (ancestraisPorEtapa.value[etapaId]?.atividade_id) {
+    caminho += `/atividades/${ancestraisPorEtapa.value[etapaId].atividade_id}`;
+  }
+
+  return caminho;
+};
 
 //  pendentes:
 //    para o ponto focal:
@@ -23,6 +42,7 @@ const lista = computed(() => listaDePendentes.value
       título: cur.titulo,
       cronogramas: cur.cronograma.detalhes.map((y) => ({
         ...y,
+        caminho: gerarURL(y.id),
         inícioPendente: cur.cronograma.atraso_inicio.includes(y.id),
         términoPendente: cur.cronograma.atraso_fim.includes(y.id),
       })),
@@ -111,7 +131,15 @@ const lista = computed(() => listaDePendentes.value
               ><use xlink:href="#i_circle" /></svg>
               <div>Término pendente</div>
             </span>
-            {{ tarefa.código || tarefa.id }} - {{ tarefa.titulo }}
+            <router-link
+              v-if="tarefa.caminho"
+              :to="tarefa.caminho"
+            >
+              {{ tarefa.código || tarefa.id }} - {{ tarefa.titulo }}
+            </router-link>
+            <template v-else>
+              {{ tarefa.código || tarefa.id }} - {{ tarefa.titulo }}
+            </template>
           </li>
         </ul>
       </Transition>
