@@ -109,6 +109,16 @@ export class FilterMfDashMetasDto {
     retornar_detalhes?: boolean;
 
     @IsOptional()
+    @IsBoolean()
+    @Transform(({ value }: any) => value === 'true')
+    filtro_ponto_focal_cronograma?: boolean;
+
+    @IsOptional()
+    @IsBoolean()
+    @Transform(({ value }: any) => value === 'true')
+    filtro_ponto_focal_variavel?: boolean;
+
+    @IsOptional()
     @IsArray()
     @IsInt({ each: true })
     @Transform(NumberArrayTransform)
