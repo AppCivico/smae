@@ -91,7 +91,10 @@ const lista = computed(() => listaDePendentes.value
         >
           {{ meta.código }} - {{ meta.título }}
 
-          <small v-ScrollLockDebug>
+          <small
+            v-if="meta.atualizadoEm"
+            v-ScrollLockDebug
+          >
             (<code>meta.atualizado_em:&nbsp;{{ meta.atualizadoEm }}</code>)
           </small>
         </label>

@@ -114,7 +114,10 @@ const listaDeAtualizadas = computed(() => {
           >
             {{ meta.código }} - {{ meta.título }}
           </router-link>
-          <small v-ScrollLockDebug>
+          <small
+            v-if="meta.atualizadoEm"
+            v-ScrollLockDebug
+          >
             (<code>meta.atualizado_em:&nbsp;{{ meta.atualizadoEm }}</code>)
           </small>
         </span>

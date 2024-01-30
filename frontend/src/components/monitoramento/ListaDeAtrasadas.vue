@@ -53,7 +53,10 @@ const idsDosItensAbertos = ref([]);
           class="block mb1 bgc50 br6 p1 flex start"
         >
           {{ meta.codigo }} - {{ meta.titulo }}
-          <small v-ScrollLockDebug>
+          <small
+            v-if="meta.atualizado_em"
+            v-ScrollLockDebug
+          >
             (<code>meta.atualizado_em:&nbsp;{{ meta.atualizado_em }}</code>)
           </small>
         </label>
