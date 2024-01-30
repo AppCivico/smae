@@ -22,7 +22,7 @@ import { FindOneParams, FindTwoParams } from '../../common/decorators/find-param
 import { RecordWithId } from '../../common/dto/record-with-id.dto';
 import { CreateProjetoDocumentDto, CreateProjetoDto, CreateProjetoSeiDto } from './dto/create-projeto.dto';
 import { FilterProjetoDto } from './dto/filter-projeto.dto';
-import { CloneProjetoTarefasDto, UpdateProjetoDocumentDto, UpdateProjetoDto, UpdateProjetoRegistroSeiDto } from './dto/update-projeto.dto';
+import { CloneProjetoTarefasDto, TransferProjetoPortfolioDto, UpdateProjetoDocumentDto, UpdateProjetoDto, UpdateProjetoRegistroSeiDto } from './dto/update-projeto.dto';
 import {
     ListProjetoDocumento,
     ListProjetoDto,
@@ -245,6 +245,18 @@ export class ProjetoController {
         @CurrentUser() user: PessoaFromJwt
     ) {
         await this.projetoService.cloneTarefas(params.id, cloneProjetoTarefasdto, user);
+    }
+
+    @Post(':id/transferir-portfolio')
+    @ApiBearerAuth('access-token')
+    @ApiUnauthorizedResponse()
+    @Roles(...roles)
+    async transferPortfolio(
+        @Param() params: FindOneParams,
+        @Body() transferProjetoPortfolio: TransferProjetoPortfolioDto,
+        @CurrentUser() user: PessoaFromJwt
+    ) {
+        await this.projetoService.transferPortfolio(params.id, transferProjetoPortfolio, user);
     }
     
 }

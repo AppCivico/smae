@@ -104,10 +104,11 @@ export class ListProjetoSeiDto {
     linhas: ProjetoSeiDto[];
 }
 
-export class IdTituloNivelMaxDto {
+export class IdTituloNivelMaxRegDto {
     id: number;
     titulo: string;
     nivel_maximo_tarefa: number;
+    nivel_regionalizacao: number;
     orcamento_execucao_disponivel_meses: number[];
 }
 
@@ -134,7 +135,7 @@ export class ProjetoDetailDto {
     fase: ProjetoFase;
     resumo: string;
     portfolio_id: number;
-    portfolio: IdTituloNivelMaxDto;
+    portfolio: IdTituloNivelMaxRegDto;
     codigo: string | null;
     objeto: string;
     objetivo: string;

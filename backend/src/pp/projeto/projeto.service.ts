@@ -14,7 +14,7 @@ import { PortfolioDto } from '../portfolio/entities/portfolio.entity';
 import { PortfolioService } from '../portfolio/portfolio.service';
 import { CreateProjetoDocumentDto, CreateProjetoDto } from './dto/create-projeto.dto';
 import { FilterProjetoDto } from './dto/filter-projeto.dto';
-import { CloneProjetoTarefasDto, UpdateProjetoDocumentDto, UpdateProjetoDto } from './dto/update-projeto.dto';
+import { CloneProjetoTarefasDto, TransferProjetoPortfolioDto, UpdateProjetoDocumentDto, UpdateProjetoDto } from './dto/update-projeto.dto';
 import {
     ProjetoDetailDto,
     ProjetoDocumentoDto,
@@ -754,6 +754,7 @@ export class ProjetoService {
                         titulo: true,
                         nivel_maximo_tarefa: true,
                         orcamento_execucao_disponivel_meses: true,
+                        nivel_regionalizacao: true,
                         orgaos: {
                             select: {
                                 orgao_id: true,
@@ -1959,6 +1960,85 @@ export class ProjetoService {
     async cloneTarefas(projetoId: number, dto: CloneProjetoTarefasDto, user: PessoaFromJwt) {
 
         await this.prisma.$queryRaw`CALL clone_projeto_tarefas(${dto.projeto_fonte_id}::int, ${projetoId}::int);`
+    }
+
+    async transferPortfolio(projetoId: number, dto: TransferProjetoPortfolioDto, user: PessoaFromJwt) {
+        const projeto = await this.findOne(projetoId, user, 'ReadWrite');
+
+        async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
+            const portfolioAntigo = projeto.portfolio;
+
+            const portfolioNovo = await prismaTx.portfolio
+              .findFirstOrThrow({
+                where: { id: dto.portfolio_id, removido_em: null },
+                select: {
+                    id: true,
+                    nivel_maximo_tarefa: true,
+                    nivel_regionalizacao: true,
+                    orcamento_execucao_disponivel_meses: true,
+                    orgaos: {
+                        select: { id: true }
+                    }
+                }})
+              .catch(() => {throw new HttpException('portfolio_id| Não foi encontrado', 400)});
+
+            // Nível de tarefas, do port novo, não pode ser menor.
+            if (portfolioNovo.nivel_maximo_tarefa < portfolioAntigo.nivel_maximo_tarefa)
+                throw new HttpException('portfolio_id| Portfolio novo deve ter nível máximo de tarefa maior ou igual ao portfolio original.', 400);
+
+            // Nível de regionalização deve ser igual.
+            if (portfolioNovo.nivel_regionalizacao != portfolioAntigo.nivel_regionalizacao)
+                throw new HttpException('portfolio_id| Portfolio novo deve ter mesmo nível de regionalização.', 400);
+
+            // Meses disponíveis para orçamento devem ser iguais.
+            if (!assertOrcamentoDisponivelEqual(portfolioNovo.orcamento_execucao_disponivel_meses, portfolioAntigo.orcamento_execucao_disponivel_meses))
+                throw new HttpException('portfolio_id| Portfolio novo deve ter mesmos meses disponíveis para orçamento.', 400);
+            
+            // Por agora o órgão gestor não será modificado.
+            // Portanto deve ser verificado se ele está presente nos órgãos do novo port.
+            if (!portfolioNovo.orgaos.some(o => {o.id == projeto.orgao_gestor.id}))
+                throw new HttpException('portfolio_id| Órgão gestor do Projeto deve estar no Portfolio novo.', 400);
+
+            const operations = [];
+
+            operations.push(prismaTx.projeto.update({ where: { id: projetoId }, data: { portfolio_id: dto.portfolio_id } }));
+
+            // Números sequenciais utilizados pelo Projeto
+            operations.push(prismaTx.projetoNumeroSequencial.updateMany({
+                where: {
+                    portfolio_id: portfolioAntigo.id,
+                    projeto_id: projetoId
+                },
+                data: { portfolio_id: portfolioNovo.id }
+            }));
+
+            // Removendo projeto de grupos de Portfolio.
+            operations.push(prismaTx.projetoGrupoPortfolio.updateMany({
+                where: { projeto_id: projetoId },
+                data: {
+                    removido_em: new Date(Date.now()),
+                    removido_por: user.id
+                }
+            }));
+
+            await Promise.all(operations);
+
+            return { id: projeto.id }
+        }
+
+        function assertOrcamentoDisponivelEqual(novo: number[], velho: number[]): boolean {
+            if (novo.length !== velho.length) {
+                return false;
+            }
+        
+            for (let i = 0; i < novo.length; i++) {
+                if (novo[i] !== velho[i]) {
+                    return false;
+                }
+            }
+        
+            return true;
+        }
     }
 
 }
