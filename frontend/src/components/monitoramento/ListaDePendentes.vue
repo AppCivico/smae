@@ -30,8 +30,8 @@ const lista = computed(() => {
     título: x.titulo,
 
     riscoEnviado: x.risco_enviado,
-    fechamentoEnviado: x.fechamento_enviado.risco_enviado,
-    analiseQualitativaEnviada: x.analise_qualitativa_enviada.risco_enviado,
+    fechamentoEnviado: x.fechamento_enviado,
+    analiseQualitativaEnviada: x.analise_qualitativa_enviada,
 
     variáveis: x.variaveis?.total?.reduce((acc, cur) => {
       const manter = x.variaveis.aguardando_complementacao.includes(cur);
