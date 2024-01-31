@@ -480,7 +480,7 @@ BEGIN
     select meta_id into v_meta_id
     from view_etapa_rel_meta where etapa_id = NEW.id;
 
-    PERFORM add_refresh_meta_task(v_meta_id);
+    CALL add_refresh_meta_task(v_meta_id);
 
     RETURN NEW;
 END;
@@ -494,7 +494,7 @@ EXECUTE FUNCTION f_etapa_refresh_meta_trigger();
 CREATE OR REPLACE FUNCTION f_meta_refresh_meta_trigger()
 RETURNS TRIGGER AS $$
 BEGIN
-    PERFORM add_refresh_meta_task(NEW.id);
+    CALL add_refresh_meta_task(NEW.id);
 
     RETURN NEW;
 END;
@@ -517,7 +517,7 @@ BEGIN
         v_meta_id := (SELECT meta_id FROM mv_variavel_pdm WHERE variavel_id = NEW.variavel_id);
     END IF;
 
-    PERFORM add_refresh_meta_task(v_meta_id);
+    CALL add_refresh_meta_task(v_meta_id);
 
     -- For INSERT or UPDATE, return NEW
     IF TG_OP = 'DELETE' THEN
@@ -549,7 +549,7 @@ BEGIN
         v_meta_id := (SELECT meta_id FROM mv_variavel_pdm WHERE variavel_id = NEW.variavel_id);
     END IF;
 
-    PERFORM add_refresh_meta_task(v_meta_id);
+    CALL add_refresh_meta_task(v_meta_id);
 
     -- For INSERT or UPDATE, return NEW
     IF TG_OP = 'DELETE' THEN
@@ -574,7 +574,7 @@ BEGIN
   IF TG_OP = 'UPDATE' AND (OLD.removido_em IS DISTINCT FROM NEW.removido_em) THEN
     REFRESH MATERIALIZED VIEW mv_variavel_pdm;
     v_meta_id := (SELECT me.meta_id FROM iniciativa me WHERE me.id = NEW.iniciativa_id);
-    PERFORM add_refresh_meta_task(v_meta_id);
+    CALL add_refresh_meta_task(v_meta_id);
   END IF;
 
   RETURN NEW;
@@ -588,7 +588,7 @@ BEGIN
   IF TG_OP = 'UPDATE' AND (OLD.removido_em IS DISTINCT FROM NEW.removido_em) THEN
     REFRESH MATERIALIZED VIEW mv_variavel_pdm;
 
-    PERFORM add_refresh_meta_task(NEW.meta_id);
+    CALL add_refresh_meta_task(NEW.meta_id);
   END IF;
   RETURN NEW;
 END;
@@ -603,7 +603,7 @@ BEGIN
     REFRESH MATERIALIZED VIEW mv_variavel_pdm;
 
     v_meta_id := (SELECT meta_id FROM mv_variavel_pdm WHERE indicador_id = NEW.id);
-    PERFORM add_refresh_meta_task(v_meta_id);
+    CALL add_refresh_meta_task(v_meta_id);
 
   END IF;
   RETURN NEW;
@@ -621,7 +621,7 @@ BEGIN
         v_meta_id := NEW.meta_id;
     END IF;
 
-    PERFORM add_refresh_meta_task(v_meta_id);
+    CALL add_refresh_meta_task(v_meta_id);
 
     -- For INSERT or UPDATE, return NEW
     IF TG_OP = 'DELETE' THEN
