@@ -110,6 +110,14 @@ defineProps({
       >
         Conferir
       </li>
+
+      <li
+        v-if="perfil && perfil !== 'ponto_focal'"
+        class="legenda__item w900"
+        style="color: #8ec122"
+      >
+        Atualizado
+      </li>
     </ul>
   </div>
 </template>
