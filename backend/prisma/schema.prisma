@@ -3757,6 +3757,7 @@ model MetaStatusConsolidadoCf {
     cronograma_atraso_fim               Int[]
     cronograma_atraso_inicio            Int[]
     orcamento_total                     Int[]
+    orcamento_pendentes                 Int[]
     orcamento_preenchido                Int[]
 
     analise_qualitativa_enviada Boolean?
