@@ -330,7 +330,17 @@ export class MfDashMetasService {
     }
 
     private async aplicaFiltroMetas(params: FilterMfDashMetasDto, config: MfPessoaAcessoPdm): Promise<number[]> {
-        const metas = [...config.metas_cronograma, ...config.metas_variaveis];
+        const metas: number[] = [];
+
+        // se quer filtrar pelo cronograma, ou não é o ponto focal, adiciona tudo o que ele pode ver
+        // isso é importante pro caso do not-in do atualizadas
+        if (params.filtro_ponto_focal_cronograma || config.perfil != 'ponto_focal') {
+            metas.push(...config.metas_cronograma);
+        }
+
+        if (params.filtro_ponto_focal_variavel || config.perfil != 'ponto_focal') {
+            metas.push(...config.metas_variaveis);
+        }
 
         const filterMetas = await this.prisma.meta.findMany({
             where: {
