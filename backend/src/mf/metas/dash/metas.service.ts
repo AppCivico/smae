@@ -453,21 +453,11 @@ export class MfDashMetasService {
     }
 
     async etapaHierarquia(filters: FilterMfDashEtapasDto): Promise<MfDashEtapaHierarquiaDto[]> {
-        // confiando no DTO pra validar que só chegou array de number
-        const metasPendentes: MfDashEtapaHierarquiaDto[] = await this.prisma.$queryRawUnsafe(`
-            select
-                b.id as etapa_id,
-                m1.id as meta_id,
-                i1.id as iniciativa_id,
-                a1.id as atividade_id
-            from etapa b
-            join cronograma c on c.id = b.cronograma_id
-            left join atividade a1 on c.atividade_id is not null and a1.id = c.atividade_id
-            left join iniciativa i1 on i1.id = coalesce( c.iniciativa_id, a1.iniciativa_id )
-            join meta m1 on m1.id = coalesce( c.meta_id, i1.meta_id )
-            where  b.removido_em is null
-            ${filters.etapas_ids ? `and b.id IN (${filters.etapas_ids.join(',')})` : ''}
-        `);
+        const metasPendentes = await this.prisma.view_etapa_rel_meta.findMany({
+            where: {
+                etapa_id: filters.etapas_ids ? { in: filters.etapas_ids } : undefined,
+            },
+        });
 
         return metasPendentes;
     }

@@ -228,7 +228,7 @@ export class ReportsService {
     private decodeNextPageToken(jwt: string | undefined): NextPageTokenJwtBody | null {
         let tmp: NextPageTokenJwtBody | null = null;
         try {
-            if (jwt) tmp = this.jwtService.decode(jwt) as NextPageTokenJwtBody;
+            if (jwt) tmp = this.jwtService.verify(jwt) as NextPageTokenJwtBody;
         } catch {
             throw new HttpException('Param next_page_token is invalid', 400);
         }

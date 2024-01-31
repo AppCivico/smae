@@ -312,7 +312,7 @@ export class UploadService {
     checkUploadOrDownloadToken(token: string): number {
         let decoded: UploadBody | null = null;
         try {
-            decoded = this.jwtService.decode(token) as UploadBody;
+            decoded = this.jwtService.verify(token) as UploadBody;
         } catch (error) {
             console.log(error);
         }
@@ -351,7 +351,7 @@ export class UploadService {
     checkDownloadToken(downloadToken: string): number {
         let decoded: UploadBody | null = null;
         try {
-            decoded = this.jwtService.decode(downloadToken) as DownloadBody;
+            decoded = this.jwtService.verify(downloadToken) as DownloadBody;
         } catch (error) {
             console.log(error);
         }

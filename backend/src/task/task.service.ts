@@ -1,21 +1,20 @@
 import { HttpException, Inject, Injectable, Logger, forwardRef } from '@nestjs/common';
-import { CreateTaskDto } from './dto/create-task.dto';
-import { TaskSingleDto, TaskableService } from './entities/task.entity';
-import { Prisma, task_queue, task_type } from '@prisma/client';
-import { ParseParams } from './task.parseParams';
-
-import { fork } from 'child_process';
-import { resolve as resolvePath } from 'path';
-
-import { PrismaService } from '../prisma/prisma.service';
-import { EchoService } from './echo/echo.service';
-import { CrontabIsEnabled } from '../common/CrontabIsEnabled';
-import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
-import { RecordWithId } from '../common/dto/record-with-id.dto';
-import { TASK_JOB_LOCK_NUMBER } from '../common/dto/locks';
 import { Interval } from '@nestjs/schedule';
+import { Prisma, task_queue, task_type } from '@prisma/client';
+import { fork } from 'child_process';
 import { DateTime } from 'luxon';
+import { resolve as resolvePath } from 'path';
+import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
+import { CrontabIsEnabled } from '../common/CrontabIsEnabled';
+import { TASK_JOB_LOCK_NUMBER } from '../common/dto/locks';
+import { RecordWithId } from '../common/dto/record-with-id.dto';
+import { PrismaService } from '../prisma/prisma.service';
+import { CreateTaskDto } from './dto/create-task.dto';
+import { EchoService } from './echo/echo.service';
+import { TaskSingleDto, TaskableService } from './entities/task.entity';
+import { RefreshMetaService } from './refresh_meta/refresh-meta.service';
 import { RefreshMvService } from './refresh_mv/refresh-mv.service';
+import { ParseParams } from './task.parseParams';
 function areJsonObjectsEquivalent(obj1: object, obj2: object): boolean {
     return JSON.stringify(sortObjectKeys(obj1)) === JSON.stringify(sortObjectKeys(obj2));
 }
@@ -48,7 +47,8 @@ export class TaskService {
     constructor(
         private readonly prisma: PrismaService,
         @Inject(forwardRef(() => EchoService)) private readonly echoService: EchoService,
-        @Inject(forwardRef(() => RefreshMvService)) private readonly refreshMvService: RefreshMvService
+        @Inject(forwardRef(() => RefreshMvService)) private readonly refreshMvService: RefreshMvService,
+        @Inject(forwardRef(() => RefreshMetaService)) private readonly refreshMetaService: RefreshMetaService
     ) {
         this.enabled = CrontabIsEnabled('task');
         this.logger.debug(`task crontab enabled? ${this.enabled}`);
@@ -355,7 +355,8 @@ export class TaskService {
     private shouldRunInForeground(type: task_type): boolean {
         const map: Partial<Record<task_type, boolean>> = {
             echo: true,
-            refresh_mv: true,
+            refresh_mv: true, // só chama uma função no banco, n tem risco de leak
+            refresh_meta: true, // tbm só chama função no banco
         };
 
         if (map[type]) return true;
@@ -386,6 +387,9 @@ export class TaskService {
                 break;
             case 'refresh_mv':
                 service = this.refreshMvService;
+                break;
+            case 'refresh_meta':
+                service = this.refreshMetaService;
                 break;
             default:
                 service satisfies never | null;

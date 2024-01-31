@@ -1149,7 +1149,7 @@ export class VariavelService {
                 continue;
             let referenciaDecoded: SerieJwt | null = null;
             try {
-                referenciaDecoded = this.jwtService.decode(valor.referencia) as SerieJwt;
+                referenciaDecoded = this.jwtService.verify(valor.referencia) as SerieJwt;
             } catch (error) {
                 this.logger.error(error);
             }
