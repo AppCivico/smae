@@ -299,9 +299,10 @@ BEGIN
         SELECT unnest(v_orc_preenchido)
     ) = ARRAY[]::int[];
 
-    IF (v_orcamento_pendente) THEN
-        v_pendente_cp := true;
-    END IF;
+    -- deixando separado, pois no detalhe (monitoramento) não retronar os v_orcamento_pendente
+    --IF (v_orcamento_pendente) THEN
+        --v_pendente_cp := true;
+    --END IF;
 
     --
     delete from meta_status_consolidado_cf where meta_id = pMetaId;

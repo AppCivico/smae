@@ -127,7 +127,14 @@ export class MfDashMetasService {
                     ciclo_fisico_id: cicloFisicoId,
                     meta_id: { in: metas },
 
-                    pendente_cp: ehPontoFocal ? undefined : true,
+                    OR: ehPontoFocal
+                        ? undefined
+                        : [
+                              { pendente_cp: true },
+                              // no detalhes, n importa o status do orçamento, mas na primeira tela, se tiver pendente
+                              // precisa retornar
+                              { orcamento_pendente: retornar_detalhes ? undefined : true },
+                          ],
 
                     AND: ehPontoFocal ? [{ meta_id: { in: listaMetasPendentesPf } }] : undefined,
                 },

@@ -13,7 +13,6 @@ left join atividade a1 on c.atividade_id is not null and a1.id = c.atividade_id
 left join iniciativa i1 on i1.id = coalesce( c.iniciativa_id, a1.iniciativa_id )
 join meta m1 on m1.id = coalesce( c.meta_id, i1.meta_id )
 where  b.removido_em is null;
-
 CREATE OR REPLACE FUNCTION atualiza_meta_status_consolidado(pMetaId int, pCicloFisicoIdAtual int)
     RETURNS varchar
     AS $$
@@ -315,9 +314,10 @@ BEGIN
         SELECT unnest(v_orc_preenchido)
     ) = ARRAY[]::int[];
 
-    IF (v_orcamento_pendente) THEN
-        v_pendente_cp := true;
-    END IF;
+    -- deixando separado, pois no detalhe (monitoramento) não retronar os v_orcamento_pendente
+    --IF (v_orcamento_pendente) THEN
+        --v_pendente_cp := true;
+    --END IF;
 
     --
     delete from meta_status_consolidado_cf where meta_id = pMetaId;
