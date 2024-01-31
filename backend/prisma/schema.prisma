@@ -3730,6 +3730,7 @@ model task_queue {
     erro_mensagem String?
 
     @@index([status])
+    @@index([criado_em])
 }
 
 model feature_flag {
