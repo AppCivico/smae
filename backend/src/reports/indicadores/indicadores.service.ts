@@ -50,7 +50,10 @@ const defaultTransform = [flatten({ paths: [] })];
 @Injectable()
 export class IndicadoresService implements ReportableService {
     private readonly logger = new Logger(IndicadoresService.name);
-    constructor(private readonly prisma: PrismaService, private readonly utils: UtilsService) {}
+    constructor(
+        private readonly prisma: PrismaService,
+        private readonly utils: UtilsService
+    ) {}
 
     async create(dto: CreateRelIndicadorDto): Promise<ListIndicadoresDto> {
         if (dto.periodo == 'Semestral' && !dto.semestre) {
@@ -153,7 +156,7 @@ export class IndicadoresService implements ReportableService {
                 '1 month'
             );
 
-            out.push(...this.convertRows(data, null));
+            this.convertRowsInto(data, null, out);
         } else if (dto.periodo == 'Anual' && dto.tipo == 'Consolidado') {
             const data: RetornoDb[] = await this.prisma.$queryRawUnsafe(
                 sql.replace(':JANELA:', '12').replace(':DATA:', 'dt.dt::date::text').replace(':OFFSET:', ''),
@@ -162,7 +165,7 @@ export class IndicadoresService implements ReportableService {
                 '1 year'
             );
 
-            out.push(...this.convertRows(data, null));
+            this.convertRowsInto(data, null, out);
         } else if (dto.periodo == 'Semestral' && dto.tipo == 'Consolidado') {
             const base_ano = dto.semestre == 'Primeiro' ? anoInicio : anoInicio - 1;
             const base_mes = dto.semestre == 'Primeiro' ? base_ano + '-06-01' : base_ano + '-12-01';
@@ -177,7 +180,7 @@ export class IndicadoresService implements ReportableService {
                 '1 decade'
             );
 
-            out.push(...this.convertRows(base_data, null));
+            this.convertRowsInto(base_data, null, out);
         } else if (dto.periodo == 'Semestral' && dto.tipo == 'Analitico') {
             // indo buscar 6 meses, por isso sempre tem valor
             const base_data: RetornoDb[] = await this.prisma.$queryRawUnsafe(
@@ -189,7 +192,7 @@ export class IndicadoresService implements ReportableService {
                 dto.semestre == 'Primeiro' ? dto.ano + '-12-01' : dto.ano + 1 + '-06-01',
                 '1 month'
             );
-            out.push(...this.convertRows(base_data, null));
+            this.convertRowsInto(base_data, null, out);
         }
     }
 
@@ -266,7 +269,7 @@ export class IndicadoresService implements ReportableService {
                 '1 month'
             );
 
-            out.push(...(this.convertRows(data, regioes) as RelIndicadoresVariaveisDto[]));
+            this.convertRowsInto(data, regioes, out as RelIndicadoresVariaveisDto[]);
         } else if (dto.periodo == 'Anual' && dto.tipo == 'Consolidado') {
             const data: RetornoDbRegiao[] = await this.prisma.$queryRawUnsafe(
                 sql.replace(':JANELA:', '12').replace(':DATA:', 'dt.dt::date::text').replace(':OFFSET:', ''),
@@ -275,7 +278,7 @@ export class IndicadoresService implements ReportableService {
                 '1 year'
             );
 
-            out.push(...(this.convertRows(data, regioes) as RelIndicadoresVariaveisDto[]));
+            this.convertRowsInto(data, regioes, out as RelIndicadoresVariaveisDto[]);
         } else if (dto.periodo == 'Semestral' && dto.tipo == 'Consolidado') {
             const base_ano = dto.semestre == 'Primeiro' ? anoInicio : anoInicio - 1;
             const base_mes = dto.semestre == 'Primeiro' ? base_ano + '-06-01' : base_ano + '-12-01';
@@ -290,7 +293,7 @@ export class IndicadoresService implements ReportableService {
                 '1 decade'
             );
 
-            out.push(...(this.convertRows(base_data, regioes) as RelIndicadoresVariaveisDto[]));
+            this.convertRowsInto(base_data, regioes, out as RelIndicadoresVariaveisDto[]);
         } else if (dto.periodo == 'Semestral' && dto.tipo == 'Analitico') {
             // indo buscar 6 meses, por isso sempre tem valor
             const base_data: RetornoDbRegiao[] = await this.prisma.$queryRawUnsafe(
@@ -302,7 +305,7 @@ export class IndicadoresService implements ReportableService {
                 dto.semestre == 'Primeiro' ? dto.ano + '-12-01' : dto.ano + 1 + '-06-01',
                 '1 month'
             );
-            out.push(...(this.convertRows(base_data, regioes) as RelIndicadoresVariaveisDto[]));
+            this.convertRowsInto(base_data, regioes, out as RelIndicadoresVariaveisDto[]);
         }
     }
 
@@ -408,12 +411,9 @@ export class IndicadoresService implements ReportableService {
         ];
     }
 
-    private convertRows(
-        input: RetornoDb[] | RetornoDbRegiao[],
-        regioesDb: Regiao[] | null
-    ): RelIndicadoresDto[] | RelIndicadoresVariaveisDto[] {
-        return input.map((db) => {
-            return {
+    private convertRowsInto(input: RetornoDb[] | RetornoDbRegiao[], regioesDb: Regiao[] | null, out: object[]) {
+        for (const db of input) {
+            out.push({
                 indicador: {
                     codigo: db.indicador_codigo,
                     titulo: db.indicador_titulo,
@@ -438,8 +438,8 @@ export class IndicadoresService implements ReportableService {
                     ? { codigo: db.variavel_codigo, titulo: db.variavel_titulo, id: +db.variavel_id }
                     : undefined,
                 ...('regiao_id' in db && regioesDb ? this.convertRowsRegiao(regioesDb, db) : {}),
-            };
-        });
+            });
+        }
     }
 
     convertRowsRegiao(
