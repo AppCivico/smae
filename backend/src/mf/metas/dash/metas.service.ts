@@ -110,8 +110,8 @@ export class MfDashMetasService {
                     detalhes: null,
                 },
                 orcamento: {
-                    preenchido: r.orcamento_preenchido.length,
-                    total: r.orcamento_total.length,
+                    preenchido:Arr.intersection( r.orcamento_pendentes, r.orcamento_preenchido ) .length,
+                    total:  r.orcamento_pendentes .length,
                 },
                 atualizado_em: r.atualizado_em,
             };

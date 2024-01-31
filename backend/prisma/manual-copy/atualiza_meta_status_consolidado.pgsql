@@ -28,6 +28,7 @@ vCronograma int[];
 v_cronograma_total int[];
 v_cronograma_atraso_ini int[];
 v_cronograma_atraso_fim int[];
+v_orcamento_pendentes int[];
 v_dont_care int;
 v_orcamento_pendente BOOLEAN;
 
@@ -305,8 +306,22 @@ BEGIN
       v_orc_preenchido
     from cte_calc;
 
+    -- mais feio que bater em... sorry, depois a gente vai ter um jeito certo disso
+    select array_agg(extract(year from x.data_valor)) into v_orcamento_pendentes
+    from (
+    select
+        case when
+            extract(year from data_valor) = extract(year from CURRENT_TIMESTAMP AT TIME ZONE 'America/Sao_Paulo')
+            then data_valor
+            else data_valor + '11 month'::interval
+        end as data_valor
+        from (select  (unnest(v_orc_total::int[])::text || '-01-01')::date as data_valor) AS data_valor(data_valor)
+    ) x
+    where CURRENT_TIMESTAMP - x.data_valor::date <= '3 month' ::interval;
+
+
     v_orcamento_pendente = NOT ARRAY(
-        SELECT unnest(v_orc_total)
+        SELECT unnest(v_orcamento_pendentes)
             EXCEPT
         SELECT unnest(v_orc_preenchido)
     ) = ARRAY[]::int[];
@@ -333,6 +348,7 @@ BEGIN
         cronograma_atraso_inicio,
         orcamento_total,
         orcamento_preenchido,
+        orcamento_pendentes,
 
         analise_qualitativa_enviada,
         risco_enviado,
@@ -356,6 +372,8 @@ BEGIN
         v_cronograma_atraso_fim,
         v_orc_total,
         v_orc_preenchido,
+        v_orcamento_pendentes,
+
         v_analise_qualitativa_enviada,
         v_risco_enviado,
         v_fechamento_enviado,
