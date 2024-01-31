@@ -178,7 +178,9 @@ const listaDePendentes = computed(() => {
                 <svg
                   width="20"
                   height="20"
-                  :color="variável.aguardaConferência && perfil !== 'ponto_focal'
+                  :color="variável.aguardaConferência
+                    && perfil !== 'ponto_focal'
+                    && !variável.aguardaComplementação
                     ? '#4074bf'
                     : variável.aguardaEnvio
                       ? '#f7c234'
