@@ -115,6 +115,18 @@ BEGIN
         v_variaveis_aguardando_complementacao
     from cte_variaveis v;
 
+    v_variaveis_enviadas = ARRAY(
+        SELECT unnest(v_variaveis_enviadas)
+            EXCEPT
+        SELECT unnest(v_variaveis_aguardando_complementacao)
+    );
+
+    v_variaveis_preenchidas = ARRAY(
+        SELECT unnest(v_variaveis_preenchidas)
+            EXCEPT
+        SELECT unnest(v_variaveis_aguardando_complementacao)
+    );
+
     select 1 = (
             select count(1)
             from meta_ciclo_fisico_analise mcfa
