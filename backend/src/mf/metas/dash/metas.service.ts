@@ -155,9 +155,13 @@ export class MfDashMetasService {
                     ciclo_fisico_id: cicloFisicoId,
                     meta_id: metas ? { in: metas } : undefined,
 
-                    pendente_cp: ehPontoFocal ? undefined : false,
-
-                    AND: ehPontoFocal ? [{ meta_id: { notIn: listaMetasPendentesPf } }] : undefined,
+                    AND: ehPontoFocal
+                        ? [{ meta_id: { notIn: listaMetasPendentesPf } }]
+                        : [
+                              { pendente_cp: false },
+                              // again, no detalhe, n importa o status do orçamento
+                              { orcamento_pendente: retornar_detalhes ? undefined : false },
+                          ],
                 },
                 include: {
                     meta: {
