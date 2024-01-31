@@ -334,11 +334,11 @@ export class MfDashMetasService {
 
         // se quer filtrar pelo cronograma, ou não é o ponto focal, adiciona tudo o que ele pode ver
         // isso é importante pro caso do not-in do atualizadas
-        if (params.filtro_ponto_focal_cronograma || config.perfil != 'ponto_focal') {
+        if (params.filtro_ponto_focal_cronograma || config.perfil != 'ponto_focal' || !params.retornar_detalhes) {
             metas.push(...config.metas_cronograma);
         }
 
-        if (params.filtro_ponto_focal_variavel || config.perfil != 'ponto_focal') {
+        if (params.filtro_ponto_focal_variavel || config.perfil != 'ponto_focal' || !params.retornar_detalhes) {
             metas.push(...config.metas_variaveis);
         }
 
