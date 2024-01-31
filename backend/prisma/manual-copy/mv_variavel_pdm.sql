@@ -42,11 +42,28 @@ ON mv_variavel_pdm (meta_id);
 -- Trigger to refresh materialized view when changes occur in indicador_variavel
 CREATE OR REPLACE FUNCTION refresh_mv_variavel_pdm_indicador_variavel()
 RETURNS TRIGGER AS $$
+DECLARE
+    v_meta_id INTEGER;
 BEGIN
-  IF TG_OP = 'INSERT' OR (TG_OP = 'UPDATE' AND (OLD.* IS DISTINCT FROM NEW.*)) THEN
-    REFRESH MATERIALIZED VIEW mv_variavel_pdm;
-  END IF;
-  RETURN NEW;
+    IF TG_OP = 'INSERT' OR (TG_OP = 'UPDATE' AND (OLD.* IS DISTINCT FROM NEW.*)) THEN
+        REFRESH MATERIALIZED VIEW mv_variavel_pdm;
+    END IF;
+
+    IF TG_OP = 'DELETE' THEN
+        REFRESH MATERIALIZED VIEW mv_variavel_pdm;
+        v_meta_id := (SELECT meta_id FROM mv_variavel_pdm WHERE variavel_id = OLD.variavel_id);
+    ELSE
+        v_meta_id := (SELECT meta_id FROM mv_variavel_pdm WHERE variavel_id = NEW.variavel_id);
+    END IF;
+
+    PERFORM add_refresh_meta_task(v_meta_id);
+
+    -- For INSERT or UPDATE, return NEW
+    IF TG_OP = 'DELETE' THEN
+        RETURN OLD;
+    ELSE
+        RETURN NEW;
+    END IF;
 END;
 $$ LANGUAGE plpgsql;
 
@@ -56,13 +73,23 @@ FOR EACH ROW
 EXECUTE FUNCTION refresh_mv_variavel_pdm_indicador_variavel();
 
 
+CREATE TRIGGER trig_refresh_mv_variavel_pdm_indicador_variavel_delete
+AFTER DELETE ON indicador_variavel
+FOR EACH ROW
+EXECUTE FUNCTION refresh_mv_variavel_pdm_indicador_variavel();
+
 -- Trigger to refresh materialized view when changes occur in atividade
 CREATE OR REPLACE FUNCTION refresh_mv_variavel_pdm_atividade()
 RETURNS TRIGGER AS $$
+DECLARE
+    v_meta_id INTEGER;
 BEGIN
   IF TG_OP = 'UPDATE' AND (OLD.removido_em IS DISTINCT FROM NEW.removido_em) THEN
     REFRESH MATERIALIZED VIEW mv_variavel_pdm;
+    v_meta_id := (SELECT me.meta_id FROM iniciativa me WHERE me.id = NEW.iniciativa_id);
+    PERFORM add_refresh_meta_task(v_meta_id);
   END IF;
+
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
@@ -76,9 +103,13 @@ EXECUTE FUNCTION refresh_mv_variavel_pdm_atividade();
 -- Trigger to refresh materialized view when changes occur in iniciativa
 CREATE OR REPLACE FUNCTION refresh_mv_variavel_pdm_iniciativa()
 RETURNS TRIGGER AS $$
+DECLARE
+    v_meta_id INTEGER;
 BEGIN
   IF TG_OP = 'UPDATE' AND (OLD.removido_em IS DISTINCT FROM NEW.removido_em) THEN
     REFRESH MATERIALIZED VIEW mv_variavel_pdm;
+
+    PERFORM add_refresh_meta_task(NEW.meta_id);
   END IF;
   RETURN NEW;
 END;
@@ -93,9 +124,15 @@ EXECUTE FUNCTION refresh_mv_variavel_pdm_iniciativa();
 -- Trigger to refresh materialized view when changes occur in indicador
 CREATE OR REPLACE FUNCTION refresh_mv_variavel_pdm_indicador()
 RETURNS TRIGGER AS $$
+DECLARE
+    v_meta_id INTEGER;
 BEGIN
   IF TG_OP = 'UPDATE' AND (OLD.removido_em IS DISTINCT FROM NEW.removido_em) THEN
     REFRESH MATERIALIZED VIEW mv_variavel_pdm;
+
+    v_meta_id := (SELECT meta_id FROM mv_variavel_pdm WHERE indicador_id = NEW.id);
+    PERFORM add_refresh_meta_task(v_meta_id);
+
   END IF;
   RETURN NEW;
 END;
@@ -122,3 +159,9 @@ CREATE TRIGGER trig_refresh_mv_variavel_pdm_meta
 AFTER INSERT OR UPDATE ON meta
 FOR EACH ROW
 EXECUTE FUNCTION refresh_mv_variavel_pdm_meta();
+
+
+CREATE TRIGGER trig_refresh_mv_variavel_pdm_indicador_variavel_delete
+AFTER DELETE ON indicador_variavel
+FOR EACH ROW
+EXECUTE FUNCTION refresh_mv_variavel_pdm_indicador_variavel();

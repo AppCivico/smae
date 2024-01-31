@@ -3,6 +3,7 @@ import { task_type } from '@prisma/client';
 import { IsEnum } from 'class-validator';
 import { CreateEchoDto } from '../echo/dto/create-echo.dto';
 import { TaskValidatorOf } from '../task.validator';
+import { CreateRefreshMetaDto } from '../refresh_meta/dto/create-refresh-mv.dto';
 import { CreateRefreshMvDto } from '../refresh_mv/dto/create-refresh-mv.dto';
 
 export class CreateTaskDto {
@@ -17,7 +18,7 @@ export class CreateTaskDto {
      */
     @TaskValidatorOf('type')
     @ApiProperty({
-        oneOf: refs(CreateEchoDto, CreateRefreshMvDto),
+        oneOf: refs(CreateEchoDto, CreateRefreshMvDto, CreateRefreshMetaDto),
     })
     params: any;
 }

@@ -419,6 +419,13 @@ export class PdmService {
                     await this.variavelService.recalc_variaveis_acumulada(varsSuspensas, prisma);
                     await this.variavelService.recalc_indicador_usando_variaveis(varsSuspensas, prisma);
                 }
+
+                this.logger.debug(`Atualizando metas consolidadas`);
+                await prisma.$queryRaw`
+                    SELECT add_refresh_meta_task(meta_id)
+                    FROM meta_status_consolidado_cf cf
+                    WHERE (atualizado_em at time zone ${SYSTEM_TIMEZONE})::date != current_date at time zone ${SYSTEM_TIMEZONE}
+                `;
             },
             {
                 maxWait: 30000,

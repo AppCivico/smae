@@ -8,8 +8,9 @@ import { FindOneParams } from '../common/decorators/find-params';
 import { RecordWithId } from '../common/dto/record-with-id.dto';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { CreateEchoDto } from './echo/dto/create-echo.dto';
-import { TaskService } from './task.service';
+import { CreateRefreshMetaDto } from './refresh_meta/dto/create-refresh-mv.dto';
 import { CreateRefreshMvDto } from './refresh_mv/dto/create-refresh-mv.dto';
+import { TaskService } from './task.service';
 
 const roles: ListaDePrivilegios[] = ['SMAE.superadmin'];
 
@@ -21,7 +22,7 @@ export class TaskController {
     @ApiUnauthorizedResponse()
     @ApiBearerAuth('access-token')
     @Roles(...roles)
-    @ApiExtraModels(CreateEchoDto, CreateRefreshMvDto)
+    @ApiExtraModels(CreateEchoDto, CreateRefreshMvDto, CreateRefreshMetaDto)
     async create(@Body() createTaskDto: CreateTaskDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
         return await this.taskService.create(createTaskDto, user);
     }

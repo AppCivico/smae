@@ -1,3 +1,19 @@
+-- AlterEnum
+ALTER TYPE "task_type" ADD VALUE 'refresh_meta';
+
+create or replace view view_etapa_rel_meta AS
+select
+    b.id as etapa_id,
+    m1.id as meta_id,
+    i1.id as iniciativa_id,
+    a1.id as atividade_id
+from etapa b
+join cronograma c on c.id = b.cronograma_id
+left join atividade a1 on c.atividade_id is not null and a1.id = c.atividade_id
+left join iniciativa i1 on i1.id = coalesce( c.iniciativa_id, a1.iniciativa_id )
+join meta m1 on m1.id = coalesce( c.meta_id, i1.meta_id )
+where  b.removido_em is null;
+
 CREATE OR REPLACE FUNCTION atualiza_meta_status_consolidado(pMetaId int, pCicloFisicoIdAtual int)
     RETURNS varchar
     AS $$
@@ -425,5 +441,200 @@ BEGIN
 END
 $$
 LANGUAGE plpgsql;
+
+
+CREATE OR REPLACE VIEW view_meta_pessoa_responsavel_na_cp AS
+ SELECT mr.id,
+    mr.meta_id,
+    mr.pessoa_id,
+    pf.orgao_id,
+    mr.coordenador_responsavel_cp
+   FROM meta_responsavel mr
+      join pessoa p on mr.pessoa_id = p.id
+     JOIN pessoa_fisica pf ON pf.id = p.pessoa_fisica_id
+  WHERE mr.coordenador_responsavel_cp and pf.orgao_id is not null;
+
+CREATE OR REPLACE PROCEDURE add_refresh_meta_task(p_meta_id INTEGER)
+AS $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1
+        FROM task_queue
+        WHERE "type" = 'refresh_meta'
+        AND status = 'pending'
+        AND (params->>'meta_id')::INTEGER = p_meta_id
+    ) THEN
+        INSERT INTO task_queue ("type", params)
+        VALUES ('refresh_meta', json_build_object('meta_id', p_meta_id));
+    END IF;
+END;
+$$ LANGUAGE plpgsql;
+
+
+CREATE OR REPLACE FUNCTION f_etapa_refresh_meta_trigger()
+RETURNS TRIGGER AS $$
+DECLARE
+    v_meta_id INTEGER;
+BEGIN
+
+    select meta_id into v_meta_id
+    from view_etapa_rel_meta where etapa_id = NEW.id;
+
+    PERFORM add_refresh_meta_task(v_meta_id);
+
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trg_refresh_meta_etapa
+AFTER INSERT OR UPDATE ON etapa
+FOR EACH ROW
+EXECUTE FUNCTION f_etapa_refresh_meta_trigger();
+
+CREATE OR REPLACE FUNCTION f_meta_refresh_meta_trigger()
+RETURNS TRIGGER AS $$
+BEGIN
+    PERFORM add_refresh_meta_task(NEW.id);
+
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trg_refresh_meta
+AFTER INSERT OR UPDATE ON meta
+FOR EACH ROW
+EXECUTE FUNCTION f_meta_refresh_meta_trigger();
+
+
+CREATE OR REPLACE FUNCTION f_meta_refresh_serie_variavel_trigger()
+RETURNS TRIGGER AS $$
+DECLARE
+    v_meta_id INTEGER;
+BEGIN
+    IF TG_OP = 'DELETE' THEN
+        v_meta_id := (SELECT meta_id FROM mv_variavel_pdm WHERE variavel_id = OLD.variavel_id);
+    ELSE
+        v_meta_id := (SELECT meta_id FROM mv_variavel_pdm WHERE variavel_id = NEW.variavel_id);
+    END IF;
+
+    PERFORM add_refresh_meta_task(v_meta_id);
+
+    -- For INSERT or UPDATE, return NEW
+    IF TG_OP = 'DELETE' THEN
+        RETURN OLD;
+    ELSE
+        RETURN NEW;
+    END IF;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trg_refresh_meta_serie_variavel
+AFTER INSERT OR UPDATE OR DELETE ON serie_variavel
+FOR EACH ROW
+EXECUTE FUNCTION f_meta_refresh_serie_variavel_trigger();
+
+CREATE OR REPLACE FUNCTION refresh_mv_variavel_pdm_indicador_variavel()
+RETURNS TRIGGER AS $$
+DECLARE
+    v_meta_id INTEGER;
+BEGIN
+    IF TG_OP = 'INSERT' OR (TG_OP = 'UPDATE' AND (OLD.* IS DISTINCT FROM NEW.*)) THEN
+        REFRESH MATERIALIZED VIEW mv_variavel_pdm;
+    END IF;
+
+    IF TG_OP = 'DELETE' THEN
+        REFRESH MATERIALIZED VIEW mv_variavel_pdm;
+        v_meta_id := (SELECT meta_id FROM mv_variavel_pdm WHERE variavel_id = OLD.variavel_id);
+    ELSE
+        v_meta_id := (SELECT meta_id FROM mv_variavel_pdm WHERE variavel_id = NEW.variavel_id);
+    END IF;
+
+    PERFORM add_refresh_meta_task(v_meta_id);
+
+    -- For INSERT or UPDATE, return NEW
+    IF TG_OP = 'DELETE' THEN
+        RETURN OLD;
+    ELSE
+        RETURN NEW;
+    END IF;
+END;
+$$ LANGUAGE plpgsql;
+
+
+CREATE TRIGGER trig_refresh_mv_variavel_pdm_indicador_variavel_delete
+AFTER DELETE ON indicador_variavel
+FOR EACH ROW
+EXECUTE FUNCTION refresh_mv_variavel_pdm_indicador_variavel();
+
+CREATE OR REPLACE FUNCTION refresh_mv_variavel_pdm_atividade()
+RETURNS TRIGGER AS $$
+DECLARE
+    v_meta_id INTEGER;
+BEGIN
+  IF TG_OP = 'UPDATE' AND (OLD.removido_em IS DISTINCT FROM NEW.removido_em) THEN
+    REFRESH MATERIALIZED VIEW mv_variavel_pdm;
+    v_meta_id := (SELECT me.meta_id FROM iniciativa me WHERE me.id = NEW.iniciativa_id);
+    PERFORM add_refresh_meta_task(v_meta_id);
+  END IF;
+
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Trigger to refresh materialized view when changes occur in iniciativa
+CREATE OR REPLACE FUNCTION refresh_mv_variavel_pdm_iniciativa()
+RETURNS TRIGGER AS $$
+BEGIN
+  IF TG_OP = 'UPDATE' AND (OLD.removido_em IS DISTINCT FROM NEW.removido_em) THEN
+    REFRESH MATERIALIZED VIEW mv_variavel_pdm;
+
+    PERFORM add_refresh_meta_task(NEW.meta_id);
+  END IF;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION refresh_mv_variavel_pdm_indicador()
+RETURNS TRIGGER AS $$
+DECLARE
+    v_meta_id INTEGER;
+BEGIN
+  IF TG_OP = 'UPDATE' AND (OLD.removido_em IS DISTINCT FROM NEW.removido_em) THEN
+    REFRESH MATERIALIZED VIEW mv_variavel_pdm;
+
+    v_meta_id := (SELECT meta_id FROM mv_variavel_pdm WHERE indicador_id = NEW.id);
+    PERFORM add_refresh_meta_task(v_meta_id);
+
+  END IF;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION f_meta_refresh_pdm_orcamento_realizado_config_trigger()
+RETURNS TRIGGER AS $$
+DECLARE
+    v_meta_id INTEGER;
+BEGIN
+    IF TG_OP = 'DELETE' THEN
+        v_meta_id := OLD.meta_id;
+    ELSE
+        v_meta_id := NEW.meta_id;
+    END IF;
+
+    PERFORM add_refresh_meta_task(v_meta_id);
+
+    -- For INSERT or UPDATE, return NEW
+    IF TG_OP = 'DELETE' THEN
+        RETURN OLD;
+    ELSE
+        RETURN NEW;
+    END IF;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trg_refresh_meta_pdm_orcamento_realizado_config
+AFTER INSERT OR UPDATE OR DELETE ON pdm_orcamento_realizado_config
+FOR EACH ROW
+EXECUTE FUNCTION f_meta_refresh_pdm_orcamento_realizado_config_trigger();
 
 

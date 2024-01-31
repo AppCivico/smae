@@ -3697,6 +3697,7 @@ model PortfolioGrupoPortfolio {
 enum task_type {
     echo
     refresh_mv
+    refresh_meta
 }
 
 enum task_status {
@@ -3761,7 +3762,7 @@ model MetaStatusConsolidadoCf {
     risco_enviado               Boolean?
     fechamento_enviado          Boolean?
 
-    pendente_cp Boolean
+    pendente_cp        Boolean
     orcamento_pendente Boolean @default(false)
 
     atualizado_em DateTime
@@ -3793,4 +3794,13 @@ model MetaStatusAtrasoVariavel {
 
     @@id([meta_id, variavel_id])
     @@map("meta_status_atraso_variavel")
+}
+
+view view_etapa_rel_meta {
+    etapa_id      Int  @id
+    meta_id       Int
+    atividade_id  Int?
+    iniciativa_id Int?
+
+    @@map("view_etapa_rel_meta")
 }

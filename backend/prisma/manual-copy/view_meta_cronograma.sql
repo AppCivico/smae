@@ -25,3 +25,18 @@ join atividade a on a.iniciativa_id = i.id and a.removido_em is null
 join cronograma ia on ia.atividade_id = a.id and ia.removido_em is null
 where m.ativo = TRUE
 and m.removido_em is null;
+
+create or replace view view_etapa_rel_meta AS
+select
+    b.id as etapa_id,
+    m1.id as meta_id,
+    i1.id as iniciativa_id,
+    a1.id as atividade_id
+from etapa b
+join cronograma c on c.id = b.cronograma_id
+left join atividade a1 on c.atividade_id is not null and a1.id = c.atividade_id
+left join iniciativa i1 on i1.id = coalesce( c.iniciativa_id, a1.iniciativa_id )
+join meta m1 on m1.id = coalesce( c.meta_id, i1.meta_id )
+where  b.removido_em is null;
+
+
