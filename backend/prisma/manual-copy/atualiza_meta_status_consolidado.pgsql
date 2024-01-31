@@ -396,7 +396,12 @@ BEGIN
     ),
     late_per_month_orc as (
         select
-            data_valor, 1 as qtde_orcamento
+            case when
+                extract(year from data_valor) = extract(year from CURRENT_TIMESTAMP AT TIME ZONE 'America/Sao_Paulo')
+                then data_valor
+                else data_valor + '11 month'::interval
+            end as data_valor,
+            1 as qtde_orcamento
         from (
             -- todo colocar o mes de dezembro nos anos que não é o corrente
             select (unnest(orcamento_total)::text || '-01-01')::date as data_valor
