@@ -47,7 +47,10 @@ defineProps({
       >
         {{ meta.codigo }} - {{ meta.titulo }}
 
-        <small v-ScrollLockDebug>
+        <small
+          v-if="meta.atualizado_em"
+          v-ScrollLockDebug
+        >
           (<code>meta.atualizado_em:&nbsp;{{ meta.atualizado_em }}</code>)
         </small>
       </router-link>
