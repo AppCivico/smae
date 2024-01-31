@@ -183,7 +183,7 @@ const listaDePendentes = computed(() => {
                     && !variável.aguardaComplementação
                     ? '#4074bf'
                     : variável.aguardaEnvio
-                      ? '#f7c234'
+                      ? '#f2890d'
                       : variável.aguardaPreenchimento
                         ? '#ee3b2b'
                         : '#3b5881'"
