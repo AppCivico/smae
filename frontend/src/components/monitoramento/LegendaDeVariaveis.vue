@@ -46,29 +46,6 @@ defineProps({
       </div>
     </dl>
 
-    <ul class="legenda__lista flex g1 mb1 flexwrap">
-      <li
-        class="legenda__item w900"
-        style="color: #f2890d"
-      >
-        Enviar
-      </li>
-
-      <li
-        class="legenda__item w900"
-        style="color: #ee3b2b"
-      >
-        Preencher
-      </li>
-      <li
-        v-if="perfil && perfil !== 'ponto_focal'"
-        class="legenda__item w900"
-        style="color: #4074bf"
-      >
-        Conferir
-      </li>
-    </ul>
-
     <Transition name="fade">
       <dl
         v-if="perfil && perfil !== 'ponto_focal'"
@@ -110,5 +87,29 @@ defineProps({
         </div>
       </dl>
     </Transition>
+
+    <ul class="legenda__lista flex g1 mb1 flexwrap">
+      <li
+        class="legenda__item w900"
+        style="color: #f2890d"
+      >
+        Enviar
+      </li>
+
+      <li
+        class="legenda__item w900"
+        style="color: #ee3b2b"
+      >
+        Preencher
+      </li>
+
+      <li
+        v-if="perfil && perfil !== 'ponto_focal'"
+        class="legenda__item w900"
+        style="color: #4074bf"
+      >
+        Conferir
+      </li>
+    </ul>
   </div>
 </template>
