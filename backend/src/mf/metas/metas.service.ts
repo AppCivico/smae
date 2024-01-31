@@ -1140,7 +1140,7 @@ export class MetasService {
 
             let needRecalc = false;
             for (const campo of CamposRealizado) {
-                const existeValor = await this.prisma.serieVariavel.findFirst({
+                const existeValor = await prismaTxn.serieVariavel.findFirst({
                     where: {
                         variavel_id: dto.variavel_id,
                         serie: CamposRealizadoParaSerie[campo],
@@ -1154,7 +1154,7 @@ export class MetasService {
                     // existe o valor, entao vamos ativar
                     needRecalc = true;
 
-                    await this.prisma.serieVariavel.update({
+                    await prismaTxn.serieVariavel.update({
                         where: { id: existeValor.id },
                         data: {
                             conferida_em: now,
