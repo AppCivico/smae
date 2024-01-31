@@ -387,8 +387,6 @@ export class MfDashMetasService {
     private async metasPendentePontoFocal(pessoaId: number, params: FilterMfDashMetasDto): Promise<number[]> {
         const retornar_detalhes = !!params.retornar_detalhes;
 
-        if (params.filtro_ponto_focal_variavel === undefined) params.filtro_ponto_focal_variavel = true;
-
         const pf_cronograma = !!params.filtro_ponto_focal_cronograma;
         const pf_variavel = !!params.filtro_ponto_focal_variavel;
 
