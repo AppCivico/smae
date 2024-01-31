@@ -192,7 +192,18 @@ const listaDePendentes = computed(() => {
                     ? '#i_alert'
                     : '#i_circle'"
                 /></svg>
-                <div>Aguarda XYZ</div>
+                <div v-if="variável.aguardaConferência && perfil !== 'ponto_focal'">
+                  Aguarda conferência
+                </div>
+                <div v-else-if="variável.aguardaEnvio">
+                  Aguarda envio
+                </div>
+                <div v-else-if="variável.aguardaPreenchimento">
+                  Aguarda preenchimento
+                </div>
+                <div v-else>
+                  ERRO DE CÁLCULO!
+                </div>
               </span>
               <router-link
                 :to="{
