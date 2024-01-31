@@ -50,7 +50,7 @@ const idsDosItensAbertos = ref([]);
         >
         <label
           :for="`atrasada--${meta.id}`"
-          class="block mb1 bgc50 br6 p1 flex start"
+          class="block mb1 bgc50 br6 p1 flex g1 start"
         >
           {{ meta.codigo }} - {{ meta.titulo }}
           <small
