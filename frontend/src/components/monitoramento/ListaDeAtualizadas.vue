@@ -50,7 +50,7 @@ const listaDeAtualizadas = computed(() => {
       v-else-if="!listaDeAtualizadas.length"
       tipo="negativo"
       título="Você ainda não possui atividades atualizadas!"
-      mensagem="Complete pendências para visualizar-las aqui."
+      mensagem="Complete pendências para visualiza-las aqui."
     />
     <ul
       v-else
