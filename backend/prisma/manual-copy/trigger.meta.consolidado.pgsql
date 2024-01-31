@@ -24,7 +24,7 @@ BEGIN
     select meta_id into v_meta_id
     from view_etapa_rel_meta where etapa_id = NEW.id;
 
-    PERFORM add_refresh_meta_task(v_meta_id);
+    CALL add_refresh_meta_task(v_meta_id);
 
     RETURN NEW;
 END;
@@ -38,7 +38,7 @@ EXECUTE FUNCTION f_etapa_refresh_meta_trigger();
 CREATE OR REPLACE FUNCTION f_meta_refresh_meta_trigger()
 RETURNS TRIGGER AS $$
 BEGIN
-    PERFORM add_refresh_meta_task(NEW.id);
+    CALL add_refresh_meta_task(NEW.id);
 
     RETURN NEW;
 END;
@@ -60,7 +60,7 @@ BEGIN
         v_meta_id := (SELECT meta_id FROM mv_variavel_pdm WHERE variavel_id = NEW.variavel_id);
     END IF;
 
-    PERFORM add_refresh_meta_task(v_meta_id);
+    CALL add_refresh_meta_task(v_meta_id);
 
     -- For INSERT or UPDATE, return NEW
     IF TG_OP = 'DELETE' THEN
@@ -88,7 +88,7 @@ BEGIN
         v_meta_id := NEW.meta_id;
     END IF;
 
-    PERFORM add_refresh_meta_task(v_meta_id);
+    CALL add_refresh_meta_task(v_meta_id);
 
     -- For INSERT or UPDATE, return NEW
     IF TG_OP = 'DELETE' THEN
