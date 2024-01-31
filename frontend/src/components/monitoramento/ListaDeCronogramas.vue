@@ -16,16 +16,17 @@ const idsDosItensAbertos = ref([]);
 const gerarURL = (etapaId) => {
   let caminho = '';
 
+  // /monitoramento/cronograma/:meta_id/:iniciativa_id/:atividade_id
   if (ancestraisPorEtapa.value[etapaId]?.meta_id) {
-    caminho += `/metas/${ancestraisPorEtapa.value[etapaId]?.meta_id}`;
+    caminho += `/monitoramento/cronograma/${ancestraisPorEtapa.value[etapaId]?.meta_id}`;
   }
 
   if (ancestraisPorEtapa.value[etapaId]?.iniciativa_id) {
-    caminho += `/iniciativas/${ancestraisPorEtapa.value[etapaId].iniciativa_id}`;
+    caminho += `/${ancestraisPorEtapa.value[etapaId].iniciativa_id}`;
   }
 
   if (ancestraisPorEtapa.value[etapaId]?.atividade_id) {
-    caminho += `/atividades/${ancestraisPorEtapa.value[etapaId].atividade_id}`;
+    caminho += `/${ancestraisPorEtapa.value[etapaId].atividade_id}`;
   }
 
   return caminho;
