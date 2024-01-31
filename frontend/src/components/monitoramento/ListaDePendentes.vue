@@ -173,48 +173,24 @@ const listaDePendentes = computed(() => {
               class="mb1 bgc50 br6 p1 flex start"
             >
               <span
-                v-if="variável.aguardaComplementação"
                 class="tipinfo ib mr1 f0"
               >
                 <svg
                   width="20"
                   height="20"
-                  color="#ee3b2b"
-                ><use xlink:href="#i_alert" /></svg>
-                <div>Aguarda complementação</div>
-              </span>
-              <span
-                v-else-if="variável.aguardaConferência"
-                class="tipinfo ib mr1 f0"
-              >
-                <svg
-                  width="20"
-                  height="20"
-                  color="#4c626d"
-                ><use xlink:href="#i_alert" /></svg>
-                <div>Aguarda conferência</div>
-              </span>
-              <span
-                v-else-if="variável.aguardaEnvio"
-                class="tipinfo ib mr1 f0"
-              >
-                <svg
-                  width="20"
-                  height="20"
-                  color="#f2890d"
-                ><use xlink:href="#i_circle" /></svg>
-                <div>Aguarda envio</div>
-              </span>
-              <span
-                v-else-if="variável.aguardaPreenchimento"
-                class="tipinfo ib mr1 f0"
-              >
-                <svg
-                  width="20"
-                  height="20"
-                  color="#f2890d"
-                ><use xlink:href="#i_alert" /></svg>
-                <div>Aguarda preenchimento</div>
+                  :color="variável.aguardaConferência && perfil !== 'ponto_focal'
+                    ? '#4074bf'
+                    : variável.aguardaEnvio
+                      ? '#f7c234'
+                      : variável.aguardaPreenchimento
+                        ? '#ee3b2b'
+                        : '#3b5881'"
+                ><use
+                  :xlink:href="variável.aguardaComplementação
+                    ? '#i_alert'
+                    : '#i_circle'"
+                /></svg>
+                <div>Aguarda XYZ</div>
               </span>
               <router-link
                 :to="{
