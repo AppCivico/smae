@@ -63,10 +63,7 @@ defineProps({
         >
           <router-link
             :to="{
-              name: 'monitoramentoDeEvoluçãoDeMetaEspecífica',
-              params: {
-                meta_id: meta.id
-              }
+              name: 'monitoramentoPorVariáveis',
             }"
             class="tipinfo"
           >
@@ -83,10 +80,7 @@ defineProps({
         >
           <router-link
             :to="{
-              name: 'monitoramentoDeEvoluçãoDeMetaEspecífica',
-              params: {
-                meta_id: meta.id
-              }
+              name: 'monitoramentoPorVariáveis',
             }"
             class="tipinfo"
           >
@@ -104,10 +98,7 @@ defineProps({
         >
           <router-link
             :to="{
-              name: 'monitoramentoDeEvoluçãoDeMetaEspecífica',
-              params: {
-                meta_id: meta.id
-              }
+              name: 'monitoramentoPorTarefas',
             }"
             class="tipinfo"
           >
@@ -148,42 +139,72 @@ defineProps({
         <template v-if="perfil !== 'ponto_focal'">
           <li
             v-if="meta.analise_qualitativa_enviada !== null"
-            class="meta__icones-item tipinfo"
+            class="meta__icones-item"
           >
-            <svg
-              class="meta__icone"
-              :class="{
-                sucesso: meta.analise_qualitativa_enviada
+            <router-link
+              :to="{
+                name: 'monitoramentoDeEvoluçãoDeMetaEspecífica',
+                params: {
+                  meta_id: meta.id
+                }
               }"
-              width="24"
-              height="24"
-            ><use xlink:href="#i_iniciativa" /></svg><div>Qualificação</div>
+              class="tipinfo"
+            >
+              <svg
+                class="meta__icone"
+                :class="{
+                  sucesso: meta.analise_qualitativa_enviada
+                }"
+                width="24"
+                height="24"
+              ><use xlink:href="#i_iniciativa" /></svg><div>Qualificação</div>
+            </router-link>
           </li>
           <li
             v-if="meta.risco_enviado !== null"
-            class="meta__icones-item tipinfo"
+            class="meta__icones-item"
           >
-            <svg
-              class="meta__icone"
-              :class="{
-                sucesso: meta.risco_enviado
+            <router-link
+              :to="{
+                name: 'monitoramentoDeEvoluçãoDeMetaEspecífica',
+                params: {
+                  meta_id: meta.id
+                }
               }"
-              width="24"
-              height="24"
-            ><use xlink:href="#i_binoculars" /></svg><div>Análise de Risco</div>
+              class="tipinfo"
+            >
+              <svg
+                class="meta__icone"
+                :class="{
+                  sucesso: meta.risco_enviado
+                }"
+                width="24"
+                height="24"
+              ><use xlink:href="#i_binoculars" /></svg><div>Análise de Risco</div>
+            </router-link>
           </li>
           <li
             v-if="meta.fechamento_enviado !== null"
-            class="meta__icones-item tipinfo"
+            class="meta__icones-item"
           >
-            <svg
-              class="meta__icone"
-              :class="{
-                sucesso: meta.fechamento_enviado
+            <router-link
+              :to="{
+                name: 'monitoramentoDeEvoluçãoDeMetaEspecífica',
+                params: {
+                  meta_id: meta.id
+                }
               }"
-              width="24"
-              height="24"
-            ><use xlink:href="#i_check" /></svg><div>Fechamento</div>
+              class="tipinfo"
+            >
+              <svg
+                class="meta__icone"
+                :class="{
+                  sucesso: meta.fechamento_enviado
+                }"
+                width="24"
+                height="24"
+              ><use xlink:href="#i_check" /></svg><div>Fechamento</div>
+            </router-link>
           </li>
         </template>
       </ul>
