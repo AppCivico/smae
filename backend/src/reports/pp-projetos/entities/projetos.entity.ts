@@ -27,6 +27,12 @@ export class RelProjetosDto {
     previsao_termino: string | null;
     escopo: string | null;
     nao_escopo: string | null;
+    secretario_responsavel: string | undefined;
+    secretario_executivo: string | undefined;
+    coordenador_ue: string | undefined;
+    data_aprovacao: Date | undefined;
+    data_revisao: Date | undefined;
+    gestores: string;
 
     orgao_participante: IdSiglaDescricao;
     orgao_gestor: IdSiglaDescricao;
@@ -43,6 +49,7 @@ export class RelProjetosCronogramaDto {
     projeto_id: number;
     projeto_codigo: string;
     tarefa_id: number;
+    hirearquia: string;
     numero: number;
     nivel: number;
     tarefa: string;

@@ -17,6 +17,7 @@
         "strictBindCallApply": true,
         "forceConsistentCasingInFileNames": true,
         "noFallthroughCasesInSwitch": true,
-        "allowJs": false
+        "allowJs": false,
+        "strictFunctionTypes": false, // ready not yet
     }
 }
