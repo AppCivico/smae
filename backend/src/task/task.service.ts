@@ -195,6 +195,7 @@ export class TaskService {
                 await this.startPendingJobs();
 
                 await this.handleActiveJobs();
+                await this.handleOldJobs();
 
                 process.env.INTERNAL_DISABLE_QUERY_LOG = '1';
             },
@@ -308,6 +309,22 @@ export class TaskService {
             }),
         ]);
         process.env.INTERNAL_DISABLE_QUERY_LOG = '';
+    }
+
+    async handleOldJobs() {
+        // 2400 * 250 = 10min
+        if (++this.running_job_counter % 2400 !== 0) return;
+        this.running_job_counter = 0;
+
+        this.logger.debug(`Deleting completed jobs older than 1 day`);
+        this.prisma.task_queue.deleteMany({
+            where: {
+                status: 'completed',
+                criado_em: {
+                    lte: DateTime.now().minus({ day: 1 }).toJSDate(),
+                },
+            },
+        });
     }
 
     async runJob(taskId: number, type: task_type, params: Prisma.JsonValue): Promise<JSON> {
