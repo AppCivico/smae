@@ -46,8 +46,8 @@ const listaDePendentes = computed(() => {
           título: variáveisPorId.value[cur]?.titulo || '',
           aguardaComplementação: manter,
           aguardaConferência: !x.variaveis.conferidas.includes(cur),
-          aguardaEnvio: x.variaveis.enviadas.includes(cur),
-          aguardaPreenchimento: x.variaveis.preenchidas.includes(cur),
+          aguardaEnvio: !x.variaveis.enviadas.includes(cur),
+          aguardaPreenchimento: !x.variaveis.preenchidas.includes(cur),
         }])
         : acc;
     }, [])
