@@ -610,7 +610,8 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE OR REPLACE FUNCTION f_meta_refresh_pdm_orcamento_realizado_config_trigger()
+
+CREATE OR REPLACE FUNCTION f_meta_refresh_generic_trigger()
 RETURNS TRIGGER AS $$
 DECLARE
     v_meta_id INTEGER;
@@ -635,6 +636,43 @@ $$ LANGUAGE plpgsql;
 CREATE TRIGGER trg_refresh_meta_pdm_orcamento_realizado_config
 AFTER INSERT OR UPDATE OR DELETE ON pdm_orcamento_realizado_config
 FOR EACH ROW
-EXECUTE FUNCTION f_meta_refresh_pdm_orcamento_realizado_config_trigger();
+EXECUTE FUNCTION f_meta_refresh_generic_trigger();
+
+
+CREATE TRIGGER trg_refresh_meta_status_variavel_ciclo_fisico
+AFTER INSERT OR UPDATE OR DELETE ON status_variavel_ciclo_fisico
+FOR EACH ROW
+EXECUTE FUNCTION f_meta_refresh_generic_trigger();
+
+CREATE TRIGGER trg_refresh_meta_variavel_ciclo_fisico_qualitativo
+AFTER INSERT OR UPDATE OR DELETE ON variavel_ciclo_fisico_qualitativo
+FOR EACH ROW
+EXECUTE FUNCTION f_meta_refresh_generic_trigger();
+
+CREATE TRIGGER trg_refresh_meta_formula_composta_ciclo_fisico_qualitativo
+AFTER INSERT OR UPDATE OR DELETE ON formula_composta_ciclo_fisico_qualitativo
+FOR EACH ROW
+EXECUTE FUNCTION f_meta_refresh_generic_trigger();
+
+CREATE TRIGGER trg_refresh_meta_variavel_ciclo_fisico_pedido_complementacao
+AFTER INSERT OR UPDATE OR DELETE ON variavel_ciclo_fisico_pedido_complementacao
+FOR EACH ROW
+EXECUTE FUNCTION f_meta_refresh_generic_trigger();
+
+CREATE TRIGGER trg_refresh_meta_meta_ciclo_fisico_risco
+AFTER INSERT OR UPDATE OR DELETE ON meta_ciclo_fisico_risco
+FOR EACH ROW
+EXECUTE FUNCTION f_meta_refresh_generic_trigger();
+
+CREATE TRIGGER trg_refresh_meta_meta_ciclo_fisico_fechamento
+AFTER INSERT OR UPDATE OR DELETE ON meta_ciclo_fisico_fechamento
+FOR EACH ROW
+EXECUTE FUNCTION f_meta_refresh_generic_trigger();
+
+CREATE TRIGGER trg_refresh_meta_meta_ciclo_fisico_analise
+AFTER INSERT OR UPDATE OR DELETE ON meta_ciclo_fisico_analise
+FOR EACH ROW
+EXECUTE FUNCTION f_meta_refresh_generic_trigger();
+
 
 
