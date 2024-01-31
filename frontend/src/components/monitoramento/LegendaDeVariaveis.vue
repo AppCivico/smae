@@ -61,10 +61,11 @@ defineProps({
         Preencher
       </li>
       <li
+        v-if="perfil && perfil !== 'ponto_focal'"
         class="legenda__item w900"
         style="color: #4074bf"
       >
-        Conferência
+        Conferir
       </li>
     </ul>
 
