@@ -1325,9 +1325,9 @@ export class ProjetoService {
             if (dto.portfolios_compartilhados?.length) {
                 const portfoliosCompartilhados = portfolios.filter(p =>  dto.portfolios_compartilhados?.some(x => x == p.id));
                 await this.checkPortCompartilhadoOrgaos(portfolio, portfoliosCompartilhados);
-                
+
                 const { deletedPC, createdPC } = this.checkDiffPortfoliosCompartilhados(projeto.portfolios_compartilhados?.map(pc => pc.id), dto.portfolios_compartilhados);
-    
+
                 if (deletedPC.length) {
                     await prismaTx.portfolioProjetoCompartilhado.updateMany({
                         where: {
@@ -1450,7 +1450,7 @@ export class ProjetoService {
             deleted = currentPortCompartilhados.filter(cpc => {
                 return !newPortCompartilhados.find(npc => npc == cpc)
             });
-    
+
             created = newPortCompartilhados.filter(npc => {
                 return !currentPortCompartilhados.find(cpc => cpc == npc)
             });
@@ -1993,7 +1993,7 @@ export class ProjetoService {
             // Meses disponíveis para orçamento devem ser iguais.
             if (!assertOrcamentoDisponivelEqual(portfolioNovo.orcamento_execucao_disponivel_meses, portfolioAntigo.orcamento_execucao_disponivel_meses))
                 throw new HttpException('portfolio_id| Portfolio novo deve ter mesmos meses disponíveis para orçamento.', 400);
-            
+
             // Por agora o órgão gestor não será modificado.
             // Portanto deve ser verificado se ele está presente nos órgãos do novo port.
             if (!portfolioNovo.orgaos.some(o => {o.id == projeto.orgao_gestor.id}))
@@ -2030,13 +2030,13 @@ export class ProjetoService {
             if (novo.length !== velho.length) {
                 return false;
             }
-        
+
             for (let i = 0; i < novo.length; i++) {
                 if (novo[i] !== velho[i]) {
                     return false;
                 }
             }
-        
+
             return true;
         }
     }

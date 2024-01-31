@@ -439,12 +439,12 @@ export class PPProjetosService implements ReportableService {
 
         const data: RetornoDbProjeto[] = await this.prisma.$queryRawUnsafe(sql, ...whereCond.queryParams);
 
-        out.push(...this.convertRowsProjetos(data));
+        this.convertRowsProjetosInto(data, out);
     }
 
-    private convertRowsProjetos(input: RetornoDbProjeto[]): RelProjetosDto[] {
-        return input.map((db) => {
-            return {
+    private convertRowsProjetosInto(input: RetornoDbProjeto[], out: RelProjetosDto[]) {
+        for (const db of input) {
+            out.push({
                 id: db.id,
                 portfolio_id: db.portfolio_id,
                 portfolio_titulo: db.portfolio_titulo,
@@ -522,8 +522,8 @@ export class PPProjetosService implements ReportableService {
                           valor_nominal: db.fonte_recurso_valor_nominal,
                       }
                     : null,
-            };
-        });
+            });
+        }
     }
 
     private async queryDataCronograma(whereCond: WhereCond, out: RelProjetosCronogramaDto[]) {
@@ -561,65 +561,62 @@ export class PPProjetosService implements ReportableService {
 
         const data: RetornoDbCronograma[] = await this.prisma.$queryRawUnsafe(sql, ...whereCond.queryParams);
 
-        const convertedRows = await this.convertRowsCronograma(data);
-        out.push(...convertedRows);
+        await this.putRowsCronogramaInto(data, out);
     }
 
-    private async convertRowsCronograma(input: RetornoDbCronograma[]): Promise<RelProjetosCronogramaDto[]> {
-        return await Promise.all(
-            input.map(async (db) => {
-                interface dependenciaRow {
-                    id: number;
-                    tipo: string;
-                    latencia: number;
-                }
+    private async putRowsCronogramaInto(input: RetornoDbCronograma[], out: RelProjetosCronogramaDto[]) {
+        for (const db of input) {
+            interface dependenciaRow {
+                id: number;
+                tipo: string;
+                latencia: number;
+            }
 
-                const projetoDetail: ProjetoDetailDto = await this.projetoService.findOne(
-                    db.projeto_id,
-                    undefined,
-                    'ReadOnly'
-                );
-                const tarefasHierarquia = await this.tarefasService.tarefasHierarquia(projetoDetail);
-                return {
-                    projeto_id: db.projeto_id,
-                    projeto_codigo: db.projeto_codigo,
-                    tarefa_id: db.id,
-                    hirearquia: tarefasHierarquia[db.id],
-                    numero: db.numero,
-                    nivel: db.nivel,
-                    tarefa: db.tarefa,
-                    inicio_planejado: db.inicio_planejado ? Date2YMD.toString(db.inicio_planejado) : null,
-                    termino_planejado: db.termino_planejado ? Date2YMD.toString(db.termino_planejado) : null,
-                    custo_estimado: db.custo_estimado ? db.custo_estimado : null,
-                    inicio_real: db.inicio_real ? Date2YMD.toString(db.inicio_real) : null,
-                    termino_real: db.termino_real ? Date2YMD.toString(db.termino_real) : null,
-                    duracao_real: db.duracao_real ? db.duracao_real : null,
-                    percentual_concluido: db.percentual_concluido ? db.percentual_concluido : null,
-                    custo_real: db.custo_real ? db.custo_real : null,
-                    dependencias: db.dependencias
-                        ? db.dependencias
-                              .split('/')
-                              .map((e) => {
-                                  const row: dependenciaRow = JSON.parse(e);
+            const projetoDetail: ProjetoDetailDto = await this.projetoService.findOne(
+                db.projeto_id,
+                undefined,
+                'ReadOnly'
+            );
+            const tarefasHierarquia = await this.tarefasService.tarefasHierarquia(projetoDetail);
+            out.push({
+                projeto_id: db.projeto_id,
+                projeto_codigo: db.projeto_codigo,
+                tarefa_id: db.id,
+                hirearquia: tarefasHierarquia[db.id],
+                numero: db.numero,
+                nivel: db.nivel,
+                tarefa: db.tarefa,
+                inicio_planejado: db.inicio_planejado ? Date2YMD.toString(db.inicio_planejado) : null,
+                termino_planejado: db.termino_planejado ? Date2YMD.toString(db.termino_planejado) : null,
+                custo_estimado: db.custo_estimado ? db.custo_estimado : null,
+                inicio_real: db.inicio_real ? Date2YMD.toString(db.inicio_real) : null,
+                termino_real: db.termino_real ? Date2YMD.toString(db.termino_real) : null,
+                duracao_real: db.duracao_real ? db.duracao_real : null,
+                percentual_concluido: db.percentual_concluido ? db.percentual_concluido : null,
+                custo_real: db.custo_real ? db.custo_real : null,
+                dependencias: db.dependencias
+                    ? db.dependencias
+                          .split('/')
+                          .map((e) => {
+                              const row: dependenciaRow = JSON.parse(e);
 
-                                  const hierarquia = tarefasHierarquia[row.id];
-                                  const tipo = this.tarefasUtilsService.tarefaDependenteTipoSigla(row.tipo);
-                                  const latencia_str = row.latencia == 0 ? '' : row.latencia;
+                              const hierarquia = tarefasHierarquia[row.id];
+                              const tipo = this.tarefasUtilsService.tarefaDependenteTipoSigla(row.tipo);
+                              const latencia_str = row.latencia == 0 ? '' : row.latencia;
 
-                                  return `${hierarquia} ${tipo} ${latencia_str}`;
-                              })
-                              .join('/')
-                        : null,
-                    atraso: db.atraso ? db.atraso : null,
-                    responsavel: db.responsavel_id
-                        ? {
-                              id: db.responsavel_id,
-                              nome_exibicao: db.responsavel_nome_exibicao,
-                          }
-                        : null,
-                };
-            })
-        );
+                              return `${hierarquia} ${tipo} ${latencia_str}`;
+                          })
+                          .join('/')
+                    : null,
+                atraso: db.atraso ? db.atraso : null,
+                responsavel: db.responsavel_id
+                    ? {
+                          id: db.responsavel_id,
+                          nome_exibicao: db.responsavel_nome_exibicao,
+                      }
+                    : null,
+            });
+        }
     }
 
     private async queryDataRiscos(whereCond: WhereCond, out: RelProjetosRiscosDto[]) {
