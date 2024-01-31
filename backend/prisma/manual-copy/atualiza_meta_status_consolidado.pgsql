@@ -361,6 +361,7 @@ BEGIN
         v_fechamento_enviado,
 
         v_pendente_cp,
+        --
         v_orcamento_pendente,
 
         now()
@@ -397,6 +398,7 @@ BEGIN
         select
             data_valor, 1 as qtde_orcamento
         from (
+            -- todo colocar o mes de dezembro nos anos que não é o corrente
             select (unnest(orcamento_total)::text || '-01-01')::date as data_valor
             from meta_status_consolidado_cf cf where cf.meta_id = pMetaId
                     EXCEPT
