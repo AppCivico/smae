@@ -13,6 +13,7 @@ left join atividade a1 on c.atividade_id is not null and a1.id = c.atividade_id
 left join iniciativa i1 on i1.id = coalesce( c.iniciativa_id, a1.iniciativa_id )
 join meta m1 on m1.id = coalesce( c.meta_id, i1.meta_id )
 where  b.removido_em is null;
+
 CREATE OR REPLACE FUNCTION atualiza_meta_status_consolidado(pMetaId int, pCicloFisicoIdAtual int)
     RETURNS varchar
     AS $$
@@ -376,6 +377,7 @@ BEGIN
         v_fechamento_enviado,
 
         v_pendente_cp,
+        --
         v_orcamento_pendente,
 
         now()
@@ -410,8 +412,14 @@ BEGIN
     ),
     late_per_month_orc as (
         select
-            data_valor, 1 as qtde_orcamento
+            case when
+                extract(year from data_valor) = extract(year from CURRENT_TIMESTAMP AT TIME ZONE 'America/Sao_Paulo')
+                then data_valor
+                else data_valor + '11 month'::interval
+            end as data_valor,
+            1 as qtde_orcamento
         from (
+            -- todo colocar o mes de dezembro nos anos que não é o corrente
             select (unnest(orcamento_total)::text || '-01-01')::date as data_valor
             from meta_status_consolidado_cf cf where cf.meta_id = pMetaId
                     EXCEPT
@@ -453,7 +461,6 @@ BEGIN
 END
 $$
 LANGUAGE plpgsql;
-
 
 CREATE OR REPLACE VIEW view_meta_pessoa_responsavel_na_cp AS
  SELECT mr.id,
