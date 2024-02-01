@@ -504,7 +504,7 @@ export class PPProjetosService implements ReportableService {
           LEFT JOIN orgao orgao_responsavel ON orgao_responsavel.id = projeto.orgao_responsavel_id
           LEFT JOIN orgao orgao_gestor ON orgao_gestor.id = projeto.orgao_gestor_id
           LEFT JOIN pessoa resp ON resp.id = projeto.responsavel_id
-          WHERE ppc.removido_em IS NULL ${whereCond.whereString.replace('WHERE', '')}
+          WHERE ppc.removido_em IS NULL AND ${whereCond.whereString.replace('WHERE', '')}
         `;
 
         const data: RetornoDbProjeto[] = await this.prisma.$queryRawUnsafe(sql, ...whereCond.queryParams);
