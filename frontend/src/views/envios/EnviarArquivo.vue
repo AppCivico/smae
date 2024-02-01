@@ -1,5 +1,4 @@
 <script setup>
-import LabelFromYup from '@/components/LabelFromYup.vue';
 import requestS from '@/helpers/requestS.ts';
 import { useAlertStore } from '@/stores/alert.store';
 import { useImportaçõesStore } from '@/stores/importacoes.store.ts';

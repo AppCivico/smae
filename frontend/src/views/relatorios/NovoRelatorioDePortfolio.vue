@@ -1,5 +1,4 @@
 <script setup>
-import LabelFromYup from '@/components/LabelFromYup.vue';
 import { relatórioDePortfolio as schema } from '@/consts/formSchemas';
 import statuses from '@/consts/projectStatuses';
 import truncate from '@/helpers/truncate';
