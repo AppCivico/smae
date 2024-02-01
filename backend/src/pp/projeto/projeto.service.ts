@@ -1977,7 +1977,7 @@ export class ProjetoService {
                     nivel_regionalizacao: true,
                     orcamento_execucao_disponivel_meses: true,
                     orgaos: {
-                        select: { id: true }
+                        select: { orgao_id: true }
                     }
                 }})
               .catch(() => {throw new HttpException('portfolio_id| Não foi encontrado', 400)});
@@ -1998,7 +1998,7 @@ export class ProjetoService {
             // Portanto deve ser verificado se ele está presente nos órgãos do novo port.
             console.log(portfolioNovo.orgaos);
             console.log(projeto.orgao_gestor.id);
-            if (!portfolioNovo.orgaos.find(o => {o.id == projeto.orgao_gestor.id}))
+            if (!portfolioNovo.orgaos.some(o => {o.orgao_id == projeto.orgao_gestor.id}))
                 throw new HttpException('portfolio_id| Órgão gestor do Projeto deve estar no Portfolio novo.', 400);
             
             await Promise.all([
