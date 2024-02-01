@@ -296,6 +296,20 @@ export default {
         },
 
         {
+          path: 'trocar-portfolio',
+          name: 'projetosTrocarPortfolio',
+          component: () => import('@/views/projetos/TransferirDePortfolio.vue'),
+          meta: {
+            título: 'Transferir de portfolio',
+            rotaDeEscape: 'projetosEditar',
+          },
+          props: ({ params }) => ({
+            ...params,
+            projetoId: Number.parseInt(params.projetoId, 10) || undefined,
+          }),
+        },
+
+        {
           path: 'escopo',
           name: 'projetosResumo',
           component: ProjetosResumo,
