@@ -2000,7 +2000,7 @@ export class ProjetoService {
             console.log(projeto.orgao_gestor.id);
             console.log(portfolioNovo.orgaos.some(o => {o.orgao_id == projeto.orgao_gestor.id}))
             console.log(portfolioNovo.orgaos.find(o => {o.orgao_id == projeto.orgao_gestor.id}))
-            if (!portfolioNovo.orgaos.find(o => {o.orgao_id == projeto.orgao_gestor.id}))
+            if (!portfolioNovo.orgaos.map(o => o.orgao_id).some(o => o == projeto.orgao_gestor.id))
                 throw new HttpException('portfolio_id| Órgão gestor do Projeto deve estar no Portfolio novo.', 400);
             
             await Promise.all([
