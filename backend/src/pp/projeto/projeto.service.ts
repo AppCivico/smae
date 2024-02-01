@@ -1353,6 +1353,15 @@ export class ProjetoService {
                         })
                     })
                 }
+            } else {
+                // Verificar se possui compartilhados e caso possua, remover.
+                await prismaTx.portfolioProjetoCompartilhado.updateMany({
+                    where: { projeto_id: projetoId, removido_em: null },
+                    data: {
+                        removido_em: now,
+                        removido_por: user.id
+                    }
+                });
             }
 
             await prismaTx.projeto.update({
