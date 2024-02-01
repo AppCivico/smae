@@ -2,7 +2,7 @@
 const props = defineProps({
   active: {
     type: Boolean,
-    required: true,
+    default: true,
   },
 });
 defineEmits(['close']);
