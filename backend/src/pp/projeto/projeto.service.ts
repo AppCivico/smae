@@ -1996,6 +1996,8 @@ export class ProjetoService {
 
             // Por agora o órgão gestor não será modificado.
             // Portanto deve ser verificado se ele está presente nos órgãos do novo port.
+            console.log(portfolioNovo.orgaos);
+            console.log(projeto.orgao_gestor.id);
             if (!portfolioNovo.orgaos.find(o => {o.id == projeto.orgao_gestor.id}))
                 throw new HttpException('portfolio_id| Órgão gestor do Projeto deve estar no Portfolio novo.', 400);
             
