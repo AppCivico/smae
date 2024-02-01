@@ -110,8 +110,8 @@ export class MfDashMetasService {
                     detalhes: null,
                 },
                 orcamento: {
-                    preenchido:Arr.intersection( r.orcamento_pendentes, r.orcamento_preenchido ) .length,
-                    total:  r.orcamento_pendentes .length,
+                    preenchido: Arr.intersection(r.orcamento_pendentes, r.orcamento_preenchido).length,
+                    total: r.orcamento_pendentes.length,
                 },
                 atualizado_em: r.atualizado_em,
             };
@@ -386,6 +386,11 @@ export class MfDashMetasService {
 
     private async metasPendentePontoFocal(pessoaId: number, params: FilterMfDashMetasDto): Promise<number[]> {
         const retornar_detalhes = !!params.retornar_detalhes;
+
+        if (retornar_detalhes == false) {
+            params.filtro_ponto_focal_cronograma = true;
+            params.filtro_ponto_focal_variavel = true;
+        }
 
         const pf_cronograma = !!params.filtro_ponto_focal_cronograma;
         const pf_variavel = !!params.filtro_ponto_focal_variavel;
