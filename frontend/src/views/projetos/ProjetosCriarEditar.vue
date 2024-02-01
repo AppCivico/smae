@@ -448,10 +448,6 @@ watch(emFoco, () => {
       </div>
     </div>
 
-    <router-view v-slot="{ Component }">
-      <component :is="Component" />
-    </router-view>
-
     <div
       v-if="projetoId"
       class="flex g2 mb1"
@@ -1752,4 +1748,6 @@ watch(emFoco, () => {
       {{ erro }}
     </div>
   </div>
+
+  <router-view />
 </template>
