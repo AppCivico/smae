@@ -255,8 +255,8 @@ export class ProjetoController {
         @Param() params: FindOneParams,
         @Body() transferProjetoPortfolio: TransferProjetoPortfolioDto,
         @CurrentUser() user: PessoaFromJwt
-    ) {
-        await this.projetoService.transferPortfolio(params.id, transferProjetoPortfolio, user);
+    ): Promise<RecordWithId> {
+        return await this.projetoService.transferPortfolio(params.id, transferProjetoPortfolio, user);
     }
     
 }

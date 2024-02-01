@@ -1962,10 +1962,10 @@ export class ProjetoService {
         await this.prisma.$queryRaw`CALL clone_projeto_tarefas(${dto.projeto_fonte_id}::int, ${projetoId}::int);`
     }
 
-    async transferPortfolio(projetoId: number, dto: TransferProjetoPortfolioDto, user: PessoaFromJwt) {
+    async transferPortfolio(projetoId: number, dto: TransferProjetoPortfolioDto, user: PessoaFromJwt): Promise<RecordWithId> {
         const projeto = await this.findOne(projetoId, user, 'ReadWrite');
 
-        async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
+        const updated =  await this.prisma.$transaction( async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
             const portfolioAntigo = projeto.portfolio;
 
             const portfolioNovo = await prismaTx.portfolio
@@ -1998,34 +1998,34 @@ export class ProjetoService {
             // Portanto deve ser verificado se ele está presente nos órgãos do novo port.
             if (!portfolioNovo.orgaos.some(o => {o.id == projeto.orgao_gestor.id}))
                 throw new HttpException('portfolio_id| Órgão gestor do Projeto deve estar no Portfolio novo.', 400);
+            
+            await Promise.all([
+                prismaTx.projeto.update({ where: { id: projetoId }, data: { portfolio_id: dto.portfolio_id } }),
+                
+                // Números sequenciais utilizados pelo Projeto
+                prismaTx.projetoNumeroSequencial.updateMany({
+                    where: {
+                        portfolio_id: portfolioAntigo.id,
+                        projeto_id: projetoId
+                    },
+                    data: { portfolio_id: portfolioNovo.id }
+                }),
 
-            const operations = [];
-
-            operations.push(prismaTx.projeto.update({ where: { id: projetoId }, data: { portfolio_id: dto.portfolio_id } }));
-
-            // Números sequenciais utilizados pelo Projeto
-            operations.push(prismaTx.projetoNumeroSequencial.updateMany({
-                where: {
-                    portfolio_id: portfolioAntigo.id,
-                    projeto_id: projetoId
-                },
-                data: { portfolio_id: portfolioNovo.id }
-            }));
-
-            // Removendo projeto de grupos de Portfolio.
-            operations.push(prismaTx.projetoGrupoPortfolio.updateMany({
-                where: { projeto_id: projetoId },
-                data: {
-                    removido_em: new Date(Date.now()),
-                    removido_por: user.id
-                }
-            }));
-
-            await Promise.all(operations);
+                // Removendo projeto de grupos de Portfolio.
+                prismaTx.projetoGrupoPortfolio.updateMany({
+                    where: { projeto_id: projetoId },
+                    data: {
+                        removido_em: new Date(Date.now()),
+                        removido_por: user.id
+                    }
+                })
+            ]);
 
             return { id: projeto.id }
-        }
+        });
 
+        return updated;
+        
         function assertOrcamentoDisponivelEqual(novo: number[], velho: number[]): boolean {
             if (novo.length !== velho.length) {
                 return false;
