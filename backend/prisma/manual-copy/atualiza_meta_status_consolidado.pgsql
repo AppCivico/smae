@@ -190,7 +190,6 @@ BEGIN
 
     END IF;
 
-
     select array_agg(cronograma_id) into vCronograma
     from view_meta_cronograma
     where meta_id = pMetaId;
@@ -330,6 +329,11 @@ BEGIN
     --IF (v_orcamento_pendente) THEN
         --v_pendente_cp := true;
     --END IF;
+
+
+    IF (v_cronograma_atraso_ini != ARRAY[]::int[] OR v_cronograma_atraso_fim != ARRAY[]::int[] ) THEN
+        v_pendente_cp := true;
+    END IF;
 
     --
     delete from meta_status_consolidado_cf where meta_id = pMetaId;
