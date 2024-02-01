@@ -38,16 +38,16 @@ export default {
 };
 </script>
 <template>
-  <div class="flex spacebetween center mb2">
+  <div class="flex spacebetween center mb2 g2">
     <TítuloDePágina>
       Cronograma
     </TítuloDePágina>
 
-    <hr class="ml2 f1">
+    <hr class="f1">
 
-    <div
+    <nav
       v-if="projetoEmFoco?.eh_prioritario && !apenasLeitura"
-      class="ml2"
+      class="flex g1"
     >
       <router-link
         :to="{ name: 'tarefasCriar' }"
@@ -55,7 +55,15 @@ export default {
       >
         Nova tarefa
       </router-link>
-    </div>
+
+      <router-link
+        v-if="!árvoreDeTarefas.length"
+        :to="{ name: 'tarefasClonar' }"
+        class="btn"
+      >
+        Clonar tarefas
+      </router-link>
+    </nav>
   </div>
 
   <div class="boards mb4">
@@ -306,4 +314,6 @@ export default {
       {{ erro }}
     </div>
   </div>
+
+  <router-view />
 </template>

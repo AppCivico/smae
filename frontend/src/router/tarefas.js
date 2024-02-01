@@ -35,6 +35,19 @@ export default {
         ],
       },
       props: true,
+
+      children: [
+        {
+          name: 'tarefasClonar',
+          path: 'clonar',
+          component: () => import('@/views/tarefas/TarefasClonar.vue'),
+          meta: {
+            título: 'Clonar tarefas',
+            títuloParaMenu: 'Clonar tarefas',
+            rotaDeEscape: 'tarefasListar',
+          },
+        },
+      ],
     },
 
     {
@@ -44,7 +57,6 @@ export default {
       meta: {
         título: 'Nova tarefa',
         títuloParaMenu: 'Nova tarefa',
-
         rotaDeEscape: 'tarefasListar',
       },
     },
