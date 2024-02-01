@@ -474,4 +474,4 @@ END
 $$
 LANGUAGE plpgsql;
 
-select atualiza_meta_status_consolidado(id, (select id from ciclo_fisico where ativo)) from meta where pdm_id=11 and removido_em is null;
+select atualiza_meta_status_consolidado(id, (select id from ciclo_fisico where ativo)) from meta where pdm_id = (select id from pdm where ativo) and removido_em is null;
