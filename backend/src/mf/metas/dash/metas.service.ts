@@ -76,10 +76,10 @@ export class MfDashMetasService {
             );
             // só retorna etapas separadas se for com detalhes
             const cronoAF = retornar_detalhes
-                ? this.buildItem(r.cronograma_atraso_fim, config.cronogramas_etapas, config, retornar_detalhes)
+                ? this.buildItem(r.cronograma_atraso_fim, config.cronogramas_etapas, config, params)
                 : null;
             const cronoAI = retornar_detalhes
-                ? this.buildItem(r.cronograma_atraso_inicio, config.cronogramas_etapas, config, retornar_detalhes)
+                ? this.buildItem(r.cronograma_atraso_inicio, config.cronogramas_etapas, config, params)
                 : null;
 
             return {
