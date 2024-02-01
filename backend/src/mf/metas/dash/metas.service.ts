@@ -184,9 +184,12 @@ export class MfDashMetasService {
                         select: { id: true, codigo: true, titulo: true },
                     },
                 },
-                orderBy: {
-                    mes: 'asc',
-                },
+                orderBy: [
+                    { meta: { codigo: 'asc' } },
+                    {
+                        mes: 'asc',
+                    },
+                ],
             });
 
             ret.atrasadas = [];
