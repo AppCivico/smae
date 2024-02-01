@@ -56,7 +56,7 @@ export const usePortfolioStore = defineStore('portfolios', {
       this.chamadasPendentes.lista = false;
     },
 
-    async excluirItem(id: Number): Promise<boolean> {
+    async excluirItem(id: number): Promise<boolean> {
       this.chamadasPendentes.lista = true;
 
       try {

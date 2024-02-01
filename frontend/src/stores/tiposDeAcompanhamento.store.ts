@@ -65,7 +65,7 @@ export const useTiposDeAcompanhamentoStore = defineStore('tiposDeAcompanhamento'
       this.chamadasPendentes.emFoco = false;
     },
 
-    async excluirItem(id: Number): Promise<boolean> {
+    async excluirItem(id: number): Promise<boolean> {
       this.chamadasPendentes.lista = true;
 
       try {
