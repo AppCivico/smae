@@ -23,13 +23,14 @@ defineProps({
     class="label"
     :for="name || $attrs.for || null"
   >
+    <slot name="prepend" />
     <slot>
       <pre
         v-if="!schema.fields[name]"
         v-ScrollLockDebug
       >
-        Etiqueta não encontrada para `{{ name }}`
-      </pre>
+      Etiqueta não encontrada para `{{ name }}`
+    </pre>
       <template v-else>
         <template v-if="schema">
           {{ schema.fields[name]?.spec.label }}
@@ -39,5 +40,6 @@ defineProps({
         >*</span>
       </template>
     </slot>
+    <slot name="append" />
   </component>
 </template>

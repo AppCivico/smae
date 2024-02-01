@@ -1,5 +1,4 @@
 <script setup>
-import LabelFromYup from '@/components/LabelFromYup.vue';
 import { relatórioDeProjeto as schema } from '@/consts/formSchemas';
 import { useAlertStore } from '@/stores/alert.store';
 import { usePortfolioStore } from '@/stores/portfolios.store.ts';
