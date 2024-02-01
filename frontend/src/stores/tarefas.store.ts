@@ -33,6 +33,7 @@ interface TarefasPorNível {
 interface ChamadasPendentes {
   lista: boolean;
   emFoco: boolean;
+  clonarTarefas: boolean;
   validaçãoDeDependências: boolean;
 }
 
@@ -60,6 +61,7 @@ export const useTarefasStore = defineStore('tarefas', {
     chamadasPendentes: {
       lista: true,
       emFoco: true,
+      clonarTarefas: false,
       validaçãoDeDependências: false,
     },
 
@@ -130,6 +132,22 @@ export const useTarefasStore = defineStore('tarefas', {
       }
     },
 
+    async clonarTarefas(projetoFonteId:number, projetoId = 0): Promise<boolean> {
+      this.chamadasPendentes.clonarTarefas = true;
+      this.erro = null;
+
+      try {
+        await this.requestS.post(`${baseUrl}/projeto/${projetoId || this.route.params.projetoId}/clone-tarefas`, { projeto_fonte_id: projetoFonteId });
+
+        this.chamadasPendentes.clonarTarefas = false;
+        return true;
+      } catch (erro) {
+        this.erro = erro;
+        this.chamadasPendentes.clonarTarefas = false;
+        return false;
+      }
+    },
+
     async validarDependências(params: { tarefa_corrente_id: number; dependencias: [] }) {
       this.chamadasPendentes.validaçãoDeDependências = true;
 
@@ -173,7 +191,10 @@ export const useTarefasStore = defineStore('tarefas', {
         };
 
         return [
-          ...this.tarefasComHierarquia.map((x) => ({ ...x, parentId: x.tarefa_pai_id || projeto.id })),
+          ...this.tarefasComHierarquia.map((x) => ({
+            ...x,
+            parentId: x.tarefa_pai_id || projeto.id,
+          })),
           projeto,
         ];
       }
