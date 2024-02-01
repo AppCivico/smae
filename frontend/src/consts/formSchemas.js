@@ -696,7 +696,8 @@ export const projeto = object()
       .required('O projeto precisa de uma origem de recursos.')
       .oneOf(['PdmSistema', 'PdmAntigo', 'Outro'], 'A origem escolhida é inválida'),
     portfolios_compartilhados: array()
-      .label('Compartilhar no portfólios'),
+      .label('Compartilhar no portfólios')
+      .nullable(),
     publico_alvo: string()
       .label('Público alvo')
       .nullable(),
