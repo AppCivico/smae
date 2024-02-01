@@ -435,6 +435,76 @@ export class PPProjetosService implements ReportableService {
           LEFT JOIN orgao orgao_gestor ON orgao_gestor.id = projeto.orgao_gestor_id
           LEFT JOIN pessoa resp ON resp.id = projeto.responsavel_id
         ${whereCond.whereString}
+
+        UNION
+
+        SELECT
+            projeto.id,
+            portfolio.id as portfolio_id,
+            portfolio.titulo as portfolio_titulo,
+            projeto.meta_id,
+            projeto.iniciativa_id,
+            projeto.atividade_id,
+            projeto.nome,
+            projeto.codigo,
+            projeto.objeto,
+            projeto.objetivo,
+            projeto.publico_alvo,
+            projeto.previsao_inicio,
+            projeto.previsao_termino,
+            projeto.previsao_duracao,
+            projeto.previsao_custo,
+            projeto.escopo,
+            projeto.nao_escopo,
+            projeto.secretario_responsavel,
+            projeto.secretario_executivo,
+            projeto.coordenador_ue,
+            projeto.data_aprovacao,
+            projeto.data_revisao,
+            projeto.versao,
+            projeto.status,
+            orgao_responsavel.id AS orgao_responsavel_id,
+            orgao_responsavel.sigla AS orgao_responsavel_sigla,
+            orgao_responsavel.descricao AS orgao_responsavel_descricao,
+            resp.id AS responsavel_id,
+            resp.nome_exibicao AS responsavel_nome_exibicao,
+            orgao_gestor.id as orgao_gestor_id,
+            orgao_gestor.sigla as orgao_gestor_sigla,
+            orgao_gestor.descricao as orgao_gestor_descricao,
+            (
+                SELECT
+                    string_agg(nome_exibicao, '/')
+                FROM pessoa
+                WHERE id = ANY(projeto.responsaveis_no_orgao_gestor)
+            ) as gestores,
+            r.id AS fonte_recurso_id,
+            sof.descricao AS fonte_recurso_nome,
+            r.fonte_recurso_cod_sof AS fonte_recurso_cod_sof,
+            r.fonte_recurso_ano AS fonte_recurso_ano,
+            r.valor_percentual AS fonte_recurso_valor_pct,
+            r.valor_nominal AS fonte_recurso_valor_nominal,
+            pp.id AS premisa_id,
+            pp.premissa,
+            pr.id AS restricao_id,
+            pr.restricao,
+            o.id AS orgao_id,
+            o.sigla AS orgao_sigla,
+            o.descricao AS orgao_descricao
+        FROM projeto
+          LEFT JOIN portfolio_projeto_compartilhado ppc ON ppc.projeto_id = projeto.id
+          LEFT JOIN portfolio ON portfolio.id = ppc.portfolio_id
+          LEFT JOIN projeto_fonte_recurso r ON r.projeto_id = projeto.id
+          LEFT JOIN sof_entidades_linhas sof ON sof.codigo = r.fonte_recurso_cod_sof
+            AND sof.ano = ( case when r.fonte_recurso_ano > ${anoCorrente}::int then ${anoCorrente}::int else r.fonte_recurso_ano end )
+            AND sof.col = 'fonte_recursos'
+          LEFT JOIN projeto_premissa pp ON pp.projeto_id = projeto.id
+          LEFT JOIN projeto_restricao pr ON pr.projeto_id = projeto.id
+          LEFT JOIN projeto_orgao_participante po ON po.projeto_id = projeto.id
+          LEFT JOIN orgao o ON po.orgao_id = o.id
+          LEFT JOIN orgao orgao_responsavel ON orgao_responsavel.id = projeto.orgao_responsavel_id
+          LEFT JOIN orgao orgao_gestor ON orgao_gestor.id = projeto.orgao_gestor_id
+          LEFT JOIN pessoa resp ON resp.id = projeto.responsavel_id
+          WHERE ppc.removido_em IS NULL ${whereCond.whereString.replace('WHERE', '')}
         `;
 
         const data: RetornoDbProjeto[] = await this.prisma.$queryRawUnsafe(sql, ...whereCond.queryParams);
