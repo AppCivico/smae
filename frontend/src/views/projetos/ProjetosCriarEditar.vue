@@ -109,7 +109,7 @@ const possíveisResponsáveisPorÓrgãoId = computed(() => possíveisColaborador
 
 const órgãosDisponíveisNessePortfolio = (idDoPortfólio) => portfolioStore
   .portfoliosPorId?.[idDoPortfólio]?.orgaos
-  .some((x) => órgãosQueTemResponsáveisEPorId.value?.[x.id]) || [];
+  .filter((x) => !!órgãosQueTemResponsáveisEPorId.value?.[x.id]) || [];
 
 const iniciativasPorId = computed(() => (Array.isArray(metaSimplificada.value?.iniciativas)
   ? metaSimplificada.value.iniciativas.reduce((acc, cur) => ({ ...acc, [cur.id]: cur }), {})
