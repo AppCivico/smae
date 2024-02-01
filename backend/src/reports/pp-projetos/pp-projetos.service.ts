@@ -491,7 +491,7 @@ export class PPProjetosService implements ReportableService {
             o.sigla AS orgao_sigla,
             o.descricao AS orgao_descricao
         FROM projeto
-          LEFT JOIN portfolio_projeto_compartilhado ppc ON ppc.projeto_id = projeto.id
+          JOIN portfolio_projeto_compartilhado ppc ON ppc.projeto_id = projeto.id
           LEFT JOIN portfolio ON portfolio.id = ppc.portfolio_id
           LEFT JOIN projeto_fonte_recurso r ON r.projeto_id = projeto.id
           LEFT JOIN sof_entidades_linhas sof ON sof.codigo = r.fonte_recurso_cod_sof
