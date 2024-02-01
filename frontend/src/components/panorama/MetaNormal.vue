@@ -58,7 +58,8 @@ defineProps({
     <div class="meta__meta-dados flex flexwrap spacebetween tc g1">
       <ul class="meta__icones-lista flex g1">
         <li
-          v-if="meta.variaveis?.conferidas < meta.variaveis?.total && perfil !== 'ponto_focal'"
+          v-if="meta.variaveis?.conferidas < meta.variaveis?.enviadas
+            && perfil !== 'ponto_focal'"
           class="meta__icones-item"
         >
           <router-link
