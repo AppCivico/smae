@@ -664,7 +664,9 @@ export class PdmService {
         const found = await this.prisma.cicloFisico.findFirst({
             where: { pdm_id: pdm_id, ativo: true },
             include: {
-                fases: true,
+                fases: {
+                    orderBy: { data_inicio: 'asc' },
+                },
             },
         });
         if (found) {
