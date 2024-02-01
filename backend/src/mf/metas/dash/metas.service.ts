@@ -94,12 +94,12 @@ export class MfDashMetasService {
                         r.variaveis_aguardando_complementacao,
                         config.variaveis,
                         config,
-                        retornar_detalhes
+                        params
                     ),
-                    conferidas: this.buildItem(r.variaveis_conferidas, config.variaveis, config, retornar_detalhes),
-                    enviadas: this.buildItem(r.variaveis_enviadas, config.variaveis, config, retornar_detalhes),
-                    preenchidas: this.buildItem(r.variaveis_preenchidas, config.variaveis, config, retornar_detalhes),
-                    total: this.buildItem(r.variaveis_total, config.variaveis, config, retornar_detalhes),
+                    conferidas: this.buildItem(r.variaveis_conferidas, config.variaveis, config, params),
+                    enviadas: this.buildItem(r.variaveis_enviadas, config.variaveis, config, params),
+                    preenchidas: this.buildItem(r.variaveis_preenchidas, config.variaveis, config, params),
+                    total: this.buildItem(r.variaveis_total, config.variaveis, config, params),
                     detalhes: null,
                 },
                 cronograma: {
@@ -322,10 +322,14 @@ export class MfDashMetasService {
         metaItem: number[],
         userItem: number[],
         config: MfPessoaAcessoPdm,
-        detalhes: boolean
+        params: FilterMfDashMetasDto
     ): number | number[] {
+        const detalhes = !!params.retornar_detalhes;
+        const visao_geral = !!params.visao_geral;
+
         // não precisa de nenhum filtro para admin_cp, pode voltar diretamente a lista da esquerda
-        if (config.perfil == 'admin_cp') return detalhes ? metaItem : metaItem.length;
+        if (config.perfil == 'admin_cp' || (config.perfil == 'tecnico_cp' && visao_geral))
+            return detalhes ? metaItem : metaItem.length;
 
         const list = Arr.intersection(metaItem, userItem);
 
