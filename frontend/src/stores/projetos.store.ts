@@ -66,6 +66,8 @@ export const useProjetosStore = defineStore('projetos', {
   actions: {
     async buscarItem(id = 0, params = {}): Promise<void> {
       this.chamadasPendentes.emFoco = true;
+      this.erro = null;
+
       try {
         const resposta = await this.requestS.get(`${baseUrl}/projeto/${id}`, params);
         this.emFoco = resposta;
@@ -78,6 +80,7 @@ export const useProjetosStore = defineStore('projetos', {
     async buscarPdms(params = {}): Promise<void> {
       this.chamadasPendentes.pdmsSimplificados = true;
       this.pdmsSimplificados = [];
+      this.erro = null;
 
       try {
         const { linhas } = await this.requestS.get(`${baseUrl}/projeto/proxy/pdm-e-metas`, params);
@@ -91,6 +94,7 @@ export const useProjetosStore = defineStore('projetos', {
     async buscarMetaSimplificada(params = {}): Promise<void> {
       this.chamadasPendentes.metaSimplificada = true;
       this.metaSimplificada = [];
+      this.erro = null;
 
       try {
         const { linhas } = await this.requestS.get(`${baseUrl}/projeto/proxy/iniciativas-atividades`, params);
@@ -104,6 +108,8 @@ export const useProjetosStore = defineStore('projetos', {
     async buscarTudo(params = {}): Promise<void> {
       this.chamadasPendentes.lista = true;
       this.chamadasPendentes.emFoco = true;
+      this.erro = null;
+
       try {
         const { linhas } = await this.requestS.get(`${baseUrl}/projeto`, params);
 
@@ -117,6 +123,8 @@ export const useProjetosStore = defineStore('projetos', {
 
     async buscarDiretórios(idDoProjeto = 0): Promise<void> {
       this.chamadasPendentes.diretórios = true;
+      this.erro = null;
+
       try {
         const { linhas } = await this.requestS.get(`${baseUrl}/diretorio`, { projeto_id: idDoProjeto || this.route.params.projetoId });
 
@@ -130,6 +138,7 @@ export const useProjetosStore = defineStore('projetos', {
 
     async excluirItem(id: number): Promise<boolean> {
       this.chamadasPendentes.lista = true;
+      this.erro = null;
 
       try {
         await this.requestS.delete(`${baseUrl}/projeto/${id}`);
@@ -145,6 +154,7 @@ export const useProjetosStore = defineStore('projetos', {
 
     async mudarStatus(id: number, ação: ProjetoAcao): Promise<boolean> {
       this.chamadasPendentes.mudarStatus = true;
+      this.erro = null;
 
       try {
         await this.requestS.patch(`${baseUrl}/projeto-acao`, { acao: ação, projeto_id: id });
@@ -161,6 +171,7 @@ export const useProjetosStore = defineStore('projetos', {
 
     async salvarItem(params = {}, id = 0): Promise<boolean> {
       this.chamadasPendentes.emFoco = true;
+      this.erro = null;
 
       try {
         let resposta;
@@ -172,7 +183,6 @@ export const useProjetosStore = defineStore('projetos', {
         }
 
         this.chamadasPendentes.emFoco = false;
-        this.erro = null;
         return resposta;
       } catch (erro) {
         this.erro = erro;
@@ -183,6 +193,7 @@ export const useProjetosStore = defineStore('projetos', {
 
     async buscarArquivos(id = 0, params = {}): Promise<void> {
       this.chamadasPendentes.arquivos = true;
+      this.erro = null;
 
       try {
         const resposta: ListProjetoDocumento = await this.requestS.get(`${baseUrl}/projeto/${id || this.route.params.projetoId}/documento`, params);
@@ -198,6 +209,7 @@ export const useProjetosStore = defineStore('projetos', {
 
     async excluirArquivo(id: number, idDoProjeto = 0): Promise<boolean> {
       this.chamadasPendentes.arquivos = true;
+      this.erro = null;
 
       try {
         await this.requestS.delete(`${baseUrl}/projeto/${idDoProjeto || this.route.params.projetoId}/documento/${id}`);
@@ -215,6 +227,7 @@ export const useProjetosStore = defineStore('projetos', {
 
     async associarArquivo(params = {}, id = 0, idDoProjeto = 0): Promise<boolean> {
       this.chamadasPendentes.arquivos = true;
+      this.erro = null;
 
       try {
         let resposta;
