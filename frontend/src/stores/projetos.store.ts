@@ -128,7 +128,7 @@ export const useProjetosStore = defineStore('projetos', {
       this.chamadasPendentes.diretórios = false;
     },
 
-    async excluirItem(id: Number): Promise<boolean> {
+    async excluirItem(id: number): Promise<boolean> {
       this.chamadasPendentes.lista = true;
 
       try {
@@ -143,7 +143,7 @@ export const useProjetosStore = defineStore('projetos', {
       }
     },
 
-    async mudarStatus(id: Number, ação: ProjetoAcao): Promise<boolean> {
+    async mudarStatus(id: number, ação: ProjetoAcao): Promise<boolean> {
       this.chamadasPendentes.mudarStatus = true;
 
       try {
@@ -196,7 +196,7 @@ export const useProjetosStore = defineStore('projetos', {
       this.chamadasPendentes.arquivos = false;
     },
 
-    async excluirArquivo(id: Number, idDoProjeto = 0): Promise<boolean> {
+    async excluirArquivo(id: number, idDoProjeto = 0): Promise<boolean> {
       this.chamadasPendentes.arquivos = true;
 
       try {
