@@ -57,7 +57,7 @@ export const useRelatoriosStore = defineStore('relatorios', {
       if (await this.requestS.post(`${baseUrl}/relatorios`, params)) return true;
       return false;
     },
-    async delete(id: Number) {
+    async delete(id: number) {
       if (await this.requestS.delete(`${baseUrl}/relatorios/${id}`)) {
         this.lista = this.lista.filter((x) => x.id != id);
         return true;

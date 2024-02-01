@@ -58,7 +58,7 @@ export const useAcompanhamentosStore = defineStore('acompanhamentos', {
       this.chamadasPendentes.emFoco = false;
     },
 
-    async excluirItem(id: Number, projetoId = 0): Promise<boolean> {
+    async excluirItem(id: number, projetoId = 0): Promise<boolean> {
       this.chamadasPendentes.lista = true;
 
       try {
