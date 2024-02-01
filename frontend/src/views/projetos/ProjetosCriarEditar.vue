@@ -76,6 +76,10 @@ const portfolioId = Number.parseInt(route.query.portfolio_id, 10) || undefined;
 const possíveisGestores = ref([]);
 const possíveisColaboradores = ref([]);
 const portfóliosDisponíveis = computed(() => {
+  if (!emFoco.value?.portfolio_id || !emFoco.value?.portfolio_id) {
+    return [];
+  }
+
   const órgãosDoPortfólioCorrente = portfolioStore.portfoliosPorId[emFoco.value.portfolio_id].orgaos
     .map((x) => x.id);
 
@@ -105,7 +109,7 @@ const possíveisResponsáveisPorÓrgãoId = computed(() => possíveisColaborador
 
 const órgãosDisponíveisNessePortfolio = (idDoPortfólio) => portfolioStore
   .portfoliosPorId?.[idDoPortfólio]?.orgaos
-  .filter((x) => !!órgãosQueTemResponsáveisEPorId.value?.[x.id]) || [];
+  .some((x) => órgãosQueTemResponsáveisEPorId.value?.[x.id]) || [];
 
 const iniciativasPorId = computed(() => (Array.isArray(metaSimplificada.value?.iniciativas)
   ? metaSimplificada.value.iniciativas.reduce((acc, cur) => ({ ...acc, [cur.id]: cur }), {})
@@ -325,7 +329,23 @@ watch(emFoco, () => {
         <LabelFromYup
           name="portfolio_id"
           :schema="schema"
-        />
+        >
+          <template #append>
+            <router-link
+              v-if="portfóliosDisponíveis.length > 1"
+              :to="{
+                name: 'projetosTrocarPortfolio'
+              }"
+              class="ml05 tipinfo"
+              aria-label="Trocar de portfolio"
+            >
+              <svg
+                width="10"
+                height="10"
+              ><use xlink:href="#i_edit" /></svg><div>Trocar de portfolio</div>
+            </router-link>
+          </template>
+        </LabelFromYup>
         <Field
           name="portfolio_id"
           as="select"
@@ -427,6 +447,10 @@ watch(emFoco, () => {
         />
       </div>
     </div>
+
+    <router-view v-slot="{ Component }">
+      <component :is="Component" />
+    </router-view>
 
     <div
       v-if="projetoId"

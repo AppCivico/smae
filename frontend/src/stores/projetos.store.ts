@@ -25,6 +25,7 @@ interface ChamadasPendentes {
   pdmsSimplificados: boolean;
   metaSimplificada: boolean;
   mudarStatus: boolean;
+  transferirDePortfolio: boolean;
   arquivos: boolean;
   diretórios: boolean;
 }
@@ -55,6 +56,7 @@ export const useProjetosStore = defineStore('projetos', {
       pdmsSimplificados: false,
       metaSimplificada: false,
       mudarStatus: false,
+      transferirDePortfolio: false,
       arquivos: false,
       diretórios: true,
     },
@@ -165,6 +167,30 @@ export const useProjetosStore = defineStore('projetos', {
       } catch (erro) {
         this.erro = erro;
         this.chamadasPendentes.mudarStatus = false;
+        return false;
+      }
+    },
+
+    async transferirDePortfolio(idDoProjeto: number, idDoPortfolio: number): Promise<boolean> {
+      this.chamadasPendentes.transferirDePortfolio = true;
+      this.erro = null;
+
+      try {
+        if (!(idDoProjeto > 0)) {
+          throw new Error(`ID do projeto inválido: \`${idDoProjeto}\``);
+        }
+        if (!(idDoPortfolio > 0)) {
+          throw new Error(`ID do portfolio inválido: \`${idDoPortfolio}\``);
+        }
+
+        await this.requestS.post(`${baseUrl}/projeto/${idDoProjeto}/transferir-portfolio`, { portfolio_id: idDoPortfolio });
+
+        this.chamadasPendentes.transferirDePortfolio = false;
+        return true;
+      } catch (erro) {
+        this.erro = erro;
+        this.chamadasPendentes.transferirDePortfolio = false;
+
         return false;
       }
     },
