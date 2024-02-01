@@ -3,7 +3,9 @@
 
 <template>
   <div class="main-loading">
-    carregando
+    <slot>
+      carregando
+    </slot>
   </div>
 </template>
 <style lang="less" scoped>
