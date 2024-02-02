@@ -13,6 +13,54 @@ const {
 
 const idsDosItensAbertos = ref([]);
 
+const calcularDadosDoÍcone = ({
+  aguardaComplementação,
+  aguardaConferência,
+  aguardaEnvio,
+  aguardaPreenchimento,
+}) => {
+  switch (perfil.value) {
+    case 'ponto_focal':
+      if (aguardaPreenchimento) {
+        return {
+          cor: '#ee3b2b',
+          mensagem: 'Aguarda preenchimento',
+        };
+      } if (aguardaEnvio) {
+        return {
+          cor: '#f2890d',
+          mensagem: 'Aguarda envio',
+        };
+      }
+      return {
+        cor: '#3b5881',
+        mensagem: 'ERRO DE CÁLCULO!',
+      };
+
+    default:
+      if (aguardaConferência && !aguardaComplementação) {
+        return {
+          cor: '#4074bf',
+          mensagem: 'Aguarda conferência',
+        };
+      } if (aguardaEnvio) {
+        return {
+          cor: '#f2890d',
+          mensagem: 'Aguarda envio',
+        };
+      } if (aguardaPreenchimento) {
+        return {
+          cor: '#ee3b2b',
+          mensagem: 'Aguarda preenchimento',
+        };
+      }
+      return {
+        cor: '#3b5881',
+        mensagem: 'ERRO DE CÁLCULO!',
+      };
+  }
+};
+
 //  pendentes:
 //    para o ponto focal:
 //      - total - enviadas + aguardando complementação
@@ -39,15 +87,27 @@ const listaDePendentes = computed(() => {
     variáveis: x.variaveis?.total?.reduce((acc, cur) => {
       const manter = x.variaveis.aguardando_complementacao.includes(cur);
       const remover = !x.variaveis[aRemover].includes(cur);
+
+      const aguardaComplementação = manter;
+      const aguardaConferência = !x.variaveis.conferidas.includes(cur);
+      const aguardaEnvio = !x.variaveis.enviadas.includes(cur);
+      const aguardaPreenchimento = !x.variaveis.preenchidas.includes(cur);
+
       return (manter || remover)
         ? acc.concat([{
           id: cur,
           código: variáveisPorId.value[cur]?.codigo || '',
           título: variáveisPorId.value[cur]?.titulo || '',
-          aguardaComplementação: manter,
-          aguardaConferência: !x.variaveis.conferidas.includes(cur),
-          aguardaEnvio: !x.variaveis.enviadas.includes(cur),
-          aguardaPreenchimento: !x.variaveis.preenchidas.includes(cur),
+          aguardaComplementação,
+          aguardaConferência,
+          aguardaEnvio,
+          aguardaPreenchimento,
+          ícone: calcularDadosDoÍcone({
+            aguardaComplementação,
+            aguardaConferência,
+            aguardaEnvio,
+            aguardaPreenchimento,
+          }),
         }])
         : acc;
     }, [])
@@ -174,35 +234,21 @@ const listaDePendentes = computed(() => {
             >
               <span
                 class="tipinfo ib mr1 f0"
+                :class="{
+                  tipinfo: !!variável.ícone.mensagem
+                }"
               >
                 <svg
                   width="20"
                   height="20"
-                  :color="variável.aguardaConferência
-                    && perfil !== 'ponto_focal'
-                    && !variável.aguardaComplementação
-                    ? '#4074bf'
-                    : variável.aguardaEnvio
-                      ? '#f2890d'
-                      : variável.aguardaPreenchimento
-                        ? '#ee3b2b'
-                        : '#3b5881'"
+                  :color="variável.ícone.cor"
                 ><use
                   :xlink:href="variável.aguardaComplementação
                     ? '#i_alert'
                     : '#i_circle'"
                 /></svg>
-                <div v-if="variável.aguardaConferência && perfil !== 'ponto_focal'">
-                  Aguarda conferência
-                </div>
-                <div v-else-if="variável.aguardaEnvio">
-                  Aguarda envio
-                </div>
-                <div v-else-if="variável.aguardaPreenchimento">
-                  Aguarda preenchimento
-                </div>
-                <div v-else>
-                  ERRO DE CÁLCULO!
+                <div v-if="variável.ícone.mensagem">
+                  {{ variável.ícone.mensagem }}
                 </div>
               </span>
               <router-link
