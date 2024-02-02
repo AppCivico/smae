@@ -476,16 +476,8 @@ CREATE OR REPLACE VIEW view_meta_pessoa_responsavel_na_cp AS
 CREATE OR REPLACE PROCEDURE add_refresh_meta_task(p_meta_id INTEGER)
 AS $$
 BEGIN
-    IF NOT EXISTS (
-        SELECT 1
-        FROM task_queue
-        WHERE "type" = 'refresh_meta'
-        AND status = 'pending'
-        AND (params->>'meta_id')::INTEGER = p_meta_id
-    ) THEN
-        INSERT INTO task_queue ("type", params)
-        VALUES ('refresh_meta', json_build_object('meta_id', p_meta_id));
-    END IF;
+    INSERT INTO task_queue ("type", params)
+    VALUES ('refresh_meta', json_build_object('meta_id', p_meta_id));
 END;
 $$ LANGUAGE plpgsql;
 
