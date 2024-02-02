@@ -217,7 +217,7 @@ export default {
     <div class="mb2">
       <div class="flex spacebetween center mb1">
         <legend class="label mb1">
-          Regiões
+          Regiões abrangidas
         </legend>
         <hr class="ml2 f1">
         <label class="ml2">
