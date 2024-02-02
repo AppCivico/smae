@@ -210,6 +210,9 @@ export default {
         class="error-msg"
       />
     </div>
+    <pre v-ScrollLockDebug>values.regioes:{{ values.regioes }}</pre>
+
+    <pre v-ScrollLockDebug>regiõesSelecionadas:{{ regiõesSelecionadas }}</pre>
 
     <div class="mb2">
       <div class="flex spacebetween center mb1">
