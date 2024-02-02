@@ -70,7 +70,7 @@ const level2 = ref(null);
 const level3 = ref(null);
 const regiao_id_mount = ref(null);
 const periodicidade = ref(null);
-const regioes = ref([]);
+const regiõesSelecionadas = ref([]);
 
 const virtualParent = ref({});
 
@@ -92,10 +92,11 @@ const idsDasRegiõesVálidas = computed(() => regiõesDisponíveis.value
 
 const estãoTodasAsRegiõesSelecionadas = computed({
   get() {
-    return regioes.value?.length === idsDasRegiõesVálidas.value.length;
+    return regiõesSelecionadas.value?.length
+      && regiõesSelecionadas.value.length === idsDasRegiõesVálidas.value.length;
   },
   set(novoValor) {
-    regioes.value = novoValor
+    regiõesSelecionadas.value = novoValor
       ? idsDasRegiõesVálidas.value
       : [];
   },
@@ -629,7 +630,7 @@ export default {
             :title="!r.pdm_codigo_sufixo ? 'Região sem código de sufixo' : undefined"
           >
             <Field
-              v-model="regioes"
+              v-model="regiõesSelecionadas"
               name="regioes"
               :value="r.id"
               type="checkbox"
