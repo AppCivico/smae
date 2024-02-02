@@ -217,63 +217,57 @@ export class IndicadoresService implements ReportableService {
         join ${queryFromWhere}
         `;
 
-        await this.prisma.$transaction(
-            async (prismaTxn: Prisma.TransactionClient) => {
-                if (dto.periodo == 'Anual' && dto.tipo == 'Analitico') {
-                    await prismaTxn.$queryRawUnsafe(
-                        sql
-                            .replace(':JANELA:', "extract('month' from periodicidade_intervalo(i.periodicidade))::int")
-                            .replace(':DATA:', 'dt.dt::date::text')
-                            .replace(':OFFSET:', ''),
-                        anoInicio + '-01-01',
-                        dto.ano + 1 + '-01-01',
-                        '1 month'
-                    );
+        await this.prisma.$transaction(async (prismaTxn: Prisma.TransactionClient) => {
+            if (dto.periodo == 'Anual' && dto.tipo == 'Analitico') {
+                await prismaTxn.$queryRawUnsafe(
+                    sql
+                        .replace(':JANELA:', "extract('month' from periodicidade_intervalo(i.periodicidade))::int")
+                        .replace(':DATA:', 'dt.dt::date::text')
+                        .replace(':OFFSET:', ''),
+                    anoInicio + '-01-01',
+                    dto.ano + 1 + '-01-01',
+                    '1 month'
+                );
 
-                    await this.streamRowsInto(null, stream, prismaTxn);
-                } else if (dto.periodo == 'Anual' && dto.tipo == 'Consolidado') {
-                    await prismaTxn.$queryRawUnsafe(
-                        sql.replace(':JANELA:', '12').replace(':DATA:', 'dt.dt::date::text').replace(':OFFSET:', ''),
-                        anoInicio + '-12-01',
-                        dto.ano + 1 + '-12-01',
-                        '1 year'
-                    );
+                await this.streamRowsInto(null, stream, prismaTxn);
+            } else if (dto.periodo == 'Anual' && dto.tipo == 'Consolidado') {
+                await prismaTxn.$queryRawUnsafe(
+                    sql.replace(':JANELA:', '12').replace(':DATA:', 'dt.dt::date::text').replace(':OFFSET:', ''),
+                    anoInicio + '-12-01',
+                    dto.ano + 1 + '-12-01',
+                    '1 year'
+                );
 
-                    await this.streamRowsInto(null, stream, prismaTxn);
-                } else if (dto.periodo == 'Semestral' && dto.tipo == 'Consolidado') {
-                    const base_ano = dto.semestre == 'Primeiro' ? anoInicio : anoInicio - 1;
-                    const base_mes = dto.semestre == 'Primeiro' ? base_ano + '-06-01' : base_ano + '-12-01';
+                await this.streamRowsInto(null, stream, prismaTxn);
+            } else if (dto.periodo == 'Semestral' && dto.tipo == 'Consolidado') {
+                const base_ano = dto.semestre == 'Primeiro' ? anoInicio : anoInicio - 1;
+                const base_mes = dto.semestre == 'Primeiro' ? base_ano + '-06-01' : base_ano + '-12-01';
 
-                    await prismaTxn.$queryRawUnsafe(
-                        sql
-                            .replace(':JANELA:', '6')
-                            .replace(
-                                ':DATA:',
-                                "(dt.dt::date - '5 months'::interval)::date::text || '/' || (dt.dt::date)"
-                            )
-                            .replace(':OFFSET:', ''),
-                        base_mes,
-                        base_mes,
-                        '1 decade'
-                    );
+                await prismaTxn.$queryRawUnsafe(
+                    sql
+                        .replace(':JANELA:', '6')
+                        .replace(':DATA:', "(dt.dt::date - '5 months'::interval)::date::text || '/' || (dt.dt::date)")
+                        .replace(':OFFSET:', ''),
+                    base_mes,
+                    base_mes,
+                    '1 decade'
+                );
 
-                    await this.streamRowsInto(null, stream, prismaTxn);
-                } else if (dto.periodo == 'Semestral' && dto.tipo == 'Analitico') {
-                    // indo buscar 6 meses, por isso sempre tem valor
-                    await prismaTxn.$queryRawUnsafe(
-                        sql
-                            .replace(':JANELA:', '6')
-                            .replace(':DATA:', "(dt.dt::date - '5 months'::interval)::date::text")
-                            .replace(':OFFSET:', "- '1 month'::interval"),
-                        dto.semestre == 'Primeiro' ? anoInicio + '-06-01' : anoInicio + '-12-01',
-                        dto.semestre == 'Primeiro' ? dto.ano + '-12-01' : dto.ano + 1 + '-06-01',
-                        '1 month'
-                    );
-                    await this.streamRowsInto(null, stream, prismaTxn);
-                }
-            },
-            { isolationLevel: 'RepeatableRead' }
-        );
+                await this.streamRowsInto(null, stream, prismaTxn);
+            } else if (dto.periodo == 'Semestral' && dto.tipo == 'Analitico') {
+                // indo buscar 6 meses, por isso sempre tem valor
+                await prismaTxn.$queryRawUnsafe(
+                    sql
+                        .replace(':JANELA:', '6')
+                        .replace(':DATA:', "(dt.dt::date - '5 months'::interval)::date::text")
+                        .replace(':OFFSET:', "- '1 month'::interval"),
+                    dto.semestre == 'Primeiro' ? anoInicio + '-06-01' : anoInicio + '-12-01',
+                    dto.semestre == 'Primeiro' ? dto.ano + '-12-01' : dto.ano + 1 + '-06-01',
+                    '1 month'
+                );
+                await this.streamRowsInto(null, stream, prismaTxn);
+            }
+        });
     }
 
     private async queryDataRegiao(indicadoresOrVar: number[], dto: CreateRelIndicadorDto, stream: Readable) {
