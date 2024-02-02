@@ -13,6 +13,25 @@ const {
 
 const idsDosItensAbertos = ref([]);
 
+const dadosDeÍcones = {
+  Envio: {
+    cor: '#f2890d',
+    mensagem: 'Aguarda envio',
+  },
+  Conferência: {
+    cor: '#4074bf',
+    mensagem: 'Aguarda conferência',
+  },
+  Preenchimento: {
+    cor: '#ee3b2b',
+    mensagem: 'Aguarda preenchimento',
+  },
+  erro: {
+    cor: '#3b5881',
+    mensagem: 'ERRO DE CÁLCULO!',
+  },
+};
+
 const calcularDadosDoÍcone = ({
   aguardaComplementação,
   aguardaConferência,
@@ -22,42 +41,21 @@ const calcularDadosDoÍcone = ({
   switch (perfil.value) {
     case 'ponto_focal':
       if (aguardaPreenchimento) {
-        return {
-          cor: '#ee3b2b',
-          mensagem: 'Aguarda preenchimento',
-        };
+        return dadosDeÍcones.Preenchimento;
       } if (aguardaEnvio) {
-        return {
-          cor: '#f2890d',
-          mensagem: 'Aguarda envio',
-        };
+        return dadosDeÍcones.Envio;
       }
-      return {
-        cor: '#3b5881',
-        mensagem: 'ERRO DE CÁLCULO!',
-      };
+      return dadosDeÍcones.erro;
 
     default:
       if (aguardaConferência && !aguardaComplementação) {
-        return {
-          cor: '#4074bf',
-          mensagem: 'Aguarda conferência',
-        };
+        return dadosDeÍcones.Conferência;
       } if (aguardaEnvio) {
-        return {
-          cor: '#f2890d',
-          mensagem: 'Aguarda envio',
-        };
+        return dadosDeÍcones.Envio;
       } if (aguardaPreenchimento) {
-        return {
-          cor: '#ee3b2b',
-          mensagem: 'Aguarda preenchimento',
-        };
+        return dadosDeÍcones.Preenchimento;
       }
-      return {
-        cor: '#3b5881',
-        mensagem: 'ERRO DE CÁLCULO!',
-      };
+      return dadosDeÍcones.erro;
   }
 };
 
