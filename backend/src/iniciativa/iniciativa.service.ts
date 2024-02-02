@@ -29,7 +29,7 @@ export class IniciativaService {
 
         if (!user.hasSomeRoles(['CadastroMeta.inserir'])) {
             // logo, é um tecnico_cp
-            const filterIdIn = await user.getMetaIdsFromAnyModel(this.prisma.view_meta_pessoa_responsavel);
+            const filterIdIn = await user.getMetaIdsFromAnyModel(this.prisma.view_meta_pessoa_responsavel_na_cp);
             if (!filterIdIn.includes(createIniciativaDto.meta_id)) {
                 throw new HttpException('Sem permissão para criar iniciativa nesta meta', 400);
             }
@@ -193,7 +193,7 @@ export class IniciativaService {
 
         let filterIdIn: undefined | number[] = undefined;
         if (!user.hasSomeRoles(['CadastroMeta.inserir'])) {
-            filterIdIn = await user.getMetaIdsFromAnyModel(this.prisma.view_meta_pessoa_responsavel);
+            filterIdIn = await user.getMetaIdsFromAnyModel(this.prisma.view_meta_pessoa_responsavel_na_cp);
             // TODO: notei que existe responsavel na iniciativa, então talvez seja necessario na verdade,
             // filtrar usando o responsavel da iniciativa e não da meta
             // o mesmo vale pra atividade
@@ -297,7 +297,7 @@ export class IniciativaService {
         const self = await this.prisma.iniciativa.findFirstOrThrow({ where: { id }, select: { meta_id: true } });
 
         if (!user.hasSomeRoles(['CadastroMeta.inserir'])) {
-            const filterIdIn = await user.getMetaIdsFromAnyModel(this.prisma.view_meta_pessoa_responsavel);
+            const filterIdIn = await user.getMetaIdsFromAnyModel(this.prisma.view_meta_pessoa_responsavel_na_cp);
             if (!filterIdIn.includes(self.meta_id))
                 throw new HttpException('Sem permissão para editar iniciativa', 400);
         }
