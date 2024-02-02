@@ -600,6 +600,9 @@ export default {
         v-if="funçãoDaTela === 'gerar'"
         class="mb1"
       >
+        <pre v-ScrollLockDebug>values.regioes:{{ values.regioes }}</pre>
+        <pre v-ScrollLockDebug>regiõesSelecionadas:{{ regiõesSelecionadas }}</pre>
+
         <div class="flex spacebetween center mb2">
           <legend class="label mt2 mb1">
             Regiões abrangidas
