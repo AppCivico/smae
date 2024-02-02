@@ -367,7 +367,7 @@ export default {
         </div>
         <div
           v-if="values.tipo_de_janela !== 'mes_corrente'"
-          class="f100"
+          class="fb100"
         >
           <label class="label tc600">Meses</label>
 
