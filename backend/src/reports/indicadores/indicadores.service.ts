@@ -1,11 +1,13 @@
 import { HttpException, Injectable, Logger } from '@nestjs/common';
-import { Regiao } from '@prisma/client';
+import { Prisma, Regiao } from '@prisma/client';
+import { Readable } from 'stream';
 import { Date2YMD } from '../../common/date2ymd';
 import { PrismaService } from '../../prisma/prisma.service';
 import { RegiaoBasica as RegiaoDto } from '../../regiao/entities/regiao.entity';
 import { DefaultCsvOptions, FileOutput, ReportableService, UtilsService } from '../utils/utils.service';
 import { CreateRelIndicadorDto } from './dto/create-indicadore.dto';
 import { ListIndicadoresDto, RelIndicadoresDto, RelIndicadoresVariaveisDto } from './entities/indicadores.entity';
+const BATCH_SIZE = 500;
 
 class RetornoDb {
     data: string;
@@ -41,6 +43,25 @@ class RetornoDbRegiao extends RetornoDb {
     regiao_id: number;
 }
 
+function errStream(stream: Readable): ((reason: any) => void | PromiseLike<void>) | null | undefined {
+    return (err) => {
+        stream.emit('error', { err });
+        stream.destroy();
+    };
+}
+const readStreamPromise = (queryStream: Readable, outputArray: any[]) => {
+    return new Promise((resolve, reject) => {
+        queryStream
+            .on('data', (chunk) => {
+                outputArray.push(chunk);
+            })
+            .on('end', () => {
+                resolve(true);
+            })
+            .on('error', reject);
+    });
+};
+
 const {
     Parser,
     transforms: { flatten },
@@ -50,12 +71,80 @@ const defaultTransform = [flatten({ paths: [] })];
 @Injectable()
 export class IndicadoresService implements ReportableService {
     private readonly logger = new Logger(IndicadoresService.name);
+    private invalidatePreparedStatement: number = 0;
+
     constructor(
         private readonly prisma: PrismaService,
         private readonly utils: UtilsService
     ) {}
 
     async create(dto: CreateRelIndicadorDto): Promise<ListIndicadoresDto> {
+        const indicadores = await this.filtraIndicadores(dto);
+
+        const out: RelIndicadoresDto[] = [];
+        const out_regioes: RelIndicadoresVariaveisDto[] = [];
+
+        const linhasDataStream = new Readable({ objectMode: true, read() {} });
+
+        await Promise.all([
+            this.queryData(
+                indicadores.map((r) => r.id),
+                dto,
+                linhasDataStream
+            ),
+            readStreamPromise(linhasDataStream, out),
+        ]);
+
+        const regioesDataStream = new Readable({ objectMode: true, read() {} });
+
+        await Promise.all([
+            this.queryDataRegiao(
+                indicadores.map((r) => r.id),
+                dto,
+                regioesDataStream
+            ),
+            readStreamPromise(regioesDataStream, out_regioes),
+        ]);
+
+        return {
+            linhas: out,
+            regioes: out_regioes,
+        };
+    }
+
+    streamLinhas(dto: CreateRelIndicadorDto): Readable {
+        const stream = new Readable({ objectMode: true, read() {} });
+
+        this.filtraIndicadores(dto)
+            .then((indicadores) => {
+                this.queryData(
+                    indicadores.map((r) => r.id),
+                    dto,
+                    stream
+                ).catch(errStream(stream));
+            })
+            .catch(errStream(stream));
+
+        return stream;
+    }
+
+    streamRegioes(dto: CreateRelIndicadorDto): Readable {
+        const stream = new Readable({ objectMode: true, read() {} });
+
+        this.filtraIndicadores(dto)
+            .then((indicadores) => {
+                this.queryDataRegiao(
+                    indicadores.map((r) => r.id),
+                    dto,
+                    stream
+                ).catch(errStream(stream));
+            })
+            .catch(errStream(stream));
+
+        return stream;
+    }
+
+    private async filtraIndicadores(dto: CreateRelIndicadorDto) {
         if (dto.periodo == 'Semestral' && !dto.semestre) {
             throw new HttpException('Necessário enviar semestre para o periodo Semestral', 400);
         }
@@ -75,28 +164,11 @@ export class IndicadoresService implements ReportableService {
             },
             select: { id: true },
         });
-
-        const out: RelIndicadoresDto[] = [];
-        const out_regioes: RelIndicadoresVariaveisDto[] = [];
-
-        await this.queryData(
-            indicadores.map((r) => r.id),
-            dto,
-            out
-        );
-        await this.queryDataRegiao(
-            indicadores.map((r) => r.id),
-            dto,
-            out_regioes
-        );
-
-        return {
-            linhas: out,
-            regioes: out_regioes,
-        };
+        return indicadores;
     }
 
-    private async queryData(indicadoresOrVar: number[], dto: CreateRelIndicadorDto, out: RelIndicadoresDto[]) {
+    private async queryData(indicadoresOrVar: number[], dto: CreateRelIndicadorDto, stream: Readable) {
+        this.invalidatePreparedStatement++;
         if (indicadoresOrVar.length == 0) return;
 
         const queryFromWhere = `indicador i ON i.id IN (${indicadoresOrVar.join(',')})
@@ -113,7 +185,7 @@ export class IndicadoresService implements ReportableService {
 
         const anoInicio = buscaInicio[0].min.getFullYear();
 
-        const sql = `SELECT
+        const sql = `CREATE TEMP TABLE _report_data ON COMMIT DROP AS SELECT
         i.id as indicador_id,
         i.codigo as indicador_codigo,
         i.titulo as indicador_titulo,
@@ -145,63 +217,68 @@ export class IndicadoresService implements ReportableService {
         join ${queryFromWhere}
         `;
 
-        if (dto.periodo == 'Anual' && dto.tipo == 'Analitico') {
-            const data: RetornoDb[] = await this.prisma.$queryRawUnsafe(
-                sql
-                    .replace(':JANELA:', "extract('month' from periodicidade_intervalo(i.periodicidade))::int")
-                    .replace(':DATA:', 'dt.dt::date::text')
-                    .replace(':OFFSET:', ''),
-                anoInicio + '-01-01',
-                dto.ano + 1 + '-01-01',
-                '1 month'
-            );
+        await this.prisma.$transaction(
+            async (prismaTxn: Prisma.TransactionClient) => {
+                if (dto.periodo == 'Anual' && dto.tipo == 'Analitico') {
+                    await prismaTxn.$queryRawUnsafe(
+                        sql
+                            .replace(':JANELA:', "extract('month' from periodicidade_intervalo(i.periodicidade))::int")
+                            .replace(':DATA:', 'dt.dt::date::text')
+                            .replace(':OFFSET:', ''),
+                        anoInicio + '-01-01',
+                        dto.ano + 1 + '-01-01',
+                        '1 month'
+                    );
 
-            this.convertRowsInto(data, null, out);
-        } else if (dto.periodo == 'Anual' && dto.tipo == 'Consolidado') {
-            const data: RetornoDb[] = await this.prisma.$queryRawUnsafe(
-                sql.replace(':JANELA:', '12').replace(':DATA:', 'dt.dt::date::text').replace(':OFFSET:', ''),
-                anoInicio + '-12-01',
-                dto.ano + 1 + '-12-01',
-                '1 year'
-            );
+                    await this.streamRowsInto(null, stream, prismaTxn);
+                } else if (dto.periodo == 'Anual' && dto.tipo == 'Consolidado') {
+                    await prismaTxn.$queryRawUnsafe(
+                        sql.replace(':JANELA:', '12').replace(':DATA:', 'dt.dt::date::text').replace(':OFFSET:', ''),
+                        anoInicio + '-12-01',
+                        dto.ano + 1 + '-12-01',
+                        '1 year'
+                    );
 
-            this.convertRowsInto(data, null, out);
-        } else if (dto.periodo == 'Semestral' && dto.tipo == 'Consolidado') {
-            const base_ano = dto.semestre == 'Primeiro' ? anoInicio : anoInicio - 1;
-            const base_mes = dto.semestre == 'Primeiro' ? base_ano + '-06-01' : base_ano + '-12-01';
+                    await this.streamRowsInto(null, stream, prismaTxn);
+                } else if (dto.periodo == 'Semestral' && dto.tipo == 'Consolidado') {
+                    const base_ano = dto.semestre == 'Primeiro' ? anoInicio : anoInicio - 1;
+                    const base_mes = dto.semestre == 'Primeiro' ? base_ano + '-06-01' : base_ano + '-12-01';
 
-            const base_data: RetornoDb[] = await this.prisma.$queryRawUnsafe(
-                sql
-                    .replace(':JANELA:', '6')
-                    .replace(':DATA:', "(dt.dt::date - '5 months'::interval)::date::text || '/' || (dt.dt::date)")
-                    .replace(':OFFSET:', ''),
-                base_mes,
-                base_mes,
-                '1 decade'
-            );
+                    await prismaTxn.$queryRawUnsafe(
+                        sql
+                            .replace(':JANELA:', '6')
+                            .replace(
+                                ':DATA:',
+                                "(dt.dt::date - '5 months'::interval)::date::text || '/' || (dt.dt::date)"
+                            )
+                            .replace(':OFFSET:', ''),
+                        base_mes,
+                        base_mes,
+                        '1 decade'
+                    );
 
-            this.convertRowsInto(base_data, null, out);
-        } else if (dto.periodo == 'Semestral' && dto.tipo == 'Analitico') {
-            // indo buscar 6 meses, por isso sempre tem valor
-            const base_data: RetornoDb[] = await this.prisma.$queryRawUnsafe(
-                sql
-                    .replace(':JANELA:', '6')
-                    .replace(':DATA:', "(dt.dt::date - '5 months'::interval)::date::text")
-                    .replace(':OFFSET:', "- '1 month'::interval"),
-                dto.semestre == 'Primeiro' ? anoInicio + '-06-01' : anoInicio + '-12-01',
-                dto.semestre == 'Primeiro' ? dto.ano + '-12-01' : dto.ano + 1 + '-06-01',
-                '1 month'
-            );
-            this.convertRowsInto(base_data, null, out);
-        }
+                    await this.streamRowsInto(null, stream, prismaTxn);
+                } else if (dto.periodo == 'Semestral' && dto.tipo == 'Analitico') {
+                    // indo buscar 6 meses, por isso sempre tem valor
+                    await prismaTxn.$queryRawUnsafe(
+                        sql
+                            .replace(':JANELA:', '6')
+                            .replace(':DATA:', "(dt.dt::date - '5 months'::interval)::date::text")
+                            .replace(':OFFSET:', "- '1 month'::interval"),
+                        dto.semestre == 'Primeiro' ? anoInicio + '-06-01' : anoInicio + '-12-01',
+                        dto.semestre == 'Primeiro' ? dto.ano + '-12-01' : dto.ano + 1 + '-06-01',
+                        '1 month'
+                    );
+                    await this.streamRowsInto(null, stream, prismaTxn);
+                }
+            },
+            { isolationLevel: 'RepeatableRead' }
+        );
     }
 
-    private async queryDataRegiao(
-        indicadoresOrVar: number[],
-        dto: CreateRelIndicadorDto,
-        out: RelIndicadoresVariaveisDto[]
-    ) {
+    private async queryDataRegiao(indicadoresOrVar: number[], dto: CreateRelIndicadorDto, stream: Readable) {
         if (indicadoresOrVar.length == 0) return;
+        this.invalidatePreparedStatement++;
 
         const queryFromWhere = `indicador i ON i.id IN (${indicadoresOrVar.join(',')})
         join indicador_variavel iv ON iv.indicador_id = i.id
@@ -220,7 +297,7 @@ export class IndicadoresService implements ReportableService {
 
         const anoInicio = buscaInicio[0].min.getFullYear();
 
-        const sql = `SELECT
+        const sql = `CREATE TEMP TABLE _report_data ON COMMIT DROP AS SELECT
         i.id as indicador_id,
         i.codigo as indicador_codigo,
         i.titulo as indicador_titulo,
@@ -257,56 +334,58 @@ export class IndicadoresService implements ReportableService {
         const regioes = await this.prisma.regiao.findMany({
             where: { removido_em: null },
         });
+        await this.prisma.$transaction(async (prismaTxn: Prisma.TransactionClient) => {
+            if (dto.periodo == 'Anual' && dto.tipo == 'Analitico') {
+                await prismaTxn.$queryRawUnsafe(
+                    sql
+                        .replace(':JANELA:', "extract('month' from periodicidade_intervalo(v.periodicidade))::int")
+                        .replace(':DATA:', 'dt.dt::date::text')
+                        .replace(':OFFSET:', ''),
+                    anoInicio + '-01-01',
+                    dto.ano + 1 + '-01-01',
+                    '1 month'
+                );
 
-        if (dto.periodo == 'Anual' && dto.tipo == 'Analitico') {
-            const data: RetornoDbRegiao[] = await this.prisma.$queryRawUnsafe(
-                sql
-                    .replace(':JANELA:', "extract('month' from periodicidade_intervalo(v.periodicidade))::int")
-                    .replace(':DATA:', 'dt.dt::date::text')
-                    .replace(':OFFSET:', ''),
-                anoInicio + '-01-01',
-                dto.ano + 1 + '-01-01',
-                '1 month'
-            );
+                await this.streamRowsInto(regioes, stream, prismaTxn);
+            } else if (dto.periodo == 'Anual' && dto.tipo == 'Consolidado') {
+                await prismaTxn.$queryRawUnsafe(
+                    sql.replace(':JANELA:', '12').replace(':DATA:', 'dt.dt::date::text').replace(':OFFSET:', ''),
+                    anoInicio + '-12-01',
+                    dto.ano + 1 + '-12-01',
+                    '1 year'
+                );
 
-            this.convertRowsInto(data, regioes, out as RelIndicadoresVariaveisDto[]);
-        } else if (dto.periodo == 'Anual' && dto.tipo == 'Consolidado') {
-            const data: RetornoDbRegiao[] = await this.prisma.$queryRawUnsafe(
-                sql.replace(':JANELA:', '12').replace(':DATA:', 'dt.dt::date::text').replace(':OFFSET:', ''),
-                anoInicio + '-12-01',
-                dto.ano + 1 + '-12-01',
-                '1 year'
-            );
+                await this.streamRowsInto(regioes, stream, prismaTxn);
+            } else if (dto.periodo == 'Semestral' && dto.tipo == 'Consolidado') {
+                const base_ano = dto.semestre == 'Primeiro' ? anoInicio : anoInicio - 1;
+                const base_mes = dto.semestre == 'Primeiro' ? base_ano + '-06-01' : base_ano + '-12-01';
 
-            this.convertRowsInto(data, regioes, out as RelIndicadoresVariaveisDto[]);
-        } else if (dto.periodo == 'Semestral' && dto.tipo == 'Consolidado') {
-            const base_ano = dto.semestre == 'Primeiro' ? anoInicio : anoInicio - 1;
-            const base_mes = dto.semestre == 'Primeiro' ? base_ano + '-06-01' : base_ano + '-12-01';
+                await prismaTxn.$queryRawUnsafe(
+                    sql
+                        .replace(':JANELA:', '6')
+                        .replace(':DATA:', "(dt.dt::date - '5 months'::interval)::date::text || '/' || (dt.dt::date)")
+                        .replace(':OFFSET:', ''),
+                    base_mes,
+                    base_mes,
+                    '1 decade'
+                );
 
-            const base_data: RetornoDbRegiao[] = await this.prisma.$queryRawUnsafe(
-                sql
-                    .replace(':JANELA:', '6')
-                    .replace(':DATA:', "(dt.dt::date - '5 months'::interval)::date::text || '/' || (dt.dt::date)")
-                    .replace(':OFFSET:', ''),
-                base_mes,
-                base_mes,
-                '1 decade'
-            );
+                await this.streamRowsInto(regioes, stream, prismaTxn);
+            } else if (dto.periodo == 'Semestral' && dto.tipo == 'Analitico') {
+                // indo buscar 6 meses, por isso sempre tem valor
+                await prismaTxn.$queryRawUnsafe(
+                    sql
+                        .replace(':JANELA:', '6')
+                        .replace(':DATA:', "(dt.dt::date - '5 months'::interval)::date::text")
+                        .replace(':OFFSET:', "- '1 month'::interval"),
+                    dto.semestre == 'Primeiro' ? anoInicio + '-06-01' : anoInicio + '-12-01',
+                    dto.semestre == 'Primeiro' ? dto.ano + '-12-01' : dto.ano + 1 + '-06-01',
+                    '1 month'
+                );
 
-            this.convertRowsInto(base_data, regioes, out as RelIndicadoresVariaveisDto[]);
-        } else if (dto.periodo == 'Semestral' && dto.tipo == 'Analitico') {
-            // indo buscar 6 meses, por isso sempre tem valor
-            const base_data: RetornoDbRegiao[] = await this.prisma.$queryRawUnsafe(
-                sql
-                    .replace(':JANELA:', '6')
-                    .replace(':DATA:', "(dt.dt::date - '5 months'::interval)::date::text")
-                    .replace(':OFFSET:', "- '1 month'::interval"),
-                dto.semestre == 'Primeiro' ? anoInicio + '-06-01' : anoInicio + '-12-01',
-                dto.semestre == 'Primeiro' ? dto.ano + '-12-01' : dto.ano + 1 + '-06-01',
-                '1 month'
-            );
-            this.convertRowsInto(base_data, regioes, out as RelIndicadoresVariaveisDto[]);
-        }
+                await this.streamRowsInto(regioes, stream, prismaTxn);
+            }
+        });
     }
 
     async getFiles(myInput: any, pdm_id: number, params: any): Promise<FileOutput[]> {
@@ -411,35 +490,51 @@ export class IndicadoresService implements ReportableService {
         ];
     }
 
-    private convertRowsInto(input: RetornoDb[] | RetornoDbRegiao[], regioesDb: Regiao[] | null, out: object[]) {
-        for (const db of input) {
-            out.push({
-                indicador: {
-                    codigo: db.indicador_codigo,
-                    titulo: db.indicador_titulo,
-                    contexto: db.indicador_contexto,
-                    complemento: db.indicador_complemento,
-                    id: +db.indicador_id,
-                },
-                meta: db.meta_id ? { codigo: db.meta_codigo, titulo: db.meta_titulo, id: +db.meta_id } : null,
-                meta_tags: db.meta_tags ? db.meta_tags : null,
-                iniciativa: db.iniciativa_id
-                    ? { codigo: db.iniciativa_codigo, titulo: db.iniciativa_titulo, id: +db.iniciativa_id }
-                    : null,
-                atividade: db.atividade_id
-                    ? { codigo: db.atividade_codigo, titulo: db.atividade_titulo, id: +db.atividade_id }
-                    : null,
+    private async streamRowsInto(regioesDb: Regiao[] | null, stream: Readable, prismaTxn: Prisma.TransactionClient) {
+        let offset: number = 0;
+        let has_more: boolean = true;
+        while (has_more) {
+            const data: RetornoDb[] | RetornoDbRegiao[] = await prismaTxn.$queryRawUnsafe(`
+                SELECT *
+                FROM _report_data
+                LIMIT ${BATCH_SIZE} OFFSET ${offset} -- ${this.invalidatePreparedStatement}`);
+            if (data.length === 0) {
+                has_more = false;
+                continue;
+            }
+            offset += data.length;
 
-                data: db.data,
-                serie: db.serie,
-                valor: db.valor,
+            for (const row of data) {
+                stream.push({
+                    indicador: {
+                        codigo: row.indicador_codigo,
+                        titulo: row.indicador_titulo,
+                        contexto: row.indicador_contexto,
+                        complemento: row.indicador_complemento,
+                        id: +row.indicador_id,
+                    },
+                    meta: row.meta_id ? { codigo: row.meta_codigo, titulo: row.meta_titulo, id: +row.meta_id } : null,
+                    meta_tags: row.meta_tags ? row.meta_tags : null,
+                    iniciativa: row.iniciativa_id
+                        ? { codigo: row.iniciativa_codigo, titulo: row.iniciativa_titulo, id: +row.iniciativa_id }
+                        : null,
+                    atividade: row.atividade_id
+                        ? { codigo: row.atividade_codigo, titulo: row.atividade_titulo, id: +row.atividade_id }
+                        : null,
 
-                variavel: db.variavel_id
-                    ? { codigo: db.variavel_codigo, titulo: db.variavel_titulo, id: +db.variavel_id }
-                    : undefined,
-                ...('regiao_id' in db && regioesDb ? this.convertRowsRegiao(regioesDb, db) : {}),
-            });
+                    data: row.data,
+                    serie: row.serie,
+                    valor: row.valor,
+
+                    variavel: row.variavel_id
+                        ? { codigo: row.variavel_codigo, titulo: row.variavel_titulo, id: +row.variavel_id }
+                        : undefined,
+                    ...('regiao_id' in row && regioesDb ? this.convertRowsRegiao(regioesDb, row) : {}),
+                });
+            }
         }
+
+        stream.push(null);
     }
 
     convertRowsRegiao(
