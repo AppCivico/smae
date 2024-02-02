@@ -54,7 +54,7 @@ const schema = computed(() => (Array.isArray(operaçõesParaVariávelComposta.va
   : geraçãoDeVariávelComposta()));
 
 const {
-  errors, handleSubmit, isSubmitting, /* setFieldValue, */resetField, values,
+  errors, handleSubmit, isSubmitting, resetField, values,
 } = useForm({
   initialValues: valoresIniciais,
   validationSchema: schema,
@@ -63,7 +63,7 @@ const {
 const formulárioSujo = useIsFormDirty();
 
 const nívelDeRegionalização = ref(0);
-const regiões = ref([]);
+const regiõesSelecionadas = ref([]);
 
 const regiõesDisponíveis = computed(() => (Array.isArray(regiõesPorNívelOrdenadas.value?.[
   nívelDeRegionalização.value
@@ -73,18 +73,11 @@ const regiõesDisponíveis = computed(() => (Array.isArray(regiõesPorNívelOrde
 
 const estãoTodasAsRegiõesSelecionadas = computed({
   get() {
-    return values.regioes?.length
-      && values.regioes?.length === regiõesDisponíveis.value.length;
+    return regiõesSelecionadas.value?.length
+      && regiõesSelecionadas.value.length === regiõesDisponíveis.value.length;
   },
-  // set(novoValor) {
-  //   setFieldValue('regioes', (novoValor
-  //     ? regiõesDisponíveis.value.map((x) => x.id)
-  //     : []));
-  // },
-  // PRA-FAZER: Atualizar a vee-validate para poder usar o código recomendado:
-  // usando `setFieldValue()`
   set(novoValor) {
-    values.regioes = novoValor
+    regiõesSelecionadas.value = novoValor
       ? regiõesDisponíveis.value.map((x) => x.id)
       : [];
   },
@@ -255,15 +248,18 @@ export default {
           v-for="r in regiõesPorNívelOrdenadas?.[values.nivel_regionalizacao]"
           :key="r.id"
           class="tc600 lista-de-opções__item"
+          :for="`região__${r.id}`"
         >
-          <Field
-            v-model="regiões"
-            name="regioes"
+          <input
+            :id="`região__${r.id}`"
+            :key="`região__${r.id}`"
+            v-model="regiõesSelecionadas"
+            :name="`regioes[${idx}]`"
             :value="r.id"
             type="checkbox"
             class="inputcheckbox"
             :class="{ 'error': errors['parametros.tipo'] }"
-          />
+          >
           <span>
             {{ r.descricao }}
           </span>
