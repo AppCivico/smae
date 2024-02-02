@@ -42,7 +42,8 @@ const calcularDadosDoÍcone = ({
     case 'ponto_focal':
       if (aguardaPreenchimento) {
         return dadosDeÍcones.Preenchimento;
-      } if (aguardaEnvio) {
+      }
+      if (aguardaEnvio) {
         return dadosDeÍcones.Envio;
       }
       return dadosDeÍcones.erro;
@@ -50,9 +51,11 @@ const calcularDadosDoÍcone = ({
     default:
       if (aguardaConferência && !aguardaComplementação) {
         return dadosDeÍcones.Conferência;
-      } if (aguardaEnvio) {
+      }
+      if (aguardaEnvio) {
         return dadosDeÍcones.Envio;
-      } if (aguardaPreenchimento) {
+      }
+      if (aguardaPreenchimento) {
         return dadosDeÍcones.Preenchimento;
       }
       return dadosDeÍcones.erro;
