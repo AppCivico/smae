@@ -1967,6 +1967,10 @@ export class ProjetoService {
     }
 
     async cloneTarefas(projetoId: number, dto: CloneProjetoTarefasDto, user: PessoaFromJwt) {
+        // Se o projeto já tiver tarefas, não pode realizar esta ação.
+        const tarefasCount = await this.prisma.tarefa.count({ where: { projeto_id: projetoId, removido_em: null } });
+        if (tarefasCount > 0)
+          throw new HttpException('Projeto já possui cronograma', 400);
 
         await this.prisma.$queryRaw`CALL clone_projeto_tarefas(${dto.projeto_fonte_id}::int, ${projetoId}::int);`
     }
