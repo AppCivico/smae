@@ -212,7 +212,7 @@ function buscaCoord(e, parent, item) {
 }
 
 (async () => {
-  regioes.value = [];
+  regiõesSelecionadas.value = [];
 
   if (atividade_id) {
     if (atividade_id) {
