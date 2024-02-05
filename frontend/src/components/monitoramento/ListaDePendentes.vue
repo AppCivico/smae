@@ -74,46 +74,52 @@ const listaDePendentes = computed(() => {
     ? 'enviadas'
     : 'conferidas';
 
-  return panoramaStore.listaDePendentes.map((x) => ({
-    id: x.id,
-    código: x.codigo,
-    título: x.titulo,
+  return panoramaStore.listaDePendentes.map((x) => {
+    const listaBase = perfil.value !== 'ponto_focal' && x.fase === 'Coleta'
+      ? 'enviadas'
+      : 'total';
 
-    riscoEnviado: x.risco_enviado,
-    fechamentoEnviado: x.fechamento_enviado,
-    analiseQualitativaEnviada: x.analise_qualitativa_enviada,
+    return {
+      id: x.id,
+      código: x.codigo,
+      título: x.titulo,
 
-    atualizadoEm: x.atualizado_em,
+      riscoEnviado: x.risco_enviado,
+      fechamentoEnviado: x.fechamento_enviado,
+      analiseQualitativaEnviada: x.analise_qualitativa_enviada,
 
-    variáveis: x.variaveis?.total?.reduce((acc, cur) => {
-      const manter = x.variaveis.aguardando_complementacao.includes(cur);
-      const remover = !x.variaveis[aRemover].includes(cur);
+      atualizadoEm: x.atualizado_em,
 
-      const aguardaComplementação = manter;
-      const aguardaConferência = !x.variaveis.conferidas.includes(cur);
-      const aguardaEnvio = !x.variaveis.enviadas.includes(cur);
-      const aguardaPreenchimento = !x.variaveis.preenchidas.includes(cur);
+      variáveis: x.variaveis?.[listaBase]?.reduce((acc, cur) => {
+        const manter = x.variaveis.aguardando_complementacao.includes(cur);
+        const remover = !x.variaveis[aRemover].includes(cur);
 
-      return (manter || remover)
-        ? acc.concat([{
-          id: cur,
-          código: variáveisPorId.value[cur]?.codigo || '',
-          título: variáveisPorId.value[cur]?.titulo || '',
-          aguardaComplementação,
-          aguardaConferência,
-          aguardaEnvio,
-          aguardaPreenchimento,
-          ícone: calcularDadosDoÍcone({
+        const aguardaComplementação = manter;
+        const aguardaConferência = !x.variaveis.conferidas.includes(cur);
+        const aguardaEnvio = !x.variaveis.enviadas.includes(cur);
+        const aguardaPreenchimento = !x.variaveis.preenchidas.includes(cur);
+
+        return (manter || remover)
+          ? acc.concat([{
+            id: cur,
+            código: variáveisPorId.value[cur]?.codigo || '',
+            título: variáveisPorId.value[cur]?.titulo || '',
             aguardaComplementação,
             aguardaConferência,
             aguardaEnvio,
             aguardaPreenchimento,
-          }),
-        }])
-        : acc;
-    }, [])
-      .sort((a, b) => a.código.localeCompare(b.código)),
-  }));
+            ícone: calcularDadosDoÍcone({
+              aguardaComplementação,
+              aguardaConferência,
+              aguardaEnvio,
+              aguardaPreenchimento,
+            }),
+          }])
+          : acc;
+      }, [])
+        .sort((a, b) => a.código.localeCompare(b.código)),
+    };
+  });
 });
 </script>
 <template>
