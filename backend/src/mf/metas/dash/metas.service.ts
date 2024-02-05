@@ -114,6 +114,7 @@ export class MfDashMetasService {
                     total: r.orcamento_pendentes.length,
                 },
                 atualizado_em: r.atualizado_em,
+                fase: r.fase,
             };
         };
 

@@ -5,6 +5,7 @@ import { NumberArrayTransform } from '../../../../auth/transforms/number-array.e
 import { IdCodTituloDto } from '../../../../common/dto/IdCodTitulo.dto';
 import { IdTituloOrNullDto } from '../../../../common/dto/IdTitulo.dto';
 import { MfPerfilDto } from '../../dto/mf-meta.dto';
+import { CicloFase } from '@prisma/client';
 
 export class MfMetaVariavelCount {
     total: number | number[];
@@ -47,6 +48,7 @@ export class MfDashMetaPendenteDto extends IdCodTituloDto {
      */
     fechamento_enviado: boolean | null;
     atualizado_em: Date;
+    fase: CicloFase
 }
 
 export class MfMetaAtrasoItemDto {

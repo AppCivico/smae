@@ -3748,6 +3748,8 @@ model MetaStatusConsolidadoCf {
     ciclo_fisico_id Int
     ciclo_fisico    CicloFisico @relation(fields: [ciclo_fisico_id], references: [id])
 
+    fase CicloFase
+
     variaveis_total                     Int[]
     variaveis_preenchidas               Int[]
     variaveis_enviadas                  Int[]
