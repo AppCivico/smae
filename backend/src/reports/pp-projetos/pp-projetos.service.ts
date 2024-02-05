@@ -337,6 +337,12 @@ export class PPProjetosService implements ReportableService {
 
         let paramIndex = 1;
 
+        if (filters.portfolio_id) {
+            whereConditions.push(`projeto.portfolio_id = $${paramIndex}`);
+            queryParams.push(filters.portfolio_id);
+            paramIndex++;
+        }
+
         if (filters.orgao_responsavel_id) {
             whereConditions.push(`projeto.orgao_responsavel_id = $${paramIndex}`);
             queryParams.push(filters.orgao_responsavel_id);
@@ -346,12 +352,6 @@ export class PPProjetosService implements ReportableService {
         if (filters.codigo) {
             whereConditions.push(`projeto.codigo = $${paramIndex}`);
             queryParams.push(filters.codigo);
-            paramIndex++;
-        }
-
-        if (filters.portfolio_id) {
-            whereConditions.push(`projeto.portfolio_id = $${paramIndex}`);
-            queryParams.push(filters.portfolio_id);
             paramIndex++;
         }
 
@@ -369,6 +369,16 @@ export class PPProjetosService implements ReportableService {
 
     private async queryDataProjetos(whereCond: WhereCond, out: RelProjetosDto[]) {
         const anoCorrente = DateTime.local({ locale: SYSTEM_TIMEZONE }).year;
+
+        let portfolioParamIdx;
+        if (whereCond.whereString.match(/portfolio_id = \$([0-9]+)/)) {
+            const match = whereCond.whereString.match(/portfolio_id = \$([0-9]+)/);
+            portfolioParamIdx = match ? parseInt(match[1], 10) : null;
+            
+            if (!portfolioParamIdx)
+                throw new Error('Erro interno ao extrair relatório')
+        }
+
         const sql = `SELECT
             projeto.id,
             projeto.portfolio_id,
@@ -504,7 +514,7 @@ export class PPProjetosService implements ReportableService {
           LEFT JOIN orgao orgao_responsavel ON orgao_responsavel.id = projeto.orgao_responsavel_id
           LEFT JOIN orgao orgao_gestor ON orgao_gestor.id = projeto.orgao_gestor_id
           LEFT JOIN pessoa resp ON resp.id = projeto.responsavel_id
-          WHERE ppc.removido_em IS NULL AND ${whereCond.whereString.replace('WHERE', '')}
+          WHERE ppc.removido_em IS NULL AND ppc.portofolio_id = $${portfolioParamIdx} ${whereCond.whereString.replace('WHERE', '')}
         `;
 
         const data: RetornoDbProjeto[] = await this.prisma.$queryRawUnsafe(sql, ...whereCond.queryParams);
