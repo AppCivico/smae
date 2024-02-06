@@ -466,7 +466,8 @@ export const perdidoDeComplementação = object()
 export const planoDeAção = object()
   .shape({
     contato_do_responsavel: string()
-      .label('Contato do responsável'),
+      .label('Contato do responsável')
+      .nullable(),
     contramedida: string()
       .label('Contra-medidas')
       .max(50000)
