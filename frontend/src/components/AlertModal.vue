@@ -6,7 +6,11 @@ const alertStore = useAlertStore();
 const { alert } = storeToRefs(alertStore);
 async function callbackFn() {
   await alert.value.callback();
-  alertStore.clear();
+
+  // talvez o tipo da janela já tenha sido substituído
+  if (alert.value?.type === 'confirmAction') {
+    alertStore.$reset();
+  }
 }
 </script>
 
