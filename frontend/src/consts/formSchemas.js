@@ -30,8 +30,8 @@ setLocale({
   },
   number: {
     integer: ({ label }) => (label ? `${label} deve ser um número inteiro` : 'Deve ser um número inteiro'),
-    max: ({ label, max }) => (label ? `${label} deve ser menor que ${max}` : 'Deve ser menor que ${max}'),
-    min: ({ label, min }) => (label ? `${label} deve ser maior que ${min}` : 'Deve ser maior que ${min}'),
+    max: ({ label, max }) => (label ? `${label} deve ser no máximo ${max}` : 'Deve ser no máximo ${max}'),
+    min: ({ label, min }) => (label ? `${label} deve ser no mínimo ${min}` : 'Deve ser no mínimo ${min}'),
   },
   string: {
     min: ({ label, min }) => (label ? `${label} está menor que ${min}` : 'Esse texto é menor que ${min}'),
