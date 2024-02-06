@@ -176,7 +176,7 @@ function addItem() {
     <div class="f1">
       <MaskedFloatInput
         v-model="item.valor_empenho"
-        :value="item.valor_empenho"
+        :value="Number(item.valor_empenho)"
         :name="`itens[${i}].valor_empenho`"
         type="text"
         class="inputtext light"
@@ -189,7 +189,7 @@ function addItem() {
     <div class="f1">
       <MaskedFloatInput
         v-model="item.valor_liquidado"
-        :value="item.valor_liquidado"
+        :value="Number(item.valor_liquidado)"
         :name="`itens[${i}].valor_liquidado`"
         type="text"
         class="inputtext light"
