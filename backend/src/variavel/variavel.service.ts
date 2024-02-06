@@ -874,21 +874,37 @@ export class VariavelService {
             select: { indicador_id: true, variavel: { select: { valor_base: true, periodicidade: true } } },
         });
         if (!selfIdicadorVariavel)
-            throw new HttpException('Variavel não encontrada, confira se você está no indicador base', 400);
+            throw new BadRequestException('Variavel não encontrada, confira se você está no indicador base');
 
         await this.prisma.$transaction(
             async (prismaTxn: Prisma.TransactionClient) => {
                 const refEmUso = await prismaTxn.indicadorFormulaVariavel.findMany({
-                    where: { variavel_id: +variavelId },
+                    where: { variavel_id: variavelId },
                     select: {
                         indicador: { select: { codigo: true, titulo: true } },
                     },
                 });
 
                 for (const ref of refEmUso) {
-                    throw new HttpException(
-                        `Não é possível remover a variável: em uso no indicador ${ref.indicador.codigo}, ${ref.indicador.titulo}`,
-                        400
+                    throw new BadRequestException(
+                        `Não é possível remover a variável: em uso no indicador ${ref.indicador.codigo}, ${ref.indicador.titulo}`
+                    );
+                }
+
+                const refFormulaComposta = await prismaTxn.formulaComposta.findMany({
+                    where: {
+                        removido_em: null,
+                        FormulaCompostaVariavel: {
+                            some: {
+                                variavel_id: variavelId,
+                            },
+                        },
+                    },
+                    select: { titulo: true },
+                });
+                for (const ref of refFormulaComposta) {
+                    throw new BadRequestException(
+                        `Não é possível remover a variável: em uso na variável composta ${ref.titulo}`
                     );
                 }
 
