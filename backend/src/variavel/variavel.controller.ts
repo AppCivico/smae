@@ -66,6 +66,7 @@ export class VariavelController {
     @ApiUnauthorizedResponse()
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.NO_CONTENT)
+    @Roles('CadastroIndicador.inserir')
     async patchSeriePrevisto(@Body() series: BatchSerieUpsert, @CurrentUser() user: PessoaFromJwt) {
         await this.variavelService.batchUpsertSerie(series.valores, user);
 
