@@ -24,7 +24,7 @@ async function callbackFn() {
     >
       <div
         class="overlay"
-        @click="alertStore.clear()"
+        @click="alertStore.$reset()"
       />
       <div
         class="alert"
@@ -44,7 +44,7 @@ async function callbackFn() {
           </button>
           <button
             class="btn outline bgnone tcamarelo"
-            @click="alert.fallback ? alert.fallback() : alertStore.clear()"
+            @click="alert.fallback ? alert.fallback() : alertStore.$reset()"
           >
             Cancelar
           </button>
@@ -54,7 +54,7 @@ async function callbackFn() {
             v-if="typeof alert.url == 'string'"
             :to="alert.url"
             class="btn amarelo mr1"
-            @click="alertStore.clear()"
+            @click="alertStore.$reset()"
           >
             Sair sem salvar
           </router-link>
@@ -67,7 +67,7 @@ async function callbackFn() {
           </button>
           <button
             class="btn amarelo outline"
-            @click="alertStore.clear()"
+            @click="alertStore.$reset()"
           >
             Cancelar
           </button>
@@ -75,7 +75,7 @@ async function callbackFn() {
         <template v-else>
           <button
             class="btn amarelo"
-            @click="alertStore.clear()"
+            @click="alertStore.$reset()"
           >
             OK
           </button>
