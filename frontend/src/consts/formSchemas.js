@@ -505,7 +505,8 @@ export const portfolio = object({
   data_criacao: date()
     .label('Data de criação')
     .nullable()
-    .min(new Date(2003, 0, 1)),
+    .min(new Date(2003, 0, 1))
+    .transform((v) => (!v ? null : v)),
   descricao: string()
     .label('Descrição')
     .min(0)
