@@ -88,13 +88,14 @@ const totaisQueSuperamSOF = computed(() => ({
     : false,
 }));
 
-watch(itens.value, (newValue) => {
+watch(() => itens.value, (newValue) => {
   const valorLimpo = newValue.map((x) => ({
     mes: x.mes,
     valor_empenho: toFloat(x.valor_empenho),
     valor_liquidado: toFloat(x.valor_liquidado),
   }));
 
+  emit('change', valorLimpo);
   handleChange(valorLimpo);
 });
 
@@ -106,13 +107,11 @@ start();
 onMounted(() => { start(); });
 onUpdated(() => { start(); });
 
-function removeItem(g, i) {
-  g = g.splice(i, 1);
-  emit('change', g);
+function removeItem(i) {
+  itens.value.splice(i, 1);
 }
-function addItem(g) {
-  g = g.push({ mes: 0, valor_empenho: 0, valor_liquidado: 0 });
-  emit('change', g);
+function addItem() {
+  itens.value.push({ mes: 0, valor_empenho: 0, valor_liquidado: 0 });
 }
 </script>
 <template>
@@ -203,22 +202,24 @@ function addItem(g) {
     <div style="flex-basis: 30px;">
       <a
         class="addlink"
-        @click="removeItem(itens, i)"
+        @click="removeItem(i)"
       ><svg
         width="20"
         height="20"
       ><use xlink:href="#i_remove" /></svg></a>
     </div>
   </div>
-  <div class="tc mb2">
-    <button
-      type="button"
-      class="btn outline bgnone tcprimary"
-      @click="addItem(itens)"
-    >
-      Informar execução orçamentária
-    </button>
-  </div>
+
+  <button
+    class="like-a__text addlink"
+    type="button"
+    @click="addItem()"
+  >
+    <svg
+      width="20"
+      height="20"
+    ><use xlink:href="#i_+" /></svg>Informar execução orçamentária
+  </button>
 
   <div class="flex g2 mb2">
     <div class="f1" />
