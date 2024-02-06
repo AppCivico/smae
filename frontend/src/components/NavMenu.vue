@@ -33,7 +33,10 @@ const menuFiltrado = router.options.routes
   >
     <div class="top">
       <component
-        :is="user?.flags?.panorama ? 'router-link' : 'span'"
+        :is="user?.flags?.panorama
+          && temPermissãoPara(['PDM.admin_cp', 'PDM.tecnico_cp', 'PDM.ponto_focal'])
+          ? 'router-link'
+          : 'span'"
         id="m_profile"
         :to="user?.flags?.panorama
           ? {
