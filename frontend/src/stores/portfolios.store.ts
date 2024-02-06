@@ -34,6 +34,8 @@ export const usePortfolioStore = defineStore('portfolios', {
   actions: {
     async buscarItem(id = 0, params = {}): Promise<void> {
       this.chamadasPendentes.emFoco = true;
+      this.erro = null;
+
       try {
         const resposta = await this.requestS.get(`${baseUrl}/portfolio/${id}`, params);
         this.emFoco = {
@@ -47,6 +49,8 @@ export const usePortfolioStore = defineStore('portfolios', {
 
     async buscarTudo(params = {}): Promise<void> {
       this.chamadasPendentes.lista = true;
+      this.erro = null;
+
       try {
         const { linhas } = await this.requestS.get(`${baseUrl}/portfolio`, params);
         this.lista = linhas;
@@ -58,6 +62,7 @@ export const usePortfolioStore = defineStore('portfolios', {
 
     async excluirItem(id: number): Promise<boolean> {
       this.chamadasPendentes.lista = true;
+      this.erro = null;
 
       try {
         await this.requestS.delete(`${baseUrl}/portfolio/${id}`);
@@ -73,6 +78,7 @@ export const usePortfolioStore = defineStore('portfolios', {
 
     async salvarItem(params = {}, id = 0): Promise<boolean> {
       this.chamadasPendentes.emFoco = true;
+      this.erro = null;
 
       try {
         if (id) {
