@@ -1046,6 +1046,7 @@ export const risco = object()
       .default(1)
       .min(1)
       .nullable()
+      .transform((v) => (v === undefined ? null : v))
       .required(),
     consequencia: string()
       .label('Consequências')
@@ -1075,7 +1076,7 @@ export const risco = object()
     titulo: string()
       .label('Nome')
       .required(),
-  }, [['risco_tarefa_outros', 'tarefa_id']]);
+  });
 
 export const tarefa = object()
   .shape({
