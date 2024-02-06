@@ -760,10 +760,10 @@ export const projeto = object()
       .label('Resumo')
       .max(500),
     secretario_executivo: string()
-      .label('Secretário executivo')
+      .label('Secretário responsável')
       .nullable(),
     secretario_responsavel: string()
-      .label('Secretário responsável')
+      .label('Secretário gestor')
       .nullable(),
     status: mixed()
       .label('Status')
