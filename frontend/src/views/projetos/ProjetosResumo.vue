@@ -461,16 +461,16 @@ if (!Array.isArray(organs.value) || !organs.value.length) {
       <h2>
         Órgãos
       </h2>
-      <div class="flex g2">
-        <dl class="f1 mb1">
+      <dl class="flex g2 flexwrap">
+        <div class="f1 mb1">
           <dt class="t12 uc w700 mb05 tamarelo">
             {{ schema.fields.orgao_gestor_id.spec.label }}
           </dt>
           <dd class="t13">
             {{ emFoco?.orgao_gestor.sigla }} - {{ emFoco?.orgao_gestor.descricao }}
           </dd>
-        </dl>
-        <dl class="f1 mb1">
+        </div>
+        <div class="f1 mb1">
           <dt class="t12 uc w700 mb05 tamarelo">
             {{ schema.fields.responsaveis_no_orgao_gestor.spec.label }}
           </dt>
@@ -480,50 +480,72 @@ if (!Array.isArray(organs.value) || !organs.value.length) {
               ? emFoco?.responsaveis_no_orgao_gestor?.map((x) => x.nome_exibicao || x).join(', ')
               : '-' }}
           </dd>
-        </dl>
-      </div>
-      <div class="flex g2">
-        <dl class="f1 mb1">
+        </div>
+
+        <div class="f1 mb1">
+          <dt class="t12 uc w700 mb05 tamarelo">
+            {{ schema.fields.secretario_executivo.spec.label }}
+          </dt>
+          <dd class="t13">
+            {{ emFoco?.secretario_executivo || '-' }}
+          </dd>
+        </div>
+      </dl>
+      <dl class="flex g2 flexwrap">
+        <div class="f1 mb1">
           <dt class="t12 uc w700 mb05 tamarelo">
             {{ schema.fields.orgao_responsavel_id.spec.label }}
           </dt>
           <dd class="t13">
             {{ emFoco?.orgao_responsavel?.sigla }} - {{ emFoco?.orgao_responsavel?.descricao }}
           </dd>
-        </dl>
-        <dl class="f1 mb1">
+        </div>
+        <div class="f1 mb1">
           <dt class="t12 uc w700 mb05 tamarelo">
             {{ schema.fields.responsavel_id.spec.label }}
           </dt>
           <dd class="t13">
             {{ emFoco?.responsavel?.nome_exibicao || emFoco?.responsavel_id || '-' }}
           </dd>
-        </dl>
-      </div>
+        </div>
 
-      <div
-        v-if="emFoco?.orgaos_participantes?.length"
-        class="flex g2"
-      >
-        <dl class="f1 mb1">
+        <div class="f1 mb1">
           <dt class="t12 uc w700 mb05 tamarelo">
-            {{ schema.fields.orgaos_participantes.spec.label }}
+            {{ schema.fields.secretario_responsavel.spec.label }}
           </dt>
           <dd class="t13">
-            <template
-              v-for="item in emFoco?.orgaos_participantes"
-              :key="item.id"
-            >
-              {{ item.sigla }} - {{ item.descricao }},
-            </template>
+            {{ emFoco?.secretario_responsavel || '-' }}
           </dd>
-        </dl>
-      </div>
+        </div>
+      </dl>
+
+      <dl
+        v-if="emFoco?.orgaos_participantes?.length"
+        class="f1 mb1 fb100"
+      >
+        <dt class="t12 uc w700 mb05 tamarelo">
+          {{ schema.fields.orgaos_participantes.spec.label }}
+        </dt>
+        <dd class="t13">
+          <template
+            v-for="item in emFoco?.orgaos_participantes"
+            :key="item.id"
+          >
+            {{ item.sigla }} - {{ item.descricao }},
+          </template>
+        </dd>
+      </dl>
     </div>
 
-    <hr class="mb1 f1">
+    <hr
+      v-if="emFoco.equipe?.length"
+      class="mb1 f1"
+    >
 
-    <div class="mb1">
+    <div
+      v-if="emFoco.equipe?.length"
+      class="mb1"
+    >
       <h2>
         {{ schema.fields.equipe.spec.label }}
       </h2>
@@ -557,26 +579,7 @@ if (!Array.isArray(organs.value) || !organs.value.length) {
 
     <hr class="mb1 f1">
 
-    <div class="flex g2 mb1 flexwrap">
-      <dl class="f1 mb1">
-        <dt class="t12 uc w700 mb05 tamarelo">
-          {{ schema.fields.secretario_executivo.spec.label }}
-        </dt>
-        <dd class="t13">
-          {{ emFoco?.secretario_executivo || '-' }}
-        </dd>
-      </dl>
-      <dl class="f1 mb1">
-        <dt class="t12 uc w700 mb05 tamarelo">
-          {{ schema.fields.secretario_responsavel.spec.label }}
-        </dt>
-        <dd class="t13">
-          {{ emFoco?.secretario_responsavel || '-' }}
-        </dd>
-      </dl>
-    </div>
-
-    <hr class="mb1 f1">
+    <h2>Controle de versões</h2>
 
     <div class="flex g2 mb1 flexwrap">
       <dl class="f1 mb1">
