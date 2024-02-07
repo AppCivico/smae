@@ -11,7 +11,7 @@
             width="12"
             height="12"
             fill="#634A09"
-          /></svg> dado estimado
+          /></svg> dado planejado
         </li>
         <li class="legenda__item mb05 legenda__item--dado-efetivo">
           <svg
@@ -22,7 +22,7 @@
             width="12"
             height="12"
             fill="#3B5881"
-          /></svg> dado efetivo
+          /></svg> dado real
         </li>
       </ul>
     </div>
