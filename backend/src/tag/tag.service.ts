@@ -114,6 +114,19 @@ export class TagService {
     }
 
     async remove(id: number, user: PessoaFromJwt) {
+        const emUso = await this.prisma.meta.count({
+            where: {
+                removido_em: null,
+                meta_tag: {
+                    some: {
+                        tag_id: id
+                    }
+                }
+            }
+        });
+        if (emUso > 0)
+            throw new HttpException('Tag em uso em Metas.', 400);
+
         const created = await this.prisma.tag.updateMany({
             where: { id: id },
             data: {
