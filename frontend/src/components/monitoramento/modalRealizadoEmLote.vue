@@ -129,6 +129,15 @@ const onSubmit = handleSubmit.withControlled(async () => {
   }
 });
 
+const soma = computed(() => carga.linhas?.reduce((acc, cur) => ({
+  valor_realizado: acc.valor_realizado + Number(cur.valor_realizado || 0),
+  valor_realizado_acumulado: acc.valor_realizado_acumulado
+    + Number(cur.valor_realizado_acumulado || 0),
+}), {
+  valor_realizado: 0,
+  valor_realizado_acumulado: 0,
+}));
+
 function submeterAoCP() {
   alertStore.confirmAction(
     'Deseja submeter as informações? Após o envio, os dados só poderão ser editados pela coordenadoria de planejamento ou em caso de solicitação de complementação.',
@@ -463,6 +472,17 @@ watch(variáveisComSuasDatas, (novoValor) => {
             Valor Realizado Acumulado
           </th>
         </thead>
+        <tfoot>
+          <th />
+          <th />
+          <th />
+          <th class="cell--number">
+            {{ soma.valor_realizado || '-' }}
+          </th>
+          <th class="cell--number">
+            {{ soma.valor_realizado_acumulado || '-' }}
+          </th>
+        </tfoot>
         <tbody
           v-for="(field, idx) in fields"
           :key="idx"
