@@ -99,6 +99,10 @@ export class ObjetivoEstrategicoService {
     }
 
     async remove(id: number, user: PessoaFromJwt) {
+        const emUso = await this.prisma.meta.count({ where: { tema_id: id, removido_em: null } });
+        if (emUso > 0)
+            throw new HttpException('Tema em uso em Metas.', 400);
+
         const created = await this.prisma.tema.updateMany({
             where: { id: id },
             data: {
