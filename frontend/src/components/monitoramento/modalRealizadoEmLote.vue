@@ -306,11 +306,9 @@ watch(variáveisComSuasDatas, (novoValor) => {
         <Field
           name="composta.analise_qualitativa"
           as="textarea"
-          :value="composta?.analise_qualitativa"
           rows="3"
           class="inputtext light mb1"
           :class="{ 'error': errors['composta.analise_qualitativa'] }"
-
           :disabled="ediçãoProibidaApósConferência"
         />
 
