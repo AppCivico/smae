@@ -148,7 +148,7 @@ export default {
       </div>
       <div class="f1 mb1">
         <dt class="t12 uc w700 mb05 tamarelo">
-          Custo previsto
+          Custo total planejado
         </dt>
         <dd class="t13 dado-estimado">
           {{ typeof projetoEmFoco?.previsao_custo === 'number'
@@ -231,7 +231,7 @@ export default {
           colspan="2"
           class="dado-estimado"
         >
-          Previsão
+          Planejado
         </th>
         <th
           colspan="2"
@@ -271,7 +271,7 @@ export default {
           Término
         </th>
         <th class="cell--number dado-estimado">
-          Estimado
+          Planejado
         </th>
         <th class="cell--number dado-efetivo">
           Real
