@@ -70,6 +70,11 @@ const acumulados = computed(() => (Array.isArray(carga.valores)
   }))
   : []));
 
+const soma = computed(() => ({
+  fornecidos: carga.valores.reduce((acc, cur) => acc + Number(cur.valor), 0),
+  acumulados: acumulados.value?.reduce((acc, cur) => acc + Number(cur.valor), 0) || 0,
+}));
+
 const atualizarAPartirDoAcumulado = ((valorFornecido, índice) => {
   const diferença = sériesDeCompostaParaEdição.value?.[`Diferença${tipoDeValor.value}`][índice];
   const novoAcumulado = typeof valorFornecido === 'number'
@@ -274,6 +279,16 @@ watch(período, (novoValor) => {
                 Valor acumulado
               </th>
             </thead>
+            <tfoot>
+              <th />
+              <th />
+              <th>
+                {{ soma.fornecidos }}
+              </th>
+              <th>
+                {{ soma.acumulados }}
+              </th>
+            </tfoot>
             <template
               v-for="(field, idx) in fields"
               :key="idx"
