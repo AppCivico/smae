@@ -4,7 +4,7 @@
       <ul class="legenda mb1">
         <li class="legenda__item mb05 legenda__item--dado-estimado">
           <svg
-            class="legenda__amostra"
+            class="legenda__amostra ib"
             height="12"
             width="12"
           ><rect
@@ -15,7 +15,7 @@
         </li>
         <li class="legenda__item mb05 legenda__item--dado-efetivo">
           <svg
-            class="legenda__amostra"
+            class="legenda__amostra ib"
             height="12"
             width="12"
           ><rect
