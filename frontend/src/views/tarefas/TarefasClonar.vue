@@ -84,7 +84,7 @@ export default {
 };
 </script>
 <template>
-  <SmallModal>
+  <SmallModal class="small">
     <div class="flex spacebetween center mb2">
       <h2>
         {{ typeof $route?.meta?.título === 'function'
