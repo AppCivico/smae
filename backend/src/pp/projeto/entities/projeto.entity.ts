@@ -19,6 +19,11 @@ export class ProjetoDto {
     codigo: string | null;
     portfolio: IdTituloDto;
     portfolios_compartilhados: IdTituloDto[];
+    regiao: {
+        id: number,
+        nivel: number,
+        descricao: string 
+    } | null
 }
 
 export class ListProjetoDto {

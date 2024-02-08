@@ -455,6 +455,13 @@ export class ProjetoService {
                             }
                         }
                     }
+                },
+                regiao: {
+                    select: {
+                        id: true,
+                        nivel: true,
+                        descricao: true,
+                    }
                 }
             },
             orderBy: { codigo: 'asc' },
@@ -483,6 +490,11 @@ export class ProjetoService {
                 arquivado: row.arquivado,
                 eh_prioritario: row.eh_prioritario,
                 codigo: row.codigo,
+                regiao: row.regiao ? {
+                    id: row.regiao.id,
+                    nivel: row.regiao.nivel,
+                    descricao: row.regiao.descricao
+                } : null,
                 portfolios_compartilhados: row.portfolios_compartilhados.map(pc => {
                     return {
                         id: pc.portfolio.id,
