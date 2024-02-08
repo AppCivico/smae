@@ -12,7 +12,7 @@ import {
     ValidateIf,
 } from 'class-validator';
 import { IsOnlyDate } from '../../../common/decorators/IsDateOnly';
-import { Transform } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
 
 export class CreatePortfolioDto {
     /**
@@ -47,6 +47,7 @@ export class CreatePortfolioDto {
 
     @IsOptional()
     @IsOnlyDate()
+    @Type(() => Date)
     @ValidateIf((object, value) => value !== null)
     data_criacao?: Date | null;
 
