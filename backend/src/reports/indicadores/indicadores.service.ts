@@ -394,14 +394,14 @@ export class IndicadoresService implements ReportableService {
             {
                 value: (row: RetornoDb) => {
                     if (!row.meta_tags || !Array.isArray(row.meta_tags)) return '';
-                    return row.meta_tags.map((t) => t.descricao).join('\n');
+                    return row.meta_tags.map((t) => t.descricao).join(';');
                 },
                 label: 'Meta Tags',
             },
             {
                 value: (row: RetornoDb) => {
                     if (!row.meta_tags || !Array.isArray(row.meta_tags)) return '';
-                    return row.meta_tags.map((t) => t.id).join(', ');
+                    return row.meta_tags.map((t) => t.id).join(';');
                 },
                 label: 'Tags IDs',
             },
