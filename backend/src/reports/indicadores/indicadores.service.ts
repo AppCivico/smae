@@ -179,8 +179,7 @@ export class IndicadoresService implements ReportableService {
         left join iniciativa on iniciativa.id = i.iniciativa_id
         left join atividade on atividade.id = i.atividade_id
         left join iniciativa i2 on i2.id = atividade.iniciativa_id
-        left join meta m2 on m2.id = iniciativa.meta_id OR m2.id = i2.meta_id
-        left join orgao on i.orgao_id = orgao.id`;
+        left join meta m2 on m2.id = iniciativa.meta_id OR m2.id = i2.meta_id`;
 
         const buscaInicio: { min: Date }[] = await this.prisma.$queryRawUnsafe(`SELECT min(si.data_valor::date)
         FROM (select 'Realizado'::"Serie" as serie UNION ALL select 'RealizadoAcumulado'::"Serie" as serie ) series
@@ -193,8 +192,6 @@ export class IndicadoresService implements ReportableService {
         i.id as indicador_id,
         i.codigo as indicador_codigo,
         i.titulo as indicador_titulo,
-        orgao.id as orgao_id,
-        orgao.sigla as orgao_sigla,
         COALESCE(i.meta_id, m2.id) as meta_id,
         COALESCE(meta.titulo, m2.titulo) as meta_titulo,
         COALESCE(meta.codigo, m2.codigo) as meta_codigo,
@@ -283,6 +280,7 @@ export class IndicadoresService implements ReportableService {
         const queryFromWhere = `indicador i ON i.id IN (${indicadoresOrVar.join(',')})
         join indicador_variavel iv ON iv.indicador_id = i.id
         join variavel v ON v.id = iv.variavel_id
+        join orgao ON v.orgao_id = orgao.id
         left join meta on meta.id = i.meta_id
         left join iniciativa on iniciativa.id = i.iniciativa_id
         left join atividade on atividade.id = i.atividade_id
@@ -317,6 +315,8 @@ export class IndicadoresService implements ReportableService {
         v.codigo as variavel_codigo,
         v.titulo as variavel_titulo,
         v.regiao_id as regiao_id,
+        orgao.id as orgao_id,
+        orgao.sigla as orgao_sigla,
         round(
             valor_variavel_em(
                 v.id,
@@ -423,8 +423,6 @@ export class IndicadoresService implements ReportableService {
             { value: 'indicador.contexto', label: pdm.rotulo_contexto_meta },
             { value: 'indicador.complemento', label: pdm.rotulo_complementacao_meta },
             { value: 'indicador.id', label: 'ID do Indicador' },
-            { value: 'indicador.orgao.id', label: 'ID do órgão' },
-            { value: 'indicador.orgao.sigla', label: 'Sigla do órgão' },
         ];
 
         if (dados.linhas.length) {
@@ -446,6 +444,8 @@ export class IndicadoresService implements ReportableService {
                 transforms: defaultTransform,
                 fields: [
                     ...camposMetaIniAtv,
+                    { value: 'variavel.orgao.id', label: 'ID do órgão' },
+                    { value: 'variavel.orgao.sigla', label: 'Sigla do órgão' },
 
                     { value: 'variavel.codigo', label: 'Código da Variável' },
                     { value: 'variavel.titulo', label: 'Título da Variável' },
@@ -513,11 +513,7 @@ export class IndicadoresService implements ReportableService {
                         titulo: row.indicador_titulo,
                         contexto: row.indicador_contexto,
                         complemento: row.indicador_complemento,
-                        id: +row.indicador_id,
-                        orgao: {
-                            id: +row.orgao_id,
-                            sigla: row.orgao_sigla
-                        }
+                        id: +row.indicador_id
                     },
                     meta: row.meta_id ? { codigo: row.meta_codigo, titulo: row.meta_titulo, id: +row.meta_id } : null,
                     meta_tags: row.meta_tags ? row.meta_tags : null,
@@ -533,7 +529,15 @@ export class IndicadoresService implements ReportableService {
                     valor: row.valor,
 
                     variavel: row.variavel_id
-                        ? { codigo: row.variavel_codigo, titulo: row.variavel_titulo, id: +row.variavel_id }
+                        ? {
+                            codigo: row.variavel_codigo,
+                            titulo: row.variavel_titulo,
+                            id: +row.variavel_id,
+                            orgao: {
+                                id: +row.orgao_id,
+                                sigla: row.orgao_sigla
+                            }
+                        }
                         : undefined,
                     ...('regiao_id' in row && regioesDb ? this.convertRowsRegiao(regioesDb, row) : {}),
                 });
