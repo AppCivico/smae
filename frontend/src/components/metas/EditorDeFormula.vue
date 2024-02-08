@@ -463,6 +463,7 @@ watch(() => props.variáveisCompostas, async () => {
 
   <!-- modal para variáveis comuns -->
   <SmallModal
+    class="small"
     :active="variaveisFormulaModal === 1"
     @close="() => { variaveisFormulaModal = 0; }"
   >
@@ -555,6 +556,7 @@ watch(() => props.variáveisCompostas, async () => {
 
   <!-- modal para variáveis compostas -->
   <SmallModal
+    class="small"
     :active="variaveisFormulaModal === 2"
     @close="() => { variaveisFormulaModal = 0; }"
   >

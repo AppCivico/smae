@@ -735,6 +735,7 @@ export default {
     </template>
   </Dashboard>
   <SmallModal
+    class="small"
     :active="props.group === 'gerar-compostas'"
     @close="() => {
       editModalStore.$reset();

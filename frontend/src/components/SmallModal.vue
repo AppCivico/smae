@@ -24,7 +24,7 @@ export default {
         @click="$emit('close')"
       />
       <div
-        class="editModal small"
+        class="editModal"
         v-bind="$attrs"
       >
         <slot />
