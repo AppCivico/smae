@@ -1,8 +1,12 @@
 import { NestFactory } from '@nestjs/core';
 import { NestExpressApplication } from '@nestjs/platform-express';
-import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { DocumentBuilder, OpenAPIObject, SwaggerModule } from '@nestjs/swagger';
 import { join } from 'path';
 import { AppModule } from './app.module';
+import { AppModuleProjeto } from './app.module.projeto';
+import { AppModuleCommon } from './app.module.common';
+import { INestApplication } from '@nestjs/common';
+import { AppModulePdm } from './app.module.pdm';
 
 const winston = require('winston'),
     expressWinston = require('express-winston');
@@ -10,39 +14,46 @@ const winston = require('winston'),
 async function bootstrap() {
     const app = await NestFactory.create<NestExpressApplication>(AppModule);
     app.setGlobalPrefix('api');
+    const desc = `*SMAE* (Sistema de Monitoramento e Acompanhamento Estratégico) é um software livre e de código aberto.
 
-    const config = new DocumentBuilder()
-        .setTitle('SMAE - OpenAPI file')
-        .setDescription(
-            '*SMAE*\n\n' +
-                '**CONVERSÃO AUTOMÁTICA PARA CSV**' +
-                '\n\nTodos os endpoints que devolvem `application/json` também podem devolver CSV, utilize o' +
-                'header `Accept: text/csv` para explodir apenas as linhas, ou então `Accept: text/csv; unwind-all` (mais lento, que expande tudo) que transforma todas as arrays em items. ' +
-                '\n\nPor padrão todos os campos deep são achatados (flatten).' +
-                '\n\né possível liberar o unwind-all apenas pra quem for admin ou alguns endpoints, mas no momento está liberado para todos.'
-        )
-        .addBearerAuth(
-            {
-                type: 'http',
-                scheme: 'bearer',
-                bearerFormat: 'Bearer',
-            },
-            'access-token'
-        )
-        .setVersion('1.0')
-        .addTag('Público', 'Rotas públicas')
-        .addTag('Minha Conta', 'Dados do próprio usuário')
-        .addTag('default', 'Informações do sistema')
-        .build();
+### CONVERSÃO AUTOMÁTICA PARA CSV
 
-    const document = SwaggerModule.createDocument(app, config);
-    SwaggerModule.setup('api', app, document, {
-        swaggerOptions: {
-            persistAuthorization: true,
-            filter: '',
-            docExpansion: 'list', // none
-        },
-    });
+<p>
+Todos os endpoints que devolvem \`application/json\` também podem devolver CSV, utilize o
+header \`Accept: text/csv\` para explodir apenas as linhas, ou então \`Accept: text/csv; unwind-all\`
+(mais lento, que expande tudo) que transforma todas as arrays em items.
+<br>Por padrão todos os campos deep são achatados (flatten).<br>
+</p>
+</div>
+`;
+
+    const configProjeto = createSwaggerConfig('SMAE - OpenAPI - Módulos de Projetos', desc);
+    setupSwaggerModule('api/projetos', app, configProjeto.build(), [AppModuleProjeto]);
+
+    const configCommon = createSwaggerConfig('SMAE - OpenAPI - Módulos fundamentais', desc);
+    setupSwaggerModule('api/base', app, configCommon.build(), [AppModuleCommon]);
+
+    const configPdm = createSwaggerConfig('SMAE - OpenAPI - Módulos Programa de Metas', desc);
+    setupSwaggerModule('api/pdm', app, configPdm.build(), [AppModulePdm]);
+
+    const config = createSwaggerConfig(
+        'SMAE - OpenAPI - Aplicação completa',
+        `${desc}\n\n----\n\n# Disponível também
+- [Módulos fundamentais](/api/base)
+- [OpenAPI - Módulos de Programa de Metas](/api/pdm)
+- [OpenAPI - Módulos de Projetos](/api/projetos)`
+    );
+
+    setupSwaggerModule(
+        'api',
+        app,
+        config
+            .addTag('Público', 'Rotas públicas')
+            .addTag('Minha Conta', 'Dados do próprio usuário')
+            .addTag('default', 'Informações do sistema')
+            .build(),
+        []
+    );
 
     app.use(
         expressWinston.logger({
@@ -76,3 +87,38 @@ process.on('unhandledRejection', (reason, promise) => {
         console.log('Unhandled Rejection at:', promise, 'reason:', reason);
     }
 });
+
+function createSwaggerConfig(title: string, description: string) {
+    return new DocumentBuilder()
+        .setTitle(title)
+        .setDescription(description)
+        .addBearerAuth(
+            {
+                type: 'http',
+                scheme: 'bearer',
+                bearerFormat: 'Bearer',
+            },
+            'access-token'
+        )
+        .setVersion('1.0');
+}
+
+function setupSwaggerModule(
+    route: string,
+    app: INestApplication,
+    config: Omit<OpenAPIObject, 'paths'>,
+    includeModules: any[]
+) {
+    const document = SwaggerModule.createDocument(app, config, {
+        include: includeModules,
+        deepScanRoutes: true,
+    });
+
+    SwaggerModule.setup(route, app, document, {
+        swaggerOptions: {
+            persistAuthorization: true,
+            filter: '',
+            docExpansion: 'list', // none
+        },
+    });
+}

@@ -18,9 +18,9 @@ export class CreateRegiaoDto {
      * @example 27
      */
     @IsOptional()
-    @IsInt({ message: '$property| Precisa ser um número' })
-    @Type(() => Number)
-    codigo?: number;
+    @IsString({ message: '$property| Precisa ser um texto' })
+    @MaxLength(100)
+    codigo?: string;
 
     /**
      * Descrição

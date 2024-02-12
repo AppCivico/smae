@@ -2,7 +2,7 @@ import { OmitType, PartialType } from '@nestjs/swagger';
 
 export class Regiao {
     id: number;
-    codigo: number | null;
+    codigo: string | null;
     descricao: string;
     nivel: number;
     parente_id: number | null;
