@@ -254,7 +254,9 @@ model Pessoa {
     projetosCompartilhadosEmPortfolioQueRemovi    PortfolioProjetoCompartilhado[] @relation("Removedor")
     projetosCompartilhadosEmPortfolioQueAtualizei PortfolioProjetoCompartilhado[] @relation("Atualizador")
 
-    task_queue task_queue[]
+    task_queue                       task_queue[]
+    GeoEnderecoReferenciaqQueCriei   GeoLocalizacaoReferencia[] @relation("criador")
+    GeoEnderecoReferenciaqQueRemovid GeoLocalizacaoReferencia[] @relation("removedor")
 
     @@index([email])
     @@map("pessoa")
@@ -670,7 +672,7 @@ model Regiao {
     descricao  String
     shapefile  String?
     nivel      Int
-    codigo     Int?
+    codigo     String?
     parente_id Int?
 
     pdm_codigo_sufixo String?
@@ -687,13 +689,14 @@ model Regiao {
     removido_por   Int?
     removido_em    DateTime? @db.Timestamptz(6)
 
-    atualizador   Pessoa?    @relation("Atualizador", fields: [atualizado_por], references: [id])
-    criador       Pessoa?    @relation("Criador", fields: [criado_por], references: [id])
-    removedor     Pessoa?    @relation("Removedor", fields: [removido_por], references: [id])
-    RegioesAbaixo Regiao[]   @relation("Parente")
-    Variavel      Variavel[]
-    Etapa         Etapa[]
-    Projetos      Projeto[]
+    atualizador     Pessoa?           @relation("Atualizador", fields: [atualizado_por], references: [id])
+    criador         Pessoa?           @relation("Criador", fields: [criado_por], references: [id])
+    removedor       Pessoa?           @relation("Removedor", fields: [removido_por], references: [id])
+    RegioesAbaixo   Regiao[]          @relation("Parente")
+    Variavel        Variavel[]
+    Etapa           Etapa[]
+    Projetos        Projeto[]
+    GeoCamadaRegiao GeoCamadaRegiao[]
 
     @@index([parente_id])
     @@map("regiao")
@@ -834,6 +837,7 @@ model Meta {
     ViewMetaPessoaResponsavelNaCp         view_meta_pessoa_responsavel_na_cp[]
     MetaStatusAtrasoConsolidadoMes        MetaStatusAtrasoConsolidadoMes[]
     MetaStatusAtrasoVariavel              MetaStatusAtrasoVariavel[]
+    GeoEnderecoReferencia                 GeoLocalizacaoReferencia[]
 
     @@index([pdm_id])
     @@map("meta")
@@ -1289,6 +1293,7 @@ model Iniciativa {
     MetaOrcamento            OrcamentoPrevisto[]
     projetos                 Projeto[]
     OrcamentoPlanejadoZerado OrcamentoPrevistoZerado[]
+    GeoEnderecoReferencia    GeoLocalizacaoReferencia[]
 
     @@index([meta_id])
     @@map("iniciativa")
@@ -1371,6 +1376,7 @@ model Atividade {
     MetaOrcamento            OrcamentoPrevisto[]
     projetos                 Projeto[]
     OrcamentoPlanejadoZerado OrcamentoPrevistoZerado[]
+    GeoEnderecoReferencia    GeoLocalizacaoReferencia[]
 
     @@index([iniciativa_id])
     @@map("atividade")
@@ -1504,7 +1510,8 @@ model Etapa {
     criador     Pessoa? @relation("Criador", fields: [criado_por], references: [id])
     removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
 
-    responsaveis EtapaResponsavel[]
+    responsaveis             EtapaResponsavel[]
+    GeoLocalizacaoReferencia GeoLocalizacaoReferencia[]
 
     @@index([regiao_id])
     @@index([etapa_pai_id])
@@ -2859,7 +2866,7 @@ model Projeto {
     ProjetoNumerosSequenciais ProjetoNumeroSequencial[]
 
     // data em que o sistema deve novamente calcular os atrasos automaticamente
-    tarefas_proximo_recalculo DateTime                  @default(now())
+    tarefas_proximo_recalculo DateTime                   @default(now())
     MetaOrcamento             OrcamentoPrevisto[]
     OrcamentoPlanejado        OrcamentoPlanejado[]
     OrcamentoRealizado        OrcamentoRealizado[]
@@ -2867,6 +2874,7 @@ model Projeto {
     Diretorio                 Diretorio[]
     ProjetoGrupoPortfolio     ProjetoGrupoPortfolio[]
     equipe                    ProjetoEquipe[]
+    GeoEnderecoReferencia     GeoLocalizacaoReferencia[]
 
     @@index([removido_em])
     @@map("projeto")
@@ -3807,4 +3815,111 @@ view view_etapa_rel_meta {
     iniciativa_id Int?
 
     @@map("view_etapa_rel_meta")
+}
+
+model GeoLocalizacao {
+    id Int @id @default(autoincrement())
+
+    endereco_exibicao String
+    geom_geojson      Json
+    metadata          Json
+    lat               Float    @db.DoublePrecision
+    lon               Float    @db.DoublePrecision
+    criado_em         DateTime @default(now()) @db.Timestamp(6)
+
+    GeoEnderecoCamada     GeoEnderecoCamada[]
+    GeoEnderecoReferencia GeoLocalizacaoReferencia[]
+
+    @@map("geo_localizacao")
+}
+
+model GeoCamadaConfig {
+    id Int @id @default(autoincrement())
+
+    tipo_camada String // eg: distrito_municipal
+    chave_camada String // eg: pro caso do distrito_municipal=cd_identificador_subprefeitura
+    titulo_camada String // eg: pro caso do distrito_municipal=nm_distrito_municipal
+
+    nivel_regionalizacao Int?
+    simplificar_em       Float? @db.DoublePrecision
+
+    @@unique([tipo_camada])
+    @@map("geo_camada_config")
+}
+
+model GeoCamada {
+    id Int @id @default(autoincrement())
+
+    tipo_camada String
+    codigo      String
+    titulo      String
+
+    nivel_regionalizacao Int?
+
+    geom_geojson_original Json /// versao original
+    geom_geojson          Json /// versão simplificada
+
+    GeoCamadaRegiao   GeoCamadaRegiao[]
+    GeoEnderecoCamada GeoEnderecoCamada[]
+
+    @@unique([tipo_camada, codigo])
+    @@map("geo_camada")
+}
+
+model GeoCamadaRegiao {
+    id Int @id @default(autoincrement())
+
+    regiao_id     Int
+    geo_camada_id Int
+
+    geo_camada GeoCamada @relation(fields: [geo_camada_id], references: [id])
+    regiao     Regiao    @relation(fields: [regiao_id], references: [id])
+
+    @@map("geo_camada_regiao")
+}
+
+model GeoEnderecoCamada {
+    id Int @id @default(autoincrement())
+
+    geo_localizacao_id Int
+    geo_camada_id      Int
+
+    geo_localizacao GeoLocalizacao @relation(fields: [geo_localizacao_id], references: [id])
+    geo_camada      GeoCamada      @relation(fields: [geo_camada_id], references: [id])
+
+    @@map("geo_endereco_regiao")
+}
+
+enum GeoReferenciaTipo {
+    Endereco
+}
+
+model GeoLocalizacaoReferencia {
+    id                 Int @id @default(autoincrement())
+    geo_localizacao_id Int
+
+    criador_por  Int?
+    removido_por Int?
+
+    tipo          GeoReferenciaTipo
+    projeto_id    Int?
+    iniciativa_id Int?
+    atividade_id  Int?
+    meta_id       Int?
+    etapa_id      Int?
+
+    projeto    Projeto?    @relation(fields: [projeto_id], references: [id])
+    iniciativa Iniciativa? @relation(fields: [iniciativa_id], references: [id])
+    atividade  Atividade?  @relation(fields: [atividade_id], references: [id])
+    meta       Meta?       @relation(fields: [meta_id], references: [id])
+    etapa      Etapa?      @relation(fields: [etapa_id], references: [id])
+
+    criado_em   DateTime  @default(now()) @db.Timestamp(6)
+    removido_em DateTime? @db.Timestamp(6)
+
+    geo_localizacao GeoLocalizacao @relation(fields: [geo_localizacao_id], references: [id])
+    criador         Pessoa?        @relation("criador", fields: [criador_por], references: [id])
+    removedor       Pessoa?        @relation("removedor", fields: [removido_por], references: [id])
+
+    @@map("geo_localicao_referencia")
 }
