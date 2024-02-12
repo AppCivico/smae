@@ -52,7 +52,7 @@ export class GeoApiService {
     GEO_API_PREFIX: string;
 
     constructor() {
-        this.GEO_API_PREFIX = process.env.GEO_API_PREFIX || 'http://smae_geo:80/';
+        this.GEO_API_PREFIX = process.env.GEO_API_PREFIX || 'http://smae_geoloc:80/';
     }
 
     onModuleInit() {
