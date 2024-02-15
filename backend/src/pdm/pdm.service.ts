@@ -392,12 +392,12 @@ export class PdmService {
         if (Boolean(process.env['DISABLE_PDM_CRONTAB'])) return;
 
         await this.prisma.$transaction(
-            async (prisma: Prisma.TransactionClient) => {
+            async (prismaTx: Prisma.TransactionClient) => {
                 this.logger.debug(`Adquirindo lock para verificação dos ciclos`);
                 const locked: {
                     locked: boolean;
                     now_ymd: DateYMD;
-                }[] = await prisma.$queryRaw`SELECT
+                }[] = await prismaTx.$queryRaw`SELECT
                 pg_try_advisory_xact_lock(${JOB_PDM_CICLO_LOCK}) as locked,
                 (now() at time zone ${SYSTEM_TIMEZONE}::varchar)::date::text as now_ymd
             `;
@@ -413,16 +413,16 @@ export class PdmService {
                 }
 
                 // TODO isso aqui não volta um ARRAY de number não, volta um {"variaveis": []}
-                const varsSuspensas = await this.variavelService.processVariaveisSuspensas(prisma);
+                const varsSuspensas = await this.variavelService.processVariaveisSuspensas(prismaTx);
 
                 if (varsSuspensas.length) {
-                    await this.variavelService.recalc_variaveis_acumulada(varsSuspensas, prisma);
-                    await this.variavelService.recalc_indicador_usando_variaveis(varsSuspensas, prisma);
+                    await this.variavelService.recalc_variaveis_acumulada(varsSuspensas, prismaTx);
+                    await this.variavelService.recalc_indicador_usando_variaveis(varsSuspensas, prismaTx);
                 }
 
                 this.logger.debug(`Atualizando metas consolidadas`);
-                await prisma.$queryRaw`
-                    SELECT add_refresh_meta_task(meta_id)
+                await prismaTx.$queryRaw`
+                    CALL add_refresh_meta_task(meta_id)
                     FROM meta_status_consolidado_cf cf
                     WHERE (atualizado_em at time zone ${SYSTEM_TIMEZONE})::date != current_date at time zone ${SYSTEM_TIMEZONE}
                 `;
