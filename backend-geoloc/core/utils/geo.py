@@ -40,22 +40,23 @@ def geojson_dict_to_geodf(geojson:dict, crs_data=True)->gpd.GeoDataFrame:
     return gdf
 
 
-def extract_points_from_feature(geojson_feature: dict) -> Tuple[float, float]:
-    geom = geojson_feature['geometry']
-    geom_type = geom['type']
-    if geom_type != 'Point':
-        raise ValueError(f'Geometria deve ser ponto. Geometria: {geom_type}')
+def extract_points_from_feature(geojson_feature:dict)->Tuple[float, float]:
 
-    x, y = geom['coordinates']
+        geom = geojson_feature['geometry']
+        geom_type = geom['type']
+        if geom_type!='Point':
+            raise ValueError(f'Geometria deve ser ponto. Geometria: {geom_type}')
 
-    # Correct the order of transformation: from SIRGAS to WGS84
-    y, x = point_from_sirgas_to_wgs(x, y)
+        x, y = geom['coordinates']
 
-    return x, y
+        #nunca entendi o por que, mas precisa inverter
+        return y, x
 
-def convert_points_to_sirgas(geojson_feature: dict) -> Tuple[float, float]:
+def convert_points_to_sirgas(geojson_feature:dict)->Tuple[float, float]:
+
     x, y = extract_points_from_feature(geojson_feature)
-    x, y = point_from_sirgas_to_wgs(x, y)
+    x, y = point_from_wgs_to_sirgas(x, y)
+
 
     return x, y
 
@@ -85,9 +86,10 @@ def geojson_envelop(feature_list:List[dict], epsg_num:int=None)->dict:
     return geojson
 
 
-def geopandas_to_wgs_84(gdf: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
+def geopandas_to_wgs_84(gdf:gpd.GeoDataFrame)->gpd.GeoDataFrame:
     wgs_84_crs = CRS("EPSG:4326")
-    gdf['geometry'] = gdf['geometry'].to_crs(wgs_84_crs)
+    gdf = gdf.to_crs(wgs_84_crs)
+
     return gdf
 
 
