@@ -3836,12 +3836,14 @@ model GeoLocalizacao {
 model GeoCamadaConfig {
     id Int @id @default(autoincrement())
 
-    tipo_camada String // eg: distrito_municipal
-    chave_camada String // eg: pro caso do distrito_municipal=cd_identificador_subprefeitura
+    tipo_camada   String // eg: distrito_municipal
+    chave_camada  String // eg: pro caso do distrito_municipal=cd_identificador_subprefeitura
     titulo_camada String // eg: pro caso do distrito_municipal=nm_distrito_municipal
+    descricao     String @default("")
 
     nivel_regionalizacao Int?
-    simplificar_em       Float? @db.DoublePrecision
+    simplificar_em       Float?      @db.DoublePrecision
+    GeoCamada            GeoCamada[]
 
     @@unique([tipo_camada])
     @@map("geo_camada_config")
@@ -3855,6 +3857,9 @@ model GeoCamada {
     titulo      String
 
     nivel_regionalizacao Int?
+
+    geo_camada_config Int
+    config            GeoCamadaConfig @relation(fields: [geo_camada_config], references: [id])
 
     geom_geojson_original Json /// versao original
     geom_geojson          Json /// versão simplificada
