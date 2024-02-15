@@ -19,6 +19,7 @@ export class GeoLocCamadaSimplesDto {
     id: number;
     titulo: string;
     codigo: string;
+    descricao: string
 }
 
 export class GeoLocCamadaFullDto extends GeoLocCamadaSimplesDto {
