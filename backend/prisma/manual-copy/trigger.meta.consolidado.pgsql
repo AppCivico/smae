@@ -111,11 +111,6 @@ AFTER INSERT OR UPDATE OR DELETE ON formula_composta_ciclo_fisico_qualitativo
 FOR EACH ROW
 EXECUTE FUNCTION f_meta_refresh_generic_trigger();
 
-CREATE TRIGGER trg_refresh_meta_variavel_ciclo_fisico_pedido_complementacao
-AFTER INSERT OR UPDATE OR DELETE ON variavel_ciclo_fisico_pedido_complementacao
-FOR EACH ROW
-EXECUTE FUNCTION f_meta_refresh_generic_trigger();
-
 CREATE TRIGGER trg_refresh_meta_meta_ciclo_fisico_risco
 AFTER INSERT OR UPDATE OR DELETE ON meta_ciclo_fisico_risco
 FOR EACH ROW
