@@ -40,23 +40,22 @@ def geojson_dict_to_geodf(geojson:dict, crs_data=True)->gpd.GeoDataFrame:
     return gdf
 
 
-def extract_points_from_feature(geojson_feature:dict)->Tuple[float, float]:
+def extract_points_from_feature(geojson_feature: dict) -> Tuple[float, float]:
+    geom = geojson_feature['geometry']
+    geom_type = geom['type']
+    if geom_type != 'Point':
+        raise ValueError(f'Geometria deve ser ponto. Geometria: {geom_type}')
 
-        geom = geojson_feature['geometry']
-        geom_type = geom['type']
-        if geom_type!='Point':
-            raise ValueError(f'Geometria deve ser ponto. Geometria: {geom_type}')
+    x, y = geom['coordinates']
 
-        x, y = geom['coordinates']
+    # Correct the order of transformation: from SIRGAS to WGS84
+    y, x = point_from_sirgas_to_wgs(x, y)
 
-        #nunca entendi o por que, mas precisa inverter
-        return y, x
+    return x, y
 
-def convert_points_to_sirgas(geojson_feature:dict)->Tuple[float, float]:
-
+def convert_points_to_sirgas(geojson_feature: dict) -> Tuple[float, float]:
     x, y = extract_points_from_feature(geojson_feature)
-    x, y = point_from_wgs_to_sirgas(x, y)
-
+    x, y = point_from_sirgas_to_wgs(x, y)
 
     return x, y
 
