@@ -41,17 +41,16 @@ def geojson_dict_to_geodf(geojson:dict, crs_data=True)->gpd.GeoDataFrame:
 
 
 def extract_points_from_feature(geojson_feature:dict)->Tuple[float, float]:
-        
+
         geom = geojson_feature['geometry']
         geom_type = geom['type']
         if geom_type!='Point':
             raise ValueError(f'Geometria deve ser ponto. Geometria: {geom_type}')
-        
+
         x, y = geom['coordinates']
 
-        #nunca entendi o por que, mas precisa inverter
-        return y, x
-    
+        return x, y
+
 def convert_points_to_sirgas(geojson_feature:dict)->Tuple[float, float]:
 
     x, y = extract_points_from_feature(geojson_feature)
@@ -81,7 +80,7 @@ def geojson_envelop(feature_list:List[dict], epsg_num:int=None)->dict:
 
     if epsg_num:
         geojson['crs'] = geojson_crs_param(epsg_num)
-        
+
 
     return geojson
 
