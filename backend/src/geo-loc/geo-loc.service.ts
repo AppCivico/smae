@@ -109,6 +109,7 @@ export class GeoLocService {
                     id: geoCamada.id,
                     codigo: geoCamada.codigo,
                     titulo: geoCamada.titulo,
+                    descricao: dbConfig.descricao,
                 });
             }
         }
@@ -137,6 +138,7 @@ export class GeoLocService {
                 nivel_regionalizacao: dbConfig.nivel_regionalizacao,
                 codigo: propCodigo,
                 titulo: propTitulo,
+                geo_camada_config: dbConfig.id,
             },
         });
 
@@ -186,6 +188,11 @@ export class GeoLocService {
                 codigo: true,
                 titulo: true,
                 geom_geojson: true,
+                config: {
+                    select: {
+                        descricao: true,
+                    },
+                },
             },
         });
 
@@ -194,6 +201,7 @@ export class GeoLocService {
             .map((r) => {
                 return {
                     ...r,
+                    descricao: r.config.descricao,
                     geom_geojson: r.geom_geojson?.valueOf() as GeoJSON,
                 };
             });
