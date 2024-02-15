@@ -3,6 +3,7 @@ from typing import Tuple
 import geopandas as gpd
 from shapely.geometry import shape
 from typing import List
+import json
 
 wgs_84_crs = CRS("WGS84")
 sirgas_2000_crs = CRS('epsg:31983')
@@ -83,3 +84,19 @@ def geojson_envelop(feature_list:List[dict], epsg_num:int=None)->dict:
         
 
     return geojson
+
+
+def geopandas_to_wgs_84(gdf:gpd.GeoDataFrame)->gpd.GeoDataFrame:
+
+    gdf = gdf.to_crs(epsg=4326)
+
+    return gdf
+
+
+def geopandas_to_geojson_dict(gdf:gpd.GeoDataFrame, epsg_num:int=None)->dict:
+
+    geojson_dict = json.loads(gdf.to_json())
+    if epsg_num:
+        geojson_dict['crs'] = geojson_crs_param(epsg_num)
+
+    return geojson_dict

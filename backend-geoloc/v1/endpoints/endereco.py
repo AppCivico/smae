@@ -22,6 +22,7 @@ async def geolocalizar_endereco(search_endereco:AdressSearchParameters)->List[Ad
 
     endereco = search_endereco.endereco
     camadas = search_endereco.camadas
+    convert = search_endereco.convert_to_wgs_84
 
     if camadas:
         camadas_geosampa = {}
@@ -30,7 +31,7 @@ async def geolocalizar_endereco(search_endereco:AdressSearchParameters)->List[Ad
             camadas_geosampa[camada.alias] = camada.layer_name
     else:
         camadas_geosampa={}
-    data = buscar_endereco(endereco, **camadas_geosampa)
+    data = buscar_endereco(endereco, convert, **camadas_geosampa)
 
     return data
 
