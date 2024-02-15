@@ -4,7 +4,7 @@ import geopandas as gpd
 from shapely.geometry import shape
 from typing import List
 import json
-from shapely.ops import orient
+#from shapely.ops import orient
 
 wgs_84_crs = CRS("WGS84")
 sirgas_2000_crs = CRS('epsg:31983')
@@ -29,7 +29,7 @@ def point_from_sirgas_to_wgs(x:float, y:float)->Tuple[float, float]:
 
 def geojson_dict_to_geodf(geojson:dict, crs_data=True)->gpd.GeoDataFrame:
 
-    geometries = [orient(shape(feature['geometry'])) for feature in geojson['features']]
+    geometries = [shape(feature['geometry']) for feature in geojson['features']]
     gdf = gpd.GeoDataFrame(geometry=geometries)
     #pressupoe que as properties sao as mesmas
     for key in geojson['features'][0]['properties']:
