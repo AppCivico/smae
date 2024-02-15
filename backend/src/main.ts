@@ -25,24 +25,30 @@ header \`Accept: text/csv\` para explodir apenas as linhas, ou então \`Accept: 
 <br>Por padrão todos os campos deep são achatados (flatten).<br>
 </p>
 </div>
+
+----
+
+# Add to insomnia
+
+Usar o link do do swagger + "-json"
+
+# Disponível também
+
+- [Módulos fundamentais](/api/swagger-base)
+- [OpenAPI - Módulos de Programa de Metas](/api/swagger-pdm)
+- [OpenAPI - Módulos de Projetos](/api/swagger-projetos)
 `;
 
     const configProjeto = createSwaggerConfig('SMAE - OpenAPI - Módulos de Projetos', desc);
-    setupSwaggerModule('api/projetos', app, configProjeto.build(), [AppModuleProjeto]);
+    setupSwaggerModule('api/swagger-projetos', app, configProjeto.build(), [AppModuleProjeto]);
 
     const configCommon = createSwaggerConfig('SMAE - OpenAPI - Módulos fundamentais', desc);
-    setupSwaggerModule('api/base', app, configCommon.build(), [AppModuleCommon]);
+    setupSwaggerModule('api/swagger-base', app, configCommon.build(), [AppModuleCommon]);
 
     const configPdm = createSwaggerConfig('SMAE - OpenAPI - Módulos Programa de Metas', desc);
-    setupSwaggerModule('api/pdm', app, configPdm.build(), [AppModulePdm]);
+    setupSwaggerModule('api/swagger-pdm', app, configPdm.build(), [AppModulePdm]);
 
-    const config = createSwaggerConfig(
-        'SMAE - OpenAPI - Aplicação completa',
-        `${desc}\n\n----\n\n# Disponível também
-- [Módulos fundamentais](/api/base)
-- [OpenAPI - Módulos de Programa de Metas](/api/pdm)
-- [OpenAPI - Módulos de Projetos](/api/projetos)`
-    );
+    const config = createSwaggerConfig('SMAE - OpenAPI - Aplicação completa', desc);
 
     setupSwaggerModule(
         'api',
