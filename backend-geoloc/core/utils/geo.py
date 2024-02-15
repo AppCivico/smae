@@ -86,10 +86,9 @@ def geojson_envelop(feature_list:List[dict], epsg_num:int=None)->dict:
     return geojson
 
 
-def geopandas_to_wgs_84(gdf:gpd.GeoDataFrame)->gpd.GeoDataFrame:
+def geopandas_to_wgs_84(gdf: gpd.GeoDataFrame) -> gpd.GeoDataFrame:
     wgs_84_crs = CRS("EPSG:4326")
-    gdf = gdf.to_crs(wgs_84_crs)
-
+    gdf['geometry'] = gdf['geometry'].to_crs(wgs_84_crs)
     return gdf
 
 
