@@ -45,4 +45,6 @@ class AdressSearchParameters(BaseModel):
 
     endereco: str
     camadas: Optional[List[CamadaParam]]=None
+    convert_to_wgs_84: Optional[bool]=True
+
     

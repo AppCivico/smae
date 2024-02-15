@@ -44,18 +44,18 @@ class AddresSearch:
         
         return geojson_envelop([address_feat], crs_num)
     
-    def format_address_data(self, address:dict, nominatim_crs:str, **camadas)->dict:
+    def format_address_data(self, address:dict, nominatim_crs:str, convert_to_wgs_84:bool, **camadas)->dict:
 
         address_data = {
                 'endereco' : self.address_feature_to_geojson(address, nominatim_crs),
             }
 
-        camadas_data = self.geosampa_query(address, **camadas)
+        camadas_data = self.geosampa_query(address, convert_to_wgs_84, **camadas)
         address_data['camadas_geosampa'] = camadas_data
 
         return address_data
     
-    def __call__(self, address:str, **camadas)->List[dict]:
+    def __call__(self, address:str, convert_to_wgs_84:bool=True, **camadas)->List[dict]:
 
 
         geoloc_resp = self.nominatim_address_search(address)
@@ -64,7 +64,7 @@ class AddresSearch:
         data = []
         #arrumar o endereco para ficar geojson
         for add in geoloc_resp['features']:
-            data.append(self.format_address_data(add, nominatim_crs, **camadas))
+            data.append(self.format_address_data(add, nominatim_crs, convert_to_wgs_84, **camadas))
 
         return data
             
