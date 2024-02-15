@@ -1225,15 +1225,28 @@ export class VariavelService {
                                 prismaTxn.serieVariavel.updateMany({
                                     where: {
                                         id: valor.referencia.id,
-                                        valor_nominal: {
-                                            not: valor.valor,
-                                        },
+
+                                        AND: [
+                                            {
+                                                OR: [
+                                                    {
+                                                        valor_nominal: {
+                                                            not: valor.valor,
+                                                        },
+                                                    },
+                                                    {
+                                                        conferida: false,
+                                                    },
+                                                ],
+                                            },
+                                        ],
                                     },
                                     data: {
                                         valor_nominal: valor.valor,
                                         atualizado_em: new Date(Date.now()),
                                         atualizado_por: user.id,
                                         conferida: true,
+                                        conferida_por: user.id,
                                     },
                                 })
                             );
