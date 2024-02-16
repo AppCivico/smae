@@ -236,6 +236,7 @@ export class TaskService {
             // já tem um job da org na fila, pula
             if (task.pessoa_id && this.current_jobs_pessoa_ids.has(task.pessoa_id)) continue;
             if (task.pessoa_id) this.current_jobs_pessoa_ids.add(task.pessoa_id);
+            if (task.type == 'refresh_meta' && this.current_jobs_types.has(task.type)) continue;
             if (task.type == 'refresh_meta') this.current_jobs_types.add(task.type);
 
             this.running_jobs.add(task.id);
@@ -259,6 +260,7 @@ export class TaskService {
                     });
 
                     if (task.pessoa_id) this.current_jobs_pessoa_ids.delete(task.pessoa_id);
+                    if (task.type) this.current_jobs_types.delete(task.type);
                     this.running_jobs.delete(task.id);
                 })
                 .catch(async (e: any) => {
