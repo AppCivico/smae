@@ -21,7 +21,7 @@ export class RefreshMetaService implements TaskableService {
         SET status='completed', output = '{"duplicated": true}'
         WHERE type = 'refresh_meta' AND criado_em = ${task.criado_em.toISOString}
         AND status='pending' AND id != ${task.id}
-        AND params::text == (select params::text from task_queue where id = ${task.id})
+        AND params::text = (select params::text from task_queue where id = ${task.id})
         `;
         let tries = 0;
         do {
