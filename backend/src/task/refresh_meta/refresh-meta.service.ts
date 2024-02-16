@@ -19,9 +19,9 @@ export class RefreshMetaService implements TaskableService {
 
         await this.prisma.$queryRaw`UPDATE task_queue
         SET status='completed', output = '{"duplicated": true}'
-        WHERE type = 'refresh_meta' AND criado_em = ${task.criado_em.toISOString}
+        WHERE type = 'refresh_meta'
         AND status='pending' AND id != ${task.id}
-        AND params::text = (select params::text from task_queue where id = ${task.id})
+        AND (params::text, criado_em) = (select params::text, criado_em from task_queue where id = ${task.id})
         `;
         let tries = 0;
         do {
