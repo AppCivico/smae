@@ -3828,7 +3828,7 @@ model GeoLocalizacao {
     lon               Float             @db.DoublePrecision
     criado_em         DateTime          @default(now()) @db.Timestamp(6)
 
-    GeoEnderecoCamada     GeoEnderecoCamada[]
+    GeoEnderecoCamada     GeoLocalizacaoCamada[]
     GeoEnderecoReferencia GeoLocalizacaoReferencia[]
 
     @@map("geo_localizacao")
@@ -3866,7 +3866,7 @@ model GeoCamada {
     geom_geojson          Json /// versão simplificada
 
     GeoCamadaRegiao   GeoCamadaRegiao[]
-    GeoEnderecoCamada GeoEnderecoCamada[]
+    GeoEnderecoCamada GeoLocalizacaoCamada[]
 
     @@unique([tipo_camada, codigo])
     @@map("geo_camada")
@@ -3884,7 +3884,7 @@ model GeoCamadaRegiao {
     @@map("geo_camada_regiao")
 }
 
-model GeoEnderecoCamada {
+model GeoLocalizacaoCamada {
     id Int @id @default(autoincrement())
 
     geo_localizacao_id Int
@@ -3893,7 +3893,7 @@ model GeoEnderecoCamada {
     geo_localizacao GeoLocalizacao @relation(fields: [geo_localizacao_id], references: [id])
     geo_camada      GeoCamada      @relation(fields: [geo_camada_id], references: [id])
 
-    @@map("geo_endereco_regiao")
+    @@map("geo_localizacao_camada")
 }
 
 enum GeoReferenciaTipo {
