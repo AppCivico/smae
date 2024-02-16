@@ -7,6 +7,7 @@ import { GeoApiService } from '../geo-api/geo-api.service';
 import { PrismaService } from '../prisma/prisma.service';
 import {
     CreateEnderecoDto,
+    CreateGeoEnderecoReferenciaDto,
     FilterCamadasDto,
     GeoLocCamadaFullDto,
     GeoLocCamadaSimplesDto,
@@ -163,13 +164,12 @@ export class GeoLocService {
         return geoCamada;
     }
 
-    private decodeToken(jwt: string | undefined): GeoTokenJwtBody | null {
+    private decodeToken(jwt: string): GeoTokenJwtBody {
         let tmp: GeoTokenJwtBody | null = null;
         try {
             if (jwt) tmp = this.jwtService.verify(jwt) as GeoTokenJwtBody;
-        } catch {
-            throw new BadRequestException('geo token is invalid');
-        }
+        } catch {}
+        if (!tmp) throw new BadRequestException('geo token is invalid');
         return tmp;
     }
 
@@ -234,6 +234,7 @@ export class GeoLocService {
                         endereco_exibicao,
                         lat,
                         lon,
+                        tipo: dto.tipo,
                         geom_geojson: dto.endereco as any,
                         metadata: { criado_por: user.id },
                         criado_em: now,
@@ -262,5 +263,41 @@ export class GeoLocService {
                 };
             }
         );
+    }
+
+    async associar(
+        dto: CreateGeoEnderecoReferenciaDto,
+        user: PessoaFromJwt,
+        prismaTx: Prisma.TransactionClient
+    ): Promise<number> {
+        const enderecoJwt = this.decodeToken(dto.token);
+
+        const endereco = await prismaTx.geoLocalizacao.findUniqueOrThrow({
+            where: { id: enderecoJwt.id },
+        });
+        if (endereco.tipo != dto.tipo)
+            throw new BadRequestException(
+                `Tipo da geolocalização ${endereco.tipo} precisa ser o mesmo tipo da associação ${dto.tipo}`
+            );
+
+        if (!dto.projeto_id || !dto.iniciativa_id || !dto.atividade_id || !dto.meta_id || !dto.etapa_id) {
+            throw new InternalServerErrorException('Necessário informar com qual associação!');
+        }
+
+        const record = await prismaTx.geoLocalizacaoReferencia.create({
+            data: {
+                tipo: endereco.tipo,
+                criado_em: new Date(Date.now()),
+                criador_por: user.id,
+                geo_localizacao_id: endereco.id,
+                projeto_id: dto.projeto_id,
+                iniciativa_id: dto.iniciativa_id,
+                atividade_id: dto.atividade_id,
+                meta_id: dto.meta_id,
+                etapa_id: dto.etapa_id,
+            },
+            select: { id: true },
+        });
+        return record.id;
     }
 }
