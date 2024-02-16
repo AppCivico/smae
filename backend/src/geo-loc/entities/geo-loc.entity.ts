@@ -19,11 +19,15 @@ export class GeoLocCamadaSimplesDto {
     id: number;
     titulo: string;
     codigo: string;
-    descricao: string
+    descricao: string;
 }
 
 export class GeoLocCamadaFullDto extends GeoLocCamadaSimplesDto {
     geom_geojson: GeoJSON;
+}
+
+export class RetornoGeoLocCamadaFullDto {
+    linhas: GeoLocCamadaFullDto[];
 }
 
 export class GeoLocListRetDto {

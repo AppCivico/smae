@@ -1,6 +1,6 @@
 import { Body, Controller, Get, Post, Query } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
-import { FilterCamadasDto, GeoLocCamadaFullDto, GeoLocDto, RetornoGeoLoc } from './entities/geo-loc.entity';
+import { FilterCamadasDto, GeoLocDto, RetornoGeoLoc, RetornoGeoLocCamadaFullDto } from './entities/geo-loc.entity';
 import { GeoLocService } from './geo-loc.service';
 
 @Controller('')
@@ -18,7 +18,7 @@ export class GeoLocController {
     @Get('camadas')
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
-    async findCamadas(@Query() dto: FilterCamadasDto): Promise<GeoLocCamadaFullDto[]> {
-        return await this.geoService.buscaCamadas(dto);
+    async findCamadas(@Query() dto: FilterCamadasDto): Promise<RetornoGeoLocCamadaFullDto> {
+        return { linhas: await this.geoService.buscaCamadas(dto) };
     }
 }
