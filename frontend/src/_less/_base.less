@@ -2643,6 +2643,10 @@ caption {
   flex-grow: 0;
   flex-shrink: 1;
 
+  &[hidden] {
+    display: none;
+  }
+
   &[data-debug] {
     &::before {
       content: attr(data-debug)': ';
