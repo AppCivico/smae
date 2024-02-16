@@ -41,6 +41,7 @@ export class TaskService {
     private enabled = false;
     private readonly logger = new Logger(TaskService.name);
     private current_jobs_pessoa_ids = new Set<number>();
+    private current_jobs_types = new Set<task_type>();
     private running_jobs = new Set<number>();
     private running_job_counter = 0;
 
@@ -213,6 +214,9 @@ export class TaskService {
         const pendingTasks = await this.prisma.task_queue.findMany({
             where: {
                 status: 'pending',
+                type: {
+                    notIn: Array.from(this.current_jobs_types.values()),
+                },
                 pessoa_id: {
                     // pula quem ainda o job não terminou na org
                     notIn: Array.from(this.current_jobs_pessoa_ids.values()),
@@ -232,6 +236,8 @@ export class TaskService {
             // já tem um job da org na fila, pula
             if (task.pessoa_id && this.current_jobs_pessoa_ids.has(task.pessoa_id)) continue;
             if (task.pessoa_id) this.current_jobs_pessoa_ids.add(task.pessoa_id);
+            if (task.type == 'refresh_meta') this.current_jobs_types.add(task.type);
+
             this.running_jobs.add(task.id);
 
             await this.prisma.task_queue.update({
@@ -269,6 +275,7 @@ export class TaskService {
                     });
 
                     if (task.pessoa_id) this.current_jobs_pessoa_ids.delete(task.pessoa_id);
+                    if (task.type) this.current_jobs_types.delete(task.type);
                     this.running_jobs.delete(task.id);
                 });
         }

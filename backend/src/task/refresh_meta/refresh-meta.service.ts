@@ -10,10 +10,19 @@ export class RefreshMetaService implements TaskableService {
     private readonly logger = new Logger(RefreshMetaService.name);
     constructor(private readonly prisma: PrismaService) {}
 
-    async executeJob(inputParams: CreateRefreshMetaDto, _taskId: string): Promise<any> {
+    async executeJob(inputParams: CreateRefreshMetaDto, taskId: string): Promise<any> {
         const before = Date.now();
 
         this.logger.verbose(`Refreshing meta ${inputParams.meta_id}...`);
+
+        const task = await this.prisma.task_queue.findFirstOrThrow({where: {id: +taskId}});
+
+        await this.prisma.$queryRaw`UPDATE task_queue
+        SET status='completed', output = '{"duplicated": true}'
+        WHERE type = 'refresh_meta' AND criado_em = ${task.criado_em.toISOString}
+        AND status='pending' AND id != ${task.id}
+        AND params::text == (select params::text from task_queue where id = ${task.id})
+        `;
         let tries = 0;
         do {
             try {
