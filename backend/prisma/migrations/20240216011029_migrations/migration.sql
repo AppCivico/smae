@@ -20,6 +20,15 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+CREATE OR REPLACE FUNCTION f_add_refresh_meta_task(p_meta_id INTEGER)
+RETURNS VOID AS
+$$
+BEGIN
+    CALL add_refresh_meta_task(p_meta_id);
+END;
+$$
+LANGUAGE plpgsql;
+
 CREATE OR REPLACE FUNCTION atualiza_meta_status_consolidado(pMetaId int, pCicloFisicoIdAtual int)
     RETURNS varchar
     AS $$

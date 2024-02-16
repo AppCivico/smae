@@ -20,6 +20,14 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+CREATE OR REPLACE FUNCTION f_add_refresh_meta_task(p_meta_id INTEGER)
+RETURNS VOID AS
+$$
+BEGIN
+    CALL add_refresh_meta_task(p_meta_id);
+END;
+$$
+LANGUAGE plpgsql;
 
 CREATE OR REPLACE FUNCTION f_etapa_refresh_meta_trigger()
 RETURNS TRIGGER AS $$
