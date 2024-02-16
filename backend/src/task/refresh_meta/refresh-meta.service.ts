@@ -15,7 +15,7 @@ export class RefreshMetaService implements TaskableService {
 
         this.logger.verbose(`Refreshing meta ${inputParams.meta_id}...`);
 
-        const task = await this.prisma.task_queue.findFirstOrThrow({where: {id: +taskId}});
+        const task = await this.prisma.task_queue.findFirstOrThrow({ where: { id: +taskId } });
 
         await this.prisma.$queryRaw`UPDATE task_queue
         SET status='completed', output = '{"duplicated": true}'
