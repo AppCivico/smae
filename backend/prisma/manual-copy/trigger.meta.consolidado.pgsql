@@ -1,16 +1,21 @@
 CREATE OR REPLACE PROCEDURE add_refresh_meta_task(p_meta_id INTEGER)
 AS $$
+DECLARE
+    current_txid bigint;
 BEGIN
+    current_txid := txid_current();
+
     IF NOT EXISTS (
         SELECT 1
         FROM task_queue
         WHERE "type" = 'refresh_meta'
         AND status = 'pending'
         AND (params->>'meta_id')::INTEGER = p_meta_id
+        AND (params->>'current_txid')::bigint = current_txid
         AND criado_em = now()
     ) THEN
         INSERT INTO task_queue ("type", params)
-        VALUES ('refresh_meta', json_build_object('meta_id', p_meta_id));
+        VALUES ('refresh_meta', json_build_object('meta_id', p_meta_id, 'current_txid', current_txid));
     END IF;
 END;
 $$ LANGUAGE plpgsql;
