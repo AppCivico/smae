@@ -3820,12 +3820,13 @@ view view_etapa_rel_meta {
 model GeoLocalizacao {
     id Int @id @default(autoincrement())
 
+    tipo              GeoReferenciaTipo
     endereco_exibicao String
     geom_geojson      Json
     metadata          Json
-    lat               Float    @db.DoublePrecision
-    lon               Float    @db.DoublePrecision
-    criado_em         DateTime @default(now()) @db.Timestamp(6)
+    lat               Float             @db.DoublePrecision
+    lon               Float             @db.DoublePrecision
+    criado_em         DateTime          @default(now()) @db.Timestamp(6)
 
     GeoEnderecoCamada     GeoEnderecoCamada[]
     GeoEnderecoReferencia GeoLocalizacaoReferencia[]

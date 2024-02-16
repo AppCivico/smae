@@ -57,7 +57,7 @@ export class CreateEnderecoDto {
 
     @ApiProperty({ enum: GeoReferenciaTipo, enumName: 'GeoReferenciaTipo' })
     @IsEnum(GeoReferenciaTipo)
-    tipo: string;
+    tipo: GeoReferenciaTipo;
 
     @IsGeoJSON()
     endereco: GeoJSON;
@@ -66,4 +66,18 @@ export class CreateEnderecoDto {
 export class RetornoCreateEnderecoDto {
     token: string;
     endereco_exibicao: string | undefined;
+}
+
+export class CreateGeoEnderecoReferenciaDto {
+    token: string;
+
+    @ApiProperty({ enum: GeoReferenciaTipo, enumName: 'GeoReferenciaTipo' })
+    @IsEnum(GeoReferenciaTipo)
+    tipo: GeoReferenciaTipo;
+
+    projeto_id?: number;
+    iniciativa_id?: number;
+    atividade_id?: number;
+    meta_id?: number;
+    etapa_id?: number;
 }
