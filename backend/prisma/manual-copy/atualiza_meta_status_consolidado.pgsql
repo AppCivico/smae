@@ -36,6 +36,8 @@ v_orc_total int[];
 v_orc_preenchido int[];
 
 BEGIN
+    PERFORM pg_advisory_xact_lock(pMetaId);
+
     v_debug := '';
 
     if (pMetaId is null) then
