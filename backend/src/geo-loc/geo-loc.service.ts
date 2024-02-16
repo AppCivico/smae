@@ -1,23 +1,22 @@
 import { BadRequestException, Injectable, InternalServerErrorException, Logger } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { GeoCamadaConfig } from '@prisma/client';
+import { GeoCamadaConfig, Prisma } from '@prisma/client';
 import { Feature, GeoJSON } from 'geojson';
+import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { GeoApiService } from '../geo-api/geo-api.service';
 import { PrismaService } from '../prisma/prisma.service';
 import {
+    CreateEnderecoDto,
     FilterCamadasDto,
     GeoLocCamadaFullDto,
     GeoLocCamadaSimplesDto,
     GeoLocDto,
+    RetornoCreateEnderecoDto,
     RetornoGeoLoc,
 } from './entities/geo-loc.entity';
 
-type TipoToken = 'GeoLoc' | 'Pesquisa';
-
 class GeoTokenJwtBody {
-    id: number | null;
-    tipo: TipoToken;
-    camadas_ids: number[] | null;
+    id: number;
 }
 
 @Injectable()
@@ -205,5 +204,63 @@ export class GeoLocService {
                     geom_geojson: r.geom_geojson?.valueOf() as GeoJSON,
                 };
             });
+    }
+
+    async createEndereco(dto: CreateEnderecoDto, user: PessoaFromJwt): Promise<RetornoCreateEnderecoDto> {
+        let endereco_exibicao = '';
+        let lat = 0;
+        let lon = 0;
+        if (dto.tipo == 'Endereco' && dto.endereco.type != 'Feature')
+            throw new BadRequestException('Para o tipo Endereço o GeoJson precisa ser do tipo Feature');
+
+        if (dto.tipo == 'Endereco' && dto.endereco.type == 'Feature') {
+            if (dto.endereco.geometry.type == 'Point') {
+                [lon, lat] = [...dto.endereco.geometry.coordinates];
+            } else {
+                throw new BadRequestException('Para o tipo Endereço o GeoJson ter uma coordenada do tipo Ponto');
+            }
+
+            const propEndereco = dto.endereco.properties ? dto.endereco.properties['string_endereco'] : null;
+            if (typeof propEndereco != 'string')
+                throw new BadRequestException('Para o tipo Endereço o GeoJson ter a propriedade string_endereco');
+            endereco_exibicao = propEndereco;
+        }
+
+        const now = new Date(Date.now());
+        return await this.prisma.$transaction(
+            async (prismaTx: Prisma.TransactionClient): Promise<RetornoCreateEnderecoDto> => {
+                const endereco = await prismaTx.geoLocalizacao.create({
+                    data: {
+                        endereco_exibicao,
+                        lat,
+                        lon,
+                        geom_geojson: dto.endereco as any,
+                        metadata: { criado_por: user.id },
+                        criado_em: now,
+                        GeoEnderecoCamada: dto.camadas
+                            ? {
+                                  createMany: {
+                                      data: dto.camadas.map((camada_id) => {
+                                          return {
+                                              geo_camada_id: camada_id,
+                                          };
+                                      }),
+                                      skipDuplicates: true,
+                                  },
+                              }
+                            : undefined,
+                    },
+                    select: {
+                        id: true,
+                        endereco_exibicao: true,
+                    },
+                });
+
+                return {
+                    endereco_exibicao: endereco.endereco_exibicao,
+                    token: this.encodeToken({ id: endereco.id }),
+                };
+            }
+        );
     }
 }
