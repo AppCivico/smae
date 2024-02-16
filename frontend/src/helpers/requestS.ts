@@ -16,7 +16,7 @@ function listErrors(r: String[]) {
   return r;
 }
 
-async function handleResponse(response: Response) {
+async function handleResponse(response: Response, alertarErros:Boolean = true) {
   const isJson = response.headers?.get('content-type')?.includes('application/json');
   const isZip = response.headers?.get('content-type')?.includes('application/zip');
 
@@ -32,8 +32,13 @@ async function handleResponse(response: Response) {
     if ([502].includes(response.status) && user) {
       msgDefault = 'Erro de comunicação do servidor.';
     }
-    const error = (data && data.message) ? listErrors(data.message) : msgDefault ?? response.status;
-    alertStore.error(error);
+    const error = (data && data.message)
+      ? listErrors(data.message)
+      : msgDefault ?? response.status;
+
+    if (alertarErros) {
+      alertStore.error(error);
+    }
     // eslint-disable-next-line consistent-return
     return Promise.reject(error);
   }
@@ -57,7 +62,11 @@ function userToken(url: RequestInfo | URL): HeadersInit {
 }
 
 function request(method: Method, upload = false) {
-  return (url: RequestInfo | URL, params: { [key: string]: any } | undefined) => {
+  return (
+    url: RequestInfo | URL,
+    params: { [key: string]: any } | undefined,
+    AlertarErros:Boolean = true,
+  ) => {
     let urlFinal = url;
 
     const requestOptions: RequestInit = {
@@ -80,13 +89,15 @@ function request(method: Method, upload = false) {
           };
           requestOptions.body = JSON.stringify(params);
         } else {
-          // requestOptions.headers['Content-Type'] = 'multipart/form-data';
+        // requestOptions.headers['Content-Type'] = 'multipart/form-data';
           requestOptions.body = params as FormData;
         }
         break;
     }
 
-    return fetch(urlFinal, requestOptions).then(handleResponse);
+    // return fetch(urlFinal, requestOptions).then(handleResponse);
+    return fetch(urlFinal, requestOptions)
+      .then((response) => handleResponse(response, AlertarErros));
   };
 }
 
