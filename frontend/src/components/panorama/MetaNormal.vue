@@ -225,13 +225,14 @@ defineProps({
             || (visão === 'geral' && perfil === 'admin_cp')"
         >
           <div
-            v-if="meta.variaveis.preenchidas"
+            v-if="meta.variaveis.total"
             class="meta__variável pl1 pr1"
           >
             <dt
               class="w700"
               :class="{
-                sucesso: meta.variaveis.preenchidas === meta.variaveis.total
+                sucesso: meta.variaveis.preenchidas
+                  && meta.variaveis.preenchidas === meta.variaveis.total
               }"
             >
               {{ meta.variaveis.preenchidas }}
@@ -239,13 +240,14 @@ defineProps({
             <dd>preenchidas</dd>
           </div>
           <div
-            v-if="meta.variaveis.enviadas"
+            v-if="meta.variaveis.total"
             class="meta__variável pl1 pr1"
           >
             <dt
               class="w700"
               :class="{
-                sucesso: meta.variaveis.enviadas === meta.variaveis.total
+                sucesso: meta.variaveis.enviadas
+                  && meta.variaveis.enviadas === meta.variaveis.total
               }"
             >
               {{ meta.variaveis.enviadas }}
