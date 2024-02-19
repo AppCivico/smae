@@ -5,6 +5,7 @@ import { IsArray, IsEnum, IsInt, IsOptional, IsString, MaxLength } from 'class-v
 import { GeoJSON } from 'geojson';
 import { NumberArrayTransform } from '../../auth/transforms/number-array.error';
 import { IsGeoJSON } from '../../auth/decorators/is-geojson.decorator';
+import { BadRequestException } from '@nestjs/common';
 
 export class GeoLocDto {
     @IsString()
@@ -78,18 +79,49 @@ export class RetornoCreateEnderecoDto {
     camadas: GeoLocCamadaSimplesDto[];
 }
 
-export class RetornoEnderecoDto extends RetornoCreateEnderecoDto {}
+export class GeolocalizacaoDto extends RetornoCreateEnderecoDto {}
 
-export class CreateGeoEnderecoReferenciaDto {
+export class ReferenciasValidasBase {
+    projeto_id?: number | number[];
+    iniciativa_id?: number | number[];
+    atividade_id?: number | number[];
+    meta_id?: number | number[];
+    etapa_id?: number | number[];
+
+    validaReferencia(): void {
+        const associationProperties: (keyof this)[] = [
+            'projeto_id',
+            'iniciativa_id',
+            'atividade_id',
+            'meta_id',
+            'etapa_id',
+        ];
+
+        const countTruthy = associationProperties.filter((prop) => !!this[prop]).length;
+
+        if (countTruthy !== 1) {
+            throw new BadRequestException('Necessário informar exatamente uma associação!');
+        }
+    }
+
+    referencia(): 'projeto_id' | 'iniciativa_id' | 'atividade_id' | 'meta_id' | 'etapa_id' {
+        // this.constructor.prototype retorna apenas as props da propria class, ignora a herança
+        const definedKeys = Object.keys(this.constructor.prototype).find(
+            (key) => key !== 'validaReferencia' && (this as any)[key] !== undefined
+        );
+        if (!definedKeys) throw new BadRequestException('Necessário informar exatamente uma associação!');
+
+        // as any pra n ter que repetir yet another time
+        return definedKeys as any;
+    }
+}
+
+export class CreateGeoEnderecoReferenciaDto extends ReferenciasValidasBase {
     token: string;
 
     @ApiProperty({ enum: GeoReferenciaTipo, enumName: 'GeoReferenciaTipo' })
     @IsEnum(GeoReferenciaTipo)
     tipo: GeoReferenciaTipo;
-
-    projeto_id?: number;
-    iniciativa_id?: number;
-    atividade_id?: number;
-    meta_id?: number;
-    etapa_id?: number;
 }
+
+export class FindGeoEnderecoReferenciaDto extends ReferenciasValidasBase {}

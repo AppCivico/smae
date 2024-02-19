@@ -9,9 +9,11 @@ import {
     CreateEnderecoDto,
     CreateGeoEnderecoReferenciaDto,
     FilterCamadasDto,
+    FindGeoEnderecoReferenciaDto,
     GeoLocCamadaFullDto,
     GeoLocCamadaSimplesDto,
     GeoLocDto,
+    GeolocalizacaoDto,
     RetornoCreateEnderecoDto,
     RetornoGeoLoc,
 } from './entities/geo-loc.entity';
@@ -306,8 +308,15 @@ export class GeoLocService {
                 `Tipo da geolocalização ${endereco.tipo} precisa ser o mesmo tipo da associação ${dto.tipo}`
             );
 
-        if (!dto.projeto_id || !dto.iniciativa_id || !dto.atividade_id || !dto.meta_id || !dto.etapa_id) {
-            throw new InternalServerErrorException('Necessário informar com qual associação!');
+        dto.validaReferencia();
+        if (
+            Array.isArray(dto.projeto_id) ||
+            Array.isArray(dto.iniciativa_id) ||
+            Array.isArray(dto.atividade_id) ||
+            Array.isArray(dto.meta_id) ||
+            Array.isArray(dto.etapa_id)
+        ) {
+            throw new BadRequestException(`Associação ${dto.referencia()} não pode ser array durante a criação.`);
         }
 
         const record = await prismaTx.geoLocalizacaoReferencia.create({
@@ -325,5 +334,80 @@ export class GeoLocService {
             select: { id: true },
         });
         return record.id;
+    }
+
+    async carregaReferencias(dto: FindGeoEnderecoReferenciaDto): Promise<Map<number, GeolocalizacaoDto[]>> {
+        dto.validaReferencia();
+
+        const ret = new Map<number, GeolocalizacaoDto[]>();
+
+        const referencia = dto.referencia();
+
+        const records = await this.prisma.geoLocalizacaoReferencia.findMany({
+            where: {
+                removido_em: null,
+
+                [referencia]:
+                    dto[referencia] && Array.isArray(dto[referencia]) ? { in: dto[referencia] } : dto[referencia],
+            },
+            include: {
+                geo_localizacao: {
+                    select: {
+                        id: true,
+                        endereco_exibicao: true,
+                        geom_geojson: true,
+                        tipo: true,
+                        GeoEnderecoCamada: {
+                            select: {
+                                geo_camada: {
+                                    select: {
+                                        id: true,
+                                        titulo: true,
+                                        codigo: true,
+                                        config: true,
+                                    },
+                                },
+                            },
+                        },
+                    },
+                },
+            },
+        });
+
+        for (const r of records) {
+            const endereco = r.geo_localizacao;
+
+            const item = {
+                endereco_exibicao: endereco.endereco_exibicao,
+                token: this.encodeToken({ id: endereco.id }),
+                tipo: endereco.tipo,
+                endereco: endereco.geom_geojson as any as GeoJSON,
+                camadas: endereco.GeoEnderecoCamada.map((c) => {
+                    return {
+                        codigo: c.geo_camada.codigo,
+                        titulo: c.geo_camada.titulo,
+                        id: c.geo_camada.id,
+                        descricao: c.geo_camada.config.descricao,
+                        nivel_regionalizacao: c.geo_camada.config.nivel_regionalizacao,
+                        cor: c.geo_camada.config.cor,
+                    };
+                }),
+            };
+
+            const id = r[referencia] as number;
+            if (!id) {
+                this.logger.warn(`${referencia} is undefined, but expected to be filtered at database level`);
+                continue;
+            }
+
+            let container = ret.get(id);
+            if (!container) {
+                container = [];
+                ret.set(id, container);
+            }
+            container.push(item);
+        }
+
+        return ret;
     }
 }
