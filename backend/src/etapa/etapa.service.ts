@@ -154,6 +154,7 @@ export class EtapaService {
                 termino_real: etapa.termino_real,
                 etapa_filha: etapa.etapa_filha,
                 ordem: cronograma_etapa[0].ordem,
+                endereco_obrigatorio: etapa.endereco_obrigatorio
             });
         }
 
