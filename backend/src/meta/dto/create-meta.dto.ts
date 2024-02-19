@@ -141,6 +141,11 @@ export class CreateMetaDto {
     @IsInt({ each: true, message: '$property| Cada item precisa ser um número inteiro' })
     @ValidateIf((object, value) => value !== null)
     tags?: number[] | null;
+
+    @IsOptional()
+    @IsString({ each: true })
+    @IsArray()
+    geolocalizacao?: string[];
 }
 
 export class DadosCodTituloAtividadeDto {

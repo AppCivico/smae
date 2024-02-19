@@ -9,6 +9,8 @@ import { UpdateEtapaDto } from './dto/update-etapa.dto';
 import { Etapa } from './entities/etapa.entity';
 import { CronogramaEtapaService } from 'src/cronograma-etapas/cronograma-etapas.service';
 import { UpdateCronogramaEtapaDto } from 'src/cronograma-etapas/dto/update-cronograma-etapa.dto';
+import { CreateGeoEnderecoReferenciaDto, ReferenciasValidasBase } from '../geo-loc/entities/geo-loc.entity';
+import { GeoLocService } from '../geo-loc/geo-loc.service';
 
 @Injectable()
 export class EtapaService {
@@ -16,65 +18,63 @@ export class EtapaService {
 
     constructor(
         private readonly prisma: PrismaService,
-        private readonly cronogramaEtapaService: CronogramaEtapaService
+        private readonly cronogramaEtapaService: CronogramaEtapaService,
+        private readonly geolocService: GeoLocService
     ) {}
 
-    async create(cronogramaId: number, createEtapaDto: CreateEtapaDto, user: PessoaFromJwt) {
+    async create(cronogramaId: number, dto: CreateEtapaDto, user: PessoaFromJwt) {
         if (!user.hasSomeRoles(['CadastroMeta.inserir'])) {
             // logo, é um tecnico_cp
             // TODO buscar o ID da meta pelo cronograma, pra verificar
         }
 
-        const responsaveis = createEtapaDto.responsaveis || [];
+        const responsaveis = dto.responsaveis || [];
 
-        const ordem: number | undefined = createEtapaDto.ordem;
-        delete createEtapaDto.ordem;
-        delete (createEtapaDto as any).responsaveis;
+        const ordem: number | undefined = dto.ordem;
+        delete dto.ordem;
+        delete (dto as any).responsaveis;
 
-        if (
-            createEtapaDto.inicio_previsto &&
-            createEtapaDto.termino_previsto &&
-            createEtapaDto.inicio_previsto > createEtapaDto.termino_previsto
-        )
+        if (dto.inicio_previsto && dto.termino_previsto && dto.inicio_previsto > dto.termino_previsto)
             throw new HttpException('inicio_previsto| Não pode ser maior que termino_previsto', 400);
 
-        if (
-            createEtapaDto.inicio_real &&
-            createEtapaDto.termino_real &&
-            createEtapaDto.inicio_real > createEtapaDto.termino_real
-        )
+        if (dto.inicio_real && dto.termino_real && dto.inicio_real > dto.termino_real)
             throw new HttpException('inicio_real| Não pode ser maior que termino_real', 400);
 
-        if (
-            createEtapaDto.termino_previsto &&
-            createEtapaDto.inicio_previsto &&
-            createEtapaDto.termino_previsto < createEtapaDto.inicio_previsto
-        )
+        if (dto.termino_previsto && dto.inicio_previsto && dto.termino_previsto < dto.inicio_previsto)
             throw new HttpException('termino_previsto| Não pode ser menor que inicio_previsto', 400);
 
-        if (
-            createEtapaDto.termino_real &&
-            createEtapaDto.inicio_real &&
-            createEtapaDto.termino_real < createEtapaDto.inicio_real
-        )
+        if (dto.termino_real && dto.inicio_real && dto.termino_real < dto.inicio_real)
             throw new HttpException('termino_real| Não pode ser menor que inicio_real', 400);
 
+        const now = new Date(Date.now());
         const created = await this.prisma.$transaction(
-            async (prisma: Prisma.TransactionClient): Promise<RecordWithId> => {
-                const etapa = await prisma.etapa.create({
+            async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
+                const geolocalizacao = dto.geolocalizacao;
+                delete dto.geolocalizacao;
+
+                const etapa = await prismaTx.etapa.create({
                     data: {
                         criado_por: user.id,
-                        criado_em: new Date(Date.now()),
-                        ...createEtapaDto,
+                        criado_em: now,
+                        ...dto,
                         cronograma_id: cronogramaId,
                         responsaveis: undefined,
                     },
                     select: { id: true },
                 });
 
-                await prisma.etapaResponsavel.createMany({
+                await prismaTx.etapaResponsavel.createMany({
                     data: await this.buildEtapaResponsaveis(etapa.id, responsaveis),
                 });
+
+                if (geolocalizacao) {
+                    const geoDto = new CreateGeoEnderecoReferenciaDto();
+                    geoDto.etapa_id = etapa.id;
+                    geoDto.tokens = geolocalizacao;
+                    geoDto.tipo = 'Endereco';
+
+                    await this.geolocService.upsertGeolocalizacao(geoDto, user, prismaTx, now);
+                }
 
                 return etapa;
             }
@@ -130,6 +130,10 @@ export class EtapaService {
             },
         });
 
+        const geoDto = new ReferenciasValidasBase();
+        geoDto.etapa_id = etapas.map((r) => r.id);
+        const geolocalizacao = await this.geolocService.carregaReferencias(geoDto);
+
         for (const etapa of etapas) {
             const cronograma_etapa = etapa.CronogramaEtapa.filter((r) => {
                 return r.cronograma_id === cronogramaId;
@@ -154,18 +158,22 @@ export class EtapaService {
                 termino_real: etapa.termino_real,
                 etapa_filha: etapa.etapa_filha,
                 ordem: cronograma_etapa[0].ordem,
-                endereco_obrigatorio: etapa.endereco_obrigatorio
+                endereco_obrigatorio: etapa.endereco_obrigatorio,
+                geolocalizacao: geolocalizacao.get(etapa.id) || [],
             });
         }
 
         return ret;
     }
 
-    async update(id: number, updateEtapaDto: UpdateEtapaDto, user: PessoaFromJwt) {
-        const responsaveis = updateEtapaDto.responsaveis === null ? [] : updateEtapaDto.responsaveis;
+    async update(id: number, dto: UpdateEtapaDto, user: PessoaFromJwt) {
+        const responsaveis = dto.responsaveis === null ? [] : dto.responsaveis;
+        const geolocalizacao = dto.geolocalizacao;
+        delete dto.geolocalizacao;
 
-        await this.prisma.$transaction(async (prisma: Prisma.TransactionClient): Promise<RecordWithId> => {
-            const self = await prisma.etapa.findFirstOrThrow({
+        const now = new Date(Date.now());
+        await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
+            const self = await prismaTx.etapa.findFirstOrThrow({
                 where: { id },
                 select: {
                     n_filhos_imediatos: true,
@@ -183,65 +191,60 @@ export class EtapaService {
                     },
                     GeoLocalizacaoReferencia: {
                         where: { removido_em: null },
-                        select: { id: true }
-                    }
+                        select: { id: true },
+                    },
                 },
             });
 
             if (
                 self.n_filhos_imediatos &&
-                updateEtapaDto.percentual_execucao &&
-                updateEtapaDto.percentual_execucao != self.percentual_execucao
+                dto.percentual_execucao &&
+                dto.percentual_execucao != self.percentual_execucao
             )
                 throw new HttpException('percentual_execucao| Não pode ser enviado pois há dependentes.', 400);
 
             if (
                 self.n_filhos_imediatos &&
-                ((updateEtapaDto.inicio_previsto &&
-                    updateEtapaDto.inicio_previsto.getTime() != self.inicio_previsto?.getTime()) ||
-                    (updateEtapaDto.inicio_real &&
-                        updateEtapaDto.inicio_real.getTime() != self.inicio_real?.getTime()) ||
-                    (updateEtapaDto.termino_previsto &&
-                        updateEtapaDto.termino_previsto.getTime() != self.termino_previsto?.getTime()) ||
-                    (updateEtapaDto.termino_real &&
-                        updateEtapaDto.termino_real.getTime() != self.termino_real?.getTime()))
+                ((dto.inicio_previsto && dto.inicio_previsto.getTime() != self.inicio_previsto?.getTime()) ||
+                    (dto.inicio_real && dto.inicio_real.getTime() != self.inicio_real?.getTime()) ||
+                    (dto.termino_previsto && dto.termino_previsto.getTime() != self.termino_previsto?.getTime()) ||
+                    (dto.termino_real && dto.termino_real.getTime() != self.termino_real?.getTime()))
             )
                 throw new HttpException('Datas não podem ser modificadas pois há dependentes.', 400);
-            
+
             // Boolean de controle de endereço:
             // Caso seja true, a etapa só pode receber a data de termino_real
             // Se possuir endereço, ou seja, rows de GeoLocalizacaoReferencia
-            if (self.endereco_obrigatorio && self.GeoLocalizacaoReferencia.length == 0 && updateEtapaDto.termino_real && updateEtapaDto.termino_real != null)
+            if (
+                self.endereco_obrigatorio &&
+                self.GeoLocalizacaoReferencia.length == 0 &&
+                dto.termino_real &&
+                dto.termino_real != null
+            )
                 throw new HttpException('Endereço é obrigatório.', 400);
 
-            const terminoPrevisto: Date | null = updateEtapaDto.termino_previsto
-                ? updateEtapaDto.termino_previsto
-                : self.termino_previsto;
-            if (updateEtapaDto.inicio_previsto && terminoPrevisto && updateEtapaDto.inicio_previsto > terminoPrevisto)
+            const terminoPrevisto: Date | null = dto.termino_previsto ? dto.termino_previsto : self.termino_previsto;
+            if (dto.inicio_previsto && terminoPrevisto && dto.inicio_previsto > terminoPrevisto)
                 throw new HttpException('inicio_previsto| Não pode ser maior que termino_previsto', 400);
 
-            const terminoReal: Date | null = updateEtapaDto.termino_real
-                ? updateEtapaDto.termino_real
-                : self.termino_real;
-            if (updateEtapaDto.inicio_real && terminoReal && updateEtapaDto.inicio_real > terminoReal)
+            const terminoReal: Date | null = dto.termino_real ? dto.termino_real : self.termino_real;
+            if (dto.inicio_real && terminoReal && dto.inicio_real > terminoReal)
                 throw new HttpException('inicio_real| Não pode ser maior que termino_real', 400);
 
-            const inicioPrevisto: Date | null = updateEtapaDto.inicio_previsto
-                ? updateEtapaDto.inicio_previsto
-                : self.inicio_previsto;
-            if (updateEtapaDto.termino_previsto && inicioPrevisto && updateEtapaDto.termino_previsto < inicioPrevisto)
+            const inicioPrevisto: Date | null = dto.inicio_previsto ? dto.inicio_previsto : self.inicio_previsto;
+            if (dto.termino_previsto && inicioPrevisto && dto.termino_previsto < inicioPrevisto)
                 throw new HttpException('termino_previsto| Não pode ser menor que inicio_previsto', 400);
 
-            const inicioReal: Date | null = updateEtapaDto.inicio_real ? updateEtapaDto.inicio_real : self.inicio_real;
-            if (updateEtapaDto.termino_real && inicioReal && updateEtapaDto.termino_real < inicioReal)
+            const inicioReal: Date | null = dto.inicio_real ? dto.inicio_real : self.inicio_real;
+            if (dto.termino_real && inicioReal && dto.termino_real < inicioReal)
                 throw new HttpException('termino_real| Não pode ser menor que inicio_real', 400);
 
-            const etapa = await prisma.etapa.update({
+            const etapa = await prismaTx.etapa.update({
                 where: { id: id },
                 data: {
                     atualizado_por: user.id,
-                    atualizado_em: new Date(Date.now()),
-                    ...updateEtapaDto,
+                    atualizado_em: now,
+                    ...dto,
                     responsaveis: undefined,
                 },
                 select: { id: true },
@@ -256,7 +259,7 @@ export class EtapaService {
                     const promises = [];
                     for (const responsavel of responsaveis) {
                         promises.push(
-                            prisma.etapaResponsavel.upsert({
+                            prismaTx.etapaResponsavel.upsert({
                                 where: {
                                     etapa_pessoa_uniq: {
                                         pessoa_id: responsavel,
@@ -279,8 +282,17 @@ export class EtapaService {
                 }
             }
 
+            if (geolocalizacao) {
+                const geoDto = new CreateGeoEnderecoReferenciaDto();
+                geoDto.etapa_id = etapa.id;
+                geoDto.tokens = geolocalizacao;
+                geoDto.tipo = 'Endereco';
+
+                await this.geolocService.upsertGeolocalizacao(geoDto, user, prismaTx, now);
+            }
+
             // apaga tudo por enquanto, não só as que tem algum crono dessa meta
-            await prisma.statusMetaCicloFisico.deleteMany();
+            await prismaTx.statusMetaCicloFisico.deleteMany();
 
             return etapa;
         });

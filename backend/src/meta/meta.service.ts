@@ -15,6 +15,8 @@ import {
 import { FilterMetaDto } from './dto/filter-meta.dto';
 import { UpdateMetaDto } from './dto/update-meta.dto';
 import { IdNomeExibicao, Meta, MetaOrgao, MetaTag } from './entities/meta.entity';
+import { GeoLocService } from '../geo-loc/geo-loc.service';
+import { CreateGeoEnderecoReferenciaDto, ReferenciasValidasBase } from '../geo-loc/entities/geo-loc.entity';
 
 type DadosMetaIniciativaAtividadesDto = {
     tipo: string;
@@ -32,70 +34,74 @@ export class MetaService {
     constructor(
         private readonly prisma: PrismaService,
         private readonly cronogramaEtapaService: CronogramaEtapaService,
-        private readonly uploadService: UploadService
+        private readonly uploadService: UploadService,
+        private readonly geolocService: GeoLocService
     ) {}
 
-    async create(createMetaDto: CreateMetaDto, user: PessoaFromJwt) {
+    async create(dto: CreateMetaDto, user: PessoaFromJwt) {
         // TODO: verificar se todos os membros de createMetaDto.coordenadores_cp estão ativos
         // e se tem o privilegios de CP
         // e se os *tema_id são do mesmo PDM
         // se existe pelo menos 1 responsável=true no op
-        const created = await this.prisma.$transaction(
-            async (prisma: Prisma.TransactionClient): Promise<RecordWithId> => {
-                const op = createMetaDto.orgaos_participantes!;
-                const cp = createMetaDto.coordenadores_cp!;
-                delete createMetaDto.orgaos_participantes;
-                delete createMetaDto.coordenadores_cp;
+        const now = new Date(Date.now());
+        const geolocalizacao = dto.geolocalizacao;
+        delete dto.geolocalizacao;
 
-                const tags = createMetaDto.tags!;
-                delete createMetaDto.tags;
+        const created = await this.prisma.$transaction(
+            async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
+                const op = dto.orgaos_participantes!;
+                const cp = dto.coordenadores_cp!;
+                delete dto.orgaos_participantes;
+                delete dto.coordenadores_cp;
+
+                const tags = dto.tags!;
+                delete dto.tags;
 
                 // Verificação de código da Meta.
-                const codigoJaEmUso = await prisma.meta.count({
+                const codigoJaEmUso = await prismaTx.meta.count({
                     where: {
                         removido_em: null,
-                        pdm_id: createMetaDto.pdm_id,
-                        codigo: { equals: createMetaDto.codigo, mode: 'insensitive' },
+                        pdm_id: dto.pdm_id,
+                        codigo: { equals: dto.codigo, mode: 'insensitive' },
                     },
                 });
                 if (codigoJaEmUso > 0) throw new HttpException('codigo| Já existe meta com este código', 400);
 
-                const tituloJaEmUso = await prisma.meta.count({
+                const tituloJaEmUso = await prismaTx.meta.count({
                     where: {
                         removido_em: null,
-                        pdm_id: createMetaDto.pdm_id,
-                        titulo: { equals: createMetaDto.titulo, mode: 'insensitive' },
+                        pdm_id: dto.pdm_id,
+                        titulo: { equals: dto.titulo, mode: 'insensitive' },
                     },
                 });
                 if (tituloJaEmUso > 0) throw new HttpException('titulo| Já existe meta com este título', 400);
 
-                const now = new Date(Date.now());
-                const meta = await prisma.meta.create({
+                const meta = await prismaTx.meta.create({
                     data: {
                         criado_por: user.id,
                         criado_em: now,
                         status: '',
                         ativo: true,
-                        ...createMetaDto,
+                        ...dto,
                     },
                     select: { id: true },
                 });
 
-                await prisma.metaOrgao.createMany({
+                await prismaTx.metaOrgao.createMany({
                     data: await this.buildOrgaosParticipantes(meta.id, op),
                 });
 
-                await prisma.metaResponsavel.createMany({
+                await prismaTx.metaResponsavel.createMany({
                     data: await this.buildMetaResponsaveis(meta.id, op, cp),
                 });
 
                 if (Array.isArray(tags) && tags.length)
-                    await prisma.metaTag.createMany({
+                    await prismaTx.metaTag.createMany({
                         data: await this.buildTags(meta.id, tags),
                     });
 
                 // reagenda o PDM para recalcular as fases (e status)
-                await prisma.cicloFisico.updateMany({
+                await prismaTx.cicloFisico.updateMany({
                     where: {
                         ativo: true,
                     },
@@ -104,6 +110,15 @@ export class MetaService {
                         acordar_ciclo_executou_em: null,
                     },
                 });
+
+                if (geolocalizacao) {
+                    const geoDto = new CreateGeoEnderecoReferenciaDto();
+                    geoDto.meta_id = meta.id;
+                    geoDto.tokens = geolocalizacao;
+                    geoDto.tipo = 'Endereco';
+
+                    await this.geolocService.upsertGeolocalizacao(geoDto, user, prismaTx, now);
+                }
 
                 return meta;
             },
@@ -332,6 +347,11 @@ export class MetaService {
                         : undefined,
             },
         });
+
+        const geoDto = new ReferenciasValidasBase();
+        geoDto.meta_id = listActive.map((r) => r.id);
+        const geolocalizacao = await this.geolocService.carregaReferencias(geoDto);
+
         const ret: Meta[] = [];
         for (const dbMeta of listActive) {
             const coordenadores_cp: IdNomeExibicao[] = [];
@@ -403,6 +423,7 @@ export class MetaService {
                 orgaos_participantes: Object.values(orgaos),
                 tags: tags,
                 cronograma: metaCronograma,
+                geolocalizacao: geolocalizacao.get(dbMeta.id) || [],
             });
         }
 
@@ -422,17 +443,20 @@ export class MetaService {
         const op = updateMetaDto.orgaos_participantes;
         const cp = updateMetaDto.coordenadores_cp;
         const tags = updateMetaDto.tags;
+        const geolocalizacao = updateMetaDto.geolocalizacao;
         delete updateMetaDto.orgaos_participantes;
         delete updateMetaDto.coordenadores_cp;
         delete updateMetaDto.tags;
+        delete updateMetaDto.geolocalizacao;
+        const now = new Date(Date.now());
         if (cp && !op)
             throw new HttpException('é necessário enviar orgaos_participantes para alterar coordenadores_cp', 400);
 
         await this.prisma.$transaction(
-            async (prisma: Prisma.TransactionClient): Promise<RecordWithId> => {
+            async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
                 // Verificação de código da Meta.
                 if (updateMetaDto.codigo) {
-                    const codigoJaEmUso = await prisma.meta.count({
+                    const codigoJaEmUso = await prismaTx.meta.count({
                         where: {
                             removido_em: null,
                             pdm_id: loadMeta.pdm_id,
@@ -444,7 +468,7 @@ export class MetaService {
                 }
 
                 if (updateMetaDto.titulo) {
-                    const tituloJaEmUso = await prisma.meta.count({
+                    const tituloJaEmUso = await prismaTx.meta.count({
                         where: {
                             removido_em: null,
                             pdm_id: loadMeta.pdm_id,
@@ -455,7 +479,7 @@ export class MetaService {
                     if (tituloJaEmUso > 0) throw new HttpException('titulo| Já existe outra meta com este título', 400);
                 }
 
-                const meta = await prisma.meta.update({
+                const meta = await prismaTx.meta.update({
                     where: { id: id },
                     data: {
                         atualizado_por: user.id,
@@ -472,29 +496,37 @@ export class MetaService {
                     // Não podem ser excluídos
                     await this.checkHasOrgaosParticipantesChildren(meta.id, op);
 
-                    await prisma.metaOrgao.deleteMany({ where: { meta_id: id } });
-                    await prisma.metaOrgao.createMany({
+                    await prismaTx.metaOrgao.deleteMany({ where: { meta_id: id } });
+                    await prismaTx.metaOrgao.createMany({
                         data: await this.buildOrgaosParticipantes(meta.id, op),
                     });
 
                     if (cp) {
                         // await this.checkHasResponsaveisChildren(meta.id, cp);
 
-                        await prisma.metaResponsavel.deleteMany({
+                        await prismaTx.metaResponsavel.deleteMany({
                             where: {
                                 meta_id: id,
                             },
                         });
-                        await prisma.metaResponsavel.createMany({
+                        await prismaTx.metaResponsavel.createMany({
                             data: await this.buildMetaResponsaveis(meta.id, op, cp),
                         });
                     }
                 }
 
                 if (tags == null || tags) {
-                    await prisma.metaTag.deleteMany({ where: { meta_id: id } });
+                    await prismaTx.metaTag.deleteMany({ where: { meta_id: id } });
                     if (Array.isArray(tags) && tags.length)
-                        await prisma.metaTag.createMany({ data: await this.buildTags(meta.id, tags) });
+                        await prismaTx.metaTag.createMany({ data: await this.buildTags(meta.id, tags) });
+                }
+                if (geolocalizacao) {
+                    const geoDto = new CreateGeoEnderecoReferenciaDto();
+                    geoDto.meta_id = meta.id;
+                    geoDto.tokens = geolocalizacao;
+                    geoDto.tipo = 'Endereco';
+
+                    await this.geolocService.upsertGeolocalizacao(geoDto, user, prismaTx, now);
                 }
 
                 return meta;

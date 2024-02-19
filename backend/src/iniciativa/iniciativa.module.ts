@@ -5,9 +5,10 @@ import { IniciativaController } from './iniciativa.controller';
 import { IniciativaService } from './iniciativa.service';
 import { CronogramaEtapaService } from 'src/cronograma-etapas/cronograma-etapas.service';
 import { CronogramaEtapaModule } from 'src/cronograma-etapas/cronograma-etapas.module';
+import { GeoLocModule } from '../geo-loc/geo-loc.module';
 
 @Module({
-    imports: [PrismaModule, VariavelModule, CronogramaEtapaModule],
+    imports: [PrismaModule, VariavelModule, CronogramaEtapaModule, GeoLocModule],
     controllers: [IniciativaController],
     providers: [IniciativaService, CronogramaEtapaService],
 })

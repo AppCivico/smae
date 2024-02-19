@@ -11,6 +11,8 @@ import { UpdateIniciativaDto } from './dto/update-iniciativa.dto';
 import { IdNomeExibicao, Iniciativa, IniciativaOrgao } from './entities/iniciativa.entity';
 import { CronogramaEtapaService } from 'src/cronograma-etapas/cronograma-etapas.service';
 import { CronogramaAtrasoGrau } from 'src/common/dto/CronogramaAtrasoGrau.dto';
+import { GeoLocService } from '../geo-loc/geo-loc.service';
+import { CreateGeoEnderecoReferenciaDto, ReferenciasValidasBase } from '../geo-loc/entities/geo-loc.entity';
 
 @Injectable()
 export class IniciativaService {
@@ -18,10 +20,11 @@ export class IniciativaService {
     constructor(
         private readonly prisma: PrismaService,
         private readonly variavelService: VariavelService,
-        private readonly cronogramaEtapaService: CronogramaEtapaService
+        private readonly cronogramaEtapaService: CronogramaEtapaService,
+        private readonly geolocService: GeoLocService
     ) {}
 
-    async create(createIniciativaDto: CreateIniciativaDto, user: PessoaFromJwt) {
+    async create(dto: CreateIniciativaDto, user: PessoaFromJwt) {
         // TODO: verificar se todos os membros de createMetaDto.coordenadores_cp estão ativos
         // e se tem o privilegios de CP
         // e se os *tema_id são do mesmo PDM
@@ -30,60 +33,72 @@ export class IniciativaService {
         if (!user.hasSomeRoles(['CadastroMeta.inserir'])) {
             // logo, é um tecnico_cp
             const filterIdIn = await user.getMetaIdsFromAnyModel(this.prisma.view_meta_pessoa_responsavel_na_cp);
-            if (!filterIdIn.includes(createIniciativaDto.meta_id)) {
+            if (!filterIdIn.includes(dto.meta_id)) {
                 throw new HttpException('Sem permissão para criar iniciativa nesta meta', 400);
             }
         }
 
+        const now = new Date(Date.now());
         const created = await this.prisma.$transaction(
-            async (prisma: Prisma.TransactionClient): Promise<RecordWithId> => {
-                const op = createIniciativaDto.orgaos_participantes!;
-                const cp = createIniciativaDto.coordenadores_cp!;
-                const tags = createIniciativaDto.tags || [];
-                delete createIniciativaDto.orgaos_participantes;
-                delete createIniciativaDto.coordenadores_cp;
-                delete createIniciativaDto.tags;
+            async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
+                const op = dto.orgaos_participantes!;
+                const cp = dto.coordenadores_cp!;
+                const tags = dto.tags || [];
+                const geolocalizacao = dto.geolocalizacao;
+                delete dto.orgaos_participantes;
+                delete dto.coordenadores_cp;
+                delete dto.tags;
+                delete dto.geolocalizacao;
 
-                const codigoJaEmUso = await prisma.iniciativa.count({
+                const codigoJaEmUso = await prismaTx.iniciativa.count({
                     where: {
-                        codigo: { equals: createIniciativaDto.codigo, mode: 'insensitive' },
-                        meta_id: createIniciativaDto.meta_id,
+                        codigo: { equals: dto.codigo, mode: 'insensitive' },
+                        meta_id: dto.meta_id,
                         removido_em: null,
                     },
                 });
                 if (codigoJaEmUso > 0)
                     throw new HttpException('codigo| Já existe iniciativa com este código nesta meta', 400);
 
-                const tituloJaEmUso = await prisma.iniciativa.count({
+                const tituloJaEmUso = await prismaTx.iniciativa.count({
                     where: {
-                        titulo: { equals: createIniciativaDto.titulo, mode: 'insensitive' },
-                        meta_id: createIniciativaDto.meta_id,
+                        titulo: { equals: dto.titulo, mode: 'insensitive' },
+                        meta_id: dto.meta_id,
                         removido_em: null,
                     },
                 });
                 if (tituloJaEmUso > 0)
                     throw new HttpException('codigo| Já existe iniciativa com este título nesta meta', 400);
 
-                const iniciativa = await prisma.iniciativa.create({
+                const iniciativa = await prismaTx.iniciativa.create({
                     data: {
                         criado_por: user.id,
-                        criado_em: new Date(Date.now()),
-                        ...createIniciativaDto,
+                        criado_em: now,
+                        ...dto,
                     },
                     select: { id: true },
                 });
 
-                await prisma.iniciativaOrgao.createMany({
+                await prismaTx.iniciativaOrgao.createMany({
                     data: await this.buildOrgaosParticipantes(iniciativa.id, op),
                 });
 
-                await prisma.iniciativaResponsavel.createMany({
+                await prismaTx.iniciativaResponsavel.createMany({
                     data: await this.buildIniciativaResponsaveis(iniciativa.id, op, cp),
                 });
 
-                await prisma.iniciativaTag.createMany({
+                await prismaTx.iniciativaTag.createMany({
                     data: await this.buildIniciativaTags(iniciativa.id, tags),
                 });
+
+                if (geolocalizacao) {
+                    const geoDto = new CreateGeoEnderecoReferenciaDto();
+                    geoDto.iniciativa_id = iniciativa.id;
+                    geoDto.tokens = geolocalizacao;
+                    geoDto.tipo = 'Endereco';
+
+                    await this.geolocService.upsertGeolocalizacao(geoDto, user, prismaTx, now);
+                }
 
                 return iniciativa;
             }
@@ -238,6 +253,10 @@ export class IniciativaService {
             },
         });
 
+        const geoDto = new ReferenciasValidasBase();
+        geoDto.iniciativa_id = listActive.map((r) => r.id);
+        const geolocalizacao = await this.geolocService.carregaReferencias(geoDto);
+
         const ret: Iniciativa[] = [];
         for (const dbIniciativa of listActive) {
             const coordenadores_cp: IdNomeExibicao[] = [];
@@ -287,13 +306,14 @@ export class IniciativaService {
                 compoe_indicador_meta: dbIniciativa.compoe_indicador_meta,
                 ativo: dbIniciativa.ativo,
                 cronograma: cronogramaAtraso,
+                geolocalizacao: geolocalizacao.get(dbIniciativa.id) || [],
             });
         }
 
         return ret;
     }
 
-    async update(id: number, updateIniciativaDto: UpdateIniciativaDto, user: PessoaFromJwt) {
+    async update(id: number, dto: UpdateIniciativaDto, user: PessoaFromJwt) {
         const self = await this.prisma.iniciativa.findFirstOrThrow({ where: { id }, select: { meta_id: true } });
 
         if (!user.hasSomeRoles(['CadastroMeta.inserir'])) {
@@ -302,20 +322,23 @@ export class IniciativaService {
                 throw new HttpException('Sem permissão para editar iniciativa', 400);
         }
 
-        await this.prisma.$transaction(async (prisma: Prisma.TransactionClient): Promise<RecordWithId> => {
-            const op = updateIniciativaDto.orgaos_participantes!;
-            const cp = updateIniciativaDto.coordenadores_cp!;
-            const tags = updateIniciativaDto.tags!;
-            delete updateIniciativaDto.orgaos_participantes;
-            delete updateIniciativaDto.coordenadores_cp;
-            delete updateIniciativaDto.tags;
+        const now = new Date(Date.now());
+        await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
+            const op = dto.orgaos_participantes!;
+            const cp = dto.coordenadores_cp!;
+            const tags = dto.tags!;
+            const geolocalizacao = dto.geolocalizacao;
+            delete dto.orgaos_participantes;
+            delete dto.coordenadores_cp;
+            delete dto.tags;
+            delete dto.geolocalizacao;
 
-            if (updateIniciativaDto.codigo) {
-                const codigoJaEmUso = await prisma.iniciativa.count({
+            if (dto.codigo) {
+                const codigoJaEmUso = await prismaTx.iniciativa.count({
                     where: {
                         id: { not: id },
                         removido_em: null,
-                        codigo: { equals: updateIniciativaDto.codigo, mode: 'insensitive' },
+                        codigo: { equals: dto.codigo, mode: 'insensitive' },
                         meta_id: self.meta_id,
                     },
                 });
@@ -323,12 +346,12 @@ export class IniciativaService {
                     throw new HttpException('codigo| Já existe iniciativa com este código nesta meta', 400);
             }
 
-            if (updateIniciativaDto.titulo) {
-                const codigoJaEmUso = await prisma.iniciativa.count({
+            if (dto.titulo) {
+                const codigoJaEmUso = await prismaTx.iniciativa.count({
                     where: {
                         id: { not: id },
                         removido_em: null,
-                        titulo: { equals: updateIniciativaDto.titulo, mode: 'insensitive' },
+                        titulo: { equals: dto.titulo, mode: 'insensitive' },
                         meta_id: self.meta_id,
                     },
                 });
@@ -336,36 +359,36 @@ export class IniciativaService {
                     throw new HttpException('codigo| Já existe iniciativa com este título nesta meta', 400);
             }
 
-            const iniciativa = await prisma.iniciativa.update({
+            const iniciativa = await prismaTx.iniciativa.update({
                 where: { id: id },
                 data: {
                     atualizado_por: user.id,
-                    atualizado_em: new Date(Date.now()),
+                    atualizado_em: now,
                     status: '',
                     ativo: true,
-                    ...updateIniciativaDto,
+                    ...dto,
                 },
                 select: { id: true },
             });
             await Promise.all([
-                prisma.iniciativaOrgao.deleteMany({ where: { iniciativa_id: id } }),
-                prisma.iniciativaResponsavel.deleteMany({ where: { iniciativa_id: id } }),
-                prisma.iniciativaTag.deleteMany({ where: { iniciativa_id: id } }),
+                prismaTx.iniciativaOrgao.deleteMany({ where: { iniciativa_id: id } }),
+                prismaTx.iniciativaResponsavel.deleteMany({ where: { iniciativa_id: id } }),
+                prismaTx.iniciativaTag.deleteMany({ where: { iniciativa_id: id } }),
             ]);
 
             await Promise.all([
-                prisma.iniciativaOrgao.createMany({
+                prismaTx.iniciativaOrgao.createMany({
                     data: await this.buildOrgaosParticipantes(iniciativa.id, op),
                 }),
-                prisma.iniciativaResponsavel.createMany({
+                prismaTx.iniciativaResponsavel.createMany({
                     data: await this.buildIniciativaResponsaveis(iniciativa.id, op, cp),
                 }),
-                prisma.iniciativaTag.createMany({
+                prismaTx.iniciativaTag.createMany({
                     data: await this.buildIniciativaTags(iniciativa.id, tags),
                 }),
             ]);
 
-            const indicador = await prisma.indicador.findFirst({
+            const indicador = await prismaTx.indicador.findFirst({
                 where: {
                     removido_em: null,
                     iniciativa_id: iniciativa.id,
@@ -386,8 +409,17 @@ export class IniciativaService {
                 this.logger.log('não há indicador para a iniciativa');
             } else {
                 for (const variavel of indicador.IndicadorVariavel) {
-                    await this.variavelService.resyncIndicadorVariavel(indicador, variavel.variavel_id, prisma);
+                    await this.variavelService.resyncIndicadorVariavel(indicador, variavel.variavel_id, prismaTx);
                 }
+            }
+
+            if (geolocalizacao) {
+                const geoDto = new CreateGeoEnderecoReferenciaDto();
+                geoDto.iniciativa_id = iniciativa.id;
+                geoDto.tokens = geolocalizacao;
+                geoDto.tipo = 'Endereco';
+
+                await this.geolocService.upsertGeolocalizacao(geoDto, user, prismaTx, now);
             }
 
             return iniciativa;

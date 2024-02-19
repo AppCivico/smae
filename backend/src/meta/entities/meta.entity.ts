@@ -1,5 +1,6 @@
 import { CronogramaAtrasoGrau } from 'src/common/dto/CronogramaAtrasoGrau.dto';
 import { IdSiglaDescricao } from 'src/common/dto/IdSigla.dto';
+import { GeolocalizacaoDto } from '../../geo-loc/entities/geo-loc.entity';
 
 export class IdDesc {
     id: number;
@@ -39,4 +40,5 @@ export class Meta {
     coordenadores_cp: IdNomeExibicao[];
     tags: MetaTag[];
     cronograma: CronogramaAtrasoGrau | null;
+    geolocalizacao: GeolocalizacaoDto[];
 }

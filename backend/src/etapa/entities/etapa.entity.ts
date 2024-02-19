@@ -1,3 +1,5 @@
+import { GeolocalizacaoDto } from '../../geo-loc/entities/geo-loc.entity';
+
 export class Etapa {
     id: number;
     cronograma_id: number;
@@ -18,4 +20,5 @@ export class Etapa {
     percentual_execucao: number | null;
     ordem: number | null;
     n_filhos_imediatos: number | null;
+    geolocalizacao: GeolocalizacaoDto[];
 }
