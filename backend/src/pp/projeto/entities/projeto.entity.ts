@@ -111,6 +111,7 @@ export class IdTituloNivelMaxRegDto {
     titulo: string;
     nivel_maximo_tarefa: number;
     nivel_regionalizacao: number;
+    modelo_clonagem: boolean;
     orcamento_execucao_disponivel_meses: number[];
 }
 

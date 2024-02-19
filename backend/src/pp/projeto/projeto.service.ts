@@ -340,6 +340,11 @@ export class ProjetoService {
                                     : [],
                             },
                         },
+
+                        // Este campo, normalmente, é definido com a ação "selecionar" (acao.service)
+                        // No entanto, caso o Portfolio seja de compartilhamento, já deve vir pré-definida.
+                        // Para permitir criação de cronograma.
+                        eh_prioritario: portfolio.modelo_clonagem ? true : false
                     },
                     select: { id: true },
                 });
@@ -792,6 +797,7 @@ export class ProjetoService {
                         nivel_maximo_tarefa: true,
                         orcamento_execucao_disponivel_meses: true,
                         nivel_regionalizacao: true,
+                        modelo_clonagem: true,
                         orgaos: {
                             select: {
                                 orgao_id: true,
