@@ -24,7 +24,10 @@ export class UtilsService {
             where: {
                 pdm_id: filters.pdm_id,
                 removido_em: null,
-                id: filters.meta_id ? filters.meta_id : undefined,
+                AND: [
+                    { id: filters.meta_id ? filters.meta_id : undefined },
+                    { id: filters.meta_ids ? { in: filters.meta_ids } : undefined },
+                ],
                 meta_tag: tags.length === 0 ? undefined : { some: { tag_id: { in: tags } } },
             },
             select: { id: true },
