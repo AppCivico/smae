@@ -82,6 +82,14 @@ export class RetornoCreateEnderecoDto {
 export class GeolocalizacaoDto extends RetornoCreateEnderecoDto {}
 
 export class ReferenciasValidasBase {
+    private static props: (keyof ReferenciasValidasBase)[] = [
+        'projeto_id',
+        'iniciativa_id',
+        'atividade_id',
+        'meta_id',
+        'etapa_id',
+    ];
+
     projeto_id?: number | number[];
     iniciativa_id?: number | number[];
     atividade_id?: number | number[];
@@ -89,15 +97,7 @@ export class ReferenciasValidasBase {
     etapa_id?: number | number[];
 
     validaReferencia(): void {
-        const associationProperties: (keyof this)[] = [
-            'projeto_id',
-            'iniciativa_id',
-            'atividade_id',
-            'meta_id',
-            'etapa_id',
-        ];
-
-        const countTruthy = associationProperties.filter((prop) => !!this[prop]).length;
+        const countTruthy = ReferenciasValidasBase.props.filter((prop) => !!this[prop]).length;
 
         if (countTruthy !== 1) {
             throw new BadRequestException('Necessário informar exatamente uma associação!');
@@ -105,13 +105,12 @@ export class ReferenciasValidasBase {
     }
 
     referencia(): 'projeto_id' | 'iniciativa_id' | 'atividade_id' | 'meta_id' | 'etapa_id' {
-        // this.constructor.prototype retorna apenas as props da propria class, ignora a herança
-        const definedKeys = Object.keys(this.constructor.prototype).find(
-            (key) => key !== 'validaReferencia' && (this as any)[key] !== undefined
-        );
-        if (!definedKeys) throw new BadRequestException('Necessário informar exatamente uma associação!');
+        const definedKeys = ReferenciasValidasBase.props.find((key) => this[key] !== undefined);
 
-        // as any pra n ter que repetir yet another time
+        if (!definedKeys) {
+            throw new BadRequestException('Necessário informar exatamente uma associação!');
+        }
+
         return definedKeys as any;
     }
 }
