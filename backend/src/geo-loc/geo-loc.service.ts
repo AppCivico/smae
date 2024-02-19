@@ -304,7 +304,8 @@ export class GeoLocService {
         const inputIds: number[] = [];
         for (const token of dto.tokens) {
             const enderecoJwt = this.decodeToken(token);
-            inputIds.push(enderecoJwt.id);
+
+            if (inputIds.includes(enderecoJwt.id) == false) inputIds.push(enderecoJwt.id);
         }
 
         const endereco = await prismaTx.geoLocalizacao.findMany({
