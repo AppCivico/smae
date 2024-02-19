@@ -15,7 +15,7 @@ import {
     MaxLength,
     Min,
     MinLength,
-    ValidateIf
+    ValidateIf,
 } from 'class-validator';
 import { IsOnlyDate } from 'src/common/decorators/IsDateOnly';
 
@@ -38,7 +38,7 @@ export class CreateProjetoDto {
     @ArrayMaxSize(100, { message: '$property| precisa ter no máximo 100 items' })
     @IsInt({ each: true, message: '$property| Cada item precisa ser um número inteiro' })
     @ValidateIf((object, value) => value !== null)
-    portfolios_compartilhados?: number[] |null;
+    portfolios_compartilhados?: number[] | null;
 
     /**
      * ID do órgão gestor
@@ -230,6 +230,11 @@ export class CreateProjetoDto {
     @ValidateIf((object, value) => value !== null)
     @MaxLength(1024)
     logradouro_cep?: string;
+
+    @IsOptional()
+    @IsString({ each: true })
+    @IsArray()
+    geolocalizacao: string[];
 }
 
 export class CreateProjetoDocumentDto {

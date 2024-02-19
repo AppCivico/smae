@@ -31,7 +31,7 @@ import {
 
 import { HtmlSanitizer } from '../../common/html-sanitizer';
 import { GeoLocService } from '../../geo-loc/geo-loc.service';
-import { ReferenciasValidasBase } from '../../geo-loc/entities/geo-loc.entity';
+import { CreateGeoEnderecoReferenciaDto, ReferenciasValidasBase } from '../../geo-loc/entities/geo-loc.entity';
 
 const FASES_LIBERAR_COLABORADOR: ProjetoStatus[] = ['Registrado', 'Selecionado', 'EmPlanejamento'];
 const StatusParaFase: Record<ProjetoStatus, ProjetoFase> = {
@@ -272,7 +272,10 @@ export class ProjetoService {
             // Caso o portfolio seja de modelo para clonagem.
             // Não permitir compartilhar com outros ports.
             if (portfolio.modelo_clonagem)
-                throw new HttpException('portfolios_compartilhados| Projeto não pode ser compartilhado pois pertence a um Portfolio de modelo de clonagem.', 400);
+                throw new HttpException(
+                    'portfolios_compartilhados| Projeto não pode ser compartilhado pois pertence a um Portfolio de modelo de clonagem.',
+                    400
+                );
 
             // Os portfolios compartilhados obrigatoriamente devem possuir ao menos um órgão em comum.
             const portfoliosCompartilhados = portfolios.filter((p) =>
@@ -280,6 +283,8 @@ export class ProjetoService {
             );
             await this.checkPortCompartilhadoOrgaos(portfolio, portfoliosCompartilhados);
         }
+
+        const now = new Date(Date.now());
 
         const created = await this.prisma.$transaction(
             async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
@@ -348,6 +353,12 @@ export class ProjetoService {
                     },
                     select: { id: true },
                 });
+
+                const geoDto = new CreateGeoEnderecoReferenciaDto();
+                geoDto.projeto_id = row.id;
+                geoDto.tokens = dto.geolocalizacao;
+
+                await this.geolocService.upsertGeolocalizacao(geoDto, user, prismaTx, now);
 
                 return row;
             }
@@ -1477,6 +1488,14 @@ export class ProjetoService {
                             : undefined,
                 },
             });
+
+            if (dto.geolocalizacao) {
+                const geoDto = new CreateGeoEnderecoReferenciaDto();
+                geoDto.projeto_id = projeto.id;
+                geoDto.tokens = dto.geolocalizacao;
+
+                await this.geolocService.upsertGeolocalizacao(geoDto, user, prismaTx, now);
+            }
 
             // se já passou da fase do planejamento, então sim pode verificar se há necessidade de gerar
             // ou atualizar o código
