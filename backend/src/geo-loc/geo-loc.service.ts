@@ -110,6 +110,8 @@ export class GeoLocService {
                     codigo: geoCamada.codigo,
                     titulo: geoCamada.titulo,
                     descricao: dbConfig.descricao,
+                    cor: dbConfig.cor,
+                    nivel_regionalizacao: dbConfig.nivel_regionalizacao,
                 });
             }
         }
@@ -187,11 +189,7 @@ export class GeoLocService {
                 codigo: true,
                 titulo: true,
                 geom_geojson: true,
-                config: {
-                    select: {
-                        descricao: true,
-                    },
-                },
+                config: true,
             },
         });
 
@@ -201,6 +199,8 @@ export class GeoLocService {
                 return {
                     ...r,
                     descricao: r.config.descricao,
+                    cor: r.config.cor,
+                    nivel_regionalizacao: r.config.nivel_regionalizacao,
                     geom_geojson: r.geom_geojson?.valueOf() as GeoJSON,
                 };
             });
@@ -254,18 +254,44 @@ export class GeoLocService {
                     select: {
                         id: true,
                         endereco_exibicao: true,
+                        geom_geojson: true,
+                        tipo: true,
+                        GeoEnderecoCamada: {
+                            select: {
+                                geo_camada: {
+                                    select: {
+                                        id: true,
+                                        titulo: true,
+                                        codigo: true,
+                                        config: true,
+                                    },
+                                },
+                            },
+                        },
                     },
                 });
 
                 return {
                     endereco_exibicao: endereco.endereco_exibicao,
                     token: this.encodeToken({ id: endereco.id }),
+                    tipo: endereco.tipo,
+                    endereco: endereco.geom_geojson as any as GeoJSON,
+                    camadas: endereco.GeoEnderecoCamada.map((c) => {
+                        return {
+                            codigo: c.geo_camada.codigo,
+                            titulo: c.geo_camada.titulo,
+                            id: c.geo_camada.id,
+                            descricao: c.geo_camada.config.descricao,
+                            nivel_regionalizacao: c.geo_camada.config.nivel_regionalizacao,
+                            cor: c.geo_camada.config.cor,
+                        };
+                    }),
                 };
             }
         );
     }
 
-    async associar(
+    private async associar(
         dto: CreateGeoEnderecoReferenciaDto,
         user: PessoaFromJwt,
         prismaTx: Prisma.TransactionClient

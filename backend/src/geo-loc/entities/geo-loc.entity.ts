@@ -21,6 +21,8 @@ export class GeoLocCamadaSimplesDto {
     titulo: string;
     codigo: string;
     descricao: string;
+    nivel_regionalizacao: number | null;
+    cor: string | null;
 }
 
 export class GeoLocCamadaFullDto extends GeoLocCamadaSimplesDto {
@@ -66,7 +68,17 @@ export class CreateEnderecoDto {
 export class RetornoCreateEnderecoDto {
     token: string;
     endereco_exibicao: string | undefined;
+
+    @ApiProperty({ enum: GeoReferenciaTipo, enumName: 'GeoReferenciaTipo' })
+    tipo: GeoReferenciaTipo;
+
+    @ApiProperty({ description: 'GeoJson', example: '{}' })
+    endereco: GeoJSON;
+
+    camadas: GeoLocCamadaSimplesDto[];
 }
+
+export class RetornoEnderecoDto extends RetornoCreateEnderecoDto {}
 
 export class CreateGeoEnderecoReferenciaDto {
     token: string;
