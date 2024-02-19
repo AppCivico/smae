@@ -237,11 +237,14 @@ export class MfDashMetasService {
                         select: { id: true, codigo: true, titulo: true },
                     },
                 },
-                orderBy: {
-                    variavel: {
-                        codigo: 'asc',
+                orderBy: [
+                    { meta: { codigo: 'asc' } },
+                    {
+                        variavel: {
+                            codigo: 'asc',
+                        },
                     },
-                },
+                ],
             });
 
             ret.atrasadas_detalhes = [];
