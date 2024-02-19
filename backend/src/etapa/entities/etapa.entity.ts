@@ -3,7 +3,7 @@ export class Etapa {
     cronograma_id: number;
     etapa_pai_id: number | null;
     regiao_id: number | null;
-
+    endereco_obrigatorio: boolean;
     titulo: string | null;
     descricao: string | null;
     nivel: string | null;
