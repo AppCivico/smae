@@ -3935,5 +3935,5 @@ model GeoLocalizacaoReferencia {
     criador         Pessoa?        @relation("criador", fields: [criador_por], references: [id])
     removedor       Pessoa?        @relation("removedor", fields: [removido_por], references: [id])
 
-    @@map("geo_localicao_referencia")
+    @@map("geo_localizacao_referencia")
 }
