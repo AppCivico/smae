@@ -9,3 +9,5 @@ ALTER TABLE "geo_localizacao_camada" RENAME CONSTRAINT "geo_endereco_regiao_geo_
 
 -- RenameForeignKey
 ALTER TABLE "geo_localizacao_camada" RENAME CONSTRAINT "geo_endereco_regiao_geo_localizacao_id_fkey" TO "geo_localizacao_camada_geo_localizacao_id_fkey";
+
+alter table geo_localicao_referencia rename to geo_localizacao_referencia;
