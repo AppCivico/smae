@@ -937,6 +937,9 @@ export const relatórioMensal = object({
     pdm_id: string()
       .label('PDM')
       .required('Escolha um PdM'),
+    meta: array()
+      .label('Metas')
+      .nullable(),
     mes: number()
       .label('Mês')
       .min(1)
