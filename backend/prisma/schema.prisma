@@ -3843,6 +3843,7 @@ model GeoCamadaConfig {
     descricao     String @default("")
 
     nivel_regionalizacao Int?
+    cor                  String?
     simplificar_em       Float?      @db.DoublePrecision
     GeoCamada            GeoCamada[]
 
