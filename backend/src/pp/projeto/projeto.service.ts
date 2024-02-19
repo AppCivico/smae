@@ -349,7 +349,7 @@ export class ProjetoService {
                         // Este campo, normalmente, é definido com a ação "selecionar" (acao.service)
                         // No entanto, caso o Portfolio seja de compartilhamento, já deve vir pré-definida.
                         // Para permitir criação de cronograma.
-                        eh_prioritario: portfolio.modelo_clonagem ? true : false
+                        eh_prioritario: portfolio.modelo_clonagem ? true : false,
                     },
                     select: { id: true },
                 });
@@ -357,6 +357,7 @@ export class ProjetoService {
                 const geoDto = new CreateGeoEnderecoReferenciaDto();
                 geoDto.projeto_id = row.id;
                 geoDto.tokens = dto.geolocalizacao;
+                geoDto.tipo = 'Endereco';
 
                 await this.geolocService.upsertGeolocalizacao(geoDto, user, prismaTx, now);
 
@@ -1493,6 +1494,7 @@ export class ProjetoService {
                 const geoDto = new CreateGeoEnderecoReferenciaDto();
                 geoDto.projeto_id = projeto.id;
                 geoDto.tokens = dto.geolocalizacao;
+                geoDto.tipo = 'Endereco';
 
                 await this.geolocService.upsertGeolocalizacao(geoDto, user, prismaTx, now);
             }
