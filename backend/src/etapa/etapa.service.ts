@@ -173,12 +173,17 @@ export class EtapaService {
                     inicio_real: true,
                     termino_previsto: true,
                     termino_real: true,
+                    endereco_obrigatorio: true,
                     responsaveis: {
                         select: {
                             pessoa_id: true,
                         },
                         orderBy: { pessoa_id: 'asc' },
                     },
+                    GeoLocalizacaoReferencia: {
+                        where: { removido_em: null },
+                        select: { id: true }
+                    }
                 },
             });
 
@@ -201,6 +206,12 @@ export class EtapaService {
                         updateEtapaDto.termino_real.getTime() != self.termino_real?.getTime()))
             )
                 throw new HttpException('Datas não podem ser modificadas pois há dependentes.', 400);
+            
+            // Boolean de controle de endereço:
+            // Caso seja true, a etapa só pode receber a data de termino_real
+            // Se possuir endereço, ou seja, rows de GeoLocalizacaoReferencia
+            if (self.endereco_obrigatorio && self.GeoLocalizacaoReferencia.length == 0 && updateEtapaDto.termino_real && updateEtapaDto.termino_real != null)
+                throw new HttpException('Endereço é obrigatório.', 400);
 
             const terminoPrevisto: Date | null = updateEtapaDto.termino_previsto
                 ? updateEtapaDto.termino_previsto

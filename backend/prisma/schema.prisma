@@ -1499,6 +1499,9 @@ model Etapa {
     // se não, são calculados pela trigger, usando a formula
     // %execucao pai = round( (%execucao * nvl(peso) )/(soma dos pesos dos filhos) )
 
+    // Boolean que indica se endereço (GeoLocalizacaoReferencia) é obrigatório para encerrar etapa.
+    endereco_obrigatorio Boolean @default(false)
+
     criado_por     Int?
     criado_em      DateTime  @default(now()) @db.Timestamptz(6)
     atualizado_por Int?
