@@ -362,6 +362,7 @@ export class PPProjetosService implements ReportableService {
         }
 
         whereConditions.push(`projeto.removido_em IS NULL`);
+        whereConditions.push(`portfolio.modelo_clonagem = false`)
 
         const whereString = whereConditions.length > 0 ? 'WHERE ' + whereConditions.join(' AND ') : '';
         return { whereString, queryParams };
@@ -636,6 +637,7 @@ export class PPProjetosService implements ReportableService {
             FROM projeto
             LEFT JOIN pessoa resp ON resp.id = projeto.responsavel_id
             JOIN tarefa t ON t.projeto_id = projeto.id
+            JOIN portfolio ON projeto.portfolio_id = portfolio.id
             ${whereCond.whereString}
         `;
 
@@ -723,6 +725,7 @@ export class PPProjetosService implements ReportableService {
             ) as tarefas_afetadas
         FROM projeto
           JOIN projeto_risco ON projeto_risco.projeto_id = projeto.id
+          JOIN portfolio ON projeto.portfolio_id = portfolio_id
         ${whereCond.whereString}
         `;
 
@@ -775,6 +778,7 @@ export class PPProjetosService implements ReportableService {
         FROM projeto
           JOIN projeto_risco ON projeto_risco.projeto_id = projeto.id
           JOIN plano_acao ON plano_acao.projeto_risco_id = projeto_risco.id
+          JOIN portfolio ON projeto.portfolio_id = portfolio.id
         ${whereCond.whereString}
         `;
 
@@ -813,6 +817,7 @@ export class PPProjetosService implements ReportableService {
           JOIN projeto_risco ON projeto_risco.projeto_id = projeto.id
           JOIN plano_acao ON plano_acao.projeto_risco_id = projeto_risco.id
           JOIN plano_acao_monitoramento ON plano_acao_monitoramento.plano_acao_id = plano_acao.id
+          JOIN portfolio ON projeto.portfolio_id = portfolio.id
         ${whereCond.whereString}
         `;
 
@@ -852,6 +857,7 @@ export class PPProjetosService implements ReportableService {
             projeto_licao_aprendida.resultado
         FROM projeto
           JOIN projeto_licao_aprendida ON projeto_licao_aprendida.projeto_id = projeto.id
+          JOIN portfolio ON projeto.portfolio_id = portfolio.id
         ${whereCond.whereString}
         `;
 
@@ -901,6 +907,7 @@ export class PPProjetosService implements ReportableService {
         FROM projeto
           JOIN projeto_acompanhamento ON projeto_acompanhamento.projeto_id = projeto.id
           JOIN projeto_acompanhamento_item ON projeto_acompanhamento_item.projeto_acompanhamento_id = projeto_acompanhamento.id
+          JOIN portfolio ON projeto.portfolio_id = portfolio.id
         ${whereCond.whereString}
         `;
 

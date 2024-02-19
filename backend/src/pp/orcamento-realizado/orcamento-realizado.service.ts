@@ -41,6 +41,13 @@ export class OrcamentoRealizadoService {
         dto: CreatePPOrcamentoRealizadoDto,
         user: PessoaFromJwt
     ): Promise<RecordWithId> {
+        const portfolio = await this.prisma.portfolio.findFirstOrThrow({
+            where: { id: projeto.portfolio_id },
+            select: { modelo_clonagem: true }
+        });
+        if (portfolio.modelo_clonagem)
+          throw new HttpException('Projeto pertence a Portfolio de modelo de clonagem', 400);
+
         const dotacao_complemento = ExtraiComplementoDotacao(dto);
         console.log(
             'create orcamento pp ExtraiComplementoDotacaoExtraiComplementoDotacaoExtraiComplementoDotacaoExtraiComplementoDotacao',

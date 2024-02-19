@@ -18,6 +18,17 @@ export class OrcamentoPlanejadoService {
     constructor(private readonly prisma: PrismaService, private readonly dotacaoService: DotacaoService) {}
 
     async create(projeto_id: number, dto: CreatePPOrcamentoPlanejadoDto, user: PessoaFromJwt): Promise<RecordWithId> {
+        const projetoPortfolio = await this.prisma.projeto.findFirstOrThrow({
+            where: { id: projeto_id },
+            select: {
+                portfolio: {
+                    select: { modelo_clonagem: true }
+                }
+            }
+        });
+        if (projetoPortfolio.portfolio.modelo_clonagem)
+          throw new HttpException('Projeto pertence a Portfolio de modelo de clonagem', 400);
+
         const dotacao = await this.prisma.dotacaoPlanejado.findFirst({
             where: { dotacao: dto.dotacao, ano_referencia: dto.ano_referencia },
             select: { id: true },

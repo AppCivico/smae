@@ -14,7 +14,10 @@ export class PlanoAcaoService {
 
     async create(projetoId: number, dto: CreatePlanoAcaoDto, user: PessoaFromJwt): Promise<RecordWithId> {
         const projeto = await this.prisma.projeto.findFirst({
-            where: { id: projetoId },
+            where: {
+                id: projetoId,
+                portfolio: { modelo_clonagem: false }
+            },
             select: { id: true },
         });
         if (!projeto) throw new HttpException('Projeto| Inválido', 400);

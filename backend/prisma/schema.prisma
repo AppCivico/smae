@@ -2629,6 +2629,10 @@ model Portfolio {
     /// data informada pelo usuario
     data_criacao DateTime? @db.Date
 
+    // Boolean que indica se portfolio é "template"
+    // Ou seja, utilizado para clonagem
+    modelo_clonagem Boolean @default(false)
+
     atualizador Pessoa? @relation("Atualizador", fields: [atualizado_por], references: [id])
     criador     Pessoa? @relation("Criador", fields: [criado_por], references: [id])
     removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
