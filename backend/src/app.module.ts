@@ -37,16 +37,16 @@ import { AppModulePdm } from './app.module.pdm';
 
 @Module({
     imports: [
-        AppModuleProjeto,
+        ConfigModule.forRoot(),
+        PrismaModule,
         AppModuleCommon,
         AppModulePdm,
+        AppModuleProjeto,
         RequestLogModule,
-        ConfigModule.forRoot(),
         ServeStaticModule.forRoot({
             rootPath: join(__dirname, '..', 'public'),
             serveRoot: '/public',
         }),
-        PrismaModule,
         ReportsModule,
         MinhaContaModule,
         DotacaoModule,
@@ -55,7 +55,6 @@ import { AppModulePdm } from './app.module.pdm';
         OrcamentoRealizadoModule,
         CronogramaEtapaModule,
         OrcamentoPrevistoModule,
-
         DashboardModule,
     ],
     controllers: [AppController],

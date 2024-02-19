@@ -11,7 +11,7 @@ import { ProjetoService } from './projeto.service';
 import { GeoLocModule } from '../../geo-loc/geo-loc.module';
 
 @Module({
-    imports: [PrismaModule, MetaModule, UploadModule, PortfolioModule, GeoLocModule],
+    imports: [PrismaModule, GeoLocModule, MetaModule, UploadModule, PortfolioModule],
     controllers: [ProjetoController, ProjetoProxyPdmMetasController],
     providers: [ProjetoService, ProjetoProxyPdmMetasService, ProjetoSeiService],
     exports: [ProjetoService],

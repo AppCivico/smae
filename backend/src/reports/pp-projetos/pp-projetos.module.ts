@@ -1,21 +1,14 @@
-import { Module } from '@nestjs/common';
-import { PortfolioModule } from '../../pp/portfolio/portfolio.module';
+import { Module, forwardRef } from '@nestjs/common';
 import { ProjetoModule } from '../../pp/projeto/projeto.module';
-import { ProjetoService } from '../../pp/projeto/projeto.service';
 import { PrismaModule } from '../../prisma/prisma.module';
-import { UploadModule } from '../../upload/upload.module';
 import { PPProjetosController } from './pp-projetos.controller';
 import { PPProjetosService } from './pp-projetos.service';
-import { TarefaService } from 'src/pp/tarefa/tarefa.service';
-import { TarefaModule } from 'src/pp/tarefa/tarefa.module';
-import { TarefaUtilsService } from 'src/pp/tarefa/tarefa.service.utils';
-import { TarefaDotTemplate } from 'src/pp/tarefa/tarefa.dot.template';
-import { GraphvizModule } from 'src/graphviz/graphviz.module';
+import { TarefaModule } from '../../pp/tarefa/tarefa.module';
 
 @Module({
-    imports: [PrismaModule, ProjetoModule, PortfolioModule, UploadModule, TarefaModule, GraphvizModule],
+    imports: [PrismaModule, forwardRef(() => ProjetoModule), forwardRef(() => TarefaModule)],
     controllers: [PPProjetosController],
-    providers: [PPProjetosService, ProjetoService, TarefaService, TarefaUtilsService, TarefaDotTemplate],
+    providers: [PPProjetosService],
     exports: [PPProjetosService],
 })
 export class PPProjetosModule {}
