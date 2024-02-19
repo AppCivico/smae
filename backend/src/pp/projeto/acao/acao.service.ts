@@ -17,6 +17,9 @@ export class AcaoService {
     async create(dto: CreateAcaoDto, user: PessoaFromJwt) {
         const projeto = await this.projetoService.findOne(dto.projeto_id, user, 'ReadWrite');
 
+        if (projeto.portfolio.modelo_clonagem)
+            throw new HttpException('Projeto pertence a um Portfolio modelo de clonagem', 400);
+
         const acaoDesejada = 'acao_' + dto.acao;
         if (!(projeto.permissoes as any)[acaoDesejada])
             throw new HttpException(`Não é possível executar ação ${dto.acao} no momento`, 400);
