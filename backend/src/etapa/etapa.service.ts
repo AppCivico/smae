@@ -224,27 +224,6 @@ export class EtapaService {
             )
                 throw new HttpException('Datas não podem ser modificadas pois há dependentes.', 400);
 
-            // Boolean de controle de endereço:
-            // Caso seja true, a etapa só pode receber a data de termino_real
-            // Se possuir endereço, ou seja, rows de GeoLocalizacaoReferencia
-            if (
-                self.endereco_obrigatorio &&
-                self.GeoLocalizacaoReferencia.length == 0 &&
-                dto.termino_real &&
-                dto.termino_real != null
-            )
-                throw new HttpException('Endereço é obrigatório.', 400);
-
-            // Esta func verifica se as rows acima (etapa_pai_id) possuem esse boolean "endereco_obrigatorio"
-            // E se está sendo respeitado
-            try {
-                if (self.endereco_obrigatorio && dto.termino_real && dto.termino_real != null) {
-                    await prismaTx.$queryRaw`SELECT assert_geoloc_rule(${id}, ${self.CronogramaEtapa[0].cronograma_id})`;
-                }
-            } catch {
-                throw new HttpException('Existem linhas na hirearquia que não possuem endereço.', 400);
-            }
-
             const terminoPrevisto: Date | null = dto.termino_previsto ? dto.termino_previsto : self.termino_previsto;
             if (dto.inicio_previsto && terminoPrevisto && dto.inicio_previsto > terminoPrevisto)
                 throw new HttpException('inicio_previsto| Não pode ser maior que termino_previsto', 400);
@@ -315,6 +294,27 @@ export class EtapaService {
 
             // apaga tudo por enquanto, não só as que tem algum crono dessa meta
             await prismaTx.statusMetaCicloFisico.deleteMany();
+
+            // Boolean de controle de endereço:
+            // Caso seja true, a etapa só pode receber a data de termino_real
+            // Se possuir endereço, ou seja, rows de GeoLocalizacaoReferencia
+            if (
+                self.endereco_obrigatorio &&
+                (self.GeoLocalizacaoReferencia.length == 0 || !geolocalizacao) &&
+                dto.termino_real &&
+                dto.termino_real != null
+            )
+                throw new HttpException('Endereço é obrigatório.', 400);
+
+            // Esta func verifica se as rows acima (etapa_pai_id) possuem esse boolean "endereco_obrigatorio"
+            // E se está sendo respeitado
+            try {
+                if (self.endereco_obrigatorio && dto.termino_real && dto.termino_real != null) {
+                    await prismaTx.$queryRaw`SELECT assert_geoloc_rule(${id}, ${self.CronogramaEtapa[0].cronograma_id})`;
+                }
+            } catch {
+                throw new HttpException('Existem linhas na hirearquia que não possuem endereço.', 400);
+            }
 
             return etapa;
         });
