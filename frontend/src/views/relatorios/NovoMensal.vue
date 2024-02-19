@@ -4,6 +4,7 @@ import { relatórioMensal as schema } from '@/consts/formSchemas';
 import months from '@/consts/months';
 import { useAlertStore } from '@/stores/alert.store';
 import { usePaineisStore } from '@/stores/paineis.store';
+import { useMetasStore } from '@/stores/metas.store';
 import { usePdMStore } from '@/stores/pdm.store';
 import { useRelatoriosStore } from '@/stores/relatorios.store.ts';
 import { useTagsStore } from '@/stores/tags.store';
@@ -18,6 +19,7 @@ const { filtradasPorPdM } = storeToRefs(TagsStore);
 const alertStore = useAlertStore();
 const PdMStore = usePdMStore();
 const PainéisStore = usePaineisStore();
+const MetasStore = useMetasStore();
 const relatoriosStore = useRelatoriosStore();
 const route = useRoute();
 const router = useRouter();
@@ -27,6 +29,7 @@ const initialValues = computed(() => ({
   fonte: 'MonitoramentoMensal',
   parametros: {
     tipo: 'Analitico',
+    metas: [],
     pdm_id: null,
     ano: 2003,
     tags: [],
@@ -69,6 +72,7 @@ onMounted(() => {
   });
 
   PainéisStore.getAll();
+  MetasStore.getAll();
 });
 </script>
 
@@ -116,6 +120,32 @@ onMounted(() => {
           {{ errors['parametros.pdm_id'] }}
         </div>
       </div>
+
+      <div class="mb2">
+        <LabelFromYup
+          name="meta"
+          :schema="schema.fields.parametros"
+        />
+
+        <AutocompleteField
+          name="parametros.metas"
+          :controlador="{ busca: '', participantes: values.parametros.metas || ['teste'] }"
+          :grupo="MetasStore.Metas"
+          label="descricao"
+          :class="{
+            error: errors['parametros.meta'],
+            loading: MetasStore.Metas?.loading,
+          }"
+        />
+
+        <div
+          v-if="errors['parametros.tags']"
+          class="error-msg"
+        >
+          {{ errors['parametros.tags'] }}
+        </div>
+      </div>
+
       <div class="f1">
         <label
           for="mes"
