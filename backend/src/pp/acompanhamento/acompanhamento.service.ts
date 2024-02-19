@@ -25,6 +25,17 @@ export class AcompanhamentoService {
 
         const created = await this.prisma.$transaction(
             async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
+                const projetoPortfolio = await prismaTx.projeto.findFirstOrThrow({
+                    where: { id: projeto_id },
+                    select: {
+                        portfolio: {
+                            select: { modelo_clonagem: true }
+                        }
+                    }
+                });
+                if (projetoPortfolio.portfolio.modelo_clonagem)
+                  throw new HttpException('Projeto pertence a Portfolio de modelo de clonagem', 400);
+
                 const now = new Date(Date.now());
 
                 dto.detalhamento = HtmlSanitizer(dto.detalhamento);

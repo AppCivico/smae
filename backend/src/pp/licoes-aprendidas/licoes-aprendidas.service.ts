@@ -17,6 +17,17 @@ export class LicoesAprendidasService {
     async create(projetoId: number, dto: CreateLicoesApreendidasDto, user: PessoaFromJwt): Promise<RecordWithId> {
         const created = await this.prisma.$transaction(
             async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
+                const projetoPortfolio = await prismaTx.projeto.findFirstOrThrow({
+                    where: { id: projetoId },
+                    select: {
+                        portfolio: {
+                            select: { modelo_clonagem: true }
+                        }
+                    }
+                });
+                if (projetoPortfolio.portfolio.modelo_clonagem)
+                  throw new HttpException('Projeto pertence a Portfolio de modelo de clonagem', 400);
+
                 let sequencial: number | undefined = dto.sequencial;
 
                 // Caso o "sequencial" seja enviado, deve ser checado se não há já um mesmo sequencial para o mesmo projeto.

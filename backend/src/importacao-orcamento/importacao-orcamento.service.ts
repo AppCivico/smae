@@ -165,6 +165,7 @@ export class ImportacaoOrcamentoService {
                 id: true,
                 titulo: true,
                 nivel_maximo_tarefa: true,
+                modelo_clonagem: true,
                 orgaos: {
                     select: {
                         orgao: {

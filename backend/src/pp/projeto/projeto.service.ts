@@ -244,8 +244,6 @@ export class ProjetoService {
      * *: essa pessoa tem acesso de escrita até a hora que o status do projeto passar de "EmPlanejamento", depois disso vira read-only
      * */
     async create(dto: CreateProjetoDto, user: PessoaFromJwt): Promise<RecordWithId> {
-        console.log({ dto });
-
         // pra criar, verifica se a pessoa pode realmente acessar o portfolio, então
         // começa listando todos os portfolios
         const portfolios = await this.portfolioService.findAll(user);
@@ -263,6 +261,11 @@ export class ProjetoService {
         if (!origem_tipo) throw new Error('origem_tipo deve estar definido no create de Projeto');
 
         if (dto.portfolios_compartilhados?.length) {
+            // Caso o portfolio seja de modelo para clonagem.
+            // Não permitir compartilhar com outros ports.
+            if (portfolio.modelo_clonagem)
+                throw new HttpException('portfolios_compartilhados| Projeto não pode ser compartilhado pois pertence a um Portfolio de modelo de clonagem.', 400);
+
             // Os portfolios compartilhados obrigatoriamente devem possuir ao menos um órgão em comum.
             const portfoliosCompartilhados = portfolios.filter(p =>  dto.portfolios_compartilhados?.some(x => x == p.id));
             await this.checkPortCompartilhadoOrgaos(portfolio, portfoliosCompartilhados);

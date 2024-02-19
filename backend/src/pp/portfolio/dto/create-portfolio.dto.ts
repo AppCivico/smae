@@ -2,6 +2,7 @@ import {
     ArrayMaxSize,
     ArrayMinSize,
     IsArray,
+    IsBoolean,
     IsInt,
     IsOptional,
     IsString,
@@ -69,4 +70,8 @@ export class CreatePortfolioDto {
     @IsInt({ message: '$property| Precisa ser uma lista de inteiros', each: true })
     @Max(1000, { each: true })
     grupo_portfolio?: number[];
+
+    @IsOptional()
+    @IsBoolean()
+    modelo_clonagem?: boolean;
 }

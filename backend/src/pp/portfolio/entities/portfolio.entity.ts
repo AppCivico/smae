@@ -4,6 +4,7 @@ export class PortfolioDto {
     id: number;
     titulo: string;
     nivel_maximo_tarefa: number;
+    modelo_clonagem: boolean;
     orgaos: IdSiglaDescricao[];
 }
 

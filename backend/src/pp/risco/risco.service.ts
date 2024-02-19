@@ -15,6 +15,17 @@ export class RiscoService {
     constructor(private readonly prisma: PrismaService) {}
 
     async create(projetoId: number, dto: CreateRiscoDto, user: PessoaFromJwt): Promise<RecordWithId> {
+        const projetoPortfolio = await this.prisma.projeto.findFirstOrThrow({
+            where: { id: projetoId },
+            select: {
+                portfolio: {
+                    select: { modelo_clonagem: true }
+                }
+            }
+        });
+        if (projetoPortfolio.portfolio.modelo_clonagem)
+          throw new HttpException('Projeto pertence a Portfolio de modelo de clonagem', 400);
+
         const calcResult =
             dto.probabilidade && dto.impacto ? RiscoCalc.getResult(dto.probabilidade, dto.impacto) : undefined;
 

@@ -20,8 +20,11 @@ export class PPStatusService implements ReportableService {
         const projetoRows = await this.prisma.projeto.findMany({
             where: {
                 id: dto.projeto_id ? dto.projeto_id : undefined,
-                portfolio_id: dto.portfolio_id,
                 removido_em: null,
+                portfolio: {
+                    id: dto.portfolio_id,
+                    modelo_clonagem: false
+                }
             },
             select: {
                 id: true,
