@@ -193,6 +193,18 @@ export class EtapaService {
                         where: { removido_em: null },
                         select: { id: true },
                     },
+
+                    // Por agora pegando apenas uma única row de cronograma
+                    // No entanto, o sistema foi construído com a possibilidade
+                    // de uma etapa estar em N cronogramas.
+                    CronogramaEtapa: {
+                        take: 1,
+                        where: {
+                            etapa_id: id,
+                            inativo: false
+                        },
+                        select: { cronograma_id: true }
+                    },
                 },
             });
 
@@ -222,6 +234,16 @@ export class EtapaService {
                 dto.termino_real != null
             )
                 throw new HttpException('Endereço é obrigatório.', 400);
+
+            // Esta func verifica se as rows acima (etapa_pai_id) possuem esse boolean "endereco_obrigatorio"
+            // E se está sendo respeitado
+            try {
+                if (self.endereco_obrigatorio && dto.termino_real && dto.termino_real != null) {
+                    await prismaTx.$queryRaw`SELECT assert_geoloc_rule(${id}, ${self.CronogramaEtapa[0].cronograma_id})`;
+                }
+            } catch {
+                throw new HttpException('Existem linhas na hirearquia que não possuem endereço.', 400);
+            }
 
             const terminoPrevisto: Date | null = dto.termino_previsto ? dto.termino_previsto : self.termino_previsto;
             if (dto.inicio_previsto && terminoPrevisto && dto.inicio_previsto > terminoPrevisto)
