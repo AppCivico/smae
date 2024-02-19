@@ -18,7 +18,7 @@ export class ProjetoDto {
     eh_prioritario: boolean;
     meta: IdCodTituloDto | null;
     codigo: string | null;
-    portfolio: IdTituloDto;
+    portfolio: PortIdTituloModeloClonagemDto;
     portfolios_compartilhados: IdTituloDto[];
     geolocalizacao: GeolocalizacaoDto[]
 }
@@ -113,6 +113,12 @@ export class IdTituloNivelMaxRegDto {
     nivel_regionalizacao: number;
     modelo_clonagem: boolean;
     orcamento_execucao_disponivel_meses: number[];
+}
+
+export class PortIdTituloModeloClonagemDto {
+    id: number;
+    titulo: string;
+    modelo_clonagem: boolean
 }
 
 export class ProjetoEquipeItemDto {

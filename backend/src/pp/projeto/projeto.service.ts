@@ -485,7 +485,7 @@ export class ProjetoService {
                     },
                 },
                 portfolio: {
-                    select: { id: true, titulo: true },
+                    select: { id: true, titulo: true, modelo_clonagem: true },
                 },
                 portfolios_compartilhados: {
                     where: { removido_em: null },
