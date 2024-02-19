@@ -8,9 +8,10 @@ import { ProjetoProxyPdmMetasController } from './projeto.proxy-pdm-metas.contro
 import { ProjetoProxyPdmMetasService } from './projeto.proxy-pdm-metas.service';
 import { ProjetoSeiService } from './projeto.sei.service';
 import { ProjetoService } from './projeto.service';
+import { GeoLocModule } from '../../geo-loc/geo-loc.module';
 
 @Module({
-    imports: [PrismaModule, MetaModule, UploadModule, PortfolioModule],
+    imports: [PrismaModule, MetaModule, UploadModule, PortfolioModule, GeoLocModule],
     controllers: [ProjetoController, ProjetoProxyPdmMetasController],
     providers: [ProjetoService, ProjetoProxyPdmMetasService, ProjetoSeiService],
     exports: [ProjetoService],

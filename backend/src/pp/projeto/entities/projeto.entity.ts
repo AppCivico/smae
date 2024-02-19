@@ -5,6 +5,7 @@ import { IdCodTituloDto } from 'src/common/dto/IdCodTitulo.dto';
 import { IdNomeExibicaoDto } from 'src/common/dto/IdNomeExibicao.dto';
 import { IdSiglaDescricao } from 'src/common/dto/IdSigla.dto';
 import { IdTituloDto } from '../../../common/dto/IdTitulo.dto';
+import { GeolocalizacaoDto } from '../../../geo-loc/entities/geo-loc.entity';
 import { TipoDocumentoDto } from '../../../tipo-documento/entities/tipo-documento.entity';
 
 export class ProjetoDto {
@@ -19,11 +20,7 @@ export class ProjetoDto {
     codigo: string | null;
     portfolio: IdTituloDto;
     portfolios_compartilhados: IdTituloDto[];
-    regiao: {
-        id: number,
-        nivel: number,
-        descricao: string 
-    } | null
+    geolocalizacao: GeolocalizacaoDto[]
 }
 
 export class ListProjetoDto {
@@ -214,6 +211,8 @@ export class ProjetoDetailDto {
     logradouro_nome: string | null;
     logradouro_numero: string | null;
     logradouro_cep: string | null;
+
+    geolocalizacao: GeolocalizacaoDto[]
 }
 
 export class ProjetoMVPDto extends PickType(ProjetoDetailDto, ['id', 'portfolio_id']) {}

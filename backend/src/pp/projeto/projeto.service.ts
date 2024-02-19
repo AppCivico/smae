@@ -14,7 +14,12 @@ import { PortfolioDto } from '../portfolio/entities/portfolio.entity';
 import { PortfolioService } from '../portfolio/portfolio.service';
 import { CreateProjetoDocumentDto, CreateProjetoDto } from './dto/create-projeto.dto';
 import { FilterProjetoDto } from './dto/filter-projeto.dto';
-import { CloneProjetoTarefasDto, TransferProjetoPortfolioDto, UpdateProjetoDocumentDto, UpdateProjetoDto } from './dto/update-projeto.dto';
+import {
+    CloneProjetoTarefasDto,
+    TransferProjetoPortfolioDto,
+    UpdateProjetoDocumentDto,
+    UpdateProjetoDto,
+} from './dto/update-projeto.dto';
 import {
     ProjetoDetailDto,
     ProjetoDocumentoDto,
@@ -25,6 +30,8 @@ import {
 } from './entities/projeto.entity';
 
 import { HtmlSanitizer } from '../../common/html-sanitizer';
+import { GeoLocService } from '../../geo-loc/geo-loc.service';
+import { ReferenciasValidasBase } from '../../geo-loc/entities/geo-loc.entity';
 
 const FASES_LIBERAR_COLABORADOR: ProjetoStatus[] = ['Registrado', 'Selecionado', 'EmPlanejamento'];
 const StatusParaFase: Record<ProjetoStatus, ProjetoFase> = {
@@ -78,7 +85,8 @@ export class ProjetoService {
     constructor(
         private readonly prisma: PrismaService,
         private readonly portfolioService: PortfolioService,
-        private readonly uploadService: UploadService
+        private readonly uploadService: UploadService,
+        private readonly geolocService: GeoLocService
     ) {}
 
     private async processaOrigem(dto: CreateProjetoDto) {
@@ -267,7 +275,9 @@ export class ProjetoService {
                 throw new HttpException('portfolios_compartilhados| Projeto não pode ser compartilhado pois pertence a um Portfolio de modelo de clonagem.', 400);
 
             // Os portfolios compartilhados obrigatoriamente devem possuir ao menos um órgão em comum.
-            const portfoliosCompartilhados = portfolios.filter(p =>  dto.portfolios_compartilhados?.some(x => x == p.id));
+            const portfoliosCompartilhados = portfolios.filter((p) =>
+                dto.portfolios_compartilhados?.some((x) => x == p.id)
+            );
             await this.checkPortCompartilhadoOrgaos(portfolio, portfoliosCompartilhados);
         }
 
@@ -319,15 +329,17 @@ export class ProjetoService {
 
                         portfolios_compartilhados: {
                             createMany: {
-                                data: dto.portfolios_compartilhados? dto.portfolios_compartilhados.map(pc => {
-                                    return {
-                                        portfolio_id: pc,
-                                        criado_em: new Date(Date.now()),
-                                        criado_por: user.id
-                                    }
-                                }) : []
-                            }
-                        }
+                                data: dto.portfolios_compartilhados
+                                    ? dto.portfolios_compartilhados.map((pc) => {
+                                          return {
+                                              portfolio_id: pc,
+                                              criado_em: new Date(Date.now()),
+                                              criado_por: user.id,
+                                          };
+                                      })
+                                    : [],
+                            },
+                        },
                     },
                     select: { id: true },
                 });
@@ -342,9 +354,18 @@ export class ProjetoService {
     private async checkPortCompartilhadoOrgaos(portPrincipal: PortfolioDto, portCompartilhados: PortfolioDto[]) {
         for (const portfolioCompartilhado of portCompartilhados) {
             if (portfolioCompartilhado.id == portPrincipal.id)
-                throw new HttpException('portfolios_compartilhados| Portfolio compartilhado deve ser diferente do Portfolio principal.', 400);
+                throw new HttpException(
+                    'portfolios_compartilhados| Portfolio compartilhado deve ser diferente do Portfolio principal.',
+                    400
+                );
 
-            if (!portfolioCompartilhado.orgaos.map(o => o.id).some(pco => { return portPrincipal.orgaos.map(o => o.id).includes(pco) }))
+            if (
+                !portfolioCompartilhado.orgaos
+                    .map((o) => o.id)
+                    .some((pco) => {
+                        return portPrincipal.orgaos.map((o) => o.id).includes(pco);
+                    })
+            )
                 throw new HttpException(
                     'portfolios_compartilhados| Portfolio compartilhado deve conter ao menos um órgão em comum com o Portfolio principal.',
                     400
@@ -454,21 +475,26 @@ export class ProjetoService {
                     select: {
                         portfolio: {
                             select: {
-                                id: true, titulo: true
-                            }
-                        }
-                    }
+                                id: true,
+                                titulo: true,
+                            },
+                        },
+                    },
                 },
                 regiao: {
                     select: {
                         id: true,
                         nivel: true,
                         descricao: true,
-                    }
-                }
+                    },
+                },
             },
             orderBy: { codigo: 'asc' },
         });
+
+        const geoDto = new ReferenciasValidasBase();
+        geoDto.projeto_id = rows.map((r) => r.id);
+        const geolocalizacao = await this.geolocService.carregaReferencias(geoDto);
 
         for (const row of rows) {
             let meta: IdCodTituloDto | null;
@@ -493,17 +519,13 @@ export class ProjetoService {
                 arquivado: row.arquivado,
                 eh_prioritario: row.eh_prioritario,
                 codigo: row.codigo,
-                regiao: row.regiao ? {
-                    id: row.regiao.id,
-                    nivel: row.regiao.nivel,
-                    descricao: row.regiao.descricao
-                } : null,
-                portfolios_compartilhados: row.portfolios_compartilhados.map(pc => {
+                geolocalizacao: geolocalizacao.get(row.id) || [],
+                portfolios_compartilhados: row.portfolios_compartilhados.map((pc) => {
                     return {
                         id: pc.portfolio.id,
-                        titulo: pc.portfolio.titulo
-                    }
-                })
+                        titulo: pc.portfolio.titulo,
+                    };
+                }),
             });
         }
 
@@ -632,10 +654,10 @@ export class ProjetoService {
                                             },
                                         },
                                     },
-                                }
-                            }
-                        }
-                    }
+                                },
+                            },
+                        },
+                    },
                 ],
             });
         }
@@ -923,10 +945,10 @@ export class ProjetoService {
                     where: { removido_em: null },
                     select: {
                         portfolio: {
-                            select: { id: true, titulo: true }
-                        }
-                    }
-                }
+                            select: { id: true, titulo: true },
+                        },
+                    },
+                },
             },
         });
         if (!projeto) throw new HttpException('Projeto não encontrado ou sem permissão para acesso', 400);
@@ -937,6 +959,10 @@ export class ProjetoService {
 
         let iniciativa: IdCodTituloDto | null = null;
         let atividade: IdCodTituloDto | null = null;
+
+        const geoDto = new ReferenciasValidasBase();
+        geoDto.projeto_id = projeto.id;
+        const geolocalizacao = await this.geolocService.carregaReferencias(geoDto);
 
         if (projeto.iniciativa) {
             iniciativa = {
@@ -1002,10 +1028,13 @@ export class ProjetoService {
                     descricao: o.orgao.descricao,
                 };
             }),
+            geolocalizacao: geolocalizacao.get(projeto.id) || [],
 
-            portfolios_compartilhados: projeto.portfolios_compartilhados ? projeto.portfolios_compartilhados.map(pc => {
-                return { id: pc.portfolio.id, titulo: pc.portfolio.titulo }
-            }) : null
+            portfolios_compartilhados: projeto.portfolios_compartilhados
+                ? projeto.portfolios_compartilhados.map((pc) => {
+                      return { id: pc.portfolio.id, titulo: pc.portfolio.titulo };
+                  })
+                : null,
         };
     }
 
@@ -1338,35 +1367,40 @@ export class ProjetoService {
             dto.nao_escopo = HtmlSanitizer(dto.nao_escopo);
 
             if (dto.portfolios_compartilhados?.length) {
-                const portfoliosCompartilhados = portfolios.filter(p =>  dto.portfolios_compartilhados?.some(x => x == p.id));
+                const portfoliosCompartilhados = portfolios.filter((p) =>
+                    dto.portfolios_compartilhados?.some((x) => x == p.id)
+                );
                 await this.checkPortCompartilhadoOrgaos(portfolio, portfoliosCompartilhados);
 
-                const { deletedPC, createdPC } = this.checkDiffPortfoliosCompartilhados(projeto.portfolios_compartilhados?.map(pc => pc.id), dto.portfolios_compartilhados);
+                const { deletedPC, createdPC } = this.checkDiffPortfoliosCompartilhados(
+                    projeto.portfolios_compartilhados?.map((pc) => pc.id),
+                    dto.portfolios_compartilhados
+                );
 
                 if (deletedPC.length) {
                     await prismaTx.portfolioProjetoCompartilhado.updateMany({
                         where: {
-                            portfolio_id: {in: deletedPC},
-                            projeto_id: projetoId
+                            portfolio_id: { in: deletedPC },
+                            projeto_id: projetoId,
                         },
                         data: {
                             removido_em: now,
-                            removido_por: user.id
-                        }
-                    })
-                };
+                            removido_por: user.id,
+                        },
+                    });
+                }
 
                 if (createdPC.length) {
                     await prismaTx.portfolioProjetoCompartilhado.createMany({
-                        data: createdPC.map(cpc => {
+                        data: createdPC.map((cpc) => {
                             return {
                                 projeto_id: projetoId,
                                 portfolio_id: cpc,
                                 criado_em: now,
-                                criado_por: user.id
-                            }
-                        })
-                    })
+                                criado_por: user.id,
+                            };
+                        }),
+                    });
                 }
             } else {
                 // Verificar se possui compartilhados e caso possua, remover.
@@ -1374,8 +1408,8 @@ export class ProjetoService {
                     where: { projeto_id: projetoId, removido_em: null },
                     data: {
                         removido_em: now,
-                        removido_por: user.id
-                    }
+                        removido_por: user.id,
+                    },
                 });
             }
 
@@ -1464,26 +1498,29 @@ export class ProjetoService {
         return { id: projetoId };
     }
 
-    private checkDiffPortfoliosCompartilhados(currentPortCompartilhados: number[] | undefined, newPortCompartilhados: number[]) {
+    private checkDiffPortfoliosCompartilhados(
+        currentPortCompartilhados: number[] | undefined,
+        newPortCompartilhados: number[]
+    ) {
         let deleted: number[] = [];
         let created: number[] = [];
 
         if (!currentPortCompartilhados) {
             created = newPortCompartilhados;
         } else {
-            deleted = currentPortCompartilhados.filter(cpc => {
-                return !newPortCompartilhados.find(npc => npc == cpc)
+            deleted = currentPortCompartilhados.filter((cpc) => {
+                return !newPortCompartilhados.find((npc) => npc == cpc);
             });
 
-            created = newPortCompartilhados.filter(npc => {
-                return !currentPortCompartilhados.find(cpc => cpc == npc)
+            created = newPortCompartilhados.filter((npc) => {
+                return !currentPortCompartilhados.find((cpc) => cpc == npc);
             });
         }
 
         return {
             deletedPC: deleted,
             createdPC: created,
-        }
+        };
     }
 
     private async upsertGrupoPort(
@@ -1984,76 +2021,98 @@ export class ProjetoService {
     async cloneTarefas(projetoId: number, dto: CloneProjetoTarefasDto, user: PessoaFromJwt) {
         // Se o projeto já tiver tarefas, não pode realizar esta ação.
         const tarefasCount = await this.prisma.tarefa.count({ where: { projeto_id: projetoId, removido_em: null } });
-        if (tarefasCount > 0)
-          throw new HttpException('Projeto já possui cronograma', 400);
+        if (tarefasCount > 0) throw new HttpException('Projeto já possui cronograma', 400);
 
-        await this.prisma.$queryRaw`CALL clone_projeto_tarefas(${dto.projeto_fonte_id}::int, ${projetoId}::int);`
+        await this.prisma.$queryRaw`CALL clone_projeto_tarefas(${dto.projeto_fonte_id}::int, ${projetoId}::int);`;
     }
 
-    async transferPortfolio(projetoId: number, dto: TransferProjetoPortfolioDto, user: PessoaFromJwt): Promise<RecordWithId> {
+    async transferPortfolio(
+        projetoId: number,
+        dto: TransferProjetoPortfolioDto,
+        user: PessoaFromJwt
+    ): Promise<RecordWithId> {
         const projeto = await this.findOne(projetoId, user, 'ReadWrite');
 
-        const updated =  await this.prisma.$transaction( async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
-            const portfolioAntigo = projeto.portfolio;
+        const updated = await this.prisma.$transaction(
+            async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
+                const portfolioAntigo = projeto.portfolio;
 
-            const portfolioNovo = await prismaTx.portfolio
-              .findFirstOrThrow({
-                where: { id: dto.portfolio_id, removido_em: null },
-                select: {
-                    id: true,
-                    nivel_maximo_tarefa: true,
-                    nivel_regionalizacao: true,
-                    orcamento_execucao_disponivel_meses: true,
-                    orgaos: {
-                        select: { orgao_id: true }
-                    }
-                }})
-              .catch(() => {throw new HttpException('portfolio_id| Não foi encontrado', 400)});
+                const portfolioNovo = await prismaTx.portfolio
+                    .findFirstOrThrow({
+                        where: { id: dto.portfolio_id, removido_em: null },
+                        select: {
+                            id: true,
+                            nivel_maximo_tarefa: true,
+                            nivel_regionalizacao: true,
+                            orcamento_execucao_disponivel_meses: true,
+                            orgaos: {
+                                select: { orgao_id: true },
+                            },
+                        },
+                    })
+                    .catch(() => {
+                        throw new HttpException('portfolio_id| Não foi encontrado', 400);
+                    });
 
-            // Nível de tarefas, do port novo, não pode ser menor.
-            if (portfolioNovo.nivel_maximo_tarefa < portfolioAntigo.nivel_maximo_tarefa)
-                throw new HttpException('portfolio_id| Portfolio novo deve ter nível máximo de tarefa maior ou igual ao portfolio original.', 400);
+                // Nível de tarefas, do port novo, não pode ser menor.
+                if (portfolioNovo.nivel_maximo_tarefa < portfolioAntigo.nivel_maximo_tarefa)
+                    throw new HttpException(
+                        'portfolio_id| Portfolio novo deve ter nível máximo de tarefa maior ou igual ao portfolio original.',
+                        400
+                    );
 
-            // Nível de regionalização deve ser igual.
-            if (portfolioNovo.nivel_regionalizacao != portfolioAntigo.nivel_regionalizacao)
-                throw new HttpException('portfolio_id| Portfolio novo deve ter mesmo nível de regionalização.', 400);
+                // Nível de regionalização deve ser igual.
+                if (portfolioNovo.nivel_regionalizacao != portfolioAntigo.nivel_regionalizacao)
+                    throw new HttpException(
+                        'portfolio_id| Portfolio novo deve ter mesmo nível de regionalização.',
+                        400
+                    );
 
-            // Meses disponíveis para orçamento devem ser iguais.
-            if (!assertOrcamentoDisponivelEqual(portfolioNovo.orcamento_execucao_disponivel_meses, portfolioAntigo.orcamento_execucao_disponivel_meses))
-                throw new HttpException('portfolio_id| Portfolio novo deve ter mesmos meses disponíveis para orçamento.', 400);
+                // Meses disponíveis para orçamento devem ser iguais.
+                if (
+                    !assertOrcamentoDisponivelEqual(
+                        portfolioNovo.orcamento_execucao_disponivel_meses,
+                        portfolioAntigo.orcamento_execucao_disponivel_meses
+                    )
+                )
+                    throw new HttpException(
+                        'portfolio_id| Portfolio novo deve ter mesmos meses disponíveis para orçamento.',
+                        400
+                    );
 
-            // Por agora o órgão gestor não será modificado.
-            // Portanto deve ser verificado se ele está presente nos órgãos do novo port.
-            if (!portfolioNovo.orgaos.map(o => o.orgao_id).some(o => o == projeto.orgao_gestor.id))
-                throw new HttpException('portfolio_id| Órgão gestor do Projeto deve estar no Portfolio novo.', 400);
-            
-            await Promise.all([
-                prismaTx.projeto.update({ where: { id: projetoId }, data: { portfolio_id: dto.portfolio_id } }),
-                
-                // Números sequenciais utilizados pelo Projeto
-                prismaTx.projetoNumeroSequencial.updateMany({
-                    where: {
-                        portfolio_id: portfolioAntigo.id,
-                        projeto_id: projetoId
-                    },
-                    data: { portfolio_id: portfolioNovo.id }
-                }),
+                // Por agora o órgão gestor não será modificado.
+                // Portanto deve ser verificado se ele está presente nos órgãos do novo port.
+                if (!portfolioNovo.orgaos.map((o) => o.orgao_id).some((o) => o == projeto.orgao_gestor.id))
+                    throw new HttpException('portfolio_id| Órgão gestor do Projeto deve estar no Portfolio novo.', 400);
 
-                // Removendo projeto de grupos de Portfolio.
-                prismaTx.projetoGrupoPortfolio.updateMany({
-                    where: { projeto_id: projetoId },
-                    data: {
-                        removido_em: new Date(Date.now()),
-                        removido_por: user.id
-                    }
-                })
-            ]);
+                await Promise.all([
+                    prismaTx.projeto.update({ where: { id: projetoId }, data: { portfolio_id: dto.portfolio_id } }),
 
-            return { id: projeto.id }
-        });
+                    // Números sequenciais utilizados pelo Projeto
+                    prismaTx.projetoNumeroSequencial.updateMany({
+                        where: {
+                            portfolio_id: portfolioAntigo.id,
+                            projeto_id: projetoId,
+                        },
+                        data: { portfolio_id: portfolioNovo.id },
+                    }),
+
+                    // Removendo projeto de grupos de Portfolio.
+                    prismaTx.projetoGrupoPortfolio.updateMany({
+                        where: { projeto_id: projetoId },
+                        data: {
+                            removido_em: new Date(Date.now()),
+                            removido_por: user.id,
+                        },
+                    }),
+                ]);
+
+                return { id: projeto.id };
+            }
+        );
 
         return updated;
-        
+
         function assertOrcamentoDisponivelEqual(novo: number[], velho: number[]): boolean {
             if (novo.length !== velho.length) {
                 return false;
@@ -2068,5 +2127,4 @@ export class ProjetoService {
             return true;
         }
     }
-
 }
