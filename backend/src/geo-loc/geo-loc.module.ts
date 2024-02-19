@@ -16,5 +16,6 @@ import { JwtModule } from '@nestjs/jwt';
     ],
     controllers: [GeoLocController],
     providers: [GeoLocService],
+    exports: [GeoLocService],
 })
 export class GeoLocModule {}
