@@ -20,8 +20,8 @@ import { AcaoModule } from './pp/projeto/acao/acao.module';
 
 @Module({
     imports: [
-        PortfolioModule,
         ProjetoModule,
+        PortfolioModule,
         PPProjetoModule,
         TarefaModule,
         RiscoModule,

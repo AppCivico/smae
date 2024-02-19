@@ -1,4 +1,4 @@
-import { BadRequestException, HttpException, Injectable, Logger } from '@nestjs/common';
+import { BadRequestException, HttpException, Inject, Injectable, Logger, forwardRef } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
 import { Prisma, TarefaDependente, TarefaDependenteTipo } from '@prisma/client';
 import { Type, plainToInstance } from 'class-transformer';
@@ -56,7 +56,7 @@ export class TarefaService {
         private readonly prisma: PrismaService,
         private readonly utils: TarefaUtilsService,
         private readonly dotTemplate: TarefaDotTemplate,
-        private readonly projetoService: ProjetoService,
+        @Inject(forwardRef(() => ProjetoService)) private readonly projetoService: ProjetoService,
         private readonly graphvizService: GraphvizService
     ) {}
 
@@ -397,29 +397,29 @@ export class TarefaService {
                         depDateInicio = depTarefa.termino_real
                             ? DateTime.fromJSDate(depTarefa.termino_real)
                             : depTarefa.projecao_termino
-                            ? depTarefa.projecao_termino
-                            : hoje;
+                              ? depTarefa.projecao_termino
+                              : hoje;
                         break;
                     case TarefaDependenteTipo.inicia_pro_inicio:
                         depDateInicio = depTarefa.inicio_real
                             ? DateTime.fromJSDate(depTarefa.inicio_real)
                             : depTarefa.projecao_inicio
-                            ? depTarefa.projecao_inicio
-                            : hoje;
+                              ? depTarefa.projecao_inicio
+                              : hoje;
                         break;
                     case TarefaDependenteTipo.inicia_pro_termino:
                         depDateTermino = depTarefa.inicio_real
                             ? DateTime.fromJSDate(depTarefa.inicio_real)
                             : depTarefa.projecao_inicio
-                            ? depTarefa.projecao_inicio
-                            : hoje;
+                              ? depTarefa.projecao_inicio
+                              : hoje;
                         break;
                     case TarefaDependenteTipo.termina_pro_termino:
                         depDateTermino = depTarefa.termino_real
                             ? DateTime.fromJSDate(depTarefa.termino_real)
                             : depTarefa.projecao_termino
-                            ? depTarefa.projecao_termino
-                            : hoje;
+                              ? depTarefa.projecao_termino
+                              : hoje;
                         break;
                 }
 

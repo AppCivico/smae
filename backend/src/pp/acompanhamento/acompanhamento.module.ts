@@ -8,5 +8,6 @@ import { AcompanhamentoService } from './acompanhamento.service';
     imports: [PrismaModule, ProjetoModule],
     controllers: [AcompanhamentoController],
     providers: [AcompanhamentoService],
+    exports: [AcompanhamentoService],
 })
 export class AcompanhamentoModule {}

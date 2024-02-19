@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable, forwardRef } from '@nestjs/common';
 import { DateTime } from 'luxon';
 import { Stream2Buffer } from 'src/common/helpers/Stream2Buffer';
 import { AcompanhamentoService } from 'src/pp/acompanhamento/acompanhamento.service';
@@ -32,11 +32,11 @@ const defaultTransform = [flatten({ paths: [] })];
 export class PPProjetoService implements ReportableService {
     constructor(
         private readonly prisma: PrismaService,
-        private readonly projetoService: ProjetoService,
-        private readonly riscoService: RiscoService,
-        private readonly planoAcaoService: PlanoAcaoService,
-        private readonly tarefaService: TarefaService,
-        private readonly acompanhamentoService: AcompanhamentoService
+        @Inject(forwardRef(() => ProjetoService)) private readonly projetoService: ProjetoService,
+        @Inject(forwardRef(() => RiscoService)) private readonly riscoService: RiscoService,
+        @Inject(forwardRef(() => PlanoAcaoService)) private readonly planoAcaoService: PlanoAcaoService,
+        @Inject(forwardRef(() => TarefaService)) private readonly tarefaService: TarefaService,
+        @Inject(forwardRef(() => AcompanhamentoService)) private readonly acompanhamentoService: AcompanhamentoService
     ) {}
 
     async create(dto: CreateRelProjetoDto): Promise<PPProjetoRelatorioDto> {
@@ -174,7 +174,7 @@ export class PPProjetoService implements ReportableService {
         });
 
         const acompanhamentoRows = await this.acompanhamentoService.findAll(dto.projeto_id, undefined);
-        const acompanhamentoOut: RelProjetoAcompanhamentoDto[] = acompanhamentoRows.map(a => {
+        const acompanhamentoOut: RelProjetoAcompanhamentoDto[] = acompanhamentoRows.map((a) => {
             return {
                 id: a.id,
                 acompanhamento_tipo: a.acompanhamento_tipo ? a.acompanhamento_tipo.nome : null,
@@ -187,22 +187,22 @@ export class PPProjetoService implements ReportableService {
                 pontos_atencao: a.pontos_atencao,
                 pauta: a.pauta,
                 cronograma_paralisado: a.cronograma_paralisado,
-                riscos: a.risco ? a.risco.map(r => r.codigo).join('|') : null
-            }
+                riscos: a.risco ? a.risco.map((r) => r.codigo).join('|') : null,
+            };
         });
 
         // Encaminhamentos são retornados já junto com os acompanhamentos
-        const encaminhamentoOut: RelProjetoEncaminhamentoDto[] = acompanhamentoRows.flatMap(a => {
-            return a.acompanhamentos.map(e => {
+        const encaminhamentoOut: RelProjetoEncaminhamentoDto[] = acompanhamentoRows.flatMap((a) => {
+            return a.acompanhamentos.map((e) => {
                 return {
                     acompanhamento_id: a.id,
                     numero_encaminhamento: e.numero_identificador,
                     encaminhamento: e.encaminhamento,
                     responsavel: e.responsavel,
                     prazo_encaminhamento: Date2YMD.toStringOrNull(e.prazo_encaminhamento),
-                    prazo_realizado: Date2YMD.toStringOrNull(e.prazo_realizado)
-                }
-            })
+                    prazo_realizado: Date2YMD.toStringOrNull(e.prazo_realizado),
+                };
+            });
         });
 
         return {
@@ -211,7 +211,7 @@ export class PPProjetoService implements ReportableService {
             riscos: riscosOut,
             planos_acao: planoAcaoOut,
             acompanhamentos: acompanhamentoOut,
-            encaminhamentos: encaminhamentoOut
+            encaminhamentos: encaminhamentoOut,
         };
     }
 

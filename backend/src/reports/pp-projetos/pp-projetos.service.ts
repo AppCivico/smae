@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable, forwardRef } from '@nestjs/common';
 import { Date2YMD, SYSTEM_TIMEZONE } from '../../common/date2ymd';
 import { ProjetoService, ProjetoStatusParaExibicao } from '../../pp/projeto/projeto.service';
 import { PrismaService } from '../../prisma/prisma.service';
@@ -188,9 +188,9 @@ class RetornoDbAcompanhamentos {
 export class PPProjetosService implements ReportableService {
     constructor(
         private readonly prisma: PrismaService,
-        private readonly projetoService: ProjetoService,
-        private readonly tarefasService: TarefaService,
-        private readonly tarefasUtilsService: TarefaUtilsService
+        @Inject(forwardRef(() => ProjetoService)) private readonly projetoService: ProjetoService,
+        @Inject(forwardRef(() => TarefaService)) private readonly tarefasService: TarefaService,
+        @Inject(forwardRef(() => TarefaUtilsService)) private readonly tarefasUtilsService: TarefaUtilsService,
     ) {}
 
     async create(dto: CreateRelProjetosDto): Promise<PPProjetosRelatorioDto> {
@@ -375,7 +375,7 @@ export class PPProjetosService implements ReportableService {
         if (whereCond.whereString.match(/portfolio_id = \$([0-9]+)/)) {
             const match = whereCond.whereString.match(/portfolio_id = \$([0-9]+)/);
             portfolioParamIdx = match ? parseInt(match[1], 10) : null;
-            
+
             if (!portfolioParamIdx)
                 throw new Error('Erro interno ao extrair relatório')
         }
