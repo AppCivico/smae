@@ -132,4 +132,9 @@ export class CreateIniciativaDto {
     @IsOptional()
     @IsBoolean({ message: 'Campo ativo precisa ser do tipo Boolean' })
     ativo?: boolean;
+
+    @IsOptional()
+    @IsString({ each: true })
+    @IsArray()
+    geolocalizacao?: string[];
 }

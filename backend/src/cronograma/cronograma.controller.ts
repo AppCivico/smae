@@ -18,7 +18,10 @@ import { UpdateCronogramaDto } from './dto/update-cronograma.dto';
 @ApiTags('Cronograma')
 @Controller('cronograma')
 export class CronogramaController {
-    constructor(private readonly cronogramaService: CronogramaService, private readonly etapaService: EtapaService) {}
+    constructor(
+        private readonly cronogramaService: CronogramaService,
+        private readonly etapaService: EtapaService
+    ) {}
 
     @Post()
     @ApiBearerAuth('access-token')

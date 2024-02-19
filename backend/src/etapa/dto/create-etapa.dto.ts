@@ -150,4 +150,9 @@ export class CreateEtapaDto {
     @IsOptional()
     @IsBoolean()
     endereco_obrigatorio?: boolean;
+
+    @IsOptional()
+    @IsString({ each: true })
+    @IsArray()
+    geolocalizacao?: string[];
 }

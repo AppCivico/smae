@@ -1,6 +1,7 @@
 import { CronogramaAtrasoGrau } from 'src/common/dto/CronogramaAtrasoGrau.dto';
 import { IdSiglaDescricao } from 'src/common/dto/IdSigla.dto';
 import { IdNomeExibicaoDto } from '../../common/dto/IdNomeExibicao.dto';
+import { GeolocalizacaoDto } from '../../geo-loc/entities/geo-loc.entity';
 
 export class IdDesc {
     id: number;
@@ -26,4 +27,5 @@ export class Atividade {
     compoe_indicador_iniciativa: boolean;
     ativo: boolean;
     cronograma: CronogramaAtrasoGrau | null;
+    geolocalizacao: GeolocalizacaoDto[];
 }

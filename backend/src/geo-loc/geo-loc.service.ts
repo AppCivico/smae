@@ -299,6 +299,8 @@ export class GeoLocService {
         prismaTx: Prisma.TransactionClient,
         now: Date
     ): Promise<void> {
+        if (!dto.tokens) return;
+
         dto.validaReferencia();
 
         const inputIds: number[] = [];
