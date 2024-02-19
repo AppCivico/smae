@@ -116,7 +116,7 @@ export class ReferenciasValidasBase {
 }
 
 export class CreateGeoEnderecoReferenciaDto extends ReferenciasValidasBase {
-    token: string;
+    tokens: string[];
 
     @ApiProperty({ enum: GeoReferenciaTipo, enumName: 'GeoReferenciaTipo' })
     @IsEnum(GeoReferenciaTipo)

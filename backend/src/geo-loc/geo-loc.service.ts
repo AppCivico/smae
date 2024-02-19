@@ -293,22 +293,38 @@ export class GeoLocService {
         );
     }
 
-    private async associar(
+    async upsertGeolocalizacao(
         dto: CreateGeoEnderecoReferenciaDto,
         user: PessoaFromJwt,
-        prismaTx: Prisma.TransactionClient
-    ): Promise<number> {
-        const enderecoJwt = this.decodeToken(dto.token);
-
-        const endereco = await prismaTx.geoLocalizacao.findUniqueOrThrow({
-            where: { id: enderecoJwt.id },
-        });
-        if (endereco.tipo != dto.tipo)
-            throw new BadRequestException(
-                `Tipo da geolocalização ${endereco.tipo} precisa ser o mesmo tipo da associação ${dto.tipo}`
-            );
-
+        prismaTx: Prisma.TransactionClient,
+        now: Date
+    ): Promise<void> {
         dto.validaReferencia();
+
+        const inputIds: number[] = [];
+        for (const token of dto.tokens) {
+            const enderecoJwt = this.decodeToken(token);
+            inputIds.push(enderecoJwt.id);
+        }
+
+        const endereco = await prismaTx.geoLocalizacao.findMany({
+            where: { id: { in: inputIds } },
+            select: { id: true, tipo: true },
+        });
+        const enderecoById: Record<number, (typeof endereco)[0]> = {};
+        for (const r of endereco) {
+            enderecoById[r.id] = r;
+
+            if (r.tipo != dto.tipo)
+                throw new BadRequestException(
+                    `Tipo da geolocalização ${r.tipo} precisa ser o mesmo tipo da associação ${dto.tipo}`
+                );
+        }
+
+        for (const id of inputIds) {
+            if (!enderecoById[id]) throw new BadRequestException(`Geolocalização ID ${id} não encontrada.`);
+        }
+
         if (
             Array.isArray(dto.projeto_id) ||
             Array.isArray(dto.iniciativa_id) ||
@@ -319,21 +335,57 @@ export class GeoLocService {
             throw new BadRequestException(`Associação ${dto.referencia()} não pode ser array durante a criação.`);
         }
 
-        const record = await prismaTx.geoLocalizacaoReferencia.create({
-            data: {
-                tipo: endereco.tipo,
-                criado_em: new Date(Date.now()),
-                criador_por: user.id,
-                geo_localizacao_id: endereco.id,
-                projeto_id: dto.projeto_id,
-                iniciativa_id: dto.iniciativa_id,
-                atividade_id: dto.atividade_id,
-                meta_id: dto.meta_id,
-                etapa_id: dto.etapa_id,
+        const referencia = dto.referencia();
+
+        const prevRelationRecords = await prismaTx.geoLocalizacaoReferencia.findMany({
+            where: {
+                removido_em: null,
+
+                [referencia]: dto[referencia],
             },
-            select: { id: true },
+            select: {
+                id: true,
+                geo_localizacao: {
+                    select: { id: true },
+                },
+            },
         });
-        return record.id;
+
+        for (const end of endereco) {
+            // se já existe, n precisa recriar
+            if (prevRelationRecords.filter((r) => r.geo_localizacao.id == end.id)[0]) continue;
+
+            // cria o relacionamento
+            await prismaTx.geoLocalizacaoReferencia.create({
+                data: {
+                    tipo: dto.tipo,
+                    criado_em: new Date(Date.now()),
+                    criador_por: user.id,
+                    geo_localizacao_id: end.id,
+
+                    [referencia]: dto[referencia],
+                },
+                select: { id: true },
+            });
+        }
+
+        for (const prevRecord of prevRelationRecords) {
+            // se ainda ta na lista dos presentes, n precisa remover
+            if (inputIds.filter((r) => r == prevRecord.geo_localizacao.id)[0]) continue;
+
+            await prismaTx.geoLocalizacaoReferencia.update({
+                where: {
+                    id: prevRecord.id,
+                    removido_em: null,
+                },
+                data: {
+                    removido_em: now,
+                    removido_por: user.id,
+                },
+            });
+        }
+
+        return;
     }
 
     async carregaReferencias(dto: FindGeoEnderecoReferenciaDto): Promise<Map<number, GeolocalizacaoDto[]>> {
