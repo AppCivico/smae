@@ -121,31 +121,6 @@ onMounted(() => {
         </div>
       </div>
 
-      <div class="mb2">
-        <LabelFromYup
-          name="meta"
-          :schema="schema.fields.parametros"
-        />
-
-        <AutocompleteField
-          name="parametros.metas"
-          :controlador="{ busca: '', participantes: values.parametros.metas || ['teste'] }"
-          :grupo="MetasStore.Metas"
-          label="descricao"
-          :class="{
-            error: errors['parametros.meta'],
-            loading: MetasStore.Metas?.loading,
-          }"
-        />
-
-        <div
-          v-if="errors['parametros.tags']"
-          class="error-msg"
-        >
-          {{ errors['parametros.tags'] }}
-        </div>
-      </div>
-
       <div class="f1">
         <label
           for="mes"
@@ -196,7 +171,30 @@ onMounted(() => {
         </div>
       </div>
     </div>
+    <div class="mb2">
+      <LabelFromYup
+        name="meta"
+        :schema="schema.fields.parametros"
+      />
 
+      <AutocompleteField
+        name="parametros.metas"
+        :controlador="{ busca: '', participantes: values.parametros.metas || [] }"
+        :grupo="MetasStore.Metas"
+        label="titulo"
+        :class="{
+          error: errors['parametros.meta'],
+          loading: MetasStore.Metas?.loading,
+        }"
+      />
+
+      <div
+        v-if="errors['parametros.tags']"
+        class="error-msg"
+      >
+        {{ errors['parametros.tags'] }}
+      </div>
+    </div>
     <div class="mb2">
       <LabelFromYup
         name="tags"
