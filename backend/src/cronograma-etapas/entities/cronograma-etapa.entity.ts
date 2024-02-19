@@ -76,6 +76,7 @@ export class CEEtapaDto {
     peso: number | null;
     percentual_execucao: number | null;
     n_filhos_imediatos: number | null;
+    endereco_obrigatorio: boolean;
 
     responsaveis: CronogramaEtapaResponsavel[] | null;
     etapa_filha?: CEEtapaDto[] | null;

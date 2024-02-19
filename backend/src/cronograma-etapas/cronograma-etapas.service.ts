@@ -72,6 +72,7 @@ export class CronogramaEtapaService {
                         prazo_inicio: true,
                         prazo_termino: true,
                         titulo: true,
+                        endereco_obrigatorio: true,
                         responsaveis: {
                             select: {
                                 pessoa: {
@@ -159,6 +160,7 @@ export class CronogramaEtapaService {
                                 prazo_inicio: true,
                                 prazo_termino: true,
                                 titulo: true,
+                                endereco_obrigatorio: true,
                                 responsaveis: {
                                     select: {
                                         pessoa: {
@@ -193,6 +195,7 @@ export class CronogramaEtapaService {
                                         prazo_inicio: true,
                                         prazo_termino: true,
                                         titulo: true,
+                                        endereco_obrigatorio: true,
                                         responsaveis: {
                                             select: {
                                                 pessoa: {
@@ -278,6 +281,7 @@ export class CronogramaEtapaService {
                     percentual_execucao: cronogramaEtapa.etapa.percentual_execucao,
                     ordem: cronogramaEtapa.ordem,
                     n_filhos_imediatos: cronogramaEtapa.etapa.n_filhos_imediatos,
+                    endereco_obrigatorio: cronogramaEtapa.etapa.endereco_obrigatorio,
 
                     // Cálculo de duração e atraso
                     duracao: await this.getDuracao(
@@ -333,6 +337,7 @@ export class CronogramaEtapaService {
                                 duracao: await this.getDuracao(f.inicio_real, f.termino_real),
                                 atraso: atrasoFase,
                                 atraso_grau: atrasoFaseGrau,
+                                endereco_obrigatorio: f.endereco_obrigatorio,
                                 responsaveis: f.responsaveis.map((r) => {
                                     return {
                                         id: r.pessoa.id,
@@ -374,6 +379,7 @@ export class CronogramaEtapaService {
                                             duracao: await this.getDuracao(ff.inicio_real, ff.termino_real),
                                             atraso: atrasoSubFase,
                                             atraso_grau: atrasoSubFaseGrau,
+                                            endereco_obrigatorio: ff.endereco_obrigatorio,
 
                                             responsaveis: ff.responsaveis.map((r) => {
                                                 return {
