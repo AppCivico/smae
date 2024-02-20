@@ -3,10 +3,10 @@ import { Prisma } from '@prisma/client';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { RecordWithId } from '../common/dto/record-with-id.dto';
 import { PrismaService } from '../prisma/prisma.service';
-import { CreatePainelExternoDto } from './dto/create-painel.dto';
-import { FilterPainelExternoDto } from './dto/filter-painel.dto';
-import { UpdatePainelExternoDto } from './dto/update-painel.dto';
-import { PainelExternoDto } from './entities/painel.entity';
+import { CreatePainelExternoDto } from './dto/create-painel-externo.dto';
+import { FilterPainelExternoDto } from './dto/filter-painel-externo.dto';
+import { UpdatePainelExternoDto } from './dto/update-painel-externo.dto';
+import { PainelExternoDto } from './entities/painel-externo.entity';
 
 function getDomainFromUrl(url: string): string {
     const urlObject = new URL(url);
@@ -89,16 +89,18 @@ export class PainelExternoService {
     }
 
     async update(id: number, dto: UpdatePainelExternoDto, user: PessoaFromJwt): Promise<RecordWithId> {
-        const similarExists = await this.prisma.painelExterno.count({
-            where: {
-                titulo: { equals: dto.titulo, mode: 'insensitive' },
-                removido_em: null,
-                NOT: { id: id },
-            },
-        });
+        if (dto.titulo) {
+            const similarExists = await this.prisma.painelExterno.count({
+                where: {
+                    titulo: { equals: dto.titulo, mode: 'insensitive' },
+                    removido_em: null,
+                    NOT: { id: id },
+                },
+            });
 
-        if (similarExists > 0)
-            throw new HttpException('descricao| Nome igual ou semelhante já existe em outro registro', 400);
+            if (similarExists > 0)
+                throw new HttpException('descricao| Nome igual ou semelhante já existe em outro registro', 400);
+        }
 
         const now = new Date(Date.now());
         await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
@@ -115,7 +117,7 @@ export class PainelExternoService {
                 select: { id: true },
             });
 
-            await this.upsertGrupoPort(prismaTx, painel, dto, now, user);
+            await this.upsertGruposPainelExterno(prismaTx, painel, dto, now, user);
 
             return painel;
         });
@@ -135,7 +137,7 @@ export class PainelExternoService {
         return;
     }
 
-    private async upsertGrupoPort(
+    private async upsertGruposPainelExterno(
         prismaTx: Prisma.TransactionClient,
         row: { id: number },
         dto: UpdatePainelExternoDto,

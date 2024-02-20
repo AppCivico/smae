@@ -1,4 +1,4 @@
-import { PainelExternoDto } from '../entities/painel.entity';
+import { PainelExternoDto } from '../entities/painel-externo.entity';
 
 export class ListPainelExternoDto {
     linhas: PainelExternoDto[];

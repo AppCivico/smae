@@ -22,7 +22,7 @@ import { TipoOrgaoModule } from './tipo-orgao/tipo-orgao.module';
 import { UnidadeMedidaModule } from './unidade-medida/unidade-medida.module';
 import { UploadModule } from './upload/upload.module';
 import { GrupoPainelExternoModule } from './grupo-panel-externo/grupo-externo.module';
-import { PainelExternoModule } from './painel-externo/painel.module';
+import { PainelExternoModule } from './painel-externo/painel-externo.module';
 
 @Module({
     imports: [
