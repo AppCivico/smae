@@ -7,5 +7,6 @@ import { SubTemaService } from './subtema.service';
     imports: [PrismaModule],
     controllers: [SubTemaController],
     providers: [SubTemaService],
+    exports: [SubTemaService],
 })
 export class SubTemaModule {}
