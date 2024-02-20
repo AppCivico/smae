@@ -25,6 +25,7 @@ import { UploadModule } from './upload/upload.module';
 @Module({
     imports: [
         AuthModule,
+        GeoLocModule,
         ScheduleModule.forRoot(),
         TaskModule,
         SofApiModule,
@@ -44,7 +45,6 @@ import { UploadModule } from './upload/upload.module';
         UnidadeMedidaModule,
         TextoConfigModule,
         FeatureFlagModule,
-        GeoLocModule,
         GeoApiModule,
     ],
     controllers: [],

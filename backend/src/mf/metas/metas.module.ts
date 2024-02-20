@@ -1,8 +1,6 @@
 import { Module } from '@nestjs/common';
 import { CronogramaEtapaModule } from '../../cronograma-etapas/cronograma-etapas.module';
-import { CronogramaEtapaService } from '../../cronograma-etapas/cronograma-etapas.service';
 import { CronogramaModule } from '../../cronograma/cronograma.module';
-import { CronogramaService } from '../../cronograma/cronograma.service';
 import { EtapaModule } from '../../etapa/etapa.module';
 import { MetaModule } from '../../meta/meta.module';
 import { PrismaModule } from '../../prisma/prisma.module';
@@ -31,7 +29,7 @@ import { MfDashMetasService } from './dash/metas.service';
         CronogramaModule,
         CronogramaEtapaModule,
         EtapaModule,
-        MetaModule
+        MetaModule,
     ],
     controllers: [
         MetasController,
@@ -46,8 +44,6 @@ import { MfDashMetasService } from './dash/metas.service';
         MetasAnaliseQualiService,
         MetasRiscoService,
         MetasFechamentoService,
-        CronogramaService,
-        CronogramaEtapaService,
         MetasCronogramaService,
         MfDashMetasService
     ],
