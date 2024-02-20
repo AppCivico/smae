@@ -859,6 +859,42 @@ export class PessoaService {
             });
         }
 
+        if (filters?.espectador_de_painel_externo) {
+            this.logger.log('filtrando apenas espectador_de_painel_externo');
+            extraFilter.push({
+                PessoaPerfil: {
+                    some: {
+                        perfil_acesso: {
+                            perfil_privilegio: {
+                                some: {
+                                    privilegio: {
+                                        codigo: 'SMAE.espectador_de_projeto',
+                                    },
+                                },
+                            },
+                        },
+                    },
+                },
+            });
+        } else if (filters?.espectador_de_painel_externo === false) {
+            this.logger.log('filtrando quem não é espectador_de_painel_externo');
+            extraFilter.push({
+                PessoaPerfil: {
+                    none: {
+                        perfil_acesso: {
+                            perfil_privilegio: {
+                                some: {
+                                    privilegio: {
+                                        codigo: 'SMAE.espectador_de_projeto',
+                                    },
+                                },
+                            },
+                        },
+                    },
+                },
+            });
+        }
+
         if (filters?.espectador_de_projeto) {
             this.logger.log('filtrando apenas espectador_de_projeto');
             extraFilter.push({

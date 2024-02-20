@@ -20,6 +20,11 @@ export class FilterPessoaDto {
     @ApiProperty({ deprecated: true })
     coorderandor_responsavel_cp?: boolean;
 
+    @IsOptional()
+    @IsBoolean()
+    @Transform(({ value }: any) => value === 'true')
+    espectador_de_painel_externo?: boolean;
+
     /**
      * Filtrar por órgão?
      *
