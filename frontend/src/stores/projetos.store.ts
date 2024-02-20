@@ -6,7 +6,6 @@ import {
   ListProjetoDto,
   ProjetoDetailDto,
   ProjetoDto,
-  ProjetoPermissoesDto,
 } from '@/../../backend/src/pp/projeto/entities/projeto.entity';
 import { ListProjetoProxyPdmMetaDto } from '@/../../backend/src/pp/projeto/entities/projeto.proxy-pdm-meta.entity';
 import { DiretorioItemDto } from '@/../../backend/src/upload/dto/diretorio.dto';
@@ -280,7 +279,7 @@ export const useProjetosStore = defineStore('projetos', {
       data_aprovacao: dateTimeToDate(emFoco?.data_aprovacao),
       data_revisao: dateTimeToDate(emFoco?.data_revisao),
       equipe: emFoco?.equipe.map((x) => x.pessoa.id) || [],
-      geolocalizacao: emFoco?.geolocalizacao.map((x) => x.token) || [],
+      geolocalizacao: emFoco?.geolocalizacao?.map((x) => x.token) || [],
       meta_codigo: emFoco?.meta_codigo || '',
       orgao_gestor_id: emFoco?.orgao_gestor?.id || null,
       origem_outro: emFoco?.origem_outro || '',
