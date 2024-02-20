@@ -32,3 +32,11 @@ export default {
     </div>
   </Teleport>
 </template>
+<style lang="less">
+.editModal-wrap {
+  .largura-total {
+    width: 100% !important;
+    max-width: none !important;
+  }
+}
+</style>
