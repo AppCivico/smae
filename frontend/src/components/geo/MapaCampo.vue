@@ -479,10 +479,6 @@ const formulárioSujo = useIsFormDirty();
             </div>
           </div>
 
-          <LoadingComponent v-if="isSubmitting">
-            salvando
-          </LoadingComponent>
-
           <FormErrorsList
             :errors="errors"
             class="mb1"
@@ -494,6 +490,9 @@ const formulárioSujo = useIsFormDirty();
               type="submit"
               class="btn big"
               :disabled="isSubmitting || Object.keys(errors)?.length"
+              :class="{
+                loading: isSubmitting
+              }"
             >
               Salvar
             </button>
