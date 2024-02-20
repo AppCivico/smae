@@ -316,12 +316,12 @@ const formulárioSujo = useIsFormDirty();
           >
             <ul v-if="sugestõesDeEndereços.length">
               <li
-                v-for="(item, i) in sugestõesDeEndereços"
-                :key="i"
+                v-for="(item, j) in sugestõesDeEndereços"
+                :key="j"
                 class="mb1"
               >
                 <Field
-                  :id="`item--${i}`"
+                  :id="`item--${j}`"
                   v-model="sugestãoSelecionada"
                   type="radio"
                   class="mr1"
@@ -329,7 +329,7 @@ const formulárioSujo = useIsFormDirty();
                   :value="item"
                   @change="preencherFormulário(item)"
                 />
-                <label :for="`item--${i}`">
+                <label :for="`item--${j}`">
                   {{ item.endereco?.properties?.string_endereco }}
                 </label>
               </li>
