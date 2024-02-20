@@ -235,12 +235,11 @@ const formulárioSujo = useIsFormDirty();
         <button
           class="block like-a__text addlink tipinfo"
           type="button"
-          @click="abrirEdição(i)"
+          @click="model.splice(i, 1)"
         >
           <svg
             width="20"
             height="20"
-            @click="model.splice(i, 1)"
           ><use xlink:href="#i_remove" /></svg><div>remover endereço</div>
         </button>
       </li>
