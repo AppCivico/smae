@@ -10,7 +10,7 @@ import { useRelatoriosStore } from '@/stores/relatorios.store.ts';
 import { useTagsStore } from '@/stores/tags.store';
 import { storeToRefs } from 'pinia';
 import { Field, Form } from 'vee-validate';
-import { computed, onMounted, ref } from 'vue';
+import { watch, onMounted, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import CheckClose from '../../components/CheckClose.vue';
 
@@ -73,16 +73,13 @@ onMounted(() => {
 
   PainéisStore.getAll();
   MetasStore.getAll();
-});
 
-const filteredMetas = computed(() => {
-  if (!initialValues.value.parametros.pdm_id || !Array.isArray(MetasStore.Metas)) {
-    return [];
-  }
-  const pdm = initialValues.value.parametros.pdm_id;
-  return MetasStore.Metas.filter((meta) => meta.pdm_id === pdm);
+  watch(() => initialValues.value.parametros.pdm_id, (newId, oldId) => {
+    if (newId !== oldId) {
+      MetasStore.getfilteredMetasByPdM(newId);
+    }
+  });
 });
-
 </script>
 
 <template>
@@ -190,7 +187,7 @@ const filteredMetas = computed(() => {
         name="parametros.metas"
         :controlador="{ busca: '', participantes: values.parametros.metas || [] }"
         label="titulo"
-        :grupo="filteredMetas"
+        :grupo="MetasStore.Metas"
         :class="{
           error: errors['parametros.meta'],
           loading: MetasStore.Metas?.loading,
