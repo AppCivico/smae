@@ -34,7 +34,7 @@ export class GrupoPainelExternoService {
                 });
                 if (exists) throw new BadRequestException('Título já está em uso.');
 
-                const pComPriv = await this.prisma.view_pessoa_espectador_de_projeto.findMany({
+                const pComPriv = await this.prisma.view_pessoa_espectador_de_painel_externo.findMany({
                     where: {
                         pessoa_id: { in: dto.participantes },
                     },
