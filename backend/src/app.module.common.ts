@@ -21,6 +21,7 @@ import { TipoDocumentoModule } from './tipo-documento/tipo-documento.module';
 import { TipoOrgaoModule } from './tipo-orgao/tipo-orgao.module';
 import { UnidadeMedidaModule } from './unidade-medida/unidade-medida.module';
 import { UploadModule } from './upload/upload.module';
+import { GrupoPainelExternoModule } from './grupo-panel-externo/grupo-externo.module';
 
 @Module({
     imports: [
@@ -46,6 +47,7 @@ import { UploadModule } from './upload/upload.module';
         TextoConfigModule,
         FeatureFlagModule,
         GeoApiModule,
+        GrupoPainelExternoModule
     ],
     controllers: [],
     providers: [],
