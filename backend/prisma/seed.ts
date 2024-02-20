@@ -2,7 +2,7 @@ import { PrismaClient } from '@prisma/client';
 import { ListaDePrivilegios } from '../src/common/ListaDePrivilegios';
 const prisma = new PrismaClient({ log: ['query'] });
 
-const ModuloDescricao = {
+const ModuloDescricao: Record<string, string> = {
     CadastroOrgao: 'Cadastro de Órgão',
     CadastroTipoOrgao: 'Cadastro de Tipo de Órgão',
     CadastroPessoa: 'Cadastro de pessoas',
@@ -42,9 +42,8 @@ const ModuloDescricao = {
     CadastroEtapa: '',
     CadastroGrupoPaineisExternas: '',
 } as const;
-type ListaDeModulos = keyof typeof ModuloDescricao;
 
-const PrivConfig: Record<Partial<ListaDeModulos>, false | [ListaDePrivilegios, string][]> = {
+const PrivConfig: Record<string, false | [ListaDePrivilegios, string][]> = {
     CadastroCargo: false,
     CadastroCoordenadoria: false,
     CadastroDepartamento: false,
