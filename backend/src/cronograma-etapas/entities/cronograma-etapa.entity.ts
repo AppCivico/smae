@@ -1,3 +1,5 @@
+import { GeolocalizacaoDto } from "../../geo-loc/entities/geo-loc.entity";
+
 export enum CronogramaEtapaAtrasoGrau {
     Concluido,
     Neutro,
@@ -77,6 +79,7 @@ export class CEEtapaDto {
     percentual_execucao: number | null;
     n_filhos_imediatos: number | null;
     endereco_obrigatorio: boolean;
+    geolocalizacao: GeolocalizacaoDto[]
 
     responsaveis: CronogramaEtapaResponsavel[] | null;
     etapa_filha?: CEEtapaDto[] | null;
