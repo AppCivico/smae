@@ -22,6 +22,7 @@ import { TipoOrgaoModule } from './tipo-orgao/tipo-orgao.module';
 import { UnidadeMedidaModule } from './unidade-medida/unidade-medida.module';
 import { UploadModule } from './upload/upload.module';
 import { GrupoPainelExternoModule } from './grupo-panel-externo/grupo-externo.module';
+import { PainelExternoModule } from './painel-externo/painel.module';
 
 @Module({
     imports: [
@@ -47,7 +48,8 @@ import { GrupoPainelExternoModule } from './grupo-panel-externo/grupo-externo.mo
         TextoConfigModule,
         FeatureFlagModule,
         GeoApiModule,
-        GrupoPainelExternoModule
+        GrupoPainelExternoModule,
+        PainelExternoModule
     ],
     controllers: [],
     providers: [],
