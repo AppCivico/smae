@@ -1,5 +1,6 @@
 <script setup>
 import { default as AutocompleteField } from '@/components/AutocompleteField.vue';
+import MapaCampo from '@/components/geo/MapaCampo.vue';
 import { fase as schema } from '@/consts/formSchemas';
 import { router } from '@/router';
 import {
@@ -7,7 +8,7 @@ import {
 } from '@/stores';
 import { storeToRefs } from 'pinia';
 import { Field, Form } from 'vee-validate';
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 import { useRoute } from 'vue-router';
 import temDescendenteEmOutraRegião from './auxiliares/temDescendenteEmOutraRegiao.ts';
 
@@ -187,6 +188,25 @@ function maskDate(el) {
   }
 }
 
+const valoresIniciais = computed(() => (currentFase.value?.loading
+  || currentFase.value?.error
+  || !oktogo.value
+  ? {}
+  : {
+    ...currentFase.value,
+    geolocalizacao: currentFase.value?.geolocalizacao?.map((x) => x.token) || [],
+  }));
+
+const geolocalizaçãoPorToken = computed(() => (currentFase.value?.loading
+  || currentFase.value?.error
+  || !oktogo.value
+  ? {}
+  : currentFase.value?.geolocalizacao?.reduce((acc, cur) => {
+    acc[cur.token] = cur;
+    return acc;
+  }, {})
+));
+
 (async () => {
   await EtapasStore.getById(cronograma_id, etapa_id);
   const p0 = singleEtapa.value.etapa;
@@ -256,7 +276,7 @@ function maskDate(el) {
       <Form
         v-slot="{ errors, isSubmitting, values }"
         :validation-schema="schema"
-        :initial-values="currentFase"
+        :initial-values="valoresIniciais"
         @submit="onSubmit"
       >
         <div>
@@ -441,6 +461,46 @@ function maskDate(el) {
           <div class="error-msg">
             {{ errors.regiao_id }}
           </div>
+        </div>
+
+        <div class="mb1">
+          <Field
+            id="endereco_obrigatorio"
+            name="endereco_obrigatorio"
+            type="checkbox"
+            :value="true"
+            :unchecked-value="false"
+            class="inputcheckbox"
+          />
+          <label
+            for="endereco_obrigatorio"
+            :class="{ 'error': errors.endereco_obrigatorio }"
+          >
+            Endereço obrigatório
+          </label>
+          <div class="error-msg">
+            {{ errors.endereco_obrigatorio }}
+          </div>
+        </div>
+
+        <div
+          v-if="values.endereco_obrigatorio"
+          class="mb1"
+        >
+          <legend class="label mt2 mb1legend">
+            Localização
+          </legend>
+
+          <MapaCampo
+            v-model="values.geolocalizacao"
+            name="geolocalizacao"
+            :geolocalização-por-token="geolocalizaçãoPorToken"
+          />
+
+          <ErrorMessage
+            name="geolocalizacao"
+            class="error-msg"
+          />
         </div>
 
         <hr class="mt2 mb2">
