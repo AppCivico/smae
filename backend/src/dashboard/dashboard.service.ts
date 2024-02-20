@@ -69,7 +69,7 @@ export class DashboardService {
         if (painelExterno.length === 0) return;
 
         const opcoes: DashboardOptionDto[] = painelExterno.map((r) => {
-            const url = new URL('https://' + hostname + '/api/dashboard-iframe');
+            const url = new URL('https://' + hostname + '/api/dashboard/iframe');
             url.searchParams.append('url', r.link);
 
             return {
