@@ -1,14 +1,17 @@
 <script setup>
 import { etapaDeMonitoramento as schema } from '@/consts/formSchemas';
+import MapaCampo from '@/components/geo/MapaCampo.vue';
 import fieldToDate from '@/helpers/fieldToDate';
 import { router } from '@/router';
 import { useAlertStore } from '@/stores/alert.store';
 import { useCiclosStore } from '@/stores/ciclos.store';
 import { useEditModalStore } from '@/stores/editModal.store';
 import { storeToRefs } from 'pinia';
-import { Field, Form } from 'vee-validate';
+import { ErrorMessage, Field, Form } from 'vee-validate';
 import { useRoute } from 'vue-router';
+import { computed, defineOptions } from 'vue';
 
+defineOptions({ inheritAttrs: false });
 const editModalStore = useEditModalStore();
 const alertStore = useAlertStore();
 const route = useRoute();
@@ -19,6 +22,26 @@ const { etapa_id } = route.params;
 const CiclosStore = useCiclosStore();
 const { SingleEtapa } = storeToRefs(CiclosStore);
 CiclosStore.getEtapaById(cron_id, etapa_id);
+
+const geolocalizaçãoPorToken = computed(() => (
+  SingleEtapa.value?.loading
+    || SingleEtapa.value?.error
+    || !SingleEtapa.value?.id
+    ? {}
+    : SingleEtapa.value?.geolocalizacao?.reduce((acc, cur) => {
+      acc[cur.token] = cur;
+      return acc;
+    }, {})
+));
+
+const valoresIniciais = computed(() => (SingleEtapa.value?.loading
+  || SingleEtapa.value?.error
+  || !SingleEtapa.value?.id
+  ? {}
+  : {
+    ...SingleEtapa.value,
+    geolocalizacao: SingleEtapa.value?.geolocalizacao?.map((x) => x.token) || [],
+  }));
 
 async function onSubmit(values) {
   try {
@@ -97,7 +120,7 @@ function maskDate(el) {
     <Form
       v-slot="{ errors, isSubmitting, values }"
       :validation-schema="schema"
-      :initial-values="SingleEtapa"
+      :initial-values="valoresIniciais"
       @submit="onSubmit"
     >
       <div class="flex g2 mb2">
@@ -163,6 +186,29 @@ function maskDate(el) {
           </div>
         </div>
       </div>
+
+      <div
+        v-if="values.endereco_obrigatorio"
+        class="mb1"
+      >
+        <legend class="label mt2 mb1legend">
+          Localização
+        </legend>
+
+        <MapaCampo
+          v-model="values.geolocalizacao"
+          name="geolocalizacao"
+          :geolocalização-por-token="geolocalizaçãoPorToken"
+        />
+
+        <ErrorMessage
+          name="geolocalizacao"
+          class="error-msg"
+        />
+      </div>
+
+      <FormErrorsList :errors="errors" />
+
       <div class="flex spacebetween center mb2">
         <hr class="mr2 f1">
         <button
