@@ -60,7 +60,10 @@ if (!Array.isArray(organs.value) || !organs.value.length) {
     </router-link>
   </div>
 
-  <div class="boards">
+  <div
+    v-if="emFoco"
+    class="boards"
+  >
     <div class="flex g2 mb1 flexwrap">
       <dl
         v-if="emFoco?.codigo"
