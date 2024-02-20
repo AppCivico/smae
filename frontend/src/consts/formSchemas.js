@@ -288,6 +288,30 @@ export const fase = object()
       .required('Preencha o título'),
   });
 
+export const geoLocalização = object({
+  cep: string()
+    .label('CEP')
+    .max(1024)
+    .nullable(),
+  rua: string()
+    .label('Logradouro')
+    .max(1024)
+    .required()
+    .nullable(),
+  numero: string()
+    .label('Número')
+    .max(1024)
+    .nullable(),
+  tipo: string()
+    .label('Tipo')
+    .max(1024)
+    .nullable(),
+  termo_de_busca: string()
+    .label('Termo de busca')
+    .min(3)
+    .nullable(),
+});
+
 export const geraçãoDeVariávelComposta = (tiposDeOperações = []) => object()
   .shape({
     codigo: string()
