@@ -10,7 +10,7 @@ import { useRelatoriosStore } from '@/stores/relatorios.store.ts';
 import { useTagsStore } from '@/stores/tags.store';
 import { storeToRefs } from 'pinia';
 import { Field, Form } from 'vee-validate';
-import { computed, onMounted } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import CheckClose from '../../components/CheckClose.vue';
 
@@ -25,7 +25,7 @@ const route = useRoute();
 const router = useRouter();
 const { loading } = storeToRefs(relatoriosStore);
 
-const initialValues = computed(() => ({
+const initialValues = ref({
   fonte: 'MonitoramentoMensal',
   parametros: {
     tipo: 'Analitico',
@@ -36,7 +36,7 @@ const initialValues = computed(() => ({
     paineis: [],
   },
   salvar_arquivo: false,
-}));
+});
 
 async function onSubmit(values) {
   const carga = values;
@@ -74,6 +74,15 @@ onMounted(() => {
   PainéisStore.getAll();
   MetasStore.getAll();
 });
+
+const filteredMetas = computed(() => {
+  if (!initialValues.value.parametros.pdm_id || !Array.isArray(MetasStore.Metas)) {
+    return [];
+  }
+  const pdm = initialValues.value.parametros.pdm_id;
+  return MetasStore.Metas.filter((meta) => meta.pdm_id === pdm);
+});
+
 </script>
 
 <template>
@@ -180,8 +189,8 @@ onMounted(() => {
       <AutocompleteField
         name="parametros.metas"
         :controlador="{ busca: '', participantes: values.parametros.metas || [] }"
-        :grupo="MetasStore.Metas"
         label="titulo"
+        :grupo="filteredMetas"
         :class="{
           error: errors['parametros.meta'],
           loading: MetasStore.Metas?.loading,
