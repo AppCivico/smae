@@ -72,7 +72,10 @@ async function checkClose() {
 }
 </script>
 <template>
-  <pre v-ScrollLockDebug="'formulárioSujo'">{{ formulárioSujo }}</pre>
+  <pre
+    v-ScrollLockDebug="'formulárioSujo'"
+    class="f1"
+  >{{ formulárioSujo }}</pre>
 
   <button
     class="btn round ml2"
