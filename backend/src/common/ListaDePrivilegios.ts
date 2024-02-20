@@ -86,4 +86,7 @@ export type ListaDePrivilegios =
     | 'CadastroGrupoPortfolio.administrador'
     | 'SMAE.loga_direto_na_analise'
     | 'SMAE.espectador_de_projeto'
+    | 'SMAE.espectador_de_painel_externo'
+    | 'CadastroGrupoPainelExterno.administrador'
+    | 'CadastroGrupoPainelExterno.administrador_no_orgao'
     | 'SMAE.acesso_bi';
