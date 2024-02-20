@@ -37,9 +37,52 @@ export class DashboardService {
             if (user.hasSomeRoles(['Reports.dashboard_portfolios'])) {
                 await this.reportProjetos(config, r, liberados);
             }
+
+            if (user.hasSomeRoles(['SMAE.espectador_de_painel_externo'])) {
+                await this.painelExterno(user, liberados);
+            }
         }
 
         return liberados;
+    }
+
+    private async painelExterno(user: PessoaFromJwt, liberados: RetornoLinhasDashboardLinhasDto[]) {
+        const painelExterno = await this.prisma.painelExterno.findMany({
+            where: {
+                removido_em: null,
+                PainelExternoGrupoPainelExterno: {
+                    some: {
+                        removido_em: null,
+                        GrupoPainelExterno: {
+                            removido_em: null,
+                            GrupoPainelExternoPessoa: {
+                                some: {
+                                    removido_em: null,
+                                    pessoa_id: user.id,
+                                },
+                            },
+                        },
+                    },
+                },
+            },
+        });
+
+        if (painelExterno.length === 0) return;
+
+        const opcoes: DashboardOptionDto[] = painelExterno.map((r) => {
+            return {
+                id: r.id,
+                titulo: r.titulo,
+                url: r.link,
+            };
+        });
+
+        liberados.push({
+            id: -1,
+            titulo: 'Painéis Externos',
+            opcoes_titulo: 'Escolha o Painel',
+            opcoes: opcoes,
+        });
     }
 
     private async reportProjetos(config: any, r: MetabasePermissao, liberados: RetornoLinhasDashboardLinhasDto[]) {
