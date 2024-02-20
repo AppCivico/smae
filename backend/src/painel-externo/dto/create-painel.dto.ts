@@ -1,4 +1,4 @@
-import { ArrayMaxSize, ArrayMinSize, IsArray, IsInt, IsOptional, IsString, IsUrl, MaxLength } from 'class-validator';
+import { ArrayMaxSize, IsArray, IsInt, IsOptional, IsString, IsUrl, MaxLength } from 'class-validator';
 
 export class CreatePainelExternoDto {
     @IsString()
@@ -30,7 +30,6 @@ export class CreatePainelExternoDto {
 
     @IsArray()
     @IsOptional()
-    @ArrayMinSize(1, { message: '$property| grupo(s): precisa ter pelo menos um item' })
     @ArrayMaxSize(100, { message: '$property| grupo(s): precisa ter no máximo 100 items' })
     @IsInt({ each: true, message: '$property| Cada item precisa ser um número inteiro' })
     grupos?: number[];
