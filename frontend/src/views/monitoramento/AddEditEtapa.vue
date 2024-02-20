@@ -155,7 +155,7 @@ function maskDate(el) {
             min="0"
             max="100"
             class="inputtext light mb1"
-            :value="etapa_id ? singleEtapa?.percentual_execucao : percentual_execucao"
+            :value="etapa_id ? SingleEtapa?.percentual_execucao : percentual_execucao"
             :class="{ 'error': errors.percentual_execucao }"
           />
           <div class="error-msg">
