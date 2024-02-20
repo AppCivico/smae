@@ -6,6 +6,10 @@ import { useRoute, useRouter } from 'vue-router';
 const editModalStore = useEditModalStore();
 
 const props = defineProps({
+  apenasEmitir: {
+    type: Boolean,
+    default: false,
+  },
   apenasModal: {
     type: Boolean,
     default: false,
@@ -56,10 +60,13 @@ async function checkClose() {
   const destino = () => {
     emit('close');
 
-    editModalStore.$reset();
+    if (!props.apenasEmitir) {
+      editModalStore.$reset();
+    }
+
     alertStore.$reset();
 
-    if (!props.apenasModal) {
+    if (!props.apenasModal && !props.apenasEmitir) {
       router.push(caminhoParaSaída);
     }
   };
