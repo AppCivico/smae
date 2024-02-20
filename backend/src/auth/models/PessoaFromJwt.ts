@@ -22,10 +22,13 @@ export class PessoaFromJwt extends PessoaFromJwtBase {
         return fakeUser;
     }
 
-    public async assertHasMetaRespAccess(meta_id: number, prisma: Prisma.TransactionClient) {
-        const metas = await this.getMetaIdsFromAnyModel(prisma.view_meta_pessoa_responsavel);
+    public async assertHasMetaRespAccessNaCp(meta_id: number, prisma: Prisma.TransactionClient) {
+        const metas = await this.getMetaIdsFromAnyModel(prisma.view_meta_pessoa_responsavel_na_cp);
         if (!metas.includes(+meta_id))
-            throw new HttpException(`Seu perfil no momento não pode acessar a meta ${meta_id}`, 400);
+            throw new HttpException(
+                `Seu perfil no momento não é responsável CP na meta ID ${meta_id}. Ação não pode ser efetuada.`,
+                400
+            );
 
         return;
     }

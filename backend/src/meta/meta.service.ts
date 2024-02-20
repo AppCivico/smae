@@ -432,7 +432,7 @@ export class MetaService {
 
     async update(id: number, updateMetaDto: UpdateMetaDto, user: PessoaFromJwt) {
         if (!user.hasSomeRoles(['CadastroMeta.inserir'])) {
-            await user.assertHasMetaRespAccess(id, this.prisma);
+            await user.assertHasMetaRespAccessNaCp(id, this.prisma);
         }
 
         const loadMeta = await this.prisma.meta.findFirstOrThrow({
@@ -634,7 +634,7 @@ export class MetaService {
     async remove(id: number, user: PessoaFromJwt) {
         if (!user.hasSomeRoles(['CadastroMeta.inserir'])) {
             // logo, só pode editar se for responsável
-            await user.assertHasMetaRespAccess(id, this.prisma);
+            await user.assertHasMetaRespAccessNaCp(id, this.prisma);
         }
 
         return await this.prisma.$transaction(
