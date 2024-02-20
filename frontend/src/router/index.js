@@ -11,7 +11,8 @@ import { Home } from '@/views';
 
 import { Login, LostPassword, NewPassword } from '@/views/auth';
 import {
-  ListCiclos, ListCiclosPassados,
+  ListCiclos,
+  ListCiclosPassados,
   ListMonitoramentoMetas,
   ListMonitoramentoMetasCronograma,
   ListMonitoramentoMetasEvolucao,
