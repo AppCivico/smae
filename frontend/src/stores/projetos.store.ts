@@ -280,6 +280,7 @@ export const useProjetosStore = defineStore('projetos', {
       data_aprovacao: dateTimeToDate(emFoco?.data_aprovacao),
       data_revisao: dateTimeToDate(emFoco?.data_revisao),
       equipe: emFoco?.equipe.map((x) => x.pessoa.id) || [],
+      geolocalizacao: emFoco?.geolocalizacao.map((x) => x.token) || [],
       meta_codigo: emFoco?.meta_codigo || '',
       orgao_gestor_id: emFoco?.orgao_gestor?.id || null,
       origem_outro: emFoco?.origem_outro || '',
@@ -299,6 +300,13 @@ export const useProjetosStore = defineStore('projetos', {
       // eslint-disable-next-line max-len
       responsaveis_no_orgao_gestor: emFoco?.responsaveis_no_orgao_gestor?.map((x) => x.id) || null,
     }),
+
+    geolocalizaçãoPorToken: ({ emFoco }) => (Array.isArray(emFoco?.geolocalizacao)
+      ? emFoco?.geolocalizacao.reduce((acc, cur) => {
+        acc[cur.token] = cur;
+        return acc;
+      }, {})
+      : {}),
 
     arquivosPorId: ({ arquivos }: Estado) => arquivos
       .reduce((acc, cur) => ({ ...acc, [cur.id]: cur }), {}),

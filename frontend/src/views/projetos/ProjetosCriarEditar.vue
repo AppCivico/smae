@@ -1,11 +1,11 @@
 <script setup>
 import AutocompleteField from '@/components/AutocompleteField2.vue';
 import CampoDePessoasComBuscaPorOrgao from '@/components/CampoDePessoasComBuscaPorOrgao.vue';
+import MapaCampo from '@/components/geo/MapaCampo.vue';
 import MaskedFloatInput from '@/components/MaskedFloatInput.vue';
 import MenuDeMudançaDeStatusDeProjeto from '@/components/projetos/MenuDeMudançaDeStatusDeProjeto.vue';
 import { projeto as schema } from '@/consts/formSchemas';
 import statuses from '@/consts/projectStatuses';
-import tiposDeLogradouro from '@/consts/tiposDeLogradouro';
 import arrayToValueAndLabel from '@/helpers/arrayToValueAndLabel';
 import requestS from '@/helpers/requestS.ts';
 import truncate from '@/helpers/truncate';
@@ -46,6 +46,7 @@ const {
   chamadasPendentes,
   emFoco,
   erro,
+  geolocalizaçãoPorToken,
   itemParaEdição,
   pdmsSimplificados,
   pdmsPorId,
@@ -199,7 +200,9 @@ async function buscarPossíveisColaboradores() {
   }
 }
 
-async function onSubmit(_, { controlledValues: valores }) {
+// PRA-FAZER: não usando o `controlledValues` devido à algum erro no campo de
+// mapa. Trazer de volta.
+async function onSubmit(valores) {
   const carga = valores;
 
   switch (true) {
@@ -753,136 +756,11 @@ watch(emFoco, () => {
         Localização
       </legend>
 
-      <div class="flex g2">
-        <div class="f1 mb1">
-          <LabelFromYup
-            class="tc300"
-            name="regiao_id"
-            :schema="schema"
-          />
-          <Field
-            name="regiao_id"
-            as="select"
-            class="inputtext light mb1"
-            :class="{
-              error: errors.regiao_id,
-              loading: ÓrgãosStore.organs.loading,
-            }"
-            :disabled="!regiõesDisponíveisNoPortfolio(values.portfolio_id).length"
-            @change="() => {
-              setFieldValue('logradouro_cep', '');
-              setFieldValue('logradouro_tipo', '');
-              setFieldValue('logradouro_nome', '');
-              setFieldValue('logradouro_numero', '');
-            }"
-          >
-            <option :value="0">
-              Selecionar
-            </option>
-            <option
-              v-for="item in
-                regiõesDisponíveisNoPortfolio(values.portfolio_id) || []"
-              :key="item.id"
-              :value="item.id"
-              :title="item.descricao?.length > 36 ? item.descricao : null"
-            >
-              {{ truncate(item.descricao, 36) }}
-            </option>
-          </Field>
-
-          <ErrorMessage
-            name="regiao_id"
-            class="error-msg"
-          />
-        </div>
-
-        <div class="f1 mb1">
-          <LabelFromYup
-            :schema="schema"
-            name="logradouro_cep"
-            as="legend"
-            class="label tc300"
-          />
-
-          <Field
-            name="logradouro_cep"
-            type="text"
-            class="inputtext light mb1"
-            :disabled="!values.regiao_id"
-          />
-          <ErrorMessage
-            class="error-msg mb1"
-            name="logradouro_cep"
-          />
-        </div>
-
-        <div class="f1 mb1">
-          <LabelFromYup
-            :schema="schema"
-            name="logradouro_tipo"
-            as="legend"
-            class="label tc300"
-          />
-
-          <Field
-            name="logradouro_tipo"
-            class="inputtext light mb1"
-            :disabled="!values.regiao_id"
-            as="select"
-          >
-            <option :value="null" />
-            <option
-              v-for="item in tiposDeLogradouro"
-              :key="item"
-              :value="item"
-            >
-              {{ item }}
-            </option>
-          </Field>
-          <ErrorMessage
-            class="error-msg mb1"
-            name="logradouro_tipo"
-          />
-        </div>
-      </div>
-      <div class="flex g2">
-        <div class="f2 mb1">
-          <LabelFromYup
-            :schema="schema"
-            name="logradouro_nome"
-            as="legend"
-            class="label tc300"
-          />
-          <Field
-            name="logradouro_nome"
-            type="text"
-            class="inputtext light mb1"
-            :disabled="!values.regiao_id"
-          />
-          <ErrorMessage
-            class="error-msg mb1"
-            name="logradouro_nome"
-          />
-        </div>
-        <div class="f1 mb1">
-          <LabelFromYup
-            :schema="schema"
-            name="logradouro_numero"
-            as="legend"
-            class="label tc300"
-          />
-          <Field
-            name="logradouro_numero"
-            type="text"
-            class="inputtext light mb1"
-            :disabled="!values.regiao_id"
-          />
-          <ErrorMessage
-            class="error-msg mb1"
-            name="logradouro_numero"
-          />
-        </div>
-      </div>
+      <MapaCampo
+        v-model="values.geolocalizacao"
+        name="geolocalizacao"
+        :geolocalização-por-token="geolocalizaçãoPorToken"
+      />
     </div>
 
     <template v-if="projetoId">
