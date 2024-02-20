@@ -11,8 +11,16 @@ export const useRegionsStore = defineStore({
     regions: {},
     tempRegions: {},
     singleTempRegions: {},
+    camadas: null,
+    chamadasPendentes: {
+      camadas: false,
+    },
+    erros: {
+      camadas: null,
+    },
   }),
   actions: {
+    // PRA-FAZER: trocar essa função redundante por $reset()
     clear() {
       this.regions = {};
       this.tempRegions = {};
@@ -149,6 +157,30 @@ export const useRegionsStore = defineStore({
         }
       } catch (error) {
         this.tempRegions = { error };
+      }
+    },
+    async buscarCamadas(ids) {
+      this.chamadasPendentes.camadas = true;
+      this.erros.camadas = null;
+      try {
+        const { linhas } = await this.requestS.get(`${baseUrl}/camada`, { camada_ids: ids });
+
+        if (!this.camadas) {
+          this.camadas = {};
+        }
+
+        if (!Array.isArray(linhas)) {
+          throw new Error('resposta de `/camadas` fora do padrão esperado');
+        } else {
+          for (let i = 0; i < linhas.length; i += 1) {
+            const camada = linhas[i];
+            this.camadas[camada.id] = camada;
+          }
+        }
+      } catch (error) {
+        this.erros.camadas = error;
+      } finally {
+        this.chamadasPendentes.camadas = false;
       }
     },
   },
