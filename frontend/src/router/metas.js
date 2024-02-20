@@ -12,7 +12,8 @@ import {
   SingleCronograma,
   SingleEvolucao,
   SingleIniciativa,
-  SingleMeta, SinglePainelMeta,
+  SingleMeta,
+  SinglePainelMeta,
 } from '@/views/metas';
 import {
   AddEditCusteio,
