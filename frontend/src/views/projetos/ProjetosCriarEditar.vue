@@ -751,7 +751,10 @@ watch(emFoco, () => {
       </div>
     </div>
 
-    <div class="mb1">
+    <div
+      v-if="projetoId"
+      class="mb1"
+    >
       <legend class="label mt2 mb1legend">
         Localização
       </legend>
@@ -764,8 +767,6 @@ watch(emFoco, () => {
     </div>
 
     <template v-if="projetoId">
-      <hr class="mb1 f1">
-
       <div class="g2 mb2">
         <legend class="label mt2 mb1">
           {{ schema.fields.fonte_recursos.spec.label }}
