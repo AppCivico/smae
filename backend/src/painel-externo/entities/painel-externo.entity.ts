@@ -4,4 +4,5 @@ export class PainelExternoDto {
     titulo: string;
     descricao: string | null;
     link: string;
+    grupos: number[]
 }

@@ -73,7 +73,7 @@ export class PainelExternoService {
     }
 
     async findAll(filters: FilterPainelExternoDto, user: PessoaFromJwt): Promise<PainelExternoDto[]> {
-        return await this.prisma.painelExterno.findMany({
+        const rows = await this.prisma.painelExterno.findMany({
             where: {
                 id: filters.id,
                 removido_em: null,
@@ -83,8 +83,21 @@ export class PainelExternoService {
                 titulo: true,
                 descricao: true,
                 link: true,
+                PainelExternoGrupoPainelExterno: {
+                    where: { removido_em: null },
+                    select: {
+                        grupo_painel_externo_id: true,
+                    },
+                },
             },
             orderBy: { titulo: 'asc' },
+        });
+
+        return rows.map((r) => {
+            return {
+                ...{ ...r, PainelExternoGrupoPainelExterno: undefined },
+                grupos: r.PainelExternoGrupoPainelExterno.map((rr) => rr.grupo_painel_externo_id),
+            };
         });
     }
 
