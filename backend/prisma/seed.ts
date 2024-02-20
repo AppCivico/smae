@@ -210,6 +210,7 @@ const PrivConfig: Record<string, false | [ListaDePrivilegios, string][]> = {
         ['SMAE.superadmin', 'Faz parte do perfil Administrador Geral'],
         ['SMAE.loga_direto_na_analise', 'Já entra direto na parte de análise'],
         ['SMAE.acesso_bi', 'Acesso total aos BI de projetos/metas'],
+        ['SMAE.espectador_de_painel_externo', 'Observador de painel externo'],
     ],
     Projeto: [
         ['Projeto.administrar_portfolios', 'Administrar todos os portfólios, sem acesso aos projetos'],
