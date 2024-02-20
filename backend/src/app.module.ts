@@ -71,11 +71,11 @@ import { AppModulePdm } from './app.module.pdm';
         {
             provide: APP_FILTER,
             useClass: ErrorFilter,
-        },
-        {
-            provide: APP_INTERCEPTOR,
-            useClass: ContentInterceptor,
-        },
+            },
+            {
+                provide: APP_INTERCEPTOR,
+                useClass: ContentInterceptor,
+            },
         {
             provide: APP_PIPE,
             useValue: new TrimPipe(),
