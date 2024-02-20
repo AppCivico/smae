@@ -239,7 +239,7 @@ const formulárioSujo = useIsFormDirty();
 
           <CheckClose
             :formulário-sujo="formulárioSujo"
-            :apenas-modal="true"
+            :apenas-emitir="true"
             @close="ediçãoDeEndereçoAberta = -1"
           />
         </div>
