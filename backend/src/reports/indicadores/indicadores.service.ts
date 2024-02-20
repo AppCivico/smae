@@ -243,7 +243,8 @@ export class IndicadoresService implements ReportableService {
 
                 await this.streamRowsInto(null, stream, prismaTxn);
             } else if (dto.periodo == 'Semestral' && dto.tipo == 'Consolidado') {
-                const base_ano = dto.semestre == 'Primeiro' ? anoInicio : anoInicio - 1;
+                const ano_to_use = dto.ano ? dto.ano : anoInicio;
+                const base_ano = dto.semestre == 'Primeiro' ? ano_to_use : ano_to_use - 1;
                 const base_mes = dto.semestre == 'Primeiro' ? base_ano + '-06-01' : base_ano + '-12-01';
 
                 await prismaTxn.$queryRawUnsafe(
