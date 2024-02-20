@@ -5,6 +5,7 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { MetaService } from '../meta/meta.service';
 import { ProjetoService } from '../pp/projeto/projeto.service';
 import { DashboardOptionDto, RetornoLinhasDashboardLinhasDto } from './entities/dashboard.entity';
+import { MetabasePermissao } from '@prisma/client';
 
 @Injectable()
 export class DashboardService {
@@ -29,58 +30,29 @@ export class DashboardService {
             const config = r.configuracao && typeof r.configuracao == 'object' ? r.configuracao.valueOf() : false;
             if (config === false) continue;
 
-            if (config && (config as any)['params'] && (config as any)['params']['projetos_ids']) {
-                if (memory['projetos_ids'] === undefined) {
-                    memory['projetos_ids'] = (await this.projetoService.findAllIds(user)).map((p) => p.id);
-                    if (memory['projetos_ids'].length == 0) memory['projetos_ids'] = [-1];
-                }
-
-                (config as any)['params']['projetos_ids'] = memory['projetos_ids'];
+            if (user.hasSomeRoles(['Reports.dashboard_pdm'])) {
+                await this.reportPdm(config, memory, user);
             }
 
-            if (config && (config as any)['params'] && (config as any)['params']['metas_ids']) {
-                if (memory['metas_ids'] === undefined) {
-                    memory['metas_ids'] = (await this.metaService.findAllIds(user)).map((p) => p.id);
-                    if (memory['metas_ids'].length == 0) memory['metas_ids'] = [-1];
-                }
-
-                (config as any)['params']['metas_ids'] = memory['metas_ids'];
+            if (user.hasSomeRoles(['Reports.dashboard_portfolios'])) {
+                await this.reportProjetos(config, r, liberados);
             }
+        }
 
-            if (config && (config as any)['params'] && (config as any)['params']['pdm_id']) {
-                const pdms = await this.prisma.pdm.findMany({
-                    orderBy: [{ ativo: 'desc' }, { nome: 'asc' }],
-                    select: { id: true, nome: true },
-                });
+        return liberados;
+    }
 
-                const opcoes: DashboardOptionDto[] = [];
-                for (const pdm of pdms) {
-                    (config as any)['params']['pdm_id'] = pdm.id;
+    private async reportProjetos(config: any, r: MetabasePermissao, liberados: RetornoLinhasDashboardLinhasDto[]) {
+        if (config && config['params'] && config['params']['pdm_id']) {
+            const pdms = await this.prisma.pdm.findMany({
+                orderBy: [{ ativo: 'desc' }, { nome: 'asc' }],
+                select: { id: true, nome: true },
+            });
 
-                    const jwt = sign(
-                        {
-                            ...config,
-                        },
-                        r.metabase_token,
-                        { algorithm: 'HS256', expiresIn: 86400 }
-                    );
-                    const url =
-                        r.metabase_url + '/embed/dashboard/' + jwt + '#theme=transparent&bordered=false&titled=false';
+            const opcoes: DashboardOptionDto[] = [];
+            for (const pdm of pdms) {
+                config['params']['pdm_id'] = pdm.id;
 
-                    opcoes.push({
-                        titulo: pdm.nome,
-                        url: url,
-                        id: pdm.id,
-                    });
-                }
-
-                liberados.push({
-                    id: r.id,
-                    titulo: r.titulo,
-                    opcoes_titulo: 'Programa de Metas',
-                    opcoes: opcoes,
-                });
-            } else {
                 const jwt = sign(
                     {
                         ...config,
@@ -91,14 +63,54 @@ export class DashboardService {
                 const url =
                     r.metabase_url + '/embed/dashboard/' + jwt + '#theme=transparent&bordered=false&titled=false';
 
-                liberados.push({
-                    id: r.id,
-                    titulo: r.titulo,
+                opcoes.push({
+                    titulo: pdm.nome,
                     url: url,
+                    id: pdm.id,
                 });
             }
+
+            liberados.push({
+                id: r.id,
+                titulo: r.titulo,
+                opcoes_titulo: 'Programa de Metas',
+                opcoes: opcoes,
+            });
+        } else {
+            const jwt = sign(
+                {
+                    ...config,
+                },
+                r.metabase_token,
+                { algorithm: 'HS256', expiresIn: 86400 }
+            );
+            const url = r.metabase_url + '/embed/dashboard/' + jwt + '#theme=transparent&bordered=false&titled=false';
+
+            liberados.push({
+                id: r.id,
+                titulo: r.titulo,
+                url: url,
+            });
+        }
+    }
+
+    private async reportPdm(config: any, memory: any, user: PessoaFromJwt) {
+        if (config && config['params'] && config['params']['projetos_ids']) {
+            if (memory['projetos_ids'] === undefined) {
+                memory['projetos_ids'] = (await this.projetoService.findAllIds(user)).map((p) => p.id);
+                if (memory['projetos_ids'].length == 0) memory['projetos_ids'] = [-1];
+            }
+
+            config['params']['projetos_ids'] = memory['projetos_ids'];
         }
 
-        return liberados;
+        if (config && config['params'] && config['params']['metas_ids']) {
+            if (memory['metas_ids'] === undefined) {
+                memory['metas_ids'] = (await this.metaService.findAllIds(user)).map((p) => p.id);
+                if (memory['metas_ids'].length == 0) memory['metas_ids'] = [-1];
+            }
+
+            config['params']['metas_ids'] = memory['metas_ids'];
+        }
     }
 }

@@ -13,7 +13,7 @@ export class DashboardController {
 
     @Get()
     @ApiBearerAuth('access-token')
-    @Roles('Reports.dashboard_pdm', 'Reports.dashboard_portfolios')
+    @Roles('Reports.dashboard_pdm', 'Reports.dashboard_portfolios', 'SMAE.espectador_de_painel_externo')
     async findAll(@CurrentUser() user: PessoaFromJwt): Promise<DashboardLinhasDto> {
         return {
             linhas: await this.dashboardService.findAll(user),
