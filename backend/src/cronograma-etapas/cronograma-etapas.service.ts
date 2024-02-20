@@ -8,6 +8,8 @@ import { PrismaService } from '../prisma/prisma.service';
 import { FilterCronogramaEtapaDto } from './dto/filter-cronograma-etapa.dto';
 import { UpdateCronogramaEtapaDto } from './dto/update-cronograma-etapa.dto';
 import { CECronogramaEtapaDto, CronogramaEtapaAtrasoGrau } from './entities/cronograma-etapa.entity';
+import { GeoLocService } from '../geo-loc/geo-loc.service';
+import { ReferenciasValidasBase } from '../geo-loc/entities/geo-loc.entity';
 
 class NivelOrdemForUpsert {
     nivel: CronogramaEtapaNivel;
@@ -16,7 +18,10 @@ class NivelOrdemForUpsert {
 @Injectable()
 export class CronogramaEtapaService {
     private readonly logger = new Logger(CronogramaEtapaService.name);
-    constructor(private readonly prisma: PrismaService) {}
+    constructor(
+        private readonly prisma: PrismaService,
+        private readonly geolocService: GeoLocService
+    ) {}
 
     async findAll(filters: FilterCronogramaEtapaDto | undefined = undefined) {
         const cronogramaId = filters!.cronograma_id;
@@ -222,6 +227,21 @@ export class CronogramaEtapaService {
 
         const ret: CECronogramaEtapaDto[] = [];
 
+        const etapasIds: number[] = [];
+        for (const cronogramaEtapa of cronogramaEtapas) {
+            etapasIds.push(cronogramaEtapa.etapa.id);
+
+            for (const fase of cronogramaEtapa.etapa.etapa_filha) {
+                etapasIds.push(fase.id);
+                for (const subFase of cronogramaEtapa.etapa.etapa_filha) {
+                    etapasIds.push(subFase.id);
+                }
+            }
+        }
+        const geoDto = new ReferenciasValidasBase();
+        geoDto.etapa_id = etapasIds;
+        const geolocalizacao = await this.geolocService.carregaReferencias(geoDto);
+
         for (const cronogramaEtapa of cronogramaEtapas) {
             if (cronogramaEtapa.etapa.etapa_pai_id) {
                 const firstLevelParentIndex = cronogramaEtapas
@@ -298,6 +318,7 @@ export class CronogramaEtapaService {
                         };
                     }),
 
+                    geolocalizacao: geolocalizacao.get(cronogramaEtapa.etapa.id) || [],
                     etapa_filha: await Promise.all(
                         cronogramaEtapa.etapa.etapa_filha.map(async (f) => {
                             const atrasoFase = await this.getAtraso(
@@ -319,6 +340,7 @@ export class CronogramaEtapaService {
 
                                 id: f.id,
                                 etapa_id: f.id,
+                                geolocalizacao: geolocalizacao.get(f.id) || [],
                                 etapa_pai_id: f.etapa_pai_id,
                                 regiao_id: f.regiao_id,
                                 nivel: f.nivel,
@@ -360,6 +382,7 @@ export class CronogramaEtapaService {
                                             }),
 
                                             id: ff.id,
+                                            geolocalizacao: geolocalizacao.get(ff.id) || [],
                                             etapa_id: ff.id,
                                             etapa_pai_id: ff.etapa_pai_id,
                                             regiao_id: ff.regiao_id,
