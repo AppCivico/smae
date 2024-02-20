@@ -7,12 +7,7 @@ import { CreatePainelExternoDto } from './dto/create-painel-externo.dto';
 import { FilterPainelExternoDto } from './dto/filter-painel-externo.dto';
 import { UpdatePainelExternoDto } from './dto/update-painel-externo.dto';
 import { PainelExternoDto } from './entities/painel-externo.entity';
-
-function getDomainFromUrl(url: string): string {
-    const urlObject = new URL(url);
-
-    return urlObject.hostname;
-}
+import { GetDomainFromUrl } from '../auth/models/GetDomainFromUrl';
 
 @Injectable()
 export class PainelExternoService {
@@ -38,7 +33,7 @@ export class PainelExternoService {
                         criado_em: now,
                         descricao: dto.descricao,
                         link: dto.link,
-                        link_dominio: getDomainFromUrl(dto.link),
+                        link_dominio: GetDomainFromUrl(dto.link),
                         titulo: dto.titulo,
                     },
                     select: { id: true },
@@ -124,7 +119,7 @@ export class PainelExternoService {
                     atualizado_em: now,
                     descricao: dto.descricao,
                     link: dto.link,
-                    link_dominio: dto.link ? getDomainFromUrl(dto.link) : undefined,
+                    link_dominio: dto.link ? GetDomainFromUrl(dto.link) : undefined,
                     titulo: dto.titulo,
                 },
                 select: { id: true },

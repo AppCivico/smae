@@ -15,7 +15,7 @@ export class DashboardService {
         @Inject(forwardRef(() => MetaService)) private readonly metaService: MetaService
     ) {}
 
-    async findAll(user: PessoaFromJwt): Promise<RetornoLinhasDashboardLinhasDto[]> {
+    async findAll(user: PessoaFromJwt, hostname: string): Promise<RetornoLinhasDashboardLinhasDto[]> {
         const liberados: RetornoLinhasDashboardLinhasDto[] = [];
 
         const rows = await this.prisma.metabasePermissao.findMany({
@@ -40,12 +40,12 @@ export class DashboardService {
         }
 
         if (user.hasSomeRoles(['SMAE.espectador_de_painel_externo'])) {
-            await this.painelExterno(user, liberados);
+            await this.painelExterno(user, liberados, hostname);
         }
         return liberados;
     }
 
-    private async painelExterno(user: PessoaFromJwt, liberados: RetornoLinhasDashboardLinhasDto[]) {
+    private async painelExterno(user: PessoaFromJwt, liberados: RetornoLinhasDashboardLinhasDto[], hostname: string) {
         const painelExterno = await this.prisma.painelExterno.findMany({
             where: {
                 removido_em: null,
@@ -69,10 +69,13 @@ export class DashboardService {
         if (painelExterno.length === 0) return;
 
         const opcoes: DashboardOptionDto[] = painelExterno.map((r) => {
+            const url = new URL('https://' + hostname + '/api/dashboard-iframe');
+            url.searchParams.append('url', r.link);
+
             return {
                 id: r.id,
                 titulo: r.titulo,
-                url: r.link,
+                url: url.toString(),
             };
         });
 

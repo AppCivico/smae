@@ -1,10 +1,13 @@
-import { Controller, Get } from '@nestjs/common';
-import { DashboardService } from './dashboard.service';
+import { Controller, Get, Query, Req, Res } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
-import { Roles } from 'src/auth/decorators/roles.decorator';
 import { CurrentUser } from 'src/auth/decorators/current-user.decorator';
+import { Roles } from 'src/auth/decorators/roles.decorator';
 import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
+import { DashboardService } from './dashboard.service';
 import { DashboardLinhasDto } from './entities/dashboard.entity';
+import { Request, Response } from 'express';
+import { GetDomainFromUrl } from '../auth/models/GetDomainFromUrl';
+import { IsPublic } from '../auth/decorators/is-public.decorator';
 
 @Controller('dashboard')
 @ApiTags('Dashboard')
@@ -14,9 +17,22 @@ export class DashboardController {
     @Get()
     @ApiBearerAuth('access-token')
     @Roles('Reports.dashboard_pdm', 'Reports.dashboard_portfolios', 'SMAE.espectador_de_painel_externo')
-    async findAll(@CurrentUser() user: PessoaFromJwt): Promise<DashboardLinhasDto> {
+    async findAll(@CurrentUser() user: PessoaFromJwt, @Req() req: Request): Promise<DashboardLinhasDto> {
+        const hostname = req.hostname;
         return {
-            linhas: await this.dashboardService.findAll(user),
+            linhas: await this.dashboardService.findAll(user, hostname),
         };
+    }
+
+    @Get('dashboard-iframe')
+    @IsPublic()
+    async renderIframe(@Query() params: { url: string }, @Res() res: Response): Promise<void> {
+        const url = params.url;
+
+        const domain = GetDomainFromUrl(url);
+
+        res.header('X-Frame-Options', `ALLOW-FROM ${domain}`);
+
+        res.render('iframe-template', { smae: { url } });
     }
 }
