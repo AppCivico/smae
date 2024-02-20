@@ -254,9 +254,19 @@ model Pessoa {
     projetosCompartilhadosEmPortfolioQueRemovi    PortfolioProjetoCompartilhado[] @relation("Removedor")
     projetosCompartilhadosEmPortfolioQueAtualizei PortfolioProjetoCompartilhado[] @relation("Atualizador")
 
-    task_queue                       task_queue[]
-    GeoEnderecoReferenciaqQueCriei   GeoLocalizacaoReferencia[] @relation("criador")
-    GeoEnderecoReferenciaqQueRemovid GeoLocalizacaoReferencia[] @relation("removedor")
+    task_queue                               task_queue[]
+    GeoEnderecoReferenciaqQueCriei           GeoLocalizacaoReferencia[]                @relation("criador")
+    GeoEnderecoReferenciaqQueRemovid         GeoLocalizacaoReferencia[]                @relation("removedor")
+    GrupoPainelExternoQueCriei               GrupoPainelExterno[]                      @relation("Criador")
+    GrupoPainelExternoQueAtualizei           GrupoPainelExterno[]                      @relation("Atualizador")
+    GrupoPainelExternoQueRemovi              GrupoPainelExterno[]                      @relation("Removedor")
+    GrupoPainelExternoPessoa                 GrupoPainelExternoPessoa[]
+    PainelExternoGrupoPainelExternoQueRemovi PainelExternoGrupoPainelExterno[]         @relation("Removedor")
+    PainelExternoGrupoPainelExternoQueCriei  PainelExternoGrupoPainelExterno[]         @relation("Criador")
+    PainelExternoQueCriei                    PainelExterno[]                           @relation("Criador")
+    PainelExternoQueAtualizei                PainelExterno[]                           @relation("Atualizador")
+    PainelExternoQueRemovi                   PainelExterno[]                           @relation("Removedor")
+    view_pessoa_espectador_de_painel_externo view_pessoa_espectador_de_painel_externo?
 
     @@index([email])
     @@map("pessoa")
@@ -302,11 +312,13 @@ model Orgao {
     projetos_participando  ProjetoOrgaoParticipante[]
     projetos_geridos       Projeto[]                  @relation("orgao_gestor")
 
-    PortifolioOrgao      PortfolioOrgao[]
-    orgao_responsavel    Projeto[]              @relation("orgao_responsavel")
-    GrupoPortfolio       GrupoPortfolio[]
-    GrupoPortfolioPessoa GrupoPortfolioPessoa[]
-    ProjetoEquipe        ProjetoEquipe[]
+    PortifolioOrgao          PortfolioOrgao[]
+    orgao_responsavel        Projeto[]                  @relation("orgao_responsavel")
+    GrupoPortfolio           GrupoPortfolio[]
+    GrupoPortfolioPessoa     GrupoPortfolioPessoa[]
+    ProjetoEquipe            ProjetoEquipe[]
+    GrupoPainelExterno       GrupoPainelExterno[]
+    GrupoPainelExternoPessoa GrupoPainelExternoPessoa[]
 
     @@map("orgao")
 }
@@ -3604,6 +3616,15 @@ view view_pessoa_espectador_de_projeto {
     @@unique([pessoa_id])
 }
 
+view view_pessoa_espectador_de_painel_externo {
+    pessoa_id Int
+    pessoa    Pessoa @relation(fields: [pessoa_id], references: [id])
+
+    orgao_id Int
+
+    @@unique([pessoa_id])
+}
+
 // view que já faz o join das pessoas tem o privilegio SMAE.gestor_de_projeto
 // tbm faz um WHERE orgao_id is not null
 view view_pessoa_gestor_de_projeto {
@@ -3936,4 +3957,94 @@ model GeoLocalizacaoReferencia {
     removedor       Pessoa?        @relation("removedor", fields: [removido_por], references: [id])
 
     @@map("geo_localizacao_referencia")
+}
+
+model GrupoPainelExterno {
+    id Int @id @default(autoincrement())
+
+    titulo String
+
+    criado_por     Int
+    criado_em      DateTime  @default(now()) @db.Timestamptz(6)
+    atualizado_por Int?
+    atualizado_em  DateTime  @default(now()) @db.Timestamptz(6)
+    removido_por   Int?
+    removido_em    DateTime? @db.Timestamptz(6)
+
+    criador     Pessoa  @relation("Criador", fields: [criado_por], references: [id])
+    atualizador Pessoa? @relation("Atualizador", fields: [atualizado_por], references: [id])
+    removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
+
+    orgao_id                        Int
+    orgao                           Orgao                             @relation(fields: [orgao_id], references: [id])
+    GrupoPainelExternoPessoa        GrupoPainelExternoPessoa[]
+    PainelExternoGrupoPainelExterno PainelExternoGrupoPainelExterno[]
+
+    @@index([titulo])
+    @@map("grupo_painel_externo")
+}
+
+model GrupoPainelExternoPessoa {
+    id Int @id @default(autoincrement())
+
+    grupo_painel_externo_id Int
+
+    orgao_id  Int
+    pessoa_id Int
+
+    criado_por Int
+    criado_em  DateTime @default(now()) @db.Timestamptz(6)
+
+    removido_por Int?
+    removido_em  DateTime? @db.Timestamptz(6)
+
+    grupo_painel_externo GrupoPainelExterno @relation(fields: [grupo_painel_externo_id], references: [id])
+    pessoa               Pessoa             @relation(fields: [pessoa_id], references: [id])
+    orgao                Orgao              @relation(fields: [orgao_id], references: [id])
+
+    @@map("grupo_painel_externo_pessoa")
+}
+
+model PainelExternoGrupoPainelExterno {
+    id Int @id @default(autoincrement())
+
+    painel_externo_id       Int
+    grupo_painel_externo_id Int
+    PainelExterno           PainelExterno      @relation(fields: [painel_externo_id], references: [id])
+    GrupoPainelExterno      GrupoPainelExterno @relation(fields: [grupo_painel_externo_id], references: [id])
+
+    criado_por   Int
+    criado_em    DateTime  @default(now()) @db.Timestamptz(6)
+    removido_por Int?
+    removido_em  DateTime? @db.Timestamptz(6)
+
+    criador   Pessoa  @relation("Criador", fields: [criado_por], references: [id])
+    removedor Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
+
+    @@map("painel_externo_grupo_painel_externo")
+}
+
+model PainelExterno {
+    id Int @id @default(autoincrement())
+
+    titulo    String
+    descricao String?
+
+    link         String
+    link_dominio String
+
+    criado_por     Int
+    criado_em      DateTime  @default(now()) @db.Timestamptz(6)
+    atualizado_por Int?
+    atualizado_em  DateTime  @default(now()) @db.Timestamptz(6)
+    removido_por   Int?
+    removido_em    DateTime? @db.Timestamptz(6)
+
+    criador                         Pessoa                            @relation("Criador", fields: [criado_por], references: [id])
+    atualizador                     Pessoa?                           @relation("Atualizador", fields: [atualizado_por], references: [id])
+    removedor                       Pessoa?                           @relation("Removedor", fields: [removido_por], references: [id])
+    PainelExternoGrupoPainelExterno PainelExternoGrupoPainelExterno[]
+
+    @@index([removido_em])
+    @@map("painel_externo")
 }
