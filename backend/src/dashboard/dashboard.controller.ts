@@ -24,7 +24,7 @@ export class DashboardController {
         };
     }
 
-    @Get('dashboard-iframe')
+    @Get('iframe')
     @IsPublic()
     async renderIframe(@Query() params: { url: string }, @Res() res: Response): Promise<void> {
         const url = params.url;
