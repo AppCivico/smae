@@ -7,5 +7,6 @@ import { ObjetivoEstrategicoService } from './objetivo-estrategico.service';
     imports: [PrismaModule],
     controllers: [ObjetivoEstrategicoController, ObjetivoEstrategicoController2],
     providers: [ObjetivoEstrategicoService],
+    exports: [ObjetivoEstrategicoService],
 })
 export class ObjetivoEstrategicoModule {}

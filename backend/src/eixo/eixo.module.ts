@@ -7,5 +7,6 @@ import { EixoService } from './eixo.service';
     imports: [PrismaModule],
     controllers: [EixoController, EixoController2],
     providers: [EixoService],
+    exports: [EixoService],
 })
 export class EixoModule {}
