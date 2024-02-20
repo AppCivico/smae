@@ -1,5 +1,6 @@
 <script setup>
 import MenuDeMudançaDeStatusDeProjeto from '@/components/projetos/MenuDeMudançaDeStatusDeProjeto.vue';
+import MapaExibir from '@/components/geo/MapaExibir.vue';
 import { projeto as schema } from '@/consts/formSchemas';
 import statuses from '@/consts/projectStatuses';
 import dateToField from '@/helpers/dateToField';
@@ -200,50 +201,39 @@ if (!Array.isArray(organs.value) || !organs.value.length) {
 
     <hr class="mb1 f1">
 
-    <div class="mb1">
+    <div
+      v-if="emFoco?.geolocalizacao?.length"
+      class="mb1"
+    >
       <h3 class="label mt2 mb1legend">
         Localização
       </h3>
 
-      <div class="flex g2 mb1 flexwrap">
+      <div
+        v-for="(item, i) in emFoco.geolocalizacao"
+        :key="i"
+        class="mb1"
+      >
         <dl class="f1 mb1">
           <dt class="t12 uc w700 mb05 tamarelo">
-            {{ schema.fields.regiao_id.spec.label }}
+            {{ item.endereco_exibicao }}
           </dt>
-          <dd class="t13">
-            {{ emFoco?.regiao?.descricao || '-' }}
-          </dd>
-        </dl>
-        <dl class="f1 mb1">
-          <dt class="t12 uc w700 mb05 tamarelo">
-            {{ schema.fields.logradouro_cep.spec.label }}
-          </dt>
-          <dd class="t13">
-            {{ emFoco?.logradouro_cep || '-' }}
-          </dd>
-        </dl>
-        <dl class="f1 mb1">
-          <dt class="t12 uc w700 mb05 tamarelo">
-            {{ schema.fields.logradouro_tipo.spec.label }}
-          </dt>
-          <dd class="t13">
-            {{ emFoco?.logradouro_tipo || '-' }}
-          </dd>
-        </dl>
-        <dl class="f2 mb1">
-          <dt class="t12 uc w700 mb05 tamarelo">
-            {{ schema.fields.logradouro_nome.spec.label }}
-          </dt>
-          <dd class="t13">
-            {{ emFoco?.logradouro_nome || '-' }}
-          </dd>
-        </dl>
-        <dl class="f1 mb1">
-          <dt class="t12 uc w700 mb05 tamarelo">
-            {{ schema.fields.logradouro_numero.spec.label }}
-          </dt>
-          <dd class="t13">
-            {{ emFoco?.logradouro_numero || '-' }}
+          <dd>
+            <MapaExibir
+              :marcador="[
+                item.endereco.geometry.coordinates[1],
+                item.endereco.geometry.coordinates[0]
+              ]"
+              :latitude="item.endereco.geometry.coordinates[1]"
+              :longitude="item.endereco.geometry.coordinates[0]"
+              :camadas="item.camadas"
+              class="mb1"
+              :opções-do-polígono="{
+                fill: true,
+                opacity: 0.5,
+              }"
+              zoom="16"
+            />
           </dd>
         </dl>
       </div>
