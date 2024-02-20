@@ -51,8 +51,11 @@ const PrivConfig: Record<ListaDeModulos, false | [ListaDePrivilegios, string][]>
     ],
 
     CadastroGrupoPaineisExternas: [
-        ['CadastroGrupoPaineisExternas.administrador', 'Gerenciar Grupo de Painéis Externos de qualquer órgão'],
-        ['CadastroGrupoPaineisExternas.administrador_no_orgao', 'Gerenciar Grupo de Painéis Externos do órgão em que pertence'],
+        ['CadastroGrupoPainelExterno.administrador', 'Gerenciar Grupo de Painéis Externos de qualquer órgão'],
+        [
+            'CadastroGrupoPainelExterno.administrador_no_orgao',
+            'Gerenciar Grupo de Painéis Externos do órgão em que pertence',
+        ],
     ],
 
     CadastroFonteRecurso: [
