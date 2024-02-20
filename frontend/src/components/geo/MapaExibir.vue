@@ -84,6 +84,11 @@ const props = defineProps({
     type: [Number, String],
     default: 13,
   },
+  // opções para o mapa
+  opçõesDoMapa: {
+    type: Object,
+    default: null,
+  },
 });
 
 const emits = defineEmits(['update:modelValue']);
@@ -193,13 +198,21 @@ async function iniciarMapa(element) {
   }
 
   mapa = L
-    .map(element, {})
+    .map(element, {
+      scrollWheelZoom: false,
+      ...props.opçõesDoMapa,
+    })
     .setView([Number(props.latitude), Number(props.longitude)], Number(props.zoom));
 
   L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
     maxZoom: 19,
     attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
   }).addTo(mapa);
+
+  if (!props.opçõesDoMapa?.scrollWheelZoom) {
+    mapa.on('focus', () => { mapa.scrollWheelZoom.enable(); });
+    mapa.on('blur', () => { mapa.scrollWheelZoom.disable(); });
+  }
 
   if (props.marcador) {
     criarMarcadores([props.marcador]);
@@ -261,8 +274,13 @@ watch(() => props.polígonos, (valorNovo) => {
   chamarDesenhoDePolígonosNovos(valorNovo);
 });
 </script>
-<style>
+<style lang="less">
 .mapa {
   height: 24rem;
+
+  &:focus {
+    outline: 1px solid @c400;
+    outline-style: solid !important;
+  }
 }
 </style>
