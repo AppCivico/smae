@@ -36,6 +36,19 @@ export const useMetasStore = defineStore({
       this.activePdm = PdMStore.activePdm;
       return this.activePdm;
     },
+    async getfilteredMetasByPdM(pdmId) {
+      try {
+        if (!pdmId) {
+          throw new Error('ID do PdM não fornecido.');
+        }
+        const response = await this.requestS.get(`${baseUrl}/meta?pdm_id=${pdmId}`);
+        this.Metas = response.linhas;
+        return true;
+      } catch (error) {
+        console.error('Erro ao filtrar metas por pdm_id:', error);
+        throw error;
+      }
+    },
     async getAll() {
       try {
         if (!this.activePdm.id) await this.getPdM();
