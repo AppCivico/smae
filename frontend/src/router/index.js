@@ -55,6 +55,9 @@ export const router = createRouter({
 
     {
       path: '/monitoramento',
+      meta: {
+        rotaPrescindeDeChave: false,
+      },
       children: [
         {
           path: '',
