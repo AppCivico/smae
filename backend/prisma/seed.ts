@@ -2,7 +2,7 @@ import { PrismaClient } from '@prisma/client';
 import { ListaDePrivilegios } from '../src/common/ListaDePrivilegios';
 const prisma = new PrismaClient({ log: ['query'] });
 
-const ModuloDescricao: Record<string, string> = {
+const ModuloDescricao = {
     CadastroOrgao: 'Cadastro de Órgão',
     CadastroTipoOrgao: 'Cadastro de Tipo de Órgão',
     CadastroPessoa: 'Cadastro de pessoas',
@@ -21,21 +21,30 @@ const ModuloDescricao: Record<string, string> = {
     CadastroIniciativa: 'Cadastro de Iniciativas',
     CadastroAtividade: 'Cadastro de Atividades',
     CadastroCronograma: 'Cadastro de Cronogramas',
-    CadastroEtapa: 'Cadastro de Etapas',
-    CadastroCicloFisico: 'Cadastro de Ciclos Físicos',
+
     CadastroPainel: 'Cadastro de Painéis',
     CadastroGrupoPaineis: 'Cadastro de Grupos de Painéis',
     CadastroGrupoPortfolio: 'Cadastro de Grupos de Portfólio',
-    CadastroGrupoPaineisExternas: 'Cadastro de Grupos de Painéis Externos',
+    CadastroGrupoPainelExterno: 'Cadastro de Grupos de Painéis Externos',
     Config: 'Configurações do Sistema',
     Reports: 'Relatórios',
     Projeto: 'Cadastro de Projetos',
     PDM: 'Regras de Negocio do PDM',
     SMAE: 'Regras de Negocio do SMAE',
-};
+
+    CadastroCargo: '',
+    CadastroCoordenadoria: '',
+    CadastroDepartamento: '',
+    CadastroDivisaoTecnica: '',
+    CadastroCicloFisico: '',
+    CadastroEixo: '',
+    CadastroObjetivoEstrategico: '',
+    CadastroEtapa: '',
+    CadastroGrupoPaineisExternas: '',
+} as const;
 type ListaDeModulos = keyof typeof ModuloDescricao;
 
-const PrivConfig: Record<ListaDeModulos, false | [ListaDePrivilegios, string][]> = {
+const PrivConfig: Record<Partial<ListaDeModulos>, false | [ListaDePrivilegios, string][]> = {
     CadastroCargo: false,
     CadastroCoordenadoria: false,
     CadastroDepartamento: false,
@@ -44,13 +53,14 @@ const PrivConfig: Record<ListaDeModulos, false | [ListaDePrivilegios, string][]>
     CadastroEixo: false,
     CadastroObjetivoEstrategico: false,
     CadastroEtapa: false,
+    CadastroGrupoPaineisExternas: false,
 
     CadastroGrupoPortfolio: [
         ['CadastroGrupoPortfolio.administrador', 'Gerenciar Grupo de Portfólio de qualquer órgão'],
         ['CadastroGrupoPortfolio.administrador_no_orgao', 'Gerenciar Grupo de Portfólio do órgão em que pertence'],
     ],
 
-    CadastroGrupoPaineisExternas: [
+    CadastroGrupoPainelExterno: [
         ['CadastroGrupoPainelExterno.administrador', 'Gerenciar Grupo de Painéis Externos de qualquer órgão'],
         [
             'CadastroGrupoPainelExterno.administrador_no_orgao',
