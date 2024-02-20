@@ -429,6 +429,11 @@ const PerfilAcessoConfig: {
         descricao: 'Pode participar como leitor em portfólio e projetos',
         privilegios: ['SMAE.espectador_de_projeto'],
     },
+    {
+        nome: atualizarNomePerfil('Observador de painéis externos', []),
+        descricao: 'Pode participar como leitor em painéis externos',
+        privilegios: ['SMAE.espectador_de_painel_externo'],
+    },
     removerNomePerfil('Técnico CP'),
     removerNomePerfil('Orçamento'),
     removerNomePerfil('Unidade de Entregas'),
