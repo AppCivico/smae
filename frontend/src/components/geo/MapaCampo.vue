@@ -36,6 +36,13 @@ const props = defineProps({
     type: Object,
     default: () => ({}),
   },
+  max: {
+    type: [
+      Number,
+      String,
+    ],
+    default: 0,
+  },
   name: {
     type: String,
     required: true,
@@ -207,9 +214,7 @@ const formulárioSujo = useIsFormDirty();
       v-for="(token, i) in model"
       :key="token"
     >
-      <li
-        class="flex g1"
-      >
+      <li class="flex g1 mb1">
         <span class="f1">
           {{ geolocalizaçãoPorToken[token]?.endereco_exibicao
             || endereçosTemporários[token]?.endereco?.properties?.string_endereco
@@ -217,14 +222,26 @@ const formulárioSujo = useIsFormDirty();
         </span>
 
         <button
-          class="block like-a__text addlink"
+          class="block like-a__text addlink tipinfo"
+          type="button tipinfo"
+          @click="abrirEdição(i)"
+        >
+          <svg
+            width="20"
+            height="20"
+          ><use xlink:href="#i_edit" /></svg><div>Editar endereço</div>
+        </button>
+
+        <button
+          class="block like-a__text addlink tipinfo"
           type="button"
           @click="abrirEdição(i)"
         >
           <svg
             width="20"
             height="20"
-          ><use xlink:href="#i_edit" /></svg>Editar endereço
+            @click="model.splice(i, 1)"
+          ><use xlink:href="#i_remove" /></svg><div>remover endereço</div>
         </button>
       </li>
 
@@ -487,4 +504,16 @@ const formulárioSujo = useIsFormDirty();
       </SmallModal>
     </template>
   </ul>
+
+  <button
+    :disabled="!model.length < Number(props.max)"
+    class="block like-a__text addlink mb1 mt1"
+    type="button"
+    @click="model.push([])"
+  >
+    <svg
+      width="20"
+      height="20"
+    ><use xlink:href="#i_+" /></svg>Adicionar endereço
+  </button>
 </template>
