@@ -37,12 +37,11 @@ export class DashboardService {
             if (user.hasSomeRoles(['Reports.dashboard_portfolios'])) {
                 await this.reportProjetos(config, r, liberados);
             }
-
-            if (user.hasSomeRoles(['SMAE.espectador_de_painel_externo'])) {
-                await this.painelExterno(user, liberados);
-            }
         }
 
+        if (user.hasSomeRoles(['SMAE.espectador_de_painel_externo'])) {
+            await this.painelExterno(user, liberados);
+        }
         return liberados;
     }
 
