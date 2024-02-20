@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { PrismaModule } from '../prisma/prisma.module';
-import { PainelExternoController } from './painel.controller';
-import { PainelExternoService } from './painel.service';
+import { PainelExternoController } from './painel-externo.controller';
+import { PainelExternoService } from './painel-externo.service';
 
 @Module({
     imports: [PrismaModule],

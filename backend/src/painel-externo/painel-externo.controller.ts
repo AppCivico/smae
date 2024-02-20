@@ -17,12 +17,12 @@ import { Roles } from '../auth/decorators/roles.decorator';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { FindOneParams } from '../common/decorators/find-params';
 import { RecordWithId } from '../common/dto/record-with-id.dto';
-import { CreatePainelExternoDto } from './dto/create-painel.dto';
-import { FilterPainelExternoDto } from './dto/filter-painel.dto';
-import { ListPainelExternoDto } from './dto/list-painel.dto';
-import { UpdatePainelExternoDto } from './dto/update-painel.dto';
-import { PainelExternoDto } from './entities/painel.entity';
-import { PainelExternoService } from './painel.service';
+import { CreatePainelExternoDto } from './dto/create-painel-externo.dto';
+import { FilterPainelExternoDto } from './dto/filter-painel-externo.dto';
+import { ListPainelExternoDto } from './dto/list-painel-externo.dto';
+import { UpdatePainelExternoDto } from './dto/update-painel-externo.dto';
+import { PainelExternoDto } from './entities/painel-externo.entity';
+import { PainelExternoService } from './painel-externo.service';
 
 @ApiTags('Painel Externo')
 @Controller('painel-externo')
