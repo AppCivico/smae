@@ -334,7 +334,7 @@ function maskDate(el) {
         <label class="label">
           Responsável <span class="tvermelho">*</span>
         </label>
-        <div class="flex">
+        <div class="flex mb1">
           <div class="f1">
             <AutocompleteField
               :controlador="responsaveis"
@@ -344,9 +344,15 @@ function maskDate(el) {
           </div>
         </div>
 
-        <hr class="mt2 mb2">
+        <hr
+          v-if="singleCronograma.regionalizavel && tempRegions.length"
+          class="mt2 mb2"
+        >
 
-        <div v-if="singleCronograma.regionalizavel && tempRegions.length">
+        <div
+          v-if="singleCronograma.regionalizavel && tempRegions.length"
+          class="mb1"
+        >
           <label class="label">Região</label>
           <select
             v-model="level1"
