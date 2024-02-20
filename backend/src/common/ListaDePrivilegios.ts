@@ -89,4 +89,7 @@ export type ListaDePrivilegios =
     | 'SMAE.espectador_de_painel_externo'
     | 'CadastroGrupoPainelExterno.administrador'
     | 'CadastroGrupoPainelExterno.administrador_no_orgao'
+    | 'CadastroPainelExterno.inserir'
+    | 'CadastroPainelExterno.editar'
+    | 'CadastroPainelExterno.remover'
     | 'SMAE.acesso_bi';

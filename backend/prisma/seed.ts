@@ -25,6 +25,7 @@ const ModuloDescricao: Record<string, string> = {
     CadastroPainel: 'Cadastro de Painéis',
     CadastroGrupoPaineis: 'Cadastro de Grupos de Painéis',
     CadastroGrupoPortfolio: 'Cadastro de Grupos de Portfólio',
+    CadastroPainelExterno: 'Cadastro de Painéis Externos',
     CadastroGrupoPainelExterno: 'Cadastro de Grupos de Painéis Externos',
     Config: 'Configurações do Sistema',
     Reports: 'Relatórios',
@@ -57,6 +58,11 @@ const PrivConfig: Record<string, false | [ListaDePrivilegios, string][]> = {
     CadastroGrupoPortfolio: [
         ['CadastroGrupoPortfolio.administrador', 'Gerenciar Grupo de Portfólio de qualquer órgão'],
         ['CadastroGrupoPortfolio.administrador_no_orgao', 'Gerenciar Grupo de Portfólio do órgão em que pertence'],
+    ],
+    CadastroPainelExterno: [
+        ['CadastroPainelExterno.inserir', 'Cadastrar novos Painéis Externos'],
+        ['CadastroPainelExterno.editar', 'Cadastrar editar Painéis Externos'],
+        ['CadastroPainelExterno.remover', 'Remover Painéis Externos'],
     ],
 
     CadastroGrupoPainelExterno: [
