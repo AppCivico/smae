@@ -223,7 +223,7 @@ const formulárioSujo = useIsFormDirty();
 
         <button
           class="block like-a__text addlink tipinfo"
-          type="button tipinfo"
+          type="button"
           @click="abrirEdição(i)"
         >
           <svg
