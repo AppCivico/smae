@@ -21,6 +21,7 @@ export default {
     restringirÀsPermissões: [
       'Reports.dashboard_pdm',
       'Reports.dashboard_portfolios',
+      'SMAE.espectador_de_painel_externo',
     ],
   },
 };
