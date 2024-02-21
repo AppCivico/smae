@@ -111,6 +111,7 @@ export class PortfolioService {
                         orgao_id: true,
                     },
                 },
+                modelo_clonagem: true,
                 descricao: true,
                 data_criacao: true,
                 orcamento_execucao_disponivel_meses: true,
