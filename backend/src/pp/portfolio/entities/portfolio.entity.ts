@@ -18,6 +18,7 @@ export class PortfolioOneDto {
     data_criacao: Date | null;
     orcamento_execucao_disponivel_meses: number[];
     grupo_portfolio: number[];
+    modelo_clonagem: boolean;
 }
 
 export class ListPortfolioDto {
