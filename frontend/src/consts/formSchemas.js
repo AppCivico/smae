@@ -550,6 +550,9 @@ export const portfolio = object({
     .min(1)
     .max(32)
     .required(),
+  modelo_clonagem: boolean()
+    .label('Modelo de clonagem')
+    .nullable(),
   nivel_regionalizacao: number()
     .label('Nível de regionalização')
     .min(1)
