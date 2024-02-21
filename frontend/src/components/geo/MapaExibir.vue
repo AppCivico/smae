@@ -16,6 +16,11 @@ import { storeToRefs } from 'pinia';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
 import { useRegionsStore } from '@/stores/regions.store';
+// prevenir erro de encapsulamento do Vite
+// https://cescobaz.com/2023/06/14/setup-leaflet-with-svelte-and-vite/
+import markerIconUrl from '@/../node_modules/leaflet/dist/images/marker-icon.png';
+import markerIconRetinaUrl from '@/../node_modules/leaflet/dist/images/marker-icon-2x.png';
+import markerShadowUrl from '@/../node_modules/leaflet/dist/images/marker-shadow.png';
 
 const RegionsStore = useRegionsStore();
 
@@ -208,6 +213,13 @@ async function iniciarMapa(element) {
     maxZoom: 19,
     attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
   }).addTo(mapa);
+
+  // prevenir erro de encapsulamento do Vite
+  // https://cescobaz.com/2023/06/14/setup-leaflet-with-svelte-and-vite/
+  L.Icon.Default.prototype.options.iconUrl = markerIconUrl;
+  L.Icon.Default.prototype.options.iconRetinaUrl = markerIconRetinaUrl;
+  L.Icon.Default.prototype.options.shadowUrl = markerShadowUrl;
+  L.Icon.Default.imagePath = '';
 
   if (!props.opçõesDoMapa?.scrollWheelZoom) {
     mapa.on('focus', () => { mapa.scrollWheelZoom.enable(); });
