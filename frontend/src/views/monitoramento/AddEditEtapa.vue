@@ -187,6 +187,26 @@ function maskDate(el) {
         </div>
       </div>
 
+      <div class="mb1">
+        <Field
+          id="endereco_obrigatorio"
+          name="endereco_obrigatorio"
+          type="checkbox"
+          :value="true"
+          :unchecked-value="false"
+          class="inputcheckbox"
+        />
+        <label
+          for="endereco_obrigatorio"
+          :class="{ 'error': errors.endereco_obrigatorio }"
+        >
+          Endereço obrigatório
+        </label>
+        <div class="error-msg">
+          {{ errors.endereco_obrigatorio }}
+        </div>
+      </div>
+
       <div
         v-if="values.endereco_obrigatorio"
         class="mb1"
