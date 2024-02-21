@@ -35,6 +35,7 @@ export class PortfolioService {
                         data_criacao: dto.data_criacao,
                         orcamento_execucao_disponivel_meses: dto.orcamento_execucao_disponivel_meses,
                         nivel_regionalizacao: dto.nivel_regionalizacao,
+                        modelo_clonagem: dto.modelo_clonagem
                     },
                     select: { id: true },
                 });
