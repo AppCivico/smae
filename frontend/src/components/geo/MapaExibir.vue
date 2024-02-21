@@ -28,6 +28,7 @@ const { camadas } = storeToRefs(RegionsStore);
 
 let marcadorNoMapa = null;
 const polígonosNoMapa = [];
+const geoJsonsNoMapa = [];
 const elementoMapa = ref(null);
 let mapa;
 // marcadores atualizam separado do v-model para:
@@ -92,6 +93,10 @@ const props = defineProps({
     type: Object,
     default: null,
   },
+  geoJson: {
+    type: [Array, Object],
+    default: () => [],
+  },
 });
 
 const emits = defineEmits(['update:modelValue']);
@@ -132,6 +137,33 @@ function criarMarcadores(marcadores = []) {
       marcadorNoMapa.addTo(mapa);
     }
   });
+}
+
+function criarGeoJson(item) {
+  const geoJson = L.geoJSON(item).addTo(mapa);
+
+  if (item.properties?.string_endereco) {
+    geoJson.bindTooltip(item.properties.string_endereco);
+  }
+
+  geoJsonsNoMapa.push(geoJson);
+}
+
+function prepararGeoJsonS(items) {
+  geoJsonsNoMapa.forEach((item) => {
+    item.remove();
+  });
+
+  const listaDeItens = Array.isArray(items)
+    ? items
+    : [items];
+
+  if (listaDeItens.length) {
+    listaDeItens.forEach((item) => { criarGeoJson(item); });
+
+    const grupo = L.featureGroup(geoJsonsNoMapa);
+    mapa.fitBounds(grupo.getBounds());
+  }
 }
 
 function criarPolígono(dadosDoPolígono) {
@@ -228,6 +260,10 @@ async function iniciarMapa(element) {
     criarMarcadores([props.marcador]);
   }
 
+  if (props.geoJson) {
+    prepararGeoJsonS(props.geoJson);
+  }
+
   for (let i = 0; i < props.polígonos.length; i += 1) {
     criarPolígono(props.polígonos[i]);
   }
@@ -263,6 +299,12 @@ onMounted(() => {
     observer.observe(elementoMapa.value);
   } else {
     console.error('Error: elementoMapa not available');
+  }
+});
+
+watch(() => props.geoJson, (valorNovo) => {
+  if (mapa) {
+    prepararGeoJsonS(valorNovo);
   }
 });
 
