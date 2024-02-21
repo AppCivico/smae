@@ -26,7 +26,7 @@ export class UtilsService {
                 removido_em: null,
                 AND: [
                     { id: filters.meta_id ? filters.meta_id : undefined },
-                    { id: filters.metas_ids ? { in: filters.metas_ids } : undefined },
+                    { id: filters.metas_ids && filters.metas_ids.length > 0 ? { in: filters.metas_ids } : undefined },
                 ],
                 meta_tag: tags.length === 0 ? undefined : { some: { tag_id: { in: tags } } },
             },
