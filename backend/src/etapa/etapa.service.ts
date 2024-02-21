@@ -310,12 +310,10 @@ export class EtapaService {
             // E se está sendo respeitado
             if (dto.termino_real && dto.termino_real != null) {
                 const paisComPendencias: {assert_geoloc_rule: string}[] = await prismaTx.$queryRaw`SELECT CAST(assert_geoloc_rule(${id}::integer, ${self.CronogramaEtapa[0].cronograma_id}::integer) AS VARCHAR)`;
-                console.log('paisComPendencias');
-                console.log(paisComPendencias);
                 if (paisComPendencias[0].assert_geoloc_rule && paisComPendencias[0].assert_geoloc_rule != null) {
                     const pendentesStr = paisComPendencias[0].assert_geoloc_rule.slice(1, -1);
                     const pendentes = pendentesStr.split(',').filter(e => e.length > 1);
-                    console.log(pendentes);
+
                     if (pendentes.length > 0)
                         throw new HttpException(`Seguintes etapas precisam ter endereço preenchido: ${pendentes.join(',')}`, 400);
                 }
