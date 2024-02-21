@@ -52,6 +52,13 @@ const podeAcessarGrupos = computed(() => perm?.CadastroGrupoPaineis?.inserir
           >
             Tipos de acompanhamento
           </router-link>
+
+          <router-link
+            v-if="perm?.CadastroPainelExterno"
+            to="/painel-externo/novo"
+          >
+            Novo painel externo
+          </router-link>
         </div>
       </template>
       <template
