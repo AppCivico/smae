@@ -314,7 +314,7 @@ export class EtapaService {
                 console.log(paisComPendencias);
                 if (paisComPendencias[0].assert_geoloc_rule && paisComPendencias[0].assert_geoloc_rule != null) {
                     const pendentesStr = paisComPendencias[0].assert_geoloc_rule.slice(1, -1);
-                    const pendentes = pendentesStr.split(',');
+                    const pendentes = pendentesStr.split(',').filter(e => e.length > 1);
                     console.log(pendentes);
                     if (pendentes.length > 0)
                         throw new HttpException(`Seguintes etapas precisam ter endereço preenchido: ${pendentes.join(',')}`, 400);
