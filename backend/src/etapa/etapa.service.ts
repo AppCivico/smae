@@ -308,12 +308,12 @@ export class EtapaService {
 
             // Esta func verifica se as rows acima (etapa_pai_id) possuem esse boolean "endereco_obrigatorio"
             // E se está sendo respeitado
-            try {
-                if (dto.termino_real && dto.termino_real != null) {
-                    await prismaTx.$queryRaw`SELECT assert_geoloc_rule(${id}, ${self.CronogramaEtapa[0].cronograma_id})`;
-                }
-            } catch {
-                throw new HttpException('Existem linhas na hirearquia que não possuem endereço.', 400);
+            if (dto.termino_real && dto.termino_real != null) {
+                const paisComPendencias = await prismaTx.$queryRaw`SELECT assert_geoloc_rule(${id}, ${self.CronogramaEtapa[0].cronograma_id})`;
+                console.log('paisComPendencias');
+                console.log(paisComPendencias);
+                if (paisComPendencias != null)
+                    throw new HttpException(`Seguintes etapas precisam ter endereço preenchido: ${paisComPendencias}`, 400);
             }
 
             return etapa;
