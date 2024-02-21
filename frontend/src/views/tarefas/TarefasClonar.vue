@@ -76,8 +76,11 @@ if (!projetosPorPortfolio.value.length) {
 
 const combinedArray = computed(() => {
   const projetosDoMesmoPort = projetosPorPortfolio.value[projetoEmFoco.value?.portfolio_id] || [];
+  console.log(projetosDoMesmoPort);
   const projetosPortsModeloClonagem = projetosPortfolioModeloClonagem
     .value[projetoEmFoco.value?.portfolio_id] || [];
+  console.log('projetosPortsModeloClonagem');
+  console.log(projetosPortsModeloClonagem);
   return [...projetosDoMesmoPort, ...projetosPortsModeloClonagem];
 });
 
