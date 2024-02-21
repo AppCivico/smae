@@ -75,13 +75,11 @@ const props = defineProps({
   },
   latitude: {
     type: [Number, String],
-    required: true,
     // marco zero de São Paulo
     default: -23.55040,
   },
   longitude: {
     type: [Number, String],
-    required: true,
     // marco zero de São Paulo
     default: -46.63395,
   },
