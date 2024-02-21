@@ -295,7 +295,7 @@ export class IndicadoresService implements ReportableService {
         JOIN ${queryFromWhere} and sv.variavel_id = v.id`);
 
         if (!buscaInicio[0].min) {
-            stream.emit('error', new Error('Vars sem região'));
+            stream.emit('end');
             return
         };
 
