@@ -294,7 +294,10 @@ export class IndicadoresService implements ReportableService {
         JOIN serie_variavel sv ON sv.serie = series.serie
         JOIN ${queryFromWhere} and sv.variavel_id = v.id`);
 
-        if (!buscaInicio[0].min) return;
+        if (!buscaInicio[0].min) {
+            // stream.destroy();
+            throw new Error('Vars sem região');
+        };
 
         const anoInicio = buscaInicio[0].min.getFullYear();
 
