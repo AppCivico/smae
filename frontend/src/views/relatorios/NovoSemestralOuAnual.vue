@@ -30,7 +30,7 @@ const currentOptions = ref({
     tipo: 'Analitico',
     pdm_id: 0,
     meta_id: 0,
-    metas: [],
+    metas_ids: [],
     ano: 2003,
     periodo: '',
     semestre: '',
