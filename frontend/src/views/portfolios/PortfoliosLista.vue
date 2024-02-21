@@ -56,6 +56,9 @@ if (!organs.length) {
         <th>
           Órgãos
         </th>
+        <th>
+            Modelo de clonagem
+        </th>
         <th />
         <th />
       </tr>
@@ -69,6 +72,7 @@ if (!organs.length) {
         <td>
           {{ item.orgaos.map((x) => órgãosPorId[x.id]?.sigla || x.id).join(', ') }}
         </td>
+        <td>{{ item.modelo_clonagem }}</td>
         <td>
           <button
             class="like-a__text"
