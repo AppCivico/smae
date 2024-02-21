@@ -188,7 +188,7 @@ observadoresStore.buscarTudo();
       </div>
     </div>
 
-    <div class="f1 mb1 flex row-reverse justifyright">
+    <div v-if="props.portfolioId" class="f1 mb1 flex row-reverse label justifyright">
       <LabelFromYup
         name="modelo_clonagem"
         :schema="schema"
