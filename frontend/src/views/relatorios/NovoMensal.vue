@@ -29,7 +29,7 @@ const initialValues = ref({
   fonte: 'MonitoramentoMensal',
   parametros: {
     tipo: 'Analitico',
-    metas: [],
+    metas_ids: [],
     pdm_id: null,
     ano: 2003,
     tags: [],
