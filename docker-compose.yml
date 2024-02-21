@@ -61,7 +61,8 @@ services:
       POSTGRES_DB: metabase
       POSTGRES_PASSWORD: password
     networks:
-      - metadb_postgres
+      #- metadb_postgres
+      - smae_network
   # RAM ~ 4.0gb max
   smae_api:
     container_name: "${API_CONTAINER_NAME}"
@@ -189,8 +190,9 @@ services:
     depends_on:
       - db
     networks:
-      - smtp
-      - postgres
+      #- smtp
+      #- postgres
+      - smae_network
     logging:
       driver: "json-file"
       options:
@@ -204,8 +206,9 @@ services:
     ports:
       - "${BIND_INTERFACE}${SMTP_WEB_LISTEN}:80"
     networks:
-      - api
-      - smtp
+      #- api
+      #- smtp
+      - smae_network
     logging:
       driver: "json-file"
       options:
