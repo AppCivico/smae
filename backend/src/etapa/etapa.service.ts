@@ -309,7 +309,7 @@ export class EtapaService {
             // Esta func verifica se as rows acima (etapa_pai_id) possuem esse boolean "endereco_obrigatorio"
             // E se está sendo respeitado
             if (dto.termino_real && dto.termino_real != null) {
-                const paisComPendencias = await prismaTx.$queryRaw`SELECT assert_geoloc_rule(${id}::integer, ${self.CronogramaEtapa[0].cronograma_id}::integer)`;
+                const paisComPendencias = await prismaTx.$queryRaw`SELECT CAST(assert_geoloc_rule(${id}::integer, ${self.CronogramaEtapa[0].cronograma_id}::integer) AS VARCHAR)`;
                 console.log('paisComPendencias');
                 console.log(paisComPendencias);
                 if (paisComPendencias != null)
