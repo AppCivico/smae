@@ -188,6 +188,25 @@ observadoresStore.buscarTudo();
       </div>
     </div>
 
+    <div class="f1 mb1 flex row-reverse justifyright">
+      <LabelFromYup
+        name="modelo_clonagem"
+        :schema="schema"
+      />
+      <Field
+        name="modelo_clonagem"
+        type="checkbox"
+        :value="true"
+        class="inputcheckbox"
+      />
+
+   
+      <!-- <ErrorMessage
+          name="nivel_regionalizacao"
+          class="error-msg"
+        /> -->
+    </div>
+
     <div class="f1 mb2">
       <LabelFromYup
         :schema="schema"
