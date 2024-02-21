@@ -9,7 +9,8 @@ services:
       POSTGRES_USER: "smae"
       POSTGRES_DB: smae_dev_persistent
     networks:
-      - postgres
+      #- postgres
+      - smae_network
     volumes:
       - pgdata:/var/lib/postgresql/data
     ports:
@@ -40,9 +41,10 @@ services:
       MB_DB_HOST: metadb_postgres
       MB_SITE_URL: "${MB_SITE_URL}"
     networks:
-      - postgres
-      - metadb_web
-      - metadb_postgres
+      #- postgres
+      #- metadb_web
+      #- metadb_postgres
+      - smae_network
     healthcheck:
       test: curl --fail -I http://localhost:3000/api/health || exit 1
       interval: 15s
@@ -87,12 +89,13 @@ services:
       LOG_REQ_ON_DB: "${LOG_REQ_ON_DB}"
       LOG_DB_SKIP_URL_LIST: "${LOG_DB_SKIP_URL_LIST}"
     networks:
-      - postgres
-      - minio
-      - api
-      - api_orcamento
-      - api_sei
-      - api_geoloc
+      #- postgres
+      #- minio
+      #- api
+      #- api_orcamento
+      #- api_sei
+      #- api_geoloc
+      - smae_network
     depends_on:
       - db
       - minio
@@ -116,7 +119,8 @@ services:
       SOF_API_VERSION: "v4"
       PORT: 80
     networks:
-      - api_orcamento
+      #- api_orcamento
+      - smae_network
     logging:
       driver: "json-file"
       options:
@@ -139,7 +143,8 @@ services:
       DISTANCIA_PADRAO_MTS_GEOSAMPA: "5"
       NAMES_CAMADAS_TTL_SECONDS: "21600"
     networks:
-      - api_geoloc
+      #- api_geoloc
+      - smae_network
     logging:
       driver: "json-file"
       options:
@@ -218,7 +223,8 @@ services:
       MINIO_ROOT_USER: "${MINIO_ROOT_USER}"
       MINIO_ROOT_PASSWORD: "${MINIO_ROOT_PASSWORD}"
     networks:
-      - minio
+      #- minio
+      - smae_network
     ports:
       - "${BIND_INTERFACE}${MINIO_S3_LISTEN}:9000"
       - "${BIND_INTERFACE}${MINIO_CONSOLE_LISTEN}:9001"
@@ -237,8 +243,9 @@ services:
       context: ./
       dockerfile: frontend/Dockerfile
     networks:
-      - api
-      - metadb_web
+      #- api
+      #- metadb_web
+      - smae_network
     depends_on:
       - smae_api
       - metabase
@@ -259,7 +266,8 @@ services:
     volumes:
       - backup_smae_pg:/backups
     networks:
-      - postgres
+      #- postgres
+      - smae_network
     depends_on:
       - db
     environment:
@@ -282,7 +290,8 @@ services:
     volumes:
       - backup_metabase_pg:/backups
     networks:
-      - postgres
+      #- postgres
+      - smae_network
     depends_on:
       - db
     environment:
@@ -299,15 +308,7 @@ services:
 
 
 networks:
-  postgres:
-  minio:
-  api:
-  api_orcamento:
-  api_geoloc:
-  smtp:
-  metadb_postgres:
-  metadb_web:
-  api_sei:
+  smae_network:
 
 volumes:
   pgdata:
