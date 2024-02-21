@@ -294,13 +294,6 @@ export class IndicadoresService implements ReportableService {
         JOIN serie_variavel sv ON sv.serie = series.serie
         JOIN ${queryFromWhere} and sv.variavel_id = v.id`);
 
-        if (!buscaInicio[0].min) {
-            stream.destroy();
-            return;
-        };
-
-        const anoInicio = buscaInicio[0].min.getFullYear();
-
         const sql = `CREATE TEMP TABLE _report_data ON COMMIT DROP AS SELECT
         i.id as indicador_id,
         i.codigo as indicador_codigo,
@@ -341,6 +334,13 @@ export class IndicadoresService implements ReportableService {
             where: { removido_em: null },
         });
         await this.prisma.$transaction(async (prismaTxn: Prisma.TransactionClient) => {
+            if (!buscaInicio[0].min) {
+                await this.streamRowsInto(null, stream, prismaTxn);
+                return;
+            };
+
+            const anoInicio = buscaInicio[0].min.getFullYear();
+
             if (dto.periodo == 'Anual' && dto.tipo == 'Analitico') {
                 await prismaTxn.$queryRawUnsafe(
                     sql
