@@ -2,15 +2,18 @@
 import { relatórioSemestralOuAnual as schema } from '@/consts/formSchemas';
 import { useAlertStore } from '@/stores/alert.store';
 import { usePdMStore } from '@/stores/pdm.store';
+import { useMetasStore } from '@/stores/metas.store';
 import { useRelatoriosStore } from '@/stores/relatorios.store.ts';
 import { storeToRefs } from 'pinia';
 import { Field, Form } from 'vee-validate';
-import { onMounted } from 'vue';
+import { onMounted, watch, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+import AutocompleteField from '@/components/AutocompleteField2.vue';
 import CheckClose from '../../components/CheckClose.vue';
 
 const alertStore = useAlertStore();
 const PdMStore = usePdMStore();
+const MetasStore = useMetasStore();
 const relatoriosStore = useRelatoriosStore();
 const route = useRoute();
 const router = useRouter();
@@ -18,28 +21,22 @@ const { current } = storeToRefs(relatoriosStore);
 
 const { loading } = storeToRefs(relatoriosStore);
 
-const listaDeSemestres = [
-  'Primeiro',
-  'Segundo',
-];
+const listaDeSemestres = ['Primeiro', 'Segundo'];
+const listaDePeríodos = ['Semestral', 'Anual'];
 
-const listaDePeríodos = [
-  'Semestral',
-  'Anual',
-];
-
-current.value = {
+const currentOptions = ref({
   fonte: 'Indicadores',
   parametros: {
     tipo: 'Analitico',
     pdm_id: 0,
     meta_id: 0,
+    metas: [],
     ano: 2003,
     periodo: '',
     semestre: '',
   },
   salvar_arquivo: false,
-};
+});
 
 async function onSubmit(values) {
   const carga = values;
@@ -75,6 +72,12 @@ onMounted(() => {
       current.value.parametros.pdm_id = currentPdM.id;
     }
   });
+
+  watch(() => currentOptions.value.parametros.pdm_id, (newId, oldId) => {
+    if (newId !== oldId) {
+      MetasStore.getfilteredMetasByPdM(newId);
+    }
+  });
 });
 </script>
 
@@ -87,7 +90,7 @@ onMounted(() => {
   <Form
     v-slot="{ errors, isSubmitting, values }"
     :validation-schema="schema"
-    :initial-values="current"
+    :initial-values="currentOptions"
     @submit="onSubmit"
   >
     <div class="flex g2 mb2">
@@ -96,6 +99,7 @@ onMounted(() => {
           <abbr title="Programa de metas">PdM</abbr>&nbsp;<span class="tvermelho">*</span>
         </label>
         <Field
+          v-model="currentOptions.parametros.pdm_id"
           name="parametros.pdm_id"
           as="select"
           class="inputtext light
@@ -157,7 +161,7 @@ onMounted(() => {
             v-for="item, k in listaDePeríodos"
             :key="k"
             :value="item"
-            :selected="k == current.parametros?.periodo"
+            :selected="k == currentOptions.parametros?.periodo"
           >
             {{ item }}
           </option>
@@ -194,7 +198,7 @@ onMounted(() => {
             v-for="item, k in listaDeSemestres"
             :key="k"
             :value="item"
-            :selected="k == current.parametros?.semestre"
+            :selected="k == currentOptions.parametros?.semestre"
           >
             {{ item }}
           </option>
@@ -204,7 +208,22 @@ onMounted(() => {
         </div>
       </div>
     </div>
-
+    <div class="mb2">
+      <label
+        for="metas"
+        class="label"
+      >
+        Metas
+      </label>
+      <AutocompleteField
+        id="metas"
+        name="parametros.metas"
+        :controlador="{ busca: '', participantes: values.parametros.metas || [] }"
+        label="titulo"
+        :grupo="MetasStore.Metas"
+        :class="{ error: errors['parametros.metas'], loading: MetasStore.Metas?.loading }"
+      />
+    </div>
     <div class="mb2">
       <div class="pl2">
         <label class="block mb1">
