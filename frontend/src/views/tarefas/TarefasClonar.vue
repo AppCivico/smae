@@ -22,6 +22,7 @@ const {
   chamadasPendentes,
   erro,
   projetosPorPortfolio,
+  projetosPortfolioModeloClonagem
 } = storeToRefs(projetosStore);
 
 const tarefasStore = useTarefasStore();
@@ -73,6 +74,13 @@ if (!projetosPorPortfolio.value.length) {
   projetosStore.buscarTudo();
 }
 
+const combinedArray = computed(() => {
+  const projetosDoMesmoPort = projetosPorPortfolio.value[projetoEmFoco.value?.portfolio_id] || [];
+  const projetosPortsModeloClonagem = projetosPortfolioModeloClonagem
+    .value[projetoEmFoco.value?.portfolio_id] || [];
+  return [...projetosDoMesmoPort, ...projetosPortsModeloClonagem];
+});
+
 watch(valoresIniciais, (novoValor) => {
   resetForm({ values: novoValor });
 });
@@ -122,7 +130,7 @@ export default {
               Selecionar
             </option>
             <option
-              v-for="item in projetosPorPortfolio[projetoEmFoco?.portfolio_id]"
+              v-for="item in combinedArray"
               :key="item.id"
               :value="item.id"
               :hidden="item.id === projetoEmFoco?.id"
