@@ -269,7 +269,9 @@ onMounted(() => {
 });
 
 watch(() => props.camadas, async (valorNovo) => {
-  await prepararCamadas(valorNovo);
+  if (mapa) {
+    await prepararCamadas(valorNovo);
+  }
 });
 
 watch(() => props.marcador, (valorNovo) => {
@@ -283,7 +285,9 @@ watch(() => props.marcador, (valorNovo) => {
 });
 
 watch(() => props.polígonos, (valorNovo) => {
-  chamarDesenhoDePolígonosNovos(valorNovo);
+  if (mapa) {
+    chamarDesenhoDePolígonosNovos(valorNovo);
+  }
 });
 </script>
 <style lang="less">
