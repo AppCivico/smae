@@ -329,16 +329,8 @@ export const useProjetosStore = defineStore('projetos', {
         return acc;
       }, {}),
 
-      projetosPortfolioModeloClonagem: ({ lista }: Estado): { [k: number | string]: ProjetoDto[] } => lista
-      .reduce((acc: any, cur: ProjetoDto) => {
-        if (cur.portfolio.modelo_clonagem) {
-          if (!acc[cur.portfolio.id]) {
-            acc[cur.portfolio.id] = [];
-          }
-          acc[cur.portfolio.id].push(cur);
-        }
-        return acc;
-      }, {}),
+      projetosPortfolioModeloClonagem: ({ lista }: Estado): ProjetoDto[] => lista
+      .filter(e => e.portfolio.modelo_clonagem == true),
 
     órgãosEnvolvidosNoProjetoEmFoco: ({ emFoco }) => {
       const órgãos = emFoco?.orgaos_participantes && Array.isArray(emFoco?.orgaos_participantes)
