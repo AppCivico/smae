@@ -331,12 +331,15 @@ export const useProjetosStore = defineStore('projetos', {
 
     projetosPortfolioModeloClonagem: ({ lista }: Estado): { [k: number | string]: ProjetoDto[] } => lista
       .reduce((acc: any, cur: ProjetoDto) => {
-      if (!cur.portfolio.modelo_clonagem) {
-        acc[cur.portfolio.id] = [];
-      }
+        if (!acc[cur.portfolio.id]) {
+          acc[cur.portfolio.id] = [];
+        }
+        if (!cur.portfolio.modelo_clonagem) {
+          acc[cur.portfolio.id] = [];
+        }
     
-      acc[cur.portfolio.id].push(cur);
-      return acc;
+        acc[cur.portfolio.id].push(cur);
+        return acc;
     }, {}),
 
     órgãosEnvolvidosNoProjetoEmFoco: ({ emFoco }) => {
