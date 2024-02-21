@@ -10,8 +10,9 @@ import { default as AddEditEtapa } from '@/views/metas/AddEditEtapa.vue';
 import { default as AddEditFase } from '@/views/metas/AddEditFase.vue';
 import { default as AddEditMonitorar } from '@/views/metas/AddEditMonitorar.vue';
 import { storeToRefs } from 'pinia';
+import MapaExibir from '@/components/geo/MapaExibir.vue';
 import {
-  onMounted, onUpdated, reactive, ref,
+  computed, onMounted, onUpdated, reactive, ref,
 } from 'vue';
 import { useRoute } from 'vue-router';
 import { classeParaFarolDeAtraso, textoParaFarolDeAtraso } from './helpers/auxiliaresParaFaroisDeAtraso.ts';
@@ -46,6 +47,39 @@ const parentLabel = ref(atividade_id ? '-' : iniciativa_id ? '-' : meta_id ? 'Me
 const CronogramasStore = useCronogramasStore();
 const { singleCronograma, singleCronogramaEtapas } = storeToRefs(CronogramasStore);
 const editModalStore = useEditModalStore();
+
+function achatarGeoLocalização(data) {
+  let geoLocalizaçãoAchatada = [];
+
+  data.forEach((item) => {
+    if (item?.etapa?.geolocalizacao?.length > 0) {
+      geoLocalizaçãoAchatada = geoLocalizaçãoAchatada
+        .concat(item.etapa.geolocalizacao);
+    }
+
+    if (item?.geolocalizacao?.length > 0) {
+      geoLocalizaçãoAchatada = geoLocalizaçãoAchatada
+        .concat(item.geolocalizacao);
+    }
+
+    if (item?.etapa?.etapa_filha?.length > 0) {
+      geoLocalizaçãoAchatada = geoLocalizaçãoAchatada
+        .concat(achatarGeoLocalização(item.etapa.etapa_filha));
+    }
+
+    if (item?.etapa_filha?.length > 0) {
+      geoLocalizaçãoAchatada = geoLocalizaçãoAchatada
+        .concat(achatarGeoLocalização(item.etapa_filha));
+    }
+  });
+
+  return geoLocalizaçãoAchatada;
+}
+
+const marcadoresDasEtapas = computed(() => (singleCronogramaEtapas.value?.loading
+  || !singleCronogramaEtapas.value.length
+  ? []
+  : achatarGeoLocalização(singleCronogramaEtapas.value).map((x) => x.endereco)));
 
 function excluirEtapa(id) {
   alertStore.confirmAction('Deseja mesmo excluir?', async () => {
@@ -207,6 +241,13 @@ onUpdated(() => { start(); });
         </div>
         <hr class="mt2 mb2">
       </div>
+
+      <MapaExibir
+        v-if="marcadoresDasEtapas.length"
+        :geo-json="marcadoresDasEtapas"
+        class="mb2"
+        zoom="16"
+      />
 
       <div
         v-if="!singleCronogramaEtapas?.loading && singleCronogramaEtapas.length"
