@@ -294,6 +294,8 @@ export class IndicadoresService implements ReportableService {
         JOIN serie_variavel sv ON sv.serie = series.serie
         JOIN ${queryFromWhere} and sv.variavel_id = v.id`);
 
+        if (!buscaInicio[0]) return;
+
         const anoInicio = buscaInicio[0].min.getFullYear();
 
         const sql = `CREATE TEMP TABLE _report_data ON COMMIT DROP AS SELECT
