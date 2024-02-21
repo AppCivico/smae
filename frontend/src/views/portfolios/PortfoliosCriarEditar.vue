@@ -188,7 +188,7 @@ observadoresStore.buscarTudo();
       </div>
     </div>
 
-    <div v-if="props.portfolioId" class="f1 mb1 flex row-reverse label justifyright">
+    <div class="f1 mb1 flex row-reverse label justifyright">
       <LabelFromYup
         name="modelo_clonagem"
         :schema="schema"
@@ -198,6 +198,7 @@ observadoresStore.buscarTudo();
         type="checkbox"
         :value="true"
         class="inputcheckbox"
+        :disabled="props.portfolioId ? true : false"
       />
 
    
