@@ -40,7 +40,6 @@ const currentOptions = ref({
 
 async function onSubmit(values) {
   const carga = values;
-
   try {
     if (carga.parametros.periodo === 'Anual') {
       delete carga.parametros.semestre;
@@ -217,8 +216,8 @@ onMounted(() => {
       </label>
       <AutocompleteField
         id="metas"
-        name="parametros.metas"
-        :controlador="{ busca: '', participantes: values.parametros.metas || [] }"
+        name="parametros.metas_ids"
+        :controlador="{ busca: '', participantes: values.parametros.metas_ids || [] }"
         label="titulo"
         :grupo="MetasStore.Metas"
         :class="{ error: errors['parametros.metas'], loading: MetasStore.Metas?.loading }"
