@@ -294,7 +294,7 @@ export class IndicadoresService implements ReportableService {
         JOIN serie_variavel sv ON sv.serie = series.serie
         JOIN ${queryFromWhere} and sv.variavel_id = v.id`);
 
-        if (!buscaInicio[0]) return;
+        if (!buscaInicio[0].min) return;
 
         const anoInicio = buscaInicio[0].min.getFullYear();
 
