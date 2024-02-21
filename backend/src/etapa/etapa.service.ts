@@ -309,15 +309,16 @@ export class EtapaService {
             // Esta func verifica se as rows acima (etapa_pai_id) possuem esse boolean "endereco_obrigatorio"
             // E se está sendo respeitado
             if (dto.termino_real && dto.termino_real != null) {
-                const paisComPendencias: {assert_geoloc_rule: string} = await prismaTx.$queryRaw`SELECT CAST(assert_geoloc_rule(${id}::integer, ${self.CronogramaEtapa[0].cronograma_id}::integer) AS VARCHAR)`;
+                const paisComPendencias: {assert_geoloc_rule: string}[] = await prismaTx.$queryRaw`SELECT CAST(assert_geoloc_rule(${id}::integer, ${self.CronogramaEtapa[0].cronograma_id}::integer) AS VARCHAR)`;
                 console.log('paisComPendencias');
-                console.log(paisComPendencias.assert_geoloc_rule);
-                if (paisComPendencias != null)
-                    paisComPendencias.assert_geoloc_rule = paisComPendencias.assert_geoloc_rule.slice(1, -1);
-                    const pendentes = paisComPendencias.assert_geoloc_rule.split(',');
+                console.log(paisComPendencias);
+                if (paisComPendencias[0].assert_geoloc_rule && paisComPendencias[0].assert_geoloc_rule != null) {
+                    const pendentesStr = paisComPendencias[0].assert_geoloc_rule.slice(1, -1);
+                    const pendentes = pendentesStr.split(',');
                     console.log(pendentes);
                     if (pendentes.length > 0)
                         throw new HttpException(`Seguintes etapas precisam ter endereço preenchido: ${pendentes.join(',')}`, 400);
+                }
             }
 
             return etapa;
