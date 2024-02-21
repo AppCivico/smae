@@ -184,8 +184,8 @@ onMounted(() => {
       />
 
       <AutocompleteField
-        name="parametros.metas"
-        :controlador="{ busca: '', participantes: values.parametros.metas || [] }"
+        name="parametros.metas_ids"
+        :controlador="{ busca: '', participantes: values.parametros.metas_ids || [] }"
         label="titulo"
         :grupo="MetasStore.Metas"
         :class="{
