@@ -37,6 +37,10 @@ import {
   ListUsers,
 } from '@/views/users';
 
+import { PaineisExternosLista } from '@/views/paineisExternos/PaineisExternosLista.vue';
+import { PaineisExternosCriarEditar } from '@/views/paineisExternos/PaineisExternosCriarEditar.vue';
+import { PaineisExternosRaiz } from '@/views/paineisExternos/PaineisExternosRaiz.vue';
+
 const PortfoliosCriarEditar = defineAsyncComponent({
   loader: () => import('@/views/portfolios/PortfoliosCriarEditar.vue'),
   loadingComponent: LoadingComponent,
@@ -532,6 +536,49 @@ export default [
 
         meta: {
           título: 'Editar portfolio',
+        },
+      },
+    ],
+  },
+  {
+    path: '/paineis-externos',
+    component: PaineisExternosRaiz,
+    meta: {
+      requerAutenticação: true,
+      title: 'Paineis Externos',
+      rotaPrescindeDeChave: true,
+    },
+    props: {
+      submenu: SubmenuConfig,
+    },
+    children: [
+      {
+        name: 'paineisExternosListar',
+        path: '',
+        component: PaineisExternosLista,
+        meta: {
+          título: 'Paineis Externos',
+        },
+      },
+      {
+        name: 'paineisExternosCriar',
+        path: 'novo',
+        component: PaineisExternosCriarEditar,
+        meta: {
+          título: 'Novo painel externo',
+        },
+      },
+      {
+        path: ':paineilId',
+        name: 'paineisExternosEditar',
+        component: PaineisExternosCriarEditar,
+        props: ({ params }) => ({
+          ...params,
+          ...{ paineilId: Number.parseInt(params.paineilId, 10) || undefined },
+        }),
+
+        meta: {
+          título: 'Editar painel externo',
         },
       },
     ],

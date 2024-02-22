@@ -55,9 +55,9 @@ const podeAcessarGrupos = computed(() => perm?.CadastroGrupoPaineis?.inserir
 
           <router-link
             v-if="perm?.CadastroPainelExterno"
-            to="/painel-externo/novo"
+            :to="{ name: 'paineisExternosListar' }"
           >
-            Novo painel externo
+            Paineis externos
           </router-link>
         </div>
       </template>
