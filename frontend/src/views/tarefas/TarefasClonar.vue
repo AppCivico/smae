@@ -22,7 +22,7 @@ const {
   chamadasPendentes,
   erro,
   projetosPorPortfolio,
-  projetosPortfolioModeloClonagem
+  projetosPortfolioModeloClonagem,
 } = storeToRefs(projetosStore);
 
 const tarefasStore = useTarefasStore();
@@ -74,21 +74,6 @@ if (!projetosPorPortfolio.value.length) {
   projetosStore.buscarTudo();
 }
 
-const combinedArray = computed(() => {
-  const projetosDoMesmoPort = projetosPorPortfolio.value[projetoEmFoco.value?.portfolio_id] || [];
-  console.log('projetosDoMesmoPort');
-  console.log(projetosDoMesmoPort);
-
-  const projetosPortsModeloClonagem = projetosPortfolioModeloClonagem.value.map((e) => ({
-    id: e.id,
-    nome: e.nome,
-  }));
-
-  console.log('projetosPortsModeloClonagem');
-  console.log(projetosPortsModeloClonagem);
-  return [...projetosDoMesmoPort, ...projetosPortsModeloClonagem];
-});
-
 watch(valoresIniciais, (novoValor) => {
   resetForm({ values: novoValor });
 });
@@ -137,14 +122,32 @@ export default {
             <option :value="0">
               Selecionar
             </option>
-            <option
-              v-for="item in combinedArray"
-              :key="item.id"
-              :value="item.id"
-              :hidden="item.id === projetoEmFoco?.id"
+            <optgroup
+              v-if="projetosPortfolioModeloClonagem?.length"
+              label="Modelos"
             >
-              {{ item.nome }}
-            </option>
+              <option
+                v-for="item in projetosPortfolioModeloClonagem"
+                :key="item.id"
+                :value="item.id"
+              >
+                {{ item.nome }}
+              </option>
+            </optgroup>
+
+            <optgroup
+              v-if="projetosPorPortfolio[projetoEmFoco?.portfolio_id]?.length"
+              label="Projetos"
+            >
+              <option
+                v-for="item in projetosPorPortfolio[projetoEmFoco?.portfolio_id]"
+                :key="item.id"
+                :value="item.id"
+                :hidden="item.id === projetoEmFoco?.id"
+              >
+                {{ item.nome }}
+              </option>
+            </optgroup>
           </Field>
           <ErrorMessage
             class="error-msg mb1"
