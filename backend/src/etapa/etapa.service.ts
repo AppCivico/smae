@@ -240,6 +240,9 @@ export class EtapaService {
             if (dto.termino_real && inicioReal && dto.termino_real < inicioReal)
                 throw new HttpException('termino_real| Não pode ser menor que inicio_real', 400);
 
+            if (self.endereco_obrigatorio && (dto.geolocalizacao?.length == 0 && self.GeoLocalizacaoReferencia.length > 0) && self.termino_real)
+                throw new HttpException('Endereços não podem ser removidos, pois tarefa já foi concluída e endereço é obrigatório.', 400);
+
             const etapa = await prismaTx.etapa.update({
                 where: { id: id },
                 data: {
@@ -299,7 +302,7 @@ export class EtapaService {
             // Caso seja true, a etapa só pode receber a data de termino_real
             // Se possuir endereço, ou seja, rows de GeoLocalizacaoReferencia
             if (
-                self.endereco_obrigatorio &&
+                (self.endereco_obrigatorio && (dto.endereco_obrigatorio == true || dto.endereco_obrigatorio == undefined)) &&
                 (self.GeoLocalizacaoReferencia.length == 0 || !geolocalizacao) &&
                 dto.termino_real &&
                 dto.termino_real != null
