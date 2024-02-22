@@ -21,29 +21,35 @@ class AddresSearch:
         geojson_data = self.nominatim_parser(resp)
 
         return geojson_data
-    
-    def is_sp(self, address:dict)->bool:
 
-        test_city = address['properties']['cidade']=='São Paulo'
-        test_state = address['properties']['estado']=='São Paulo'
-        test_country = address['properties']['codigo_pais']=='br'
+    def is_sp(self, address: dict) -> bool:
+        test_city = address['properties']['cidade'] == 'São Paulo'
+        test_state = address['properties']['estado'] == 'São Paulo'
+        test_country = address['properties']['codigo_pais'] == 'br'
 
-        return test_city * test_state & test_country
+        # Debug messages
+        print(f"City Test: {test_city}, State Test: {test_state}, Country Test: {test_country}")
 
-    def filter_address_sp(self, address_geojson:list)->List:
+        result = test_city and test_state and test_country
+        print(f"Address is São Paulo: {result}")
+        return result
 
-        in_city = [add for add in address_geojson['features']
-                if self.is_sp(add)]
+    def filter_address_sp(self, address_geojson: list) -> List:
+        in_city = [add for add in address_geojson['features'] if self.is_sp(add)]
+
+        # Debug message
+        print(f"Filtered addresses in São Paulo: {len(in_city)}")
+
         address_geojson['features'] = in_city
 
     def address_feature_to_geojson(self, address_feat:dict, crs:dict)->dict:
         '''takes and anddress features and format it to a whole geojson'''
-        
+
         #crs must be of t he whole geojson not of just one feature
         crs_num = int(crs['properties']['name'].split(':')[-1])
-        
+
         return geojson_envelop([address_feat], crs_num)
-    
+
     def format_address_data(self, address:dict, nominatim_crs:str, convert_to_wgs_84:bool, **camadas)->dict:
 
         address_data = {
@@ -54,7 +60,7 @@ class AddresSearch:
         address_data['camadas_geosampa'] = camadas_data
 
         return address_data
-    
+
     def __call__(self, address:str, convert_to_wgs_84:bool=True, **camadas)->List[dict]:
 
 
@@ -67,12 +73,12 @@ class AddresSearch:
             data.append(self.format_address_data(add, nominatim_crs, convert_to_wgs_84, **camadas))
 
         return data
-            
 
 
-    
-    
-    
+
+
+
+
 
 
 
