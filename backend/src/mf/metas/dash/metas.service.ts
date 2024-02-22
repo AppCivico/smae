@@ -122,6 +122,12 @@ export class MfDashMetasService {
         if ((params.retornar_pendentes || params.retornar_atualizadas) && ehPontoFocal)
             listaMetasPendentesPf = await this.metasPendentePontoFocal(config.pessoa_id, params);
 
+        // se passar só retornar_detalhes, mas não ativar nenhum filtro de variavel ou cronograma, então
+        // vai filtrar usando qualquer um deles (basicamente vira um OR, mas ta calculado já isso lá no banco)
+        // se passar algum desses dois, vira undefined para o prisma ignorar o valor desse campo
+        const usar_pendente_cp =
+            retornar_detalhes && !params.filtro_ponto_focal_variavel && !params.filtro_ponto_focal_cronograma;
+
         if (params.retornar_pendentes) {
             const pendentes = await this.prisma.metaStatusConsolidadoCf.findMany({
                 where: {
@@ -131,7 +137,15 @@ export class MfDashMetasService {
                     OR: ehPontoFocal
                         ? undefined
                         : [
-                              { pendente_cp: true },
+                              { pendente_cp: usar_pendente_cp ? true : undefined },
+                              {
+                                  pendente_cp_cronograma:
+                                      retornar_detalhes && params.filtro_ponto_focal_cronograma ? true : undefined,
+                              },
+                              {
+                                  pendente_cp_variavel:
+                                      retornar_detalhes && params.filtro_ponto_focal_variavel ? true : undefined,
+                              },
                               // no detalhes, n importa o status do orçamento, mas na primeira tela, se tiver pendente
                               // precisa retornar
                               { orcamento_pendente: retornar_detalhes ? undefined : true },
@@ -159,7 +173,16 @@ export class MfDashMetasService {
                     AND: ehPontoFocal
                         ? [{ meta_id: { notIn: listaMetasPendentesPf } }]
                         : [
-                              { pendente_cp: false },
+                              { pendente_cp: usar_pendente_cp ? false : undefined },
+                              {
+                                  pendente_cp_cronograma:
+                                      retornar_detalhes && params.filtro_ponto_focal_cronograma ? false : undefined,
+                              },
+                              {
+                                  pendente_cp_variavel:
+                                      retornar_detalhes && params.filtro_ponto_focal_variavel ? false : undefined,
+                              },
+
                               // again, no detalhe, n importa o status do orçamento
                               { orcamento_pendente: retornar_detalhes ? undefined : false },
                           ],
