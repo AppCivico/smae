@@ -19,27 +19,27 @@ class Nominatim:
 
     def __init__(self, city:str, state:str, country_iso:str, contact_email:str, bbox_bound:dict=None)->None:
 
-        
-        self.build_query = QueryBuilder(city, state, country_iso, 
+
+        self.build_query = QueryBuilder(city, state, country_iso,
                                         contact_email, bbox_bound)
 
         self.session = Session()
         self.add_language_headers()
 
-        self.base_url = self.build_base_url()    
-        
+        self.base_url = self.build_base_url()
+
     def build_base_url(self)->str:
 
         return f'https://{self.host}/{self.endpoint}'
-        
-    
+
+
     def add_language_headers(self):
-        
+
         #tem que colocar esse header se nao ele muda a language da
         #resposta da API com base no reverse location search do IP
         #o que faria o codigo quebrar
 
-        self.session.headers.update({'Accept-Language' : 'en-US'})
+        self.session.headers.update({'Accept-Language' : 'pt-BR'})
 
     @json_decode_error_handling
     def address_request(self, address:str)->dict:
