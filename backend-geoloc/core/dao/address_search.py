@@ -23,11 +23,16 @@ class AddresSearch:
         return geojson_data
 
     def is_sp(self, address: dict) -> bool:
-        test_city = address['properties']['cidade'] == 'São Paulo'
-        test_state = address['properties']['estado'] == 'São Paulo'
-        test_country = address['properties']['codigo_pais'] == 'br'
+        cidade_value = address['properties']['cidade']
+        estado_value = address['properties']['estado']
+        codigo_pais_value = address['properties']['codigo_pais']
+
+        test_city = cidade_value == 'São Paulo'
+        test_state = estado_value == 'São Paulo'
+        test_country = codigo_pais_value == 'br'
 
         # Debug messages
+        print(f"Cidade Value: {cidade_value}, Estado Value: {estado_value}, Codigo Pais Value: {codigo_pais_value}")
         print(f"City Test: {test_city}, State Test: {test_state}, Country Test: {test_country}")
 
         result = test_city and test_state and test_country
