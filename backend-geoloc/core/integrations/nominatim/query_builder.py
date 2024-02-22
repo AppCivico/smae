@@ -32,7 +32,7 @@ class QueryBuilder:
     def set_accept_language_param(self, query:dict)->None:
 
         #soh para garantir vou colocar nos parametros tambem
-        query['accept-language'] = 'en-US'
+        query['accept-language'] = 'pt-BR'
 
     def set_bbox_param(self, query:dict)->None:
 
