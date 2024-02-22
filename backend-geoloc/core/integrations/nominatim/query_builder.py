@@ -1,7 +1,7 @@
 
 class QueryBuilder:
 
-    def __init__(self, city:str, state:str, country_iso:str, 
+    def __init__(self, city:str, state:str, country_iso:str,
                 contact_email:str, bbox_bound:dict=None)->None:
 
         self.check_country_iso(country_iso)
@@ -32,7 +32,7 @@ class QueryBuilder:
     def set_accept_language_param(self, query:dict)->None:
 
         #soh para garantir vou colocar nos parametros tambem
-        query['accept-language'] = 'en-US'
+        query['accept-language'] = 'pt-BR'
 
     def set_bbox_param(self, query:dict)->None:
 
@@ -75,7 +75,7 @@ class QueryBuilder:
         self.set_accept_language_param(query)
         self.set_email_param(query)
         self.set_address_details_param(query)
-    
+
     def set_search_boundaries(self, query:dict)->None:
 
         self.set_city(query)
