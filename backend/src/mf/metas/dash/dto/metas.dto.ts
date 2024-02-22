@@ -48,7 +48,7 @@ export class MfDashMetaPendenteDto extends IdCodTituloDto {
      */
     fechamento_enviado: boolean | null;
     atualizado_em: Date;
-    fase: CicloFase
+    fase: CicloFase;
 }
 
 export class MfMetaAtrasoItemDto {
@@ -110,11 +110,19 @@ export class FilterMfDashMetasDto {
     @Transform(({ value }: any) => value === 'true')
     retornar_detalhes?: boolean;
 
+    /**
+     * Por mais que o campos chame filtro_ponto_focal_cronograma, o campo começou a ser usado também para as telas de detalhes
+     * de qualquer usuário. Se passado junto com os detalhes, retorna apenas os itens de pendente/atualizado do cronograma
+     */
     @IsOptional()
     @IsBoolean()
     @Transform(({ value }: any) => value === 'true')
     filtro_ponto_focal_cronograma?: boolean;
 
+    /**
+     * Por mais que o campos chame filtro_ponto_focal_variavel, o campo começou a ser usado também para as telas de detalhes
+     * de qualquer usuário. Se passado junto com os detalhes, retorna apenas os itens de pendente/atualizado da variavel
+     */
     @IsOptional()
     @IsBoolean()
     @Transform(({ value }: any) => value === 'true')
