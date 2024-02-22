@@ -117,7 +117,7 @@ export class MonitoramentoMensalMfService {
     }
 
     async getSeriesVariaveis(cf: CicloFisico, metas_ids: number[] | undefined): Promise<RelSerieVariavelDto[]> {
-        const metasFilter = metas_ids && metas_ids.length > 0 ? `mi.id IN (${Prisma.join(metas_ids).statement})` : "true";
+        const metasFilter = metas_ids && metas_ids.length > 0 ? `mi.id IN (${Prisma.join(metas_ids).statement})` : "true::boolean";
 
         const serieVariaveis = await this.prisma.$queryRaw`
         with cf as (
