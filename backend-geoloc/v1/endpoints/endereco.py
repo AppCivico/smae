@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Query, HTTPException
 
 from typing import List
-
+from core.exceptions import AtributeNotFound
 from core.dao import buscar_endereco, buscar_endereco_simples, nomes_camadas
 from core.schemas.address import AdressSearch, AdressSearchParameters, GeoJsonEndereco
 
@@ -31,7 +31,10 @@ async def geolocalizar_endereco(search_endereco:AdressSearchParameters)->List[Ad
             camadas_geosampa[camada.alias] = camada.layer_name
     else:
         camadas_geosampa={}
-    data = buscar_endereco(endereco, convert, **camadas_geosampa)
+    try:
+        data = buscar_endereco(endereco, convert, **camadas_geosampa)
+    except AtributeNotFound as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
     return data
 
