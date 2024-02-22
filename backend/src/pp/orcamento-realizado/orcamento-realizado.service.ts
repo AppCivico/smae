@@ -31,7 +31,10 @@ const fk_nota = (row: { dotacao: string; dotacao_processo: string; dotacao_proce
 @Injectable()
 export class OrcamentoRealizadoService {
     liberarValoresMaioresQueSof: boolean;
-    constructor(private readonly prisma: PrismaService, private readonly dotacaoService: DotacaoService) {
+    constructor(
+        private readonly prisma: PrismaService,
+        private readonly dotacaoService: DotacaoService
+    ) {
         // deixar ligado a verificação
         this.liberarValoresMaioresQueSof = false;
     }
@@ -43,10 +46,10 @@ export class OrcamentoRealizadoService {
     ): Promise<RecordWithId> {
         const portfolio = await this.prisma.portfolio.findFirstOrThrow({
             where: { id: projeto.portfolio_id },
-            select: { modelo_clonagem: true }
+            select: { modelo_clonagem: true },
         });
         if (portfolio.modelo_clonagem)
-          throw new HttpException('Projeto pertence a Portfolio de modelo de clonagem', 400);
+            throw new HttpException('Projeto pertence a Portfolio de modelo de clonagem', 400);
 
         const dotacao_complemento = ExtraiComplementoDotacao(dto);
         console.log(
@@ -356,7 +359,7 @@ export class OrcamentoRealizadoService {
     ) {
         console.log('buscaProcesso', dto, dotacao, processo);
         const processoTx = await this.buscaProcesso(prismaTxn, dto, dotacao, processo);
-        console.log(processoTx)
+        console.log(processoTx);
         const mes_utilizado = processoTx.mes_utilizado;
 
         // muda um recurso em comum, pra criar o lock no serialize
@@ -373,14 +376,14 @@ export class OrcamentoRealizadoService {
                 portfolio_id: portfolio_id,
             },
         });
-        console.log(novo_valor)
+        console.log(novo_valor);
 
         if (
             novo_valor &&
             this.liberarValoresMaioresQueSof === false &&
             novo_valor.soma_valor_empenho.greaterThan(processoTx.empenho_liquido)
         ) {
-            console.log('entrou no exception 1')
+            console.log('entrou no exception 1');
             throw new HttpException(FRASE_ERRO_EMPENHO, 400);
         }
 
@@ -389,7 +392,7 @@ export class OrcamentoRealizadoService {
             this.liberarValoresMaioresQueSof === false &&
             novo_valor.soma_valor_liquidado.greaterThan(processoTx.valor_liquidado)
         ) {
-            console.log('entrou no exception 2')
+            console.log('entrou no exception 2');
             throw new HttpException(FRASE_ERRO_LIQUIDADO, 400);
         }
 
@@ -457,13 +460,15 @@ export class OrcamentoRealizadoService {
             throw new HttpException(FRASE_ERRO_EMPENHO, 400);
         }
 
-        console.log('novo_valor', novo_valor, notaEmpenhoTx)
+        console.log('novo_valor', novo_valor, notaEmpenhoTx);
         if (
             novo_valor &&
             this.liberarValoresMaioresQueSof === false &&
             novo_valor.soma_valor_liquidado.greaterThan(notaEmpenhoTx.valor_liquidado)
         ) {
-            console.log('entrou no this.liberarValoresMaioresQueSof novo_valor.soma_valor_liquidado notaEmpenhoTx.valor_liquidado')
+            console.log(
+                'entrou no this.liberarValoresMaioresQueSof novo_valor.soma_valor_liquidado notaEmpenhoTx.valor_liquidado'
+            );
             throw new HttpException(FRASE_ERRO_LIQUIDADO, 400);
         }
 
@@ -567,7 +572,6 @@ export class OrcamentoRealizadoService {
         filters: FilterPPOrcamentoRealizadoDto,
         user: PessoaFromJwt
     ): Promise<PPOrcamentoRealizado[]> {
-
         const queryRows = await this.prisma.orcamentoRealizado.findMany({
             where: {
                 removido_em: null,
@@ -593,6 +597,11 @@ export class OrcamentoRealizadoService {
                 itens: {
                     where: {
                         sobrescrito_por: null,
+                    },
+                    select: {
+                        valor_empenho: true,
+                        valor_liquidado: true,
+                        mes: true,
                     },
                 },
             },
