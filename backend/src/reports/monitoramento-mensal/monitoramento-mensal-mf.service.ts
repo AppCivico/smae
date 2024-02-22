@@ -73,7 +73,7 @@ export class MonitoramentoMensalMfService {
         });
         if (!cf) return null;
 
-        const seriesVariaveis = await this.getSeriesVariaveis(cf, dto.metas_ids);
+        const seriesVariaveis = await this.getSeriesVariaveis(cf, metas);
 
         const metasOut: RelMfMetas[] = [];
 
@@ -116,9 +116,7 @@ export class MonitoramentoMensalMfService {
         };
     }
 
-    async getSeriesVariaveis(cf: CicloFisico, metas_ids: number[] | undefined): Promise<RelSerieVariavelDto[]> {
-        const metasFilter = metas_ids && metas_ids.length > 0 ? `mi.id IN (${Prisma.join(metas_ids).statement})` : "true::boolean";
-
+    async getSeriesVariaveis(cf: CicloFisico, metas: number[]): Promise<RelSerieVariavelDto[]> {
         const serieVariaveis = await this.prisma.$queryRaw`
         with cf as (
             select pdm_id, id, data_ciclo
@@ -205,7 +203,7 @@ export class MonitoramentoMensalMfService {
         left join atividade ai on ai.id = i.atividade_id
         left join iniciativa ii on  ii.id = coalesce(ai.iniciativa_id, i.iniciativa_id)
         left join meta mi on mi.id = coalesce(ii.meta_id, i.meta_id)
-        WHERE ${metasFilter}
+        WHERE mi.id IN (${Prisma.join(metas)})
         order by all_sv.serie, all_sv.codigo
         `;
 
