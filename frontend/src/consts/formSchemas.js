@@ -262,6 +262,17 @@ export const fase = object()
   .shape({
     descricao: string()
       .nullable(),
+    endereco_obrigatorio: boolean()
+      .required(),
+    geolocalizacao: array()
+      .label('Endereços')
+      .of(
+        string()
+          .min(10, 'Endereço inválido'),
+      )
+      .when('endereco_obrigatorio', (enderecoObrigatorio, field) => (enderecoObrigatorio
+        ? field.min(1)
+        : field)),
     inicio_previsto: string()
       .required('Preencha a data')
       .matches(regEx['day/month/year'], 'Formato inválido'),
