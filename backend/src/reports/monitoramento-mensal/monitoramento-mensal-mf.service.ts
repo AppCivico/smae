@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { CicloFisico, Pdm } from '@prisma/client';
+import { CicloFisico, Pdm, Prisma } from '@prisma/client';
 import { SYSTEM_TIMEZONE } from '../../common/date2ymd';
 import { MetasAnaliseQualiService } from '../../mf/metas/metas-analise-quali.service';
 import { MetasFechamentoService } from '../../mf/metas/metas-fechamento.service';
@@ -73,7 +73,7 @@ export class MonitoramentoMensalMfService {
         });
         if (!cf) return null;
 
-        const seriesVariaveis = await this.getSeriesVariaveis(cf);
+        const seriesVariaveis = await this.getSeriesVariaveis(cf, dto.metas_ids);
 
         const metasOut: RelMfMetas[] = [];
 
@@ -116,7 +116,9 @@ export class MonitoramentoMensalMfService {
         };
     }
 
-    async getSeriesVariaveis(cf: CicloFisico): Promise<RelSerieVariavelDto[]> {
+    async getSeriesVariaveis(cf: CicloFisico, metas_ids: number[] | undefined): Promise<RelSerieVariavelDto[]> {
+        const metasFilter = metas_ids && metas_ids.length > 0 ? ` WHERE mi.id IN (${Prisma.join(metas_ids)})` : " ";
+
         const serieVariaveis = await this.prisma.$queryRaw`
         with cf as (
             select pdm_id, id, data_ciclo
@@ -203,6 +205,7 @@ export class MonitoramentoMensalMfService {
         left join atividade ai on ai.id = i.atividade_id
         left join iniciativa ii on  ii.id = coalesce(ai.iniciativa_id, i.iniciativa_id)
         left join meta mi on mi.id = coalesce(ii.meta_id, i.meta_id)
+        ${metasFilter}
         order by all_sv.serie, all_sv.codigo
         `;
 
