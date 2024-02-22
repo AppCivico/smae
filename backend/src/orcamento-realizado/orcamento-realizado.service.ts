@@ -675,6 +675,11 @@ export class OrcamentoRealizadoService {
                     where: {
                         sobrescrito_por: null,
                     },
+                    select: {
+                        valor_empenho: true,
+                        valor_liquidado: true,
+                        mes: true,
+                    },
                 },
             },
             orderBy: [{ meta_id: 'asc' }, { iniciativa_id: 'asc' }, { atividade_id: 'asc' }, { id: 'asc' }],
