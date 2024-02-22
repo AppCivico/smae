@@ -39,7 +39,7 @@ class Nominatim:
         #resposta da API com base no reverse location search do IP
         #o que faria o codigo quebrar
 
-        self.session.headers.update({'Accept-Language' : 'pt-BR'})
+        self.session.headers.update({'Accept-Language' : 'en-US'})
 
     @json_decode_error_handling
     def address_request(self, address:str)->dict:
