@@ -77,9 +77,14 @@ const estãoTodasAsRegiõesSelecionadas = computed({
       && regiõesSelecionadas.value.length === regiõesDisponíveis.value.length;
   },
   set(novoValor) {
-    regiõesSelecionadas.value = novoValor
-      ? regiõesDisponíveis.value.map((x) => x.id)
-      : [];
+    regiõesSelecionadas.value = [];
+    // Não é bonito, mas é o único jeito que achei do framework não confundir a
+    // redefinição com um push;
+    if (novoValor) {
+      regiõesDisponíveis.value.forEach((x) => {
+        regiõesSelecionadas.value.push(x.id);
+      });
+    }
   },
 });
 
@@ -253,16 +258,16 @@ export default {
           class="tc600 lista-de-opções__item"
           :for="`região__${r.id}`"
         >
-          <input
+          <Field
             :id="`região__${r.id}`"
             :key="`região__${r.id}`"
             v-model="regiõesSelecionadas"
-            :name="`regioes[${idx}]`"
+            name="regioes"
             :value="r.id"
             type="checkbox"
             class="inputcheckbox"
             :class="{ 'error': errors['parametros.tipo'] }"
-          >
+          />
           <span>
             {{ r.descricao }}
           </span>
