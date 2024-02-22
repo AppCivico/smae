@@ -18,6 +18,7 @@ class AddressParser:
         if cidade is None:
             raise AtributeNotFound(f'Atributo não encontrado: cidade: {address}' )
 
+        return cidade
 
     @attr_not_found('state')
     def get_state(self, address:dict)->str:
