@@ -449,7 +449,7 @@ export class MfDashMetasService {
                             NOT (
                                 -- retorna TRUE se todos os verificados estão no set dos enviados
                                 SELECT
-                                    bool_and(element = ANY (msc.variaveis_enviadas))
+                                    bool_and(element = ANY (msc.variaveis_preenchidas))
                                 FROM
                                     unnest(pf.variaveis_ponto_focal) AS element)
                                 -- se o banco usar químicos ruins e voltar um negativo, o default é false
