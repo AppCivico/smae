@@ -1,3 +1,6 @@
+-- AlterTable
+ALTER TABLE "meta_status_consolidado_cf" ADD COLUMN     "pendente_cp_cronograma" BOOLEAN NOT NULL DEFAULT false,
+ADD COLUMN     "pendente_cp_variavel" BOOLEAN NOT NULL DEFAULT false;
 CREATE OR REPLACE FUNCTION atualiza_meta_status_consolidado(pMetaId int, pCicloFisicoIdAtual int)
     RETURNS varchar
     AS $$
@@ -513,4 +516,5 @@ $$
 LANGUAGE plpgsql;
 
 
--- select atualiza_meta_status_consolidado(id, (select id from ciclo_fisico where ativo)) from meta where pdm_id = (select id from pdm where ativo) and removido_em is null;
+ select atualiza_meta_status_consolidado(id, (select id from ciclo_fisico where ativo)) from meta where pdm_id = (select id from pdm where ativo) and removido_em is null;
+
