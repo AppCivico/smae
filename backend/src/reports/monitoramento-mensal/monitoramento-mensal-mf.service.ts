@@ -117,7 +117,7 @@ export class MonitoramentoMensalMfService {
     }
 
     async getSeriesVariaveis(cf: CicloFisico, metas_ids: number[] | undefined): Promise<RelSerieVariavelDto[]> {
-        const metasFilter = metas_ids && metas_ids.length > 0 ? ` WHERE mi.id IN (${Prisma.join(metas_ids)})` : " ";
+        const metasFilter = metas_ids && metas_ids.length > 0 ? ` WHERE mi.id IN (${Prisma.join(metas_ids).statement})` : " ";
 
         const serieVariaveis = await this.prisma.$queryRaw`
         with cf as (
@@ -205,7 +205,7 @@ export class MonitoramentoMensalMfService {
         left join atividade ai on ai.id = i.atividade_id
         left join iniciativa ii on  ii.id = coalesce(ai.iniciativa_id, i.iniciativa_id)
         left join meta mi on mi.id = coalesce(ii.meta_id, i.meta_id)
-        ${metasFilter}
+         ${metasFilter}
         order by all_sv.serie, all_sv.codigo
         `;
 
