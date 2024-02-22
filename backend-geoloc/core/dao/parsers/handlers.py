@@ -1,7 +1,6 @@
-class AtributeNotFound(Exception):
-    pass
+from core.exceptions import AtributeNotFound
 
-def attr_not_found(msg:str):
+def attr_not_found(attr:str):
 
     def decorator(func):
 
@@ -9,7 +8,7 @@ def attr_not_found(msg:str):
             try:
                 return func(self, resp, *args, **kwargs)
             except KeyError:
-                raise AtributeNotFound(msg + f': {resp}')
+                raise AtributeNotFound('Atributo não encontrado: ' + attr + f': {resp}')
         return wrapper
     
     return decorator

@@ -1,4 +1,5 @@
 from .handlers import attr_not_found
+from core.exceptions import AtributeNotFound
 from core.utils.geo import geojson_envelop
 
 from typing import List
@@ -13,7 +14,9 @@ class AddressParser:
     @attr_not_found('cidade')
     def get_city(self, address:dict)->str:
 
-        return address['city']
+        cidade = address.get('city') or address.get('town')
+        if cidade is None:
+            raise AtributeNotFound(f'Atributo não encontrado: cidade: {address}' )
     
 
     @attr_not_found('state')

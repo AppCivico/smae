@@ -1,0 +1,2 @@
+class AtributeNotFound(RuntimeError):
+    pass
