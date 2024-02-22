@@ -14,8 +14,14 @@ import {
 
 setLocale({
   array: {
-    min: 'Escolha ao menos ${min}',
-    max: 'Escolha no máximo ${max}',
+    min: ({ label, min }) => (label
+      ? `${label}: escolha ao menos ${min}`
+      : 'Escolha ao menos ${min}'
+    ),
+    max: ({ label, max }) => (label
+      ? `${label}: escolha no máximo ${max}`
+      : 'Escolha no máximo ${max}'
+    ),
   },
   date: {
     max: ({ label }) => (label ? `${label} está muito no futuro` : 'Essa data é muito no futuro'),
