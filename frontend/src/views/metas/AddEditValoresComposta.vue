@@ -200,7 +200,6 @@ watch(período, (novoValor) => {
             <input
               v-model="valorPadrão"
               type="number"
-              min="0"
               class="inputtext light mb1"
             >
           </div>
@@ -316,7 +315,6 @@ watch(período, (novoValor) => {
                     :step="geradorDeAtributoStep(
                       sériesDaVariávelComposta.linhas?.[idx]?.variavel?.casas_decimais
                     )"
-                    min="0"
                     class="inputtext light"
                     :class="{ 'error': errors[`valores[${idx}].valor`] }"
                     :disabled="modoDePreenchimento !== 'valor_nominal'"
@@ -334,7 +332,6 @@ watch(período, (novoValor) => {
                     :step="geradorDeAtributoStep(
                       sériesDaVariávelComposta.linhas?.[idx]?.variavel?.casas_decimais
                     )"
-                    min="0"
                     class="inputtext light"
                     :disabled="modoDePreenchimento !== 'valor_acumulado'"
                     @input="($event) => { atualizarAPartirDoAcumulado($event.target.value, idx) }"
