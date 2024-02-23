@@ -592,7 +592,7 @@ export const painelExterno = object({
     .label('Descrição')
     .min(0)
     .max(2040)
-    .required(),
+    .nullable(),
   grupo: array()
     .label('Grupos')
     .nullable()
@@ -603,11 +603,12 @@ export const painelExterno = object({
     ),
   titulo: string()
     .label('Nome')
-    .required('Um painel requer um título'),
+    .required(),
   link: string()
     .label('Link')
     .max(1024)
-    .required('Um painel requer um link'),
+    .required()
+    .url(),
 });
 
 export const processo = object()

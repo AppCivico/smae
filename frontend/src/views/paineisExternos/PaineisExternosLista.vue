@@ -66,12 +66,11 @@ portfolioStore.buscarTudo();
       >
         <td>{{ item.titulo }}</td>
         <td>
-          {{ item.descricao }}
+          {{ truncate(item.descricao, 36) }}
         </td>
-        <!-- TODO: cortar string -->
-        <!-- TODO: usar router ao inves de <a></a>>-->
         <td>
           <a
+            v-if="item.link"
             :href="item.link"
             target="_blank"
           >
@@ -93,7 +92,7 @@ portfolioStore.buscarTudo();
         </td>
         <td>
           <router-link
-            :to="{ name: 'paineisExternosEditar', params: { paineilId: item.id } }"
+            :to="{ name: 'paineisExternosEditar', params: { painelId: item.id } }"
             class="tprimary"
           >
             <svg

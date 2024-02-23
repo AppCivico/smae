@@ -1,11 +1,6 @@
 <script setup>
-// import AutocompleteField from '@/components/AutocompleteField2.vue';
 import { painelExterno as schema } from '@/consts/formSchemas';
-// import months from '@/consts/months';
-// import níveisRegionalização from '@/consts/niveisRegionalizacao';
 import { useAlertStore } from '@/stores/alert.store';
-import { useObservadoresStore } from '@/stores/observadores.store.ts';
-import { useOrgansStore } from '@/stores/organs.store';
 import { usePaineisExternosStore } from '@/stores/paineisExternos.store';
 import { storeToRefs } from 'pinia';
 import { ErrorMessage, Field, Form } from 'vee-validate';
@@ -21,19 +16,8 @@ const props = defineProps({
 });
 
 const alertStore = useAlertStore();
-const observadoresStore = useObservadoresStore();
-const ÓrgãosStore = useOrgansStore();
 const paineisStore = usePaineisExternosStore();
-// const mesesDisponíveis = months.map((x, i) => ({ nome: x, id: i + 1 }));
 const { chamadasPendentes, erro, itemParaEdição } = storeToRefs(paineisStore);
-// const { órgãosComoLista } = storeToRefs(ÓrgãosStore);
-// const {
-//   lista: gruposDeObservadores,
-//   chamadasPendentes: gruposDeObservadoresPendentes,
-//   erro: erroNosDadosDeObservadores,
-// } = storeToRefs(observadoresStore);
-
-paineisStore.$reset();
 
 async function onSubmit(values) {
   try {
@@ -50,7 +34,7 @@ async function onSubmit(values) {
     if (r) {
       alertStore.success(msg);
       paineisStore.$reset();
-      router.push({ name: 'portfoliosListar' });
+      router.push({ name: 'paineisExternosListar' });
     }
   } catch (error) {
     alertStore.error(error);
@@ -61,11 +45,6 @@ if (props.painelId) {
   paineisStore.buscarItem(props.painelId);
 }
 
-ÓrgãosStore.getAll().finally(() => {
-  chamadasPendentes.value.emFoco = false;
-});
-
-observadoresStore.buscarTudo(); //
 </script>
 
 <template>
@@ -94,6 +73,24 @@ observadoresStore.buscarTudo(); //
         <ErrorMessage
           class="error-msg mb1"
           name="titulo"
+        />
+      </div>
+    </div>
+
+    <div class="flex g2 mb1">
+      <div class="f1">
+        <LabelFromYup
+          name="link"
+          :schema="schema"
+        />
+        <Field
+          name="link"
+          type="text"
+          class="inputtext light mb1"
+        />
+        <ErrorMessage
+          class="error-msg mb1"
+          name="link"
         />
       </div>
     </div>

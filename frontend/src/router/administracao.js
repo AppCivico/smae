@@ -569,7 +569,7 @@ export default [
         },
       },
       {
-        path: ':paineilId',
+        path: ':painelId',
         name: 'paineisExternosEditar',
         component: PaineisExternosCriarEditar,
         props: ({ params }) => ({
