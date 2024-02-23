@@ -1,20 +1,18 @@
 <script setup>
 import { useAlertStore } from '@/stores/alert.store';
-import { useOrgansStore } from '@/stores/organs.store';
-import { usePortfolioStore } from '@/stores/portfolios.store.ts';
 import { storeToRefs } from 'pinia';
 import { useRoute } from 'vue-router';
+import { usePaineisExternosStore } from '@/stores/paineisExternos.store';
+import truncate from '@/helpers/truncate';
 
-const organsStore = useOrgansStore();
-const { organs, órgãosPorId } = storeToRefs(organsStore);
-const portfolioStore = usePortfolioStore();
+const portfolioStore = usePaineisExternosStore();
 const {
   lista, chamadasPendentes, erro,
 } = storeToRefs(portfolioStore);
 const route = useRoute();
 const alertStore = useAlertStore();
 
-async function excluirPortfolio(id) {
+async function excluirPainel(id) {
   alertStore.confirmAction('Deseja mesmo remover esse item?', async () => {
     if (await portfolioStore.excluirItem(id)) {
       portfolioStore.$reset();
@@ -27,23 +25,21 @@ async function excluirPortfolio(id) {
 portfolioStore.$reset();
 portfolioStore.buscarTudo();
 
-if (!organs.length) {
-  organsStore.getAll();
-}
 </script>
 <template>
   <div class="flex spacebetween center mb2">
-    <h1>{{ route?.meta?.título || 'Portfolios' }}</h1>
+    <h1>{{ route?.meta?.título || 'Paineis externos' }}</h1>
     <hr class="ml2 f1">
     <router-link
-      :to="{name: 'portfoliosCriar'}"
+      :to="{name: 'paineisExternosCriar'}"
       class="btn big ml1"
     >
-      Novo portfolio teste teste
+      Novo painel externo
     </router-link>
   </div>
 
   <table class="tablemain">
+    <col>
     <col>
     <col>
     <col class="col--botão-de-ação">
@@ -51,13 +47,13 @@ if (!organs.length) {
     <thead>
       <tr>
         <th>
-          Portfolio xxxx
+          Nome
         </th>
         <th>
-          Órgãos
+          Descrição
         </th>
         <th>
-          Modelo de clonagem
+          Link
         </th>
         <th />
         <th />
@@ -70,15 +66,24 @@ if (!organs.length) {
       >
         <td>{{ item.titulo }}</td>
         <td>
-          {{ item.orgaos.map((x) => órgãosPorId[x.id]?.sigla || x.id).join(', ') }}
+          {{ item.descricao }}
         </td>
-        <td>{{ item.modelo_clonagem ? 'Sim' : 'Não' }}</td>
+        <!-- TODO: cortar string -->
+        <!-- TODO: usar router ao inves de <a></a>>-->
+        <td>
+          <a
+            :href="item.link"
+            target="_blank"
+          >
+            {{ truncate(item.link, 36) }}
+          </a>
+        </td>
         <td>
           <button
             class="like-a__text"
             arial-label="excluir"
             title="excluir"
-            @click="excluirPortfolio(item.id)"
+            @click="excluirPainel(item.id)"
           >
             <svg
               width="20"
@@ -88,7 +93,7 @@ if (!organs.length) {
         </td>
         <td>
           <router-link
-            :to="{ name: 'portfoliosEditar', params: { portfolioId: item.id } }"
+            :to="{ name: 'paineisExternosEditar', params: { paineilId: item.id } }"
             class="tprimary"
           >
             <svg

@@ -587,6 +587,29 @@ export const portfolio = object({
     .required('Um portfolio requer um título'),
 });
 
+export const painelExterno = object({
+  descricao: string()
+    .label('Descrição')
+    .min(0)
+    .max(2040)
+    .required(),
+  grupo: array()
+    .label('Grupos')
+    .nullable()
+    .of(
+      number()
+        .label('Id')
+        .required(),
+    ),
+  titulo: string()
+    .label('Nome')
+    .required('Um painel requer um título'),
+  link: string()
+    .label('Link')
+    .max(1024)
+    .required('Um painel requer um link'),
+});
+
 export const processo = object()
   .shape({
     comentarios: string()
