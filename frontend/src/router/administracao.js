@@ -37,9 +37,9 @@ import {
   ListUsers,
 } from '@/views/users';
 
-import { PaineisExternosLista } from '@/views/paineisExternos/PaineisExternosLista.vue';
-import { PaineisExternosCriarEditar } from '@/views/paineisExternos/PaineisExternosCriarEditar.vue';
-import { PaineisExternosRaiz } from '@/views/paineisExternos/PaineisExternosRaiz.vue';
+import PaineisExternosLista from '@/views/paineisExternos/PaineisExternosLista.vue';
+import PaineisExternosCriarEditar from '@/views/paineisExternos/PaineisExternosCriarEditar.vue';
+import PaineisExternosRaiz from '@/views/paineisExternos/PaineisExternosRaiz.vue';
 
 const PortfoliosCriarEditar = defineAsyncComponent({
   loader: () => import('@/views/portfolios/PortfoliosCriarEditar.vue'),
