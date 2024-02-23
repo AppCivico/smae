@@ -26,6 +26,7 @@ import { ReportsModule } from './reports/relatorios/reports.module';
 import { UtilsService } from './reports/utils/utils.service';
 import { RequestLogModule } from './request_log/request_log.module';
 import { AppModulePdm } from './app.module.pdm';
+import { PartidoModule } from './partido/partido.module';
 
 // Hacks pro JS
 /*
@@ -56,6 +57,7 @@ import { AppModulePdm } from './app.module.pdm';
         CronogramaEtapaModule,
         OrcamentoPrevistoModule,
         DashboardModule,
+        PartidoModule,
     ],
     controllers: [AppController],
     providers: [
