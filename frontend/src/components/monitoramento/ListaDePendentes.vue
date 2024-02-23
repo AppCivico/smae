@@ -119,8 +119,7 @@ const listaDePendentes = computed(() => {
       }, [])
         .sort((a, b) => a.código.localeCompare(b.código)),
     };
-  })
-    .filter((x) => !!x.variáveis.length);
+  });
 });
 </script>
 <template>
