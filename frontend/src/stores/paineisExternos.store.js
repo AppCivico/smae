@@ -8,8 +8,8 @@ export const usePaineisExternosStore = defineStore('paineisExternos', {
     emFoco: null,
 
     chamadasPendentes: {
-      lista: true,
-      emFoco: true,
+      lista: false,
+      emFoco: false,
     },
     erro: null,
   }),
@@ -79,16 +79,9 @@ export const usePaineisExternosStore = defineStore('paineisExternos', {
   },
 
   getters: {
-    itemParaEdição(emFoco) {
+    itemParaEdição({ emFoco }) {
       return {
         ...emFoco,
-        // nivel_maximo_tarefa: emFoco?.nivel_maximo_tarefa || 5,
-        // nivel_regionalizacao: emFoco?.nivel_regionalizacao || 1,
-        // data_criacao: emFoco?.data_criacao ? dateTimeToDate(emFoco?.data_criacao) : null,
-        // orcamento_execucao_disponivel_meses: emFoco?.orcamento_execucao_disponivel_meses
-        //   && Array.isArray(emFoco.orcamento_execucao_disponivel_meses)
-        //   ? emFoco.orcamento_execucao_disponivel_meses
-        //   : range(1, 13),
       };
     },
   },
