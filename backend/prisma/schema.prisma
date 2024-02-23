@@ -254,6 +254,14 @@ model Pessoa {
     projetosCompartilhadosEmPortfolioQueRemovi    PortfolioProjetoCompartilhado[] @relation("Removedor")
     projetosCompartilhadosEmPortfolioQueAtualizei PortfolioProjetoCompartilhado[] @relation("Atualizador")
 
+    partidosQueCriei Partido[] @relation("Criador")
+    partidosQueAtualizei Partido[] @relation("Atualizador")
+    partidosQueRemovi Partido[] @relation("Removedor")
+
+    bancadasQueCriei Bancada[] @relation("Criador")
+    bancadasQueAtualizei Bancada[] @relation("Atualizador")
+    bancadasQueRemovi Bancada[] @relation("Removedor")
+
     task_queue                               task_queue[]
     GeoEnderecoReferenciaqQueCriei           GeoLocalizacaoReferencia[]                @relation("criador")
     GeoEnderecoReferenciaqQueRemovid         GeoLocalizacaoReferencia[]                @relation("removedor")
@@ -4049,4 +4057,49 @@ model PainelExterno {
 
     @@index([removido_em])
     @@map("painel_externo")
+}
+
+model Partido {
+    id Int @id @default(autoincrement())
+
+    nome         String
+    sigla        String
+    numero       Int
+    observacao   String?
+    fundacao     DateTime? @db.Timestamptz(6)
+    encerramento DateTime? @db.Timestamptz(6)
+
+    criado_por     Int?
+    criado_em      DateTime?  @default(now()) @db.Timestamptz(6)
+    atualizado_por Int?
+    atualizado_em  DateTime  @default(now()) @db.Timestamptz(6)
+    removido_por   Int?
+    removido_em    DateTime? @db.Timestamptz(6)
+
+    // Criador nullable, pois provavelmente faremos carga inicial de dados.
+    criador     Pessoa?  @relation("Criador", fields: [criado_por], references: [id])
+    atualizador Pessoa? @relation("Atualizador", fields: [atualizado_por], references: [id])
+    removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
+
+    @@map("partido")
+}
+
+model Bancada {
+    id Int @id @default(autoincrement())
+    nome      String
+    descricao String
+
+    criado_por     Int?
+    criado_em      DateTime?  @default(now()) @db.Timestamptz(6)
+    atualizado_por Int?
+    atualizado_em  DateTime  @default(now()) @db.Timestamptz(6)
+    removido_por   Int?
+    removido_em    DateTime? @db.Timestamptz(6)
+
+    // Criador nullable, pois provavelmente faremos carga inicial de dados.
+    criador     Pessoa?  @relation("Criador", fields: [criado_por], references: [id])
+    atualizador Pessoa? @relation("Atualizador", fields: [atualizado_por], references: [id])
+    removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
+
+    @@map("bancada")
 }
