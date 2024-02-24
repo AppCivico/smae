@@ -60,6 +60,8 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_DB: metabase
       POSTGRES_PASSWORD: password
+    volumes:
+      - pgdata:/var/lib/postgresql/data
     networks:
       #- metadb_postgres
       - smae_network
@@ -300,7 +302,7 @@ services:
     environment:
       - POSTGRES_HOST=metadb_postgres
       - POSTGRES_DB=metabase
-      - POSTGRES_USER=metabase
+      - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=password
       - POSTGRES_EXTRA_OPTS=-Z6 --schema=public --blobs
       - SCHEDULE=@daily
