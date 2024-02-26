@@ -21,6 +21,7 @@ const { chamadasPendentes, erro, itemParaEdição } = storeToRefs(partidosStore)
 
 async function onSubmit(values) {
   values.numero = parseInt(values.numero);
+  console.log(values);
 
   try {
     let r;
@@ -104,7 +105,6 @@ if (props.painelId) {
           :schema="schema"
         />
         <Field
-          v-model.number="numero"
           name="numero"
           type="number"
           class="inputtext light mb1"
@@ -116,6 +116,59 @@ if (props.painelId) {
       </div>
     </div>
 
+    <div class="flex g2 mb1">
+      <div class="f1">
+        <LabelFromYup
+          name="observacao"
+          :schema="schema"
+        />
+        <Field
+          name="observacao"
+          type="text"
+          class="inputtext light mb1"
+        />
+        <ErrorMessage
+          class="error-msg mb1"
+          name="observacao"
+        />
+      </div>
+    </div>
+
+    <div class="flex g2 mb1">
+      <div class="f1">
+        <LabelFromYup
+          name="fundacao"
+          :schema="schema"
+        />
+        <Field
+          name="fundacao"
+          type="date"
+          class="inputtext light mb1"
+        />
+        <ErrorMessage
+          class="error-msg mb1"
+          name="fundacao"
+        />
+      </div>
+    </div>
+
+    <div class="flex g2 mb1">
+      <div class="f1">
+        <LabelFromYup
+          name="encerramento"
+          :schema="schema"
+        />
+        <Field
+          name="encerramento"
+          type="date"
+          class="inputtext light mb1"
+        />
+        <ErrorMessage
+          class="error-msg mb1"
+          name="encerramento"
+        />
+      </div>
+    </div>
     <FormErrorsList :errors="errors" />
 
     <div class="flex spacebetween center mb2">
