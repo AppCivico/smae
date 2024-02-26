@@ -622,12 +622,14 @@ export const partido = object({
     .required(),
   numero: number()
     .label('Número')
-    .max(2)
     .required(),
-  data_criacao: date()
+  observacao: string()
+    .label('Observação')
+    .nullable(),
+  fundacao: date()
     .label('Data de criação')
     .nullable(),
-  data_encerramento: date()
+  encerramento: date()
     .label('Data de encerramento')
     .nullable(),
 });

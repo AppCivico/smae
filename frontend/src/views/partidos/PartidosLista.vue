@@ -62,7 +62,7 @@ partidoStore.buscarTudo();
         v-for="item in lista"
         :key="item.id"
       >
-        <td>{{ item.titulo }}</td>
+        <td>{{ item.nome }}</td>
         <td>
           {{ item.sigla }}
         </td>
