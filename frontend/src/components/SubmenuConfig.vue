@@ -59,6 +59,13 @@ const podeAcessarGrupos = computed(() => perm?.CadastroGrupoPaineis?.inserir
           >
             Paineis externos
           </router-link>
+
+          <router-link
+            v-if="perm?.CadastroPainelExterno"
+            :to="{ name: 'partidosListar' }"
+          >
+            Partidos
+          </router-link>
         </div>
       </template>
       <template

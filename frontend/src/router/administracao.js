@@ -41,6 +41,10 @@ import PaineisExternosLista from '@/views/paineisExternos/PaineisExternosLista.v
 import PaineisExternosCriarEditar from '@/views/paineisExternos/PaineisExternosCriarEditar.vue';
 import PaineisExternosRaiz from '@/views/paineisExternos/PaineisExternosRaiz.vue';
 
+import PartidosLista from '@/views/partidos/PartidosLista.vue';
+import PartidosCriarEditar from '@/views/partidos/PartidosCriarEditar.vue';
+import PartidosRaiz from '@/views/partidos/PartidosRaiz.vue';
+
 const PortfoliosCriarEditar = defineAsyncComponent({
   loader: () => import('@/views/portfolios/PortfoliosCriarEditar.vue'),
   loadingComponent: LoadingComponent,
@@ -583,7 +587,49 @@ export default [
       },
     ],
   },
+  {
+    path: '/partidos',
+    component: PartidosRaiz,
+    meta: {
+      requerAutenticação: true,
+      title: 'Partidos',
+      rotaPrescindeDeChave: true,
+    },
+    props: {
+      submenu: SubmenuConfig,
+    },
+    children: [
+      {
+        name: 'partidosListar',
+        path: '',
+        component: PartidosLista,
+        meta: {
+          título: 'Partidos',
+        },
+      },
+      {
+        name: 'partidosCriar',
+        path: 'novo',
+        component: PartidosCriarEditar,
+        meta: {
+          título: 'Novo partido',
+        },
+      },
+      {
+        path: ':partidoId',
+        name: 'partidosEditar',
+        component: PartidosCriarEditar,
+        props: ({ params }) => ({
+          ...params,
+          ...{ partidoId: Number.parseInt(params.partidoId, 10) || undefined },
+        }),
 
+        meta: {
+          título: 'Editar partido',
+        },
+      },
+    ],
+  },
   {
     path: '/tipos-de-acompanhamento',
     component: TiposDeAcompanhamentoRaiz,
