@@ -3,7 +3,6 @@ import { IsOnlyDate } from "src/common/decorators/IsDateOnly";
 
 export class CreatePartidoDto {
     @IsNumber()
-    @MaxLength(2)
     numero: number;
 
     @IsString({ message: '$property| sigla: Precisa ser alfanumérico' })
