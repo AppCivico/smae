@@ -1071,7 +1071,7 @@ export class PessoaService {
     async listaPrivilegiosModulos(pessoaId: number): Promise<ListaPrivilegiosModulos> {
         const dados: ListaPrivilegiosModulos[] = await this.prisma.$queryRaw`
             with perms as (
-                select p.codigo as cod_priv, m.codigo as cod_modulos, p.modulo_sistema
+                select p.codigo as cod_priv, m.codigo as cod_modulos, m.modulo_sistema
                 from pessoa_perfil pp
                 join perfil_acesso pa on pp.perfil_acesso_id = pa.id
                 join perfil_privilegio priv on priv.perfil_acesso_id = pa.id
