@@ -665,7 +665,7 @@ export default {
       </div>
 
       <div v-else-if="singleIndicadores.regionalizavel && regions">
-        <label class="label">Região <span class="tvermelho">*</span></label>
+        <label class="label">Região</label>
         <template v-if="singleIndicadores.nivel_regionalizacao >= 2">
           <select
             v-model="level1"
