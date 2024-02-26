@@ -4087,7 +4087,8 @@ model Partido {
 model Bancada {
     id Int @id @default(autoincrement())
     nome      String
-    descricao String
+    sigla     String
+    descricao String?
 
     criado_por     Int?
     criado_em      DateTime?  @default(now()) @db.Timestamptz(6)
