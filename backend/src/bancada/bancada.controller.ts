@@ -57,6 +57,6 @@ export class BancadaController {
     @HttpCode(HttpStatus.ACCEPTED)
     async remove(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt) {
         await this.bancadaService.remove(+params.id, user);
-        return '';
+        return  '';
     }
 }
