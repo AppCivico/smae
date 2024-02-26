@@ -1,47 +1,47 @@
-import { PrismaClient } from '@prisma/client';
+import { ModuloSistema, PerfilAcesso, PrismaClient, Privilegio } from '@prisma/client';
 import { ListaDePrivilegios } from '../src/common/ListaDePrivilegios';
 const prisma = new PrismaClient({ log: ['query'] });
 
-const ModuloDescricao: Record<string, string> = {
-    CadastroOrgao: 'Cadastro de Órgão',
-    CadastroTipoOrgao: 'Cadastro de Tipo de Órgão',
-    CadastroPessoa: 'Cadastro de pessoas',
-    CadastroOds: 'Cadastro de ODS',
-    CadastroPdm: 'Cadastro do PDM',
-    CadastroFonteRecurso: 'Cadastro de Fonte de Recurso',
-    CadastroTipoDocumento: 'Cadastro de Tipo de Arquivo',
-    CadastroTag: 'Cadastro de Tag',
-    CadastroMacroTema: 'Cadastro de Macro Tema',
-    CadastroSubTema: 'Cadastro de Sub Tema',
-    CadastroTema: 'Cadastro de Tema',
-    CadastroRegiao: 'Cadastro de Regiões',
-    CadastroMeta: 'Cadastro de Metas',
-    CadastroIndicador: 'Cadastro de Indicadores',
-    CadastroUnidadeMedida: 'Cadastro de Unidade de Medidas',
-    CadastroIniciativa: 'Cadastro de Iniciativas',
-    CadastroAtividade: 'Cadastro de Atividades',
-    CadastroCronograma: 'Cadastro de Cronogramas',
-
-    CadastroPainel: 'Cadastro de Painéis',
-    CadastroGrupoPaineis: 'Cadastro de Grupos de Painéis',
-    CadastroGrupoPortfolio: 'Cadastro de Grupos de Portfólio',
-    CadastroPainelExterno: 'Cadastro de Painéis Externos',
-    CadastroGrupoPainelExterno: 'Cadastro de Grupos de Painéis Externos',
-    Config: 'Configurações do Sistema',
-    Reports: 'Relatórios',
-    Projeto: 'Cadastro de Projetos',
-    PDM: 'Regras de Negocio do PDM',
-    SMAE: 'Regras de Negocio do SMAE',
-
-    CadastroCargo: '',
-    CadastroCoordenadoria: '',
-    CadastroDepartamento: '',
-    CadastroDivisaoTecnica: '',
-    CadastroCicloFisico: '',
-    CadastroEixo: '',
-    CadastroObjetivoEstrategico: '',
-    CadastroEtapa: '',
-    CadastroGrupoPaineisExternas: '',
+const ModuloDescricao: Record<string, [string, ModuloSistema | null]> = {
+    CadastroOrgao: ['Cadastro de Órgão', 'SMAE'],
+    CadastroTipoOrgao: ['Cadastro de Tipo de Órgão', 'SMAE'],
+    CadastroPessoa: ['Cadastro de pessoas', 'SMAE'],
+    CadastroOds: ['Cadastro de ODS', 'SMAE'],
+    CadastroPdm: ['Cadastro do PDM', 'PDM'],
+    CadastroFonteRecurso: ['Cadastro de Fonte de Recurso', 'SMAE'],
+    CadastroTipoDocumento: ['Cadastro de Tipo de Arquivo', 'SMAE'],
+    CadastroTag: ['Cadastro de Tag', 'SMAE'],
+    CadastroMacroTema: ['Cadastro de Macro Tema', 'SMAE'],
+    CadastroSubTema: ['Cadastro de Sub Tema', 'SMAE'],
+    CadastroTema: ['Cadastro de Tema', 'SMAE'],
+    CadastroRegiao: ['Cadastro de Regiões', 'SMAE'],
+    CadastroMeta: ['Cadastro de Metas', 'PDM'],
+    CadastroIndicador: ['Cadastro de Indicadores', 'PDM'],
+    CadastroUnidadeMedida: ['Cadastro de Unidade de Medidas', 'PDM'],
+    CadastroIniciativa: ['Cadastro de Iniciativas', 'PDM'],
+    CadastroAtividade: ['Cadastro de Atividades', 'PDM'],
+    CadastroCronograma: ['Cadastro de Cronogramas', 'PDM'],
+    CadastroPainel: ['Cadastro de Painéis', 'PDM'],
+    CadastroGrupoPaineis: ['Cadastro de Grupos de Painéis', 'PDM'],
+    CadastroGrupoPortfolio: ['Cadastro de Grupos de Portfólio', 'Projetos'],
+    CadastroPainelExterno: ['Cadastro de Painéis Externos', 'SMAE'],
+    CadastroGrupoPainelExterno: ['Cadastro de Grupos de Painéis Externos', 'SMAE'],
+    Config: ['Configurações do Sistema', 'SMAE'],
+    Reports: ['Executar Relatórios', 'SMAE'],
+    ReportsProjetos: ['Relatórios de Projetos', 'Projetos'],
+    ReportsPdm: ['Relatórios de PDM', 'PDM'],
+    Projeto: ['Cadastro de Projetos', 'Projetos'],
+    PDM: ['Regras de Negocio do PDM', 'PDM'],
+    SMAE: ['Regras de Negocio do SMAE', 'SMAE'],
+    CadastroCargo: ['', null],
+    CadastroCoordenadoria: ['', null],
+    CadastroDepartamento: ['', null],
+    CadastroDivisaoTecnica: ['', null],
+    CadastroCicloFisico: ['', null],
+    CadastroEixo: ['', null],
+    CadastroObjetivoEstrategico: ['', null],
+    CadastroEtapa: ['', null],
+    CadastroGrupoPaineisExternas: ['', null],
 } as const;
 
 const PrivConfig: Record<string, false | [ListaDePrivilegios, string][]> = {
@@ -197,14 +197,12 @@ const PrivConfig: Record<string, false | [ListaDePrivilegios, string][]> = {
         ['CadastroGrupoPaineis.editar', 'Editar Grupo de Painéis'],
         ['CadastroGrupoPaineis.remover', 'Remover Grupo de Painéis'],
     ],
-
     Reports: [
         ['Reports.executar', 'Executar relatórios'],
         ['Reports.remover', 'Remover relatórios'],
-        ['Reports.dashboard_pdm', 'Dashboard de programa de metas'],
-        ['Reports.dashboard_portfolios', 'Dashboard de portfólios'],
     ],
-
+    ReportsPdm: [['Reports.dashboard_pdm', 'Dashboard de programa de metas']],
+    ReportsProjetos: [['Reports.dashboard_portfolios', 'Dashboard de portfólios']],
     Config: [
         ['Config.editar', 'Editar configuração de textos do sistema'],
         ['SMAE.superadmin', 'Faz parte do perfil Administrador Geral'],
@@ -461,6 +459,18 @@ async function main() {
 async function atualizar_modulos_e_privilegios() {
     const promises: Array<PromiseLike<any>> = [];
 
+    const modulosInDb = await prisma.privilegioModulo.findMany();
+    const modulosByCodigo: Record<string, (typeof modulosInDb)[0]> = {};
+    for (const r of modulosInDb) {
+        modulosByCodigo[r.codigo] = r;
+    }
+
+    const privInDb = await prisma.privilegio.findMany();
+    const privByCodigo: Record<string, (typeof privInDb)[0]> = {};
+    for (const r of privInDb) {
+        privByCodigo[r.codigo] = r;
+    }
+
     for (const codModulo in PrivConfig) {
         const privilegio = PrivConfig[codModulo];
 
@@ -492,18 +502,29 @@ async function atualizar_modulos_e_privilegios() {
     });
 
     async function upsertModulo(codModulo: string, privilegio: [ListaDePrivilegios, string][]) {
-        const moduloObject = await prisma.modulo.upsert({
-            where: { codigo: codModulo },
-            update: {
-                descricao: ModuloDescricao[codModulo],
-            },
-            create: {
-                codigo: codModulo,
-                descricao: ModuloDescricao[codModulo],
-            },
-        });
+        const modConfig = ModuloDescricao[codModulo];
+
+        if (!modConfig[1]) return;
+
+        let moduloObject = modulosByCodigo[codModulo];
+
+        if (!moduloObject || moduloObject.descricao !== modConfig[0] || moduloObject.modulo_sistema !== modConfig[1]) {
+            moduloObject = await prisma.privilegioModulo.upsert({
+                where: { codigo: codModulo },
+                update: {
+                    descricao: modConfig[0],
+                    modulo_sistema: modConfig[1],
+                },
+                create: {
+                    codigo: codModulo,
+                    descricao: modConfig[0],
+                    modulo_sistema: modConfig[1],
+                },
+            });
+        }
+
         for (const priv of privilegio) {
-            promises.push(upsert_privilegios(moduloObject.id, priv[0], priv[1]));
+            promises.push(upsert_privilegios(moduloObject.id, priv[0], priv[1], privByCodigo));
         }
     }
 }
@@ -527,7 +548,7 @@ async function removeModulo(codModulo: string) {
         },
     });
 
-    await prisma.modulo.deleteMany({
+    await prisma.privilegioModulo.deleteMany({
         where: {
             codigo: codModulo,
         },
@@ -563,72 +584,108 @@ async function criar_emaildb_config() {
     });
 }
 
-async function upsert_privilegios(moduloId: number, codigo: string, nome: string) {
-    return prisma.privilegio.upsert({
-        where: { codigo: codigo },
-        update: { nome: nome, modulo_id: moduloId },
-        create: {
-            nome: nome,
-            modulo_id: moduloId,
-            codigo: codigo,
-        },
-    });
+async function upsert_privilegios(moduloId: number, codigo: string, nome: string, cache: Record<string, Privilegio>) {
+    const priv = cache[codigo];
+    if (!priv || priv.nome !== nome) {
+        return prisma.privilegio.upsert({
+            where: { codigo: codigo },
+            update: { nome: nome, modulo_id: moduloId },
+            create: {
+                nome: nome,
+                modulo_id: moduloId,
+                codigo: codigo,
+            },
+        });
+    }
+    return priv;
 }
 
 async function atualizar_perfil_acesso() {
-    for (const perfilAcessoConf of PerfilAcessoConfig) {
+    const deletePerfilAcesso = async (perfilAcessoId: number) => {
+        await prisma.pessoaPerfil.deleteMany({
+            where: { perfil_acesso_id: perfilAcessoId },
+        });
+
+        await prisma.perfilPrivilegio.deleteMany({
+            where: { perfil_acesso_id: perfilAcessoId },
+        });
+
+        await prisma.perfilAcesso.delete({
+            where: { id: perfilAcessoId },
+        });
+    };
+
+    const perfilAcessoInDb = await prisma.perfilAcesso.findMany({
+        where: {
+            autogerenciavel: true,
+            removido_em: null,
+        },
+    });
+    const perfilAcessoByNome: Record<string, (typeof perfilAcessoInDb)[0]> = {};
+    for (const r of perfilAcessoInDb) {
+        perfilAcessoByNome[r.nome] = r;
+    }
+
+    const privInDb = await prisma.privilegio.findMany();
+    const privByCodigo: Record<string, (typeof privInDb)[0]> = {};
+    for (const r of privInDb) {
+        privByCodigo[r.codigo] = r;
+    }
+
+    const processPerfilAcessoConf = async (perfilAcessoConf: (typeof PerfilAcessoConfig)[0]) => {
         if (perfilAcessoConf.privilegios === false) {
-            // apagar quem tiver acesso ao perfilAcesso e remover o próprio perfil
-            const perfilAcesso = await prisma.perfilAcesso.findFirst({
-                where: { nome: perfilAcessoConf.nome },
-                select: { id: true },
-            });
-            if (!perfilAcesso) continue;
+            const perfilAcesso = perfilAcessoByNome[perfilAcessoConf.nome];
+            if (perfilAcesso) {
+                await deletePerfilAcesso(perfilAcesso.id);
+            } else {
+                console.error(`Não encontrado ${perfilAcessoConf.nome} para remover`);
+            }
+        } else {
+            const perfilAcesso = await ensurePerfilAcessoIsEmpty(perfilAcessoConf, perfilAcessoByNome);
+            const promises = perfilAcessoConf.privilegios.map((codPriv: ListaDePrivilegios) =>
+                criaPrivComPerfilDeAcesso(codPriv, perfilAcesso, privByCodigo)
+            );
+            await Promise.all(promises);
+        }
+    };
 
-            await prisma.pessoaPerfil.deleteMany({
-                where: {
-                    perfil_acesso_id: perfilAcesso.id,
-                },
-            });
+    const processPerfilAcessoConfsInParallel = async () => {
+        const promises = PerfilAcessoConfig.map(processPerfilAcessoConf);
+        await Promise.all(promises);
+    };
 
-            await prisma.perfilPrivilegio.deleteMany({
-                where: {
-                    perfil_acesso_id: perfilAcesso.id,
-                },
-            });
+    // Call the parallel processing function
+    await processPerfilAcessoConfsInParallel();
+}
 
-            await prisma.perfilAcesso.delete({
-                where: {
-                    id: perfilAcesso.id,
+async function ensurePerfilAcessoIsEmpty(
+    perfilAcessoConf: {
+        nome: string;
+        descricao: string;
+        privilegios: ListaDePrivilegios[] | false;
+    },
+    cache: Record<string, PerfilAcesso>
+) {
+    let perfilAcesso = cache[perfilAcessoConf.nome];
+
+    if (!perfilAcesso || perfilAcesso.descricao != perfilAcessoConf.descricao) {
+        if (perfilAcesso) {
+            await prisma.perfilAcesso.update({
+                where: { id: perfilAcesso.id },
+                data: {
+                    nome: perfilAcessoConf.nome,
+                    descricao: perfilAcessoConf.descricao,
                 },
             });
         } else {
-            const perfilAcesso = await ensurePerfilAcessoExists(perfilAcessoConf);
-
-            for (const codPriv of perfilAcessoConf.privilegios) {
-                await criaPrivComPerfilDeAcesso(codPriv, perfilAcesso);
-            }
+            perfilAcesso = await prisma.perfilAcesso.create({
+                data: {
+                    nome: perfilAcessoConf.nome,
+                    descricao: perfilAcessoConf.descricao,
+                    autogerenciavel: true,
+                },
+            });
         }
-    }
-}
-
-async function ensurePerfilAcessoExists(perfilAcessoConf: {
-    nome: string;
-    descricao: string;
-    privilegios: ListaDePrivilegios[] | false;
-}) {
-    let perfilAcesso = await prisma.perfilAcesso.findFirst({
-        where: { nome: perfilAcessoConf.nome },
-        select: { id: true },
-    });
-    if (!perfilAcesso) {
-        perfilAcesso = await prisma.perfilAcesso.create({
-            data: {
-                nome: perfilAcessoConf.nome,
-                descricao: perfilAcessoConf.descricao,
-            },
-            select: { id: true },
-        });
     } else {
         await prisma.perfilAcesso.update({
             where: { id: perfilAcesso.id },
@@ -639,20 +696,26 @@ async function ensurePerfilAcessoExists(perfilAcessoConf: {
         });
     }
 
-    if (Array.isArray(perfilAcessoConf.privilegios))
-        await prisma.perfilPrivilegio.deleteMany({
-            where: {
-                perfil_acesso_id: perfilAcesso.id,
-                privilegio: {
-                    codigo: { notIn: perfilAcessoConf.privilegios },
-                },
-            },
-        });
+    await prisma.perfilPrivilegio.deleteMany({
+        where: {
+            perfil_acesso_id: perfilAcesso.id,
+            privilegio: Array.isArray(perfilAcessoConf.privilegios)
+                ? {
+                      codigo: { notIn: perfilAcessoConf.privilegios },
+                  }
+                : undefined,
+        },
+    });
+
     return perfilAcesso;
 }
 
-async function criaPrivComPerfilDeAcesso(codPriv: string, perfilAcesso: { id: number }) {
-    const priv = await prisma.privilegio.findFirst({ where: { codigo: codPriv } });
+async function criaPrivComPerfilDeAcesso(
+    codPriv: string,
+    perfilAcesso: { id: number },
+    cache: Record<string, Privilegio>
+) {
+    const priv = cache[codPriv];
     if (!priv) {
         throw `Não encontrado priv ${codPriv}`;
     }

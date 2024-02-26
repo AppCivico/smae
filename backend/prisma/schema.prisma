@@ -45,6 +45,10 @@ model Pessoa {
     TipoOrgaoQueRemovi    TipoOrgao[] @relation("Removedor")
     TipoOrgaoQueAtualizei TipoOrgao[] @relation("Atualizador")
 
+    PerfilAcessoQueCriei     PerfilAcesso[] @relation("Criador")
+    PerfilAcessoQueRemovi    PerfilAcesso[] @relation("Removedor")
+    PerfilAcessoQueAtualizei PerfilAcesso[] @relation("Atualizador")
+
     OdsQueCriei     Ods[] @relation("Criador")
     OdsQueRemovi    Ods[] @relation("Removedor")
     OdsQueAtualizei Ods[] @relation("Atualizador")
@@ -254,13 +258,13 @@ model Pessoa {
     projetosCompartilhadosEmPortfolioQueRemovi    PortfolioProjetoCompartilhado[] @relation("Removedor")
     projetosCompartilhadosEmPortfolioQueAtualizei PortfolioProjetoCompartilhado[] @relation("Atualizador")
 
-    partidosQueCriei Partido[] @relation("Criador")
+    partidosQueCriei     Partido[] @relation("Criador")
     partidosQueAtualizei Partido[] @relation("Atualizador")
-    partidosQueRemovi Partido[] @relation("Removedor")
+    partidosQueRemovi    Partido[] @relation("Removedor")
 
-    bancadasQueCriei Bancada[] @relation("Criador")
+    bancadasQueCriei     Bancada[] @relation("Criador")
     bancadasQueAtualizei Bancada[] @relation("Atualizador")
-    bancadasQueRemovi Bancada[] @relation("Removedor")
+    bancadasQueRemovi    Bancada[] @relation("Removedor")
 
     task_queue                               task_queue[]
     GeoEnderecoReferenciaqQueCriei           GeoLocalizacaoReferencia[]                @relation("criador")
@@ -280,13 +284,14 @@ model Pessoa {
     @@map("pessoa")
 }
 
-model Modulo {
-    id         Int          @id @default(autoincrement())
-    codigo     String       @unique
-    descricao  String
-    privilegio Privilegio[]
+model PrivilegioModulo {
+    id             Int           @id @default(autoincrement())
+    codigo         String        @unique
+    descricao      String
+    privilegio     Privilegio[]
+    modulo_sistema ModuloSistema @default(SMAE)
 
-    @@map("modulo")
+    @@map("privilegio_modulo")
 }
 
 model Orgao {
@@ -332,9 +337,23 @@ model Orgao {
 }
 
 model PerfilAcesso {
-    id                Int                @id @default(autoincrement())
-    nome              String
-    descricao         String?
+    id               Int             @id @default(autoincrement())
+    nome             String
+    descricao        String?
+    modulos_sistemas ModuloSistema[] @default([SMAE])
+    autogerenciavel  Boolean         @default(true)
+
+    criado_por     Int?
+    criado_em      DateTime  @default(now()) @db.Timestamptz(6)
+    atualizado_por Int?
+    atualizado_em  DateTime  @default(now()) @db.Timestamptz(6)
+    removido_por   Int?
+    removido_em    DateTime? @db.Timestamptz(6)
+
+    atualizador Pessoa? @relation("Atualizador", fields: [atualizado_por], references: [id])
+    criador     Pessoa? @relation("Criador", fields: [criado_por], references: [id])
+    removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
+
     perfil_privilegio PerfilPrivilegio[]
     pessoa_perfil     PessoaPerfil[]
 
@@ -392,7 +411,7 @@ model Privilegio {
     nome              String
     codigo            String             @unique
     modulo_id         Int
-    modulo            Modulo             @relation(fields: [modulo_id], references: [id])
+    modulo            PrivilegioModulo   @relation(fields: [modulo_id], references: [id])
     perfil_privilegio PerfilPrivilegio[]
 
     @@map("privilegio")
@@ -4070,14 +4089,14 @@ model Partido {
     encerramento DateTime? @db.Timestamptz(6)
 
     criado_por     Int?
-    criado_em      DateTime?  @default(now()) @db.Timestamptz(6)
+    criado_em      DateTime? @default(now()) @db.Timestamptz(6)
     atualizado_por Int?
     atualizado_em  DateTime  @default(now()) @db.Timestamptz(6)
     removido_por   Int?
     removido_em    DateTime? @db.Timestamptz(6)
 
     // Criador nullable, pois provavelmente faremos carga inicial de dados.
-    criador     Pessoa?  @relation("Criador", fields: [criado_por], references: [id])
+    criador     Pessoa? @relation("Criador", fields: [criado_por], references: [id])
     atualizador Pessoa? @relation("Atualizador", fields: [atualizado_por], references: [id])
     removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
 
@@ -4085,22 +4104,29 @@ model Partido {
 }
 
 model Bancada {
-    id Int @id @default(autoincrement())
+    id        Int     @id @default(autoincrement())
     nome      String
     sigla     String
     descricao String?
 
     criado_por     Int?
-    criado_em      DateTime?  @default(now()) @db.Timestamptz(6)
+    criado_em      DateTime? @default(now()) @db.Timestamptz(6)
     atualizado_por Int?
     atualizado_em  DateTime  @default(now()) @db.Timestamptz(6)
     removido_por   Int?
     removido_em    DateTime? @db.Timestamptz(6)
 
     // Criador nullable, pois provavelmente faremos carga inicial de dados.
-    criador     Pessoa?  @relation("Criador", fields: [criado_por], references: [id])
+    criador     Pessoa? @relation("Criador", fields: [criado_por], references: [id])
     atualizador Pessoa? @relation("Atualizador", fields: [atualizado_por], references: [id])
     removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
 
     @@map("bancada")
+}
+
+enum ModuloSistema {
+    SMAE
+    PDM
+    CasaCivil
+    Projetos
 }
