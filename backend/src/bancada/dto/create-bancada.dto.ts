@@ -1,10 +1,6 @@
-import { IsNumber, IsOptional, IsString, Max, MaxLength } from "class-validator";
+import { IsOptional, IsString, MaxLength } from "class-validator";
 
 export class CreateBancadaDto {
-    @IsNumber()
-    @Max(99)
-    numero: number;
-
     @IsString({ message: '$property| sigla: Precisa ser alfanumérico' })
     @MaxLength(20, { message: '$property| sigla: Máximo 20 caracteres' })
     sigla: string;
