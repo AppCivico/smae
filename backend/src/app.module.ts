@@ -27,6 +27,7 @@ import { UtilsService } from './reports/utils/utils.service';
 import { RequestLogModule } from './request_log/request_log.module';
 import { AppModulePdm } from './app.module.pdm';
 import { PartidoModule } from './partido/partido.module';
+import { BancadaModule } from './bancada/bancada.module';
 
 // Hacks pro JS
 /*
@@ -58,6 +59,7 @@ import { PartidoModule } from './partido/partido.module';
         OrcamentoPrevistoModule,
         DashboardModule,
         PartidoModule,
+        BancadaModule
     ],
     controllers: [AppController],
     providers: [
