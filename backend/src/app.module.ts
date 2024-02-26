@@ -58,8 +58,8 @@ import { BancadaModule } from './bancada/bancada.module';
         CronogramaEtapaModule,
         OrcamentoPrevistoModule,
         DashboardModule,
+        BancadaModule,
         PartidoModule,
-        BancadaModule
     ],
     controllers: [AppController],
     providers: [
