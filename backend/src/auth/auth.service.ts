@@ -85,6 +85,7 @@ export class AuthService {
             session_id: 0,
             modulos: modPriv.modulos,
             privilegios: modPriv.privilegios,
+            sistemas: modPriv.sistemas,
             orgao_id: pessoa.pessoa_fisica?.orgao_id,
             flags: await this.featureFlagService.featureFlag(),
         });
@@ -101,6 +102,7 @@ export class AuthService {
             session_id: session_id,
             modulos: modPriv.modulos,
             privilegios: modPriv.privilegios,
+            sistemas: modPriv.sistemas,
             orgao_id: pessoa.pessoa_fisica?.orgao_id,
             flags: await this.featureFlagService.featureFlag(),
         });
