@@ -68,28 +68,39 @@ function openParent(e) {
     </div>
 
     <div class="content">
-      <table class="tablemain no-zebra fix">
+      <table class="tablemain no-zebra">
+        <col class="col--minimum">
+        <col>
+        <col class="col--minimum">
+        <col class="col--minimum">
+        <col class="col--minimum">
+        <col class="col--minimum">
+        <col class="col--minimum">
+        <col class="col--botão-de-ação">
         <thead>
           <tr>
-            <th style="width: 25%">
+            <th>
               Código
             </th>
-            <th style="width: 25%">
+            <th>
+              Título
+            </th>
+            <th>
               Mês/Ano
             </th>
-            <th style="width: 17.5%">
+            <th class="cell--number cell--minimum">
               Projetado Mensal
             </th>
-            <th style="width: 17.5%">
+            <th class="cell--number cell--minimum">
               Realizado Mensal
             </th>
-            <th style="width: 17.5%">
+            <th class="cell--number cell--minimum">
               Projetado Acumulado
             </th>
-            <th style="width: 17.5%">
+            <th class="cell--number cell--minimum">
               Realizado Acumulado
             </th>
-            <th style="width: 50px" />
+            <th />
           </tr>
         </thead>
         <tbody
@@ -105,13 +116,21 @@ function openParent(e) {
             }"
           >
             <td>{{ v.variavel?.codigo }}</td>
-            <td @click="abrePeriodo(parent, v.variavel.id, val.periodo)">
+            <td>{{ v.variavel?.titulo }}</td>
+            <td
+              class="cell--nowrap"
+              @click="abrePeriodo(parent, v.variavel.id, val.periodo)"
+            >
               {{ dateToTitle(val.periodo) }}
             </td>
-            <td @click="abrePeriodo(parent, v.variavel.id, val.periodo)">
+            <td
+              class="cell--number"
+              @click="abrePeriodo(parent, v.variavel.id, val.periodo)"
+            >
               {{ val.series[indexes.indexOf('Previsto')]?.valor_nominal ?? '-' }}
             </td>
             <td
+              class="cell--number"
               :class="{
                 'tamarelo': val.nao_preenchida && CiclosStore.valoresNovos.valorRealizado,
               }"
@@ -122,11 +141,13 @@ function openParent(e) {
                 : (CiclosStore.valoresNovos.valorRealizado ?? '-') }}
             </td>
             <td
+              class="cell--number"
               @click="abrePeriodo(parent, v.variavel.id, val.periodo)"
             >
               {{ val.series[indexes.indexOf('PrevistoAcumulado')]?.valor_nominal ?? '-' }}
             </td>
             <td
+              class="cell--number"
               :class="{
                 'tamarelo': val.nao_preenchida && CiclosStore.valoresNovos.valorRealizadoAcumulado
               }"
