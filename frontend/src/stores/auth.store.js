@@ -144,7 +144,12 @@ export const useAuthStore = defineStore({
   getters: {
     estouAutenticada: ({ token }) => !!token,
     temPermissãoPara: ({ user }) => (permissões) => (Array.isArray(permissões)
-      ? permissões.some((y) => user.privilegios?.indexOf(y) !== -1)
-      : user.privilegios.indexOf(permissões) !== -1),
+      ? permissões
+      : [permissões]
+    ).some((x) => user.privilegios.some((y) => y.indexOf((
+      // garantir que há um `.` no nome da permissão pelo menos na segunda
+      // letra. Caso contrário, adicionar-lhe um ao final
+      x.indexOf('.') < 1 ? `${x}.` : x
+    )) !== -1)),
   },
 });
