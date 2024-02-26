@@ -21,7 +21,6 @@ const { chamadasPendentes, erro, itemParaEdição } = storeToRefs(partidosStore)
 
 async function onSubmit(values) {
   values.numero = parseInt(values.numero);
-  console.log(values);
 
   try {
     let r;
