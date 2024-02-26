@@ -639,6 +639,27 @@ export const painelExterno = object({
     .url(),
 });
 
+export const partido = object({
+  sigla: string()
+    .label('Sigla')
+    .max(20)
+    .required(),
+  nome: string()
+    .label('Nome')
+    .max(250)
+    .required(),
+  numero: number()
+    .label('Número')
+    .max(2)
+    .required(),
+  data_criacao: date()
+    .label('Data de criação')
+    .nullable(),
+  data_encerramento: date()
+    .label('Data de encerramento')
+    .nullable(),
+});
+
 export const processo = object()
   .shape({
     comentarios: string()
