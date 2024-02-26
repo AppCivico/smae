@@ -1,8 +1,9 @@
-import { IsNumber, IsOptional, IsString, MaxLength } from "class-validator";
+import { IsNumber, IsOptional, IsString, Max, MaxLength } from "class-validator";
 import { IsOnlyDate } from "src/common/decorators/IsDateOnly";
 
 export class CreatePartidoDto {
     @IsNumber()
+    @Max(99)
     numero: number;
 
     @IsString({ message: '$property| sigla: Precisa ser alfanumérico' })
