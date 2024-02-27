@@ -1056,6 +1056,7 @@ export class PessoaService {
     async listaPerfilAcesso(filter: FilterPrivDto): Promise<PerfilAcessoPrivilegios[]> {
         const dados = await this.prisma.perfilAcesso.findMany({
             where: {
+                removido_em: null,
                 modulos_sistemas: filter.sistemas
                     ? {
                           hasSome: filter.sistemas,
@@ -1091,6 +1092,7 @@ export class PessoaService {
                 join privilegio_modulo m on p.modulo_id = m.id
                 join pessoa pessoa on pessoa.id = pp.pessoa_id AND pessoa.desativado = false
                 where pp.pessoa_id = ${pessoaId}
+                AND pp.removido_em IS null
             )
             select
                 array_agg(distinct cod_priv) as privilegios,
