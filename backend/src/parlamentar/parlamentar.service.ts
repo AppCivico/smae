@@ -90,4 +90,8 @@ export class ParlamentarService {
 
         return deleted;
     }
+
+    async createMandato() {
+        
+    }
 }
