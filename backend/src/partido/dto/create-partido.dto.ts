@@ -1,3 +1,4 @@
+import { Type } from "class-transformer";
 import { IsNumber, IsOptional, IsString, Max, MaxLength } from "class-validator";
 import { IsOnlyDate } from "src/common/decorators/IsDateOnly";
 
@@ -19,11 +20,21 @@ export class CreatePartidoDto {
     @MaxLength(250, { message: '$property| observação: Máximo 250 caracteres' })
     observacao?: string;
 
+    /**
+     * fundação do partido
+     * @example YYYY-MM-DD
+     */
     @IsOptional()
     @IsOnlyDate()
+    @Type(() => Date)
     fundacao?: Date;
 
+    /**
+     * encerramento do partido
+     * @example YYYY-MM-DD
+     */
     @IsOptional()
     @IsOnlyDate()
+    @Type(() => Date)
     encerramento?: Date;
 }
