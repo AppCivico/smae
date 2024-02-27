@@ -1,4 +1,4 @@
-import { HttpException, Injectable } from '@nestjs/common';
+import { BadRequestException, HttpException, Injectable } from '@nestjs/common';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreatePerfilAcessoDto, PerfilAcessoSimplesDto, UpdatePerfilAcessoDto } from './models/PerfilAcesso.dto';
@@ -101,21 +101,23 @@ export class PerfilAcessoService {
                     const privilegesToRemove = currentPrivileges.filter((p) => !dto.privilegios!.includes(p));
                     const privilegesToAdd = dto.privilegios.filter((p) => !currentPrivileges.includes(p));
 
-                    await prismaTx.perfilPrivilegio.deleteMany({
-                        where: {
-                            perfil_acesso_id: id,
-                            privilegio_id: {
-                                in: privilegesToRemove,
+                    if (privilegesToRemove.length)
+                        await prismaTx.perfilPrivilegio.deleteMany({
+                            where: {
+                                perfil_acesso_id: id,
+                                privilegio_id: {
+                                    in: privilegesToRemove,
+                                },
                             },
-                        },
-                    });
+                        });
 
-                    await prismaTx.perfilPrivilegio.createMany({
-                        data: privilegesToAdd.map((p) => ({
-                            perfil_acesso_id: id,
-                            privilegio_id: p,
-                        })),
-                    });
+                    if (privilegesToAdd.length)
+                        await prismaTx.perfilPrivilegio.createMany({
+                            data: privilegesToAdd.map((p) => ({
+                                perfil_acesso_id: id,
+                                privilegio_id: p,
+                            })),
+                        });
                 }
             },
             {
@@ -127,17 +129,37 @@ export class PerfilAcessoService {
     }
 
     async remove(id: number, user: PessoaFromJwt) {
-        const created = await this.prisma.perfilAcesso.updateMany({
-            where: {
-                id: id,
-                autogerenciavel: false,
-            },
-            data: {
-                removido_por: user.id,
-                removido_em: new Date(Date.now()),
-            },
-        });
+        await this.prisma.$transaction(
+            async (prismaTx: Prisma.TransactionClient): Promise<void> => {
+                const peopleUsing = await prismaTx.pessoaPerfil.findMany({
+                    where: {
+                        perfil_acesso_id: id,
+                    },
+                    select: {
+                        pessoa: { select: { nome_exibicao: true } },
+                    },
+                });
+                if (peopleUsing.length)
+                    throw new BadRequestException(
+                        `Não é passível remover o perfil, há ${peopleUsing.length} pessoa(s) com o perfil em uso. Utilizando por: ${peopleUsing.map((r) => r.pessoa.nome_exibicao).join(', ')}`
+                    );
 
-        return created;
+                await prismaTx.perfilAcesso.updateMany({
+                    where: {
+                        id: id,
+                        autogerenciavel: false,
+                    },
+                    data: {
+                        removido_por: user.id,
+                        removido_em: new Date(Date.now()),
+                    },
+                });
+            },
+            {
+                isolationLevel: 'Serializable',
+            }
+        );
+
+        return;
     }
 }
