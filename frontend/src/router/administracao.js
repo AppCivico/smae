@@ -45,6 +45,10 @@ import PartidosLista from '@/views/partidos/PartidosLista.vue';
 import PartidosCriarEditar from '@/views/partidos/PartidosCriarEditar.vue';
 import PartidosRaiz from '@/views/partidos/PartidosRaiz.vue';
 
+import BancadasLista from '@/views/bancada/BancadasLista.vue';
+import BancadasCriarEditar from '@/views/bancada/BancadasCriarEditar.vue';
+import BancadasRaiz from '@/views/bancada/BancadasRaiz.vue';
+
 const PortfoliosCriarEditar = defineAsyncComponent({
   loader: () => import('@/views/portfolios/PortfoliosCriarEditar.vue'),
   loadingComponent: LoadingComponent,
@@ -626,6 +630,49 @@ export default [
 
         meta: {
           título: 'Editar partido',
+        },
+      },
+    ],
+  },
+  {
+    path: '/bancadas',
+    component: BancadasRaiz,
+    meta: {
+      requerAutenticação: true,
+      title: 'Bancadas',
+      rotaPrescindeDeChave: true,
+    },
+    props: {
+      submenu: SubmenuConfig,
+    },
+    children: [
+      {
+        name: 'bancadasListar',
+        path: '',
+        component: BancadasLista,
+        meta: {
+          título: 'Bancadas',
+        },
+      },
+      {
+        name: 'bancadasCriar',
+        path: 'novo',
+        component: BancadasCriarEditar,
+        meta: {
+          título: 'Nova bancada',
+        },
+      },
+      {
+        path: ':bancadaId',
+        name: 'bancadasEditar',
+        component: BancadasCriarEditar,
+        props: ({ params }) => ({
+          ...params,
+          ...{ bancadaId: Number.parseInt(params.bancadaId, 10) || undefined },
+        }),
+
+        meta: {
+          título: 'Editar bancada',
         },
       },
     ],
