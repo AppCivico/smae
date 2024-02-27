@@ -1,4 +1,5 @@
 <script setup>
+import MenuSecundario from '@/components/MenuSecundario.vue';
 import { Nav } from '@/components';
 import { useAuthStore } from '@/stores/auth.store';
 import { useEditModalStore } from '@/stores/editModal.store';
@@ -20,7 +21,12 @@ export default {
   <Nav :activate="props?.submenu?.__name" />
   <component
     :is="submenu"
+    v-if="submenu"
     :parent-page="parentPage"
+  />
+  <MenuSecundario
+    v-else
+    class="carregado-via-route.meta"
   />
   <main
     v-if="user"
