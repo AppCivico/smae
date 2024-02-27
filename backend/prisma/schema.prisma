@@ -266,6 +266,14 @@ model Pessoa {
     bancadasQueAtualizei Bancada[] @relation("Atualizador")
     bancadasQueRemovi    Bancada[] @relation("Removedor")
 
+    parlamentaresQueCriei Parlamentar[] @relation("Criador")
+    parlamentaresQueAtualizei Parlamentar[] @relation("Atualizador")
+    parlamentaresQueRemovi Parlamentar[] @relation("Removedor")
+
+    mandatosQueCriei ParlamentarMandato[] @relation("Criador")
+    mandatosQueAtualizei ParlamentarMandato[] @relation("Atualizador")
+    mandatosQueRemovi ParlamentarMandato[] @relation("Removedor")
+
     task_queue                               task_queue[]
     GeoEnderecoReferenciaqQueCriei           GeoLocalizacaoReferencia[]                @relation("criador")
     GeoEnderecoReferenciaqQueRemovid         GeoLocalizacaoReferencia[]                @relation("removedor")
@@ -736,6 +744,7 @@ model Regiao {
     Etapa           Etapa[]
     Projetos        Projeto[]
     GeoCamadaRegiao GeoCamadaRegiao[]
+    parlamentares   Parlamentar[]
 
     @@index([parente_id])
     @@map("regiao")
@@ -4100,6 +4109,9 @@ model Partido {
     atualizador Pessoa? @relation("Atualizador", fields: [atualizado_por], references: [id])
     removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
 
+    mandatos_candidatura ParlamentarMandato[] @relation("candidatura")
+    mandatos_atual       ParlamentarMandato[] @relation("atual")
+
     @@map("partido")
 }
 
@@ -4129,4 +4141,105 @@ enum ModuloSistema {
     PDM
     CasaCivil
     Projetos
+}
+
+enum EleicaoTipo {
+    Municipal
+    Estadual
+}
+model Eleicao {
+    id                  Int @id @default(autoincrement())
+    tipo                EleicaoTipo
+    ano                 Int
+    atual_para_mandatos Boolean
+
+    mandatos ParlamentarMandato[]
+
+    @@index([tipo, ano])
+    @@map("eleicao")
+}
+
+model Parlamentar {
+    id Int @id @default(autoincrement())
+    
+    regiao_id Int 
+    regiao    Regiao @relation(fields: [regiao_id], references: [id])
+
+    nome         String
+    nome_popular String?
+    nascimento   DateTime? @db.Date()
+    telefone     String?
+    email        String?
+    gabinete     String?
+    endereco     String?
+    atuacao      String?
+    em_atividade Boolean @default(false)
+
+    mandatos ParlamentarMandato[]
+
+    criado_por     Int?
+    criado_em      DateTime?  @default(now()) @db.Timestamptz(6)
+    atualizado_por Int?
+    atualizado_em  DateTime  @default(now()) @db.Timestamptz(6)
+    removido_por   Int?
+    removido_em    DateTime? @db.Timestamptz(6)
+
+    // Criador nullable, pois provavelmente faremos carga inicial de dados.
+    criador     Pessoa? @relation("Criador", fields: [criado_por], references: [id])
+    atualizador Pessoa? @relation("Atualizador", fields: [atualizado_por], references: [id])
+    removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
+
+    @@map("parlamentar")
+}
+
+enum ParlamentarCargo {
+    DeputadoEstadual
+    DeputadoFederal
+    Vereador
+}
+
+enum ParlamentarSuplente {
+    PrimeiroSuplente
+    SegundoSuplente
+}
+
+model ParlamentarMandato {
+    id Int @id @default(autoincrement())
+
+    parlamentar_id Int
+    parlamentar    Parlamentar @relation(fields: [parlamentar_id], references: [id])
+
+    eleicao_id Int
+    eleicao    Eleicao @relation(fields: [eleicao_id], references: [id])
+
+    partido_candidatura_id Int
+    partido_candidatura    Partido @relation("candidatura", fields: [partido_candidatura_id], references: [id])
+
+    partido_atual_id Int
+    partido_atual    Partido @relation("atual", fields: [partido_atual_id], references: [id])
+
+    eleito    Boolean?
+    cargo     ParlamentarCargo
+    suplencia ParlamentarSuplente
+    atuacao   String?
+
+    votos_estado   BigInt?
+    votos_capital  BigInt?
+    votos_interior BigInt?
+
+    mandato_principal_id Int?
+    mandato_principal    ParlamentarMandato?  @relation("Suplentes", fields: [mandato_principal_id], references: [id])
+    suplentes            ParlamentarMandato[] @relation("Suplentes")
+
+    criado_por     Int?
+    criado_em      DateTime?  @default(now()) @db.Timestamptz(6)
+    atualizado_por Int?
+    atualizado_em  DateTime  @default(now()) @db.Timestamptz(6)
+    removido_por   Int?
+    removido_em    DateTime? @db.Timestamptz(6)
+
+    // Criador nullable, pois provavelmente faremos carga inicial de dados.
+    criador     Pessoa? @relation("Criador", fields: [criado_por], references: [id])
+    atualizador Pessoa? @relation("Atualizador", fields: [atualizado_por], references: [id])
+    removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
 }
