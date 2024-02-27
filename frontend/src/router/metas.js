@@ -424,6 +424,7 @@ export default {
           props: { area: 'Custo', title: 'Previsão de Custo' },
           meta: {
             títuloParaMenu: 'Previsão de custo',
+            restringirÀsPermissões: 'CadastroMeta.orcamento',
             rotasParaMenuSecundário: rotasParaMenuSecundário('meta'),
           },
         },
@@ -450,6 +451,7 @@ export default {
           props: { area: 'Planejado', title: 'Orçamento Planejado' },
           meta: {
             títuloParaMenu: 'Orçamento planejado',
+            restringirÀsPermissões: 'CadastroMeta.orcamento',
             rotasParaMenuSecundário: rotasParaMenuSecundário('meta'),
           },
         },
@@ -477,6 +479,7 @@ export default {
           props: { area: 'Realizado', title: 'Execução orçamentária' },
           meta: {
             títuloParaMenu: 'Execução orçamentária',
+            restringirÀsPermissões: 'CadastroMeta.orcamento',
             rotasParaMenuSecundário: rotasParaMenuSecundário('meta'),
           },
         },
