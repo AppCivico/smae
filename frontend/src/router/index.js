@@ -20,6 +20,7 @@ import análise from './analise';
 import envios from './envios';
 import monitoramento from './monitoramento';
 import metas from './metas';
+import monitoramento from './monitoramento';
 import projetos from './projetos';
 import relatorios from './relatorios';
 
