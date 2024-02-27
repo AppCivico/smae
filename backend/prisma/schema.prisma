@@ -4136,6 +4136,8 @@ model Bancada {
     atualizador Pessoa? @relation("Atualizador", fields: [atualizado_por], references: [id])
     removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
 
+    mandatos MandatoBancada[]
+
     @@map("bancada")
 }
 
@@ -4170,8 +4172,6 @@ model Parlamentar {
     nascimento   DateTime? @db.Date()
     telefone     String?
     email        String?
-    gabinete     String?
-    endereco     String?
     atuacao      String?
     em_atividade Boolean @default(false)
 
@@ -4248,11 +4248,14 @@ model ParlamentarMandato {
     partido_atual_id Int
     partido_atual    Partido @relation("atual", fields: [partido_atual_id], references: [id])
 
-    eleito    Boolean?
+    biografia String
+    gabinete  String
+    eleito    Boolean
     cargo     ParlamentarCargo
     uf        ParlamentarUF 
     suplencia ParlamentarSuplente?
     atuacao   String?
+    endereco  String?
 
     votos_estado   BigInt?
     votos_capital  BigInt?
@@ -4260,7 +4263,9 @@ model ParlamentarMandato {
 
     mandato_principal_id Int?
     mandato_principal    ParlamentarMandato?  @relation("Suplentes", fields: [mandato_principal_id], references: [id])
-    suplentes            ParlamentarMandato[] @relation("Suplentes")
+    
+    suplentes ParlamentarMandato[] @relation("Suplentes")
+    bancadas  MandatoBancada[]
 
     criado_por     Int?
     criado_em      DateTime?  @default(now()) @db.Timestamptz(6)
@@ -4293,4 +4298,14 @@ model ParlamentarAssessor {
     criador     Pessoa? @relation("Criador", fields: [criado_por], references: [id])
     atualizador Pessoa? @relation("Atualizador", fields: [atualizado_por], references: [id])
     removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
+}
+
+model MandatoBancada {
+    id Int @id @default(autoincrement())
+
+    mandato_id Int
+    mandato    ParlamentarMandato @relation(fields: [mandato_id], references: [id])
+
+    bancada_id Int
+    bancada    Bancada @relation(fields: [bancada_id], references: [id])
 }
