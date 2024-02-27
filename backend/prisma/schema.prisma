@@ -4177,6 +4177,7 @@ model Parlamentar {
     em_atividade Boolean @default(false)
 
     mandatos ParlamentarMandato[]
+    assessores ParlamentarAssessor[]
 
     criado_por     Int?
     criado_em      DateTime?  @default(now()) @db.Timestamptz(6)
@@ -4254,7 +4255,6 @@ model ParlamentarMandato {
     cargo     ParlamentarCargo
     uf        ParlamentarUF 
     suplencia ParlamentarSuplente?
-    atuacao   String?
     endereco  String?
 
     votos_estado   BigInt?
@@ -4282,6 +4282,9 @@ model ParlamentarMandato {
 
 model ParlamentarAssessor {
     id Int @id @default(autoincrement())
+
+    parlamentar_id Int
+    parlamentar    Parlamentar @relation(fields: [parlamentar_id], references: [id])
 
     nome     String
     telefone String
