@@ -1,5 +1,4 @@
 import { defineStore } from 'pinia';
-// import dateTimeToDate from '@/helpers/dateTimeToDate';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
@@ -83,8 +82,6 @@ export const useBancadasStore = defineStore('bancadasStore', {
     itemParaEdição({ emFoco }) {
       return {
         ...emFoco,
-        // fundacao: dateTimeToDate(emFoco?.fundacao),
-        // encerramento: dateTimeToDate(emFoco?.encerramento),
       };
     },
   },
