@@ -1,5 +1,3 @@
-import { default as SubmenuMetas } from '@/components/SubmenuMetas.vue';
-
 import {
   AddEditAtividade,
   AddEditCronograma,
@@ -37,6 +35,56 @@ import MetaOrçamentoRaiz from '@/views/orcamento/MetaOrçamentoRaiz.vue';
 // - `/meta/:meta_id/iniciativas/:iniciativa_id`
 // - `/meta/:meta_id/iniciativas/:iniciativa_id/atividades/:atividade_id`
 
+const rotasParaMenuSecundário = (nível) => {
+  let rotasDoPdm = [];
+  const rotasDoOrçamento = [
+    'MetaOrcamentoCusto',
+    'MetaOrcamentoPlanejado',
+    'MetaOrcamentoRealizado',
+  ];
+
+  switch (nível) {
+    case 'atividade':
+      rotasDoPdm = [
+        'resumoDeAtividade',
+        'painelDaMeta',
+        'evoluçãoDaAtividade',
+        'cronogramaDaAtividade',
+      ];
+      break;
+
+    case 'iniciativa':
+      rotasDoPdm = [
+        'resumoDeIniciativa',
+        'painelDaMeta',
+        'evoluçãoDaIniciativa',
+        'cronogramaDaIniciativa',
+      ];
+      break;
+
+    case 'meta':
+    default:
+      rotasDoPdm = [
+        'meta',
+        'painelDaMeta',
+        'evoluçãoDaMeta',
+        'cronogramaDaMeta',
+      ];
+      break;
+  }
+
+  return [
+    {
+      títuloParaGrupoDeLinksNoMenu: 'Programa de Metas',
+      rotas: rotasDoPdm,
+    },
+    {
+      títuloParaGrupoDeLinksNoMenu: 'Visão orçamentária',
+      rotas: rotasDoOrçamento,
+    },
+  ];
+};
+
 export default {
   path: '/metas',
   children: [
@@ -58,36 +106,79 @@ export default {
       path: ':meta_id',
       name: 'meta',
       component: SingleMeta,
-      props: { submenu: SubmenuMetas },
+      meta: {
+        títuloParaMenu: 'Resumo',
+        rotasParaMenuSecundário: rotasParaMenuSecundário('meta'),
+      },
     },
     {
       path: ':meta_id/indicadores/novo',
       component: AddEditIndicador,
-      props: { submenu: SubmenuMetas },
+      meta: {
+        rotasParaMenuSecundário: rotasParaMenuSecundário('meta'),
+      },
     },
     {
       path: ':meta_id/indicadores/:indicador_id',
       component: AddEditIndicador,
       name: 'indicadorDaMeta',
-      props: { submenu: SubmenuMetas },
+      meta: {
+        rotasParaMenuSecundário: rotasParaMenuSecundário('meta'),
+      },
     },
 
-    { path: ':meta_id/indicadores/:indicador_id/variaveis/novo', component: AddEditIndicador, props: { group: 'variaveis', submenu: SubmenuMetas } },
+    {
+      path: ':meta_id/indicadores/:indicador_id/variaveis/novo',
+      component: AddEditIndicador,
+      props: { group: 'variaveis' },
+      meta: {
+        rotasParaMenuSecundário: rotasParaMenuSecundário('meta'),
+      },
+    },
 
     {
       path: ':meta_id/indicadores/:indicador_id/variaveis/gerar',
       component: AddEditIndicador,
-      props: { group: 'variaveis', submenu: SubmenuMetas },
+      props: { group: 'variaveis' },
       meta: {
         funçãoDaTela: 'gerar',
         rotaDeEscape: 'indicadorDaMeta',
+        rotasParaMenuSecundário: rotasParaMenuSecundário('meta'),
       },
     },
 
-    { path: ':meta_id/indicadores/:indicador_id/variaveis/novo/:copy_id', component: AddEditIndicador, props: { group: 'variaveis', submenu: SubmenuMetas } },
-    { path: ':meta_id/indicadores/:indicador_id/variaveis/:var_id', component: AddEditIndicador, props: { group: 'variaveis', submenu: SubmenuMetas } },
-    { path: ':meta_id/indicadores/:indicador_id/variaveis/:var_id/valores', component: AddEditIndicador, props: { group: 'valores', submenu: SubmenuMetas } },
-    { path: ':meta_id/indicadores/:indicador_id/variaveis/:var_id/retroativos', component: AddEditIndicador, props: { group: 'retroativos', submenu: SubmenuMetas } },
+    {
+      path: ':meta_id/indicadores/:indicador_id/variaveis/novo/:copy_id',
+      component: AddEditIndicador,
+      props: { group: 'variaveis' },
+      meta: {
+        rotasParaMenuSecundário: rotasParaMenuSecundário('meta'),
+      },
+    },
+    {
+      path: ':meta_id/indicadores/:indicador_id/variaveis/:var_id',
+      component: AddEditIndicador,
+      props: { group: 'variaveis' },
+      meta: {
+        rotasParaMenuSecundário: rotasParaMenuSecundário('meta'),
+      },
+    },
+    {
+      path: ':meta_id/indicadores/:indicador_id/variaveis/:var_id/valores',
+      component: AddEditIndicador,
+      props: { group: 'valores' },
+      meta: {
+        rotasParaMenuSecundário: rotasParaMenuSecundário('meta'),
+      },
+    },
+    {
+      path: ':meta_id/indicadores/:indicador_id/variaveis/:var_id/retroativos',
+      component: AddEditIndicador,
+      props: { group: 'retroativos' },
+      meta: {
+        rotasParaMenuSecundário: rotasParaMenuSecundário('meta'),
+      },
+    },
 
     // /////////////////////////////////////////////////////////////////////////
     // Variáveis compostas
@@ -95,164 +186,339 @@ export default {
     {
       path: ':meta_id/indicadores/:indicador_id/variaveis-compostas/novo',
       component: AddEditIndicador,
-      props: { group: 'criar-ou-editar-variaveis-compostas', submenu: SubmenuMetas },
+      props: { group: 'criar-ou-editar-variaveis-compostas' },
       meta: {
         rotaDeEscape: 'indicadorDaMeta',
         título: 'Nova variável composta',
         rotaPrescindeDeChave: true,
+        rotasParaMenuSecundário: rotasParaMenuSecundário('meta'),
       },
     },
     {
       path: ':meta_id/indicadores/:indicador_id/variaveis-compostas/gerar',
       component: AddEditIndicador,
-      props: { group: 'gerar-compostas', submenu: SubmenuMetas },
+      props: { group: 'gerar-compostas' },
       meta: {
         funçãoDaTela: 'gerar',
         rotaDeEscape: 'indicadorDaMeta',
         título: 'Auxiliar de variável composta',
         rotaPrescindeDeChave: true,
+        rotasParaMenuSecundário: rotasParaMenuSecundário('meta'),
       },
     },
     {
       path: ':meta_id/indicadores/:indicador_id/variaveis-compostas/:var_id',
       component: AddEditIndicador,
-      props: { group: 'criar-ou-editar-variaveis-compostas', submenu: SubmenuMetas },
+      props: { group: 'criar-ou-editar-variaveis-compostas' },
       meta: {
         rotaDeEscape: 'indicadorDaMeta',
         título: 'Editar variável composta',
         rotaPrescindeDeChave: true,
+        rotasParaMenuSecundário: rotasParaMenuSecundário('meta'),
       },
     },
 
     {
       path: ':meta_id/indicadores/:indicador_id/variaveis-compostas/:var_id/valores',
       component: AddEditIndicador,
-      props: { group: 'compostas-valores', submenu: SubmenuMetas },
+      props: { group: 'compostas-valores' },
       meta: {
         rotaDeEscape: 'indicadorDaMeta',
         título: 'Editar valores previstos',
         tipoDeValor: 'previsto',
         rotaPrescindeDeChave: true,
+        rotasParaMenuSecundário: rotasParaMenuSecundário('meta'),
       },
     },
     {
       path: ':meta_id/indicadores/:indicador_id/variaveis-compostas/:var_id/retroativos',
       component: AddEditIndicador,
-      props: { group: 'compostas-retroativos', submenu: SubmenuMetas },
+      props: { group: 'compostas-retroativos' },
       meta: {
         rotaDeEscape: 'indicadorDaMeta',
         título: 'Editar valores realizados',
         tipoDeValor: 'realizado',
         rotaPrescindeDeChave: true,
+        rotasParaMenuSecundário: rotasParaMenuSecundário('meta'),
       },
     },
 
     // /////////////////////////////////////////////////////////////////////////
 
-    { path: ':meta_id/painel', component: SinglePainelMeta, props: { submenu: SubmenuMetas } },
-    { path: ':meta_id/evolucao', component: SingleEvolucao, props: { submenu: SubmenuMetas } },
-    { path: ':meta_id/evolucao/:indicador_id', component: SingleEvolucao, props: { submenu: SubmenuMetas } },
-    { path: ':meta_id/evolucao/:indicador_id/variaveis/novo', component: SingleEvolucao, props: { group: 'variaveis', submenu: SubmenuMetas } },
-    { path: ':meta_id/evolucao/:indicador_id/variaveis/novo/:copy_id', component: SingleEvolucao, props: { group: 'variaveis', submenu: SubmenuMetas } },
-    { path: ':meta_id/evolucao/:indicador_id/variaveis/:var_id', component: SingleEvolucao, props: { group: 'variaveis', submenu: SubmenuMetas } },
-    { path: ':meta_id/evolucao/:indicador_id/variaveis/:var_id/valores', component: SingleEvolucao, props: { group: 'valores', submenu: SubmenuMetas } },
-    { path: ':meta_id/evolucao/:indicador_id/variaveis/:var_id/retroativos', component: SingleEvolucao, props: { group: 'retroativos', submenu: SubmenuMetas } },
-    { path: ':meta_id/cronograma', component: SingleCronograma, props: { submenu: SubmenuMetas } },
-    { path: ':meta_id/cronograma/novo', component: AddEditCronograma, props: { submenu: SubmenuMetas } },
-    { path: ':meta_id/cronograma/:cronograma_id', component: AddEditCronograma, props: { submenu: SubmenuMetas } },
-    { path: ':meta_id/cronograma/:cronograma_id/etapas/novo', component: SingleCronograma, props: { group: 'etapas', submenu: SubmenuMetas } },
-    { path: ':meta_id/cronograma/:cronograma_id/etapas/:etapa_id', component: SingleCronograma, props: { group: 'etapas', submenu: SubmenuMetas } },
-    { path: ':meta_id/cronograma/:cronograma_id/etapas/:etapa_id/novo', component: SingleCronograma, props: { group: 'fase', submenu: SubmenuMetas } },
-    { path: ':meta_id/cronograma/:cronograma_id/etapas/:etapa_id/:fase_id', component: SingleCronograma, props: { group: 'fase', submenu: SubmenuMetas } },
-    { path: ':meta_id/cronograma/:cronograma_id/etapas/:etapa_id/:fase_id/novo', component: SingleCronograma, props: { group: 'subfase', submenu: SubmenuMetas } },
-    { path: ':meta_id/cronograma/:cronograma_id/etapas/:etapa_id/:fase_id/:subfase_id', component: SingleCronograma, props: { group: 'subfase', submenu: SubmenuMetas } },
-    { path: ':meta_id/cronograma/:cronograma_id/monitorar/iniciativa', component: SingleCronograma, props: { group: 'monitorar', recorte: 'iniciativa', submenu: SubmenuMetas } },
-    { path: ':meta_id/cronograma/:cronograma_id/monitorar/atividade', component: SingleCronograma, props: { group: 'monitorar', recorte: 'atividade', submenu: SubmenuMetas } },
-    { path: ':meta_id/cronograma/:cronograma_id/monitorar/:etapa_id', component: SingleCronograma, props: { group: 'monitorar', submenu: SubmenuMetas } },
+    {
+      path: ':meta_id/painel',
+      name: 'painelDaMeta',
+      component: SinglePainelMeta,
+      meta: {
+        títuloParaMenu: 'Painel da meta',
+        rotasParaMenuSecundário: rotasParaMenuSecundário('meta'),
+      },
+    },
+    {
+      path: ':meta_id/evolucao',
+      name: 'evoluçãoDaMeta',
+      component: SingleEvolucao,
+      meta: {
+        títuloParaMenu: 'Evolução',
+        rotasParaMenuSecundário: rotasParaMenuSecundário('meta'),
+      },
+    },
+    {
+      path: ':meta_id/evolucao/:indicador_id',
+      component: SingleEvolucao,
+      meta: {
+        rotasParaMenuSecundário: rotasParaMenuSecundário('meta'),
+      },
+    },
+    {
+      path: ':meta_id/evolucao/:indicador_id/variaveis/novo',
+      component: SingleEvolucao,
+      props: { group: 'variaveis' },
+      meta: {
+        rotasParaMenuSecundário: rotasParaMenuSecundário('meta'),
+      },
+    },
+    {
+      path: ':meta_id/evolucao/:indicador_id/variaveis/novo/:copy_id',
+      component: SingleEvolucao,
+      props: { group: 'variaveis' },
+      meta: {
+        rotasParaMenuSecundário: rotasParaMenuSecundário('meta'),
+      },
+    },
+    {
+      path: ':meta_id/evolucao/:indicador_id/variaveis/:var_id',
+      component: SingleEvolucao,
+      props: { group: 'variaveis' },
+      meta: {
+        rotasParaMenuSecundário: rotasParaMenuSecundário('meta'),
+      },
+    },
+    {
+      path: ':meta_id/evolucao/:indicador_id/variaveis/:var_id/valores',
+      component: SingleEvolucao,
+      props: { group: 'valores' },
+      meta: {
+        rotasParaMenuSecundário: rotasParaMenuSecundário('meta'),
+      },
+    },
+    {
+      path: ':meta_id/evolucao/:indicador_id/variaveis/:var_id/retroativos',
+      component: SingleEvolucao,
+      props: { group: 'retroativos' },
+      meta: {
+        rotasParaMenuSecundário: rotasParaMenuSecundário('meta'),
+      },
+    },
+    {
+      path: ':meta_id/cronograma',
+      name: 'cronogramaDaMeta',
+      component: SingleCronograma,
+      meta: {
+        títuloParaMenu: 'Cronograma',
+        rotasParaMenuSecundário: rotasParaMenuSecundário('meta'),
+      },
+    },
+    {
+      path: ':meta_id/cronograma/novo',
+      component: AddEditCronograma,
+      meta: {
+        rotasParaMenuSecundário: rotasParaMenuSecundário('meta'),
+      },
+    },
+    {
+      path: ':meta_id/cronograma/:cronograma_id',
+      component: AddEditCronograma,
+      meta: {
+        rotasParaMenuSecundário: rotasParaMenuSecundário('meta'),
+      },
+    },
+    {
+      path: ':meta_id/cronograma/:cronograma_id/etapas/novo',
+      component: SingleCronograma,
+      props: { group: 'etapas' },
+      meta: {
+        rotasParaMenuSecundário: rotasParaMenuSecundário('meta'),
+      },
+    },
+    {
+      path: ':meta_id/cronograma/:cronograma_id/etapas/:etapa_id',
+      component: SingleCronograma,
+      props: { group: 'etapas' },
+      meta: {
+        rotasParaMenuSecundário: rotasParaMenuSecundário('meta'),
+      },
+    },
+    {
+      path: ':meta_id/cronograma/:cronograma_id/etapas/:etapa_id/novo',
+      component: SingleCronograma,
+      props: { group: 'fase' },
+      meta: {
+        rotasParaMenuSecundário: rotasParaMenuSecundário('meta'),
+      },
+    },
+    {
+      path: ':meta_id/cronograma/:cronograma_id/etapas/:etapa_id/:fase_id',
+      component: SingleCronograma,
+      props: { group: 'fase' },
+      meta: {
+        rotasParaMenuSecundário: rotasParaMenuSecundário('meta'),
+      },
+    },
+    {
+      path: ':meta_id/cronograma/:cronograma_id/etapas/:etapa_id/:fase_id/novo',
+      component: SingleCronograma,
+      props: { group: 'subfase' },
+      meta: {
+        rotasParaMenuSecundário: rotasParaMenuSecundário('meta'),
+      },
+    },
+    {
+      path: ':meta_id/cronograma/:cronograma_id/etapas/:etapa_id/:fase_id/:subfase_id',
+      component: SingleCronograma,
+      props: { group: 'subfase' },
+      meta: {
+        rotasParaMenuSecundário: rotasParaMenuSecundário('meta'),
+      },
+    },
+    {
+      path: ':meta_id/cronograma/:cronograma_id/monitorar/iniciativa',
+      component: SingleCronograma,
+      props: { group: 'monitorar', recorte: 'iniciativa' },
+      meta: {
+        rotasParaMenuSecundário: rotasParaMenuSecundário('meta'),
+      },
+    },
+    {
+      path: ':meta_id/cronograma/:cronograma_id/monitorar/atividade',
+      component: SingleCronograma,
+      props: { group: 'monitorar', recorte: 'atividade' },
+      meta: {
+        rotasParaMenuSecundário: rotasParaMenuSecundário('meta'),
+      },
+    },
+    {
+      path: ':meta_id/cronograma/:cronograma_id/monitorar/:etapa_id',
+      component: SingleCronograma,
+      props: { group: 'monitorar' },
+      meta: {
+        rotasParaMenuSecundário: rotasParaMenuSecundário('meta'),
+      },
+    },
 
     {
       path: ':meta_id/orcamento',
       redirect: (to) => `${to.path}/custo`,
       component: MetaOrçamentoRaiz,
-      props: { submenu: SubmenuMetas },
       meta: {
         // como o componente é compartilhado, ele deveria
         // se atualizar em mudanças de rota
         rotaPrescindeDeChave: false,
+        rotasParaMenuSecundário: rotasParaMenuSecundário('meta'),
       },
       children: [
         {
           path: 'custo',
           name: 'MetaOrcamentoCusto',
           component: MetaOrcamento,
-          props: { submenu: SubmenuMetas, area: 'Custo', title: 'Previsão de Custo' },
+          props: { area: 'Custo', title: 'Previsão de Custo' },
+          meta: {
+            títuloParaMenu: 'Previsão de custo',
+            rotasParaMenuSecundário: rotasParaMenuSecundário('meta'),
+          },
         },
         {
           path: 'custo/:ano',
           component: AddEditCusteio,
-          props: { submenu: SubmenuMetas },
-          meta: { rotaDeEscape: 'MetaOrcamentoCusto' },
+          meta: {
+            rotaDeEscape: 'MetaOrcamentoCusto',
+            rotasParaMenuSecundário: rotasParaMenuSecundário('meta'),
+          },
         },
         {
           path: 'custo/:ano/:id',
           component: AddEditCusteio,
-          props: { submenu: SubmenuMetas },
-          meta: { rotaDeEscape: 'MetaOrcamentoCusto' },
+          meta: {
+            rotaDeEscape: 'MetaOrcamentoCusto',
+            rotasParaMenuSecundário: rotasParaMenuSecundário('meta'),
+          },
         },
         {
           path: 'planejado',
           name: 'MetaOrcamentoPlanejado',
           component: MetaOrcamento,
-          props: { submenu: SubmenuMetas, area: 'Planejado', title: 'Orçamento Planejado' },
+          props: { area: 'Planejado', title: 'Orçamento Planejado' },
+          meta: {
+            títuloParaMenu: 'Orçamento planejado',
+            rotasParaMenuSecundário: rotasParaMenuSecundário('meta'),
+          },
         },
         {
           path: 'planejado/:ano',
           component: AddEditPlanejado,
-          props: { submenu: SubmenuMetas },
-          meta: { rotaDeEscape: 'MetaOrcamentoPlanejado' },
+          meta: {
+            rotaDeEscape: 'MetaOrcamentoPlanejado',
+            rotasParaMenuSecundário: rotasParaMenuSecundário('meta'),
+          },
         },
         {
           path: 'planejado/:ano/:id',
           component: AddEditPlanejado,
-          props: { submenu: SubmenuMetas },
-          meta: { rotaDeEscape: 'MetaOrcamentoPlanejado' },
+          meta: {
+            rotaDeEscape: 'MetaOrcamentoPlanejado',
+            rotasParaMenuSecundário: rotasParaMenuSecundário('meta'),
+          },
         },
 
         {
           path: 'realizado',
           name: 'MetaOrcamentoRealizado',
           component: MetaOrcamento,
-          props: { submenu: SubmenuMetas, area: 'Realizado', title: 'Execução orçamentária' },
+          props: { area: 'Realizado', title: 'Execução orçamentária' },
+          meta: {
+            títuloParaMenu: 'Execução orçamentária',
+            rotasParaMenuSecundário: rotasParaMenuSecundário('meta'),
+          },
         },
         {
           path: 'realizado/:ano/dotacao',
           component: AddRealizado,
-          props: { submenu: SubmenuMetas },
-          meta: { rotaDeEscape: 'MetaOrcamentoRealizado' },
+          meta: {
+            rotaDeEscape: 'MetaOrcamentoRealizado',
+            rotasParaMenuSecundário: rotasParaMenuSecundário('meta'),
+          },
         },
         {
           path: 'realizado/:ano/processo',
           component: AddRealizadoProcesso,
-          props: { submenu: SubmenuMetas },
-          meta: { rotaDeEscape: 'MetaOrcamentoRealizado' },
+          meta: {
+            rotaDeEscape: 'MetaOrcamentoRealizado',
+            rotasParaMenuSecundário: rotasParaMenuSecundário('meta'),
+          },
         },
         {
           path: 'realizado/:ano/nota',
           component: AddRealizadoNota,
-          props: { submenu: SubmenuMetas },
-          meta: { rotaDeEscape: 'MetaOrcamentoRealizado' },
+          meta: {
+            rotaDeEscape: 'MetaOrcamentoRealizado',
+            rotasParaMenuSecundário: rotasParaMenuSecundário('meta'),
+          },
         },
         {
           path: 'realizado/:ano/:id',
           component: EditRealizado,
-          props: { submenu: SubmenuMetas },
-          meta: { rotaDeEscape: 'MetaOrcamentoRealizado' },
+          meta: {
+            rotaDeEscape: 'MetaOrcamentoRealizado',
+            rotasParaMenuSecundário: rotasParaMenuSecundário('meta'),
+          },
         },
         {
           path: 'realizado/:ano/dotacao/:id',
           component: EditRealizado,
-          props: { submenu: SubmenuMetas },
-          meta: { rotaDeEscape: 'MetaOrcamentoRealizado' },
+          meta: {
+            rotaDeEscape: 'MetaOrcamentoRealizado',
+            rotasParaMenuSecundário: rotasParaMenuSecundário('meta'),
+          },
         },
       ],
     },
@@ -260,24 +526,103 @@ export default {
     {
       path: ':meta_id/iniciativas',
       children: [
-        { path: '', component: SingleMeta, props: { submenu: SubmenuMetas } },
-        { path: 'novo', component: AddEditIniciativa, props: { submenu: SubmenuMetas } },
-        { path: 'editar/:iniciativa_id', component: AddEditIniciativa, props: { submenu: SubmenuMetas } },
-        { path: ':iniciativa_id', component: SingleIniciativa, props: { submenu: SubmenuMetas } },
-        { path: ':iniciativa_id/indicadores/novo', component: AddEditIndicador, props: { submenu: SubmenuMetas } },
         {
-          path: ':iniciativa_id/indicadores/:indicador_id', component: AddEditIndicador, props: { submenu: SubmenuMetas }, name: 'indicadorDaIniciativa',
+          path: '',
+          component: SingleMeta,
+          metas: {
+            rotasParaMenuSecundário: rotasParaMenuSecundário('meta'),
+          },
         },
-        { path: ':iniciativa_id/indicadores/:indicador_id/variaveis/novo', component: AddEditIndicador, props: { group: 'variaveis', submenu: SubmenuMetas } },
-        { path: ':iniciativa_id/indicadores/:indicador_id/variaveis/novo/:copy_id', component: AddEditIndicador, props: { group: 'variaveis', submenu: SubmenuMetas } },
+        {
+          path: 'novo',
+          component: AddEditIniciativa,
+          metas: {
+            rotasParaMenuSecundário: rotasParaMenuSecundário('iniciativa'),
+          },
+        },
+        {
+          path: 'editar/:iniciativa_id',
+          component: AddEditIniciativa,
+          metas: {
+            rotasParaMenuSecundário: rotasParaMenuSecundário('iniciativa'),
+          },
+        },
+        {
+          path: ':iniciativa_id',
+          name: 'resumoDeIniciativa',
+          component: SingleIniciativa,
+          meta: {
+            títuloParaMenu: 'Resumo',
+            rotasParaMenuSecundário: rotasParaMenuSecundário('iniciativa'),
+          },
+        },
+        {
+          path: ':iniciativa_id/indicadores/novo',
+          component: AddEditIndicador,
+          meta: {
+            rotasParaMenuSecundário: rotasParaMenuSecundário('iniciativa'),
+          },
+        },
+        {
+          path: ':iniciativa_id/indicadores/:indicador_id',
+          name: 'indicadorDaIniciativa',
+          component: AddEditIndicador,
+          meta: {
+            rotasParaMenuSecundário: rotasParaMenuSecundário('iniciativa'),
+          },
+        },
+        {
+          path: ':iniciativa_id/indicadores/:indicador_id/variaveis/novo',
+          component: AddEditIndicador,
+          props: { group: 'variaveis' },
+          meta: {
+            rotasParaMenuSecundário: rotasParaMenuSecundário('iniciativa'),
+          },
+        },
+        {
+          path: ':iniciativa_id/indicadores/:indicador_id/variaveis/novo/:copy_id',
+          component: AddEditIndicador,
+          props: { group: 'variaveis' },
+          meta: {
+            rotasParaMenuSecundário: rotasParaMenuSecundário('iniciativa'),
+          },
+        },
 
         {
-          path: ':iniciativa_id/indicadores/:indicador_id/variaveis/gerar', component: AddEditIndicador, props: { group: 'variaveis', submenu: SubmenuMetas }, meta: { funçãoDaTela: 'gerar', rotaDeEscape: 'indicadorDaIniciativa' },
+          path: ':iniciativa_id/indicadores/:indicador_id/variaveis/gerar',
+          component: AddEditIndicador,
+          props: { group: 'variaveis' },
+          meta: {
+            funçãoDaTela: 'gerar',
+            rotaDeEscape: 'indicadorDaIniciativa',
+            rotasParaMenuSecundário: rotasParaMenuSecundário('iniciativa'),
+          },
         },
 
-        { path: ':iniciativa_id/indicadores/:indicador_id/variaveis/:var_id', component: AddEditIndicador, props: { group: 'variaveis', submenu: SubmenuMetas } },
-        { path: ':iniciativa_id/indicadores/:indicador_id/variaveis/:var_id/valores', component: AddEditIndicador, props: { group: 'valores', submenu: SubmenuMetas } },
-        { path: ':iniciativa_id/indicadores/:indicador_id/variaveis/:var_id/retroativos', component: AddEditIndicador, props: { group: 'retroativos', submenu: SubmenuMetas } },
+        {
+          path: ':iniciativa_id/indicadores/:indicador_id/variaveis/:var_id',
+          component: AddEditIndicador,
+          props: { group: 'variaveis' },
+          meta: {
+            rotasParaMenuSecundário: rotasParaMenuSecundário('iniciativa'),
+          },
+        },
+        {
+          path: ':iniciativa_id/indicadores/:indicador_id/variaveis/:var_id/valores',
+          component: AddEditIndicador,
+          props: { group: 'valores' },
+          meta: {
+            rotasParaMenuSecundário: rotasParaMenuSecundário('iniciativa'),
+          },
+        },
+        {
+          path: ':iniciativa_id/indicadores/:indicador_id/variaveis/:var_id/retroativos',
+          component: AddEditIndicador,
+          props: { group: 'retroativos' },
+          meta: {
+            rotasParaMenuSecundário: rotasParaMenuSecundário('iniciativa'),
+          },
+        },
 
         // /////////////////////////////////////////////////////////////////////////
         // Variáveis compostas
@@ -285,102 +630,308 @@ export default {
         {
           path: ':iniciativa_id/indicadores/:indicador_id/variaveis-compostas/novo',
           component: AddEditIndicador,
-          props: { group: 'criar-ou-editar-variaveis-compostas', submenu: SubmenuMetas },
+          props: { group: 'criar-ou-editar-variaveis-compostas' },
           meta: {
             rotaDeEscape: 'indicadorDaIniciativa',
             título: 'Nova variável composta',
             rotaPrescindeDeChave: true,
+            rotasParaMenuSecundário: rotasParaMenuSecundário('iniciativa'),
           },
         },
         {
           path: ':iniciativa_id/indicadores/:indicador_id/variaveis-compostas/gerar',
           component: AddEditIndicador,
-          props: { group: 'gerar-compostas', submenu: SubmenuMetas },
+          props: { group: 'gerar-compostas' },
           meta: {
             funçãoDaTela: 'gerar',
             rotaDeEscape: 'indicadorDaIniciativa',
             título: 'Auxiliar de variável composta',
             rotaPrescindeDeChave: true,
+            rotasParaMenuSecundário: rotasParaMenuSecundário('iniciativa'),
           },
         },
         {
           path: ':iniciativa_id/indicadores/:indicador_id/variaveis-compostas/:var_id',
           component: AddEditIndicador,
-          props: { group: 'criar-ou-editar-variaveis-compostas', submenu: SubmenuMetas },
+          props: { group: 'criar-ou-editar-variaveis-compostas' },
           meta: {
             rotaDeEscape: 'indicadorDaIniciativa',
             título: 'Editar variável composta',
             rotaPrescindeDeChave: true,
+            rotasParaMenuSecundário: rotasParaMenuSecundário('iniciativa'),
           },
         },
 
         {
           path: ':iniciativa_id/indicadores/:indicador_id/variaveis-compostas/:var_id/valores',
           component: AddEditIndicador,
-          props: { group: 'compostas-valores', submenu: SubmenuMetas },
+          props: { group: 'compostas-valores' },
           meta: {
             rotaDeEscape: 'indicadorDaIniciativa',
             título: 'Editar valores previstos',
             tipoDeValor: 'previsto',
             rotaPrescindeDeChave: true,
+            rotasParaMenuSecundário: rotasParaMenuSecundário('iniciativa'),
           },
         },
         {
           path: ':iniciativa_id/indicadores/:indicador_id/variaveis-compostas/:var_id/retroativos',
           component: AddEditIndicador,
-          props: { group: 'compostas-retroativos', submenu: SubmenuMetas },
+          props: { group: 'compostas-retroativos' },
           meta: {
             rotaDeEscape: 'indicadorDaIniciativa',
             título: 'Editar valores realizados',
             tipoDeValor: 'realizado',
             rotaPrescindeDeChave: true,
+            rotasParaMenuSecundário: rotasParaMenuSecundário('iniciativa'),
           },
         },
 
         // /////////////////////////////////////////////////////////////////////////
 
-        { path: ':iniciativa_id/evolucao', component: SingleEvolucao, props: { submenu: SubmenuMetas } },
-        { path: ':iniciativa_id/evolucao/:indicador_id', component: SingleEvolucao, props: { submenu: SubmenuMetas } },
-        { path: ':iniciativa_id/evolucao/:indicador_id/variaveis/novo', component: SingleEvolucao, props: { group: 'variaveis', submenu: SubmenuMetas } },
-        { path: ':iniciativa_id/evolucao/:indicador_id/variaveis/novo/:copy_id', component: SingleEvolucao, props: { group: 'variaveis', submenu: SubmenuMetas } },
-        { path: ':iniciativa_id/evolucao/:indicador_id/variaveis/:var_id', component: SingleEvolucao, props: { group: 'variaveis', submenu: SubmenuMetas } },
-        { path: ':iniciativa_id/evolucao/:indicador_id/variaveis/:var_id/valores', component: SingleEvolucao, props: { group: 'valores', submenu: SubmenuMetas } },
-        { path: ':iniciativa_id/evolucao/:indicador_id/variaveis/:var_id/retroativos', component: SingleEvolucao, props: { group: 'retroativos', submenu: SubmenuMetas } },
-        { path: ':iniciativa_id/cronograma', component: SingleCronograma, props: { submenu: SubmenuMetas } },
-        { path: ':iniciativa_id/cronograma/novo', component: AddEditCronograma, props: { submenu: SubmenuMetas } },
-        { path: ':iniciativa_id/cronograma/:cronograma_id', component: AddEditCronograma, props: { submenu: SubmenuMetas } },
-        { path: ':iniciativa_id/cronograma/:cronograma_id/etapas/novo', component: SingleCronograma, props: { group: 'etapas', submenu: SubmenuMetas } },
-        { path: ':iniciativa_id/cronograma/:cronograma_id/etapas/:etapa_id', component: SingleCronograma, props: { group: 'etapas', submenu: SubmenuMetas } },
-        { path: ':iniciativa_id/cronograma/:cronograma_id/etapas/:etapa_id/novo', component: SingleCronograma, props: { group: 'fase', submenu: SubmenuMetas } },
-        { path: ':iniciativa_id/cronograma/:cronograma_id/etapas/:etapa_id/:fase_id', component: SingleCronograma, props: { group: 'fase', submenu: SubmenuMetas } },
-        { path: ':iniciativa_id/cronograma/:cronograma_id/etapas/:etapa_id/:fase_id/novo', component: SingleCronograma, props: { group: 'subfase', submenu: SubmenuMetas } },
-        { path: ':iniciativa_id/cronograma/:cronograma_id/etapas/:etapa_id/:fase_id/:subfase_id', component: SingleCronograma, props: { group: 'subfase', submenu: SubmenuMetas } },
-        { path: ':iniciativa_id/cronograma/:cronograma_id/monitorar/atividade', component: SingleCronograma, props: { group: 'monitorar', recorte: 'atividade', submenu: SubmenuMetas } },
-        { path: ':iniciativa_id/cronograma/:cronograma_id/monitorar/:etapa_id', component: SingleCronograma, props: { group: 'monitorar', submenu: SubmenuMetas } },
+        {
+          path: ':iniciativa_id/evolucao',
+          name: 'evoluçãoDaIniciativa',
+          component: SingleEvolucao,
+          meta: {
+            títuloParaMenu: 'Evolução',
+            rotasParaMenuSecundário: rotasParaMenuSecundário('iniciativa'),
+          },
+        },
+        {
+          path: ':iniciativa_id/evolucao/:indicador_id',
+          component: SingleEvolucao,
+          meta: {
+            rotasParaMenuSecundário: rotasParaMenuSecundário('iniciativa'),
+          },
+        },
+        {
+          path: ':iniciativa_id/evolucao/:indicador_id/variaveis/novo',
+          component: SingleEvolucao,
+          props: { group: 'variaveis' },
+          meta: {
+            rotasParaMenuSecundário: rotasParaMenuSecundário('iniciativa'),
+          },
+        },
+        {
+          path: ':iniciativa_id/evolucao/:indicador_id/variaveis/novo/:copy_id',
+          component: SingleEvolucao,
+          props: { group: 'variaveis' },
+          meta: {
+            rotasParaMenuSecundário: rotasParaMenuSecundário('iniciativa'),
+          },
+        },
+        {
+          path: ':iniciativa_id/evolucao/:indicador_id/variaveis/:var_id',
+          component: SingleEvolucao,
+          props: { group: 'variaveis' },
+          meta: {
+            rotasParaMenuSecundário: rotasParaMenuSecundário('iniciativa'),
+          },
+        },
+        {
+          path: ':iniciativa_id/evolucao/:indicador_id/variaveis/:var_id/valores',
+          component: SingleEvolucao,
+          props: { group: 'valores' },
+          meta: {
+            rotasParaMenuSecundário: rotasParaMenuSecundário('iniciativa'),
+          },
+        },
+        {
+          path: ':iniciativa_id/evolucao/:indicador_id/variaveis/:var_id/retroativos',
+          component: SingleEvolucao,
+          props: { group: 'retroativos' },
+          meta: {
+            rotasParaMenuSecundário: rotasParaMenuSecundário('iniciativa'),
+          },
+        },
+        {
+          path: ':iniciativa_id/cronograma',
+          name: 'cronogramaDaIniciativa',
+          component: SingleCronograma,
+          meta: {
+            títuloParaMenu: 'Cronograma',
+            rotasParaMenuSecundário: rotasParaMenuSecundário('iniciativa'),
+          },
+        },
+        {
+          path: ':iniciativa_id/cronograma/novo',
+          component: AddEditCronograma,
+          meta: {
+            rotasParaMenuSecundário: rotasParaMenuSecundário('iniciativa'),
+          },
+        },
+        {
+          path: ':iniciativa_id/cronograma/:cronograma_id',
+          component: AddEditCronograma,
+          meta: {
+            rotasParaMenuSecundário: rotasParaMenuSecundário('iniciativa'),
+          },
+        },
+        {
+          path: ':iniciativa_id/cronograma/:cronograma_id/etapas/novo',
+          component: SingleCronograma,
+          props: { group: 'etapas' },
+          meta: {
+            rotasParaMenuSecundário: rotasParaMenuSecundário('iniciativa'),
+          },
+        },
+        {
+          path: ':iniciativa_id/cronograma/:cronograma_id/etapas/:etapa_id',
+          component: SingleCronograma,
+          props: { group: 'etapas' },
+          meta: {
+            rotasParaMenuSecundário: rotasParaMenuSecundário('iniciativa'),
+          },
+        },
+        {
+          path: ':iniciativa_id/cronograma/:cronograma_id/etapas/:etapa_id/novo',
+          component: SingleCronograma,
+          props: { group: 'fase' },
+          meta: {
+            rotasParaMenuSecundário: rotasParaMenuSecundário('iniciativa'),
+          },
+        },
+        {
+          path: ':iniciativa_id/cronograma/:cronograma_id/etapas/:etapa_id/:fase_id',
+          component: SingleCronograma,
+          props: { group: 'fase' },
+          meta: {
+            rotasParaMenuSecundário: rotasParaMenuSecundário('iniciativa'),
+          },
+        },
+        {
+          path: ':iniciativa_id/cronograma/:cronograma_id/etapas/:etapa_id/:fase_id/novo',
+          component: SingleCronograma,
+          props: { group: 'subfase' },
+          meta: {
+            rotasParaMenuSecundário: rotasParaMenuSecundário('iniciativa'),
+          },
+        },
+        {
+          path: ':iniciativa_id/cronograma/:cronograma_id/etapas/:etapa_id/:fase_id/:subfase_id',
+          component: SingleCronograma,
+          props: { group: 'subfase' },
+          meta: {
+            rotasParaMenuSecundário: rotasParaMenuSecundário('iniciativa'),
+          },
+        },
+        {
+          path: ':iniciativa_id/cronograma/:cronograma_id/monitorar/atividade',
+          component: SingleCronograma,
+          props: { group: 'monitorar', recorte: 'atividade' },
+          meta: {
+            rotasParaMenuSecundário: rotasParaMenuSecundário('iniciativa'),
+          },
+        },
+        {
+          path: ':iniciativa_id/cronograma/:cronograma_id/monitorar/:etapa_id',
+          component: SingleCronograma,
+          props: { group: 'monitorar' },
+          meta: {
+            rotasParaMenuSecundário: rotasParaMenuSecundário('iniciativa'),
+          },
+        },
         {
           path: ':iniciativa_id/atividades',
           children: [
-            { path: '', component: SingleIniciativa, props: { submenu: SubmenuMetas } },
-            { path: 'novo', component: AddEditAtividade, props: { submenu: SubmenuMetas } },
-            { path: 'editar/:atividade_id', component: AddEditAtividade, props: { submenu: SubmenuMetas } },
-            { path: ':atividade_id', component: SingleAtividade, props: { submenu: SubmenuMetas } },
-            { path: ':atividade_id/indicadores/novo', component: AddEditIndicador, props: { submenu: SubmenuMetas } },
             {
-              path: ':atividade_id/indicadores/:indicador_id', component: AddEditIndicador, props: { submenu: SubmenuMetas }, name: 'indicadorDaAtividade',
+              path: '',
+              component: SingleIniciativa,
+              meta: {
+                rotasParaMenuSecundário: rotasParaMenuSecundário('iniciativa'),
+              },
             },
-            { path: ':atividade_id/indicadores/:indicador_id/variaveis/novo', component: AddEditIndicador, props: { group: 'variaveis', submenu: SubmenuMetas } },
+            {
+              path: 'novo',
+              component: AddEditAtividade,
+              meta: {
+                rotasParaMenuSecundário: rotasParaMenuSecundário('atividade'),
+              },
+            },
+            {
+              path: 'editar/:atividade_id',
+              component: AddEditAtividade,
+              meta: {
+                rotasParaMenuSecundário: rotasParaMenuSecundário('atividade'),
+              },
+            },
+            {
+              path: ':atividade_id',
+              name: 'resumoDeAtividade',
+              component: SingleAtividade,
+              meta: {
+                títuloParaMenu: 'Resumo',
+                rotasParaMenuSecundário: rotasParaMenuSecundário('atividade'),
+              },
+            },
+            {
+              path: ':atividade_id/indicadores/novo',
+              component: AddEditIndicador,
+              meta: {
+                rotasParaMenuSecundário: rotasParaMenuSecundário('atividade'),
+              },
+            },
+            {
+              path: ':atividade_id/indicadores/:indicador_id',
+              component: AddEditIndicador,
+              meta: {
+                rotasParaMenuSecundário: rotasParaMenuSecundário('atividade'),
+              },
+              name: 'indicadorDaAtividade',
+            },
+            {
+              path: ':atividade_id/indicadores/:indicador_id/variaveis/novo',
+              component: AddEditIndicador,
+              props: { group: 'variaveis' },
+              meta: {
+                rotasParaMenuSecundário: rotasParaMenuSecundário('atividade'),
+              },
+            },
 
             {
               path: ':atividade_id/indicadores/:indicador_id/variaveis/gerar',
               component: AddEditIndicador,
-              props: { group: 'variaveis', submenu: SubmenuMetas },
-              meta: { funçãoDaTela: 'gerar', rotaDeEscape: 'indicadorDaAtividade' },
+              props: { group: 'variaveis' },
+              meta: {
+                funçãoDaTela: 'gerar',
+                rotaDeEscape: 'indicadorDaAtividade',
+                rotasParaMenuSecundário: rotasParaMenuSecundário('atividade'),
+              },
             },
 
-            { path: ':atividade_id/indicadores/:indicador_id/variaveis/novo/:copy_id', component: AddEditIndicador, props: { group: 'variaveis', submenu: SubmenuMetas } },
-            { path: ':atividade_id/indicadores/:indicador_id/variaveis/:var_id', component: AddEditIndicador, props: { group: 'variaveis', submenu: SubmenuMetas } },
-            { path: ':atividade_id/indicadores/:indicador_id/variaveis/:var_id/valores', component: AddEditIndicador, props: { group: 'valores', submenu: SubmenuMetas } },
-            { path: ':atividade_id/indicadores/:indicador_id/variaveis/:var_id/retroativos', component: AddEditIndicador, props: { group: 'retroativos', submenu: SubmenuMetas } },
+            {
+              path: ':atividade_id/indicadores/:indicador_id/variaveis/novo/:copy_id',
+              component: AddEditIndicador,
+              props: { group: 'variaveis' },
+              meta: {
+                rotasParaMenuSecundário: rotasParaMenuSecundário('atividade'),
+              },
+            },
+            {
+              path: ':atividade_id/indicadores/:indicador_id/variaveis/:var_id',
+              component: AddEditIndicador,
+              props: { group: 'variaveis' },
+              meta: {
+                rotasParaMenuSecundário: rotasParaMenuSecundário('atividade'),
+              },
+            },
+            {
+              path: ':atividade_id/indicadores/:indicador_id/variaveis/:var_id/valores',
+              component: AddEditIndicador,
+              props: { group: 'valores' },
+              meta: {
+                rotasParaMenuSecundário: rotasParaMenuSecundário('atividade'),
+              },
+            },
+            {
+              path: ':atividade_id/indicadores/:indicador_id/variaveis/:var_id/retroativos',
+              component: AddEditIndicador,
+              props: { group: 'retroativos' },
+              meta: {
+                rotasParaMenuSecundário: rotasParaMenuSecundário('atividade'),
+              },
+            },
 
             // /////////////////////////////////////////////////////////////////////////
             // Variáveis compostas
@@ -389,76 +940,192 @@ export default {
             {
               path: ':atividade_id/indicadores/:indicador_id/variaveis-compostas/novo',
               component: AddEditIndicador,
-              props: { group: 'criar-ou-editar-variaveis-compostas', submenu: SubmenuMetas },
+              props: { group: 'criar-ou-editar-variaveis-compostas' },
               meta: {
                 rotaDeEscape: 'indicadorDaAtividade',
                 título: 'Nova variável composta',
                 rotaPrescindeDeChave: true,
+                rotasParaMenuSecundário: rotasParaMenuSecundário('atividade'),
               },
             },
             {
               path: ':atividade_id/indicadores/:indicador_id/variaveis-compostas/gerar',
               component: AddEditIndicador,
-              props: { group: 'gerar-compostas', submenu: SubmenuMetas },
+              props: { group: 'gerar-compostas' },
               meta: {
                 funçãoDaTela: 'gerar',
                 rotaDeEscape: 'indicadorDaAtividade',
                 título: 'Auxiliar de variável composta',
                 rotaPrescindeDeChave: true,
+                rotasParaMenuSecundário: rotasParaMenuSecundário('atividade'),
               },
             },
             {
               path: ':atividade_id/indicadores/:indicador_id/variaveis-compostas/:var_id',
               component: AddEditIndicador,
-              props: { group: 'criar-ou-editar-variaveis-compostas', submenu: SubmenuMetas },
+              props: { group: 'criar-ou-editar-variaveis-compostas' },
               meta: {
                 rotaDeEscape: 'indicadorDaAtividade',
                 título: 'Editar variável composta',
                 rotaPrescindeDeChave: true,
+                rotasParaMenuSecundário: rotasParaMenuSecundário('atividade'),
               },
             },
 
             {
               path: ':atividade_id/indicadores/:indicador_id/variaveis-compostas/:var_id/valores',
               component: AddEditIndicador,
-              props: { group: 'compostas-valores', submenu: SubmenuMetas },
+              props: { group: 'compostas-valores' },
               meta: {
                 rotaDeEscape: 'indicadorDaAtividade',
                 título: 'Editar valores previstos',
                 tipoDeValor: 'previsto',
                 rotaPrescindeDeChave: true,
+                rotasParaMenuSecundário: rotasParaMenuSecundário('atividade'),
               },
             },
             {
               path: ':atividade_id/indicadores/:indicador_id/variaveis-compostas/:var_id/retroativos',
               component: AddEditIndicador,
-              props: { group: 'compostas-retroativos', submenu: SubmenuMetas },
+              props: { group: 'compostas-retroativos' },
               meta: {
                 rotaDeEscape: 'indicadorDaAtividade',
                 título: 'Editar valores realizados',
                 tipoDeValor: 'realizado',
                 rotaPrescindeDeChave: true,
+                rotasParaMenuSecundário: rotasParaMenuSecundário('atividade'),
               },
             },
 
             // /////////////////////////////////////////////////////////////////////////
 
-            { path: ':atividade_id/evolucao', component: SingleEvolucao, props: { submenu: SubmenuMetas } },
-            { path: ':atividade_id/evolucao/:indicador_id', component: SingleEvolucao, props: { submenu: SubmenuMetas } },
-            { path: ':atividade_id/evolucao/:indicador_id/variaveis/novo', component: SingleEvolucao, props: { group: 'variaveis', submenu: SubmenuMetas } },
-            { path: ':atividade_id/evolucao/:indicador_id/variaveis/novo/:copy_id', component: SingleEvolucao, props: { group: 'variaveis', submenu: SubmenuMetas } },
-            { path: ':atividade_id/evolucao/:indicador_id/variaveis/:var_id', component: SingleEvolucao, props: { group: 'variaveis', submenu: SubmenuMetas } },
-            { path: ':atividade_id/evolucao/:indicador_id/variaveis/:var_id/valores', component: SingleEvolucao, props: { group: 'valores', submenu: SubmenuMetas } },
-            { path: ':atividade_id/evolucao/:indicador_id/variaveis/:var_id/retroativos', component: SingleEvolucao, props: { group: 'retroativos', submenu: SubmenuMetas } },
-            { path: ':atividade_id/cronograma', component: SingleCronograma, props: { submenu: SubmenuMetas } },
-            { path: ':atividade_id/cronograma/novo', component: AddEditCronograma, props: { submenu: SubmenuMetas } },
-            { path: ':atividade_id/cronograma/:cronograma_id', component: AddEditCronograma, props: { submenu: SubmenuMetas } },
-            { path: ':atividade_id/cronograma/:cronograma_id/etapas/novo', component: SingleCronograma, props: { group: 'etapas', submenu: SubmenuMetas } },
-            { path: ':atividade_id/cronograma/:cronograma_id/etapas/:etapa_id', component: SingleCronograma, props: { group: 'etapas', submenu: SubmenuMetas } },
-            { path: ':atividade_id/cronograma/:cronograma_id/etapas/:etapa_id/novo', component: SingleCronograma, props: { group: 'fase', submenu: SubmenuMetas } },
-            { path: ':atividade_id/cronograma/:cronograma_id/etapas/:etapa_id/:fase_id', component: SingleCronograma, props: { group: 'fase', submenu: SubmenuMetas } },
-            { path: ':atividade_id/cronograma/:cronograma_id/etapas/:etapa_id/:fase_id/novo', component: SingleCronograma, props: { group: 'subfase', submenu: SubmenuMetas } },
-            { path: ':atividade_id/cronograma/:cronograma_id/etapas/:etapa_id/:fase_id/:subfase_id', component: SingleCronograma, props: { group: 'subfase', submenu: SubmenuMetas } },
+            {
+              path: ':atividade_id/evolucao',
+              name: 'evoluçãoDaAtividade',
+              component: SingleEvolucao,
+              meta: {
+                títuloParaMenu: 'Evolução',
+                rotasParaMenuSecundário: rotasParaMenuSecundário('atividade'),
+              },
+            },
+            {
+              path: ':atividade_id/evolucao/:indicador_id',
+              component: SingleEvolucao,
+              meta: {
+                rotasParaMenuSecundário: rotasParaMenuSecundário('atividade'),
+              },
+            },
+            {
+              path: ':atividade_id/evolucao/:indicador_id/variaveis/novo',
+              component: SingleEvolucao,
+              props: { group: 'variaveis' },
+              meta: {
+                rotasParaMenuSecundário: rotasParaMenuSecundário('atividade'),
+              },
+            },
+            {
+              path: ':atividade_id/evolucao/:indicador_id/variaveis/novo/:copy_id',
+              component: SingleEvolucao,
+              props: { group: 'variaveis' },
+              meta: {
+                rotasParaMenuSecundário: rotasParaMenuSecundário('atividade'),
+              },
+            },
+            {
+              path: ':atividade_id/evolucao/:indicador_id/variaveis/:var_id',
+              component: SingleEvolucao,
+              props: { group: 'variaveis' },
+              meta: {
+                rotasParaMenuSecundário: rotasParaMenuSecundário('atividade'),
+              },
+            },
+            {
+              path: ':atividade_id/evolucao/:indicador_id/variaveis/:var_id/valores',
+              component: SingleEvolucao,
+              props: { group: 'valores' },
+              meta: {
+                rotasParaMenuSecundário: rotasParaMenuSecundário('atividade'),
+              },
+            },
+            {
+              path: ':atividade_id/evolucao/:indicador_id/variaveis/:var_id/retroativos',
+              component: SingleEvolucao,
+              props: { group: 'retroativos' },
+              meta: {
+                rotasParaMenuSecundário: rotasParaMenuSecundário('atividade'),
+              },
+            },
+            {
+              path: ':atividade_id/cronograma',
+              name: 'cronogramaDaAtividade',
+              component: SingleCronograma,
+              meta: {
+                títuloParaMenu: 'Cronograma',
+                rotasParaMenuSecundário: rotasParaMenuSecundário('atividade'),
+              },
+            },
+            {
+              path: ':atividade_id/cronograma/novo',
+              component: AddEditCronograma,
+              meta: {
+                rotasParaMenuSecundário: rotasParaMenuSecundário('atividade'),
+              },
+            },
+            {
+              path: ':atividade_id/cronograma/:cronograma_id',
+              component: AddEditCronograma,
+              meta: {
+                rotasParaMenuSecundário: rotasParaMenuSecundário('atividade'),
+              },
+            },
+            {
+              path: ':atividade_id/cronograma/:cronograma_id/etapas/novo',
+              component: SingleCronograma,
+              props: { group: 'etapas' },
+              meta: {
+                rotasParaMenuSecundário: rotasParaMenuSecundário('atividade'),
+              },
+            },
+            {
+              path: ':atividade_id/cronograma/:cronograma_id/etapas/:etapa_id',
+              component: SingleCronograma,
+              props: { group: 'etapas' },
+              meta: {
+                rotasParaMenuSecundário: rotasParaMenuSecundário('atividade'),
+              },
+            },
+            {
+              path: ':atividade_id/cronograma/:cronograma_id/etapas/:etapa_id/novo',
+              component: SingleCronograma,
+              props: { group: 'fase' },
+              meta: {
+                rotasParaMenuSecundário: rotasParaMenuSecundário('atividade'),
+              },
+            },
+            {
+              path: ':atividade_id/cronograma/:cronograma_id/etapas/:etapa_id/:fase_id',
+              component: SingleCronograma,
+              props: { group: 'fase' },
+              meta: {
+                rotasParaMenuSecundário: rotasParaMenuSecundário('atividade'),
+              },
+            },
+            {
+              path: ':atividade_id/cronograma/:cronograma_id/etapas/:etapa_id/:fase_id/novo',
+              component: SingleCronograma,
+              props: { group: 'subfase' },
+              meta: {
+                rotasParaMenuSecundário: rotasParaMenuSecundário('atividade'),
+              },
+            },
+            {
+              path: ':atividade_id/cronograma/:cronograma_id/etapas/:etapa_id/:fase_id/:subfase_id',
+              component: SingleCronograma,
+              props: { group: 'subfase' },
+              meta: {
+                rotasParaMenuSecundário: rotasParaMenuSecundário('atividade'),
+              },
+            },
           ],
         },
       ],
