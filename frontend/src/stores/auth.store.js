@@ -146,10 +146,10 @@ export const useAuthStore = defineStore({
     temPermissãoPara: ({ user }) => (permissões) => (Array.isArray(permissões)
       ? permissões
       : [permissões]
-    ).some((x) => user.privilegios.some((y) => y.indexOf((
-      // garantir que há um `.` no nome da permissão pelo menos na segunda
-      // letra. Caso contrário, adicionar-lhe um ao final
-      x.indexOf('.') < 1 ? `${x}.` : x
-    )) !== -1)),
+    ).some((x) => (x.slice(-1) === '.'
+      // se o valor termina com `.`,
+      // ele tem que bater com o começo de algumas permissão
+      ? user.privilegios.some((y) => y.indexOf(x) === 0)
+      : user.privilegios.some((y) => x === y))),
   },
 });
