@@ -62,51 +62,49 @@ const listaPreparada = computed(() => lista.value.map((x) => ({
 })) || []);
 </script>
 <template>
-  <Dashboard>
-    <div class="flex spacebetween center mb2">
-      <h1>{{ $route.meta.título }}</h1>
-      <hr class="ml2 f1">
-      <router-link
-        v-if="perm?.Projeto?.administrar_portfolios"
-        :to="{ name: 'tipoDeAcompanhamentoCriar' }"
-        class="btn big ml2"
-      >
-        Novo tipo
-      </router-link>
-    </div>
+  <div class="flex spacebetween center mb2">
+    <h1>{{ $route.meta.título }}</h1>
+    <hr class="ml2 f1">
+    <router-link
+      v-if="perm?.Projeto?.administrar_portfolios"
+      :to="{ name: 'tipoDeAcompanhamentoCriar' }"
+      class="btn big ml2"
+    >
+      Novo tipo
+    </router-link>
+  </div>
 
-    <div class="flex center mb2 spacebetween">
-      <slot name="filtro" />
+  <div class="flex center mb2 spacebetween">
+    <slot name="filtro" />
 
-      <LocalFilter
-        v-model="listaFiltradaPorTermoDeBusca"
-        :lista="listaPreparada"
-      />
-    </div>
-
-    <TabelaGenérica
-      v-if="!chamadasPendentes.lista || lista.length"
-      :lista="listaFiltradaPorTermoDeBusca"
-      :colunas="colunas"
-      :erro="erro"
-      :chamadas-pendentes="chamadasPendentes"
-      class="mb1"
+    <LocalFilter
+      v-model="listaFiltradaPorTermoDeBusca"
+      :lista="listaPreparada"
     />
+  </div>
 
-    <div
-      v-if="chamadasPendentes?.lista"
-      class="spinner"
-    >
-      Carregando
-    </div>
+  <TabelaGenérica
+    v-if="!chamadasPendentes.lista || lista.length"
+    :lista="listaFiltradaPorTermoDeBusca"
+    :colunas="colunas"
+    :erro="erro"
+    :chamadas-pendentes="chamadasPendentes"
+    class="mb1"
+  />
 
-    <div
-      v-if="erro"
-      class="error p1"
-    >
-      <div class="error-msg">
-        {{ erro }}
-      </div>
+  <div
+    v-if="chamadasPendentes?.lista"
+    class="spinner"
+  >
+    Carregando
+  </div>
+
+  <div
+    v-if="erro"
+    class="error p1"
+  >
+    <div class="error-msg">
+      {{ erro }}
     </div>
-  </Dashboard>
+  </div>
 </template>
