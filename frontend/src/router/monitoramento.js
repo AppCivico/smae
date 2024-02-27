@@ -196,6 +196,12 @@ export default {
       meta: {
         rotasParaMenuSecundário,
         título: 'Próximos ciclos',
+        restringirÀsPermissões: [
+          'CadastroCicloFisico',
+          'PDM.admin_cp',
+          'CadastroIndicador.inserir',
+          'PDM.tecnico_cp',
+        ],
       },
     },
     {
@@ -208,6 +214,12 @@ export default {
       meta: {
         rotasParaMenuSecundário,
         título: 'Ciclos fechados',
+        restringirÀsPermissões: [
+          'CadastroCicloFisico',
+          'PDM.admin_cp',
+          'CadastroIndicador.inserir',
+          'PDM.tecnico_cp',
+        ],
       },
     },
     {
