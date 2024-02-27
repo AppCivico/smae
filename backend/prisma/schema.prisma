@@ -4160,7 +4160,7 @@ model Eleicao {
 
     mandatos ParlamentarMandato[]
 
-    @@index([tipo, ano])
+    @@unique([tipo, ano])
     @@map("eleicao")
 }
 

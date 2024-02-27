@@ -1,4 +1,4 @@
-import { ModuloSistema, PerfilAcesso, PrismaClient, Privilegio } from '@prisma/client';
+import { EleicaoTipo, ModuloSistema, PerfilAcesso, PrismaClient, Privilegio } from '@prisma/client';
 import { ListaDePrivilegios } from '../src/common/ListaDePrivilegios';
 const prisma = new PrismaClient({ log: ['query'] });
 
@@ -455,6 +455,8 @@ async function main() {
     await atualizar_perfil_acesso();
 
     await atualizar_superadmin();
+
+    await populateEleicao();
 }
 
 async function atualizar_modulos_e_privilegios() {
@@ -797,6 +799,39 @@ async function atualizar_superadmin() {
                 perfil_acesso_id: idPerfilAcesso,
             },
         });
+    }
+}
+
+async function populateEleicao() {
+    const eleicoes: { ano: number, tipo: EleicaoTipo, atual_para_mandatos: boolean }[] = [
+        { ano: 2020, tipo: EleicaoTipo.Municipal, atual_para_mandatos: true },
+        { ano: 2022, tipo: EleicaoTipo.Estadual, atual_para_mandatos: true },
+        { ano: 2024, tipo: EleicaoTipo.Municipal, atual_para_mandatos: false },
+        { ano: 2026, tipo: EleicaoTipo.Estadual, atual_para_mandatos: false },
+        { ano: 2028, tipo: EleicaoTipo.Municipal, atual_para_mandatos: false },
+        { ano: 2030, tipo: EleicaoTipo.Estadual, atual_para_mandatos: false }
+    ];
+
+    for (const eleicao of eleicoes) {
+        await prisma.eleicao.upsert({
+            where: {
+                tipo_ano: {
+                    ano: eleicao.ano,
+                    tipo: eleicao.tipo
+                }
+            },
+            create: {
+                ano: eleicao.ano,
+                tipo: eleicao.tipo,
+                atual_para_mandatos: eleicao.atual_para_mandatos
+            },
+            update: {
+                ano: eleicao.ano,
+                tipo: eleicao.tipo,
+                atual_para_mandatos: eleicao.atual_para_mandatos
+            }
+        })
+
     }
 }
 

@@ -29,6 +29,7 @@ import { AppModulePdm } from './app.module.pdm';
 import { PartidoModule } from './partido/partido.module';
 import { BancadaModule } from './bancada/bancada.module';
 import { ParlamentarModule } from './parlamentar/parlamentar.modules';
+import { EleicaoModule } from './eleicao/eleicao.module';
 
 // Hacks pro JS
 /*
@@ -61,7 +62,8 @@ import { ParlamentarModule } from './parlamentar/parlamentar.modules';
         DashboardModule,
         BancadaModule,
         PartidoModule,
-        ParlamentarModule
+        ParlamentarModule,
+        EleicaoModule
     ],
     controllers: [AppController],
     providers: [
