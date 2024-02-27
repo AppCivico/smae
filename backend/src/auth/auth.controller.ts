@@ -1,15 +1,15 @@
-import { Body, Controller, Get, HttpCode, HttpStatus, Post, Request, UseGuards } from '@nestjs/common';
+import { Body, Controller, HttpCode, HttpStatus, Post, Request, UseGuards } from '@nestjs/common';
 import {
     ApiBearerAuth,
     ApiBody,
     ApiExtraModels,
     ApiNoContentResponse,
     ApiOkResponse,
-    ApiResponse,
     ApiTags,
     ApiUnauthorizedResponse,
-    refs,
+    refs
 } from '@nestjs/swagger';
+import { IpAddress } from '../common/decorators/current-ip';
 import { Pessoa } from '../pessoa/entities/pessoa.entity';
 import { AuthService } from './auth.service';
 import { CurrentUser } from './decorators/current-user.decorator';
@@ -19,10 +19,8 @@ import { AccessToken } from './models/AccessToken';
 import { AuthRequestLogin } from './models/AuthRequestLogin';
 import { EscreverNovaSenhaRequestBody } from './models/EscreverNovaSenhaRequestBody.dto';
 import { LoginRequestBody } from './models/LoginRequestBody.dto';
-import { PerfilDeAcessoLinhaDto } from './models/PerfilDeAcesso.dto';
 import { ReducedAccessToken } from './models/ReducedAccessToken';
 import { SolicitarNovaSenhaRequestBody } from './models/SolicitarNovaSenhaRequestBody.dto';
-import { IpAddress } from '../common/decorators/current-ip';
 
 @Controller()
 export class AuthController {
@@ -73,16 +71,5 @@ export class AuthController {
     async solicitaNovaSenha(@Body() body: SolicitarNovaSenhaRequestBody) {
         await this.authService.solicitarNovaSenha(body);
         return '';
-    }
-
-    @ApiTags('default')
-    @Get('perfil-de-acesso')
-    @ApiBearerAuth('access-token')
-    @HttpCode(HttpStatus.OK)
-    @ApiResponse({ type: PerfilDeAcessoLinhaDto, description: 'Retorna todos os perfis de acesso do sistema' })
-    async perfilDeAcesso(): Promise<PerfilDeAcessoLinhaDto> {
-        return {
-            linhas: await this.authService.listaPerfilAcesso(),
-        };
     }
 }
