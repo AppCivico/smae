@@ -4168,6 +4168,7 @@ model Parlamentar {
     id Int @id @default(autoincrement())
     
     nome         String
+    biografia    String?
     nome_popular String?
     nascimento   DateTime? @db.Date()
     telefone     String?
@@ -4248,7 +4249,6 @@ model ParlamentarMandato {
     partido_atual_id Int
     partido_atual    Partido @relation("atual", fields: [partido_atual_id], references: [id])
 
-    biografia String
     gabinete  String
     eleito    Boolean
     cargo     ParlamentarCargo
