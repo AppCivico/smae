@@ -634,6 +634,17 @@ export const partido = object({
     .nullable(),
 });
 
+export const bancada = object({
+  sigla: string()
+    .label('Sigla')
+    .max(20)
+    .required(),
+  nome: string()
+    .label('Nome')
+    .max(250)
+    .required(),
+});
+
 export const processo = object()
   .shape({
     comentarios: string()
