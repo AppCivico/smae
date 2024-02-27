@@ -6,7 +6,7 @@ import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { FindOneParams, FindTwoParams } from '../common/decorators/find-params';
 import { RecordWithId } from '../common/dto/record-with-id.dto';
 import { ParlamentarService } from './parlamentar.service';
-import { CreateAssessorDto, CreateParlamentarDto } from './dto/create-parlamentar.dto';
+import { CreateAssessorDto, CreateMandatoDto, CreateParlamentarDto } from './dto/create-parlamentar.dto';
 import { ListParlamentarDto, ParlamentarDetailDto } from './entities/parlamentar.entity';
 import { UpdateAssessorDto, UpdateParlamentarDto } from './dto/update-parlamentar.dto';
 
@@ -88,4 +88,12 @@ export class ParlamentarController {
         return '';
     }
 
+    // Mandato
+    @Post(':id/mandato')
+    @ApiBearerAuth('access-token')
+    @ApiUnauthorizedResponse()
+    // @Roles('CadastroPainel.visualizar')
+    async createMandato(@Param() params: FindOneParams, @Body() dto: CreateMandatoDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
+        return await this.parlamentarService.createMandato(+params.id, dto, user);
+    }
 }
