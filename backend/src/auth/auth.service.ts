@@ -11,6 +11,7 @@ import { JwtReducedAccessToken } from './models/JwtReducedAccessToken';
 import { PessoaFromJwt } from './models/PessoaFromJwt';
 import { ReducedAccessToken } from './models/ReducedAccessToken';
 import { SolicitarNovaSenhaRequestBody } from './models/SolicitarNovaSenhaRequestBody.dto';
+import { ModuloSistema } from '@prisma/client';
 
 @Injectable()
 export class AuthService {
@@ -76,7 +77,7 @@ export class AuthService {
     async pessoaJwtFromId(pessoa_id: number): Promise<PessoaFromJwt> {
         const pessoa = await this.pessoaPeloId(pessoa_id);
 
-        const modPriv = await this.listaPrivilegiosPessoa(pessoa.id as number);
+        const modPriv = await this.listaPrivilegiosPessoa(pessoa.id as number, undefined);
 
         return new PessoaFromJwt({
             id: pessoa.id as number,
@@ -90,10 +91,13 @@ export class AuthService {
         });
     }
 
-    async pessoaJwtFromSessionId(session_id: number): Promise<PessoaFromJwt> {
+    async pessoaJwtFromSessionId(
+        session_id: number,
+        filterModulos: ModuloSistema[] | undefined
+    ): Promise<PessoaFromJwt> {
         const pessoa = await this.pessoaPeloSessionId(session_id);
 
-        const modPriv = await this.listaPrivilegiosPessoa(pessoa.id as number);
+        const modPriv = await this.listaPrivilegiosPessoa(pessoa.id as number, filterModulos);
 
         return new PessoaFromJwt({
             id: pessoa.id as number,
@@ -123,8 +127,8 @@ export class AuthService {
         throw new UnauthorizedError('Pessoa não está mais ativa');
     }
 
-    async listaPrivilegiosPessoa(pessoaId: number) {
-        return await this.pessoaService.listaPrivilegiosModulos(pessoaId);
+    async listaPrivilegiosPessoa(pessoaId: number, filterModulos: ModuloSistema[] | undefined) {
+        return await this.pessoaService.listaPrivilegiosModulos(pessoaId, filterModulos);
     }
 
     async escreverNovaSenha(body: EscreverNovaSenhaRequestBody, ip: string) {

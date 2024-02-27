@@ -106,7 +106,13 @@ function createSwaggerConfig(title: string, description: string) {
             },
             'access-token'
         )
-        .setVersion('1.0');
+        .setVersion('1.0')
+        .addGlobalParameters({
+            name: 'smae-sistemas',
+            in: 'header',
+            required: false,
+            example: 'SMAE,PDM,CasaCivil,Projetos',
+        });
 }
 
 function setupSwaggerModule(
