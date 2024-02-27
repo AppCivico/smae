@@ -4,6 +4,8 @@ import { PrismaService } from '../prisma/prisma.service';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
 import { CreateParlamentarDto } from './dto/create-parlamentar.dto';
 import { Prisma } from '@prisma/client';
+import { ParlamentarDetailDto, ParlamentarDto } from './entities/parlamentar.entity';
+import { UpdateParlamentarDto } from './dto/update-parlamentar.dto';
 
 @Injectable()
 export class ParlamentarService {
@@ -30,81 +32,62 @@ export class ParlamentarService {
         return created;
     }
 
-    // async findAll(): Promise<BancadaDto[]> {
-    //     const listActive = await this.prisma.bancada.findMany({
-    //         where: {
-    //             removido_em: null,
-    //         },
-    //         select: {
-    //             id: true,
-    //             nome: true,
-    //             sigla: true,
-    //             descricao: true
-    //         },
-    //         orderBy: [{ sigla: 'asc' }],
-    //     });
-    //     return listActive;
-    // }
+    async findAll(): Promise<ParlamentarDto[]> {
+        const listActive = await this.prisma.parlamentar.findMany({
+            where: {
+                // TODO: filtros.
+                removido_em: null,
+            },
+            select: {
+                id: true,
+                nome: true,
+                nome_popular: true,
+                em_atividade: true
+            },
+            orderBy: [{ nome: 'asc' }],
+        });
 
-    // async findOne(id: number, user: PessoaFromJwt): Promise<BancadaOneDto> {
-    //     return await this.prisma.bancada.findUniqueOrThrow({
-    //         where: {
-    //             id: id,
-    //         },
-    //     });
-    // }
+        return listActive;
+    }
 
-    // async update(id: number, dto: UpdateBancadaDto, user: PessoaFromJwt): Promise<RecordWithId> {
-    //     if (dto.nome !== undefined) {
-    //         const similarExists = await this.prisma.bancada.count({
-    //             where: {
-    //                 nome: { endsWith: dto.nome, mode: 'insensitive' },
-    //                 removido_em: null,
-    //                 NOT: { id: id },
-    //             },
-    //         });
-    //         if (similarExists > 0)
-    //             throw new HttpException(
-    //                 'nome| Nome igual ou semelhante já existe em outro registro ativo',
-    //                 400
-    //             );
-    //     }
+    async findOne(id: number, user: PessoaFromJwt): Promise<ParlamentarDetailDto> {
+        return await this.prisma.parlamentar.findUniqueOrThrow({
+            where: {
+                id: id,
+            },
+        });
+    }
 
-    //     if (dto.sigla) {
-    //         const similarExists = await this.prisma.orgao.count({
-    //             where: {
-    //                 sigla: { endsWith: dto.sigla, mode: 'insensitive' },
-    //                 removido_em: null,
-    //                 NOT: { id: id },
-    //             },
-    //         });
-    //         if (similarExists > 0)
-    //             throw new HttpException('sigla| Sigla igual ou semelhante já existe em outro registro ativo', 400);
-    //     }
+    async update(id: number, dto: UpdateParlamentarDto, user: PessoaFromJwt): Promise<RecordWithId> {
+        const updated = await this.prisma.$transaction(
+            async (prismaTxn: Prisma.TransactionClient): Promise<RecordWithId> => {
+                const parlamentar = await prismaTxn.parlamentar.update({
+                    where: { id: id },
+                    data: {
+                        atualizado_por: user.id,
+                        atualizado_em: new Date(Date.now()),
+                        ...dto,
+                    },
+                });
 
-    //     await this.prisma.bancada.update({
-    //         where: { id: id },
-    //         data: {
-    //             atualizado_por: user.id,
-    //             atualizado_em: new Date(Date.now()),
-    //             ...dto,
-    //         },
-    //     });
+                return parlamentar;
+            }
+        );
+    
+        return updated;
+    }
 
-    //     return { id };
-    // }
+    async remove(id: number, user: PessoaFromJwt) {
+        // TODO verificar dependentes
 
-    // async remove(id: number, user: PessoaFromJwt) {
-    //     // TODO verificar dependentes
+        const deleted = await this.prisma.parlamentar.updateMany({
+            where: { id: id },
+            data: {
+                removido_por: user.id,
+                removido_em: new Date(Date.now()),
+            },
+        });
 
-    //     const deleted = await this.prisma.bancada.updateMany({
-    //         where: { id: id },
-    //         data: {
-    //             removido_por: user.id,
-    //             removido_em: new Date(Date.now()),
-    //         },
-    //     });
-
-    //     return deleted;
-    // }
+        return deleted;
+    }
 }

@@ -274,6 +274,10 @@ model Pessoa {
     mandatosQueAtualizei ParlamentarMandato[] @relation("Atualizador")
     mandatosQueRemovi ParlamentarMandato[] @relation("Removedor")
 
+    assessoresQueCriei ParlamentarAssessor[] @relation("Criador")
+    assessoresQueAtualizei ParlamentarAssessor[] @relation("Atualizador")
+    assessoresQueRemovi ParlamentarAssessor[] @relation("Removedor")
+
     task_queue                               task_queue[]
     GeoEnderecoReferenciaqQueCriei           GeoLocalizacaoReferencia[]                @relation("criador")
     GeoEnderecoReferenciaqQueRemovid         GeoLocalizacaoReferencia[]                @relation("removedor")
@@ -744,7 +748,6 @@ model Regiao {
     Etapa           Etapa[]
     Projetos        Projeto[]
     GeoCamadaRegiao GeoCamadaRegiao[]
-    parlamentares   Parlamentar[]
 
     @@index([parente_id])
     @@map("regiao")
@@ -4162,9 +4165,6 @@ model Eleicao {
 model Parlamentar {
     id Int @id @default(autoincrement())
     
-    regiao_id Int 
-    regiao    Regiao @relation(fields: [regiao_id], references: [id])
-
     nome         String
     nome_popular String?
     nascimento   DateTime? @db.Date()
@@ -4203,6 +4203,36 @@ enum ParlamentarSuplente {
     SegundoSuplente
 }
 
+enum ParlamentarUF {
+    AC
+    AL
+    AP
+    AM
+    BA
+    CE
+    DF
+    ES
+    GO
+    MA
+    MT
+    MS
+    MG
+    PA
+    PB
+    PR
+    PE
+    PI
+    RJ
+    RN
+    RS
+    RO
+    RR
+    SC
+    SP
+    SE
+    TO    
+}
+
 model ParlamentarMandato {
     id Int @id @default(autoincrement())
 
@@ -4220,7 +4250,8 @@ model ParlamentarMandato {
 
     eleito    Boolean?
     cargo     ParlamentarCargo
-    suplencia ParlamentarSuplente
+    uf        ParlamentarUF 
+    suplencia ParlamentarSuplente?
     atuacao   String?
 
     votos_estado   BigInt?
@@ -4230,6 +4261,26 @@ model ParlamentarMandato {
     mandato_principal_id Int?
     mandato_principal    ParlamentarMandato?  @relation("Suplentes", fields: [mandato_principal_id], references: [id])
     suplentes            ParlamentarMandato[] @relation("Suplentes")
+
+    criado_por     Int?
+    criado_em      DateTime?  @default(now()) @db.Timestamptz(6)
+    atualizado_por Int?
+    atualizado_em  DateTime  @default(now()) @db.Timestamptz(6)
+    removido_por   Int?
+    removido_em    DateTime? @db.Timestamptz(6)
+
+    // Criador nullable, pois provavelmente faremos carga inicial de dados.
+    criador     Pessoa? @relation("Criador", fields: [criado_por], references: [id])
+    atualizador Pessoa? @relation("Atualizador", fields: [atualizado_por], references: [id])
+    removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
+}
+
+model ParlamentarAssessor {
+    id Int @id @default(autoincrement())
+
+    nome     String
+    telefone String
+    email    String
 
     criado_por     Int?
     criado_em      DateTime?  @default(now()) @db.Timestamptz(6)
