@@ -3,12 +3,12 @@ import { ApiBearerAuth, ApiNoContentResponse, ApiTags, ApiUnauthorizedResponse }
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 // import { Roles } from '../auth/decorators/roles.decorator';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
-import { FindOneParams } from '../common/decorators/find-params';
+import { FindOneParams, FindTwoParams } from '../common/decorators/find-params';
 import { RecordWithId } from '../common/dto/record-with-id.dto';
 import { ParlamentarService } from './parlamentar.service';
-import { CreateParlamentarDto } from './dto/create-parlamentar.dto';
+import { CreateAssessorDto, CreateParlamentarDto } from './dto/create-parlamentar.dto';
 import { ListParlamentarDto, ParlamentarDetailDto } from './entities/parlamentar.entity';
-import { UpdateParlamentarDto } from './dto/update-parlamentar.dto';
+import { UpdateAssessorDto, UpdateParlamentarDto } from './dto/update-parlamentar.dto';
 
 @ApiTags('Parlamentar')
 @Controller('parlamentar')
@@ -59,4 +59,33 @@ export class ParlamentarController {
         await this.parlamentarService.remove(+params.id, user);
         return '';
     }
+
+    // Assessores
+    @Post(':id/assessor')
+    @ApiBearerAuth('access-token')
+    @ApiUnauthorizedResponse()
+    // @Roles('CadastroPainel.visualizar')
+    async createAssessor(@Param() params: FindOneParams, @Body() dto: CreateAssessorDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
+        return await this.parlamentarService.createAssessor(+params.id, dto, user);
+    }
+
+    @Patch(':id/assessor/:id2')
+    @ApiBearerAuth('access-token')
+    @ApiUnauthorizedResponse()
+    // @Roles('CadastroPainel.visualizar')
+    async updateAssessor(@Param() params: FindTwoParams, @Body() dto: UpdateAssessorDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
+        return await this.parlamentarService.updateAssessor(+params.id2, dto, user);
+    }
+
+    @Delete(':id/assessor/:id2')
+    @ApiBearerAuth('access-token')
+    @ApiUnauthorizedResponse()
+    @ApiNoContentResponse()
+    @HttpCode(HttpStatus.ACCEPTED)
+    // @Roles('CadastroPainel.visualizar')
+    async removeAssessor(@Param() params: FindTwoParams, @CurrentUser() user: PessoaFromJwt) {
+        await this.parlamentarService.removeAssessor(+params.id2, user);
+        return '';
+    }
+
 }

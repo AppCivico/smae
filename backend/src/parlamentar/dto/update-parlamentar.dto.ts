@@ -1,4 +1,6 @@
 import { PartialType } from '@nestjs/swagger';
-import { CreateParlamentarDto } from './create-parlamentar.dto';
+import { CreateAssessorDto, CreateParlamentarDto } from './create-parlamentar.dto';
 
 export class UpdateParlamentarDto extends PartialType(CreateParlamentarDto) {}
+
+export class UpdateAssessorDto extends PartialType(CreateAssessorDto) {}
