@@ -5,7 +5,6 @@ import { usePartidosStore } from '@/stores/partidos.store';
 import { storeToRefs } from 'pinia';
 import { ErrorMessage, Field, Form } from 'vee-validate';
 import { useRoute, useRouter } from 'vue-router';
-import dateTimeToDate from '@/helpers/dateTimeToDate';
 
 const router = useRouter();
 const route = useRoute();
@@ -20,16 +19,8 @@ const alertStore = useAlertStore();
 const partidosStore = usePartidosStore();
 const { chamadasPendentes, erro, itemParaEdição } = storeToRefs(partidosStore);
 
-// function formatarData(data) {
-//   const dataFormatada = new Date(data);
-//   return dataFormatada.toISOString();
-// }
-
 async function onSubmit(values) {
   values.numero = Number.parseInt(values.numero, 10);
-  // if (values.fundacao) {
-  //   values.fundacao += 'T00:00:00';
-  // }
   try {
     let r;
     const msg = props.partidoId
