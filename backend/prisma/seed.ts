@@ -33,6 +33,7 @@ const ModuloDescricao: Record<string, [string, ModuloSistema | null]> = {
     Projeto: ['Cadastro de Projetos', 'Projetos'],
     PDM: ['Regras de Negocio do PDM', 'PDM'],
     SMAE: ['Regras de Negocio do SMAE', 'SMAE'],
+    PerfilAcesso: ['Gerenciar Perfil de Acesso', 'SMAE'],
     CadastroCargo: ['', null],
     CadastroCoordenadoria: ['', null],
     CadastroDepartamento: ['', null],
@@ -64,7 +65,7 @@ const PrivConfig: Record<string, false | [ListaDePrivilegios, string][]> = {
         ['CadastroPainelExterno.editar', 'Cadastrar editar Painéis Externos'],
         ['CadastroPainelExterno.remover', 'Remover Painéis Externos'],
     ],
-
+    PerfilAcesso: [['PerfilAcesso.administrador', 'Gerenciar Perfil de Acesso']],
     CadastroGrupoPainelExterno: [
         ['CadastroGrupoPainelExterno.administrador', 'Gerenciar Grupo de Painéis Externos de qualquer órgão'],
         [

@@ -92,4 +92,5 @@ export type ListaDePrivilegios =
     | 'CadastroPainelExterno.inserir'
     | 'CadastroPainelExterno.editar'
     | 'CadastroPainelExterno.remover'
+    | 'PerfilAcesso.administrador'
     | 'SMAE.acesso_bi';
