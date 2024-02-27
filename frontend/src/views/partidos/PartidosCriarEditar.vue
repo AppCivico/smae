@@ -5,11 +5,12 @@ import { usePartidosStore } from '@/stores/partidos.store';
 import { storeToRefs } from 'pinia';
 import { ErrorMessage, Field, Form } from 'vee-validate';
 import { useRoute, useRouter } from 'vue-router';
+import dateTimeToDate from '@/helpers/dateTimeToDate';
 
 const router = useRouter();
 const route = useRoute();
 const props = defineProps({
-  painelId: {
+  partidoId: {
     type: Number,
     default: 0,
   },
@@ -19,17 +20,24 @@ const alertStore = useAlertStore();
 const partidosStore = usePartidosStore();
 const { chamadasPendentes, erro, itemParaEdição } = storeToRefs(partidosStore);
 
-async function onSubmit(values) {
-  values.numero = parseInt(values.numero);
+// function formatarData(data) {
+//   const dataFormatada = new Date(data);
+//   return dataFormatada.toISOString();
+// }
 
+async function onSubmit(values) {
+  values.numero = Number.parseInt(values.numero, 10);
+  // if (values.fundacao) {
+  //   values.fundacao += 'T00:00:00';
+  // }
   try {
     let r;
-    const msg = props.painelId
+    const msg = props.partidoId
       ? 'Dados salvos com sucesso!'
       : 'Item adicionado com sucesso!';
 
-    if (props.painelId) {
-      r = await partidosStore.salvarItem(values, props.painelId);
+    if (props.partidoId) {
+      r = await partidosStore.salvarItem(values, props.partidoId);
     } else {
       r = await partidosStore.salvarItem(values);
     }
@@ -43,8 +51,8 @@ async function onSubmit(values) {
   }
 }
 
-if (props.painelId) {
-  partidosStore.buscarItem(props.painelId);
+if (props.partidoId) {
+  partidosStore.buscarItem(props.partidoId);
 }
 
 </script>
