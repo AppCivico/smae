@@ -18,6 +18,7 @@ export class ParlamentarService {
                         ...dto,
                         criado_por: user ? user.id : undefined,
                         criado_em: new Date(Date.now()),
+                        
                     },
                     select: { id: true },
                 });
