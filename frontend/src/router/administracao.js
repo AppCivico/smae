@@ -115,6 +115,7 @@ export default [
   {
     path: '/usuarios',
     meta: {
+      restringirÀsPermissões: 'CadastroPessoa.',
       título: 'Gerenciar usuários',
       rotasParaMenuSecundário,
     },
@@ -137,6 +138,7 @@ export default [
   {
     path: '/orgaos',
     meta: {
+      restringirÀsPermissões: 'CadastroOrgao.',
       título: 'Órgãos',
       rotasParaMenuSecundário,
     },
@@ -172,6 +174,7 @@ export default [
   {
     path: '/unidade-medida',
     meta: {
+      restringirÀsPermissões: 'CadastroUnidadeMedida.',
       título: 'Unidades de medida',
       rotasParaMenuSecundário,
     },
@@ -194,6 +197,7 @@ export default [
   {
     path: '/tipo-documento',
     meta: {
+      restringirÀsPermissões: 'CadastroTipoDocumento.',
       título: 'Tipos de documento',
       rotasParaMenuSecundário,
     },
@@ -216,6 +220,7 @@ export default [
   {
     path: '/categorias',
     meta: {
+      restringirÀsPermissões: 'CadastroOds.',
       título: 'Categorias',
       rotasParaMenuSecundário,
     },
@@ -238,6 +243,7 @@ export default [
   {
     path: '/pdm',
     meta: {
+      restringirÀsPermissões: 'CadastroPdm.',
       título: 'Programa de metas',
       rotasParaMenuSecundário,
     },
@@ -341,6 +347,10 @@ export default [
   {
     path: '/paineis',
     meta: {
+      restringirÀsPermissões: [
+        'CadastroPainel.inserir',
+        'CadastroMeta.inserir',
+      ],
       título: 'Painéis de metas',
       rotasParaMenuSecundário,
     },
@@ -384,6 +394,11 @@ export default [
   {
     path: '/paineis-grupos',
     meta: {
+      restringirÀsPermissões: [
+        'CadastroGrupoPaineis.inserir',
+        'CadastroGrupoPaineis.editar',
+        'CadastroGrupoPaineis.remover',
+      ],
       título: 'Grupos de paineis',
       rotasParaMenuSecundário,
     },
@@ -407,6 +422,7 @@ export default [
   {
     path: '/regioes',
     meta: {
+      restringirÀsPermissões: 'CadastroRegiao.',
       título: 'Regiões, subprefeituras e distritos',
       rotasParaMenuSecundário,
     },
@@ -482,6 +498,7 @@ export default [
       requerAutenticação: true,
       título: 'Portfolios',
       rotaPrescindeDeChave: true,
+      restringirÀsPermissões: 'Projeto.administrar_portfolios',
       rotasParaMenuSecundário,
     },
 
@@ -524,6 +541,7 @@ export default [
       requerAutenticação: true,
       título: 'Painéis Externos',
       rotaPrescindeDeChave: true,
+      restringirÀsPermissões: 'CadastroPainelExterno.',
       rotasParaMenuSecundário,
     },
     children: [
@@ -565,6 +583,7 @@ export default [
       requerAutenticação: true,
       título: 'Partidos',
       rotaPrescindeDeChave: true,
+      restringirÀsPermissões: 'partidosListar',
       rotasParaMenuSecundário,
     },
     children: [
@@ -650,6 +669,7 @@ export default [
       requerAutenticação: true,
       título: 'Tipos de acompanhamento',
       rotaPrescindeDeChave: true,
+      restringirÀsPermissões: 'Projeto.administrar_portfolios',
       rotasParaMenuSecundário,
     },
 
