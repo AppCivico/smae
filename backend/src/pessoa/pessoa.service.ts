@@ -1,5 +1,5 @@
 import { BadRequestException, ForbiddenException, HttpException, Injectable, Logger } from '@nestjs/common';
-import { Pessoa, Prisma } from '@prisma/client';
+import { ModuloSistema, Pessoa, Prisma } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { RecordWithId } from '../common/dto/record-with-id.dto';
@@ -1081,7 +1081,12 @@ export class PessoaService {
         return dados as PerfilAcessoPrivilegios[];
     }
 
-    async listaPrivilegiosModulos(pessoaId: number): Promise<ListaPrivilegiosModulos> {
+    async listaPrivilegiosModulos(
+        pessoaId: number,
+        filterModulos: ModuloSistema[] | undefined
+    ): Promise<ListaPrivilegiosModulos> {
+        if (!filterModulos) filterModulos = Object.keys(ModuloSistema) as ModuloSistema[];
+
         const dados: ListaPrivilegiosModulos[] = await this.prisma.$queryRaw`
             with perms as (
                 select p.codigo as cod_priv, m.codigo as cod_modulos, m.modulo_sistema
@@ -1092,6 +1097,7 @@ export class PessoaService {
                 join privilegio_modulo m on p.modulo_id = m.id
                 join pessoa pessoa on pessoa.id = pp.pessoa_id AND pessoa.desativado = false
                 where pp.pessoa_id = ${pessoaId}
+                AND m.modulo_sistema = ANY(${filterModulos}::"ModuloSistema"[])
                 AND pa.removido_em IS null
             )
             select
