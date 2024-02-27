@@ -45,6 +45,4 @@ export class CreateParlamentarDto {
     @IsBoolean()
     em_atividade: boolean
 
-    @IsNumber()
-    regiao_id: number
 }
