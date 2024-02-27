@@ -96,6 +96,13 @@ const rotasParaMenuSecundário = [
     ],
   },
   {
+    títuloParaGrupoDeLinksNoMenu: 'Parlamentares',
+    rotas: [
+      'partidosListar',
+      'bancadasListar',
+    ],
+  },
+  {
     títuloParaGrupoDeLinksNoMenu: 'Painéis de metas',
     rotas: [
       'gerenciarPainéisDeMetas',
@@ -583,7 +590,6 @@ export default [
       requerAutenticação: true,
       título: 'Partidos',
       rotaPrescindeDeChave: true,
-      restringirÀsPermissões: 'partidosListar',
       rotasParaMenuSecundário,
     },
     children: [
@@ -625,9 +631,6 @@ export default [
       requerAutenticação: true,
       title: 'Bancadas',
       rotaPrescindeDeChave: true,
-    },
-    props: {
-      submenu: SubmenuConfig,
     },
     children: [
       {
