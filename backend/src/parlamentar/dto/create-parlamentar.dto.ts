@@ -111,4 +111,8 @@ export class CreateMandatoDto {
     @IsOptional()
     @IsNumber()
     votos_interior?: number;
+
+    @IsOptional()
+    @IsNumber()
+    mandato_principal_id?: number;
 }

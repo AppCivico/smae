@@ -2,7 +2,7 @@ import { HttpException, Injectable } from '@nestjs/common';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { PrismaService } from '../prisma/prisma.service';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
-import { CreateAssessorDto, CreateParlamentarDto } from './dto/create-parlamentar.dto';
+import { CreateAssessorDto, CreateMandatoDto, CreateParlamentarDto } from './dto/create-parlamentar.dto';
 import { Prisma } from '@prisma/client';
 import { ParlamentarDetailDto, ParlamentarDto } from './entities/parlamentar.entity';
 import { UpdateAssessorDto, UpdateParlamentarDto } from './dto/update-parlamentar.dto';
@@ -159,7 +159,43 @@ export class ParlamentarService {
         });
     }
 
-    async createMandato() {
+    async createMandato(parlamentarId: number, dto: CreateMandatoDto, user: PessoaFromJwt): Promise<RecordWithId> {
+        const mandatoExists = await this.prisma.parlamentarMandato.count({
+            where: {
+                parlamentar_id: parlamentarId,
+                eleicao_id: dto.eleicao_id,
+                removido_em: null
+            }
+        });
+        if (mandatoExists) throw new HttpException('eleicao_id| Parlamentar já possui mandato para esta eleição', 400);
 
+        const partidoCandidaturaExists = await this.prisma.partido.count({
+            where: { id: dto.partido_candidatura_id, removido_em: null }
+        });
+        if (!partidoCandidaturaExists) throw new HttpException('partido_candidatura_id| Partido de candidatura inválido', 400);
+
+        const partidoAtualExists = await this.prisma.partido.count({
+            where: { id: dto.partido_atual_id, removido_em: null }
+        });
+        if (!partidoAtualExists) throw new HttpException('partido_atual_id| Partido atual inválido', 400);
+
+        if ((dto.suplencia && !dto.mandato_principal_id) || (!dto.suplencia && dto.mandato_principal_id))
+            throw new HttpException('Para mandatos de suplentes, deve ser informado o grau de suplência e o mandato principal', 400);
+
+        const created = await this.prisma.$transaction(
+            async (prismaTxn: Prisma.TransactionClient): Promise<RecordWithId> => {
+                const mandato = await prismaTxn.parlamentarMandato.create({
+                    data: {
+                        parlamentar_id: parlamentarId,
+                        ...dto
+                    },
+                    select: { id: true }
+                });
+
+                return mandato;
+            }
+        );
+
+        return created;
     }
 }
