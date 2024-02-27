@@ -10,7 +10,10 @@ export class CreateParlamentarDto {
     @IsString({ message: '$property| Nome popular: Precisa ser alfanumérico' })
     @MaxLength(250, { message: '$property| Nome popular: Máximo 250 caracteres' })
     nome_popular: string | null;
-
+    
+    /**
+    * @example YYYY-MM-DD
+    */
     @IsOnlyDate()
     @Type(() => Date)
     @ValidateIf((object, value) => value !== null)
@@ -25,16 +28,6 @@ export class CreateParlamentarDto {
     @IsString()
     @MaxLength(250, { message: '$property| Nome popular: Máximo 250 caracteres' })
     email: string | null;
-    
-    @IsOptional()
-    @IsString()
-    @MaxLength(250, { message: '$property| Nome popular: Máximo 250 caracteres' })
-    gabinete: string | null;
-    
-    @IsOptional()
-    @IsString()
-    @MaxLength(250, { message: '$property| Nome popular: Máximo 250 caracteres' })
-    endereco: string | null;
     
     @IsOptional()
     @IsString()

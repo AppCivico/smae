@@ -7,8 +7,6 @@ export class ParlamentarDetailDto {
     nascimento: Date | null;
     telefone: string | null;
     email: string | null;
-    gabinete: string | null;
-    endereco: string | null;
     atuacao: string | null;
     em_atividade: boolean;
 }
