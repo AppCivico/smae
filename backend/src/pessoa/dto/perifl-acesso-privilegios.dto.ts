@@ -1,4 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { ModuloSistema } from '@prisma/client';
 
 class Privilegio {
     @ApiProperty({ description: 'Nome do privilégio' })
@@ -20,4 +21,9 @@ export class PerfilAcessoPrivilegios {
 
     @ApiProperty({ description: 'Lista dos privilégios' })
     perfil_privilegio: PrivilegioData[];
+
+    @ApiProperty({ isArray: true, enumName: 'ModuloSistema', enum: ModuloSistema })
+    modulos_sistemas: ModuloSistema[];
+
+    autogerenciavel: boolean;
 }

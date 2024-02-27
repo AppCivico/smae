@@ -1,6 +1,6 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { PerfilAcessoPrivilegios } from '../pessoa/dto/perifl-acesso-privilegios.dto';
+import { FeatureFlagService } from '../feature-flag/feature-flag.service';
 import { Pessoa } from '../pessoa/entities/pessoa.entity';
 import { PessoaService } from '../pessoa/pessoa.service';
 import { UnauthorizedError } from './errors/unauthorized.error';
@@ -8,10 +8,9 @@ import { AccessToken } from './models/AccessToken';
 import { EscreverNovaSenhaRequestBody } from './models/EscreverNovaSenhaRequestBody.dto';
 import { JwtPessoaPayload } from './models/JwtPessoaPayload';
 import { JwtReducedAccessToken } from './models/JwtReducedAccessToken';
+import { PessoaFromJwt } from './models/PessoaFromJwt';
 import { ReducedAccessToken } from './models/ReducedAccessToken';
 import { SolicitarNovaSenhaRequestBody } from './models/SolicitarNovaSenhaRequestBody.dto';
-import { PessoaFromJwt } from './models/PessoaFromJwt';
-import { FeatureFlagService } from '../feature-flag/feature-flag.service';
 
 @Injectable()
 export class AuthService {
@@ -126,10 +125,6 @@ export class AuthService {
 
     async listaPrivilegiosPessoa(pessoaId: number) {
         return await this.pessoaService.listaPrivilegiosModulos(pessoaId);
-    }
-
-    async listaPerfilAcesso(): Promise<PerfilAcessoPrivilegios[]> {
-        return await this.pessoaService.listaPerfilAcesso();
     }
 
     async escreverNovaSenha(body: EscreverNovaSenhaRequestBody, ip: string) {

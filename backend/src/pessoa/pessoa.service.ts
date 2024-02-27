@@ -13,6 +13,7 @@ import { UpdatePessoaDto } from './dto/update-pessoa.dto';
 import { ListaPrivilegiosModulos } from './entities/ListaPrivilegiosModulos';
 import { uuidv7 } from 'uuidv7';
 import { MathRandom } from '../common/math-random';
+import { FilterPrivDto } from '../auth/models/Privilegios.dto';
 
 const BCRYPT_ROUNDS = 10;
 
@@ -1052,15 +1053,26 @@ export class PessoaService {
         return password;
     }
 
-    async listaPerfilAcesso(): Promise<PerfilAcessoPrivilegios[]> {
+    async listaPerfilAcesso(filter: FilterPrivDto): Promise<PerfilAcessoPrivilegios[]> {
         const dados = await this.prisma.perfilAcesso.findMany({
+            where: {
+                modulos_sistemas: filter.sistemas
+                    ? {
+                          hasSome: filter.sistemas,
+                      }
+                    : undefined,
+            },
             orderBy: { nome: 'asc' },
             select: {
                 nome: true,
                 descricao: true,
                 id: true,
+                modulos_sistemas: true,
+                autogerenciavel: true,
                 perfil_privilegio: {
-                    select: { privilegio: { select: { nome: true } } },
+                    select: {
+                        privilegio: { select: { nome: true } },
+                    },
                 },
             },
         });
