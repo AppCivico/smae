@@ -69,7 +69,6 @@ const rotasParaMigalhasDePão = computed(() => {
     ? limparRotas(listaDeRotas)
     : [];
 });
-
 </script>
 <template>
   <div
