@@ -278,15 +278,18 @@ export default [
       },
       {
         path: 'novo',
+        name: 'novoPdm',
         component: AddEditPdM,
       },
       {
         path: ':pdm_id',
+        name: 'editarPdm',
         component: AddEditPdM,
       },
       {
         path: ':pdm_id/arquivos/novo',
         component: ListPdM,
+        name: 'novoArquivoEmPdm',
         props: {
           type: 'novo',
           group: 'arquivos',
@@ -296,6 +299,7 @@ export default [
       {
         path: ':pdm_id/macrotemas/novo',
         component: ListPdM,
+        name: 'criarMacroTemaEmPdm',
         props: {
           type: 'novo',
           group: 'macrotemas',
@@ -304,6 +308,7 @@ export default [
       },
       {
         path: ':pdm_id/macrotemas/:id',
+        name: 'editarMacroTemaEmPdm',
         component: ListPdM,
         props: {
           type: 'editar',
@@ -314,6 +319,7 @@ export default [
       {
         path: ':pdm_id/subtemas/novo',
         component: ListPdM,
+        name: 'criarSubtemaEmPdm',
         props: {
           type: 'novo',
           group: 'subtemas',
@@ -323,6 +329,7 @@ export default [
       {
         path: ':pdm_id/subtemas/:id',
         component: ListPdM,
+        name: 'editarSubtemaEmPdm',
         props: {
           type: 'editar',
           group: 'subtemas',
@@ -332,6 +339,7 @@ export default [
       {
         path: ':pdm_id/temas/novo',
         component: ListPdM,
+        name: 'criarTemaEmPdm',
         props: {
           type: 'novo',
           group: 'temas',
@@ -340,6 +348,7 @@ export default [
       },
       {
         path: ':pdm_id/temas/:id',
+        name: 'editarTemaEmPdm',
         component: ListPdM,
         props: {
           type: 'editar',
@@ -350,6 +359,7 @@ export default [
       {
         path: ':pdm_id/tags/novo',
         component: ListPdM,
+        name: 'criarTagEmPdm',
         props: {
           type: 'novo',
           group: 'tags',
@@ -358,6 +368,7 @@ export default [
       },
       {
         path: ':pdm_id/tags/:id',
+        name: 'editarTagEmPdm',
         component: ListPdM,
         props: {
           type: 'editar',
