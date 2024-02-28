@@ -16,7 +16,7 @@ async function excluirPainel(id) {
     if (await partidoStore.excluirItem(id)) {
       partidoStore.$reset();
       partidoStore.buscarTudo();
-      alertStore.success('Portfolio removido.');
+      alertStore.success('Partido removido.');
     }
   }, 'Remover');
 }
