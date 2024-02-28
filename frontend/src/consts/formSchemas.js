@@ -645,6 +645,15 @@ export const bancada = object({
     .required(),
 });
 
+export const parlamentar = object({
+  partido: string()
+    .label('Partido')
+    .max(20),
+  nome: string()
+    .label('Nome')
+    .max(250),
+});
+
 export const processo = object()
   .shape({
     comentarios: string()
