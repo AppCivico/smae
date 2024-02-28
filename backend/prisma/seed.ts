@@ -213,6 +213,7 @@ const PrivConfig: Record<string, false | [ListaDePrivilegios, string][]> = {
     ],
     Projeto: [
         ['Projeto.administrar_portfolios', 'Administrar todos os portfólios, sem acesso aos projetos'],
+        ['Projeto.administrar_portfolios_no_orgao', 'Criar e editar portfólios exclusivamente do órgão em que pertence'],
         ['Projeto.administrador', 'Acesso total aos projetos'],
         ['Projeto.administrador_no_orgao', 'Acesso total aos projetos com o portfólio do órgão em que pertence'],
         ['Projeto.orcamento', 'Atualizar a Execução Orçamentária que for responsável'],

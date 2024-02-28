@@ -1,4 +1,4 @@
-import { HttpException, Injectable, Logger } from '@nestjs/common';
+import { BadRequestException, HttpException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import { RecordWithId } from '../../common/dto/record-with-id.dto';
@@ -35,7 +35,7 @@ export class PortfolioService {
                         data_criacao: dto.data_criacao,
                         orcamento_execucao_disponivel_meses: dto.orcamento_execucao_disponivel_meses,
                         nivel_regionalizacao: dto.nivel_regionalizacao,
-                        modelo_clonagem: dto.modelo_clonagem
+                        modelo_clonagem: dto.modelo_clonagem,
                     },
                     select: { id: true },
                 });
@@ -80,27 +80,13 @@ export class PortfolioService {
     }
 
     async findOne(id: number, user: PessoaFromJwt | null): Promise<PortfolioOneDto> {
-        let orgao_id: undefined | number = undefined;
-        if (
-            user != null &&
-            !user.hasSomeRoles(['Projeto.administrar_portfolios']) &&
-            user != null &&
-            user.hasSomeRoles(['Projeto.administrador_no_orgao'])
-        ) {
-            orgao_id = user.orgao_id!;
-        }
+        // faz o check de permissão pelo endpoint de listagem, se existir user
+        if (user) await this.findAll(user, false, id);
 
         const r = await this.prisma.portfolio.findFirstOrThrow({
             where: {
                 id: +id,
                 removido_em: null,
-                orgaos: orgao_id
-                    ? {
-                          some: {
-                              orgao_id: orgao_id,
-                          },
-                      }
-                    : undefined,
             },
             select: {
                 id: true,
@@ -132,24 +118,48 @@ export class PortfolioService {
         };
     }
 
-    async findAll(user: PessoaFromJwt): Promise<PortfolioDto[]> {
+    async findAll(
+        user: PessoaFromJwt,
+        listaParaProjetos: boolean,
+        filterId: number | undefined = undefined
+    ): Promise<PortfolioDto[]> {
         let orgao_id: undefined | number = undefined;
 
-        // só pra manter mais ou menos uma retrocompatibilidade com o frontend
-        // preciso pensar melhor nesse filtro
-        if (
-            !user.hasSomeRoles(['Projeto.administrador', 'Projeto.administrar_portfolios']) &&
-            user.hasSomeRoles(['Projeto.administrador_no_orgao'])
-        ) {
-            if (!user.orgao_id) {
-                throw new HttpException('Usuário Projeto.administrador_no_orgao precisa ter um órgão definido', 400);
+        const isFullAdmin = user.hasSomeRoles(['Projeto.administrar_portfolios']);
+        const isAdminNoOrgao = user.hasSomeRoles(['Projeto.administrar_portfolios_no_orgao']);
+
+        if (listaParaProjetos) {
+            if (
+                !user.hasSomeRoles(['Projeto.administrador']) &&
+                user.hasSomeRoles(['Projeto.administrador_no_orgao'])
+            ) {
+                if (!user.orgao_id)
+                    throw new BadRequestException(
+                        'Usuário Projeto.administrador_no_orgao precisa ter um órgão definido'
+                    );
+
+                orgao_id = user.orgao_id;
+                this.logger.debug(`Filtro Projeto.administrador_no_orgao: orgao_id=${orgao_id}`);
             }
+        } else if (!isFullAdmin) {
+            // else do listaParaProjetos = listando para edição
+            if (!isAdminNoOrgao)
+                throw new BadRequestException(
+                    'Necessário Projeto.administrar_portfolios_no_orgao para listar em modo edição.'
+                );
+
+            if (!user.orgao_id)
+                throw new BadRequestException(
+                    'Usuário com Projeto.administrar_portfolios_no_orgao precisa ter um órgão definido para utilizar a listar em modo edição.'
+                );
+
             orgao_id = user.orgao_id;
-            this.logger.debug(`Filtro Projeto.administrador_no_orgao: orgao_id=${orgao_id}`);
+            this.logger.debug(`Filtro Projeto.administrar_portfolios_no_orgao: orgao_id=${orgao_id}`);
         }
 
         const listActive = await this.prisma.portfolio.findMany({
             where: {
+                id: filterId,
                 removido_em: null,
                 orgaos: orgao_id ? { some: { orgao_id: orgao_id } } : undefined,
             },
@@ -174,8 +184,18 @@ export class PortfolioService {
             orderBy: { titulo: 'asc' },
         });
 
+        if (filterId && listActive.length == 0) throw new NotFoundException('Portfólio não encontrado.');
+
         return listActive.map((r) => {
+            let pode_editar = isFullAdmin;
+
+            if (!pode_editar && isAdminNoOrgao && orgao_id) {
+                // orgao precisa ser exclusivamente o orgao da pessoa para que ela possa editar
+                pode_editar = r.orgaos.length == 1 && r.orgaos[0].orgao.id == orgao_id;
+            }
+
             return {
+                pode_editar: pode_editar,
                 ...r,
                 orgaos: r.orgaos.map((rr) => rr.orgao),
             };
@@ -183,6 +203,9 @@ export class PortfolioService {
     }
 
     async update(id: number, dto: UpdatePortfolioDto, user: PessoaFromJwt): Promise<RecordWithId> {
+        const self = await this.findAll(user, false, id);
+        if (!self[0].pode_editar) throw new BadRequestException('Sem permissão para editar o portfólio');
+
         if (dto.titulo !== undefined) {
             const similarExists = await this.prisma.portfolio.count({
                 where: {
@@ -348,6 +371,9 @@ export class PortfolioService {
     }
 
     async remove(id: number, user: PessoaFromJwt) {
+        const self = await this.findAll(user, false, id);
+        if (!self[0].pode_editar) throw new BadRequestException('Sem permissão para remover o portfólio');
+
         const count = await this.prisma.projeto.count({
             where: {
                 removido_em: null,
