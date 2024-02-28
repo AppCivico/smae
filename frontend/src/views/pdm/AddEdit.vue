@@ -1,5 +1,4 @@
 <script setup>
-import { Dashboard } from '@/components';
 import { requestS } from '@/helpers';
 import { router } from '@/router';
 import { storeToRefs } from 'pinia';
@@ -141,504 +140,502 @@ async function uploadshape(e) {
 }
 </script>
 <template>
-  <Dashboard>
-    <div class="flex spacebetween center mb2">
-      <h1>{{ title }}</h1>
-      <hr class="ml2 f1">
-      <button
-        class="btn round ml2"
-        @click="checkClose"
+  <div class="flex spacebetween center mb2">
+    <h1>{{ title }}</h1>
+    <hr class="ml2 f1">
+    <button
+      class="btn round ml2"
+      @click="checkClose"
+    >
+      <svg
+        width="12"
+        height="12"
+      ><use xlink:href="#i_x" /></svg>
+    </button>
+  </div>
+  <template v-if="!(singlePdm?.loading || singlePdm?.error)">
+    <Form
+      v-slot="{ errors, isSubmitting }"
+      :validation-schema="schema"
+      :initial-values="singlePdm"
+      @submit="onSubmit"
+    >
+      <div
+        v-if="pdm_id && perm?.CadastroPdm?.inativar"
+        class="flex g2 mb2"
       >
-        <svg
-          width="12"
-          height="12"
-        ><use xlink:href="#i_x" /></svg>
-      </button>
-    </div>
-    <template v-if="!(singlePdm?.loading || singlePdm?.error)">
-      <Form
-        v-slot="{ errors, isSubmitting }"
-        :validation-schema="schema"
-        :initial-values="singlePdm"
-        @submit="onSubmit"
-      >
-        <div
-          v-if="pdm_id && perm?.CadastroPdm?.inativar"
-          class="flex g2 mb2"
-        >
-          <div class="f1">
-            <label class="block mb1">
-              <Field
-                name="ativo"
-                type="checkbox"
-                value="1"
-                :checked="ativo"
-              /><span>Programa ativo</span><span>Programa inativo</span>
-            </label>
-            <p class="t13 tc500">
-              Ao ativar um Programa de Metas, todos os demais programas serão inativados
-            </p>
-          </div>
-        </div>
-        <div class="flex g2">
-          <div class="f1">
-            <label class="label">Nome <span class="tvermelho">*</span></label>
+        <div class="f1">
+          <label class="block mb1">
             <Field
-              name="nome"
-              type="text"
-              class="inputtext light mb1"
-              :class="{ 'error': errors.nome }"
-            />
-            <div class="error-msg">
-              {{ errors.nome }}
-            </div>
-          </div>
-        </div>
-        <div class="flex g2">
-          <div class="f1">
-            <label class="label">Descrição <span class="tvermelho">*</span></label>
-            <Field
-              name="descricao"
-              as="textarea"
-              rows="3"
-              class="inputtext light mb1"
-              :class="{ 'error': errors.descricao }"
-            />
-            <div class="error-msg">
-              {{ errors.descricao }}
-            </div>
-          </div>
-        </div>
-
-        <div class="mt2">
-          <label class="label tc300">Logo do Programa de Metas</label>
-
-          <label
-            v-if="!curfile.loading && !curfile.name"
-            class="addlink"
-          ><svg
-             width="20"
-             height="20"
-           ><use xlink:href="#i_+" /></svg>
-            <span>
-              Adicionar arquivo (formatos SVG ou PNG até 2mb)&nbsp;<span class="tvermelho">*</span>
-            </span>
-            <input
-              type="file"
-              accept=".svg,.png"
-              :onchange="uploadshape"
-              style="display:none;"
-            ></label>
-
-          <div
-            v-else-if="curfile.loading"
-            class="addlink"
-          >
-            <span>Carregando</span> <svg
-              width="20"
-              height="20"
-            ><use xlink:href="#i_spin" /></svg>
-          </div>
-
-          <div v-else-if="curfile.name">
-            <img
-              v-if="singlePdm.logo == curfile?.name"
-              :src="`${baseUrl}/download/${singlePdm.logo}?inline=true`"
-              width="100"
-              class="ib mr1"
-            >
-            <span v-else>{{ curfile?.name?.slice(0, 30) }}</span>
-            <a
-              :onclick="removeshape"
-              class="addlink"
-            ><svg
-              width="20"
-              height="20"
-            ><use xlink:href="#i_remove" /></svg></a>
-          </div>
-          <Field
-            name="upload_logo"
-            type="hidden"
-            :value="curfile?.name"
-          />
-        </div>
-
-        <hr class="mt2 mb2">
-
-        <div class="flex g2">
-          <div class="f1">
-            <label class="label">Início do Período <span class="tvermelho">*</span></label>
-            <Field
-              name="data_inicio"
-              type="text"
-              class="inputtext light mb1"
-              :class="{ 'error': errors.data_inicio }"
-              maxlength="10"
-              placeholder="dd/mm/aaaa"
-              @keyup="maskDate"
-            />
-            <div class="error-msg">
-              {{ errors.data_inicio }}
-            </div>
-          </div>
-          <div class="f1">
-            <label class="label">Fim do Período <span class="tvermelho">*</span></label>
-            <Field
-              name="data_fim"
-              type="text"
-              class="inputtext light mb1"
-              :class="{ 'error': errors.data_fim }"
-              maxlength="10"
-              placeholder="dd/mm/aaaa"
-              @keyup="maskDate"
-            />
-            <div class="error-msg">
-              {{ errors.data_fim }}
-            </div>
-          </div>
-          <div class="f1">
-            <label class="label">Data de Publicação</label>
-            <Field
-              name="data_publicacao"
-              type="text"
-              class="inputtext light mb1"
-              :class="{ 'error': errors.data_publicacao }"
-              maxlength="10"
-              placeholder="dd/mm/aaaa"
-              @keyup="maskDate"
-            />
-            <div class="error-msg">
-              {{ errors.data_publicacao }}
-            </div>
-          </div>
-        </div>
-        <div class="flex g2">
-          <div class="f1">
-            <label class="label">Inicio do ciclo participativo</label>
-            <Field
-              name="periodo_do_ciclo_participativo_inicio"
-              type="text"
-              class="inputtext light mb1"
-              :class="{ 'error': errors.periodo_do_ciclo_participativo_inicio }"
-              maxlength="10"
-              placeholder="dd/mm/aaaa"
-              @keyup="maskDate"
-            />
-            <div class="error-msg">
-              {{ errors.periodo_do_ciclo_participativo_inicio }}
-            </div>
-          </div>
-          <div class="f1">
-            <label class="label">Fim do ciclo participativo</label>
-            <Field
-              name="periodo_do_ciclo_participativo_fim"
-              type="text"
-              class="inputtext light mb1"
-              :class="{ 'error': errors.periodo_do_ciclo_participativo_fim }"
-              maxlength="10"
-              placeholder="dd/mm/aaaa"
-              @keyup="maskDate"
-            />
-            <div class="error-msg">
-              {{ errors.periodo_do_ciclo_participativo_fim }}
-            </div>
-          </div>
-          <div class="f1">
-            <label class="label">Prefeito <span class="tvermelho">*</span></label>
-            <Field
-              name="prefeito"
-              type="text"
-              class="inputtext light mb1"
-              :class="{ 'error': errors.prefeito }"
-            />
-            <div class="error-msg">
-              {{ errors.prefeito }}
-            </div>
-          </div>
-        </div>
-        <div class="flex g2">
-          <div class="f1">
-            <label class="label">Equipe técnica</label>
-            <Field
-              name="equipe_tecnica"
-              as="textarea"
-              rows="3"
-              class="inputtext light mb1"
-              :class="{ 'error': errors.equipe_tecnica }"
-            />
-            <div class="error-msg">
-              {{ errors.equipe_tecnica }}
-            </div>
-            <p class="t13 tc500">
-              Separe os membros por vírgula ou ponto-e-vírgula
-            </p>
-          </div>
-        </div>
-
-        <hr class="mt2 mb2">
-
-        <div class="flex center g2">
-          <div class="f1">
-            <label class="label">Rótulo do Macrotema</label>
-            <Field
-              name="rotulo_macro_tema"
-              type="text"
-              class="inputtext light mb1"
-              :class="{ 'error': errors.rotulo_macro_tema }"
-            />
-            <div class="error-msg">
-              {{ errors.rotulo_macro_tema }}
-            </div>
-          </div>
-          <div
-            class="f0"
-            style="flex-basis: 200px;"
-          >
-            <label class="block mb1">
-              <Field
-                name="possui_macro_tema"
-                class="inputcheckbox"
-                :class="{ 'error': errors.possui_macro_tema }"
-                type="checkbox"
-                value="1"
-                :checked="possui_macro_tema"
-              /><span>Habilitar Macrotema</span>
-            </label>
-          </div>
-        </div>
-        <div class="flex center g2">
-          <div class="f1">
-            <label class="label">Rótulo do Tema</label>
-            <Field
-              name="rotulo_tema"
-              type="text"
-              class="inputtext light mb1"
-              :class="{ 'error': errors.rotulo_tema }"
-            />
-            <div class="error-msg">
-              {{ errors.rotulo_tema }}
-            </div>
-          </div>
-          <div
-            class="f0"
-            style="flex-basis: 200px;"
-          >
-            <label class="block mb1">
-              <Field
-                name="possui_tema"
-                class="inputcheckbox"
-                :class="{ 'error': errors.possui_tema }"
-                type="checkbox"
-                value="1"
-                :checked="possui_tema"
-              /><span>Habilitar Tema</span>
-            </label>
-          </div>
-        </div>
-        <div class="flex center g2">
-          <div class="f1">
-            <label class="label">Rótulo do Subtema</label>
-            <Field
-              name="rotulo_sub_tema"
-              type="text"
-              class="inputtext light mb1"
-              :class="{ 'error': errors.rotulo_sub_tema }"
-            />
-            <div class="error-msg">
-              {{ errors.rotulo_sub_tema }}
-            </div>
-          </div>
-          <div
-            class="f0"
-            style="flex-basis: 200px;"
-          >
-            <label class="block mb1">
-              <Field
-                name="possui_sub_tema"
-                class="inputcheckbox"
-                :class="{ 'error': errors.possui_sub_tema }"
-                type="checkbox"
-                value="1"
-                :checked="possui_sub_tema"
-              /><span>Habilitar Subtema</span>
-            </label>
-          </div>
-        </div>
-        <div class="flex center g2">
-          <div class="f1">
-            <label class="label">Rótulo do Contexto da Meta</label>
-            <Field
-              name="rotulo_contexto_meta"
-              type="text"
-              class="inputtext light mb1"
-              :class="{ 'error': errors.rotulo_contexto_meta }"
-            />
-            <div class="error-msg">
-              {{ errors.rotulo_contexto_meta }}
-            </div>
-          </div>
-          <div
-            class="f0"
-            style="flex-basis: 200px;"
-          >
-            <label class="block mb1">
-              <Field
-                name="possui_contexto_meta"
-                class="inputcheckbox"
-                :class="{ 'error': errors.possui_contexto_meta }"
-                type="checkbox"
-                value="1"
-                :checked="possui_contexto_meta"
-              /><span>Habilitar Contexto</span>
-            </label>
-          </div>
-        </div>
-        <div class="flex center g2">
-          <div class="f1">
-            <label class="label">Rótulo do Complementação da Meta</label>
-            <Field
-              name="rotulo_complementacao_meta"
-              type="text"
-              class="inputtext light mb1"
-              :class="{ 'error': errors.rotulo_complementacao_meta }"
-            />
-            <div class="error-msg">
-              {{ errors.rotulo_complementacao_meta }}
-            </div>
-          </div>
-          <div
-            class="f0"
-            style="flex-basis: 200px;"
-          >
-            <label class="block mb1">
-              <Field
-                name="possui_complementacao_meta"
-                class="inputcheckbox"
-                :class="{ 'error': errors.possui_complementacao_meta }"
-                type="checkbox"
-                value="1"
-                :checked="possui_complementacao_meta"
-              /><span>Habilitar Complementação</span>
-            </label>
-          </div>
-        </div>
-
-        <hr class="mt2 mb2">
-        <div class="flex center g2">
-          <div class="f1">
-            <label class="label">Rótulo da Iniciativa</label>
-            <Field
-              name="rotulo_iniciativa"
-              type="text"
-              class="inputtext light mb1"
-              :class="{ 'error': errors.rotulo_iniciativa }"
-            />
-            <div class="error-msg">
-              {{ errors.rotulo_iniciativa }}
-            </div>
-            <div class="error-msg">
-              {{ errors.possui_iniciativa }}
-            </div>
-          </div>
-          <div
-            class="f0"
-            style="flex-basis: 200px;"
-          >
-            <label class="block mb1">
-              <Field
-                v-model="possui_iniciativa"
-                name="possui_iniciativa"
-                class="inputcheckbox"
-                :class="{ 'error': errors.possui_iniciativa }"
-                type="checkbox"
-                value="1"
-              />
-              <span>Habilitar Iniciativa</span>
-            </label>
-          </div>
-        </div>
-        <div class="flex center g2">
-          <div class="f1">
-            <label class="label">Rótulo da Atividade</label>
-            <Field
-              name="rotulo_atividade"
-              type="text"
-              class="inputtext light mb1"
-              :class="{ 'error': errors.rotulo_atividade }"
-              :disabled="!possui_iniciativa"
-            />
-            <div class="error-msg">
-              {{ errors.rotulo_atividade }}
-            </div>
-          </div>
-          <div
-            class="f0"
-            style="flex-basis: 200px;"
-          >
-            <label class="block mb1">
-              <Field
-                name="possui_atividade"
-                class="inputcheckbox"
-                :class="{ 'error': errors.possui_atividade }"
-                type="checkbox"
-                value="1"
-                :disabled="!possui_iniciativa"
-              /><span>Habilitar Atividade</span>
-            </label>
-          </div>
-        </div>
-        <div class="error-msg">
-          {{ errors.possui_atividade }}
-        </div>
-        <hr class="mt2 mb2">
-
-        <div class="flex center g2">
-          <div class="f1">
-            <label class="label">Nível de controle orçamentário</label>
-            <Field
-              name="nivel_orcamento"
-              as="select"
-              class="inputtext light mb1"
-              :class="{ 'error': errors.nivel_orcamento }"
-            >
-              <option value="Meta">
-                Meta
-              </option>
-              <option value="Iniciativa">
-                Iniciativa
-              </option>
-              <option value="Atividade">
-                Atividade
-              </option>
-            </Field>
-            <div class="error-msg">
-              {{ errors.nivel_orcamento }}
-            </div>
-          </div>
-        </div>
-
-        <div class="flex spacebetween center mb2">
-          <hr class="mr2 f1">
-          <button
-            class="btn big"
-            :disabled="isSubmitting"
-          >
-            Salvar
-          </button>
-          <hr class="ml2 f1">
-        </div>
-      </Form>
-    </template>
-
-    <template v-if="singlePdm?.loading">
-      <span class="spinner">Carregando</span>
-    </template>
-    <template v-if="singlePdm?.error || error">
-      <div class="error p1">
-        <div class="error-msg">
-          {{ singlePdm.error ?? error }}
+              name="ativo"
+              type="checkbox"
+              value="1"
+              :checked="ativo"
+            /><span>Programa ativo</span><span>Programa inativo</span>
+          </label>
+          <p class="t13 tc500">
+            Ao ativar um Programa de Metas, todos os demais programas serão inativados
+          </p>
         </div>
       </div>
-    </template>
-  </Dashboard>
+      <div class="flex g2">
+        <div class="f1">
+          <label class="label">Nome <span class="tvermelho">*</span></label>
+          <Field
+            name="nome"
+            type="text"
+            class="inputtext light mb1"
+            :class="{ 'error': errors.nome }"
+          />
+          <div class="error-msg">
+            {{ errors.nome }}
+          </div>
+        </div>
+      </div>
+      <div class="flex g2">
+        <div class="f1">
+          <label class="label">Descrição <span class="tvermelho">*</span></label>
+          <Field
+            name="descricao"
+            as="textarea"
+            rows="3"
+            class="inputtext light mb1"
+            :class="{ 'error': errors.descricao }"
+          />
+          <div class="error-msg">
+            {{ errors.descricao }}
+          </div>
+        </div>
+      </div>
+
+      <div class="mt2">
+        <label class="label tc300">Logo do Programa de Metas</label>
+
+        <label
+          v-if="!curfile.loading && !curfile.name"
+          class="addlink"
+        ><svg
+           width="20"
+           height="20"
+         ><use xlink:href="#i_+" /></svg>
+          <span>
+            Adicionar arquivo (formatos SVG ou PNG até 2mb)&nbsp;<span class="tvermelho">*</span>
+          </span>
+          <input
+            type="file"
+            accept=".svg,.png"
+            :onchange="uploadshape"
+            style="display:none;"
+          ></label>
+
+        <div
+          v-else-if="curfile.loading"
+          class="addlink"
+        >
+          <span>Carregando</span> <svg
+            width="20"
+            height="20"
+          ><use xlink:href="#i_spin" /></svg>
+        </div>
+
+        <div v-else-if="curfile.name">
+          <img
+            v-if="singlePdm.logo == curfile?.name"
+            :src="`${baseUrl}/download/${singlePdm.logo}?inline=true`"
+            width="100"
+            class="ib mr1"
+          >
+          <span v-else>{{ curfile?.name?.slice(0, 30) }}</span>
+          <a
+            :onclick="removeshape"
+            class="addlink"
+          ><svg
+            width="20"
+            height="20"
+          ><use xlink:href="#i_remove" /></svg></a>
+        </div>
+        <Field
+          name="upload_logo"
+          type="hidden"
+          :value="curfile?.name"
+        />
+      </div>
+
+      <hr class="mt2 mb2">
+
+      <div class="flex g2">
+        <div class="f1">
+          <label class="label">Início do Período <span class="tvermelho">*</span></label>
+          <Field
+            name="data_inicio"
+            type="text"
+            class="inputtext light mb1"
+            :class="{ 'error': errors.data_inicio }"
+            maxlength="10"
+            placeholder="dd/mm/aaaa"
+            @keyup="maskDate"
+          />
+          <div class="error-msg">
+            {{ errors.data_inicio }}
+          </div>
+        </div>
+        <div class="f1">
+          <label class="label">Fim do Período <span class="tvermelho">*</span></label>
+          <Field
+            name="data_fim"
+            type="text"
+            class="inputtext light mb1"
+            :class="{ 'error': errors.data_fim }"
+            maxlength="10"
+            placeholder="dd/mm/aaaa"
+            @keyup="maskDate"
+          />
+          <div class="error-msg">
+            {{ errors.data_fim }}
+          </div>
+        </div>
+        <div class="f1">
+          <label class="label">Data de Publicação</label>
+          <Field
+            name="data_publicacao"
+            type="text"
+            class="inputtext light mb1"
+            :class="{ 'error': errors.data_publicacao }"
+            maxlength="10"
+            placeholder="dd/mm/aaaa"
+            @keyup="maskDate"
+          />
+          <div class="error-msg">
+            {{ errors.data_publicacao }}
+          </div>
+        </div>
+      </div>
+      <div class="flex g2">
+        <div class="f1">
+          <label class="label">Inicio do ciclo participativo</label>
+          <Field
+            name="periodo_do_ciclo_participativo_inicio"
+            type="text"
+            class="inputtext light mb1"
+            :class="{ 'error': errors.periodo_do_ciclo_participativo_inicio }"
+            maxlength="10"
+            placeholder="dd/mm/aaaa"
+            @keyup="maskDate"
+          />
+          <div class="error-msg">
+            {{ errors.periodo_do_ciclo_participativo_inicio }}
+          </div>
+        </div>
+        <div class="f1">
+          <label class="label">Fim do ciclo participativo</label>
+          <Field
+            name="periodo_do_ciclo_participativo_fim"
+            type="text"
+            class="inputtext light mb1"
+            :class="{ 'error': errors.periodo_do_ciclo_participativo_fim }"
+            maxlength="10"
+            placeholder="dd/mm/aaaa"
+            @keyup="maskDate"
+          />
+          <div class="error-msg">
+            {{ errors.periodo_do_ciclo_participativo_fim }}
+          </div>
+        </div>
+        <div class="f1">
+          <label class="label">Prefeito <span class="tvermelho">*</span></label>
+          <Field
+            name="prefeito"
+            type="text"
+            class="inputtext light mb1"
+            :class="{ 'error': errors.prefeito }"
+          />
+          <div class="error-msg">
+            {{ errors.prefeito }}
+          </div>
+        </div>
+      </div>
+      <div class="flex g2">
+        <div class="f1">
+          <label class="label">Equipe técnica</label>
+          <Field
+            name="equipe_tecnica"
+            as="textarea"
+            rows="3"
+            class="inputtext light mb1"
+            :class="{ 'error': errors.equipe_tecnica }"
+          />
+          <div class="error-msg">
+            {{ errors.equipe_tecnica }}
+          </div>
+          <p class="t13 tc500">
+            Separe os membros por vírgula ou ponto-e-vírgula
+          </p>
+        </div>
+      </div>
+
+      <hr class="mt2 mb2">
+
+      <div class="flex center g2">
+        <div class="f1">
+          <label class="label">Rótulo do Macrotema</label>
+          <Field
+            name="rotulo_macro_tema"
+            type="text"
+            class="inputtext light mb1"
+            :class="{ 'error': errors.rotulo_macro_tema }"
+          />
+          <div class="error-msg">
+            {{ errors.rotulo_macro_tema }}
+          </div>
+        </div>
+        <div
+          class="f0"
+          style="flex-basis: 200px;"
+        >
+          <label class="block mb1">
+            <Field
+              name="possui_macro_tema"
+              class="inputcheckbox"
+              :class="{ 'error': errors.possui_macro_tema }"
+              type="checkbox"
+              value="1"
+              :checked="possui_macro_tema"
+            /><span>Habilitar Macrotema</span>
+          </label>
+        </div>
+      </div>
+      <div class="flex center g2">
+        <div class="f1">
+          <label class="label">Rótulo do Tema</label>
+          <Field
+            name="rotulo_tema"
+            type="text"
+            class="inputtext light mb1"
+            :class="{ 'error': errors.rotulo_tema }"
+          />
+          <div class="error-msg">
+            {{ errors.rotulo_tema }}
+          </div>
+        </div>
+        <div
+          class="f0"
+          style="flex-basis: 200px;"
+        >
+          <label class="block mb1">
+            <Field
+              name="possui_tema"
+              class="inputcheckbox"
+              :class="{ 'error': errors.possui_tema }"
+              type="checkbox"
+              value="1"
+              :checked="possui_tema"
+            /><span>Habilitar Tema</span>
+          </label>
+        </div>
+      </div>
+      <div class="flex center g2">
+        <div class="f1">
+          <label class="label">Rótulo do Subtema</label>
+          <Field
+            name="rotulo_sub_tema"
+            type="text"
+            class="inputtext light mb1"
+            :class="{ 'error': errors.rotulo_sub_tema }"
+          />
+          <div class="error-msg">
+            {{ errors.rotulo_sub_tema }}
+          </div>
+        </div>
+        <div
+          class="f0"
+          style="flex-basis: 200px;"
+        >
+          <label class="block mb1">
+            <Field
+              name="possui_sub_tema"
+              class="inputcheckbox"
+              :class="{ 'error': errors.possui_sub_tema }"
+              type="checkbox"
+              value="1"
+              :checked="possui_sub_tema"
+            /><span>Habilitar Subtema</span>
+          </label>
+        </div>
+      </div>
+      <div class="flex center g2">
+        <div class="f1">
+          <label class="label">Rótulo do Contexto da Meta</label>
+          <Field
+            name="rotulo_contexto_meta"
+            type="text"
+            class="inputtext light mb1"
+            :class="{ 'error': errors.rotulo_contexto_meta }"
+          />
+          <div class="error-msg">
+            {{ errors.rotulo_contexto_meta }}
+          </div>
+        </div>
+        <div
+          class="f0"
+          style="flex-basis: 200px;"
+        >
+          <label class="block mb1">
+            <Field
+              name="possui_contexto_meta"
+              class="inputcheckbox"
+              :class="{ 'error': errors.possui_contexto_meta }"
+              type="checkbox"
+              value="1"
+              :checked="possui_contexto_meta"
+            /><span>Habilitar Contexto</span>
+          </label>
+        </div>
+      </div>
+      <div class="flex center g2">
+        <div class="f1">
+          <label class="label">Rótulo do Complementação da Meta</label>
+          <Field
+            name="rotulo_complementacao_meta"
+            type="text"
+            class="inputtext light mb1"
+            :class="{ 'error': errors.rotulo_complementacao_meta }"
+          />
+          <div class="error-msg">
+            {{ errors.rotulo_complementacao_meta }}
+          </div>
+        </div>
+        <div
+          class="f0"
+          style="flex-basis: 200px;"
+        >
+          <label class="block mb1">
+            <Field
+              name="possui_complementacao_meta"
+              class="inputcheckbox"
+              :class="{ 'error': errors.possui_complementacao_meta }"
+              type="checkbox"
+              value="1"
+              :checked="possui_complementacao_meta"
+            /><span>Habilitar Complementação</span>
+          </label>
+        </div>
+      </div>
+
+      <hr class="mt2 mb2">
+      <div class="flex center g2">
+        <div class="f1">
+          <label class="label">Rótulo da Iniciativa</label>
+          <Field
+            name="rotulo_iniciativa"
+            type="text"
+            class="inputtext light mb1"
+            :class="{ 'error': errors.rotulo_iniciativa }"
+          />
+          <div class="error-msg">
+            {{ errors.rotulo_iniciativa }}
+          </div>
+          <div class="error-msg">
+            {{ errors.possui_iniciativa }}
+          </div>
+        </div>
+        <div
+          class="f0"
+          style="flex-basis: 200px;"
+        >
+          <label class="block mb1">
+            <Field
+              v-model="possui_iniciativa"
+              name="possui_iniciativa"
+              class="inputcheckbox"
+              :class="{ 'error': errors.possui_iniciativa }"
+              type="checkbox"
+              value="1"
+            />
+            <span>Habilitar Iniciativa</span>
+          </label>
+        </div>
+      </div>
+      <div class="flex center g2">
+        <div class="f1">
+          <label class="label">Rótulo da Atividade</label>
+          <Field
+            name="rotulo_atividade"
+            type="text"
+            class="inputtext light mb1"
+            :class="{ 'error': errors.rotulo_atividade }"
+            :disabled="!possui_iniciativa"
+          />
+          <div class="error-msg">
+            {{ errors.rotulo_atividade }}
+          </div>
+        </div>
+        <div
+          class="f0"
+          style="flex-basis: 200px;"
+        >
+          <label class="block mb1">
+            <Field
+              name="possui_atividade"
+              class="inputcheckbox"
+              :class="{ 'error': errors.possui_atividade }"
+              type="checkbox"
+              value="1"
+              :disabled="!possui_iniciativa"
+            /><span>Habilitar Atividade</span>
+          </label>
+        </div>
+      </div>
+      <div class="error-msg">
+        {{ errors.possui_atividade }}
+      </div>
+      <hr class="mt2 mb2">
+
+      <div class="flex center g2">
+        <div class="f1">
+          <label class="label">Nível de controle orçamentário</label>
+          <Field
+            name="nivel_orcamento"
+            as="select"
+            class="inputtext light mb1"
+            :class="{ 'error': errors.nivel_orcamento }"
+          >
+            <option value="Meta">
+              Meta
+            </option>
+            <option value="Iniciativa">
+              Iniciativa
+            </option>
+            <option value="Atividade">
+              Atividade
+            </option>
+          </Field>
+          <div class="error-msg">
+            {{ errors.nivel_orcamento }}
+          </div>
+        </div>
+      </div>
+
+      <div class="flex spacebetween center mb2">
+        <hr class="mr2 f1">
+        <button
+          class="btn big"
+          :disabled="isSubmitting"
+        >
+          Salvar
+        </button>
+        <hr class="ml2 f1">
+      </div>
+    </Form>
+  </template>
+
+  <template v-if="singlePdm?.loading">
+    <span class="spinner">Carregando</span>
+  </template>
+  <template v-if="singlePdm?.error || error">
+    <div class="error p1">
+      <div class="error-msg">
+        {{ singlePdm.error ?? error }}
+      </div>
+    </div>
+  </template>
 </template>
