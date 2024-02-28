@@ -101,7 +101,9 @@ async function onSubmit(values) {
     }
     if (r == true) {
       regionsStore.filterRegions();
-      await router.push('/regioes');
+      await router.push({
+        name: 'gerenciarRegiões'
+      });
       alertStore.success(msg);
       editModalStore.clear();
     }
@@ -114,7 +116,9 @@ async function checkClose() {
   alertStore.confirm('Deseja sair sem salvar as alterações?', () => {
     editModalStore.clear();
     alertStore.clear();
-    router.push('/regioes');
+    router.push({
+      name: 'gerenciarRegiões'
+    });
   });
 }
 async function checkDelete(idDaRegião) {
@@ -122,7 +126,9 @@ async function checkDelete(idDaRegião) {
     if (await regionsStore.delete(idDaRegião)) {
       regionsStore.filterRegions();
       editModalStore.clear();
-      router.push('/regioes');
+      router.push({
+        name: 'gerenciarRegiões'
+      });
     }
   }, 'Remover');
 }

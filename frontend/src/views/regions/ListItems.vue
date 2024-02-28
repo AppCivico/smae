@@ -46,7 +46,9 @@ onUpdated(() => { start(); });
 
       <router-link
         v-if="perm?.CadastroRegiao?.inserir && Array.isArray(regions) && !regions.length"
-        to="/regioes/novo"
+        :to="{
+          name: 'novaRegião'
+        }"
         class="btn big ml2"
       >
         Novo Município
@@ -94,7 +96,12 @@ onUpdated(() => { start(); });
               <td style="white-space: nowrap; text-align: right;">
                 <template v-if="perm?.CadastroRegiao?.editar">
                   <router-link
-                    :to="`/regioes/editar/${item.id}`"
+                    :to="{
+                      name: 'editarRegião',
+                      params: {
+                        id: item.id
+                      }
+                    }"
                     class="tprimary"
                   >
                     <svg
@@ -148,7 +155,13 @@ onUpdated(() => { start(); });
                         <td style="white-space: nowrap; text-align: right;">
                           <template v-if="perm?.CadastroRegiao?.editar">
                             <router-link
-                              :to="`/regioes/editar/${item.id}/${item2.id}`"
+                              :to="{
+                                name: 'editarRegião2',
+                                params: {
+                                  id: item.id,
+                                  id2: item2.id,
+                                }
+                              }"
                               class="tprimary"
                             >
                               <svg
@@ -202,7 +215,14 @@ onUpdated(() => { start(); });
                                   <td style="white-space: nowrap; text-align: right;">
                                     <template v-if="perm?.CadastroRegiao?.editar">
                                       <router-link
-                                        :to="`/regioes/editar/${item.id}/${item2.id}/${item3.id}`"
+                                        :to="{
+                                          name: 'editarRegião3',
+                                          params: {
+                                            id: item.id,
+                                            id2: item2.id,
+                                            id3: item3.id,
+                                          }
+                                        }"
                                         class="tprimary"
                                       >
                                         <svg
@@ -247,7 +267,15 @@ onUpdated(() => { start(); });
                                             <td style="white-space: nowrap; text-align: right;">
                                               <template v-if="perm?.CadastroRegiao?.editar">
                                                 <router-link
-                                                  :to="`/regioes/editar/${item.id}/${item2.id}/${item3.id}/${item4.id}`"
+                                                  :to="{
+                                                    name: 'editarRegião4',
+                                                    params: {
+                                                      id: item.id,
+                                                      id2: item2.id,
+                                                      id3: item3.id,
+                                                      id4: item4.id,
+                                                    }
+                                                  }"
                                                   class="tprimary"
                                                 >
                                                   <svg
@@ -262,7 +290,14 @@ onUpdated(() => { start(); });
                                       </tbody>
                                     </table>
                                     <router-link
-                                      :to="`/regioes/novo/${item.id}/${item2.id}/${item3.id}`"
+                                      :to="{
+                                        name: 'novaRegião3',
+                                        params: {
+                                          id: item.id,
+                                          id2: item2.id,
+                                          id3: item3.id,
+                                        }
+                                      }"
                                       class="addlink"
                                     >
                                       <svg
@@ -276,7 +311,13 @@ onUpdated(() => { start(); });
                             </tbody>
                           </table>
                           <router-link
-                            :to="`/regioes/novo/${item.id}/${item2.id}`"
+                            :to="{
+                              name: 'novaRegião2',
+                              params: {
+                                id: item.id,
+                                id2: item2.id,
+                              }
+                            }"
                             class="addlink"
                           >
                             <svg
@@ -290,7 +331,12 @@ onUpdated(() => { start(); });
                   </tbody>
                 </table>
                 <router-link
-                  :to="`/regioes/novo/${item.id}`"
+                  :to="{
+                    name: 'novaRegião',
+                    params: {
+                      id: item.id,
+                    }
+                  }"
                   class="addlink"
                 >
                   <svg
