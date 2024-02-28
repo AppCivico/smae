@@ -149,6 +149,15 @@
       <div>
         <dt>
           <svg
+            width="24"
+            height="24"
+          ><use xlink:href="#i_home" /></svg>
+        </dt>
+        <dd>i_i</dd>
+      </div>
+      <div>
+        <dt>
+          <svg
             width="18"
             height="18"
           ><use xlink:href="#i_i" /></svg>
@@ -217,6 +226,15 @@
           ><use xlink:href="#i_right" /></svg>
         </dt>
         <dd>i_right</dd>
+      </div>
+      <div>
+        <dt>
+          <svg
+            width="32"
+            height="32"
+          ><use xlink:href="#i_right-double" /></svg>
+        </dt>
+        <dd>i_right-double</dd>
       </div>
       <div>
         <dt>
