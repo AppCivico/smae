@@ -140,8 +140,8 @@
       <div>
         <dt>
           <svg
-            width="22"
-            height="16"
+            width="20"
+            height="20"
           ><use xlink:href="#i_graf" /></svg>
         </dt>
         <dd>i_graf</dd>
