@@ -75,7 +75,17 @@ export class PartidoService {
     }
 
     async update(id: number, dto: UpdatePartidoDto, user: PessoaFromJwt) {
-        if (dto.nome !== undefined) {
+        const self = await this.prisma.partido.findFirst({
+            where: { id, removido_em: null },
+            select: {
+                nome: true,
+                numero: true,
+                sigla: true,
+            }
+        });
+        if (!self) throw new HttpException('Partido não encontrado', 404);
+
+        if (dto.nome !== undefined && self.nome !== dto.nome) {
             const similarExists = await this.prisma.partido.count({
                 where: {
                     nome: { endsWith: dto.nome, mode: 'insensitive' },
@@ -90,7 +100,7 @@ export class PartidoService {
                 );
         }
 
-        if (dto.sigla) {
+        if (dto.sigla && dto.sigla != self.sigla) {
             const similarExists = await this.prisma.orgao.count({
                 where: {
                     sigla: { endsWith: dto.sigla, mode: 'insensitive' },
@@ -102,7 +112,7 @@ export class PartidoService {
                 throw new HttpException('sigla| Sigla igual ou semelhante já existe em outro registro ativo', 400);
         }
 
-        if (dto.numero) {
+        if (dto.numero && dto.numero !== self.numero) {
             const similarNumeroExists = await this.prisma.partido.count({
                 where: {
                     numero: dto.numero,
