@@ -54,9 +54,7 @@ async function checkClose() {
 async function checkDelete(id) {
   alertStore.confirmAction('Deseja mesmo remover esse item?', async () => { if (await ODSStore.delete(id)) router.push('/categorias'); }, 'Remover');
 }
-
 </script>
-
 <template>
   <Dashboard>
     <div class="flex spacebetween center mb2">
