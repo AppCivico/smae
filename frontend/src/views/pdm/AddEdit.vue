@@ -139,9 +139,7 @@ async function uploadshape(e) {
     singlePdm.value.upload_logo = curfile.name;
   }
 }
-
 </script>
-
 <template>
   <Dashboard>
     <div class="flex spacebetween center mb2">
