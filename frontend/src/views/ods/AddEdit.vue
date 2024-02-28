@@ -1,5 +1,4 @@
 <script setup>
-import { Dashboard } from '@/components';
 import { router } from '@/router';
 import { storeToRefs } from 'pinia';
 import { Field, Form } from 'vee-validate';
@@ -56,96 +55,94 @@ async function checkDelete(id) {
 }
 </script>
 <template>
-  <Dashboard>
-    <div class="flex spacebetween center mb2">
-      <h1>{{ title }}</h1>
-      <hr class="ml2 f1">
-      <button
-        class="btn round ml2"
-        @click="checkClose"
-      >
-        <svg
-          width="12"
-          height="12"
-        ><use xlink:href="#i_x" /></svg>
-      </button>
-    </div>
-    <template v-if="!(tempODS?.loading || tempODS?.error)">
-      <Form
-        v-slot="{ errors, isSubmitting }"
-        :validation-schema="schema"
-        :initial-values="tempODS"
-        @submit="onSubmit"
-      >
-        <div class="flex g2">
-          <div class="f1">
-            <label class="label">Número <span class="tvermelho">*</span></label>
-            <Field
-              name="numero"
-              type="number"
-              class="inputtext light mb1"
-              :class="{ 'error': errors.numero }"
-            />
-            <div class="error-msg">
-              {{ errors.numero }}
-            </div>
-          </div>
-          <div class="f2">
-            <label class="label">Título <span class="tvermelho">*</span></label>
-            <Field
-              name="titulo"
-              type="text"
-              class="inputtext light mb1"
-              :class="{ 'error': errors.titulo }"
-            />
-            <div class="error-msg">
-              {{ errors.titulo }}
-            </div>
+  <div class="flex spacebetween center mb2">
+    <h1>{{ title }}</h1>
+    <hr class="ml2 f1">
+    <button
+      class="btn round ml2"
+      @click="checkClose"
+    >
+      <svg
+        width="12"
+        height="12"
+      ><use xlink:href="#i_x" /></svg>
+    </button>
+  </div>
+  <template v-if="!(tempODS?.loading || tempODS?.error)">
+    <Form
+      v-slot="{ errors, isSubmitting }"
+      :validation-schema="schema"
+      :initial-values="tempODS"
+      @submit="onSubmit"
+    >
+      <div class="flex g2">
+        <div class="f1">
+          <label class="label">Número <span class="tvermelho">*</span></label>
+          <Field
+            name="numero"
+            type="number"
+            class="inputtext light mb1"
+            :class="{ 'error': errors.numero }"
+          />
+          <div class="error-msg">
+            {{ errors.numero }}
           </div>
         </div>
-        <div class="flex g2">
-          <div class="f1">
-            <label class="label">Descrição <span class="tvermelho">*</span></label>
-            <Field
-              name="descricao"
-              type="text"
-              class="inputtext light mb1"
-              :class="{ 'error': errors.descricao }"
-            />
-            <div class="error-msg">
-              {{ errors.descricao }}
-            </div>
+        <div class="f2">
+          <label class="label">Título <span class="tvermelho">*</span></label>
+          <Field
+            name="titulo"
+            type="text"
+            class="inputtext light mb1"
+            :class="{ 'error': errors.titulo }"
+          />
+          <div class="error-msg">
+            {{ errors.titulo }}
           </div>
-        </div>
-        <div class="flex spacebetween center mb2">
-          <hr class="mr2 f1">
-          <button
-            class="btn big"
-            :disabled="isSubmitting"
-          >
-            Salvar
-          </button>
-          <hr class="ml2 f1">
-        </div>
-      </Form>
-    </template>
-    <template v-if="tempODS.id">
-      <button
-        class="btn amarelo big"
-        @click="checkDelete(tempODS.id)"
-      >
-        Remover item
-      </button>
-    </template>
-    <template v-if="tempODS?.loading">
-      <span class="spinner">Carregando</span>
-    </template>
-    <template v-if="tempODS?.error || error">
-      <div class="error p1">
-        <div class="error-msg">
-          {{ tempODS.error ?? error }}
         </div>
       </div>
-    </template>
-  </Dashboard>
+      <div class="flex g2">
+        <div class="f1">
+          <label class="label">Descrição <span class="tvermelho">*</span></label>
+          <Field
+            name="descricao"
+            type="text"
+            class="inputtext light mb1"
+            :class="{ 'error': errors.descricao }"
+          />
+          <div class="error-msg">
+            {{ errors.descricao }}
+          </div>
+        </div>
+      </div>
+      <div class="flex spacebetween center mb2">
+        <hr class="mr2 f1">
+        <button
+          class="btn big"
+          :disabled="isSubmitting"
+        >
+          Salvar
+        </button>
+        <hr class="ml2 f1">
+      </div>
+    </Form>
+  </template>
+  <template v-if="tempODS.id">
+    <button
+      class="btn amarelo big"
+      @click="checkDelete(tempODS.id)"
+    >
+      Remover item
+    </button>
+  </template>
+  <template v-if="tempODS?.loading">
+    <span class="spinner">Carregando</span>
+  </template>
+  <template v-if="tempODS?.error || error">
+    <div class="error p1">
+      <div class="error-msg">
+        {{ tempODS.error ?? error }}
+      </div>
+    </div>
+  </template>
 </template>

@@ -11,5 +11,6 @@ const { user } = storeToRefs(authStore);
     <div class="flex spacebetween center">
       <h1>Administração</h1>
     </div>
+    <router-view />
   </Dashboard>
 </template>

@@ -1,6 +1,5 @@
 <script setup>
 import { ref, unref } from 'vue';
-import { Dashboard } from '@/components';
 import { Form, Field } from 'vee-validate';
 import * as Yup from 'yup';
 import { useRoute } from 'vue-router';
@@ -91,86 +90,84 @@ function toggleAccordeon(t) {
 }
 </script>
 <template>
-  <Dashboard>
-    <div class="flex spacebetween center mb2">
-      <h1>{{ title }}</h1>
-      <hr class="ml2 f1">
-      <button
-        class="btn round ml2"
-        @click="checkClose"
-      >
-        <svg
-          width="12"
-          height="12"
-        ><use xlink:href="#i_x" /></svg>
-      </button>
-    </div>
-    <template v-if="!(singlePaineisGrupos?.loading || singlePaineisGrupos?.error)">
-      <Form
-        v-slot="{ errors, isSubmitting }"
-        :validation-schema="schema"
-        :initial-values="grupo_id ? singlePaineisGrupos : virtualCopy"
-        @submit="onSubmit"
-      >
-        <div class="mb1">
-          <label class="block">
-            <Field
-              name="ativo"
-              type="checkbox"
-              value="1"
-              class="inputcheckbox"
-            /><span :class="{ 'error': errors.ativo }">Grupo ativo</span>
-          </label>
-          <div class="error-msg">
-            {{ errors.ativo }}
-          </div>
-        </div>
-        <div class="flex g2">
-          <div class="f2">
-            <label class="label">Nome <span class="tvermelho">*</span></label>
-            <Field
-              name="nome"
-              type="text"
-              class="inputtext light mb1"
-              :class="{ 'error': errors.nome }"
-            />
-            <div class="error-msg">
-              {{ errors.nome }}
-            </div>
-          </div>
-        </div>
-        <div class="flex spacebetween center mb2">
-          <hr class="mr2 f1">
-          <button
-            class="btn big"
-            :disabled="isSubmitting"
-          >
-            Salvar grupo
-          </button>
-          <hr class="ml2 f1">
-        </div>
-      </Form>
-    </template>
-    <template v-if="singlePaineisGrupos?.loading">
-      <span class="spinner">Carregando</span>
-    </template>
-    <template v-if="singlePaineisGrupos?.error || error">
-      <div class="error p1">
+  <div class="flex spacebetween center mb2">
+    <h1>{{ title }}</h1>
+    <hr class="ml2 f1">
+    <button
+      class="btn round ml2"
+      @click="checkClose"
+    >
+      <svg
+        width="12"
+        height="12"
+      ><use xlink:href="#i_x" /></svg>
+    </button>
+  </div>
+  <template v-if="!(singlePaineisGrupos?.loading || singlePaineisGrupos?.error)">
+    <Form
+      v-slot="{ errors, isSubmitting }"
+      :validation-schema="schema"
+      :initial-values="grupo_id ? singlePaineisGrupos : virtualCopy"
+      @submit="onSubmit"
+    >
+      <div class="mb1">
+        <label class="block">
+          <Field
+            name="ativo"
+            type="checkbox"
+            value="1"
+            class="inputcheckbox"
+          /><span :class="{ 'error': errors.ativo }">Grupo ativo</span>
+        </label>
         <div class="error-msg">
-          {{ singlePaineisGrupos.error ?? error }}
+          {{ errors.ativo }}
         </div>
       </div>
-    </template>
+      <div class="flex g2">
+        <div class="f2">
+          <label class="label">Nome <span class="tvermelho">*</span></label>
+          <Field
+            name="nome"
+            type="text"
+            class="inputtext light mb1"
+            :class="{ 'error': errors.nome }"
+          />
+          <div class="error-msg">
+            {{ errors.nome }}
+          </div>
+        </div>
+      </div>
+      <div class="flex spacebetween center mb2">
+        <hr class="mr2 f1">
+        <button
+          class="btn big"
+          :disabled="isSubmitting"
+        >
+          Salvar grupo
+        </button>
+        <hr class="ml2 f1">
+      </div>
+    </Form>
+  </template>
+  <template v-if="singlePaineisGrupos?.loading">
+    <span class="spinner">Carregando</span>
+  </template>
+  <template v-if="singlePaineisGrupos?.error || error">
+    <div class="error p1">
+      <div class="error-msg">
+        {{ singlePaineisGrupos.error ?? error }}
+      </div>
+    </div>
+  </template>
 
-    <hr class="mt1 mb2">
+  <hr class="mt1 mb2">
 
-    <template v-if="singlePaineisGrupos.id">
-      <button
-        class="btn amarelo big"
-        @click="checkDelete(singlePaineisGrupos.id)"
-      >
-        Remover grupo
-      </button>
-    </template>
-  </Dashboard>
+  <template v-if="singlePaineisGrupos.id">
+    <button
+      class="btn amarelo big"
+      @click="checkDelete(singlePaineisGrupos.id)"
+    >
+      Remover grupo
+    </button>
+  </template>
 </template>

@@ -1,8 +1,5 @@
 <script setup>
-import { Dashboard } from '@/components';
 </script>
 <template>
-  <Dashboard>
-    <router-view />
-  </Dashboard>
+  <router-view />
 </template>

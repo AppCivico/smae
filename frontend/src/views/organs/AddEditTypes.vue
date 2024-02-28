@@ -1,5 +1,4 @@
 <script setup>
-import { Dashboard } from '@/components';
 import { Form, Field } from 'vee-validate';
 import * as Yup from 'yup';
 import { useRoute } from 'vue-router';
@@ -53,70 +52,68 @@ async function checkDelete(id) {
 }
 </script>
 <template>
-  <Dashboard>
-    <div class="flex spacebetween center mb2">
-      <h1>{{ title }}</h1>
-      <hr class="ml2 f1">
-      <button
-        class="btn round ml2"
-        @click="checkClose"
-      >
-        <svg
-          width="12"
-          height="12"
-        ><use xlink:href="#i_x" /></svg>
-      </button>
-    </div>
-    <template v-if="!(tempOrganTypes?.loading || tempOrganTypes?.error)">
-      <Form
-        v-slot="{ errors, isSubmitting }"
-        :validation-schema="schema"
-        :initial-values="tempOrganTypes"
-        @submit="onSubmit"
-      >
-        <div class="flex g2">
-          <div class="f1">
-            <label class="label">Descrição <span class="tvermelho">*</span></label>
-            <Field
-              name="descricao"
-              type="text"
-              class="inputtext light mb1"
-              :class="{ 'error': errors.descricao }"
-            />
-            <div class="error-msg">
-              {{ errors.descricao }}
-            </div>
+  <div class="flex spacebetween center mb2">
+    <h1>{{ title }}</h1>
+    <hr class="ml2 f1">
+    <button
+      class="btn round ml2"
+      @click="checkClose"
+    >
+      <svg
+        width="12"
+        height="12"
+      ><use xlink:href="#i_x" /></svg>
+    </button>
+  </div>
+  <template v-if="!(tempOrganTypes?.loading || tempOrganTypes?.error)">
+    <Form
+      v-slot="{ errors, isSubmitting }"
+      :validation-schema="schema"
+      :initial-values="tempOrganTypes"
+      @submit="onSubmit"
+    >
+      <div class="flex g2">
+        <div class="f1">
+          <label class="label">Descrição <span class="tvermelho">*</span></label>
+          <Field
+            name="descricao"
+            type="text"
+            class="inputtext light mb1"
+            :class="{ 'error': errors.descricao }"
+          />
+          <div class="error-msg">
+            {{ errors.descricao }}
           </div>
         </div>
-        <div class="flex spacebetween center mb2">
-          <hr class="mr2 f1">
-          <button
-            class="btn big"
-            :disabled="isSubmitting"
-          >
-            Salvar
-          </button>
-          <hr class="ml2 f1">
-        </div>
-      </Form>
-    </template>
-    <template v-if="tempOrganTypes.id">
-      <button
-        class="btn amarelo big"
-        @click="checkDelete(tempOrganTypes.id)"
-      >
-        Remover item
-      </button>
-    </template>
-    <template v-if="tempOrganTypes?.loading">
-      <span class="spinner">Carregando</span>
-    </template>
-    <template v-if="tempOrganTypes?.error || error">
-      <div class="error p1">
-        <div class="error-msg">
-          {{ tempOrganTypes.error ?? error }}
-        </div>
       </div>
-    </template>
-  </Dashboard>
+      <div class="flex spacebetween center mb2">
+        <hr class="mr2 f1">
+        <button
+          class="btn big"
+          :disabled="isSubmitting"
+        >
+          Salvar
+        </button>
+        <hr class="ml2 f1">
+      </div>
+    </Form>
+  </template>
+  <template v-if="tempOrganTypes.id">
+    <button
+      class="btn amarelo big"
+      @click="checkDelete(tempOrganTypes.id)"
+    >
+      Remover item
+    </button>
+  </template>
+  <template v-if="tempOrganTypes?.loading">
+    <span class="spinner">Carregando</span>
+  </template>
+  <template v-if="tempOrganTypes?.error || error">
+    <div class="error p1">
+      <div class="error-msg">
+        {{ tempOrganTypes.error ?? error }}
+      </div>
+    </div>
+  </template>
 </template>

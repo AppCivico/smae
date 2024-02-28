@@ -1,5 +1,4 @@
 <script setup>
-import { Dashboard } from '@/components';
 import { router } from '@/router';
 import { useAlertStore } from '@/stores/alert.store';
 import { useDocumentTypesStore } from '@/stores/documentTypes.store';
@@ -60,113 +59,111 @@ function removeChars(x) {
 }
 </script>
 <template>
-  <Dashboard>
-    <div class="flex spacebetween center mb2">
-      <h1>{{ title }}</h1>
-      <hr class="ml2 f1">
-      <button
-        class="btn round ml2"
-        @click="checkClose"
-      >
-        <svg
-          width="12"
-          height="12"
-        ><use xlink:href="#i_x" /></svg>
-      </button>
-    </div>
-    <template v-if="!(tempDocumentTypes?.loading || tempDocumentTypes?.error)">
-      <Form
-        v-slot="{ errors, isSubmitting }"
-        :validation-schema="schema"
-        :initial-values="tempDocumentTypes"
-        @submit="onSubmit"
-      >
-        <div class="flex g2">
-          <div class="f1">
-            <label class="label">Código <span class="tvermelho">*</span></label>
-            <Field
-              name="codigo"
-              type="text"
-              class="inputtext light mb1"
-              :class="{ 'error': errors.codigo }"
-            />
-            <div class="error-msg">
-              {{ errors.codigo }}
-            </div>
-          </div>
-          <div class="f1">
-            <label class="label">Tipo <span class="tvermelho">*</span></label>
-            <Field
-              name="titulo"
-              type="text"
-              class="inputtext light mb1"
-              :class="{ 'error': errors.titulo }"
-            />
-            <div class="error-msg">
-              {{ errors.titulo }}
-            </div>
+  <div class="flex spacebetween center mb2">
+    <h1>{{ title }}</h1>
+    <hr class="ml2 f1">
+    <button
+      class="btn round ml2"
+      @click="checkClose"
+    >
+      <svg
+        width="12"
+        height="12"
+      ><use xlink:href="#i_x" /></svg>
+    </button>
+  </div>
+  <template v-if="!(tempDocumentTypes?.loading || tempDocumentTypes?.error)">
+    <Form
+      v-slot="{ errors, isSubmitting }"
+      :validation-schema="schema"
+      :initial-values="tempDocumentTypes"
+      @submit="onSubmit"
+    >
+      <div class="flex g2">
+        <div class="f1">
+          <label class="label">Código <span class="tvermelho">*</span></label>
+          <Field
+            name="codigo"
+            type="text"
+            class="inputtext light mb1"
+            :class="{ 'error': errors.codigo }"
+          />
+          <div class="error-msg">
+            {{ errors.codigo }}
           </div>
         </div>
-        <div class="flex g2">
-          <div class="f1">
-            <label class="label">Descrição <span class="tvermelho">*</span></label>
-            <Field
-              name="descricao"
-              type="text"
-              class="inputtext light mb1"
-              :class="{ 'error': errors.descricao }"
-            />
-            <div class="error-msg">
-              {{ errors.descricao }}
-            </div>
+        <div class="f1">
+          <label class="label">Tipo <span class="tvermelho">*</span></label>
+          <Field
+            name="titulo"
+            type="text"
+            class="inputtext light mb1"
+            :class="{ 'error': errors.titulo }"
+          />
+          <div class="error-msg">
+            {{ errors.titulo }}
           </div>
-          <div class="f1">
-            <label class="label">Extensões <span class="tvermelho">*</span></label>
-            <Field
-              name="extensoes"
-              type="text"
-              class="inputtext light mb1"
-              placeholder="Liste aqui as extensões aceitas"
-              :class="{ 'error': errors.extensoes }"
-              @keyup="removeChars"
-            />
-            <div class="error-msg">
-              {{ errors.extensoes }}
-            </div>
-            <p class="t13 tc500">
-              Separe as extensões por vírgula (ex: pdf,jpg,xls)
-            </p>
-          </div>
-        </div>
-        <div class="flex spacebetween center mb2">
-          <hr class="mr2 f1">
-          <button
-            class="btn big"
-            :disabled="isSubmitting"
-          >
-            Salvar
-          </button>
-          <hr class="ml2 f1">
-        </div>
-      </Form>
-    </template>
-    <template v-if="tempDocumentTypes.id">
-      <button
-        class="btn amarelo big"
-        @click="checkDelete(tempDocumentTypes.id)"
-      >
-        Remover item
-      </button>
-    </template>
-    <template v-if="tempDocumentTypes?.loading">
-      <span class="spinner">Carregando</span>
-    </template>
-    <template v-if="tempDocumentTypes?.error || error">
-      <div class="error p1">
-        <div class="error-msg">
-          {{ tempDocumentTypes.error ?? error }}
         </div>
       </div>
-    </template>
-  </Dashboard>
+      <div class="flex g2">
+        <div class="f1">
+          <label class="label">Descrição <span class="tvermelho">*</span></label>
+          <Field
+            name="descricao"
+            type="text"
+            class="inputtext light mb1"
+            :class="{ 'error': errors.descricao }"
+          />
+          <div class="error-msg">
+            {{ errors.descricao }}
+          </div>
+        </div>
+        <div class="f1">
+          <label class="label">Extensões <span class="tvermelho">*</span></label>
+          <Field
+            name="extensoes"
+            type="text"
+            class="inputtext light mb1"
+            placeholder="Liste aqui as extensões aceitas"
+            :class="{ 'error': errors.extensoes }"
+            @keyup="removeChars"
+          />
+          <div class="error-msg">
+            {{ errors.extensoes }}
+          </div>
+          <p class="t13 tc500">
+            Separe as extensões por vírgula (ex: pdf,jpg,xls)
+          </p>
+        </div>
+      </div>
+      <div class="flex spacebetween center mb2">
+        <hr class="mr2 f1">
+        <button
+          class="btn big"
+          :disabled="isSubmitting"
+        >
+          Salvar
+        </button>
+        <hr class="ml2 f1">
+      </div>
+    </Form>
+  </template>
+  <template v-if="tempDocumentTypes.id">
+    <button
+      class="btn amarelo big"
+      @click="checkDelete(tempDocumentTypes.id)"
+    >
+      Remover item
+    </button>
+  </template>
+  <template v-if="tempDocumentTypes?.loading">
+    <span class="spinner">Carregando</span>
+  </template>
+  <template v-if="tempDocumentTypes?.error || error">
+    <div class="error p1">
+      <div class="error-msg">
+        {{ tempDocumentTypes.error ?? error }}
+      </div>
+    </div>
+  </template>
 </template>
