@@ -130,9 +130,7 @@ async function uploadshape(e) {
     tempTags.value.upload_icone = curfile.name;
   }
 }
-
 </script>
-
 <template>
   <div class="flex spacebetween center mb2">
     <h2>{{ title }}</h2>

@@ -69,7 +69,6 @@ async function checkClose() {
   alertStore.confirm('Deseja sair sem salvar as alterações?', '/usuarios');
 }
 </script>
-
 <template>
   <Dashboard>
     <div class="flex spacebetween center mb2">
