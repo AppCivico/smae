@@ -2133,8 +2133,8 @@ input[type='radio'] {
   color: @marrom;
 
   > div {
-      // posicionado em relação ao primeiro ancestral que defina um contexto.
-      // No caso, deve ser `#dashboard`.
+    // posicionado em relação ao primeiro ancestral que defina um contexto.
+    // No caso, deve ser `#dashboard`.
     position: fixed;
     transform: translateY(calc(-100% - 20px - 0.5rem)) translateX(calc(-50% + 10px));
     width: max-content;
@@ -2178,16 +2178,17 @@ input[type='radio'] {
     }
   }
 
-    &.left {
-      > div {
-        transform: translateY(calc(-100% - 20px - 0.5rem)) translateX(calc(-100% + 2.15rem));
+  &.left {
+    > div {
+      transform: translateY(calc(-100% - 20px - 0.5rem)) translateX(calc(-100% + 2.15rem));
 
-        &:before {
-          right: 1rem;
-          left: auto;
-        }
+    &:before {
+        right: 1rem;
+        left: auto;
       }
     }
+  }
+
   &:hover {
     > div {
       display: block;
