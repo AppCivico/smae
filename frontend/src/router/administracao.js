@@ -49,6 +49,10 @@ import BancadasLista from '@/views/bancada/BancadasLista.vue';
 import BancadasCriarEditar from '@/views/bancada/BancadasCriarEditar.vue';
 import BancadasRaiz from '@/views/bancada/BancadasRaiz.vue';
 
+import ParlamentaresLista from '@/views/parlamentares/ParlamentaresLista.vue';
+import ParlamentaresCriarEditar from '@/views/parlamentares/ParlamentaresCriarEditar.vue';
+import ParlamentaresRaiz from '@/views/parlamentares/ParlamentaresRaiz.vue';
+
 const PortfoliosCriarEditar = defineAsyncComponent({
   loader: () => import('@/views/portfolios/PortfoliosCriarEditar.vue'),
   loadingComponent: LoadingComponent,
@@ -673,6 +677,49 @@ export default [
 
         meta: {
           título: 'Editar bancada',
+        },
+      },
+    ],
+  },
+  {
+    path: '/parlamentares',
+    component: ParlamentaresRaiz,
+    meta: {
+      requerAutenticação: true,
+      title: 'Parlamentares',
+      rotaPrescindeDeChave: true,
+    },
+    props: {
+      submenu: SubmenuConfig,
+    },
+    children: [
+      {
+        name: 'parlamentaresListar',
+        path: '',
+        component: ParlamentaresLista,
+        meta: {
+          título: 'Parlamentares',
+        },
+      },
+      {
+        name: 'parlamentaresCriar',
+        path: 'novo',
+        component: ParlamentaresCriarEditar,
+        meta: {
+          título: 'Novo parlamentar',
+        },
+      },
+      {
+        path: ':parlamentarId',
+        name: 'parlamentaresEditar',
+        component: ParlamentaresCriarEditar,
+        props: ({ params }) => ({
+          ...params,
+          ...{ parlamentarId: Number.parseInt(params.parlamentarId, 10) || undefined },
+        }),
+
+        meta: {
+          título: 'Editar parlamentar',
         },
       },
     ],
