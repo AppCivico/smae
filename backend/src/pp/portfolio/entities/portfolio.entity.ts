@@ -6,7 +6,7 @@ export class PortfolioDto {
     nivel_maximo_tarefa: number;
     modelo_clonagem: boolean;
     orgaos: IdSiglaDescricao[];
-    pode_editar: boolean
+    pode_editar: boolean;
 }
 
 export class PortfolioOneDto {
