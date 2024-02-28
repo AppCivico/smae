@@ -469,6 +469,7 @@ export default [
       {
         path: 'novo',
         component: ListRegions,
+        name: 'novaRegião',
         props: {
           type: 'novo',
         },
@@ -476,6 +477,7 @@ export default [
       {
         path: 'novo/:id',
         component: ListRegions,
+        name: 'novaRegião1',
         props: {
           type: 'novo',
         },
@@ -483,6 +485,7 @@ export default [
       {
         path: 'novo/:id/:id2',
         component: ListRegions,
+        name: 'novaRegião2',
         props: {
           type: 'novo',
         },
@@ -490,6 +493,7 @@ export default [
       {
         path: 'novo/:id/:id2/:id3',
         component: ListRegions,
+        name: 'novaRegião3',
         props: {
           type: 'novo',
         },
@@ -497,6 +501,7 @@ export default [
       {
         path: 'editar/:id',
         component: ListRegions,
+        name: 'editarRegião',
         props: {
           type: 'editar',
         },
@@ -504,6 +509,7 @@ export default [
       {
         path: 'editar/:id/:id2',
         component: ListRegions,
+        name: 'editarRegião2',
         props: {
           type: 'editar',
         },
@@ -511,6 +517,7 @@ export default [
       {
         path: 'editar/:id/:id2/:id3',
         component: ListRegions,
+        name: 'editarRegião3',
         props: {
           type: 'editar',
         },
@@ -518,6 +525,7 @@ export default [
       {
         path: 'editar/:id/:id2/:id3/:id4',
         component: ListRegions,
+        name: 'editarRegião4',
         props: {
           type: 'editar',
         },
