@@ -93,7 +93,7 @@ async function onSubmit(values) {
     }
     if (r == true) {
       PdMStore.clear();
-      await router.push('/pdm');
+      await router.push({ name: 'gerenciarPdm' });
       alertStore.success(msg);
     }
   } catch (error) {
@@ -101,7 +101,7 @@ async function onSubmit(values) {
   }
 }
 async function checkClose() {
-  alertStore.confirm('Deseja sair sem salvar as alterações?', '/pdm');
+  alertStore.confirm('Deseja sair sem salvar as alterações?', { name: 'gerenciarPdm' });
 }
 function maskDate(el) {
   const kC = event.keyCode;
