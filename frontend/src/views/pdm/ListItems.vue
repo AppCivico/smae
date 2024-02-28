@@ -74,7 +74,7 @@ function abreEdicaoOrcamento(id) {
       <hr class="ml2 f1">
       <router-link
         v-if="perm?.CadastroPdm?.inserir"
-        to="/pdm/novo"
+        :to="{ name: 'novoPdm' }"
         class="btn big ml2"
       >
         Novo PdM
@@ -146,7 +146,12 @@ function abreEdicaoOrcamento(id) {
                 </a>
                 <template v-if="perm?.CadastroPdm?.editar">
                   <router-link
-                    :to="`/pdm/${item.id}`"
+                    :to="{
+                      name: 'editarPdm',
+                      params: {
+                        pdm_id: item.id
+                      }
+                    }"
                     class="tprimary tipinfo right"
                   >
                     <svg
@@ -192,7 +197,13 @@ function abreEdicaoOrcamento(id) {
                           <td style="white-space: nowrap; text-align: right;">
                             <template v-if="perm?.CadastroMacroTema?.editar">
                               <router-link
-                                :to="`/pdm/${item.id}/macrotemas/${subitem.id}`"
+                                :to="{
+                                  name: 'editarMacroTemaEmPdm',
+                                  params: {
+                                    pdm_id: item.id,
+                                    id: subitem.id
+                                  }
+                                }"
                                 class="tprimary"
                               >
                                 <svg
@@ -208,7 +219,12 @@ function abreEdicaoOrcamento(id) {
                   </table>
                   <router-link
                     v-if="perm?.CadastroMacroTema?.inserir"
-                    :to="`/pdm/${item.id}/macrotemas/novo`"
+                    :to="{
+                      name: 'criarMacroTemaEmPdm',
+                      params: {
+                        pdm_id: item.id
+                      }
+                    }"
                     class="addlink mb2"
                   >
                     <svg
@@ -239,7 +255,13 @@ function abreEdicaoOrcamento(id) {
                           <td style="white-space: nowrap; text-align: right;">
                             <template v-if="perm?.CadastroTema?.editar">
                               <router-link
-                                :to="`/pdm/${item.id}/temas/${subitem.id}`"
+                                :to="{
+                                  name: 'editarTemaEmPdm',
+                                  params: {
+                                    pdm_id: item.id,
+                                    id: subitem.id,
+                                  }
+                                }"
                                 class="tprimary"
                               >
                                 <svg
@@ -255,7 +277,12 @@ function abreEdicaoOrcamento(id) {
                   </table>
                   <router-link
                     v-if="perm?.CadastroTema?.inserir"
-                    :to="`/pdm/${item.id}/temas/novo`"
+                    :to="{
+                      name: 'criarTemaEmPdm',
+                      params: {
+                        pdm_id: item.id
+                      }
+                    }"
                     class="addlink mb2"
                   >
                     <svg
@@ -286,7 +313,13 @@ function abreEdicaoOrcamento(id) {
                           <td style="white-space: nowrap; text-align: right;">
                             <template v-if="perm?.CadastroSubTema?.editar">
                               <router-link
-                                :to="`/pdm/${item.id}/subtemas/${subitem.id}`"
+                                :to="{
+                                  name: 'editarSubtemaEmPdm',
+                                  params: {
+                                    pdm_id: item.id,
+                                    id: subitem.id,
+                                  }
+                                }"
                                 class="tprimary"
                               >
                                 <svg
@@ -302,7 +335,12 @@ function abreEdicaoOrcamento(id) {
                   </table>
                   <router-link
                     v-if="perm?.CadastroSubTema?.inserir"
-                    :to="`/pdm/${item.id}/subtemas/novo`"
+                    :to="{
+                      name: 'criarSubtemaEmPdm',
+                      params: {
+                        pdm_id: item.id
+                      }
+                    }"
                     class="addlink mb2"
                   >
                     <svg
@@ -349,7 +387,13 @@ function abreEdicaoOrcamento(id) {
                         <td style="white-space: nowrap; text-align: right;">
                           <template v-if="perm?.CadastroTag?.editar">
                             <router-link
-                              :to="`/pdm/${item.id}/tags/${subitem.id}`"
+                              :to="{
+                                name: 'editarTagEmPdm',
+                                params: {
+                                  pdm_id: item.id,
+                                  id: subitem.id
+                                }
+                              }"
                               class="tprimary"
                             >
                               <svg
@@ -365,7 +409,12 @@ function abreEdicaoOrcamento(id) {
                 </table>
                 <router-link
                   v-if="perm?.CadastroTag?.inserir"
-                  :to="`/pdm/${item.id}/tags/novo`"
+                  :to="{
+                    name: 'criarTagEmPdm',
+                    params: {
+                      pdm_id: item.id
+                    }
+                  }"
                   class="addlink mb1"
                 >
                   <svg
@@ -420,7 +469,12 @@ function abreEdicaoOrcamento(id) {
                 </table>
                 <router-link
                   v-if="perm?.CadastroPdm?.editar"
-                  :to="`/pdm/${item.id}/arquivos/novo`"
+                  :to="{
+                    name: 'novoArquivoEmPdm',
+                    params: {
+                      pdm_id: item.id
+                    }
+                  }"
                   class="addlink mb1"
                 >
                   <svg
