@@ -393,6 +393,7 @@ const PerfilAcessoConfig: {
             'Reports.executar', // TODO remoer, afinal, precisa dos filtros no reports
             'Projeto.administrador_no_orgao',
             'Reports.dashboard_portfolios',
+            'Projeto.administrar_portfolios_no_orgao',
             'CadastroGrupoPortfolio.administrador_no_orgao', // verificar se vamos criar um novo perfil para essa tbm
         ],
     },
