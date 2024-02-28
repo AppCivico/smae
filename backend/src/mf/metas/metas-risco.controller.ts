@@ -16,7 +16,7 @@ export class MetasRiscoController {
 
     @ApiBearerAuth('access-token')
     @Get('risco')
-    @Roles('PDM.admin_cp', 'PDM.tecnico_cp', 'PDM.ponto_focal')
+    @Roles('PDM.admin_cp', 'PDM.tecnico_cp')
     @ApiExtraModels(RecordWithId, RequestInfoDto)
     @ApiOkResponse({
         schema: { allOf: refs(MfListRiscoDto, RequestInfoDto) },
@@ -36,7 +36,7 @@ export class MetasRiscoController {
 
     @ApiBearerAuth('access-token')
     @Patch('risco')
-    @Roles('PDM.admin_cp', 'PDM.tecnico_cp', 'PDM.ponto_focal')
+    @Roles('PDM.admin_cp', 'PDM.tecnico_cp')
     @ApiExtraModels(RecordWithId, RequestInfoDto)
     @ApiOkResponse({
         schema: { allOf: refs(RecordWithId, RequestInfoDto) },
