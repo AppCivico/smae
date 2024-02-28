@@ -278,6 +278,18 @@ model Pessoa {
     assessoresQueAtualizei ParlamentarAssessor[] @relation("Atualizador")
     assessoresQueRemovi ParlamentarAssessor[] @relation("Removedor")
 
+    subprefeiturasQueCriei Subprefeitura[] @relation("Criador")
+    subprefeiturasQueAtualizei Subprefeitura[] @relation("Atualizador")
+    subprefeiturasQueRemovi Subprefeitura[] @relation("Removedor")
+
+    eleicaoComparecimentoQueCriei EleicaoComparecimento[] @relation("Criador")
+    eleicaoComparecimentoQueAtualizei EleicaoComparecimento[] @relation("Atualizador")
+    eleicaoComparecimentoQueRemovi EleicaoComparecimento[] @relation("Removedor")
+
+    mandatoRepresentatividadesQueCriei MandatoRepresentatividade[] @relation("Criador")
+    mandatoRepresentatividadesQueAtualizei MandatoRepresentatividade[] @relation("Atualizador")
+    mandatoRepresentatividadesQueRemovi MandatoRepresentatividade[] @relation("Removedor")
+
     task_queue                               task_queue[]
     GeoEnderecoReferenciaqQueCriei           GeoLocalizacaoReferencia[]                @relation("criador")
     GeoEnderecoReferenciaqQueRemovid         GeoLocalizacaoReferencia[]                @relation("removedor")
@@ -4158,10 +4170,129 @@ model Eleicao {
     ano                 Int
     atual_para_mandatos Boolean
 
-    mandatos ParlamentarMandato[]
+    mandatos        ParlamentarMandato[]
+    comparecimentos EleicaoComparecimento[]
 
     @@unique([tipo, ano])
     @@map("eleicao")
+}
+
+enum DadosEleicaoNivel {
+    Estado
+    Municipio
+    Subprefeitura
+}
+
+model EleicaoComparecimento {
+    id Int @id @default(autoincrement())
+
+    eleicao_id Int
+    eleicao    Eleicao @relation(fields: [eleicao_id], references: [id])
+
+    // Este enum facilitará muito a legibilidade do código
+    // Uma vez que bastará verificar por ele ao invés de verificar pelos 3 IDs (estado, municipio e subprefeitura).
+    nivel DadosEleicaoNivel
+
+    valor Int
+
+    estado_id Int?
+    estado    Estado? @relation(fields: [estado_id], references: [id])
+
+    municipio_id Int?
+    municipio    Municipio? @relation(fields: [municipio_id], references: [id])
+
+    subprefeitura_id Int?
+    subprefeitura    Subprefeitura? @relation(fields: [subprefeitura_id], references: [id])
+
+    criado_por     Int?
+    criado_em      DateTime?  @default(now()) @db.Timestamptz(6)
+    atualizado_por Int?
+    atualizado_em  DateTime  @default(now()) @db.Timestamptz(6)
+    removido_por   Int?
+    removido_em    DateTime? @db.Timestamptz(6)
+
+    // Criador nullable, pois provavelmente faremos carga inicial de dados.
+    criador     Pessoa? @relation("Criador", fields: [criado_por], references: [id])
+    atualizador Pessoa? @relation("Atualizador", fields: [atualizado_por], references: [id])
+    removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
+
+    @@map("eleicao_comparecimento")
+}
+
+
+model Estado {
+    id    Int @id @default(autoincrement())
+    nome  String
+    sigla String
+
+    municipios                Municipio[]
+    eleicaoComparecimento     EleicaoComparecimento[]
+    mandatos                  ParlamentarMandato[]
+    mandatoRepresentatividade MandatoRepresentatividade[]
+
+    @@map("estado")
+}
+
+enum MunicipioTipo {
+    Capital
+    Interior
+}
+
+model Municipio {
+    id        Int @id @default(autoincrement())
+    estado_id Int
+    estado    Estado @relation(fields: [estado_id], references: [id])
+
+    nome  String
+    tipo  MunicipioTipo
+
+    subprefeituras            Subprefeitura[]
+    eleicaoComparecimento     EleicaoComparecimento[]
+    mandatos                  ParlamentarMandato[]
+    mandatoRepresentatividade MandatoRepresentatividade[]
+
+    @@map("municipio")
+}
+
+enum SubprefeituraRegiao {
+    Norte
+    Sul
+    Leste
+    Oeste
+    Centro
+}
+
+model Subprefeitura {
+    id Int @id @default(autoincrement())
+    
+    municipio_id Int
+    municipio    Municipio @relation(fields: [municipio_id], references: [id])
+
+    regiao SubprefeituraRegiao
+
+    nome String
+
+    // Caso a subprefeitura seja extinta/modificada. Este boolean será marcado como false
+    // Para manter a consistência de dados do carômetro.
+    ativa Boolean @default(true)
+
+    criado_por     Int?
+    criado_em      DateTime?  @default(now()) @db.Timestamptz(6)
+    atualizado_por Int?
+    atualizado_em  DateTime  @default(now()) @db.Timestamptz(6)
+    removido_por   Int?
+    removido_em    DateTime? @db.Timestamptz(6)
+
+    // Criador nullable, pois provavelmente faremos carga inicial de dados.
+    criador     Pessoa? @relation("Criador", fields: [criado_por], references: [id])
+    atualizador Pessoa? @relation("Atualizador", fields: [atualizado_por], references: [id])
+    removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
+
+    eleicaoComparecimento     EleicaoComparecimento[]
+    mandatos                  ParlamentarMandato[]
+    mandatoRepresentatividade MandatoRepresentatividade[]
+
+    @@map("subprefeitura")
 }
 
 model Parlamentar {
@@ -4243,6 +4374,15 @@ model ParlamentarMandato {
 
     eleicao_id Int
     eleicao    Eleicao @relation(fields: [eleicao_id], references: [id])
+    
+    estado_id Int?
+    estado    Estado? @relation(fields: [estado_id], references: [id])
+
+    municipio_id Int?
+    municipio    Municipio? @relation(fields: [municipio_id], references: [id])
+
+    subprefeitura_id Int?
+    subprefeitura    Subprefeitura? @relation(fields: [subprefeitura_id], references: [id])
 
     partido_candidatura_id Int
     partido_candidatura    Partido @relation("candidatura", fields: [partido_candidatura_id], references: [id])
@@ -4278,6 +4418,8 @@ model ParlamentarMandato {
     criador     Pessoa? @relation("Criador", fields: [criado_por], references: [id])
     atualizador Pessoa? @relation("Atualizador", fields: [atualizado_por], references: [id])
     removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
+
+    @@map("parlamentar_mandato")
 }
 
 model ParlamentarAssessor {
@@ -4301,6 +4443,8 @@ model ParlamentarAssessor {
     criador     Pessoa? @relation("Criador", fields: [criado_por], references: [id])
     atualizador Pessoa? @relation("Atualizador", fields: [atualizado_por], references: [id])
     removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
+
+    @@map("parlamentar_assessor")
 }
 
 model MandatoBancada {
@@ -4311,4 +4455,40 @@ model MandatoBancada {
 
     bancada_id Int
     bancada    Bancada @relation(fields: [bancada_id], references: [id])
+
+    @@map("mandato_bancada")
+}
+
+model MandatoRepresentatividade {
+    id Int @id @default(autoincrement())
+
+    nivel DadosEleicaoNivel
+
+    estado_id Int?
+    estado    Estado? @relation(fields: [estado_id], references: [id])
+
+    municipio_id Int?
+    municipio    Municipio? @relation(fields: [municipio_id], references: [id])
+
+    subprefeitura_id Int?
+    subprefeitura    Subprefeitura? @relation(fields: [subprefeitura_id], references: [id])
+
+    numero_votos Int
+
+    // Valor será calculado com base em rows da tabela EleicaoComparecimento
+    pct_participacao Float @db.DoublePrecision 
+
+    criado_por     Int?
+    criado_em      DateTime?  @default(now()) @db.Timestamptz(6)
+    atualizado_por Int?
+    atualizado_em  DateTime  @default(now()) @db.Timestamptz(6)
+    removido_por   Int?
+    removido_em    DateTime? @db.Timestamptz(6)
+
+    // Criador nullable, pois provavelmente faremos carga inicial de dados.
+    criador     Pessoa? @relation("Criador", fields: [criado_por], references: [id])
+    atualizador Pessoa? @relation("Atualizador", fields: [atualizado_por], references: [id])
+    removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
+
+    @@map("mandato_representatividade")
 }
