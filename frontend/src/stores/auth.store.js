@@ -1,5 +1,6 @@
 import { useAlertStore } from '@/stores/alert.store';
 import { defineStore } from 'pinia';
+import módulos from '@/consts/modulosDoSistema';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
@@ -10,6 +11,7 @@ export const useAuthStore = defineStore({
     token: JSON.parse(localStorage.getItem('token')),
     reducedtoken: null,
     returnUrl: null,
+    sistemaEscolhido: localStorage.getItem('sistemaEscolhido') || 'SMAE',
     permissions: JSON.parse(localStorage.getItem('permissions')),
   }),
   actions: {
@@ -142,6 +144,7 @@ export const useAuthStore = defineStore({
     },
   },
   getters: {
+    dadosDoSistemaEscolhido: ({ sistemaEscolhido }) => módulos.find((x) => x.valor === sistemaEscolhido),
     estouAutenticada: ({ token }) => !!token,
     temPermissãoPara: ({ user }) => (permissões) => (Array.isArray(permissões)
       ? permissões
