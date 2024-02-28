@@ -19,6 +19,10 @@ import {
   MonitoramentoMetas,
   MonitoramentoMetasCronograma,
 } from '@/views/monitoramento';
+import ParlamentaresLista from '@/views/parlamentares/ParlamentaresLista.vue';
+import ParlamentaresCriarEditar from '@/views/parlamentares/ParlamentaresCriarEditar.vue';
+import ParlamentaresRaiz from '@/views/parlamentares/ParlamentaresRaiz.vue';
+
 import MonitoramentosRaiz from '@/views/monitoramento/MonitoramentosRaiz.vue';
 import MonitoramentosVariáveis from '@/views/monitoramento/MonitoramentoPorVariaveis.vue';
 import MonitoramentosTarefas from '@/views/monitoramento/MonitoramentoPorTarefas.vue';
@@ -47,6 +51,48 @@ export const router = createRouter({
       component: Panorama,
       props: { submenu: false },
     },
+
+    {
+      path: '/parlamentares',
+      component: ParlamentaresRaiz,
+      meta: {
+        requerAutenticação: true,
+        title: 'Parlamentares',
+        rotaPrescindeDeChave: true,
+      },
+      children: [
+        {
+          name: 'parlamentaresListar',
+          path: '',
+          component: ParlamentaresLista,
+          meta: {
+            título: 'Parlamentares',
+          },
+        },
+        {
+          name: 'parlamentaresCriar',
+          path: 'novo',
+          component: ParlamentaresCriarEditar,
+          meta: {
+            título: 'Novo parlamentar',
+          },
+        },
+        {
+          path: ':parlamentarId',
+          name: 'parlamentaresEditar',
+          component: ParlamentaresCriarEditar,
+          props: ({ params }) => ({
+            ...params,
+            ...{ parlamentarId: Number.parseInt(params.parlamentarId, 10) || undefined },
+          }),
+
+          meta: {
+            título: 'Editar parlamentar',
+          },
+        },
+      ],
+    },
+
     { path: '/login', component: Login },
     { path: '/esqueci-minha-senha', component: LostPassword },
     { path: '/nova-senha', component: NewPassword },
