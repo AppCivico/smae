@@ -183,6 +183,7 @@ export class ImportacaoOrcamentoService {
 
         return listActive.map((r) => {
             return {
+                pode_editar: false,
                 ...r,
                 orgaos: r.orgaos.map((rr) => rr.orgao),
             };
@@ -448,9 +449,7 @@ export class ImportacaoOrcamentoService {
         const nome_arquivo = job.arquivo.nome_original.replace(/[^A-Za-z0-9\.]/g, '-');
 
         const inputBuffer = await Stream2Buffer(
-            (
-                await this.uploadService.getReadableStreamById(job.arquivo_id)
-            ).stream
+            (await this.uploadService.getReadableStreamById(job.arquivo_id)).stream
         );
 
         const inputXLSX = read(inputBuffer, {
