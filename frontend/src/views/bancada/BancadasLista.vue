@@ -16,7 +16,7 @@ async function excluirBancada(id) {
     if (await bancadaStore.excluirItem(id)) {
       bancadaStore.$reset();
       bancadaStore.buscarTudo();
-      alertStore.success('Portfolio removido.');
+      alertStore.success('Bancada removida.');
     }
   }, 'Remover');
 }
