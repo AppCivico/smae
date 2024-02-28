@@ -82,23 +82,21 @@ const regiõesDisponíveis = computed(() => (Array.isArray(regiõesPorNívelOrde
   ? regiõesPorNívelOrdenadas.value[singleIndicadores.value.nivel_regionalizacao]
   : []));
 
-const idsDasRegiõesVálidas = computed(() => regiõesDisponíveis.value
-  .reduce((acc, cur) => {
-    if (cur.pdm_codigo_sufixo) {
-      acc.push(cur.id);
-    }
-    return acc;
-  }, []));
-
 const estãoTodasAsRegiõesSelecionadas = computed({
   get() {
     return regiõesSelecionadas.value?.length
-      && regiõesSelecionadas.value.length === idsDasRegiõesVálidas.value.length;
+      && regiõesSelecionadas.value.length === regiõesDisponíveis.value.length;
   },
+  // eslint-disable-next-line padded-blocks
   set(novoValor) {
-    regiõesSelecionadas.value = novoValor
-      ? idsDasRegiõesVálidas.value
-      : [];
+    // Não é bonito, mas é o único jeito que achei do framework não confundir a
+    // redefinição com um push;
+    regiõesSelecionadas.value.splice(0, regiõesSelecionadas.value.length);
+    if (novoValor) {
+      regiõesDisponíveis.value.forEach((x) => {
+        regiõesSelecionadas.value.push(x.id);
+      });
+    }
   },
 });
 

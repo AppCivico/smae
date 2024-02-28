@@ -76,10 +76,11 @@ const estãoTodasAsRegiõesSelecionadas = computed({
     return regiõesSelecionadas.value?.length
       && regiõesSelecionadas.value.length === regiõesDisponíveis.value.length;
   },
+  // eslint-disable-next-line padded-blocks
   set(novoValor) {
-    regiõesSelecionadas.value = [];
     // Não é bonito, mas é o único jeito que achei do framework não confundir a
     // redefinição com um push;
+    regiõesSelecionadas.value.splice(0, regiõesSelecionadas.value.length);
     if (novoValor) {
       regiõesDisponíveis.value.forEach((x) => {
         regiõesSelecionadas.value.push(x.id);
