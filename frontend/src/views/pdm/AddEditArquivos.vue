@@ -86,7 +86,6 @@ function addFile(e) {
   curfile.file = files[0];
 }
 </script>
-
 <template>
   <div class="flex spacebetween center mb2">
     <h2>{{ title }}</h2>
