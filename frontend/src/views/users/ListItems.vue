@@ -1,5 +1,4 @@
 <script setup>
-import { Dashboard } from '@/components';
 import LocalFilter from '@/components/LocalFilter.vue';
 import truncate from '@/helpers/truncate';
 import { useAuthStore, useOrgansStore, useUsersStore } from '@/stores';
@@ -53,148 +52,146 @@ const listaDeUsuáriosComNomesAlémDeIds = computed(() => (!Array.isArray(usersS
   }))));
 </script>
 <template>
-  <Dashboard>
-    <div class="flex spacebetween center mb2">
-      <h1>Gerenciar usuários</h1>
-      <hr class="ml2 f1">
-      <router-link
-        v-if="perm?.CadastroPessoa?.inserir"
-        to="/usuarios/novo"
-        class="btn big ml2"
+  <div class="flex spacebetween center mb2">
+    <h1>Gerenciar usuários</h1>
+    <hr class="ml2 f1">
+    <router-link
+      v-if="perm?.CadastroPessoa?.inserir"
+      to="/usuarios/novo"
+      class="btn big ml2"
+    >
+      Novo usuário
+    </router-link>
+  </div>
+  <div class="flex flexwrap mb2">
+    <div class="f1 mr1">
+      <label class="label tc300">Órgão</label>
+      <select
+        v-model.number="orgao"
+        class="inputtext"
       >
-        Novo usuário
-      </router-link>
-    </div>
-    <div class="flex flexwrap mb2">
-      <div class="f1 mr1">
-        <label class="label tc300">Órgão</label>
-        <select
-          v-model.number="orgao"
-          class="inputtext"
-        >
-          <option :value="0">
-            Todos
-          </option>
-          <template v-if="organs.length">
-            <option
-              v-for="organ in organs"
-              :key="organ.id"
-              :value="organ.id"
-              :title="organ.descricao?.length > 36 ? organ.descricao : null"
-            >
-              {{ organ.sigla }} - {{ truncate(organ.descricao, 36) }}
-            </option>
-          </template>
-        </select>
-      </div>
-
-      <div class="f1 mr1">
-        <label class="label tc300">Perfil</label>
-        <select
-          v-model.number="perfil"
-          class="inputtext"
-        >
-          <option :value="0">
-            Todos
-          </option>
-          <template v-if="accessProfiles.length">
-            <option
-              v-for="perfil in accessProfiles"
-              :key="perfil.id"
-              :value="perfil.id"
-            >
-              {{ perfil.nome }}
-            </option>
-          </template>
-        </select>
-      </div>
-
-      <LocalFilter
-        v-model="listaFiltradaPorTermoDeBusca"
-        :lista="listaDeUsuáriosComNomesAlémDeIds"
-        class="f2 search"
-      />
-    </div>
-
-    <table class="tablemain fix">
-      <thead>
-        <tr>
-          <th style="width: 20%">
-            E-mail
-          </th>
-          <th style="width: 20%">
-            Nome
-          </th>
-          <th style="width: 20%">
-            Lotação
-          </th>
-          <th style="width: 15%">
-            Órgão
-          </th>
-          <th style="width: 20%">
-            Perfil
-          </th>
-          <th style="width: 50px" />
-        </tr>
-      </thead>
-      <tbody>
-        <template v-if="usersFiltered.length">
-          <tr
-            v-for="user in usersFiltered"
-            :key="user.id"
-            :class="{
-              tc400: user.desativado
-            }"
+        <option :value="0">
+          Todos
+        </option>
+        <template v-if="organs.length">
+          <option
+            v-for="organ in organs"
+            :key="organ.id"
+            :value="organ.id"
+            :title="organ.descricao?.length > 36 ? organ.descricao : null"
           >
-            <td class="cell--minimum">
-              {{ user.email }}
-              <span
-                v-if="user.desativado"
-                class="tipinfo ml05"
+            {{ organ.sigla }} - {{ truncate(organ.descricao, 36) }}
+          </option>
+        </template>
+      </select>
+    </div>
+
+    <div class="f1 mr1">
+      <label class="label tc300">Perfil</label>
+      <select
+        v-model.number="perfil"
+        class="inputtext"
+      >
+        <option :value="0">
+          Todos
+        </option>
+        <template v-if="accessProfiles.length">
+          <option
+            v-for="perfil in accessProfiles"
+            :key="perfil.id"
+            :value="perfil.id"
+          >
+            {{ perfil.nome }}
+          </option>
+        </template>
+      </select>
+    </div>
+
+    <LocalFilter
+      v-model="listaFiltradaPorTermoDeBusca"
+      :lista="listaDeUsuáriosComNomesAlémDeIds"
+      class="f2 search"
+    />
+  </div>
+
+  <table class="tablemain fix">
+    <thead>
+      <tr>
+        <th style="width: 20%">
+          E-mail
+        </th>
+        <th style="width: 20%">
+          Nome
+        </th>
+        <th style="width: 20%">
+          Lotação
+        </th>
+        <th style="width: 15%">
+          Órgão
+        </th>
+        <th style="width: 20%">
+          Perfil
+        </th>
+        <th style="width: 50px" />
+      </tr>
+    </thead>
+    <tbody>
+      <template v-if="usersFiltered.length">
+        <tr
+          v-for="user in usersFiltered"
+          :key="user.id"
+          :class="{
+            tc400: user.desativado
+          }"
+        >
+          <td class="cell--minimum">
+            {{ user.email }}
+            <span
+              v-if="user.desativado"
+              class="tipinfo ml05"
+            >
+              <svg
+                width="20"
+                height="20"
+              ><use xlink:href="#i_i" /></svg><div>Usuário desativado</div>
+            </span>
+          </td>
+          <td>{{ user.nome_exibicao }}</td>
+          <td>{{ user.lotacao ?? '-' }}</td>
+          <td>{{ user.orgao_id ? filterOrgan(user.orgao_id)?.sigla : '-' }}</td>
+          <td>
+            {{ user.perfil_acesso_ids?.length
+              ? filterPerfil(user.perfil_acesso_ids) : '-' }}
+          </td>
+          <td style="white-space: nowrap; text-align: right;">
+            <template
+              v-if="temPermissãoPara('CadastroPessoa.administrador') ||
+                (perm?.CadastroPessoa?.editar && user.orgao_id
+                  == authStore.user.orgao_id)"
+            >
+              <router-link
+                :to="`/usuarios/editar/${user.id}`"
+                class="tprimary"
               >
                 <svg
                   width="20"
                   height="20"
-                ><use xlink:href="#i_i" /></svg><div>Usuário desativado</div>
-              </span>
-            </td>
-            <td>{{ user.nome_exibicao }}</td>
-            <td>{{ user.lotacao ?? '-' }}</td>
-            <td>{{ user.orgao_id ? filterOrgan(user.orgao_id)?.sigla : '-' }}</td>
-            <td>
-              {{ user.perfil_acesso_ids?.length
-                ? filterPerfil(user.perfil_acesso_ids) : '-' }}
-            </td>
-            <td style="white-space: nowrap; text-align: right;">
-              <template
-                v-if="temPermissãoPara('CadastroPessoa.administrador') ||
-                  (perm?.CadastroPessoa?.editar && user.orgao_id
-                    == authStore.user.orgao_id)"
-              >
-                <router-link
-                  :to="`/usuarios/editar/${user.id}`"
-                  class="tprimary"
-                >
-                  <svg
-                    width="20"
-                    height="20"
-                  ><use xlink:href="#i_edit" /></svg>
-                </router-link>
-              </template>
-            </td>
-          </tr>
-        </template>
-        <tr v-if="usersFiltered.loading">
-          <td colspan="54">
-            Carregando
+                ><use xlink:href="#i_edit" /></svg>
+              </router-link>
+            </template>
           </td>
         </tr>
-        <tr v-if="usersFiltered.error">
-          <td colspan="54">
-            Error: {{ usersFiltered.error }}
-          </td>
-        </tr>
-      </tbody>
-    </table>
-  </Dashboard>
+      </template>
+      <tr v-if="usersFiltered.loading">
+        <td colspan="54">
+          Carregando
+        </td>
+      </tr>
+      <tr v-if="usersFiltered.error">
+        <td colspan="54">
+          Error: {{ usersFiltered.error }}
+        </td>
+      </tr>
+    </tbody>
+  </table>
 </template>
