@@ -25,7 +25,7 @@ export class MetasAnaliseQualiController {
 
     @ApiBearerAuth('access-token')
     @Get('analise-qualitativa')
-    @Roles('PDM.admin_cp', 'PDM.tecnico_cp', 'PDM.ponto_focal')
+    @Roles('PDM.admin_cp', 'PDM.tecnico_cp')
     @ApiExtraModels(RecordWithId, RequestInfoDto)
     @ApiOkResponse({
         schema: { allOf: refs(MfListVariavelAnaliseQualitativaDto, RequestInfoDto) },
@@ -45,7 +45,7 @@ export class MetasAnaliseQualiController {
 
     @ApiBearerAuth('access-token')
     @Patch('analise-qualitativa/documento')
-    @Roles('PDM.admin_cp', 'PDM.tecnico_cp', 'PDM.ponto_focal')
+    @Roles('PDM.admin_cp', 'PDM.tecnico_cp')
     @ApiExtraModels(RecordWithId, RequestInfoDto)
     @ApiOkResponse({
         schema: { allOf: refs(RecordWithId, RequestInfoDto) },
@@ -64,7 +64,7 @@ export class MetasAnaliseQualiController {
 
     @ApiBearerAuth('access-token')
     @Delete('analise-qualitativa/documento/:id')
-    @Roles('PDM.admin_cp', 'PDM.tecnico_cp', 'PDM.ponto_focal')
+    @Roles('PDM.admin_cp', 'PDM.tecnico_cp')
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.NO_CONTENT)
     async DeleteMetaAnaliseQualitativaDocumento(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt) {
@@ -76,7 +76,7 @@ export class MetasAnaliseQualiController {
 
     @ApiBearerAuth('access-token')
     @Patch('analise-qualitativa')
-    @Roles('PDM.admin_cp', 'PDM.tecnico_cp', 'PDM.ponto_focal')
+    @Roles('PDM.admin_cp', 'PDM.tecnico_cp')
     @ApiExtraModels(RecordWithId, RequestInfoDto)
     @ApiOkResponse({
         schema: { allOf: refs(RecordWithId, RequestInfoDto) },
