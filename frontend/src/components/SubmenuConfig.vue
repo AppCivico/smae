@@ -73,13 +73,6 @@ const podeAcessarGrupos = computed(() => perm?.CadastroGrupoPaineis?.inserir
           >
             Bancadas
           </router-link>
-
-          <router-link
-            v-if="perm?.CadastroPainelExterno"
-            :to="{ name: 'parlamentaresListar' }"
-          >
-            Parlamentares
-          </router-link>
         </div>
       </template>
       <template
