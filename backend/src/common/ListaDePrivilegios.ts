@@ -71,6 +71,7 @@ export type ListaDePrivilegios =
     | 'Reports.remover'
     | 'Config.editar'
     | 'Projeto.administrar_portfolios'
+    | 'Projeto.administrar_portfolios_no_orgao'
     | 'Projeto.administrador_no_orgao'
     | 'Projeto.orcamento'
     | 'SMAE.gestor_de_projeto'
