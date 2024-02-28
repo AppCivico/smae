@@ -52,11 +52,16 @@ async function handleResponse(response: Response, alertarErros:Boolean = true) {
 }
 
 function userToken(url: RequestInfo | URL): HeadersInit {
-  const { token } = useAuthStore();
-  const isLoggedIn = !!token;
+  const authStore = useAuthStore();
+  const isLoggedIn = !!authStore.token;
   const isApiUrl = String(url).startsWith(import.meta.env.VITE_API_URL);
   if (isLoggedIn && isApiUrl) {
-    return { Authorization: `Bearer ${token}` };
+    return {
+      Authorization: `Bearer ${authStore.token}`,
+      'smae-sistemas': authStore.sistemaEscolhido === 'SMAE'
+        ? 'SMAE'
+        : `SMAE,${authStore.sistemaEscolhido}`,
+    };
   }
   return {};
 }
