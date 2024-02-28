@@ -6,7 +6,6 @@ import { useAuthStore } from '@/stores/auth.store';
 const authStore = useAuthStore();
 const { user } = storeToRefs(authStore);
 </script>
-
 <template>
   <Dashboard>
     <div class="flex spacebetween center">

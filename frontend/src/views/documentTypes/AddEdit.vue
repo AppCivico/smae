@@ -58,9 +58,7 @@ async function checkDelete(id) {
 function removeChars(x) {
   x.target.value = x.target.value.replace(/[^a-zA-Z0-9,]/g, '');
 }
-
 </script>
-
 <template>
   <Dashboard>
     <div class="flex spacebetween center mb2">
