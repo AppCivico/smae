@@ -75,6 +75,7 @@ if (!organs.length) {
         <td>{{ item.modelo_clonagem ? 'Sim' : 'Não' }}</td>
         <td>
           <button
+             v-if="item?.pode_editar"
             class="like-a__text"
             arial-label="excluir"
             title="excluir"
@@ -88,6 +89,7 @@ if (!organs.length) {
         </td>
         <td>
           <router-link
+            v-if="item?.pode_editar"
             :to="{ name: 'portfoliosEditar', params: { portfolioId: item.id } }"
             class="tprimary"
           >
