@@ -2,7 +2,7 @@
 import { useAuthStore } from '@/stores/auth.store';
 import { storeToRefs } from 'pinia';
 import { ref } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
+import { onBeforeRouteUpdate, useRoute, useRouter } from 'vue-router';
 import TransitionExpand from './TransitionExpand.vue';
 
 const authStore = useAuthStore();
@@ -35,6 +35,10 @@ const menuFiltrado = router.options.routes
         .filter((y) => filtrarRota(y, false))
       : [],
   }));
+
+onBeforeRouteUpdate(() => {
+  índiceDoItemAberto.value = -1;
+});
 </script>
 <template>
   <!-- eslint-disable max-len vue/no-v-html -->
