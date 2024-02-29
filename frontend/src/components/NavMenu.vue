@@ -278,6 +278,12 @@ onBeforeRouteUpdate(() => {
 
 .menu__lista--sub {
   margin-bottom: 1rem;
+  display: none;
+
+  .cabeçalho:hover & ,
+  .cabeçalho.aberto & {
+    display: block;
+  }
 }
 
 .menu__item {
