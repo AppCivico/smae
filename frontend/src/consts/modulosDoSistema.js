@@ -19,8 +19,9 @@ export default [
     nome: 'Transferências voluntárias',
     sigla: 'TV',
     valor: 'CasaCivil',
-    rotaInicial: null,
-    desabilitado: true,
+    rotaInicial: {
+      name: 'parlamentaresListar',
+    },
   },
   {
     nome: 'Planos setoriais',
