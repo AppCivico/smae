@@ -63,16 +63,6 @@ const rotasParaMenu = computed(() => {
     : [];
 });
 
-const rotasParaMigalhasDePão = computed(() => {
-  const listaDeRotas = typeof route.meta?.rotasParaMigalhasDePão === 'function'
-    ? route.meta.rotasParaMigalhasDePão()
-    : route.meta?.rotasParaMigalhasDePão;
-
-  return listaDeRotas
-    ? limparRotas(listaDeRotas)
-    : [];
-});
-
 function alternarItens(índice) {
   const posiçãoDoÍndice = itensFechados.value.indexOf(índice);
 
@@ -85,7 +75,7 @@ function alternarItens(índice) {
 </script>
 <template>
   <div
-    v-if="rotasParaMenu.length || rotasParaMigalhasDePão.length"
+    v-if="rotasParaMenu.length"
     class="menu-secundário"
     :class="{ aberto: menuAberto }"
   >
@@ -101,23 +91,6 @@ function alternarItens(índice) {
         height="32"
       ><use xlink:href="#i_right-double" /></svg>
     </button>
-
-    <div
-      v-if="rotasParaMigalhasDePão.length"
-      class="breadcrumbmenu"
-    >
-      <router-link
-        v-for="item, k in rotasParaMigalhasDePão"
-        :key="k"
-        :to="item.href"
-      >
-        <span>
-          {{ typeof item.meta?.título === 'function'
-            ? item.meta?.título()
-            : item.meta?.título || item.name }}
-        </span>
-      </router-link>
-    </div>
 
     <nav
       v-for="(item, i) in rotasParaMenu"
