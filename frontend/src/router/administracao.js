@@ -86,7 +86,7 @@ const rotasParaMenuSecundário = [
     ],
   },
   {
-    títuloParaGrupoDeLinksNoMenu: 'Formulários básicos',
+    título: 'Formulários básicos',
     rotas: [
       'gerenciarÓrgãos',
       'gerenciarUnidadesDeMedida',
@@ -96,14 +96,14 @@ const rotasParaMenuSecundário = [
     ],
   },
   {
-    títuloParaGrupoDeLinksNoMenu: 'Parlamentares',
+    título: 'Parlamentares',
     rotas: [
       'partidosListar',
       'bancadasListar',
     ],
   },
   {
-    títuloParaGrupoDeLinksNoMenu: 'Painéis de metas',
+    título: 'Painéis de metas',
     rotas: [
       'gerenciarPainéisDeMetas',
       'gerenciarGruposDePainéisDeMetas',

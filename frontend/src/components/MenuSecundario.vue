@@ -125,10 +125,10 @@ function alternarItens(índice) {
       class="menu-secundário__grupos-de-rotas"
     >
       <h2
-        v-if="item.títuloParaGrupoDeLinksNoMenu"
+        v-if="item.título"
         class="menu-secundário__sub-título"
       >
-        {{ item.títuloParaGrupoDeLinksNoMenu }}
+        {{ item.título }}
 
         <button
           type="button"
