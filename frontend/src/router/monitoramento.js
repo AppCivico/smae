@@ -16,13 +16,13 @@ import { useAuthStore } from '@/stores/auth.store';
 
 const rotasParaMenuSecundário = [
   {
-    títuloParaGrupoDeLinksNoMenu: 'Monitoramento',
+    título: 'Monitoramento',
     rotas: [
       'MonitoramentoDeCicloVigente',
     ],
   },
   {
-    títuloParaGrupoDeLinksNoMenu: 'Ciclo vigente',
+    título: 'Ciclo vigente',
     rotas: [
       'monitoramentoDeFasesDeMetas',
       'monitoramentoDeEvoluçãoDeMetas',
@@ -30,7 +30,7 @@ const rotasParaMenuSecundário = [
     ],
   },
   {
-    títuloParaGrupoDeLinksNoMenu: 'Configuração',
+    título: 'Configuração',
     rotas: [
       'monitoramentoDeCiclosDeMetas',
       'monitoramentoDeCiclosFechadosDeMetas',

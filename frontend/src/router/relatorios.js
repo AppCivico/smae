@@ -96,7 +96,7 @@ export default {
     ],
     rotasParaMenuSecundário: [
       {
-        títuloParaGrupoDeLinksNoMenu: 'Programa de metas',
+        título: 'Programa de metas',
         rotas: [
           'RelatóriosMensais',
           'RelatóriosSemestraisOuAnuais',
@@ -105,7 +105,7 @@ export default {
         ],
       },
       {
-        títuloParaGrupoDeLinksNoMenu: 'Portfolios',
+        título: 'Portfolios',
         rotas: [
           'RelatóriosDeProjeto',
           'RelatóriosDePortfolio',

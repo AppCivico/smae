@@ -47,7 +47,7 @@ export default {
     ],
     rotasParaMenuSecundário: [
       {
-        títuloParaGrupoDeLinksNoMenu: 'Orçamentos',
+        título: 'Orçamentos',
         rotas: [
           'EnviosOrçamentosMetas',
           'EnviosOrçamentosProjetos',
