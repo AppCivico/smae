@@ -45,7 +45,6 @@ export const router = createRouter({
       path: '/parlamentares',
       component: ParlamentaresRaiz,
       meta: {
-        requerAutenticação: true,
         title: 'Parlamentares',
         rotaPrescindeDeChave: true,
       },

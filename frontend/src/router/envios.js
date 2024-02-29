@@ -33,8 +33,6 @@ export default {
   },
 
   meta: {
-    requerAutenticação: true,
-
     presenteNoMenu: true,
     título: 'Envio de arquivos',
     títuloParaMenu: 'Envio de arquivos',

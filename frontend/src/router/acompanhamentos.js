@@ -22,7 +22,6 @@ export default {
   }),
 
   meta: {
-    requerAutenticação: true,
     rotaPrescindeDeChave: true,
   },
   children: [
