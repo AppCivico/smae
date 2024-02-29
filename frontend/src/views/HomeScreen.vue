@@ -13,7 +13,7 @@ const {
 
 function escolher(opção) {
   sistemaEscolhido.value = opção;
-
+  // PRA-FAZER: persistir o auth.store no navegador
   localStorage.setItem('sistemaEscolhido', opção);
 
   if (dadosDoSistemaEscolhido.value?.rotaInicial) {
