@@ -4365,6 +4365,7 @@ model MandatoBancada {
     bancada_id Int
     bancada    Bancada @relation(fields: [bancada_id], references: [id])
 
+    @@unique([mandato_id, bancada_id])
     @@map("mandato_bancada")
 }
 

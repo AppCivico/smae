@@ -6,9 +6,10 @@ import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { FindOneParams, FindTwoParams } from '../common/decorators/find-params';
 import { RecordWithId } from '../common/dto/record-with-id.dto';
 import { ParlamentarService } from './parlamentar.service';
-import { CreateAssessorDto, CreateMandatoDto, CreateParlamentarDto, createMandatoRepresentatividadeDto } from './dto/create-parlamentar.dto';
+import { CreateAssessorDto, CreateMandatoDto, CreateParlamentarDto, CreateMandatoBancadaDto, CreateMandatoRepresentatividadeDto, CreateMandatoSuplenteDto } from './dto/create-parlamentar.dto';
 import { ListParlamentarDto, ParlamentarDetailDto } from './entities/parlamentar.entity';
 import { UpdateAssessorDto, UpdateParlamentarDto } from './dto/update-parlamentar.dto';
+import { RemoveMandatoDepsDto } from './dto/remove-mandato-deps.dto';
 
 @ApiTags('Parlamentar')
 @Controller('parlamentar')
@@ -97,12 +98,71 @@ export class ParlamentarController {
         return await this.parlamentarService.createMandato(+params.id, dto, user);
     }
 
-    // Representatividade 
+    // Mandato - Bancada
+    @Post(':id/bancada')
+    @ApiBearerAuth('access-token')
+    @ApiUnauthorizedResponse()
+    // @Roles('CadastroPainel.visualizar')
+    async createMandatoBancada(@Param() params: FindOneParams, @Body() dto: CreateMandatoBancadaDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
+        return await this.parlamentarService.createMandatoBancada(+params.id, dto, user);
+    }
+
+    @Delete(':id/bancada/:id2')
+    @ApiBearerAuth('access-token')
+    @ApiUnauthorizedResponse()
+    @ApiNoContentResponse()
+    @HttpCode(HttpStatus.ACCEPTED)
+    // @Roles('CadastroPainel.visualizar')
+    async removeMandatoBancada(@Param() params: FindTwoParams, @Body() dto: RemoveMandatoDepsDto, @CurrentUser() user: PessoaFromJwt) {
+        await this.parlamentarService.removeMandatoBancada(+params.id2, dto, user);
+        return '';
+    }
+
+    // Mandato - Representatividade 
     @Post(':id/representatividade')
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
     // @Roles('CadastroPainel.visualizar')
-    async createRepresentatividade(@Param() params: FindOneParams, @Body() dto: createMandatoRepresentatividadeDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
+    async createRepresentatividade(@Param() params: FindOneParams, @Body() dto: CreateMandatoRepresentatividadeDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
         return await this.parlamentarService.createMandatoRepresentatividade(+params.id, dto, user);
+    }
+
+    @Patch(':id/representatividade/:id2')
+    @ApiBearerAuth('access-token')
+    @ApiUnauthorizedResponse()
+    // @Roles('CadastroPainel.visualizar')
+    async updateRepresentatividade(@Param() params: FindTwoParams, @Body() dto: UpdateAssessorDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
+        return await this.parlamentarService.updateAssessor(+params.id2, dto, user);
+    }
+
+    @Delete(':id/representatividade/:id2')
+    @ApiBearerAuth('access-token')
+    @ApiUnauthorizedResponse()
+    @ApiNoContentResponse()
+    @HttpCode(HttpStatus.ACCEPTED)
+    // @Roles('CadastroPainel.visualizar')
+    async removeRepresentatividade(@Param() params: FindTwoParams, @Body() dto: RemoveMandatoDepsDto, @CurrentUser() user: PessoaFromJwt) {
+        await this.parlamentarService.removeMandatoBancada(+params.id2, dto, user);
+        return '';
+    }
+
+    // Mandato - Suplente
+    @Post(':id/suplente')
+    @ApiBearerAuth('access-token')
+    @ApiUnauthorizedResponse()
+    // @Roles('CadastroPainel.visualizar')
+    async createSuplente(@Param() params: FindOneParams, @Body() dto: CreateMandatoSuplenteDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
+        return await this.parlamentarService.createSuplente(+params.id, dto, user);
+    }
+
+    @Delete(':id/suplente/:id2')
+    @ApiBearerAuth('access-token')
+    @ApiUnauthorizedResponse()
+    @ApiNoContentResponse()
+    @HttpCode(HttpStatus.ACCEPTED)
+    // @Roles('CadastroPainel.visualizar')
+    async removeSuplente(@Param() params: FindTwoParams, @Body() dto: RemoveMandatoDepsDto, @CurrentUser() user: PessoaFromJwt) {
+        await this.parlamentarService.removeSuplente(+params.id2, dto, user);
+        return '';
     }
 }
