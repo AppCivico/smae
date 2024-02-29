@@ -5,6 +5,7 @@ import { usePortfolioStore } from '@/stores/portfolios.store.ts';
 import { storeToRefs } from 'pinia';
 import { useRoute } from 'vue-router';
 
+
 const organsStore = useOrgansStore();
 const { organs, órgãosPorId } = storeToRefs(organsStore);
 const portfolioStore = usePortfolioStore();
@@ -30,6 +31,7 @@ portfolioStore.buscarTudo();
 if (!organs.length) {
   organsStore.getAll();
 }
+
 </script>
 <template>
   <div class="flex spacebetween center mb2">
@@ -75,6 +77,7 @@ if (!organs.length) {
         <td>{{ item.modelo_clonagem ? 'Sim' : 'Não' }}</td>
         <td>
           <button
+            v-if="item?.pode_editar"
             class="like-a__text"
             arial-label="excluir"
             title="excluir"
@@ -88,6 +91,7 @@ if (!organs.length) {
         </td>
         <td>
           <router-link
+            v-if="item?.pode_editar"
             :to="{ name: 'portfoliosEditar', params: { portfolioId: item.id } }"
             class="tprimary"
           >
