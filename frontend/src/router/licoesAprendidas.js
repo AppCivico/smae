@@ -23,8 +23,6 @@ export default {
   }),
 
   meta: {
-    requerAutenticação: true,
-
   },
   children: [
     {
