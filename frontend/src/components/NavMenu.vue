@@ -334,12 +334,11 @@ onBeforeRouteUpdate(() => {
 
 .menu__texto-do-link,
 .menu__ícone-de-abertura {
-  overflow: hidden;
-  max-width: 0;
+  display: none;
 
   .cabeçalho:hover &,
   .aberto & {
-    max-width: 100%;
+    display: block;
   }
 }
 
