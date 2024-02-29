@@ -45,7 +45,7 @@ const ModuloDescricao: Record<string, [string, ModuloSistema | null]> = {
     CadastroGrupoPaineisExternas: ['', null],
 } as const;
 
-const PrivConfig: Record<string, false | [ListaDePrivilegios, string][]> = {
+const PrivConfig: Record<string, false | [ListaDePrivilegios, string | false][]> = {
     CadastroCargo: false,
     CadastroCoordenadoria: false,
     CadastroDepartamento: false,
@@ -201,6 +201,8 @@ const PrivConfig: Record<string, false | [ListaDePrivilegios, string][]> = {
     Reports: [
         ['Reports.executar', 'Executar relatórios'],
         ['Reports.remover', 'Remover relatórios'],
+        ['Reports.dashboard_pdm', false],
+        ['Reports.dashboard_portfolios', false],
     ],
     ReportsPdm: [['Reports.dashboard_pdm', 'Dashboard de programa de metas']],
     ReportsProjetos: [['Reports.dashboard_portfolios', 'Dashboard de portfólios']],
@@ -213,7 +215,10 @@ const PrivConfig: Record<string, false | [ListaDePrivilegios, string][]> = {
     ],
     Projeto: [
         ['Projeto.administrar_portfolios', 'Administrar todos os portfólios, sem acesso aos projetos'],
-        ['Projeto.administrar_portfolios_no_orgao', 'Criar e editar portfólios exclusivamente do órgão em que pertence'],
+        [
+            'Projeto.administrar_portfolios_no_orgao',
+            'Criar e editar portfólios exclusivamente do órgão em que pertence',
+        ],
         ['Projeto.administrador', 'Acesso total aos projetos'],
         ['Projeto.administrador_no_orgao', 'Acesso total aos projetos com o portfólio do órgão em que pertence'],
         ['Projeto.orcamento', 'Atualizar a Execução Orçamentária que for responsável'],
@@ -506,7 +511,7 @@ async function atualizar_modulos_e_privilegios() {
         },
     });
 
-    async function upsertModulo(codModulo: string, privilegio: [ListaDePrivilegios, string][]) {
+    async function upsertModulo(codModulo: string, privilegio: [ListaDePrivilegios, string | false][]) {
         const modConfig = ModuloDescricao[codModulo];
 
         if (!modConfig[1]) return;
@@ -589,12 +594,26 @@ async function criar_emaildb_config() {
     });
 }
 
-async function upsert_privilegios(moduloId: number, codigo: string, nome: string, cache: Record<string, Privilegio>) {
+async function upsert_privilegios(
+    moduloId: number,
+    codigo: string,
+    nome: string | false,
+    cache: Record<string, Privilegio>
+) {
     const priv = cache[codigo];
+
+    if (nome === false && !priv) return;
+    if (nome === false) {
+        prisma.privilegio.deleteMany({
+            where: { codigo: codigo, modulo_id: moduloId },
+        });
+        return;
+    }
+
     if (!priv || priv.nome !== nome) {
         return prisma.privilegio.upsert({
-            where: { codigo: codigo },
-            update: { nome: nome, modulo_id: moduloId },
+            where: { codigo: codigo, modulo_id: moduloId },
+            update: { nome: nome },
             create: {
                 nome: nome,
                 modulo_id: moduloId,
@@ -805,13 +824,13 @@ async function atualizar_superadmin() {
 }
 
 async function populateEleicao() {
-    const eleicoes: { ano: number, tipo: EleicaoTipo, atual_para_mandatos: boolean }[] = [
+    const eleicoes: { ano: number; tipo: EleicaoTipo; atual_para_mandatos: boolean }[] = [
         { ano: 2020, tipo: EleicaoTipo.Municipal, atual_para_mandatos: true },
         { ano: 2022, tipo: EleicaoTipo.Estadual, atual_para_mandatos: true },
         { ano: 2024, tipo: EleicaoTipo.Municipal, atual_para_mandatos: false },
         { ano: 2026, tipo: EleicaoTipo.Estadual, atual_para_mandatos: false },
         { ano: 2028, tipo: EleicaoTipo.Municipal, atual_para_mandatos: false },
-        { ano: 2030, tipo: EleicaoTipo.Estadual, atual_para_mandatos: false }
+        { ano: 2030, tipo: EleicaoTipo.Estadual, atual_para_mandatos: false },
     ];
 
     for (const eleicao of eleicoes) {
@@ -819,21 +838,20 @@ async function populateEleicao() {
             where: {
                 tipo_ano: {
                     ano: eleicao.ano,
-                    tipo: eleicao.tipo
-                }
+                    tipo: eleicao.tipo,
+                },
             },
             create: {
                 ano: eleicao.ano,
                 tipo: eleicao.tipo,
-                atual_para_mandatos: eleicao.atual_para_mandatos
+                atual_para_mandatos: eleicao.atual_para_mandatos,
             },
             update: {
                 ano: eleicao.ano,
                 tipo: eleicao.tipo,
-                atual_para_mandatos: eleicao.atual_para_mandatos
-            }
-        })
-
+                atual_para_mandatos: eleicao.atual_para_mandatos,
+            },
+        });
     }
 }
 
