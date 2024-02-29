@@ -193,7 +193,7 @@ onBeforeRouteUpdate(() => {
 
   &:hover,
   &.aberto {
-    width: 12.857143rem; /* 180px */
+    width: 14rem; /* 196px */
   }
 }
 
@@ -270,13 +270,13 @@ onBeforeRouteUpdate(() => {
 .menu {
   font-weight: 700;
   color: @amarelo;
+  font-size: 1rem;
 }
 
 .menu__lista {
 }
 
 .menu__lista--sub {
-  font-size: 1rem;
   margin-bottom: 1rem;
 }
 
