@@ -82,9 +82,6 @@ const RelatoriosSemestraisOuAnuais = defineAsyncComponent({
 export default {
   path: '/relatorios',
   component: RelatoriosRaiz,
-  props: {
-    submenu: MenuSecundario,
-  },
 
   meta: {
     presenteNoMenu: true,
