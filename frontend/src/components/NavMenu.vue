@@ -327,11 +327,12 @@ const menuFiltrado = router.options.routes
 
 .menu__texto-do-link,
 .menu__ícone-de-abertura {
-  display: none;
+  overflow: hidden;
+  max-width: 0;
 
   .cabeçalho:hover &,
   .aberto & {
-    display: block;
+    max-width: 100%;
   }
 }
 
