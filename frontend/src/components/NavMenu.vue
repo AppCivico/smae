@@ -85,8 +85,9 @@ const menuFiltrado = router.options.routes
       <ul class="menu__lista">
         <li class="menu__item">
           <router-link
-            v-if="dadosDoSistemaEscolhido?.rotaInicial"
-            :to="dadosDoSistemaEscolhido?.rotaInicial"
+            :to="{
+              name: 'home',
+            }"
             class="menu__link"
           >
             <span class="menu__envelope-svg">
@@ -165,36 +166,6 @@ const menuFiltrado = router.options.routes
               </li>
             </ul>
           </TransitionExpand>
-        </li>
-
-        <li
-          class="menu__item"
-        >
-          <router-link
-            :to="{
-              name: 'home',
-            }"
-            class="menu__link menu__link--perfil"
-          >
-            <span class="menu__envelope-svg">
-              <svg
-                width="22"
-                height="22"
-                viewBox="0 0 22 22"
-                fill="currentColor"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <path
-                  fill-rule="evenodd"
-                  clip-rule="evenodd"
-                  d="M5.25252 17.9261C5.28225 17.8306 5.31458 17.7358 5.34949 17.6418C5.62916 16.8887 6.06814 16.2043 6.63622 15.6362C7.20429 15.0681 7.88819 14.6292 8.64132 14.3495C9.39444 14.0698 10.1988 13.9558 11 14.0154C11.8012 13.9558 12.606 14.0698 13.3592 14.3495C14.1123 14.6292 14.7962 15.0681 15.3643 15.6362C15.9323 16.2043 16.3708 16.8887 16.6505 17.6418C16.6854 17.7358 16.7178 17.8306 16.7475 17.9261C18.7347 16.2752 20 13.7854 20 11C20 6.02944 15.9706 2 11 2C6.02944 2 2 6.02944 2 11C2 13.7854 3.26532 16.2752 5.25252 17.9261ZM22 11C22 17.0751 17.0751 22 11 22C4.92487 22 0 17.0751 0 11C0 4.92487 4.92487 0 11 0C17.0751 0 22 4.92487 22 11ZM11 12C12.6569 12 14 10.6569 14 9C14 7.34315 12.6569 6 11 6C9.34315 6 8 7.34315 8 9C8 10.6569 9.34315 12 11 12Z"
-                />
-              </svg>
-            </span>
-            <span class="menu__texto-do-link">
-              Meus sistemas
-            </span>
-          </router-link>
         </li>
       </ul>
     </nav>
