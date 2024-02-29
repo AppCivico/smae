@@ -201,7 +201,7 @@ const PrivConfig: Record<string, false | [ListaDePrivilegios, string | false][]>
     Reports: [
         ['Reports.executar', 'Executar relatórios'],
         ['Reports.remover', 'Remover relatórios'],
-        ['Reports.dashboard_pdm', false],
+        ['Reports.dashboard_pdm', false], // lembrar que o delete sempre precisa vir antes do update/insert das novas
         ['Reports.dashboard_portfolios', false],
     ],
     ReportsPdm: [['Reports.dashboard_pdm', 'Dashboard de programa de metas']],
@@ -532,7 +532,6 @@ async function atualizar_modulos_e_privilegios() {
                 },
             });
         }
-
         for (const priv of privilegio) {
             promises.push(upsert_privilegios(moduloObject.id, priv[0], priv[1], privByCodigo));
         }
@@ -604,9 +603,10 @@ async function upsert_privilegios(
 
     if (nome === false && !priv) return;
     if (nome === false) {
-        prisma.privilegio.deleteMany({
+        await prisma.privilegio.deleteMany({
             where: { codigo: codigo, modulo_id: moduloId },
         });
+        delete cache[codigo];
         return;
     }
 
