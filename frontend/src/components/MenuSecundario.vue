@@ -92,16 +92,15 @@ function alternarItens(índice) {
   >
     <button
       type="button"
-      class="menu-secundário__botão-de-alternância tipinfo bottom"
+      class="menu-secundário__botão-de-alternância"
+      aria-hidden="true"
+      title="Expandir menu secundário"
       @click="menuAberto = !menuAberto"
     >
       <svg
         width="32"
         height="32"
       ><use xlink:href="#i_right-double" /></svg>
-      <div>
-        Expandir menu secundário
-      </div>
     </button>
 
     <div
@@ -177,22 +176,33 @@ function alternarItens(índice) {
   </div>
 </template>
 <style lang="less" scoped>
+@largura-minima: 12px;
+/* 224 px */
+@largura-maxima: 14rem;
+
 .menu-secundário {
   position: fixed;
   left: 70px;
   top: 0;
   bottom: 0;
-  /* 224 px */
-  max-width: 14rem;
+  max-width: @largura-maxima;
   font-weight: 700;
   z-index: 80;
   background: @branco;
+  padding-top: 2rem;
 
-  .transition();
   .bs(0 0 40px 20px fadeOut(black, 93%));
 
+  &.aberto {
+    + #dashboard {
+      // largura do menus somados
+      margin-left: calc(@largura-maxima + 5.142857rem);
+    }
+  }
+
   + #dashboard {
-    margin-left: 350px;
+    // largura do menus somados
+    margin-left: calc(@largura-minima + 5.142857rem);
   }
 }
 
@@ -206,17 +216,22 @@ function alternarItens(índice) {
   background-color: @branco;
   position: absolute;
   border-radius: 100%;
-  top: 1rem;
+  top: 0.5rem;
   left: 0;
   z-index: 1000;
 
   .bs();
-  .transition();
-  transform: translateX(-50%);
+  .transition(transform);
+  transform: translateX(-25%);
   left: 100%;
 
+  .menu-secundário.aberto & {
+    transform: translateX(-100%);
+    box-shadow: none;
+  }
+
   svg {
-    .transition();
+    .transition(transform);
 
     .menu-secundário.aberto & {
       transform: rotate(180deg);
@@ -238,23 +253,18 @@ function alternarItens(índice) {
 
 .menu-secundário__grupos-de-rotas {
   overflow: hidden;
-  width: 0;
+  width: @largura-minima;
   padding-top: 1rem;
   padding-bottom: 1rem;
-  .transition();
+  .transition(width);
 
   .menu-secundário.aberto & {
     width: 100%;
   }
 
   > * {
-    margin-left: 1rem;
-    margin-right: 1rem;
-
-    @media (min-width: @larguras-de-tela__estreita) {
-      margin-right: 1.5rem;
-      margin-left: 1.5rem;
-    }
+    margin-right: 1.5rem;
+    margin-left: 1.5rem;
   }
 }
 
