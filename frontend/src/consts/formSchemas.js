@@ -654,10 +654,10 @@ export const partido = object({
   observacao: string()
     .label('Observação')
     .nullable(),
-  fundacao: date()
+  fundacao: string()
     .label('Data de criação')
     .nullable(),
-  encerramento: date()
+  encerramento: string()
     .label('Data de encerramento')
     .nullable(),
 });
