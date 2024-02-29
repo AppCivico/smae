@@ -182,7 +182,10 @@ onBeforeRouteUpdate(() => {
   top: 0;
   bottom: 0;
   background: @primary;
-
+  max-height: 100vh;
+  overflow: auto;
+  overflow-x: clip;
+  overflow-y: auto;
   z-index: 110;
   width: 5.142857rem; /* 72px */
   .transition(width);

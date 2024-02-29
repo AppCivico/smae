@@ -162,6 +162,10 @@ function alternarItens(índice) {
   z-index: 80;
   background: @branco;
   padding-top: 2rem;
+  max-height: 100vh;
+  overflow: auto;
+  overflow-x: clip;
+  overflow-y: auto;
 
   .bs(0 0 40px 20px fadeOut(black, 93%));
 
