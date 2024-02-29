@@ -3,12 +3,11 @@ import { useAuthStore } from '@/stores/auth.store';
 import { storeToRefs } from 'pinia';
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
-import MenuSecundario from './MenuSecundario.vue';
 import TransitionExpand from './TransitionExpand.vue';
 
 const authStore = useAuthStore();
 const {
-  móduloCorrente, móduloCorrenteComDados, temPermissãoPara, user,
+  sistemaEscolhido, dadosDoSistemaEscolhido, temPermissãoPara, user,
 } = storeToRefs(authStore);
 const router = useRouter();
 
@@ -30,6 +29,8 @@ const menuFiltrado = router.options.routes
     rotasFilhas: x.children
       ? x.children?.filter(filtrarRota)
         .sort(ordenarRota)
+        // PRA-FAZER: resolver as rotas realmente
+        .map((y) => ({ ...y, path: `${x.path}/${y.path}` }))
       : [],
   }));
 </script>
@@ -46,9 +47,9 @@ const menuFiltrado = router.options.routes
         </abbr>
       </h1>
       <p class="cabeçalho__nome-do-módulo">
-        {{ (!móduloCorrente || móduloCorrente === 'SMAE')
+        {{ (!sistemaEscolhido || sistemaEscolhido === 'SMAE')
           ? 'Sistema de Monitoramento e Acompanhamento Estratégico'
-          : móduloCorrenteComDados?.nome || móduloCorrente }}
+          : dadosDoSistemaEscolhido?.nome || sistemaEscolhido }}
       </p>
 
       <button
@@ -72,8 +73,8 @@ const menuFiltrado = router.options.routes
     >
       <ul class="menu__lista">
         <router-link
-          v-if="móduloCorrenteComDados?.rotaInicial"
-          :to="móduloCorrenteComDados?.rotaInicial"
+          v-if="dadosDoSistemaEscolhido?.rotaInicial"
+          :to="dadosDoSistemaEscolhido?.rotaInicial"
           class="menu__link"
         >
           <span class="menu__envelope-svg">
@@ -257,6 +258,7 @@ const menuFiltrado = router.options.routes
 
 .menu__lista--sub {
   font-size: 1rem;
+  margin-bottom: 1rem;
 }
 
 .menu__item {
