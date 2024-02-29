@@ -2,7 +2,7 @@
 import { useAuthStore } from '@/stores/auth.store';
 import { storeToRefs } from 'pinia';
 import { ref } from 'vue';
-import { useRouter } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import TransitionExpand from './TransitionExpand.vue';
 
 const authStore = useAuthStore();
@@ -10,10 +10,11 @@ const {
   sistemaEscolhido, dadosDoSistemaEscolhido, temPermissãoPara, user,
 } = storeToRefs(authStore);
 const router = useRouter();
+const route = useRoute();
 
 const índiceDoItemAberto = ref(-1);
 
-const filtrarRota = (rota) => rota.meta?.presenteNoMenu
+const filtrarRota = (rota, presenteNoMenu = true) => (rota.meta?.presenteNoMenu || !presenteNoMenu)
   && (!rota.meta?.restringirÀsPermissões
     || temPermissãoPara.value(rota.meta?.restringirÀsPermissões));
 
@@ -21,16 +22,17 @@ const ordenarRota = (a, b) => (a.meta?.pesoNoMenu !== undefined && b.meta?.pesoN
   ? a.meta.pesoNoMenu - b.meta.pesoNoMenu
   : 0);
 
+const resolverRota = (nome) => router.resolve({ name: nome, params: route.params });
+
 const menuFiltrado = router.options.routes
-  .filter(filtrarRota)
+  .filter((x) => filtrarRota(x))
   .sort(ordenarRota)
   .map((x) => ({
     ...x,
-    rotasFilhas: x.children
-      ? x.children?.filter(filtrarRota)
-        .sort(ordenarRota)
-        // PRA-FAZER: resolver as rotas realmente
-        .map((y) => ({ ...y, path: `${x.path}/${y.path}` }))
+    rotasFilhas: Array.isArray(x.meta.rotasParaMenuPrincipal)
+      ? x.meta.rotasParaMenuPrincipal
+        .map(resolverRota)
+        .filter((y) => filtrarRota(y, false))
       : [],
   }));
 </script>
