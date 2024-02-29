@@ -117,7 +117,7 @@ export class CreateMandatoDto {
     mandato_principal_id?: number;
 }
 
-export class createMandatoRepresentatividadeDto {
+export class CreateMandatoRepresentatividadeDto {
     @IsNumber()
     regiao_id: number;
 
@@ -140,4 +140,27 @@ export class createMandatoRepresentatividadeDto {
 
     @IsNumber()
     numero_votos: number;
+}
+
+export class CreateMandatoBancadaDto {
+    @IsNumber()
+    mandato_id: number;
+
+    @IsNumber()
+    bancada_id: number;
+}
+
+export class CreateMandatoSuplenteDto {
+    @IsNumber()
+    mandato_id: number;
+
+    @IsNumber()
+    mandato_suplente_id: number;
+
+    @ApiProperty({ enum: ParlamentarSuplente, enumName: 'Suplente' })
+    @IsEnum(ParlamentarSuplente, {
+        message: '$property| Precisa ser um dos seguintes valores: ' + Object.values(ParlamentarSuplente).join(', '),
+    })
+    @IsOptional()
+    suplencia?: ParlamentarSuplente;
 }

@@ -2,10 +2,11 @@ import { HttpException, Injectable } from '@nestjs/common';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { PrismaService } from '../prisma/prisma.service';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
-import { CreateAssessorDto, CreateMandatoDto, CreateParlamentarDto, createMandatoRepresentatividadeDto } from './dto/create-parlamentar.dto';
+import { CreateAssessorDto, CreateMandatoDto, CreateParlamentarDto, CreateMandatoBancadaDto, CreateMandatoRepresentatividadeDto, CreateMandatoSuplenteDto } from './dto/create-parlamentar.dto';
 import { DadosEleicaoNivel, Prisma } from '@prisma/client';
 import { ParlamentarDetailDto, ParlamentarDto } from './entities/parlamentar.entity';
 import { UpdateAssessorDto, UpdateParlamentarDto } from './dto/update-parlamentar.dto';
+import { RemoveMandatoDepsDto } from './dto/remove-mandato-deps.dto';
 
 @Injectable()
 export class ParlamentarService {
@@ -50,7 +51,7 @@ export class ParlamentarService {
     }
 
     async findOne(id: number, user: PessoaFromJwt): Promise<ParlamentarDetailDto> {
-        return await this.prisma.parlamentar.findUniqueOrThrow({
+        const parlamentar = await this.prisma.parlamentar.findUniqueOrThrow({
             where: {
                 id: id,
             },
@@ -60,7 +61,6 @@ export class ParlamentarService {
                 nome_popular: true,
                 biografia: true,
                 nascimento: true,
-                telefone: true,
                 email: true,
                 atuacao: true,
                 em_atividade: true,
@@ -73,10 +73,128 @@ export class ParlamentarService {
                         nome: true,
                         telefone: true
                     }
-                }
+                },
+
+                mandatos: {
+                    where: { removido_em: null },
+                    select: {
+                        id: true,
+                        gabinete: true,
+                        eleito: true,
+                        cargo: true,
+                        uf: true,
+                        suplencia: true,
+                        endereco: true,
+                        votos_estado: true,
+                        votos_capital: true,
+                        votos_interior: true,
+
+                        partido_atual: {
+                            select: {
+                                id: true,
+                                nome: true,
+                                sigla: true,
+                                numero: true
+                            }
+                        },
+
+                        partido_candidatura: {
+                            select: {
+                                id: true,
+                                nome: true,
+                                sigla: true,
+                                numero: true
+                            }
+                        },
+
+                        suplentes: {
+                            where: { removido_em: null },
+                            select: {
+                                id: true,
+                                suplencia: true,
+                                parlamentar: {
+                                    select: {
+                                        id: true,
+                                        nome: true
+                                    }
+                                }
+                            }
+                        },
+
+                        bancadas: {
+                            select: {
+                                bancada: {
+                                    select: {
+                                        id: true,
+                                        sigla: true,
+                                        nome: true
+                                    }
+                                }
+                            }
+                        },
+
+                        representatividade: {
+                            where: { removido_em: null },
+                            select: {
+                                id: true,
+                                nivel: true,
+                                municipio_tipo: true,
+                                numero_votos: true,
+                                pct_participacao: true,
+
+                                regiao: {
+                                    select: {
+                                        id: true,
+                                        nivel: true,
+                                        codigo: true,
+                                        
+                                        eleicoesComparecimento: {
+                                            where: { removido_em: null },
+                                            take: 1,
+                                            select: {
+                                                id: true,
+                                                valor: true
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                    }
+                },
+
+
             }
         });
 
+        return {
+            ...parlamentar,
+
+            mandatos: parlamentar.mandatos.map(m => {
+                return {
+                    ...m,
+
+                    suplentes: m.suplentes.map(s => {
+                        return {...s.parlamentar}
+                    }),
+
+                    bancadas: m.bancadas.map(b => {
+                        return { ...b.bancada }
+                    }),
+
+                    representatividade: m.representatividade.map(r => {
+                        return {
+                            ...r,
+
+                            regiao: {
+                                ...r.regiao,
+                                comparecimento: {...r.regiao.eleicoesComparecimento[0]}
+                            }
+                        }
+                    })
+                }
+            })
+        };
     }
 
     async update(id: number, dto: UpdateParlamentarDto, user: PessoaFromJwt): Promise<RecordWithId> {
@@ -201,7 +319,7 @@ export class ParlamentarService {
         return created;
     }
 
-    async createMandatoRepresentatividade(parlamentarId: number, dto: createMandatoRepresentatividadeDto, user: PessoaFromJwt): Promise<RecordWithId> {
+    async createMandatoRepresentatividade(parlamentarId: number, dto: CreateMandatoRepresentatividadeDto, user: PessoaFromJwt): Promise<RecordWithId> {
         const mandato = await this.prisma.parlamentarMandato.findFirst({
             where: {
                 id: dto.mandato_id,
@@ -245,5 +363,110 @@ export class ParlamentarService {
         );
 
         return created;
+    }
+
+    async removeMandatoRepresentatividade(representatividadeId: number, dto: RemoveMandatoDepsDto, user: PessoaFromJwt) {
+        return await this.prisma.mandatoRepresentatividade.updateMany({
+            where: {
+                id: representatividadeId,
+                mandato_id: dto.mandato_id
+            },
+            data: {
+                removido_por: user.id,
+                removido_em: new Date(Date.now()),
+            }
+        })
+    }
+
+    async createMandatoBancada (parlamentarId: number, dto: CreateMandatoBancadaDto, user: PessoaFromJwt): Promise<RecordWithId> {
+        const exists = await this.prisma.mandatoBancada.count({
+            where: {
+                mandato: {
+                    id: dto.mandato_id,
+                    parlamentar_id: parlamentarId
+                },
+                bancada_id: dto.bancada_id
+            }
+        });
+        if (exists) throw new HttpException('Bancada já vinculada ao mandato', 400);
+
+        return await this.prisma.mandatoBancada.create({
+            data: {
+                mandato_id: dto.mandato_id,
+                bancada_id: dto.bancada_id
+            },
+            select: {id: true}
+        })
+    }
+
+    async removeMandatoBancada(bancadaId: number, dto: RemoveMandatoDepsDto, user: PessoaFromJwt) {
+        return await this.prisma.mandatoBancada.delete({
+            where: {
+                mandato_id_bancada_id: {
+                    bancada_id: bancadaId,
+                    mandato_id: dto.mandato_id
+                }
+            }
+        });
+    }
+
+    async createSuplente(parlamentarId: number, dto: CreateMandatoSuplenteDto, user: PessoaFromJwt): Promise<RecordWithId> {
+        const mandatoPrincipal = await this.prisma.parlamentarMandato.findFirst({
+            where: {
+                id: dto.mandato_id,
+                parlamentar_id: parlamentarId,
+                removido_em: null,
+                mandato_principal_id: null
+            },
+            select: {
+                id: true
+            }
+        });
+        if (!mandatoPrincipal) throw new HttpException('mandato_id| Mandato principal inválido', 400);
+
+        const mandatoSuplente = await this.prisma.parlamentarMandato.findFirst({
+            where: {
+                id: dto.mandato_suplente_id,
+                removido_em: null,
+            },
+            select: {
+                id: true,
+                mandato_principal_id: true,
+                suplencia: true,
+            }
+        });
+        if (!mandatoSuplente) throw new HttpException('mandato_id| Mandato suplente não encontrado', 400);
+
+        if (mandatoSuplente.mandato_principal_id && mandatoSuplente.mandato_principal_id != dto.mandato_id)
+            throw new HttpException('mandato_suplente_id| Mandato suplente já é suplente de outro mandato distinto', 400);
+
+        if (!mandatoSuplente.suplencia && !dto.suplencia)
+            throw new HttpException('suplencia| Grau de suplente deve ser informado', 400);
+
+        await this.prisma.parlamentarMandato.updateMany({
+            where: {
+                id: mandatoSuplente.id,
+            },
+            data: {
+                suplencia: dto.suplencia,
+                mandato_principal_id: dto.mandato_id
+            }
+        });
+        
+        return { id: mandatoSuplente.id }
+    }
+
+    async removeSuplente(mandatoSuplenteId: number, dto: RemoveMandatoDepsDto, user: PessoaFromJwt) {
+        return await this.prisma.parlamentarMandato.updateMany({
+            where: {
+                id: mandatoSuplenteId,
+                mandato_principal_id: dto.mandato_id
+            },
+            data: {
+                mandato_principal_id: null,
+                atualizado_por: user.id,
+                atualizado_em: new Date(Date.now()),
+            }
+        });
     }
 }
