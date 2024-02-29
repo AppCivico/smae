@@ -140,6 +140,7 @@ export default {
       meta: {
         título: 'Relatórios Mensais',
         títuloParaMenu: 'Relatório Mensal',
+        limitarÀsPermissões: 'Reports.dashboard_pdm',
       },
       children: [
         {
@@ -163,6 +164,7 @@ export default {
       meta: {
         título: 'Relatórios Semestrais e Anuais',
         títuloParaMenu: 'Relatório Semestral/Anual',
+        limitarÀsPermissões: 'Reports.dashboard_pdm',
       },
       children: [
         {
@@ -186,7 +188,7 @@ export default {
       meta: {
         título: 'Relatórios orçamentários de PdM',
         títuloParaMenu: 'Execução orçamentária',
-        presenteNoMenu: true,
+        limitarÀsPermissões: 'Reports.dashboard_pdm',
       },
       children: [
         {
@@ -211,6 +213,7 @@ export default {
       meta: {
         título: 'Relatórios orçamentários de portfolio',
         títuloParaMenu: 'Execução orçamentária',
+        limitarÀsPermissões: 'Reports.dashboard_portfolios',
       },
       children: [
         {
@@ -235,7 +238,7 @@ export default {
       meta: {
         título: 'Relatórios de projeto',
         títuloParaMenu: 'Relatório de projeto',
-        presenteNoMenu: true,
+        limitarÀsPermissões: 'Reports.dashboard_portfolios',
       },
       children: [
         {
@@ -260,7 +263,7 @@ export default {
       meta: {
         título: 'Relatórios de previsão de custo de PdM',
         títuloParaMenu: 'Previsão de custo',
-        presenteNoMenu: true,
+        limitarÀsPermissões: 'Reports.dashboard_pdm',
       },
       children: [
         {
@@ -284,6 +287,7 @@ export default {
       meta: {
         título: 'Relatórios de previsão de custo de portfolio',
         títuloParaMenu: 'Previsão de custo',
+        limitarÀsPermissões: 'Reports.dashboard_portfolios',
       },
       children: [
         {
@@ -308,7 +312,7 @@ export default {
       meta: {
         título: 'Relatórios de portfolio',
         títuloParaMenu: 'Relatório de portfolio',
-        presenteNoMenu: true,
+        limitarÀsPermissões: 'Reports.dashboard_portfolios',
       },
       children: [
         {
@@ -333,7 +337,7 @@ export default {
       meta: {
         título: 'Relatórios de status',
         títuloParaMenu: 'Relatório de status',
-        presenteNoMenu: true,
+        limitarÀsPermissões: 'Reports.dashboard_portfolios',
       },
       children: [
         {
