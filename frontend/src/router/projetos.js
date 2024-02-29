@@ -72,8 +72,6 @@ export default {
   },
 
   meta: {
-    requerAutenticação: true,
-
     presenteNoMenu: true,
     títuloParaMenu: 'Gestão de projetos',
     íconeParaMenu: `<svg width="18" height="20" viewBox="0 0 18 20" fill="currentColor">

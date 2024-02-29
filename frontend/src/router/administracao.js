@@ -549,7 +549,6 @@ export default [
         path: 'portfolios',
         component: PortfoliosRaiz,
         meta: {
-          requerAutenticação: true,
           título: 'Portfolios',
           rotaPrescindeDeChave: true,
           limitarÀsPermissões: 'Projeto.administrar_portfolios',
@@ -593,7 +592,6 @@ export default [
         path: 'paineis-externos',
         component: PaineisExternosRaiz,
         meta: {
-          requerAutenticação: true,
           título: 'Painéis Externos',
           rotaPrescindeDeChave: true,
           limitarÀsPermissões: 'CadastroPainelExterno.',
@@ -635,7 +633,6 @@ export default [
         path: 'partidos',
         component: PartidosRaiz,
         meta: {
-          requerAutenticação: true,
           título: 'Partidos',
           rotaPrescindeDeChave: true,
           rotasParaMenuSecundário,
@@ -676,7 +673,6 @@ export default [
         path: 'bancadas',
         component: BancadasRaiz,
         meta: {
-          requerAutenticação: true,
           title: 'Bancadas',
           rotaPrescindeDeChave: true,
         },
@@ -716,7 +712,6 @@ export default [
         path: 'tipos-de-acompanhamento',
         component: TiposDeAcompanhamentoRaiz,
         meta: {
-          requerAutenticação: true,
           título: 'Tipos de acompanhamento',
           presenteNoMenu: true,
           rotaPrescindeDeChave: true,

@@ -27,7 +27,6 @@ export default {
       'projetosResumo',
       'OrcamentosRaiz',
     ],
-    requerAutenticação: true,
     rotaPrescindeDeChave: false,
   },
 
