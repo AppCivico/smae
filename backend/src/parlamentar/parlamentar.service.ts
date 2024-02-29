@@ -5,7 +5,7 @@ import { RecordWithId } from 'src/common/dto/record-with-id.dto';
 import { CreateAssessorDto, CreateMandatoDto, CreateParlamentarDto, CreateMandatoBancadaDto, CreateMandatoRepresentatividadeDto, CreateMandatoSuplenteDto } from './dto/create-parlamentar.dto';
 import { DadosEleicaoNivel, Prisma } from '@prisma/client';
 import { ParlamentarDetailDto, ParlamentarDto } from './entities/parlamentar.entity';
-import { UpdateAssessorDto, UpdateParlamentarDto } from './dto/update-parlamentar.dto';
+import { UpdateAssessorDto, UpdateMandatoDto, UpdateParlamentarDto } from './dto/update-parlamentar.dto';
 import { RemoveMandatoDepsDto } from './dto/remove-mandato-deps.dto';
 
 @Injectable()
@@ -317,6 +317,47 @@ export class ParlamentarService {
         );
 
         return created;
+    }
+
+    async updateMandato(id: number, dto: UpdateMandatoDto, user: PessoaFromJwt): Promise<RecordWithId> {
+        const self = await this.prisma.parlamentarMandato.findFirstOrThrow({
+            where: { id }
+        });
+
+        if (dto.partido_atual_id && self.partido_atual_id != dto.partido_atual_id) {
+            const partidoCandidaturaExists = await this.prisma.partido.count({
+                where: { id: dto.partido_candidatura_id, removido_em: null }
+            });
+            if (!partidoCandidaturaExists) throw new HttpException('partido_candidatura_id| Partido de candidatura inválido', 400);
+        }
+
+        if (dto.partido_candidatura_id && self.partido_candidatura_id != dto.partido_candidatura_id) {
+            const partidoAtualExists = await this.prisma.partido.count({
+                where: { id: dto.partido_atual_id, removido_em: null }
+            });
+            if (!partidoAtualExists) throw new HttpException('partido_atual_id| Partido atual inválido', 400);
+        }
+
+        await this.prisma.parlamentarMandato.update({
+            where: { id },
+            data: {
+                ...dto,
+                atualizado_por: user.id,
+                atualizado_em: new Date(Date.now()),
+            }
+        });
+
+        return {id}
+    }
+
+    async removeMandato(id: number, user: PessoaFromJwt) {
+        return await this.prisma.parlamentarMandato.update({
+            where: { id },
+            data: {
+                removido_por: user.id,
+                removido_em: new Date(Date.now()),
+            }
+        })
     }
 
     async createMandatoRepresentatividade(parlamentarId: number, dto: CreateMandatoRepresentatividadeDto, user: PessoaFromJwt): Promise<RecordWithId> {
