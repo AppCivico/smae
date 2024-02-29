@@ -1,4 +1,5 @@
 <script setup>
+import { ref } from 'vue';
 import { storeToRefs } from 'pinia';
 import { useAuthStore } from '@/stores/auth.store';
 import { useRouter } from 'vue-router';
@@ -7,14 +8,20 @@ import módulos from '@/consts/modulosDoSistema';
 const authStore = useAuthStore();
 const router = useRouter();
 
+const emEspera = ref(false);
+
 const {
   sistemaEscolhido, dadosDoSistemaEscolhido,
 } = storeToRefs(authStore);
 
-function escolher(opção) {
+async function escolher(opção) {
+  emEspera.value = true;
   sistemaEscolhido.value = opção;
   // PRA-FAZER: persistir o auth.store no navegador
   localStorage.setItem('sistemaEscolhido', opção);
+
+  await authStore.getDados();
+  emEspera.value = false;
 
   if (dadosDoSistemaEscolhido.value?.rotaInicial) {
     router.push(dadosDoSistemaEscolhido.value?.rotaInicial);
@@ -24,7 +31,7 @@ function escolher(opção) {
 <template>
   <div
     v-bind="$attrs"
-    class="escolha-de-módulos flex flexwrap g2 spacebetween center"
+    class="escolha-de-módulos flex flexwrap g2 spacebetween center p15"
   >
     <div class="escolha-de-módulos__cumprimento flex column">
       <p class="w700 t64">
@@ -60,11 +67,16 @@ function escolher(opção) {
         </button>
       </li>
     </ul>
+
+    <LoadingComponent
+      v-if="emEspera"
+      class="fb100"
+    />
   </div>
 
   <button
     type="button"
-    class="like-a__link mb1"
+    class="like-a__link mb2"
     @click="authStore.logout()"
   >
     <svg
