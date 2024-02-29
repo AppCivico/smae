@@ -75,11 +75,11 @@ const rotasParaMenuSecundário = (nível) => {
 
   return [
     {
-      títuloParaGrupoDeLinksNoMenu: 'Programa de Metas',
+      título: 'Programa de Metas',
       rotas: rotasDoPdm,
     },
     {
-      títuloParaGrupoDeLinksNoMenu: 'Visão orçamentária',
+      título: 'Visão orçamentária',
       rotas: rotasDoOrçamento,
     },
   ];
