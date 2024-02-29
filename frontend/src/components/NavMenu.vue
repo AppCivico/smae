@@ -15,8 +15,8 @@ const route = useRoute();
 const índiceDoItemAberto = ref(-1);
 
 const filtrarRota = (rota, presenteNoMenu = true) => (rota.meta?.presenteNoMenu || !presenteNoMenu)
-  && (!rota.meta?.restringirÀsPermissões
-    || temPermissãoPara.value(rota.meta?.restringirÀsPermissões));
+  && (!rota.meta?.limitarÀsPermissões
+    || temPermissãoPara.value(rota.meta?.limitarÀsPermissões));
 
 const ordenarRota = (a, b) => (a.meta?.pesoNoMenu !== undefined && b.meta?.pesoNoMenu !== undefined
   ? a.meta.pesoNoMenu - b.meta.pesoNoMenu

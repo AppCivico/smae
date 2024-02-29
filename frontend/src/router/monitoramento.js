@@ -43,7 +43,7 @@ export default {
   meta: {
     rotaPrescindeDeChave: false,
 
-    restringirÀsPermissões: [
+    limitarÀsPermissões: [
       'PDM.admin_cp',
       'PDM.tecnico_cp',
       'PDM.ponto_focal',
@@ -212,7 +212,7 @@ export default {
       meta: {
         rotasParaMenuSecundário,
         título: 'Próximos ciclos',
-        restringirÀsPermissões: [
+        limitarÀsPermissões: [
           'CadastroCicloFisico',
           'PDM.admin_cp',
           'CadastroIndicador.inserir',
@@ -230,7 +230,7 @@ export default {
       meta: {
         rotasParaMenuSecundário,
         título: 'Ciclos fechados',
-        restringirÀsPermissões: [
+        limitarÀsPermissões: [
           'CadastroCicloFisico',
           'PDM.admin_cp',
           'CadastroIndicador.inserir',

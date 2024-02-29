@@ -31,7 +31,7 @@ const limparRotas = (listaDeRotas) => (Array.isArray(listaDeRotas)
     return router.resolve({ ...rotaParaResolver, params: route.params });
   })
   // eslint-disable-next-line max-len
-  .filter((y) => (!y.meta?.restringirÀsPermissões || temPermissãoPara.value(y.meta.restringirÀsPermissões)))
+  .filter((y) => (!y.meta?.limitarÀsPermissões || temPermissãoPara.value(y.meta.limitarÀsPermissões)))
   || [];
 
 const rotasParaMenu = computed(() => {

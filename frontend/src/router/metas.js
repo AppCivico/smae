@@ -88,7 +88,7 @@ const rotasParaMenuSecundário = (nível) => {
 export default {
   path: '/metas',
   meta: {
-    restringirÀsPermissões: [
+    limitarÀsPermissões: [
       'PDM.admin_cp',
       'PDM.tecnico_cp',
       'PDM.ponto_focal',
@@ -440,7 +440,7 @@ export default {
           props: { area: 'Custo', title: 'Previsão de Custo' },
           meta: {
             títuloParaMenu: 'Previsão de custo',
-            restringirÀsPermissões: 'CadastroMeta.orcamento',
+            limitarÀsPermissões: 'CadastroMeta.orcamento',
             rotasParaMenuSecundário: rotasParaMenuSecundário('meta'),
           },
         },
@@ -467,7 +467,7 @@ export default {
           props: { area: 'Planejado', title: 'Orçamento Planejado' },
           meta: {
             títuloParaMenu: 'Orçamento planejado',
-            restringirÀsPermissões: 'CadastroMeta.orcamento',
+            limitarÀsPermissões: 'CadastroMeta.orcamento',
             rotasParaMenuSecundário: rotasParaMenuSecundário('meta'),
           },
         },
@@ -495,7 +495,7 @@ export default {
           props: { area: 'Realizado', title: 'Execução orçamentária' },
           meta: {
             títuloParaMenu: 'Execução orçamentária',
-            restringirÀsPermissões: 'CadastroMeta.orcamento',
+            limitarÀsPermissões: 'CadastroMeta.orcamento',
             rotasParaMenuSecundário: rotasParaMenuSecundário('meta'),
           },
         },
