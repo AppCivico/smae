@@ -49,6 +49,7 @@ export const useAuthStore = defineStore({
       } catch (error) {
         const alertStore = useAlertStore();
         alertStore.error(error);
+        throw error;
       }
     },
     async passwordRecover(username) {
@@ -144,7 +145,8 @@ export const useAuthStore = defineStore({
     },
   },
   getters: {
-    dadosDoSistemaEscolhido: ({ sistemaEscolhido }) => módulos.find((x) => x.valor === sistemaEscolhido),
+    dadosDoSistemaEscolhido: ({ sistemaEscolhido }) => módulos
+      .find((x) => x.valor === sistemaEscolhido),
     estouAutenticada: ({ token }) => !!token,
     temPermissãoPara: ({ user }) => (permissões) => (Array.isArray(permissões)
       ? permissões

@@ -9,6 +9,7 @@ const authStore = useAuthStore();
 const router = useRouter();
 
 const emEspera = ref(false);
+const erro = ref(null);
 
 const {
   sistemaEscolhido, dadosDoSistemaEscolhido,
@@ -16,16 +17,25 @@ const {
 
 async function escolher(opção) {
   emEspera.value = true;
+  erro.value = null;
   sistemaEscolhido.value = opção;
-  // PRA-FAZER: persistir o auth.store no navegador
-  localStorage.setItem('sistemaEscolhido', opção);
 
-  await authStore.getDados();
-  emEspera.value = false;
+  authStore.getDados()
+    .then(() => {
+      // PRA-FAZER: persistir o auth.store no navegador
+      localStorage.setItem('sistemaEscolhido', opção);
 
-  if (dadosDoSistemaEscolhido.value?.rotaInicial) {
-    router.push(dadosDoSistemaEscolhido.value?.rotaInicial);
-  }
+      if (dadosDoSistemaEscolhido.value?.rotaInicial) {
+        router.push(dadosDoSistemaEscolhido.value?.rotaInicial);
+      }
+    })
+    .catch((err) => {
+      sistemaEscolhido.value = 'SMAE';
+      erro.value = err;
+    })
+    .finally(() => {
+      emEspera.value = false;
+    });
 }
 </script>
 <template>
@@ -67,6 +77,13 @@ async function escolher(opção) {
         </button>
       </li>
     </ul>
+
+    <ErrorComponent
+      v-if="erro"
+      class="fb100"
+    >
+      {{ erro }}
+    </ErrorComponent>
 
     <LoadingComponent
       v-if="emEspera"
