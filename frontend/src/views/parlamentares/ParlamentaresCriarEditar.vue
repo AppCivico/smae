@@ -1,4 +1,5 @@
 <script setup>
+import InputImageProfile from '@/components/InputImageProfile.vue';
 import { parlamentar as schema } from '@/consts/formSchemas';
 import { useAlertStore } from '@/stores/alert.store';
 import { storeToRefs } from 'pinia';
@@ -59,6 +60,7 @@ if (props.parlamentarId) {
     :initial-values="itemParaEdição"
     @submit="onSubmit"
   >
+    <InputImageProfile />
     <FormErrorsList :errors="errors" />
 
     <div class="flex spacebetween center mb2">
