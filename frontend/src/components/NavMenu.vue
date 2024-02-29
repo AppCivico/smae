@@ -49,9 +49,18 @@ const menuFiltrado = router.options.routes
         </abbr>
       </h1>
       <p class="cabeçalho__nome-do-módulo">
-        {{ (!sistemaEscolhido || sistemaEscolhido === 'SMAE')
-          ? 'Sistema de Monitoramento e Acompanhamento Estratégico'
-          : dadosDoSistemaEscolhido?.nome || sistemaEscolhido }}
+        <abbr
+          v-if="dadosDoSistemaEscolhido?.sigla && dadosDoSistemaEscolhido?.nome"
+          class="cabeçalho__sigla-do-módulo"
+          :title="dadosDoSistemaEscolhido.nome"
+        >
+          <span>
+            {{ dadosDoSistemaEscolhido.sigla }}
+          </span>
+        </abbr>
+        <template v-else>
+          {{ dadosDoSistemaEscolhido?.nome || sistemaEscolhido }}
+        </template>
       </p>
 
       <button
@@ -74,22 +83,23 @@ const menuFiltrado = router.options.routes
       class="cabeçalho__menu menu only-desktop-menu"
     >
       <ul class="menu__lista">
-        <router-link
-          v-if="dadosDoSistemaEscolhido?.rotaInicial"
-          :to="dadosDoSistemaEscolhido?.rotaInicial"
-          class="menu__link"
-        >
-          <span class="menu__envelope-svg">
-            <svg
-              width="24"
-              height="24"
-            ><use xlink:href="#i_home" /></svg>
-          </span>
-
-          <span class="menu__texto-do-link">
-            Página inicial
-          </span>
-        </router-link>
+        <li class="menu__item">
+          <router-link
+            v-if="dadosDoSistemaEscolhido?.rotaInicial"
+            :to="dadosDoSistemaEscolhido?.rotaInicial"
+            class="menu__link"
+          >
+            <span class="menu__envelope-svg">
+              <svg
+                width="24"
+                height="24"
+              ><use xlink:href="#i_home" /></svg>
+            </span>
+            <span class="menu__texto-do-link">
+              Página inicial
+            </span>
+          </router-link>
+        </li>
 
         <li
           v-for="(item, i) in menuFiltrado"
@@ -200,7 +210,8 @@ const menuFiltrado = router.options.routes
 
   z-index: 110;
   width: 5.142857rem; /* 72px */
-  .transition();
+  .transition(width);
+  .bs();
 
   &:hover,
   &.aberto {
@@ -213,6 +224,8 @@ const menuFiltrado = router.options.routes
   color: @primary;
   padding: 1rem 0.5rem;
   font-weight: 700;
+  text-align: center;
+  .transition(text-align);
 
   abbr {
     border: 0;
@@ -221,6 +234,7 @@ const menuFiltrado = router.options.routes
 
   .cabeçalho:hover &,
   .cabeçalho.aberto & {
+    text-align: left;
     padding: 1rem;
   }
 }
@@ -237,6 +251,20 @@ const menuFiltrado = router.options.routes
   max-height: 3em;
   overflow: hidden;
   text-overflow: ellipsis;
+  margin: 0;
+}
+
+.cabeçalho__sigla-do-módulo {
+  .cabeçalho:hover &,
+  .cabeçalho.aberto & {
+    &::before {
+      content: attr(title);
+    }
+
+    span {
+      display: none;
+    }
+  }
 }
 
 .cabeçalho__botão-de-menu {
@@ -245,6 +273,17 @@ const menuFiltrado = router.options.routes
   background: none;
   border: 0;
   display: block;
+
+  .transition(margin-left);
+
+  .cabeçalho:hover & ,
+  .cabeçalho.aberto & {
+    margin-left: 0;
+  }
+
+  @media (pointer: fine) {
+    display: none;
+  }
 }
 
 .cabeçalho__menu {
@@ -312,10 +351,6 @@ const menuFiltrado = router.options.routes
     display: inline-block;
     vertical-align: middle;
     fill: currentColor;
-
-    * {
-      .transition();
-    }
   }
 }
 
