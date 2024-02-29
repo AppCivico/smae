@@ -16,8 +16,6 @@ export default {
   }),
 
   meta: {
-    requerAutenticação: true,
-
     títuloParaMenu: 'Gestão de riscos',
   },
   children: [

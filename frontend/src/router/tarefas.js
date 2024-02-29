@@ -15,8 +15,6 @@ export default {
   }),
 
   meta: {
-    requerAutenticação: true,
-
     títuloParaMenu: 'Tarefas',
   },
   children: [
