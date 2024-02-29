@@ -2,8 +2,8 @@ import { HttpException, Injectable } from '@nestjs/common';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { PrismaService } from '../prisma/prisma.service';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
-import { CreateAssessorDto, CreateMandatoDto, CreateParlamentarDto } from './dto/create-parlamentar.dto';
-import { Prisma } from '@prisma/client';
+import { CreateAssessorDto, CreateMandatoDto, CreateParlamentarDto, createMandatoRepresentatividadeDto } from './dto/create-parlamentar.dto';
+import { DadosEleicaoNivel, Prisma } from '@prisma/client';
 import { ParlamentarDetailDto, ParlamentarDto } from './entities/parlamentar.entity';
 import { UpdateAssessorDto, UpdateParlamentarDto } from './dto/update-parlamentar.dto';
 
@@ -187,12 +187,60 @@ export class ParlamentarService {
                 const mandato = await prismaTxn.parlamentarMandato.create({
                     data: {
                         parlamentar_id: parlamentarId,
-                        ...dto
+                        ...dto,
+                        criado_por: user ? user.id : undefined,
+                        criado_em: new Date(Date.now()),
                     },
                     select: { id: true }
                 });
 
                 return mandato;
+            }
+        );
+
+        return created;
+    }
+
+    async createMandatoRepresentatividade(parlamentarId: number, dto: createMandatoRepresentatividadeDto, user: PessoaFromJwt): Promise<RecordWithId> {
+        const mandato = await this.prisma.parlamentarMandato.findFirst({
+            where: {
+                id: dto.mandato_id,
+                parlamentar_id: parlamentarId,
+                removido_em: null
+            }
+        });
+        if (!mandato) throw new HttpException('mandato_id| Não foi possível encontrar este mandato', 404);
+
+        if (dto.nivel == DadosEleicaoNivel.Estado && dto.municipio_tipo != undefined)
+          throw new HttpException('municipio_tipo| Não deve ser enviado para eleição de nível estadual.', 400);
+        
+        const created = await this.prisma.$transaction(
+            async (prismaTxn: Prisma.TransactionClient): Promise<RecordWithId> => {
+                const dadosEleicao = await prismaTxn.eleicaoComparecimento.findFirst({
+                    where: {
+                        eleicao_id: mandato.eleicao_id,
+                        regiao_id: dto.regiao_id,
+                        removido_em: null
+                    },
+                    select: {valor: true}
+                });
+                
+                let pct_participacao: number | null = null;
+                if (dadosEleicao) {
+                    pct_participacao = (dto.numero_votos / dadosEleicao.valor) * 100;
+                }
+
+                const representatividade = await prismaTxn.mandatoRepresentatividade.create({
+                    data: {
+                        pct_participacao: pct_participacao,
+                        ...dto,
+                        criado_por: user ? user.id : undefined,
+                        criado_em: new Date(Date.now()),
+                    },
+                    select: { id: true }
+                });
+
+                return representatividade;
             }
         );
 
