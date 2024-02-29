@@ -1,5 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { ParlamentarCargo, ParlamentarSuplente, ParlamentarUF } from "@prisma/client";
+import { DadosEleicaoNivel, MunicipioTipo, ParlamentarCargo, ParlamentarSuplente, ParlamentarUF } from "@prisma/client";
 import { Type } from "class-transformer";
 import { IsBoolean, IsEnum, IsNumber, IsOptional, IsString, MaxLength, ValidateIf } from "class-validator";
 import { IsOnlyDate } from "src/common/decorators/IsDateOnly";
@@ -115,4 +115,29 @@ export class CreateMandatoDto {
     @IsOptional()
     @IsNumber()
     mandato_principal_id?: number;
+}
+
+export class createMandatoRepresentatividadeDto {
+    @IsNumber()
+    regiao_id: number;
+
+    @IsNumber()
+    mandato_id: number;
+
+    @ApiProperty({ enum: DadosEleicaoNivel, enumName: 'DadosEleicaoNivel' })
+    @IsEnum(DadosEleicaoNivel, {
+        message: '$property| Precisa ser um dos seguintes valores: ' + Object.values(DadosEleicaoNivel).join(', '),
+    })
+    @IsOptional()
+    nivel: DadosEleicaoNivel;
+
+    @ApiProperty({ enum: MunicipioTipo, enumName: 'MunicipioTipo' })
+    @IsEnum(MunicipioTipo, {
+        message: '$property| Precisa ser um dos seguintes valores: ' + Object.values(MunicipioTipo).join(', '),
+    })
+    @IsOptional()
+    municipio_tipo?: MunicipioTipo;
+
+    @IsNumber()
+    numero_votos: number;
 }
