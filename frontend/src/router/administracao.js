@@ -116,7 +116,7 @@ export default [
     path: '/administracao',
     component: Administracao,
     meta: {
-      restringirÀsPermissões: [
+      limitarÀsPermissões: [
         'CadastroPessoa.',
         'CadastroOrgao.',
         'CadastroUnidadeMedida.',
@@ -149,7 +149,7 @@ export default [
       {
         path: 'usuarios',
         meta: {
-          restringirÀsPermissões: 'CadastroPessoa.',
+          limitarÀsPermissões: 'CadastroPessoa.',
           título: 'Gerenciar usuários',
           rotasParaMenuSecundário,
           presenteNoMenu: true,
@@ -173,7 +173,7 @@ export default [
       {
         path: 'orgaos',
         meta: {
-          restringirÀsPermissões: 'CadastroOrgao.',
+          limitarÀsPermissões: 'CadastroOrgao.',
           título: 'Órgãos',
           rotasParaMenuSecundário,
         },
@@ -209,7 +209,7 @@ export default [
       {
         path: 'unidade-medida',
         meta: {
-          restringirÀsPermissões: 'CadastroUnidadeMedida.',
+          limitarÀsPermissões: 'CadastroUnidadeMedida.',
           título: 'Unidades de medida',
           rotasParaMenuSecundário,
         },
@@ -232,7 +232,7 @@ export default [
       {
         path: 'tipo-documento',
         meta: {
-          restringirÀsPermissões: 'CadastroTipoDocumento.',
+          limitarÀsPermissões: 'CadastroTipoDocumento.',
           título: 'Tipos de documento',
           rotasParaMenuSecundário,
         },
@@ -255,7 +255,7 @@ export default [
       {
         path: 'categorias',
         meta: {
-          restringirÀsPermissões: 'CadastroOds.',
+          limitarÀsPermissões: 'CadastroOds.',
           título: 'Categorias',
           rotasParaMenuSecundário,
         },
@@ -278,7 +278,7 @@ export default [
       {
         path: 'pdm',
         meta: {
-          restringirÀsPermissões: 'CadastroPdm.',
+          limitarÀsPermissões: 'CadastroPdm.',
           título: 'Programa de metas',
           rotasParaMenuSecundário,
         },
@@ -393,7 +393,7 @@ export default [
       {
         path: 'paineis',
         meta: {
-          restringirÀsPermissões: [
+          limitarÀsPermissões: [
             'CadastroPainel.inserir',
             'CadastroMeta.inserir',
           ],
@@ -440,7 +440,7 @@ export default [
       {
         path: 'paineis-grupos',
         meta: {
-          restringirÀsPermissões: [
+          limitarÀsPermissões: [
             'CadastroGrupoPaineis.inserir',
             'CadastroGrupoPaineis.editar',
             'CadastroGrupoPaineis.remover',
@@ -468,7 +468,7 @@ export default [
       {
         path: 'regioes',
         meta: {
-          restringirÀsPermissões: 'CadastroRegiao.',
+          limitarÀsPermissões: 'CadastroRegiao.',
           título: 'Regiões, subprefeituras e distritos',
           rotasParaMenuSecundário,
         },
@@ -552,7 +552,7 @@ export default [
           requerAutenticação: true,
           título: 'Portfolios',
           rotaPrescindeDeChave: true,
-          restringirÀsPermissões: 'Projeto.administrar_portfolios',
+          limitarÀsPermissões: 'Projeto.administrar_portfolios',
           presenteNoMenu: true,
           rotasParaMenuSecundário,
         },
@@ -596,7 +596,7 @@ export default [
           requerAutenticação: true,
           título: 'Painéis Externos',
           rotaPrescindeDeChave: true,
-          restringirÀsPermissões: 'CadastroPainelExterno.',
+          limitarÀsPermissões: 'CadastroPainelExterno.',
           rotasParaMenuSecundário,
         },
         children: [
@@ -720,7 +720,7 @@ export default [
           título: 'Tipos de acompanhamento',
           presenteNoMenu: true,
           rotaPrescindeDeChave: true,
-          restringirÀsPermissões: 'Projeto.administrar_portfolios',
+          limitarÀsPermissões: 'Projeto.administrar_portfolios',
           rotasParaMenuSecundário,
         },
 
