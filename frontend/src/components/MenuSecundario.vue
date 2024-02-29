@@ -45,7 +45,6 @@ const rotasParaMenu = computed(() => {
 
       if (!Array.isArray(rotas)) {
         acc.push({
-          títuloParaGrupoDeLinksNoMenu: route?.meta?.títuloParaGrupoDeLinksNoMenu,
           rotas: [],
         });
         rotas = acc[acc.length - 1].rotas;
