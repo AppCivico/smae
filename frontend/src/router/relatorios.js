@@ -116,7 +116,19 @@ export default {
           'RelatóriosOrçamentáriosPortfolio',
         ],
       },
-
+    ],
+    rotasParaMenuPrincipal: [
+      /// PdM
+      'RelatóriosMensais',
+      'RelatóriosSemestraisOuAnuais',
+      'RelatóriosDePrevisãoDeCustoPdM',
+      'RelatóriosOrçamentáriosPdM',
+      /// Projetos
+      'RelatóriosDeProjeto',
+      'RelatóriosDePortfolio',
+      'RelatóriosDeStatus',
+      'RelatóriosDePrevisãoDeCustoPortfolio',
+      'RelatóriosOrçamentáriosPortfolio',
     ],
   },
 
