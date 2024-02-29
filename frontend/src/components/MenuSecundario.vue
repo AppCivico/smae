@@ -175,7 +175,7 @@ function alternarItens(índice) {
     </nav>
   </div>
 </template>
-<style lang="less" scoped>
+<style lang="less">
 @largura-minima: 12px;
 /* 224 px */
 @largura-maxima: 14rem;
@@ -193,16 +193,17 @@ function alternarItens(índice) {
 
   .bs(0 0 40px 20px fadeOut(black, 93%));
 
+  + #dashboard {
+    .transition(margin-left);
+    // largura do menus somados
+    margin-left: calc(@largura-minima + 5.142857rem);
+  }
+
   &.aberto {
     + #dashboard {
       // largura do menus somados
       margin-left: calc(@largura-maxima + 5.142857rem);
     }
-  }
-
-  + #dashboard {
-    // largura do menus somados
-    margin-left: calc(@largura-minima + 5.142857rem);
   }
 }
 
