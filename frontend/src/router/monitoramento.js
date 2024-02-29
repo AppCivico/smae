@@ -57,6 +57,8 @@ export default {
 
     rotasParaMenuPrincipal: [
       'MonitoramentoDeCicloVigente',
+      'monitoramentoDeCiclosDeMetas',
+      'monitoramentoDeCiclosFechadosDeMetas',
     ],
   },
   children: [
