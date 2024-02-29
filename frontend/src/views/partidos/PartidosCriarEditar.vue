@@ -20,17 +20,23 @@ const partidosStore = usePartidosStore();
 const { chamadasPendentes, erro, itemParaEdição } = storeToRefs(partidosStore);
 
 async function onSubmit(values) {
-  values.numero = Number.parseInt(values.numero, 10);
   try {
     let r;
     const msg = props.partidoId
       ? 'Dados salvos com sucesso!'
       : 'Item adicionado com sucesso!';
 
+    const dataToSend = {
+      ...values,
+      numero: Number.parseInt(values.numero, 10),
+      encerramento: values.encerramento || null,
+      fundacao: values.fundacao || null,
+    };
+
     if (props.partidoId) {
-      r = await partidosStore.salvarItem(values, props.partidoId);
+      r = await partidosStore.salvarItem(dataToSend, props.partidoId);
     } else {
-      r = await partidosStore.salvarItem(values);
+      r = await partidosStore.salvarItem(dataToSend);
     }
     if (r) {
       alertStore.success(msg);
