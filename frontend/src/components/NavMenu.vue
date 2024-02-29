@@ -44,7 +44,7 @@ onBeforeRouteUpdate(() => {
   <!-- eslint-disable max-len vue/no-v-html -->
   <header
     class="cabeçalho"
-    :class="{ aberto: índiceDoItemAberto > -1 }"
+    :class="{ aberto: índiceDoItemAberto === Infinity }"
   >
     <hgroup class="cabeçalho__títulos">
       <h1 class="cabeçalho__nome-do-site">
