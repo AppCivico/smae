@@ -57,9 +57,12 @@ async function iniciar() {
   CiclosStore.getMetaVars(meta_id);
 
   if (!activePdm.value.id) await PdMStore.getActive();
-  CiclosStore.getMetaAnalise(activePdm.value.ciclo_fisico_ativo.id, meta_id);
-  CiclosStore.getMetaRisco(activePdm.value.ciclo_fisico_ativo.id, meta_id);
-  CiclosStore.getMetaFechamento(activePdm.value.ciclo_fisico_ativo.id, meta_id);
+
+  if (perm.PDM?.admin_cp || perm.PDM?.tecnico_cp) {
+    CiclosStore.getMetaAnalise(activePdm.value.ciclo_fisico_ativo.id, meta_id);
+    CiclosStore.getMetaRisco(activePdm.value.ciclo_fisico_ativo.id, meta_id);
+    CiclosStore.getMetaFechamento(activePdm.value.ciclo_fisico_ativo.id, meta_id);
+  }
 }
 
 function checkClose() {

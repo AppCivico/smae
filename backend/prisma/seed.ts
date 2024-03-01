@@ -1,4 +1,4 @@
-import { EleicaoTipo, ModuloSistema, PerfilAcesso, PrismaClient, Privilegio } from '@prisma/client';
+import { EleicaoTipo, ModuloSistema, PerfilAcesso, Prisma, PrismaClient, Privilegio } from '@prisma/client';
 import { ListaDePrivilegios } from '../src/common/ListaDePrivilegios';
 const prisma = new PrismaClient({ log: ['query'] });
 
@@ -45,7 +45,7 @@ const ModuloDescricao: Record<string, [string, ModuloSistema | null]> = {
     CadastroGrupoPaineisExternas: ['', null],
 } as const;
 
-const PrivConfig: Record<string, false | [ListaDePrivilegios, string][]> = {
+const PrivConfig: Record<string, false | [ListaDePrivilegios, string | false][]> = {
     CadastroCargo: false,
     CadastroCoordenadoria: false,
     CadastroDepartamento: false,
@@ -201,6 +201,8 @@ const PrivConfig: Record<string, false | [ListaDePrivilegios, string][]> = {
     Reports: [
         ['Reports.executar', 'Executar relatórios'],
         ['Reports.remover', 'Remover relatórios'],
+        ['Reports.dashboard_pdm', false], // lembrar que o delete sempre precisa vir antes do update/insert das novas
+        ['Reports.dashboard_portfolios', false],
     ],
     ReportsPdm: [['Reports.dashboard_pdm', 'Dashboard de programa de metas']],
     ReportsProjetos: [['Reports.dashboard_portfolios', 'Dashboard de portfólios']],
@@ -213,7 +215,10 @@ const PrivConfig: Record<string, false | [ListaDePrivilegios, string][]> = {
     ],
     Projeto: [
         ['Projeto.administrar_portfolios', 'Administrar todos os portfólios, sem acesso aos projetos'],
-        ['Projeto.administrar_portfolios_no_orgao', 'Criar e editar portfólios exclusivamente do órgão em que pertence'],
+        [
+            'Projeto.administrar_portfolios_no_orgao',
+            'Criar e editar portfólios exclusivamente do órgão em que pertence',
+        ],
         ['Projeto.administrador', 'Acesso total aos projetos'],
         ['Projeto.administrador_no_orgao', 'Acesso total aos projetos com o portfólio do órgão em que pertence'],
         ['Projeto.orcamento', 'Atualizar a Execução Orçamentária que for responsável'],
@@ -236,7 +241,7 @@ for (const codModulo in PrivConfig) {
     if (privilegio === false) continue;
 
     for (const priv of privilegio) {
-        todosPrivilegios.push(priv[0]);
+        if (typeof priv[1] == 'string') todosPrivilegios.push(priv[0]);
     }
 }
 console.log(todosPrivilegios);
@@ -462,8 +467,6 @@ async function main() {
 }
 
 async function atualizar_modulos_e_privilegios() {
-    const promises: Array<PromiseLike<any>> = [];
-
     const modulosInDb = await prisma.privilegioModulo.findMany();
     const modulosByCodigo: Record<string, (typeof modulosInDb)[0]> = {};
     for (const r of modulosInDb) {
@@ -486,8 +489,6 @@ async function atualizar_modulos_e_privilegios() {
         }
     }
 
-    await Promise.all(promises);
-
     await prisma.perfilPrivilegio.deleteMany({
         where: {
             privilegio: {
@@ -506,7 +507,7 @@ async function atualizar_modulos_e_privilegios() {
         },
     });
 
-    async function upsertModulo(codModulo: string, privilegio: [ListaDePrivilegios, string][]) {
+    async function upsertModulo(codModulo: string, privilegio: [ListaDePrivilegios, string | false][]) {
         const modConfig = ModuloDescricao[codModulo];
 
         if (!modConfig[1]) return;
@@ -527,9 +528,8 @@ async function atualizar_modulos_e_privilegios() {
                 },
             });
         }
-
         for (const priv of privilegio) {
-            promises.push(upsert_privilegios(moduloObject.id, priv[0], priv[1], privByCodigo));
+            await upsert_privilegios(moduloObject.id, priv[0], priv[1], privByCodigo);
         }
     }
 }
@@ -589,12 +589,33 @@ async function criar_emaildb_config() {
     });
 }
 
-async function upsert_privilegios(moduloId: number, codigo: string, nome: string, cache: Record<string, Privilegio>) {
+async function upsert_privilegios(
+    moduloId: number,
+    codigo: string,
+    nome: string | false,
+    cache: Record<string, Privilegio>
+) {
     const priv = cache[codigo];
+
+    if (nome === false && !priv) return Promise.resolve(0);
+    if (nome === false) {
+        if (priv.modulo_id !== moduloId) return Promise.resolve(0);
+
+        await prisma.perfilPrivilegio.deleteMany({
+            where: { privilegio_id: priv.id },
+        });
+        await prisma.privilegio.delete({
+            where: { id: priv.id },
+        });
+
+        delete cache[codigo];
+        return Promise.resolve(0);
+    }
+
     if (!priv || priv.nome !== nome) {
         return prisma.privilegio.upsert({
-            where: { codigo: codigo },
-            update: { nome: nome, modulo_id: moduloId },
+            where: { codigo: codigo, modulo_id: moduloId },
+            update: { nome: nome },
             create: {
                 nome: nome,
                 modulo_id: moduloId,
@@ -647,9 +668,11 @@ async function atualizar_perfil_acesso() {
             }
         } else {
             const perfilAcesso = await ensurePerfilAcessoIsEmpty(perfilAcessoConf, perfilAcessoByNome);
+
             const promises = perfilAcessoConf.privilegios.map((codPriv: ListaDePrivilegios) =>
                 criaPrivComPerfilDeAcesso(codPriv, perfilAcesso, privByCodigo)
             );
+
             await Promise.all(promises);
         }
     };
@@ -722,7 +745,7 @@ async function criaPrivComPerfilDeAcesso(
 ) {
     const priv = cache[codPriv];
     if (!priv) {
-        throw `Não encontrado priv ${codPriv}`;
+        throw new Error(`Não encontrado priv ${codPriv}`);
     }
     const idPriv = priv.id;
 
@@ -733,11 +756,18 @@ async function criaPrivComPerfilDeAcesso(
         },
     });
     if (!match) {
-        await prisma.perfilPrivilegio.create({
-            data: {
+        await prisma.perfilPrivilegio.upsert({
+            where: {
+                perfil_acesso_id_privilegio_id: {
+                    perfil_acesso_id: perfilAcesso.id,
+                    privilegio_id: idPriv,
+                },
+            },
+            create: {
                 perfil_acesso_id: perfilAcesso.id,
                 privilegio_id: idPriv,
             },
+            update: {},
         });
     }
 }
@@ -805,13 +835,13 @@ async function atualizar_superadmin() {
 }
 
 async function populateEleicao() {
-    const eleicoes: { ano: number, tipo: EleicaoTipo, atual_para_mandatos: boolean }[] = [
+    const eleicoes: { ano: number; tipo: EleicaoTipo; atual_para_mandatos: boolean }[] = [
         { ano: 2020, tipo: EleicaoTipo.Municipal, atual_para_mandatos: true },
         { ano: 2022, tipo: EleicaoTipo.Estadual, atual_para_mandatos: true },
         { ano: 2024, tipo: EleicaoTipo.Municipal, atual_para_mandatos: false },
         { ano: 2026, tipo: EleicaoTipo.Estadual, atual_para_mandatos: false },
         { ano: 2028, tipo: EleicaoTipo.Municipal, atual_para_mandatos: false },
-        { ano: 2030, tipo: EleicaoTipo.Estadual, atual_para_mandatos: false }
+        { ano: 2030, tipo: EleicaoTipo.Estadual, atual_para_mandatos: false },
     ];
 
     for (const eleicao of eleicoes) {
@@ -819,21 +849,20 @@ async function populateEleicao() {
             where: {
                 tipo_ano: {
                     ano: eleicao.ano,
-                    tipo: eleicao.tipo
-                }
+                    tipo: eleicao.tipo,
+                },
             },
             create: {
                 ano: eleicao.ano,
                 tipo: eleicao.tipo,
-                atual_para_mandatos: eleicao.atual_para_mandatos
+                atual_para_mandatos: eleicao.atual_para_mandatos,
             },
             update: {
                 ano: eleicao.ano,
                 tipo: eleicao.tipo,
-                atual_para_mandatos: eleicao.atual_para_mandatos
-            }
-        })
-
+                atual_para_mandatos: eleicao.atual_para_mandatos,
+            },
+        });
     }
 }
 
