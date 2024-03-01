@@ -22,6 +22,10 @@ export class ParlamentarDto {
     nome: string;
     nome_popular: string | null;
     em_atividade: boolean;
+
+    partido: PartidoDto | null;
+
+    bancadas: BancadaDto[] | null
 }
 
 export class ListParlamentarDto {
