@@ -790,6 +790,7 @@ model Arquivo {
     MetaCicloFisicoAnaliseDocumento MetaCicloFisicoAnaliseDocumento[]
     Relatorio                       Relatorio[]
     projeto_documentos              ProjetoDocumento[]
+    fotosParlamentar                Parlamentar[]
 
     ImportacaoLogInput                  ImportacaoOrcamento[]                 @relation("input")
     ImportacaoLogOutput                 ImportacaoOrcamento[]                 @relation("output")
@@ -4224,7 +4225,10 @@ model Parlamentar {
     atuacao      String?
     em_atividade Boolean @default(false)
 
-    mandatos ParlamentarMandato[]
+    foto_upload_id Int?
+    foto           Arquivo? @relation(fields: [foto_upload_id], references: [id])
+
+    mandatos   ParlamentarMandato[]
     assessores ParlamentarAssessor[]
 
     criado_por     Int?

@@ -12,6 +12,7 @@ export class ParlamentarDetailDto {
     email: string | null;
     atuacao: string | null;
     em_atividade: boolean;
+    foto: string | null;
 
     assessores: AssessorDto[] | null;
     mandatos: MandatoDto[] | null;

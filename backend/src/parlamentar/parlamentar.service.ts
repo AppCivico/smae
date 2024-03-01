@@ -7,18 +7,29 @@ import { DadosEleicaoNivel, Prisma } from '@prisma/client';
 import { ParlamentarDetailDto, ParlamentarDto } from './entities/parlamentar.entity';
 import { UpdateAssessorDto, UpdateMandatoDto, UpdateParlamentarDto } from './dto/update-parlamentar.dto';
 import { RemoveMandatoDepsDto } from './dto/remove-mandato-deps.dto';
+import { UploadService } from 'src/upload/upload.service';
 
 @Injectable()
 export class ParlamentarService {
-    constructor(private readonly prisma: PrismaService) {}
+    constructor(
+        private readonly prisma: PrismaService,
+        private readonly uploadService: UploadService
+    ) {}
 
     async create(dto: CreateParlamentarDto, user?: PessoaFromJwt): Promise<RecordWithId> {
+
+        let uploadId: number | null = null;
+        if (dto.upload_foto) {
+            uploadId = this.uploadService.checkUploadOrDownloadToken(dto.upload_foto);
+        }
+        delete dto.upload_foto;
 
         const created = await this.prisma.$transaction(
             async (prismaTxn: Prisma.TransactionClient): Promise<RecordWithId> => {
                 const parlamentar = await prismaTxn.parlamentar.create({
                     data: {
                         ...dto,
+                        foto_upload_id: uploadId,
                         criado_por: user ? user.id : undefined,
                         criado_em: new Date(Date.now()),
                     },
@@ -105,6 +116,7 @@ export class ParlamentarService {
                 email: true,
                 atuacao: true,
                 em_atividade: true,
+                foto_upload_id: true,
 
                 assessores: {
                     where: { removido_em: null },
@@ -210,6 +222,7 @@ export class ParlamentarService {
 
         return {
             ...parlamentar,
+            foto: parlamentar.foto_upload_id ? this.uploadService.getDownloadToken(parlamentar.foto_upload_id, '1 days').download_token : null, 
 
             mandatos: parlamentar.mandatos.map(m => {
                 return {
