@@ -11,12 +11,12 @@ const {
 const route = useRoute();
 const alertStore = useAlertStore();
 
-async function excluirPainel(id) {
+async function excluirParlamentar(id) {
   alertStore.confirmAction('Deseja mesmo remover esse item?', async () => {
     if (await parlamentarStore.excluirItem(id)) {
       parlamentarStore.$reset();
       parlamentarStore.buscarTudo();
-      alertStore.success('Portfolio removido.');
+      alertStore.success('Parlamentar removido.');
     }
   }, 'Remover');
 }
@@ -74,7 +74,7 @@ parlamentarStore.buscarTudo();
             class="like-a__text"
             arial-label="excluir"
             title="excluir"
-            @click="excluirPainel(item.id)"
+            @click="excluirParlamentar(item.id)"
           >
             <svg
               width="20"
