@@ -125,8 +125,9 @@ export class MfDashMetasService {
         // se passar só retornar_detalhes, mas não ativar nenhum filtro de variavel ou cronograma, então
         // vai filtrar usando qualquer um deles (basicamente vira um OR, mas ta calculado já isso lá no banco)
         // se passar algum desses dois, vira undefined para o prisma ignorar o valor desse campo
-        const usar_pendente_cp =
-            retornar_detalhes && !params.filtro_ponto_focal_variavel && !params.filtro_ponto_focal_cronograma;
+        const usar_pendente_cp = retornar_detalhes
+            ? !params.filtro_ponto_focal_variavel && !params.filtro_ponto_focal_cronograma
+            : true;
 
         if (params.retornar_pendentes) {
             const pendentes = await this.prisma.metaStatusConsolidadoCf.findMany({
