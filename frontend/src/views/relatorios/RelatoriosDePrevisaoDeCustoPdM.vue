@@ -47,7 +47,7 @@ iniciar();
       Novo relatório
     </router-link>
   </div>
-
+  <p class="texto--explicativo">SMAE gera uma planilha contendo os registros de previsão de custo registrados nas metas</p>
   <TabelaBásica
     class="mb1"
     :etiquetas-para-valores-de-parâmetros="etiquetasParaValoresDeParâmetros"
