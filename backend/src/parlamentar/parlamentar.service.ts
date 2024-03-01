@@ -82,10 +82,11 @@ export class ParlamentarService {
             return {
                 ...p,
 
-                partido: {...p.mandatos[0].partido_atual},
-                bancadas: p.mandatos[0].bancadas.map(b => {
+                cargo: p.mandatos.length > 0 ? p.mandatos[0].cargo : null,
+                partido: p.mandatos.length > 0 && p.mandatos[0].partido_atual ? {...p.mandatos[0].partido_atual} : null,
+                bancadas:  p.mandatos.length > 0 && p.mandatos[0].partido_atual ? p.mandatos[0].bancadas.map(b => {
                     return {...b.bancada}
-                })
+                }) : null
             }
         });
     }
