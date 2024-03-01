@@ -95,5 +95,11 @@ const rotasParaMigalhasDePão = computed(() => {
 .migalhas-de-pão__link {
   color: @primary;
   white-space: wrap;
+
+  &:hover,
+  &:focus,
+  &:active {
+    color: @amarelo;
+  }
 }
 </style>
