@@ -67,15 +67,16 @@ const rotasParaMigalhasDePão = computed(() => {
 .migalhas-de-pão {
   text-transform: uppercase;
   font-weight: 700;
+  line-height: 1.5em;
 }
 
 .migalhas-de-pão__lista {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem 0;
 }
 
 .migalhas-de-pão__item {
+  display: inline;
+  white-space: nowrap;
+
   &::after {
     color: @amarelo;
     content: '/';
@@ -93,5 +94,6 @@ const rotasParaMigalhasDePão = computed(() => {
 
 .migalhas-de-pão__link {
   color: @primary;
+  white-space: wrap;
 }
 </style>
