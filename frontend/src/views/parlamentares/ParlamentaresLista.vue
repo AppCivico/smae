@@ -48,7 +48,13 @@ parlamentarStore.buscarTudo();
           Nome
         </th>
         <th>
+          Cargo
+        </th>
+        <th>
           Partido
+        </th>
+        <th>
+          Bancada
         </th>
         <th />
         <th />
@@ -60,9 +66,9 @@ parlamentarStore.buscarTudo();
         :key="item.id"
       >
         <td>{{ item.nome }}</td>
-        <td>
-          {{ item.partido }}
-        </td>
+        <td>{{ item.cargo }}</td>
+        <td>{{ item.partido }}</td>
+        <td> {{ item.bancada }}</td>
         <td>
           <button
             class="like-a__text"
