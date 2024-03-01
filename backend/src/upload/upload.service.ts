@@ -100,6 +100,12 @@ export class UploadService {
                 } else if (file.size > 1048576) {
                     throw new HttpException('O arquivo de Logo do PDM precisa ser menor que 1 Megabyte', 400);
                 }
+            } else if (createUploadDto.tipo === TipoUpload.FOTO_PARLAMENTAR) {
+                if (/(\.png|jpg|jpeg)$/i.test(file.originalname) == false) {
+                    throw new HttpException('O arquivo do Logo do PDM precisa ser um arquivo PNG, JPG ou JPEG', 400);
+                } else if (file.size > 1048576 * 5) {
+                    throw new HttpException('O arquivo de imagem do parlamentar precisa ser menor que 5 Megabyte', 400);
+                }
             }
 
             originalname = file.originalname;
