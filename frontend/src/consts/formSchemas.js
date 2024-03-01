@@ -687,8 +687,9 @@ export const parlamentar = object({
     .label('Biografia'),
   atuacao: string()
     .label('Área de atuação'),
-  contate: string()
+  contato: string()
     .label('Telefone'),
+  avatar: string(),
 });
 
 export const processo = object()
