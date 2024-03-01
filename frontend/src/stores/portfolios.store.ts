@@ -37,7 +37,7 @@ export const usePortfolioStore = defineStore('portfolios', {
       this.erro = null;
 
       try {
-        const resposta = await this.requestS.get(`${baseUrl}/portfolio/${id}`, params);
+        const resposta = await this.requestS.get(`${baseUrl}/portfolio/para-projetos/${id}`, params);
         this.emFoco = {
           ...resposta,
         };
@@ -52,7 +52,7 @@ export const usePortfolioStore = defineStore('portfolios', {
       this.erro = null;
 
       try {
-        const { linhas } = await this.requestS.get(`${baseUrl}/portfolio`, params);
+        const { linhas } = await this.requestS.get(`${baseUrl}/portfolio/para-projetos`, params);
         this.lista = linhas;
       } catch (erro: unknown) {
         this.erro = erro;
