@@ -63,7 +63,7 @@ export const router = createRouter({
           path: 'novo',
           component: ParlamentaresCriarEditar,
           meta: {
-            título: 'Novo parlamentar',
+            título: 'Registro de parlamentar',
           },
         },
         {

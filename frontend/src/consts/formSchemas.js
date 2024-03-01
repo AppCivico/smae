@@ -646,12 +646,21 @@ export const bancada = object({
 });
 
 export const parlamentar = object({
-  partido: string()
-    .label('Partido')
-    .max(20),
-  nome: string()
+  nome_popular: string()
     .label('Nome')
     .max(250),
+  nome: string()
+    .label('Nome Civil')
+    .max(250),
+  aniversario: string()
+    .label('Aniversário')
+    .nullable(),
+  biografia: string()
+    .label('Biografia'),
+  atuacao: string()
+    .label('Área de atuação'),
+  contate: string()
+    .label('Telefone'),
 });
 
 export const processo = object()
