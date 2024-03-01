@@ -22,14 +22,8 @@ function dateToTitle(d) {
 </script>
 <template>
   <Dashboard>
-    <div class="breadcrumbinline">
-      <router-link to="/monitoramento">
-        Monitoramento
-      </router-link>
-      <router-link to="/monitoramento/ciclos">
-        Próximos Ciclos
-      </router-link>
-    </div>
+    <MigalhasDePão class="mb1" />
+
     <div class="flex spacebetween center mb2">
       <h1>Ciclos fechados</h1>
       <hr class="ml2 f1">
