@@ -28,6 +28,7 @@ relatóriosStore.getAll({ fonte });
       Novo relatório
     </router-link>
   </div>
+  <p class="texto--explicativo">SMAE gera um conjunto de 4 planilhas contendo os dados do ciclo mensal de monitoramento físico do mês informado.</p>
   <!--div class="flex center mb2">
     <div class="f2 search">
       <input
