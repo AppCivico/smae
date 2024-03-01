@@ -60,7 +60,15 @@ if (props.parlamentarId) {
     :initial-values="itemParaEdição"
     @submit="onSubmit"
   >
-    <InputImageProfile />
+    <Field
+      v-slot="{ handleChange, value }"
+      name="variavel_da_foto_aqui"
+    >
+      <InputImageProfile
+        :model-value="value"
+        @update:model-value="(e) => handleChange(e)"
+      />
+    </Field>
     <FormErrorsList :errors="errors" />
 
     <div class="flex spacebetween center mb2">
