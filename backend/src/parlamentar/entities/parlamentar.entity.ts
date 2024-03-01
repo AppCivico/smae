@@ -24,7 +24,7 @@ export class ParlamentarDto {
     em_atividade: boolean;
 
     partido: PartidoDto | null;
-
+    cargo: ParlamentarCargo | null;
     bancadas: BancadaDto[] | null
 }
 
