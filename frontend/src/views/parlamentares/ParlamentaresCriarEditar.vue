@@ -1,11 +1,11 @@
 <script setup>
-import InputImageProfile from '@/components/InputImageProfile.vue';
 import { parlamentar as schema } from '@/consts/formSchemas';
 import { useAlertStore } from '@/stores/alert.store';
 import { storeToRefs } from 'pinia';
-import { ErrorMessage, Field, Form } from 'vee-validate';
 import { useRoute, useRouter } from 'vue-router';
 import { useParlamentaresStore } from '@/stores/parlamentares.store';
+import InputImageProfile from '@/components/InputImageProfile.vue';
+import { ErrorMessage, Field, Form } from 'vee-validate';
 
 const router = useRouter();
 const route = useRoute();
@@ -60,15 +60,109 @@ if (props.parlamentarId) {
     :initial-values="itemParaEdição"
     @submit="onSubmit"
   >
-    <Field
-      v-slot="{ handleChange, value }"
-      name="variavel_da_foto_aqui"
-    >
-      <InputImageProfile
-        :model-value="value"
-        @update:model-value="(e) => handleChange(e)"
-      />
-    </Field>
+    <div class="parlamentar-container">
+      <div>
+        <div class="flex g2 mb1">
+          <div class="f1">
+            <LabelFromYup
+              name="nome"
+              :schema="schema"
+            />
+            <Field
+              name="nome"
+              type="text"
+              class="inputtext light mb1"
+            />
+            <ErrorMessage
+              class="error-msg mb1"
+              name="nome"
+            />
+          </div>
+        </div>
+
+        <div class="flex g2 mb1">
+          <div class="f1">
+            <LabelFromYup
+              name="nome_popular"
+              :schema="schema"
+            />
+            <Field
+              name="nome_popular"
+              type="text"
+              class="inputtext light mb1"
+            />
+            <ErrorMessage
+              class="error-msg mb1"
+              name="nome_popular"
+            />
+          </div>
+        </div>
+
+        <div class="flex f1 mb1">
+          <div class="f1">
+            <LabelFromYup
+              name="aniversario"
+              :schema="schema"
+            />
+            <Field
+              name="aniversario"
+              type="text"
+              class="inputtext light mb1"
+            />
+            <ErrorMessage
+              class="error-msg mb1"
+              name="aniversario"
+            />
+          </div>
+        </div>
+
+        <div class="flex f1 mb1">
+          <div class="f1">
+            <LabelFromYup
+              name="atuacao"
+              :schema="schema"
+            />
+            <Field
+              name="atuacao"
+              type="text"
+              class="inputtext light mb1"
+            />
+            <ErrorMessage
+              class="error-msg mb1"
+              name="atuacao"
+            />
+          </div>
+        </div>
+
+        <div class="flex g2 mb1">
+          <div class="f1">
+            <LabelFromYup
+              name="biografia"
+              :schema="schema"
+            />
+            <Field
+              name="biografia"
+              as="textarea"
+              rows="5"
+              class="inputtext light mb1"
+            />
+            <ErrorMessage
+              class="error-msg mb1"
+              name="biografia"
+            />
+          </div>
+        </div>
+      </div>
+      <Field
+        v-slot="{ handleChange, value }"
+        name="avatar"
+      >
+        <InputImageProfile
+          :model-value="value"
+          @update:model-value="(e) => handleChange(e)"
+        />
+      </Field>
+    </div>
     <FormErrorsList :errors="errors" />
 
     <div class="flex spacebetween center mb2">
@@ -99,4 +193,31 @@ if (props.parlamentarId) {
       {{ erro }}
     </div>
   </div>
+  <span
+    v-if="chamadasPendentes?.emFoco"
+    class="spinner"
+  >
+    Carregando
+  </span>
+
+  <div
+    v-if="erro"
+    class="error p1"
+  >
+    <div class="error-msg">
+      {{ erro }}
+    </div>
+  </div>
 </template>
+
+<style scoped lang="less">
+.parlamentar-container {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 15px;
+
+    & > :nth-child(2) {
+        justify-self: end;
+    }
+}
+</style>
