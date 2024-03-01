@@ -43,6 +43,14 @@ export class CreateParlamentarDto {
     @IsOptional()
     @IsBoolean()
     em_atividade: boolean
+
+    /**
+     * Upload de foto
+     */
+    @IsOptional()
+    @ValidateIf((object, value) => value !== null)
+    @IsString({ message: '$property| upload_token de um arquivo de foto' })
+    upload_foto?: string | null;
 }
 
 export class CreateAssessorDto {
