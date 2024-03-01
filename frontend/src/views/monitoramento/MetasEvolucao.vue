@@ -172,6 +172,8 @@ iniciar();
 </script>
 <template>
   <Dashboard>
+    <MigalhasDePão class="mb1" />
+
     <div class="label tamarelo">
       Evolução da Meta
     </div>

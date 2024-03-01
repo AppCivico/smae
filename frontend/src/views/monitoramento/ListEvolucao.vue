@@ -46,6 +46,8 @@ function dateToTitle(d) {
 </script>
 <template>
   <Dashboard>
+    <MigalhasDePão class="mb1" />
+
     <div class="label tamarelo">
       Metas por fase de evolução
     </div>

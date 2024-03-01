@@ -70,6 +70,8 @@ function vazio(s) {
 </script>
 <template>
   <Dashboard>
+    <MigalhasDePão class="mb1" />
+
     <div class="label tamarelo">
       Cronograma de {{ parentLabel }}
     </div>
