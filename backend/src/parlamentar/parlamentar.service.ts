@@ -42,12 +42,52 @@ export class ParlamentarService {
                 id: true,
                 nome: true,
                 nome_popular: true,
-                em_atividade: true
+                em_atividade: true,
+
+                mandatos: {
+                    where: {
+                        removido_em: null,
+                        eleicao: { atual_para_mandatos: true },
+                    },
+                    take: 1,
+                    select: {
+                        cargo: true,
+                        partido_atual: {
+                            select: {
+                                id: true,
+                                nome: true,
+                                sigla: true,
+                                numero: true
+                            }
+                        },
+                        bancadas: {
+                            where: { bancada: { removido_em: null } },
+                            select: {
+                                bancada: {
+                                    select: {
+                                        id: true,
+                                        nome: true,
+                                        sigla: true,
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
             },
             orderBy: [{ nome: 'asc' }],
         });
 
-        return listActive;
+        return listActive.map(p => {
+            return {
+                ...p,
+
+                partido: {...p.mandatos[0].partido_atual},
+                bancadas: p.mandatos[0].bancadas.map(b => {
+                    return {...b.bancada}
+                })
+            }
+        });
     }
 
     async findOne(id: number, user: PessoaFromJwt): Promise<ParlamentarDetailDto> {
@@ -372,6 +412,9 @@ export class ParlamentarService {
 
         if (dto.nivel == DadosEleicaoNivel.Estado && dto.municipio_tipo != undefined)
           throw new HttpException('municipio_tipo| Não deve ser enviado para eleição de nível estadual.', 400);
+
+        if (dto.nivel !== DadosEleicaoNivel.Estado && !dto.municipio_tipo)
+          throw new HttpException('municipio_tipo| Deve ser informado para nível.', 400);
         
         const created = await this.prisma.$transaction(
             async (prismaTxn: Prisma.TransactionClient): Promise<RecordWithId> => {
