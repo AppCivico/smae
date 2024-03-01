@@ -24,6 +24,8 @@ relatóriosStore.getAll({ fonte });
       Novo relatório
     </router-link>
   </div>
+  <p class="texto--explicativo">SMAE gera 2 planilhas contendo os registros de execução orçamentária e do orçamento planejado. A versão analítica retorna todos os registros e a versão consolidada retorna somente o valor vigente no momento.</p>
+
   <!--div class="flex center mb2">
       <div class="f2 search">
           <input v-model="filters.textualSearch" @input="filterItems" placeholder="Buscar" type="text" class="inputtext" />
