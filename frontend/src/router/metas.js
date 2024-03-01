@@ -37,17 +37,12 @@ import MetaOrçamentoRaiz from '@/views/orcamento/MetaOrçamentoRaiz.vue';
 
 const rotasParaMenuSecundário = (nível) => {
   let rotasDoPdm = [];
-  const rotasDoOrçamento = [
-    'MetaOrcamentoCusto',
-    'MetaOrcamentoPlanejado',
-    'MetaOrcamentoRealizado',
-  ];
+  let rotasDoOrçamento = [];
 
   switch (nível) {
     case 'atividade':
       rotasDoPdm = [
         'resumoDeAtividade',
-        'painelDaMeta',
         'evoluçãoDaAtividade',
         'cronogramaDaAtividade',
       ];
@@ -56,7 +51,6 @@ const rotasParaMenuSecundário = (nível) => {
     case 'iniciativa':
       rotasDoPdm = [
         'resumoDeIniciativa',
-        'painelDaMeta',
         'evoluçãoDaIniciativa',
         'cronogramaDaIniciativa',
       ];
@@ -69,6 +63,11 @@ const rotasParaMenuSecundário = (nível) => {
         'painelDaMeta',
         'evoluçãoDaMeta',
         'cronogramaDaMeta',
+      ];
+      rotasDoOrçamento = [
+        'MetaOrcamentoCusto',
+        'MetaOrcamentoPlanejado',
+        'MetaOrcamentoRealizado',
       ];
       break;
   }
