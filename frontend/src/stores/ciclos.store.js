@@ -501,5 +501,22 @@ export const useCiclosStore = defineStore({
         return acc;
       }, {})
       : {}),
+
+    iniciativaEmFoco({ SingleMeta }) {
+      const { iniciativa_id: iniciativaId } = this.route.params;
+
+      return !Array.isArray(SingleMeta?.meta?.iniciativas)
+        ? null
+        : SingleMeta.meta.iniciativas
+          .find((x) => x.iniciativa.id === Number(iniciativaId)) || null;
+    },
+    atividadeEmFoco({ iniciativaEmFoco }) {
+      const { atividade_id: atividadeId } = this.route.params;
+
+      return !Array.isArray(iniciativaEmFoco?.atividades)
+        ? null
+        : iniciativaEmFoco.atividades
+          .find((x) => x.atividade.id === Number(atividadeId)) || null;
+    },
   },
 });
