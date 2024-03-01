@@ -25,6 +25,8 @@ if (!activePdm.value.id) {
 <template>
   <Dashboard class="página-de-monitoramento">
     <header class="flex center mb2 spacebetween g1 flexwrap">
+      <MigalhasDePão class="mb1" />
+
       <div class="t12 uc w700 tamarelo fb100">
         Ciclo vigente
       </div>
