@@ -37,7 +37,9 @@ const geolocalizaçãoPorToken = computed(() => (
 const valoresIniciais = computed(() => (SingleEtapa.value?.loading
   || SingleEtapa.value?.error
   || !SingleEtapa.value?.id
-  ? {}
+  ? {
+    endereco_obrigatorio: false,
+  }
   : {
     ...SingleEtapa.value,
     geolocalizacao: SingleEtapa.value?.geolocalizacao?.map((x) => x.token) || [],
