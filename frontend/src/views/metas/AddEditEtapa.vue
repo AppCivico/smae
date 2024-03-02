@@ -1,5 +1,6 @@
 <script setup>
 import { default as AutocompleteField } from '@/components/AutocompleteField.vue';
+import MapaCampo from '@/components/geo/MapaCampo.vue';
 import { etapa as schema } from '@/consts/formSchemas';
 import { router } from '@/router';
 import { useAlertStore } from '@/stores/alert.store';
@@ -11,10 +12,12 @@ import { useIniciativasStore } from '@/stores/iniciativas.store';
 import { useMetasStore } from '@/stores/metas.store';
 import { useRegionsStore } from '@/stores/regions.store';
 import { storeToRefs } from 'pinia';
-import { Field, Form } from 'vee-validate';
-import { ref } from 'vue';
+import { ErrorMessage, Field, Form } from 'vee-validate';
+import { computed, defineOptions, ref } from 'vue';
 import { useRoute } from 'vue-router';
 import temDescendenteEmOutraRegião from './auxiliares/temDescendenteEmOutraRegiao.ts';
+
+defineOptions({ inheritAttrs: false });
 
 const editModalStore = useEditModalStore();
 const alertStore = useAlertStore();
@@ -73,10 +76,31 @@ const acumulativa_meta_o = ref(0);
 const lastParent = ref({});
 const usersAvailable = ref([]);
 const responsaveis = ref({ participantes: [], busca: '' });
-const virtualParent = ref({
-  peso: 1,
-  percentual_execucao: 0,
-});
+
+const geolocalizaçãoPorToken = computed(() => (
+  singleEtapa.value?.loading
+    || singleEtapa.value?.error
+    || !singleEtapa.value?.id
+    ? {}
+    : singleEtapa.value?.geolocalizacao?.reduce((acc, cur) => {
+      acc[cur.token] = cur;
+      return acc;
+    }, {})
+));
+
+const valoresIniciais = computed(() => (singleEtapa.value?.loading
+  || singleEtapa.value?.error
+  || !singleEtapa.value?.id
+  ? {
+    peso: 1,
+    percentual_execucao: 0,
+    endereco_obrigatorio: false,
+    geolocalizacao: [],
+  }
+  : {
+    ...singleEtapa.value,
+    geolocalizacao: singleEtapa.value?.geolocalizacao?.map((x) => x.token) || [],
+  }));
 
 if (etapa_id) {
   title = 'Editar etapa';
@@ -279,7 +303,7 @@ function maskDate(el) {
     <Form
       v-slot="{ errors, isSubmitting, values }"
       :validation-schema="schema"
-      :initial-values="etapa_id ? singleEtapa.etapa : virtualParent"
+      :initial-values="valoresIniciais"
       @submit="onSubmit"
     >
       <div>
@@ -474,6 +498,49 @@ function maskDate(el) {
         <div class="error-msg">
           {{ errors.regiao_id }}
         </div>
+      </div>
+
+      <div
+        v-if="singleCronograma.regionalizavel && regions"
+        class="mb1"
+      >
+        <Field
+          id="endereco_obrigatorio"
+          name="endereco_obrigatorio"
+          type="checkbox"
+          :value="true"
+          :unchecked-value="false"
+          class="inputcheckbox"
+        />
+        <label
+          for="endereco_obrigatorio"
+          :class="{ 'error': errors.endereco_obrigatorio }"
+        >
+          Endereço obrigatório
+        </label>
+        <div class="error-msg">
+          {{ errors.endereco_obrigatorio }}
+        </div>
+      </div>
+
+      <div
+        v-if="values.endereco_obrigatorio"
+        class="mb1"
+      >
+        <legend class="label mt2 mb1legend">
+          Localização
+        </legend>
+
+        <MapaCampo
+          v-model="values.geolocalizacao"
+          name="geolocalizacao"
+          :geolocalização-por-token="geolocalizaçãoPorToken"
+        />
+
+        <ErrorMessage
+          name="geolocalizacao"
+          class="error-msg"
+        />
       </div>
 
       <hr class="mt2 mb2">
