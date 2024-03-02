@@ -325,7 +325,7 @@ function maskDate(el) {
             name="ordem"
             type="number"
             class="inputtext light mb1"
-            :value="etapa_id ? singleEtapa?.ordem : ordem"
+            :value="etapa_id ? singleEtapa?.ordem : undefined"
             :class="{ 'error': errors.ordem }"
           />
           <div class="error-msg">
@@ -341,7 +341,7 @@ function maskDate(el) {
             step="1"
             min="0"
             class="inputtext light mb1"
-            :value="etapa_id ? singleEtapa?.peso : peso"
+            :value="etapa_id ? singleEtapa?.peso : undefined"
             :class="{ 'error': errors.peso }"
           />
           <div class="error-msg">
@@ -358,7 +358,7 @@ function maskDate(el) {
             min="0"
             max="100"
             class="inputtext light mb1"
-            :value="etapa_id ? singleEtapa?.percentual_execucao : percentual_execucao"
+            :value="etapa_id ? singleEtapa?.percentual_execucao : undefined"
             :class="{ 'error': errors.percentual_execucao }"
           />
           <div class="error-msg">
@@ -699,10 +699,10 @@ function maskDate(el) {
   <template v-if="singleEtapa?.loading">
     <span class="spinner">Carregando</span>
   </template>
-  <template v-if="singleEtapa?.error || error">
+  <template v-if="singleEtapa?.error">
     <div class="error p1">
       <div class="error-msg">
-        {{ singleEtapa.error ?? error }}
+        {{ singleEtapa.error }}
       </div>
     </div>
   </template>
