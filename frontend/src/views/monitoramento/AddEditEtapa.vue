@@ -1,6 +1,6 @@
 <script setup>
-import { etapaDeMonitoramento as schema } from '@/consts/formSchemas';
 import MapaCampo from '@/components/geo/MapaCampo.vue';
+import { etapaDeMonitoramento as schema } from '@/consts/formSchemas';
 import fieldToDate from '@/helpers/fieldToDate';
 import { router } from '@/router';
 import { useAlertStore } from '@/stores/alert.store';
@@ -8,8 +8,8 @@ import { useCiclosStore } from '@/stores/ciclos.store';
 import { useEditModalStore } from '@/stores/editModal.store';
 import { storeToRefs } from 'pinia';
 import { ErrorMessage, Field, Form } from 'vee-validate';
-import { useRoute } from 'vue-router';
 import { computed, defineOptions } from 'vue';
+import { useRoute } from 'vue-router';
 
 defineOptions({ inheritAttrs: false });
 const editModalStore = useEditModalStore();
