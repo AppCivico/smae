@@ -405,16 +405,15 @@ function maskDate(el) {
           <select
             v-model="level1"
             class="inputtext light mb1"
-            :disabled="
-              minLevel >= 1 ||
-                temDescendenteEmOutraRegião(values.regiao_id, values.etapa_filha)"
+            :disabled="minLevel >= 1 ||
+      temDescendenteEmOutraRegião(values.regiao_id, values.etapa_filha)"
             @change="lastlevel"
           >
             <option value="">
               Selecione
             </option>
             <option
-              v-for="(r,i) in regions[0]?.children"
+              v-for="(r, i) in regions[0]?.children"
               :key="i"
               :value="i"
             >
@@ -422,22 +421,19 @@ function maskDate(el) {
             </option>
           </select>
           <template
-            v-if="singleCronograma.nivel_regionalizacao >= 3
-              && level1 !== null"
+            v-if="singleCronograma.nivel_regionalizacao >= 3 && level1 !== null"
           >
             <select
               v-model="level2"
               class="inputtext light mb1"
-              :disabled="
-                minLevel >= 2
-                  || temDescendenteEmOutraRegião(values.regiao_id, values.etapa_filha)"
+              :disabled="minLevel >= 2 || temDescendenteEmOutraRegião(values.regiao_id, values.etapa_filha)"
               @change="lastlevel"
             >
               <option value="">
                 Selecione
               </option>
               <option
-                v-for="(rr,ii) in regions[0]?.children[level1]?.children"
+                v-for="(rr, ii) in regions[0]?.children[level1]?.children"
                 :key="ii"
                 :value="ii"
               >
@@ -445,22 +441,19 @@ function maskDate(el) {
               </option>
             </select>
             <template
-              v-if="singleCronograma.nivel_regionalizacao == 4
-                && level2 !== null"
+              v-if="singleCronograma.nivel_regionalizacao == 4 && level2 !== null"
             >
               <select
                 v-model="level3"
                 class="inputtext light mb1"
-                :disabled="
-                  minLevel >= 3
-                    || temDescendenteEmOutraRegião(values.regiao_id, values.etapa_filha)"
+                :disabled="minLevel >= 3 || temDescendenteEmOutraRegião(values.regiao_id, values.etapa_filha) "
                 @change="lastlevel"
               >
                 <option value="">
                   Selecione
                 </option>
                 <option
-                  v-for="(rrr,iii) in regions[0]?.children[level1]?.children[level2]?.children"
+                  v-for="(rrr, iii) in regions[0]?.children[level1]?.children[level2]?.children"
                   :key="iii"
                   :value="iii"
                 >
@@ -469,8 +462,7 @@ function maskDate(el) {
               </select>
             </template>
             <template
-              v-else-if="singleCronograma.nivel_regionalizacao == 4
-                && level2 === null"
+              v-else-if="singleCronograma.nivel_regionalizacao == 4 && level2 === null"
             >
               <input
                 class="inputtext light mb1"
@@ -481,8 +473,7 @@ function maskDate(el) {
             </template>
           </template>
           <template
-            v-else-if="singleCronograma.nivel_regionalizacao >= 3
-              && level1 === null"
+            v-else-if="singleCronograma.nivel_regionalizacao >= 3 && level1 === null"
           >
             <input
               class="inputtext light mb1"
