@@ -190,6 +190,17 @@ export const etapa = object()
   .shape({
     descricao: string()
       .nullable(),
+    endereco_obrigatorio: boolean()
+      .required(),
+    geolocalizacao: array()
+      .label('Endereços')
+      .of(
+        string()
+          .min(10, 'Endereço inválido'),
+      )
+      .when('endereco_obrigatorio', (enderecoObrigatorio, field) => (enderecoObrigatorio
+        ? field.min(1)
+        : field)),
     inicio_previsto: string()
       .required('Preencha a data')
       .matches(regEx['day/month/year'], 'Formato inválido'),
@@ -224,6 +235,17 @@ export const etapa = object()
 
 export const etapaDeMonitoramento = object()
   .shape({
+    endereco_obrigatorio: boolean()
+      .required(),
+    geolocalizacao: array()
+      .label('Endereços')
+      .of(
+        string()
+          .min(10, 'Endereço inválido'),
+      )
+      .when('endereco_obrigatorio', (enderecoObrigatorio, field) => (enderecoObrigatorio
+        ? field.min(1)
+        : field)),
     inicio_real: string()
       .nullable()
       .required('Preencha a data')
