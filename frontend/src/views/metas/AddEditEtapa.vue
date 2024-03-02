@@ -394,8 +394,11 @@ function maskDate(el) {
         </div>
       </div>
 
-      <hr class="mt2 mb2">
-      <div v-if="singleCronograma.regionalizavel&&regions">
+      <hr
+        v-if="singleCronograma.regionalizavel && regions"
+        class="mt2 mb2"
+      >
+      <div v-if="singleCronograma.regionalizavel && regions">
         <label class="label">Região</label>
 
         <template v-if="singleCronograma.nivel_regionalizacao >= 2">
