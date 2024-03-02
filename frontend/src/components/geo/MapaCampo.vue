@@ -510,7 +510,7 @@ const formulárioSujo = useIsFormDirty();
     :disabled="!model.length < Number(props.max)"
     class="block like-a__text addlink mb1 mt1"
     type="button"
-    @click="model.push([])"
+    @click="model.push('')"
   >
     <svg
       width="20"
