@@ -1,23 +1,23 @@
 <script setup>
+import SmallModal from '@/components/SmallModal.vue';
+import MapaExibir from '@/components/geo/MapaExibir.vue';
 import { geoLocalização as schema } from '@/consts/formSchemas';
+import tiposDeLogradouro from '@/consts/tiposDeLogradouro';
+import requestS from '@/helpers/requestS.ts';
 import { useAlertStore } from '@/stores/alert.store';
 import { useRegionsStore } from '@/stores/regions.store';
 import { cloneDeep, isArray, merge } from 'lodash';
-import MapaExibir from '@/components/geo/MapaExibir.vue';
-import SmallModal from '@/components/SmallModal.vue';
 import { storeToRefs } from 'pinia';
 import {
-  computed, defineModel, defineOptions, ref,
-} from 'vue';
-import tiposDeLogradouro from '@/consts/tiposDeLogradouro';
-import requestS from '@/helpers/requestS.ts';
-import {
-  Field,
   ErrorMessage,
+  Field,
   useField,
   useForm,
   useIsFormDirty,
 } from 'vee-validate';
+import {
+  computed, defineModel, defineOptions, ref,
+} from 'vue';
 
 const RegionsStore = useRegionsStore();
 const { camadas, chamadasPendentes } = storeToRefs(RegionsStore);
@@ -26,7 +26,10 @@ const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
 defineOptions({ inheritAttrs: false });
 
-const model = defineModel({ required: true });
+const model = defineModel({
+  required: true,
+  default: () => [],
+});
 const props = defineProps({
   título: {
     type: String,
@@ -78,7 +81,7 @@ const camadasSelecionadas = computed(() => (Array.isArray(sugestãoSelecionada.v
   : []));
 
 const {
-  errors, handleSubmit, isSubmitting, resetField, resetForm, validateField, values: carga,
+  errors, handleSubmit, isSubmitting, resetField, validateField, values: carga,
 } = useForm({
   initialValues: valoresIniciais,
   validationSchema: schema,
