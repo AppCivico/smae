@@ -422,7 +422,7 @@ export class PdmService {
 
                 this.logger.debug(`Atualizando metas consolidadas`);
                 await prismaTx.$queryRaw`
-                    SELECT f_add_refresh_meta_task(meta_id)
+                    SELECT f_add_refresh_meta_task(meta_id)::text
                     FROM meta_status_consolidado_cf cf
                     WHERE (atualizado_em at time zone ${SYSTEM_TIMEZONE})::date != current_date at time zone ${SYSTEM_TIMEZONE}
                 `;
