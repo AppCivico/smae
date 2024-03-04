@@ -222,6 +222,7 @@ export class ParlamentarService {
 
         return {
             ...parlamentar,
+            nascimento: parlamentar.nascimento?.toISOString().split('T')[0],
             foto: parlamentar.foto_upload_id ? this.uploadService.getDownloadToken(parlamentar.foto_upload_id, '1 days').download_token : null, 
 
             mandatos: parlamentar.mandatos.map(m => {
