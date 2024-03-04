@@ -44,7 +44,7 @@ const props = defineProps({
       Number,
       String,
     ],
-    default: 0,
+    default: Infinity,
   },
   name: {
     type: String,
@@ -394,6 +394,7 @@ const formulárioSujo = useIsFormDirty();
               :opções-do-marcador="{ draggable: true }"
             />
           </Transition>
+
           <div class="flex g2 flexwrap">
             <div class="mb1 f2">
               <LabelFromYup
@@ -507,7 +508,7 @@ const formulárioSujo = useIsFormDirty();
   </ul>
 
   <button
-    :disabled="!model.length < Number(props.max)"
+    :disabled="!(model.length < Number(props.max)) "
     class="block like-a__text addlink mb1 mt1"
     type="button"
     @click="model.push('')"
