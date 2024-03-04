@@ -405,8 +405,8 @@ function maskDate(el) {
           <select
             v-model="level1"
             class="inputtext light mb1"
-            :disabled="minLevel >= 1 ||
-      temDescendenteEmOutraRegião(values.regiao_id, values.etapa_filha)"
+            :disabled="minLevel >= 1
+              || temDescendenteEmOutraRegião(values.regiao_id, values.etapa_filha) "
             @change="lastlevel"
           >
             <option value="">
@@ -426,7 +426,8 @@ function maskDate(el) {
             <select
               v-model="level2"
               class="inputtext light mb1"
-              :disabled="minLevel >= 2 || temDescendenteEmOutraRegião(values.regiao_id, values.etapa_filha)"
+              :disabled="minLevel >= 2 
+                || temDescendenteEmOutraRegião(values.regiao_id, values.etapa_filha)"
               @change="lastlevel"
             >
               <option value="">
@@ -446,7 +447,8 @@ function maskDate(el) {
               <select
                 v-model="level3"
                 class="inputtext light mb1"
-                :disabled="minLevel >= 3 || temDescendenteEmOutraRegião(values.regiao_id, values.etapa_filha) "
+                :disabled="minLevel >= 3 
+                  || temDescendenteEmOutraRegião(values.regiao_id, values.etapa_filha) "
                 @change="lastlevel"
               >
                 <option value="">
@@ -518,11 +520,13 @@ function maskDate(el) {
       </div>
 
       <div
-        v-if="values.endereco_obrigatorio"
         class="mb1"
       >
         <legend class="label mt2 mb1legend">
-          Localização
+          Localização&nbsp;<span
+            v-if="values.endereco_obrigatorio && values.termino_real"
+            class="tvermelho"
+          >*</span>
         </legend>
 
         <MapaCampo
