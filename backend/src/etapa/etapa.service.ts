@@ -201,9 +201,9 @@ export class EtapaService {
                         take: 1,
                         where: {
                             etapa_id: id,
-                            inativo: false
+                            inativo: false,
                         },
-                        select: { cronograma_id: true }
+                        select: { cronograma_id: true },
                     },
                 },
             });
@@ -239,11 +239,28 @@ export class EtapaService {
             const inicioReal: Date | null = dto.inicio_real ? dto.inicio_real : self.inicio_real;
             if (dto.termino_real && inicioReal && dto.termino_real < inicioReal)
                 throw new HttpException('termino_real| Não pode ser menor que inicio_real', 400);
+            if (
+                self.endereco_obrigatorio &&
+                self.termino_real &&
+                geolocalizacao !== undefined &&
+                geolocalizacao.length === 0 &&
+                self.GeoLocalizacaoReferencia.length > 0
+            )
+                throw new HttpException(
+                    'Endereços não podem ser removidos, pois a tarefa já foi concluída e o endereço é obrigatório.',
+                    400
+                );
 
-            if (self.endereco_obrigatorio && (dto.geolocalizacao?.length == 0 && self.GeoLocalizacaoReferencia.length > 0) && self.termino_real)
-                throw new HttpException('Endereços não podem ser removidos, pois tarefa já foi concluída e endereço é obrigatório.', 400);
+            if (geolocalizacao) {
+                const geoDto = new CreateGeoEnderecoReferenciaDto();
+                geoDto.etapa_id = id;
+                geoDto.tokens = geolocalizacao;
+                geoDto.tipo = 'Endereco';
 
-            const etapa = await prismaTx.etapa.update({
+                await this.geolocService.upsertGeolocalizacao(geoDto, user, prismaTx, now);
+            }
+
+            const etapaAtualizada = await prismaTx.etapa.update({
                 where: { id: id },
                 data: {
                     atualizado_por: user.id,
@@ -251,7 +268,15 @@ export class EtapaService {
                     ...dto,
                     responsaveis: undefined,
                 },
-                select: { id: true },
+                select: {
+                    id: true,
+                    termino_real: true,
+                    endereco_obrigatorio: true,
+                    GeoLocalizacaoReferencia: {
+                        where: { removido_em: null },
+                        select: { id: true },
+                    },
+                },
             });
 
             if (Array.isArray(responsaveis)) {
@@ -267,12 +292,12 @@ export class EtapaService {
                                 where: {
                                     etapa_pessoa_uniq: {
                                         pessoa_id: responsavel,
-                                        etapa_id: etapa.id,
+                                        etapa_id: etapaAtualizada.id,
                                     },
                                 },
                                 create: {
                                     pessoa_id: responsavel,
-                                    etapa_id: etapa.id,
+                                    etapa_id: etapaAtualizada.id,
                                 },
                                 update: {},
                             })
@@ -281,48 +306,42 @@ export class EtapaService {
                     await Promise.all(promises);
                 } else {
                     this.logger.debug(
-                        `responsaveis continuam iguais, banco não será chamado para evitar recalc da trigger`
+                        `responsaveis continuam iguais, o banco não será chamado para evitar o recálculo do trigger`
                     );
                 }
             }
 
-            if (geolocalizacao) {
-                const geoDto = new CreateGeoEnderecoReferenciaDto();
-                geoDto.etapa_id = etapa.id;
-                geoDto.tokens = geolocalizacao;
-                geoDto.tipo = 'Endereco';
-
-                await this.geolocService.upsertGeolocalizacao(geoDto, user, prismaTx, now);
-            }
-
-            // apaga tudo por enquanto, não só as que tem algum crono dessa meta
+            // apaga tudo por enquanto, não só as que têm algum crono dessa meta
             await prismaTx.statusMetaCicloFisico.deleteMany();
 
             // Boolean de controle de endereço:
             // Caso seja true, a etapa só pode receber a data de termino_real
             // Se possuir endereço, ou seja, rows de GeoLocalizacaoReferencia
             if (
-                (self.endereco_obrigatorio && (dto.endereco_obrigatorio == true || dto.endereco_obrigatorio == undefined)) &&
-                (self.GeoLocalizacaoReferencia.length == 0 || !geolocalizacao) &&
-                dto.termino_real &&
-                dto.termino_real != null
+                etapaAtualizada.endereco_obrigatorio &&
+                etapaAtualizada.GeoLocalizacaoReferencia.length === 0 &&
+                etapaAtualizada.termino_real !== null
             )
-                throw new HttpException('Endereço é obrigatório.', 400);
+                throw new HttpException('Endereço é obrigatório para adicionar a data de término.', 400);
 
             // Esta func verifica se as rows acima (etapa_pai_id) possuem esse boolean "endereco_obrigatorio"
             // E se está sendo respeitado
-            if (dto.termino_real && dto.termino_real != null) {
-                const paisComPendencias: {assert_geoloc_rule: string}[] = await prismaTx.$queryRaw`SELECT CAST(assert_geoloc_rule(${id}::integer, ${self.CronogramaEtapa[0].cronograma_id}::integer) AS VARCHAR)`;
-                if (paisComPendencias[0].assert_geoloc_rule && paisComPendencias[0].assert_geoloc_rule != null) {
+            if (dto.termino_real && dto.termino_real !== null) {
+                const paisComPendencias: { assert_geoloc_rule: string }[] =
+                    await prismaTx.$queryRaw`SELECT CAST(assert_geoloc_rule(${id}::integer, ${self.CronogramaEtapa[0].cronograma_id}::integer) AS VARCHAR)`;
+                if (paisComPendencias[0].assert_geoloc_rule && paisComPendencias[0].assert_geoloc_rule !== null) {
                     const pendentesStr = paisComPendencias[0].assert_geoloc_rule.slice(1, -1);
-                    const pendentes = pendentesStr.split(',').filter(e => e.length > 1);
+                    const pendentes = pendentesStr.split(',').filter((e) => e.length > 1);
 
                     if (pendentes.length > 0)
-                        throw new HttpException(`Seguintes etapas precisam ter endereço preenchido: ${pendentes.join(',')}`, 400);
+                        throw new HttpException(
+                            `Seguintes etapas precisam ter o endereço preenchido: ${pendentes.join(',')}`,
+                            400
+                        );
                 }
             }
 
-            return etapa;
+            return etapaAtualizada;
         });
 
         return { id };
