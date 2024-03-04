@@ -19,27 +19,31 @@ const props = defineProps({
 const alertStore = useAlertStore();
 const parlamentaresStore = useParlamentaresStore();
 const { chamadasPendentes, erro, itemParaEdição } = storeToRefs(parlamentaresStore);
-
+let avatar;
 async function onSubmit(values) {
-  try {
-    let r;
-    const msg = props.parlamentarId
-      ? 'Dados salvos com sucesso!'
-      : 'Item adicionado com sucesso!';
+  values.avatar = avatar;
 
-    if (props.parlamentarId) {
-      r = await parlamentaresStore.salvarItem(values, props.parlamentarId);
-    } else {
-      r = await parlamentaresStore.salvarItem(values);
-    }
-    if (r) {
-      alertStore.success(msg);
-      parlamentaresStore.$reset();
-      router.push({ name: 'parlamentaresListar' });
-    }
-  } catch (error) {
-    alertStore.error(error);
-  }
+  console.log('submit values: ', values);
+  //   console.log('vamos ver se o newvalues chega aqui: ', newValue);
+  //   try {
+  //     let r;
+  //     const msg = props.parlamentarId
+  //       ? 'Dados salvos com sucesso!'
+  //       : 'Item adicionado com sucesso!';
+
+//     if (props.parlamentarId) {
+//       r = await parlamentaresStore.salvarItem(values, props.parlamentarId);
+//     } else {
+//       r = await parlamentaresStore.salvarItem(values);
+//     }
+//     if (r) {
+//       alertStore.success(msg);
+//       parlamentaresStore.$reset();
+//       router.push({ name: 'parlamentaresListar' });
+//     }
+//   } catch (error) {
+//     alertStore.error(error);
+//   }
 }
 
 if (props.parlamentarId) {
@@ -98,7 +102,7 @@ if (props.parlamentarId) {
           </div>
         </div>
 
-        <div class="flex f1 mb1">
+        <div class="flex g2">
           <div class="f1">
             <LabelFromYup
               name="aniversario"
@@ -114,9 +118,7 @@ if (props.parlamentarId) {
               name="aniversario"
             />
           </div>
-        </div>
 
-        <div class="flex f1 mb1">
           <div class="f1">
             <LabelFromYup
               name="atuacao"
@@ -130,6 +132,24 @@ if (props.parlamentarId) {
             <ErrorMessage
               class="error-msg mb1"
               name="atuacao"
+            />
+          </div>
+        </div>
+
+        <div class="flex f1 mb1">
+          <div class="f1">
+            <LabelFromYup
+              name="telefone"
+              :schema="schema"
+            />
+            <Field
+              name="telefone"
+              type="text"
+              class="inputtext light mb1"
+            />
+            <ErrorMessage
+              class="error-msg mb1"
+              name="aniversario"
             />
           </div>
         </div>
@@ -154,16 +174,21 @@ if (props.parlamentarId) {
         </div>
       </div>
       <Field
-        v-slot="{ handleChange, value }"
+        v-slot="{ value }"
         name="avatar"
       >
         <InputImageProfile
           :model-value="value"
-          @update:model-value="(e) => handleChange(e)"
+          @update:model-value="(newValue) => { avatar = newValue }"
         />
       </Field>
     </div>
     <FormErrorsList :errors="errors" />
+
+    <div class="flex spacebetween center mb2">
+      <span class="label tc300">Mandato</span>
+      <hr class="mr2 f1">
+    </div>
 
     <div class="flex spacebetween center mb2">
       <hr class="mr2 f1">
