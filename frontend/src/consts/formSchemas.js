@@ -680,13 +680,9 @@ export const parlamentar = object({
   nome: string()
     .label('Nome Civil')
     .max(250),
-  aniversario: string()
+  nascimento: string()
     .label('Aniversário')
     .nullable(),
-  biografia: string()
-    .label('Biografia'),
-  atuacao: string()
-    .label('Área de atuação'),
   telefone: string()
     .label('Telefone'),
   avatar: string(),
