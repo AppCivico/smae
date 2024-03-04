@@ -484,11 +484,13 @@ const geolocalizaçãoPorToken = computed(() => (currentFase.value?.loading
         </div>
 
         <div
-          v-if="values.endereco_obrigatorio"
           class="mb1"
         >
           <legend class="label mt2 mb1legend">
-            Localização
+            Localização&nbsp;<span
+              v-if="values.endereco_obrigatorio && values.termino_real"
+              class="tvermelho"
+            >*</span>
           </legend>
 
           <MapaCampo
