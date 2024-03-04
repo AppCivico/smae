@@ -129,6 +129,15 @@ export class CreateMandatoDto {
     @IsOptional()
     @IsNumber()
     mandato_principal_id?: number;
+
+    @IsOptional()
+    @IsString({ message: '$property| ocupação: Precisa ser alfanumérico' })
+    @MaxLength(250, { message: '$property| ocupação: Máximo 250 caracteres' })
+    ocupacao?: string;
+
+    @IsOptional()
+    @IsString({ message: '$property| biografia: Precisa ser alfanumérico' })
+    biografia?: string;
 }
 
 export class CreateMandatoRepresentatividadeDto {
