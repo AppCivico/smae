@@ -191,7 +191,7 @@ export const etapa = object()
     descricao: string()
       .nullable(),
     endereco_obrigatorio: boolean()
-      .required(),
+      .nullable(),
     geolocalizacao: array()
       .label('Endereços')
       .of(
@@ -238,7 +238,7 @@ export const etapa = object()
 export const etapaDeMonitoramento = object()
   .shape({
     endereco_obrigatorio: boolean()
-      .required(),
+      .nullable(),
     geolocalizacao: array()
       .label('Endereços')
       .of(
@@ -289,7 +289,7 @@ export const fase = object()
     descricao: string()
       .nullable(),
     endereco_obrigatorio: boolean()
-      .required(),
+      .nullable(),
     geolocalizacao: array()
       .label('Endereços')
       .of(
