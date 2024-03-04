@@ -426,7 +426,7 @@ function maskDate(el) {
             <select
               v-model="level2"
               class="inputtext light mb1"
-              :disabled="minLevel >= 2 
+              :disabled="minLevel >= 2
                 || temDescendenteEmOutraRegião(values.regiao_id, values.etapa_filha)"
               @change="lastlevel"
             >
@@ -447,7 +447,7 @@ function maskDate(el) {
               <select
                 v-model="level3"
                 class="inputtext light mb1"
-                :disabled="minLevel >= 3 
+                :disabled="minLevel >= 3
                   || temDescendenteEmOutraRegião(values.regiao_id, values.etapa_filha) "
                 @change="lastlevel"
               >
@@ -497,7 +497,6 @@ function maskDate(el) {
       </div>
 
       <div
-        v-if="singleCronograma.regionalizavel && regions"
         class="mb1"
       >
         <Field
