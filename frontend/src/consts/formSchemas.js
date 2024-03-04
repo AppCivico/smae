@@ -198,9 +198,11 @@ export const etapa = object()
         string()
           .min(10, 'Endereço inválido'),
       )
-      .when('endereco_obrigatorio', (enderecoObrigatorio, field) => (enderecoObrigatorio
-        ? field.min(1)
-        : field)),
+      .when(['endereco_obrigatorio', 'termino_real'], {
+        is: (value) => !!value,
+        then: array().min(1),
+        otherwise: array().min(0),
+      }),
     inicio_previsto: string()
       .required('Preencha a data')
       .matches(regEx['day/month/year'], 'Formato inválido'),
@@ -243,9 +245,11 @@ export const etapaDeMonitoramento = object()
         string()
           .min(10, 'Endereço inválido'),
       )
-      .when('endereco_obrigatorio', (enderecoObrigatorio, field) => (enderecoObrigatorio
-        ? field.min(1)
-        : field)),
+      .when(['endereco_obrigatorio', 'termino_real'], {
+        is: (value) => !!value,
+        then: array().min(1),
+        otherwise: array().min(0),
+      }),
     inicio_real: string()
       .nullable()
       .required('Preencha a data')
@@ -292,9 +296,11 @@ export const fase = object()
         string()
           .min(10, 'Endereço inválido'),
       )
-      .when('endereco_obrigatorio', (enderecoObrigatorio, field) => (enderecoObrigatorio
-        ? field.min(1)
-        : field)),
+      .when(['endereco_obrigatorio', 'termino_real'], {
+        is: (value) => !!value,
+        then: array().min(1),
+        otherwise: array().min(0),
+      }),
     inicio_previsto: string()
       .required('Preencha a data')
       .matches(regEx['day/month/year'], 'Formato inválido'),
