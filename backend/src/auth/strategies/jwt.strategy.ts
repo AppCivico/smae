@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { JwtPessoaPayload } from '../models/JwtPessoaPayload';
@@ -21,7 +21,8 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     }
 
     async validate(req: Request, payload: JwtPessoaPayload): Promise<PessoaFromJwt> {
-        let xSistemas = req.headers['smae-sistemas'];
+        let xSistemas = req.query['smae-sistemas'] || req.headers['smae-sistemas'];
+        if (xSistemas && typeof xSistemas !== 'string') throw new BadRequestException('query smae-sistemas invalid');
 
         let validSistemas: ModuloSistema[] | undefined = undefined;
         if (xSistemas) {
