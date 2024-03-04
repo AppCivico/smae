@@ -304,7 +304,7 @@ export const useProjetosStore = defineStore('projetos', {
       ? emFoco?.geolocalizacao.reduce((acc, cur) => {
         acc[cur.token] = cur;
         return acc;
-      }, {})
+      }, {} as { [key: string]: any })
       : {}),
 
     arquivosPorId: ({ arquivos }: Estado) => arquivos
@@ -329,8 +329,8 @@ export const useProjetosStore = defineStore('projetos', {
         return acc;
       }, {}),
 
-      projetosPortfolioModeloClonagem: ({ lista }: Estado): ProjetoDto[] => lista
-      .filter(e => e.portfolio.modelo_clonagem == true),
+    projetosPortfolioModeloClonagem: ({ lista }: Estado): ProjetoDto[] => lista
+      .filter((e) => e.portfolio.modelo_clonagem == true),
 
     órgãosEnvolvidosNoProjetoEmFoco: ({ emFoco }) => {
       const órgãos = emFoco?.orgaos_participantes && Array.isArray(emFoco?.orgaos_participantes)
