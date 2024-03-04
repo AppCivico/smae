@@ -199,7 +199,7 @@ export const etapa = object()
           .min(10, 'Endereço inválido'),
       )
       .when(['endereco_obrigatorio', 'termino_real'], {
-        is: (value) => !!value,
+        is: (enderecoObrigatorio, terminoReal) => enderecoObrigatorio && terminoReal,
         then: array().min(1),
         otherwise: array().min(0),
       }),
@@ -246,7 +246,7 @@ export const etapaDeMonitoramento = object()
           .min(10, 'Endereço inválido'),
       )
       .when(['endereco_obrigatorio', 'termino_real'], {
-        is: (value) => !!value,
+        is: (enderecoObrigatorio, terminoReal) => enderecoObrigatorio && terminoReal,
         then: array().min(1),
         otherwise: array().min(0),
       }),
@@ -297,7 +297,7 @@ export const fase = object()
           .min(10, 'Endereço inválido'),
       )
       .when(['endereco_obrigatorio', 'termino_real'], {
-        is: (value) => !!value,
+        is: (enderecoObrigatorio, terminoReal) => enderecoObrigatorio && terminoReal,
         then: array().min(1),
         otherwise: array().min(0),
       }),
