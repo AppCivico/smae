@@ -22,28 +22,25 @@ const { chamadasPendentes, erro, itemParaEdição } = storeToRefs(parlamentaresS
 let avatar;
 async function onSubmit(values) {
   values.avatar = avatar;
+  try {
+    let r;
+    const msg = props.parlamentarId
+      ? 'Dados salvos com sucesso!'
+      : 'Item adicionado com sucesso!';
 
-  console.log('submit values: ', values);
-  //   console.log('vamos ver se o newvalues chega aqui: ', newValue);
-  //   try {
-  //     let r;
-  //     const msg = props.parlamentarId
-  //       ? 'Dados salvos com sucesso!'
-  //       : 'Item adicionado com sucesso!';
-
-//     if (props.parlamentarId) {
-//       r = await parlamentaresStore.salvarItem(values, props.parlamentarId);
-//     } else {
-//       r = await parlamentaresStore.salvarItem(values);
-//     }
-//     if (r) {
-//       alertStore.success(msg);
-//       parlamentaresStore.$reset();
-//       router.push({ name: 'parlamentaresListar' });
-//     }
-//   } catch (error) {
-//     alertStore.error(error);
-//   }
+    if (props.parlamentarId) {
+      r = await parlamentaresStore.salvarItem(values, props.parlamentarId);
+    } else {
+      r = await parlamentaresStore.salvarItem(values);
+    }
+    if (r) {
+      alertStore.success(msg);
+      parlamentaresStore.$reset();
+      router.push({ name: 'parlamentaresListar' });
+    }
+  } catch (error) {
+    alertStore.error(error);
+  }
 }
 
 if (props.parlamentarId) {
@@ -102,38 +99,22 @@ if (props.parlamentarId) {
           </div>
         </div>
 
-        <div class="flex g2">
-          <div class="f1">
-            <LabelFromYup
-              name="aniversario"
-              :schema="schema"
-            />
-            <Field
-              name="aniversario"
-              type="text"
-              class="inputtext light mb1"
-            />
-            <ErrorMessage
-              class="error-msg mb1"
-              name="aniversario"
-            />
-          </div>
-
-          <div class="f1">
-            <LabelFromYup
-              name="atuacao"
-              :schema="schema"
-            />
-            <Field
-              name="atuacao"
-              type="text"
-              class="inputtext light mb1"
-            />
-            <ErrorMessage
-              class="error-msg mb1"
-              name="atuacao"
-            />
-          </div>
+        <div class="f1">
+          <LabelFromYup
+            name="nascimento"
+            :schema="schema"
+          />
+          <Field
+            name="nascimento"
+            type="date"
+            class="inputtext light mb1"
+            maxlength="10"
+            placeholder="dd/mm/aaaa"
+          />
+          <ErrorMessage
+            class="error-msg mb1"
+            name="nascimento"
+          />
         </div>
 
         <div class="flex f1 mb1">
@@ -149,26 +130,7 @@ if (props.parlamentarId) {
             />
             <ErrorMessage
               class="error-msg mb1"
-              name="aniversario"
-            />
-          </div>
-        </div>
-
-        <div class="flex g2 mb1">
-          <div class="f1">
-            <LabelFromYup
-              name="biografia"
-              :schema="schema"
-            />
-            <Field
-              name="biografia"
-              as="textarea"
-              rows="5"
-              class="inputtext light mb1"
-            />
-            <ErrorMessage
-              class="error-msg mb1"
-              name="biografia"
+              name="telefone"
             />
           </div>
         </div>
