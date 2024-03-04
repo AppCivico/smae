@@ -76,6 +76,8 @@ export class EtapaService {
                     await this.geolocService.upsertGeolocalizacao(geoDto, user, prismaTx, now);
                 }
 
+                // TODO validar a falta do endereço e data de termino, assim como no patch
+
                 return etapa;
             }
         );
