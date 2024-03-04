@@ -71,6 +71,9 @@ const regiõesDisponíveis = computed(() => (Array.isArray(regiõesPorNívelOrde
   ? regiõesPorNívelOrdenadas.value[nívelDeRegionalização.value]
   : []));
 
+const idsDasRegiõesVálidas = computed(() => regiõesDisponíveis.value
+  .map((x) => x.id));
+
 const estãoTodasAsRegiõesSelecionadas = computed({
   get() {
     return regiõesSelecionadas.value?.length
@@ -80,11 +83,11 @@ const estãoTodasAsRegiõesSelecionadas = computed({
   set(novoValor) {
     // Não é bonito, mas é o único jeito que achei do framework não confundir a
     // redefinição com um push;
-    regiõesSelecionadas.value.splice(0, regiõesSelecionadas.value.length);
     if (novoValor) {
-      regiõesDisponíveis.value.forEach((x) => {
-        regiõesSelecionadas.value.push(x.id);
-      });
+      regiõesSelecionadas.value
+        .splice(0, regiõesSelecionadas.value.length, ...idsDasRegiõesVálidas);
+    } else {
+      regiõesSelecionadas.value.splice(0, regiõesSelecionadas.value.length);
     }
   },
 });
