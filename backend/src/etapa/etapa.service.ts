@@ -241,17 +241,6 @@ export class EtapaService {
             const inicioReal: Date | null = dto.inicio_real ? dto.inicio_real : self.inicio_real;
             if (dto.termino_real && inicioReal && dto.termino_real < inicioReal)
                 throw new HttpException('termino_real| Não pode ser menor que inicio_real', 400);
-            if (
-                self.endereco_obrigatorio &&
-                self.termino_real &&
-                geolocalizacao !== undefined &&
-                geolocalizacao.length === 0 &&
-                self.GeoLocalizacaoReferencia.length > 0
-            )
-                throw new HttpException(
-                    'Endereços não podem ser removidos, pois a tarefa já foi concluída e o endereço é obrigatório.',
-                    400
-                );
 
             if (geolocalizacao) {
                 const geoDto = new CreateGeoEnderecoReferenciaDto();
@@ -315,6 +304,17 @@ export class EtapaService {
 
             // apaga tudo por enquanto, não só as que têm algum crono dessa meta
             await prismaTx.statusMetaCicloFisico.deleteMany();
+
+            if (
+                etapaAtualizada.endereco_obrigatorio &&
+                etapaAtualizada.termino_real &&
+                etapaAtualizada.GeoLocalizacaoReferencia.length == 0 &&
+                self.GeoLocalizacaoReferencia.length > 0
+            )
+                throw new HttpException(
+                    'Endereços não podem ser removidos, pois a tarefa já foi concluída e o endereço é obrigatório.',
+                    400
+                );
 
             // Boolean de controle de endereço:
             // Caso seja true, a etapa só pode receber a data de termino_real
