@@ -4,6 +4,7 @@ import { geraçãoDeVariávelComposta } from '@/consts/formSchemas';
 import { router } from '@/router';
 import { useAlertStore } from '@/stores/alert.store';
 import { useEditModalStore } from '@/stores/editModal.store';
+import { useIndicadoresStore } from '@/stores/indicadores.store';
 import { useRegionsStore } from '@/stores/regions.store';
 import { useVariaveisStore } from '@/stores/variaveis.store';
 import { storeToRefs } from 'pinia';
@@ -13,11 +14,10 @@ import {
   useForm,
   useIsFormDirty,
 } from 'vee-validate';
-import { useIndicadoresStore } from '@/stores/indicadores.store';
 
+import níveisRegionalização from '@/consts/niveisRegionalizacao';
 import { computed, ref } from 'vue';
 import { useRoute } from 'vue-router';
-import níveisRegionalização from '@/consts/niveisRegionalizacao';
 
 const alertStore = useAlertStore();
 const editModalStore = useEditModalStore();
