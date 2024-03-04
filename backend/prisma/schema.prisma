@@ -274,9 +274,9 @@ model Pessoa {
     mandatosQueAtualizei ParlamentarMandato[] @relation("Atualizador")
     mandatosQueRemovi ParlamentarMandato[] @relation("Removedor")
 
-    assessoresQueCriei ParlamentarAssessor[] @relation("Criador")
-    assessoresQueAtualizei ParlamentarAssessor[] @relation("Atualizador")
-    assessoresQueRemovi ParlamentarAssessor[] @relation("Removedor")
+    equipeParlamentarQueCriei ParlamentarEquipe[] @relation("Criador")
+    equipeParlamentarQueAtualizei ParlamentarEquipe[] @relation("Atualizador")
+    equipeParlamentarQueRemovi ParlamentarEquipe[] @relation("Removedor")
 
     eleicaoComparecimentoQueCriei EleicaoComparecimento[] @relation("Criador")
     eleicaoComparecimentoQueAtualizei EleicaoComparecimento[] @relation("Atualizador")
@@ -4148,8 +4148,6 @@ model Bancada {
     atualizador Pessoa? @relation("Atualizador", fields: [atualizado_por], references: [id])
     removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
 
-    mandatos MandatoBancada[]
-
     @@map("bancada")
 }
 
@@ -4217,19 +4215,17 @@ model Parlamentar {
     id Int @id @default(autoincrement())
     
     nome         String
-    biografia    String?
     nome_popular String?
     nascimento   DateTime? @db.Date()
     telefone     String?
     email        String?
-    atuacao      String?
     em_atividade Boolean @default(false)
 
     foto_upload_id Int?
     foto           Arquivo? @relation(fields: [foto_upload_id], references: [id])
 
-    mandatos   ParlamentarMandato[]
-    assessores ParlamentarAssessor[]
+    mandatos ParlamentarMandato[]
+    equipe   ParlamentarEquipe[]
 
     criado_por     Int?
     criado_em      DateTime?  @default(now()) @db.Timestamptz(6)
@@ -4302,6 +4298,9 @@ model ParlamentarMandato {
     partido_atual_id Int
     partido_atual    Partido @relation("atual", fields: [partido_atual_id], references: [id])
 
+    atuacao String?
+    biografia String?
+
     gabinete  String
     eleito    Boolean
     cargo     ParlamentarCargo
@@ -4317,7 +4316,6 @@ model ParlamentarMandato {
     mandato_principal    ParlamentarMandato?  @relation("Suplentes", fields: [mandato_principal_id], references: [id])
     
     suplentes          ParlamentarMandato[] @relation("Suplentes")
-    bancadas           MandatoBancada[]
     representatividade MandatoRepresentatividade[]
 
     criado_por     Int?
@@ -4335,11 +4333,18 @@ model ParlamentarMandato {
     @@map("parlamentar_mandato")
 }
 
-model ParlamentarAssessor {
+enum ParlamentarEquipeTipo {
+    Assessor
+    Contato
+}
+
+model ParlamentarEquipe {
     id Int @id @default(autoincrement())
 
     parlamentar_id Int
     parlamentar    Parlamentar @relation(fields: [parlamentar_id], references: [id])
+
+    tipo ParlamentarEquipeTipo
 
     nome     String
     telefone String
@@ -4357,20 +4362,7 @@ model ParlamentarAssessor {
     atualizador Pessoa? @relation("Atualizador", fields: [atualizado_por], references: [id])
     removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
 
-    @@map("parlamentar_assessor")
-}
-
-model MandatoBancada {
-    id Int @id @default(autoincrement())
-
-    mandato_id Int
-    mandato    ParlamentarMandato @relation(fields: [mandato_id], references: [id])
-
-    bancada_id Int
-    bancada    Bancada @relation(fields: [bancada_id], references: [id])
-
-    @@unique([mandato_id, bancada_id])
-    @@map("mandato_bancada")
+    @@map("parlamentar_equipe")
 }
 
 enum MunicipioTipo {

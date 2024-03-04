@@ -1,5 +1,5 @@
-import { DadosEleicaoNivel, MunicipioTipo, ParlamentarCargo, ParlamentarSuplente, ParlamentarUF } from "@prisma/client";
-import { BancadaDto } from "src/bancada/entities/bancada.entity";
+import { DadosEleicaoNivel, MunicipioTipo, ParlamentarCargo, ParlamentarEquipeTipo, ParlamentarSuplente, ParlamentarUF } from "@prisma/client";
+import { IsEnum } from "class-validator";
 import { IdNomeDto } from "src/common/dto/IdNome.dto";
 import { PartidoDto } from "src/partido/entities/partido.entity";
 
@@ -7,14 +7,12 @@ export class ParlamentarDetailDto {
     id: number
     nome: string;
     nome_popular: string | null;
-    biografia: string | null;
     nascimento: string | undefined;
     email: string | null;
-    atuacao: string | null;
     em_atividade: boolean;
     foto: string | null;
 
-    assessores: AssessorDto[] | null;
+    equipe: EquipeDto[] | null;
     mandatos: MandatoDto[] | null;
 }
 
@@ -26,18 +24,19 @@ export class ParlamentarDto {
 
     partido: PartidoDto | null;
     cargo: ParlamentarCargo | null;
-    bancadas: BancadaDto[] | null
 }
 
 export class ListParlamentarDto {
     linhas: ParlamentarDto[]
 }
 
-export class AssessorDto {
+export class EquipeDto {
     id: number;
     email: string;
     nome: string;
     telefone: string;
+    @IsEnum(ParlamentarEquipeTipo)
+    tipo: ParlamentarEquipeTipo;
 }
 
 export class MandatoDto {
@@ -54,9 +53,10 @@ export class MandatoDto {
     votos_estado: bigint | null;
     votos_capital: bigint | null;
     votos_interior: bigint | null;
+    biografia: string | null;
+    atuacao: string | null;
 
     suplentes: IdNomeDto[];
-    bancadas: BancadaDto[];
     representatividade: RepresentatividadeDto[];
 }
 

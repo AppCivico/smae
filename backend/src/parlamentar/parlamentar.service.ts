@@ -2,10 +2,10 @@ import { HttpException, Injectable } from '@nestjs/common';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { PrismaService } from '../prisma/prisma.service';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
-import { CreateAssessorDto, CreateMandatoDto, CreateParlamentarDto, CreateMandatoBancadaDto, CreateMandatoRepresentatividadeDto, CreateMandatoSuplenteDto } from './dto/create-parlamentar.dto';
+import { CreateMandatoDto, CreateParlamentarDto, CreateMandatoRepresentatividadeDto, CreateMandatoSuplenteDto, CreateEquipeDto } from './dto/create-parlamentar.dto';
 import { DadosEleicaoNivel, Prisma } from '@prisma/client';
 import { ParlamentarDetailDto, ParlamentarDto } from './entities/parlamentar.entity';
-import { UpdateAssessorDto, UpdateMandatoDto, UpdateParlamentarDto } from './dto/update-parlamentar.dto';
+import { UpdateEquipeDto, UpdateMandatoDto, UpdateParlamentarDto, UpdateRepresentatividadeDto } from './dto/update-parlamentar.dto';
 import { RemoveMandatoDepsDto } from './dto/remove-mandato-deps.dto';
 import { UploadService } from 'src/upload/upload.service';
 
@@ -71,18 +71,6 @@ export class ParlamentarService {
                                 numero: true
                             }
                         },
-                        bancadas: {
-                            where: { bancada: { removido_em: null } },
-                            select: {
-                                bancada: {
-                                    select: {
-                                        id: true,
-                                        nome: true,
-                                        sigla: true,
-                                    }
-                                }
-                            }
-                        }
                     }
                 }
             },
@@ -95,9 +83,6 @@ export class ParlamentarService {
 
                 cargo: p.mandatos.length > 0 ? p.mandatos[0].cargo : null,
                 partido: p.mandatos.length > 0 && p.mandatos[0].partido_atual ? {...p.mandatos[0].partido_atual} : null,
-                bancadas:  p.mandatos.length > 0 && p.mandatos[0].partido_atual ? p.mandatos[0].bancadas.map(b => {
-                    return {...b.bancada}
-                }) : null
             }
         });
     }
@@ -111,20 +96,19 @@ export class ParlamentarService {
                 id: true,
                 nome: true,
                 nome_popular: true,
-                biografia: true,
                 nascimento: true,
                 email: true,
-                atuacao: true,
                 em_atividade: true,
                 foto_upload_id: true,
 
-                assessores: {
+                equipe: {
                     where: { removido_em: null },
                     select: {
                         id: true,
                         email: true,
                         nome: true,
-                        telefone: true
+                        telefone: true,
+                        tipo: true
                     }
                 },
 
@@ -135,6 +119,8 @@ export class ParlamentarService {
                         gabinete: true,
                         eleito: true,
                         cargo: true,
+                        biografia: true,
+                        atuacao: true,
                         uf: true,
                         suplencia: true,
                         endereco: true,
@@ -168,18 +154,6 @@ export class ParlamentarService {
                                 parlamentar: {
                                     select: {
                                         id: true,
-                                        nome: true
-                                    }
-                                }
-                            }
-                        },
-
-                        bancadas: {
-                            select: {
-                                bancada: {
-                                    select: {
-                                        id: true,
-                                        sigla: true,
                                         nome: true
                                     }
                                 }
@@ -233,10 +207,6 @@ export class ParlamentarService {
                         return {...s.parlamentar}
                     }),
 
-                    bancadas: m.bancadas.map(b => {
-                        return { ...b.bancada }
-                    }),
-
                     representatividade: m.representatividade.map(r => {
                         return {
                             ...r,
@@ -285,13 +255,13 @@ export class ParlamentarService {
         return deleted;
     }
 
-    async createAssessor(parlamentarId: number, dto: CreateAssessorDto, user: PessoaFromJwt): Promise<RecordWithId> {
+    async createEquipe(parlamentarId: number, dto: CreateEquipeDto, user: PessoaFromJwt): Promise<RecordWithId> {
         const parlamentar = await this.prisma.parlamentar.count({
             where: { id: parlamentarId, removido_em: null }
         });
         if (!parlamentar) throw new HttpException('parlamentar_id| Parlamentar inválido.', 400);
 
-        const created = await this.prisma.parlamentarAssessor.create({
+        const created = await this.prisma.parlamentarEquipe.create({
             data: {
                 ...dto,
                 parlamentar_id: parlamentarId,
@@ -304,13 +274,13 @@ export class ParlamentarService {
         return created;
     }
 
-    async updateAssessor(id: number, dto: UpdateAssessorDto, user: PessoaFromJwt): Promise<RecordWithId> {
-        const assessor = await this.prisma.parlamentarAssessor.count({
+    async updateEquipe(id: number, dto: UpdateEquipeDto, user: PessoaFromJwt): Promise<RecordWithId> {
+        const membroEquipe = await this.prisma.parlamentarEquipe.count({
             where: { id, removido_em: null}
         });
-        if (!assessor) throw new HttpException('id| Assessor inválido.', 400);
+        if (!membroEquipe) throw new HttpException('id| membro de equipe inválido.', 400);
 
-        await this.prisma.parlamentarAssessor.update({
+        await this.prisma.parlamentarEquipe.update({
             where: {id},
             data: {
                 ...dto,
@@ -322,8 +292,8 @@ export class ParlamentarService {
         return { id }
     }
 
-    async removeAssessor(id: number, user: PessoaFromJwt) {
-        await this.prisma.parlamentarAssessor.update({
+    async removeEquipe(id: number, user: PessoaFromJwt) {
+        await this.prisma.parlamentarEquipe.update({
             where: {id},
             data: {
                 removido_por: user.id,
@@ -464,6 +434,27 @@ export class ParlamentarService {
         return created;
     }
 
+    async updateMandatoRepresentatividade(representatividadeId: number, dto: UpdateRepresentatividadeDto, user: PessoaFromJwt) {
+        const updated = await this.prisma.$transaction(
+            async (prismaTxn: Prisma.TransactionClient): Promise<RecordWithId> => {
+                const representatividade = await prismaTxn.mandatoRepresentatividade.update({
+                    where: { id: representatividadeId },
+                    data: {
+                        ...dto,
+                        // TODO? calc baseado em comparecimento
+                        atualizado_por: user ? user.id : undefined,
+                        atualizado_em: new Date(Date.now()),
+                    },
+                    select: { id: true }
+                });
+
+                return representatividade;
+            }
+        );
+
+        return updated;
+    }
+
     async removeMandatoRepresentatividade(representatividadeId: number, dto: RemoveMandatoDepsDto, user: PessoaFromJwt) {
         return await this.prisma.mandatoRepresentatividade.updateMany({
             where: {
@@ -475,38 +466,6 @@ export class ParlamentarService {
                 removido_em: new Date(Date.now()),
             }
         })
-    }
-
-    async createMandatoBancada (parlamentarId: number, dto: CreateMandatoBancadaDto, user: PessoaFromJwt): Promise<RecordWithId> {
-        const exists = await this.prisma.mandatoBancada.count({
-            where: {
-                mandato: {
-                    id: dto.mandato_id,
-                    parlamentar_id: parlamentarId
-                },
-                bancada_id: dto.bancada_id
-            }
-        });
-        if (exists) throw new HttpException('Bancada já vinculada ao mandato', 400);
-
-        return await this.prisma.mandatoBancada.create({
-            data: {
-                mandato_id: dto.mandato_id,
-                bancada_id: dto.bancada_id
-            },
-            select: {id: true}
-        })
-    }
-
-    async removeMandatoBancada(bancadaId: number, dto: RemoveMandatoDepsDto, user: PessoaFromJwt) {
-        return await this.prisma.mandatoBancada.delete({
-            where: {
-                mandato_id_bancada_id: {
-                    bancada_id: bancadaId,
-                    mandato_id: dto.mandato_id
-                }
-            }
-        });
     }
 
     async createSuplente(parlamentarId: number, dto: CreateMandatoSuplenteDto, user: PessoaFromJwt): Promise<RecordWithId> {

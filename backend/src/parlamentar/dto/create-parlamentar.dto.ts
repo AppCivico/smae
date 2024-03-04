@@ -1,5 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { DadosEleicaoNivel, MunicipioTipo, ParlamentarCargo, ParlamentarSuplente, ParlamentarUF } from "@prisma/client";
+import { DadosEleicaoNivel, MunicipioTipo, ParlamentarCargo, ParlamentarEquipeTipo, ParlamentarSuplente, ParlamentarUF } from "@prisma/client";
 import { Type } from "class-transformer";
 import { IsBoolean, IsEnum, IsNumber, IsOptional, IsString, MaxLength, ValidateIf } from "class-validator";
 import { IsOnlyDate } from "src/common/decorators/IsDateOnly";
@@ -53,7 +53,7 @@ export class CreateParlamentarDto {
     upload_foto?: string | null;
 }
 
-export class CreateAssessorDto {
+export class CreateEquipeDto {
     @IsString()
     @MaxLength(250, { message: '$property| nome: Máximo 250 caracteres' })
     nome: string;
@@ -65,6 +65,12 @@ export class CreateAssessorDto {
     @IsString()
     @MaxLength(250, { message: '$property| email: Máximo 250 caracteres' })
     email: string;
+
+    @ApiProperty({ enum: ParlamentarEquipeTipo, enumName: 'Cargo' })
+    @IsEnum(ParlamentarEquipeTipo, {
+        message: '$property| Precisa ser um dos seguintes valores: ' + Object.values(ParlamentarEquipeTipo).join(', '),
+    })
+    tipo: ParlamentarEquipeTipo;
 }
 
 export class CreateMandatoDto {
