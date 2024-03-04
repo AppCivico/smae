@@ -687,7 +687,7 @@ export const parlamentar = object({
     .label('Biografia'),
   atuacao: string()
     .label('Área de atuação'),
-  contato: string()
+  telefone: string()
     .label('Telefone'),
   avatar: string(),
 });
