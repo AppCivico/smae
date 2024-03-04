@@ -1,6 +1,6 @@
+import módulos from '@/consts/modulosDoSistema';
 import { useAlertStore } from '@/stores/alert.store';
 import { defineStore } from 'pinia';
-import módulos from '@/consts/modulosDoSistema';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
@@ -39,13 +39,16 @@ export const useAuthStore = defineStore({
         alertStore.error(error);
       }
     },
-    async getDados() {
+    async getDados(params) {
       try {
-        const user = await this.requestS.get(`${baseUrl}/minha-conta`);
+        const user = await this.requestS.get(`${baseUrl}/minha-conta`, params);
+
         this.user = user.sessao;
         localStorage.setItem('user', JSON.stringify(user.sessao));
 
         this.setPermissions();
+
+        return user;
       } catch (error) {
         const alertStore = useAlertStore();
         alertStore.error(error);
@@ -145,8 +148,7 @@ export const useAuthStore = defineStore({
     },
   },
   getters: {
-    dadosDoSistemaEscolhido: ({ sistemaEscolhido }) => módulos
-      .find((x) => x.valor === sistemaEscolhido),
+    dadosDoSistemaEscolhido: ({ sistemaEscolhido }) => módulos[sistemaEscolhido] || {},
     estouAutenticada: ({ token }) => !!token,
     temPermissãoPara: ({ user }) => (permissões) => (Array.isArray(permissões)
       ? permissões
