@@ -1,9 +1,9 @@
 <script setup>
-import { ref } from 'vue';
-import { storeToRefs } from 'pinia';
-import { useAuthStore } from '@/stores/auth.store';
-import { useRouter } from 'vue-router';
 import módulos from '@/consts/modulosDoSistema';
+import { useAuthStore } from '@/stores/auth.store';
+import { storeToRefs } from 'pinia';
+import { ref } from 'vue';
+import { useRouter } from 'vue-router';
 
 const authStore = useAuthStore();
 const router = useRouter();
@@ -37,6 +37,32 @@ async function escolher(opção) {
       emEspera.value = false;
     });
 }
+
+const listaDeMódulos = Object.keys(módulos).filter((x) => !módulos[x].desabilitado);
+
+const módulosDisponíveis = ref([]);
+
+async function iniciar() {
+  emEspera.value = true;
+  erro.value = null;
+
+  await authStore.getDados({ 'smae-sistemas': listaDeMódulos.join(',') })
+    .then((resposta) => {
+      const { sessao: { sistemas } } = resposta;
+
+      if (Array.isArray(sistemas)) {
+        módulosDisponíveis.value.splice(0, módulosDisponíveis.value.length, ...sistemas);
+      }
+    })
+    .catch((err) => {
+      erro.value = err;
+    })
+    .finally(() => {
+      emEspera.value = false;
+    });
+}
+
+iniciar();
 </script>
 <template>
   <div
@@ -55,25 +81,27 @@ async function escolher(opção) {
       </p>
     </div>
 
-    <ul class="escolha-de-módulos__lista flex column g2 uc">
+    <ul
+      v-if="módulosDisponíveis.length"
+      class="escolha-de-módulos__lista flex column g2 uc"
+    >
       <li
-        v-for="(módulo, i) in módulos"
+        v-for="(sistema, i) in módulosDisponíveis"
         :key="i"
         class="fb100"
       >
         <button
           type="button"
           class="escolha-de-módulos__opção uc like-a__link tprimary tl t24 w700"
-          :disabled="módulo.desabilitado"
-          :value="módulo.valor"
+          :disabled="módulos[sistema]?.desabilitado"
+          :value="sistema"
           @click="(e) => { escolher(e.target.value) }"
         >
           <svg
             width="8"
             height="16"
           ><use xlink:href="#i_right" /></svg>
-
-          {{ módulo.nome }}
+          {{ módulos[sistema]?.nome || sistema }}
         </button>
       </li>
     </ul>
