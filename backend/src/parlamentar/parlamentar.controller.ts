@@ -6,9 +6,9 @@ import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { FindOneParams, FindTwoParams } from '../common/decorators/find-params';
 import { RecordWithId } from '../common/dto/record-with-id.dto';
 import { ParlamentarService } from './parlamentar.service';
-import { CreateAssessorDto, CreateMandatoDto, CreateParlamentarDto, CreateMandatoBancadaDto, CreateMandatoRepresentatividadeDto, CreateMandatoSuplenteDto } from './dto/create-parlamentar.dto';
+import { CreateMandatoDto, CreateParlamentarDto, CreateMandatoRepresentatividadeDto, CreateMandatoSuplenteDto, CreateEquipeDto } from './dto/create-parlamentar.dto';
 import { ListParlamentarDto, ParlamentarDetailDto } from './entities/parlamentar.entity';
-import { UpdateAssessorDto, UpdateMandatoDto, UpdateParlamentarDto } from './dto/update-parlamentar.dto';
+import { UpdateEquipeDto, UpdateMandatoDto, UpdateParlamentarDto, UpdateRepresentatividadeDto } from './dto/update-parlamentar.dto';
 import { RemoveMandatoDepsDto } from './dto/remove-mandato-deps.dto';
 
 @ApiTags('Parlamentar')
@@ -61,31 +61,31 @@ export class ParlamentarController {
         return '';
     }
 
-    // Assessores
-    @Post(':id/assessor')
+    // Equipe
+    @Post(':id/equipe')
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
     // @Roles('CadastroPainel.visualizar')
-    async createAssessor(@Param() params: FindOneParams, @Body() dto: CreateAssessorDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
-        return await this.parlamentarService.createAssessor(+params.id, dto, user);
+    async createEquipe(@Param() params: FindOneParams, @Body() dto: CreateEquipeDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
+        return await this.parlamentarService.createEquipe(+params.id, dto, user);
     }
 
-    @Patch(':id/assessor/:id2')
+    @Patch(':id/equipe/:id2')
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
     // @Roles('CadastroPainel.visualizar')
-    async updateAssessor(@Param() params: FindTwoParams, @Body() dto: UpdateAssessorDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
-        return await this.parlamentarService.updateAssessor(+params.id2, dto, user);
+    async updateEquipe(@Param() params: FindTwoParams, @Body() dto: UpdateEquipeDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
+        return await this.parlamentarService.updateEquipe(+params.id2, dto, user);
     }
 
-    @Delete(':id/assessor/:id2')
+    @Delete(':id/equipe/:id2')
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.ACCEPTED)
     // @Roles('CadastroPainel.visualizar')
-    async removeAssessor(@Param() params: FindTwoParams, @CurrentUser() user: PessoaFromJwt) {
-        await this.parlamentarService.removeAssessor(+params.id2, user);
+    async removeEquipe(@Param() params: FindTwoParams, @CurrentUser() user: PessoaFromJwt) {
+        await this.parlamentarService.removeEquipe(+params.id2, user);
         return '';
     }
 
@@ -117,26 +117,6 @@ export class ParlamentarController {
         return '';
     }
 
-    // Mandato - Bancada
-    @Post(':id/bancada')
-    @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    // @Roles('CadastroPainel.visualizar')
-    async createMandatoBancada(@Param() params: FindOneParams, @Body() dto: CreateMandatoBancadaDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
-        return await this.parlamentarService.createMandatoBancada(+params.id, dto, user);
-    }
-
-    @Delete(':id/bancada/:id2')
-    @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @ApiNoContentResponse()
-    @HttpCode(HttpStatus.ACCEPTED)
-    // @Roles('CadastroPainel.visualizar')
-    async removeMandatoBancada(@Param() params: FindTwoParams, @Body() dto: RemoveMandatoDepsDto, @CurrentUser() user: PessoaFromJwt) {
-        await this.parlamentarService.removeMandatoBancada(+params.id2, dto, user);
-        return '';
-    }
-
     // Mandato - Representatividade 
     @Post(':id/representatividade')
     @ApiBearerAuth('access-token')
@@ -150,8 +130,8 @@ export class ParlamentarController {
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
     // @Roles('CadastroPainel.visualizar')
-    async updateRepresentatividade(@Param() params: FindTwoParams, @Body() dto: UpdateAssessorDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
-        return await this.parlamentarService.updateAssessor(+params.id2, dto, user);
+    async updateRepresentatividade(@Param() params: FindTwoParams, @Body() dto: UpdateRepresentatividadeDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
+        return await this.parlamentarService.updateMandatoRepresentatividade(+params.id2, dto, user);
     }
 
     @Delete(':id/representatividade/:id2')
@@ -161,7 +141,7 @@ export class ParlamentarController {
     @HttpCode(HttpStatus.ACCEPTED)
     // @Roles('CadastroPainel.visualizar')
     async removeRepresentatividade(@Param() params: FindTwoParams, @Body() dto: RemoveMandatoDepsDto, @CurrentUser() user: PessoaFromJwt) {
-        await this.parlamentarService.removeMandatoBancada(+params.id2, dto, user);
+        await this.parlamentarService.removeMandatoRepresentatividade(+params.id2, dto, user);
         return '';
     }
 
