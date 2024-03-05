@@ -4166,6 +4166,7 @@ enum ModuloSistema {
     PDM
     CasaCivil
     Projetos
+    PlanoSetorial
 }
 
 enum EleicaoTipo {
