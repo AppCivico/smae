@@ -46,11 +46,13 @@ export class DashboardService {
     }
 
     private async painelExterno(user: PessoaFromJwt, liberados: RetornoLinhasDashboardLinhasDto[], hostname: string) {
-        /*
         const painelExterno = await this.prisma.painelExterno.findMany({
             orderBy: [{ titulo: 'asc' }],
             where: {
                 removido_em: null,
+                modulo_sistema: {
+                    in: ['SMAE', ...user.modulo_sistema],
+                },
                 PainelExternoGrupoPainelExterno: {
                     some: {
                         removido_em: null,
@@ -65,14 +67,6 @@ export class DashboardService {
                         },
                     },
                 },
-            },
-        });
-        */
-        // ve todos os links por enquanto
-        const painelExterno = await this.prisma.painelExterno.findMany({
-            orderBy: [{ titulo: 'asc' }],
-            where: {
-                removido_em: null,
             },
         });
 

@@ -13,6 +13,7 @@ export class GrupoPainelExternoService {
     constructor(private readonly prisma: PrismaService) {}
 
     async create(dto: CreateGrupoPainelExternoDto, user: PessoaFromJwt): Promise<RecordWithId> {
+        const sistema = user.assertOneModuloSistema('criar', 'grupo de painel externo');
         const orgao_id = dto.orgao_id ? dto.orgao_id : user.orgao_id;
 
         if (!orgao_id) throw new BadRequestException('Não foi possível determinar o órgão');
@@ -49,7 +50,7 @@ export class GrupoPainelExternoService {
                     data: {
                         orgao_id,
                         titulo: dto.titulo,
-
+                        modulo_sistema: sistema,
                         criado_em: new Date(Date.now()),
                         criado_por: user.id,
                     },
@@ -76,11 +77,12 @@ export class GrupoPainelExternoService {
         return { id: created.id };
     }
 
-    async findAll(filter: FilterGrupoPainelExternoDto): Promise<GrupoPainelExternoItemDto[]> {
+    async findAll(filter: FilterGrupoPainelExternoDto, user: PessoaFromJwt): Promise<GrupoPainelExternoItemDto[]> {
         const rows = await this.prisma.grupoPainelExterno.findMany({
             where: {
                 id: filter.id,
                 removido_em: null,
+                modulo_sistema: { in: ['SMAE', ...user.modulo_sistema] },
             },
             include: {
                 GrupoPainelExternoPessoa: {
@@ -136,9 +138,11 @@ export class GrupoPainelExternoService {
     }
 
     async update(id: number, dto: UpdateGrupoPainelExternoDto, user: PessoaFromJwt): Promise<RecordWithId> {
+        const sistema = user.assertOneModuloSistema('editar', 'grupo de painel externo');
         const gp = await this.prisma.grupoPainelExterno.findFirst({
             where: {
                 id,
+                modulo_sistema: sistema,
                 removido_em: null,
             },
             select: {
@@ -161,6 +165,7 @@ export class GrupoPainelExternoService {
                 const exists = await prismaTx.grupoPainelExterno.count({
                     where: {
                         NOT: { id: gp.id },
+                        modulo_sistema: sistema,
                         titulo: { mode: 'insensitive', equals: dto.titulo },
                         removido_em: null,
                     },
@@ -250,9 +255,11 @@ export class GrupoPainelExternoService {
     }
 
     async remove(id: number, user: PessoaFromJwt) {
+        const sistema = user.assertOneModuloSistema('remover', 'grupo de painel externo');
         const exists = await this.prisma.grupoPainelExterno.findFirst({
             where: {
                 id,
+                modulo_sistema: sistema,
                 removido_em: null,
             },
             select: { id: true, orgao_id: true },
@@ -270,6 +277,7 @@ export class GrupoPainelExternoService {
         await this.prisma.grupoPainelExterno.updateMany({
             where: {
                 id,
+                modulo_sistema: sistema,
                 removido_em: null,
             },
             data: {
