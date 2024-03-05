@@ -12,25 +12,25 @@ import { useIniciativasStore } from '@/stores/iniciativas.store';
 import { useMetasStore } from '@/stores/metas.store';
 import { useVariaveisStore } from '@/stores/variaveis.store';
 
-import { default as AddEditRealizado } from '@/views/metas/AddEditRealizado.vue';
-import { default as AddEditValores } from '@/views/metas/AddEditValores.vue';
-import { default as AddEditVariavel } from '@/views/metas/AddEditVariavel.vue';
-import AddEditVariavelComposta from '@/views/metas/AddEditVariavelComposta.vue';
-import AddEditValoresComposta from '@/views/metas/AddEditValoresComposta.vue';
-import { storeToRefs } from 'pinia';
-import { Field, Form } from 'vee-validate';
-import { useRoute } from 'vue-router';
-import {
-  onMounted, onUpdated, ref, unref,
-} from 'vue';
-import EditorDeFormula from '@/components/metas/EditorDeFormula.vue';
 import EnvelopeDeAbas from '@/components/EnvelopeDeAbas.vue';
-import GerarVariaveisCompostas from '@/views/metas/GerarVariaveisCompostas.vue';
 import SmallModal from '@/components/SmallModal.vue';
+import EditorDeFormula from '@/components/metas/EditorDeFormula.vue';
 import TabelaDeVariaveis from '@/components/metas/TabelaDeVariaveis.vue';
 import TabelaDeVariaveisCompostas from '@/components/metas/TabelaDeVariaveisCompostas.vue';
 import TabelaDeVariaveisCompostasEmUso from '@/components/metas/TabelaDeVariaveisCompostasEmUso.vue';
 import TabelaDeVariaveisEmUso from '@/components/metas/TabelaDeVariaveisEmUso.vue';
+import { default as AddEditRealizado } from '@/views/metas/AddEditRealizado.vue';
+import { default as AddEditValores } from '@/views/metas/AddEditValores.vue';
+import AddEditValoresComposta from '@/views/metas/AddEditValoresComposta.vue';
+import { default as AddEditVariavel } from '@/views/metas/AddEditVariavel.vue';
+import AddEditVariavelComposta from '@/views/metas/AddEditVariavelComposta.vue';
+import GerarVariaveisCompostas from '@/views/metas/GerarVariaveisCompostas.vue';
+import { storeToRefs } from 'pinia';
+import { Field, Form } from 'vee-validate';
+import {
+  onMounted, onUpdated, ref, unref,
+} from 'vue';
+import { useRoute } from 'vue-router';
 
 const editModalStore = useEditModalStore();
 const alertStore = useAlertStore();

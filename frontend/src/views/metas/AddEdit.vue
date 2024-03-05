@@ -1,17 +1,16 @@
 <script setup>
 import { Dashboard } from '@/components';
-import truncate from '@/helpers/truncate';
 import { default as AutocompleteField } from '@/components/AutocompleteField.vue';
+import truncate from '@/helpers/truncate';
 import { router } from '@/router';
+import {
+  useAlertStore, useMacrotemasStore, useMetasStore, useOrgansStore, useSubtemasStore, useTagsStore, useTemasStore, useUsersStore,
+} from '@/stores';
 import { storeToRefs } from 'pinia';
 import { Field, Form } from 'vee-validate';
 import { ref, unref } from 'vue';
 import { useRoute } from 'vue-router';
 import * as Yup from 'yup';
-
-import {
-  useAlertStore, useMacrotemasStore, useMetasStore, useOrgansStore, useSubtemasStore, useTagsStore, useTemasStore, useUsersStore,
-} from '@/stores';
 
 const alertStore = useAlertStore();
 const route = useRoute();

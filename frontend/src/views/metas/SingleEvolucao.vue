@@ -2,6 +2,7 @@
 import { Dashboard } from '@/components';
 import { default as EvolucaoGraph } from '@/components/EvolucaoGraph.vue';
 import { default as GruposDeSerie } from '@/components/metas/GruposDeSerie.vue';
+import dateToField from '@/helpers/dateToField';
 import { useAlertStore } from '@/stores/alert.store';
 import { useAuthStore } from '@/stores/auth.store';
 import { useEditModalStore } from '@/stores/editModal.store';
@@ -11,7 +12,6 @@ import { useVariaveisStore } from '@/stores/variaveis.store';
 import { default as AddEditRealizado } from '@/views/metas/AddEditRealizado.vue';
 import { default as AddEditValores } from '@/views/metas/AddEditValores.vue';
 import { default as AddEditVariavel } from '@/views/metas/AddEditVariavel.vue';
-import dateToField from '@/helpers/dateToField';
 import { storeToRefs } from 'pinia';
 import { onMounted, onUpdated, ref } from 'vue';
 import { useRoute } from 'vue-router';
