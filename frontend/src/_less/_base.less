@@ -2652,6 +2652,44 @@ caption {
   background-color: @alerta__peso-5;
 }
 
+.migalhas-de-pão {
+  text-transform: uppercase;
+  font-weight: 700;
+  line-height: 1.5em;
+}
+
+.migalhas-de-pão__lista {}
+
+.migalhas-de-pão__item {
+  display: inline;
+  white-space: nowrap;
+
+  &::after {
+    color: @amarelo;
+    content: '/';
+    display: inline-block;
+    margin-right: 0.5rem;
+    margin-left: 0.5rem;
+  }
+
+  &:last-child {
+    &::after {
+      content: none;
+    }
+  }
+}
+
+.migalhas-de-pão__link {
+  color: @primary;
+  white-space: wrap;
+
+  &:hover,
+  &:focus,
+  &:active {
+    color: @amarelo;
+  }
+}
+
 .debug {
   outline: 2px solid fuchsia;
   border-radius: 1px;
