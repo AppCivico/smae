@@ -1,5 +1,6 @@
 import { Type } from 'class-transformer';
-import { IsInt, IsString, MaxLength } from 'class-validator';
+import { IsBoolean, IsInt, IsOptional, IsString, MaxLength } from 'class-validator';
+import { IsCNPJ } from '../../common/decorators/IsCNPJ';
 
 export class CreateOrgaoDto {
     /**
@@ -22,4 +23,34 @@ export class CreateOrgaoDto {
     @IsInt({ message: '$property| precisa ser um número' })
     @Type(() => Number)
     tipo_orgao_id: number;
+
+    @IsOptional()
+    @IsString({ message: '$property| cnpj: Precisa ser alfanumérico' })
+    @MaxLength(20, { message: '$property| cnpj: Máximo 20 caracteres' })
+    @IsCNPJ()
+    cnpj: string;
+
+    @IsOptional()
+    @IsString({ message: '$property| email: Precisa ser alfanumérico' })
+    @MaxLength(100, { message: '$property| email: Máximo 100 caracteres' })
+    email: string;
+
+    @IsOptional()
+    @IsString({ message: '$property| secretário responsável: Precisa ser alfanumérico' })
+    @MaxLength(100, { message: '$property| secretário responsável: Máximo 100 caracteres' })
+    secretario_responsavel: string;
+
+    @IsOptional()
+    @IsBoolean()
+    oficial: boolean;
+
+    @IsOptional()
+    @IsInt({ message: '$property| precisa ser um número' })
+    @Type(() => Number)
+    nivel: number;
+
+    @IsOptional()
+    @IsInt({ message: '$property| precisa ser um número' })
+    @Type(() => Number)
+    parente_id: number | null;
 }
