@@ -38,15 +38,13 @@ async function escolher(opção) {
     });
 }
 
-const listaDeMódulos = Object.keys(módulos).filter((x) => !módulos[x].desabilitado);
-
 const módulosDisponíveis = ref([]);
 
 async function iniciar() {
   emEspera.value = true;
   erro.value = null;
 
-  await authStore.getDados({ 'smae-sistemas': listaDeMódulos.join(',') })
+  await authStore.getDados({ 'smae-sistemas': Object.keys(módulos).join(',') })
     .then((resposta) => {
       const { sessao: { sistemas } } = resposta;
 
@@ -82,32 +80,32 @@ iniciar();
     </div>
 
     <ul
-      v-if="módulosDisponíveis.length"
+      v-if="Object.keys(módulos).length"
       class="escolha-de-módulos__lista flex column g2 uc"
     >
       <li
-        v-for="(sistema, i) in módulosDisponíveis"
-        :key="i"
+        v-for="(sistema, k) in módulos"
+        :key="k"
         class="fb100"
       >
         <button
           type="button"
           class="escolha-de-módulos__opção uc like-a__link tprimary tl t24 w700
         flex g05"
-          :disabled="módulos[sistema]?.desabilitado"
-          :value="sistema"
+          :disabled="!sistema?.rotaInicial || !módulosDisponíveis.includes(k)"
+          :value="k"
           @click="(e) => { escolher(e.target.value) }"
         >
           <img
-            v-if="módulos[sistema].ícone"
-            :src="módulos[sistema]?.ícone"
+            v-if="sistema.ícone"
+            :src="sistema?.ícone"
             class="cabeçalho__ícone-do-módulo"
             aria-hidden="true"
             width="48"
             height="48"
             alt=""
           >
-          {{ módulos[sistema]?.nome || sistema }}
+          {{ sistema?.nome || sistema }}
         </button>
       </li>
     </ul>
