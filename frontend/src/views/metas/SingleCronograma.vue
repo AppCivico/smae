@@ -1,6 +1,7 @@
 <script setup>
 import { Dashboard } from '@/components';
 import MapaExibir from '@/components/geo/MapaExibir.vue';
+import MigalhasDeMetas from '@/components/metas/MigalhasDeMetas.vue';
 import { useAlertStore } from '@/stores/alert.store';
 import { useAuthStore } from '@/stores/auth.store';
 import { useCronogramasStore } from '@/stores/cronogramas.store';
@@ -106,6 +107,8 @@ onUpdated(() => { start(); });
 </script>
 <template>
   <Dashboard>
+    <MigalhasDeMetas class="mb1" />
+
     <div class="flex spacebetween center mb2">
       <div>
         <div class="t12 uc w700 tamarelo">
