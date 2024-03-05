@@ -2,6 +2,7 @@
 import { Dashboard } from '@/components';
 import { default as EvolucaoGraph } from '@/components/EvolucaoGraph.vue';
 import { default as GruposDeSerie } from '@/components/metas/GruposDeSerie.vue';
+import MigalhasDeMetas from '@/components/metas/MigalhasDeMetas.vue';
 import dateToField from '@/helpers/dateToField';
 import { useAlertStore } from '@/stores/alert.store';
 import { useAuthStore } from '@/stores/auth.store';
@@ -83,6 +84,8 @@ onUpdated(() => { start(); });
 </script>
 <template>
   <Dashboard>
+    <MigalhasDeMetas class="mb1" />
+
     <div class="flex spacebetween center mb2">
       <div>
         <div class="t12 uc w700 tamarelo">

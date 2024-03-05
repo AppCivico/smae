@@ -1,5 +1,6 @@
 <script setup>
 import { Dashboard } from '@/components';
+import MigalhasDeMetas from '@/components/metas/MigalhasDeMetas.vue';
 import { default as SimpleIndicador } from '@/components/metas/SimpleIndicador.vue';
 import { AtividadeAtiva } from '@/helpers/AtividadeAtiva';
 import { useAtividadesStore } from '@/stores/atividades.store';
@@ -33,6 +34,8 @@ if (singleAtividade.value.id != atividade_id) AtividadesStore.getById(iniciativa
 </script>
 <template>
   <Dashboard>
+    <MigalhasDeMetas class="mb1" />
+
     <div class="flex spacebetween center mb2">
       <div>
         <div class="t12 uc w700 tamarelo">
