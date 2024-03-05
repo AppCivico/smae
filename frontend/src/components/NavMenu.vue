@@ -122,14 +122,27 @@ onBeforeRouteUpdate(() => {
               class="menu__envelope-svg"
               v-html="item.meta.íconeParaMenu"
             />
-            <span class="menu__texto-do-link">
-              {{ item.meta?.títuloParaMenu || item.meta?.título || item.name }}
+            <span
+              v-if="item.meta?.títuloParaMenu"
+              class="menu__texto-do-link"
+            >
+              {{ typeof item.meta.títuloParaMenu === 'function' ? item.meta.títuloParaMenu() : item.meta.títuloParaMenu }}
+            </span>
+            <span
+              v-if="item.meta?.título"
+              class="menu__texto-do-link"
+            >
+              {{ typeof item.meta.título === 'function' ? item.meta.título() : item.meta.título }}
+            </span>
+            <span
+              v-else
+              class="menu__texto-do-link"
+            >
+              {{ item.name }}
             </span>
             <svg
               class="menu__ícone-de-abertura"
-              :class="{
-                'menu__ícone-de-abertura--aberto': índiceDoItemAberto === i
-              }"
+              :class="{ 'menu__ícone-de-abertura--aberto': índiceDoItemAberto === i }"
               width="13"
               height="8"
             ><use xlink:href="#i_down" /></svg>
@@ -144,8 +157,23 @@ onBeforeRouteUpdate(() => {
               class="menu__envelope-svg"
               v-html="item.meta.íconeParaMenu"
             />
-            <span class="menu__texto-do-link">
-              {{ item.meta?.títuloParaMenu || item.meta?.título || item.name }}
+            <span
+              v-if="item.meta?.títuloParaMenu"
+              class="menu__texto-do-link"
+            >
+              {{ typeof item.meta.títuloParaMenu === 'function' ? item.meta.títuloParaMenu() : item.meta.títuloParaMenu }}
+            </span>
+            <span
+              v-else-if="item.meta?.título"
+              class="menu__texto-do-link"
+            >
+              {{ typeof item.meta.título === 'function' ? item.meta.título() : item.meta.título }}
+            </span>
+            <span
+              v-else
+              class="menu__texto-do-link"
+            >
+              {{ item.name }}
             </span>
           </router-link>
           <TransitionExpand>
@@ -163,7 +191,24 @@ onBeforeRouteUpdate(() => {
                   class="menu__link menu__link--sub"
                   :to="subitem.path"
                 >
-                  <span>{{ subitem.meta?.títuloParaMenu || subitem.meta?.título || subitem.name }}</span>
+                  <span
+                    v-if="subitem.meta?.títuloParaMenu"
+                    class="menu__texto-do-link"
+                  >
+                    {{ typeof subitem.meta.títuloParaMenu === 'function' ? subitem.meta.títuloParaMenu() : subitem.meta.títuloParaMenu }}
+                  </span>
+                  <span
+                    v-else-if="subitem.meta?.título"
+                    class="menu__texto-do-link"
+                  >
+                    {{ typeof subitem.meta.título === 'function' ? subitem.meta.título() : subitem.meta.título }}
+                  </span>
+                  <span
+                    v-else
+                    class="menu__texto-do-link"
+                  >
+                    {{ subitem.name }}
+                  </span>
                 </router-link>
               </li>
             </ul>
