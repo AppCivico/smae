@@ -52,20 +52,19 @@ onBeforeRouteUpdate(() => {
           SMAE
         </abbr>
       </h1>
-      <p class="cabeçalho__nome-do-módulo">
-        <abbr
-          v-if="dadosDoSistemaEscolhido?.sigla && dadosDoSistemaEscolhido?.nome"
-          class="cabeçalho__sigla-do-módulo"
-          :title="dadosDoSistemaEscolhido.nome"
+
+      <div class="cabeçalho__nome-e-ícone-do-módulo">
+        <img
+          :src="dadosDoSistemaEscolhido.ícone"
+          class="cabeçalho__ícone-do-módulo"
+          width="24"
+          height="24"
+          aria-hidden="true"
         >
-          <span>
-            {{ dadosDoSistemaEscolhido.sigla }}
-          </span>
-        </abbr>
-        <template v-else>
+        <h2 class="cabeçalho__nome-do-módulo">
           {{ dadosDoSistemaEscolhido?.nome || sistemaEscolhido }}
-        </template>
-      </p>
+        </h2>
+      </div>
 
       <button
         type="button"
@@ -251,25 +250,35 @@ onBeforeRouteUpdate(() => {
   text-overflow: ellipsis;
 }
 
+.cabeçalho__nome-e-ícone-do-módulo {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.cabeçalho__ícone-do-módulo {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+  flex-grow: 0;
+}
+
 .cabeçalho__nome-do-módulo {
-  font-size: 1.714286rem;
+  font-size: 0.857143rem;
   line-height: 1.5em;
   max-height: 3em;
   overflow: hidden;
   text-overflow: ellipsis;
   margin: 0;
-}
+  display: none;
+  text-align: left;
+  white-space: nowrap;
+  flex-grow: 1;
 
-.cabeçalho__sigla-do-módulo {
   .cabeçalho:hover &,
   .cabeçalho.aberto & {
-    &::before {
-      content: attr(title);
-    }
-
-    span {
-      display: none;
-    }
+    display: block;
   }
 }
 
