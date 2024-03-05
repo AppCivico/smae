@@ -22,4 +22,6 @@ export class PessoaFromJwtBase {
     orgao_id: undefined | number;
 
     flags: FeatureFlagDto;
+
+    modulo_sistema: ModuloSistema[]
 }
