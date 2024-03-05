@@ -13,14 +13,14 @@ export default {
   },
   Projetos: {
     nome: 'Gestão de projetos',
-    ícone: transferenciasVoluntarias,
+    ícone: gestaoDeProjetos,
     rotaInicial: {
       name: 'projetosListar',
     },
   },
   CasaCivil: {
     nome: 'Transferências voluntárias',
-    ícone: gestaoDeProjetos,
+    ícone: transferenciasVoluntarias,
     rotaInicial: {
       name: 'parlamentaresListar',
     },
