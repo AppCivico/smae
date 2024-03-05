@@ -1,5 +1,6 @@
 <script setup>
 import { Dashboard } from '@/components';
+import MigalhasDeMetas from '@/components/metas/MigalhasDeMetas.vue';
 import { default as SimpleIndicador } from '@/components/metas/SimpleIndicador.vue';
 import { useAuthStore } from '@/stores/auth.store';
 import { useIniciativasStore } from '@/stores/iniciativas.store';
@@ -29,6 +30,8 @@ if (!Iniciativas.value[meta_id]) IniciativasStore.getAll(meta_id);
 </script>
 <template>
   <Dashboard>
+    <MigalhasDeMetas class="mb1" />
+
     <div class="flex spacebetween center mb2">
       <div>
         <div class="t12 uc w700 tamarelo">

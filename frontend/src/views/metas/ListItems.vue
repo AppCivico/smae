@@ -1,5 +1,6 @@
 <script setup>
 import { Dashboard } from '@/components';
+import MigalhasDeMetas from '@/components/metas/MigalhasDeMetas.vue';
 import truncate from '@/helpers/truncate';
 import { useAuthStore } from '@/stores/auth.store';
 import { useEditModalStore } from '@/stores/editModal.store';
@@ -68,6 +69,8 @@ function groupSlug(s) {
 </script>
 <template>
   <Dashboard>
+    <MigalhasDeMetas class="mb1" />
+
     <div class="flex spacebetween center mb2">
       <img
         v-if="activePdm.logo"

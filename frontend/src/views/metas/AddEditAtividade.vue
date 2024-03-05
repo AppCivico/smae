@@ -1,5 +1,6 @@
 <script setup>
 import { Dashboard } from '@/components';
+import MigalhasDeMetas from '@/components/metas/MigalhasDeMetas.vue';
 import { default as AutocompleteField } from '@/components/AutocompleteField.vue';
 import { AtividadeAtiva } from '@/helpers/AtividadeAtiva.js';
 import truncate from '@/helpers/truncate';
@@ -165,6 +166,8 @@ function filterResponsible(orgao_id) {
 
 <template>
   <Dashboard>
+    <MigalhasDeMetas class="mb1" />
+
     <div class="flex spacebetween center mb2">
       <div>
         <h1>{{ title }} {{ activePdm.rotulo_atividade }}</h1>

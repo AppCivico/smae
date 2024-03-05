@@ -1,6 +1,7 @@
 <script setup>
 import { Dashboard } from '@/components';
 import { default as EvolucaoGraphComparison } from '@/components/EvolucaoGraphComparison.vue';
+import MigalhasDeMetas from '@/components/metas/MigalhasDeMetas.vue';
 import { useAuthStore, useMetasStore, usePaineisStore } from '@/stores';
 import { storeToRefs } from 'pinia';
 import { ref } from 'vue';
@@ -92,6 +93,8 @@ const mouseUpHandler = function (e) {
 </script>
 <template>
   <Dashboard>
+    <MigalhasDeMetas class="mb1" />
+
     <div class="flex spacebetween center mb2">
       <div>
         <div class="t12 uc w700 tamarelo">

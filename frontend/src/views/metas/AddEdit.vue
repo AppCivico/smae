@@ -1,6 +1,7 @@
 <script setup>
 import { Dashboard } from '@/components';
 import { default as AutocompleteField } from '@/components/AutocompleteField.vue';
+import MigalhasDeMetas from '@/components/metas/MigalhasDeMetas.vue';
 import truncate from '@/helpers/truncate';
 import { router } from '@/router';
 import {
@@ -186,6 +187,8 @@ function filterResponsible(orgao_id) {
 
 <template>
   <Dashboard>
+    <MigalhasDeMetas class="mb1" />
+
     <div class="flex spacebetween center mb2">
       <h1>{{ title }}</h1>
       <hr class="ml2 f1">

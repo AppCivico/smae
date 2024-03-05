@@ -1,5 +1,6 @@
 <script setup>
 import { Dashboard } from '@/components';
+import MigalhasDeMetas from '@/components/metas/MigalhasDeMetas.vue';
 import { indicador as schema } from '@/consts/formSchemas';
 import fieldToDate from '@/helpers/fieldToDate';
 import maskMonth from '@/helpers/maskMonth';
@@ -258,6 +259,8 @@ export default {
 </script>
 <template>
   <Dashboard v-bind="$attrs">
+    <MigalhasDeMetas class="mb1" />
+
     <div class="flex spacebetween center">
       <h1 v-if="indicador_id">
         Editar Indicador
