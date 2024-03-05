@@ -215,7 +215,7 @@ onBeforeRouteUpdate(() => {
           </TransitionExpand>
         </li>
         <li
-          class="menu__item"
+          class="menu__item menu__item--módulos"
         >
           <router-link
             :to="{ name: 'home' }"
@@ -257,13 +257,17 @@ onBeforeRouteUpdate(() => {
   overflow-x: clip;
   overflow-y: auto;
   z-index: 110;
-  width: 5.142857rem; /* 72px */
+  display: flex;
+  flex-direction: column;
+  width: 5.142857rem;
+  /* 72px */
   .transition(width);
   .bs();
 
   &:hover,
   &.aberto {
-    width: 14rem; /* 196px */
+    width: 14rem;
+    /* 196px */
   }
 }
 
@@ -334,7 +338,7 @@ onBeforeRouteUpdate(() => {
 
   .transition(margin-left);
 
-  .cabeçalho:hover & ,
+  .cabeçalho:hover &,
   .cabeçalho.aberto & {
     margin-left: 0;
   }
@@ -344,23 +348,28 @@ onBeforeRouteUpdate(() => {
   }
 }
 
-.cabeçalho__menu {
-}
+.cabeçalho__menu {}
 
 .menu {
   font-weight: 700;
   color: @amarelo;
   font-size: 1rem;
+  flex-grow: 1;
+  flex-direction: column;
+  display: flex;
 }
 
 .menu__lista {
+  flex-grow: 1;
+  flex-direction: column;
+  display: flex;
 }
 
 .menu__lista--sub {
   margin-bottom: 1rem;
   display: none;
 
-  .cabeçalho:hover & ,
+  .cabeçalho:hover &,
   .cabeçalho.aberto & {
     display: block;
   }
@@ -370,6 +379,10 @@ onBeforeRouteUpdate(() => {
   border-bottom: 1px solid fadeOut(@c100, 80%);
 }
 
+.menu__item--módulos {
+  margin-top: auto;
+  margin-bottom: 0;
+}
 .menu__item--sub {
   border: 0;
 }
