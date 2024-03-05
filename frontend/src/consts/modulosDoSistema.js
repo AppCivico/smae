@@ -6,7 +6,6 @@ import transferenciasVoluntarias from '@/assets/modulos/transferencias-voluntari
 export default {
   PDM: {
     nome: 'Programa de metas',
-    valor: 'PDM',
     ícone: programaDeMetas,
     rotaInicial: {
       name: 'panorama',
@@ -14,7 +13,6 @@ export default {
   },
   Projetos: {
     nome: 'Gestão de projetos',
-    valor: 'Projetos',
     ícone: transferenciasVoluntarias,
     rotaInicial: {
       name: 'projetosListar',
@@ -22,7 +20,6 @@ export default {
   },
   CasaCivil: {
     nome: 'Transferências voluntárias',
-    valor: 'CasaCivil',
     ícone: gestaoDeProjetos,
     rotaInicial: {
       name: 'parlamentaresListar',
@@ -30,9 +27,7 @@ export default {
   },
   PlanoSetorial: {
     nome: 'Planos setoriais',
-    valor: 'planos_setoriais',
     ícone: planosSetoriais,
     rotaInicial: null,
-    desabilitado: true,
   },
 };
