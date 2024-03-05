@@ -1,5 +1,6 @@
 <script setup>
 import { Dashboard } from '@/components';
+import MapaExibir from '@/components/geo/MapaExibir.vue';
 import { useAlertStore } from '@/stores/alert.store';
 import { useAuthStore } from '@/stores/auth.store';
 import { useCronogramasStore } from '@/stores/cronogramas.store';
@@ -10,7 +11,6 @@ import { default as AddEditEtapa } from '@/views/metas/AddEditEtapa.vue';
 import { default as AddEditFase } from '@/views/metas/AddEditFase.vue';
 import { default as AddEditMonitorar } from '@/views/metas/AddEditMonitorar.vue';
 import { storeToRefs } from 'pinia';
-import MapaExibir from '@/components/geo/MapaExibir.vue';
 import {
   computed, onMounted, onUpdated, reactive, ref,
 } from 'vue';
