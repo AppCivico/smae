@@ -7,7 +7,10 @@ import { UpdateRegiaoDto } from './dto/update-regiao.dto';
 
 @Injectable()
 export class RegiaoService {
-    constructor(private readonly prisma: PrismaService, private readonly uploadService: UploadService) {}
+    constructor(
+        private readonly prisma: PrismaService,
+        private readonly uploadService: UploadService
+    ) {}
 
     async create(createRegiaoDto: CreateRegiaoDto, user: PessoaFromJwt) {
         if (!createRegiaoDto.parente_id) {
@@ -75,14 +78,18 @@ export class RegiaoService {
         return created;
     }
 
-    async findAll(filters: FilterRegiaoDto) {
+    async findAll(filters: FilterRegiaoDto, user: PessoaFromJwt) {
+        const ehParaCasaCivil = user.modulo_sistema.includes('CasaCivil');
+
         const listActive = await this.prisma.regiao.findMany({
             where: {
                 removido_em: null,
                 nivel: filters.nivel,
                 parente_id: filters.parente_id,
+                AND: ehParaCasaCivil ? undefined : [{ nivel: 1 }],
             },
             orderBy: [{ nivel: 'asc' }, { parente_id: 'asc' }],
+            take: ehParaCasaCivil ? undefined : 1, // limitando artificialmente a lista de CRUD até resolver o problema no frontend
             select: {
                 id: true,
                 descricao: true,
