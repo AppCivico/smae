@@ -34,6 +34,9 @@ const ModuloDescricao: Record<string, [string, ModuloSistema | null]> = {
     PDM: ['Regras de Negocio do PDM', 'PDM'],
     SMAE: ['Regras de Negocio do SMAE', 'SMAE'],
     PerfilAcesso: ['Gerenciar Perfil de Acesso', 'SMAE'],
+    CadastroPartido: ['Cadastrar Partidos', 'CasaCivil'],
+    CadastroBancada: ['Cadastrar Bancada', 'CasaCivil'],
+    CadastroParlamentar: ['Cadastrar Parlamentar', 'CasaCivil'],
     CadastroCargo: ['', null],
     CadastroCoordenadoria: ['', null],
     CadastroDepartamento: ['', null],
@@ -197,6 +200,21 @@ const PrivConfig: Record<string, false | [ListaDePrivilegios, string | false][]>
         ['CadastroGrupoPaineis.inserir', 'Inserir Grupo de Painéis'],
         ['CadastroGrupoPaineis.editar', 'Editar Grupo de Painéis'],
         ['CadastroGrupoPaineis.remover', 'Remover Grupo de Painéis'],
+    ],
+    CadastroBancada: [
+        ['CadastroBancada.editar', 'Editar Bancadas'],
+        ['CadastroBancada.inserir', 'Inserir Bancadas'],
+        ['CadastroBancada.remover', 'Remover Bancadas'],
+    ],
+    CadastroPartido: [
+        ['CadastroPartido.editar', 'Editar Partidos'],
+        ['CadastroPartido.inserir', 'Inserir Partidos'],
+        ['CadastroPartido.remover', 'Remover Partidos'],
+    ],
+    CadastroParlamentar : [
+        ['CadastroParlamentar.editar', 'Editar Parlamentar'],
+        ['CadastroParlamentar.inserir', 'Inserir Parlamentar'],
+        ['CadastroParlamentar.remover', 'Remover Parlamentar'],
     ],
     Reports: [
         ['Reports.executar', 'Executar relatórios'],
@@ -440,6 +458,21 @@ const PerfilAcessoConfig: {
         nome: atualizarNomePerfil('Observador de painéis externos', []),
         descricao: 'Pode participar como leitor em painéis externos',
         privilegios: ['SMAE.espectador_de_painel_externo'],
+    },
+    {
+        nome: 'Gestor Casa Civil',
+        descricao: 'Pode realizar em Casa Civil',
+        privilegios: [
+            'CadastroBancada.editar',
+            'CadastroBancada.inserir',
+            'CadastroBancada.remover',
+            'CadastroPartido.editar',
+            'CadastroPartido.inserir',
+            'CadastroPartido.remover',
+            'CadastroParlamentar.editar',
+            'CadastroParlamentar.inserir',
+            'CadastroParlamentar.remover'
+        ]
     },
     removerNomePerfil('Técnico CP'),
     removerNomePerfil('Orçamento'),
