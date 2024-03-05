@@ -1,5 +1,5 @@
 import { INestApplication } from '@nestjs/common';
-import { Orgao } from '../../src/orgao/entities/orgao.entity';
+import { OrgaoDto } from '../../src/orgao/entities/orgao.entity';
 import { OrgaoService } from '../../src/orgao/orgao.service';
 import { ListPessoa } from '../../src/pessoa/entities/list-pessoa.entity';
 import { PessoaService } from '../../src/pessoa/pessoa.service';
@@ -14,7 +14,7 @@ export class TestOrgData {
 
 export class OrganizacaoExpert {
     static async getOrCreateOrg(app: INestApplication, orgData: TestOrgData) {
-        let exitingOrg: Orgao | null;
+        let exitingOrg: OrgaoDto | null;
 
         const orgService = app.get(OrgaoService);
 
