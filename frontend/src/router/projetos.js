@@ -50,19 +50,6 @@ const ProjetosResumo = defineAsyncComponent({
   loadingComponent: LoadingComponent,
 });
 
-const GruposDeObservadoresCriarEditar = defineAsyncComponent({
-  loader: () => import('@/views/gruposDeObservadores/GruposDeObservadoresCriarEditar.vue'),
-  loadingComponent: LoadingComponent,
-});
-const GruposDeObservadoresLista = defineAsyncComponent({
-  loader: () => import('@/views/gruposDeObservadores/GruposDeObservadoresLista.vue'),
-  loadingComponent: LoadingComponent,
-});
-const GruposDeObservadoresRaiz = defineAsyncComponent({
-  loader: () => import('@/views/gruposDeObservadores/GruposDeObservadoresRaiz.vue'),
-  loadingComponent: LoadingComponent,
-});
-
 export default {
   path: '/projetos',
   component: ProjetosRaiz,
@@ -152,55 +139,6 @@ export default {
     },
 
     {
-      path: '/grupos-de-observadores',
-      component: GruposDeObservadoresRaiz,
-      meta: {
-        título: 'Grupos de observadores',
-        títuloParaMenu: 'Grupos de observadores',
-
-        limitarÀsPermissões: [
-          'Projeto.administrar_portfolios',
-          'Projeto.administrador_no_orgao',
-        ],
-      },
-
-      children: [
-        {
-          name: 'gruposDeObservadoresListar',
-          path: '',
-          component: GruposDeObservadoresLista,
-          meta: {
-            título: 'Grupos de observadores',
-          },
-        },
-        {
-          name: 'gruposDeObservadoresCriar',
-          path: 'novo',
-          component: GruposDeObservadoresCriarEditar,
-          meta: {
-            título: 'Novo grupo de observadores',
-          },
-        },
-        {
-          path: ':grupoDeObservadoresId',
-          name: 'gruposDeObservadoresEditar',
-          component: GruposDeObservadoresCriarEditar,
-          props: ({ params }) => ({
-            ...params,
-            ...{
-              grupoDeObservadoresId: Number.parseInt(params.grupoDeObservadoresId, 10)
-              || undefined,
-            },
-          }),
-
-          meta: {
-            título: 'Editar grupo de observadores',
-          },
-        },
-      ],
-    },
-
-    {
       path: ':projetoId',
       component: ProjetosItem,
       props: ({ params }) => ({
@@ -253,7 +191,6 @@ export default {
               'tarefasListar',
               'projetosEAP',
               'projetosGantt',
-
             );
 
             return [
