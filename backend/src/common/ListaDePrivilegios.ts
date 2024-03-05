@@ -103,4 +103,5 @@ export type ListaDePrivilegios =
     | 'CadastroPainelExterno.editar'
     | 'CadastroPainelExterno.remover'
     | 'PerfilAcesso.administrador'
-    | 'SMAE.acesso_bi';
+    | 'SMAE.acesso_bi'
+    | 'SMAE.acessoTelefone';

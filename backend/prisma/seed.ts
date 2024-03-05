@@ -215,6 +215,7 @@ const PrivConfig: Record<string, false | [ListaDePrivilegios, string | false][]>
         ['CadastroParlamentar.editar', 'Editar Parlamentar'],
         ['CadastroParlamentar.inserir', 'Inserir Parlamentar'],
         ['CadastroParlamentar.remover', 'Remover Parlamentar'],
+        ['SMAE.acessoTelefone', 'Ver telefone do parlamentar']
     ],
     Reports: [
         ['Reports.executar', 'Executar relatórios'],
@@ -461,7 +462,7 @@ const PerfilAcessoConfig: {
     },
     {
         nome: 'Gestor Casa Civil',
-        descricao: 'Pode realizar em Casa Civil',
+        descricao: 'Pode gerir entidades em Casa Civil e ver telefone de parlamentares',
         privilegios: [
             'CadastroBancada.editar',
             'CadastroBancada.inserir',
@@ -471,7 +472,8 @@ const PerfilAcessoConfig: {
             'CadastroPartido.remover',
             'CadastroParlamentar.editar',
             'CadastroParlamentar.inserir',
-            'CadastroParlamentar.remover'
+            'CadastroParlamentar.remover',
+            'SMAE.acessoTelefone'
         ]
     },
     removerNomePerfil('Técnico CP'),
