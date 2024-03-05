@@ -82,6 +82,7 @@ export default {
     rotaPrescindeDeChave: true,
     restringirÀsPermissões: [
       'Projeto.administrar_portfolios',
+      'Projeto.administrar_portfolios_no_orgao',
       'SMAE.gestor_de_projeto',
       'SMAE.colaborador_de_projeto',
       'SMAE.espectador_de_projeto',
