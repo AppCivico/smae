@@ -1,32 +1,37 @@
+import gestaoDeProjetos from '@/assets/modulos/gestao-de-projetos.svg';
+import planosSetoriais from '@/assets/modulos/planos-setoriais.svg';
+import programaDeMetas from '@/assets/modulos/programa-de-metas.svg';
+import transferenciasVoluntarias from '@/assets/modulos/transferencias-voluntarias.svg';
+
 export default {
   PDM: {
     nome: 'Programa de metas',
-    sigla: 'PdM',
     valor: 'PDM',
+    ícone: programaDeMetas,
     rotaInicial: {
       name: 'panorama',
     },
   },
   Projetos: {
     nome: 'Gestão de projetos',
-    sigla: 'GP',
     valor: 'Projetos',
+    ícone: transferenciasVoluntarias,
     rotaInicial: {
       name: 'projetosListar',
     },
   },
   CasaCivil: {
     nome: 'Transferências voluntárias',
-    sigla: 'TV',
     valor: 'CasaCivil',
+    ícone: gestaoDeProjetos,
     rotaInicial: {
       name: 'parlamentaresListar',
     },
   },
-  planos_setoriais: {
+  PlanoSetorial: {
     nome: 'Planos setoriais',
-    sigla: 'PS',
     valor: 'planos_setoriais',
+    ícone: planosSetoriais,
     rotaInicial: null,
     desabilitado: true,
   },
