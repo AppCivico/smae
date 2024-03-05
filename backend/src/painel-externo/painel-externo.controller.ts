@@ -42,7 +42,7 @@ export class PainelExternoController {
 
     @Get()
     @ApiBearerAuth('access-token')
-    @Roles('CadastroPainel.inserir', 'CadastroMeta.inserir')
+    @Roles('CadastroPainelExterno.inserir', 'CadastroPainelExterno.editar', 'CadastroPainelExterno.remover')
     async findAll(
         @Query() filters: FilterPainelExternoDto,
         @CurrentUser() user: PessoaFromJwt
