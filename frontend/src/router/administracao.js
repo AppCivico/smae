@@ -337,6 +337,7 @@ export default [
           título: 'Partidos',
           rotaPrescindeDeChave: true,
           rotasParaMenuSecundário,
+          limitarÀsPermissões: 'CadastroPartido.',
         },
         children: [
           {
@@ -376,6 +377,7 @@ export default [
         meta: {
           title: 'Bancadas',
           rotaPrescindeDeChave: true,
+          limitarÀsPermissões: 'CadastroBancada.',
         },
         children: [
           {
