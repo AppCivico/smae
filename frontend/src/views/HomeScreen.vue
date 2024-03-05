@@ -92,15 +92,21 @@ iniciar();
       >
         <button
           type="button"
-          class="escolha-de-módulos__opção uc like-a__link tprimary tl t24 w700"
+          class="escolha-de-módulos__opção uc like-a__link tprimary tl t24 w700
+        flex g05"
           :disabled="módulos[sistema]?.desabilitado"
           :value="sistema"
           @click="(e) => { escolher(e.target.value) }"
         >
-          <svg
-            width="8"
-            height="16"
-          ><use xlink:href="#i_right" /></svg>
+          <img
+            v-if="módulos[sistema].ícone"
+            :src="módulos[sistema]?.ícone"
+            class="cabeçalho__ícone-do-módulo"
+            aria-hidden="true"
+            width="48"
+            height="48"
+            alt=""
+          >
           {{ módulos[sistema]?.nome || sistema }}
         </button>
       </li>
