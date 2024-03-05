@@ -10,13 +10,14 @@ import { Home } from '@/views';
 
 import { Login, LostPassword, NewPassword } from '@/views/auth';
 
-import ParlamentaresLista from '@/views/parlamentares/ParlamentaresLista.vue';
 import ParlamentaresCriarEditar from '@/views/parlamentares/ParlamentaresCriarEditar.vue';
+import ParlamentaresLista from '@/views/parlamentares/ParlamentaresLista.vue';
 import ParlamentaresRaiz from '@/views/parlamentares/ParlamentaresRaiz.vue';
 
 import Panorama from '@/views/Panorama.vue';
 import administracao from './administracao';
 import análise from './analise';
+import configuracoes from './configuracoes';
 import envios from './envios';
 import metas from './metas';
 import monitoramento from './monitoramento';
@@ -86,6 +87,7 @@ export const router = createRouter({
     { path: '/nova-senha', component: NewPassword },
 
     ...administracao,
+    configuracoes,
 
     monitoramento,
     metas,
