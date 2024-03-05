@@ -34,9 +34,9 @@ export class OrgaoService {
         if (dto.parente_id === null && dto.nivel > 1) {
             throw new HttpException('Tarefas com nível maior que 1 necessitam de uma tarefa pai', 400);
         } else if (dto.parente_id !== null) {
-            const pai = await this.prisma.tarefa.findFirst({
+            const pai = await this.prisma.orgao.findFirst({
                 where: { removido_em: null, id: dto.parente_id },
-                select: { id: true, nivel: true, numero: true, tarefa: true },
+                select: { id: true, nivel: true },
             });
             if (!pai) throw new HttpException(`Órgão (${dto.parente_id}) não foi encontrado.`, 400);
             if (pai.nivel != dto.nivel - 1)
@@ -142,9 +142,9 @@ export class OrgaoService {
                     if (dto.parente_id === null && dto.nivel > 1) {
                         throw new HttpException('Tarefas com nível maior que 1 necessitam de uma tarefa pai', 400);
                     } else if (dto.parente_id !== null) {
-                        const pai = await prismaTx.tarefa.findFirst({
+                        const pai = await prismaTx.orgao.findFirst({
                             where: { removido_em: null, id: dto.parente_id },
-                            select: { id: true, nivel: true, numero: true, tarefa: true },
+                            select: { id: true, nivel: true },
                         });
                         if (!pai) throw new HttpException(`Órgão (${dto.parente_id}) não foi encontrado.`, 400);
                         if (pai.nivel != dto.nivel - 1)
