@@ -142,7 +142,6 @@ export class GrupoPainelExternoService {
         const gp = await this.prisma.grupoPainelExterno.findFirst({
             where: {
                 id,
-                modulo_sistema: sistema,
                 removido_em: null,
             },
             select: {
@@ -244,6 +243,7 @@ export class GrupoPainelExternoService {
                 data: {
                     titulo: dto.titulo,
 
+                    modulo_sistema: sistema,
                     atualizado_em: new Date(Date.now()),
                     atualizado_por: user.id,
                 },

@@ -109,7 +109,6 @@ export class PainelExternoService {
                 where: {
                     titulo: { equals: dto.titulo, mode: 'insensitive' },
                     removido_em: null,
-                    modulo_sistema: sistema,
                     NOT: { id: id },
                 },
             });
@@ -128,6 +127,7 @@ export class PainelExternoService {
                 data: {
                     atualizado_por: user.id,
                     atualizado_em: now,
+                    modulo_sistema: sistema,
                     descricao: dto.descricao,
                     link: dto.link,
                     link_dominio: dto.link ? GetDomainFromUrl(dto.link) : undefined,
