@@ -32,7 +32,7 @@ export class OrgaoService {
         }
 
         if (dto.parente_id === null && dto.nivel > 1) {
-            throw new HttpException('Tarefas com nível maior que 1 necessitam de uma tarefa pai', 400);
+            throw new HttpException('Órgãos com nível maior que 1 necessita de um órgão pai', 400);
         } else if (dto.parente_id !== null) {
             const pai = await this.prisma.orgao.findFirst({
                 where: { removido_em: null, id: dto.parente_id },
@@ -140,7 +140,7 @@ export class OrgaoService {
                     if (dto.nivel === undefined) dto.nivel = self.nivel;
 
                     if (dto.parente_id === null && dto.nivel > 1) {
-                        throw new HttpException('Tarefas com nível maior que 1 necessitam de uma tarefa pai', 400);
+                        throw new HttpException('Órgãos com nível maior que 1 necessita de um órgão pai', 400);
                     } else if (dto.parente_id !== null) {
                         const pai = await prismaTx.orgao.findFirst({
                             where: { removido_em: null, id: dto.parente_id },
@@ -164,6 +164,7 @@ export class OrgaoService {
                         atualizado_em: new Date(Date.now()),
                         ...dto,
                     },
+                    select: { id: true },
                 });
             },
             { isolationLevel: 'Serializable' }
