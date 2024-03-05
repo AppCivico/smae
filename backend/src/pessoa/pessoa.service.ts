@@ -371,6 +371,8 @@ export class PessoaService {
     }
 
     async update(pessoaId: number, updatePessoaDto: UpdatePessoaDto, user: PessoaFromJwt) {
+        const sistema = user.assertOneModuloSistema('editar', 'pessoa');
+
         await this.verificarPrivilegiosEdicao(pessoaId, updatePessoaDto, user);
         this.verificarCPFObrigatorio(updatePessoaDto);
         this.verificarRFObrigatorio(updatePessoaDto);
@@ -430,9 +432,12 @@ export class PessoaService {
                 }
 
                 const grupos_to_assign = [];
-                if (updatePessoaDto.grupos) {
-                    const grupos = updatePessoaDto.grupos;
-                    delete updatePessoaDto.grupos;
+
+                const grupos = updatePessoaDto.grupos;
+                delete updatePessoaDto.grupos;
+                if (grupos) {
+                    if (sistema != 'PDM')
+                        throw new BadRequestException('Edição de grupos não é suportada fora do sistema do PDM');
 
                     for (const grupo of grupos) {
                         grupos_to_assign.push({ grupo_painel_id: grupo });
@@ -494,13 +499,7 @@ export class PessoaService {
                                 registro_funcionario: updatePessoaDto.registro_funcionario,
                             },
                         },
-
-                        GruposDePaineisQueParticipo: {
-                            // aqui vai inserir de novo
-                            createMany: {
-                                data: grupos_to_assign,
-                            },
-                        },
+                        GruposDePaineisQueParticipo: grupos ? { createMany: { data: grupos_to_assign } } : undefined,
                     },
                 });
 
@@ -545,18 +544,42 @@ export class PessoaService {
                 if (Array.isArray(updatePessoaDto.perfil_acesso_ids)) {
                     const promises = [];
 
+                    const privOfModuleDb = await this.prisma.privilegio.findMany({
+                        where: {
+                            modulo: {
+                                modulo_sistema: { in: ['SMAE', sistema] },
+                            },
+                        },
+                        select: { id: true },
+                    });
+                    const privOfModuleArr = privOfModuleDb.map((r) => r.id);
+
                     await prismaTx.pessoaPerfil.deleteMany({
-                        where: { pessoa_id: pessoaId },
+                        where: {
+                            pessoa_id: pessoaId,
+                            // só deve apagar os privilégios que tiverem relação ao modulo que a pessoa estava visualizando na tela
+                            perfil_acesso: {
+                                perfil_privilegio: {
+                                    some: {
+                                        privilegio_id: { in: privOfModuleArr },
+                                    },
+                                },
+                            },
+                        },
                     });
 
                     for (const perm of updatePessoaDto.perfil_acesso_ids) {
+                        if (privOfModuleArr.includes(perm) === false)
+                            throw new BadRequestException(
+                                `Perfil de acesso ID ${perm} não foi encontrado (sistemas: SMAE, ${sistema}), carregados: ${privOfModuleArr.join(',')}`
+                            );
                         promises.push(
                             prismaTx.pessoaPerfil.create({ data: { perfil_acesso_id: +perm, pessoa_id: pessoaId } })
                         );
                     }
                     await Promise.all(promises);
 
-                    this.logger.log(`recalculando pessoa_acesso_pdm...`);
+                    this.logger.log(`Recalculando pessoa_acesso_pdm...`);
                     await prismaTx.$queryRaw`select pessoa_acesso_pdm(${pessoaId}::int)`;
                 }
             },
