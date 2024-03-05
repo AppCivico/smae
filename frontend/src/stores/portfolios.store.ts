@@ -37,7 +37,7 @@ export const usePortfolioStore = defineStore('portfolios', {
       this.erro = null;
 
       try {
-        const resposta = await this.requestS.get(`${baseUrl}/portfolio/para-projetos/${id}`, params);
+        const resposta = await this.requestS.get(`${baseUrl}/portfolio/${id}`, params);
         this.emFoco = {
           ...resposta,
         };
@@ -47,12 +47,16 @@ export const usePortfolioStore = defineStore('portfolios', {
       this.chamadasPendentes.emFoco = false;
     },
 
-    async buscarTudo(params = {}): Promise<void> {
+    async buscarTudo(params = {}, paraProjetos = true): Promise<void> {
       this.chamadasPendentes.lista = true;
       this.erro = null;
 
+      const rotaNaApi = paraProjetos
+        ? '/portfolio/para-projetos'
+        : '/portfolio';
+
       try {
-        const { linhas } = await this.requestS.get(`${baseUrl}/portfolio/para-projetos`, params);
+        const { linhas } = await this.requestS.get(`${baseUrl}${rotaNaApi}`, params);
         this.lista = linhas;
       } catch (erro: unknown) {
         this.erro = erro;
