@@ -4034,6 +4034,8 @@ model GrupoPainelExterno {
     removido_por   Int?
     removido_em    DateTime? @db.Timestamptz(6)
 
+    modulo_sistema ModuloSistema @default(SMAE)
+
     criador     Pessoa  @relation("Criador", fields: [criado_por], references: [id])
     atualizador Pessoa? @relation("Atualizador", fields: [atualizado_por], references: [id])
     removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
@@ -4092,6 +4094,8 @@ model PainelExterno {
 
     titulo    String
     descricao String?
+
+    modulo_sistema ModuloSistema @default(SMAE)
 
     link         String
     link_dominio String

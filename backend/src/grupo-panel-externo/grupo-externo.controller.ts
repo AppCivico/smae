@@ -33,8 +33,11 @@ export class GrupoPainelExternoController {
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
     @Roles(...roles)
-    async findAll(@Query() filter: FilterGrupoPainelExternoDto): Promise<ListGrupoPainelExternoDto> {
-        return { linhas: await this.grupoPainelExternoService.findAll(filter) };
+    async findAll(
+        @Query() filter: FilterGrupoPainelExternoDto,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<ListGrupoPainelExternoDto> {
+        return { linhas: await this.grupoPainelExternoService.findAll(filter, user) };
     }
 
     @Patch(':id')

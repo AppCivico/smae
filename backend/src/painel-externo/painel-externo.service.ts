@@ -1,5 +1,6 @@
 import { HttpException, Injectable } from '@nestjs/common';
-import { Prisma } from '@prisma/client';
+import { ModuloSistema, Prisma } from '@prisma/client';
+import { GetDomainFromUrl } from '../auth/models/GetDomainFromUrl';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { RecordWithId } from '../common/dto/record-with-id.dto';
 import { PrismaService } from '../prisma/prisma.service';
@@ -7,15 +8,16 @@ import { CreatePainelExternoDto } from './dto/create-painel-externo.dto';
 import { FilterPainelExternoDto } from './dto/filter-painel-externo.dto';
 import { UpdatePainelExternoDto } from './dto/update-painel-externo.dto';
 import { PainelExternoDto } from './entities/painel-externo.entity';
-import { GetDomainFromUrl } from '../auth/models/GetDomainFromUrl';
 
 @Injectable()
 export class PainelExternoService {
     constructor(private readonly prisma: PrismaService) {}
 
     async create(dto: CreatePainelExternoDto, user: PessoaFromJwt): Promise<RecordWithId> {
+        const sistema = user.assertOneModuloSistema('criar', 'painel externo');
         const similarExists = await this.prisma.painelExterno.count({
             where: {
+                modulo_sistema: sistema,
                 titulo: { equals: dto.titulo, mode: 'insensitive' },
                 removido_em: null,
             },
@@ -29,6 +31,7 @@ export class PainelExternoService {
             async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
                 const painel = await prismaTx.painelExterno.create({
                     data: {
+                        modulo_sistema: sistema,
                         criado_por: user.id,
                         criado_em: now,
                         descricao: dto.descricao,
@@ -44,6 +47,7 @@ export class PainelExternoService {
                         const pe = await prismaTx.painelExterno.findFirstOrThrow({
                             where: {
                                 removido_em: null,
+                                modulo_sistema: sistema,
                                 id: grupoPortId,
                             },
                             select: { id: true },
@@ -72,6 +76,7 @@ export class PainelExternoService {
             where: {
                 id: filters.id,
                 removido_em: null,
+                modulo_sistema: { in: ['SMAE', ...user.modulo_sistema] },
             },
             select: {
                 id: true,
@@ -97,11 +102,14 @@ export class PainelExternoService {
     }
 
     async update(id: number, dto: UpdatePainelExternoDto, user: PessoaFromJwt): Promise<RecordWithId> {
+        const sistema = user.assertOneModuloSistema('editar', 'painel externo');
+
         if (dto.titulo) {
             const similarExists = await this.prisma.painelExterno.count({
                 where: {
                     titulo: { equals: dto.titulo, mode: 'insensitive' },
                     removido_em: null,
+                    modulo_sistema: sistema,
                     NOT: { id: id },
                 },
             });
@@ -113,7 +121,10 @@ export class PainelExternoService {
         const now = new Date(Date.now());
         await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
             const painel = await prismaTx.painelExterno.update({
-                where: { id: id },
+                where: {
+                    id: id,
+                    modulo_sistema: sistema,
+                },
                 data: {
                     atualizado_por: user.id,
                     atualizado_em: now,
@@ -125,7 +136,7 @@ export class PainelExternoService {
                 select: { id: true },
             });
 
-            await this.upsertGruposPainelExterno(prismaTx, painel, dto, now, user);
+            await this.upsertGruposPainelExterno(prismaTx, painel, dto, now, user, sistema);
 
             return painel;
         });
@@ -134,8 +145,10 @@ export class PainelExternoService {
     }
 
     async remove(id: number, user: PessoaFromJwt): Promise<void> {
+        const sistema = user.assertOneModuloSistema('remover', 'painel externo');
+
         await this.prisma.painelExterno.updateMany({
-            where: { id: id, removido_em: null },
+            where: { id: id, removido_em: null, modulo_sistema: sistema },
             data: {
                 removido_por: user.id,
                 removido_em: new Date(Date.now()),
@@ -150,7 +163,8 @@ export class PainelExternoService {
         row: { id: number },
         dto: UpdatePainelExternoDto,
         now: Date,
-        user: PessoaFromJwt
+        user: PessoaFromJwt,
+        sistema: ModuloSistema
     ) {
         if (!Array.isArray(dto.grupos)) return;
 
@@ -161,13 +175,14 @@ export class PainelExternoService {
             },
         });
 
-        for (const grupoPortId of dto.grupos) {
-            if (prevVersions.filter((r) => r.grupo_painel_externo_id == grupoPortId)[0]) continue;
+        for (const grupoPainelId of dto.grupos) {
+            if (prevVersions.filter((r) => r.grupo_painel_externo_id == grupoPainelId)[0]) continue;
 
-            const gp = await prismaTx.grupoPortfolio.findFirstOrThrow({
+            const gp = await prismaTx.painelExterno.findFirstOrThrow({
                 where: {
                     removido_em: null,
-                    id: grupoPortId,
+                    modulo_sistema: sistema,
+                    id: grupoPainelId,
                 },
                 select: { id: true },
             });
@@ -182,14 +197,14 @@ export class PainelExternoService {
             });
         }
 
-        for (const prevPortRow of prevVersions) {
+        for (const prevPainelRow of prevVersions) {
             // pula as que continuam na lista
-            if (dto.grupos.filter((r) => r == prevPortRow.grupo_painel_externo_id)[0]) continue;
+            if (dto.grupos.filter((r) => r == prevPainelRow.grupo_painel_externo_id)[0]) continue;
 
             // remove o relacionamento
             await prismaTx.painelExternoGrupoPainelExterno.update({
                 where: {
-                    id: prevPortRow.id,
+                    id: prevPainelRow.id,
                     removido_em: null,
                 },
                 data: {

@@ -78,6 +78,7 @@ export class AuthService {
         const pessoa = await this.pessoaPeloId(pessoa_id);
 
         const modPriv = await this.listaPrivilegiosPessoa(pessoa.id as number, undefined);
+        const modulo_sistema: ModuloSistema[] = this.calcModuloSistema(undefined);
 
         return new PessoaFromJwt({
             id: pessoa.id as number,
@@ -88,6 +89,7 @@ export class AuthService {
             sistemas: modPriv.sistemas,
             orgao_id: pessoa.pessoa_fisica?.orgao_id,
             flags: await this.featureFlagService.featureFlag(),
+            modulo_sistema,
         });
     }
 
@@ -99,6 +101,8 @@ export class AuthService {
 
         const modPriv = await this.listaPrivilegiosPessoa(pessoa.id as number, filterModulos);
 
+        const modulo_sistema: ModuloSistema[] = this.calcModuloSistema(filterModulos);
+
         return new PessoaFromJwt({
             id: pessoa.id as number,
             nome_exibicao: pessoa.nome_exibicao,
@@ -108,7 +112,17 @@ export class AuthService {
             sistemas: modPriv.sistemas,
             orgao_id: pessoa.pessoa_fisica?.orgao_id,
             flags: await this.featureFlagService.featureFlag(),
+            modulo_sistema,
         });
+    }
+
+    private calcModuloSistema(filterModulos: ModuloSistema[] | undefined) {
+        // retorna os módulos que a pessoa enviou, exceto o próprio SMAE
+        let modulo_sistema: ModuloSistema[] = filterModulos
+            ? filterModulos.filter((r) => r != 'SMAE')
+            : (Object.keys(ModuloSistema) as ModuloSistema[]);
+        modulo_sistema = modulo_sistema.filter((r) => r != 'SMAE');
+        return modulo_sistema;
     }
 
     async pessoaPeloSessionId(id: number): Promise<Pessoa> {

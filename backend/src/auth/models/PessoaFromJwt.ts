@@ -1,7 +1,7 @@
-import { HttpException } from '@nestjs/common';
+import { BadRequestException, HttpException } from '@nestjs/common';
 import { ListaDePrivilegios } from '../../common/ListaDePrivilegios';
 import { PessoaFromJwtBase } from './PessoaFromJwtBase';
-import { Prisma } from '@prisma/client';
+import { ModuloSistema, Prisma } from '@prisma/client';
 
 export class PessoaFromJwt extends PessoaFromJwtBase {
     // facilitando pra ter que não ter que usar um método estático aqui
@@ -77,5 +77,13 @@ export class PessoaFromJwt extends PessoaFromJwtBase {
         });
 
         return metas.map((r) => r.meta_id);
+    }
+
+    public assertOneModuloSistema(tipo: 'criar' | 'editar' | 'remover', label: string): ModuloSistema {
+        if (this.modulo_sistema.length != 1)
+            throw new BadRequestException(
+                `Apenas um smae-sistema pode enviado por ves para ${tipo} ${label}, pois esse sistema será marcado no registro.`
+            );
+        return this.modulo_sistema[0];
     }
 }
