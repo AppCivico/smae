@@ -47,29 +47,9 @@ const GruposDeObservadoresRaiz = defineAsyncComponent({
 const rotasParaMenuSecundário = [
   {
     rotas: [
-      'gerenciarUsuários',
       'gerenciarPdm',
       'portfoliosListar',
-      'tipoDeAcompanhamentoListar',
       'paineisExternosListar',
-      'partidosListar',
-    ],
-  },
-  {
-    título: 'Formulários básicos',
-    rotas: [
-      'gerenciarÓrgãos',
-      'gerenciarUnidadesDeMedida',
-      'gerenciarTiposDeDocumento',
-      'gerenciarCategorias',
-      'gerenciarRegiões',
-    ],
-  },
-  {
-    título: 'Parlamentares',
-    rotas: [
-      'partidosListar',
-      'bancadasListar',
     ],
   },
   {
