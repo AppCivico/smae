@@ -1,4 +1,5 @@
 <script setup>
+import MigalhasDeMetas from '@/components/metas/MigalhasDeMetas.vue';
 import { Dashboard } from '@/components';
 import { router } from '@/router';
 import {
@@ -128,6 +129,8 @@ async function checkClose() {
 
 <template>
   <Dashboard>
+    <MigalhasDeMetas class="mb1" />
+
     <div class="flex spacebetween center">
       <h1>{{ title }}</h1>
       <hr class="ml2 f1">
