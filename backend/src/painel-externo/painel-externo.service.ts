@@ -122,7 +122,6 @@ export class PainelExternoService {
             const painel = await prismaTx.painelExterno.update({
                 where: {
                     id: id,
-                    modulo_sistema: sistema,
                 },
                 data: {
                     atualizado_por: user.id,
