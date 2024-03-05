@@ -399,6 +399,7 @@ onBeforeRouteUpdate(() => {
   align-items: center;
   color: inherit;
   font-weight: inherit;
+  min-height: calc(24px + 1.5rem * 2);
 
   @media (min-height: 570px) {
     padding: 1.5rem 1rem;
@@ -408,6 +409,7 @@ onBeforeRouteUpdate(() => {
 .menu__link--sub {
   padding-top: 0.5rem;
   padding-bottom: 0.5rem;
+  min-height: 0;
 }
 
 .menu__link--módulos {
