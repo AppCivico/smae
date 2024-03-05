@@ -218,10 +218,8 @@ onBeforeRouteUpdate(() => {
           class="menu__item"
         >
           <router-link
-            :to="{
-              name: 'home',
-            }"
-            class="menu__link menu__link--perfil"
+            :to="{ name: 'home' }"
+            class="menu__link menu__link--módulos"
           >
             <span class="menu__envelope-svg">
               <svg
@@ -399,7 +397,7 @@ onBeforeRouteUpdate(() => {
   padding-bottom: 0.5rem;
 }
 
-.menu__link--perfil {
+.menu__link--módulos {
   background-color: @amarelo;
   color: @primary;
 }
