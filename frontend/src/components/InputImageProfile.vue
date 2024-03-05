@@ -76,6 +76,7 @@ const uploadImageFile = (event) => {
 
     &__label{
       max-width: 140px;
+      max-height: 250px;
       margin: 15px auto;
     }
 }

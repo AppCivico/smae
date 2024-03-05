@@ -686,6 +686,23 @@ export const parlamentar = object({
   telefone: string()
     .label('Telefone'),
   avatar: string(),
+  assessores: array()
+    .label('Assessores')
+    .nullable()
+    .of(
+      object().shape({
+        nome: string()
+          .label('Nome')
+          .required('O nome é obrigatório'),
+        email: string()
+          .label('Email')
+          .email('Insira um email válido')
+          .required('O email é obrigatório'),
+        telefone: string()
+          .label('Telefone')
+          .required('O telefone é obrigatório'),
+      }),
+    ),
 });
 
 export const processo = object()
