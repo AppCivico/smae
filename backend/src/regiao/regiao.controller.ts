@@ -26,8 +26,8 @@ export class RegiaoController {
 
     @ApiBearerAuth('access-token')
     @Get()
-    async findAll(@Query() filters: FilterRegiaoDto): Promise<ListRegiaoDto> {
-        return { linhas: await this.regiaoService.findAll(filters) };
+    async findAll(@Query() filters: FilterRegiaoDto, @CurrentUser() user: PessoaFromJwt): Promise<ListRegiaoDto> {
+        return { linhas: await this.regiaoService.findAll(filters, user) };
     }
 
     @Patch(':id')
