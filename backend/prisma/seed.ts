@@ -1,4 +1,4 @@
-import { EleicaoTipo, ModuloSistema, PerfilAcesso, Prisma, PrismaClient, Privilegio } from '@prisma/client';
+import { EleicaoTipo, ModuloSistema, PerfilAcesso, PrismaClient, Privilegio } from '@prisma/client';
 import { ListaDePrivilegios } from '../src/common/ListaDePrivilegios';
 const prisma = new PrismaClient({ log: ['query'] });
 

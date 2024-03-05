@@ -266,25 +266,25 @@ model Pessoa {
     bancadasQueAtualizei Bancada[] @relation("Atualizador")
     bancadasQueRemovi    Bancada[] @relation("Removedor")
 
-    parlamentaresQueCriei Parlamentar[] @relation("Criador")
+    parlamentaresQueCriei     Parlamentar[] @relation("Criador")
     parlamentaresQueAtualizei Parlamentar[] @relation("Atualizador")
-    parlamentaresQueRemovi Parlamentar[] @relation("Removedor")
+    parlamentaresQueRemovi    Parlamentar[] @relation("Removedor")
 
-    mandatosQueCriei ParlamentarMandato[] @relation("Criador")
+    mandatosQueCriei     ParlamentarMandato[] @relation("Criador")
     mandatosQueAtualizei ParlamentarMandato[] @relation("Atualizador")
-    mandatosQueRemovi ParlamentarMandato[] @relation("Removedor")
+    mandatosQueRemovi    ParlamentarMandato[] @relation("Removedor")
 
-    equipeParlamentarQueCriei ParlamentarEquipe[] @relation("Criador")
+    equipeParlamentarQueCriei     ParlamentarEquipe[] @relation("Criador")
     equipeParlamentarQueAtualizei ParlamentarEquipe[] @relation("Atualizador")
-    equipeParlamentarQueRemovi ParlamentarEquipe[] @relation("Removedor")
+    equipeParlamentarQueRemovi    ParlamentarEquipe[] @relation("Removedor")
 
-    eleicaoComparecimentoQueCriei EleicaoComparecimento[] @relation("Criador")
+    eleicaoComparecimentoQueCriei     EleicaoComparecimento[] @relation("Criador")
     eleicaoComparecimentoQueAtualizei EleicaoComparecimento[] @relation("Atualizador")
-    eleicaoComparecimentoQueRemovi EleicaoComparecimento[] @relation("Removedor")
+    eleicaoComparecimentoQueRemovi    EleicaoComparecimento[] @relation("Removedor")
 
-    mandatoRepresentatividadesQueCriei MandatoRepresentatividade[] @relation("Criador")
+    mandatoRepresentatividadesQueCriei     MandatoRepresentatividade[] @relation("Criador")
     mandatoRepresentatividadesQueAtualizei MandatoRepresentatividade[] @relation("Atualizador")
-    mandatoRepresentatividadesQueRemovi MandatoRepresentatividade[] @relation("Removedor")
+    mandatoRepresentatividadesQueRemovi    MandatoRepresentatividade[] @relation("Removedor")
 
     task_queue                               task_queue[]
     GeoEnderecoReferenciaqQueCriei           GeoLocalizacaoReferencia[]                @relation("criador")
@@ -321,6 +321,16 @@ model Orgao {
     tipo_orgao_id Int
     tipo_orgao    TipoOrgao      @relation(fields: [tipo_orgao_id], references: [id])
     pessoa_fisica PessoaFisica[]
+
+    cnpj                   String?
+    email                  String?
+    secretario_responsavel String?
+    oficial                Boolean @default(false)
+
+    nivel        Int     @default(1)
+    parente_id   Int?
+    OrgaoAcima   Orgao?  @relation("Parente", fields: [parente_id], references: [id])
+    OrgaosAbaixo Orgao[] @relation("Parente")
 
     criado_por     Int?
     criado_em      DateTime  @default(now()) @db.Timestamptz(6)
@@ -757,7 +767,7 @@ model Regiao {
     Projetos        Projeto[]
     GeoCamadaRegiao GeoCamadaRegiao[]
 
-    eleicoesComparecimento EleicaoComparecimento[]
+    eleicoesComparecimento    EleicaoComparecimento[]
     mandatoRepresentatividade MandatoRepresentatividade[]
 
     @@index([parente_id])
@@ -4162,8 +4172,9 @@ enum EleicaoTipo {
     Municipal
     Estadual
 }
+
 model Eleicao {
-    id                  Int @id @default(autoincrement())
+    id                  Int         @id @default(autoincrement())
     tipo                EleicaoTipo
     ano                 Int
     atual_para_mandatos Boolean
@@ -4197,7 +4208,7 @@ model EleicaoComparecimento {
     regiao    Regiao @relation(fields: [regiao_id], references: [id])
 
     criado_por     Int?
-    criado_em      DateTime?  @default(now()) @db.Timestamptz(6)
+    criado_em      DateTime? @default(now()) @db.Timestamptz(6)
     atualizado_por Int?
     atualizado_em  DateTime  @default(now()) @db.Timestamptz(6)
     removido_por   Int?
@@ -4213,13 +4224,13 @@ model EleicaoComparecimento {
 
 model Parlamentar {
     id Int @id @default(autoincrement())
-    
+
     nome         String
     nome_popular String?
     nascimento   DateTime? @db.Date()
     telefone     String?
     email        String?
-    em_atividade Boolean @default(false)
+    em_atividade Boolean   @default(false)
 
     foto_upload_id Int?
     foto           Arquivo? @relation(fields: [foto_upload_id], references: [id])
@@ -4228,7 +4239,7 @@ model Parlamentar {
     equipe   ParlamentarEquipe[]
 
     criado_por     Int?
-    criado_em      DateTime?  @default(now()) @db.Timestamptz(6)
+    criado_em      DateTime? @default(now()) @db.Timestamptz(6)
     atualizado_por Int?
     atualizado_em  DateTime  @default(now()) @db.Timestamptz(6)
     removido_por   Int?
@@ -4280,7 +4291,7 @@ enum ParlamentarUF {
     SC
     SP
     SE
-    TO    
+    TO
 }
 
 model ParlamentarMandato {
@@ -4298,13 +4309,13 @@ model ParlamentarMandato {
     partido_atual_id Int
     partido_atual    Partido @relation("atual", fields: [partido_atual_id], references: [id])
 
-    atuacao String?
+    atuacao   String?
     biografia String?
 
     gabinete  String
     eleito    Boolean
     cargo     ParlamentarCargo
-    uf        ParlamentarUF 
+    uf        ParlamentarUF
     suplencia ParlamentarSuplente?
     endereco  String?
 
@@ -4313,13 +4324,13 @@ model ParlamentarMandato {
     votos_interior BigInt?
 
     mandato_principal_id Int?
-    mandato_principal    ParlamentarMandato?  @relation("Suplentes", fields: [mandato_principal_id], references: [id])
-    
-    suplentes          ParlamentarMandato[] @relation("Suplentes")
+    mandato_principal    ParlamentarMandato? @relation("Suplentes", fields: [mandato_principal_id], references: [id])
+
+    suplentes          ParlamentarMandato[]        @relation("Suplentes")
     representatividade MandatoRepresentatividade[]
 
     criado_por     Int?
-    criado_em      DateTime?  @default(now()) @db.Timestamptz(6)
+    criado_em      DateTime? @default(now()) @db.Timestamptz(6)
     atualizado_por Int?
     atualizado_em  DateTime  @default(now()) @db.Timestamptz(6)
     removido_por   Int?
@@ -4351,7 +4362,7 @@ model ParlamentarEquipe {
     email    String
 
     criado_por     Int?
-    criado_em      DateTime?  @default(now()) @db.Timestamptz(6)
+    criado_em      DateTime? @default(now()) @db.Timestamptz(6)
     atualizado_por Int?
     atualizado_em  DateTime  @default(now()) @db.Timestamptz(6)
     removido_por   Int?
@@ -4385,10 +4396,10 @@ model MandatoRepresentatividade {
     numero_votos Int
 
     // Valor será calculado com base em rows da tabela EleicaoComparecimento
-    pct_participacao Float? @db.DoublePrecision 
+    pct_participacao Float? @db.DoublePrecision
 
     criado_por     Int?
-    criado_em      DateTime?  @default(now()) @db.Timestamptz(6)
+    criado_em      DateTime? @default(now()) @db.Timestamptz(6)
     atualizado_por Int?
     atualizado_em  DateTime  @default(now()) @db.Timestamptz(6)
     removido_por   Int?

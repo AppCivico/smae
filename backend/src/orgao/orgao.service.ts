@@ -1,5 +1,7 @@
 import { HttpException, Injectable } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
+import { RecordWithId } from '../common/dto/record-with-id.dto';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateOrgaoDto } from './dto/create-orgao.dto';
 import { UpdateOrgaoDto } from './dto/update-orgao.dto';
@@ -8,20 +10,20 @@ import { UpdateOrgaoDto } from './dto/update-orgao.dto';
 export class OrgaoService {
     constructor(private readonly prisma: PrismaService) {}
 
-    async create(createOrgaoDto: CreateOrgaoDto, user?: PessoaFromJwt) {
+    async create(dto: CreateOrgaoDto, user?: PessoaFromJwt): Promise<RecordWithId> {
         const similarExists = await this.prisma.orgao.count({
             where: {
-                descricao: { endsWith: createOrgaoDto.descricao, mode: 'insensitive' },
+                descricao: { endsWith: dto.descricao, mode: 'insensitive' },
                 removido_em: null,
             },
         });
         if (similarExists > 0)
             throw new HttpException('descricao| Descrição igual ou semelhante já existe em outro registro ativo', 400);
 
-        if (createOrgaoDto.sigla) {
+        if (dto.sigla) {
             const similarExists = await this.prisma.orgao.count({
                 where: {
-                    sigla: { endsWith: createOrgaoDto.sigla, mode: 'insensitive' },
+                    sigla: { endsWith: dto.sigla, mode: 'insensitive' },
                     removido_em: null,
                 },
             });
@@ -29,16 +31,35 @@ export class OrgaoService {
                 throw new HttpException('sigla| Sigla igual ou semelhante já existe em outro registro ativo', 400);
         }
 
-        const created = await this.prisma.orgao.create({
-            data: {
-                criado_por: user ? user.id : undefined,
-                criado_em: new Date(Date.now()),
-                ...createOrgaoDto,
-            },
-            select: { id: true },
-        });
+        if (dto.parente_id === null && dto.nivel > 1) {
+            throw new HttpException('Tarefas com nível maior que 1 necessitam de uma tarefa pai', 400);
+        } else if (dto.parente_id !== null) {
+            const pai = await this.prisma.tarefa.findFirst({
+                where: { removido_em: null, id: dto.parente_id },
+                select: { id: true, nivel: true, numero: true, tarefa: true },
+            });
+            if (!pai) throw new HttpException(`Órgão (${dto.parente_id}) não foi encontrado.`, 400);
+            if (pai.nivel != dto.nivel - 1)
+                throw new HttpException(
+                    `Nível (${dto.nivel}) inválido para ser filho imediato do órgão pai enviado (nível ${pai.nivel}).`,
+                    400
+                );
+        } else {
+            dto.nivel = 1;
+        }
 
-        return created;
+        return await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
+            const orgao = await prismaTx.orgao.create({
+                data: {
+                    criado_por: user ? user.id : undefined,
+                    criado_em: new Date(Date.now()),
+                    ...dto,
+                },
+                select: { id: true },
+            });
+
+            return orgao;
+        });
     }
 
     async findAll() {
@@ -53,6 +74,12 @@ export class OrgaoService {
                 tipo_orgao: {
                     select: { descricao: true, id: true },
                 },
+                cnpj: true,
+                email: true,
+                secretario_responsavel: true,
+                oficial: true,
+                parente_id: true,
+                nivel: true,
             },
             orderBy: [{ sigla: 'asc' }],
         });
@@ -67,44 +94,80 @@ export class OrgaoService {
         });
     }
 
-    async update(id: number, updateOrgaoDto: UpdateOrgaoDto, user: PessoaFromJwt) {
-        if (updateOrgaoDto.descricao !== undefined) {
-            const similarExists = await this.prisma.orgao.count({
-                where: {
-                    descricao: { endsWith: updateOrgaoDto.descricao, mode: 'insensitive' },
-                    removido_em: null,
-                    NOT: { id: id },
-                },
-            });
-            if (similarExists > 0)
-                throw new HttpException(
-                    'descricao| Descrição igual ou semelhante já existe em outro registro ativo',
-                    400
-                );
-        }
+    async update(id: number, dto: UpdateOrgaoDto, user: PessoaFromJwt) {
+        return await this.prisma.$transaction(
+            async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
+                if (dto.descricao !== undefined) {
+                    const similarExists = await prismaTx.orgao.count({
+                        where: {
+                            descricao: { equals: dto.descricao, mode: 'insensitive' },
+                            removido_em: null,
+                            NOT: { id: id },
+                        },
+                    });
+                    if (similarExists > 0)
+                        throw new HttpException(
+                            'descricao| Descrição igual ou semelhante já existe em outro registro ativo',
+                            400
+                        );
+                }
 
-        if (updateOrgaoDto.sigla) {
-            const similarExists = await this.prisma.orgao.count({
-                where: {
-                    sigla: { endsWith: updateOrgaoDto.sigla, mode: 'insensitive' },
-                    removido_em: null,
-                    NOT: { id: id },
-                },
-            });
-            if (similarExists > 0)
-                throw new HttpException('sigla| Sigla igual ou semelhante já existe em outro registro ativo', 400);
-        }
+                if (dto.sigla) {
+                    const similarExists = await prismaTx.orgao.count({
+                        where: {
+                            sigla: { equals: dto.sigla, mode: 'insensitive' },
+                            removido_em: null,
+                            NOT: { id: id },
+                        },
+                    });
+                    if (similarExists > 0)
+                        throw new HttpException(
+                            'sigla| Sigla igual ou semelhante já existe em outro registro ativo',
+                            400
+                        );
+                }
 
-        await this.prisma.orgao.update({
-            where: { id: id },
-            data: {
-                atualizado_por: user.id,
-                atualizado_em: new Date(Date.now()),
-                ...updateOrgaoDto,
+                const self = await prismaTx.orgao.findFirstOrThrow({
+                    where: {
+                        id: id,
+                        removido_em: null,
+                    },
+                });
+
+                // se enviar um ou o outro, pre-carregar o que faltar do banco, e inicia as validações
+                if (dto.parente_id || dto.nivel) {
+                    if (dto.parente_id === undefined) dto.parente_id = self.parente_id;
+                    if (dto.nivel === undefined) dto.nivel = self.nivel;
+
+                    if (dto.parente_id === null && dto.nivel > 1) {
+                        throw new HttpException('Tarefas com nível maior que 1 necessitam de uma tarefa pai', 400);
+                    } else if (dto.parente_id !== null) {
+                        const pai = await prismaTx.tarefa.findFirst({
+                            where: { removido_em: null, id: dto.parente_id },
+                            select: { id: true, nivel: true, numero: true, tarefa: true },
+                        });
+                        if (!pai) throw new HttpException(`Órgão (${dto.parente_id}) não foi encontrado.`, 400);
+                        if (pai.nivel != dto.nivel - 1)
+                            throw new HttpException(
+                                `Nível (${dto.nivel}) inválido para ser filho imediato do órgão pai enviado (nível ${pai.nivel}).`,
+                                400
+                            );
+                    } else {
+                        dto.nivel = 1;
+                    }
+                }
+
+                return await prismaTx.orgao.update({
+                    where: { id: id },
+                    data: {
+                        atualizado_por: user.id,
+                        atualizado_em: new Date(Date.now()),
+                        ...dto,
+                    },
+                });
             },
-        });
-
-        return { id };
+            { isolationLevel: 'Serializable' }
+        );
     }
 
     async remove(id: number, user: PessoaFromJwt) {
@@ -123,6 +186,15 @@ export class OrgaoService {
         });
         if (countAtividade > 0)
             throw new HttpException('Não é possível remover o órgão, pois existem Iniciativas associadas.', 400);
+
+        const filhoExiste = await this.prisma.orgao.count({
+            where: {
+                parente_id: id,
+                removido_em: null,
+            },
+        });
+        if (filhoExiste > 0)
+            throw new HttpException('Não é possível remover o órgão, pois existem órgãos dependentes.', 400);
 
         // TODO
         // verificar se há pessoas neste orgao
