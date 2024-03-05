@@ -5,7 +5,9 @@ import { storeToRefs } from 'pinia';
 import { useRoute, useRouter } from 'vue-router';
 import { useParlamentaresStore } from '@/stores/parlamentares.store';
 import InputImageProfile from '@/components/InputImageProfile.vue';
-import { ErrorMessage, Field, Form } from 'vee-validate';
+import {
+  ErrorMessage, Field, FieldArray, Form,
+} from 'vee-validate';
 
 const router = useRouter();
 const route = useRoute();
@@ -145,13 +147,168 @@ if (props.parlamentarId) {
         />
       </Field>
     </div>
-    <FormErrorsList :errors="errors" />
 
     <div class="flex spacebetween center mb2">
-      <span class="label tc300">Mandato</span>
+      <span class="label tc300">Assessores</span>
       <hr class="mr2 f1">
     </div>
 
+    <FieldArray
+      v-slot="{ fields, push, remove }"
+      name="assessores"
+    >
+      <div
+        v-for="(field, idx) in fields"
+        :key="`assessor-${field.key}`"
+        class="flex g2"
+      >
+        <div class="f1 mb1">
+          <label
+            class="label tc300"
+            for="nome"
+          >Nome</label>
+          <Field
+            v-model="field.nome"
+            :name="`assessores[${idx}].nome`"
+            type="text"
+            class="inputtext light mb1"
+          />
+          <ErrorMessage
+            class="error-msg mb1"
+            :name="`assessores[${idx}].nome`"
+          />
+        </div>
+
+        <div class="f1 mb1">
+          <label
+            class="label tc300"
+            for="email"
+          >Email</label>
+          <Field
+            v-model="field.email"
+            :name="`assessores[${idx}].email`"
+            type="email"
+            class="inputtext light mb1"
+          />
+          <ErrorMessage
+            class="error-msg mb1"
+            :name="`assessores[${idx}].email`"
+          />
+        </div>
+
+        <div class="f1 mb1">
+          <label
+            class="label tc300"
+            for="telefone"
+          >Telefone</label>
+          <Field
+            v-model="field.telefone"
+            :name="`assessores[${idx}].telefone`"
+            type="text"
+            class="inputtext light mb1"
+          />
+          <ErrorMessage
+            class="error-msg mb1"
+            :name="`assessores[${idx}].telefone`"
+          />
+        </div>
+
+        <button
+          class="like-a__text addlink"
+          aria-label="excluir"
+          title="excluir"
+          type="button"
+          @click="remove(idx)"
+        >
+          <svg
+            width="20"
+            height="20"
+          ><use xlink:href="#i_remove" /></svg>
+        </button>
+      </div>
+
+      <button
+        class="like-a__text addlink"
+        type="button"
+        @click="push({
+          nome: '',
+          email: '',
+          telefone: '',
+        })"
+      >
+        <svg
+          width="20"
+          height="20"
+        ><use xlink:href="#i_+" /></svg>Adicionar assessor
+      </button>
+    </FieldArray>
+
+    <FormErrorsList :errors="errors" />
+
+    <div v-if="itemParaEdição.mandatos">
+      <div class="flex spacebetween center mb2">
+        <span class="label tc300">Mandato</span>
+        <hr class="mr2 f1">
+      </div>
+
+      <table class="tablemain">
+        <col>
+        <col>
+        <col>
+        <col class="col--botão-de-ação">
+        <col class="col--botão-de-ação">
+        <thead>
+          <tr>
+            <th>
+              Eleição
+            </th>
+            <th>
+              Cargo
+            </th>
+            <th>
+              Votos
+            </th>
+            <th />
+            <th />
+          </tr>
+        </thead>
+        <tbody>
+          <tr
+            v-for="item in itemParaEdição.mandatos"
+            :key="item.id"
+          >
+            <td>{{ item.eleicao }}</td>
+            <td>{{ item.cargo }}</td>
+            <td>{{ item.votos }}</td>
+
+            <td>
+              <button
+                class="like-a__text"
+                arial-label="excluir"
+                title="excluir"
+                @click="(item.id)"
+              >
+                <svg
+                  width="20"
+                  height="20"
+                ><use xlink:href="#i_remove" /></svg>
+              </button>
+            </td>
+            <td>
+              <router-link
+                :to="{ name: 'parlamentaresEditar', params: { parlamentarId: item.id } }"
+                class="tprimary"
+              >
+                <svg
+                  width="20"
+                  height="20"
+                ><use xlink:href="#i_edit" /></svg>
+              </router-link>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
     <div class="flex spacebetween center mb2">
       <hr class="mr2 f1">
       <button
@@ -166,20 +323,6 @@ if (props.parlamentarId) {
       <hr class="ml2 f1">
     </div>
   </Form>
-
-  <span
-    v-if="chamadasPendentes?.emFoco"
-    class="spinner"
-  >Carregando</span>
-
-  <div
-    v-if="erro"
-    class="error p1"
-  >
-    <div class="error-msg">
-      {{ erro }}
-    </div>
-  </div>
   <span
     v-if="chamadasPendentes?.emFoco"
     class="spinner"
