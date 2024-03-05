@@ -5,7 +5,6 @@ import { usePortfolioStore } from '@/stores/portfolios.store.ts';
 import { storeToRefs } from 'pinia';
 import { useRoute } from 'vue-router';
 
-
 const organsStore = useOrgansStore();
 const { organs, órgãosPorId } = storeToRefs(organsStore);
 const portfolioStore = usePortfolioStore();
@@ -19,14 +18,14 @@ async function excluirPortfolio(id) {
   alertStore.confirmAction('Deseja mesmo remover esse item?', async () => {
     if (await portfolioStore.excluirItem(id)) {
       portfolioStore.$reset();
-      portfolioStore.buscarTudo();
+      portfolioStore.buscarTudo({}, false);
       alertStore.success('Portfolio removido.');
     }
   }, 'Remover');
 }
 
 portfolioStore.$reset();
-portfolioStore.buscarTudo();
+portfolioStore.buscarTudo({}, false);
 
 if (!organs.length) {
   organsStore.getAll();
@@ -59,7 +58,7 @@ if (!organs.length) {
           Órgãos
         </th>
         <th>
-            Modelo de clonagem
+          Modelo de clonagem
         </th>
         <th />
         <th />
