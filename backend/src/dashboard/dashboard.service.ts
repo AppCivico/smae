@@ -31,11 +31,11 @@ export class DashboardService {
             if (config === false) continue;
 
             if (user.hasSomeRoles(['Reports.dashboard_pdm'])) {
-                await this.reportPdm(config, memory, user);
+                await this.reportPdm(config, memory, r, user, liberados);
             }
 
             if (user.hasSomeRoles(['Reports.dashboard_portfolios'])) {
-                await this.reportProjetos(config, r, liberados);
+                await this.reportProjetos(config, memory, r, user, liberados);
             }
         }
 
@@ -91,7 +91,54 @@ export class DashboardService {
         });
     }
 
-    private async reportProjetos(config: any, r: MetabasePermissao, liberados: RetornoLinhasDashboardLinhasDto[]) {
+    private async reportProjetos(
+        config: any,
+        memory: any,
+        r: MetabasePermissao,
+        user: PessoaFromJwt,
+        liberados: RetornoLinhasDashboardLinhasDto[]
+    ) {
+        if (config && config['params'] && config['params']['projetos_ids']) {
+            if (memory['projetos_ids'] === undefined) {
+                memory['projetos_ids'] = (await this.projetoService.findAllIds(user)).map((p) => p.id);
+                if (memory['projetos_ids'].length == 0) memory['projetos_ids'] = [-1];
+            }
+
+            config['params']['projetos_ids'] = memory['projetos_ids'];
+
+            const jwt = sign(
+                {
+                    ...config,
+                },
+                r.metabase_token,
+                { algorithm: 'HS256', expiresIn: 86400 }
+            );
+            const url = r.metabase_url + '/embed/dashboard/' + jwt + '#theme=transparent&bordered=false&titled=false';
+
+            liberados.push({
+                id: r.id,
+                titulo: r.titulo,
+                url: url,
+            });
+        }
+    }
+
+    private async reportPdm(
+        config: any,
+        memory: any,
+        r: MetabasePermissao,
+        user: PessoaFromJwt,
+        liberados: RetornoLinhasDashboardLinhasDto[]
+    ) {
+        if (config && config['params'] && config['params']['metas_ids']) {
+            if (memory['metas_ids'] === undefined) {
+                memory['metas_ids'] = (await this.metaService.findAllIds(user)).map((p) => p.id);
+                if (memory['metas_ids'].length == 0) memory['metas_ids'] = [-1];
+            }
+
+            config['params']['metas_ids'] = memory['metas_ids'];
+        }
+
         if (config && config['params'] && config['params']['pdm_id']) {
             const pdms = await this.prisma.pdm.findMany({
                 orderBy: [{ ativo: 'desc' }, { nome: 'asc' }],
@@ -125,41 +172,6 @@ export class DashboardService {
                 opcoes_titulo: 'Programa de Metas',
                 opcoes: opcoes,
             });
-        } else {
-            const jwt = sign(
-                {
-                    ...config,
-                },
-                r.metabase_token,
-                { algorithm: 'HS256', expiresIn: 86400 }
-            );
-            const url = r.metabase_url + '/embed/dashboard/' + jwt + '#theme=transparent&bordered=false&titled=false';
-
-            liberados.push({
-                id: r.id,
-                titulo: r.titulo,
-                url: url,
-            });
-        }
-    }
-
-    private async reportPdm(config: any, memory: any, user: PessoaFromJwt) {
-        if (config && config['params'] && config['params']['projetos_ids']) {
-            if (memory['projetos_ids'] === undefined) {
-                memory['projetos_ids'] = (await this.projetoService.findAllIds(user)).map((p) => p.id);
-                if (memory['projetos_ids'].length == 0) memory['projetos_ids'] = [-1];
-            }
-
-            config['params']['projetos_ids'] = memory['projetos_ids'];
-        }
-
-        if (config && config['params'] && config['params']['metas_ids']) {
-            if (memory['metas_ids'] === undefined) {
-                memory['metas_ids'] = (await this.metaService.findAllIds(user)).map((p) => p.id);
-                if (memory['metas_ids'].length == 0) memory['metas_ids'] = [-1];
-            }
-
-            config['params']['metas_ids'] = memory['metas_ids'];
         }
     }
 }
