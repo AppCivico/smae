@@ -147,12 +147,20 @@ function toggleAccordeon(t) {
                   <th style="width: 10%" />
                 </tr>
               </thead>
-              <tr v-for="pp in p.pessoas">
+              <tr
+                v-for="pp in p.pessoas"
+                :key="pp.id"
+              >
                 <td>{{ pp.nome_exibicao }}</td>
                 <td style="white-space: nowrap; text-align: right">
                   <router-link
                     v-if="perm?.CadastroPessoa?.editar"
-                    :to="`/usuarios/editar/${pp.id}`"
+                    :to="{
+                      name: 'editarUsuários',
+                      params: {
+                        id: pp.id
+                      }
+                    }"
                     class="tprimary"
                   >
                     <svg

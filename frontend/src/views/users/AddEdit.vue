@@ -1,7 +1,7 @@
 <script setup>
 import { usuário as schema } from '@/consts/formSchemas';
-import { router } from '@/router';
 import truncate from '@/helpers/truncate';
+import { router } from '@/router';
 import { useAlertStore } from '@/stores/alert.store';
 import { useOrgansStore } from '@/stores/organs.store';
 import { usePaineisGruposStore } from '@/stores/paineisGrupos.store';
@@ -57,30 +57,19 @@ async function onSubmit(payload) {
       msg = 'Usuário adicionado com sucesso!';
     }
     if (r == true) {
-      await router.push('/usuarios');
+      await router.push({ name: 'gerenciarUsuários' });
       alertStore.success(msg);
     }
   } catch (error) {
     alertStore.error(error);
   }
 }
-async function checkClose() {
-  alertStore.confirm('Deseja sair sem salvar as alterações?', '/usuarios');
-}
 </script>
 <template>
   <div class="flex spacebetween center mb2">
     <h1>{{ title }}</h1>
     <hr class="ml2 f1">
-    <button
-      class="btn round ml2"
-      @click="checkClose"
-    >
-      <svg
-        width="12"
-        height="12"
-      ><use xlink:href="#i_x" /></svg>
-    </button>
+    <CheckClose />
   </div>
 
   <div

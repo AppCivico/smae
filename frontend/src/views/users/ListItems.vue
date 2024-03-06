@@ -57,7 +57,9 @@ const listaDeUsuáriosComNomesAlémDeIds = computed(() => (!Array.isArray(usersS
     <hr class="ml2 f1">
     <router-link
       v-if="perm?.CadastroPessoa?.inserir"
-      to="/usuarios/novo"
+      :to="{
+        name: 'criarUsuários'
+      }"
       class="btn big ml2"
     >
       Novo usuário
@@ -170,7 +172,12 @@ const listaDeUsuáriosComNomesAlémDeIds = computed(() => (!Array.isArray(usersS
                   == authStore.user.orgao_id)"
             >
               <router-link
-                :to="`/usuarios/editar/${user.id}`"
+                :to="{
+                  name: 'editarUsuários',
+                  params: {
+                    id: user.id
+                  }
+                }"
                 class="tprimary"
               >
                 <svg
