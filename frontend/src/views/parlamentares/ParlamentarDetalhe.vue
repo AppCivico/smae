@@ -4,11 +4,11 @@
   <h1>Parlamentar</h1>
   <div>
     <div class="flex g2 mb1 flexwrap">
-      <img
+      <!-- <img
 
         class="carometro__img"
         src="/home/gio/Downloads/image.png"
-      >
+      > -->
       <div>
         <dl
           class="f1 mb1"
