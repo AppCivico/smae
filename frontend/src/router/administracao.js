@@ -34,19 +34,6 @@ import BancadasCriarEditar from '@/views/bancada/BancadasCriarEditar.vue';
 import BancadasLista from '@/views/bancada/BancadasLista.vue';
 import BancadasRaiz from '@/views/bancada/BancadasRaiz.vue';
 
-const PortfoliosCriarEditar = defineAsyncComponent({
-  loader: () => import('@/views/portfolios/PortfoliosCriarEditar.vue'),
-  loadingComponent: LoadingComponent,
-});
-const PortfoliosLista = defineAsyncComponent({
-  loader: () => import('@/views/portfolios/PortfoliosLista.vue'),
-  loadingComponent: LoadingComponent,
-});
-const PortfoliosRaiz = defineAsyncComponent({
-  loader: () => import('@/views/portfolios/PortfoliosRaiz.vue'),
-  loadingComponent: LoadingComponent,
-});
-
 const TiposDeAcompanhamentoLista = defineAsyncComponent({
   loader: () => import('@/views/tiposDeAcompanhamento/TiposLista.vue'),
   loadingComponent: LoadingComponent,
