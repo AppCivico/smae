@@ -248,6 +248,15 @@
       <div>
         <dt>
           <svg
+            width="24"
+            height="24"
+          ><use xlink:href="#i_settings" /></svg>
+        </dt>
+        <dd>i_settings</dd>
+      </div>
+      <div>
+        <dt>
+          <svg
             width="20"
             height="20"
           ><use xlink:href="#i_spin" /></svg>
