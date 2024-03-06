@@ -24,6 +24,9 @@ export class ParlamentarService {
         }
         delete dto.upload_foto;
 
+        if (dto.telefone && !user?.privilegios.includes('SMAE.acessoTelefone') )
+          throw new HttpException('Usuário sem permissão para cadastro de telefone', 400)
+
         const created = await this.prisma.$transaction(
             async (prismaTxn: Prisma.TransactionClient): Promise<RecordWithId> => {
                 const parlamentar = await prismaTxn.parlamentar.create({
@@ -98,6 +101,7 @@ export class ParlamentarService {
                 nome_popular: true,
                 nascimento: true,
                 email: true,
+                telefone: true,
                 em_atividade: true,
                 foto_upload_id: true,
 
@@ -208,7 +212,8 @@ export class ParlamentarService {
         return {
             ...parlamentar,
             nascimento: parlamentar.nascimento?.toISOString().split('T')[0],
-            foto: parlamentar.foto_upload_id ? this.uploadService.getDownloadToken(parlamentar.foto_upload_id, '1 days').download_token : null, 
+            foto: parlamentar.foto_upload_id ? this.uploadService.getDownloadToken(parlamentar.foto_upload_id, '1 days').download_token : null,
+            telefone: !user?.privilegios.includes('SMAE.acessoTelefone') ? parlamentar.telefone : null,
 
             mandato_atual: mandatoCorrente ? {
                 ...mandatoCorrente,
@@ -253,6 +258,9 @@ export class ParlamentarService {
     }
 
     async update(id: number, dto: UpdateParlamentarDto, user: PessoaFromJwt): Promise<RecordWithId> {
+        if (dto.telefone && !user?.privilegios.includes('SMAE.acessoTelefone') )
+          throw new HttpException('Usuário sem permissão para edição de telefone', 400)
+
         const updated = await this.prisma.$transaction(
             async (prismaTxn: Prisma.TransactionClient): Promise<RecordWithId> => {
                 const parlamentar = await prismaTxn.parlamentar.update({
