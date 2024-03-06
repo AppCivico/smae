@@ -76,7 +76,6 @@ const rotasParaMenuPrincipal = [
   'portfoliosListar',
   'gerenciarPainéisDeMetas',
   'paineisExternosListar',
-  'grupospaineisExternosListar',
 ];
 
 export default [
@@ -164,7 +163,7 @@ export default [
           limitarÀsPermissões: 'CadastroPainelExterno.',
           rotasParaMenuSecundário: [
             'paineisExternosListar',
-            // PRA-FAZER: grupos de paineis externos, Ingred!
+            'grupospaineisExternosListar'
           ],
 
         },
@@ -200,6 +199,7 @@ export default [
           },
         ],
       },
+
       {
         path: '/grupos-paineis-externos',
         component: GruposDePaineisExternosRaiz,
@@ -207,10 +207,7 @@ export default [
           título: 'Grupos de Painéis Externos',
           rotaPrescindeDeChave: true,
           limitarÀsPermissões: 'CadastroPainelExterno.',
-          rotasParaMenuSecundário: [
-            'paineisExternosListar',
-            'gruposDeObservadoresListar',
-          ],
+
         },
         children: [
           {
@@ -219,6 +216,10 @@ export default [
             component: GruposDePaineisExternosLista,
             meta: {
               título: 'Grupos de Painéis Externos',
+              rotasParaMenuSecundário: [
+                'paineisExternosListar',
+                'grupospaineisExternosListar'
+              ],
             },
           },
           {
