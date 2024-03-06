@@ -204,7 +204,7 @@ function alternarItens(índice) {
   left: 100%;
 
   .menu-secundário.aberto & {
-    transform: translateX(-100%);
+    transform: translateX(calc(-100% - 12px));
     box-shadow: none;
   }
 
