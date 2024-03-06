@@ -73,10 +73,6 @@ export default {
       'SMAE.colaborador_de_projeto',
       'SMAE.espectador_de_projeto',
     ],
-    rotasParaMenuSecundário: [
-      'projetosListar',
-      'gruposDeObservadoresListar',
-    ],
   },
   children: [
     {

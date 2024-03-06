@@ -94,27 +94,6 @@ export default {
       'Reports.executar',
       'Reports.remover',
     ],
-    rotasParaMenuSecundário: [
-      {
-        título: 'Programa de metas',
-        rotas: [
-          'RelatóriosMensais',
-          'RelatóriosSemestraisOuAnuais',
-          'RelatóriosDePrevisãoDeCustoPdM',
-          'RelatóriosOrçamentáriosPdM',
-        ],
-      },
-      {
-        título: 'Portfolios',
-        rotas: [
-          'RelatóriosDeProjeto',
-          'RelatóriosDePortfolio',
-          'RelatóriosDeStatus',
-          'RelatóriosDePrevisãoDeCustoPortfolio',
-          'RelatóriosOrçamentáriosPortfolio',
-        ],
-      },
-    ],
     rotasParaMenuPrincipal: [
       /// PdM
       'RelatóriosMensais',

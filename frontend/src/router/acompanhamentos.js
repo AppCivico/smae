@@ -110,6 +110,11 @@ export default {
           meta: {
             título: 'Resumo do acompanhamento',
             títuloParaMenu: 'Resumo',
+            rotasParaMigalhasDePão: [
+              'projetosListar',
+              'projetosResumo',
+              'acompanhamentosListar',
+            ],
           },
         },
       ],

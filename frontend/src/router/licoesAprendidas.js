@@ -1,11 +1,11 @@
+import LoadingComponent from '@/components/LoadingComponent.vue';
+import dateToField from '@/helpers/dateToField';
 import { useLiçõesAprendidasStore } from '@/stores/licoesAprendidas.store.ts';
+import { useProjetosStore } from '@/stores/projetos.store.ts';
 import liçõesAprendidasCriarEditar from '@/views/licoesAprendidas/LicoesAprendidasCriarEditar.vue';
 import liçõesAprendidasItem from '@/views/licoesAprendidas/LicoesAprendidasItem.vue';
 import liçõesAprendidasLista from '@/views/licoesAprendidas/LicoesAprendidasLista.vue';
 import liçõesAprendidasRaiz from '@/views/licoesAprendidas/LicoesAprendidasRaiz.vue';
-import { useProjetosStore } from '@/stores/projetos.store.ts';
-import dateToField from '@/helpers/dateToField';
-import LoadingComponent from '@/components/LoadingComponent.vue';
 import { defineAsyncComponent } from 'vue';
 
 const licoesAprendidasResumo = defineAsyncComponent({
@@ -85,12 +85,10 @@ export default {
             títuloParaMenu: 'Editar lição',
 
             rotaDeEscape: 'liçõesAprendidasListar',
-
             rotasParaMigalhasDePão: [
               'projetosListar',
               'projetosResumo',
               'liçõesAprendidasListar',
-              'liçõesAprendidasEditar',
             ],
           },
         },
@@ -117,6 +115,11 @@ export default {
               return título;
             },
             títuloParaMenu: 'Resumo',
+            rotasParaMigalhasDePão: [
+              'projetosListar',
+              'projetosResumo',
+              'liçõesAprendidasListar',
+            ],
           },
         },
       ],
