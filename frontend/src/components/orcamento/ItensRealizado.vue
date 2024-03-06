@@ -149,7 +149,7 @@ function addItem() {
     <div class="f1">
       <Field
         v-model.number="item.mes"
-        :name="`itens[${i}].mes`"
+        :name="`${name}[${i}].mes`"
         class="inputtext light"
         as="select"
       >
@@ -170,33 +170,33 @@ function addItem() {
       </Field>
       <ErrorMessage
         class="error-msg mb1"
-        :name="`itens[${i}].mes`"
+        :name="`${name}[${i}].mes`"
       />
     </div>
     <div class="f1">
       <MaskedFloatInput
         v-model="item.valor_empenho"
         :value="Number(item.valor_empenho)"
-        :name="`itens[${i}].valor_empenho`"
+        :name="`${name}[${i}].valor_empenho`"
         type="text"
         class="inputtext light"
       />
       <ErrorMessage
         class="error-msg mb1"
-        :name="`itens[${i}].valor_empenho`"
+        :name="`${name}[${i}].valor_empenho`"
       />
     </div>
     <div class="f1">
       <MaskedFloatInput
         v-model="item.valor_liquidado"
         :value="Number(item.valor_liquidado)"
-        :name="`itens[${i}].valor_liquidado`"
+        :name="`${name}[${i}].valor_liquidado`"
         type="text"
         class="inputtext light"
       />
       <ErrorMessage
         class="error-msg mb1"
-        :name="`itens[${i}].valor_liquidado`"
+        :name="`${name}[${i}].valor_liquidado`"
       />
     </div>
     <div style="flex-basis: 30px;">
