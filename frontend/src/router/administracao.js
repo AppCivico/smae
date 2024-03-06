@@ -2,6 +2,10 @@ import { defineAsyncComponent } from 'vue';
 
 import LoadingComponent from '@/components/LoadingComponent.vue';
 import { Administracao } from '@/views';
+import CadastrosBasicosRaiz from '@/views/CadastrosBasicosRaiz.vue';
+import BancadasCriarEditar from '@/views/bancada/BancadasCriarEditar.vue';
+import BancadasLista from '@/views/bancada/BancadasLista.vue';
+import BancadasRaiz from '@/views/bancada/BancadasRaiz.vue';
 import {
   AddEditDocumentTypes,
   ListDocumentTypes,
@@ -16,6 +20,9 @@ import {
   ListOrganTypes,
   ListOrgans,
 } from '@/views/organs';
+import PartidosCriarEditar from '@/views/partidos/PartidosCriarEditar.vue';
+import PartidosLista from '@/views/partidos/PartidosLista.vue';
+import PartidosRaiz from '@/views/partidos/PartidosRaiz.vue';
 import { ListRegions } from '@/views/regions';
 import {
   AddEditResources,
@@ -25,14 +32,6 @@ import {
   AddEditUsers,
   ListUsers,
 } from '@/views/users';
-
-import PartidosCriarEditar from '@/views/partidos/PartidosCriarEditar.vue';
-import PartidosLista from '@/views/partidos/PartidosLista.vue';
-import PartidosRaiz from '@/views/partidos/PartidosRaiz.vue';
-
-import BancadasCriarEditar from '@/views/bancada/BancadasCriarEditar.vue';
-import BancadasLista from '@/views/bancada/BancadasLista.vue';
-import BancadasRaiz from '@/views/bancada/BancadasRaiz.vue';
 
 const TiposDeAcompanhamentoLista = defineAsyncComponent({
   loader: () => import('@/views/tiposDeAcompanhamento/TiposLista.vue'),
@@ -50,18 +49,11 @@ const TiposDeAcompanhamentoRaiz = defineAsyncComponent({
 const rotasParaMenuSecundário = [
   {
     rotas: [
-      'gerenciarUsuários',
       'tipoDeAcompanhamentoListar',
-    ],
-  },
-  {
-    título: 'Formulários básicos',
-    rotas: [
       'gerenciarÓrgãos',
       'gerenciarUnidadesDeMedida',
       'gerenciarTiposDeDocumento',
       'gerenciarCategorias',
-      'gerenciarRegiões',
     ],
   },
   {
@@ -97,12 +89,8 @@ export default [
 </svg>`,
       rotasParaMenuSecundário,
       rotasParaMenuPrincipal: [
-      //   'administração',
         'gerenciarUsuários',
-      //   'gerenciarÓrgãos',
-      //   'gerenciarUnidadesDeMedida',
-      //   'gerenciarTiposDeDocumento',
-      //   'gerenciarCategorias',
+        'cadastrosBasicos',
       ],
     },
 
@@ -223,7 +211,9 @@ export default [
             component: TiposDeAcompanhamentoCriarEditar,
             props: ({ params }) => ({
               ...params,
-              ...{ tipoDeAtendimentoId: Number.parseInt(params.tipoDeAtendimentoId, 10) || undefined },
+              ...{
+                tipoDeAtendimentoId: Number.parseInt(params.tipoDeAtendimentoId, 10) || undefined,
+              },
             }),
 
             meta: {
@@ -235,6 +225,23 @@ export default [
       },
     ],
   },
+
+  {
+    path: '/cadastros-basicos',
+    name: 'cadastrosBasicos',
+    component: CadastrosBasicosRaiz,
+    meta: {
+      títulos: 'Cadastros básicos',
+      rotasParaMenuSecundário: [
+        'gerenciarÓrgãos',
+        'gerenciarUnidadesDeMedida',
+        'gerenciarTiposDeDocumento',
+        'gerenciarCategorias',
+        'gerenciarRegiões',
+      ],
+    },
+  },
+
   {
     path: '/usuarios',
     meta: {
