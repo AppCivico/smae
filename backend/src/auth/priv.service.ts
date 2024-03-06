@@ -3,6 +3,7 @@ import { PerfilAcessoPrivilegios } from '../pessoa/dto/perifl-acesso-privilegios
 import { PessoaService } from '../pessoa/pessoa.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { FilterPrivDto, RetornoListaPrivDto } from './models/Privilegios.dto';
+import { PessoaFromJwt } from './models/PessoaFromJwt';
 
 @Injectable()
 export class PrivService {
@@ -11,8 +12,8 @@ export class PrivService {
         private readonly pessoaService: PessoaService
     ) {}
 
-    async listaPerfilAcesso(filter: FilterPrivDto): Promise<PerfilAcessoPrivilegios[]> {
-        return await this.pessoaService.listaPerfilAcesso(filter);
+    async listaPerfilAcesso(filter: FilterPrivDto, user: PessoaFromJwt): Promise<PerfilAcessoPrivilegios[]> {
+        return await this.pessoaService.listaPerfilAcessoParaPessoas(filter, user);
     }
 
     async listaPrivilegios(filter: FilterPrivDto): Promise<RetornoListaPrivDto> {
