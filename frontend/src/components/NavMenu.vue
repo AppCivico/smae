@@ -14,7 +14,10 @@ const route = useRoute();
 
 const índiceDoItemAberto = ref(-1);
 
-const filtrarRota = (rota, presenteNoMenu = true) => (rota.meta?.presenteNoMenu || !presenteNoMenu)
+const filtrarRota = (
+  rota,
+  considerarPresençaNoMenu = true,
+) => (rota.meta?.presenteNoMenu || !considerarPresençaNoMenu)
   && (!rota.meta?.limitarÀsPermissões
     || temPermissãoPara.value(rota.meta?.limitarÀsPermissões));
 
