@@ -4,8 +4,6 @@ import { Dashboard } from '@/components';
 
 <template>
   <Dashboard>
-    <TítuloDePágina>
-      Cadastros básicos
-    </TítuloDePágina>
+    <TítuloDePágina />
   </Dashboard>
 </template>

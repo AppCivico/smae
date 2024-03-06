@@ -231,7 +231,7 @@ export default [
     name: 'cadastrosBasicos',
     component: CadastrosBasicosRaiz,
     meta: {
-      títulos: 'Cadastros básicos',
+      título: 'Cadastros básicos',
       rotasParaMenuSecundário: [
         'gerenciarÓrgãos',
         'gerenciarUnidadesDeMedida',
