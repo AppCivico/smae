@@ -60,7 +60,7 @@ export class PessoaExpert {
         let exitingPessoa: ListPessoa | null;
 
         const pessoaService = app.get(PessoaService);
-        const profiles = await pessoaService.listaPerfilAcesso();
+        const profiles = await pessoaService.listaPerfilAcessoParaPessoas();
         const adminProfile = profiles.filter((p) => p.nome.match('Administrador Geral'))[0];
         if (!adminProfile) throw 'nao encontrado perfil do admin';
 
