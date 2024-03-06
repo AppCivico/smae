@@ -39,8 +39,8 @@ export class PessoaController {
         'Projeto.administrador',
         'Projeto.administrador_no_orgao'
     )
-    async findAll(@Query() filters: FilterPessoaDto): Promise<ListPessoaDto> {
-        return { linhas: await this.pessoaService.findAll(filters) };
+    async findAll(@Query() filters: FilterPessoaDto, @CurrentUser() user: PessoaFromJwt): Promise<ListPessoaDto> {
+        return { linhas: await this.pessoaService.findAll(filters, user) };
     }
 
     @ApiBearerAuth('access-token')
@@ -60,8 +60,11 @@ export class PessoaController {
         'CadastroGrupoPortfolio.administrador',
         'CadastroGrupoPortfolio.administrador_no_orgao'
     )
-    async findAllReduced(@Query() filters: FilterPessoaDto): Promise<ListPessoaReducedDto> {
-        const list = await this.pessoaService.findAll(filters);
+    async findAllReduced(
+        @Query() filters: FilterPessoaDto,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<ListPessoaReducedDto> {
+        const list = await this.pessoaService.findAll(filters, user);
 
         return {
             linhas: list.map((r) => {

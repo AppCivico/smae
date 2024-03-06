@@ -79,7 +79,7 @@ export class PessoaFromJwt extends PessoaFromJwtBase {
         return metas.map((r) => r.meta_id);
     }
 
-    public assertOneModuloSistema(tipo: 'criar' | 'editar' | 'remover', label: string): ModuloSistema {
+    public assertOneModuloSistema(tipo: 'buscar' | 'criar' | 'editar' | 'remover', label: string): ModuloSistema {
         if (this.modulo_sistema.length != 1)
             throw new BadRequestException(
                 `Apenas um smae-sistema pode enviado por ves para ${tipo} ${label}, pois esse sistema será marcado no registro.`

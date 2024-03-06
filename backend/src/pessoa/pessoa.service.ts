@@ -173,6 +173,7 @@ export class PessoaService {
     }
 
     private async verificarPrivilegiosEdicao(id: number, updatePessoaDto: UpdatePessoaDto, user: PessoaFromJwt) {
+        const ehAdmin = user.hasSomeRoles(['CadastroPessoa.administrador']);
         if (user.hasSomeRoles(['SMAE.superadmin']) == false && updatePessoaDto.perfil_acesso_ids) {
             const oldPessoaPerfis = (
                 await this.prisma.pessoaPerfil.findMany({
@@ -187,7 +188,7 @@ export class PessoaService {
 
             // verificar se realmente esta acontecendo uma mudança, pois o frontend sempre envia os dados
             if (newPessoaPerfis !== oldPessoaPerfis) {
-                // verifica tbm se não está tentando remover o admin, mas nesse caso, tbm é necessario
+                // verifica tbm se não está tentando remover o admin, mas nesse caso, tbm é necessário
                 await this.verificarPerfilNaoContemAdmin(oldPessoaPerfis.split(',').map((n) => +n));
 
                 // verifica se não está tentando adicionar admin
@@ -213,7 +214,7 @@ export class PessoaService {
         if (
             pessoaCurrentOrgao &&
             updatePessoaDto.orgao_id &&
-            user.hasSomeRoles(['CadastroPessoa.administrador']) === false &&
+            ehAdmin === false &&
             Number(pessoaCurrentOrgao.orgao_id) != Number(user.orgao_id)
         ) {
             throw new ForbiddenException(`Você só pode editar pessoas do seu próprio órgão.`);
@@ -223,7 +224,7 @@ export class PessoaService {
             pessoaCurrentOrgao &&
             updatePessoaDto.desativado === true &&
             user.hasSomeRoles(['CadastroPessoa.inativar']) &&
-            user.hasSomeRoles(['CadastroPessoa.administrador']) === false &&
+            ehAdmin === false &&
             Number(pessoaCurrentOrgao.orgao_id) != Number(user.orgao_id)
         ) {
             throw new ForbiddenException(`Você só pode inativar pessoas do seu próprio órgão.`);
@@ -237,7 +238,7 @@ export class PessoaService {
             pessoaCurrentOrgao &&
             updatePessoaDto.desativado === false &&
             user.hasSomeRoles(['CadastroPessoa.ativar']) &&
-            user.hasSomeRoles(['CadastroPessoa.administrador']) === false &&
+            ehAdmin === false &&
             Number(pessoaCurrentOrgao.orgao_id) != Number(user.orgao_id)
         ) {
             throw new ForbiddenException(`Você só pode ativar pessoas do seu próprio órgão.`);
@@ -313,6 +314,8 @@ export class PessoaService {
     }
 
     async getDetail(pessoaId: number, user: PessoaFromJwt): Promise<DetalhePessoaDto> {
+        const visiblePriv = await this.buscaPrivilegiosVisiveis(user);
+
         const pessoa = await this.prisma.pessoa.findFirst({
             where: {
                 id: pessoaId,
@@ -362,7 +365,9 @@ export class PessoaService {
             cargo: pessoa.pessoa_fisica?.cargo || null,
             registro_funcionario: pessoa.pessoa_fisica?.registro_funcionario || null,
             cpf: pessoa.pessoa_fisica?.cpf || null,
-            perfil_acesso_ids: pessoa.PessoaPerfil.map((e) => e.perfil_acesso_id),
+            perfil_acesso_ids: pessoa.PessoaPerfil.map((e) => e.perfil_acesso_id).filter((e) =>
+                visiblePriv.includes(e)
+            ),
             grupos: pessoa.GruposDePaineisQueParticipo.map((e) => e.grupo_painel),
             responsavel_pelos_projetos,
         };
@@ -372,6 +377,8 @@ export class PessoaService {
 
     async update(pessoaId: number, updatePessoaDto: UpdatePessoaDto, user: PessoaFromJwt) {
         const sistema = user.assertOneModuloSistema('editar', 'pessoa');
+        const visiblePriv = await this.buscaPrivilegiosVisiveis(user, sistema);
+        this.verificaPerfilAcesso(updatePessoaDto, visiblePriv);
 
         await this.verificarPrivilegiosEdicao(pessoaId, updatePessoaDto, user);
         this.verificarCPFObrigatorio(updatePessoaDto);
@@ -571,7 +578,7 @@ export class PessoaService {
                     for (const perm of updatePessoaDto.perfil_acesso_ids) {
                         if (privOfModuleArr.includes(perm) === false)
                             throw new BadRequestException(
-                                `Perfil de acesso ID ${perm} não foi encontrado (sistemas: SMAE, ${sistema}), carregados: ${privOfModuleArr.join(',')}`
+                                `Perfil de acesso ID ${perm} não foi encontrado (sistemas: SMAE, ${sistema}), carregados: ${privOfModuleArr.join(', ')}`
                             );
                         promises.push(
                             prismaTx.pessoaPerfil.create({ data: { perfil_acesso_id: +perm, pessoa_id: pessoaId } })
@@ -594,7 +601,35 @@ export class PessoaService {
         return { id: pessoaId };
     }
 
+    private async listaPerfilAcessoIds(): Promise<number[]> {
+        const rows = await this.prisma.perfilAcesso.findMany({
+            select: { id: true },
+            where: { removido_em: null },
+        });
+        return rows.map((r) => r.id);
+    }
+
+    private async listaPerfilAcessoIdsPorSistema(mod: ModuloSistema): Promise<number[]> {
+        const rows = await this.prisma.perfilAcesso.findMany({
+            where: {
+                removido_em: null,
+                modulos_sistemas: {
+                    hasSome: ['SMAE', mod],
+                },
+            },
+            select: { id: true },
+        });
+        return rows.map((r) => r.id);
+    }
+
     async criarPessoa(createPessoaDto: CreatePessoaDto, user?: PessoaFromJwt) {
+        const visiblePriv: number[] = [];
+        if (user) {
+            visiblePriv.concat(await this.buscaPrivilegiosVisiveis(user));
+        }
+
+        this.verificaPerfilAcesso(createPessoaDto, visiblePriv);
+
         if (user) {
             await this.verificarPrivilegiosCriacao(createPessoaDto, user);
         }
@@ -704,7 +739,31 @@ export class PessoaService {
         return { id: pessoa.id };
     }
 
-    async findAll(filters: FilterPessoaDto | undefined = undefined) {
+    private verificaPerfilAcesso(dto: { perfil_acesso_ids?: number[] }, visiblePriv: number[]) {
+        if (Array.isArray(dto.perfil_acesso_ids) === false) return;
+
+        for (const id of dto.perfil_acesso_ids) {
+            if (visiblePriv.includes(id) === false)
+                throw new BadRequestException(
+                    `Perfil de Acesso ID ${id} não está na lista dos perfis de acesso para o seu usuário neste sistema, carregados: ${visiblePriv.join(', ')}`
+                );
+        }
+    }
+
+    private async buscaPrivilegiosVisiveis(user: PessoaFromJwt, cachedSistema?: ModuloSistema) {
+        const ehAdmin = user.hasSomeRoles(['CadastroPessoa.administrador']);
+
+        if (ehAdmin) {
+            return await this.listaPerfilAcessoIds();
+        }
+
+        const sistema = cachedSistema ?? user.assertOneModuloSistema('buscar', 'pessoa');
+        return await this.listaPerfilAcessoIdsPorSistema(sistema);
+    }
+
+    async findAll(filters: FilterPessoaDto | undefined = undefined, user: PessoaFromJwt) {
+        const visiblePriv = await this.buscaPrivilegiosVisiveis(user);
+
         this.logger.log(`buscando pessoas...`);
         const selectColumns = {
             id: true,
@@ -763,7 +822,7 @@ export class PessoaService {
                 email: p.email,
                 lotacao: p.pessoa_fisica?.lotacao ? p.pessoa_fisica.lotacao : undefined,
                 orgao_id: p.pessoa_fisica?.orgao_id || undefined,
-                perfil_acesso_ids: p.PessoaPerfil.map((e) => e.perfil_acesso_id),
+                perfil_acesso_ids: p.PessoaPerfil.map((e) => e.perfil_acesso_id).filter((e) => visiblePriv.includes(e)),
             };
         });
 
