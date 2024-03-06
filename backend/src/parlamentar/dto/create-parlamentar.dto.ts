@@ -33,7 +33,7 @@ export class CreateParlamentarDto {
 
     @IsOptional()
     @IsBoolean()
-    em_atividade: boolean
+    em_atividade: boolean;
 
     /**
      * Upload de foto

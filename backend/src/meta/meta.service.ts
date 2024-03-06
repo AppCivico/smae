@@ -502,7 +502,7 @@ export class MetaService {
                     });
 
                     if (cp) {
-                        await this.checkHasResponsaveisChildren(meta.id, cp);
+                        // await this.checkHasResponsaveisChildren(meta.id, cp);
 
                         await prismaTx.metaResponsavel.deleteMany({
                             where: {
