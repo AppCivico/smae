@@ -1,10 +1,10 @@
+import LoadingComponent from '@/components/LoadingComponent.vue';
+import formatProcesso from '@/helpers/formatProcesso';
 import { useProcessosStore } from '@/stores/processos.store.ts';
 import ProcessosCriarEditar from '@/views/processos/ProcessosCriarEditar.vue';
 import ProcessosItem from '@/views/processos/ProcessosItem.vue';
 import ProcessosLista from '@/views/processos/ProcessosLista.vue';
 import ProcessosRaiz from '@/views/processos/ProcessosRaiz.vue';
-import formatProcesso from '@/helpers/formatProcesso';
-import LoadingComponent from '@/components/LoadingComponent.vue';
 import { defineAsyncComponent } from 'vue';
 
 const processosResumo = defineAsyncComponent({
@@ -115,6 +115,12 @@ export default {
               return daApi ? `Resumo do processo SEI ${formatProcesso(daApi)}` : 'Resumo de processo';
             },
             títuloParaMenu: 'Resumo',
+
+            rotasParaMigalhasDePão: [
+              'projetosListar',
+              'projetosResumo',
+              'processosListar',
+            ],
           },
         },
 
