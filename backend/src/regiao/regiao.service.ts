@@ -86,7 +86,18 @@ export class RegiaoService {
                 removido_em: null,
                 nivel: filters.nivel,
                 parente_id: filters.parente_id,
-                AND: ehParaCasaCivil ? undefined : [{ nivel: 1 }],
+                AND: ehParaCasaCivil
+                    ? undefined
+                    : [
+                          // god forgive me
+                          {
+                              OR: [
+                                  { descricao: 'São Paulo', nivel: 1 },
+                                  { RegiaoAcima: { descricao: 'São Paulo', nivel: 1 } },
+                                  { RegiaoAcima: { RegiaoAcima: { descricao: 'São Paulo', nivel: 1 } } },
+                              ],
+                          },
+                      ],
             },
             orderBy: [{ nivel: 'asc' }, { parente_id: 'asc' }],
             take: ehParaCasaCivil ? undefined : 1, // limitando artificialmente a lista de CRUD até resolver o problema no frontend
