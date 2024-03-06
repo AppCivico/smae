@@ -1,7 +1,7 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post } from '@nestjs/common';
 import { ApiBearerAuth, ApiNoContentResponse, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
-// import { Roles } from '../auth/decorators/roles.decorator';
+import { Roles } from '../auth/decorators/roles.decorator';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { FindOneParams } from '../common/decorators/find-params';
 import { RecordWithId } from '../common/dto/record-with-id.dto';
@@ -18,7 +18,7 @@ export class PartidoController {
     @Post()
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
-    // @Roles('CadastroOrgao.inserir')
+    @Roles('CadastroPartido.inserir')
     async create(@Body() dto: CreatePartidoDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
         return await this.partidoService.create(dto, user);
     }
@@ -32,7 +32,7 @@ export class PartidoController {
     @Get(':id')
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
-    // @Roles('Projeto.administrar_portfolios', 'Projeto.administrador_no_orgao', ...PROJETO_READONLY_ROLES)
+    @Roles('CadastroPartido.editar', 'CadastroPartido.inserir')
     async findOne(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt): Promise<PartidoOneDto> {
         return await this.partidoService.findOne(params.id, user);
     }
@@ -40,7 +40,7 @@ export class PartidoController {
     @Patch(':id')
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
-    // @Roles('CadastroOrgao.editar')
+    @Roles('CadastroPartido.editar')
     async update(
         @Param() params: FindOneParams,
         @Body() dto: UpdatePartidoDto,
@@ -52,7 +52,7 @@ export class PartidoController {
     @Delete(':id')
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
-    // @Roles('CadastroOrgao.remover')
+    @Roles('CadastroPartido.remover')
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.ACCEPTED)
     async remove(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt) {
