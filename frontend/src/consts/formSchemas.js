@@ -511,6 +511,22 @@ export const orçamentoRealizado = object()
       .required(),
   });
 
+export const órgão = object()
+  .shape({
+    descricao: string()
+      .label('Descrição')
+      .required(),
+    nivel: number()
+      .required(),
+    parente_id: number()
+      .when('nivel', (nivel, field) => (nivel > 1
+        ? field.required('Esse campo é obrigatório para o nível maior do que 1')
+        : field.nullable())),
+    sigla: string()
+      .label('Sigla')
+      .required(),
+  });
+
 export const perdidoDeComplementação = object()
   .shape({
     pedido: string()
