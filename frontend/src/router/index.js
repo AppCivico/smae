@@ -87,7 +87,7 @@ export const router = createRouter({
     { path: '/nova-senha', component: NewPassword },
 
     ...administracao,
-    configuracoes,
+    ...configuracoes,
 
     monitoramento,
     metas,

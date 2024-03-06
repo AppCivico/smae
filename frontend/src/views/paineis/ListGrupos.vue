@@ -1,4 +1,5 @@
 <script setup>
+import { Dashboard } from '@/components';
 import { useAuthStore, usePaineisGruposStore } from '@/stores';
 import { storeToRefs } from 'pinia';
 import { ref } from 'vue';
@@ -25,6 +26,7 @@ function toggleAccordeon(t) {
 }
 </script>
 <template>
+  <Dashboard>
     <div class="flex spacebetween center mb2">
       <h1>Grupos de paineis</h1>
       <hr class="ml2 f1">
@@ -194,4 +196,5 @@ function toggleAccordeon(t) {
         </td>
       </tr>
     </table>
+  </Dashboard>
 </template>

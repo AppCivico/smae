@@ -1,7 +1,8 @@
 <script setup>
-import { ref, reactive } from 'vue';
-import { storeToRefs } from 'pinia';
+import { Dashboard } from '@/components';
 import { useAuthStore, useDocumentTypesStore } from '@/stores';
+import { storeToRefs } from 'pinia';
+import { reactive, ref } from 'vue';
 
 const authStore = useAuthStore();
 const { permissions } = storeToRefs(authStore);
@@ -22,87 +23,89 @@ function filterItems() {
 }
 </script>
 <template>
-  <div class="flex spacebetween center mb2">
-    <h1>Tipos de Documento</h1>
-    <hr class="ml2 f1">
-    <router-link
-      v-if="perm?.CadastroTipoDocumento?.inserir"
-      to="/tipo-documento/novo"
-      class="btn big ml2"
-    >
-      Novo tipo
-    </router-link>
-  </div>
-  <div class="flex center mb2">
-    <div class="f2 search">
-      <input
-        v-model="filters.textualSearch"
-        placeholder="Buscar"
-        type="text"
-        class="inputtext"
-        @input="filterItems"
+  <Dashboard>
+    <div class="flex spacebetween center mb2">
+      <h1>Tipos de Documento</h1>
+      <hr class="ml2 f1">
+      <router-link
+        v-if="perm?.CadastroTipoDocumento?.inserir"
+        to="/tipo-documento/novo"
+        class="btn big ml2"
       >
+        Novo tipo
+      </router-link>
     </div>
-  </div>
-
-  <table class="tablemain">
-    <thead>
-      <tr>
-        <th style="width: 10%">
-          Código
-        </th>
-        <th style="width: 25%">
-          Tipo
-        </th>
-        <th style="width: 35%">
-          Descrição
-        </th>
-        <th style="width: 20%">
-          Extensões
-        </th>
-        <th style="width: 10%" />
-      </tr>
-    </thead>
-    <tbody>
-      <template v-if="itemsFiltered.length">
-        <tr
-          v-for="item in itemsFiltered"
-          :key="item.id"
+    <div class="flex center mb2">
+      <div class="f2 search">
+        <input
+          v-model="filters.textualSearch"
+          placeholder="Buscar"
+          type="text"
+          class="inputtext"
+          @input="filterItems"
         >
-          <td>{{ item.codigo }}</td>
-          <td>{{ item.titulo }}</td>
-          <td>{{ item.descricao }}</td>
-          <td>{{ item.extensoes.split(',').join(', ') }}</td>
-          <td style="white-space: nowrap; text-align: right;">
-            <template v-if="perm?.CadastroTipoDocumento?.editar">
-              <router-link
-                :to="`/tipo-documento/editar/${item.id}`"
-                class="tprimary"
-              >
-                <svg
-                  width="20"
-                  height="20"
-                ><use xlink:href="#i_edit" /></svg>
-              </router-link>
-            </template>
+      </div>
+    </div>
+
+    <table class="tablemain">
+      <thead>
+        <tr>
+          <th style="width: 10%">
+            Código
+          </th>
+          <th style="width: 25%">
+            Tipo
+          </th>
+          <th style="width: 35%">
+            Descrição
+          </th>
+          <th style="width: 20%">
+            Extensões
+          </th>
+          <th style="width: 10%" />
+        </tr>
+      </thead>
+      <tbody>
+        <template v-if="itemsFiltered.length">
+          <tr
+            v-for="item in itemsFiltered"
+            :key="item.id"
+          >
+            <td>{{ item.codigo }}</td>
+            <td>{{ item.titulo }}</td>
+            <td>{{ item.descricao }}</td>
+            <td>{{ item.extensoes.split(',').join(', ') }}</td>
+            <td style="white-space: nowrap; text-align: right;">
+              <template v-if="perm?.CadastroTipoDocumento?.editar">
+                <router-link
+                  :to="`/tipo-documento/editar/${item.id}`"
+                  class="tprimary"
+                >
+                  <svg
+                    width="20"
+                    height="20"
+                  ><use xlink:href="#i_edit" /></svg>
+                </router-link>
+              </template>
+            </td>
+          </tr>
+        </template>
+        <tr v-else-if="itemsFiltered.loading">
+          <td colspan="54">
+            Carregando
           </td>
         </tr>
-      </template>
-      <tr v-else-if="itemsFiltered.loading">
-        <td colspan="54">
-          Carregando
-        </td>
-      </tr>
-      <tr v-else-if="itemsFiltered.error">
-        <td colspan="54">
-          Error: {{ itemsFiltered.error }}
-        </td>
-      </tr>
-      <tr v-else>
-        <td colspan="54">
-          Nenhum resultado encontrado.
-        </td>
-      </tr>
-    </tbody>
-  </table>
+        <tr v-else-if="itemsFiltered.error">
+          <td colspan="54">
+            Error: {{ itemsFiltered.error }}
+          </td>
+        </tr>
+        <tr v-else>
+          <td colspan="54">
+            Nenhum resultado encontrado.
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </Dashboard>
 </template>
