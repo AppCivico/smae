@@ -236,6 +236,7 @@ export default [
         'gerenciarÓrgãos',
         'gerenciarUnidadesDeMedida',
         'gerenciarTiposDeDocumento',
+        'tipoDeAcompanhamentoListar',
         'gerenciarCategorias',
         'gerenciarRegiões',
       ],
@@ -247,7 +248,9 @@ export default [
     meta: {
       limitarÀsPermissões: 'CadastroPessoa.',
       título: 'Gerenciar usuários',
-      rotasParaMenuSecundário,
+      rotasParaMenuSecundário: [
+        // PRA-FAZER: adicionar edição de responsabilidade
+      ],
     },
     children: [
       {
