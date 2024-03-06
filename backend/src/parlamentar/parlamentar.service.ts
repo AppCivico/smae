@@ -210,8 +210,24 @@ export class ParlamentarService {
             nascimento: parlamentar.nascimento?.toISOString().split('T')[0],
             foto: parlamentar.foto_upload_id ? this.uploadService.getDownloadToken(parlamentar.foto_upload_id, '1 days').download_token : null, 
 
-            biografia: mandatoCorrente ? mandatoCorrente.biografia : null,
-            atuacao: mandatoCorrente ? mandatoCorrente.atuacao : null,
+            mandato_atual: mandatoCorrente ? {
+                ...mandatoCorrente,
+
+                suplentes: mandatoCorrente.suplentes.map(s => {
+                    return {...s.parlamentar}
+                }),
+
+                representatividade: mandatoCorrente.representatividade.map(r => {
+                    return {
+                        ...r,
+
+                        regiao: {
+                            ...r.regiao,
+                            comparecimento: {...r.regiao.eleicoesComparecimento[0]}
+                        }
+                    }
+                })
+            } : null,
 
             mandatos: parlamentar.mandatos.map(m => {
                 return {
