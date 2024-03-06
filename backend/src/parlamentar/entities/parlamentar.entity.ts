@@ -14,8 +14,7 @@ export class ParlamentarDetailDto {
     foto: string | null;
 
     // Dados do mandato corrente
-    biografia: string | null;
-    atuacao: string | null;
+    mandato_atual: MandatoDto | null;
 
     equipe: EquipeDto[] | null;
     mandatos: MandatoDto[] | null;
