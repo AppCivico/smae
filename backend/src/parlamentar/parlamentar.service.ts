@@ -128,6 +128,15 @@ export class ParlamentarService {
                         votos_capital: true,
                         votos_interior: true,
 
+                        eleicao: {
+                            select: {
+                                id: true,
+                                ano: true,
+                                atual_para_mandatos: true,
+                                tipo: true,
+                            }
+                        },
+
                         partido_atual: {
                             select: {
                                 id: true,
@@ -194,10 +203,15 @@ export class ParlamentarService {
             }
         });
 
+        const mandatoCorrente = parlamentar.mandatos.find(m => m.eleicao.atual_para_mandatos == true);
+
         return {
             ...parlamentar,
             nascimento: parlamentar.nascimento?.toISOString().split('T')[0],
             foto: parlamentar.foto_upload_id ? this.uploadService.getDownloadToken(parlamentar.foto_upload_id, '1 days').download_token : null, 
+
+            biografia: mandatoCorrente ? mandatoCorrente.biografia : null,
+            atuacao: mandatoCorrente ? mandatoCorrente.atuacao : null,
 
             mandatos: parlamentar.mandatos.map(m => {
                 return {
@@ -260,6 +274,13 @@ export class ParlamentarService {
             where: { id: parlamentarId, removido_em: null }
         });
         if (!parlamentar) throw new HttpException('parlamentar_id| Parlamentar inválido.', 400);
+
+        if (dto.mandato_id != undefined) {
+            const mandato = await this.prisma.parlamentarMandato.count({
+                where: { id: dto.mandato_id, parlamentar_id: parlamentarId, removido_em: null }
+            });
+            if (!mandato) throw new HttpException('mandato_id| Mandato inválido.', 400);
+        }
 
         if (dto.tipo == ParlamentarEquipeTipo.Contato && !dto.mandato_id)
           throw new HttpException('tipo| Contato precisa receber ser relacionado ao mandato.', 400);

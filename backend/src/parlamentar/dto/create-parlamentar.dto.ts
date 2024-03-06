@@ -30,15 +30,6 @@ export class CreateParlamentarDto {
     @IsString()
     @MaxLength(250, { message: '$property| email: Máximo 250 caracteres' })
     email?: string;
-    
-    @IsOptional()
-    @IsString()
-    @MaxLength(250, { message: '$property| atuação: Máximo 250 caracteres' })
-    atuacao?: string;
-
-    @IsOptional()
-    @IsString()
-    biografia?: string | null;
 
     @IsOptional()
     @IsBoolean()
@@ -137,7 +128,7 @@ export class CreateMandatoDto {
     @IsOptional()
     @IsString({ message: '$property| ocupação: Precisa ser alfanumérico' })
     @MaxLength(250, { message: '$property| ocupação: Máximo 250 caracteres' })
-    ocupacao?: string;
+    atuacao?: string;
 
     @IsOptional()
     @IsString({ message: '$property| biografia: Precisa ser alfanumérico' })
