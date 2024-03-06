@@ -95,6 +95,11 @@ export class RegiaoService {
                                   { descricao: 'São Paulo', nivel: 1 },
                                   { RegiaoAcima: { descricao: 'São Paulo', nivel: 1 } },
                                   { RegiaoAcima: { RegiaoAcima: { descricao: 'São Paulo', nivel: 1 } } },
+                                  {
+                                      RegiaoAcima: {
+                                          RegiaoAcima: { RegiaoAcima: { descricao: 'São Paulo', nivel: 1 } },
+                                      },
+                                  },
                               ],
                           },
                       ],
