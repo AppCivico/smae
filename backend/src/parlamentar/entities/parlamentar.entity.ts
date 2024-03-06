@@ -47,7 +47,7 @@ export class MandatoDto {
     cargo: ParlamentarCargo;
     uf: ParlamentarUF;
     suplencia: ParlamentarSuplente |null;
-    gabinete: string;
+    gabinete: string | null;
     eleito: boolean;
     endereco: string | null;
     votos_estado: bigint | null;

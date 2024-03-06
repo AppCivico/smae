@@ -54,6 +54,10 @@ export class CreateParlamentarDto {
 }
 
 export class CreateEquipeDto {
+    @IsOptional()
+    @IsNumber()
+    mandato_id?: number;
+
     @IsString()
     @MaxLength(250, { message: '$property| nome: Máximo 250 caracteres' })
     nome: string;

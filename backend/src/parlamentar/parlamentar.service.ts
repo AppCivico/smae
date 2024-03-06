@@ -3,7 +3,7 @@ import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { PrismaService } from '../prisma/prisma.service';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
 import { CreateMandatoDto, CreateParlamentarDto, CreateMandatoRepresentatividadeDto, CreateMandatoSuplenteDto, CreateEquipeDto } from './dto/create-parlamentar.dto';
-import { DadosEleicaoNivel, Prisma } from '@prisma/client';
+import { DadosEleicaoNivel, ParlamentarEquipeTipo, Prisma } from '@prisma/client';
 import { ParlamentarDetailDto, ParlamentarDto } from './entities/parlamentar.entity';
 import { UpdateEquipeDto, UpdateMandatoDto, UpdateParlamentarDto, UpdateRepresentatividadeDto } from './dto/update-parlamentar.dto';
 import { RemoveMandatoDepsDto } from './dto/remove-mandato-deps.dto';
@@ -260,6 +260,12 @@ export class ParlamentarService {
             where: { id: parlamentarId, removido_em: null }
         });
         if (!parlamentar) throw new HttpException('parlamentar_id| Parlamentar inválido.', 400);
+
+        if (dto.tipo == ParlamentarEquipeTipo.Contato && !dto.mandato_id)
+          throw new HttpException('tipo| Contato precisa receber ser relacionado ao mandato.', 400);
+
+        if (dto.tipo == ParlamentarEquipeTipo.Assessor && dto.mandato_id != undefined)
+            dto.mandato_id = undefined;
 
         const created = await this.prisma.parlamentarEquipe.create({
             data: {
