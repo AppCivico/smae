@@ -443,15 +443,17 @@ export class PessoaService {
                 const grupos = updatePessoaDto.grupos;
                 delete updatePessoaDto.grupos;
                 if (grupos) {
-                    if (sistema != 'PDM')
-                        throw new BadRequestException('Edição de grupos não é suportada fora do sistema do PDM');
+                    if (sistema != 'PDM') {
+                        //throw new BadRequestException('Edição de grupos não é suportada fora do sistema do PDM');
+                        this.logger.warn('Edição de grupos não é suportada fora do sistema do PDM');
+                    } else {
+                        for (const grupo of grupos) {
+                            grupos_to_assign.push({ grupo_painel_id: grupo });
+                        }
 
-                    for (const grupo of grupos) {
-                        grupos_to_assign.push({ grupo_painel_id: grupo });
+                        // apaga todos os grupos
+                        await prismaTx.pessoaGrupoPainel.deleteMany({ where: { pessoa_id: pessoaId } });
                     }
-
-                    // apaga todos os grupos
-                    await prismaTx.pessoaGrupoPainel.deleteMany({ where: { pessoa_id: pessoaId } });
                 }
 
                 if (
