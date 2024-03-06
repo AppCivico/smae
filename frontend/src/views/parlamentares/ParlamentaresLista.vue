@@ -27,7 +27,7 @@ parlamentarStore.buscarTudo();
 </script>
 <template>
   <div class="flex spacebetween center mb2">
-    <h1>{{ route?.meta?.título || 'Parlamentares' }}</h1>
+    <h1>{{ route?.meta?.título || 'Lista de Parlamentares' }}</h1>
     <hr class="ml2 f1">
     <router-link
       :to="{name: 'parlamentaresCriar'}"
@@ -50,6 +50,9 @@ parlamentarStore.buscarTudo();
         <th>
           Partido
         </th>
+        <th>
+          Cargo
+        </th>
         <th />
         <th />
       </tr>
@@ -68,6 +71,7 @@ parlamentarStore.buscarTudo();
           </router-link>
         </td>
         <td> <span v-if="item.partido">{{ item.partido.sigla }}</span></td>
+        <td> <span v-if="item.cargo">{{ item.cargo }}</span></td>
         <td>
           <button
             class="like-a__text"
