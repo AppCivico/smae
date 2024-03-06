@@ -4,7 +4,6 @@ import { Dashboard } from '@/components';
 
 <template>
   <Dashboard>
-    <MigalhasDeMetas class="mb1" />
     <TítuloDePágina>
       Cadastros básicos
     </TítuloDePágina>
