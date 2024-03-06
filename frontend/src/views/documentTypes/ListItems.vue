@@ -72,7 +72,7 @@ function filterItems() {
           <td>{{ item.codigo }}</td>
           <td>{{ item.titulo }}</td>
           <td>{{ item.descricao }}</td>
-          <td>{{ item.extensoes }}</td>
+          <td>{{ item.extensoes.split(',').join(', ') }}</td>
           <td style="white-space: nowrap; text-align: right;">
             <template v-if="perm?.CadastroTipoDocumento?.editar">
               <router-link
