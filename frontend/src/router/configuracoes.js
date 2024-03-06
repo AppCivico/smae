@@ -44,6 +44,19 @@ const GruposDeObservadoresRaiz = defineAsyncComponent({
   loadingComponent: LoadingComponent,
 });
 
+const GruposDePaineisExternosCriarEditar = defineAsyncComponent({
+  loader: () => import('@/views/gruposDePaineisExternos/GruposDePaineisExternosCriarEditar.vue'),
+  loadingComponent: LoadingComponent,
+});
+const GruposDePaineisExternosLista = defineAsyncComponent({
+  loader: () => import('@/views/gruposDePaineisExternos/GruposDePaineisExternosLista.vue'),
+  loadingComponent: LoadingComponent,
+});
+const GruposDePaineisExternosRaiz = defineAsyncComponent({
+  loader: () => import('@/views/gruposDePaineisExternos/GruposDePaineisExternosRaiz.vue'),
+  loadingComponent: LoadingComponent,
+});
+
 const rotasParaMenuSecundário = [
   {
     rotas: [
@@ -63,6 +76,7 @@ const rotasParaMenuPrincipal = [
   'portfoliosListar',
   'gerenciarPainéisDeMetas',
   'paineisExternosListar',
+  'grupospaineisExternosListar',
 ];
 
 export default [
@@ -186,6 +200,50 @@ export default [
           },
         ],
       },
+      {
+        path: '/grupos-paineis-externos',
+        component: GruposDePaineisExternosRaiz,
+        meta: {
+          título: 'Grupos de Painéis Externos',
+          rotaPrescindeDeChave: true,
+          limitarÀsPermissões: 'CadastroPainelExterno.',
+          rotasParaMenuSecundário: [
+            'paineisExternosListar',
+            'gruposDeObservadoresListar',
+          ],
+        },
+        children: [
+          {
+            name: 'grupospaineisExternosListar',
+            path: '',
+            component: GruposDePaineisExternosLista,
+            meta: {
+              título: 'Grupos de Painéis Externos',
+            },
+          },
+          {
+            name: 'grupospaineisExternosCriar',
+            path: 'novo',
+            component: GruposDePaineisExternosCriarEditar,
+            meta: {
+              título: 'Novo Grupos de Painéis Externos',
+            },
+          },
+          {
+            path: ':gruposPaineisExternosId',
+            name: 'gruposPaineisExternosEditar',
+            component: GruposDePaineisExternosCriarEditar,
+            props: ({ params }) => ({
+              ...params,
+              ...{ gruposPaineisExternosId: Number.parseInt(params.gruposPaineisExternosId, 10) || undefined },
+            }),
+
+            meta: {
+              título: 'Editar painel externo',
+            },
+          },
+        ],
+      },
 
       {
         path: 'grupos-de-observadores',
@@ -230,12 +288,12 @@ export default [
               ...params,
               ...{
                 grupoDeObservadoresId: Number.parseInt(params.grupoDeObservadoresId, 10)
-                || undefined,
+                  || undefined,
               },
             }),
 
             meta: {
-              título: 'Editar grupo de observadores',
+              título: 'Editar Novo grupo de observadores',
             },
           },
         ],
