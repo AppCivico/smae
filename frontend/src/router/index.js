@@ -56,7 +56,7 @@ export const router = createRouter({
           path: '',
           component: ParlamentaresLista,
           meta: {
-            título: 'Parlamentares',
+            título: 'Lista de Parlamentares',
           },
         },
         {
