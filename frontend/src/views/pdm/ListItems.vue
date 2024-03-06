@@ -3,6 +3,7 @@ import {
   ref, reactive, onMounted, onUpdated,
 } from 'vue';
 import { storeToRefs } from 'pinia';
+import { Dashboard } from '@/components';
 import {
   useAlertStore, useEditModalStore, useAuthStore, usePdMStore,
 } from '@/stores';
@@ -67,136 +68,327 @@ function abreEdicaoOrcamento(id) {
 }
 </script>
 <template>
-  <div class="flex spacebetween center mb2">
-    <h1>Programa de Metas</h1>
-    <hr class="ml2 f1">
-    <router-link
-      v-if="perm?.CadastroPdm?.inserir"
-      :to="{ name: 'novoPdm' }"
-      class="btn big ml2"
-    >
-      Novo PdM
-    </router-link>
-  </div>
-  <div class="flex center mb2">
-    <div class="f2 search">
-      <input
-        v-model="filters.textualSearch"
-        placeholder="Buscar"
-        type="text"
-        class="inputtext"
-        @input="filterItems"
+  <Dashboard>
+    <div class="flex spacebetween center mb2">
+      <h1>Programa de Metas</h1>
+      <hr class="ml2 f1">
+      <router-link
+        v-if="perm?.CadastroPdm?.inserir"
+        :to="{ name: 'novoPdm' }"
+        class="btn big ml2"
       >
+        Novo PdM
+      </router-link>
     </div>
-  </div>
-
-  <table class="tablemain fix">
-    <thead>
-      <tr>
-        <th style="width: 35%">
-          Nome
-        </th>
-        <th style="width: 35%">
-          Descrição
-        </th>
-        <th style="width: 15%">
-          Prefeito
-        </th>
-        <th style="width: 10%">
-          Ativo
-        </th>
-        <th style="width: 82px" />
-      </tr>
-    </thead>
-    <tbody>
-      <template v-if="itemsFiltered.length">
-        <template
-          v-for="item in itemsFiltered"
-          :key="item.id"
+    <div class="flex center mb2">
+      <div class="f2 search">
+        <input
+          v-model="filters.textualSearch"
+          placeholder="Buscar"
+          type="text"
+          class="inputtext"
+          @input="filterItems"
         >
-          <tr
-            class="tzaccordeon"
-            @click="toggleAccordeon"
+      </div>
+    </div>
+
+    <table class="tablemain fix">
+      <thead>
+        <tr>
+          <th style="width: 35%">
+            Nome
+          </th>
+          <th style="width: 35%">
+            Descrição
+          </th>
+          <th style="width: 15%">
+            Prefeito
+          </th>
+          <th style="width: 10%">
+            Ativo
+          </th>
+          <th style="width: 82px" />
+        </tr>
+      </thead>
+      <tbody>
+        <template v-if="itemsFiltered.length">
+          <template
+            v-for="item in itemsFiltered"
+            :key="item.id"
           >
-            <td>
-              <div class="flex">
-                <svg
-                  class="arrow"
-                  width="13"
-                  height="8"
-                ><use xlink:href="#i_down" /></svg><span>{{ item.nome }}</span>
-              </div>
-            </td>
-            <td>{{ item.descricao }}</td>
-            <td>{{ item.prefeito }}</td>
-            <td>{{ item.ativo ? 'Sim' : 'Não' }}</td>
-            <td style="text-align: right;">
-              <a
-                v-if="perm?.CadastroPdm?.editar"
-                class="tprimary mr1 tipinfo right"
-                @click="abreEdicaoOrcamento(item.id)"
-              >
-                <svg
-                  width="20"
-                  height="20"
-                ><use xlink:href="#i_calendar" /></svg>
-                <div>Permissões para edições no orçamento</div>
-              </a>
-              <template v-if="perm?.CadastroPdm?.editar">
-                <router-link
-                  :to="{
-                    name: 'editarPdm',
-                    params: {
-                      pdm_id: item.id
-                    }
-                  }"
-                  class="tprimary tipinfo right"
+            <tr
+              class="tzaccordeon"
+              @click="toggleAccordeon"
+            >
+              <td>
+                <div class="flex">
+                  <svg
+                    class="arrow"
+                    width="13"
+                    height="8"
+                  ><use xlink:href="#i_down" /></svg><span>{{ item.nome }}</span>
+                </div>
+              </td>
+              <td>{{ item.descricao }}</td>
+              <td>{{ item.prefeito }}</td>
+              <td>{{ item.ativo ? 'Sim' : 'Não' }}</td>
+              <td style="text-align: right;">
+                <a
+                  v-if="perm?.CadastroPdm?.editar"
+                  class="tprimary mr1 tipinfo right"
+                  @click="abreEdicaoOrcamento(item.id)"
                 >
                   <svg
                     width="20"
                     height="20"
-                  ><use xlink:href="#i_edit" /></svg><div>Editar</div>
-                </router-link>
-              </template>
-            </td>
-          </tr>
-          <tz>
-            <td
-              colspan="56"
-              style="padding-left: 2rem;"
-            >
-              <router-link
-                v-if="item.ativo"
-                :to="`/metas`"
-                class="tlink"
+                  ><use xlink:href="#i_calendar" /></svg>
+                  <div>Permissões para edições no orçamento</div>
+                </a>
+                <template v-if="perm?.CadastroPdm?.editar">
+                  <router-link
+                    :to="{
+                      name: 'editarPdm',
+                      params: {
+                        pdm_id: item.id
+                      }
+                    }"
+                    class="tprimary tipinfo right"
+                  >
+                    <svg
+                      width="20"
+                      height="20"
+                    ><use xlink:href="#i_edit" /></svg><div>Editar</div>
+                  </router-link>
+                </template>
+              </td>
+            </tr>
+            <tz>
+              <td
+                colspan="56"
+                style="padding-left: 2rem;"
               >
-                <span>Visualizar programa de metas ativo</span> <svg
-                  width="20"
-                  height="20"
-                ><use xlink:href="#i_link" /></svg>
-              </router-link>
-              <template v-if="item.possui_macro_tema">
+                <router-link
+                  v-if="item.ativo"
+                  :to="`/metas`"
+                  class="tlink"
+                >
+                  <span>Visualizar programa de metas ativo</span> <svg
+                    width="20"
+                    height="20"
+                  ><use xlink:href="#i_link" /></svg>
+                </router-link>
+                <template v-if="item.possui_macro_tema">
+                  <table class="tablemain mb1">
+                    <thead>
+                      <tr>
+                        <th style="width: 90%">
+                          {{ item.rotulo_macro_tema ?? 'Macrotema' }}
+                        </th>
+                        <th style="width: 10%" />
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <template
+                        v-for="subitem in item.macrotemas"
+                        :key="subitem.id"
+                      >
+                        <tr>
+                          <td>{{ subitem.descricao }}</td>
+                          <td style="white-space: nowrap; text-align: right;">
+                            <template v-if="perm?.CadastroMacroTema?.editar">
+                              <router-link
+                                :to="{
+                                  name: 'editarMacroTemaEmPdm',
+                                  params: {
+                                    pdm_id: item.id,
+                                    id: subitem.id
+                                  }
+                                }"
+                                class="tprimary"
+                              >
+                                <svg
+                                  width="20"
+                                  height="20"
+                                ><use xlink:href="#i_edit" /></svg>
+                              </router-link>
+                            </template>
+                          </td>
+                        </tr>
+                      </template>
+                    </tbody>
+                  </table>
+                  <router-link
+                    v-if="perm?.CadastroMacroTema?.inserir"
+                    :to="{
+                      name: 'criarMacroTemaEmPdm',
+                      params: {
+                        pdm_id: item.id
+                      }
+                    }"
+                    class="addlink mb2"
+                  >
+                    <svg
+                      width="20"
+                      height="20"
+                    ><use xlink:href="#i_+" /></svg>
+                    <span>Adicionar {{ item.rotulo_macro_tema ?? 'Macrotema' }}</span>
+                  </router-link>
+                  <br>
+                </template>
+                <template v-if="item.possui_tema">
+                  <table class="tablemain mb1">
+                    <thead>
+                      <tr>
+                        <th style="width: 90%">
+                          {{ item.rotulo_tema ?? "Tema" }}
+                        </th>
+                        <th style="width: 10%" />
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <template
+                        v-for="subitem in item.temas"
+                        :key="subitem.id"
+                      >
+                        <tr>
+                          <td>{{ subitem.descricao }}</td>
+                          <td style="white-space: nowrap; text-align: right;">
+                            <template v-if="perm?.CadastroTema?.editar">
+                              <router-link
+                                :to="{
+                                  name: 'editarTemaEmPdm',
+                                  params: {
+                                    pdm_id: item.id,
+                                    id: subitem.id,
+                                  }
+                                }"
+                                class="tprimary"
+                              >
+                                <svg
+                                  width="20"
+                                  height="20"
+                                ><use xlink:href="#i_edit" /></svg>
+                              </router-link>
+                            </template>
+                          </td>
+                        </tr>
+                      </template>
+                    </tbody>
+                  </table>
+                  <router-link
+                    v-if="perm?.CadastroTema?.inserir"
+                    :to="{
+                      name: 'criarTemaEmPdm',
+                      params: {
+                        pdm_id: item.id
+                      }
+                    }"
+                    class="addlink mb2"
+                  >
+                    <svg
+                      width="20"
+                      height="20"
+                    ><use xlink:href="#i_+" /></svg>
+                    <span>Adicionar {{ item.rotulo_tema ?? "Tema" }}</span>
+                  </router-link>
+                  <br>
+                </template>
+                <template v-if="item.possui_sub_tema">
+                  <table class="tablemain mb1">
+                    <thead>
+                      <tr>
+                        <th style="width: 90%">
+                          {{ item.rotulo_sub_tema ?? "Subtema" }}
+                        </th>
+                        <th style="width: 10%" />
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <template
+                        v-for="subitem in item.subtemas"
+                        :key="subitem.id"
+                      >
+                        <tr>
+                          <td>{{ subitem.descricao }}</td>
+                          <td style="white-space: nowrap; text-align: right;">
+                            <template v-if="perm?.CadastroSubTema?.editar">
+                              <router-link
+                                :to="{
+                                  name: 'editarSubtemaEmPdm',
+                                  params: {
+                                    pdm_id: item.id,
+                                    id: subitem.id,
+                                  }
+                                }"
+                                class="tprimary"
+                              >
+                                <svg
+                                  width="20"
+                                  height="20"
+                                ><use xlink:href="#i_edit" /></svg>
+                              </router-link>
+                            </template>
+                          </td>
+                        </tr>
+                      </template>
+                    </tbody>
+                  </table>
+                  <router-link
+                    v-if="perm?.CadastroSubTema?.inserir"
+                    :to="{
+                      name: 'criarSubtemaEmPdm',
+                      params: {
+                        pdm_id: item.id
+                      }
+                    }"
+                    class="addlink mb2"
+                  >
+                    <svg
+                      width="20"
+                      height="20"
+                    ><use xlink:href="#i_+" /></svg>
+                    <span>Adicionar {{ item.rotulo_sub_tema ?? "Subtema" }}</span>
+                  </router-link>
+                  <br>
+                </template>
+
                 <table class="tablemain mb1">
                   <thead>
                     <tr>
-                      <th style="width: 90%">
-                        {{ item.rotulo_macro_tema ?? 'Macrotema' }}
+                      <th style="width: 60%">
+                        Tag
+                      </th>
+                      <th style="width: 30%">
+                        Icone
                       </th>
                       <th style="width: 10%" />
                     </tr>
                   </thead>
                   <tbody>
                     <template
-                      v-for="subitem in item.macrotemas"
+                      v-for="subitem in item.tags"
                       :key="subitem.id"
                     >
                       <tr>
                         <td>{{ subitem.descricao }}</td>
+                        <td>
+                          <a
+                            v-if="subitem.icone"
+                            :href="baseUrl + '/download/' + subitem?.icone"
+                            download
+                          >
+                            <img
+                              :src="`${baseUrl}/download/${subitem.icone}?inline=true`"
+                              width="15"
+                              class="ib mr1"
+                            >
+                          </a>
+                        </td>
                         <td style="white-space: nowrap; text-align: right;">
-                          <template v-if="perm?.CadastroMacroTema?.editar">
+                          <template v-if="perm?.CadastroTag?.editar">
                             <router-link
                               :to="{
-                                name: 'editarMacroTemaEmPdm',
+                                name: 'editarTagEmPdm',
                                 params: {
                                   pdm_id: item.id,
                                   id: subitem.id
@@ -216,289 +408,100 @@ function abreEdicaoOrcamento(id) {
                   </tbody>
                 </table>
                 <router-link
-                  v-if="perm?.CadastroMacroTema?.inserir"
+                  v-if="perm?.CadastroTag?.inserir"
                   :to="{
-                    name: 'criarMacroTemaEmPdm',
+                    name: 'criarTagEmPdm',
                     params: {
                       pdm_id: item.id
                     }
                   }"
-                  class="addlink mb2"
+                  class="addlink mb1"
                 >
                   <svg
                     width="20"
                     height="20"
-                  ><use xlink:href="#i_+" /></svg>
-                  <span>Adicionar {{ item.rotulo_macro_tema ?? 'Macrotema' }}</span>
+                  ><use xlink:href="#i_+" /></svg> <span>Adicionar Tag</span>
                 </router-link>
-                <br>
-              </template>
-              <template v-if="item.possui_tema">
-                <table class="tablemain mb1">
-                  <thead>
-                    <tr>
-                      <th style="width: 90%">
-                        {{ item.rotulo_tema ?? "Tema" }}
-                      </th>
-                      <th style="width: 10%" />
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <template
-                      v-for="subitem in item.temas"
-                      :key="subitem.id"
-                    >
-                      <tr>
-                        <td>{{ subitem.descricao }}</td>
-                        <td style="white-space: nowrap; text-align: right;">
-                          <template v-if="perm?.CadastroTema?.editar">
-                            <router-link
-                              :to="{
-                                name: 'editarTemaEmPdm',
-                                params: {
-                                  pdm_id: item.id,
-                                  id: subitem.id,
-                                }
-                              }"
-                              class="tprimary"
-                            >
-                              <svg
-                                width="20"
-                                height="20"
-                              ><use xlink:href="#i_edit" /></svg>
-                            </router-link>
-                          </template>
-                        </td>
-                      </tr>
-                    </template>
-                  </tbody>
-                </table>
-                <router-link
-                  v-if="perm?.CadastroTema?.inserir"
-                  :to="{
-                    name: 'criarTemaEmPdm',
-                    params: {
-                      pdm_id: item.id
-                    }
-                  }"
-                  class="addlink mb2"
-                >
-                  <svg
-                    width="20"
-                    height="20"
-                  ><use xlink:href="#i_+" /></svg>
-                  <span>Adicionar {{ item.rotulo_tema ?? "Tema" }}</span>
-                </router-link>
-                <br>
-              </template>
-              <template v-if="item.possui_sub_tema">
-                <table class="tablemain mb1">
-                  <thead>
-                    <tr>
-                      <th style="width: 90%">
-                        {{ item.rotulo_sub_tema ?? "Subtema" }}
-                      </th>
-                      <th style="width: 10%" />
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <template
-                      v-for="subitem in item.subtemas"
-                      :key="subitem.id"
-                    >
-                      <tr>
-                        <td>{{ subitem.descricao }}</td>
-                        <td style="white-space: nowrap; text-align: right;">
-                          <template v-if="perm?.CadastroSubTema?.editar">
-                            <router-link
-                              :to="{
-                                name: 'editarSubtemaEmPdm',
-                                params: {
-                                  pdm_id: item.id,
-                                  id: subitem.id,
-                                }
-                              }"
-                              class="tprimary"
-                            >
-                              <svg
-                                width="20"
-                                height="20"
-                              ><use xlink:href="#i_edit" /></svg>
-                            </router-link>
-                          </template>
-                        </td>
-                      </tr>
-                    </template>
-                  </tbody>
-                </table>
-                <router-link
-                  v-if="perm?.CadastroSubTema?.inserir"
-                  :to="{
-                    name: 'criarSubtemaEmPdm',
-                    params: {
-                      pdm_id: item.id
-                    }
-                  }"
-                  class="addlink mb2"
-                >
-                  <svg
-                    width="20"
-                    height="20"
-                  ><use xlink:href="#i_+" /></svg>
-                  <span>Adicionar {{ item.rotulo_sub_tema ?? "Subtema" }}</span>
-                </router-link>
-                <br>
-              </template>
 
-              <table class="tablemain mb1">
-                <thead>
-                  <tr>
-                    <th style="width: 60%">
-                      Tag
-                    </th>
-                    <th style="width: 30%">
-                      Icone
-                    </th>
-                    <th style="width: 10%" />
-                  </tr>
-                </thead>
-                <tbody>
-                  <template
-                    v-for="subitem in item.tags"
-                    :key="subitem.id"
-                  >
+                <table class="tablemain mb1">
+                  <thead>
                     <tr>
-                      <td>{{ subitem.descricao }}</td>
-                      <td>
-                        <a
-                          v-if="subitem.icone"
-                          :href="baseUrl + '/download/' + subitem?.icone"
-                          download
-                        >
-                          <img
-                            :src="`${baseUrl}/download/${subitem.icone}?inline=true`"
-                            width="15"
-                            class="ib mr1"
-                          >
-                        </a>
-                      </td>
-                      <td style="white-space: nowrap; text-align: right;">
-                        <template v-if="perm?.CadastroTag?.editar">
-                          <router-link
-                            :to="{
-                              name: 'editarTagEmPdm',
-                              params: {
-                                pdm_id: item.id,
-                                id: subitem.id
-                              }
-                            }"
+                      <th style="width: 30%">
+                        Arquivos
+                      </th>
+                      <th style="width: 60%">
+                        Descrição
+                      </th>
+                      <th style="width: 10%" />
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <template
+                      v-for="subitem in arquivos[item.id]"
+                      :key="subitem.id"
+                    >
+                      <tr>
+                        <td>
+                          <a
+                            :href="baseUrl + '/download/' + subitem?.arquivo?.download_token"
+                            download
+                          >{{ subitem?.arquivo?.nome_original ?? '-' }}</a>
+                        </td>
+                        <td>
+                          <a
+                            :href="baseUrl + '/download/' + subitem?.arquivo?.download_token"
+                            download
+                          >{{ subitem?.arquivo?.descricao ?? '-' }}</a>
+                        </td>
+                        <td style="white-space: nowrap; text-align: right;">
+                          <a
+                            v-if="perm?.CadastroPdm?.editar"
                             class="tprimary"
-                          >
-                            <svg
-                              width="20"
-                              height="20"
-                            ><use xlink:href="#i_edit" /></svg>
-                          </router-link>
-                        </template>
-                      </td>
-                    </tr>
-                  </template>
-                </tbody>
-              </table>
-              <router-link
-                v-if="perm?.CadastroTag?.inserir"
-                :to="{
-                  name: 'criarTagEmPdm',
-                  params: {
-                    pdm_id: item.id
-                  }
-                }"
-                class="addlink mb1"
-              >
-                <svg
-                  width="20"
-                  height="20"
-                ><use xlink:href="#i_+" /></svg> <span>Adicionar Tag</span>
-              </router-link>
-
-              <table class="tablemain mb1">
-                <thead>
-                  <tr>
-                    <th style="width: 30%">
-                      Arquivos
-                    </th>
-                    <th style="width: 60%">
-                      Descrição
-                    </th>
-                    <th style="width: 10%" />
-                  </tr>
-                </thead>
-                <tbody>
-                  <template
-                    v-for="subitem in arquivos[item.id]"
-                    :key="subitem.id"
-                  >
-                    <tr>
-                      <td>
-                        <a
-                          :href="baseUrl + '/download/' + subitem?.arquivo?.download_token"
-                          download
-                        >{{ subitem?.arquivo?.nome_original ?? '-' }}</a>
-                      </td>
-                      <td>
-                        <a
-                          :href="baseUrl + '/download/' + subitem?.arquivo?.download_token"
-                          download
-                        >{{ subitem?.arquivo?.descricao ?? '-' }}</a>
-                      </td>
-                      <td style="white-space: nowrap; text-align: right;">
-                        <a
-                          v-if="perm?.CadastroPdm?.editar"
-                          class="tprimary"
-                          @click="deleteArquivo(item.id, subitem.id)"
-                        ><svg
-                          width="20"
-                          height="20"
-                        ><use xlink:href="#i_remove" /></svg></a>
-                      </td>
-                    </tr>
-                  </template>
-                </tbody>
-              </table>
-              <router-link
-                v-if="perm?.CadastroPdm?.editar"
-                :to="{
-                  name: 'novoArquivoEmPdm',
-                  params: {
-                    pdm_id: item.id
-                  }
-                }"
-                class="addlink mb1"
-              >
-                <svg
-                  width="20"
-                  height="20"
-                ><use xlink:href="#i_+" /></svg> <span>Adicionar arquivo</span>
-              </router-link>
-            </td>
-          </tz>
+                            @click="deleteArquivo(item.id, subitem.id)"
+                          ><svg
+                            width="20"
+                            height="20"
+                          ><use xlink:href="#i_remove" /></svg></a>
+                        </td>
+                      </tr>
+                    </template>
+                  </tbody>
+                </table>
+                <router-link
+                  v-if="perm?.CadastroPdm?.editar"
+                  :to="{
+                    name: 'novoArquivoEmPdm',
+                    params: {
+                      pdm_id: item.id
+                    }
+                  }"
+                  class="addlink mb1"
+                >
+                  <svg
+                    width="20"
+                    height="20"
+                  ><use xlink:href="#i_+" /></svg> <span>Adicionar arquivo</span>
+                </router-link>
+              </td>
+            </tz>
+          </template>
         </template>
-      </template>
-      <tr v-else-if="itemsFiltered.loading">
-        <td colspan="54">
-          Carregando
-        </td>
-      </tr>
-      <tr v-else-if="itemsFiltered.error">
-        <td colspan="54">
-          Error: {{ itemsFiltered.error }}
-        </td>
-      </tr>
-      <tr v-else>
-        <td colspan="54">
-          Nenhum resultado encontrado.
-        </td>
-      </tr>
-    </tbody>
-  </table>
+        <tr v-else-if="itemsFiltered.loading">
+          <td colspan="54">
+            Carregando
+          </td>
+        </tr>
+        <tr v-else-if="itemsFiltered.error">
+          <td colspan="54">
+            Error: {{ itemsFiltered.error }}
+          </td>
+        </tr>
+        <tr v-else>
+          <td colspan="54">
+            Nenhum resultado encontrado.
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </Dashboard>
 </template>
