@@ -31,7 +31,9 @@ export default {
   props: {
     submenu: MenuSecundário,
   },
-
+  // redirect feito no componente para evitar:
+  // - **mais uma** dependência cíclica
+  // - correr rotas abaixo da raiz para montar o menu
   meta: {
     presenteNoMenu: true,
     título: 'Envio de arquivos',
@@ -44,15 +46,6 @@ export default {
     limitarÀsPermissões: [
       'CadastroMeta.orcamento',
       'Projeto.orcamento',
-    ],
-    rotasParaMenuSecundário: [
-      {
-        título: 'Orçamentos',
-        rotas: [
-          'EnviosOrçamentosMetas',
-          'EnviosOrçamentosProjetos',
-        ],
-      },
     ],
   },
   children: [
