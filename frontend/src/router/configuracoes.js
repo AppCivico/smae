@@ -84,6 +84,7 @@ export default [
         'CadastroPdm.',
         'CadastroRegiao.',
         'Projeto.administrar_portfolios',
+        'Projeto.administrar_portfolios_no_orgao',
         'CadastroPainelExterno.',
       ],
       presenteNoMenu: true,
@@ -103,7 +104,10 @@ export default [
         meta: {
           título: 'Portfolios',
           rotaPrescindeDeChave: true,
-          limitarÀsPermissões: 'Projeto.administrar_portfolios',
+          limitarÀsPermissões: [
+            'Projeto.administrar_portfolios',
+            'Projeto.administrar_portfolios_no_orgao',
+          ],
           presenteNoMenu: true,
           rotasParaMenuSecundário,
         },
