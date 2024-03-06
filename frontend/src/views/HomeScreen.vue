@@ -125,7 +125,7 @@ iniciar();
 
   <button
     type="button"
-    class="like-a__link mb2"
+    class="escolha-de-módulos__botão-de-saída like-a__link mb2"
     @click="authStore.logout()"
   >
     <svg
@@ -188,5 +188,11 @@ iniciar();
     top: 50%;
     transform: translateY(-50%);
   }
+}
+
+.escolha-de-módulos__botão-de-saída {
+  max-with: max-content;
+  margin-right: auto;
+  margin-left: auto;
 }
 </style>
