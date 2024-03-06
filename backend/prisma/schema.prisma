@@ -4140,6 +4140,7 @@ model Partido {
 
     mandatos_candidatura ParlamentarMandato[] @relation("candidatura")
     mandatos_atual       ParlamentarMandato[] @relation("atual")
+    bancadas             BancadaPartido[]
 
     @@map("partido")
 }
@@ -4162,7 +4163,22 @@ model Bancada {
     atualizador Pessoa? @relation("Atualizador", fields: [atualizado_por], references: [id])
     removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
 
+    partidos BancadaPartido[]
+
     @@map("bancada")
+}
+
+model BancadaPartido {
+    id        Int     @id @default(autoincrement())
+
+    bancada_id Int
+    bancada    Bancada @relation(fields: [bancada_id], references: [id])
+
+    partido_id Int
+    partido    Partido @relation(fields: [partido_id], references: [id])
+
+    @@unique([bancada_id, partido_id])
+    @@map("bancada_partido")
 }
 
 enum ModuloSistema {
@@ -4317,7 +4333,7 @@ model ParlamentarMandato {
     atuacao   String?
     biografia String?
 
-    gabinete  String
+    gabinete  String?
     eleito    Boolean
     cargo     ParlamentarCargo
     uf        ParlamentarUF
@@ -4333,6 +4349,7 @@ model ParlamentarMandato {
 
     suplentes          ParlamentarMandato[]        @relation("Suplentes")
     representatividade MandatoRepresentatividade[]
+    equipe             ParlamentarEquipe[]
 
     criado_por     Int?
     criado_em      DateTime? @default(now()) @db.Timestamptz(6)
@@ -4359,6 +4376,9 @@ model ParlamentarEquipe {
 
     parlamentar_id Int
     parlamentar    Parlamentar @relation(fields: [parlamentar_id], references: [id])
+
+    mandato_id Int?
+    mandato    ParlamentarMandato? @relation(fields: [mandato_id], references: [id])
 
     tipo ParlamentarEquipeTipo
 
