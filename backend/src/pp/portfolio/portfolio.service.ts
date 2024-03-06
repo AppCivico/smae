@@ -22,6 +22,13 @@ export class PortfolioService {
         if (similarExists > 0)
             throw new HttpException('titulo| Título igual ou semelhante já existe em outro registro ativo', 400);
 
+        if (user.hasSomeRoles(['Projeto.administrar_portfolios']) == false) {
+            for (const orgao of dto.orgaos) {
+                if (user.orgao_id !== orgao)
+                    throw new BadRequestException(`Você só tem permissão para criar portfólio no próprio órgão.`);
+            }
+        }
+
         const now = new Date(Date.now());
         const created = await this.prisma.$transaction(
             async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
