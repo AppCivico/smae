@@ -548,21 +548,21 @@ export default {
         {
           path: '',
           component: SingleMeta,
-          metas: {
+          meta: {
             rotasParaMenuSecundário: rotasParaMenuSecundário('meta'),
           },
         },
         {
           path: 'novo',
           component: AddEditIniciativa,
-          metas: {
+          meta: {
             rotasParaMenuSecundário: rotasParaMenuSecundário('iniciativa'),
           },
         },
         {
           path: 'editar/:iniciativa_id',
           component: AddEditIniciativa,
-          metas: {
+          meta: {
             rotasParaMenuSecundário: rotasParaMenuSecundário('iniciativa'),
           },
         },

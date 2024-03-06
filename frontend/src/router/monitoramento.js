@@ -2,45 +2,16 @@ import dateToTitle from '@/helpers/dateToTitle';
 import {
   ListCiclos,
   ListCiclosPassados,
-  ListMonitoramentoMetas,
   ListMonitoramentoMetasCronograma,
-  ListMonitoramentoMetasEvolucao,
   MonitoramentoMetas,
   MonitoramentoMetasCronograma,
 } from '@/views/monitoramento';
 import MonitoramentosTarefas from '@/views/monitoramento/MonitoramentoPorTarefas.vue';
 import MonitoramentosVariáveis from '@/views/monitoramento/MonitoramentoPorVariaveis.vue';
 import MonitoramentosRaiz from '@/views/monitoramento/MonitoramentosRaiz.vue';
-
+// Stores
 import { useCiclosStore } from '@/stores/ciclos.store';
 import { usePdMStore } from '@/stores/pdm.store';
-
-// Stores
-import { useAuthStore } from '@/stores/auth.store';
-
-const rotasParaMenuSecundário = [
-  {
-    título: 'Monitoramento',
-    rotas: [
-      'MonitoramentoDeCicloVigente',
-    ],
-  },
-  {
-    título: 'Ciclo vigente',
-    rotas: [
-      'monitoramentoDeFasesDeMetas',
-      'monitoramentoDeEvoluçãoDeMetas',
-      'monitoramentoDeCronogramaDeMetas',
-    ],
-  },
-  {
-    título: 'Configuração',
-    rotas: [
-      'monitoramentoDeCiclosDeMetas',
-      'monitoramentoDeCiclosFechadosDeMetas',
-    ],
-  },
-];
 
 // Apesar dessa função para normalizar o comportamento, há exceções
 const rotasParaMigalhasDePão = (
@@ -55,17 +26,12 @@ const rotasParaMigalhasDePão = (
   ];
 
   switch (seção) {
-    case 'fases':
-      rotas.push('monitoramentoDeFasesDeMetas');
-      break;
     case 'evolucao':
-      rotas.push('monitoramentoDeEvoluçãoDeMetas');
       if (metaPresente) {
         rotas.push('monitoramentoDeEvoluçãoDeMetaEspecífica');
       }
       break;
     case 'cronograma':
-      rotas.push('monitoramentoDeCronogramaDeMetas');
       if (metaPresente) {
         rotas.push('monitoramentoDeCronogramaDeMetaEspecífica');
       }
@@ -125,13 +91,11 @@ export default {
       name: 'MonitoramentoDeCicloVigente',
       meta: {
         título: 'Monitoramento',
+        títuloParaMenu: 'Ciclo Vigente',
         rotasParaMigalhasDePão: rotasParaMigalhasDePão(),
-        rotasParaMenuSecundário,
       },
 
-      redirect: () => (useAuthStore()?.user?.flags?.mf_v2
-        ? { name: 'monitoramentoPorVariáveis' }
-        : { name: 'monitoramentoDeEvoluçãoDeMetas' }),
+      redirect: () => ({ name: 'monitoramentoPorVariáveis' }),
 
       children: [
         {
@@ -153,29 +117,6 @@ export default {
       ],
     },
     {
-      path: 'fases',
-      name: 'monitoramentoDeFasesDeMetas',
-      component: ListMonitoramentoMetas,
-      meta: {
-        título: () => {
-          const dataCiclo = usePdMStore()?.activePdm?.ciclo_fisico_ativo?.data_ciclo;
-          return dataCiclo ? dateToTitle(dataCiclo) : 'Metas por fase do ciclo';
-        },
-        rotasParaMigalhasDePão: rotasParaMigalhasDePão('fases'),
-        rotasParaMenuSecundário,
-      },
-    },
-    {
-      name: 'monitoramentoDeEvoluçãoDeMetas',
-      path: 'evolucao',
-      component: ListMonitoramentoMetasEvolucao,
-      meta: {
-        título: 'Coleta - Evolução',
-        rotasParaMigalhasDePão: rotasParaMigalhasDePão('evolucao'),
-        rotasParaMenuSecundário,
-      },
-    },
-    {
       name: 'monitoramentoDeEvoluçãoDeMetaEspecífica',
       path: 'evolucao/:meta_id',
       component: MonitoramentoMetas,
@@ -188,11 +129,12 @@ export default {
             ? `Meta ${código} ${título}`
             : 'Meta';
         },
-        rotasParaMenuSecundário,
+        títuloParaMenu: null,
         rotasParaMigalhasDePão: rotasParaMigalhasDePão('evolucao', true),
       },
     },
     {
+      // talvez essa rota não precise mais existir
       path: 'cronograma',
       name: 'monitoramentoDeCronogramaDeMetas',
       component: ListMonitoramentoMetasCronograma,
@@ -201,8 +143,8 @@ export default {
           const dataCiclo = usePdMStore()?.activePdm?.ciclo_fisico_ativo?.data_ciclo;
           return dataCiclo ? dateToTitle(dataCiclo) : 'Coleta - Cronograma';
         },
+        títuloParaMenu: null,
         rotasParaMigalhasDePão: rotasParaMigalhasDePão('cronograma'),
-        rotasParaMenuSecundário,
       },
     },
     {
@@ -218,7 +160,7 @@ export default {
             ? `Meta ${código} ${título}`
             : 'Meta';
         },
-        rotasParaMenuSecundário,
+        títuloParaMenu: null,
         rotasParaMigalhasDePão: rotasParaMigalhasDePão('cronograma', true),
       },
     },
@@ -226,7 +168,6 @@ export default {
       path: 'cronograma/:meta_id/editar/:cron_id/:etapa_id',
       component: MonitoramentoMetasCronograma,
       meta: {
-        rotasParaMenuSecundário,
         rotasParaMigalhasDePão: rotasParaMigalhasDePão('cronograma', true),
       },
     },
@@ -243,7 +184,7 @@ export default {
             ? `${rótulo}: ${iniciativa.codigo} • ${iniciativa.titulo}`
             : rótulo;
         },
-        rotasParaMenuSecundário,
+        títuloParaMenu: null,
         rotasParaMigalhasDePão: rotasParaMigalhasDePão('cronograma', true, true),
       },
     },
@@ -259,7 +200,7 @@ export default {
             ? `${rótulo}: ${iniciativa.codigo} • ${iniciativa.titulo}`
             : rótulo;
         },
-        rotasParaMenuSecundário,
+        títuloParaMenu: null,
         rotasParaMigalhasDePão: rotasParaMigalhasDePão('cronograma', true, true),
       },
     },
@@ -276,7 +217,7 @@ export default {
             ? `${rótulo}: ${atividade?.codigo} • ${atividade?.titulo}`
             : rótulo;
         },
-        rotasParaMenuSecundário,
+        títuloParaMenu: null,
         rotasParaMigalhasDePão: rotasParaMigalhasDePão('cronograma', true, true, true),
       },
     },
@@ -292,7 +233,7 @@ export default {
             ? `${rótulo}: ${atividade?.codigo} • ${atividade?.titulo}`
             : rótulo;
         },
-        rotasParaMenuSecundário,
+        títuloParaMenu: null,
         rotasParaMigalhasDePão: rotasParaMigalhasDePão('cronograma', true, true, true),
       },
     },
@@ -301,12 +242,9 @@ export default {
       name: 'monitoramentoDeCiclosDeMetas',
       component: ListCiclos,
       meta: {
-        rotasParaMenuSecundário,
-        rotasParaMigalhasDePão: rotasParaMigalhasDePão('ciclos'),
-        título: () => {
-          const dataCiclo = usePdMStore()?.activePdm?.ciclo_fisico_ativo?.data_ciclo;
-          return dataCiclo ? dateToTitle(dataCiclo) : 'Próximos ciclos';
-        },
+        rotasParaMigalhasDePão: rotasParaMigalhasDePão(),
+        título: 'Próximos ciclos',
+        títuloParaMenu: null,
         limitarÀsPermissões: [
           'CadastroCicloFisico',
           'PDM.admin_cp',
@@ -320,9 +258,9 @@ export default {
       name: 'monitoramentoDeCiclosFechadosDeMetas',
       component: ListCiclosPassados,
       meta: {
-        rotasParaMenuSecundário,
         rotasParaMigalhasDePão: rotasParaMigalhasDePão(),
         título: 'Ciclos fechados',
+        títuloParaMenu: null,
         limitarÀsPermissões: [
           'CadastroCicloFisico',
           'PDM.admin_cp',
@@ -336,8 +274,8 @@ export default {
       component: ListCiclos,
       name: 'monitoramentoDeCronogramaDeCicloEspecífico',
       meta: {
-        rotasParaMenuSecundário,
         rotasParaMigalhasDePão: rotasParaMigalhasDePão('ciclos', false, false, false, true),
+        títuloParaMenu: null,
       },
     },
     {
@@ -349,7 +287,7 @@ export default {
           const dataCiclo = usePdMStore()?.activePdm?.ciclo_fisico_ativo?.data_ciclo;
           return dataCiclo ? dateToTitle(dataCiclo) : 'Monitoramento de meta';
         },
-        rotasParaMenuSecundário,
+        títuloParaMenu: null,
         rotasParaMigalhasDePão: rotasParaMigalhasDePão('metas', true),
       },
     },
