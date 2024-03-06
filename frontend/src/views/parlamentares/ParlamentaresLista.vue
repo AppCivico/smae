@@ -59,7 +59,14 @@ parlamentarStore.buscarTudo();
         v-for="item in lista"
         :key="item.id"
       >
-        <td>{{ item.nome }}</td>
+        <td>
+          <router-link
+            :to="{ name: 'parlamentarDetalhe', params: { parlamentarId: item.id } }"
+            class="tprimary"
+          >
+            {{ item.nome }}
+          </router-link>
+        </td>
         <td> <span v-if="item.partido">{{ item.partido.sigla }}</span></td>
         <td>
           <button
