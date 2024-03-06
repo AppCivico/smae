@@ -4,8 +4,8 @@ import months from '@/consts/months';
 import dinheiro from '@/helpers/dinheiro';
 import retornarQuaisOsRecentesDosItens from '@/helpers/retornarQuaisOsMaisRecentesDosItensDeOrcamento';
 import toFloat from '@/helpers/toFloat';
-import { useOrcamentosStore } from '@/stores/orcamentos.store';
 import { useMetasStore } from '@/stores/metas.store';
+import { useOrcamentosStore } from '@/stores/orcamentos.store';
 import { useProjetosStore } from '@/stores/projetos.store.ts';
 import { range } from 'lodash';
 import { storeToRefs } from 'pinia';
@@ -15,9 +15,11 @@ import {
   useField,
 } from 'vee-validate';
 import {
-  computed, onMounted, onUpdated, ref, toRef, watch,
+  computed, defineOptions, onMounted, onUpdated, ref, toRef, watch,
 } from 'vue';
 import { useRoute } from 'vue-router';
+
+defineOptions({ inheritAttrs: false });
 
 const route = useRoute();
 const { líquidoDosItens, orçamentoEmFoco } = storeToRefs(useOrcamentosStore());
