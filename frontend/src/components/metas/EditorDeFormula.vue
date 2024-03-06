@@ -499,22 +499,22 @@ watch(() => props.variáveisCompostas, async () => {
         </option>
       </select>
       <label class="block mb1"><input
-        v-model="fieldsVariaveis.periodo"
+        v-model.number="fieldsVariaveis.periodo"
         type="radio"
         class="inputcheckbox"
-        value="1"
+        :value="1"
       ><span>Mês corrente</span></label>
       <label class="block mb1"><input
-        v-model="fieldsVariaveis.periodo"
+        v-model.number="fieldsVariaveis.periodo"
         type="radio"
         class="inputcheckbox"
-        value="0"
+        :value="0"
       ><span>Média</span></label>
       <label class="block mb1"><input
-        v-model="fieldsVariaveis.periodo"
+        v-model.number="fieldsVariaveis.periodo"
         type="radio"
         class="inputcheckbox"
-        value="-1"
+        :value="-1"
       ><span>Mês anterior</span></label>
 
       <label class="block mt2 mb2"><input
