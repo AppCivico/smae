@@ -136,11 +136,19 @@ export default [
           },
           {
             path: 'novo',
+            name: 'criarUsuários',
             component: AddEditUsers,
+            meta: {
+              rotaDeEscape: 'gerenciarUsuários',
+            },
           },
           {
             path: 'editar/:id',
+            name: 'editarUsuários',
             component: AddEditUsers,
+            meta: {
+              rotaDeEscape: 'gerenciarUsuários',
+            },
           },
         ],
       },
