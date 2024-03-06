@@ -171,5 +171,18 @@ export const useOrgansStore = defineStore({
       return this.órgãosQueTemResponsáveis
         .reduce((acc, cur) => ({ ...acc, [cur.id]: cur }), {});
     },
+    órgãosPorNível: ({ organs }) => (Array.isArray(organs)
+      ? organs.reduce((acc, cur) => {
+        if (!acc[cur.nivel || 0]) {
+          acc[cur.nivel || 0] = [];
+        }
+        acc[cur.nivel].push(cur);
+        return acc;
+      }, {})
+      : {}),
+    nívelDoÓrgãoMaisProfundo() {
+      return Number(Object.keys(this.órgãosPorNível)[Object.keys(this.órgãosPorNível).length - 1])
+        || 0;
+    },
   },
 });
