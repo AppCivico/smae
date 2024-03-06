@@ -254,7 +254,7 @@ export class PessoaService {
     }
 
     async verificarPerfilNaoContemAdmin(perfil_acesso_ids: number[]) {
-        const privilegios = await this.prisma.perfilAcesso.findMany({
+        const rows = await this.prisma.perfilAcesso.findMany({
             where: {
                 id: { in: perfil_acesso_ids },
             },
@@ -269,7 +269,7 @@ export class PessoaService {
             },
         });
 
-        const codigos = privilegios.reduce((prev, r) => {
+        const codigos = rows.reduce((prev, r) => {
             return [...prev, ...r.perfil_privilegio.map((s) => s.privilegio.codigo)];
         }, []);
 
@@ -314,7 +314,7 @@ export class PessoaService {
     }
 
     async getDetail(pessoaId: number, user: PessoaFromJwt): Promise<DetalhePessoaDto> {
-        const visiblePriv = await this.buscaPrivilegiosVisiveis(user);
+        const perfisVisiveis = await this.buscaPerfisVisiveis(user);
 
         const pessoa = await this.prisma.pessoa.findFirst({
             where: {
@@ -366,7 +366,7 @@ export class PessoaService {
             registro_funcionario: pessoa.pessoa_fisica?.registro_funcionario || null,
             cpf: pessoa.pessoa_fisica?.cpf || null,
             perfil_acesso_ids: pessoa.PessoaPerfil.map((e) => e.perfil_acesso_id).filter((e) =>
-                visiblePriv.includes(e)
+                perfisVisiveis.includes(e)
             ),
             grupos: pessoa.GruposDePaineisQueParticipo.map((e) => e.grupo_painel),
             responsavel_pelos_projetos,
@@ -377,8 +377,8 @@ export class PessoaService {
 
     async update(pessoaId: number, updatePessoaDto: UpdatePessoaDto, user: PessoaFromJwt) {
         const sistema = user.assertOneModuloSistema('editar', 'pessoa');
-        const visiblePriv = await this.buscaPrivilegiosVisiveis(user, sistema);
-        this.verificaPerfilAcesso(updatePessoaDto, visiblePriv);
+        const perfisVisiveis = await this.buscaPerfisVisiveis(user, sistema);
+        this.verificaPerfilAcesso(updatePessoaDto, perfisVisiveis);
 
         await this.verificarPrivilegiosEdicao(pessoaId, updatePessoaDto, user);
         this.verificarCPFObrigatorio(updatePessoaDto);
@@ -551,35 +551,18 @@ export class PessoaService {
                 if (Array.isArray(updatePessoaDto.perfil_acesso_ids)) {
                     const promises = [];
 
-                    const privOfModuleDb = await this.prisma.privilegio.findMany({
-                        where: {
-                            modulo: {
-                                modulo_sistema: { in: ['SMAE', sistema] },
-                            },
-                        },
-                        select: { id: true },
-                    });
-                    const privOfModuleArr = privOfModuleDb.map((r) => r.id);
-
                     await prismaTx.pessoaPerfil.deleteMany({
                         where: {
                             pessoa_id: pessoaId,
                             // só deve apagar os privilégios que tiverem relação ao modulo que a pessoa estava visualizando na tela
-                            perfil_acesso: {
-                                perfil_privilegio: {
-                                    some: {
-                                        privilegio_id: { in: privOfModuleArr },
-                                    },
-                                },
-                            },
+                            perfil_acesso_id: { in: perfisVisiveis },
                         },
                     });
 
                     for (const perm of updatePessoaDto.perfil_acesso_ids) {
-                        if (privOfModuleArr.includes(perm) === false)
-                            throw new BadRequestException(
-                                `Perfil de acesso ID ${perm} não foi encontrado (sistemas: SMAE, ${sistema}), carregados: ${privOfModuleArr.join(', ')}`
-                            );
+                        // double check, just in case
+                        if (perfisVisiveis.includes(perm) == false)
+                            throw new BadRequestException(`Perm ${perm} não é permitida para o seu sistema`);
                         promises.push(
                             prismaTx.pessoaPerfil.create({ data: { perfil_acesso_id: +perm, pessoa_id: pessoaId } })
                         );
@@ -625,7 +608,7 @@ export class PessoaService {
     async criarPessoa(createPessoaDto: CreatePessoaDto, user?: PessoaFromJwt) {
         const visiblePriv: number[] = [];
         if (user) {
-            visiblePriv.concat(await this.buscaPrivilegiosVisiveis(user));
+            visiblePriv.concat(await this.buscaPerfisVisiveis(user));
         }
 
         this.verificaPerfilAcesso(createPessoaDto, visiblePriv);
@@ -750,7 +733,7 @@ export class PessoaService {
         }
     }
 
-    private async buscaPrivilegiosVisiveis(user: PessoaFromJwt, cachedSistema?: ModuloSistema) {
+    private async buscaPerfisVisiveis(user: PessoaFromJwt, cachedSistema?: ModuloSistema) {
         const ehAdmin = user.hasSomeRoles(['CadastroPessoa.administrador']);
 
         if (ehAdmin) {
@@ -762,7 +745,7 @@ export class PessoaService {
     }
 
     async findAll(filters: FilterPessoaDto | undefined = undefined, user: PessoaFromJwt) {
-        const visiblePriv = await this.buscaPrivilegiosVisiveis(user);
+        const visiblePriv = await this.buscaPerfisVisiveis(user);
 
         this.logger.log(`buscando pessoas...`);
         const selectColumns = {
