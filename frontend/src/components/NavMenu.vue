@@ -129,7 +129,7 @@ onBeforeRouteUpdate(() => {
               {{ typeof item.meta.títuloParaMenu === 'function' ? item.meta.títuloParaMenu() : item.meta.títuloParaMenu }}
             </span>
             <span
-              v-if="item.meta?.título"
+              v-else-if="item.meta?.título"
               class="menu__texto-do-link"
             >
               {{ typeof item.meta.título === 'function' ? item.meta.título() : item.meta.título }}
