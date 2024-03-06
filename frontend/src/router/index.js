@@ -13,6 +13,7 @@ import { Login, LostPassword, NewPassword } from '@/views/auth';
 import ParlamentaresCriarEditar from '@/views/parlamentares/ParlamentaresCriarEditar.vue';
 import ParlamentaresLista from '@/views/parlamentares/ParlamentaresLista.vue';
 import ParlamentaresRaiz from '@/views/parlamentares/ParlamentaresRaiz.vue';
+import ParlamentarDetalhe from '@/views/parlamentares/ParlamentarDetalhe.vue';
 
 import Panorama from '@/views/Panorama.vue';
 import administracao from './administracao';
@@ -67,7 +68,7 @@ export const router = createRouter({
           },
         },
         {
-          path: ':parlamentarId',
+          path: 'editar/:parlamentarId',
           name: 'parlamentaresEditar',
           component: ParlamentaresCriarEditar,
           props: ({ params }) => ({
@@ -77,6 +78,19 @@ export const router = createRouter({
 
           meta: {
             título: 'Editar parlamentar',
+          },
+        },
+        {
+          path: ':parlamentarId',
+          name: 'parlamentarDetalhe',
+          component: ParlamentarDetalhe,
+          props: ({ params }) => ({
+            ...params,
+            ...{ parlamentarId: Number.parseInt(params.parlamentarId, 10) || undefined },
+          }),
+
+          meta: {
+            título: 'Carometro',
           },
         },
       ],
