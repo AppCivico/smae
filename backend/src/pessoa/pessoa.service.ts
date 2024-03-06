@@ -1118,7 +1118,9 @@ export class PessoaService {
         return password;
     }
 
-    async listaPerfilAcesso(filter: FilterPrivDto): Promise<PerfilAcessoPrivilegios[]> {
+    async listaPerfilAcessoParaPessoas(filter: FilterPrivDto, user: PessoaFromJwt): Promise<PerfilAcessoPrivilegios[]> {
+        const ehAdmin = user.hasSomeRoles(['CadastroPessoa.administrador']);
+
         const dados = await this.prisma.perfilAcesso.findMany({
             where: {
                 removido_em: null,
@@ -1126,7 +1128,11 @@ export class PessoaService {
                     ? {
                           hasSome: filter.sistemas,
                       }
-                    : undefined,
+                    : ehAdmin
+                      ? undefined
+                      : {
+                            hasSome: ['SMAE', ...user.modulo_sistema],
+                        },
             },
             orderBy: { nome: 'asc' },
             select: {
