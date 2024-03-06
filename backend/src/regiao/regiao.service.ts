@@ -100,7 +100,6 @@ export class RegiaoService {
                       ],
             },
             orderBy: [{ nivel: 'asc' }, { parente_id: 'asc' }],
-            take: ehParaCasaCivil ? undefined : 1, // limitando artificialmente a lista de CRUD até resolver o problema no frontend
             select: {
                 id: true,
                 descricao: true,
