@@ -2,10 +2,6 @@ import LoadingComponent from '@/components/LoadingComponent.vue';
 import RelatoriosRaiz from '@/views/relatorios/RelatoriosRaiz.vue';
 import { defineAsyncComponent } from 'vue';
 
-const MenuSecundario = defineAsyncComponent({
-  loader: () => import('@/components/MenuSecundario.vue'),
-  loadingComponent: LoadingComponent,
-});
 const NovoMensal = defineAsyncComponent({
   loader: () => import('@/views/relatorios/NovoMensal.vue'),
   loadingComponent: LoadingComponent,
