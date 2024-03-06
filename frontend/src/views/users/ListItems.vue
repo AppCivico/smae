@@ -65,8 +65,8 @@ const listaDeUsuáriosComNomesAlémDeIds = computed(() => (!Array.isArray(usersS
       Novo usuário
     </router-link>
   </div>
-  <div class="flex flexwrap mb2">
-    <div class="f1 mr1">
+  <div class="flex flexwrap g1">
+    <div class="f1">
       <label class="label tc300">Órgão</label>
       <select
         v-model.number="orgao"
@@ -88,7 +88,7 @@ const listaDeUsuáriosComNomesAlémDeIds = computed(() => (!Array.isArray(usersS
       </select>
     </div>
 
-    <div class="f1 mr1">
+    <div class="f1">
       <label class="label tc300">Perfil</label>
       <select
         v-model.number="perfil"
