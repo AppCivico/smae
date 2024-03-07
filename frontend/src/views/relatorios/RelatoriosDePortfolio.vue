@@ -6,7 +6,7 @@ import { useAuthStore } from '@/stores/auth.store';
 import { useRelatoriosStore } from '@/stores/relatorios.store.ts';
 import { storeToRefs } from 'pinia';
 import { ref } from 'vue';
-import { prepararEtiquetas, prepararÓrgãos, prepararPortfolios } from './helpers/preparadorDeColunaParametros';
+import { prepararEtiquetas, prepararPortfolios, prepararÓrgãos } from './helpers/preparadorDeColunaParametros';
 
 const relatóriosStore = useRelatoriosStore();
 const { temPermissãoPara } = storeToRefs(useAuthStore());
@@ -34,7 +34,7 @@ iniciar();
     <h1>{{ $route.meta.título }}</h1>
     <hr class="ml2 f1">
     <router-link
-      v-if="temPermissãoPara('Reports.executar')"
+      v-if="temPermissãoPara('Reports.executar.') "
       :to="{ name: 'novoRelatórioDePortfolio' }"
       class="btn big ml2"
     >
