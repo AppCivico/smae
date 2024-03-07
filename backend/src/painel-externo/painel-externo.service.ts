@@ -177,7 +177,7 @@ export class PainelExternoService {
         for (const grupoPainelId of dto.grupos) {
             if (prevVersions.filter((r) => r.grupo_painel_externo_id == grupoPainelId)[0]) continue;
 
-            const gp = await prismaTx.painelExterno.findFirstOrThrow({
+            const gp = await prismaTx.grupoPainelExterno.findFirstOrThrow({
                 where: {
                     removido_em: null,
                     modulo_sistema: sistema,
