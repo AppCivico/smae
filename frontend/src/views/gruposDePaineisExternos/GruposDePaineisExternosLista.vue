@@ -65,7 +65,7 @@ if (!Array.isArray(organs) || !organs.length) {
         <th class="cell--number">
           Nº de participantes
         </th>
-        <th>Portfolios</th>
+        <th>Grupos de Painéis Externos</th>
       </tr>
     </thead>
     <tbody>
@@ -83,7 +83,7 @@ if (!Array.isArray(organs) || !organs.length) {
         <td>
           <ul>
             <li v-if="!item.portfolios?.length">
-              Nenhum portfolio associado
+              Nenhum grupo de painel externo associado
             </li>
             <li
               v-for="portfolio in item.portfolios"
