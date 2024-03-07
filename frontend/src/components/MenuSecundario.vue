@@ -256,7 +256,7 @@ function alternarItens(índice) {
 }
 
 .menu-secundário__link {
-  font-size: 1.142857rem;
+  font-size: 1rem;
   display: block;
   padding: 1rem 0;
 
