@@ -335,7 +335,7 @@ onUpdated(() => { start(); });
                 </table>
                 <router-link
                   :to="{
-                    name: 'novaRegião',
+                    name: 'novaRegião1',
                     params: {
                       id: item.id,
                     }
