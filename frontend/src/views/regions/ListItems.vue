@@ -45,7 +45,7 @@ onUpdated(() => { start(); });
       <hr class="ml2 f1">
 
       <router-link
-        v-if="perm?.CadastroRegiao?.inserir && Array.isArray(regions) && !regions.length"
+        v-if="perm?.CadastroRegiao?.inserir"
         :to="{
           name: 'novaRegião'
         }"
