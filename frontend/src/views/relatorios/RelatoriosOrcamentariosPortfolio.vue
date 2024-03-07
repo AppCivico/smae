@@ -17,7 +17,7 @@ relatóriosStore.getAll({ fonte });
     <h1>{{ $route.meta.título }}</h1>
     <hr class="ml2 f1">
     <router-link
-      v-if="temPermissãoPara('Reports.executar')"
+      v-if="temPermissãoPara('Reports.executar.Projetos') "
       :to="{ name: 'novoRelatórioOrçamentárioPortfolio' }"
       class="btn big ml2"
     >
