@@ -25,7 +25,7 @@ export class ParlamentarService {
     constructor(
         private readonly prisma: PrismaService,
         private readonly uploadService: UploadService
-    ) {}
+    ) { }
 
     async create(dto: CreateParlamentarDto, user: PessoaFromJwt): Promise<RecordWithId> {
         let uploadId: number | null = null;
@@ -176,10 +176,13 @@ export class ParlamentarService {
                             select: {
                                 id: true,
                                 suplencia: true,
+
                                 parlamentar: {
                                     select: {
                                         id: true,
                                         nome: true,
+                                        email: true,
+                                        telefone: true
                                     },
                                 },
                             },
@@ -229,23 +232,29 @@ export class ParlamentarService {
 
             mandato_atual: mandatoCorrente
                 ? {
-                      ...mandatoCorrente,
+                    ...mandatoCorrente,
 
-                      suplentes: mandatoCorrente.suplentes.map((s) => {
-                          return { ...s.parlamentar };
-                      }),
+                    suplentes: mandatoCorrente.suplentes.map((s) => {
+                        return {
+                            ...s,
+                            parlamentar: {
+                                ...s.parlamentar,
+                                telefone: !user.hasSomeRoles(['SMAE.acesso_telefone']) ? s.parlamentar.telefone : null
+                            }
+                        };
+                    }),
 
-                      representatividade: mandatoCorrente.representatividade.map((r) => {
-                          return {
-                              ...r,
+                    representatividade: mandatoCorrente.representatividade.map((r) => {
+                        return {
+                            ...r,
 
-                              regiao: {
-                                  ...r.regiao,
-                                  comparecimento: { ...r.regiao.eleicoesComparecimento[0] },
-                              },
-                          };
-                      }),
-                  }
+                            regiao: {
+                                ...r.regiao,
+                                comparecimento: { ...r.regiao.eleicoesComparecimento[0] },
+                            },
+                        };
+                    }),
+                }
                 : null,
 
             mandatos: parlamentar.mandatos.map((m) => {
@@ -253,7 +262,13 @@ export class ParlamentarService {
                     ...m,
 
                     suplentes: m.suplentes.map((s) => {
-                        return { ...s.parlamentar };
+                        return {
+                            ...s,
+                            parlamentar: {
+                                ...s.parlamentar,
+                                telefone: !user.hasSomeRoles(['SMAE.acesso_telefone']) ? s.parlamentar.telefone : null
+                            }
+                        };
                     }),
 
                     representatividade: m.representatividade.map((r) => {
@@ -482,7 +497,7 @@ export class ParlamentarService {
                         regiao_id: dto.regiao_id,
                         removido_em: null,
                     },
-                    select: {id: true, valor: true}
+                    select: { id: true, valor: true }
                 });
 
                 if (!dadosEleicao) {
