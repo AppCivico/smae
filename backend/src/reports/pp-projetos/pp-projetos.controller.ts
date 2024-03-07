@@ -13,7 +13,7 @@ export class PPProjetosController {
     @Post()
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
-    @Roles('Reports.executar')
+    @Roles('Reports.executar.Projetos')
     async create(@Body() createProjetosDto: CreateRelProjetosDto): Promise<PPProjetosRelatorioDto> {
         return await this.projetos.create(createProjetosDto);
     }
