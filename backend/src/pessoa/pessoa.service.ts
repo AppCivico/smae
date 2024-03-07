@@ -772,10 +772,6 @@ export class PessoaService {
             },
         };
 
-        if (filters?.coorderandor_responsavel_cp !== undefined) {
-            filters.coordenador_responsavel_cp = filters.coorderandor_responsavel_cp;
-        }
-
         const filtrosExtra = this.filtrosPrivilegios(filters);
         if (filters?.orgao_id) {
             this.logger.log(`filtrando órgão é ${filters?.orgao_id}`);
