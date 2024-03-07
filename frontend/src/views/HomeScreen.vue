@@ -1,5 +1,6 @@
 <script setup>
 import módulos from '@/consts/modulosDoSistema';
+import { useRegionsStore } from '@/stores';
 import { useAuthStore } from '@/stores/auth.store';
 import { storeToRefs } from 'pinia';
 import { ref } from 'vue';
@@ -8,6 +9,8 @@ import { useRouter } from 'vue-router';
 const authStore = useAuthStore();
 const router = useRouter();
 
+const regionsStore = useRegionsStore();
+
 const emEspera = ref(false);
 const erro = ref(null);
 
@@ -15,6 +18,7 @@ const {
   sistemaEscolhido, dadosDoSistemaEscolhido,
 } = storeToRefs(authStore);
 
+// PRA-FAZER: mover para o gerenciador de estado `auth.store`
 async function escolher(opção) {
   emEspera.value = true;
   erro.value = null;
@@ -28,6 +32,8 @@ async function escolher(opção) {
       if (dadosDoSistemaEscolhido.value?.rotaInicial) {
         router.push(dadosDoSistemaEscolhido.value?.rotaInicial);
       }
+
+      regionsStore.$reset();
     })
     .catch((err) => {
       sistemaEscolhido.value = 'SMAE';
