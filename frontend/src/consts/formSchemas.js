@@ -645,8 +645,8 @@ export const painelExterno = object({
     .min(0)
     .max(2040)
     .nullable(),
-  grupo: array()
-    .label('Grupos')
+  grupos: array()
+    .label('Grupos de Painéis Externos')
     .nullable()
     .of(
       number()
