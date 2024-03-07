@@ -20,6 +20,7 @@ export type ListaDePrivilegios =
     | 'CadastroPessoa.inativar'
     | 'CadastroPessoa.ativar'
     | 'CadastroPessoa.administrador'
+    | 'CadastroPessoa.editar_responsabilidade'
     | 'CadastroUnidadeMedida.inserir'
     | 'CadastroUnidadeMedida.editar'
     | 'CadastroUnidadeMedida.remover'
