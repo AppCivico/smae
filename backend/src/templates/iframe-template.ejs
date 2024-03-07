@@ -18,11 +18,23 @@
                 border: none;
                 min-height: 99999999px;
             }
+            .opentab,
+            .opentab:visited {
+                text-decoration: none;
+                color: #333;
+                font-size: 0.8em;
+            }
+
+            .opentab:hover,
+            .opentab:active {
+                text-decoration: underline;
+            }
         </style>
     </head>
     <body>
+        <a class="opentab" target="_blank" href="<%= smae.url %>">Ver está página em nova aba do navegador</a>
         <iframe id="m1" src="<%= smae.url %>" frameborder="0" sandbox="allow-scripts allow-same-origin"></iframe>
-        <script
+        <!-- <script
             src="https://cdnjs.cloudflare.com/ajax/libs/iframe-resizer/4.3.6/iframeResizer.min.js"
             integrity="sha512-f0wd6UIvZbsjPNebGx+uMzHmg6KXr1jWvumJDYSEDmwYJYOptZ0dTka/wBJu7Tj80tnCYMKoKicqvZiIc9GJgw=="
             crossorigin="anonymous"
@@ -36,6 +48,6 @@
         ></script>
         <script>
             //iFrameResize({ log: true }, '#m1');
-        </script>
+        </script> -->
     </body>
 </html>
