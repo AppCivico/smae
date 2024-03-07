@@ -33,31 +33,29 @@ if (props.props.type == 'editar') {
   title1 = 'Editar';
   title2 = 'Município';
   level = 0;
-  lastid;
-  parentID;
 
   if (id) {
     title2 = 'Município';
     lastid = id;
-    level++;
+    level += 1;
   }
   if (id2) {
     title2 = 'Região';
     lastid = id2;
     parentID = id;
-    level++;
+    level += 1;
   }
   if (id3) {
     title2 = 'Subprefeitura';
     lastid = id3;
     parentID = id2;
-    level++;
+    level += 1;
   }
   if (id4) {
     title2 = 'Distrito';
     lastid = id4;
     parentID = id3;
-    level++;
+    level += 1;
   }
 
   regionsStore.getById(lastid);
@@ -66,25 +64,24 @@ if (props.props.type == 'editar') {
   title1 = 'Cadastro de';
   title2 = 'Município';
   level = 1;
-  parentID;
 
   if (id) {
     title2 = 'Região';
     lastid = id;
     parentID = id;
-    level++;
+    level += 1;
   }
   if (id2) {
     title2 = 'Subprefeitura';
     lastid = id2;
     parentID = id2;
-    level++;
+    level += 1;
   }
   if (id3) {
     title2 = 'Distrito';
     lastid = id3;
     parentID = id3;
-    level++;
+    level += 1;
   }
 }
 
@@ -102,7 +99,7 @@ async function onSubmit(values) {
     if (r == true) {
       regionsStore.filterRegions();
       await router.push({
-        name: 'gerenciarRegiões'
+        name: 'gerenciarRegiões',
       });
       alertStore.success(msg);
       editModalStore.clear();
@@ -117,7 +114,7 @@ async function checkClose() {
     editModalStore.clear();
     alertStore.clear();
     router.push({
-      name: 'gerenciarRegiões'
+      name: 'gerenciarRegiões',
     });
   });
 }
@@ -127,7 +124,7 @@ async function checkDelete(idDaRegião) {
       regionsStore.filterRegions();
       editModalStore.clear();
       router.push({
-        name: 'gerenciarRegiões'
+        name: 'gerenciarRegiões',
       });
     }
   }, 'Remover');
@@ -219,7 +216,7 @@ singleTempRegions.value.parente_id = parentID;
           <label class="label">Shapefile</label>
 
           <label
-            v-if="!curfile.loading&&!curfile.name"
+            v-if="!curfile.loading && !curfile.name"
             class="addlink"
           ><svg
              width="20"
