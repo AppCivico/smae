@@ -30,6 +30,7 @@ const ModuloDescricao: Record<string, [string, ModuloSistema | null]> = {
     Reports: ['Executar Relatórios', 'SMAE'],
     ReportsProjetos: ['Relatórios de Projetos', 'Projetos'],
     ReportsPdm: ['Relatórios de PDM', 'PDM'],
+    ReportsCasaCivil: ['Relatórios de transferências voluntárias', 'CasaCivil'],
     Projeto: ['Cadastro de Projetos', 'Projetos'],
     PDM: ['Regras de Negocio do PDM', 'PDM'],
     SMAE: ['Regras de Negocio do SMAE', 'SMAE'],
@@ -211,20 +212,30 @@ const PrivConfig: Record<string, false | [ListaDePrivilegios, string | false][]>
         ['CadastroPartido.inserir', 'Inserir Partidos'],
         ['CadastroPartido.remover', 'Remover Partidos'],
     ],
-    CadastroParlamentar : [
+    CadastroParlamentar: [
         ['CadastroParlamentar.editar', 'Editar Parlamentar'],
         ['CadastroParlamentar.inserir', 'Inserir Parlamentar'],
         ['CadastroParlamentar.remover', 'Remover Parlamentar'],
-        ['SMAE.acessoTelefone', 'Ver telefone do parlamentar']
+        ['SMAE.acesso_telefone', 'Ver todos os telefone do parlamentar'],
     ],
     Reports: [
-        ['Reports.executar', 'Executar relatórios'],
-        ['Reports.remover', 'Remover relatórios'],
         ['Reports.dashboard_pdm', false], // lembrar que o delete sempre precisa vir antes do update/insert das novas
         ['Reports.dashboard_portfolios', false],
     ],
-    ReportsPdm: [['Reports.dashboard_pdm', 'Dashboard de programa de metas']],
-    ReportsProjetos: [['Reports.dashboard_portfolios', 'Dashboard de portfólios']],
+    ReportsPdm: [
+        ['Reports.dashboard_pdm', 'Dashboard de programa de metas'],
+        ['Reports.executar.PDM', 'Executar relatórios de programa de metas'],
+        ['Reports.remover.PDM', 'Executar relatórios de programa de metas'],
+    ],
+    ReportsProjetos: [
+        ['Reports.dashboard_portfolios', 'Dashboard de portfólios'],
+        ['Reports.executar.Projetos', 'Executar relatórios de projetos'],
+        ['Reports.remover.Projetos', 'Executar relatórios de projetos'],
+    ],
+    ReportsCasaCivil: [
+        ['Reports.executar.CasaCivil', 'Executar relatórios de transferências voluntárias'],
+        ['Reports.remover.CasaCivil', 'Executar relatórios de transferências voluntárias'],
+    ],
     Config: [
         ['Config.editar', 'Editar configuração de textos do sistema'],
         ['SMAE.superadmin', 'Faz parte do perfil Administrador Geral'],
@@ -363,8 +374,8 @@ const PerfilAcessoConfig: {
             'CadastroPainel.remover',
             'CadastroPainel.visualizar',
 
-            'Reports.executar',
-            'Reports.remover',
+            'Reports.executar.PDM',
+            'Reports.remover.PDM',
 
             'Reports.dashboard_pdm',
         ],
@@ -414,7 +425,7 @@ const PerfilAcessoConfig: {
         nome: 'Gestor de Projetos no Órgão',
         descricao: 'Gerenciar todos os projetos no órgão em qual faz parte',
         privilegios: [
-            'Reports.executar', // TODO remoer, afinal, precisa dos filtros no reports
+            'Reports.executar.Projetos', // TODO remoer, afinal, precisa dos filtros no reports
             'Projeto.administrador_no_orgao',
             'Reports.dashboard_portfolios',
             'Projeto.administrar_portfolios_no_orgao',
@@ -425,7 +436,7 @@ const PerfilAcessoConfig: {
         nome: atualizarNomePerfil('Gestor de projetos', ['Órgão Gestor']),
         descricao: 'Pode ser escolhido como responsável no órgão gestor de projetos',
         privilegios: [
-            'Reports.executar', // TODO remoer, afinal, precisa dos filtros no reports
+            'Reports.executar.Projetos', // TODO remoer, afinal, precisa dos filtros no reports
             'SMAE.gestor_de_projeto',
             'Reports.dashboard_portfolios',
         ],
@@ -435,7 +446,7 @@ const PerfilAcessoConfig: {
         descricao:
             'Pode ser escolhido como responsável no órgão responsável pelo projeto e contribuir durante a fase de registro e planejamento, e dados de execução do cronograma e acompanhamento do risco',
         privilegios: [
-            'Reports.executar', // TODO remoer, afinal, precisa dos filtros no reports
+            'Reports.executar.Projetos', // TODO remoer, afinal, precisa dos filtros no reports
             'SMAE.colaborador_de_projeto',
             'Reports.dashboard_portfolios',
         ],
@@ -461,8 +472,13 @@ const PerfilAcessoConfig: {
         privilegios: ['SMAE.espectador_de_painel_externo'],
     },
     {
+        nome: atualizarNomePerfil('Administrador Casa Civil', []),
+        descricao: 'Visualizar o telefone de parlamentares',
+        privilegios: ['SMAE.acesso_telefone'],
+    },
+    {
         nome: 'Gestor Casa Civil',
-        descricao: 'Pode gerir entidades em Casa Civil e ver telefone de parlamentares',
+        descricao: 'Pode gerir entidades em Casa Civil',
         privilegios: [
             'CadastroBancada.editar',
             'CadastroBancada.inserir',
@@ -473,8 +489,9 @@ const PerfilAcessoConfig: {
             'CadastroParlamentar.editar',
             'CadastroParlamentar.inserir',
             'CadastroParlamentar.remover',
-            'SMAE.acessoTelefone'
-        ]
+            'Reports.remover.CasaCivil',
+            'Reports.executar.CasaCivil',
+        ],
     },
     removerNomePerfil('Técnico CP'),
     removerNomePerfil('Orçamento'),

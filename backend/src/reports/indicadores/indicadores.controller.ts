@@ -23,7 +23,7 @@ export class IndicadoresController {
     @Post()
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
-    @Roles('Reports.executar')
+    @Roles('Reports.executar.PDM')
     async create(@Body() dto: CreateRelIndicadorDto): Promise<ListIndicadoresDto> {
         return await this.indicadoresService.create(dto);
     }
@@ -31,7 +31,7 @@ export class IndicadoresController {
     @Post('/stream-linhas')
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
-    @Roles('Reports.executar')
+    @Roles('Reports.executar.PDM')
     @ApiOkResponse({
         content: {
             'application/jsonlines+json': {
@@ -56,7 +56,7 @@ export class IndicadoresController {
     @Post('/stream-regioes')
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
-    @Roles('Reports.executar')
+    @Roles('Reports.executar.PDM')
     @ApiOkResponse({
         content: {
             'application/jsonlines+json': {

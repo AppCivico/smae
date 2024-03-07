@@ -50,6 +50,7 @@ export class ReportsService {
     ) {}
 
     async runReport(dto: CreateReportDto): Promise<FileOutput[]> {
+        // TODO agora que existem vários sistemas, conferir se o privilégio faz sentido com o serviço
         const service: ReportableService | null = this.servicoDaFonte(dto);
 
         // acaba sendo chamado 2x a cada request, pq já rodou 1x na validação, mas blz.

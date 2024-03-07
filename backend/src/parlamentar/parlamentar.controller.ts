@@ -117,7 +117,7 @@ export class ParlamentarController {
         return '';
     }
 
-    // Mandato - Representatividade 
+    // Mandato - Representatividade
     @Post(':id/representatividade')
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()

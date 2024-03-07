@@ -1,6 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { FeatureFlagDto } from './FeatureFlagDto';
 import { ModuloSistema } from '@prisma/client';
+import { ListaDePrivilegios } from '../../common/ListaDePrivilegios';
 
 export class PessoaFromJwtBase {
     @ApiProperty({ description: 'ID da Pessoa' })
@@ -11,7 +12,7 @@ export class PessoaFromJwtBase {
     session_id: number;
 
     @ApiProperty({ description: 'Lista de privilégios' })
-    privilegios: string[];
+    privilegios: ListaDePrivilegios[];
 
     @ApiProperty({ description: 'Lista de Módulos', enum: ModuloSistema, enumName: 'ModuloSistema' })
     sistemas: ModuloSistema[];
