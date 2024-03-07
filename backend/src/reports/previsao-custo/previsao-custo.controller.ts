@@ -13,7 +13,7 @@ export class PrevisaoCustoController {
     @Post()
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
-    @Roles('Reports.executar')
+    @Roles('Reports.executar.PDM')
     async create(@Body() createPrevisaoCustDto: CreateRelPrevisaoCustoDto): Promise<ListPrevisaoCustoDto> {
         return await this.previsaoCustoService.create(createPrevisaoCustDto);
     }

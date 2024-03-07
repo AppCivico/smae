@@ -76,8 +76,12 @@ export type ListaDePrivilegios =
     | 'CadastroParlamentar.inserir'
     | 'CadastroParlamentar.editar'
     | 'CadastroParlamentar.remover'
-    | 'Reports.executar'
-    | 'Reports.remover'
+    | 'Reports.executar.PDM'
+    | 'Reports.remover.PDM'
+    | 'Reports.executar.Projetos'
+    | 'Reports.remover.Projetos'
+    | 'Reports.executar.CasaCivil'
+    | 'Reports.remover.CasaCivil'
     | 'Config.editar'
     | 'Projeto.administrar_portfolios'
     | 'Projeto.administrar_portfolios_no_orgao'
@@ -104,4 +108,4 @@ export type ListaDePrivilegios =
     | 'CadastroPainelExterno.remover'
     | 'PerfilAcesso.administrador'
     | 'SMAE.acesso_bi'
-    | 'SMAE.acessoTelefone';
+    | 'SMAE.acesso_telefone';

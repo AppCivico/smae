@@ -18,12 +18,15 @@ import { ReportsService } from './reports.service';
 @ApiTags('Relatórios')
 @Controller('relatorios')
 export class ReportsController {
-    constructor(private readonly reportsService: ReportsService, private readonly uploadService: UploadService) {}
+    constructor(
+        private readonly reportsService: ReportsService,
+        private readonly uploadService: UploadService
+    ) {}
 
     @Post()
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
-    @Roles('Reports.executar')
+    @Roles('Reports.executar.CasaCivil', 'Reports.executar.PDM', 'Reports.executar.Projetos')
     @ApiOkResponse({
         description: 'Recebe o arquivo do relatório, ou msg de erro em JSON',
         type: '',
@@ -61,7 +64,7 @@ export class ReportsController {
 
     @ApiBearerAuth('access-token')
     @Get()
-    @Roles('Reports.executar')
+    @Roles('Reports.executar.CasaCivil', 'Reports.executar.PDM', 'Reports.executar.Projetos')
     @ApiPaginatedResponse(RelatorioDto)
     async findAll(@Query() filters: FilterRelatorioDto): Promise<PaginatedDto<RelatorioDto>> {
         return await this.reportsService.findAll(filters);
@@ -69,7 +72,7 @@ export class ReportsController {
 
     @Delete(':id')
     @ApiBearerAuth('access-token')
-    @Roles('Reports.remover')
+    @Roles('Reports.remover.CasaCivil', 'Reports.remover.PDM', 'Reports.remover.Projetos')
     @ApiUnauthorizedResponse()
     @ApiResponse({ description: 'sucesso ao remover', status: 204 })
     @HttpCode(HttpStatus.NO_CONTENT)
