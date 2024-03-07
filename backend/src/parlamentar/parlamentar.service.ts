@@ -454,7 +454,7 @@ export class ParlamentarService {
         
         const created = await this.prisma.$transaction(
             async (prismaTxn: Prisma.TransactionClient): Promise<RecordWithId> => {
-                const dadosEleicao = await prismaTxn.eleicaoComparecimento.findFirst({
+                let dadosEleicao = await prismaTxn.eleicaoComparecimento.findFirst({
                     where: {
                         eleicao_id: mandato.eleicao_id,
                         regiao_id: dto.regiao_id,
@@ -462,9 +462,39 @@ export class ParlamentarService {
                     },
                     select: {valor: true}
                 });
+
+                if (!dadosEleicao) {
+                    if ( dto.numero_comparecimento == undefined ) throw new HttpException('numero_comparecimento| Precisa ser enviado', 400);
+
+                    const regiao = await prismaTxn.regiao.findFirstOrThrow({
+                        where: { id: dto.regiao_id, removido_em: null },
+                        select: { nivel: true }
+                    });
+
+                    let nivelDadoEleicao: DadosEleicaoNivel;
+                    
+                    if (regiao.nivel == 1) {
+                        nivelDadoEleicao = DadosEleicaoNivel.Municipio
+                    } else if (regiao.nivel == 3) {
+                        nivelDadoEleicao = DadosEleicaoNivel.Subprefeitura
+                    } else {
+                        throw new HttpException('regiao_id| Faltando tratamento para nível de região', 400);
+                    }
+
+                    dadosEleicao = await prismaTxn.eleicaoComparecimento.create({
+                        data: {
+                            eleicao_id: mandato.eleicao_id,
+                            regiao_id: dto.regiao_id,
+                            nivel: nivelDadoEleicao,
+                            valor: dto.numero_comparecimento
+                        }
+                    });
+
+                    delete dto.numero_comparecimento;
+                }
                 
-                let pct_participacao: number | null = null;
-                if (dadosEleicao) {
+                let pct_participacao: number | null = dto.pct_valor ? dto.pct_valor : null;
+                if (dadosEleicao && !dto.pct_valor) {
                     pct_participacao = (dto.numero_votos / dadosEleicao.valor) * 100;
                 }
 
