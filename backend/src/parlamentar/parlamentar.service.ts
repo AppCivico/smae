@@ -143,6 +143,8 @@ export class ParlamentarService {
                         votos_estado: true,
                         votos_capital: true,
                         votos_interior: true,
+                        telefone: true,
+                        email: true,
 
                         eleicao: {
                             select: {
@@ -182,7 +184,7 @@ export class ParlamentarService {
                                         id: true,
                                         nome: true,
                                         email: true,
-                                        telefone: true
+                                        telefone: true,
                                     },
                                 },
                             },
@@ -239,8 +241,10 @@ export class ParlamentarService {
                             ...s,
                             parlamentar: {
                                 ...s.parlamentar,
-                                telefone: !user.hasSomeRoles(['SMAE.acesso_telefone']) ? s.parlamentar.telefone : null
-                            }
+                                telefone: !user.hasSomeRoles(['SMAE.acesso_telefone'])
+                                    ? s.parlamentar.telefone
+                                    : null,
+                            },
                         };
                     }),
 
@@ -266,8 +270,8 @@ export class ParlamentarService {
                             ...s,
                             parlamentar: {
                                 ...s.parlamentar,
-                                telefone: !user.hasSomeRoles(['SMAE.acesso_telefone']) ? s.parlamentar.telefone : null
-                            }
+                                telefone: !user.hasSomeRoles(['SMAE.acesso_telefone']) ? s.parlamentar.telefone : null,
+                            },
                         };
                     }),
 
@@ -497,7 +501,7 @@ export class ParlamentarService {
                         regiao_id: dto.regiao_id,
                         removido_em: null,
                     },
-                    select: { id: true, valor: true }
+                    select: { id: true, valor: true },
                 });
 
                 if (!dadosEleicao) {
@@ -533,8 +537,8 @@ export class ParlamentarService {
                     if (dto.numero_comparecimento != undefined && dto.numero_comparecimento != dadosEleicao.valor) {
                         dadosEleicao = await prismaTxn.eleicaoComparecimento.update({
                             where: { id: dadosEleicao.id },
-                            data: { valor: dto.numero_comparecimento }
-                        })
+                            data: { valor: dto.numero_comparecimento },
+                        });
                     }
                 }
 
@@ -616,22 +620,48 @@ export class ParlamentarService {
             },
             select: {
                 id: true,
+                cargo: true,
+                eleicao_id: true,
+                suplentes: {
+                    where: { removido_em: null },
+                    select: {
+                        suplencia: true,
+                    },
+                },
             },
         });
         if (!mandatoPrincipal) throw new HttpException('mandato_id| Mandato principal inválido', 400);
 
-        const mandatoSuplente = await this.prisma.parlamentarMandato.findFirst({
+        const parlamentarSuplente = await this.prisma.parlamentar.findFirst({
             where: {
-                id: dto.mandato_suplente_id,
+                id: dto.parlamentar_suplente_id,
                 removido_em: null,
             },
             select: {
-                id: true,
-                mandato_principal_id: true,
-                suplencia: true,
+                mandatos: {
+                    take: 1,
+                    where: {
+                        eleicao_id: mandatoPrincipal.eleicao_id,
+                        cargo: mandatoPrincipal.cargo,
+                        removido_em: null,
+                    },
+                },
             },
         });
-        if (!mandatoSuplente) throw new HttpException('mandato_id| Mandato suplente não encontrado', 400);
+
+        if (!parlamentarSuplente)
+            throw new HttpException('parlamentar_suplente_id| Não foi encontrado parlamentar suplente', 400);
+
+        if (parlamentarSuplente && parlamentarSuplente.mandatos.length == 0)
+            throw new HttpException('parlamentar_suplente_id| Não foi encontrado mandato para este parlamentar', 400);
+
+        if (
+            mandatoPrincipal.suplentes.length > 0 &&
+            mandatoPrincipal.suplentes.filter((e) => e.suplencia == dto.suplencia)
+        )
+            throw new HttpException('suplencia| Parlamentar já possui um outro suplente deste nivel', 400);
+
+        const mandatoSuplente = parlamentarSuplente.mandatos[0];
 
         if (mandatoSuplente.mandato_principal_id && mandatoSuplente.mandato_principal_id != dto.mandato_id)
             throw new HttpException(
