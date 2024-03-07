@@ -79,6 +79,19 @@ export const router = createRouter({
           meta: {
             título: 'Editar parlamentar',
           },
+
+          children: [
+            {
+              path: 'equipe/:pessoaId?',
+              name: 'parlamentaresEditarEquipe',
+              component: () => import('@/views/parlamentares/ParlamentarEquipe.vue'),
+              props: true,
+              meta: {
+                título: 'Integrante de equipe',
+                rotaDeEscape: 'parlamentaresEditar',
+              },
+            },
+          ],
         },
         {
           path: ':parlamentarId',
