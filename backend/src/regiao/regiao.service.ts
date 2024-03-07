@@ -13,6 +13,7 @@ export class RegiaoService {
     ) {}
 
     async create(createRegiaoDto: CreateRegiaoDto, user: PessoaFromJwt) {
+        const sistema = user.assertOneModuloSistema('criar', 'região');
         if (!createRegiaoDto.parente_id) {
             createRegiaoDto.parente_id = undefined;
 
@@ -42,7 +43,7 @@ export class RegiaoService {
                     nivel: 1,
                 },
             });
-            if (nivel1exists > 0)
+            if (nivel1exists > 0 && sistema !== 'CasaCivil')
                 throw new HttpException(
                     'nivel| Já existe uma região nivel 1 no SMAE, só é suportado um município por vez.',
                     400
