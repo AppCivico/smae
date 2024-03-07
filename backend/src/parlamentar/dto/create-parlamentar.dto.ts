@@ -158,6 +158,17 @@ export class CreateMandatoRepresentatividadeDto {
 
     @IsNumber()
     numero_votos: number;
+
+    // Dados de comparecimento.
+    // Idealmente, não seriam enviados aqui.
+    // Mas para viabilizar a v1, será enviado nesse endpoint.
+    @IsOptional()
+    @IsNumber()
+    numero_comparecimento?: number;
+
+    @IsOptional()
+    @IsNumber()
+    pct_valor?: number;
 }
 
 export class CreateMandatoBancadaDto {
