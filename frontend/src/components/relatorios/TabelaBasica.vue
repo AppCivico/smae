@@ -48,7 +48,7 @@ function excluirRelatório(id) {
       :span="Object.keys(colunas).length"
     />
     <col
-      v-if="temPermissãoPara(['Reports.remover'])"
+      v-if="temPermissãoPara(['Reports.remover.'])"
       class="col--botão-de-ação"
     >
     <col class="col--botão-de-ação">
@@ -63,7 +63,7 @@ function excluirRelatório(id) {
         >
           {{ valor }}
         </th>
-        <th v-if="temPermissãoPara(['Reports.remover'])" />
+        <th v-if="temPermissãoPara(['Reports.remover.'])" />
         <th />
       </tr>
     </thead>
@@ -85,9 +85,9 @@ function excluirRelatório(id) {
                 .map((x) => props.etiquetasParaValoresDeParâmetros?.[chave]?.[x])
                 .join(', ')
               : props.etiquetasParaValoresDeParâmetros?.[chave]?.[item.parametros[chave]]
-              || item.parametros[chave] }}
+                || item.parametros[chave] }}
           </td>
-          <td v-if="temPermissãoPara(['Reports.remover'])">
+          <td v-if="temPermissãoPara(['Reports.remover.'])">
             <button
               class="like-a__text addlink"
               arial-label="excluir"

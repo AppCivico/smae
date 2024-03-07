@@ -40,7 +40,7 @@ iniciar();
     <h1>{{ $route.meta.título }}</h1>
     <hr class="ml2 f1">
     <router-link
-      v-if="temPermissãoPara('Reports.executar')"
+      v-if="temPermissãoPara('Reports.executar.PDM') "
       :to="{ name: 'novoRelatórioDePrevisãoDeCustoPdM' }"
       class="btn big ml2"
     >

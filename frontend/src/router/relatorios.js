@@ -87,8 +87,8 @@ export default {
 </svg>`,
     pesoNoMenu: 4,
     limitarÀsPermissões: [
-      'Reports.executar',
-      'Reports.remover',
+      'Reports.executar.',
+      'Reports.remover.',
     ],
     rotasParaMenuPrincipal: [
       /// PdM
@@ -115,7 +115,9 @@ export default {
       meta: {
         título: 'Relatórios Mensais',
         títuloParaMenu: 'Relatório Mensal',
-        limitarÀsPermissões: 'Reports.dashboard_pdm',
+        limitarÀsPermissões: [
+          'Reports.executar.PDM',
+        ],
       },
       children: [
         {
@@ -139,7 +141,7 @@ export default {
       meta: {
         título: 'Relatórios Semestrais e Anuais',
         títuloParaMenu: 'Relatório Semestral/Anual',
-        limitarÀsPermissões: 'Reports.dashboard_pdm',
+        limitarÀsPermissões: 'Reports.executar.PDM',
       },
       children: [
         {
@@ -163,7 +165,7 @@ export default {
       meta: {
         título: 'Relatórios orçamentários de PdM',
         títuloParaMenu: 'Execução orçamentária',
-        limitarÀsPermissões: 'Reports.dashboard_pdm',
+        limitarÀsPermissões: 'Reports.executar.PDM',
       },
       children: [
         {
@@ -188,7 +190,7 @@ export default {
       meta: {
         título: 'Relatórios orçamentários de portfolio',
         títuloParaMenu: 'Execução orçamentária',
-        limitarÀsPermissões: 'Reports.dashboard_portfolios',
+        limitarÀsPermissões: 'Reports.executar.Projetos',
       },
       children: [
         {
@@ -213,7 +215,7 @@ export default {
       meta: {
         título: 'Relatórios de projeto',
         títuloParaMenu: 'Relatório de projeto',
-        limitarÀsPermissões: 'Reports.dashboard_portfolios',
+        limitarÀsPermissões: 'Reports.executar.Projetos',
       },
       children: [
         {
@@ -238,7 +240,7 @@ export default {
       meta: {
         título: 'Relatórios de previsão de custo de PdM',
         títuloParaMenu: 'Previsão de custo',
-        limitarÀsPermissões: 'Reports.dashboard_pdm',
+        limitarÀsPermissões: 'Reports.executar.PDM',
       },
       children: [
         {
@@ -262,7 +264,7 @@ export default {
       meta: {
         título: 'Relatórios de previsão de custo de portfolio',
         títuloParaMenu: 'Previsão de custo',
-        limitarÀsPermissões: 'Reports.dashboard_portfolios',
+        limitarÀsPermissões: 'Reports.executar.Projetos',
       },
       children: [
         {
@@ -287,7 +289,7 @@ export default {
       meta: {
         título: 'Relatórios de portfolio',
         títuloParaMenu: 'Relatório de portfolio',
-        limitarÀsPermissões: 'Reports.dashboard_portfolios',
+        limitarÀsPermissões: 'Reports.executar.Projetos',
       },
       children: [
         {
@@ -312,7 +314,7 @@ export default {
       meta: {
         título: 'Relatórios de status',
         títuloParaMenu: 'Relatório de status',
-        limitarÀsPermissões: 'Reports.dashboard_portfolios',
+        limitarÀsPermissões: 'Reports.executar.Projetos',
       },
       children: [
         {
