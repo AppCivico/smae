@@ -54,6 +54,7 @@ const rotasParaMenuSecundário = [
       'gerenciarUnidadesDeMedida',
       'gerenciarTiposDeDocumento',
       'gerenciarCategorias',
+      'gerenciarRegiões',
     ],
   },
   {
@@ -232,14 +233,7 @@ export default [
     component: CadastrosBasicosRaiz,
     meta: {
       título: 'Cadastros básicos',
-      rotasParaMenuSecundário: [
-        'gerenciarÓrgãos',
-        'gerenciarUnidadesDeMedida',
-        'gerenciarTiposDeDocumento',
-        'tipoDeAcompanhamentoListar',
-        'gerenciarCategorias',
-        'gerenciarRegiões',
-      ],
+      rotasParaMenuSecundário,
     },
   },
 
