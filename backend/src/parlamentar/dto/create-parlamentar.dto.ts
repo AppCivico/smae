@@ -12,7 +12,7 @@ export class CreateParlamentarDto {
     @IsString({ message: '$property| Nome popular: Precisa ser alfanumérico' })
     @MaxLength(250, { message: '$property| Nome popular: Máximo 250 caracteres' })
     nome_popular?: string;
-    
+
     /**
     * @example YYYY-MM-DD
     */
@@ -112,11 +112,11 @@ export class CreateMandatoDto {
     @IsOptional()
     @IsNumber()
     votos_estado?: number;
-    
+
     @IsOptional()
     @IsNumber()
     votos_capital?: number;
-    
+
     @IsOptional()
     @IsNumber()
     votos_interior?: number;
@@ -133,6 +133,16 @@ export class CreateMandatoDto {
     @IsOptional()
     @IsString({ message: '$property| biografia: Precisa ser alfanumérico' })
     biografia?: string;
+
+    @IsOptional()
+    @IsString()
+    @MaxLength(12, { message: '$property| telefone: Máximo 12 caracteres' })
+    telefone: string;
+
+    @IsOptional()
+    @IsString()
+    @MaxLength(250, { message: '$property| email: Máximo 250 caracteres' })
+    email: string;
 }
 
 export class CreateMandatoRepresentatividadeDto {
@@ -184,7 +194,7 @@ export class CreateMandatoSuplenteDto {
     mandato_id: number;
 
     @IsNumber()
-    mandato_suplente_id: number;
+    parlamentar_suplente_id: number;
 
     @ApiProperty({ enum: ParlamentarSuplente, enumName: 'Suplente' })
     @IsEnum(ParlamentarSuplente, {

@@ -1,6 +1,5 @@
 import { DadosEleicaoNivel, MunicipioTipo, ParlamentarCargo, ParlamentarEquipeTipo, ParlamentarSuplente, ParlamentarUF } from "@prisma/client";
 import { IsEnum } from "class-validator";
-import { IdNomeDto } from "src/common/dto/IdNome.dto";
 import { EleicaoDto } from "src/eleicao/entity/eleicao.entity";
 import { PartidoDto } from "src/partido/entities/partido.entity";
 
@@ -61,6 +60,8 @@ export class MandatoDto {
     votos_interior: bigint | null;
     biografia: string | null;
     atuacao: string | null;
+    email: string | null;
+    telefone: string | null;
 
     eleicao: EleicaoDto;
 
