@@ -163,7 +163,7 @@ export default [
           limitarÀsPermissões: 'CadastroPainelExterno.',
           rotasParaMenuSecundário: [
             'paineisExternosListar',
-            'grupospaineisExternosListar'
+            'grupospaineisExternosListar',
           ],
 
         },
@@ -207,7 +207,10 @@ export default [
           título: 'Grupos de Painéis Externos',
           rotaPrescindeDeChave: true,
           limitarÀsPermissões: 'CadastroPainelExterno.',
-
+          rotasParaMenuSecundário: [
+            'paineisExternosListar',
+            'grupospaineisExternosListar',
+          ],
         },
         children: [
           {
@@ -216,10 +219,6 @@ export default [
             component: GruposDePaineisExternosLista,
             meta: {
               título: 'Grupos de Painéis Externos',
-              rotasParaMenuSecundário: [
-                'paineisExternosListar',
-                'grupospaineisExternosListar'
-              ],
             },
           },
           {
