@@ -466,6 +466,50 @@
       </table>
     </div>
   </div>
+
+  <div class="mb2">
+    <div class="flex spacebetween center mb2">
+      <h3 class="c500">
+        Suplentes
+      </h3>
+      <hr class="ml2 f1">
+    </div>
+    <table class="tablemain">
+      <col>
+      <col>
+      <col>
+      <col>
+      <col>
+      <thead>
+        <tr>
+          <th>Ordem</th>
+          <th>ID do Parlamentar</th>
+          <th>Nome</th>
+          <th>Telefone</th>
+          <th>Email</th>
+        </tr>
+      </thead>
+      <tbody v-if="suplentes.length">
+        <tr
+          v-for="(suplente, index) in suplentes"
+          :key="suplente.id"
+        >
+          <td>{{ index === 0 ? '1º' : '2º' }}</td>
+          <td>{{ suplente.parlamentar.id }}</td>
+          <td>{{ suplente.parlamentar.nome }}</td>
+          <td>{{ suplente.parlamentar.telefone }}</td>
+          <td>{{ suplente.parlamentar.email }}</td>
+        </tr>
+      </tbody>
+      <tbody v-else>
+        <tr>
+          <td colspan="5">
+            Nenhum suplente encontrado.
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
 </template>
 
 <script setup>
@@ -497,6 +541,9 @@ const contatos = computed(() => equipe.value.filter((item) => item.tipo === 'Con
 
 const representatividadeCapital = computed(() => representatividade.value.filter((item) => item.municipio_tipo === 'Capital'));
 const representatividadeInterior = computed(() => representatividade.value.filter((item) => item.municipio_tipo === 'Interior'));
+
+const suplentes = computed(() => emFoco.value?.mandato_atual?.suplentes ?? []);
+
 </script>
 
 <style scoped lang="less">
