@@ -1,14 +1,15 @@
 <template>
-  <!-- -  {{ emFoco }} - -->
   <!-- TODO: pegar <dt></dt> do  schema-->
   <h1>Parlamentar</h1>
   <div>
     <div class="flex g2 mb1 flexwrap">
-      <!-- <img
-
-        class="carometro__img"
-        src="/home/gio/Downloads/image.png"
-      > -->
+      <div class="carometro__img-container">
+        <img
+          v-if="emFoco.image"
+          class="carometro__img"
+          :src="emFoco.image"
+        >
+      </div>
       <div>
         <dl
           class="f1 mb1"
@@ -46,7 +47,6 @@
           </dd>
         </dl>
 
-        <!-- TODO: ver como acessar o emFoco.telefone -->
         <dl
           v-if="emFoco.telefone"
           class="f1 mb1"
@@ -72,34 +72,37 @@
         </dl>
       </div>
     </div>
+    <div v-if="emFoco.biografia">
+      <div class="flex spacebetween center mb2">
+        <h3 class="c500">
+          Biografia
+        </h3>
+        <hr class="ml2 f1">
+      </div>
+      <p>
+        {{ emFoco.biografia }}
+      </p>
+    </div>
 
-    <div class="flex spacebetween center mb2">
-      <h1>Biografia</h1>
-      <hr class="ml2 f1">
-    </div>
-    <div v-if="emFoco">
-      <!-- {{ emFoco.biografia }} -->
-      TEXTOTEXTOTEXTOTEXTO TEXTOTEXTOTEXTOTEXTOTEXTOTEXTOTEXTOTEXTOTEXTOTEXTOTEXTOTEXTOTEXTOTEXTOTEXTOTEXTO TEXTOTEXTOTEXTOTEXTOTEXTOTEXTOTEXTOTEXTOTEXTOTEXTOTEXTOTEXTOTEXTOTEXTOTEXTOTEXTOTEXTOTEXTOTEXTOTEXTO TEXTOTEXTOTEXTOTEXTOTEXTOTEXTOTEXTOTEXTOTEXTOTEXTOTEXTOTEXTO
-    </div>
-    <div class="flex spacebetween center mb2">
-      <h1>Assessores</h1>
-      <hr class="ml2 f1">
-    </div>
-    <table class="tablemain">
-      <colgroup>
+    <div class=" mb2">
+      <div class="flex spacebetween center mb2">
+        <h3 class="c500">
+          Assessores
+        </h3>
+        <hr class="ml2 f1">
+      </div>
+      <table class="tablemain ">
         <col>
         <col>
         <col>
-      </colgroup>
-      <thead>
-        <tr>
-          <th>Nome</th>
-          <th>Telefone</th>
-          <th>E-mail</th>
-        </tr>
-      </thead>
-      <tbody>
-        <template v-if="assessores.length">
+        <thead>
+          <tr>
+            <th>Nome</th>
+            <th>Telefone</th>
+            <th>E-mail</th>
+          </tr>
+        </thead>
+        <tbody v-if="assessores.length">
           <tr
             v-for="assessor in assessores"
             :key="assessor.id"
@@ -108,14 +111,221 @@
             <td>{{ assessor.telefone }}</td>
             <td>{{ assessor.email }}</td>
           </tr>
-        </template>
-        <tr v-else>
-          <td colspan="3">
-            Nenhum assessor encontrado.
-          </td>
-        </tr>
-      </tbody>
-    </table>
+        </tbody>
+        <tbody v-else>
+          <tr>
+            <td colspan="3">
+              Nenhum assessor encontrado.
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div v-if="emFoco.mandato_atual">
+      <div class="flex spacebetween center mb2">
+        <h3 class="c500">
+          Aleição {{ emFoco.mandato_atual.eleicao.ano }}
+        </h3>
+        <hr class="ml2 f1">
+      </div>
+
+      <div class="flex spacebetween center mb2">
+        <div>
+          <dl class="f1 mb1">
+            <dt class="t12 uc w700 mb05 ">
+              Eleito
+            </dt>
+            <dd
+              v-if="emFoco"
+              class="t13"
+            >
+              <span v-if="emFoco.mandato_atual.eleito">Sim</span>
+              <span v-else>Não</span>
+            </dd>
+          </dl>
+
+          <dl class="f1 mb1">
+            <dt class="t12 uc w700 mb05 ">
+              Suplente
+            </dt>
+            <dd
+              v-if="emFoco"
+              class="t13"
+            >
+              <span v-if="emFoco.mandato_atual.suplencia">Sim</span>
+              <span v-else>Não</span>
+            </dd>
+          </dl>
+
+          <dl class="f1 mb1">
+            <dt class="t12 uc w700 mb05 ">
+              Em atividade?
+            </dt>
+            <dd
+              v-if="emFoco"
+              class="t13"
+            >
+              <span v-if="emFoco.em_atividade">Sim</span>
+              <span v-else>Não</span>
+            </dd>
+          </dl>
+        </div>
+
+        <div>
+          <dl class="f1 mb1">
+            <dt class="t12 uc w700 mb05 ">
+              UF
+            </dt>
+            <dd
+              v-if="emFoco.mandato_atual"
+              class="t13"
+            >
+              {{ emFoco.mandato_atual.uf }}
+            </dd>
+          </dl>
+
+          <dl class="f1 mb1">
+            <dt class="t12 uc w700 mb05">
+              Cargo
+            </dt>
+            <dd
+              v-if="emFoco.mandato_atual"
+              class="t13"
+            >
+              {{ emFoco.mandato_atual.cargo }}
+            </dd>
+          </dl>
+        </div>
+
+        <div>
+          <dl class="f1 mb1">
+            <dt class="t12 uc w700 mb05 ">
+              Partido Atual
+            </dt>
+            <dd
+              v-if="emFoco.mandato_atual"
+              class="t13"
+            >
+              {{ emFoco.mandato_atual.partido_atual.sigla }}
+            </dd>
+          </dl>
+
+          <!-- pedir bancada -->
+          <!-- <dl class="f1 mb1">
+          <dt class="t12 uc w700 mb05 ">
+            Bancada Atual
+          </dt>
+          <dd
+            v-if="emFoco.mandato_atual"
+            class="t13"
+          >
+            {{ emFoco.mandato_atual.bancada }}
+          </dd>
+        </dl> -->
+
+          <dl class="f1 mb1">
+            <dt class="t12 uc w700 mb05 ">
+              Partido - Candidatura
+            </dt>
+            <dd
+              v-if="emFoco.mandato_atual"
+              class="t13"
+            >
+              {{ emFoco.mandato_atual.partido_candidatura.sigla }}
+            </dd>
+          </dl>
+        </div>
+        <!-- sempre vai ter essas infos? pq ta vino null-->
+        <div>
+          <dl class="f1 mb1">
+            <dt class="t12 uc w700 mb05 ">
+              Votos no Estado
+            </dt>
+            <dd
+              v-if="emFoco.mandato_atual"
+              class="t13"
+            >
+              {{ emFoco.mandato_atual.votos_estado }}
+            </dd>
+          </dl>
+
+          <dl class="f1 mb1">
+            <dt class="t12 uc w700 mb05 ">
+              Votos no interior
+            </dt>
+            <dd
+              v-if="emFoco.mandato_atual"
+              class="t13"
+            >
+              {{ emFoco.mandato_atual.votos_interior }}
+            </dd>
+          </dl>
+
+          <dl class="f1 mb1">
+            <dt class="t12 uc w700 mb05 ">
+              Votos na capital
+            </dt>
+            <dd
+              v-if="emFoco.mandato_atual"
+              class="t13"
+            >
+              {{ emFoco.mandato_atual.votos_capital }}
+            </dd>
+          </dl>
+        </div>
+      </div>
+
+      <div>
+        <dl class="f1 mb1">
+          <dt class="t12 uc w700 mb05 ">
+            Endereço
+          </dt>
+          <dd
+            v-if="emFoco.mandato_atual"
+            class="t13"
+          >
+            {{ emFoco.mandato_atual.endereco }}
+          </dd>
+        </dl>
+
+        <dl class="f1 mb1">
+          <dt class="t12 uc w700 mb05 ">
+            Gabinete
+          </dt>
+          <dd
+            v-if="emFoco.mandato_atual"
+            class="t13"
+          >
+            {{ emFoco.mandato_atual.gabinete }}
+          </dd>
+        </dl>
+        <!-- pedir email e telefone -->
+        <!-- <dl class="f1 mb1">
+          <dt class="t12 uc w700 mb05 ">
+            Email
+          </dt>
+          <dd
+            v-if="emFoco.mandato_atual"
+            class="t13"
+          >
+            {{ emFoco.mandato_atual.email }}
+          </dd>
+        </dl>
+
+        <dl class="f1 mb1">
+          <dt class="t12 uc w700 mb05 ">
+            Telefone
+          </dt>
+          <dd
+            v-if="emFoco.mandato_atual"
+            class="t13"
+          >
+            {{ emFoco.mandato_atual.telefone }}
+          </dd>
+        </dl> -->
+      </div>
+    </div>
   </div>
 </template>
 
@@ -138,20 +348,31 @@ const emFoco = ref({});
 onMounted(async () => {
   await parlamentaresStore.buscarItem(props.parlamentarId);
   emFoco.value = parlamentaresStore.emFoco;
-  console.log('emFoco: ', emFoco);
 });
 
 const assessores = computed(() => {
-  if (!emFoco.value || !emFoco.value.equipe) return [];
-  return emFoco.value.equipe.filter((item) => item.tipo === 'Assessor');
+  const equipe = emFoco.value?.equipe ?? [];
+  return equipe.filter((item) => item.tipo === 'Assessor');
 });
 </script>
 
 <style scoped lang="less">
 .carometro{
+  &__img-container{
+    width: 280px;
+    height:280px;
+    border-radius: 10px;
+    background-color: #F7F7F7;
+    border: 6px solid #F7C234;
+    ;
+  }
   &__img{
-  max-width: 280px;
-  border-radius: 10px;
+   width: 100%;
+  }
+
+  &__equipe{
+    max-width: 890px;
+    margin: 0 auto;
   }
 }
 </style>
