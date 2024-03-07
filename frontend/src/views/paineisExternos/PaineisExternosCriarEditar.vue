@@ -4,8 +4,10 @@ import { useAlertStore } from '@/stores/alert.store';
 import { usePaineisExternosStore } from '@/stores/paineisExternos.store';
 import { storeToRefs } from 'pinia';
 import { ErrorMessage, Field, Form } from 'vee-validate';
+import { defineOptions } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
+defineOptions({ inheritAttrs: false });
 const router = useRouter();
 const route = useRoute();
 const props = defineProps({
