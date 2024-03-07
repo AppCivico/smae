@@ -203,7 +203,8 @@ onUpdated(() => { start(); });
                                       class="arrow"
                                       width="13"
                                       height="8"
-                                  ><use xlink:href="#i_down" /></svg> <span>{{ item3.descricao }}</span>
+                                    ><use xlink:href="#i_down" /></svg>
+                                    <span>{{ item3.descricao }}</span>
                                   </td>
                                   <td>
                                     <a
@@ -303,7 +304,8 @@ onUpdated(() => { start(); });
                                       <svg
                                         width="20"
                                         height="20"
-                                    ><use xlink:href="#i_+" /></svg> <span>Adicionar distrito</span>
+                                      ><use xlink:href="#i_+" /></svg>
+                                      <span>Adicionar distrito</span>
                                     </router-link>
                                   </td>
                                 </tz>
@@ -323,7 +325,8 @@ onUpdated(() => { start(); });
                             <svg
                               width="20"
                               height="20"
-                            ><use xlink:href="#i_+" /></svg> <span>Adicionar Subprefeitura</span>
+                            ><use xlink:href="#i_+" /></svg>
+                            <span>Adicionar Subprefeitura</span>
                           </router-link>
                         </td>
                       </tz>
@@ -342,7 +345,8 @@ onUpdated(() => { start(); });
                   <svg
                     width="20"
                     height="20"
-                  ><use xlink:href="#i_+" /></svg> <span>Adicionar Região</span>
+                  ><use xlink:href="#i_+" /></svg>
+                  <span>Adicionar Região</span>
                 </router-link>
               </td>
             </tz>
