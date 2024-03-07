@@ -136,7 +136,48 @@ async function checkDelete(id) {
           </div>
         </div>
 
-        <div class="flex g2">
+        <div class="flex g2 flexwrap">
+          <div class="f1">
+            <label class="label">Secretário</label>
+            <Field
+              name="secretario_responsavel"
+              type="text"
+              class="inputtext light mb1"
+              :class="{ 'error': errors.secretario_responsavel }"
+            />
+            <ErrorMessage
+              class="error-msg"
+              name="secretario_responsavel"
+            />
+          </div>
+          <div class="f1">
+            <label class="label">email</label>
+            <Field
+              name="email"
+              type="email"
+              class="inputtext light mb1"
+              :class="{ 'error': errors.email }"
+            />
+            <ErrorMessage
+              class="error-msg"
+              name="email"
+            />
+          </div>
+        </div>
+        <div class="flex g2 flexwrap">
+          <div class="f1">
+            <label class="label">CNPJ</label>
+            <Field
+              name="cnpj"
+              type="text"
+              class="inputtext light mb1"
+              :class="{ 'error': errors.cnpj }"
+            />
+            <ErrorMessage
+              class="error-msg"
+              name="cnpj"
+            />
+          </div>
           <div class="f1">
             <label class="label">Nível <span class="tvermelho">*</span></label>
             <Field
