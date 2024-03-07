@@ -26,6 +26,8 @@ let title = 'Cadastro de orgão';
 if (id) {
   title = 'Editar orgão';
   organsStore.getById(id);
+} else {
+  organsStore.getAll();
 }
 
 async function onSubmit(values) {
