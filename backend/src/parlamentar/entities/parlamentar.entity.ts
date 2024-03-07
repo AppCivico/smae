@@ -52,7 +52,7 @@ export class MandatoDto {
 
     cargo: ParlamentarCargo;
     uf: ParlamentarUF;
-    suplencia: ParlamentarSuplente |null;
+    suplencia: ParlamentarSuplente | null;
     gabinete: string | null;
     eleito: boolean;
     endereco: string | null;
@@ -64,7 +64,7 @@ export class MandatoDto {
 
     eleicao: EleicaoDto;
 
-    suplentes: IdNomeDto[];
+    suplentes: SuplentesDto[] | null;
     representatividade: RepresentatividadeDto[];
 }
 
@@ -74,7 +74,7 @@ export class RepresentatividadeDto {
     municipio_tipo: MunicipioTipo | null;
     numero_votos: number;
     pct_participacao: number | null;
-    
+
     regiao: {
         id: number;
         nivel: number;
@@ -89,10 +89,12 @@ export class RepresentatividadeDto {
 
 export class SuplentesDto {
     id: number;
-    suplencia: ParlamentarSuplente;
+    suplencia: ParlamentarSuplente | null;
 
     parlamentar: {
         id: number;
         nome: string;
+        email: string | null;
+        telefone: string | null;
     }
 }
