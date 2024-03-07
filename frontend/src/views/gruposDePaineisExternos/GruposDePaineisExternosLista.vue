@@ -83,7 +83,7 @@ if (!Array.isArray(organs) || !organs.length) {
         <td>
           <ul>
             <li v-if="!item.paineis?.length">
-              grupo não associado a um painel
+              Grupo não associado a um painel
             </li>
             <li
               v-for="painel in item.paineis"
