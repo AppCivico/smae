@@ -33,9 +33,9 @@ defineProps({
     </pre>
       <template v-else>
         <template v-if="schema">
-          {{ schema.fields[name]?.spec.label }}
+          {{ schema.fields?.[name]?.spec?.label || `Campo: ${name}` }}
         </template>&nbsp;<span
-          v-if="schema.fields[name].spec.presence === 'required'"
+          v-if="schema.fields[name]?.spec?.presence === 'required'"
           class="tvermelho"
         >*</span>
       </template>
