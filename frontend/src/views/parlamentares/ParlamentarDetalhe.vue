@@ -125,7 +125,7 @@
     <div v-if="emFoco.mandato_atual">
       <div class="flex spacebetween center mb2">
         <h3 class="c500">
-          Aleição {{ emFoco.mandato_atual.eleicao.ano }}
+          Eleição {{ emFoco.mandato_atual.eleicao.ano }}
         </h3>
         <hr class="ml2 f1">
       </div>
@@ -236,38 +236,45 @@
             </dd>
           </dl>
         </div>
-        <!-- sempre vai ter essas infos? pq ta vino null-->
+        <!-- como tratar quqnaodn n tem essas infos?-->
         <div>
-          <dl class="f1 mb1">
+          <dl
+            v-if="emFoco.mandato_atual.votos_estado"
+            class="f1 mb1"
+          >
             <dt class="t12 uc w700 mb05 ">
               Votos no Estado
             </dt>
             <dd
-              v-if="emFoco.mandato_atual"
               class="t13"
             >
               {{ emFoco.mandato_atual.votos_estado }}
             </dd>
           </dl>
 
-          <dl class="f1 mb1">
+          <dl
+            v-if="emFoco.mandato_atual.votos_interior"
+            class="f1 mb1"
+          >
             <dt class="t12 uc w700 mb05 ">
               Votos no interior
             </dt>
             <dd
-              v-if="emFoco.mandato_atual"
+
               class="t13"
             >
               {{ emFoco.mandato_atual.votos_interior }}
             </dd>
           </dl>
 
-          <dl class="f1 mb1">
+          <dl
+            v-if="emFoco.mandato_atual.votos_capital"
+            class="f1 mb1"
+          >
             <dt class="t12 uc w700 mb05 ">
               Votos na capital
             </dt>
             <dd
-              v-if="emFoco.mandato_atual"
               class="t13"
             >
               {{ emFoco.mandato_atual.votos_capital }}
@@ -300,6 +307,18 @@
             {{ emFoco.mandato_atual.gabinete }}
           </dd>
         </dl>
+
+        <dl class="f1 mb1">
+          <dt class="t12 uc w700 mb05 ">
+            Email
+          </dt>
+          <dd
+            v-if="emFoco.mandato_atual"
+            class="t13"
+          >
+            {{ emFoco.mandato_atual.email }}
+          </dd>
+        </dl>
         <!-- pedir email e telefone -->
         <!-- <dl class="f1 mb1">
           <dt class="t12 uc w700 mb05 ">
@@ -326,6 +345,44 @@
         </dl> -->
       </div>
     </div>
+
+    <div class=" mb2">
+      <div class="flex spacebetween center mb2">
+        <h3 class="c500">
+          Contatos
+        </h3>
+        <hr class="ml2 f1">
+      </div>
+      <table class="tablemain ">
+        <col>
+        <col>
+        <col>
+        <thead>
+          <tr>
+            <th>Nome</th>
+            <th>Telefone</th>
+            <th>E-mail</th>
+          </tr>
+        </thead>
+        <tbody v-if="contatos.length">
+          <tr
+            v-for="contato in contatos"
+            :key="contato.id"
+          >
+            <td>{{ contato.nome }}</td>
+            <td>{{ contato.telefone }}</td>
+            <td>{{ contato.email }}</td>
+          </tr>
+        </tbody>
+        <tbody v-else>
+          <tr>
+            <td colspan="3">
+              Nenhum contato encontrado.
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
   </div>
 </template>
 
@@ -350,10 +407,11 @@ onMounted(async () => {
   emFoco.value = parlamentaresStore.emFoco;
 });
 
-const assessores = computed(() => {
-  const equipe = emFoco.value?.equipe ?? [];
-  return equipe.filter((item) => item.tipo === 'Assessor');
-});
+const equipe = computed(() => emFoco.value?.equipe ?? []);
+
+const assessores = computed(() => equipe.value.filter((item) => item.tipo === 'Assessor'));
+
+const contatos = computed(() => equipe.value.filter((item) => item.tipo === 'Contato'));
 </script>
 
 <style scoped lang="less">
