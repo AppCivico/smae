@@ -460,7 +460,7 @@ export class ParlamentarService {
                         regiao_id: dto.regiao_id,
                         removido_em: null
                     },
-                    select: {valor: true}
+                    select: {id: true, valor: true}
                 });
 
                 if (!dadosEleicao) {
@@ -491,6 +491,13 @@ export class ParlamentarService {
                     });
 
                     delete dto.numero_comparecimento;
+                } else {
+                    if (dto.numero_comparecimento != undefined && dto.numero_comparecimento != dadosEleicao.valor) {
+                        dadosEleicao = await prismaTxn.eleicaoComparecimento.update({
+                            where: { id: dadosEleicao.id },
+                            data: { valor: dto.numero_comparecimento }
+                        })
+                    } 
                 }
                 
                 let pct_participacao: number | null = dto.pct_valor ? dto.pct_valor : null;
