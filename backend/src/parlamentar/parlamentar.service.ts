@@ -109,6 +109,7 @@ export class ParlamentarService {
                     where: { removido_em: null },
                     select: {
                         id: true,
+                        mandato_id: true,
                         email: true,
                         nome: true,
                         telefone: true,
