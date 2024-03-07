@@ -338,6 +338,8 @@ if (props.parlamentarId) {
       {{ erro }}
     </div>
   </div>
+
+  <router-view />
 </template>
 
 <style scoped lang="less">

@@ -10,6 +10,7 @@ export const useParlamentaresStore = defineStore('parlamentaresStore', {
     chamadasPendentes: {
       lista: false,
       emFoco: false,
+      equipe: false,
     },
     erro: null,
   }),
@@ -76,12 +77,47 @@ export const useParlamentaresStore = defineStore('parlamentaresStore', {
         return false;
       }
     },
+
+    async salvarPessoaNaEquipe(params = {}, { pessoaId = 0, parlamentarId } = this.route.params) {
+      this.chamadasPendentes.equipe = true;
+      this.erro = null;
+
+      if (!parlamentarId) {
+        throw new Error('id da parlamentar ausente');
+      }
+
+      try {
+        if (pessoaId) {
+          await this.requestS.patch(`${baseUrl}/parlamentar/${parlamentarId}/equipe/${pessoaId}`, params);
+        } else {
+          await this.requestS.post(`${baseUrl}/parlamentar/${parlamentarId}/equipe`, params);
+        }
+
+        this.chamadasPendentes.equipe = false;
+        return true;
+      } catch (erro) {
+        this.erro = erro;
+        this.chamadasPendentes.equipe = false;
+        return false;
+      }
+    },
   },
 
   getters: {
     itemParaEdição({ emFoco }) {
       return {
         ...emFoco,
+      };
+    },
+    pessoaParaEdição({ emFoco }) {
+      const { pessoaId } = this.route.params;
+
+      const pessoa = pessoaId && Array.isArray(emFoco?.equipe)
+        ? emFoco.equipe.find((x) => Number(pessoaId) === x.id)
+        : {};
+
+      return {
+        ...pessoa,
       };
     },
   },
