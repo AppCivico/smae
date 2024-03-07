@@ -47,7 +47,7 @@ export class PainelController {
 
     @Get()
     @ApiBearerAuth('access-token')
-    @Roles('CadastroPainel.inserir', 'CadastroMeta.inserir')
+    @Roles('CadastroPainel.inserir', 'CadastroMeta.inserir', 'Reports.executar.PDM')
     async findAll(@Query() filters: FilterPainelDto, @CurrentUser() user: PessoaFromJwt): Promise<ListPainelDto> {
         // Este boolean indica que não é para realizar restrição por Grupo de Paineis
         // Neste endpoint será retornado todos os paineis, independente do grupo do painel e do usuário.
