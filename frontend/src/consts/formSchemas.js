@@ -729,6 +729,33 @@ export const parlamentar = object({
     ),
 });
 
+export const pessoaNaEquipeDeParlamentar = object({
+  email: string()
+    .email()
+    .label('Email')
+    .required(),
+  mandato_id: number()
+    .label('Mandato')
+    .when('tipo', (tipo, field) => (tipo !== 'Assessor'
+      ? field
+        .min(1)
+        .required()
+      : field
+        .nullable()
+    )),
+  nome: string()
+    .label('Nome')
+    .required(),
+  telefone: string()
+    .label('Telefone')
+    .max(11)
+    .required(),
+  tipo: mixed()
+    .label('Tipo')
+    .oneOf(['Assessor', 'Contato'])
+    .required(),
+});
+
 export const processo = object()
   .shape({
     comentarios: string()
