@@ -13,7 +13,7 @@ export class MonitoramentoMensalController {
     @Post()
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
-    @Roles('Reports.executar')
+    @Roles('Reports.executar.PDM')
     async create(
         @Body() createOrcamentoExecutadoDto: CreateRelMonitoramentoMensalDto
     ): Promise<RetMonitoramentoMensal> {

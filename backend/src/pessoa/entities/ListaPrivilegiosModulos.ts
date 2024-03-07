@@ -1,7 +1,8 @@
 import { ModuloSistema } from '@prisma/client';
+import { ListaDePrivilegios } from '../../common/ListaDePrivilegios';
 
 export class ListaPrivilegiosModulos {
-    privilegios: string[];
+    privilegios: ListaDePrivilegios[];
     modulos: string[];
     sistemas: ModuloSistema[];
 }
