@@ -31,10 +31,10 @@ function excluirRelatório(id) {
       <col class="col--dataHora">
 
       <col
-        v-if="temPermissãoPara(['Reports.remover'])"
+        v-if="temPermissãoPara(['Reports.remover.'])"
         class="col--botão-de-ação"
       >
-      <!--col v-if="temPermissãoPara('Reports.executar')" class="col--botão-de-ação" /-->
+      <!--col v-if="temPermissãoPara('Reports.executar.')" class="col--botão-de-ação" /-->
       <col class="col--botão-de-ação">
     </colgroup>
     <thead>
@@ -45,8 +45,8 @@ function excluirRelatório(id) {
         <!--th>tags</th-->
         <th>gerado em</th>
 
-        <th v-if="temPermissãoPara(['Reports.remover'])" />
-        <!--th v-if="temPermissãoPara('Reports.executar')"></th-->
+        <th v-if="temPermissãoPara(['Reports.remover.'])" />
+        <!--th v-if="temPermissãoPara('Reports.executar.')"></th-->
         <th />
       </tr>
     </thead>
@@ -61,7 +61,7 @@ function excluirRelatório(id) {
           <td>{{ item.parametros.tipo }}</td>
           <!--td>{{ item.parametros.tags }}</td-->
           <td>{{ localizeDate(item.criado_em) }}</td>
-          <td v-if="temPermissãoPara(['Reports.remover'])">
+          <td v-if="temPermissãoPara(['Reports.remover.'])">
             <button
               class="like-a__text addlink"
               arial-label="excluir"
@@ -74,7 +74,7 @@ function excluirRelatório(id) {
               ><use xlink:href="#i_remove" /></svg>
             </button>
           </td>
-          <!--td v-if="temPermissãoPara('Reports.executar')">
+          <!--td v-if="temPermissãoPara('Reports.executar.')">
                     <button class="like-a__text" arial-label="duplicar" title="duplicar"><img
                     src="../../assets/icons/duplicar.svg" /></button>
                   </td-->
