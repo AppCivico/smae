@@ -72,7 +72,7 @@ const onSubmit = handleSubmit.withControlled(async () => {
 
 async function iniciar() {
   useGruposPaineisExternosStore.$reset();
-  UserStore.buscarPessoasSimplificadas({ espectador_de_projeto: true });
+  UserStore.buscarPessoasSimplificadas({ espectador_de_painel_externo: true });
 
   if (props.gruposPaineisExternosId) {
     await useGruposPaineisExternosStore.buscarItem(props.gruposPaineisExternosId);
@@ -97,7 +97,7 @@ watch(itemParaEdição, (novosValores) => {
 
 <template>
   <div class="flex spacebetween center mb2">
-    <h1>{{ route?.meta?.título || 'Portfolios' }}</h1>
+    <h1>{{ route?.meta?.título || 'Grupos de Painéis Externos' }}</h1>
     <hr class="ml2 f1">
     <CheckClose :formulário-sujo="formulárioSujo" />
   </div>
