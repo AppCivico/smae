@@ -1,15 +1,14 @@
 <script setup>
 import módulos from '@/consts/modulosDoSistema';
-import { useRegionsStore } from '@/stores';
 import { useAuthStore } from '@/stores/auth.store';
+import { useRegionsStore } from '@/stores/regions.store';
+import { useUsersStore } from '@/stores/users.store';
 import { storeToRefs } from 'pinia';
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 
 const authStore = useAuthStore();
 const router = useRouter();
-
-const regionsStore = useRegionsStore();
 
 const emEspera = ref(false);
 const erro = ref(null);
@@ -33,7 +32,8 @@ async function escolher(opção) {
         router.push(dadosDoSistemaEscolhido.value?.rotaInicial);
       }
 
-      regionsStore.$reset();
+      useRegionsStore().$reset();
+      useUsersStore().$reset();
     })
     .catch((err) => {
       sistemaEscolhido.value = 'SMAE';
