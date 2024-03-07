@@ -52,7 +52,7 @@ onBeforeRouteLeave(() => {
 iniciar();
 </script>
 <template>
-  <Dashboard>
+  <Dashboard class="dashboard--analise">
     <div class="flex spacebetween center flexwrap">
       <header>
         <TítuloDePágina>
@@ -142,6 +142,13 @@ iniciar();
   </Dashboard>
 </template>
 <style lang="css">
+.dashboard--analise {
+  display: flex;
+  flex-direction: column;
+}
+</style>
+
+<style lang="css" scoped>
 iframe {
   min-width: 100%;
   flex-grow: 1;
