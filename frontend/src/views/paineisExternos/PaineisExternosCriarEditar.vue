@@ -1,6 +1,8 @@
 <script setup>
+import AutocompleteField from '@/components/AutocompleteField2.vue';
 import { painelExterno as schema } from '@/consts/formSchemas';
 import { useAlertStore } from '@/stores/alert.store';
+import { useGruposPaineisExternos } from '@/stores/grupospaineisExternos.store.ts';
 import { usePaineisExternosStore } from '@/stores/paineisExternos.store';
 import { storeToRefs } from 'pinia';
 import { ErrorMessage, Field, Form } from 'vee-validate';
@@ -8,6 +10,14 @@ import { defineOptions } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
 defineOptions({ inheritAttrs: false });
+
+const GruposPaineisExternos = useGruposPaineisExternos();
+const {
+  lista: gruposDePaineis,
+  chamadasPendentes: gruposDePaineisPendentes,
+  erro: erroNosGruposDePaineis,
+} = storeToRefs(GruposPaineisExternos);
+
 const router = useRouter();
 const route = useRoute();
 const props = defineProps({
@@ -46,7 +56,7 @@ async function onSubmit(values) {
 if (props.painelId) {
   paineisStore.buscarItem(props.painelId);
 }
-
+GruposPaineisExternos.buscarTudo();
 </script>
 
 <template>
@@ -56,7 +66,7 @@ if (props.painelId) {
     <CheckClose />
   </div>
   <Form
-    v-slot="{ errors, isSubmitting, }"
+    v-slot="{ errors, isSubmitting, values }"
     :validation-schema="schema"
     :initial-values="itemParaEdição"
     @submit="onSubmit"
@@ -115,6 +125,44 @@ if (props.painelId) {
           name="descricao"
           class="error-msg"
         />
+      </div>
+    </div>
+
+    <div class="flex g2">
+      <div class="f1 mb1">
+        <LabelFromYup
+          name="grupos"
+          :schema="schema"
+          class="tc300"
+        />
+
+        <AutocompleteField
+          :disabled="gruposDePaineisPendentes.lista"
+          name="grupos"
+          :controlador="{
+            busca: '',
+            participantes: values.grupos || []
+          }"
+          :class="{
+            error: erroNosGruposDePaineis,
+            loading: gruposDePaineisPendentes.lista
+          }"
+          :grupo="gruposDePaineis"
+          label="titulo"
+        />
+        <ErrorMessage
+          name="grupos"
+          class="error-msg"
+        />
+      </div>
+    </div>
+
+    <div
+      v-if="erroNosGruposDePaineis"
+      class="error p1"
+    >
+      <div class="error-msg">
+        {{ erroNosGruposDePaineis }}
       </div>
     </div>
 
