@@ -220,8 +220,8 @@ export const useParlamentaresStore = defineStore('parlamentaresStore', {
         ...emFoco,
       };
     },
-    idsDasEleiçõesQueParlamentarConcorreu: ({ emFoco }) => emFoco
-      .mandatos?.map((x) => x.eleicao.id) || [],
+    idsDasEleiçõesQueParlamentarConcorreu: (({ emFoco }) => emFoco?.mandatos
+      ?.map((x) => x.eleicao.id) || []),
     mandatoParaEdição({ emFoco }) {
       const { mandatoId } = this.route.params;
 
