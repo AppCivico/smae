@@ -246,12 +246,12 @@ if (props.parlamentarId) {
     <FormErrorsList :errors="errors" />
 
     <div v-if="itemParaEdição.mandatos">
-      <div class="flex spacebetween center mb2">
+      <div class="flex spacebetween center mb1">
         <span class="label tc300">Mandato</span>
         <hr class="mr2 f1">
       </div>
 
-      <table class="tablemain">
+      <table class="tablemain mb1">
         <col>
         <col>
         <col>
@@ -277,7 +277,7 @@ if (props.parlamentarId) {
             v-for="item in itemParaEdição.mandatos"
             :key="item.id"
           >
-            <td>{{ item.eleicao }}</td>
+            <td>{{ item.eleicao.ano }}</td>
             <td>{{ item.cargo }}</td>
             <td>{{ item.votos }}</td>
 
@@ -308,6 +308,15 @@ if (props.parlamentarId) {
           </tr>
         </tbody>
       </table>
+      <router-link
+        :to="{ name: 'parlamentaresEditarMandato', params: { parlamentarId: props.parlamentarId } }"
+        class="like-a__text addlink"
+      >
+        <svg
+          width="20"
+          height="20"
+        ><use xlink:href="#i_+" /></svg>Registrar novo mandato
+      </router-link>
     </div>
     <div class="flex spacebetween center mb2">
       <hr class="mr2 f1">
