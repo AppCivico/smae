@@ -239,13 +239,9 @@ export const useParlamentaresStore = defineStore('parlamentaresStore', {
     pessoaParaEdição({ emFoco }) {
       const { pessoaId } = this.route.params;
 
-      const pessoa = pessoaId && Array.isArray(emFoco?.equipe)
-        ? emFoco.equipe.find((x) => Number(pessoaId) === x.id)
+      return pessoaId && Array.isArray(emFoco?.equipe)
+        ? { ...emFoco.equipe.find((x) => Number(pessoaId) === x.id) }
         : {};
-
-      return {
-        ...pessoa,
-      };
     },
     representatividadeParaEdição({ emFoco }) {
       const { representatividadeId } = this.route.params;
