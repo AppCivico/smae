@@ -4,7 +4,7 @@ defineProps({
     type: String,
     default: 'label',
     validator(value) {
-      return ['label', 'legend'].includes(value);
+      return ['label', 'legend', 'span'].includes(value);
     },
   },
   name: {
