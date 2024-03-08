@@ -499,17 +499,20 @@ export const mandato = object({
     .required(),
   eleicao_id: number()
     .label('Eleição')
-    .min(1, 'Eleição inválida'),
+    .min(1, 'Eleição inválida')
+    .required(),
   eleito: boolean()
-    .label('Eleito'),
+    .label('Eleito')
+    .required(),
   endereco: string()
     .label('Endereco'),
   gabinete: string()
     .label('Gabinete')
-    .nullable(),
+    .required(),
   partido_atual_id: number()
     .label('Partido atual')
-    .min(1, 'Partido atual inválido'),
+    .min(1, 'Partido atual inválido')
+    .required(),
   partido_candidatura_id: number()
     .label('Partido da candidatura')
     .min(1, 'Partido da candidatura inválido')
