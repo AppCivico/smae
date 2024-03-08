@@ -51,12 +51,16 @@ if (props.parlamentarId) {
   parlamentaresStore.buscarItem(props.parlamentarId);
 }
 
-const equipe = computed(() => itemParaEdição.value?.equipe ?? []);
+const equipe = computed(() => itemParaEdição.value?.equipe?.reduce((acc, cur) => {
+  if (cur.tipo === 'Assessor') {
+    acc.assessores.push(cur);
+  } else if (cur.tipo === 'Contato') {
+    acc.contatos.push(cur);
+  }
+  return acc;
+}, { assessores: [], contatos: [] }) || { assessores: [], contatos: [] });
 
-const assessores = computed(() => equipe.value.filter((item) => item.tipo === 'Assessor'));
-const contatos = computed(() => equipe.value.filter((item) => item.tipo === 'Contato'));
 </script>
-
 <template>
   <div class="flex spacebetween center mb2">
     <h1>{{ route?.meta?.título || 'Parlamentar' }}</h1>
@@ -156,7 +160,7 @@ const contatos = computed(() => equipe.value.filter((item) => item.tipo === 'Con
     </div>
 
     <div
-      v-if="assessores"
+      v-if="equipe.assessores.length"
       class="mb3"
     >
       <div class="flex spacebetween center mb1">
@@ -179,7 +183,7 @@ const contatos = computed(() => equipe.value.filter((item) => item.tipo === 'Con
         </thead>
         <tbody>
           <tr
-            v-for="item in assessores"
+            v-for="item in equipe.assessores"
             :key="item.id"
           >
             <td>{{ item.nome }}</td>
@@ -224,7 +228,7 @@ const contatos = computed(() => equipe.value.filter((item) => item.tipo === 'Con
     </div>
 
     <div
-      v-if="contatos"
+      v-if="equipe.contatos.length"
       class="mb3"
     >
       <div class="flex spacebetween center mb1">
@@ -247,7 +251,7 @@ const contatos = computed(() => equipe.value.filter((item) => item.tipo === 'Con
         </thead>
         <tbody>
           <tr
-            v-for="item in contatos"
+            v-for="item in equipe.contatos"
             :key="item.id"
           >
             <td>{{ item.nome }}</td>
