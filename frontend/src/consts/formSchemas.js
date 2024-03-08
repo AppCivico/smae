@@ -2,6 +2,7 @@
 import cargosDeParlamentar from '@/consts/cargosDeParlamentar';
 import estadosDoBrasil from '@/consts/estadosDoBrasil';
 import níveisDeRepresentatividade from '@/consts/niveisDeRepresentatividade';
+import níveisDeSuplência from '@/consts/niveisDeSuplencia';
 import regEx from '@/consts/patterns';
 import tiposDeMunicípio from '@/consts/tiposDeMunicipio';
 import tiposNaEquipeDeParlamentar from '@/consts/tiposNaEquipeDeParlamentar';
