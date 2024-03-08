@@ -128,6 +128,21 @@ export const useParlamentaresStore = defineStore('parlamentaresStore', {
       }
     },
 
+    async excluirPessoa(pessoaId, parlamentarId = this.route.params.parlamentarId) {
+      this.chamadasPendentes.equipe = true;
+      this.erro = null;
+
+      try {
+        await this.requestS.delete(`${baseUrl}/parlamentar/${parlamentarId}/equipe/${pessoaId}`);
+        this.chamadasPendentes.equipe = false;
+        return true;
+      } catch (erro) {
+        this.erro = erro;
+        this.chamadasPendentes.equipe = false;
+        return false;
+      }
+    },
+
     async salvarSuplente(params = {}, {
       parlamentarId, mandatoId, suplencia, parlamentarSuplenteId,
     } = {}) {
@@ -185,6 +200,21 @@ export const useParlamentaresStore = defineStore('parlamentaresStore', {
       }
     },
 
+    async excluirMandato(mandatoId, parlamentarId = this.route.params.parlamentarId) {
+      this.chamadasPendentes.mandato = true;
+      this.erro = null;
+
+      try {
+        await this.requestS.delete(`${baseUrl}/parlamentar/${parlamentarId}/mandato/${mandatoId}`);
+        this.chamadasPendentes.mandato = false;
+        return true;
+      } catch (erro) {
+        this.erro = erro;
+        this.chamadasPendentes.mandato = false;
+        return false;
+      }
+    },
+
     async salvarRepresentatividade(
       params = {},
       representatividadeId = this.route.params.representatividadeId,
@@ -204,6 +234,24 @@ export const useParlamentaresStore = defineStore('parlamentaresStore', {
           await this.requestS.post(`${baseUrl}/parlamentar/${parlamentarId}/representatividade`, params);
         }
 
+        this.chamadasPendentes.representatividade = false;
+        return true;
+      } catch (erro) {
+        this.erro = erro;
+        this.chamadasPendentes.representatividade = false;
+        return false;
+      }
+    },
+
+    async excluirRepresentatividade(
+      representatividadeId,
+      parlamentarId = this.route.params.parlamentarId,
+    ) {
+      this.chamadasPendentes.representatividade = true;
+      this.erro = null;
+
+      try {
+        await this.requestS.delete(`${baseUrl}/parlamentar/${parlamentarId}/representatividade/${representatividadeId}`);
         this.chamadasPendentes.representatividade = false;
         return true;
       } catch (erro) {

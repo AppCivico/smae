@@ -49,8 +49,45 @@ async function onSubmit(values) {
   }
 }
 
-if (props.parlamentarId) {
-  parlamentaresStore.buscarItem(props.parlamentarId);
+function iniciar() {
+  if (props.parlamentarId) {
+    parlamentaresStore.buscarItem(props.parlamentarId);
+  }
+}
+
+function excluirItem(tipo, id) {
+  useAlertStore().confirmAction('Deseja mesmo remover esse item?', async () => {
+    let tentativa;
+    let mensagem;
+
+    switch (tipo) {
+      case 'assessor':
+      case 'contato':
+      case 'pessoa':
+        tentativa = await useParlamentaresStore().excluirPessoa(id);
+        mensagem = 'Remoção bem sucedida';
+        break;
+
+      case 'mandato':
+        tentativa = await useParlamentaresStore().excluirMandato(id);
+        mensagem = 'Mandato removido.';
+        break;
+
+      case 'representatividade':
+        tentativa = await useParlamentaresStore().excluirRepresentatividade(id);
+        mensagem = 'Representatividade removida.';
+        break;
+
+      default:
+        useAlertStore().error('Tipo fornecido para remoção inválido');
+        throw new Error('Tipo fornecido para remoção inválido');
+    }
+
+    if (tentativa) {
+      useAlertStore().success(mensagem);
+      iniciar();
+    }
+  }, 'Remover');
 }
 
 const equipe = computed(() => itemParaEdição.value?.equipe?.reduce((acc, cur) => {
@@ -62,6 +99,7 @@ const equipe = computed(() => itemParaEdição.value?.equipe?.reduce((acc, cur) 
   return acc;
 }, { assessores: [], contatos: [] }) || { assessores: [], contatos: [] });
 
+iniciar();
 </script>
 <template>
   <div class="flex spacebetween center mb2">
@@ -196,7 +234,8 @@ const equipe = computed(() => itemParaEdição.value?.equipe?.reduce((acc, cur) 
                 class="like-a__text"
                 arial-label="excluir"
                 title="excluir"
-                @click="(item.id)"
+                type="button"
+                @click="excluirItem('assessor', item.id)"
               >
                 <svg
                   width="20"
@@ -275,7 +314,8 @@ const equipe = computed(() => itemParaEdição.value?.equipe?.reduce((acc, cur) 
                 class="like-a__text"
                 arial-label="excluir"
                 title="excluir"
-                @click="(item.id)"
+                type="button"
+                @click="excluirItem('contato', item.id)"
               >
                 <svg
                   width="20"
@@ -358,7 +398,8 @@ const equipe = computed(() => itemParaEdição.value?.equipe?.reduce((acc, cur) 
                 class="like-a__text"
                 arial-label="excluir"
                 title="excluir"
-                @click="(item.id)"
+                type="button"
+                @click="excluirItem('mandato', item.id)"
               >
                 <svg
                   width="20"
