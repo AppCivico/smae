@@ -80,7 +80,7 @@ const onSubmit = handleSubmit.withControlled(async (valoresControlados) => {
     )) {
       parlamentaresStore.buscarItem(props.parlamentarId);
 
-      alertStore.success('Equipe atualizada!');
+      alertStore.success('Representatividade atualizada!');
       if (props.apenasEmitir) {
         emit('close');
       } else if (route.meta.rotaDeEscape) {
