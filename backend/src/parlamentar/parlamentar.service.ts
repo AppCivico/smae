@@ -192,6 +192,7 @@ export class ParlamentarService {
 
                         representatividade: {
                             where: { removido_em: null },
+                            orderBy: { ranking: 'asc' },
                             select: {
                                 id: true,
                                 nivel: true,
@@ -546,6 +547,9 @@ export class ParlamentarService {
                 if (dadosEleicao && !dto.pct_valor) {
                     pct_participacao = (dto.numero_votos / dadosEleicao.valor) * 100;
                 }
+
+                if (dto.ranking == undefined)
+                    throw new HttpException('Ranking deve ser enviado.', 400);
 
                 const representatividade = await prismaTxn.mandatoRepresentatividade.create({
                     data: {
