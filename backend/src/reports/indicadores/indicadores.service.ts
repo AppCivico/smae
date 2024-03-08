@@ -483,7 +483,13 @@ export class IndicadoresService implements ReportableService {
             const json2csvParser = new Parser({
                 ...DefaultCsvOptions,
                 transforms: defaultTransform,
-                fields: [...camposMetaIniAtv, 'data_referencia', 'serie', 'data', 'valor'],
+                fields: [
+                    ...camposMetaIniAtv,
+                    { value: 'data_referencia', label: 'Data de Referência' },
+                    'serie',
+                    'data',
+                    'valor',
+                ],
             });
             const linhas = json2csvParser.parse(dados.linhas);
             out.push({
@@ -518,6 +524,7 @@ export class IndicadoresService implements ReportableService {
                     { value: 'regiao_nivel_2.id', label: 'ID da Região' },
                     { value: 'regiao_nivel_2.codigo', label: 'Código da Região' },
                     { value: 'regiao_nivel_2.descricao', label: 'Descrição da Região' },
+                    { value: 'data_referencia', label: 'Data de Referência' },
 
                     'serie',
                     'data',
