@@ -91,6 +91,16 @@ export const router = createRouter({
                 rotaDeEscape: 'parlamentaresEditar',
               },
             },
+            {
+              path: 'mandato/:mandatoId?',
+              name: 'parlamentaresEditarMandato',
+              component: () => import('@/views/parlamentares/ParlamentarMandato.vue'),
+              props: true,
+              meta: {
+                título: 'Mandato legislativo',
+                rotaDeEscape: 'parlamentaresEditar',
+              },
+            },
           ],
         },
         {
