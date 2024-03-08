@@ -296,7 +296,7 @@ if (props.parlamentarId) {
             </td>
             <td>
               <router-link
-                :to="{ name: 'parlamentaresEditar', params: { parlamentarId: item.id } }"
+                :to="{ name: 'parlamentaresEditarMandato', params: { parlamentarId: props.parlamentarId, mandatoId: item.id } }"
                 class="tprimary"
               >
                 <svg
