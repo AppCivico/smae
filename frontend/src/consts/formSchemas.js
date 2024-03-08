@@ -512,6 +512,11 @@ export const mandato = object({
   gabinete: string()
     .label('Gabinete')
     .required(),
+  suplencia: mixed()
+    .label('Suplência')
+    // feio, mas... Algo parece bugado no Yup e não posso atualizá-lo agora
+    .oneOf([...Object.keys(níveisDeSuplência), null])
+    .nullable(),
   partido_atual_id: number()
     .label('Partido atual')
     .min(1, 'Partido atual inválido')

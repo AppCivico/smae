@@ -3,6 +3,7 @@ import SmallModal from '@/components/SmallModal.vue';
 import cargosDeParlamentar from '@/consts/cargosDeParlamentar';
 import estadosDoBrasil from '@/consts/estadosDoBrasil';
 import { mandato as schema } from '@/consts/formSchemas';
+import níveisDeSuplência from '@/consts/niveisDeSuplencia';
 import { useAlertStore } from '@/stores/alert.store';
 import { useParlamentaresStore } from '@/stores/parlamentares.store';
 import { usePartidosStore } from '@/stores/partidos.store';
@@ -151,10 +152,7 @@ watch(mandatoParaEdição, (novoValor) => {
             name="eleicao_id"
             as="select"
             class="inputtext light mb1"
-            :class="{
-          error: errors.eleicao_id,
-          loading: chamadasPendentes.emFoco,
-        }"
+            :class="{ error: errors.eleicao_id, loading: chamadasPendentes.emFoco }"
             @change="resetField('cargo', null)"
           >
             <option :value="null">
@@ -184,10 +182,7 @@ watch(mandatoParaEdição, (novoValor) => {
             name="cargo"
             as="select"
             class="inputtext light mb1"
-            :class="{
-          error: errors.cargo,
-          loading: chamadasPendentes.emFoco,
-        }"
+            :class="{ error: errors.cargo, loading: chamadasPendentes.emFoco }"
           >
             <option value="">
               Selecionar
@@ -208,6 +203,32 @@ watch(mandatoParaEdição, (novoValor) => {
 
         <div class="f1">
           <LabelFromYup
+            name="suplencia"
+            :schema="schema"
+          />
+          <Field
+            name="suplencia"
+            as="select"
+            class="inputtext light mb1"
+            :class="{ error: errors.suplencia, loading: chamadasPendentes.emFoco }"
+          >
+            <option :value="null" />
+            <option
+              v-for="nível in níveisDeSuplência"
+              :key="nível.valor"
+              :value="nível.valor"
+            >
+              {{ nível.nome }}
+            </option>
+          </Field>
+          <ErrorMessage
+            class="error-msg"
+            name="suplencia"
+          />
+        </div>
+
+        <div class="f1">
+          <LabelFromYup
             name="uf"
             :schema="schema"
           />
@@ -215,10 +236,7 @@ watch(mandatoParaEdição, (novoValor) => {
             name="uf"
             as="select"
             class="inputtext light mb1"
-            :class="{
-          error: errors.uf,
-          loading: chamadasPendentes.emFoco
-        }"
+            :class="{ error: errors.uf, loading: chamadasPendentes.emFoco }"
           >
             <option value="">
               Selecionar
@@ -248,10 +266,7 @@ watch(mandatoParaEdição, (novoValor) => {
             name="eleito"
             as="select"
             class="inputtext light mb1"
-            :class="{
-          error: errors.eleito,
-          loading: chamadasPendentes.emFoco
-        }"
+            :class="{ error: errors.eleito, loading: chamadasPendentes.emFoco }"
           >
             <option :value="false">
               não
@@ -278,10 +293,7 @@ watch(mandatoParaEdição, (novoValor) => {
             name="partido_candidatura_id"
             as="select"
             class="inputtext light mb1"
-            :class="{
-          error: errors.partido_candidatura_id,
-          loading: chamadasPendentes.emFoco
-        }"
+            :class="{ error: errors.partido_candidatura_id, loading: chamadasPendentes.emFoco }"
           >
             <option :value="null">
               Selecionar
@@ -347,10 +359,7 @@ watch(mandatoParaEdição, (novoValor) => {
             name="votos_estado"
             type="number"
             class="inputtext light mb1"
-            :class="{
-          error: errors.votos_estado,
-          loading: chamadasPendentes.emFoco
-        }"
+            :class="{ error: errors.votos_estado, loading: chamadasPendentes.emFoco }"
             min="0"
             step="1"
             @change="setFieldValue(
@@ -372,10 +381,7 @@ watch(mandatoParaEdição, (novoValor) => {
             name="votos_capital"
             type="number"
             class="inputtext light mb1"
-            :class="{
-          error: errors.votos_capital,
-          loading: chamadasPendentes.emFoco
-        }"
+            :class="{ error: errors.votos_capital, loading: chamadasPendentes.emFoco }"
             min="0"
             step="1"
             @change="setFieldValue(
@@ -397,10 +403,7 @@ watch(mandatoParaEdição, (novoValor) => {
             name="votos_interior"
             type="number"
             class="inputtext light mb1"
-            :class="{
-          error: errors.votos_interior,
-          loading: chamadasPendentes.emFoco,
-        }"
+            :class="{ error: errors.votos_interior, loading: chamadasPendentes.emFoco }"
             min="0"
             step="1"
             @change="setFieldValue(
@@ -426,10 +429,7 @@ watch(mandatoParaEdição, (novoValor) => {
             as="textarea"
             rows="5"
             class="inputtext light mb1"
-            :class="{
-          error: errors.gabinete,
-          loading: chamadasPendentes.emFoco,
-        }"
+            :class="{ error: errors.gabinete, loading: chamadasPendentes.emFoco }"
           />
           <ErrorMessage
             class="error-msg"
@@ -449,10 +449,7 @@ watch(mandatoParaEdição, (novoValor) => {
             as="textarea"
             rows="5"
             class="inputtext light mb1"
-            :class="{
-          error: errors.endereco,
-          loading: chamadasPendentes.emFoco,
-        }"
+            :class="{ error: errors.endereco, loading: chamadasPendentes.emFoco }"
           />
           <ErrorMessage
             class="error-msg"
@@ -472,10 +469,7 @@ watch(mandatoParaEdição, (novoValor) => {
             as="textarea"
             rows="5"
             class="inputtext light mb1"
-            :class="{
-          error: errors.atuacao,
-          loading: chamadasPendentes.emFoco,
-        }"
+            :class="{ error: errors.atuacao, loading: chamadasPendentes.emFoco }"
           />
           <ErrorMessage
             class="error-msg"
@@ -495,10 +489,7 @@ watch(mandatoParaEdição, (novoValor) => {
             as="textarea"
             rows="5"
             class="inputtext light mb1"
-            :class="{
-          error: errors.biografia,
-          loading: chamadasPendentes.emFoco
-        }"
+            :class="{ error: errors.biografia, loading: chamadasPendentes.emFoco }"
           />
           <ErrorMessage
             class="error-msg"
