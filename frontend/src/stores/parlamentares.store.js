@@ -11,6 +11,7 @@ export const useParlamentaresStore = defineStore('parlamentaresStore', {
       lista: false,
       emFoco: false,
       equipe: false,
+      mandato: false,
     },
     erro: null,
   }),
@@ -101,12 +102,50 @@ export const useParlamentaresStore = defineStore('parlamentaresStore', {
         return false;
       }
     },
+
+    async salvarMandato(params = {}, { mandatoId = 0, parlamentarId } = this.route.params) {
+      this.chamadasPendentes.mandato = true;
+      this.erro = null;
+
+      if (!parlamentarId) {
+        throw new Error('id da parlamentar ausente');
+      }
+
+      try {
+        if (mandatoId) {
+          await this.requestS.patch(`${baseUrl}/parlamentar/${parlamentarId}/mandato/${mandatoId}`, params);
+        } else {
+          await this.requestS.post(`${baseUrl}/parlamentar/${parlamentarId}/mandato`, params);
+        }
+
+        this.chamadasPendentes.mandato = false;
+        return true;
+      } catch (erro) {
+        this.erro = erro;
+        this.chamadasPendentes.mandato = false;
+        return false;
+      }
+    },
   },
 
   getters: {
     itemParaEdição({ emFoco }) {
       return {
         ...emFoco,
+      };
+    },
+    mandatoParaEdição({ emFoco }) {
+      const { mandatoId } = this.route.params;
+
+      const mandato = mandatoId && Array.isArray(emFoco?.mandatos)
+        ? emFoco.mandatos.find((x) => Number(mandatoId) === x.id)
+        : {};
+
+      return {
+        ...mandato,
+        eleicao_id: mandato?.eleicao?.id || 0,
+        partido_atual_id: mandato?.partido_atual?.id || 0,
+        partido_candidatura_id: mandato?.partido_candidatura?.id || 0,
       };
     },
     pessoaParaEdição({ emFoco }) {
