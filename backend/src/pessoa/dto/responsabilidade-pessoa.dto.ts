@@ -1,7 +1,9 @@
 import { Transform } from 'class-transformer';
-import { IsInt, IsOptional } from 'class-validator';
+import { IsArray, IsEnum, IsInt, IsOptional } from 'class-validator';
 import { PositiveNumberTransform } from '../../auth/transforms/number.transform';
 import { IdCodTituloDto } from '../../common/dto/IdCodTitulo.dto';
+import { NumberArrayTransform } from '../../auth/transforms/number-array.transform';
+import { ApiProperty } from '@nestjs/swagger';
 
 export class BuscaResponsabilidades {
     @IsInt()
@@ -12,6 +14,35 @@ export class BuscaResponsabilidades {
     @IsInt()
     @Transform(PositiveNumberTransform)
     pdm_id?: number;
+}
+
+export const TransferenciaRespOperacao = {
+    transferir: 'transferir',
+    copiar: 'copiar',
+    remover: 'remover',
+} as const;
+export type TransferenciaRespOperacao = (typeof TransferenciaRespOperacao)[keyof typeof TransferenciaRespOperacao];
+
+export class ExecutaTransferenciaResponsabilidades {
+    @IsInt()
+    @Transform(PositiveNumberTransform)
+    origem_pessoa_id: number;
+
+    @IsInt()
+    @Transform(PositiveNumberTransform)
+    nova_pessoa_id: number | null;
+
+    @ApiProperty({ enum: TransferenciaRespOperacao, enumName: 'TransferenciaRespOperacao' })
+    @IsEnum(TransferenciaRespOperacao, {
+        message:
+            '$property| Precisa ser um dos seguintes valores: ' + Object.values(TransferenciaRespOperacao).join(', '),
+    })
+    operacao: TransferenciaRespOperacao;
+
+    @IsArray()
+    @IsInt({ each: true })
+    @Transform(NumberArrayTransform)
+    metas: number[];
 }
 
 export class DetalheResponsabilidadeDto {

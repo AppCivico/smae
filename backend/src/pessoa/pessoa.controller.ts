@@ -11,7 +11,11 @@ import { FilterPessoaDto } from './dto/filter-pessoa.dto';
 import { ListPessoaDto, ListPessoaReducedDto } from './dto/list-pessoa.dto';
 import { UpdatePessoaDto } from './dto/update-pessoa.dto';
 import { PessoaService } from './pessoa.service';
-import { BuscaResponsabilidades, DetalheResponsabilidadeDto } from './dto/responsabilidade-pessoa.dto';
+import {
+    BuscaResponsabilidades,
+    DetalheResponsabilidadeDto,
+    ExecutaTransferenciaResponsabilidades,
+} from './dto/responsabilidade-pessoa.dto';
 
 @ApiTags('Pessoa')
 @Controller('pessoa')
@@ -100,6 +104,18 @@ export class PessoaController {
         @CurrentUser() user: PessoaFromJwt
     ): Promise<DetalheResponsabilidadeDto> {
         return await this.pessoaService.getResponsabilidades(dto, user);
+    }
+
+    @Post('responsabilidades')
+    @ApiBearerAuth('access-token')
+    @ApiUnauthorizedResponse()
+    @Roles('CadastroPessoa.editar_responsabilidade')
+    async executaTransferenciaResponsabilidades(
+        @Query() dto: ExecutaTransferenciaResponsabilidades,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<void> {
+        await this.pessoaService.executaTransferenciaResponsabilidades(dto, user);
+        return;
     }
 
     @Get(':id')

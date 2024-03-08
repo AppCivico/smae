@@ -299,6 +299,7 @@ model Pessoa {
     PainelExternoQueAtualizei                PainelExterno[]                           @relation("Atualizador")
     PainelExternoQueRemovi                   PainelExterno[]                           @relation("Removedor")
     view_pessoa_espectador_de_painel_externo view_pessoa_espectador_de_painel_externo?
+    view_pessoa_coordenador_responsavel_cp   view_pessoa_coordenador_responsavel_cp?
 
     @@index([email])
     @@map("pessoa")
@@ -3608,7 +3609,7 @@ view view_meta_pessoa_responsavel {
     orgao_id  Int
 }
 
-// view que já faz o join o filtro onde coordenador_responsavel_cp=true
+// view que já faz o join o filtro onde PDM.coordenador_responsavel_cp=true
 view view_meta_pessoa_responsavel_na_cp {
     id Int @id @default(autoincrement())
 
@@ -3669,6 +3670,17 @@ model PessoaAtividadeLog {
 // view que já faz o join das pessoas tem o privilegio SMAE.espectador_de_projeto
 // tbm faz um WHERE orgao_id is not null
 view view_pessoa_espectador_de_projeto {
+    pessoa_id Int
+    pessoa    Pessoa @relation(fields: [pessoa_id], references: [id])
+
+    orgao_id Int
+
+    @@unique([pessoa_id])
+}
+
+// view que já faz o join das pessoas tem o privilegio PDM.coordenador_responsavel_cp
+// tbm faz um WHERE orgao_id is not null
+view view_pessoa_coordenador_responsavel_cp {
     pessoa_id Int
     pessoa    Pessoa @relation(fields: [pessoa_id], references: [id])
 
