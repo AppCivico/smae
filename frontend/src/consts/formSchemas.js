@@ -736,7 +736,7 @@ export const partido = object({
 
 export const bancada = object({
   sigla: string()
-    .label('Sigla')
+    .label('Número')
     .max(20)
     .required(),
   nome: string()
