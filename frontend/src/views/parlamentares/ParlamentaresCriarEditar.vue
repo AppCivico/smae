@@ -71,7 +71,7 @@ const equipe = computed(() => itemParaEdição.value?.equipe?.reduce((acc, cur) 
     v-slot="{ errors, isSubmitting, }"
     :validation-schema="schema"
     :initial-values="itemParaEdição"
-    @submit="onSubmit"
+    @submit.prevent="onSubmit"
   >
     <!-- form do parlamentar -->
     <div class="parlamentar-container mb3">
