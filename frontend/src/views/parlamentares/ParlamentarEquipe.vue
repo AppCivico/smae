@@ -146,7 +146,7 @@ watch(pessoaParaEdição, (novoValor) => {
               Selecionar
             </option>
             <option
-              v-for="mandato in emFoco.mandatos || []"
+              v-for="mandato in emFoco?.mandatos || []"
               :key="mandato.id"
               :value="mandato.id"
             >
