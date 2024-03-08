@@ -50,7 +50,7 @@ export const useUsersStore = defineStore({
     async buscarPessoasSimplificadas(params) {
       try {
         if (this.pessoasSimplificadas.loading) return;
-        this.pessoasSimplificadas = { loading: true };
+        //this.pessoasSimplificadas = { loading: true };
         const r = await this.requestS.get(`${baseUrl}/pessoa/reduzido`, params);
         this.pessoasSimplificadas = r.linhas;
       } catch (error) {
@@ -114,9 +114,9 @@ export const useUsersStore = defineStore({
             .filter((u) => (f.orgao
               ? u.orgao_id == f.orgao
               : 1)
-        && (f.nomeemail
-          ? (u.nome_completo.includes(f.nomeemail) || u.email.includes(f.nomeemail))
-          : 1))
+              && (f.nomeemail
+                ? (u.nome_completo.includes(f.nomeemail) || u.email.includes(f.nomeemail))
+                : 1))
           : this.users;
       } catch (error) {
         this.user = { error };
