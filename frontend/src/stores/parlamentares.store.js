@@ -1,4 +1,3 @@
-import tiposNaEquipeDeParlamentar from '@/consts/tiposNaEquipeDeParlamentar';
 import { defineStore } from 'pinia';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
@@ -16,6 +15,7 @@ export const useParlamentaresStore = defineStore('parlamentaresStore', {
       suplentes: false,
       mandato: false,
       eleições: false,
+      representatividade: false,
     },
     erro: null,
   }),
@@ -100,7 +100,11 @@ export const useParlamentaresStore = defineStore('parlamentaresStore', {
       }
     },
 
-    async salvarPessoaNaEquipe(params = {}, { pessoaId = 0, parlamentarId } = this.route.params) {
+    async salvarPessoaNaEquipe(
+      params = {},
+      pessoaId = this.route.paramspessoaId,
+      parlamentarId = this.route.params.parlamentarId,
+    ) {
       this.chamadasPendentes.equipe = true;
       this.erro = null;
 
@@ -153,7 +157,11 @@ export const useParlamentaresStore = defineStore('parlamentaresStore', {
       }
     },
 
-    async salvarMandato(params = {}, { mandatoId = 0, parlamentarId } = this.route.params) {
+    async salvarMandato(
+      params = {},
+      mandatoId = this.route.params.mandatoId,
+      parlamentarId = this.route.params.parlamentarId,
+    ) {
       this.chamadasPendentes.mandato = true;
       this.erro = null;
 
@@ -173,6 +181,34 @@ export const useParlamentaresStore = defineStore('parlamentaresStore', {
       } catch (erro) {
         this.erro = erro;
         this.chamadasPendentes.mandato = false;
+        return false;
+      }
+    },
+
+    async salvarRepresentatividade(
+      params = {},
+      representatividadeId = this.route.params.representatividadeId,
+      parlamentarId = this.route.params.parlamentarId,
+    ) {
+      this.chamadasPendentes.representatividade = true;
+      this.erro = null;
+
+      if (!parlamentarId) {
+        throw new Error('id da parlamentar ausente');
+      }
+
+      try {
+        if (representatividadeId) {
+          await this.requestS.patch(`${baseUrl}/parlamentar/${parlamentarId}/representatividade/${representatividadeId}`, params);
+        } else {
+          await this.requestS.post(`${baseUrl}/parlamentar/${parlamentarId}/representatividade`, params);
+        }
+
+        this.chamadasPendentes.representatividade = false;
+        return true;
+      } catch (erro) {
+        this.erro = erro;
+        this.chamadasPendentes.representatividade = false;
         return false;
       }
     },
@@ -202,10 +238,6 @@ export const useParlamentaresStore = defineStore('parlamentaresStore', {
     },
     pessoaParaEdição({ emFoco }) {
       const { pessoaId } = this.route.params;
-      const tipoSugerido = this.route.query.tipo
-        ? tiposNaEquipeDeParlamentar
-          .find((x) => x.toLowerCase() === this.route.query.tipo.toLocaleLowerCase())
-        : '';
 
       const pessoa = pessoaId && Array.isArray(emFoco?.equipe)
         ? emFoco.equipe.find((x) => Number(pessoaId) === x.id)
@@ -213,7 +245,36 @@ export const useParlamentaresStore = defineStore('parlamentaresStore', {
 
       return {
         ...pessoa,
-        tipo: pessoa.tipo || tipoSugerido,
+      };
+    },
+    representatividadeParaEdição({ emFoco }) {
+      const { representatividadeId } = this.route.params;
+
+      let representatividade;
+
+      if (Array.isArray(emFoco?.mandatos)) {
+        for (let i = 0; i < emFoco.mandatos.length; i += 1) {
+          if (Array.isArray(emFoco.mandatos[i]?.representatividade)) {
+            const mandato = emFoco.mandatos[i];
+
+            representatividade = mandato.representatividade
+              .find((y) => Number(representatividadeId) === y.id);
+            if (representatividade) {
+              representatividade.mandato = {
+                tipo: mandato.eleicao?.tipo,
+                ano: mandato.eleicao?.ano,
+                id: mandato.id,
+              };
+
+              break;
+            }
+          }
+        }
+      }
+
+      return {
+        ...representatividade,
+        regiao_id: representatividade?.regiao?.id,
       };
     },
     // TODO: fazer edição

@@ -1,7 +1,9 @@
 /* eslint-disable no-template-curly-in-string */
 import cargosDeParlamentar from '@/consts/cargosDeParlamentar';
 import estadosDoBrasil from '@/consts/estadosDoBrasil';
+import níveisDeRepresentatividade from '@/consts/niveisDeRepresentatividade';
 import regEx from '@/consts/patterns';
+import tiposDeMunicípio from '@/consts/tiposDeMunicipio';
 import tiposNaEquipeDeParlamentar from '@/consts/tiposNaEquipeDeParlamentar';
 import {
   array,
@@ -1308,6 +1310,53 @@ export const relatórioSemestralOuAnual = object({
   }),
   salvar_arquivo: boolean(),
 });
+
+export const representatividade = (éCorreção = false) => object()
+  .shape({
+    mandato_id: number()
+      .label('Mandato')
+      /* .when('éCorreção', ((_, field) => ((éCorreção)
+        ? field
+          .min(1)
+          .required()
+        : field
+          .nullable()
+          .isType(null)))) */,
+    municipio_tipo: mixed()
+      .label('Tipo de município')
+      .oneOf(tiposDeMunicípio), /* .when('éCorreção', ((_, field) => ((éCorreção)
+        ? field
+          .nullable()
+        : field
+          .isType(null)))) */
+    nivel: mixed()
+      .label('Nível')
+      .oneOf(níveisDeRepresentatividade), /* .when('éCorreção', ((_, field) => ((éCorreção)
+        ? field
+          .required()
+        : field
+          .isType(null)))) */
+    numero_comparecimento: number()
+      .label('Comparecimento')
+      .min(0)
+      .nullable(),
+    numero_votos: number()
+      .label('Votos')
+      .min(0)
+      .required(),
+    pct_valor: number()
+      .label('Percentual')
+      .min(0)
+      .max(100)
+      .nullable(),
+    regiao_id: number()
+      .label('Região')
+      /* .when('éCorreção', ((_, field) => ((éCorreção)
+        ? field
+          .min(1)
+          .required()
+        : field.isType(null)))) */,
+  });
 
 export const risco = object()
   .shape({

@@ -22,6 +22,28 @@ const alertStore = useAlertStore();
 const parlamentaresStore = useParlamentaresStore();
 const partidosStore = usePartidosStore();
 
+const emit = defineEmits(['close']);
+const props = defineProps({
+  apenasEmitir: {
+    type: Boolean,
+    default: false,
+  },
+  parlamentarId: {
+    type: [
+      Number,
+      String,
+    ],
+    default: 0,
+  },
+  mandatoId: {
+    type: [
+      Number,
+      String,
+    ],
+    default: 0,
+  },
+});
+
 const {
   chamadasPendentes, erro, mandatoParaEdição, eleições, idsDasEleiçõesQueParlamentarConcorreu,
 } = storeToRefs(parlamentaresStore);
@@ -51,11 +73,17 @@ const cargosDisponíveisParaEdição = computed(() => Object.values(cargosDeParl
 
 const onSubmit = handleSubmit.withControlled(async (valoresControlados) => {
   try {
-    if (await parlamentaresStore.salvarMandato(valoresControlados)) {
+    if (await parlamentaresStore.salvarMandato(
+      valoresControlados,
+      props.mandatoId,
+      props.parlamentarId,
+    )) {
       parlamentaresStore.buscarItem(route.params?.parlamentarId);
 
       alertStore.success('Mandatos atualizados!');
-      if (route.meta.rotaDeEscape) {
+      if (props.apenasEmitir) {
+        emit('close');
+      } else if (route.meta.rotaDeEscape) {
         router.push({
           name: route.meta.rotaDeEscape,
           params: route.params,
@@ -98,18 +126,15 @@ watch(mandatoParaEdição, (novoValor) => {
 <template>
   <SmallModal>
     <div class="flex spacebetween center mb2">
-      <TítuloDePágina />
+      <TítuloDePágina>
+        Mandato legislativo
+      </TítuloDePágina>
       <hr class="ml2 f1">
 
       <CheckClose
         :formulário-sujo="formulárioSujo"
       />
     </div>
-
-    <LoadingComponent
-      v-if="chamadasPendentes.emFoco"
-      class="mb1"
-    />
 
     <form
       :disabled="isSubmitting"
@@ -126,7 +151,10 @@ watch(mandatoParaEdição, (novoValor) => {
             name="eleicao_id"
             as="select"
             class="inputtext light mb1"
-            :class="{ 'error': errors.eleicao_id }"
+            :class="{
+          error: errors.eleicao_id,
+          loading: chamadasPendentes.emFoco,
+        }"
             @change="resetField('cargo', null)"
           >
             <option :value="null">
@@ -156,7 +184,10 @@ watch(mandatoParaEdição, (novoValor) => {
             name="cargo"
             as="select"
             class="inputtext light mb1"
-            :class="{ 'error': errors.cargo }"
+            :class="{
+          error: errors.cargo,
+          loading: chamadasPendentes.emFoco,
+        }"
           >
             <option value="">
               Selecionar
@@ -184,7 +215,10 @@ watch(mandatoParaEdição, (novoValor) => {
             name="uf"
             as="select"
             class="inputtext light mb1"
-            :class="{ 'error': errors.uf }"
+            :class="{
+          error: errors.uf,
+          loading: chamadasPendentes.emFoco
+        }"
           >
             <option value="">
               Selecionar
@@ -214,7 +248,10 @@ watch(mandatoParaEdição, (novoValor) => {
             name="eleito"
             as="select"
             class="inputtext light mb1"
-            :class="{ 'error': errors.eleito }"
+            :class="{
+          error: errors.eleito,
+          loading: chamadasPendentes.emFoco
+        }"
           >
             <option :value="false">
               não
@@ -241,7 +278,10 @@ watch(mandatoParaEdição, (novoValor) => {
             name="partido_candidatura_id"
             as="select"
             class="inputtext light mb1"
-            :class="{ 'error': errors.partido_candidatura_id }"
+            :class="{
+          error: errors.partido_candidatura_id,
+          loading: chamadasPendentes.emFoco
+        }"
           >
             <option :value="null">
               Selecionar
@@ -307,7 +347,10 @@ watch(mandatoParaEdição, (novoValor) => {
             name="votos_estado"
             type="number"
             class="inputtext light mb1"
-            :class="{ 'error': errors.votos_estado }"
+            :class="{
+          error: errors.votos_estado,
+          loading: chamadasPendentes.emFoco
+        }"
             min="0"
             step="1"
             @change="setFieldValue(
@@ -329,7 +372,10 @@ watch(mandatoParaEdição, (novoValor) => {
             name="votos_capital"
             type="number"
             class="inputtext light mb1"
-            :class="{ 'error': errors.votos_capital }"
+            :class="{
+          error: errors.votos_capital,
+          loading: chamadasPendentes.emFoco
+        }"
             min="0"
             step="1"
             @change="setFieldValue(
@@ -351,7 +397,10 @@ watch(mandatoParaEdição, (novoValor) => {
             name="votos_interior"
             type="number"
             class="inputtext light mb1"
-            :class="{ 'error': errors.votos_interior }"
+            :class="{
+          error: errors.votos_interior,
+          loading: chamadasPendentes.emFoco,
+        }"
             min="0"
             step="1"
             @change="setFieldValue(
@@ -377,7 +426,10 @@ watch(mandatoParaEdição, (novoValor) => {
             as="textarea"
             rows="5"
             class="inputtext light mb1"
-            :class="{ 'error': errors.gabinete }"
+            :class="{
+          error: errors.gabinete,
+          loading: chamadasPendentes.emFoco,
+        }"
           />
           <ErrorMessage
             class="error-msg"
@@ -397,7 +449,10 @@ watch(mandatoParaEdição, (novoValor) => {
             as="textarea"
             rows="5"
             class="inputtext light mb1"
-            :class="{ 'error': errors.endereco }"
+            :class="{
+          error: errors.endereco,
+          loading: chamadasPendentes.emFoco,
+        }"
           />
           <ErrorMessage
             class="error-msg"
@@ -417,7 +472,10 @@ watch(mandatoParaEdição, (novoValor) => {
             as="textarea"
             rows="5"
             class="inputtext light mb1"
-            :class="{ 'error': errors.atuacao }"
+            :class="{
+          error: errors.atuacao,
+          loading: chamadasPendentes.emFoco,
+        }"
           />
           <ErrorMessage
             class="error-msg"
@@ -437,7 +495,10 @@ watch(mandatoParaEdição, (novoValor) => {
             as="textarea"
             rows="5"
             class="inputtext light mb1"
-            :class="{ 'error': errors.biografia }"
+            :class="{
+          error: errors.biografia,
+          loading: chamadasPendentes.emFoco
+        }"
           />
           <ErrorMessage
             class="error-msg"
@@ -453,8 +514,8 @@ watch(mandatoParaEdição, (novoValor) => {
         <button
           class="btn big"
           :disabled="isSubmitting || Object.keys(errors)?.length"
-          :title="Object.keys(errors)?.length ? `Erros de preenchimento:
-        ${Object.keys(errors)?.length}`
+          :title="Object.keys(errors)?.length
+          ? `Erros de preenchimento: ${Object.keys(errors)?.length}`
           : null"
         >
           Salvar

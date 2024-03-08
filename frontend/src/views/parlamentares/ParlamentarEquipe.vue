@@ -19,24 +19,56 @@ const router = useRouter();
 const alertStore = useAlertStore();
 const parlamentaresStore = useParlamentaresStore();
 
+const emit = defineEmits(['close']);
+const props = defineProps({
+  apenasEmitir: {
+    type: Boolean,
+    default: false,
+  },
+  parlamentarId: {
+    type: [
+      Number,
+      String,
+    ],
+    default: 0,
+  },
+  pessoaId: {
+    type: [
+      Number,
+      String,
+    ],
+    default: 0,
+  },
+  tipo: {
+    type: String,
+    default: '',
+  },
+});
+
 const {
   emFoco, chamadasPendentes, erro, pessoaParaEdição,
 } = storeToRefs(parlamentaresStore);
 
 const {
-  errors, handleSubmit, isSubmitting, resetForm, values,
+  errors, handleSubmit, isSubmitting, resetField, resetForm, values,
 } = useForm({
   initialValues: pessoaParaEdição.value,
   validationSchema: schema,
 });
 
-const onSubmit = handleSubmit.withControlled(async () => {
+const onSubmit = handleSubmit.withControlled(async (valoresControlados) => {
   try {
-    if (await parlamentaresStore.salvarPessoaNaEquipe(values)) {
-      parlamentaresStore.buscarItem(route.params?.parlamentarId);
+    if (await parlamentaresStore.salvarPessoaNaEquipe(
+      valoresControlados,
+      props.pessoaId,
+      props.parlamentarId,
+    )) {
+      parlamentaresStore.buscarItem(props.parlamentarId);
 
       alertStore.success('Equipe atualizada!');
-      if (route.meta.rotaDeEscape) {
+      if (props.apenasEmitir) {
+        emit('close');
+      } else if (route.meta.rotaDeEscape) {
         router.push({
           name: route.meta.rotaDeEscape,
           params: route.params,
@@ -51,31 +83,47 @@ const onSubmit = handleSubmit.withControlled(async () => {
 
 const formulárioSujo = useIsFormDirty();
 
-if (!parlamentaresStore.emFoco?.id !== Number(route.params?.parlamentarId)) {
-  if (route.params?.parlamentarId) {
-    parlamentaresStore.buscarItem(route.params?.parlamentarId);
-  } else {
-    alertStore.error('Você não está editando uma parlamentar');
+function iniciar() {
+  if (!parlamentaresStore.emFoco?.id !== Number(props.parlamentarId)) {
+    if (props.parlamentarId) {
+      parlamentaresStore.buscarItem(props.parlamentarId);
+    } else {
+      alertStore.error('Você não está editando uma parlamentar');
+    }
   }
 }
 
+iniciar();
+
 watch(pessoaParaEdição, (novoValor) => {
   resetForm({ values: novoValor });
-});
+
+  const tipoSugerido = props.tipo
+    ? tiposNaEquipeDeParlamentar
+      .find((x) => x.toLowerCase() === props.tipo.toLocaleLowerCase())
+    : '';
+
+  if (tipoSugerido) {
+    resetField('tipo', tipoSugerido);
+  }
+
+  // rodar imediatamente apenas por causa do tipo sugerido
+}, { immediate: true });
 </script>
 
 <template>
   <SmallModal>
     <div class="flex spacebetween center mb2">
-      <TítuloDePágina />
+      <TítuloDePágina>
+        Integrante de equipe
+      </TítuloDePágina>
+
       <hr class="ml2 f1">
 
       <CheckClose
         :formulário-sujo="formulárioSujo"
       />
     </div>
-
-    <LoadingComponent v-if="chamadasPendentes.emFoco" />
 
     <form
       :disabled="isSubmitting"
@@ -91,7 +139,10 @@ watch(pessoaParaEdição, (novoValor) => {
             name="tipo"
             as="select"
             class="inputtext light mb1"
-            :class="{ 'error': errors.tipo }"
+            :class="{
+          error: errors.tipo,
+          loading: chamadasPendentes.emFoco,
+        }"
           >
             <option value="">
               Selecionar
@@ -129,7 +180,10 @@ watch(pessoaParaEdição, (novoValor) => {
             as="select"
             class="inputtext light mb1"
             :disabled="!values.tipo || values.tipo === 'Assessor'"
-            :class="{ 'error': errors.mandato_id }"
+            :class="{
+          error: errors.mandato_id,
+          loading: chamadasPendentes.emFoco,
+        }"
           >
             <option :value="0">
               Selecionar
@@ -160,7 +214,10 @@ watch(pessoaParaEdição, (novoValor) => {
             name="nome"
             type="text"
             class="inputtext light mb1"
-            :class="{ 'error': errors.nome }"
+            :class="{
+          error: errors.nome,
+          loading: chamadasPendentes.emFoco,
+        }"
           />
           <ErrorMessage
             class="error-msg"
@@ -179,7 +236,10 @@ watch(pessoaParaEdição, (novoValor) => {
             name="telefone"
             type="text"
             class="inputtext light mb1"
-            :class="{ 'error': errors.telefone }"
+            :class="{
+          error: errors.telefone,
+          loading: chamadasPendentes.emFoco,
+        }"
             maxlength="11"
           />
           <ErrorMessage
@@ -196,7 +256,10 @@ watch(pessoaParaEdição, (novoValor) => {
             name="email"
             type="email"
             class="inputtext light mb1"
-            :class="{ 'error': errors.email }"
+            :class="{
+          error: errors.email,
+          loading: chamadasPendentes.emFoco,
+        }"
           />
           <ErrorMessage
             class="error-msg"
@@ -212,8 +275,8 @@ watch(pessoaParaEdição, (novoValor) => {
         <button
           class="btn big"
           :disabled="isSubmitting || Object.keys(errors)?.length"
-          :title="Object.keys(errors)?.length ? `Erros de preenchimento:
-        ${Object.keys(errors)?.length}`
+          :title="Object.keys(errors)?.length
+          ? `Erros de preenchimento: ${Object.keys(errors)?.length}`
           : null"
         >
           Salvar
