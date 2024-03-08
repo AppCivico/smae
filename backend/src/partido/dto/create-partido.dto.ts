@@ -1,5 +1,5 @@
 import { Type } from "class-transformer";
-import { IsNumber, IsOptional, IsString, Max, MaxLength } from "class-validator";
+import { ArrayMaxSize, ArrayMinSize, IsArray, IsInt, IsNumber, IsOptional, IsString, Max, MaxLength } from "class-validator";
 import { IsOnlyDate } from "src/common/decorators/IsDateOnly";
 
 export class CreatePartidoDto {
@@ -39,5 +39,9 @@ export class CreatePartidoDto {
     encerramento?: Date;
 
     @IsOptional()
+    @IsArray({ message: '$property| precisa ser um array' })
+    @ArrayMaxSize(100, { message: '$property| precisa ter no máximo 100 items' })
+    @ArrayMinSize(1, { message: '$property| precisa ter no mínimo 1 item' })
+    @IsInt({ each: true, message: '$property| Cada item precisa ser um número inteiro' })
     bancadas_id?: number[];
 }
