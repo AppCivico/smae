@@ -162,6 +162,7 @@ watch(representatividadeParaEdição, (novoValor) => {
             </option>
           </Field>
           <input
+            v-else
             type="text"
             disabled
             class="inputtext light mb1"
@@ -198,6 +199,7 @@ watch(representatividadeParaEdição, (novoValor) => {
             </option>
           </Field>
           <input
+            v-else
             type="text"
             disabled
             class="inputtext light mb1"
@@ -234,6 +236,7 @@ watch(representatividadeParaEdição, (novoValor) => {
             </option>
           </Field>
           <input
+            v-else
             type="text"
             disabled
             class="inputtext light mb1"
