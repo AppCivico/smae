@@ -40,7 +40,6 @@ bancadaStore.buscarTudo();
   <table class="tablemain">
     <col>
     <col>
-    <col>
     <col class="col--botão-de-ação">
     <col class="col--botão-de-ação">
     <thead>
@@ -49,7 +48,7 @@ bancadaStore.buscarTudo();
           Nome
         </th>
         <th>
-          Sigla
+          Número
         </th>
         <th />
         <th />
