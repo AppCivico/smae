@@ -18,6 +18,11 @@ import PaineisExternosCriarEditar from '@/views/paineisExternos/PaineisExternosC
 import PaineisExternosLista from '@/views/paineisExternos/PaineisExternosLista.vue';
 import PaineisExternosRaiz from '@/views/paineisExternos/PaineisExternosRaiz.vue';
 
+import GruposDePaineisExternosCriarEditar from '@/views/gruposDePaineisExternos/GruposDePaineisExternosCriarEditar.vue';
+import GruposDePaineisExternosLista from '@/views/gruposDePaineisExternos/GruposDePaineisExternosLista.vue';
+import GruposDePaineisExternosRaiz from '@/views/gruposDePaineisExternos/GruposDePaineisExternosRaiz.vue';
+
+
 const PortfoliosCriarEditar = defineAsyncComponent({
   loader: () => import('@/views/portfolios/PortfoliosCriarEditar.vue'),
   loadingComponent: LoadingComponent,
@@ -41,19 +46,6 @@ const GruposDeObservadoresLista = defineAsyncComponent({
 });
 const GruposDeObservadoresRaiz = defineAsyncComponent({
   loader: () => import('@/views/gruposDeObservadores/GruposDeObservadoresRaiz.vue'),
-  loadingComponent: LoadingComponent,
-});
-
-const GruposDePaineisExternosCriarEditar = defineAsyncComponent({
-  loader: () => import('@/views/gruposDePaineisExternos/GruposDePaineisExternosCriarEditar.vue'),
-  loadingComponent: LoadingComponent,
-});
-const GruposDePaineisExternosLista = defineAsyncComponent({
-  loader: () => import('@/views/gruposDePaineisExternos/GruposDePaineisExternosLista.vue'),
-  loadingComponent: LoadingComponent,
-});
-const GruposDePaineisExternosRaiz = defineAsyncComponent({
-  loader: () => import('@/views/gruposDePaineisExternos/GruposDePaineisExternosRaiz.vue'),
   loadingComponent: LoadingComponent,
 });
 
@@ -239,7 +231,7 @@ export default [
             }),
 
             meta: {
-              título: 'Editar painel externo',
+              título: 'Editar grupo de painel externo',
             },
           },
         ],
