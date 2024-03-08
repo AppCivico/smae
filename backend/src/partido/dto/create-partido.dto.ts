@@ -10,7 +10,7 @@ export class CreatePartidoDto {
     @IsString({ message: '$property| sigla: Precisa ser alfanumérico' })
     @MaxLength(20, { message: '$property| sigla: Máximo 20 caracteres' })
     sigla: string;
-    
+
     @IsString({ message: '$property| nome: Precisa ser alfanumérico' })
     @MaxLength(250, { message: '$property| nome: Máximo 250 caracteres' })
     nome: string;
@@ -37,4 +37,7 @@ export class CreatePartidoDto {
     @IsOnlyDate()
     @Type(() => Date)
     encerramento?: Date;
+
+    @IsOptional()
+    bancadas_id?: number[];
 }
