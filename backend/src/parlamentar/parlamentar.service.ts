@@ -26,7 +26,7 @@ export class ParlamentarService {
     constructor(
         private readonly prisma: PrismaService,
         private readonly uploadService: UploadService
-    ) { }
+    ) {}
 
     async create(dto: CreateParlamentarDto, user: PessoaFromJwt): Promise<RecordWithId> {
         let uploadId: number | null = null;
@@ -58,11 +58,13 @@ export class ParlamentarService {
     }
 
     async findAll(filters: FilterParlamentarDto): Promise<ParlamentarDto[]> {
-        let filterSuplente: {
-            cargo: ParlamentarCargo,
-            eleicao_id: number,
-            mandato_principal_id: null
-        } | undefined;
+        let filterSuplente:
+            | {
+                  cargo: ParlamentarCargo;
+                  eleicao_id: number;
+                  mandato_principal_id: null;
+              }
+            | undefined;
 
         if (filters.disponivel_para_suplente_parlamentar_id) {
             const mandatoPrincipal = await this.prisma.parlamentarMandato.findFirst({
@@ -76,7 +78,7 @@ export class ParlamentarService {
                 select: {
                     cargo: true,
                     eleicao_id: true,
-                }
+                },
             });
 
             if (!mandatoPrincipal)
@@ -85,7 +87,7 @@ export class ParlamentarService {
             filterSuplente = {
                 cargo: mandatoPrincipal.cargo,
                 eleicao_id: mandatoPrincipal.eleicao_id,
-                mandato_principal_id: null
+                mandato_principal_id: null,
             };
         }
 
@@ -93,8 +95,8 @@ export class ParlamentarService {
             where: {
                 removido_em: null,
                 mandatos: {
-                    some: filterSuplente ? { ...filterSuplente } : undefined
-                }
+                    some: filterSuplente ? { ...filterSuplente } : undefined,
+                },
             },
             select: {
                 id: true,
@@ -242,8 +244,8 @@ export class ParlamentarService {
                                         parente_id: true,
                                         RegiaoAcima: {
                                             select: {
-                                                descricao: true
-                                            }
+                                                descricao: true,
+                                            },
                                         },
                                         eleicoesComparecimento: {
                                             where: { removido_em: null },
@@ -274,34 +276,34 @@ export class ParlamentarService {
 
             mandato_atual: mandatoCorrente
                 ? {
-                    ...mandatoCorrente,
+                      ...mandatoCorrente,
 
-                    suplentes: mandatoCorrente.suplentes.map((s) => {
-                        return {
-                            ...s,
-                            parlamentar: {
-                                ...s.parlamentar,
-                                telefone: !user.hasSomeRoles(['SMAE.acesso_telefone'])
-                                    ? s.parlamentar.telefone
-                                    : null,
-                            },
-                        };
-                    }),
+                      suplentes: mandatoCorrente.suplentes.map((s) => {
+                          return {
+                              ...s,
+                              parlamentar: {
+                                  ...s.parlamentar,
+                                  telefone: !user.hasSomeRoles(['SMAE.acesso_telefone'])
+                                      ? s.parlamentar.telefone
+                                      : null,
+                              },
+                          };
+                      }),
 
-                    representatividade: mandatoCorrente.representatividade.map((r) => {
-                        return {
-                            ...r,
+                      representatividade: mandatoCorrente.representatividade.map((r) => {
+                          return {
+                              ...r,
 
-                            regiao: {
-                                id: r.regiao.id,
-                                nivel: r.regiao.nivel,
-                                descricao: r.regiao.descricao,
-                                zona: r.regiao.nivel === 3 ? r.regiao.RegiaoAcima!.descricao : null,
-                                comparecimento: { ...r.regiao.eleicoesComparecimento[0] },
-                            },
-                        };
-                    }),
-                }
+                              regiao: {
+                                  id: r.regiao.id,
+                                  nivel: r.regiao.nivel,
+                                  descricao: r.regiao.descricao,
+                                  zona: r.regiao.nivel === 3 ? r.regiao.RegiaoAcima!.descricao : null,
+                                  comparecimento: { ...r.regiao.eleicoesComparecimento[0] },
+                              },
+                          };
+                      }),
+                  }
                 : null,
 
             mandatos: parlamentar.mandatos.map((m) => {
@@ -588,13 +590,12 @@ export class ParlamentarService {
                     }
                 }
 
-                let pct_participacao: number | null = dto.pct_valor ? dto.pct_valor : null;
-                if (dadosEleicao && !dto.pct_valor) {
+                let pct_participacao: number | null = dto.pct_participacao ? dto.pct_participacao : null;
+                if (dadosEleicao && !dto.pct_participacao) {
                     pct_participacao = (dto.numero_votos / dadosEleicao.valor) * 100;
                 }
 
-                if (dto.ranking == undefined)
-                    throw new HttpException('Ranking deve ser enviado.', 400);
+                if (dto.ranking == undefined) throw new HttpException('Ranking deve ser enviado.', 400);
 
                 const representatividade = await prismaTxn.mandatoRepresentatividade.create({
                     data: {

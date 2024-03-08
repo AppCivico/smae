@@ -1,8 +1,15 @@
-import { ApiProperty } from "@nestjs/swagger";
-import { DadosEleicaoNivel, MunicipioTipo, ParlamentarCargo, ParlamentarEquipeTipo, ParlamentarSuplente, ParlamentarUF } from "@prisma/client";
-import { Transform, TransformFnParams, Type } from "class-transformer";
-import { IsBoolean, IsEnum, IsNumber, IsOptional, IsString, MaxLength, ValidateIf } from "class-validator";
-import { IsOnlyDate } from "src/common/decorators/IsDateOnly";
+import { ApiProperty } from '@nestjs/swagger';
+import {
+    DadosEleicaoNivel,
+    MunicipioTipo,
+    ParlamentarCargo,
+    ParlamentarEquipeTipo,
+    ParlamentarSuplente,
+    ParlamentarUF,
+} from '@prisma/client';
+import { Transform, TransformFnParams, Type } from 'class-transformer';
+import { IsBoolean, IsEnum, IsNumber, IsOptional, IsString, MaxLength, ValidateIf } from 'class-validator';
+import { IsOnlyDate } from 'src/common/decorators/IsDateOnly';
 
 export class CreateParlamentarDto {
     @IsString({ message: '$property| nome: Precisa ser alfanumérico' })
@@ -14,8 +21,8 @@ export class CreateParlamentarDto {
     nome_popular?: string;
 
     /**
-    * @example YYYY-MM-DD
-    */
+     * @example YYYY-MM-DD
+     */
     @IsOnlyDate()
     @Type(() => Date)
     @ValidateIf((object, value) => value !== null)
@@ -183,7 +190,7 @@ export class CreateMandatoRepresentatividadeDto {
     )
     @Transform((a: TransformFnParams) => (a.value === null ? null : +a.value))
     @ValidateIf((object, value) => value !== null)
-    pct_valor?: number;
+    pct_participacao?: number;
 
     @IsOptional()
     @IsNumber()
