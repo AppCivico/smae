@@ -99,7 +99,7 @@ watch(pessoaParaEdição, (novoValor) => {
   resetForm({ values: novoValor });
 
   const tipoSugerido = props.tipo
-    ? tiposNaEquipeDeParlamentar
+    ? tiposNaEquipe
       .find((x) => x.toLowerCase() === props.tipo.toLocaleLowerCase())
     : '';
 
