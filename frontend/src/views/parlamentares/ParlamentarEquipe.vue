@@ -98,13 +98,15 @@ iniciar();
 watch(pessoaParaEdição, (novoValor) => {
   resetForm({ values: novoValor });
 
-  const tipoSugerido = props.tipo
-    ? tiposNaEquipe
-      .find((x) => x.toLowerCase() === props.tipo.toLocaleLowerCase())
-    : '';
+  if (!values.tipo) {
+    const tipoSugerido = props.tipo
+      ? tiposNaEquipe
+        .find((x) => x.toLowerCase() === props.tipo.toLocaleLowerCase())
+      : '';
 
-  if (tipoSugerido) {
-    resetField('tipo', tipoSugerido);
+    if (tipoSugerido) {
+      resetField('tipo', { value: tipoSugerido });
+    }
   }
 
   // rodar imediatamente apenas por causa do tipo sugerido
