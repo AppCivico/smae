@@ -1,4 +1,6 @@
 /* eslint-disable no-template-curly-in-string */
+import cargosDeParlamentar from '@/consts/cargosDeParlamentar';
+import estadosDoBrasil from '@/consts/estadosDoBrasil';
 import regEx from '@/consts/patterns';
 import {
   array,
@@ -482,6 +484,48 @@ export const liçãoAprendida = object()
       .label('Responsável')
       .required(),
   });
+
+export const mandato = object({
+  atuacao: string()
+    .label('Atuação')
+    .nullable(),
+  biografia: string()
+    .label('Biografia')
+    .nullable(),
+  cargo: mixed()
+    .label('Cargo')
+    .oneOf(Object.keys(cargosDeParlamentar))
+    .required(),
+  eleicao_id: number()
+    .label('Eleição')
+    .min(1, 'Eleição inválida'),
+  eleito: boolean()
+    .label('Eleito'),
+  endereco: string()
+    .label('Endereco'),
+  gabinete: string()
+    .label('Gabinete')
+    .nullable(),
+  partido_atual_id: number()
+    .label('Partido atual')
+    .min(1, 'Partido atual inválido'),
+  partido_candidatura_id: number()
+    .label('Partido da candidatura')
+    .min(1, 'Partido da candidatura inválido')
+    .required(),
+  uf: mixed()
+    .label('Estado')
+    .oneOf(estadosDoBrasil.map((x) => x.sigla)).required(),
+  votos_capital: number()
+    .label('Total de votos na capital')
+    .nullable(),
+  votos_estado: number()
+    .label('Total de votos na estado')
+    .nullable(),
+  votos_interior: number()
+    .label('Total de votos na interior')
+    .nullable(),
+});
 
 export const monitoramentoDePlanoDeAção = object()
   .shape({
