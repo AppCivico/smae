@@ -1,0 +1,386 @@
+<script setup>
+import SmallModal from '@/components/SmallModal.vue';
+import { representatividade as representatividadeSchema } from '@/consts/formSchemas';
+import níveisDeRepresentatividade from '@/consts/niveisDeRepresentatividade';
+import tiposDeMunicípio from '@/consts/tiposDeMunicipio';
+import { useAlertStore } from '@/stores/alert.store';
+import { useParlamentaresStore } from '@/stores/parlamentares.store';
+import { useRegionsStore } from '@/stores/regions.store';
+import { storeToRefs } from 'pinia';
+import {
+  ErrorMessage,
+  Field,
+  useForm,
+  useIsFormDirty,
+} from 'vee-validate';
+import { computed, watch } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
+
+const emit = defineEmits(['close']);
+const props = defineProps({
+  apenasEmitir: {
+    type: Boolean,
+    default: false,
+  },
+  parlamentarId: {
+    type: [
+      Number,
+      String,
+    ],
+    default: 0,
+  },
+  representatividadeId: {
+    type: [
+      Number,
+      String,
+    ],
+    default: 0,
+  },
+});
+
+const route = useRoute();
+const router = useRouter();
+const alertStore = useAlertStore();
+const parlamentaresStore = useParlamentaresStore();
+const regionsStore = useRegionsStore();
+
+const {
+  emFoco, chamadasPendentes, erro, representatividadeParaEdição,
+} = storeToRefs(parlamentaresStore);
+
+const { regions: regiões, regiõesPorNível } = storeToRefs(regionsStore);
+
+const schema = representatividadeSchema(!!props.representatividadeId);
+
+const {
+  errors, handleSubmit, isSubmitting, resetForm, setFieldValue, values,
+} = useForm({
+  initialValues: representatividadeParaEdição.value,
+  validationSchema: schema,
+});
+
+const regiõesFiltradas = computed(() => {
+  switch (values.municipio_tipo) {
+    case 'Capital':
+      return regiõesPorNível.value[3];
+    case 'Interior':
+      return regiõesPorNível.value[1];
+
+    default:
+      return [];
+  }
+});
+
+const onSubmit = handleSubmit.withControlled(async (valoresControlados) => {
+  try {
+    if (await parlamentaresStore.salvarRepresentatividade(
+      valoresControlados,
+      props.representatividadeId,
+      props.parlamentarId,
+    )) {
+      parlamentaresStore.buscarItem(props.parlamentarId);
+
+      alertStore.success('Equipe atualizada!');
+      if (props.apenasEmitir) {
+        emit('close');
+      } else if (route.meta.rotaDeEscape) {
+        router.push({
+          name: route.meta.rotaDeEscape,
+          params: route.params,
+          query: route.query,
+        });
+      }
+    }
+  } catch (error) {
+    alertStore.error(error);
+  }
+});
+
+const formulárioSujo = useIsFormDirty();
+
+function iniciar() {
+  if (!regiões.value.length) {
+    regionsStore.getAll();
+  }
+
+  if (!parlamentaresStore.emFoco?.id !== Number(route.params?.parlamentarId)) {
+    if (route.params?.parlamentarId) {
+      parlamentaresStore.buscarItem(route.params?.parlamentarId);
+    } else {
+      alertStore.error('Você não está editando uma representatividade');
+    }
+  }
+}
+
+iniciar();
+
+watch(representatividadeParaEdição, (novoValor) => {
+  resetForm({ values: novoValor });
+});
+</script>
+
+<template>
+  <SmallModal>
+    <div class="flex spacebetween center mb2">
+      <TítuloDePágina>
+        Representatividade parlamentar
+      </TítuloDePágina>
+
+      <hr class="ml2 f1">
+
+      <CheckClose
+        :formulário-sujo="formulárioSujo"
+      />
+    </div>
+
+    <form
+      :disabled="isSubmitting"
+      @submit="onSubmit"
+    >
+      <div class="flex flexwrap g2 mb1">
+        <div class="f1">
+          <LabelFromYup
+            name="nivel"
+            :schema="schema"
+          />
+          <Field
+            v-if="!props.representatividadeId"
+            name="nivel"
+            as="select"
+            class="inputtext light mb1"
+            :class="{ 'error': errors.nivel, loading: chamadasPendentes.emFoco }"
+          >
+            <option value="">
+              Selecionar
+            </option>
+            <option
+              v-for="nível in níveisDeRepresentatividade"
+              :key="nível"
+              :value="nível"
+            >
+              {{ nível }}
+            </option>
+          </Field>
+          <input
+            type="text"
+            disabled
+            class="inputtext light mb1"
+            :value="representatividadeParaEdição?.nivel"
+            :class="{ loading: chamadasPendentes.emFoco }"
+          >
+          <ErrorMessage
+            class="error-msg"
+            name="nivel"
+          />
+        </div>
+
+        <div class="f1">
+          <LabelFromYup
+            name="municipio_tipo"
+            :schema="schema"
+          />
+          <Field
+            v-if="!props.representatividadeId"
+            name="municipio_tipo"
+            as="select"
+            class="inputtext light mb1"
+            :class="{ 'error': errors.municipio_tipo, loading: chamadasPendentes.emFoco }"
+          >
+            <option value="">
+              Selecionar
+            </option>
+            <option
+              v-for="tipo in tiposDeMunicípio"
+              :key="tipo"
+              :value="tipo"
+            >
+              {{ tipo }}
+            </option>
+          </Field>
+          <input
+            type="text"
+            disabled
+            class="inputtext light mb1"
+            :value="representatividadeParaEdição?.municipio_tipo"
+            :class="{ loading: chamadasPendentes.emFoco }"
+          >
+          <ErrorMessage
+            class="error-msg"
+            name="municipio_tipo"
+          />
+        </div>
+
+        <div class="f1">
+          <LabelFromYup
+            name="regiao_id"
+            :schema="schema"
+          />
+          <Field
+            v-if="!props.representatividadeId"
+            name="regiao_id"
+            as="select"
+            class="inputtext light mb1"
+            :class="{ error: errors.regiao_id, loading: chamadasPendentes.emFoco }"
+          >
+            <option value="">
+              Selecionar
+            </option>
+            <option
+              v-for="região in regiõesFiltradas"
+              :key="região.id"
+              :value="região.id"
+            >
+              {{ região.descricao }}
+            </option>
+          </Field>
+          <input
+            type="text"
+            disabled
+            class="inputtext light mb1"
+            :value="representatividadeParaEdição?.regiao?.descricao"
+            :class="{ loading: chamadasPendentes.emFoco }"
+          >
+          <ErrorMessage
+            class="error-msg"
+            name="regiao_id"
+          />
+        </div>
+      </div>
+
+      <div class="flex g2 mb1">
+        <div class="f1">
+          <LabelFromYup
+            name="mandato_id"
+            :schema="schema"
+          />
+
+          <Field
+            v-if="!props.representatividadeId"
+            name="mandato_id"
+            as="select"
+            class="inputtext light mb1"
+            :class="{ error: errors.mandato_id, loading: chamadasPendentes.emFoco }"
+          >
+            <option :value="0">
+              Selecionar
+            </option>
+            <option
+              v-for="mandato in emFoco?.mandatos || []"
+              :key="mandato.id"
+              :value="mandato.id"
+            >
+              {{ mandato.eleicao?.tipo }} -
+              {{ mandato.eleicao?.ano || mandato.id }}
+            </option>
+          </Field>
+          <input
+            v-else
+            class="inputtext light mb1 disabled"
+            :value="representatividadeParaEdição?.mandato?.tipo + ' - ' + representatividadeParaEdição?.mandato?.ano"
+            disabled
+            :class="{ loading: chamadasPendentes.emFoco }"
+          >
+          <ErrorMessage
+            class="error-msg"
+            name="mandato_id"
+          />
+        </div>
+      </div>
+
+      <div class="flex g2 mb1">
+        <div class="f1">
+          <LabelFromYup
+            name="numero_votos"
+            :schema="schema"
+          />
+          <Field
+            name="numero_votos"
+            type="number"
+            class="inputtext light mb1"
+            :class="{ error: errors.numero_votos, loading: chamadasPendentes.emFoco }"
+            min="0"
+            step="1"
+            @change="setFieldValue('numero_votos', $event.target.value ? Number($event.target.value) : null)"
+          />
+          <ErrorMessage
+            class="error-msg"
+            name="numero_votos"
+          />
+        </div>
+        <div class="f1">
+          <LabelFromYup
+            name="numero_comparecimento"
+            :schema="schema"
+          />
+          <Field
+            v-if="!props.representatividadeId"
+            name="numero_comparecimento"
+            type="number"
+            class="inputtext light mb1"
+            :class="{ error: errors.numero_comparecimento, loading: chamadasPendentes.emFoco }"
+            min="0"
+            step="1"
+            @change="setFieldValue('numero_comparecimento', $event.target.value ? Number($event.target.value) : null)"
+          />
+          <input
+            v-else
+            class="inputtext light mb1 disabled"
+            :value="representatividadeParaEdição?.numero_comparecimento"
+            disabled
+            :class="{ loading: chamadasPendentes.emFoco }"
+          >
+          <ErrorMessage
+            class="error-msg"
+            name="numero_comparecimento"
+          />
+        </div>
+        <div class="f1">
+          <LabelFromYup
+            name="pct_valor"
+            :schema="schema"
+          />
+          <Field
+            name="pct_valor"
+            type="number"
+            class="inputtext light mb1"
+            :class="{ error: errors.pct_valor, loading: chamadasPendentes.emFoco }"
+            min="0"
+            step="0.01"
+            @change="setFieldValue('pct_valor', $event.target.value ? Number($event.target.value) : null)"
+          />
+          <ErrorMessage
+            class="error-msg"
+            name="pct_valor"
+          />
+        </div>
+      </div>
+
+      <FormErrorsList :errors="errors" />
+
+      <div class="flex spacebetween center mb2">
+        <hr class="mr2 f1">
+        <button
+          class="btn big"
+          :disabled="isSubmitting || Object.keys(errors)?.length"
+          :title="Object.keys(errors)?.length
+          ? `Erros de preenchimento: ${Object.keys(errors)?.length}`
+          : null"
+        >
+          Salvar
+        </button>
+        <hr class="ml2 f1">
+      </div>
+    </form>
+
+    <LoadingComponent v-if="chamadasPendentes.equipe" />
+
+    <div
+      v-if="erro"
+      class="error p1"
+    >
+      <div class="error-msg">
+        {{ erro }}
+      </div>
+    </div>
+  </SmallModal>
+</template>
