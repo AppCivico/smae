@@ -11,7 +11,7 @@ import {
 import { Response as ExpressResponse } from 'express';
 import { Roles } from '../../auth/decorators/roles.decorator';
 import { JsonStringifyTransformStream } from '../../auth/pipe/JsonStringifyTransformStream.pipe';
-import { CreateRelIndicadorDto } from './dto/create-indicadore.dto';
+import { CreateRelIndicadorDto } from './dto/create-indicadores.dto';
 import { ListIndicadoresDto, RelIndicadoresDto, RelIndicadoresVariaveisDto } from './entities/indicadores.entity';
 import { IndicadoresService } from './indicadores.service';
 
