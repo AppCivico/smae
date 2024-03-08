@@ -336,21 +336,21 @@ watch(representatividadeParaEdição, (novoValor) => {
         </div>
         <div class="f1">
           <LabelFromYup
-            name="pct_valor"
+            name="pct_participacao"
             :schema="schema"
           />
           <Field
-            name="pct_valor"
+            name="pct_participacao"
             type="number"
             class="inputtext light mb1"
-            :class="{ error: errors.pct_valor, loading: chamadasPendentes.emFoco }"
+            :class="{ error: errors.pct_participacao, loading: chamadasPendentes.emFoco }"
             min="0"
             step="0.01"
-            @change="setFieldValue('pct_valor', $event.target.value ? Number($event.target.value) : null)"
+            @change="setFieldValue('pct_participacao', $event.target.value ? Number($event.target.value) : null)"
           />
           <ErrorMessage
             class="error-msg"
-            name="pct_valor"
+            name="pct_participacao"
           />
         </div>
       </div>
@@ -363,8 +363,8 @@ watch(representatividadeParaEdição, (novoValor) => {
           class="btn big"
           :disabled="isSubmitting || Object.keys(errors)?.length"
           :title="Object.keys(errors)?.length
-          ? `Erros de preenchimento: ${Object.keys(errors)?.length}`
-          : null"
+  ? `Erros de preenchimento: ${Object.keys(errors)?.length}`
+  : null"
         >
           Salvar
         </button>
