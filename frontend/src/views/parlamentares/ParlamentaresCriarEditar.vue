@@ -1,13 +1,15 @@
 <script setup>
+import InputImageProfile from '@/components/InputImageProfile.vue';
 import { parlamentar as schema } from '@/consts/formSchemas';
 import { useAlertStore } from '@/stores/alert.store';
-import { storeToRefs } from 'pinia';
-import { useRoute, useRouter } from 'vue-router';
 import { useParlamentaresStore } from '@/stores/parlamentares.store';
-import InputImageProfile from '@/components/InputImageProfile.vue';
+import { storeToRefs } from 'pinia';
 import {
-  ErrorMessage, Field, FieldArray, Form,
+  ErrorMessage,
+  Field,
+  Form,
 } from 'vee-validate';
+import { useRoute, useRouter } from 'vue-router';
 
 import { computed } from 'vue';
 
@@ -67,6 +69,7 @@ const equipe = computed(() => itemParaEdição.value?.equipe?.reduce((acc, cur) 
     <hr class="ml2 f1">
     <CheckClose />
   </div>
+
   <Form
     v-slot="{ errors, isSubmitting, }"
     :validation-schema="schema"

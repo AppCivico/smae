@@ -10,10 +10,10 @@ import { Home } from '@/views';
 
 import { Login, LostPassword, NewPassword } from '@/views/auth';
 
+import ParlamentarDetalhe from '@/views/parlamentares/ParlamentarDetalhe.vue';
 import ParlamentaresCriarEditar from '@/views/parlamentares/ParlamentaresCriarEditar.vue';
 import ParlamentaresLista from '@/views/parlamentares/ParlamentaresLista.vue';
 import ParlamentaresRaiz from '@/views/parlamentares/ParlamentaresRaiz.vue';
-import ParlamentarDetalhe from '@/views/parlamentares/ParlamentarDetalhe.vue';
 
 import Panorama from '@/views/Panorama.vue';
 import administracao from './administracao';
