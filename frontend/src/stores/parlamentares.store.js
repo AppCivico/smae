@@ -1,3 +1,4 @@
+import tiposNaEquipeDeParlamentar from '@/consts/tiposNaEquipeDeParlamentar';
 import { defineStore } from 'pinia';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
@@ -150,6 +151,10 @@ export const useParlamentaresStore = defineStore('parlamentaresStore', {
     },
     pessoaParaEdição({ emFoco }) {
       const { pessoaId } = this.route.params;
+      const tipoSugerido = this.route.query.tipo
+        ? tiposNaEquipeDeParlamentar
+          .find((x) => x.toLowerCase() === this.route.query.tipo.toLocaleLowerCase())
+        : '';
 
       const pessoa = pessoaId && Array.isArray(emFoco?.equipe)
         ? emFoco.equipe.find((x) => Number(pessoaId) === x.id)
@@ -157,6 +162,7 @@ export const useParlamentaresStore = defineStore('parlamentaresStore', {
 
       return {
         ...pessoa,
+        tipo: pessoa.tipo || tipoSugerido,
       };
     },
   },
