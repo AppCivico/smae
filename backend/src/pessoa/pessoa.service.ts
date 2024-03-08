@@ -780,9 +780,7 @@ export class PessoaService {
         }
 
         const listActive = await this.prisma.pessoa.findMany({
-            orderBy: {
-                nome_exibicao: 'asc',
-            },
+            orderBy: [{ desativado: 'asc' }, { nome_exibicao: 'asc' }],
             where: {
                 NOT: { pessoa_fisica_id: null },
                 AND: filtrosExtra,
