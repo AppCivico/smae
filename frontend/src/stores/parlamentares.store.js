@@ -7,12 +7,14 @@ export const useParlamentaresStore = defineStore('parlamentaresStore', {
   state: () => ({
     lista: [],
     emFoco: null,
+    eleições: [],
 
     chamadasPendentes: {
       lista: false,
       emFoco: false,
       equipe: false,
       mandato: false,
+      eleições: false,
     },
     erro: null,
   }),
@@ -43,6 +45,23 @@ export const useParlamentaresStore = defineStore('parlamentaresStore', {
         this.erro = erro;
       }
       this.chamadasPendentes.lista = false;
+    },
+
+    async buscarEleições(params = {}) {
+      this.chamadasPendentes.eleições = true;
+      this.erro = null;
+
+      this.requestS.get(`${baseUrl}/eleicao`, params).then((resposta) => {
+        if (Array.isArray(resposta)) {
+          this.eleições = resposta;
+        } else {
+          throw new Error('Falha na carga da lista de eleições');
+        }
+      }).catch((erro) => {
+        this.erro = erro;
+      });
+
+      this.chamadasPendentes.eleições = false;
     },
 
     async excluirItem(id) {
@@ -135,6 +154,8 @@ export const useParlamentaresStore = defineStore('parlamentaresStore', {
         ...emFoco,
       };
     },
+    idsDasEleiçõesQueParlamentarConcorreu: ({ emFoco }) => emFoco
+      .mandatos?.map((x) => x.eleicao.id) || [],
     mandatoParaEdição({ emFoco }) {
       const { mandatoId } = this.route.params;
 
