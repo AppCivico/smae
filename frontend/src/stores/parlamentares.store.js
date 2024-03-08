@@ -13,6 +13,7 @@ export const useParlamentaresStore = defineStore('parlamentaresStore', {
       lista: false,
       emFoco: false,
       equipe: false,
+      suplentes: false,
       mandato: false,
       eleições: false,
     },
@@ -123,6 +124,35 @@ export const useParlamentaresStore = defineStore('parlamentaresStore', {
       }
     },
 
+    async salvarSuplente(params = {}, {
+      parlamentarId, mandatoId, suplencia, parlamentarSuplenteId,
+    } = {}) {
+      this.chamadasPendentes.suplente = true;
+      this.erro = null;
+      console.log('salvarSuplente: ', parlamentarId, mandatoId, suplencia, parlamentarSuplenteId);
+      if (!parlamentarId) {
+        throw new Error('ID do parlamentar ausente');
+      }
+
+      try {
+        await this.requestS.post(
+          `${baseUrl}/parlamentar/${parlamentarId}/suplente/`,
+          {
+            suplencia,
+            mandato_id: mandatoId,
+            parlamentar_suplente_id: parlamentarSuplenteId,
+          },
+        );
+
+        this.chamadasPendentes.suplente = false;
+        return true;
+      } catch (error) {
+        this.erro = error;
+        this.chamadasPendentes.suplente = false;
+        return false;
+      }
+    },
+
     async salvarMandato(params = {}, { mandatoId = 0, parlamentarId } = this.route.params) {
       this.chamadasPendentes.mandato = true;
       this.erro = null;
@@ -185,6 +215,10 @@ export const useParlamentaresStore = defineStore('parlamentaresStore', {
         ...pessoa,
         tipo: pessoa.tipo || tipoSugerido,
       };
+    },
+    // TODO: fazer edição
+    suplenteParaEdição({ emFoco }) {
+      console.log('suplenteParaEdição: ', emFoco);
     },
   },
 });

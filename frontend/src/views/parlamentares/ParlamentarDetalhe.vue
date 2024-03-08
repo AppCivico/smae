@@ -509,14 +509,32 @@
         </tr>
       </tbody>
     </table>
+    <button
+      class="like-a__text addlink"
+      type="button"
+      @click="abrirModalSuplentes"
+    >
+      <svg
+        width="20"
+        height="20"
+      >
+        <use xlink:href="#i_+" />
+      </svg>
+      Adicionar suplente
+    </button>
   </div>
+  <!-- TODO: só pode aparecer se tiver mandato criado -->
+  <ParlamentaresSuplentes
+    v-if="showSuplentesModal"
+    :parlamentar-id="emFoco.id"
+    :mandato-id="emFoco.mandato_atual.id"
+  />
 </template>
 
 <script setup>
 import { useParlamentaresStore } from '@/stores/parlamentares.store';
-// import { parlamentar as schema } from '@/consts/formSchemas';
-
 import { onMounted, ref, computed } from 'vue';
+import ParlamentaresSuplentes from './ParlamentaresSuplentes.vue';
 
 const props = defineProps({
   parlamentarId: {
@@ -544,6 +562,11 @@ const representatividadeInterior = computed(() => representatividade.value.filte
 
 const suplentes = computed(() => emFoco.value?.mandato_atual?.suplentes ?? []);
 
+const showSuplentesModal = ref(false);
+
+const abrirModalSuplentes = () => {
+  showSuplentesModal.value = true;
+};
 </script>
 
 <style scoped lang="less">
