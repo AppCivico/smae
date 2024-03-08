@@ -184,6 +184,10 @@ export class CreateMandatoRepresentatividadeDto {
     @Transform((a: TransformFnParams) => (a.value === null ? null : +a.value))
     @ValidateIf((object, value) => value !== null)
     pct_valor?: number;
+
+    @IsOptional()
+    @IsNumber()
+    ranking?: number;
 }
 
 export class CreateMandatoBancadaDto {

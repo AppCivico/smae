@@ -4421,6 +4421,8 @@ model MandatoRepresentatividade {
 
     numero_votos Int
 
+    ranking Int?
+
     // Valor será calculado com base em rows da tabela EleicaoComparecimento
     pct_participacao Float? @db.DoublePrecision
 
