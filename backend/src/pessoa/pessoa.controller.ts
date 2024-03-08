@@ -9,13 +9,13 @@ import { CreatePessoaDto } from './dto/create-pessoa.dto';
 import { DetalhePessoaDto } from './dto/detalhe-pessoa.dto';
 import { FilterPessoaDto } from './dto/filter-pessoa.dto';
 import { ListPessoaDto, ListPessoaReducedDto } from './dto/list-pessoa.dto';
-import { UpdatePessoaDto } from './dto/update-pessoa.dto';
-import { PessoaService } from './pessoa.service';
 import {
     BuscaResponsabilidades,
     DetalheResponsabilidadeDto,
     ExecutaTransferenciaResponsabilidades,
 } from './dto/responsabilidade-pessoa.dto';
+import { UpdatePessoaDto } from './dto/update-pessoa.dto';
+import { PessoaService } from './pessoa.service';
 
 @ApiTags('Pessoa')
 @Controller('pessoa')
@@ -111,7 +111,7 @@ export class PessoaController {
     @ApiUnauthorizedResponse()
     @Roles('CadastroPessoa.editar_responsabilidade')
     async executaTransferenciaResponsabilidades(
-        @Query() dto: ExecutaTransferenciaResponsabilidades,
+        @Body() dto: ExecutaTransferenciaResponsabilidades,
         @CurrentUser() user: PessoaFromJwt
     ): Promise<void> {
         await this.pessoaService.executaTransferenciaResponsabilidades(dto, user);
