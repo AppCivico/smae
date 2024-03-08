@@ -934,7 +934,7 @@ export class PessoaService {
                             perfil_privilegio: {
                                 some: {
                                     privilegio: {
-                                        codigo: 'SMAE.espectador_de_projeto',
+                                        codigo: 'SMAE.espectador_de_painel_externo',
                                     },
                                 },
                             },
@@ -951,7 +951,7 @@ export class PessoaService {
                             perfil_privilegio: {
                                 some: {
                                     privilegio: {
-                                        codigo: 'SMAE.espectador_de_projeto',
+                                        codigo: 'SMAE.espectador_de_painel_externo',
                                     },
                                 },
                             },
@@ -1198,10 +1198,8 @@ export class PessoaService {
     }
 
     async getResponsabilidades(dto: BuscaResponsabilidades, user: PessoaFromJwt): Promise<DetalheResponsabilidadeDto> {
-        const sistema = user.assertOneModuloSistema('buscar', 'responsabilidades de usuários');
-
         let metas: IdCodTituloDto[] | undefined;
-        if (sistema == 'PDM') {
+        if (user.modulo_sistema.includes('PDM')) {
             // a ideia é 'pecar' pelo excesso, pois os sistema pode estar com o banco
             // sujo, ou seja, ter uma pessoa atribuida no filho mas não estar atribuida corretamente na meta
             // nesse caso, na migração, a meta seria ajustada até o nivel necessário
