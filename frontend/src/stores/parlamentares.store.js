@@ -234,6 +234,15 @@ export const useParlamentaresStore = defineStore('parlamentaresStore', {
         eleicao_id: mandato?.eleicao?.id,
         partido_atual_id: mandato?.partido_atual?.id,
         partido_candidatura_id: mandato?.partido_candidatura?.id,
+        votos_estado: typeof mandato.votos_estado === 'string'
+          ? Number(mandato.votos_estado)
+          : undefined,
+        votos_capital: typeof mandato.votos_capital === 'string'
+          ? Number(mandato.votos_capital)
+          : undefined,
+        votos_interior: typeof mandato.votos_interior === 'string'
+          ? Number(mandato.votos_interior)
+          : undefined,
       };
     },
     pessoaParaEdição({ emFoco }) {
