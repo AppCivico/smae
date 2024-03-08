@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post, Query } from '@nestjs/common';
 import { ApiBearerAuth, ApiNoContentResponse, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { Roles } from '../auth/decorators/roles.decorator';
@@ -10,11 +10,12 @@ import { CreateMandatoDto, CreateParlamentarDto, CreateMandatoRepresentatividade
 import { ListParlamentarDto, ParlamentarDetailDto } from './entities/parlamentar.entity';
 import { UpdateEquipeDto, UpdateMandatoDto, UpdateParlamentarDto, UpdateRepresentatividadeDto } from './dto/update-parlamentar.dto';
 import { RemoveMandatoDepsDto } from './dto/remove-mandato-deps.dto';
+import { FilterParlamentarDto } from './dto/filter-parlamentar.dto';
 
 @ApiTags('Parlamentar')
 @Controller('parlamentar')
 export class ParlamentarController {
-    constructor(private readonly parlamentarService: ParlamentarService) {}
+    constructor(private readonly parlamentarService: ParlamentarService) { }
 
     @Post()
     @ApiBearerAuth('access-token')
@@ -26,8 +27,8 @@ export class ParlamentarController {
 
     @ApiBearerAuth('access-token')
     @Get()
-    async findAll(): Promise<ListParlamentarDto> {
-        return { linhas: await this.parlamentarService.findAll() };
+    async findAll(@Query() filters: FilterParlamentarDto): Promise<ListParlamentarDto> {
+        return { linhas: await this.parlamentarService.findAll(filters) };
     }
 
     @Get(':id')

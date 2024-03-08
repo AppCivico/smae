@@ -90,7 +90,7 @@ export class CreateMandatoDto {
     @IsBoolean()
     eleito: boolean;
 
-    @ApiProperty({ enum: ParlamentarCargo, enumName: 'Cargo' })
+    @ApiProperty({ enum: ParlamentarCargo, enumName: 'ParlamentarCargo' })
     @IsEnum(ParlamentarCargo, {
         message: '$property| Precisa ser um dos seguintes valores: ' + Object.values(ParlamentarCargo).join(', '),
     })
