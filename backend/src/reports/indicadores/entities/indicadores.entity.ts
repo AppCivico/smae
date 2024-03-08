@@ -16,6 +16,8 @@ export class RelIndicadoresDto {
      * data em YYYY-MM (anual, analítico), YYYY (anual, consolidado) ou "YYYY-MM/YYYY-MM" (semestral, consolidado e analítico)
      **/
     data: string;
+
+    data_referencia: string
     /**
      * Valor inteiro ou null
      **/
