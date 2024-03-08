@@ -3,7 +3,7 @@ import { GeoReferenciaTipo } from '@prisma/client';
 import { Transform } from 'class-transformer';
 import { IsArray, IsEnum, IsInt, IsOptional, IsString, MaxLength } from 'class-validator';
 import { GeoJSON } from 'geojson';
-import { NumberArrayTransform } from '../../auth/transforms/number-array.error';
+import { NumberArrayTransform } from '../../auth/transforms/number-array.transform';
 import { IsGeoJSON } from '../../auth/decorators/is-geojson.decorator';
 import { BadRequestException } from '@nestjs/common';
 
