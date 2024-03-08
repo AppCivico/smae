@@ -13,9 +13,14 @@ import { CreatePessoaDto } from './dto/create-pessoa.dto';
 import { DetalhePessoaDto } from './dto/detalhe-pessoa.dto';
 import { FilterPessoaDto } from './dto/filter-pessoa.dto';
 import { PerfilAcessoPrivilegios } from './dto/perifl-acesso-privilegios.dto';
-import { BuscaResponsabilidades, DetalheResponsabilidadeDto } from './dto/responsabilidade-pessoa.dto';
+import {
+    BuscaResponsabilidades,
+    DetalheResponsabilidadeDto,
+    ExecutaTransferenciaResponsabilidades,
+} from './dto/responsabilidade-pessoa.dto';
 import { UpdatePessoaDto } from './dto/update-pessoa.dto';
 import { ListaPrivilegiosModulos } from './entities/ListaPrivilegiosModulos';
+import { PessoaResponsabilidadesMetaService } from './pessoa.responsabilidades.metas.service';
 
 const BCRYPT_ROUNDS = 10;
 
@@ -27,7 +32,10 @@ export class PessoaService {
     #urlLoginSMAE: string;
     #cpfObrigatorioSemRF: boolean;
     #matchEmailRFObrigatorio: string;
-    constructor(private readonly prisma: PrismaService) {
+    constructor(
+        private readonly prisma: PrismaService,
+        private readonly pRespMetaService: PessoaResponsabilidadesMetaService
+    ) {
         this.#maxQtdeSenhaInvalidaParaBlock = Number(process.env.MAX_QTDE_SENHA_INVALIDA_PARA_BLOCK) || 3;
         this.#urlLoginSMAE = process.env.URL_LOGIN_SMAE || '#/login-smae';
         this.#cpfObrigatorioSemRF = Number(process.env.CPF_OBRIGATORIO_SEM_RF) == 1;
@@ -1198,191 +1206,105 @@ export class PessoaService {
     async getResponsabilidades(dto: BuscaResponsabilidades, user: PessoaFromJwt): Promise<DetalheResponsabilidadeDto> {
         let metas: IdCodTituloDto[] | undefined;
         if (user.modulo_sistema.includes('PDM')) {
-            // a ideia é 'pecar' pelo excesso, pois os sistema pode estar com o banco
-            // sujo, ou seja, ter uma pessoa atribuida no filho mas não estar atribuida corretamente na meta
-            // nesse caso, na migração, a meta seria ajustada até o nivel necessário
-            const somePessoa = { some: { pessoa_id: dto.pessoa_id } } as const;
-            const rows = await this.prisma.meta.findMany({
-                where: {
-                    removido_em: null,
-                    pdm_id: dto.pdm_id,
-                    OR: [
-                        // responsavel na meta
-                        { meta_responsavel: somePessoa },
-
-                        // responsavel na iniciativa
-                        {
-                            iniciativa: {
-                                some: {
-                                    removido_em: null,
-                                    iniciativa_responsavel: somePessoa,
-                                },
-                            },
-                        },
-                        // responsavel na atividade
-                        {
-                            iniciativa: {
-                                some: {
-                                    removido_em: null,
-                                    atividade: {
-                                        some: { atividade_responsavel: somePessoa },
-                                    },
-                                },
-                            },
-                        },
-
-                        // responsavel em variavel do indicador da meta
-                        {
-                            indicador: {
-                                some: {
-                                    removido_em: null,
-                                    IndicadorVariavel: {
-                                        some: {
-                                            desativado_em: null,
-                                            variavel: {
-                                                removido_em: null,
-                                                variavel_responsavel: somePessoa,
-                                            },
-                                        },
-                                    },
-                                },
-                            },
-                        },
-                        // responsavel em variavel do indicador da iniciativa
-                        {
-                            iniciativa: {
-                                some: {
-                                    removido_em: null,
-                                    Indicador: {
-                                        some: {
-                                            removido_em: null,
-                                            IndicadorVariavel: {
-                                                some: {
-                                                    desativado_em: null,
-                                                    variavel: {
-                                                        removido_em: null,
-                                                        variavel_responsavel: somePessoa,
-                                                    },
-                                                },
-                                            },
-                                        },
-                                    },
-                                },
-                            },
-                        },
-                        // responsavel em variavel do indicador da atividade
-                        {
-                            iniciativa: {
-                                some: {
-                                    removido_em: null,
-                                    atividade: {
-                                        some: {
-                                            Indicador: {
-                                                some: {
-                                                    removido_em: null,
-                                                    IndicadorVariavel: {
-                                                        some: {
-                                                            desativado_em: null,
-                                                            variavel: {
-                                                                removido_em: null,
-                                                                variavel_responsavel: somePessoa,
-                                                            },
-                                                        },
-                                                    },
-                                                },
-                                            },
-                                        },
-                                    },
-                                },
-                            },
-                        },
-
-                        // cronograma da meta
-                        {
-                            cronograma: {
-                                some: {
-                                    removido_em: null,
-                                    CronogramaEtapa: {
-                                        some: {
-                                            inativo: undefined, // conferir com o Lucas/FGV
-                                            etapa: {
-                                                removido_em: null,
-                                                responsaveis: somePessoa,
-                                            },
-                                        },
-                                    },
-                                },
-                            },
-                        },
-
-                        // cronograma da iniciativa
-                        {
-                            iniciativa: {
-                                some: {
-                                    removido_em: null,
-                                    Cronograma: {
-                                        some: {
-                                            removido_em: null,
-                                            CronogramaEtapa: {
-                                                some: {
-                                                    inativo: undefined, // conferir com o Lucas/FGV
-                                                    etapa: {
-                                                        removido_em: null,
-                                                        responsaveis: somePessoa,
-                                                    },
-                                                },
-                                            },
-                                        },
-                                    },
-                                },
-                            },
-                        },
-
-                        // cronograma da atividade
-                        {
-                            iniciativa: {
-                                some: {
-                                    removido_em: null,
-                                    atividade: {
-                                        some: {
-                                            removido_em: null,
-                                            Cronograma: {
-                                                some: {
-                                                    removido_em: null,
-                                                    CronogramaEtapa: {
-                                                        some: {
-                                                            inativo: undefined, // conferir com o Lucas/FGV
-                                                            etapa: {
-                                                                removido_em: null,
-                                                                responsaveis: somePessoa,
-                                                            },
-                                                        },
-                                                    },
-                                                },
-                                            },
-                                        },
-                                    },
-                                },
-                            },
-                        },
-
-                        // TODO: conferir se também vai movimentar coordenador CP, pois esses precisam também da flag,
-                        // nesse caso, precisaria começar a receber o ID da pessoa que vai receber tbm, pra condicionar o
-                        // que vai carregar aqui
-                    ],
-                },
-                select: {
-                    id: true,
-                    codigo: true,
-                    titulo: true,
-                },
-            });
-
-            metas = rows;
+            metas = await this.pRespMetaService.buscaMetas(dto.pessoa_id, dto.pdm_id, this.prisma);
         }
 
         return {
             metas: metas ?? [],
         };
+    }
+
+    async executaTransferenciaResponsabilidades(
+        dto: ExecutaTransferenciaResponsabilidades,
+        user: PessoaFromJwt
+    ): Promise<void> {
+        const { origemPessoa, novaPessoa } = await this.buscaPessoasTransferencia(dto);
+
+        const info = await this.getResponsabilidades({ pessoa_id: origemPessoa.id }, user);
+
+        if (Array.isArray(dto.metas)) {
+            for (const metaId of dto.metas) {
+                if (!info.metas.find((v) => v.id === metaId))
+                    throw new BadRequestException(
+                        `Meta ID ${metaId} não pode ser transferida, pois não está na origem.`
+                    );
+            }
+        }
+
+        await this.prisma.$transaction(
+            async (prismaTx: Prisma.TransactionClient) => {
+                if (dto.metas.length) {
+                    switch (dto.operacao) {
+                        case 'copiar':
+                            await this.pRespMetaService.copiarResponsabilidades(
+                                origemPessoa.id,
+                                novaPessoa!.id,
+                                dto.metas,
+                                prismaTx
+                            );
+                            break;
+                        case 'remover':
+                            await this.pRespMetaService.removerResponsabilidades(origemPessoa.id, dto.metas, prismaTx);
+                            break;
+                        case 'transferir':
+                            await this.pRespMetaService.transferirResponsabilidades(
+                                origemPessoa.id,
+                                novaPessoa!.id,
+                                dto.metas,
+                                prismaTx
+                            );
+                            break;
+                        default:
+                            dto.operacao satisfies never;
+                    }
+                }
+            },
+            { isolationLevel: 'Serializable' }
+        );
+
+        console.log(origemPessoa, novaPessoa);
+    }
+
+    private async buscaPessoasTransferencia(dto: ExecutaTransferenciaResponsabilidades) {
+        const pessoas = await this.prisma.pessoa.findMany({
+            where: {
+                OR: [
+                    { id: dto.origem_pessoa_id }, // a pessoa de origem pode estar desativada já
+                    {
+                        AND: dto.nova_pessoa_id ? { id: dto.nova_pessoa_id } : undefined,
+                    },
+                ],
+            },
+            select: {
+                id: true,
+                nome_completo: true,
+                desativado: true,
+                pessoa_fisica: {
+                    select: {
+                        orgao_id: true,
+                    },
+                },
+            },
+        });
+
+        const origemPessoa = pessoas.find((pessoa) => pessoa.id === dto.origem_pessoa_id);
+        const novaPessoa = dto.nova_pessoa_id ? pessoas.find((pessoa) => pessoa.id === dto.nova_pessoa_id) : undefined;
+
+        if (!origemPessoa) throw new BadRequestException('Não foi possível encontrar a pessoa de origem');
+
+        if (dto.operacao === 'transferir' || dto.operacao === 'copiar') {
+            if (!novaPessoa)
+                throw new BadRequestException('Não foi possível encontrar o usuário de destino. Não encontrado');
+
+            if (novaPessoa.desativado)
+                throw new BadRequestException('Usuário responsável pelo destino não pode estar desativado');
+
+            if (!novaPessoa.pessoa_fisica?.orgao_id || !origemPessoa.pessoa_fisica?.orgao_id)
+                throw new BadRequestException('Usuário de origem e destino precisam ter um órgão');
+
+            if (novaPessoa.pessoa_fisica.orgao_id !== origemPessoa.pessoa_fisica.orgao_id)
+                throw new BadRequestException('Usuário de origem e destino precisam pertencer ao mesmo órgão');
+        }
+        return { origemPessoa, novaPessoa };
     }
 }
