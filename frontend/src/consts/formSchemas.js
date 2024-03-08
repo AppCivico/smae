@@ -1338,18 +1338,16 @@ export const representatividade = (éCorreção = false) => object()
           .isType(null)))) */
     nivel: mixed()
       .label('Nível')
-      .oneOf(níveisDeRepresentatividade), /* .when('éCorreção', ((_, field) => ((éCorreção)
-        ? field
-          .required()
-        : field
-          .isType(null)))) */
+      .oneOf(Object.keys(níveisDeRepresentatividade)),
     numero_comparecimento: number()
       .label('Comparecimento')
       .min(0)
+      .max(2147483647)
       .nullable(),
     numero_votos: number()
       .label('Votos')
       .min(0)
+      .max(2147483647)
       .required(),
     pct_participacao: number()
       .label('Percentual')
