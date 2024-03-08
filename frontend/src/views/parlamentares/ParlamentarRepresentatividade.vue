@@ -1,7 +1,6 @@
 <script setup>
 import SmallModal from '@/components/SmallModal.vue';
 import { representatividade as representatividadeSchema } from '@/consts/formSchemas';
-import níveisDeRepresentatividade from '@/consts/niveisDeRepresentatividade';
 import tiposDeMunicípio from '@/consts/tiposDeMunicipio';
 import { useAlertStore } from '@/stores/alert.store';
 import { useParlamentaresStore } from '@/stores/parlamentares.store';
@@ -65,7 +64,6 @@ const regiõesFiltradas = computed(() => {
       return regiõesPorNível.value[3];
     case 'Interior':
       return regiõesPorNível.value[1];
-
     default:
       return [];
   }
@@ -97,6 +95,19 @@ const onSubmit = handleSubmit.withControlled(async (valoresControlados) => {
 });
 
 const formulárioSujo = useIsFormDirty();
+
+function definirCampoNível(valor) {
+  switch (valor) {
+    case 'Capital':
+      setFieldValue('nivel', 'Subprefeitura');
+      break;
+    case 'Interior':
+      setFieldValue('nivel', 'Municipio'); break;
+    default:
+      setFieldValue('nivel', '');
+      break;
+  }
+}
 
 function iniciar() {
   if (!regiões.value.length) {
@@ -138,42 +149,11 @@ watch(representatividadeParaEdição, (novoValor) => {
       @submit="onSubmit"
     >
       <div class="flex flexwrap g2 mb1">
-        <div class="f1">
-          <LabelFromYup
-            name="nivel"
-            :schema="schema"
-          />
-          <Field
-            v-if="!props.representatividadeId"
-            name="nivel"
-            as="select"
-            class="inputtext light mb1"
-            :class="{ 'error': errors.nivel, loading: chamadasPendentes.emFoco }"
-          >
-            <option value="">
-              Selecionar
-            </option>
-            <option
-              v-for="nível in Object.values(níveisDeRepresentatividade) "
-              :key="nível.valor"
-              :value="nível.valor"
-            >
-              {{ nível.nome }}
-            </option>
-          </Field>
-          <input
-            v-else
-            type="text"
-            disabled
-            class="inputtext light mb1"
-            :value="representatividadeParaEdição?.nivel"
-            :class="{ loading: chamadasPendentes.emFoco }"
-          >
-          <ErrorMessage
-            class="error-msg"
-            name="nivel"
-          />
-        </div>
+        <Field
+          v-if="!props.representatividadeId"
+          name="nivel"
+          type="hidden"
+        />
 
         <div class="f1">
           <LabelFromYup
@@ -186,6 +166,7 @@ watch(representatividadeParaEdição, (novoValor) => {
             as="select"
             class="inputtext light mb1"
             :class="{ 'error': errors.municipio_tipo, loading: chamadasPendentes.emFoco }"
+            @change="(e) => definirCampoNível(e.target.value) "
           >
             <option value="">
               Selecionar
@@ -248,9 +229,7 @@ watch(representatividadeParaEdição, (novoValor) => {
             name="regiao_id"
           />
         </div>
-      </div>
 
-      <div class="flex g2 mb1">
         <div class="f1">
           <LabelFromYup
             name="mandato_id"
