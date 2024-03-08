@@ -1344,7 +1344,7 @@ export const representatividade = (éCorreção = false) => object()
       .label('Votos')
       .min(0)
       .required(),
-    pct_valor: number()
+    pct_participacao: number()
       .label('Percentual')
       .min(0)
       .max(100)
