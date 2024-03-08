@@ -507,7 +507,8 @@ export const mandato = object({
     .label('Eleito')
     .required(),
   endereco: string()
-    .label('Endereco'),
+    .label('Endereco')
+    .nullable(),
   gabinete: string()
     .label('Gabinete')
     .required(),
