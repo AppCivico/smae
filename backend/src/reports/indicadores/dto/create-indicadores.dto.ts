@@ -1,7 +1,7 @@
 import { ApiProperty, IntersectionType } from '@nestjs/swagger';
 import { TipoRelatorio } from '@prisma/client';
 import { Transform } from 'class-transformer';
-import { IsEnum, IsInt, IsOptional, ValidateIf } from 'class-validator';
+import { IsBoolean, IsEnum, IsInt, IsOptional, ValidateIf } from 'class-validator';
 import { FiltroMetasIniAtividadeDto } from '../../relatorios/dto/filtros.dto';
 
 export const SemestreDto = {
@@ -55,6 +55,14 @@ export class IndicadorParams {
     @IsInt()
     @Transform(({ value }: any) => +value)
     ano: number;
+
+    /**
+     * Se devemos trazer o analitico desde o ano do inicio ou não
+     * @example "true"
+     */
+    @IsOptional()
+    @IsBoolean()
+    analitico_desde_o_inicio?: boolean;
 }
 
 export class CreateRelIndicadorDto extends IntersectionType(FiltroMetasIniAtividadeDto, IndicadorParams) {}

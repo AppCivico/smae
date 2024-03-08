@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { FonteRelatorio } from '@prisma/client';
 import { plainToInstance } from 'class-transformer';
 import { PrismaService } from '../../prisma/prisma.service';
-import { CreateRelIndicadorDto } from '../indicadores/dto/create-indicadore.dto';
+import { CreateRelIndicadorDto } from '../indicadores/dto/create-indicadores.dto';
 import { CreateRelMonitoramentoMensalDto } from '../monitoramento-mensal/dto/create-monitoramento-mensal.dto';
 import { PdmCreateOrcamentoExecutadoDto as CreateRelPdmOrcamentoExecutadoDto } from '../orcamento/dto/create-orcamento-executado.dto';
 import { CreateRelProjetoDto } from '../pp-projeto/dto/create-previsao-custo.dto';
