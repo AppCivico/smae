@@ -1,6 +1,7 @@
 <script setup>
 import SmallModal from '@/components/SmallModal.vue';
 import { pessoaNaEquipeDeParlamentar as schema } from '@/consts/formSchemas';
+import tiposNaEquipe from '@/consts/tiposNaEquipeDeParlamentar';
 import { useAlertStore } from '@/stores/alert.store';
 import { useParlamentaresStore } from '@/stores/parlamentares.store';
 import { storeToRefs } from 'pinia';
@@ -13,22 +14,10 @@ import {
 import { watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
-defineProps({
-  parlamentarId: {
-    type: [Number, String],
-    default: 0,
-  },
-  pessoaId: {
-    type: [Number, String],
-    default: 0,
-  },
-});
-
 const route = useRoute();
 const router = useRouter();
 const alertStore = useAlertStore();
 const parlamentaresStore = useParlamentaresStore();
-const tiposNaEquipe = ['Assessor', 'Contato'];
 
 const {
   emFoco, chamadasPendentes, erro, pessoaParaEdição,
