@@ -1,6 +1,6 @@
 import { Transform, Type } from 'class-transformer';
 import { ArrayMaxSize, ArrayMinSize, IsArray, IsInt, IsNumber, IsOptional } from 'class-validator';
-import { NumberArrayTransform } from '../../../auth/transforms/number-array.error';
+import { NumberArrayTransform } from '../../../auth/transforms/number-array.transform';
 
 export class FiltroMetasIniAtividadeDto {
     @IsNumber()
