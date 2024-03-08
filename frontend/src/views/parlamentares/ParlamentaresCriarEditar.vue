@@ -203,8 +203,12 @@ const equipe = computed(() => itemParaEdição.value?.equipe?.reduce((acc, cur) 
             </td>
             <td>
               <router-link
-                :to="{ name: 'parlamentaresEditarMandato', params: { parlamentarId: props.parlamentarId, mandatoId: item.id } }"
+                :to="{
+      name: 'parlamentaresEditarMandato',
+      params: { parlamentarId: props.parlamentarId, pessoaId: item.id }
+    }"
                 class="tprimary"
+                aria-label="Editar assessor"
               >
                 <svg
                   width="20"
@@ -217,13 +221,20 @@ const equipe = computed(() => itemParaEdição.value?.equipe?.reduce((acc, cur) 
       </table>
 
       <router-link
-        :to="{ name: 'parlamentaresEditarMandato', params: { parlamentarId: props.parlamentarId } }"
+        :to="{
+      name: 'parlamentaresEditarEquipe',
+      params: {
+        parlamentarId:
+          props.parlamentarId
+      },
+      query: { tipo: 'assessor' }
+    }"
         class="like-a__text addlink"
       >
         <svg
           width="20"
           height="20"
-        ><use xlink:href="#i_+" /></svg>Registrar novo Assessor
+        ><use xlink:href="#i_+" /></svg>Registrar novo assessor
       </router-link>
     </div>
 
@@ -271,8 +282,9 @@ const equipe = computed(() => itemParaEdição.value?.equipe?.reduce((acc, cur) 
             </td>
             <td>
               <router-link
-                :to="{ name: 'parlamentaresEditarMandato', params: { parlamentarId: props.parlamentarId, mandatoId: item.id } }"
+                :to="{ name: 'parlamentaresEditarEquipe', params: { parlamentarId: props.parlamentarId, pessoaId: item.id } }"
                 class="tprimary"
+                aria-label="Editar contato"
               >
                 <svg
                   width="20"
@@ -285,7 +297,12 @@ const equipe = computed(() => itemParaEdição.value?.equipe?.reduce((acc, cur) 
       </table>
 
       <router-link
-        :to="{ name: 'parlamentaresEditarMandato', params: { parlamentarId: props.parlamentarId } }"
+        :to="{
+      name: 'parlamentaresEditarEquipe', params: {
+        parlamentarId:
+          props.parlamentarId
+      }, query: { tipo: 'contato' }
+    }"
         class="like-a__text addlink"
       >
         <svg
