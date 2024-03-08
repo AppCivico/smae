@@ -724,7 +724,7 @@ export const partido = object({
     .label('Número')
     .required(),
   observacao: string()
-    .label('Observação')
+    .label('Presidente nacional')
     .nullable(),
   fundacao: string()
     .label('Data de criação')
