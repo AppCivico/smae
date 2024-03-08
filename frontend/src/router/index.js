@@ -84,20 +84,30 @@ export const router = createRouter({
             {
               path: 'equipe/:pessoaId?',
               name: 'parlamentaresEditarEquipe',
-              component: () => import('@/views/parlamentares/ParlamentarEquipe.vue'),
-              props: true,
+              component: import('@/views/parlamentares/ParlamentarEquipe.vue'),
+              props: ({ params, query }) => ({
+                ...params,
+                ...query,
+              }),
               meta: {
-                título: 'Integrante de equipe',
                 rotaDeEscape: 'parlamentaresEditar',
               },
             },
             {
               path: 'mandato/:mandatoId?',
               name: 'parlamentaresEditarMandato',
-              component: () => import('@/views/parlamentares/ParlamentarMandato.vue'),
+              component: import('@/views/parlamentares/ParlamentarMandato.vue'),
               props: true,
               meta: {
-                título: 'Mandato legislativo',
+                rotaDeEscape: 'parlamentaresEditar',
+              },
+            },
+            {
+              path: 'representatividade/:representatividadeId?',
+              name: 'parlamentaresEditarRepresentatividade',
+              component: import('@/views/parlamentares/ParlamentarRepresentatividade.vue'),
+              props: true,
+              meta: {
                 rotaDeEscape: 'parlamentaresEditar',
               },
             },
