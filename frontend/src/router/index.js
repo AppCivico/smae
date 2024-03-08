@@ -84,7 +84,7 @@ export const router = createRouter({
             {
               path: 'equipe/:pessoaId?',
               name: 'parlamentaresEditarEquipe',
-              component: import('@/views/parlamentares/ParlamentarEquipe.vue'),
+              component: () => import('@/views/parlamentares/ParlamentarEquipe.vue'),
               props: ({ params, query }) => ({
                 ...params,
                 ...query,
@@ -96,7 +96,7 @@ export const router = createRouter({
             {
               path: 'mandato/:mandatoId?',
               name: 'parlamentaresEditarMandato',
-              component: import('@/views/parlamentares/ParlamentarMandato.vue'),
+              component: () => import('@/views/parlamentares/ParlamentarMandato.vue'),
               props: true,
               meta: {
                 rotaDeEscape: 'parlamentaresEditar',
@@ -105,7 +105,7 @@ export const router = createRouter({
             {
               path: 'representatividade/:representatividadeId?',
               name: 'parlamentaresEditarRepresentatividade',
-              component: import('@/views/parlamentares/ParlamentarRepresentatividade.vue'),
+              component: () => import('@/views/parlamentares/ParlamentarRepresentatividade.vue'),
               props: true,
               meta: {
                 rotaDeEscape: 'parlamentaresEditar',
