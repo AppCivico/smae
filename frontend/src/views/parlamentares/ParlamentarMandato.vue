@@ -3,7 +3,6 @@ import SmallModal from '@/components/SmallModal.vue';
 import cargosDeParlamentar from '@/consts/cargosDeParlamentar';
 import estadosDoBrasil from '@/consts/estadosDoBrasil';
 import { mandato as schema } from '@/consts/formSchemas';
-import requestS from '@/helpers/requestS.ts';
 import { useAlertStore } from '@/stores/alert.store';
 import { useParlamentaresStore } from '@/stores/parlamentares.store';
 import { usePartidosStore } from '@/stores/partidos.store';
@@ -17,8 +16,6 @@ import {
 import { computed, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
-const baseUrl = `${import.meta.env.VITE_API_URL}`;
-
 const route = useRoute();
 const router = useRouter();
 const alertStore = useAlertStore();
@@ -26,7 +23,7 @@ const parlamentaresStore = useParlamentaresStore();
 const partidosStore = usePartidosStore();
 
 const {
-  chamadasPendentes, erro, mandatoParaEdição,
+  chamadasPendentes, erro, mandatoParaEdição, eleições, idsDasEleiçõesQueParlamentarConcorreu,
 } = storeToRefs(parlamentaresStore);
 
 const {
@@ -42,7 +39,6 @@ const {
   validationSchema: schema,
 });
 
-const eleições = ref([]);
 const eleiçõesDisponíveisParaEdição = computed(() => eleições
   .value?.filter((x) => x.atual_para_mandatos) || []);
 const eleiçãoEscolhida = ref(0);
@@ -75,16 +71,7 @@ const onSubmit = handleSubmit.withControlled(async (valoresControlados) => {
 const formulárioSujo = useIsFormDirty();
 
 function iniciar() {
-  requestS.get(`${baseUrl}/eleicao`)
-    .then((resposta) => {
-      if (Array.isArray(resposta)) {
-        eleições.value = resposta;
-      } else {
-        throw new Error('Falha na carga da lista de eleições');
-      }
-    }).catch((err) => {
-      alertStore.error(err);
-    });
+  parlamentaresStore.buscarEleições();
 
   if (!listaDePartidos.value.length) {
     partidosStore.buscarTudo();
@@ -149,6 +136,7 @@ watch(mandatoParaEdição, (novoValor) => {
               v-for="pleito in eleiçõesDisponíveisParaEdição"
               :key="pleito.id"
               :value="pleito.id"
+              :disabled="idsDasEleiçõesQueParlamentarConcorreu?.includes(pleito.id)"
             >
               {{ pleito.ano }} - {{ pleito.tipo || pleito.id }}
             </option>
