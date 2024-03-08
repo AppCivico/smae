@@ -154,11 +154,11 @@ watch(representatividadeParaEdição, (novoValor) => {
               Selecionar
             </option>
             <option
-              v-for="nível in níveisDeRepresentatividade"
-              :key="nível"
-              :value="nível"
+              v-for="nível in Object.values(níveisDeRepresentatividade) "
+              :key="nível.valor"
+              :value="nível.valor"
             >
-              {{ nível }}
+              {{ nível.nome }}
             </option>
           </Field>
           <input
