@@ -1,10 +1,17 @@
-import { DadosEleicaoNivel, MunicipioTipo, ParlamentarCargo, ParlamentarEquipeTipo, ParlamentarSuplente, ParlamentarUF } from "@prisma/client";
-import { IsEnum } from "class-validator";
-import { EleicaoDto } from "src/eleicao/entity/eleicao.entity";
-import { PartidoDto } from "src/partido/entities/partido.entity";
+import {
+    DadosEleicaoNivel,
+    MunicipioTipo,
+    ParlamentarCargo,
+    ParlamentarEquipeTipo,
+    ParlamentarSuplente,
+    ParlamentarUF,
+} from '@prisma/client';
+import { IsEnum } from 'class-validator';
+import { EleicaoDto } from 'src/eleicao/entity/eleicao.entity';
+import { PartidoDto } from 'src/partido/entities/partido.entity';
 
 export class ParlamentarDetailDto {
-    id: number
+    id: number;
     nome: string;
     nome_popular: string | null;
     nascimento: string | undefined;
@@ -31,7 +38,7 @@ export class ParlamentarDto {
 }
 
 export class ListParlamentarDto {
-    linhas: ParlamentarDto[]
+    linhas: ParlamentarDto[];
 }
 
 export class EquipeDto {
@@ -75,17 +82,17 @@ export class RepresentatividadeDto {
     municipio_tipo: MunicipioTipo | null;
     numero_votos: number;
     pct_participacao: number | null;
-
+    ranking: number | null;
     regiao: {
         id: number;
         nivel: number;
         descricao: string;
         zona: string | null;
         comparecimento: {
-            id: number,
-            valor: number
-        }
-    }
+            id: number;
+            valor: number;
+        };
+    };
 }
 
 export class SuplentesDto {
@@ -97,5 +104,5 @@ export class SuplentesDto {
         nome: string;
         email: string | null;
         telefone: string | null;
-    }
+    };
 }

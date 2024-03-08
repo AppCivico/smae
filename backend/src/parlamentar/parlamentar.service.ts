@@ -235,7 +235,7 @@ export class ParlamentarService {
                                 municipio_tipo: true,
                                 numero_votos: true,
                                 pct_participacao: true,
-
+                                ranking: true,
                                 regiao: {
                                     select: {
                                         id: true,
