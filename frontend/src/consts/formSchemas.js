@@ -804,6 +804,15 @@ export const pessoaNaEquipeDeParlamentar = object({
     .required(),
 });
 
+export const suplentes = object({
+  nome: string()
+    .label('Nome')
+    .required(),
+  ordem: mixed()
+    .label('Ordem')
+    .required(),
+});
+
 export const processo = object()
   .shape({
     comentarios: string()
