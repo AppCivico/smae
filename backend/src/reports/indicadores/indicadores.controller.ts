@@ -11,7 +11,7 @@ import {
 import { Response as ExpressResponse } from 'express';
 import { Roles } from '../../auth/decorators/roles.decorator';
 import { JsonStringifyTransformStream } from '../../auth/pipe/JsonStringifyTransformStream.pipe';
-import { CreateRelIndicadorDto } from './dto/create-indicadores.dto';
+import { CreateRelIndicadorDto, CreateRelIndicadorRegioesDto } from './dto/create-indicadores.dto';
 import { ListIndicadoresDto, RelIndicadoresDto, RelIndicadoresVariaveisDto } from './entities/indicadores.entity';
 import { IndicadoresService } from './indicadores.service';
 
@@ -66,7 +66,7 @@ export class IndicadoresController {
     })
     @ApiExtraModels(RelIndicadoresVariaveisDto)
     @ApiProduces('application/jsonlines+json')
-    streamRegioes(@Body() dto: CreateRelIndicadorDto, @Res() res: ExpressResponse) {
+    streamRegioes(@Body() dto: CreateRelIndicadorRegioesDto, @Res() res: ExpressResponse) {
         res.setHeader('Content-Type', 'application/jsonlines+json');
         res.writeHead(200);
         res.flushHeaders();

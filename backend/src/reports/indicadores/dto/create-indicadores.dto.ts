@@ -3,6 +3,7 @@ import { TipoRelatorio } from '@prisma/client';
 import { Transform } from 'class-transformer';
 import { IsBoolean, IsEnum, IsInt, IsOptional, ValidateIf } from 'class-validator';
 import { FiltroMetasIniAtividadeDto } from '../../relatorios/dto/filtros.dto';
+import { NumberArrayTransform } from '../../../auth/transforms/number-array.transform';
 
 export const SemestreDto = {
     Primeiro: 'Primeiro',
@@ -66,3 +67,9 @@ export class IndicadorParams {
 }
 
 export class CreateRelIndicadorDto extends IntersectionType(FiltroMetasIniAtividadeDto, IndicadorParams) {}
+
+export class CreateRelIndicadorRegioesDto extends CreateRelIndicadorDto {
+    @IsOptional()
+    @Transform(NumberArrayTransform)
+    regioes?: number[];
+}

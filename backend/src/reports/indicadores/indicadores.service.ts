@@ -5,7 +5,7 @@ import { Date2YMD } from '../../common/date2ymd';
 import { PrismaService } from '../../prisma/prisma.service';
 import { RegiaoBasica as RegiaoDto } from '../../regiao/entities/regiao.entity';
 import { DefaultCsvOptions, FileOutput, ReportableService, UtilsService } from '../utils/utils.service';
-import { CreateRelIndicadorDto } from './dto/create-indicadores.dto';
+import { CreateRelIndicadorDto, CreateRelIndicadorRegioesDto } from './dto/create-indicadores.dto';
 import { ListIndicadoresDto, RelIndicadoresDto, RelIndicadoresVariaveisDto } from './entities/indicadores.entity';
 import { DateTime } from 'luxon';
 const BATCH_SIZE = 500;
@@ -133,7 +133,7 @@ export class IndicadoresService implements ReportableService {
         return stream;
     }
 
-    streamRegioes(dto: CreateRelIndicadorDto): Readable {
+    streamRegioes(dto: CreateRelIndicadorRegioesDto): Readable {
         const stream = new Readable({ objectMode: true, read() {} });
 
         this.filtraIndicadores(dto)
@@ -202,7 +202,7 @@ export class IndicadoresService implements ReportableService {
         i.complemento as indicador_complemento,
         i.contexto as indicador_contexto,
         :DATA: as "data",
-        dt.dt::date as "data_referencia",
+        dt.dt::date::text as "data_referencia",
         series.serie,
         round(
             valor_indicador_em(
@@ -288,7 +288,7 @@ export class IndicadoresService implements ReportableService {
         await prismaTxn.$queryRawUnsafe(
             sql
                 .replace(':JANELA:', '12')
-                .replace(':DATA:', "(dt.dt::date - '11 months'::interval)::date::text || '/' || ((dt.dt::date)"),
+                .replace(':DATA:', "(dt.dt::date - '11 months'::interval)::date::text || '/' || (dt.dt::date)"),
             ano + '-12-01',
             ano + '-12-01',
             '1 year'
@@ -351,11 +351,11 @@ export class IndicadoresService implements ReportableService {
         return dataAno;
     }
 
-    private async queryDataRegiao(indicadoresOrVar: number[], dto: CreateRelIndicadorDto, stream: Readable) {
+    private async queryDataRegiao(indicadoresOrVar: number[], dto: CreateRelIndicadorRegioesDto, stream: Readable) {
         if (indicadoresOrVar.length == 0) return;
         this.invalidatePreparedStatement++;
 
-        const queryFromWhere = `indicador i ON i.id IN (${indicadoresOrVar.join(',')})
+        let queryFromWhere = `indicador i ON i.id IN (${indicadoresOrVar.join(',')})
         join indicador_variavel iv ON iv.indicador_id = i.id
         join variavel v ON v.id = iv.variavel_id
         join orgao ON v.orgao_id = orgao.id
@@ -365,6 +365,11 @@ export class IndicadoresService implements ReportableService {
         left join iniciativa i2 on i2.id = atividade.iniciativa_id
         left join meta m2 on m2.id = iniciativa.meta_id OR m2.id = i2.meta_id
         where v.regiao_id is not null`;
+
+        if (Array.isArray(dto.regioes)) {
+            const numbers = dto.regioes.map((n) => +n).join(',');
+            queryFromWhere = `${queryFromWhere} AND v.regiao_id IN (${numbers})`;
+        }
 
         const ano = await this.capturaAnoSerieVariavel(dto, queryFromWhere);
 
@@ -383,7 +388,7 @@ export class IndicadoresService implements ReportableService {
         atividade.titulo as atividade_titulo,
         atividade.codigo as atividade_codigo,
         :DATA: as "data",
-        dt.dt::date as "data_referencia",
+        dt.dt::date::text as "data_referencia",
         series.serie,
         v.id as variavel_id,
         v.codigo as variavel_codigo,
@@ -478,7 +483,7 @@ export class IndicadoresService implements ReportableService {
             const json2csvParser = new Parser({
                 ...DefaultCsvOptions,
                 transforms: defaultTransform,
-                fields: [...camposMetaIniAtv, 'serie', 'data', 'valor'],
+                fields: [...camposMetaIniAtv, 'data_referencia', 'serie', 'data', 'valor'],
             });
             const linhas = json2csvParser.parse(dados.linhas);
             out.push({
