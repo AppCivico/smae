@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Transform, TransformFnParams } from 'class-transformer';
 import { IsArray, IsBoolean, IsInt, IsOptional } from 'class-validator';
-import { NumberArrayTransform } from '../../../../auth/transforms/number-array.error';
+import { NumberArrayTransform } from '../../../../auth/transforms/number-array.transform';
 import { IdCodTituloDto } from '../../../../common/dto/IdCodTitulo.dto';
 import { IdTituloOrNullDto } from '../../../../common/dto/IdTitulo.dto';
 import { MfPerfilDto } from '../../dto/mf-meta.dto';

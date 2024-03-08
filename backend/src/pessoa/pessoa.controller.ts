@@ -11,6 +11,7 @@ import { FilterPessoaDto } from './dto/filter-pessoa.dto';
 import { ListPessoaDto, ListPessoaReducedDto } from './dto/list-pessoa.dto';
 import { UpdatePessoaDto } from './dto/update-pessoa.dto';
 import { PessoaService } from './pessoa.service';
+import { BuscaResponsabilidades, DetalheResponsabilidadeDto } from './dto/responsabilidade-pessoa.dto';
 
 @ApiTags('Pessoa')
 @Controller('pessoa')
@@ -58,7 +59,8 @@ export class PessoaController {
         'Projeto.administrador',
         'Projeto.administrador_no_orgao',
         'CadastroGrupoPortfolio.administrador',
-        'CadastroGrupoPortfolio.administrador_no_orgao'
+        'CadastroGrupoPortfolio.administrador_no_orgao',
+        'CadastroPessoa.editar_responsabilidade'
     )
     async findAllReduced(
         @Query() filters: FilterPessoaDto,
@@ -89,10 +91,26 @@ export class PessoaController {
         return await this.pessoaService.update(+params.id, updatePessoaDto, user);
     }
 
+    @Get('responsabilidades')
+    @ApiBearerAuth('access-token')
+    @ApiUnauthorizedResponse()
+    @Roles('CadastroPessoa.editar_responsabilidade')
+    async getResponsabilidades(
+        @Query() dto: BuscaResponsabilidades,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<DetalheResponsabilidadeDto> {
+        return await this.pessoaService.getResponsabilidades(dto, user);
+    }
+
     @Get(':id')
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
-    @Roles('CadastroPessoa.inserir', 'CadastroPessoa.editar', 'CadastroPessoa.inativar')
+    @Roles(
+        'CadastroPessoa.inserir',
+        'CadastroPessoa.editar',
+        'CadastroPessoa.inativar',
+        'CadastroPessoa.editar_responsabilidade'
+    )
     async get(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt): Promise<DetalhePessoaDto> {
         return await this.pessoaService.getDetail(+params.id, user);
     }

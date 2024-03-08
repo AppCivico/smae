@@ -1,19 +1,21 @@
 import { BadRequestException, ForbiddenException, HttpException, Injectable, Logger } from '@nestjs/common';
 import { ModuloSistema, Pessoa, Prisma } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
+import { uuidv7 } from 'uuidv7';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
+import { FilterPrivDto } from '../auth/models/Privilegios.dto';
+import { IdCodTituloDto } from '../common/dto/IdCodTitulo.dto';
 import { RecordWithId } from '../common/dto/record-with-id.dto';
+import { MathRandom } from '../common/math-random';
 import { NovaSenhaDto } from '../minha-conta/models/nova-senha.dto';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreatePessoaDto } from './dto/create-pessoa.dto';
 import { DetalhePessoaDto } from './dto/detalhe-pessoa.dto';
 import { FilterPessoaDto } from './dto/filter-pessoa.dto';
 import { PerfilAcessoPrivilegios } from './dto/perifl-acesso-privilegios.dto';
+import { BuscaResponsabilidades, DetalheResponsabilidadeDto } from './dto/responsabilidade-pessoa.dto';
 import { UpdatePessoaDto } from './dto/update-pessoa.dto';
 import { ListaPrivilegiosModulos } from './entities/ListaPrivilegiosModulos';
-import { uuidv7 } from 'uuidv7';
-import { MathRandom } from '../common/math-random';
-import { FilterPrivDto } from '../auth/models/Privilegios.dto';
 
 const BCRYPT_ROUNDS = 10;
 
@@ -1193,5 +1195,198 @@ export class PessoaService {
         if (!(await this.escreverNovaSenhaById(user.id, novaSenhaDto.senha_nova, true))) {
             throw new BadRequestException('Senha não pode ser alterada no momento');
         }
+    }
+
+    async getResponsabilidades(dto: BuscaResponsabilidades, user: PessoaFromJwt): Promise<DetalheResponsabilidadeDto> {
+        const sistema = user.assertOneModuloSistema('buscar', 'responsabilidades de usuários');
+
+        let metas: IdCodTituloDto[] | undefined;
+        if (sistema == 'PDM') {
+            // a ideia é 'pecar' pelo excesso, pois os sistema pode estar com o banco
+            // sujo, ou seja, ter uma pessoa atribuida no filho mas não estar atribuida corretamente na meta
+            // nesse caso, na migração, a meta seria ajustada até o nivel necessário
+            const somePessoa = { some: { pessoa_id: dto.pessoa_id } } as const;
+            const rows = await this.prisma.meta.findMany({
+                where: {
+                    removido_em: null,
+                    pdm_id: dto.pdm_id,
+                    OR: [
+                        // responsavel na meta
+                        { meta_responsavel: somePessoa },
+
+                        // responsavel na iniciativa
+                        {
+                            iniciativa: {
+                                some: {
+                                    removido_em: null,
+                                    iniciativa_responsavel: somePessoa,
+                                },
+                            },
+                        },
+                        // responsavel na atividade
+                        {
+                            iniciativa: {
+                                some: {
+                                    removido_em: null,
+                                    atividade: {
+                                        some: { atividade_responsavel: somePessoa },
+                                    },
+                                },
+                            },
+                        },
+
+                        // responsavel em variavel do indicador da meta
+                        {
+                            indicador: {
+                                some: {
+                                    removido_em: null,
+                                    IndicadorVariavel: {
+                                        some: {
+                                            desativado_em: null,
+                                            variavel: {
+                                                removido_em: null,
+                                                variavel_responsavel: somePessoa,
+                                            },
+                                        },
+                                    },
+                                },
+                            },
+                        },
+                        // responsavel em variavel do indicador da iniciativa
+                        {
+                            iniciativa: {
+                                some: {
+                                    removido_em: null,
+                                    Indicador: {
+                                        some: {
+                                            removido_em: null,
+                                            IndicadorVariavel: {
+                                                some: {
+                                                    desativado_em: null,
+                                                    variavel: {
+                                                        removido_em: null,
+                                                        variavel_responsavel: somePessoa,
+                                                    },
+                                                },
+                                            },
+                                        },
+                                    },
+                                },
+                            },
+                        },
+                        // responsavel em variavel do indicador da atividade
+                        {
+                            iniciativa: {
+                                some: {
+                                    removido_em: null,
+                                    atividade: {
+                                        some: {
+                                            Indicador: {
+                                                some: {
+                                                    removido_em: null,
+                                                    IndicadorVariavel: {
+                                                        some: {
+                                                            desativado_em: null,
+                                                            variavel: {
+                                                                removido_em: null,
+                                                                variavel_responsavel: somePessoa,
+                                                            },
+                                                        },
+                                                    },
+                                                },
+                                            },
+                                        },
+                                    },
+                                },
+                            },
+                        },
+
+                        // cronograma da meta
+                        {
+                            cronograma: {
+                                some: {
+                                    removido_em: null,
+                                    CronogramaEtapa: {
+                                        some: {
+                                            inativo: undefined, // conferir com o Lucas/FGV
+                                            etapa: {
+                                                removido_em: null,
+                                                responsaveis: somePessoa,
+                                            },
+                                        },
+                                    },
+                                },
+                            },
+                        },
+
+                        // cronograma da iniciativa
+                        {
+                            iniciativa: {
+                                some: {
+                                    removido_em: null,
+                                    Cronograma: {
+                                        some: {
+                                            removido_em: null,
+                                            CronogramaEtapa: {
+                                                some: {
+                                                    inativo: undefined, // conferir com o Lucas/FGV
+                                                    etapa: {
+                                                        removido_em: null,
+                                                        responsaveis: somePessoa,
+                                                    },
+                                                },
+                                            },
+                                        },
+                                    },
+                                },
+                            },
+                        },
+
+                        // cronograma da atividade
+                        {
+                            iniciativa: {
+                                some: {
+                                    removido_em: null,
+                                    atividade: {
+                                        some: {
+                                            removido_em: null,
+                                            Cronograma: {
+                                                some: {
+                                                    removido_em: null,
+                                                    CronogramaEtapa: {
+                                                        some: {
+                                                            inativo: undefined, // conferir com o Lucas/FGV
+                                                            etapa: {
+                                                                removido_em: null,
+                                                                responsaveis: somePessoa,
+                                                            },
+                                                        },
+                                                    },
+                                                },
+                                            },
+                                        },
+                                    },
+                                },
+                            },
+                        },
+
+                        // TODO: conferir se também vai movimentar coordenador CP, pois esses precisam também da flag,
+                        // nesse caso, precisaria começar a receber o ID da pessoa que vai receber tbm, pra condicionar o
+                        // que vai carregar aqui
+                    ],
+                },
+                select: {
+                    id: true,
+                    codigo: true,
+                    titulo: true,
+                },
+            });
+
+            metas = rows;
+        }
+
+        return {
+            metas: metas ?? [],
+        };
     }
 }
