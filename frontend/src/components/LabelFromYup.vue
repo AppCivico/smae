@@ -26,7 +26,7 @@ defineProps({
     <slot name="prepend" />
     <slot>
       <pre
-        v-if="!schema.fields[name]"
+        v-if="!schema.fields?.[name]"
         v-ScrollLockDebug
       >
       Etiqueta não encontrada para `{{ name }}`
