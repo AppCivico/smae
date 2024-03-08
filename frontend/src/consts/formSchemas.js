@@ -2,6 +2,7 @@
 import cargosDeParlamentar from '@/consts/cargosDeParlamentar';
 import estadosDoBrasil from '@/consts/estadosDoBrasil';
 import regEx from '@/consts/patterns';
+import tiposNaEquipeDeParlamentar from '@/consts/tiposNaEquipeDeParlamentar';
 import {
   array,
   boolean,
@@ -796,7 +797,7 @@ export const pessoaNaEquipeDeParlamentar = object({
     .required(),
   tipo: mixed()
     .label('Tipo')
-    .oneOf(['Assessor', 'Contato'])
+    .oneOf(tiposNaEquipeDeParlamentar)
     .required(),
 });
 
