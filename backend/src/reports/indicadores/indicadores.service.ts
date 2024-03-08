@@ -574,6 +574,7 @@ export class IndicadoresService implements ReportableService {
                         : null,
 
                     data: row.data,
+                    data_referencia: row.data_referencia,
                     serie: row.serie,
                     valor: row.valor,
 
