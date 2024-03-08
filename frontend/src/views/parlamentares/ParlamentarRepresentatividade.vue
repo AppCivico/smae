@@ -356,6 +356,26 @@ watch(representatividadeParaEdição, (novoValor) => {
             name="pct_participacao"
           />
         </div>
+        <div class="f1">
+          <LabelFromYup
+            name="ranking"
+            :schema="schema"
+          />
+          <Field
+            name="ranking"
+            type="number"
+            class="inputtext light mb1"
+            :class="{ error: errors.ranking, loading: chamadasPendentes.emFoco }"
+            max="1000"
+            min="0"
+            step="1"
+            @change="setFieldValue('ranking', $event.target.value ? Number($event.target.value) : null)"
+          />
+          <ErrorMessage
+            class="error-msg"
+            name="ranking"
+          />
+        </div>
       </div>
 
       <FormErrorsList :errors="errors" />
