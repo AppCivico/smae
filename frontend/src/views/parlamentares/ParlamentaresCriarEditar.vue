@@ -9,6 +9,8 @@ import {
   ErrorMessage, Field, FieldArray, Form,
 } from 'vee-validate';
 
+import { computed } from 'vue';
+
 const router = useRouter();
 const route = useRoute();
 const props = defineProps({
@@ -49,6 +51,10 @@ if (props.parlamentarId) {
   parlamentaresStore.buscarItem(props.parlamentarId);
 }
 
+const equipe = computed(() => itemParaEdição.value?.equipe ?? []);
+
+const assessores = computed(() => equipe.value.filter((item) => item.tipo === 'Assessor'));
+const contatos = computed(() => equipe.value.filter((item) => item.tipo === 'Contato'));
 </script>
 
 <template>
@@ -63,7 +69,8 @@ if (props.parlamentarId) {
     :initial-values="itemParaEdição"
     @submit="onSubmit"
   >
-    <div class="parlamentar-container">
+    <!-- form do parlamentar -->
+    <div class="parlamentar-container mb3">
       <div>
         <div class="flex g2 mb1">
           <div class="f1">
@@ -148,100 +155,141 @@ if (props.parlamentarId) {
       </Field>
     </div>
 
-    <div class="flex spacebetween center mb2">
-      <span class="label tc300">Assessores</span>
-      <hr class="mr2 f1">
-    </div>
-
-    <FieldArray
-      v-slot="{ fields, push, remove }"
-      name="assessores"
+    <div
+      v-if="assessores"
+      class="mb3"
     >
-      <div
-        v-for="(field, idx) in fields"
-        :key="`assessor-${field.key}`"
-        class="flex g2"
-      >
-        <div class="f1 mb1">
-          <label
-            class="label tc300"
-            for="nome"
-          >Nome</label>
-          <Field
-            v-model="field.nome"
-            :name="`assessores[${idx}].nome`"
-            type="text"
-            class="inputtext light mb1"
-          />
-          <ErrorMessage
-            class="error-msg mb1"
-            :name="`assessores[${idx}].nome`"
-          />
-        </div>
-
-        <div class="f1 mb1">
-          <label
-            class="label tc300"
-            for="email"
-          >Email</label>
-          <Field
-            v-model="field.email"
-            :name="`assessores[${idx}].email`"
-            type="email"
-            class="inputtext light mb1"
-          />
-          <ErrorMessage
-            class="error-msg mb1"
-            :name="`assessores[${idx}].email`"
-          />
-        </div>
-
-        <div class="f1 mb1">
-          <label
-            class="label tc300"
-            for="telefone"
-          >Telefone</label>
-          <Field
-            v-model="field.telefone"
-            :name="`assessores[${idx}].telefone`"
-            type="text"
-            class="inputtext light mb1"
-          />
-          <ErrorMessage
-            class="error-msg mb1"
-            :name="`assessores[${idx}].telefone`"
-          />
-        </div>
-
-        <button
-          class="like-a__text addlink"
-          aria-label="excluir"
-          title="excluir"
-          type="button"
-          @click="remove(idx)"
-        >
-          <svg
-            width="20"
-            height="20"
-          ><use xlink:href="#i_remove" /></svg>
-        </button>
+      <div class="flex spacebetween center mb1">
+        <span class="label tc300">Assessores</span>
+        <hr class="mr2 f1">
       </div>
 
-      <button
+      <table class="tablemain mb1">
+        <col>
+        <col class="col--botão-de-ação">
+        <col class="col--botão-de-ação">
+        <thead>
+          <tr>
+            <th>
+              Nome
+            </th>
+            <th />
+            <th />
+          </tr>
+        </thead>
+        <tbody>
+          <tr
+            v-for="item in assessores"
+            :key="item.id"
+          >
+            <td>{{ item.nome }}</td>
+
+            <td>
+              <button
+                class="like-a__text"
+                arial-label="excluir"
+                title="excluir"
+                @click="(item.id)"
+              >
+                <svg
+                  width="20"
+                  height="20"
+                ><use xlink:href="#i_remove" /></svg>
+              </button>
+            </td>
+            <td>
+              <router-link
+                :to="{ name: 'parlamentaresEditarMandato', params: { parlamentarId: props.parlamentarId, mandatoId: item.id } }"
+                class="tprimary"
+              >
+                <svg
+                  width="20"
+                  height="20"
+                ><use xlink:href="#i_edit" /></svg>
+              </router-link>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <router-link
+        :to="{ name: 'parlamentaresEditarMandato', params: { parlamentarId: props.parlamentarId } }"
         class="like-a__text addlink"
-        type="button"
-        @click="push({
-          nome: '',
-          email: '',
-          telefone: '',
-        })"
       >
         <svg
           width="20"
           height="20"
-        ><use xlink:href="#i_+" /></svg>Adicionar assessor
-      </button>
-    </FieldArray>
+        ><use xlink:href="#i_+" /></svg>Registrar novo Assessor
+      </router-link>
+    </div>
+
+    <div
+      v-if="contatos"
+      class="mb3"
+    >
+      <div class="flex spacebetween center mb1">
+        <span class="label tc300">Contatos</span>
+        <hr class="mr2 f1">
+      </div>
+
+      <table class="tablemain mb1">
+        <col>
+        <col class="col--botão-de-ação">
+        <col class="col--botão-de-ação">
+        <thead>
+          <tr>
+            <th>
+              Nome
+            </th>
+            <th />
+            <th />
+          </tr>
+        </thead>
+        <tbody>
+          <tr
+            v-for="item in contatos"
+            :key="item.id"
+          >
+            <td>{{ item.nome }}</td>
+
+            <td>
+              <button
+                class="like-a__text"
+                arial-label="excluir"
+                title="excluir"
+                @click="(item.id)"
+              >
+                <svg
+                  width="20"
+                  height="20"
+                ><use xlink:href="#i_remove" /></svg>
+              </button>
+            </td>
+            <td>
+              <router-link
+                :to="{ name: 'parlamentaresEditarMandato', params: { parlamentarId: props.parlamentarId, mandatoId: item.id } }"
+                class="tprimary"
+              >
+                <svg
+                  width="20"
+                  height="20"
+                ><use xlink:href="#i_edit" /></svg>
+              </router-link>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <router-link
+        :to="{ name: 'parlamentaresEditarMandato', params: { parlamentarId: props.parlamentarId } }"
+        class="like-a__text addlink"
+      >
+        <svg
+          width="20"
+          height="20"
+        ><use xlink:href="#i_+" /></svg>Registrar novo Contato
+      </router-link>
+    </div>
 
     <FormErrorsList :errors="errors" />
 
