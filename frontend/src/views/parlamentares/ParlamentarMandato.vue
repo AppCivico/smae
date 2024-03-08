@@ -54,7 +54,7 @@ const onSubmit = handleSubmit.withControlled(async (valoresControlados) => {
     if (await parlamentaresStore.salvarMandato(valoresControlados)) {
       parlamentaresStore.buscarItem(route.params?.parlamentarId);
 
-      alertStore.success('Equipe atualizada!');
+      alertStore.success('Mandatos atualizados!');
       if (route.meta.rotaDeEscape) {
         router.push({
           name: route.meta.rotaDeEscape,
