@@ -293,7 +293,9 @@ export class ParlamentarService {
                             ...r,
 
                             regiao: {
-                                ...r.regiao,
+                                id: r.regiao.id,
+                                nivel: r.regiao.nivel,
+                                descricao: r.regiao.descricao,
                                 zona: r.regiao.nivel === 3 ? r.regiao.RegiaoAcima!.descricao : null,
                                 comparecimento: { ...r.regiao.eleicoesComparecimento[0] },
                             },
@@ -321,7 +323,9 @@ export class ParlamentarService {
                             ...r,
 
                             regiao: {
-                                ...r.regiao,
+                                id: r.regiao.id,
+                                nivel: r.regiao.nivel,
+                                descricao: r.regiao.descricao,
                                 zona: r.regiao.nivel === 3 ? r.regiao.RegiaoAcima!.descricao : null,
                                 comparecimento: { ...r.regiao.eleicoesComparecimento[0] },
                             },
