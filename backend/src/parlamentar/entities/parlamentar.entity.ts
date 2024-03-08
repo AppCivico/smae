@@ -79,8 +79,8 @@ export class RepresentatividadeDto {
     regiao: {
         id: number;
         nivel: number;
-        codigo: string | null;
-
+        descricao: string;
+        zona: string | null;
         comparecimento: {
             id: number,
             valor: number
