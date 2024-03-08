@@ -328,7 +328,7 @@ watch(representatividadeParaEdição, (novoValor) => {
           <input
             v-else
             class="inputtext light mb1 disabled"
-            :value="representatividadeParaEdição?.numero_comparecimento"
+            :value="representatividadeParaEdição?.regiao?.comparecimento?.valor"
             disabled
             :class="{ loading: chamadasPendentes.emFoco }"
           >
