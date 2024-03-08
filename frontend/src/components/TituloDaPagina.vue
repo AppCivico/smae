@@ -1,6 +1,6 @@
 <script setup>
-import { useRoute } from 'vue-router';
 import { computed } from 'vue';
+import { useRoute } from 'vue-router';
 
 defineProps({
   as: {
@@ -28,9 +28,16 @@ const título = typeof route?.meta?.título === 'function'
   <component
     :is="as"
   >
-    <template v-if="título">
-      {{ prefixo }} {{ título }} {{ sufixo }}
-    </template>
-    <slot v-else />
+    <slot>
+      <template v-if="título">
+        {{ prefixo }} {{ título }} {{ sufixo }}
+      </template>
+      <span
+        v-else
+        v-ScrollLockDebug
+      >
+        Título ausente
+      </span>
+    </slot>
   </component>
 </template>
