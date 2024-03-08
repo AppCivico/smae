@@ -14,9 +14,9 @@ export class FilterPessoaDto {
     coordenador_responsavel_cp?: boolean;
 
     /**
-     * Filtrar pessoa com privilegio `SMAE.espectador_de_projeto` ?
+     * Filtrar pessoa com privilegio `SMAE.espectador_de_painel_externo` ?
      *
-     *  true filtra quem tem a `SMAE.espectador_de_projeto`; false filtra quem não tem
+     *  true filtra quem tem a `SMAE.espectador_de_painel_externo`; false filtra quem não tem
      * @example ""
      */
     @IsOptional()
