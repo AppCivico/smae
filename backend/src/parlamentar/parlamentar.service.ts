@@ -9,7 +9,7 @@ import {
     CreateMandatoSuplenteDto,
     CreateEquipeDto,
 } from './dto/create-parlamentar.dto';
-import { DadosEleicaoNivel, ParlamentarEquipeTipo, Prisma } from '@prisma/client';
+import { DadosEleicaoNivel, ParlamentarCargo, ParlamentarEquipeTipo, Prisma } from '@prisma/client';
 import { ParlamentarDetailDto, ParlamentarDto } from './entities/parlamentar.entity';
 import {
     UpdateEquipeDto,
@@ -19,6 +19,7 @@ import {
 } from './dto/update-parlamentar.dto';
 import { RemoveMandatoDepsDto } from './dto/remove-mandato-deps.dto';
 import { UploadService } from 'src/upload/upload.service';
+import { FilterParlamentarDto } from './dto/filter-parlamentar.dto';
 
 @Injectable()
 export class ParlamentarService {
@@ -56,11 +57,44 @@ export class ParlamentarService {
         return created;
     }
 
-    async findAll(): Promise<ParlamentarDto[]> {
+    async findAll(filters: FilterParlamentarDto): Promise<ParlamentarDto[]> {
+        let filterSuplente: {
+            cargo: ParlamentarCargo,
+            eleicao_id: number,
+            mandato_principal_id: null
+        } | undefined;
+
+        if (filters.disponivel_para_suplente_parlamentar_id) {
+            const mandatoPrincipal = await this.prisma.parlamentarMandato.findFirst({
+                where: {
+                    parlamentar: {
+                        id: filters.disponivel_para_suplente_parlamentar_id,
+                        removido_em: null,
+                    },
+                    removido_em: null,
+                },
+                select: {
+                    cargo: true,
+                    eleicao_id: true,
+                }
+            });
+
+            if (!mandatoPrincipal)
+                throw new HttpException('disponivel_para_suplente_parlamentar_id| Não disponível para filtro', 400);
+
+            filterSuplente = {
+                cargo: mandatoPrincipal.cargo,
+                eleicao_id: mandatoPrincipal.eleicao_id,
+                mandato_principal_id: null
+            };
+        }
+
         const listActive = await this.prisma.parlamentar.findMany({
             where: {
-                // TODO: filtros.
                 removido_em: null,
+                mandatos: {
+                    some: filterSuplente ? { ...filterSuplente } : undefined
+                }
             },
             select: {
                 id: true,

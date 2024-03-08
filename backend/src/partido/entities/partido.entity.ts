@@ -1,12 +1,13 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { BancadaDto } from 'src/bancada/entities/bancada.entity';
 
 export class PartidoOneDto {
     @ApiProperty({ description: 'ID do Partido' })
     id: number;
-    
+
     @ApiProperty({ description: 'Sigla do partido' })
     sigla: string;
-    
+
     @ApiProperty({ description: 'Nome do partido' })
     nome: string;
 
@@ -26,15 +27,17 @@ export class PartidoOneDto {
 export class PartidoDto {
     @ApiProperty({ description: 'ID do Partido' })
     id: number;
-    
+
     @ApiProperty({ description: 'Sigla do partido' })
     sigla: string;
-    
+
     @ApiProperty({ description: 'Nome do partido' })
     nome: string;
 
     @ApiProperty({ description: 'Número do partido' })
     numero: number;
+
+    // bancadas: BancadaDto[] | null
 }
 
 export class ListPartidoDto {
