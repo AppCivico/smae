@@ -1349,6 +1349,11 @@ export const representatividade = (éCorreção = false) => object()
       .min(0)
       .max(100)
       .nullable(),
+    ranking: number()
+      .label('Ranking')
+      .min(0)
+      .max(1000)
+      .required(),
     regiao_id: number()
       .label('Região')
       /* .when('éCorreção', ((_, field) => ((éCorreção)
