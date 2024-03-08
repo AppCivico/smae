@@ -238,8 +238,13 @@ export class ParlamentarService {
                                     select: {
                                         id: true,
                                         nivel: true,
-                                        codigo: true,
-
+                                        descricao: true,
+                                        parente_id: true,
+                                        RegiaoAcima: {
+                                            select: {
+                                                descricao: true
+                                            }
+                                        },
                                         eleicoesComparecimento: {
                                             where: { removido_em: null },
                                             take: 1,
@@ -289,6 +294,7 @@ export class ParlamentarService {
 
                             regiao: {
                                 ...r.regiao,
+                                zona: r.regiao.nivel === 3 ? r.regiao.RegiaoAcima!.descricao : null,
                                 comparecimento: { ...r.regiao.eleicoesComparecimento[0] },
                             },
                         };
@@ -316,6 +322,7 @@ export class ParlamentarService {
 
                             regiao: {
                                 ...r.regiao,
+                                zona: r.regiao.nivel === 3 ? r.regiao.RegiaoAcima!.descricao : null,
                                 comparecimento: { ...r.regiao.eleicoesComparecimento[0] },
                             },
                         };
