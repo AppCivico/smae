@@ -14,4 +14,9 @@ export default {
     nome: 'Vereador',
     tipo: 'Municipal',
   },
+  Senador: {
+    valor: 'Senador',
+    nome: 'Senador',
+    tipo: 'Estadual',
+  },
 };
