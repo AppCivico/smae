@@ -8,7 +8,7 @@ import { RecordWithId } from 'src/common/dto/record-with-id.dto';
 
 @Injectable()
 export class BancadaService {
-    constructor(private readonly prisma: PrismaService) {}
+    constructor(private readonly prisma: PrismaService) { }
 
     async create(dto: CreateBancadaDto, user?: PessoaFromJwt): Promise<RecordWithId> {
         const similarExists = await this.prisma.bancada.count({
@@ -119,5 +119,16 @@ export class BancadaService {
         });
 
         return deleted;
+    }
+
+    async bancadaExiste(id: number): Promise<boolean> {
+        const bancada = await this.prisma.bancada.count({
+            where: {
+                id,
+                removido_em: null
+            }
+        });
+
+        return bancada ? true : false;
     }
 }
