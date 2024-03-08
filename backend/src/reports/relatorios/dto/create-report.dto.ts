@@ -6,7 +6,7 @@ import { CreateRelProjetoStatusDto } from 'src/reports/pp-status/dto/create-proj
 import { CreateRelPrevisaoCustoDto } from 'src/reports/previsao-custo/dto/create-previsao-custo.dto';
 import { CreateRelProjetoOrcamentoDto } from 'src/reports/projeto-orcamento/dto/create-projeto-orcamento.dto';
 import { CreateRelProjetoPrevisaoCustoDto } from 'src/reports/projeto-previsao-custo/dto/create-projeto-previsao-custo.dto';
-import { CreateRelIndicadorDto } from '../../indicadores/dto/create-indicadore.dto';
+import { CreateRelIndicadorDto } from '../../indicadores/dto/create-indicadores.dto';
 import { CreateRelMonitoramentoMensalDto } from '../../monitoramento-mensal/dto/create-monitoramento-mensal.dto';
 import {
     PdmCreateOrcamentoExecutadoDto
