@@ -1,10 +1,12 @@
-import { ApiProperty } from "@nestjs/swagger";
-import { ParlamentarCargo } from "@prisma/client";
-import { IsEnum, IsNumber, IsOptional } from "class-validator";
+import { ApiProperty } from '@nestjs/swagger';
+import { ParlamentarCargo } from '@prisma/client';
+import { Transform, TransformFnParams } from 'class-transformer';
+import { IsEnum, IsNumber, IsOptional } from 'class-validator';
 
 export class FilterParlamentarDto {
     @IsOptional()
     @IsNumber()
+    @Transform((a: TransformFnParams) => (a.value === '' ? undefined : +a.value))
     partido_id?: number;
 
     @IsOptional()
@@ -16,5 +18,6 @@ export class FilterParlamentarDto {
 
     @IsOptional()
     @IsNumber()
+    @Transform((a: TransformFnParams) => (a.value === '' ? undefined : +a.value))
     disponivel_para_suplente_parlamentar_id?: number;
 }
