@@ -745,7 +745,7 @@ export const partido = object({
 
 export const bancada = object({
   sigla: string()
-    .label('Número')
+    .label('Sigla')
     .max(20)
     .required(),
   nome: string()
@@ -1322,14 +1322,13 @@ export const relatórioSemestralOuAnual = object({
 export const representatividade = (éCorreção = false) => object()
   .shape({
     mandato_id: number()
-      .label('Mandato')
-      /* .when('éCorreção', ((_, field) => ((éCorreção)
+      .label('Mandato'), /* .when('éCorreção', ((_, field) => ((éCorreção)
         ? field
           .min(1)
           .required()
         : field
           .nullable()
-          .isType(null)))) */,
+          .isType(null)))) */
     municipio_tipo: mixed()
       .label('Tipo de município')
       .oneOf(tiposDeMunicípio), /* .when('éCorreção', ((_, field) => ((éCorreção)
