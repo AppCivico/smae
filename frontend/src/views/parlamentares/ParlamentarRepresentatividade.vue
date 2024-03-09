@@ -37,6 +37,11 @@ const props = defineProps({
   },
 });
 
+const tipoSugerido = props.tipo
+  ? tiposDeMunicípio
+    .find((x) => x.toLowerCase() === props.tipo.toLocaleLowerCase())
+  : '';
+
 const route = useRoute();
 const router = useRouter();
 const alertStore = useAlertStore();
@@ -52,7 +57,7 @@ const { regions: regiões, regiõesPorNível } = storeToRefs(regionsStore);
 const schema = representatividadeSchema(!!props.representatividadeId);
 
 const {
-  errors, handleSubmit, isSubmitting, resetForm, setFieldValue, values,
+  errors, handleSubmit, isSubmitting, resetField, resetForm, setFieldValue, values,
 } = useForm({
   initialValues: representatividadeParaEdição.value,
   validationSchema: schema,
@@ -102,7 +107,8 @@ function definirCampoNível(valor) {
       setFieldValue('nivel', 'Subprefeitura');
       break;
     case 'Interior':
-      setFieldValue('nivel', 'Municipio'); break;
+      setFieldValue('nivel', 'Municipio');
+      break;
     default:
       setFieldValue('nivel', '');
       break;
@@ -127,7 +133,15 @@ iniciar();
 
 watch(representatividadeParaEdição, (novoValor) => {
   resetForm({ values: novoValor });
-});
+
+  if (!values.municipio_tipo) {
+    if (tipoSugerido) {
+      resetField('municipio_tipo', { value: tipoSugerido });
+    }
+  }
+
+  // rodar imediatamente apenas por causa do tipo sugerido
+}, { immediate: true });
 </script>
 
 <template>
