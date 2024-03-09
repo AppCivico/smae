@@ -114,7 +114,7 @@ watch(pessoaParaEdição, (novoValor) => {
 </script>
 
 <template>
-  <SmallModal>
+  <SmallModal @close="emit('close')">
     <div class="flex spacebetween center mb2">
       <TítuloDePágina>
         Integrante de equipe
@@ -125,6 +125,7 @@ watch(pessoaParaEdição, (novoValor) => {
       <CheckClose
         :apenas-emitir="props.apenasEmitir"
         :formulário-sujo="formulárioSujo"
+        @close="emit('close')"
       />
     </div>
 
