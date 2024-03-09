@@ -7,6 +7,7 @@ export const useParlamentaresStore = defineStore('parlamentaresStore', {
     lista: [],
     emFoco: null,
     eleições: [],
+    listaDeDisponíveisParaSuplência: [],
 
     chamadasPendentes: {
       lista: false,
@@ -41,7 +42,12 @@ export const useParlamentaresStore = defineStore('parlamentaresStore', {
 
       try {
         const { linhas } = await this.requestS.get(`${baseUrl}/parlamentar`, params);
-        this.lista = linhas;
+
+        if (params.disponivel_para_suplente_parlamentar_id) {
+          this.listaDeDisponíveisParaSuplência = linhas;
+        } else {
+          this.lista = linhas;
+        }
       } catch (erro) {
         this.erro = erro;
       }

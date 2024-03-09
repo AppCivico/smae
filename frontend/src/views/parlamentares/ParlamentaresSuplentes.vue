@@ -10,7 +10,7 @@ import {
   useForm,
   useIsFormDirty,
 } from 'vee-validate';
-import { watch } from 'vue';
+import { computed, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
 const emit = defineEmits(['close']);
@@ -35,10 +35,10 @@ const parlamentaresStore = useParlamentaresStore();
 const ordens = [{ titulo: '1°', valor: 'PrimeiroSuplente' }, { titulo: '2°', valor: 'SegundoSuplente' }];
 
 const {
-  chamadasPendentes, erro, suplenteParaEdição, lista,
+  chamadasPendentes, emFoco, erro, suplenteParaEdição, listaDeDisponíveisParaSuplência: lista,
 } = storeToRefs(parlamentaresStore);
 
-parlamentaresStore.buscarTudo();
+parlamentaresStore.buscarTudo({ disponivel_para_suplente_parlamentar_id: props.parlamentarId });
 
 const {
   errors, handleSubmit, isSubmitting, resetForm, values,
@@ -46,6 +46,11 @@ const {
   initialValues: suplenteParaEdição.value,
   validationSchema: schema,
 });
+
+const níveisDeSuplênciaPreenchidos = computed(() => (Array
+  .isArray(emFoco.value?.mandato_atual?.suplentes)
+  ? emFoco.value.mandato_atual.suplentes.map((x) => x.suplencia)
+  : []));
 
 const onSubmit = handleSubmit.withControlled(async () => {
   try {
@@ -117,6 +122,7 @@ watch(suplenteParaEdição, (novoValor) => {
               v-for="ordem in ordens"
               :key="ordem.valor"
               :value="ordem.valor"
+              :disabled="níveisDeSuplênciaPreenchidos.includes(ordem.valor) "
             >
               {{ ordem.titulo }}
             </option>
