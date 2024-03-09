@@ -38,6 +38,10 @@ export default {
 
       meta: {
         título: 'Editar parlamentar',
+        rotasParaMigalhasDePão: [
+          'parlamentaresListar',
+          'parlamentarDetalhe',
+        ],
       },
 
       children: [
@@ -87,6 +91,9 @@ export default {
 
       meta: {
         título: 'Carometro',
+        rotasParaMigalhasDePão: [
+          'parlamentaresListar',
+        ],
       },
     },
   ],
