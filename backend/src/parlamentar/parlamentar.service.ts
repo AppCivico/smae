@@ -454,12 +454,6 @@ export class ParlamentarService {
         });
         if (!partidoAtualExists) throw new HttpException('partido_atual_id| Partido atual inválido', 400);
 
-        if ((dto.suplencia && !dto.mandato_principal_id) || (!dto.suplencia && dto.mandato_principal_id))
-            throw new HttpException(
-                'Para mandatos de suplentes, deve ser informado o grau de suplência e o mandato principal',
-                400
-            );
-
         const created = await this.prisma.$transaction(
             async (prismaTxn: Prisma.TransactionClient): Promise<RecordWithId> => {
                 const mandato = await prismaTxn.parlamentarMandato.create({
