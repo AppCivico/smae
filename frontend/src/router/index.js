@@ -106,7 +106,10 @@ export const router = createRouter({
               path: 'representatividade/:representatividadeId?',
               name: 'parlamentaresEditarRepresentatividade',
               component: () => import('@/views/parlamentares/ParlamentarRepresentatividade.vue'),
-              props: true,
+              props: ({ params, query }) => ({
+                ...params,
+                ...query,
+              }),
               meta: {
                 rotaDeEscape: 'parlamentaresEditar',
               },
