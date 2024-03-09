@@ -140,6 +140,7 @@ watch(representatividadeParaEdição, (novoValor) => {
 
   if (!values.municipio_tipo && tipoSugerido) {
     resetField('municipio_tipo', { value: tipoSugerido });
+    definirCampoNível(tipoSugerido);
   }
 
   // rodar imediatamente apenas por causa do tipo sugerido
@@ -164,7 +165,7 @@ watch(representatividadeParaEdição, (novoValor) => {
 
     <form
       :disabled="isSubmitting"
-      @submit="onSubmit"
+      @submit.prevent="onSubmit"
     >
       <div class="flex flexwrap g2 mb1">
         <Field
