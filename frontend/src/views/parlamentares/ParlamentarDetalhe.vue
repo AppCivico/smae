@@ -518,22 +518,22 @@ const representatividadeInterior = computed(() => representatividade.value.filte
 </script>
 
 <style scoped lang="less">
-.carometro{
-  &__img-container{
-    width: 280px;
-    height:280px;
-    border-radius: 10px;
-    background-color: #F7F7F7;
-    border: 6px solid #F7C234;
-    ;
-  }
-  &__img{
-   width: 100%;
-  }
+.carometro {}
 
-  &__equipe{
-    max-width: 890px;
-    margin: 0 auto;
-  }
+.carometro__img-container {
+  width: 280px;
+  height: 280px;
+  border-radius: 10px;
+  background-color: #F7F7F7;
+  border: 6px solid #F7C234;
+}
+
+.carometro__img {
+  width: 100%;
+}
+
+.carometro__equipe {
+  max-width: 890px;
+  margin: 0 auto;
 }
 </style>
