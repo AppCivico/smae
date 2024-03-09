@@ -139,7 +139,7 @@ export class ParlamentarController {
     @ApiUnauthorizedResponse()
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.ACCEPTED)
-    @Roles('CadastroPainel.visualizar')
+    @Roles('CadastroParlamentar.remover')
     async removeMandatoo(@Param() params: FindTwoParams, @CurrentUser() user: PessoaFromJwt) {
         await this.parlamentarService.removeMandato(+params.id2, user);
         return '';
