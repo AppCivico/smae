@@ -348,6 +348,12 @@ export class ParlamentarService {
         if (dto.telefone && !user.hasSomeRoles(['SMAE.acesso_telefone']))
             throw new HttpException('Usuário sem permissão para edição de telefone', 400);
 
+        let uploadId: number | null = null;
+        if (dto.upload_foto) {
+            uploadId = this.uploadService.checkUploadOrDownloadToken(dto.upload_foto);
+        }
+        delete dto.upload_foto;
+
         const updated = await this.prisma.$transaction(
             async (prismaTxn: Prisma.TransactionClient): Promise<RecordWithId> => {
                 const parlamentar = await prismaTxn.parlamentar.update({
@@ -355,6 +361,7 @@ export class ParlamentarService {
                     data: {
                         atualizado_por: user.id,
                         atualizado_em: new Date(Date.now()),
+                        foto_upload_id: uploadId,
                         ...dto,
                     },
                 });
