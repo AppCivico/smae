@@ -200,16 +200,16 @@ iniciar();
       </Field>
     </div>
 
-    <div
-      v-if="equipe.assessores.length"
-      class="mb3"
-    >
+    <div class="mb3">
       <div class="flex spacebetween center mb1">
         <span class="label tc300">Assessores</span>
         <hr class="mr2 f1">
       </div>
 
-      <table class="tablemain mb1">
+      <table
+        v-if="equipe.assessores.length"
+        class="tablemain mb1"
+      >
         <col>
         <col class="col--botão-de-ação">
         <col class="col--botão-de-ação">
@@ -280,16 +280,16 @@ iniciar();
       </router-link>
     </div>
 
-    <div
-      v-if="equipe.contatos.length"
-      class="mb3"
-    >
+    <div class="mb3">
       <div class="flex spacebetween center mb1">
         <span class="label tc300">Contatos</span>
         <hr class="mr2 f1">
       </div>
 
-      <table class="tablemain mb1">
+      <table
+        v-if="equipe.contatos.length"
+        class="tablemain mb1"
+      >
         <col>
         <col class="col--botão-de-ação">
         <col class="col--botão-de-ação">
