@@ -23,6 +23,20 @@
             {{ emFoco.nome }}
           </dd>
         </dl>
+        <dl
+          v-if="emFoco.mandato_atual?.suplencia"
+          class="f1 mb1"
+        >
+          <dt class="t12 uc w700 mb05 ">
+            Suplência
+          </dt>
+          <dd
+            v-if="emFoco"
+            class="t13"
+          >
+            {{ níveisDeSuplência[emFoco.mandato_atual?.suplencia]?.nome }}
+          </dd>
+        </dl>
         <dl class="f1 mb1">
           <dt class="t12 uc w700 mb05 ">
             Nome
@@ -537,7 +551,8 @@
 
 <script setup>
 import { useParlamentaresStore } from '@/stores/parlamentares.store';
-import { onMounted, ref, computed } from 'vue';
+import { computed, onMounted, ref } from 'vue';
+import níveisDeSuplência from '@/consts/niveisDeSuplencia';
 import ParlamentaresSuplentes from './ParlamentaresSuplentes.vue';
 
 const props = defineProps({
