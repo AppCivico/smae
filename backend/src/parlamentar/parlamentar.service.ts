@@ -701,7 +701,7 @@ export class ParlamentarService {
 
         if (
             mandatoPrincipal.suplentes.length > 0 &&
-            mandatoPrincipal.suplentes.filter((e) => e.suplencia == dto.suplencia)
+            mandatoPrincipal.suplentes.filter((e) => e.suplencia == dto.suplencia).length > 0
         )
             throw new HttpException('suplencia| Parlamentar já possui um outro suplente deste nivel', 400);
 
