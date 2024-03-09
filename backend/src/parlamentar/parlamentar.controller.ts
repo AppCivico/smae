@@ -6,16 +6,27 @@ import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { FindOneParams, FindTwoParams } from '../common/decorators/find-params';
 import { RecordWithId } from '../common/dto/record-with-id.dto';
 import { ParlamentarService } from './parlamentar.service';
-import { CreateMandatoDto, CreateParlamentarDto, CreateMandatoRepresentatividadeDto, CreateMandatoSuplenteDto, CreateEquipeDto } from './dto/create-parlamentar.dto';
+import {
+    CreateMandatoDto,
+    CreateParlamentarDto,
+    CreateMandatoRepresentatividadeDto,
+    CreateMandatoSuplenteDto,
+    CreateEquipeDto,
+} from './dto/create-parlamentar.dto';
 import { ListParlamentarDto, ParlamentarDetailDto } from './entities/parlamentar.entity';
-import { UpdateEquipeDto, UpdateMandatoDto, UpdateParlamentarDto, UpdateRepresentatividadeDto } from './dto/update-parlamentar.dto';
+import {
+    UpdateEquipeDto,
+    UpdateMandatoDto,
+    UpdateParlamentarDto,
+    UpdateRepresentatividadeDto,
+} from './dto/update-parlamentar.dto';
 import { RemoveMandatoDepsDto } from './dto/remove-mandato-deps.dto';
 import { FilterParlamentarDto } from './dto/filter-parlamentar.dto';
 
 @ApiTags('Parlamentar')
 @Controller('parlamentar')
 export class ParlamentarController {
-    constructor(private readonly parlamentarService: ParlamentarService) { }
+    constructor(private readonly parlamentarService: ParlamentarService) {}
 
     @Post()
     @ApiBearerAuth('access-token')
@@ -67,7 +78,11 @@ export class ParlamentarController {
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
     @Roles('CadastroParlamentar.inserir')
-    async createEquipe(@Param() params: FindOneParams, @Body() dto: CreateEquipeDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
+    async createEquipe(
+        @Param() params: FindOneParams,
+        @Body() dto: CreateEquipeDto,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<RecordWithId> {
         return await this.parlamentarService.createEquipe(+params.id, dto, user);
     }
 
@@ -75,7 +90,11 @@ export class ParlamentarController {
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
     @Roles('CadastroParlamentar.editar')
-    async updateEquipe(@Param() params: FindTwoParams, @Body() dto: UpdateEquipeDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
+    async updateEquipe(
+        @Param() params: FindTwoParams,
+        @Body() dto: UpdateEquipeDto,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<RecordWithId> {
         return await this.parlamentarService.updateEquipe(+params.id2, dto, user);
     }
 
@@ -95,7 +114,11 @@ export class ParlamentarController {
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
     @Roles('CadastroParlamentar.inserir')
-    async createMandato(@Param() params: FindOneParams, @Body() dto: CreateMandatoDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
+    async createMandato(
+        @Param() params: FindOneParams,
+        @Body() dto: CreateMandatoDto,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<RecordWithId> {
         return await this.parlamentarService.createMandato(+params.id, dto, user);
     }
 
@@ -103,7 +126,11 @@ export class ParlamentarController {
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
     @Roles('CadastroParlamentar.editar')
-    async updateMandato(@Param() params: FindTwoParams, @Body() dto: UpdateMandatoDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
+    async updateMandato(
+        @Param() params: FindTwoParams,
+        @Body() dto: UpdateMandatoDto,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<RecordWithId> {
         return await this.parlamentarService.updateMandato(+params.id2, dto, user);
     }
 
@@ -123,7 +150,11 @@ export class ParlamentarController {
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
     @Roles('CadastroParlamentar.inserir')
-    async createRepresentatividade(@Param() params: FindOneParams, @Body() dto: CreateMandatoRepresentatividadeDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
+    async createRepresentatividade(
+        @Param() params: FindOneParams,
+        @Body() dto: CreateMandatoRepresentatividadeDto,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<RecordWithId> {
         return await this.parlamentarService.createMandatoRepresentatividade(+params.id, dto, user);
     }
 
@@ -131,7 +162,11 @@ export class ParlamentarController {
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
     @Roles('CadastroParlamentar.editar')
-    async updateRepresentatividade(@Param() params: FindTwoParams, @Body() dto: UpdateRepresentatividadeDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
+    async updateRepresentatividade(
+        @Param() params: FindTwoParams,
+        @Body() dto: UpdateRepresentatividadeDto,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<RecordWithId> {
         return await this.parlamentarService.updateMandatoRepresentatividade(+params.id2, dto, user);
     }
 
@@ -141,7 +176,11 @@ export class ParlamentarController {
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.ACCEPTED)
     @Roles('CadastroParlamentar.remover')
-    async removeRepresentatividade(@Param() params: FindTwoParams, @Body() dto: RemoveMandatoDepsDto, @CurrentUser() user: PessoaFromJwt) {
+    async removeRepresentatividade(
+        @Param() params: FindTwoParams,
+        @Body() dto: RemoveMandatoDepsDto,
+        @CurrentUser() user: PessoaFromJwt
+    ) {
         await this.parlamentarService.removeMandatoRepresentatividade(+params.id2, dto, user);
         return '';
     }
@@ -151,7 +190,11 @@ export class ParlamentarController {
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
     @Roles('CadastroParlamentar.inserir')
-    async createSuplente(@Param() params: FindOneParams, @Body() dto: CreateMandatoSuplenteDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
+    async createSuplente(
+        @Param() params: FindOneParams,
+        @Body() dto: CreateMandatoSuplenteDto,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<RecordWithId> {
         return await this.parlamentarService.createSuplente(+params.id, dto, user);
     }
 
@@ -161,8 +204,8 @@ export class ParlamentarController {
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.ACCEPTED)
     @Roles('CadastroParlamentar.remover')
-    async removeSuplente(@Param() params: FindTwoParams, @Body() dto: RemoveMandatoDepsDto, @CurrentUser() user: PessoaFromJwt) {
-        await this.parlamentarService.removeSuplente(+params.id2, dto, user);
+    async removeSuplente(@Param() params: FindTwoParams, @CurrentUser() user: PessoaFromJwt) {
+        await this.parlamentarService.removeSuplente(+params.id, +params.id2, user);
         return '';
     }
 }
