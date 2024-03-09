@@ -12,14 +12,25 @@
       <div>
         <dl>
           <dt>
-            Nome Civil
+            Nome
           </dt>
           <dd v-if="emFoco">
-            {{ emFoco.nome }}
+            {{ emFoco.nome_popular }}
           </dd>
         </dl>
 
         <dl
+          v-if="emFoco.mandato_atual?.atuacao"
+        >
+          <dt>
+            Área de Atuação
+          </dt>
+          <dd>
+            {{ emFoco.mandato_atual.atuacao }}
+          </dd>
+        </dl>
+
+        <!-- <dl
           v-if="emFoco.mandato_atual?.suplencia"
         >
           <dt>
@@ -28,17 +39,16 @@
           <dd v-if="emFoco">
             {{ níveisDeSuplência[emFoco.mandato_atual?.suplencia]?.nome }}
           </dd>
-        </dl>
+        </dl> -->
+      </div>
 
+      <div>
         <dl>
           <dt>
-            Nome
+            Nome Civil
           </dt>
-          <dd
-            v-if="emFoco"
-            class="t13"
-          >
-            {{ emFoco.nome_popular }}
+          <dd v-if="emFoco">
+            {{ emFoco.nome }}
           </dd>
         </dl>
 
@@ -46,10 +56,7 @@
           <dt>
             Aniversário
           </dt>
-          <dd
-            v-if="emFoco"
-            class="t13"
-          >
+          <dd v-if="emFoco">
             {{ new Date(emFoco.nascimento).toLocaleDateString('pt-BR', { month: '2-digit', day: '2-digit' }) }}
           </dd>
         </dl>
@@ -64,22 +71,11 @@
             {{ emFoco.telefone }}
           </dd>
         </dl>
-
-        <dl
-          v-if="emFoco.mandato_atual?.atuacao"
-        >
-          <dt>
-            Área de Atuação
-          </dt>
-          <dd>
-            {{ emFoco.mandato_atual.atuacao }}
-          </dd>
-        </dl>
       </div>
     </div>
     <div v-if="emFoco.mandato_atual?.biografia">
       <div class="flex spacebetween center mb2">
-        <h3 class="c500">
+        <h3 class="title">
           Biografia
         </h3>
         <hr class="ml2 f1">
@@ -91,7 +87,7 @@
 
     <div class="mb2">
       <div class="flex spacebetween center mb2">
-        <h3 class="c500">
+        <h3 class="title">
           Assessores
         </h3>
         <hr class="ml2 f1">
@@ -132,13 +128,13 @@
       class="mb2"
     >
       <div class="flex spacebetween center mb2">
-        <h3 class="c500">
+        <h3 class="title">
           Eleição {{ emFoco.mandato_atual.eleicao.ano }}
         </h3>
         <hr class="ml2 f1">
       </div>
 
-      <div class="flex spacebetween center mb2">
+      <div class="eleicao">
         <div>
           <dl>
             <dt>
@@ -197,10 +193,7 @@
             <dt>
               Cargo
             </dt>
-            <dd
-              v-if="emFoco.mandato_atual?.cargo"
-              class="t13"
-            >
+            <dd v-if="emFoco.mandato_atual?.cargo">
               {{ emFoco.mandato_atual.cargo }}
             </dd>
           </dl>
@@ -211,10 +204,7 @@
             <dt>
               Partido Atual
             </dt>
-            <dd
-              v-if="emFoco.mandato_atual?.partido_atual.sigla"
-              class="t13"
-            >
+            <dd v-if="emFoco.mandato_atual?.partido_atual.sigla">
               {{ emFoco.mandato_atual.partido_atual.sigla }}
             </dd>
           </dl>
@@ -230,7 +220,8 @@
             </dd>
           </dl>
         </div>
-        <div>
+
+        <div v-if="emFoco.mandato_atual?.votos_estado || emFoco.mandato_atual?.votos_interior || emFoco.mandato_atual?.votos_capital">
           <dl
             v-if="emFoco.mandato_atual?.votos_estado"
           >
@@ -271,50 +262,50 @@
             </dd>
           </dl>
         </div>
-      </div>
 
-      <div>
-        <dl>
-          <dt>
-            Endereço
-          </dt>
-          <dd
-            v-if="emFoco.mandato_atual?.endereco"
-            class="t13"
-          >
-            {{ emFoco.mandato_atual.endereco }}
-          </dd>
-        </dl>
+        <div>
+          <dl>
+            <dt>
+              Endereço
+            </dt>
+            <dd
+              v-if="emFoco.mandato_atual?.endereco"
+              class="t13"
+            >
+              {{ emFoco.mandato_atual.endereco }}
+            </dd>
+          </dl>
 
-        <dl>
-          <dt>
-            Gabinete
-          </dt>
-          <dd
-            v-if="emFoco.mandato_atual?.gabinete"
-            class="t13"
-          >
-            {{ emFoco.mandato_atual.gabinete }}
-          </dd>
-        </dl>
+          <dl>
+            <dt>
+              Gabinete
+            </dt>
+            <dd
+              v-if="emFoco.mandato_atual?.gabinete"
+              class="t13"
+            >
+              {{ emFoco.mandato_atual.gabinete }}
+            </dd>
+          </dl>
 
-        <dl>
-          <dt>
-            Email
-          </dt>
-          <dd
-            v-if="emFoco.mandato_atual?.email"
-            class="t13"
-          >
-            {{ emFoco.mandato_atual.email }}
-          </dd>
-        </dl>
+          <dl>
+            <dt>
+              Email
+            </dt>
+            <dd
+              v-if="emFoco.mandato_atual?.email"
+              class="t13"
+            >
+              {{ emFoco.mandato_atual.email }}
+            </dd>
+          </dl>
+        </div>
       </div>
     </div>
 
     <div class="mb2">
       <div class="flex spacebetween center mb2">
-        <h3 class="c500">
+        <h3 class="title">
           Contatos
         </h3>
         <hr class="ml2 f1">
@@ -381,13 +372,10 @@ onMounted(async () => {
 });
 
 const equipe = computed(() => emFoco.value?.equipe ?? []);
-const representatividade = computed(() => emFoco.value?.mandato_atual?.representatividade ?? []);
 
 const assessores = computed(() => equipe.value.filter((item) => item.tipo === 'Assessor'));
 const contatos = computed(() => equipe.value.filter((item) => item.tipo === 'Contato'));
 
-const representatividadeCapital = computed(() => representatividade.value.filter((item) => item.municipio_tipo === 'Capital'));
-const representatividadeInterior = computed(() => representatividade.value.filter((item) => item.municipio_tipo === 'Interior'));
 </script>
 
 <style scoped lang="less">
@@ -413,7 +401,8 @@ const representatividadeInterior = computed(() => representatividade.value.filte
   margin: 0 auto;
 }
 
-dt{
+dt,
+.title{
   color: #607A9F;
   font-weight: 700;
   font-size: 24px;
@@ -425,5 +414,18 @@ dd {
   font-size: 20px;
   margin-bottom: 15px;
 }
+.eleicao {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 15px;
+}
 
+.eleicao > div {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  padding: 20px;
+  border-top: solid 2px #B8C0CC;
+  border-radius: 12px;
+}
 </style>
