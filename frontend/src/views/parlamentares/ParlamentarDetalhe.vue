@@ -10,35 +10,28 @@
         >
       </div>
       <div>
-        <dl
-          class="f1 mb1"
-        >
-          <dt class="t12 uc w700 mb05 ">
+        <dl>
+          <dt>
             Nome Civil
           </dt>
-          <dd
-            v-if="emFoco"
-            class="t13"
-          >
+          <dd v-if="emFoco">
             {{ emFoco.nome }}
           </dd>
         </dl>
+
         <dl
           v-if="emFoco.mandato_atual?.suplencia"
-          class="f1 mb1"
         >
-          <dt class="t12 uc w700 mb05 ">
+          <dt>
             Suplência
           </dt>
-          <dd
-            v-if="emFoco"
-            class="t13"
-          >
+          <dd v-if="emFoco">
             {{ níveisDeSuplência[emFoco.mandato_atual?.suplencia]?.nome }}
           </dd>
         </dl>
-        <dl class="f1 mb1">
-          <dt class="t12 uc w700 mb05 ">
+
+        <dl>
+          <dt>
             Nome
           </dt>
           <dd
@@ -48,8 +41,9 @@
             {{ emFoco.nome_popular }}
           </dd>
         </dl>
-        <dl class="f1 mb1">
-          <dt class="t12 uc w700 mb05 ">
+
+        <dl>
+          <dt>
             Aniversário
           </dt>
           <dd
@@ -62,24 +56,22 @@
 
         <dl
           v-if="emFoco.telefone && authStore.temPermissãoPara('SMAE.acesso_telefone') "
-          class="f1 mb1"
         >
-          <dt class="t12 uc w700 mb05 ">
-            Telefone:
+          <dt>
+            Telefone
           </dt>
-          <dd class="t13">
+          <dd>
             {{ emFoco.telefone }}
           </dd>
         </dl>
 
         <dl
           v-if="emFoco.mandato_atual?.atuacao"
-          class="f1 mb1"
         >
-          <dt class="t12 uc w700 mb05 ">
-            Atuação
+          <dt>
+            Área de Atuação
           </dt>
-          <dd class="t13">
+          <dd>
             {{ emFoco.mandato_atual.atuacao }}
           </dd>
         </dl>
@@ -148,8 +140,8 @@
 
       <div class="flex spacebetween center mb2">
         <div>
-          <dl class="f1 mb1">
-            <dt class="t12 uc w700 mb05 ">
+          <dl>
+            <dt>
               Eleito
             </dt>
             <dd
@@ -161,8 +153,8 @@
             </dd>
           </dl>
 
-          <dl class="f1 mb1">
-            <dt class="t12 uc w700 mb05 ">
+          <dl>
+            <dt>
               Suplente
             </dt>
             <dd
@@ -174,8 +166,8 @@
             </dd>
           </dl>
 
-          <dl class="f1 mb1">
-            <dt class="t12 uc w700 mb05 ">
+          <dl>
+            <dt>
               Em atividade?
             </dt>
             <dd
@@ -189,8 +181,8 @@
         </div>
 
         <div>
-          <dl class="f1 mb1">
-            <dt class="t12 uc w700 mb05 ">
+          <dl>
+            <dt>
               UF
             </dt>
             <dd
@@ -201,8 +193,8 @@
             </dd>
           </dl>
 
-          <dl class="f1 mb1">
-            <dt class="t12 uc w700 mb05">
+          <dl>
+            <dt>
               Cargo
             </dt>
             <dd
@@ -215,8 +207,8 @@
         </div>
 
         <div>
-          <dl class="f1 mb1">
-            <dt class="t12 uc w700 mb05 ">
+          <dl>
+            <dt>
               Partido Atual
             </dt>
             <dd
@@ -226,8 +218,8 @@
               {{ emFoco.mandato_atual.partido_atual.sigla }}
             </dd>
           </dl>
-          <dl class="f1 mb1">
-            <dt class="t12 uc w700 mb05 ">
+          <dl>
+            <dt>
               Partido - Candidatura
             </dt>
             <dd
@@ -241,9 +233,8 @@
         <div>
           <dl
             v-if="emFoco.mandato_atual?.votos_estado"
-            class="f1 mb1"
           >
-            <dt class="t12 uc w700 mb05 ">
+            <dt>
               Votos no Estado
             </dt>
             <dd
@@ -255,9 +246,8 @@
 
           <dl
             v-if="emFoco.mandato_atual?.votos_interior"
-            class="f1 mb1"
           >
-            <dt class="t12 uc w700 mb05 ">
+            <dt>
               Votos no interior
             </dt>
             <dd
@@ -270,9 +260,8 @@
 
           <dl
             v-if="emFoco.mandato_atual?.votos_capital"
-            class="f1 mb1"
           >
-            <dt class="t12 uc w700 mb05 ">
+            <dt>
               Votos na capital
             </dt>
             <dd
@@ -285,8 +274,8 @@
       </div>
 
       <div>
-        <dl class="f1 mb1">
-          <dt class="t12 uc w700 mb05 ">
+        <dl>
+          <dt>
             Endereço
           </dt>
           <dd
@@ -297,8 +286,8 @@
           </dd>
         </dl>
 
-        <dl class="f1 mb1">
-          <dt class="t12 uc w700 mb05 ">
+        <dl>
+          <dt>
             Gabinete
           </dt>
           <dd
@@ -309,8 +298,8 @@
           </dd>
         </dl>
 
-        <dl class="f1 mb1">
-          <dt class="t12 uc w700 mb05 ">
+        <dl>
+          <dt>
             Email
           </dt>
           <dd
@@ -320,30 +309,6 @@
             {{ emFoco.mandato_atual.email }}
           </dd>
         </dl>
-        <!-- pedir email e telefone -->
-        <!-- <dl class="f1 mb1">
-          <dt class="t12 uc w700 mb05 ">
-            Email
-          </dt>
-          <dd
-            v-if="emFoco.mandato_atual"
-            class="t13"
-          >
-            {{ emFoco.mandato_atual.email }}
-          </dd>
-        </dl>
-
-        <dl class="f1 mb1">
-          <dt class="t12 uc w700 mb05 ">
-            Telefone
-          </dt>
-          <dd
-            v-if="emFoco.mandato_atual"
-            class="t13"
-          >
-            {{ emFoco.mandato_atual.telefone }}
-          </dd>
-        </dl> -->
       </div>
     </div>
 
@@ -426,7 +391,10 @@ const representatividadeInterior = computed(() => representatividade.value.filte
 </script>
 
 <style scoped lang="less">
-.carometro {}
+
+.carometro {
+
+}
 
 .carometro__img-container {
   width: 280px;
@@ -444,4 +412,18 @@ const representatividadeInterior = computed(() => representatividade.value.filte
   max-width: 890px;
   margin: 0 auto;
 }
+
+dt{
+  color: #607A9F;
+  font-weight: 700;
+  font-size: 24px;
+}
+
+dd {
+  font-weight: 400;
+  color: #233B5C;
+  font-size: 20px;
+  margin-bottom: 15px;
+}
+
 </style>
