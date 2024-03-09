@@ -125,6 +125,11 @@ watch(suplenteParaEdição, (novoValor) => {
               :disabled="níveisDeSuplênciaPreenchidos.includes(ordem.valor) "
             >
               {{ ordem.titulo }}
+              <template
+                v-if="níveisDeSuplênciaPreenchidos.includes(ordem.valor) "
+              >
+                (já preenchida)
+              </template>
             </option>
           </Field>
           <ErrorMessage
@@ -144,10 +149,13 @@ watch(suplenteParaEdição, (novoValor) => {
             name="nome"
             as="select"
             class="inputtext light mb1"
-            :class="{ 'error': errors.tipo }"
+            :class="{ error: errors.tipo, loading: chamadasPendentes.lista }"
           >
             <option value="">
               Selecionar
+              <template v-if="!lista.length">
+                (Sem opções disponíveis)
+              </template>
             </option>
             <option
               v-for="parlamentar in lista"
@@ -181,7 +189,7 @@ watch(suplenteParaEdição, (novoValor) => {
       </div>
     </form>
 
-    <LoadingComponent v-if="chamadasPendentes.equipe" />
+    <LoadingComponent v-if="chamadasPendentes.suplente" />
 
     <div
       v-if="erro"
