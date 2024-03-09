@@ -123,6 +123,7 @@ watch(pessoaParaEdição, (novoValor) => {
       <hr class="ml2 f1">
 
       <CheckClose
+        :apenas-emitir="props.apenasEmitir"
         :formulário-sujo="formulárioSujo"
       />
     </div>
