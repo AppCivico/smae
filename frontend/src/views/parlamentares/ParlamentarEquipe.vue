@@ -131,11 +131,11 @@ watch(pessoaParaEdição, (novoValor) => {
       :disabled="isSubmitting"
       @submit.prevent="onSubmit"
     >
-      <div
-        :hidden="!pessoaId && !!tipoSugerido"
-        class="flex flexwrap g2 mb1"
-      >
-        <div class="f1">
+      <div class="flex flexwrap g2 mb1">
+        <div
+          class="f1"
+          :hidden="(!pessoaId && !!tipoSugerido)"
+        >
           <LabelFromYup
             name="tipo"
             :schema="schema"
@@ -144,10 +144,7 @@ watch(pessoaParaEdição, (novoValor) => {
             name="tipo"
             as="select"
             class="inputtext light mb1"
-            :class="{
-          error: errors.tipo,
-          loading: chamadasPendentes.emFoco,
-        }"
+            :class="{ error: errors.tipo, loading: chamadasPendentes.emFoco }"
           >
             <option value="">
               Selecionar
