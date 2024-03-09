@@ -108,7 +108,6 @@ export default {
   children: [
     {
       path: '',
-      redirect: '/relatorios/mensal',
     },
     {
       path: 'mensal',
