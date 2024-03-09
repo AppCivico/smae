@@ -752,6 +752,9 @@ export const bancada = object({
     .label('Nome')
     .max(250)
     .required(),
+  partidos: array()
+    .label('Partidos')
+    .nullable(),
 });
 
 export const parlamentar = object({
