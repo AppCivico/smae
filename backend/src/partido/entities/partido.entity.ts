@@ -1,5 +1,4 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { BancadaDto } from 'src/bancada/entities/bancada.entity';
 
 export class PartidoOneDto {
     @ApiProperty({ description: 'ID do Partido' })
