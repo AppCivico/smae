@@ -163,7 +163,6 @@ export class CreateMandatoRepresentatividadeDto {
     @IsEnum(DadosEleicaoNivel, {
         message: '$property| Precisa ser um dos seguintes valores: ' + Object.values(DadosEleicaoNivel).join(', '),
     })
-    @IsOptional()
     nivel: DadosEleicaoNivel;
 
     @ApiProperty({ enum: MunicipioTipo, enumName: 'MunicipioTipo' })
