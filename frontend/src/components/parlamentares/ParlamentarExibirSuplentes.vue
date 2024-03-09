@@ -93,7 +93,7 @@ function excluirSuplente(suplenteId, parlamentarId = emFoco.value.id) {
               arial-label="excluir"
               title="excluir"
               type="button"
-              @click="excluirSuplente(suplente.id, emFoco.mandato_atual.id, emFoco.id)"
+              @click="excluirSuplente(suplente.id, emFoco.id)"
             >
               <svg
                 width="20"
