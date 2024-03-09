@@ -1,6 +1,7 @@
 <script setup>
 import InputImageProfile from '@/components/InputImageProfile.vue';
 import ParlamentarExibirSuplentes from '@/components/parlamentares/ParlamentarExibirSuplentes.vue';
+import ParlamentaresExibirRepresentatividade from '@/components/parlamentares/ParlamentaresExibirRepresentatividade.vue';
 import { parlamentar as schema } from '@/consts/formSchemas';
 import { useAlertStore } from '@/stores/alert.store';
 import { useAuthStore } from '@/stores/auth.store';
@@ -73,11 +74,6 @@ function excluirItem(tipo, id) {
       case 'mandato':
         tentativa = await useParlamentaresStore().excluirMandato(id);
         mensagem = 'Mandato removido.';
-        break;
-
-      case 'representatividade':
-        tentativa = await useParlamentaresStore().excluirRepresentatividade(id);
-        mensagem = 'Representatividade removida.';
         break;
 
       default:
@@ -438,6 +434,8 @@ iniciar();
     </div>
 
     <ParlamentarExibirSuplentes :exibir-edição="true" />
+
+    <ParlamentaresExibirRepresentatividade :exibir-edição="true" />
 
     <div class="flex spacebetween center mb2">
       <hr class="mr2 f1">
