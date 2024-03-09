@@ -103,10 +103,8 @@ iniciar();
 watch(pessoaParaEdição, (novoValor) => {
   resetForm({ values: novoValor });
 
-  if (!values.tipo) {
-    if (tipoSugerido) {
-      resetField('tipo', { value: tipoSugerido });
-    }
+  if (!values.tipo && tipoSugerido) {
+    resetField('tipo', { value: tipoSugerido });
   }
 
   // rodar imediatamente apenas por causa do tipo sugerido
@@ -131,7 +129,7 @@ watch(pessoaParaEdição, (novoValor) => {
 
     <form
       :disabled="isSubmitting"
-      @submit="onSubmit"
+      @submit.prevent="onSubmit"
     >
       <div
         :hidden="!pessoaId && !!tipoSugerido"
