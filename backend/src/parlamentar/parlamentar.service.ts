@@ -57,7 +57,7 @@ export class ParlamentarService {
         return created;
     }
 
-    async findAll(filters: FilterParlamentarDto): Promise<ParlamentarDto[]> {
+    async findAll(filters: FilterParlamentarDto | undefined): Promise<ParlamentarDto[]> {
         let filterSuplente:
             | {
                   cargo: ParlamentarCargo;
@@ -67,7 +67,7 @@ export class ParlamentarService {
               }
             | undefined;
 
-        if (filters.disponivel_para_suplente_parlamentar_id) {
+        if (filters != undefined && filters.disponivel_para_suplente_parlamentar_id) {
             const mandatoPrincipal = await this.prisma.parlamentarMandato.findFirst({
                 where: {
                     parlamentar: {
@@ -139,7 +139,7 @@ export class ParlamentarService {
         });
     }
 
-    async findOne(id: number, user: PessoaFromJwt): Promise<ParlamentarDetailDto> {
+    async findOne(id: number, user: PessoaFromJwt | undefined): Promise<ParlamentarDetailDto> {
         const parlamentar = await this.prisma.parlamentar.findUniqueOrThrow({
             where: {
                 id: id,
@@ -274,7 +274,7 @@ export class ParlamentarService {
             foto: parlamentar.foto_upload_id
                 ? this.uploadService.getDownloadToken(parlamentar.foto_upload_id, '1 days').download_token
                 : null,
-            telefone: !user.hasSomeRoles(['SMAE.acesso_telefone']) ? parlamentar.telefone : null,
+            telefone: user && !user.hasSomeRoles(['SMAE.acesso_telefone']) ? parlamentar.telefone : null,
 
             mandato_atual: mandatoCorrente
                 ? {
@@ -285,9 +285,10 @@ export class ParlamentarService {
                               ...s,
                               parlamentar: {
                                   ...s.parlamentar,
-                                  telefone: !user.hasSomeRoles(['SMAE.acesso_telefone'])
-                                      ? s.parlamentar.telefone
-                                      : null,
+                                  telefone:
+                                      user && !user.hasSomeRoles(['SMAE.acesso_telefone'])
+                                          ? s.parlamentar.telefone
+                                          : null,
                               },
                           };
                       }),
@@ -317,7 +318,10 @@ export class ParlamentarService {
                             ...s,
                             parlamentar: {
                                 ...s.parlamentar,
-                                telefone: !user.hasSomeRoles(['SMAE.acesso_telefone']) ? s.parlamentar.telefone : null,
+                                telefone:
+                                    user && !user.hasSomeRoles(['SMAE.acesso_telefone'])
+                                        ? s.parlamentar.telefone
+                                        : null,
                             },
                         };
                     }),
