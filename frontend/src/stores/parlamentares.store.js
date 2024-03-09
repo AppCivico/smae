@@ -108,7 +108,7 @@ export const useParlamentaresStore = defineStore('parlamentaresStore', {
 
     async salvarPessoaNaEquipe(
       params = {},
-      pessoaId = this.route.paramspessoaId,
+      pessoaId = this.route.params.pessoaId,
       parlamentarId = this.route.params.parlamentarId,
     ) {
       this.chamadasPendentes.equipe = true;
