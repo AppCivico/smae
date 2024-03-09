@@ -80,7 +80,7 @@ watch(suplenteParaEdição, (novoValor) => {
 </script>
 
 <template>
-  <SmallModal>
+  <SmallModal @close="emit('close')">
     <div class="flex spacebetween center mb2">
       <TítuloDePágina> Suplentes </TítuloDePágina>
       <hr class="ml2 f1">
@@ -88,6 +88,7 @@ watch(suplenteParaEdição, (novoValor) => {
       <CheckClose
         :apenas-emitir="props.apenasEmitir"
         :formulário-sujo="formulárioSujo"
+        @close="emit('close')"
       />
     </div>
 

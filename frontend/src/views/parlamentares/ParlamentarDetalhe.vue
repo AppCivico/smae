@@ -540,8 +540,9 @@
   <!-- TODO: só pode aparecer se tiver mandato criado -->
   <ParlamentaresSuplentes
     v-if="showSuplentesModal"
+    apenas-emitir="true"
     :parlamentar-id="emFoco.id"
-    :mandato-id="emFoco.mandato_atual.id"
+    :mandato-id="emFoco?.mandato_atual?.id"
     @close="() => {
       showSuplentesModal = false;
       parlamentaresStore.buscarItem(props.parlamentarId);
