@@ -35,6 +35,10 @@ const props = defineProps({
     ],
     default: 0,
   },
+  tipo: {
+    type: String,
+    default: '',
+  },
 });
 
 const tipoSugerido = props.tipo
@@ -134,10 +138,8 @@ iniciar();
 watch(representatividadeParaEdição, (novoValor) => {
   resetForm({ values: novoValor });
 
-  if (!values.municipio_tipo) {
-    if (tipoSugerido) {
-      resetField('municipio_tipo', { value: tipoSugerido });
-    }
+  if (!values.municipio_tipo && tipoSugerido) {
+    resetField('municipio_tipo', { value: tipoSugerido });
   }
 
   // rodar imediatamente apenas por causa do tipo sugerido
@@ -171,13 +173,17 @@ watch(representatividadeParaEdição, (novoValor) => {
           type="hidden"
         />
 
-        <div class="f1">
+        <div
+          v-if="!props.representatividadeId"
+          class="f1"
+          :hidden="!pessoaId && !!tipoSugerido"
+        >
           <LabelFromYup
             name="municipio_tipo"
             :schema="schema"
           />
           <Field
-            v-if="!props.representatividadeId"
+
             name="municipio_tipo"
             as="select"
             class="inputtext light mb1"
@@ -195,14 +201,6 @@ watch(representatividadeParaEdição, (novoValor) => {
               {{ tipo }}
             </option>
           </Field>
-          <input
-            v-else
-            type="text"
-            disabled
-            class="inputtext light mb1"
-            :value="representatividadeParaEdição?.municipio_tipo"
-            :class="{ loading: chamadasPendentes.emFoco }"
-          >
           <ErrorMessage
             class="error-msg"
             name="municipio_tipo"
