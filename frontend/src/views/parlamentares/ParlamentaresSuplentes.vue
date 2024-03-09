@@ -60,7 +60,7 @@ const onSubmit = handleSubmit.withControlled(async () => {
       suplencia: values.ordem,
       parlamentarSuplenteId: values.nome,
     })) {
-      parlamentaresStore.buscarItem(route.params?.parlamentarId);
+      parlamentaresStore.buscarItem(props.parlamentarId);
       alertStore.success('Suplente adicionado!');
       if (props.apenasEmitir) {
         emit('close');
