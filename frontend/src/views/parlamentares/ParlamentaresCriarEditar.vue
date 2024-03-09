@@ -246,9 +246,9 @@ iniciar();
             <td>
               <router-link
                 :to="{
-      name: 'parlamentaresEditarMandato',
-      params: { parlamentarId: props.parlamentarId, pessoaId: item.id }
-    }"
+                  name: 'parlamentaresEditarEquipe',
+                  params: { parlamentarId: props.parlamentarId, pessoaId: item.id }
+                }"
                 class="tprimary"
                 aria-label="Editar assessor"
               >
@@ -264,13 +264,13 @@ iniciar();
 
       <router-link
         :to="{
-      name: 'parlamentaresEditarEquipe',
-      params: {
-        parlamentarId:
-          props.parlamentarId
-      },
-      query: { tipo: 'assessor' }
-    }"
+          name: 'parlamentaresEditarEquipe',
+          params: {
+            parlamentarId:
+              props.parlamentarId
+          },
+          query: { tipo: 'assessor' }
+        }"
         class="like-a__text addlink"
       >
         <svg
