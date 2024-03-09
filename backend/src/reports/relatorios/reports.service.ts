@@ -22,6 +22,7 @@ import { FilterRelatorioDto } from './dto/filter-relatorio.dto';
 import { RelatorioDto } from './entities/report.entity';
 import { PPProjetosService } from '../pp-projetos/pp-projetos.service';
 import { PPStatusService } from '../pp-status/pp-status.service';
+import { ParlamentaresService } from '../parlamentares/parlamentares.service';
 const AdmZip = require('adm-zip');
 const XLSX = require('xlsx');
 const { parse } = require('csv-parse');
@@ -46,7 +47,8 @@ export class ReportsService {
         @Inject(forwardRef(() => PrevisaoCustoService)) private readonly previsaoCustoService: PrevisaoCustoService,
         @Inject(forwardRef(() => PPProjetoService)) private readonly ppProjetoService: PPProjetoService,
         @Inject(forwardRef(() => PPProjetosService)) private readonly ppProjetosService: PPProjetosService,
-        @Inject(forwardRef(() => PPStatusService)) private readonly ppStatusService: PPStatusService
+        @Inject(forwardRef(() => PPStatusService)) private readonly ppStatusService: PPStatusService,
+        @Inject(forwardRef(() => ParlamentaresService)) private readonly parlamentaresService: ParlamentaresService
     ) {}
 
     async runReport(dto: CreateReportDto): Promise<FileOutput[]> {
@@ -154,6 +156,9 @@ export class ReportsService {
                 break;
             case 'ProjetoStatus':
                 service = this.ppStatusService;
+                break;
+            case 'Parlamentares':
+                service = this.parlamentaresService;
                 break;
         }
         if (service === null) throw new HttpException(`Fonte ${dto.fonte} ainda não foi implementada`, 500);
