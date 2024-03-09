@@ -1,5 +1,17 @@
 <template>
-  <h1>Parlamentar</h1>
+  <div class="flex spacebetween center mb2">
+    <h1>Parlamentar</h1>
+    <hr class="ml2 f1">
+
+    <router-link
+      v-if="emFoco?.id"
+      :to="{ name: 'parlamentaresEditar', params: { parlamentarId: emFoco.id } }"
+      class="btn big ml2"
+    >
+      Editar
+    </router-link>
+  </div>
+
   <div>
     <div class="flex g2 mb1 flexwrap">
       <div class="carometro__img-container">
@@ -346,7 +358,6 @@
 <script setup>
 import ParlamentaresExibirRepresentatividade from '@/components/parlamentares/ParlamentaresExibirRepresentatividade.vue';
 import ParlamentarExibirSuplentes from '@/components/parlamentares/ParlamentarExibirSuplentes.vue';
-import níveisDeSuplência from '@/consts/niveisDeSuplencia';
 import { useAuthStore } from '@/stores/auth.store';
 import { useParlamentaresStore } from '@/stores/parlamentares.store';
 import { computed, onMounted, ref } from 'vue';
