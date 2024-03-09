@@ -729,12 +729,7 @@ export class ParlamentarService {
         return { id: mandatoSuplente.id };
     }
 
-    async removeSuplente(
-        parlamentarTitularId: number,
-        suplenteId: number,
-        dto: RemoveMandatoDepsDto,
-        user: PessoaFromJwt
-    ) {
+    async removeSuplente(parlamentarTitularId: number, suplenteId: number, user: PessoaFromJwt) {
         return await this.prisma.parlamentarMandato.updateMany({
             where: {
                 parlamentar_id: suplenteId,
