@@ -127,7 +127,7 @@ function excluirRepresentatividade(representatividadeId, parlamentarId = emFoco.
         :to="{
           name: 'parlamentaresEditarRepresentatividade',
           params: { parlamentarId: emFoco.id },
-          query: { municipio_tipo: 'capital' }
+          query: { tipo: 'capital' }
         }"
         class="like-a__text addlink"
       >
@@ -224,7 +224,7 @@ function excluirRepresentatividade(representatividadeId, parlamentarId = emFoco.
         :to="{
           name: 'parlamentaresEditarRepresentatividade',
           params: { parlamentarId: emFoco.id },
-          query: { municipio_tipo: 'interior' }
+          query: { tipo: 'interior' }
         }"
         class="like-a__text addlink"
       >
