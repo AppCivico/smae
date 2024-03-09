@@ -385,106 +385,14 @@
       </table>
     </div>
 
-    <div class="mb2">
-      <div class="flex spacebetween center mb2">
-        <h3 class="c500">
-          Representatividade na Capital
-        </h3>
-        <hr class="ml2 f1">
-      </div>
-      <table class="tablemain">
-        <col>
-        <col>
-        <col>
-        <col>
-        <col>
-        <col>
-        <thead>
-          <tr>
-            <th>Ranking na Capital</th>
-            <th>Município/Subprefeitura</th>
-            <th>Região</th>
-            <th>Votos nominais do candidato </th>
-            <th>Quantidade de Comparecimento</th>
-            <th>Porcentagem do candidato</th>
-            <!-- <th></th> v-if can edit -->
-          </tr>
-        </thead>
-        <tbody v-if="representatividadeCapital.length">
-          <tr
-            v-for="item in representatividadeCapital"
-            :key="item.id"
-          >
-            <td>{{ item.id }}</td>
-            <td>{{ item.municipio_tipo }}</td>
-            <td>{{ item.regiao.descricao }}</td>
-            <td>{{ item.numero_votos }}</td>
-            <td>{{ item.regiao.comparecimento.valor }}</td>
-            <td>{{ item.pct_participacao }}</td>
-          </tr>
-        </tbody>
-        <tbody v-else>
-          <tr>
-            <td colspan="3">
-              Nenhuma representatividade na Capital encontrada.
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-
-    <div class="mb2">
-      <div class="flex spacebetween center mb2">
-        <h3 class="c500">
-          Representatividade no Interior
-        </h3>
-        <hr class="ml2 f1">
-      </div>
-      <table class="tablemain">
-        <col>
-        <col>
-        <col>
-        <col>
-        <col>
-        <col>
-        <thead>
-          <tr>
-            <th>Ranking no Interior</th>
-            <th>Município/Subprefeitura</th>
-            <th>Região</th>
-            <th>Votos nominais do candidato</th>
-            <th>Quantidade de Comparecimento</th>
-            <th>Porcentagem do candidato</th>
-          </tr>
-        </thead>
-        <tbody v-if="representatividadeInterior.length">
-          <tr
-            v-for="item in representatividadeInterior"
-            :key="item.id"
-          >
-            <td>{{ item.id }}</td>
-            <td>{{ item.municipio_tipo }}</td>
-            <td>{{ item.regiao.codigo }}</td>
-            <td>{{ item.numero_votos }}</td>
-            <td>{{ item.regiao.comparecimento.valor }}</td>
-            <td>{{ item.pct_participacao }}</td>
-          </tr>
-        </tbody>
-        <tbody v-else>
-          <tr>
-            <td colspan="6">
-              Nenhuma representatividade no Interior encontrada.
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
+    <ParlamentaresExibirRepresentatividade />
   </div>
 
   <ParlamentarExibirSuplentes />
 </template>
 
 <script setup>
+import ParlamentaresExibirRepresentatividade from '@/components/parlamentares/ParlamentaresExibirRepresentatividade.vue';
 import ParlamentarExibirSuplentes from '@/components/parlamentares/ParlamentarExibirSuplentes.vue';
 import níveisDeSuplência from '@/consts/niveisDeSuplencia';
 import { useAuthStore } from '@/stores/auth.store';
