@@ -48,6 +48,7 @@ export class ParlamentaresService implements ReportableService {
                 nome_civil: row.nome,
                 nome_parlamentar: row.nome_popular,
                 partido_sigla: row.mandato_atual!.partido_atual.sigla,
+                cargo: row.mandato_atual.cargo ? row.mandato_atual.cargo : null,
                 uf: row.mandato_atual.uf,
                 titular_suplente: row.mandato_atual.suplencia ? 'S' : 'T',
                 endereco: row.mandato_atual.endereco ? row.mandato_atual.endereco : null,
