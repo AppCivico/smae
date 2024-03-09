@@ -12,6 +12,7 @@ import { PrevisaoCustoModule } from '../previsao-custo/previsao-custo.module';
 import { ReportsController } from './reports.controller';
 import { ReportsService } from './reports.service';
 import { PPStatusModule } from '../pp-status/pp-status.module';
+import { ParlamentaresModule } from '../parlamentares/parlamentares.module';
 
 @Module({
     imports: [
@@ -24,6 +25,7 @@ import { PPStatusModule } from '../pp-status/pp-status.module';
         forwardRef(() => PPProjetoModule),
         forwardRef(() => PPProjetosModule),
         forwardRef(() => PPStatusModule),
+        forwardRef(() => ParlamentaresModule),
         JwtModule.register({
             secret: process.env.SESSION_JWT_SECRET + ':pagination',
             signOptions: { expiresIn: '30d' },
