@@ -61,7 +61,7 @@
         </dl>
 
         <dl
-          v-if="emFoco.telefone"
+          v-if="emFoco.telefone && authStore.temPermissãoPara('SMAE.acesso_telefone') "
           class="f1 mb1"
         >
           <dt class="t12 uc w700 mb05 ">

@@ -173,7 +173,10 @@ iniciar();
           />
         </div>
 
-        <div class="flex f1 mb1">
+        <div
+          v-if="authStore.temPermissãoPara('SMAE.acesso_telefone')"
+          class="flex f1 mb1"
+        >
           <div class="f1">
             <LabelFromYup
               name="telefone"
