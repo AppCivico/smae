@@ -13,7 +13,12 @@ import {
 import { watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
+const emit = defineEmits(['close']);
 const props = defineProps({
+  apenasEmitir: {
+    type: Boolean,
+    default: false,
+  },
   parlamentarId: {
     type: [Number, String],
     default: 0,
@@ -52,7 +57,9 @@ const onSubmit = handleSubmit.withControlled(async () => {
     })) {
       parlamentaresStore.buscarItem(route.params?.parlamentarId);
       alertStore.success('Suplente adicionado!');
-      if (route.meta.rotaDeEscape) {
+      if (props.apenasEmitir) {
+        emit('close');
+      } else if (route.meta.rotaDeEscape) {
         router.push({
           name: route.meta.rotaDeEscape,
           params: route.params,
@@ -79,6 +86,7 @@ watch(suplenteParaEdição, (novoValor) => {
       <hr class="ml2 f1">
 
       <CheckClose
+        :apenas-emitir="props.apenasEmitir"
         :formulário-sujo="formulárioSujo"
       />
     </div>
@@ -87,7 +95,7 @@ watch(suplenteParaEdição, (novoValor) => {
 
     <form
       :disabled="isSubmitting"
-      @submit="onSubmit"
+      @submit.prevent="onSubmit"
     >
       <div class="flex flexwrap g2 mb1">
         <div class="f1">
