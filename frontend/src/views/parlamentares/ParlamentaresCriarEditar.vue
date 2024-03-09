@@ -7,14 +7,17 @@ import { useAlertStore } from '@/stores/alert.store';
 import { useAuthStore } from '@/stores/auth.store';
 import { useParlamentaresStore } from '@/stores/parlamentares.store';
 import { storeToRefs } from 'pinia';
+import { requestS } from '@/helpers';
+
 import {
   ErrorMessage,
   Field,
   Form,
 } from 'vee-validate';
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
+const baseUrl = `${import.meta.env.VITE_API_URL}`;
 const router = useRouter();
 const route = useRoute();
 const props = defineProps({
@@ -28,9 +31,10 @@ const alertStore = useAlertStore();
 const authStore = useAuthStore();
 const parlamentaresStore = useParlamentaresStore();
 const { chamadasPendentes, erro, itemParaEdição } = storeToRefs(parlamentaresStore);
-let avatar;
+const avatar = ref();
+
 async function onSubmit(values) {
-  values.avatar = avatar;
+  values.upload_foto = avatar.value;
   try {
     let r;
     const msg = props.parlamentarId
@@ -97,6 +101,16 @@ const equipe = computed(() => itemParaEdição.value?.equipe?.reduce((acc, cur) 
   return acc;
 }, { assessores: [], contatos: [] }) || { assessores: [], contatos: [] });
 
+async function handleImage(e) {
+  const formData = new FormData();
+  formData.append('tipo', 'FOTO_PARLAMENTAR');
+  formData.append('arquivo', e);
+  const response = await requestS.upload(`${baseUrl}/upload`, formData);
+  if (response.upload_token) {
+    avatar.value = response.upload_token;
+  }
+}
+
 iniciar();
 </script>
 <template>
@@ -105,7 +119,6 @@ iniciar();
     <hr class="ml2 f1">
     <CheckClose />
   </div>
-
   <Form
     v-slot="{ errors, isSubmitting, }"
     :validation-schema="schema"
@@ -196,7 +209,7 @@ iniciar();
       >
         <InputImageProfile
           :model-value="value"
-          @update:model-value="(newValue) => { avatar = newValue }"
+          @update:model-value="event => handleImage(event)"
         />
       </Field>
     </div>
@@ -498,4 +511,4 @@ iniciar();
         justify-self: end;
     }
 }
-</style>
+</style>import { log } from 'console';
