@@ -19,7 +19,7 @@ const alertStore = useAlertStore();
 const bancadasStore = useBancadasStore();
 const { chamadasPendentes, erro, itemParaEdição } = storeToRefs(bancadasStore);
 
-async function onSubmit(values) {
+async function onSubmit(_, controlledValues) {
   try {
     let r;
     const msg = props.bancadaId
@@ -27,9 +27,9 @@ async function onSubmit(values) {
       : 'Item adicionado com sucesso!';
 
     if (props.bancadaId) {
-      r = await bancadasStore.salvarItem(values, props.bancadaId);
+      r = await bancadasStore.salvarItem(controlledValues, props.bancadaId);
     } else {
-      r = await bancadasStore.salvarItem(values);
+      r = await bancadasStore.salvarItem(controlledValues);
     }
     if (r) {
       alertStore.success(msg);
