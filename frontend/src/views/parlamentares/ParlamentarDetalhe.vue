@@ -282,20 +282,16 @@
             </dt>
             <dd
               v-if="emFoco.mandato_atual?.gabinete"
-              class="t13"
             >
               {{ emFoco.mandato_atual.gabinete }}
             </dd>
           </dl>
 
-          <dl>
+          <dl v-if="emFoco.mandato_atual?.email">
             <dt>
               Email
             </dt>
-            <dd
-              v-if="emFoco.mandato_atual?.email"
-              class="t13"
-            >
+            <dd>
               {{ emFoco.mandato_atual.email }}
             </dd>
           </dl>
