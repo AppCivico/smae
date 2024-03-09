@@ -1,7 +1,9 @@
 <script setup>
 import InputImageProfile from '@/components/InputImageProfile.vue';
+import ParlamentarExibirSuplentes from '@/components/parlamentares/ParlamentarExibirSuplentes.vue';
 import { parlamentar as schema } from '@/consts/formSchemas';
 import { useAlertStore } from '@/stores/alert.store';
+import { useAuthStore } from '@/stores/auth.store';
 import { useParlamentaresStore } from '@/stores/parlamentares.store';
 import { storeToRefs } from 'pinia';
 import {
@@ -9,9 +11,8 @@ import {
   Field,
   Form,
 } from 'vee-validate';
-import { useRoute, useRouter } from 'vue-router';
-
 import { computed } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 
 const router = useRouter();
 const route = useRoute();
@@ -23,6 +24,7 @@ const props = defineProps({
 });
 
 const alertStore = useAlertStore();
+const authStore = useAuthStore();
 const parlamentaresStore = useParlamentaresStore();
 const { chamadasPendentes, erro, itemParaEdição } = storeToRefs(parlamentaresStore);
 let avatar;
@@ -431,6 +433,9 @@ iniciar();
         ><use xlink:href="#i_+" /></svg>Registrar novo mandato
       </router-link>
     </div>
+
+    <ParlamentarExibirSuplentes :exibir-edição="true" />
+
     <div class="flex spacebetween center mb2">
       <hr class="mr2 f1">
       <button
