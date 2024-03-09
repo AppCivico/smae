@@ -284,7 +284,7 @@ iniciar();
       </router-link>
     </div>
     <div
-      v-if="props.parlamentarId && itemParaEdição.mandatos.length > 0"
+      v-if="props.parlamentarId && itemParaEdição?.mandatos?.length > 0"
       class="mb3"
     >
       <div class="flex spacebetween center mb1">
