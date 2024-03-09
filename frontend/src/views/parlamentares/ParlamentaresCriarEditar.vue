@@ -112,7 +112,7 @@ iniciar();
     v-slot="{ errors, isSubmitting, }"
     :validation-schema="schema"
     :initial-values="itemParaEdição"
-    @submit.prevent="onSubmit"
+    @submit="onSubmit"
   >
     <!-- form do parlamentar -->
     <div class="parlamentar-container mb3">
