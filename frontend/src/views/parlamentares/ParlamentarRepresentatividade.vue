@@ -1,6 +1,6 @@
 <script setup>
 import SmallModal from '@/components/SmallModal.vue';
-import { representatividade as representatividadeSchema } from '@/consts/formSchemas';
+import { representatividade as schema } from '@/consts/formSchemas';
 import tiposDeMunicípio from '@/consts/tiposDeMunicipio';
 import { useAlertStore } from '@/stores/alert.store';
 import { useParlamentaresStore } from '@/stores/parlamentares.store';
@@ -57,8 +57,6 @@ const {
 } = storeToRefs(parlamentaresStore);
 
 const { regions: regiões, regiõesPorNível } = storeToRefs(regionsStore);
-
-const schema = representatividadeSchema(!!props.representatividadeId);
 
 const {
   errors, handleSubmit, isSubmitting, resetField, resetForm, setFieldValue, values,

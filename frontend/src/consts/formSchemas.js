@@ -1322,23 +1322,13 @@ export const relatórioSemestralOuAnual = object({
   salvar_arquivo: boolean(),
 });
 
-export const representatividade = (éCorreção = false) => object()
+export const representatividade = object()
   .shape({
     mandato_id: number()
-      .label('Mandato'), /* .when('éCorreção', ((_, field) => ((éCorreção)
-        ? field
-          .min(1)
-          .required()
-        : field
-          .nullable()
-          .isType(null)))) */
+      .label('Mandato'),
     municipio_tipo: mixed()
       .label('Tipo de município')
-      .oneOf(tiposDeMunicípio), /* .when('éCorreção', ((_, field) => ((éCorreção)
-        ? field
-          .nullable()
-        : field
-          .isType(null)))) */
+      .oneOf(tiposDeMunicípio),
     nivel: mixed()
       .label('Nível')
       .oneOf(Object.keys(níveisDeRepresentatividade)),
@@ -1363,12 +1353,7 @@ export const representatividade = (éCorreção = false) => object()
       .max(1000)
       .required(),
     regiao_id: number()
-      .label('Região')
-      /* .when('éCorreção', ((_, field) => ((éCorreção)
-        ? field
-          .min(1)
-          .required()
-        : field.isType(null)))) */,
+      .label('Região'),
   });
 
 export const risco = object()
