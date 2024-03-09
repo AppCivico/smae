@@ -45,6 +45,11 @@ const props = defineProps({
   },
 });
 
+const tipoSugerido = props.tipo
+  ? tiposNaEquipe
+    .find((x) => x.toLowerCase() === props.tipo.toLocaleLowerCase())
+  : '';
+
 const {
   emFoco, chamadasPendentes, erro, pessoaParaEdição,
 } = storeToRefs(parlamentaresStore);
@@ -99,11 +104,6 @@ watch(pessoaParaEdição, (novoValor) => {
   resetForm({ values: novoValor });
 
   if (!values.tipo) {
-    const tipoSugerido = props.tipo
-      ? tiposNaEquipe
-        .find((x) => x.toLowerCase() === props.tipo.toLocaleLowerCase())
-      : '';
-
     if (tipoSugerido) {
       resetField('tipo', { value: tipoSugerido });
     }
@@ -133,7 +133,10 @@ watch(pessoaParaEdição, (novoValor) => {
       :disabled="isSubmitting"
       @submit="onSubmit"
     >
-      <div class="flex flexwrap g2 mb1">
+      <div
+        :hidden="!pessoaId && !!tipoSugerido"
+        class="flex flexwrap g2 mb1"
+      >
         <div class="f1">
           <LabelFromYup
             name="tipo"
@@ -152,11 +155,11 @@ watch(pessoaParaEdição, (novoValor) => {
               Selecionar
             </option>
             <option
-              v-for="tipo in tiposNaEquipe"
-              :key="tipo"
-              :value="tipo"
+              v-for="item in tiposNaEquipe"
+              :key="item"
+              :value="item"
             >
-              {{ tipo }}
+              {{ item }}
             </option>
           </Field>
           <ErrorMessage
@@ -166,8 +169,8 @@ watch(pessoaParaEdição, (novoValor) => {
         </div>
 
         <div
+          v-if="values.tipo !== 'Assessor'"
           class="f1"
-          :class="{ disabled: (!values.tipo || values.tipo === 'Assessor') }"
         >
           <LabelFromYup
             name="mandato_id"
