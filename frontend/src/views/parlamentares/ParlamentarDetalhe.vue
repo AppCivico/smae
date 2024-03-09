@@ -481,84 +481,15 @@
     </div>
   </div>
 
-  <div
-    v-if="!emFoco.mandato_atual?.suplencia"
-    class="mb2"
-  >
-    <div class="flex spacebetween center mb2">
-      <h3 class="c500">
-        Suplentes
-      </h3>
-      <hr class="ml2 f1">
-    </div>
-    <table class="tablemain">
-      <col>
-      <col>
-      <col>
-      <col>
-      <col>
-      <thead>
-        <tr>
-          <th>Ordem</th>
-          <th>ID do Parlamentar</th>
-          <th>Nome</th>
-          <th>Telefone</th>
-          <th>Email</th>
-        </tr>
-      </thead>
-      <tbody v-if="suplentes.length">
-        <tr
-          v-for="(suplente, index) in suplentes"
-          :key="suplente.id"
-        >
-          <td>{{ index === 0 ? '1º' : '2º' }}</td>
-          <td>{{ suplente.parlamentar.id }}</td>
-          <td>{{ suplente.parlamentar.nome }}</td>
-          <td>{{ suplente.parlamentar.telefone }}</td>
-          <td>{{ suplente.parlamentar.email }}</td>
-        </tr>
-      </tbody>
-      <tbody v-else>
-        <tr>
-          <td colspan="5">
-            Nenhum suplente encontrado.
-          </td>
-        </tr>
-      </tbody>
-    </table>
-    <button
-      v-if="podeTerSuplentes"
-      class="like-a__text addlink"
-      type="button"
-      @click="abrirModalSuplentes"
-    >
-      <svg
-        width="20"
-        height="20"
-      >
-        <use xlink:href="#i_+" />
-      </svg>
-      Adicionar suplente
-    </button>
-  </div>
-  <!-- TODO: só pode aparecer se tiver mandato criado -->
-  <ParlamentaresSuplentes
-    v-if="showSuplentesModal"
-    apenas-emitir="true"
-    :parlamentar-id="emFoco.id"
-    :mandato-id="emFoco?.mandato_atual?.id"
-    @close="() => {
-      showSuplentesModal = false;
-      parlamentaresStore.buscarItem(props.parlamentarId);
-    }"
-  />
+  <ParlamentarExibirSuplentes />
 </template>
 
 <script setup>
+import ParlamentarExibirSuplentes from '@/components/parlamentares/ParlamentarExibirSuplentes.vue';
+import níveisDeSuplência from '@/consts/niveisDeSuplencia';
+import { useAuthStore } from '@/stores/auth.store';
 import { useParlamentaresStore } from '@/stores/parlamentares.store';
 import { computed, onMounted, ref } from 'vue';
-import níveisDeSuplência from '@/consts/niveisDeSuplencia';
-import ParlamentaresSuplentes from './ParlamentaresSuplentes.vue';
 
 const props = defineProps({
   parlamentarId: {
@@ -567,6 +498,7 @@ const props = defineProps({
   },
 });
 
+const authStore = useAuthStore();
 const parlamentaresStore = useParlamentaresStore();
 
 const emFoco = ref({});
@@ -574,10 +506,6 @@ onMounted(async () => {
   await parlamentaresStore.buscarItem(props.parlamentarId);
   emFoco.value = parlamentaresStore.emFoco;
 });
-
-const podeTerSuplentes = computed(() => !emFoco.value?.mandato_atual?.suplencia
-  && !(emFoco.value?.mandato_atual?.suplentes?.length >= 2)
-  && emFoco.value?.mandato_atual?.id);
 
 const equipe = computed(() => emFoco.value?.equipe ?? []);
 const representatividade = computed(() => emFoco.value?.mandato_atual?.representatividade ?? []);
@@ -587,15 +515,6 @@ const contatos = computed(() => equipe.value.filter((item) => item.tipo === 'Con
 
 const representatividadeCapital = computed(() => representatividade.value.filter((item) => item.municipio_tipo === 'Capital'));
 const representatividadeInterior = computed(() => representatividade.value.filter((item) => item.municipio_tipo === 'Interior'));
-
-const suplentes = computed(() => emFoco.value?.mandato_atual?.suplentes ?? []);
-
-const showSuplentesModal = ref(false);
-
-const abrirModalSuplentes = () => {
-  showSuplentesModal.value = true;
-};
-
 </script>
 
 <style scoped lang="less">
