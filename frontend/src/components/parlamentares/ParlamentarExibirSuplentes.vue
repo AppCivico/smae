@@ -37,10 +37,10 @@ const abrirModalSuplentes = () => {
   showSuplentesModal.value = true;
 };
 
-function excluirSuplente(suplenteId, mandatoId, parlamentarId = emFoco.value.id) {
-  useAlertStore().confirmAction('Deseja mesmo remover a pessoa nessa suplência?', async () => {
-    if (await useParlamentaresStore().excluirSuplente(suplenteId, mandatoId, parlamentarId)) {
-      alertStore().success('Suplente removida.');
+function excluirSuplente(suplenteId, parlamentarId = emFoco.value.id) {
+  alertStore.confirmAction('Deseja mesmo remover a pessoa nessa suplência?', async () => {
+    if (await useParlamentaresStore().excluirSuplente(suplenteId, parlamentarId)) {
+      alertStore.success('Suplente removida.');
       parlamentaresStore.buscarItem(parlamentarId);
     }
   }, 'Remover');
