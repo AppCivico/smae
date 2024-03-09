@@ -82,6 +82,7 @@ export const useBancadasStore = defineStore('bancadasStore', {
     itemParaEdição({ emFoco }) {
       return {
         ...emFoco,
+        partido_ids: emFoco?.partidos?.map((x) => x.id) || [],
       };
     },
   },
