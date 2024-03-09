@@ -13,7 +13,7 @@ export const useParlamentaresStore = defineStore('parlamentaresStore', {
       lista: false,
       emFoco: false,
       equipe: false,
-      suplentes: false,
+      suplente: false,
       mandato: false,
       eleições: false,
       representatividade: false,
@@ -173,6 +173,21 @@ export const useParlamentaresStore = defineStore('parlamentaresStore', {
         return true;
       } catch (error) {
         this.erro = error;
+        this.chamadasPendentes.suplente = false;
+        return false;
+      }
+    },
+
+    async excluirSuplente(suplenteId, parlamentarId = this.route.params.parlamentarId) {
+      this.chamadasPendentes.suplente = true;
+      this.erro = null;
+
+      try {
+        await this.requestS.delete(`${baseUrl}/parlamentar/${parlamentarId}/suplente/${suplenteId}`);
+        this.chamadasPendentes.suplente = false;
+        return true;
+      } catch (erro) {
+        this.erro = erro;
         this.chamadasPendentes.suplente = false;
         return false;
       }
