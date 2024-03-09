@@ -201,7 +201,10 @@ iniciar();
       </Field>
     </div>
 
-    <div class="mb3">
+    <div
+      v-if="props.parlamentarId"
+      class="mb3"
+    >
       <div class="flex spacebetween center mb1">
         <span class="label tc300">Assessores</span>
         <hr class="mr2 f1">
@@ -281,7 +284,10 @@ iniciar();
       </router-link>
     </div>
 
-    <div class="mb3">
+    <div
+      v-if="props.parlamentarId"
+      class="mb3"
+    >
       <div class="flex spacebetween center mb1">
         <span class="label tc300">Contatos</span>
         <hr class="mr2 f1">
@@ -342,11 +348,11 @@ iniciar();
 
       <router-link
         :to="{
-      name: 'parlamentaresEditarEquipe', params: {
-        parlamentarId:
-          props.parlamentarId
-      }, query: { tipo: 'contato' }
-    }"
+          name: 'parlamentaresEditarEquipe', params: {
+            parlamentarId:
+              props.parlamentarId
+          }, query: { tipo: 'contato' }
+        }"
         class="like-a__text addlink"
       >
         <svg
@@ -433,9 +439,15 @@ iniciar();
       </router-link>
     </div>
 
-    <ParlamentarExibirSuplentes :exibir-edição="true" />
+    <ParlamentarExibirSuplentes
+      v-if="props.parlamentarId"
+      :exibir-edição="true"
+    />
 
-    <ParlamentaresExibirRepresentatividade :exibir-edição="true" />
+    <ParlamentaresExibirRepresentatividade
+      v-if="props.parlamentarId"
+      :exibir-edição="true"
+    />
 
     <div class="flex spacebetween center mb2">
       <hr class="mr2 f1">
