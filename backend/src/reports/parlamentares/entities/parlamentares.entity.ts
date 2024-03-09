@@ -1,3 +1,5 @@
+import { ParlamentarCargo } from '@prisma/client';
+
 export class RelParlamentaresDto {
     id: number;
     nome_civil: string;
@@ -10,6 +12,7 @@ export class RelParlamentaresDto {
     telefone: string | null;
     nascimento: string | null;
     email: string | null;
+    cargo: ParlamentarCargo | null;
 }
 
 export class ParlamentaresRelatorioDto {
