@@ -5,10 +5,14 @@ import { CreateBancadaDto } from './dto/create-bancada.dto';
 import { BancadaDto, BancadaOneDto } from './entities/bancada.entity';
 import { UpdateBancadaDto } from './dto/update-bancada.dto';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
+import { PartidoService } from 'src/partido/partido.service';
 
 @Injectable()
 export class BancadaService {
-    constructor(private readonly prisma: PrismaService) { }
+    constructor(
+        private readonly prisma: PrismaService,
+        private readonly partidoService: PartidoService
+    ) {}
 
     async create(dto: CreateBancadaDto, user?: PessoaFromJwt): Promise<RecordWithId> {
         const similarExists = await this.prisma.bancada.count({
@@ -31,16 +35,42 @@ export class BancadaService {
                 throw new HttpException('sigla| Sigla igual ou semelhante já existe em outro registro ativo', 400);
         }
 
+        if (dto.partido_ids && dto.partido_ids.length > 0) await this.checkPartido(dto.partido_ids);
+
         const created = await this.prisma.bancada.create({
             data: {
                 criado_por: user ? user.id : undefined,
                 criado_em: new Date(Date.now()),
                 ...dto,
+
+                partidos: {
+                    createMany: {
+                        data:
+                            dto.partido_ids && dto.partido_ids.length > 0
+                                ? dto.partido_ids.map((p) => {
+                                      return {
+                                          partido_id: p,
+                                      };
+                                  })
+                                : [],
+                    },
+                },
             },
             select: { id: true },
         });
 
         return created;
+    }
+
+    private async checkPartido(ids: number[]) {
+        if (ids.length > 0) {
+            const partidos = await this.partidoService.findAll();
+
+            for (const id of ids) {
+                if (!partidos.find((p) => p.id == id))
+                    throw new HttpException(`partido_ids| partido ${id} inválido`, 400);
+            }
+        }
     }
 
     async findAll(): Promise<BancadaDto[]> {
@@ -52,7 +82,13 @@ export class BancadaService {
                 id: true,
                 nome: true,
                 sigla: true,
-                descricao: true
+                descricao: true,
+
+                partidos: {
+                    select: {
+                        partido_id: true,
+                    },
+                },
             },
             orderBy: [{ sigla: 'asc' }],
         });
@@ -60,14 +96,42 @@ export class BancadaService {
     }
 
     async findOne(id: number, user: PessoaFromJwt): Promise<BancadaOneDto> {
-        return await this.prisma.bancada.findUniqueOrThrow({
+        const bancada = await this.prisma.bancada.findUniqueOrThrow({
             where: {
                 id: id,
             },
+            select: {
+                id: true,
+                nome: true,
+                sigla: true,
+                descricao: true,
+
+                partidos: {
+                    select: {
+                        partido: {
+                            select: {
+                                id: true,
+                                nome: true,
+                                numero: true,
+                                sigla: true,
+                            },
+                        },
+                    },
+                },
+            },
         });
+
+        return {
+            ...bancada,
+            partidos: bancada.partidos.map((b) => {
+                return { ...b.partido };
+            }),
+        };
     }
 
     async update(id: number, dto: UpdateBancadaDto, user: PessoaFromJwt): Promise<RecordWithId> {
+        const self = await this.findOne(id, user);
+
         if (dto.nome !== undefined) {
             const similarExists = await this.prisma.bancada.count({
                 where: {
@@ -77,10 +141,7 @@ export class BancadaService {
                 },
             });
             if (similarExists > 0)
-                throw new HttpException(
-                    'nome| Nome igual ou semelhante já existe em outro registro ativo',
-                    400
-                );
+                throw new HttpException('nome| Nome igual ou semelhante já existe em outro registro ativo', 400);
         }
 
         if (dto.sigla) {
@@ -93,6 +154,20 @@ export class BancadaService {
             });
             if (similarExists > 0)
                 throw new HttpException('sigla| Sigla igual ou semelhante já existe em outro registro ativo', 400);
+        }
+
+        if (dto.partido_ids && dto.partido_ids.length > 0 && dto.partido_ids.length != self.partidos.length) {
+            await this.checkPartido(dto.partido_ids);
+
+            await this.prisma.bancadaPartido.deleteMany({ where: { bancada_id: id } });
+            await this.prisma.bancadaPartido.createMany({
+                data: dto.partido_ids.map((partidoId) => {
+                    return {
+                        bancada_id: id,
+                        partido_id: partidoId,
+                    };
+                }),
+            });
         }
 
         await this.prisma.bancada.update({
@@ -119,16 +194,5 @@ export class BancadaService {
         });
 
         return deleted;
-    }
-
-    async bancadaExiste(id: number): Promise<boolean> {
-        const bancada = await this.prisma.bancada.count({
-            where: {
-                id,
-                removido_em: null
-            }
-        });
-
-        return bancada ? true : false;
     }
 }

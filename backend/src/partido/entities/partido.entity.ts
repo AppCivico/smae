@@ -36,10 +36,8 @@ export class PartidoDto {
 
     @ApiProperty({ description: 'Número do partido' })
     numero: number;
-
-    bancadas?: BancadaDto[] | null
 }
 
 export class ListPartidoDto {
-    linhas: PartidoDto[]
+    linhas: PartidoDto[];
 }
