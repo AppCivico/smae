@@ -401,7 +401,7 @@
         <col>
         <thead>
           <tr>
-            <th> Ranking na Capital </th>
+            <th>Ranking na Capital</th>
             <th>Município/Subprefeitura</th>
             <th>Região</th>
             <th>Votos nominais do candidato </th>
@@ -417,7 +417,7 @@
           >
             <td>{{ item.id }}</td>
             <td>{{ item.municipio_tipo }}</td>
-            <td>{{ item.regiao.codigo }}</td>
+            <td>{{ item.regiao.descricao }}</td>
             <td>{{ item.numero_votos }}</td>
             <td>{{ item.regiao.comparecimento.valor }}</td>
             <td>{{ item.pct_participacao }}</td>
