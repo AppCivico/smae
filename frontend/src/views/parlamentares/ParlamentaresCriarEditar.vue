@@ -283,9 +283,8 @@ iniciar();
         ><use xlink:href="#i_+" /></svg>Registrar novo assessor
       </router-link>
     </div>
-
     <div
-      v-if="props.parlamentarId"
+      v-if="props.parlamentarId && itemParaEdição.mandatos.length > 0"
       class="mb3"
     >
       <div class="flex spacebetween center mb1">
@@ -391,7 +390,7 @@ iniciar();
             <th />
           </tr>
         </thead>
-        <tbody>
+        <tbody v-if="itemParaEdição.mandatos.length > 0">
           <tr
             v-for="item in itemParaEdição.mandatos"
             :key="item.id"
@@ -424,6 +423,13 @@ iniciar();
                   height="20"
                 ><use xlink:href="#i_edit" /></svg>
               </router-link>
+            </td>
+          </tr>
+        </tbody>
+        <tbody v-else>
+          <tr>
+            <td colspan="5">
+              Nenhum mandato encontrado.
             </td>
           </tr>
         </tbody>
