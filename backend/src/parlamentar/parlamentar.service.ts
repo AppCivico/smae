@@ -63,6 +63,7 @@ export class ParlamentarService {
                   cargo: ParlamentarCargo;
                   eleicao_id: number;
                   mandato_principal_id: null;
+                  NOT: { parlamentar_id: number };
               }
             | undefined;
 
@@ -85,6 +86,7 @@ export class ParlamentarService {
                 throw new HttpException('disponivel_para_suplente_parlamentar_id| Não disponível para filtro', 400);
 
             filterSuplente = {
+                NOT: { parlamentar_id: filters.disponivel_para_suplente_parlamentar_id },
                 cargo: mandatoPrincipal.cargo,
                 eleicao_id: mandatoPrincipal.eleicao_id,
                 mandato_principal_id: null,
