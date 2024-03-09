@@ -1,7 +1,9 @@
 <script setup>
+import AutocompleteField from '@/components/AutocompleteField2.vue';
 import { bancada as schema } from '@/consts/formSchemas';
 import { useAlertStore } from '@/stores/alert.store';
 import { useBancadasStore } from '@/stores/bancadas.store';
+import { usePartidosStore } from '@/stores/partidos.store';
 import { storeToRefs } from 'pinia';
 import { ErrorMessage, Field, Form } from 'vee-validate';
 import { useRoute, useRouter } from 'vue-router';
@@ -17,7 +19,14 @@ const props = defineProps({
 
 const alertStore = useAlertStore();
 const bancadasStore = useBancadasStore();
+const partidoStore = usePartidosStore();
 const { chamadasPendentes, erro, itemParaEdição } = storeToRefs(bancadasStore);
+
+const {
+  lista: listaDePartidos,
+  chamadasPendentes: { lista: listaDePartidosPendente },
+  erro: erroNaListagemDePartidos,
+} = storeToRefs(partidoStore);
 
 async function onSubmit(_, controlledValues) {
   try {
@@ -45,6 +54,7 @@ if (props.bancadaId) {
   bancadasStore.buscarItem(props.bancadaId);
 }
 
+partidoStore.buscarTudo();
 </script>
 
 <template>
@@ -54,8 +64,15 @@ if (props.bancadaId) {
     <CheckClose />
   </div>
 
+  <LoadingComponent
+    v-if="chamadasPendentes?.emFoco"
+    class="spinner"
+  >
+    Carregando
+  </LoadingComponent>
+
   <Form
-    v-slot="{ errors, isSubmitting, }"
+    v-slot="{ errors, isSubmitting, values }"
     :validation-schema="schema"
     :initial-values="itemParaEdição"
     @submit="onSubmit"
@@ -95,6 +112,34 @@ if (props.bancadaId) {
         />
       </div>
     </div>
+
+    <div class="flex g2">
+      <div class="f1 mb1">
+        <LabelFromYup
+          name="partido_ids"
+          :schema="schema"
+          class="tc300"
+        />
+
+        <AutocompleteField
+          :disabled="listaDePartidosPendente"
+          name="partido_ids"
+          :controlador="{ busca: '', participantes: values.partido_ids || [] }"
+          :class="{ error: erroNaListagemDePartidos, loading: listaDePartidosPendente }"
+          :grupo="listaDePartidos"
+          label="nome"
+        />
+        <ErrorMessage
+          name="partido_ids"
+          class="error-msg"
+        />
+      </div>
+
+      <ErrorComponent v-if="erroNaListagemDePartidos">
+        {{ erroNaListagemDePartidos }}
+      </ErrorComponent>
+    </div>
+
     <FormErrorsList :errors="errors" />
 
     <div class="flex spacebetween center mb2">
@@ -111,11 +156,6 @@ if (props.bancadaId) {
       <hr class="ml2 f1">
     </div>
   </Form>
-
-  <span
-    v-if="chamadasPendentes?.emFoco"
-    class="spinner"
-  >Carregando</span>
 
   <div
     v-if="erro"
