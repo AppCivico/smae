@@ -765,7 +765,8 @@ export const parlamentar = object({
     .label('Aniversário')
     .nullable(),
   telefone: string()
-    .label('Telefone'),
+    .label('Telefone')
+    .nullable(),
   avatar: string(),
   assessores: array()
     .label('Assessores')
