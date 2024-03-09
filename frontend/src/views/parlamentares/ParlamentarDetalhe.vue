@@ -481,7 +481,10 @@
     </div>
   </div>
 
-  <div class="mb2">
+  <div
+    v-if="!emFoco.mandato_atual?.suplencia"
+    class="mb2"
+  >
     <div class="flex spacebetween center mb2">
       <h3 class="c500">
         Suplentes
@@ -524,6 +527,7 @@
       </tbody>
     </table>
     <button
+      v-if="podeTerSuplentes"
       class="like-a__text addlink"
       type="button"
       @click="abrirModalSuplentes"
@@ -571,6 +575,10 @@ onMounted(async () => {
   emFoco.value = parlamentaresStore.emFoco;
 });
 
+const podeTerSuplentes = computed(() => !emFoco.value?.mandato_atual?.suplencia
+  && !(emFoco.value?.mandato_atual?.suplentes?.length >= 2)
+  && emFoco.value?.mandato_atual?.id);
+
 const equipe = computed(() => emFoco.value?.equipe ?? []);
 const representatividade = computed(() => emFoco.value?.mandato_atual?.representatividade ?? []);
 
@@ -587,6 +595,7 @@ const showSuplentesModal = ref(false);
 const abrirModalSuplentes = () => {
   showSuplentesModal.value = true;
 };
+
 </script>
 
 <style scoped lang="less">
