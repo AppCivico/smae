@@ -694,9 +694,6 @@ export class ParlamentarService {
         });
         if (!mandatoPrincipal) throw new HttpException('mandato_id| Mandato principal inválido', 400);
 
-        if (dto.mandato_id == mandatoPrincipal.id)
-            throw new HttpException('Não é permitido suplente de si próprio', 400);
-
         const parlamentarSuplente = await this.prisma.parlamentar.findFirst({
             where: {
                 id: dto.parlamentar_suplente_id,
@@ -727,6 +724,9 @@ export class ParlamentarService {
             throw new HttpException('suplencia| Parlamentar já possui um outro suplente deste nivel', 400);
 
         const mandatoSuplente = parlamentarSuplente.mandatos[0];
+
+        if (dto.mandato_id == mandatoSuplente.id)
+            throw new HttpException('Não é permitido suplente de si próprio', 400);
 
         if (mandatoSuplente.mandato_principal_id && mandatoSuplente.mandato_principal_id != dto.mandato_id)
             throw new HttpException(
