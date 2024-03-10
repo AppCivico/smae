@@ -511,4 +511,4 @@ iniciar();
         justify-self: end;
     }
 }
-</style>import { log } from 'console';
+</style>
