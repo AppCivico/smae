@@ -183,9 +183,9 @@ watch(pessoaParaEdição, (novoValor) => {
             class="inputtext light mb1"
             :disabled="!values.tipo || values.tipo === 'Assessor'"
             :class="{
-          error: errors.mandato_id,
-          loading: chamadasPendentes.emFoco,
-        }"
+              error: errors.mandato_id,
+              loading: chamadasPendentes.emFoco,
+            }"
           >
             <option :value="0">
               Selecionar
@@ -217,9 +217,9 @@ watch(pessoaParaEdição, (novoValor) => {
             type="text"
             class="inputtext light mb1"
             :class="{
-          error: errors.nome,
-          loading: chamadasPendentes.emFoco,
-        }"
+              error: errors.nome,
+              loading: chamadasPendentes.emFoco,
+            }"
           />
           <ErrorMessage
             class="error-msg"
@@ -236,12 +236,12 @@ watch(pessoaParaEdição, (novoValor) => {
           />
           <Field
             name="telefone"
-            type="text"
+            type="number"
             class="inputtext light mb1"
             :class="{
-          error: errors.telefone,
-          loading: chamadasPendentes.emFoco,
-        }"
+              error: errors.telefone,
+              loading: chamadasPendentes.emFoco,
+            }"
             maxlength="11"
           />
           <ErrorMessage
@@ -259,9 +259,9 @@ watch(pessoaParaEdição, (novoValor) => {
             type="email"
             class="inputtext light mb1"
             :class="{
-          error: errors.email,
-          loading: chamadasPendentes.emFoco,
-        }"
+              error: errors.email,
+              loading: chamadasPendentes.emFoco,
+            }"
           />
           <ErrorMessage
             class="error-msg"
@@ -278,8 +278,8 @@ watch(pessoaParaEdição, (novoValor) => {
           class="btn big"
           :disabled="isSubmitting || Object.keys(errors)?.length"
           :title="Object.keys(errors)?.length
-          ? `Erros de preenchimento: ${Object.keys(errors)?.length}`
-          : null"
+            ? `Erros de preenchimento: ${Object.keys(errors)?.length}`
+            : null"
         >
           Salvar
         </button>
