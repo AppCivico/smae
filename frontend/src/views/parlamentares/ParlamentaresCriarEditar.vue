@@ -281,6 +281,9 @@ iniciar();
           </tr>
         </tbody>
       </table>
+      <p v-else>
+        Nenhum assessor encontrado
+      </p>
 
       <router-link
         :to="{
@@ -452,7 +455,7 @@ iniciar();
       </table>
       <router-link
         :to="{ name: 'parlamentaresEditarMandato', params: { parlamentarId: props.parlamentarId } }"
-        class="like-a__text addlink"
+        class="like-a__text addlink mb4"
       >
         <svg
           width="20"
@@ -518,5 +521,9 @@ iniciar();
 
 .small-input{
   max-width: 300px;
+}
+
+table{
+  max-width: 1000px;
 }
 </style>
