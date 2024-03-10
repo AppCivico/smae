@@ -57,8 +57,8 @@
           <dt>
             Aniversário
           </dt>
-          <dd v-if="emFoco">
-            {{ new Date(emFoco.nascimento).toISOString().split('T')[0].split('-').reverse().join('/').slice(0, 5) }}
+          <dd v-if="emFoco.nascimento">
+            {{ emFoco.nascimento ? emFoco.nascimento.split('T')[0].split('-').reverse().join('/').slice(0, 5) : '' }}
           </dd>
         </dl>
 
