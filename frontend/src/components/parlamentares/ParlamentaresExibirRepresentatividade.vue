@@ -82,7 +82,7 @@ function excluirRepresentatividade(representatividadeId, parlamentarId = emFoco.
             v-for="item in representatividade.capital"
             :key="item.id"
           >
-            <td>{{ item.id }}</td>
+            <td>{{ item.ranking }}</td>
             <td>{{ item.municipio_tipo }}</td>
             <td>{{ item.regiao.descricao }}</td>
             <td>{{ item.numero_votos }}</td>
@@ -106,9 +106,9 @@ function excluirRepresentatividade(representatividadeId, parlamentarId = emFoco.
             <td v-if="exibirEdição">
               <router-link
                 :to="{
-          name: 'parlamentaresEditarRepresentatividade',
-          params: { parlamentarId: emFoco?.id, representatividadeId: item.id }
-        }"
+                  name: 'parlamentaresEditarRepresentatividade',
+                  params: { parlamentarId: emFoco?.id, representatividadeId: item.id }
+                }"
                 class="tprimary"
                 aria-label="Editar representatividade"
               >
@@ -203,9 +203,9 @@ function excluirRepresentatividade(representatividadeId, parlamentarId = emFoco.
             <td v-if="exibirEdição">
               <router-link
                 :to="{
-          name: 'parlamentaresEditarRepresentatividade',
-          params: { parlamentarId: emFoco?.id, representatividadeId: item.id }
-        }"
+                  name: 'parlamentaresEditarRepresentatividade',
+                  params: { parlamentarId: emFoco?.id, representatividadeId: item.id }
+                }"
                 class="tprimary"
                 aria-label="Editar representatividade"
               >
