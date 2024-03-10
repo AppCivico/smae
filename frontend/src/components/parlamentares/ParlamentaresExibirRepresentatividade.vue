@@ -40,8 +40,8 @@ function excluirRepresentatividade(representatividadeId, parlamentarId = emFoco.
 </script>
 <template>
   <div>
-    <div class="mb2">
-      <div class="flex spacebetween center mb2">
+    <div class="mb4">
+      <div class="flex spacebetween center">
         <h3 class="c500">
           Representatividade na Capital
         </h3>
@@ -121,6 +121,9 @@ function excluirRepresentatividade(representatividadeId, parlamentarId = emFoco.
           </tr>
         </tbody>
       </table>
+      <p v-else>
+        Sem representatividade cadastrada na Capital
+      </p>
 
       <router-link
         v-if="exibirEdição && emFoco?.id"
@@ -138,8 +141,8 @@ function excluirRepresentatividade(representatividadeId, parlamentarId = emFoco.
       </router-link>
     </div>
 
-    <div class="mb2">
-      <div class="flex spacebetween center mb2">
+    <div class="mb4">
+      <div class="flex spacebetween center">
         <h3 class="c500">
           Representatividade no Interior
         </h3>
@@ -218,7 +221,9 @@ function excluirRepresentatividade(representatividadeId, parlamentarId = emFoco.
           </tr>
         </tbody>
       </table>
-
+      <p v-else>
+        Sem representatividade cadastrada no Interior
+      </p>
       <router-link
         v-if="exibirEdição && emFoco?.id"
         :to="{
@@ -236,3 +241,14 @@ function excluirRepresentatividade(representatividadeId, parlamentarId = emFoco.
     </div>
   </div>
 </template>
+<style scoped ang="less">
+h3{
+  color: #607A9F;
+  font-weight: 700;
+  font-size: 24px;
+}
+table{
+  max-width: 1000px;
+  margin: 0 auto;
+}
+</style>
