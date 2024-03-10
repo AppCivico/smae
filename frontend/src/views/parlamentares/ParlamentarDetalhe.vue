@@ -16,9 +16,9 @@
     <div class="flex g2 mb1 flexwrap">
       <div class="carometro__img-container">
         <img
-          v-if="emFoco.image"
+          v-if="emFoco.foto"
           class="carometro__img"
-          :src="emFoco.image"
+          :src="`${baseUrl}/download/${emFoco.foto}?inline=true`"
         >
       </div>
       <div>
@@ -361,6 +361,8 @@ import ParlamentarExibirSuplentes from '@/components/parlamentares/ParlamentarEx
 import { useAuthStore } from '@/stores/auth.store';
 import { useParlamentaresStore } from '@/stores/parlamentares.store';
 import { computed, onMounted, ref } from 'vue';
+
+const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
 const props = defineProps({
   parlamentarId: {
