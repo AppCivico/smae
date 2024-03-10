@@ -12,7 +12,7 @@
     </router-link>
   </div>
   <div>
-    <div class="flex g2 mb1 flexwrap">
+    <div class="carometro__cabeçalho mb1">
       <div class="carometro__img-container">
         <img
           v-if="emFoco.foto"
@@ -20,6 +20,7 @@
           :src="`${baseUrl}/download/${emFoco.foto}?inline=true`"
         >
       </div>
+
       <div>
         <dl>
           <dt>
@@ -40,17 +41,6 @@
             {{ emFoco.mandato_atual.atuacao }}
           </dd>
         </dl>
-
-        <!-- <dl
-          v-if="emFoco.mandato_atual?.suplencia"
-        >
-          <dt>
-            Suplência
-          </dt>
-          <dd v-if="emFoco">
-            {{ níveisDeSuplência[emFoco.mandato_atual?.suplencia]?.nome }}
-          </dd>
-        </dl> -->
       </div>
 
       <div>
@@ -84,20 +74,26 @@
         </dl>
       </div>
     </div>
-    <div v-if="emFoco.mandato_atual?.biografia">
-      <div class="flex spacebetween center mb2">
+
+    <div
+      v-if="emFoco.mandato_atual?.biografia"
+      class="mb4"
+    >
+      <div class="flex spacebetween center">
         <h3 class="title">
           Biografia
         </h3>
         <hr class="ml2 f1">
       </div>
-      <p>
-        {{ emFoco.mandato_atual.biografia }}
-      </p>
+      <div class="biografia">
+        <p>
+          {{ emFoco.mandato_atual.biografia }}
+        </p>
+      </div>
     </div>
 
-    <div class="mb2">
-      <div class="flex spacebetween center mb2">
+    <div class="mb4">
+      <div class="flex spacebetween center">
         <h3 class="title">
           Assessores
         </h3>
@@ -136,9 +132,9 @@
 
     <div
       v-if="emFoco.mandato_atual?.eleicao"
-      class="mb2"
+      class="mb4"
     >
-      <div class="flex spacebetween center mb2">
+      <div class="flex spacebetween center">
         <h3 class="title">
           Eleição {{ emFoco.mandato_atual.eleicao.ano }}
         </h3>
@@ -310,8 +306,8 @@
       </div>
     </div>
 
-    <div class="mb2">
-      <div class="flex spacebetween center mb2">
+    <div class="mb4">
+      <div class="flex spacebetween center">
         <h3 class="title">
           Contatos
         </h3>
@@ -392,6 +388,17 @@ const contatos = computed(() => equipe.value.filter((item) => item.tipo === 'Con
 
 }
 
+.carometro__cabeçalho{
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 15px;
+  max-width: 1000px;
+
+  div{
+    min-width: 300px;
+  }
+}
+
 .carometro__img-container {
   width: 280px;
   height: 280px;
@@ -425,10 +432,14 @@ dd {
   font-size: 20px;
   margin-bottom: 15px;
 }
+
 .eleicao {
   display: grid;
+  max-width:650px;
   grid-template-columns: repeat(2, 1fr);
+  justify-items: center;
   gap: 15px;
+  margin: 0 auto;
 }
 
 .eleicao > div {
@@ -438,5 +449,24 @@ dd {
   padding: 20px;
   border-top: solid 2px #B8C0CC;
   border-radius: 12px;
+  max-width: 300px;
+}
+
+.eleicao > div dt {
+  font-size: 20px;
+}
+
+.eleicao > div dd {
+  font-size: 18px;
+}
+
+.biografia{
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+table{
+  max-width: 1000px;
+  margin: 0 auto;
 }
 </style>
