@@ -238,7 +238,7 @@
             <dd
               class="t13"
             >
-              {{ emFoco.mandato_atual.votos_estado }}
+              {{ formatarNumero(emFoco.mandato_atual.votos_estado) }}
             </dd>
           </dl>
 
@@ -252,7 +252,7 @@
 
               class="t13"
             >
-              {{ emFoco.mandato_atual.votos_interior }}
+              {{ formatarNumero(emFoco.mandato_atual.votos_interior) }}
             </dd>
           </dl>
 
@@ -265,7 +265,7 @@
             <dd
               class="t13"
             >
-              {{ emFoco.mandato_atual.votos_capital }}
+              {{ formatarNumero(emFoco.mandato_atual.votos_capital) }}
             </dd>
           </dl>
         </div>
@@ -380,6 +380,9 @@ const equipe = computed(() => emFoco.value?.equipe ?? []);
 const assessores = computed(() => equipe.value.filter((item) => item.tipo === 'Assessor'));
 const contatos = computed(() => equipe.value.filter((item) => item.tipo === 'Contato'));
 
+function formatarNumero(numero) {
+  return numero.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+}
 </script>
 
 <style scoped lang="less">
