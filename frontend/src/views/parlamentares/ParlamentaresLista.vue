@@ -3,6 +3,7 @@ import { useAlertStore } from '@/stores/alert.store';
 import { storeToRefs } from 'pinia';
 import { useRoute } from 'vue-router';
 import { useParlamentaresStore } from '@/stores/parlamentares.store';
+import { useAuthStore } from '@/stores/auth.store';
 
 const parlamentarStore = useParlamentaresStore();
 const {
@@ -10,6 +11,7 @@ const {
 } = storeToRefs(parlamentarStore);
 const route = useRoute();
 const alertStore = useAlertStore();
+const authStore = useAuthStore();
 
 async function excluirParlamentar(id) {
   alertStore.confirmAction('Deseja mesmo remover esse item?', async () => {
@@ -40,8 +42,14 @@ parlamentarStore.buscarTudo();
     <col>
     <col>
     <col>
-    <col class="col--botão-de-ação">
-    <col class="col--botão-de-ação">
+    <col
+      v-if="authStore.temPermissãoPara('SMAE.acesso_telefone')"
+      class="col--botão-de-ação"
+    >
+    <col
+      v-if="authStore.temPermissãoPara('SMAE.acesso_telefone')"
+      class="col--botão-de-ação"
+    >
     <thead>
       <tr>
         <th>
@@ -53,8 +61,8 @@ parlamentarStore.buscarTudo();
         <th>
           Cargo
         </th>
-        <th />
-        <th />
+        <th v-if="authStore.temPermissãoPara('SMAE.acesso_telefone')" />
+        <th v-if="authStore.temPermissãoPara('SMAE.acesso_telefone')" />
       </tr>
     </thead>
     <tbody>
@@ -72,7 +80,7 @@ parlamentarStore.buscarTudo();
         </td>
         <td> <span v-if="item.partido">{{ item.partido.sigla }}</span></td>
         <td> <span v-if="item.cargo">{{ item.cargo }}</span></td>
-        <td>
+        <td v-if="authStore.temPermissãoPara('SMAE.acesso_telefone')">
           <button
             class="like-a__text"
             arial-label="excluir"
@@ -85,7 +93,7 @@ parlamentarStore.buscarTudo();
             ><use xlink:href="#i_remove" /></svg>
           </button>
         </td>
-        <td>
+        <td v-if="authStore.temPermissãoPara('SMAE.acesso_telefone')">
           <router-link
             :to="{ name: 'parlamentaresEditar', params: { parlamentarId: item.id } }"
             class="tprimary"
