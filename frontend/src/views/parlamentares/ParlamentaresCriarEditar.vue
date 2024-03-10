@@ -101,6 +101,8 @@ const equipe = computed(() => itemParaEdição.value?.equipe?.reduce((acc, cur) 
   return acc;
 }, { assessores: [], contatos: [] }) || { assessores: [], contatos: [] });
 
+const imageUrl = computed(() => (itemParaEdição.value && itemParaEdição.value.foto ? `${baseUrl}/download/${itemParaEdição.value.foto}?inline=true` : false));
+
 async function handleImage(e) {
   const formData = new FormData();
   formData.append('tipo', 'FOTO_PARLAMENTAR');
@@ -119,13 +121,13 @@ iniciar();
     <hr class="ml2 f1">
     <CheckClose />
   </div>
+
   <Form
     v-slot="{ errors, isSubmitting, }"
     :validation-schema="schema"
     :initial-values="itemParaEdição"
     @submit="onSubmit"
   >
-    <!-- form do parlamentar -->
     <div class="parlamentar-container mb3">
       <div>
         <div class="flex g2 mb1">
@@ -208,7 +210,7 @@ iniciar();
         name="avatar"
       >
         <InputImageProfile
-          :model-value="value"
+          :model-value="imageUrl"
           @update:model-value="event => handleImage(event)"
         />
       </Field>

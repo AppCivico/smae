@@ -26,7 +26,7 @@
 </template>
 
 <script setup>
-import { defineProps, ref } from 'vue';
+import { defineProps, ref, watch } from 'vue';
 
 const props = defineProps({
   modelValue: {
@@ -36,6 +36,12 @@ const props = defineProps({
 });
 
 const imgSrc = ref(props.modelValue);
+
+watch(() => props.modelValue, (newValue, oldValue) => {
+  if (newValue !== oldValue) {
+    imgSrc.value = newValue;
+  }
+});
 
 const emit = defineEmits(['update:modelValue']);
 
