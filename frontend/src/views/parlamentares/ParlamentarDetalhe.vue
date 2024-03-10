@@ -58,7 +58,7 @@
             Aniversário
           </dt>
           <dd v-if="emFoco">
-            {{ new Date(emFoco.nascimento).toLocaleDateString('pt-BR', { month: '2-digit', day: '2-digit' }) }}
+            {{ new Date(emFoco.nascimento).toISOString().split('T')[0].split('-').reverse().join('/').slice(0, 5) }}
           </dd>
         </dl>
 
