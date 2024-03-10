@@ -37,6 +37,10 @@ function excluirRepresentatividade(representatividadeId, parlamentarId = emFoco.
     }
   }, 'Remover');
 }
+
+function formatarNumero(numero) {
+  return numero.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+}
 </script>
 <template>
   <div>
@@ -85,9 +89,9 @@ function excluirRepresentatividade(representatividadeId, parlamentarId = emFoco.
             <td>{{ item.ranking }}</td>
             <td>{{ item.municipio_tipo }}</td>
             <td>{{ item.regiao.descricao }}</td>
-            <td>{{ item.numero_votos }}</td>
-            <td>{{ item.regiao.comparecimento.valor }}</td>
-            <td>{{ item.pct_participacao }}</td>
+            <td>{{ formatarNumero(item.numero_votos) }}</td>
+            <td>{{ formatarNumero(item.regiao.comparecimento.valor) }}</td>
+            <td>{{ item.pct_participacao }}%</td>
             <td v-if="exibirEdição">
               <button
                 class="like-a__text"
@@ -186,9 +190,9 @@ function excluirRepresentatividade(representatividadeId, parlamentarId = emFoco.
             <td>{{ item.id }}</td>
             <td>{{ item.municipio_tipo }}</td>
             <td>{{ item.regiao.codigo }}</td>
-            <td>{{ item.numero_votos }}</td>
-            <td>{{ item.regiao.comparecimento.valor }}</td>
-            <td>{{ item.pct_participacao }}</td>
+            <td>{{ formatarNumero(item.numero_votos) }}</td>
+            <td>{{ formatarNumero(item.regiao.comparecimento.valor) }}</td>
+            <td>{{ item.pct_participacao }}%</td>
             <td v-if="exibirEdição">
               <button
                 class="like-a__text"
