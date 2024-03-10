@@ -11,7 +11,6 @@
       Editar
     </router-link>
   </div>
-
   <div>
     <div class="flex g2 mb1 flexwrap">
       <div class="carometro__img-container">
@@ -399,10 +398,13 @@ const contatos = computed(() => equipe.value.filter((item) => item.tipo === 'Con
   border-radius: 10px;
   background-color: #F7F7F7;
   border: 6px solid #F7C234;
+  overflow: hidden;
 }
 
 .carometro__img {
   width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .carometro__equipe {
