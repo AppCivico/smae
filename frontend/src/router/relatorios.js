@@ -102,6 +102,9 @@ export default {
       'RelatóriosDeStatus',
       'RelatóriosDePrevisãoDeCustoPortfolio',
       'RelatóriosOrçamentáriosPortfolio',
+
+      /// CasaCivil
+      'RelatóriosDeParlamentares',
     ],
   },
 
@@ -204,6 +207,31 @@ export default {
           meta: {
             título: 'Novo relatório orçamentário de portfolio',
             rotaDeEscape: 'RelatóriosOrçamentáriosPortfolio',
+          },
+        },
+      ],
+    },
+
+    {
+      path: 'parlamentares',
+      meta: {
+        título: 'Relatórios de parlamentares',
+        títuloParaMenu: 'Relatório de parlamentares',
+        limitarÀsPermissões: 'Reports.executar.CasaCivil',
+      },
+      children: [
+        {
+          path: '',
+          name: 'RelatóriosDeParlamentares',
+          component: () => import('@/views/relatorios/RelatoriosDeParlamentares.vue'),
+        },
+        {
+          component: () => import('@/views/relatorios/NovoRelatorioDeParlamentares.vue'),
+          path: 'novo',
+          name: 'novoRelatórioDeParlamentares',
+          meta: {
+            título: 'Novo relatório de parlamentares',
+            rotaDeEscape: 'RelatóriosDeParlamentares',
           },
         },
       ],
