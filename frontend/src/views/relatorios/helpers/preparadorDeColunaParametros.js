@@ -1,10 +1,13 @@
-import { usePortfolioStore } from '@/stores/portfolios.store.ts';
+import cargosDeParlamentar from '@/consts/cargosDeParlamentar';
 import { useOrgansStore } from '@/stores/organs.store';
+import { usePartidosStore } from '@/stores/partidos.store';
+import { usePdMStore } from '@/stores/pdm.store';
+import { usePortfolioStore } from '@/stores/portfolios.store.ts';
 import { useProjetosStore } from '@/stores/projetos.store.ts';
 import { useTagsStore } from '@/stores/tags.store';
-import { usePdMStore } from '@/stores/pdm.store';
 
 const ÓrgãosStore = useOrgansStore();
+const partidosStore = usePartidosStore();
 const PdMStore = usePdMStore();
 const portfolioStore = usePortfolioStore();
 const projetosStore = useProjetosStore();
@@ -12,6 +15,16 @@ const TagsStore = useTagsStore();
 
 export const prepararEtiquetas = (schema) => Object.keys(schema.fields.parametros.fields)
   .reduce((acc, cur) => ({ ...acc, [cur]: schema.fields.parametros.fields[cur].spec.label }), {});
+
+export const prepararCargos = () => Object.values(cargosDeParlamentar)
+  .reduce((acc, cur) => ({ ...acc, [cur.valor]: cur.nome }), {});
+
+ÓrgãosStore.getAll()
+  .then(() => ÓrgãosStore.órgãosComoLista
+    .reduce((acc, cur) => ({ ...acc, [cur.id]: cur.sigla }), {}))
+  .catch((error) => {
+    throw new Error(error);
+  });
 
 export const prepararÓrgãos = () => ÓrgãosStore.getAll()
   .then(() => ÓrgãosStore.órgãosComoLista
@@ -27,6 +40,21 @@ export const prepararPdm = () => PdMStore.getAll()
   .catch((error) => {
     throw new Error(error);
   });
+
+// menos enxuto, mas evita chamadas sem necessidade
+export const prepararPartidos = async () => {
+  try {
+    if (!partidosStore.lista.length) {
+      await partidosStore.buscarTudo();
+    }
+    return partidosStore.lista.reduce((acc, cur) => ({
+      ...acc,
+      [cur.id]: cur.nome,
+    }), {});
+  } catch (error) {
+    throw new Error(error);
+  }
+};
 
 export const prepararPortfolios = () => portfolioStore.buscarTudo()
   .then(() => portfolioStore.lista.reduce((acc, cur) => ({
@@ -53,5 +81,3 @@ export const prepararTags = () => TagsStore.getAll()
   .catch((error) => {
     throw new Error(error);
   });
-
-
