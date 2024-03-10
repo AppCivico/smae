@@ -274,7 +274,7 @@ export class ParlamentarService {
             foto: parlamentar.foto_upload_id
                 ? this.uploadService.getDownloadToken(parlamentar.foto_upload_id, '1 days').download_token
                 : null,
-            telefone: user && !user.hasSomeRoles(['SMAE.acesso_telefone']) ? parlamentar.telefone : null,
+            telefone: user && user.hasSomeRoles(['SMAE.acesso_telefone']) ? parlamentar.telefone : null,
 
             mandato_atual: mandatoCorrente
                 ? {
