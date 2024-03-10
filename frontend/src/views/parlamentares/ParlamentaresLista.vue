@@ -32,6 +32,7 @@ parlamentarStore.buscarTudo();
     <h1>{{ route?.meta?.título || 'Lista de Parlamentares' }}</h1>
     <hr class="ml2 f1">
     <router-link
+      v-if="authStore.temPermissãoPara('SMAE.acesso_telefone')"
       :to="{name: 'parlamentaresCriar'}"
       class="btn big ml1"
     >
