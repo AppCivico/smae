@@ -49,9 +49,9 @@ function excluirSuplente(suplenteId, parlamentarId = emFoco.value.id) {
 <template>
   <div
     v-if="!emFoco?.mandato_atual?.suplencia"
-    class="mb2"
+    class="mb4"
   >
-    <div class="flex spacebetween center mb2">
+    <div class="flex spacebetween center">
       <h3 class="c500">
         Suplentes
       </h3>
@@ -126,7 +126,6 @@ function excluirSuplente(suplenteId, parlamentarId = emFoco.value.id) {
       Adicionar suplente
     </button>
   </div>
-  <!-- TODO: só pode aparecer se tiver mandato criado -->
   <ParlamentaresCadastrarSuplentes
     v-if="showSuplentesModal"
     :apenas-emitir="true"
@@ -138,3 +137,14 @@ function excluirSuplente(suplenteId, parlamentarId = emFoco.value.id) {
     }"
   />
 </template>
+<style scoped ang="less">
+h3{
+  color: #607A9F;
+  font-weight: 700;
+  font-size: 24px;
+}
+table{
+  max-width: 1000px;
+  margin: 0 auto;
+}
+</style>
