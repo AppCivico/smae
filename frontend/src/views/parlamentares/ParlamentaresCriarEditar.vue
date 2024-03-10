@@ -166,7 +166,7 @@ iniciar();
           </div>
         </div>
 
-        <div class="f1">
+        <div class="f1 small-input">
           <LabelFromYup
             name="nascimento"
             :schema="schema"
@@ -186,7 +186,7 @@ iniciar();
 
         <div
           v-if="authStore.temPermissãoPara('SMAE.acesso_telefone')"
-          class="flex f1 mb1"
+          class="flex f1 mb1 small-input"
         >
           <div class="f1">
             <LabelFromYup
@@ -195,8 +195,9 @@ iniciar();
             />
             <Field
               name="telefone"
-              type="text"
+              type="number"
               class="inputtext light mb1"
+              maxlength="11"
             />
             <ErrorMessage
               class="error-msg mb1"
@@ -505,12 +506,17 @@ iniciar();
 
 <style scoped lang="less">
 .parlamentar-container {
-    display: grid;
-    grid-template-columns: 2fr 1fr;
-    gap: 15px;
+  max-width: 900px;
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 15px;
 
-    & > :nth-child(2) {
-        justify-self: end;
-    }
+  & > :nth-child(2) {
+    justify-self: end;
+  }
+}
+
+.small-input{
+  max-width: 300px;
 }
 </style>
