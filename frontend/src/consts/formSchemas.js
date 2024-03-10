@@ -1087,6 +1087,24 @@ export const região = object()
       .nullable(),
   });
 
+export const relatórioDeParlamentares = object({
+  fonte: string()
+    .required(),
+  parametros: object({
+    partido_id: number()
+      .label('Partido')
+      .min(0, '${label} inválido')
+      .nullable()
+      .transform((v) => (v === '' || Number.isNaN(v) ? null : v)),
+    cargo: mixed()
+      .label('Cargo')
+      // feio, mas... Algo parece bugado no Yup e não posso atualizá-lo agora
+      .oneOf([...Object.keys(cargosDeParlamentar), null])
+      .nullable(),
+  }),
+  salvar_arquivo: boolean(),
+});
+
 export const relatórioDePrevisãoDeCustoPdM = object()
   .shape({
     fonte: string()
