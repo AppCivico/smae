@@ -28,7 +28,7 @@ const {
   erro: erroNaListagemDePartidos,
 } = storeToRefs(partidoStore);
 
-async function onSubmit(_, controlledValues) {
+async function onSubmit(_, { controlledValues }) {
   try {
     let r;
     const msg = props.bancadaId
