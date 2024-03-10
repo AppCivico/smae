@@ -41,7 +41,9 @@ export class BancadaService {
             data: {
                 criado_por: user ? user.id : undefined,
                 criado_em: new Date(Date.now()),
-                ...dto,
+                nome: dto.nome,
+                sigla: dto.sigla,
+                descricao: dto.descricao,
 
                 partidos: {
                     createMany: {
@@ -175,7 +177,9 @@ export class BancadaService {
             data: {
                 atualizado_por: user.id,
                 atualizado_em: new Date(Date.now()),
-                ...dto,
+                nome: dto.nome,
+                sigla: dto.sigla,
+                descricao: dto.descricao,
             },
         });
 
