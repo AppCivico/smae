@@ -77,7 +77,9 @@ const uploadImageFile = (event) => {
 
     &__image{
       position: absolute;
-      size: 100%;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
     }
 
     &__label{
