@@ -64,8 +64,6 @@ partidosStore.buscarTudo();
     :initial-values="initialValues"
     @submit="onSubmit"
   >
-    <pre>values:{{ values }}</pre>
-
     <div class="flex flexwrap g2 mb2">
       <div class="f1">
         <LabelFromYup
