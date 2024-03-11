@@ -771,7 +771,7 @@ export const parlamentar = object({
   nascimento: string()
     .label('Nascimento')
     .nullable(),
-  telefone: number()
+  telefone: string()
     .label('Telefone')
     .nullable(),
   avatar: string(),
@@ -811,7 +811,7 @@ export const pessoaNaEquipeDeParlamentar = object({
   nome: string()
     .label('Nome')
     .required(),
-  telefone: number()
+  telefone: string()
     .label('Telefone')
     .required(),
   tipo: mixed()
