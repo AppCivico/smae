@@ -51,6 +51,12 @@ export class ParlamentaresService implements ReportableService {
                                 sigla: true,
                             },
                         },
+                        eleicao: {
+                            select: {
+                                ano: true,
+                                tipo: true,
+                            },
+                        },
                     },
                 },
             },
@@ -72,6 +78,7 @@ export class ParlamentaresService implements ReportableService {
                     telefone: mandato.telefone,
                     nascimento: parlamentar.nascimento ? Date2YMD.toString(parlamentar.nascimento) : null,
                     email: mandato.email,
+                    ano_eleicao: mandato.eleicao.ano,
                 });
             }
         }
@@ -94,6 +101,7 @@ export class ParlamentaresService implements ReportableService {
                     { value: 'nome_civil', label: 'Nome Civil' },
                     { value: 'nome_parlamentar', label: 'Nome Parlamentar' },
                     { value: 'partido_sigla', label: 'Sigla do Partido' },
+                    { value: 'ano_eleicao', label: 'Ano da Eleição' },
                     { value: 'cargo', label: 'Cargo' },
                     { value: 'uf', label: 'UF' },
                     { value: 'titular_suplente', label: 'Titular/Suplente/Efetivado' },

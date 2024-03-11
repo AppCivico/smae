@@ -13,6 +13,7 @@ export class RelParlamentaresDto {
     nascimento: string | null;
     email: string | null;
     cargo: ParlamentarCargo | null;
+    ano_eleicao: number;
 }
 
 export class ParlamentaresRelatorioDto {
