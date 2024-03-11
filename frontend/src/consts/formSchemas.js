@@ -769,7 +769,7 @@ export const parlamentar = object({
     .label('Nome Civil')
     .max(250),
   nascimento: string()
-    .label('Aniversário')
+    .label('Nascimento')
     .nullable(),
   telefone: number()
     .label('Telefone')
