@@ -79,8 +79,8 @@ export class ParlamentaresService implements ReportableService {
                     endereco: mandato.endereco,
                     gabinete: mandato.gabinete,
                     telefone: mandato.telefone,
-                    dia_aniversario: parlamentar.nascimento ? parlamentar.nascimento.getDate.toString() : null,
-                    mes_aniversario: parlamentar.nascimento ? parlamentar.nascimento.getMonth.toString() : null,
+                    dia_aniversario: parlamentar.nascimento ? parlamentar.nascimento.getDate() : null,
+                    mes_aniversario: parlamentar.nascimento ? parlamentar.nascimento.getMonth() : null,
                     email: mandato.email,
                     ano_eleicao: mandato.eleicao.ano,
                 });
