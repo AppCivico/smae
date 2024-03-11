@@ -581,7 +581,8 @@ export const orçamentoRealizado = object()
 export const órgão = object()
   .shape({
     cnpj: string()
-      .label('CNPJ'),
+      .label('CNPJ')
+      .matches(regEx.cnpj),
     descricao: string()
       .label('Descrição')
       .required(),
