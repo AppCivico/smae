@@ -57,7 +57,7 @@ function excluirSuplente(suplenteId, parlamentarId = emFoco.value.id) {
       </h3>
       <hr class="ml2 f1">
     </div>
-    <table class="tablemain">
+    <table class="tablemain mb1">
       <col>
       <col>
       <col>
