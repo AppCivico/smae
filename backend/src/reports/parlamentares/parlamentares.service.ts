@@ -23,16 +23,6 @@ export class ParlamentaresService implements ReportableService {
         const parlamentares = await this.prisma.parlamentar.findMany({
             where: {
                 removido_em: null,
-                mandatos: {
-                    every: {
-                        removido_em: null,
-                        partido_atual_id: dto.partido_id,
-                        eleicao: {
-                            id: dto.eleicao_id != null ? dto.eleicao_id : undefined,
-                        },
-                        cargo: dto.cargo != null ? dto.cargo : undefined,
-                    },
-                },
             },
             select: {
                 id: true,
@@ -40,7 +30,14 @@ export class ParlamentaresService implements ReportableService {
                 nome: true,
                 nome_popular: true,
                 mandatos: {
-                    where: { removido_em: null },
+                    where: {
+                        removido_em: null,
+                        partido_atual_id: dto.partido_id,
+                        eleicao: {
+                            id: dto.eleicao_id != null ? dto.eleicao_id : undefined,
+                        },
+                        cargo: dto.cargo != null ? dto.cargo : undefined,
+                    },
                     select: {
                         id: true,
                         cargo: true,
