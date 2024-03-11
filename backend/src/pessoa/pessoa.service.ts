@@ -620,7 +620,7 @@ export class PessoaService {
     async criarPessoa(createPessoaDto: CreatePessoaDto, user?: PessoaFromJwt) {
         const visiblePriv: number[] = [];
         if (user) {
-            visiblePriv.concat(await this.buscaPerfisVisiveis(user));
+            visiblePriv.push(...(await this.buscaPerfisVisiveis(user)));
         }
 
         this.verificaPerfilAcesso(createPessoaDto, visiblePriv);
