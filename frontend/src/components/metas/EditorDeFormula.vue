@@ -101,12 +101,33 @@ const formula = computed({
     emit('update:modelValue', value);
 
     const listaDeVariáveisNaFórmula = Object.values(variaveisFormula)
-      .map((x) => ({
-        referencia: x.id.substring(1),
-        janela: (x.periodo === 0 || x.periodo === -1) ? x.meses * -1 : 1,
-        variavel_id: x.variavel_id,
-        usar_serie_acumulada: !!x.usar_serie_acumulada,
-      }))
+      .map((x) => {
+        let janela = 0;
+        switch (x.periodo) {
+          // meses anteriores
+          case -1:
+            janela = x.meses * -1;
+            break;
+
+          // média
+          case 0:
+            janela = x.meses;
+            break;
+
+          // mês corrente
+          case 1:
+          default:
+            janela = 1;
+            break;
+        }
+
+        return ({
+          referencia: x.id.substring(1),
+          janela,
+          variavel_id: x.variavel_id,
+          usar_serie_acumulada: !!x.usar_serie_acumulada,
+        });
+      })
       .filter((x) => value.indexOf(x.referencia) !== -1);
 
     emit('update:variaveis-formula', listaDeVariáveisNaFórmula);
