@@ -10,7 +10,8 @@ export class RelParlamentaresDto {
     endereco: string | null;
     gabinete: string | null;
     telefone: string | null;
-    aniversario: string | null;
+    dia_aniversario: string | null;
+    mes_aniversario: string | null;
     email: string | null;
     cargo: ParlamentarCargo | null;
     ano_eleicao: number;
