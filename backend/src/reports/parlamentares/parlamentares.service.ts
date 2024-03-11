@@ -28,7 +28,7 @@ export class ParlamentaresService implements ReportableService {
                         removido_em: null,
                         partido_atual_id: dto.partido_id,
                         eleicao: {
-                            id: dto.eleicao_id,
+                            id: dto.eleicao_id != null ? dto.eleicao_id : undefined,
                         },
                         cargo: dto.cargo != null ? dto.cargo : undefined,
                     },
