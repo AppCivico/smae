@@ -1117,7 +1117,8 @@ export const relatórioDeParlamentares = object({
     eleicao_id: number()
       .label('Eleição')
       .min(1, 'Eleição inválida')
-      .required(),
+      .nullable()
+      .transform((v) => (v === '' || Number.isNaN(v) ? null : v)),
   }),
   salvar_arquivo: boolean(),
 });
