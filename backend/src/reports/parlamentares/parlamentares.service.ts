@@ -22,8 +22,8 @@ export class ParlamentaresService implements ReportableService {
     async create(dto: CreateRelParlamentaresDto): Promise<ParlamentaresRelatorioDto> {
         if (dto.cargo === null) dto.cargo = undefined;
         if (dto.partido_id === null) dto.cargo = undefined;
-        if (dto.eleicao_id === null) dto.cargo = undefined;
-
+        if (dto.eleicao_id === null) dto.eleicao_id = undefined;
+        console.log(dto);
         const parlamentares = await this.prisma.parlamentar.findMany({
             where: {
                 removido_em: null,
