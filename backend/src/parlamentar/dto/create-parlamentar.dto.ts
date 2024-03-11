@@ -30,7 +30,7 @@ export class CreateParlamentarDto {
 
     @IsOptional()
     @IsString()
-    @MaxLength(12, { message: '$property| telefone: Máximo 12 caracteres' })
+    @MaxLength(250, { message: '$property| telefone: Máximo 250 caracteres' })
     telefone?: string;
 
     @IsOptional()
@@ -61,7 +61,7 @@ export class CreateEquipeDto {
     nome: string;
 
     @IsString()
-    @MaxLength(12, { message: '$property| telefone: Máximo 12 caracteres' })
+    @MaxLength(250, { message: '$property| telefone: Máximo 250 caracteres' })
     telefone: string;
 
     @IsString()
@@ -143,7 +143,7 @@ export class CreateMandatoDto {
 
     @IsOptional()
     @IsString()
-    @MaxLength(12, { message: '$property| telefone: Máximo 12 caracteres' })
+    @MaxLength(250, { message: '$property| telefone: Máximo 250 caracteres' })
     telefone: string;
 
     @IsOptional()
