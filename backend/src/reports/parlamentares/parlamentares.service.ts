@@ -79,7 +79,9 @@ export class ParlamentaresService implements ReportableService {
                     endereco: mandato.endereco,
                     gabinete: mandato.gabinete,
                     telefone: mandato.telefone,
-                    nascimento: parlamentar.nascimento ? Date2YMD.toString(parlamentar.nascimento) : null,
+                    aniversario: parlamentar.nascimento
+                        ? `${parlamentar.nascimento.getDay.toString}/${parlamentar.nascimento.getMonth.toString}`
+                        : null,
                     email: mandato.email,
                     ano_eleicao: mandato.eleicao.ano,
                 });
@@ -111,7 +113,7 @@ export class ParlamentaresService implements ReportableService {
                     { value: 'endereco', label: 'Endereço' },
                     { value: 'gabinete', label: 'Gabinete' },
                     { value: 'telefone', label: 'Telefone' },
-                    { value: 'nascimento', label: 'Nascimento' },
+                    { value: 'aniversario', label: 'Aniversário' },
                     { value: 'email', label: 'E-mail' },
                 ],
             });
