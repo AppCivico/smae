@@ -9,6 +9,7 @@ import {
   Field,
   Form,
 } from 'vee-validate';
+import { vMaska } from "maska"
 import { useRoute } from 'vue-router';
 
 const alertStore = useAlertStore();
@@ -172,6 +173,8 @@ async function checkDelete(id) {
               type="text"
               class="inputtext light mb1"
               :class="{ 'error': errors.cnpj }"
+              v-maska
+              data-maska="##.###.###/####-##"
             />
             <ErrorMessage
               class="error-msg"
