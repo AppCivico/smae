@@ -1114,6 +1114,10 @@ export const relatórioDeParlamentares = object({
       .oneOf([...Object.keys(cargosDeParlamentar), null])
       .nullable()
       .transform((v) => (v === '' ? null : v)),
+    eleicao_id: number()
+      .label('Eleição')
+      .min(1, 'Eleição inválida')
+      .required(),
   }),
   salvar_arquivo: boolean(),
 });
