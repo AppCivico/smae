@@ -85,9 +85,10 @@ export class CreateMandatoDto {
     @IsNumber()
     partido_atual_id: number;
 
+    @IsOptional()
     @IsString({ message: '$property| gabinete: Precisa ser alfanumérico' })
     @MaxLength(250, { message: '$property| gabinete: Máximo 250 caracteres' })
-    gabinete: string;
+    gabinete: string | null;
 
     @IsOptional()
     @IsString({ message: '$property| endereco: Precisa ser alfanumérico' })
