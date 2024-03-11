@@ -171,7 +171,7 @@
 
           <dl>
             <dt>
-              Em atividade?
+              Em exercício?
             </dt>
             <dd
               v-if="emFoco"
