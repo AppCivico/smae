@@ -174,7 +174,48 @@ watch(mandatoParaEdição, (novoValor) => {
             name="eleicao_id"
           />
         </div>
+        <div class="f1">
+          <LabelFromYup
+            name="eleito"
+            :schema="schema"
+          />
+          <Field
+            name="eleito"
+            as="select"
+            class="inputtext light mb1"
+            :class="{ error: errors.eleito, loading: chamadasPendentes.emFoco }"
+          >
+            <option :value="false">
+              não
+            </option>
+            <option :value="true">
+              sim
+            </option>
+          </Field>
+          <ErrorMessage
+            class="error-msg"
+            name="eleito"
+          />
+        </div>
+        <div class="f1">
+          <LabelFromYup
+            name="em_atividade"
+            :schema="schema"
+          />
+          <Field
+            name="em_atividade"
+            type="checkbox"
+            :value="true"
+            class="inputcheckbox"
+          />
+          <ErrorMessage
+            class="error-msg"
+            name="em_atividade"
+          />
+        </div>
+      </div>
 
+      <div class="flex flexwrap g2 mb1">
         <div class="f1">
           <LabelFromYup
             name="cargo"
@@ -202,7 +243,6 @@ watch(mandatoParaEdição, (novoValor) => {
             name="cargo"
           />
         </div>
-
         <div class="f1">
           <LabelFromYup
             name="suplencia"
@@ -228,7 +268,6 @@ watch(mandatoParaEdição, (novoValor) => {
             name="suplencia"
           />
         </div>
-
         <div class="f1">
           <LabelFromYup
             name="uf"
@@ -259,30 +298,6 @@ watch(mandatoParaEdição, (novoValor) => {
       </div>
 
       <div class="flex flexwrap g2 mb1">
-        <div class="f1">
-          <LabelFromYup
-            name="eleito"
-            :schema="schema"
-          />
-          <Field
-            name="eleito"
-            as="select"
-            class="inputtext light mb1"
-            :class="{ error: errors.eleito, loading: chamadasPendentes.emFoco }"
-          >
-            <option :value="false">
-              não
-            </option>
-            <option :value="true">
-              sim
-            </option>
-          </Field>
-          <ErrorMessage
-            class="error-msg"
-            name="eleito"
-          />
-        </div>
-
         <div
           class="f2"
           :class="{ loading: esperandoListaDePartidos }"
@@ -343,6 +358,7 @@ watch(mandatoParaEdição, (novoValor) => {
             name="partido_atual_id"
           />
         </div>
+
         <ErrorComponent
           v-if="erroNaListaDePartidos"
           class="fb100"
@@ -365,9 +381,9 @@ watch(mandatoParaEdição, (novoValor) => {
             min="0"
             step="1"
             @change="setFieldValue(
-          'votos_estado',
-          $event.target.value ? Number($event.target.value) : null
-        )"
+              'votos_estado',
+              $event.target.value ? Number($event.target.value) : null
+            )"
           />
           <ErrorMessage
             class="error-msg"
@@ -387,9 +403,9 @@ watch(mandatoParaEdição, (novoValor) => {
             min="0"
             step="1"
             @change="setFieldValue(
-          'votos_capital',
-          $event.target.value ? Number($event.target.value) : null
-        )"
+              'votos_capital',
+              $event.target.value ? Number($event.target.value) : null
+            )"
           />
           <ErrorMessage
             class="error-msg"
@@ -409,9 +425,9 @@ watch(mandatoParaEdição, (novoValor) => {
             min="0"
             step="1"
             @change="setFieldValue(
-          'votos_interior',
-          $event.target.value ? Number($event.target.value) : null
-        )"
+              'votos_interior',
+              $event.target.value ? Number($event.target.value) : null
+            )"
           />
           <ErrorMessage
             class="error-msg"
@@ -423,13 +439,44 @@ watch(mandatoParaEdição, (novoValor) => {
       <div class="flex g2 mb1">
         <div class="f1">
           <LabelFromYup
+            name="telefone"
+            :schema="schema"
+          />
+          <Field
+            name="telefone"
+            type="text"
+            class="inputtext light mb1"
+          />
+          <ErrorMessage
+            class="error-msg"
+            name="telefone"
+          />
+        </div>
+
+        <div class="f1">
+          <LabelFromYup
+            name="email"
+            :schema="schema"
+          />
+          <Field
+            name="email"
+            type="text"
+            class="inputtext light mb1"
+          />
+          <ErrorMessage
+            class="error-msg"
+            name="email"
+          />
+        </div>
+
+        <div class="f1">
+          <LabelFromYup
             name="gabinete"
             :schema="schema"
           />
           <Field
             name="gabinete"
-            as="textarea"
-            rows="5"
+            type="text"
             class="inputtext light mb1"
             :class="{ error: errors.gabinete, loading: chamadasPendentes.emFoco }"
           />
@@ -440,24 +487,21 @@ watch(mandatoParaEdição, (novoValor) => {
         </div>
       </div>
 
-      <div class="flex g2 mb1">
-        <div class="f1">
-          <LabelFromYup
-            name="endereco"
-            :schema="schema"
-          />
-          <Field
-            name="endereco"
-            as="textarea"
-            rows="5"
-            class="inputtext light mb1"
-            :class="{ error: errors.endereco, loading: chamadasPendentes.emFoco }"
-          />
-          <ErrorMessage
-            class="error-msg"
-            name="endereco"
-          />
-        </div>
+      <div class="f1">
+        <LabelFromYup
+          name="endereco"
+          :schema="schema"
+        />
+        <Field
+          name="endereco"
+          type="text"
+          class="inputtext light mb1"
+          :class="{ error: errors.endereco, loading: chamadasPendentes.emFoco }"
+        />
+        <ErrorMessage
+          class="error-msg"
+          name="endereco"
+        />
       </div>
 
       <div class="flex g2 mb1">
@@ -489,7 +533,7 @@ watch(mandatoParaEdição, (novoValor) => {
           <Field
             name="biografia"
             as="textarea"
-            rows="5"
+            rows="10"
             class="inputtext light mb1"
             :class="{ error: errors.biografia, loading: chamadasPendentes.emFoco }"
           />
@@ -508,8 +552,8 @@ watch(mandatoParaEdição, (novoValor) => {
           class="btn big"
           :disabled="isSubmitting || Object.keys(errors)?.length"
           :title="Object.keys(errors)?.length
-          ? `Erros de preenchimento: ${Object.keys(errors)?.length}`
-          : null"
+            ? `Erros de preenchimento: ${Object.keys(errors)?.length}`
+            : null"
         >
           Salvar
         </button>
