@@ -79,9 +79,8 @@ export class ParlamentaresService implements ReportableService {
                     endereco: mandato.endereco,
                     gabinete: mandato.gabinete,
                     telefone: mandato.telefone,
-                    aniversario: parlamentar.nascimento
-                        ? `${parlamentar.nascimento.getDay.toString}/${parlamentar.nascimento.getMonth.toString}`
-                        : null,
+                    dia_aniversario: parlamentar.nascimento ? parlamentar.nascimento.getDate.toString() : null,
+                    mes_aniversario: parlamentar.nascimento ? parlamentar.nascimento.getMonth.toString() : null,
                     email: mandato.email,
                     ano_eleicao: mandato.eleicao.ano,
                 });
@@ -113,7 +112,8 @@ export class ParlamentaresService implements ReportableService {
                     { value: 'endereco', label: 'Endereço' },
                     { value: 'gabinete', label: 'Gabinete' },
                     { value: 'telefone', label: 'Telefone' },
-                    { value: 'aniversario', label: 'Aniversário' },
+                    { value: 'dia_aniversario', label: 'Dia Aniversário' },
+                    { value: 'mes_aniversario', label: 'Mês Aniversário' },
                     { value: 'email', label: 'E-mail' },
                 ],
             });
