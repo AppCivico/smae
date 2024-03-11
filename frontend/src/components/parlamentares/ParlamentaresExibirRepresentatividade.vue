@@ -53,7 +53,7 @@ function formatarNumero(numero) {
       </div>
       <table
         v-if="representatividade.capital.length"
-        class="tablemain"
+        class="tablemain mb1"
       >
         <col>
         <col>
@@ -154,7 +154,7 @@ function formatarNumero(numero) {
       </div>
       <table
         v-if="representatividade.interior.length"
-        class="tablemain"
+        class="tablemain mb1"
       >
         <col>
         <col>

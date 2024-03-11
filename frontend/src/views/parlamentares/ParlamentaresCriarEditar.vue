@@ -195,7 +195,7 @@ iniciar();
             />
             <Field
               name="telefone"
-              type="number"
+              type="text"
               class="inputtext light mb1"
               maxlength="11"
             />
