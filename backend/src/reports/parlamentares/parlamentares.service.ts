@@ -24,7 +24,7 @@ export class ParlamentaresService implements ReportableService {
             where: {
                 removido_em: null,
                 mandatos: {
-                    some: {
+                    every: {
                         removido_em: null,
                         partido_atual_id: dto.partido_id,
                         eleicao: {
