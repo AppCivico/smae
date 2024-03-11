@@ -11,4 +11,8 @@ export class CreateRelParlamentaresDto {
     @ApiProperty({ enum: ParlamentarCargo, enumName: 'ParlamentarCargo' })
     @IsEnum(ParlamentarCargo)
     cargo?: ParlamentarCargo;
+
+    @IsOptional()
+    @IsNumber()
+    eleicao_id?: number;
 }
