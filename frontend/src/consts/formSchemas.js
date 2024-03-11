@@ -510,9 +510,15 @@ export const mandato = object({
   endereco: string()
     .label('Endereco')
     .nullable(),
+  email: string()
+    .email()
+    .label('Email'),
+  telefone: string()
+    .label('Telefone')
+    .nullable(),
   gabinete: string()
     .label('Gabinete')
-    .required(),
+    .nullable(),
   suplencia: mixed()
     .label('Suplência')
     // feio, mas... Algo parece bugado no Yup e não posso atualizá-lo agora
@@ -533,10 +539,13 @@ export const mandato = object({
     .label('Total de votos na capital')
     .nullable(),
   votos_estado: number()
-    .label('Total de votos na estado')
+    .label('Total de votos no estado')
     .nullable(),
   votos_interior: number()
-    .label('Total de votos na interior')
+    .label('Total de votos no interior')
+    .nullable(),
+  em_atividade: boolean()
+    .label('Em exercício')
     .nullable(),
 });
 
@@ -787,7 +796,7 @@ export const parlamentar = object({
           .label('Email')
           .email('Insira um email válido')
           .required('O email é obrigatório'),
-        telefone: number()
+        telefone: string()
           .label('Telefone')
           .required('O telefone é obrigatório'),
       }),

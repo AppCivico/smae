@@ -236,7 +236,7 @@ watch(pessoaParaEdição, (novoValor) => {
           />
           <Field
             name="telefone"
-            type="number"
+            type="text"
             class="inputtext light mb1"
             :class="{
               error: errors.telefone,
