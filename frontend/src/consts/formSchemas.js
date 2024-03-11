@@ -1112,7 +1112,8 @@ export const relatórioDeParlamentares = object({
       .label('Cargo')
       // feio, mas... Algo parece bugado no Yup e não posso atualizá-lo agora
       .oneOf([...Object.keys(cargosDeParlamentar), null])
-      .nullable(),
+      .nullable()
+      .transform((v) => (v === '' ? null : v)),
   }),
   salvar_arquivo: boolean(),
 });
