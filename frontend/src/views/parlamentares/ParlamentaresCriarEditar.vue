@@ -31,11 +31,11 @@ const alertStore = useAlertStore();
 const authStore = useAuthStore();
 const parlamentaresStore = useParlamentaresStore();
 const { chamadasPendentes, erro, itemParaEdição } = storeToRefs(parlamentaresStore);
-const avatar = ref({});
+const avatar = ref(null);
 
 async function onSubmit(values) {
-  values.upload_foto = avatar.value ? avatar.value : itemParaEdição.value.foto;
-
+  const newValues = { ...values };
+  newValues.upload_foto = avatar.value ? avatar.value : itemParaEdição.value.foto;
   try {
     let r;
     const msg = props.parlamentarId
@@ -43,9 +43,9 @@ async function onSubmit(values) {
       : 'Item adicionado com sucesso!';
 
     if (props.parlamentarId) {
-      r = await parlamentaresStore.salvarItem(values, props.parlamentarId);
+      r = await parlamentaresStore.salvarItem(newValues, props.parlamentarId);
     } else {
-      r = await parlamentaresStore.salvarItem(values);
+      r = await parlamentaresStore.salvarItem(newValues);
     }
     if (r) {
       alertStore.success(msg);
