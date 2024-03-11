@@ -9,6 +9,7 @@
     "iframe-resizer": "^4.3.6",
     "leaflet": "^1.9.4",
     "lodash": "^4.17.21",
+    "maska": "^2.1.11",
     "nice-number": "^1.0.3",
     "pinia": "^2.0.17",
     "qs": "^6.11.1",
