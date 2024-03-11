@@ -34,7 +34,8 @@ const { chamadasPendentes, erro, itemParaEdição } = storeToRefs(parlamentaresS
 const avatar = ref();
 
 async function onSubmit(values) {
-  values.upload_foto = avatar.value;
+  values.upload_foto = avatar.value ? avatar.value : itemParaEdição.value.foto;
+
   try {
     let r;
     const msg = props.parlamentarId
@@ -121,7 +122,6 @@ iniciar();
     <hr class="ml2 f1">
     <CheckClose />
   </div>
-
   <Form
     v-slot="{ errors, isSubmitting, }"
     :validation-schema="schema"
