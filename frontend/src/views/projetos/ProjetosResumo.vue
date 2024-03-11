@@ -474,16 +474,16 @@ if (!Array.isArray(organs.value) || !organs.value.length) {
               : '-' }}
           </dd>
         </div>
-
         <div class="f1 mb1">
           <dt class="t12 uc w700 mb05 tamarelo">
-            {{ schema.fields.secretario_executivo.spec.label }}
+            {{ schema.fields.secretario_responsavel.spec.label }}
           </dt>
           <dd class="t13">
-            {{ emFoco?.secretario_executivo || '-' }}
+            {{ emFoco?.secretario_responsavel || '-' }}
           </dd>
         </div>
       </dl>
+
       <dl class="flex g2 flexwrap">
         <div class="f1 mb1">
           <dt class="t12 uc w700 mb05 tamarelo">
@@ -498,16 +498,15 @@ if (!Array.isArray(organs.value) || !organs.value.length) {
             {{ schema.fields.responsavel_id.spec.label }}
           </dt>
           <dd class="t13">
-            {{ emFoco?.responsavel?.nome_exibicao || emFoco?.responsavel_id || '-' }}
+            {{ emFoco?.responsavel?.nome_exibicao || emFoco?.responsavel?.id || '-' }}
           </dd>
         </div>
-
         <div class="f1 mb1">
           <dt class="t12 uc w700 mb05 tamarelo">
-            {{ schema.fields.secretario_responsavel.spec.label }}
+            {{ schema.fields.secretario_executivo.spec.label }}
           </dt>
           <dd class="t13">
-            {{ emFoco?.secretario_responsavel || '-' }}
+            {{ emFoco?.secretario_executivo || '-' }}
           </dd>
         </div>
       </dl>
