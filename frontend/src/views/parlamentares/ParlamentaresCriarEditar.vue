@@ -31,7 +31,7 @@ const alertStore = useAlertStore();
 const authStore = useAuthStore();
 const parlamentaresStore = useParlamentaresStore();
 const { chamadasPendentes, erro, itemParaEdição } = storeToRefs(parlamentaresStore);
-const avatar = ref();
+const avatar = ref({});
 
 async function onSubmit(values) {
   values.upload_foto = avatar.value ? avatar.value : itemParaEdição.value.foto;
