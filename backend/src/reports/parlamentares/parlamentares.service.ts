@@ -20,43 +20,60 @@ export class ParlamentaresService implements ReportableService {
     ) {}
 
     async create(dto: CreateRelParlamentaresDto): Promise<ParlamentaresRelatorioDto> {
-        let parlamentares = await this.parlamentarService.findAll(undefined);
-
-        parlamentares = parlamentares.filter((p) => p.cargo != null);
-
-        if (dto.cargo != undefined) {
-            parlamentares = parlamentares.filter((p) => {
-                p.cargo == dto.cargo;
-            });
-        }
-
-        if (dto.partido_id != undefined) {
-            parlamentares = parlamentares.filter((p) => {
-                p.partido!.id == dto.partido_id;
-            });
-        }
+        const parlamentares = await this.prisma.parlamentar.findMany({
+            where: {
+                removido_em: null,
+                mandatos: {
+                    some: {
+                        removido_em: null,
+                        partido_atual_id: dto.partido_id,
+                        cargo: dto.cargo,
+                    },
+                },
+            },
+            select: {
+                id: true,
+                nascimento: true,
+                nome: true,
+                nome_popular: true,
+                mandatos: {
+                    select: {
+                        id: true,
+                        cargo: true,
+                        endereco: true,
+                        gabinete: true,
+                        telefone: true,
+                        email: true,
+                        suplencia: true,
+                        uf: true,
+                        partido_atual: {
+                            select: {
+                                sigla: true,
+                            },
+                        },
+                    },
+                },
+            },
+        });
 
         const parlamentaresOut: RelParlamentaresDto[] = [];
-
         for (const parlamentar of parlamentares) {
-            const row = await this.parlamentarService.findOne(parlamentar.id, undefined);
-
-            if (!row.mandato_atual) continue;
-
-            parlamentaresOut.push({
-                id: row.id,
-                nome_civil: row.nome,
-                nome_parlamentar: row.nome_popular,
-                partido_sigla: row.mandato_atual!.partido_atual.sigla,
-                cargo: row.mandato_atual.cargo ? row.mandato_atual.cargo : null,
-                uf: row.mandato_atual.uf,
-                titular_suplente: row.mandato_atual.suplencia ? 'S' : 'T',
-                endereco: row.mandato_atual.endereco ? row.mandato_atual.endereco : null,
-                gabinete: row.mandato_atual.gabinete ? row.mandato_atual.gabinete : null,
-                telefone: row.mandato_atual.telefone ? row.mandato_atual.telefone : null,
-                nascimento: row.nascimento ? row.nascimento : null,
-                email: row.mandato_atual.email ? row.mandato_atual.email : null,
-            });
+            for (const mandato of parlamentar.mandatos) {
+                parlamentaresOut.push({
+                    id: parlamentar.id,
+                    nome_civil: parlamentar.nome,
+                    nome_parlamentar: parlamentar.nome_popular,
+                    partido_sigla: mandato.partido_atual.sigla,
+                    cargo: mandato.cargo,
+                    uf: mandato.uf,
+                    titular_suplente: mandato.suplencia ? 'S' : 'T',
+                    endereco: mandato.endereco,
+                    gabinete: mandato.gabinete,
+                    telefone: mandato.telefone,
+                    nascimento: parlamentar.nascimento ? Date2YMD.toString(parlamentar.nascimento) : null,
+                    email: mandato.email,
+                });
+            }
         }
         return {
             linhas: parlamentaresOut,
@@ -72,6 +89,20 @@ export class ParlamentaresService implements ReportableService {
             const json2csvParser = new Parser({
                 ...DefaultCsvOptions,
                 transforms: defaultTransform,
+                fields: [
+                    { value: 'id', label: 'ID do Parlamentar' },
+                    { value: 'nome_civil', label: 'Nome Civil' },
+                    { value: 'nome_parlamentar', label: 'Nome Parlamentar' },
+                    { value: 'partido_sigla', label: 'Sigla do Partido' },
+                    { value: 'cargo', label: 'Cargo' },
+                    { value: 'uf', label: 'UF' },
+                    { value: 'titular_suplente', label: 'Titular/Suplente/Efetivado' },
+                    { value: 'endereco', label: 'Endereço' },
+                    { value: 'gabinete', label: 'Gabinete' },
+                    { value: 'telefone', label: 'Telefone' },
+                    { value: 'nascimento', label: 'Nascimento' },
+                    { value: 'email', label: 'E-mail' },
+                ],
             });
             const linhas = json2csvParser.parse(
                 dados.linhas.map((r) => {
