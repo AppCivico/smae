@@ -40,6 +40,7 @@ export class ParlamentaresService implements ReportableService {
                 nome: true,
                 nome_popular: true,
                 mandatos: {
+                    where: { removido_em: null },
                     select: {
                         id: true,
                         cargo: true,
