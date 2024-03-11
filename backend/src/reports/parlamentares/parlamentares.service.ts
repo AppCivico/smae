@@ -20,6 +20,8 @@ export class ParlamentaresService implements ReportableService {
     ) {}
 
     async create(dto: CreateRelParlamentaresDto): Promise<ParlamentaresRelatorioDto> {
+        console.log(dto);
+        console.log('=================');
         if (dto.cargo === null) dto.cargo = undefined;
         if (dto.partido_id === null) dto.cargo = undefined;
         if (dto.eleicao_id === null) dto.eleicao_id = undefined;
