@@ -784,7 +784,7 @@ export const parlamentar = object({
     .min(new Date(1910, 0, 1))
     .label('Nascimento'),
   telefone: string()
-    .label('Telefone')
+    .label('Telefone Fixo')
     .nullable(),
   avatar: string(),
   assessores: array()
