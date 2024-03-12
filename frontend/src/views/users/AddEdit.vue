@@ -300,7 +300,6 @@ async function onSubmit(payload) {
         <div class="mb2" v-if="sistemaEscolhido.valueOf() === 'PDM'">
           <div class="label">
             Grupos de paineis da meta
-            {{ sistemaEscolhido.valueOf() }}
           </div>
           <template v-if="PaineisGrupos?.loading">
             <span class="spinner">Carregando</span>
