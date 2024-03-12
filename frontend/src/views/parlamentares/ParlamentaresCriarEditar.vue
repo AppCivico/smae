@@ -2,6 +2,7 @@
 import InputImageProfile from '@/components/InputImageProfile.vue';
 import ParlamentarExibirSuplentes from '@/components/parlamentares/ParlamentarExibirSuplentes.vue';
 import ParlamentaresExibirRepresentatividade from '@/components/parlamentares/ParlamentaresExibirRepresentatividade.vue';
+import { vMaska } from "maska"
 import { parlamentar as schema } from '@/consts/formSchemas';
 import { useAlertStore } from '@/stores/alert.store';
 import { useAuthStore } from '@/stores/auth.store';
@@ -188,16 +189,19 @@ iniciar();
           v-if="authStore.temPermissãoPara('SMAE.acesso_telefone')"
           class="flex f1 mb1 small-input"
         >
-          <div class="f1">
+          <div class="f1 tipinfo">
             <LabelFromYup
               name="telefone"
               :schema="schema"
             />
+            <div>LGPD - Evite cadastrar dados pessoais</div>
             <Field
               name="telefone"
               type="text"
               class="inputtext light mb1"
-              maxlength="11"
+              maxlength="15"
+              v-maska
+              data-maska="(##) #####-####'"
             />
             <ErrorMessage
               class="error-msg mb1"
@@ -517,6 +521,11 @@ iniciar();
   & > :nth-child(2) {
     justify-self: end;
   }
+}
+
+.tipinfo > div {
+  max-width: 100%;
+  left: 200px;
 }
 
 .small-input{
