@@ -346,13 +346,10 @@
 
     <ParlamentaresExibirRepresentatividade />
   </div>
-
-  <ParlamentarExibirSuplentes />
 </template>
 
 <script setup>
 import ParlamentaresExibirRepresentatividade from '@/components/parlamentares/ParlamentaresExibirRepresentatividade.vue';
-import ParlamentarExibirSuplentes from '@/components/parlamentares/ParlamentarExibirSuplentes.vue';
 import { useAuthStore } from '@/stores/auth.store';
 import { useParlamentaresStore } from '@/stores/parlamentares.store';
 import { computed, onMounted, ref } from 'vue';
