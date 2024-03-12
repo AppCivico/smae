@@ -68,9 +68,9 @@ const {
 const regiõesFiltradas = computed(() => {
   switch (values.municipio_tipo) {
     case 'Capital':
-      return regiõesPorNível.value[3];
+      return regiõesPorNível.value[3].slice().sort((a, b) => a.descricao.localeCompare(b.descricao));
     case 'Interior':
-      return regiõesPorNível.value[1];
+      return regiõesPorNível.value[1].slice().sort((a, b) => a.descricao.localeCompare(b.descricao));
     default:
       return [];
   }
@@ -378,8 +378,8 @@ watch(representatividadeParaEdição, (novoValor) => {
           class="btn big"
           :disabled="isSubmitting || Object.keys(errors)?.length"
           :title="Object.keys(errors)?.length
-  ? `Erros de preenchimento: ${Object.keys(errors)?.length}`
-  : null"
+            ? `Erros de preenchimento: ${Object.keys(errors)?.length}`
+            : null"
         >
           Salvar
         </button>
