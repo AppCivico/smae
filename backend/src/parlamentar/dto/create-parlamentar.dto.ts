@@ -8,17 +8,19 @@ import {
     ParlamentarUF,
 } from '@prisma/client';
 import { Transform, TransformFnParams, Type } from 'class-transformer';
-import { IsBoolean, IsEnum, IsNumber, IsOptional, IsString, MaxLength, ValidateIf } from 'class-validator';
+import { IsBoolean, IsEnum, IsNumber, IsOptional, IsString, MaxLength, MinLength, ValidateIf } from 'class-validator';
 import { IsOnlyDate } from 'src/common/decorators/IsDateOnly';
 
 export class CreateParlamentarDto {
     @IsString({ message: '$property| nome: Precisa ser alfanumérico' })
     @MaxLength(250, { message: '$property| nome: Máximo 250 caracteres' })
+    @MinLength(1, { message: '$property| nome: Mínimo 1 caractere' })
     nome: string;
 
     @IsString({ message: '$property| Nome popular: Precisa ser alfanumérico' })
     @MaxLength(250, { message: '$property| Nome popular: Máximo 250 caracteres' })
-    nome_popular?: string;
+    @MinLength(1, { message: '$property| nome: Mínimo 1 caractere' })
+    nome_popular: string;
 
     /**
      * @example YYYY-MM-DD

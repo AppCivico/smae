@@ -4260,7 +4260,7 @@ model Parlamentar {
     id Int @id @default(autoincrement())
 
     nome         String
-    nome_popular String?
+    nome_popular String
     nascimento   DateTime? @db.Date()
     telefone     String?
     email        String?
