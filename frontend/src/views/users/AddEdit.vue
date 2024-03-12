@@ -11,6 +11,7 @@ import { storeToRefs } from 'pinia';
 import { Field, Form } from 'vee-validate';
 import { ref } from 'vue';
 import { useRoute } from 'vue-router';
+import { useAuthStore } from '@/stores/auth.store';
 
 const usersStore = useUsersStore();
 usersStore.clear();
@@ -25,6 +26,9 @@ organsStore.getAll();
 const PaineisGruposStore = usePaineisGruposStore();
 const { PaineisGrupos } = storeToRefs(PaineisGruposStore);
 PaineisGruposStore.getAll();
+
+const authStore = useAuthStore();
+const { sistemaEscolhido } = storeToRefs(authStore);
 
 let title = 'Cadastro de Usuário';
 const personalizarNomeParaExibição = ref(false);
@@ -293,9 +297,10 @@ async function onSubmit(payload) {
           </template>
         </div>
 
-        <div class="mb2">
+        <div class="mb2" v-if="sistemaEscolhido.valueOf() === 'PDM'">
           <div class="label">
             Grupos de paineis da meta
+            {{ sistemaEscolhido.valueOf() }}
           </div>
           <template v-if="PaineisGrupos?.loading">
             <span class="spinner">Carregando</span>
