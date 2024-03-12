@@ -1,6 +1,5 @@
 <script setup>
 import InputImageProfile from '@/components/InputImageProfile.vue';
-import ParlamentarExibirSuplentes from '@/components/parlamentares/ParlamentarExibirSuplentes.vue';
 import ParlamentaresExibirRepresentatividade from '@/components/parlamentares/ParlamentaresExibirRepresentatividade.vue';
 import { vMaska } from "maska"
 import { parlamentar as schema } from '@/consts/formSchemas';
@@ -467,11 +466,6 @@ iniciar();
         ><use xlink:href="#i_+" /></svg>Registrar novo mandato
       </router-link>
     </div>
-
-    <ParlamentarExibirSuplentes
-      v-if="props.parlamentarId"
-      :exibir-edição="true"
-    />
 
     <ParlamentaresExibirRepresentatividade
       v-if="props.parlamentarId"
