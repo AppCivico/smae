@@ -4,6 +4,7 @@ import cargosDeParlamentar from '@/consts/cargosDeParlamentar';
 import estadosDoBrasil from '@/consts/estadosDoBrasil';
 import { mandato as schema } from '@/consts/formSchemas';
 import níveisDeSuplência from '@/consts/niveisDeSuplencia';
+import { vMaska } from "maska"
 import { useAlertStore } from '@/stores/alert.store';
 import { useParlamentaresStore } from '@/stores/parlamentares.store';
 import { usePartidosStore } from '@/stores/partidos.store';
@@ -446,6 +447,9 @@ watch(mandatoParaEdição, (novoValor) => {
             name="telefone"
             type="text"
             class="inputtext light mb1"
+            maxlength="15"
+            v-maska
+            data-maska="(##) #####-####'"
           />
           <ErrorMessage
             class="error-msg"
