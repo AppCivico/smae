@@ -4297,6 +4297,9 @@ enum ParlamentarCargo {
 enum ParlamentarSuplente {
     PrimeiroSuplente
     SegundoSuplente
+    TerceiroSuplente
+    QuartoSuplente
+    QuintoSuplente
 }
 
 enum ParlamentarUF {
