@@ -782,6 +782,7 @@ export const parlamentar = object({
     .max(250),
   nascimento: string()
     .label('Nascimento')
+    .matches(regEx['year/month/day'], 'Formato inválido')
     .nullable(),
   telefone: string()
     .label('Telefone')
