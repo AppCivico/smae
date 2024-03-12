@@ -1,5 +1,5 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post, Query } from '@nestjs/common';
-import { ApiBearerAuth, ApiNoContentResponse, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiNoContentResponse, ApiOperation, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
@@ -190,6 +190,11 @@ export class ParlamentarController {
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
     @Roles('CadastroParlamentar.inserir')
+    @ApiOperation({
+        deprecated: true,
+        summary: 'Endpoint desativado por regra de negócio, por agora.',
+        description: 'Não salva nenhum retorno no banco.',
+    })
     async createSuplente(
         @Param() params: FindOneParams,
         @Body() dto: CreateMandatoSuplenteDto,
@@ -204,6 +209,11 @@ export class ParlamentarController {
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.ACCEPTED)
     @Roles('CadastroParlamentar.remover')
+    @ApiOperation({
+        deprecated: true,
+        summary: 'Endpoint desativado por regra de negócio, por agora.',
+        description: 'Não salva nenhum retorno no banco.',
+    })
     async removeSuplente(@Param() params: FindTwoParams, @CurrentUser() user: PessoaFromJwt) {
         await this.parlamentarService.removeSuplente(+params.id, +params.id2, user);
         return '';
