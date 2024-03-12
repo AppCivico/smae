@@ -7,4 +7,16 @@ export default {
     valor: 'SegundoSuplente',
     nome: 'Segundo Suplente',
   },
+  TerceiroSuplente: {
+    valor: 'TerceiroSuplente',
+    nome: 'Terceiro Suplente',
+  },
+  QuartoSuplente: {
+    valor: 'QuartoSuplente',
+    nome: 'Quarto Suplente',
+  },
+  QuintoSuplente: {
+    valor: 'QuintoSuplente',
+    nome: 'Quinto Suplente',
+  },
 };
