@@ -73,11 +73,13 @@ export const useOrgansStore = defineStore({
             .filter((u) => (f.textualSearch
               ? u.descricao.toLowerCase().includes(f.textualSearch.toLowerCase())
               || u.tipo_orgao.descricao.toLowerCase().includes(f.textualSearch.toLowerCase())
+              || u.sigla.toLowerCase().includes(f.textualSearch.toLowerCase())
               : 1))
           : this.organs;
       } catch (error) {
         this.tempOrgans = { error };
       }
+
     },
     async getAllTypes() {
       this.organTypes = { loading: true };
