@@ -774,9 +774,11 @@ export const bancada = object({
 export const parlamentar = object({
   nome_popular: string()
     .label('Nome')
+    .min(1)
     .max(250),
   nome: string()
     .label('Nome Civil')
+    .min(1)
     .max(250),
   nascimento: string()
     .label('Nascimento')
