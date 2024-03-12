@@ -780,10 +780,9 @@ export const parlamentar = object({
     .label('Nome Civil')
     .min(1)
     .max(250),
-  nascimento: string()
-    .label('Nascimento')
-    .matches(regEx['year/month/day'], 'Formato inválido')
-    .nullable(),
+  nascimento: date()
+    .min(new Date(1910, 0, 1))
+    .label('Nascimento'),
   telefone: string()
     .label('Telefone')
     .nullable(),
