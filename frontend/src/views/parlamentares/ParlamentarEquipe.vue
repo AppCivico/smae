@@ -1,6 +1,7 @@
 <script setup>
 import SmallModal from '@/components/SmallModal.vue';
 import { pessoaNaEquipeDeParlamentar as schema } from '@/consts/formSchemas';
+import { vMaska } from "maska"
 import tiposNaEquipe from '@/consts/tiposNaEquipeDeParlamentar';
 import { useAlertStore } from '@/stores/alert.store';
 import { useParlamentaresStore } from '@/stores/parlamentares.store';
@@ -242,7 +243,9 @@ watch(pessoaParaEdição, (novoValor) => {
               error: errors.telefone,
               loading: chamadasPendentes.emFoco,
             }"
-            maxlength="11"
+            maxlength="15"
+            v-maska
+            data-maska="(##) #####-####'"
           />
           <ErrorMessage
             class="error-msg"
