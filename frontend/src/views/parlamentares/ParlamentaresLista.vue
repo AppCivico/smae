@@ -76,7 +76,7 @@ parlamentarStore.buscarTudo();
             :to="{ name: 'parlamentarDetalhe', params: { parlamentarId: item.id } }"
             class="tprimary"
           >
-            {{ item.nome }}
+            {{ item.nome_popular }}
           </router-link>
         </td>
         <td> <span v-if="item.partido">{{ item.partido.sigla }}</span></td>
