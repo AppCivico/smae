@@ -7,7 +7,7 @@ import arrayToValueAndLabel from '@/helpers/arrayToValueAndLabel';
 import { useAuthStore } from '@/stores/auth.store';
 import { useProjetosStore } from '@/stores/projetos.store.ts';
 import { storeToRefs } from 'pinia';
-import { computed, ref } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
 const authStore = useAuthStore();
@@ -43,24 +43,9 @@ const props = defineProps({
   },
 });
 
-const parâmetros = ref({});
 const listaFiltradaPorTermoDeBusca = ref([]);
 
-const status = props.status.map((x) => statusesPorChaveCaixaBaixa[x]?.valor);
-
-if (status.length) {
-  parâmetros.value.status = status;
-}
-
-if (props.apenasPrioritários) {
-  parâmetros.value.eh_prioritario = true;
-  parâmetros.value.arquivado = false;
-} else if (props.apenasArquivados) {
-  parâmetros.value.arquivado = true;
-}
-
 projetosStore.$reset();
-projetosStore.buscarTudo(parâmetros.value);
 
 const listasAgrupadas = computed(() => listaFiltradaPorTermoDeBusca.value?.reduce((acc, cur) => {
   if (!acc[cur.portfolio.id]) {
@@ -80,6 +65,22 @@ const listasAgrupadas = computed(() => listaFiltradaPorTermoDeBusca.value?.reduc
 
   return acc;
 }, {}) || {});
+
+watch(props, (novoValor) => {
+  const valores = {};
+
+  if (novoValor.status.length) {
+    valores.status = novoValor.status.map((x) => statusesPorChaveCaixaBaixa[x]?.valor);
+  }
+  if (novoValor.apenasPrioritários) {
+    valores.eh_prioritario = true;
+    valores.arquivado = false;
+  } else if (novoValor.apenasArquivados) {
+    valores.arquivado = true;
+  }
+
+  projetosStore.buscarTudo(valores);
+}, { immediate: true });
 </script>
 <template>
   <div class="flex spacebetween center mb2 g2">
