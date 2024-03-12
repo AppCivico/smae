@@ -189,7 +189,7 @@ function formatarNumero(numero) {
           >
             <td>{{ item.id }}</td>
             <td>{{ item.municipio_tipo }}</td>
-            <td>{{ item.regiao.codigo }}</td>
+            <td>{{ item.regiao.descricao }}</td>
             <td>{{ formatarNumero(item.numero_votos) }}</td>
             <td>{{ formatarNumero(item.regiao.comparecimento.valor) }}</td>
             <td>{{ item.pct_participacao }}%</td>
