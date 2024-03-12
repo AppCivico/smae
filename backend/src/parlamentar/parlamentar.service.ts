@@ -673,84 +673,87 @@ export class ParlamentarService {
         dto: CreateMandatoSuplenteDto,
         user: PessoaFromJwt
     ): Promise<RecordWithId> {
-        const mandatoPrincipal = await this.prisma.parlamentarMandato.findFirst({
-            where: {
-                id: dto.mandato_id,
-                parlamentar_id: parlamentarId,
-                removido_em: null,
-                mandato_principal_id: null,
-            },
-            select: {
-                id: true,
-                cargo: true,
-                eleicao_id: true,
-                suplentes: {
-                    where: { removido_em: null },
-                    select: {
-                        suplencia: true,
-                    },
-                },
-            },
-        });
-        if (!mandatoPrincipal) throw new HttpException('mandato_id| Mandato principal inválido', 400);
+        return { id: 0 };
 
-        const parlamentarSuplente = await this.prisma.parlamentar.findFirst({
-            where: {
-                id: dto.parlamentar_suplente_id,
-                removido_em: null,
-            },
-            select: {
-                mandatos: {
-                    take: 1,
-                    where: {
-                        eleicao_id: mandatoPrincipal.eleicao_id,
-                        cargo: mandatoPrincipal.cargo,
-                        removido_em: null,
-                    },
-                },
-            },
-        });
+        // const mandatoPrincipal = await this.prisma.parlamentarMandato.findFirst({
+        //     where: {
+        //         id: dto.mandato_id,
+        //         parlamentar_id: parlamentarId,
+        //         removido_em: null,
+        //         mandato_principal_id: null,
+        //     },
+        //     select: {
+        //         id: true,
+        //         cargo: true,
+        //         eleicao_id: true,
+        //         suplentes: {
+        //             where: { removido_em: null },
+        //             select: {
+        //                 suplencia: true,
+        //             },
+        //         },
+        //     },
+        // });
+        // if (!mandatoPrincipal) throw new HttpException('mandato_id| Mandato principal inválido', 400);
 
-        if (!parlamentarSuplente)
-            throw new HttpException('parlamentar_suplente_id| Não foi encontrado parlamentar suplente', 400);
+        // const parlamentarSuplente = await this.prisma.parlamentar.findFirst({
+        //     where: {
+        //         id: dto.parlamentar_suplente_id,
+        //         removido_em: null,
+        //     },
+        //     select: {
+        //         mandatos: {
+        //             take: 1,
+        //             where: {
+        //                 eleicao_id: mandatoPrincipal.eleicao_id,
+        //                 cargo: mandatoPrincipal.cargo,
+        //                 removido_em: null,
+        //             },
+        //         },
+        //     },
+        // });
 
-        if (parlamentarSuplente && parlamentarSuplente.mandatos.length == 0)
-            throw new HttpException('parlamentar_suplente_id| Não foi encontrado mandato para este parlamentar', 400);
+        // if (!parlamentarSuplente)
+        //     throw new HttpException('parlamentar_suplente_id| Não foi encontrado parlamentar suplente', 400);
 
-        if (
-            mandatoPrincipal.suplentes.length > 0 &&
-            mandatoPrincipal.suplentes.filter((e) => e.suplencia == dto.suplencia).length > 0
-        )
-            throw new HttpException('suplencia| Parlamentar já possui um outro suplente deste nivel', 400);
+        // if (parlamentarSuplente && parlamentarSuplente.mandatos.length == 0)
+        //     throw new HttpException('parlamentar_suplente_id| Não foi encontrado mandato para este parlamentar', 400);
 
-        const mandatoSuplente = parlamentarSuplente.mandatos[0];
+        // if (
+        //     mandatoPrincipal.suplentes.length > 0 &&
+        //     mandatoPrincipal.suplentes.filter((e) => e.suplencia == dto.suplencia).length > 0
+        // )
+        //     throw new HttpException('suplencia| Parlamentar já possui um outro suplente deste nivel', 400);
 
-        if (dto.mandato_id == mandatoSuplente.id)
-            throw new HttpException('Não é permitido suplente de si próprio', 400);
+        // const mandatoSuplente = parlamentarSuplente.mandatos[0];
 
-        if (mandatoSuplente.mandato_principal_id && mandatoSuplente.mandato_principal_id != dto.mandato_id)
-            throw new HttpException(
-                'mandato_suplente_id| Mandato suplente já é suplente de outro mandato distinto',
-                400
-            );
+        // if (dto.mandato_id == mandatoSuplente.id)
+        //     throw new HttpException('Não é permitido suplente de si próprio', 400);
 
-        if (!mandatoSuplente.suplencia && !dto.suplencia)
-            throw new HttpException('suplencia| Grau de suplente deve ser informado', 400);
+        // if (mandatoSuplente.mandato_principal_id && mandatoSuplente.mandato_principal_id != dto.mandato_id)
+        //     throw new HttpException(
+        //         'mandato_suplente_id| Mandato suplente já é suplente de outro mandato distinto',
+        //         400
+        //     );
 
-        await this.prisma.parlamentarMandato.updateMany({
-            where: {
-                id: mandatoSuplente.id,
-            },
-            data: {
-                suplencia: dto.suplencia,
-                mandato_principal_id: dto.mandato_id,
-            },
-        });
+        // if (!mandatoSuplente.suplencia && !dto.suplencia)
+        //     throw new HttpException('suplencia| Grau de suplente deve ser informado', 400);
 
-        return { id: mandatoSuplente.id };
+        // await this.prisma.parlamentarMandato.updateMany({
+        //     where: {
+        //         id: mandatoSuplente.id,
+        //     },
+        //     data: {
+        //         suplencia: dto.suplencia,
+        //         mandato_principal_id: dto.mandato_id,
+        //     },
+        // });
+
+        // return { id: mandatoSuplente.id };
     }
 
     async removeSuplente(parlamentarTitularId: number, suplenteId: number, user: PessoaFromJwt) {
+        return;
         return await this.prisma.parlamentarMandato.updateMany({
             where: {
                 parlamentar_id: suplenteId,
