@@ -841,6 +841,18 @@ export const suplentes = object({
     .required(),
 });
 
+export const tipoDeTransferencia = object({
+  nome: string()
+    .label('Nome')
+    .required(),
+  categoria: string()
+    .label('Tipo')
+    .required(),
+  esfera: string()
+    .label('Esfera')
+    .required(),
+})
+
 export const processo = object()
   .shape({
     comentarios: string()
