@@ -22,3 +22,27 @@ AFTER INSERT OR UPDATE
 ON Perfil_Privilegio
 FOR EACH ROW
 EXECUTE FUNCTION update_modulos_sistemas();
+
+CREATE TRIGGER privilegio_trigger_update
+AFTER UPDATE
+ON privilegio
+FOR EACH ROW
+WHEN (
+    (OLD.modulo_id IS DISTINCT FROM NEW.modulo_id)
+)
+EXECUTE FUNCTION update_modulos_sistemas();
+
+CREATE TRIGGER privilegio_modulo_trigger_update
+AFTER UPDATE
+ON privilegio_modulo
+FOR EACH ROW
+WHEN (
+    (OLD.modulo_sistema IS DISTINCT FROM NEW.modulo_sistema)
+)
+EXECUTE FUNCTION update_modulos_sistemas();
+
+CREATE TRIGGER privilegio_modulo_trigger_insert
+AFTER INSERT
+ON privilegio_modulo
+FOR EACH ROW
+EXECUTE FUNCTION update_modulos_sistemas();
