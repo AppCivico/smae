@@ -5,11 +5,11 @@ import { useAlertStore } from '@/stores/alert.store';
 import { useOrcamentosStore } from '@/stores/orcamentos.store';
 import { storeToRefs } from 'pinia';
 import {
-  computed, ref, watch, inject,
+  computed, inject, ref, watch,
 } from 'vue';
+import FiltroPorOrgaoEUnidade from './FiltroPorOrgaoEUnidade.vue';
 import agrupaFilhos from './helpers/agrupaFilhos';
 import somaItems from './helpers/somaItems';
-import FiltroPorOrgaoEUnidade from './FiltroPorOrgaoEUnidade.vue';
 
 const gblLimiteDeSeleçãoSimultânea = inject('gblLimiteDeSeleçãoSimultânea');
 
