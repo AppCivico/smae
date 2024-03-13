@@ -1,12 +1,10 @@
 <script setup>
+import EnvelopeDeAbas from '@/components/EnvelopeDeAbas.vue';
 import { default as SimpleOrcamentoCusteio } from '@/components/orcamento/SimpleOrcamentoCusteio.vue';
 import { default as SimpleOrcamentoPlanejado } from '@/components/orcamento/SimpleOrcamentoPlanejado.vue';
 import { default as SimpleOrcamentoRealizado } from '@/components/orcamento/SimpleOrcamentoRealizado.vue';
-import EnvelopeDeAbas from '@/components/EnvelopeDeAbas.vue';
 import { storeToRefs } from 'pinia';
-import {
-  computed, onMounted, onUpdated, ref,
-} from 'vue';
+import { computed, ref } from 'vue';
 import { useRoute } from 'vue-router';
 
 import { useAlertStore } from '@/stores/alert.store';
@@ -48,8 +46,8 @@ OrcamentosStore.clear();
 
 const orçamentosEmOrdemDecrescente = computed(() => (Array.isArray(activePdm.value.orcamento_config)
   ? activePdm.value.orcamento_config
-    // adicionando uma chave para ser usada como Object.key
-    // porque números causam sua reordenação
+  // adicionando uma chave para ser usada como Object.key
+  // porque números causam sua reordenação
     .map((x) => ({ ...x, chave: `_${x.ano_referencia}` }))
     .sort((a, b) => b.ano_referencia - a.ano_referencia)
   : []));
