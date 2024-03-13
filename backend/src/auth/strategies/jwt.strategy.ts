@@ -1,12 +1,13 @@
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
+import { ModuloSistema } from '@prisma/client';
+import { Request } from 'express';
 import { ExtractJwt, Strategy } from 'passport-jwt';
+import { extractIpAddress } from '../../common/decorators/current-ip';
 import { JwtPessoaPayload } from '../models/JwtPessoaPayload';
 import { PessoaFromJwt } from '../models/PessoaFromJwt';
-import { AuthService } from './../auth.service';
-import { Request } from 'express';
-import { ModuloSistema } from '@prisma/client';
 import { ValidateModuloSistema } from '../models/Privilegios.dto';
+import { AuthService } from './../auth.service';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
@@ -34,6 +35,8 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
             }
         }
 
-        return await this.authService.pessoaJwtFromSessionId(payload.sid, validSistemas);
+        const user = await this.authService.pessoaJwtFromSessionId(payload.sid, validSistemas);
+        user.ip = extractIpAddress(req);
+        return user;
     }
 }

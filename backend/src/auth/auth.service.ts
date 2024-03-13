@@ -90,6 +90,7 @@ export class AuthService {
             orgao_id: pessoa.pessoa_fisica?.orgao_id,
             flags: await this.featureFlagService.featureFlag(),
             modulo_sistema,
+            ip: null
         });
     }
 
@@ -113,6 +114,7 @@ export class AuthService {
             orgao_id: pessoa.pessoa_fisica?.orgao_id,
             flags: await this.featureFlagService.featureFlag(),
             modulo_sistema,
+            ip: null
         });
     }
 
