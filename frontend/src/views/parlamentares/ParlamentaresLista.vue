@@ -37,7 +37,7 @@ parlamentarStore.buscarTudo();
     <h1>{{ route?.meta?.título || 'Lista de Parlamentares' }}</h1>
     <hr class="ml2 f1">
     <router-link
-      v-if="authStore.temPermissãoPara('SMAE.acesso_telefone')"
+      v-if="authStore.temPermissãoPara('CadastroParlamentar.inserir')"
       :to="{name: 'parlamentaresCriar'}"
       class="btn big ml1"
     >
@@ -59,11 +59,11 @@ parlamentarStore.buscarTudo();
     <col>
     <col>
     <col
-      v-if="authStore.temPermissãoPara('SMAE.acesso_telefone')"
+      v-if="authStore.temPermissãoPara('CadastroParlamentar.remover')"
       class="col--botão-de-ação"
     >
     <col
-      v-if="authStore.temPermissãoPara('SMAE.acesso_telefone')"
+      v-if="authStore.temPermissãoPara('CadastroParlamentar.editar')"
       class="col--botão-de-ação"
     >
     <thead>
@@ -77,8 +77,8 @@ parlamentarStore.buscarTudo();
         <th>
           Cargo
         </th>
-        <th v-if="authStore.temPermissãoPara('SMAE.acesso_telefone')" />
-        <th v-if="authStore.temPermissãoPara('SMAE.acesso_telefone')" />
+        <th v-if="authStore.temPermissãoPara('CadastroParlamentar.remover)" />
+        <th v-if="authStore.temPermissãoPara('CadastroParlamentar.editar')" />
       </tr>
     </thead>
     <tbody>
@@ -108,7 +108,7 @@ parlamentarStore.buscarTudo();
         <td>
           {{ cargosDeParlamentar[item.cargo]?.nome || item.cargo }}
         </td>
-        <td v-if="authStore.temPermissãoPara('SMAE.acesso_telefone')">
+        <td v-if="authStore.temPermissãoPara('CadastroParlamentar.remover')">
           <button
             class="like-a__text"
             arial-label="excluir"
@@ -121,7 +121,7 @@ parlamentarStore.buscarTudo();
             ><use xlink:href="#i_remove" /></svg>
           </button>
         </td>
-        <td v-if="authStore.temPermissãoPara('SMAE.acesso_telefone')">
+        <td v-if="authStore.temPermissãoPara('CadastroParlamentar.editar')">
           <router-link
             :to="{ name: 'parlamentaresEditar', params: { parlamentarId: item.id } }"
             class="tprimary"
