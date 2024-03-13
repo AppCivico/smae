@@ -201,14 +201,14 @@ export class PessoaResponsabilidadesMetaService {
 
         // Meta Responsavel + Responsável CP
         {
-            const metaResponsavelRows = await prismaTx.metaResponsavel.findMany({
+            const origMetaResponsavelRows = await prismaTx.metaResponsavel.findMany({
                 where: {
                     meta_id: metasInIds,
                     pessoa_id: origemId,
                 },
             });
-            const mrInput: Prisma.MetaResponsavelCreateManyInput[] = [];
-            for (const mr of metaResponsavelRows) {
+
+            for (const mr of origMetaResponsavelRows) {
                 if (mr.coordenador_responsavel_cp && !destinoEhCoordenadorCp) {
                     logger.warn(
                         `Desativando cópia como metaResponsavel de ${origemId} para ${destinoId}, meta ${mr.meta_id}`
@@ -216,18 +216,28 @@ export class PessoaResponsabilidadesMetaService {
 
                     mr.coordenador_responsavel_cp = false;
                 }
-
                 logger.verbose(
-                    `Copiando metaResponsavel de ${origemId} para ${destinoId}, meta ${mr.meta_id}, coordenador_responsavel_cp=${mr.coordenador_responsavel_cp}`
+                    `Copiando/atualizando metaResponsavel de ${origemId} para ${destinoId}, meta ${mr.meta_id}, coordenador_responsavel_cp=${mr.coordenador_responsavel_cp}`
                 );
-                mrInput.push({
-                    coordenador_responsavel_cp: mr.coordenador_responsavel_cp,
-                    orgao_id: mr.orgao_id,
-                    pessoa_id: destinoId,
-                    meta_id: mr.meta_id,
+
+                await prismaTx.metaResponsavel.upsert({
+                    where: {
+                        pessoa_id_meta_id: {
+                            pessoa_id: destinoId,
+                            meta_id: mr.meta_id,
+                        },
+                    },
+                    create: {
+                        coordenador_responsavel_cp: mr.coordenador_responsavel_cp,
+                        orgao_id: mr.orgao_id,
+                        pessoa_id: destinoId,
+                        meta_id: mr.meta_id,
+                    },
+                    update: {
+                        coordenador_responsavel_cp: mr.coordenador_responsavel_cp,
+                    },
                 });
             }
-            await prismaTx.metaResponsavel.createMany({ data: mrInput });
         }
 
         const iniciativasAtividades = await prismaTx.iniciativa.findMany({
@@ -256,7 +266,7 @@ export class PessoaResponsabilidadesMetaService {
                     pessoa_id: origemId,
                 },
             });
-            const mrInput: Prisma.IniciativaResponsavelCreateManyInput[] = [];
+
             for (const mr of iniciativaResponsavelRows) {
                 if (mr.coordenador_responsavel_cp && !destinoEhCoordenadorCp) {
                     logger.warn(
@@ -267,16 +277,27 @@ export class PessoaResponsabilidadesMetaService {
                 }
 
                 logger.verbose(
-                    `Copiando atividadeResponsavel de ${origemId} para ${destinoId}, atividade ${mr.iniciativa_id}, coordenador_responsavel_cp=${mr.coordenador_responsavel_cp}`
+                    `Copiando/Atualizando atividadeResponsavel de ${origemId} para ${destinoId}, atividade ${mr.iniciativa_id}, coordenador_responsavel_cp=${mr.coordenador_responsavel_cp}`
                 );
-                mrInput.push({
-                    coordenador_responsavel_cp: mr.coordenador_responsavel_cp,
-                    orgao_id: mr.orgao_id,
-                    pessoa_id: destinoId,
-                    iniciativa_id: mr.iniciativa_id,
+
+                await prismaTx.iniciativaResponsavel.upsert({
+                    where: {
+                        pessoa_id_iniciativa_id: {
+                            pessoa_id: destinoId,
+                            iniciativa_id: mr.iniciativa_id,
+                        },
+                    },
+                    create: {
+                        coordenador_responsavel_cp: mr.coordenador_responsavel_cp,
+                        orgao_id: mr.orgao_id,
+                        pessoa_id: destinoId,
+                        iniciativa_id: mr.iniciativa_id,
+                    },
+                    update: {
+                        coordenador_responsavel_cp: mr.coordenador_responsavel_cp,
+                    },
                 });
             }
-            await prismaTx.iniciativaResponsavel.createMany({ data: mrInput });
         }
 
         // Atividade Responsavel + Responsável CP
@@ -287,7 +308,7 @@ export class PessoaResponsabilidadesMetaService {
                     pessoa_id: origemId,
                 },
             });
-            const mrInput: Prisma.AtividadeResponsavelCreateManyInput[] = [];
+
             for (const mr of atividadeResponsavelRows) {
                 if (mr.coordenador_responsavel_cp && !destinoEhCoordenadorCp) {
                     logger.warn(
@@ -300,18 +321,50 @@ export class PessoaResponsabilidadesMetaService {
                 logger.verbose(
                     `Copiando atividadeResponsavel de ${origemId} para ${destinoId}, atividade ${mr.atividade_id}, coordenador_responsavel_cp=${mr.coordenador_responsavel_cp}`
                 );
-                mrInput.push({
-                    coordenador_responsavel_cp: mr.coordenador_responsavel_cp,
-                    orgao_id: mr.orgao_id,
-                    pessoa_id: destinoId,
-                    atividade_id: mr.atividade_id,
+
+                await prismaTx.atividadeResponsavel.upsert({
+                    where: {
+                        pessoa_id_atividade_id: {
+                            pessoa_id: destinoId,
+                            atividade_id: mr.atividade_id,
+                        },
+                    },
+                    create: {
+                        coordenador_responsavel_cp: mr.coordenador_responsavel_cp,
+                        orgao_id: mr.orgao_id,
+                        pessoa_id: destinoId,
+                        atividade_id: mr.atividade_id,
+                    },
+                    update: {
+                        coordenador_responsavel_cp: mr.coordenador_responsavel_cp,
+                    },
                 });
             }
-            await prismaTx.atividadeResponsavel.createMany({ data: mrInput });
         }
 
         // Variavel do indicador da Meta/Iniciativa/Atividade
         {
+            const destinoRows = await prismaTx.variavelResponsavel.findMany({
+                where: {
+                    variavel: {
+                        indicador_variavel: {
+                            some: {
+                                desativado_em: null,
+                                indicador_origem: null,
+                                indicador: {
+                                    OR: [
+                                        { meta_id: metasInIds },
+                                        { iniciativa_id: iniInIds },
+                                        { atividade_id: atvInIds },
+                                    ],
+                                },
+                            },
+                        },
+                    },
+                    pessoa_id: destinoId,
+                },
+            });
+
             const variavelResponsavelRows = await prismaTx.variavelResponsavel.findMany({
                 where: {
                     variavel: {
@@ -355,6 +408,15 @@ export class PessoaResponsabilidadesMetaService {
             });
             const mrInput: Prisma.VariavelResponsavelCreateManyInput[] = [];
             for (const mr of variavelResponsavelRows) {
+                const varExists = destinoRows.find((r) => r.variavel_id == mr.variavel_id);
+
+                if (varExists) {
+                    logger.verbose(
+                        `variavelResponsavel destino ${destinoId} já tem variavel ${JSON.stringify(mr.variavel)}`
+                    );
+                    continue;
+                }
+
                 logger.verbose(
                     `Copiando variavelResponsavel de ${origemId} para ${destinoId}, variavel ${JSON.stringify(mr.variavel)}`
                 );
@@ -368,6 +430,19 @@ export class PessoaResponsabilidadesMetaService {
 
         // Cronograma da meta/iniciativa/atividade
         {
+            const destinoRows = await prismaTx.etapaResponsavel.findMany({
+                where: {
+                    pessoa_id: origemId,
+                    etapa: {
+                        cronograma: {
+                            removido_em: null,
+
+                            OR: [{ meta_id: metasInIds }, { iniciativa_id: iniInIds }, { atividade_id: atvInIds }],
+                        },
+                    },
+                },
+            });
+
             const variavelResponsavelRows = await prismaTx.etapaResponsavel.findMany({
                 where: {
                     pessoa_id: origemId,
@@ -395,8 +470,15 @@ export class PessoaResponsabilidadesMetaService {
             });
             const mrInput: Prisma.EtapaResponsavelCreateManyInput[] = [];
             for (const mr of variavelResponsavelRows) {
+                const varExists = destinoRows.find((r) => r.etapa_id == mr.etapa_id);
+
+                if (varExists) {
+                    logger.verbose(`etapaResponsavel destino ${destinoId} já tem etapa ${JSON.stringify(mr.etapa)}`);
+                    continue;
+                }
+
                 logger.verbose(
-                    `Copiando variavelResponsavel de ${origemId} para ${destinoId}, etapa ${JSON.stringify(mr.etapa)}`
+                    `Copiando etapaResponsavel de ${origemId} para ${destinoId}, etapa ${JSON.stringify(mr.etapa)}`
                 );
                 mrInput.push({
                     etapa_id: mr.etapa_id,
