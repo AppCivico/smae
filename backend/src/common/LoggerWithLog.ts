@@ -2,7 +2,7 @@ import { Logger } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { LogOpt } from '../auth/models/PessoaFromJwt';
 
-type LoggerWithLog = {
+export type LoggerWithLog = {
     getLogs: () => string[];
     debug: (message: string, ...args: any[]) => void;
     log: (message: string, ...args: any[]) => void;
@@ -12,7 +12,7 @@ type LoggerWithLog = {
     saveLogs: (prismaTx: Prisma.TransactionClient, logOpts: LogOpt) => Promise<void>;
 };
 
-export function loggerWithLog(methodName: string): LoggerWithLog {
+export function LoggerWithLog(methodName: string): LoggerWithLog {
     const logger = new Logger(`${methodName}`);
 
     const logs: string[] = [];
