@@ -288,8 +288,6 @@ export class PessoaService {
                 'O seu usuário não pode adicionar ou remover permissões de outros usuários que são administradores do sistema, ou adicionar a permissão de administrador para um usuário já existente.',
                 400
             );
-
-        console.log(codigos);
     }
 
     private verificarCPFObrigatorio(dto: CreatePessoaDto | UpdatePessoaDto) {
@@ -1268,8 +1266,6 @@ export class PessoaService {
             },
             { isolationLevel: 'Serializable' }
         );
-
-        console.log(origemPessoa, novaPessoa);
     }
 
     private async buscaPessoasTransferencia(dto: ExecutaTransferenciaResponsabilidades) {
