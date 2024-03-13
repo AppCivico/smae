@@ -3,6 +3,12 @@ import { ListaDePrivilegios } from '../../common/ListaDePrivilegios';
 import { PessoaFromJwtBase } from './PessoaFromJwtBase';
 import { ModuloSistema, Prisma } from '@prisma/client';
 
+export type LogOpt = {
+    pessoa_id?: number | null;
+    pessoa_sessao_id?: number | null;
+    ip?: string | null;
+};
+
 export class PessoaFromJwt extends PessoaFromJwtBase {
     // facilitando pra ter que não ter que usar um método estático aqui
     constructor(opts: PessoaFromJwtBase) {
@@ -85,5 +91,13 @@ export class PessoaFromJwt extends PessoaFromJwtBase {
                 `Apenas um smae-sistema pode enviado por ves para ${tipo} ${label}, pois esse sistema será marcado no registro.`
             );
         return this.modulo_sistema[0];
+    }
+
+    getLogData(): LogOpt {
+        return {
+            ip: this.ip,
+            pessoa_id: this.id,
+            pessoa_sessao_id: this.session_id,
+        };
     }
 }
