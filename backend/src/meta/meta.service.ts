@@ -378,7 +378,7 @@ export class MetaService {
                     const orgao = orgaos[responsavel.orgao.id];
                     if (!orgao) {
                         this.logger.error(
-                            `Faltando órgão ${responsavel.orgao.id} na meta ID ${dbMeta.id} - ${dbMeta.titulo}`
+                            `Faltando órgão ${responsavel.orgao.id} na meta ID ${dbMeta.id} - ${dbMeta.titulo}, participante ${responsavel.pessoa.id} não pode ser mais responsável`
                         );
                         continue;
                     }
