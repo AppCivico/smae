@@ -1,9 +1,12 @@
 <script setup>
+import LocalFilter from '@/components/LocalFilter.vue';
+import cargosDeParlamentar from '@/consts/cargosDeParlamentar';
 import { useAlertStore } from '@/stores/alert.store';
-import { storeToRefs } from 'pinia';
-import { useRoute } from 'vue-router';
-import { useParlamentaresStore } from '@/stores/parlamentares.store';
 import { useAuthStore } from '@/stores/auth.store';
+import { useParlamentaresStore } from '@/stores/parlamentares.store';
+import { storeToRefs } from 'pinia';
+import { ref } from 'vue';
+import { useRoute } from 'vue-router';
 
 const parlamentarStore = useParlamentaresStore();
 const {
@@ -12,6 +15,8 @@ const {
 const route = useRoute();
 const alertStore = useAlertStore();
 const authStore = useAuthStore();
+
+const listaFiltradaPorTermoDeBusca = ref([]);
 
 async function excluirParlamentar(id) {
   alertStore.confirmAction('Deseja mesmo remover esse item?', async () => {
@@ -39,6 +44,16 @@ parlamentarStore.buscarTudo();
       Novo parlamentar
     </router-link>
   </div>
+
+  <div class="flex center mb2 spacebetween">
+    <LocalFilter
+      v-model="listaFiltradaPorTermoDeBusca"
+      :lista="lista"
+      class="mr1"
+    />
+    <hr class="ml2 f1">
+  </div>
+
   <table class="tablemain">
     <col>
     <col>
@@ -68,7 +83,7 @@ parlamentarStore.buscarTudo();
     </thead>
     <tbody>
       <tr
-        v-for="item in lista"
+        v-for="item in listaFiltradaPorTermoDeBusca"
         :key="item.id"
       >
         <td>
