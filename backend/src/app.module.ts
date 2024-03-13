@@ -30,6 +30,7 @@ import { PartidoModule } from './partido/partido.module';
 import { BancadaModule } from './bancada/bancada.module';
 import { ParlamentarModule } from './parlamentar/parlamentar.modules';
 import { EleicaoModule } from './eleicao/eleicao.module';
+import { TransferenciaModule } from './transferencia/transferencia.module';
 
 // Hacks pro JS
 /*
@@ -63,7 +64,8 @@ import { EleicaoModule } from './eleicao/eleicao.module';
         BancadaModule,
         PartidoModule,
         ParlamentarModule,
-        EleicaoModule
+        EleicaoModule,
+        TransferenciaModule,
     ],
     controllers: [AppController],
     providers: [
@@ -79,11 +81,11 @@ import { EleicaoModule } from './eleicao/eleicao.module';
         {
             provide: APP_FILTER,
             useClass: ErrorFilter,
-            },
-            {
-                provide: APP_INTERCEPTOR,
-                useClass: ContentInterceptor,
-            },
+        },
+        {
+            provide: APP_INTERCEPTOR,
+            useClass: ContentInterceptor,
+        },
         {
             provide: APP_PIPE,
             useValue: new TrimPipe(),
