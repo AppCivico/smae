@@ -4283,6 +4283,7 @@ model Parlamentar {
     nome         String
     nome_popular String
     nascimento   DateTime? @db.Date()
+    telefone     String?
     email        String?
     em_atividade Boolean   @default(false)
 
