@@ -586,7 +586,7 @@ export class PessoaService {
                     await prismaTx.$queryRaw`select pessoa_acesso_pdm(${pessoaId}::int)`;
                 }
 
-                logger.saveLogs(prismaTx, user.getLogData());
+                await logger.saveLogs(prismaTx, user.getLogData());
             },
             {
                 // verificar o email dentro do contexto Serializable
