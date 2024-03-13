@@ -1,4 +1,4 @@
-import { HttpException } from '@nestjs/common';
+import { HttpException, Injectable } from '@nestjs/common';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { PrismaService } from '../prisma/prisma.service';
@@ -7,6 +7,7 @@ import { Prisma } from '@prisma/client';
 import { UpdateTransferenciaTipoDto } from './dto/update-transferencia-tipo.dto';
 import { TransferenciaTipoDto } from './entities/transferencia-tipo.dto';
 
+@Injectable()
 export class TransferenciaService {
     constructor(private readonly prisma: PrismaService) {}
 
