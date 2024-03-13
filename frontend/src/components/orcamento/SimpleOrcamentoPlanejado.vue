@@ -4,9 +4,9 @@ import formataValor from '@/helpers/formataValor';
 import { useOrcamentosStore } from '@/stores/orcamentos.store';
 import { storeToRefs } from 'pinia';
 import { computed, ref } from 'vue';
+import FiltroPorOrgaoEUnidade from './FiltroPorOrgaoEUnidade.vue';
 import agrupaFilhos from './helpers/agrupaFilhos';
 import somaItems from './helpers/somaItems';
-import FiltroPorOrgaoEUnidade from './FiltroPorOrgaoEUnidade.vue';
 
 const props = defineProps(['parentlink', 'config']);
 const ano = props.config.ano_referencia;
