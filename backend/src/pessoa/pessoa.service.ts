@@ -608,19 +608,103 @@ export class PessoaService {
         logger: LoggerWithLog,
         now: Date
     ) {
+        const somePessoaCp = { some: { pessoa_id: pessoaId, coordenador_responsavel_cp: true } } as const;
         for (const priv of perfilDeInteresse) {
             if (!privDepoisUpdate.find((r) => r.codigo == priv) && privAntesUpdate.find((r) => r.codigo == priv)) {
                 logger.log(`Privilégio ${priv} foi removido, removendo acesso das tabelas...`);
 
                 switch (priv) {
                     case 'PDM.coordenador_responsavel_cp':
-                        // TODO contar as metas, se for zero, pode apagar
+                        const metaResp = await prismaTx.meta.findMany({
+                            where: {
+                                removido_em: null,
+                                pdm: {
+                                    ativo: true,
+                                },
+                                OR: [
+                                    { meta_responsavel: somePessoaCp },
+
+                                    // responsavel na iniciativa
+                                    {
+                                        iniciativa: {
+                                            some: {
+                                                removido_em: null,
+                                                iniciativa_responsavel: somePessoaCp,
+                                            },
+                                        },
+                                    },
+                                    // responsavel na atividade
+                                    {
+                                        iniciativa: {
+                                            some: {
+                                                removido_em: null,
+                                                atividade: {
+                                                    some: { atividade_responsavel: somePessoaCp },
+                                                },
+                                            },
+                                        },
+                                    },
+                                ],
+                            },
+                            select: {
+                                id: true,
+                                codigo: true,
+                                titulo: true,
+                            },
+                        });
+                        if (metaResp.length) {
+                            throw new BadRequestException(
+                                `Não é possível remover privilégio de coordenador CP, pois ainda é utilizado nas metas: ${metaResp.map(
+                                    (r) => {
+                                        return `Meta ${r.codigo} - ${r.titulo}`;
+                                    }
+                                )}`
+                            );
+                        }
                         break;
                     case 'SMAE.gestor_de_projeto':
-                        // TODO contar os projetos, se for zero, pode apagar
+                        const projGestoResp = await prismaTx.projeto.findMany({
+                            where: {
+                                removido_em: null,
+                                responsaveis_no_orgao_gestor: {
+                                    has: pessoaId,
+                                },
+                            },
+                            select: {
+                                id: true,
+                                nome: true,
+                            },
+                        });
+                        if (projGestoResp.length) {
+                            throw new BadRequestException(
+                                `Não é possível remover privilégio de Gestor de Projeto, pois ainda é utilizado nos projetos: ${projGestoResp.map(
+                                    (r) => {
+                                        return `Projeto ${r.nome}`;
+                                    }
+                                )}`
+                            );
+                        }
                         break;
                     case 'SMAE.colaborador_de_projeto':
-                        // TODO contar os projetos, se for zero, pode apagar
+                        const projColab = await prismaTx.projeto.findMany({
+                            where: {
+                                removido_em: null,
+                                responsavel_id: pessoaId,
+                            },
+                            select: {
+                                id: true,
+                                nome: true,
+                            },
+                        });
+                        if (projColab.length) {
+                            throw new BadRequestException(
+                                `Não é possível remover privilégio de Colaborador de Projeto, pois ainda é utilizado nos projetos: ${projColab.map(
+                                    (r) => {
+                                        return `Projeto ${r.nome}`;
+                                    }
+                                )}`
+                            );
+                        }
                         break;
                     case 'SMAE.espectador_de_painel_externo':
                         const gpp = await prismaTx.grupoPortfolioPessoa.findMany({
