@@ -85,266 +85,266 @@
         </h3>
         <hr class="ml2 f1">
       </div>
-      <div class="biografia">
-        <p>
-          {{ emFoco.mandato_atual.biografia }}
-        </p>
+
+      <div
+        class="biografia"
+        v-html="emFoco.mandato_atual.biografia"
+      />
+
+      <div class="mb4">
+        <div class="flex spacebetween center">
+          <h3 class="title">
+            Assessores
+          </h3>
+          <hr class="ml2 f1">
+        </div>
+        <table class="tablemain ">
+          <col>
+          <col>
+          <col>
+          <thead>
+            <tr>
+              <th>Nome</th>
+              <th>Telefone</th>
+              <th>E-mail</th>
+            </tr>
+          </thead>
+          <tbody v-if="assessores.length">
+            <tr
+              v-for="assessor in assessores"
+              :key="assessor.id"
+            >
+              <td>{{ assessor.nome }}</td>
+              <td>{{ assessor.telefone }}</td>
+              <td>{{ assessor.email }}</td>
+            </tr>
+          </tbody>
+          <tbody v-else>
+            <tr>
+              <td colspan="3">
+                Nenhum assessor encontrado.
+              </td>
+            </tr>
+          </tbody>
+        </table>
       </div>
+
+      <div
+        v-if="emFoco.mandato_atual?.eleicao"
+        class="mb4"
+      >
+        <div class="flex spacebetween center">
+          <h3 class="title">
+            Eleição {{ emFoco.mandato_atual.eleicao.ano }}
+          </h3>
+          <hr class="ml2 f1">
+        </div>
+
+        <div class="eleicao">
+          <div>
+            <dl>
+              <dt>
+                Eleito
+              </dt>
+              <dd
+                v-if="emFoco"
+                class="t13"
+              >
+                <span v-if="emFoco.mandato_atual.eleito">Sim</span>
+                <span v-else>Não</span>
+              </dd>
+            </dl>
+
+            <dl>
+              <dt>
+                Suplente
+              </dt>
+              <dd
+                v-if="emFoco"
+                class="t13"
+              >
+                <span v-if="emFoco.mandato_atual.suplencia">Sim</span>
+                <span v-else>Não</span>
+              </dd>
+            </dl>
+
+            <dl>
+              <dt>
+                Em exercício?
+              </dt>
+              <dd
+                v-if="emFoco"
+                class="t13"
+              >
+                <span v-if="emFoco.em_atividade">Sim</span>
+                <span v-else>Não</span>
+              </dd>
+            </dl>
+          </div>
+
+          <div>
+            <dl>
+              <dt>
+                UF
+              </dt>
+              <dd
+                v-if="emFoco.mandato_atual"
+                class="t13"
+              >
+                {{ emFoco.mandato_atual.uf }}
+              </dd>
+            </dl>
+
+            <dl>
+              <dt>
+                Cargo
+              </dt>
+              <dd v-if="emFoco.mandato_atual?.cargo">
+                {{ emFoco.mandato_atual.cargo }}
+              </dd>
+            </dl>
+          </div>
+
+          <div>
+            <dl>
+              <dt>
+                Partido Atual
+              </dt>
+              <dd v-if="emFoco.mandato_atual?.partido_atual.sigla">
+                {{ emFoco.mandato_atual.partido_atual.sigla }}
+              </dd>
+            </dl>
+            <dl>
+              <dt>
+                Partido - Candidatura
+              </dt>
+              <dd
+                v-if="emFoco.mandato_atual?.partido_candidatura.sigla"
+                class="t13"
+              >
+                {{ emFoco.mandato_atual.partido_candidatura.sigla }}
+              </dd>
+            </dl>
+          </div>
+
+          <div v-if="emFoco.mandato_atual?.votos_estado || emFoco.mandato_atual?.votos_interior || emFoco.mandato_atual?.votos_capital">
+            <dl
+              v-if="emFoco.mandato_atual?.votos_estado"
+            >
+              <dt>
+                Votos no Estado
+              </dt>
+              <dd
+                class="t13"
+              >
+                {{ formatarNumero(emFoco.mandato_atual.votos_estado) }}
+              </dd>
+            </dl>
+
+            <dl
+              v-if="emFoco.mandato_atual?.votos_interior"
+            >
+              <dt>
+                Votos no interior
+              </dt>
+              <dd
+
+                class="t13"
+              >
+                {{ formatarNumero(emFoco.mandato_atual.votos_interior) }}
+              </dd>
+            </dl>
+
+            <dl
+              v-if="emFoco.mandato_atual?.votos_capital"
+            >
+              <dt>
+                Votos na capital
+              </dt>
+              <dd
+                class="t13"
+              >
+                {{ formatarNumero(emFoco.mandato_atual.votos_capital) }}
+              </dd>
+            </dl>
+          </div>
+
+          <div>
+            <dl>
+              <dt>
+                Endereço
+              </dt>
+              <dd
+                v-if="emFoco.mandato_atual?.endereco"
+                class="t13"
+              >
+                {{ emFoco.mandato_atual.endereco }}
+              </dd>
+            </dl>
+
+            <dl>
+              <dt>
+                Gabinete
+              </dt>
+              <dd
+                v-if="emFoco.mandato_atual?.gabinete"
+              >
+                {{ emFoco.mandato_atual.gabinete }}
+              </dd>
+            </dl>
+
+            <dl v-if="emFoco.mandato_atual?.email">
+              <dt>
+                Email
+              </dt>
+              <dd>
+                {{ emFoco.mandato_atual.email }}
+              </dd>
+            </dl>
+          </div>
+        </div>
+      </div>
+
+      <div class="mb4">
+        <div class="flex spacebetween center">
+          <h3 class="title">
+            Contatos
+          </h3>
+          <hr class="ml2 f1">
+        </div>
+        <table class="tablemain ">
+          <col>
+          <col>
+          <col>
+          <thead>
+            <tr>
+              <th>Nome</th>
+              <th>Telefone</th>
+              <th>E-mail</th>
+            </tr>
+          </thead>
+          <tbody v-if="contatos.length">
+            <tr
+              v-for="contato in contatos"
+              :key="contato.id"
+            >
+              <td>{{ contato.nome }}</td>
+              <td>{{ contato.telefone }}</td>
+              <td>{{ contato.email }}</td>
+            </tr>
+          </tbody>
+          <tbody v-else>
+            <tr>
+              <td colspan="3">
+                Nenhum contato encontrado.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <ParlamentaresExibirRepresentatividade />
     </div>
-
-    <div class="mb4">
-      <div class="flex spacebetween center">
-        <h3 class="title">
-          Assessores
-        </h3>
-        <hr class="ml2 f1">
-      </div>
-      <table class="tablemain ">
-        <col>
-        <col>
-        <col>
-        <thead>
-          <tr>
-            <th>Nome</th>
-            <th>Telefone</th>
-            <th>E-mail</th>
-          </tr>
-        </thead>
-        <tbody v-if="assessores.length">
-          <tr
-            v-for="assessor in assessores"
-            :key="assessor.id"
-          >
-            <td>{{ assessor.nome }}</td>
-            <td>{{ assessor.telefone }}</td>
-            <td>{{ assessor.email }}</td>
-          </tr>
-        </tbody>
-        <tbody v-else>
-          <tr>
-            <td colspan="3">
-              Nenhum assessor encontrado.
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-
-    <div
-      v-if="emFoco.mandato_atual?.eleicao"
-      class="mb4"
-    >
-      <div class="flex spacebetween center">
-        <h3 class="title">
-          Eleição {{ emFoco.mandato_atual.eleicao.ano }}
-        </h3>
-        <hr class="ml2 f1">
-      </div>
-
-      <div class="eleicao">
-        <div>
-          <dl>
-            <dt>
-              Eleito
-            </dt>
-            <dd
-              v-if="emFoco"
-              class="t13"
-            >
-              <span v-if="emFoco.mandato_atual.eleito">Sim</span>
-              <span v-else>Não</span>
-            </dd>
-          </dl>
-
-          <dl>
-            <dt>
-              Suplente
-            </dt>
-            <dd
-              v-if="emFoco"
-              class="t13"
-            >
-              <span v-if="emFoco.mandato_atual.suplencia">Sim</span>
-              <span v-else>Não</span>
-            </dd>
-          </dl>
-
-          <dl>
-            <dt>
-              Em exercício?
-            </dt>
-            <dd
-              v-if="emFoco"
-              class="t13"
-            >
-              <span v-if="emFoco.em_atividade">Sim</span>
-              <span v-else>Não</span>
-            </dd>
-          </dl>
-        </div>
-
-        <div>
-          <dl>
-            <dt>
-              UF
-            </dt>
-            <dd
-              v-if="emFoco.mandato_atual"
-              class="t13"
-            >
-              {{ emFoco.mandato_atual.uf }}
-            </dd>
-          </dl>
-
-          <dl>
-            <dt>
-              Cargo
-            </dt>
-            <dd v-if="emFoco.mandato_atual?.cargo">
-              {{ emFoco.mandato_atual.cargo }}
-            </dd>
-          </dl>
-        </div>
-
-        <div>
-          <dl>
-            <dt>
-              Partido Atual
-            </dt>
-            <dd v-if="emFoco.mandato_atual?.partido_atual.sigla">
-              {{ emFoco.mandato_atual.partido_atual.sigla }}
-            </dd>
-          </dl>
-          <dl>
-            <dt>
-              Partido - Candidatura
-            </dt>
-            <dd
-              v-if="emFoco.mandato_atual?.partido_candidatura.sigla"
-              class="t13"
-            >
-              {{ emFoco.mandato_atual.partido_candidatura.sigla }}
-            </dd>
-          </dl>
-        </div>
-
-        <div v-if="emFoco.mandato_atual?.votos_estado || emFoco.mandato_atual?.votos_interior || emFoco.mandato_atual?.votos_capital">
-          <dl
-            v-if="emFoco.mandato_atual?.votos_estado"
-          >
-            <dt>
-              Votos no Estado
-            </dt>
-            <dd
-              class="t13"
-            >
-              {{ formatarNumero(emFoco.mandato_atual.votos_estado) }}
-            </dd>
-          </dl>
-
-          <dl
-            v-if="emFoco.mandato_atual?.votos_interior"
-          >
-            <dt>
-              Votos no interior
-            </dt>
-            <dd
-
-              class="t13"
-            >
-              {{ formatarNumero(emFoco.mandato_atual.votos_interior) }}
-            </dd>
-          </dl>
-
-          <dl
-            v-if="emFoco.mandato_atual?.votos_capital"
-          >
-            <dt>
-              Votos na capital
-            </dt>
-            <dd
-              class="t13"
-            >
-              {{ formatarNumero(emFoco.mandato_atual.votos_capital) }}
-            </dd>
-          </dl>
-        </div>
-
-        <div>
-          <dl>
-            <dt>
-              Endereço
-            </dt>
-            <dd
-              v-if="emFoco.mandato_atual?.endereco"
-              class="t13"
-            >
-              {{ emFoco.mandato_atual.endereco }}
-            </dd>
-          </dl>
-
-          <dl>
-            <dt>
-              Gabinete
-            </dt>
-            <dd
-              v-if="emFoco.mandato_atual?.gabinete"
-            >
-              {{ emFoco.mandato_atual.gabinete }}
-            </dd>
-          </dl>
-
-          <dl v-if="emFoco.mandato_atual?.email">
-            <dt>
-              Email
-            </dt>
-            <dd>
-              {{ emFoco.mandato_atual.email }}
-            </dd>
-          </dl>
-        </div>
-      </div>
-    </div>
-
-    <div class="mb4">
-      <div class="flex spacebetween center">
-        <h3 class="title">
-          Contatos
-        </h3>
-        <hr class="ml2 f1">
-      </div>
-      <table class="tablemain ">
-        <col>
-        <col>
-        <col>
-        <thead>
-          <tr>
-            <th>Nome</th>
-            <th>Telefone</th>
-            <th>E-mail</th>
-          </tr>
-        </thead>
-        <tbody v-if="contatos.length">
-          <tr
-            v-for="contato in contatos"
-            :key="contato.id"
-          >
-            <td>{{ contato.nome }}</td>
-            <td>{{ contato.telefone }}</td>
-            <td>{{ contato.email }}</td>
-          </tr>
-        </tbody>
-        <tbody v-else>
-          <tr>
-            <td colspan="3">
-              Nenhum contato encontrado.
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-
-    <ParlamentaresExibirRepresentatividade />
   </div>
 </template>
 
