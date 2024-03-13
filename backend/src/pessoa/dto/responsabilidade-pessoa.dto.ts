@@ -14,6 +14,11 @@ export class BuscaResponsabilidades {
     @IsInt()
     @Transform(PositiveNumberTransform)
     pdm_id?: number;
+
+    @IsOptional()
+    @IsInt()
+    @Transform(PositiveNumberTransform)
+    orgao_id?: number;
 }
 
 export const TransferenciaRespOperacao = {
