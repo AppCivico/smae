@@ -134,7 +134,7 @@ export class ParlamentarService {
 
         return listActive.map((p) => {
             const mandatoAtual = p.mandatos.find((m) => {
-                m.eleicao.atual_para_mandatos == true;
+                return m.eleicao.atual_para_mandatos === true;
             });
 
             return {
