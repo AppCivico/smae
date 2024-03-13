@@ -15,6 +15,7 @@ export class ParlamentarDetailDto {
     nome: string;
     nome_popular: string | null;
     nascimento: string | undefined;
+    telefone: string | null;
     email: string | null;
     em_atividade: boolean;
     foto: string | null;
@@ -103,5 +104,6 @@ export class SuplentesDto {
         id: number;
         nome: string;
         email: string | null;
+        telefone: string | null;
     };
 }
