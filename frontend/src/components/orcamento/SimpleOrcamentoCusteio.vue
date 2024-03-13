@@ -5,10 +5,10 @@ import formataValor from '@/helpers/formataValor';
 import { useAlertStore, useOrcamentosStore } from '@/stores';
 import { storeToRefs } from 'pinia';
 import { computed, ref } from 'vue';
+import FiltroPorOrgaoEUnidade from './FiltroPorOrgaoEUnidade.vue';
 import agrupaFilhos from './helpers/agrupaFilhos';
 import maiorData from './helpers/maiorData';
 import somaItems from './helpers/somaItems';
-import FiltroPorOrgaoEUnidade from './FiltroPorOrgaoEUnidade.vue';
 
 const alertStore = useAlertStore();
 const props = defineProps(['parentlink', 'config']);
