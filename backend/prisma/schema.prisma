@@ -971,6 +971,7 @@ model MetaResponsavel {
 
     coordenador_responsavel_cp Boolean
 
+    @@unique([pessoa_id, meta_id])
     @@index([pessoa_id])
     @@index([meta_id])
     @@map("meta_responsavel")
@@ -1113,6 +1114,7 @@ model VariavelResponsavel {
     pessoa   Pessoa   @relation(fields: [pessoa_id], references: [id])
     variavel Variavel @relation(fields: [variavel_id], references: [id])
 
+    @@unique([pessoa_id, variavel_id])
     @@index([pessoa_id])
     @@index([variavel_id])
     @@map("variavel_responsavel")
@@ -1426,6 +1428,7 @@ model IniciativaResponsavel {
 
     coordenador_responsavel_cp Boolean
 
+    @@unique([pessoa_id, iniciativa_id])
     @@index([iniciativa_id])
     @@index([orgao_id])
     @@map("iniciativa_responsavel")
@@ -1509,6 +1512,7 @@ model AtividadeResponsavel {
 
     coordenador_responsavel_cp Boolean
 
+    @@unique([pessoa_id, atividade_id])
     @@index([atividade_id])
     @@index([orgao_id])
     @@map("atividade_responsavel")
