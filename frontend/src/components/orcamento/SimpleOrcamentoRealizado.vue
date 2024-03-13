@@ -179,7 +179,7 @@ watch(órgãoEUnidadeSelecionados, (novoValor) => {
       </div>
 
       <table
-        v-if="config.execucao_disponivel"
+        v-if="linhasFiltradas?.length"
         class="tablemain fix no-zebra horizontal-lines"
       >
         <col>
