@@ -1,11 +1,10 @@
 <script setup>
 import LegendaEstimadoVsEfetivo from '@/components/LegendaEstimadoVsEfetivo.vue';
 import LinhaDeCronograma from '@/components/projetos/LinhaDeCronograma.vue';
-import dateToField from '@/helpers/dateToField';
-import dinheiro from '@/helpers/dinheiro';
 import { useTarefasStore } from '@/stores/tarefas.store.ts';
 import { storeToRefs } from 'pinia';
 import { computed, ref } from 'vue';
+import Header from './partials/Header.vue';
 
 const tarefasStore = useTarefasStore();
 const {
@@ -65,110 +64,7 @@ export default {
       </router-link>
     </nav>
   </div>
-
-  <div class="boards mb4">
-    <dl class="flex flexwrap g2">
-      <div class="mr2">
-        <dt class="t12 uc w700 mb05 tamarelo">
-          Início previsto
-        </dt>
-        <dd class="t13 dado-estimado">
-          {{
-            projetoEmFoco?.previsao_inicio
-              ? dateToField(projetoEmFoco.previsao_inicio)
-              : '--/--/----'
-          }}
-        </dd>
-      </div>
-      <div class="mr2">
-        <dt class="t12 uc w700 mb05 tamarelo">
-          Término previsto
-        </dt>
-        <dd class="t13 dado-estimado">
-          {{
-            projetoEmFoco?.previsao_termino
-              ? dateToField(projetoEmFoco.previsao_termino)
-              : '--/--/----'
-          }}
-        </dd>
-      </div>
-      <div class="mr2">
-        <dt class="t12 uc w700 mb05 tamarelo">
-          Início real
-        </dt>
-        <dd class="t13 dado-efetivo">
-          {{
-            projetoEmFoco?.realizado_inicio
-              ? dateToField(projetoEmFoco.realizado_inicio)
-              : '--/--/----'
-          }}
-        </dd>
-      </div>
-      <div class="mr2">
-        <dt class="t12 uc w700 mb05 tamarelo">
-          Término real
-        </dt>
-        <dd class="t13 dado-efetivo">
-          {{
-            projetoEmFoco?.realizado_termino
-              ? dateToField(projetoEmFoco.realizado_termino)
-              : '--/--/----'
-          }}
-        </dd>
-      </div>
-      <div class="f1 mb1">
-        <dt class="t12 uc w700 mb05 tamarelo">
-          Duração
-        </dt>
-        <dd class="t13">
-          {{ projetoEmFoco?.realizado_duracao
-            ? projetoEmFoco?.realizado_duracao + ' dias'
-            : '-' }}
-        </dd>
-      </div>
-      <div class="f1 mb1">
-        <dt class="t12 uc w700 mb05 tamarelo">
-          Percentual concluído
-        </dt>
-        <dd class="t13">
-          {{ typeof projetoEmFoco?.percentual_concluido === 'number'
-            ? projetoEmFoco?.percentual_concluido + '%'
-            : '-' }}
-        </dd>
-      </div>
-      <div class="f1 mb1">
-        <dt class="t12 uc w700 mb05 tamarelo">
-          Atraso
-        </dt>
-        <dd class="t13">
-          {{ projetoEmFoco?.atraso
-            ? projetoEmFoco?.atraso + ' dias'
-            : '-' }}
-        </dd>
-      </div>
-      <div class="f1 mb1">
-        <dt class="t12 uc w700 mb05 tamarelo">
-          Custo total planejado
-        </dt>
-        <dd class="t13 dado-estimado">
-          {{ typeof projetoEmFoco?.previsao_custo === 'number'
-            ? `R$${dinheiro(projetoEmFoco?.previsao_custo)}`
-            : '-' }}
-        </dd>
-      </div>
-      <div class="f1 mb1">
-        <dt class="t12 uc w700 mb05 tamarelo">
-          Custo real
-        </dt>
-        <dd class="t13 dado-efetivo">
-          {{ typeof projetoEmFoco?.realizado_custo === 'number'
-            ? `R$${dinheiro(projetoEmFoco?.realizado_custo)}`
-            : '-' }}
-        </dd>
-      </div>
-    </dl>
-  </div>
-
+  <Header />
   <div class="mb2">
     <div class="">
       <label class="label tc300">
