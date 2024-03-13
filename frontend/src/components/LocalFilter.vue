@@ -54,8 +54,6 @@ emit('update:modelValue', props.lista);
   </form>
 </template>
 <style lang="less">
-@import '@/_less/variables.less';
-
 .busca-livre {
   position: relative;
 }
