@@ -150,7 +150,6 @@ export class ParlamentarService {
                 nome_popular: true,
                 nascimento: true,
                 email: true,
-                telefone: true,
                 em_atividade: true,
                 foto_upload_id: true,
 
@@ -222,7 +221,6 @@ export class ParlamentarService {
                                         id: true,
                                         nome: true,
                                         email: true,
-                                        telefone: true,
                                     },
                                 },
                             },
@@ -274,7 +272,6 @@ export class ParlamentarService {
             foto: parlamentar.foto_upload_id
                 ? this.uploadService.getDownloadToken(parlamentar.foto_upload_id, '1 days').download_token
                 : null,
-            telefone: user && user.hasSomeRoles(['SMAE.acesso_telefone']) ? parlamentar.telefone : null,
 
             mandato_atual: mandatoCorrente
                 ? {
@@ -285,10 +282,6 @@ export class ParlamentarService {
                               ...s,
                               parlamentar: {
                                   ...s.parlamentar,
-                                  telefone:
-                                      user && !user.hasSomeRoles(['SMAE.acesso_telefone'])
-                                          ? s.parlamentar.telefone
-                                          : null,
                               },
                           };
                       }),
@@ -318,10 +311,6 @@ export class ParlamentarService {
                             ...s,
                             parlamentar: {
                                 ...s.parlamentar,
-                                telefone:
-                                    user && !user.hasSomeRoles(['SMAE.acesso_telefone'])
-                                        ? s.parlamentar.telefone
-                                        : null,
                             },
                         };
                     }),

@@ -18,7 +18,6 @@ export class ParlamentarDetailDto {
     email: string | null;
     em_atividade: boolean;
     foto: string | null;
-    telefone: string | null;
 
     // Dados do mandato corrente
     mandato_atual: MandatoDto | null;
@@ -103,6 +102,5 @@ export class SuplentesDto {
         id: number;
         nome: string;
         email: string | null;
-        telefone: string | null;
     };
 }
