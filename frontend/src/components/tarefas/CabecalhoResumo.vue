@@ -2,8 +2,6 @@
 import dateToField from '@/helpers/dateToField';
 import dinheiro from '@/helpers/dinheiro';
 
-import { computed, ref } from 'vue';
-
 const props = defineProps({
   emFoco: {
     type: Object,
@@ -11,27 +9,6 @@ const props = defineProps({
   },
 });
 
-// eslint-disable-next-line max-len
-const nívelMáximoPermitido = computed(() => emFoco?.extra?.portfolio?.nivel_maximo_tarefa || 0);
-
-const nívelMáximoVisível = ref(0);
-
-async function iniciar() {
-  emFoco.$reset();
-  await emFoco.buscarTudo();
-
-  if (nívelMáximoPermitido.value) {
-    nívelMáximoVisível.value = nívelMáximoPermitido.value;
-  }
-}
-
-iniciar();
-</script>
-<script>
-// use normal <script> to declare options
-export default {
-  inheritAttrs: false,
-};
 </script>
 <template>
   <div class="boards mb4">
