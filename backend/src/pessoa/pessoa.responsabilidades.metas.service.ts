@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
-import { loggerWithLog } from '../common/LoggerWithLog';
+import { LoggerWithLog } from '../common/LoggerWithLog';
 
 @Injectable()
 export class PessoaResponsabilidadesMetaService {
@@ -191,7 +191,7 @@ export class PessoaResponsabilidadesMetaService {
         prismaTx: Prisma.TransactionClient,
         user: PessoaFromJwt
     ): Promise<void> {
-        const logger = loggerWithLog('PessoaResponsabilidadesMetaService: copiarResponsabilidades');
+        const logger = LoggerWithLog('PessoaResponsabilidadesMetaService: copiarResponsabilidades');
         const metasInIds = { in: metas } as const;
 
         const destinoEhCoordenadorCp =
@@ -499,7 +499,7 @@ export class PessoaResponsabilidadesMetaService {
         prismaTx: Prisma.TransactionClient,
         user: PessoaFromJwt
     ): Promise<void> {
-        const logger = loggerWithLog('PessoaResponsabilidadesMetaService: removerResponsabilidades');
+        const logger = LoggerWithLog('PessoaResponsabilidadesMetaService: removerResponsabilidades');
         const metasInIds = { in: metas } as const;
 
         // Meta Responsavel + Responsável CP
