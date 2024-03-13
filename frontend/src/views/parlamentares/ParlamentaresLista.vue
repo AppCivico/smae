@@ -77,7 +77,7 @@ parlamentarStore.buscarTudo();
         <th>
           Cargo
         </th>
-        <th v-if="authStore.temPermissãoPara('CadastroParlamentar.remover)" />
+        <th v-if="authStore.temPermissãoPara('CadastroParlamentar.remover')" />
         <th v-if="authStore.temPermissãoPara('CadastroParlamentar.editar')" />
       </tr>
     </thead>
