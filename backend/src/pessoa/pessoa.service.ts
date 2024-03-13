@@ -21,6 +21,7 @@ import {
 import { UpdatePessoaDto } from './dto/update-pessoa.dto';
 import { ListaPrivilegiosModulos } from './entities/ListaPrivilegiosModulos';
 import { PessoaResponsabilidadesMetaService } from './pessoa.responsabilidades.metas.service';
+import { LoggerWithLog } from '../common/LoggerWithLog';
 
 const BCRYPT_ROUNDS = 10;
 
@@ -384,7 +385,10 @@ export class PessoaService {
     }
 
     async update(pessoaId: number, updatePessoaDto: UpdatePessoaDto, user: PessoaFromJwt) {
+        const logger = LoggerWithLog('Pessoa: Editar');
         const sistema = user.assertOneModuloSistema('editar', 'pessoa');
+        logger.log(`Editando Pessoa ID=${pessoaId}, pelo sistema ${sistema}`);
+
         const perfisVisiveis = await this.buscaPerfisVisiveis(user, sistema);
         this.verificaPerfilAcesso(updatePessoaDto, perfisVisiveis);
 
@@ -453,7 +457,7 @@ export class PessoaService {
                 if (grupos) {
                     if (sistema != 'PDM') {
                         //throw new BadRequestException('Edição de grupos não é suportada fora do sistema do PDM');
-                        this.logger.warn('Edição de grupos não é suportada fora do sistema do PDM');
+                        logger.warn('Edição de grupos não é suportada fora do sistema do PDM');
                     } else {
                         for (const grupo of grupos) {
                             grupos_to_assign.push({ grupo_painel_id: grupo });
@@ -470,32 +474,7 @@ export class PessoaService {
                     self.pessoa_fisica.orgao_id &&
                     self.pessoa_fisica.orgao_id != updatePessoaDto.orgao_id
                 ) {
-                    this.logger.log(
-                        `Trocou de órgão: removendo relacionamentos de grupoPortfolioPessoa no órgão antigo.`
-                    );
-
-                    await prismaTx.grupoPortfolioPessoa.updateMany({
-                        where: {
-                            pessoa_id: self.id,
-                            orgao_id: self.pessoa_fisica.orgao_id,
-                            removido_em: null,
-                        },
-                        data: {
-                            removido_em: now,
-                        },
-                    });
-
-                    this.logger.log(`Trocou de órgão: removendo relacionamentos de projetoEquipe no órgão antigo.`);
-                    await prismaTx.projetoEquipe.updateMany({
-                        where: {
-                            pessoa_id: self.id,
-                            orgao_id: self.pessoa_fisica.orgao_id,
-                            removido_em: null,
-                        },
-                        data: {
-                            removido_em: now,
-                        },
-                    });
+                    await this.trocouDeOrgao(prismaTx, { ...self, pessoa_fisica: self.pessoa_fisica }, now, logger);
                 }
 
                 await prismaTx.pessoa.update({
@@ -521,6 +500,7 @@ export class PessoaService {
                 });
 
                 if (updatePessoaDto.desativado === true) {
+                    logger.verbose(`Desativando usuário...`);
                     await prismaTx.pessoa.update({
                         where: {
                             id: pessoaId,
@@ -533,6 +513,7 @@ export class PessoaService {
                         },
                     });
                 } else if (updatePessoaDto.desativado === false) {
+                    logger.verbose(`Reativando usuário...`);
                     await prismaTx.pessoa.update({
                         where: {
                             id: pessoaId,
@@ -559,6 +540,7 @@ export class PessoaService {
                 }
 
                 if (Array.isArray(updatePessoaDto.perfil_acesso_ids)) {
+                    logger.verbose(`Perfis de acessos recebidos: ${JSON.stringify(updatePessoaDto.perfil_acesso_ids)}`);
                     const promises = [];
 
                     await prismaTx.pessoaPerfil.deleteMany({
@@ -579,9 +561,11 @@ export class PessoaService {
                     }
                     await Promise.all(promises);
 
-                    this.logger.log(`Recalculando pessoa_acesso_pdm...`);
+                    logger.log(`Recalculando pessoa_acesso_pdm(${pessoaId})...`);
                     await prismaTx.$queryRaw`select pessoa_acesso_pdm(${pessoaId}::int)`;
                 }
+
+                logger.saveLogs(prismaTx, user.getLogData());
             },
             {
                 // verificar o email dentro do contexto Serializable
@@ -592,6 +576,60 @@ export class PessoaService {
         );
 
         return { id: pessoaId };
+    }
+
+    private async trocouDeOrgao(
+        prismaTx: Prisma.TransactionClient,
+        self: {
+            pessoa_fisica: {
+                orgao_id: number;
+            };
+        } & {
+            id: number;
+        },
+        now: Date,
+        logger: LoggerWithLog
+    ) {
+        const orgaoAntigo = self.pessoa_fisica.orgao_id;
+        const orgaoAntigoStr = `órgão antigo ID ${orgaoAntigo}`;
+
+        {
+            logger.log(`Trocou de órgão: removendo relacionamentos de grupoPortfolioPessoa no ${orgaoAntigoStr}`);
+            await prismaTx.grupoPortfolioPessoa.updateMany({
+                where: {
+                    pessoa_id: self.id,
+                    orgao_id: orgaoAntigo,
+                    removido_em: null,
+                },
+                data: { removido_em: now },
+            });
+        }
+
+        {
+            logger.log(`Trocou de órgão: removendo relacionamentos de projetoEquipe no ${orgaoAntigoStr}`);
+            await prismaTx.projetoEquipe.updateMany({
+                where: {
+                    pessoa_id: self.id,
+                    orgao_id: orgaoAntigo,
+                    removido_em: null,
+                },
+                data: { removido_em: now },
+            });
+        }
+
+        {
+            logger.log(`Trocou de órgão: removendo relacionamentos de GrupoPainelExternoPessoa no ${orgaoAntigoStr}`);
+
+            await prismaTx.grupoPainelExternoPessoa.updateMany({
+                where: {
+                    pessoa_id: self.id,
+                    orgao_id: orgaoAntigo,
+                    removido_em: null,
+                },
+                data: { removido_em: now },
+            });
+        }
+
     }
 
     private async listaPerfilAcessoIds(): Promise<number[]> {
