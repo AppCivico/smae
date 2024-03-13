@@ -6,8 +6,8 @@ import { computed, ref } from 'vue';
 
 const props = defineProps({
   emFoco: {
-    type: Boolean,
-    default: false,
+    type: Object,
+    required: true,
   },
 });
 
