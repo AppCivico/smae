@@ -971,7 +971,7 @@ model MetaResponsavel {
 
     coordenador_responsavel_cp Boolean
 
-    @@unique([pessoa_id, meta_id])
+    @@unique([pessoa_id, meta_id, coordenador_responsavel_cp])
     @@index([pessoa_id])
     @@index([meta_id])
     @@map("meta_responsavel")
@@ -1428,7 +1428,7 @@ model IniciativaResponsavel {
 
     coordenador_responsavel_cp Boolean
 
-    @@unique([pessoa_id, iniciativa_id])
+    @@unique([pessoa_id, iniciativa_id, coordenador_responsavel_cp])
     @@index([iniciativa_id])
     @@index([orgao_id])
     @@map("iniciativa_responsavel")
@@ -1512,7 +1512,7 @@ model AtividadeResponsavel {
 
     coordenador_responsavel_cp Boolean
 
-    @@unique([pessoa_id, atividade_id])
+    @@unique([pessoa_id, atividade_id, coordenador_responsavel_cp])
     @@index([atividade_id])
     @@index([orgao_id])
     @@map("atividade_responsavel")
