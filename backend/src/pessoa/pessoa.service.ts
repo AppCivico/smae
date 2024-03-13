@@ -22,6 +22,7 @@ import {
 import { UpdatePessoaDto } from './dto/update-pessoa.dto';
 import { ListaPrivilegiosModulos } from './entities/ListaPrivilegiosModulos';
 import { PessoaResponsabilidadesMetaService } from './pessoa.responsabilidades.metas.service';
+import { ListaDePrivilegios } from '../common/ListaDePrivilegios';
 
 const BCRYPT_ROUNDS = 10;
 
@@ -543,6 +544,15 @@ export class PessoaService {
                     logger.verbose(`Perfis de acessos recebidos: ${JSON.stringify(updatePessoaDto.perfil_acesso_ids)}`);
                     const promises = [];
 
+                    const perfilDeInteresse: ListaDePrivilegios[] = [
+                        'PDM.coordenador_responsavel_cp',
+                        'SMAE.gestor_de_projeto',
+                        'SMAE.colaborador_de_projeto',
+                        'SMAE.espectador_de_painel_externo',
+                        'SMAE.espectador_de_projeto',
+                    ] as const;
+                    const privAntesUpdate = await this.carregaPrivPessoa(prismaTx, perfilDeInteresse, pessoaId);
+
                     await prismaTx.pessoaPerfil.deleteMany({
                         where: {
                             pessoa_id: pessoaId,
@@ -561,6 +571,17 @@ export class PessoaService {
                     }
                     await Promise.all(promises);
 
+                    const privDepoisUpdate = await this.carregaPrivPessoa(prismaTx, perfilDeInteresse, pessoaId);
+                    await this.removeAcessoOuAbortaTx(
+                        prismaTx,
+                        perfilDeInteresse,
+                        pessoaId,
+                        privDepoisUpdate,
+                        privAntesUpdate,
+                        logger,
+                        now
+                    );
+
                     logger.log(`Recalculando pessoa_acesso_pdm(${pessoaId})...`);
                     await prismaTx.$queryRaw`select pessoa_acesso_pdm(${pessoaId}::int)`;
                 }
@@ -576,6 +597,101 @@ export class PessoaService {
         );
 
         return { id: pessoaId };
+    }
+
+    private async removeAcessoOuAbortaTx(
+        prismaTx: Prisma.TransactionClient,
+        perfilDeInteresse: ListaDePrivilegios[],
+        pessoaId: number,
+        privDepoisUpdate: { codigo: string }[],
+        privAntesUpdate: { codigo: string }[],
+        logger: LoggerWithLog,
+        now: Date
+    ) {
+        for (const priv of perfilDeInteresse) {
+            if (!privDepoisUpdate.find((r) => r.codigo == priv) && privAntesUpdate.find((r) => r.codigo == priv)) {
+                logger.log(`Privilégio ${priv} foi removido, removendo acesso das tabelas...`);
+
+                switch (priv) {
+                    case 'PDM.coordenador_responsavel_cp':
+                        // TODO contar as metas, se for zero, pode apagar
+                        break;
+                    case 'SMAE.gestor_de_projeto':
+                        // TODO contar os projetos, se for zero, pode apagar
+                        break;
+                    case 'SMAE.colaborador_de_projeto':
+                        // TODO contar os projetos, se for zero, pode apagar
+                        break;
+                    case 'SMAE.espectador_de_painel_externo':
+                        const gpp = await prismaTx.grupoPortfolioPessoa.findMany({
+                            where: {
+                                pessoa_id: pessoaId,
+                                removido_em: null,
+                            },
+                            select: {
+                                id: true,
+                                grupo_portfolio: { select: { id: true, titulo: true } },
+                            },
+                        });
+                        logger.verbose(`Removendo dos grupos portfólio: ${JSON.stringify(gpp)}`);
+
+                        await prismaTx.grupoPortfolioPessoa.updateMany({
+                            where: {
+                                id: { in: gpp.map((r) => r.id) },
+                                pessoa_id: pessoaId,
+                            },
+                            data: { removido_em: now },
+                        });
+                        break;
+                    case 'SMAE.espectador_de_projeto':
+                        const gpe = await prismaTx.grupoPainelExternoPessoa.findMany({
+                            where: {
+                                pessoa_id: pessoaId,
+                                removido_em: null,
+                            },
+                            select: {
+                                id: true,
+                                grupo_painel_externo: { select: { id: true, titulo: true } },
+                            },
+                        });
+                        logger.verbose(`Removendo dos grupos de painel externo: ${JSON.stringify(gpe)}`);
+
+                        await prismaTx.grupoPainelExternoPessoa.updateMany({
+                            where: {
+                                id: { in: gpe.map((r) => r.id) },
+                                pessoa_id: pessoaId,
+                            },
+                            data: { removido_em: now },
+                        });
+
+                        break;
+                }
+            }
+        }
+    }
+
+    private async carregaPrivPessoa(
+        prismaTx: Prisma.TransactionClient,
+        perfilDeInteresse: ListaDePrivilegios[],
+        pessoaId: number
+    ) {
+        return await prismaTx.privilegio.findMany({
+            distinct: 'codigo',
+            where: {
+                codigo: { in: perfilDeInteresse },
+                perfil_privilegio: {
+                    some: {
+                        perfil_acesso: {
+                            pessoa_perfil: {
+                                some: {
+                                    pessoa_id: pessoaId,
+                                },
+                            },
+                        },
+                    },
+                },
+            },
+        });
     }
 
     private async trocouDeOrgao(
