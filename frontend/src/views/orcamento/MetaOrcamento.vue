@@ -68,13 +68,11 @@ async function start() {
   else if (iniciativa_id) parentLabel.value = activePdm.value.rotulo_iniciativa;
   if (Array.isArray(activePdm.value.orcamento_config)) {
     activePdm.value.orcamento_config.forEach((x) => {
-      if (x.execucao_disponivel && props.area === 'Realizado') {
+      if (props.area === 'Realizado') {
         OrcamentosStore.getOrcamentoRealizadoById(meta_id, x.ano_referencia);
-      }
-      if (x.planejado_disponivel && props.area === 'Planejado') {
+      } else if (props.area === 'Planejado') {
         OrcamentosStore.getOrcamentoPlanejadoById(meta_id, x.ano_referencia);
-      }
-      if (x.previsao_custo_disponivel && props.area === 'Custo') {
+      } else if (props.area === 'Custo') {
         OrcamentosStore.getOrcamentoCusteioById(meta_id, x.ano_referencia);
       }
     });
