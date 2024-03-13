@@ -1240,18 +1240,25 @@ export class PessoaService {
                                 origemPessoa.id,
                                 novaPessoa!.id,
                                 dto.metas,
-                                prismaTx
+                                prismaTx,
+                                user
                             );
                             break;
                         case 'remover':
-                            await this.pRespMetaService.removerResponsabilidades(origemPessoa.id, dto.metas, prismaTx);
+                            await this.pRespMetaService.removerResponsabilidades(
+                                origemPessoa.id,
+                                dto.metas,
+                                prismaTx,
+                                user
+                            );
                             break;
                         case 'transferir':
                             await this.pRespMetaService.transferirResponsabilidades(
                                 origemPessoa.id,
                                 novaPessoa!.id,
                                 dto.metas,
-                                prismaTx
+                                prismaTx,
+                                user
                             );
                             break;
                         default:

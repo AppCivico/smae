@@ -24,5 +24,7 @@ export class PessoaFromJwtBase {
 
     flags: FeatureFlagDto;
 
-    modulo_sistema: ModuloSistema[]
+    modulo_sistema: ModuloSistema[];
+
+    ip: string | null;
 }
