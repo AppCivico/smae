@@ -1,5 +1,9 @@
 <template>
-  <div class="input-image-profile">
+  <div
+    class="input-image-profile"
+    @dragover.prevent
+    @drop="handleDrop"
+  >
     <label class="input-image-profile__container">
       <div class="input-image-profile__image-container">
         <img
@@ -47,6 +51,16 @@ const emit = defineEmits(['update:modelValue']);
 
 const uploadImageFile = (event) => {
   const [file] = event.target.files;
+  handleFile(file);
+};
+
+const handleDrop = (event) => {
+  event.preventDefault();
+  const file = event.dataTransfer.files[0];
+  handleFile(file);
+};
+
+const handleFile = (file) => {
   const fileUrl = URL.createObjectURL(file);
   imgSrc.value = fileUrl;
   emit('update:modelValue', file);
