@@ -1,7 +1,16 @@
 import { Transform, Type } from 'class-transformer';
 import { IsBoolean, IsEmail, IsInt, IsOptional } from 'class-validator';
+import { ListaDePrivilegios } from '../../common/ListaDePrivilegios';
 
-export class FilterPessoaDto {
+export const FilterPermsPessoa2Priv: Record<keyof FilterPermsPessoaDto, ListaDePrivilegios> = {
+    coordenador_responsavel_cp: 'PDM.coordenador_responsavel_cp',
+    gestor_de_projeto: 'SMAE.gestor_de_projeto',
+    colaborador_de_projeto: 'SMAE.colaborador_de_projeto',
+    espectador_de_painel_externo: 'SMAE.espectador_de_painel_externo',
+    espectador_de_projeto: 'SMAE.espectador_de_projeto',
+} as const;
+
+export class FilterPermsPessoaDto {
     /**
      * Filtrar pessoa com privilegio `PDM.coordenador_responsavel_cp` ?
      *
@@ -23,20 +32,6 @@ export class FilterPessoaDto {
     @IsBoolean()
     @Transform(({ value }: any) => value === 'true')
     espectador_de_painel_externo?: boolean;
-
-    /**
-     * Filtrar por órgão?
-     *
-     * @example "1"
-     */
-    @IsOptional()
-    @IsInt({ message: '$property| orgao_id' })
-    @Type(() => Number)
-    orgao_id?: number;
-
-    @IsOptional()
-    @IsEmail()
-    email?: string;
 
     /**
      * Filtrar pessoa com privilegio `SMAE.gestor_de_projeto` ?
@@ -70,4 +65,20 @@ export class FilterPessoaDto {
     @IsBoolean()
     @Transform(({ value }: any) => value === 'true')
     espectador_de_projeto?: boolean;
+}
+
+export class FilterPessoaDto extends FilterPermsPessoaDto {
+    /**
+     * Filtrar por órgão?
+     *
+     * @example "1"
+     */
+    @IsOptional()
+    @IsInt({ message: '$property| orgao_id' })
+    @Type(() => Number)
+    orgao_id?: number;
+
+    @IsOptional()
+    @IsEmail()
+    email?: string;
 }

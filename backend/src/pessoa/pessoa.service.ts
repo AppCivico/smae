@@ -4,6 +4,7 @@ import * as bcrypt from 'bcrypt';
 import { uuidv7 } from 'uuidv7';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { FilterPrivDto } from '../auth/models/Privilegios.dto';
+import { LoggerWithLog } from '../common/LoggerWithLog';
 import { IdCodTituloDto } from '../common/dto/IdCodTitulo.dto';
 import { RecordWithId } from '../common/dto/record-with-id.dto';
 import { MathRandom } from '../common/math-random';
@@ -11,7 +12,7 @@ import { NovaSenhaDto } from '../minha-conta/models/nova-senha.dto';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreatePessoaDto } from './dto/create-pessoa.dto';
 import { DetalhePessoaDto } from './dto/detalhe-pessoa.dto';
-import { FilterPessoaDto } from './dto/filter-pessoa.dto';
+import { FilterPermsPessoa2Priv, FilterPessoaDto } from './dto/filter-pessoa.dto';
 import { PerfilAcessoPrivilegios } from './dto/perifl-acesso-privilegios.dto';
 import {
     BuscaResponsabilidades,
@@ -21,7 +22,6 @@ import {
 import { UpdatePessoaDto } from './dto/update-pessoa.dto';
 import { ListaPrivilegiosModulos } from './entities/ListaPrivilegiosModulos';
 import { PessoaResponsabilidadesMetaService } from './pessoa.responsabilidades.metas.service';
-import { LoggerWithLog } from '../common/LoggerWithLog';
 
 const BCRYPT_ROUNDS = 10;
 
@@ -876,184 +876,27 @@ export class PessoaService {
     private filtrosPrivilegios(filters: FilterPessoaDto | undefined): Prisma.PessoaWhereInput[] {
         const extraFilter: Prisma.PessoaWhereInput[] = [];
 
-        if (filters?.coordenador_responsavel_cp) {
-            this.logger.log('filtrando apenas coordenador_responsavel_cp');
-            extraFilter.push({
-                PessoaPerfil: {
-                    some: {
-                        perfil_acesso: {
-                            perfil_privilegio: {
-                                some: {
-                                    privilegio: {
-                                        codigo: 'PDM.coordenador_responsavel_cp',
-                                    },
-                                },
-                            },
-                        },
-                    },
-                },
-            });
-        } else if (filters?.coordenador_responsavel_cp === false) {
-            this.logger.log('filtrando quem não é coordenador_responsavel_cp');
-            extraFilter.push({
-                PessoaPerfil: {
-                    none: {
-                        perfil_acesso: {
-                            perfil_privilegio: {
-                                some: {
-                                    privilegio: {
-                                        codigo: 'PDM.coordenador_responsavel_cp',
-                                    },
-                                },
-                            },
-                        },
-                    },
-                },
-            });
-        }
+        for (const [key, value] of Object.keys(FilterPermsPessoa2Priv)) {
+            if ((filters as any)[key] !== undefined) {
+                const filterValue = (filters as any)[key] as boolean;
+                const filterOperator = filterValue ? 'some' : 'none';
 
-        if (filters?.gestor_de_projeto) {
-            this.logger.log('filtrando apenas gestor_de_projeto');
-            extraFilter.push({
-                PessoaPerfil: {
-                    some: {
-                        perfil_acesso: {
-                            perfil_privilegio: {
-                                some: {
-                                    privilegio: {
-                                        codigo: 'SMAE.gestor_de_projeto',
+                extraFilter.push({
+                    PessoaPerfil: {
+                        [filterOperator]: {
+                            perfil_acesso: {
+                                perfil_privilegio: {
+                                    some: {
+                                        privilegio: {
+                                            codigo: value,
+                                        },
                                     },
                                 },
                             },
                         },
                     },
-                },
-            });
-        } else if (filters?.gestor_de_projeto === false) {
-            this.logger.log('filtrando quem não é gestor_de_projeto');
-            extraFilter.push({
-                PessoaPerfil: {
-                    none: {
-                        perfil_acesso: {
-                            perfil_privilegio: {
-                                some: {
-                                    privilegio: {
-                                        codigo: 'SMAE.gestor_de_projeto',
-                                    },
-                                },
-                            },
-                        },
-                    },
-                },
-            });
-        }
-
-        if (filters?.colaborador_de_projeto) {
-            this.logger.log('filtrando apenas gestor_de_projeto');
-            extraFilter.push({
-                PessoaPerfil: {
-                    some: {
-                        perfil_acesso: {
-                            perfil_privilegio: {
-                                some: {
-                                    privilegio: {
-                                        codigo: 'SMAE.colaborador_de_projeto',
-                                    },
-                                },
-                            },
-                        },
-                    },
-                },
-            });
-        } else if (filters?.colaborador_de_projeto === false) {
-            this.logger.log('filtrando quem não é colaborador_de_projeto');
-            extraFilter.push({
-                PessoaPerfil: {
-                    none: {
-                        perfil_acesso: {
-                            perfil_privilegio: {
-                                some: {
-                                    privilegio: {
-                                        codigo: 'SMAE.colaborador_de_projeto',
-                                    },
-                                },
-                            },
-                        },
-                    },
-                },
-            });
-        }
-
-        if (filters?.espectador_de_painel_externo) {
-            this.logger.log('filtrando apenas espectador_de_painel_externo');
-            extraFilter.push({
-                PessoaPerfil: {
-                    some: {
-                        perfil_acesso: {
-                            perfil_privilegio: {
-                                some: {
-                                    privilegio: {
-                                        codigo: 'SMAE.espectador_de_painel_externo',
-                                    },
-                                },
-                            },
-                        },
-                    },
-                },
-            });
-        } else if (filters?.espectador_de_painel_externo === false) {
-            this.logger.log('filtrando quem não é espectador_de_painel_externo');
-            extraFilter.push({
-                PessoaPerfil: {
-                    none: {
-                        perfil_acesso: {
-                            perfil_privilegio: {
-                                some: {
-                                    privilegio: {
-                                        codigo: 'SMAE.espectador_de_painel_externo',
-                                    },
-                                },
-                            },
-                        },
-                    },
-                },
-            });
-        }
-
-        if (filters?.espectador_de_projeto) {
-            this.logger.log('filtrando apenas espectador_de_projeto');
-            extraFilter.push({
-                PessoaPerfil: {
-                    some: {
-                        perfil_acesso: {
-                            perfil_privilegio: {
-                                some: {
-                                    privilegio: {
-                                        codigo: 'SMAE.espectador_de_projeto',
-                                    },
-                                },
-                            },
-                        },
-                    },
-                },
-            });
-        } else if (filters?.espectador_de_projeto === false) {
-            this.logger.log('filtrando quem não é espectador_de_projeto');
-            extraFilter.push({
-                PessoaPerfil: {
-                    none: {
-                        perfil_acesso: {
-                            perfil_privilegio: {
-                                some: {
-                                    privilegio: {
-                                        codigo: 'SMAE.espectador_de_projeto',
-                                    },
-                                },
-                            },
-                        },
-                    },
-                },
-            });
+                });
+            }
         }
 
         return extraFilter;
