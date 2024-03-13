@@ -94,8 +94,20 @@ parlamentarStore.buscarTudo();
             {{ item.nome_popular }}
           </router-link>
         </td>
-        <td> <span v-if="item.partido">{{ item.partido.sigla }}</span></td>
-        <td> <span v-if="item.cargo">{{ item.cargo }}</span></td>
+        <td>
+          <abbr
+            v-if="item.partido"
+            :title="item.partido.nome"
+          >
+            {{ item.partido.sigla }}
+          </abbr>
+          <template v-else>
+            -
+          </template>
+        </td>
+        <td>
+          {{ cargosDeParlamentar[item.cargo]?.nome || item.cargo }}
+        </td>
         <td v-if="authStore.temPermissãoPara('SMAE.acesso_telefone')">
           <button
             class="like-a__text"
