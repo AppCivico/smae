@@ -376,8 +376,14 @@ export class MetaService {
                         });
                 } else {
                     const orgao = orgaos[responsavel.orgao.id];
+                    if (!orgao) {
+                        this.logger.error(
+                            `Faltando órgão ${responsavel.orgao.id} na meta ID ${dbMeta.id} - ${dbMeta.titulo}`
+                        );
+                        continue;
+                    }
 
-                    if (orgao.participantes && orgao.participantes.filter((r) => r.id == responsavel.pessoa.id).length == 0)
+                    if (orgao.participantes.filter((r) => r.id == responsavel.pessoa.id).length == 0)
                         orgao.participantes.push(responsavel.pessoa);
                 }
             }
