@@ -109,11 +109,15 @@ export class ParlamentarService {
                 mandatos: {
                     where: {
                         removido_em: null,
-                        eleicao: { atual_para_mandatos: true },
                     },
-                    take: 1,
                     select: {
                         cargo: true,
+                        eleicao: {
+                            select: {
+                                ano: true,
+                                atual_para_mandatos: true,
+                            },
+                        },
                         partido_atual: {
                             select: {
                                 id: true,
@@ -129,12 +133,18 @@ export class ParlamentarService {
         });
 
         return listActive.map((p) => {
+            const mandatoAtual = p.mandatos.find((m) => {
+                m.eleicao.atual_para_mandatos == true;
+            });
+
             return {
                 ...p,
 
-                cargo: p.mandatos.length > 0 ? p.mandatos[0].cargo : null,
-                partido:
-                    p.mandatos.length > 0 && p.mandatos[0].partido_atual ? { ...p.mandatos[0].partido_atual } : null,
+                cargo: mandatoAtual ? mandatoAtual.cargo : null,
+                partido: mandatoAtual ? mandatoAtual.partido_atual : null,
+                eleicoes: p.mandatos.map((m) => {
+                    return m.eleicao.ano;
+                }),
             };
         });
     }

@@ -34,6 +34,7 @@ export class ParlamentarDto {
 
     partido: PartidoDto | null;
     cargo: ParlamentarCargo | null;
+    eleicoes: number[] | null;
 }
 
 export class ListParlamentarDto {
