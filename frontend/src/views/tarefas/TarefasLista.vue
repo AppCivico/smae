@@ -4,7 +4,7 @@ import LinhaDeCronograma from '@/components/projetos/LinhaDeCronograma.vue';
 import { useTarefasStore } from '@/stores/tarefas.store.ts';
 import { storeToRefs } from 'pinia';
 import { computed, ref } from 'vue';
-import Header from './partials/Header.vue';
+import CabecalhoResumo from '@/components/tarefas/CabecalhoResumo.vue';
 
 const tarefasStore = useTarefasStore();
 const {
@@ -64,7 +64,7 @@ export default {
       </router-link>
     </nav>
   </div>
-  <Header />
+  <CabecalhoResumo :em-foco="projetoEmFoco" />
   <div class="mb2">
     <div class="">
       <label class="label tc300">

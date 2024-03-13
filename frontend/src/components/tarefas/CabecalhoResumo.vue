@@ -1,25 +1,24 @@
 <script setup>
 import dateToField from '@/helpers/dateToField';
 import dinheiro from '@/helpers/dinheiro';
-import { useTarefasStore } from '@/stores/tarefas.store.ts';
-// import { useTransferenciafasStore } from '@/stores/transferencias.store.ts';
 
 import { computed, ref } from 'vue';
 
-const tarefasStore = useTarefasStore();
-// const transferenciasStore = useTransferenciafasStore();
-
-const emFoco = computed(() => tarefasStore?.extra?.projeto);
-console.log('tarefasStore: ', tarefasStore?.extra?.projeto);
+const props = defineProps({
+  emFoco: {
+    type: Boolean,
+    default: false,
+  },
+});
 
 // eslint-disable-next-line max-len
-const nívelMáximoPermitido = computed(() => tarefasStore?.extra?.portfolio?.nivel_maximo_tarefa || 0);
+const nívelMáximoPermitido = computed(() => emFoco?.extra?.portfolio?.nivel_maximo_tarefa || 0);
 
 const nívelMáximoVisível = ref(0);
 
 async function iniciar() {
-  tarefasStore.$reset();
-  await tarefasStore.buscarTudo();
+  emFoco.$reset();
+  await emFoco.buscarTudo();
 
   if (nívelMáximoPermitido.value) {
     nívelMáximoVisível.value = nívelMáximoPermitido.value;
@@ -35,8 +34,6 @@ export default {
 };
 </script>
 <template>
-  <p>Header</p>
-  emFoco: {{ emFoco }}
   <div class="boards mb4">
     <dl class="flex flexwrap g2">
       <div class="mr2">
