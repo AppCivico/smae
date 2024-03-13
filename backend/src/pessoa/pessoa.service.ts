@@ -593,6 +593,24 @@ export class PessoaService {
         const orgaoAntigo = self.pessoa_fisica.orgao_id;
         const orgaoAntigoStr = `órgão antigo ID ${orgaoAntigo}`;
 
+        const curActivePdm = await prismaTx.pdm.findFirst({ where: { ativo: true }, select: { id: true } });
+        if (curActivePdm) {
+            const curResp = await this.pRespMetaService.buscaMetas(self.id, curActivePdm.id, prismaTx);
+            if (curResp.length) {
+                const getDesc = await prismaTx.meta.findMany({
+                    where: { id: { in: curResp.map((r) => r.id) } },
+                    select: { codigo: true, titulo: true, pdm: { select: { nome: true } } },
+                });
+                throw new BadRequestException(
+                    `Mudança de órgão não pode ser efetuada antes de remover todas as responsabilidades, há responsabilidades em: ${getDesc
+                        .map((r) => {
+                            return `Meta ${r.codigo} - ${r.titulo} (PDM ${r.pdm.nome})`;
+                        })
+                        .join('\n')}`
+                );
+            }
+        }
+
         {
             logger.log(`Trocou de órgão: removendo relacionamentos de grupoPortfolioPessoa no ${orgaoAntigoStr}`);
             await prismaTx.grupoPortfolioPessoa.updateMany({
@@ -629,7 +647,6 @@ export class PessoaService {
                 data: { removido_em: now },
             });
         }
-
     }
 
     private async listaPerfilAcessoIds(): Promise<number[]> {
