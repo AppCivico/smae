@@ -5,7 +5,7 @@ import cargosDeParlamentar from '@/consts/cargosDeParlamentar';
 import estadosDoBrasil from '@/consts/estadosDoBrasil';
 import { mandato as schema } from '@/consts/formSchemas';
 import níveisDeSuplência from '@/consts/niveisDeSuplencia';
-import { vMaska } from "maska"
+import { vMaska } from 'maska';
 import { useAlertStore } from '@/stores/alert.store';
 import { useParlamentaresStore } from '@/stores/parlamentares.store';
 import { usePartidosStore } from '@/stores/partidos.store';
@@ -24,7 +24,6 @@ const router = useRouter();
 const alertStore = useAlertStore();
 const parlamentaresStore = useParlamentaresStore();
 const partidosStore = usePartidosStore();
-const biografia = ref('');
 const emit = defineEmits(['close']);
 const props = defineProps({
   apenasEmitir: {
@@ -75,12 +74,9 @@ const cargosDisponíveisParaEdição = computed(() => Object.values(cargosDeParl
   .filter((x) => x.tipo === dadosDaEleiçãoEscolhida.value?.tipo) || []);
 
 const onSubmit = handleSubmit.withControlled(async (valoresControlados) => {
-  const novosValoresControlados = { ...valoresControlados };
-  novosValoresControlados.biografia = biografia.value;
-
   try {
     if (await parlamentaresStore.salvarMandato(
-      novosValoresControlados,
+      valoresControlados,
       props.mandatoId,
       props.parlamentarId,
     )) {
@@ -126,10 +122,6 @@ watch(mandatoParaEdição, (novoValor) => {
   resetForm({ values: novoValor });
 
   eleiçãoEscolhida.value = novoValor.eleicao_id;
-
-  if (mandatoParaEdição.value) {
-    biografia.value = mandatoParaEdição.value.biografia;
-  }
 });
 </script>
 
@@ -452,11 +444,11 @@ watch(mandatoParaEdição, (novoValor) => {
             :schema="schema"
           />
           <Field
+            v-maska
             name="telefone"
             type="text"
             class="inputtext light mb1"
             maxlength="15"
-            v-maska
             data-maska="(##) #####-####'"
           />
           <ErrorMessage
@@ -542,9 +534,16 @@ watch(mandatoParaEdição, (novoValor) => {
             name="biografia"
             :schema="schema"
           />
-
-          <TextEditor
-            v-model="biografia"
+          <Field
+            name="biografia"
+            as="textarea"
+            rows="10"
+            class="inputtext light mb1"
+            :class="{ error: errors.biografia, loading: chamadasPendentes.emFoco }"
+          />
+          <ErrorMessage
+            class="error-msg"
+            name="biografia"
           />
         </div>
       </div>
