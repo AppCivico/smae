@@ -194,6 +194,7 @@ export class PessoaResponsabilidadesMetaService {
         const logger = LoggerWithLog('PessoaResponsabilidadesMetaService: copiarResponsabilidades');
         const metasInIds = { in: metas } as const;
 
+        const disclaimerStr = 'pois não destino não tem permissão de coordenador CP';
         const destinoEhCoordenadorCp =
             (await prismaTx.view_pessoa_coordenador_responsavel_cp.count({
                 where: { pessoa_id: destinoId },
@@ -211,20 +212,21 @@ export class PessoaResponsabilidadesMetaService {
             for (const mr of origMetaResponsavelRows) {
                 if (mr.coordenador_responsavel_cp && !destinoEhCoordenadorCp) {
                     logger.warn(
-                        `Desativando cópia como metaResponsavel de ${origemId} para ${destinoId}, meta ${mr.meta_id}`
+                        `Desativando cópia na metaResponsavel de ${origemId} para ${destinoId}, meta_id ${mr.meta_id} ${disclaimerStr}`
                     );
-
-                    mr.coordenador_responsavel_cp = false;
+                    continue;
                 }
+
                 logger.verbose(
-                    `Copiando/atualizando metaResponsavel de ${origemId} para ${destinoId}, meta ${mr.meta_id}, coordenador_responsavel_cp=${mr.coordenador_responsavel_cp}`
+                    `Copiando/atualizando metaResponsavel de ${origemId} para ${destinoId}, meta_id ${mr.meta_id}, coordenador_responsavel_cp=${mr.coordenador_responsavel_cp}`
                 );
 
                 await prismaTx.metaResponsavel.upsert({
                     where: {
-                        pessoa_id_meta_id: {
+                        pessoa_id_meta_id_coordenador_responsavel_cp: {
                             pessoa_id: destinoId,
                             meta_id: mr.meta_id,
+                            coordenador_responsavel_cp: mr.coordenador_responsavel_cp,
                         },
                     },
                     create: {
@@ -233,9 +235,7 @@ export class PessoaResponsabilidadesMetaService {
                         pessoa_id: destinoId,
                         meta_id: mr.meta_id,
                     },
-                    update: {
-                        coordenador_responsavel_cp: mr.coordenador_responsavel_cp,
-                    },
+                    update: {},
                 });
             }
         }
@@ -268,34 +268,32 @@ export class PessoaResponsabilidadesMetaService {
             });
 
             for (const mr of iniciativaResponsavelRows) {
-                if (mr.coordenador_responsavel_cp && !destinoEhCoordenadorCp) {
+                if (mr.coordenador_responsavel_cp != destinoEhCoordenadorCp) {
                     logger.warn(
-                        `Desativando cópia como iniciativaResponsavel de ${origemId} para ${destinoId}, atividade ${mr.iniciativa_id}`
+                        `Desativando cópia na iniciativaResponsavel de ${origemId} para ${destinoId}, iniciativa_id ${mr.iniciativa_id} ${disclaimerStr}`
                     );
-
-                    mr.coordenador_responsavel_cp = false;
+                    continue;
                 }
 
                 logger.verbose(
-                    `Copiando/Atualizando atividadeResponsavel de ${origemId} para ${destinoId}, atividade ${mr.iniciativa_id}, coordenador_responsavel_cp=${mr.coordenador_responsavel_cp}`
+                    `Copiando/Atualizando iniciativaResponsavel de ${origemId} para ${destinoId}, iniciativa_id ${mr.iniciativa_id}, coordenador_responsavel_cp=${mr.coordenador_responsavel_cp}`
                 );
 
                 await prismaTx.iniciativaResponsavel.upsert({
                     where: {
-                        pessoa_id_iniciativa_id: {
+                        pessoa_id_iniciativa_id_coordenador_responsavel_cp: {
                             pessoa_id: destinoId,
                             iniciativa_id: mr.iniciativa_id,
+                            coordenador_responsavel_cp: mr.coordenador_responsavel_cp,
                         },
                     },
                     create: {
-                        coordenador_responsavel_cp: mr.coordenador_responsavel_cp,
                         orgao_id: mr.orgao_id,
                         pessoa_id: destinoId,
                         iniciativa_id: mr.iniciativa_id,
-                    },
-                    update: {
                         coordenador_responsavel_cp: mr.coordenador_responsavel_cp,
                     },
+                    update: {},
                 });
             }
         }
@@ -312,21 +310,21 @@ export class PessoaResponsabilidadesMetaService {
             for (const mr of atividadeResponsavelRows) {
                 if (mr.coordenador_responsavel_cp && !destinoEhCoordenadorCp) {
                     logger.warn(
-                        `Desativando cópia como atividadeResponsavel de ${origemId} para ${destinoId}, atividade ${mr.atividade_id}`
+                        `Desativando cópia de atividadeResponsavel de ${origemId} para ${destinoId}, atividade_id ${mr.atividade_id} ${disclaimerStr}`
                     );
-
-                    mr.coordenador_responsavel_cp = false;
+                    continue;
                 }
 
                 logger.verbose(
-                    `Copiando atividadeResponsavel de ${origemId} para ${destinoId}, atividade ${mr.atividade_id}, coordenador_responsavel_cp=${mr.coordenador_responsavel_cp}`
+                    `Copiando atividadeResponsavel de ${origemId} para ${destinoId}, atividade_id ${mr.atividade_id}, coordenador_responsavel_cp=${mr.coordenador_responsavel_cp}`
                 );
 
                 await prismaTx.atividadeResponsavel.upsert({
                     where: {
-                        pessoa_id_atividade_id: {
+                        pessoa_id_atividade_id_coordenador_responsavel_cp: {
                             pessoa_id: destinoId,
                             atividade_id: mr.atividade_id,
+                            coordenador_responsavel_cp: mr.coordenador_responsavel_cp,
                         },
                     },
                     create: {
@@ -335,9 +333,7 @@ export class PessoaResponsabilidadesMetaService {
                         pessoa_id: destinoId,
                         atividade_id: mr.atividade_id,
                     },
-                    update: {
-                        coordenador_responsavel_cp: mr.coordenador_responsavel_cp,
-                    },
+                    update: {},
                 });
             }
         }
