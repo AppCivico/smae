@@ -4,7 +4,7 @@
     <hr class="ml2 f1">
 
     <router-link
-      v-if="emFoco?.id && authStore.temPermissãoPara('SMAE.acesso_telefone')"
+      v-if="emFoco?.id && authStore.temPermissãoPara('CadastroParlamentar.editar')"
       :to="{ name: 'parlamentaresEditar', params: { parlamentarId: emFoco.id } }"
       class="btn big ml2"
     >
