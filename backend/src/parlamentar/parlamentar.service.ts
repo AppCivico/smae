@@ -1,25 +1,26 @@
 import { HttpException, Injectable } from '@nestjs/common';
-import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
-import { PrismaService } from '../prisma/prisma.service';
+import { DadosEleicaoNivel, ParlamentarCargo, ParlamentarEquipeTipo, Prisma } from '@prisma/client';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
+import { UploadService } from 'src/upload/upload.service';
+import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
+import { HtmlSanitizer } from '../common/html-sanitizer';
+import { PrismaService } from '../prisma/prisma.service';
 import {
+    CreateEquipeDto,
     CreateMandatoDto,
-    CreateParlamentarDto,
     CreateMandatoRepresentatividadeDto,
     CreateMandatoSuplenteDto,
-    CreateEquipeDto,
+    CreateParlamentarDto,
 } from './dto/create-parlamentar.dto';
-import { DadosEleicaoNivel, ParlamentarCargo, ParlamentarEquipeTipo, Prisma } from '@prisma/client';
-import { ParlamentarDetailDto, ParlamentarDto } from './entities/parlamentar.entity';
+import { FilterParlamentarDto } from './dto/filter-parlamentar.dto';
+import { RemoveMandatoDepsDto } from './dto/remove-mandato-deps.dto';
 import {
     UpdateEquipeDto,
     UpdateMandatoDto,
     UpdateParlamentarDto,
     UpdateRepresentatividadeDto,
 } from './dto/update-parlamentar.dto';
-import { RemoveMandatoDepsDto } from './dto/remove-mandato-deps.dto';
-import { UploadService } from 'src/upload/upload.service';
-import { FilterParlamentarDto } from './dto/filter-parlamentar.dto';
+import { ParlamentarDetailDto, ParlamentarDto } from './entities/parlamentar.entity';
 
 @Injectable()
 export class ParlamentarService {
@@ -477,6 +478,8 @@ export class ParlamentarService {
         });
         if (!partidoAtualExists) throw new HttpException('partido_atual_id| Partido atual inválido', 400);
 
+        dto.biografia = HtmlSanitizer(dto.biografia);
+
         const created = await this.prisma.$transaction(
             async (prismaTxn: Prisma.TransactionClient): Promise<RecordWithId> => {
                 const mandato = await prismaTxn.parlamentarMandato.create({
@@ -508,6 +511,8 @@ export class ParlamentarService {
             if (!partidoCandidaturaExists)
                 throw new HttpException('partido_candidatura_id| Partido de candidatura inválido', 400);
         }
+
+        if (dto.biografia) dto.biografia = HtmlSanitizer(dto.biografia);
 
         if (dto.partido_candidatura_id && self.partido_candidatura_id != dto.partido_candidatura_id) {
             const partidoAtualExists = await this.prisma.partido.count({
@@ -679,8 +684,8 @@ export class ParlamentarService {
     }
 
     async createSuplente(
-        parlamentarId: number,
-        dto: CreateMandatoSuplenteDto,
+        _parlamentarId: number,
+        _dto: CreateMandatoSuplenteDto,
         user: PessoaFromJwt
     ): Promise<RecordWithId> {
         return { id: 0 };
