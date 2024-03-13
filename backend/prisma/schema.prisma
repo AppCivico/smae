@@ -300,9 +300,25 @@ model Pessoa {
     PainelExternoQueRemovi                   PainelExterno[]                           @relation("Removedor")
     view_pessoa_espectador_de_painel_externo view_pessoa_espectador_de_painel_externo?
     view_pessoa_coordenador_responsavel_cp   view_pessoa_coordenador_responsavel_cp?
+    LogGenerico                              LogGenerico[]
 
     @@index([email])
     @@map("pessoa")
+}
+
+model LogGenerico {
+    id               Int           @id @default(autoincrement())
+    contexto         String
+    ip               String        @db.Inet
+    log              String
+    pessoa_sessao_id Int?
+    pessoa_id        Int?
+    pessoa           Pessoa?       @relation(fields: [pessoa_id], references: [id])
+    pessoa_sessao    PessoaSessao? @relation(fields: [pessoa_sessao_id], references: [id])
+
+    criado_em DateTime @default(now()) @db.Timestamptz(6)
+
+    @@map("log_generico")
 }
 
 model PrivilegioModulo {
@@ -3646,6 +3662,7 @@ model PessoaSessao {
 
     PessoaSessaoAtiva  PessoaSessaoAtiva[]
     PessoaAtividadeLog PessoaAtividadeLog[]
+    LogGenerico        LogGenerico[]
 
     @@index([pessoa_id])
     @@map("pessoa_sessao")
