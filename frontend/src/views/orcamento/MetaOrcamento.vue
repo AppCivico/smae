@@ -146,7 +146,10 @@ export default {
         :parentlink="parentlink"
         @apagar="start"
       >
-        <template #cabeçalho="{ ano }">
+        <template
+          v-if="orc.execucao_disponivel"
+          #cabeçalho="{ ano }"
+        >
           <label
             v-if="!!OrcamentoRealizadoConclusão[ano]?.pode_editar"
             class="conclusão-de-plano__label ml2"

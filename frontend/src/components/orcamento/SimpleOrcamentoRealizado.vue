@@ -157,7 +157,7 @@ watch(órgãoEUnidadeSelecionados, (novoValor) => {
         />
 
         <button
-          v-if="podeExcluirEmLote"
+          v-if="podeExcluirEmLote && config?.execucao_disponivel"
           type="button"
           class="ml2 btn with-icon bgnone tcprimary p0"
           :disabled="!linhasSelecionadas.length"
@@ -188,7 +188,7 @@ watch(órgãoEUnidadeSelecionados, (novoValor) => {
         <col>
         <col v-if="OrcamentoRealizadoPermissões[ano]?.pode_editar">
         <col
-          v-if="podeExcluirEmLote"
+          v-if="podeExcluirEmLote && config?.execucao_disponivel"
           class="col--botão-de-ação"
         >
         <thead>
@@ -203,7 +203,7 @@ watch(órgãoEUnidadeSelecionados, (novoValor) => {
               v-if="OrcamentoRealizadoPermissões[ano]?.pode_editar"
               style="width: 50px"
             />
-            <th v-if="podeExcluirEmLote">
+            <th v-if="podeExcluirEmLote && config?.execucao_disponivel">
               <input
                 type="checkbox"
                 class="like-a__text"
@@ -247,14 +247,14 @@ watch(órgãoEUnidadeSelecionados, (novoValor) => {
               />
               <td />
               <td v-if="OrcamentoRealizadoPermissões[ano]?.pode_editar" />
-              <td v-if="podeExcluirEmLote" />
+              <td v-if="podeExcluirEmLote && config?.execucao_disponivel" />
             </tr>
             <LinhaRealizado
               v-model="linhasSelecionadas"
               :órgão-e-unidade-selecionados="órgãoEUnidadeSelecionados"
               :group="groups"
               :permissao="config.execucao_disponivel"
-              :exibir-checkbox-de-seleção="podeExcluirEmLote"
+              :exibir-checkbox-de-seleção="podeExcluirEmLote && config?.execucao_disponivel"
               :parentlink="parentlink"
             />
           </tbody>
@@ -284,14 +284,14 @@ watch(órgãoEUnidadeSelecionados, (novoValor) => {
                 </td>
                 <td />
                 <td v-if="OrcamentoRealizadoPermissões[ano]?.pode_editar" />
-                <td v-if="podeExcluirEmLote" />
+                <td v-if="podeExcluirEmLote && config?.execucao_disponivel" />
               </tr>
               <LinhaRealizado
                 v-model="linhasSelecionadas"
                 :órgão-e-unidade-selecionados="órgãoEUnidadeSelecionados"
                 :group="g"
                 :permissao="config.previsao_custo_disponivel"
-                :exibir-checkbox-de-seleção="podeExcluirEmLote"
+                :exibir-checkbox-de-seleção="podeExcluirEmLote && config?.execucao_disponivel"
                 :parentlink="parentlink"
               />
             </tbody>
@@ -324,14 +324,14 @@ watch(órgãoEUnidadeSelecionados, (novoValor) => {
                   </td>
                   <td />
                   <td v-if="OrcamentoRealizadoPermissões[ano]?.pode_editar" />
-                  <td v-if="podeExcluirEmLote" />
+                  <td v-if="podeExcluirEmLote && config?.execucao_disponivel" />
                 </tr>
                 <LinhaRealizado
                   v-model="linhasSelecionadas"
                   :órgão-e-unidade-selecionados="órgãoEUnidadeSelecionados"
                   :group="gg"
                   :permissao="config.previsao_custo_disponivel"
-                  :exibir-checkbox-de-seleção="podeExcluirEmLote"
+                  :exibir-checkbox-de-seleção="podeExcluirEmLote && config?.execucao_disponivel"
                   :parentlink="parentlink"
                 />
               </tbody>
