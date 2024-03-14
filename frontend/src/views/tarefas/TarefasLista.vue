@@ -5,7 +5,9 @@ import { useTarefasStore } from '@/stores/tarefas.store.ts';
 import { storeToRefs } from 'pinia';
 import { computed, ref } from 'vue';
 import CabecalhoResumo from '@/components/tarefas/CabecalhoResumo.vue';
+import { useRoute } from 'vue-router';
 
+const route = useRoute();
 const tarefasStore = useTarefasStore();
 const {
   árvoreDeTarefas, chamadasPendentes, erro,
@@ -19,7 +21,15 @@ const nívelMáximoPermitido = computed(() => tarefasStore?.extra?.portfolio?.ni
 
 const nívelMáximoVisível = ref(0);
 
+let prefixo = null;
+
 async function iniciar() {
+  if (route.params?.projetoId) {
+    prefixo = 'projeto';
+  } else if (route.params?.transferenciaId) {
+    prefixo = 'transferencia';
+  }
+
   tarefasStore.$reset();
   await tarefasStore.buscarTudo();
 
@@ -49,7 +59,7 @@ export default {
       class="flex g1"
     >
       <router-link
-        :to="{ name: 'tarefasCriar' }"
+        :to="{ name: prefixo + 'tarefasCriar' }"
         class="btn"
       >
         Nova tarefa
@@ -57,7 +67,7 @@ export default {
 
       <router-link
         v-if="!árvoreDeTarefas.length"
-        :to="{ name: 'tarefasClonar' }"
+        :to="{ name: prefixo + 'tarefasClonar' }"
         class="btn"
       >
         Clonar tarefas
