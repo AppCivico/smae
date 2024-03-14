@@ -2,10 +2,9 @@
 import { tipoDeTransferencia as schema } from '@/consts/formSchemas';
 import { useAlertStore } from '@/stores/alert.store';
 import { useTipoDeTransferenciaStore } from '@/stores/tipoDeTransferencia.store';
-
 import { storeToRefs } from 'pinia';
 import { ErrorMessage, Field, Form } from 'vee-validate';
-
+import { computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
 defineOptions({ inheritAttrs: false });
@@ -14,7 +13,8 @@ const tipoDeTransferencia = useTipoDeTransferenciaStore();
 const {
   chamadasPendentes,
   erro,
-  itemParaEdição } = storeToRefs(tipoDeTransferencia);
+  lista,
+   } = storeToRefs(tipoDeTransferencia);
 
 const router = useRouter();
 const route = useRoute();
@@ -26,6 +26,11 @@ const props = defineProps({
 });
 
 const alertStore = useAlertStore();
+ const itemParaEdição = computed(() => lista.value.find((x) => {
+   return x.id === Number(route.params.tipoId);
+ }) || {
+   id: 0, nome: '', categoria: null, esfera: null,
+});
 
 
 async function onSubmit(values) {
@@ -51,9 +56,9 @@ async function onSubmit(values) {
 }
 
 if (props.tipoId) {
-  tipoDeTransferencia.buscarItem(props.tipoId);
+  tipoDeTransferencia.buscarTudo(props.tipoId);
 }
-tipoDeTransferencia.buscarTudo();
+
 </script>
 
 <template>
@@ -62,6 +67,7 @@ tipoDeTransferencia.buscarTudo();
     <hr class="ml2 f1">
     <CheckClose />
   </div>
+
   <Form v-slot="{ errors, isSubmitting }"
     :validation-schema="schema"
     :initial-values="itemParaEdição"
