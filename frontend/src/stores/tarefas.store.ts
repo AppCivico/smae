@@ -53,6 +53,16 @@ function resolverHierarquia(tarefa: TarefaItemDto, tarefasPorId: { [x: string | 
     : String(tarefa.numero);
 }
 
+// eslint-disable-next-line max-len
+function obterPrefixo(route: { params?: { projetoId?: number; transferenciaId?: number } }): string | null {
+  if (route.params?.projetoId) {
+    return 'projeto';
+  } if (route.params?.transferenciaId) {
+    return 'transferencia';
+  }
+  return null;
+}
+
 export const useTarefasStore = defineStore('tarefas', {
   state: (): Estado => ({
     lista: [],
@@ -79,13 +89,15 @@ export const useTarefasStore = defineStore('tarefas', {
       }
       this.chamadasPendentes.emFoco = false;
     },
-
+    // TODO: trocar projetoId
     async buscarTudo(params = {}, projetoId = 0): Promise<void> {
+      const prefixo = obterPrefixo(this.route);
+
       this.chamadasPendentes.lista = true;
       this.chamadasPendentes.emFoco = true;
 
       try {
-        const { linhas, portfolio, projeto } = await this.requestS.get(`${baseUrl}/projeto/${projetoId || this.route.params.projetoId}/tarefa`, params);
+        const { linhas, portfolio, projeto } = await this.requestS.get(`${baseUrl}/${prefixo}/${projetoId || this.route.params.projetoId}/tarefa`, params);
 
         this.lista = linhas;
         this.extra = { portfolio, projeto };
