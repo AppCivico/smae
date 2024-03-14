@@ -61,10 +61,11 @@ services:
       POSTGRES_DB: metabase
       POSTGRES_PASSWORD: password
     volumes:
-      - pgdata:/var/lib/postgresql/data
+      - pgdata_metabase:/var/lib/postgresql/data
     networks:
       #- metadb_postgres
       - smae_network
+
   # RAM ~ 4.0gb max
   smae_api:
     container_name: "${API_CONTAINER_NAME}"
@@ -110,7 +111,8 @@ services:
       options:
         max-file: "2"
         max-size: 100MB
-  # RAM ~ 4.0gb max
+
+  # RAM ~ 300mb max
   smae_orcamento:
     container_name: "${API_CONTAINER_NAME}_orcamento"
     build:
@@ -131,6 +133,7 @@ services:
         max-file: "2"
         max-size: 100MB
 
+  # RAM ~ 300mb max
   smae_geoloc:
     container_name: "${API_CONTAINER_NAME}_geoloc"
     build:
@@ -319,6 +322,9 @@ networks:
 volumes:
   pgdata:
     name: "${DATA_PREFIX}smae_pg_data"
+
+  pgdata_metabase:
+    name: "${DATA_PREFIX}smae_pg_metabase_data"
 
   email_data:
     name: "${DATA_PREFIX}smae_email_data"
