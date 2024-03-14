@@ -19,7 +19,7 @@ async function excluirGrupoDePaineisExternos(id) {
     if (await useGruposPaineisExternosStore.excluirItem(id)) {
       useGruposPaineisExternosStore.$reset();
       useGruposPaineisExternosStore.buscarTudo();
-      alertStore.success('GGrupos de painéis Externos removido.');
+      alertStore.success('Grupos de painéis Externos removido.');
     }
   }, 'Remover');
 }
