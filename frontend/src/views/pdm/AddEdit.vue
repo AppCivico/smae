@@ -157,7 +157,7 @@ async function uploadshape(e) {
     </div>
     <template v-if="!(singlePdm?.loading || singlePdm?.error)">
       <Form
-        v-slot="{ errors, isSubmitting }"
+        v-slot="{ errors, isSubmitting, values }"
         :validation-schema="schema"
         :initial-values="singlePdm"
         @submit="onSubmit"
@@ -173,7 +173,10 @@ async function uploadshape(e) {
                 type="checkbox"
                 value="1"
                 :checked="ativo"
-              /><span>Programa ativo</span><span>Programa inativo</span>
+                class="mr1"
+              />
+              <template v-if="values.ativo">Programa ativo</template>
+              <template v-else>Programa inativo</template>
             </label>
             <p class="t13 tc500">
               Ao ativar um Programa de Metas, todos os demais programas serão inativados
