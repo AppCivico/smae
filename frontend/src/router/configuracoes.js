@@ -22,7 +22,6 @@ import GruposDePaineisExternosCriarEditar from '@/views/gruposDePaineisExternos/
 import GruposDePaineisExternosLista from '@/views/gruposDePaineisExternos/GruposDePaineisExternosLista.vue';
 import GruposDePaineisExternosRaiz from '@/views/gruposDePaineisExternos/GruposDePaineisExternosRaiz.vue';
 
-
 const PortfoliosCriarEditar = defineAsyncComponent({
   loader: () => import('@/views/portfolios/PortfoliosCriarEditar.vue'),
   loadingComponent: LoadingComponent,
@@ -85,7 +84,7 @@ export default [
         'CadastroRegiao.',
         'Projeto.administrar_portfolios',
         'Projeto.administrar_portfolios_no_orgao',
-        'CadastroPainelExterno',
+        'CadastroPainelExterno.',
       ],
       presenteNoMenu: true,
       pesoNoMenu: 1,
@@ -154,7 +153,7 @@ export default [
         meta: {
           título: 'Painéis externos',
           rotaPrescindeDeChave: true,
-          limitarÀsPermissões: 'CadastroPainelExterno',
+          limitarÀsPermissões: 'CadastroPainelExterno.',
           rotasParaMenuSecundário: [
             'paineisExternosListar',
             'grupospaineisExternosListar',
@@ -200,7 +199,7 @@ export default [
         meta: {
           título: 'Grupos de Painéis Externos',
           rotaPrescindeDeChave: true,
-          limitarÀsPermissões: 'CadastroPainelExterno',
+          limitarÀsPermissões: 'CadastroPainelExterno.',
           rotasParaMenuSecundário: [
             'paineisExternosListar',
 
