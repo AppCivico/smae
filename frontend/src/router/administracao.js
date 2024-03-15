@@ -33,6 +33,11 @@ import {
   ListUsers,
 } from '@/views/users';
 
+import TipoDeTrasferenciaCriarEditar from '@/views/tipoDeTrasferencia/TipoDeTrasferenciaCriarEditar.vue';
+import TipoDeTrasferenciaLista from '@/views/tipoDeTrasferencia/TipoDeTrasferenciaLista.vue';
+import TipoDeTrasferenciaRaiz from '@/views/tipoDeTrasferencia/TipoDeTrasferenciaRaiz.vue';
+
+
 const TiposDeAcompanhamentoLista = defineAsyncComponent({
   loader: () => import('@/views/tiposDeAcompanhamento/TiposLista.vue'),
   loadingComponent: LoadingComponent,
@@ -55,6 +60,7 @@ const rotasParaMenuSecundário = [
       'gerenciarTiposDeDocumento',
       'gerenciarCategorias',
       'gerenciarRegiões',
+      'tipoDeTrasferenciaListar'
     ],
   },
   {
@@ -220,6 +226,46 @@ export default [
             meta: {
               título: 'Editar tipo de acompanhamento',
               rotaDeEscape: 'tipoDeAcompanhamentoListar',
+            },
+          },
+        ],
+      },
+      {
+        path: '/transferencia-tipo',
+        component: TipoDeTrasferenciaRaiz,
+        meta: {
+          título: 'Tipo de Trasferência',
+          rotaPrescindeDeChave: true,
+          rotasParaMenuSecundário,
+        },
+        children: [
+          {
+            name: 'tipoDeTrasferenciaListar',
+            path: '',
+            component: TipoDeTrasferenciaLista,
+            meta: {
+              título: 'Tipo de Trasferência',
+            },
+          },
+          {
+            name: 'tipoDeTrasferenciaCriar',
+            path: 'novo',
+            component: TipoDeTrasferenciaCriarEditar,
+            meta: {
+              título: 'Novo Tipo de Trasferencia',
+            },
+          },
+          {
+            path: ':tipoId',
+            name: 'tipoDeTrasferenciaEditar',
+            component: TipoDeTrasferenciaCriarEditar,
+            props: ({ params }) => ({
+              ...params,
+              ...{ tipoId: Number.parseInt(params.tipoId, 10) || undefined },
+            }),
+
+            meta: {
+              título: 'Editar Tipo de Trasferência',
             },
           },
         ],
@@ -455,4 +501,6 @@ export default [
       },
     ],
   },
+
+
 ];
