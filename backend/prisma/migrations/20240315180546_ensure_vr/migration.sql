@@ -12,4 +12,4 @@ WHERE (pessoa_id, variavel_id, id)
             pessoa_id,
             variavel_id);
 
-CREATE UNIQUE INDEX "variavel_responsavel_pessoa_id_variavel_id_key" ON "variavel_responsavel"("pessoa_id", "variavel_id");
+CREATE UNIQUE INDEX IF NOT EXISTS "variavel_responsavel_pessoa_id_variavel_id_key" ON "variavel_responsavel"("pessoa_id", "variavel_id");
