@@ -104,6 +104,4 @@ export default {
   >
     carregar mais
   </button>
-
-  <router-view />
 </template>
