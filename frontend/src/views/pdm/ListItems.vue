@@ -1,18 +1,23 @@
 <script setup>
-import {
-  ref, reactive, onMounted, onUpdated,
-} from 'vue';
-import { storeToRefs } from 'pinia';
 import { Dashboard } from '@/components';
 import {
-  useAlertStore, useEditModalStore, useAuthStore, usePdMStore,
+  useAlertStore,
+  useAuthStore,
+  useEditModalStore,
+  usePdMStore,
 } from '@/stores';
+import { default as AddEditArquivos } from '@/views/pdm/AddEditArquivos.vue';
 import { default as AddEditMacrotemas } from '@/views/pdm/AddEditMacrotemas.vue';
-import { default as AddEditTemas } from '@/views/pdm/AddEditTemas.vue';
 import { default as AddEditSubtemas } from '@/views/pdm/AddEditSubtemas.vue';
 import { default as AddEditTags } from '@/views/pdm/AddEditTags.vue';
-import { default as AddEditArquivos } from '@/views/pdm/AddEditArquivos.vue';
+import { default as AddEditTemas } from '@/views/pdm/AddEditTemas.vue';
 import { default as EdicaoOrcamento } from '@/views/pdm/EdicaoOrcamento.vue';
+import { storeToRefs } from 'pinia';
+import {
+  onMounted, onUpdated,
+  reactive,
+  ref,
+} from 'vue';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
