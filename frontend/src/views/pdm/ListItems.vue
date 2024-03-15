@@ -135,7 +135,7 @@ function abreEdicaoOrcamento(id) {
               <td style="text-align: right;">
                 <a
                   v-if="perm?.CadastroPdm?.editar"
-                  class="tprimary mr1 tipinfo right"
+                  class="tprimary mr1 tipinfo left"
                   @click="abreEdicaoOrcamento(item.id)"
                 >
                   <svg
@@ -152,7 +152,7 @@ function abreEdicaoOrcamento(id) {
                         pdm_id: item.id
                       }
                     }"
-                    class="tprimary tipinfo right"
+                    class="tprimary tipinfo"
                   >
                     <svg
                       width="20"
