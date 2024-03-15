@@ -1,12 +1,16 @@
 <script setup>
 import { Dashboard } from '@/components';
-import { Form, Field } from 'vee-validate';
-import * as Yup from 'yup';
-import { useRoute } from 'vue-router';
 import { router } from '@/router';
+import { useAlertStore } from '@/stores/alert.store';
+import { useAuthStore } from '@/stores/auth.store';
+import { useResourcesStore } from '@/stores/resources.store';
 import { storeToRefs } from 'pinia';
+import { Field, Form } from 'vee-validate';
+import { useRoute } from 'vue-router';
+import * as Yup from 'yup';
 
-import { useAlertStore, useResourcesStore } from '@/stores';
+const authStore = useAuthStore();
+const { permissions: perm } = storeToRefs(authStore);
 
 const alertStore = useAlertStore();
 const route = useRoute();
@@ -116,6 +120,7 @@ async function checkDelete(id) {
         </div>
       </Form>
     </template>
+
     <template v-if="tempResources.id && perm?.CadastroUnidadeMedida?.remover">
       <button
         class="btn amarelo big"
