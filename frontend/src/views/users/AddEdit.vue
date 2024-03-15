@@ -297,7 +297,10 @@ async function onSubmit(payload) {
           </template>
         </div>
 
-        <div class="mb2" v-if="sistemaEscolhido.valueOf() === 'PDM'">
+        <div
+          v-if="sistemaEscolhido.valueOf() === 'PDM'"
+          class="mb2"
+        >
           <div class="label">
             Grupos de paineis da meta
           </div>
