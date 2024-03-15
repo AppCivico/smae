@@ -1,21 +1,9 @@
-import LoadingComponent from '@/components/LoadingComponent.vue';
 import MenuSecundário from '@/components/MenuSecundario.vue';
 import EnviarArquivo from '@/views/envios/EnviarArquivo.vue';
+import EnviosLista from '@/views/envios/EnviosLista.vue';
+import EnviosMetas from '@/views/envios/EnviosMetas.vue';
+import EnviosProjetos from '@/views/envios/EnviosProjetos.vue';
 import EnviosRaiz from '@/views/envios/EnviosRaiz.vue';
-import { defineAsyncComponent } from 'vue';
-
-const EnviosLista = defineAsyncComponent({
-  loader: () => import('@/views/envios/EnviosLista.vue'),
-  loadingComponent: LoadingComponent,
-});
-const EnviosMetas = defineAsyncComponent({
-  loader: () => import('@/views/envios/EnviosMetas.vue'),
-  loadingComponent: LoadingComponent,
-});
-const EnviosProjetos = defineAsyncComponent({
-  loader: () => import('@/views/envios/EnviosProjetos.vue'),
-  loadingComponent: LoadingComponent,
-});
 
 export default {
   path: '/envios',
