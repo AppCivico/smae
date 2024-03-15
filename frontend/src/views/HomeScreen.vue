@@ -3,6 +3,7 @@ import módulos from '@/consts/modulosDoSistema';
 import { useAuthStore } from '@/stores/auth.store';
 import { useRegionsStore } from '@/stores/regions.store';
 import { useUsersStore } from '@/stores/users.store';
+import { useTarefasStore } from '@/stores/tarefas.store.ts';
 import { storeToRefs } from 'pinia';
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
@@ -34,6 +35,8 @@ async function escolher(opção) {
 
       useRegionsStore().$reset();
       useUsersStore().$reset();
+      useTarefasStore().$reset();
+
     })
     .catch((err) => {
       sistemaEscolhido.value = 'SMAE';
