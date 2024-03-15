@@ -66,17 +66,17 @@ export default {
           path: '',
           name: 'EnviosOrçamentosMetas',
           component: EnviosLista,
-        },
-        {
-          path: 'enviar',
-          name: 'EnviosOrçamentosMetasNovo',
-          components: {
-            default: EnviosLista,
-            modal: EnviarArquivo,
-          },
-          meta: {
-            rotaDeEscape: 'EnviosOrçamentosMetas',
-          },
+
+          children: [
+            {
+              path: 'enviar',
+              name: 'EnviosOrçamentosMetasNovo',
+              component: EnviarArquivo,
+              meta: {
+                rotaDeEscape: 'EnviosOrçamentosMetas',
+              },
+            },
+          ],
         },
       ],
     },
@@ -96,17 +96,16 @@ export default {
           path: '',
           name: 'EnviosOrçamentosProjetos',
           component: EnviosLista,
-        },
-        {
-          path: 'enviar',
-          name: 'EnviosOrçamentosProjetosNovo',
-          components: {
-            default: EnviosLista,
-            modal: EnviarArquivo,
-          },
-          meta: {
-            rotaDeEscape: 'EnviosOrçamentosProjetos',
-          },
+          children: [
+            {
+              path: 'enviar',
+              name: 'EnviosOrçamentosProjetosNovo',
+              component: EnviarArquivo,
+              meta: {
+                rotaDeEscape: 'EnviosOrçamentosProjetos',
+              },
+            },
+          ],
         },
       ],
     },
