@@ -190,7 +190,7 @@ export default {
           :hidden="!oProjetoÉPrioritário || linha.dependencias?.length"
           :title="`Criar tarefa filha de ${linha.hierarquia}`"
           :to="{
-            name: 'tarefasCriar',
+            name: 'projetoTarefasCriar',
             params: {
               projetoId: projetoId,
               tarefaId: linha.id,

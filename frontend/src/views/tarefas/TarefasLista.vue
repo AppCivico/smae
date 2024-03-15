@@ -59,7 +59,7 @@ export default {
       class="flex g1"
     >
       <router-link
-        :to="{ name: prefixo + 'tarefasCriar' }"
+        :to="{ name: prefixo + 'TarefasCriar' }"
         class="btn"
       >
         Nova tarefa
@@ -67,7 +67,7 @@ export default {
 
       <router-link
         v-if="!árvoreDeTarefas.length"
-        :to="{ name: prefixo + 'tarefasClonar' }"
+        :to="{ name: prefixo + 'TarefasClonar' }"
         class="btn"
       >
         Clonar tarefas
