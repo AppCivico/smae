@@ -101,7 +101,11 @@ async function onSubmit(values) {
   }
 }
 async function checkClose() {
-  alertStore.confirm('Deseja sair sem salvar as alterações?', { name: 'gerenciarPdm' });
+  alertStore.confirm('Deseja sair sem salvar as alterações?', () => {
+    editModalStore.$reset();
+    alertStore.$reset();
+    router.push({ name: 'gerenciarPdm' });
+  });
 }
 function maskDate(el) {
   const kC = event.keyCode;
