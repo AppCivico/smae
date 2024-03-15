@@ -82,12 +82,10 @@ if (!PdMStore.PdM.length) {
     </component>
   </router-view>
 
-  <Teleport to="body">
-    <router-view
-      v-slot="{ Component }"
-      name="modal"
-    >
-      <component :is="Component" />
-    </router-view>
-  </Teleport>
+  <router-view
+    v-slot="{ Component }"
+    name="modal"
+  >
+    <component :is="Component" />
+  </router-view>
 </template>
