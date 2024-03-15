@@ -1,4 +1,5 @@
 <script setup>
+import SmallModal from '@/components/SmallModal.vue';
 import requestS from '@/helpers/requestS.ts';
 import { useAlertStore } from '@/stores/alert.store';
 import { useImportaçõesStore } from '@/stores/importacoes.store.ts';
@@ -107,171 +108,173 @@ export default {
 };
 </script>
 <template>
-  <div class="flex spacebetween center mb2">
-    <h2>Enviar arquivo</h2>
-    <hr class="ml2 f1">
+  <SmallModal>
+    <div class="flex spacebetween center mb2">
+      <h2>Enviar arquivo</h2>
+      <hr class="ml2 f1">
 
-    <CheckClose />
-  </div>
+      <CheckClose />
+    </div>
 
-  <template v-if="!curfile?.loading">
-    <Form
-      v-slot="{ errors, isSubmitting }"
-      :validation-schema="schema"
-      @submit="onSubmit"
-    >
-      <Field
-        name="tipo"
-        value="IMPORTACAO_ORCAMENTO"
-        type="hidden"
-      />
-      <div
-        v-if="$route.meta.entidadeMãe === 'pdm'"
-        class="flex g2 mb1"
+    <template v-if="!curfile?.loading">
+      <Form
+        v-slot="{ errors, isSubmitting }"
+        :validation-schema="schema"
+        @submit="onSubmit"
       >
-        <div class="f1">
-          <LabelFromYup
-            for="pdm_id"
-            name="pdm_id"
-            :schema="schema"
-          />
-          <Field
-            id="pdm_id"
-            name="pdm_id"
-            as="select"
-            class="inputtext light mb1"
-            :class="{ 'error': errors['pdm_id'] }"
-            :disabled="PdMStore.PdM?.loading"
-          >
-            <option :value="null">
-              Selecionar
-            </option>
-            <option
-              v-for="item in PdMStore.PdM"
-              :key="item.id"
-              :value="item.id"
-              :selected="item.id == $route.query.pdm_id"
+        <Field
+          name="tipo"
+          value="IMPORTACAO_ORCAMENTO"
+          type="hidden"
+        />
+        <div
+          v-if="$route.meta.entidadeMãe === 'pdm'"
+          class="flex g2 mb1"
+        >
+          <div class="f1">
+            <LabelFromYup
+              for="pdm_id"
+              name="pdm_id"
+              :schema="schema"
+            />
+            <Field
+              id="pdm_id"
+              name="pdm_id"
+              as="select"
+              class="inputtext light mb1"
+              :class="{ 'error': errors['pdm_id'] }"
+              :disabled="PdMStore.PdM?.loading"
             >
-              {{ item.nome }}
-            </option>
-          </Field>
-          <div class="error-msg">
-            {{ errors['pdm_id'] }}
+              <option :value="null">
+                Selecionar
+              </option>
+              <option
+                v-for="item in PdMStore.PdM"
+                :key="item.id"
+                :value="item.id"
+                :selected="item.id == $route.query.pdm_id"
+              >
+                {{ item.nome }}
+              </option>
+            </Field>
+            <div class="error-msg">
+              {{ errors['pdm_id'] }}
+            </div>
+            <ErrorMessage
+              class="error-msg mb1"
+              name="pdm_idarquivo"
+            />
           </div>
-          <ErrorMessage
-            class="error-msg mb1"
-            name="pdm_idarquivo"
-          />
         </div>
-      </div>
 
-      <div
-        v-if="$route.meta.entidadeMãe === 'portfolio'"
-        class="flex g2"
-      >
-        <div class="f1">
-          <LabelFromYup
-            for="portfolio_id"
-            name="portfolio_id"
-            :schema="schema"
-          />
-          <Field
-            id="portfolio_id"
-            name="portfolio_id"
-            as="select"
-            class="inputtext light mb1"
-            :class="{
-              loading: importaçõesStore.chamadasPendentes.portfoliosPermitidos
-            }"
-            :disabled="importaçõesStore.chamadasPendentes.portfoliosPermitidos"
-          >
-            <option :value="null">
-              Selecionar
-            </option>
-            <option
-              v-for="item in importaçõesStore.portfoliosPermitidos"
-              :key="item.id"
-              :value="item.id"
-              :selected="item.id == $route.query.portfolio_id"
+        <div
+          v-if="$route.meta.entidadeMãe === 'portfolio'"
+          class="flex g2"
+        >
+          <div class="f1">
+            <LabelFromYup
+              for="portfolio_id"
+              name="portfolio_id"
+              :schema="schema"
+            />
+            <Field
+              id="portfolio_id"
+              name="portfolio_id"
+              as="select"
+              class="inputtext light mb1"
+              :class="{
+                loading: importaçõesStore.chamadasPendentes.portfoliosPermitidos
+              }"
+              :disabled="importaçõesStore.chamadasPendentes.portfoliosPermitidos"
             >
-              {{ item.id }} - {{ item.titulo }}
-            </option>
-          </Field>
-          <ErrorMessage
-            class="error-msg mb1"
-            name="portfolio_id"
-          />
+              <option :value="null">
+                Selecionar
+              </option>
+              <option
+                v-for="item in importaçõesStore.portfoliosPermitidos"
+                :key="item.id"
+                :value="item.id"
+                :selected="item.id == $route.query.portfolio_id"
+              >
+                {{ item.id }} - {{ item.titulo }}
+              </option>
+            </Field>
+            <ErrorMessage
+              class="error-msg mb1"
+              name="portfolio_id"
+            />
+          </div>
         </div>
-      </div>
 
-      <div class="flex g2 mb2">
-        <div class="f1">
-          <LabelFromYup
-            name="arquivo"
-            :schema="schema"
-          />
-          <label
-            v-if="!curfile.name"
-            class="addlink"
-            :class="{ 'error': errors.arquivo }"
-          ><svg
-            width="20"
-            height="20"
-          ><use xlink:href="#i_+" /></svg><span>Selecionar arquivo</span><input
-            type="file"
-            :onchange="addFile"
-            style="display:none;"
-          ></label>
-
-          <div v-else-if="curfile.name">
-            <span>{{ curfile?.name?.slice(0, 30) }}</span> <a
+        <div class="flex g2 mb2">
+          <div class="f1">
+            <LabelFromYup
+              name="arquivo"
+              :schema="schema"
+            />
+            <label
+              v-if="!curfile.name"
               class="addlink"
-              @click="curfile.name = ''"
+              :class="{ 'error': errors.arquivo }"
             ><svg
               width="20"
               height="20"
-            ><use xlink:href="#i_remove" /></svg></a>
+            ><use xlink:href="#i_+" /></svg><span>Selecionar arquivo</span><input
+              type="file"
+              :onchange="addFile"
+              style="display:none;"
+            ></label>
+
+            <div v-else-if="curfile.name">
+              <span>{{ curfile?.name?.slice(0, 30) }}</span> <a
+                class="addlink"
+                @click="curfile.name = ''"
+              ><svg
+                width="20"
+                height="20"
+              ><use xlink:href="#i_remove" /></svg></a>
+            </div>
+            <Field
+              v-model="curfile.file"
+              name="arquivo"
+              type="hidden"
+            />
+            <ErrorMessage
+              class="error-msg mb1"
+              name="arquivo"
+            />
           </div>
-          <Field
-            v-model="curfile.file"
-            name="arquivo"
-            type="hidden"
-          />
-          <ErrorMessage
-            class="error-msg mb1"
-            name="arquivo"
-          />
+        </div>
+
+        <FormErrorsList :errors="errors" />
+
+        <div class="flex spacebetween center mb2">
+          <hr class="mr2 f1">
+          <button
+            class="btn big"
+            :disabled="isSubmitting || Object.keys(errors)?.length"
+            :title="Object.keys(errors)?.length
+              ? `Erros de preenchimento: ${Object.keys(errors)?.length}`
+              : null"
+          >
+            Salvar
+          </button>
+          <hr class="ml2 f1">
+        </div>
+      </Form>
+    </template>
+    <template v-else-if="curfile?.loading">
+      <span class="spinner">Enviando o arquivo</span>
+    </template>
+    <template v-else-if="importaçõesStore.chamadasPendentes.arquivos">
+      <span class="spinner">Associando o arquivo</span>
+    </template>
+    <template v-if="erro">
+      <div class="error p1">
+        <div class="error-msg">
+          {{ erro }}
         </div>
       </div>
-
-      <FormErrorsList :errors="errors" />
-
-      <div class="flex spacebetween center mb2">
-        <hr class="mr2 f1">
-        <button
-          class="btn big"
-          :disabled="isSubmitting || Object.keys(errors)?.length"
-          :title="Object.keys(errors)?.length
-            ? `Erros de preenchimento: ${Object.keys(errors)?.length}`
-            : null"
-        >
-          Salvar
-        </button>
-        <hr class="ml2 f1">
-      </div>
-    </Form>
-  </template>
-  <template v-else-if="curfile?.loading">
-    <span class="spinner">Enviando o arquivo</span>
-  </template>
-  <template v-else-if="importaçõesStore.chamadasPendentes.arquivos">
-    <span class="spinner">Associando o arquivo</span>
-  </template>
-  <template v-if="erro">
-    <div class="error p1">
-      <div class="error-msg">
-        {{ erro }}
-      </div>
-    </div>
-  </template>
+    </template>
+  </SmallModal>
 </template>
