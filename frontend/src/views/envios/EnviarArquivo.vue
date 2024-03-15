@@ -5,7 +5,7 @@ import { useAlertStore } from '@/stores/alert.store';
 import { useImportaçõesStore } from '@/stores/importacoes.store.ts';
 import { usePdMStore } from '@/stores/pdm.store';
 import { ErrorMessage, Field, Form } from 'vee-validate';
-import { reactive } from 'vue';
+import { reactive, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import {
   mixed,
@@ -21,7 +21,7 @@ const alertStore = useAlertStore();
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 const curfile = reactive({});
-const erro = reactive(null);
+const erro = ref(null);
 
 let schema = object()
   .shape({
