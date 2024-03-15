@@ -15,6 +15,27 @@ export class TransferenciaService {
     async createTransferencia(dto: CreateTransferenciaDto, user: PessoaFromJwt): Promise<RecordWithId> {
         const created = await this.prisma.$transaction(
             async (prismaTxn: Prisma.TransactionClient): Promise<RecordWithId> => {
+                const tipoExiste = await prismaTxn.transferenciaTipo.count({
+                    where: { id: dto.tipo_id, removido_em: null },
+                });
+                if (!tipoExiste) throw new HttpException('tipo_id| Tipo não encontrado.', 400);
+
+                if (dto.parlamentar_id != undefined) {
+                    const parlamentarExiste = await prismaTxn.parlamentar.count({
+                        where: { id: dto.parlamentar_id, removido_em: null },
+                    });
+
+                    if (!parlamentarExiste) throw new HttpException('parlamentar_id| Parlamentar não encontrado.', 400);
+                }
+
+                if (dto.partido_id != undefined) {
+                    const partidoExiste = await prismaTxn.partido.count({
+                        where: { id: dto.partido_id, removido_em: null },
+                    });
+
+                    if (!partidoExiste) throw new HttpException('partido_id| Partido não encontrado.', 400);
+                }
+
                 const transferencia = await prismaTxn.transferencia.create({
                     data: {
                         tipo_id: dto.tipo_id,
