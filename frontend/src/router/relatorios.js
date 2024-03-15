@@ -165,8 +165,8 @@ export default {
     {
       path: 'orcamentarios-pdm',
       meta: {
-        título: 'Relatórios orçamentários de PdM',
-        títuloParaMenu: 'Execução orçamentária',
+        título: 'Relatórios orçamentários do PdM',
+        títuloParaMenu: 'Relatórios orçamentários',
         limitarÀsPermissões: 'Reports.executar.PDM',
       },
       children: [
