@@ -6,10 +6,52 @@ import { CreateTransferenciaTipoDto } from './dto/create-transferencia-tipo.dto'
 import { Prisma } from '@prisma/client';
 import { UpdateTransferenciaTipoDto } from './dto/update-transferencia-tipo.dto';
 import { TransferenciaTipoDto } from './entities/transferencia-tipo.dto';
+import { CreateTransferenciaDto } from './dto/create-transferencia.dto';
 
 @Injectable()
 export class TransferenciaService {
     constructor(private readonly prisma: PrismaService) {}
+
+    async createTransferencia(dto: CreateTransferenciaDto, user: PessoaFromJwt): Promise<RecordWithId> {
+        const created = await this.prisma.$transaction(
+            async (prismaTxn: Prisma.TransactionClient): Promise<RecordWithId> => {
+                const transferencia = await prismaTxn.transferencia.create({
+                    data: {
+                        tipo_id: dto.tipo_id,
+                        orgao_concedente_id: dto.orgao_concedente_id,
+                        secretaria_concedente_id: dto.secretaria_concedente_id,
+                        partido_id: dto.partido_id,
+                        parlamentar_id: dto.parlamentar_id,
+                        objeto: dto.objeto,
+                        critico: dto.critico,
+                        interface: dto.interface,
+                        esfera: dto.esfera,
+                        identificador: dto.identificador,
+                        clausula_suspensiva: dto.clausula_suspensiva,
+                        clausula_suspensiva_vencimento: dto.clausula_suspensiva_vencimento,
+                        ano: dto.ano,
+                        emenda: dto.emenda,
+                        demanda: dto.demanda,
+                        programa: dto.programa,
+                        normativa: dto.normativa,
+                        observacoes: dto.observacoes,
+                        detalhamento: dto.detalhamento,
+                        nome_programa: dto.nome_programa,
+                        agencia_aceite: dto.agencia_aceite,
+                        emenda_unitaria: dto.emenda_unitaria,
+                        numero_identificacao: dto.numero_identificacao,
+                        criado_por: user.id,
+                        criado_em: new Date(Date.now()),
+                    },
+                    select: { id: true },
+                });
+
+                return transferencia;
+            }
+        );
+
+        return created;
+    }
 
     async createTransferenciaTipo(dto: CreateTransferenciaTipoDto, user: PessoaFromJwt): Promise<RecordWithId> {
         const created = await this.prisma.$transaction(

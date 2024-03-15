@@ -290,6 +290,10 @@ model Pessoa {
     mandatoRepresentatividadesQueAtualizei MandatoRepresentatividade[] @relation("Atualizador")
     mandatoRepresentatividadesQueRemovi    MandatoRepresentatividade[] @relation("Removedor")
 
+    transferenciasQueCriei     Transferencia[] @relation("Criador")
+    transferenciasQueAtualizei Transferencia[] @relation("Atualizador")
+    transferenciasQueRemovi    Transferencia[] @relation("Removedor")
+
     task_queue                               task_queue[]
     GeoEnderecoReferenciaqQueCriei           GeoLocalizacaoReferencia[]                @relation("criador")
     GeoEnderecoReferenciaqQueRemovid         GeoLocalizacaoReferencia[]                @relation("removedor")
@@ -383,6 +387,8 @@ model Orgao {
     ProjetoEquipe            ProjetoEquipe[]
     GrupoPainelExterno       GrupoPainelExterno[]
     GrupoPainelExternoPessoa GrupoPainelExternoPessoa[]
+    TransferenciasOrgao      Transferencia[]            @relation("orgao_concedente")
+    TransferenciasSecretaria Transferencia[]            @relation("secretaria_concedente")
 
     @@map("orgao")
 }
@@ -4179,6 +4185,7 @@ model Partido {
     mandatos_candidatura ParlamentarMandato[] @relation("candidatura")
     mandatos_atual       ParlamentarMandato[] @relation("atual")
     bancadas             BancadaPartido[]
+    transferencias       Transferencia[]
 
     @@map("partido")
 }
@@ -4305,9 +4312,10 @@ model Parlamentar {
     removido_em    DateTime? @db.Timestamptz(6)
 
     // Criador nullable, pois provavelmente faremos carga inicial de dados.
-    criador     Pessoa? @relation("Criador", fields: [criado_por], references: [id])
-    atualizador Pessoa? @relation("Atualizador", fields: [atualizado_por], references: [id])
-    removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
+    criador        Pessoa?         @relation("Criador", fields: [criado_por], references: [id])
+    atualizador    Pessoa?         @relation("Atualizador", fields: [atualizado_por], references: [id])
+    removedor      Pessoa?         @relation("Removedor", fields: [removido_por], references: [id])
+    transferencias Transferencia[]
 
     @@map("parlamentar")
 }
@@ -4500,6 +4508,8 @@ model TransferenciaTipo {
     categoria TransferenciaTipoCategoria
     esfera    TransferenciaTipoEsfera
 
+    transferencias Transferencia[]
+
     criado_por     Int
     criado_em      DateTime  @default(now()) @db.Timestamptz(6)
     atualizado_por Int?
@@ -4507,10 +4517,78 @@ model TransferenciaTipo {
     removido_por   Int?
     removido_em    DateTime? @db.Timestamptz(6)
 
-    // Criador nullable, pois provavelmente faremos carga inicial de dados.
     criador     Pessoa  @relation("Criador", fields: [criado_por], references: [id])
     atualizador Pessoa? @relation("Atualizador", fields: [atualizado_por], references: [id])
     removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
 
     @@map("transferencia_tipo")
+}
+
+enum TransferenciaInterface {
+    TransfereGov
+    SemPapel
+}
+
+model Transferencia {
+    id Int @id @default(autoincrement())
+
+    tipo_id Int
+    tipo    TransferenciaTipo @relation(fields: [tipo_id], references: [id])
+
+    orgao_concedente_id Int
+    orgao_concedente    Orgao @relation("orgao_concedente", fields: [orgao_concedente_id], references: [id])
+
+    secretaria_concedente_id Int
+    secretaria_concedente    Orgao @relation("secretaria_concedente", fields: [secretaria_concedente_id], references: [id])
+
+    parlamentar_id Int?
+    parlamentar    Parlamentar? @relation(fields: [parlamentar_id], references: [id])
+
+    partido_id Int?
+    partido    Partido? @relation(fields: [partido_id], references: [id])
+
+    objeto                         String
+    critico                        Boolean
+    interface                      TransferenciaInterface
+    identificador                  String
+    esfera                         TransferenciaTipoEsfera
+    clausula_suspensiva            Boolean
+    clausula_suspensiva_vencimento DateTime?               @db.Date()
+    empenho                        Boolean?
+
+    pendente_preenchimento_valores Boolean  @default(true)
+    valor                          Decimal? @default(0) @db.Decimal(15, 2)
+    valor_total                    Decimal? @default(0) @db.Decimal(15, 2)
+    valor_contrapartida            Decimal? @default(0) @db.Decimal(15, 2)
+
+    ano                  Int?
+    emenda               String?
+    dotacao              String?
+    demanda              String?
+    programa             String?
+    banco_fim            String?
+    normativa            String?
+    conta_fim            String?
+    agencia_fim          String?
+    observacoes          String?
+    detalhamento         String?
+    banco_aceite         String?
+    conta_aceite         String?
+    nome_programa        String?
+    agencia_aceite       String?
+    emenda_unitaria      String?
+    gestor_contrato      String?
+    ordenador_despesa    String?
+    numero_identificacao String?
+
+    criado_por     Int
+    criado_em      DateTime  @default(now()) @db.Timestamptz(6)
+    atualizado_por Int?
+    atualizado_em  DateTime  @default(now()) @db.Timestamptz(6)
+    removido_por   Int?
+    removido_em    DateTime? @db.Timestamptz(6)
+
+    criador     Pessoa  @relation("Criador", fields: [criado_por], references: [id])
+    atualizador Pessoa? @relation("Atualizador", fields: [atualizado_por], references: [id])
+    removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
 }
