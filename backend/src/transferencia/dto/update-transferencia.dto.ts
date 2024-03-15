@@ -82,5 +82,5 @@ export class UpdateTransferenciaDto extends PartialType(CreateTransferenciaDto) 
     banco_fim?: string;
 
     @IsBoolean()
-    empenho: Boolean;
+    empenho: boolean;
 }

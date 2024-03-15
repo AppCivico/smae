@@ -7,6 +7,8 @@ import { Prisma } from '@prisma/client';
 import { UpdateTransferenciaTipoDto } from './dto/update-transferencia-tipo.dto';
 import { TransferenciaTipoDto } from './entities/transferencia-tipo.dto';
 import { CreateTransferenciaDto } from './dto/create-transferencia.dto';
+import { UpdateTransferenciaDto } from './dto/update-transferencia.dto';
+import { TransferenciaDto } from './entities/transferencia.dto';
 
 @Injectable()
 export class TransferenciaService {
@@ -72,6 +74,100 @@ export class TransferenciaService {
         );
 
         return created;
+    }
+
+    async updateTransferencia(id: number, dto: UpdateTransferenciaDto, user: PessoaFromJwt): Promise<RecordWithId> {
+        const self = await this.prisma.transferencia.findFirst({
+            where: {
+                id,
+                removido_em: null,
+            },
+        });
+        if (!self) throw new HttpException('id| Transferência não encontrada', 404);
+
+        const updated = await this.prisma.$transaction(
+            async (prismaTxn: Prisma.TransactionClient): Promise<RecordWithId> => {
+                let pendente_preenchimento_valores: boolean = self.pendente_preenchimento_valores;
+                if (dto.valor && dto.valor_contrapartida && dto.valor_total && pendente_preenchimento_valores == false)
+                    pendente_preenchimento_valores = true;
+
+                const transferencia = await prismaTxn.transferencia.update({
+                    where: { id },
+                    data: {
+                        pendente_preenchimento_valores: pendente_preenchimento_valores,
+                        valor: dto.valor,
+                        valor_total: dto.valor_total,
+                        valor_contrapartida: dto.valor_contrapartida,
+                        dotacao: dto.dotacao,
+                        ordenador_despesa: dto.ordenador_despesa,
+                        gestor_contrato: dto.gestor_contrato,
+                        banco_aceite: dto.banco_aceite,
+                        conta_aceite: dto.conta_aceite,
+                        conta_fim: dto.conta_fim,
+                        agencia_fim: dto.agencia_fim,
+                        banco_fim: dto.banco_fim,
+                        empenho: dto.empenho,
+                        criado_por: user.id,
+                        atualizado_por: user.id,
+                        atualizado_em: new Date(Date.now()),
+                    },
+                    select: { id: true },
+                });
+
+                return transferencia;
+            }
+        );
+
+        return updated;
+    }
+
+    async findAllTransferencia(user: PessoaFromJwt): Promise<TransferenciaDto[]> {
+        const rows = await this.prisma.transferencia.findMany({
+            where: {
+                removido_em: null,
+                pendente_preenchimento_valores: false,
+            },
+            select: {
+                id: true,
+                ano: true,
+                objeto: true,
+                detalhamento: true,
+                critico: true,
+                clausula_suspensiva: true,
+                clausula_suspensiva_vencimento: true,
+                normativa: true,
+                observacoes: true,
+                programa: true,
+
+                orgao_concedente: {
+                    select: {
+                        id: true,
+                        descricao: true,
+                        sigla: true,
+                    },
+                },
+
+                secretaria_concedente: {
+                    select: {
+                        id: true,
+                        sigla: true,
+                        descricao: true,
+                    },
+                },
+            },
+        });
+
+        return rows;
+    }
+
+    async removeTransferencia(id: number, user: PessoaFromJwt) {
+        await this.prisma.transferencia.update({
+            where: { id },
+            data: {
+                removido_por: user.id,
+                removido_em: new Date(Date.now()),
+            },
+        });
     }
 
     async createTransferenciaTipo(dto: CreateTransferenciaTipoDto, user: PessoaFromJwt): Promise<RecordWithId> {
