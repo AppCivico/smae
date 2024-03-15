@@ -16,6 +16,7 @@ export default {
   // - **mais uma** dependência cíclica
   // - correr rotas abaixo da raiz para montar o menu
   meta: {
+    rotaPrescindeDeChave: true,
     presenteNoMenu: true,
     título: 'Envio de arquivos',
     títuloParaMenu: 'Envio de arquivos',
