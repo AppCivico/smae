@@ -2,7 +2,7 @@
 import { useAlertStore } from '@/stores/alert.store';
 import { storeToRefs } from 'pinia';
 import { useRoute } from 'vue-router';
-import { useTransferenciasVoluntariasStore } from '@/stores/tranferenciasVoluntarias.store';
+import { useTransferenciasVoluntariasStore } from '@/stores/transferenciasVoluntarias.store';
 
 const tranferenciasVoluntarias = useTransferenciasVoluntariasStore();
 const route = useRoute();
@@ -128,3 +128,4 @@ tranferenciasVoluntarias.buscarTudo();
     </tbody>
   </table>
 </template>
+

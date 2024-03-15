@@ -1,7 +1,7 @@
 <script setup>
 import { transferenciasVoluntarias as schema } from '@/consts/formSchemas';
 import { useAlertStore } from '@/stores/alert.store';
-import { useTransferenciasVoluntariasStore } from '@/stores/tranferenciasVoluntarias.store';
+import { useTransferenciasVoluntariasStore } from '@/stores/transferenciasVoluntarias.store';
 import { storeToRefs } from 'pinia';
 import { ErrorMessage, Field, Form } from 'vee-validate';
 import { useRoute, useRouter } from 'vue-router';
@@ -287,3 +287,4 @@ if (props.tipoId) {
     font-size: 20px;
   }
 </style>
+
