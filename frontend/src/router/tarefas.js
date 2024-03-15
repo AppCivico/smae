@@ -36,7 +36,7 @@ export default {
 
       children: [
         {
-          name: 'tarefasClonar',
+          name: 'projetoTarefasClonar',
           path: 'clonar',
           component: () => import('@/views/tarefas/TarefasClonar.vue'),
           meta: {
@@ -49,7 +49,7 @@ export default {
     },
 
     {
-      name: 'tarefasCriar',
+      name: 'projetoTarefasCriar',
       path: 'nova',
       component: TarefasCriarEditar,
       meta: {

@@ -366,7 +366,7 @@ const config = computed(() => ({
   },
   onEmptyButtonClick: function onEmptyButtonClick() {
     router.push({
-      name: 'tarefasCriar',
+      name: 'projetoTarefasCriar',
       params: {
         projetoId,
       },
