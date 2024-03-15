@@ -853,6 +853,65 @@ export const tipoDeTransferencia = object({
     .required(),
 })
 
+export const transferenciasVoluntarias = object({
+  identificador: string()
+    .label('Identificador')
+    .required(),
+  esfera: string()
+    .label('Esfera')
+    .required(),
+  nome_programa: string()
+    .label('Nome do programa')
+    .required(),
+  ano: string()
+    .label('Ano')
+    .required(),
+  categoria: string()
+    .label('Tipo')
+    .required(),
+  categoria: string()
+    .label('Crítico')
+    .required(),
+  interface: string()
+    .label('Interface')
+    .required(),
+  programa: string()
+    .label('Programa')
+    .required(),
+  emenda: string()
+    .label('Emenda')
+    .required(),
+  emenda_unitaria: string()
+    .label('Emenda unitária')
+    .required(),
+  numero_identificacao: string()
+    .label('Número da Demanda')
+    .required(),
+  detalhamento: string()
+    .label('Detalhamento')
+    .max(50000)
+    .nullable(),
+  observacoes: string()
+    .label('Observação')
+    .max(50000)
+    .nullable(),
+  objeto: string()
+    .label('Objeto/Empreendimento')
+    .max(50000)
+    .nullable(),
+  clausula_suspensiva: string()
+    .label('cláusula suspensiva')
+    .max(50000),
+  normativa: string()
+    .label('normativa')
+    .max(50000),
+  clausula_suspensiva_vencimento: date()
+    .label('Data de criação')
+    .nullable()
+    .min(new Date(2003, 0, 1))
+    .transform((v) => (!v ? null : v)),
+})
+
 export const processo = object()
   .shape({
     comentarios: string()

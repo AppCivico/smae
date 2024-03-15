@@ -202,7 +202,7 @@ export default [
           limitarÀsPermissões: 'CadastroPainelExterno.',
           rotasParaMenuSecundário: [
             'paineisExternosListar',
-
+            'grupospaineisExternosListar'
           ],
         },
         children: [
