@@ -61,7 +61,7 @@ BEGIN
 
     SELECT coalesce(cfs.ciclo_fase, v_fase) INTO v_fase
     FROM meta m
-    JOIN ciclo_fisico_fase cfs on cfs.id = m.ciclo_fase_id
+    LEFT JOIN ciclo_fisico_fase cfs on cfs.id = m.ciclo_fase_id
     WHERE m.id = pMetaId;
 
     v_debug := v_debug || ' fase=' || v_fase;

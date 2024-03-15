@@ -380,6 +380,9 @@ export class MfDashMetasService {
         const filterMetas = await this.prisma.meta.findMany({
             where: {
                 removido_em: null,
+                pdm: {
+                    ativo: true,
+                },
                 AND: params.visao_geral
                     ? undefined
                     : [
