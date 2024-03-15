@@ -1069,30 +1069,35 @@ export class PessoaService {
     private filtrosPrivilegios(filters: FilterPessoaDto | undefined): Prisma.PessoaWhereInput[] {
         const extraFilter: Prisma.PessoaWhereInput[] = [];
 
-        for (const [key, value] of Object.keys(FilterPermsPessoa2Priv)) {
-            if ((filters as any)[key] !== undefined) {
-                const filterValue = (filters as any)[key] as boolean;
-                const filterOperator = filterValue ? 'some' : 'none';
+        for (const entry of Object.entries(FilterPermsPessoa2Priv)) {
+            const [key, value] = entry;
+            if ((filters as any)[key] === undefined) continue;
 
-                extraFilter.push({
-                    PessoaPerfil: {
-                        [filterOperator]: {
-                            perfil_acesso: {
-                                perfil_privilegio: {
-                                    some: {
-                                        privilegio: {
-                                            codigo: value,
-                                        },
+            const filterValue = (filters as any)[key] as boolean;
+            const filterOperator = filterValue ? 'some' : 'none';
+
+            extraFilter.push({
+                PessoaPerfil: {
+                    [filterOperator]: {
+                        perfil_acesso: {
+                            perfil_privilegio: {
+                                some: {
+                                    privilegio: {
+                                        codigo: value,
                                     },
                                 },
                             },
                         },
                     },
-                });
-            }
+                },
+            });
         }
 
-        return extraFilter;
+        return [
+            {
+                AND: extraFilter,
+            },
+        ];
     }
 
     async findByEmailAsHash(email: string) {
