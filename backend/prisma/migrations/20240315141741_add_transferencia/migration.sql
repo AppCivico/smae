@@ -56,9 +56,6 @@ CREATE TABLE "Transferencia" (
     CONSTRAINT "Transferencia_pkey" PRIMARY KEY ("id")
 );
 
--- CreateIndex
-CREATE UNIQUE INDEX "variavel_responsavel_pessoa_id_variavel_id_key" ON "variavel_responsavel"("pessoa_id", "variavel_id");
-
 -- AddForeignKey
 ALTER TABLE "Transferencia" ADD CONSTRAINT "Transferencia_tipo_id_fkey" FOREIGN KEY ("tipo_id") REFERENCES "transferencia_tipo"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
