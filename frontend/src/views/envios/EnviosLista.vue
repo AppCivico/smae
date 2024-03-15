@@ -104,9 +104,6 @@ export default {
   >
     carregar mais
   </button>
-  <pre
-    v-ScrollLockDebug
-    class="mt1 mb1"
-  >$route:{{ $route }}</pre>
+
   <router-view />
 </template>
