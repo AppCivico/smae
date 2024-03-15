@@ -18,15 +18,15 @@ import {
   Form,
 } from 'vee-validate';
 import { computed, ref, watch } from 'vue';
-import { useRouter } from 'vue-router';
+import { useRouter, useRoute } from 'vue-router';
 
 const alertStore = useAlertStore();
 const tarefasStore = useTarefasStore();
 const router = useRouter();
-
+const route = useRoute();
 const projetosStore = useProjetosStore();
 const {
-  órgãosEnvolvidosNoProjetoEmFoco,
+  órgãosEnvolvidosNoProjetoEmFoco, órgãosComoLista
 } = storeToRefs(projetosStore);
 
 const {
@@ -285,14 +285,14 @@ iniciar();
             error: errors.orgao_id,
             loading: projetosStore.chamadasPendentes?.emFoco,
           }"
-          :disabled="!órgãosEnvolvidosNoProjetoEmFoco?.length"
+          :disabled="!órgãosEnvolvidosNoProjetoEmFoco?.length && !órgãosComoLista.length"
         >
           <option :value="0">
             Selecionar
           </option>
 
           <option
-            v-for="item in órgãosEnvolvidosNoProjetoEmFoco"
+            v-for="item in (route.meta.entidadeMãe === 'projeto' ? órgãosEnvolvidosNoProjetoEmFoco : órgãosComoLista)"
             :key="item"
             :value="item.id"
           >
