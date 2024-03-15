@@ -75,11 +75,4 @@ if (!importaçõesStore.portfoliosPermitidos.length) {
       </template>
     </component>
   </router-view>
-
-  <router-view
-    v-slot="{ Component }"
-    name="modal"
-  >
-    <component :is="Component" />
-  </router-view>
 </template>
