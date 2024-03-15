@@ -1,16 +1,9 @@
 import LoadingComponent from '@/components/LoadingComponent.vue';
 import MenuSecundário from '@/components/MenuSecundario.vue';
+import EnviarArquivo from '@/views/envios/EnviarArquivo.vue';
 import EnviosRaiz from '@/views/envios/EnviosRaiz.vue';
 import { defineAsyncComponent } from 'vue';
 
-const DialogWrapper = defineAsyncComponent({
-  loader: () => import('@/views/DialogWrapper.vue'),
-  loadingComponent: LoadingComponent,
-});
-const EnviarArquivo = defineAsyncComponent({
-  loader: () => import('@/views/envios/EnviarArquivo.vue'),
-  loadingComponent: LoadingComponent,
-});
 const EnviosLista = defineAsyncComponent({
   loader: () => import('@/views/envios/EnviosLista.vue'),
   loadingComponent: LoadingComponent,
@@ -76,10 +69,7 @@ export default {
         },
         {
           path: 'enviar',
-          components: {
-            default: EnviosLista,
-            modal: DialogWrapper,
-          },
+          component: EnviosLista,
           children: [
             {
               path: '',
@@ -112,10 +102,7 @@ export default {
         },
         {
           path: 'enviar',
-          components: {
-            default: EnviosLista,
-            modal: DialogWrapper,
-          },
+          component: EnviosLista,
           children: [
             {
               path: '',
