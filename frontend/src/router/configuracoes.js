@@ -18,11 +18,6 @@ import PaineisExternosCriarEditar from '@/views/paineisExternos/PaineisExternosC
 import PaineisExternosLista from '@/views/paineisExternos/PaineisExternosLista.vue';
 import PaineisExternosRaiz from '@/views/paineisExternos/PaineisExternosRaiz.vue';
 
-import TipoDeTrasferenciaCriarEditar from '@/views/tipoDeTrasferencia/TipoDeTrasferenciaCriarEditar.vue';
-import TipoDeTrasferenciaLista from '@/views/tipoDeTrasferencia/TipoDeTrasferenciaLista.vue';
-import TipoDeTrasferenciaRaiz from '@/views/tipoDeTrasferencia/TipoDeTrasferenciaRaiz.vue';
-
-
 import GruposDePaineisExternosCriarEditar from '@/views/gruposDePaineisExternos/GruposDePaineisExternosCriarEditar.vue';
 import GruposDePaineisExternosLista from '@/views/gruposDePaineisExternos/GruposDePaineisExternosLista.vue';
 import GruposDePaineisExternosRaiz from '@/views/gruposDePaineisExternos/GruposDePaineisExternosRaiz.vue';
@@ -73,8 +68,6 @@ const rotasParaMenuPrincipal = [
   'portfoliosListar',
   'gerenciarPainéisDeMetas',
   'paineisExternosListar',
-  'tipoDeTrasferenciaListar',
-
 ];
 
 export default [
@@ -210,7 +203,7 @@ export default [
           limitarÀsPermissões: 'CadastroPainelExterno',
           rotasParaMenuSecundário: [
             'paineisExternosListar',
-            'grupospaineisExternosListar',
+
           ],
         },
         children: [
@@ -299,52 +292,6 @@ export default [
           },
         ],
       },
-
-      {
-        path: '/transferencia-tipo',
-        component: TipoDeTrasferenciaRaiz,
-        meta: {
-          título: 'Tipo de Trasferência',
-          rotaPrescindeDeChave: true,
-          limitarÀsPermissões: '',
-          rotasParaMenuSecundário: [
-            'tipoDeTrasferenciaListar',
-          ],
-
-        },
-        children: [
-          {
-            name: 'tipoDeTrasferenciaListar',
-            path: '',
-            component: TipoDeTrasferenciaLista,
-            meta: {
-              título: 'Tipo de Trasferência',
-            },
-          },
-          {
-            name: 'tipoDeTrasferenciaCriar',
-            path: 'novo',
-            component: TipoDeTrasferenciaCriarEditar,
-            meta: {
-              título: 'Novo Tipo de Trasferencia',
-            },
-          },
-          {
-            path: ':tipoId',
-            name: 'tipoDeTrasferenciaEditar',
-            component: TipoDeTrasferenciaCriarEditar,
-            props: ({ params }) => ({
-              ...params,
-              ...{ tipoId: Number.parseInt(params.tipoId, 10) || undefined },
-            }),
-
-            meta: {
-              título: 'Editar Tipo de Trasferência',
-            },
-          },
-        ],
-      },
-
     ],
   },
 
