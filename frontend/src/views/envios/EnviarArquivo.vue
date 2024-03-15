@@ -108,7 +108,7 @@ export default {
 };
 </script>
 <template>
-  <SmallModal>
+  <pre>
     <div class="flex spacebetween center mb2">
       <h2>Enviar arquivo</h2>
       <hr class="ml2 f1">
@@ -276,5 +276,5 @@ export default {
         </div>
       </div>
     </template>
-  </SmallModal>
+  </pre>
 </template>
