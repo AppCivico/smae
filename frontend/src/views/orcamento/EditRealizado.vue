@@ -4,13 +4,15 @@ import { execuçãoOrçamentária as schema } from '@/consts/formSchemas';
 import retornarQuaisOsRecentesDosItens from '@/helpers/retornarQuaisOsMaisRecentesDosItensDeOrcamento';
 import { useAlertStore } from '@/stores/alert.store';
 import { useAtividadesStore } from '@/stores/atividades.store';
+import { useDotaçãoStore } from '@/stores/dotacao.store.ts';
 import { useIniciativasStore } from '@/stores/iniciativas.store';
 import { useMetasStore } from '@/stores/metas.store';
 import { useOrcamentosStore } from '@/stores/orcamentos.store';
-import { useDotaçãoStore } from '@/stores/dotacao.store.ts';
 import { storeToRefs } from 'pinia';
-import { Field, Form } from 'vee-validate';
-import { computed, ref } from 'vue';
+import { Field, useForm } from 'vee-validate';
+import {
+  computed, ref, toRaw, watch,
+} from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
 const alertStore = useAlertStore();
@@ -107,7 +109,14 @@ const complemento = computed(() => {
   }
 })();
 
-function beforeSubmit(values) {
+const {
+  errors, handleSubmit, isSubmitting, resetForm, setValues, values,
+} = useForm({
+  initialValues: currentEdit.value,
+  validationSchema: schema,
+});
+
+const beforeSubmit = handleSubmit.withControlled(async () => {
   const maisRecentesDosItens = Array.isArray(values.itens)
     ? retornarQuaisOsRecentesDosItens(values.itens)
     : {
@@ -142,9 +151,9 @@ function beforeSubmit(values) {
   } else {
     onSubmit(values);
   }
-}
+});
 
-async function onSubmit(values) {
+async function onSubmit() {
   try {
     let msg;
     let r;
@@ -222,6 +231,10 @@ function validaPartes(a) {
   }
 }
 
+watch(currentEdit, (novosValores) => {
+  resetForm({ values: toRaw(novosValores) });
+});
+
 </script>
 <script>
 // use normal <script> to declare options
@@ -241,11 +254,10 @@ export default {
     <strong>{{ ano }}</strong> - {{ parent_item.codigo }} - {{ parent_item.titulo }}
   </h3>
   <template v-if="!(OrcamentoRealizado[ano]?.loading || OrcamentoRealizado[ano]?.error)">
-    <Form
-      v-slot="{ errors, isSubmitting, values }"
+    <form
       :validation-schema="schema"
       :initial-values="currentEdit"
-      @submit="beforeSubmit"
+      @submit.prevent="beforeSubmit"
     >
       <div v-if="currentEdit.processo">
         <label class="label">Processo</label>
@@ -568,7 +580,7 @@ export default {
       </div>
 
       <ItensRealizado
-        :controlador="values.itens"
+        v-model="values.itens"
         :respostasof="respostasof"
         name="itens"
       />
@@ -585,7 +597,7 @@ export default {
         </button>
         <hr class="ml2 f1">
       </div>
-    </Form>
+    </form>
   </template>
   <template v-if="currentEdit && currentEdit?.id">
     <button
