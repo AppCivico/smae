@@ -161,16 +161,18 @@ function addItem() {
     </tbody>
   </table>
 
-  <button
-    class="like-a__text addlink mb1"
-    type="button"
-    @click="addItem()"
-  >
-    <svg
-      width="20"
-      height="20"
-    ><use xlink:href="#i_+" /></svg>Informar execução orçamentária
-  </button>
+  <div class="flex justifyright">
+    <button
+      class="like-a__text addlink mb1"
+      type="button"
+      @click="addItem()"
+    >
+      <svg
+        width="20"
+        height="20"
+      ><use xlink:href="#i_+" /></svg>Informar execução orçamentária
+    </button>
+  </div>
 
   <div class="flex g2 mb2">
     <div class="f1" />
