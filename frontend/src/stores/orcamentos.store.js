@@ -269,6 +269,7 @@ export const useOrcamentosStore = defineStore({
   },
 
   getters: {
+    // sem uso
     orçamentoEmFoco({ OrcamentoRealizado }) {
       const { ano, id } = this.route.params;
       const anoEmFoco = Array.isArray(OrcamentoRealizado?.[ano])
@@ -276,20 +277,6 @@ export const useOrcamentosStore = defineStore({
         : [];
 
       return anoEmFoco.find((x) => x.id == id);
-    },
-
-    líquidoDosItens() {
-      const {
-        smae_soma_valor_empenho = '0',
-        smae_soma_valor_liquidado = '0',
-        soma_valor_empenho = '0',
-        soma_valor_liquidado = '0',
-      } = this.orçamentoEmFoco || {};
-
-      return {
-        empenho: toFloat(smae_soma_valor_empenho) - toFloat(soma_valor_empenho),
-        liquidação: toFloat(smae_soma_valor_liquidado) - toFloat(soma_valor_liquidado),
-      };
     },
   },
 });

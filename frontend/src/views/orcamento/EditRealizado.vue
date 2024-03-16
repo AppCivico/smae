@@ -1,11 +1,8 @@
 <script setup>
 import ItensRealizado from '@/components/orcamento/ItensRealizado.vue';
 import { execuçãoOrçamentária as schema } from '@/consts/formSchemas';
-import retornarQuaisOsRecentesDosItens from '@/helpers/retornarQuaisOsMaisRecentesDosItensDeOrcamento';
 import { useAlertStore } from '@/stores/alert.store';
-import { useAtividadesStore } from '@/stores/atividades.store';
 import { useDotaçãoStore } from '@/stores/dotacao.store.ts';
-import { useIniciativasStore } from '@/stores/iniciativas.store';
 import { useMetasStore } from '@/stores/metas.store';
 import { useOrcamentosStore } from '@/stores/orcamentos.store';
 import { storeToRefs } from 'pinia';
@@ -41,7 +38,7 @@ const parent_item = ref(meta_id ? singleMeta : false);
 
 const OrcamentosStore = useOrcamentosStore();
 const {
-  líquidoDosItens, OrcamentoRealizado, orçamentoEmFoco,
+  OrcamentoRealizado,
 } = storeToRefs(OrcamentosStore);
 const { DotaçãoSegmentos } = storeToRefs(DotaçãoStore);
 
@@ -116,44 +113,7 @@ const {
   validationSchema: schema,
 });
 
-const beforeSubmit = handleSubmit.withControlled(async () => {
-  const maisRecentesDosItens = Array.isArray(values.itens)
-    ? retornarQuaisOsRecentesDosItens(values.itens)
-    : {
-      valor_empenho: 0,
-      valor_liquidado: 0,
-    };
-
-  const totais = {
-    empenho: líquidoDosItens.value.empenho + maisRecentesDosItens.empenho,
-    liquidação: líquidoDosItens.value.liquidação + maisRecentesDosItens.liquidação,
-  };
-
-  const totaisQueSuperamSOF = {
-    empenho: orçamentoEmFoco?.value?.empenho_liquido !== null
-      && typeof orçamentoEmFoco?.value?.empenho_liquido !== 'undefined'
-      ? totais.empenho > Number(orçamentoEmFoco.value.empenho_liquido)
-      : false,
-    liquidação: orçamentoEmFoco?.value?.valor_liquidado !== null
-      && typeof orçamentoEmFoco?.value?.valor_liquidado !== 'undefined'
-      ? totais.liquidação > Number(orçamentoEmFoco.value.valor_liquidado)
-      : false,
-  };
-
-  if (totaisQueSuperamSOF.empenho || totaisQueSuperamSOF.liquidacao) {
-    useAlertStore().confirmAction('Valores superioes ao SOF', async () => {
-      try {
-        onSubmit(values);
-      } catch (error) {
-        return false;
-      }
-    }, 'Deseja mesmo salvar?');
-  } else {
-    onSubmit(values);
-  }
-});
-
-async function onSubmit() {
+const onSubmit = handleSubmit.withControlled(async () => {
   try {
     let msg;
     let r;
@@ -191,7 +151,7 @@ async function onSubmit() {
   } catch (error) {
     alertStore.error(error);
   }
-}
+});
 
 async function checkDelete(id) {
   alertStore.confirmAction('Deseja mesmo remover esse item?', async () => {
@@ -257,7 +217,7 @@ export default {
     <form
       :validation-schema="schema"
       :initial-values="currentEdit"
-      @submit.prevent="beforeSubmit"
+      @submit.prevent="onSubmit"
     >
       <div v-if="currentEdit.processo">
         <label class="label">Processo</label>
