@@ -69,6 +69,10 @@ function addItem() {
 </script>
 <template>
   <table class="tablemain no-zebra mb1">
+    <col>
+    <col>
+    <col>
+    <col class="col--botão-de-ação">
     <thead>
       <tr>
         <th>Mês Ref. *</th>
