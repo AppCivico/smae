@@ -437,10 +437,10 @@ watch(currentEdit, (novosValores) => {
   <template v-if="OrcamentoRealizado[ano]?.loading">
     <span class="spinner">Carregando</span>
   </template>
-  <template v-if="OrcamentoRealizado[ano]?.error || error">
+  <template v-if="OrcamentoRealizado[ano]?.error">
     <div class="error p1">
       <div class="error-msg">
-        {{ OrcamentoRealizado[ano].error ?? error }}
+        {{ OrcamentoRealizado[ano].error }}
       </div>
     </div>
   </template>
