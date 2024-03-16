@@ -80,7 +80,7 @@ const complemento = computed(() => {
     } else {
       await OrcamentosStore.getOrcamentoRealizadoById(meta_id, ano);
     }
-    currentEdit.value = OrcamentoRealizado.value[ano].find((x) => x.id == id);
+    currentEdit.value = OrcamentoRealizado.value[ano]?.find((x) => x.id == id);
 
     currentEdit.value.dotacao = await currentEdit.value.dotacao.split('.').map((x, i) => {
       if (x.indexOf('*') != -1) {
