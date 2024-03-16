@@ -2,14 +2,14 @@
 import ItensRealizado from '@/components/orcamento/ItensRealizado.vue';
 import { useAlertStore } from '@/stores/alert.store';
 import { useAtividadesStore } from '@/stores/atividades.store';
+import { useDotaçãoStore } from '@/stores/dotacao.store.ts';
 import { useIniciativasStore } from '@/stores/iniciativas.store';
 import { useMetasStore } from '@/stores/metas.store';
 import { useOrcamentosStore } from '@/stores/orcamentos.store';
-import { useDotaçãoStore } from '@/stores/dotacao.store.ts';
 import { useProjetosStore } from '@/stores/projetos.store.ts';
 import { storeToRefs } from 'pinia';
-import { Field, Form } from 'vee-validate';
-import { ref } from 'vue';
+import { Field, Form, useForm } from 'vee-validate';
+import { ref, toRaw, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import * as Yup from 'yup';
 
@@ -52,7 +52,14 @@ const schema = Yup.object().shape({
   processo: Yup.string(),
 });
 
-async function onSubmit(values = {}) {
+const {
+  errors, handleSubmit, isSubmitting, resetForm, values,
+} = useForm({
+  initialValues: currentEdit.value,
+  validationSchema: schema,
+});
+
+const onSubmit = handleSubmit.withControlled(async () => {
   const nota_empenho_e_ano = `${values.nota_empenho}/${dotaAno.value}`;
 
   if (respostasof.value.nota_empenho !== nota_empenho_e_ano) {
@@ -101,7 +108,7 @@ async function onSubmit(values = {}) {
   } catch (error) {
     alertStore.error(error);
   }
-}
+});
 
 async function checkDelete(id) {
   alertStore.confirmAction('Deseja mesmo remover esse item?', async () => {
@@ -173,6 +180,10 @@ async function validarDota(evt) {
     evt.stopPropagation();
   }
 }
+
+watch(currentEdit, (novosValores) => {
+  resetForm({ values: toRaw(novosValores) });
+});
 </script>
 <template>
   <div class="flex spacebetween center">
@@ -185,11 +196,10 @@ async function validarDota(evt) {
     <strong>{{ ano }}</strong> - {{ parent_item.codigo }} - {{ parent_item.titulo }}
   </h3>
   <template v-if="!(OrcamentoRealizado[ano]?.loading || OrcamentoRealizado[ano]?.error)">
-    <Form
-      v-slot="{ errors, isSubmitting, values }"
+    <form
       :validation-schema="schema"
       :initial-values="currentEdit"
-      @submit="onSubmit"
+      @submit.prevent="onSubmit"
     >
       <div class="flex center g2">
         <div class="f1">
@@ -390,7 +400,7 @@ async function validarDota(evt) {
         </div>
 
         <ItensRealizado
-          :controlador="values.itens"
+          v-model="values.itens"
           :respostasof="respostasof"
           name="itens"
         />
@@ -414,7 +424,7 @@ async function validarDota(evt) {
           <hr class="ml2 f1">
         </div>
       </template>
-    </Form>
+    </form>
   </template>
   <template v-if="currentEdit && currentEdit?.id">
     <button

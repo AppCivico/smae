@@ -1,14 +1,14 @@
 <script setup>
+import CampoDeDotacao from '@/components/orcamento/CampoDeDotacao.vue';
 import ItensRealizado from '@/components/orcamento/ItensRealizado.vue';
 import { orçamentoRealizado as schema } from '@/consts/formSchemas';
 import { useAlertStore } from '@/stores/alert.store';
 import { useMetasStore } from '@/stores/metas.store';
 import { useOrcamentosStore } from '@/stores/orcamentos.store';
 import { storeToRefs } from 'pinia';
-import { Field, Form } from 'vee-validate';
-import { ref } from 'vue';
+import { Field, useForm } from 'vee-validate';
+import { ref, toRaw, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import CampoDeDotacao from '@/components/orcamento/CampoDeDotacao.vue';
 
 const alertStore = useAlertStore();
 
@@ -36,7 +36,14 @@ const dota = ref('');
 const respostasof = ref({});
 const complemento = ref('');
 
-async function onSubmit(values) {
+const {
+  errors, handleSubmit, isSubmitting, resetForm, values,
+} = useForm({
+  initialValues: currentEdit.value,
+  validationSchema: schema,
+});
+
+const onSubmit = handleSubmit.withControlled(async () => {
   try {
     const carga = values;
 
@@ -83,7 +90,7 @@ complemento: 1.111.1111.1
   } catch (error) {
     alertStore.error(error);
   }
-}
+});
 
 async function checkDelete(id) {
   alertStore.confirmAction('Deseja mesmo remover esse item?', async () => {
@@ -103,6 +110,9 @@ async function checkDelete(id) {
   }, 'Remover');
 }
 
+watch(currentEdit, (novosValores) => {
+  resetForm({ values: toRaw(novosValores) });
+});
 </script>
 <script>
 // use normal <script> to declare options
@@ -121,11 +131,10 @@ export default {
     <strong>{{ ano }}</strong> - {{ parent_item.codigo }} - {{ parent_item.titulo }}
   </h3>
   <template v-if="!(OrcamentoRealizado[ano]?.loading || OrcamentoRealizado[ano]?.error)">
-    <Form
-      v-slot="{ errors, isSubmitting, values }"
+    <form
       :validation-schema="schema"
       :initial-values="currentEdit"
-      @submit="onSubmit"
+      @submit.prevent="onSubmit"
     >
       <CampoDeDotacao
         v-model:respostasof="respostasof"
@@ -208,7 +217,7 @@ export default {
       </div>
 
       <ItensRealizado
-        :controlador="values.itens"
+        v-model="values.itens"
         :respostasof="respostasof"
         name="itens"
       />
@@ -223,7 +232,7 @@ export default {
         </button>
         <hr class="ml2 f1">
       </div>
-    </Form>
+    </form>
   </template>
   <template v-if="currentEdit && currentEdit?.id">
     <button
@@ -236,10 +245,10 @@ export default {
   <template v-if="OrcamentoRealizado[ano]?.loading">
     <span class="spinner">Carregando</span>
   </template>
-  <template v-if="OrcamentoRealizado[ano]?.error || error">
+  <template v-if="OrcamentoRealizado[ano]?.error">
     <div class="error p1">
       <div class="error-msg">
-        {{ OrcamentoRealizado[ano].error ?? error }}
+        {{ OrcamentoRealizado[ano].error }}
       </div>
     </div>
   </template>
