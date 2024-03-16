@@ -1,13 +1,9 @@
 <script setup>
 import MaskedFloatInput from '@/components/MaskedFloatInput.vue';
 import months from '@/consts/months';
-import dinheiro from '@/helpers/dinheiro';
-import retornarQuaisOsRecentesDosItens from '@/helpers/retornarQuaisOsMaisRecentesDosItensDeOrcamento';
 import { useMetasStore } from '@/stores/metas.store';
-import { useOrcamentosStore } from '@/stores/orcamentos.store';
 import { useProjetosStore } from '@/stores/projetos.store.ts';
 import { range } from 'lodash';
-import { storeToRefs } from 'pinia';
 import { computed, defineModel, defineOptions } from 'vue';
 import { useRoute } from 'vue-router';
 
@@ -32,13 +28,10 @@ let projetosStore;
 
 const route = useRoute();
 
-const { líquidoDosItens, orçamentoEmFoco } = storeToRefs(useOrcamentosStore());
-
 const model = defineModel({
   default: [],
 });
 
-const maisRecentesDosItens = computed(() => retornarQuaisOsRecentesDosItens(model.value));
 const mesesSelecionados = computed(() => model.value?.map((x) => x.mes) || []);
 const mesesDisponíveis = computed(() => {
   let mesesPermitidos = range(1, 13);
@@ -65,21 +58,6 @@ const mesesDisponíveis = computed(() => {
 
   return mesesPermitidos.filter((x) => !mesesSelecionados.value.includes(x));
 });
-const totais = computed(() => ({
-  empenho: líquidoDosItens.value.empenho + maisRecentesDosItens.value.empenho,
-  liquidação: líquidoDosItens.value.liquidação + maisRecentesDosItens.value.liquidação,
-}));
-
-const totaisQueSuperamSOF = computed(() => ({
-  empenho: orçamentoEmFoco?.value?.empenho_liquido !== null
-    && typeof orçamentoEmFoco?.value?.empenho_liquido !== 'undefined'
-    ? totais.value.empenho > Number(orçamentoEmFoco.value.empenho_liquido)
-    : false,
-  liquidação: orçamentoEmFoco?.value?.valor_liquidado !== null
-    && typeof orçamentoEmFoco?.value?.valor_liquidado !== 'undefined'
-    ? totais.value.liquidação > Number(orçamentoEmFoco.value.valor_liquidado)
-    : false,
-}));
 
 function removeItem(i) {
   model.value.splice(i, 1);
@@ -172,37 +150,5 @@ function addItem() {
         height="20"
       ><use xlink:href="#i_+" /></svg>Informar execução orçamentária
     </button>
-  </div>
-
-  <div class="flex g2 mb2">
-    <div class="f1" />
-
-    <div class="f1">
-      <div
-        v-if="respostasof.smae_soma_valor_empenho != undefined"
-        class="flex center flexwrap"
-      >
-        <span class="label mb0 tc300 mr1">Total Empenho SMAE</span>
-        <span class="t14">R$ {{ dinheiro(totais.empenho) }}</span>
-        <span
-          v-if="totaisQueSuperamSOF.empenho"
-          class="tvermelho w700 block"
-        >(valor supera empenho SOF)</span>
-      </div>
-    </div>
-
-    <div class="f1">
-      <div
-        v-if="respostasof.smae_soma_valor_liquidado != undefined"
-        class="flex center flexwrap"
-      >
-        <span class="label mb0 tc300 mr1">Total liquidação SMAE</span>
-        <span class="t14">R$ {{ dinheiro(totais.liquidação) }}</span>
-        <span
-          v-if="totaisQueSuperamSOF.liquidação"
-          class="tvermelho w700 block"
-        >(valor supera liquidação SOF)</span>
-      </div>
-    </div>
   </div>
 </template>
