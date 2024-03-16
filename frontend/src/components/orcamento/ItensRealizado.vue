@@ -3,28 +3,17 @@ import MaskedFloatInput from '@/components/MaskedFloatInput.vue';
 import months from '@/consts/months';
 import dinheiro from '@/helpers/dinheiro';
 import retornarQuaisOsRecentesDosItens from '@/helpers/retornarQuaisOsMaisRecentesDosItensDeOrcamento';
-import toFloat from '@/helpers/toFloat';
 import { useMetasStore } from '@/stores/metas.store';
 import { useOrcamentosStore } from '@/stores/orcamentos.store';
 import { useProjetosStore } from '@/stores/projetos.store.ts';
 import { range } from 'lodash';
 import { storeToRefs } from 'pinia';
-import {
-  ErrorMessage,
-  Field,
-  useField,
-} from 'vee-validate';
-import {
-  computed, defineOptions, onMounted, onUpdated, ref, toRef, watch,
-} from 'vue';
+import { computed, defineModel, defineOptions } from 'vue';
 import { useRoute } from 'vue-router';
 
 defineOptions({ inheritAttrs: false });
-
-const route = useRoute();
-const { líquidoDosItens, orçamentoEmFoco } = storeToRefs(useOrcamentosStore());
-const props = defineProps({
-  controlador: {
+defineProps({
+  modelValue: {
     type: Array,
     default: () => [],
   },
@@ -41,14 +30,16 @@ const props = defineProps({
 let MetasStore;
 let projetosStore;
 
-const itens = ref(props.controlador);
-const emit = defineEmits(['change']);
-const name = toRef(props, 'name');
-const { handleChange } = useField(name, undefined, {
-  initialValue: props.controlador,
+const route = useRoute();
+
+const { líquidoDosItens, orçamentoEmFoco } = storeToRefs(useOrcamentosStore());
+
+const model = defineModel({
+  default: [],
 });
-const maisRecentesDosItens = computed(() => retornarQuaisOsRecentesDosItens(itens.value));
-const mesesSelecionados = computed(() => itens.value?.map((x) => x.mes) || []);
+
+const maisRecentesDosItens = computed(() => retornarQuaisOsRecentesDosItens(model.value));
+const mesesSelecionados = computed(() => model.value?.map((x) => x.mes) || []);
 const mesesDisponíveis = computed(() => {
   let mesesPermitidos = range(1, 13);
 
@@ -90,130 +81,88 @@ const totaisQueSuperamSOF = computed(() => ({
     : false,
 }));
 
-watch(() => itens.value, (newValue) => {
-  const valorLimpo = newValue.map((x) => ({
-    mes: x.mes,
-    valor_empenho: toFloat(x.valor_empenho),
-    valor_liquidado: toFloat(x.valor_liquidado),
-  }));
-
-  emit('change', valorLimpo);
-  handleChange(valorLimpo);
-});
-
-function start() {
-  itens.value = props.controlador;
-}
-
-start();
-onMounted(() => { start(); });
-onUpdated(() => { start(); });
-
 function removeItem(i) {
-  itens.value.splice(i, 1);
+  model.value.splice(i, 1);
 }
+
 function addItem() {
-  itens.value.push({ mes: 0, valor_empenho: 0, valor_liquidado: 0 });
+  model.value.push({ mes: 0, valor_empenho: 0, valor_liquidado: 0 });
 }
 </script>
 <template>
-  <hr class="mt2 mb2">
+  <table class="tablemain no-zebra mb1">
+    <thead>
+      <tr>
+        <th>Mês Ref. *</th>
+        <th>Valor empenho *</th>
+        <th>Valor liquidação *</th>
+      </tr>
+    </thead>
 
-  <legend class="label mt2 mb1">
-    Ciclo de monitoramento
-  </legend>
-
-  <p class="t300 tc500 mb2">
-    No quadro abaixo, informar o mês correspondente a etapa do ciclo e os
-    valores acumulados realizados até o período. A cada novo ciclo, uma nova
-    linha deve ser inserida com a informação dos valores acumulados, ou seja, o
-    total realizado a partir de janeiro até o período de referência.
-  </p>
-
-  <div class="flex g2 mb1">
-    <div class="f1">
-      <label class="label tc300">Mês Ref. <span class="tvermelho">*</span></label>
-    </div>
-    <div class="f1">
-      <label class="label tc300">Valor empenho <span class="tvermelho">*</span></label>
-    </div>
-    <div class="f1">
-      <label class="label tc300">Valor liquidação <span class="tvermelho">*</span></label>
-    </div>
-    <div style="flex-basis: 30px;" />
-  </div>
-
-  <div
-    v-for="(item, i) in itens"
-    :key="i"
-    class="flex center g2 mb1"
-  >
-    <div class="f1">
-      <Field
-        v-model.number="item.mes"
-        :name="`${name}[${i}].mes`"
-        class="inputtext light"
-        as="select"
+    <tbody>
+      <tr
+        v-for="item, i in model"
+        :key="i"
       >
-        <option
-          :value="0"
-          disabled
-        >
-          Selecionar
-        </option>
-        <option
-          v-for="month, k in months"
-          :key="k"
-          :value="k + 1"
-          :disabled="k + 1 != item.mes && !mesesDisponíveis.includes(k + 1)"
-        >
-          {{ month }}
-        </option>
-      </Field>
-      <ErrorMessage
-        class="error-msg mb1"
-        :name="`${name}[${i}].mes`"
-      />
-    </div>
-    <div class="f1">
-      <MaskedFloatInput
-        v-model="item.valor_empenho"
-        :value="Number(item.valor_empenho)"
-        :name="`${name}[${i}].valor_empenho`"
-        type="text"
-        class="inputtext light"
-      />
-      <ErrorMessage
-        class="error-msg mb1"
-        :name="`${name}[${i}].valor_empenho`"
-      />
-    </div>
-    <div class="f1">
-      <MaskedFloatInput
-        v-model="item.valor_liquidado"
-        :value="Number(item.valor_liquidado)"
-        :name="`${name}[${i}].valor_liquidado`"
-        type="text"
-        class="inputtext light"
-      />
-      <ErrorMessage
-        class="error-msg mb1"
-        :name="`${name}[${i}].valor_liquidado`"
-      />
-    </div>
-    <div style="flex-basis: 30px;">
-      <a
-        class="addlink"
-        @click="removeItem(i)"
-      ><svg
-        width="20"
-        height="20"
-      ><use xlink:href="#i_remove" /></svg></a>
-    </div>
-  </div>
+        <td>
+          <select
+            v-model.number="item.mes"
+            :name="`${name}[${i}].mes`"
+            class="inputtext light"
+          >
+            <option
+              :value="0"
+              disabled
+            >
+              Selecionar
+            </option>
+            <option
+              v-for="month, k in months"
+              :key="k"
+              :value="k + 1"
+              :disabled="k + 1 != item.mes && !mesesDisponíveis.includes(k + 1)"
+            >
+              {{ month }}
+            </option>
+          </select>
+        </td>
+
+        <td>
+          <MaskedFloatInput
+            v-model="item.valor_empenho"
+            :value="Number(item.valor_empenho)"
+            :name="`${name}[${i}].valor_empenho`"
+            type="text"
+            class="inputtext light"
+          />
+        </td>
+        <td>
+          <MaskedFloatInput
+            v-model="item.valor_liquidado"
+            :value="Number(item.valor_liquidado)"
+            :name="`${name}[${i}].valor_liquidado`"
+            type="text"
+            class="inputtext light"
+          />
+        </td>
+        <td>
+          <button
+            type="button"
+            class="like-a__link addlink"
+            @click="removeItem(i)"
+          >
+            <svg
+              width="20"
+              height="20"
+            ><use xlink:href="#i_remove" /></svg>
+          </button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
 
   <button
-    class="like-a__text addlink"
+    class="like-a__text addlink mb1"
     type="button"
     @click="addItem()"
   >
