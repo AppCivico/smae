@@ -143,3 +143,30 @@ export class CreateTransferenciaDto {
     @MaxLength(250)
     numero_identificacao?: string;
 }
+
+export class CreateTransferenciaAnexoDto {
+    /**
+     * Upload do Documento
+     */
+    @IsString({ message: '$property| upload_token do documento' })
+    upload_token: string;
+
+    @IsString()
+    @IsOptional()
+    diretorio_caminho?: string;
+
+    /**
+     * data ou null
+     * @example "2020-01-01"
+     */
+    @IsOptional()
+    @IsOnlyDate()
+    @Type(() => Date)
+    @ValidateIf((object, value) => value !== null)
+    data?: Date;
+
+    @IsOptional()
+    @IsString()
+    @MaxLength(2048)
+    descricao?: string;
+}
