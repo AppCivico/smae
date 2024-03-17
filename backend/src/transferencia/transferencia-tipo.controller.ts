@@ -8,6 +8,7 @@ import { TransferenciaService } from './transferencia.service';
 import { UpdateTransferenciaTipoDto } from './dto/update-transferencia-tipo.dto';
 import { FindOneParams } from 'src/common/decorators/find-params';
 import { ListTransferenciaTipoDto } from './entities/transferencia-tipo.dto';
+import { Roles } from 'src/auth/decorators/roles.decorator';
 
 @ApiTags('Transferência')
 @Controller('transferencia-tipo')
@@ -16,12 +17,14 @@ export class TransferenciaTipoController {
 
     @Post('')
     @ApiBearerAuth('access-token')
+    @Roles('CadastroTransferencia.inserir')
     @ApiUnauthorizedResponse()
     async create(@Body() dto: CreateTransferenciaTipoDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
         return await this.transferenciaService.createTransferenciaTipo(dto, user);
     }
 
     @ApiBearerAuth('access-token')
+    @Roles('CadastroTransferencia.listar')
     @Get()
     async findAll(): Promise<ListTransferenciaTipoDto> {
         return { linhas: await this.transferenciaService.findAllTransferenciaTipo() };
@@ -29,6 +32,7 @@ export class TransferenciaTipoController {
 
     @Patch(':id')
     @ApiBearerAuth('access-token')
+    @Roles('CadastroTransferencia.editar')
     @ApiUnauthorizedResponse()
     async update(
         @Param() params: FindOneParams,
@@ -41,6 +45,7 @@ export class TransferenciaTipoController {
     @Delete(':id')
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
+    @Roles('CadastroTransferencia.remover')
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.ACCEPTED)
     async remove(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt) {

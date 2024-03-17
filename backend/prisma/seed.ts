@@ -38,6 +38,7 @@ const ModuloDescricao: Record<string, [string, ModuloSistema | null]> = {
     CadastroPartido: ['Partidos', 'CasaCivil'],
     CadastroBancada: ['Bancadas', 'CasaCivil'],
     CadastroParlamentar: ['Parlamentares', 'CasaCivil'],
+    CadastroTransferencia: ['Transferências', 'CasaCivil'],
     CadastroCargo: ['', null],
     CadastroCoordenadoria: ['', null],
     CadastroDepartamento: ['', null],
@@ -217,6 +218,12 @@ const PrivConfig: Record<string, false | [ListaDePrivilegios, string | false][]>
         ['CadastroParlamentar.inserir', 'Inserir Parlamentar'],
         ['CadastroParlamentar.remover', 'Remover Parlamentar'],
         ['SMAE.acesso_telefone', 'Ver todos os telefones do parlamentar'],
+    ],
+    CadastroTransferencia: [
+        ['CadastroTransferencia.editar', 'Editar Transferência'],
+        ['CadastroTransferencia.listar', 'Listar Transferência'],
+        ['CadastroTransferencia.inserir', 'Inserir Transferência'],
+        ['CadastroTransferencia.remover', 'Remover Transferência'],
     ],
     Reports: [
         ['Reports.dashboard_pdm', false], // lembrar que o delete sempre precisa vir antes do update/insert das novas
@@ -493,6 +500,10 @@ const PerfilAcessoConfig: {
             'CadastroParlamentar.remover',
             'Reports.remover.CasaCivil',
             'Reports.executar.CasaCivil',
+            'CadastroTransferencia.editar',
+            'CadastroTransferencia.listar',
+            'CadastroTransferencia.inserir',
+            'CadastroTransferencia.remover',
         ],
     },
     removerNomePerfil('Técnico CP'),

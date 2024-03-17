@@ -8,6 +8,7 @@ import { CreateTransferenciaDto } from './dto/create-transferencia.dto';
 import { ListTransferenciaDto, TransferenciaDetailDto } from './entities/transferencia.dto';
 import { UpdateTransferenciaDto } from './dto/update-transferencia.dto';
 import { FindOneParams } from 'src/common/decorators/find-params';
+import { Roles } from 'src/auth/decorators/roles.decorator';
 
 @ApiTags('Transferência')
 @Controller('transferencia')
@@ -16,12 +17,14 @@ export class TransferenciaController {
 
     @Post('')
     @ApiBearerAuth('access-token')
+    @Roles('CadastroTransferencia.inserir')
     @ApiUnauthorizedResponse()
     async create(@Body() dto: CreateTransferenciaDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
         return await this.transferenciaService.createTransferencia(dto, user);
     }
 
     @ApiBearerAuth('access-token')
+    @Roles('CadastroTransferencia.inserir')
     @Get()
     async findAll(@CurrentUser() user: PessoaFromJwt): Promise<ListTransferenciaDto> {
         return { linhas: await this.transferenciaService.findAllTransferencia(user) };
@@ -29,6 +32,7 @@ export class TransferenciaController {
 
     @Get(':id')
     @ApiBearerAuth('access-token')
+    @Roles('CadastroTransferencia.listar')
     @ApiUnauthorizedResponse()
     async findOne(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt): Promise<TransferenciaDetailDto> {
         return await this.transferenciaService.findOneTransferencia(params.id, user);
@@ -36,6 +40,7 @@ export class TransferenciaController {
 
     @Patch(':id')
     @ApiBearerAuth('access-token')
+    @Roles('CadastroTransferencia.editar')
     @ApiUnauthorizedResponse()
     async update(
         @Param() params: FindOneParams,
@@ -48,6 +53,7 @@ export class TransferenciaController {
     @Delete(':id')
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
+    @Roles('CadastroTransferencia.remover')
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.ACCEPTED)
     async remove(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt) {
