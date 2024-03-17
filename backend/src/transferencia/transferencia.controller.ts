@@ -5,7 +5,7 @@ import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
 import { TransferenciaService } from './transferencia.service';
 import { CreateTransferenciaDto } from './dto/create-transferencia.dto';
-import { ListTransferenciaDto } from './entities/transferencia.dto';
+import { ListTransferenciaDto, TransferenciaDetailDto } from './entities/transferencia.dto';
 import { UpdateTransferenciaDto } from './dto/update-transferencia.dto';
 import { FindOneParams } from 'src/common/decorators/find-params';
 
@@ -25,6 +25,13 @@ export class TransferenciaController {
     @Get()
     async findAll(@CurrentUser() user: PessoaFromJwt): Promise<ListTransferenciaDto> {
         return { linhas: await this.transferenciaService.findAllTransferencia(user) };
+    }
+
+    @Get(':id')
+    @ApiBearerAuth('access-token')
+    @ApiUnauthorizedResponse()
+    async findOne(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt): Promise<TransferenciaDetailDto> {
+        return await this.transferenciaService.findOneTransferencia(params.id, user);
     }
 
     @Patch(':id')
