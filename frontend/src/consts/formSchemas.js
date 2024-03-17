@@ -1610,6 +1610,20 @@ export const tarefa = object()
       .nullable(),
   });
 
+export const emailTransferencia = object()
+  .shape({
+    disparo_email:boolean()
+      .label('Disparo de e-mail?')
+      .nullable(),
+    com_copia:array()
+      .label('CC (com cópia)'),
+    periodicidade: number()
+      .label('Periodicidade')
+      .min(0),
+    data:date()
+      .label('Data do primeiro envio',)
+  })
+
 export const tag = object()
   .shape({
     descricao: string().required('Preencha a descrição'),

@@ -11,7 +11,7 @@ const props = defineProps({
 
 </script>
 <template>
-  <div class="boards mb4">
+  <div class="boards mb2">
     <dl class="flex flexwrap g2">
       <div class="mr2">
         <dt class="t12 uc w700 mb05 tamarelo">
