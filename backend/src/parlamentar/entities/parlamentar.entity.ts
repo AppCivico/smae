@@ -107,3 +107,9 @@ export class SuplentesDto {
         telefone: string | null;
     };
 }
+
+export class ParlamnetarIdNomes {
+    id: number;
+    nome: string;
+    nome_popular: string | null;
+}

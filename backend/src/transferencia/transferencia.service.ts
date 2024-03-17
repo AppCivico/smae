@@ -8,7 +8,7 @@ import { UpdateTransferenciaTipoDto } from './dto/update-transferencia-tipo.dto'
 import { TransferenciaTipoDto } from './entities/transferencia-tipo.dto';
 import { CreateTransferenciaDto } from './dto/create-transferencia.dto';
 import { UpdateTransferenciaDto } from './dto/update-transferencia.dto';
-import { TransferenciaDto } from './entities/transferencia.dto';
+import { TransferenciaDetailDto, TransferenciaDto } from './entities/transferencia.dto';
 
 @Injectable()
 export class TransferenciaService {
@@ -158,6 +158,79 @@ export class TransferenciaService {
         });
 
         return rows;
+    }
+
+    async findOneTransferencia(id: number, user: PessoaFromJwt): Promise<TransferenciaDetailDto> {
+        const row = await this.prisma.transferencia.findFirst({
+            where: {
+                id,
+                removido_em: null,
+            },
+            select: {
+                id: true,
+                identificador: true,
+                ano: true,
+                objeto: true,
+                detalhamento: true,
+                critico: true,
+                clausula_suspensiva: true,
+                clausula_suspensiva_vencimento: true,
+                normativa: true,
+                observacoes: true,
+                programa: true,
+                empenho: true,
+                pendente_preenchimento_valores: true,
+                valor: true,
+                valor_total: true,
+                valor_contrapartida: true,
+                emenda: true,
+                dotacao: true,
+                demanda: true,
+                banco_fim: true,
+                conta_fim: true,
+                agencia_fim: true,
+                banco_aceite: true,
+                conta_aceite: true,
+                nome_programa: true,
+                agencia_aceite: true,
+                emenda_unitaria: true,
+                gestor_contrato: true,
+                ordenador_despesa: true,
+                numero_identificacao: true,
+                interface: true,
+                esfera: true,
+                partido: {
+                    select: {
+                        id: true,
+                        sigla: true,
+                    },
+                },
+                parlamentar: {
+                    select: {
+                        id: true,
+                        nome: true,
+                        nome_popular: true,
+                    },
+                },
+                orgao_concedente: {
+                    select: {
+                        id: true,
+                        sigla: true,
+                        descricao: true,
+                    },
+                },
+                secretaria_concedente: {
+                    select: {
+                        id: true,
+                        sigla: true,
+                        descricao: true,
+                    },
+                },
+            },
+        });
+        if (!row) throw new HttpException('id| Transferência não encontrada.', 404);
+
+        return row;
     }
 
     async removeTransferencia(id: number, user: PessoaFromJwt) {
