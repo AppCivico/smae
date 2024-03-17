@@ -294,6 +294,10 @@ model Pessoa {
     transferenciasQueAtualizei Transferencia[] @relation("Atualizador")
     transferenciasQueRemovi    Transferencia[] @relation("Removedor")
 
+    transferenciaAnexoQueCriei     TransferenciaAnexo[] @relation("Criador")
+    transferenciaAnexoQueAtualizei TransferenciaAnexo[] @relation("Atualizador")
+    transferenciaAnexoQueRemovi    TransferenciaAnexo[] @relation("Removedor")
+
     task_queue                               task_queue[]
     GeoEnderecoReferenciaqQueCriei           GeoLocalizacaoReferencia[]                @relation("criador")
     GeoEnderecoReferenciaqQueRemovid         GeoLocalizacaoReferencia[]                @relation("removedor")
@@ -832,6 +836,7 @@ model Arquivo {
     ImportacaoLogInput                  ImportacaoOrcamento[]                 @relation("input")
     ImportacaoLogOutput                 ImportacaoOrcamento[]                 @relation("output")
     FormulaCompostaCicloFisicoDocumento FormulaCompostaCicloFisicoDocumento[]
+    transferencia_anexos                TransferenciaAnexo[]
 
     @@map("arquivo")
 }
@@ -4588,7 +4593,35 @@ model Transferencia {
     removido_por   Int?
     removido_em    DateTime? @db.Timestamptz(6)
 
-    criador     Pessoa  @relation("Criador", fields: [criado_por], references: [id])
+    criador     Pessoa               @relation("Criador", fields: [criado_por], references: [id])
+    atualizador Pessoa?              @relation("Atualizador", fields: [atualizado_por], references: [id])
+    removedor   Pessoa?              @relation("Removedor", fields: [removido_por], references: [id])
+    anexos      TransferenciaAnexo[]
+}
+
+model TransferenciaAnexo {
+    id Int @id @default(autoincrement())
+
+    transferencia_id Int
+    arquivo_id       Int
+
+    transferencia Transferencia @relation(fields: [transferencia_id], references: [id])
+    arquivo       Arquivo       @relation(fields: [arquivo_id], references: [id])
+
+    descricao String?
+    data      DateTime?
+
+    criado_por     Int?
+    criado_em      DateTime  @default(now()) @db.Timestamptz(6)
+    atualizado_por Int?
+    atualizado_em  DateTime  @default(now()) @db.Timestamptz(6)
+    removido_por   Int?
+    removido_em    DateTime? @db.Timestamptz(6)
+
     atualizador Pessoa? @relation("Atualizador", fields: [atualizado_por], references: [id])
+    criador     Pessoa? @relation("Criador", fields: [criado_por], references: [id])
     removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
+
+    @@index([transferencia_id])
+    @@map("transferencia_anexo")
 }

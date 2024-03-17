@@ -1,6 +1,8 @@
 import { PartialType } from '@nestjs/swagger';
 import { CreateTransferenciaDto } from './create-transferencia.dto';
 import { IsBoolean, IsNumberString, IsOptional, IsString, MaxLength, MinLength, ValidateIf } from 'class-validator';
+import { Type } from 'class-transformer';
+import { IsOnlyDate } from 'src/common/decorators/IsDateOnly';
 
 export class UpdateTransferenciaDto extends PartialType(CreateTransferenciaDto) {
     @IsNumberString(
@@ -83,4 +85,27 @@ export class UpdateTransferenciaDto extends PartialType(CreateTransferenciaDto) 
 
     @IsBoolean()
     empenho: boolean;
+}
+
+export class UpdateTransferenciaAnexoDto {
+    /**
+     * Token para encontrar documento
+     */
+    @IsString({ message: '$property| upload_token do documento' })
+    upload_token: string;
+
+    @IsString()
+    @IsOptional()
+    diretorio_caminho?: string;
+
+    @IsOptional()
+    @IsString()
+    @ValidateIf((object, value) => value !== null)
+    descricao?: string | null;
+
+    @IsOptional()
+    @IsOnlyDate()
+    @Type(() => Date)
+    @ValidateIf((object, value) => value !== null)
+    data?: Date | null;
 }
