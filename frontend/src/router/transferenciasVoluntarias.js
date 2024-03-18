@@ -25,7 +25,7 @@ export default {
     {
       name: 'TransferenciasVoluntariaCriar',
       path: 'novo',
-      component: RegistroDeTransferenciaCriarEditar,
+      component: RegistroDeTransferenciaCriarEditar, //Dev - teste
       meta: {
         título: 'Formulário de registro',
       },
