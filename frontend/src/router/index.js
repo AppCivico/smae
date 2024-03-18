@@ -20,6 +20,7 @@ import monitoramento from './monitoramento';
 import parlamentares from './parlamentares';
 import projetos from './projetos';
 import relatorios from './relatorios';
+import transferenciasVoluntarias from './transferenciasVoluntarias.js'
 
 // eslint-disable-next-line import/prefer-default-export
 export const router = createRouter({
@@ -53,6 +54,7 @@ export const router = createRouter({
     análise,
     relatorios,
     envios,
+    transferenciasVoluntarias,
 
     { path: '/:pathMatch(.*)*', redirect: '/' },
   ],
