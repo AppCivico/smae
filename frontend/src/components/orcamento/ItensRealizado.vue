@@ -4,13 +4,18 @@ import months from '@/consts/months';
 import { useMetasStore } from '@/stores/metas.store';
 import { useProjetosStore } from '@/stores/projetos.store.ts';
 import { range } from 'lodash';
-import { computed, defineModel, defineOptions } from 'vue';
+import {
+  computed, defineModel, defineOptions, nextTick,
+} from 'vue';
 import { useRoute } from 'vue-router';
 
 defineOptions({ inheritAttrs: false });
 defineProps({
   modelValue: {
-    type: Array,
+    type: [
+      Array,
+      null,
+    ],
     default: () => [],
   },
   name: {
@@ -63,7 +68,12 @@ function removeItem(i) {
   model.value.splice(i, 1);
 }
 
-function addItem() {
+async function addItem() {
+  if (!Array.isArray(model.value)) {
+    model.value = [];
+    await nextTick();
+  }
+
   model.value.push({ mes: 0, valor_empenho: 0, valor_liquidado: 0 });
 }
 </script>
@@ -81,7 +91,7 @@ function addItem() {
       </tr>
     </thead>
 
-    <tbody>
+    <tbody v-if="Array.isArray(model)">
       <tr
         v-for="item, i in model"
         :key="i"
