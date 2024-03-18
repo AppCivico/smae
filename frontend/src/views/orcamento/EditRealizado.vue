@@ -28,11 +28,6 @@ if (!route.params.projetoId) {
   MetasStore.getChildren(meta_id);
 }
 
-const IniciativasStore = useIniciativasStore();
-const { singleIniciativa } = storeToRefs(IniciativasStore);
-const AtividadesStore = useAtividadesStore();
-const { singleAtividade } = storeToRefs(AtividadesStore);
-
 const parentlink = `${meta_id ? `/metas/${meta_id}` : ''}`;
 const parent_item = ref(meta_id ? singleMeta : false);
 
@@ -92,22 +87,28 @@ const complemento = computed(() => {
     dota.value = currentEdit.value.dotacao;
     validaPartes(currentEdit.value.dotacao);
 
-    currentEdit.value.location = currentEdit.value.atividade?.id ? `a${currentEdit.value.atividade.id}`
-      : currentEdit.value.iniciativa?.id ? `i${currentEdit.value.iniciativa.id}`
-        : currentEdit.value.meta?.id ? `m${currentEdit.value.meta.id}` : `m${meta_id}`;
+    currentEdit.value.location = currentEdit.value.atividade?.id
+      ? `a${currentEdit.value.atividade.id}`
+      : currentEdit.value.iniciativa?.id
+        ? `i${currentEdit.value.iniciativa.id}`
+        : currentEdit.value.meta?.id
+          ? `m${currentEdit.value.meta.id}`
+          : `m${meta_id}`;
 
     respostasof.value.projeto_atividade = currentEdit.value.projeto_atividade;
 
     respostasof.value.empenho_liquido = toFloat(currentEdit.value.empenho_liquido);
     respostasof.value.valor_liquidado = toFloat(currentEdit.value.valor_liquidado);
 
-    respostasof.value.smae_soma_valor_empenho = toFloat(currentEdit.value.smae_soma_valor_empenho) - toFloat(currentEdit.value.soma_valor_empenho);
-    respostasof.value.smae_soma_valor_liquidado = toFloat(currentEdit.value.smae_soma_valor_liquidado) - toFloat(currentEdit.value.soma_valor_liquidado);
+    respostasof.value.smae_soma_valor_empenho = toFloat(currentEdit.value.smae_soma_valor_empenho)
+      - toFloat(currentEdit.value.soma_valor_empenho);
+    respostasof.value.smae_soma_valor_liquidado = toFloat(currentEdit.value.smae_soma_valor_liquidado)
+      - toFloat(currentEdit.value.soma_valor_liquidado);
   }
 })();
 
 const {
-  errors, handleSubmit, isSubmitting, resetForm, setValues, values,
+  errors, handleSubmit, isSubmitting, resetForm, values,
 } = useForm({
   initialValues: currentEdit.value,
   validationSchema: schema,
@@ -175,7 +176,9 @@ function dinheiro(v) {
   return new Intl.NumberFormat('pt-BR', { minimumFractionDigits: 2 }).format(Number(v));
 }
 function toFloat(v) {
-  return isNaN(v) || String(v).indexOf(',') !== -1 ? Number(String(v).replace(/[^0-9\,]/g, '').replace(',', '.')) : Math.round(Number(v) * 100) / 100;
+  return isNaN(v) || String(v).indexOf(',') !== -1
+    ? Number(String(v).replace(/[^0-9\,]/g, '').replace(',', '.'))
+    : Math.round(Number(v) * 100) / 100;
 }
 function validaPartes(a) {
   const v = a.split('.');
@@ -356,7 +359,8 @@ export default {
             <input
               class="inputtext light mb1 disabled"
               type="text"
-              :value="(it = DotaçãoSegmentos[ano].projetos_atividades.find(x => x.codigo == d_projetoatividade))
+              :value="(it = DotaçãoSegmentos[ano].projetos_atividades
+                .find(x => x.codigo == d_projetoatividade))
                 ? `${it.codigo} - ${it.descricao}`
                 : ''"
               disabled
@@ -365,7 +369,8 @@ export default {
               v-if="d_projetoatividade"
               class="t12 tc500"
             >
-              {{ (it = DotaçãoSegmentos[ano].projetos_atividades.find(x => x.codigo == d_projetoatividade))
+              {{ (it = DotaçãoSegmentos[ano].projetos_atividades
+                .find(x => x.codigo == d_projetoatividade))
                 ? `${it.codigo} - ${it.descricao}`
                 : '' }}
             </div>
@@ -496,7 +501,8 @@ export default {
               v-if="m?.iniciativas?.length"
               class="label tc300"
             >
-              {{ activePdm.rotulo_iniciativa }}{{ ['Atividade'].indexOf(activePdm.nivel_orcamento) != -1
+              {{ activePdm.rotulo_iniciativa }}{{ ['Atividade']
+                .indexOf(activePdm.nivel_orcamento) != -1
                 ? ' e ' + activePdm.rotulo_atividade
                 : '' }}
             </div>
