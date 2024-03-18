@@ -46,7 +46,7 @@ export class RetornoListaPrivDto {
 export function ValidateModuloSistema(item: any) {
     const parsedValue = ModuloSistema[item as ModuloSistema];
     if (parsedValue === undefined) {
-        throw new BadRequestException(`Invalid value '${item}' for ModuloSistema`);
+        throw new BadRequestException(`Valor '${item}' não é válido para header smae-sistemas`);
     }
     return parsedValue;
 }
