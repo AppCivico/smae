@@ -173,6 +173,16 @@ async function addItem() {
     </tbody>
     <tfoot>
       <tr>
+        <th>compartilhado</th>
+        <td class="tc300">
+          R$ {{ dinheiro(respostasof.smae_soma_valor_empenho || 0) }}
+        </td>
+        <td class="tc300">
+          R$ {{ dinheiro(respostasof.smae_soma_valor_liquidado || 0) }}
+        </td>
+        <td />
+      </tr>
+      <tr>
         <th>
           Total no
           <abbr title="Sistema de Monitoramento e Acompanhamento Estratégico">
@@ -183,7 +193,6 @@ async function addItem() {
           :class="{
             tvermelho: totaisQueSuperamSOF.empenho
           }"
-          class="tc300"
         >
           <template v-if="respostasof.smae_soma_valor_empenho != undefined">
             R$ {{ dinheiro(totais.empenho) }}
@@ -206,7 +215,6 @@ async function addItem() {
           :class="{
             tvermelho: totaisQueSuperamSOF.liquidação
           }"
-          class="tc300"
         >
           <template v-if="respostasof.smae_soma_valor_liquidado != undefined">
             R$ {{ dinheiro(totais.liquidação) }}
