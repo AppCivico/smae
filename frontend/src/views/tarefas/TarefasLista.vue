@@ -43,11 +43,15 @@ function removeEmail(index, event) {
 }
 
 function addNewEmail() {
-  const email = newEmail.value.trim();
-  if (email !== "" && !localEmails.value.includes(email)) {
-    localEmails.value.push(email);
-    newEmail.value = "";
-  }
+  const emails = newEmail.value
+    .split(/[;, ]+/)
+    .filter((email) => email.trim() !== "");
+  emails.forEach((email) => {
+    if (email !== "" && !localEmails.value.includes(email)) {
+      localEmails.value.push(email);
+    }
+  });
+  newEmail.value = "";
 }
 
 function onSubmit() {}
@@ -138,7 +142,7 @@ export default {
             />
           </div>
         </div>
-        <div class="mb2 wrap">
+        <div class="mb2">
           <div class="f1">
             <LabelFromYup name="com_copia" :schema="schema" />
             <Field
@@ -150,7 +154,7 @@ export default {
               placeholder="email@dominio.com"
               @blur="addNewEmail()"
             />
-            <ul v-if="localEmails" class="flex">
+            <ul v-if="localEmails" class="flex flexwrap">
               <li v-for="(email, index) in localEmails" :key="index">
                 <button
                   @click="removeEmail(index, $event)"
@@ -288,7 +292,7 @@ export default {
   <router-view />
 </template>
 <style scoped>
-.disparo-email{
+.disparo-email {
   max-width: 900px;
 }
 </style>
