@@ -7,7 +7,11 @@ import {
 
 const props = defineProps({
   value: {
-    type: Number || null,
+    type: [
+      Number,
+      String,
+      null,
+    ],
     default: null,
   },
   // necessária para que o vee-validate não se perca
@@ -20,7 +24,9 @@ const props = defineProps({
 const emit = defineEmits(['update:modelValue']);
 const name = toRef(props, 'name');
 const { handleChange } = useField(name, undefined, {
-  initialValue: props.value,
+  initialValue: props.value
+    ? Number(props.value)
+    : null,
 });
 
 const typedValue = computed({
