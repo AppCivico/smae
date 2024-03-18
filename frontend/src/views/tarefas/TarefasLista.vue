@@ -8,10 +8,7 @@ import { computed, ref } from "vue";
 import CabecalhoResumo from "@/components/tarefas/CabecalhoResumo.vue";
 import { useRoute } from "vue-router";
 
-import {
-  Field,
-  Form,
-} from "vee-validate";
+import { Field, Form } from "vee-validate";
 
 const route = useRoute();
 const tarefasStore = useTarefasStore();
@@ -36,13 +33,14 @@ let localEmails = ref([
   "carlos@yahoo.com",
 ]);
 
+const periodicidades = ["Semanal", "Quinzenal", "Mensal"];
+
 function removeEmail(index, event) {
   console.log("entrou no removeEmail");
   event.preventDefault();
   localEmails.value.splice(index, 1);
   console.log("localEmails: ", localEmails.value);
 }
-
 
 function addNewEmail() {
   const email = newEmail.value.trim();
@@ -52,8 +50,7 @@ function addNewEmail() {
   }
 }
 
-function onSubmit() {
-}
+function onSubmit() {}
 let prefixo = null;
 
 async function iniciar() {
@@ -100,7 +97,7 @@ export default {
   <CabecalhoResumo :em-foco="projetoEmFoco" />
 
   <!--  v-if="route.meta.entidadeMãe === 'transferencia'" -->
-  <div class="mb4">
+  <div class="mb4 disparo-email">
     <div class="">
       <Form :validation-schema="schema" @submit="onSubmit">
         <div class="mb2">
@@ -112,17 +109,25 @@ export default {
             class="inputcheckbox"
           />
         </div>
-        <div>
-          <div class="mb2">
+        <div class="flex mb2 flexwrap g2">
+          <div class="f1">
             <LabelFromYup name="periodicidade" :schema="schema" />
             <Field
+              v-model.number="eleiçãoEscolhida"
               name="periodicidade"
-              type="number"
-              min="0"
-              class="inputtext light"
-            />
+              as="select"
+              class="inputtext light mb1"
+            >
+              <option
+                v-for="periodicidade in periodicidades"
+                :key="id"
+                :value="periodicidade"
+              >
+                {{ periodicidade }}
+              </option>
+            </Field>
           </div>
-          <div class="mb2">
+          <div class="f1">
             <LabelFromYup name="data" :schema="schema" />
             <Field
               name="data"
@@ -133,30 +138,32 @@ export default {
             />
           </div>
         </div>
-        <div class="mb2">
-          <LabelFromYup name="com_copia" :schema="schema" />
-          <Field
-            name="com_copia"
-            v-model="newEmail"
-            type="email"
-            class="inputtext light mb1"
-            maxlength="250"
-            placeholder="email@dominio.com"
-            @blur="addNewEmail()"
-          />
-          <ul v-if="localEmails" class="flex">
-            <li v-for="(email, index) in localEmails" :key="index">
-              <button
-                @click="removeEmail(index, $event)"
-                type="button"
-                class="tagsmall"
-                tabindex="1"
-              >
-                {{ email }}
-                <svg width="12" height="12"><use xlink:href="#i_x" /></svg>
-              </button>
-            </li>
-          </ul>
+        <div class="mb2 wrap">
+          <div class="f1">
+            <LabelFromYup name="com_copia" :schema="schema" />
+            <Field
+              name="com_copia"
+              v-model="newEmail"
+              type="email"
+              class="inputtext light mb1"
+              maxlength="250"
+              placeholder="email@dominio.com"
+              @blur="addNewEmail()"
+            />
+            <ul v-if="localEmails" class="flex">
+              <li v-for="(email, index) in localEmails" :key="index">
+                <button
+                  @click="removeEmail(index, $event)"
+                  type="button"
+                  class="tagsmall"
+                  tabindex="1"
+                >
+                  {{ email }}
+                  <svg width="12" height="12"><use xlink:href="#i_x" /></svg>
+                </button>
+              </li>
+            </ul>
+          </div>
         </div>
       </Form>
 
@@ -280,3 +287,8 @@ export default {
 
   <router-view />
 </template>
+<style scoped>
+.disparo-email{
+  max-width: 900px;
+}
+</style>
