@@ -11,13 +11,6 @@ import { useRoute } from 'vue-router';
 
 defineOptions({ inheritAttrs: false });
 defineProps({
-  modelValue: {
-    type: [
-      Array,
-      null,
-    ],
-    default: () => [],
-  },
   name: {
     type: String,
     required: true,
@@ -34,7 +27,7 @@ let projetosStore;
 const route = useRoute();
 
 const model = defineModel({
-  default: [],
+  required: true,
 });
 
 const mesesSelecionados = computed(() => model.value?.map((x) => x.mes) || []);
