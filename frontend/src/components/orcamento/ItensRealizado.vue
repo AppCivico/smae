@@ -104,6 +104,7 @@ async function addItem() {
         <th>Mês Ref. *</th>
         <th>Valor empenho *</th>
         <th>Valor liquidação *</th>
+        <th />
       </tr>
     </thead>
 
