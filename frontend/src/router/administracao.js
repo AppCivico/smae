@@ -37,10 +37,6 @@ import TipoDeTrasferenciaCriarEditar from '@/views/tipoDeTrasferencia/TipoDeTras
 import TipoDeTrasferenciaLista from '@/views/tipoDeTrasferencia/TipoDeTrasferenciaLista.vue';
 import TipoDeTrasferenciaRaiz from '@/views/tipoDeTrasferencia/TipoDeTrasferenciaRaiz.vue';
 
-import TransferenciasVoluntariasCriarEditar from '@/views/transferenciasVoluntarias/TransferenciasVoluntariasCriarEditar.vue';
-import TransferenciasVoluntariasLista from '@/views/transferenciasVoluntarias/TransferenciasVoluntariasLista.vue';
-import TransferenciasVoluntariasRaiz from '@/views/transferenciasVoluntarias/TransferenciasVoluntariasRaiz.vue';
-
 
 const TiposDeAcompanhamentoLista = defineAsyncComponent({
   loader: () => import('@/views/tiposDeAcompanhamento/TiposLista.vue'),
@@ -265,46 +261,6 @@ export default [
             path: ':tipoId',
             name: 'tipoDeTrasferenciaEditar',
             component: TipoDeTrasferenciaCriarEditar,
-            props: ({ params }) => ({
-              ...params,
-              ...{ tipoId: Number.parseInt(params.tipoId, 10) || undefined },
-            }),
-
-            meta: {
-              título: 'Editar Tipo de Trasferência',
-            },
-          },
-        ],
-      },
-      {
-        path: '/trasferencias-voluntarias',
-        component: TransferenciasVoluntariasRaiz,
-        meta: {
-          título: 'Transfêrencias Voluntarias',
-          rotaPrescindeDeChave: true,
-          rotasParaMenuSecundário,
-        },
-        children: [
-          {
-            name: 'TransferenciasVoluntariasListar',
-            path: '',
-            component: TransferenciasVoluntariasLista,
-            meta: {
-              título: 'Transfêrencias Voluntarias',
-            },
-          },
-          {
-            name: 'TransferenciasVoluntariaCriar',
-            path: 'novo',
-            component: TransferenciasVoluntariasCriarEditar,
-            meta: {
-              título: 'Formulário de registro',
-            },
-          },
-          {
-            path: ':tipoId',
-            name: 'TransferenciasVoluntariaEditar',
-            component: TransferenciasVoluntariasCriarEditar,
             props: ({ params }) => ({
               ...params,
               ...{ tipoId: Number.parseInt(params.tipoId, 10) || undefined },
