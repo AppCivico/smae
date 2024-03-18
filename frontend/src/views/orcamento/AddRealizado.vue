@@ -33,6 +33,7 @@ const { OrcamentoRealizado } = storeToRefs(OrcamentosStore);
 
 const currentEdit = ref({
   itens: [],
+  location: '',
 });
 const dota = ref('');
 const respostasof = ref({});

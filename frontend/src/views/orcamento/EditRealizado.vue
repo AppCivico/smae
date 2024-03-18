@@ -37,7 +37,10 @@ const {
 } = storeToRefs(OrcamentosStore);
 const { DotaçãoSegmentos } = storeToRefs(DotaçãoStore);
 
-const currentEdit = ref({});
+const currentEdit = ref({
+  location: '',
+  itens: [],
+});
 const dota = ref('');
 const respostasof = ref({});
 
@@ -194,10 +197,10 @@ function validaPartes(a) {
   }
 }
 
+// com `{ deep: true; }` por causa da carga atrasada da location
 watch(currentEdit, (novosValores) => {
   resetForm({ values: toRaw(novosValores) });
-});
-
+}, { deep: true });
 </script>
 <script>
 // use normal <script> to declare options
