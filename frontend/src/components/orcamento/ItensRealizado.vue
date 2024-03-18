@@ -1,9 +1,13 @@
 <script setup>
 import MaskedFloatInput from '@/components/MaskedFloatInput.vue';
 import months from '@/consts/months';
+import dinheiro from '@/helpers/dinheiro';
+import retornarQuaisOsRecentesDosItens from '@/helpers/retornarQuaisOsMaisRecentesDosItensDeOrcamento';
 import { useMetasStore } from '@/stores/metas.store';
+import { useOrcamentosStore } from '@/stores/orcamentos.store';
 import { useProjetosStore } from '@/stores/projetos.store.ts';
 import { range } from 'lodash';
+import { storeToRefs } from 'pinia';
 import {
   computed, defineModel, defineOptions, nextTick,
 } from 'vue';
@@ -26,10 +30,13 @@ let projetosStore;
 
 const route = useRoute();
 
+const { líquidoDosItens, orçamentoEmFoco } = storeToRefs(useOrcamentosStore());
+
 const model = defineModel({
   required: true,
 });
 
+const maisRecentesDosItens = computed(() => retornarQuaisOsRecentesDosItens(model.value));
 const mesesSelecionados = computed(() => model.value?.map((x) => x.mes) || []);
 const mesesDisponíveis = computed(() => {
   let mesesPermitidos = range(1, 13);
@@ -56,6 +63,22 @@ const mesesDisponíveis = computed(() => {
 
   return mesesPermitidos.filter((x) => !mesesSelecionados.value.includes(x));
 });
+
+const totais = computed(() => ({
+  empenho: líquidoDosItens.value.empenho + maisRecentesDosItens.value.empenho,
+  liquidação: líquidoDosItens.value.liquidação + maisRecentesDosItens.value.liquidação,
+}));
+
+const totaisQueSuperamSOF = computed(() => ({
+  empenho: orçamentoEmFoco?.value?.empenho_liquido !== null
+    && orçamentoEmFoco?.value?.empenho_liquido !== undefined
+    ? totais.value.empenho > Number(orçamentoEmFoco.value.empenho_liquido)
+    : false,
+  liquidação: orçamentoEmFoco?.value?.valor_liquidado !== null
+    && orçamentoEmFoco?.value?.valor_liquidado !== undefined
+    ? totais.value.liquidação > Number(orçamentoEmFoco.value.valor_liquidado)
+    : false,
+}));
 
 function removeItem(i) {
   model.value.splice(i, 1);
@@ -108,6 +131,9 @@ async function addItem() {
               :disabled="k + 1 != item.mes && !mesesDisponíveis.includes(k + 1)"
             >
               {{ month }}
+              <template v-if="k + 1 != item.mes && !mesesDisponíveis.includes(k + 1)">
+                (indisponível)
+              </template>
             </option>
           </select>
         </td>
@@ -144,6 +170,63 @@ async function addItem() {
         </td>
       </tr>
     </tbody>
+    <tfoot>
+      <tr>
+        <th>
+          Total no
+          <abbr title="Sistema de Monitoramento e Acompanhamento Estratégico">
+            SMAE
+          </abbr>
+        </th>
+        <td
+          :class="{
+            tvermelho: totaisQueSuperamSOF.empenho
+          }"
+          class="tc300"
+        >
+          <template v-if="respostasof.smae_soma_valor_empenho != undefined">
+            R$ {{ dinheiro(totais.empenho) }}
+          </template>
+
+          <span
+            v-if="totaisQueSuperamSOF.empenho"
+            class="tipinfo"
+          >
+            <svg
+              width="24"
+              height="24"
+              color="#F2890D"
+            ><use xlink:href="#i_alert" /></svg><div>
+              valor supera empenho SOF
+            </div>
+          </span>
+        </td>
+        <td
+          :class="{
+            tvermelho: totaisQueSuperamSOF.liquidação
+          }"
+          class="tc300"
+        >
+          <template v-if="respostasof.smae_soma_valor_liquidado != undefined">
+            R$ {{ dinheiro(totais.liquidação) }}
+          </template>
+
+          <span
+            v-if="totaisQueSuperamSOF.liquidação"
+            class="tipinfo"
+          >
+            <svg
+              width="24"
+              height="24"
+              color="#F2890D"
+            ><use xlink:href="#i_alert" /></svg><div>
+              valor supera liquidação SOF
+            </div>
+          </span>
+        </td>
+        <td />
+      </tr>
+    </tfoot>
   </table>
 
   <div class="flex justifyright">
