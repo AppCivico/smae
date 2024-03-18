@@ -1,7 +1,7 @@
-import qs from 'qs';
 import responseDownload from '@/helpers/responseDownload';
 import { useAlertStore } from '@/stores/alert.store';
 import { useAuthStore } from '@/stores/auth.store';
+import qs from 'qs';
 
 type Method = 'GET' | 'POST' | 'UPLOAD' | 'PUT' | 'PATCH' | 'DELETE';
 
@@ -34,7 +34,8 @@ async function handleResponse(response: Response, alertarErros:Boolean = true) {
     }
     const error = (data && data.message)
       ? listErrors(data.message)
-      : msgDefault ?? response.status;
+      : msgDefault
+      ?? response.status;
 
     if (alertarErros) {
       alertStore.error(error);
@@ -58,7 +59,7 @@ function userToken(url: RequestInfo | URL): HeadersInit {
   if (isLoggedIn && isApiUrl) {
     return {
       Authorization: `Bearer ${authStore.token}`,
-      'smae-sistemas': authStore.sistemaEscolhido === 'SMAE'
+      'smae-sistemas': !authStore.sistemaEscolhido || authStore.sistemaEscolhido === 'SMAE'
         ? 'SMAE'
         : `SMAE,${authStore.sistemaEscolhido}`,
     };
