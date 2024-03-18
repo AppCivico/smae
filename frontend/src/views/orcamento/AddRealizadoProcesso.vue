@@ -344,7 +344,7 @@ watch(currentEdit, (novosValores) => {
 
         <ItensRealizado
           v-model="values.itens"
-          :respostasof="respostasof.find(x => x.dotacao == values.dotacao)"
+          :respostasof="respostasof.find((x) => x.dotacao == values.dotacao)"
           name="itens"
         />
 
