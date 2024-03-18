@@ -151,7 +151,7 @@ export default {
         type="hidden"
         :value="$route.params.projetoId"
       />
-      <div v-else>
+      <div v-else-if="Object.keys(respostasof).length && ! respostasof.error">
         <hr class="mt2 mb2">
         <label class="label">Vincular dotação<span class="tvermelho">*</span></label>
 
@@ -220,16 +220,22 @@ export default {
       </div>
 
       <ItensRealizado
+        v-if="Object.keys(respostasof).length && ! respostasof.error"
         v-model="values.itens"
         :respostasof="respostasof"
         name="itens"
       />
 
+      <FormErrorsList :errors="errors" />
+
       <div class="flex spacebetween center mb2">
         <hr class="mr2 f1">
         <button
           class="btn big"
-          :disabled="isSubmitting"
+          :disabled="isSubmitting || Object.keys(errors)?.length"
+          :title="Object.keys(errors)?.length
+            ? `Erros de preenchimento: ${Object.keys(errors)?.length}`
+            : null"
         >
           Salvar
         </button>
