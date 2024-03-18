@@ -270,24 +270,23 @@ export const execuçãoOrçamentária = object()
   .shape({
     itens: array()
       .label('Execução orçamentária')
-      .nullable()
+      .min(1)
       .of(
-        object()
-          .shape({
-            mes: number()
-              .label('Mês Ref.')
-              .max(12)
-              .min(1)
-              .required(),
-            valor_empenho: number()
-              .label('Valor empenho')
-              .min(0)
-              .required(),
-            valor_liquidado: number()
-              .label('Valor liquidado')
-              .min(0)
-              .required(),
-          }),
+        object({
+          mes: number()
+            .label('Mês Ref.')
+            .max(12)
+            .min(1)
+            .required(),
+          valor_empenho: number()
+            .label('Valor empenho')
+            .min(0)
+            .required(),
+          valor_liquidado: number()
+            .label('Valor liquidado')
+            .min(0)
+            .required(),
+        }),
       ),
   });
 
@@ -570,13 +569,32 @@ export const novaSenha = object()
       .oneOf([ref('password'), null], 'Senhas não coincidem'),
   });
 
-export const orçamentoRealizado = object()
-  .shape({
-    dotacao: string()
-      .label('Dotação')
-      .matches(regEx.dotaçãoComComplemento)
-      .required(),
-  });
+export const orçamentoRealizado = object({
+  dotacao: string()
+    .label('Dotação')
+    .matches(regEx.dotaçãoComComplemento)
+    .required(),
+  itens: array()
+    .label('Execução orçamentária')
+    .min(1)
+    .of(
+      object({
+        mes: number()
+          .label('Mês Ref.')
+          .max(12, 'Mês inválido')
+          .min(1, 'Mês inválido')
+          .required(),
+        valor_empenho: number()
+          .label('Valor empenho')
+          .min(0)
+          .required(),
+        valor_liquidado: number()
+          .label('Valor liquidado')
+          .min(0)
+          .required(),
+      }),
+    ),
+});
 
 export const órgão = object()
   .shape({
