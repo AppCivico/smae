@@ -40,7 +40,10 @@ const parent_item = ref(meta_id ? singleMeta : false);
 
 const OrcamentosStore = useOrcamentosStore();
 const { OrcamentoRealizado } = storeToRefs(OrcamentosStore);
-const currentEdit = ref({});
+
+const currentEdit = ref({
+  itens: [],
+});
 const dota = ref('');
 const dotaAno = ref(ano);
 const respostasof = ref({});
