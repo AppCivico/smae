@@ -74,8 +74,8 @@ export class OrcamentoRealizadoService {
         let soma_valor_empenho = dto.itens.sort((a, b) => b.mes - a.mes)[0].valor_empenho;
         let soma_valor_liquidado = dto.itens.sort((a, b) => b.mes - a.mes)[0].valor_liquidado;
 
-        const perc_valor_empenho = dto.itens.sort((a, b) => b.mes - a.mes)[0].valor_empenho;
-        const perc_valor_liquidado = dto.itens.sort((a, b) => b.mes - a.mes)[0].valor_liquidado;
+        const perc_valor_empenho = dto.itens.sort((a, b) => b.mes - a.mes)[0].percentual_empenho;
+        const perc_valor_liquidado = dto.itens.sort((a, b) => b.mes - a.mes)[0].percentual_liquidado;
         const mes_corrente = dto.itens.sort((a, b) => b.mes - a.mes)[0].mes;
 
         if (soma_valor_empenho != null && soma_valor_liquidado != null)
@@ -278,8 +278,12 @@ export class OrcamentoRealizadoService {
         if (!anoCount)
             throw new HttpException('Ano de referencia não encontrado ou não está com a execução liberada', 400);
 
-        const nova_soma_valor_empenho = dto.itens.sort((a, b) => b.mes - a.mes)[0].valor_empenho;
-        const nova_soma_valor_liquidado = dto.itens.sort((a, b) => b.mes - a.mes)[0].valor_liquidado;
+        let nova_soma_valor_empenho = dto.itens.sort((a, b) => b.mes - a.mes)[0].valor_empenho;
+        let nova_soma_valor_liquidado = dto.itens.sort((a, b) => b.mes - a.mes)[0].valor_liquidado;
+
+        const nova_perc_valor_empenho = dto.itens.sort((a, b) => b.mes - a.mes)[0].percentual_empenho;
+        const nova_perc_valor_liquidado = dto.itens.sort((a, b) => b.mes - a.mes)[0].percentual_liquidado;
+
         const mes_corrente = dto.itens.sort((a, b) => b.mes - a.mes)[0].mes;
         if (nova_soma_valor_empenho != null && nova_soma_valor_liquidado != null)
             verificaValorLiqEmpenhoMaiorEmp(nova_soma_valor_empenho, nova_soma_valor_liquidado);
@@ -334,6 +338,34 @@ export class OrcamentoRealizadoService {
                     dot_valor_liquidado = dotacaoTx.valor_liquidado;
                 } else {
                     throw new HttpException('Erro interno: nota, processo ou dotação está null', 500);
+                }
+
+                if (nova_perc_valor_empenho && nova_soma_valor_empenho == null) {
+                    // importação do excel, calcula sozinho
+                    nova_soma_valor_empenho = DivPerc2Decimal(dot_empenho_liquido, nova_perc_valor_empenho);
+                } else if (nova_perc_valor_empenho && nova_soma_valor_empenho) {
+                    // importação web ou api, se receber o campo, confere o valor
+                    const check_soma_valor_empenho = DivPerc2Decimal(dot_empenho_liquido, nova_perc_valor_empenho);
+                    DoubleCheckException(
+                        'de empenho',
+                        check_soma_valor_empenho,
+                        nova_soma_valor_empenho,
+                        nova_perc_valor_empenho
+                    );
+                }
+
+                if (nova_perc_valor_liquidado && nova_soma_valor_liquidado == null) {
+                    // importação do excel, calcula sozinho
+                    nova_soma_valor_liquidado = DivPerc2Decimal(dot_valor_liquidado, nova_perc_valor_liquidado);
+                } else if (nova_perc_valor_liquidado && nova_soma_valor_liquidado) {
+                    // importação web ou api, se receber o campo, confere o valor
+                    const check_soma_valor_liquidado = DivPerc2Decimal(dot_valor_liquidado, nova_perc_valor_liquidado);
+                    DoubleCheckException(
+                        'do liquidado',
+                        check_soma_valor_liquidado,
+                        nova_soma_valor_liquidado,
+                        nova_perc_valor_liquidado
+                    );
                 }
 
                 if (nova_soma_valor_empenho == null || nova_soma_valor_liquidado == null)
