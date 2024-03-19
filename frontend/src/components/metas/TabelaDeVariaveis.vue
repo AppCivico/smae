@@ -1,11 +1,11 @@
 <script setup>
+import níveisRegionalização from '@/consts/niveisRegionalizacao';
+import dateToField from '@/helpers/dateToField';
 import { useAlertStore } from '@/stores/alert.store';
 import { useAuthStore } from '@/stores/auth.store';
 import { useVariaveisStore } from '@/stores/variaveis.store';
-import { useRoute } from 'vue-router';
 import { storeToRefs } from 'pinia';
-import dateToField from '@/helpers/dateToField';
-import níveisRegionalização from '@/consts/niveisRegionalizacao';
+import { useRoute } from 'vue-router';
 
 const alertStore = useAlertStore();
 const authStore = useAuthStore();
