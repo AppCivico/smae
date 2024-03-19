@@ -141,7 +141,7 @@ export class TransferenciaService {
                 normativa: true,
                 observacoes: true,
                 programa: true,
-
+                pendente_preenchimento_valores: true,
                 orgao_concedente: {
                     select: {
                         id: true,
