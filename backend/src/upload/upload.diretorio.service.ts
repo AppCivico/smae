@@ -80,6 +80,7 @@ export class UploadDiretorioService {
         const linhas = await this.prisma.diretorio.findMany({
             where: {
                 projeto_id: filters.projeto_id,
+                transferencia_id: filters.transferencia_id,
             },
             select: {
                 id: true,
