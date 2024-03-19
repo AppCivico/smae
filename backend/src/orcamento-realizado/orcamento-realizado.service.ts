@@ -769,6 +769,9 @@ export class OrcamentoRealizadoService {
         filters: FilterOrcamentoRealizadoCompartilhadoDto,
         user: PessoaFromJwt
     ): Promise<ListApenasOrcamentoRealizadoDto> {
+        if (!filters.dotacao)
+            throw new BadRequestException('É necessário enviar a dotação para buscar as metas compartilhadas');
+
         const ret: ListApenasOrcamentoRealizadoDto = {
             linhas: await this.findAll(filters, user, undefined, true, filters.pdm_id),
         };
