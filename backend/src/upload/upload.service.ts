@@ -423,5 +423,16 @@ export class UploadService {
                 projeto_id: projetoDoc.projeto_id,
             });
         }
+
+        const transferenciaDoc = await this.prisma.transferenciaAnexo.findFirst({
+            where: { arquivo_id: arquivo.id },
+            select: { transferencia_id: true },
+        });
+        if (transferenciaDoc) {
+            await this.uploadDiretorio.create({
+                caminho: dto.caminho,
+                projeto_id: transferenciaDoc.transferencia_id,
+            });
+        }
     }
 }
