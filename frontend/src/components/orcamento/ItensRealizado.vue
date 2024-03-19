@@ -86,6 +86,32 @@ function removeItem(i) {
   model.value.splice(i, 1);
 }
 
+function atualizarDePercentagem(i, coluna) {
+  switch (coluna) {
+    case 'empenho':
+      if (model.value[i].percentual_empenho === 0) {
+        model.value[i].percentual_empenho = null;
+      } else {
+        model.value[i].valor_empenho = (model.value[i].percentual_empenho
+          * 0.01 * orçamentoEmFoco.value.empenho_liquido).toFixed(2);
+      }
+      break;
+
+    case 'liquidação':
+    case 'liquidacao':
+      if (model.value[i].percentual_liquidado === 0) {
+        model.value[i].percentual_liquidado = null;
+      } else {
+        model.value[i].valor_liquidado = (model.value[i].percentual_liquidado
+          * 0.01 * orçamentoEmFoco.value.valor_liquidado).toFixed(2);
+      }
+      break;
+
+    default:
+      throw new Error('Coluna desconhecida fornecida');
+  }
+}
+
 async function addItem() {
   if (!Array.isArray(model.value)) {
     model.value = [];
@@ -98,14 +124,35 @@ async function addItem() {
 <template>
   <table class="tablemain no-zebra mb1">
     <col>
+    <col class="col--percentagem">
     <col>
+    <col class="col--percentagem">
     <col>
     <col class="col--botão-de-ação">
     <thead>
       <tr>
-        <th>Mês Ref. *</th>
-        <th>Valor empenho *</th>
-        <th>Valor liquidação *</th>
+        <th rowspan="2">
+          Mês Ref. <span class="tvermelho">*</span>
+        </th>
+        <th
+          colspan="2"
+          class="tc"
+        >
+          Valor empenho
+        </th>
+        <th
+          colspan="2"
+          class="tc"
+        >
+          Valor liquidação
+        </th>
+        <th />
+      </tr>
+      <tr>
+        <th>Percentagem</th>
+        <th>Valor <span class="tvermelho">*</span></th>
+        <th>Percentagem</th>
+        <th>Valor <span class="tvermelho">*</span></th>
         <th />
       </tr>
     </thead>
@@ -142,18 +189,44 @@ async function addItem() {
         </td>
 
         <td>
+          <input
+            v-model="item.percentual_empenho"
+            name="percentual_empenho"
+            max="100"
+            min="0"
+            step="0.01"
+            autocomplete="off"
+            type="number"
+            class="inputtext light"
+            @input="atualizarDePercentagem(i,'empenho')"
+          >
+        </td>
+        <td>
           <MaskedFloatInput
             v-model="item.valor_empenho"
-            :value="Number(item.valor_empenho)"
+            :value="item.valor_empenho"
             :name="`${name}[${i}].valor_empenho`"
             type="text"
             class="inputtext light"
           />
         </td>
         <td>
+          <input
+            v-model="item.percentual_liquidado"
+            name="percentual_liquidado"
+            max="100"
+            min="0"
+            step="0.01"
+            autocomplete="off"
+            type="number"
+            class="inputtext light"
+            @input="atualizarDePercentagem(i,'liquidação')"
+          >
+        </td>
+        <td>
           <MaskedFloatInput
             v-model="item.valor_liquidado"
-            :value="Number(item.valor_liquidado)"
+            :value="item.valor_liquidado"
             :name="`${name}[${i}].valor_liquidado`"
             type="text"
             class="inputtext light"
@@ -185,6 +258,7 @@ async function addItem() {
         <td class="tc300">
           R$ {{ dinheiro(respostasof.smae_soma_valor_empenho || 0) }}
         </td>
+        <td />
         <td class="tc300">
           R$ {{ dinheiro(respostasof.smae_soma_valor_liquidado || 0) }}
         </td>
@@ -194,6 +268,7 @@ async function addItem() {
         <th>
           compartilhado + {{ months[maisRecenteDosMeses - 1] || 'último mês' }}
         </th>
+        <td />
         <td
           :class="{
             tvermelho: totaisQueSuperamSOF.empenho
@@ -216,6 +291,7 @@ async function addItem() {
             </div>
           </span>
         </td>
+        <td />
         <td
           :class="{
             tvermelho: totaisQueSuperamSOF.liquidação
