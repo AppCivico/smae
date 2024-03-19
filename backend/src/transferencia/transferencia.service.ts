@@ -129,7 +129,6 @@ export class TransferenciaService {
         const rows = await this.prisma.transferencia.findMany({
             where: {
                 removido_em: null,
-                pendente_preenchimento_valores: false,
             },
             select: {
                 id: true,
