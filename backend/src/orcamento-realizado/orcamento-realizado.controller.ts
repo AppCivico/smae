@@ -7,7 +7,9 @@ import { FindOneParams } from '../common/decorators/find-params';
 import { BatchRecordWithId, RecordWithId } from '../common/dto/record-with-id.dto';
 import {
     CreateOrcamentoRealizadoDto,
+    FilterOrcamentoRealizadoCompartilhadoDto,
     FilterOrcamentoRealizadoDto,
+    ListApenasOrcamentoRealizadoDto,
     ListOrcamentoRealizadoDto,
     PatchOrcamentoRealizadoConcluidoDto,
     UpdateOrcamentoRealizadoDto,
@@ -61,6 +63,16 @@ export class OrcamentoRealizadoController {
         @CurrentUser() user: PessoaFromJwt
     ): Promise<ListOrcamentoRealizadoDto> {
         return await this.orcamentoRealizadoService.findAllWithPermissions(filters, user);
+    }
+
+    @ApiBearerAuth('access-token')
+    @Get('compartilhados-no-pdm')
+    @Roles('CadastroMeta.orcamento', 'PDM.tecnico_cp', 'PDM.admin_cp')
+    async findCompartilhado(
+        @Query() filters: FilterOrcamentoRealizadoCompartilhadoDto,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<ListApenasOrcamentoRealizadoDto> {
+        return await this.orcamentoRealizadoService.findCompartilhadosNoPdm(filters, user);
     }
 
     @Delete('em-lote')
