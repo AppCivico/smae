@@ -1,3 +1,4 @@
+import TransferenciaDistribuiçãoDeRecursosCriarEditar from '@/views/transferenciasVoluntarias/TransferenciaDistribuiçãoDeRecursosCriarEditar.vue';
 import RegistroDeTransferenciaCriarEditar from '@/views/transferenciasVoluntarias/RegistroDeTransferenciaCriarEditar.vue';
 import TransferenciasVoluntariasCriarEditar from '@/views/transferenciasVoluntarias/TransferenciasVoluntariasCriarEditar.vue';
 import TransferenciasVoluntariasLista from '@/views/transferenciasVoluntarias/TransferenciasVoluntariasLista.vue';
@@ -26,7 +27,15 @@ export default {
     {
       name: 'TransferenciasVoluntariaCriar',
       path: 'novo',
-      component: TransferenciasVoluntariasCriarEditar, //Dev - teste
+      component: TransferenciasVoluntariasCriarEditar,
+      meta: {
+        título: 'Formulário de registro',
+      },
+    },
+    {
+      name: 'RegistroDeTransferenciaCriar',
+      path: 'novo',
+      component: RegistroDeTransferenciaCriarEditar,
       meta: {
         título: 'Formulário de registro',
       },
@@ -34,7 +43,7 @@ export default {
     {
       path: ':transferenciaId',
       name: 'TransferenciasVoluntariaEditar',
-      component: RegistroDeTransferenciaCriarEditar,
+      component: TransferenciasVoluntariasCriarEditar,
       props: ({ params }) => ({
         ...params,
         ...{ transferenciaId: Number.parseInt(params.transferenciaId, 10) || undefined },

@@ -1,25 +1,32 @@
 <script setup>
 import { transferenciasVoluntarias as schema } from '@/consts/formSchemas';
-import truncate from '@/helpers/truncate';
 import { useAlertStore } from '@/stores/alert.store';
 import { useTransferenciasVoluntariasStore } from '@/stores/transferenciasVoluntarias.store';
 import { useOrgansStore } from '@/stores/organs.store';
 import { useParlamentaresStore } from '@/stores/parlamentares.store';
+import { usePartidosStore } from '@/stores/partidos.store';
+import { useTipoDeTransferenciaStore } from '@/stores/tipoDeTransferencia.store';
 import { storeToRefs } from 'pinia';
 import { ErrorMessage, Field, Form} from 'vee-validate';
 import { useRoute, useRouter } from 'vue-router';
+import truncate from '@/helpers/truncate';
 
-const transferenciasVoluntarias = useTransferenciasVoluntariasStore();
+const TransferenciasVoluntarias = useTransferenciasVoluntariasStore();
+const TipoDeTransferenciaStore = useTipoDeTransferenciaStore();
+const partidoStore = usePartidosStore();
 const ÓrgãosStore = useOrgansStore();
 const ParlamentaresStore = useParlamentaresStore();
-const { chamadasPendentes, erro, lista} = storeToRefs(transferenciasVoluntarias);
+
+const { chamadasPendentes, erro, lista} = storeToRefs(TransferenciasVoluntarias);
 const { órgãosComoLista } = storeToRefs(ÓrgãosStore);
-const { parlamentarComoLista } = storeToRefs(ParlamentaresStore);
+const { lista: parlamentarComoLista } = storeToRefs(ParlamentaresStore);
+const { lista: tipoTransferenciaComoLista } = storeToRefs(TipoDeTransferenciaStore);
+const { lista: partidoComoLista } = storeToRefs(partidoStore);
 
 const router = useRouter();
 const route = useRoute();
 const props = defineProps({
-  tipoId: {
+  transferenciaId: {
     type: Number,
     default: 0,
   },
@@ -27,39 +34,46 @@ const props = defineProps({
 
 const alertStore = useAlertStore();
 
-async function onSubmit(values) {
+async function onSubmit(_, { controlledValues }) {
+  console.log(controlledValues)
+  console.log(_)
   try {
     let r;
-    const msg = props.tipoId
+    const msg = props.transferenciaId
       ? 'Dados salvos com sucesso!'
       : 'Item adicionado com sucesso!';
 
-    if (props.tipoId) {
-      r = await transferenciasVoluntarias.salvarItem(values, props.tipoId);
+    if (props.transferenciaId) {
+      r = await TransferenciasVoluntarias.salvarItem(controlledValues, props.transferenciaId);
     } else {
-      r = await transferenciasVoluntarias.salvarItem(values);
+      r = await TransferenciasVoluntarias.salvarItem(controlledValues);
     }
     if (r) {
       alertStore.success(msg);
-      transferenciasVoluntarias.$reset();
-      router.push({ name: 'tipoDeTrasferenciaListar' });
+      TransferenciasVoluntarias.$reset();
+      if( props.transferenciaId ){
+        router.push({ name: 'TransferenciasVoluntariasListar' });
+       } else {
+         router.push({ name: 'RegistroDeTransferenciaCriar' });
+       }
+
     }
   } catch (error) {
     alertStore.error(error);
   }
 }
 
-if (props.tipoId) {
-  transferenciasVoluntarias.buscarTudo(props.tipoId);
+function iniciar(){
+  if (props.transferenciaId) {
+    TransferenciasVoluntarias.buscarTudo(props.transferenciaId); //revisar
+  }
+
+  ÓrgãosStore.getAll();
+  ParlamentaresStore.buscarTudo();
+  TipoDeTransferenciaStore.buscarTudo();
+  partidoStore.buscarTudo();
 }
-
-ÓrgãosStore.getAll(() => {
-  chamadasPendentes.value.emFoco = false;
-});
-
-ParlamentaresStore.buscarTudo(() => {
-  chamadasPendentes.value.emFoco = false;
-});
+iniciar()
 
 </script>
 
@@ -93,7 +107,7 @@ ParlamentaresStore.buscarTudo(() => {
           <option value="Federal">
             Federal
           </option>
-          <option value="Estadual ">
+          <option value="Estadual">
             Estadual
           </option>
         </Field>
@@ -104,21 +118,33 @@ ParlamentaresStore.buscarTudo(() => {
     </div>
     <div class="flex g2 mb1">
       <div class="f1">
-        <label class="label">Tipo <span class="tvermelho">*</span></label>
-        <Field name="categoria" as="select" class="inputtext light mb1" :class="{ 'error': errors.categoria }">
-          <option value="">
+        <LabelFromYup name="tipo_id" :schema="schema" />
+        <Field
+          name="tipo_id"
+          as="select"
+          class="inputtext light mb1"
+          :class="{
+            error: errors.tipo_id,
+            loading: TipoDeTransferenciaStore.chamadasPendentes?.lista,
+          }"
+          :disabled="!tipoTransferenciaComoLista?.length"
+        >
+          <option :value="0">
             Selecionar
           </option>
-          <option value="Discricionaria">
-            Discricionárias dos Ministérios/Secretarias
-          </option>
-          <option value="Impositiva">
-            Impositivas
+
+          <option
+            v-for="item in tipoTransferenciaComoLista"
+            :key="item"
+            :value="item.id"
+          >
+            {{ item.nome }} -- {{ item.esfera }}
           </option>
         </Field>
-        <div class="error-msg">
-          {{ errors.categoria }}
-        </div>
+        <ErrorMessage
+          name="tipo_id"
+          class="error-msg"
+        />
       </div>
       <div class="f1">
         <label class="label">Interface <span class="tvermelho">*</span></label>
@@ -126,10 +152,10 @@ ParlamentaresStore.buscarTudo(() => {
           <option value="">
             Selecionar
           </option>
-          <option value="Discricionaria">
+          <option value="TransfereGov">
             TransfereGov
           </option>
-          <option value="Impositiva">
+          <option value="SemPapel">
             SemPapel
           </option>
         </Field>
@@ -146,7 +172,7 @@ ParlamentaresStore.buscarTudo(() => {
     <div class="flex g2 mb1">
       <div class="f1">
         <LabelFromYup name="emenda" :schema="schema" />
-        <Field name="emenda" type="text" class="inputtext light mb1" />
+        <Field name="emenda" type="text" class="inputtext light mb1" placeholder="000.000.000.000/ AAAA.0000000.00000 / AAAA.000.00000"/>
         <ErrorMessage class="error-msg mb1" name="emenda" />
       </div>
 
@@ -158,9 +184,9 @@ ParlamentaresStore.buscarTudo(() => {
     </div>
     <div class="flex g2 mb1">
       <div class="f1">
-        <LabelFromYup name="numero_identificacao" :schema="schema" />
-        <Field name="numero_identificacao" type="text" class="inputtext light mb1" />
-        <ErrorMessage class="error-msg mb1" name="numero_identificacao" />
+        <LabelFromYup name="demanda" :schema="schema" />
+        <Field name="demanda" type="text" class="inputtext light mb1" />
+        <ErrorMessage class="error-msg mb1" name="demanda" />
       </div>
     </div>
 
@@ -170,15 +196,14 @@ ParlamentaresStore.buscarTudo(() => {
     </div>
 
     <div class="flex g2 mb1">
-      <div class="f1 mb1">
-        <LabelFromYup name="orgao_concedente" :schema="schema"
-        />
+      <div class="f1">
+        <LabelFromYup name="orgao_concedente_id" :schema="schema"/>
         <Field
-          name="orgao_concedente"
+          name="orgao_concedente_id"
           as="select"
           class="inputtext light mb1"
           :class="{
-            error: errors.orgao_concedente,
+            error: errors.orgao_concedente_id,
             loading: ÓrgãosStore.chamadasPendentes?.lista,
           }"
           :disabled="!órgãosComoLista?.length"
@@ -197,16 +222,41 @@ ParlamentaresStore.buscarTudo(() => {
           </option>
         </Field>
         <ErrorMessage
-          name="orgao_concedente"
+          name="orgao_concedente_id"
           class="error-msg"
         />
       </div>
       <div class="f1">
-        <LabelFromYup name="secretaria_concedente_id" :schema="schema" />
-        <Field name="secretaria_concedente_id" type="text" class="inputtext light mb1" />
-        <ErrorMessage class="error-msg mb1" name="secretaria_concedente_id" />
+        <LabelFromYup name="secretaria_concedente_id" :schema="schema"/>
+        <Field
+          name="secretaria_concedente_id"
+          as="select"
+          class="inputtext light mb1"
+          :class="{
+            error: errors.secretaria_concedente_id,
+            loading: ÓrgãosStore.chamadasPendentes?.lista,
+          }"
+          :disabled="!órgãosComoLista?.length"
+        >
+          <option :value="0">
+            Selecionar
+          </option>
+
+          <option
+            v-for="item in órgãosComoLista"
+            :key="item"
+            :value="item.id"
+          >
+            {{ item.secretario_responsavel }}
+          </option>
+        </Field>
+        <ErrorMessage
+          name="secretaria_concedente_id"
+          class="error-msg"
+        />
       </div>
     </div>
+
     <div class="flex g2 mb1">
       <div class="f1 mb1">
         <LabelFromYup name="parlamentar_id" :schema="schema" />
@@ -229,7 +279,7 @@ ParlamentaresStore.buscarTudo(() => {
             :key="item"
             :value="item.id"
           >
-            {{ item.nome }}
+            {{ item.nome }} - {{ item.nome_popular }}
           </option>
         </Field>
         <ErrorMessage
@@ -244,21 +294,60 @@ ParlamentaresStore.buscarTudo(() => {
         <ErrorMessage class="error-msg mb1" name="numero_identificacao" />
       </div>
     </div>
+
     <div class="flex g2 mb1">
-      <div class="f1">
-        <label for="partido_id" :schema="schema" class="label">Partido</label>
-        <AutocompleteField
-          id="partido_id"
-          class="inputtext light mb1"
+      <div class="f1 mb1">
+        <LabelFromYup name="partido_id" :schema="schema" />
+        <Field
           name="partido_id"
-          label="partido"
+          as="select"
+          class="inputtext light mb1"
+          :class="{
+            error: errors.partido_id,
+            loading: ParlamentaresStore.chamadasPendentes?.lista,
+          }"
+          :disabled="!partidoComoLista?.length"
+        >
+          <option :value="0">
+            Selecionar
+          </option>
+
+          <option
+            v-for="item in partidoComoLista"
+            :key="item"
+            :value="item.id"
+          >
+            {{ item.nome }}
+          </option>
+        </Field>
+        <ErrorMessage
+          name="partido_id"
+          class="error-msg"
         />
       </div>
-      <!-- <div class="f1">
-        <LabelFromYup name="numero_identificacao" :schema="schema" />
-        <Field name="numero_identificacao" type="text" class="inputtext light mb1" />
-        <ErrorMessage class="error-msg mb1" name="numero_identificacao" />
-      </div>-->
+      <div class="f1">
+        <label class="label">Cargo<span class="tvermelho">*</span></label>
+        <Field name="cargo" as="select" class="inputtext light mb1" :class="{ 'error': errors.cargo }">
+          <option value="">
+            Selecionar
+          </option>
+          <option value="Senador">
+            Senador
+          </option>
+          <option value="DeputadoEstadual">
+            Deputado Estadual
+          </option>
+          <option value="DeputadoFederal">
+            Deputado Federal
+          </option>
+          <option value="Vereador">
+            Vereador
+          </option>
+        </Field>
+        <div class="error-msg">
+          {{ errors.cargo }}
+        </div>
+      </div>
     </div>
 
     <div class="flex spacebetween center mb1">
@@ -275,7 +364,7 @@ ParlamentaresStore.buscarTudo(() => {
 
       <div class="f1">
         <LabelFromYup name="nome_programa" :schema="schema" />
-        <Field name="nome_programa" type="text" class="inputtext light mb1" />
+        <Field name="nome_programa" type="text" class="inputtext light mb1"/>
         <ErrorMessage class="error-msg mb1" name="nome_programa" />
       </div>
     </div>
@@ -293,13 +382,13 @@ ParlamentaresStore.buscarTudo(() => {
     </div>
 
     <div class="f1">
-      <label class="label">Tipo <span class="tvermelho">*</span></label>
+      <label class="label">Crítico <span class="tvermelho">*</span></label>
       <Field name="critico" as="select" class="inputtext light mb1"
       :class="{ 'error': errors.critico }">
-        <option value="true">
+        <option :value="true">
           Sim
         </option>
-        <option value="false">
+        <option :value="false">
           Não
         </option>
       </Field>
@@ -310,13 +399,13 @@ ParlamentaresStore.buscarTudo(() => {
 
     <div class="flex g2 mb1">
       <div class="f1">
-        <label class="label">Tipo <span class="tvermelho">*</span></label>
+        <label class="label">Cláusula suspensiva <span class="tvermelho">*</span></label>
         <Field name="clausula_suspensiva" as="select" class="inputtext light mb1"
         :class="{ 'error': errors.clausula_suspensiva }">
-          <option value="true">
+          <option :value="true">
             Sim
           </option>
-          <option value="false">
+          <option :value="false">
             Não
           </option>
         </Field>
