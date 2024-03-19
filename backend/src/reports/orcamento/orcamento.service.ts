@@ -49,6 +49,8 @@ class RetornoRealizadoDb {
     mes_corrente: boolean;
     smae_valor_empenhado: string;
     smae_valor_liquidado: string;
+    smae_percentual_empenho: string | null;
+    smae_percentual_liquidado: string | null;
     total_registros?: number;
     orcamento_realizado_item_id?: number;
 }
@@ -163,7 +165,6 @@ export class OrcamentoService implements ReportableService {
             for (const r of resultadosPlanejados) {
                 retPlanejado.push(this.convertPlanejadoRow(r));
             }
-
         } else if (dto.tipo == 'Consolidado' && search.length > 0) {
             const resultados: RetornoRealizadoDb[] = await this.queryConsolidadoExecutado(search);
 
@@ -322,6 +323,8 @@ export class OrcamentoService implements ReportableService {
                     o.nota_empenho,
                     i.valor_empenho as smae_valor_empenhado,
                     i.valor_liquidado as smae_valor_liquidado,
+                    i.percentual_empenho as smae_percentual_empenhado,
+                    i.percentual_liquidado as smae_percentual_liquidado,
                     i.mes,
                     o.ano_referencia as ano,
 
@@ -401,6 +404,8 @@ export class OrcamentoService implements ReportableService {
                 nota_empenho,
                 dotacao_valor_empenhado,
                 dotacao_valor_liquidado,
+                dotacao_percentual_empenhado,
+                dotacao_percentual_liquidado,
                 dotacao_mes_utilizado,
                 dotacao_ano_utilizado,
                 dotacao_sincronizado_em,
@@ -422,7 +427,7 @@ export class OrcamentoService implements ReportableService {
                 to_char_numeric(sum(smae_valor_liquidado)::numeric) as smae_valor_liquidado,
                 count(1) as total_registros
             FROM analitico
-            GROUP BY 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28
+            GROUP BY 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30
             order by analitico.dotacao, analitico.processo, analitico.nota_empenho, 1, 2
             `;
     }
@@ -437,6 +442,8 @@ export class OrcamentoService implements ReportableService {
                     o.nota_empenho,
                     to_char_numeric(i.valor_empenho::numeric) as smae_valor_empenhado,
                     to_char_numeric(i.valor_liquidado::numeric) as smae_valor_liquidado,
+                    to_char_numeric(i.percentual::numeric) as smae_percentual_empenhado,
+                    to_char_numeric(i.percentual::numeric) as smae_percentual_liquidado,
                     i.mes,
                     o.ano_referencia as ano,
 
@@ -592,6 +599,8 @@ export class OrcamentoService implements ReportableService {
             dotacao_mes_utilizado: db.dotacao_mes_utilizado?.toString() ?? '',
             smae_valor_empenhado: db.smae_valor_empenhado,
             smae_valor_liquidado: db.smae_valor_liquidado,
+            smae_percentual_empenho: db.smae_percentual_empenho,
+            smae_percentual_liquidado: db.smae_percentual_liquidado,
 
             mes: db.mes,
             ano: db.ano,
