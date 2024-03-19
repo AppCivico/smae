@@ -1302,6 +1302,15 @@ export class OrcamentoRealizadoService {
     }
 }
 
+const numberFormatterPtBr = new Intl.NumberFormat('pt-BR', {
+    maximumFractionDigits: 2,
+    minimumFractionDigits: 0,
+    useGrouping: true,
+});
+function FormataDinheiroBr(valor: number) {
+    return `R$ ${numberFormatterPtBr.format(valor)}`;
+}
+
 export function DoubleCheckException(
     tipo: string,
     check_soma_valor_empenho: number,
@@ -1310,7 +1319,7 @@ export function DoubleCheckException(
 ) {
     if (Math.round(check_soma_valor_empenho * 100) != Math.round(soma_valor_empenho * 100)) {
         throw new BadRequestException(
-            `${perc_valor_empenho}% do valor ${tipo} informado, ${soma_valor_empenho}, não confere com valor esperado de ${check_soma_valor_empenho}`
+            `${perc_valor_empenho}% do valor ${tipo} informado, ${FormataDinheiroBr(soma_valor_empenho)}, não confere com valor esperado de ${FormataDinheiroBr(check_soma_valor_empenho)}`
         );
     }
 }
