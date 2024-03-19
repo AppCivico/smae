@@ -262,7 +262,6 @@ export class FilterOrcamentoRealizadoCompartilhadoDto extends PickType(FilterOrc
     'processo',
     'nota_empenho',
     'ano_referencia',
-    'atividade_id',
 ]) {
     @IsInt({ message: '$property| pdm_id precisa ser positivo' })
     @Transform(PositiveNumberTransform)
