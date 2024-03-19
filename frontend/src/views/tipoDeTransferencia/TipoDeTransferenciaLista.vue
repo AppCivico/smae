@@ -29,10 +29,10 @@ tipoDeTransferencia.buscarTudo();
 </script>
 <template>
   <div class="flex spacebetween center mb2">
-    <h1>{{ route?.meta?.título || 'Tipo de Trasferência' }}</h1>
+    <h1>{{ route?.meta?.título || 'Tipo de Transferência' }}</h1>
     <hr class="ml2 f1">
-    <router-link :to="{ name: 'tipoDeTrasferenciaCriar' }" class="btn big ml1">
-      Novo Tipo de Trasferência
+    <router-link :to="{ name: 'tipoDeTransferenciaCriar' }" class="btn big ml1">
+      Novo Tipo de Transferência
     </router-link>
   </div>
 
@@ -74,7 +74,7 @@ tipoDeTransferencia.buscarTudo();
           </button>
         </td>
         <td>
-          <router-link :to="{ name: 'tipoDeTrasferenciaEditar', params: { tipoId: item.id } }"
+          <router-link :to="{ name: 'tipoDeTransferenciaEditar', params: { tipoId: item.id } }"
             class="tprimary">
             <svg width="20" height="20">
               <use xlink:href="#i_edit" />
