@@ -18,6 +18,7 @@ export class UploadDiretorioService {
                 data: {
                     caminho: path,
                     projeto_id: dto.projeto_id,
+                    transferencia_id: dto.transferencia_id,
                 },
             });
 
