@@ -145,7 +145,7 @@ export const useTransferenciasVoluntariasStore = defineStore(
           } else {
             resposta = await this.requestS.post(
               `${baseUrl}/transferencia/${
-                idDoProjeto || this.route.params.transferenciaId
+                idDaTransferencia || this.route.params.transferenciaId
               }/anexo`,
               params
             );
