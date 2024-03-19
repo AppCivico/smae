@@ -32,16 +32,16 @@ export default {
       },
     },
     {
-      path: ':tipoId',
+      path: ':transferenciaId',
       name: 'TransferenciasVoluntariaEditar',
       component: RegistroDeTransferenciaCriarEditar,
       props: ({ params }) => ({
         ...params,
-        ...{ tipoId: Number.parseInt(params.tipoId, 10) || undefined },
+        ...{ transferenciaId: Number.parseInt(params.transferenciaId, 10) || undefined },
       }),
 
       meta: {
-        título: 'Editar Tipo de Trasferência',
+        título: 'Editar Trasferência',
       },
     },
   ],
