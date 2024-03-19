@@ -56,15 +56,30 @@ app.directive('ScrollLockDebug', {
   beforeMount: (el, binding) => {
     el.classList.add('debug');
     el.setAttribute('hidden', '');
+    let shiftPressionada = false;
 
     if (binding.value) {
       el.setAttribute('data-debug', binding.value);
     }
     window.addEventListener('keydown', (event) => {
-      if (event.getModifierState && event.getModifierState('ScrollLock')) {
-        el.removeAttribute('hidden', '');
-      } else if (event.key === 'ScrollLock') {
-        el.setAttribute('hidden', '');
+      if (event.getModifierState && event.getModifierState('Control')) {
+        if (event.key === 'Shift') {
+          if (shiftPressionada) {
+            if (el.hasAttribute('hidden')) {
+              el.removeAttribute('hidden');
+            } else {
+              el.setAttribute('hidden', '');
+            }
+            shiftPressionada = false;
+          } else {
+            shiftPressionada = true;
+            setTimeout(() => {
+              shiftPressionada = false;
+            }, 300);
+          }
+        } else if (shiftPressionada) {
+          shiftPressionada = false;
+        }
       }
     });
   },
