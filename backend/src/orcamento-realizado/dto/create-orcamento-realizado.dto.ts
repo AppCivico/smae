@@ -25,25 +25,59 @@ export class CreateOrcamentoRealizadoItemDto {
      * Valor Empenho para meta - no momento aceitando zero, mas é meio sem sentido IMHO, uma vez que se ta registrando é pq ta alocado!
      * @example "42343.34"
      */
+    @IsOptional()
     @IsNumber(
         { maxDecimalPlaces: 2, allowInfinity: false, allowNaN: false },
         { message: '$property| Valor Empenho com até duas casas decimais' }
     )
     @Min(0, { message: '$property| Valor Empenhado precisa ser positivo ou zero' })
     @Type(() => Number)
-    valor_empenho: number;
+    @ValidateIf((object, value) => value !== null && value !== '')
+    valor_empenho: number | null;
+
+    /**
+     * Percentual Empenhado para meta - zero ou mais
+     * @example "20.34"
+     */
+    @IsOptional()
+    @IsNumber(
+        { maxDecimalPlaces: 2, allowInfinity: false, allowNaN: false },
+        { message: '$property| Percentual Empenhado com até duas casas decimais' }
+    )
+    @Min(0, { message: '$property| Percentual Empenhado precisa ser positivo ou zero' })
+    @Max(100, { message: '$property| Percentual Empenhado precisa menor que 100' })
+    @Type(() => Number)
+    @ValidateIf((object, value) => value !== null && value !== '')
+    percentual_empenho: number | null;
 
     /**
      * Valor Liquidado para meta - zero ou mais
      * @example "42343.34"
      */
+    @IsOptional()
     @IsNumber(
         { maxDecimalPlaces: 2, allowInfinity: false, allowNaN: false },
         { message: '$property| Valor Liquidado com até duas casas decimais' }
     )
     @Min(0, { message: '$property| Valor Liquidado precisa ser positivo ou zero' })
     @Type(() => Number)
-    valor_liquidado: number;
+    @ValidateIf((object, value) => value !== null && value !== '')
+    valor_liquidado: number | null;
+
+    /**
+     * Percentual Liquidado para meta - zero ou mais
+     * @example "20.34"
+     */
+    @IsOptional()
+    @IsNumber(
+        { maxDecimalPlaces: 2, allowInfinity: false, allowNaN: false },
+        { message: '$property| Percentual Liquidado com até duas casas decimais' }
+    )
+    @Min(0, { message: '$property| Percentual Liquidado precisa ser positivo ou zero' })
+    @Max(100, { message: '$property| Percentual Liquidado precisa menor que 100' })
+    @Type(() => Number)
+    @ValidateIf((object, value) => value !== null && value !== '')
+    percentual_liquidado: number | null;
 
     /**
      * Valor Liquidado para meta - zero ou mais

@@ -3,6 +3,8 @@ import { IdCodTituloDto } from '../../common/dto/IdCodTitulo.dto';
 export class OrcamentoRealizadoItem {
     valor_empenho: string;
     valor_liquidado: string;
+    percentual_empenho: string | null;
+    percentual_liquidado: string | null;
     mes: number;
 }
 
@@ -36,5 +38,5 @@ export class OrcamentoRealizado {
 
     execucao_disponivel_meses: number[];
 
-    pode_editar: boolean
+    pode_editar: boolean;
 }
