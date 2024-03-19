@@ -541,8 +541,12 @@ export class ImportacaoOrcamentoService {
                     // traduzindo algumas colunas do excel pro DTO
                     if (columnName === 'ano') {
                         col2row['ano_referencia'] = cellValue;
-                    } else if (['valor_empenho', 'valor_liquidado'].includes(columnName)) {
-                        // essas duas colunas vem como float, e então as vezes vem no excel ta "83242998.52" mas chega aqui "83242998.52000001"
+                    } else if (
+                        ['valor_empenho', 'valor_liquidado', 'percentual_empenho', 'percentual_liquidado'].includes(
+                            columnName
+                        )
+                    ) {
+                        // essas quatro colunas vem como float, e então as vezes vem no excel ta "83242998.52" mas chega aqui "83242998.52000001"
                         // então vamos fazer o toFixed(2)
                         col2row[columnName] = +cellValue;
 
@@ -899,6 +903,9 @@ export class ImportacaoOrcamentoService {
 
         if (!dotacao) return 'Erro: faltando dotacao';
 
+        if (isEmpty(row.valor_empenho) && isEmpty(row.percentual_empenho))
+            return 'Erro: percentual ou valor de de empenho';
+
         // joga fora os dígitos extra da dotação
         dotacao = TrataDotacaoGrande(dotacao);
 
@@ -934,6 +941,8 @@ export class ImportacaoOrcamentoService {
                         mes: r.mes,
                         valor_empenho: +r.valor_empenho,
                         valor_liquidado: +r.valor_liquidado,
+                        percentual_empenho: r.percentual_empenho !== null ? +r.percentual_empenho : null,
+                        percentual_liquidado: r.percentual_liquidado !== null ? +r.percentual_liquidado : null,
                     };
                 });
             }
@@ -943,6 +952,8 @@ export class ImportacaoOrcamentoService {
                     adicionar_item_mes = false;
                     item.valor_empenho = row.valor_empenho;
                     item.valor_liquidado = row.valor_liquidado;
+                    item.percentual_empenho = row.percentual_empenho;
+                    item.percentual_liquidado = row.percentual_liquidado;
                 }
             }
         } else if (params.eh_projeto) {
@@ -971,6 +982,8 @@ export class ImportacaoOrcamentoService {
                         mes: r.mes,
                         valor_empenho: +r.valor_empenho,
                         valor_liquidado: +r.valor_liquidado,
+                        percentual_empenho: r.percentual_empenho !== null ? +r.percentual_empenho : null,
+                        percentual_liquidado: r.percentual_liquidado !== null ? +r.percentual_liquidado : null,
                     };
                 });
             }
@@ -980,6 +993,8 @@ export class ImportacaoOrcamentoService {
                     adicionar_item_mes = false;
                     item.valor_empenho = row.valor_empenho;
                     item.valor_liquidado = row.valor_liquidado;
+                    item.percentual_empenho = row.percentual_empenho;
+                    item.percentual_liquidado = row.percentual_liquidado;
                 }
             }
         }
@@ -989,6 +1004,8 @@ export class ImportacaoOrcamentoService {
                 mes: row.mes,
                 valor_empenho: row.valor_empenho,
                 valor_liquidado: row.valor_liquidado,
+                percentual_empenho: row.percentual_empenho,
+                percentual_liquidado: row.percentual_liquidado,
             });
 
         this.logger.verbose(`request: ${JSON.stringify({ adicionar_item_mes, itens })}`);
@@ -1064,4 +1081,9 @@ export class ImportacaoOrcamentoService {
 
         return '';
     }
+}
+function isEmpty(n: number | string | null | undefined) {
+    if (typeof n == 'number' && isNaN(n) == false) return false;
+    if (typeof n == 'string' && n === '') return true;
+    return n === undefined || n === null;
 }

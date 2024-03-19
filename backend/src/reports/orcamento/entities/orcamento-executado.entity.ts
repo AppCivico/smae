@@ -65,14 +65,24 @@ export class OrcamentoExecutadoSaidaDto {
     dotacao_mes_utilizado: string;
 
     /**
-     * fonte: SMAE, soma ou valor do valor empenhado
+     * fonte: SMAE, valor empenhado
      **/
     smae_valor_empenhado: string;
 
     /**
-     * fonte: SMAE, soma ou valor do valor liquidado
+     * fonte: SMAE, valor liquidado
      **/
     smae_valor_liquidado: string;
+
+    /**
+     * fonte: SMAE, % empenhado ou nulo
+     **/
+    smae_percentual_empenho: string | null;
+
+    /**
+     * fonte: SMAE, % liquidado ou nulo
+     **/
+    smae_percentual_liquidado: string | null;
 
     /**
      * fonte: SMAE, mês do registro, em caso de Consolidado é sempre em branco

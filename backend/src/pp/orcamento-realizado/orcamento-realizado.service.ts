@@ -14,11 +14,14 @@ import {
 } from './dto/create-orcamento-realizado.dto';
 import { PPOrcamentoRealizado } from './entities/orcamento-realizado.entity';
 import {
+    DivPerc2Decimal,
+    DoubleCheckException,
     FRASE_ERRO_EMPENHO,
     FRASE_ERRO_LIQUIDADO,
     MAX_BATCH_SIZE,
     verificaValorLiqEmpenhoMaiorEmp,
 } from '../../orcamento-realizado/orcamento-realizado.service';
+import { Decimal } from '@prisma/client/runtime/library';
 
 type PartialOrcamentoRealizadoDto = {
     ano_referencia: number;
@@ -63,29 +66,74 @@ export class OrcamentoRealizadoService {
 
         const { dotacao, processo, nota_empenho } = await this.validaDotProcNota(dto);
 
-        console.log({ dotacao, processo, nota_empenho });
-        const soma_valor_empenho = dto.itens.sort((a, b) => b.mes - a.mes)[0].valor_empenho;
-        const soma_valor_liquidado = dto.itens.sort((a, b) => b.mes - a.mes)[0].valor_liquidado;
+        let soma_valor_empenho = dto.itens.sort((a, b) => b.mes - a.mes)[0].valor_empenho;
+        let soma_valor_liquidado = dto.itens.sort((a, b) => b.mes - a.mes)[0].valor_liquidado;
+        const perc_valor_empenho = dto.itens.sort((a, b) => b.mes - a.mes)[0].valor_empenho;
+        const perc_valor_liquidado = dto.itens.sort((a, b) => b.mes - a.mes)[0].valor_liquidado;
         const mes_correte = dto.itens.sort((a, b) => b.mes - a.mes)[0].mes;
-        verificaValorLiqEmpenhoMaiorEmp(soma_valor_empenho, soma_valor_liquidado);
+
+        if (soma_valor_empenho != null && soma_valor_liquidado != null)
+            verificaValorLiqEmpenhoMaiorEmp(soma_valor_empenho, soma_valor_liquidado);
 
         const created = await this.prisma.$transaction(
             async (prismaTxn: Prisma.TransactionClient): Promise<RecordWithId> => {
                 const now = new Date(Date.now());
                 let mes_utilizado: number;
 
+                let dot_empenho_liquido: Decimal;
+                let dot_valor_liquidado: Decimal;
+
                 if (nota_empenho) {
                     const notaEmpenhoTx = await this.buscaNotaEmpenho(prismaTxn, nota_empenho, dotacao, processo);
                     mes_utilizado = notaEmpenhoTx.mes_utilizado;
+                    dot_empenho_liquido = notaEmpenhoTx.empenho_liquido;
+                    dot_valor_liquidado = notaEmpenhoTx.valor_liquidado;
                 } else if (processo) {
                     const processoTx = await this.buscaProcesso(prismaTxn, dto, dotacao, processo);
                     mes_utilizado = processoTx.mes_utilizado;
+                    dot_empenho_liquido = processoTx.empenho_liquido;
+                    dot_valor_liquidado = processoTx.valor_liquidado;
                 } else if (dotacao) {
                     const dotacaoTx = await this.buscaDotacao(prismaTxn, dto, dotacao);
                     mes_utilizado = dotacaoTx.mes_utilizado;
+                    dot_empenho_liquido = dotacaoTx.empenho_liquido;
+                    dot_valor_liquidado = dotacaoTx.valor_liquidado;
                 } else {
                     throw new HttpException('Erro interno: nota, processo ou dotação está null', 500);
                 }
+
+                if (perc_valor_empenho && soma_valor_empenho == null) {
+                    // importação do excel, calcula sozinho
+                    soma_valor_empenho = DivPerc2Decimal(dot_empenho_liquido, perc_valor_empenho);
+                } else if (perc_valor_empenho && soma_valor_empenho) {
+                    // importação web ou api, se receber o campo, confere o valor
+                    const check_soma_valor_empenho = DivPerc2Decimal(dot_empenho_liquido, perc_valor_empenho);
+                    DoubleCheckException(
+                        'de empenho',
+                        check_soma_valor_empenho,
+                        soma_valor_empenho,
+                        perc_valor_empenho
+                    );
+                }
+
+                if (perc_valor_liquidado && soma_valor_liquidado == null) {
+                    // importação do excel, calcula sozinho
+                    soma_valor_liquidado = DivPerc2Decimal(dot_valor_liquidado, perc_valor_liquidado);
+                } else if (perc_valor_liquidado && soma_valor_liquidado) {
+                    // importação web ou api, se receber o campo, confere o valor
+                    const check_soma_valor_liquidado = DivPerc2Decimal(dot_valor_liquidado, perc_valor_liquidado);
+                    DoubleCheckException(
+                        'do liquidado',
+                        check_soma_valor_liquidado,
+                        soma_valor_liquidado,
+                        perc_valor_liquidado
+                    );
+                }
+                if (soma_valor_empenho == null || soma_valor_liquidado == null)
+                    throw new BadRequestException('soma_valor_empenho ou soma_valor_liquidado estão nulo');
+
+                // double check, apos a conta
+                verificaValorLiqEmpenhoMaiorEmp(soma_valor_empenho, soma_valor_liquidado);
 
                 const countExisting = await prismaTxn.orcamentoRealizado.count({
                     where: {
@@ -122,9 +170,35 @@ export class OrcamentoRealizadoService {
                             createMany: {
                                 data: dto.itens.map(
                                     (item): Prisma.OrcamentoRealizadoItemCreateManyOrcamentoRealizadoInput => {
+                                        if (item.percentual_empenho && item.valor_empenho == null) {
+                                            // importação do excel, calcula sozinho
+                                            item.valor_empenho = DivPerc2Decimal(
+                                                dot_empenho_liquido,
+                                                item.percentual_empenho
+                                            );
+                                        }
+                                        if (item.percentual_liquidado && item.valor_liquidado == null) {
+                                            // importação do excel, calcula sozinho
+                                            item.valor_liquidado = DivPerc2Decimal(
+                                                dot_valor_liquidado,
+                                                item.percentual_liquidado
+                                            );
+                                        }
+
+                                        if (item.valor_empenho == null || item.valor_empenho == undefined)
+                                            throw new BadRequestException(
+                                                `Faltando valor_empenho para mês ${item.mes}`
+                                            );
+                                        if (item.valor_liquidado == null || item.valor_liquidado == undefined)
+                                            throw new BadRequestException(
+                                                `Faltando valor_liquidado para mês ${item.mes}`
+                                            );
+
                                         return {
                                             valor_empenho: item.valor_empenho,
                                             valor_liquidado: item.valor_liquidado,
+                                            percentual_empenho: item.percentual_empenho,
+                                            percentual_liquidado: item.percentual_liquidado,
                                             mes: item.mes,
                                             data_referencia: new Date([dto.ano_referencia, item.mes, '01'].join('-')),
                                             mes_corrente: item.mes == mes_correte,
@@ -172,7 +246,8 @@ export class OrcamentoRealizadoService {
         const nova_soma_valor_empenho = dto.itens.sort((a, b) => b.mes - a.mes)[0].valor_empenho;
         const nova_soma_valor_liquidado = dto.itens.sort((a, b) => b.mes - a.mes)[0].valor_liquidado;
         const mes_corrente = dto.itens.sort((a, b) => b.mes - a.mes)[0].mes;
-        verificaValorLiqEmpenhoMaiorEmp(nova_soma_valor_empenho, nova_soma_valor_liquidado);
+        if (nova_soma_valor_empenho != null && nova_soma_valor_liquidado != null)
+            verificaValorLiqEmpenhoMaiorEmp(nova_soma_valor_empenho, nova_soma_valor_liquidado);
 
         const updated = await this.prisma.$transaction(
             async (prismaTxn: Prisma.TransactionClient): Promise<RecordWithId> => {
@@ -188,7 +263,48 @@ export class OrcamentoRealizadoService {
                     });
                 }
 
+                let dot_empenho_liquido: Decimal;
+                let dot_valor_liquidado: Decimal;
+
                 const orcRealizado = await prismaTxn.orcamentoRealizado.findUniqueOrThrow({ where: { id: +id } });
+
+                if (orcRealizado.nota_empenho) {
+                    const notaEmpenhoTx = await this.buscaNotaEmpenho(
+                        prismaTxn,
+                        orcRealizado.nota_empenho,
+                        orcRealizado.dotacao,
+                        orcRealizado.processo
+                    );
+
+                    dot_empenho_liquido = notaEmpenhoTx.empenho_liquido;
+                    dot_valor_liquidado = notaEmpenhoTx.valor_liquidado;
+                } else if (orcRealizado.processo) {
+                    const processoTx = await this.buscaProcesso(
+                        prismaTxn,
+                        { ...dto, ano_referencia: orcRealizado.ano_referencia },
+                        orcRealizado.dotacao,
+                        orcRealizado.processo
+                    );
+
+                    dot_empenho_liquido = processoTx.empenho_liquido;
+                    dot_valor_liquidado = processoTx.valor_liquidado;
+                } else if (orcRealizado.dotacao) {
+                    const dotacaoTx = await this.buscaDotacao(
+                        prismaTxn,
+                        { ...dto, ano_referencia: orcRealizado.ano_referencia },
+                        orcRealizado.dotacao
+                    );
+
+                    dot_empenho_liquido = dotacaoTx.empenho_liquido;
+                    dot_valor_liquidado = dotacaoTx.valor_liquidado;
+                } else {
+                    throw new HttpException('Erro interno: nota, processo ou dotação está null', 500);
+                }
+
+                if (nova_soma_valor_empenho == null || nova_soma_valor_liquidado == null)
+                    throw new BadRequestException('soma_valor_empenho ou soma_valor_liquidado estão nulo');
+
+                verificaValorLiqEmpenhoMaiorEmp(nova_soma_valor_empenho, nova_soma_valor_liquidado);
 
                 await prismaTxn.orcamentoRealizadoItem.updateMany({
                     where: {
@@ -210,9 +326,34 @@ export class OrcamentoRealizadoService {
                             createMany: {
                                 data: dto.itens.map(
                                     (item): Prisma.OrcamentoRealizadoItemCreateManyOrcamentoRealizadoInput => {
+                                        if (item.percentual_empenho && item.valor_empenho == null) {
+                                            // importação do excel, calcula sozinho
+                                            item.valor_empenho = DivPerc2Decimal(
+                                                dot_empenho_liquido,
+                                                item.percentual_empenho
+                                            );
+                                        }
+                                        if (item.percentual_liquidado && item.valor_liquidado == null) {
+                                            // importação do excel, calcula sozinho
+                                            item.valor_liquidado = DivPerc2Decimal(
+                                                dot_valor_liquidado,
+                                                item.percentual_liquidado
+                                            );
+                                        }
+
+                                        if (item.valor_empenho == null || item.valor_empenho == undefined)
+                                            throw new BadRequestException(
+                                                `Faltando valor_empenho para mês ${item.mes}`
+                                            );
+                                        if (item.valor_liquidado == null || item.valor_liquidado == undefined)
+                                            throw new BadRequestException(
+                                                `Faltando valor_liquidado para mês ${item.mes}`
+                                            );
                                         return {
                                             valor_empenho: item.valor_empenho,
                                             valor_liquidado: item.valor_liquidado,
+                                            percentual_empenho: item.percentual_empenho,
+                                            percentual_liquidado: item.percentual_liquidado,
                                             mes: item.mes,
                                             data_referencia: new Date(
                                                 [orcRealizado.ano_referencia, item.mes, '01'].join('-')
@@ -603,6 +744,8 @@ export class OrcamentoRealizadoService {
                     select: {
                         valor_empenho: true,
                         valor_liquidado: true,
+                        percentual_empenho: true,
+                        percentual_liquidado: true,
                         mes: true,
                     },
                 },
@@ -828,6 +971,8 @@ export class OrcamentoRealizadoService {
                         ...item,
                         valor_empenho: item.valor_empenho.toFixed(2),
                         valor_liquidado: item.valor_liquidado.toFixed(2),
+                        percentual_empenho: item.percentual_empenho ? item.percentual_empenho.toFixed(2) : null,
+                        percentual_liquidado: item.percentual_liquidado ? item.percentual_liquidado.toFixed(2) : null,
                     };
                 }),
                 // sem regra por enquanto, sempre pode editar tudo

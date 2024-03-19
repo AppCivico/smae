@@ -44,7 +44,13 @@ export class LinhaCsvInputDto extends IntersectionType(
         'nota_empenho',
     ]),
     PartialType(PickType(CreateOrcamentoRealizadoDto, ['dotacao'])),
-    PickType(CreateOrcamentoRealizadoItemDto, ['mes', 'valor_empenho', 'valor_liquidado'])
+    PickType(CreateOrcamentoRealizadoItemDto, [
+        'mes',
+        'valor_empenho',
+        'valor_liquidado',
+        'percentual_empenho',
+        'percentual_liquidado',
+    ])
 ) {
     @IsOptional()
     @IsInt({ message: 'ID do projeot precisa ser um número' })

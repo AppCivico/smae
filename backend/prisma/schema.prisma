@@ -2575,10 +2575,13 @@ model OrcamentoPrevistoZerado {
 model OrcamentoRealizadoItem {
     id Int @id @default(autoincrement())
 
-    valor_empenho   Decimal @db.Decimal(15, 2)
-    valor_liquidado Decimal @db.Decimal(15, 2)
-    mes             Int
-    mes_corrente    Boolean @default(false)
+    valor_empenho        Decimal  @db.Decimal(15, 2)
+    valor_liquidado      Decimal  @db.Decimal(15, 2)
+    percentual_empenho   Decimal? @db.Decimal(7, 4)
+    percentual_liquidado Decimal? @db.Decimal(7, 4)
+
+    mes          Int
+    mes_corrente Boolean @default(false)
 
     /// data compilada a partir do ano/mes
     data_referencia DateTime @db.Date()
