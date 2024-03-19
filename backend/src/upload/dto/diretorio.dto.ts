@@ -28,13 +28,15 @@ export class PatchDiretorioDto {
 }
 
 export class FilterDiretorioDto {
+    @IsOptional()
     @IsInt()
     @Transform((a: TransformFnParams) => (a.value === '' ? undefined : +a.value))
-    projeto_id: number;
+    projeto_id?: number;
 
+    @IsOptional()
     @IsInt()
     @Transform((a: TransformFnParams) => (a.value === '' ? undefined : +a.value))
-    transferencia_id: number;
+    transferencia_id?: number;
 }
 
 export class ListDiretorioDto {
