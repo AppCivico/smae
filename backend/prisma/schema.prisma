@@ -4569,6 +4569,7 @@ model Transferencia {
     valor_total                    Decimal? @default(0) @db.Decimal(15, 2)
     valor_contrapartida            Decimal? @default(0) @db.Decimal(15, 2)
 
+    cargo                ParlamentarCargo?
     ano                  Int?
     emenda               String?
     dotacao              String?
