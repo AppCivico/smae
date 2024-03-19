@@ -557,40 +557,53 @@ export default {
           v-if="lastParent?.orgaos_participantes?.length&&orgao_id"
           class="mb1"
         >
-          <template
-            v-for="c in [lastParent.orgaos_participantes.find(x=>x.orgao.id==orgao_id)]"
-            :key="c.orgao.id"
+          <textarea
+            v-ScrollLockDebug
+            cols="30"
+            rows="10"
           >
-            <div class="suggestion search">
-              <input
-                v-model="responsaveisArr.busca"
-                type="text"
-                class="inputtext light mb05"
-                @keyup.enter.stop.prevent="buscaCoord($event,c.participantes,responsaveisArr)"
-              >
-              <ul v-if="c?.participantes">
-                <li
-                  v-for="r in c?.participantes.filter(x=>!responsaveisArr.participantes.includes(x.id)&&x.nome_exibicao.toLowerCase().includes(responsaveisArr.busca.toLowerCase()))"
-                  :key="r.id"
+lastParent.orgaos_participantes:{{ lastParent.orgaos_participantes }}</textarea>
+          <pre v-ScrollLockDebug>orgao_id:{{ orgao_id }}</pre>
+
+          <template
+            v-for="(c, i) in [lastParent.orgaos_participantes.find((x) => x.orgao.id == orgao_id)]"
+            :key="c?.orgao?.id || i"
+          >
+            <template v-if="c.orgao">
+              <div class="suggestion search">
+                <input
+                  v-model="responsaveisArr.busca"
+                  type="text"
+                  class="inputtext light mb05"
+                  @keyup.enter.stop.prevent="buscaCoord($event,c.participantes,responsaveisArr)"
                 >
-                  <a
-                    tabindex="1"
-                    @click="pushId(responsaveisArr.participantes,r.id)"
-                  >{{ r.nome_exibicao }}</a>
-                </li>
-              </ul>
-            </div>
-            <div v-if="c?.participantes">
-              <span
-                v-for="p in c?.participantes.filter(x=>responsaveisArr.participantes.includes(x.id))"
-                :key="p.id"
-                class="tagsmall"
-                @click="removeParticipante(responsaveisArr,p.id)"
-              >{{ p.nome_exibicao }}<svg
-                width="12"
-                height="12"
-              ><use xlink:href="#i_x" /></svg></span>
-            </div>
+                <ul v-if="c?.participantes">
+                  <li
+                    v-for="r in c?.participantes.filter(x=>!responsaveisArr.participantes.includes(x.id)&&x.nome_exibicao.toLowerCase().includes(responsaveisArr.busca.toLowerCase()))"
+                    :key="r.id"
+                  >
+                    <a
+                      tabindex="1"
+                      @click="pushId(responsaveisArr.participantes,r.id)"
+                    >{{ r.nome_exibicao }}</a>
+                  </li>
+                </ul>
+              </div>
+              <div v-if="c?.participantes">
+                <span
+                  v-for="p in c?.participantes.filter(x=>responsaveisArr.participantes.includes(x.id))"
+                  :key="p.id"
+                  class="tagsmall"
+                  @click="removeParticipante(responsaveisArr,p.id)"
+                >{{ p.nome_exibicao }}<svg
+                  width="12"
+                  height="12"
+                ><use xlink:href="#i_x" /></svg></span>
+              </div>
+            </template>
+            <ErrorComponent v-else>
+              Órgão <code>{{ orgao_id }}</code> ausente dos participantes.
+            </ErrorComponent>
           </template>
         </div>
         <input
