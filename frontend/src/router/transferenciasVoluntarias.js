@@ -13,7 +13,6 @@ export default {
     título: 'Transfêrencias Voluntarias',
     rotaPrescindeDeChave: true,
     presenteNoMenu: true,
-    rotasParaMenuSecundário: [],
     limitarÀsPermissões: 'CadastroTransferencia.listar',
   },
   children: [
@@ -44,15 +43,21 @@ export default {
 
       meta: {
         título: 'Editar Trasferência',
+        rotasParaMenuSecundário: [
+          'TransferenciasVoluntariasDocumentos'
+        ],
       },
     },
     {
-      path: ':transferenciaId/documento',
+      path: ':transferenciaId/documentos',
       component: TransferenciasVoluntariasDocumentos,
       name: 'TransferenciasVoluntariasDocumentos',
       props: true,
       meta: {
         título: 'Transferencia documento',
+        rotasParaMenuSecundário: [
+          'TransferenciasVoluntariasDocumentos'
+        ],
       },
     },
   ],
