@@ -36,6 +36,8 @@ const model = defineModel({
   required: true,
 });
 
+const maisRecenteDosMeses = computed(() => model.value
+  .reduce((acc, cur) => Math.max(acc, cur.mes), 0));
 const maisRecentesDosItens = computed(() => retornarQuaisOsRecentesDosItens(model.value));
 const mesesSelecionados = computed(() => model.value?.map((x) => x.mes) || []);
 const mesesDisponíveis = computed(() => {
@@ -173,7 +175,13 @@ async function addItem() {
     </tbody>
     <tfoot>
       <tr>
-        <th>compartilhado</th>
+        <th>
+          compartilhado com todo
+          <abbr title="Sistema de Monitoramento e Acompanhamento Estratégico">
+            SMAE
+          </abbr>
+        </th>
+        <td />
         <td class="tc300">
           R$ {{ dinheiro(respostasof.smae_soma_valor_empenho || 0) }}
         </td>
@@ -184,10 +192,7 @@ async function addItem() {
       </tr>
       <tr>
         <th>
-          Total no
-          <abbr title="Sistema de Monitoramento e Acompanhamento Estratégico">
-            SMAE
-          </abbr>
+          compartilhado + {{ months[maisRecenteDosMeses - 1] || 'último mês' }}
         </th>
         <td
           :class="{
