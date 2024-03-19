@@ -48,7 +48,7 @@ async function onSubmit(values) {
     if (r) {
       alertStore.success(msg);
       tipoDeTransferencia.$reset();
-      router.push({ name: 'tipoDeTrasferenciaListar' });
+      router.push({ name: 'tipoDeTransferenciaListar' });
     }
   } catch (error) {
     alertStore.error(error);

@@ -33,9 +33,9 @@ import {
   ListUsers,
 } from '@/views/users';
 
-import TipoDeTrasferenciaCriarEditar from '@/views/tipoDeTrasferencia/TipoDeTrasferenciaCriarEditar.vue';
-import TipoDeTrasferenciaLista from '@/views/tipoDeTrasferencia/TipoDeTrasferenciaLista.vue';
-import TipoDeTrasferenciaRaiz from '@/views/tipoDeTrasferencia/TipoDeTrasferenciaRaiz.vue';
+import TipoDeTransferenciaCriarEditar from '@/views/tipoDeTransferencia/TipoDeTransferenciaCriarEditar.vue';
+import TipoDeTransferenciaLista from '@/views/tipoDeTransferencia/TipoDeTransferenciaLista.vue';
+import TipoDeTransferenciaRaiz from '@/views/tipoDeTransferencia/TipoDeTransferenciaRaiz.vue';
 
 
 const TiposDeAcompanhamentoLista = defineAsyncComponent({
@@ -60,8 +60,7 @@ const rotasParaMenuSecundário = [
       'gerenciarTiposDeDocumento',
       'gerenciarCategorias',
       'gerenciarRegiões',
-      'tipoDeTrasferenciaListar',
-      'TransferenciasVoluntariasListar', // Obs: isso não ficará aqui
+      'tipoDeTransferenciaListar',
     ],
   },
   {
@@ -233,41 +232,41 @@ export default [
       },
       {
         path: '/transferencia-tipo',
-        component: TipoDeTrasferenciaRaiz,
+        component: TipoDeTransferenciaRaiz,
         meta: {
-          título: 'Tipo de Trasferência',
+          título: 'Tipo de Transferência',
           rotaPrescindeDeChave: true,
           rotasParaMenuSecundário,
           limitarÀsPermissões: 'CadastroTransferencia.listar',
         },
         children: [
           {
-            name: 'tipoDeTrasferenciaListar',
+            name: 'tipoDeTransferenciaListar',
             path: '',
-            component: TipoDeTrasferenciaLista,
+            component: TipoDeTransferenciaLista,
             meta: {
-              título: 'Tipo de Trasferência',
+              título: 'Tipo de Transferência',
             },
           },
           {
-            name: 'tipoDeTrasferenciaCriar',
+            name: 'tipoDeTransferenciaCriar',
             path: 'novo',
-            component: TipoDeTrasferenciaCriarEditar,
+            component: TipoDeTransferenciaCriarEditar,
             meta: {
-              título: 'Novo Tipo de Trasferencia',
+              título: 'Novo Tipo de Transferência',
             },
           },
           {
             path: ':tipoId',
-            name: 'tipoDeTrasferenciaEditar',
-            component: TipoDeTrasferenciaCriarEditar,
+            name: 'tipoDeTransferenciaEditar',
+            component: TipoDeTransferenciaCriarEditar,
             props: ({ params }) => ({
               ...params,
               ...{ tipoId: Number.parseInt(params.tipoId, 10) || undefined },
             }),
 
             meta: {
-              título: 'Editar Tipo de Trasferência',
+              título: 'Editar Tipo de Transferência',
             },
           },
         ],
