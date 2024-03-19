@@ -1,4 +1,4 @@
-import TransferenciaDistribuiçãoDeRecursosCriarEditar from '@/views/transferenciasVoluntarias/TransferenciaDistribuiçãoDeRecursosCriarEditar.vue';
+import TransferenciaDistribuicaoDeRecursosCriarEditar from '@/views/transferenciasVoluntarias/TransferenciaDistribuicaoDeRecursosCriarEditar.vue';
 import RegistroDeTransferenciaCriarEditar from '@/views/transferenciasVoluntarias/RegistroDeTransferenciaCriarEditar.vue';
 import TransferenciasVoluntariasCriarEditar from '@/views/transferenciasVoluntarias/TransferenciasVoluntariasCriarEditar.vue';
 import TransferenciasVoluntariasLista from '@/views/transferenciasVoluntarias/TransferenciasVoluntariasLista.vue';
