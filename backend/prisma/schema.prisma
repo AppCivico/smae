@@ -848,7 +848,11 @@ model Diretorio {
     projeto_id Int?
     projeto    Projeto? @relation(fields: [projeto_id], references: [id])
 
+    transferencia_id Int?
+    transferencia    Transferencia? @relation(fields: [transferencia_id], references: [id])
+
     @@index([projeto_id])
+    @@index([transferencia_id])
     @@map("diretorio")
 }
 
@@ -4601,6 +4605,7 @@ model Transferencia {
     atualizador Pessoa?              @relation("Atualizador", fields: [atualizado_por], references: [id])
     removedor   Pessoa?              @relation("Removedor", fields: [removido_por], references: [id])
     anexos      TransferenciaAnexo[]
+    diretorios  Diretorio[]
 }
 
 model TransferenciaAnexo {
