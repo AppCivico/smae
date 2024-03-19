@@ -17,7 +17,7 @@ const partidoStore = usePartidosStore();
 const ÓrgãosStore = useOrgansStore();
 const ParlamentaresStore = useParlamentaresStore();
 
-const { chamadasPendentes, erro, lista} = storeToRefs(TransferenciasVoluntarias);
+const { chamadasPendentes, erro, itemParaEdição } = storeToRefs(TransferenciasVoluntarias);
 const { órgãosComoLista } = storeToRefs(ÓrgãosStore);
 const { lista: parlamentarComoLista } = storeToRefs(ParlamentaresStore);
 const { lista: tipoTransferenciaComoLista } = storeToRefs(TipoDeTransferenciaStore);
