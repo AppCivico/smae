@@ -203,6 +203,7 @@ export class TransferenciaService {
                 numero_identificacao: true,
                 interface: true,
                 esfera: true,
+                cargo: true,
                 partido: {
                     select: {
                         id: true,
