@@ -1,4 +1,5 @@
 import RegistroDeTransferenciaCriarEditar from '@/views/transferenciasVoluntarias/RegistroDeTransferenciaCriarEditar.vue';
+import TransferenciasVoluntariasCriarEditar from '@/views/transferenciasVoluntarias/TransferenciasVoluntariasCriarEditar.vue';
 import TransferenciasVoluntariasLista from '@/views/transferenciasVoluntarias/TransferenciasVoluntariasLista.vue';
 import TransferenciasVoluntariasRaiz from '@/views/transferenciasVoluntarias/TransferenciasVoluntariasRaiz.vue';
 
@@ -25,7 +26,7 @@ export default {
     {
       name: 'TransferenciasVoluntariaCriar',
       path: 'novo',
-      component: RegistroDeTransferenciaCriarEditar, //Dev - teste
+      component: TransferenciasVoluntariasCriarEditar, //Dev - teste
       meta: {
         título: 'Formulário de registro',
       },

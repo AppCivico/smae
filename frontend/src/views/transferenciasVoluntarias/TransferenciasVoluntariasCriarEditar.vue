@@ -1,17 +1,20 @@
 <script setup>
 import { transferenciasVoluntarias as schema } from '@/consts/formSchemas';
+import truncate from '@/helpers/truncate';
 import { useAlertStore } from '@/stores/alert.store';
 import { useTransferenciasVoluntariasStore } from '@/stores/transferenciasVoluntarias.store';
+import { useOrgansStore } from '@/stores/organs.store';
+import { useParlamentaresStore } from '@/stores/parlamentares.store';
 import { storeToRefs } from 'pinia';
-import { ErrorMessage, Field, Form } from 'vee-validate';
+import { ErrorMessage, Field, Form} from 'vee-validate';
 import { useRoute, useRouter } from 'vue-router';
 
 const transferenciasVoluntarias = useTransferenciasVoluntariasStore();
-const {
-  chamadasPendentes,
-  erro,
-  lista,
-   } = storeToRefs(transferenciasVoluntarias);
+const ÓrgãosStore = useOrgansStore();
+const ParlamentaresStore = useParlamentaresStore();
+const { chamadasPendentes, erro, lista} = storeToRefs(transferenciasVoluntarias);
+const { órgãosComoLista } = storeToRefs(ÓrgãosStore);
+const { parlamentarComoLista } = storeToRefs(ParlamentaresStore);
 
 const router = useRouter();
 const route = useRoute();
@@ -50,6 +53,14 @@ if (props.tipoId) {
   transferenciasVoluntarias.buscarTudo(props.tipoId);
 }
 
+ÓrgãosStore.getAll(() => {
+  chamadasPendentes.value.emFoco = false;
+});
+
+ParlamentaresStore.buscarTudo(() => {
+  chamadasPendentes.value.emFoco = false;
+});
+
 </script>
 
 <template>
@@ -62,7 +73,9 @@ if (props.tipoId) {
     <hr class="ml2 f1">
   </div>
 
-  <Form v-slot="{ errors, isSubmitting }" :validation-schema="schema" :initial-values="itemParaEdição"
+  <Form v-slot="{ errors, isSubmitting }"
+  :validation-schema="schema"
+  :initial-values="itemParaEdição"
     @submit="onSubmit">
     <div class="flex g2 mb1">
       <div class="f1">
@@ -108,20 +121,20 @@ if (props.tipoId) {
         </div>
       </div>
       <div class="f1">
-        <label class="label">Tipo <span class="tvermelho">*</span></label>
-        <Field name="categoria" as="select" class="inputtext light mb1" :class="{ 'error': errors.categoria }">
+        <label class="label">Interface <span class="tvermelho">*</span></label>
+        <Field name="interface" as="select" class="inputtext light mb1" :class="{ 'error': errors.interface }">
           <option value="">
             Selecionar
           </option>
           <option value="Discricionaria">
-            Discricionárias dos Ministérios/Secretarias
+            TransfereGov
           </option>
           <option value="Impositiva">
-            Impositivas
+            SemPapel
           </option>
         </Field>
         <div class="error-msg">
-          {{ errors.categoria }}
+          {{ errors.interface }}
         </div>
       </div>
       <div class="f1">
@@ -151,12 +164,104 @@ if (props.tipoId) {
       </div>
     </div>
 
-    <div class="flex spacebetween center">
+    <div class="flex spacebetween center mb1">
       <h3 class="title">Origem</h3>
       <hr class="ml2 f1">
     </div>
 
-    <div class="flex spacebetween center">
+    <div class="flex g2 mb1">
+      <div class="f1 mb1">
+        <LabelFromYup name="orgao_concedente" :schema="schema"
+        />
+        <Field
+          name="orgao_concedente"
+          as="select"
+          class="inputtext light mb1"
+          :class="{
+            error: errors.orgao_concedente,
+            loading: ÓrgãosStore.chamadasPendentes?.lista,
+          }"
+          :disabled="!órgãosComoLista?.length"
+        >
+          <option :value="0">
+            Selecionar
+          </option>
+
+          <option
+            v-for="item in órgãosComoLista"
+            :key="item"
+            :value="item.id"
+            :title="item.descricao?.length > 36 ? item.descricao : null"
+          >
+            {{ item.sigla }} - {{ truncate(item.descricao, 36) }}
+          </option>
+        </Field>
+        <ErrorMessage
+          name="orgao_concedente"
+          class="error-msg"
+        />
+      </div>
+      <div class="f1">
+        <LabelFromYup name="secretaria_concedente_id" :schema="schema" />
+        <Field name="secretaria_concedente_id" type="text" class="inputtext light mb1" />
+        <ErrorMessage class="error-msg mb1" name="secretaria_concedente_id" />
+      </div>
+    </div>
+    <div class="flex g2 mb1">
+      <div class="f1 mb1">
+        <LabelFromYup name="parlamentar_id" :schema="schema" />
+        <Field
+          name="parlamentar_id"
+          as="select"
+          class="inputtext light mb1"
+          :class="{
+            error: errors.parlamentar_id,
+            loading: ParlamentaresStore.chamadasPendentes?.lista,
+          }"
+          :disabled="!parlamentarComoLista?.length"
+        >
+          <option :value="0">
+            Selecionar
+          </option>
+
+          <option
+            v-for="item in parlamentarComoLista"
+            :key="item"
+            :value="item.id"
+          >
+            {{ item.nome }}
+          </option>
+        </Field>
+        <ErrorMessage
+          name="parlamentar_id"
+          class="error-msg"
+        />
+      </div>
+
+      <div class="f1">
+        <LabelFromYup name="numero_identificacao" :schema="schema" />
+        <Field name="numero_identificacao" type="text" class="inputtext light mb1" />
+        <ErrorMessage class="error-msg mb1" name="numero_identificacao" />
+      </div>
+    </div>
+    <div class="flex g2 mb1">
+      <div class="f1">
+        <label for="partido_id" :schema="schema" class="label">Partido</label>
+        <AutocompleteField
+          id="partido_id"
+          class="inputtext light mb1"
+          name="partido_id"
+          label="partido"
+        />
+      </div>
+      <!-- <div class="f1">
+        <LabelFromYup name="numero_identificacao" :schema="schema" />
+        <Field name="numero_identificacao" type="text" class="inputtext light mb1" />
+        <ErrorMessage class="error-msg mb1" name="numero_identificacao" />
+      </div>-->
+    </div>
+
+    <div class="flex spacebetween center mb1">
       <h3 class="title">Transferência</h3>
       <hr class="ml2 f1">
     </div>

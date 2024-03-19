@@ -872,43 +872,95 @@ export const tipoDeTransferencia = object({
 })
 
 export const transferenciasVoluntarias = object({
-  identificador: string()
-    .label('Identificador')
+  agencia_aceite: string()
+    .label('Agência da conta de aceite')
+    .nullable()
     .required(),
-  esfera: string()
-    .label('Esfera')
-    .required(),
-  nome_programa: string()
-    .label('Nome do programa')
+  agencia_fim: string()
+    .label('Agência da conta da secretaria fim')
+    .nullable()
     .required(),
   ano: string()
     .label('Ano')
+    .nullable()
     .required(),
+  banco_fim: string()
+    .label('Banco da conta secretaria fim')
+    .nullable()
+    .required(),
+  banco_aceite: string()
+    .label('Banco da conta de aceite')
+    .nullable()
+    .required(),
+  conta_fim: string()
+    .label('número conta-corrente  secretaria fim')
+    .nullable()
+    .required(),
+  conta_aceite: string()
+    .label('número conta-corrente de aceite')
+    .nullable()
+    .required(),
+  clausula_suspensiva_vencimento: date()
+    .label('Data de criação')
+    .nullable()
+    .min(new Date(2003, 0, 1))
+    .transform((v) => (!v ? null : v)),
   categoria: string()
     .label('Tipo')
+    .nullable()
     .required(),
-  categoria: string()
+  critico: string()
     .label('Crítico')
+    .nullable()
     .required(),
-  interface: string()
-    .label('Interface')
-    .required(),
-  programa: string()
-    .label('Programa')
-    .required(),
-  emenda: string()
-    .label('Emenda')
-    .required(),
-  emenda_unitaria: string()
-    .label('Emenda unitária')
-    .required(),
-  numero_identificacao: string()
-    .label('Número da Demanda')
-    .required(),
+  clausula_suspensiva: string()
+    .label('cláusula suspensiva')
+    .nullable()
+    .max(50000),
   detalhamento: string()
     .label('Detalhamento')
     .max(50000)
     .nullable(),
+  emenda: string()
+    .label('Emenda')
+    .nullable()
+    .required(),
+  emenda_unitaria: string()
+    .label('Emenda unitária')
+    .nullable()
+    .required(),
+  esfera: string()
+    .label('Esfera')
+    .nullable()
+    .required(),
+  dotacao:string()
+    .label('Dotacao')
+    .nullable()
+    .required(),
+  gestor_contrato: string()
+    .label('Gestor Municipal do Contrato')
+    .nullable()
+    .required(),
+  identificador: string()
+    .label('Identificador')
+    .nullable()
+    .required(),
+  interface: string()
+    .label('Interface')
+    .nullable()
+    .required(),
+  nome_programa: string()
+    .label('Nome do programa')
+    .nullable()
+    .required(),
+  normativa: string()
+    .label('normativa')
+    .nullable()
+    .max(50000),
+  numero_identificacao: string()
+    .label('Número de identificação')
+    .nullable()
+    .required(),
   observacoes: string()
     .label('Observação')
     .max(50000)
@@ -917,17 +969,43 @@ export const transferenciasVoluntarias = object({
     .label('Objeto/Empreendimento')
     .max(50000)
     .nullable(),
-  clausula_suspensiva: string()
-    .label('cláusula suspensiva')
-    .max(50000),
-  normativa: string()
-    .label('normativa')
-    .max(50000),
-  clausula_suspensiva_vencimento: date()
-    .label('Data de criação')
+  orgao_concedente: array()
+    .label('Órgão concedente')
+    .min(1, 'Selecione um órgão responsável')
+    .nullable(),
+  programa: string()
+    .label('Programa')
     .nullable()
-    .min(new Date(2003, 0, 1))
-    .transform((v) => (!v ? null : v)),
+    .required(),
+  partido_id: number()
+    .label('Partido')
+    .nullable()
+    .required(),
+  parlamentar_id: number()
+    .label('Parlamentar')
+    .min(1, 'Selecione um parlamentar')
+    .nullable()
+    .required(),
+  secretaria_concedente_id: number()
+    .label('Secretaria do órgão concedente')
+    .nullable()
+    .required(),
+  valor: number()
+    .label('Valor')
+    .nullable()
+    .required(),
+  valor_contrapartida:number()
+    .label('Valor contrapartida')
+    .nullable()
+    .required(),
+  ordenador_despesa:string()
+    .label('Valor contrapartida')
+    .nullable()
+    .required(),
+  valor_total:number()
+    .label('Valor total')
+    .required()
+    .nullable(),
 })
 
 export const processo = object()
