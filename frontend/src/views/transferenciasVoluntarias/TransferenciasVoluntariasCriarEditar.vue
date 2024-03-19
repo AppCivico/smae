@@ -65,7 +65,7 @@ async function onSubmit(_, { controlledValues }) {
 
 function iniciar(){
   if (props.transferenciaId) {
-    TransferenciasVoluntarias.buscarTudo(props.transferenciaId); //revisar
+    TransferenciasVoluntarias.buscarItem(props.transferenciaId);
   }
 
   ÓrgãosStore.getAll();

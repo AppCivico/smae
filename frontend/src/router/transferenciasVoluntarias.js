@@ -21,7 +21,7 @@ export default {
       path: '',
       component: TransferenciasVoluntariasLista,
       meta: {
-        título: 'Transfêrencias Voluntarias',
+        título: 'Transferências Voluntarias',
       },
     },
     {
