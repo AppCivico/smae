@@ -59,7 +59,10 @@ function permitirEdição(indicadorVariavel) {
 <template>
   <nav>
     <ul class="flex justifyleft mb1">
-      <li class="mr1">
+      <li
+        v-if="indicadorId"
+        class="mr1"
+      >
         <router-link
           :to="{
             path: `${parentlink}/indicadores/${indicadorId}/variaveis/novo`,
