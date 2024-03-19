@@ -10,7 +10,9 @@ import { PrismaService } from '../prisma/prisma.service';
 import { ExtraiComplementoDotacao, TrataDotacaoGrande } from '../sof-api/sof-api.service';
 import {
     CreateOrcamentoRealizadoDto,
+    FilterOrcamentoRealizadoCompartilhadoDto,
     FilterOrcamentoRealizadoDto,
+    ListApenasOrcamentoRealizadoDto,
     ListOrcamentoRealizadoDto,
     OrcamentoRealizadoStatusConcluidoDto,
     OrcamentoRealizadoStatusPermissoesDto,
@@ -748,10 +750,27 @@ export class OrcamentoRealizadoService {
     ): Promise<ListOrcamentoRealizadoDto> {
         const { permissoes, status } = await this.buscaPermissoesStatus(user, filters);
 
+        const meta = await this.prisma.meta.findFirst({
+            where: { id: filters.meta_id, removido_em: null },
+            select: { pdm_id: true, id: true },
+        });
+        if (meta === null) throw new HttpException('Meta não encontrada', 404);
+
         const ret: ListOrcamentoRealizadoDto = {
             permissoes: permissoes,
-            linhas: await this.findAll(filters, user, permissoes),
+            linhas: await this.findAll(filters, user, permissoes, false, meta.pdm_id),
             concluido: status,
+        };
+
+        return ret;
+    }
+
+    async findCompartilhadosNoPdm(
+        filters: FilterOrcamentoRealizadoCompartilhadoDto,
+        user: PessoaFromJwt
+    ): Promise<ListApenasOrcamentoRealizadoDto> {
+        const ret: ListApenasOrcamentoRealizadoDto = {
+            linhas: await this.findAll(filters, user, undefined, true, filters.pdm_id),
         };
 
         return ret;
@@ -776,31 +795,36 @@ export class OrcamentoRealizadoService {
     }
 
     private async findAll(
-        filters: FilterOrcamentoRealizadoDto,
+        filters: FilterOrcamentoRealizadoDto | FilterOrcamentoRealizadoCompartilhadoDto,
         user: PessoaFromJwt,
-        permissoes: OrcamentoRealizadoStatusPermissoesDto
+        permissoes: OrcamentoRealizadoStatusPermissoesDto | undefined,
+        ehCompartilhado: boolean,
+        pdm_id: number
     ): Promise<OrcamentoRealizado[]> {
         let filterIdIn: undefined | number[] = undefined;
-        if (!user.hasSomeRoles(['CadastroMeta.administrador_orcamento']))
+        if (!ehCompartilhado && !user.hasSomeRoles(['CadastroMeta.administrador_orcamento']))
             filterIdIn = await user.getMetaIdsFromAnyModel(this.prisma.view_meta_responsavel_orcamento);
 
-        const meta = await this.prisma.meta.findFirst({
-            where: { id: filters.meta_id, removido_em: null },
-            select: { pdm_id: true, id: true },
-        });
-        if (meta === null) throw new HttpException('Meta não encontrada', 404);
-
+        // quando é compartilhado, queremos que o campo seja sempre filtrado para retornar o null, se não for enviado o vizinho
         const queryRows = await this.prisma.orcamentoRealizado.findMany({
             where: {
+                meta: { pdm_id: pdm_id },
                 removido_em: null,
-                dotacao: filters.dotacao,
-                dotacao_complemento: filters.dotacao_complemento,
-                AND: [{ meta_id: filters.meta_id }, { meta_id: filterIdIn ? { in: filterIdIn } : undefined }],
-                processo: filters.processo,
-                nota_empenho: filters.nota_empenho,
                 ano_referencia: filters.ano_referencia, // obrigatório para que o 'join' com a dotação seja feito sem complicações
-                iniciativa_id: filters.iniciativa_id,
-                atividade_id: filters.atividade_id,
+                dotacao: filters.dotacao,
+                processo: ehCompartilhado ? (filters.processo ? filters.processo : null) : filters.processo,
+                nota_empenho: ehCompartilhado
+                    ? filters.nota_empenho
+                        ? filters.nota_empenho
+                        : null
+                    : filters.nota_empenho,
+                dotacao_complemento: 'dotacao_complemento' in filters ? filters.dotacao_complemento : undefined,
+                AND: [
+                    { meta_id: 'meta_id' in filters ? filters.meta_id : undefined },
+                    { meta_id: filterIdIn ? { in: filterIdIn } : undefined },
+                ],
+                iniciativa_id: 'iniciativa_id' in filters ? filters.iniciativa_id : undefined,
+                atividade_id: 'atividade_id' in filters ? filters.atividade_id : undefined,
             },
             select: {
                 criador: { select: { nome_exibicao: true } },
@@ -857,7 +881,7 @@ export class OrcamentoRealizadoService {
             where: {
                 dotacao_processo_nota: { in: Object.keys(notaEncontradas) },
                 ano_referencia: filters.ano_referencia,
-                pdm_id: meta.pdm_id,
+                pdm_id: pdm_id,
             },
             select: {
                 soma_valor_empenho: true,
@@ -896,7 +920,7 @@ export class OrcamentoRealizadoService {
             where: {
                 dotacao_processo: { in: Object.keys(processosEncontrados) },
                 ano_referencia: filters.ano_referencia,
-                pdm_id: meta.pdm_id,
+                pdm_id: pdm_id,
             },
             select: {
                 soma_valor_empenho: true,
@@ -931,7 +955,7 @@ export class OrcamentoRealizadoService {
             where: {
                 dotacao: { in: Object.keys(dotacoesEncontradas) },
                 ano_referencia: filters.ano_referencia,
-                pdm_id: meta.pdm_id,
+                pdm_id: pdm_id,
             },
             select: {
                 soma_valor_empenho: true,
@@ -1021,7 +1045,7 @@ export class OrcamentoRealizadoService {
             }
 
             const orc_config = await this.prisma.pdmOrcamentoConfig.findFirst({
-                where: { pdm_id: meta.pdm_id, ano_referencia: filters.ano_referencia },
+                where: { pdm_id: pdm_id, ano_referencia: filters.ano_referencia },
                 select: { execucao_disponivel_meses: true },
             });
 
@@ -1055,7 +1079,7 @@ export class OrcamentoRealizadoService {
                     };
                 }),
 
-                pode_editar: permissoes.pode_editar,
+                pode_editar: permissoes ? permissoes.pode_editar : false,
             });
         }
 
@@ -1279,7 +1303,7 @@ export function DoubleCheckException(
     tipo: string,
     check_soma_valor_empenho: number,
     soma_valor_empenho: number,
-    perc_valor_empenho: number,
+    perc_valor_empenho: number
 ) {
     if (Math.round(check_soma_valor_empenho * 100) != Math.round(soma_valor_empenho * 100)) {
         throw new BadRequestException(

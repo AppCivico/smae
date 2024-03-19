@@ -1,4 +1,4 @@
-import { ApiProperty, OmitType } from '@nestjs/swagger';
+import { ApiProperty, OmitType, PickType } from '@nestjs/swagger';
 import { Transform, TransformFnParams, Type } from 'class-transformer';
 import {
     ArrayMaxSize,
@@ -19,6 +19,7 @@ import {
 import { IdNomeExibicaoDto } from '../../common/dto/IdNomeExibicao.dto';
 import { PROCESSO_DESCRIPTION, PROCESSO_MESSAGE, PROCESSO_REGEXP } from '../../dotacao/dto/dotacao.dto';
 import { OrcamentoRealizado } from '../entities/orcamento-realizado.entity';
+import { PositiveNumberTransform } from '../../auth/transforms/number.transform';
 
 export class CreateOrcamentoRealizadoItemDto {
     /**
@@ -197,7 +198,7 @@ export class UpdateOrcamentoRealizadoDto extends OmitType(CreateOrcamentoRealiza
 
 export class FilterOrcamentoRealizadoDto {
     /**
-     * Filtrar por meta_id: eg: 205
+     * meta_id: eg: 205 - necessário para buscar o status do 'concluido' no retorno
      * @example ""
      */
     @IsInt({ message: '$property| meta_id precisa ser positivo' })
@@ -256,6 +257,18 @@ export class FilterOrcamentoRealizadoDto {
     atividade_id?: number | null;
 }
 
+export class FilterOrcamentoRealizadoCompartilhadoDto extends PickType(FilterOrcamentoRealizadoDto, [
+    'dotacao',
+    'processo',
+    'nota_empenho',
+    'ano_referencia',
+    'atividade_id',
+]) {
+    @IsInt({ message: '$property| pdm_id precisa ser positivo' })
+    @Transform(PositiveNumberTransform)
+    pdm_id: number;
+}
+
 export class OrcamentoRealizadoStatusConcluidoDto {
     concluido: boolean;
     concluido_por: IdNomeExibicaoDto | null;
@@ -268,8 +281,11 @@ export class OrcamentoRealizadoStatusPermissoesDto {
     pode_excluir_lote: boolean;
 }
 
-export class ListOrcamentoRealizadoDto {
+export class ListApenasOrcamentoRealizadoDto {
     linhas: OrcamentoRealizado[];
+}
+
+export class ListOrcamentoRealizadoDto extends ListApenasOrcamentoRealizadoDto {
     concluido: OrcamentoRealizadoStatusConcluidoDto;
     permissoes: OrcamentoRealizadoStatusPermissoesDto;
 }
