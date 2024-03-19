@@ -159,6 +159,23 @@ export const useTransferenciasVoluntariasStore = defineStore(
           return false;
         }
       },
+
+      async buscarDiretórios(idDaTransferencia = 0) {
+        this.chamadasPendentes.diretórios = true;
+        this.erro = null;
+
+        try {
+          const { linhas } = await this.requestS.get(`${baseUrl}/diretorio`, {
+            transferencia_id: idDaTransferencia || this.route.params.transferenciaId,
+          });
+
+          this.diretórios = linhas;
+        } catch (erro) {
+          this.erro = erro;
+        }
+
+        this.chamadasPendentes.diretórios = false;
+      },
     },
 
     getters: {
