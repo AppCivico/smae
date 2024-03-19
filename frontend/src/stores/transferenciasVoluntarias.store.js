@@ -175,6 +175,11 @@ export const useTransferenciasVoluntariasStore = defineStore(
             diretórios.map((x) => x.caminho)
           )
           .sort((a, b) => a.localeCompare(b)),
+
+      itemParaEdição: ({ emFoco }) => ({
+        ...emFoco,
+        partido_id: emFoco?.partido?.id || null,
+      }),
     },
   }
 );
