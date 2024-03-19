@@ -278,6 +278,16 @@ export const execuçãoOrçamentária = object()
             .max(12)
             .min(1)
             .required(),
+          percentual_empenho: number()
+            .label('Percentual empenho')
+            .max(100)
+            .min(0)
+            .nullable(),
+          percentual_liquidado: number()
+            .label('Percentual liquidado')
+            .max(100)
+            .min(0)
+            .nullable(),
           valor_empenho: number()
             .label('Valor empenho')
             .min(0)
