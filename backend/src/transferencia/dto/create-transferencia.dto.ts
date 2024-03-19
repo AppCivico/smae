@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { TransferenciaInterface, TransferenciaTipoEsfera } from '@prisma/client';
+import { ParlamentarCargo, TransferenciaInterface, TransferenciaTipoEsfera } from '@prisma/client';
 import { Type } from 'class-transformer';
 import {
     IsBoolean,
@@ -54,6 +54,12 @@ export class CreateTransferenciaDto {
             '$property| Precisa ser um dos seguintes valores: ' + Object.values(TransferenciaTipoEsfera).join(', '),
     })
     esfera: TransferenciaTipoEsfera;
+
+    @ApiProperty({ enum: ParlamentarCargo, enumName: 'ParlamentarCargo' })
+    @IsEnum(ParlamentarCargo, {
+        message: '$property| Precisa ser um dos seguintes valores: ' + Object.values(ParlamentarCargo).join(', '),
+    })
+    cargo: ParlamentarCargo;
 
     @IsString()
     @MinLength(1)
