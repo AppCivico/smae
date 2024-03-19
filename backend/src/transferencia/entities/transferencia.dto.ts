@@ -16,6 +16,7 @@ export class TransferenciaDto {
     normativa: string | null;
     observacoes: string | null;
     programa: string | null;
+    pendente_preenchimento_valores: boolean;
 
     orgao_concedente: IdSiglaDescricao;
     secretaria_concedente: IdSiglaDescricao;
