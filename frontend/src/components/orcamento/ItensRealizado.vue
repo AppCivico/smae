@@ -6,6 +6,7 @@ import retornarQuaisOsRecentesDosItens from '@/helpers/retornarQuaisOsMaisRecent
 import { useMetasStore } from '@/stores/metas.store';
 import { useOrcamentosStore } from '@/stores/orcamentos.store';
 import { useProjetosStore } from '@/stores/projetos.store.ts';
+import Big from 'big.js';
 import { range } from 'lodash';
 import { storeToRefs } from 'pinia';
 import {
@@ -14,7 +15,7 @@ import {
 import { useRoute } from 'vue-router';
 
 defineOptions({ inheritAttrs: false });
-defineProps({
+const props = defineProps({
   name: {
     type: String,
     required: true,
@@ -92,8 +93,8 @@ function atualizarDePercentagem(i, coluna) {
       if (model.value[i].percentual_empenho === 0) {
         model.value[i].percentual_empenho = null;
       } else {
-        model.value[i].valor_empenho = (model.value[i].percentual_empenho
-          * 0.01 * orçamentoEmFoco.value.empenho_liquido).toFixed(2);
+        model.value[i].valor_empenho = new Big(model.value[i].percentual_empenho)
+          .times(new Big(props.respostasof.empenho_liquido).div(100)).toFixed(2);
       }
       break;
 
@@ -102,8 +103,8 @@ function atualizarDePercentagem(i, coluna) {
       if (model.value[i].percentual_liquidado === 0) {
         model.value[i].percentual_liquidado = null;
       } else {
-        model.value[i].valor_liquidado = (model.value[i].percentual_liquidado
-          * 0.01 * orçamentoEmFoco.value.valor_liquidado).toFixed(2);
+        model.value[i].valor_liquidado = new Big(model.value[i].percentual_liquidado)
+          .times(new Big(props.respostasof.valor_liquidado).div(100)).toFixed(2);
       }
       break;
 
@@ -122,6 +123,9 @@ async function addItem() {
 }
 </script>
 <template>
+  <pre v-scrollLockDebug>respostasof:{{ respostasof }}</pre>
+  <pre v-scrollLockDebug>orçamentoEmFoco:{{ orçamentoEmFoco }}</pre>
+
   <table class="tablemain no-zebra mb1">
     <col>
     <col class="col--percentagem">
