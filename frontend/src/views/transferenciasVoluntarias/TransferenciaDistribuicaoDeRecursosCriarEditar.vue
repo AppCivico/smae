@@ -87,7 +87,7 @@ iniciar()
     <div  class="flex g2 mb1">
       <div  class="f1">
         <LabelFromYup name="objeto" :schema="schema" />
-        <Field name="objeto" as="textarea" class="inputtext light mb1" />
+        <Field name="objeto" as="textarea" class="inputtext light mb1" rows="5"/>
         <ErrorMessage class="error-msg mb1" name="objeto" />
       </div>
     </div>
