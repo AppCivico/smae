@@ -1,5 +1,6 @@
 <script setup>
 import ItensRealizado from '@/components/orcamento/ItensRealizado.vue';
+import ListaDeCompartilhamentos from '@/components/orcamento/ListaDeCompartilhamentos.vue';
 import { useAlertStore } from '@/stores/alert.store';
 import { useAtividadesStore } from '@/stores/atividades.store';
 import { useDotaçãoStore } from '@/stores/dotacao.store.ts';
@@ -335,6 +336,16 @@ watch(currentEdit, (novosValores) => {
       />
 
       <template v-if="respostasof.dotacao">
+        <ListaDeCompartilhamentos
+          v-if="$route.meta.entidadeMãe === 'meta' && respostasof.dotacao"
+          :ano="ano"
+          :pdm="activePdm.id"
+          :dotação="values.dotacao"
+          :processo="values.processo"
+          :nota-empenho="values.nota_empenho"
+          class="mb1"
+        />
+
         <div v-if="!$route.params.projetoId">
           <label class="label">Vincular dotação<span class="tvermelho">*</span></label>
 
