@@ -1,16 +1,16 @@
 <script setup>
+import { dotação as schema } from '@/consts/formSchemas';
+import dinheiro from '@/helpers/dinheiro';
+import toFloat from '@/helpers/toFloat';
+import { useDotaçãoStore } from '@/stores/dotacao.store.ts';
+import { useMetasStore } from '@/stores/metas.store';
+import { useProjetosStore } from '@/stores/projetos.store.ts';
+import { storeToRefs } from 'pinia';
+import { ErrorMessage, useField } from 'vee-validate';
 import {
   computed, ref, toRef, watch,
 } from 'vue';
-import { useDotaçãoStore } from '@/stores/dotacao.store.ts';
-import { storeToRefs } from 'pinia';
-import { dotação as schema } from '@/consts/formSchemas';
-import { useMetasStore } from '@/stores/metas.store';
-import { useProjetosStore } from '@/stores/projetos.store.ts';
-import { ErrorMessage, useField } from 'vee-validate';
 import { useRoute } from 'vue-router';
-import dinheiro from '@/helpers/dinheiro';
-import toFloat from '@/helpers/toFloat';
 
 const props = defineProps({
   complemento: {
