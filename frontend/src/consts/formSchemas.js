@@ -881,22 +881,53 @@ export const tipoDeTransferencia = object({
     .required(),
 })
 
-export const transferenciasVoluntarias = object({
-  agencia_aceite: string()
-    .label('Agência da conta de aceite')
-    .nullable(),
-  agencia_fim: string()
-    .label('Agência da conta da secretaria fim')
-    .nullable(),
-  ano: number()
-    .label('Ano')
+export const registroDeTransferencia = object({
+  empenho: string()
+    .label('Empenho')
     .nullable()
     .required(),
-  banco_fim: string()
-    .label('Banco da conta secretaria fim')
+  dotacao: string()
+    .label('Dotacao')
+    .nullable()
+    .required(),
+  valor: number()
+    .label('Valor')
+    .nullable()
+    .required(),
+  valor_contrapartida: number()
+    .label('Valor contrapartida')
+    .nullable()
+    .required(),
+  valor_total: number()
+    .label('Valor total')
+    .required()
     .nullable(),
-  banco_aceite: string()
-    .label('Banco da conta de aceite')
+})
+
+export const transferenciaDistribuicaoDeRecursos = object({
+  empenho: string()
+    .label('Empenho')
+    .nullable()
+    .required(),
+  dotacao: string()
+    .label('Dotacao')
+    .nullable()
+    .required(),
+  valor: number()
+    .label('Valor')
+    .nullable()
+    .required(),
+  valor_contrapartida: number()
+    .label('Valor contrapartida')
+    .nullable()
+    .required(),
+  ordenador_despesa: string()
+    .label('Ordenador de despesas')
+    .nullable()
+    .required(),
+  valor_total: number()
+    .label('Valor total')
+    .required()
     .nullable(),
   conta_fim: string()
     .label('número conta-corrente  secretaria fim')
@@ -904,6 +935,22 @@ export const transferenciasVoluntarias = object({
   conta_aceite: string()
     .label('número conta-corrente de aceite')
     .nullable(),
+  gestor_contrato: string()
+    .label('Gestor do Contrato')
+    .nullable()
+    .required(),
+  objeto: string()
+    .label('Objeto/Empreendimento')
+    .max(50000)
+    .nullable()
+    .required(),
+})
+
+export const transferenciasVoluntarias = object({
+  ano: number()
+    .label('Ano')
+    .nullable()
+    .required(),
   clausula_suspensiva_vencimento: date()
     .label('data de vencimento da cláusula suspensiva')
     .nullable()
@@ -929,26 +976,14 @@ export const transferenciasVoluntarias = object({
   emenda_unitaria: string()
     .label('Emenda unitária')
     .nullable(),
-  // empenho: string()
-  //   .label('Empenho')
-  //   .nullable()
-  //   .required(),
   esfera: string()
     .label('Esfera')
     .nullable()
     .required(),
-  // dotacao:string()
-  //   .label('Dotacao')
-  //   .nullable()
-  //   .required(),
   demanda:string()
     .label('Demanda')
     .nullable()
     .required(),
-  // gestor_contrato: string()
-  //   .label('Gestor Municipal do Contrato')
-  //   .nullable()
-  //   .required(),
   identificador: string()
     .label('Identificador')
     .nullable()
@@ -998,22 +1033,6 @@ export const transferenciasVoluntarias = object({
     .min(1, 'Selecione um órgão responsável')
     .nullable()
     .required(),
-  // valor: number()
-  //   .label('Valor')
-  //   .nullable()
-  //   .required(),
-  // valor_contrapartida:number()
-  //   .label('Valor contrapartida')
-  //   .nullable()
-  //   .required(),
-  // ordenador_despesa:string()
-  //   .label('Valor contrapartida')
-  //   .nullable()
-  //   .required(),
-  // valor_total:number()
-  //   .label('Valor total')
-  //   .required()
-  //   .nullable(),
 })
 
 export const processo = object()
