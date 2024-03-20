@@ -10,12 +10,21 @@ import { CreateTransferenciaAnexoDto, CreateTransferenciaDto } from './dto/creat
 import { UpdateTransferenciaAnexoDto, UpdateTransferenciaDto } from './dto/update-transferencia.dto';
 import { TransferenciaAnexoDto, TransferenciaDetailDto, TransferenciaDto } from './entities/transferencia.dto';
 import { UploadService } from 'src/upload/upload.service';
+import { FilterTransferenciaDto } from './dto/filter-transferencia.dto';
+import { JwtService } from '@nestjs/jwt';
+import { PaginatedDto } from 'src/common/dto/paginated.dto';
+
+class NextPageTokenJwtBody {
+    offset: number;
+    ipp: number;
+}
 
 @Injectable()
 export class TransferenciaService {
     constructor(
         private readonly prisma: PrismaService,
-        private readonly uploadService: UploadService
+        private readonly uploadService: UploadService,
+        private readonly jwtService: JwtService
     ) {}
 
     async createTransferencia(dto: CreateTransferenciaDto, user: PessoaFromJwt): Promise<RecordWithId> {
@@ -125,11 +134,43 @@ export class TransferenciaService {
         return updated;
     }
 
-    async findAllTransferencia(user: PessoaFromJwt): Promise<TransferenciaDto[]> {
+    private decodeNextPageToken(jwt: string | undefined): NextPageTokenJwtBody | null {
+        let tmp: NextPageTokenJwtBody | null = null;
+        try {
+            if (jwt) tmp = this.jwtService.verify(jwt) as NextPageTokenJwtBody;
+        } catch {
+            throw new HttpException('Param next_page_token is invalid', 400);
+        }
+        return tmp;
+    }
+
+    private encodeNextPageToken(opt: NextPageTokenJwtBody): string {
+        return this.jwtService.sign(opt);
+    }
+
+    async findAllTransferencia(
+        filters: FilterTransferenciaDto,
+        user: PessoaFromJwt
+    ): Promise<PaginatedDto<TransferenciaDto>> {
+        let tem_mais = false;
+        let token_proxima_pagina: string | null = null;
+
+        let ipp = filters.ipp ? filters.ipp : 25;
+        let offset = 0;
+        const decodedPageToken = this.decodeNextPageToken(filters.token_proxima_pagina);
+
+        if (decodedPageToken) {
+            offset = decodedPageToken.offset;
+            ipp = decodedPageToken.ipp;
+        }
+
         const rows = await this.prisma.transferencia.findMany({
             where: {
                 removido_em: null,
             },
+            orderBy: { pendente_preenchimento_valores: 'asc' },
+            skip: offset,
+            take: ipp + 1,
             select: {
                 id: true,
                 identificador: true,
@@ -178,7 +219,17 @@ export class TransferenciaService {
             },
         });
 
-        return rows;
+        if (rows.length > ipp) {
+            tem_mais = true;
+            rows.pop();
+            token_proxima_pagina = this.encodeNextPageToken({ ipp: ipp, offset: offset + ipp });
+        }
+
+        return {
+            linhas: rows,
+            tem_mais: tem_mais,
+            token_proxima_pagina: token_proxima_pagina,
+        };
     }
 
     async findOneTransferencia(id: number, user: PessoaFromJwt): Promise<TransferenciaDetailDto> {

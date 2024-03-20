@@ -1,14 +1,17 @@
-import { Controller, Post, Body, Patch, Param, Get, Delete, HttpCode, HttpStatus } from '@nestjs/common';
+import { Controller, Post, Body, Patch, Param, Get, Delete, HttpCode, HttpStatus, Query } from '@nestjs/common';
 import { ApiTags, ApiBearerAuth, ApiUnauthorizedResponse, ApiNoContentResponse, ApiResponse } from '@nestjs/swagger';
 import { CurrentUser } from 'src/auth/decorators/current-user.decorator';
 import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
 import { TransferenciaService } from './transferencia.service';
 import { CreateTransferenciaAnexoDto, CreateTransferenciaDto } from './dto/create-transferencia.dto';
-import { ListTransferenciaAnexoDto, ListTransferenciaDto, TransferenciaDetailDto } from './entities/transferencia.dto';
+import { ListTransferenciaAnexoDto, TransferenciaDetailDto, TransferenciaDto } from './entities/transferencia.dto';
 import { UpdateTransferenciaAnexoDto, UpdateTransferenciaDto } from './dto/update-transferencia.dto';
 import { FindOneParams, FindTwoParams } from 'src/common/decorators/find-params';
 import { Roles } from 'src/auth/decorators/roles.decorator';
+import { ApiPaginatedResponse } from 'src/auth/decorators/paginated.decorator';
+import { PaginatedDto } from 'src/common/dto/paginated.dto';
+import { FilterTransferenciaDto } from './dto/filter-transferencia.dto';
 
 @ApiTags('Transferência')
 @Controller('transferencia')
@@ -25,9 +28,13 @@ export class TransferenciaController {
 
     @ApiBearerAuth('access-token')
     @Roles('CadastroTransferencia.listar')
+    @ApiPaginatedResponse(TransferenciaDto)
     @Get()
-    async findAll(@CurrentUser() user: PessoaFromJwt): Promise<ListTransferenciaDto> {
-        return { linhas: await this.transferenciaService.findAllTransferencia(user) };
+    async findAll(
+        @Query() filters: FilterTransferenciaDto,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<PaginatedDto<TransferenciaDto>> {
+        return await this.transferenciaService.findAllTransferencia(filters, user);
     }
 
     @Get(':id')
