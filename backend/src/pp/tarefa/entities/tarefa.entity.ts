@@ -67,18 +67,20 @@ export class TarefaDetailDto extends TarefaItemDto {
     recursos: string;
 
     dependencias: TarefaDependenciaDto[];
-    projeto: ProjetoDetailDto;
+    projeto: ProjetoDetailDto | null;
 }
 
-export class ListTarefaDto {
+export class ListApenasTarefaListDto {
     linhas: TarefaItemProjetadoDto[];
+}
+
+export class ListTarefaProjetoDto extends ListApenasTarefaListDto {
     projeto: ProjetoDetailDto;
     portfolio: IdTituloNivelMaxRegDto;
 }
 
-export class ListTarefaListDto {
-    linhas: TarefaItemProjetadoDto[];
-    projeto: ProjetoDetailDto;
+export class ListTarefaGenericoDto extends ListApenasTarefaListDto {
+    projeto: ProjetoDetailDto | null;
 }
 
 export class DependenciasDatasDto {

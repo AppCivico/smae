@@ -151,13 +151,15 @@ UNION ALL
 SELECT
     'Custo previsto até o momento',
     sum(custo_estimado) AS valor,
-    projeto_id as id
+    b.projeto_id as id
 FROM
-    tarefa
+    tarefa a
+    join tarefa_cronograma b on b.id = a.tarefa_cronograma_id
 WHERE
     termino_planejado <= now() at time zone 'America/Sao_Paulo'
 and custo_estimado is not null
 and tarefa_pai_id is null
+and b.removido_em is null
 group by 1,3;
 
 --

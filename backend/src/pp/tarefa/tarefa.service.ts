@@ -1,6 +1,6 @@
 import { BadRequestException, HttpException, Inject, Injectable, Logger, forwardRef } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
-import { Prisma, TarefaDependente, TarefaDependenteTipo } from '@prisma/client';
+import { Prisma, TarefaCronograma, TarefaDependente, TarefaDependenteTipo } from '@prisma/client';
 import { Type, plainToInstance } from 'class-transformer';
 import { Graph } from 'graphlib'; // ta os types de da lib "graphlib" que é por enquanto pure-js
 import { DateTime } from 'luxon';
@@ -11,13 +11,19 @@ import { Date2YMD, SYSTEM_TIMEZONE } from '../../common/date2ymd';
 import { JOB_PP_TAREFA_ATRASO_LOCK } from '../../common/dto/locks';
 import { RecordWithId } from '../../common/dto/record-with-id.dto';
 import { PrismaService } from '../../prisma/prisma.service';
-import { ProjetoDetailDto } from '../projeto/entities/projeto.entity';
 import { ProjetoService } from '../projeto/projeto.service';
-import { CheckDependenciasDto, CreateTarefaDto, FilterPPTarefa, TarefaDependenciaDto } from './dto/create-tarefa.dto';
+import {
+    CheckDependenciasDto,
+    CreateTarefaDto,
+    FilterPPTarefa,
+    TarefaCronogramaInput,
+    TarefaDependenciaDto,
+} from './dto/create-tarefa.dto';
 import { UpdateTarefaDto, UpdateTarefaRealizadoDto } from './dto/update-tarefa.dto';
 import {
     DependenciasDatasDto,
-    ListTarefaListDto,
+    ListApenasTarefaListDto,
+    ListTarefaGenericoDto,
     TarefaDetailDto,
     TarefaItemDbDto,
     TarefaItemProjetadoDto,
@@ -60,15 +66,66 @@ export class TarefaService {
         private readonly graphvizService: GraphvizService
     ) {}
 
-    async create(projetoId: number, dto: CreateTarefaDto, user: PessoaFromJwt): Promise<RecordWithId> {
-        await this.utils.verifica_nivel_maximo(projetoId, dto.nivel);
-        await this.utils.verifica_orgao(dto.orgao_id);
+    async loadOrCreateByInput(dto: TarefaCronogramaInput, user: PessoaFromJwt) {
+        if (dto.projeto_id) {
+            const exists = await this.prisma.tarefaCronograma.findFirst({
+                where: {
+                    projeto_id: dto.projeto_id,
+                    removido_em: null,
+                },
+                select: { id: true },
+            });
+            if (exists) return exists.id;
+            const create = await this.prisma.tarefaCronograma.create({
+                data: {
+                    projeto_id: dto.projeto_id,
+                    criado_por: user.id,
+                },
+                select: { id: true },
+            });
+            return create.id;
+        }
+
+        if (dto.transferencia_id) {
+            const exists = await this.prisma.tarefaCronograma.findFirst({
+                where: {
+                    transferencia_id: dto.transferencia_id,
+                    removido_em: null,
+                },
+                select: { id: true },
+            });
+            if (exists) return exists.id;
+            const create = await this.prisma.tarefaCronograma.create({
+                data: {
+                    transferencia_id: dto.transferencia_id,
+                    criado_por: user.id,
+                },
+                select: { id: true },
+            });
+            return create.id;
+        }
+
+        throw new BadRequestException(
+            'Faltando projeto_id ou transferencia_id, não é possível criar cronograma tarefa livre no momento.'
+        );
+    }
+
+    async create(
+        tarefaCronoInput: TarefaCronogramaInput,
+        dto: CreateTarefaDto,
+        user: PessoaFromJwt
+    ): Promise<RecordWithId> {
+        const tarefaCronoId = await this.loadOrCreateByInput(tarefaCronoInput, user);
+
+        if (tarefaCronoInput.projeto_id)
+            await this.utils.verifica_nivel_maximo_portfolio(tarefaCronoInput.projeto_id, dto.nivel);
+        await this.utils.verifica_orgao_existe(dto.orgao_id);
 
         if (dto.tarefa_pai_id === null && dto.nivel > 1) {
             throw new HttpException('Tarefas com nível maior que 1 necessitam de uma tarefa pai', 400);
         } else if (dto.tarefa_pai_id !== null) {
             const pai = await this.prisma.tarefa.findFirst({
-                where: { removido_em: null, id: dto.tarefa_pai_id, projeto_id: projetoId },
+                where: { removido_em: null, id: dto.tarefa_pai_id, tarefa_cronograma_id: tarefaCronoId },
                 select: { id: true, nivel: true, numero: true, tarefa: true },
             });
             if (!pai) throw new HttpException(`Tarefa pai (${dto.tarefa_pai_id}) não foi encontrada no projeto.`, 400);
@@ -83,9 +140,9 @@ export class TarefaService {
 
         const created = await this.prisma.$transaction(
             async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
-                await this.utils.lockProjeto(prismaTx, projetoId);
+                await this.utils.lockTarefaCrono(prismaTx, tarefaCronoId);
 
-                const calcDependencias = await this.calcDataDependencias(projetoId, prismaTx, {
+                const calcDependencias = await this.calcDataDependencias(tarefaCronoId, prismaTx, {
                     tarefa_corrente_id: 0,
                     dependencias: dto.dependencias,
                 });
@@ -139,11 +196,11 @@ export class TarefaService {
                         throw new HttpException('Se há Término e Duração planejado, deve existir um Início.', 400);
                 }
 
-                const numero = await this.utils.incrementaNumero(dto, prismaTx, projetoId);
+                const numero = await this.utils.incrementaNumero(dto, prismaTx, tarefaCronoId);
 
                 const tarefa = await prismaTx.tarefa.create({
                     data: {
-                        projeto_id: projetoId,
+                        tarefa_cronograma_id: tarefaCronoId,
                         orgao_id: dto.orgao_id,
                         descricao: dto.descricao,
                         nivel: dto.nivel,
@@ -233,17 +290,32 @@ export class TarefaService {
     }
 
     async findAll(
-        projetoId: number,
-        user: PessoaFromJwt | undefined,
+        tarefaCronoInput: TarefaCronogramaInput,
+        user: PessoaFromJwt,
         _filter: FilterPPTarefa
-    ): Promise<ListTarefaListDto> {
-        const projeto = await this.projetoService.findOne(projetoId, user, 'ReadOnly');
+    ): Promise<ListTarefaGenericoDto> {
+        const tarefaCronoId = await this.loadOrCreateByInput(tarefaCronoInput, user);
 
+        const ret = await this.buscaLinhasRecalcProjecao(tarefaCronoId);
+
+        // sempre carregando o projeto depois, pois as triggers tbm só vão carregar os dados após o update da projeção
+        // antes os dados eram atualizados no banco e tbm diretamente na referencia que seria retornada
+        // agora fica com essa carga e verificação "atrasada" em relação ao outros endpoints que geralmente carregam o
+        // projeto primeiro
+        const projeto = tarefaCronoInput.projeto_id
+            ? await this.projetoService.findOne(tarefaCronoInput.projeto_id, user, 'ReadOnly')
+            : null;
+
+        return {
+            linhas: ret.linhas,
+            projeto: projeto,
+        };
+    }
+
+    async buscaLinhasRecalcProjecao(tarefaCronoId: number) {
         const antesQuery = Date.now();
-        const rows = await this.findAllRows(projeto);
-
+        const rows = await this.findAllRows(tarefaCronoId);
         this.logger.warn(`query took ${Date.now() - antesQuery} ms`);
-
         const hoje = DateTime.local({ zone: SYSTEM_TIMEZONE }).startOf('day');
         const rowsWithAtraso = rows.map((r) => {
             return {
@@ -253,17 +325,15 @@ export class TarefaService {
         });
 
         const antesCalc = Date.now();
-        const ret = await this.calculaAtrasoProjeto(rowsWithAtraso, projeto);
-
-        this.logger.warn(`calculaAtrasoProjeto took ${Date.now() - antesCalc} ms`);
-
+        const ret = await this.calculaAtrasoCronograma(rowsWithAtraso, tarefaCronoId);
+        this.logger.warn(`calculaAtrasoCronograma took ${Date.now() - antesCalc} ms`);
         return ret;
     }
 
-    private async findAllRows(projeto: { id: number }) {
+    private async findAllRows(tarefa_cronograma_id: number) {
         return await this.prisma.tarefa.findMany({
             where: {
-                projeto_id: projeto.id,
+                tarefa_cronograma_id,
                 removido_em: null,
             },
             orderBy: [{ nivel: 'desc' }, { numero: 'asc' }, { id: 'desc' }],
@@ -302,11 +372,15 @@ export class TarefaService {
         });
     }
 
-    async calculaAtrasoProjeto(tarefasOrig: TarefaItemDbDto[], projeto: ProjetoDetailDto): Promise<ListTarefaListDto> {
-        const ret: ListTarefaListDto = {
-            linhas: [],
-            projeto: projeto,
-        };
+    private async calculaAtrasoCronograma(
+        tarefasOrig: TarefaItemDbDto[],
+        tarefaCronoId: number
+    ): Promise<ListApenasTarefaListDto> {
+        const ret: ListApenasTarefaListDto = { linhas: [] };
+
+        const tarefaCronograma = await this.prisma.tarefaCronograma.findFirstOrThrow({
+            where: { id: tarefaCronoId },
+        });
 
         // nesse caso, vai usar UTC, pois o javascript e o Prisma volta o Date como UTC.
         const hoje = DateTime.local({ zone: 'UTC' }).startOf('day');
@@ -351,8 +425,10 @@ export class TarefaService {
                     this.logger.error(
                         `tarefa.inicio_real da tarefa ID ${tarefa.id} está nulo mas deveria existir (pois há data de termino), assumindo data corrente.`
                     );
-                tarefa.projecao_inicio = tarefa.inicio_real ? DateTime.fromJSDate(tarefa.inicio_real) : hoje;
-                tarefa.projecao_termino = DateTime.fromJSDate(tarefa.termino_real);
+                tarefa.projecao_inicio = tarefa.inicio_real
+                    ? DateTime.fromJSDate(tarefa.inicio_real, { zone: 'UTC' })
+                    : hoje;
+                tarefa.projecao_termino = DateTime.fromJSDate(tarefa.termino_real, { zone: 'UTC' });
 
                 this.logger.debug(`tarefa ${tarefa.id} já finalizou`);
                 // acredito que vai precisar de mais um loop pra verificar se a data do parent tem filhos atrasados
@@ -642,6 +718,19 @@ export class TarefaService {
             await Promise.all(updates);
         }
 
+        await this.recalcCronogramaStatus(tarefaCronograma, max_term_planjeado, max_term_proj, tarefaCronoId);
+
+        ret.linhas = tarefas;
+
+        return ret;
+    }
+
+    private async recalcCronogramaStatus(
+        tarefaCronograma: TarefaCronograma,
+        max_term_planjeado: Date | undefined,
+        max_term_proj: DateTime | undefined,
+        tarefaCronoId: number
+    ) {
         let atraso_projeto: number | null = null;
         let percentual_atraso: number | null = null;
         let projecao_termino: Date | null = null;
@@ -650,18 +739,23 @@ export class TarefaService {
         // TODO ver como pensar se ta concluído, provavelmente contar se todas as tarefas tem data de termino,
         // ou se o status do projeto é fechado
         let status_cronograma = 'Em dia';
-        if (projeto.realizado_termino != null) {
+        if (tarefaCronograma.realizado_termino != null) {
             status_cronograma = 'Concluído';
         } else {
-            const estaPausado = await this.prisma.projetoAcompanhamento.findFirst({
-                where: {
-                    removido_em: null,
-                    projeto_id: projeto.id,
-                },
-                orderBy: [{ data_registro: 'desc' }],
-                take: 1,
-            });
-            if (estaPausado && estaPausado.cronograma_paralisado) status_cronograma = 'Paralisado';
+            if (tarefaCronograma.projeto_id) {
+                this.logger.verbose(
+                    `Há projeto no cronograma, verificando se está projetoAcompanhamento está pausado...`
+                );
+                const estaPausado = await this.prisma.projetoAcompanhamento.findFirst({
+                    where: {
+                        removido_em: null,
+                        projeto_id: tarefaCronograma.projeto_id,
+                    },
+                    orderBy: [{ data_registro: 'desc' }],
+                    take: 1,
+                });
+                if (estaPausado && estaPausado.cronograma_paralisado) status_cronograma = 'Paralisado';
+            }
         }
 
         if (max_term_planjeado && max_term_proj) {
@@ -676,9 +770,9 @@ export class TarefaService {
             projecao_termino = max_term_proj.toJSDate();
         }
 
-        if (atraso_projeto && projeto.previsao_duracao && projeto.previsao_duracao > 0) {
-            percentual_atraso = Math.round((atraso_projeto / projeto.previsao_duracao) * 100);
-            em_atraso = percentual_atraso >= projeto.tolerancia_atraso;
+        if (atraso_projeto && tarefaCronograma.previsao_duracao && tarefaCronograma.previsao_duracao > 0) {
+            percentual_atraso = Math.round((atraso_projeto / tarefaCronograma.previsao_duracao) * 100);
+            em_atraso = percentual_atraso >= tarefaCronograma.tolerancia_atraso;
 
             // se por acaso, tiver atraso e ao mesmo tempo já Concluído, manter o Concluído!
             if (em_atraso && status_cronograma != 'Paralisado' && status_cronograma != 'Concluído')
@@ -686,15 +780,15 @@ export class TarefaService {
         }
 
         if (
-            ret.projeto.atraso !== atraso_projeto ||
-            ret.projeto.projecao_termino !== projecao_termino ||
-            ret.projeto.em_atraso !== em_atraso ||
-            ret.projeto.percentual_atraso !== percentual_atraso ||
-            ret.projeto.status_cronograma !== status_cronograma
+            tarefaCronograma.atraso !== atraso_projeto ||
+            tarefaCronograma.projecao_termino !== projecao_termino ||
+            tarefaCronograma.em_atraso !== em_atraso ||
+            tarefaCronograma.percentual_atraso !== percentual_atraso ||
+            tarefaCronograma.status_cronograma !== status_cronograma
         ) {
-            this.logger.debug(`iniciando sincronização do atrasado projeto...`);
-            await this.prisma.projeto.update({
-                where: { id: projeto.id },
+            this.logger.debug(`iniciando sincronização do status do tarefa cronograma...`);
+            await this.prisma.tarefaCronograma.update({
+                where: { id: tarefaCronoId },
                 data: {
                     atraso: atraso_projeto,
                     projecao_termino,
@@ -704,20 +798,18 @@ export class TarefaService {
                 },
             });
         }
-
-        ret.projeto.atraso = atraso_projeto;
-        ret.projeto.projecao_termino = projecao_termino;
-        ret.projeto.em_atraso = em_atraso;
-
-        ret.linhas = tarefas;
-
-        return ret;
     }
 
-    async findOne(projeto: ProjetoDetailDto, id: number, user: PessoaFromJwt): Promise<TarefaDetailDto> {
+    async findOne(tarefaCronoInput: TarefaCronogramaInput, id: number, user: PessoaFromJwt): Promise<TarefaDetailDto> {
+        const tarefaCronoId = await this.loadOrCreateByInput(tarefaCronoInput, user);
+
+        const projeto = tarefaCronoInput.projeto_id
+            ? await this.projetoService.findOne(tarefaCronoInput.projeto_id, user, 'ReadOnly')
+            : null;
+
         const row = await this.prisma.tarefa.findFirstOrThrow({
             where: {
-                projeto_id: projeto.id,
+                tarefa_cronograma_id: tarefaCronoId,
                 id: id,
                 removido_em: null,
             },
@@ -769,20 +861,22 @@ export class TarefaService {
     }
 
     async update(
-        projetoId: number,
+        tarefaCronoInput: TarefaCronogramaInput,
         id: number,
         dto: UpdateTarefaDto | UpdateTarefaRealizadoDto,
         user: PessoaFromJwt
     ): Promise<RecordWithId> {
+        const tarefaCronoId = await this.loadOrCreateByInput(tarefaCronoInput, user);
+
         const tarefa = await this.prisma.$transaction(
             async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
                 const now = new Date(Date.now());
 
-                await this.utils.lockProjeto(prismaTx, projetoId);
+                await this.utils.lockTarefaCrono(prismaTx, tarefaCronoId);
                 const tarefa = await prismaTx.tarefa.findFirst({
                     where: {
                         removido_em: null,
-                        projeto_id: projetoId,
+                        tarefa_cronograma_id: tarefaCronoId,
                         id: id,
                     },
                     select: {
@@ -799,7 +893,7 @@ export class TarefaService {
                 if (!tarefa) throw new HttpException('Tarefa não encontrada.', 404);
 
                 if ('dependencias' in dto && dto.dependencias !== undefined && tarefa.n_filhos_imediatos == 0) {
-                    const calcDependencias = await this.calcDataDependencias(projetoId, prismaTx, {
+                    const calcDependencias = await this.calcDataDependencias(tarefaCronoId, prismaTx, {
                         tarefa_corrente_id: tarefa.id,
                         dependencias: dto.dependencias,
                     });
@@ -957,7 +1051,7 @@ export class TarefaService {
                                   where: {
                                       removido_em: null,
                                       id: dto.tarefa_pai_id,
-                                      projeto_id: projetoId,
+                                      tarefa_cronograma_id: tarefaCronoId,
                                   },
                                   select: { nivel: true, id: true, numero: true, tarefa: true },
                               })
@@ -977,8 +1071,13 @@ export class TarefaService {
                                 400
                             );
 
-                        if (novoPai) {
-                            await this.verifica_nivel_maximo_e_filhos(tarefa, prismaTx, projetoId, novoPai);
+                        if (novoPai && tarefaCronoInput.projeto_id) {
+                            await this.verifica_nivel_maximo_e_filhos_portfolio(
+                                tarefa,
+                                prismaTx,
+                                tarefaCronoInput.projeto_id,
+                                novoPai
+                            );
                         }
                         // abaixa o numero de onde era
                         await this.utils.decrementaNumero(
@@ -987,7 +1086,7 @@ export class TarefaService {
                                 tarefa_pai_id: tarefa.tarefa_pai_id,
                             },
                             prismaTx,
-                            projetoId
+                            tarefaCronoId
                         );
 
                         // aumenta o numero de onde vai entrar
@@ -997,7 +1096,7 @@ export class TarefaService {
                                 tarefa_pai_id: dto.tarefa_pai_id,
                             },
                             prismaTx,
-                            projetoId
+                            tarefaCronoId
                         );
                     } else {
                         // mudou apenas o numero
@@ -1010,7 +1109,7 @@ export class TarefaService {
                                 tarefa_pai_id: tarefa.tarefa_pai_id,
                             },
                             prismaTx,
-                            projetoId
+                            tarefaCronoId
                         );
 
                         // aumenta o numero de onde vai entrar
@@ -1020,7 +1119,7 @@ export class TarefaService {
                                 tarefa_pai_id: tarefa.tarefa_pai_id,
                             },
                             prismaTx,
-                            projetoId
+                            tarefaCronoId
                         );
                     }
                 } else if ('dependencias' in dto) {
@@ -1056,7 +1155,7 @@ export class TarefaService {
         return { id: tarefa.id };
     }
 
-    private async verifica_nivel_maximo_e_filhos(
+    private async verifica_nivel_maximo_e_filhos_portfolio(
         tarefa: { id: number; nivel: number; tarefa_pai_id: number | null; numero: number; n_filhos_imediatos: number },
         prismaTx: Prisma.TransactionClient,
         projetoId: number,
@@ -1099,16 +1198,18 @@ export class TarefaService {
             );
     }
 
-    async remove(projetoId: number, id: number, user: PessoaFromJwt) {
+    async remove(tarefaCronoInput: TarefaCronogramaInput, id: number, user: PessoaFromJwt) {
+        const tarefaCronoId = await this.loadOrCreateByInput(tarefaCronoInput, user);
+
         await this.prisma.$transaction(
             async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
                 const now = new Date(Date.now());
 
-                await this.utils.lockProjeto(prismaTx, projetoId);
+                await this.utils.lockTarefaCrono(prismaTx, tarefaCronoId);
                 const tarefa = await prismaTx.tarefa.findFirst({
                     where: {
                         removido_em: null,
-                        projeto_id: projetoId,
+                        tarefa_cronograma_id: tarefaCronoId,
                         id: id,
                     },
                     select: { id: true, tarefa_pai_id: true, nivel: true, numero: true, n_filhos_imediatos: true },
@@ -1135,7 +1236,7 @@ export class TarefaService {
                     tarefa_pai_id: tarefa.tarefa_pai_id,
                 };
 
-                await this.utils.decrementaNumero(dto, prismaTx, projetoId);
+                await this.utils.decrementaNumero(dto, prismaTx, tarefaCronoId);
 
                 await prismaTx.tarefa.update({
                     where: {
@@ -1164,7 +1265,7 @@ export class TarefaService {
     }
 
     private async calcDataDependencias(
-        projetoId: number,
+        tarefa_cronograma_id: number,
         prismaTx: Prisma.TransactionClient,
         dto: CheckDependenciasDto
     ): Promise<ValidacaoDatas> {
@@ -1207,7 +1308,7 @@ export class TarefaService {
         // carrega todas as dependencias, exceto as da tarefa correte (ou nova tarefa, no caso do zero)
         const tarefaDepsProj = await prismaTx.tarefaDependente.findMany({
             where: {
-                tarefa: { projeto_id: projetoId, removido_em: null },
+                tarefa: { tarefa_cronograma_id: tarefa_cronograma_id, removido_em: null },
                 tarefa_id: { not: tarefa_corrente_id },
             },
         });
@@ -1424,7 +1525,7 @@ export class TarefaService {
                     return;
                 }
 
-                await this.verificaAtrasoProjetos();
+                await this.verificaAtrasoTarefaCronograma();
             },
             {
                 maxWait: 30000,
@@ -1434,19 +1535,22 @@ export class TarefaService {
         );
     }
 
-    async verificaAtrasoProjetos() {
+    async verificaAtrasoTarefaCronograma() {
         // order by random pra se tiver algum projeto com erro 500, ainda vai eventualmente
         // processar a maioria eventualmente, limite pra não pra não estourar o tempo do lock
-        const projetos: { id: number }[] = await this.prisma.$queryRaw`SELECT id from projeto
+        const projetosOuTransf: { id: number; projeto_id: number | null; transferencia_id: number | null }[] =
+            await this.prisma.$queryRaw`
+        SELECT id, projeto_id, transferencia_id
+        from tarefa_cronograma
         WHERE tarefas_proximo_recalculo < NOW() and removido_em is null ORDER BY random() LIMIT 10`;
 
         const amanha = DateTime.local({ zone: SYSTEM_TIMEZONE }).startOf('day').plus({ day: 1 });
-        for (const projeto of projetos) {
-            this.logger.debug(`Recalculando atraso e projeções do projeto ${projeto.id}`);
+        for (const item of projetosOuTransf) {
+            this.logger.debug(`Recalculando atraso e projeções das tarefas crongorama ${JSON.stringify(item)}`);
 
-            await this.findAll(projeto.id, undefined, {});
-            await this.prisma.projeto.update({
-                where: { id: projeto.id },
+            await this.buscaLinhasRecalcProjecao(item.id);
+            await this.prisma.tarefaCronograma.update({
+                where: { id: item.id },
                 data: {
                     tarefas_proximo_recalculo: amanha.toJSDate(),
                 },
@@ -1454,17 +1558,27 @@ export class TarefaService {
         }
     }
 
-    async getEap(projeto: { id: number; nome: string }, format: GraphvizServiceFormat): Promise<NodeJS.ReadableStream> {
-        const rows = await this.findAllRows(projeto);
+    async getEap(
+        tarefaCronoId: number,
+        tarefaCronoInput: TarefaCronogramaInput,
+        format: GraphvizServiceFormat
+    ): Promise<NodeJS.ReadableStream> {
+        let rootName: string = '';
+        if (tarefaCronoInput.projeto_id) {
+            const projeto = await this.projetoService.findOne(tarefaCronoInput.projeto_id, undefined, 'ReadOnly');
+            rootName = projeto.nome;
+        }
 
-        const graphvizString = this.dotTemplate.buildGraphvizString(projeto.nome, rows);
+        const rows = await this.findAllRows(tarefaCronoId);
+
+        const graphvizString = this.dotTemplate.buildGraphvizString(rootName, rows);
 
         const imgStream = await this.graphvizService.generateImage(graphvizString, format);
         return imgStream;
     }
 
-    async tarefasHierarquia(projeto: ProjetoDetailDto): Promise<Record<string, string>> {
-        const rows = await this.findAllRows(projeto);
+    async tarefasHierarquia(tarefaCronoId: number): Promise<Record<string, string>> {
+        const rows = await this.findAllRows(tarefaCronoId);
 
         const filhosPeloPai: Record<number, typeof rows> = {};
         rows.forEach((row) => {

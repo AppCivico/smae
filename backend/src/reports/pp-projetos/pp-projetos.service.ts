@@ -4,8 +4,8 @@ import { ProjetoService, ProjetoStatusParaExibicao } from '../../pp/projeto/proj
 import { PrismaService } from '../../prisma/prisma.service';
 
 import { ProjetoStatus, StatusRisco } from '@prisma/client';
+import { DateTime } from 'luxon';
 import { RiscoCalc } from 'src/common/RiscoCalc';
-import { ProjetoDetailDto } from 'src/pp/projeto/entities/projeto.entity';
 import { TarefaService } from 'src/pp/tarefa/tarefa.service';
 import { TarefaUtilsService } from 'src/pp/tarefa/tarefa.service.utils';
 import { ProjetoRiscoStatus } from '../../pp/risco/entities/risco.entity';
@@ -21,7 +21,6 @@ import {
     RelProjetosPlanoAcaoMonitoramentosDto,
     RelProjetosRiscosDto,
 } from './entities/projetos.entity';
-import { DateTime } from 'luxon';
 
 const {
     Parser,
@@ -190,7 +189,7 @@ export class PPProjetosService implements ReportableService {
         private readonly prisma: PrismaService,
         @Inject(forwardRef(() => ProjetoService)) private readonly projetoService: ProjetoService,
         @Inject(forwardRef(() => TarefaService)) private readonly tarefasService: TarefaService,
-        @Inject(forwardRef(() => TarefaUtilsService)) private readonly tarefasUtilsService: TarefaUtilsService,
+        @Inject(forwardRef(() => TarefaUtilsService)) private readonly tarefasUtilsService: TarefaUtilsService
     ) {}
 
     async create(dto: CreateRelProjetosDto): Promise<PPProjetosRelatorioDto> {
@@ -362,7 +361,7 @@ export class PPProjetosService implements ReportableService {
         }
 
         whereConditions.push(`projeto.removido_em IS NULL`);
-        whereConditions.push(`portfolio.modelo_clonagem = false`)
+        whereConditions.push(`portfolio.modelo_clonagem = false`);
 
         const whereString = whereConditions.length > 0 ? 'WHERE ' + whereConditions.join(' AND ') : '';
         return { whereString, queryParams };
@@ -376,8 +375,7 @@ export class PPProjetosService implements ReportableService {
             const match = whereCond.whereString.match(/portfolio_id = \$([0-9]+)/);
             portfolioParamIdx = match ? parseInt(match[1], 10) : null;
 
-            if (!portfolioParamIdx)
-                throw new Error('Erro interno ao extrair relatório')
+            if (!portfolioParamIdx) throw new Error('Erro interno ao extrair relatório');
         }
 
         const sql = `SELECT
@@ -654,12 +652,19 @@ export class PPProjetosService implements ReportableService {
                 latencia: number;
             }
 
-            const projetoDetail: ProjetoDetailDto = await this.projetoService.findOne(
-                db.projeto_id,
-                undefined,
-                'ReadOnly'
-            );
-            const tarefasHierarquia = await this.tarefasService.tarefasHierarquia(projetoDetail);
+            await this.projetoService.findOne(db.projeto_id, undefined, 'ReadOnly');
+
+            const tarefaCronoId = await this.prisma.tarefaCronograma.findFirst({
+                where: {
+                    projeto_id: db.projeto_id,
+                    removido_em: null,
+                },
+                select: { id: true },
+            });
+
+            let tarefasHierarquia: Record<string, string> = {};
+            if (tarefaCronoId) tarefasHierarquia = await this.tarefasService.tarefasHierarquia(tarefaCronoId.id);
+
             out.push({
                 projeto_id: db.projeto_id,
                 projeto_codigo: db.projeto_codigo,

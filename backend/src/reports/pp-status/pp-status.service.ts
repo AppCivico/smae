@@ -23,8 +23,8 @@ export class PPStatusService implements ReportableService {
                 removido_em: null,
                 portfolio: {
                     id: dto.portfolio_id,
-                    modelo_clonagem: false
-                }
+                    modelo_clonagem: false,
+                },
             },
             select: {
                 id: true,
@@ -41,12 +41,19 @@ export class PPStatusService implements ReportableService {
                     },
                 },
 
-                tarefas: {
-                    where: { nivel: 1 },
+                TarefaCronograma: {
+                    where: { removido_em: null },
                     select: {
-                        tarefa: true,
-                        inicio_real: true,
-                        termino_real: true,
+                        Tarefa: {
+                            where: {
+                                nivel: 1,
+                            },
+                            select: {
+                                tarefa: true,
+                                inicio_real: true,
+                                termino_real: true,
+                            },
+                        },
                     },
                 },
 
@@ -98,8 +105,8 @@ export class PPStatusService implements ReportableService {
                     : null,
                 pontos_atencao: p.ProjetoAcompanhamento.length ? p.ProjetoAcompanhamento[0].pontos_atencao : null,
 
-                tarefas: p.tarefas.length
-                    ? p.tarefas
+                tarefas: p.TarefaCronograma.length
+                    ? p.TarefaCronograma.flatMap((r) => r.Tarefa)
                           .map((t) => {
                               let status: string;
 
