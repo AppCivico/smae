@@ -1,5 +1,5 @@
 <script setup>
-import { transferenciasVoluntarias as schema } from '@/consts/formSchemas';
+import { registroDeTransferencia as schema } from '@/consts/formSchemas';
 import { useAlertStore } from '@/stores/alert.store';
 import { useTransferenciasVoluntariasStore } from '@/stores/transferenciasVoluntarias.store';
 
@@ -14,7 +14,7 @@ const { chamadasPendentes, erro, lista} = storeToRefs(transferenciasVoluntarias)
 const router = useRouter();
 const route = useRoute();
 const props = defineProps({
-  tipoId: {
+  transferenciaId: {
     type: Number,
     default: 0,
   },
@@ -22,36 +22,40 @@ const props = defineProps({
 
 const alertStore = useAlertStore();
 
-async function onSubmit(values) {
+async function onSubmit(_, { controlledValues }) {
+  console.log(controlledValues)
+  console.log(_)
   try {
     let r;
-    const msg = props.tipoId
+    const msg = props.transferenciaId
       ? 'Dados salvos com sucesso!'
       : 'Item adicionado com sucesso!';
 
-    if (props.tipoId) {
-      r = await transferenciasVoluntarias.salvarItem(values, props.tipoId);
+    if (props.transferenciaId) {
+      r = await transferenciasVoluntarias.salvarItem(controlledValues, props.transferenciaId);
     } else {
-      r = await transferenciasVoluntarias.salvarItem(values);
+      r = await transferenciasVoluntarias.salvarItem(controlledValues);
     }
     if (r) {
       alertStore.success(msg);
       transferenciasVoluntarias.$reset();
-      router.push({ name: 'tipoDeTrasferenciaListar' });
+      router.push({ name: 'TransferenciaDistribuicaoDeRecursosCriar' });
     }
   } catch (error) {
     alertStore.error(error);
   }
 }
 
-if (props.tipoId) {
-  transferenciasVoluntarias.buscarTudo(props.tipoId);
+if (props.transferenciaId) {
+  transferenciasVoluntarias.buscarItem(props.transferenciaId);
 }
 </script>
 
 <template>
   <div class="flex spacebetween center mb2">
     <h1>{{ route?.meta?.título || 'Formulário de registro' }}</h1>
+    <hr class="ml2 f1">
+    <CheckClose />
   </div>
 
   <div class="flex spacebetween center mb1">
@@ -73,10 +77,10 @@ if (props.tipoId) {
           <option value="">
             Selecionar
           </option>
-          <option value="true">
+          <option :value="true">
             Sim
           </option>
-          <option value="false ">
+          <option :value="false ">
             Não
           </option>
         </Field>
@@ -88,19 +92,19 @@ if (props.tipoId) {
     <div class="flex g2 mb1">
       <div class="f1">
         <LabelFromYup name="valor_contrapartida" :schema="schema" />
-        <Field name="valor_contrapartida" type="text" class="inputtext light mb1" />
+        <Field name="valor_contrapartida" type="text" class="inputtext light mb1" placeholder="R$ 000.000.000.000,00"/>
         <ErrorMessage class="error-msg mb1" name="valor_contrapartida" />
       </div>
       <div class="f1">
         <LabelFromYup name="dotacao" :schema="schema" />
-        <Field name="dotacao" type="text" class="inputtext light mb1" />
+        <Field name="dotacao" type="text" class="inputtext light mb1" placeholder="16.24.12.306.3016.2.873.33903900.00"/>
         <ErrorMessage class="error-msg mb1" name="dotacao" />
       </div>
     </div>
     <div class="flex g2 mb1">
       <div class="f1">
         <LabelFromYup name="valor_total" :schema="schema" />
-        <Field name="valor_total" type="text" class="inputtext light mb1" />
+        <Field name="valor_total" type="text" class="inputtext light mb1" placeholder="R$ 000.000.000.000,00"/>
         <ErrorMessage class="error-msg mb1" name="valor_total" />
       </div>
       <div class="f1">
@@ -191,17 +195,4 @@ if (props.tipoId) {
     </div>
   </div>
 </template>
-
-
-<style scoped>
-  h1{
-    font-size: 64px;
-    color: #233B5C;
-    }
-
-  .title {
-    color: #B8C0CC;
-    font-size: 20px;
-  }
-</style>
 
