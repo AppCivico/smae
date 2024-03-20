@@ -29,7 +29,7 @@ tranferenciasVoluntarias.buscarTudo();
 </script>
 <template>
   <div class="flex spacebetween center mb2">
-    <h1>{{ route?.meta?.título || 'Tipo de Trasferência' }}</h1>
+    <h1>{{ route?.meta?.título || 'Tipo de Transferência' }}</h1>
     <hr class="ml2 f1">
     <router-link :to="{ name: 'TransferenciasVoluntariaCriar' }" class="btn big ml1">
       Novo Formulário de registro
@@ -80,10 +80,10 @@ tranferenciasVoluntarias.buscarTudo();
           {{ item.esfera }}
         </td>
         <td>
-          {{ item.tipo_id }}
+          {{ item.tipo.nome }}
         </td>
         <td>
-          {{ item.partido_id }}
+          {{ item.partido }}
         </td>
         <td>
           {{ item.ano }}
