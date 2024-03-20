@@ -1,5 +1,6 @@
 <script setup>
 import ItensRealizado from '@/components/orcamento/ItensRealizado.vue';
+import ListaDeCompartilhamentos from '@/components/orcamento/ListaDeCompartilhamentos.vue';
 import { execuçãoOrçamentária as schema } from '@/consts/formSchemas';
 import { useAlertStore } from '@/stores/alert.store';
 import { useDotaçãoStore } from '@/stores/dotacao.store.ts';
@@ -451,6 +452,16 @@ export default {
           </div>
         </div>
       </template>
+
+      <ListaDeCompartilhamentos
+        v-if="$route.meta.entidadeMãe === 'meta'"
+        :ano="ano"
+        :pdm="activePdm.id"
+        :dotação="currentEdit.dotacao"
+        :processo="currentEdit.processo"
+        :nota-empenho="currentEdit.nota_empenho"
+        class="mb1"
+      />
 
       <table
         v-if="respostasof.projeto_atividade != undefined"
