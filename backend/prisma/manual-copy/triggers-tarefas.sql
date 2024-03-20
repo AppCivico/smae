@@ -349,38 +349,6 @@ BEGIN
         (v_realizado_duracao is DISTINCT from realizado_duracao)
     );
 
-
-    IF (v_projeto_id IS NOT NULL) THEN
-        -- isso aqui provavelmente vai mudar mais pra frente, mas por enquanto, vamos atualizar o projeto tbm
-        -- nem todos os campos do projeto vão sofrer alteração pela trigger
-        -- alguns campos poderíamos inclusive apagar, e ir buscar através do join, mas para beneficiar o
-        -- o processo de migração, vou deixar na tabela por enquanto
-        UPDATE projeto p
-        SET
-            previsao_inicio = v_previsao_inicio,
-            realizado_inicio = v_realizado_inicio,
-            previsao_termino = v_previsao_termino,
-            realizado_termino = v_realizado_termino,
-            previsao_custo = v_previsao_custo,
-            realizado_custo = v_realizado_custo,
-            previsao_duracao = v_previsao_duracao,
-            realizado_duracao = v_realizado_duracao,
-            percentual_concluido = round(v_percentual_concluido * 100.0)
-
-        WHERE p.id = v_projeto_id
-        AND (
-            (v_previsao_inicio is DISTINCT from previsao_inicio) OR
-            (v_realizado_inicio is DISTINCT from realizado_inicio) OR
-            (v_previsao_termino is DISTINCT from previsao_termino) OR
-            (v_realizado_termino is DISTINCT from realizado_termino) OR
-            (v_previsao_custo is DISTINCT from previsao_custo) OR
-            (v_realizado_custo is DISTINCT from realizado_custo) OR
-            (v_previsao_duracao is DISTINCT from previsao_duracao) OR
-            (round(v_percentual_concluido * 100.0) is DISTINCT from percentual_concluido) OR
-            (v_realizado_duracao is DISTINCT from realizado_duracao)
-        );
-    END IF;
-
     return '';
 END
 $$

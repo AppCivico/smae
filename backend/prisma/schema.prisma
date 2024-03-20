@@ -2860,26 +2860,8 @@ model Projeto {
     previsao_termino DateTime?         @db.Date()
     previsao_duracao Int?
 
-    // calculado pelo cronograma
-    realizado_inicio  DateTime? @db.Date()
-    realizado_termino DateTime? @db.Date()
-    realizado_duracao Int?
-    realizado_custo   Float?
-
     ano_orcamento Int[] @default([])
 
-    projecao_termino DateTime? @db.Date()
-
-    tolerancia_atraso Int     @default(0) // em dias
-    em_atraso         Boolean @default(false)
-    atraso            Int?
-
-    percentual_concluido Int? // calculado
-
-    // campos para relatorios, calculados via triggers ou que precisam
-    // de mudanças
-    percentual_atraso Int?
-    status_cronograma String?
     risco_maximo      String?
     qtde_riscos       Int     @default(0)
 
@@ -2991,8 +2973,6 @@ model Projeto {
     ProjetoRelatorioFila      ProjetoRelatorioFila[]
     ProjetoNumerosSequenciais ProjetoNumeroSequencial[]
 
-    // data em que o sistema deve novamente calcular os atrasos automaticamente
-    tarefas_proximo_recalculo DateTime                   @default(now())
     MetaOrcamento             OrcamentoPrevisto[]
     OrcamentoPlanejado        OrcamentoPlanejado[]
     OrcamentoRealizado        OrcamentoRealizado[]

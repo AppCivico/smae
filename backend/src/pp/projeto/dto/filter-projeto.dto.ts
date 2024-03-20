@@ -41,7 +41,7 @@ export class FilterProjetoDto {
     /**
      * portfolio_id
      **/
-    @IsOptional()
+    // @IsOptional() // n pode ser opcional enquanto n remover o exception do join do port compartilhado
     @IsNumber()
     @Transform((a: TransformFnParams) => (a.value === null ? null : +a.value))
     portfolio_id?: number;

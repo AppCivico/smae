@@ -1,2 +1,2 @@
 -- AlterTable
-ALTER TABLE "Transferencia" ADD COLUMN     "cargo" "ParlamentarCargo";
+ALTER TABLE "transferencia" ADD COLUMN     "cargo" "ParlamentarCargo";
