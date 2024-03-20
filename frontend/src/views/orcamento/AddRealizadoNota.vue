@@ -8,7 +8,7 @@ import { useMetasStore } from '@/stores/metas.store';
 import { useOrcamentosStore } from '@/stores/orcamentos.store';
 import { useProjetosStore } from '@/stores/projetos.store.ts';
 import { storeToRefs } from 'pinia';
-import { Field, Form, useForm } from 'vee-validate';
+import { Field, useForm } from 'vee-validate';
 import { ref, toRaw, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import * as Yup from 'yup';
