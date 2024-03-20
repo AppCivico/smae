@@ -35,8 +35,6 @@ const props = defineProps({
 const alertStore = useAlertStore();
 
 async function onSubmit(_, { controlledValues }) {
-  console.log(controlledValues)
-  console.log(_)
   try {
     let r;
     const msg = props.transferenciaId
@@ -80,6 +78,8 @@ iniciar()
 <template>
   <div class="flex spacebetween center mb2">
     <h1>{{ route?.meta?.título || 'Formulário de registro' }}</h1>
+    <hr class="ml2 f1">
+    <CheckClose />
   </div>
 
   <div class="flex spacebetween center mb1">
@@ -468,17 +468,4 @@ iniciar()
     </div>
   </div>
 </template>
-
-
-<style scoped>
-  h1{
-    font-size: 64px;
-    color: #233B5C;
-    }
-
-  .title {
-    color: #B8C0CC;
-    font-size: 20px;
-  }
-</style>
 
