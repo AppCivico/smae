@@ -1,5 +1,6 @@
 <script setup>
 import ItensRealizado from '@/components/orcamento/ItensRealizado.vue';
+import ListaDeCompartilhamentos from '@/components/orcamento/ListaDeCompartilhamentos.vue';
 import patterns from '@/consts/patterns';
 import formatProcesso from '@/helpers/formatProcesso';
 import { useAlertStore } from '@/stores/alert.store';
@@ -272,6 +273,15 @@ watch(currentEdit, (novosValores) => {
         name="projeto_id"
         type="hidden"
         :value="$route.params.projetoId"
+      />
+
+      <ListaDeCompartilhamentos
+        v-if="$route.meta.entidadeMãe === 'meta' && respostasof.length && values.dotacao"
+        :ano="ano"
+        :pdm="activePdm.id"
+        :dotação="values.dotacao"
+        :processo="values.processo"
+        class="mb1"
       />
 
       <template v-if="respostasof.length && values.dotacao">
