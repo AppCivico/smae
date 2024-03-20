@@ -1,20 +1,26 @@
 import toFloat from '@/helpers/toFloat';
 
-export default (itens = []) => {
-  const itensComValoresConvertidosEmNúmeros = itens.map((x) => ({
-    ...x,
-    valor_empenho: x.valor_empenho !== null && typeof x.valor_empenho !== 'undefined'
-      ? toFloat(x.valor_empenho) : null,
-    valor_liquidado: x.valor_liquidado !== null && typeof x.valor_liquidado !== 'undefined'
-      ? toFloat(x.valor_liquidado) : null,
-  }));
+export default (itens = []) => itens.reduce((acc, cur) => (acc.mês > cur.mês
+  ? acc
+  : {
+    mês: Number(cur.mes),
 
-  return {
-    empenho: itensComValoresConvertidosEmNúmeros
-      .filter((x) => x.valor_empenho !== null)
-      .sort((a, b) => b.mes - a.mes)?.[0]?.valor_empenho || 0,
-    liquidação: itensComValoresConvertidosEmNúmeros
-      .filter((x) => x.valor_liquidado !== null)
-      .sort((a, b) => b.mes - a.mes)?.[0]?.valor_liquidado || 0,
-  };
-};
+    percentualEmpenho: cur.percentual_empenho !== undefined
+      && cur.percentual_empenho !== null
+      ? toFloat(cur.percentual_empenho)
+      : null,
+    empenho: cur.valor_empenho !== undefined
+      && cur.valor_empenho !== null
+      ? toFloat(cur.valor_empenho)
+      : null,
+
+    percentualLiquidação: cur.percentual_liquidado !== undefined
+      && cur.percentual_liquidado !== null
+      ? toFloat(cur.percentual_liquidado)
+      : null,
+
+    liquidação: cur.valor_liquidado !== undefined
+        && cur.valor_liquidado !== null
+      ? toFloat(cur.valor_liquidado)
+      : null,
+  }), {});
