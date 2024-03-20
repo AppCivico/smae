@@ -112,16 +112,15 @@ async function buscarCompartilhamentos(pdm, ano, dotação, extras) {
     case !pdm:
     case !ano:
     case !dotação:
-      prontaParaConsulta.value = false;
+      compartilhamentos.value = [];
       return;
 
     case !patterns.dotação.test(dotação):
     case !patterns.dotaçãoComComplemento.test(dotação):
-      prontaParaConsulta.value = false;
+      compartilhamentos.value = [];
       return;
 
     default:
-      prontaParaConsulta.value = true;
       params = { pdm_id: pdm, ano_referencia: ano, dotacao: dotação };
       break;
   }
@@ -155,7 +154,7 @@ watch(props, (novosValores) => {
 </script>
 <template>
   <div
-    v-if="prontaParaConsulta"
+    v-if="chamadaPendente || compartilhamentos.length || erro"
     class="flex flexwrap g1 center"
   >
     <LoadingComponent
@@ -166,17 +165,28 @@ watch(props, (novosValores) => {
     </LoadingComponent>
     <template v-else>
       <svg
+        v-if="compartilhamentos.length"
         width="24"
         height="24"
         color="#F2890D"
       ><use xlink:href="#i_alert" /></svg>
 
       <p class="mb0">
-        Essa dotação possui <strong>{{ compartilhamentos.length }}</strong>
-        compartilhamentos.
+        <template
+          v-if="compartilhamentos.length"
+        >
+          Essa dotação possui <strong>{{ compartilhamentos.length }}</strong>
+          compartilhamentos.
+        </template>
+        <template
+          v-else
+        >
+          Essa dotação não está em uso em outros orçamentos.
+        </template>
       </p>
 
       <button
+        v-if="compartilhamentos.length"
         type="button"
         class="like-a__text addlink"
         aria-label="exibir"
