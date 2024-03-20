@@ -146,28 +146,44 @@ watch(props, (novosValores) => {
 </script>
 <template>
   <div class="flex flexwrap g1 center">
-    <svg
-      width="24"
-      height="24"
-      color="#F2890D"
-    ><use xlink:href="#i_alert" /></svg>
-
-    <p class="mb0">
-      Essa dotação possui <strong>{{ compartilhamentos.length }}</strong>
-      compartilhamentos.
-    </p>
-
-    <button
-      type="button"
-      class="like-a__text addlink"
-      aria-label="exibir"
-      @click="diálogoAberto = true"
+    <LoadingComponent
+      v-if="chamadaPendente"
+      class="fb100 horizontal"
     >
+      Consultando dotação
+    </LoadingComponent>
+    <template v-else>
       <svg
-        width="20"
-        height="20"
-      ><use xlink:href="#i_+" /></svg><span>Ver detalhes</span>
-    </button>
+        width="24"
+        height="24"
+        color="#F2890D"
+      ><use xlink:href="#i_alert" /></svg>
+
+      <p class="mb0">
+        Essa dotação possui <strong>{{ compartilhamentos.length }}</strong>
+        compartilhamentos.
+      </p>
+
+      <button
+        type="button"
+        class="like-a__text addlink"
+        aria-label="exibir"
+        @click="diálogoAberto = true"
+      >
+        <svg
+          width="20"
+          height="20"
+        ><use xlink:href="#i_+" /></svg><span>Ver detalhes</span>
+      </button>
+    </template>
+
+    <ErrorComponent
+      v-if="erro"
+      class="fb100"
+    >
+      {{ erro }}
+    </ErrorComponent>
+
     <SmallModal
       v-if="diálogoAberto"
     >
