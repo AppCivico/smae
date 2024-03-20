@@ -151,7 +151,11 @@ export default {
         type="hidden"
         :value="$route.params.projetoId"
       />
-      <div v-else-if="Object.keys(respostasof).length && ! respostasof.error">
+      <div
+        v-else-if="Object.keys(respostasof).length
+          && !respostasof.error
+          && !respostasof.loading"
+      >
         <hr class="mt2 mb2">
         <label class="label">Vincular dotação<span class="tvermelho">*</span></label>
 
@@ -220,7 +224,7 @@ export default {
       </div>
 
       <ItensRealizado
-        v-if="Object.keys(respostasof).length && ! respostasof.error"
+        v-if="Object.keys(respostasof).length && !respostasof.error && !respostasof.loading"
         v-model="values.itens"
         :respostasof="respostasof"
         name="itens"
