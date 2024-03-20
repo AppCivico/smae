@@ -1,6 +1,7 @@
 <script setup>
 import CampoDeDotacao from '@/components/orcamento/CampoDeDotacao.vue';
 import ItensRealizado from '@/components/orcamento/ItensRealizado.vue';
+import ListaDeCompartilhamentos from '@/components/orcamento/ListaDeCompartilhamentos.vue';
 import { orçamentoRealizado as schema } from '@/consts/formSchemas';
 import { useAlertStore } from '@/stores/alert.store';
 import { useMetasStore } from '@/stores/metas.store';
@@ -143,6 +144,16 @@ export default {
         v-model:respostasof="respostasof"
         v-model:complemento="complemento"
         v-model="dota"
+      />
+
+      <ListaDeCompartilhamentos
+        v-if="$route.meta.entidadeMãe === 'meta' && Object.keys(respostasof).length
+          && !respostasof.error
+          && !respostasof.loading"
+        :ano="ano"
+        :pdm="activePdm.id"
+        :dotação="dota"
+        class="mb1"
       />
 
       <Field
