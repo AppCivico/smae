@@ -132,8 +132,10 @@ export class TransferenciaService {
             },
             select: {
                 id: true,
+                identificador: true,
                 ano: true,
                 objeto: true,
+                esfera: true,
                 detalhamento: true,
                 critico: true,
                 clausula_suspensiva: true,
@@ -142,6 +144,22 @@ export class TransferenciaService {
                 observacoes: true,
                 programa: true,
                 pendente_preenchimento_valores: true,
+                valor: true,
+
+                tipo: {
+                    select: {
+                        id: true,
+                        nome: true,
+                    },
+                },
+
+                partido: {
+                    select: {
+                        id: true,
+                        sigla: true,
+                    },
+                },
+
                 orgao_concedente: {
                     select: {
                         id: true,

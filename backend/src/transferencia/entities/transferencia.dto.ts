@@ -1,6 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { ParlamentarCargo, TransferenciaInterface, TransferenciaTipoEsfera } from '@prisma/client';
 import { Decimal } from '@prisma/client/runtime/library';
+import { IdNomeDto } from 'src/common/dto/IdNome.dto';
 import { IdSigla, IdSiglaDescricao } from 'src/common/dto/IdSigla.dto';
 import { ParlamnetarIdNomes } from 'src/parlamentar/entities/parlamentar.entity';
 import { TipoDocumentoDto } from 'src/tipo-documento/entities/tipo-documento.entity';
@@ -8,6 +9,10 @@ import { TipoDocumentoDto } from 'src/tipo-documento/entities/tipo-documento.ent
 export class TransferenciaDto {
     id: number;
     ano: number | null;
+    identificador: string;
+    valor: Decimal | null;
+    partido: IdSigla | null;
+    tipo: IdNomeDto | null;
     objeto: string;
     detalhamento: string | null;
     critico: boolean;
@@ -17,6 +22,8 @@ export class TransferenciaDto {
     observacoes: string | null;
     programa: string | null;
     pendente_preenchimento_valores: boolean;
+    @ApiProperty({ enum: TransferenciaTipoEsfera, enumName: 'TransferenciaTipoEsfera' })
+    esfera: TransferenciaTipoEsfera;
 
     orgao_concedente: IdSiglaDescricao;
     secretaria_concedente: IdSiglaDescricao;
