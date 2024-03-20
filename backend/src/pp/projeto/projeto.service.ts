@@ -1052,6 +1052,7 @@ export class ProjetoService {
                 portfolio: {
                     ...{ ...projeto.portfolio, orgaos: undefined },
                 },
+                TarefaCronograma: undefined,
                 grupo_portfolio: projeto.ProjetoGrupoPortfolio.map((r) => r.grupo_portfolio_id),
 
                 previsao_custo: tarefaCrono?.previsao_custo ?? projeto.previsao_custo ?? null,
