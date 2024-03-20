@@ -313,6 +313,8 @@ model Pessoa {
     view_pessoa_espectador_de_painel_externo view_pessoa_espectador_de_painel_externo?
     view_pessoa_coordenador_responsavel_cp   view_pessoa_coordenador_responsavel_cp?
     LogGenerico                              LogGenerico[]
+    TarefaCronogramaQCriei                   TarefaCronograma[]                        @relation("criador")
+    TarefaCronogramaQRemovi                  TarefaCronograma[]                        @relation("removedor")
 
     @@index([email])
     @@map("pessoa")
@@ -2978,7 +2980,7 @@ model Projeto {
     licoes_aprendidas     ProjetoLicaoAprendida[] // só na execucao
     fonte_recursos        ProjetoFonteRecurso[] // sempre
     documentos            ProjetoDocumento[] // sempre
-    tarefas               Tarefa[] // depois de EmPlanejamento
+    TarefaCronograma      TarefaCronograma[] // depois de EmPlanejamento
     ProjetoRisco          ProjetoRisco[] //  depois de EmPlanejamento
     ProjetoAcompanhamento ProjetoAcompanhamento[] // depois de EmAcompanhamento
     orgaos_participantes  ProjetoOrgaoParticipante[] // sempre
@@ -3231,11 +3233,12 @@ model ProjetoNumeroSequencial {
 model Tarefa {
     id Int @id @default(autoincrement())
 
-    projeto_id    Int
+    tarefa_cronograma    TarefaCronograma @relation(fields: [tarefa_cronograma_id], references: [id])
+    tarefa_cronograma_id Int
+
     orgao_id      Int?
     tarefa_pai_id Int?
 
-    projeto    Projeto  @relation(fields: [projeto_id], references: [id])
     tarefa_pai Tarefa?  @relation("tarefa_pai", fields: [tarefa_pai_id], references: [id])
     filhos     Tarefa[] @relation("tarefa_pai")
     orgao      Orgao?   @relation(fields: [orgao_id], references: [id])
@@ -3292,7 +3295,7 @@ model Tarefa {
     RiscoTarefa RiscoTarefa[]
 
     @@index([tarefa_pai_id])
-    @@index([projeto_id, removido_em])
+    @@index([tarefa_cronograma_id, removido_em])
     @@index([tarefa_pai_id, removido_em])
     @@map("tarefa")
 }
@@ -3321,6 +3324,57 @@ model TarefaDependente {
     tarefas_dependente Tarefa @relation("ref_dependentes", fields: [dependencia_tarefa_id], references: [id])
 
     @@map("tarefa_dependente")
+}
+
+model TarefaCronograma {
+    id Int @id @default(autoincrement())
+
+    projeto_id       Int?
+    transferencia_id Int?
+
+    projeto       Projeto?       @relation(fields: [projeto_id], references: [id])
+    transferencia Transferencia? @relation(fields: [transferencia_id], references: [id])
+
+    // calculado pelo cronograma
+    previsao_inicio  DateTime? @db.Date()
+    previsao_termino DateTime? @db.Date()
+    previsao_duracao Int?
+
+    realizado_inicio  DateTime? @db.Date()
+    realizado_termino DateTime? @db.Date()
+    realizado_duracao Int?
+    realizado_custo   Float?
+
+    projecao_termino DateTime? @db.Date()
+
+    tolerancia_atraso Int     @default(0) // em dias
+    em_atraso         Boolean @default(false)
+    atraso            Int?
+
+    percentual_concluido Int? // calculado
+
+    percentual_atraso Int?
+    status_cronograma String?
+    previsao_custo    Float?
+
+    criado_em  DateTime?
+    criado_por Int?
+
+    removido_em  DateTime?
+    removido_por Int?
+
+    atualizado_em DateTime?
+
+    // data em que o sistema deve novamente calcular os atrasos automaticamente
+    tarefas_proximo_recalculo DateTime @default(now())
+
+    criador   Pessoa?  @relation("criador", fields: [criado_por], references: [id])
+    removedor Pessoa?  @relation("removedor", fields: [removido_por], references: [id])
+    Tarefa    Tarefa[]
+
+    @@index([projeto_id])
+    @@index([transferencia_id])
+    @@map("tarefa_cronograma")
 }
 
 model ProjetoRisco {
@@ -4601,11 +4655,14 @@ model Transferencia {
     removido_por   Int?
     removido_em    DateTime? @db.Timestamptz(6)
 
-    criador     Pessoa               @relation("Criador", fields: [criado_por], references: [id])
-    atualizador Pessoa?              @relation("Atualizador", fields: [atualizado_por], references: [id])
-    removedor   Pessoa?              @relation("Removedor", fields: [removido_por], references: [id])
-    anexos      TransferenciaAnexo[]
-    diretorios  Diretorio[]
+    criador          Pessoa               @relation("Criador", fields: [criado_por], references: [id])
+    atualizador      Pessoa?              @relation("Atualizador", fields: [atualizado_por], references: [id])
+    removedor        Pessoa?              @relation("Removedor", fields: [removido_por], references: [id])
+    anexos           TransferenciaAnexo[]
+    diretorios       Diretorio[]
+    TarefaCronograma TarefaCronograma[]
+
+    @@map("transferencia")
 }
 
 model TransferenciaAnexo {

@@ -200,3 +200,8 @@ export class FilterEAPDto {
     })
     formato?: GraphvizServiceFormat;
 }
+
+export class TarefaCronogramaInput {
+    projeto_id?: number;
+    transferencia_id?: number;
+}

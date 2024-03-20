@@ -12,20 +12,20 @@ export class TarefaUtilsService {
             numero: number;
         },
         prismaTx: Prisma.TransactionClient,
-        projetoId: number
+        tarefa_cronograma_id: number
     ) {
-        const numeroMaximo = await this.maxNumeroNivel(prismaTx, dto);
+        const maiorNumero = await this.maiorNumeroDoNivel(prismaTx, dto);
 
         // não faz sentido, já que sempre existe pelo menos a própria task que estava sendo removida
-        if (numeroMaximo == null) return;
+        if (maiorNumero == null) return;
 
         // se o numero é maior ou igual, ele já era o ultimo nível, então não precisa mexer em nada
-        if (dto.numero >= numeroMaximo) return;
+        if (dto.numero >= maiorNumero) return;
 
         await prismaTx.$executeRaw`update tarefa
             set numero = numero - 1
             where removido_em is null and
-            projeto_id = ${projetoId}::int and
+            tarefa_cronograma_id = ${tarefa_cronograma_id}::int and
             (CASE WHEN (${dto.tarefa_pai_id !== null ? 1 : 0}::int = 1::int)
                 THEN tarefa_pai_id = ${dto.tarefa_pai_id}::int
                 ELSE tarefa_pai_id IS NULL
@@ -40,10 +40,10 @@ export class TarefaUtilsService {
             numero: number;
         },
         prismaTx: Prisma.TransactionClient,
-        projetoId: number
+        tarefa_cronograma_id: number
     ): Promise<number> {
         let numero = dto.numero;
-        const numeroMaximo = await this.maxNumeroNivel(prismaTx, dto);
+        const numeroMaximo = await this.maiorNumeroDoNivel(prismaTx, dto);
 
         if (numeroMaximo == null) {
             // se não há registros, o nível é o primeiro sempre
@@ -53,7 +53,7 @@ export class TarefaUtilsService {
             await prismaTx.$executeRaw`update tarefa
                     set numero = numero + 1
                     where removido_em is null and
-                    projeto_id = ${projetoId}::int and
+                    tarefa_cronograma_id = ${tarefa_cronograma_id}::int and
                     (CASE WHEN (${dto.tarefa_pai_id !== null ? 1 : 0}::int = 1::int)
                         THEN tarefa_pai_id = ${dto.tarefa_pai_id}::int
                         ELSE tarefa_pai_id IS NULL
@@ -67,7 +67,7 @@ export class TarefaUtilsService {
         return numero;
     }
 
-    async maxNumeroNivel(
+    private async maiorNumeroDoNivel(
         prismaTx: Prisma.TransactionClient,
         dto: { tarefa_pai_id: number | null }
     ): Promise<number | null> {
@@ -78,11 +78,11 @@ export class TarefaUtilsService {
         return lookup._max.numero;
     }
 
-    async lockProjeto(prismaTx: Prisma.TransactionClient, projetoId: number) {
-        await prismaTx.$executeRaw`select id from projeto where id = ${projetoId}::int FOR UPDATE`;
+    async lockTarefaCrono(prismaTx: Prisma.TransactionClient, tarefa_cronograma_id: number) {
+        await prismaTx.$executeRaw`select id from tarefa_cronograma where id = ${tarefa_cronograma_id}::int FOR UPDATE`;
     }
 
-    async verifica_nivel_maximo(projetoId: number, nivel: number) {
+    async verifica_nivel_maximo_portfolio(projetoId: number, nivel: number) {
         const portConfig = await this.prisma.projeto.findFirstOrThrow({
             where: { id: projetoId },
             select: { portfolio: { select: { nivel_maximo_tarefa: true } } },
@@ -94,7 +94,7 @@ export class TarefaUtilsService {
             );
     }
 
-    async verifica_orgao(orgao_id: number) {
+    async verifica_orgao_existe(orgao_id: number) {
         const count = await this.prisma.orgao.count({
             where: { id: orgao_id, removido_em: null },
         });

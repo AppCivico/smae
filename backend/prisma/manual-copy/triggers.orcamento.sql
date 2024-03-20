@@ -294,8 +294,17 @@ EXECUTE FUNCTION f_tgr_update_soma_dotacao_realizado();
 CREATE OR REPLACE FUNCTION f_tgr_update_ano_projeto_trigger()
     RETURNS TRIGGER
     AS $$
+DECLARE
+ tmp INTEGER;
 BEGIN
-    PERFORM atualiza_ano_orcamento_projeto(new.projeto_id);
+
+    SELECT projeto_id into tmp
+    from tarefa_cronograma
+    where id = NEW.tarefa_cronograma_id;
+
+    if (tmp is not null) then
+        PERFORM atualiza_ano_orcamento_projeto(tmp);
+    end if;
 
     RETURN NEW;
 END;
