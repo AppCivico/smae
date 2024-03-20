@@ -42,7 +42,7 @@ const props = defineProps({
   },
 });
 
-const diálogoAberto = ref(true);
+const diálogoAberto = ref(false);
 const compartilhamentos = ref([]);
 const chamadaPendente = ref(false);
 const erro = ref(null);
