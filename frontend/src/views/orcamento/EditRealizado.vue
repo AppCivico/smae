@@ -493,6 +493,8 @@ export default {
       <div v-else>
         <label class="label">Vincular dotação<span class="tvermelho">*</span></label>
 
+        <pre v-ScrollLockDebug>activePdm.nivel_orcamento: {{ activePdm.nivel_orcamento }}</pre>
+
         <div
           v-for="m in singleMeta.children"
           :key="m.id"
@@ -557,6 +559,8 @@ export default {
           {{ errors.location }}
         </div>
       </div>
+
+      <pre v-ScrollLockDebug>values.itens:{{ values.itens }}</pre>
 
       <ItensRealizado
         v-model="values.itens"
