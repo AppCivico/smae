@@ -881,7 +881,7 @@ export const tipoDeTransferencia = object({
     .required(),
 })
 
-export const registroDeTransferencia = object({
+export const transferenciaDistribuicaoDeRecursos = object({
   empenho: string()
     .label('Empenho')
     .nullable()
@@ -902,9 +902,30 @@ export const registroDeTransferencia = object({
     .label('Valor total')
     .required()
     .nullable(),
+  objeto: string()
+    .label('Objeto/Empreendimento')
+    .max(50000)
+    .nullable()
+    .required(),
 })
 
-export const transferenciaDistribuicaoDeRecursos = object({
+export const registroDeTransferencia = object({
+  agencia_aceite: string()
+    .label('Agência da conta de aceite')
+    .nullable()
+    .required(),
+  agencia_fim: string()
+    .label('Agência da conta da secretaria fim')
+    .nullable()
+    .required(),
+  banco_aceite: string()
+    .label('Banco da conta de aceite')
+    .nullable()
+    .required(),
+  banco_fim: string()
+    .label('Banco da conta secretaria fim')
+    .nullable()
+    .required(),
   empenho: string()
     .label('Empenho')
     .nullable()
@@ -937,11 +958,6 @@ export const transferenciaDistribuicaoDeRecursos = object({
     .nullable(),
   gestor_contrato: string()
     .label('Gestor do Contrato')
-    .nullable()
-    .required(),
-  objeto: string()
-    .label('Objeto/Empreendimento')
-    .max(50000)
     .nullable()
     .required(),
 })
@@ -981,7 +997,7 @@ export const transferenciasVoluntarias = object({
     .nullable()
     .required(),
   demanda:string()
-    .label('Demanda')
+    .label('Número da Demanda')
     .nullable()
     .required(),
   identificador: string()

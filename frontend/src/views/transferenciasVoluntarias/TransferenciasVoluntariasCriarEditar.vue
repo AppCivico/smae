@@ -183,7 +183,7 @@ iniciar()
       </div>
     </div>
     <div class="flex g2 mb1">
-      <div class="f1">
+      <div class="halfInput f1">
         <LabelFromYup name="demanda" :schema="schema" />
         <Field name="demanda" type="text" class="inputtext light mb1" />
         <ErrorMessage class="error-msg mb1" name="demanda" />
@@ -369,19 +369,19 @@ iniciar()
       </div>
     </div>
 
-    <div class="f1">
+    <div class="f1 mb2">
       <LabelFromYup name="objeto" :schema="schema" />
-      <Field name="objeto" as="textarea" class="inputtext light mb1" />
+      <Field name="objeto" as="textarea" class="inputtext light mb1" rows="5"/>
       <ErrorMessage class="error-msg mb1" name="objeto" />
     </div>
 
-    <div class="f1">
+    <div class="f1 mb2">
       <LabelFromYup name="detalhamento" :schema="schema" />
-      <Field name="detalhamento" as="textarea" class="inputtext light mb1" />
+      <Field name="detalhamento" as="textarea" class="inputtext light mb1" rows="5"/>
       <ErrorMessage class="error-msg mb1" name="detalhamento" />
     </div>
 
-    <div class="f1">
+    <div class="f1 mb2 halfInput">
       <label class="label">Crítico <span class="tvermelho">*</span></label>
       <Field name="critico" as="select" class="inputtext light mb1"
       :class="{ 'error': errors.critico }">
@@ -435,7 +435,7 @@ iniciar()
       </div>
     </div>
 
-    <div class="f1">
+    <div class="f1 mb2">
       <LabelFromYup name="normativa" :schema="schema" />
       <Field name="normativa" type="text" class="inputtext light mb1" placeholder="Lei, IN, Portaria"/>
       <ErrorMessage class="error-msg mb1" name="normativa" />
@@ -443,7 +443,7 @@ iniciar()
 
     <div class="f1">
       <LabelFromYup name="observacoes" :schema="schema" />
-      <Field name="observacoes" as="textarea" class="inputtext light mb1" />
+      <Field name="observacoes" as="textarea" class="inputtext light mb1" rows="5"/>
       <ErrorMessage class="error-msg mb1" name="observacoes" />
     </div>
 
