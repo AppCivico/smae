@@ -33,7 +33,7 @@ import { RecordWithId } from '../../common/dto/record-with-id.dto';
 import { ProjetoService } from '../projeto/projeto.service';
 import { CheckDependenciasDto, CreateTarefaDto, FilterEAPDto, FilterPPTarefa } from './dto/create-tarefa.dto';
 import { UpdateTarefaDto, UpdateTarefaRealizadoDto } from './dto/update-tarefa.dto';
-import { DependenciasDatasDto, ListTarefaDto, TarefaDetailDto } from './entities/tarefa.entity';
+import { DependenciasDatasDto, ListTarefaProjetoDto, TarefaDetailDto } from './entities/tarefa.entity';
 import { TarefaService } from './tarefa.service';
 import { GraphvizContentTypeMap } from 'src/graphviz/graphviz.service';
 
@@ -63,7 +63,7 @@ export class TarefaController {
     ): Promise<RecordWithId> {
         const projeto = await this.projetoService.findOne(params.id, user, 'ReadWrite');
 
-        return await this.tarefaService.create(projeto.id, dto, user);
+        return await this.tarefaService.create({ projeto_id: projeto.id }, dto, user);
     }
 
     @Get(':id/tarefa')
@@ -74,12 +74,13 @@ export class TarefaController {
         @Param() params: FindOneParams,
         @Query() filter: FilterPPTarefa,
         @CurrentUser() user: PessoaFromJwt
-    ): Promise<ListTarefaDto> {
-        const tarefasProj = await this.tarefaService.findAll(params.id, user, filter);
+    ): Promise<ListTarefaProjetoDto> {
+        const tarefasProj = await this.tarefaService.findAll({ projeto_id: params.id }, user, filter);
 
         return {
-            ...tarefasProj,
-            portfolio: tarefasProj.projeto.portfolio,
+            linhas: tarefasProj.linhas,
+            projeto: tarefasProj.projeto!,
+            portfolio: tarefasProj.projeto!.portfolio,
         };
     }
 
@@ -95,9 +96,10 @@ export class TarefaController {
         @Res() res: Response
     ): Promise<void> {
         const formato = filter.formato ?? 'png';
-        const projeto = await this.projetoService.findOne(params.id, user, 'ReadOnly');
 
-        const imgStream = await this.tarefaService.getEap(projeto, formato);
+        const tarefaCronoId = await this.tarefaService.loadOrCreateByInput({ projeto_id: params.id }, user);
+
+        const imgStream = await this.tarefaService.getEap(tarefaCronoId, { projeto_id: params.id }, formato);
         res.type(GraphvizContentTypeMap[formato]);
 
         if (formato == 'pdf' || formato == 'svg')
@@ -115,8 +117,11 @@ export class TarefaController {
     @Roles(...roles, 'SMAE.espectador_de_projeto')
     @ApiResponse({ status: 200, description: 'Responde com Record<ID_TAREFA, HIERARQUIA_NO_CRONOGRAMA>' })
     async getTarefasHierarquia(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt) {
-        const projeto = await this.projetoService.findOne(params.id, user, 'ReadOnly');
-        return await this.tarefaService.tarefasHierarquia(projeto);
+        await this.projetoService.findOne(params.id, user, 'ReadOnly');
+
+        const tarefaCronoId = await this.tarefaService.loadOrCreateByInput({ projeto_id: params.id }, user);
+
+        return await this.tarefaService.tarefasHierarquia(tarefaCronoId);
     }
 
     @Get(':id/tarefa/:id2')
@@ -124,8 +129,7 @@ export class TarefaController {
     @ApiUnauthorizedResponse()
     @Roles(...roles, 'SMAE.espectador_de_projeto')
     async findOne(@Param() params: FindTwoParams, @CurrentUser() user: PessoaFromJwt): Promise<TarefaDetailDto> {
-        const projeto = await this.projetoService.findOne(params.id, user, 'ReadOnly');
-        return await this.tarefaService.findOne(projeto, params.id2, user);
+        return await this.tarefaService.findOne({ projeto_id: params.id }, params.id2, user);
     }
 
     @Patch(':id/tarefa/:id2')
@@ -156,11 +160,11 @@ export class TarefaController {
                 );
             }
 
-            return await this.tarefaService.update(projeto.id, params.id2, dto, user);
+            return await this.tarefaService.update({ projeto_id: projeto.id }, params.id2, dto, user);
         } else {
             const projeto = await this.projetoService.findOne(params.id, user, 'ReadWrite');
 
-            return await this.tarefaService.update(projeto.id, params.id2, dto, user);
+            return await this.tarefaService.update({ projeto_id: projeto.id }, params.id2, dto, user);
         }
     }
 
@@ -173,7 +177,7 @@ export class TarefaController {
     async remove(@Param() params: FindTwoParams, @CurrentUser() user: PessoaFromJwt) {
         const projeto = await this.projetoService.findOne(params.id, user, 'ReadWrite');
 
-        await this.tarefaService.remove(projeto.id, params.id2, user);
+        await this.tarefaService.remove({ projeto_id: projeto.id }, params.id2, user);
         return '';
     }
 

@@ -132,9 +132,22 @@ export class PPProjetoService implements ReportableService {
                 : null,
         };
 
-        const tarefasHierarquia = await this.tarefaService.tarefasHierarquia(projetoRow);
+        const tarefaCronoId = await this.prisma.tarefaCronograma.findFirst({
+            where: {
+                projeto_id: projetoRow.id,
+                removido_em: null,
+            },
+            select: { id: true },
+        });
 
-        const tarefasRows = await this.tarefaService.findAll(dto.projeto_id, undefined, {});
+        let tarefasHierarquia: Record<string, string> = {};
+
+        if (tarefaCronoId) tarefasHierarquia = await this.tarefaService.tarefasHierarquia(tarefaCronoId.id);
+
+        const tarefasRows = tarefaCronoId
+            ? await this.tarefaService.buscaLinhasRecalcProjecao(tarefaCronoId.id)
+            : { linhas: [] };
+
         const tarefasOut: RelProjetoCronogramaDto[] = tarefasRows.linhas.map((e) => {
             return {
                 hirearquia: tarefasHierarquia[e.id],
@@ -346,18 +359,22 @@ export class PPProjetoService implements ReportableService {
         }
 
         if (dados.detail && dados.detail.id) {
-            const eap = await this.tarefaService.getEap(
-                {
-                    id: dados.detail.id,
-                    nome: dados.detail.nome!,
+            const tarefaCronoId = await this.prisma.tarefaCronograma.findFirst({
+                where: {
+                    projeto_id: dados.detail.id,
+                    removido_em: null,
                 },
-                'svg'
-            );
-
-            out.push({
-                name: 'eap.svg',
-                buffer: await Stream2Buffer(eap),
+                select: { id: true },
             });
+
+            if (tarefaCronoId) {
+                const eap = await this.tarefaService.getEap(tarefaCronoId.id, { projeto_id: dados.detail.id }, 'svg');
+
+                out.push({
+                    name: 'eap.svg',
+                    buffer: await Stream2Buffer(eap),
+                });
+            }
         }
         return [
             {
