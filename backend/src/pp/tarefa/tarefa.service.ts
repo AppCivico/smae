@@ -266,7 +266,7 @@ export class TarefaService {
                 projeto_id: projeto.id,
                 removido_em: null,
             },
-            orderBy: [{ nivel: 'desc' }, { numero: 'asc' }],
+            orderBy: [{ nivel: 'desc' }, { numero: 'asc' }, { id: 'desc' }],
             select: {
                 id: true,
                 orgao: { select: { id: true, sigla: true, descricao: true } },
