@@ -1,6 +1,7 @@
 <script setup>
 import SmallModal from '@/components/SmallModal.vue';
 import months from '@/consts/months';
+import patterns from '@/consts/patterns';
 import dinheiro from '@/helpers/dinheiro';
 import requestS from '@/helpers/requestS.ts';
 import retornarQuaisOsRecentesDosItens from '@/helpers/retornarQuaisOsMaisRecentesDosItensDeOrcamento';
@@ -46,6 +47,7 @@ const diálogoAberto = ref(false);
 const compartilhamentos = ref([]);
 const chamadaPendente = ref(false);
 const erro = ref(null);
+const prontaParaConsulta = ref(false);
 
 const lista = computed(() => compartilhamentos.value
   .map((x) => {
@@ -110,9 +112,16 @@ async function buscarCompartilhamentos(pdm, ano, dotação, extras) {
     case !pdm:
     case !ano:
     case !dotação:
-      compartilhamentos.value = [];
+      prontaParaConsulta.value = false;
       return;
+
+    case !patterns.dotação.test(dotação):
+    case !patterns.dotaçãoComComplemento.test(dotação):
+      prontaParaConsulta.value = false;
+      return;
+
     default:
+      prontaParaConsulta.value = true;
       params = { pdm_id: pdm, ano_referencia: ano, dotacao: dotação };
       break;
   }
@@ -145,7 +154,10 @@ watch(props, (novosValores) => {
 }, { immediate: true });
 </script>
 <template>
-  <div class="flex flexwrap g1 center">
+  <div
+    v-if="prontaParaConsulta"
+    class="flex flexwrap g1 center"
+  >
     <LoadingComponent
       v-if="chamadaPendente"
       class="fb100 horizontal"
