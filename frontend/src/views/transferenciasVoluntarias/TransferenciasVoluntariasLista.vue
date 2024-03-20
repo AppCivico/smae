@@ -102,7 +102,7 @@ tranferenciasVoluntarias.buscarTudo();
           </button>
         </td>
         <td>
-          <router-link :to="{ name: 'TransferenciasVoluntariaEditar', params: { tipoId: item.id } }"
+          <router-link :to="{ name: 'TransferenciasVoluntariaEditar', params: { transferenciaId: item.id } }"
             class="tprimary">
             <svg width="20" height="20">
               <use xlink:href="#i_edit" />
