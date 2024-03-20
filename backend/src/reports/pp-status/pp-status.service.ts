@@ -32,8 +32,6 @@ export class PPStatusService implements ReportableService {
                 codigo: true,
                 nome: true,
                 previsao_custo: true,
-                realizado_custo: true,
-                em_atraso: true,
 
                 orgao_responsavel: {
                     select: {
@@ -44,6 +42,10 @@ export class PPStatusService implements ReportableService {
                 TarefaCronograma: {
                     where: { removido_em: null },
                     select: {
+                        em_atraso: true,
+                        realizado_custo: true,
+                        previsao_custo: true,
+
                         Tarefa: {
                             where: {
                                 nivel: 1,
@@ -80,10 +82,11 @@ export class PPStatusService implements ReportableService {
         const projetoStatusOut: RelProjetoStatusRelatorioDto[] = projetoRows.map((p) => {
             let cronograma: string;
             const acompanhamento = p.ProjetoAcompanhamento[0];
+            const tarefaCrono = p.TarefaCronograma[0] ? p.TarefaCronograma[0] : undefined;
 
             if (acompanhamento && acompanhamento.cronograma_paralisado) {
                 cronograma = 'Paralisado';
-            } else if (p.em_atraso) {
+            } else if (tarefaCrono?.em_atraso) {
                 cronograma = 'Atrasado';
             } else {
                 cronograma = 'Em dia';
@@ -94,16 +97,13 @@ export class PPStatusService implements ReportableService {
                 portfolio_id: p.portfolio_id,
                 codigo: p.codigo,
                 nome: p.nome,
-                previsao_custo: p.previsao_custo,
-                realizado_custo: p.realizado_custo,
+                previsao_custo: tarefaCrono?.previsao_custo ?? p.previsao_custo ?? null,
+                realizado_custo: tarefaCrono?.realizado_custo ?? null,
                 cronograma: cronograma,
 
-                orgao_responsavel_sigla: p.orgao_responsavel ? p.orgao_responsavel.sigla : null,
-
-                detalhamento_status: p.ProjetoAcompanhamento.length
-                    ? p.ProjetoAcompanhamento[0].detalhamento_status
-                    : null,
-                pontos_atencao: p.ProjetoAcompanhamento.length ? p.ProjetoAcompanhamento[0].pontos_atencao : null,
+                orgao_responsavel_sigla: p?.orgao_responsavel?.sigla ?? null,
+                detalhamento_status: acompanhamento?.detalhamento_status ?? null,
+                pontos_atencao: acompanhamento?.pontos_atencao ?? null,
 
                 tarefas: p.TarefaCronograma.length
                     ? p.TarefaCronograma.flatMap((r) => r.Tarefa)

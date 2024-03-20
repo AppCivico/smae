@@ -29,12 +29,12 @@ export class AcompanhamentoService {
                     where: { id: projeto_id },
                     select: {
                         portfolio: {
-                            select: { modelo_clonagem: true }
-                        }
-                    }
+                            select: { modelo_clonagem: true },
+                        },
+                    },
                 });
                 if (projetoPortfolio.portfolio.modelo_clonagem)
-                  throw new HttpException('Projeto pertence a Portfolio de modelo de clonagem', 400);
+                    throw new HttpException('Projeto pertence a Portfolio de modelo de clonagem', 400);
 
                 const now = new Date(Date.now());
 
@@ -440,8 +440,8 @@ export class AcompanhamentoService {
     }
 
     private async atualizaProjeto(prismaTx: Prisma.TransactionClient, projeto_id: number, now: Date) {
-        await prismaTx.projeto.update({
-            where: { id: projeto_id },
+        await prismaTx.tarefaCronograma.updateMany({
+            where: { projeto_id: projeto_id, removido_em: null },
             data: {
                 tarefas_proximo_recalculo: now,
             },

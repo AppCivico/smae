@@ -11,10 +11,10 @@ p.objetivo,
 p.origem_eh_pdm,
 p.origem_outro,
 p.publico_alvo,
-p.previsao_inicio,
-p.previsao_termino,
-p.previsao_duracao,
-p.previsao_custo,
+coalesce(tc.previsao_inicio, p.previsao_inicio) as previsao_inicio,
+coalesce(tc.previsao_termino, p.previsao_termino) as previsao_termino,
+coalesce(tc.previsao_duracao, p.previsao_duracao) as previsao_duracao,
+coalesce(tc.previsao_custo, p.previsao_custo) as previsao_custo,
 p.status,
 p.fase,
 p.arquivado,
@@ -36,9 +36,9 @@ p.reiniciado_em,
 p.reiniciado_por,
 p.iniciado_em,
 p.iniciado_por,
-p.realizado_inicio,
-p.realizado_termino,
-p.realizado_custo,
+tc.realizado_inicio,
+tc.realizado_termino,
+tc.realizado_custo,
 p.principais_etapas,
 p.resumo,
 p.em_planejamento_em,
@@ -64,17 +64,17 @@ p.terminado_em,
 p.terminado_por,
 p.validado_em,
 p.validado_por,
-p.atraso,
-p.realizado_duracao,
-p.em_atraso,
-p.tolerancia_atraso,
-p.projecao_termino,
-p.percentual_concluido,
-p.tarefas_proximo_recalculo,
-p.percentual_atraso,
+tc.atraso,
+tc.realizado_duracao,
+tc.em_atraso,
+tc.tolerancia_atraso,
+tc.projecao_termino,
+tc.percentual_concluido,
+tc.tarefas_proximo_recalculo,
+tc.percentual_atraso,
 p.qtde_riscos,
 p.risco_maximo,
-p.status_cronograma,
+tc.status_cronograma,
 p.ano_orcamento,
 case
 when p.status = 'Registrado' then  'Registrado'
@@ -87,8 +87,8 @@ when p.status = 'Suspenso' then  'Suspenso'
 when p.status = 'Fechado' then  'Concluído'
 end as "Status",
 
-case when previsao_custo > 0 then
-    round((realizado_custo::numeric / previsao_custo::numeric) * 100.0)
+case when coalesce(tc.previsao_custo, p.previsao_custo) > 0 then
+    round((tc.realizado_custo::numeric / coalesce(tc.previsao_custo, p.previsao_custo)::numeric) * 100.0)
 else null
 end as percentual_custo_realizado,
 
@@ -115,8 +115,9 @@ left join (
     from projeto p
     join portfolio po on po.id = p.portfolio_id
 ) po on po.projeto_id = p.id
+left join tarefa_cronograma tc ON tc.projeto_id = p.id AND tc.removido_em IS NULL
 where p.removido_em IS NULL
-group by p.id
+group by p.id, tc.id
 order by p.status, p.codigo;
 -- isso vai garantir a ordem do enum (Registrado, Selecionado, EmPlanejamento, Planejado, Validado, EmAcompanhamento, Suspenso, Fechado)
 -- e depois o código
@@ -126,21 +127,23 @@ order by p.status, p.codigo;
 CREATE OR REPLACE VIEW view_projeto_custo_categoria AS
 SELECT
     'Custo Realizado' AS categoria,
-    realizado_custo AS valor,
-    id
+    tc.realizado_custo AS valor,
+    p.id
 FROM
-    projeto
+    projeto p
+left join tarefa_cronograma tc ON tc.projeto_id = p.id AND tc.removido_em IS NULL
 WHERE
-    realizado_custo IS NOT NULL
+    tc.realizado_custo IS NOT NULL
 UNION ALL
 SELECT
     'Custo Previsto',
-    previsao_custo AS valor,
-    id
+    coalesce(tc.previsao_custo, p.previsao_custo) AS valor,
+    p.id
 FROM
-    projeto
+    projeto p
+left join tarefa_cronograma tc ON tc.projeto_id = p.id AND tc.removido_em IS NULL
 WHERE
-    previsao_custo IS NOT NULL;
+    coalesce(tc.previsao_custo, p.previsao_custo) IS NOT NULL;
 
 --------
 

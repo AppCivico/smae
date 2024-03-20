@@ -309,7 +309,6 @@ export class ProjetoService {
                         resumo: dto.resumo,
                         previsao_inicio: dto.previsao_inicio,
                         previsao_termino: dto.previsao_termino,
-                        tolerancia_atraso: dto.tolerancia_atraso,
 
                         origem_tipo: origem_tipo,
                         origem_outro: origem_outro,
@@ -352,6 +351,13 @@ export class ProjetoService {
                         eh_prioritario: portfolio.modelo_clonagem ? true : false,
                     },
                     select: { id: true },
+                });
+
+                await prismaTx.tarefaCronograma.create({
+                    data: {
+                        projeto_id: row.id,
+                        tolerancia_atraso: dto.tolerancia_atraso,
+                    },
                 });
 
                 const geoDto = new CreateGeoEnderecoReferenciaDto();
@@ -784,9 +790,6 @@ export class ProjetoService {
                 previsao_custo: true,
                 previsao_duracao: true,
                 previsao_termino: true,
-                realizado_inicio: true,
-                realizado_termino: true,
-                realizado_custo: true,
                 nao_escopo: true,
                 principais_etapas: true,
                 responsaveis_no_orgao_gestor: true,
@@ -795,12 +798,28 @@ export class ProjetoService {
                 secretario_executivo: true,
                 secretario_responsavel: true,
                 coordenador_ue: true,
-                atraso: true,
-                em_atraso: true,
-                tolerancia_atraso: true,
-                projecao_termino: true,
-                realizado_duracao: true,
-                percentual_concluido: true,
+
+                TarefaCronograma: {
+                    select: {
+                        previsao_custo: true,
+                        previsao_duracao: true,
+                        previsao_inicio: true,
+                        previsao_termino: true,
+
+                        atraso: true,
+                        em_atraso: true,
+                        projecao_termino: true,
+                        realizado_duracao: true,
+                        percentual_concluido: true,
+
+                        realizado_inicio: true,
+                        realizado_termino: true,
+                        realizado_custo: true,
+                        tolerancia_atraso: true,
+                        percentual_atraso: true,
+                        status_cronograma: true,
+                    },
+                },
 
                 portfolio: {
                     select: {
@@ -951,8 +970,7 @@ export class ProjetoService {
 
                 selecionado_em: true,
                 em_planejamento_em: true,
-                percentual_atraso: true,
-                status_cronograma: true,
+
                 ano_orcamento: true,
                 logradouro_tipo: true,
                 logradouro_nome: true,
@@ -1026,6 +1044,8 @@ export class ProjetoService {
             },
         });
 
+        const tarefaCrono = projeto.TarefaCronograma[0] ? projeto.TarefaCronograma[0] : undefined;
+
         return {
             ...{
                 ...{ ...projeto, ProjetoGrupoPortfolio: undefined },
@@ -1033,6 +1053,30 @@ export class ProjetoService {
                     ...{ ...projeto.portfolio, orgaos: undefined },
                 },
                 grupo_portfolio: projeto.ProjetoGrupoPortfolio.map((r) => r.grupo_portfolio_id),
+
+                previsao_custo: tarefaCrono?.previsao_custo ?? projeto.previsao_custo ?? null,
+                previsao_duracao: tarefaCrono?.previsao_duracao ?? projeto.previsao_duracao ?? null,
+                previsao_inicio: tarefaCrono?.previsao_inicio ?? projeto.previsao_inicio ?? null,
+                previsao_termino: tarefaCrono?.previsao_termino ?? projeto.previsao_termino ?? null,
+
+                previsao_calculada: tarefaCrono ? true : false,
+                // retorna os originais do projeto
+                previsao_custo_projeto: projeto.previsao_custo,
+                previsao_duracao_projeto: projeto.previsao_duracao,
+                previsao_inicio_projeto: projeto.previsao_inicio,
+                previsao_termino_projeto: projeto.previsao_termino,
+
+                atraso: tarefaCrono?.atraso ?? null,
+                em_atraso: tarefaCrono?.em_atraso ?? false,
+                projecao_termino: tarefaCrono?.projecao_termino ?? null,
+                realizado_duracao: tarefaCrono?.realizado_duracao ?? null,
+                percentual_concluido: tarefaCrono?.percentual_concluido ?? null,
+                realizado_inicio: tarefaCrono?.realizado_inicio ?? null,
+                realizado_termino: tarefaCrono?.realizado_termino ?? null,
+                realizado_custo: tarefaCrono?.realizado_custo ?? null,
+                tolerancia_atraso: tarefaCrono?.tolerancia_atraso ?? 0,
+                percentual_atraso: tarefaCrono?.percentual_atraso ?? null,
+                status_cronograma: tarefaCrono?.status_cronograma ?? null,
             },
             meta: meta,
             iniciativa: iniciativa,
@@ -1431,6 +1475,19 @@ export class ProjetoService {
                 });
             }
 
+            if (dto.tolerancia_atraso !== undefined) {
+                const feedback = await prismaTx.tarefaCronograma.updateMany({
+                    where: { projeto_id: projetoId, removido_em: null },
+                    data: {
+                        tolerancia_atraso: dto.tolerancia_atraso,
+                        tarefas_proximo_recalculo: new Date(),
+                    },
+                });
+                this.logger.verbose(
+                    `Repassando update de tolerancia_atraso= ${dto.tolerancia_atraso} para tarefaCronograma: ${feedback.count} updated rows`
+                );
+            }
+
             await prismaTx.projeto.update({
                 where: { id: projetoId },
                 data: {
@@ -1469,7 +1526,6 @@ export class ProjetoService {
                     secretario_executivo: dto.secretario_executivo,
                     secretario_responsavel: dto.secretario_responsavel,
                     coordenador_ue: dto.coordenador_ue,
-                    tolerancia_atraso: dto.tolerancia_atraso,
 
                     regiao_id: dto.regiao_id,
                     logradouro_cep: dto.logradouro_cep,
