@@ -261,7 +261,7 @@ watch(valorDoComplemento, (novoValor) => {
 }, { immediate: true });
 </script>
 <template>
-  <div class="flex center g2">
+  <div class="flex flexwrap center g2">
     <div class="f1">
       <label
         class="label"
@@ -303,7 +303,7 @@ watch(valorDoComplemento, (novoValor) => {
   </div>
   <template v-if="DotaçãoSegmentos[ano]?.atualizado_em">
     <label class="label mb1">Dotação orçamentária - por segmento</label>
-    <div class="flex g2 mb2">
+    <div class="flex flexwrap g2 mb2">
       <div class="f1">
         <label
           for="órgão"
@@ -455,7 +455,7 @@ watch(valorDoComplemento, (novoValor) => {
       </div>
     </div>
 
-    <div class="flex g2 mb2">
+    <div class="flex flexwrap g2 mb2">
       <div class="f1">
         <label
           class="label tc300"
@@ -533,7 +533,7 @@ watch(valorDoComplemento, (novoValor) => {
 
     <div
       v-if="props.complemento !== false"
-      class="flex g2 mb2"
+      class="flex flexwrap g2 mb2"
     >
       <div class="f1">
         <label
