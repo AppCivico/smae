@@ -71,11 +71,12 @@ const largurasDeCampo = {
   complemento: {
     complementoExercício: 1,
     complementoFonte: 3,
-    complementoAcompanhamento: 6,
+    complementoAcompanhamento: 4,
+    complementoOrigem: 1,
   },
   dotaçãoEComplemento: {
     apenasDotação: 36,
-    comComplemento: 46,
+    comComplemento: 48,
   },
 };
 
@@ -91,6 +92,7 @@ const fonte = ref('');
 const complementoExercício = ref('');
 const complementoFonte = ref('');
 const complementoAcompanhamento = ref('');
+const complementoOrigem = ref('');
 
 const valorDaDotação = computed(() => {
   const campos = [
@@ -110,7 +112,10 @@ const valorDaDotação = computed(() => {
 
 const valorDoComplemento = computed(() => {
   const campos = [
-    complementoExercício, complementoFonte, complementoAcompanhamento,
+    complementoExercício,
+    complementoFonte,
+    complementoAcompanhamento,
+    complementoOrigem,
   ];
   let valor = '';
 
@@ -132,7 +137,7 @@ const dotaçãoEComplemento = computed({
     let valorLimpo = String(valor).replace(/([^0-9*])/g, '');
 
     if (props.complemento !== false) {
-      valorLimpo = valorLimpo.slice(0, 35);
+      valorLimpo = valorLimpo.slice(0, 36);
     } else {
       valorLimpo = valorLimpo.slice(0, 27);
     }
@@ -202,9 +207,15 @@ const dotaçãoEComplemento = computed({
     }
 
     if (valorLimpo.length >= 31) {
-      complementoAcompanhamento.value = valorLimpo.slice(31, 35);
+      complementoAcompanhamento.value = valorLimpo.slice(31, 36);
     } else {
       complementoAcompanhamento.value = '';
+    }
+
+    if (valorLimpo.length >= 35) {
+      complementoOrigem.value = valorLimpo.slice(35, 36);
+    } else {
+      complementoOrigem.value = '';
     }
   },
 });
@@ -529,10 +540,7 @@ watch(valorDoComplemento, (novoValor) => {
           class="label tc300"
           for="complementoExercício"
         >
-          Exercício da Fonte de Recurso <span
-            v-if="complementoExercício || complementoFonte || complementoAcompanhamento"
-            class="tvermelho"
-          >*</span>
+          Exercício da Fonte de Recurso <span class="tvermelho">*</span>
         </label>
         <input
           id="complementoExercício"
@@ -552,10 +560,7 @@ watch(valorDoComplemento, (novoValor) => {
           class="label tc300"
           for="complementoFonte"
         >
-          Fonte <span
-            v-if="complementoExercício || complementoFonte || complementoAcompanhamento"
-            class="tvermelho"
-          >*</span>
+          Fonte <span class="tvermelho">*</span>
         </label>
         <input
           id="complementoFonte"
@@ -575,10 +580,7 @@ watch(valorDoComplemento, (novoValor) => {
           class="label tc300"
           for="complementoAcompanhamento"
         >
-          Código de Acompanhamento da Execução Orçamentária <span
-            v-if="complementoExercício || complementoFonte || complementoAcompanhamento"
-            class="tvermelho"
-          >*</span>
+          Acompanhamento da Execução Orçamentária <span class="tvermelho">*</span>
         </label>
         <input
           id="complementoAcompanhamento"
@@ -587,8 +589,27 @@ watch(valorDoComplemento, (novoValor) => {
           inputmode="numeric"
           :maxlength="largurasDeCampo.complemento.complementoAcompanhamento"
           :minlength="largurasDeCampo.complemento.complementoAcompanhamento"
-          patter="\d{3}\.\d"
+          pattern="\d{3}"
           name="complementoAcompanhamento"
+          @keypress="mascararCódigos"
+        >
+      </div>
+      <div class="f05">
+        <label
+          class="label tc300"
+          for="complementoOrigem"
+        >
+          Origem do Recurso <span class="tvermelho">*</span>
+        </label>
+        <input
+          id="complementoOrigem"
+          v-model="complementoOrigem"
+          class="inputtext light mb1"
+          inputmode="numeric"
+          :maxlength="largurasDeCampo.complemento.complementoOrigem"
+          :minlength="largurasDeCampo.complemento.complementoOrigem"
+          pattern="\d"
+          name="complementoOrigem"
           @keypress="mascararCódigos"
         >
       </div>
