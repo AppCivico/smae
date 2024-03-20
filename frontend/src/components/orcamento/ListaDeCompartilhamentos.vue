@@ -1,0 +1,288 @@
+<script setup>
+import SmallModal from '@/components/SmallModal.vue';
+import months from '@/consts/months';
+import dinheiro from '@/helpers/dinheiro';
+import requestS from '@/helpers/requestS.ts';
+import retornarQuaisOsRecentesDosItens from '@/helpers/retornarQuaisOsMaisRecentesDosItensDeOrcamento';
+import truncate from '@/helpers/truncate';
+import { computed, ref, watch } from 'vue';
+
+const baseUrl = `${import.meta.env.VITE_API_URL}`;
+
+const props = defineProps({
+  pdm: {
+    type: [
+      Number,
+      String,
+    ],
+    required: true,
+  },
+  ano: {
+    type: [
+      Number,
+      String,
+    ],
+    required: true,
+  },
+  dotação: {
+    type: String,
+    required: true,
+  },
+  processo: {
+    type: String,
+    default: '',
+  },
+  notaEmpenho: {
+    type: String,
+    default: '',
+  },
+  título: {
+    type: String,
+    default: '',
+  },
+});
+
+const diálogoAberto = ref(true);
+const compartilhamentos = ref([]);
+const chamadaPendente = ref(false);
+const erro = ref(null);
+
+const lista = computed(() => compartilhamentos.value
+  .map((x) => {
+    let prefixo = '';
+    let código = '';
+    let título = '';
+    let rota = '';
+
+    switch (true) {
+      case !!x.atividade:
+        prefixo = 'atividade';
+        código = x.atividade.codigo;
+        título = x.atividade.titulo;
+        rota = {
+          name: 'resumoDeAtividade',
+          params: {
+            atividade_id: x.atividade.id,
+          },
+        };
+        break;
+      case !!x.iniciativa:
+        prefixo = 'iniciativa';
+        código = x.iniciativa.codigo;
+        título = x.iniciativa.titulo;
+        rota = {
+          name: 'resumoDeIniciativa',
+          params: {
+            iniciativa_id: x.iniciativa.id,
+          },
+        };
+        break;
+      case !!x.meta:
+        prefixo = 'meta';
+        código = x.meta.codigo;
+        título = x.meta.titulo;
+        rota = {
+          name: 'meta',
+          params: {
+            meta_id: x.meta.id,
+          },
+        };
+        break;
+
+      default:
+        break;
+    }
+
+    return {
+      ...x,
+      prefixo,
+      código,
+      título,
+      rota,
+      maisRecentesDosItens: retornarQuaisOsRecentesDosItens(x.itens),
+    };
+  }));
+
+async function buscarCompartilhamentos(pdm, ano, dotação, extras) {
+  let params = {};
+
+  switch (true) {
+    case !pdm:
+    case !ano:
+    case !dotação:
+      compartilhamentos.value = [];
+      return;
+    default:
+      params = { pdm_id: pdm, ano_referencia: ano, dotacao: dotação };
+      break;
+  }
+
+  if (extras.processo) {
+    params.processo = extras.processo;
+  }
+
+  if (extras.notaEmpenho) {
+    params.nota_empenho = extras.notaEmpenho;
+  }
+
+  chamadaPendente.value = true;
+  try {
+    const r = await requestS.get(`${baseUrl}/orcamento-realizado/compartilhados-no-pdm`, params);
+
+    compartilhamentos.value = Array.isArray(r.linhas) ? r.linhas : r;
+  } catch (error) {
+    erro.value = error;
+  } finally {
+    chamadaPendente.value = false;
+  }
+}
+
+watch(props, (novosValores) => {
+  buscarCompartilhamentos(novosValores.pdm, novosValores.ano, novosValores.dotação, {
+    processo: novosValores.processo,
+    notaEmpenho: novosValores.notaEmpenho,
+  });
+}, { immediate: true });
+</script>
+<template>
+  <div class="flex flexwrap g1 center">
+    <svg
+      width="24"
+      height="24"
+      color="#F2890D"
+    ><use xlink:href="#i_alert" /></svg>
+
+    <p class="mb0">
+      Essa dotação possui <strong>{{ compartilhamentos.length }}</strong>
+      compartilhamentos.
+    </p>
+
+    <button
+      type="button"
+      class="like-a__text addlink"
+      aria-label="exibir"
+      @click="diálogoAberto = true"
+    >
+      <svg
+        width="20"
+        height="20"
+      ><use xlink:href="#i_+" /></svg><span>Ver detalhes</span>
+    </button>
+    <SmallModal
+      v-if="diálogoAberto"
+    >
+      <div class="flex spacebetween center mb2">
+        <h2>
+          {{ props.título || 'Compartilhamentos' }}
+        </h2>
+        <hr class="ml2 f1">
+
+        <CheckClose
+          :formulário-sujo="false"
+          :apenas-emitir="true"
+          @close="diálogoAberto = false"
+        />
+      </div>
+
+      <table class="tablemain">
+        <col>
+        <col>
+        <col>
+        <col class="col--percentagem">
+        <col>
+        <col class="col--percentagem">
+        <col>
+        <thead>
+          <tr>
+            <th />
+            <th />
+
+            <th
+              colspan="2"
+              class="tc"
+            >
+              Valor empenho
+            </th>
+            <th
+              colspan="2"
+              class="tc"
+            >
+              Valor liquidação
+            </th>
+          </tr>
+          <tr>
+            <th />
+            <th class="cell--number">
+              Mês
+            </th>
+
+            <th
+              class="cell--number"
+              title="Porcentagem"
+            >
+              %
+            </th>
+            <th class="cell--number">
+              R$
+            </th>
+            <th
+              class="cell--number"
+              title="Porcentagem"
+            >
+              %
+            </th>
+            <th class="cell--number">
+              R$
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr
+            v-for="(item) in lista"
+            :key="item.id"
+          >
+            <th>
+              <router-link
+                :title="item.título?.length > 36 ? item.título : undefined"
+                :to="item.rota"
+              >
+                {{ item.prefixo }} - {{ item.código }} - {{ truncate(item.título, 36) }}
+              </router-link>
+            </th>
+            <td class="cell--number">
+              {{ months[item.maisRecentesDosItens.mês - 1] || item.maisRecentesDosItens.mês }}
+            </td>
+            <td class="cell--number">
+              {{
+                item.maisRecentesDosItens.percentualEmpenho
+                  ? `${item.maisRecentesDosItens.percentualEmpenho}%`
+                  : '-'
+              }}
+            </td>
+            <td class="cell--number">
+              {{
+                item.maisRecentesDosItens.empenho
+                  ? dinheiro(item.maisRecentesDosItens.empenho)
+                  : '-'
+              }}
+            </td>
+            <td class="cell--number">
+              {{
+                item.maisRecentesDosItens.percentualLiquidação
+                  ? `${item.maisRecentesDosItens.percentualLiquidação}%`
+                  : '-'
+              }}
+            </td>
+            <td class="cell--number">
+              {{
+                item.maisRecentesDosItens.liquidação
+                  ? dinheiro(item.maisRecentesDosItens.liquidação)
+                  : '-'
+              }}
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </SmallModal>
+  </div>
+</template>
