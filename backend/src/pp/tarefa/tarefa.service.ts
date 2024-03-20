@@ -401,13 +401,15 @@ export class TarefaService {
 
         let max_term_planjeado: Date | undefined = undefined;
         let max_term_proj: DateTime | undefined = undefined;
-        for (const tarefa of tarefas) {
+
+        // Recursive function to calculate projections
+        const calculaProjecoes = (tarefa: TarefaItemProjetadoDto) => {
             // a tarefa tem que ter todas as datas de planejamento para funcionar
             if (!tarefa.inicio_planejado || !tarefa.duracao_planejado || !tarefa.termino_planejado) {
-                this.logger.warn(
+                console.warn(
                     `tarefa ${tarefa.id} sem inicio_planejado|duracao_planejado|termino_planejado, não será calculado projeção`
                 );
-                continue;
+                return;
             }
 
             if (tarefa.nivel == 1) {
@@ -431,17 +433,16 @@ export class TarefaService {
                 tarefa.projecao_termino = DateTime.fromJSDate(tarefa.termino_real, { zone: 'UTC' });
 
                 this.logger.debug(`tarefa ${tarefa.id} já finalizou`);
-                // acredito que vai precisar de mais um loop pra verificar se a data do parent tem filhos atrasados
-                // mas o filho em si acho que vai ficar com undefined mesmo
-                // tarefa.projecao_atraso = 0;
-                continue;
+                return;
             }
 
             // se não tem filhos (é folha, mesmo se for no nivel 1) OU
             // se a tarefa tem dependência, mas já iniciou, ela entra no algorítimo normal (soma da duração planejada)
             if (tarefa.n_filhos_imediatos == 0 && (tarefa.dependencias.length == 0 || tarefa.inicio_real)) {
                 // se não tem inicio real preenchido, considera que começou hj
-                tarefa.projecao_inicio = tarefa.inicio_real ? DateTime.fromJSDate(tarefa.inicio_real) : hoje;
+                tarefa.projecao_inicio = tarefa.inicio_real
+                    ? DateTime.fromJSDate(tarefa.inicio_real, { zone: 'UTC' })
+                    : hoje;
 
                 tarefa.projecao_termino = tarefa.projecao_inicio.plus({ days: tarefa.duracao_planejado - 1 });
                 this.logger.debug(
@@ -449,15 +450,18 @@ export class TarefaService {
                         tarefa.projecao_inicio.toJSDate()
                     )}, projecao_termino=${Date2YMD.toString(tarefa.projecao_termino.toJSDate())}`
                 );
+                return;
             }
-        }
 
-        // resolvendo as dependencias
-        for (const tarefa of tarefas) {
-            // filtra pra ficar só com quem tem dependencias
-            // e não terminou ainda (se já terminou, já temos a data de projeção no loop anterior
-            if (tarefa.dependencias.length === 0 || tarefa.n_filhos_imediatos !== 0 || tarefa.termino_real) continue;
+            // If the task has dependencies, recursively calculate the projections of its dependencies
+            for (const dependencia of tarefa.dependencias) {
+                const depTarefa = tarefas_por_id[dependencia.dependencia_tarefa_id];
+                if (!depTarefa) continue;
 
+                calculaProjecoes(depTarefa);
+            }
+
+            // After calculating the projections of the dependencies, calculate the projections of the current task
             let dataInicioMax: DateTime | undefined;
             let dataTerminoMax: DateTime | undefined;
 
@@ -471,31 +475,23 @@ export class TarefaService {
                 switch (dependencia.tipo) {
                     case TarefaDependenteTipo.termina_pro_inicio:
                         depDateInicio = depTarefa.termino_real
-                            ? DateTime.fromJSDate(depTarefa.termino_real)
-                            : depTarefa.projecao_termino
-                              ? depTarefa.projecao_termino
-                              : hoje;
+                            ? DateTime.fromJSDate(depTarefa.termino_real, { zone: 'UTC' })
+                            : depTarefa.projecao_termino;
                         break;
                     case TarefaDependenteTipo.inicia_pro_inicio:
                         depDateInicio = depTarefa.inicio_real
-                            ? DateTime.fromJSDate(depTarefa.inicio_real)
-                            : depTarefa.projecao_inicio
-                              ? depTarefa.projecao_inicio
-                              : hoje;
+                            ? DateTime.fromJSDate(depTarefa.inicio_real, { zone: 'UTC' })
+                            : depTarefa.projecao_inicio;
                         break;
                     case TarefaDependenteTipo.inicia_pro_termino:
                         depDateTermino = depTarefa.inicio_real
-                            ? DateTime.fromJSDate(depTarefa.inicio_real)
-                            : depTarefa.projecao_inicio
-                              ? depTarefa.projecao_inicio
-                              : hoje;
+                            ? DateTime.fromJSDate(depTarefa.inicio_real, { zone: 'UTC' })
+                            : depTarefa.projecao_inicio;
                         break;
                     case TarefaDependenteTipo.termina_pro_termino:
                         depDateTermino = depTarefa.termino_real
-                            ? DateTime.fromJSDate(depTarefa.termino_real)
-                            : depTarefa.projecao_termino
-                              ? depTarefa.projecao_termino
-                              : hoje;
+                            ? DateTime.fromJSDate(depTarefa.termino_real, { zone: 'UTC' })
+                            : depTarefa.projecao_termino;
                         break;
                 }
 
@@ -547,6 +543,11 @@ export class TarefaService {
             }
         }
 
+        // Calculate projections for all tasks
+        for (const tarefa of tarefas) {
+            calculaProjecoes(tarefa);
+        }
+
         // calculando projeção de quem tem filhos
         for (const tarefa of tarefas) {
             // filha quem não tem filho
@@ -554,7 +555,7 @@ export class TarefaService {
 
             // a tarefa tem que ter todas as datas de planejamento para funcionar
             if (!tarefa.inicio_planejado || !tarefa.duracao_planejado || !tarefa.termino_planejado) {
-                this.logger.warn(
+                console.warn(
                     `tarefa ${tarefa.id} sem inicio_planejado|duracao_planejado|termino_planejado, não será calculado projeção pelos filhos`
                 );
                 continue;
@@ -568,7 +569,7 @@ export class TarefaService {
             let atraso_max = -1;
             for (const filho of filhos) {
                 if (!filho.projecao_termino) {
-                    this.logger.debug(`tarefa ${tarefa.id}.filho.${filho.id}: projecao_termino vazia, pulando...`);
+                    console.debug(`tarefa ${tarefa.id}.filho.${filho.id}: projecao_termino vazia, pulando...`);
                     continue;
                 }
 
@@ -590,10 +591,12 @@ export class TarefaService {
                 )
                     tarefa.projecao_termino = filho.projecao_termino;
 
-                const d = filho.projecao_termino.diff(DateTime.fromJSDate(tarefa.termino_planejado)).as('days');
+                const d = filho.projecao_termino
+                    .diff(DateTime.fromJSDate(tarefa.termino_planejado, { zone: 'UTC' }))
+                    .as('days');
 
                 if (d > 0) {
-                    this.logger.debug(
+                    console.debug(
                         `tarefa ${tarefa.id}.filho.${filho.id}: projecao_termino: ${Date2YMD.toString(
                             filho.projecao_termino.toJSDate()
                         )}, tarefa(pai).termino_planejado: ${Date2YMD.toString(
@@ -604,7 +607,7 @@ export class TarefaService {
 
                     if (atraso_max < d) atraso_max = d;
                 } else {
-                    this.logger.debug(
+                    console.debug(
                         `tarefa ${tarefa.id}.filho.${filho.id}: projecao_termino: ${Date2YMD.toString(
                             filho.projecao_termino.toJSDate()
                         )}, tarefa(pai).termino_planejado: ${Date2YMD.toString(tarefa.termino_planejado)} => sem atraso`
@@ -613,22 +616,22 @@ export class TarefaService {
             }
 
             if (atraso_max > 0) {
-                this.logger.debug(`tarefa ${tarefa.id} - atraso estimado: ${atraso_max}`);
+                console.debug(`tarefa ${tarefa.id} - atraso estimado: ${atraso_max}`);
 
                 tarefa.projecao_atraso = atraso_max;
             } else {
-                this.logger.debug(`tarefa ${tarefa.id} - sem atraso`);
+                console.debug(`tarefa ${tarefa.id} - sem atraso`);
                 tarefa.projecao_atraso = 0;
             }
 
             if (projecao_inicio_min) {
                 tarefa.projecao_inicio = projecao_inicio_min;
             } else {
-                this.logger.warn(`tarefa ${tarefa.id} - faltando projeção de inicio`);
+                console.warn(`tarefa ${tarefa.id} - faltando projeção de inicio`);
             }
 
             if (tarefa.projecao_termino)
-                this.logger.debug(
+                console.debug(
                     `tarefa ${tarefa.id} - max projeção termino: ${Date2YMD.toString(
                         tarefa.projecao_termino.toJSDate()
                     )}`
@@ -759,7 +762,7 @@ export class TarefaService {
         }
 
         if (max_term_planjeado && max_term_proj) {
-            const d = max_term_proj.diff(DateTime.fromJSDate(max_term_planjeado)).as('days');
+            const d = max_term_proj.diff(DateTime.fromJSDate(max_term_planjeado, { zone: 'UTC' })).as('days');
             this.logger.debug(
                 `projeto max projecao_termino: ${Date2YMD.toString(
                     max_term_proj.toJSDate()
