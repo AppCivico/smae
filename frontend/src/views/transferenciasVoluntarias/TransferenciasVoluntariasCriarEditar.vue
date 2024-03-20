@@ -247,7 +247,7 @@ iniciar()
             :key="item"
             :value="item.id"
           >
-            {{ item.secretario_responsavel }}
+          {{ item.sigla }} - {{ truncate(item.descricao, 36) }}
           </option>
         </Field>
         <ErrorMessage

@@ -926,10 +926,6 @@ export const registroDeTransferencia = object({
     .label('Banco da conta secretaria fim')
     .nullable()
     .required(),
-  empenho: string()
-    .label('Empenho')
-    .nullable()
-    .required(),
   dotacao: string()
     .label('Dotacao')
     .nullable()
@@ -988,9 +984,11 @@ export const transferenciasVoluntarias = object({
     .nullable(),
   emenda: string()
     .label('Emenda')
+    .max(250)
     .nullable(),
   emenda_unitaria: string()
     .label('Emenda unitária')
+    .max(250)
     .nullable(),
   esfera: string()
     .label('Esfera')
