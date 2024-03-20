@@ -437,7 +437,7 @@ iniciar()
 
     <div class="f1">
       <LabelFromYup name="normativa" :schema="schema" />
-      <Field name="normativa" type="text" class="inputtext light mb1" />
+      <Field name="normativa" type="text" class="inputtext light mb1" placeholder="Lei, IN, Portaria"/>
       <ErrorMessage class="error-msg mb1" name="normativa" />
     </div>
 
