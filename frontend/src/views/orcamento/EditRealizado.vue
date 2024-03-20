@@ -60,7 +60,8 @@ const complemento = computed(() => {
     return {
       exercicio: partes[0],
       fonte: partes[1],
-      acompanhamento: `${partes[2]}.${partes[3]}`,
+      acompanhamento: partes[2],
+      origem: partes[3],
     };
   }
 
@@ -436,6 +437,15 @@ export default {
               class="inputtext light mb1 disabled"
               type="text"
               :value="complemento.acompanhamento"
+              disabled
+            >
+          </div>
+          <div class="f05">
+            <label class="label tc300">Origem do recurso</label>
+            <input
+              class="inputtext light mb1 disabled"
+              type="text"
+              :value="complemento.origem"
               disabled
             >
           </div>
