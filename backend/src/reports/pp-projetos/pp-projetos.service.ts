@@ -390,10 +390,10 @@ export class PPProjetosService implements ReportableService {
             projeto.objeto,
             projeto.objetivo,
             projeto.publico_alvo,
-            projeto.previsao_inicio,
-            projeto.previsao_termino,
-            projeto.previsao_duracao,
-            projeto.previsao_custo,
+            coalesce(tc.previsao_inicio, projeto.previsao_inicio) AS previsao_inicio,
+            coalesce(tc.previsao_termino, projeto.previsao_termino) AS previsao_termino,
+            coalesce(tc.previsao_duracao, projeto.previsao_duracao) AS previsao_duracao,
+            coalesce(tc.previsao_custo, projeto.previsao_custo) AS previsao_custo,
             projeto.escopo,
             projeto.nao_escopo,
             projeto.secretario_responsavel,
@@ -431,6 +431,7 @@ export class PPProjetosService implements ReportableService {
             o.sigla AS orgao_sigla,
             o.descricao AS orgao_descricao
         FROM projeto
+          LEFT JOIN tarefa_cronograma tc ON tc.projeto_id = projeto.id AND tc.removido_em IS NULL
           LEFT JOIN portfolio ON portfolio.id = projeto.portfolio_id
           LEFT JOIN projeto_fonte_recurso r ON r.projeto_id = projeto.id
           LEFT JOIN sof_entidades_linhas sof ON sof.codigo = r.fonte_recurso_cod_sof
@@ -459,10 +460,10 @@ export class PPProjetosService implements ReportableService {
             projeto.objeto,
             projeto.objetivo,
             projeto.publico_alvo,
-            projeto.previsao_inicio,
-            projeto.previsao_termino,
-            projeto.previsao_duracao,
-            projeto.previsao_custo,
+            coalesce(tc.previsao_inicio, projeto.previsao_inicio) AS previsao_inicio,
+            coalesce(tc.previsao_termino, projeto.previsao_termino) AS previsao_termino,
+            coalesce(tc.previsao_duracao, projeto.previsao_duracao) AS previsao_duracao,
+            coalesce(tc.previsao_custo, projeto.previsao_custo) AS previsao_custo,
             projeto.escopo,
             projeto.nao_escopo,
             projeto.secretario_responsavel,
@@ -500,6 +501,7 @@ export class PPProjetosService implements ReportableService {
             o.sigla AS orgao_sigla,
             o.descricao AS orgao_descricao
         FROM projeto
+        LEFT JOIN tarefa_cronograma tc ON tc.projeto_id = projeto.id AND tc.removido_em IS NULL
           JOIN portfolio_projeto_compartilhado ppc ON ppc.projeto_id = projeto.id
           LEFT JOIN portfolio ON portfolio.id = ppc.portfolio_id
           LEFT JOIN projeto_fonte_recurso r ON r.projeto_id = projeto.id
@@ -607,7 +609,7 @@ export class PPProjetosService implements ReportableService {
 
     private async queryDataCronograma(whereCond: WhereCond, out: RelProjetosCronogramaDto[]) {
         const sql = `SELECT
-            projeto.id AS projeto_id,
+            tc.projeto_id AS projeto_id,
             projeto.codigo AS projeto_codigo,
             projeto.atraso,
             resp.id AS responsavel_id,
@@ -633,8 +635,9 @@ export class PPProjetosService implements ReportableService {
                 WHERE td.tarefa_id = t.id
             ) as dependencias
             FROM projeto
+            LEFT JOIN tarefa_cronograma tc ON tc.projeto_id = p.id AND tc.removido_em IS NULL
             LEFT JOIN pessoa resp ON resp.id = projeto.responsavel_id
-            JOIN tarefa t ON t.projeto_id = projeto.id
+            JOIN tarefa t ON t.tarefa_cronograma_id = tc.id
             JOIN portfolio ON projeto.portfolio_id = portfolio.id
             ${whereCond.whereString}
         `;

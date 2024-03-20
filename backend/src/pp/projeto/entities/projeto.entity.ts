@@ -153,6 +153,13 @@ export class ProjetoDetailDto {
     previsao_custo: number | null;
     previsao_duracao: number | null;
     previsao_termino: Date | null;
+
+    previsao_inicio_projeto: Date | null;
+    previsao_custo_projeto: number | null;
+    previsao_duracao_projeto: number | null;
+    previsao_termino_projeto: Date | null;
+    previsao_calculada: boolean;
+
     projecao_termino: Date | null;
     percentual_concluido: number | null;
 
