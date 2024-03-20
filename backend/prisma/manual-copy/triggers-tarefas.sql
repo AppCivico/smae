@@ -149,12 +149,13 @@ BEGIN
 
     WITH _int AS (
         SELECT
-            extract('year' FROM previsao_inicio) AS ini,
-            extract('year' FROM coalesce(realizado_termino, previsao_termino, previsao_inicio)) AS fim
+            extract('year' FROM coalesce(tc.previsao_inicio, p.previsao_inicio)) AS ini,
+            extract('year' FROM coalesce(tc.realizado_termino, tc.previsao_termino, tc.previsao_inicio, p.previsao_termino, p.previsao_inicio)) AS fim
         FROM
-            projeto
+            projeto p
+            left join tarefa_cronograma tc ON tc.projeto_id = p.id AND tc.removido_em IS NULL
         WHERE
-            id = pProjetoId
+            p.id = pProjetoId
     ),
     _anos AS ( SELECT ano.ano FROM _int, generate_series(ini::int, fim::int, 1) ano ),
     _prev_custo AS (
