@@ -1,5 +1,5 @@
 <script setup>
-import { transferenciasVoluntarias as schema } from '@/consts/formSchemas';
+import { transferenciaDistribuicaoDeRecursos as schema } from '@/consts/formSchemas';
 import { useAlertStore } from '@/stores/alert.store';
 import { useTransferenciasVoluntariasStore } from '@/stores/transferenciasVoluntarias.store';
 
@@ -57,6 +57,8 @@ iniciar()
 <template>
   <div class="flex spacebetween center mb2">
     <h1>{{ route?.meta?.título || 'Formulário de registro' }}</h1>
+    <hr class="ml2 f1">
+    <CheckClose />
   </div>
 
   <div class="flex spacebetween center mb1">
@@ -64,47 +66,221 @@ iniciar()
     <hr class="ml2 f1">
   </div>
 
-  <Form v-slot="{ errors, isSubmitting }" :validation-schema="schema" :initial-values="itemParaEdição"
+  <Form v-slot="{ errors, isSubmitting }"
+    :validation-schema="schema"
+    :initial-values="itemParaEdição"
     @submit="onSubmit">
+
     <div class="flex spacebetween center mb1">
       <h3 class="title">Registro Distribuição de Recursos</h3>
       <hr class="ml2 f1">
     </div>
-    <div class="f1">
-        <LabelFromYup name="teste.ano" :schema="schema" />
-        <Field name="teste.ano" type="text" class="inputtext light mb1" />
-        <ErrorMessage class="error-msg mb1" name="teste.ano" />
+
+    <div class="flex g2 mb1">
+      <div class="f1">
+        <LabelFromYup name="gestor_contrato" :schema="schema" />
+        <Field name="gestor_contrato" type="text" class="inputtext light mb1" />
+        <ErrorMessage class="error-msg mb1" name="gestor_contrato" />
       </div>
-    <!-- <div class="flex g2 mb1">
-      <div class="f1 mb1">
-        <LabelFromYup name="parlamentar_id" :schema="schema" />
-        <Field
-          name="parlamentar_id"
-          as="select"
-          class="inputtext light mb1"
-          :class="{
-            error: errors.parlamentar_id,
-            loading: ParlamentaresStore.chamadasPendentes?.lista,
-          }"
-        >
-          <option :value="0">
+    </div>
+
+    <div  class="flex g2 mb1">
+      <div  class="f1">
+        <LabelFromYup name="objeto" :schema="schema" />
+        <Field name="objeto" as="textarea" class="inputtext light mb1" />
+        <ErrorMessage class="error-msg mb1" name="objeto" />
+      </div>
+    </div>
+
+    <div class="flex g2 mb1">
+      <div class="f1">
+        <LabelFromYup name="valor" :schema="schema" />
+        <Field name="valor" type="text" class="inputtext light mb1" placeholder="R$ 000.000.000.000,00"/>
+        <ErrorMessage class="error-msg mb1" name="valor" />
+      </div>
+    </div>
+
+    <div class="flex g2 mb1">
+      <div class="f1">
+        <LabelFromYup name="valor_contrapartida" :schema="schema" />
+        <Field name="valor_contrapartida" type="text" class="inputtext light mb1" placeholder="R$ 000.000.000.000,00"/>
+        <ErrorMessage class="error-msg mb1" name="valor_contrapartida" />
+      </div>
+    </div>
+
+    <div class="flex g2 mb1">
+      <div class="f1">
+        <LabelFromYup name="valor_total" :schema="schema" />
+        <Field name="valor_total" type="text" class="inputtext light mb1" placeholder="R$ 000.000.000.000,00"/>
+        <ErrorMessage class="error-msg mb1" name="valor_total" />
+      </div>
+      <div class="f1">
+        <label class="label">Empenho <span class="tvermelho">*</span></label>
+        <Field name="empenho" as="select" class="inputtext light mb1" :class="{ 'error': errors.empenho }">
+          <option value="">
             Selecionar
           </option>
-
-          <option
-            v-for="item in parlamentarComoLista"
-            :key="item"
-            :value="item.id"
-          >
-            {{ item.nome }}
+          <option :value="true">
+            Sim
+          </option>
+          <option :value="false ">
+            Não
           </option>
         </Field>
+        <div class="error-msg">
+          {{ errors.empenho }}
+        </div>
+      </div>
+    </div>
+
+    <div class="mb1">
+      <div class="f1 mb2">
+        <LabelFromYup name="gestor_contrato" :schema="schema" />
+        <Field name="gestor_contrato" type="text" class="inputtext light mb1" />
+        <ErrorMessage class="error-msg mb1" name="gestor_contrato" />
+      </div>
+      <div class="f1 mb2">
+        <LabelFromYup name="gestor_contrato" :schema="schema" />
+        <Field name="gestor_contrato" type="text" class="inputtext light mb1" />
+        <ErrorMessage class="error-msg mb1" name="gestor_contrato" />
+      </div>
+    </div>
+
+    <div class="flex g2 mb1">
+      <div class="f1">
+        <LabelFromYup name="dotacao" :schema="schema" />
+        <Field name="dotacao" type="text" class="inputtext light mb1" placeholder="16.24.12.306.3016.2.873.33903900.00"/>
+        <ErrorMessage class="error-msg mb1" name="dotacao" />
+      </div>
+      <!-- falta campo -->
+    </div>
+
+    <div class="flex g2 mb1">
+      <div class="f1 mb2">
+        <LabelFromYup name="gestor_contrato" :schema="schema" />
+        <Field name="gestor_contrato" type="text" class="inputtext light mb1" />
+        <ErrorMessage class="error-msg mb1" name="gestor_contrato" />
+      </div>
+      <div class="f1 mb2">
+        <LabelFromYup name="gestor_contrato" :schema="schema" />
+        <Field name="gestor_contrato" type="text" class="inputtext light mb1" />
+        <ErrorMessage class="error-msg mb1" name="gestor_contrato" />
+      </div>
+    </div>
+
+    <div class="flex g2 mb1">
+      <div class="f1">
+        <LabelFromYup name="gestor_contrato" :schema="schema" />
+        <Field name="gestor_contrato" type="text" class="inputtext light mb1" />
+        <ErrorMessage class="error-msg mb1" name="gestor_contrato" />
+      </div>
+      <div class="f1">
+        <LabelFromYup
+          name="clausula_suspensiva_vencimento"
+          :schema="schema"
+        />
+        <Field
+          name="clausula_suspensiva_vencimento"
+          type="date"
+          class="inputtext light mb1"
+          :class="{ 'error': errors.clausula_suspensiva_vencimento }"
+          maxlength="10"
+          @update:model-value="values.clausula_suspensiva_vencimento === ''
+            ? values.clausula_suspensiva_vencimento = null
+            : null"
+        />
         <ErrorMessage
-          name="parlamentar_id"
+          name="clausula_suspensiva_vencimento"
           class="error-msg"
         />
       </div>
-    </div> -->
+    </div>
+
+    <div class="flex g2">
+      <div class="f1">
+        <LabelFromYup
+          name="clausula_suspensiva_vencimento"
+          :schema="schema"
+        />
+        <Field
+          name="clausula_suspensiva_vencimento"
+          type="date"
+          class="inputtext light mb1"
+          :class="{ 'error': errors.clausula_suspensiva_vencimento }"
+          maxlength="10"
+          @update:model-value="values.clausula_suspensiva_vencimento === ''
+            ? values.clausula_suspensiva_vencimento = null
+            : null"
+        />
+        <ErrorMessage
+          name="clausula_suspensiva_vencimento"
+          class="error-msg"
+        />
+      </div>
+      <div class="f1">
+        <LabelFromYup
+          name="clausula_suspensiva_vencimento"
+          :schema="schema"
+        />
+        <Field
+          name="clausula_suspensiva_vencimento"
+          type="date"
+          class="inputtext light mb1"
+          :class="{ 'error': errors.clausula_suspensiva_vencimento }"
+          maxlength="10"
+          @update:model-value="values.clausula_suspensiva_vencimento === ''
+            ? values.clausula_suspensiva_vencimento = null
+            : null"
+        />
+        <ErrorMessage
+          name="clausula_suspensiva_vencimento"
+          class="error-msg"
+        />
+      </div>
+    </div>
+
+    <div class="flex g2">
+      <div class="f1">
+        <LabelFromYup
+          name="clausula_suspensiva_vencimento"
+          :schema="schema"
+        />
+        <Field
+          name="clausula_suspensiva_vencimento"
+          type="date"
+          class="inputtext light"
+          :class="{ 'error': errors.clausula_suspensiva_vencimento }"
+          maxlength="10"
+          @update:model-value="values.clausula_suspensiva_vencimento === ''
+            ? values.clausula_suspensiva_vencimento = null
+            : null"
+        />
+        <ErrorMessage
+          name="clausula_suspensiva_vencimento"
+          class="error-msg"
+        />
+      </div>
+      <div class="f1">
+        <LabelFromYup
+          name="clausula_suspensiva_vencimento"
+          :schema="schema"
+        />
+        <Field
+          name="clausula_suspensiva_vencimento"
+          type="date"
+          class="inputtext light mb1"
+          :class="{ 'error': errors.clausula_suspensiva_vencimento }"
+          maxlength="10"
+          @update:model-value="values.clausula_suspensiva_vencimento === ''
+            ? values.clausula_suspensiva_vencimento = null
+            : null"
+        />
+        <ErrorMessage
+          name="clausula_suspensiva_vencimento"
+          class="error-msg"
+        />
+      </div>
+    </div>
 
     <FormErrorsList :errors="errors" />
 
@@ -127,17 +303,4 @@ iniciar()
     </div>
   </div>
 </template>
-
-
-<style scoped>
-  h1{
-    font-size: 64px;
-    color: #233B5C;
-    }
-
-  .title {
-    color: #B8C0CC;
-    font-size: 20px;
-  }
-</style>
 
