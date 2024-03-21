@@ -9,6 +9,9 @@ import { useTipoDeTransferenciaStore } from '@/stores/tipoDeTransferencia.store'
 import { storeToRefs } from 'pinia';
 import { ErrorMessage, Field, Form} from 'vee-validate';
 import { useRoute, useRouter } from 'vue-router';
+
+import esferasDeTransferencia from '@/consts/esferasDeTransferencia';
+import interfacesDeTransferências from '@/consts/interfacesDeTransferências';
 import truncate from '@/helpers/truncate';
 
 const TransferenciasVoluntarias = useTransferenciasVoluntariasStore();
@@ -106,11 +109,12 @@ iniciar()
           <option value="">
             Selecionar
           </option>
-          <option value="Federal">
-            Federal
-          </option>
-          <option value="Estadual">
-            Estadual
+          <option
+            v-for="item in Object.values(esferasDeTransferencia)"
+            :key="item.valor"
+            :value="item.valor"
+          >
+          {{ item.nome }}
           </option>
         </Field>
         <div class="error-msg">
@@ -141,11 +145,12 @@ iniciar()
           <option value="">
             Selecionar
           </option>
-          <option value="TransfereGov">
-            TransfereGov
-          </option>
-          <option value="SemPapel">
-            SemPapel
+          <option
+            v-for="item in Object.values(interfacesDeTransferências)"
+            :key="item.nome"
+            :value="item.valor"
+          >
+            {{ item.nome }}
           </option>
         </Field>
         <div class="error-msg">
@@ -198,7 +203,6 @@ iniciar()
           <option :value="0">
             Selecionar
           </option>
-
           <option v-for="item in órgãosComoLista" :key="item" :value="item.id"
             :title="item.descricao?.length > 36 ? item.descricao : null">
             {{ item.sigla }} - {{ truncate(item.descricao, 36) }}
@@ -208,19 +212,8 @@ iniciar()
       </div>
       <div class="f1">
         <LabelFromYup name="secretaria_concedente_id" :schema="schema" />
-        <Field name="secretaria_concedente_id" as="select" class="inputtext light mb1" :class="{
-            error: errors.secretaria_concedente_id,
-            loading: ÓrgãosStore.chamadasPendentes?.lista,
-          }" :disabled="!órgãosComoLista?.length">
-          <option :value="0">
-            Selecionar
-          </option>
-
-          <option v-for="item in órgãosComoLista" :key="item" :value="item.id">
-            {{ item.sigla }} - {{ truncate(item.descricao, 36) }}
-          </option>
-        </Field>
-        <ErrorMessage name="secretaria_concedente_id" class="error-msg" />
+        <Field name="secretaria_concedente_id" type="text" class="inputtext light mb1" />
+        <ErrorMessage class="error-msg mb1" name="secretaria_concedente_id" />
       </div>
     </div>
 
