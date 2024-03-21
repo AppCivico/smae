@@ -611,7 +611,7 @@ export class PPProjetosService implements ReportableService {
         const sql = `SELECT
             tc.projeto_id AS projeto_id,
             projeto.codigo AS projeto_codigo,
-            projeto.atraso,
+            tc.atraso,
             resp.id AS responsavel_id,
             resp.nome_exibicao AS responsavel_nome_exibicao,
             t.id,
