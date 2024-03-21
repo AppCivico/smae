@@ -1,7 +1,7 @@
 <script setup>
 import BotãoParaCarregarMais from '@/components/relatorios/BotaoParaCarregarMais.vue';
 import TabelaBásica from '@/components/relatorios/TabelaBasica.vue';
-import { relatórioDeParlamentares as schema } from '@/consts/formSchemas';
+import { relatórioDeTransferênciasVoluntárias as schema } from '@/consts/formSchemas';
 import { useAuthStore } from '@/stores/auth.store';
 import { useRelatoriosStore } from '@/stores/relatorios.store.ts';
 import { storeToRefs } from 'pinia';
