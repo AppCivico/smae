@@ -74,7 +74,12 @@ tranferenciasVoluntarias.buscarTudo();
     <tbody>
       <tr v-for="item in lista" :key="item.id">
         <td>
+          <router-link
+            :to="{ name: 'TransferenciasVoluntariasDetalhes', params: { transferenciaId: item.id } }"
+            class="tprimary"
+          >
           {{ item.identificador }}
+        </router-link>
         </td>
         <td>
           {{ item.esfera }}
