@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, Logger } from '@nestjs/common';
+import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { RecordWithId } from '../common/dto/record-with-id.dto';
@@ -106,8 +106,35 @@ export class AvisoEmailService {
         });
     }
 
-    async update(_id: number, _dto: UpdateAvisoEmailDto, user: PessoaFromJwt): Promise<RecordWithId> {
-        throw '';
+    async update(id: number, dto: UpdateAvisoEmailDto, user: PessoaFromJwt): Promise<RecordWithId> {
+        // TODO: verificar permissões e etc. isso aqui é só o mínimo possível
+        const exists = await this.prisma.tarefaCronograma.findFirst({
+            where: {
+                id,
+            },
+            select: { id: true },
+        });
+        if (!exists) throw new NotFoundException('Item não encontrado');
+
+        await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient) => {
+            await prismaTx.avisoEmail.update({
+                where: {
+                    id: exists.id,
+                },
+                data: {
+                    ativo: dto.ativo,
+                    numero: dto.numero,
+                    numero_periodo: dto.numero_periodo,
+                    tipo: dto.tipo,
+                    com_copia: dto.com_copia,
+                    recorrencia_dias: dto.recorrencia_dias,
+                },
+            });
+
+            return;
+        });
+
+        return { id: exists.id };
     }
 
     async remove(id: number, user: PessoaFromJwt) {
