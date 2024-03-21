@@ -177,13 +177,13 @@ export class TransferenciasService implements ReportableService {
         }
 
         if (filters.orgao_concedente_id) {
-            whereConditions.push(`projeto.orgao_concedente_id = $${paramIndex}`);
+            whereConditions.push(`t.orgao_concedente_id = $${paramIndex}`);
             queryParams.push(filters.orgao_concedente_id);
             paramIndex++;
         }
 
         if (filters.partido_id) {
-            whereConditions.push(`projeto.partido_id = $${paramIndex}`);
+            whereConditions.push(`t.partido_id = $${paramIndex}`);
             queryParams.push(filters.partido_id);
             paramIndex++;
         }
