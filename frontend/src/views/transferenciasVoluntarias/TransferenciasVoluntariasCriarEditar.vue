@@ -322,7 +322,7 @@ iniciar()
       <ErrorMessage class="error-msg mb1" name="detalhamento" />
     </div>
 
-    <div class="flex g2 end mb1">
+    <div class="flex g1 end mb1">
       <div class="f1">
         <label class="label">Crítico <span class="tvermelho">*</span></label>
         <Field name="critico" as="select" class="inputtext light mb1" :class="{ 'error': errors.critico }">
