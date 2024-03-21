@@ -185,7 +185,7 @@ export default {
             rotasDePlanoDeProjeto.rotas.splice(
               1,
               0,
-              'tarefasListar',
+              'projetoTarefasListar',
               'projetosEAP',
               'projetosGantt',
             );

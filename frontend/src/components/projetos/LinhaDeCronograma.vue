@@ -56,7 +56,6 @@ export default {
   },
 };
 </script>
-
 <template>
   <tr
     class="t13"
@@ -101,7 +100,7 @@ export default {
         :to="{
           name: 'tarefasProgresso',
           params: {
-            projetoId: projetoId,
+            ...$route.params,
             tarefaId: linha.id,
           },
         }"
@@ -190,9 +189,9 @@ export default {
           :hidden="!oProjetoÉPrioritário || linha.dependencias?.length"
           :title="`Criar tarefa filha de ${linha.hierarquia}`"
           :to="{
-            name: 'projetoTarefasCriar',
+            name: $route.meta.prefixoParaFilhas + 'TarefasCriar',
             params: {
-              projetoId: projetoId,
+              ...$route.params,
               tarefaId: linha.id,
             },
             query: {
@@ -212,9 +211,9 @@ export default {
       >
         <router-link
           :to="{
-            name: 'tarefasEditar',
+            name: $route.meta.prefixoParaFilhas + 'TarefasEditar',
             params: {
-              projetoId: projetoId,
+              ...$route.params,
               tarefaId: linha.id,
             }
           }"

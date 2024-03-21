@@ -83,15 +83,27 @@ export default {
 <template>
   <div class="flex spacebetween center mb2 g2">
     <TítuloDePágina> Cronograma </TítuloDePágina>
-    <hr class="f1" />
-    <nav v-if="projetoEmFoco?.eh_prioritario && !apenasLeitura" class="flex g1">
-      <router-link :to="{ name: prefixo + 'TarefasCriar' }" class="btn">
+    <hr class="f1">
+    <nav
+      v-if="projetoEmFoco?.eh_prioritario && !apenasLeitura"
+      class="flex g1"
+    >
+      <router-link
+        :to="{
+          name: $route.meta.prefixoParaFilhas + 'TarefasCriar',
+          params: $route.params,
+        }"
+        class="btn"
+      >
         Nova tarefa
       </router-link>
 
       <router-link
         v-if="!árvoreDeTarefas.length"
-        :to="{ name: prefixo + 'TarefasClonar' }"
+        :to="{
+          name: $route.meta.prefixoParaFilhas + 'TarefasClonar',
+          params: $route.params,
+        }"
         class="btn"
       >
         Clonar tarefas
