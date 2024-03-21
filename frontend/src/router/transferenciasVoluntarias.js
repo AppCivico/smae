@@ -79,8 +79,64 @@ export default {
             },
           ],
         },
+        {
+          path: ':arquivoId',
+          component: DialogWrapper,
+          props: ({ params }) => ({
+            ...params,
+            arquivoId: Number.parseInt(params.arquivoId, 10) || undefined,
+          }),
+          meta: {
+            rotaDeEscape: 'TransferenciasVoluntariasDocumentos',
+            título: 'Editar documento da transferencia',
+            títuloParaMenu: 'Editar documento',
+          },
+          children: [
+            {
+              path: '',
+              name: 'transferenciaEditarDocumento',
+              component: TransferenciasVoluntariasEnviarArquivo,
+            },
+          ],
+        },
       ],
-      
     },
   ],
 }
+
+// {
+//   path: 'novo',
+//   component: DialogWrapper,
+//   meta: {
+//     rotaDeEscape: 'projetosDocumentos',
+//     título: 'Novo documento do projeto',
+//     títuloParaMenu: 'Novo documento',
+//   },
+//   children: [
+//     {
+//       path: '',
+//       name: 'projetosNovoDocumento',
+//       component: ProjetoEnviarArquivo,
+//     },
+//   ],
+// },
+// {
+//   path: ':arquivoId',
+//   component: DialogWrapper,
+//   props: ({ params }) => ({
+//     ...params,
+//     arquivoId: Number.parseInt(params.arquivoId, 10) || undefined,
+//   }),
+//   meta: {
+//     rotaDeEscape: 'projetosDocumentos',
+//     título: 'Editar documento do projeto',
+//     títuloParaMenu: 'Editar documento',
+//   },
+//   children: [
+//     {
+//       path: '',
+//       name: 'projetosEditarDocumento',
+//       component: ProjetoEnviarArquivo,
+//     },
+//   ],
+// },
