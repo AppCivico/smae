@@ -46,6 +46,11 @@ interface Estado {
   extra: any;
 }
 
+type MãeComId = {
+  projetoId?: Number;
+  transferenciaId?: Number;
+};
+
 // eslint-disable-next-line max-len
 function resolverHierarquia(tarefa: TarefaItemDto, tarefasPorId: { [x: string | number]: TarefaItemDto }): string {
   return tarefa.tarefa_pai_id
@@ -53,14 +58,18 @@ function resolverHierarquia(tarefa: TarefaItemDto, tarefasPorId: { [x: string | 
     : String(tarefa.numero);
 }
 
-// eslint-disable-next-line max-len
-function obterPrefixo(route: { params?: { projetoId?: number; transferenciaId?: number } }): string | null {
-  if (route.params?.projetoId) {
-    return 'projeto';
-  } if (route.params?.transferenciaId) {
-    return 'transferencia';
+function gerarCaminhoParaApi(mãeComId: MãeComId): string | null {
+  switch (true) {
+    case !!mãeComId?.projetoId:
+      return `projeto/${mãeComId?.projetoId}`;
+
+    case !!mãeComId?.transferenciaId:
+      return `transferencia/${mãeComId?.transferenciaId}`;
+
+    default:
+      console.error('Id identificado da entidade mãe não foi provido como esperado', mãeComId);
+      throw new Error('Id identificado da entidade mãe não foi provido como esperado');
   }
-  return null;
 }
 
 export const useTarefasStore = defineStore('tarefas', {
@@ -79,25 +88,23 @@ export const useTarefasStore = defineStore('tarefas', {
     extra: null,
   }),
   actions: {
-    async buscarItem(id = 0, params = {}, projetoId = 0): Promise<void> {
+    async buscarItem(id = 0, params = {}, mãeComId: MãeComId = this.route.params): Promise<void> {
       this.chamadasPendentes.emFoco = true;
       try {
-        const resposta = await this.requestS.get(`${baseUrl}/projeto/${projetoId || this.route.params.projetoId}/tarefa/${id}`, params);
+        const resposta = await this.requestS.get(`${baseUrl}/${gerarCaminhoParaApi(mãeComId)}/tarefa/${id}`, params);
         this.emFoco = resposta;
       } catch (erro: unknown) {
         this.erro = erro;
       }
       this.chamadasPendentes.emFoco = false;
     },
-    // TODO: trocar projetoId
-    async buscarTudo(params = {}, projetoId = 0): Promise<void> {
-      const prefixo = obterPrefixo(this.route);
 
+    async buscarTudo(params = {}, mãeComId: MãeComId = this.route.params): Promise<void> {
       this.chamadasPendentes.lista = true;
       this.chamadasPendentes.emFoco = true;
 
       try {
-        const { linhas, portfolio, projeto } = await this.requestS.get(`${baseUrl}/${prefixo}/${projetoId || this.route.params.projetoId}/tarefa`, params);
+        const { linhas, portfolio, projeto } = await this.requestS.get(`${baseUrl}/${gerarCaminhoParaApi(mãeComId)}/tarefa`, params);
 
         this.lista = linhas;
         this.extra = { portfolio, projeto };
@@ -108,11 +115,11 @@ export const useTarefasStore = defineStore('tarefas', {
       this.chamadasPendentes.emFoco = false;
     },
 
-    async excluirItem(id: number, projetoId = 0): Promise<boolean> {
+    async excluirItem(id: number, mãeComId: MãeComId = this.route.params): Promise<boolean> {
       this.chamadasPendentes.lista = true;
 
       try {
-        await this.requestS.delete(`${baseUrl}/projeto/${projetoId || this.route.params.projetoId}/tarefa/${id}`);
+        await this.requestS.delete(`${baseUrl}/${gerarCaminhoParaApi(mãeComId)}/tarefa/${id}`);
         this.chamadasPendentes.lista = false;
         return true;
       } catch (erro) {
@@ -122,16 +129,20 @@ export const useTarefasStore = defineStore('tarefas', {
       }
     },
 
-    async salvarItem(params = {}, id = 0, projetoId = 0): Promise<boolean> {
+    async salvarItem(
+      params = {},
+      id = 0,
+      mãeComId: MãeComId = this.route.params,
+    ): Promise<boolean> {
       this.chamadasPendentes.emFoco = true;
 
       try {
         let resposta;
 
         if (id) {
-          resposta = await this.requestS.patch(`${baseUrl}/projeto/${projetoId || this.route.params.projetoId}/tarefa/${id}`, params);
+          resposta = await this.requestS.patch(`${baseUrl}/${gerarCaminhoParaApi(mãeComId)}/tarefa/${id}`, params);
         } else {
-          resposta = await this.requestS.post(`${baseUrl}/projeto/${projetoId || this.route.params.projetoId}/tarefa`, params);
+          resposta = await this.requestS.post(`${baseUrl}/${gerarCaminhoParaApi(mãeComId)}/tarefa`, params);
         }
 
         this.chamadasPendentes.emFoco = false;
@@ -144,12 +155,15 @@ export const useTarefasStore = defineStore('tarefas', {
       }
     },
 
-    async clonarTarefas(projetoFonteId:number, projetoId = 0): Promise<boolean> {
+    async clonarTarefas(
+      projetoFonteId:number,
+      mãeComId: MãeComId = this.route.params,
+    ): Promise<boolean> {
       this.chamadasPendentes.clonarTarefas = true;
       this.erro = null;
 
       try {
-        await this.requestS.post(`${baseUrl}/projeto/${projetoId || this.route.params.projetoId}/clone-tarefas`, { projeto_fonte_id: projetoFonteId });
+        await this.requestS.post(`${baseUrl}/${gerarCaminhoParaApi(mãeComId)}/clone-tarefas`, { projeto_fonte_id: projetoFonteId });
 
         this.chamadasPendentes.clonarTarefas = false;
         return true;
@@ -160,7 +174,10 @@ export const useTarefasStore = defineStore('tarefas', {
       }
     },
 
-    async validarDependências(params: { tarefa_corrente_id: number; dependencias: [] }) {
+    async validarDependências(
+      params: { tarefa_corrente_id: number; dependencias: [] },
+      mãeComId: MãeComId = this.route.params,
+    ) {
       this.chamadasPendentes.validaçãoDeDependências = true;
 
       try {
@@ -173,7 +190,7 @@ export const useTarefasStore = defineStore('tarefas', {
           termino_planejado?: string | null;
         };
 
-        const resposta: Atualização = await this.requestS.post(`${baseUrl}/projeto/${this.route.params.projetoId}/dependencias`, params);
+        const resposta: Atualização = await this.requestS.post(`${baseUrl}/${gerarCaminhoParaApi(mãeComId)}/dependencias`, params);
 
         this.chamadasPendentes.validaçãoDeDependências = false;
         this.erro = null;
