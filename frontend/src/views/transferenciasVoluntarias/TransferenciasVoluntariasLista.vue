@@ -112,17 +112,17 @@ tranferenciasVoluntarias.buscarTudo();
         </td>
       </tr>
       <tr v-if="chamadasPendentes.lista">
-        <td colspan="3">
+        <td colspan="9">
           Carregando
         </td>
       </tr>
       <tr v-else-if="erro">
-        <td colspan="3">
+        <td colspan="9">
           Erro: {{ erro }}
         </td>
       </tr>
       <tr v-else-if="!lista.length">
-        <td colspan="3">
+        <td colspan="9">
           Nenhum resultado encontrado.
         </td>
       </tr>
