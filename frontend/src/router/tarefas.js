@@ -16,10 +16,11 @@ export default {
 
   meta: {
     títuloParaMenu: 'Tarefas',
+    prefixoParaFilhas: 'projeto',
   },
   children: [
     {
-      name: 'tarefasListar',
+      name: 'projetoTarefasListar',
       path: '',
       component: TarefasLista,
       meta: {
@@ -29,7 +30,7 @@ export default {
         rotasParaMigalhasDePão: [
           'projetosListar',
           'projetosResumo',
-          'tarefasListar',
+          'projetoTarefasListar',
         ],
       },
       props: true,
@@ -42,7 +43,7 @@ export default {
           meta: {
             título: 'Clonar tarefas',
             títuloParaMenu: 'Clonar tarefas',
-            rotaDeEscape: 'tarefasListar',
+            rotaDeEscape: 'projetoTarefasListar',
           },
         },
       ],
@@ -55,7 +56,7 @@ export default {
       meta: {
         título: 'Nova tarefa',
         títuloParaMenu: 'Nova tarefa',
-        rotaDeEscape: 'tarefasListar',
+        rotaDeEscape: 'projetoTarefasListar',
       },
     },
 
@@ -71,7 +72,7 @@ export default {
       children: [
         {
           path: '',
-          name: 'tarefasEditar',
+          name: 'projetoTarefasEditar',
           component: TarefasCriarEditar,
           props: ({ params }) => ({
             ...params,
@@ -83,13 +84,13 @@ export default {
             título: () => useTarefasStore()?.emFoco?.tarefa || 'Editar tarefa',
             títuloParaMenu: 'Editar tarefa',
 
-            rotaDeEscape: 'tarefasListar',
+            rotaDeEscape: 'projetoTarefasListar',
 
             rotasParaMigalhasDePão: [
               'projetosListar',
               'projetosResumo',
-              'tarefasListar',
-              'tarefasEditar',
+              'projetoTarefasListar',
+              'projetoTarefasEditar',
             ],
           },
         },
@@ -109,12 +110,12 @@ export default {
               : 'Registrar progresso'),
             títuloParaMenu: 'Progresso',
 
-            rotaDeEscape: 'tarefasListar',
+            rotaDeEscape: 'projetoTarefasListar',
 
             rotasParaMigalhasDePão: [
               'projetosListar',
               'projetosResumo',
-              'tarefasListar',
+              'projetoTarefasListar',
               'tarefasProgresso',
             ],
           },
