@@ -83,7 +83,7 @@ tranferenciasVoluntarias.buscarTudo();
           {{ item.tipo.nome }}
         </td>
         <td>
-          {{ item.partido }}
+          {{ item.partido?.sigla }}
         </td>
         <td>
           {{ item.ano }}
@@ -92,7 +92,7 @@ tranferenciasVoluntarias.buscarTudo();
           {{ item.objeto }}
         </td>
         <td>
-          {{ item.observacoes }}
+          {{ item.valor }}
         </td>
         <td>
           <button class="like-a__text" arial-label="excluir" title="excluir" @click="excluirTransferencia(item.id)">

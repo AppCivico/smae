@@ -40,7 +40,7 @@ export default {
     {
       path: ':transferenciaId',
       name: 'TransferenciasVoluntariaEditar',
-      component: RegistroDeTransferenciaCriarEditar,
+      component: TransferenciasVoluntariasCriarEditar,
       props: ({ params }) => ({
         ...params,
         ...{ transferenciaId: Number.parseInt(params.transferenciaId, 10) || undefined },
