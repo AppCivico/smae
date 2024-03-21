@@ -48,11 +48,15 @@ async function onSubmit(_, { controlledValues }) {
     }
     if (r) {
       alertStore.success(msg);
-      TransferenciasVoluntarias.$reset();
       if( props.transferenciaId ){
         router.push({ name: 'TransferenciasVoluntariasListar' });
        } else {
-         router.push({ name: 'RegistroDeTransferenciaCriar' });
+         router.push({
+          name: 'RegistroDeTransferenciaCriar',
+          params:{
+            transferenciaId: r.id,
+          }
+         });
        }
 
     }
@@ -87,7 +91,7 @@ iniciar()
     <hr class="ml2 f1">
   </div>
 
-  <Form v-slot="{ errors, isSubmitting }"
+  <Form v-slot="{ errors, isSubmitting, setValues }"
   :validation-schema="schema"
   :initial-values="itemParaEdição"
     @submit="onSubmit">
@@ -172,13 +176,16 @@ iniciar()
     <div class="flex g2 mb1">
       <div class="f1">
         <LabelFromYup name="emenda" :schema="schema" />
-        <Field name="emenda" type="text" class="inputtext light mb1" placeholder="000.000.000.000/ AAAA.0000000.00000 / AAAA.000.00000"/>
+        <Field name="emenda" type="text" class="inputtext light mb1"
+          placeholder="000.000.000.000/ AAAA.0000000.00000 / AAAA.000.00000"
+          @change="!$event.target.value ? setValues({emenda:null}) : null"
+        />
         <ErrorMessage class="error-msg mb1" name="emenda" />
       </div>
 
       <div class="f1">
         <LabelFromYup name="emenda_unitaria" :schema="schema" />
-        <Field name="emenda_unitaria" type="text" class="inputtext light mb1" />
+        <Field name="emenda_unitaria" type="text" class="inputtext light mb1"  @change="!$event.target.value ? setValues({emenda:null}) : null"/>
         <ErrorMessage class="error-msg mb1" name="emenda_unitaria" />
       </div>
     </div>
