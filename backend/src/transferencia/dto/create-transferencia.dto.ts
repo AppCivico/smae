@@ -23,8 +23,10 @@ export class CreateTransferenciaDto {
     @IsNumber()
     orgao_concedente_id: number;
 
-    @IsNumber()
-    secretaria_concedente_id: number;
+    @IsString()
+    @MinLength(1)
+    @MaxLength(250)
+    secretaria_concedente: string;
 
     @IsOptional()
     @IsNumber()
