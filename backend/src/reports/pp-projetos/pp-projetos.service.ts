@@ -635,7 +635,7 @@ export class PPProjetosService implements ReportableService {
                 WHERE td.tarefa_id = t.id
             ) as dependencias
             FROM projeto
-            LEFT JOIN tarefa_cronograma tc ON tc.projeto_id = p.id AND tc.removido_em IS NULL
+            LEFT JOIN tarefa_cronograma tc ON tc.projeto_id = projeto.id AND tc.removido_em IS NULL
             LEFT JOIN pessoa resp ON resp.id = projeto.responsavel_id
             JOIN tarefa t ON t.tarefa_cronograma_id = tc.id
             JOIN portfolio ON projeto.portfolio_id = portfolio.id
