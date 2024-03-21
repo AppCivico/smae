@@ -5,7 +5,7 @@ import { useAlertStore } from "@/stores/alert.store";
 import { useTransferenciasVoluntariasStore } from "@/stores/transferenciasVoluntarias.store.js";
 import { storeToRefs } from "pinia";
 import { computed, ref } from "vue";
-import ArvoreDeArquivos from "../projetos/ArvoreDeArquivos.vue";
+import ArvoreDeArquivos from "./ArvoreDeArquivos.vue";
 
 const alertStore = useAlertStore();
 const transferenciasStore = useTransferenciasVoluntariasStore();
@@ -15,7 +15,6 @@ const {
   arquivos,
   diretóriosConsolidados,
   erro,
-  permissõesDoProjetoEmFoco,
 } = storeToRefs(transferenciasStore);
 
 const ordenadoPor = ref("descricao");
