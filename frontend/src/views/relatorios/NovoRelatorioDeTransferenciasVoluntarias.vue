@@ -82,6 +82,11 @@ partidosStore.buscarTudo();
     :disabled="isSubmitting"
     @submit.prevent="onSubmit"
   >
+    <Field
+      name="fonte"
+      type="hidden"
+      value="Transferencias"
+    />
     <div class="flex flexwrap g2 mb2">
       <div class="f1">
         <LabelFromYup
