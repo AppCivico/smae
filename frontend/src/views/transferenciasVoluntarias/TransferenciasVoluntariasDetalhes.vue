@@ -4,8 +4,6 @@ import { useTransferenciasVoluntariasStore } from '@/stores/transferenciasVolunt
 import dateToField from '@/helpers/dateToField';
 import { computed, onMounted, ref } from 'vue';
 
-const baseUrl = `${import.meta.env.VITE_API_URL}`;
-
 const props = defineProps({
   transferenciaId: {
     type: Number,
@@ -13,7 +11,7 @@ const props = defineProps({
   },
 });
 
-const authStore = useAuthStore();
+
 const TransferenciasVoluntarias = useTransferenciasVoluntariasStore();
 
 const emFoco = ref({});
@@ -22,28 +20,20 @@ onMounted(async () => {
   emFoco.value = TransferenciasVoluntarias.emFoco;
 });
 
-const equipe = computed(() => emFoco.value?.equipe ?? []);
-
-const assessores = computed(() => equipe.value.filter((item) => item.tipo === 'Assessor'));
-const contatos = computed(() => equipe.value.filter((item) => item.tipo === 'Contato'));
-
-function formatarNumero(numero) {
-  return numero.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
-}
 </script>
 
 <template>
   <div class="flex spacebetween center mb2">
     <h1>Resumo da transferência</h1> <!-- não finalizado -->
   </div>
-  <div class="flex spacebetween center mb1">
+  <div class="flex spacebetween center mb2">
     <h3 class="title">Identificação</h3>
     <hr class="ml2 f1">
   </div>
 
   <div>
     <div class="flex spacebetween start mb1">
-      <dl class="f1">
+      <dl class="f1 mb3">
         <dt>
           Identificador
         </dt>
@@ -51,7 +41,7 @@ function formatarNumero(numero) {
           {{ emFoco.identificador }}
         </dd>
       </dl>
-      <dl class="f1">
+      <dl class="f1 mb3">
         <dt>
           Esfera
         </dt>
@@ -59,7 +49,7 @@ function formatarNumero(numero) {
           {{ emFoco.esfera }}
         </dd>
       </dl>
-      <dl class="f1">
+      <dl class="f1 mb3">
         <dt>
           Tipo
         </dt>
@@ -69,7 +59,7 @@ function formatarNumero(numero) {
       </dl>
     </div>
     <div class="flex spacebetween start mb1">
-      <dl class="f1">
+      <dl class="f1 mb3">
         <dt>
           Interface
         </dt>
@@ -77,7 +67,7 @@ function formatarNumero(numero) {
           {{ emFoco.interface }}
         </dd>
       </dl>
-      <dl class="f1">
+      <dl class="f1 mb3">
         <dt>
           programa
         </dt>
@@ -85,7 +75,7 @@ function formatarNumero(numero) {
           {{ emFoco.programa }}
         </dd>
       </dl>
-      <dl class="f1">
+      <dl class="f1 mb3">
         <dt>
           Emenda
         </dt>
@@ -95,7 +85,7 @@ function formatarNumero(numero) {
       </dl>
     </div>
     <div class="flex spacebetween start mb1">
-      <dl class="f1">
+      <dl class="f1 mb3">
         <dt>
           Emenda unitária
         </dt>
@@ -103,7 +93,7 @@ function formatarNumero(numero) {
           {{ emFoco.emenda_unitaria }}
         </dd>
       </dl>
-      <dl class="f1">
+      <dl class="f1 mb3">
         <dt>
           Demanda
         </dt>
@@ -111,19 +101,19 @@ function formatarNumero(numero) {
           {{ emFoco.demanda }}
         </dd>
       </dl>
-      <dl class="f1">
+      <dl class="f1 mb3">
       </dl>
     </div>
   </div>
 
-  <div class="flex spacebetween center mb1">
+  <div class="flex spacebetween center mb2">
     <h3 class="title">Origem</h3>
     <hr class="ml2 f1">
   </div>
 
   <div>
     <div class="flex spacebetween start mb1">
-      <dl class="f1">
+      <dl class="f1 mb3">
         <dt>
           Órgão concedente
         </dt>
@@ -131,7 +121,7 @@ function formatarNumero(numero) {
           {{ emFoco.orgao_concedente?.sigla }}
         </dd>
       </dl>
-      <dl class="f1">
+      <dl class="f1 mb3">
         <dt>
           Secretaria do órgão concedente
         </dt>
@@ -139,11 +129,11 @@ function formatarNumero(numero) {
           {{ emFoco.secretaria_concedente.descricao }}
         </dd>
       </dl>
-      <dl class="f1">
+      <dl class="f1 mb3">
       </dl>
     </div>
     <div class="flex spacebetween start mb1">
-      <dl class="f1">
+      <dl class="f1 mb3">
         <dt>
           Parlamentar
         </dt>
@@ -151,7 +141,7 @@ function formatarNumero(numero) {
           {{ emFoco.parlamentar.nome }}
         </dd>
       </dl>
-      <dl class="f1">
+      <dl class="f1 mb3">
         <dt>
           Partido
         </dt>
@@ -159,7 +149,7 @@ function formatarNumero(numero) {
           {{ emFoco.partido.sigla }}
         </dd>
       </dl>
-      <dl class="f1">
+      <dl class="f1 mb3">
         <dt>
           cargo
         </dt>
@@ -170,7 +160,7 @@ function formatarNumero(numero) {
     </div>
   </div>
 
-  <div class="flex spacebetween center mb1">
+  <div class="flex spacebetween center mb2">
     <h3 class="title">Transferência</h3>
     <hr class="ml2 f1">
   </div>
@@ -178,7 +168,7 @@ function formatarNumero(numero) {
   <div>
     <div>
       <div class="flex spacebetween start mb1">
-        <dl class="f1">
+        <dl class="f1 mb3">
           <dt>
             Ano
           </dt>
@@ -186,7 +176,7 @@ function formatarNumero(numero) {
             {{ emFoco.ano }}
           </dd>
         </dl>
-        <dl class="f1">
+        <dl class="f1 mb3">
           <dt>
             Nome do Programa
           </dt>
@@ -194,11 +184,11 @@ function formatarNumero(numero) {
             {{ emFoco.nome_programa }}
           </dd>
         </dl>
-        <dl class="f1">
+        <dl class="f1 mb3">
         </dl>
       </div>
       <div class="mb1">
-        <dl class="f1">
+        <dl class="f1 mb3">
           <dt>
             Objeto/Empreendimento
           </dt>
@@ -206,7 +196,7 @@ function formatarNumero(numero) {
             {{ emFoco.objeto }}
           </dd>
         </dl>
-        <dl class="f1">
+        <dl class="f1 mb3">
           <dt>
             detalhamento
           </dt>
@@ -218,8 +208,8 @@ function formatarNumero(numero) {
     </div>
 
     <div>
-      <div class="flex spacebetween start mb1">
-        <dl class="f1">
+      <div class="flex spacebetween end mb1">
+        <dl class="f1 mb3">
           <dt>
             Crítico
           </dt>
@@ -227,7 +217,7 @@ function formatarNumero(numero) {
             {{ emFoco.critico ? 'Sim' : 'Não' }}
           </dd>
         </dl>
-        <dl class="f1">
+        <dl class="f1 mb3">
           <dt>
             Cláusula suspensiva
           </dt>
@@ -235,7 +225,7 @@ function formatarNumero(numero) {
             {{ emFoco.clausula_suspensiva ? 'Sim' : 'Não' }}
           </dd>
         </dl>
-        <dl class="f1">
+        <dl class="f1 mb3">
           <dt>
             Data de vencimento
           </dt>
@@ -247,7 +237,7 @@ function formatarNumero(numero) {
     </div>
 
     <div>
-      <dl class="f1 mb1">
+      <dl class="f1 mb3">
         <dt>
           normativa
         </dt>
@@ -255,7 +245,7 @@ function formatarNumero(numero) {
           {{ emFoco.normativa }}
         </dd>
       </dl>
-      <dl class="f1 mb1">
+      <dl class="f1 mb3">
         <dt>
           observacoes
         </dt>
@@ -266,7 +256,7 @@ function formatarNumero(numero) {
     </div>
   </div>
 
-  <div class="flex spacebetween center mb1">
+  <div class="flex spacebetween center mb2">
     <h3 class="title">Recurso Financeiro</h3>
     <hr class="ml2 f1">
   </div>
@@ -409,13 +399,13 @@ function formatarNumero(numero) {
     <div class="mb2">
       <dl class="mb3">
         <dt>
-          Gestor municipal do contrato
+          Gestor municipal
         </dt>
         <dd v-if="emFoco.gestor_contrato">
           {{ emFoco.gestor_contrato }}
         </dd>
       </dl>
-      <dl class="f1">
+      <dl class="f1 mb3">
         <dt>
           Objeto/Empreendimento
         </dt>
@@ -520,36 +510,73 @@ function formatarNumero(numero) {
       <div class="flex spacebetween start mb4">
         <dl class="f1">
           <dt>
-            Número do convênio/pré convênio
+            Número do contrato
           </dt>
-          <dd v-if="emFoco.numero_convenio">
-            {{ emFoco.numero_convenio }}
+          <dd v-if="emFoco.numero_contrato">
+            {{ emFoco.numero_contrato }}
           </dd>
         </dl>
         <dl class="f1">
           <dt>
-            Agência
+            Data de vigência
           </dt>
-          <dd v-if="emFoco.agencia_fim">
-            {{ emFoco.agencia_fim }}
+          <dd v-if="emFoco.data_vigencia">
+            {{ dateToField(emFoco.data_vigencia) }}
           </dd>
         </dl>
         <dl class="f1">
           <dt>
-            Conta
+            Data de conclusão da suspensiva
           </dt>
-          <dd v-if="emFoco.conta_fim">
-            {{ emFoco.conta_fim }}
+          <dd v-if="emFoco.data_conclusao_suspensiva">
+            {{ dateToField(emFoco.data_conclusao_suspensiva) }}
           </dd>
         </dl>
       </div>
     </div>
 
+    <div class="flex spacebetween center mb3">
+      <h3 class="title">Assinaturas</h3>
+      <hr class="ml2 f1">
+    </div>
+
+    <div class="flex spacebetween start mb4">
+      <dl class="f1">
+        <dt>
+          Data assinatura do termo de aceite
+        </dt>
+        <dd v-if="emFoco.data_assinatura_termo_aceite">
+          {{ emFoco.data_assinatura_termo_aceite }}
+        </dd>
+      </dl>
+      <dl class="f1">
+        <dt>
+          Data assinatura do representante do estado
+        </dt>
+        <dd v-if="emFoco.data_vigencia">
+          {{ dateToField(emFoco.data_vigencia) }}
+        </dd>
+      </dl>
+      <dl class="f1">
+        <dt>
+          Data assinatura do representante do município
+        </dt>
+        <dd v-if="emFoco.data_conclusao_suspensiva">
+          {{ dateToField(emFoco.data_conclusao_suspensiva) }}
+        </dd>
+      </dl>
+    </div>
   </section>
 
 </template>
 
 <style scoped lang="less">
+section{
+  box-shadow: 0px 4px 16px 0px rgba(21, 39, 65, 0.1);
+  padding: 1rem 2rem 4rem 2rem;
+  border-radius: 20px;
+}
+
 dt {
   color: #607A9F;
   font-weight: 700;
