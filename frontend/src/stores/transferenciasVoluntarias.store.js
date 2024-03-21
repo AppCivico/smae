@@ -17,6 +17,11 @@ export const useTransferenciasVoluntariasStore = defineStore(
         diretórios: true,
       },
       erro: null,
+
+      paginação: {
+        temMais: false,
+        tokenDaPróximaPágina: '',
+      },
     }),
     actions: {
       async buscarItem(id = 0, params = {}) {
@@ -42,11 +47,20 @@ export const useTransferenciasVoluntariasStore = defineStore(
         this.erro = null;
 
         try {
-          const { linhas } = await this.requestS.get(
+          const { linhas,
+            tem_mais: temMais,
+            token_proxima_pagina: tokenDaPróximaPágina } = await this.requestS.get(
             `${baseUrl}/transferencia`,
             params
           );
-          this.lista = linhas;
+          if (Array.isArray(linhas)) {
+            this.lista = params.token_proxima_pagina
+              ? this.lista.concat(linhas)
+              : linhas;
+
+            this.paginação.temMais = temMais || false;
+            this.paginação.tokenDaPróximaPágina = tokenDaPróximaPágina || '';
+          }
         } catch (erro) {
           this.erro = erro;
         }
