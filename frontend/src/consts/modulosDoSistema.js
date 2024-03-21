@@ -22,7 +22,7 @@ export default {
     nome: 'Transferências voluntárias',
     ícone: transferenciasVoluntarias,
     rotaInicial: {
-      name: 'parlamentaresListar',
+      name: 'TransferenciasVoluntariasListar',
     },
   },
   PlanoSetorial: {
