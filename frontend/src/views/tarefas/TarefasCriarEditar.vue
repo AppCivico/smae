@@ -93,7 +93,7 @@ async function onSubmit(_, { controlledValues: valores }) {
     if (resposta) {
       alertStore.success(msg);
       tarefasStore.$reset();
-      router.push({ name: 'projetoTarefasListar' });
+      router.push({ name: route.meta.rotaDeEscape });
     }
   } catch (error) {
     alertStore.error(error);
