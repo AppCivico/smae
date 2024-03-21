@@ -42,7 +42,7 @@ export class AvisoEmailService {
         transferencia_id?: number;
     }) {
         let tarefa_cronograma_id = dto.tarefa_cronograma_id;
-        if (tarefa_cronograma_id) {
+        if (!tarefa_cronograma_id) {
             if (dto.projeto_id) {
                 const tmp = await this.prisma.tarefaCronograma.findFirstOrThrow({
                     where: { removido_em: null, projeto_id: dto.projeto_id },
