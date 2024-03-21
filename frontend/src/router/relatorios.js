@@ -105,6 +105,7 @@ export default {
 
       /// CasaCivil
       'RelatóriosDeParlamentares',
+      'RelatóriosDeTransferênciasVoluntárias',
     ],
   },
 
@@ -232,6 +233,31 @@ export default {
           meta: {
             título: 'Novo relatório de parlamentares',
             rotaDeEscape: 'RelatóriosDeParlamentares',
+          },
+        },
+      ],
+    },
+
+    {
+      path: 'transferencias-voluntarias',
+      meta: {
+        título: 'Relatórios de transferências voluntárias',
+        títuloParaMenu: 'Relatório de transferências voluntárias',
+        limitarÀsPermissões: 'Reports.executar.CasaCivil',
+      },
+      children: [
+        {
+          path: '',
+          name: 'RelatóriosDeTransferênciasVoluntárias',
+          component: () => import('@/views/relatorios/RelatoriosDeTransferenciasVoluntarias.vue'),
+        },
+        {
+          component: () => import('@/views/relatorios/NovoRelatorioDeTransferenciasVoluntarias.vue'),
+          path: 'novo',
+          name: 'novoRelatórioDeTransferênciasVoluntárias',
+          meta: {
+            título: 'Novo relatório de transferências voluntárias',
+            rotaDeEscape: 'RelatóriosDeTransferênciasVoluntárias',
           },
         },
       ],
