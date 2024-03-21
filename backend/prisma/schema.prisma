@@ -4584,8 +4584,11 @@ model Transferencia {
     orgao_concedente_id Int
     orgao_concedente    Orgao @relation("orgao_concedente", fields: [orgao_concedente_id], references: [id])
 
-    secretaria_concedente_id Int
-    secretaria_concedente    Orgao @relation("secretaria_concedente", fields: [secretaria_concedente_id], references: [id])
+    secretaria_concedente_id  Int?
+    secretaria_concedente     Orgao?  @relation("secretaria_concedente", fields: [secretaria_concedente_id], references: [id])
+    // secretaria_concedente por agora é uma string livre. Mas existe a possibilidade de virar um relacionamento.
+    // Portanto, mantendo as cols de rel.
+    secretaria_concedente_str String?
 
     parlamentar_id Int?
     parlamentar    Parlamentar? @relation(fields: [parlamentar_id], references: [id])

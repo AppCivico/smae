@@ -26,7 +26,7 @@ export class TransferenciaDto {
     esfera: TransferenciaTipoEsfera;
 
     orgao_concedente: IdSiglaDescricao;
-    secretaria_concedente: IdSiglaDescricao;
+    secretaria_concedente: string | null;
 }
 
 export class ListTransferenciaDto {
@@ -68,7 +68,7 @@ export class TransferenciaDetailDto {
     partido: IdSigla | null;
     parlamentar: ParlamnetarIdNomes | null;
     orgao_concedente: IdSiglaDescricao;
-    secretaria_concedente: IdSiglaDescricao;
+    secretaria_concedente: string | null;
 
     @ApiProperty({ enum: TransferenciaInterface, enumName: 'TransferenciaInterface' })
     interface: TransferenciaInterface;
