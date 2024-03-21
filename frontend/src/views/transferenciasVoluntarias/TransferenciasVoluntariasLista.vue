@@ -1,8 +1,8 @@
 <script setup>
 import { useAlertStore } from '@/stores/alert.store';
+import { useTransferenciasVoluntariasStore } from '@/stores/transferenciasVoluntarias.store';
 import { storeToRefs } from 'pinia';
 import { useRoute } from 'vue-router';
-import { useTransferenciasVoluntariasStore } from '@/stores/transferenciasVoluntarias.store';
 
 const tranferenciasVoluntarias = useTransferenciasVoluntariasStore();
 const route = useRoute();
@@ -27,7 +27,10 @@ tranferenciasVoluntarias.buscarTudo();
   <div class="flex spacebetween center mb2">
     <h1>{{ route?.meta?.título || 'Tipo de Transferência' }}</h1>
     <hr class="ml2 f1">
-    <router-link :to="{ name: 'TransferenciasVoluntariaCriar' }" class="btn big ml1">
+    <router-link
+      :to="{ name: 'TransferenciasVoluntariaCriar' }"
+      class="btn big ml1"
+    >
       Novo Formulário de registro
     </router-link>
   </div>
@@ -118,16 +121,29 @@ tranferenciasVoluntarias.buscarTudo();
           {{ item.valor }}
         </td>
         <td>
-          <button class="like-a__text" arial-label="excluir" title="excluir" @click="excluirTransferencia(item.id)">
-            <svg width="20" height="20">
+          <button
+            class="like-a__text"
+            arial-label="excluir"
+            title="excluir"
+            @click="excluirTransferencia(item.id)"
+          >
+            <svg
+              width="20"
+              height="20"
+            >
               <use xlink:href="#i_remove" />
             </svg>
           </button>
         </td>
         <td>
-          <router-link :to="{ name: 'TransferenciasVoluntariaEditar', params: { transferenciaId: item.id } }"
-            class="tprimary">
-            <svg width="20" height="20">
+          <router-link
+            :to="{ name: 'TransferenciasVoluntariaEditar', params: { transferenciaId: item.id } }"
+            class="tprimary"
+          >
+            <svg
+              width="20"
+              height="20"
+            >
               <use xlink:href="#i_edit" />
             </svg>
           </router-link>
