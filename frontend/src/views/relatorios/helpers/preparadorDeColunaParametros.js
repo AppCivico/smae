@@ -1,4 +1,6 @@
 import cargosDeParlamentar from '@/consts/cargosDeParlamentar';
+import esferasDeTransferencia from '@/consts/esferasDeTransferencia';
+import interfacesDeTransferências from '@/consts/interfacesDeTransferências';
 import { useOrgansStore } from '@/stores/organs.store';
 import { usePartidosStore } from '@/stores/partidos.store';
 import { usePdMStore } from '@/stores/pdm.store';
@@ -13,8 +15,14 @@ const portfolioStore = usePortfolioStore();
 const projetosStore = useProjetosStore();
 const TagsStore = useTagsStore();
 
+export const prepararEsferaDeTransferência = () => Object.values(esferasDeTransferencia)
+  .reduce((acc, cur) => ({ ...acc, [cur.valor]: cur.nome }), {});
+
 export const prepararEtiquetas = (schema) => Object.keys(schema.fields.parametros.fields)
   .reduce((acc, cur) => ({ ...acc, [cur]: schema.fields.parametros.fields[cur].spec.label }), {});
+
+export const prepararInterfaceDeTransferência = () => Object.values(interfacesDeTransferências)
+  .reduce((acc, cur) => ({ ...acc, [cur.valor]: cur.nome }), {});
 
 export const prepararCargos = () => Object.values(cargosDeParlamentar)
   .reduce((acc, cur) => ({ ...acc, [cur.valor]: cur.nome }), {});
