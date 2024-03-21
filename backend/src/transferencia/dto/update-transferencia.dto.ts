@@ -4,7 +4,9 @@ import { IsBoolean, IsNumberString, IsOptional, IsString, MaxLength, MinLength, 
 import { Type } from 'class-transformer';
 import { IsOnlyDate } from 'src/common/decorators/IsDateOnly';
 
-export class UpdateTransferenciaDto extends PartialType(CreateTransferenciaDto) {
+export class UpdateTransferenciaDto extends PartialType(CreateTransferenciaDto) {}
+
+export class CompletarTransferenciaDto {
     @IsNumberString(
         {},
         {
