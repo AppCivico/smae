@@ -5,31 +5,32 @@ import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
 import { AppController } from './app.controller';
 import { AppModuleCommon } from './app.module.common';
+import { AppModulePdm } from './app.module.pdm';
 import { AppModuleProjeto } from './app.module.projeto';
 import { AppService } from './app.service';
 import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
 import { RolesGuard } from './auth/guards/roles.guard';
+import { AvisoEmailModule } from './aviso-email/aviso-email.module';
+import { BancadaModule } from './bancada/bancada.module';
 import { LoggerMiddleware } from './common/middleware/logger.middleware';
 import { TrimPipe } from './common/pipes/trim-pipe';
 import { ContentInterceptor } from './content.interceptor';
 import { CronogramaEtapaModule } from './cronograma-etapas/cronograma-etapas.module';
 import { DashboardModule } from './dashboard/dashboard.module';
 import { DotacaoModule } from './dotacao/dotacao.module';
+import { EleicaoModule } from './eleicao/eleicao.module';
 import { ErrorFilter } from './error.filter';
 import { MinhaContaModule } from './minha-conta/minha-conta.module';
 import { OrcamentoPlanejadoModule } from './orcamento-planejado/orcamento-planejado.module';
 import { OrcamentoRealizadoModule } from './orcamento-realizado/orcamento-realizado.module';
+import { ParlamentarModule } from './parlamentar/parlamentar.modules';
+import { PartidoModule } from './partido/partido.module';
 import { OrcamentoPrevistoModule } from './pp/orcamento-previsto/orcamento-previsto.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { OrcamentoModule } from './reports/orcamento/orcamento.module';
 import { ReportsModule } from './reports/relatorios/reports.module';
 import { UtilsService } from './reports/utils/utils.service';
 import { RequestLogModule } from './request_log/request_log.module';
-import { AppModulePdm } from './app.module.pdm';
-import { PartidoModule } from './partido/partido.module';
-import { BancadaModule } from './bancada/bancada.module';
-import { ParlamentarModule } from './parlamentar/parlamentar.modules';
-import { EleicaoModule } from './eleicao/eleicao.module';
 import { TransferenciaModule } from './transferencia/transferencia.module';
 
 // Hacks pro JS
@@ -66,6 +67,7 @@ import { TransferenciaModule } from './transferencia/transferencia.module';
         ParlamentarModule,
         EleicaoModule,
         TransferenciaModule,
+        AvisoEmailModule
     ],
     controllers: [AppController],
     providers: [
