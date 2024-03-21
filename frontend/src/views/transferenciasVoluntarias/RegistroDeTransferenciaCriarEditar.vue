@@ -23,8 +23,6 @@ const props = defineProps({
 const alertStore = useAlertStore();
 
 async function onSubmit(_, { controlledValues }) {
-  console.log(controlledValues)
-  console.log(_)
   try {
     let r;
     const msg = props.transferenciaId
