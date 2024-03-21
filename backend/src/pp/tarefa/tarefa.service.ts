@@ -438,7 +438,8 @@ export class TarefaService {
 
             // se não tem filhos (é folha, mesmo se for no nivel 1) OU
             // se a tarefa tem dependência, mas já iniciou, ela entra no algorítimo normal (soma da duração planejada)
-            if (tarefa.n_filhos_imediatos == 0 && (tarefa.dependencias.length == 0 || tarefa.inicio_real)) {
+            //if (tarefa.n_filhos_imediatos == 0 && (tarefa.dependencias.length == 0 || tarefa.inicio_real)) {
+            if (tarefa.dependencias.length == 0 || tarefa.inicio_real) {
                 // se não tem inicio real preenchido, considera que começou hj
                 tarefa.projecao_inicio = tarefa.inicio_real
                     ? DateTime.fromJSDate(tarefa.inicio_real, { zone: 'UTC' })
