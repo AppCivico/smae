@@ -513,18 +513,19 @@ model EmaildbConfig {
 }
 
 model EmaildbQueue {
-    id             String        @id @db.Uuid
-    config_id      Int
-    created_at     DateTime      @default(now()) @db.Timestamp(6)
-    template       String
-    to             String
-    subject        String
-    variables      Json          @db.Json
-    sent           Boolean?
-    updated_at     DateTime?     @db.Timestamp(6)
-    visible_after  DateTime?     @db.Timestamp(6)
-    errmsg         String?
-    emaildb_config EmaildbConfig @relation(fields: [config_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+    id                 String               @id @db.Uuid
+    config_id          Int
+    created_at         DateTime             @default(now()) @db.Timestamp(6)
+    template           String
+    to                 String
+    subject            String
+    variables          Json                 @db.Json
+    sent               Boolean?
+    updated_at         DateTime?            @db.Timestamp(6)
+    visible_after      DateTime?            @db.Timestamp(6)
+    errmsg             String?
+    emaildb_config     EmaildbConfig        @relation(fields: [config_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+    AvisoEmailDisparos AvisoEmailDisparos[]
 
     @@map("emaildb_queue")
 }
@@ -3273,6 +3274,7 @@ model Tarefa {
     ref_dependentes TarefaDependente[] @relation("ref_dependentes")
 
     RiscoTarefa RiscoTarefa[]
+    AvisoEmail  AvisoEmail[]
 
     @@index([tarefa_pai_id])
     @@index([tarefa_cronograma_id, removido_em])
@@ -3348,9 +3350,10 @@ model TarefaCronograma {
     // data em que o sistema deve novamente calcular os atrasos automaticamente
     tarefas_proximo_recalculo DateTime @default(now())
 
-    criador   Pessoa?  @relation("criador", fields: [criado_por], references: [id])
-    removedor Pessoa?  @relation("removedor", fields: [removido_por], references: [id])
-    Tarefa    Tarefa[]
+    criador    Pessoa?      @relation("criador", fields: [criado_por], references: [id])
+    removedor  Pessoa?      @relation("removedor", fields: [removido_por], references: [id])
+    Tarefa     Tarefa[]
+    AvisoEmail AvisoEmail[]
 
     @@index([projeto_id])
     @@index([transferencia_id])
@@ -4674,4 +4677,63 @@ model TransferenciaAnexo {
 
     @@index([transferencia_id])
     @@map("transferencia_anexo")
+}
+
+enum TipoAviso {
+    CronogramaTerminoPlanejado
+}
+
+enum AvisoPeriodo {
+    Dias
+    Semanas
+    Meses
+    Anos
+}
+
+model AvisoEmail {
+    id Int @id @default(autoincrement())
+
+    tipo TipoAviso
+
+    tarefa_cronograma_id Int?
+    tarefa_id            Int?
+
+    tarefa_cronograma TarefaCronograma? @relation(fields: [tarefa_cronograma_id], references: [id])
+    tarefa            Tarefa?           @relation(fields: [tarefa_id], references: [id])
+    com_copia         String[]
+
+    numero         Int
+    numero_periodo AvisoPeriodo
+
+    recorrencia_dias Int @default(0)
+
+    ativo Boolean
+
+    AvisoEmailDisparos AvisoEmailDisparos[]
+
+    criado_por     Int?
+    criado_em      DateTime  @default(now()) @db.Timestamptz(6)
+    atualizado_por Int?
+    atualizado_em  DateTime  @default(now()) @db.Timestamptz(6)
+    removido_por   Int?
+    removido_em    DateTime? @db.Timestamptz(6)
+
+    @@map("aviso_email")
+}
+
+model AvisoEmailDisparos {
+    id Int @id @default(autoincrement())
+
+    para      String
+    com_copia String[]
+
+    criado_por Int?
+    criado_em  DateTime @default(now()) @db.Timestamptz(6)
+
+    aviso_email_id   Int
+    aviso_email      AvisoEmail   @relation(fields: [id], references: [id])
+    emaildb_queue_id String       @db.Uuid
+    emaildb_queue    EmaildbQueue @relation(fields: [emaildb_queue_id], references: [id])
+
+    @@map("aviso_email_disparos")
 }
