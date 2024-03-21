@@ -99,7 +99,7 @@ export default {
       </router-link>
 
       <router-link
-        v-if="!árvoreDeTarefas.length"
+        v-if="route.meta.entidadeMãe === 'projeto' && !árvoreDeTarefas.length"
         :to="{
           name: $route.meta.prefixoParaFilhas + 'TarefasClonar',
           params: $route.params,
