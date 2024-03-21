@@ -18,7 +18,7 @@ import {
   Form,
 } from 'vee-validate';
 import { computed, ref, watch } from 'vue';
-import { useRouter, useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 
 const alertStore = useAlertStore();
 const tarefasStore = useTarefasStore();
@@ -26,7 +26,7 @@ const router = useRouter();
 const route = useRoute();
 const projetosStore = useProjetosStore();
 const {
-  órgãosEnvolvidosNoProjetoEmFoco, órgãosComoLista
+  órgãosEnvolvidosNoProjetoEmFoco, órgãosComoLista,
 } = storeToRefs(projetosStore);
 
 const {
@@ -535,7 +535,7 @@ iniciar();
           v-if="!values?.n_filhos_imediatos"
           :disabled="
             values?.inicio_planejado_calculado
-            || chamadasPendentes.validaçãoDeDependências
+              || chamadasPendentes.validaçãoDeDependências
           "
           name="inicio_planejado"
           type="date"
@@ -575,10 +575,8 @@ iniciar();
         />
         <Field
           v-if="!values?.n_filhos_imediatos"
-          :disabled="
-            values?.duracao_planejado_calculado
-            || chamadasPendentes.validaçãoDeDependências
-          "
+          :disabled="values?.duracao_planejado_calculado
+            || chamadasPendentes.validaçãoDeDependências"
           name="duracao_planejado"
           type="number"
           class="inputtext light mb1"
@@ -621,8 +619,7 @@ iniciar();
         />
         <Field
           v-if="!values?.n_filhos_imediatos"
-          :disabled="
-            values?.termino_planejado_calculado
+          :disabled="values?.termino_planejado_calculado
             || chamadasPendentes.validaçãoDeDependências
             || (values?.inicio_planejado_calculado && !values?.inicio_planejado)"
           name="termino_planejado"
