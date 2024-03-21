@@ -33,6 +33,7 @@ tranferenciasVoluntarias.buscarTudo();
   </div>
 
   <table class="tablemain mb1">
+    <col class="col--botão-de-ação">
     <col>
     <col>
     <col>
@@ -44,6 +45,7 @@ tranferenciasVoluntarias.buscarTudo();
     <col class="col--botão-de-ação">
     <thead>
       <tr>
+        <th />
         <th>
           Identificador
         </th>
@@ -68,15 +70,35 @@ tranferenciasVoluntarias.buscarTudo();
       </tr>
     </thead>
     <tbody>
-      <tr v-for="item in lista" :key="item.id">
+      <tr
+        v-for="item in lista"
+        :key="item.id"
+      >
         <td>
+          <span
+            v-if="item.pendente_preenchimento_valores"
+            class="tipinfo right"
+          >
+            <svg
+              width="24"
+              height="24"
+              color="#F2890D"
+            ><use xlink:href="#i_alert" /></svg><div>
+              Preenchimento incompleto
+            </div>
+          </span>
+        </td>
+        <th>
           <router-link
-            :to="{ name: 'TransferenciasVoluntariasDetalhes', params: { transferenciaId: item.id } }"
+            :to="{
+              name: 'TransferenciasVoluntariasDetalhes',
+              params: { transferenciaId: item.id }
+            }"
             class="tprimary"
           >
-          {{ item.identificador }}
-        </router-link>
-        </td>
+            {{ item.identificador }}
+          </router-link>
+        </th>
         <td>
           {{ item.esfera }}
         </td>
@@ -112,17 +134,17 @@ tranferenciasVoluntarias.buscarTudo();
         </td>
       </tr>
       <tr v-if="chamadasPendentes.lista">
-        <td colspan="9">
+        <td colspan="10">
           Carregando
         </td>
       </tr>
       <tr v-else-if="erro">
-        <td colspan="9">
+        <td colspan="10">
           Erro: {{ erro }}
         </td>
       </tr>
       <tr v-else-if="!lista.length">
-        <td colspan="9">
+        <td colspan="10">
           Nenhum resultado encontrado.
         </td>
       </tr>
