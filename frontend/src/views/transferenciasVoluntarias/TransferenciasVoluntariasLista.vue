@@ -9,7 +9,7 @@ const route = useRoute();
 const alertStore = useAlertStore();
 
 const {
-  lista, chamadasPendentes, erro,
+  lista, chamadasPendentes, erro, paginação,
 } = storeToRefs(tranferenciasVoluntarias);
 
 async function excluirTransferencia(id) {
@@ -32,7 +32,7 @@ tranferenciasVoluntarias.buscarTudo();
     </router-link>
   </div>
 
-  <table class="tablemain">
+  <table class="tablemain mb1">
     <col>
     <col>
     <col>
@@ -128,5 +128,16 @@ tranferenciasVoluntarias.buscarTudo();
       </tr>
     </tbody>
   </table>
-</template>
 
+  <button
+    v-if="paginação.temMais && paginação.tokenDaPróximaPágina"
+    :disabled="chamadasPendentes.lista"
+    class="btn bgnone outline center"
+    @click="tranferenciasVoluntarias.buscarTudo({
+      ...route.query,
+      token_proxima_pagina: paginação.tokenDaPróximaPágina
+    })"
+  >
+    carregar mais
+  </button>
+</template>
