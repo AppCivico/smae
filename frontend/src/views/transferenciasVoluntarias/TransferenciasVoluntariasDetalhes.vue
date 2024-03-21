@@ -126,7 +126,7 @@ onMounted(async () => {
           Secretaria do órgão concedente
         </dt>
         <dd v-if="emFoco.secretaria_concedente">
-          {{ emFoco.secretaria_concedente.descricao }}
+          {{ emFoco.secretaria_concedente }}
         </dd>
       </dl>
       <dl class="f1 mb3">
