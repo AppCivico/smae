@@ -13,6 +13,7 @@ import { ReportsController } from './reports.controller';
 import { ReportsService } from './reports.service';
 import { PPStatusModule } from '../pp-status/pp-status.module';
 import { ParlamentaresModule } from '../parlamentares/parlamentares.module';
+import { TransferenciasModule } from '../transferencias/transferencias.module';
 
 @Module({
     imports: [
@@ -26,6 +27,7 @@ import { ParlamentaresModule } from '../parlamentares/parlamentares.module';
         forwardRef(() => PPProjetosModule),
         forwardRef(() => PPStatusModule),
         forwardRef(() => ParlamentaresModule),
+        forwardRef(() => TransferenciasModule),
         JwtModule.register({
             secret: process.env.SESSION_JWT_SECRET + ':pagination',
             signOptions: { expiresIn: '30d' },
