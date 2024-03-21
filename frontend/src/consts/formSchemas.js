@@ -985,10 +985,12 @@ export const transferenciasVoluntarias = object({
   emenda: string()
     .label('Emenda')
     .max(250)
+    .min(1)
     .nullable(),
   emenda_unitaria: string()
     .label('Emenda unitária')
     .max(250)
+    .min(1)
     .nullable(),
   esfera: string()
     .label('Esfera')
@@ -1015,6 +1017,8 @@ export const transferenciasVoluntarias = object({
     .max(50000),
   numero_identificacao: string()
     .label('Número de identificação')
+    .max(250)
+    .min(1)
     .nullable(),
   observacoes: string()
     .label('Observação')
