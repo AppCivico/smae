@@ -7,6 +7,7 @@ import dateTimeToDate from '@/helpers/dateTimeToDate';
 import dinheiro from '@/helpers/dinheiro';
 import subtractDates from '@/helpers/subtractDates';
 import { useAlertStore } from '@/stores/alert.store';
+import { useOrgansStore } from '@/stores/organs.store';
 import { useProjetosStore } from '@/stores/projetos.store.ts';
 import { useTarefasStore } from '@/stores/tarefas.store.ts';
 import { isEqual } from 'lodash';
@@ -21,12 +22,14 @@ import { computed, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
 const alertStore = useAlertStore();
+const ÓrgãosStore = useOrgansStore();
 const tarefasStore = useTarefasStore();
 const router = useRouter();
 const route = useRoute();
 const projetosStore = useProjetosStore();
+const { órgãosComoLista } = storeToRefs(ÓrgãosStore);
 const {
-  órgãosEnvolvidosNoProjetoEmFoco, órgãosComoLista,
+  órgãosEnvolvidosNoProjetoEmFoco,
 } = storeToRefs(projetosStore);
 
 const {
