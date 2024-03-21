@@ -30,32 +30,3 @@ BEGIN
     RETURN NEW;
 END
 $$ LANGUAGE 'plpgsql';
-
-CREATE TRIGGER trigger_transferencia_update_tsvector_update
-BEFORE UPDATE ON transferencia
-FOR EACH ROW
-WHEN (
-    OLD.objeto IS DISTINCT FROM NEW.objeto
-        OR
-    OLD.interface IS DISTINCT FROM NEW.interface
-        OR
-    OLD.ano IS DISTINCT FROM NEW.ano
-        OR
-    OLD.esfera IS DISTINCT FROM NEW.esfera
-        OR
-    OLD.gestor_contrato IS DISTINCT FROM NEW.gestor_contrato
-        OR
-    OLD.tipo_id IS DISTINCT FROM NEW.tipo_id
-        OR
-    OLD.orgao_concedente_id IS DISTINCT FROM NEW.orgao_concedente_id
-        OR
-    OLD.secretaria_concedente_id IS DISTINCT FROM NEW.secretaria_concedente_id
-        OR
-    OLD.vetores_busca::varchar = ''
-)
-EXECUTE PROCEDURE f_transferencia_update_tsvector();
-
-CREATE TRIGGER trigger_transferencia_update_tsvector_insert
-BEFORE INSERT ON transferencia
-FOR EACH ROW
-EXECUTE PROCEDURE f_transferencia_update_tsvector();
