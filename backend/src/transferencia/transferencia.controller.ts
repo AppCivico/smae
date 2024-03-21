@@ -6,7 +6,11 @@ import { RecordWithId } from 'src/common/dto/record-with-id.dto';
 import { TransferenciaService } from './transferencia.service';
 import { CreateTransferenciaAnexoDto, CreateTransferenciaDto } from './dto/create-transferencia.dto';
 import { ListTransferenciaAnexoDto, TransferenciaDetailDto, TransferenciaDto } from './entities/transferencia.dto';
-import { UpdateTransferenciaAnexoDto, UpdateTransferenciaDto } from './dto/update-transferencia.dto';
+import {
+    CompletarTransferenciaDto,
+    UpdateTransferenciaAnexoDto,
+    UpdateTransferenciaDto,
+} from './dto/update-transferencia.dto';
 import { FindOneParams, FindTwoParams } from 'src/common/decorators/find-params';
 import { Roles } from 'src/auth/decorators/roles.decorator';
 import { ApiPaginatedResponse } from 'src/auth/decorators/paginated.decorator';
@@ -55,6 +59,18 @@ export class TransferenciaController {
         @CurrentUser() user: PessoaFromJwt
     ): Promise<RecordWithId> {
         return await this.transferenciaService.updateTransferencia(+params.id, dto, user);
+    }
+
+    @Patch(':id/completar-registro')
+    @ApiBearerAuth('access-token')
+    @Roles('CadastroTransferencia.editar')
+    @ApiUnauthorizedResponse()
+    async completeRegister(
+        @Param() params: FindOneParams,
+        @Body() dto: CompletarTransferenciaDto,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<RecordWithId> {
+        return await this.transferenciaService.completeTransferencia(+params.id, dto, user);
     }
 
     @Delete(':id')
