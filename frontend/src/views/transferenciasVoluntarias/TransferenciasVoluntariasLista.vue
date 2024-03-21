@@ -12,20 +12,16 @@ const {
   lista, chamadasPendentes, erro,
 } = storeToRefs(tranferenciasVoluntarias);
 
-
 async function excluirTransferencia(id) {
   alertStore.confirmAction('Deseja mesmo remover esse item?', async () => {
     if (await tranferenciasVoluntarias.excluirItem(id)) {
-      tranferenciasVoluntarias.$reset();
       tranferenciasVoluntarias.buscarTudo();
       alertStore.success('Transferência removida.');
     }
   }, 'Remover');
 }
 
-tranferenciasVoluntarias.$reset();
 tranferenciasVoluntarias.buscarTudo();
-
 </script>
 <template>
   <div class="flex spacebetween center mb2">
