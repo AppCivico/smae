@@ -44,7 +44,7 @@ async function onSubmit(_, { controlledValues: carga }) {
     if (resposta) {
       alertStore.success('Dados salvos com sucesso!');
       tarefasStore.$reset();
-      router.push({ name: 'tarefasListar' });
+      router.push({ name: 'projetoTarefasListar' });
     }
   } catch (error) {
     alertStore.error(error);
@@ -69,7 +69,7 @@ async function onSubmit(_, { controlledValues: carga }) {
     >
       <router-link
         :to="{
-          name: 'tarefasEditar',
+          name: 'projetoTarefasEditar',
           params: {
             projetoId: projetoId,
             tarefaId: tarefaId,

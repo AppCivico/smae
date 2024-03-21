@@ -90,7 +90,7 @@ async function onSubmit(_, { controlledValues: valores }) {
     if (resposta) {
       alertStore.success(msg);
       tarefasStore.$reset();
-      router.push({ name: 'tarefasListar' });
+      router.push({ name: 'projetoTarefasListar' });
     }
   } catch (error) {
     alertStore.error(error);
