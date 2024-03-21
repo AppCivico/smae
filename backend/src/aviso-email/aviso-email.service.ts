@@ -41,6 +41,16 @@ export class AvisoEmailService {
         projeto_id?: number;
         transferencia_id?: number;
     }) {
+        const tarefa_cronograma_id = await this.resolveCronoEtapaIdOrUndef(dto);
+        if (!tarefa_cronograma_id) throw new BadRequestException('Faltando tarefa_cronograma_id');
+        return tarefa_cronograma_id;
+    }
+
+    private async resolveCronoEtapaIdOrUndef(dto: {
+        tarefa_cronograma_id?: number | undefined;
+        projeto_id?: number | undefined;
+        transferencia_id?: number | undefined;
+    }) {
         let tarefa_cronograma_id = dto.tarefa_cronograma_id;
         if (!tarefa_cronograma_id) {
             if (dto.projeto_id) {
@@ -58,12 +68,11 @@ export class AvisoEmailService {
                 tarefa_cronograma_id = tmp.id;
             }
         }
-        if (!tarefa_cronograma_id) throw new BadRequestException('Faltando tarefa_cronograma_id');
         return tarefa_cronograma_id;
     }
 
     async findAll(filter: FilterAvisoEamilDto, user: PessoaFromJwt): Promise<AvisoEmailItemDto[]> {
-        const tarefa_cronograma_id = filter.id ? undefined : await this.resolveCronoEtapaId(filter);
+        const tarefa_cronograma_id = filter.id ? undefined : await this.resolveCronoEtapaIdOrUndef(filter);
 
         const rows = await this.prisma.avisoEmail.findMany({
             where: {
