@@ -59,7 +59,7 @@ export class TransferenciaService {
                     data: {
                         tipo_id: dto.tipo_id,
                         orgao_concedente_id: dto.orgao_concedente_id,
-                        secretaria_concedente_id: dto.secretaria_concedente_id,
+                        secretaria_concedente_str: dto.secretaria_concedente,
                         partido_id: dto.partido_id,
                         parlamentar_id: dto.parlamentar_id,
                         objeto: dto.objeto,
@@ -109,7 +109,7 @@ export class TransferenciaService {
                     data: {
                         tipo_id: dto.tipo_id,
                         orgao_concedente_id: dto.orgao_concedente_id,
-                        secretaria_concedente_id: dto.secretaria_concedente_id,
+                        secretaria_concedente_str: dto.secretaria_concedente,
                         partido_id: dto.partido_id,
                         parlamentar_id: dto.parlamentar_id,
                         objeto: dto.objeto,
@@ -244,6 +244,7 @@ export class TransferenciaService {
                 programa: true,
                 pendente_preenchimento_valores: true,
                 valor: true,
+                secretaria_concedente_str: true,
 
                 tipo: {
                     select: {
@@ -266,14 +267,6 @@ export class TransferenciaService {
                         sigla: true,
                     },
                 },
-
-                secretaria_concedente: {
-                    select: {
-                        id: true,
-                        sigla: true,
-                        descricao: true,
-                    },
-                },
             },
         });
 
@@ -284,7 +277,12 @@ export class TransferenciaService {
         }
 
         return {
-            linhas: rows,
+            linhas: rows.map((r) => {
+                return {
+                    ...r,
+                    secretaria_concedente: r.secretaria_concedente_str,
+                };
+            }),
             tem_mais: tem_mais,
             token_proxima_pagina: token_proxima_pagina,
         };
@@ -330,6 +328,7 @@ export class TransferenciaService {
                 interface: true,
                 esfera: true,
                 cargo: true,
+                secretaria_concedente_str: true,
                 partido: {
                     select: {
                         id: true,
@@ -350,18 +349,14 @@ export class TransferenciaService {
                         descricao: true,
                     },
                 },
-                secretaria_concedente: {
-                    select: {
-                        id: true,
-                        sigla: true,
-                        descricao: true,
-                    },
-                },
             },
         });
         if (!row) throw new HttpException('id| Transferência não encontrada.', 404);
 
-        return row;
+        return {
+            ...row,
+            secretaria_concedente: row.secretaria_concedente_str,
+        };
     }
 
     async removeTransferencia(id: number, user: PessoaFromJwt) {
