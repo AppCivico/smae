@@ -135,9 +135,9 @@ iniciar();
     Adicionar arquivo
   </router-link> -->
 
-  <!-- <router-view v-slot="{ Component }">
+  <router-view v-slot="{ Component }">
     <component :is="Component" />
-  </router-view> -->
+  </router-view>
 
   <div v-if="chamadasPendentes?.arquivos" class="spinner mb1">Carregando</div>
 

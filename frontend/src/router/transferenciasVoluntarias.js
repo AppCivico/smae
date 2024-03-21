@@ -4,7 +4,8 @@ import TransferenciasVoluntariasCriarEditar from '@/views/transferenciasVoluntar
 import TransferenciasVoluntariasLista from '@/views/transferenciasVoluntarias/TransferenciasVoluntariasLista.vue';
 import TransferenciasVoluntariasRaiz from '@/views/transferenciasVoluntarias/TransferenciasVoluntariasRaiz.vue';
 import TransferenciasVoluntariasDocumentos from '@/views/transferenciasVoluntarias/TransferenciasVoluntariasDocumentos.vue';
-
+import DialogWrapper from '@/views/DialogWrapper.vue'
+import TransferenciasVoluntariasEnviarArquivo from '@/views/transferenciasVoluntarias/TransferenciasVoluntariasEnviarArquivo.vue'
 
 export default {
   path: '/trasferencias-voluntarias',
@@ -61,6 +62,25 @@ export default {
           'TransferenciasVoluntariasDocumentos'
         ],
       },
+      children: [
+        {
+          path: 'novo',
+          component: DialogWrapper,
+          meta: {
+            rotaDeEscape: 'TransferenciasVoluntariasDocumentos',
+            título: 'Novo documento da transferencia voluntária',
+            títuloParaMenu: 'Novo documento',
+          },
+          children: [
+            {
+              path: '',
+              name: 'TransferenciasVoluntariasEnviarArquivo',
+              component: TransferenciasVoluntariasEnviarArquivo,
+            },
+          ],
+        },
+      ],
+      
     },
   ],
 }
