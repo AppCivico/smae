@@ -109,8 +109,8 @@ export class AvisoEmailService {
                 recorrencia_dias: r.recorrencia_dias,
                 tipo: r.tipo,
 
-                projeto: null,
-                tarefa: null,
+                projeto: r.tarefa_cronograma?.projeto ?? null,
+                tarefa: r.tarefa ?? null,
             };
         });
     }
