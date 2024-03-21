@@ -305,13 +305,13 @@ iniciar()
 
     <div class="f1 mb2">
       <LabelFromYup name="objeto" :schema="schema" />
-      <Field name="objeto" as="textarea" class="inputtext light mb1" rows="5" />
+      <Field name="objeto" as="textarea" class="inputtext light mb1" rows="5" maxlength="250"/>
       <ErrorMessage class="error-msg mb1" name="objeto" />
     </div>
 
     <div class="f1 mb2">
       <LabelFromYup name="detalhamento" :schema="schema" />
-      <Field name="detalhamento" as="textarea" class="inputtext light mb1" rows="5" />
+      <Field name="detalhamento" as="textarea" class="inputtext light mb1" rows="5" maxlength="250"/>
       <ErrorMessage class="error-msg mb1" name="detalhamento" />
     </div>
 
