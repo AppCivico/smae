@@ -91,9 +91,7 @@ iniciar()
     <hr class="ml2 f1">
   </div>
 
-  <Form v-slot="{ errors, isSubmitting, setValues }"
-  :validation-schema="schema"
-  :initial-values="itemParaEdição"
+  <Form v-slot="{ errors, isSubmitting, setValues }" :validation-schema="schema" :initial-values="itemParaEdição"
     @submit="onSubmit">
     <div class="flex g2 mb1">
       <div class="f1">
@@ -123,32 +121,19 @@ iniciar()
     <div class="flex g2 mb1">
       <div class="f1">
         <LabelFromYup name="tipo_id" :schema="schema" />
-        <Field
-          name="tipo_id"
-          as="select"
-          class="inputtext light mb1"
-          :class="{
+        <Field name="tipo_id" as="select" class="inputtext light mb1" :class="{
             error: errors.tipo_id,
             loading: TipoDeTransferenciaStore.chamadasPendentes?.lista,
-          }"
-          :disabled="!tipoTransferenciaComoLista?.length"
-        >
+          }" :disabled="!tipoTransferenciaComoLista?.length">
           <option :value="0">
             Selecionar
           </option>
 
-          <option
-            v-for="item in tipoTransferenciaComoLista"
-            :key="item"
-            :value="item.id"
-          >
+          <option v-for="item in tipoTransferenciaComoLista" :key="item" :value="item.id">
             {{ item.nome }} -- {{ item.esfera }}
           </option>
         </Field>
-        <ErrorMessage
-          name="tipo_id"
-          class="error-msg"
-        />
+        <ErrorMessage name="tipo_id" class="error-msg" />
       </div>
       <div class="f1">
         <label class="label">Interface <span class="tvermelho">*</span></label>
@@ -178,17 +163,18 @@ iniciar()
         <LabelFromYup name="emenda" :schema="schema" />
         <Field name="emenda" type="text" class="inputtext light mb1"
           placeholder="000.000.000.000/ AAAA.0000000.00000 / AAAA.000.00000"
-          @change="!$event.target.value ? setValues({emenda:null}) : null"
-        />
+          @change="!$event.target.value ? setValues({emenda:null}) : null" />
         <ErrorMessage class="error-msg mb1" name="emenda" />
       </div>
 
       <div class="f1">
         <LabelFromYup name="emenda_unitaria" :schema="schema" />
-        <Field name="emenda_unitaria" type="text" class="inputtext light mb1"  @change="!$event.target.value ? setValues({emenda:null}) : null"/>
+        <Field name="emenda_unitaria" type="text" class="inputtext light mb1"
+          @change="!$event.target.value ? setValues({emenda:null}) : null" />
         <ErrorMessage class="error-msg mb1" name="emenda_unitaria" />
       </div>
     </div>
+
     <div class="flex g2 mb1">
       <div class="halfInput f1">
         <LabelFromYup name="demanda" :schema="schema" />
@@ -204,95 +190,56 @@ iniciar()
 
     <div class="flex g2 mb1">
       <div class="f1">
-        <LabelFromYup name="orgao_concedente_id" :schema="schema"/>
-        <Field
-          name="orgao_concedente_id"
-          as="select"
-          class="inputtext light mb1"
-          :class="{
+        <LabelFromYup name="orgao_concedente_id" :schema="schema" />
+        <Field name="orgao_concedente_id" as="select" class="inputtext light mb1" :class="{
             error: errors.orgao_concedente_id,
             loading: ÓrgãosStore.chamadasPendentes?.lista,
-          }"
-          :disabled="!órgãosComoLista?.length"
-        >
+          }" :disabled="!órgãosComoLista?.length">
           <option :value="0">
             Selecionar
           </option>
 
-          <option
-            v-for="item in órgãosComoLista"
-            :key="item"
-            :value="item.id"
-            :title="item.descricao?.length > 36 ? item.descricao : null"
-          >
+          <option v-for="item in órgãosComoLista" :key="item" :value="item.id"
+            :title="item.descricao?.length > 36 ? item.descricao : null">
             {{ item.sigla }} - {{ truncate(item.descricao, 36) }}
           </option>
         </Field>
-        <ErrorMessage
-          name="orgao_concedente_id"
-          class="error-msg"
-        />
+        <ErrorMessage name="orgao_concedente_id" class="error-msg" />
       </div>
       <div class="f1">
-        <LabelFromYup name="secretaria_concedente_id" :schema="schema"/>
-        <Field
-          name="secretaria_concedente_id"
-          as="select"
-          class="inputtext light mb1"
-          :class="{
+        <LabelFromYup name="secretaria_concedente_id" :schema="schema" />
+        <Field name="secretaria_concedente_id" as="select" class="inputtext light mb1" :class="{
             error: errors.secretaria_concedente_id,
             loading: ÓrgãosStore.chamadasPendentes?.lista,
-          }"
-          :disabled="!órgãosComoLista?.length"
-        >
+          }" :disabled="!órgãosComoLista?.length">
           <option :value="0">
             Selecionar
           </option>
 
-          <option
-            v-for="item in órgãosComoLista"
-            :key="item"
-            :value="item.id"
-          >
-          {{ item.sigla }} - {{ truncate(item.descricao, 36) }}
+          <option v-for="item in órgãosComoLista" :key="item" :value="item.id">
+            {{ item.sigla }} - {{ truncate(item.descricao, 36) }}
           </option>
         </Field>
-        <ErrorMessage
-          name="secretaria_concedente_id"
-          class="error-msg"
-        />
+        <ErrorMessage name="secretaria_concedente_id" class="error-msg" />
       </div>
     </div>
 
     <div class="flex g2 mb1">
       <div class="f1 mb1">
         <LabelFromYup name="parlamentar_id" :schema="schema" />
-        <Field
-          name="parlamentar_id"
-          as="select"
-          class="inputtext light mb1"
-          :class="{
+        <Field name="parlamentar_id" as="select" class="inputtext light mb1" :class="{
             error: errors.parlamentar_id,
             loading: ParlamentaresStore.chamadasPendentes?.lista,
-          }"
-          :disabled="!parlamentarComoLista?.length"
-        >
+          }" :disabled="!parlamentarComoLista?.length">
           <option :value="0">
             Selecionar
           </option>
 
-          <option
-            v-for="item in parlamentarComoLista"
-            :key="item"
-            :value="item.id"
-          >
+          <option v-for="item in parlamentarComoLista" :key="item" :value="item.id">
             {{ item.nome }} - {{ item.nome_popular }}
           </option>
         </Field>
-        <ErrorMessage
-          name="parlamentar_id"
-          class="error-msg"
-        />
+        <ErrorMessage name="parlamentar_id" class="error-msg" />
       </div>
 
       <div class="f1">
@@ -305,32 +252,19 @@ iniciar()
     <div class="flex g2 mb1">
       <div class="f1 mb1">
         <LabelFromYup name="partido_id" :schema="schema" />
-        <Field
-          name="partido_id"
-          as="select"
-          class="inputtext light mb1"
-          :class="{
+        <Field name="partido_id" as="select" class="inputtext light mb1" :class="{
             error: errors.partido_id,
             loading: ParlamentaresStore.chamadasPendentes?.lista,
-          }"
-          :disabled="!partidoComoLista?.length"
-        >
+          }" :disabled="!partidoComoLista?.length">
           <option :value="0">
             Selecionar
           </option>
 
-          <option
-            v-for="item in partidoComoLista"
-            :key="item"
-            :value="item.id"
-          >
+          <option v-for="item in partidoComoLista" :key="item" :value="item.id">
             {{ item.nome }}
           </option>
         </Field>
-        <ErrorMessage
-          name="partido_id"
-          class="error-msg"
-        />
+        <ErrorMessage name="partido_id" class="error-msg" />
       </div>
       <div class="f1">
         <label class="label">Cargo<span class="tvermelho">*</span></label>
@@ -371,44 +305,42 @@ iniciar()
 
       <div class="f1">
         <LabelFromYup name="nome_programa" :schema="schema" />
-        <Field name="nome_programa" type="text" class="inputtext light mb1"/>
+        <Field name="nome_programa" type="text" class="inputtext light mb1" />
         <ErrorMessage class="error-msg mb1" name="nome_programa" />
       </div>
     </div>
 
     <div class="f1 mb2">
       <LabelFromYup name="objeto" :schema="schema" />
-      <Field name="objeto" as="textarea" class="inputtext light mb1" rows="5"/>
+      <Field name="objeto" as="textarea" class="inputtext light mb1" rows="5" />
       <ErrorMessage class="error-msg mb1" name="objeto" />
     </div>
 
     <div class="f1 mb2">
       <LabelFromYup name="detalhamento" :schema="schema" />
-      <Field name="detalhamento" as="textarea" class="inputtext light mb1" rows="5"/>
+      <Field name="detalhamento" as="textarea" class="inputtext light mb1" rows="5" />
       <ErrorMessage class="error-msg mb1" name="detalhamento" />
     </div>
 
-    <div class="f1 mb2 halfInput">
-      <label class="label">Crítico <span class="tvermelho">*</span></label>
-      <Field name="critico" as="select" class="inputtext light mb1"
-      :class="{ 'error': errors.critico }">
-        <option :value="true">
-          Sim
-        </option>
-        <option :value="false">
-          Não
-        </option>
-      </Field>
-      <div class="error-msg">
-        {{ errors.critico }}
+    <div class="flex g2 end mb1">
+      <div class="f1">
+        <label class="label">Crítico <span class="tvermelho">*</span></label>
+        <Field name="critico" as="select" class="inputtext light mb1" :class="{ 'error': errors.critico }">
+          <option :value="true">
+            Sim
+          </option>
+          <option :value="false">
+            Não
+          </option>
+        </Field>
+        <div class="error-msg">
+          {{ errors.critico }}
+        </div>
       </div>
-    </div>
-
-    <div class="flex g2 mb1">
       <div class="f1">
         <label class="label">Cláusula suspensiva <span class="tvermelho">*</span></label>
         <Field name="clausula_suspensiva" as="select" class="inputtext light mb1"
-        :class="{ 'error': errors.clausula_suspensiva }">
+          :class="{ 'error': errors.clausula_suspensiva }">
           <option :value="true">
             Sim
           </option>
@@ -420,37 +352,25 @@ iniciar()
           {{ errors.clausula_suspensiva }}
         </div>
       </div>
-      <div class="f1 mb1">
-        <LabelFromYup
-          name="clausula_suspensiva_vencimento"
-          :schema="schema"
-        />
-        <Field
-          name="clausula_suspensiva_vencimento"
-          type="date"
-          class="inputtext light mb1"
-          :class="{ 'error': errors.clausula_suspensiva_vencimento }"
-          maxlength="10"
-          @update:model-value="values.clausula_suspensiva_vencimento === ''
+      <div class="f1">
+        <LabelFromYup name="clausula_suspensiva_vencimento" :schema="schema" />
+        <Field name="clausula_suspensiva_vencimento" type="date" class="inputtext light mb1"
+          :class="{ 'error': errors.clausula_suspensiva_vencimento }" maxlength="10" @update:model-value="values.clausula_suspensiva_vencimento === ''
             ? values.clausula_suspensiva_vencimento = null
-            : null"
-        />
-        <ErrorMessage
-          name="clausula_suspensiva_vencimento"
-          class="error-msg"
-        />
+            : null" />
+        <ErrorMessage name="clausula_suspensiva_vencimento" class="error-msg" />
       </div>
     </div>
 
     <div class="f1 mb2">
       <LabelFromYup name="normativa" :schema="schema" />
-      <Field name="normativa" type="text" class="inputtext light mb1" placeholder="Lei, IN, Portaria"/>
+      <Field name="normativa" type="text" class="inputtext light mb1" placeholder="Lei, IN, Portaria" />
       <ErrorMessage class="error-msg mb1" name="normativa" />
     </div>
 
     <div class="f1">
       <LabelFromYup name="observacoes" :schema="schema" />
-      <Field name="observacoes" as="textarea" class="inputtext light mb1" rows="5"/>
+      <Field name="observacoes" as="textarea" class="inputtext light mb1" rows="5" />
       <ErrorMessage class="error-msg mb1" name="observacoes" />
     </div>
 

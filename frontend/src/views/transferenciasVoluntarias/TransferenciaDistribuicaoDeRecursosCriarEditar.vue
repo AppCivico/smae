@@ -93,15 +93,12 @@ iniciar()
     </div>
 
     <div class="flex g2 mb1">
-      <div class="halfInput ">
+      <div class="f1">
         <LabelFromYup name="valor" :schema="schema" />
         <Field name="valor" type="text" class="inputtext light mb1" placeholder="R$ 000.000.000.000,00"/>
         <ErrorMessage class="error-msg mb1" name="valor" />
       </div>
-    </div>
-
-    <div class="flex g2 mb1">
-      <div class="halfInput">
+      <div class="f1">
         <LabelFromYup name="valor_contrapartida" :schema="schema" />
         <Field name="valor_contrapartida" type="text" class="inputtext light mb1" placeholder="R$ 000.000.000.000,00"/>
         <ErrorMessage class="error-msg mb1" name="valor_contrapartida" />
