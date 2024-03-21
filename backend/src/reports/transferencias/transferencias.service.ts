@@ -47,7 +47,7 @@ class RetornoDbTransferencias {
     gestor_contrato: string | null;
     ordenador_despesa: string | null;
     numero_identificacao: string | null;
-    secretaria_concedente: string | null;
+    secretaria_concedente_str: string | null;
     interface: string;
     esfera: string;
     cargo: string | null;
@@ -105,7 +105,7 @@ export class TransferenciasService implements ReportableService {
                 t.gestor_contrato,
                 t.ordenador_despesa,
                 t.numero_identificacao,
-                t.secretaria_concedente,
+                t.secretaria_concedente_str,
                 t.interface,
                 t.esfera,
                 t.cargo,
@@ -227,7 +227,7 @@ export class TransferenciasService implements ReportableService {
                 gestor_contrato: db.gestor_contrato,
                 ordenador_despesa: db.ordenador_despesa,
                 numero_identificacao: db.numero_identificacao,
-                secretaria_concedente: db.secretaria_concedente,
+                secretaria_concedente: db.secretaria_concedente_str,
                 interface: db.interface,
                 esfera: db.esfera,
                 cargo: db.cargo,
