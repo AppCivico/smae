@@ -75,39 +75,39 @@ export class TransferenciasService implements ReportableService {
 
         const sql = `
             SELECT
-                t.id
-                t.identificador
-                t.ano
-                t.objeto
-                t.detalhamento
-                t.critico
-                t.clausula_suspensiva
-                t.clausula_suspensiva_vencimento
-                t.normativa
-                t.observacoes
-                t.programa
-                t.empenho
-                t.pendente_preenchimento_valores
-                t.valor
-                t.valor_total
-                t.valor_contrapartida
-                t.emenda
-                t.dotacao
-                t.demanda
-                t.banco_fim
-                t.conta_fim
-                t.agencia_fim
-                t.banco_aceite
-                t.conta_aceite
-                t.nome_programa
-                t.agencia_aceite
-                t.emenda_unitaria
-                t.gestor_contrato
-                t.ordenador_despesa
-                t.numero_identificacao
-                t.secretaria_concedente
-                t.interface
-                t.esfera
+                t.id,
+                t.identificador,
+                t.ano,
+                t.objeto,
+                t.detalhamento,
+                t.critico,
+                t.clausula_suspensiva,
+                t.clausula_suspensiva_vencimento,
+                t.normativa,
+                t.observacoes,
+                t.programa,
+                t.empenho,
+                t.pendente_preenchimento_valores,
+                t.valor,
+                t.valor_total,
+                t.valor_contrapartida,
+                t.emenda,
+                t.dotacao,
+                t.demanda,
+                t.banco_fim,
+                t.conta_fim,
+                t.agencia_fim,
+                t.banco_aceite,
+                t.conta_aceite,
+                t.nome_programa,
+                t.agencia_aceite,
+                t.emenda_unitaria,
+                t.gestor_contrato,
+                t.ordenador_despesa,
+                t.numero_identificacao,
+                t.secretaria_concedente,
+                t.interface,
+                t.esfera,
                 t.cargo,
                 pa.id AS partido_id,
                 pa.sigla AS partido_sigla,
