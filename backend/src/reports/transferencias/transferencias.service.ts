@@ -155,7 +155,7 @@ export class TransferenciasService implements ReportableService {
             paramIndex++;
         }
 
-        whereConditions.push(`transferencia.removido_em IS NULL`);
+        whereConditions.push(`t.removido_em IS NULL`);
 
         const whereString = whereConditions.length > 0 ? 'WHERE ' + whereConditions.join(' AND ') : '';
         return { whereString, queryParams };
