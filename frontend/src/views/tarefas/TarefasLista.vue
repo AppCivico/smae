@@ -14,7 +14,7 @@ const route = useRoute();
 const tarefasStore = useTarefasStore();
 const { árvoreDeTarefas, chamadasPendentes, erro } = storeToRefs(tarefasStore);
 
-const projetoEmFoco = computed(() => tarefasStore?.extra?.projeto);
+const projetoEmFoco = computed(() => tarefasStore?.extra?.projeto || {});
 const apenasLeitura = computed(
   () => !!projetoEmFoco.value?.permissoes?.apenas_leitura,
 );
