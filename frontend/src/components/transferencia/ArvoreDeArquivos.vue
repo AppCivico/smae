@@ -142,7 +142,7 @@ const éPossívelAbrir = (item) => !item.children?.length
                   class="like-a__text arvore-de-arquivos__editar"
                   :aria-label="`editar propriedades de ${arquivo?.arquivo?.nome_original}`"
                   :to="{
-                    name: 'TransferenciasVoluntariasEnviarArquivo',
+                    name: 'transferenciaEditarDocumento',
                     params: {
                       arquivoId: arquivo?.id
                     },
