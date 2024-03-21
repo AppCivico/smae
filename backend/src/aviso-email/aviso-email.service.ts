@@ -125,7 +125,6 @@ export class AvisoEmailService {
                     ativo: dto.ativo,
                     numero: dto.numero,
                     numero_periodo: dto.numero_periodo,
-                    tipo: dto.tipo,
                     com_copia: dto.com_copia,
                     recorrencia_dias: dto.recorrencia_dias,
                 },
