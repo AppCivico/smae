@@ -7,7 +7,11 @@ import { Prisma } from '@prisma/client';
 import { UpdateTransferenciaTipoDto } from './dto/update-transferencia-tipo.dto';
 import { TransferenciaTipoDto } from './entities/transferencia-tipo.dto';
 import { CreateTransferenciaAnexoDto, CreateTransferenciaDto } from './dto/create-transferencia.dto';
-import { UpdateTransferenciaAnexoDto, UpdateTransferenciaDto } from './dto/update-transferencia.dto';
+import {
+    CompletarTransferenciaDto,
+    UpdateTransferenciaAnexoDto,
+    UpdateTransferenciaDto,
+} from './dto/update-transferencia.dto';
 import { TransferenciaAnexoDto, TransferenciaDetailDto, TransferenciaDto } from './entities/transferencia.dto';
 import { UploadService } from 'src/upload/upload.service';
 import { FilterTransferenciaDto } from './dto/filter-transferencia.dto';
@@ -90,6 +94,60 @@ export class TransferenciaService {
     }
 
     async updateTransferencia(id: number, dto: UpdateTransferenciaDto, user: PessoaFromJwt): Promise<RecordWithId> {
+        const self = await this.prisma.transferencia.findFirst({
+            where: {
+                id,
+                removido_em: null,
+            },
+        });
+        if (!self) throw new HttpException('id| Transferência não encontrada', 404);
+
+        const updated = await this.prisma.$transaction(
+            async (prismaTxn: Prisma.TransactionClient): Promise<RecordWithId> => {
+                const transferencia = await prismaTxn.transferencia.update({
+                    where: { id },
+                    data: {
+                        tipo_id: dto.tipo_id,
+                        orgao_concedente_id: dto.orgao_concedente_id,
+                        secretaria_concedente_id: dto.secretaria_concedente_id,
+                        partido_id: dto.partido_id,
+                        parlamentar_id: dto.parlamentar_id,
+                        objeto: dto.objeto,
+                        critico: dto.critico,
+                        interface: dto.interface,
+                        esfera: dto.esfera,
+                        identificador: dto.identificador,
+                        clausula_suspensiva: dto.clausula_suspensiva,
+                        clausula_suspensiva_vencimento: dto.clausula_suspensiva_vencimento,
+                        ano: dto.ano,
+                        emenda: dto.emenda,
+                        demanda: dto.demanda,
+                        programa: dto.programa,
+                        normativa: dto.normativa,
+                        observacoes: dto.observacoes,
+                        detalhamento: dto.detalhamento,
+                        nome_programa: dto.nome_programa,
+                        agencia_aceite: dto.agencia_aceite,
+                        emenda_unitaria: dto.emenda_unitaria,
+                        numero_identificacao: dto.numero_identificacao,
+                        atualizado_por: user.id,
+                        atualizado_em: new Date(Date.now()),
+                    },
+                    select: { id: true },
+                });
+
+                return transferencia;
+            }
+        );
+
+        return updated;
+    }
+
+    async completeTransferencia(
+        id: number,
+        dto: CompletarTransferenciaDto,
+        user: PessoaFromJwt
+    ): Promise<RecordWithId> {
         const self = await this.prisma.transferencia.findFirst({
             where: {
                 id,

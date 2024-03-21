@@ -2862,8 +2862,8 @@ model Projeto {
 
     ano_orcamento Int[] @default([])
 
-    risco_maximo      String?
-    qtde_riscos       Int     @default(0)
+    risco_maximo String?
+    qtde_riscos  Int     @default(0)
 
     status         ProjetoStatus
     fase           ProjetoFase
@@ -2973,14 +2973,14 @@ model Projeto {
     ProjetoRelatorioFila      ProjetoRelatorioFila[]
     ProjetoNumerosSequenciais ProjetoNumeroSequencial[]
 
-    MetaOrcamento             OrcamentoPrevisto[]
-    OrcamentoPlanejado        OrcamentoPlanejado[]
-    OrcamentoRealizado        OrcamentoRealizado[]
-    OrcamentoPlanejadoZerado  OrcamentoPrevistoZerado[]
-    Diretorio                 Diretorio[]
-    ProjetoGrupoPortfolio     ProjetoGrupoPortfolio[]
-    equipe                    ProjetoEquipe[]
-    GeoEnderecoReferencia     GeoLocalizacaoReferencia[]
+    MetaOrcamento            OrcamentoPrevisto[]
+    OrcamentoPlanejado       OrcamentoPlanejado[]
+    OrcamentoRealizado       OrcamentoRealizado[]
+    OrcamentoPlanejadoZerado OrcamentoPrevistoZerado[]
+    Diretorio                Diretorio[]
+    ProjetoGrupoPortfolio    ProjetoGrupoPortfolio[]
+    equipe                   ProjetoEquipe[]
+    GeoEnderecoReferencia    GeoLocalizacaoReferencia[]
 
     @@index([removido_em])
     @@map("projeto")
@@ -4627,6 +4627,7 @@ model Transferencia {
     gestor_contrato      String?
     ordenador_despesa    String?
     numero_identificacao String?
+    vetores_busca        Unsupported("tsvector")?
 
     criado_por     Int
     criado_em      DateTime  @default(now()) @db.Timestamptz(6)
