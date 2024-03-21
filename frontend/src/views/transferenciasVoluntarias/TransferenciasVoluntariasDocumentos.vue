@@ -1,8 +1,5 @@
 <script setup>
 import DocumentosDaTransferencia from "@/components/transferencia/DocumentosDaTransferencia.vue";
-import { useTransferenciasVoluntariasStore } from "@/stores/transferenciasVoluntarias.store.js";
-
-import { storeToRefs } from "pinia";
 
 const props = defineProps({
   transferenciaId: {
@@ -11,15 +8,6 @@ const props = defineProps({
   },
 });
 
-const transferenciasVoluntariasStore = useTransferenciasVoluntariasStore();
-
-// const {
-//   permissõesDoProjetoEmFoco,
-// } = storeToRefs(projetosStore);
-
-// const {
-//   permissõesDaTransferenciaEmFoco,
-// } = storeToRefs(transferenciasVoluntariasStore);
 </script>
 <script>
 // use normal <script> to declare options
