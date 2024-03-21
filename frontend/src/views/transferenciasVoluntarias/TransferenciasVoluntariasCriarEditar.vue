@@ -211,9 +211,9 @@ iniciar()
         <ErrorMessage name="orgao_concedente_id" class="error-msg" />
       </div>
       <div class="f1">
-        <LabelFromYup name="secretaria_concedente_id" :schema="schema" />
-        <Field name="secretaria_concedente_id" type="text" class="inputtext light mb1" />
-        <ErrorMessage class="error-msg mb1" name="secretaria_concedente_id" />
+        <LabelFromYup name="secretaria_concedente" :schema="schema" />
+        <Field name="secretaria_concedente" type="text" class="inputtext light mb1" />
+        <ErrorMessage class="error-msg mb1" name="secretaria_concedente" />
       </div>
     </div>
 
