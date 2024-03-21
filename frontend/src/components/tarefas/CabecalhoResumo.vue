@@ -1,6 +1,9 @@
 <script setup>
 import dateToField from '@/helpers/dateToField';
 import dinheiro from '@/helpers/dinheiro';
+import { useRoute } from 'vue-router';
+
+const route = useRoute();
 
 const props = defineProps({
   emFoco: {
@@ -109,6 +112,20 @@ const props = defineProps({
           {{ typeof emFoco?.realizado_custo === 'number'
             ? `R$${dinheiro(emFoco?.realizado_custo)}`
             : '-' }}
+        </dd>
+      </div>
+      <!--  v-if="route.meta.entidadeMãe" -->
+      <div class="f1 mb1">
+        <dt class="t12 uc w700 mb05 tamarelo">Envio de e-mail?</dt>
+        <dd class="t13 dado-efetivo">
+          <!-- v-if="email" -->
+          <div class="flex g1">
+            <span>Sim</span>
+            <router-link :to="{}" title="Editar e-mail">
+              <svg width="20" height="20"><use xlink:href="#i_edit" /></svg>
+            </router-link>
+          </div>
+          <!-- <spam v-else>Não</spam> -->
         </dd>
       </div>
     </dl>
