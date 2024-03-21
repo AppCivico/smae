@@ -589,7 +589,7 @@ watch(valorDoComplemento, (novoValor) => {
           inputmode="numeric"
           :maxlength="largurasDeCampo.complemento.complementoAcompanhamento"
           :minlength="largurasDeCampo.complemento.complementoAcompanhamento"
-          pattern="\d{3}"
+          pattern="\d{4}"
           name="complementoAcompanhamento"
           @keypress="mascararCódigos"
         >
