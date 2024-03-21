@@ -1,25 +1,17 @@
 <script setup>
 import DocumentosDaTransferencia from "@/components/transferencia/DocumentosDaTransferencia.vue";
 import { useTransferenciasVoluntariasStore } from "@/stores/transferenciasVoluntarias.store.js";
-
 import { storeToRefs } from "pinia";
 
 const props = defineProps({
   transferenciaId: {
-    type: [Number,String],
+    type: Number,
     default: 0,
   },
 });
 
 const transferenciasVoluntariasStore = useTransferenciasVoluntariasStore();
 
-// const {
-//   permissõesDoProjetoEmFoco,
-// } = storeToRefs(projetosStore);
-
-// const {
-//   permissõesDaTransferenciaEmFoco,
-// } = storeToRefs(transferenciasVoluntariasStore);
 </script>
 <script>
 // use normal <script> to declare options
@@ -29,20 +21,20 @@ export default {
 </script>
 <template>
   <div class="flex spacebetween center mb2">
-    <TítuloDePágina> Documentos </TítuloDePágina>
+    <TítuloDePágina> Documentos Transferencia enviar </TítuloDePágina>
+
     <hr class="ml2 f1" />
-    <router-link
+
+    <!-- <router-link
       :to="{
-        name: 'TransferenciasVoluntariasEnviarArquivo',
-        params: {
-          transferenciaId,
-        },
+        name: 'projetosNovoDocumento',
+        params: 85,
       }"
       class="btn ml2"
     >
       Novo arquivo
-    </router-link>
+    </router-link> -->
   </div>
 
-  <DocumentosDaTransferencia />
+  <!-- <DocumentosDaTransferencia /> -->
 </template>
