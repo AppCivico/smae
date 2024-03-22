@@ -805,8 +805,9 @@ export class OrcamentoRealizadoService {
             throw new BadRequestException('É necessário enviar a dotação para buscar as metas compartilhadas');
 
         if (filters.nota_empenho) {
-            if (!filters.nota_empenho.includes('/'))
-                throw new BadRequestException('nota_empenho é necessário informar o ano para a nota de empenho');
+            if (filters.nota_empenho.includes('/')) {
+                filters.nota_empenho = `${filters.nota_empenho}/${filters.ano_referencia}`;
+            }
 
             filters.nota_empenho = FormataNotaEmpenho(filters.nota_empenho);
         }
