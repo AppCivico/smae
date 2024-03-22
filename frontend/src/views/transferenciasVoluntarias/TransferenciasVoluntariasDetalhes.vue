@@ -26,6 +26,7 @@ onMounted(async () => {
   <div class="flex spacebetween center mb2">
     <h1>Resumo da transferência</h1> <!-- não finalizado -->
   </div>
+
   <div class="flex spacebetween center mb2">
     <h3 class="title">Identificação</h3>
     <hr class="ml2 f1">
@@ -553,16 +554,16 @@ onMounted(async () => {
         <dt>
           Data assinatura do representante do estado
         </dt>
-        <dd v-if="emFoco.data_vigencia">
-          {{ dateToField(emFoco.data_vigencia) }}
+        <dd v-if="emFoco.data_assinatura_representante_estado">
+          {{ dateToField(emFoco.data_assinatura_representante_estado) }}
         </dd>
       </dl>
       <dl class="f1">
         <dt>
           Data assinatura do representante do município
         </dt>
-        <dd v-if="emFoco.data_conclusao_suspensiva">
-          {{ dateToField(emFoco.data_conclusao_suspensiva) }}
+        <dd v-if="emFoco.data_assinatura_representante_municipio">
+          {{ dateToField(emFoco.data_assinatura_representante_municipio) }}
         </dd>
       </dl>
     </div>
