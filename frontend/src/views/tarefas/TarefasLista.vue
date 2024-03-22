@@ -82,9 +82,8 @@ export default {
   </div>
   <CabecalhoResumo :em-foco="projetoEmFoco" />
 
-  <!--  v-if="route.meta.entidadeMãe === 'transferencia'" -->
-  <div class="flex center mb4">
-    <router-link :to="{ name: 'EmailModal' }" class="addlink mb1">
+  <div class="flex center mb4" v-if="route.meta.prefixoParaFilhas === 'TransferenciasVoluntarias'" >
+    <router-link :to="{ name: 'transferenciaEmailModal' }" class="addlink mb1">
       <svg width="20" height="20">
         <use xlink:href="#i_+" />
       </svg>
