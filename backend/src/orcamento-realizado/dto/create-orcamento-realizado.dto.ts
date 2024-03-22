@@ -185,7 +185,7 @@ export class CreateOrcamentoRealizadoDto {
     @Type(() => CreateOrcamentoRealizadoItemDto)
     @ArrayMinSize(1)
     @ArrayMaxSize(1024) // talvez seja 12, 1 pra cada mês
-    @IsArray()
+    @IsArray({ message: 'Adicione pelo menos um mês para do orçamento realizado' })
     itens: CreateOrcamentoRealizadoItemDto[];
 }
 
