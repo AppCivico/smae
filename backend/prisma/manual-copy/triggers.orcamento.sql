@@ -291,7 +291,7 @@ FOR EACH ROW
 EXECUTE FUNCTION f_tgr_update_soma_dotacao_realizado();
 
 
-CREATE OR REPLACE FUNCTION f_tgr_update_ano_projeto_trigger()
+CREATE OR REPLACE FUNCTION f_tgr_update_ano_projeto_tarefa_trigger()
     RETURNS TRIGGER
     AS $$
 DECLARE
@@ -311,6 +311,20 @@ END;
 $$
 LANGUAGE plpgsql;
 
+CREATE OR REPLACE FUNCTION f_tgr_update_ano_projeto_trigger()
+    RETURNS TRIGGER
+    AS $$
+DECLARE
+ tmp INTEGER;
+BEGIN
+    PERFORM atualiza_ano_orcamento_projeto(NEW.projeto_id);
+
+    RETURN NEW;
+END;
+$$
+LANGUAGE plpgsql;
+
+
 CREATE TRIGGER tgr_ano_orcamento_projeto_realizado
 AFTER INSERT OR UPDATE
 ON orcamento_realizado
@@ -329,9 +343,11 @@ ON orcamento_planejado
 FOR EACH ROW
 EXECUTE FUNCTION f_tgr_update_ano_projeto_trigger();
 
+DROP TRIGGER tgr_ano_orcamento_projeto_tarefa on tarefa;
+
 CREATE TRIGGER tgr_ano_orcamento_projeto_tarefa
 AFTER INSERT OR UPDATE
 ON tarefa
 FOR EACH ROW
-EXECUTE FUNCTION f_tgr_update_ano_projeto_trigger();
+EXECUTE FUNCTION f_tgr_update_ano_projeto_tarefa_trigger();
 
