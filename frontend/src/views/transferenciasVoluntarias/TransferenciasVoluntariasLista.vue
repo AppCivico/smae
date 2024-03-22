@@ -1,5 +1,6 @@
 <script setup>
 import esferasDeTransferencia from '@/consts/esferasDeTransferencia';
+import dinheiro from '@/helpers/dinheiro';
 import { useAlertStore } from '@/stores/alert.store';
 import { useTransferenciasVoluntariasStore } from '@/stores/transferenciasVoluntarias.store';
 import { storeToRefs } from 'pinia';
@@ -198,7 +199,7 @@ watch([
           {{ item.objeto }}
         </td>
         <td>
-          {{ item.valor }}
+          {{ item.valor ? `R$${dinheiro(item.valor)}` : '-' }}
         </td>
         <td>
           <button
