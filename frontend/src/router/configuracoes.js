@@ -66,6 +66,7 @@ const rotasParaMenuPrincipal = [
   'gerenciarPdm',
   'portfoliosListar',
   'gerenciarPainéisDeMetas',
+  'parlamentaresListar',
   'paineisExternosListar',
 ];
 
