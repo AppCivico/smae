@@ -7,8 +7,9 @@ export default {
   path: '/parlamentares',
   component: ParlamentaresRaiz,
   meta: {
-    title: 'Parlamentares',
+    título: 'Parlamentares',
     rotaPrescindeDeChave: true,
+    presenteNoMenu: true,
   },
   children: [
     {
