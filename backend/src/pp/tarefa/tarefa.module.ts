@@ -8,9 +8,17 @@ import { TarefaController } from './tarefa.controller';
 import { TarefaDotTemplate } from './tarefa.dot.template';
 import { TarefaService } from './tarefa.service';
 import { TarefaUtilsService } from './tarefa.service.utils';
+import { TransferenciaModule } from 'src/transferencia/transferencia.module';
 
 @Module({
-    imports: [PrismaModule, forwardRef(() => ProjetoModule), PortfolioModule, UploadModule, GraphvizModule],
+    imports: [
+        PrismaModule,
+        forwardRef(() => ProjetoModule),
+        forwardRef(() => TransferenciaModule),
+        PortfolioModule,
+        UploadModule,
+        GraphvizModule,
+    ],
     controllers: [TarefaController],
     providers: [TarefaService, TarefaUtilsService, TarefaDotTemplate],
     exports: [TarefaService, TarefaUtilsService],

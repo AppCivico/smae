@@ -4,6 +4,7 @@ import { DateTime } from 'luxon';
 import { IdSiglaDescricao } from '../../../common/dto/IdSigla.dto';
 import { IdTituloNivelMaxRegDto, ProjetoDetailDto } from '../../projeto/entities/projeto.entity';
 import { TarefaDependenciaDto } from '../dto/create-tarefa.dto';
+import { CabecalhoTarefaTransferenciaDto } from 'src/transferencia/entities/transferencia-tarefa.dto';
 
 export class TarefaItemDto {
     id: number;
@@ -81,6 +82,9 @@ export class ListTarefaProjetoDto extends ListApenasTarefaListDto {
 
 export class ListTarefaGenericoDto extends ListApenasTarefaListDto {
     projeto: ProjetoDetailDto | null;
+
+    // TODO? mudar nome deste DTO para não ser "ligado" a transferência.
+    cabecalho: CabecalhoTarefaTransferenciaDto | null;
 }
 
 export class DependenciasDatasDto {

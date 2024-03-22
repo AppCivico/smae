@@ -30,6 +30,7 @@ import {
 } from './entities/tarefa.entity';
 import { TarefaDotTemplate } from './tarefa.dot.template';
 import { TarefaUtilsService } from './tarefa.service.utils';
+import { TransferenciaService } from 'src/transferencia/transferencia.service';
 
 // e temos um fork mais atualizado por esse projeto, @dagrejs
 const graphlib = require('@dagrejs/graphlib');
@@ -63,6 +64,7 @@ export class TarefaService {
         private readonly utils: TarefaUtilsService,
         private readonly dotTemplate: TarefaDotTemplate,
         @Inject(forwardRef(() => ProjetoService)) private readonly projetoService: ProjetoService,
+        @Inject(forwardRef(() => TransferenciaService)) private readonly transferenciaService: TransferenciaService,
         private readonly graphvizService: GraphvizService
     ) {}
 
@@ -306,9 +308,14 @@ export class TarefaService {
             ? await this.projetoService.findOne(tarefaCronoInput.projeto_id, user, 'ReadOnly')
             : null;
 
+        const cabecalhoTransferencia = tarefaCronoInput.transferencia_id
+            ? await this.transferenciaService.getCronogramaCabecalho(tarefaCronoInput.transferencia_id)
+            : null;
+
         return {
             linhas: ret.linhas,
             projeto: projeto,
+            cabecalho: cabecalhoTransferencia,
         };
     }
 
@@ -542,7 +549,7 @@ export class TarefaService {
                     );
                 }
             }
-        }
+        };
 
         // Calculate projections for all tasks
         for (const tarefa of tarefas) {
