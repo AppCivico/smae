@@ -10,7 +10,7 @@ import { CreateDistribuicaoRecursoDto } from './dto/create-distribuicao-recurso.
 import { DistribuicaoRecursoDetailDto, ListDistribuicaoRecursoDto } from './entities/distribuicao-recurso.entity';
 import { UpdateDistribuicaoRecursoDto } from './dto/update-distribuicao-recurso.dto';
 
-@ApiTags('Transfêrencia - Distribuição de Recursos')
+@ApiTags('Transferência - Distribuição de Recursos')
 @Controller('distribuicao-recurso')
 export class DistribuicaoRecursoController {
     constructor(private readonly distribuicaoRecursoService: DistribuicaoRecursoService) {}
