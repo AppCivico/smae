@@ -9,7 +9,7 @@ export default {
   meta: {
     título: 'Parlamentares',
     rotaPrescindeDeChave: true,
-    presenteNoMenu: true,
+    limitarÀsPermissões: 'CadastroParlamentar.',
   },
   children: [
     {
@@ -18,6 +18,7 @@ export default {
       component: ParlamentaresLista,
       meta: {
         título: 'Lista de Parlamentares',
+        títuloParaMenu: 'Parlamentares',
       },
     },
     {
