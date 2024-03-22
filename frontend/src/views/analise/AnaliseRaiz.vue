@@ -84,7 +84,7 @@ iniciar();
             value=""
             :selected="!props.opção"
           >
-            qualquer
+            selecionar
           </option>
           <option
             v-for="item in dashboardEmFoco.opcoes"
