@@ -173,7 +173,7 @@ watch([
           Esfera
         </th>
         <th>
-          Tipo de transferência
+          Tipo
         </th>
         <th>
           Partido
@@ -184,7 +184,7 @@ watch([
         <th>
           Objeto/Empreendimento
         </th>
-        <th>
+        <th class="cell--number">
           Valor
         </th>
       </tr>
@@ -234,7 +234,7 @@ watch([
         <td>
           {{ item.objeto }}
         </td>
-        <td>
+        <td class="cell--number">
           {{ item.valor ? `R$${dinheiro(item.valor)}` : '-' }}
         </td>
         <td>
