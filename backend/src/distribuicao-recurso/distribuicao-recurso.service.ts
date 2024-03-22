@@ -92,10 +92,16 @@ export class DistribuicaoRecursoService {
             },
             select: {
                 id: true,
-                orgao_gestor: true,
                 valor_total: true,
                 empenho: true,
                 vigencia: true,
+                orgao_gestor: {
+                    select: {
+                        id: true,
+                        sigla: true,
+                        descricao: true,
+                    },
+                },
             },
         });
 
