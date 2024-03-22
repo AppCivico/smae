@@ -1,4 +1,5 @@
 <script setup>
+import cargosDeParlamentar from '@/consts/cargosDeParlamentar';
 import { transferenciasVoluntarias as schema } from '@/consts/formSchemas';
 import { useAlertStore } from '@/stores/alert.store';
 import { useOrgansStore } from '@/stores/organs.store';
@@ -9,7 +10,7 @@ import { useTransferenciasVoluntariasStore } from '@/stores/transferenciasVolunt
 import { storeToRefs } from 'pinia';
 import { ErrorMessage, Field, Form } from 'vee-validate';
 import { computed, ref } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
+import { useRouter } from 'vue-router';
 
 import esferasDeTransferencia from '@/consts/esferasDeTransferencia';
 import interfacesDeTransferências from '@/consts/interfacesDeTransferências';
@@ -23,15 +24,17 @@ const ParlamentaresStore = useParlamentaresStore();
 
 const { chamadasPendentes, erro, itemParaEdição } = storeToRefs(TransferenciasVoluntarias);
 const { órgãosComoLista } = storeToRefs(ÓrgãosStore);
-const { lista: parlamentarComoLista } = storeToRefs(ParlamentaresStore);
+const { lista: parlamentarComoLista, parlamentaresPorId } = storeToRefs(ParlamentaresStore);
 const { lista: tipoTransferenciaComoLista } = storeToRefs(TipoDeTransferenciaStore);
 const { lista: partidoComoLista } = storeToRefs(partidoStore);
 
 const router = useRouter();
-const route = useRoute();
 const props = defineProps({
   transferenciaId: {
-    type: Number,
+    type: [
+      Number,
+      String,
+    ],
     default: 0,
   },
 });
@@ -39,6 +42,18 @@ const props = defineProps({
 const alertStore = useAlertStore();
 
 const esferaSelecionada = ref('');
+const parlamentarSelecionado = ref(0);
+
+const cargosDisponíveis = computed(() => (!parlamentarSelecionado.value
+  ? Object.values(cargosDeParlamentar)
+  : parlamentaresPorId.value[parlamentarSelecionado.value]?.mandatos?.map((x) => x.cargo) || []
+));
+
+const partidosDisponíveis = computed(() => (!parlamentarSelecionado.value
+  ? partidoComoLista.value
+  : parlamentaresPorId
+    .value[parlamentarSelecionado.value]?.mandatos?.map((x) => x.partido_atual) || []
+));
 
 const tiposDisponíveis = computed(() => (esferaSelecionada.value
   ? tipoTransferenciaComoLista.value.filter((x) => x.esfera === esferaSelecionada.value)
@@ -103,7 +118,7 @@ iniciar();
   </div>
 
   <Form
-    v-slot="{ errors, isSubmitting, setValues }"
+    v-slot="{ errors, isSubmitting, setFieldValue }"
     :validation-schema="schema"
     :initial-values="itemParaEdição"
     @submit="onSubmit"
@@ -126,14 +141,17 @@ iniciar();
       </div>
 
       <div class="f1">
-        <label class="label">Esfera <span class="tvermelho">*</span></label>
+        <LabelFromYup
+          name="esfera"
+          :schema="schema"
+        />
         <Field
           v-model="esferaSelecionada"
           name="esfera"
           as="select"
           class="inputtext light mb1"
           :class="{ 'error': errors.esfera }"
-          @update-value="setValues({tipo_id: null})"
+          @update:model-value="setFieldValue('tipo_id', null)"
         >
           <option value="">
             Selecionar
@@ -151,6 +169,7 @@ iniciar();
         </div>
       </div>
     </div>
+
     <div class="flex g2 mb1">
       <div class="f1">
         <LabelFromYup
@@ -176,7 +195,7 @@ iniciar();
             :key="item"
             :value="item.id"
           >
-            {{ item.nome }} -- {{ item.esfera }}
+            {{ item.nome }} ({{ item.esfera }})
           </option>
         </Field>
         <ErrorMessage
@@ -185,7 +204,10 @@ iniciar();
         />
       </div>
       <div class="f1">
-        <label class="label">Interface <span class="tvermelho">*</span></label>
+        <LabelFromYup
+          name="interface"
+          :schema="schema"
+        />
         <Field
           name="interface"
           as="select"
@@ -234,7 +256,9 @@ iniciar();
           type="text"
           class="inputtext light mb1"
           placeholder="000.000.000.000/ AAAA.0000000.00000 / AAAA.000.00000"
-          @change="!$event.target.value ? setValues({emenda:null}) : null"
+          @update:model-value="($event) => {
+            if ($event?.target?.value === '') setFieldValue(emenda, null);
+          }"
         />
         <ErrorMessage
           class="error-msg mb1"
@@ -251,7 +275,9 @@ iniciar();
           name="emenda_unitaria"
           type="text"
           class="inputtext light mb1"
-          @change="!$event.target.value ? setValues({emenda:null}) : null"
+          @update:model-value="($event) => {
+            if ($event?.target?.value === '') setFieldValue(emenda_unitaria, null);
+          }"
         />
         <ErrorMessage
           class="error-msg mb1"
@@ -342,6 +368,7 @@ iniciar();
           :schema="schema"
         />
         <Field
+          v-model="parlamentarSelecionado"
           name="parlamentar_id"
           as="select"
           class="inputtext light mb1"
@@ -350,6 +377,9 @@ iniciar();
             loading: ParlamentaresStore.chamadasPendentes?.lista,
           }"
           :disabled="!parlamentarComoLista?.length"
+          @update:model-value="() => {
+            setFieldValue('partido_id', null); setFieldValue('cargo', null);
+          }"
         >
           <option :value="0">
             Selecionar
@@ -398,16 +428,16 @@ iniciar();
           class="inputtext light mb1"
           :class="{
             error: errors.partido_id,
-            loading: ParlamentaresStore.chamadasPendentes?.lista,
+            loading: partidoStore.chamadasPendentes?.lista,
           }"
-          :disabled="!partidoComoLista?.length"
+          :disabled="!partidosDisponíveis?.length"
         >
           <option :value="0">
             Selecionar
           </option>
 
           <option
-            v-for="item in partidoComoLista"
+            v-for="item in partidosDisponíveis"
             :key="item"
             :value="item.id"
           >
@@ -426,21 +456,18 @@ iniciar();
           as="select"
           class="inputtext light mb1"
           :class="{ 'error': errors.cargo }"
+          :disabled="!cargosDisponíveis?.length"
         >
           <option value="">
             Selecionar
           </option>
-          <option value="Senador">
-            Senador
-          </option>
-          <option value="DeputadoEstadual">
-            Deputado Estadual
-          </option>
-          <option value="DeputadoFederal">
-            Deputado Federal
-          </option>
-          <option value="Vereador">
-            Vereador
+
+          <option
+            v-for="(cargo, i) in cargosDisponíveis"
+            :key="i"
+            :value="cargo.valor || cargo"
+          >
+            {{ cargo.nome||cargo }}
           </option>
         </Field>
         <div class="error-msg">
@@ -576,9 +603,11 @@ iniciar();
           class="inputtext light mb1"
           :class="{ 'error': errors.clausula_suspensiva_vencimento }"
           maxlength="10"
-          @update:model-value="values.clausula_suspensiva_vencimento === ''
-            ? values.clausula_suspensiva_vencimento = null
-            : null"
+          @update:model-value="($event) => {
+            if ($event?.target?.value === '') {
+              setFieldValue(clausula_suspensiva_vencimento, null );
+            }
+          }"
         />
         <ErrorMessage
           name="clausula_suspensiva_vencimento"
