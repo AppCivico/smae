@@ -804,6 +804,13 @@ export class OrcamentoRealizadoService {
         if (!filters.dotacao)
             throw new BadRequestException('É necessário enviar a dotação para buscar as metas compartilhadas');
 
+        if (filters.nota_empenho) {
+            if (!filters.nota_empenho.includes('/'))
+                throw new BadRequestException('nota_empenho é necessário informar o ano para a nota de empenho');
+
+            filters.nota_empenho = FormataNotaEmpenho(filters.nota_empenho);
+        }
+
         const ret: ListApenasOrcamentoRealizadoDto = {
             linhas: await this.findAll(filters, user, undefined, true, filters.pdm_id),
         };
