@@ -1,27 +1,55 @@
 <script setup>
+import esferasDeTransferencia from '@/consts/esferasDeTransferencia';
 import { useAlertStore } from '@/stores/alert.store';
 import { useTransferenciasVoluntariasStore } from '@/stores/transferenciasVoluntarias.store';
 import { storeToRefs } from 'pinia';
-import { useRoute } from 'vue-router';
+import { ref, watch } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 
-const tranferenciasVoluntarias = useTransferenciasVoluntariasStore();
+const transferenciasVoluntarias = useTransferenciasVoluntariasStore();
 const route = useRoute();
+const router = useRouter();
 const alertStore = useAlertStore();
 
 const {
   lista, chamadasPendentes, erro, paginação,
-} = storeToRefs(tranferenciasVoluntarias);
+} = storeToRefs(transferenciasVoluntarias);
 
 async function excluirTransferencia(id) {
   alertStore.confirmAction('Deseja mesmo remover esse item?', async () => {
-    if (await tranferenciasVoluntarias.excluirItem(id)) {
-      tranferenciasVoluntarias.buscarTudo();
+    if (await transferenciasVoluntarias.excluirItem(id)) {
+      transferenciasVoluntarias.buscarTudo();
       alertStore.success('Transferência removida.');
     }
   }, 'Remover');
 }
 
-tranferenciasVoluntarias.buscarTudo();
+const ano = ref(route.query.ano);
+const esfera = ref(route.query.esfera);
+const pendentePreenchimentoValores = ref(!!route.query.pendente_preenchimento_valores);
+
+function atualizarUrl() {
+  router.push({
+    query: {
+      ...route.query,
+      ano: ano.value || undefined,
+      esfera: esfera.value || undefined,
+      pendente_preenchimento_valores: pendentePreenchimentoValores.value || undefined,
+    },
+  });
+}
+
+watch([
+  () => route.query.ano,
+  () => route.query.esfera,
+  () => route.query.pendente_preenchimento_valores,
+], () => {
+  transferenciasVoluntarias.buscarTudo({
+    ano: route.query.ano,
+    esfera: route.query.esfera,
+    pendente_preenchimento_valores: route.query.pendente_preenchimento_valores,
+  });
+}, { immediate: true });
 </script>
 <template>
   <div class="flex spacebetween center mb2">
@@ -34,6 +62,58 @@ tranferenciasVoluntarias.buscarTudo();
       Novo Formulário de registro
     </router-link>
   </div>
+
+  <form
+    class="flex bottom mb2 g1"
+    @submit.prevent="atualizarUrl"
+  >
+    <div class="f0">
+      <label class="label tc300">Ano</label>
+      <input
+        v-model="ano"
+        class="inputtext"
+        name="ano"
+        type="number"
+        min="2003"
+      >
+    </div>
+    <div class="f0">
+      <label class="label tc300">Esfera</label>
+      <select
+        v-model="esfera"
+        class="inputtext"
+        name="esfera"
+      >
+        <option value="" />
+        <option
+          v-for="item in Object.values(esferasDeTransferencia)"
+          :key="item.valor"
+          :value="item.valor"
+        >
+          {{ item.nome }}
+        </option>
+      </select>
+    </div>
+
+    <div class="flex f0 center g1 mtauto">
+      <label
+        class="label tc300"
+        for="pendentePreenchimentoValores"
+      >
+        apenas completas
+      </label>
+      <input
+        v-model="pendentePreenchimentoValores"
+        name="pendente_preenchimento_valores"
+        type="checkbox"
+        :value="true"
+      >
+    </div>
+
+    <button class="btn outline bgnone mtauto">
+      Pesquisar
+    </button>
+  </form>
 
   <table class="tablemain mb1">
     <col class="col--botão-de-ação">
@@ -171,7 +251,7 @@ tranferenciasVoluntarias.buscarTudo();
     v-if="paginação.temMais && paginação.tokenDaPróximaPágina"
     :disabled="chamadasPendentes.lista"
     class="btn bgnone outline center"
-    @click="tranferenciasVoluntarias.buscarTudo({
+    @click="transferenciasVoluntarias.buscarTudo({
       ...route.query,
       token_proxima_pagina: paginação.tokenDaPróximaPágina
     })"
