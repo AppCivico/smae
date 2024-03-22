@@ -30,6 +30,12 @@ onMounted(async () => {
   <div class="flex spacebetween center mb2">
     <h3 class="title">Identificação</h3>
     <hr class="ml2 f1">
+    <router-link
+      :to="{ name: 'TransferenciasVoluntariaEditar' }"
+      class="btn big ml2"
+    >
+      Editar
+    </router-link>
   </div>
 
   <div>
@@ -260,6 +266,12 @@ onMounted(async () => {
   <div class="flex spacebetween center mb2">
     <h3 class="title">Recurso Financeiro</h3>
     <hr class="ml2 f1">
+    <router-link
+      :to="{ name: 'RegistroDeTransferenciaEditar' }"
+      class="btn big ml2"
+    >
+      Editar
+    </router-link>
   </div>
 
   <div class="flex g2 mb3 spacebetween">
@@ -394,6 +406,12 @@ onMounted(async () => {
   <div class="flex spacebetween center mb3">
     <h3 class="title">Distribuição de Recursos </h3>
     <hr class="ml2 f1">
+    <router-link
+      :to="{ name: 'TransferenciaDistribuicaoDeRecursosEditar' }"
+      class="btn big ml2"
+    >
+      Editar
+    </router-link>
   </div>
 
   <section>
