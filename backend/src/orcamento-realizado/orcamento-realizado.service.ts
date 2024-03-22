@@ -852,6 +852,7 @@ export class OrcamentoRealizadoService {
         const queryRows = await this.prisma.orcamentoRealizado.findMany({
             where: {
                 meta: { pdm_id: pdm_id },
+                id: { not: filters.not_id },
                 removido_em: null,
                 ano_referencia: filters.ano_referencia, // obrigatório para que o 'join' com a dotação seja feito sem complicações
                 dotacao: filters.dotacao,
