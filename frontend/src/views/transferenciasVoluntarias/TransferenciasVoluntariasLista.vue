@@ -26,8 +26,12 @@ async function excluirTransferencia(id) {
 }
 
 const ano = ref(route.query.ano);
-const esfera = ref(route.query.esfera);
-const pendentePreenchimentoValores = ref(!!route.query.pendente_preenchimento_valores);
+const esfera = ref(route.query.esfera
+  ? Object.keys(esferasDeTransferencia)
+    .find((x) => x.toLowerCase() === route.query.esfera.toLocaleLowerCase())
+  : undefined);
+const palavraChave = ref(route.query.palavra_chave);
+const apenasPreenchimentoCompleto = ref(!!route.query.preenchimento_completo);
 
 function atualizarUrl() {
   router.push({
@@ -35,7 +39,8 @@ function atualizarUrl() {
       ...route.query,
       ano: ano.value || undefined,
       esfera: esfera.value || undefined,
-      pendente_preenchimento_valores: pendentePreenchimentoValores.value || undefined,
+      palavra_chave: palavraChave.value || undefined,
+      preenchimento_completo: !!apenasPreenchimentoCompleto.value || undefined,
     },
   });
 }
@@ -43,12 +48,18 @@ function atualizarUrl() {
 watch([
   () => route.query.ano,
   () => route.query.esfera,
-  () => route.query.pendente_preenchimento_valores,
+  () => route.query.palavra_chave,
+  () => route.query.preenchimento_completo,
 ], () => {
+  transferenciasVoluntarias.$reset();
   transferenciasVoluntarias.buscarTudo({
-    ano: route.query.ano,
-    esfera: route.query.esfera,
-    pendente_preenchimento_valores: route.query.pendente_preenchimento_valores,
+    ano: route.query.ano || undefined,
+    esfera: route.query.esfera
+      ? Object.keys(esferasDeTransferencia)
+        .find((x) => x.toLowerCase() === route.query.esfera.toLocaleLowerCase())
+      : undefined,
+    palavra_chave: route.query.palavra_chave || undefined,
+    preenchimento_completo: !!route.query.preenchimento_completo || undefined,
   });
 }, { immediate: true });
 </script>
@@ -69,8 +80,12 @@ watch([
     @submit.prevent="atualizarUrl"
   >
     <div class="f0">
-      <label class="label tc300">Ano</label>
+      <label
+        for="ano"
+        class="label tc300"
+      >Ano</label>
       <input
+        id="ano"
         v-model="ano"
         class="inputtext"
         name="ano"
@@ -78,9 +93,14 @@ watch([
         min="2003"
       >
     </div>
+
     <div class="f0">
-      <label class="label tc300">Esfera</label>
+      <label
+        for="esfera"
+        class="label tc300"
+      >Esfera</label>
       <select
+        id="esfera"
         v-model="esfera"
         class="inputtext"
         name="esfera"
@@ -96,22 +116,38 @@ watch([
       </select>
     </div>
 
-    <div class="flex f0 center g1 mtauto">
+    <div class="f0">
       <label
+        for="palavra_chave"
         class="label tc300"
-        for="pendentePreenchimentoValores"
+      >Palavra-chave</label>
+      <input
+        id="palavra_chave"
+        v-model="palavraChave"
+        class="inputtext"
+        name="palavra_chave"
+        type="text"
+      >
+    </div>
+
+    <div class="flex f0 center g1">
+      <label
+        class="label tc300 mt2 mb0"
+        for="preenchimento_completo"
       >
         apenas completas
       </label>
       <input
-        v-model="pendentePreenchimentoValores"
-        name="pendente_preenchimento_valores"
+        id="preenchimento_completo"
+        v-model="apenasPreenchimentoCompleto"
+        name="preenchimento_completo"
         type="checkbox"
         :value="true"
+        class="mt2"
       >
     </div>
 
-    <button class="btn outline bgnone mtauto">
+    <button class="btn outline bgnone tcprimary mtauto">
       Pesquisar
     </button>
   </form>
