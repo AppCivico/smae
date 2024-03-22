@@ -914,24 +914,19 @@ export const transferenciaDistribuicaoDeRecursos = object({
 export const registroDeTransferencia = object({
   agencia_aceite: string()
     .label('Agência da conta de aceite')
-    .nullable()
-    .required(),
+    .nullable(),
   agencia_fim: string()
     .label('Agência da conta da secretaria fim')
-    .nullable()
-    .required(),
+    .nullable(),
   banco_aceite: string()
     .label('Banco da conta de aceite')
-    .nullable()
-    .required(),
+    .nullable(),
   banco_fim: string()
     .label('Banco da conta secretaria fim')
-    .nullable()
-    .required(),
+    .nullable(),
   dotacao: string()
     .label('Dotacao')
-    .nullable()
-    .required(),
+    .nullable(),
   valor: number()
     .label('Valor')
     .nullable()
@@ -942,8 +937,7 @@ export const registroDeTransferencia = object({
     .required(),
   ordenador_despesa: string()
     .label('Ordenador de despesas')
-    .nullable()
-    .required(),
+    .nullable(),
   valor_total: number()
     .label('Valor total')
     .required()
@@ -956,8 +950,7 @@ export const registroDeTransferencia = object({
     .nullable(),
   gestor_contrato: string()
     .label('Gestor do Contrato')
-    .nullable()
-    .required(),
+    .nullable(),
 })
 
 export const transferenciasVoluntarias = object({
