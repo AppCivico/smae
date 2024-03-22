@@ -198,6 +198,14 @@ export class UpdateOrcamentoRealizadoDto extends OmitType(CreateOrcamentoRealiza
 
 export class FilterOrcamentoRealizadoDto {
     /**
+     * not_id - remove um ID do retorno do orçamento (usado na busca do compartilhamento)
+     * @example ""
+     */
+    @IsInt({ message: '$property| remove um item de orçamento da lista' })
+    @Type(() => Number)
+    not_id: number;
+
+    /**
      * meta_id: eg: 205 - necessário para buscar o status do 'concluido' no retorno
      * @example ""
      */
@@ -261,6 +269,7 @@ export class FilterOrcamentoRealizadoCompartilhadoDto extends PickType(FilterOrc
     'dotacao',
     'processo',
     'ano_referencia',
+    'not_id'
 ]) {
     @IsInt({ message: '$property| pdm_id precisa ser positivo' })
     @Transform(PositiveNumberTransform)
