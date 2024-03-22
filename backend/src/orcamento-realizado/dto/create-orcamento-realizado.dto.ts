@@ -183,9 +183,9 @@ export class CreateOrcamentoRealizadoDto {
 
     @ValidateNested({ each: true })
     @Type(() => CreateOrcamentoRealizadoItemDto)
-    @ArrayMinSize(1)
+    @ArrayMinSize(1, { message: 'Adicione pelo menos um mês para do orçamento realizado' })
     @ArrayMaxSize(1024) // talvez seja 12, 1 pra cada mês
-    @IsArray({ message: 'Adicione pelo menos um mês para do orçamento realizado' })
+    @IsArray({ message: 'itens do orcamento precisa ser um array' })
     itens: CreateOrcamentoRealizadoItemDto[];
 }
 
