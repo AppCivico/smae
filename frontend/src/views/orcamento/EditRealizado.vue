@@ -456,6 +456,7 @@ export default {
       <ListaDeCompartilhamentos
         v-if="$route.meta.entidadeMãe === 'meta'"
         :ano="ano"
+        :id-do-item="id"
         :pdm="activePdm.id"
         :dotação="currentEdit.dotacao"
         :processo="currentEdit.processo"
