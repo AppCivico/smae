@@ -92,7 +92,7 @@ export default {
         <option
           :value="0"
         >
-          qualquer
+          selecionar
         </option>
         <option
           v-for="item, i in grauDescricao"
@@ -113,7 +113,7 @@ export default {
         <option
           value=""
         >
-          qualquer
+          selecionar
         </option>
         <option
           v-for="item in listaDeStatuses"
