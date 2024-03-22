@@ -125,7 +125,7 @@ async function buscarCompartilhamentos(pdm, ano, dotação, extras) {
   }
 
   if (extras.processo) {
-    params.processo = extras.processo;
+    params.processo = extras.processo.replace(/\D/g, '');
   }
 
   if (extras.notaEmpenho) {
