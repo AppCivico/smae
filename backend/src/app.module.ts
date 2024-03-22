@@ -32,6 +32,7 @@ import { ReportsModule } from './reports/relatorios/reports.module';
 import { UtilsService } from './reports/utils/utils.service';
 import { RequestLogModule } from './request_log/request_log.module';
 import { TransferenciaModule } from './transferencia/transferencia.module';
+import { DistribuicaoRecursoModule } from './distribuicao-recurso/distribuicao-recurso.module';
 
 // Hacks pro JS
 /*
@@ -67,7 +68,8 @@ import { TransferenciaModule } from './transferencia/transferencia.module';
         ParlamentarModule,
         EleicaoModule,
         TransferenciaModule,
-        AvisoEmailModule
+        DistribuicaoRecursoModule,
+        AvisoEmailModule,
     ],
     controllers: [AppController],
     providers: [
