@@ -884,12 +884,38 @@ export const tipoDeTransferencia = object({
 })
 
 export const transferenciaDistribuicaoDeRecursos = object({
-  empenho: string()
-    .label('Empenho')
+  assinatura_municipio: date()
+    .label('data de assinatura do representante do município')
     .nullable()
-    .required(),
+    .min(new Date(2003, 0, 1))
+    .transform((v) => (!v ? null : v)),
+  assinatura_estado: date()
+    .label('data de assinatura do representante do estado')
+    .nullable()
+    .min(new Date(2003, 0, 1))
+    .transform((v) => (!v ? null : v)),
+  assinatura_termo_aceite: date()
+    .label('data de assinatura do termo de aceite')
+    .nullable()
+    .min(new Date(2003, 0, 1))
+    .transform((v) => (!v ? null : v)),
+  contrato: string()
+    .label('número do contrato')
+    .nullable(),
+  convenio: string()
+    .label('número convênio/pré-convênio')
+    .nullable(),
+  conclusao_suspensiva: date()
+    .label('data de conclusão da suspensiva')
+    .nullable()
+    .min(new Date(2003, 0, 1))
+    .transform((v) => (!v ? null : v)),
   dotacao: string()
     .label('Dotacao')
+    .nullable()
+    .required(),
+  empenho: string()
+    .label('Empenho')
     .nullable()
     .required(),
   valor: number()
@@ -904,11 +930,33 @@ export const transferenciaDistribuicaoDeRecursos = object({
     .label('Valor total')
     .required()
     .nullable(),
+  vigencia: date()
+    .label('data de vigência')
+    .nullable()
+    .min(new Date(2003, 0, 1))
+    .transform((v) => (!v ? null : v)),
   objeto: string()
     .label('Objeto/Empreendimento')
     .max(50000)
     .nullable()
     .required(),
+  orgao_gestor_id: number()
+    .label('Gestor Municipal')
+    .min(1, 'Selecione um gestor Municipal')
+    .nullable()
+    .required(),
+  programa_orcamentario_estadual: string()
+    .label('programa orçamentário estadual')
+    .nullable(),
+  programa_orcamentario_municipal: string()
+    .label('programa orçamentário municipal')
+    .nullable(),
+  proposta: string()
+    .label('proposta')
+    .nullable(),
+  registros_sei: string()
+    .label('proposta')
+    .nullable(),
 })
 
 export const registroDeTransferencia = object({
