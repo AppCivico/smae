@@ -49,3 +49,44 @@ ALTER TABLE "aviso_email_disparos" ADD CONSTRAINT "aviso_email_disparos_id_fkey"
 
 -- AddForeignKey
 ALTER TABLE "aviso_email_disparos" ADD CONSTRAINT "aviso_email_disparos_emaildb_queue_id_fkey" FOREIGN KEY ("emaildb_queue_id") REFERENCES "emaildb_queue"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+CREATE OR REPLACE FUNCTION f_tgr_update_ano_projeto_tarefa_trigger()
+    RETURNS TRIGGER
+    AS $$
+DECLARE
+ tmp INTEGER;
+BEGIN
+
+    SELECT projeto_id into tmp
+    from tarefa_cronograma
+    where id = NEW.tarefa_cronograma_id;
+
+    if (tmp is not null) then
+        PERFORM atualiza_ano_orcamento_projeto(tmp);
+    end if;
+
+    RETURN NEW;
+END;
+$$
+LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION f_tgr_update_ano_projeto_trigger()
+    RETURNS TRIGGER
+    AS $$
+DECLARE
+ tmp INTEGER;
+BEGIN
+    PERFORM atualiza_ano_orcamento_projeto(NEW.projeto_id);
+
+    RETURN NEW;
+END;
+$$
+LANGUAGE plpgsql;
+
+DROP TRIGGER tgr_ano_orcamento_projeto_tarefa on tarefa;
+
+CREATE TRIGGER tgr_ano_orcamento_projeto_tarefa
+AFTER INSERT OR UPDATE
+ON tarefa
+FOR EACH ROW
+EXECUTE FUNCTION f_tgr_update_ano_projeto_tarefa_trigger();
