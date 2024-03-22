@@ -56,7 +56,7 @@ iniciar()
 
 <template>
   <div class="flex spacebetween center mb2">
-    <h1>{{ route?.meta?.título || 'Formulário de registro' }}</h1>
+    <h1>Formulário de registro</h1>
     <hr class="ml2 f1">
     <CheckClose />
   </div>
@@ -76,6 +76,8 @@ iniciar()
       <hr class="ml2 f1">
     </div>
 
+
+
     <div class="flex g2 mb1">
       <div class="f1">
         <LabelFromYup name="gestor_contrato" :schema="schema" />
@@ -92,16 +94,16 @@ iniciar()
       </div>
     </div>
 
-    <div class="flex g2 mb1">
-      <div class="f1">
+    <div class=" g2 mb2">
+      <div class="halfInput">
         <LabelFromYup name="valor" :schema="schema" />
-        <Field name="valor" type="text" class="inputtext light mb1" placeholder="R$ 000.000.000.000,00"/>
-        <ErrorMessage class="error-msg mb1" name="valor" />
+        <Field name="valor" type="text" class="inputtext light mb2" placeholder="R$ 000.000.000.000,00"/>
+        <ErrorMessage class="error-msg mb2" name="valor" />
       </div>
-      <div class="f1">
+      <div class="halfInput">
         <LabelFromYup name="valor_contrapartida" :schema="schema" />
-        <Field name="valor_contrapartida" type="text" class="inputtext light mb1" placeholder="R$ 000.000.000.000,00"/>
-        <ErrorMessage class="error-msg mb1" name="valor_contrapartida" />
+        <Field name="valor_contrapartida" type="text" class="inputtext light mb2" placeholder="R$ 000.000.000.000,00"/>
+        <ErrorMessage class="error-msg mb2" name="valor_contrapartida" />
       </div>
     </div>
 
@@ -131,15 +133,15 @@ iniciar()
     </div>
 
     <div class="mb1">
-      <div class="f1 mb2">
-        <LabelFromYup name="gestor_contrato" :schema="schema" />
-        <Field name="gestor_contrato" type="text" class="inputtext light mb1" />
-        <ErrorMessage class="error-msg mb1" name="gestor_contrato" />
+      <div class="f1 mb1">
+        <LabelFromYup name="programa_orcamentario_municipal" :schema="schema" />
+        <Field name="programa_orcamentario_municipal" type="text" class="inputtext light mb1" />
+        <ErrorMessage class="error-msg mb1" name="programa_orcamentario_municipal" />
       </div>
-      <div class="f1 mb2">
-        <LabelFromYup name="gestor_contrato" :schema="schema" />
-        <Field name="gestor_contrato" type="text" class="inputtext light mb1" />
-        <ErrorMessage class="error-msg mb1" name="gestor_contrato" />
+      <div class="f1 mb1">
+        <LabelFromYup name="programa_orcamentario_estadual" :schema="schema" />
+        <Field name="programa_orcamentario_estadual" type="text" class="inputtext light mb1" />
+        <ErrorMessage class="error-msg mb1" name="programa_orcamentario_estadual" />
       </div>
     </div>
 
@@ -152,42 +154,42 @@ iniciar()
       <!-- falta campo -->
     </div>
 
-    <div class="flex g2 mb1">
-      <div class="f1 mb2">
-        <LabelFromYup name="gestor_contrato" :schema="schema" />
-        <Field name="gestor_contrato" type="text" class="inputtext light mb1" />
-        <ErrorMessage class="error-msg mb1" name="gestor_contrato" />
+    <div class="flex g2">
+      <div class="f1 mb1">
+        <LabelFromYup name="numero_proposta" :schema="schema" />
+        <Field name="numero_proposta" type="text" class="inputtext light mb1" />
+        <ErrorMessage class="error-msg mb1" name="numero_proposta" />
       </div>
-      <div class="f1 mb2">
-        <LabelFromYup name="gestor_contrato" :schema="schema" />
-        <Field name="gestor_contrato" type="text" class="inputtext light mb1" />
-        <ErrorMessage class="error-msg mb1" name="gestor_contrato" />
+      <div class="f1 mb1">
+        <LabelFromYup name="numero_convenio" :schema="schema" />
+        <Field name="numero_convenio" type="text" class="inputtext light mb1" />
+        <ErrorMessage class="error-msg mb1" name="numero_convenio" />
       </div>
     </div>
 
-    <div class="flex g2 mb1">
+    <div class="flex g2">
       <div class="f1">
-        <LabelFromYup name="gestor_contrato" :schema="schema" />
-        <Field name="gestor_contrato" type="text" class="inputtext light mb1" />
-        <ErrorMessage class="error-msg mb1" name="gestor_contrato" />
+        <LabelFromYup name="numero_contrato" :schema="schema" />
+        <Field name="numero_contrato" type="text" class="inputtext light mb1" />
+        <ErrorMessage class="error-msg mb1" name="numero_contrato" />
       </div>
       <div class="f1">
         <LabelFromYup
-          name="clausula_suspensiva_vencimento"
+          name="data_assinatura_termo_aceite"
           :schema="schema"
         />
         <Field
-          name="clausula_suspensiva_vencimento"
+          name="data_assinatura_termo_aceite"
           type="date"
           class="inputtext light mb1"
-          :class="{ 'error': errors.clausula_suspensiva_vencimento }"
+          :class="{ 'error': errors.data_assinatura_termo_aceite }"
           maxlength="10"
-          @update:model-value="values.clausula_suspensiva_vencimento === ''
-            ? values.clausula_suspensiva_vencimento = null
+          @update:model-value="values.data_assinatura_termo_aceite === ''
+            ? values.data_assinatura_termo_aceite = null
             : null"
         />
         <ErrorMessage
-          name="clausula_suspensiva_vencimento"
+          name="data_assinatura_termo_aceite"
           class="error-msg"
         />
       </div>
@@ -196,88 +198,90 @@ iniciar()
     <div class="flex g2">
       <div class="f1">
         <LabelFromYup
-          name="clausula_suspensiva_vencimento"
+          name="data_assinatura_representante_municipio"
           :schema="schema"
         />
         <Field
-          name="clausula_suspensiva_vencimento"
-          type="date"
-          class="inputtext light mb1"
-          :class="{ 'error': errors.clausula_suspensiva_vencimento }"
-          maxlength="10"
-          @update:model-value="values.clausula_suspensiva_vencimento === ''
-            ? values.clausula_suspensiva_vencimento = null
-            : null"
-        />
-        <ErrorMessage
-          name="clausula_suspensiva_vencimento"
-          class="error-msg"
-        />
-      </div>
-      <div class="f1">
-        <LabelFromYup
-          name="clausula_suspensiva_vencimento"
-          :schema="schema"
-        />
-        <Field
-          name="clausula_suspensiva_vencimento"
-          type="date"
-          class="inputtext light mb1"
-          :class="{ 'error': errors.clausula_suspensiva_vencimento }"
-          maxlength="10"
-          @update:model-value="values.clausula_suspensiva_vencimento === ''
-            ? values.clausula_suspensiva_vencimento = null
-            : null"
-        />
-        <ErrorMessage
-          name="clausula_suspensiva_vencimento"
-          class="error-msg"
-        />
-      </div>
-    </div>
-
-    <div class="flex g2">
-      <div class="f1">
-        <LabelFromYup
-          name="clausula_suspensiva_vencimento"
-          :schema="schema"
-        />
-        <Field
-          name="clausula_suspensiva_vencimento"
+          name="data_assinatura_representante_municipio"
           type="date"
           class="inputtext light"
-          :class="{ 'error': errors.clausula_suspensiva_vencimento }"
+          :class="{ 'error': errors.data_assinatura_representante_municipio }"
           maxlength="10"
-          @update:model-value="values.clausula_suspensiva_vencimento === ''
-            ? values.clausula_suspensiva_vencimento = null
+          @update:model-value="values.data_assinatura_representante_municipio === ''
+            ? values.data_assinatura_representante_municipio = null
             : null"
         />
         <ErrorMessage
-          name="clausula_suspensiva_vencimento"
+          name="data_assinatura_representante_municipio"
           class="error-msg"
         />
       </div>
       <div class="f1">
         <LabelFromYup
-          name="clausula_suspensiva_vencimento"
+          name="assinatura_representante_estado"
           :schema="schema"
         />
         <Field
-          name="clausula_suspensiva_vencimento"
+          name="assinatura_representante_estado"
           type="date"
           class="inputtext light mb1"
-          :class="{ 'error': errors.clausula_suspensiva_vencimento }"
+          :class="{ 'error': errors.assinatura_representante_estado }"
           maxlength="10"
-          @update:model-value="values.clausula_suspensiva_vencimento === ''
-            ? values.clausula_suspensiva_vencimento = null
+          @update:model-value="values.assinatura_representante_estado === ''
+            ? values.assinatura_representante_estado = null
             : null"
         />
         <ErrorMessage
-          name="clausula_suspensiva_vencimento"
+          name="assinatura_representante_estado"
           class="error-msg"
         />
       </div>
     </div>
+
+    <div class="flex g2 mb3">
+      <div class="f1">
+        <LabelFromYup
+          name="data_vigencia"
+          :schema="schema"
+        />
+        <Field
+          name="data_vigencia"
+          type="date"
+          class="inputtext light mb1"
+          :class="{ 'error': errors.data_vigencia }"
+          maxlength="10"
+          @update:model-value="values.data_vigencia === ''
+            ? values.data_vigencia = null
+            : null"
+        />
+        <ErrorMessage
+          name="data_vigencia"
+          class="error-msg"
+        />
+      </div>
+      <div class="f1">
+        <LabelFromYup
+          name="clausula_suspensiva_conclusao"
+          :schema="schema"
+        />
+        <Field
+          name="clausula_suspensiva_conclusao"
+          type="date"
+          class="inputtext light mb1"
+          :class="{ 'error': errors.clausula_suspensiva_conclusao }"
+          maxlength="10"
+          @update:model-value="values.clausula_suspensiva_conclusao === ''
+            ? values.clausula_suspensiva_conclusao = null
+            : null"
+        />
+        <ErrorMessage
+          name="clausula_suspensiva_conclusao"
+          class="error-msg"
+        />
+      </div>
+    </div>
+
+
 
     <FormErrorsList :errors="errors" />
 
