@@ -805,9 +805,8 @@ export class OrcamentoRealizadoService {
             throw new BadRequestException('É necessário enviar a dotação para buscar as metas compartilhadas');
 
         if (filters.nota_empenho) {
-            if (filters.nota_empenho.includes('/')) {
+            if (!filters.nota_empenho.includes('/'))
                 filters.nota_empenho = `${filters.nota_empenho}/${filters.ano_referencia}`;
-            }
 
             filters.nota_empenho = FormataNotaEmpenho(filters.nota_empenho);
         }
