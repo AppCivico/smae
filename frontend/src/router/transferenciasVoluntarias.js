@@ -114,7 +114,7 @@ export default {
       name: 'TransferenciasVoluntariasDocumentos',
       props: true,
       meta: {
-        título: 'Transferencia documento',
+        título: 'Documentos',
         rotasParaMenuSecundário,
       },
       children: [
