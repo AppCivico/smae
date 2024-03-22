@@ -8,6 +8,7 @@ import { useTipoDeTransferenciaStore } from '@/stores/tipoDeTransferencia.store'
 import { useTransferenciasVoluntariasStore } from '@/stores/transferenciasVoluntarias.store';
 import { storeToRefs } from 'pinia';
 import { ErrorMessage, Field, Form } from 'vee-validate';
+import { computed, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
 import esferasDeTransferencia from '@/consts/esferasDeTransferencia';
@@ -36,6 +37,12 @@ const props = defineProps({
 });
 
 const alertStore = useAlertStore();
+
+const esferaSelecionada = ref('');
+
+const tiposDisponíveis = computed(() => (esferaSelecionada.value
+  ? tipoTransferenciaComoLista.value.filter((x) => x.esfera === esferaSelecionada.value)
+  : tipoTransferenciaComoLista.value));
 
 async function onSubmit(_, { controlledValues }) {
   try {
@@ -121,10 +128,12 @@ iniciar();
       <div class="f1">
         <label class="label">Esfera <span class="tvermelho">*</span></label>
         <Field
+          v-model="esferaSelecionada"
           name="esfera"
           as="select"
           class="inputtext light mb1"
           :class="{ 'error': errors.esfera }"
+          @change="setValues({tipo_id: null})"
         >
           <option value="">
             Selecionar
@@ -163,7 +172,7 @@ iniciar();
           </option>
 
           <option
-            v-for="item in tipoTransferenciaComoLista"
+            v-for="item in tiposDisponíveis"
             :key="item"
             :value="item.id"
           >
