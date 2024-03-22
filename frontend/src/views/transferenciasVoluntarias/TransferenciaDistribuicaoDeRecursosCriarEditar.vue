@@ -3,43 +3,46 @@ import { transferenciaDistribuicaoDeRecursos as schema } from '@/consts/formSche
 import { useAlertStore } from '@/stores/alert.store';
 import { storeToRefs } from 'pinia';
 import truncate from '@/helpers/truncate';
+import dateToField from '@/helpers/dateToField';
 import { ErrorMessage, Field, Form} from 'vee-validate';
 import { useRoute, useRouter } from 'vue-router';
-import { useTransferenciasVoluntariasStore } from '@/stores/transferenciasVoluntarias.store';
+import { useDistribuicaoRecursosStore } from '@/stores/transferenciasDistribuicaoRecursos.store';
 import { useOrgansStore } from '@/stores/organs.store';
+import { ref } from 'vue';
 
-const transferenciasVoluntarias = useTransferenciasVoluntariasStore();
+const distribuicaoRecursos = useDistribuicaoRecursosStore();
 const ÓrgãosStore = useOrgansStore();
 
-const { chamadasPendentes, erro, lista} = storeToRefs(transferenciasVoluntarias);
+const { chamadasPendentes, erro, lista} = storeToRefs(distribuicaoRecursos);
 const { órgãosComoLista } = storeToRefs(ÓrgãosStore);
 
 const router = useRouter();
 const route = useRoute();
 const props = defineProps({
-  tipoId: {
+  transferenciaId: {
     type: Number,
     default: 0,
   },
 });
 
 const alertStore = useAlertStore();
+const mostrarDistribuicaoRegistroForm = ref(false);
 
 async function onSubmit(values) {
   try {
     let r;
-    const msg = props.tipoId
+    const msg = props.transferenciaId
       ? 'Dados salvos com sucesso!'
       : 'Item adicionado com sucesso!';
 
-    if (props.tipoId) {
-      r = await transferenciasVoluntarias.salvarItem(values, props.tipoId);
+    if (props.transferenciaId) {
+      r = await distribuicaoRecursos.salvarItem(values, props.transferenciaId);
     } else {
-      r = await transferenciasVoluntarias.salvarItem(values);
+      r = await distribuicaoRecursos.salvarItem(values);
     }
     if (r) {
       alertStore.success(msg);
-      transferenciasVoluntarias.$reset();
+      distribuicaoRecursos.$reset();
       router.push({ name: 'tipoDeTrasferenciaListar' });
     }
   } catch (error) {
@@ -48,12 +51,17 @@ async function onSubmit(values) {
 }
 
 function iniciar(){
-  if (props.tipoId) {
-    transferenciasVoluntarias.buscarTudo(props.tipoId);
+  if (props.transferenciaId) {
+    distribuicaoRecursos.buscarTudo(props.transferenciaId);
   }
   ÓrgãosStore.getAll();
 }
 iniciar()
+
+function registrarNovaDistribuicaoRecursos() {
+  mostrarDistribuicaoRegistroForm.value = true;
+}
+
 
 </script>
 
@@ -64,12 +72,86 @@ iniciar()
     <CheckClose />
   </div>
 
-  <div class="flex spacebetween center mb1">
+  <div class="flex spacebetween center mb2">
     <h3 class="title">Distribuição de Recursos</h3>
     <hr class="ml2 f1">
   </div>
 
-  <Form v-slot="{ errors, isSubmitting }"
+  <div class="mb2">
+    <table class="tablemain mb1">
+      <col>
+      <col>
+      <col>
+      <col>
+      <col class="col--botão-de-ação">
+      <col class="col--botão-de-ação">
+      <thead>
+        <tr>
+          <th>
+            Gestor municipal
+          </th>
+          <th>
+            Valor total
+          </th>
+          <th>
+            empenho
+          </th>
+          <th>
+            data de vigência
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr
+          v-for="item in lista"
+          :key="item.id"
+        >
+          <td>{{ item.orgao_gestor.sigla }}</td>
+          <td>{{ item.valor_total }}</td>
+          <td>{{ item.empenho? 'Sim' : 'Não'  }}</td>
+          <td>{{  dateToField(item.vigencia) }}</td>
+          <td>
+            <button
+              class="like-a__text"
+              arial-label="excluir"
+              title="excluir"
+              type="button"
+              @click="excluirItem('distribuição de recurso', item.id)"
+            >
+              <svg
+                width="20"
+                height="20"
+              ><use xlink:href="#i_remove" /></svg>
+            </button>
+          </td>
+          <td>
+            <button
+              class="tprimary"
+            >
+              <svg
+                width="20"
+                height="20"
+              ><use xlink:href="#i_edit" /></svg>
+            </button>
+          </td>
+        </tr>
+      </tbody>
+      <tbody>
+        <tr v-if="!lista.length">
+          <td colspan="5">
+            Nenhum Registro de Distribuição de Recursos encontrado.
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <button @click="registrarNovaDistribuicaoRecursos" class="adicionarNovo">
+      <svg
+        width="20"
+        height="20"
+      ><use xlink:href="#i_+" /></svg> Registrar nova distribuição de recurso
+    </button>
+  </div>
+  <Form v-if="mostrarDistribuicaoRegistroForm" v-slot="{ errors, isSubmitting }"
     :validation-schema="schema"
     :initial-values="itemParaEdição"
     @submit="onSubmit">
@@ -161,7 +243,11 @@ iniciar()
         <Field name="dotacao" type="text" class="inputtext light mb1" placeholder="16.24.12.306.3016.2.873.33903900.00"/>
         <ErrorMessage class="error-msg mb1" name="dotacao" />
       </div>
-      <!-- falta campo -->
+      <div class="f1">
+        <LabelFromYup name="registros_sei" :schema="schema" />
+        <Field name="registros_sei" type="text" class="inputtext light mb1"/>
+        <ErrorMessage class="error-msg mb1" name="registros_sei" />
+      </div>
     </div>
 
     <div class="flex g2">
@@ -291,8 +377,6 @@ iniciar()
       </div>
     </div>
 
-
-
     <FormErrorsList :errors="errors" />
 
     <div class="flex spacebetween center mb2">
@@ -314,4 +398,16 @@ iniciar()
     </div>
   </div>
 </template>
+
+
+<style scoped>
+button.adicionarNovo{
+  border: 0;
+  background: none;
+  font-size: 12px;
+  text-transform: uppercase;
+  font-weight: 900;
+  color: #3B5881;
+}
+</style>
 

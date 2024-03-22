@@ -2,7 +2,7 @@ import { defineStore } from 'pinia';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
-export const useTransferenciasVoluntariasStore = defineStore('transferenciasVoluntarias', {
+export const useDistribuicaoRecursosStore = defineStore('distribuicaoRecursos', {
   state: () => ({
     lista: [],
     emFoco: null,
@@ -19,7 +19,7 @@ export const useTransferenciasVoluntariasStore = defineStore('transferenciasVolu
       this.erro = null;
 
       try {
-        const resposta = await this.requestS.get(`${baseUrl}/transferencia/${id}`, params);
+        const resposta = await this.requestS.get(`${baseUrl}/distribuicao-recurso/${id}`, params);
         this.emFoco = {
           ...resposta,
         };
@@ -34,7 +34,7 @@ export const useTransferenciasVoluntariasStore = defineStore('transferenciasVolu
       this.erro = null;
 
       try {
-        const { linhas } = await this.requestS.get(`${baseUrl}/transferencia`, params);
+        const { linhas } = await this.requestS.get(`${baseUrl}/distribuicao-recurso`, params);
         this.lista = linhas;
       } catch (erro) {
         this.erro = erro;
@@ -47,7 +47,7 @@ export const useTransferenciasVoluntariasStore = defineStore('transferenciasVolu
       this.erro = null;
 
       try {
-        await this.requestS.delete(`${baseUrl}/transferencia/${id}`);
+        await this.requestS.delete(`${baseUrl}/distribuicao-recurso/${id}`);
         this.chamadasPendentes.lista = false;
         return true;
       } catch (erro) {
@@ -63,9 +63,9 @@ export const useTransferenciasVoluntariasStore = defineStore('transferenciasVolu
 
       try {
         if (id) {
-          await this.requestS.patch(`${baseUrl}/transferencia/${id}`, params);
+          await this.requestS.patch(`${baseUrl}/distribuicao-recurso/${id}`, params);
         } else {
-          await this.requestS.post(`${baseUrl}/transferencia`, params);
+          await this.requestS.post(`${baseUrl}/distribuicao-recurso`, params);
         }
 
         this.chamadasPendentes.emFoco = false;
