@@ -18,6 +18,10 @@ const props = defineProps({
     ],
     required: true,
   },
+  idDoItem: {
+    type: Number,
+    default: 0,
+  },
   ano: {
     type: [
       Number,
@@ -127,6 +131,10 @@ async function buscarCompartilhamentos(pdm, ano, dotação, extras) {
       break;
   }
 
+  if (extras.idDoItem) {
+    params.not_id = extras.idDoItem;
+  }
+
   if (extras.processo) {
     params.processo = extras.processo.replace(/\D/g, '');
   }
@@ -149,6 +157,7 @@ async function buscarCompartilhamentos(pdm, ano, dotação, extras) {
 
 watch(props, (novosValores) => {
   buscarCompartilhamentos(novosValores.pdm, novosValores.ano, novosValores.dotação, {
+    idDoItem: novosValores.idDoItem,
     processo: novosValores.processo,
     notaEmpenho: novosValores.notaEmpenho,
   });
