@@ -133,7 +133,7 @@ iniciar();
           as="select"
           class="inputtext light mb1"
           :class="{ 'error': errors.esfera }"
-          @change="setValues({tipo_id: null})"
+          @update-value="setValues({tipo_id: null})"
         >
           <option value="">
             Selecionar
