@@ -342,7 +342,7 @@ watch(currentEdit, (novosValores) => {
           :pdm="activePdm.id"
           :dotação="values.dotacao"
           :processo="values.processo"
-          :nota-empenho="values.nota_empenho"
+          :nota-empenho="`${values.nota_empenho}/${values.nota_ano}`"
           class="mb1"
         />
 
