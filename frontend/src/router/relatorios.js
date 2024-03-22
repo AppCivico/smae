@@ -217,7 +217,7 @@ export default {
       path: 'parlamentares',
       meta: {
         título: 'Relatórios de parlamentares',
-        títuloParaMenu: 'Relatório de parlamentares',
+        títuloParaMenu: 'Parlamentares',
         limitarÀsPermissões: 'Reports.executar.CasaCivil',
       },
       children: [
@@ -242,7 +242,7 @@ export default {
       path: 'transferencias-voluntarias',
       meta: {
         título: 'Relatórios de transferências voluntárias',
-        títuloParaMenu: 'Relatório de transferências voluntárias',
+        títuloParaMenu: 'Transferências voluntárias',
         limitarÀsPermissões: 'Reports.executar.CasaCivil',
       },
       children: [
