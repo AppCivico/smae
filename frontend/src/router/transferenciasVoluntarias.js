@@ -9,6 +9,23 @@ import TransferenciasVoluntariasEnviarArquivo from '@/views/transferenciasVolunt
 import transferenciasVoluntariasTarefas from './transferenciasVoluntarias.tarefas';
 import DialogWrapper from '@/views/DialogWrapper.vue'
 
+const rotasParaMenuSecundário = [
+  {
+    rotas: [
+      'TransferenciasVoluntariasDetalhes',
+    ],
+  },
+  {
+    título: 'Formulários',
+    rotas: [
+      'TransferenciasVoluntariaEditar',
+      'RegistroDeTransferenciaEditar',
+      'TransferenciaDistribuicaoDeRecursosEditar',
+      'TransferenciasVoluntariasDocumentos',
+    ],
+  },
+];
+
 export default {
   path: '/trasferencias-voluntarias',
   component: TransferenciasVoluntariasRaiz,
@@ -39,35 +56,42 @@ export default {
       },
     },
     {
-      name: 'TransferenciaDistribuicaoDeRecursosCriar',
-      path: 'novo',
+      name: 'TransferenciaDistribuicaoDeRecursosEditar',
+      path: ':transferenciaId/transferenciaDistribuicaoDeRecursosEditar',
       component: TransferenciaDistribuicaoDeRecursosCriarEditar, //Dev - teste
+      props: ({ params }) => ({
+        ...params,
+        ...{ transferenciaId: Number.parseInt(params.transferenciaId, 10) || undefined },
+      }),
       meta: {
-        título: 'Formulário de registro',
+        título: 'Recursos Financeiros',
+        rotasParaMenuSecundário
       },
     },
     {
-      name: 'RegistroDeTransferenciaCriar',
-      path: 'novo',
-      component: RegistroDeTransferenciaCriarEditar, //Dev - teste
+      name: 'RegistroDeTransferenciaEditar',
+      path: ':transferenciaId/registroDeTransferenciaEditar',
+      component: RegistroDeTransferenciaCriarEditar,
+      props: ({ params }) => ({
+        ...params,
+        ...{ transferenciaId: Number.parseInt(params.transferenciaId, 10) || undefined },
+      }),
       meta: {
-        título: 'Formulário de registro',
+        título: 'Distribuição de recursos',
+        rotasParaMenuSecundário,
       },
     },
     {
       name: 'TransferenciasVoluntariasDetalhes',
       path: ':transferenciaId/transferenciasVoluntariasDetalhes',
-      component: TransferenciasVoluntariasDetalhes, //Dev - teste
+      component: TransferenciasVoluntariasDetalhes,
       props: ({ params }) => ({
         ...params,
         ...{ transferenciaId: Number.parseInt(params.transferenciaId, 10) || undefined },
       }),
       meta: {
         título: 'Resumo',
-        rotasParaMenuSecundário: [
-          'TransferenciasVoluntariasDocumentos',
-          'TransferenciasVoluntariasDetalhes'
-        ],
+        rotasParaMenuSecundário,
       },
     },
     {
@@ -80,11 +104,8 @@ export default {
       }),
 
       meta: {
-        título: 'Editar Trasferência',
-        rotasParaMenuSecundário: [
-          'TransferenciasVoluntariasDocumentos',
-          'TransferenciasVoluntariasDetalhes'
-        ],
+        título: 'Identificação, origem, transferência',
+        rotasParaMenuSecundário,
       },
     },
     {
@@ -94,10 +115,7 @@ export default {
       props: true,
       meta: {
         título: 'Transferencia documento',
-        rotasParaMenuSecundário: [
-          'TransferenciasVoluntariasDocumentos',
-          'TransferenciasVoluntariasDetalhes'
-        ],
+        rotasParaMenuSecundário,
       },
       children: [
         {
