@@ -351,6 +351,10 @@ export const useParlamentaresStore = defineStore('parlamentaresStore', {
         regiao_id: representatividade?.regiao?.id,
       };
     },
+    parlamentaresPorId: (({ lista }) => lista.reduce((acc, cur) => {
+      acc[cur.id] = cur;
+      return acc;
+    }, {})),
     // TODO: fazer edição
     suplenteParaEdição({ emFoco }) {
       console.log('suplenteParaEdição: ', emFoco);
