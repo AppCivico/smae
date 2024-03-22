@@ -1,4 +1,5 @@
-import { defineStore } from "pinia";
+import dateTimeToDate from '@/helpers/dateTimeToDate';
+import { defineStore } from 'pinia';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
@@ -209,6 +210,7 @@ export const useTransferenciasVoluntariasStore = defineStore(
 
       itemParaEdição: ({ emFoco }) => ({
         ...emFoco,
+        clausula_suspensiva_vencimento: dateTimeToDate(emFoco?.clausula_suspensiva_vencimento),
         orgao_concedente_id: emFoco?.orgao_concedente?.id || null,
         parlamentar_id: emFoco?.parlamentar?.id || null,
         partido_id: emFoco?.partido?.id || null,
