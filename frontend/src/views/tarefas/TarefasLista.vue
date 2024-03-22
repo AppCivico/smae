@@ -2,7 +2,6 @@
 import LegendaEstimadoVsEfetivo from '@/components/LegendaEstimadoVsEfetivo.vue';
 import LinhaDeCronograma from '@/components/projetos/LinhaDeCronograma.vue';
 import CabecalhoResumo from '@/components/tarefas/CabecalhoResumo.vue';
-import { emailTransferencia as schema } from '@/consts/formSchemas';
 import { useTarefasStore } from '@/stores/tarefas.store.ts';
 import { storeToRefs } from 'pinia';
 import { computed, ref } from 'vue';
@@ -26,35 +25,6 @@ const nívelMáximoPermitido = computed(
 
 const nívelMáximoVisível = ref(0);
 
-const newEmail = ref('');
-const localEmails = ref([
-  'joao@hotmail.com',
-  'maria@gmail.com',
-  'carlos@yahoo.com',
-]);
-
-const periodicidades = ['Semanal', 'Quinzenal', 'Mensal'];
-
-function removeEmail(index, event) {
-  console.log('entrou no removeEmail');
-  event.preventDefault();
-  localEmails.value.splice(index, 1);
-  console.log('localEmails: ', localEmails.value);
-}
-
-function addNewEmail() {
-  const emails = newEmail.value
-    .split(/[;, ]+/)
-    .filter((email) => email.trim() !== '');
-  emails.forEach((email) => {
-    if (email !== '' && !localEmails.value.includes(email)) {
-      localEmails.value.push(email);
-    }
-  });
-  newEmail.value = '';
-}
-
-function onSubmit() {}
 let prefixo = null;
 
 async function iniciar() {
@@ -113,115 +83,13 @@ export default {
   <CabecalhoResumo :em-foco="projetoEmFoco" />
 
   <!--  v-if="route.meta.entidadeMãe === 'transferencia'" -->
-  <div class="mb4 disparo-email">
-    <div class="">
-      <Form
-        :validation-schema="schema"
-        @submit="onSubmit"
-      >
-        <div class="mb2">
-          <LabelFromYup
-            name="disparo_email"
-            :schema="schema"
-          />
-          <Field
-            name="disparo_email"
-            type="checkbox"
-            value="true"
-            class="inputcheckbox"
-          />
-        </div>
-        <div class="flex mb2 flexwrap g2">
-          <div class="f1">
-            <LabelFromYup
-              name="periodicidade"
-              :schema="schema"
-            />
-            <Field
-              name="periodicidade"
-              as="select"
-              class="inputtext light mb1"
-            >
-              <option
-                v-for="periodicidade in periodicidades"
-                :key="periodicidade"
-                :value="periodicidade"
-              >
-                {{ periodicidade }}
-              </option>
-            </Field>
-          </div>
-          <div class="f1">
-            <LabelFromYup
-              name="data"
-              :schema="schema"
-            />
-            <Field
-              name="data"
-              type="date"
-              class="inputtext light mb1"
-              maxlength="10"
-              placeholder="dd/mm/aaaa"
-            />
-          </div>
-        </div>
-        <div class="mb2">
-          <div class="f1">
-            <LabelFromYup
-              name="com_copia"
-              :schema="schema"
-            />
-            <Field
-              v-model="newEmail"
-              name="com_copia"
-              type="email"
-              class="inputtext light mb1"
-              maxlength="250"
-              placeholder="email@dominio.com"
-              @blur="addNewEmail()"
-            />
-            <ul
-              v-if="localEmails"
-              class="flex flexwrap"
-            >
-              <li
-                v-for="(email, index) in localEmails"
-                :key="index"
-              >
-                <button
-                  type="button"
-                  class="tagsmall"
-                  tabindex="1"
-                  @click="removeEmail(index, $event)"
-                >
-                  {{ email }}
-                  <svg
-                    width="12"
-                    height="12"
-                  ><use xlink:href="#i_x" /></svg>
-                </button>
-              </li>
-            </ul>
-          </div>
-        </div>
-      </Form>
-
-      <div class="flex center">
-        <button
-          class="like-a__text addlink"
-          type="button"
-          @click="salvarDisparo"
-        >
-          <svg
-            width="20"
-            height="20"
-          >
-            <use xlink:href="#i_+" />
-          </svg>
-          Salvar disparo de e-mail
-        </button>
-      </div>
-    </div>
+  <div class="flex center mb4">
+    <router-link :to="{ name: 'EmailModal' }" class="addlink mb1">
+      <svg width="20" height="20">
+        <use xlink:href="#i_+" />
+      </svg>
+      Adicionar envio de e-mail
+    </router-link>
   </div>
 
   <div class="mb2">
