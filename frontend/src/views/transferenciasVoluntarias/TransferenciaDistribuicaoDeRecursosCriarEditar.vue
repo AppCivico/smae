@@ -1,15 +1,18 @@
 <script setup>
 import { transferenciaDistribuicaoDeRecursos as schema } from '@/consts/formSchemas';
 import { useAlertStore } from '@/stores/alert.store';
-import { useTransferenciasVoluntariasStore } from '@/stores/transferenciasVoluntarias.store';
-
 import { storeToRefs } from 'pinia';
+import truncate from '@/helpers/truncate';
 import { ErrorMessage, Field, Form} from 'vee-validate';
 import { useRoute, useRouter } from 'vue-router';
+import { useTransferenciasVoluntariasStore } from '@/stores/transferenciasVoluntarias.store';
+import { useOrgansStore } from '@/stores/organs.store';
 
 const transferenciasVoluntarias = useTransferenciasVoluntariasStore();
-const { chamadasPendentes, erro, lista} = storeToRefs(transferenciasVoluntarias);
+const ÓrgãosStore = useOrgansStore();
 
+const { chamadasPendentes, erro, lista} = storeToRefs(transferenciasVoluntarias);
+const { órgãosComoLista } = storeToRefs(ÓrgãosStore);
 
 const router = useRouter();
 const route = useRoute();
@@ -48,8 +51,8 @@ function iniciar(){
   if (props.tipoId) {
     transferenciasVoluntarias.buscarTudo(props.tipoId);
   }
+  ÓrgãosStore.getAll();
 }
-console.log(schema)
 iniciar()
 
 </script>
@@ -76,12 +79,21 @@ iniciar()
       <hr class="ml2 f1">
     </div>
 
-    <div class="flex g2 mb1">
-      <div class="f1">
-        <LabelFromYup name="gestor_contrato" :schema="schema" />
-        <Field name="gestor_contrato" type="text" class="inputtext light mb1" />
-        <ErrorMessage class="error-msg mb1" name="gestor_contrato" />
-      </div>
+    <div class="f1 mb2">
+      <LabelFromYup name="orgao_gestor_id" :schema="schema" />
+      <Field name="orgao_gestor_id" as="select" class="inputtext light mb1" :class="{
+          error: errors.orgao_gestor_id,
+          loading: ÓrgãosStore.chamadasPendentes?.lista,
+        }" :disabled="!órgãosComoLista?.length">
+        <option :value="0">
+          Selecionar
+        </option>
+        <option v-for="item in órgãosComoLista" :key="item" :value="item.id"
+          :title="item.descricao?.length > 36 ? item.descricao : null">
+          {{ item.sigla }} - {{ truncate(item.descricao, 36) }}
+        </option>
+      </Field>
+      <ErrorMessage name="orgao_gestor_id" class="error-msg" />
     </div>
 
     <div  class="flex g2 mb1">
@@ -131,12 +143,12 @@ iniciar()
     </div>
 
     <div class="mb1">
-      <div class="f1 mb1">
+      <div class="f1 mb2">
         <LabelFromYup name="programa_orcamentario_municipal" :schema="schema" />
         <Field name="programa_orcamentario_municipal" type="text" class="inputtext light mb1" />
         <ErrorMessage class="error-msg mb1" name="programa_orcamentario_municipal" />
       </div>
-      <div class="f1 mb1">
+      <div class="f1 mb2">
         <LabelFromYup name="programa_orcamentario_estadual" :schema="schema" />
         <Field name="programa_orcamentario_estadual" type="text" class="inputtext light mb1" />
         <ErrorMessage class="error-msg mb1" name="programa_orcamentario_estadual" />
@@ -154,126 +166,126 @@ iniciar()
 
     <div class="flex g2">
       <div class="f1 mb1">
-        <LabelFromYup name="numero_proposta" :schema="schema" />
-        <Field name="numero_proposta" type="text" class="inputtext light mb1" />
-        <ErrorMessage class="error-msg mb1" name="numero_proposta" />
+        <LabelFromYup name="proposta" :schema="schema" />
+        <Field name="proposta" type="text" class="inputtext light mb1" />
+        <ErrorMessage class="error-msg mb1" name="proposta" />
       </div>
       <div class="f1 mb1">
-        <LabelFromYup name="numero_convenio" :schema="schema" />
-        <Field name="numero_convenio" type="text" class="inputtext light mb1" />
-        <ErrorMessage class="error-msg mb1" name="numero_convenio" />
+        <LabelFromYup name="convenio" :schema="schema" />
+        <Field name="convenio" type="text" class="inputtext light mb1" />
+        <ErrorMessage class="error-msg mb1" name="convenio" />
       </div>
     </div>
 
     <div class="flex g2">
-      <div class="f1">
-        <LabelFromYup name="numero_contrato" :schema="schema" />
-        <Field name="numero_contrato" type="text" class="inputtext light mb1" />
-        <ErrorMessage class="error-msg mb1" name="numero_contrato" />
+      <div class="f1 mb1">
+        <LabelFromYup name="contrato" :schema="schema" />
+        <Field name="contrato" type="text" class="inputtext light mb1" />
+        <ErrorMessage class="error-msg mb1" name="contrato" />
       </div>
-      <div class="f1">
+      <div class="f1 mb1">
         <LabelFromYup
-          name="data_assinatura_termo_aceite"
+          name="assinatura_termo_aceite"
           :schema="schema"
         />
         <Field
-          name="data_assinatura_termo_aceite"
+          name="assinatura_termo_aceite"
           type="date"
           class="inputtext light mb1"
-          :class="{ 'error': errors.data_assinatura_termo_aceite }"
+          :class="{ 'error': errors.assinatura_termo_aceite }"
           maxlength="10"
-          @update:model-value="values.data_assinatura_termo_aceite === ''
-            ? values.data_assinatura_termo_aceite = null
+          @update:model-value="values.assinatura_termo_aceite === ''
+            ? values.assinatura_termo_aceite = null
             : null"
         />
         <ErrorMessage
-          name="data_assinatura_termo_aceite"
+          name="assinatura_termo_aceite"
           class="error-msg"
         />
       </div>
     </div>
 
-    <div class="flex g2">
+    <div class="flex g2 mb1">
       <div class="f1">
         <LabelFromYup
-          name="data_assinatura_representante_municipio"
+          name="assinatura_municipio"
           :schema="schema"
         />
         <Field
-          name="data_assinatura_representante_municipio"
+          name="assinatura_municipio"
           type="date"
           class="inputtext light"
-          :class="{ 'error': errors.data_assinatura_representante_municipio }"
+          :class="{ 'error': errors.assinatura_municipio }"
           maxlength="10"
-          @update:model-value="values.data_assinatura_representante_municipio === ''
-            ? values.data_assinatura_representante_municipio = null
+          @update:model-value="values.assinatura_municipio === ''
+            ? values.assinatura_municipio = null
             : null"
         />
         <ErrorMessage
-          name="data_assinatura_representante_municipio"
+          name="assinatura_municipio"
           class="error-msg"
         />
       </div>
       <div class="f1">
         <LabelFromYup
-          name="assinatura_representante_estado"
+          name="assinatura_municipio"
           :schema="schema"
         />
         <Field
-          name="assinatura_representante_estado"
+          name="assinatura_municipio"
           type="date"
           class="inputtext light mb1"
-          :class="{ 'error': errors.assinatura_representante_estado }"
+          :class="{ 'error': errors.assinatura_municipio }"
           maxlength="10"
-          @update:model-value="values.assinatura_representante_estado === ''
-            ? values.assinatura_representante_estado = null
+          @update:model-value="values.assinatura_municipio === ''
+            ? values.assinatura_municipio = null
             : null"
         />
         <ErrorMessage
-          name="assinatura_representante_estado"
+          name="assinatura_municipio"
           class="error-msg"
         />
       </div>
     </div>
 
     <div class="flex g2 mb3">
-      <div class="f1">
+      <div class="f1 mb1">
         <LabelFromYup
-          name="data_vigencia"
+          name="vigencia"
           :schema="schema"
         />
         <Field
-          name="data_vigencia"
+          name="vigencia"
           type="date"
           class="inputtext light mb1"
-          :class="{ 'error': errors.data_vigencia }"
+          :class="{ 'error': errors.vigencia }"
           maxlength="10"
-          @update:model-value="values.data_vigencia === ''
-            ? values.data_vigencia = null
+          @update:model-value="values.vigencia === ''
+            ? values.vigencia = null
             : null"
         />
         <ErrorMessage
-          name="data_vigencia"
+          name="vigencia"
           class="error-msg"
         />
       </div>
-      <div class="f1">
+      <div class="f1 mb1">
         <LabelFromYup
-          name="clausula_suspensiva_conclusao"
+          name="conclusao_suspensiva"
           :schema="schema"
         />
         <Field
-          name="clausula_suspensiva_conclusao"
+          name="conclusao_suspensiva"
           type="date"
           class="inputtext light mb1"
-          :class="{ 'error': errors.clausula_suspensiva_conclusao }"
+          :class="{ 'error': errors.conclusao_suspensiva }"
           maxlength="10"
-          @update:model-value="values.clausula_suspensiva_conclusao === ''
-            ? values.clausula_suspensiva_conclusao = null
+          @update:model-value="values.conclusao_suspensiva === ''
+            ? values.conclusao_suspensiva = null
             : null"
         />
         <ErrorMessage
-          name="clausula_suspensiva_conclusao"
+          name="conclusao_suspensiva"
           class="error-msg"
         />
       </div>
