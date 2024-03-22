@@ -32,6 +32,10 @@ const props = defineProps({
     type: Number,
     default: 0,
   },
+  transferenciaId:{
+    type: Number,
+    default: 0,
+  }
 });
 
 async function onSubmit(_, { controlledValues: carga }) {
@@ -44,7 +48,7 @@ async function onSubmit(_, { controlledValues: carga }) {
     if (resposta) {
       alertStore.success('Dados salvos com sucesso!');
       tarefasStore.$reset();
-      router.push({ name: 'projetoTarefasListar' });
+      router.push({ name: route.meta.rotaDeEscape });
     }
   } catch (error) {
     alertStore.error(error);
@@ -64,15 +68,16 @@ async function onSubmit(_, { controlledValues: carga }) {
     <hr class="ml2 f1">
 
     <div
-      v-if="!emFoco?.projeto?.permissoes?.apenas_leitura"
+      v-if="!emFoco?.projeto?.permissoes?.apenas_leitura || $route.meta.entidaMãe"
       class="ml2"
     >
       <router-link
         :to="{
-          name: 'projetoTarefasEditar',
+          name: $route.meta.prefixoParaFilhas + 'TarefasEditar',
           params: {
             projetoId: projetoId,
             tarefaId: tarefaId,
+            transferenciaId: transferenciaId,
           }
         }"
         title="Editar tarefa"

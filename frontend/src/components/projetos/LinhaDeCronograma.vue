@@ -98,7 +98,7 @@ export default {
       <router-link
         v-if="!apenasLeitura || souResponsável"
         :to="{
-          name: 'tarefasProgresso',
+          name: $route.meta.prefixoParaFilhas + 'TarefasProgresso',
           params: {
             ...$route.params,
             tarefaId: linha.id,
