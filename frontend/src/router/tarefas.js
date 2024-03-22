@@ -4,6 +4,8 @@ import TarefasItem from '@/views/tarefas/TarefasItem.vue';
 import TarefasLista from '@/views/tarefas/TarefasLista.vue';
 import TarefasProgresso from '@/views/tarefas/TarefasProgresso.vue';
 import TarefasRaiz from '@/views/tarefas/TarefasRaiz.vue';
+import DialogWrapper from '@/views/DialogWrapper.vue'
+import EmailModal from '@/components/EmailModal.vue'
 
 export default {
   path: 'tarefas',
@@ -36,6 +38,23 @@ export default {
       props: true,
 
       children: [
+        {
+          path: 'disparo-email',
+          component: DialogWrapper,
+          meta: {
+            rotaDeEscape: 'projetoTarefasListar',
+            título: 'Novo disparo de e-mail para cronograma',
+            títuloParaMenu: 'Novo e-mail',
+          },
+          children: [
+            {
+              path: '',
+              name: 'EmailModal',
+              component: EmailModal,
+            },
+          ],
+        },
+
         {
           name: 'projetoTarefasClonar',
           path: 'clonar',
