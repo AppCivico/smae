@@ -37,7 +37,7 @@ async function onSubmit(_, { controlledValues }) {
     if (r) {
       alertStore.success(msg);
       transferenciasVoluntarias.$reset();
-      router.push({ name: 'TransferenciaDistribuicaoDeRecursosCriar' });
+      router.push({ name: 'TransferenciaDistribuicaoDeRecursosEditar' });
     }
   } catch (error) {
     alertStore.error(error);
@@ -51,7 +51,7 @@ if (props.transferenciaId) {
 
 <template>
   <div class="flex spacebetween center mb2">
-    <h1>{{ route?.meta?.título || 'Formulário de registro' }}</h1>
+    <h1>Formulário de registro</h1>
     <hr class="ml2 f1">
     <CheckClose />
   </div>
@@ -158,19 +158,12 @@ if (props.transferenciaId) {
         <Field name="conta_fim" type="text" class="inputtext light mb1" />
         <ErrorMessage class="error-msg mb1" name="conta_fim" />
       </div>
-      <div class="f1 mb2">
-        <LabelFromYup name="conta_fim" :schema="schema" />
-        <Field name="conta_fim" type="text" class="inputtext light mb1" />
-        <ErrorMessage class="error-msg mb1" name="conta_fim" />
-      </div>
-      <div class="f1 mb2">
+      <div class="f1 mb3">
         <LabelFromYup name="gestor_contrato" :schema="schema" />
         <Field name="gestor_contrato" type="text" class="inputtext light mb1" />
         <ErrorMessage class="error-msg mb1" name="gestor_contrato" />
       </div>
     </div>
-
-
 
     <FormErrorsList :errors="errors" />
 
