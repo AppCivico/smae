@@ -17,6 +17,7 @@ import { UploadService } from 'src/upload/upload.service';
 import { FilterTransferenciaDto } from './dto/filter-transferencia.dto';
 import { JwtService } from '@nestjs/jwt';
 import { PaginatedDto } from 'src/common/dto/paginated.dto';
+import { CabecalhoTarefaTransferenciaDto } from './entities/transferencia-tarefa.dto';
 
 class NextPageTokenJwtBody {
     offset: number;
@@ -586,5 +587,45 @@ export class TransferenciaService {
                 removido_em: new Date(Date.now()),
             },
         });
+    }
+
+    async getCronogramaCabecalho(transferenciaId: number): Promise<CabecalhoTarefaTransferenciaDto | null> {
+        const transferenciaCronograma = await this.prisma.tarefaCronograma.findFirst({
+            where: {
+                transferencia_id: transferenciaId,
+                removido_em: null,
+            },
+            select: {
+                previsao_custo: true,
+                previsao_duracao: true,
+                previsao_inicio: true,
+                previsao_termino: true,
+
+                atraso: true,
+                em_atraso: true,
+                projecao_termino: true,
+                realizado_duracao: true,
+                percentual_concluido: true,
+
+                realizado_inicio: true,
+                realizado_termino: true,
+                realizado_custo: true,
+                tolerancia_atraso: true,
+                percentual_atraso: true,
+                status_cronograma: true,
+
+                transferencia: {
+                    select: {
+                        nivel_maximo_tarefa: true,
+                    },
+                },
+            },
+        });
+        if (!transferenciaCronograma) return null;
+
+        return {
+            ...transferenciaCronograma,
+            nivel_maximo_tarefa: transferenciaCronograma.transferencia!.nivel_maximo_tarefa,
+        };
     }
 }

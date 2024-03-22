@@ -4636,6 +4636,8 @@ model Transferencia {
     numero_identificacao String?
     vetores_busca        Unsupported("tsvector")?
 
+    nivel_maximo_tarefa Int @default(5) @db.SmallInt
+
     criado_por     Int
     criado_em      DateTime  @default(now()) @db.Timestamptz(6)
     atualizado_por Int?
