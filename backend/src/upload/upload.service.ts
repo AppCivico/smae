@@ -417,7 +417,7 @@ export class UploadService {
             },
             select: { projeto_id: true },
         });
-        if (projetoDoc) {
+        if (projetoDoc && projetoDoc.projeto_id) {
             await this.uploadDiretorio.create({
                 caminho: dto.caminho,
                 projeto_id: projetoDoc.projeto_id,
@@ -428,7 +428,7 @@ export class UploadService {
             where: { arquivo_id: arquivo.id },
             select: { transferencia_id: true },
         });
-        if (transferenciaDoc) {
+        if (transferenciaDoc && transferenciaDoc.transferencia_id) {
             await this.uploadDiretorio.create({
                 caminho: dto.caminho,
                 projeto_id: transferenciaDoc.transferencia_id,
