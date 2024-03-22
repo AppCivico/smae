@@ -260,12 +260,16 @@ export class FilterOrcamentoRealizadoDto {
 export class FilterOrcamentoRealizadoCompartilhadoDto extends PickType(FilterOrcamentoRealizadoDto, [
     'dotacao',
     'processo',
-    'nota_empenho',
     'ano_referencia',
 ]) {
     @IsInt({ message: '$property| pdm_id precisa ser positivo' })
     @Transform(PositiveNumberTransform)
     pdm_id: number;
+
+    @IsOptional()
+    @IsString()
+    @MaxLength(20)
+    nota_empenho?: string | null;
 }
 
 export class OrcamentoRealizadoStatusConcluidoDto {
