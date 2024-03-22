@@ -76,7 +76,7 @@ watch([
   </div>
 
   <form
-    class="flex bottom mb2 g1"
+    class="flex flexwrap bottom mb2 g1"
     @submit.prevent="atualizarUrl"
   >
     <div class="f0">
