@@ -116,7 +116,7 @@ export default {
 
         {
           path: 'progresso',
-          name: 'tarefasProgresso',
+          name: 'projetoTarefasProgresso',
           component: TarefasProgresso,
           props: ({ params }) => ({
             ...params,
@@ -135,7 +135,7 @@ export default {
               'projetosListar',
               'projetosResumo',
               'projetoTarefasListar',
-              'tarefasProgresso',
+              'projetoTarefasProgresso',
             ],
           },
         },

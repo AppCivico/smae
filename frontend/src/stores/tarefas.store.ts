@@ -64,7 +64,7 @@ function gerarCaminhoParaApi(mãeComId: MãeComId): string | null {
       return `projeto/${mãeComId?.projetoId}`;
 
     case !!mãeComId?.transferenciaId:
-      return `transferencia/${mãeComId?.transferenciaId}`;
+      return `transferencia-tarefa/${mãeComId?.transferenciaId}`;
 
     default:
       console.error('Id identificado da entidade mãe não foi provido como esperado', mãeComId);
