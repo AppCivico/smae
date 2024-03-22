@@ -47,7 +47,6 @@ const diálogoAberto = ref(false);
 const compartilhamentos = ref([]);
 const chamadaPendente = ref(false);
 const erro = ref(null);
-const prontaParaConsulta = ref(false);
 
 const lista = computed(() => compartilhamentos.value
   .map((x) => {
