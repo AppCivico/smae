@@ -954,7 +954,7 @@ export const transferenciaDistribuicaoDeRecursos = object({
   proposta: string()
     .label('proposta')
     .nullable(),
-  registros_sei: string()
+  registros_sei: array()
     .label('número sei')
     .nullable(),
 })
