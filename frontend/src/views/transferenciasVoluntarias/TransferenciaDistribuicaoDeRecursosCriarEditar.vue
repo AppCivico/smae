@@ -76,8 +76,6 @@ iniciar()
       <hr class="ml2 f1">
     </div>
 
-
-
     <div class="flex g2 mb1">
       <div class="f1">
         <LabelFromYup name="gestor_contrato" :schema="schema" />
