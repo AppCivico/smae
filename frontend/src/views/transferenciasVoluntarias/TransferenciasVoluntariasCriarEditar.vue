@@ -84,7 +84,7 @@ iniciar()
 
 <template>
   <div class="flex spacebetween center mb2">
-    <h1>{{ route?.meta?.título || 'Formulário de registro' }}</h1>
+    <h1>Formulário de registro</h1>
     <hr class="ml2 f1">
     <CheckClose />
   </div>
@@ -361,7 +361,7 @@ iniciar()
       <ErrorMessage class="error-msg mb1" name="normativa" />
     </div>
 
-    <div class="f1">
+    <div class="f1 mb3">
       <LabelFromYup name="observacoes" :schema="schema" />
       <Field name="observacoes" as="textarea" class="inputtext light mb1" rows="5" />
       <ErrorMessage class="error-msg mb1" name="observacoes" />
