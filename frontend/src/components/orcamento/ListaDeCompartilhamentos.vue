@@ -64,6 +64,8 @@ const lista = computed(() => compartilhamentos.value
           name: 'resumoDeAtividade',
           params: {
             atividade_id: x.atividade.id,
+            iniciativa_id: x.iniciativa.id,
+            meta_id: x.meta.id,
           },
         };
         break;
@@ -75,6 +77,7 @@ const lista = computed(() => compartilhamentos.value
           name: 'resumoDeIniciativa',
           params: {
             iniciativa_id: x.iniciativa.id,
+            meta_id: x.meta.id,
           },
         };
         break;
