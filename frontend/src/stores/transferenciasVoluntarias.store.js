@@ -209,7 +209,10 @@ export const useTransferenciasVoluntariasStore = defineStore(
 
       itemParaEdição: ({ emFoco }) => ({
         ...emFoco,
+        orgao_concedente_id: emFoco?.orgao_concedente?.id || null,
+        parlamentar_id: emFoco?.parlamentar?.id || null,
         partido_id: emFoco?.partido?.id || null,
+        tipo_id: emFoco?.tipo?.id || null,
       }),
     },
   }
