@@ -1844,10 +1844,10 @@ export const emailTransferencia = object()
     com_copia:array()
       .label('CC (com cópia)'),
     recorrencia_dias: number()
-      .label('Recorrencia')
+      .label('Recorrência (dias)')
       .min(0),
     numero: number()
-      .label('Número'),
+      .label('Dias antes da previsão de termino'),
     numero_periodo: string()
       .label('Periodicidade')
   })
