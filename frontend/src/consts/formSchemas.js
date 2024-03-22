@@ -1838,16 +1838,18 @@ export const tarefa = object()
 
 export const emailTransferencia = object()
   .shape({
-    disparo_email:boolean()
+    ativo:boolean()
       .label('Disparo de e-mail?')
       .nullable(),
     com_copia:array()
       .label('CC (com cópia)'),
-    periodicidade: number()
-      .label('Periodicidade')
+    recorrencia_dias: number()
+      .label('Recorrencia')
       .min(0),
-    data:date()
-      .label('Data do primeiro envio',)
+    numero: number()
+      .label('Número'),
+    numero_periodo: string()
+      .label('Periodicidade')
   })
 
 export const tag = object()
