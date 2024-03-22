@@ -1369,6 +1369,8 @@ export function DivPerc2Decimal(valorEmpOuLiq: Prisma.Decimal, perc_valor_empenh
 }
 
 export function verificaValorLiqEmpenhoMaiorEmp(soma_valor_empenho: number, soma_valor_liquidado: number) {
-    if (soma_valor_liquidado > soma_valor_empenho)
+    // meio que reaproveitando a flag do liberarLiquidadoValoresMaioresQueSof, mas ok, só pra não apagar o código
+    // completamente pois pode ser que a regra volte
+    if (soma_valor_liquidado > soma_valor_empenho && this.liberarLiquidadoValoresMaioresQueSof == false)
         throw new BadRequestException('O valor liquidado não pode ser maior do que valor empenhado.');
 }
