@@ -100,7 +100,6 @@ function iniciar() {
   partidoStore.buscarTudo();
 }
 iniciar();
-
 </script>
 
 <template>
@@ -377,8 +376,9 @@ iniciar();
             loading: ParlamentaresStore.chamadasPendentes?.lista,
           }"
           :disabled="!parlamentarComoLista?.length"
-          @change="() => {
-            setFieldValue('partido_id', null); setFieldValue('cargo', null);
+          @change="($e) => {
+            setFieldValue('partido_id', parlamentaresPorId[$e.target.value]?.partido?.id || null);
+            setFieldValue('cargo', parlamentaresPorId[$e.target.value]?.cargo || null);
           }"
         >
           <option :value="0">
@@ -389,8 +389,13 @@ iniciar();
             v-for="item in parlamentarComoLista"
             :key="item"
             :value="item.id"
+            :disabled="!item.mandatos.length"
           >
             {{ item.nome }} - {{ item.nome_popular }}
+
+            <template v-if="!item.mandatos.length">
+              (sem mandatos cadastrados)
+            </template>
           </option>
         </Field>
         <ErrorMessage
