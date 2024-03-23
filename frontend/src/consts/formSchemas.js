@@ -912,23 +912,18 @@ export const transferenciaDistribuicaoDeRecursos = object({
     .transform((v) => (!v ? null : v)),
   dotacao: string()
     .label('Dotacao')
-    .nullable()
-    .required(),
+    .nullable(),
   empenho: string()
     .label('Empenho')
-    .nullable()
-    .required(),
+    .nullable(),
   valor: number()
     .label('Valor')
-    .nullable()
-    .required(),
+    .nullable(),
   valor_contrapartida: number()
     .label('Valor contrapartida')
-    .nullable()
-    .required(),
+    .nullable(),
   valor_total: number()
     .label('Valor total')
-    .required()
     .nullable(),
   vigencia: date()
     .label('data de vigência')
@@ -938,13 +933,10 @@ export const transferenciaDistribuicaoDeRecursos = object({
   objeto: string()
     .label('Objeto/Empreendimento')
     .max(50000)
-    .nullable()
-    .required(),
+    .nullable(),
   orgao_gestor_id: number()
     .label('Gestor Municipal')
-    .min(1, 'Selecione um gestor Municipal')
-    .nullable()
-    .required(),
+    .nullable(),
   programa_orcamentario_estadual: string()
     .label('programa orçamentário estadual')
     .nullable(),
