@@ -20,24 +20,10 @@ const props = defineProps({
 const alertStore = useAlertStore();
 
 async function onSubmit(_, { controlledValues }) {
-  try {
-    let r;
-    const msg = props.transferenciaId
-      ? 'Dados salvos com sucesso!'
-      : 'Item adicionado com sucesso!';
-
-    if (props.transferenciaId) {
-      r = await transferenciasVoluntarias.salvarItem(controlledValues, props.transferenciaId);
-    } else {
-      r = await transferenciasVoluntarias.salvarItem(controlledValues);
-    }
-    if (r) {
-      alertStore.success(msg);
-      transferenciasVoluntarias.buscarItem(props.transferenciaId);
-      router.push({ name: 'TransferenciaDistribuicaoDeRecursosEditar' });
-    }
-  } catch (error) {
-    alertStore.error(error);
+  if (await transferenciasVoluntarias.salvarItem(controlledValues, props.transferenciaId, true)) {
+    alertStore.success('Dados salvos com sucesso!');
+    transferenciasVoluntarias.buscarItem(props.transferenciaId);
+    router.push({ name: 'TransferenciaDistribuicaoDeRecursosEditar' });
   }
 }
 
