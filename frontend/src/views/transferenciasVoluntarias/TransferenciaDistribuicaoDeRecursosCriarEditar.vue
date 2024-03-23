@@ -40,7 +40,7 @@ async function onSubmit(values) {
     }
     if (r) {
       alertStore.success(msg);
-      distribuicaoRecursos.buscarTudo(props.transferenciaId);
+      distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
     }
   } catch (error) {
     alertStore.error(error);
@@ -48,9 +48,8 @@ async function onSubmit(values) {
 }
 
 function iniciar() {
-  if (props.transferenciaId) {
-    distribuicaoRecursos.buscarTudo(props.transferenciaId);
-  }
+  distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
+
   ÓrgãosStore.getAll();
 }
 iniciar();
