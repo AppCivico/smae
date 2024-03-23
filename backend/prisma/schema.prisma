@@ -615,6 +615,9 @@ model Pdm {
 
     paineis_de_meta Painel[]
 
+    orcamento_dia_abertura   Int @default(1) @db.SmallInt
+    orcamento_dia_fechamento Int @default(20) @db.SmallInt
+
     logo                   String?
     arquivo_logo_id        Int?
     ArquivoLogo            Arquivo?                 @relation(fields: [arquivo_logo_id], references: [id])
@@ -630,6 +633,26 @@ model Pdm {
 
     @@index([ativo])
     @@map("pdm")
+}
+
+model PdmOrcamentoRealizadoControleConcluido {
+    id Int @id @default(autoincrement())
+
+    ano_referencia Int
+    meta_id        Int
+    meta           Meta @relation(fields: [meta_id], references: [id])
+
+    criado_em DateTime
+
+    // sobre qual dia foi feito a abertura (setar concluido=false)
+    referencia_dia_abertura   Int? @db.SmallInt
+    // sobre qual dia foi feito a abertura (setar concluido=true)
+    referencia_dia_fechamento Int? @db.SmallInt
+
+    // marcar se a execução foi marcada como concluida nessa data
+    execucao_concluida Boolean @default(false)
+
+    @@map("pdm_orcamento_realizado_controle_concluido")
 }
 
 model MacroTema {
@@ -936,29 +959,30 @@ model Meta {
     iniciativa       Iniciativa[]
     meta_tag         MetaTag[]
 
-    cronograma                            Cronograma[]
-    painel_conteudo                       PainelConteudo[]
-    StatusMetaCicloFisico                 StatusMetaCicloFisico[]
-    StatusVariavelCicloFisico             StatusVariavelCicloFisico[]
-    VariavelCicloFisicoQualitativo        VariavelCicloFisicoQualitativo[]
-    VariavelCicloFisicoDocumento          VariavelCicloFisicoDocumento[]
-    MetaCicloFisicoAnalise                MetaCicloFisicoAnalise[]
-    MetaCicloFisicoAnaliseDocumento       MetaCicloFisicoAnaliseDocumento[]
-    MetaCicloFisicoRisco                  MetaCicloFisicoRisco[]
-    MetaCicloFisicoFechamento             MetaCicloFisicoFechamento[]
-    MetaOrcamento                         OrcamentoPrevisto[]
-    OrcamentoPlanejado                    OrcamentoPlanejado[]
-    OrcamentoRealizado                    OrcamentoRealizado[]
-    projetos                              Projeto[]
-    OrcamentoPlanejadoZerado              OrcamentoPrevistoZerado[]
-    FormulaCompostaCicloFisicoQualitativo FormulaCompostaCicloFisicoQualitativo[]
-    FormulaCompostaCicloFisicoDocumento   FormulaCompostaCicloFisicoDocumento[]
-    PdmOrcamentoRealizadoConfig           PdmOrcamentoRealizadoConfig[]
-    MetaStatusConsolidadoCf               MetaStatusConsolidadoCf[]
-    ViewMetaPessoaResponsavelNaCp         view_meta_pessoa_responsavel_na_cp[]
-    MetaStatusAtrasoConsolidadoMes        MetaStatusAtrasoConsolidadoMes[]
-    MetaStatusAtrasoVariavel              MetaStatusAtrasoVariavel[]
-    GeoEnderecoReferencia                 GeoLocalizacaoReferencia[]
+    cronograma                             Cronograma[]
+    painel_conteudo                        PainelConteudo[]
+    StatusMetaCicloFisico                  StatusMetaCicloFisico[]
+    StatusVariavelCicloFisico              StatusVariavelCicloFisico[]
+    VariavelCicloFisicoQualitativo         VariavelCicloFisicoQualitativo[]
+    VariavelCicloFisicoDocumento           VariavelCicloFisicoDocumento[]
+    MetaCicloFisicoAnalise                 MetaCicloFisicoAnalise[]
+    MetaCicloFisicoAnaliseDocumento        MetaCicloFisicoAnaliseDocumento[]
+    MetaCicloFisicoRisco                   MetaCicloFisicoRisco[]
+    MetaCicloFisicoFechamento              MetaCicloFisicoFechamento[]
+    MetaOrcamento                          OrcamentoPrevisto[]
+    OrcamentoPlanejado                     OrcamentoPlanejado[]
+    OrcamentoRealizado                     OrcamentoRealizado[]
+    projetos                               Projeto[]
+    OrcamentoPlanejadoZerado               OrcamentoPrevistoZerado[]
+    FormulaCompostaCicloFisicoQualitativo  FormulaCompostaCicloFisicoQualitativo[]
+    FormulaCompostaCicloFisicoDocumento    FormulaCompostaCicloFisicoDocumento[]
+    PdmOrcamentoRealizadoConfig            PdmOrcamentoRealizadoConfig[]
+    MetaStatusConsolidadoCf                MetaStatusConsolidadoCf[]
+    ViewMetaPessoaResponsavelNaCp          view_meta_pessoa_responsavel_na_cp[]
+    MetaStatusAtrasoConsolidadoMes         MetaStatusAtrasoConsolidadoMes[]
+    MetaStatusAtrasoVariavel               MetaStatusAtrasoVariavel[]
+    GeoEnderecoReferencia                  GeoLocalizacaoReferencia[]
+    PdmOrcamentoRealizadoControleConcluido PdmOrcamentoRealizadoControleConcluido[]
 
     @@index([pdm_id])
     @@map("meta")
