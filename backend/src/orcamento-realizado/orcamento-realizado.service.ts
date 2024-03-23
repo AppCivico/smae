@@ -1439,13 +1439,12 @@ export class OrcamentoRealizadoService {
                 (r) => r.referencia_dia_fechamento
             )[0];
 
-            this.logger.debug(`Verificando meta ${meta.id}, ultimoControle=${JSON.stringify(ultimoControleAbertura)}`);
             if (configOrcamentoAbertura) {
                 const mesReabertura = mesAtual === 1 ? 12 : mesAtual - 1;
 
                 const mesInclude = configOrcamentoAbertura.execucao_disponivel_meses.includes(mesReabertura);
                 this.logger.debug(
-                    `verificando contra mesReabertura, execucao_disponivel_meses.includes(${mesReabertura})=${mesInclude}`
+                    `verificando contra mesReabertura, execucao_disponivel_meses.includes(${mesReabertura})=${mesInclude}, ultimoControleAbertura=${JSON.stringify(ultimoControleAbertura)}`
                 );
                 if (
                     mesInclude &&
@@ -1481,14 +1480,15 @@ export class OrcamentoRealizadoService {
                     });
                 }
             } else {
-                this.logger.log(`Não há configuração anterior, ignorando abertura automática de janeiro`);
+                this.logger.log(
+                    `Não há configuração para o ano anterior ${anoAtual - 1}, ignorando abertura automática de janeiro`
+                );
             }
 
             // Verificação de fechamento, se abriu e passou do dia 20, vai fechar assim que bater esse dia
             // não importa que mês que abriu
-
             this.logger.debug(
-                `Verificando fechamento da meta ${meta.id}, diaAtual (${diaAtual}) >= pdm.orcamento_dia_fechamento ${pdm.orcamento_dia_fechamento} `
+                `Verificando fechamento da meta ${meta.id}, diaAtual (${diaAtual}) >= pdm.orcamento_dia_fechamento ${pdm.orcamento_dia_fechamento}, ultimoControleFechamento=${JSON.stringify(ultimoControleFechamento)}`
             );
             if (
                 diaAtual >= pdm.orcamento_dia_fechamento &&
