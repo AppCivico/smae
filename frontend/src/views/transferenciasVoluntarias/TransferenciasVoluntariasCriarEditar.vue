@@ -151,7 +151,7 @@ iniciar();
           as="select"
           class="inputtext light mb1"
           :class="{ 'error': errors.esfera }"
-          @update:model-value="setFieldValue('tipo_id', null)"
+          @change="setFieldValue('tipo_id', null)"
         >
           <option value="">
             Selecionar
@@ -256,7 +256,7 @@ iniciar();
           type="text"
           class="inputtext light mb1"
           placeholder="000.000.000.000/ AAAA.0000000.00000 / AAAA.000.00000"
-          @update:model-value="($event) => {
+          @change="($event) => {
             if ($event?.target?.value === '') setFieldValue(emenda, null);
           }"
         />
@@ -275,7 +275,7 @@ iniciar();
           name="emenda_unitaria"
           type="text"
           class="inputtext light mb1"
-          @update:model-value="($event) => {
+          @change="($event) => {
             if ($event?.target?.value === '') setFieldValue(emenda_unitaria, null);
           }"
         />
@@ -377,7 +377,7 @@ iniciar();
             loading: ParlamentaresStore.chamadasPendentes?.lista,
           }"
           :disabled="!parlamentarComoLista?.length"
-          @update:model-value="() => {
+          @change="() => {
             setFieldValue('partido_id', null); setFieldValue('cargo', null);
           }"
         >
@@ -603,7 +603,7 @@ iniciar();
           class="inputtext light mb1"
           :class="{ 'error': errors.clausula_suspensiva_vencimento }"
           maxlength="10"
-          @update:model-value="($event) => {
+          @change="($event) => {
             if ($event?.target?.value === '') {
               setFieldValue(clausula_suspensiva_vencimento, null );
             }
