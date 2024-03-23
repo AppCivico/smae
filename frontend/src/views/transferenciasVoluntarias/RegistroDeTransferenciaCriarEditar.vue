@@ -28,9 +28,7 @@ async function onSubmit(_, { controlledValues }) {
   }
 }
 
-if (props.transferenciaId) {
-  transferenciasVoluntarias.buscarItem(props.transferenciaId);
-}
+transferenciasVoluntarias.buscarItem(props.transferenciaId);
 </script>
 <template>
   <div class="flex spacebetween center mb2">
