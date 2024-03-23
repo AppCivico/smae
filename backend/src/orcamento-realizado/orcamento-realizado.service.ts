@@ -1437,14 +1437,17 @@ export class OrcamentoRealizadoService {
                 ? meta.PdmOrcamentoRealizadoControleConcluido[0]
                 : undefined;
 
+            this.logger.debug(`Verificando meta ${meta.id}, ultimoControle=${JSON.stringify(ultimoControle)}`);
             if (configOrcamentoAbertura) {
                 const mesReabertura = mesAtual === 1 ? 12 : mesAtual - 1;
 
+                const mesInclude = configOrcamentoAbertura.execucao_disponivel_meses.includes(mesReabertura);
+                this.logger.debug(
+                    `verificando contra mesReabertura, execucao_disponivel_meses.includes(${mesReabertura})=${mesInclude}`
+                );
                 if (
-                    configOrcamentoAbertura.execucao_disponivel_meses.includes(mesReabertura) &&
-                    (!ultimoControle || !ultimoControle.referencia_dia_abertura) &&
-                    ultimoControle &&
-                    ultimoControle.referencia_dia_abertura !== ultimoControle.referencia_dia_abertura
+                    mesInclude &&
+                    (!ultimoControle || ultimoControle.referencia_dia_abertura !== pdm.orcamento_dia_abertura)
                 ) {
                     const now = new Date(Date.now());
                     await this.prisma.$transaction(async (prismaTxn: Prisma.TransactionClient): Promise<void> => {
@@ -1467,7 +1470,7 @@ export class OrcamentoRealizadoService {
                                 ano_referencia: ano_referencia,
                                 criado_em: now,
                                 referencia_dia_abertura: pdm.orcamento_dia_abertura,
-                                execucao_concluida: false,
+                                execucao_concluida,
                             },
                         });
 
@@ -1480,11 +1483,13 @@ export class OrcamentoRealizadoService {
 
             // Verificação de fechamento, se abriu e passou do dia 20, vai fechar assim que bater esse dia
             // não importa que mês que abriu
+
+            this.logger.debug(
+                `Verificando fechamento da meta ${meta.id}, diaAtual (${diaAtual}) >= pdm.orcamento_dia_fechamento ${pdm.orcamento_dia_fechamento} `
+            );
             if (
                 diaAtual >= pdm.orcamento_dia_fechamento &&
-                (!ultimoControle || !ultimoControle.referencia_dia_fechamento) &&
-                ultimoControle &&
-                ultimoControle.referencia_dia_fechamento !== pdm.orcamento_dia_fechamento
+                (!ultimoControle || ultimoControle.referencia_dia_fechamento !== pdm.orcamento_dia_fechamento)
             ) {
                 const now = new Date(Date.now());
                 await this.prisma.$transaction(async (prismaTxn: Prisma.TransactionClient): Promise<void> => {
@@ -1508,7 +1513,7 @@ export class OrcamentoRealizadoService {
                             ano_referencia: ano_referencia,
                             criado_em: now,
                             referencia_dia_fechamento: pdm.orcamento_dia_fechamento,
-                            execucao_concluida: false,
+                            execucao_concluida,
                         },
                     });
 
@@ -1537,6 +1542,7 @@ export class OrcamentoRealizadoService {
         anyAdminUser: { id: number },
         now: Date
     ) {
+        // invalida o registro anterior
         await prismaTxn.pdmOrcamentoRealizadoConfig.updateMany({
             where: {
                 ultima_revisao: true,
@@ -1544,9 +1550,13 @@ export class OrcamentoRealizadoService {
                 ano_referencia: ano_referencia,
             },
             data: {
-                execucao_concluida: execucao_concluida,
+                ultima_revisao: null,
             },
         });
+        // cria o novo registro
+        this.logger.verbose(
+            `Marcando meta ${meta.id} ano_referencia ${ano_referencia} como execucao_concluida=${execucao_concluida}`
+        );
         await prismaTxn.pdmOrcamentoRealizadoConfig.create({
             data: {
                 atualizado_por: anyAdminUser.id,
