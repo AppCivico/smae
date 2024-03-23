@@ -1,4 +1,5 @@
 <script setup>
+import MaskedFloatInput from '@/components/MaskedFloatInput.vue';
 import { registroDeTransferencia as schema } from '@/consts/formSchemas';
 import { useAlertStore } from '@/stores/alert.store';
 import { useTransferenciasVoluntariasStore } from '@/stores/transferenciasVoluntarias.store';
@@ -31,7 +32,6 @@ if (props.transferenciaId) {
   transferenciasVoluntarias.buscarItem(props.transferenciaId);
 }
 </script>
-
 <template>
   <div class="flex spacebetween center mb2">
     <h1>Formulário de registro</h1>
@@ -47,7 +47,7 @@ if (props.transferenciaId) {
   </div>
 
   <Form
-    v-slot="{ errors, isSubmitting }"
+    v-slot="{ errors, isSubmitting, values }"
     :validation-schema="schema"
     :initial-values="itemParaEdição"
     @submit="onSubmit"
@@ -58,10 +58,11 @@ if (props.transferenciaId) {
           name="valor"
           :schema="schema"
         />
-        <Field
+        <MaskedFloatInput
           name="valor"
           type="text"
           class="inputtext light mb1"
+          :value="values.valor"
         />
         <ErrorMessage
           class="error-msg mb1"
@@ -97,11 +98,11 @@ if (props.transferenciaId) {
           name="valor_contrapartida"
           :schema="schema"
         />
-        <Field
+        <MaskedFloatInput
           name="valor_contrapartida"
           type="text"
           class="inputtext light mb1"
-          placeholder="R$ 000.000.000.000,00"
+          :value="values.valor_contrapartida"
         />
         <ErrorMessage
           class="error-msg mb1"
@@ -131,11 +132,12 @@ if (props.transferenciaId) {
           name="valor_total"
           :schema="schema"
         />
-        <Field
+        <MaskedFloatInput
           name="valor_total"
           type="text"
           class="inputtext light mb1"
           placeholder="R$ 000.000.000.000,00"
+          :value="values.valor_total"
         />
         <ErrorMessage
           class="error-msg mb1"
