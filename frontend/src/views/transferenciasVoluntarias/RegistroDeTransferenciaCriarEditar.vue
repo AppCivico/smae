@@ -7,7 +7,7 @@ import { ErrorMessage, Field, Form } from 'vee-validate';
 import { useRouter } from 'vue-router';
 
 const transferenciasVoluntarias = useTransferenciasVoluntariasStore();
-const { chamadasPendentes, erro } = storeToRefs(transferenciasVoluntarias);
+const { chamadasPendentes, erro, itemParaEdição } = storeToRefs(transferenciasVoluntarias);
 
 const router = useRouter();
 const props = defineProps({
@@ -33,7 +33,7 @@ async function onSubmit(_, { controlledValues }) {
     }
     if (r) {
       alertStore.success(msg);
-      transferenciasVoluntarias.$reset();
+      transferenciasVoluntarias.buscarItem(props.transferenciaId);
       router.push({ name: 'TransferenciaDistribuicaoDeRecursosEditar' });
     }
   } catch (error) {
