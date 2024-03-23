@@ -19,8 +19,8 @@ const rotasParaMenuSecundário = [
     título: 'Formulários',
     rotas: [
       'TransferenciasVoluntariaEditar',
-      'TransferenciaDistribuicaoDeRecursosEditar',
       'RegistroDeTransferenciaEditar',
+      'TransferenciaDistribuicaoDeRecursosEditar',
       'TransferenciasVoluntariasDocumentos',
     ],
   },
@@ -64,7 +64,7 @@ export default {
         ...{ transferenciaId: Number.parseInt(params.transferenciaId, 10) || undefined },
       }),
       meta: {
-        título: 'Recursos Financeiros',
+        título: 'Distribuição de recursos',
         rotasParaMenuSecundário
       },
     },
@@ -77,7 +77,7 @@ export default {
         ...{ transferenciaId: Number.parseInt(params.transferenciaId, 10) || undefined },
       }),
       meta: {
-        título: 'Distribuição de recursos',
+        título: 'Recursos Financeiros',
         rotasParaMenuSecundário,
       },
     },

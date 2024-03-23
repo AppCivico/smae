@@ -27,6 +27,7 @@ const props = defineProps({
 
 const alertStore = useAlertStore();
 const mostrarDistribuicaoRegistroForm = ref(false);
+const registrosSei = ref([{ id: 0, valor: '' }]);
 
 async function onSubmit(values) {
   try {
@@ -42,8 +43,7 @@ async function onSubmit(values) {
     }
     if (r) {
       alertStore.success(msg);
-      distribuicaoRecursos.$reset();
-      router.push({ name: 'tipoDeTrasferenciaListar' });
+      distribuicaoRecursos.buscarTudo(props.transferenciaId);
     }
   } catch (error) {
     alertStore.error(error);
@@ -62,6 +62,9 @@ function registrarNovaDistribuicaoRecursos() {
   mostrarDistribuicaoRegistroForm.value = true;
 }
 
+function adicionarLinha() {
+  registrosSei.value.push({ id: registrosSei.value.length, valor: '' });
+}
 
 </script>
 
@@ -243,11 +246,26 @@ function registrarNovaDistribuicaoRecursos() {
         <Field name="dotacao" type="text" class="inputtext light mb1" placeholder="16.24.12.306.3016.2.873.33903900.00"/>
         <ErrorMessage class="error-msg mb1" name="dotacao" />
       </div>
-      <div class="f1">
-        <LabelFromYup name="registros_sei" :schema="schema" />
-        <Field name="registros_sei" type="text" class="inputtext light mb1"/>
-        <ErrorMessage class="error-msg mb1" name="registros_sei" />
+      <div>
+        <div v-for="(registro, index) in registrosSei" :key="index" class="flex g2 mb1">
+        <div class="f1">
+          <LabelFromYup name="registros_sei" :schema="schema" />
+          <Field :name="'registros_sei_' + registro.id" type="text" class="inputtext light mb1" v-model="registro.valor"/>
+          <ErrorMessage class="error-msg mb1" :name="'registros_sei_' + registro.id" />
+        </div>
       </div>
+        <button
+          class="like-a__text addlink"
+          type="button"
+          @click="adicionarLinha"
+        >
+          <svg
+            width="20"
+            height="20"
+          ><use xlink:href="#i_+" /></svg>adicionar novo número sei
+        </button>
+      </div>
+
     </div>
 
     <div class="flex g2">
