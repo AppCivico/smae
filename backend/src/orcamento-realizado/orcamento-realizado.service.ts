@@ -1,4 +1,4 @@
-import { BadRequestException, HttpException, Injectable } from '@nestjs/common';
+import { BadRequestException, HttpException, Injectable, Logger } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { Decimal } from '@prisma/client/runtime/library';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
@@ -20,6 +20,8 @@ import {
     UpdateOrcamentoRealizadoDto,
 } from './dto/create-orcamento-realizado.dto';
 import { OrcamentoRealizado } from './entities/orcamento-realizado.entity';
+import { Cron, CronExpression } from '@nestjs/schedule';
+import { JOB_PDM_ORCAMENTO_CONCLUIDO } from '../common/dto/locks';
 
 export const MAX_BATCH_SIZE = parseInt(process.env.MAX_LINHAS_REMOVIDAS_ORCAMENTO_EM_LOTE || '', 10) || 10;
 
@@ -39,6 +41,8 @@ const fk_nota = (row: { dotacao: string; dotacao_processo: string; dotacao_proce
 export const LIBERAR_LIQUIDADO_VALORES_MAIORES_QUE_SOF = false;
 @Injectable()
 export class OrcamentoRealizadoService {
+    private readonly logger = new Logger(OrcamentoRealizadoService.name);
+
     liberarEmpenhoValoresMaioresQueSof: boolean;
     liberarLiquidadoValoresMaioresQueSof: boolean;
     constructor(
@@ -1340,6 +1344,219 @@ export class OrcamentoRealizadoService {
                 // await prismaTxn.dotacaoRealizado.update({ where: { id: processoTx.id }, data: { id: processoTx.id } });
             }
         }
+    }
+
+    @Cron(CronExpression.EVERY_6_HOURS)
+    async handleCron() {
+        if (Boolean(process.env['DISABLE_PDM_CRONTAB'])) return;
+
+        await this.prisma.$transaction(
+            async (prismaTx: Prisma.TransactionClient) => {
+                this.logger.debug(`Adquirindo lock para abertura/fechamento do orçamento realizado das metas`);
+                const locked: {
+                    locked: boolean;
+                }[] = await prismaTx.$queryRaw`SELECT
+                pg_try_advisory_xact_lock(${JOB_PDM_ORCAMENTO_CONCLUIDO}) as locked
+            `;
+                if (!locked[0].locked) {
+                    this.logger.debug(`Já está em processamento...`);
+                    return;
+                }
+                await this.verificaOrcamentoAberturaFechamento();
+            },
+            {
+                maxWait: 30000,
+                timeout: 60 * 1000 * 15,
+                isolationLevel: 'Serializable',
+            }
+        );
+    }
+
+    async verificaOrcamentoAberturaFechamento() {
+        // Obter a data atual
+        const hoje = new Date();
+        const diaAtual = hoje.getDate();
+        const mesAtual = hoje.getMonth() + 1; // Janeiro é 0
+        const anoAtual = hoje.getFullYear();
+
+        // Obter as informações do PDM
+        const pdm = await this.prisma.pdm.findFirst({
+            where: { ativo: true },
+        });
+        if (!pdm) return;
+
+        const anyAdminUser = await this.prisma.pessoa.findFirstOrThrow({
+            where: {
+                desativado: false,
+            },
+            take: 1,
+            orderBy: { id: 'asc' },
+            select: { id: true },
+        });
+
+        // Obter as metas ativas
+        const metas = await this.prisma.meta.findMany({
+            where: {
+                pdm_id: pdm.id,
+                removido_em: null,
+            },
+            select: {
+                id: true,
+                PdmOrcamentoRealizadoControleConcluido: {
+                    orderBy: { criado_em: 'desc' },
+                    where: { ano_referencia: anoAtual },
+                    take: 1,
+                },
+            },
+        });
+
+        const configOrcamentoCorrente = await this.prisma.pdmOrcamentoConfig.findFirst({
+            where: {
+                pdm: { ativo: true },
+                ano_referencia: anoAtual,
+            },
+        });
+        if (!configOrcamentoCorrente) {
+            this.logger.warn(`Não encontrado configuração para o ano ${anoAtual}`);
+            return;
+        }
+
+        const configOrcamentoAbertura =
+            mesAtual == 1
+                ? await this.prisma.pdmOrcamentoConfig.findFirst({
+                      where: {
+                          pdm: { ativo: true },
+                          ano_referencia: anoAtual - 1,
+                      },
+                  })
+                : configOrcamentoCorrente;
+
+        for (const meta of metas) {
+            // Obter o último registro de controle de conclusão
+            const ultimoControle = meta.PdmOrcamentoRealizadoControleConcluido[0]
+                ? meta.PdmOrcamentoRealizadoControleConcluido[0]
+                : undefined;
+
+            if (configOrcamentoAbertura) {
+                const mesReabertura = mesAtual === 1 ? 12 : mesAtual - 1;
+
+                if (
+                    configOrcamentoAbertura.execucao_disponivel_meses.includes(mesReabertura) &&
+                    (!ultimoControle || !ultimoControle.referencia_dia_abertura) &&
+                    ultimoControle &&
+                    ultimoControle.referencia_dia_abertura !== ultimoControle.referencia_dia_abertura
+                ) {
+                    const now = new Date(Date.now());
+                    await this.prisma.$transaction(async (prismaTxn: Prisma.TransactionClient): Promise<void> => {
+                        const ano_referencia = anoAtual;
+                        const execucao_concluida = false;
+                        // Reabrir o orçamento
+                        await this.updateOrcamentoConcluido(
+                            prismaTxn,
+                            meta,
+                            ano_referencia,
+                            execucao_concluida,
+                            anyAdminUser,
+                            now
+                        );
+
+                        // Registrar a reabertura
+                        await prismaTxn.pdmOrcamentoRealizadoControleConcluido.create({
+                            data: {
+                                meta_id: meta.id,
+                                ano_referencia: ano_referencia,
+                                criado_em: now,
+                                referencia_dia_abertura: pdm.orcamento_dia_abertura,
+                                execucao_concluida: false,
+                            },
+                        });
+
+                        return;
+                    });
+                }
+            } else {
+                this.logger.log(`Não há configuração anterior, ignorando abertura automática de janeiro`);
+            }
+
+            // Verificação de fechamento, se abriu e passou do dia 20, vai fechar assim que bater esse dia
+            // não importa que mês que abriu
+            if (
+                diaAtual >= pdm.orcamento_dia_fechamento &&
+                (!ultimoControle || !ultimoControle.referencia_dia_fechamento) &&
+                ultimoControle &&
+                ultimoControle.referencia_dia_fechamento !== pdm.orcamento_dia_fechamento
+            ) {
+                const now = new Date(Date.now());
+                await this.prisma.$transaction(async (prismaTxn: Prisma.TransactionClient): Promise<void> => {
+                    const ano_referencia = anoAtual;
+                    const execucao_concluida = true;
+
+                    // fechar o orcamento
+                    await this.updateOrcamentoConcluido(
+                        prismaTxn,
+                        meta,
+                        ano_referencia,
+                        execucao_concluida,
+                        anyAdminUser,
+                        now
+                    );
+
+                    // Registrar o fechamento
+                    await prismaTxn.pdmOrcamentoRealizadoControleConcluido.create({
+                        data: {
+                            meta_id: meta.id,
+                            ano_referencia: ano_referencia,
+                            criado_em: now,
+                            referencia_dia_fechamento: pdm.orcamento_dia_fechamento,
+                            execucao_concluida: false,
+                        },
+                    });
+
+                    return;
+                });
+            }
+        }
+    }
+
+    private async updateOrcamentoConcluido(
+        prismaTxn: Prisma.TransactionClient,
+        meta: {
+            id: number;
+            PdmOrcamentoRealizadoControleConcluido: {
+                id: number;
+                ano_referencia: number;
+                meta_id: number;
+                criado_em: Date;
+                referencia_dia_abertura: number | null;
+                referencia_dia_fechamento: number | null;
+                execucao_concluida: boolean;
+            }[];
+        },
+        ano_referencia: number,
+        execucao_concluida: boolean,
+        anyAdminUser: { id: number },
+        now: Date
+    ) {
+        await prismaTxn.pdmOrcamentoRealizadoConfig.updateMany({
+            where: {
+                ultima_revisao: true,
+                meta_id: meta.id,
+                ano_referencia: ano_referencia,
+            },
+            data: {
+                execucao_concluida: execucao_concluida,
+            },
+        });
+        await prismaTxn.pdmOrcamentoRealizadoConfig.create({
+            data: {
+                atualizado_por: anyAdminUser.id,
+                atualizado_em: now,
+                ultima_revisao: true,
+                meta_id: meta.id,
+                ano_referencia: ano_referencia,
+                execucao_concluida: execucao_concluida,
+            },
+        });
     }
 }
 
