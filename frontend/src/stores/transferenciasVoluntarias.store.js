@@ -83,13 +83,17 @@ export const useTransferenciasVoluntariasStore = defineStore(
         }
       },
 
-      async salvarItem(params = {}, id = 0) {
+      async salvarItem(params = {}, id = 0, éSegundoFormulário = false) {
         this.chamadasPendentes.emFoco = true;
         this.erro = null;
 
         try {
           if (id) {
-            await this.requestS.patch(`${baseUrl}/transferencia/${id}`, params);
+            if (éSegundoFormulário) {
+              await this.requestS.patch(`${baseUrl}/transferencia/${id}/completar-registro`, params);
+            } else {
+              await this.requestS.patch(`${baseUrl}/transferencia/${id}`, params);
+            }
           } else {
             await this.requestS.post(`${baseUrl}/transferencia`, params);
           }
