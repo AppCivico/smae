@@ -147,7 +147,7 @@ function adicionarLinha() {
         </tr>
       </tbody>
     </table>
-    <button @click="registrarNovaDistribuicaoRecursos" class="adicionarNovo">
+    <button @click="registrarNovaDistribuicaoRecursos" class="like-a__text addlink">
       <svg
         width="20"
         height="20"
@@ -246,8 +246,8 @@ function adicionarLinha() {
         <Field name="dotacao" type="text" class="inputtext light mb1" placeholder="16.24.12.306.3016.2.873.33903900.00"/>
         <ErrorMessage class="error-msg mb1" name="dotacao" />
       </div>
-      <div>
-        <div v-for="(registro, index) in registrosSei" :key="index" class="flex g2 mb1">
+      <div class="f1">
+        <div v-for="(registro, index) in registrosSei" :key="index" class="flex g2">
         <div class="f1">
           <LabelFromYup name="registros_sei" :schema="schema" />
           <Field :name="'registros_sei_' + registro.id" type="text" class="inputtext light mb1" v-model="registro.valor"/>
@@ -255,14 +255,14 @@ function adicionarLinha() {
         </div>
       </div>
         <button
-          class="like-a__text addlink"
+          class="like-a__text addlink mb1"
           type="button"
           @click="adicionarLinha"
         >
           <svg
             width="20"
             height="20"
-          ><use xlink:href="#i_+" /></svg>adicionar novo número sei
+          ><use xlink:href="#i_+" /></svg> adicionar novo número sei
         </button>
       </div>
 
@@ -416,16 +416,3 @@ function adicionarLinha() {
     </div>
   </div>
 </template>
-
-
-<style scoped>
-button.adicionarNovo{
-  border: 0;
-  background: none;
-  font-size: 12px;
-  text-transform: uppercase;
-  font-weight: 900;
-  color: #3B5881;
-}
-</style>
-
