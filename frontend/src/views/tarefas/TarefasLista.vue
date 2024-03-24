@@ -26,14 +26,8 @@ const nívelMáximoPermitido = computed(() => {
 
 const nívelMáximoVisível = ref(0);
 
-let prefixo = null;
 
 async function iniciar() {
-  if (route.params?.projetoId) {
-    prefixo = 'projeto';
-  } else if (route.params?.transferenciaId) {
-    prefixo = 'transferencia';
-  }
 
   tarefasStore.$reset();
   await tarefasStore.buscarTudo();
