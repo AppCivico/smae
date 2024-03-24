@@ -11,7 +11,6 @@ import { storeToRefs } from 'pinia';
 import { ErrorMessage, Field, Form } from 'vee-validate';
 import { computed, ref } from 'vue';
 import { useRouter } from 'vue-router';
-
 import esferasDeTransferencia from '@/consts/esferasDeTransferencia';
 import interfacesDeTransferências from '@/consts/interfacesDeTransferências';
 import truncate from '@/helpers/truncate';
