@@ -580,7 +580,10 @@ iniciar();
         </div>
       </div>
       <div class="f1">
-        <label class="label">Cláusula suspensiva <span class="tvermelho">*</span></label>
+        <LabelFromYup
+          name="clausula_suspensiva"
+          :schema="schema"
+        />
         <Field
           name="clausula_suspensiva"
           as="select"
@@ -610,8 +613,8 @@ iniciar();
           :class="{ 'error': errors.clausula_suspensiva_vencimento }"
           maxlength="10"
           @change="($event) => {
-            if ($event?.target?.value === '') {
-              setFieldValue(clausula_suspensiva_vencimento, null );
+            if (!$event?.target?.value) {
+              setFieldValue('clausula_suspensiva_vencimento', null);
             }
           }"
         />
