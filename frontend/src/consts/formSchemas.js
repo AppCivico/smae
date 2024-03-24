@@ -936,7 +936,8 @@ export const transferenciaDistribuicaoDeRecursos = object({
     .nullable(),
   orgao_gestor_id: number()
     .label('Gestor Municipal')
-    .nullable(),
+    .min(1, 'Selecione um gestor municipal')
+    .required(),
   programa_orcamentario_estadual: string()
     .label('programa orçamentário estadual')
     .nullable(),
