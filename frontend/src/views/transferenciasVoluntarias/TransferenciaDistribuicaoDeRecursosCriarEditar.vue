@@ -15,7 +15,9 @@ import { ref } from 'vue';
 const distribuicaoRecursos = useDistribuicaoRecursosStore();
 const ÓrgãosStore = useOrgansStore();
 
-const { chamadasPendentes, erro, lista } = storeToRefs(distribuicaoRecursos);
+const {
+  chamadasPendentes, erro, lista, itemParaEdição, emFoco,
+} = storeToRefs(distribuicaoRecursos);
 const { órgãosComoLista } = storeToRefs(ÓrgãosStore);
 
 const props = defineProps({
@@ -28,24 +30,46 @@ const props = defineProps({
 const alertStore = useAlertStore();
 const mostrarDistribuicaoRegistroForm = ref(false);
 
-async function onSubmit(values) {
+async function onSubmit(_, { controlledValues: values }) {
   try {
     let r;
-    const msg = props.transferenciaId
+    const msg = itemParaEdição.value.id
       ? 'Dados salvos com sucesso!'
       : 'Item adicionado com sucesso!';
 
-    if (props.transferenciaId) {
-      r = await distribuicaoRecursos.salvarItem(values, props.transferenciaId);
+    if (itemParaEdição.value.id) {
+      r = await distribuicaoRecursos.salvarItem(values, itemParaEdição.value.id);
     } else {
       r = await distribuicaoRecursos.salvarItem(values);
     }
     if (r) {
       alertStore.success(msg);
+
+      mostrarDistribuicaoRegistroForm.value = false;
+
+      if (itemParaEdição.value.id) {
+        emFoco.value = null;
+      }
+
       distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
     }
   } catch (error) {
     alertStore.error(error);
+  }
+}
+
+function editarDistribuicaoRecursos(id) {
+  if (distribuicaoRecursos.buscarItem(id)) {
+    mostrarDistribuicaoRegistroForm.value = true;
+  }
+}
+
+function registrarNovaDistribuicaoRecursos() {
+  if (mostrarDistribuicaoRegistroForm.value) {
+    mostrarDistribuicaoRegistroForm.value = false;
+  } else {
+    emFoco.value = null;
+    mostrarDistribuicaoRegistroForm.value = true;
   }
 }
 
@@ -54,11 +78,8 @@ function iniciar() {
 
   ÓrgãosStore.getAll();
 }
-iniciar();
 
-function registrarNovaDistribuicaoRecursos() {
-  mostrarDistribuicaoRegistroForm.value = true;
-}
+iniciar();
 </script>
 <template>
   <div class="flex spacebetween center mb2">
@@ -123,7 +144,11 @@ function registrarNovaDistribuicaoRecursos() {
           </td>
           <td>
             <button
-              class="tprimary"
+              class="like-a__text"
+              arial-label="editar"
+              title="editar"
+              type="button"
+              @click="editarDistribuicaoRecursos(item.id)"
             >
               <svg
                 width="20"
@@ -156,6 +181,13 @@ function registrarNovaDistribuicaoRecursos() {
     :initial-values="itemParaEdição"
     @submit="onSubmit"
   >
+    <Field
+      v-if="!itemParaEdição.id"
+      type="hidden"
+      name="transferencia_id"
+      :value="props.transferenciaId"
+    />
+
     <div class="flex spacebetween center mb1">
       <h3 class="title">
         Registro Distribuição de Recursos
