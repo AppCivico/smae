@@ -267,7 +267,10 @@ iniciar();
         <ErrorMessage class="error-msg mb1" name="valor_total" />
       </div>
       <div class="f1">
-        <label class="label">Empenho <span class="tvermelho">*</span></label>
+        <LabelFromYup
+          name="empenho"
+          :schema="schema"
+        />
         <Field
           name="empenho"
           as="select"

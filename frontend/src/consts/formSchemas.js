@@ -913,9 +913,9 @@ export const transferenciaDistribuicaoDeRecursos = object({
   dotacao: string()
     .label('Dotacao')
     .nullable(),
-  empenho: string()
+  empenho: boolean()
     .label('Empenho')
-    .nullable(),
+    .required(),
   valor: number()
     .label('Valor')
     .nullable(),
@@ -949,7 +949,7 @@ export const transferenciaDistribuicaoDeRecursos = object({
   registros_sei: array()
     .label('número sei')
     .nullable(),
-})
+});
 
 export const registroDeTransferencia = object({
   agencia_aceite: string()
