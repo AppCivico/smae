@@ -78,7 +78,7 @@ async function onSubmit(_, { controlledValues }) {
         router.push({ name: 'TransferenciasVoluntariasListar' });
       } else {
         router.push({
-          name: 'RegistroDeTransferenciaCriar',
+          name: 'RegistroDeTransferenciaEditar',
           params: {
             transferenciaId: r.id,
           },
