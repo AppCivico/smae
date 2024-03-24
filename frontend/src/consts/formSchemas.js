@@ -965,8 +965,6 @@ export const transferenciaDistribuicaoDeRecursos = object({
     .label('número sei')
     .required()
     .nullable(),
-  transferencia_id: number()
-    .required(),
 });
 
 export const registroDeTransferencia = object({
