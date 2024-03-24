@@ -45,7 +45,9 @@ const parlamentarSelecionado = ref(0);
 
 const cargosDisponíveis = computed(() => (!parlamentarSelecionado.value
   ? Object.values(cargosDeParlamentar)
-  : parlamentaresPorId.value[parlamentarSelecionado.value]?.mandatos?.map((x) => x.cargo) || []
+  : parlamentaresPorId.value[
+    parlamentarSelecionado.value
+  ]?.mandatos?.map((x) => cargosDeParlamentar[x.cargo]) || []
 ));
 
 const partidosDisponíveis = computed(() => (!parlamentarSelecionado.value
