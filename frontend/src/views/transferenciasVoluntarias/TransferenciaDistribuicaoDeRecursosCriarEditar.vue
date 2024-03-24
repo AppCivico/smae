@@ -7,7 +7,9 @@ import { useAlertStore } from '@/stores/alert.store';
 import { useOrgansStore } from '@/stores/organs.store';
 import { useDistribuicaoRecursosStore } from '@/stores/transferenciasDistribuicaoRecursos.store';
 import { storeToRefs } from 'pinia';
-import { ErrorMessage, Field, Form } from 'vee-validate';
+import {
+  ErrorMessage, Field, FieldArray, Form,
+} from 'vee-validate';
 import { ref } from 'vue';
 
 const distribuicaoRecursos = useDistribuicaoRecursosStore();
@@ -25,7 +27,6 @@ const props = defineProps({
 
 const alertStore = useAlertStore();
 const mostrarDistribuicaoRegistroForm = ref(false);
-const registrosSei = ref([{ id: 0, valor: '' }]);
 
 async function onSubmit(values) {
   try {
@@ -57,10 +58,6 @@ iniciar();
 
 function registrarNovaDistribuicaoRecursos() {
   mostrarDistribuicaoRegistroForm.value = true;
-}
-
-function adicionarLinha() {
-  registrosSei.value.push({ id: registrosSei.value.length, valor: '' });
 }
 </script>
 <template>
@@ -311,40 +308,63 @@ function adicionarLinha() {
           name="dotacao"
         />
       </div>
-      <div class="f1">
-        <div
-          v-for="(registro, index) in registrosSei"
-          :key="index"
-          class="flex g2"
-        >
-          <div class="f1">
-            <LabelFromYup
-              name="registros_sei"
-              :schema="schema"
-            />
-            <Field
-              v-model="registro.valor"
-              :name="'registros_sei_' + registro.id"
-              type="text"
-              class="inputtext light mb1"
-            />
+    </div>
+
+    <div class="mb1">
+      <LabelFromYup
+        :schema="schema"
+        name="registros_sei"
+        as="legend"
+        class="label mb1"
+      />
+      <FieldArray
+        v-slot="{ fields, push, remove }"
+        name="registros_sei"
+      >
+        <div class="g2 registros-sei">
+          <div
+            v-for="(field, idx) in fields"
+            :key="field.key"
+            class="mb1 registros-sei__item"
+          >
+            <div class="flex g1 center">
+              <Field
+                :name="`registros_sei[${idx}]`"
+                type="text"
+                class="inputtext light"
+              />
+
+              <button
+                class="like-a__text addlink"
+                arial-label="excluir"
+                title="excluir"
+                @click="remove(idx)"
+              >
+                <svg
+                  width="20"
+                  height="20"
+                ><use xlink:href="#i_remove" /></svg>
+              </button>
+            </div>
+
             <ErrorMessage
               class="error-msg mb1"
-              :name="'registros_sei_' + registro.id"
+              :name="`registros_sei[${idx}]`"
             />
           </div>
         </div>
+
         <button
-          class="like-a__text addlink mb1"
+          class="like-a__text addlink flb100"
           type="button"
-          @click="adicionarLinha"
+          @click="push('')"
         >
           <svg
             width="20"
             height="20"
-          ><use xlink:href="#i_+" /></svg> adicionar novo número sei
+          ><use xlink:href="#i_+" /></svg>Adicionar registro
         </button>
-      </div>
+      </FieldArray>
     </div>
 
     <div class="flex g2">
@@ -535,3 +555,12 @@ function adicionarLinha() {
     </div>
   </div>
 </template>
+<style lang="less">
+.registros-sei {
+  display: grid;
+  grid-template-columns: repeat( auto-fit, minmax(250px, 1fr) );
+}
+
+.registros-sei__item {
+}
+</style>
