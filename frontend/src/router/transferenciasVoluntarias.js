@@ -216,7 +216,7 @@ export default {
           meta: {
             título: 'Nova tarefa',
             títuloParaMenu: 'Nova tarefa',
-            rotaDeEscape: 'TransferenciasVoluntariasTarefasListar',
+            rotaDeEscape: 'TransferenciaCronograma',
           },
         },
     
@@ -236,7 +236,7 @@ export default {
                 título: () => useTarefasStore()?.emFoco?.tarefa || 'Editar tarefa',
                 títuloParaMenu: 'Editar tarefa',
     
-                rotaDeEscape: 'TransferenciasVoluntariasTarefasListar',
+                rotaDeEscape: 'TransferenciaCronograma',
     
                 rotasParaMigalhasDePão: [
                   'TransferenciasVoluntariasListar',
