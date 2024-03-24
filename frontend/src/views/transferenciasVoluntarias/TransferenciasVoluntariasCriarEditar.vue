@@ -473,7 +473,7 @@ iniciar();
             :key="i"
             :value="cargo.valor || cargo"
           >
-            {{ cargo.nome||cargo }}
+            {{ cargo.nome || cargo }}
           </option>
         </Field>
         <div class="error-msg">
