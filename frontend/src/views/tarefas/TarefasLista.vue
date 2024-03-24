@@ -18,10 +18,11 @@ const apenasLeitura = computed(
   () => !!projetoEmFoco.value?.permissoes?.apenas_leitura,
 );
 
-// eslint-disable-next-line max-len
-const nívelMáximoPermitido = computed(
-  () => tarefasStore?.extra?.portfolio?.nivel_maximo_tarefa || 0,
-);
+const nívelMáximoPermitido = computed(() => {
+  const extra = tarefasStore?.extra;
+  
+  return extra ? extra.portfolio?.nivel_maximo_tarefa || extra.cabecalho?.transferencia?.nivel_maximo_tarefa : 0;
+});
 
 const nívelMáximoVisível = ref(0);
 
