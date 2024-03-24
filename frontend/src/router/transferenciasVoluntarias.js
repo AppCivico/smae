@@ -194,7 +194,7 @@ export default {
               path: 'disparo-email',
               component: DialogWrapper,
               meta: {
-                rotaDeEscape: 'TransferenciasVoluntariasTarefasListar',
+                rotaDeEscape: 'TransferenciaCronograma',
                 título: 'Novo disparo de e-mail para cronograma',
                 títuloParaMenu: 'Novo e-mail',
               },

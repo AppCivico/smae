@@ -55,7 +55,7 @@ export default {
     <TítuloDePágina> Cronograma </TítuloDePágina>
     <hr class="f1">
     <nav
-      v-if="projetoEmFoco?.eh_prioritario && !apenasLeitura"
+      v-if="(projetoEmFoco?.eh_prioritario && !apenasLeitura) || route.meta.prefixoParaFilhas === 'TransferenciasVoluntarias'"
       class="flex g1"
     >
       <router-link
