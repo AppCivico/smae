@@ -195,7 +195,7 @@ iniciar();
             :key="item"
             :value="item.id"
           >
-            {{ item.nome }} ({{ item.esfera }})
+            {{ item.nome }}
           </option>
         </Field>
         <ErrorMessage
