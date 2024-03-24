@@ -21,7 +21,8 @@ onMounted(async () => {
   await TransferenciasVoluntarias.buscarItem(props.transferenciaId);
   emFoco.value = TransferenciasVoluntarias.emFoco;
 
-
+  await distribuicaoRecursos.buscarItem(props.transferenciaId);
+  emFoco.value = distribuicaoRecursos.emFoco;
 });
 
 </script>
