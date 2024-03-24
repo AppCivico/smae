@@ -104,10 +104,10 @@ export const useTarefasStore = defineStore('tarefas', {
       this.chamadasPendentes.emFoco = true;
 
       try {
-        const { linhas, portfolio, projeto } = await this.requestS.get(`${baseUrl}/${gerarCaminhoParaApi(mãeComId)}/tarefa`, params);
+        const { linhas, portfolio, projeto, cabecalho } = await this.requestS.get(`${baseUrl}/${gerarCaminhoParaApi(mãeComId)}/tarefa`, params);
 
         this.lista = linhas;
-        this.extra = { portfolio, projeto };
+        this.extra = { portfolio, projeto, cabecalho };
       } catch (erro: unknown) {
         this.erro = erro;
       }
