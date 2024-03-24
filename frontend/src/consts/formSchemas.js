@@ -981,13 +981,13 @@ export const registroDeTransferencia = object({
     .label('Banco da conta secretaria fim')
     .nullable(),
   conta_fim: string()
-    .label('número conta-corrente  secretaria fim')
+    .label('Número conta-corrente da secretaria fim')
     .nullable(),
   conta_aceite: string()
-    .label('número conta-corrente de aceite')
+    .label('Número conta-corrente de aceite')
     .nullable(),
   dotacao: string()
-    .label('Dotacao')
+    .label('Dotação')
     .nullable(),
   empenho: boolean()
     .label('Empenho')
