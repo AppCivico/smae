@@ -1,9 +1,8 @@
 <script setup>
-import { useAuthStore } from '@/stores/auth.store';
-import { useTransferenciasVoluntariasStore } from '@/stores/transferenciasVoluntarias.store';
-import { useDistribuicaoRecursosStore } from '@/stores/transferenciasDistribuicaoRecursos.store';
 import dateToField from '@/helpers/dateToField';
-import { computed, onMounted, ref } from 'vue';
+import { useDistribuicaoRecursosStore } from '@/stores/transferenciasDistribuicaoRecursos.store';
+import { useTransferenciasVoluntariasStore } from '@/stores/transferenciasVoluntarias.store';
+import { storeToRefs } from 'pinia';
 
 const props = defineProps({
   transferenciaId: {
@@ -12,28 +11,27 @@ const props = defineProps({
   },
 });
 
-
 const TransferenciasVoluntarias = useTransferenciasVoluntariasStore();
 const distribuicaoRecursos = useDistribuicaoRecursosStore();
 
-const emFoco = ref({});
-onMounted(async () => {
-  await TransferenciasVoluntarias.buscarItem(props.transferenciaId);
-  emFoco.value = TransferenciasVoluntarias.emFoco;
+const { emFoco: transferênciaEmFoco } = storeToRefs(TransferenciasVoluntarias);
+const { lista: listaDeDistribuição } = storeToRefs(distribuicaoRecursos);
 
-  await distribuicaoRecursos.buscarItem(props.transferenciaId);
-  emFoco.value = distribuicaoRecursos.emFoco;
-});
-
+TransferenciasVoluntarias.buscarItem(props.transferenciaId);
+distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
 </script>
-
 <template>
   <div class="flex spacebetween center mb2">
     <h1>Resumo da transferência</h1> <!-- não finalizado -->
   </div>
 
+  <pre v-scrollLockDebug>transferênciaEmFoco:{{ transferênciaEmFoco }}</pre>
+  <pre v-scrollLockDebug>listaDeDistribuição:{{ listaDeDistribuição }}</pre>
+
   <div class="flex spacebetween center mb2">
-    <h3 class="title">Identificação</h3>
+    <h3 class="title">
+      Identificação
+    </h3>
     <hr class="ml2 f1">
     <router-link
       :to="{ name: 'TransferenciasVoluntariaEditar' }"
@@ -49,24 +47,24 @@ onMounted(async () => {
         <dt>
           Identificador
         </dt>
-        <dd v-if="emFoco.identificador">
-          {{ emFoco.identificador }}
+        <dd>
+          {{ transferênciaEmFoco?.identificador || '-' }}
         </dd>
       </dl>
       <dl class="f1 mb3">
         <dt>
           Esfera
         </dt>
-        <dd v-if="emFoco.esfera">
-          {{ emFoco.esfera }}
+        <dd>
+          {{ transferênciaEmFoco?.esfera || '-' }}
         </dd>
       </dl>
       <dl class="f1 mb3">
         <dt>
           Tipo
         </dt>
-        <dd v-if="emFoco.tipo">
-          {{ emFoco.tipo }}
+        <dd>
+          {{ transferênciaEmFoco?.tipo || '-' }}
         </dd>
       </dl>
     </div>
@@ -75,24 +73,24 @@ onMounted(async () => {
         <dt>
           Interface
         </dt>
-        <dd v-if="emFoco.interface">
-          {{ emFoco.interface }}
+        <dd>
+          {{ transferênciaEmFoco?.interface || '-' }}
         </dd>
       </dl>
       <dl class="f1 mb3">
         <dt>
-          programa
+          Programa
         </dt>
-        <dd v-if="emFoco.programa">
-          {{ emFoco.programa }}
+        <dd>
+          {{ transferênciaEmFoco?.programa || '-' }}
         </dd>
       </dl>
       <dl class="f1 mb3">
         <dt>
           Emenda
         </dt>
-        <dd v-if="emFoco.emenda">
-          {{ emFoco.emenda }}
+        <dd>
+          {{ transferênciaEmFoco?.emenda || '-' }}
         </dd>
       </dl>
     </div>
@@ -101,25 +99,26 @@ onMounted(async () => {
         <dt>
           Emenda unitária
         </dt>
-        <dd v-if="emFoco.emenda_unitaria">
-          {{ emFoco.emenda_unitaria }}
+        <dd>
+          {{ transferênciaEmFoco?.emenda_unitaria || '-' }}
         </dd>
       </dl>
       <dl class="f1 mb3">
         <dt>
           Demanda
         </dt>
-        <dd v-if="emFoco.demanda">
-          {{ emFoco.demanda }}
+        <dd>
+          {{ transferênciaEmFoco?.demanda ||'-' }}
         </dd>
       </dl>
-      <dl class="f1 mb3">
-      </dl>
+      <dl class="f1 mb3" />
     </div>
   </div>
 
   <div class="flex spacebetween center mb2">
-    <h3 class="title">Origem</h3>
+    <h3 class="title">
+      Origem
+    </h3>
     <hr class="ml2 f1">
   </div>
 
@@ -129,51 +128,52 @@ onMounted(async () => {
         <dt>
           Órgão concedente
         </dt>
-        <dd v-if="emFoco.orgao_concedente">
-          {{ emFoco.orgao_concedente?.sigla }}
+        <dd>
+          {{ transferênciaEmFoco?.orgao_concedente?.sigla || '-' }}
         </dd>
       </dl>
       <dl class="f1 mb3">
         <dt>
           Secretaria do órgão concedente
         </dt>
-        <dd v-if="emFoco.secretaria_concedente">
-          {{ emFoco.secretaria_concedente }}
+        <dd>
+          {{ transferênciaEmFoco?.secretaria_concedente || '-' }}
         </dd>
       </dl>
-      <dl class="f1 mb3">
-      </dl>
+      <dl class="f1 mb3" />
     </div>
     <div class="flex spacebetween start mb1">
       <dl class="f1 mb3">
         <dt>
           Parlamentar
         </dt>
-        <dd v-if="emFoco.parlamentar">
-          {{ emFoco.parlamentar.nome }}
+        <dd>
+          {{ transferênciaEmFoco?.parlamentar?.nome || '-' }}
         </dd>
       </dl>
       <dl class="f1 mb3">
         <dt>
           Partido
         </dt>
-        <dd v-if="emFoco.partido">
-          {{ emFoco.partido.sigla }}
+        <dd>
+          {{ transferênciaEmFoco?.partido?.sigla || '-' }}
         </dd>
       </dl>
       <dl class="f1 mb3">
         <dt>
           cargo
         </dt>
-        <dd v-if="emFoco.cargo">
-          {{ emFoco.cargo }}
+        <dd>
+          {{ transferênciaEmFoco?.cargo || '-' }}
         </dd>
       </dl>
     </div>
   </div>
 
   <div class="flex spacebetween center mb2">
-    <h3 class="title">Transferência</h3>
+    <h3 class="title">
+      Transferência
+    </h3>
     <hr class="ml2 f1">
   </div>
 
@@ -184,36 +184,35 @@ onMounted(async () => {
           <dt>
             Ano
           </dt>
-          <dd v-if="emFoco.ano">
-            {{ emFoco.ano }}
+          <dd>
+            {{ transferênciaEmFoco?.ano || '-' }}
           </dd>
         </dl>
         <dl class="f1 mb3">
           <dt>
             Nome do Programa
           </dt>
-          <dd v-if="emFoco.nome_programa">
-            {{ emFoco.nome_programa }}
+          <dd>
+            {{ transferênciaEmFoco?.nome_programa || '-' }}
           </dd>
         </dl>
-        <dl class="f1 mb3">
-        </dl>
+        <dl class="f1 mb3" />
       </div>
       <div class="mb1">
         <dl class="f1 mb3">
           <dt>
             Objeto/Empreendimento
           </dt>
-          <dd v-if="emFoco.objeto">
-            {{ emFoco.objeto }}
+          <dd>
+            {{ transferênciaEmFoco?.objeto || '-' }}
           </dd>
         </dl>
         <dl class="f1 mb3">
           <dt>
-            detalhamento
+            Detalhamento
           </dt>
-          <dd v-if="emFoco.detalhamento">
-            {{ emFoco.detalhamento }}
+          <dd>
+            {{ transferênciaEmFoco?.detalhamento }}
           </dd>
         </dl>
       </div>
@@ -225,24 +224,26 @@ onMounted(async () => {
           <dt>
             Crítico
           </dt>
-          <dd v-if="emFoco.critico">
-            {{ emFoco.critico ? 'Sim' : 'Não' }}
+          <dd>
+            {{ transferênciaEmFoco?.critico ? 'Sim' : 'Não' }}
           </dd>
         </dl>
         <dl class="f1 mb3">
           <dt>
             Cláusula suspensiva
           </dt>
-          <dd v-if="emFoco.clausula_suspensiva">
-            {{ emFoco.clausula_suspensiva ? 'Sim' : 'Não' }}
+          <dd>
+            {{ transferênciaEmFoco?.clausula_suspensiva ? 'Sim' : 'Não' }}
           </dd>
         </dl>
         <dl class="f1 mb3">
           <dt>
             Data de vencimento
           </dt>
-          <dd v-if="emFoco.clausula_suspensiva_vencimento">
-            {{ dateToField(emFoco.clausula_suspensiva_vencimento) }}
+          <dd>
+            {{ transferênciaEmFoco?.clausula_suspensiva_vencimento
+              ? dateToField(transferênciaEmFoco.clausula_suspensiva_vencimento)
+              : '-' }}
           </dd>
         </dl>
       </div>
@@ -253,23 +254,25 @@ onMounted(async () => {
         <dt>
           normativa
         </dt>
-        <dd v-if="emFoco.normativa">
-          {{ emFoco.normativa }}
+        <dd>
+          {{ transferênciaEmFoco?.normativa || '-' }}
         </dd>
       </dl>
       <dl class="f1 mb3">
         <dt>
           observacoes
         </dt>
-        <dd v-if="emFoco.observacoes">
-          {{ emFoco.observacoes }}
+        <dd>
+          {{ transferênciaEmFoco?.observacoes || '-' }}
         </dd>
       </dl>
     </div>
   </div>
 
   <div class="flex spacebetween center mb2">
-    <h3 class="title">Recurso Financeiro</h3>
+    <h3 class="title">
+      Recurso Financeiro
+    </h3>
     <hr class="ml2 f1">
     <router-link
       :to="{ name: 'RegistroDeTransferenciaEditar' }"
@@ -285,24 +288,24 @@ onMounted(async () => {
         <dt>
           valor
         </dt>
-        <dd v-if="emFoco.valor">
-          {{ emFoco.valor }}
+        <dd>
+          {{ transferênciaEmFoco?.valor || '-' }}
         </dd>
       </dl>
       <dl class="mb3">
         <dt>
           Valor contra-partida
         </dt>
-        <dd v-if="emFoco.valor_contrapartida">
-          {{ emFoco.valor_contrapartida }}
+        <dd>
+          {{ transferênciaEmFoco?.valor_contrapartida || '-' }}
         </dd>
       </dl>
       <dl class="mb3">
         <dt>
           Valor total
         </dt>
-        <dd v-if="emFoco.valor_total">
-          {{ emFoco.valor_total }}
+        <dd>
+          {{ transferênciaEmFoco?.valor_total || '-' }}
         </dd>
       </dl>
     </div>
@@ -311,24 +314,24 @@ onMounted(async () => {
         <dt>
           Empenho
         </dt>
-        <dd v-if="emFoco.empenho">
-          {{ emFoco.empenho ? 'Sim' : 'Não' }}
+        <dd>
+          {{ transferênciaEmFoco?.empenho ? 'Sim' : 'Não' }}
         </dd>
       </dl>
       <dl class="mb3">
         <dt>
           Ordenador de despesas
         </dt>
-        <dd v-if="emFoco.ordenador_despesa">
-          {{ emFoco.ordenador_despesa }}
+        <dd>
+          {{ transferênciaEmFoco?.ordenador_despesa || '-' }}
         </dd>
       </dl>
       <dl class="mb3">
         <dt>
           Gestor municipal do contrato
         </dt>
-        <dd v-if="emFoco.gestor_contrato">
-          {{ emFoco.gestor_contrato }}
+        <dd>
+          {{ transferênciaEmFoco?.gestor_contrato || '-' }}
         </dd>
       </dl>
     </div>
@@ -337,15 +340,17 @@ onMounted(async () => {
         <dt>
           Dotação
         </dt>
-        <dd v-if="emFoco.dotacao">
-          {{ emFoco.dotacao ? 'Sim' : 'Não' }}
+        <dd>
+          {{ transferênciaEmFoco?.dotacao || '-' }}
         </dd>
       </dl>
     </div>
   </div>
 
   <div class="flex spacebetween center mb3">
-    <h3 class="title">Dados Bancários de Aceite</h3>
+    <h3 class="title">
+      Dados Bancários de Aceite
+    </h3>
     <hr class="ml2 f1">
   </div>
 
@@ -354,30 +359,32 @@ onMounted(async () => {
       <dt>
         Banco
       </dt>
-      <dd v-if="emFoco.banco_aceite">
-        {{ emFoco.banco_aceite }}
+      <dd>
+        {{ transferênciaEmFoco?.banco_aceite || '-' }}
       </dd>
     </dl>
     <dl class="f1">
       <dt>
         Agência
       </dt>
-      <dd v-if="emFoco.agencia_aceite">
-        {{ emFoco.agencia_aceite }}
+      <dd>
+        {{ transferênciaEmFoco?.agencia_aceite || '-' }}
       </dd>
     </dl>
     <dl class="f1">
       <dt>
         Conta
       </dt>
-      <dd v-if="emFoco.conta_aceite">
-        {{ emFoco.conta_aceite }}
+      <dd>
+        {{ transferênciaEmFoco?.conta_aceite || '-' }}
       </dd>
     </dl>
   </div>
 
   <div class="flex spacebetween center mb3">
-    <h3 class="title">Dados Bancários Secretaria Fim</h3>
+    <h3 class="title">
+      Dados Bancários Secretaria Fim
+    </h3>
     <hr class="ml2 f1">
   </div>
 
@@ -386,30 +393,32 @@ onMounted(async () => {
       <dt>
         Banco
       </dt>
-      <dd v-if="emFoco.banco_fim">
-        {{ emFoco.banco_fim }}
+      <dd>
+        {{ transferênciaEmFoco?.banco_fim || '-' }}
       </dd>
     </dl>
     <dl class="f1">
       <dt>
         Agência
       </dt>
-      <dd v-if="emFoco.agencia_fim">
-        {{ emFoco.agencia_fim }}
+      <dd>
+        {{ transferênciaEmFoco?.agencia_fim || '-' }}
       </dd>
     </dl>
     <dl class="f1">
       <dt>
         Conta
       </dt>
-      <dd v-if="emFoco.conta_fim">
-        {{ emFoco.conta_fim }}
+      <dd>
+        {{ transferênciaEmFoco?.conta_fim || '-' }}
       </dd>
     </dl>
   </div>
 
   <div class="flex spacebetween center mb3">
-    <h3 class="title">Distribuição de Recursos </h3>
+    <h3 class="title">
+      Distribuição de Recursos
+    </h3>
     <hr class="ml2 f1">
     <router-link
       :to="{ name: 'TransferenciaDistribuicaoDeRecursosEditar' }"
@@ -419,22 +428,26 @@ onMounted(async () => {
     </router-link>
   </div>
 
-  <section>
+  <section
+    v-for="distribuição in listaDeDistribuição"
+    :key="distribuição.id"
+    class="mb1"
+  >
     <div class="mb2">
       <dl class="mb3">
         <dt>
           Gestor municipal
         </dt>
-        <dd v-if="emFoco.gestor_contrato">
-          {{ emFoco.gestor_contrato }}
+        <dd>
+          {{ distribuição.gestor_contrato || '-' }}
         </dd>
       </dl>
       <dl class="f1 mb3">
         <dt>
           Objeto/Empreendimento
         </dt>
-        <dd v-if="emFoco.objeto">
-          {{ emFoco.objeto }}
+        <dd>
+          {{ distribuição.objeto || '-' }}
         </dd>
       </dl>
     </div>
@@ -443,26 +456,26 @@ onMounted(async () => {
       <div class="grid valores f1">
         <dl class="mb3">
           <dt>
-            valor
+            Valor
           </dt>
-          <dd v-if="emFoco.valor">
-            {{ emFoco.valor }}
+          <dd>
+            {{ distribuição.valor || '-' }}
           </dd>
         </dl>
         <dl class="mb3">
           <dt>
             Valor contra-partida
           </dt>
-          <dd v-if="emFoco.valor_contrapartida">
-            {{ emFoco.valor_contrapartida }}
+          <dd>
+            {{ distribuição.valor_contrapartida || '-' }}
           </dd>
         </dl>
         <dl class="mb3">
           <dt>
             Valor total
           </dt>
-          <dd v-if="emFoco.valor_total">
-            {{ emFoco.valor_total }}
+          <dd>
+            {{ distribuição.valor_total || '-' }}
           </dd>
         </dl>
       </div>
@@ -471,24 +484,24 @@ onMounted(async () => {
           <dt>
             Empenho
           </dt>
-          <dd v-if="emFoco.empenho">
-            {{ emFoco.empenho ? 'Sim' : 'Não' }}
+          <dd>
+            {{ distribuição.empenho ? 'Sim' : 'Não' }}
           </dd>
         </dl>
         <dl class="mb3">
           <dt>
             Programa orçamentário municipal
           </dt>
-          <dd v-if="emFoco.programa_orcamentario_municipal">
-            {{ emFoco.programa_orcamentario_municipal }}
+          <dd>
+            {{ distribuição.programa_orcamentario_municipal || '-' }}
           </dd>
         </dl>
         <dl class="mb3">
           <dt>
             Programa orçamentário estadual
           </dt>
-          <dd v-if="emFoco.programa_orcamentario_estadual">
-            {{ emFoco.programa_orcamentario_estadual }}
+          <dd>
+            {{ distribuição.programa_orcamentario_estadual || '-' }}
           </dd>
         </dl>
       </div>
@@ -497,8 +510,8 @@ onMounted(async () => {
           <dt>
             Dotação orçamentária
           </dt>
-          <dd v-if="emFoco.dotacao">
-            {{ emFoco.dotacao ? 'Sim' : 'Não' }}
+          <dd>
+            {{ distribuição.dotacao || '-' }}
           </dd>
         </dl>
       </div>
@@ -510,24 +523,35 @@ onMounted(async () => {
           <dt>
             Número SEI
           </dt>
-          <dd v-if="emFoco.numero_sei">
-            {{ emFoco.numero_sei }}
+
+          <dd v-if="distribuição.numero_sei?.length">
+            <ul>
+              <li
+                v-for="(número, i) in distribuição.numero_sei"
+                :key="i"
+              >
+                {{ número || '-' }}
+              </li>
+            </ul>
+          </dd>
+          <dd v-else>
+            -
           </dd>
         </dl>
         <dl class="f1">
           <dt>
             Número proposta
           </dt>
-          <dd v-if="emFoco.proposta">
-            {{ emFoco.proposta }}
+          <dd>
+            {{ distribuição.proposta || '-' }}
           </dd>
         </dl>
         <dl class="f1">
           <dt>
             Número do convênio/pré convênio
           </dt>
-          <dd v-if="emFoco.convenios">
-            {{ emFoco.convenios }}
+          <dd>
+            {{ distribuição.convenios || '-' }}
           </dd>
         </dl>
       </div>
@@ -536,31 +560,37 @@ onMounted(async () => {
           <dt>
             Número do contrato
           </dt>
-          <dd v-if="emFoco.contrato">
-            {{ emFoco.contrato }}
+          <dd>
+            {{ distribuição.contrato || '-' }}
           </dd>
         </dl>
         <dl class="f1">
           <dt>
             Data de vigência
           </dt>
-          <dd v-if="emFoco.vigencia">
-            {{ dateToField(emFoco.vigencia) }}
+          <dd>
+            {{ distribuição.vigencia
+              ? dateToField(distribuição.vigencia)
+              : '-' }}
           </dd>
         </dl>
         <dl class="f1">
           <dt>
             Data de conclusão da suspensiva
           </dt>
-          <dd v-if="emFoco.conclusao_suspensiva">
-            {{ dateToField(emFoco.conclusao_suspensiva) }}
+          <dd>
+            {{ distribuição.conclusao_suspensiva
+              ? dateToField(distribuição.conclusao_suspensiva)
+              : '-' }}
           </dd>
         </dl>
       </div>
     </div>
 
     <div class="flex spacebetween center mb3">
-      <h3 class="title">Assinaturas</h3>
+      <h3 class="title">
+        Assinaturas
+      </h3>
       <hr class="ml2 f1">
     </div>
 
@@ -569,29 +599,28 @@ onMounted(async () => {
         <dt>
           Data assinatura do termo de aceite
         </dt>
-        <dd v-if="emFoco.data_assinatura_termo_aceite">
-          {{ emFoco.data_assinatura_termo_aceite }}
+        <dd v-if="distribuição?.data_assinatura_termo_aceite">
+          {{ distribuição.data_assinatura_termo_aceite }}
         </dd>
       </dl>
       <dl class="f1">
         <dt>
           Data assinatura do representante do estado
         </dt>
-        <dd v-if="emFoco.data_assinatura_representante_estado">
-          {{ dateToField(emFoco.data_assinatura_representante_estado) }}
+        <dd v-if="distribuição?.data_assinatura_representante_estado">
+          {{ dateToField(distribuição.data_assinatura_representante_estado) }}
         </dd>
       </dl>
       <dl class="f1">
         <dt>
           Data assinatura do representante do município
         </dt>
-        <dd v-if="emFoco.data_assinatura_representante_municipio">
-          {{ dateToField(emFoco.data_assinatura_representante_municipio) }}
+        <dd v-if="distribuição?.data_assinatura_representante_municipio">
+          {{ dateToField(distribuição.data_assinatura_representante_municipio) }}
         </dd>
       </dl>
     </div>
   </section>
-
 </template>
 
 <style scoped lang="less">
