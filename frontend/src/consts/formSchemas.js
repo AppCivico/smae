@@ -1018,7 +1018,7 @@ export const transferenciasVoluntarias = object({
     .nullable(),
   clausula_suspensiva: boolean()
     .label('Cláusula suspensiva')
-    .nullable(),
+    .required(),
   detalhamento: string()
     .label('Detalhamento')
     .max(50000)
@@ -1037,7 +1037,7 @@ export const transferenciasVoluntarias = object({
     .label('Esfera')
     .nullable()
     .required(),
-  demanda:string()
+  demanda: string()
     .label('Número da Demanda')
     .nullable()
     .required(),
