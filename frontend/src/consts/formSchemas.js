@@ -980,6 +980,12 @@ export const registroDeTransferencia = object({
   banco_fim: string()
     .label('Banco da conta secretaria fim')
     .nullable(),
+  conta_fim: string()
+    .label('número conta-corrente  secretaria fim')
+    .nullable(),
+  conta_aceite: string()
+    .label('número conta-corrente de aceite')
+    .nullable(),
   dotacao: string()
     .label('Dotacao')
     .nullable(),
@@ -1000,12 +1006,6 @@ export const registroDeTransferencia = object({
   valor_total: number()
     .label('Valor total')
     .required()
-    .nullable(),
-  conta_fim: string()
-    .label('número conta-corrente  secretaria fim')
-    .nullable(),
-  conta_aceite: string()
-    .label('número conta-corrente de aceite')
     .nullable(),
   gestor_contrato: string()
     .label('Gestor do Contrato')
@@ -1030,6 +1030,10 @@ export const transferenciasVoluntarias = object({
     .required(),
   critico: string()
     .label('Crítico')
+    .nullable(),
+  cargo: string()
+    .label('Cargo')
+    .required()
     .nullable(),
   clausula_suspensiva: boolean()
     .label('Cláusula suspensiva')
