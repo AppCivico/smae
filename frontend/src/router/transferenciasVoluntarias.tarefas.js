@@ -54,7 +54,7 @@ export default {
     },
 
     {
-      name: 'transferenciaTarefasCriar',
+      name: 'TransferenciasVoluntariasTarefasCriar',
       path: 'nova',
       component: TarefasCriarEditar,
       meta: {
