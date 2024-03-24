@@ -257,7 +257,7 @@ iniciar();
           class="inputtext light mb1"
           placeholder="000.000.000.000/ AAAA.0000000.00000 / AAAA.000.00000"
           @change="($event) => {
-            if ($event?.target?.value === '') setFieldValue(emenda, null);
+            if ($event?.target?.value === '') setFieldValue('emenda', null);
           }"
         />
         <ErrorMessage
@@ -276,7 +276,7 @@ iniciar();
           type="text"
           class="inputtext light mb1"
           @change="($event) => {
-            if ($event?.target?.value === '') setFieldValue(emenda_unitaria, null);
+            if ($event?.target?.value === '') setFieldValue('emenda_unitaria', null);
           }"
         />
         <ErrorMessage
