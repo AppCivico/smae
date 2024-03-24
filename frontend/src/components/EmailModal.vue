@@ -73,6 +73,7 @@ async function onSubmit() {
             <Field
               name="atirecorrencia_diasvo"
               type="number"
+              min="0"
               class="inputtext light mb1"
             />
           </div>
@@ -100,8 +101,8 @@ async function onSubmit() {
             <Field
               name="numero"
               type="number"
+              min="0"
               class="inputtext light mb1"
-              maxlength="10"
             />
           </div>
         </div>
@@ -123,7 +124,6 @@ async function onSubmit() {
                 <button
                   type="button"
                   class="tagsmall"
-                  tabindex="1"
                   @click="removeEmail(index, $event)"
                 >
                   {{ email }}
