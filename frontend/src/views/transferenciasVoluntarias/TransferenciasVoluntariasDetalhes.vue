@@ -1,6 +1,7 @@
 <script setup>
 import { useAuthStore } from '@/stores/auth.store';
 import { useTransferenciasVoluntariasStore } from '@/stores/transferenciasVoluntarias.store';
+import { useDistribuicaoRecursosStore } from '@/stores/transferenciasDistribuicaoRecursos.store';
 import dateToField from '@/helpers/dateToField';
 import { computed, onMounted, ref } from 'vue';
 
@@ -13,11 +14,14 @@ const props = defineProps({
 
 
 const TransferenciasVoluntarias = useTransferenciasVoluntariasStore();
+const distribuicaoRecursos = useDistribuicaoRecursosStore();
 
 const emFoco = ref({});
 onMounted(async () => {
   await TransferenciasVoluntarias.buscarItem(props.transferenciaId);
   emFoco.value = TransferenciasVoluntarias.emFoco;
+
+
 });
 
 </script>
@@ -513,16 +517,16 @@ onMounted(async () => {
           <dt>
             Número proposta
           </dt>
-          <dd v-if="emFoco.numero_proposta">
-            {{ emFoco.numero_proposta }}
+          <dd v-if="emFoco.proposta">
+            {{ emFoco.proposta }}
           </dd>
         </dl>
         <dl class="f1">
           <dt>
             Número do convênio/pré convênio
           </dt>
-          <dd v-if="emFoco.numero_convenio">
-            {{ emFoco.numero_convenio }}
+          <dd v-if="emFoco.convenios">
+            {{ emFoco.convenios }}
           </dd>
         </dl>
       </div>
@@ -531,24 +535,24 @@ onMounted(async () => {
           <dt>
             Número do contrato
           </dt>
-          <dd v-if="emFoco.numero_contrato">
-            {{ emFoco.numero_contrato }}
+          <dd v-if="emFoco.contrato">
+            {{ emFoco.contrato }}
           </dd>
         </dl>
         <dl class="f1">
           <dt>
             Data de vigência
           </dt>
-          <dd v-if="emFoco.data_vigencia">
-            {{ dateToField(emFoco.data_vigencia) }}
+          <dd v-if="emFoco.vigencia">
+            {{ dateToField(emFoco.vigencia) }}
           </dd>
         </dl>
         <dl class="f1">
           <dt>
             Data de conclusão da suspensiva
           </dt>
-          <dd v-if="emFoco.data_conclusao_suspensiva">
-            {{ dateToField(emFoco.data_conclusao_suspensiva) }}
+          <dd v-if="emFoco.conclusao_suspensiva">
+            {{ dateToField(emFoco.conclusao_suspensiva) }}
           </dd>
         </dl>
       </div>
