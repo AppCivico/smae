@@ -44,21 +44,21 @@ const esferaSelecionada = ref('');
 const parlamentarSelecionado = ref(0);
 
 const cargosDisponíveis = computed(() => (!parlamentarSelecionado.value
-  ? Object.values(cargosDeParlamentar)
+  ? []
   : parlamentaresPorId.value[
     parlamentarSelecionado.value
   ]?.mandatos?.map((x) => cargosDeParlamentar[x.cargo]) || []
 ));
 
 const partidosDisponíveis = computed(() => (!parlamentarSelecionado.value
-  ? partidoComoLista.value
+  ? []
   : parlamentaresPorId
     .value[parlamentarSelecionado.value]?.mandatos?.map((x) => x.partido_atual) || []
 ));
 
 const tiposDisponíveis = computed(() => (esferaSelecionada.value
   ? tipoTransferenciaComoLista.value.filter((x) => x.esfera === esferaSelecionada.value)
-  : tipoTransferenciaComoLista.value));
+  : []));
 
 async function onSubmit(_, { controlledValues }) {
   try {
@@ -184,7 +184,7 @@ iniciar();
             error: errors.tipo_id,
             loading: TipoDeTransferenciaStore.chamadasPendentes?.lista,
           }"
-          :disabled="!tipoTransferenciaComoLista?.length"
+          :disabled="!tiposDisponíveis.length"
         >
           <option :value="0">
             Selecionar
@@ -436,7 +436,7 @@ iniciar();
             error: errors.partido_id,
             loading: partidoStore.chamadasPendentes?.lista,
           }"
-          :disabled="!partidosDisponíveis?.length"
+          :disabled="!partidosDisponíveis.length"
         >
           <option :value="0">
             Selecionar
@@ -462,7 +462,7 @@ iniciar();
           as="select"
           class="inputtext light mb1"
           :class="{ 'error': errors.cargo }"
-          :disabled="!cargosDisponíveis?.length"
+          :disabled="!cargosDisponíveis.length"
         >
           <option value="">
             Selecionar

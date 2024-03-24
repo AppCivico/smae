@@ -1081,15 +1081,14 @@ export const transferenciasVoluntarias = object({
     .required(),
   partido_id: number()
     .label('Partido')
-    .nullable()
     .required(),
   parlamentar_id: number()
     .label('Parlamentar')
     .min(1, 'Selecione um parlamentar')
-    .nullable(),
+    .required(),
   secretaria_concedente: string()
     .label('Secretaria do órgão concedente')
-    .nullable(),
+    .required(),
 });
 
 export const processo = object()
