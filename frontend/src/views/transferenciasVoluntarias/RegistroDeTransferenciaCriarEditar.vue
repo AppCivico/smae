@@ -45,7 +45,7 @@ transferenciasVoluntarias.buscarItem(props.transferenciaId);
   </div>
 
   <Form
-    v-slot="{ errors, isSubmitting, values }"
+    v-slot="{ errors, isSubmitting, setFieldValue, values }"
     :validation-schema="schema"
     :initial-values="itemParaEdição"
     @submit="onSubmit"
@@ -61,6 +61,7 @@ transferenciasVoluntarias.buscarItem(props.transferenciaId);
           type="text"
           class="inputtext light mb1"
           :value="values.valor"
+          @update:model-value="setFieldValue('valor', String(values.valor));"
         />
         <ErrorMessage
           class="error-msg mb1"
@@ -101,6 +102,9 @@ transferenciasVoluntarias.buscarItem(props.transferenciaId);
           type="text"
           class="inputtext light mb1"
           :value="values.valor_contrapartida"
+          @update:model-value="
+            setFieldValue('valor_contrapartida', String(values.valor_contrapartida))
+          "
         />
         <ErrorMessage
           class="error-msg mb1"
@@ -136,6 +140,7 @@ transferenciasVoluntarias.buscarItem(props.transferenciaId);
           class="inputtext light mb1"
           placeholder="R$ 000.000.000.000,00"
           :value="values.valor_total"
+          @update:model-value="setFieldValue('valor_total', String(values.valor_total));"
         />
         <ErrorMessage
           class="error-msg mb1"
