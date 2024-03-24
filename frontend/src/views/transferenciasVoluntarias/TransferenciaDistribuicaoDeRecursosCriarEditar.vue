@@ -270,7 +270,7 @@ iniciar();
           type="text"
           class="inputtext light mb2"
           :value="values.valor"
-          placeholder="R$ 000.000.000.000,00"
+          @update:model-value="setFieldValue('valor', String(values.valor));"
         />
         <ErrorMessage
           class="error-msg mb2"
@@ -287,7 +287,9 @@ iniciar();
           type="text"
           class="inputtext light mb2"
           :value="values.valor_contrapartida"
-          placeholder="R$ 000.000.000.000,00"
+          @update:model-value="
+            setFieldValue('valor_contrapartida', String(values.valor_contrapartida))
+          "
         />
         <ErrorMessage
           class="error-msg mb2"
@@ -307,7 +309,7 @@ iniciar();
           type="text"
           class="inputtext light mb1"
           :value="values.valor_total"
-          placeholder="R$ 000.000.000.000,00"
+          @update:model-value="setFieldValue('valor_total', String(values.valor_total));"
         />
         <ErrorMessage
           class="error-msg mb1"
