@@ -186,7 +186,9 @@ iniciar();
       ><use xlink:href="#i_+" /></svg> Registrar nova distribuição de recurso
     </button>
   </div>
-  <Form v-if="mostrarDistribuicaoRegistroForm" v-slot="{ errors, isSubmitting,values }"
+  <Form
+    v-if="mostrarDistribuicaoRegistroForm"
+    v-slot="{ errors, isSubmitting, values }"
     :validation-schema="schema"
     :initial-values="itemParaEdição"
     @submit="onSubmit"
@@ -259,22 +261,58 @@ iniciar();
 
     <div class=" g2 mb2">
       <div class="halfInput">
-        <LabelFromYup name="valor" :schema="schema" />
-        <MaskedFloatInput name="valor" type="text" class="inputtext light mb2" :value="values.valor" placeholder="R$ 000.000.000.000,00"/>
-        <ErrorMessage class="error-msg mb2" name="valor" />
+        <LabelFromYup
+          name="valor"
+          :schema="schema"
+        />
+        <MaskedFloatInput
+          name="valor"
+          type="text"
+          class="inputtext light mb2"
+          :value="values.valor"
+          placeholder="R$ 000.000.000.000,00"
+        />
+        <ErrorMessage
+          class="error-msg mb2"
+          name="valor"
+        />
       </div>
       <div class="halfInput">
-        <LabelFromYup name="valor_contrapartida" :schema="schema" />
-        <MaskedFloatInput name="valor_contrapartida" type="text" class="inputtext light mb2" :value="values.valor_contrapartida" placeholder="R$ 000.000.000.000,00"/>
-        <ErrorMessage class="error-msg mb2" name="valor_contrapartida" />
+        <LabelFromYup
+          name="valor_contrapartida"
+          :schema="schema"
+        />
+        <MaskedFloatInput
+          name="valor_contrapartida"
+          type="text"
+          class="inputtext light mb2"
+          :value="values.valor_contrapartida"
+          placeholder="R$ 000.000.000.000,00"
+        />
+        <ErrorMessage
+          class="error-msg mb2"
+          name="valor_contrapartida"
+        />
       </div>
     </div>
 
     <div class="flex g2 mb1">
       <div class="f1">
-        <LabelFromYup name="valor_total" :schema="schema" />
-        <MaskedFloatInput name="valor_total" type="text" class="inputtext light mb1" :value="values.valor_total" placeholder="R$ 000.000.000.000,00"/>
-        <ErrorMessage class="error-msg mb1" name="valor_total" />
+        <LabelFromYup
+          name="valor_total"
+          :schema="schema"
+        />
+        <MaskedFloatInput
+          name="valor_total"
+          type="text"
+          class="inputtext light mb1"
+          :value="values.valor_total"
+          placeholder="R$ 000.000.000.000,00"
+        />
+        <ErrorMessage
+          class="error-msg mb1"
+          name="valor_total"
+        />
       </div>
       <div class="f1">
         <LabelFromYup
