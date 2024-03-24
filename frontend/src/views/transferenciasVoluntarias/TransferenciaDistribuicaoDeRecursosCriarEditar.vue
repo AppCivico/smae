@@ -1,7 +1,6 @@
 <script setup>
 import { transferenciaDistribuicaoDeRecursos as schema } from '@/consts/formSchemas';
-import dateToField from '@/helpers/dateToField';
-import truncate from '@/helpers/truncate';
+import MaskedFloatInput from '@/components/MaskedFloatInput.vue';
 import { useAlertStore } from '@/stores/alert.store';
 import { useOrgansStore } from '@/stores/organs.store';
 import { useDistribuicaoRecursosStore } from '@/stores/transferenciasDistribuicaoRecursos.store';
@@ -153,9 +152,7 @@ function adicionarLinha() {
       ><use xlink:href="#i_+" /></svg> Registrar nova distribuição de recurso
     </button>
   </div>
-  <Form
-    v-if="mostrarDistribuicaoRegistroForm"
-    v-slot="{ errors, isSubmitting }"
+  <Form v-if="mostrarDistribuicaoRegistroForm" v-slot="{ errors, isSubmitting,values }"
     :validation-schema="schema"
     :initial-values="itemParaEdição"
     @submit="onSubmit"
@@ -221,55 +218,22 @@ function adicionarLinha() {
 
     <div class=" g2 mb2">
       <div class="halfInput">
-        <LabelFromYup
-          name="valor"
-          :schema="schema"
-        />
-        <Field
-          name="valor"
-          type="text"
-          class="inputtext light mb2"
-          placeholder="R$ 000.000.000.000,00"
-        />
-        <ErrorMessage
-          class="error-msg mb2"
-          name="valor"
-        />
+        <LabelFromYup name="valor" :schema="schema" />
+        <MaskedFloatInput name="valor" type="text" class="inputtext light mb2" :value="values.valor" placeholder="R$ 000.000.000.000,00"/>
+        <ErrorMessage class="error-msg mb2" name="valor" />
       </div>
       <div class="halfInput">
-        <LabelFromYup
-          name="valor_contrapartida"
-          :schema="schema"
-        />
-        <Field
-          name="valor_contrapartida"
-          type="text"
-          class="inputtext light mb2"
-          placeholder="R$ 000.000.000.000,00"
-        />
-        <ErrorMessage
-          class="error-msg mb2"
-          name="valor_contrapartida"
-        />
+        <LabelFromYup name="valor_contrapartida" :schema="schema" />
+        <MaskedFloatInput name="valor_contrapartida" type="text" class="inputtext light mb2" :value="values.valor_contrapartida" placeholder="R$ 000.000.000.000,00"/>
+        <ErrorMessage class="error-msg mb2" name="valor_contrapartida" />
       </div>
     </div>
 
     <div class="flex g2 mb1">
       <div class="f1">
-        <LabelFromYup
-          name="valor_total"
-          :schema="schema"
-        />
-        <Field
-          name="valor_total"
-          type="text"
-          class="inputtext light mb1"
-          placeholder="R$ 000.000.000.000,00"
-        />
-        <ErrorMessage
-          class="error-msg mb1"
-          name="valor_total"
-        />
+        <LabelFromYup name="valor_total" :schema="schema" />
+        <MaskedFloatInput name="valor_total" type="text" class="inputtext light mb1" :value="values.valor_total" placeholder="R$ 000.000.000.000,00"/>
+        <ErrorMessage class="error-msg mb1" name="valor_total" />
       </div>
       <div class="f1">
         <label class="label">Empenho <span class="tvermelho">*</span></label>
@@ -455,21 +419,21 @@ function adicionarLinha() {
     <div class="flex g2 mb1">
       <div class="f1">
         <LabelFromYup
-          name="assinatura_municipio"
+          name="assinatura_estado"
           :schema="schema"
         />
         <Field
-          name="assinatura_municipio"
+          name="assinatura_estado"
           type="date"
           class="inputtext light"
-          :class="{ 'error': errors.assinatura_municipio }"
+          :class="{ 'error': errors.assinatura_estado }"
           maxlength="10"
-          @update:model-value="values.assinatura_municipio === ''
-            ? values.assinatura_municipio = null
+          @update:model-value="values.assinatura_estado === ''
+            ? values.assinatura_estado = null
             : null"
         />
         <ErrorMessage
-          name="assinatura_municipio"
+          name="assinatura_estado"
           class="error-msg"
         />
       </div>
