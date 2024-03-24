@@ -86,24 +86,25 @@ export const useTransferenciasVoluntariasStore = defineStore(
       async salvarItem(params = {}, id = 0, éSegundoFormulário = false) {
         this.chamadasPendentes.emFoco = true;
         this.erro = null;
+        let resposta;
 
         try {
           if (id) {
             if (éSegundoFormulário) {
-              await this.requestS.patch(`${baseUrl}/transferencia/${id}/completar-registro`, params);
+              resposta = await this.requestS.patch(`${baseUrl}/transferencia/${id}/completar-registro`, params);
             } else {
-              await this.requestS.patch(`${baseUrl}/transferencia/${id}`, params);
+              resposta = await this.requestS.patch(`${baseUrl}/transferencia/${id}`, params);
             }
           } else {
-            await this.requestS.post(`${baseUrl}/transferencia`, params);
+            resposta = await this.requestS.post(`${baseUrl}/transferencia`, params);
           }
 
           this.chamadasPendentes.emFoco = false;
-          return true;
+          return resposta;
         } catch (erro) {
           this.erro = erro;
           this.chamadasPendentes.emFoco = false;
-          return false;
+          return erro;
         }
       },
       async buscarArquivos(id = 0, params = {}) {
