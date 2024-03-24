@@ -933,7 +933,7 @@ export const transferenciaDistribuicaoDeRecursos = object({
   objeto: string()
     .label('Objeto/Empreendimento')
     .max(50000)
-    .nullable(),
+    .required(),
   orgao_gestor_id: number()
     .label('Gestor Municipal')
     .min(1, 'Selecione um gestor municipal')
@@ -995,7 +995,7 @@ export const registroDeTransferencia = object({
   gestor_contrato: string()
     .label('Gestor do Contrato')
     .nullable(),
-})
+});
 
 export const transferenciasVoluntarias = object({
   ano: number()
