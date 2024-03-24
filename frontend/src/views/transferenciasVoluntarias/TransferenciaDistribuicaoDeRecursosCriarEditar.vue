@@ -64,6 +64,16 @@ function editarDistribuicaoRecursos(id) {
   }
 }
 
+async function excluirDistribuição(id) {
+  alertStore.confirmAction('Deseja mesmo remover esse item?', async () => {
+    if (await distribuicaoRecursos.excluirItem(id)) {
+      distribuicaoRecursos.$reset();
+      distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
+      alertStore.success('Distribuição removida.');
+    }
+  }, 'Remover');
+}
+
 function registrarNovaDistribuicaoRecursos() {
   if (mostrarDistribuicaoRegistroForm.value) {
     mostrarDistribuicaoRegistroForm.value = false;
@@ -134,7 +144,7 @@ iniciar();
               arial-label="excluir"
               title="excluir"
               type="button"
-              @click="excluirItem('distribuição de recurso', item.id)"
+              @click="excluirDistribuição(item.id)"
             >
               <svg
                 width="20"
