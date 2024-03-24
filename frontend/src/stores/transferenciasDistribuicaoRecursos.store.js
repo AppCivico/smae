@@ -77,4 +77,11 @@ export const useDistribuicaoRecursosStore = defineStore('distribuicaoRecursos', 
       }
     },
   },
+  getters: {
+    itemParaEdição: ({ emFoco }) => ({
+      ...emFoco,
+      orgao_gestor_id: emFoco?.orgao_gestor?.id || null,
+      registros_sei: emFoco?.registros_sei?.map((x) => x.processo_sei) || null,
+    }),
+  },
 });
