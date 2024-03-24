@@ -1,8 +1,8 @@
 <script setup>
+import MaskedFloatInput from '@/components/MaskedFloatInput.vue';
 import { transferenciaDistribuicaoDeRecursos as schema } from '@/consts/formSchemas';
 import dateToField from '@/helpers/dateToField';
 import truncate from '@/helpers/truncate';
-import MaskedFloatInput from '@/components/MaskedFloatInput.vue';
 import { useAlertStore } from '@/stores/alert.store';
 import { useOrgansStore } from '@/stores/organs.store';
 import { useDistribuicaoRecursosStore } from '@/stores/transferenciasDistribuicaoRecursos.store';
