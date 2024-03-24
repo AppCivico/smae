@@ -887,47 +887,58 @@ export const transferenciaDistribuicaoDeRecursos = object({
   assinatura_municipio: date()
     .label('data de assinatura do representante do município')
     .nullable()
+    .required()
     .min(new Date(2003, 0, 1))
     .transform((v) => (!v ? null : v)),
   assinatura_estado: date()
     .label('data de assinatura do representante do estado')
     .nullable()
+    .required()
     .min(new Date(2003, 0, 1))
     .transform((v) => (!v ? null : v)),
   assinatura_termo_aceite: date()
     .label('data de assinatura do termo de aceite')
     .nullable()
+    .required()
     .min(new Date(2003, 0, 1))
     .transform((v) => (!v ? null : v)),
   contrato: string()
     .label('número do contrato')
+    .required()
     .nullable(),
   convenio: string()
     .label('número convênio/pré-convênio')
+    .required()
     .nullable(),
   conclusao_suspensiva: date()
     .label('data de conclusão da suspensiva')
     .nullable()
+    .required()
     .min(new Date(2003, 0, 1))
     .transform((v) => (!v ? null : v)),
   dotacao: string()
     .label('Dotacao')
+    .required()
     .nullable(),
   empenho: boolean()
     .label('Empenho')
     .required(),
   valor: number()
     .label('Valor')
+    .required()
     .nullable(),
   valor_contrapartida: number()
     .label('Valor contrapartida')
+    .required()
     .nullable(),
   valor_total: number()
     .label('Valor total')
+    .required()
     .nullable(),
   vigencia: date()
     .label('data de vigência')
     .nullable()
+    .required()
     .min(new Date(2003, 0, 1))
     .transform((v) => (!v ? null : v)),
   objeto: string()
@@ -940,16 +951,22 @@ export const transferenciaDistribuicaoDeRecursos = object({
     .required(),
   programa_orcamentario_estadual: string()
     .label('programa orçamentário estadual')
+    .required()
     .nullable(),
   programa_orcamentario_municipal: string()
     .label('programa orçamentário municipal')
+    .required()
     .nullable(),
   proposta: string()
     .label('proposta')
+    .required()
     .nullable(),
   registros_sei: array()
     .label('número sei')
+    .required()
     .nullable(),
+  transferencia_id: number()
+    .required(),
 });
 
 export const registroDeTransferencia = object({
