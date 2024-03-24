@@ -72,7 +72,7 @@ export default {
       children: [
         {
           path: '',
-          name: 'tarefasEditar',
+          name: 'TransferenciasVoluntariasTarefasEditar',
           component: TarefasCriarEditar,
           props: true,
 
