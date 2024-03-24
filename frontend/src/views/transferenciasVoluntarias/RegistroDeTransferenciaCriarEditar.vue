@@ -142,7 +142,6 @@ transferenciasVoluntarias.buscarItem(props.transferenciaId);
           name="valor_total"
           type="text"
           class="inputtext light mb1"
-          placeholder="R$ 000.000.000.000,00"
           :value="values.valor_total"
           @update:model-value="setFieldValue('valor_total', String(values.valor_total));"
         />
