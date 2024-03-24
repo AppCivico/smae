@@ -1085,9 +1085,8 @@ export const transferenciasVoluntarias = object({
     .nullable(),
   secretaria_concedente: string()
     .label('Secretaria do órgão concedente')
-    .nullable()
-    .required(),
-})
+    .nullable(),
+});
 
 export const processo = object()
   .shape({
