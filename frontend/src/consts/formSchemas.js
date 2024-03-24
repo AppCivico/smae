@@ -1000,9 +1000,11 @@ export const transferenciasVoluntarias = object({
     .required(),
   clausula_suspensiva_vencimento: date()
     .label('data de vencimento da cláusula suspensiva')
-    .nullable()
     .min(new Date(2003, 0, 1))
-    .transform((v) => (!v ? null : v)),
+    .transform((v) => (!v ? null : v))
+    .when('clausula_suspensiva', (clausulaSuspensiva, field) => (clausulaSuspensiva
+      ? field.required()
+      : field.nullable())),
   tipo_id: number()
     .label('Tipo')
     .nullable()
@@ -1010,8 +1012,8 @@ export const transferenciasVoluntarias = object({
   critico: string()
     .label('Crítico')
     .nullable(),
-  clausula_suspensiva: string()
-    .label('cláusula suspensiva')
+  clausula_suspensiva: boolean()
+    .label('Cláusula suspensiva')
     .nullable(),
   detalhamento: string()
     .label('Detalhamento')
