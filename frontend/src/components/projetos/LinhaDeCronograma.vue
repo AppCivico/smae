@@ -49,7 +49,7 @@ export default {
         if (await useTarefasStore().excluirItem(id)) {
           useTarefasStore().$reset();
           useTarefasStore().buscarTudo();
-          useAlertStore().success('Portfolio removido.');
+          useAlertStore().success('Tarefa removida.');
         }
       }, 'Remover');
     },
