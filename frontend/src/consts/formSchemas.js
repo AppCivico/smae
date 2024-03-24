@@ -967,6 +967,9 @@ export const registroDeTransferencia = object({
   dotacao: string()
     .label('Dotacao')
     .nullable(),
+  empenho: boolean()
+    .label('Empenho')
+    .required(),
   valor: number()
     .label('Valor')
     .nullable()

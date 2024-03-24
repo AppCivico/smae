@@ -69,7 +69,10 @@ transferenciasVoluntarias.buscarItem(props.transferenciaId);
         />
       </div>
       <div class="f1">
-        <label class="label">Empenho <span class="tvermelho">*</span></label>
+        <LabelFromYup
+          name="empenho"
+          :schema="schema"
+        />
         <Field
           name="empenho"
           as="select"
@@ -86,9 +89,10 @@ transferenciasVoluntarias.buscarItem(props.transferenciaId);
             Não
           </option>
         </Field>
-        <div class="error-msg">
-          {{ errors.empenho }}
-        </div>
+        <ErrorMessage
+          class="error-msg mb1"
+          name="empenho"
+        />
       </div>
     </div>
     <div class="flex g2 mb1">
