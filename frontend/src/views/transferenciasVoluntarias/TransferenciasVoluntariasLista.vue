@@ -87,7 +87,7 @@ watch([
       <input
         id="ano"
         v-model="ano"
-        class="inputtext"
+        class="inputtext mb1"
         name="ano"
         type="number"
         min="2003"
@@ -102,7 +102,7 @@ watch([
       <select
         id="esfera"
         v-model="esfera"
-        class="inputtext"
+        class="inputtext mb1"
         name="esfera"
       >
         <option value="" />
@@ -128,9 +128,10 @@ watch([
         name="palavra_chave"
         type="text"
       >
+      <small class="tc200 t13">pode-se usar <strong>e</strong> ou <strong>ou</strong></small>
     </div>
 
-    <div class="flex f0 center g1">
+    <div class="flex f0 center g1 mb1">
       <label
         class="label tc300 mt2 mb0"
         for="preenchimento_completo"
@@ -147,7 +148,7 @@ watch([
       >
     </div>
 
-    <button class="btn outline bgnone tcprimary mtauto">
+    <button class="btn outline bgnone tcprimary mtauto mb1">
       Pesquisar
     </button>
   </form>
