@@ -287,7 +287,7 @@ export class TransferenciaService {
                     in: palavrasChave != undefined ? palavrasChave.map((row) => row.id) : undefined,
                 },
             },
-            orderBy: [{ pendente_preenchimento_valores: 'asc', identificador: 'asc' }],
+            orderBy: [{ pendente_preenchimento_valores: 'asc' }, { identificador: 'asc' }],
             skip: offset,
             take: ipp + 1,
             select: {
