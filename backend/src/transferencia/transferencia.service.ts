@@ -235,7 +235,8 @@ export class TransferenciaService {
             where: {
                 removido_em: null,
                 esfera: filters.esfera,
-                pendente_preenchimento_valores: filters.preenchimento_completo,
+                pendente_preenchimento_valores:
+                    filters.preenchimento_completo != undefined ? !filters.preenchimento_completo : undefined,
                 ano: filters.ano,
 
                 // Filtro por palavras-chave com tsvector

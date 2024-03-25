@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { TransferenciaTipoEsfera } from '@prisma/client';
 import { Transform, TransformFnParams, Type } from 'class-transformer';
-import { IsOptional, IsString, MaxLength, IsInt, Max, Min, IsNumber, IsEnum, IsBoolean } from 'class-validator';
+import { IsOptional, IsString, MaxLength, IsInt, Max, Min, IsEnum, IsBoolean } from 'class-validator';
 
 export class FilterTransferenciaDto {
     @IsOptional()
