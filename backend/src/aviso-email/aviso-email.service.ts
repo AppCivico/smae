@@ -35,6 +35,7 @@ export class AvisoEmailService {
                     where: {
                         tarefa_cronograma_id,
                         tarefa_id,
+                        removido_em: null,
                     },
                 });
                 if (exists)
