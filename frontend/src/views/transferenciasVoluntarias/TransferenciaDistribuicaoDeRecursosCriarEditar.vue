@@ -512,9 +512,9 @@ iniciar();
           class="inputtext light mb1"
           :class="{ 'error': errors.assinatura_termo_aceite }"
           maxlength="10"
-          @update:model-value="values.assinatura_termo_aceite === ''
-            ? values.assinatura_termo_aceite = null
-            : null"
+          @change="($event) => {
+            if ($event?.target?.value === '') setFieldValue('assinatura_termo_aceite', null);
+          }"
         />
         <ErrorMessage
           name="assinatura_termo_aceite"
@@ -535,9 +535,9 @@ iniciar();
           class="inputtext light"
           :class="{ 'error': errors.assinatura_estado }"
           maxlength="10"
-          @update:model-value="values.assinatura_estado === ''
-            ? values.assinatura_estado = null
-            : null"
+          @change="($event) => {
+            if ($event?.target?.value === '') setFieldValue('assinatura_estado', null);
+          }"
         />
         <ErrorMessage
           name="assinatura_estado"
@@ -555,9 +555,9 @@ iniciar();
           class="inputtext light mb1"
           :class="{ 'error': errors.assinatura_municipio }"
           maxlength="10"
-          @update:model-value="values.assinatura_municipio === ''
-            ? values.assinatura_municipio = null
-            : null"
+          @change="($event) => {
+            if ($event?.target?.value === '') setFieldValue('assinatura_municipio', null);
+          }"
         />
         <ErrorMessage
           name="assinatura_municipio"
@@ -578,9 +578,9 @@ iniciar();
           class="inputtext light mb1"
           :class="{ 'error': errors.vigencia }"
           maxlength="10"
-          @update:model-value="values.vigencia === ''
-            ? values.vigencia = null
-            : null"
+          @change="($event) => {
+            if ($event?.target?.value === '') setFieldValue('vigencia', null);
+          }"
         />
         <ErrorMessage
           name="vigencia"
@@ -598,9 +598,9 @@ iniciar();
           class="inputtext light mb1"
           :class="{ 'error': errors.conclusao_suspensiva }"
           maxlength="10"
-          @update:model-value="values.conclusao_suspensiva === ''
-            ? values.conclusao_suspensiva = null
-            : null"
+          @change="($event) => {
+            if ($event?.target?.value === '') setFieldValue('conclusao_suspensiva', null);
+          }"
         />
         <ErrorMessage
           name="conclusao_suspensiva"
