@@ -51,17 +51,25 @@ watch([
   () => route.query.palavra_chave,
   () => route.query.preenchimento_completo,
 ], () => {
+  let { ano: anoParaBusca, palavra_chave: palavraChaveParaBusca } = route.query;
+  if (typeof anoParaBusca === 'string') {
+    anoParaBusca = anoParaBusca.trim();
+  }
+  if (typeof palavraChaveParaBusca === 'string') {
+    palavraChaveParaBusca = palavraChaveParaBusca.trim();
+  }
   transferenciasVoluntarias.$reset();
   transferenciasVoluntarias.buscarTudo({
-    ano: route.query.ano || undefined,
+    ano: anoParaBusca,
     esfera: route.query.esfera
       ? Object.keys(esferasDeTransferencia)
         .find((x) => x.toLowerCase() === route.query.esfera.toLocaleLowerCase())
       : undefined,
-    palavra_chave: route.query.palavra_chave || undefined,
+    palavra_chave: palavraChaveParaBusca,
     preenchimento_completo: !!route.query.preenchimento_completo || undefined,
   });
 }, { immediate: true });
+
 </script>
 <template>
   <div class="flex spacebetween center mb2">
