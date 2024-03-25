@@ -71,7 +71,7 @@ watch([
       :to="{ name: 'TransferenciasVoluntariaCriar' }"
       class="btn big ml1"
     >
-      Novo Formulário de registro
+      Novo transferência voluntária
     </router-link>
   </div>
 
