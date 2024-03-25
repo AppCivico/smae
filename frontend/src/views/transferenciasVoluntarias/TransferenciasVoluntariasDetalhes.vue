@@ -35,9 +35,13 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
     <hr class="ml2 f1">
     <router-link
       :to="{ name: 'TransferenciasVoluntariaEditar' }"
-      class="btn big ml2"
+      title="Editar identificação"
+      class="ml2"
     >
-      Editar
+      <svg
+        width="20"
+        height="20"
+      ><use xlink:href="#i_edit" /></svg>
     </router-link>
   </div>
 
@@ -276,9 +280,13 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
     <hr class="ml2 f1">
     <router-link
       :to="{ name: 'RegistroDeTransferenciaEditar' }"
-      class="btn big ml2"
+      title="Editar recursos financeiros"
+      class="ml2"
     >
-      Editar
+      <svg
+        width="20"
+        height="20"
+      ><use xlink:href="#i_edit" /></svg>
     </router-link>
   </div>
 
@@ -422,9 +430,13 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
     <hr class="ml2 f1">
     <router-link
       :to="{ name: 'TransferenciaDistribuicaoDeRecursosEditar' }"
-      class="btn big ml2"
+      title="Editar distribuição de recursos"
+      class="ml2"
     >
-      Editar
+      <svg
+        width="20"
+        height="20"
+      ><use xlink:href="#i_edit" /></svg>
     </router-link>
   </div>
 
