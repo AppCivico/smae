@@ -18,6 +18,7 @@ import {
     DoubleCheckException,
     FRASE_ERRO_EMPENHO,
     FRASE_ERRO_LIQUIDADO,
+    LIBERAR_LIQUIDADO_VALORES_MAIORES_QUE_SOF,
     MAX_BATCH_SIZE,
     verificaValorLiqEmpenhoMaiorEmp,
 } from '../../orcamento-realizado/orcamento-realizado.service';
@@ -41,7 +42,7 @@ export class OrcamentoRealizadoService {
     ) {
         // deixar ligado a verificação
         this.liberarEmpenhoValoresMaioresQueSof = false;
-        this.liberarLiquidadoValoresMaioresQueSof = true;
+        this.liberarLiquidadoValoresMaioresQueSof = LIBERAR_LIQUIDADO_VALORES_MAIORES_QUE_SOF;
     }
 
     async create(
