@@ -1,8 +1,8 @@
 import { IdCodTituloDto } from '../../common/dto/IdCodTitulo.dto';
 
 export class OrcamentoRealizadoItem {
-    valor_empenho: string;
-    valor_liquidado: string;
+    valor_empenho: string | null;
+    valor_liquidado: string | null;
     percentual_empenho: string | null;
     percentual_liquidado: string | null;
     mes: number;
