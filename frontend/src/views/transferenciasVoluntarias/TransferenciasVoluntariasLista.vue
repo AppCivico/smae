@@ -86,7 +86,7 @@ watch([
       >Ano</label>
       <input
         id="ano"
-        v-model="ano"
+        v-model.number="ano"
         class="inputtext mb1"
         name="ano"
         type="number"
@@ -101,7 +101,7 @@ watch([
       >Esfera</label>
       <select
         id="esfera"
-        v-model="esfera"
+        v-model.trim="esfera"
         class="inputtext mb1"
         name="esfera"
       >
@@ -123,7 +123,7 @@ watch([
       >Palavra-chave</label>
       <input
         id="palavra_chave"
-        v-model="palavraChave"
+        v-model.trim="palavraChave"
         class="inputtext"
         name="palavra_chave"
         type="text"
