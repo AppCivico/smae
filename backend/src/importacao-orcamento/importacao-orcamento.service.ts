@@ -914,7 +914,10 @@ export class ImportacaoOrcamentoService {
         if (!dotacao) return 'Erro: faltando dotacao';
 
         if (isEmpty(row.valor_empenho) && isEmpty(row.percentual_empenho))
-            return 'Erro: percentual ou valor de de empenho';
+            return 'Erro: percentual e valor de empenho estão ambos vazios, por favor, preencha um dos campos.';
+
+        if (isEmpty(row.valor_liquidado) && isEmpty(row.percentual_liquidado))
+            return 'Erro: percentual e valor liquidado estão ambos vazios, por favor, preencha um dos campos.';
 
         // joga fora os dígitos extra da dotação
         dotacao = TrataDotacaoGrande(dotacao);
@@ -1093,7 +1096,7 @@ export class ImportacaoOrcamentoService {
     }
 }
 function isEmpty(n: number | string | null | undefined) {
-    if (typeof n == 'number' && isNaN(n) == false) return false;
+    if (typeof n == 'number' && isNaN(n)) return false;
     if (typeof n == 'string' && n === '') return true;
     return n === undefined || n === null;
 }
