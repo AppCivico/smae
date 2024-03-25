@@ -10,6 +10,7 @@ export class AvisoEmailItemDto {
     tipo: TipoAviso;
     projeto: IdNomeDto | null;
     tarefa: IdDesc | null;
+    transferencia_id: number | null;
     com_copia: string[];
     numero: number;
     numero_periodo: AvisoPeriodo;

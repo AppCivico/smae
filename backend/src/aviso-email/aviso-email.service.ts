@@ -92,6 +92,7 @@ export class AvisoEmailService {
                         projeto: {
                             select: { id: true, nome: true },
                         },
+                        transferencia_id: true,
                     },
                 },
             },
@@ -108,7 +109,7 @@ export class AvisoEmailService {
                 numero_periodo: r.numero_periodo,
                 recorrencia_dias: r.recorrencia_dias,
                 tipo: r.tipo,
-
+                transferencia_id: r.tarefa_cronograma?.transferencia_id ?? null,
                 projeto: r.tarefa_cronograma?.projeto ?? null,
                 tarefa: r.tarefa ?? null,
             };
