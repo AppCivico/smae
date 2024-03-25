@@ -6,6 +6,7 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
 import { DistribuicaoRecursoDetailDto, DistribuicaoRecursoDto } from './entities/distribuicao-recurso.entity';
 import { UpdateDistribuicaoRecursoDto } from './dto/update-distribuicao-recurso.dto';
+import { FilterDistribuicaoRecursoDto } from './dto/filter-distribuicao-recurso.dto';
 
 type operationsRegistroSEI = {
     id?: number;
@@ -85,10 +86,11 @@ export class DistribuicaoRecursoService {
         return { id: created.id };
     }
 
-    async findAll(): Promise<DistribuicaoRecursoDto[]> {
+    async findAll(filters: FilterDistribuicaoRecursoDto): Promise<DistribuicaoRecursoDto[]> {
         const rows = await this.prisma.distribuicaoRecurso.findMany({
             where: {
                 removido_em: null,
+                id: filters.id,
             },
             select: {
                 id: true,
