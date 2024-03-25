@@ -32,15 +32,12 @@ export const useEmailsStore = defineStore("emailsStore", {
       this.chamadasPendentes.emFoco = false;
     },
 
-    async buscarTudo(params = {}) {
+    async buscarTudo(params) {
       this.chamadasPendentes.lista = true;
       this.erro = null;
 
       try {
-        const { linhas } = await this.requestS.get(
-          `${baseUrl}/aviso-email`,
-          params
-        );
+        const { linhas } = await this.requestS.get(`${baseUrl}/aviso-email`,params);
         this.lista = linhas;
       } catch (erro) {
         this.erro = erro;
