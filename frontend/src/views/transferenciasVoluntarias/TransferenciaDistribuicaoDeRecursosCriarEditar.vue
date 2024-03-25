@@ -2,6 +2,7 @@
 import MaskedFloatInput from '@/components/MaskedFloatInput.vue';
 import { transferenciaDistribuicaoDeRecursos as schema } from '@/consts/formSchemas';
 import dateToField from '@/helpers/dateToField';
+import dinheiro from '@/helpers/dinheiro';
 import truncate from '@/helpers/truncate';
 import { useAlertStore } from '@/stores/alert.store';
 import { useOrgansStore } from '@/stores/organs.store';
@@ -123,9 +124,9 @@ watch(itemParaEdição, (novosValores) => {
   <div class="mb2">
     <table class="tablemain mb1">
       <col>
+      <col class="col--number">
       <col>
-      <col>
-      <col>
+      <col class="col--data">
       <col class="col--botão-de-ação">
       <col class="col--botão-de-ação">
       <thead>
@@ -133,7 +134,7 @@ watch(itemParaEdição, (novosValores) => {
           <th>
             Gestor municipal
           </th>
-          <th>
+          <th class="cell--number">
             Valor total
           </th>
           <th>
@@ -150,7 +151,13 @@ watch(itemParaEdição, (novosValores) => {
           :key="item.id"
         >
           <td>{{ item.orgao_gestor.sigla }}</td>
-          <td>{{ item.valor_total }}</td>
+          <td class="cell--number">
+            {{
+              item.valor_total
+                ? dinheiro(item.valor_total )
+                : '-'
+            }}
+          </td>
           <td>{{ item.empenho? 'Sim' : 'Não' }}</td>
           <td>{{ dateToField(item.vigencia) }}</td>
           <td>
