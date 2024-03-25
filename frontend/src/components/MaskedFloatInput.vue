@@ -19,6 +19,17 @@ const props = defineProps({
     type: String,
     default: '',
   },
+  converterPara: {
+    default: 'number',
+    type: String,
+    validator(valor) {
+      return [
+        'number',
+        'string',
+        'text',
+      ].indexOf(valor) > -1;
+    },
+  },
 });
 
 const emit = defineEmits(['update:modelValue']);
@@ -36,9 +47,22 @@ const typedValue = computed({
       : dinheiro(props.value);
   },
   set: (newValue) => {
-    const cleanValue = newValue === '' || newValue === null
-      ? null
-      : Number(newValue.replace(/[\D]/g, '')) / 100;
+    let cleanValue;
+
+    switch (newValue) {
+      case '':
+      case null:
+        cleanValue = null;
+        break;
+
+      default:
+        cleanValue = Number(newValue.replace(/[\D]/g, '')) / 100;
+
+        if (['string', 'text'].indexOf(props.converterPara.toLowerCase()) !== -1) {
+          cleanValue = String(cleanValue);
+        }
+        break;
+    }
 
     handleChange(cleanValue);
     emit('update:modelValue', cleanValue);
