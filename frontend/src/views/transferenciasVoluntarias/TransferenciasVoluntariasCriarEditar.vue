@@ -392,7 +392,7 @@ iniciar();
             :value="item.id"
             :disabled="!item.mandatos.length"
           >
-            {{ item.nome }} - {{ item.nome_popular }}
+            {{ item.nome_popular }}
 
             <template v-if="!item.mandatos.length">
               (sem mandatos cadastrados)
