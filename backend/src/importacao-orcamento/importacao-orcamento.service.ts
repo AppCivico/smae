@@ -552,12 +552,16 @@ export class ImportacaoOrcamentoService {
                             columnName
                         )
                     ) {
-                        // essas quatro colunas vem como float, e então as vezes vem no excel ta "83242998.52" mas chega aqui "83242998.52000001"
-                        // então vamos fazer o toFixed(2)
-                        if (col2row[columnName] !== null) col2row[columnName] = +cellValue;
+                        if (col2row[columnName] === undefined || String(col2row[columnName]).trim() === '') {
+                            col2row[columnName] = null;
+                        } else {
+                            // essas quatro colunas vem como float, e então as vezes vem no excel ta "83242998.52" mas chega aqui "83242998.52000001"
+                            // então vamos fazer o toFixed(2)
+                            col2row[columnName] = +cellValue;
 
-                        if (typeof col2row[columnName] === 'number') {
-                            col2row[columnName] = toFixed2ButString(col2row[columnName]);
+                            if (typeof col2row[columnName] === 'number') {
+                                col2row[columnName] = toFixed2ButString(col2row[columnName]);
+                            }
                         }
                     } else if (cellValue !== undefined && cellValue !== '' && columnName === 'processo') {
                         col2row[columnName] = `${cellValue}`;
