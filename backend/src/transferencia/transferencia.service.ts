@@ -690,7 +690,21 @@ export class TransferenciaService {
         if (!transferenciaCronograma) return null;
 
         return {
-            ...transferenciaCronograma,
+            previsao_custo: transferenciaCronograma.previsao_custo,
+            previsao_duracao: transferenciaCronograma.previsao_duracao,
+            previsao_inicio: transferenciaCronograma.previsao_inicio,
+            previsao_termino: transferenciaCronograma.previsao_termino,
+            atraso: transferenciaCronograma.atraso,
+            em_atraso: transferenciaCronograma.em_atraso,
+            projecao_termino: transferenciaCronograma.projecao_termino,
+            realizado_duracao: transferenciaCronograma.realizado_duracao,
+            percentual_concluido: transferenciaCronograma.percentual_concluido,
+            realizado_inicio: transferenciaCronograma.realizado_inicio,
+            realizado_termino: transferenciaCronograma.realizado_termino,
+            realizado_custo: transferenciaCronograma.realizado_custo,
+            tolerancia_atraso: transferenciaCronograma.tolerancia_atraso,
+            percentual_atraso: transferenciaCronograma.percentual_atraso,
+            status_cronograma: transferenciaCronograma.status_cronograma,
             nivel_maximo_tarefa: transferenciaCronograma.transferencia!.nivel_maximo_tarefa,
         };
     }
