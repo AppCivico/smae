@@ -1028,10 +1028,10 @@ export const transferenciasVoluntarias = object({
     .required(),
   critico: boolean()
     .label('Crítico')
-    .nullable()
     .required(),
-  cargo: string()
+  cargo: mixed()
     .label('Cargo')
+    .oneOf(Object.keys(cargosDeParlamentar))
     .nullable(),
   clausula_suspensiva: boolean()
     .label('Cláusula suspensiva')
