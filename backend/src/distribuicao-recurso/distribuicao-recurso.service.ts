@@ -64,7 +64,7 @@ export class DistribuicaoRecursoService {
                                     dto.registros_sei != undefined && dto.registros_sei.length > 0
                                         ? dto.registros_sei!.map((r) => {
                                               return {
-                                                  processo_sei: r,
+                                                  processo_sei: r.processo_sei,
                                                   registro_sei_info: '{}',
                                                   criado_em: new Date(Date.now()),
                                                   criado_por: user.id,
