@@ -53,7 +53,10 @@ function onSubmit(values) {
           alertStore.success('Item adicionado com sucesso!');
           curfile.value = {};
           if (route.meta.rotaDeEscape) {
-            router.push({ name: route.meta.rotaDeEscape });
+            router.push({
+              name: route.meta.rotaDeEscape,
+              query: route.query,
+            });
           }
         } else {
           alertStore.error('`upload_token` ausente da resposta');
