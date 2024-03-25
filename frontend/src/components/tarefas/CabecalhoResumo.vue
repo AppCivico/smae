@@ -10,6 +10,10 @@ const props = defineProps({
     type: Object,
     required: true,
   },
+  existeEmail:{
+    type: Boolean,
+    default: false
+  }
 });
 
 </script>
@@ -117,16 +121,16 @@ const props = defineProps({
       <div v-if="route.meta.prefixoParaFilhas === 'TransferenciasVoluntarias'" class="f1 mb1"  >
         <dt class="t12 uc w700 mb05 tamarelo">Envio de e-mail?</dt>
         <dd class="t13 dado-efetivo">
-          <!-- v-if="email" -->
-          <div class="flex g1">
+          <div class="flex g1" v-if="existeEmail">
             <span>Sim</span>
             <router-link :to="{}" title="Editar e-mail">
               <svg width="20" height="20"><use xlink:href="#i_edit" /></svg>
             </router-link>
           </div>
-          <!-- <spam v-else>Não</spam> -->
+          <spam v-else>Não</spam>
         </dd>
       </div>
     </dl>
   </div>
-</template>
+</template>import { type } from 'os';
+
