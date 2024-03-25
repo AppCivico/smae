@@ -14,12 +14,36 @@ export class AvisoEmailService {
 
     async create(dto: CreateAvisoEmailDto, user: PessoaFromJwt): Promise<RecordWithId> {
         const tarefa_cronograma_id = await this.resolveCronoEtapaId(dto);
+        const tarefa_id = dto.tarefa_id;
+
+        if (tarefa_id && tarefa_cronograma_id) {
+            throw new BadRequestException(
+                `Só pode ser do cronograma ou da tarefa, não pode ser de ambos ao mesmo tempo.`
+            );
+        }
+
+        if (dto.tipo == 'CronogramaTerminoPlanejado') {
+            if (!tarefa_id || !tarefa_cronograma_id)
+                throw new BadRequestException(
+                    `Tipo cronograma para fim precisa ser associado com uma tarefa ou um cronograma.`
+                );
+        }
 
         const created = await this.prisma.$transaction(
             async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
-                const exists = await prismaTx.avisoEmail.create({
+                const exists = await prismaTx.avisoEmail.count({
+                    where: {
+                        tarefa_cronograma_id,
+                        tarefa_id,
+                    },
+                });
+                if (exists)
+                    throw new BadRequestException(`Já existe um aviso configurado para essa tarefa ou cronograma.`);
+
+                const created = await prismaTx.avisoEmail.create({
                     data: {
                         tarefa_cronograma_id,
+                        tarefa_id,
                         ativo: dto.ativo,
                         numero: dto.numero,
                         numero_periodo: dto.numero_periodo,
@@ -29,7 +53,7 @@ export class AvisoEmailService {
                     },
                 });
 
-                return { id: exists.id };
+                return { id: created.id };
             }
         );
 
