@@ -23,7 +23,7 @@ const rotasParaMenuSecundário = [
     ],
   },
   {
-    título: 'Formulários',
+    título: 'Transferências',
     rotas: [
       'TransferenciasVoluntariaEditar',
       'RegistroDeTransferenciaEditar',
@@ -85,7 +85,7 @@ export default {
         ...{ transferenciaId: Number.parseInt(params.transferenciaId, 10) || undefined },
       }),
       meta: {
-        título: 'Recursos Financeiros',
+        título: 'Recurso financeiro',
         rotasParaMenuSecundário,
       },
     },
@@ -111,7 +111,7 @@ export default {
         ...{ transferenciaId: Number.parseInt(params.transferenciaId, 10) || undefined },
       }),
       meta: {
-        título: 'Transferência',
+        título: 'Identificação',
         rotasParaMenuSecundário,
       },
     },
@@ -166,9 +166,9 @@ export default {
     {
       path: ':transferenciaId/tarefas',
       component: TarefasRaiz,
-    
+
       props: true,
-    
+
       meta: {
         títuloParaMenu: 'Tarefas',
       },
@@ -188,7 +188,7 @@ export default {
             ],
           },
           props: true,
-    
+
           children: [
             {
               path: 'disparo-email',
@@ -208,7 +208,7 @@ export default {
             },
           ],
         },
-    
+
         {
           name: 'TransferenciasVoluntariasTarefasCriar',
           path: 'nova',
@@ -219,25 +219,25 @@ export default {
             rotaDeEscape: 'TransferenciaCronograma',
           },
         },
-    
+
         {
           path: ':tarefaId',
           component: TarefasItem,
           props: true,
-    
+
           children: [
             {
               path: '',
               name: 'TransferenciasVoluntariasTarefasEditar',
               component: TarefasCriarEditar,
               props: true,
-    
+
               meta: {
                 título: () => useTarefasStore()?.emFoco?.tarefa || 'Editar tarefa',
                 títuloParaMenu: 'Editar tarefa',
-    
+
                 rotaDeEscape: 'TransferenciaCronograma',
-    
+
                 rotasParaMigalhasDePão: [
                   'TransferenciasVoluntariasListar',
                   'TransferenciasVoluntariasResumo',
@@ -246,7 +246,7 @@ export default {
                 ],
               },
             },
-    
+
             {
               path: 'progresso',
               name: 'TransferenciasVoluntariasTarefasProgresso',
@@ -257,9 +257,9 @@ export default {
                   ? `Registro de progresso de ${useTarefasStore().emFoco.tarefa}`
                   : 'Registrar progresso'),
                 títuloParaMenu: 'Progresso',
-    
+
                 rotaDeEscape: 'TransferenciasVoluntariasTarefasListar',
-    
+
                 rotasParaMigalhasDePão: [
                   'TransferenciasVoluntariasListar',
                   'TransferenciasVoluntariasResumo',
