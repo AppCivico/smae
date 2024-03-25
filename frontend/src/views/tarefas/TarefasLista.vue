@@ -6,11 +6,12 @@ import { useTarefasStore } from '@/stores/tarefas.store.ts';
 import { storeToRefs } from 'pinia';
 import { computed, ref } from 'vue';
 import { useRoute } from 'vue-router';
-
-import { Field, Form } from 'vee-validate';
+import { useEmailsStore } from "@/stores/envioEmail.store";
 
 const route = useRoute();
 const tarefasStore = useTarefasStore();
+const emailsStore = useEmailsStore();
+const { lista } = storeToRefs(emailsStore);
 const { árvoreDeTarefas, chamadasPendentes, erro } = storeToRefs(tarefasStore);
 
 const projetoEmFoco = computed(() => tarefasStore?.extra?.projeto || {});
@@ -28,7 +29,7 @@ const nívelMáximoVisível = ref(0);
 
 
 async function iniciar() {
-
+  emailsStore.buscarTudo();
   tarefasStore.$reset();
   await tarefasStore.buscarTudo();
 
@@ -36,6 +37,10 @@ async function iniciar() {
     nívelMáximoVisível.value = nívelMáximoPermitido.value;
   }
 }
+
+const existeEmail = computed(() => {
+  return lista.value.some(item => item.transferencia_id === parseInt(route.params.transferenciaId));
+});
 
 iniciar();
 </script>
@@ -75,7 +80,7 @@ export default {
       </router-link>
     </nav>
   </div>
-  <CabecalhoResumo :em-foco="projetoEmFoco" />
+  <CabecalhoResumo :em-foco="projetoEmFoco" :existe-email="existeEmail"/>
 
   <div class="flex center mb4" v-if="route.meta.prefixoParaFilhas === 'TransferenciasVoluntarias'" >
     <router-link :to="{ name: 'transferenciaEmailModal' }" class="addlink mb1">
