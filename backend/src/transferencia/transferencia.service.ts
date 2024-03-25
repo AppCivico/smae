@@ -177,6 +177,7 @@ export class TransferenciaService {
                         banco_aceite: dto.banco_aceite,
                         conta_aceite: dto.conta_aceite,
                         conta_fim: dto.conta_fim,
+                        agencia_aceite: dto.agencia_aceite,
                         agencia_fim: dto.agencia_fim,
                         banco_fim: dto.banco_fim,
                         empenho: dto.empenho,
@@ -668,8 +669,13 @@ export class TransferenciaService {
         });
 
         // Join the words into a TSQuery string
+        if (words.length > 1) {
+
+        }
         const formattedWords = words.join(' ');
 
         return formattedWords;
     }
 }
+
+SELECT id FROM transferencia WHERE vetores_busca @@ to_tsquery("defesa:* teste:*"); []
