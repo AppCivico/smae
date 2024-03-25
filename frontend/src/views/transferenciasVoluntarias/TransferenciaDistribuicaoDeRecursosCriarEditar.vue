@@ -375,6 +375,11 @@ onUnmounted(() => {
           name="programa_orcamentario_municipal"
           type="text"
           class="inputtext light mb1"
+          @change="($event) => {
+            if ($event?.target?.value === '') {
+              setFieldValue('programa_orcamentario_municipal', null);
+            }
+          }"
         />
         <ErrorMessage
           class="error-msg mb1"
@@ -490,6 +495,9 @@ onUnmounted(() => {
           name="proposta"
           type="text"
           class="inputtext light mb1"
+          @change="($event) => {
+            if ($event?.target?.value === '') setFieldValue('proposta', null);
+          }"
         />
         <ErrorMessage
           class="error-msg mb1"
@@ -505,6 +513,9 @@ onUnmounted(() => {
           name="convenio"
           type="text"
           class="inputtext light mb1"
+          @change="($event) => {
+            if ($event?.target?.value === '') setFieldValue('convenio', null);
+          }"
         />
         <ErrorMessage
           class="error-msg mb1"
