@@ -287,7 +287,7 @@ export class TransferenciaService {
                     in: palavrasChave != undefined ? palavrasChave.map((row) => row.id) : undefined,
                 },
             },
-            orderBy: { pendente_preenchimento_valores: 'asc' },
+            orderBy: { pendente_preenchimento_valores: 'asc', identificador: 'asc' },
             skip: offset,
             take: ipp + 1,
             select: {
@@ -696,6 +696,8 @@ export class TransferenciaService {
     }
 
     private formatToTSQuery(input: string): string {
+        if (input.includes(',')) throw new HttpException('Vírgula não suportada para busca', 400);
+
         let words = input.trim().split(' ');
 
         // Replace Portuguese operators with their TSQuery equivalents
