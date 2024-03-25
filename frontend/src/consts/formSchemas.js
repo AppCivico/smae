@@ -881,44 +881,37 @@ export const tipoDeTransferencia = object({
   esfera: string()
     .label('Esfera')
     .required(),
-})
+});
 
 export const transferenciaDistribuicaoDeRecursos = object({
   assinatura_municipio: date()
-    .label('data de assinatura do representante do município')
+    .label('Data de assinatura do representante do município')
     .nullable()
-    .required()
     .min(new Date(2003, 0, 1))
     .transform((v) => (!v ? null : v)),
   assinatura_estado: date()
-    .label('data de assinatura do representante do estado')
+    .label('Data de assinatura do representante do estado')
     .nullable()
-    .required()
     .min(new Date(2003, 0, 1))
     .transform((v) => (!v ? null : v)),
   assinatura_termo_aceite: date()
-    .label('data de assinatura do termo de aceite')
+    .label('Data de assinatura do termo de aceite')
     .nullable()
-    .required()
     .min(new Date(2003, 0, 1))
     .transform((v) => (!v ? null : v)),
   contrato: string()
-    .label('número do contrato')
-    .required()
+    .label('Número do contrato')
     .nullable(),
   convenio: string()
-    .label('número convênio/pré-convênio')
-    .required()
+    .label('Número convênio/pré-convênio')
     .nullable(),
   conclusao_suspensiva: date()
-    .label('data de conclusão da suspensiva')
+    .label('Data de conclusão da suspensiva')
     .nullable()
-    .required()
     .min(new Date(2003, 0, 1))
     .transform((v) => (!v ? null : v)),
   dotacao: string()
     .label('Dotacao')
-    .required()
     .nullable(),
   empenho: boolean()
     .label('Empenho')
@@ -936,9 +929,8 @@ export const transferenciaDistribuicaoDeRecursos = object({
     .required()
     .nullable(),
   vigencia: date()
-    .label('data de vigência')
+    .label('Data de vigência')
     .nullable()
-    .required()
     .min(new Date(2003, 0, 1))
     .transform((v) => (!v ? null : v)),
   objeto: string()
@@ -950,20 +942,16 @@ export const transferenciaDistribuicaoDeRecursos = object({
     .min(1, 'Selecione um gestor municipal')
     .required(),
   programa_orcamentario_estadual: string()
-    .label('programa orçamentário estadual')
-    .required()
+    .label('Programa orçamentário estadual')
     .nullable(),
   programa_orcamentario_municipal: string()
-    .label('programa orçamentário municipal')
-    .required()
+    .label('Programa orçamentário municipal')
     .nullable(),
   proposta: string()
-    .label('proposta')
-    .required()
+    .label('Proposta')
     .nullable(),
   registros_sei: array()
-    .label('número sei')
-    .required()
+    .label('Número sei')
     .nullable(),
 });
 
