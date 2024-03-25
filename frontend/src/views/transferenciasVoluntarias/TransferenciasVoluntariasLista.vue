@@ -65,7 +65,7 @@ watch([
 </script>
 <template>
   <div class="flex spacebetween center mb2">
-    <h1>{{ route?.meta?.título || 'Tipo de Transferência' }}</h1>
+    <TítuloDePágina />
     <hr class="ml2 f1">
     <router-link
       :to="{ name: 'TransferenciasVoluntariaCriar' }"
