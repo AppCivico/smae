@@ -31,6 +31,11 @@ export class FilterAvisoEamilDto {
     @IsOptional()
     @IsInt()
     @Transform(NumberTransform)
+    tarefa_id?: number;
+
+    @IsOptional()
+    @IsInt()
+    @Transform(NumberTransform)
     projeto_id?: number;
 
     @IsOptional()
