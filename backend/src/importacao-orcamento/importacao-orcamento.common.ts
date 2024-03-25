@@ -11,6 +11,8 @@ export const ColunasNecessarias = [
 
 export const OutrasColumns = [
     'dotacao',
+    'percentual_empenho',
+    'percentual_liquidado',
     'meta_id',
     'atividade_id',
     'iniciativa_id',
