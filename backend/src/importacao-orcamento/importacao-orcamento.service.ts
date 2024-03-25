@@ -31,6 +31,12 @@ import { PortfolioDto } from '../pp/portfolio/entities/portfolio.entity';
 import { ExtraiComplementoDotacao, TrataDotacaoGrande } from '../sof-api/sof-api.service';
 const XLSX_ZAHL_PAYLOAD = require('xlsx/dist/xlsx.zahl');
 
+function Str2NumberOrNull(str: string | null): number | null {
+    if (str === null) return null;
+
+    return +str;
+}
+
 class NextPageTokenJwtBody {
     offset: number;
     ipp: number;
@@ -548,7 +554,7 @@ export class ImportacaoOrcamentoService {
                     ) {
                         // essas quatro colunas vem como float, e então as vezes vem no excel ta "83242998.52" mas chega aqui "83242998.52000001"
                         // então vamos fazer o toFixed(2)
-                        col2row[columnName] = +cellValue;
+                        if (col2row[columnName] !== null) col2row[columnName] = +cellValue;
 
                         if (typeof col2row[columnName] === 'number') {
                             col2row[columnName] = toFixed2ButString(col2row[columnName]);
@@ -939,10 +945,10 @@ export class ImportacaoOrcamentoService {
                 itens = maisRecente.itens.map((r) => {
                     return {
                         mes: r.mes,
-                        valor_empenho: +r.valor_empenho,
-                        valor_liquidado: +r.valor_liquidado,
-                        percentual_empenho: r.percentual_empenho !== null ? +r.percentual_empenho : null,
-                        percentual_liquidado: r.percentual_liquidado !== null ? +r.percentual_liquidado : null,
+                        valor_empenho: Str2NumberOrNull(r.valor_empenho),
+                        valor_liquidado: Str2NumberOrNull(r.valor_liquidado),
+                        percentual_empenho: Str2NumberOrNull(r.percentual_empenho),
+                        percentual_liquidado: Str2NumberOrNull(r.percentual_liquidado),
                     };
                 });
             }
@@ -980,10 +986,10 @@ export class ImportacaoOrcamentoService {
                 itens = maisRecente.itens.map((r) => {
                     return {
                         mes: r.mes,
-                        valor_empenho: +r.valor_empenho,
-                        valor_liquidado: +r.valor_liquidado,
-                        percentual_empenho: r.percentual_empenho !== null ? +r.percentual_empenho : null,
-                        percentual_liquidado: r.percentual_liquidado !== null ? +r.percentual_liquidado : null,
+                        valor_empenho: Str2NumberOrNull(r.valor_empenho),
+                        valor_liquidado: Str2NumberOrNull(r.valor_liquidado),
+                        percentual_empenho: Str2NumberOrNull(r.percentual_empenho),
+                        percentual_liquidado: Str2NumberOrNull(r.percentual_liquidado),
                     };
                 });
             }
