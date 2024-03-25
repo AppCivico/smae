@@ -1028,8 +1028,8 @@ export const transferenciasVoluntarias = object({
     .required(),
   critico: boolean()
     .label('Crítico')
-    .nullable(),
-    required(),
+    .nullable()
+    .required(),
   cargo: string()
     .label('Cargo')
     .nullable(),
