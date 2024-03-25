@@ -536,13 +536,14 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
             Número SEI
           </dt>
 
-          <dd v-if="distribuição.numero_sei?.length">
+          <dd v-if="distribuição.registros_sei?.length">
             <ul>
               <li
-                v-for="(número, i) in distribuição.numero_sei"
+                v-for="(registro, i) in distribuição.registros_sei"
                 :key="i"
+                class="mb1"
               >
-                {{ número || '-' }}
+                {{ registro.processo_sei || '-' }}
               </li>
             </ul>
           </dd>
