@@ -880,7 +880,8 @@ export const tipoDeTransferencia = object({
     .required(),
   esfera: string()
     .label('Esfera')
-    .required(),
+    .required()
+    .oneOf([...Object.keys(esferasDeTransferencia), null]),
 });
 
 export const transferenciaDistribuicaoDeRecursos = object({
@@ -1032,6 +1033,7 @@ export const transferenciasVoluntarias = object({
   cargo: mixed()
     .label('Cargo')
     .oneOf(Object.keys(cargosDeParlamentar))
+    .transform((v) => (v === '' ? null : v))
     .nullable(),
   clausula_suspensiva: boolean()
     .label('Cláusula suspensiva')
@@ -1053,7 +1055,8 @@ export const transferenciasVoluntarias = object({
   esfera: string()
     .label('Esfera')
     .nullable()
-    .required(),
+    .required()
+    .oneOf([...Object.keys(esferasDeTransferencia), null]),
   demanda: string()
     .label('Número da Demanda')
     .nullable()
