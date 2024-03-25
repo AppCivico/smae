@@ -914,6 +914,16 @@ export class ImportacaoOrcamentoService {
 
         if (!dotacao) return 'Linha inválida: faltando dotacao';
 
+        console.log(row);
+        this.logger.debug(
+            JSON.stringify({
+                Object: row,
+                valor_empenho: isEmpty(row.valor_empenho),
+                percentual_empenho: isEmpty(row.percentual_empenho),
+                valor_empenho_is_null: row.valor_empenho === null,
+                percentual_empenho_is_null: row.percentual_empenho === null,
+            })
+        );
         if (isEmpty(row.valor_empenho) && isEmpty(row.percentual_empenho))
             return 'Linha inválida: percentual e valor de empenho estão ambos vazios, por favor, preencha um dos campos.';
 
