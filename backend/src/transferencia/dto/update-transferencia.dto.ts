@@ -65,6 +65,12 @@ export class CompletarTransferenciaDto {
     @IsString()
     @MinLength(1)
     @MaxLength(250)
+    agencia_aceite?: string;
+
+    @IsOptional()
+    @IsString()
+    @MinLength(1)
+    @MaxLength(250)
     conta_aceite?: string;
 
     @IsOptional()
