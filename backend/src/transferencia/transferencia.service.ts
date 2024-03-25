@@ -696,8 +696,7 @@ export class TransferenciaService {
     }
 
     private formatToTSQuery(input: string): string {
-        // Split the input string into words
-        let words = input.split(' ');
+        let words = input.trim().split(' ');
 
         // Replace Portuguese operators with their TSQuery equivalents
         words = words.map((word) => {
