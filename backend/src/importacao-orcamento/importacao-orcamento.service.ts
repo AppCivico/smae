@@ -719,6 +719,7 @@ export class ImportacaoOrcamentoService {
 
     async processaRow(col2row: any, params: ProcessaLinhaParams, user: PessoaFromJwt): Promise<string> {
         const row = plainToInstance(LinhaCsvInputDto, col2row);
+        console.log({row,col2row})
         const validations = await validate(row);
         this.logger.verbose(`processing row ${JSON.stringify(row)}: ${JSON.stringify(validations)}`);
         if (validations.length) {
