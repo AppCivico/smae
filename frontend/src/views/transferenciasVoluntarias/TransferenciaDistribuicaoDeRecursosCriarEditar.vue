@@ -105,7 +105,7 @@ watch(itemParaEdição, (novosValores) => {
 </script>
 <template>
   <div class="flex spacebetween center mb2">
-    <h1>Formulário de registro</h1>
+    <TítuloDePágina />
     <hr class="ml2 f1">
     <CheckClose
       :formulário-sujo="formulárioSujo"
