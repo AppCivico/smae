@@ -193,10 +193,18 @@ onUnmounted(() => {
             </button>
           </td>
         </tr>
-      </tbody>
-      <tbody>
-        <tr v-if="!lista.length">
-          <td colspan="5">
+
+        <tr v-if="chamadasPendentes.lista">
+          <td
+            colspan="6"
+            class="loading"
+          >
+            carregando
+          </td>
+        </tr>
+
+        <tr v-else-if="!lista.length">
+          <td colspan="6">
             Nenhum Registro de Distribuição de Recursos encontrado.
           </td>
         </tr>
