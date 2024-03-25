@@ -188,7 +188,7 @@ iniciar();
   </div>
   <Form
     v-if="mostrarDistribuicaoRegistroForm"
-    v-slot="{ errors, isSubmitting, values }"
+    v-slot="{ errors, isSubmitting, setFieldValue, values }"
     :validation-schema="schema"
     :initial-values="itemParaEdição"
     @submit="onSubmit"
