@@ -151,5 +151,8 @@ export class CreateDistribuicaoRecursoDto {
     @IsOptional()
     @IsString({ each: true })
     @IsArray()
-    registros_sei?: string[];
+    registros_sei?: {
+        id?: number;
+        processo_sei: string;
+    }[];
 }
