@@ -22,7 +22,7 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
 </script>
 <template>
   <div class="flex spacebetween center mb2">
-    <h1>Resumo da transferência</h1> <!-- não finalizado -->
+    <TítuloDePágina />
   </div>
 
   <pre v-scrollLockDebug>transferênciaEmFoco:{{ transferênciaEmFoco }}</pre>
