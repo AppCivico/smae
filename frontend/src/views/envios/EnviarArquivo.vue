@@ -58,7 +58,10 @@ function onSubmit(values) {
           if (route.meta.rotaDeEscape) {
             router.push({
               name: route.meta.rotaDeEscape,
-              query: route.query,
+              query: {
+                ...route.query,
+                pdm_id: values.pdm_id || route.query.pdm_id || undefined,
+              },
             });
           }
         } else {
