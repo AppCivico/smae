@@ -59,7 +59,7 @@ async function onSubmit(values) {
       recorrencia_dias: parseInt(values.recorrencia_dias),
       com_copia: localEmails.value.slice(),
       tipo: "CronogramaTerminoPlanejado",
-      tarefa_cronograma_id: parseInt(route.params.transferenciaId),
+      transferencia_id: parseInt(route.params.transferenciaId),
     };
     resposta = await emailsStore.salvarItem(valoresAuxiliares);
     if (resposta) {
