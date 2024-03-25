@@ -150,7 +150,6 @@ export class CreateDistribuicaoRecursoDto {
     conclusao_suspensiva?: Date;
 
     @IsOptional()
-    @IsString({ each: true })
     @IsArray()
     @IsArray({ message: 'precisa ser uma array.' })
     @ValidateNested({ each: true })
