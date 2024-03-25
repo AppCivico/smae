@@ -1,3 +1,4 @@
+import dateTimeToDate from '@/helpers/dateTimeToDate';
 import { defineStore } from 'pinia';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
@@ -80,8 +81,13 @@ export const useDistribuicaoRecursosStore = defineStore('distribuicaoRecursos', 
   getters: {
     itemParaEdição: ({ emFoco }) => ({
       ...emFoco,
+      assinatura_estado: dateTimeToDate(emFoco?.assinatura_estado),
+      assinatura_municipio: dateTimeToDate(emFoco?.assinatura_municipio),
+      assinatura_termo_aceite: dateTimeToDate(emFoco?.assinatura_termo_aceite),
+      conclusao_suspensiva: dateTimeToDate(emFoco?.conclusao_suspensiva),
       orgao_gestor_id: emFoco?.orgao_gestor?.id || null,
       registros_sei: emFoco?.registros_sei?.map((x) => x.processo_sei) || null,
+      vigencia: dateTimeToDate(emFoco?.vigencia),
     }),
   },
 });
