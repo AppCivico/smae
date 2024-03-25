@@ -9,6 +9,7 @@ import {
     MaxLength,
     MinLength,
     ValidateIf,
+    ValidateNested,
 } from 'class-validator';
 import { IsOnlyDate } from 'src/common/decorators/IsDateOnly';
 
@@ -28,7 +29,7 @@ export class CreateDistribuicaoRecursoDto {
         {},
         {
             message:
-                '$property| Precisa ser um número com até 35 dígitos antes do ponto, e até 30 dígitos após, enviado em formato string',
+                '$property| Precisa ser um número com até 35 dígitos antes do ponto, e até 2 dígitos após, enviado em formato string',
         }
     )
     @ValidateIf((object, value) => value !== null)
@@ -38,7 +39,7 @@ export class CreateDistribuicaoRecursoDto {
         {},
         {
             message:
-                '$property| Precisa ser um número com até 35 dígitos antes do ponto, e até 30 dígitos após, enviado em formato string',
+                '$property| Precisa ser um número com até 35 dígitos antes do ponto, e até 2 dígitos após, enviado em formato string',
         }
     )
     @ValidateIf((object, value) => value !== null)
@@ -48,7 +49,7 @@ export class CreateDistribuicaoRecursoDto {
         {},
         {
             message:
-                '$property| Precisa ser um número com até 35 dígitos antes do ponto, e até 30 dígitos após, enviado em formato string',
+                '$property| Precisa ser um número com até 35 dígitos antes do ponto, e até 2 dígitos após, enviado em formato string',
         }
     )
     @ValidateIf((object, value) => value !== null)
@@ -151,8 +152,17 @@ export class CreateDistribuicaoRecursoDto {
     @IsOptional()
     @IsString({ each: true })
     @IsArray()
-    registros_sei?: {
-        id?: number;
-        processo_sei: string;
-    }[];
+    @IsArray({ message: 'precisa ser uma array.' })
+    @ValidateNested({ each: true })
+    @Type(() => CreateDistribuicaoRegistroSEIDto)
+    registros_sei?: CreateDistribuicaoRegistroSEIDto[];
+}
+
+class CreateDistribuicaoRegistroSEIDto {
+    @IsOptional()
+    @IsNumber()
+    id?: number;
+
+    @IsString()
+    processo_sei: string;
 }
