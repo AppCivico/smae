@@ -148,7 +148,7 @@ export class AvisoEmailService {
 
     async remove(id: number, user: PessoaFromJwt) {
         // TODO: verificar permissões e etc. isso aqui é só o mínimo possível
-        const exists = await this.prisma.tarefaCronograma.findFirst({
+        const exists = await this.prisma.avisoEmail.findFirst({
             where: {
                 id,
                 removido_em: null,
@@ -158,7 +158,7 @@ export class AvisoEmailService {
 
         if (!exists) return;
 
-        await this.prisma.tarefaCronograma.updateMany({
+        await this.prisma.avisoEmail.updateMany({
             where: {
                 id,
                 removido_em: null,
