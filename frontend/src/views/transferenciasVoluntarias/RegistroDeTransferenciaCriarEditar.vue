@@ -61,7 +61,7 @@ transferenciasVoluntarias.buscarItem(props.transferenciaId);
           type="text"
           class="inputtext light mb1"
           :value="values.valor"
-          @update:model-value="setFieldValue('valor', String(values.valor));"
+          converter-para="string"
         />
         <ErrorMessage
           class="error-msg mb1"
@@ -106,9 +106,7 @@ transferenciasVoluntarias.buscarItem(props.transferenciaId);
           type="text"
           class="inputtext light mb1"
           :value="values.valor_contrapartida"
-          @update:model-value="
-            setFieldValue('valor_contrapartida', String(values.valor_contrapartida))
-          "
+          converter-para="string"
         />
         <ErrorMessage
           class="error-msg mb1"
@@ -143,7 +141,7 @@ transferenciasVoluntarias.buscarItem(props.transferenciaId);
           type="text"
           class="inputtext light mb1"
           :value="values.valor_total"
-          @update:model-value="setFieldValue('valor_total', String(values.valor_total));"
+          converter-para="string"
         />
         <ErrorMessage
           class="error-msg mb1"
