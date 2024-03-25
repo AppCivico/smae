@@ -37,6 +37,7 @@ export class FilterTransferenciaDto {
 
     @IsOptional()
     @IsBoolean()
+    @Transform(({ value }: any) => value === 'true')
     preenchimento_completo?: boolean;
 
     @IsOptional()
