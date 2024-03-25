@@ -90,7 +90,7 @@ export class DistribuicaoRecursoService {
         const rows = await this.prisma.distribuicaoRecurso.findMany({
             where: {
                 removido_em: null,
-                id: filters.id,
+                transferencia_id: filters.transferencia_id,
             },
             select: {
                 id: true,
@@ -102,6 +102,13 @@ export class DistribuicaoRecursoService {
                         id: true,
                         sigla: true,
                         descricao: true,
+                    },
+                },
+                registros_sei: {
+                    where: { removido_em: null },
+                    select: {
+                        id: true,
+                        processo_sei: true,
                     },
                 },
             },
