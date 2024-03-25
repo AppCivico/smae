@@ -81,6 +81,7 @@ export class TransferenciaService {
                         agencia_aceite: dto.agencia_aceite,
                         emenda_unitaria: dto.emenda_unitaria,
                         numero_identificacao: dto.numero_identificacao,
+                        cargo: dto.cargo,
                         criado_por: user.id,
                         criado_em: new Date(Date.now()),
                     },
