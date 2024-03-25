@@ -24,9 +24,10 @@ export class CreateTransferenciaDto {
     orgao_concedente_id: number;
 
     @IsString()
+    @IsOptional()
     @MinLength(1)
     @MaxLength(250)
-    secretaria_concedente: string;
+    secretaria_concedente?: string;
 
     @IsOptional()
     @IsNumber()
@@ -57,11 +58,12 @@ export class CreateTransferenciaDto {
     })
     esfera: TransferenciaTipoEsfera;
 
+    @IsOptional()
     @ApiProperty({ enum: ParlamentarCargo, enumName: 'ParlamentarCargo' })
     @IsEnum(ParlamentarCargo, {
         message: '$property| Precisa ser um dos seguintes valores: ' + Object.values(ParlamentarCargo).join(', '),
     })
-    cargo: ParlamentarCargo;
+    cargo?: ParlamentarCargo;
 
     @IsString()
     @MinLength(1)
