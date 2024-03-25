@@ -42,6 +42,8 @@ export class OrcamentoImportacaoHelpers {
                     cellValue = cellValue.replace(/\s/g, '_');
                     cellValue = cellValue.replace(/c[óo]d$/g, 'codigo');
                     cellValue = cellValue.replace(/código/g, 'codigo');
+                    cellValue = cellValue.replace(/empenhado/g, 'empenho');
+                    cellValue = cellValue.replace(/liquido/g, 'liquidado');
 
                     if (cellValue === columnName || (cellValue === 'mês' && columnName === 'mes')) {
                         index[columnName] = colIndex;
