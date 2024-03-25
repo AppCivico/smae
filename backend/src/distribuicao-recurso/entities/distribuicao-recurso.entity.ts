@@ -7,6 +7,7 @@ export class DistribuicaoRecursoDto {
     valor_total: Decimal;
     empenho: boolean;
     vigencia: Date | null;
+    registros_sei: DistribuicaoRecursoSeiDto[] | null;
 }
 
 export class ListDistribuicaoRecursoDto {
