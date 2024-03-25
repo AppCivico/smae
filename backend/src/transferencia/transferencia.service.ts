@@ -139,6 +139,33 @@ export class TransferenciaService {
                     select: { id: true },
                 });
 
+                const self = await this.prisma.transferencia.findFirstOrThrow({
+                    where: {
+                        id,
+                        removido_em: null,
+                    },
+                    select: {
+                        valor: true,
+                        valor_total: true,
+                        valor_contrapartida: true,
+                        pendente_preenchimento_valores: true,
+                    },
+                });
+
+                if (
+                    self.valor &&
+                    self.valor_contrapartida &&
+                    self.valor_total &&
+                    self.pendente_preenchimento_valores == true
+                ) {
+                    await prismaTxn.transferencia.update({
+                        where: { id },
+                        data: {
+                            pendente_preenchimento_valores: false,
+                        },
+                    });
+                }
+
                 return transferencia;
             }
         );
@@ -151,24 +178,11 @@ export class TransferenciaService {
         dto: CompletarTransferenciaDto,
         user: PessoaFromJwt
     ): Promise<RecordWithId> {
-        const self = await this.prisma.transferencia.findFirst({
-            where: {
-                id,
-                removido_em: null,
-            },
-        });
-        if (!self) throw new HttpException('id| Transferência não encontrada', 404);
-
         const updated = await this.prisma.$transaction(
             async (prismaTxn: Prisma.TransactionClient): Promise<RecordWithId> => {
-                let pendente_preenchimento_valores: boolean = self.pendente_preenchimento_valores;
-                if (dto.valor && dto.valor_contrapartida && dto.valor_total && pendente_preenchimento_valores == false)
-                    pendente_preenchimento_valores = true;
-
                 const transferencia = await prismaTxn.transferencia.update({
                     where: { id },
                     data: {
-                        pendente_preenchimento_valores: pendente_preenchimento_valores,
                         valor: dto.valor,
                         valor_total: dto.valor_total,
                         valor_contrapartida: dto.valor_contrapartida,
@@ -188,6 +202,33 @@ export class TransferenciaService {
                     },
                     select: { id: true },
                 });
+
+                const self = await this.prisma.transferencia.findFirstOrThrow({
+                    where: {
+                        id,
+                        removido_em: null,
+                    },
+                    select: {
+                        valor: true,
+                        valor_total: true,
+                        valor_contrapartida: true,
+                        pendente_preenchimento_valores: true,
+                    },
+                });
+
+                if (
+                    self.valor &&
+                    self.valor_contrapartida &&
+                    self.valor_total &&
+                    self.pendente_preenchimento_valores == true
+                ) {
+                    await prismaTxn.transferencia.update({
+                        where: { id },
+                        data: {
+                            pendente_preenchimento_valores: false,
+                        },
+                    });
+                }
 
                 return transferencia;
             }
