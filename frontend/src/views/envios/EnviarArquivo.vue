@@ -15,6 +15,7 @@ import {
 
 defineOptions({ inheritAttrs: false });
 
+const emit = defineEmits(['enviado']);
 const route = useRoute();
 const router = useRouter();
 const importaçõesStore = useImportaçõesStore();
@@ -49,6 +50,8 @@ function onSubmit(values) {
             ...values,
             upload: uploadToken,
           });
+
+          emit('enviado');
 
           alertStore.success('Item adicionado com sucesso!');
           curfile.value = {};
