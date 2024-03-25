@@ -534,7 +534,7 @@ export class ImportacaoOrcamentoService {
         let linhas_recusadas = 0;
 
         for (let rowIndex = range.s.r + 1; rowIndex <= range.e.r; rowIndex++) {
-            const row = [];
+            const row: any = [];
             const col2row: any = {};
 
             [...ColunasNecessarias, ...OutrasColumns].forEach((columnName) => {
@@ -575,6 +575,7 @@ export class ImportacaoOrcamentoService {
                 }
             });
 
+            console.log(rowIndex, row);
             const anosPort: number[] = [];
             const anosPdm: Record<string, typeof anosPort> = {};
             if (job.portfolio_id) {
@@ -908,16 +909,16 @@ export class ImportacaoOrcamentoService {
                 return `Erro no processamento do processo: ${error}`;
             }
         } else {
-            return 'Erro: código não implementado';
+            return 'Linha inválida: código não implementado';
         }
 
-        if (!dotacao) return 'Erro: faltando dotacao';
+        if (!dotacao) return 'Linha inválida: faltando dotacao';
 
         if (isEmpty(row.valor_empenho) && isEmpty(row.percentual_empenho))
-            return 'Erro: percentual e valor de empenho estão ambos vazios, por favor, preencha um dos campos.';
+            return 'Linha inválida: percentual e valor de empenho estão ambos vazios, por favor, preencha um dos campos.';
 
         if (isEmpty(row.valor_liquidado) && isEmpty(row.percentual_liquidado))
-            return 'Erro: percentual e valor liquidado estão ambos vazios, por favor, preencha um dos campos.';
+            return 'Linha inválida: percentual e valor liquidado estão ambos vazios, por favor, preencha um dos campos.';
 
         // joga fora os dígitos extra da dotação
         dotacao = TrataDotacaoGrande(dotacao);
@@ -1095,6 +1096,7 @@ export class ImportacaoOrcamentoService {
         return '';
     }
 }
+
 function isEmpty(n: number | string | null | undefined) {
     if (typeof n == 'number' && isNaN(n)) return false;
     if (typeof n == 'string' && n === '') return true;
