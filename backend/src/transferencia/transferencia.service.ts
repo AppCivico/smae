@@ -223,9 +223,24 @@ export class TransferenciaService {
             ipp = decodedPageToken.ipp;
         }
 
+        let palavrasChave: { id: number }[] | undefined = undefined;
+        if (filters.palavra_chave != undefined) {
+            const tsQuery = this.formatToTSQuery(filters.palavra_chave);
+            const query = `SELECT id FROM transferencia WHERE vetores_busca @@ to_tsquery(${tsQuery})`;
+            palavrasChave = await this.prisma.$queryRawUnsafe(query);
+        }
+
         const rows = await this.prisma.transferencia.findMany({
             where: {
                 removido_em: null,
+                esfera: filters.esfera,
+                pendente_preenchimento_valores: filters.preenchimento_completo,
+                ano: filters.ano,
+
+                // Filtro por palavras-chave com tsvector
+                id: {
+                    in: palavrasChave != undefined ? palavrasChave.map((row) => row.id) : undefined,
+                },
             },
             orderBy: { pendente_preenchimento_valores: 'asc' },
             skip: offset,
@@ -627,5 +642,26 @@ export class TransferenciaService {
             ...transferenciaCronograma,
             nivel_maximo_tarefa: transferenciaCronograma.transferencia!.nivel_maximo_tarefa,
         };
+    }
+
+    private formatToTSQuery(input: string): string {
+        // Split the input string into words
+        let words = input.split(' ');
+
+        // Replace Portuguese operators with their TSQuery equivalents
+        words = words.map((word) => {
+            if (word.toLowerCase() === 'e') {
+                return '&';
+            } else if (word.toLowerCase() === 'ou') {
+                return '|';
+            } else {
+                return `'${word}':*`;
+            }
+        });
+
+        // Join the words into a TSQuery string
+        const formattedWords = words.join(' ');
+
+        return formattedWords;
     }
 }
