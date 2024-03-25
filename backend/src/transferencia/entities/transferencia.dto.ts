@@ -64,6 +64,7 @@ export class TransferenciaDetailDto {
     gestor_contrato: string | null;
     ordenador_despesa: string | null;
     numero_identificacao: string | null;
+    tipo: IdNomeDto | null;
 
     partido: IdSigla | null;
     parlamentar: ParlamnetarIdNomes | null;
