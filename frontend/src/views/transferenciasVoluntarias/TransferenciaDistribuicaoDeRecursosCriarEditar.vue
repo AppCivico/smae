@@ -87,6 +87,7 @@ function registrarNovaDistribuicaoRecursos() {
     mostrarDistribuicaoRegistroForm.value = false;
   } else {
     emFoco.value = null;
+    resetForm({ values: {} });
     mostrarDistribuicaoRegistroForm.value = true;
   }
 }
