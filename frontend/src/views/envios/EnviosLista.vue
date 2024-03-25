@@ -11,6 +11,7 @@ const {
   chamadasPendentes, erro, lista, listaPreparada, paginação,
 } = storeToRefs(importaçõesStore);
 const route = useRoute();
+const emit = defineEmits(['enviado']);
 const colunas = [
   {
     nomeDaPropriedade: 'arquivo',
@@ -80,6 +81,8 @@ export default {
     />
   </div>
 
+  <slot name="pre-lista" />
+
   <div
     v-if="chamadasPendentes.lista && !lista.length"
     aria-busy="true"
@@ -105,5 +108,10 @@ export default {
     carregar mais
   </button>
 
-  <router-view />
+  <router-view
+    @enviado="() => {
+      carregar($route.query);
+      emit('enviado')
+    }"
+  />
 </template>
