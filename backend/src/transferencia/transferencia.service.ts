@@ -655,7 +655,7 @@ export class TransferenciaService {
             } else if (word.toLowerCase() === 'ou') {
                 return '|';
             } else {
-                return `'${word}':*`;
+                return `'${word}:*'`;
             }
         });
 
