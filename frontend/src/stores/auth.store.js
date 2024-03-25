@@ -29,11 +29,7 @@ export const useAuthStore = defineStore({
 
         await this.getDados();
 
-        if (this.permissions?.SMAE?.loga_direto_na_analise) {
-          this.router.push({ name: 'análises' });
-        } else {
-          this.router.push(this.returnUrl || '/');
-        }
+        this.router.push(this.returnUrl || '/');
       } catch (error) {
         const alertStore = useAlertStore();
         alertStore.error(error);
