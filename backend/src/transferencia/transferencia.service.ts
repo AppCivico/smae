@@ -365,6 +365,12 @@ export class TransferenciaService {
                         descricao: true,
                     },
                 },
+                tipo: {
+                    select: {
+                        id: true,
+                        nome: true,
+                    },
+                },
             },
         });
         if (!row) throw new HttpException('id| Transferência não encontrada.', 404);
