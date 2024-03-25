@@ -227,7 +227,7 @@ export class TransferenciaService {
         let palavrasChave: { id: number }[] | undefined = undefined;
         if (filters.palavra_chave != undefined) {
             const tsQuery = this.formatToTSQuery(filters.palavra_chave);
-            const query = `SELECT id FROM transferencia WHERE vetores_busca @@ to_tsquery(${tsQuery})`;
+            const query = `SELECT id FROM transferencia WHERE vetores_busca @@ to_tsquery('${tsQuery}')`;
             palavrasChave = await this.prisma.$queryRawUnsafe(query);
         }
 
@@ -662,7 +662,7 @@ export class TransferenciaService {
             } else if (word.toLowerCase() === 'ou') {
                 return '|';
             } else {
-                return `'${word}:*'`;
+                return `${word}:*`;
             }
         });
 
