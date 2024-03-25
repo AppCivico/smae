@@ -103,6 +103,7 @@ export class AvisoEmailService {
             where: {
                 id: filter.id,
                 tarefa_cronograma_id: tarefa_cronograma_id,
+                tarefa_id: filter.tarefa_id,
                 removido_em: null,
             },
             include: {
