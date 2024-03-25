@@ -62,8 +62,3 @@ WHEN (
     OLD.vetores_busca::varchar = ''
 )
 EXECUTE PROCEDURE f_transferencia_update_tsvector();
-
-CREATE TRIGGER trigger_transferencia_update_tsvector_insert
-BEFORE INSERT ON transferencia
-FOR EACH ROW
-EXECUTE PROCEDURE f_transferencia_update_tsvector();
