@@ -456,7 +456,10 @@ iniciar();
         />
       </div>
       <div class="f1">
-        <label class="label">Cargo<span class="tvermelho">*</span></label>
+        <LabelFromYup
+          name="cargo"
+          :schema="schema"
+        />
         <Field
           name="cargo"
           as="select"
@@ -561,7 +564,10 @@ iniciar();
 
     <div class="flex g1 end mb1">
       <div class="f1">
-        <label class="label">Crítico <span class="tvermelho">*</span></label>
+        <LabelFromYup
+          name="critico"
+          :schema="schema"
+        />
         <Field
           name="critico"
           as="select"
