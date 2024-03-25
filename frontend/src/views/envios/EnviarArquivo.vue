@@ -5,13 +5,15 @@ import { useAlertStore } from '@/stores/alert.store';
 import { useImportaçõesStore } from '@/stores/importacoes.store.ts';
 import { usePdMStore } from '@/stores/pdm.store';
 import { ErrorMessage, Field, Form } from 'vee-validate';
-import { reactive, ref } from 'vue';
+import { defineOptions, reactive, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import {
   mixed,
   number,
   object,
 } from 'yup';
+
+defineOptions({ inheritAttrs: false });
 
 const route = useRoute();
 const router = useRouter();
@@ -100,12 +102,6 @@ switch (route.meta.entidadeMãe) {
   default:
     break;
 }
-</script>
-<script>
-// use normal <script> to declare options
-export default {
-  inheritAttrs: false,
-};
 </script>
 <template>
   <SmallModal>
