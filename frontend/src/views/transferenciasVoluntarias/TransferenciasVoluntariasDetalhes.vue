@@ -64,7 +64,7 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
           Tipo
         </dt>
         <dd>
-          {{ transferênciaEmFoco?.tipo || '-' }}
+          {{ transferênciaEmFoco?.tipo.nome || '-' }}
         </dd>
       </dl>
     </div>
