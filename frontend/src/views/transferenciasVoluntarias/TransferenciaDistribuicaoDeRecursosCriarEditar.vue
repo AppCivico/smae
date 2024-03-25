@@ -11,7 +11,7 @@ import { storeToRefs } from 'pinia';
 import {
   ErrorMessage, Field, FieldArray, useForm, useIsFormDirty,
 } from 'vee-validate';
-import { ref, watch } from 'vue';
+import { onUnmounted, ref, watch } from 'vue';
 
 const distribuicaoRecursos = useDistribuicaoRecursosStore();
 const ÓrgãosStore = useOrgansStore();
@@ -103,6 +103,10 @@ iniciar();
 
 watch(itemParaEdição, (novosValores) => {
   resetForm({ values: novosValores });
+});
+
+onUnmounted(() => {
+  distribuicaoRecursos.$reset();
 });
 </script>
 <template>
