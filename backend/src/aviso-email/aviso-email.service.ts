@@ -62,7 +62,7 @@ export class AvisoEmailService {
             }
             if (dto.transferencia_id) {
                 const tmp = await this.prisma.tarefaCronograma.findFirstOrThrow({
-                    where: { removido_em: null, projeto_id: dto.transferencia_id },
+                    where: { removido_em: null, transferencia_id: dto.transferencia_id },
                     select: { id: true },
                 });
                 tarefa_cronograma_id = tmp.id;
