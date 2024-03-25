@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post, Query } from '@nestjs/common';
 import { ApiBearerAuth, ApiNoContentResponse, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { Roles } from '../auth/decorators/roles.decorator';
@@ -9,6 +9,7 @@ import { DistribuicaoRecursoService } from './distribuicao-recurso.service';
 import { CreateDistribuicaoRecursoDto } from './dto/create-distribuicao-recurso.dto';
 import { DistribuicaoRecursoDetailDto, ListDistribuicaoRecursoDto } from './entities/distribuicao-recurso.entity';
 import { UpdateDistribuicaoRecursoDto } from './dto/update-distribuicao-recurso.dto';
+import { FilterDistribuicaoRecursoDto } from './dto/filter-distribuicao-recurso.dto';
 
 @ApiTags('Transferência - Distribuição de Recursos')
 @Controller('distribuicao-recurso')
@@ -25,8 +26,8 @@ export class DistribuicaoRecursoController {
 
     @ApiBearerAuth('access-token')
     @Get()
-    async findAll(): Promise<ListDistribuicaoRecursoDto> {
-        return { linhas: await this.distribuicaoRecursoService.findAll() };
+    async findAll(@Query() filters: FilterDistribuicaoRecursoDto): Promise<ListDistribuicaoRecursoDto> {
+        return { linhas: await this.distribuicaoRecursoService.findAll(filters) };
     }
 
     @Get(':id')
