@@ -2,8 +2,8 @@
 import módulos from '@/consts/modulosDoSistema';
 import { useAuthStore } from '@/stores/auth.store';
 import { useRegionsStore } from '@/stores/regions.store';
-import { useUsersStore } from '@/stores/users.store';
 import { useTarefasStore } from '@/stores/tarefas.store.ts';
+import { useUsersStore } from '@/stores/users.store';
 import { storeToRefs } from 'pinia';
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
@@ -29,14 +29,15 @@ async function escolher(opção) {
       // PRA-FAZER: persistir o auth.store no navegador
       localStorage.setItem('sistemaEscolhido', opção);
 
-      if (dadosDoSistemaEscolhido.value?.rotaInicial) {
+      if (authStore.temPermissãoPara('SMAE.loga_direto_na_analise')) {
+        router.push({ name: 'análises' });
+      } else if (dadosDoSistemaEscolhido.value?.rotaInicial) {
         router.push(dadosDoSistemaEscolhido.value?.rotaInicial);
       }
 
       useRegionsStore().$reset();
       useUsersStore().$reset();
       useTarefasStore().$reset();
-
     })
     .catch((err) => {
       sistemaEscolhido.value = 'SMAE';
