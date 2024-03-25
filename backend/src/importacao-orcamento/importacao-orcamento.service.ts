@@ -552,7 +552,7 @@ export class ImportacaoOrcamentoService {
                             columnName
                         )
                     ) {
-                        if (col2row[columnName] === undefined || String(col2row[columnName]).trim() === '') {
+                        if (cellValue === undefined || String(cellValue).trim() === '') {
                             col2row[columnName] = null;
                         } else {
                             // essas quatro colunas vem como float, e então as vezes vem no excel ta "83242998.52" mas chega aqui "83242998.52000001"
@@ -719,7 +719,7 @@ export class ImportacaoOrcamentoService {
 
     async processaRow(col2row: any, params: ProcessaLinhaParams, user: PessoaFromJwt): Promise<string> {
         const row = plainToInstance(LinhaCsvInputDto, col2row);
-        console.log({row,col2row})
+        console.log({ row, col2row });
         const validations = await validate(row);
         this.logger.verbose(`processing row ${JSON.stringify(row)}: ${JSON.stringify(validations)}`);
         if (validations.length) {
