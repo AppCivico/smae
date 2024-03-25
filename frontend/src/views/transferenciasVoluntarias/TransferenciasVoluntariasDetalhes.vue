@@ -443,7 +443,7 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
   <section
     v-for="distribuição in listaDeDistribuição"
     :key="distribuição.id"
-    class="mb1"
+    class="mb2"
   >
     <div class="mb2">
       <dl class="mb3">
