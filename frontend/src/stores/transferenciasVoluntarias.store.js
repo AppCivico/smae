@@ -104,7 +104,7 @@ export const useTransferenciasVoluntariasStore = defineStore(
         } catch (erro) {
           this.erro = erro;
           this.chamadasPendentes.emFoco = false;
-          return erro;
+          return false;
         }
       },
       async buscarArquivos(id = 0, params = {}) {
