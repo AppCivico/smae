@@ -23,9 +23,9 @@ export class AvisoEmailService {
         }
 
         if (dto.tipo == 'CronogramaTerminoPlanejado') {
-            if (!tarefa_id || !tarefa_cronograma_id)
+            if (!tarefa_id && !tarefa_cronograma_id)
                 throw new BadRequestException(
-                    `Tipo cronograma para fim precisa ser associado com uma tarefa ou um cronograma.`
+                    `Aviso de término planejado próximo precisa ser associado com uma tarefa ou cronograma.`
                 );
         }
 
