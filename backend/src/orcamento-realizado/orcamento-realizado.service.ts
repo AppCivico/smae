@@ -38,7 +38,7 @@ const fk_nota = (row: { dotacao: string; dotacao_processo: string; dotacao_proce
     return row.dotacao + '_' + row.dotacao_processo + '_' + row.dotacao_processo_nota;
 };
 
-export const LIBERAR_LIQUIDADO_VALORES_MAIORES_QUE_SOF = false;
+export const LIBERAR_LIQUIDADO_VALORES_MAIORES_QUE_SOF = true;
 @Injectable()
 export class OrcamentoRealizadoService {
     private readonly logger = new Logger(OrcamentoRealizadoService.name);
@@ -1604,6 +1604,6 @@ export function DivPerc2Decimal(valorEmpOuLiq: Prisma.Decimal, perc_valor_empenh
 export function verificaValorLiqEmpenhoMaiorEmp(soma_valor_empenho: number, soma_valor_liquidado: number) {
     // meio que reaproveitando a flag do liberarLiquidadoValoresMaioresQueSof, mas ok, só pra não apagar o código
     // completamente pois pode ser que a regra volte
-    if (soma_valor_liquidado > soma_valor_empenho && LIBERAR_LIQUIDADO_VALORES_MAIORES_QUE_SOF)
+    if (soma_valor_liquidado > soma_valor_empenho)
         throw new BadRequestException('O valor liquidado não pode ser maior do que valor empenhado.');
 }
