@@ -20,16 +20,16 @@ const rotasParaMenuSecundário = [
   {
     rotas: [
       'TransferenciasVoluntariasDetalhes',
+      'TransferenciasVoluntariasDocumentos',
+      'TransferenciaCronograma',
     ],
   },
   {
-    título: 'Transferências',
+    título: 'Transferência',
     rotas: [
       'TransferenciasVoluntariaEditar',
       'RegistroDeTransferenciaEditar',
       'TransferenciaDistribuicaoDeRecursosEditar',
-      'TransferenciasVoluntariasDocumentos',
-      'TransferenciaCronograma',
     ],
   },
 ];
