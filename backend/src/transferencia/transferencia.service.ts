@@ -670,12 +670,9 @@ export class TransferenciaService {
 
         // Join the words into a TSQuery string
         if (words.length > 1) {
-
         }
         const formattedWords = words.join(' ');
 
         return formattedWords;
     }
 }
-
-SELECT id FROM transferencia WHERE vetores_busca @@ to_tsquery("defesa:* teste:*"); []
