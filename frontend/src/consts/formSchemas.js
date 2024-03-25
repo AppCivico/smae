@@ -951,8 +951,18 @@ export const transferenciaDistribuicaoDeRecursos = object({
     .label('Proposta')
     .nullable(),
   registros_sei: array()
-    .label('Número sei')
-    .nullable(),
+    .label('Número SEI')
+    .of(
+      object()
+        .shape({
+          id: number()
+            .nullable(),
+          processo_sei: string()
+            .required()
+            .max(40),
+        }),
+    )
+    .strict(),
 });
 
 export const registroDeTransferencia = object({

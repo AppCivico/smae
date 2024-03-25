@@ -8,9 +8,9 @@ import { useOrgansStore } from '@/stores/organs.store';
 import { useDistribuicaoRecursosStore } from '@/stores/transferenciasDistribuicaoRecursos.store';
 import { storeToRefs } from 'pinia';
 import {
-  ErrorMessage, Field, FieldArray, Form,
+  ErrorMessage, Field, FieldArray, useForm, useIsFormDirty,
 } from 'vee-validate';
-import { ref } from 'vue';
+import { ref, watch } from 'vue';
 
 const distribuicaoRecursos = useDistribuicaoRecursosStore();
 const ÓrgãosStore = useOrgansStore();
@@ -30,7 +30,16 @@ const props = defineProps({
 const alertStore = useAlertStore();
 const mostrarDistribuicaoRegistroForm = ref(false);
 
-async function onSubmit(_, { controlledValues: values }) {
+const {
+  errors, handleSubmit, isSubmitting, resetForm, setFieldValue, values,
+} = useForm({
+  initialValues: itemParaEdição,
+  validationSchema: schema,
+});
+
+const formulárioSujo = useIsFormDirty();
+
+const onSubmit = handleSubmit.withControlled(async (controlledValues) => {
   try {
     let r;
     const msg = itemParaEdição.value.id
@@ -38,9 +47,9 @@ async function onSubmit(_, { controlledValues: values }) {
       : 'Item adicionado com sucesso!';
 
     if (itemParaEdição.value.id) {
-      r = await distribuicaoRecursos.salvarItem(values, itemParaEdição.value.id);
+      r = await distribuicaoRecursos.salvarItem(controlledValues, itemParaEdição.value.id);
     } else {
-      r = await distribuicaoRecursos.salvarItem(values);
+      r = await distribuicaoRecursos.salvarItem(controlledValues);
     }
     if (r) {
       alertStore.success(msg);
@@ -56,12 +65,11 @@ async function onSubmit(_, { controlledValues: values }) {
   } catch (error) {
     alertStore.error(error);
   }
-}
+});
 
-function editarDistribuicaoRecursos(id) {
-  if (distribuicaoRecursos.buscarItem(id)) {
-    mostrarDistribuicaoRegistroForm.value = true;
-  }
+async function editarDistribuicaoRecursos(id) {
+  await distribuicaoRecursos.buscarItem(id);
+  mostrarDistribuicaoRegistroForm.value = true;
 }
 
 async function excluirDistribuição(id) {
@@ -90,12 +98,18 @@ function iniciar() {
 }
 
 iniciar();
+
+watch(itemParaEdição, (novosValores) => {
+  resetForm({ values: novosValores });
+});
 </script>
 <template>
   <div class="flex spacebetween center mb2">
     <h1>Formulário de registro</h1>
     <hr class="ml2 f1">
-    <CheckClose />
+    <CheckClose
+      :formulário-sujo="formulárioSujo"
+    />
   </div>
 
   <div class="flex spacebetween center mb2">
@@ -186,12 +200,10 @@ iniciar();
       ><use xlink:href="#i_+" /></svg> Registrar nova distribuição de recurso
     </button>
   </div>
-  <Form
+
+  <form
     v-if="mostrarDistribuicaoRegistroForm"
-    v-slot="{ errors, isSubmitting, setFieldValue, values }"
-    :validation-schema="schema"
-    :initial-values="itemParaEdição"
-    @submit="onSubmit"
+    @submit.prevent="onSubmit"
   >
     <Field
       v-if="!itemParaEdição.id"
@@ -412,11 +424,17 @@ iniciar();
             :key="field.key"
             class="mb1 registros-sei__item"
           >
+            <Field
+              :name="`registros_sei[${idx}].id`"
+              type="hidden"
+              class="inputtext light"
+            />
             <div class="flex g1 center">
               <Field
-                :name="`registros_sei[${idx}]`"
+                :name="`registros_sei[${idx}].processo_sei`"
                 type="text"
                 class="inputtext light"
+                maxlength="40"
               />
 
               <button
@@ -442,7 +460,7 @@ iniciar();
         <button
           class="like-a__text addlink flb100"
           type="button"
-          @click="push('')"
+          @click="push({processo_sei: ''})"
         >
           <svg
             width="20"
@@ -624,7 +642,7 @@ iniciar();
       </button>
       <hr class="ml2 f1">
     </div>
-  </Form>
+  </form>
 
   <span
     v-if="chamadasPendentes?.emFoco"
