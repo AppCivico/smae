@@ -1021,7 +1021,6 @@ export const transferenciasVoluntarias = object({
     .nullable(),
   cargo: string()
     .label('Cargo')
-    .required()
     .nullable(),
   clausula_suspensiva: boolean()
     .label('Cláusula suspensiva')
@@ -1088,14 +1087,14 @@ export const transferenciasVoluntarias = object({
     .required(),
   partido_id: number()
     .label('Partido')
-    .required(),
+    .nullable(),
   parlamentar_id: number()
     .label('Parlamentar')
     .min(1, 'Selecione um parlamentar')
-    .required(),
+    .nullable(),
   secretaria_concedente: string()
     .label('Secretaria do órgão concedente')
-    .required(),
+    .nullable(),
 });
 
 export const processo = object()
