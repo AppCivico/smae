@@ -62,6 +62,27 @@ class RetornoDbTransferencias {
     orgao_concedente_id: number;
     orgao_concedente_sigla: string;
     orgao_concedente_descricao: string;
+
+    distribuicao_recurso_id: number;
+    distribuicao_recurso_transferencia_id: number;
+    distribuicao_recurso_orgao_gestor_id: number;
+    distribuicao_recurso_objeto: string;
+    distribuicao_recurso_valor: number;
+    distribuicao_recurso_valor_total: number;
+    distribuicao_recurso_valor_contrapartida: number;
+    distribuicao_recurso_empenho: boolean;
+    distribuicao_recurso_programa_orcamentario_estadual: string | null;
+    distribuicao_recurso_programa_orcamentario_municipal: string | null;
+    distribuicao_recurso_dotacao: string | null;
+    distribuicao_recurso_proposta: string | null;
+    distribuicao_recurso_contrato: string | null;
+    distribuicao_recurso_convenio: string | null;
+    distribuicao_recurso_assinatura_termo_aceite: Date | null;
+    distribuicao_recurso_assinatura_municipio: Date | null;
+    distribuicao_recurso_assinatura_estado: Date | null;
+    distribuicao_recurso_vigencia: Date | null;
+    distribuicao_recurso_conclusao_suspensiva: Date | null;
+    distribuicao_recurso_sei: string | null;
 }
 
 @Injectable()
@@ -117,12 +138,34 @@ export class TransferenciasService implements ReportableService {
                 o1.descricao AS orgao_concedente_nome,
                 p.id AS parlamentar_id,
                 p.nome_popular AS parlamentar_nome_popular,
-                p.nome AS parlamentar_nome
+                p.nome AS parlamentar_nome,
+                dr.id AS distribuicao_recurso_id,
+                dr.transferencia_id AS distribuicao_recurso_transferencia_id,
+                dr.orgao_gestor_id AS distribuicao_recurso_orgao_gestor_id,
+                dr.objeto AS distribuicao_recurso_objeto,
+                dr.valor AS distribuicao_recurso_valor,
+                dr.valor_total AS distribuicao_recurso_valor_total,
+                dr.valor_contrapartida AS distribuicao_recurso_valor_contrapartida,
+                dr.empenho AS distribuicao_recurso_empenho,
+                dr.programa_orcamentario_estadual AS distribuicao_recurso_programa_orcamentario_estadual,
+                dr.programa_orcamentario_municipal AS distribuicao_recurso_programa_orcamentario_municipal,
+                dr.dotacao AS distribuicao_recurso_dotacao,
+                dr.proposta AS distribuicao_recurso_proposta,
+                dr.contrato AS distribuicao_recurso_contrato,
+                dr.convenio AS distribuicao_recurso_convenio,
+                dr.assinatura_termo_aceite AS distribuicao_recurso_assinatura_termo_aceite,
+                dr.assinatura_municipio AS distribuicao_recurso_assinatura_municipio,
+                dr.assinatura_estado AS distribuicao_recurso_assinatura_estado,
+                dr.vigencia AS distribuicao_recurso_vigencia,
+                dr.conclusao_suspensiva AS distribuicao_recurso_conclusao_suspensiva,
+                drs.processo_sei AS distribuicao_recurso_sei
             FROM transferencia t
             JOIN transferencia_tipo tt ON tt.id = t.tipo_id
             LEFT JOIN parlamentar p ON p.id = t.parlamentar_id
             LEFT JOIN partido pa ON pa.id = t.partido_id
             JOIN orgao o1 ON o1.id = t.orgao_concedente_id
+            LEFT JOIN distribuicao_recurso dr ON dr.transferencia_id = t.id AND dr.removido_em IS NULL
+            LEFT JOIN distribuicao_recurso_sei drs ON drs.distribuicao_recurso_id = dr.id AND drs.removido_em IS NULL
             ${whereCond.whereString}
             `;
 
@@ -250,6 +293,31 @@ export class TransferenciasService implements ReportableService {
                           id: db.parlamentar_id,
                           nome: db.parlamentar_nome,
                           nome_popular: db.parlamentar_nome_popular,
+                      }
+                    : null,
+
+                distribuicao_recurso: db.distribuicao_recurso_id
+                    ? {
+                          id: db.distribuicao_recurso_id,
+                          transferencia_id: db.distribuicao_recurso_transferencia_id,
+                          orgao_gestor_id: db.distribuicao_recurso_orgao_gestor_id,
+                          objeto: db.distribuicao_recurso_objeto,
+                          valor: db.distribuicao_recurso_valor,
+                          valor_total: db.distribuicao_recurso_valor_total,
+                          valor_contrapartida: db.distribuicao_recurso_valor_contrapartida,
+                          empenho: db.distribuicao_recurso_empenho,
+                          programa_orcamentario_estadual: db.distribuicao_recurso_programa_orcamentario_estadual,
+                          programa_orcamentario_municipal: db.distribuicao_recurso_programa_orcamentario_municipal,
+                          dotacao: db.distribuicao_recurso_dotacao,
+                          proposta: db.distribuicao_recurso_proposta,
+                          contrato: db.distribuicao_recurso_contrato,
+                          convenio: db.distribuicao_recurso_convenio,
+                          assinatura_termo_aceite: db.distribuicao_recurso_assinatura_termo_aceite,
+                          assinatura_municipio: db.distribuicao_recurso_assinatura_municipio,
+                          assinatura_estado: db.distribuicao_recurso_assinatura_estado,
+                          vigencia: db.distribuicao_recurso_vigencia,
+                          conclusao_suspensiva: db.distribuicao_recurso_conclusao_suspensiva,
+                          registro_sei: db.distribuicao_recurso_sei ? db.distribuicao_recurso_sei : null,
                       }
                     : null,
             });
