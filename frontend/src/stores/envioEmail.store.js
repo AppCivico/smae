@@ -52,8 +52,8 @@ export const useEmailsStore = defineStore("emailsStore", {
       this.erro = null;
 
       try {
-        if (id) {
-          await this.requestS.patch(`${baseUrl}/aviso-email/${id}`, params);
+        if (params.id) {
+          await this.requestS.patch(`${baseUrl}/aviso-email/${params.id}`, params);
         } else {
           await this.requestS.post(`${baseUrl}/aviso-email`, params);
         }
