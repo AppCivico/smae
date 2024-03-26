@@ -13,8 +13,8 @@ export class AvisoEmailService {
     constructor(private readonly prisma: PrismaService) {}
 
     async create(dto: CreateAvisoEmailDto, user: PessoaFromJwt): Promise<RecordWithId> {
-        const tarefa_cronograma_id = await this.resolveCronoEtapaId(dto);
         const tarefa_id = dto.tarefa_id;
+        const tarefa_cronograma_id = tarefa_id ? undefined : await this.resolveCronoEtapaId(dto);
 
         if (tarefa_id && tarefa_cronograma_id) {
             throw new BadRequestException(
