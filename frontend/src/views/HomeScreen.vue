@@ -29,7 +29,14 @@ async function escolher(opção) {
       // PRA-FAZER: persistir o auth.store no navegador
       localStorage.setItem('sistemaEscolhido', opção);
 
-      if (authStore.temPermissãoPara('SMAE.loga_direto_na_analise')) {
+      if (
+        authStore.temPermissãoPara('SMAE.loga_direto_na_analise')
+        && authStore.temPermissãoPara([
+          'Reports.dashboard_pdm',
+          'Reports.dashboard_portfolios',
+          'SMAE.espectador_de_painel_externo',
+        ])
+      ) {
         router.push({ name: 'análises' });
       } else if (dadosDoSistemaEscolhido.value?.rotaInicial) {
         router.push(dadosDoSistemaEscolhido.value?.rotaInicial);
