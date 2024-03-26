@@ -78,9 +78,7 @@ async function onSubmit(_, { controlledValues }) {
     }
     if (r) {
       alertStore.success(msg);
-      if (props.transferenciaId) {
-        router.push({ name: 'TransferenciasVoluntariaEditar' });
-      } else {
+      if (!props.transferenciaId) {
         router.push({
           name: 'RegistroDeTransferenciaEditar',
           params: {
