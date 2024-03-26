@@ -2,7 +2,7 @@
 import { emailTransferencia as schema } from "@/consts/formSchemas";
 import { storeToRefs } from "pinia";
 import { Field, Form } from "vee-validate";
-import { ref } from "vue";
+import { ref, toRefs } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useAlertStore } from "@/stores/alert.store";
 import { useEmailsStore } from "@/stores/envioEmail.store";
@@ -11,21 +11,12 @@ const alertStore = useAlertStore();
 const route = useRoute();
 const router = useRouter();
 const emailsStore = useEmailsStore();
-const { chamadasPendentes, erro, itemParaEdição } = storeToRefs(emailsStore);
+const { chamadasPendentes, erro, itemParaEdição } = toRefs(
+  storeToRefs(emailsStore)
+);
 
-const props = defineProps({
-  disparoEmailId: {
-    type: Number,
-    default: 0,
-  },
-});
-
-const newEmail = ref("");
-const localEmails = ref([
-  "joao@hotmail.com",
-  "maria@gmail.com",
-  "carlos@yahoo.com",
-]);
+const newEmail = ref([]);
+const localEmails = ref([]);
 
 const periodicidades = ["Dias", "Semanas", "Meses", "Anos"];
 
@@ -47,20 +38,18 @@ function addNewEmail() {
 }
 
 async function onSubmit(values) {
+  const valoresAuxiliares = {
+    ...values,
+    ativo: values.ativo === undefined ? false : true,
+    numero: parseInt(values.numero),
+    recorrencia_dias: parseInt(values.recorrencia_dias),
+    com_copia: localEmails.value ? localEmails.value.slice() : [],
+    tipo: "CronogramaTerminoPlanejado",
+    transferencia_id: parseInt(route.params.transferenciaId),
+  };
   try {
     let resposta;
-    const msg = props.disparoEmailId
-      ? "Dados salvos com sucesso!"
-      : "Item adicionado com sucesso!";
-    const valoresAuxiliares = {
-      ...values,
-      ativo: values.ativo === undefined ? false : value.ativo,
-      numero: parseInt(values.numero),
-      recorrencia_dias: parseInt(values.recorrencia_dias),
-      com_copia: localEmails.value.slice(),
-      tipo: "CronogramaTerminoPlanejado",
-      transferencia_id: parseInt(route.params.transferenciaId),
-    };
+    const msg = "Dados salvos com sucesso!";
     resposta = await emailsStore.salvarItem(valoresAuxiliares);
     if (resposta) {
       alertStore.success(msg);
@@ -71,6 +60,12 @@ async function onSubmit(values) {
     alertStore.error(error);
   }
 }
+
+async function iniciar() {
+  localEmails.value = itemParaEdição?.value?.linhas[0]?.com_copia;
+}
+
+iniciar();
 </script>
 
 <template>
@@ -83,7 +78,7 @@ async function onSubmit(values) {
     <Form
       v-slot="{ errors, isSubmitting }"
       :validation-schema="schema"
-      :initial-values="itemParaEdição"
+      :initial-values="itemParaEdição.linhas[0]"
       @submit="onSubmit"
     >
       <div class="mb2 flex flexwrap g2">
