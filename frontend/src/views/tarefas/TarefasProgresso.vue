@@ -57,6 +57,13 @@ async function onSubmit(_, { controlledValues: carga }) {
     alertStore.error(error);
   }
 }
+
+// tem que ficar assim
+async function iniciar() {
+  emailsStore.buscarItem({ tarefa_id: props.tarefaId });
+}
+
+iniciar();
 </script>
 <template>
   <div class="flex spacebetween center mb2">
@@ -86,7 +93,7 @@ async function onSubmit(_, { controlledValues: carga }) {
         title="Editar tarefa"
         class="btn"
       >
-        Editar tarefa
+        Editar tarefa yy
       </router-link>
     </div>
 
@@ -145,7 +152,7 @@ async function onSubmit(_, { controlledValues: carga }) {
       <svg width="20" height="20">
         <use xlink:href="#i_+" />
       </svg>
-      <span v-if="emailEmFoco?.linhas[0]?.id">Editar envio de e-mail </span>
+      <span v-if="emailEmFoco?.linhas?.[0]?.id">Editar envio de e-mail </span>
       <span v-else>Adicionar envio de e-mail</span>
     </router-link>
   </div>
