@@ -1060,8 +1060,7 @@ export const transferenciasVoluntarias = object({
     .oneOf([...Object.keys(esferasDeTransferencia), null]),
   demanda: string()
     .label('Número da Demanda')
-    .nullable()
-    .required(),
+    .nullable(),
   identificador: string()
     .label('Identificador')
     .nullable()
