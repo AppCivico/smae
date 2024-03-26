@@ -11,10 +11,7 @@ const alertStore = useAlertStore();
 const route = useRoute();
 const router = useRouter();
 const emailsStore = useEmailsStore();
-const { chamadasPendentes, erro, itemParaEdição } = toRefs(
-  storeToRefs(emailsStore)
-);
-
+const { chamadasPendentes, erro, itemParaEdição } = storeToRefs(emailsStore);
 const newEmail = ref([]);
 const localEmails = ref([]);
 
@@ -45,16 +42,26 @@ async function onSubmit(values) {
     recorrencia_dias: parseInt(values.recorrencia_dias),
     com_copia: localEmails.value ? localEmails.value.slice() : [],
     tipo: "CronogramaTerminoPlanejado",
-    transferencia_id: parseInt(route.params.transferenciaId),
   };
+  if (route.params.tarefaId) {
+    valoresAuxiliares.tarefa_id = parseInt(route.params.tarefaId);
+  } else if (route.params.transferenciaId) {
+    valoresAuxiliares.transferencia_id = parseInt(route.params.transferenciaId);
+  }
   try {
     let resposta;
     const msg = "Dados salvos com sucesso!";
     resposta = await emailsStore.salvarItem(valoresAuxiliares);
     if (resposta) {
       alertStore.success(msg);
-      // emailsStore.$reset();
-      router.push({ name: "TransferenciaCronograma" });
+      if (route.params.tarefaId) {
+        emailsStore.buscarItem({ tarefa_id: props.tarefaId });
+      } else if (route.params.transferenciaId) {
+        emailsStore.buscarItem({transferencia_id: route.params.transferenciaId});
+      }
+      if(route.meta.rotaDeEscape){
+         router.push({ name: route.meta.rotaDeEscape });
+      }
     }
   } catch (error) {
     alertStore.error(error);
@@ -62,7 +69,7 @@ async function onSubmit(values) {
 }
 
 async function iniciar() {
-  localEmails.value = itemParaEdição?.value?.linhas[0]?.com_copia;
+  localEmails.value = itemParaEdição?.value?.linhas?.[0]?.com_copia;
 }
 
 iniciar();
@@ -78,7 +85,7 @@ iniciar();
     <Form
       v-slot="{ errors, isSubmitting }"
       :validation-schema="schema"
-      :initial-values="itemParaEdição?.linhas[0]"
+      :initial-values="itemParaEdição?.linhas?.[0]"
       @submit="onSubmit"
     >
       <div class="mb2 flex flexwrap g2">
