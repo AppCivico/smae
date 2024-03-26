@@ -6,7 +6,6 @@ import {
     IsNumberString,
     IsOptional,
     IsString,
-    Matches,
     MaxLength,
     MinLength,
     ValidateIf,
@@ -165,8 +164,5 @@ class CreateDistribuicaoRegistroSEIDto {
 
     @IsString()
     @MaxLength(40)
-    @Matches(/^[0-9\-\.\/\\]+$/, {
-        message: '$property| Precisa ser apenas números, pontos, barras ou traços.',
-    })
     processo_sei: string;
 }
