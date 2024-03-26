@@ -3,6 +3,7 @@ import cargosDeParlamentar from '@/consts/cargosDeParlamentar';
 import esferasDeTransferencia from '@/consts/esferasDeTransferencia';
 import { transferenciasVoluntarias as schema } from '@/consts/formSchemas';
 import interfacesDeTransferências from '@/consts/interfacesDeTransferências';
+import nulificadorTotal from '@/helpers/nulificadorTotal.ts';
 import truncate from '@/helpers/truncate';
 import { useAlertStore } from '@/stores/alert.store';
 import { useOrgansStore } from '@/stores/organs.store';
@@ -68,9 +69,9 @@ async function onSubmit(_, { controlledValues }) {
       : 'Item adicionado com sucesso!';
 
     if (props.transferenciaId) {
-      r = await TransferenciasVoluntarias.salvarItem(controlledValues, props.transferenciaId);
+      r = await TransferenciasVoluntarias.salvarItem(cargaManipulada, props.transferenciaId);
     } else {
-      r = await TransferenciasVoluntarias.salvarItem(controlledValues);
+      r = await TransferenciasVoluntarias.salvarItem(cargaManipulada);
     }
     if (r) {
       alertStore.success(msg);
@@ -256,9 +257,6 @@ iniciar();
           type="text"
           class="inputtext light mb1"
           placeholder="000.000.000.000/ AAAA.0000000.00000 / AAAA.000.00000"
-          @change="($event) => {
-            if ($event?.target?.value === '') setFieldValue('emenda', null);
-          }"
         />
         <ErrorMessage
           class="error-msg mb1"
@@ -275,9 +273,6 @@ iniciar();
           name="emenda_unitaria"
           type="text"
           class="inputtext light mb1"
-          @change="($event) => {
-            if ($event?.target?.value === '') setFieldValue('emenda_unitaria', null);
-          }"
         />
         <ErrorMessage
           class="error-msg mb1"
@@ -618,11 +613,6 @@ iniciar();
           class="inputtext light mb1"
           :class="{ 'error': errors.clausula_suspensiva_vencimento }"
           maxlength="10"
-          @change="($event) => {
-            if (!$event?.target?.value) {
-              setFieldValue('clausula_suspensiva_vencimento', null);
-            }
-          }"
         />
         <ErrorMessage
           name="clausula_suspensiva_vencimento"
