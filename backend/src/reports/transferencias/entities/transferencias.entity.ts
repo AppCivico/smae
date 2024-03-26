@@ -8,7 +8,7 @@ export class RelTransferenciasDto {
     detalhamento: string | null;
     critico: boolean;
     clausula_suspensiva: boolean;
-    clausula_suspensiva_vencimento: Date | null;
+    clausula_suspensiva_vencimento: string | null;
     normativa: string | null;
     observacoes: string | null;
     programa: string | null;
@@ -61,11 +61,11 @@ export class RelTransferenciasDto {
         proposta: string | null;
         contrato: string | null;
         convenio: string | null;
-        assinatura_termo_aceite: Date | null;
-        assinatura_municipio: Date | null;
-        assinatura_estado: Date | null;
-        vigencia: Date | null;
-        conclusao_suspensiva: Date | null;
+        assinatura_termo_aceite: string | null;
+        assinatura_municipio: string | null;
+        assinatura_estado: string | null;
+        vigencia: string | null;
+        conclusao_suspensiva: string | null;
         registro_sei: string | null;
     } | null;
 }
