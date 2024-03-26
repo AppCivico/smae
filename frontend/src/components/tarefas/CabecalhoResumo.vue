@@ -123,11 +123,11 @@ const props = defineProps({
         <dd class="t13 dado-efetivo">
           <div class="flex g1" v-if="existeEmail">
             <span>Sim</span>
-            <router-link :to="{}" title="Editar e-mail">
+            <router-link :to="{name: 'transferenciaEmailModal'}" title="Editar e-mail">
               <svg width="20" height="20"><use xlink:href="#i_edit" /></svg>
             </router-link>
           </div>
-          <spam v-else>Não</spam>
+          <span v-else>Não</span>
         </dd>
       </div>
     </dl>
