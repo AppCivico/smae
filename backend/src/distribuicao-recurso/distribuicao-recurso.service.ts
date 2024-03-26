@@ -295,7 +295,7 @@ export class DistribuicaoRecursoService {
                         removido_em: null,
                     },
                     data: {
-                        processo_sei: updatedRow.processo_sei,
+                        processo_sei: updatedRow.processo_sei.replace(/\D/g, ''),
                         atualizado_em: new Date(Date.now()),
                         atualizado_por: user.id,
                     },
@@ -308,7 +308,7 @@ export class DistribuicaoRecursoService {
                 prismaTx.distribuicaoRecursoSei.create({
                     data: {
                         distribuicao_recurso_id: distribuicaoRecursoId,
-                        processo_sei: createdRow.processo_sei,
+                        processo_sei: createdRow.processo_sei.replace(/\D/g, ''),
                         registro_sei_info: '{}',
                         criado_em: new Date(Date.now()),
                         criado_por: user.id,
