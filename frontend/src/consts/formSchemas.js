@@ -1857,6 +1857,7 @@ export const emailTransferencia = object()
     ativo: boolean()
       .label('Disparo de e-mail?'),
     com_copia: array()
+      .nullable()
       .label('CC (com cópia)'),
     recorrencia_dias: number()
       .label('Recorrência (dias)')
