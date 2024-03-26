@@ -201,7 +201,7 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
           <dt>
             Objeto/Empreendimento
           </dt>
-          <dd>
+          <dd class="text">
             {{ transferênciaEmFoco?.objeto || '-' }}
           </dd>
         </dl>
@@ -209,7 +209,7 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
           <dt>
             Detalhamento
           </dt>
-          <dd>
+          <dd class="text">
             {{ transferênciaEmFoco?.detalhamento }}
           </dd>
         </dl>
@@ -639,14 +639,18 @@ section{
 dt {
   color: #607A9F;
   font-weight: 700;
-  font-size: 1.25rem;
+  font-size: 20px;
 }
 
 dd {
   font-weight: 400;
   color: #233B5C;
-  font-size: 1rem;
+  font-size: 16px;
   padding-top: 4px;
+}
+
+.text{
+  line-height: 24px;
 }
 
 .valores {
