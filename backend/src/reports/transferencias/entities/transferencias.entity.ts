@@ -72,4 +72,15 @@ export class RelTransferenciasDto {
 
 export class TransferenciasRelatorioDto {
     linhas: RelTransferenciasDto[];
+    linhas_cronograma: RelTransferenciaCronogramaDto[];
+}
+
+export class RelTransferenciaCronogramaDto {
+    transferencia_id: number;
+    hirearquia: string;
+    tarefa: string;
+    inicio_planejado: string | null;
+    termino_planejado: string | null;
+    custo_estimado: number | null;
+    duracao_planejado: number | null;
 }
