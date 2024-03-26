@@ -11,7 +11,7 @@ import { useEmailsStore } from "@/stores/envioEmail.store";
 const route = useRoute();
 const tarefasStore = useTarefasStore();
 const emailsStore = useEmailsStore();
-const { lista } = storeToRefs(emailsStore);
+const { emFoco:emailEmFoco } = storeToRefs(emailsStore);
 const { árvoreDeTarefas, chamadasPendentes, erro } = storeToRefs(tarefasStore);
 
 const projetoEmFoco = computed(() => tarefasStore?.extra?.projeto || {});
@@ -29,7 +29,7 @@ const nívelMáximoVisível = ref(0);
 
 
 async function iniciar() {
-  emailsStore.buscarTudo();
+  emailsStore.buscarItem({ transferencia_id: route.params.transferenciaId });
   tarefasStore.$reset();
   await tarefasStore.buscarTudo();
 
@@ -37,10 +37,6 @@ async function iniciar() {
     nívelMáximoVisível.value = nívelMáximoPermitido.value;
   }
 }
-
-const existeEmail = computed(() => {
-  return lista.value.some(item => item.transferencia_id === parseInt(route.params.transferenciaId));
-});
 
 iniciar();
 </script>
@@ -80,14 +76,15 @@ export default {
       </router-link>
     </nav>
   </div>
-  <CabecalhoResumo :em-foco="projetoEmFoco" :existe-email="existeEmail"/>
+  <CabecalhoResumo :em-foco="projetoEmFoco" :existe-email="emailEmFoco?.linhas[0]?.id !== undefined" />
 
   <div class="flex center mb4" v-if="route.meta.prefixoParaFilhas === 'TransferenciasVoluntarias'" >
     <router-link :to="{ name: 'transferenciaEmailModal' }" class="addlink mb1">
       <svg width="20" height="20">
         <use xlink:href="#i_+" />
       </svg>
-      Adicionar envio de e-mail
+      <span v-if="emailEmFoco?.linhas[0]?.id">Editar envio de e-mail </span>
+      <span v-else>Adicionar envio de e-mail</span>
     </router-link>
   </div>
 
