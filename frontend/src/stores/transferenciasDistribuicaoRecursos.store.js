@@ -86,15 +86,6 @@ export const useDistribuicaoRecursosStore = defineStore('distribuicaoRecursos', 
       assinatura_termo_aceite: dateTimeToDate(emFoco?.assinatura_termo_aceite),
       conclusao_suspensiva: dateTimeToDate(emFoco?.conclusao_suspensiva),
       orgao_gestor_id: emFoco?.orgao_gestor?.id || null,
-      valor: typeof emFoco?.valor === 'number'
-        ? String(emFoco.valor)
-        : emFoco?.valor,
-      valor_contrapartida: typeof emFoco?.valor_contrapartida === 'number'
-        ? String(emFoco.valor_contrapartida)
-        : emFoco?.valor_contrapartida,
-      valor_total: typeof emFoco?.valor_total === 'number'
-        ? String(emFoco.valor_total)
-        : emFoco?.valor_total,
       vigencia: dateTimeToDate(emFoco?.vigencia),
     }),
   },

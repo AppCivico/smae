@@ -35,8 +35,13 @@ const props = defineProps({
 const emit = defineEmits(['update:modelValue']);
 const name = toRef(props, 'name');
 const { handleChange } = useField(name, undefined, {
+  // eslint-disable-next-line no-nested-ternary
   initialValue: props.value
-    ? Number(props.value)
+    ? (
+      ['string', 'text'].indexOf(props.converterPara.toLowerCase()) !== -1
+        ? String(props.value)
+        : Number(props.value)
+    )
     : null,
 });
 
