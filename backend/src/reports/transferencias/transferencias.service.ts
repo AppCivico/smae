@@ -287,7 +287,7 @@ export class TransferenciasService implements ReportableService {
                 detalhamento: db.detalhamento,
                 critico: db.critico,
                 clausula_suspensiva: db.clausula_suspensiva,
-                clausula_suspensiva_vencimento: db.clausula_suspensiva_vencimento,
+                clausula_suspensiva_vencimento: Date2YMD.toStringOrNull(db.clausula_suspensiva_vencimento),
                 normativa: db.normativa,
                 observacoes: db.observacoes,
                 programa: db.programa,
@@ -352,11 +352,13 @@ export class TransferenciasService implements ReportableService {
                           proposta: db.distribuicao_recurso_proposta,
                           contrato: db.distribuicao_recurso_contrato,
                           convenio: db.distribuicao_recurso_convenio,
-                          assinatura_termo_aceite: db.distribuicao_recurso_assinatura_termo_aceite,
-                          assinatura_municipio: db.distribuicao_recurso_assinatura_municipio,
-                          assinatura_estado: db.distribuicao_recurso_assinatura_estado,
-                          vigencia: db.distribuicao_recurso_vigencia,
-                          conclusao_suspensiva: db.distribuicao_recurso_conclusao_suspensiva,
+                          assinatura_termo_aceite: Date2YMD.toStringOrNull(
+                              db.distribuicao_recurso_assinatura_termo_aceite
+                          ),
+                          assinatura_municipio: Date2YMD.toStringOrNull(db.distribuicao_recurso_assinatura_municipio),
+                          assinatura_estado: Date2YMD.toStringOrNull(db.distribuicao_recurso_assinatura_estado),
+                          vigencia: Date2YMD.toStringOrNull(db.distribuicao_recurso_vigencia),
+                          conclusao_suspensiva: Date2YMD.toStringOrNull(db.distribuicao_recurso_conclusao_suspensiva),
                           registro_sei: db.distribuicao_recurso_sei ? db.distribuicao_recurso_sei : null,
                       }
                     : null,
