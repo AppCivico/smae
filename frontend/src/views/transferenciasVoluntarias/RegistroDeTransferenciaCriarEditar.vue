@@ -9,7 +9,7 @@ import { ErrorMessage, Field, Form } from 'vee-validate';
 import { useRouter } from 'vue-router';
 
 const TransferenciasVoluntarias = useTransferenciasVoluntariasStore();
-const { chamadasPendentes, erro, itemParaEdição, emFoco: proximaPagina, } = storeToRefs(TransferenciasVoluntarias);
+const { chamadasPendentes, erro, itemParaEdição, emFoco: transferenciaEmFoco, } = storeToRefs(TransferenciasVoluntarias);
 
 const router = useRouter();
 const props = defineProps({
@@ -32,7 +32,7 @@ async function onSubmit(_, { controlledValues }) {
     if (id) {
       alertStore.success('Dados salvos com sucesso!');
       TransferenciasVoluntarias.buscarItem(props.transferenciaId);
-      if (proximaPagina.value && proximaPagina.value.pendente_preenchimento_valores) {
+      if (transferenciaEmFoco.value?.pendente_preenchimento_valores) {
         router.push({ name: 'TransferenciaDistribuicaoDeRecursosEditar' });
       } else {
         router.push({
@@ -52,7 +52,7 @@ TransferenciasVoluntarias.buscarItem(props.transferenciaId);
 </script>
 
 <template>
-  <pre v-scrollLockDebug>proximaPagina:{{ proximaPagina?.pendente_preenchimento_valores }}</pre>
+  <pre v-scrollLockDebug>transferenciaEmFoco:{{ transferenciaEmFoco?.pendente_preenchimento_valores }}</pre>
   <div class="flex spacebetween center mb2">
     <h1>Formulário de registro</h1>
     <hr class="ml2 f1">
