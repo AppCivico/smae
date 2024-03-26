@@ -95,9 +95,10 @@ watch([
       <input
         id="ano"
         v-model.number="ano"
+        inputmode="numeric"
         class="inputtext mb1"
         name="ano"
-        type="number"
+        type="text"
         min="2003"
       >
     </div>
