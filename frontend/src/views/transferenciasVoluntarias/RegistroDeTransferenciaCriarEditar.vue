@@ -1,6 +1,7 @@
 <script setup>
 import MaskedFloatInput from '@/components/MaskedFloatInput.vue';
 import { registroDeTransferencia as schema } from '@/consts/formSchemas';
+import nulificadorTotal from '@/helpers/nulificadorTotal.ts';
 import { useAlertStore } from '@/stores/alert.store';
 import { useTransferenciasVoluntariasStore } from '@/stores/transferenciasVoluntarias.store';
 import { storeToRefs } from 'pinia';
@@ -21,7 +22,10 @@ const props = defineProps({
 const alertStore = useAlertStore();
 
 async function onSubmit(_, { controlledValues }) {
-  if (await transferenciasVoluntarias.salvarItem(controlledValues, props.transferenciaId, true)) {
+  // necessário por causa de 🤬
+  const cargaManipulada = nulificadorTotal(controlledValues);
+
+  if (await transferenciasVoluntarias.salvarItem(cargaManipulada, props.transferenciaId, true)) {
     alertStore.success('Dados salvos com sucesso!');
     transferenciasVoluntarias.buscarItem(props.transferenciaId);
     router.push({ name: 'TransferenciaDistribuicaoDeRecursosEditar' });
@@ -45,7 +49,7 @@ transferenciasVoluntarias.buscarItem(props.transferenciaId);
   </div>
 
   <Form
-    v-slot="{ errors, isSubmitting, setFieldValue, values }"
+    v-slot="{ errors, isSubmitting, values }"
     :validation-schema="schema"
     :initial-values="itemParaEdição"
     @submit="onSubmit"
