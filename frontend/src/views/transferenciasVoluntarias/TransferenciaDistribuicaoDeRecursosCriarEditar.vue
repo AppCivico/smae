@@ -3,6 +3,7 @@ import MaskedFloatInput from '@/components/MaskedFloatInput.vue';
 import { transferenciaDistribuicaoDeRecursos as schema } from '@/consts/formSchemas';
 import dateToField from '@/helpers/dateToField';
 import dinheiro from '@/helpers/dinheiro';
+import nulificadorTotal from '@/helpers/nulificadorTotal.ts';
 import truncate from '@/helpers/truncate';
 import { useAlertStore } from '@/stores/alert.store';
 import { useOrgansStore } from '@/stores/organs.store';
@@ -41,6 +42,9 @@ const {
 const formulárioSujo = useIsFormDirty();
 
 const onSubmit = handleSubmit.withControlled(async (controlledValues) => {
+  // necessário por causa de 🤬
+  const cargaManipulada = nulificadorTotal(controlledValues);
+
   try {
     let r;
     const msg = itemParaEdição.value.id
@@ -48,9 +52,9 @@ const onSubmit = handleSubmit.withControlled(async (controlledValues) => {
       : 'Item adicionado com sucesso!';
 
     if (itemParaEdição.value.id) {
-      r = await distribuicaoRecursos.salvarItem(controlledValues, itemParaEdição.value.id);
+      r = await distribuicaoRecursos.salvarItem(cargaManipulada, itemParaEdição.value.id);
     } else {
-      r = await distribuicaoRecursos.salvarItem(controlledValues);
+      r = await distribuicaoRecursos.salvarItem(cargaManipulada);
     }
     if (r) {
       alertStore.success(msg);
