@@ -6,14 +6,14 @@ export class RelTransferenciasDto {
     ano: number | null;
     objeto: string;
     detalhamento: string | null;
-    critico: boolean;
-    clausula_suspensiva: boolean;
+    critico: string;
+    clausula_suspensiva: string;
     clausula_suspensiva_vencimento: string | null;
     normativa: string | null;
     observacoes: string | null;
     programa: string | null;
-    empenho: boolean | null;
-    pendente_preenchimento_valores: boolean;
+    empenho: string | null;
+    pendente_preenchimento_valores: string;
     valor: number | null;
     valor_total: number | null;
     valor_contrapartida: number | null;
@@ -54,7 +54,7 @@ export class RelTransferenciasDto {
         valor: number;
         valor_total: number;
         valor_contrapartida: number;
-        empenho: boolean;
+        empenho: string;
         programa_orcamentario_estadual: string | null;
         programa_orcamentario_municipal: string | null;
         dotacao: string | null;
