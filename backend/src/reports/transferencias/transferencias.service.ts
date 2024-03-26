@@ -3,7 +3,12 @@ import { Date2YMD } from '../../common/date2ymd';
 import { PrismaService } from '../../prisma/prisma.service';
 import { DefaultCsvOptions, FileOutput, ReportableService } from '../utils/utils.service';
 import { CreateRelTransferenciasDto } from './dto/create-transferencias.dto';
-import { RelTransferenciasDto, TransferenciasRelatorioDto } from './entities/transferencias.entity';
+import {
+    RelTransferenciaCronogramaDto,
+    RelTransferenciasDto,
+    TransferenciasRelatorioDto,
+} from './entities/transferencias.entity';
+import { TarefaService } from 'src/pp/tarefa/tarefa.service';
 
 const {
     Parser,
@@ -87,7 +92,10 @@ class RetornoDbTransferencias {
 
 @Injectable()
 export class TransferenciasService implements ReportableService {
-    constructor(private readonly prisma: PrismaService) {}
+    constructor(
+        private readonly prisma: PrismaService,
+        private readonly tarefaService: TarefaService
+    ) {}
 
     async create(dto: CreateRelTransferenciasDto): Promise<TransferenciasRelatorioDto> {
         const whereCond = await this.buildFilteredWhereStr(dto);
@@ -172,8 +180,40 @@ export class TransferenciasService implements ReportableService {
         const data: RetornoDbTransferencias[] = await this.prisma.$queryRawUnsafe(sql, ...whereCond.queryParams);
         this.convertRowsTransferenciasInto(data, out_transferencias);
 
+        const tarefaCronoIds = await this.prisma.tarefaCronograma.findMany({
+            where: {
+                NOT: [{ transferencia_id: null }],
+                removido_em: null,
+            },
+            select: { id: true, transferencia_id: true },
+        });
+
+        const tarefasOut: RelTransferenciaCronogramaDto[] = [];
+        for (const tarefaCronoId of tarefaCronoIds) {
+            let tarefasHierarquia: Record<string, string> = {};
+
+            if (tarefaCronoId) tarefasHierarquia = await this.tarefaService.tarefasHierarquia(tarefaCronoId.id);
+
+            const tarefasRows = tarefaCronoId
+                ? await this.tarefaService.buscaLinhasRecalcProjecao(tarefaCronoId.id)
+                : { linhas: [] };
+
+            tarefasRows.linhas.map((e) => {
+                tarefasOut.push({
+                    transferencia_id: tarefaCronoId.transferencia_id!,
+                    hirearquia: tarefasHierarquia[e.id],
+                    tarefa: e.tarefa,
+                    inicio_planejado: Date2YMD.toStringOrNull(e.inicio_planejado),
+                    termino_planejado: Date2YMD.toStringOrNull(e.termino_planejado),
+                    custo_estimado: e.custo_estimado,
+                    duracao_planejado: e.duracao_planejado,
+                });
+            });
+        }
+
         return {
             linhas: out_transferencias,
+            linhas_cronograma: tarefasOut,
         };
     }
 
@@ -341,6 +381,22 @@ export class TransferenciasService implements ReportableService {
             );
             out.push({
                 name: 'transferencias.csv',
+                buffer: Buffer.from(linhas, 'utf8'),
+            });
+        }
+
+        if (dados.linhas_cronograma.length) {
+            const json2csvParser = new Parser({
+                ...DefaultCsvOptions,
+                transforms: defaultTransform,
+            });
+            const linhas = json2csvParser.parse(
+                dados.linhas.map((r) => {
+                    return { ...r };
+                })
+            );
+            out.push({
+                name: 'cronograma.csv',
                 buffer: Buffer.from(linhas, 'utf8'),
             });
         }
