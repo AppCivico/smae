@@ -26,6 +26,8 @@ export const useEmailsStore = defineStore("emailsStore", {
         this.emFoco = {
           ...resposta,
         };
+        this.chamadasPendentes.emFoco = false;
+        return resposta;
       } catch (erro) {
         this.erro = erro;
       }
