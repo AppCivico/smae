@@ -8,6 +8,7 @@ import truncate from '@/helpers/truncate';
 import { useAlertStore } from '@/stores/alert.store';
 import { useOrgansStore } from '@/stores/organs.store';
 import { useDistribuicaoRecursosStore } from '@/stores/transferenciasDistribuicaoRecursos.store';
+import { vMaska } from 'maska';
 import { storeToRefs } from 'pinia';
 import {
   ErrorMessage, Field, FieldArray, useForm, useIsFormDirty,
@@ -458,10 +459,12 @@ onUnmounted(() => {
             />
             <div class="flex g1 center">
               <Field
+                v-maska
                 :name="`registros_sei[${idx}].processo_sei`"
                 type="text"
                 class="inputtext light"
                 maxlength="40"
+                data-maska="####.####/#######-#"
               />
 
               <button
