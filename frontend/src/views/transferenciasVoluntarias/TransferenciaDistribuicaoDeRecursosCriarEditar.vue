@@ -694,6 +694,7 @@ onUnmounted(() => {
 <style lang="less">
 .registros-sei {
   display: grid;
+  gap: 2rem;
   grid-template-columns: repeat( auto-fit, minmax(20em, 1fr) );
 }
 
