@@ -221,15 +221,6 @@ export const useTransferenciasVoluntariasStore = defineStore(
         parlamentar_id: emFoco?.parlamentar?.id || null,
         partido_id: emFoco?.partido?.id || null,
         tipo_id: emFoco?.tipo?.id || null,
-        valor: typeof emFoco?.valor === 'number'
-          ? String(emFoco.valor)
-          : emFoco?.valor,
-        valor_contrapartida: typeof emFoco?.valor_contrapartida === 'number'
-          ? String(emFoco.valor_contrapartida)
-          : emFoco?.valor_contrapartida,
-        valor_total: typeof emFoco?.valor_total === 'number'
-          ? String(emFoco.valor_total)
-          : emFoco?.valor_total,
       }),
     },
   },
