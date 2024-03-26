@@ -423,13 +423,13 @@ dt,
 .title{
   color: #607A9F;
   font-weight: 700;
-  font-size: 1.25rem;
+  font-size: 20px;
 }
 
 dd {
   font-weight: 400;
   color: #233B5C;
-  font-size: 1rem;
+  font-size: 16px;
   margin-bottom: 15px;
 }
 
@@ -456,13 +456,17 @@ dd {
   font-size: 20px;
 }
 
-.eleicao > div dd {
-  font-size: 18px;
+.biografia{
+  max-height: 370px;
+  overflow-y: auto;
+  font-size: 16px;
+  line-height: 24px;
 }
 
-.biografia{
-  max-height: 300px;
-  overflow-y: auto;
+.tablemain td {
+    padding: 0.75em 1em;
+    text-overflow: ellipsis;
+    font-size: 16px;
 }
 
 table{
