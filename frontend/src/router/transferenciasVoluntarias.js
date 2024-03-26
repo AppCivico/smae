@@ -267,6 +267,24 @@ export default {
                   'TransferenciasVoluntariasTarefasProgresso',
                 ],
               },
+              children: [
+                {
+                  path: 'disparo-email-tarefa',
+                  component: DialogWrapper,
+                  meta: {
+                    rotaDeEscape: 'TransferenciasVoluntariasTarefasProgresso',
+                    título: 'Novo disparo de e-mail',
+                    títuloParaMenu: 'Novo e-mail',
+                  },
+                  children: [
+                    {
+                      path: '',
+                      name: 'transferenciaTarefaEmailModal',
+                      component: EmailModal,
+                    },
+                  ],
+                },
+              ],
             },
           ],
         },
