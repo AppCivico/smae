@@ -1854,9 +1854,9 @@ export const tarefa = object()
 
 export const emailTransferencia = object()
   .shape({
-    ativo:boolean()
+    ativo: boolean()
       .label('Disparo de e-mail?'),
-    com_copia:array()
+    com_copia: array()
       .label('CC (com cópia)'),
     recorrencia_dias: number()
       .label('Recorrência (dias)')
@@ -1871,7 +1871,7 @@ export const emailTransferencia = object()
     numero_periodo: string()
       .label('Periodicidade')
       .required(),
-  })
+  });
 
 export const tag = object()
   .shape({

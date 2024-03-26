@@ -4,7 +4,7 @@ import { defineStore } from 'pinia';
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
 export const useTransferenciasVoluntariasStore = defineStore(
-  "transferenciasVoluntarias",
+  'transferenciasVoluntarias',
   {
     state: () => ({
       lista: [],
@@ -32,7 +32,7 @@ export const useTransferenciasVoluntariasStore = defineStore(
         try {
           const resposta = await this.requestS.get(
             `${baseUrl}/transferencia/${id}`,
-            params
+            params,
           );
           this.emFoco = {
             ...resposta,
@@ -48,11 +48,13 @@ export const useTransferenciasVoluntariasStore = defineStore(
         this.erro = null;
 
         try {
-          const { linhas,
+          const {
+            linhas,
             tem_mais: temMais,
-            token_proxima_pagina: tokenDaPróximaPágina } = await this.requestS.get(
+            token_proxima_pagina: tokenDaPróximaPágina,
+          } = await this.requestS.get(
             `${baseUrl}/transferencia`,
-            params
+            params,
           );
           if (Array.isArray(linhas)) {
             this.lista = params.token_proxima_pagina
@@ -115,7 +117,7 @@ export const useTransferenciasVoluntariasStore = defineStore(
             `${baseUrl}/transferencia/${
               id || this.route.params.transferenciaId
             }/anexo`,
-            params
+            params,
           );
           if (Array.isArray(resposta.linhas)) {
             this.arquivos = resposta.linhas;
@@ -134,7 +136,7 @@ export const useTransferenciasVoluntariasStore = defineStore(
           await this.requestS.delete(
             `${baseUrl}/transferencia/${
               idDaTransferencia || this.route.params.transferenciaId
-            }/anexo/${id}`
+            }/anexo/${id}`,
           );
 
           this.arquivos = this.arquivos.filter((x) => x.id !== id);
@@ -160,14 +162,14 @@ export const useTransferenciasVoluntariasStore = defineStore(
               `${baseUrl}/transferencia/${
                 idDaTransferencia || this.route.params.transferenciaId
               }/anexo/${id}`,
-              params
+              params,
             );
           } else {
             resposta = await this.requestS.post(
               `${baseUrl}/transferencia/${
                 idDaTransferencia || this.route.params.transferenciaId
               }/anexo`,
-              params
+              params,
             );
           }
 
@@ -199,19 +201,18 @@ export const useTransferenciasVoluntariasStore = defineStore(
     },
 
     getters: {
-      arquivosPorId: ({ arquivos }) =>
-        arquivos.reduce((acc, cur) => ({ ...acc, [cur.id]: cur }), {}),
+      arquivosPorId: ({ arquivos }) => arquivos
+        .reduce((acc, cur) => ({ ...acc, [cur.id]: cur }), {}),
 
-      diretóriosConsolidados: ({ diretórios, arquivos }) =>
-        arquivos
-          .reduce(
-            (acc, cur) => {
-              const caminho = cur.arquivo.diretorio_caminho || "/";
-              return acc.indexOf(caminho) === -1 ? acc.concat([caminho]) : acc;
-            },
-            diretórios.map((x) => x.caminho)
-          )
-          .sort((a, b) => a.localeCompare(b)),
+      diretóriosConsolidados: ({ diretórios, arquivos }) => arquivos
+        .reduce(
+          (acc, cur) => {
+            const caminho = cur.arquivo.diretorio_caminho || '/';
+            return acc.indexOf(caminho) === -1 ? acc.concat([caminho]) : acc;
+          },
+          diretórios.map((x) => x.caminho),
+        )
+        .sort((a, b) => a.localeCompare(b)),
 
       itemParaEdição: ({ emFoco }) => ({
         ...emFoco,
