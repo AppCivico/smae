@@ -186,7 +186,7 @@ iniciar();
           }"
           :disabled="!tiposDisponíveis.length"
         >
-          <option :value="0">
+          <option value="">
             Selecionar
           </option>
 
@@ -438,7 +438,7 @@ iniciar();
           }"
           :disabled="!partidosDisponíveis.length"
         >
-          <option :value="0">
+          <option value="">
             Selecionar
           </option>
 
