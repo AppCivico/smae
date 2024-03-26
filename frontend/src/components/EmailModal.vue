@@ -53,7 +53,7 @@ async function onSubmit(values) {
     resposta = await emailsStore.salvarItem(valoresAuxiliares);
     if (resposta) {
       alertStore.success(msg);
-      emailsStore.$reset();
+      // emailsStore.$reset();
       router.push({ name: "TransferenciaCronograma" });
     }
   } catch (error) {
@@ -78,7 +78,7 @@ iniciar();
     <Form
       v-slot="{ errors, isSubmitting }"
       :validation-schema="schema"
-      :initial-values="itemParaEdição.linhas[0]"
+      :initial-values="itemParaEdição?.linhas[0]"
       @submit="onSubmit"
     >
       <div class="mb2 flex flexwrap g2">
