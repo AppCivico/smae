@@ -9,6 +9,7 @@ import {
     TransferenciasRelatorioDto,
 } from './entities/transferencias.entity';
 import { TarefaService } from 'src/pp/tarefa/tarefa.service';
+import { formataSEI } from 'src/common/formata-sei';
 
 const {
     Parser,
@@ -359,7 +360,7 @@ export class TransferenciasService implements ReportableService {
                           assinatura_estado: Date2YMD.toStringOrNull(db.distribuicao_recurso_assinatura_estado),
                           vigencia: Date2YMD.toStringOrNull(db.distribuicao_recurso_vigencia),
                           conclusao_suspensiva: Date2YMD.toStringOrNull(db.distribuicao_recurso_conclusao_suspensiva),
-                          registro_sei: db.distribuicao_recurso_sei ? db.distribuicao_recurso_sei : null,
+                          registro_sei: db.distribuicao_recurso_sei ? formataSEI(db.distribuicao_recurso_sei) : null,
                       }
                     : null,
             });
