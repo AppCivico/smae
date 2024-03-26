@@ -1032,9 +1032,10 @@ export const transferenciasVoluntarias = object({
     .required(),
   cargo: mixed()
     .label('Cargo')
-    .oneOf(Object.keys(cargosDeParlamentar))
-    .transform((v) => (v === '' ? null : v))
-    .nullable(),
+    // feio, mas... Algo parece bugado no Yup e não posso atualizá-lo agora
+    .oneOf([...Object.keys(cargosDeParlamentar), null])
+    .nullable()
+    .transform((v) => (v === '' ? null : v)),
   clausula_suspensiva: boolean()
     .label('Cláusula suspensiva')
     .required(),
