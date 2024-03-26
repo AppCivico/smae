@@ -22,7 +22,7 @@ const apenasLeitura = computed(
 const nívelMáximoPermitido = computed(() => {
   const extra = tarefasStore?.extra;
   
-  return extra ? extra.portfolio?.nivel_maximo_tarefa || extra.cabecalho?.transferencia?.nivel_maximo_tarefa : 0;
+  return extra ? extra.portfolio?.nivel_maximo_tarefa || extra.cabecalho?.nivel_maximo_tarefa : 0;
 });
 
 const nívelMáximoVisível = ref(0);
