@@ -62,6 +62,9 @@ const tiposDisponíveis = computed(() => (esferaSelecionada.value
   : []));
 
 async function onSubmit(_, { controlledValues }) {
+  // necessário por causa de 🤬
+  const cargaManipulada = nulificadorTotal(controlledValues);
+
   try {
     let r;
     const msg = props.transferenciaId
