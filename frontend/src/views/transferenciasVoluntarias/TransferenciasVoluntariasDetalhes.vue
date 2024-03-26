@@ -646,13 +646,13 @@ section{
 dt {
   color: #607A9F;
   font-weight: 700;
-  font-size: 24px;
+  font-size: 1.25rem;
 }
 
 dd {
   font-weight: 400;
   color: #233B5C;
-  font-size: 20px;
+  font-size: 1rem;
   padding-top: 8px;
   margin-bottom: 15px;
 }
