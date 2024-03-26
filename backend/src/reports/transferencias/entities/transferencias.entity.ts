@@ -45,6 +45,29 @@ export class RelTransferenciasDto {
         nome: string | null;
         nome_popular: string | null;
     } | null;
+
+    distribuicao_recurso: {
+        id: number;
+        transferencia_id: number;
+        orgao_gestor_id: number;
+        objeto: string;
+        valor: number;
+        valor_total: number;
+        valor_contrapartida: number;
+        empenho: boolean;
+        programa_orcamentario_estadual: string | null;
+        programa_orcamentario_municipal: string | null;
+        dotacao: string | null;
+        proposta: string | null;
+        contrato: string | null;
+        convenio: string | null;
+        assinatura_termo_aceite: Date | null;
+        assinatura_municipio: Date | null;
+        assinatura_estado: Date | null;
+        vigencia: Date | null;
+        conclusao_suspensiva: Date | null;
+        registro_sei: string | null;
+    } | null;
 }
 
 export class TransferenciasRelatorioDto {
