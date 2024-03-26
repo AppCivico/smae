@@ -55,7 +55,7 @@ async function onSubmit(values) {
     if (resposta) {
       alertStore.success(msg);
       if (route.params.tarefaId) {
-        emailsStore.buscarItem({ tarefa_id: props.tarefaId });
+        emailsStore.buscarItem({ tarefa_id: route.params.tarefaId });
       } else if (route.params.transferenciaId) {
         emailsStore.buscarItem({transferencia_id: route.params.transferenciaId});
       }
