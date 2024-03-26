@@ -391,7 +391,7 @@ export class TransferenciasService implements ReportableService {
                 transforms: defaultTransform,
             });
             const linhas = json2csvParser.parse(
-                dados.linhas.map((r) => {
+                dados.linhas_cronograma.map((r) => {
                     return { ...r };
                 })
             );
