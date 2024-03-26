@@ -8,8 +8,8 @@ import { storeToRefs } from 'pinia';
 import { ErrorMessage, Field, Form } from 'vee-validate';
 import { useRouter } from 'vue-router';
 
-const transferenciasVoluntarias = useTransferenciasVoluntariasStore();
-const { chamadasPendentes, erro, itemParaEdição } = storeToRefs(transferenciasVoluntarias);
+const TransferenciasVoluntarias = useTransferenciasVoluntariasStore();
+const { chamadasPendentes, erro, itemParaEdição, emFoco: proximaPagina, } = storeToRefs(TransferenciasVoluntarias);
 
 const router = useRouter();
 const props = defineProps({
@@ -24,17 +24,35 @@ const alertStore = useAlertStore();
 async function onSubmit(_, { controlledValues }) {
   // necessário por causa de 🤬
   const cargaManipulada = nulificadorTotal(controlledValues);
-
-  if (await transferenciasVoluntarias.salvarItem(cargaManipulada, props.transferenciaId, true)) {
-    alertStore.success('Dados salvos com sucesso!');
-    transferenciasVoluntarias.buscarItem(props.transferenciaId);
-    router.push({ name: 'TransferenciaDistribuicaoDeRecursosEditar' });
+  try {
+    let id;
+    if (props.transferenciaId) {
+      id = await TransferenciasVoluntarias.salvarItem(cargaManipulada, props.transferenciaId, true);
+    }
+    if (id) {
+      alertStore.success('Dados salvos com sucesso!');
+      TransferenciasVoluntarias.buscarItem(props.transferenciaId);
+      if (proximaPagina.value && proximaPagina.value.pendente_preenchimento_valores) {
+        router.push({ name: 'TransferenciaDistribuicaoDeRecursosEditar' });
+      } else {
+        router.push({
+          name: 'RegistroDeTransferenciaEditar',
+          params: {
+            transferenciaId: id.id,
+          },
+        });
+      }
+    }
+  } catch (error) {
+    alertStore.error(error);
   }
 }
 
-transferenciasVoluntarias.buscarItem(props.transferenciaId);
+TransferenciasVoluntarias.buscarItem(props.transferenciaId);
 </script>
+
 <template>
+  <pre v-scrollLockDebug>proximaPagina:{{ proximaPagina?.pendente_preenchimento_valores }}</pre>
   <div class="flex spacebetween center mb2">
     <h1>Formulário de registro</h1>
     <hr class="ml2 f1">
