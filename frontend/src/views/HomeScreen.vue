@@ -29,6 +29,9 @@ async function escolher(opção) {
       // PRA-FAZER: persistir o auth.store no navegador
       localStorage.setItem('sistemaEscolhido', opção);
 
+      // em duas condições porque arrays como parâmetro da função
+      // `temPermissãoPara()` funcionam como **ou** e primeira condição é
+      // obrigatória
       if (
         authStore.temPermissãoPara('SMAE.loga_direto_na_analise')
         && authStore.temPermissãoPara([
