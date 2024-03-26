@@ -144,7 +144,7 @@ export class AvisoEmailService {
 
     async update(id: number, dto: UpdateAvisoEmailDto, user: PessoaFromJwt): Promise<RecordWithId> {
         // TODO: verificar permissões e etc. isso aqui é só o mínimo possível
-        const exists = await this.prisma.tarefaCronograma.findFirst({
+        const exists = await this.prisma.avisoEmail.findFirst({
             where: {
                 id,
             },
