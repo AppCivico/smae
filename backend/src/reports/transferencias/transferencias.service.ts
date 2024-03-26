@@ -411,7 +411,7 @@ export class TransferenciasService implements ReportableService {
                     { value: 'esfera', label: 'Esfera' },
                     { value: 'cargo', label: 'Cargo' },
                     { value: 'partido.sigla', label: 'Partido' },
-                    { value: 'parlamentar.nome_popular', label: 'Partido' },
+                    { value: 'parlamentar.nome_popular', label: 'Parlamentar' },
                     { value: 'orgao_concedente.descricao', label: 'Orgão Concedente' },
                     { value: 'distribuicao_recurso.id', label: 'ID Distribuição de Recurso' },
                     { value: 'distribuicao_recurso.orgao_gestor_id', label: 'Gestor Municipal (secretaria)' },
