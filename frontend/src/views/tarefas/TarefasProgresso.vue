@@ -6,16 +6,19 @@ import dateToField from '@/helpers/dateToField';
 import subtractDates from '@/helpers/subtractDates';
 import { useAlertStore } from '@/stores/alert.store';
 import { useTarefasStore } from '@/stores/tarefas.store.ts';
+import { useEmailsStore } from "@/stores/envioEmail.store";
 import { storeToRefs } from 'pinia';
 import {
   ErrorMessage, Field, Form,
 } from 'vee-validate';
-import { useRouter } from 'vue-router';
+import { useRouter, useRoute } from 'vue-router';
 
 const alertStore = useAlertStore();
 const tarefasStore = useTarefasStore();
 const router = useRouter();
-
+const route = useRoute();
+const emailsStore = useEmailsStore();
+const { emFoco:emailEmFoco } = storeToRefs(emailsStore);
 const {
   chamadasPendentes,
   emFoco,
@@ -123,9 +126,29 @@ async function onSubmit(_, { controlledValues: carga }) {
           </template>
         </dd>
       </div>
+      <div v-if="route.meta.prefixoParaFilhas === 'TransferenciasVoluntarias'" class="f1 mb1"  >
+        <dt class="t12 uc w700 mb05 tamarelo">Envio de e-mail?</dt>
+        <dd class="t13 dado-efetivo">
+          <div class="flex g1" v-if="emailEmFoco?.linhas[0]?.id !== undefined">
+            <span>Sim</span>
+            <router-link :to="{name: 'transferenciaTarefaEmailModal'}" title="Editar e-mail">
+              <svg width="20" height="20"><use xlink:href="#i_edit" /></svg>
+            </router-link>
+          </div>
+          <span v-else>Não</span>
+        </dd>
+      </div>
     </dl>
   </div>
-
+  <div class="flex center mb4" v-if="route.meta.prefixoParaFilhas === 'TransferenciasVoluntarias'" >
+    <router-link :to="{ name: 'transferenciaTarefaEmailModal' }" class="addlink mb1">
+      <svg width="20" height="20">
+        <use xlink:href="#i_+" />
+      </svg>
+      <span v-if="emailEmFoco?.linhas[0]?.id">Editar envio de e-mail </span>
+      <span v-else>Adicionar envio de e-mail</span>
+    </router-link>
+  </div>
   <Form
     v-if="!tarefaId || emFoco"
     v-slot="{ errors, isSubmitting, setFieldValue, values }"
@@ -318,4 +341,5 @@ async function onSubmit(_, { controlledValues: carga }) {
       {{ erro }}
     </div>
   </div>
+  <router-view />
 </template>
