@@ -7,6 +7,7 @@ import { RecordWithId } from 'src/common/dto/record-with-id.dto';
 import { DistribuicaoRecursoDetailDto, DistribuicaoRecursoDto } from './entities/distribuicao-recurso.entity';
 import { UpdateDistribuicaoRecursoDto } from './dto/update-distribuicao-recurso.dto';
 import { FilterDistribuicaoRecursoDto } from './dto/filter-distribuicao-recurso.dto';
+import { formataSEI } from 'src/common/formata-sei';
 
 type operationsRegistroSEI = {
     id?: number;
@@ -114,7 +115,17 @@ export class DistribuicaoRecursoService {
             },
         });
 
-        return rows;
+        return rows.map((r) => {
+            return {
+                ...r,
+                registros_sei: r.registros_sei.map((s) => {
+                    return {
+                        id: s.id,
+                        processo_sei: formataSEI(s.processo_sei),
+                    };
+                }),
+            };
+        });
     }
 
     async findOne(id: number, user: PessoaFromJwt): Promise<DistribuicaoRecursoDetailDto> {
@@ -160,7 +171,15 @@ export class DistribuicaoRecursoService {
         });
         if (!row) throw new HttpException('id| Distribuição de recurso não encontrada.', 404);
 
-        return row;
+        return {
+            ...row,
+            registros_sei: row.registros_sei.map((s) => {
+                return {
+                    id: s.id,
+                    processo_sei: formataSEI(s.processo_sei),
+                };
+            }),
+        };
     }
 
     async update(id: number, dto: UpdateDistribuicaoRecursoDto, user: PessoaFromJwt): Promise<RecordWithId> {
