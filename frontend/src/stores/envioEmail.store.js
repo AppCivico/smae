@@ -14,13 +14,13 @@ export const useEmailsStore = defineStore("emailsStore", {
     erro: null,
   }),
   actions: {
-    async buscarItem(id = 0, params = {}) {
+    async buscarItem( params = {}) {
       this.chamadasPendentes.emFoco = true;
       this.erro = null;
 
       try {
         const resposta = await this.requestS.get(
-          `${baseUrl}/aviso-email/${id}`,
+          `${baseUrl}/aviso-email/`, 
           params
         );
         this.emFoco = {
@@ -30,19 +30,6 @@ export const useEmailsStore = defineStore("emailsStore", {
         this.erro = erro;
       }
       this.chamadasPendentes.emFoco = false;
-    },
-
-    async buscarTudo(params) {
-      this.chamadasPendentes.lista = true;
-      this.erro = null;
-
-      try {
-        const { linhas } = await this.requestS.get(`${baseUrl}/aviso-email`,params);
-        this.lista = linhas;
-      } catch (erro) {
-        this.erro = erro;
-      }
-      this.chamadasPendentes.lista = false;
     },
 
     async excluirItem(id) {
