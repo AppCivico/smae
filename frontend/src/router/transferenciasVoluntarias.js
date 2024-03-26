@@ -258,7 +258,7 @@ export default {
                   : 'Registrar progresso'),
                 títuloParaMenu: 'Progresso',
 
-                rotaDeEscape: 'TransferenciasVoluntariasTarefasListar',
+                rotaDeEscape: 'TransferenciaCronograma',
 
                 rotasParaMigalhasDePão: [
                   'TransferenciasVoluntariasListar',
