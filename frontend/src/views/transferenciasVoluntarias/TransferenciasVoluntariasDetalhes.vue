@@ -20,34 +20,28 @@ const { lista: listaDeDistribuição } = storeToRefs(distribuicaoRecursos);
 TransferenciasVoluntarias.buscarItem(props.transferenciaId);
 distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
 </script>
-<template>
-  <div class="flex spacebetween center mb2">
-    <TítuloDePágina />
-  </div>
 
+<template>
   <pre v-scrollLockDebug>transferênciaEmFoco:{{ transferênciaEmFoco }}</pre>
   <pre v-scrollLockDebug>listaDeDistribuição:{{ listaDeDistribuição }}</pre>
 
-  <div class="flex spacebetween center mb2">
-    <h3 class="title">
+  <div class="flex spacebetween center mt2 mb1">
+    <h1>
       Identificação
-    </h3>
+    </h1>
     <hr class="ml2 f1">
     <router-link
       :to="{ name: 'TransferenciasVoluntariaEditar' }"
       title="Editar identificação"
-      class="ml2"
+      class="btn big ml2"
     >
-      <svg
-        width="20"
-        height="20"
-      ><use xlink:href="#i_edit" /></svg>
+    Editar
     </router-link>
   </div>
 
   <div>
     <div class="flex spacebetween start mb1">
-      <dl class="f1 mb3">
+      <dl class="f1">
         <dt>
           Identificador
         </dt>
@@ -55,7 +49,7 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
           {{ transferênciaEmFoco?.identificador || '-' }}
         </dd>
       </dl>
-      <dl class="f1 mb3">
+      <dl class="f1">
         <dt>
           Esfera
         </dt>
@@ -63,7 +57,7 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
           {{ transferênciaEmFoco?.esfera || '-' }}
         </dd>
       </dl>
-      <dl class="f1 mb3">
+      <dl class="f1">
         <dt>
           Tipo
         </dt>
@@ -73,7 +67,7 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
       </dl>
     </div>
     <div class="flex spacebetween start mb1">
-      <dl class="f1 mb3">
+      <dl class="f1">
         <dt>
           Interface
         </dt>
@@ -81,7 +75,7 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
           {{ transferênciaEmFoco?.interface || '-' }}
         </dd>
       </dl>
-      <dl class="f1 mb3">
+      <dl class="f1">
         <dt>
           Programa
         </dt>
@@ -89,7 +83,7 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
           {{ transferênciaEmFoco?.programa || '-' }}
         </dd>
       </dl>
-      <dl class="f1 mb3">
+      <dl class="f1">
         <dt>
           Emenda
         </dt>
@@ -99,7 +93,7 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
       </dl>
     </div>
     <div class="flex spacebetween start mb1">
-      <dl class="f1 mb3">
+      <dl class="f1">
         <dt>
           Emenda unitária
         </dt>
@@ -107,7 +101,7 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
           {{ transferênciaEmFoco?.emenda_unitaria || '-' }}
         </dd>
       </dl>
-      <dl class="f1 mb3">
+      <dl class="f1">
         <dt>
           Demanda
         </dt>
@@ -119,7 +113,7 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
     </div>
   </div>
 
-  <div class="flex spacebetween center mb2">
+  <div class="flex spacebetween center mt2 mb1">
     <h3 class="title">
       Origem
     </h3>
@@ -128,7 +122,7 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
 
   <div>
     <div class="flex spacebetween start mb1">
-      <dl class="f1 mb3">
+      <dl class="f1">
         <dt>
           Órgão concedente
         </dt>
@@ -136,7 +130,7 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
           {{ transferênciaEmFoco?.orgao_concedente?.sigla || '-' }}
         </dd>
       </dl>
-      <dl class="f1 mb3">
+      <dl class="f1">
         <dt>
           Secretaria do órgão concedente
         </dt>
@@ -147,7 +141,7 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
       <dl class="f1 mb3" />
     </div>
     <div class="flex spacebetween start mb1">
-      <dl class="f1 mb3">
+      <dl class="f1">
         <dt>
           Parlamentar
         </dt>
@@ -155,7 +149,7 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
           {{ transferênciaEmFoco?.parlamentar?.nome || '-' }}
         </dd>
       </dl>
-      <dl class="f1 mb3">
+      <dl class="f1">
         <dt>
           Partido
         </dt>
@@ -163,7 +157,7 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
           {{ transferênciaEmFoco?.partido?.sigla || '-' }}
         </dd>
       </dl>
-      <dl class="f1 mb3">
+      <dl class="f1">
         <dt>
           cargo
         </dt>
@@ -174,7 +168,7 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
     </div>
   </div>
 
-  <div class="flex spacebetween center mb2">
+  <div class="flex spacebetween center mt2 mb1">
     <h3 class="title">
       Transferência
     </h3>
@@ -184,7 +178,7 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
   <div>
     <div>
       <div class="flex spacebetween start mb1">
-        <dl class="f1 mb3">
+        <dl class="f1">
           <dt>
             Ano
           </dt>
@@ -192,7 +186,7 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
             {{ transferênciaEmFoco?.ano || '-' }}
           </dd>
         </dl>
-        <dl class="f1 mb3">
+        <dl class="f1">
           <dt>
             Nome do Programa
           </dt>
@@ -202,8 +196,8 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
         </dl>
         <dl class="f1 mb3" />
       </div>
-      <div class="mb1">
-        <dl class="f1 mb3">
+      <div>
+        <dl class="f1 mb1">
           <dt>
             Objeto/Empreendimento
           </dt>
@@ -211,7 +205,7 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
             {{ transferênciaEmFoco?.objeto || '-' }}
           </dd>
         </dl>
-        <dl class="f1 mb3">
+        <dl class="f1 mb1">
           <dt>
             Detalhamento
           </dt>
@@ -223,8 +217,8 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
     </div>
 
     <div>
-      <div class="flex spacebetween end mb1">
-        <dl class="f1 mb3">
+      <div class="flex spacebetween start">
+        <dl class="f1 mb1">
           <dt>
             Crítico
           </dt>
@@ -232,7 +226,7 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
             {{ transferênciaEmFoco?.critico ? 'Sim' : 'Não' }}
           </dd>
         </dl>
-        <dl class="f1 mb3">
+        <dl class="f1">
           <dt>
             Cláusula suspensiva
           </dt>
@@ -240,7 +234,7 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
             {{ transferênciaEmFoco?.clausula_suspensiva ? 'Sim' : 'Não' }}
           </dd>
         </dl>
-        <dl class="f1 mb3">
+        <dl class="f1">
           <dt>
             Data de vencimento
           </dt>
@@ -254,7 +248,7 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
     </div>
 
     <div>
-      <dl class="f1 mb3">
+      <dl class="f1 mb1">
         <dt>
           normativa
         </dt>
@@ -262,7 +256,7 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
           {{ transferênciaEmFoco?.normativa || '-' }}
         </dd>
       </dl>
-      <dl class="f1 mb3">
+      <dl class="f1 mb1">
         <dt>
           observacoes
         </dt>
@@ -273,26 +267,23 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
     </div>
   </div>
 
-  <div class="flex spacebetween center mb2">
-    <h3 class="title">
+  <div class="flex spacebetween center mt2 mb1">
+    <h1>
       Recurso Financeiro
-    </h3>
+    </h1>
     <hr class="ml2 f1">
     <router-link
       :to="{ name: 'RegistroDeTransferenciaEditar' }"
       title="Editar recursos financeiros"
-      class="ml2"
+      class="btn big ml2"
     >
-      <svg
-        width="20"
-        height="20"
-      ><use xlink:href="#i_edit" /></svg>
+      Editar
     </router-link>
   </div>
 
   <div class="flex g2 mb3 spacebetween">
     <div class="grid valores f1">
-      <dl class="mb3">
+      <dl class="mb1">
         <dt>
           valor
         </dt>
@@ -300,7 +291,7 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
           {{ transferênciaEmFoco?.valor || '-' }}
         </dd>
       </dl>
-      <dl class="mb3">
+      <dl class="mb1">
         <dt>
           Valor contra-partida
         </dt>
@@ -308,7 +299,7 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
           {{ transferênciaEmFoco?.valor_contrapartida || '-' }}
         </dd>
       </dl>
-      <dl class="mb3">
+      <dl class="mb1">
         <dt>
           Valor total
         </dt>
@@ -318,7 +309,7 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
       </dl>
     </div>
     <div class="grid f1">
-      <dl class="mb3">
+      <dl class="mb1">
         <dt>
           Empenho
         </dt>
@@ -326,7 +317,7 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
           {{ transferênciaEmFoco?.empenho ? 'Sim' : 'Não' }}
         </dd>
       </dl>
-      <dl class="mb3">
+      <dl class="mb1">
         <dt>
           Ordenador de despesas
         </dt>
@@ -334,7 +325,7 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
           {{ transferênciaEmFoco?.ordenador_despesa || '-' }}
         </dd>
       </dl>
-      <dl class="mb3">
+      <dl class="mb1">
         <dt>
           Gestor municipal do contrato
         </dt>
@@ -344,7 +335,7 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
       </dl>
     </div>
     <div class="grid f1">
-      <dl class="mb3">
+      <dl class="mb1">
         <dt>
           Dotação
         </dt>
@@ -355,14 +346,14 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
     </div>
   </div>
 
-  <div class="flex spacebetween center mb3">
+  <div class="flex spacebetween center mb1 mt2">
     <h3 class="title">
       Dados Bancários de Aceite
     </h3>
     <hr class="ml2 f1">
   </div>
 
-  <div class="flex spacebetween start mb3">
+  <div class="flex spacebetween start mb1">
     <dl class="f1">
       <dt>
         Banco
@@ -389,14 +380,14 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
     </dl>
   </div>
 
-  <div class="flex spacebetween center mb3">
+  <div class="flex spacebetween center mb1 mt2">
     <h3 class="title">
       Dados Bancários Secretaria Fim
     </h3>
     <hr class="ml2 f1">
   </div>
 
-  <div class="flex spacebetween start mb3">
+  <div class="flex spacebetween start mb1">
     <dl class="f1">
       <dt>
         Banco
@@ -423,20 +414,17 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
     </dl>
   </div>
 
-  <div class="flex spacebetween center mb3">
-    <h3 class="title">
+  <div class="flex spacebetween center mb1 mt2">
+    <h1>
       Distribuição de Recursos
-    </h3>
+    </h1>
     <hr class="ml2 f1">
     <router-link
       :to="{ name: 'TransferenciaDistribuicaoDeRecursosEditar' }"
       title="Editar distribuição de recursos"
-      class="ml2"
+      class="btn big ml2"
     >
-      <svg
-        width="20"
-        height="20"
-      ><use xlink:href="#i_edit" /></svg>
+      Editar
     </router-link>
   </div>
 
@@ -445,8 +433,8 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
     :key="distribuição.id"
     class="mb2"
   >
-    <div class="mb2">
-      <dl class="mb3">
+    <div class="mb1">
+      <dl class="mb1">
         <dt>
           Gestor municipal
         </dt>
@@ -454,7 +442,7 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
           {{ distribuição.gestor_contrato || '-' }}
         </dd>
       </dl>
-      <dl class="f1 mb3">
+      <dl class="f1">
         <dt>
           Objeto/Empreendimento
         </dt>
@@ -464,9 +452,9 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
       </dl>
     </div>
 
-    <div class="flex g2 mb3 spacebetween">
+    <div class="flex g2 mb2  spacebetween">
       <div class="grid valores f1">
-        <dl class="mb3">
+        <dl class="mb1">
           <dt>
             Valor
           </dt>
@@ -474,7 +462,7 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
             {{ distribuição.valor || '-' }}
           </dd>
         </dl>
-        <dl class="mb3">
+        <dl class="mb1">
           <dt>
             Valor contra-partida
           </dt>
@@ -482,7 +470,7 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
             {{ distribuição.valor_contrapartida || '-' }}
           </dd>
         </dl>
-        <dl class="mb3">
+        <dl class="mb1">
           <dt>
             Valor total
           </dt>
@@ -492,7 +480,7 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
         </dl>
       </div>
       <div class="grid f1">
-        <dl class="mb3">
+        <dl class="mb1">
           <dt>
             Empenho
           </dt>
@@ -500,7 +488,7 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
             {{ distribuição.empenho ? 'Sim' : 'Não' }}
           </dd>
         </dl>
-        <dl class="mb3">
+        <dl class="mb1">
           <dt>
             Programa orçamentário municipal
           </dt>
@@ -508,7 +496,7 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
             {{ distribuição.programa_orcamentario_municipal || '-' }}
           </dd>
         </dl>
-        <dl class="mb3">
+        <dl class="mb1">
           <dt>
             Programa orçamentário estadual
           </dt>
@@ -518,7 +506,7 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
         </dl>
       </div>
       <div class="grid f1">
-        <dl class="mb3">
+        <dl class="mb1">
           <dt>
             Dotação orçamentária
           </dt>
@@ -530,7 +518,7 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
     </div>
 
     <div>
-      <div class="flex spacebetween start mb4">
+      <div class="flex spacebetween start mb1">
         <dl class="f1">
           <dt>
             Número SEI
@@ -568,7 +556,7 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
           </dd>
         </dl>
       </div>
-      <div class="flex spacebetween start mb4">
+      <div class="flex spacebetween start mb1">
         <dl class="f1">
           <dt>
             Número do contrato
@@ -607,7 +595,7 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
       <hr class="ml2 f1">
     </div>
 
-    <div class="flex spacebetween start mb4">
+    <div class="flex spacebetween start mb2">
       <dl class="f1">
         <dt>
           Data assinatura do termo de aceite
@@ -637,6 +625,11 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
 </template>
 
 <style scoped lang="less">
+.title{
+    color: #607a9f;
+    font-weight: 700;
+    font-size: 1.25rem;
+}
 section{
   box-shadow: 0px 4px 16px 0px rgba(21, 39, 65, 0.1);
   padding: 1rem 2rem 4rem 2rem;
@@ -653,8 +646,7 @@ dd {
   font-weight: 400;
   color: #233B5C;
   font-size: 1rem;
-  padding-top: 8px;
-  margin-bottom: 15px;
+  padding-top: 4px;
 }
 
 .valores {
