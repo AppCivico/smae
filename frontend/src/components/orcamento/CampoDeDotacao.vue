@@ -42,7 +42,9 @@ const emit = defineEmits([
 ]);
 
 const name = toRef(props, 'name');
-const { errors, handleChange, validate } = useField(name, schema, {
+const {
+  errors, handleChange, validate, meta,
+} = useField(name, schema, {
   initialValue: props.value,
 });
 
@@ -619,6 +621,7 @@ watch(valorDoComplemento, (novoValor) => {
     <button
       class="btn outline bgnone tcprimary"
       type="button"
+      :disabled="!meta?.valid"
       @click="validarDota()"
     >
       Validar via SOF
