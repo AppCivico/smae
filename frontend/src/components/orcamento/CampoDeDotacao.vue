@@ -207,7 +207,7 @@ const dotaçãoEComplemento = computed({
     }
 
     if (valorLimpo.length >= 31) {
-      complementoAcompanhamento.value = valorLimpo.slice(31, 36);
+      complementoAcompanhamento.value = valorLimpo.slice(31, 35);
     } else {
       complementoAcompanhamento.value = '';
     }
