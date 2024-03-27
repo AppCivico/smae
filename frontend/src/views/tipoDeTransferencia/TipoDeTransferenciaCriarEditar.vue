@@ -82,7 +82,7 @@ if (props.tipoId) {
 
     <div class="flex g2 mb1">
       <div class="f1">
-        <label class="label">Tipo <span class="tvermelho">*</span></label>
+        <label class="label">Tipo<span class="tvermelho">*</span></label>
         <Field name="categoria"
           as="select"
           class="inputtext light mb1"
@@ -103,7 +103,7 @@ if (props.tipoId) {
       </div>
 
       <div class="f1">
-        <label class="label">Esfera <span class="tvermelho">*</span></label>
+        <label class="label">Esfera<span class="tvermelho">*</span></label>
         <Field name="esfera"
           as="select"
           class="inputtext light mb1"
@@ -114,7 +114,7 @@ if (props.tipoId) {
           <option value="Federal">
             Federal
           </option>
-          <option value="Estadual ">
+          <option value="Estadual">
             Estadual
           </option>
         </Field>
