@@ -12,8 +12,10 @@ import { usePartidosStore } from '@/stores/partidos.store';
 import { useTipoDeTransferenciaStore } from '@/stores/tipoDeTransferencia.store';
 import { useTransferenciasVoluntariasStore } from '@/stores/transferenciasVoluntarias.store';
 import { storeToRefs } from 'pinia';
-import { ErrorMessage, Field, Form } from 'vee-validate';
-import { computed, ref } from 'vue';
+import {
+  ErrorMessage, Field, useForm, useIsFormDirty,
+} from 'vee-validate';
+import { computed, ref, watch } from 'vue';
 import { useRouter } from 'vue-router';
 
 const TransferenciasVoluntarias = useTransferenciasVoluntariasStore();
@@ -41,27 +43,33 @@ const props = defineProps({
 
 const alertStore = useAlertStore();
 
+const {
+  errors, handleSubmit, isSubmitting, resetForm, setFieldValue, values,
+} = useForm({
+  initialValues: itemParaEdição,
+  validationSchema: schema,
+});
 const esferaSelecionada = ref('');
 const parlamentarSelecionado = ref(0);
 
-const cargosDisponíveis = computed(() => (!parlamentarSelecionado.value
+const cargosDisponíveis = computed(() => (!values.parlamentar_id
   ? []
   : parlamentaresPorId.value[
-    parlamentarSelecionado.value
+    values.parlamentar_id
   ]?.mandatos?.map((x) => cargosDeParlamentar[x.cargo]) || []
 ));
 
-const partidosDisponíveis = computed(() => (!parlamentarSelecionado.value
+const partidosDisponíveis = computed(() => (!values.parlamentar_id
   ? []
   : parlamentaresPorId
-    .value[parlamentarSelecionado.value]?.mandatos?.map((x) => x.partido_atual) || []
+    .value[values.parlamentar_id]?.mandatos?.map((x) => x.partido_atual) || []
 ));
 
-const tiposDisponíveis = computed(() => (esferaSelecionada.value
-  ? tipoTransferenciaComoLista.value.filter((x) => x.esfera === esferaSelecionada.value)
+const tiposDisponíveis = computed(() => (values.esfera
+  ? tipoTransferenciaComoLista.value.filter((x) => x.esfera === values.esfera)
   : []));
 
-async function onSubmit(_, { controlledValues }) {
+const onSubmit = handleSubmit.withControlled(async (controlledValues) => {
   // necessário por causa de 🤬
   const cargaManipulada = nulificadorTotal(controlledValues);
 
@@ -90,7 +98,9 @@ async function onSubmit(_, { controlledValues }) {
   } catch (error) {
     alertStore.error(error);
   }
-}
+});
+
+const formulárioSujo = useIsFormDirty();
 
 function iniciar() {
   if (props.transferenciaId) {
@@ -102,14 +112,20 @@ function iniciar() {
   TipoDeTransferenciaStore.buscarTudo();
   partidoStore.buscarTudo();
 }
-iniciar();
-</script>
 
+iniciar();
+
+watch(itemParaEdição, (novosValores) => {
+  resetForm({ values: novosValores });
+});
+</script>
 <template>
   <div class="flex spacebetween center mb2">
     <TítuloDePágina />
     <hr class="ml2 f1">
-    <CheckClose />
+    <CheckClose
+      :formulário-sujo="formulárioSujo"
+    />
   </div>
 
   <div class="flex spacebetween center mb1">
@@ -119,12 +135,7 @@ iniciar();
     <hr class="ml2 f1">
   </div>
 
-  <Form
-    v-slot="{ errors, isSubmitting, setFieldValue }"
-    :validation-schema="schema"
-    :initial-values="itemParaEdição"
-    @submit="onSubmit"
-  >
+  <form @submit.prevent="onSubmit">
     <div class="flex g2 mb1">
       <div class="f1">
         <LabelFromYup
@@ -671,7 +682,7 @@ iniciar();
       </button>
       <hr class="ml2 f1">
     </div>
-  </Form>
+  </form>
 
   <span
     v-if="chamadasPendentes?.emFoco"
