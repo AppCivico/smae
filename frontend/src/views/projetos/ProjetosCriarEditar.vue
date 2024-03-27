@@ -1449,34 +1449,34 @@ watch(emFoco, () => {
       <div class="f1 mb1">
         <LabelFromYup
           :schema="schema"
-          name="secretario_executivo"
+          name="secretario_responsavel"
         />
         <Field
-          name="secretario_executivo"
+          name="secretario_responsavel"
           type="text"
           class="inputtext light mb1"
           :disabled="!emFoco?.permissoes?.campo_secretario_executivo"
         />
         <ErrorMessage
           class="error-msg mb1"
-          name="secretario_executivo"
+          name="secretario_responsavel"
         />
       </div>
 
       <div class="f1 mb1">
         <LabelFromYup
           :schema="schema"
-          name="secretario_responsavel"
+          name="secretario_executivo"
         />
         <Field
-          name="secretario_responsavel"
+          name="secretario_executivo"
           type="text"
           class="inputtext light mb1"
           :disabled="!emFoco?.permissoes?.campo_secretario_responsavel"
         />
         <ErrorMessage
           class="error-msg mb1"
-          name="secretario_responsavel"
+          name="secretario_executivo"
         />
       </div>
     </div>
