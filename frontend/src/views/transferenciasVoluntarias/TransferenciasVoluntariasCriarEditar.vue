@@ -65,6 +65,10 @@ const partidosDisponíveis = computed(() => (!values.parlamentar_id
     .value[values.parlamentar_id]?.mandatos?.map((x) => x.partido_atual) || []
 ));
 
+const outrosPartidos = computed(() => (
+  partidoComoLista.value.filter((x) => !partidosDisponíveis.value.find((y) => y.id === x.id)) || []
+));
+
 const tiposDisponíveis = computed(() => (values.esfera
   ? tipoTransferenciaComoLista.value.filter((x) => x.esfera === values.esfera)
   : []));
@@ -443,7 +447,7 @@ watch(itemParaEdição, (novosValores) => {
             error: errors.partido_id,
             loading: partidoStore.chamadasPendentes?.lista,
           }"
-          :disabled="!partidosDisponíveis.length"
+          :disabled="!partidoComoLista.length"
         >
           <option value="">
             Selecionar
@@ -456,6 +460,16 @@ watch(itemParaEdição, (novosValores) => {
           >
             {{ item.nome }}
           </option>
+
+          <optgroup label="todos os partidos">
+            <option
+              v-for="item in outrosPartidos"
+              :key="item"
+              :value="item.id"
+            >
+              {{ item.nome }}
+            </option>
+          </optgroup>
         </Field>
         <ErrorMessage
           name="partido_id"
