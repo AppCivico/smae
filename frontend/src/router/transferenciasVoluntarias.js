@@ -35,7 +35,7 @@ const rotasParaMenuSecundário = [
 ];
 
 export default {
-  path: '/trasferencias-voluntarias',
+  path: '/transferencias-voluntarias',
   component: TransferenciasVoluntariasRaiz,
   meta: {
     título: 'Transfêrencias Voluntarias',
@@ -65,7 +65,7 @@ export default {
     },
     {
       name: 'TransferenciaDistribuicaoDeRecursosEditar',
-      path: ':transferenciaId/transferenciaDistribuicaoDeRecursosEditar',
+      path: ':transferenciaId/distribuicao-de-recursos',
       component: TransferenciaDistribuicaoDeRecursosCriarEditar, //Dev - teste
       props: ({ params }) => ({
         ...params,
@@ -78,7 +78,7 @@ export default {
     },
     {
       name: 'RegistroDeTransferenciaEditar',
-      path: ':transferenciaId/registroDeTransferenciaEditar',
+      path: ':transferenciaId/registro',
       component: RegistroDeTransferenciaCriarEditar,
       props: ({ params }) => ({
         ...params,
@@ -91,7 +91,7 @@ export default {
     },
     {
       name: 'TransferenciasVoluntariasDetalhes',
-      path: ':transferenciaId/transferenciasVoluntariasDetalhes',
+      path: ':transferenciaId/detalhes',
       component: TransferenciasVoluntariasDetalhes,
       props: ({ params }) => ({
         ...params,
