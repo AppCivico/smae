@@ -1,5 +1,7 @@
 <script setup>
 import { tipoDeTransferencia as schema } from '@/consts/formSchemas';
+import esferasDeTransferencia from '@/consts/esferasDeTransferencia';
+import categoriaDeTransferencia from '@/consts/categoriaDeTransferencia';
 import { useAlertStore } from '@/stores/alert.store';
 import { useTipoDeTransferenciaStore } from '@/stores/tipoDeTransferencia.store';
 import { storeToRefs } from 'pinia';
@@ -82,40 +84,37 @@ if (props.tipoId) {
 
     <div class="flex g2 mb1">
       <div class="f1">
-        <label class="label">Tipo<span class="tvermelho">*</span></label>
-        <Field name="categoria"
-          as="select"
-          class="inputtext light mb1"
-          :class="{ 'error': errors.categoria }">
+        <LabelFromYup name="categoria" :schema="schema"/>
+        <Field
+          name="categoria" as="select" class="inputtext light mb1" :class="{ 'error': errors.categoria }">
           <option value="">
             Selecionar
           </option>
-          <option value="Discricionaria">
-            Discricionárias dos Ministérios/Secretarias
-          </option>
-          <option value="Impositiva">
-            Impositivas
+          <option
+            v-for="item in Object.values(categoriaDeTransferencia)"
+            :key="item.valor"
+            :value="item.valor"
+          >
+            {{ item.nome }}
           </option>
         </Field>
         <div class="error-msg">
           {{ errors.categoria }}
         </div>
       </div>
-
       <div class="f1">
-        <label class="label">Esfera<span class="tvermelho">*</span></label>
-        <Field name="esfera"
-          as="select"
-          class="inputtext light mb1"
-          :class="{ 'error': errors.esfera }">
+        <LabelFromYup name="esfera" :schema="schema"/>
+        <Field
+          name="esfera" as="select" class="inputtext light mb1" :class="{ 'error': errors.esfera }">
           <option value="">
             Selecionar
           </option>
-          <option value="Federal">
-            Federal
-          </option>
-          <option value="Estadual">
-            Estadual
+          <option
+            v-for="item in Object.values(esferasDeTransferencia)"
+            :key="item.valor"
+            :value="item.valor"
+          >
+            {{ item.nome }}
           </option>
         </Field>
         <div class="error-msg">
