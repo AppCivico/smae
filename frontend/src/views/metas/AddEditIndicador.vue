@@ -688,6 +688,7 @@ export default {
     </template>
 
     <EnvelopeDeAbas
+      v-if="indicador_id"
       :meta-dados-por-id="dadosExtrasDeAbas"
       class="mt2 mb2"
     >
