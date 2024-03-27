@@ -879,11 +879,11 @@ export const tipoDeTransferencia = object({
   categoria: mixed()
     .label('Tipo')
     .required()
-    .oneOf([...Object.keys(categoriaDeTransferencia), null]),
+    .oneOf([...Object.keys(categoriaDeTransferencia)]),
   esfera: mixed()
     .label('Esfera')
     .required()
-    .oneOf([...Object.keys(esferasDeTransferencia), null]),
+    .oneOf([...Object.keys(esferasDeTransferencia)]),
 });
 
 export const transferenciaDistribuicaoDeRecursos = object({
