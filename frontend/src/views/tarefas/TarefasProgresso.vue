@@ -58,7 +58,6 @@ async function onSubmit(_, { controlledValues: carga }) {
   }
 }
 
-// tem que ficar assim
 async function iniciar() {
   emailsStore.buscarItem({ tarefa_id: props.tarefaId });
 }
