@@ -1,5 +1,6 @@
 /* eslint-disable no-template-curly-in-string */
 import cargosDeParlamentar from '@/consts/cargosDeParlamentar';
+import categoriaDeTransferencia from '@/consts/categoriaDeTransferencia';
 import esferasDeTransferencia from '@/consts/esferasDeTransferencia';
 import estadosDoBrasil from '@/consts/estadosDoBrasil';
 import interfacesDeTransferências from '@/consts/interfacesDeTransferências';
@@ -875,10 +876,11 @@ export const tipoDeTransferencia = object({
   nome: string()
     .label('Nome')
     .required(),
-  categoria: string()
+  categoria: mixed()
     .label('Tipo')
-    .required(),
-  esfera: string()
+    .required()
+    .oneOf([...Object.keys(categoriaDeTransferencia), null]),
+  esfera: mixed()
     .label('Esfera')
     .required()
     .oneOf([...Object.keys(esferasDeTransferencia), null]),
@@ -1053,7 +1055,7 @@ export const transferenciasVoluntarias = object({
     .max(250)
     .min(1)
     .nullable(),
-  esfera: string()
+  esfera: mixed()
     .label('Esfera')
     .nullable()
     .required()
