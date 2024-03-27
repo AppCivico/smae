@@ -120,10 +120,70 @@ watch(órgãoEUnidadeSelecionados, (novoValor) => {
 <template>
   <div class="mb2">
     <div>
-      <header>
-        <h3 class="mb1 w700">
-          {{ config.ano_referencia }}
-        </h3>
+      <header class="flex spacebetween center">
+        <h3 class=" w700 mb0">{{ config.ano_referencia }}</h3>
+        <div >
+          <div
+            v-if="config.execucao_disponivel || Array.isArray($route.meta?.rotasParaAdição)"
+            class="dropbtn"
+          >
+            <span class="addlink"><svg
+              width="20"
+              height="20"
+            ><use xlink:href="#i_+" /></svg> <span>Informar execução orçamentária</span></span>
+            <ul class="tl">
+              <template v-if="$route.meta?.rotasParaAdição?.length">
+                <li
+                  v-for="item, i in $route.meta.rotasParaAdição"
+                  :key="i"
+                >
+                  <router-link :to="{ name: item.nome, params: { ano } }">
+                    {{ item.texto }}
+                  </router-link>
+                </li>
+              </template>
+              <template v-else>
+                <li>
+                  <router-link
+                    :to="{
+                      path: `${parentlink}/orcamento/realizado/${ano}/dotacao`,
+                      query: $route.query
+                    }"
+                  >
+                    Dotação
+                  </router-link>
+                </li>
+                <li>
+                  <router-link
+                    :to="{
+                      path: `${parentlink}/orcamento/realizado/${ano}/processo`,
+                      query: $route.query
+                    }"
+                  >
+                    Processo
+                  </router-link>
+                </li>
+                <li>
+                  <router-link
+                    :to="{
+                      path: `${parentlink}/orcamento/realizado/${ano}/nota`,
+                      query: $route.query
+                    }"
+                  >
+                    Nota de empenho
+                  </router-link>
+                </li>
+              </template>
+            </ul>
+          </div>
+        <span
+          v-else
+          class="addlink disabled mt1 mb1"
+        ><svg
+          width="20"
+          height="20"
+        ><use xlink:href="#i_+" /></svg> <span>Informar execução orçamentária</span></span>
+        </div>
       </header>
 
       <FiltroPorOrgaoEUnidade
@@ -339,68 +399,6 @@ watch(órgãoEUnidadeSelecionados, (novoValor) => {
           </template>
         </template>
       </table>
-      <div class="flex center justifycenter">
-        <div
-          v-if="config.execucao_disponivel || Array.isArray($route.meta?.rotasParaAdição)"
-          class="ml2 dropbtn"
-        >
-          <span class="addlink mt1 mb1"><svg
-            width="20"
-            height="20"
-          ><use xlink:href="#i_+" /></svg> <span>Informar execução orçamentária</span></span>
-          <ul class="tl">
-            <template v-if="$route.meta?.rotasParaAdição?.length">
-              <li
-                v-for="item, i in $route.meta.rotasParaAdição"
-                :key="i"
-              >
-                <router-link :to="{ name: item.nome, params: { ano } }">
-                  {{ item.texto }}
-                </router-link>
-              </li>
-            </template>
-            <template v-else>
-              <li>
-                <router-link
-                  :to="{
-                    path: `${parentlink}/orcamento/realizado/${ano}/dotacao`,
-                    query: $route.query
-                  }"
-                >
-                  Dotação
-                </router-link>
-              </li>
-              <li>
-                <router-link
-                  :to="{
-                    path: `${parentlink}/orcamento/realizado/${ano}/processo`,
-                    query: $route.query
-                  }"
-                >
-                  Processo
-                </router-link>
-              </li>
-              <li>
-                <router-link
-                  :to="{
-                    path: `${parentlink}/orcamento/realizado/${ano}/nota`,
-                    query: $route.query
-                  }"
-                >
-                  Nota de empenho
-                </router-link>
-              </li>
-            </template>
-          </ul>
-        </div>
-        <span
-          v-else
-          class="addlink disabled mt1 mb1"
-        ><svg
-          width="20"
-          height="20"
-        ><use xlink:href="#i_+" /></svg> <span>Informar execução orçamentária</span></span>
-      </div>
     </div>
   </div>
 </template>
