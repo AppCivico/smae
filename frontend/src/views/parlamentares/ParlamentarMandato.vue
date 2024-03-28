@@ -449,7 +449,7 @@ watch(mandatoParaEdição, (novoValor) => {
             type="text"
             class="inputtext light mb1"
             maxlength="15"
-            data-maska="(##) #####-####'"
+            data-maska="(##) #####-####"
           />
           <ErrorMessage
             class="error-msg"
