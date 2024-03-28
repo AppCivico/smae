@@ -3922,6 +3922,7 @@ enum task_type {
     echo
     refresh_mv
     refresh_meta
+    aviso_email
 }
 
 enum task_status {
@@ -4815,6 +4816,11 @@ model AvisoEmail {
     recorrencia_dias Int @default(0)
 
     ativo Boolean
+
+    executou_em    DateTime @default(now()) @db.Date
+    executou_em_ts DateTime @default(now())
+
+    ultimo_envio_em DateTime?
 
     AvisoEmailDisparos AvisoEmailDisparos[]
 
