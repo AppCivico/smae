@@ -20,7 +20,7 @@ export class ProjetoDto {
     codigo: string | null;
     portfolio: PortIdTituloModeloClonagemDto;
     portfolios_compartilhados: IdTituloDto[];
-    geolocalizacao: GeolocalizacaoDto[]
+    geolocalizacao: GeolocalizacaoDto[];
 }
 
 export class ListProjetoDto {
@@ -118,7 +118,7 @@ export class IdTituloNivelMaxRegDto {
 export class PortIdTituloModeloClonagemDto {
     id: number;
     titulo: string;
-    modelo_clonagem: boolean
+    modelo_clonagem: boolean;
 }
 
 export class ProjetoEquipeItemDto {
@@ -131,7 +131,7 @@ export class ProjetoDetailDto {
     meta_id: number | null;
     iniciativa_id: number | null;
     atividade_id: number | null;
-    projeto_etapa_id: number | null;
+    projeto_etapa: IdDesc | null;
     nome: string;
     /**
      * @example "EmAcompanhamento"
@@ -227,7 +227,7 @@ export class ProjetoDetailDto {
     logradouro_numero: string | null;
     logradouro_cep: string | null;
 
-    geolocalizacao: GeolocalizacaoDto[]
+    geolocalizacao: GeolocalizacaoDto[];
 }
 
 export class ProjetoMVPDto extends PickType(ProjetoDetailDto, ['id', 'portfolio_id']) {}
