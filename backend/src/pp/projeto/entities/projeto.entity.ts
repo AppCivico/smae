@@ -131,6 +131,7 @@ export class ProjetoDetailDto {
     meta_id: number | null;
     iniciativa_id: number | null;
     atividade_id: number | null;
+    projeto_etapa_id: number | null;
     nome: string;
     /**
      * @example "EmAcompanhamento"
