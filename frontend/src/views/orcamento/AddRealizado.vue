@@ -41,7 +41,7 @@ const currentEdit = ref({
 });
 const dota = ref('');
 const dotação = ref('');
-const dotaçãoComComplemento = ref('84.22.10.304.3003.2.522.33903900.00.1.234.5678.9');
+const dotaçãoComComplemento = ref('');
 const respostasof = ref({});
 const complemento = ref('');
 
