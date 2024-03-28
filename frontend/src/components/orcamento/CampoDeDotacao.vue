@@ -11,14 +11,15 @@ import {
   computed, ref, toRef, watch,
 } from 'vue';
 import { useRoute } from 'vue-router';
-
+// PRA-FAZER: preenchimento inicial dos campos de parciais
 const props = defineProps({
   complemento: {
-    type: [
-      String,
-      Boolean,
-    ],
-    default: false,
+    type: String,
+    default: '',
+  },
+  dotação: {
+    type: String,
+    default: '',
   },
   modelValue: {
     type: String,
@@ -31,13 +32,14 @@ const props = defineProps({
   // necessária para que o vee-validate não se perca
   name: {
     type: String,
-    default: 'dotacao',
+    default: 'dotacao_cheia',
   },
 });
 
 const emit = defineEmits([
   'update:modelValue',
   'update:complemento',
+  'update:dotação',
   'update:respostasof',
 ]);
 
@@ -131,10 +133,12 @@ const valorDoComplemento = computed(() => {
   return valor;
 });
 
+const dotaçãoCheia = computed(() => (valorDoComplemento.value
+  ? `${valorDaDotação.value}.${valorDoComplemento.value}`
+  : valorDaDotação.value));
+
 const dotaçãoEComplemento = computed({
-  get: () => (props.complemento
-    ? `${props.modelValue}.${props.complemento}`
-    : props.modelValue),
+  get: () => props.modelValue,
   set(valor) {
     let valorLimpo = String(valor).replace(/([^0-9*])/g, '');
 
@@ -254,13 +258,16 @@ if (!DotaçãoSegmentos.value[ano]?.atualizado_em && !chamadasPendentes.value.se
 }
 
 watch(valorDaDotação, (novoValor) => {
-  handleChange(novoValor);
-  emit('update:modelValue', novoValor);
-}, { immediate: true });
+  handleChange(dotaçãoCheia.value);
+  emit('update:modelValue', dotaçãoCheia.value);
+  emit('update:dotação', novoValor);
+});
 
 watch(valorDoComplemento, (novoValor) => {
+  handleChange(dotaçãoCheia.value);
+  emit('update:modelValue', dotaçãoCheia.value);
   emit('update:complemento', novoValor);
-}, { immediate: true });
+});
 </script>
 <template>
   <div class="flex flexwrap center g2">
@@ -617,6 +624,9 @@ watch(valorDoComplemento, (novoValor) => {
       </div>
     </div>
   </template>
+
+  <FormErrorsList :errors="errors" />
+
   <div class="tc mb2">
     <button
       class="btn outline bgnone tcprimary"
