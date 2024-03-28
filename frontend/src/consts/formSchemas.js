@@ -846,15 +846,6 @@ export const pessoaNaEquipeDeParlamentar = object({
     .email()
     .label('Email')
     .required(),
-  mandato_id: number()
-    .label('Mandato')
-    .when('tipo', (tipo, field) => (tipo !== 'Assessor'
-      ? field
-        .min(1)
-        .required()
-      : field
-        .nullable()
-    )),
   nome: string()
     .label('Nome')
     .required(),
