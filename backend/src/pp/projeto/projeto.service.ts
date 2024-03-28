@@ -971,8 +971,12 @@ export class ProjetoService {
 
                 selecionado_em: true,
                 em_planejamento_em: true,
-                projeto_etapa_id: true,
-
+                projeto_etapa: {
+                    select: {
+                        id: true,
+                        descricao: true,
+                    }
+                },
                 ano_orcamento: true,
                 logradouro_tipo: true,
                 logradouro_nome: true,
