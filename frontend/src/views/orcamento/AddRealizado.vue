@@ -35,8 +35,13 @@ const { OrcamentoRealizado } = storeToRefs(OrcamentosStore);
 const currentEdit = ref({
   itens: [],
   location: '',
+  dotacao: '',
+  dotacao_complemento: '',
+  ano_referencia: ano,
 });
 const dota = ref('');
+const dotação = ref('');
+const dotaçãoComComplemento = ref('84.22.10.304.3003.2.522.33903900.00.1.234.5678.9');
 const respostasof = ref({});
 const complemento = ref('');
 
@@ -49,16 +54,17 @@ const {
 
 const onSubmit = handleSubmit.withControlled(async () => {
   try {
-    const carga = values;
+    const carga = { ...values };
 
-    carga.ano_referencia = Number(ano);
     /* exemplo:
 84.22.10.304.3003.2.522.33903900.00.1.111.1111.1
 dotação: 84.22.10.304.3003.2.522.33903900.00
 complemento: 1.111.1111.1
 */
-    carga.dotacao_complemento = complemento.value;
-    carga.dotacao = dota.value.split('.').map((x) => (x.indexOf('*') !== -1 ? '*' : x)).join('.');
+    // Gambiarra porque não tenho tempo de refazer o campo inteiro de modo a
+    // cobrir todas as situações
+    carga.dotacao_cheia = undefined;
+    carga.dotacao = values.dotacao.split('.').map((x) => (x.indexOf('*') !== -1 ? '*' : x)).join('.');
 
     if (carga.location) {
       carga.atividade_id = null;
@@ -140,10 +146,27 @@ export default {
       :initial-values="currentEdit"
       @submit.prevent="onSubmit"
     >
+      <Field
+        name="ano_referencia"
+        :value="ano"
+        type="hidden"
+      />
+      <Field
+        v-model="dotação"
+        name="dotacao"
+        type="hidden"
+      />
+      <Field
+        v-model="complemento"
+        name="dotacao_complemento"
+        type="hidden"
+      />
+
       <CampoDeDotacao
         v-model:respostasof="respostasof"
         v-model:complemento="complemento"
-        v-model="dota"
+        v-model:dotação="dotação"
+        v-model="dotaçãoComComplemento"
       />
 
       <ListaDeCompartilhamentos
@@ -191,9 +214,11 @@ export default {
               v-if="m?.iniciativas?.length"
               class="label tc300"
             >
-              {{ activePdm.rotulo_iniciativa }}{{ ['Atividade'].indexOf(activePdm.nivel_orcamento) != -1
-                ? ' e ' + activePdm.rotulo_atividade
-                : '' }}
+              {{ activePdm.rotulo_iniciativa }}{{
+                ['Atividade'].indexOf(activePdm.nivel_orcamento) != -1
+                  ? ' e ' + activePdm.rotulo_atividade
+                  : ''
+              }}
             </div>
             <div
               v-for="i in m.iniciativas"
