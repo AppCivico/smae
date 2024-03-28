@@ -194,7 +194,7 @@ export const custeio = object()
 
 export const dotação = string()
   .label('Dotação')
-  .matches(regEx.dotaçãoComComplemento);
+  .matches(regEx.dotaçãoComComplemento, 'regex em dotação');
 
 export const etapa = object()
   .shape({
@@ -585,8 +585,12 @@ export const novaSenha = object()
 export const orçamentoRealizado = object({
   dotacao: string()
     .label('Dotação')
-    .matches(regEx.dotaçãoComComplemento)
-    .required(),
+    .matches(regEx.dotação, 'regEx de dotacao em orçamentoRealizado')
+    .required('dotacao requerida em orçamentoRealizado'),
+  dotacao_complemento: string()
+    .label('Complemento')
+    .matches(regEx.complementoDeDotação, 'regEx de complemento em orçamentoRealizado')
+    .required('complemento requerido em orçamentoRealizado'),
   itens: array()
     .label('Execução orçamentária')
     .min(1)
