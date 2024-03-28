@@ -91,10 +91,10 @@
         v-html="emFoco.mandato_atual.biografia"
       />
 
-      <div class="mb4">
+      <div class="mb4 mt2">
         <div class="flex spacebetween center">
           <h3 class="title">
-            Assessores
+            Assessores / Contato
           </h3>
           <hr class="ml2 f1">
         </div>
@@ -107,16 +107,15 @@
               <th>Nome</th>
               <th>Telefone</th>
               <th>E-mail</th>
+              <th>Tipo</th>
             </tr>
           </thead>
-          <tbody v-if="assessores.length">
-            <tr
-              v-for="assessor in assessores"
-              :key="assessor.id"
-            >
-              <td>{{ assessor.nome }}</td>
-              <td>{{ assessor.telefone }}</td>
-              <td>{{ assessor.email }}</td>
+          <tbody v-if="tabelaCombinada.length">
+            <tr v-for="(item, index) in tabelaCombinada" :key="index">
+              <td>{{ item.nome }}</td>
+              <td>{{ item.telefone }}</td>
+              <td>{{ item.email }}</td>
+              <td>{{ item.tipo }}</td>
             </tr>
           </tbody>
           <tbody v-else>
@@ -305,43 +304,6 @@
         </div>
       </div>
 
-      <div class="mb4">
-        <div class="flex spacebetween center">
-          <h3 class="title">
-            Contatos
-          </h3>
-          <hr class="ml2 f1">
-        </div>
-        <table class="tablemain ">
-          <col>
-          <col>
-          <col>
-          <thead>
-            <tr>
-              <th>Nome</th>
-              <th>Telefone</th>
-              <th>E-mail</th>
-            </tr>
-          </thead>
-          <tbody v-if="contatos.length">
-            <tr
-              v-for="contato in contatos"
-              :key="contato.id"
-            >
-              <td>{{ contato.nome }}</td>
-              <td>{{ contato.telefone }}</td>
-              <td>{{ contato.email }}</td>
-            </tr>
-          </tbody>
-          <tbody v-else>
-            <tr>
-              <td colspan="3">
-                Nenhum contato encontrado.
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
 
       <ParlamentaresExibirRepresentatividade />
     </div>
@@ -380,6 +342,11 @@ const contatos = computed(() => equipe.value.filter((item) => item.tipo === 'Con
 function formatarNumero(numero) {
   return numero.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
 }
+
+const tabelaCombinada = computed(() => {
+  const assessoresContatos = [...assessores.value, ...contatos.value];
+  return assessoresContatos;
+});
 </script>
 
 <style scoped lang="less">
