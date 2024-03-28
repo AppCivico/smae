@@ -1,15 +1,13 @@
 import { HttpException, Injectable } from '@nestjs/common';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { PrismaService } from '../prisma/prisma.service';
-import { UploadService } from '../upload/upload.service';
 import { CreateProjetoEtapaDto } from './dto/create-projeto-etapa.dto';
 import { UpdateProjetoEtapaDto } from './dto/update-projeto-etapa.dto';
 
 @Injectable()
 export class ProjetoEtapaService {
     constructor(
-        private readonly prisma: PrismaService,
-        private readonly uploadService: UploadService
+        private readonly prisma: PrismaService
     ) {}
 
     async create(dto: CreateProjetoEtapaDto, user: PessoaFromJwt) {
