@@ -17,6 +17,7 @@ import { TrimPipe } from './common/pipes/trim-pipe';
 import { ContentInterceptor } from './content.interceptor';
 import { CronogramaEtapaModule } from './cronograma-etapas/cronograma-etapas.module';
 import { DashboardModule } from './dashboard/dashboard.module';
+import { DistribuicaoRecursoModule } from './distribuicao-recurso/distribuicao-recurso.module';
 import { DotacaoModule } from './dotacao/dotacao.module';
 import { EleicaoModule } from './eleicao/eleicao.module';
 import { ErrorFilter } from './error.filter';
@@ -32,7 +33,6 @@ import { ReportsModule } from './reports/relatorios/reports.module';
 import { UtilsService } from './reports/utils/utils.service';
 import { RequestLogModule } from './request_log/request_log.module';
 import { TransferenciaModule } from './transferencia/transferencia.module';
-import { DistribuicaoRecursoModule } from './distribuicao-recurso/distribuicao-recurso.module';
 
 // Hacks pro JS
 /*

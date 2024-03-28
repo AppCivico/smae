@@ -303,6 +303,7 @@ export class ProjetoService {
                                 }),
                             },
                         },
+                        projeto_etapa_id: dto.projeto_etapa_id,
                         orgao_responsavel_id: dto.orgao_responsavel_id,
                         responsavel_id: dto.responsavel_id,
                         nome: dto.nome,
@@ -970,6 +971,7 @@ export class ProjetoService {
 
                 selecionado_em: true,
                 em_planejamento_em: true,
+                projeto_etapa_id: true,
 
                 ano_orcamento: true,
                 logradouro_tipo: true,
@@ -1507,6 +1509,7 @@ export class ProjetoService {
                     orgao_responsavel_id: dto.orgao_responsavel_id,
                     responsavel_id: dto.responsavel_id,
 
+                    projeto_etapa_id: dto.projeto_etapa_id,
                     nome: dto.nome,
                     resumo: dto.resumo,
                     previsao_inicio: dto.previsao_inicio,

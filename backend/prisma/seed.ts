@@ -39,6 +39,7 @@ const ModuloDescricao: Record<string, [string, ModuloSistema | null]> = {
     CadastroBancada: ['Bancadas', 'CasaCivil'],
     CadastroParlamentar: ['Parlamentares', 'CasaCivil'],
     CadastroTransferencia: ['Transferências', 'CasaCivil'],
+    CadastroProjetoEtapa: ['Etapas', 'Projetos'],
     CadastroCargo: ['', null],
     CadastroCoordenadoria: ['', null],
     CadastroDepartamento: ['', null],
@@ -154,6 +155,11 @@ const PrivConfig: Record<string, false | [ListaDePrivilegios, string | false][]>
         ['CadastroTag.inserir', 'Inserir Tag'],
         ['CadastroTag.editar', 'Editar Tag'],
         ['CadastroTag.remover', 'Remover Tag'],
+    ],
+    CadastroProjetoEtapa: [
+        ['CadastroProjetoEtapa.inserir', 'Inserir cadastro básico de Etapa'],
+        ['CadastroProjetoEtapa.editar', 'Editar cadastro básico de Etapa'],
+        ['CadastroProjetoEtapa.remover', 'Remover cadastro básico de Etapa'],
     ],
     CadastroMeta: [
         // de fato, esse é o administrador, mas o frontend já usava o código CadastroMeta.inserir
@@ -439,6 +445,9 @@ const PerfilAcessoConfig: {
             'Reports.dashboard_portfolios',
             'Projeto.administrar_portfolios_no_orgao',
             'CadastroGrupoPortfolio.administrador_no_orgao', // verificar se vamos criar um novo perfil para essa tbm
+            'CadastroProjetoEtapa.inserir',
+            'CadastroProjetoEtapa.editar',
+            'CadastroProjetoEtapa.remover',
         ],
     },
     {
@@ -448,6 +457,9 @@ const PerfilAcessoConfig: {
             'Reports.executar.Projetos', // TODO remoer, afinal, precisa dos filtros no reports
             'SMAE.gestor_de_projeto',
             'Reports.dashboard_portfolios',
+            'CadastroProjetoEtapa.inserir',
+            'CadastroProjetoEtapa.editar',
+            'CadastroProjetoEtapa.remover',
         ],
     },
     {
@@ -458,6 +470,9 @@ const PerfilAcessoConfig: {
             'Reports.executar.Projetos', // TODO remoer, afinal, precisa dos filtros no reports
             'SMAE.colaborador_de_projeto',
             'Reports.dashboard_portfolios',
+            'CadastroProjetoEtapa.inserir',
+            'CadastroProjetoEtapa.editar',
+            'CadastroProjetoEtapa.remover',
         ],
     },
     {

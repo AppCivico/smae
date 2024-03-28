@@ -112,6 +112,12 @@ export class CreateProjetoDto {
     atividade_id?: number | null;
 
     @IsOptional()
+    @IsInt({ message: '$property| projeto_etapa_id precisa ser positivo' })
+    @Transform((a: TransformFnParams) => (a.value === null ? null : +a.value))
+    @ValidateIf((object, value) => value !== null)
+    projeto_etapa_id?: number | null;
+
+    @IsOptional()
     @IsString()
     @ValidateIf((object, value) => value !== null)
     meta_codigo?: string | null;

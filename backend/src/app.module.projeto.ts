@@ -17,6 +17,7 @@ import { ProjetoOrcamentoModule } from './reports/projeto-orcamento/projeto-orca
 import { ProjetoPrevisaoCustoModule } from './reports/projeto-previsao-custo/projeto-previsao-custo.module';
 import { OrcamentoRealizadoModule as PPOrcamentoRealizadoModule } from './pp/orcamento-realizado/orcamento-realizado.module';
 import { AcaoModule } from './pp/projeto/acao/acao.module';
+import { ProjetoEtapaModule } from './projeto-etapa/projeto-etapa.module';
 
 @Module({
     imports: [
@@ -38,6 +39,7 @@ import { AcaoModule } from './pp/projeto/acao/acao.module';
         AcompanhamentoTipoModule,
         GrupoPortfolioModule,
         AcaoModule,
+        ProjetoEtapaModule
     ],
     controllers: [],
     providers: [],
