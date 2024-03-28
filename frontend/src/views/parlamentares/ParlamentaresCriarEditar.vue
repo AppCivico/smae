@@ -225,7 +225,7 @@ iniciar();
       class="mb3"
     >
       <div class="flex spacebetween center mb1">
-        <span class="label tc300">Assessores</span>
+        <span class="label tc300">Assessores / Contato</span>
         <hr class="mr2 f1">
       </div>
 
@@ -234,13 +234,13 @@ iniciar();
         class="tablemain mb1"
       >
         <col>
+        <col>
         <col class="col--botão-de-ação">
         <col class="col--botão-de-ação">
         <thead>
           <tr>
-            <th>
-              Nome
-            </th>
+            <th>Nome</th>
+            <th>Tipo</th>
             <th />
             <th />
           </tr>
@@ -251,7 +251,7 @@ iniciar();
             :key="item.id"
           >
             <td>{{ item.nome }}</td>
-
+            <td>{{ item.tipo }}</td>
             <td>
               <button
                 class="like-a__text"

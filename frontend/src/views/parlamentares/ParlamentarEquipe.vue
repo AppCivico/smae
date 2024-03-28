@@ -163,48 +163,6 @@ watch(pessoaParaEdição, (novoValor) => {
             name="tipo"
           />
         </div>
-
-        <div
-          v-if="values.tipo !== 'Assessor'"
-          class="f1"
-        >
-          <LabelFromYup
-            name="mandato_id"
-            :schema="schema"
-          >
-            {{ schema.fields.mandato_id.spec.label }}&nbsp;<span
-              v-if="values.tipo && values.tipo !== 'Assessor'"
-              class="tvermelho"
-            >*</span>
-          </LabelFromYup>
-
-          <Field
-            name="mandato_id"
-            as="select"
-            class="inputtext light mb1"
-            :disabled="!values.tipo || values.tipo === 'Assessor'"
-            :class="{
-              error: errors.mandato_id,
-              loading: chamadasPendentes.emFoco,
-            }"
-          >
-            <option :value="0">
-              Selecionar
-            </option>
-            <option
-              v-for="mandato in emFoco?.mandatos || []"
-              :key="mandato.id"
-              :value="mandato.id"
-            >
-              {{ mandato.eleicao?.tipo }} -
-              {{ mandato.eleicao?.ano || mandato.id }}
-            </option>
-          </Field>
-          <ErrorMessage
-            class="error-msg"
-            name="mandato_id"
-          />
-        </div>
       </div>
       <div class="flex g2 mb1">
         <div class="f1">
