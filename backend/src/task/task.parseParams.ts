@@ -20,6 +20,9 @@ export function ParseParams(taskType: task_type, value: any): any {
         case 'aviso_email':
             theClass = CreateAvisoEmailJobDto;
             break;
+        case 'aviso_email_cronograma_tp':
+            theClass = CreateAvisoEmailJobDto;
+            break;
         default:
             taskType satisfies never;
     }

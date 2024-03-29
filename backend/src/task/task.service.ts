@@ -16,6 +16,7 @@ import { RefreshMetaService } from './refresh_meta/refresh-meta.service';
 import { RefreshMvService } from './refresh_mv/refresh-mv.service';
 import { ParseParams } from './task.parseParams';
 import { AvisoEmailTaskService } from './aviso_email/aviso_email.service';
+import { AeCronogramaTpTaskService } from './aviso_email_cronograma_tp/ae_cronograma_tp.service';
 function areJsonObjectsEquivalent(obj1: object, obj2: object): boolean {
     return JSON.stringify(sortObjectKeys(obj1)) === JSON.stringify(sortObjectKeys(obj2));
 }
@@ -51,7 +52,9 @@ export class TaskService {
         @Inject(forwardRef(() => EchoService)) private readonly echoService: EchoService,
         @Inject(forwardRef(() => RefreshMvService)) private readonly refreshMvService: RefreshMvService,
         @Inject(forwardRef(() => RefreshMetaService)) private readonly refreshMetaService: RefreshMetaService,
-        @Inject(forwardRef(() => AvisoEmailTaskService)) private readonly avisoEmailTaskService: AvisoEmailTaskService
+        @Inject(forwardRef(() => AvisoEmailTaskService)) private readonly avisoEmailTaskService: AvisoEmailTaskService,
+        @Inject(forwardRef(() => AeCronogramaTpTaskService))
+        private readonly aeCronoTpService: AeCronogramaTpTaskService
     ) {
         this.enabled = CrontabIsEnabled('task');
         this.logger.debug(`task crontab enabled? ${this.enabled}`);
@@ -422,6 +425,10 @@ export class TaskService {
             case 'aviso_email':
                 service = this.avisoEmailTaskService;
                 break;
+            case 'aviso_email_cronograma_tp':
+                service = this.aeCronoTpService;
+                break;
+
             default:
                 task_type satisfies never;
         }

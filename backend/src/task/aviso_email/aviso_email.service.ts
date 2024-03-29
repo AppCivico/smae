@@ -1,20 +1,25 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Inject, Injectable, Logger, forwardRef } from '@nestjs/common';
+import { AvisoEmail, Prisma, Tarefa, TarefaCronograma } from '@prisma/client';
+import { DateTime } from 'luxon';
 import { PrismaService } from '../../prisma/prisma.service';
 import { TaskableService } from '../entities/task.entity';
+import { TaskService } from '../task.service';
 import { CreateAvisoEmailJobDto } from './dto/create-aviso_email.dto';
-import { DateTime } from 'luxon';
-import { AvisoEmail, Tarefa, TarefaCronograma } from '@prisma/client';
 
 type AvisoComCronograma = AvisoEmail & { tarefa: Tarefa | null } & { tarefa_cronograma: TarefaCronograma | null };
 
 @Injectable()
 export class AvisoEmailTaskService implements TaskableService {
     private readonly logger = new Logger(AvisoEmailTaskService.name);
-    constructor(private readonly prisma: PrismaService) {}
+    constructor(
+        private readonly prisma: PrismaService,
+        @Inject(forwardRef(() => TaskService)) private readonly taskService: TaskService
+    ) {}
 
     async executeJob(inputParams: CreateAvisoEmailJobDto, _taskId: string): Promise<any> {
         this.logger.verbose(`Carregando aviso-email id ${inputParams.aviso_email_id}`);
 
+        let job_id: number | undefined = undefined;
         const aviso_email = await this.prisma.avisoEmail.findFirstOrThrow({
             where: { id: inputParams.aviso_email_id },
             include: {
@@ -27,8 +32,6 @@ export class AvisoEmailTaskService implements TaskableService {
             return { success: true, mensagem: this.geraMensagem(aviso_email) };
         }
 
-        console.log(aviso_email);
-
         if (aviso_email.tipo == 'CronogramaTerminoPlanejado') {
             const dataTermPlanejado = this.resolveDataTermPlanejado(aviso_email);
             const dataTermAviso = this.resolveDataTermino(aviso_email);
@@ -39,10 +42,34 @@ export class AvisoEmailTaskService implements TaskableService {
                     mensagem: this.geraMensagemEspera(dataTermPlanejado, dataTermAviso),
                 };
             }
+
+            const now = new Date(Date.now());
+            await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient) => {
+                const job = await this.taskService.create(
+                    {
+                        params: {
+                            tarefa_cronograma_id: aviso_email.tarefa_cronograma_id ?? undefined,
+                            tarefa_id: aviso_email.tarefa_id ?? undefined,
+                        },
+                        type: 'aviso_email_cronograma_tp',
+                    },
+                    null,
+                    prismaTx
+                );
+                job_id = job.id;
+
+                this.logger.verbose(`Tarefa agendada id=${job_id} para produção do e-mail, com disparo ou não`);
+
+                await prismaTx.avisoEmail.update({
+                    where: { id: aviso_email.id },
+                    data: { ultimo_envio_em: now },
+                });
+            });
         }
 
         return {
-            success: true,
+            job_id,
+            success: !!job_id,
         };
     }
 

@@ -3923,6 +3923,7 @@ enum task_type {
     refresh_mv
     refresh_meta
     aviso_email
+    aviso_email_cronograma_tp
 }
 
 enum task_status {
