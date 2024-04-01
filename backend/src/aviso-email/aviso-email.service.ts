@@ -6,11 +6,23 @@ import { PrismaService } from '../prisma/prisma.service';
 import { CreateAvisoEmailDto } from './dto/create-aviso-email.dto';
 import { UpdateAvisoEmailDto } from './dto/update-aviso-email.dto';
 import { AvisoEmailItemDto, FilterAvisoEamilDto } from './entities/aviso-email.entity';
+import { Cron, CronExpression } from '@nestjs/schedule';
+import { CrontabIsEnabled } from '../common/CrontabIsEnabled';
+import { JOB_AVISO_EMAIL } from '../common/dto/locks';
+import { DateYMD, SYSTEM_TIMEZONE } from '../common/date2ymd';
+import { DateTime } from 'luxon';
+import { TaskService } from '../task/task.service';
 
 @Injectable()
 export class AvisoEmailService {
+    private enabled: boolean;
     private readonly logger = new Logger(AvisoEmailService.name);
-    constructor(private readonly prisma: PrismaService) {}
+    constructor(
+        private readonly prisma: PrismaService,
+        private readonly taskService: TaskService
+    ) {
+        this.enabled = CrontabIsEnabled('aviso_email');
+    }
 
     async create(dto: CreateAvisoEmailDto, user: PessoaFromJwt): Promise<RecordWithId> {
         const tarefa_id = dto.tarefa_id;
@@ -196,5 +208,81 @@ export class AvisoEmailService {
         });
 
         return;
+    }
+
+    @Cron(CronExpression.EVERY_30_MINUTES_BETWEEN_10AM_AND_7PM)
+    async handleCron() {
+        if (!this.enabled) return;
+
+        await this.prisma.$transaction(
+            async (prismaTx: Prisma.TransactionClient) => {
+                this.logger.debug(`Adquirindo lock para verificação dos avisos por emails`);
+                const locked: {
+                    locked: boolean;
+                    now_ymd: DateYMD;
+                }[] = await prismaTx.$queryRaw`SELECT
+                pg_try_advisory_xact_lock(${JOB_AVISO_EMAIL}) as locked,
+                (now() at time zone ${SYSTEM_TIMEZONE}::varchar)::date::text as now_ymd
+            `;
+                if (!locked[0].locked) {
+                    this.logger.debug(`Já está em processamento...`);
+                    return;
+                }
+
+                await this.verificaAvisosPorEmail(DateTime.fromISO(locked[0].now_ymd));
+            },
+            {
+                maxWait: 30000,
+                timeout: 60 * 1000 * 5,
+                isolationLevel: 'Serializable',
+            }
+        );
+    }
+
+    private async verificaAvisosPorEmail(ymd: DateTime) {
+        const today = ymd.toJSDate();
+        const now = new Date(Date.now());
+
+        await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient) => {
+            const pendingRun = await prismaTx.avisoEmail.findMany({
+                where: {
+                    removido_em: null,
+                    ativo: true,
+                    executou_em: { lt: today },
+                },
+                select: {
+                    id: true,
+                },
+            });
+
+            if (pendingRun.length) {
+                this.logger.log(`Adicionando ${pendingRun.length} jobs na fila...`);
+
+                for (const r of pendingRun) {
+                    const t = await this.taskService.create(
+                        {
+                            params: { aviso_email_id: r.id },
+                            type: 'aviso_email',
+                        },
+                        null,
+                        prismaTx
+                    );
+
+                    this.logger.log(`Aviso id = ${r.id} task ${t.id}`);
+                }
+
+                await prismaTx.avisoEmail.updateMany({
+                    where: {
+                        id: { in: pendingRun.map((r) => r.id) },
+                    },
+                    data: {
+                        executou_em: today,
+                        executou_em_ts: now,
+                    },
+                });
+            } else {
+                this.logger.log(`Nenhum aviso pendente no momento.`);
+            }
+        });
     }
 }
