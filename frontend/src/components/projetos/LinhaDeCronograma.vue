@@ -76,7 +76,7 @@ export default {
       </span>
     </td>
     <th
-      class="tabela-de-etapas__titulo-da-tarefa pl1 left"
+      class="tabela-de-etapas__titulo-da-tarefa left"
       :class="{
         'tabela-de-etapas__titulo-da-tarefa--fora-do-EAP': linha.nivel > 2
       }"
@@ -112,6 +112,10 @@ export default {
         {{ linha.tarefa }}
       </template>
     </th>
+
+    <td class="cell--number dado-efetivo">
+      {{ linha.orgao.sigla}}
+    </td>
 
     <td class="cell--number dado-efetivo">
       {{ typeof linha.percentual_concluido === 'number' ? linha.percentual_concluido + '%' : '-' }}
