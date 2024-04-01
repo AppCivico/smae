@@ -17,6 +17,7 @@ import { FilterVariavelDto } from './dto/filter-variavel.dto';
 import { ListSeriesAgrupadas } from './dto/list-variavel.dto';
 import { UpdateVariavelDto } from './dto/update-variavel.dto';
 import { SerieValorNomimal, SerieValorPorPeriodo, ValorSerieExistente } from './entities/variavel.entity';
+import { RespDependentesRet } from 'src/common/dto/RespDependentesRet.dto';
 
 /**
  * ordem que é populado na função populaSeriesExistentes, usada no serviço do VariavelFormulaCompostaService
@@ -1496,5 +1497,23 @@ export class VariavelService {
 
         if (!result[0].meta_id) throw `getMetaIdDoIndicador: nenhum resultado para indicador ${indicador_id}`;
         return result[0].meta_id;
+    }
+
+    async respEmUso(pessoaId: number, prismaTx: Prisma.TransactionClient): Promise<RespDependentesRet> {
+        const query = await prismaTx.variavelResponsavel.findMany({
+            where: {
+                pessoa_id: pessoaId,
+            },
+            select: {
+                variavel_id: true,
+            },
+        });
+
+        return {
+            resultado: query.length > 0 ? true : false,
+            ids: query.map((e) => {
+                return e.variavel_id;
+            }),
+        };
     }
 }

@@ -17,6 +17,8 @@ import { UpdateMetaDto } from './dto/update-meta.dto';
 import { IdNomeExibicao, Meta, MetaOrgao, MetaTag } from './entities/meta.entity';
 import { GeoLocService } from '../geo-loc/geo-loc.service';
 import { CreateGeoEnderecoReferenciaDto, ReferenciasValidasBase } from '../geo-loc/entities/geo-loc.entity';
+import { AtividadeService } from 'src/atividade/atividade.service';
+import { IniciativaService } from 'src/iniciativa/iniciativa.service';
 
 type DadosMetaIniciativaAtividadesDto = {
     tipo: string;
@@ -35,7 +37,9 @@ export class MetaService {
         private readonly prisma: PrismaService,
         private readonly cronogramaEtapaService: CronogramaEtapaService,
         private readonly uploadService: UploadService,
-        private readonly geolocService: GeoLocService
+        private readonly geolocService: GeoLocService,
+        private readonly atividadeService: AtividadeService,
+        private readonly iniciativaService: IniciativaService
     ) {}
 
     async create(dto: CreateMetaDto, user: PessoaFromJwt) {
@@ -593,47 +597,38 @@ export class MetaService {
         }
     }
 
-    private async checkHasResponsaveisChildren(meta_id: number, coordenadores_cp: number[]) {
-        const currentCoordenadores = await this.prisma.metaResponsavel.findMany({
+    private async verificarDepsResponsaveis(
+        meta_id: number,
+        coordenadores_cp: number[],
+        prismaTx: Prisma.TransactionClient
+    ) {
+        const currentCoordenadores = await prismaTx.metaResponsavel.findMany({
             where: { meta_id },
             select: {
                 pessoa_id: true,
             },
         });
-        const deletedPessoas = currentCoordenadores
-            .map((c) => c.pessoa_id)
-            .filter((x) => coordenadores_cp.indexOf(x) === -1);
+        const deletedPessoas = currentCoordenadores.filter((e) => {
+            return !coordenadores_cp.find((x) => x == e.pessoa_id);
+        });
 
         for (const resp of deletedPessoas) {
-            const atividadePessoaCount = await this.prisma.atividadeResponsavel.count({
-                where: {
-                    pessoa_id: resp,
-                    atividade: {
-                        iniciativa: {
-                            meta_id: meta_id,
-                        },
-                    },
-                },
-            });
-            if (atividadePessoaCount > 0)
-                throw new HttpException(
-                    'Coordenador em uso em Atividade, remova-o primeiro no nível de Atividade.',
-                    400
-                );
+            const respEmAtividades = await this.atividadeService.respEmUso(resp.pessoa_id, prismaTx);
 
-            const iniciativaPessoaCount = await this.prisma.iniciativaResponsavel.count({
-                where: {
-                    pessoa_id: resp,
-                    iniciativa: {
-                        meta_id: meta_id,
-                    },
-                },
-            });
-            if (iniciativaPessoaCount > 0)
+            if (respEmAtividades.resultado == true) {
                 throw new HttpException(
-                    'Coordenador em uso em Iniciativa, remova-o primeiro no nível de Iniciativa.',
+                    `Coordenador em uso em Atividade, remova-o primeiro no nível de Atividade. IDs: ${respEmAtividades.ids.join(', ')}`,
                     400
                 );
+            }
+
+            const respEmIniciativas = await this.iniciativaService.respEmUso(resp.pessoa_id, prismaTx);
+            if (respEmIniciativas.resultado == true) {
+                throw new HttpException(
+                    `Coordenador em uso em Iniciativa, remova-o primeiro no nível de Iniciativa. IDs: ${respEmIniciativas.ids.join(', ')}`,
+                    400
+                );
+            }
         }
     }
 
