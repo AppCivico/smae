@@ -66,14 +66,14 @@ export default {
     {
       name: 'TransferenciaDistribuicaoDeRecursosEditar',
       path: ':transferenciaId/distribuicao-de-recursos',
-      component: TransferenciaDistribuicaoDeRecursosCriarEditar, //Dev - teste
+      component: TransferenciaDistribuicaoDeRecursosCriarEditar, // Dev - teste
       props: ({ params }) => ({
         ...params,
         ...{ transferenciaId: Number.parseInt(params.transferenciaId, 10) || undefined },
       }),
       meta: {
         título: 'Distribuição de recursos',
-        rotasParaMenuSecundário
+        rotasParaMenuSecundário,
       },
     },
     {
@@ -310,6 +310,6 @@ export default {
           ],
         },
       ],
-    }
+    },
   ],
-}
+};
