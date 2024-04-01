@@ -12,4 +12,8 @@ export class CreateAeCronogramaTpJobDto {
     @IsArray()
     @IsString({ each: true })
     cc: string[];
+
+    @IsOptional()
+    @IsInt()
+    aviso_email_id?: number;
 }

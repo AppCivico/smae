@@ -4851,3 +4851,15 @@ model AvisoEmailDisparos {
 
     @@map("aviso_email_disparos")
 }
+
+model CronogramaTerminoPlanejadoConfig {
+    id             Int           @id @default(autoincrement())
+    modulo_sistema ModuloSistema @unique
+    para           String
+    texto_inicial  String
+    texto_final    String
+    assunto_global String
+    assunto_orgao  String
+
+    @@map("cronograma_termino_planejado_config")
+}

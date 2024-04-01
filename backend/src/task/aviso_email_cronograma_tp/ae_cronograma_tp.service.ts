@@ -1,12 +1,14 @@
 import { Inject, Injectable, Logger, forwardRef } from '@nestjs/common';
 import { plainToClass } from 'class-transformer';
 import { validate } from 'class-validator';
+import { uuidv7 } from 'uuidv7';
 import { Date2YMD } from '../../common/date2ymd';
-import { ListApenasTarefaListDto } from '../../pp/tarefa/entities/tarefa.entity';
+import { TarefaItemProjetadoDto } from '../../pp/tarefa/entities/tarefa.entity';
 import { TarefaService } from '../../pp/tarefa/tarefa.service';
 import { PrismaService } from '../../prisma/prisma.service';
 import { TaskableService } from '../entities/task.entity';
 import { CreateAeCronogramaTpJobDto } from './dto/ae_cronograma_tp.dto';
+import { Prisma } from '@prisma/client';
 
 // t=tarefa, i=intro
 // c=conteúdo
@@ -47,7 +49,7 @@ export class AeCronogramaTpTaskService implements TaskableService {
             },
         });
 
-        const { tarefas, hierarquiaRef } = await this.resolveTarefas(tarefa_cronograma_id, config);
+        const { tarefas, hierarquiaRef, orgaoDb } = await this.resolveTarefas(tarefa_cronograma_id, config);
         if (tarefas.linhas.length === 0) {
             return { tarefas_zero: true, success: true };
         }
@@ -72,18 +74,97 @@ export class AeCronogramaTpTaskService implements TaskableService {
             tarefaText = `A tarefa ${tarefa.tarefa}`;
         }
 
-        const parts: NotificationParts[] = [];
-        await adicionaTextoIntro(tarefaText);
-        this.adicionaTarefas(tarefas, hierarquiaRef, parts);
+        const emailConfig = await this.prisma.cronogramaTerminoPlanejadoConfig.findUnique({
+            where: {
+                modulo_sistema: tc.projeto ? 'Projetos' : 'CasaCivil',
+            },
+        });
+        if (emailConfig) {
+            // email global
 
-        console.log(parts.filter((t) => (t.t = 't')).map((t) => t.c));
+            const partes: NotificationParts[] = [];
+            await adicionaTextoIntro(tarefaText, partes);
+            this.adicionaTarefas(tarefas.linhas, hierarquiaRef, partes);
+
+            await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient) => {
+                const globalEmailQueue = await prismaTx.emaildbQueue.create({
+                    data: {
+                        id: uuidv7(),
+                        config_id: 1,
+                        subject: emailConfig.assunto_global,
+                        template: 'ae-cronograma-termino-planejado.html',
+                        to: emailConfig.para,
+                        variables: {
+                            ':cc': config.cc.join(','),
+                            texto_inicial: emailConfig.texto_inicial,
+                            texto_final: emailConfig.texto_final,
+                            partes: partes,
+                        },
+                    },
+                });
+
+                if (config.aviso_email_id)
+                    await prismaTx.avisoEmailDisparos.create({
+                        data: {
+                            aviso_email_id: config.aviso_email_id,
+                            para: globalEmailQueue.to,
+                            com_copia: config.cc,
+                            emaildb_queue_id: globalEmailQueue.id,
+                        },
+                    });
+
+                for (const orgao of orgaoDb) {
+                    if (!orgao.email) {
+                        this.logger.verbose(`órgão ${orgao.sigla} sem e-mail`);
+                        continue;
+                    }
+                    const tarefasDoOrgao = tarefas.linhas.filter((t) => t.orgao?.id === orgao.id);
+                    if (!tarefasDoOrgao.length) {
+                        this.logger.verbose(`sem tarefas para o órgão ${orgao.sigla}`);
+                        continue;
+                    }
+
+                    const partes: NotificationParts[] = [];
+                    await adicionaTextoIntro(tarefaText, partes);
+                    this.adicionaTarefas(tarefasDoOrgao, hierarquiaRef, partes);
+
+                    const orgaoEmailQueue = await prismaTx.emaildbQueue.create({
+                        data: {
+                            id: uuidv7(),
+                            config_id: 1,
+                            subject: emailConfig.assunto_orgao,
+                            template: 'ae-cronograma-termino-planejado.html',
+                            to: orgao.email,
+                            variables: {
+                                ':cc': config.cc.join(','),
+                                texto_inicial: emailConfig.texto_inicial,
+                                texto_final: emailConfig.texto_final,
+                                partes: partes,
+                            },
+                        },
+                    });
+
+                    if (config.aviso_email_id)
+                        await prismaTx.avisoEmailDisparos.create({
+                            data: {
+                                aviso_email_id: config.aviso_email_id,
+                                para: orgaoEmailQueue.to,
+                                com_copia: config.cc,
+                                emaildb_queue_id: orgaoEmailQueue.id,
+                            },
+                        });
+                }
+            });
+        } else {
+            this.logger.warn(`configuração de email não encontrada, nenhum e-mail disparado`);
+        }
 
         return {
             success: true,
         };
 
         // mantendo no escopo para não precisar declara o tipo de TC
-        async function adicionaTextoIntro(tarefaText: string) {
+        async function adicionaTextoIntro(tarefaText: string, parts: NotificationParts[]) {
             if (tc.projeto) {
                 const textoComSemTarefa = {
                     false: 'O Projeto',
@@ -108,11 +189,11 @@ export class AeCronogramaTpTaskService implements TaskableService {
     }
 
     private adicionaTarefas(
-        tarefas: ListApenasTarefaListDto,
+        tarefas: TarefaItemProjetadoDto[],
         hierarquiaRef: Record<string, string>,
         parts: NotificationParts[]
     ) {
-        for (const t of tarefas.linhas) {
+        for (const t of tarefas) {
             const hierarquia = hierarquiaRef[t.id];
             const ehMarco = t.eh_marco ? '🚩 ' : '';
             const temAtraso = t.atraso !== null && t.atraso > 0 ? ` (atraso ${t.atraso} dias) ` : '';
@@ -155,7 +236,19 @@ export class AeCronogramaTpTaskService implements TaskableService {
                 return numberA - numberB;
             }
         });
-        return { tarefas, hierarquiaRef };
+
+        const orgaos = new Set<number>();
+        for (const t of tarefas.linhas) {
+            if (t.orgao?.id) orgaos.add(t.orgao.id);
+        }
+        const orgaoList = Array.from(orgaos).map((r) => +r);
+
+        const orgaoDb = await this.prisma.orgao.findMany({
+            where: { id: { in: orgaoList } },
+            select: { id: true, sigla: true, email: true },
+        });
+
+        return { tarefas, hierarquiaRef, orgaoList, orgaoDb };
     }
 
     private async resolveTarefaCronoId(inputParams: CreateAeCronogramaTpJobDto) {
