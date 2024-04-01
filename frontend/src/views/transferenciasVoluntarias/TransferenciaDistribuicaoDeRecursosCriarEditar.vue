@@ -11,7 +11,11 @@ import { useDistribuicaoRecursosStore } from '@/stores/transferenciasDistribuica
 import { vMaska } from 'maska';
 import { storeToRefs } from 'pinia';
 import {
-  ErrorMessage, Field, FieldArray, useForm, useIsFormDirty,
+  ErrorMessage,
+  Field,
+  FieldArray,
+  useForm,
+  useIsFormDirty,
 } from 'vee-validate';
 import { onUnmounted, ref, watch } from 'vue';
 
