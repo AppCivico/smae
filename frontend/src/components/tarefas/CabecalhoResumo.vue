@@ -22,7 +22,7 @@ const props = defineProps({
     <dl class="flex flexwrap g2">
       <div class="mr2">
         <dt class="t12 uc w700 mb05 tamarelo">
-          Início previsto
+          Início Planejado
         </dt>
         <dd class="t13 dado-estimado">
           {{
@@ -34,7 +34,7 @@ const props = defineProps({
       </div>
       <div class="mr2">
         <dt class="t12 uc w700 mb05 tamarelo">
-          Término previsto
+          Término Planejado
         </dt>
         <dd class="t13 dado-estimado">
           {{
@@ -46,7 +46,7 @@ const props = defineProps({
       </div>
       <div class="mr2">
         <dt class="t12 uc w700 mb05 tamarelo">
-          Início real
+          Real Início
         </dt>
         <dd class="t13 dado-efetivo">
           {{
@@ -58,12 +58,24 @@ const props = defineProps({
       </div>
       <div class="mr2">
         <dt class="t12 uc w700 mb05 tamarelo">
-          Término real
+          Real Término
         </dt>
         <dd class="t13 dado-efetivo">
           {{
             emFoco?.realizado_termino
               ? dateToField(emFoco.realizado_termino)
+              : '--/--/----'
+          }}
+        </dd>
+      </div>
+      <div class="mr2">
+        <dt class="t12 uc w700 mb05 tamarelo">
+          Término Projetado
+        </dt>
+        <dd class="t13 dado-efetivo">
+          {{
+            emFoco?.termino_planejado
+              ? dateToField(emFoco.termino_planejado)
               : '--/--/----'
           }}
         </dd>
