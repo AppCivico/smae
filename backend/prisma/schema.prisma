@@ -3948,6 +3948,8 @@ enum task_type {
     echo
     refresh_mv
     refresh_meta
+    aviso_email
+    aviso_email_cronograma_tp
 }
 
 enum task_status {
@@ -4842,6 +4844,11 @@ model AvisoEmail {
 
     ativo Boolean
 
+    executou_em    DateTime @default(now()) @db.Date
+    executou_em_ts DateTime @default(now())
+
+    ultimo_envio_em DateTime?
+
     AvisoEmailDisparos AvisoEmailDisparos[]
 
     criado_por     Int?
@@ -4869,4 +4876,16 @@ model AvisoEmailDisparos {
     emaildb_queue    EmaildbQueue @relation(fields: [emaildb_queue_id], references: [id])
 
     @@map("aviso_email_disparos")
+}
+
+model CronogramaTerminoPlanejadoConfig {
+    id             Int           @id @default(autoincrement())
+    modulo_sistema ModuloSistema @unique
+    para           String
+    texto_inicial  String
+    texto_final    String
+    assunto_global String
+    assunto_orgao  String
+
+    @@map("cronograma_termino_planejado_config")
 }

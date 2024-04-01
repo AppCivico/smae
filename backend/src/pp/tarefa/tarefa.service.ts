@@ -5,6 +5,7 @@ import { Type, plainToInstance } from 'class-transformer';
 import { Graph } from 'graphlib'; // ta os types de da lib "graphlib" que é por enquanto pure-js
 import { DateTime } from 'luxon';
 import { GraphvizService, GraphvizServiceFormat } from 'src/graphviz/graphviz.service';
+import { TransferenciaService } from 'src/transferencia/transferencia.service';
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import { CalculaAtraso } from '../../common/CalculaAtraso';
 import { Date2YMD, SYSTEM_TIMEZONE } from '../../common/date2ymd';
@@ -30,7 +31,6 @@ import {
 } from './entities/tarefa.entity';
 import { TarefaDotTemplate } from './tarefa.dot.template';
 import { TarefaUtilsService } from './tarefa.service.utils';
-import { TransferenciaService } from 'src/transferencia/transferencia.service';
 
 // e temos um fork mais atualizado por esse projeto, @dagrejs
 const graphlib = require('@dagrejs/graphlib');
@@ -68,7 +68,7 @@ export class TarefaService {
         private readonly graphvizService: GraphvizService
     ) {}
 
-    async loadOrCreateByInput(dto: TarefaCronogramaInput, user: PessoaFromJwt) {
+    async loadOrCreateByInput(dto: TarefaCronogramaInput, user: PessoaFromJwt): Promise<number> {
         if (dto.projeto_id) {
             const exists = await this.prisma.tarefaCronograma.findFirst({
                 where: {
