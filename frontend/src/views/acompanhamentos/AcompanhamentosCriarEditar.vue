@@ -256,8 +256,8 @@ if (!riscosStore?.lista?.length) {
       </div>
     </div>
 
-    <div class="flex g2">
-      <div class="f1 mb1">
+    <div class="flex g2" v-if="!acompanhamentoId || emFoco?.observacao">
+      <div class="f1 mb1" v-show="emFoco?.observacao || acompanhamentoId">
         <LabelFromYup
           name="observacao"
           :schema="schema"
@@ -278,8 +278,8 @@ if (!riscosStore?.lista?.length) {
       </div>
     </div>
 
-    <div class="flex g2">
-      <div class="f1 mb1">
+    <div class="flex g2" v-if="!acompanhamentoId || emFoco?.detalhamento_status">
+      <div class="f1 mb1" v-show="emFoco?.detalhamento_status || acompanhamentoId">
         <LabelFromYup
           name="detalhamento_status"
           :schema="schema"
