@@ -37,6 +37,9 @@ import TipoDeTransferenciaCriarEditar from '@/views/tipoDeTransferencia/TipoDeTr
 import TipoDeTransferenciaLista from '@/views/tipoDeTransferencia/TipoDeTransferenciaLista.vue';
 import TipoDeTransferenciaRaiz from '@/views/tipoDeTransferencia/TipoDeTransferenciaRaiz.vue';
 
+import EtapasRaiz from '@/views/etapasProjeto/EtapasRaiz.vue';
+import EtapasLista from '@/views/etapasProjeto/EtapasLista.vue';
+import EtapasCriarEditar from '@/views/etapasProjeto/EtapasCriarEditar.vue';
 
 const TiposDeAcompanhamentoLista = defineAsyncComponent({
   loader: () => import('@/views/tiposDeAcompanhamento/TiposLista.vue'),
@@ -61,6 +64,7 @@ const rotasParaMenuSecundário = [
       'gerenciarCategorias',
       'gerenciarRegiões',
       'tipoDeTransferenciaListar',
+      'etapasDoProjetoListar',
     ],
   },
   {
@@ -87,6 +91,7 @@ export default [
         'CadastroRegiao.',
         'Projeto.administrar_portfolios',
         'CadastroPainelExterno.',
+        'CadastroProjetoEtapa.'
       ],
       presenteNoMenu: true,
       pesoNoMenu: Infinity,
@@ -271,6 +276,54 @@ export default [
           },
         ],
       },
+      {
+        path: 'etapa-de-projeto',
+        component: EtapasRaiz,
+        meta: {
+          título: 'Etapas de projeto',
+          presenteNoMenu: true,
+          rotaPrescindeDeChave: true,
+          limitarÀsPermissões: 'CadastroProjetoEtapa.',
+          rotasParaMenuSecundário,
+        },
+
+        children: [
+          {
+            name: 'etapasDoProjetoListar',
+            path: '',
+            component: EtapasLista,
+            meta: {
+              título: 'Etapas do projeto',
+            },
+          },
+          {
+            name: 'etapaDoProjetoCriar',
+            path: 'novo',
+            component: EtapasCriarEditar,
+            meta: {
+              título: 'Nova etapa do projeto',
+              rotaDeEscape: 'etapasDoProjetoListar',
+            },
+          },
+          {
+            path: ':etapaDoProjetoId',
+            name: 'novaEtapaDoProjetoEditar',
+            component: EtapasCriarEditar,
+            props: ({ params }) => ({
+              ...params,
+              ...{
+                etapaDoProjetoId: Number.parseInt(params.etapaDoProjetoId, 10) || undefined,
+              },
+            }),
+
+            meta: {
+              título: 'Editar etapa do projeto',
+              rotaDeEscape: 'etapasDoProjetoListar',
+            },
+          },
+        ],
+      },
+      
     ],
   },
 
