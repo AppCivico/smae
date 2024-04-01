@@ -1705,9 +1705,8 @@ export const representatividade = object()
       .label('Região'),
   });
 
-  export const etapasProjeto = object()
-  .shape({
-    nome: string()
+  export const etapasProjeto = object({
+    descricao: string()
       .label('Etapa')
       .required(),
   });
