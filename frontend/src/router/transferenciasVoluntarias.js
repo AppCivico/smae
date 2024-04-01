@@ -1,20 +1,20 @@
+import DialogWrapper from '@/views/DialogWrapper.vue';
+import TarefasLista from '@/views/tarefas/TarefasLista.vue';
 import RegistroDeTransferenciaCriarEditar from '@/views/transferenciasVoluntarias/RegistroDeTransferenciaCriarEditar.vue';
 import TransferenciaDistribuicaoDeRecursosCriarEditar from '@/views/transferenciasVoluntarias/TransferenciaDistribuicaoDeRecursosCriarEditar.vue';
 import TransferenciasVoluntariasCriarEditar from '@/views/transferenciasVoluntarias/TransferenciasVoluntariasCriarEditar.vue';
-import TransferenciasVoluntariasLista from '@/views/transferenciasVoluntarias/TransferenciasVoluntariasLista.vue';
-import TransferenciasVoluntariasRaiz from '@/views/transferenciasVoluntarias/TransferenciasVoluntariasRaiz.vue';
 import TransferenciasVoluntariasDetalhes from '@/views/transferenciasVoluntarias/TransferenciasVoluntariasDetalhes.vue';
 import TransferenciasVoluntariasDocumentos from '@/views/transferenciasVoluntarias/TransferenciasVoluntariasDocumentos.vue';
-import TransferenciasVoluntariasEnviarArquivo from '@/views/transferenciasVoluntarias/TransferenciasVoluntariasEnviarArquivo.vue'
-import TarefasLista from '@/views/tarefas/TarefasLista.vue';
-import DialogWrapper from '@/views/DialogWrapper.vue'
+import TransferenciasVoluntariasEnviarArquivo from '@/views/transferenciasVoluntarias/TransferenciasVoluntariasEnviarArquivo.vue';
+import TransferenciasVoluntariasLista from '@/views/transferenciasVoluntarias/TransferenciasVoluntariasLista.vue';
+import TransferenciasVoluntariasRaiz from '@/views/transferenciasVoluntarias/TransferenciasVoluntariasRaiz.vue';
 
+import EmailModal from '@/components/EmailModal.vue';
 import { useTarefasStore } from '@/stores/tarefas.store.ts';
 import TarefasCriarEditar from '@/views/tarefas/TarefasCriarEditar.vue';
 import TarefasItem from '@/views/tarefas/TarefasItem.vue';
 import TarefasProgresso from '@/views/tarefas/TarefasProgresso.vue';
 import TarefasRaiz from '@/views/tarefas/TarefasRaiz.vue';
-import EmailModal from '@/components/EmailModal.vue'
 
 const rotasParaMenuSecundário = [
   {
