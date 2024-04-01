@@ -152,7 +152,7 @@ export default {
           colspan="2"
           class="dado-efetivo"
         >
-          Execução
+          Real
         </th>
         <th colspan="2">
           Custo <small>(R$)</small>
