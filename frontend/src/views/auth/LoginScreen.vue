@@ -5,11 +5,9 @@ import { Field, Form } from 'vee-validate';
 
 async function onSubmit(values) {
   const authStore = useAuthStore();
-  const { username, password } = values;
-  await authStore.login(username, password);
+  await authStore.login(values);
 }
 </script>
-
 <template>
   <div class="login">
     <div class="login-form">
@@ -24,7 +22,7 @@ async function onSubmit(values) {
           </p>
         </div>
         <Form
-          v-slot="{ errors, isSubmitting }"
+          v-slot="{ errors, isSubmitting, setFieldValue }"
           :validation-schema="schema"
           @submit="onSubmit"
         >
@@ -36,6 +34,7 @@ async function onSubmit(values) {
               type="text"
               class="inputtext tc500 mb1"
               :class="{ 'error': errors.username }"
+              @change="($e) => { setFieldValue('username', $e.target.value.trim()); }"
             />
             <div class="error-msg">
               {{ errors.username }}
@@ -49,6 +48,7 @@ async function onSubmit(values) {
               type="password"
               class="inputtext tc500 mb1"
               :class="{ 'error': errors.password }"
+              @change="($e) => { setFieldValue('password', $e.target.value.trim()); }"
             />
             <div class="error-msg">
               {{ errors.password }}
