@@ -18,8 +18,12 @@ import {
   FieldArray,
   Form,
 } from 'vee-validate';
-import { computed, ref, watch } from 'vue';
+import {
+  computed, defineOptions, ref, watch,
+} from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+
+defineOptions({ inheritAttrs: false });
 
 const alertStore = useAlertStore();
 const ÓrgãosStore = useOrgansStore();
