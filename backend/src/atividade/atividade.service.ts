@@ -14,6 +14,7 @@ import { CronogramaEtapaService } from 'src/cronograma-etapas/cronograma-etapas.
 import { IdNomeExibicaoDto } from '../common/dto/IdNomeExibicao.dto';
 import { GeoLocService } from '../geo-loc/geo-loc.service';
 import { CreateGeoEnderecoReferenciaDto, ReferenciasValidasBase } from '../geo-loc/entities/geo-loc.entity';
+import { RespDependentesRet } from 'src/common/dto/RespDependentesRet.dto';
 
 @Injectable()
 export class AtividadeService {
@@ -520,5 +521,26 @@ export class AtividadeService {
                 return removed;
             }
         );
+    }
+
+    async respEmUso(pessoaId: number, prismaTx: Prisma.TransactionClient): Promise<RespDependentesRet> {
+        const query = await prismaTx.atividade.findMany({
+            where: {
+                removido_em: null,
+                atividade_responsavel: {
+                    some: { pessoa_id: pessoaId },
+                },
+            },
+            select: {
+                id: true,
+            },
+        });
+
+        return {
+            resultado: query.length > 0 ? true : false,
+            ids: query.map((e) => {
+                return e.id;
+            }),
+        };
     }
 }

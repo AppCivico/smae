@@ -10,6 +10,6 @@ import { GeoLocModule } from '../geo-loc/geo-loc.module';
 @Module({
     imports: [PrismaModule, VariavelModule, CronogramaEtapaModule, GeoLocModule],
     controllers: [IniciativaController],
-    providers: [IniciativaService, CronogramaEtapaService],
+    providers: [IniciativaService],
 })
 export class IniciativaModule {}
