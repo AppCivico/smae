@@ -43,10 +43,6 @@ const {
 } = storeToRefs(tarefasStore);
 
 const props = defineProps({
-  projetoId: {
-    type: Number,
-    default: 0,
-  },
   tarefaId: {
     type: Number,
     default: 0,
