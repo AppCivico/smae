@@ -44,7 +44,6 @@ export class ListParlamentarDto {
 
 export class EquipeDto {
     id: number;
-    mandato_id: number | null;
     email: string;
     nome: string;
     telefone: string;
