@@ -1,5 +1,5 @@
 import { HttpException, Injectable } from '@nestjs/common';
-import { DadosEleicaoNivel, ParlamentarCargo, ParlamentarEquipeTipo, Prisma } from '@prisma/client';
+import { DadosEleicaoNivel, ParlamentarCargo, Prisma } from '@prisma/client';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
 import { UploadService } from 'src/upload/upload.service';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
@@ -169,7 +169,6 @@ export class ParlamentarService {
                     where: { removido_em: null },
                     select: {
                         id: true,
-                        mandato_id: true,
                         email: true,
                         nome: true,
                         telefone: true,
@@ -403,18 +402,6 @@ export class ParlamentarService {
             where: { id: parlamentarId, removido_em: null },
         });
         if (!parlamentar) throw new HttpException('parlamentar_id| Parlamentar inválido.', 400);
-
-        if (dto.mandato_id != undefined) {
-            const mandato = await this.prisma.parlamentarMandato.count({
-                where: { id: dto.mandato_id, parlamentar_id: parlamentarId, removido_em: null },
-            });
-            if (!mandato) throw new HttpException('mandato_id| Mandato inválido.', 400);
-        }
-
-        if (dto.tipo == ParlamentarEquipeTipo.Contato && !dto.mandato_id)
-            throw new HttpException('tipo| Contato precisa receber ser relacionado ao mandato.', 400);
-
-        if (dto.tipo == ParlamentarEquipeTipo.Assessor && dto.mandato_id != undefined) dto.mandato_id = undefined;
 
         const created = await this.prisma.parlamentarEquipe.create({
             data: {
