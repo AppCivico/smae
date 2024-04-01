@@ -55,6 +55,14 @@ const props = defineProps({
 
 const dependênciasValidadas = ref([]);
 
+const órgãosPendentes = computed(() => (route.meta.entidadeMãe === 'projeto'
+  ? projetosStore.chamadasPendentes?.emFoco
+  : (ÓrgãosStore.organs.loading || !Array.isArray(ÓrgãosStore.organs))));
+
+const órgãosDisponíveis = computed(() => (route.meta.entidadeMãe === 'projeto'
+  ? órgãosEnvolvidosNoProjetoEmFoco.value
+  : órgãosComoLista.value));
+
 const tiposDeDependências = Object.keys(dependencyTypes)
   .map((x) => ({ valor: x, nome: dependencyTypes[x] }));
 
@@ -289,16 +297,16 @@ iniciar();
           class="inputtext light mb1"
           :class="{
             error: errors.orgao_id,
-            loading: projetosStore.chamadasPendentes?.emFoco,
+            loading: órgãosPendentes,
           }"
-          :disabled="!órgãosEnvolvidosNoProjetoEmFoco?.length && !órgãosComoLista.length"
+          :disabled="!órgãosDisponíveis.length"
         >
           <option :value="0">
             Selecionar
           </option>
 
           <option
-            v-for="item in (route.meta.entidadeMãe === 'projeto' ? órgãosEnvolvidosNoProjetoEmFoco : órgãosComoLista)"
+            v-for="item in órgãosDisponíveis"
             :key="item"
             :value="item.id"
           >
