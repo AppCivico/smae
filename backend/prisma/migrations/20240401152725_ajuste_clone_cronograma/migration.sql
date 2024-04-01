@@ -1,4 +1,3 @@
-drop procedure if exists clone_projeto_tarefas;
 CREATE OR REPLACE PROCEDURE clone_projeto_tarefas (projeto_source_id int, projeto_target_id int)
 LANGUAGE plpgsql
 AS $$
