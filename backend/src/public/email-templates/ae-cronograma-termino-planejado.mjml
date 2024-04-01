@@ -21,7 +21,7 @@
         </mj-text>
 
         <mj-raw>
-        [% FOR p IN partes %]
+        [% FOREACH p IN partes %]
             [% IF p.t == 'i' %]
                 <p>[% p.c %]</p>
             [% ELSIF p.t == 't' %]
