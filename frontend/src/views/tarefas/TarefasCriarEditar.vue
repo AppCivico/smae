@@ -154,7 +154,7 @@ async function validarDependências(dependências) {
 async function iniciar() {
   // apenas porque alguma tarefa nova pode ter sido criada por outra pessoa
   tarefasStore.buscarTudo();
-  if(route.meta.entidadeMãe !== 'projeto'){
+  if (route.meta.entidadeMãe !== 'projeto') {
     ÓrgãosStore.getAll();
   }
 }
