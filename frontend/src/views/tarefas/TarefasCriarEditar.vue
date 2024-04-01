@@ -218,7 +218,7 @@ iniciar();
     </div>
     <hr class="mb1 f1">
 
-    <div class="flex g2 mb1 flexwrap">
+    <div class="flex g2 mb1 flexwrap end">
       <div class="f1 mb1">
         <LabelFromYup
           name="tarefa_pai_id"
@@ -264,7 +264,7 @@ iniciar();
         @update:model-value="values.nivel = Number(values.nivel)"
       />
 
-      <div class="f1 mb1">
+      <div class="mb1">
         <LabelFromYup
           name="numero"
           :schema="schema"
@@ -316,6 +316,23 @@ iniciar();
         <ErrorMessage
           name="orgao_id"
           class="error-msg"
+        />
+      </div>
+
+      <div class="f1 mb1">
+        <LabelFromYup
+          name="recursos"
+          :schema="schema"
+        />
+        <Field
+          name="recursos"
+          type="text"
+          class="inputtext light mb1"
+          :class="{ 'error': errors.recursos }"
+        />
+        <ErrorMessage
+          class="error-msg mb1"
+          name="recursos"
         />
       </div>
     </div>
@@ -715,27 +732,6 @@ iniciar();
         <ErrorMessage
           class="error-msg mb1"
           name="custo_estimado"
-        />
-      </div>
-    </div>
-
-    <div class="flex g2">
-      <div class="f1 mb1">
-        <LabelFromYup
-          name="recursos"
-          :schema="schema"
-        />
-        <Field
-          name="recursos"
-          as="textarea"
-          rows="5"
-          class="inputtext light mb1"
-          maxlength="2048"
-          :class="{ 'error': errors.recursos }"
-        />
-        <ErrorMessage
-          class="error-msg mb1"
-          name="recursos"
         />
       </div>
     </div>
