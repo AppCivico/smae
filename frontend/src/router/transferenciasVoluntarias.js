@@ -119,7 +119,10 @@ export default {
       path: ':transferenciaId/documentos',
       component: TransferenciasVoluntariasDocumentos,
       name: 'TransferenciasVoluntariasDocumentos',
-      props: true,
+      props: ({ params }) => ({
+        ...params,
+        transferenciaId: Number.parseInt(params.transferenciaId, 10) || undefined,
+      }),
       meta: {
         título: 'Documentos',
         rotasParaMenuSecundário,
@@ -167,7 +170,10 @@ export default {
       path: ':transferenciaId/tarefas',
       component: TarefasRaiz,
 
-      props: true,
+      props: ({ params }) => ({
+        ...params,
+        transferenciaId: Number.parseInt(params.transferenciaId, 10) || undefined,
+      }),
 
       meta: {
         títuloParaMenu: 'Tarefas',
@@ -187,7 +193,10 @@ export default {
               'TransferenciasVoluntariasTarefasListar',
             ],
           },
-          props: true,
+          props: ({ params }) => ({
+            ...params,
+            transferenciaId: Number.parseInt(params.transferenciaId, 10) || undefined,
+          }),
 
           children: [
             {
@@ -223,14 +232,22 @@ export default {
         {
           path: ':tarefaId',
           component: TarefasItem,
-          props: true,
+          props: ({ params }) => ({
+            ...params,
+            transferenciaId: Number.parseInt(params.transferenciaId, 10) || undefined,
+            tarefaId: Number.parseInt(params.tarefaId, 10) || undefined,
+          }),
 
           children: [
             {
               path: '',
               name: 'TransferenciasVoluntariasTarefasEditar',
               component: TarefasCriarEditar,
-              props: true,
+              props: ({ params }) => ({
+                ...params,
+                transferenciaId: Number.parseInt(params.transferenciaId, 10) || undefined,
+                tarefaId: Number.parseInt(params.tarefaId, 10) || undefined,
+              }),
 
               meta: {
                 título: () => useTarefasStore()?.emFoco?.tarefa || 'Editar tarefa',
@@ -251,7 +268,11 @@ export default {
               path: 'progresso',
               name: 'TransferenciasVoluntariasTarefasProgresso',
               component: TarefasProgresso,
-              props: true,
+              props: ({ params }) => ({
+                ...params,
+                transferenciaId: Number.parseInt(params.transferenciaId, 10) || undefined,
+                tarefaId: Number.parseInt(params.tarefaId, 10) || undefined,
+              }),
               meta: {
                 título: () => (useTarefasStore()?.emFoco?.tarefa
                   ? `Registro de progresso de ${useTarefasStore().emFoco.tarefa}`
