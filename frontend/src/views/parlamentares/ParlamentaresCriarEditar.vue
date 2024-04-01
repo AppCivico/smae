@@ -230,7 +230,7 @@ iniciar();
       </div>
 
       <table
-        v-if="equipe.assessores.length"
+        v-if="equipe.assessores.length || equipe.contatos.length"
         class="tablemain mb1"
       >
         <col>
@@ -247,7 +247,7 @@ iniciar();
         </thead>
         <tbody>
           <tr
-            v-for="item in equipe.assessores"
+            v-for="item in equipe.assessores.concat(equipe.contatos)"
             :key="item.id"
           >
             <td>{{ item.nome }}</td>
@@ -258,7 +258,7 @@ iniciar();
                 arial-label="excluir"
                 title="excluir"
                 type="button"
-                @click="excluirItem('assessor', item.id)"
+                @click="excluirItem(item.tipo === 'Assessor' ? 'assessor' : 'contato', item.id)"
               >
                 <svg
                   width="20"
@@ -273,7 +273,7 @@ iniciar();
                   params: { parlamentarId: props.parlamentarId, pessoaId: item.id }
                 }"
                 class="tprimary"
-                aria-label="Editar assessor"
+                aria-label="Editar {{ item.tipo }}"
               >
                 <svg
                   width="20"
@@ -285,7 +285,7 @@ iniciar();
         </tbody>
       </table>
       <p v-else>
-        Nenhum assessor encontrado
+        Nenhum assessor ou Contato encontrado
       </p>
 
       <router-link
@@ -303,83 +303,6 @@ iniciar();
           width="20"
           height="20"
         ><use xlink:href="#i_+" /></svg>Registrar novo assessor
-      </router-link>
-    </div>
-    <div
-      v-if="props.parlamentarId && itemParaEdição?.mandatos?.length > 0"
-      class="mb3"
-    >
-      <div class="flex spacebetween center mb1">
-        <span class="label tc300">Contatos</span>
-        <hr class="mr2 f1">
-      </div>
-
-      <table
-        v-if="equipe.contatos.length"
-        class="tablemain mb1"
-      >
-        <col>
-        <col class="col--botão-de-ação">
-        <col class="col--botão-de-ação">
-        <thead>
-          <tr>
-            <th>
-              Nome
-            </th>
-            <th />
-            <th />
-          </tr>
-        </thead>
-        <tbody>
-          <tr
-            v-for="item in equipe.contatos"
-            :key="item.id"
-          >
-            <td>{{ item.nome }}</td>
-
-            <td>
-              <button
-                class="like-a__text"
-                arial-label="excluir"
-                title="excluir"
-                type="button"
-                @click="excluirItem('contato', item.id)"
-              >
-                <svg
-                  width="20"
-                  height="20"
-                ><use xlink:href="#i_remove" /></svg>
-              </button>
-            </td>
-            <td>
-              <router-link
-                :to="{ name: 'parlamentaresEditarEquipe', params: { parlamentarId: props.parlamentarId, pessoaId: item.id } }"
-                class="tprimary"
-                aria-label="Editar contato"
-              >
-                <svg
-                  width="20"
-                  height="20"
-                ><use xlink:href="#i_edit" /></svg>
-              </router-link>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-
-      <router-link
-        :to="{
-          name: 'parlamentaresEditarEquipe', params: {
-            parlamentarId:
-              props.parlamentarId
-          }, query: { tipo: 'contato' }
-        }"
-        class="like-a__text addlink"
-      >
-        <svg
-          width="20"
-          height="20"
-        ><use xlink:href="#i_+" /></svg>Registrar novo Contato
       </router-link>
     </div>
 

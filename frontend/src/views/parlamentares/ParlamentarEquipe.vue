@@ -134,9 +134,7 @@ watch(pessoaParaEdição, (novoValor) => {
     >
       <div class="flex flexwrap g2 mb1">
         <div
-          class="f1"
-          :hidden="(!pessoaId && !!tipoSugerido)"
-        >
+          class="f1">
           <LabelFromYup
             name="tipo"
             :schema="schema"
