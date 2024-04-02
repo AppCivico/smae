@@ -56,6 +56,7 @@ export class AeCronogramaTpTaskService implements TaskableService {
 
         const mailTo: string[] = config.cc;
         let tarefaText = '';
+        let objeto = '';
         if (config.tarefa_id) {
             const tarefa = await this.prisma.tarefa.findFirstOrThrow({
                 where: { id: config.tarefa_id },
@@ -73,6 +74,11 @@ export class AeCronogramaTpTaskService implements TaskableService {
             }
             tarefaText = `A tarefa ${tarefa.tarefa}`;
         }
+        objeto = calculaTextoObjeto(tarefaText);
+
+        const partes: NotificationParts[] = [];
+        await adicionaTextoIntro(objeto, partes);
+        this.adicionaTarefas(tarefas.linhas, hierarquiaRef, partes);
 
         const emailConfig = await this.prisma.cronogramaTerminoPlanejadoConfig.findUnique({
             where: {
@@ -81,17 +87,12 @@ export class AeCronogramaTpTaskService implements TaskableService {
         });
         if (emailConfig) {
             // email global
-
-            const partes: NotificationParts[] = [];
-            await adicionaTextoIntro(tarefaText, partes);
-            this.adicionaTarefas(tarefas.linhas, hierarquiaRef, partes);
-
             await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient) => {
                 const globalEmailQueue = await prismaTx.emaildbQueue.create({
                     data: {
                         id: uuidv7(),
                         config_id: 1,
-                        subject: emailConfig.assunto_global,
+                        subject: this.processaAssunto(emailConfig.assunto_global, objeto),
                         template: 'ae-cronograma-termino-planejado.html',
                         to: emailConfig.para,
                         variables: {
@@ -103,7 +104,8 @@ export class AeCronogramaTpTaskService implements TaskableService {
                     },
                 });
 
-                if (config.aviso_email_id)
+                if (config.aviso_email_id) {
+                    console.log(config, globalEmailQueue.id);
                     await prismaTx.avisoEmailDisparos.create({
                         data: {
                             aviso_email_id: config.aviso_email_id,
@@ -112,6 +114,7 @@ export class AeCronogramaTpTaskService implements TaskableService {
                             emaildb_queue_id: globalEmailQueue.id,
                         },
                     });
+                }
 
                 for (const orgao of orgaoDb) {
                     if (!orgao.email) {
@@ -132,7 +135,7 @@ export class AeCronogramaTpTaskService implements TaskableService {
                         data: {
                             id: uuidv7(),
                             config_id: 1,
-                            subject: emailConfig.assunto_orgao,
+                            subject: this.processaAssunto(emailConfig.assunto_orgao, objeto),
                             template: 'ae-cronograma-termino-planejado.html',
                             to: orgao.email,
                             variables: {
@@ -164,28 +167,42 @@ export class AeCronogramaTpTaskService implements TaskableService {
         };
 
         // mantendo no escopo para não precisar declara o tipo de TC
-        async function adicionaTextoIntro(tarefaText: string, parts: NotificationParts[]) {
+        function calculaTextoObjeto(tarefaText: string): string {
             if (tc.projeto) {
                 const textoComSemTarefa = {
                     false: 'O Projeto',
                     true: `${tarefaText} do projeto`,
                 };
 
-                parts.push({
-                    t: 'i',
-                    c: `${textoComSemTarefa[tarefaText ? 'true' : 'false']} "${tc.projeto.codigo} - ${tc.projeto.nome}" está aguardando posição sobre as seguintes tarefas:`,
-                });
+                return `${textoComSemTarefa[tarefaText ? 'true' : 'false']} ${tc.projeto.codigo} - ${tc.projeto.nome}`;
             } else if (tc.transferencia) {
                 const textoComSemTarefa = {
                     false: 'A Transferência',
                     true: `${tarefaText} da transferência`,
                 };
+                return `${textoComSemTarefa[tarefaText ? 'true' : 'false']} ${tc.transferencia.identificador}`;
+            }
+            return `-`;
+        }
+
+        // mantendo no escopo para não precisar declara o tipo de TC
+        async function adicionaTextoIntro(objeto: string, parts: NotificationParts[]) {
+            if (tc.projeto) {
                 parts.push({
                     t: 'i',
-                    c: `${textoComSemTarefa[tarefaText ? 'true' : 'false']}  "${tc.transferencia.identificador}" (${tc.transferencia.tipo.nome}) está aguardando posição sobre as seguintes atividades:`,
+                    c: `${objeto} está aguardando posição sobre as seguintes tarefas:`,
+                });
+            } else if (tc.transferencia) {
+                parts.push({
+                    t: 'i',
+                    c: `${objeto} (${tc.transferencia.tipo.nome}) está aguardando posição sobre as seguintes atividades:`,
                 });
             }
         }
+    }
+
+    private processaAssunto(base: string, objeto: string): string {
+        return base.replace(/:objeto:/g, objeto);
     }
 
     private adicionaTarefas(
