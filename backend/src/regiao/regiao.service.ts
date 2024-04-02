@@ -105,7 +105,7 @@ export class RegiaoService {
                           },
                       ],
             },
-            orderBy: [{ nivel: 'asc' }, { parente_id: 'asc' }],
+            orderBy: [{ descricao: 'asc' }, { id: 'asc' }],
             select: {
                 id: true,
                 descricao: true,
