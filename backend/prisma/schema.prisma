@@ -4871,7 +4871,7 @@ model AvisoEmailDisparos {
     criado_em  DateTime @default(now()) @db.Timestamptz(6)
 
     aviso_email_id   Int
-    aviso_email      AvisoEmail   @relation(fields: [id], references: [id])
+    aviso_email      AvisoEmail   @relation(fields: [aviso_email_id], references: [id])
     emaildb_queue_id String       @db.Uuid
     emaildb_queue    EmaildbQueue @relation(fields: [emaildb_queue_id], references: [id])
 
