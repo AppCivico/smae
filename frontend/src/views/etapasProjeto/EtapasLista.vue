@@ -44,24 +44,46 @@ const colunas = [
 ];
 const listaFiltradaPorTermoDeBusca = ref([]);
 
-const listaPreparada = computed(() => lista.value.map((x) => ({
-  nome: x.descricao,
-  ...(temPermissãoPara('CadastroProjetoEtapa.editar') ? {
-    editar: {
-      rota: {
-        name: 'novaEtapaDoProjetoEditar',
-        params: {
-          etapaDoProjetoId: x.id,
+const listaPreparada = computed(() => {
+  const listaOrdenada = lista.value.map((x) => {
+    const item = {
+      nome: x.descricao,
+    };
+
+    if (temPermissãoPara('CadastroProjetoEtapa.editar')) {
+      item.editar = {
+        rota: {
+          name: 'novaEtapaDoProjetoEditar',
+          params: {
+            etapaDoProjetoId: x.id,
+          },
         },
-      },
-    },
-  } : {}),
-  ...(temPermissãoPara('CadastroProjetoEtapa.remover') ? {
-    excluir: {
-      ação: () => excluirEtapa(x.id),
-    },    
-  } : {}),
-})) || []);
+      };
+    }
+
+    if (temPermissãoPara('CadastroProjetoEtapa.remover')) {
+      item.excluir = {
+        ação: () => excluirEtapa(x.id),
+      };
+    }
+
+    return item;
+  });
+
+  listaOrdenada.sort((a, b) => {
+    const nomeA = a.nome.toLowerCase();
+    const nomeB = b.nome.toLowerCase();
+    if (nomeA < nomeB) {
+      return -1;
+    }
+    if (nomeA > nomeB) {
+      return 1;
+    }
+    return 0;
+  });
+
+  return listaOrdenada;
+});
 </script>
 <template>
   <div class="flex spacebetween center mb2">
