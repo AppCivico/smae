@@ -7,11 +7,13 @@ import { storeToRefs } from 'pinia';
 import { computed, ref } from 'vue';
 import { useRoute } from 'vue-router';
 import { useEmailsStore } from "@/stores/envioEmail.store";
+import { useEtapasProjetosStore } from '@/stores/etapasProjeto.store.js';
 
 const route = useRoute();
 const tarefasStore = useTarefasStore();
 const emailsStore = useEmailsStore();
 const { emFoco:emailEmFoco } = storeToRefs(emailsStore);
+const etapasProjetosStore = useEtapasProjetosStore(); 
 const { árvoreDeTarefas, chamadasPendentes, erro } = storeToRefs(tarefasStore);
 
 const projetoEmFoco = computed(() => tarefasStore?.extra?.projeto || {});
@@ -27,8 +29,10 @@ const nívelMáximoPermitido = computed(() => {
 
 const nívelMáximoVisível = ref(0);
 
+const { lista } = storeToRefs(etapasProjetosStore);
 
 async function iniciar() {
+  etapasProjetosStore.buscarTudo();
   emailsStore.buscarItem({ transferencia_id: route.params.transferenciaId });
   tarefasStore.$reset();
   await tarefasStore.buscarTudo();
@@ -36,6 +40,10 @@ async function iniciar() {
   if (nívelMáximoPermitido.value) {
     nívelMáximoVisível.value = nívelMáximoPermitido.value;
   }
+}
+
+async function mudarEtapa(value){
+  console.log('mudarEtapa, value: ', value)
 }
 
 iniciar();
@@ -54,14 +62,33 @@ export default {
       v-if="(projetoEmFoco?.eh_prioritario && !apenasLeitura) || route.meta.prefixoParaFilhas === 'TransferenciasVoluntarias'"
       class="flex g1"
     >
+
+    <div class="dropbtn">
+      <span class="btn">Mudar etapa</span>
+      <ul>
+        <li
+          v-for="item, k in lista"
+          :key="k"
+        >
+          <button
+            type="button"
+            class="like-a__link"
+            @click="mudarEtapa(item)"
+          >
+            {{ item.descricao }}
+          </button>
+        </li>
+      </ul>
+    </div>
+
       <router-link
         :to="{
           name: $route.meta.prefixoParaFilhas + 'TarefasCriar',
           params: $route.params,
         }"
-        class="btn"
+        class="dropbtn"
       >
-        Nova tarefa
+       <span class="btn">Nova tarefa</span> 
       </router-link>
 
       <router-link
