@@ -208,7 +208,7 @@ iniciar();
       <thead>
         <th />
         <th class="tl">
-          Contra-medidas
+          Contramedidas
         </th>
         <th class="tl">
           Responsável
@@ -265,7 +265,15 @@ iniciar();
             </label>
           </td>
           <th>
-            {{ item.contramedida }}
+            <router-link
+              v-if="item.contramedida === 'terceiro plano'"
+              :to="{ name: 'planosDeAcaoDetalhes', params: { planoId: item.id }}"
+              >
+              {{ item.contramedida }}
+            </router-link>
+            <span v-else>
+              {{ item.contramedida }}
+            </span>
           </th>
           <td>
             {{ item.responsavel || item.orgao.sigla }}
