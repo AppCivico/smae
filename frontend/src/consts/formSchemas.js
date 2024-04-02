@@ -163,10 +163,10 @@ export const arquivoSimples = object()
 
 export const autenticação = object()
   .shape({
-    username: string()
+    email: string()
       .email('E-mail inválido')
       .required('Preencha seu e-mail'),
-    password: string()
+    senha: string()
       .required('Preencha sua senha'),
   });
 

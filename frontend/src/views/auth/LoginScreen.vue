@@ -29,12 +29,12 @@ async function onSubmit(values) {
           <div class="form-group">
             <label class="label tc300">Login</label>
             <Field
-              name="username"
+              name="email"
               placeholder="seu_email@provedor.com"
               type="text"
               class="inputtext tc500 mb1"
-              :class="{ 'error': errors.username }"
-              @change="($e) => { setFieldValue('username', $e.target.value.trim()); }"
+              :class="{ 'error': errors.email }"
+              @change="($e) => { setFieldValue('email', $e.target.value.trim()); }"
             />
             <div class="error-msg">
               {{ errors.username }}
@@ -43,12 +43,12 @@ async function onSubmit(values) {
           <div class="form-group">
             <label class="label tc300">Senha</label>
             <Field
-              name="password"
+              name="senha"
               placeholder="*******"
               type="password"
               class="inputtext tc500 mb1"
-              :class="{ 'error': errors.password }"
-              @change="($e) => { setFieldValue('password', $e.target.value.trim()); }"
+              :class="{ 'error': errors.senha }"
+              @change="($e) => { setFieldValue('senha', $e.target.value.trim()); }"
             />
             <div class="error-msg">
               {{ errors.password }}
