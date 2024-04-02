@@ -111,7 +111,10 @@ iniciar()
           {{ schema.fields.custo.spec.label }}
         </dt>
         <dd class="t13">
-          {{ `R$${ emFoco?.custo}` || '-' }}
+          {{ emFoco?.custo
+            ? `R$${dinheiro(emFoco?.custo)}`
+            : '-'
+          }}
         </dd>
       </div>
 
