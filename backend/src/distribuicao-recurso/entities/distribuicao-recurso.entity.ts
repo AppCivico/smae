@@ -3,19 +3,6 @@ import { IdSiglaDescricao } from 'src/common/dto/IdSigla.dto';
 
 export class DistribuicaoRecursoDto {
     id: number;
-    orgao_gestor: IdSiglaDescricao;
-    valor_total: Decimal;
-    empenho: boolean;
-    vigencia: Date | null;
-    registros_sei: DistribuicaoRecursoSeiDto[] | null;
-}
-
-export class ListDistribuicaoRecursoDto {
-    linhas: DistribuicaoRecursoDto[];
-}
-
-export class DistribuicaoRecursoDetailDto {
-    id: number;
     transferencia_id: number;
     orgao_gestor: IdSiglaDescricao;
     objeto: String;
@@ -35,6 +22,10 @@ export class DistribuicaoRecursoDetailDto {
     vigencia: Date | null;
     conclusao_suspensiva: Date | null;
     registros_sei: DistribuicaoRecursoSeiDto[] | null;
+}
+
+export class ListDistribuicaoRecursoDto {
+    linhas: DistribuicaoRecursoDto[];
 }
 
 export class DistribuicaoRecursoSeiDto {

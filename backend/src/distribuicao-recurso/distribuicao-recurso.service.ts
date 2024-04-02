@@ -4,7 +4,7 @@ import { CreateDistribuicaoRecursoDto } from './dto/create-distribuicao-recurso.
 import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
-import { DistribuicaoRecursoDetailDto, DistribuicaoRecursoDto } from './entities/distribuicao-recurso.entity';
+import { DistribuicaoRecursoDto } from './entities/distribuicao-recurso.entity';
 import { UpdateDistribuicaoRecursoDto } from './dto/update-distribuicao-recurso.dto';
 import { FilterDistribuicaoRecursoDto } from './dto/filter-distribuicao-recurso.dto';
 import { formataSEI } from 'src/common/formata-sei';
@@ -95,9 +95,23 @@ export class DistribuicaoRecursoService {
             },
             select: {
                 id: true,
+                transferencia_id: true,
+                objeto: true,
+                valor: true,
                 valor_total: true,
+                valor_contrapartida: true,
                 empenho: true,
+                programa_orcamentario_estadual: true,
+                programa_orcamentario_municipal: true,
+                dotacao: true,
+                proposta: true,
+                contrato: true,
+                convenio: true,
+                assinatura_termo_aceite: true,
+                assinatura_municipio: true,
+                assinatura_estado: true,
                 vigencia: true,
+                conclusao_suspensiva: true,
                 orgao_gestor: {
                     select: {
                         id: true,
@@ -128,7 +142,7 @@ export class DistribuicaoRecursoService {
         });
     }
 
-    async findOne(id: number, user: PessoaFromJwt): Promise<DistribuicaoRecursoDetailDto> {
+    async findOne(id: number, user: PessoaFromJwt): Promise<DistribuicaoRecursoDto> {
         const row = await this.prisma.distribuicaoRecurso.findFirst({
             where: {
                 id,
