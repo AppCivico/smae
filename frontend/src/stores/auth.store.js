@@ -15,9 +15,9 @@ export const useAuthStore = defineStore({
     permissions: JSON.parse(localStorage.getItem('permissions')),
   }),
   actions: {
-    async login(username, password) {
+    async login(carga) {
       try {
-        const token = await this.requestS.post(`${baseUrl}/login`, { email: username, senha: password });
+        const token = await this.requestS.post(`${baseUrl}/login`, carga);
 
         if (token.reduced_access_token) {
           this.reducedtoken = token.reduced_access_token;
