@@ -1,5 +1,4 @@
 import createDataTree from '@/helpers/createDataTree.ts';
-import flatten from '@/helpers/flatDataTree';
 import { defineStore } from 'pinia';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
@@ -30,8 +29,9 @@ function filtrar(array, nome, id) {
 export const useRegionsStore = defineStore({
   id: 'regions',
   state: () => ({
-    listregions: {},
+    listregions: [],
     regions: {},
+    regiõesEmLista: [],
     tempRegions: {},
     singleTempRegions: {},
     camadas: null,
@@ -174,16 +174,13 @@ export const useRegionsStore = defineStore({
     },
   },
   getters: {
-    regiõesEmLista: (({ regions }) => (regions && Array.isArray(regions) ? flatten(regions) : [])),
-    regiõesPorNível() {
-      return this.regiõesEmLista.reduce((acc, cur) => ({
-        ...acc,
-        [cur.nivel]: [
-          ...(acc[cur.nivel] || []),
-          cur,
-        ],
-      }), {});
-    },
+    regiõesPorNível: ({ listregions }) => listregions.reduce((acc, cur) => ({
+      ...acc,
+      [cur.nivel]: [
+        ...(acc[cur.nivel] || []),
+        cur,
+      ],
+    }), {}),
     regiõesPorNívelOrdenadas() {
       return Object.keys(this.regiõesPorNível)
         .reduce((acc, cur) => ({
