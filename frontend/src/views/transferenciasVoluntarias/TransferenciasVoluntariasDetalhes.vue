@@ -1,5 +1,6 @@
 <script setup>
 import dateToField from '@/helpers/dateToField';
+import dinheiro from '@/helpers/dinheiro';
 import { useDistribuicaoRecursosStore } from '@/stores/transferenciasDistribuicaoRecursos.store';
 import { useTransferenciasVoluntariasStore } from '@/stores/transferenciasVoluntarias.store';
 import { storeToRefs } from 'pinia';
@@ -159,7 +160,7 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
       </dl>
       <dl class="f1">
         <dt>
-          cargo
+          Cargo
         </dt>
         <dd>
           {{ transferênciaEmFoco?.cargo || '-' }}
@@ -250,7 +251,7 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
     <div>
       <dl class="f1 mb1">
         <dt>
-          normativa
+          Normativa
         </dt>
         <dd>
           {{ transferênciaEmFoco?.normativa || '-' }}
@@ -258,7 +259,7 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
       </dl>
       <dl class="f1 mb1">
         <dt>
-          observacoes
+          Observações
         </dt>
         <dd>
           {{ transferênciaEmFoco?.observacoes || '-' }}
@@ -285,10 +286,10 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
     <div class="grid valores f1">
       <dl class="mb1">
         <dt>
-          valor
+          Valor
         </dt>
         <dd>
-          {{ transferênciaEmFoco?.valor || '-' }}
+          {{ `R$${dinheiro(transferênciaEmFoco?.valor)}` || '-' }}
         </dd>
       </dl>
       <dl class="mb1">
@@ -296,7 +297,7 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
           Valor contra-partida
         </dt>
         <dd>
-          {{ transferênciaEmFoco?.valor_contrapartida || '-' }}
+          {{ `R$${dinheiro(transferênciaEmFoco?.valor_contrapartida)}` || '-' }}
         </dd>
       </dl>
       <dl class="mb1">
@@ -304,7 +305,7 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
           Valor total
         </dt>
         <dd>
-          {{ transferênciaEmFoco?.valor_total || '-' }}
+          {{ `R$${dinheiro(transferênciaEmFoco?.valor_total)}` || '-' }}
         </dd>
       </dl>
     </div>
@@ -382,7 +383,7 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
 
   <div class="flex spacebetween center mb1 mt2">
     <h3 class="title">
-      Dados Bancários Secretaria Fim
+      Dados bancários secretaria fim
     </h3>
     <hr class="ml2 f1">
   </div>
@@ -439,7 +440,9 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
           Gestor municipal
         </dt>
         <dd>
-          {{ distribuição.gestor_contrato || '-' }}
+          {{ distribuição.orgao_gestor ?
+          `${distribuição.orgao_gestor.sigla} - ${distribuição.orgao_gestor.descricao}` : '-'
+          }}
         </dd>
       </dl>
       <dl class="f1">
@@ -459,7 +462,7 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
             Valor
           </dt>
           <dd>
-            {{ distribuição.valor || '-' }}
+            {{ `R$${dinheiro(distribuição.valor)}` || '-' }}
           </dd>
         </dl>
         <dl class="mb1">
@@ -467,7 +470,7 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
             Valor contra-partida
           </dt>
           <dd>
-            {{ distribuição.valor_contrapartida || '-' }}
+            {{ `R$${dinheiro(distribuição.valor_contrapartida)}` || '-' }}
           </dd>
         </dl>
         <dl class="mb1">
@@ -475,7 +478,7 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
             Valor total
           </dt>
           <dd>
-            {{ distribuição.valor_total || '-' }}
+            {{ `R$${dinheiro(distribuição.valor_total)}` || '-' }}
           </dd>
         </dl>
       </div>
@@ -552,7 +555,7 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
             Número do convênio/pré convênio
           </dt>
           <dd>
-            {{ distribuição.convenios || '-' }}
+            {{ distribuição.convenio || '-' }}
           </dd>
         </dl>
       </div>
@@ -598,26 +601,26 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
     <div class="flex spacebetween start mb2">
       <dl class="f1">
         <dt>
-          Data assinatura do termo de aceite
+          Data da assinatura do termo de aceite
         </dt>
-        <dd v-if="distribuição?.data_assinatura_termo_aceite">
-          {{ distribuição.data_assinatura_termo_aceite }}
+        <dd v-if="distribuição?.assinatura_termo_aceite">
+          {{ dateToField(distribuição.assinatura_termo_aceite) }}
         </dd>
       </dl>
       <dl class="f1">
         <dt>
-          Data assinatura do representante do estado
+          Data da assinatura do representante do estado
         </dt>
-        <dd v-if="distribuição?.data_assinatura_representante_estado">
-          {{ dateToField(distribuição.data_assinatura_representante_estado) }}
+        <dd v-if="distribuição?.assinatura_estado">
+          {{ dateToField(distribuição.assinatura_estado) }}
         </dd>
       </dl>
       <dl class="f1">
         <dt>
-          Data assinatura do representante do município
+          Data da assinatura do representante do município
         </dt>
-        <dd v-if="distribuição?.data_assinatura_representante_municipio">
-          {{ dateToField(distribuição.data_assinatura_representante_municipio) }}
+        <dd v-if="distribuição?.assinatura_municipio">
+          {{ dateToField(distribuição.assinatura_municipio) }}
         </dd>
       </dl>
     </div>
@@ -628,7 +631,7 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
 .title{
     color: #607a9f;
     font-weight: 700;
-    font-size: 1.25rem;
+    font-size: 22px;
 }
 section{
   box-shadow: 0px 4px 16px 0px rgba(21, 39, 65, 0.1);
