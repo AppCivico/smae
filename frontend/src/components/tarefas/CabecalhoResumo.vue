@@ -130,6 +130,18 @@ const props = defineProps({
             : '-' }}
         </dd>
       </div>
+      <div class="f1 mb1">
+        <dt class="t12 uc w700 mb05 tamarelo">
+          Etapa do projeto
+        </dt>
+        <dd class="t13 dado-efetivo">
+          {{
+            emFoco?.projeto_etapa
+              ? emFoco.projeto_etapa
+              : '-'
+          }}
+        </dd>
+      </div>
       <div v-if="route.meta.prefixoParaFilhas === 'TransferenciasVoluntarias'" class="f1 mb1"  >
         <dt class="t12 uc w700 mb05 tamarelo">Envio de e-mail?</dt>
         <dd class="t13 dado-efetivo">
