@@ -139,15 +139,22 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
           {{ transferênciaEmFoco?.secretaria_concedente || '-' }}
         </dd>
       </dl>
-      <dl class="f1 mb3" />
-    </div>
-    <div class="flex spacebetween start mb1">
       <dl class="f1">
         <dt>
           Parlamentar
         </dt>
         <dd>
           {{ transferênciaEmFoco?.parlamentar?.nome || '-' }}
+        </dd>
+      </dl>
+    </div>
+    <div class="flex spacebetween start mb1">
+      <dl class="f1">
+        <dt>
+          Número de identificação
+        </dt>
+        <dd>
+          {{ transferênciaEmFoco?.numero_identificacao || '-' }}
         </dd>
       </dl>
       <dl class="f1">
