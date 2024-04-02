@@ -4,6 +4,29 @@ import { defineStore } from 'pinia';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
+function filtrar(array, nome, id) {
+  const conferirDescendentes = (resultado, item) => {
+    switch (true) {
+      // no código original, nome é mas importante do que ID
+      case nome && item.descricao.toLowerCase().includes(nome):
+        resultado.push(item);
+        return resultado;
+      case id && item.id === id:
+        resultado.push(item);
+        return resultado;
+      case Array.isArray(item.children): {
+        const children = item.children.reduce(conferirDescendentes, []);
+        if (children.length) resultado.push({ ...item, children });
+        return resultado;
+      }
+      default:
+        return resultado;
+    }
+  };
+
+  return array.reduce(conferirDescendentes, []);
+}
+
 export const useRegionsStore = defineStore({
   id: 'regions',
   state: () => ({
@@ -28,12 +51,6 @@ export const useRegionsStore = defineStore({
     },
     clearEdit() {
       this.singleTempRegions = {};
-    },
-    compareFilter(item, nome, rid) {
-      let r = 0;
-      if (rid) r = item.id == rid;
-      if (nome) r = item.descricao.toLowerCase().includes(nome);
-      return r;
     },
     async getAll() {
       this.regions = { loading: true };
@@ -119,41 +136,13 @@ export const useRegionsStore = defineStore({
       try {
         if (!this.regions.length) await this.getAll();
 
-        const x = JSON.parse(JSON.stringify(this.regions));
         if (f?.textualSearch || f?.id) {
-          const nome = f.textualSearch ? f.textualSearch.toLowerCase() : false;
-          const rid = f.id ? f.id : false;
+          const nome = f.textualSearch ? f.textualSearch.toLowerCase() : undefined;
+          const id = f.id ? f.id : undefined;
 
-          this.tempRegions = x.reduce((a, u, i) => {
-            if (this.compareFilter(u, nome, rid)) { u.index = i; a.push(u); return a; }
-            let ru = 0;
-            if (u.children.length) {
-              u.children = u.children.reduce((aa, uu, ii) => {
-                if (this.compareFilter(uu, nome, rid)) { uu.index = ii; aa.push(uu); ru = 1; return aa; }
-                let ruu = 0;
-                if (uu.children.length) {
-                  uu.children = uu.children.reduce((aaa, uuu, iii) => {
-                    if (this.compareFilter(uuu, nome, rid)) { uuu.index = iii; aaa.push(uuu); ruu = 1; return aaa; }
-                    let ruuu = 0;
-                    if (uuu.children.length) {
-                      uuu.children = uuu.children.reduce((aaaa, uuuu, iiii) => {
-                        if (this.compareFilter(uuuu, nome, rid)) { uuuu.index = iiii; aaaa.push(uuuu); ruuu = 1; return aaaa; }
-                        return aaaa;
-                      }, []);
-                    }
-                    if (ruuu) { uuu.index = iii; aaa.push(uuu); ruu = 1; }
-                    return aaa;
-                  }, []);
-                }
-                if (ruu) { uu.index = ii; aa.push(uu); ru = 1; }
-                return aa;
-              }, []);
-            }
-            if (ru) { u.index = i; a.push(u); }
-            return a;
-          }, []);
+          this.tempRegions = filtrar(this.regions, nome, id);
         } else {
-          this.tempRegions = x;
+          this.tempRegions = JSON.parse(JSON.stringify(this.regions));
         }
       } catch (error) {
         this.tempRegions = { error };
