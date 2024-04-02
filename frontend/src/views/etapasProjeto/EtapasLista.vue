@@ -9,7 +9,7 @@ import { computed, ref } from 'vue';
 
 const authStore = useAuthStore();
 const { temPermissãoPara } = authStore;
-const etapasProjetosStore = useEtapasProjetosStore(); //
+const etapasProjetosStore = useEtapasProjetosStore(); 
 const {
   lista, chamadasPendentes, erro,
 } = storeToRefs(etapasProjetosStore);
@@ -67,10 +67,6 @@ const listaPreparada = computed(() => lista.value.map((x) => ({
   <div class="flex spacebetween center mb2">
     <h1>{{ $route.meta.título }}</h1>
     <hr class="ml2 f1">
-        <!-- v-if="perm?.Projeto?.administrar_portfolios" -->
-        <!-- 'CadastroProjetoEtapa.inserir',
-              'CadastroProjetoEtapa.editar',
-              'CadastroProjetoEtapa.remover', -->
     <router-link
       v-if="temPermissãoPara('CadastroProjetoEtapa.inserir')"
       :to="{ name: 'etapaDoProjetoCriar' }"
