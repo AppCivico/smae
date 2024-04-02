@@ -1,3 +1,6 @@
+-- AlterTable
+ALTER TABLE "pdm" ADD COLUMN     "considerar_atraso_apos" DATE;
+
 CREATE OR REPLACE FUNCTION atualiza_meta_status_consolidado(pMetaId int, pCicloFisicoIdAtual int)
     RETURNS varchar
     AS $$
@@ -513,6 +516,3 @@ BEGIN
 END
 $$
 LANGUAGE plpgsql;
-
-
--- select atualiza_meta_status_consolidado(id, (select id from ciclo_fisico where ativo)) from meta where pdm_id = (select id from pdm where ativo) and removido_em is null;
