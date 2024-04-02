@@ -33,6 +33,7 @@ import { ReportsModule } from './reports/relatorios/reports.module';
 import { UtilsService } from './reports/utils/utils.service';
 import { RequestLogModule } from './request_log/request_log.module';
 import { TransferenciaModule } from './transferencia/transferencia.module';
+import { CTPConfigModule } from './cronograma-termino-planejado-config/ctp-config.module';
 
 // Hacks pro JS
 /*
@@ -70,6 +71,7 @@ import { TransferenciaModule } from './transferencia/transferencia.module';
         TransferenciaModule,
         DistribuicaoRecursoModule,
         AvisoEmailModule,
+        CTPConfigModule
     ],
     controllers: [AppController],
     providers: [

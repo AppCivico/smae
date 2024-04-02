@@ -50,6 +50,8 @@ export class AvisoEmailTaskService implements TaskableService {
                         params: {
                             tarefa_cronograma_id: aviso_email.tarefa_cronograma_id ?? undefined,
                             tarefa_id: aviso_email.tarefa_id ?? undefined,
+                            aviso_email_id: aviso_email.id,
+                            cc: aviso_email.com_copia,
                         },
                         type: 'aviso_email_cronograma_tp',
                     },
