@@ -4,6 +4,7 @@ import PlanosDeAçãoItem from '@/views/planosDeAcao/PlanosDeAcaoItem.vue';
 import PlanosDeAçãoLista from '@/views/planosDeAcao/PlanosDeAcaoLista.vue';
 import PlanosDeAçãoMonitoramento from '@/views/planosDeAcao/PlanosDeAcaoMonitoramento.vue';
 import PlanosDeAçãoRaiz from '@/views/planosDeAcao/PlanosDeAcaoRaiz.vue';
+import PlanosDeAçãoDetalhes from '@/views/planosDeAcao/PlanosDeAcaoDetalhe.vue';
 
 export default {
   path: 'planos-de-acao',
@@ -124,6 +125,26 @@ export default {
             ],
           },
         },
+
+        {
+          path: 'planosDeAcaoDetalhes',
+          name: 'planosDeAcaoDetalhes',
+          component: PlanosDeAçãoDetalhes,
+          props: ({ params }) => ({
+            ...params,
+            projetoId: Number.parseInt(params.projetoId, 10) || undefined,
+          }),
+          meta: {
+            título: 'Resumo do Plano de ação',
+            títuloParaMenu: 'Resumo',
+            rotasParaMigalhasDePão: [
+              'projetosListar',
+              'projetosResumo',
+              'planosDeAcaoDetalhes',
+            ],
+          },
+        },
+
       ],
     },
   ],
