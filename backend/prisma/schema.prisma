@@ -606,6 +606,8 @@ model Pdm {
     desativado_por Int?
     desativado_em  DateTime? @db.Timestamptz(6)
 
+    considerar_atraso_apos DateTime? @db.Date()
+
     atualizador         Pessoa?            @relation("Atualizador", fields: [atualizado_por], references: [id])
     criador             Pessoa?            @relation("Criador", fields: [criado_por], references: [id])
     desativador         Pessoa?            @relation("Desativador", fields: [desativado_por], references: [id])
