@@ -1705,6 +1705,12 @@ export const representatividade = object()
       .label('Região'),
   });
 
+  export const etapasProjeto = object({
+    descricao: string()
+      .label('Etapa')
+      .required(),
+  });
+
 export const risco = object()
   .shape({
     causa: string()
