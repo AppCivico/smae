@@ -8,8 +8,6 @@ function filtrar(array, nome, id) {
     switch (true) {
       // no código original, nome é mas importante do que ID
       case nome && item.descricao.toLowerCase().includes(nome):
-        resultado.push(item);
-        return resultado;
       case id && item.id === id:
         resultado.push(item);
         return resultado;
