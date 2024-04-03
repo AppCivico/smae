@@ -248,9 +248,9 @@ iniciar();
         </thead>
         <tbody>
           <tr
-            v-for="item in equipe.assessores.concat(equipe.contatos).sort((a, b) => (a.nome > b.nome) ? 1 : -1)"
-            :key="item.id"
-          >
+            v-for="item in equipe.assessores.concat(equipe.contatos).sort(
+            (a, b) => a.nome.localeCompare(b.nome))"
+            :key="item.id">
             <td>{{ item.nome }}</td>
             <td>{{ item.tipo }}</td>
             <td>

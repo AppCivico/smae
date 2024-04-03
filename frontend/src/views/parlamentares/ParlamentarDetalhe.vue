@@ -110,8 +110,8 @@
               <th>Tipo</th>
             </tr>
           </thead>
-          <tbody v-if="tabelaCombinada.length">
-            <tr v-for="(item, index) in tabelaCombinada" :key="index">
+          <tbody v-if="emFoco.equipe">
+            <tr v-for="(item, index) in emFoco.equipe.sort((a, b) => a.nome.localeCompare(b.nome))" :key="index">
               <td>{{ item.nome }}</td>
               <td>{{ item.telefone }}</td>
               <td>{{ item.email }}</td>
@@ -334,20 +334,9 @@ onMounted(async () => {
   emFoco.value = parlamentaresStore.emFoco;
 });
 
-const equipe = computed(() => emFoco.value?.equipe ?? []);
-
-const assessores = computed(() => equipe.value.filter((item) => item.tipo === 'Assessor'));
-const contatos = computed(() => equipe.value.filter((item) => item.tipo === 'Contato'));
-
 function formatarNumero(numero) {
   return numero.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
 }
-
-const tabelaCombinada = computed(() => {
-  const assessoresContatos = [...assessores.value, ...contatos.value];
-  return assessoresContatos.sort(
-      (a, b) => (a.nome > b.nome) ? 1 : -1);
-});
 
 </script>
 
