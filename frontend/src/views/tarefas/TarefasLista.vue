@@ -8,6 +8,8 @@ import { computed, ref } from 'vue';
 import { useRoute } from 'vue-router';
 import { useEmailsStore } from "@/stores/envioEmail.store";
 import { useEtapasProjetosStore } from '@/stores/etapasProjeto.store.js';
+import { useAlertStore } from '@/stores/alert.store';
+import { useProjetosStore } from '@/stores/projetos.store.ts';
 
 const route = useRoute();
 const tarefasStore = useTarefasStore();
@@ -15,7 +17,8 @@ const emailsStore = useEmailsStore();
 const { emFoco:emailEmFoco } = storeToRefs(emailsStore);
 const etapasProjetosStore = useEtapasProjetosStore(); 
 const { árvoreDeTarefas, chamadasPendentes, erro } = storeToRefs(tarefasStore);
-
+const alertStore = useAlertStore();
+const projetosStore = useProjetosStore();
 const projetoEmFoco = computed(() => tarefasStore?.extra?.projeto || {});
 const apenasLeitura = computed(
   () => !!projetoEmFoco.value?.permissoes?.apenas_leitura,
@@ -29,7 +32,7 @@ const nívelMáximoPermitido = computed(() => {
 
 const nívelMáximoVisível = ref(0);
 
-const { lista } = storeToRefs(etapasProjetosStore);
+const { lista:listaDeEtapas } = storeToRefs(etapasProjetosStore);
 
 async function iniciar() {
   etapasProjetosStore.buscarTudo();
@@ -42,10 +45,21 @@ async function iniciar() {
   }
 }
 
-async function mudarEtapa(value){
-  console.log('mudarEtapa, value: ', value)
+async function mudarEtapa(idEtapa) {
+  const carga = {
+    projeto_etapa_id: idEtapa
+  }
+  try {
+    const msg = 'Etapa salva com sucesso!';
+    const resposta =  await projetosStore.salvarItem(carga, projetoEmFoco.value.id)
+    if (resposta) {
+      alertStore.success(msg);
+      tarefasStore.buscarTudo();
+    }
+  } catch (error) {
+    alertStore.error(error);
+  }
 }
-
 iniciar();
 </script>
 <script>
@@ -67,15 +81,15 @@ export default {
       <span class="btn">Mudar etapa</span>
       <ul>
         <li
-          v-for="item, k in lista"
-          :key="k"
+          v-for="etapa, index in listaDeEtapas"
+          :key="index"
         >
           <button
             type="button"
             class="like-a__link"
-            @click="mudarEtapa(item)"
+            @click="mudarEtapa(etapa.id)"
           >
-            {{ item.descricao }}
+            {{ etapa.descricao }}
           </button>
         </li>
       </ul>
@@ -97,12 +111,15 @@ export default {
           name: $route.meta.prefixoParaFilhas + 'TarefasClonar',
           params: $route.params,
         }"
-        class="btn"
+        class="dropbtn"
       >
-        Clonar tarefas
+        <span class="btn"> Clonar tarefas </span>
       </router-link>
     </nav>
   </div>
+
+  <LoadingComponent v-if="chamadasPendentes.lista" class="mb2 horizontal"/>
+  <LoadingComponent v-if="projetosStore.chamadasPendentes.emFoco" class="mb2 horizontal">Salvando</LoadingComponent>
   <CabecalhoResumo :em-foco="projetoEmFoco" :existe-email="emailEmFoco?.linhas[0]?.id !== undefined" />
 
   <div class="flex center mb4" v-if="route.meta.prefixoParaFilhas === 'TransferenciasVoluntarias'" >
