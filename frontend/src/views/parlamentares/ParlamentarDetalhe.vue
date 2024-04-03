@@ -94,7 +94,7 @@
       <div class="mb4 mt2">
         <div class="flex spacebetween center">
           <h3 class="title">
-            Assessores / Contato
+            Assessores / Contatos
           </h3>
           <hr class="ml2 f1">
         </div>
@@ -121,7 +121,7 @@
           <tbody v-else>
             <tr>
               <td colspan="3">
-                Nenhum assessor encontrado.
+                Nenhum assessor/contato encontrado.
               </td>
             </tr>
           </tbody>
@@ -345,8 +345,10 @@ function formatarNumero(numero) {
 
 const tabelaCombinada = computed(() => {
   const assessoresContatos = [...assessores.value, ...contatos.value];
-  return assessoresContatos;
+  return assessoresContatos.sort(
+      (a, b) => (a.nome > b.nome) ? 1 : -1);
 });
+
 </script>
 
 <style scoped lang="less">

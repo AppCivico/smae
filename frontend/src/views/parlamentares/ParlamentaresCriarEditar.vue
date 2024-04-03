@@ -57,6 +57,7 @@ async function onSubmit(values) {
   }
 }
 
+
 function iniciar() {
   if (props.parlamentarId) {
     parlamentaresStore.buscarItem(props.parlamentarId);
@@ -225,7 +226,7 @@ iniciar();
       class="mb3"
     >
       <div class="flex spacebetween center mb1">
-        <span class="label tc300">Assessores / Contato</span>
+        <span class="label tc300">Assessores / Contatos</span>
         <hr class="mr2 f1">
       </div>
 
@@ -247,7 +248,7 @@ iniciar();
         </thead>
         <tbody>
           <tr
-            v-for="item in equipe.assessores.concat(equipe.contatos)"
+            v-for="item in equipe.assessores.concat(equipe.contatos).sort((a, b) => (a.nome > b.nome) ? 1 : -1)"
             :key="item.id"
           >
             <td>{{ item.nome }}</td>
@@ -285,7 +286,7 @@ iniciar();
         </tbody>
       </table>
       <p v-else>
-        Nenhum assessor ou Contato encontrado
+        Nenhum assessor ou contato encontrado
       </p>
 
       <router-link
@@ -302,7 +303,7 @@ iniciar();
         <svg
           width="20"
           height="20"
-        ><use xlink:href="#i_+" /></svg>Registrar novo assessor
+        ><use xlink:href="#i_+" /></svg>Registrar novo assessor/contato
       </router-link>
     </div>
 
