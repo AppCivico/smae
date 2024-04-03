@@ -19,7 +19,10 @@ const props = defineProps({
     required: true,
   },
   idDoItem: {
-    type: Number,
+    type: [
+      Number,
+      String,
+    ],
     default: 0,
   },
   ano: {
@@ -121,8 +124,7 @@ async function buscarCompartilhamentos(pdm, ano, dotação, extras) {
       compartilhamentos.value = [];
       return;
 
-    case !patterns.dotação.test(dotação):
-    case !patterns.dotaçãoComComplemento.test(dotação):
+    case !patterns.dotação.test(dotação) && !patterns.dotaçãoComComplemento.test(dotação):
       compartilhamentos.value = [];
       return;
 
