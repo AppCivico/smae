@@ -130,7 +130,7 @@ const props = defineProps({
             : '-' }}
         </dd>
       </div>
-      <div class="f1 mb1">
+      <div v-if="route.meta.entidadeMãe === 'projeto'" class="f1 mb1">
         <dt class="t12 uc w700 mb05 tamarelo">
           Etapa do projeto
         </dt>
@@ -148,7 +148,7 @@ const props = defineProps({
           <div class="flex g1" v-if="existeEmail">
             <span>Sim</span>
             <router-link :to="{name: 'transferenciaEmailModal'}" title="Editar e-mail">
-              <svg width="20" height="20"><use xlink:href="#i_edit" /></svg>
+              <svg width="18" height="17"><use xlink:href="#i_edit" /></svg>
             </router-link>
           </div>
           <span v-else>Não</span>
