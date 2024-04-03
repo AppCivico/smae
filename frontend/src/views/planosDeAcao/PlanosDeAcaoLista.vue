@@ -266,14 +266,12 @@ iniciar();
           </td>
           <th>
             <router-link
-              v-if="item.contramedida === 'terceiro plano'"
-              :to="{ name: 'planosDeAcaoDetalhes', params: { planoId: item.id }}"
+              :to="{ name: 'detalhes',
+              params: { planoId: item.id }}"
               >
               {{ item.contramedida }}
             </router-link>
-            <span v-else>
-              {{ item.contramedida }}
-            </span>
+
           </th>
           <td>
             {{ item.responsavel || item.orgao.sigla }}

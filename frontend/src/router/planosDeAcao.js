@@ -127,11 +127,12 @@ export default {
         },
 
         {
-          path: 'planosDeAcaoDetalhes',
-          name: 'planosDeAcaoDetalhes',
+          path: 'detalhes',
+          name: 'detalhes',
           component: PlanosDeAçãoDetalhes,
           props: ({ params }) => ({
             ...params,
+            planoId: Number.parseInt(params.planoId, 10) || undefined,
             projetoId: Number.parseInt(params.projetoId, 10) || undefined,
           }),
           meta: {
@@ -140,7 +141,7 @@ export default {
             rotasParaMigalhasDePão: [
               'projetosListar',
               'projetosResumo',
-              'planosDeAcaoDetalhes',
+              'detalhes',
             ],
           },
         },
