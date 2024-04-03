@@ -1,6 +1,6 @@
 <script setup>
 import { storeToRefs } from 'pinia';
-import { defineProps, ref } from 'vue';
+import { defineProps, ref, onMounted  } from 'vue';
 import dinheiro from '@/helpers/dinheiro';
 import { planoDeAção as schema } from '@/consts/formSchemas';
 import { usePlanosDeAçãoStore } from '@/stores/planosDeAcao.store.ts';
@@ -8,30 +8,36 @@ import dateToField from '@/helpers/dateToField';
 import requestS from '@/helpers/requestS.ts';
 
 const planosDeAçãoStore = usePlanosDeAçãoStore();
-const {  emFoco } = storeToRefs(planosDeAçãoStore);
+const { emFoco } = storeToRefs(planosDeAçãoStore);
 
 const props = defineProps({
   projetoId: {
     type: Number,
     default: 0,
   },
+  planoId: {
+    type: Number,
+    default: 0,
+  },
 });
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
+const planoAcaoLinhas = ref(null);
 
-const u = ref(null);
-
-async function iniciar(id) {
-  u.value = await requestS.get(
-    `${baseUrl}/projeto/${props.projetoId}/plano-acao-monitoramento`,
-    {
-      plano_acao_id: id,
-    },
-  );
+async function iniciar(planoId) {
+  try {
+    planoAcaoLinhas.value = await requestS.get(
+      `${baseUrl}/projeto/${props.projetoId}/plano-acao-monitoramento`,
+      { plano_acao_id: planoId }
+    );
+  } catch (error) {
+    console.error('Erro ao buscar dados:', error);
+  }
 }
 
-iniciar()
-
+onMounted(() => {
+  iniciar(props.planoId);
+});
 </script>
 
 <template>
@@ -138,18 +144,27 @@ iniciar()
     </dd>
   </div>
 
-  <div>
-    <table v-if="u && u.linhas && u.linhas.length > 0" class="tablemain">
+  <div v-if="planoAcaoLinhas && planoAcaoLinhas.linhas && planoAcaoLinhas.linhas.length > 0">
+    <table class="tablemain">
       <colgroup>
         <col class="col--data">
         <col>
       </colgroup>
-      <tr v-for="(linha, index) in u.linhas" :key="index">
-        <td>{{ dateToField(linha.data_afericao) || "-" }}</td>
-        <td>{{ linha.descricao }}</td>
-      </tr>
+      <tbody>
+        <tr v-for="(linha, index) in planoAcaoLinhas.linhas" :key="index">
+          <td>{{ dateToField(linha.data_afericao) || "-" }}</td>
+          <td>{{ linha.descricao }}</td>
+        </tr>
+      </tbody>
     </table>
-    <span v-else class="spinner">Carregando</span>
+  </div>
+
+  <div v-else-if="planoAcaoLinhas && planoAcaoLinhas.linhas && planoAcaoLinhas.linhas.length === 0">
+    <p>Nenhum dado disponível.</p>
+  </div>
+
+  <div v-else>
+    <span class="spinner">Carregando</span>
   </div>
 
 </template>
