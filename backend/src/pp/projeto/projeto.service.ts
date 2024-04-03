@@ -975,7 +975,7 @@ export class ProjetoService {
                     select: {
                         id: true,
                         descricao: true,
-                    }
+                    },
                 },
                 ano_orcamento: true,
                 logradouro_tipo: true,
@@ -2110,20 +2110,9 @@ export class ProjetoService {
     }
 
     async cloneTarefas(projetoId: number, dto: CloneProjetoTarefasDto, user: PessoaFromJwt) {
-        // Se o projeto já tiver tarefas, não pode realizar esta ação.
-        const tarefasCount = await this.prisma.tarefa.count({
-            where: {
-                tarefa_cronograma: {
-                    projeto_id: projetoId,
-                    removido_em: null,
-                },
-                removido_em: null,
-            },
-        });
-        if (tarefasCount > 0) throw new HttpException('Projeto já possui cronograma', 400);
-        // TODO: arrumando mas eu sei que tem card já pra isso morrer, é pra entrar por cima com o clone
-
-        await this.prisma.$queryRaw`CALL clone_projeto_tarefas(${dto.projeto_fonte_id}::int, ${projetoId}::int);`;
+        // O true é para indicar que é clone de projeto e não de transferência.
+        await this.prisma
+            .$queryRaw`CALL clone_tarefas('true'::boolean, ${dto.projeto_fonte_id}::int, ${projetoId}::int);`;
     }
 
     async transferPortfolio(
