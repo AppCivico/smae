@@ -15,7 +15,7 @@ const route = useRoute();
 const tarefasStore = useTarefasStore();
 const emailsStore = useEmailsStore();
 const { emFoco:emailEmFoco } = storeToRefs(emailsStore);
-const etapasProjetosStore = useEtapasProjetosStore(); 
+const etapasProjetosStore = useEtapasProjetosStore();
 const { árvoreDeTarefas, chamadasPendentes, erro } = storeToRefs(tarefasStore);
 const alertStore = useAlertStore();
 const projetosStore = useProjetosStore();
@@ -102,11 +102,11 @@ export default {
         }"
         class="dropbtn"
       >
-       <span class="btn">Nova tarefa</span> 
+       <span class="btn">Nova tarefa</span>
       </router-link>
 
       <router-link
-        v-if="route.meta.entidadeMãe === 'projeto' && !árvoreDeTarefas.length"
+        v-if="route.meta.entidadeMãe === 'projeto'"
         :to="{
           name: $route.meta.prefixoParaFilhas + 'TarefasClonar',
           params: $route.params,
