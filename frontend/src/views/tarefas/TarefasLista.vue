@@ -116,7 +116,7 @@ export default {
       </router-link>
     </nav>
   </div>
-  <!-- projetosStore: <pre>{{ projetosStore }}</pre> -->
+  
   <LoadingComponent v-if="chamadasPendentes.lista" class="mb2 horizontal"/>
   <LoadingComponent v-if="projetosStore.chamadasPendentes.emFoco && $route.meta.entidadeMãe === 'projeto'" class="mb2 horizontal">Salvando</LoadingComponent>
   <CabecalhoResumo :em-foco="projetoEmFoco" :existe-email="emailEmFoco?.linhas[0]?.id !== undefined" />
