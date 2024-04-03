@@ -76,8 +76,7 @@ export default {
       v-if="(projetoEmFoco?.eh_prioritario && !apenasLeitura) || route.meta.prefixoParaFilhas === 'TransferenciasVoluntarias'"
       class="flex g1"
     >
-
-    <div class="dropbtn">
+    <div v-if="$route.meta.entidadeMãe === 'projeto'" class="dropbtn">
       <span class="btn">Mudar etapa</span>
       <ul>
         <li
@@ -117,9 +116,9 @@ export default {
       </router-link>
     </nav>
   </div>
-
+  <!-- projetosStore: <pre>{{ projetosStore }}</pre> -->
   <LoadingComponent v-if="chamadasPendentes.lista" class="mb2 horizontal"/>
-  <LoadingComponent v-if="projetosStore.chamadasPendentes.emFoco" class="mb2 horizontal">Salvando</LoadingComponent>
+  <LoadingComponent v-if="projetosStore.chamadasPendentes.emFoco && $route.meta.entidadeMãe === 'projeto'" class="mb2 horizontal">Salvando</LoadingComponent>
   <CabecalhoResumo :em-foco="projetoEmFoco" :existe-email="emailEmFoco?.linhas[0]?.id !== undefined" />
 
   <div class="flex center mb4" v-if="route.meta.prefixoParaFilhas === 'TransferenciasVoluntarias'" >
