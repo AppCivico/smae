@@ -2113,6 +2113,7 @@ export class ProjetoService {
         // O true é para indicar que é clone de projeto e não de transferência.
         await this.prisma
             .$queryRaw`CALL clone_tarefas('true'::boolean, ${dto.projeto_fonte_id}::int, ${projetoId}::int);`;
+        console.log('exec de procedure');
     }
 
     async transferPortfolio(
