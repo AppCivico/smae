@@ -86,7 +86,7 @@ function excluirEtapaDoProjeto(id) {
           ? emFoco?.descricao
           : etapaDoProjetoId
           ? "Etapa"
-          : "Novo registro de tapa de projeto"
+          : "Nova etapa"
       }}
     </h1>
     <hr class="ml2 f1" />
