@@ -114,7 +114,7 @@ export default {
     </th>
 
     <td class="cell--number dado-efetivo">
-      {{ linha.orgao.sigla}}
+      {{ linha.orgao?.sigla}}
     </td>
 
     <td class="cell--number dado-efetivo">
