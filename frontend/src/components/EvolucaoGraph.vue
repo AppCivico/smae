@@ -2,6 +2,7 @@
 import * as d3 from 'd3';
 import { niceNumber } from 'nice-number';
 import { onMounted, onUpdated, ref } from 'vue';
+import Big from 'big.js';
 
 const props = defineProps(['dataserie']);
 const evolucao = ref(null);
@@ -489,7 +490,7 @@ function start() {
         date: x.series[iPrevistoAcumulado].data_valor,
         value: x.series[iPrevistoAcumulado].valor_nominal
           && !isNaN(x.series[iPrevistoAcumulado].valor_nominal)
-          ? Number.parseFloat(x.series[iPrevistoAcumulado].valor_nominal).toFixed(casasDecimais)
+          ? new Big(x.series[iPrevistoAcumulado].valor_nominal).toFixed(casasDecimais)
           : x.series[iPrevistoAcumulado].valor_nominal,
       }));
     data.realizado = props.dataserie.linhas
@@ -497,7 +498,7 @@ function start() {
         date: x.series[iRealizadoAcumulado].data_valor,
         value: x.series[iRealizadoAcumulado].valor_nominal
           && !isNaN(x.series[iRealizadoAcumulado].valor_nominal)
-          ? Number.parseFloat(x.series[iRealizadoAcumulado].valor_nominal).toFixed(casasDecimais)
+          ? new Big(x.series[iRealizadoAcumulado].valor_nominal).toFixed(casasDecimais)
           : x.series[iRealizadoAcumulado].valor_nominal,
       }));
     chart.drawChart(data, evolucao.value);
