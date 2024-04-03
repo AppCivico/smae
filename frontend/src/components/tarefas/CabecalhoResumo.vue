@@ -137,7 +137,7 @@ const props = defineProps({
         <dd class="t13 dado-efetivo">
           {{
             emFoco?.projeto_etapa
-              ? emFoco.projeto_etapa
+              ? emFoco.projeto_etapa.descricao
               : '-'
           }}
         </dd>
