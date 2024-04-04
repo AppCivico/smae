@@ -206,6 +206,7 @@ export default [
         component: WorkflowRaiz,
         meta: {
           título: 'Workflow',
+          prefixoParaFilhas: 'TransferenciasVoluntarias',
           rotasParaMenuSecundário: [
             'etapasListar',
           ],
