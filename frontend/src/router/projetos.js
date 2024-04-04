@@ -175,32 +175,24 @@ export default {
             ],
           };
 
-          if (useProjetosStore()?.emFoco?.eh_prioritario) {
-            rotasDeAcompanhamento.rotas.splice(
-              0,
-              0,
-              'acompanhamentosListar',
-              'riscosListar',
-            );
-            rotasDePlanoDeProjeto.rotas.splice(
-              1,
-              0,
-              'projetoTarefasListar',
-              'projetosEAP',
-              'projetosGantt',
-            );
-
-            return [
-              rotasDePlanoDeProjeto,
-              rotasDeAcompanhamento,
-              rotasDeEncerramento,
-              orçamentos,
-            ];
-          }
+          rotasDeAcompanhamento.rotas.splice(
+            0,
+            0,
+            'acompanhamentosListar',
+            'riscosListar',
+          );
+          rotasDePlanoDeProjeto.rotas.splice(
+            1,
+            0,
+            'projetoTarefasListar',
+            'projetosEAP',
+            'projetosGantt',
+          );
 
           return [
             rotasDePlanoDeProjeto,
             rotasDeAcompanhamento,
+            rotasDeEncerramento,
             orçamentos,
           ];
         },
