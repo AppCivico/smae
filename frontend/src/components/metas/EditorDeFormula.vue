@@ -166,7 +166,7 @@ function setCaret(el, p) {
 }
 function labelPeriodo(p, m) {
   if (p === 0 && m > 1) {
-    return `${m} meses atrás`;
+    return `média ${m} meses`;
   } if (p === -1) {
     return `Média dos últimos ${m} meses`;
   }
