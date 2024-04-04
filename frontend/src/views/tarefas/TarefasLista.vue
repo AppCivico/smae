@@ -116,7 +116,7 @@ export default {
       </router-link>
     </nav>
   </div>
-  
+
   <LoadingComponent v-if="chamadasPendentes.lista" class="mb2 horizontal"/>
   <LoadingComponent v-if="projetosStore.chamadasPendentes.emFoco && $route.meta.entidadeMãe === 'projeto'" class="mb2 horizontal">Salvando</LoadingComponent>
   <CabecalhoResumo :em-foco="projetoEmFoco" :existe-email="emailEmFoco?.linhas[0]?.id !== undefined" />
@@ -210,8 +210,8 @@ export default {
       <tr class="pl3 center mb05 tc300 w700 t12 uc">
         <th />
         <th />
-        <th class="cell--number">
-          Resonsavel
+        <th>
+          Responsável
         </th>
         <th class="cell--number">
           % conclusão
