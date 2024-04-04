@@ -29,7 +29,6 @@ export const useRegionsStore = defineStore({
   state: () => ({
     listregions: [],
     regions: {},
-    regiõesEmLista: [],
     tempRegions: {},
     singleTempRegions: {},
     camadas: null,
