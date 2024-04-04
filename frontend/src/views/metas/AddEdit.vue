@@ -4,9 +4,14 @@ import { default as AutocompleteField } from '@/components/AutocompleteField.vue
 import MigalhasDeMetas from '@/components/metas/MigalhasDeMetas.vue';
 import truncate from '@/helpers/truncate';
 import { router } from '@/router';
-import {
-  useAlertStore, useMacrotemasStore, useMetasStore, useOrgansStore, useSubtemasStore, useTagsStore, useTemasStore, useUsersStore,
-} from '@/stores';
+import { useAlertStore } from '@/stores/alert.store';
+import { useMacrotemasStore } from '@/stores/macrotemas.store';
+import { useMetasStore } from '@/stores/metas.store';
+import { useOrgansStore } from '@/stores/organs.store';
+import { useSubtemasStore } from '@/stores/subtemas.store';
+import { useTagsStore } from '@/stores/tags.store';
+import { useTemasStore } from '@/stores/temas.store';
+import { useUsersStore } from '@/stores/users.store';
 import { storeToRefs } from 'pinia';
 import { Field, Form } from 'vee-validate';
 import { ref, unref } from 'vue';
@@ -184,7 +189,6 @@ function filterResponsible(orgao_id) {
   return v?.responsible ?? [];
 }
 </script>
-
 <template>
   <Dashboard>
     <MigalhasDeMetas class="mb1" />
