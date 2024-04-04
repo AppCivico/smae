@@ -131,6 +131,8 @@ export class AcompanhamentoService {
                 pauta: true,
                 ordem: true,
                 cronograma_paralisado: true,
+                criado_em: true,
+                atualizado_em: true,
 
                 acompanhamento_tipo: {
                     select: { id: true, nome: true },
@@ -160,6 +162,8 @@ export class AcompanhamentoService {
                 data_registro: a.data_registro,
                 participantes: a.participantes,
                 detalhamento: a.detalhamento,
+                criado_em: a.criado_em,
+                atualizado_em: a.atualizado_em,
                 pauta: a.pauta,
                 ordem: a.ordem,
                 observacao: a.observacao,
