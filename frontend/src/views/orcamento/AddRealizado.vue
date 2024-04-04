@@ -39,7 +39,7 @@ const currentEdit = ref({
   dotacao_complemento: '',
   ano_referencia: ano,
 });
-const dota = ref('');
+
 const dotação = ref('');
 const dotaçãoComComplemento = ref('');
 const respostasof = ref({});
@@ -175,7 +175,7 @@ export default {
           && !respostasof.loading"
         :ano="ano"
         :pdm="activePdm.id"
-        :dotação="dota"
+        :dotação="dotaçãoComComplemento"
         class="mb1"
       />
 
