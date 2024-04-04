@@ -69,12 +69,16 @@ const { pessoasSimplificadas } = storeToRefs(UserStore);
   if (meta_id) await MetasStore.getById(meta_id);
   await MetasStore.getPdM();
 
-  MacrotemaStore.filterByPdm(activePdm.value.id);
-  TemaStore.filterByPdm(activePdm.value.id);
-  SubtemaStore.filterByPdm(activePdm.value.id);
-  TagsStore.filterByPdm(activePdm.value.id);
-  OrgansStore.getAllOrganResponsibles();
-  UserStore.buscarPessoasSimplificadas({ coordenador_responsavel_cp: true });
+  const promessas = [
+    MacrotemaStore.filterByPdm(activePdm.value.id),
+    TemaStore.filterByPdm(activePdm.value.id),
+    SubtemaStore.filterByPdm(activePdm.value.id),
+    TagsStore.filterByPdm(activePdm.value.id),
+    OrgansStore.getAllOrganResponsibles(),
+    UserStore.buscarPessoasSimplificadas({ coordenador_responsavel_cp: true }),
+  ];
+
+  await Promise.allSettled(promessas);
 
   if (singleMeta.value.id) {
     if (singleMeta.value?.tema?.id) singleMeta.value.tema_id = singleMeta.value.tema.id;
