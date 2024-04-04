@@ -13,9 +13,13 @@ import {
   useIsFormDirty,
 } from 'vee-validate';
 import { useIndicadoresStore } from '@/stores/indicadores.store';
-import { computed, ref, watch } from 'vue';
+import {
+  computed, defineOptions, ref, watch,
+} from 'vue';
 import { useRoute } from 'vue-router';
 import níveisRegionalização from '@/consts/niveisRegionalizacao';
+
+defineOptions({ inheritAttrs: false });
 
 const alertStore = useAlertStore();
 const editModalStore = useEditModalStore();
