@@ -295,28 +295,28 @@ export class IndicadoresService implements ReportableService {
         );
     }
 
-    private async capturaAnoSerieIndicador(dto: CreateRelIndicadorDto, queryFromWhere: string) {
-        if (dto.analitico_desde_o_inicio !== false) {
-            const buscaInicio: { min: Date }[] = await this.prisma.$queryRawUnsafe(`SELECT min(si.data_valor::date)
-            FROM (select 'Realizado'::"Serie" as serie UNION ALL select 'RealizadoAcumulado'::"Serie" as serie ) series
-            JOIN serie_indicador si ON si.serie = series.serie
-            JOIN ${queryFromWhere} and si.indicador_id = i.id`);
-
-            if (buscaInicio.length && buscaInicio[0].min) return buscaInicio[0].min.getFullYear();
-        }
+    private async capturaAnoSerieIndicador(dto: CreateRelIndicadorDto, _queryFromWhere: string) {
+//        if (dto.analitico_desde_o_inicio !== false) {
+//            const buscaInicio: { min: Date }[] = await this.prisma.$queryRawUnsafe(`SELECT min(si.data_valor::date)
+//            FROM (select 'Realizado'::"Serie" as serie UNION ALL select 'RealizadoAcumulado'::"Serie" as serie ) series
+//            JOIN serie_indicador si ON si.serie = series.serie
+//            JOIN ${queryFromWhere} and si.indicador_id = i.id`);
+//
+//            if (buscaInicio.length && buscaInicio[0].min) return buscaInicio[0].min.getFullYear();
+//        }
 
         return dto.ano;
     }
 
-    private async capturaAnoSerieVariavel(dto: CreateRelIndicadorDto, queryFromWhere: string) {
-        if (dto.analitico_desde_o_inicio !== false) {
-            const buscaInicio: { min: Date }[] = await this.prisma.$queryRawUnsafe(`SELECT min(sv.data_valor::date)
-        FROM (select 'Realizado'::"Serie" as serie UNION ALL select 'RealizadoAcumulado'::"Serie" as serie ) series
-        JOIN serie_variavel sv ON sv.serie = series.serie
-        JOIN ${queryFromWhere} and sv.variavel_id = v.id`);
-
-            if (buscaInicio.length && buscaInicio[0].min) return buscaInicio[0].min.getFullYear();
-        }
+    private async capturaAnoSerieVariavel(dto: CreateRelIndicadorDto, _queryFromWhere: string) {
+//        if (dto.analitico_desde_o_inicio !== false) {
+//            const buscaInicio: { min: Date }[] = await this.prisma.$queryRawUnsafe(`SELECT min(sv.data_valor::date)
+//        FROM (select 'Realizado'::"Serie" as serie UNION ALL select 'RealizadoAcumulado'::"Serie" as serie ) series
+//        JOIN serie_variavel sv ON sv.serie = series.serie
+//        JOIN ${queryFromWhere} and sv.variavel_id = v.id`);
+//
+//            if (buscaInicio.length && buscaInicio[0].min) return buscaInicio[0].min.getFullYear();
+//        }
 
         return dto.ano;
     }
