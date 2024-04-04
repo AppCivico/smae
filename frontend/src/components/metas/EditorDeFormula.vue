@@ -587,12 +587,7 @@ watch(() => props.variáveisCompostas, async () => {
       <h2 class="mb2">
         Adicionar Variável Composta
       </h2>
-      <input
-        v-model="fieldsVariaveis.id"
-        type="hidden"
-        name="id"
-        class="inputtext light mb1"
-      >
+
       <label class="label">Variável</label>
       <select
         v-if="Array.isArray(variáveisCompostas)"
