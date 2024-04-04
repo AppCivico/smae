@@ -30,7 +30,11 @@ const route = useRoute();
 const { indicador_id: indicadorId, var_id: variávelId } = route.params;
 
 const { singleIndicadores } = storeToRefs(IndicadoresStore);
-const { Variaveis, variáveisCompostasPorReferência } = storeToRefs(VariaveisStore);
+const {
+  variáveisCompostas,
+  Variaveis,
+  variáveisCompostasPorReferência,
+} = storeToRefs(VariaveisStore);
 
 const emFoco = computed(() => variáveisCompostasPorReferência.value?.[`@_${variávelId}`] || null);
 
@@ -225,16 +229,16 @@ if (variávelId) {
   </form>
 
   <span
-    v-if="singleVariaveis?.loading"
+    v-if="variáveisCompostas[indicadorId]?.loading"
     class="spinner"
   >Carregando</span>
 
   <div
-    v-if="singleVariaveis?.error || error"
+    v-if="variáveisCompostas[indicadorId]?.error"
     class="error p1"
   >
     <div class="error-msg">
-      {{ singleVariaveis.error ?? error }}
+      {{ variáveisCompostas[indicadorId]?.error }}
     </div>
   </div>
 </template>
