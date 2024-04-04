@@ -352,13 +352,15 @@ async function saveVar(tipoDeVariável) {
       break;
   }
   variaveisFormulaModal.value = 0;
-  if (nova) {
-    const v = formula.value;
-    const i = v.indexOf(`${caracterDefinidor}xxx`);
-    formula.value = [v.slice(0, i), variávelId, v.slice(i + 4)].join('');
-    // aguardar a atualização da fórmula antes de formatá-la
-    nextTick();
-  }
+
+  const v = formula.value;
+  const i = nova
+    ? v.indexOf(`${caracterDefinidor}xxx`)
+    : v.indexOf(variávelId);
+  formula.value = [v.slice(0, i), variávelId, v.slice(i + 4)].join('');
+
+  // aguardar a atualização da fórmula antes de formatá-la
+  nextTick();
 
   formatFormula(variávelId);
 }
