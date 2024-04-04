@@ -13,6 +13,8 @@ export class ProjetoAcompanhamentoRowDto {
 export class ProjetoAcompanhamento {
     id: number;
     data_registro: Date;
+    criado_em: Date;
+    atualizado_em: Date | null;
     participantes: string;
     observacao: string | null;
     detalhamento_status: string | null;
