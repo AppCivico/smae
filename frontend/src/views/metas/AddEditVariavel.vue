@@ -780,7 +780,6 @@ lastParent.orgaos_participantes:{{ lastParent.orgaos_participantes }}</textarea>
       >
         <label class="block">
           <Field
-            v-model="suspendida"
             name="suspendida"
             type="checkbox"
             :value="true"
