@@ -48,19 +48,35 @@ const {
   validationSchema: schema,
 });
 
+function clonarTarefasComConfirmacao() {
+  useAlertStore().confirmAction('O cronograma atual será substituído pelo cronograma que será clonado.', async () => {
+      if (await tarefasStore.clonarTarefas(values.projeto_fonte_id)) {
+        tarefasStore.$reset();
+        tarefasStore.buscarTudo();
+        alertStore.success('Tarefas clonadas!');
+        router.push({
+            name: route.meta.rotaDeEscape,
+            params: route.params,
+            query: route.query,
+          });
+      }
+  });
+}
+
 const onSubmit = handleSubmit.withControlled(async () => {
   try {
-    if (await tarefasStore.clonarTarefas(values.projeto_fonte_id)) {
-      tarefasStore.$reset();
-      tarefasStore.buscarTudo();
-
-      alertStore.success('Tarefas clonadas!');
-      if (route.meta.rotaDeEscape) {
-        router.push({
-          name: route.meta.rotaDeEscape,
-          params: route.params,
-          query: route.query,
-        });
+    if (tarefasStore.lista.length) {
+      clonarTarefasComConfirmacao()
+    } else {
+      if (await tarefasStore.clonarTarefas(values.projeto_fonte_id)) {
+        tarefasStore.$reset();
+        tarefasStore.buscarTudo();
+        alertStore.success('Tarefas clonadas!');
+          router.push({
+            name: route.meta.rotaDeEscape,
+            params: route.params,
+            query: route.query,
+          });
       }
     }
   } catch (error) {
