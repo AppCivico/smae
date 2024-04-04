@@ -2,6 +2,18 @@ import { defineStore } from 'pinia';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
+function caminhoParaApi(rota){
+  
+  if(rota === 'projeto'){
+    return 'projeto-etapa'
+  }
+  
+  if( rota === 'TransferenciasVoluntarias'){
+     // alterar quando tiver endpoint
+    return 'projeto-etapa'
+  }
+}
+
 export const useEtapasProjetosStore = defineStore('paineisExternos', {
   state: () => ({
     lista: [],
@@ -16,7 +28,7 @@ export const useEtapasProjetosStore = defineStore('paineisExternos', {
       this.erro = null;
 
       try {
-        const { linhas } = await this.requestS.get(`${baseUrl}/projeto-etapa`, params);
+        const { linhas } = await this.requestS.get(`${baseUrl}/${caminhoParaApi(this.route.meta.prefixoParaFilhas)}`, params);
         this.lista = linhas;
       } catch (erro) {
         this.erro = erro;
@@ -29,7 +41,7 @@ export const useEtapasProjetosStore = defineStore('paineisExternos', {
       this.erro = null;
 
       try {
-        await this.requestS.delete(`${baseUrl}/projeto-etapa/${id}`);
+        await this.requestS.delete(`${baseUrl}/${caminhoParaApi(this.route.meta.prefixoParaFilhas)}/${id}`);
         this.chamadasPendentes.lista = false;
         return true;
       } catch (erro) {
@@ -45,9 +57,9 @@ export const useEtapasProjetosStore = defineStore('paineisExternos', {
 
       try {
         if (id) {
-          await this.requestS.patch(`${baseUrl}/projeto-etapa/${id}`, params);
+          await this.requestS.patch(`${baseUrl}/${caminhoParaApi(this.route.meta.prefixoParaFilhas)}/${id}`, params);
         } else {
-          await this.requestS.post(`${baseUrl}/projeto-etapa`, params);
+          await this.requestS.post(`${baseUrl}/${caminhoParaApi(this.route.meta.prefixoParaFilhas)}`, params);
         }
 
         this.chamadasPendentes.emFoco = false;

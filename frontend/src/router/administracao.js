@@ -281,6 +281,7 @@ export default [
         component: EtapasRaiz,
         meta: {
           título: 'Etapas de projeto',
+          prefixoParaFilhas: 'projeto',
           presenteNoMenu: true,
           rotaPrescindeDeChave: true,
           limitarÀsPermissões: 'CadastroProjetoEtapa.',
