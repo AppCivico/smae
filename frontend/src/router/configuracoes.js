@@ -18,6 +18,12 @@ import PaineisExternosCriarEditar from '@/views/paineisExternos/PaineisExternosC
 import PaineisExternosLista from '@/views/paineisExternos/PaineisExternosLista.vue';
 import PaineisExternosRaiz from '@/views/paineisExternos/PaineisExternosRaiz.vue';
 
+import WorkflowRaiz from '@/views/workflow/WorkflowRaiz.vue';
+
+import EtapasCriarEditar from '@/views/etapasProjeto/EtapasCriarEditar.vue';
+import EtapasLista from '@/views/etapasProjeto/EtapasLista.vue';
+import EtapasRaiz from '@/views/etapasProjeto/EtapasRaiz.vue';
+
 import GruposDePaineisExternosCriarEditar from '@/views/gruposDePaineisExternos/GruposDePaineisExternosCriarEditar.vue';
 import GruposDePaineisExternosLista from '@/views/gruposDePaineisExternos/GruposDePaineisExternosLista.vue';
 import GruposDePaineisExternosRaiz from '@/views/gruposDePaineisExternos/GruposDePaineisExternosRaiz.vue';
@@ -68,6 +74,7 @@ const rotasParaMenuPrincipal = [
   'gerenciarPainéisDeMetas',
   'parlamentaresListar',
   'paineisExternosListar',
+  'Workflow',
 ];
 
 export default [
@@ -191,6 +198,64 @@ export default [
               título: 'Editar painel externo',
             },
           },
+        ],
+      },
+      {
+        path: '/workflow',
+        name: 'Workflow',
+        component: WorkflowRaiz,
+        meta: {
+          título: 'Workflow',
+          rotasParaMenuSecundário: [
+            'etapasListar',
+          ],
+        },
+        children: [
+          {
+            path: 'etapa',
+            name: 'etapasRaiz',
+            component: EtapasRaiz,
+            meta: {
+              título: 'Etapa',
+              rotaPrescindeDeChave: true,
+              rotasParaMenuSecundário: [
+                'etapasListar',
+              ]
+            },
+
+            children:[
+              {
+                name: 'etapasListar',
+                path: '',
+                component: EtapasLista,
+                meta: {
+                  título: 'Etapas',
+                },
+              },
+              {
+                name: 'etapasCriar',
+                path: 'nova',
+                component: EtapasCriarEditar,
+                meta: {
+                  título: 'Nova etapa',
+                },
+              },
+              {
+                path: ':etapalId',
+                name: 'etapasEditar',
+                component: EtapasCriarEditar,
+                props: ({ params }) => ({
+                  ...params,
+                  ...{ etapaId: Number.parseInt(params.etapaId, 10) || undefined },
+                }),
+  
+                meta: {
+                  título: 'Editar etapa',
+                },
+              },
+            ]
+          },
+                  
         ],
       },
 
