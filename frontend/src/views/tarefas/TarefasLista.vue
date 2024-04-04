@@ -121,6 +121,12 @@ export default {
   <LoadingComponent v-if="projetosStore.chamadasPendentes.emFoco && $route.meta.entidadeMãe === 'projeto'" class="mb2 horizontal">Salvando</LoadingComponent>
   <CabecalhoResumo :em-foco="projetoEmFoco" :existe-email="emailEmFoco?.linhas[0]?.id !== undefined" />
 
+  <div v-if="$route.meta.entidadeMãe === 'projeto' && projetoEmFoco.projeto_etapa" class="etapa">
+    <span>
+       {{ projetoEmFoco.projeto_etapa.descricao }}
+    </span>
+  </div>
+
   <div class="flex center mb4" v-if="route.meta.prefixoParaFilhas === 'TransferenciasVoluntarias'" >
     <router-link :to="{ name: 'transferenciaEmailModal' }" class="addlink mb1">
       <svg width="20" height="20">
@@ -281,5 +287,15 @@ export default {
 <style scoped>
 .disparo-email {
   max-width: 900px;
+}
+
+.etapa{
+  padding: 8px;
+  background-color: #E2EAFE;
+  font-size: 14px;
+  color: #152741;
+  line-height: 18px;
+  display: inline-block;
+  border-radius: 10px;
 }
 </style>
