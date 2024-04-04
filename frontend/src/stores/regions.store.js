@@ -4,16 +4,16 @@ import { defineStore } from 'pinia';
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
 function filtrar(array, nome, id) {
-  const conferirDescendentes = (resultado, item) => {
+  const conferirDescendentes = (resultado, item, index) => {
     switch (true) {
       // no código original, nome é mas importante do que ID
       case nome && item.descricao.toLowerCase().includes(nome):
       case id && item.id === id:
-        resultado.push(item);
+        resultado.push({ ...item, index });
         return resultado;
       case Array.isArray(item.children): {
         const children = item.children.reduce(conferirDescendentes, []);
-        if (children.length) resultado.push({ ...item, children });
+        if (children.length) resultado.push({ ...item, index, children });
         return resultado;
       }
       default:
