@@ -111,7 +111,7 @@
             </tr>
           </thead>
           <tbody v-if="emFoco.equipe">
-            <tr v-for="(item, index) in emFoco.equipe.sort((a, b) => a.nome.localeCompare(b.nome))" :key="index">
+            <tr v-for="(item, index) in emFoco.equipe" :key="index">
               <td>{{ item.nome }}</td>
               <td>{{ item.telefone }}</td>
               <td>{{ item.email }}</td>
@@ -332,6 +332,10 @@ const emFoco = ref({});
 onMounted(async () => {
   await parlamentaresStore.buscarItem(props.parlamentarId);
   emFoco.value = parlamentaresStore.emFoco;
+
+  if (emFoco.value.equipe) {
+    emFoco.value.equipe.sort((a, b) => a.nome.localeCompare(b.nome));
+  }
 });
 
 function formatarNumero(numero) {
