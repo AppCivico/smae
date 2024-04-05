@@ -132,7 +132,7 @@ BEGIN
             d.tipo,
             d.latencia
         FROM id_map idm
-        JOIN tarefa_dependente d ON d.tarefa_id = idm.r_source_id
+        JOIN tarefa_dependente d ON d.tarefa_id = idm.r_source_id AND EXISTS ( SELECT new_id FROM id_map WHERE r_source_id = d.dependencia_tarefa_id)
     )
     UPDATE tarefa SET
         tarefa_pai_id = id_map.new_id 
