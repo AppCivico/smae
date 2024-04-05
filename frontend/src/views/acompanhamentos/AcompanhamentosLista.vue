@@ -85,7 +85,7 @@ vue/singleline-html-element-content-newline -->
           v-for="item in lista"
           :key="item.id"
         >
-          {{ linha.acompanhamento_tipo?.nome }}
+          {{ item.acompanhamento_tipo?.nome }}
         </option>
       </select>
     </div>
