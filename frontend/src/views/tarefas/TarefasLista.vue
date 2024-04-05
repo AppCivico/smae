@@ -128,13 +128,12 @@ export default {
 
   <LoadingComponent v-if="chamadasPendentes.lista" class="mb2 horizontal"/>
   <LoadingComponent v-if="projetosStore.chamadasPendentes.emFoco && $route.meta.entidadeMãe === 'projeto'" class="mb2 horizontal">Salvando</LoadingComponent>
-  <CabecalhoResumo :em-foco="projetoEmFoco" :existe-email="emailEmFoco?.linhas[0]?.id !== undefined" />
-
-  <div v-if="$route.meta.entidadeMãe === 'projeto' && projetoEmFoco.projeto_etapa" class="etapa">
+  <div v-if="$route.meta.entidadeMãe === 'projeto' && projetoEmFoco.projeto_etapa" class="etapa mb2">
     <span>
-       {{ projetoEmFoco.projeto_etapa.descricao }}
+      Etapa atual: {{ projetoEmFoco.projeto_etapa.descricao }}
     </span>
   </div>
+  <CabecalhoResumo :em-foco="projetoEmFoco" :existe-email="emailEmFoco?.linhas[0]?.id !== undefined" />
 
   <div class="flex center mb4" v-if="route.meta.prefixoParaFilhas === 'TransferenciasVoluntarias'" >
     <router-link :to="{ name: 'transferenciaEmailModal' }" class="addlink mb1">
