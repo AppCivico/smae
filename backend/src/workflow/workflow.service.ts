@@ -86,10 +86,12 @@ export class WorkflowService {
                     // if (dto.inicio != undefined && DateTime.fromJSDate(dto.inicio) != DateTime.fromJSDate(self.inicio) )
                 }
 
+                // TODO se alguma transferencia já estiver usando o workflow.
+                // Bloquear o edit.
+
                 const workflow = await prismaTxn.workflow.update({
                     where: { id },
                     data: {
-                        transferencia_tipo_id: dto.transferencia_tipo_id,
                         ativo: dto.ativo,
                         inicio: dto.inicio,
                         termino: dto.termino,
