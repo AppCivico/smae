@@ -2,6 +2,7 @@ import ParlamentarDetalhe from '@/views/parlamentares/ParlamentarDetalhe.vue';
 import ParlamentaresCriarEditar from '@/views/parlamentares/ParlamentaresCriarEditar.vue';
 import ParlamentaresLista from '@/views/parlamentares/ParlamentaresLista.vue';
 import ParlamentaresRaiz from '@/views/parlamentares/ParlamentaresRaiz.vue';
+import ParlamentarMandato from '@/views/parlamentares/ParlamentarMandato.vue';
 
 export default {
   path: '/parlamentares',
@@ -62,7 +63,7 @@ export default {
         {
           path: 'mandato/:mandatoId?',
           name: 'parlamentaresEditarMandato',
-          component: () => import('@/views/parlamentares/ParlamentarMandato.vue'),
+          component: ParlamentarMandato,
           props: true,
           meta: {
             rotaDeEscape: 'parlamentaresEditar',
