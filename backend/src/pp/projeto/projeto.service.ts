@@ -1056,7 +1056,14 @@ export class ProjetoService {
             ...{
                 ...{ ...projeto, ProjetoGrupoPortfolio: undefined },
                 portfolio: {
-                    ...{ ...projeto.portfolio, orgaos: undefined },
+                    ...{
+                        ...projeto.portfolio,
+                        orgaos: undefined,
+                        // Agora o cronograma sempre será liberado para uso. No entanto, se o projeto estiver em Registro.
+                        // Deve ser limitado ao nível 1.
+                        nivel_maximo_tarefa:
+                            projeto.fase == ProjetoFase.Registro ? 1 : projeto.portfolio.nivel_maximo_tarefa,
+                    },
                 },
                 TarefaCronograma: undefined,
                 grupo_portfolio: projeto.ProjetoGrupoPortfolio.map((r) => r.grupo_portfolio_id),
