@@ -17,7 +17,11 @@ async function excluirFase(id) {
   }, 'Remover');
 }
 
-fasesProjetosStore.buscarTudo();
+function ordenarListaAlfabeticamente() {
+  lista.value.sort((a, b) => a.fase.localeCompare(b.fase));
+}
+
+fasesProjetosStore.buscarTudo().then(ordenarListaAlfabeticamente);
 </script>
 <template>
   <div class="flex spacebetween center mb2">
