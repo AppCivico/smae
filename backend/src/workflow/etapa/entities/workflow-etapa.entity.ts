@@ -1,6 +1,7 @@
 export class WorkflowEtapaDto {
     id: number;
-    etapa_fluxo: string;
+    // Modificando de "etapa_fluxo" para "descrição" para facilitar implementação do front-end.
+    descricao: string;
 }
 
 export class ListWorkflowEtapaDto {
