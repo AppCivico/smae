@@ -57,7 +57,6 @@ async function onSubmit(values) {
   }
 }
 
-
 function iniciar() {
   if (props.parlamentarId) {
     parlamentaresStore.buscarItem(props.parlamentarId);
@@ -102,6 +101,11 @@ const equipe = computed(() => itemParaEdição.value?.equipe?.reduce((acc, cur) 
   }
   return acc;
 }, { assessores: [], contatos: [] }) || { assessores: [], contatos: [] });
+
+const equipeOrdenada = computed(() => {
+  const equipeCompleta = equipe.value.assessores.concat(equipe.value.contatos);
+  return equipeCompleta.sort((a, b) => a.nome.localeCompare(b.nome));
+});
 
 const imageUrl = computed(() => (itemParaEdição.value && itemParaEdição.value.foto ? `${baseUrl}/download/${itemParaEdição.value.foto}?inline=true` : false));
 
@@ -248,8 +252,7 @@ iniciar();
         </thead>
         <tbody>
           <tr
-            v-for="item in equipe.assessores.concat(equipe.contatos).sort(
-            (a, b) => a.nome.localeCompare(b.nome))"
+            v-for="item in equipeOrdenada"
             :key="item.id">
             <td>{{ item.nome }}</td>
             <td>{{ item.tipo }}</td>
