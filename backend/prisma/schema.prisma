@@ -152,6 +152,22 @@ model Pessoa {
     TiposDeTransferenciaQueAtualizei TransferenciaTipo[] @relation("Atualizador")
     TiposDeTransferenciaQueRemovi    TransferenciaTipo[] @relation("Removedor")
 
+    WorkflowsQueCriei     Workflow[] @relation("Criador")
+    WorkflowsQueAtualizei Workflow[] @relation("Atualizador")
+    WorkflowsQueRemovi    Workflow[] @relation("Removedor")
+
+    EtapasDeWorkflowsQueCriei     WorkflowEtapa[] @relation("Criador")
+    EtapasDeWorkflowsQueAtualizei WorkflowEtapa[] @relation("Atualizador")
+    EtapasDeWorkflowsQueRemovi    WorkflowEtapa[] @relation("Removedor")
+
+    FasesDeWorkflowsQueCriei     WorkflowFase[] @relation("Criador")
+    FasesDeWorkflowsQueAtualizei WorkflowFase[] @relation("Atualizador")
+    FasesDeWorkflowsQueRemovi    WorkflowFase[] @relation("Removedor")
+
+    SituacoesDeWorkflowsQueCriei     WorkflowSituacao[] @relation("Criador")
+    SituacoesDeWorkflowsQueAtualizei WorkflowSituacao[] @relation("Atualizador")
+    SituacoesDeWorkflowsQueRemovi    WorkflowSituacao[] @relation("Removedor")
+
     PaineisQueCriei     Painel[]          @relation("Criador")
     PaineisQueRemovi    Painel[]          @relation("Removedor")
     PaineisQueAtualizei Painel[]          @relation("Atualizador")
@@ -4622,6 +4638,7 @@ model TransferenciaTipo {
     esfera    TransferenciaTipoEsfera
 
     transferencias Transferencia[]
+    workflows      Workflow[]
 
     criado_por     Int
     criado_em      DateTime  @default(now()) @db.Timestamptz(6)
@@ -4814,6 +4831,99 @@ model DistribuicaoRecursoSei {
     atualizador Pessoa? @relation("Atualizador", fields: [atualizado_por], references: [id])
 
     @@map("distribuicao_recurso_sei")
+}
+
+model Workflow {
+    id Int @id @default(autoincrement())
+
+    transferencia_tipo_id Int
+    transferencia_tipo    TransferenciaTipo @relation(fields: [transferencia_tipo_id], references: [id])
+
+    ativo   Boolean
+    inicio  DateTime  @db.Date()
+    termino DateTime? @db.Date()
+
+    criado_por     Int
+    criado_em      DateTime  @default(now()) @db.Timestamptz(6)
+    atualizado_por Int?
+    atualizado_em  DateTime  @default(now()) @db.Timestamptz(6)
+    removido_por   Int?
+    removido_em    DateTime? @db.Timestamptz(6)
+
+    atualizador Pessoa? @relation("Atualizador", fields: [atualizado_por], references: [id])
+    criador     Pessoa? @relation("Criador", fields: [criado_por], references: [id])
+    removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
+
+    @@index([transferencia_tipo_id, ativo])
+    @@map("workflow")
+}
+
+model WorkflowEtapa {
+    id Int @id @default(autoincrement())
+
+    etapa_fluxo String
+
+    criado_por     Int
+    criado_em      DateTime  @default(now()) @db.Timestamptz(6)
+    atualizado_por Int?
+    atualizado_em  DateTime  @default(now()) @db.Timestamptz(6)
+    removido_por   Int?
+    removido_em    DateTime? @db.Timestamptz(6)
+
+    atualizador Pessoa? @relation("Atualizador", fields: [atualizado_por], references: [id])
+    criador     Pessoa? @relation("Criador", fields: [criado_por], references: [id])
+    removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
+
+    @@map("workflow_etapa")
+}
+
+model WorkflowFase {
+    id Int @id @default(autoincrement())
+
+    fase String
+
+    criado_por     Int
+    criado_em      DateTime  @default(now()) @db.Timestamptz(6)
+    atualizado_por Int?
+    atualizado_em  DateTime  @default(now()) @db.Timestamptz(6)
+    removido_por   Int?
+    removido_em    DateTime? @db.Timestamptz(6)
+
+    atualizador Pessoa? @relation("Atualizador", fields: [atualizado_por], references: [id])
+    criador     Pessoa? @relation("Criador", fields: [criado_por], references: [id])
+    removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
+
+    @@map("workflow_fase")
+}
+
+enum WorkflowSituacaoTipo {
+    NaoIniciado
+    EmAndamento
+    Suspenso
+    Cancelado
+    ConcluidoComSucesso
+    EncerradoSemSucesso
+    Terminal
+}
+
+model WorkflowSituacao {
+    id Int @id @default(autoincrement())
+
+    situacao      String
+    tipo_situacao WorkflowSituacaoTipo
+
+    criado_por     Int
+    criado_em      DateTime  @default(now()) @db.Timestamptz(6)
+    atualizado_por Int?
+    atualizado_em  DateTime  @default(now()) @db.Timestamptz(6)
+    removido_por   Int?
+    removido_em    DateTime? @db.Timestamptz(6)
+
+    atualizador Pessoa? @relation("Atualizador", fields: [atualizado_por], references: [id])
+    criador     Pessoa? @relation("Criador", fields: [criado_por], references: [id])
+    removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
+
+    @@map("workflow_situacao")
 }
 
 enum TipoAviso {
