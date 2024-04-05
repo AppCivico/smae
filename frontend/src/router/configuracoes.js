@@ -24,6 +24,10 @@ import EtapasCriarEditar from '@/views/etapasProjeto/EtapasCriarEditar.vue';
 import EtapasLista from '@/views/etapasProjeto/EtapasLista.vue';
 import EtapasRaiz from '@/views/etapasProjeto/EtapasRaiz.vue';
 
+import FasesCriarEditar from '@/views/fasesProjeto/FasesCriarEditar.vue';
+import FasesLista from '@/views/fasesProjeto/FasesLista.vue';
+import FasesRaiz from '@/views/fasesProjeto/FasesRaiz.vue';
+
 import GruposDePaineisExternosCriarEditar from '@/views/gruposDePaineisExternos/GruposDePaineisExternosCriarEditar.vue';
 import GruposDePaineisExternosLista from '@/views/gruposDePaineisExternos/GruposDePaineisExternosLista.vue';
 import GruposDePaineisExternosRaiz from '@/views/gruposDePaineisExternos/GruposDePaineisExternosRaiz.vue';
@@ -209,6 +213,7 @@ export default [
           prefixoParaFilhas: 'TransferenciasVoluntarias',
           rotasParaMenuSecundário: [
             'etapasListar',
+            'fasesListar',
           ],
         },
         children: [
@@ -221,6 +226,7 @@ export default [
               rotaPrescindeDeChave: true,
               rotasParaMenuSecundário: [
                 'etapasListar',
+                'fasesListar',
               ]
             },
 
@@ -249,14 +255,58 @@ export default [
                   ...params,
                   ...{ etapaId: Number.parseInt(params.etapaId, 10) || undefined },
                 }),
-  
+
                 meta: {
                   título: 'Editar etapa',
                 },
               },
             ]
           },
-                  
+          {
+            path: 'fases',
+            name: 'fasesRaiz',
+            component: FasesRaiz,
+            meta: {
+              título: 'Fases',
+              rotaPrescindeDeChave: true,
+              rotasParaMenuSecundário: [
+                'etapasListar',
+                'fasesListar',
+              ]
+            },
+
+            children:[
+              {
+                name: 'fasesListar',
+                path: '',
+                component: FasesLista,
+                meta: {
+                  título: 'Fases',
+                },
+              },
+              {
+                name: 'fasesCriar',
+                path: 'nova',
+                component: FasesCriarEditar,
+                meta: {
+                  título: 'Nova fase',
+                },
+              },
+              {
+                path: ':fasesId',
+                name: 'fasesEditar',
+                component: FasesCriarEditar,
+                props: ({ params }) => ({
+                  ...params,
+                  ...{ fasesId: Number.parseInt(params.fasesId, 10) || undefined },
+                }),
+
+                meta: {
+                  título: 'Editar fase',
+                },
+              },
+            ]
+          },
         ],
       },
 
