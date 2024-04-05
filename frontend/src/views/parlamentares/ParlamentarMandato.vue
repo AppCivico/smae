@@ -448,8 +448,6 @@ watch(mandatoParaEdição, (novoValor) => {
             name="telefone"
             type="text"
             class="inputtext light mb1"
-            maxlength="15"
-            data-maska="(##) #####-####"
           />
           <ErrorMessage
             class="error-msg"
