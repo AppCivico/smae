@@ -1706,11 +1706,19 @@ export const representatividade = object()
       .label('Região'),
   });
 
-  export const etapasProjeto = object({
-    descricao: string()
-      .label('Etapa')
-      .required(),
-  });
+export const etapasProjeto = object({
+  descricao: string()
+    .label('Etapa')
+    .required(),
+});
+
+export const fasesProjeto = object({
+  fase: string()
+    .label('Fase')
+    .min(0)
+    .max(250)
+    .required(),
+});
 
 export const risco = object()
   .shape({
