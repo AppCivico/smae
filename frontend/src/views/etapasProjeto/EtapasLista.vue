@@ -1,12 +1,14 @@
 <script setup>
 import LocalFilter from '@/components/LocalFilter.vue';
 import TabelaGenérica from '@/components/TabelaGenerica.vue';
+import { useRoute } from 'vue-router';
 import { useAlertStore } from '@/stores/alert.store';
 import { useAuthStore } from '@/stores/auth.store';
 import { useEtapasProjetosStore } from '@/stores/etapasProjeto.store.js';
 import { storeToRefs } from 'pinia';
 import { computed, ref } from 'vue';
 
+const route = useRoute();
 const authStore = useAuthStore();
 const { temPermissãoPara } = authStore;
 const etapasProjetosStore = useEtapasProjetosStore(); 
@@ -60,8 +62,19 @@ const listaPreparada = computed(() => {
         },
       };
     }
-
-    if (temPermissãoPara('CadastroProjetoEtapa.remover')) {
+    
+    if (route.meta.prefixoParaFilhas === 'TransferenciasVoluntarias') {
+      item.editar = {
+        rota: {
+          name: 'etapasEditar',
+          params: {
+            etapaId: x.id,
+          },
+        },
+      };
+    }
+  
+    if (temPermissãoPara('CadastroProjetoEtapa.remover') || route.meta.prefixoParaFilhas === 'TransferenciasVoluntarias') {
       item.excluir = {
         ação: () => excluirEtapa(x.id),
       };
@@ -90,8 +103,8 @@ const listaPreparada = computed(() => {
     <h1>{{ $route.meta.título }}</h1>
     <hr class="ml2 f1">
     <router-link
-      v-if="temPermissãoPara('CadastroProjetoEtapa.inserir')"
-      :to="{ name: 'etapaDoProjetoCriar' }"
+      v-if="temPermissãoPara('CadastroProjetoEtapa.inserir') || $route.meta.prefixoParaFilhas === 'TransferenciasVoluntarias'"
+      :to="{ name: $route.meta.prefixoParaFilhas === 'TransferenciasVoluntarias' ? 'etapasCriar' : 'etapaDoProjetoCriar' }"
       class="btn big ml2"
     >
       Nova etapa

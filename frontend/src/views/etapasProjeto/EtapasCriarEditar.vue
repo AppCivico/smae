@@ -25,12 +25,12 @@ const props = defineProps({
 });
 
 const emFoco = computed(
-  () => tiposPorId.value[route.params.etapaDoProjetoId] || null //
+  () => tiposPorId.value[props.etapaDoProjetoId] || null //
 );
 
 async function onSubmit(_, { controlledValues }) {
   const carga = controlledValues;
-
+  const redirect = route.meta.prefixoParaFilhas === 'TransferenciasVoluntarias' ? "etapasListar": "etapasDoProjetoListar";
   try {
     const msg = props.etapaDoProjetoId
       ? "Dados salvos com sucesso!"
@@ -44,7 +44,7 @@ async function onSubmit(_, { controlledValues }) {
       alertStore.success(msg);
       etapasProjetosStore.$reset();
       etapasProjetosStore.buscarTudo();
-      router.push({ name: "etapasDoProjetoListar" });
+      router.push({ name: redirect });
     }
   } catch (error) {
     alertStore.error(error);
@@ -141,7 +141,7 @@ function excluirEtapaDoProjeto(id) {
   <div v-if="chamadasPendentes?.emFoco" class="spinner">Carregando</div>
 
   <button
-    v-else-if="emFoco?.id && temPermissãoPara('CadastroProjetoEtapa.remover')"
+    v-else-if="emFoco?.id && (temPermissãoPara('CadastroProjetoEtapa.remover' || route.meta.prefixoParaFilhas === 'TransferenciasVoluntarias'))"
     class="btn amarelo big"
     @click="excluirEtapaDoProjeto(emFoco.id)"
   >
