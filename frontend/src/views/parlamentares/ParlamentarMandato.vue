@@ -464,6 +464,9 @@ watch(mandatoParaEdição, (novoValor) => {
             name="email"
             type="text"
             class="inputtext light mb1"
+            @change="($e) => {
+              if (!$e.target.value) setFieldValue('email', null);
+            }"
           />
           <ErrorMessage
             class="error-msg"

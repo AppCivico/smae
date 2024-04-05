@@ -524,7 +524,8 @@ export const mandato = object({
     .nullable(),
   email: string()
     .email()
-    .label('Email'),
+    .label('Email')
+    .nullable(),
   telefone: string()
     .label('Telefone')
     .nullable(),
