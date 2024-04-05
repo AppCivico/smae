@@ -16,7 +16,7 @@ export class WorkflowEtapaService {
             async (prismaTxn: Prisma.TransactionClient): Promise<RecordWithId> => {
                 const similarExists = await this.prisma.workflowEtapa.count({
                     where: {
-                        etapa_fluxo: { endsWith: dto.etapa_fluxo, mode: 'insensitive' },
+                        etapa_fluxo: { endsWith: dto.descricao, mode: 'insensitive' },
                         removido_em: null,
                     },
                 });
@@ -28,7 +28,7 @@ export class WorkflowEtapaService {
 
                 const workflowEtapa = await prismaTxn.workflowEtapa.create({
                     data: {
-                        etapa_fluxo: dto.etapa_fluxo,
+                        etapa_fluxo: dto.descricao,
                         criado_por: user.id,
                         criado_em: new Date(Date.now()),
                     },
@@ -56,10 +56,10 @@ export class WorkflowEtapaService {
                 });
                 if (!self) throw new NotFoundException('Etapa não encontrada');
 
-                if (dto.etapa_fluxo != undefined && dto.etapa_fluxo != self.etapa_fluxo) {
+                if (dto.descricao != undefined && dto.descricao != self.etapa_fluxo) {
                     const similarExists = await this.prisma.workflowEtapa.count({
                         where: {
-                            etapa_fluxo: { endsWith: dto.etapa_fluxo, mode: 'insensitive' },
+                            etapa_fluxo: { endsWith: dto.descricao, mode: 'insensitive' },
                             removido_em: null,
                         },
                     });
@@ -73,7 +73,7 @@ export class WorkflowEtapaService {
                 const workflowEtapa = await prismaTxn.workflowEtapa.update({
                     where: { id },
                     data: {
-                        etapa_fluxo: dto.etapa_fluxo,
+                        etapa_fluxo: dto.descricao,
                         atualizado_por: user.id,
                         atualizado_em: new Date(Date.now()),
                     },
@@ -98,7 +98,13 @@ export class WorkflowEtapaService {
             },
         });
 
-        return rows;
+        return rows.map((r) => {
+            return {
+                id: r.id,
+                // Modificando de "etapa_fluxo" para "descrição" para facilitar implementação do front-end.
+                descricao: r.etapa_fluxo,
+            };
+        });
     }
 
     async remove(id: number, user: PessoaFromJwt) {
