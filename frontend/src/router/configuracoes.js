@@ -248,12 +248,12 @@ export default [
                 },
               },
               {
-                path: ':etapalId',
+                path: ':etapaId',
                 name: 'etapasEditar',
                 component: EtapasCriarEditar,
                 props: ({ params }) => ({
                   ...params,
-                  ...{ etapaId: Number.parseInt(params.etapaId, 10) || undefined },
+                  ...{ etapaDoProjetoId: Number.parseInt(params.etapaId, 10) || undefined },
                 }),
 
                 meta: {
