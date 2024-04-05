@@ -442,8 +442,8 @@ export class OrcamentoService implements ReportableService {
                     o.nota_empenho,
                     to_char_numeric(i.valor_empenho::numeric) as smae_valor_empenhado,
                     to_char_numeric(i.valor_liquidado::numeric) as smae_valor_liquidado,
-                    to_char_numeric(i.percentual::numeric) as smae_percentual_empenhado,
-                    to_char_numeric(i.percentual::numeric) as smae_percentual_liquidado,
+                    to_char_numeric(i.percentual_empenho::numeric) as smae_percentual_empenhado,
+                    to_char_numeric(i.percentual_liquidado::numeric) as smae_percentual_liquidado,
                     i.mes,
                     o.ano_referencia as ano,
 
