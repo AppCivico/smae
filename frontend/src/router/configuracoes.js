@@ -97,6 +97,7 @@ export default [
         'Projeto.administrar_portfolios',
         'Projeto.administrar_portfolios_no_orgao',
         'CadastroPainelExterno.',
+        'CadastroWorkflows.'
       ],
       presenteNoMenu: true,
       pesoNoMenu: 1,
@@ -211,6 +212,7 @@ export default [
         meta: {
           título: 'Workflow',
           prefixoParaFilhas: 'TransferenciasVoluntarias',
+          limitarÀsPermissões: 'CadastroWorkflows.',
           rotasParaMenuSecundário: [
             'etapasListar',
             'fasesListar',
