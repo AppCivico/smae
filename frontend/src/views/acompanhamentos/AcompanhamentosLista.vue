@@ -69,12 +69,26 @@ vue/singleline-html-element-content-newline -->
     </div>
   </div>
 
-  <div class="flex center mb1 spacebetween">
+  <div class="flex center g2 mb1 spacebetween">
     <LocalFilter
       v-model="listaFiltradaPorTermoDeBusca"
       :lista="lista"
       class="f1"
     />
+    <div class="f0">
+      <label class="label tc300">
+        {{ schema.fields.acompanhamento_tipo_id.spec.label }}
+      </label>
+      <select class="inputtext light mb1">
+        <option value="" />
+        <option
+          v-for="item in lista"
+          :key="item.id"
+        >
+          {{ linha.acompanhamento_tipo?.nome }}
+        </option>
+      </select>
+    </div>
   </div>
 
   <table
