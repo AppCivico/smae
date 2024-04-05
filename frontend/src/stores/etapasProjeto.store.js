@@ -9,8 +9,7 @@ function caminhoParaApi(rota){
   }
   
   if( rota === 'TransferenciasVoluntarias'){
-     // alterar quando tiver endpoint
-    return 'projeto-etapa'
+    return 'workflow-etapa'
   }
 }
 
