@@ -75,29 +75,35 @@ export default {
   <div class="flex spacebetween center mb2 g2">
     <TítuloDePágina> Cronograma </TítuloDePágina>
     <hr class="f1">
-    <nav
-      v-if="(projetoEmFoco?.eh_prioritario && !apenasLeitura) || route.meta.prefixoParaFilhas === 'TransferenciasVoluntarias'"
-      class="flex g1"
-    >
-    <div v-if="$route.meta.entidadeMãe === 'projeto'" class="dropbtn">
-      <span class="btn">Mudar etapa</span>
-      <ul>
-        <li
-          v-for="etapa, index in listaDeEtapas"
-          :key="index"
-        >
-          <button
-            type="button"
-            class="like-a__link"
-            @click="mudarEtapa(etapa.id)"
+    <nav class="flex g1">
+      <div
+        v-if="
+          projetoEmFoco?.eh_prioritario
+            && !apenasLeitura
+            && $route.meta.entidadeMãe === 'projeto'
+        "
+        class="dropbtn"
+      >
+        <span class="btn">Mudar etapa</span>
+        <ul>
+          <li
+            v-for="etapa, index in listaDeEtapas"
+            :key="index"
           >
-            {{ etapa.descricao }}
-          </button>
-        </li>
-      </ul>
-    </div>
+            <button
+              type="button"
+              class="like-a__link"
+              @click="mudarEtapa(etapa.id)"
+            >
+              {{ etapa.descricao }}
+            </button>
+          </li>
+        </ul>
+      </div>
 
       <router-link
+        v-if="(projetoEmFoco?.eh_prioritario && !apenasLeitura)
+          || route.meta.prefixoParaFilhas === 'TransferenciasVoluntarias'"
         :to="{
           name: $route.meta.prefixoParaFilhas + 'TarefasCriar',
           params: $route.params,
