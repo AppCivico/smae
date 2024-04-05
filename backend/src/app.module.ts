@@ -34,6 +34,9 @@ import { UtilsService } from './reports/utils/utils.service';
 import { RequestLogModule } from './request_log/request_log.module';
 import { TransferenciaModule } from './transferencia/transferencia.module';
 import { CTPConfigModule } from './cronograma-termino-planejado-config/ctp-config.module';
+import { WorkflowModule } from './workflow/workflow.module';
+import { WorkflowEtapaModule } from './workflow/etapa/workflow-etapa.module';
+import { WorkflowFaseModule } from './workflow/fase/workflow-fase.module';
 
 // Hacks pro JS
 /*
@@ -71,7 +74,10 @@ import { CTPConfigModule } from './cronograma-termino-planejado-config/ctp-confi
         TransferenciaModule,
         DistribuicaoRecursoModule,
         AvisoEmailModule,
-        CTPConfigModule
+        CTPConfigModule,
+        WorkflowModule,
+        WorkflowEtapaModule,
+        WorkflowFaseModule,
     ],
     controllers: [AppController],
     providers: [

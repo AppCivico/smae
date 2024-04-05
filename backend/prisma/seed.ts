@@ -39,6 +39,7 @@ const ModuloDescricao: Record<string, [string, ModuloSistema | null]> = {
     CadastroBancada: ['Bancadas', 'CasaCivil'],
     CadastroParlamentar: ['Parlamentares', 'CasaCivil'],
     CadastroTransferencia: ['Transferências', 'CasaCivil'],
+    CadastroWorkflow: ['Workflows', 'CasaCivil'],
     CadastroProjetoEtapa: ['Etapas', 'Projetos'],
     CadastroCargo: ['', null],
     CadastroCoordenadoria: ['', null],
@@ -230,6 +231,12 @@ const PrivConfig: Record<string, false | [ListaDePrivilegios, string | false][]>
         ['CadastroTransferencia.listar', 'Listar Transferência'],
         ['CadastroTransferencia.inserir', 'Inserir Transferência'],
         ['CadastroTransferencia.remover', 'Remover Transferência'],
+    ],
+    CadastroWorkflow: [
+        ['CadastroWorkflows.editar', 'Editar Workflows'],
+        ['CadastroWorkflows.listar', 'Listar Workflows'],
+        ['CadastroWorkflows.inserir', 'Inserir Workflows'],
+        ['CadastroWorkflows.remover', 'Remover Workflows'],
     ],
     Reports: [
         ['Reports.dashboard_pdm', false], // lembrar que o delete sempre precisa vir antes do update/insert das novas
@@ -519,6 +526,10 @@ const PerfilAcessoConfig: {
             'CadastroTransferencia.listar',
             'CadastroTransferencia.inserir',
             'CadastroTransferencia.remover',
+            'CadastroWorkflows.editar',
+            'CadastroWorkflows.listar',
+            'CadastroWorkflows.inserir',
+            'CadastroWorkflows.remover',
         ],
     },
     removerNomePerfil('Técnico CP'),
