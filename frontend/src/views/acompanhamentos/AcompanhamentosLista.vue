@@ -6,7 +6,7 @@ import { useAcompanhamentosStore } from '@/stores/acompanhamentos.store.ts';
 import { useProjetosStore } from '@/stores/projetos.store.ts';
 import { storeToRefs } from 'pinia';
 import { computed, ref } from 'vue';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 
 const acompanhamentosStore = useAcompanhamentosStore();
 const {
@@ -18,6 +18,7 @@ const {
 } = storeToRefs(projetosStore);
 
 const route = useRoute();
+const router = useRouter();
 const projetoId = route?.params?.projetoId;
 const listaFiltradaPorTermoDeBusca = ref([]);
 const grauVisível = ref(0);
@@ -35,6 +36,54 @@ const listaFiltrada = computed(() => (!statusVisível.value && !grauVisível.val
     .filter((x) => (!grauVisível.value || x.grau === grauVisível.value)
       && (!statusVisível.value || x.status_acompanhamento === statusVisível.value))
 ));
+
+const opçõesDeOrdenação = {
+  data_registro: {
+    valor: 'data_registro',
+    nome: 'Data do acompanhamento',
+  },
+  criado_em: {
+    valor: 'criado_em',
+    nome: 'Data de inclusão',
+  },
+  atualizado_em: {
+    valor: 'atualizado_em',
+    nome: 'Data de alteração',
+  },
+  acompanhamento_tipo: {
+    valor: 'acompanhamento_tipo',
+    nome: 'Tipo',
+  },
+};
+
+const parâmetroDeOrdenação = computed(() => route.query.ordenada_por?.toLowerCase().trim());
+
+const listaOrdenada = computed(() => {
+  switch (parâmetroDeOrdenação.value) {
+    case 'atualizado_em':
+    case 'criado_em':
+    case 'data_registro':
+      return listaFiltrada.value
+        .toSorted((a, b) => b[parâmetroDeOrdenação.value] - a[parâmetroDeOrdenação.value]);
+
+    case 'acompanhamento_tipo':
+      return listaFiltrada.value
+        .toSorted((a, b) => a?.acompanhamento_tipo?.nome
+          .localeCompare(b?.acompanhamento_tipo?.nome));
+
+    default:
+      return listaFiltrada.value;
+  }
+});
+
+function aplicarOrdenação(valor) {
+  router.replace({
+    query: {
+      ...route.query,
+      ordenada_por: valor || undefined,
+    },
+  });
+}
 
 iniciar();
 </script>
@@ -77,15 +126,21 @@ vue/singleline-html-element-content-newline -->
     />
     <div class="f0">
       <label class="label tc300">
-        {{ schema.fields.acompanhamento_tipo_id.spec.label }}
+        Ordenar por
       </label>
-      <select class="inputtext light mb1">
+      <select
+        class="inputtext light mb1"
+        :disabled="!listaFiltrada.length"
+        @change="($e) => aplicarOrdenação($e.target.value)"
+      >
         <option value="" />
         <option
-          v-for="item in lista"
-          :key="item.id"
+          v-for="item in Object.values(opçõesDeOrdenação)"
+          :key="item.valor"
+          :value="item.valor"
+          :selected="route.query.ordenada_por === item.valor"
         >
-          {{ item.acompanhamento_tipo?.nome }}
+          {{ item.nome }}
         </option>
       </select>
     </div>
@@ -136,7 +191,7 @@ vue/singleline-html-element-content-newline -->
       class="tablemain"
     >
       <tr
-        v-for="linha in listaFiltrada"
+        v-for="linha in listaOrdenada"
         :key="linha.id"
       >
         <th class="cell--number">
