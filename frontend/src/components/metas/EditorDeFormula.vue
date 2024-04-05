@@ -166,9 +166,10 @@ function setCaret(el, p) {
 }
 function labelPeriodo(p, m) {
   if (p === 0 && m > 1) {
-    return `média ${m} meses`;
-  } if (p === -1) {
-    return `Média dos últimos ${m} meses`;
+    return `Média ${m} meses`;
+  }
+  if (p === -1) {
+    return `Últimos ${m} meses`;
   }
   return 'Mês corrente';
 }
@@ -527,12 +528,14 @@ watch(() => props.variáveisCompostas, async () => {
         class="inputcheckbox"
         :value="1"
       ><span>Mês corrente</span></label>
+
       <label class="block mb1"><input
         v-model.number="fieldsVariaveis.periodo"
         type="radio"
         class="inputcheckbox"
         :value="0"
       ><span>Média</span></label>
+
       <label class="block mb1"><input
         v-model.number="fieldsVariaveis.periodo"
         type="radio"
