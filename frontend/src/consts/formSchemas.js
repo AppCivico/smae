@@ -1711,6 +1711,11 @@ export const etapasProjeto = object({
     .label('Etapa')
     .required(),
 });
+export const etapasProjeto = object({
+  descricao: string()
+    .label('Etapa')
+    .required(),
+});
 
 export const fasesProjeto = object({
   fase: string()
