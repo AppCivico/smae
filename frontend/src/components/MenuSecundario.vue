@@ -158,6 +158,7 @@ function alternarItens(índice) {
   top: 0;
   bottom: 0;
   max-width: @largura-maxima;
+  width: @largura-minima;
   font-weight: 700;
   z-index: 80;
   background: @branco;
@@ -165,6 +166,7 @@ function alternarItens(índice) {
   max-height: 100vh;
   overflow: visible;
   .bs(0 0 40px 20px fadeOut(black, 93%));
+  .transition(width);
 
   + #dashboard {
     .transition(margin-left);
@@ -176,6 +178,7 @@ function alternarItens(índice) {
     overflow: auto;
     overflow-x: visible;
     overflow-y: auto;
+    width: 100%;
 
     + #dashboard {
       // largura do menus somados
