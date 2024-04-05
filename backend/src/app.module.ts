@@ -37,6 +37,7 @@ import { CTPConfigModule } from './cronograma-termino-planejado-config/ctp-confi
 import { WorkflowModule } from './workflow/workflow.module';
 import { WorkflowEtapaModule } from './workflow/etapa/workflow-etapa.module';
 import { WorkflowFaseModule } from './workflow/fase/workflow-fase.module';
+import { WorkflowSituacaoModule } from './workflow/situacao/workflow-situacao.module';
 
 // Hacks pro JS
 /*
@@ -78,6 +79,7 @@ import { WorkflowFaseModule } from './workflow/fase/workflow-fase.module';
         WorkflowModule,
         WorkflowEtapaModule,
         WorkflowFaseModule,
+        WorkflowSituacaoModule,
     ],
     controllers: [AppController],
     providers: [
