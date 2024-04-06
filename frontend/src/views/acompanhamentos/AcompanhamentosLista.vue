@@ -160,7 +160,7 @@ vue/singleline-html-element-content-newline -->
     </div>
   </div>
 
-  <div class="flex center g2 mb1 spacebetween">
+  <div class="flex center g2 mb1 flexwrap">
     <LocalFilter
       v-model="listaFiltradaPorTermoDeBusca"
       :lista="lista"
