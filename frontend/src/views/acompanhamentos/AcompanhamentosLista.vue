@@ -5,8 +5,10 @@ import dateToField from '@/helpers/dateToField';
 import { useAcompanhamentosStore } from '@/stores/acompanhamentos.store.ts';
 import { useProjetosStore } from '@/stores/projetos.store.ts';
 import { storeToRefs } from 'pinia';
-import { computed, ref } from 'vue';
+import { computed, defineOptions, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+
+defineOptions({ inheritAttrs: false });
 
 const acompanhamentosStore = useAcompanhamentosStore();
 const {
@@ -86,12 +88,6 @@ function aplicarOrdenação(valor) {
 }
 
 iniciar();
-</script>
-<script>
-// use normal <script> to declare options
-export default {
-  inheritAttrs: false,
-};
 </script>
 <template>
   <!-- eslint-disable-next-line max-len -->
