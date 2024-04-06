@@ -35,7 +35,7 @@ emit('update:modelValue', props.lista);
     class="f1 search busca-livre"
     @submit.prevent
   >
-    <label class="label tc300">Busca livre</label>
+    <label class="label tc300 nowrap">Busca livre</label>
     <input
       v-model="termoDeBusca"
       type="search"
@@ -50,7 +50,7 @@ emit('update:modelValue', props.lista);
     >
       &times;
     </button>
-    <small class="tc200 t13">ocorre nos dados já baixados</small>
+    <small class="tc200 t13 nowrap">ocorre nos dados já baixados</small>
   </form>
 </template>
 <style lang="less">
