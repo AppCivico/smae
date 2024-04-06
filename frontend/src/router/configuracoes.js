@@ -231,10 +231,6 @@ export default [
             meta: {
               título: 'Etapa',
               rotaPrescindeDeChave: true,
-              rotasParaMenuSecundário: [
-                'etapasListar',
-                'fasesListar',
-              ]
             },
 
             children:[
@@ -276,10 +272,6 @@ export default [
             meta: {
               título: 'Fases',
               rotaPrescindeDeChave: true,
-              rotasParaMenuSecundário: [
-                'etapasListar',
-                'fasesListar',
-              ]
             },
 
             children:[
