@@ -9,6 +9,7 @@ import níveisDeSuplência from '@/consts/niveisDeSuplencia';
 import regEx from '@/consts/patterns';
 import tiposDeMunicípio from '@/consts/tiposDeMunicipio';
 import tiposNaEquipeDeParlamentar from '@/consts/tiposNaEquipeDeParlamentar';
+import tiposSituacaoSchema from '@/consts/tiposSituacaoSchema';
 import {
   array,
   boolean,
@@ -856,6 +857,18 @@ export const pessoaNaEquipeDeParlamentar = object({
   tipo: mixed()
     .label('Tipo')
     .oneOf(tiposNaEquipeDeParlamentar)
+    .required(),
+});
+
+export const situacao = object({
+  situacao: string()
+    .label('Situação')
+    .min(0)
+    .max(250)
+    .required(),
+  tipo_situacao: mixed()
+    .label('Tipo')
+    .oneOf(tiposSituacaoSchema)
     .required(),
 });
 
