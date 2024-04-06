@@ -7,6 +7,7 @@ export const useSituacaoStore = defineStore('situacao', {
     lista: [],
     chamadasPendentes: {
       lista: false,
+      emFoco: false,
     },
     erro: null,
   }),
@@ -23,7 +24,6 @@ export const useSituacaoStore = defineStore('situacao', {
       }
       this.chamadasPendentes.lista = false;
     },
-
     async excluirItem(id) {
       this.chamadasPendentes.lista = true;
       this.erro = null;
@@ -38,7 +38,6 @@ export const useSituacaoStore = defineStore('situacao', {
         return false;
       }
     },
-
     async salvarItem(params = {}, id = 0) {
       this.chamadasPendentes.emFoco = true;
       this.erro = null;
@@ -57,6 +56,14 @@ export const useSituacaoStore = defineStore('situacao', {
         this.chamadasPendentes.emFoco = false;
         return false;
       }
+    },
+  },
+  getters: {
+    tiposPorId() {
+      return this.lista.reduce((acc, current) => {
+        acc[current.id] = current;
+        return acc;
+      }, {});
     },
   },
 });
