@@ -58,31 +58,77 @@ const opçõesDeOrdenação = {
   },
 };
 
-const parâmetroDeOrdenação = computed(() => route.query.ordenada_por?.toLowerCase().trim());
+const parâmetroDeOrdenação = computed(() => route.query.ordenar_por?.toLowerCase().trim());
+const ordemDeOrdenação = computed(() => route.query.ordem?.toLowerCase().trim());
 
 const listaOrdenada = computed(() => {
   switch (parâmetroDeOrdenação.value) {
     case 'atualizado_em':
     case 'criado_em':
     case 'data_registro':
-      return listaFiltrada.value
-        .toSorted((a, b) => b[parâmetroDeOrdenação.value] - a[parâmetroDeOrdenação.value]);
+      return ordemDeOrdenação.value === 'decrescente'
+        ? listaFiltrada.value.toSorted((a, b) => {
+          if (a[parâmetroDeOrdenação.value] > b[parâmetroDeOrdenação.value]) {
+            return -1;
+          }
+          if (a[parâmetroDeOrdenação.value] < b[parâmetroDeOrdenação.value]) {
+            return 1;
+          }
+          return 0;
+        })
+        : listaFiltrada.value.toSorted((a, b) => {
+          if (a[parâmetroDeOrdenação.value] > b[parâmetroDeOrdenação.value]) {
+            return 1;
+          }
+          if (a[parâmetroDeOrdenação.value] < b[parâmetroDeOrdenação.value]) {
+            return -1;
+          }
+          return 0;
+        });
 
     case 'acompanhamento_tipo':
-      return listaFiltrada.value
-        .toSorted((a, b) => a?.acompanhamento_tipo?.nome
-          .localeCompare(b?.acompanhamento_tipo?.nome));
+      return ordemDeOrdenação.value === 'crescente'
+        ? listaFiltrada.value
+          .toSorted((a, b) => a?.acompanhamento_tipo?.nome
+            .localeCompare(b?.acompanhamento_tipo?.nome))
+        : listaFiltrada.value
+          .toSorted((a, b) => b?.acompanhamento_tipo?.nome
+            .localeCompare(a?.acompanhamento_tipo?.nome));
 
     default:
       return listaFiltrada.value;
   }
 });
 
-function aplicarOrdenação(valor) {
+function aplicarOrdenação(nome, valor) {
+  const valoresParaAplicar = {
+    [nome]: valor || undefined,
+  };
+
+  if (nome === 'ordenar_por') {
+    switch (valor) {
+      case 'atualizado_em':
+      case 'criado_em':
+      case 'data_registro':
+        if (!ordemDeOrdenação.value) {
+          valoresParaAplicar.ordem = 'decrescente';
+        }
+        break;
+      case 'acompanhamento_tipo':
+        if (!ordemDeOrdenação.value) {
+          valoresParaAplicar.ordem = 'crescente';
+        }
+        break;
+      default:
+        valoresParaAplicar.ordem = undefined;
+        break;
+    }
+  }
+
   router.replace({
     query: {
       ...route.query,
-      ordenada_por: valor || undefined,
+      ...valoresParaAplicar,
     },
   });
 }
@@ -127,16 +173,47 @@ vue/singleline-html-element-content-newline -->
       <select
         class="inputtext light mb1"
         :disabled="!listaFiltrada.length"
-        @change="($e) => aplicarOrdenação($e.target.value)"
+        name="ordenar_por"
+        @change="($e) => aplicarOrdenação($e.target.name, $e.target.value)"
       >
         <option value="" />
         <option
           v-for="item in Object.values(opçõesDeOrdenação)"
           :key="item.valor"
           :value="item.valor"
-          :selected="route.query.ordenada_por === item.valor"
+          :selected="parâmetroDeOrdenação === item.valor"
         >
           {{ item.nome }}
+        </option>
+      </select>
+    </div>
+
+    <div class="f0">
+      <label class="label tc300">
+        Ordem
+      </label>
+      <select
+        class="inputtext light mb1"
+        :disabled="!listaFiltrada.length || !parâmetroDeOrdenação"
+        name="ordem"
+        @change="($e) => aplicarOrdenação($e.target.name, $e.target.value)"
+      >
+        <option
+          value=""
+          :disabled="!!parâmetroDeOrdenação"
+          :selected="!!ordemDeOrdenação"
+        />
+        <option
+          value="crescente"
+          :selected="ordemDeOrdenação === 'crescente'"
+        >
+          crescente
+        </option>
+        <option
+          value="decrescente"
+          :selected="ordemDeOrdenação === 'decrescente'"
+        >
+          decrescente
         </option>
       </select>
     </div>
