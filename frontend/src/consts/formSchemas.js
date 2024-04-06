@@ -1733,6 +1733,14 @@ export const fasesProjeto = object({
     .required(),
 });
 
+export const tarefasProjeto = object({
+  tarefa: string()
+    .label('Tarefa')
+    .min(0)
+    .max(250)
+    .required(),
+});
+
 export const risco = object()
   .shape({
     causa: string()

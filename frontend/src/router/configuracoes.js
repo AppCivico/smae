@@ -28,6 +28,10 @@ import FasesCriarEditar from '@/views/fasesProjeto/FasesCriarEditar.vue';
 import FasesLista from '@/views/fasesProjeto/FasesLista.vue';
 import FasesRaiz from '@/views/fasesProjeto/FasesRaiz.vue';
 
+import TarefasCriarEditar from '@/views/tarefasProjetoWorkflow/TarefasCriarEditar.vue';
+import TarefasLista from '@/views/tarefasProjetoWorkflow/TarefasLista.vue';
+import TarefasRaiz from '@/views/tarefasProjetoWorkflow/TarefasRaiz.vue';
+
 import GruposDePaineisExternosCriarEditar from '@/views/gruposDePaineisExternos/GruposDePaineisExternosCriarEditar.vue';
 import GruposDePaineisExternosLista from '@/views/gruposDePaineisExternos/GruposDePaineisExternosLista.vue';
 import GruposDePaineisExternosRaiz from '@/views/gruposDePaineisExternos/GruposDePaineisExternosRaiz.vue';
@@ -220,6 +224,7 @@ export default [
           rotasParaMenuSecundário: [
             'etapasListar',
             'fasesListar',
+            'tarefasListar',
             'situacaoListar',
           ],
         },
@@ -305,7 +310,48 @@ export default [
                 },
               },
             ]
-          },     
+          },
+          {
+            path: 'tarefas',
+            name: 'tarefasRaiz',
+            component: TarefasRaiz,
+            meta: {
+              título: 'Tarefas',
+              rotaPrescindeDeChave: true,
+            },
+
+            children:[
+              {
+                name: 'tarefasListar',
+                path: '',
+                component: TarefasLista,
+                meta: {
+                  título: 'Tarefas',
+                },
+              },
+              {
+                name: 'tarefasCriar',
+                path: 'nova',
+                component: TarefasCriarEditar,
+                meta: {
+                  título: 'Nova tarefa',
+                },
+              },
+              {
+                path: ':tarefasId',
+                name: 'tarefasEditar',
+                component: TarefasCriarEditar,
+                props: ({ params }) => ({
+                  ...params,
+                  ...{ tarefasId: Number.parseInt(params.tarefasId, 10) || undefined },
+                }),
+
+                meta: {
+                  título: 'Editar tarefas',
+                },
+              },
+            ]
+          },
           {
             path: 'situacoes',
             name: 'situacaoRaiz',
