@@ -32,6 +32,10 @@ import GruposDePaineisExternosCriarEditar from '@/views/gruposDePaineisExternos/
 import GruposDePaineisExternosLista from '@/views/gruposDePaineisExternos/GruposDePaineisExternosLista.vue';
 import GruposDePaineisExternosRaiz from '@/views/gruposDePaineisExternos/GruposDePaineisExternosRaiz.vue';
 
+import SituacaoCriarEditar from '@/views/situacao/SituacaoCriarEditar.vue';
+import SituacaoLista from '@/views/situacao/SituacaoLista.vue';
+import SituacaoRaiz from '@/views/situacao/SituacaoRaiz.vue';
+
 const PortfoliosCriarEditar = defineAsyncComponent({
   loader: () => import('@/views/portfolios/PortfoliosCriarEditar.vue'),
   loadingComponent: LoadingComponent,
@@ -216,6 +220,7 @@ export default [
           rotasParaMenuSecundário: [
             'etapasListar',
             'fasesListar',
+            'situacaoListar',
           ],
         },
         children: [
@@ -305,6 +310,47 @@ export default [
 
                 meta: {
                   título: 'Editar fase',
+                },
+              },
+            ]
+          },     
+          {
+            path: 'situacoes',
+            name: 'situacaoRaiz',
+            component: SituacaoRaiz,
+            meta: {
+              título: 'Situações',
+              rotaPrescindeDeChave: true,
+            },
+
+            children:[
+              {
+                name: 'situacaoListar',
+                path: '',
+                component: SituacaoLista,
+                meta: {
+                  título: 'Situações',
+                },
+              },
+              {
+                name: 'situacaoCriar',
+                path: 'nova',
+                component: SituacaoCriarEditar,
+                meta: {
+                  título: 'Nova situação',
+                },
+              },
+              {
+                path: ':situacaoId',
+                name: 'situacaoEditar',
+                component: SituacaoCriarEditar,
+                props: ({ params }) => ({
+                  ...params,
+                  ...{ situacaoId: Number.parseInt(params.situacaoId, 10) || undefined },
+                }),
+
+                meta: {
+                  título: 'Editar situação',
                 },
               },
             ]
