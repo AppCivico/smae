@@ -33,6 +33,11 @@ const nívelMáximoPermitido = computed(() => {
 const nívelMáximoEmUso = computed(() => tarefasStore.lista
   .reduce((acc, cur) => (cur.nivel > acc ? cur.nivel : acc), -Infinity));
 
+const nivelMáximoDisponível = computed(() => Math.max(
+  nívelMáximoPermitido.value,
+  nívelMáximoEmUso.value,
+));
+
 const nívelMáximoVisível = ref(0);
 
 const { lista:listaDeEtapas } = storeToRefs(etapasProjetosStore);
@@ -44,7 +49,7 @@ async function iniciar() {
   await tarefasStore.buscarTudo();
 
   if (nívelMáximoPermitido.value) {
-    nívelMáximoVisível.value = Math.max(nívelMáximoPermitido.value, nívelMáximoEmUso.value);
+    nívelMáximoVisível.value = nivelMáximoDisponível.value;
   }
 }
 
@@ -155,7 +160,7 @@ export default {
           type="range"
           name="nivel"
           min="1"
-          :max="nívelMáximoPermitido"
+          :max="nivelMáximoDisponível"
           class="f1"
         >
         <output class="f1 ml1">
