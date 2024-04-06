@@ -19,7 +19,7 @@ const etapasProjetosStore = useEtapasProjetosStore();
 const { árvoreDeTarefas, chamadasPendentes, erro } = storeToRefs(tarefasStore);
 const alertStore = useAlertStore();
 const projetosStore = useProjetosStore();
-const projetoEmFoco = computed(() => tarefasStore?.extra?.projeto || {});
+const projetoEmFoco = computed(() => tarefasStore?.extra?.projeto || tarefasStore?.extra?.cabecalho || {});
 const apenasLeitura = computed(
   () => !!projetoEmFoco.value?.permissoes?.apenas_leitura,
 );
