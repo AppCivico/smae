@@ -1068,10 +1068,10 @@ export class ProjetoService {
                 TarefaCronograma: undefined,
                 grupo_portfolio: projeto.ProjetoGrupoPortfolio.map((r) => r.grupo_portfolio_id),
 
-                previsao_custo: tarefaCrono?.previsao_custo ?? projeto.previsao_custo ?? null,
-                previsao_duracao: tarefaCrono?.previsao_duracao ?? projeto.previsao_duracao ?? null,
-                previsao_inicio: tarefaCrono?.previsao_inicio ?? projeto.previsao_inicio ?? null,
-                previsao_termino: tarefaCrono?.previsao_termino ?? projeto.previsao_termino ?? null,
+                previsao_custo: tarefaCrono ? tarefaCrono.previsao_custo : null,
+                previsao_duracao: tarefaCrono ? tarefaCrono.previsao_duracao : null,
+                previsao_inicio: tarefaCrono ? tarefaCrono.previsao_inicio : null,
+                previsao_termino: tarefaCrono ? tarefaCrono.previsao_termino : null,
 
                 previsao_calculada: tarefaCrono ? true : false,
                 // retorna os originais do projeto
