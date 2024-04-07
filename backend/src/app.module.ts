@@ -3,6 +3,7 @@ import { ConfigModule } from '@nestjs/config';
 import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR, APP_PIPE } from '@nestjs/core';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { join } from 'path';
+import { AllExceptionsFilter } from './any-error.filter';
 import { AppController } from './app.controller';
 import { AppModuleCommon } from './app.module.common';
 import { AppModulePdm } from './app.module.pdm';
@@ -16,24 +17,24 @@ import { LoggerMiddleware } from './common/middleware/logger.middleware';
 import { TrimPipe } from './common/pipes/trim-pipe';
 import { ContentInterceptor } from './content.interceptor';
 import { CronogramaEtapaModule } from './cronograma-etapas/cronograma-etapas.module';
+import { CTPConfigModule } from './cronograma-termino-planejado-config/ctp-config.module';
 import { DashboardModule } from './dashboard/dashboard.module';
 import { DistribuicaoRecursoModule } from './distribuicao-recurso/distribuicao-recurso.module';
 import { DotacaoModule } from './dotacao/dotacao.module';
 import { EleicaoModule } from './eleicao/eleicao.module';
-import { ErrorFilter } from './error.filter';
 import { MinhaContaModule } from './minha-conta/minha-conta.module';
 import { OrcamentoPlanejadoModule } from './orcamento-planejado/orcamento-planejado.module';
 import { OrcamentoRealizadoModule } from './orcamento-realizado/orcamento-realizado.module';
 import { ParlamentarModule } from './parlamentar/parlamentar.modules';
 import { PartidoModule } from './partido/partido.module';
 import { OrcamentoPrevistoModule } from './pp/orcamento-previsto/orcamento-previsto.module';
+import { PrismaErrorFilter } from './prisma-error.filter';
 import { PrismaModule } from './prisma/prisma.module';
 import { OrcamentoModule } from './reports/orcamento/orcamento.module';
 import { ReportsModule } from './reports/relatorios/reports.module';
 import { UtilsService } from './reports/utils/utils.service';
 import { RequestLogModule } from './request_log/request_log.module';
 import { TransferenciaModule } from './transferencia/transferencia.module';
-import { CTPConfigModule } from './cronograma-termino-planejado-config/ctp-config.module';
 import { WorkflowModule } from './workflow/configuracao/workflow.module';
 import { WorkflowEtapaModule } from './workflow/configuracao/etapa/workflow-etapa.module';
 import { WorkflowFaseModule } from './workflow/configuracao/fase/workflow-fase.module';
@@ -42,6 +43,7 @@ import { WorkflowFluxoModule } from './workflow/configuracao/fluxo/workflow-flux
 import { WorkflowTarefaModule } from './workflow/configuracao/tarefa/workflow-tarefa.module';
 import { WorkflowfluxoFaseModule } from './workflow/configuracao/fluxo-fase/workflow-fluxo-fase.module';
 import { WorkflowFluxoTarefaModule } from './workflow/configuracao/fluxo-tarefa/workflow-fluxo-tarefa.module';
+
 
 // Hacks pro JS
 /*
@@ -102,7 +104,11 @@ import { WorkflowFluxoTarefaModule } from './workflow/configuracao/fluxo-tarefa/
         },
         {
             provide: APP_FILTER,
-            useClass: ErrorFilter,
+            useClass: AllExceptionsFilter,
+        },
+        {
+            provide: APP_FILTER,
+            useClass: PrismaErrorFilter,
         },
         {
             provide: APP_INTERCEPTOR,
