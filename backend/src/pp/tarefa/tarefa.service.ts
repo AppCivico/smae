@@ -410,7 +410,11 @@ export class TarefaService {
         let max_term_proj: DateTime | undefined = undefined;
 
         // Recursive function to calculate projections
+        const jaPassou = new Set<number>;
         const calculaProjecoes = (tarefa: TarefaItemProjetadoDto) => {
+            if (jaPassou.has(tarefa.id)) return;
+            jaPassou.add(tarefa.id);
+
             // a tarefa tem que ter todas as datas de planejamento para funcionar
             if (!tarefa.inicio_planejado || !tarefa.duracao_planejado || !tarefa.termino_planejado) {
                 console.warn(
