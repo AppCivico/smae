@@ -4,7 +4,7 @@ import { Request, Response } from 'express';
 
 // Tratando erro do Prisma quando usa findOrThrow
 @Catch(Prisma.PrismaClientKnownRequestError)
-export class ErrorFilter implements ExceptionFilter {
+export class PrismaErrorFilter implements ExceptionFilter {
     catch(exception: Prisma.PrismaClientKnownRequestError, host: ArgumentsHost) {
         const ctx = host.switchToHttp();
         const response = ctx.getResponse<Response>();
