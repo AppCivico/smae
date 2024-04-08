@@ -3,6 +3,7 @@ import { WorkflowFluxoDto } from '../fluxo/entities/workflow-fluxo.entity';
 import { OmitType, PartialType } from '@nestjs/swagger';
 import { WorkflowfluxoFaseDto } from '../fluxo-fase/entities/workflow-fluxo-fase.entity';
 import { WorkflowFluxoTarefaDto } from '../fluxo-tarefa/entities/workflow-fluxo-tarefa.entity';
+import { WorkflowSituacaoDto } from '../situacao/entities/workflow-situacao.entity';
 
 export class WorkflowDto {
     id: number;
@@ -34,6 +35,7 @@ class DetailWorkflowFluxoDto extends PartialType(OmitType(WorkflowFluxoDto, ['wo
 
 class DetailWorkflowFluxoFaseDto extends PartialType(OmitType(WorkflowfluxoFaseDto, ['fluxo_id'])) {
     tarefas: DetailWorkflowFluxoFaseTarefaDto[];
+    situacoes: WorkflowSituacaoDto[];
 }
 
 class DetailWorkflowFluxoFaseTarefaDto extends PartialType(OmitType(WorkflowFluxoTarefaDto, ['fluxo_fase_id'])) {}
