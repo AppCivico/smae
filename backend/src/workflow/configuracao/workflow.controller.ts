@@ -7,7 +7,7 @@ import { FindOneParams } from 'src/common/decorators/find-params';
 import { Roles } from 'src/auth/decorators/roles.decorator';
 import { CreateWorkflowDto } from './dto/create-workflow.dto';
 import { WorkflowService } from './workflow.service';
-import { ListWorkflowDto } from './entities/workflow.entity';
+import { ListWorkflowDto, WorkflowDetailDto } from './entities/workflow.entity';
 import { FilterWorkflowDto } from './dto/filter-workflow.dto';
 import { UpdateWorkflowDto } from './dto/update-workflow.dto';
 
@@ -31,13 +31,13 @@ export class WorkflowController {
         return { linhas: await this.workflowService.findAll(filters, user) };
     }
 
-    // @Get(':id')
-    // @ApiBearerAuth('access-token')
-    // @Roles('CadastroWorkflows.listar')
-    // @ApiUnauthorizedResponse()
-    // async findOne(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt): Promise<TransferenciaDetailDto> {
-    //     return await this.workflowService.f(params.id, user);
-    // }
+    @Get(':id')
+    @ApiBearerAuth('access-token')
+    @Roles('CadastroWorkflows.listar')
+    @ApiUnauthorizedResponse()
+    async findOne(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt): Promise<WorkflowDetailDto> {
+        return await this.workflowService.findOne(params.id, user);
+    }
 
     @Patch(':id')
     @ApiBearerAuth('access-token')
