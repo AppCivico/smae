@@ -329,7 +329,7 @@ export class UploadService {
     }
 
     getDownloadToken(id: number, expiresIn: string): Download {
-        if (!expiresIn) expiresIn = '10 minutes';
+        if (!expiresIn) expiresIn = '60 minutes';
 
         return {
             download_token: this.jwtService.sign(
@@ -337,7 +337,7 @@ export class UploadService {
                     arquivo_id: id,
                     aud: DOWNLOAD_AUD,
                 },
-                { expiresIn: '30d' }
+                { expiresIn: expiresIn }
             ),
         } as Download;
     }

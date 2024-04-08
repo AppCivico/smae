@@ -228,6 +228,7 @@ export class ProjetoDetailDto {
     logradouro_cep: string | null;
 
     geolocalizacao: GeolocalizacaoDto[];
+    bloco_nota_token: string;
 }
 
 export class ProjetoMVPDto extends PickType(ProjetoDetailDto, ['id', 'portfolio_id']) {}
