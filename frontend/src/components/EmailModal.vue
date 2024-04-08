@@ -35,6 +35,7 @@ function addNewEmail() {
 }
 
 async function onSubmit(values) {
+  addNewEmail()
   const valoresAuxiliares = {
     ...values,
     ativo: values.ativo === undefined ? false : true,
@@ -145,6 +146,7 @@ iniciar();
             maxlength="250"
             placeholder="email@dominio.com"
             @blur="addNewEmail()"
+            @keyup.space="addNewEmail()"
           />
           <ul v-if="localEmails" class="flex flexwrap">
             <li v-for="(email, index) in localEmails" :key="index">
