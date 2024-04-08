@@ -34,14 +34,14 @@ import { UtilsService } from './reports/utils/utils.service';
 import { RequestLogModule } from './request_log/request_log.module';
 import { TransferenciaModule } from './transferencia/transferencia.module';
 import { CTPConfigModule } from './cronograma-termino-planejado-config/ctp-config.module';
-import { WorkflowModule } from './workflow/workflow.module';
-import { WorkflowEtapaModule } from './workflow/etapa/workflow-etapa.module';
-import { WorkflowFaseModule } from './workflow/fase/workflow-fase.module';
-import { WorkflowSituacaoModule } from './workflow/situacao/workflow-situacao.module';
-import { WorkflowFluxoModule } from './workflow/fluxo/workflow-fluxo.module';
-import { WorkflowTarefaModule } from './workflow/tarefa/workflow-tarefa.module';
-import { WorkflowfluxoFaseModule } from './workflow/fluxo-fase/workflow-fluxo-fase.module';
-import { WorkflowFluxoTarefaModule } from './workflow/fluxo-tarefa/workflow-fluxo-tarefa.module';
+import { WorkflowModule } from './workflow/configuracao/workflow.module';
+import { WorkflowEtapaModule } from './workflow/configuracao/etapa/workflow-etapa.module';
+import { WorkflowFaseModule } from './workflow/configuracao/fase/workflow-fase.module';
+import { WorkflowSituacaoModule } from './workflow/configuracao/situacao/workflow-situacao.module';
+import { WorkflowFluxoModule } from './workflow/configuracao/fluxo/workflow-fluxo.module';
+import { WorkflowTarefaModule } from './workflow/configuracao/tarefa/workflow-tarefa.module';
+import { WorkflowfluxoFaseModule } from './workflow/configuracao/fluxo-fase/workflow-fluxo-fase.module';
+import { WorkflowFluxoTarefaModule } from './workflow/configuracao/fluxo-tarefa/workflow-fluxo-tarefa.module';
 
 // Hacks pro JS
 /*
