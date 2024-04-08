@@ -3,7 +3,7 @@ import { RecordWithId } from 'src/common/dto/record-with-id.dto';
 import { Prisma } from '@prisma/client';
 import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { CreateWorkflowfluxoFaseDto } from './dto/create-workflow-fluxo-fase.dto';
+import { CreateWorkflowfluxoFaseDto, UpsertWorkflowFluxoFaseSituacaoDto } from './dto/create-workflow-fluxo-fase.dto';
 import { FilterWorkflowfluxoFaseDto } from './dto/filter-workflow-fluxo-fase.dto';
 import { UpdateWorkflowfluxoFaseDto } from './dto/update-workflow-fluxo-fase.dto';
 import { WorkflowfluxoFaseDto } from './entities/workflow-fluxo-fase.entity';
@@ -163,5 +163,67 @@ export class WorkflowfluxoFaseService {
                 removido_em: new Date(Date.now()),
             },
         });
+    }
+
+    async upsertSituacao(id: number, dto: UpsertWorkflowFluxoFaseSituacaoDto, user: PessoaFromJwt) {
+        function idsIguais(arr1: number[], arr2: number[]): boolean {
+            if (arr1.length !== arr2.length) {
+                return false;
+            }
+
+            for (let i = 0; i < arr1.length; i++) {
+                if (arr1[i] !== arr2[i]) {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        const updated = await this.prisma.$transaction(
+            async (prismaTxn: Prisma.TransactionClient): Promise<RecordWithId> => {
+                const self = await prismaTxn.fluxoFase.findFirst({
+                    where: {
+                        id,
+                        removido_em: null,
+                    },
+                    select: {
+                        situacoes: {
+                            select: {
+                                id: true,
+                                situacao_id: true,
+                            },
+                        },
+                    },
+                });
+                if (!self) throw new NotFoundException('Fase de fluxo não encontrada');
+
+                const paramIds: number[] = dto.situacao.sort((a, b) => a - b);
+                const currentIds: number[] = self.situacoes
+                    .map((s) => {
+                        return s.situacao_id;
+                    })
+                    .sort((a, b) => a - b);
+
+                if (!idsIguais(paramIds, currentIds)) {
+                    await prismaTxn.fluxoFaseSituacao.deleteMany({
+                        where: { fluxo_fase_id: id },
+                    });
+
+                    await prismaTxn.fluxoFaseSituacao.createMany({
+                        data: paramIds.map((situacao_id) => {
+                            return {
+                                fluxo_fase_id: id,
+                                situacao_id: situacao_id,
+                            };
+                        }),
+                    });
+                }
+
+                return { id };
+            }
+        );
+
+        return updated;
     }
 }
