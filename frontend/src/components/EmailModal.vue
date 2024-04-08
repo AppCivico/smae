@@ -2,7 +2,7 @@
 import { emailTransferencia as schema } from "@/consts/formSchemas";
 import { storeToRefs } from "pinia";
 import { Field, Form } from "vee-validate";
-import { ref, toRefs } from "vue";
+import { ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useAlertStore } from "@/stores/alert.store";
 import { useEmailsStore } from "@/stores/envioEmail.store";
@@ -23,6 +23,10 @@ function removeEmail(index, event) {
 }
 
 function addNewEmail() {
+  if(newEmail.value === ""){
+    return
+  }
+
   const emails = newEmail.value
     .split(/[;, ]+/)
     .filter((email) => email.trim() !== "");
@@ -35,6 +39,7 @@ function addNewEmail() {
 }
 
 async function onSubmit(values) {
+  console.log('submit');
   addNewEmail()
   const valoresAuxiliares = {
     ...values,
@@ -69,11 +74,10 @@ async function onSubmit(values) {
   }
 }
 
-async function iniciar() {
+watch(() => {
   localEmails.value = itemParaEdição?.value?.linhas?.[0]?.com_copia;
-}
+}, { deep: true})
 
-iniciar();
 </script>
 
 <template>
@@ -140,13 +144,12 @@ iniciar();
           <LabelFromYup name="com_copia" :schema="schema" />
           <Field
             v-model="newEmail"
-            name="com_copia"
             type="email"
             class="inputtext light mb1"
             maxlength="250"
             placeholder="email@dominio.com"
             @blur="addNewEmail()"
-            @keyup.space="addNewEmail()"
+            @keydown.enter.prevent="addNewEmail()"
           />
           <ul v-if="localEmails" class="flex flexwrap">
             <li v-for="(email, index) in localEmails" :key="index">
