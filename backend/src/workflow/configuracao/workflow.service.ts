@@ -198,6 +198,18 @@ export class WorkflowService {
                                     },
                                 },
 
+                                situacoes: {
+                                    select: {
+                                        situacao: {
+                                            select: {
+                                                id: true,
+                                                situacao: true,
+                                                tipo_situacao: true,
+                                            },
+                                        },
+                                    },
+                                },
+
                                 tarefas: {
                                     where: { removido_em: null },
                                     orderBy: { ordem: 'asc' },
@@ -241,6 +253,14 @@ export class WorkflowService {
                       fases: fluxo.fases.map((fase) => {
                           return {
                               ...fase,
+
+                              situacoes: fase.situacoes.map((situacaoRel) => {
+                                  return {
+                                      id: situacaoRel.situacao.id,
+                                      situacao: situacaoRel.situacao.situacao,
+                                      tipo_situacao: situacaoRel.situacao.tipo_situacao,
+                                  };
+                              }),
 
                               tarefas: fase.tarefas.map((tarefa) => {
                                   return {
