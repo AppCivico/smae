@@ -111,7 +111,7 @@ BEGIN
             _tarefa_cronograma_id AS tarefa_cronograma_id,
 
             t.tarefa_pai_id, t.tarefa, t.descricao, t.recursos, t.numero, t.nivel,
-            t.n_dep_inicio_planejado, t.n_dep_termino_planejado, t.n_filhos_imediatos,
+            t.n_dep_inicio_planejado, t.n_dep_termino_planejado, CASE WHEN _nvl_tarefas = 1 THEN 0 ELSE t.n_filhos_imediatos END,
             t.eh_marco, t.duracao_planejado
         FROM temp_source_tarefas t
         RETURNING *
