@@ -803,7 +803,10 @@ export class ProjetoService {
                 coordenador_ue: true,
 
                 TarefaCronograma: {
+                    where: { removido_em: null },
+                    take: 1,
                     select: {
+                        id: true,
                         previsao_custo: true,
                         previsao_duracao: true,
                         previsao_inicio: true,
@@ -1067,20 +1070,15 @@ export class ProjetoService {
                             projeto.fase == ProjetoFase.Registro ? 1 : projeto.portfolio.nivel_maximo_tarefa,
                     },
                 },
-                TarefaCronograma: undefined,
+                tarefa_cronograma: projeto.TarefaCronograma[0] ?? null,
                 grupo_portfolio: projeto.ProjetoGrupoPortfolio.map((r) => r.grupo_portfolio_id),
 
-                previsao_custo: tarefaCrono ? tarefaCrono.previsao_custo : null,
-                previsao_duracao: tarefaCrono ? tarefaCrono.previsao_duracao : null,
-                previsao_inicio: tarefaCrono ? tarefaCrono.previsao_inicio : null,
-                previsao_termino: tarefaCrono ? tarefaCrono.previsao_termino : null,
+                previsao_custo: projeto.previsao_custo,
+                previsao_duracao: projeto.previsao_duracao,
+                previsao_inicio: projeto.previsao_inicio,
+                previsao_termino: projeto.previsao_termino,
 
                 previsao_calculada: tarefaCrono ? true : false,
-                // retorna os originais do projeto
-                previsao_custo_projeto: projeto.previsao_custo,
-                previsao_duracao_projeto: projeto.previsao_duracao,
-                previsao_inicio_projeto: projeto.previsao_inicio,
-                previsao_termino_projeto: projeto.previsao_termino,
 
                 atraso: tarefaCrono?.atraso ?? null,
                 em_atraso: tarefaCrono?.em_atraso ?? false,

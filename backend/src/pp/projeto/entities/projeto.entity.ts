@@ -7,6 +7,7 @@ import { IdSiglaDescricao } from 'src/common/dto/IdSigla.dto';
 import { IdTituloDto } from '../../../common/dto/IdTitulo.dto';
 import { GeolocalizacaoDto } from '../../../geo-loc/entities/geo-loc.entity';
 import { TipoDocumentoDto } from '../../../tipo-documento/entities/tipo-documento.entity';
+import { TarefaCronogramaDto } from 'src/common/dto/TarefaCronograma.dto';
 
 export class ProjetoDto {
     id: number;
@@ -155,10 +156,6 @@ export class ProjetoDetailDto {
     previsao_duracao: number | null;
     previsao_termino: Date | null;
 
-    previsao_inicio_projeto: Date | null;
-    previsao_custo_projeto: number | null;
-    previsao_duracao_projeto: number | null;
-    previsao_termino_projeto: Date | null;
     previsao_calculada: boolean;
 
     projecao_termino: Date | null;
@@ -228,6 +225,8 @@ export class ProjetoDetailDto {
     logradouro_cep: string | null;
 
     geolocalizacao: GeolocalizacaoDto[];
+
+    tarefa_cronograma: TarefaCronogramaDto;
     bloco_nota_token: string;
 }
 
