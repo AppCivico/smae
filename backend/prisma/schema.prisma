@@ -322,6 +322,10 @@ model Pessoa {
     distribuicoesRecursoSEIQueAtualizei DistribuicaoRecursoSei[] @relation("Atualizador")
     distribuicoesRecursoSEIQueRemovi    DistribuicaoRecursoSei[] @relation("Removedor")
 
+    fluxosWorkflowQueCriei     Fluxo[] @relation("Criador")
+    fluxosWorkflowQueAtualizei Fluxo[] @relation("Atualizador")
+    fluxosWorkflowQueRemovi    Fluxo[] @relation("Removedor")
+
     task_queue                               task_queue[]
     GeoEnderecoReferenciaqQueCriei           GeoLocalizacaoReferencia[]                @relation("criador")
     GeoEnderecoReferenciaqQueRemovid         GeoLocalizacaoReferencia[]                @relation("removedor")
@@ -4850,6 +4854,8 @@ model Workflow {
     removido_por   Int?
     removido_em    DateTime? @db.Timestamptz(6)
 
+    etapasFluxo Fluxo[]
+
     atualizador Pessoa? @relation("Atualizador", fields: [atualizado_por], references: [id])
     criador     Pessoa? @relation("Criador", fields: [criado_por], references: [id])
     removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
@@ -4869,6 +4875,9 @@ model WorkflowEtapa {
     atualizado_em  DateTime  @default(now()) @db.Timestamptz(6)
     removido_por   Int?
     removido_em    DateTime? @db.Timestamptz(6)
+
+    fluxoSaida   Fluxo[] @relation("EtapaSaida")
+    fluxoDestino Fluxo[] @relation("EtapaDestino")
 
     atualizador Pessoa? @relation("Atualizador", fields: [atualizado_por], references: [id])
     criador     Pessoa? @relation("Criador", fields: [criado_por], references: [id])
@@ -4924,6 +4933,35 @@ model WorkflowSituacao {
     removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
 
     @@map("workflow_situacao")
+}
+
+model Fluxo {
+    id Int @id @default(autoincrement())
+
+    workflow_id Int
+    workflow    Workflow @relation(fields: [workflow_id], references: [id])
+
+    fluxo_etapa_de_id Int
+    fluxo_etapa_de    WorkflowEtapa @relation("EtapaSaida", fields: [fluxo_etapa_de_id], references: [id])
+
+    fluxo_etapa_para_id Int
+    fluxo_etapa_para    WorkflowEtapa @relation("EtapaDestino", fields: [fluxo_etapa_para_id], references: [id])
+
+    ordem Int
+
+    criado_por     Int
+    criado_em      DateTime  @default(now()) @db.Timestamptz(6)
+    atualizado_por Int?
+    atualizado_em  DateTime  @default(now()) @db.Timestamptz(6)
+    removido_por   Int?
+    removido_em    DateTime? @db.Timestamptz(6)
+
+    atualizador Pessoa? @relation("Atualizador", fields: [atualizado_por], references: [id])
+    criador     Pessoa? @relation("Criador", fields: [criado_por], references: [id])
+    removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
+
+    @@index([workflow_id, fluxo_etapa_de_id, fluxo_etapa_para_id])
+    @@map("fluxo")
 }
 
 enum TipoAviso {

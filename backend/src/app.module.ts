@@ -38,6 +38,7 @@ import { WorkflowModule } from './workflow/workflow.module';
 import { WorkflowEtapaModule } from './workflow/etapa/workflow-etapa.module';
 import { WorkflowFaseModule } from './workflow/fase/workflow-fase.module';
 import { WorkflowSituacaoModule } from './workflow/situacao/workflow-situacao.module';
+import { WorkflowFluxoModule } from './workflow/fluxo/workflow-fluxo.module';
 
 // Hacks pro JS
 /*
@@ -80,6 +81,7 @@ import { WorkflowSituacaoModule } from './workflow/situacao/workflow-situacao.mo
         WorkflowEtapaModule,
         WorkflowFaseModule,
         WorkflowSituacaoModule,
+        WorkflowFluxoModule,
     ],
     controllers: [AppController],
     providers: [
