@@ -51,7 +51,7 @@ tarefasProjetos.buscarTudo().then(ordenarListaAlfabeticamente);
         v-for="item in lista"
         :key="item.id"
       >
-        <td>{{ item.Tarefa }}</td>
+        <td>{{ item.descricao }}</td>
         <td>
           <button
             class="like-a__text"

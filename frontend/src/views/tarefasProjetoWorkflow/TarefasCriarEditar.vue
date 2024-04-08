@@ -23,7 +23,7 @@ const props = defineProps({
 const itemParaEdição = computed(() => lista.value.find((x) => {
    return x.id === Number(route.params.tarefasId);
  }) || {
-   id: 0, tarefa: '',
+   id: 0, descricao: '',
 });
 
 
@@ -63,15 +63,15 @@ async function onSubmit(_, { controlledValues: carga }) {
   >
     <div class="flex g2 mb1">
       <div class="f2 mb1">
-        <LabelFromYup name="tarefa" :schema="schema" />
+        <LabelFromYup name="descricao" :schema="schema" />
         <Field
-          id="tarefa"
-          name="tarefa"
+          id="descricao"
+          name="descricao"
           type="text"
           maxlength="250"
           class="inputtext light mb1"
         />
-        <ErrorMessage name="tarefa" class="error-msg" />
+        <ErrorMessage name="descricao" class="error-msg" />
       </div>
     </div>
 

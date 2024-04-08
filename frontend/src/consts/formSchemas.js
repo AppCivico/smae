@@ -1734,7 +1734,7 @@ export const fasesProjeto = object({
 });
 
 export const tarefasProjeto = object({
-  tarefa: string()
+  descricao: string()
     .label('Tarefa')
     .min(0)
     .max(250)
