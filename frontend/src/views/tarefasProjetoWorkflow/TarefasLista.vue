@@ -18,9 +18,8 @@ async function excluirTarefa(id) {
 }
 
 function ordenarListaAlfabeticamente() {
-  lista.value.sort((a, b) => a.tarefa.localeCompare(b.tarefa));
+  lista.value.sort((a, b) => a.descricao.localeCompare(b.descricao));
 }
-
 tarefasProjetos.buscarTudo().then(ordenarListaAlfabeticamente);
 </script>
 <template>
