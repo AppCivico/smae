@@ -17,7 +17,7 @@ import { UploadService } from 'src/upload/upload.service';
 import { FilterTransferenciaDto } from './dto/filter-transferencia.dto';
 import { JwtService } from '@nestjs/jwt';
 import { PaginatedDto } from 'src/common/dto/paginated.dto';
-import { CabecalhoTarefaTransferenciaDto } from './entities/transferencia-tarefa.dto';
+import { TarefaCronogramaDto } from 'src/common/dto/TarefaCronograma.dto';
 import { BlocoNotaService } from '../bloco-nota/bloco-nota/bloco-nota.service';
 
 class NextPageTokenJwtBody {
@@ -658,13 +658,14 @@ export class TransferenciaService {
         });
     }
 
-    async getCronogramaCabecalho(transferenciaId: number): Promise<CabecalhoTarefaTransferenciaDto | null> {
+    async getCronogramaCabecalho(transferenciaId: number): Promise<TarefaCronogramaDto | null> {
         const transferenciaCronograma = await this.prisma.tarefaCronograma.findFirst({
             where: {
                 transferencia_id: transferenciaId,
                 removido_em: null,
             },
             select: {
+                id: true,
                 previsao_custo: true,
                 previsao_duracao: true,
                 previsao_inicio: true,
@@ -693,6 +694,7 @@ export class TransferenciaService {
         if (!transferenciaCronograma) return null;
 
         return {
+            id: transferenciaCronograma.id,
             previsao_custo: transferenciaCronograma.previsao_custo,
             previsao_duracao: transferenciaCronograma.previsao_duracao,
             previsao_inicio: transferenciaCronograma.previsao_inicio,
