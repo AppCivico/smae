@@ -13,6 +13,10 @@ const props = defineProps({
   existeEmail:{
     type: Boolean,
     default: false
+  },
+  emailAtivo:{
+    type: Boolean,
+    default: false
   }
 });
 
@@ -133,7 +137,7 @@ const props = defineProps({
       <div v-if="route.meta.prefixoParaFilhas === 'TransferenciasVoluntarias'" class="f1 mb1"  >
         <dt class="t12 uc w700 mb05 tamarelo">Envio de e-mail?</dt>
         <dd class="t13 dado-efetivo">
-          <div class="flex g1" v-if="existeEmail">
+          <div class="flex g1" v-if="emailAtivo">
             <span>Sim</span>
             <router-link :to="{name: 'transferenciaEmailModal'}" title="Editar e-mail">
               <svg width="18" height="17"><use xlink:href="#i_edit" /></svg>

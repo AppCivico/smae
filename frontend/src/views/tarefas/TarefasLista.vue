@@ -138,7 +138,7 @@ export default {
       Etapa atual: {{ projetoEmFoco.projeto_etapa.descricao }}
     </span>
   </div>
-  <CabecalhoResumo :em-foco="projetoEmFoco" :existe-email="emailEmFoco?.linhas[0]?.id !== undefined" />
+  <CabecalhoResumo :em-foco="projetoEmFoco" :existe-email="emailEmFoco?.linhas[0]?.id !== undefined" :email-ativo="emailEmFoco?.linhas[0]?.ativo"/>
 
   <div class="flex center mb4" v-if="route.meta.prefixoParaFilhas === 'TransferenciasVoluntarias'" >
     <router-link :to="{ name: 'transferenciaEmailModal' }" class="addlink mb1">
