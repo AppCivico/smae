@@ -32,6 +32,7 @@ import {
 import { HtmlSanitizer } from '../../common/html-sanitizer';
 import { GeoLocService } from '../../geo-loc/geo-loc.service';
 import { CreateGeoEnderecoReferenciaDto, ReferenciasValidasBase } from '../../geo-loc/entities/geo-loc.entity';
+import { BlocoNotaService } from '../../bloco-nota/bloco-nota/bloco-nota.service';
 
 const FASES_LIBERAR_COLABORADOR: ProjetoStatus[] = ['Registrado', 'Selecionado', 'EmPlanejamento'];
 const StatusParaFase: Record<ProjetoStatus, ProjetoFase> = {
@@ -86,7 +87,8 @@ export class ProjetoService {
         private readonly prisma: PrismaService,
         private readonly portfolioService: PortfolioService,
         private readonly uploadService: UploadService,
-        private readonly geolocService: GeoLocService
+        private readonly geolocService: GeoLocService,
+        private readonly blocoNotaService: BlocoNotaService
     ) {}
 
     private async processaOrigem(dto: CreateProjetoDto) {
@@ -1097,6 +1099,9 @@ export class ProjetoService {
             atividade: atividade,
             responsaveis_no_orgao_gestor: responsaveis_no_orgao_gestor,
             permissoes: permissoes,
+            bloco_nota_token: user
+                ? await this.blocoNotaService.getTokenFor({ bloco: `Proj:${projeto.id}` }, user)
+                : '',
             orgaos_participantes: projeto.orgaos_participantes.map((o) => {
                 return {
                     id: o.orgao.id,

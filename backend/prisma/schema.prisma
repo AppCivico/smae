@@ -356,8 +356,19 @@ model Pessoa {
     TarefaCronogramaQCriei                   TarefaCronograma[]                        @relation("criador")
     TarefaCronogramaQRemovi                  TarefaCronograma[]                        @relation("removedor")
     ProjetoEtapaQCriei                       ProjetoEtapa[]                            @relation("Criador")
-    ProjetoEtapaQRemovi                      ProjetoEtapa[]                            @relation("Atualizador")
-    ProjetoEtapaQAtualizei                   ProjetoEtapa[]                            @relation("Removedor")
+    ProjetoEtapaQRemovi                      ProjetoEtapa[]                            @relation("Removedor")
+    ProjetoEtapaQAtualizei                   ProjetoEtapa[]                            @relation("Atualizador")
+    Nota                                     Nota[]
+    NotaEnderecamentoQSouEnderecado          NotaEnderecamento[]                       @relation("Enderecado")
+    NotaEnderecamentoQCriei                  NotaEnderecamento[]                       @relation("Criador")
+    NotaEnderecamentoQRemovi                 NotaEnderecamento[]                       @relation("Removedor")
+    NotaEnderecamentoRespostaQCriei          NotaEnderecamentoResposta[]               @relation("Criador")
+    NotaEnderecamentoRespostaQRemovi         NotaEnderecamentoResposta[]               @relation("Removedor")
+    NotaQCriei                               Nota[]                                    @relation("Criador")
+    NotaQRemovi                              Nota[]                                    @relation("Removedor")
+    BlocoNotaQCriei                          BlocoNota[]                               @relation("Criador")
+    BlocoNotaQRemovi                         BlocoNota[]                               @relation("Removedor")
+    BlocoNotaQAtualizei                      BlocoNota[]                               @relation("Atualizador")
 
     @@index([email])
     @@map("pessoa")
@@ -439,6 +450,8 @@ model Orgao {
     TransferenciasOrgao      Transferencia[]            @relation("orgao_concedente")
     TransferenciasSecretaria Transferencia[]            @relation("secretaria_concedente")
     distribuicao_recursos    DistribuicaoRecurso[]
+    Nota                     Nota[]
+    NotaEnderecamento        NotaEnderecamento[]
 
     @@map("orgao")
 }
@@ -5137,4 +5150,165 @@ model CronogramaTerminoPlanejadoConfig {
     assunto_orgao  String
 
     @@map("cronograma_termino_planejado_config")
+}
+
+model BlocoNota {
+    id    Int    @id @default(autoincrement())
+    bloco String
+    Nota  Nota[]
+
+    criado_por Int
+    criado_em  DateTime @default(now()) @db.Timestamptz(6)
+
+    atualizado_por Int?
+    atualizado_em  DateTime? @db.Timestamptz(6)
+
+    removido_por Int?
+    removido_em  DateTime? @db.Timestamptz(6)
+
+    criador     Pessoa  @relation("Criador", fields: [criado_por], references: [id])
+    atualizador Pessoa? @relation("Atualizador", fields: [atualizado_por], references: [id])
+    removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
+
+    @@map("bloco_nota")
+}
+
+model TipoNota {
+    id Int @id @default(autoincrement())
+
+    codigo                String  @unique
+    permite_revisao       Boolean
+    permite_enderecamento Boolean
+    permite_email         Boolean
+    permite_replica       Boolean
+    visivel_resp_orgao    Boolean
+    eh_publico            Boolean
+
+    TipoNotaModulo TipoNotaModulo[]
+    Nota           Nota[]
+    criado_em      DateTime         @default(now()) @db.Timestamptz(6)
+    removido_em    DateTime?        @db.Timestamptz(6)
+    atualizado_em  DateTime?        @db.Timestamptz(6)
+
+    @@map("tipo_nota")
+}
+
+model TipoNotaModulo {
+    id Int @id @default(autoincrement())
+
+    modulo_sistema ModuloSistema
+    tipo_nota_id   Int
+
+    tipo_nota TipoNota @relation(fields: [tipo_nota_id], references: [id])
+
+    @@unique([modulo_sistema, tipo_nota_id])
+    @@map("tipo_nota_modulo")
+}
+
+enum StatusNota {
+    Programado
+    Em_Curso   @map("Em Curso")
+    Suspenso
+    Encerrado
+    Cancelado
+}
+
+// disparo email talvez seja com o aviso, seria o ideal
+model Nota {
+    id Int @id @default(autoincrement())
+
+    bloco_nota_id         Int
+    tipo_nota_id          Int
+    data_nota             DateTime
+    orgao_responsavel_id  Int
+    pessoa_responsavel_id Int
+    nota                  String
+    rever_em              DateTime?
+    dispara_email         Boolean    @default(false)
+    status                StatusNota
+
+    n_enderecamentos Int       @default(0) @map("n_encaminhamentos")
+    n_repostas       Int       @default(0)
+    ultima_resposta  DateTime?
+
+    criado_por Int
+    criado_em  DateTime @default(now()) @db.Timestamptz(6)
+
+    removido_por Int?
+    removido_em  DateTime? @db.Timestamptz(6)
+
+    tipo_nota                 TipoNota                    @relation(fields: [tipo_nota_id], references: [id])
+    bloco_nota                BlocoNota                   @relation(fields: [bloco_nota_id], references: [id])
+    orgao_responsavel         Orgao                       @relation(fields: [orgao_responsavel_id], references: [id])
+    pessoa_responsavel        Pessoa                      @relation(fields: [pessoa_responsavel_id], references: [id])
+    criador                   Pessoa                      @relation("Criador", fields: [criado_por], references: [id])
+    removedor                 Pessoa?                     @relation("Removedor", fields: [removido_por], references: [id])
+    NotaEnderecamento         NotaEnderecamento[]
+    NotaEnderecamentoResposta NotaEnderecamentoResposta[]
+    revisoes                  NotaRevisao[]
+
+    @@index([data_nota, status])
+    @@index([rever_em])
+    @@map("nota")
+}
+
+model NotaRevisao {
+    id Int @id @default(autoincrement())
+
+    nota_id Int
+    nota    String
+
+    nota_fk Nota @relation(fields: [nota_id], references: [id])
+
+    criado_por Int
+    criado_em  DateTime @default(now()) @db.Timestamptz(6)
+
+    @@map("nota_revisao")
+}
+
+model NotaEnderecamento {
+    id      Int @id @default(autoincrement())
+    nota_id Int
+
+    // pra essa tabela fazer sentido, um dos dois precisa estar preenchido
+    // se não ta endereçado pra /dev/null
+    orgao_enderecado_id  Int
+    pessoa_enderecado_id Int?
+
+    criado_por Int
+    criado_em  DateTime @default(now()) @db.Timestamptz(6)
+
+    removido_por Int?
+    removido_em  DateTime? @db.Timestamptz(6)
+
+    nota                      Nota                        @relation(fields: [nota_id], references: [id])
+    orgao_enderecado          Orgao?                      @relation(fields: [orgao_enderecado_id], references: [id])
+    pessoa_enderecado         Pessoa?                     @relation("Enderecado", fields: [pessoa_enderecado_id], references: [id])
+    criador                   Pessoa                      @relation("Criador", fields: [criado_por], references: [id])
+    removedor                 Pessoa?                     @relation("Removedor", fields: [removido_por], references: [id])
+    NotaEnderecamentoResposta NotaEnderecamentoResposta[]
+
+    @@index([nota_id])
+    @@map("nota_enderecamento")
+}
+
+model NotaEnderecamentoResposta {
+    id Int @id @default(autoincrement())
+
+    nota_id               Int
+    nota_enderecamento_id Int
+
+    resposta   String
+    criado_por Int
+    criado_em  DateTime @default(now()) @db.Timestamptz(6)
+
+    removido_por Int?
+    removido_em  DateTime? @db.Timestamptz(6)
+
+    nota               Nota              @relation(fields: [nota_id], references: [id])
+    nota_enderecamento NotaEnderecamento @relation(fields: [nota_enderecamento_id], references: [id])
+    criador            Pessoa            @relation("Criador", fields: [criado_por], references: [id])
+    removedor          Pessoa?           @relation("Removedor", fields: [removido_por], references: [id])
+
+    @@map("nota_enderecamento_resposta")
 }

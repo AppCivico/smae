@@ -14,7 +14,10 @@ export function IsOnlyDate(validationOptions?: ValidationOptions) {
             validator: {
                 validate(value: any) {
                     // é uma data, e não tem o horário setado
-                    return value instanceof Date && !isNaN(value as any) && /T00:00:00/.test(value.toISOString());
+                    const x= value instanceof Date && !isNaN(value as any) && /T00:00:00/.test(value.toISOString());
+                    console.log(x);
+
+                    return x;
                 },
             },
         });

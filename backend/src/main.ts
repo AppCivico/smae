@@ -7,6 +7,7 @@ import { AppModuleProjeto } from './app.module.projeto';
 import { AppModuleCommon } from './app.module.common';
 import { INestApplication } from '@nestjs/common';
 import { AppModulePdm } from './app.module.pdm';
+import { BlocoNotasModule } from './bloco-nota/bloco-notas.module';
 
 const winston = require('winston'),
     expressWinston = require('express-winston');
@@ -37,6 +38,7 @@ Usar o link do do swagger + "-json"
 - [Módulos fundamentais](/api/swagger-base)
 - [OpenAPI - Módulos de Programa de Metas](/api/swagger-pdm)
 - [OpenAPI - Módulos de Projetos](/api/swagger-projetos)
+- [OpenAPI - Módulos de bloco de notas](/api/swagger-bloco-notas)
 `;
 
     const configProjeto = createSwaggerConfig('SMAE - OpenAPI - Módulos de Projetos', desc);
@@ -47,6 +49,9 @@ Usar o link do do swagger + "-json"
 
     const configPdm = createSwaggerConfig('SMAE - OpenAPI - Módulos Programa de Metas', desc);
     setupSwaggerModule('api/swagger-pdm', app, configPdm.build(), [AppModulePdm]);
+
+    const blocoNotasPdm = createSwaggerConfig('SMAE - OpenAPI - Bloco de notas', desc);
+    setupSwaggerModule('api/swagger-bloco-notas', app, blocoNotasPdm.build(), [BlocoNotasModule]);
 
     const config = createSwaggerConfig('SMAE - OpenAPI - Aplicação completa', desc);
 

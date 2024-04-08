@@ -7,6 +7,7 @@ import { UploadModule } from 'src/upload/upload.module';
 import { JwtModule } from '@nestjs/jwt';
 import { TransferenciaTarefaController } from './transferencia-tarefa.controller';
 import { TarefaModule } from 'src/pp/tarefa/tarefa.module';
+import { BlocoNotaModule } from '../bloco-nota/bloco-nota/bloco-nota.module';
 
 @Module({
     imports: [
@@ -17,6 +18,7 @@ import { TarefaModule } from 'src/pp/tarefa/tarefa.module';
             secret: process.env.SESSION_JWT_SECRET + ':pagination',
             signOptions: { expiresIn: '30d' },
         }),
+        BlocoNotaModule
     ],
     controllers: [TransferenciaController, TransferenciaTipoController, TransferenciaTarefaController],
     providers: [TransferenciaService],
