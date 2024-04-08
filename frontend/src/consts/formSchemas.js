@@ -1719,6 +1719,29 @@ export const representatividade = object()
       .label('Região'),
   });
 
+export const workflow = object({
+  ativo: boolean()
+    .label('Ativo'),
+  inicio: date()
+    .label('Data de criação')
+    .nullable()
+    .min(new Date(2003, 0, 1))
+    .transform((v) => (!v ? null : v))
+    .required(),
+  nome: string()
+    .label('Nome do fluxo')
+    .required(),
+  termino: date()
+    .label('Data de criação')
+    .nullable()
+    .min(new Date(2003, 0, 1))
+    .transform((v) => (!v ? null : v)),
+  transferencia_tipo_id: number()
+    .label('Tipo de transferência')
+    .nullable()
+    .required(),
+});
+
 export const etapasProjeto = object({
   descricao: string()
     .label('Etapa')
