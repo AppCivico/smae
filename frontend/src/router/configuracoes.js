@@ -249,7 +249,7 @@ export default [
                 path: '',
                 component: FluxosLista,
                 meta: {
-                  título: 'Cadastro de Fluxo',
+                  título: 'Fluxo',
                 },
               },
               {

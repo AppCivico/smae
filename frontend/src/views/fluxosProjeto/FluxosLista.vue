@@ -1,9 +1,11 @@
 <script setup>
 import { workflow as schema } from '@/consts/formSchemas';
-import { ErrorMessage, Field, Form, useIsFormDirty} from 'vee-validate';
+import { ErrorMessage, Field, Form} from 'vee-validate';
 import { storeToRefs } from 'pinia';
 import { useAlertStore } from '@/stores/alert.store';
+import { useRouter } from "vue-router";
 import { useTipoDeTransferenciaStore } from '@/stores/tipoDeTransferencia.store';
+import { useFluxosProjetosStore } from '@/stores/fluxosProjeto.store';
 
 const props = defineProps({
   fluxosId: {
@@ -12,25 +14,55 @@ const props = defineProps({
   },
 });
 
+const router = useRouter();
 const alertStore = useAlertStore();
-const TipoDeTransferenciaStore = useTipoDeTransferenciaStore();
-const { tipoTransferenciaComoLista } = storeToRefs(TipoDeTransferenciaStore);
+const tipoDeTransferenciaStore = useTipoDeTransferenciaStore();
+const fluxosProjetoStore = useFluxosProjetosStore();
+const { lista: tipoTransferenciaComoLista } = storeToRefs(tipoDeTransferenciaStore);
+const { lista, chamadasPendentes, erro} = storeToRefs(fluxosProjetoStore);
 
 function iniciar(){
-  TipoDeTransferenciaStore.buscarTudo();
+  tipoDeTransferenciaStore.buscarTudo();
+  fluxosProjetoStore.buscarTudo();
 }
 iniciar()
 
 async function onSubmit(_, { controlledValues: carga }) {
+  try {
+    const msg = props.fluxosId
+      ? "Dados salvos com sucesso!"
+      : "Item adicionado com sucesso!";
+
+    const resposta =  await fluxosProjetoStore.salvarItem(carga, props.fluxosId)
+
+    if (resposta) {
+      alertStore.success(msg);
+      fluxosProjetoStore.$reset();
+      fluxosProjetoStore.buscarTudo();
+      router.push({ name: "fluxosListar" });
+    }
+  } catch (error) {
+    alertStore.error(error);
+  }
 }
+
+async function excluirEtapa(id) {
+  alertStore.confirmAction('Deseja mesmo remover esse item?', async () => {
+    if (await fluxosProjetoStore.excluirItem(id)) {
+      fluxosProjetoStore.buscarTudo();
+      alertStore.success('Etapa removida.');
+    }
+  }, 'Remover');
+}
+
 </script>
 <template>
   <div class="flex spacebetween center mb2">
-    <TítuloDePágina />
+    <h1>Cadastro de Fluxo</h1>
     <hr class="ml2 f1">
   </div>
 
-  <Form @submit.prevent="onSubmit"
+  <Form @submit="onSubmit"
     v-slot="{ errors, isSubmitting, values }"
     :validation-schema="schema"
     :initial-values="itemParaEdição"
@@ -47,7 +79,7 @@ async function onSubmit(_, { controlledValues: carga }) {
           class="inputtext light mb1"
           :class="{
             error: errors.transferencia_tipo_id,
-            loading: TipoDeTransferenciaStore.chamadasPendentes?.lista,
+            loading: tipoDeTransferenciaStore.chamadasPendentes?.lista,
           }"
         >
           <option value="">
@@ -135,11 +167,13 @@ async function onSubmit(_, { controlledValues: carga }) {
       </div>
       <FormErrorsList :errors="errors" />
       <button
-        class="btn big"
+        class="btn"
         :disabled="isSubmitting || Object.keys(errors)?.length"
-        :title="Object.keys(errors)?.length
-          ? `Erros de preenchimento: ${Object.keys(errors)?.length}`
-          : null"
+        :title="
+          Object.keys(errors)?.length
+            ? `Erros de preenchimento: ${Object.keys(errors)?.length}`
+            : null
+        "
       >
         Salvar
       </button>
