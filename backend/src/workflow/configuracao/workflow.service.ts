@@ -25,6 +25,15 @@ export class WorkflowService {
                 if (!transferenciaTipoExiste)
                     throw new HttpException('transferencia_tipo_id| Tipo de transferência não existe.', 400);
 
+                const similarExists = await prismaTxn.workflow.count({
+                    where: {
+                        nome: { endsWith: dto.nome, mode: 'insensitive' },
+                        removido_em: null,
+                    },
+                });
+                if (similarExists > 0)
+                    throw new HttpException('nome| Nome igual ou semelhante já existe em outro registro ativo', 400);
+
                 // Tratando boolean de ativo.
                 let ativo: boolean = false;
                 const now = DateTime.now().startOf('day');
@@ -46,6 +55,7 @@ export class WorkflowService {
 
                 const workflow = await prismaTxn.workflow.create({
                     data: {
+                        nome: dto.nome,
                         transferencia_tipo_id: dto.transferencia_tipo_id,
                         ativo: ativo,
                         inicio: dto.inicio,
@@ -117,6 +127,7 @@ export class WorkflowService {
             },
             select: {
                 id: true,
+                nome: true,
                 ativo: true,
                 inicio: true,
                 termino: true,
@@ -140,6 +151,7 @@ export class WorkflowService {
             },
             select: {
                 id: true,
+                nome: true,
                 ativo: true,
                 inicio: true,
                 termino: true,
