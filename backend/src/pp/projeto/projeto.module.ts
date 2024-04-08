@@ -9,9 +9,10 @@ import { ProjetoProxyPdmMetasService } from './projeto.proxy-pdm-metas.service';
 import { ProjetoSeiService } from './projeto.sei.service';
 import { ProjetoService } from './projeto.service';
 import { GeoLocModule } from '../../geo-loc/geo-loc.module';
+import { BlocoNotaModule } from '../../bloco-nota/bloco-nota/bloco-nota.module';
 
 @Module({
-    imports: [PrismaModule, GeoLocModule, MetaModule, UploadModule, PortfolioModule],
+    imports: [PrismaModule, GeoLocModule, MetaModule, UploadModule, PortfolioModule, BlocoNotaModule],
     controllers: [ProjetoController, ProjetoProxyPdmMetasController],
     providers: [ProjetoService, ProjetoProxyPdmMetasService, ProjetoSeiService],
     exports: [ProjetoService],

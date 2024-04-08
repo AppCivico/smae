@@ -79,6 +79,8 @@ export class TransferenciaDetailDto {
 
     @ApiProperty({ enum: ParlamentarCargo, enumName: 'ParlamentarCargo' })
     cargo: ParlamentarCargo | null;
+
+    bloco_nota_token: string;
 }
 
 export class TransferenciaAnexoDto {

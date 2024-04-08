@@ -18,6 +18,7 @@ import { FilterTransferenciaDto } from './dto/filter-transferencia.dto';
 import { JwtService } from '@nestjs/jwt';
 import { PaginatedDto } from 'src/common/dto/paginated.dto';
 import { CabecalhoTarefaTransferenciaDto } from './entities/transferencia-tarefa.dto';
+import { BlocoNotaService } from '../bloco-nota/bloco-nota/bloco-nota.service';
 
 class NextPageTokenJwtBody {
     offset: number;
@@ -29,7 +30,8 @@ export class TransferenciaService {
     constructor(
         private readonly prisma: PrismaService,
         private readonly uploadService: UploadService,
-        private readonly jwtService: JwtService
+        private readonly jwtService: JwtService,
+        private readonly blocoNotaService: BlocoNotaService
     ) {}
 
     async createTransferencia(dto: CreateTransferenciaDto, user: PessoaFromJwt): Promise<RecordWithId> {
@@ -422,6 +424,7 @@ export class TransferenciaService {
 
         return {
             ...row,
+            bloco_nota_token: await this.blocoNotaService.getTokenFor({ bloco: `Transf:${row.id}` }, user),
             secretaria_concedente: row.secretaria_concedente_str,
         };
     }
