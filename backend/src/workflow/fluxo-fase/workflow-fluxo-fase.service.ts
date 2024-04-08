@@ -1,0 +1,167 @@
+import { HttpException, Injectable, NotFoundException } from '@nestjs/common';
+import { RecordWithId } from 'src/common/dto/record-with-id.dto';
+import { Prisma } from '@prisma/client';
+import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
+import { PrismaService } from 'src/prisma/prisma.service';
+import { CreateWorkflowfluxoFaseDto } from './dto/create-workflow-fluxo-fase.dto';
+import { FilterWorkflowfluxoFaseDto } from './dto/filter-workflow-fluxo-fase.dto';
+import { UpdateWorkflowfluxoFaseDto } from './dto/update-workflow-fluxo-fase.dto';
+import { WorkflowfluxoFaseDto } from './entities/workflow-fluxo-fase.entity';
+
+@Injectable()
+export class WorkflowfluxoFaseService {
+    constructor(private readonly prisma: PrismaService) {}
+
+    async create(dto: CreateWorkflowfluxoFaseDto, user: PessoaFromJwt): Promise<RecordWithId> {
+        const created = await this.prisma.$transaction(
+            async (prismaTxn: Prisma.TransactionClient): Promise<RecordWithId> => {
+                // Tratando ordem
+                let ordem: number;
+                if (dto.ordem != undefined) {
+                    const ordemEmUso = await prismaTxn.fluxoFase.count({
+                        where: {
+                            fluxo_id: dto.fluxo_id,
+                            ordem: dto.ordem,
+                            removido_em: null,
+                        },
+                    });
+                    if (ordemEmUso) throw new HttpException('ordem| Ordem já em uso para este Workflow.', 400);
+
+                    ordem = dto.ordem;
+                } else {
+                    const ultimaOrdem = await prismaTxn.fluxoFase.findFirst({
+                        where: {
+                            fluxo_id: dto.fluxo_id,
+                            removido_em: null,
+                        },
+                        select: { ordem: true },
+                    });
+
+                    ordem = ultimaOrdem?.ordem ?? 1;
+                }
+
+                // TODO: tratar fluxoFase circular
+
+                const workflowfluxoFase = await prismaTxn.fluxoFase.create({
+                    data: {
+                        fluxo_id: dto.fluxo_id,
+                        fase_id: dto.fase_id,
+                        ordem: ordem,
+                        responsabilidade: dto.responsabilidade,
+                        criado_por: user.id,
+                        criado_em: new Date(Date.now()),
+                    },
+                    select: { id: true },
+                });
+
+                return workflowfluxoFase;
+            }
+        );
+
+        return created;
+    }
+
+    async update(id: number, dto: UpdateWorkflowfluxoFaseDto, user: PessoaFromJwt): Promise<RecordWithId> {
+        const updated = await this.prisma.$transaction(
+            async (prismaTxn: Prisma.TransactionClient): Promise<RecordWithId> => {
+                const self = await prismaTxn.fluxoFase.findFirst({
+                    where: {
+                        id,
+                        removido_em: null,
+                    },
+                    select: {
+                        fluxo_id: true,
+                        fase_id: true,
+                        ordem: true,
+                    },
+                });
+                if (!self) throw new NotFoundException('fluxoFase não encontrado');
+
+                if (dto.fase_id != undefined && dto.fase_id != self.fase_id) {
+                    const saidaJaExiste = await prismaTxn.fluxoFase.count({
+                        where: {
+                            fluxo_id: self.fluxo_id,
+                            fase_id: dto.fase_id,
+                            removido_em: null,
+                        },
+                    });
+                    if (saidaJaExiste) throw new HttpException('fase_id| Fase já em uso para este fluxo.', 400);
+                }
+
+                // Tratando ordem
+                let ordem: number | undefined;
+                if (dto.ordem != undefined && dto.ordem != self.ordem) {
+                    const ordemEmUso = await prismaTxn.fluxoFase.count({
+                        where: {
+                            fluxo_id: self.fluxo_id,
+                            ordem: dto.ordem,
+                            removido_em: null,
+                        },
+                    });
+                    if (ordemEmUso) throw new HttpException('ordem| Ordem já em uso para este Workflow.', 400);
+
+                    ordem = dto.ordem;
+                }
+
+                const workflowfluxoFase = await prismaTxn.fluxoFase.update({
+                    where: { id },
+                    data: {
+                        fase_id: dto.fase_id,
+                        responsabilidade: dto.responsabilidade,
+                        ordem: ordem,
+                        atualizado_por: user.id,
+                        atualizado_em: new Date(Date.now()),
+                    },
+                    select: { id: true },
+                });
+
+                return workflowfluxoFase;
+            }
+        );
+
+        return updated;
+    }
+
+    async findAll(filters: FilterWorkflowfluxoFaseDto, user: PessoaFromJwt): Promise<WorkflowfluxoFaseDto[]> {
+        const rows = await this.prisma.fluxoFase.findMany({
+            where: {
+                fluxo_id: filters.fluxo_id,
+                removido_em: null,
+            },
+            orderBy: [{ ordem: 'asc' }],
+            select: {
+                id: true,
+                fluxo_id: true,
+                ordem: true,
+                responsabilidade: true,
+                fase: {
+                    select: {
+                        id: true,
+                        fase: true,
+                    },
+                },
+            },
+        });
+
+        return rows.map((r) => {
+            return {
+                ...r,
+
+                fase: {
+                    id: r.fase.id,
+                    fase: r.fase.fase,
+                },
+            };
+        });
+    }
+
+    async remove(id: number, user: PessoaFromJwt) {
+        await this.prisma.fluxoFase.update({
+            where: { id },
+            data: {
+                removido_por: user.id,
+                removido_em: new Date(Date.now()),
+            },
+        });
+    }
+}

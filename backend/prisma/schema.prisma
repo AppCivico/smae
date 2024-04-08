@@ -326,6 +326,18 @@ model Pessoa {
     fluxosWorkflowQueAtualizei Fluxo[] @relation("Atualizador")
     fluxosWorkflowQueRemovi    Fluxo[] @relation("Removedor")
 
+    fasesFluxoWorkflowQueCriei     FluxoFase[] @relation("Criador")
+    fasesFluxoWorkflowQueAtualizei FluxoFase[] @relation("Atualizador")
+    fasesFluxoWorkflowQueRemovi    FluxoFase[] @relation("Removedor")
+
+    tarefasFluxoWorkflowQueCriei     FluxoTarefa[] @relation("Criador")
+    tarefasFluxoWorkflowQueAtualizei FluxoTarefa[] @relation("Atualizador")
+    tarefasFluxoWorkflowQueRemovi    FluxoTarefa[] @relation("Removedor")
+
+    tarefasWorkflowQueCriei     WorkflowTarefa[] @relation("Criador")
+    tarefasWorkflowQueAtualizei WorkflowTarefa[] @relation("Atualizador")
+    tarefasWorkflowQueRemovi    WorkflowTarefa[] @relation("Removedor")
+
     task_queue                               task_queue[]
     GeoEnderecoReferenciaqQueCriei           GeoLocalizacaoReferencia[]                @relation("criador")
     GeoEnderecoReferenciaqQueRemovid         GeoLocalizacaoReferencia[]                @relation("removedor")
@@ -4891,6 +4903,8 @@ model WorkflowFase {
 
     fase String
 
+    fluxos FluxoFase[]
+
     criado_por     Int
     criado_em      DateTime  @default(now()) @db.Timestamptz(6)
     atualizado_por Int?
@@ -4935,6 +4949,27 @@ model WorkflowSituacao {
     @@map("workflow_situacao")
 }
 
+model WorkflowTarefa {
+    id Int @id @default(autoincrement())
+
+    tarefa_fluxo String
+
+    fluxoTarefas FluxoTarefa[]
+
+    criado_por     Int
+    criado_em      DateTime  @default(now()) @db.Timestamptz(6)
+    atualizado_por Int?
+    atualizado_em  DateTime  @default(now()) @db.Timestamptz(6)
+    removido_por   Int?
+    removido_em    DateTime? @db.Timestamptz(6)
+
+    atualizador Pessoa? @relation("Atualizador", fields: [atualizado_por], references: [id])
+    criador     Pessoa  @relation("Criador", fields: [criado_por], references: [id])
+    removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
+
+    @@map("workflow_tarefa")
+}
+
 model Fluxo {
     id Int @id @default(autoincrement())
 
@@ -4949,6 +4984,8 @@ model Fluxo {
 
     ordem Int
 
+    fases FluxoFase[]
+
     criado_por     Int
     criado_em      DateTime  @default(now()) @db.Timestamptz(6)
     atualizado_por Int?
@@ -4956,12 +4993,72 @@ model Fluxo {
     removido_por   Int?
     removido_em    DateTime? @db.Timestamptz(6)
 
+    criador     Pessoa  @relation("Criador", fields: [criado_por], references: [id])
     atualizador Pessoa? @relation("Atualizador", fields: [atualizado_por], references: [id])
-    criador     Pessoa? @relation("Criador", fields: [criado_por], references: [id])
     removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
 
     @@index([workflow_id, fluxo_etapa_de_id, fluxo_etapa_para_id])
     @@map("fluxo")
+}
+
+enum WorkflowResponsabilidade {
+    Propria
+    OutroOrgao
+}
+
+model FluxoFase {
+    id Int @id @default(autoincrement())
+
+    fluxo_id Int
+    fluxo    Fluxo @relation(fields: [fluxo_id], references: [id])
+
+    fase_id Int
+    fase    WorkflowFase @relation(fields: [fase_id], references: [id])
+
+    ordem            Int
+    responsabilidade WorkflowResponsabilidade
+
+    tarefas FluxoTarefa[]
+
+    criado_por     Int
+    criado_em      DateTime  @default(now()) @db.Timestamptz(6)
+    atualizado_por Int?
+    atualizado_em  DateTime  @default(now()) @db.Timestamptz(6)
+    removido_por   Int?
+    removido_em    DateTime? @db.Timestamptz(6)
+
+    criador     Pessoa  @relation("Criador", fields: [criado_por], references: [id])
+    atualizador Pessoa? @relation("Atualizador", fields: [atualizado_por], references: [id])
+    removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
+
+    @@index([fluxo_id, fase_id])
+    @@map("fluxo_fase")
+}
+
+model FluxoTarefa {
+    id Int @id @default(autoincrement())
+
+    workflow_tarefa_id Int
+    workflow_tarefa    WorkflowTarefa @relation(fields: [workflow_tarefa_id], references: [id])
+
+    fluxo_fase_id Int
+    fluxo_fase    FluxoFase @relation(fields: [fluxo_fase_id], references: [id])
+
+    responsabilidade WorkflowResponsabilidade
+
+    criado_por     Int
+    criado_em      DateTime  @default(now()) @db.Timestamptz(6)
+    atualizado_por Int?
+    atualizado_em  DateTime  @default(now()) @db.Timestamptz(6)
+    removido_por   Int?
+    removido_em    DateTime? @db.Timestamptz(6)
+
+    criador     Pessoa  @relation("Criador", fields: [criado_por], references: [id])
+    atualizador Pessoa? @relation("Atualizador", fields: [atualizado_por], references: [id])
+    removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
+
+    @@index([workflow_tarefa_id, fluxo_fase_id])
+    @@map("fluxo_tarefa")
 }
 
 enum TipoAviso {
