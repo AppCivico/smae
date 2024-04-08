@@ -145,6 +145,7 @@ watch(() => {
           <Field
             v-model="newEmail"
             type="email"
+            name="comcopia"
             class="inputtext light mb1"
             maxlength="250"
             placeholder="email@dominio.com"
