@@ -7,7 +7,7 @@ import { CreateWorkflowDto } from './dto/create-workflow.dto';
 import { DateTime } from 'luxon';
 import { UpdateWorkflowDto } from './dto/update-workflow.dto';
 import { FilterWorkflowDto } from './dto/filter-workflow.dto';
-import { WorkflowDto } from './entities/workflow.entity';
+import { WorkflowDetailDto, WorkflowDto } from './entities/workflow.entity';
 
 @Injectable()
 export class WorkflowService {
@@ -130,6 +130,120 @@ export class WorkflowService {
         });
 
         return rows;
+    }
+
+    async findOne(id: number, user: PessoaFromJwt): Promise<WorkflowDetailDto> {
+        const row = await this.prisma.workflow.findFirst({
+            where: {
+                id,
+                removido_em: null,
+            },
+            select: {
+                id: true,
+                ativo: true,
+                inicio: true,
+                termino: true,
+
+                transferencia_tipo: {
+                    select: {
+                        id: true,
+                        nome: true,
+                    },
+                },
+
+                etapasFluxo: {
+                    where: { removido_em: null },
+                    orderBy: { ordem: 'asc' },
+                    take: 1, // TODO: verificar possibilidade de N fluxos por workflow.
+                    select: {
+                        id: true,
+                        ordem: true,
+
+                        fluxo_etapa_de: {
+                            select: {
+                                id: true,
+                                etapa_fluxo: true,
+                            },
+                        },
+
+                        fluxo_etapa_para: {
+                            select: {
+                                id: true,
+                                etapa_fluxo: true,
+                            },
+                        },
+
+                        fases: {
+                            where: { removido_em: null },
+                            orderBy: { ordem: 'asc' },
+                            select: {
+                                id: true,
+                                responsabilidade: true,
+                                fase: {
+                                    select: {
+                                        id: true,
+                                        fase: true,
+                                    },
+                                },
+
+                                tarefas: {
+                                    where: { removido_em: null },
+                                    orderBy: { ordem: 'asc' },
+                                    select: {
+                                        id: true,
+                                        responsabilidade: true,
+                                        workflow_tarefa: {
+                                            select: {
+                                                id: true,
+                                                tarefa_fluxo: true,
+                                            },
+                                        },
+                                    },
+                                },
+                            },
+                        },
+                    },
+                },
+            },
+        });
+        if (!row) throw new NotFoundException('Workflow não encontrado');
+
+        const fluxo = row.etapasFluxo[0];
+
+        return {
+            ...row,
+
+            fluxo: fluxo
+                ? {
+                      ...fluxo,
+                      workflow_etapa_de: {
+                          id: fluxo.fluxo_etapa_de.id,
+                          descricao: fluxo.fluxo_etapa_de.etapa_fluxo,
+                      },
+
+                      workflow_etapa_para: {
+                          id: fluxo.fluxo_etapa_para.id,
+                          descricao: fluxo.fluxo_etapa_para.etapa_fluxo,
+                      },
+
+                      fases: fluxo.fases.map((fase) => {
+                          return {
+                              ...fase,
+
+                              tarefas: fase.tarefas.map((tarefa) => {
+                                  return {
+                                      ...tarefa,
+                                      workflow_tarefa: {
+                                          id: tarefa.workflow_tarefa.id,
+                                          descricao: tarefa.workflow_tarefa.tarefa_fluxo,
+                                      },
+                                  };
+                              }),
+                          };
+                      }),
+                  }
+                : null,
+        };
     }
 
     async remove(id: number, user: PessoaFromJwt) {
