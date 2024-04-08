@@ -6,6 +6,7 @@ import { WorkflowFluxoTarefaDto } from '../fluxo-tarefa/entities/workflow-fluxo-
 
 export class WorkflowDto {
     id: number;
+    nome: string;
     ativo: boolean;
     inicio: Date;
     termino: Date | null;
@@ -18,6 +19,7 @@ export class ListWorkflowDto {
 
 export class WorkflowDetailDto {
     id: number;
+    nome: string;
     ativo: boolean;
     inicio: Date;
     termino: Date | null;

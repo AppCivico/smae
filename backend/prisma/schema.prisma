@@ -4855,6 +4855,7 @@ model Workflow {
     transferencia_tipo_id Int
     transferencia_tipo    TransferenciaTipo @relation(fields: [transferencia_tipo_id], references: [id])
 
+    nome    String
     ativo   Boolean
     inicio  DateTime  @db.Date()
     termino DateTime? @db.Date()
