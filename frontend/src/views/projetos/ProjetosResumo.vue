@@ -34,6 +34,10 @@ const equipeAgrupadaPorÓrgão = computed(() => (Array.isArray(emFoco.value?.equ
   }, {})
   : {}));
 
+const custoTotalPlanejado = computed(() => (Array.isArray(emFoco.value?.tarefa_cronograma)
+  ? emFoco.value?.tarefa_cronograma.reduce((acc, cur) => (cur.previsao_custo || 0) + acc, 0)
+  : 0));
+
 defineProps({
   projetoId: {
     type: Number,
@@ -444,6 +448,14 @@ if (!Array.isArray(organs.value) || !organs.value.length) {
         </dt>
         <dd class="t13">
           {{ emFoco?.previsao_custo ? `R$ ${dinheiro(emFoco.previsao_custo)}` : '-' }}
+        </dd>
+      </dl>
+      <dl class="f2 mb1">
+        <dt class="t12 uc w700 mb05 tamarelo">
+          Total de custos planejados
+        </dt>
+        <dd class="t13">
+          {{ custoTotalPlanejado ? `R$ ${dinheiro(custoTotalPlanejado)}` : '-' }}
         </dd>
       </dl>
     </div>
