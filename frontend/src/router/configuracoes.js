@@ -20,6 +20,10 @@ import PaineisExternosRaiz from '@/views/paineisExternos/PaineisExternosRaiz.vue
 
 import WorkflowRaiz from '@/views/workflow/WorkflowRaiz.vue';
 
+import FluxosCriarEditar from '@/views/fluxosProjeto/FluxosCriarEditar.vue';
+import FluxosLista from '@/views/fluxosProjeto/FluxosLista.vue';
+import FluxosRaiz from '@/views/fluxosProjeto/FluxosRaiz.vue';
+
 import EtapasCriarEditar from '@/views/etapasProjeto/EtapasCriarEditar.vue';
 import EtapasLista from '@/views/etapasProjeto/EtapasLista.vue';
 import EtapasRaiz from '@/views/etapasProjeto/EtapasRaiz.vue';
@@ -222,6 +226,7 @@ export default [
           prefixoParaFilhas: 'TransferenciasVoluntarias',
           limitarÀsPermissões: 'CadastroWorkflows.',
           rotasParaMenuSecundário: [
+            'fluxosListar',
             'etapasListar',
             'fasesListar',
             'tarefasListar',
@@ -229,6 +234,47 @@ export default [
           ],
         },
         children: [
+          {
+            path: 'fluxo',
+            name: 'fluxoRaiz',
+            component: FluxosRaiz,
+            meta: {
+              título: 'Fluxo',
+              rotaPrescindeDeChave: true,
+            },
+
+            children:[
+              {
+                name: 'fluxosListar',
+                path: '',
+                component: FluxosLista,
+                meta: {
+                  título: 'Fluxos',
+                },
+              },
+              {
+                name: 'fluxosCriar',
+                path: 'nova',
+                component: FluxosCriarEditar,
+                meta: {
+                  título: 'Novo fluxo',
+                },
+              },
+              {
+                path: ':fluxoId',
+                name: 'fluxosEditar',
+                component: FluxosCriarEditar,
+                props: ({ params }) => ({
+                  ...params,
+                  ...{ fluxoDoProjetoId: Number.parseInt(params.fluxoId, 10) || undefined },
+                }),
+
+                meta: {
+                  título: 'Editar fluxo',
+                },
+              },
+            ]
+          },
           {
             path: 'etapa',
             name: 'etapasRaiz',
