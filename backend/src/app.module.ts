@@ -41,6 +41,7 @@ import { WorkflowSituacaoModule } from './workflow/situacao/workflow-situacao.mo
 import { WorkflowFluxoModule } from './workflow/fluxo/workflow-fluxo.module';
 import { WorkflowTarefaModule } from './workflow/tarefa/workflow-tarefa.module';
 import { WorkflowfluxoFaseModule } from './workflow/fluxo-fase/workflow-fluxo-fase.module';
+import { WorkflowFluxoTarefaModule } from './workflow/fluxo-tarefa/workflow-fluxo-tarefa.module';
 
 // Hacks pro JS
 /*
@@ -86,6 +87,7 @@ import { WorkflowfluxoFaseModule } from './workflow/fluxo-fase/workflow-fluxo-fa
         WorkflowTarefaModule,
         WorkflowFluxoModule,
         WorkflowfluxoFaseModule,
+        WorkflowFluxoTarefaModule,
     ],
     controllers: [AppController],
     providers: [
