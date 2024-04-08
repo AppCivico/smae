@@ -1300,9 +1300,9 @@ export const projeto = object()
       )
       .strict(),
     previsao_custo: number()
-      .label('Previsão de custos')
+      .label('Custo previsto inicial')
       .min(0)
-      .required('Previsão de custo é obrigatória'),
+      .required(),
     previsao_inicio: date()
       .label('Previsão de início')
       .nullable(),
