@@ -18,10 +18,10 @@
         </mj-text>
         <mj-button href="[% link %]">Acessar sistema</mj-button>
         <mj-text>
-          <p>Nota: [% nota %]</p>
+          <p>Nota: [% nota | raw%]</p>
         </mj-text>
         <mj-text>
-          <p>Resposta: [% resposta %]</p>
+          <p>Resposta: [% resposta | raw %]</p>
         </mj-text>
       </mj-column>
     </mj-section>
