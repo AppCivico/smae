@@ -3,7 +3,7 @@ import { RecordWithId } from 'src/common/dto/record-with-id.dto';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateTransferenciaTipoDto } from './dto/create-transferencia-tipo.dto';
-import { Prisma } from '@prisma/client';
+import { Prisma, WorkflowResponsabilidade, WorkflowSituacaoTipo } from '@prisma/client';
 import { UpdateTransferenciaTipoDto } from './dto/update-transferencia-tipo.dto';
 import { TransferenciaTipoDto } from './entities/transferencia-tipo.dto';
 import { CreateTransferenciaAnexoDto, CreateTransferenciaDto } from './dto/create-transferencia.dto';
@@ -19,6 +19,7 @@ import { JwtService } from '@nestjs/jwt';
 import { PaginatedDto } from 'src/common/dto/paginated.dto';
 import { TarefaCronogramaDto } from 'src/common/dto/TarefaCronograma.dto';
 import { BlocoNotaService } from '../bloco-nota/bloco-nota/bloco-nota.service';
+import { WorkflowService } from 'src/workflow/configuracao/workflow.service';
 
 class NextPageTokenJwtBody {
     offset: number;
@@ -31,7 +32,8 @@ export class TransferenciaService {
         private readonly prisma: PrismaService,
         private readonly uploadService: UploadService,
         private readonly jwtService: JwtService,
-        private readonly blocoNotaService: BlocoNotaService
+        private readonly blocoNotaService: BlocoNotaService,
+        private readonly workflowService: WorkflowService
     ) {}
 
     async createTransferencia(dto: CreateTransferenciaDto, user: PessoaFromJwt): Promise<RecordWithId> {
@@ -106,6 +108,8 @@ export class TransferenciaService {
                     select: { id: true },
                 });
 
+                if (workflow_id) this.startWorkflow(transferencia.id, workflow_id, dto, prismaTxn, user);
+
                 return transferencia;
             }
         );
@@ -167,6 +171,8 @@ export class TransferenciaService {
                         valor_total: true,
                         valor_contrapartida: true,
                         pendente_preenchimento_valores: true,
+                        workflow_id: true,
+                        tipo_id: true,
                     },
                 });
 
@@ -182,6 +188,29 @@ export class TransferenciaService {
                             pendente_preenchimento_valores: false,
                         },
                     });
+                }
+
+                if (!self.workflow_id) {
+                    const workflow = await prismaTxn.workflow.findFirst({
+                        where: {
+                            transferencia_tipo_id: self.tipo_id,
+                            removido_em: null,
+                            ativo: true,
+                        },
+                        select: {
+                            id: true,
+                        },
+                    });
+                    const workflow_id: number | null = workflow?.id ?? null;
+
+                    if (workflow_id) {
+                        await prismaTxn.transferencia.update({
+                            where: { id },
+                            data: { workflow_id: workflow_id },
+                        });
+
+                        await this.startWorkflow(id, workflow_id, dto, prismaTxn, user);
+                    }
                 }
 
                 return transferencia;
@@ -752,5 +781,61 @@ export class TransferenciaService {
         const formattedWords = words.join(' ');
 
         return formattedWords;
+    }
+
+    private async startWorkflow(
+        transferencia_id: number,
+        workflow_id: number,
+        dto: CreateTransferenciaDto | UpdateTransferenciaDto,
+        prismaTxn: Prisma.TransactionClient,
+        user: PessoaFromJwt
+    ) {
+        const workflow = await this.workflowService.findOne(workflow_id, undefined);
+
+        // Apenas a primeira etapa importa nesta criação.
+        const fluxo = workflow.fluxo[0];
+
+        if (fluxo) {
+            for (const fase of fluxo.fases) {
+                if (fase.responsabilidade == WorkflowResponsabilidade.OutroOrgao && !dto.workflow_orgao_responsavel_id)
+                    throw new HttpException(
+                        'Fase é de responsabilidade de outro órgão, portanto workflow_orgao_responsavel_id deve ser enviado',
+                        400
+                    );
+
+                const primeiraSituacao = fase.situacoes.find((s) => {
+                    s.tipo_situacao == WorkflowSituacaoTipo.NaoIniciado;
+                });
+                if (!primeiraSituacao) throw new Error('Não foi encontrada situação inicial, "Não iniciado".');
+
+                const jaExiste = await prismaTxn.transferenciaAndamento.count({
+                    where: {
+                        removido_em: null,
+                        transferencia_id: transferencia_id,
+                        workflow_etapa_id: fluxo.workflow_etapa_de!.id,
+                        workflow_fase_id: fase.id,
+                        workflow_situacao_id: primeiraSituacao.id,
+                    },
+                });
+
+                // TODO: investigar o pq fase.id pode ser undefined (DetailWorkflowFluxoFaseDto)
+                if (!fase.id) continue;
+
+                if (!jaExiste) {
+                    await prismaTxn.transferenciaAndamento.create({
+                        data: {
+                            transferencia_id: transferencia_id,
+                            workflow_etapa_id: fluxo.workflow_etapa_de!.id, // Sempre será o "dê" do "dê-para".
+                            workflow_fase_id: fase.id,
+                            workflow_situacao_id: primeiraSituacao.id,
+                            orgao_responsavel_id: dto.workflow_orgao_responsavel_id,
+                            data_inicio: new Date(Date.now()),
+                            criado_por: user.id,
+                            criado_em: new Date(Date.now()),
+                        },
+                    });
+                }
+            }
+        }
     }
 }
