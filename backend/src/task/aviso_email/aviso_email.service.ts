@@ -170,7 +170,7 @@ export class AvisoEmailTaskService implements TaskableService {
             const fromData = data_nota.diff(today).as('days');
             const fromRever = rever_em ? rever_em.diff(today).as('days') : undefined;
 
-            console.log(fromData)
+            console.log(fromData);
 
             if (fromData >= 0 || (fromRever && fromRever >= 0)) return false;
         }
