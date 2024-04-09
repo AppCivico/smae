@@ -5,6 +5,8 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { TaskableService } from '../entities/task.entity';
 import { TaskService } from '../task.service';
 import { CreateAvisoEmailJobDto } from './dto/create-aviso_email.dto';
+import { CreateAeCronogramaTpJobDto } from '../aviso_email_cronograma_tp/dto/ae_cronograma_tp.dto';
+import { CreateNotaJobDto } from '../aviso_email_nota/dto/ae_nota.dto';
 
 type AvisoComCronograma = AvisoEmail & { tarefa: Tarefa | null } & { tarefa_cronograma: TarefaCronograma | null };
 
@@ -33,6 +35,7 @@ export class AvisoEmailTaskService implements TaskableService {
             return { success: true, mensagem: this.geraMensagem(aviso_email) };
         }
 
+        const now = new Date(Date.now());
         if (aviso_email.tipo == 'CronogramaTerminoPlanejado') {
             const dataTermPlanejado = this.resolveDataTermPlanejado(aviso_email);
             const dataTermAviso = this.resolveDataTermino(aviso_email);
@@ -44,7 +47,6 @@ export class AvisoEmailTaskService implements TaskableService {
                 };
             }
 
-            const now = new Date(Date.now());
             await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient) => {
                 const job = await this.taskService.create(
                     {
@@ -53,7 +55,7 @@ export class AvisoEmailTaskService implements TaskableService {
                             tarefa_id: aviso_email.tarefa_id ?? undefined,
                             aviso_email_id: aviso_email.id,
                             cc: aviso_email.com_copia,
-                        },
+                        } satisfies CreateAeCronogramaTpJobDto,
                         type: 'aviso_email_cronograma_tp',
                     },
                     null,
@@ -68,7 +70,29 @@ export class AvisoEmailTaskService implements TaskableService {
                     data: { ultimo_envio_em: now },
                 });
             });
-        } else if (aviso_email.tipo == 'Nota') {
+        } else if (aviso_email.tipo == 'Nota' && aviso_email.nota_id) {
+            await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient) => {
+                const job = await this.taskService.create(
+                    {
+                        params: {
+                            nota_id: aviso_email.nota_id!,
+                            aviso_email_id: aviso_email.id,
+                            cc: aviso_email.com_copia,
+                        } satisfies CreateNotaJobDto,
+                        type: 'aviso_email_nota',
+                    },
+                    null,
+                    prismaTx
+                );
+                job_id = job.id;
+
+                this.logger.verbose(`Tarefa agendada id=${job_id} para produção do e-mail, com disparo ou não`);
+
+                await prismaTx.avisoEmail.update({
+                    where: { id: aviso_email.id },
+                    data: { ultimo_envio_em: now },
+                });
+            });
         }
 
         return {
