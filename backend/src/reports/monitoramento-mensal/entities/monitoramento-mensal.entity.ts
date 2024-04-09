@@ -59,7 +59,7 @@ export class RelSerieVariavelDto {
     titulo_meta: string;
     titulo_iniciativa: string | null;
     titulo_atividad: string | null;
-    informacoes_complementares: string | null;
+    analise_qualitativa: string | null;
 }
 
 export class RetMonitoramentoFisico {
