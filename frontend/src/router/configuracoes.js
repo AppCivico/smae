@@ -20,6 +20,8 @@ import PaineisExternosRaiz from '@/views/paineisExternos/PaineisExternosRaiz.vue
 
 import WorkflowRaiz from '@/views/workflow/WorkflowRaiz.vue';
 
+import EtapaFluxo from '@/views/fluxosProjeto/EtapaFluxo.vue';
+import FaseFluxo from '@/views/fluxosProjeto/FaseFluxo.vue';
 import FluxosCriarEditar from '@/views/fluxosProjeto/FluxosCriarEditar.vue';
 import FluxosLista from '@/views/fluxosProjeto/FluxosLista.vue';
 import FluxosRaiz from '@/views/fluxosProjeto/FluxosRaiz.vue';
@@ -266,11 +268,29 @@ export default [
                 component: FluxosCriarEditar,
                 props: ({ params }) => ({
                   ...params,
-                  ...{ fluxoDoProjetoId: Number.parseInt(params.fluxoId, 10) || undefined },
+                  ...{ fluxoId: Number.parseInt(params.fluxoId, 10) || undefined },
                 }),
 
                 meta: {
                   título: 'Editar fluxo',
+                },
+              },
+              {
+                path: 'etapaFluxo',
+                name: 'etapaFluxoCriarEditar',
+                component: EtapaFluxo,
+                props: true,
+                meta: {
+                  rotaDeEscape: 'etapaFluxoCriarEditar',
+                },
+              },
+              {
+                path: 'faseFluxo',
+                name: 'faseFluxoCriarEditar',
+                component: FaseFluxo,
+                props: true,
+                meta: {
+                  rotaDeEscape: 'faseFluxoCriarEditar',
                 },
               },
             ]
