@@ -832,6 +832,19 @@ export class TransferenciaService {
                             data_inicio: new Date(Date.now()),
                             criado_por: user.id,
                             criado_em: new Date(Date.now()),
+
+                            tarefas: {
+                                createMany: {
+                                    data: fase.tarefas.map((t) => {
+                                        return {
+                                            workflow_tarefa_fluxo_id: t.workflow_tarefa!.id,
+                                            orgao_responsavel_id: dto.workflow_orgao_responsavel_id,
+                                            criado_por: user.id,
+                                            criado_em: new Date(Date.now()),
+                                        };
+                                    }),
+                                },
+                            },
                         },
                     });
                 }
