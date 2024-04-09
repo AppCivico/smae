@@ -26,7 +26,7 @@ export class WorkflowDetailDto {
     termino: Date | null;
     transferencia_tipo: IdNomeDto;
 
-    fluxo: DetailWorkflowFluxoDto | null;
+    fluxo: DetailWorkflowFluxoDto[];
 }
 
 class DetailWorkflowFluxoDto extends PartialType(OmitType(WorkflowFluxoDto, ['workflow_id'])) {
