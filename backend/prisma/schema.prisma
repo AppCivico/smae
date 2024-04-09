@@ -4008,6 +4008,7 @@ enum task_type {
     refresh_meta
     aviso_email
     aviso_email_cronograma_tp
+    aviso_email_nota
 }
 
 enum task_status {
@@ -5182,6 +5183,7 @@ model TransferenciaAndamentoTarefa {
 
 enum TipoAviso {
     CronogramaTerminoPlanejado
+    Nota
 }
 
 enum AvisoPeriodo {
@@ -5198,9 +5200,11 @@ model AvisoEmail {
 
     tarefa_cronograma_id Int?
     tarefa_id            Int?
+    nota_id              Int?
 
     tarefa_cronograma TarefaCronograma? @relation(fields: [tarefa_cronograma_id], references: [id])
     tarefa            Tarefa?           @relation(fields: [tarefa_id], references: [id])
+    nota              Nota?             @relation(fields: [nota_id], references: [id])
     com_copia         String[]
 
     numero         Int
@@ -5350,6 +5354,7 @@ model Nota {
     NotaEnderecamento         NotaEnderecamento[]
     NotaEnderecamentoResposta NotaEnderecamentoResposta[]
     revisoes                  NotaRevisao[]
+    AvisoEmail                AvisoEmail[]
 
     @@index([data_nota, status])
     @@index([rever_em])

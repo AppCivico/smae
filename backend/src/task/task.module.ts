@@ -7,6 +7,7 @@ import { TaskController } from './task.controller';
 import { TaskService } from './task.service';
 import { AvisoEmailTaskModule } from './aviso_email/aviso_email.module';
 import { AeCronogramaTpModule } from './aviso_email_cronograma_tp/ae_cronograma_tp.module';
+import { AeNotaModule } from './aviso_email_nota/ae_nota.module';
 
 @Module({
     imports: [
@@ -16,6 +17,7 @@ import { AeCronogramaTpModule } from './aviso_email_cronograma_tp/ae_cronograma_
         forwardRef(() => RefreshMetaModule),
         forwardRef(() => AvisoEmailTaskModule),
         forwardRef(() => AeCronogramaTpModule),
+        forwardRef(() => AeNotaModule),
     ],
     controllers: [TaskController],
     providers: [TaskService],
