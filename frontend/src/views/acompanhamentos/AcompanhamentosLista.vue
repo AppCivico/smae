@@ -96,8 +96,7 @@ const listaOrdenada = computed(() => {
             .localeCompare(a?.acompanhamento_tipo?.nome));
 
     default:
-      return listaFiltrada.value
-        .toSorted((a, b) => a.ordem - b.ordem);
+      return listaFiltrada.value;
   }
 });
 
