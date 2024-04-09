@@ -2,6 +2,7 @@
 import cargosDeParlamentar from '@/consts/cargosDeParlamentar';
 import categoriaDeTransferencia from '@/consts/categoriaDeTransferencia';
 import esferasDeTransferencia from '@/consts/esferasDeTransferencia';
+import responsabilidadeEtapaFluxo from '@/consts/responsabilidadeEtapaFluxo';
 import estadosDoBrasil from '@/consts/estadosDoBrasil';
 import interfacesDeTransferências from '@/consts/interfacesDeTransferências';
 import níveisDeRepresentatividade from '@/consts/niveisDeRepresentatividade';
@@ -1742,6 +1743,22 @@ export const workflow = object({
   transferencia_tipo_id: number()
     .label('Tipo de transferência')
     .nullable()
+    .required(),
+});
+
+export const etapasFluxo = object({
+  fase_id: number()
+    .label('Tipo de fase')
+    .required(),
+  responsabilidade: mixed()
+    .label('Responsabilidade')
+    .oneOf(Object.keys(responsabilidadeEtapaFluxo))
+    .required(),
+  situacao: object()
+    .label('Situação')
+    .required('Selecione ao menos uma situação'),
+  ordem: number()
+    .label('posição dentro da etapa')
     .required(),
 });
 
