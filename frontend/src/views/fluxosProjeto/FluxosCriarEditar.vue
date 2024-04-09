@@ -34,11 +34,11 @@ const tiposDisponíveis = computed(() => (values.esfera
 
 async function onSubmit(_, { controlledValues: carga }) {
   try {
-    const msg = props.fluxosId
+    const msg = props.fluxoId
       ? "Dados salvos com sucesso!"
       : "Item adicionado com sucesso!";
 
-    const resposta =  await fluxosProjetoStore.salvarItem(carga, props.fluxosId)
+    const resposta =  await fluxosProjetoStore.salvarItem(carga, props.fluxoId)
     if (resposta) {
       alertStore.success(msg);
       fluxosProjetoStore.$reset();
@@ -55,7 +55,6 @@ async function iniciar() {
   if(props.fluxoId){
     await fluxosProjetoStore.buscarItem(props.fluxoId);
   }
-
 }
 iniciar()
 
@@ -228,4 +227,16 @@ iniciar()
       {{ erro }}
     </div>
   </div>
+  <template v-if="props.fluxoId">
+    <div class="flex spacebetween center mb2">
+      <h1>Etapas do fluxo</h1>
+      <hr class="ml2 f1">
+      <router-link
+        :to="{ name: 'etapaFluxoCriarEditar' }"
+        class="btn big ml2"
+      >
+        Adicionar etapa
+      </router-link>
+    </div>
+  </template>
 </template>
