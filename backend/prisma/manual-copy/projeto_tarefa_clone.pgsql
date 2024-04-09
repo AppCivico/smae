@@ -29,7 +29,7 @@ BEGIN
     -- Se o projeto destino da clonagem estiver na fase de “registro”. A clonagem é limitada às atividades de nivel 1.
     SELECT
         -- Operador na query de clone será "<=".
-        CASE WHEN projeto.fase::TEXT = 'Registro' THEN 1
+        CASE WHEN projeto.status::TEXT = 'Registrado' THEN 1
         ELSE portfolio.nivel_maximo_tarefa
         END
     FROM projeto
