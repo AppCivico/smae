@@ -194,10 +194,12 @@ export class MonitoramentoMensalMfService {
             ai.codigo as codigo_atividade,
             mi.titulo as titulo_meta,
             ii.titulo as titulo_iniciativa,
-            ai.titulo as titulo_atividade
+            ai.titulo as titulo_atividade,
+            mcfa.informacoes_complementares as informacoes_complementares
         from all_sv
         left join serie_variavel sv on sv.variavel_id = all_sv.variavel_id and sv.data_valor = all_sv.data_valor and sv.serie = all_sv.serie
         left join status_variavel_ciclo_fisico svcf on svcf.variavel_id = all_sv.variavel_id and svcf.ciclo_fisico_id = ${cf.id}
+        left join meta_ciclo_fisico_analise mcfa on mcfa.ciclo_fisico_id = ${cf.id} and mcfa.variavel_id = all_sv.variavel_id and mcfa.ultima_revisao and mcfa.removido_em is null
         join indicador_variavel iv on iv.variavel_id = sv.variavel_id AND iv.indicador_origem_id is null
         join indicador i on i.id = iv.indicador_id AND i.removido_em is null
         left join atividade ai on ai.id = i.atividade_id
@@ -342,6 +344,7 @@ export class MonitoramentoMensalMfService {
                 { value: 'titulo_meta', label: 'Título da Meta' },
                 { value: 'titulo_iniciativa', label: 'Título da ' + pdm.rotulo_iniciativa },
                 { value: 'titulo_atividade', label: 'Título da ' + pdm.rotulo_atividade },
+                { value: 'informacoes_complementares', label: 'Informações Complementares' },
             ];
 
             const json2csvParser = new Parser({
