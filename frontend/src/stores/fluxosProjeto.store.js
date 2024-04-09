@@ -1,12 +1,14 @@
 import { defineStore } from 'pinia';
-
+import dateTimeToDate from '@/helpers/dateTimeToDate';
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
 export const useFluxosProjetosStore = defineStore('fluxosProjetos', {
   state: () => ({
     lista: [],
+    emFoco: null,
     chamadasPendentes: {
       lista: false,
+      emFoco: false,
     },
     erro: null,
   }),
@@ -72,6 +74,16 @@ export const useFluxosProjetosStore = defineStore('fluxosProjetos', {
         this.chamadasPendentes.emFoco = false;
         return false;
       }
+    },
+  },
+  getters: {
+    itemParaEdição({ emFoco }) {
+      return {
+        ...emFoco,
+        inicio: dateTimeToDate(emFoco?.inicio),
+        termino: dateTimeToDate(emFoco?.termino),
+        transferencia_tipo_id: emFoco?.transferencia_tipo_id?.id || null,
+      };
     },
   },
 });
