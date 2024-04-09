@@ -195,11 +195,11 @@ export class MonitoramentoMensalMfService {
             mi.titulo as titulo_meta,
             ii.titulo as titulo_iniciativa,
             ai.titulo as titulo_atividade,
-            mcfa.informacoes_complementares as informacoes_complementares
+            vcfq.analise_qualitativa as analise_qualitativa
         from all_sv
         left join serie_variavel sv on sv.variavel_id = all_sv.variavel_id and sv.data_valor = all_sv.data_valor and sv.serie = all_sv.serie
         left join status_variavel_ciclo_fisico svcf on svcf.variavel_id = all_sv.variavel_id and svcf.ciclo_fisico_id = ${cf.id}
-        left join meta_ciclo_fisico_analise mcfa on mcfa.ciclo_fisico_id = ${cf.id} and mcfa.variavel_id = all_sv.variavel_id and mcfa.ultima_revisao and mcfa.removido_em is null
+        left join variavel_ciclo_fisico_qualitativo vcfq on vcfq.ciclo_fisico_id = ${cf.id} and vcfq.variavel_id = all_sv.variavel_id and vcfq.ultima_revisao and vcfq.removido_em is null
         join indicador_variavel iv on iv.variavel_id = sv.variavel_id AND iv.indicador_origem_id is null
         join indicador i on i.id = iv.indicador_id AND i.removido_em is null
         left join atividade ai on ai.id = i.atividade_id
@@ -344,7 +344,7 @@ export class MonitoramentoMensalMfService {
                 { value: 'titulo_meta', label: 'Título da Meta' },
                 { value: 'titulo_iniciativa', label: 'Título da ' + pdm.rotulo_iniciativa },
                 { value: 'titulo_atividade', label: 'Título da ' + pdm.rotulo_atividade },
-                { value: 'informacoes_complementares', label: 'Informações Complementares' },
+                { value: 'analise_qualitativa', label: 'Analise Qualitativa' },
             ];
 
             const json2csvParser = new Parser({
