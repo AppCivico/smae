@@ -7,10 +7,14 @@ import { WorkflowFluxoDto } from './entities/workflow-fluxo.entity';
 import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { FilterWorkflowFluxoDto } from './dto/filter-workflow-fluxo.dto';
+import { WorkflowService } from '../workflow.service';
 
 @Injectable()
 export class WorkflowFluxoService {
-    constructor(private readonly prisma: PrismaService) {}
+    constructor(
+        private readonly prisma: PrismaService,
+        private readonly workflowService: WorkflowService
+    ) {}
 
     async create(dto: CreateWorkflowFluxoDto, user: PessoaFromJwt): Promise<RecordWithId> {
         const created = await this.prisma.$transaction(
@@ -100,6 +104,9 @@ export class WorkflowFluxoService {
                     },
                 });
                 if (!self) throw new NotFoundException('Fluxo não encontrado');
+
+                // Caso o Workflow já possua uma transferência ativa, não pode ser editado.
+                await this.workflowService.verificaEdicao(self.workflow_id, prismaTxn);
 
                 if (dto.workflow_etapa_de_id != undefined && dto.workflow_etapa_de_id != self.fluxo_etapa_de_id) {
                     const saidaJaExiste = await prismaTxn.fluxo.count({
@@ -210,12 +217,28 @@ export class WorkflowFluxoService {
     }
 
     async remove(id: number, user: PessoaFromJwt) {
-        await this.prisma.fluxo.update({
-            where: { id },
-            data: {
-                removido_por: user.id,
-                removido_em: new Date(Date.now()),
-            },
+        await this.prisma.$transaction(async (prismaTxn: Prisma.TransactionClient) => {
+            const self = await prismaTxn.fluxo.findFirst({
+                where: {
+                    id,
+                    removido_em: null,
+                },
+                select: {
+                    workflow_id: true,
+                },
+            });
+            if (!self) throw new NotFoundException('Fluxo não encontrado');
+
+            // Caso o Workflow já possua uma transferência ativa, não pode ser removido.
+            await this.workflowService.verificaEdicao(self.workflow_id, prismaTxn);
+
+            await this.prisma.fluxo.update({
+                where: { id },
+                data: {
+                    removido_por: user.id,
+                    removido_em: new Date(Date.now()),
+                },
+            });
         });
     }
 }
