@@ -16,12 +16,12 @@ export class AllExceptionsFilter implements ExceptionFilter {
 
         const httpStatus =
             exception instanceof HttpException ? exception.getStatus() : HttpStatus.INTERNAL_SERVER_ERROR;
-        const httpResponse = exception instanceof HttpException ? exception.getResponse() : {};
+        const httpResponse = exception instanceof HttpException ? exception.getResponse() : undefined;
 
         let responseBody: any = {
             statusCode: httpStatus,
             message: 'Erro interno',
-            ...(typeof httpResponse == 'object' ? httpResponse : { message: httpResponse }),
+            ...(typeof httpResponse == 'object' ? httpResponse : {}),
         };
 
         if (ehAdmin) {
