@@ -58,6 +58,21 @@ export class TransferenciaService {
                     if (!partidoExiste) throw new HttpException('partido_id| Partido não encontrado.', 400);
                 }
 
+                // Tratando workflow
+                // Caso tenha um workflow ativo para o tipo de transferência.
+                // Ele deve ser automaticamente o workflow selecionado.
+                const workflow = await prismaTxn.workflow.findFirst({
+                    where: {
+                        transferencia_tipo_id: dto.tipo_id,
+                        removido_em: null,
+                        ativo: true,
+                    },
+                    select: {
+                        id: true,
+                    },
+                });
+                const workflow_id: number | null = workflow?.id ?? null;
+
                 const transferencia = await prismaTxn.transferencia.create({
                     data: {
                         tipo_id: dto.tipo_id,
@@ -84,6 +99,7 @@ export class TransferenciaService {
                         emenda_unitaria: dto.emenda_unitaria,
                         numero_identificacao: dto.numero_identificacao,
                         cargo: dto.cargo,
+                        workflow_id: workflow_id,
                         criado_por: user.id,
                         criado_em: new Date(Date.now()),
                     },
