@@ -152,6 +152,10 @@ export class CreateTransferenciaDto {
     @MinLength(1)
     @MaxLength(250)
     numero_identificacao?: string;
+
+    @IsOptional()
+    @IsInt()
+    workflow_orgao_responsavel_id?: number;
 }
 
 export class CreateTransferenciaAnexoDto {
