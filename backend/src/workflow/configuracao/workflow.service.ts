@@ -146,7 +146,7 @@ export class WorkflowService {
         return rows;
     }
 
-    async findOne(id: number, user: PessoaFromJwt): Promise<WorkflowDetailDto> {
+    async findOne(id: number, user: PessoaFromJwt | undefined): Promise<WorkflowDetailDto> {
         const row = await this.prisma.workflow.findFirst({
             where: {
                 id,
@@ -169,7 +169,6 @@ export class WorkflowService {
                 etapasFluxo: {
                     where: { removido_em: null },
                     orderBy: { ordem: 'asc' },
-                    take: 1, // TODO: verificar possibilidade de N fluxos por workflow.
                     select: {
                         id: true,
                         ordem: true,
@@ -235,49 +234,47 @@ export class WorkflowService {
         });
         if (!row) throw new NotFoundException('Workflow não encontrado');
 
-        const fluxo = row.etapasFluxo[0];
-
         return {
             ...row,
 
-            fluxo: fluxo
-                ? {
-                      ...fluxo,
-                      workflow_etapa_de: {
-                          id: fluxo.fluxo_etapa_de.id,
-                          descricao: fluxo.fluxo_etapa_de.etapa_fluxo,
-                      },
+            fluxo: row.etapasFluxo.map((fluxo) => {
+                return {
+                    ...fluxo,
+                    workflow_etapa_de: {
+                        id: fluxo.fluxo_etapa_de.id,
+                        descricao: fluxo.fluxo_etapa_de.etapa_fluxo,
+                    },
 
-                      workflow_etapa_para: {
-                          id: fluxo.fluxo_etapa_para.id,
-                          descricao: fluxo.fluxo_etapa_para.etapa_fluxo,
-                      },
+                    workflow_etapa_para: {
+                        id: fluxo.fluxo_etapa_para.id,
+                        descricao: fluxo.fluxo_etapa_para.etapa_fluxo,
+                    },
 
-                      fases: fluxo.fases.map((fase) => {
-                          return {
-                              ...fase,
+                    fases: fluxo.fases.map((fase) => {
+                        return {
+                            ...fase,
 
-                              situacoes: fase.situacoes.map((situacaoRel) => {
-                                  return {
-                                      id: situacaoRel.situacao.id,
-                                      situacao: situacaoRel.situacao.situacao,
-                                      tipo_situacao: situacaoRel.situacao.tipo_situacao,
-                                  };
-                              }),
+                            situacoes: fase.situacoes.map((situacaoRel) => {
+                                return {
+                                    id: situacaoRel.situacao.id,
+                                    situacao: situacaoRel.situacao.situacao,
+                                    tipo_situacao: situacaoRel.situacao.tipo_situacao,
+                                };
+                            }),
 
-                              tarefas: fase.tarefas.map((tarefa) => {
-                                  return {
-                                      ...tarefa,
-                                      workflow_tarefa: {
-                                          id: tarefa.workflow_tarefa.id,
-                                          descricao: tarefa.workflow_tarefa.tarefa_fluxo,
-                                      },
-                                  };
-                              }),
-                          };
-                      }),
-                  }
-                : null,
+                            tarefas: fase.tarefas.map((tarefa) => {
+                                return {
+                                    ...tarefa,
+                                    workflow_tarefa: {
+                                        id: tarefa.workflow_tarefa.id,
+                                        descricao: tarefa.workflow_tarefa.tarefa_fluxo,
+                                    },
+                                };
+                            }),
+                        };
+                    }),
+                };
+            }),
         };
     }
 
