@@ -27,26 +27,26 @@ export class AvisoEmailService {
     }
 
     async create(dto: CreateAvisoEmailDto, user: PessoaFromJwt): Promise<RecordWithId> {
-        let tarefa_id = dto.tarefa_id;
-        let tarefa_cronograma_id = tarefa_id ? undefined : await this.resolveCronoEtapaId(dto);
-        let nota_id = dto.nota_jwt ? this.notaService.checkToken(dto.nota_jwt) : undefined;
-
-        if (tarefa_id && tarefa_cronograma_id) {
-            throw new BadRequestException(
-                `Só pode ser do cronograma ou da tarefa, não pode ser de ambos ao mesmo tempo.`
-            );
-        }
+        let tarefa_id: number | undefined = undefined;
+        let tarefa_cronograma_id: number | undefined = undefined;
+        let nota_id: number | undefined = undefined;
 
         if (dto.tipo == 'CronogramaTerminoPlanejado') {
+            tarefa_id = dto.tarefa_id;
+            tarefa_cronograma_id = await this.resolveCronoEtapaId(dto);
+            if (tarefa_id && tarefa_cronograma_id) {
+                throw new BadRequestException(
+                    `Só pode ser do cronograma ou da tarefa, não pode ser de ambos ao mesmo tempo.`
+                );
+            }
+
             if (!tarefa_id && !tarefa_cronograma_id)
                 throw new BadRequestException(
                     `Aviso de término planejado próximo precisa ser associado com uma tarefa ou cronograma.`
                 );
-            nota_id = undefined;
         } else if (dto.tipo == 'Nota') {
+            nota_id = this.notaService.checkToken(dto.nota_jwt ?? '');
             if (!nota_id) throw new BadRequestException(`Aviso de nota precisa ser associado com uma nota.`);
-            tarefa_id = undefined;
-            tarefa_cronograma_id = undefined;
         }
 
         const created = await this.prisma.$transaction(
