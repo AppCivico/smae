@@ -2,7 +2,7 @@
 import { emailTransferencia as schema } from "@/consts/formSchemas";
 import { storeToRefs } from "pinia";
 import { Field, Form } from "vee-validate";
-import { ref, watch } from "vue";
+import { ref, watchEffect } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useAlertStore } from "@/stores/alert.store";
 import { useEmailsStore } from "@/stores/envioEmail.store";
@@ -12,7 +12,7 @@ const route = useRoute();
 const router = useRouter();
 const emailsStore = useEmailsStore();
 const { chamadasPendentes, erro, itemParaEdição } = storeToRefs(emailsStore);
-const newEmail = ref([]);
+const newEmail = ref("");
 const localEmails = ref([]);
 
 const periodicidades = ["Dias", "Semanas", "Meses", "Anos"];
@@ -23,7 +23,7 @@ function removeEmail(index, event) {
 }
 
 function addNewEmail() {
-  if(newEmail.value === ""){
+  if(newEmail.value === "" || !newEmail.value){
     return
   }
 
@@ -38,8 +38,7 @@ function addNewEmail() {
   newEmail.value = "";
 }
 
-async function onSubmit(values) {
-  console.log('submit');
+async function onSubmit({comcopia, ...values}) {
   addNewEmail()
   const valoresAuxiliares = {
     ...values,
@@ -74,9 +73,9 @@ async function onSubmit(values) {
   }
 }
 
-watch(() => {
+watchEffect(() => {
   localEmails.value = itemParaEdição?.value?.linhas?.[0]?.com_copia;
-}, { deep: true})
+})
 
 </script>
 
