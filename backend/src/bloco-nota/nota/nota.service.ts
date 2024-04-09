@@ -382,8 +382,6 @@ export class NotaService {
         const id = this.checkWritableToken(signedId);
         dto.nota = HtmlSanitizer(dto.nota);
 
-        console.log(id);
-
         const nota = await this.prisma.nota.findFirstOrThrow({
             where: { id: id, removido_em: null },
             select: {
