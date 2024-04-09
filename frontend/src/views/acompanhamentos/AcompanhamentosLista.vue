@@ -96,7 +96,8 @@ const listaOrdenada = computed(() => {
             .localeCompare(a?.acompanhamento_tipo?.nome));
 
     default:
-      return listaFiltrada.value;
+      return listaFiltrada.value
+        .toSorted((a, b) => a.ordem - b.ordem);
   }
 });
 
@@ -176,7 +177,7 @@ vue/singleline-html-element-content-newline -->
         name="ordenar_por"
         @change="($e) => aplicarOrdenação($e.target.name, $e.target.value)"
       >
-        <option value="" />
+        <option value="">Número</option>
         <option
           v-for="item in Object.values(opçõesDeOrdenação)"
           :key="item.valor"
