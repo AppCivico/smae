@@ -174,7 +174,7 @@ export class AeCronogramaTpTaskService implements TaskableService {
                     true: `${tarefaText} do projeto`,
                 };
 
-                return `${textoComSemTarefa[tarefaText ? 'true' : 'false']} ${tc.projeto.codigo} - ${tc.projeto.nome}`;
+                return `${textoComSemTarefa[tarefaText ? 'true' : 'false']} ${tc.projeto.codigo ? tc.projeto.codigo + ' -' : ''} ${tc.projeto.nome}`;
             } else if (tc.transferencia) {
                 const textoComSemTarefa = {
                     false: 'A Transferência',

@@ -25,14 +25,23 @@ type JwtToken = {
     aud: string;
 };
 
+type DadosEmailInfo = {
+    objeto: string;
+    link: string;
+};
+
 @Injectable()
 export class NotaService {
+    baseUrl: string;
     constructor(
         private readonly jwtService: JwtService,
         private readonly blocoService: BlocoNotaService,
         private readonly tipoService: TipoNotaService,
         private readonly prisma: PrismaService
-    ) {}
+    ) {
+        const parsedUrl = new URL(process.env.URL_LOGIN_SMAE || 'http://smae-frontend/');
+        this.baseUrl = `${parsedUrl.protocol}//${parsedUrl.hostname}:${parsedUrl.port}`;
+    }
 
     async create(dto: CreateNotaDto, user: PessoaFromJwt): Promise<RecordWithIdJwt> {
         const blocoId = this.blocoService.checkToken(dto.bloco_token);
@@ -95,17 +104,20 @@ export class NotaService {
                     {
                         tipo_nota: {
                             eh_publico: false,
+                            removido_em: null,
                         },
                         pessoa_responsavel_id: user.id,
                     },
-                    {
-                        NotaEnderecamento: {
-                            some: {
-                                removido_em: null,
-                                orgao_enderecado_id: user.orgao_id,
-                            },
-                        },
-                    },
+                    user.orgao_id
+                        ? {
+                              NotaEnderecamento: {
+                                  some: {
+                                      removido_em: null,
+                                      orgao_enderecado_id: user.orgao_id,
+                                  },
+                              },
+                          }
+                        : {},
                     {
                         NotaEnderecamento: {
                             some: {
@@ -118,6 +130,7 @@ export class NotaService {
                         ? {
                               tipo_nota: {
                                   visivel_resp_orgao: true,
+                                  removido_em: null,
                               },
                               orgao_responsavel_id: user.orgao_id,
                           }
@@ -316,14 +329,11 @@ export class NotaService {
                 },
             });
 
-            let objeto = '';
             let emailTo = '';
 
             if (encaminhamentoInfo.pessoa_enderecado?.email) {
-                objeto = 'você';
                 emailTo = encaminhamentoInfo.pessoa_enderecado.email;
             } else if (encaminhamentoInfo.orgao_enderecado?.email) {
-                objeto = encaminhamentoInfo.orgao_enderecado.sigla;
                 emailTo = encaminhamentoInfo.orgao_enderecado.email;
             }
 
@@ -344,16 +354,18 @@ export class NotaService {
             });
 
             if (nota.dispara_email && emailTo) {
+                const objeto = await this.geraDadosEmail(nota.id, prismaTx);
                 await prismaTx.emaildbQueue.create({
                     data: {
                         id: uuidv7(),
                         config_id: 1,
-                        subject: `Nova resposta para ${objeto}`,
+                        subject: `Nova resposta - ${objeto.objeto}`,
                         template: 'nota-nova-resposta.html',
                         to: emailTo,
                         variables: {
                             nota: nota.nota,
                             resposta: dto.resposta,
+                            ...objeto,
                         },
                     },
                 });
@@ -440,7 +452,6 @@ export class NotaService {
 
             if (!enderecamento.orgao_enderecado_id) throw new BadRequestException(`Necessário enviar o órgão`);
 
-            let objeto = '';
             let emailTo = '';
 
             if (enderecamento.pessoa_enderecado_id && enderecamento.orgao_enderecado_id) {
@@ -455,7 +466,6 @@ export class NotaService {
                     select: { id: true, email: true },
                 });
                 emailTo = pessoaInfo.email;
-                objeto = 'você';
             } else {
                 const orgaoInfo = await prismaTx.orgao.findFirstOrThrow({
                     where: {
@@ -465,7 +475,6 @@ export class NotaService {
                     select: { id: true, email: true, sigla: true },
                 });
                 if (orgaoInfo.email) emailTo = orgaoInfo.email;
-                objeto = orgaoInfo.sigla;
             }
 
             await prismaTx.notaEnderecamento.create({
@@ -483,15 +492,17 @@ export class NotaService {
             });
 
             if (nota.dispara_email && emailTo) {
+                const objeto = await this.geraDadosEmail(nota.id, prismaTx);
                 await prismaTx.emaildbQueue.create({
                     data: {
                         id: uuidv7(),
                         config_id: 1,
-                        subject: `Novo encaminhamento para ${objeto}`,
+                        subject: `Novo encaminhamento - ${objeto.objeto}`,
                         template: 'nota-novo-encaminhamento.html',
                         to: emailTo,
                         variables: {
                             nota: updated.nota,
+                            ...objeto,
                         },
                     },
                 });
@@ -525,6 +536,40 @@ export class NotaService {
                 data: { n_enderecamentos: { decrement: 1 } },
             });
         }
+    }
+
+    private async geraDadosEmail(notaId: number, prismaTx: Prisma.TransactionClient): Promise<DadosEmailInfo> {
+        const bloco = await prismaTx.blocoNota.findFirst({
+            where: { Nota: { some: { id: notaId } } },
+            select: {
+                bloco: true,
+            },
+        });
+        const ret: DadosEmailInfo = {
+            objeto: '',
+            link: '',
+        };
+        if (!bloco) return ret;
+
+        if (bloco.bloco.startsWith('Transf:')) {
+            const transferencia = await prismaTx.transferencia.findFirstOrThrow({
+                where: { id: +bloco.bloco.split(':')[1] },
+                select: { id: true, identificador: true },
+            });
+
+            ret.objeto = `transferência ${transferencia.identificador}`;
+            ret.link = [this.baseUrl, 'transferencias-voluntarias', transferencia.id, 'detalhes'].join('/');
+        } else if (bloco.bloco.startsWith('Proj:')) {
+            const projeto = await prismaTx.projeto.findFirstOrThrow({
+                where: { id: +bloco.bloco.split(':')[1] },
+                select: { id: true, codigo: true, nome: true },
+            });
+
+            ret.objeto = `projeto ${projeto.codigo ? projeto.codigo + ' -' : ''} ${projeto.nome}`;
+            ret.link = [this.baseUrl, 'projetos', projeto.id, 'escopo'].join('/');
+        }
+
+        return ret;
     }
 
     async remove(signedId: string, user: PessoaFromJwt) {
