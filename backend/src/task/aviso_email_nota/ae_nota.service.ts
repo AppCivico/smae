@@ -4,15 +4,10 @@ import { plainToClass } from 'class-transformer';
 import { validate } from 'class-validator';
 import { uuidv7 } from 'uuidv7';
 import { NotaService } from '../../bloco-nota/nota/nota.service';
-import { Date2YMD } from '../../common/date2ymd';
-import { TarefaItemProjetadoDto } from '../../pp/tarefa/entities/tarefa.entity';
 import { PrismaService } from '../../prisma/prisma.service';
 import { TaskableService } from '../entities/task.entity';
 import { CreateNotaJobDto } from './dto/ae_nota.dto';
 
-// t=tarefa, i=intro
-// c=conteúdo
-type NotificationParts = { t: 'i' | 't'; c: string };
 @Injectable()
 export class AeNotaTaskService implements TaskableService {
     private readonly logger = new Logger(AeNotaTaskService.name);
