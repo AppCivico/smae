@@ -75,6 +75,9 @@ export class EixoService {
                                 equals: updateEixoDto.descricao,
                                 mode: 'insensitive',
                             },
+                            NOT: {
+                                id,
+                            }
                         },
                     });
                     if (descricaoExists)

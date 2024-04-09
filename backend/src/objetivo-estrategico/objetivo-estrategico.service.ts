@@ -75,6 +75,9 @@ export class ObjetivoEstrategicoService {
                                 equals: updateObjetivoEstrategicoDto.descricao,
                                 mode: 'insensitive',
                             },
+                            NOT: {
+                                id,
+                            }
                         },
                     });
                     if (descricaoExists)

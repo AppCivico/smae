@@ -75,6 +75,9 @@ export class SubTemaService {
                                 equals: updateSubTemaDto.descricao,
                                 mode: 'insensitive',
                             },
+                            NOT: {
+                                id,
+                            }
                         },
                     });
                     if (descricaoExists)
