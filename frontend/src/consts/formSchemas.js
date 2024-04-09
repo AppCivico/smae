@@ -1746,6 +1746,18 @@ export const workflow = object({
     .required(),
 });
 
+export const fasesFluxo = object({
+  workflow_etapa_de_id: number()
+    .label('De etapa')
+    .required(),
+  ordem: number()
+    .label('posição dentro da etapa')
+    .required(),
+    workflow_etapa_para_id: number()
+    .label('Para etapa')
+    .required(),
+});
+
 export const etapasFluxo = object({
   fase_id: number()
     .label('Tipo de fase')
