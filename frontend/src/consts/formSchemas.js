@@ -1722,6 +1722,9 @@ export const representatividade = object()
 export const workflow = object({
   ativo: boolean()
     .label('Ativo'),
+  esfera: mixed()
+    .label('Esfera')
+    .oneOf(Object.keys(esferasDeTransferencia)),
   inicio: date()
     .label('Data de criação')
     .nullable()
