@@ -58,7 +58,7 @@ export class RelSerieVariavelDto {
 
     titulo_meta: string;
     titulo_iniciativa: string | null;
-    titulo_atividad: string | null;
+    titulo_atividade: string | null;
     analise_qualitativa: string | null;
 }
 
