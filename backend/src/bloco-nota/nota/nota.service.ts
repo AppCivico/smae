@@ -17,6 +17,7 @@ import {
     TipoNotaItem,
     UpdateNotaDto,
 } from './dto/nota.dto';
+import { HtmlSanitizer } from '../../common/html-sanitizer';
 
 const JWT_AUD = 'nt';
 type JwtToken = {
@@ -46,6 +47,7 @@ export class NotaService {
     async create(dto: CreateNotaDto, user: PessoaFromJwt): Promise<RecordWithIdJwt> {
         const blocoId = this.blocoService.checkToken(dto.bloco_token);
         const tipo = await this.tipoService.findOneOrThrow(dto.tipo_nota_id);
+        dto.nota = HtmlSanitizer(dto.nota);
 
         if (!tipo.permite_revisao && dto.rever_em) delete dto.rever_em;
         if (!tipo.permite_email && dto.dispara_email) dto.dispara_email = false;
@@ -310,6 +312,7 @@ export class NotaService {
         });
 
         if (!nota.tipo_nota.permite_replica) throw new BadRequestException('Tipo de nota não permite replica');
+        dto.resposta = HtmlSanitizer(dto.resposta);
 
         const now = new Date(Date.now());
         return await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient) => {
@@ -377,6 +380,7 @@ export class NotaService {
 
     async update(signedId: string, dto: UpdateNotaDto, user: PessoaFromJwt): Promise<RecordWithIdJwt> {
         const id = this.checkWritableToken(signedId);
+        dto.nota = HtmlSanitizer(dto.nota);
 
         console.log(id);
 
