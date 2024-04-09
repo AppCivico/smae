@@ -76,6 +76,9 @@ export class WorkflowService {
     async update(id: number, dto: UpdateWorkflowDto, user: PessoaFromJwt): Promise<RecordWithId> {
         const updated = await this.prisma.$transaction(
             async (prismaTxn: Prisma.TransactionClient): Promise<RecordWithId> => {
+                // Caso o Workflow já possua uma transferência ativa, não pode ser editado.
+                await this.verificaEdicao(id, prismaTxn);
+
                 const self = await this.prisma.workflow.findFirst({
                     where: {
                         id,
@@ -279,12 +282,28 @@ export class WorkflowService {
     }
 
     async remove(id: number, user: PessoaFromJwt) {
-        await this.prisma.workflow.update({
-            where: { id },
-            data: {
-                removido_por: user.id,
-                removido_em: new Date(Date.now()),
+        await this.prisma.$transaction(async (prismaTxn: Prisma.TransactionClient) => {
+            // Caso o Workflow já possua uma transferência ativa, não pode ser removido.
+            await this.verificaEdicao(id, prismaTxn);
+
+            await prismaTxn.workflow.update({
+                where: { id },
+                data: {
+                    removido_por: user.id,
+                    removido_em: new Date(Date.now()),
+                },
+            });
+        });
+    }
+
+    async verificaEdicao(id: number, prismaTxn: Prisma.TransactionClient) {
+        const transferenciaEmAndamento = await prismaTxn.transferencia.count({
+            where: {
+                workflow_id: id,
+                removido_em: null,
             },
         });
+        if (transferenciaEmAndamento)
+            throw new HttpException('id| Workflow não pode ser editado, pois há uma Transferência que o utiliza.', 400);
     }
 }

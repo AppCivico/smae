@@ -7,10 +7,14 @@ import { CreateWorkflowfluxoFaseDto, UpsertWorkflowFluxoFaseSituacaoDto } from '
 import { FilterWorkflowfluxoFaseDto } from './dto/filter-workflow-fluxo-fase.dto';
 import { UpdateWorkflowfluxoFaseDto } from './dto/update-workflow-fluxo-fase.dto';
 import { WorkflowfluxoFaseDto } from './entities/workflow-fluxo-fase.entity';
+import { WorkflowService } from '../workflow.service';
 
 @Injectable()
 export class WorkflowfluxoFaseService {
-    constructor(private readonly prisma: PrismaService) {}
+    constructor(
+        private readonly prisma: PrismaService,
+        private readonly workflowService: WorkflowService
+    ) {}
 
     async create(dto: CreateWorkflowfluxoFaseDto, user: PessoaFromJwt): Promise<RecordWithId> {
         const created = await this.prisma.$transaction(
@@ -73,9 +77,18 @@ export class WorkflowfluxoFaseService {
                         fluxo_id: true,
                         fase_id: true,
                         ordem: true,
+
+                        fluxo: {
+                            select: {
+                                workflow_id: true,
+                            },
+                        },
                     },
                 });
                 if (!self) throw new NotFoundException('fluxoFase não encontrado');
+
+                // Caso o Workflow já possua uma transferência ativa, não pode ser editado.
+                await this.workflowService.verificaEdicao(self.fluxo.workflow_id, prismaTxn);
 
                 if (dto.fase_id != undefined && dto.fase_id != self.fase_id) {
                     const saidaJaExiste = await prismaTxn.fluxoFase.count({
@@ -156,12 +169,32 @@ export class WorkflowfluxoFaseService {
     }
 
     async remove(id: number, user: PessoaFromJwt) {
-        await this.prisma.fluxoFase.update({
-            where: { id },
-            data: {
-                removido_por: user.id,
-                removido_em: new Date(Date.now()),
-            },
+        await this.prisma.$transaction(async (prismaTxn: Prisma.TransactionClient) => {
+            const self = await prismaTxn.fluxoFase.findFirst({
+                where: {
+                    id,
+                    removido_em: null,
+                },
+                select: {
+                    fluxo: {
+                        select: {
+                            workflow_id: true,
+                        },
+                    },
+                },
+            });
+            if (!self) throw new NotFoundException('Fluxo fase não encontrado');
+
+            // Caso o Workflow já possua uma transferência ativa, não pode ser removido.
+            await this.workflowService.verificaEdicao(self.fluxo.workflow_id, prismaTxn);
+
+            await this.prisma.fluxoFase.update({
+                where: { id },
+                data: {
+                    removido_por: user.id,
+                    removido_em: new Date(Date.now()),
+                },
+            });
         });
     }
 

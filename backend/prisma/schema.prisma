@@ -338,6 +338,15 @@ model Pessoa {
     tarefasWorkflowQueAtualizei WorkflowTarefa[] @relation("Atualizador")
     tarefasWorkflowQueRemovi    WorkflowTarefa[] @relation("Removedor")
 
+    transferenciaAndamentoQueCriei          TransferenciaAndamento[] @relation("Criador")
+    transferenciaAndamentoQueAtualizei      TransferenciaAndamento[] @relation("Atualizador")
+    transferenciaAndamentoQueRemovi         TransferenciaAndamento[] @relation("Removedor")
+    transferenciaAndamentoQueSouResponsavel TransferenciaAndamento[]
+
+    transferenciaAndamentoTarefaQueCriei     TransferenciaAndamentoTarefa[] @relation("Criador")
+    transferenciaAndamentoTarefaQueAtualizei TransferenciaAndamentoTarefa[] @relation("Atualizador")
+    transferenciaAndamentoTarefaQueRemovi    TransferenciaAndamentoTarefa[] @relation("Removedor")
+
     task_queue                               task_queue[]
     GeoEnderecoReferenciaqQueCriei           GeoLocalizacaoReferencia[]                @relation("criador")
     GeoEnderecoReferenciaqQueRemovid         GeoLocalizacaoReferencia[]                @relation("removedor")
@@ -440,18 +449,20 @@ model Orgao {
     projetos_participando  ProjetoOrgaoParticipante[]
     projetos_geridos       Projeto[]                  @relation("orgao_gestor")
 
-    PortifolioOrgao          PortfolioOrgao[]
-    orgao_responsavel        Projeto[]                  @relation("orgao_responsavel")
-    GrupoPortfolio           GrupoPortfolio[]
-    GrupoPortfolioPessoa     GrupoPortfolioPessoa[]
-    ProjetoEquipe            ProjetoEquipe[]
-    GrupoPainelExterno       GrupoPainelExterno[]
-    GrupoPainelExternoPessoa GrupoPainelExternoPessoa[]
-    TransferenciasOrgao      Transferencia[]            @relation("orgao_concedente")
-    TransferenciasSecretaria Transferencia[]            @relation("secretaria_concedente")
-    distribuicao_recursos    DistribuicaoRecurso[]
-    Nota                     Nota[]
-    NotaEnderecamento        NotaEnderecamento[]
+    PortifolioOrgao              PortfolioOrgao[]
+    orgao_responsavel            Projeto[]                      @relation("orgao_responsavel")
+    GrupoPortfolio               GrupoPortfolio[]
+    GrupoPortfolioPessoa         GrupoPortfolioPessoa[]
+    ProjetoEquipe                ProjetoEquipe[]
+    GrupoPainelExterno           GrupoPainelExterno[]
+    GrupoPainelExternoPessoa     GrupoPainelExternoPessoa[]
+    TransferenciasOrgao          Transferencia[]                @relation("orgao_concedente")
+    TransferenciasSecretaria     Transferencia[]                @relation("secretaria_concedente")
+    distribuicao_recursos        DistribuicaoRecurso[]
+    Nota                         Nota[]
+    NotaEnderecamento            NotaEnderecamento[]
+    transferenciaAndamento       TransferenciaAndamento[]
+    transferenciaAndamentoTarefa TransferenciaAndamentoTarefa[]
 
     @@map("orgao")
 }
@@ -4709,6 +4720,9 @@ model Transferencia {
     partido_id Int?
     partido    Partido? @relation(fields: [partido_id], references: [id])
 
+    workflow_id Int?
+    workflow    Workflow? @relation(fields: [workflow_id], references: [id])
+
     objeto                         String
     critico                        Boolean
     interface                      TransferenciaInterface
@@ -4754,13 +4768,14 @@ model Transferencia {
     removido_por   Int?
     removido_em    DateTime? @db.Timestamptz(6)
 
-    criador               Pessoa                @relation("Criador", fields: [criado_por], references: [id])
-    atualizador           Pessoa?               @relation("Atualizador", fields: [atualizado_por], references: [id])
-    removedor             Pessoa?               @relation("Removedor", fields: [removido_por], references: [id])
+    criador               Pessoa                   @relation("Criador", fields: [criado_por], references: [id])
+    atualizador           Pessoa?                  @relation("Atualizador", fields: [atualizado_por], references: [id])
+    removedor             Pessoa?                  @relation("Removedor", fields: [removido_por], references: [id])
     anexos                TransferenciaAnexo[]
     diretorios            Diretorio[]
     TarefaCronograma      TarefaCronograma[]
     distribuicao_recursos DistribuicaoRecurso[]
+    andamentoWorkflow     TransferenciaAndamento[]
 
     @@map("transferencia")
 }
@@ -4880,7 +4895,8 @@ model Workflow {
     removido_por   Int?
     removido_em    DateTime? @db.Timestamptz(6)
 
-    etapasFluxo Fluxo[]
+    etapasFluxo    Fluxo[]
+    transferencias Transferencia[]
 
     atualizador Pessoa? @relation("Atualizador", fields: [atualizado_por], references: [id])
     criador     Pessoa? @relation("Criador", fields: [criado_por], references: [id])
@@ -4902,8 +4918,9 @@ model WorkflowEtapa {
     removido_por   Int?
     removido_em    DateTime? @db.Timestamptz(6)
 
-    fluxoSaida   Fluxo[] @relation("EtapaSaida")
-    fluxoDestino Fluxo[] @relation("EtapaDestino")
+    fluxoSaida             Fluxo[]                  @relation("EtapaSaida")
+    fluxoDestino           Fluxo[]                  @relation("EtapaDestino")
+    transferenciaAndamento TransferenciaAndamento[]
 
     atualizador Pessoa? @relation("Atualizador", fields: [atualizado_por], references: [id])
     criador     Pessoa? @relation("Criador", fields: [criado_por], references: [id])
@@ -4917,7 +4934,8 @@ model WorkflowFase {
 
     fase String
 
-    fluxos FluxoFase[]
+    fluxos                 FluxoFase[]
+    transferenciaAndamento TransferenciaAndamento[]
 
     criado_por     Int
     criado_em      DateTime  @default(now()) @db.Timestamptz(6)
@@ -4949,7 +4967,8 @@ model WorkflowSituacao {
     situacao      String
     tipo_situacao WorkflowSituacaoTipo
 
-    fasesWorkflow FluxoFaseSituacao[]
+    fasesWorkflow          FluxoFaseSituacao[]
+    transferenciaAndamento TransferenciaAndamento[]
 
     criado_por     Int
     criado_em      DateTime  @default(now()) @db.Timestamptz(6)
@@ -4970,7 +4989,8 @@ model WorkflowTarefa {
 
     tarefa_fluxo String
 
-    fluxoTarefas FluxoTarefa[]
+    fluxoTarefas                 FluxoTarefa[]
+    transferenciaAndamentoTarefa TransferenciaAndamentoTarefa[]
 
     criado_por     Int
     criado_em      DateTime  @default(now()) @db.Timestamptz(6)
@@ -5089,6 +5109,75 @@ model FluxoTarefa {
 
     @@index([workflow_tarefa_id, fluxo_fase_id])
     @@map("fluxo_tarefa")
+}
+
+model TransferenciaAndamento {
+    id Int @id @default(autoincrement())
+
+    transferencia_id Int
+    transferencia    Transferencia @relation(fields: [transferencia_id], references: [id])
+
+    workflow_etapa_id Int
+    workflow_etapa    WorkflowEtapa @relation(fields: [workflow_etapa_id], references: [id])
+
+    workflow_fase_id Int
+    workflow_fase    WorkflowFase @relation(fields: [workflow_fase_id], references: [id])
+
+    workflow_situacao_id Int
+    workflow_situacao    WorkflowSituacao @relation(fields: [workflow_situacao_id], references: [id])
+
+    orgao_responsavel_id Int?
+    orgao_responsavel    Orgao? @relation(fields: [orgao_responsavel_id], references: [id])
+
+    pessoa_responsavel_id Int
+    pessoa_responsavel    Pessoa @relation(fields: [pessoa_responsavel_id], references: [id])
+
+    data_inicio  DateTime  @db.Date()
+    data_termino DateTime? @db.Date()
+
+    criado_por     Int
+    criado_em      DateTime  @default(now()) @db.Timestamptz(6)
+    atualizado_por Int?
+    atualizado_em  DateTime  @default(now()) @db.Timestamptz(6)
+    removido_por   Int?
+    removido_em    DateTime? @db.Timestamptz(6)
+
+    criador     Pessoa  @relation("Criador", fields: [criado_por], references: [id])
+    atualizador Pessoa? @relation("Atualizador", fields: [atualizado_por], references: [id])
+    removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
+
+    tarefas TransferenciaAndamentoTarefa[]
+
+    @@index([transferencia_id, workflow_etapa_id, workflow_situacao_id])
+    @@map("transferencia_andamento")
+}
+
+model TransferenciaAndamentoTarefa {
+    id Int @id @default(autoincrement())
+
+    transferencia_andamento_id Int
+    transferencia_andamento    TransferenciaAndamento @relation(fields: [transferencia_andamento_id], references: [id])
+
+    workflow_tarefa_fluxo_id Int
+    workflow_tarefa          WorkflowTarefa @relation(fields: [workflow_tarefa_fluxo_id], references: [id])
+
+    orgao_responsavel_id Int?
+    orgao_responsavel    Orgao? @relation(fields: [orgao_responsavel_id], references: [id])
+
+    feito Boolean @default(false)
+
+    criado_por     Int
+    criado_em      DateTime  @default(now()) @db.Timestamptz(6)
+    atualizado_por Int?
+    atualizado_em  DateTime  @default(now()) @db.Timestamptz(6)
+    removido_por   Int?
+    removido_em    DateTime? @db.Timestamptz(6)
+
+    criador     Pessoa  @relation("Criador", fields: [criado_por], references: [id])
+    atualizador Pessoa? @relation("Atualizador", fields: [atualizado_por], references: [id])
+    removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
+
+    @@map("transferencia_andamento_tarefa")
 }
 
 enum TipoAviso {
