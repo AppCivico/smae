@@ -540,7 +540,7 @@ export class NotaService {
         }
     }
 
-    private async geraDadosEmail(notaId: number, prismaTx: Prisma.TransactionClient): Promise<DadosEmailInfo> {
+    async geraDadosEmail(notaId: number, prismaTx: Prisma.TransactionClient): Promise<DadosEmailInfo> {
         const bloco = await prismaTx.blocoNota.findFirst({
             where: { Nota: { some: { id: notaId } } },
             select: {
@@ -587,7 +587,7 @@ export class NotaService {
         return created;
     }
 
-    private checkToken(token: string): number {
+    checkToken(token: string): number {
         let decoded: JwtToken | null = null;
         try {
             decoded = this.jwtService.verify(token) as JwtToken;

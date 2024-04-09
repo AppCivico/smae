@@ -1,6 +1,6 @@
 import { AvisoPeriodo, TipoAviso } from '@prisma/client';
 import { Transform } from 'class-transformer';
-import { IsInt, IsOptional } from 'class-validator';
+import { IsInt, IsOptional, IsString } from 'class-validator';
 import { IdDesc } from '../../atividade/entities/atividade.entity';
 import { NumberTransform } from '../../auth/transforms/number.transform';
 import { IdNomeDto } from '../../common/dto/IdNome.dto';
@@ -10,6 +10,7 @@ export class AvisoEmailItemDto {
     tipo: TipoAviso;
     projeto: IdNomeDto | null;
     tarefa: IdDesc | null;
+    nota_id: number | null;
     transferencia_id: number | null;
     com_copia: string[];
     numero: number;
@@ -47,4 +48,13 @@ export class FilterAvisoEamilDto {
     @IsInt()
     @Transform(NumberTransform)
     tarefa_cronograma_id?: number;
+
+    @IsOptional()
+    @IsInt()
+    @Transform(NumberTransform)
+    nota_id?: number;
+
+    @IsOptional()
+    @IsString()
+    nota_jwt?: string;
 }
