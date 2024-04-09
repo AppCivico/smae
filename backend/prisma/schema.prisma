@@ -5129,8 +5129,8 @@ model TransferenciaAndamento {
     orgao_responsavel_id Int?
     orgao_responsavel    Orgao? @relation(fields: [orgao_responsavel_id], references: [id])
 
-    pessoa_responsavel_id Int
-    pessoa_responsavel    Pessoa @relation(fields: [pessoa_responsavel_id], references: [id])
+    pessoa_responsavel_id Int?
+    pessoa_responsavel    Pessoa? @relation(fields: [pessoa_responsavel_id], references: [id])
 
     data_inicio  DateTime  @db.Date()
     data_termino DateTime? @db.Date()
