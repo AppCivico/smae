@@ -1,6 +1,7 @@
 <script setup>
 import dateToField from '@/helpers/dateToField';
 import dinheiro from '@/helpers/dinheiro';
+import ModalNotas from '@/components/notas/ModalNotas.vue'
 import { useDistribuicaoRecursosStore } from '@/stores/transferenciasDistribuicaoRecursos.store';
 import { useTransferenciasVoluntariasStore } from '@/stores/transferenciasVoluntarias.store';
 import { storeToRefs } from 'pinia';
@@ -25,7 +26,7 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
 <template>
   <pre v-scrollLockDebug>transferênciaEmFoco:{{ transferênciaEmFoco }}</pre>
   <pre v-scrollLockDebug>listaDeDistribuição:{{ listaDeDistribuição }}</pre>
-
+  <ModalNotas></ModalNotas>
   <div class="flex spacebetween center mt2 mb1">
     <h1>
       Identificação
