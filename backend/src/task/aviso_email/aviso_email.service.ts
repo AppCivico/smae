@@ -1,5 +1,5 @@
 import { Inject, Injectable, Logger, forwardRef } from '@nestjs/common';
-import { AvisoEmail, Prisma, Tarefa, TarefaCronograma } from '@prisma/client';
+import { AvisoEmail, Nota, Prisma, Tarefa, TarefaCronograma } from '@prisma/client';
 import { DateTime } from 'luxon';
 import { PrismaService } from '../../prisma/prisma.service';
 import { TaskableService } from '../entities/task.entity';
@@ -25,6 +25,7 @@ export class AvisoEmailTaskService implements TaskableService {
             include: {
                 tarefa_cronograma: true,
                 tarefa: true,
+                nota: true,
             },
         });
         const deveProcessar = this.deveProcessarAvisoEmail(aviso_email);
@@ -67,6 +68,7 @@ export class AvisoEmailTaskService implements TaskableService {
                     data: { ultimo_envio_em: now },
                 });
             });
+        } else if (aviso_email.tipo == 'Nota') {
         }
 
         return {
@@ -118,19 +120,30 @@ export class AvisoEmailTaskService implements TaskableService {
         return date.toJSDate();
     }
 
-    private deveProcessarAvisoEmail(aviso_email: AvisoComCronograma): boolean {
+    private deveProcessarAvisoEmail(aviso_email: AvisoComCronograma & { nota: Nota | null }): boolean {
         if (!aviso_email.ativo) {
             return false;
         }
 
-        if (aviso_email.ultimo_envio_em) {
+        let ultimo_envio_em = aviso_email.ultimo_envio_em;
+        if (ultimo_envio_em && aviso_email.nota && aviso_email.nota.rever_em) {
+            const today = DateTime.now();
+            const rever_em = DateTime.fromJSDate(aviso_email.nota.rever_em);
+            const fromToday = rever_em.diff(today).as('days');
+
+            if (fromToday >= 0 && rever_em.valueOf() >= DateTime.fromJSDate(ultimo_envio_em).valueOf()) {
+                ultimo_envio_em = null;
+            }
+        }
+
+        if (ultimo_envio_em) {
             if (aviso_email.recorrencia_dias === 0) {
                 return false;
             }
 
-            const diffAsDay = DateTime.fromJSDate(aviso_email.ultimo_envio_em).diffNow().as('days');
+            const diffAsDay = DateTime.fromJSDate(ultimo_envio_em).diffNow().as('days');
             this.logger.verbose(
-                `aviso_email.ultimo_envio_em = ${aviso_email.ultimo_envio_em}, diff as days=${diffAsDay}, aviso-email recorrencia_dias=${aviso_email.recorrencia_dias}`
+                `aviso_email.ultimo_envio_em = ${ultimo_envio_em}, diff as days=${diffAsDay}, aviso-email recorrencia_dias=${aviso_email.recorrencia_dias}`
             );
 
             if (diffAsDay < aviso_email.recorrencia_dias) {
@@ -149,6 +162,17 @@ export class AvisoEmailTaskService implements TaskableService {
 
             const dataTermPlanejado = this.resolveDataTermPlanejado(aviso_email);
             if (!dataTermPlanejado) return false;
+        } else if (aviso_email.tipo == 'Nota' && aviso_email.nota) {
+            const today = DateTime.now();
+            const rever_em = aviso_email.nota.rever_em ? DateTime.fromJSDate(aviso_email.nota.rever_em) : undefined;
+            const data_nota = DateTime.fromJSDate(aviso_email.nota.data_nota);
+
+            const fromData = data_nota.diff(today).as('days');
+            const fromRever = rever_em ? rever_em.diff(today).as('days') : undefined;
+
+            console.log(fromData)
+
+            if (fromData >= 0 || (fromRever && fromRever >= 0)) return false;
         }
 
         return true;

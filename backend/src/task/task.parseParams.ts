@@ -4,6 +4,8 @@ import { CreateEchoDto } from './echo/dto/create-echo.dto';
 import { CreateRefreshMvDto } from './refresh_mv/dto/create-refresh-mv.dto';
 import { CreateRefreshMetaDto } from './refresh_meta/dto/create-refresh-mv.dto';
 import { CreateAvisoEmailJobDto } from './aviso_email/dto/create-aviso_email.dto';
+import { CreateAeCronogramaTpJobDto } from './aviso_email_cronograma_tp/dto/ae_cronograma_tp.dto';
+import { CreateNotaJobDto } from './aviso_email_nota/dto/ae_nota.dto';
 
 export function ParseParams(taskType: task_type, value: any): any {
     let theClass: any = undefined;
@@ -21,7 +23,10 @@ export function ParseParams(taskType: task_type, value: any): any {
             theClass = CreateAvisoEmailJobDto;
             break;
         case 'aviso_email_cronograma_tp':
-            theClass = CreateAvisoEmailJobDto;
+            theClass = CreateAeCronogramaTpJobDto;
+            break;
+        case 'aviso_email_nota':
+            theClass = CreateNotaJobDto;
             break;
         default:
             taskType satisfies never;

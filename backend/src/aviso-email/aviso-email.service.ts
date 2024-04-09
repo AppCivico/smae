@@ -12,6 +12,7 @@ import { JOB_AVISO_EMAIL } from '../common/dto/locks';
 import { DateYMD, SYSTEM_TIMEZONE } from '../common/date2ymd';
 import { DateTime } from 'luxon';
 import { TaskService } from '../task/task.service';
+import { NotaService } from '../bloco-nota/nota/nota.service';
 
 @Injectable()
 export class AvisoEmailService {
@@ -19,14 +20,16 @@ export class AvisoEmailService {
     private readonly logger = new Logger(AvisoEmailService.name);
     constructor(
         private readonly prisma: PrismaService,
-        private readonly taskService: TaskService
+        private readonly taskService: TaskService,
+        private readonly notaService: NotaService
     ) {
         this.enabled = CrontabIsEnabled('aviso_email');
     }
 
     async create(dto: CreateAvisoEmailDto, user: PessoaFromJwt): Promise<RecordWithId> {
-        const tarefa_id = dto.tarefa_id;
-        const tarefa_cronograma_id = tarefa_id ? undefined : await this.resolveCronoEtapaId(dto);
+        let tarefa_id = dto.tarefa_id;
+        let tarefa_cronograma_id = tarefa_id ? undefined : await this.resolveCronoEtapaId(dto);
+        let nota_id = dto.nota_jwt ? this.notaService.checkToken(dto.nota_jwt) : undefined;
 
         if (tarefa_id && tarefa_cronograma_id) {
             throw new BadRequestException(
@@ -39,6 +42,11 @@ export class AvisoEmailService {
                 throw new BadRequestException(
                     `Aviso de término planejado próximo precisa ser associado com uma tarefa ou cronograma.`
                 );
+            nota_id = undefined;
+        } else if (dto.tipo == 'Nota') {
+            if (!nota_id) throw new BadRequestException(`Aviso de nota precisa ser associado com uma nota.`);
+            tarefa_id = undefined;
+            tarefa_cronograma_id = undefined;
         }
 
         const created = await this.prisma.$transaction(
@@ -47,16 +55,20 @@ export class AvisoEmailService {
                     where: {
                         tarefa_cronograma_id,
                         tarefa_id,
+                        nota_id,
                         removido_em: null,
                     },
                 });
                 if (exists)
-                    throw new BadRequestException(`Já existe um aviso configurado para essa tarefa ou cronograma.`);
+                    throw new BadRequestException(
+                        `Já existe um aviso configurado para essa tarefa, cronograma ou nota.`
+                    );
 
                 const created = await prismaTx.avisoEmail.create({
                     data: {
                         tarefa_cronograma_id,
                         tarefa_id,
+                        nota_id,
                         ativo: dto.ativo,
                         numero: dto.numero,
                         numero_periodo: dto.numero_periodo,
@@ -111,10 +123,13 @@ export class AvisoEmailService {
     async findAll(filter: FilterAvisoEamilDto, user: PessoaFromJwt): Promise<AvisoEmailItemDto[]> {
         const tarefa_cronograma_id = filter.id ? undefined : await this.resolveCronoEtapaIdOrUndef(filter);
 
+        const nota_id = filter.nota_jwt ? this.notaService.checkToken(filter.nota_jwt) : filter.nota_id;
+
         const rows = await this.prisma.avisoEmail.findMany({
             where: {
                 id: filter.id,
                 tarefa_cronograma_id: tarefa_cronograma_id,
+                nota_id: nota_id,
                 tarefa_id: filter.tarefa_id,
                 removido_em: null,
             },
@@ -146,6 +161,7 @@ export class AvisoEmailService {
                 numero: r.numero,
                 numero_periodo: r.numero_periodo,
                 recorrencia_dias: r.recorrencia_dias,
+                nota_id: r.nota_id,
                 tipo: r.tipo,
                 transferencia_id: r.tarefa_cronograma?.transferencia_id ?? null,
                 projeto: r.tarefa_cronograma?.projeto ?? null,
