@@ -40,7 +40,7 @@ const campoPlanoConcluído = ref(null);
 
 const OrcamentosStore = useOrcamentosStore();
 
-const { OrcamentoRealizadoConclusão } = storeToRefs(OrcamentosStore);
+const { OrcamentoRealizadoConclusao } = storeToRefs(OrcamentosStore);
 
 OrcamentosStore.clear();
 
@@ -80,7 +80,7 @@ async function start() {
 }
 
 async function concluirOrçamento(evento, metaId, ano) {
-  const valor = !OrcamentoRealizadoConclusão.value[ano].concluido;
+  const valor = !OrcamentoRealizadoConclusao.value[ano].concluido;
 
   alertStore.confirmAction('Somente a coordenadoria poderá desfazer essa ação. Tem certeza?', async () => {
     const carga = {
@@ -94,7 +94,7 @@ async function concluirOrçamento(evento, metaId, ano) {
       const resultado = await OrcamentosStore.closeOrcamentoRealizado(carga);
 
       // Mudar mensagem junto ao botão enquanto a nova requisição não chega
-      OrcamentoRealizadoConclusão.value[ano].concluido = resultado
+      OrcamentoRealizadoConclusao.value[ano].concluido = resultado
         ? valor
         : !valor;
     } catch (error) {
@@ -103,7 +103,7 @@ async function concluirOrçamento(evento, metaId, ano) {
       await start();
 
       conclusãoPendente.value = false;
-      campoPlanoConcluído.value.checked = !!OrcamentoRealizadoConclusão.value[ano].concluido;
+      campoPlanoConcluído.value.checked = !!OrcamentoRealizadoConclusao.value[ano].concluido;
     }
   }, 'Concluir', () => {
     evento.preventDefault();
@@ -151,7 +151,7 @@ export default {
           #cabeçalho="{ ano }"
         >
           <label
-            v-if="!!OrcamentoRealizadoConclusão[ano]?.pode_editar"
+            v-if="!!OrcamentoRealizadoConclusao[ano]?.pode_editar"
             class="conclusão-de-plano__label ml2"
             :class="{ loading: conclusãoPendente }"
           >
@@ -160,7 +160,7 @@ export default {
               type="checkbox"
               name="plano-concluído"
               class="interruptor"
-              :checked="OrcamentoRealizadoConclusão[ano]?.concluido"
+              :checked="OrcamentoRealizadoConclusao[ano]?.concluido"
               @click.prevent="($event) => {
                 concluirOrçamento(
                   $event, Number($route.params.meta_id), ano
@@ -168,7 +168,7 @@ export default {
               }"
             >
             <template
-              v-if="OrcamentoRealizadoConclusão[ano]?.concluido"
+              v-if="OrcamentoRealizadoConclusao[ano]?.concluido"
             >
               Concluído
             </template>

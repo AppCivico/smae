@@ -9,7 +9,7 @@ export const useOrcamentosStore = defineStore({
     OrcamentoCusteio: {},
     OrcamentoPlanejado: {},
     OrcamentoRealizado: {},
-    OrcamentoRealizadoConclusão: {},
+    OrcamentoRealizadoConclusao: {},
     OrcamentoRealizadoPermissões: {},
 
     previstoEhZero: {},
@@ -86,7 +86,7 @@ export const useOrcamentosStore = defineStore({
         this.OrcamentoRealizado[ano] = r.linhas ? r.linhas : r;
 
         if (r.concluido) {
-          this.OrcamentoRealizadoConclusão[ano] = r.concluido;
+          this.OrcamentoRealizadoConclusao[ano] = r.concluido;
         }
         if (r.permissoes) {
           this.OrcamentoRealizadoPermissões[ano] = r.permissoes;
