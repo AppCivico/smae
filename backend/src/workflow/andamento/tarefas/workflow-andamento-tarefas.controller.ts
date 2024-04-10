@@ -4,7 +4,7 @@ import { CurrentUser } from 'src/auth/decorators/current-user.decorator';
 import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
 import { Roles } from 'src/auth/decorators/roles.decorator';
-import { UpdateWorkflowAndamentoTarefasDto } from './dto/upsert-workflow-andamento-tarefa.dto';
+import { UpdateWorkflowAndamentoTarefasDto } from './dto/update-workflow-andamento-tarefa.dto';
 import { WorkflowAndamentoTarefasService } from './workflow-andamento-tarefas.service';
 
 @ApiTags('Workflow - Andamento')
