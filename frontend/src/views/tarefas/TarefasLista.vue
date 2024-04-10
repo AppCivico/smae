@@ -181,6 +181,7 @@ export default {
       <col>
       <col>
       <col>
+      <col>
 
       <col class="col--data">
       <col class="col--data">
@@ -200,6 +201,7 @@ export default {
 
     <thead>
       <tr class="pl3 center mb05 tc300 w700 t12 uc">
+        <th />
         <th />
         <th />
         <th />
@@ -232,7 +234,7 @@ export default {
         <th>
           Responsável
         </th>
-        <th class="cell--number">
+        <th class="cell--number nowrap">
           % conclusão
         </th>
         <th class="cell--number">
