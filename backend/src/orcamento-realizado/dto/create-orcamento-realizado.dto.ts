@@ -270,7 +270,7 @@ export class FilterOrcamentoRealizadoCompartilhadoDto extends PickType(FilterOrc
     'dotacao',
     'processo',
     'ano_referencia',
-    'not_id'
+    'not_id',
 ]) {
     @IsInt({ message: '$property| pdm_id precisa ser positivo' })
     @Transform(PositiveNumberTransform)
@@ -289,6 +289,12 @@ export class OrcamentoRealizadoStatusConcluidoDto {
     pode_editar: boolean;
 }
 
+export class OrcamentoRealizadoStatusConcluidoAdminDto {
+    concluido: boolean;
+    concluido_por: IdNomeExibicaoDto | null;
+    concluido_em: Date | null;
+}
+
 export class OrcamentoRealizadoStatusPermissoesDto {
     pode_editar: boolean;
     pode_excluir_lote: boolean;
@@ -299,7 +305,8 @@ export class ListApenasOrcamentoRealizadoDto {
 }
 
 export class ListOrcamentoRealizadoDto extends ListApenasOrcamentoRealizadoDto {
-    concluido: OrcamentoRealizadoStatusConcluidoDto;
+    concluido: OrcamentoRealizadoStatusConcluidoDto | null;
+    concluido_admin: OrcamentoRealizadoStatusConcluidoAdminDto[] | null;
     permissoes: OrcamentoRealizadoStatusPermissoesDto;
 }
 
@@ -322,4 +329,9 @@ export class PatchOrcamentoRealizadoConcluidoDto {
     @IsOptional()
     @IsBoolean({ message: '$property| concluído precisa ser um boolean' })
     concluido: boolean;
+}
+
+export class PatchOrcamentoRealizadoConcluidoComOrgaoDto extends PatchOrcamentoRealizadoConcluidoDto {
+    @IsInt({ message: '$property| orgao_id precisa ser positivo' })
+    orgao_id: number;
 }
