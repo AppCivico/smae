@@ -3,7 +3,7 @@ import { RecordWithId } from 'src/common/dto/record-with-id.dto';
 import { Prisma, WorkflowResponsabilidade } from '@prisma/client';
 import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { UpdateWorkflowAndamentoTarefasDto } from './dto/upsert-workflow-andamento-tarefa.dto';
+import { UpdateWorkflowAndamentoTarefasDto } from './dto/update-workflow-andamento-tarefa.dto';
 
 @Injectable()
 export class WorkflowAndamentoTarefasService {
