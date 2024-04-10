@@ -588,12 +588,12 @@ export const novaSenha = object()
 export const orçamentoRealizado = object({
   dotacao: string()
     .label('Dotação')
-    .matches(regEx.dotação, 'regEx de dotacao em orçamentoRealizado')
-    .required('dotacao requerida em orçamentoRealizado'),
+    .matches(regEx.dotação, { excludeEmptyString: true })
+    .required(),
   dotacao_complemento: string()
     .label('Complemento')
-    .matches(regEx.complementoDeDotação, 'regEx de complemento em orçamentoRealizado')
-    .required('complemento requerido em orçamentoRealizado'),
+    .matches(regEx.complementoDeDotação, { excludeEmptyString: true })
+    .required('Necessário complementar a dotação com o detalhamento da fonte orçamentária'),
   itens: array()
     .label('Execução orçamentária')
     .min(1)
