@@ -857,13 +857,13 @@ export const nota = object({
     .label("Disparo de e-mail")
     .required(),
   enderecamentos:array()
-  .nullable()
-  .shape({
+  .of(
+    object().shape({
     orgao_enderecado_id: number()
       .required(),
     pessoa_enderecado_id: number()
-      .required()
-  }),
+      .required(),
+  })),
 });
 
 export const parlamentar = object({
