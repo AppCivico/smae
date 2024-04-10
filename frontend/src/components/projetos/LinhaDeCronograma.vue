@@ -113,8 +113,8 @@ export default {
       </template>
     </th>
 
-    <td class="cell--number dado-efetivo">
-      {{ linha.orgao?.sigla}}
+    <td>
+      {{ linha.orgao?.sigla }} - {{ linha.recursos }}
     </td>
 
     <td class="cell--number dado-efetivo">
