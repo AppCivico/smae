@@ -297,7 +297,7 @@ export default {
     </div>
   </div>
 
-  <router-view />
+  <router-view @clonagem-concluída="iniciar" />
 </template>
 <style scoped>
 .disparo-email {
