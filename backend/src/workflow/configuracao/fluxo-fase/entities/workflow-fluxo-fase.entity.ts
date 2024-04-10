@@ -1,6 +1,7 @@
 import { WorkflowResponsabilidade } from '@prisma/client';
 import { IsEnum } from 'class-validator';
 import { WorkflowFaseDto } from 'src/workflow/configuracao/fase/entities/workflow-fase.entity';
+import { WorkflowSituacaoDto } from '../../situacao/entities/workflow-situacao.entity';
 
 export class WorkflowfluxoFaseDto {
     id: number;
@@ -9,6 +10,7 @@ export class WorkflowfluxoFaseDto {
     ordem: number;
     @IsEnum(WorkflowResponsabilidade)
     responsabilidade: WorkflowResponsabilidade;
+    situacao: WorkflowSituacaoDto[];
 }
 
 export class ListWorkflowfluxoFaseDto {
