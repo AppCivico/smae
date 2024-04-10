@@ -11,6 +11,7 @@ import {
     FilterOrcamentoRealizadoDto,
     ListApenasOrcamentoRealizadoDto,
     ListOrcamentoRealizadoDto,
+    PatchOrcamentoRealizadoConcluidoComOrgaoDto,
     PatchOrcamentoRealizadoConcluidoDto,
     UpdateOrcamentoRealizadoDto,
 } from './dto/create-orcamento-realizado.dto';
@@ -38,8 +39,25 @@ export class OrcamentoRealizadoController {
     @Roles('CadastroMeta.orcamento', 'PDM.tecnico_cp', 'PDM.admin_cp')
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.ACCEPTED)
-    async orcamentoConcluido(@Body() params: PatchOrcamentoRealizadoConcluidoDto, @CurrentUser() user: PessoaFromJwt) {
-        await this.orcamentoRealizadoService.orcamentoConcluido(params, user);
+    async patchProprioOrgaoOrcamentoConcluido(
+        @Body() params: PatchOrcamentoRealizadoConcluidoDto,
+        @CurrentUser() user: PessoaFromJwt
+    ) {
+        await this.orcamentoRealizadoService.patchOrcamentoConcluidoProprioOrgao(params, user);
+        return '';
+    }
+
+    @Patch('orcamento-concluido-admin')
+    @ApiBearerAuth('access-token')
+    @ApiUnauthorizedResponse()
+    @Roles('CadastroMeta.orcamento', 'PDM.tecnico_cp', 'PDM.admin_cp')
+    @ApiNoContentResponse()
+    @HttpCode(HttpStatus.ACCEPTED)
+    async patchOrcamentoConcluidoAdmin(
+        @Body() params: PatchOrcamentoRealizadoConcluidoComOrgaoDto,
+        @CurrentUser() user: PessoaFromJwt
+    ) {
+        await this.orcamentoRealizadoService.patchOrcamentoConcluidoMetaOrgao(params, user);
         return '';
     }
 
