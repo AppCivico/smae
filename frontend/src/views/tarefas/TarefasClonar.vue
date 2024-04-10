@@ -14,6 +14,8 @@ import { storeToRefs } from 'pinia';
 import { computed, watch } from 'vue';
 import { useTarefasStore } from '@/stores/tarefas.store.ts';
 
+const emit = defineEmits(['clonagemConcluída']);
+
 const alertStore = useAlertStore();
 
 const projetosStore = useProjetosStore();
@@ -48,39 +50,30 @@ const {
   validationSchema: schema,
 });
 
-function clonarTarefasComConfirmacao() {
-  useAlertStore().confirmAction('O cronograma atual será substituído pelo cronograma que será clonado.', async () => {
-      if (await tarefasStore.clonarTarefas(values.projeto_fonte_id)) {
-        tarefasStore.$reset();
-        tarefasStore.buscarTudo();
-        alertStore.success('Tarefas clonadas!');
-        router.push({
-            name: route.meta.rotaDeEscape,
-            params: route.params,
-            query: route.query,
-          });
-      }
-  });
-}
-
-const onSubmit = handleSubmit.withControlled(async () => {
+async function clonarTarefas() {
   try {
-    if (tarefasStore.lista.length) {
-      clonarTarefasComConfirmacao()
-    } else {
-      if (await tarefasStore.clonarTarefas(values.projeto_fonte_id)) {
-        tarefasStore.$reset();
-        tarefasStore.buscarTudo();
-        alertStore.success('Tarefas clonadas!');
-          router.push({
-            name: route.meta.rotaDeEscape,
-            params: route.params,
-            query: route.query,
-          });
-      }
+    if (await tarefasStore.clonarTarefas(values.projeto_fonte_id)) {
+      emit('clonagemConcluída');
+      alertStore.success('Tarefas clonadas!');
+      router.push({
+        name: route.meta.rotaDeEscape,
+        params: route.params,
+        query: route.query,
+      });
     }
   } catch (error) {
     alertStore.error(error);
+  }
+}
+
+const onSubmit = handleSubmit(() => {
+  if (tarefasStore.lista.length) {
+    useAlertStore().confirmAction(
+      'O cronograma atual será substituído pelo cronograma que será clonado.',
+      clonarTarefas,
+    );
+  } else {
+    clonarTarefas();
   }
 });
 
