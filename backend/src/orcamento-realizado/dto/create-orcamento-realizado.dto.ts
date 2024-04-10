@@ -16,11 +16,11 @@ import {
     ValidateIf,
     ValidateNested,
 } from 'class-validator';
+import { PositiveNumberTransform } from '../../auth/transforms/number.transform';
 import { IdNomeExibicaoDto } from '../../common/dto/IdNomeExibicao.dto';
+import { IdSiglaDescricao } from '../../common/dto/IdSigla.dto';
 import { PROCESSO_DESCRIPTION, PROCESSO_MESSAGE, PROCESSO_REGEXP } from '../../dotacao/dto/dotacao.dto';
 import { OrcamentoRealizado } from '../entities/orcamento-realizado.entity';
-import { PositiveNumberTransform } from '../../auth/transforms/number.transform';
-import { IdSigla } from '../../common/dto/IdSigla.dto';
 
 export class CreateOrcamentoRealizadoItemDto {
     /**
@@ -293,7 +293,7 @@ export class OrcamentoRealizadoStatusConcluidoDto {
 export class OrcamentoRealizadoStatusConcluidoAdminDto {
     concluido: boolean;
     concluido_por: IdNomeExibicaoDto | null;
-    orgao: IdSigla
+    orgao: IdSiglaDescricao
     concluido_em: Date | null;
 }
 
