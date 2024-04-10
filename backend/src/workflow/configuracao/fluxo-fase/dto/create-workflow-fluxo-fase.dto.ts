@@ -23,9 +23,7 @@ export class CreateWorkflowfluxoFaseDto {
             '$property| Precisa ser um dos seguintes valores: ' + Object.values(WorkflowResponsabilidade).join(', '),
     })
     responsabilidade: WorkflowResponsabilidade;
-}
 
-export class UpsertWorkflowFluxoFaseSituacaoDto {
     /**
      * IDs de Workflow Situação
      * @example "[1, 2, 3]"
@@ -34,5 +32,6 @@ export class UpsertWorkflowFluxoFaseSituacaoDto {
         message: '$property| Situações deve ser um array.',
     })
     @IsInt({ each: true, message: '$property| Cada item precisa ser um número inteiro' })
-    situacao: number[];
+    @IsOptional()
+    situacao?: number[];
 }
