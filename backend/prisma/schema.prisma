@@ -463,6 +463,7 @@ model Orgao {
     NotaEnderecamento            NotaEnderecamento[]
     transferenciaAndamento       TransferenciaAndamento[]
     transferenciaAndamentoTarefa TransferenciaAndamentoTarefa[]
+    PdmOrcamentoRealizadoConfig  PdmOrcamentoRealizadoConfig[]
 
     @@map("orgao")
 }
@@ -2373,6 +2374,9 @@ model PdmOrcamentoRealizadoConfig {
     meta_id        Int
     meta           Meta @relation(fields: [meta_id], references: [id])
 
+    orgao_id Int
+    orgao    Orgao @relation(fields: [orgao_id], references: [id])
+
     ultima_revisao Boolean?
 
     atualizado_em  DateTime
@@ -2381,7 +2385,7 @@ model PdmOrcamentoRealizadoConfig {
 
     execucao_concluida Boolean @default(false)
 
-    @@unique([meta_id, ano_referencia, ultima_revisao])
+    @@unique([meta_id, ano_referencia, orgao_id, ultima_revisao])
     @@map("pdm_orcamento_realizado_config")
 }
 

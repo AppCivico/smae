@@ -1,8 +1,10 @@
 import { BadRequestException, HttpException, Injectable, Logger } from '@nestjs/common';
+import { Cron, CronExpression } from '@nestjs/schedule';
 import { Prisma } from '@prisma/client';
 import { Decimal } from '@prisma/client/runtime/library';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { FormataNotaEmpenho } from '../common/FormataNotaEmpenho';
+import { JOB_PDM_ORCAMENTO_CONCLUIDO } from '../common/dto/locks';
 import { BatchRecordWithId, RecordWithId } from '../common/dto/record-with-id.dto';
 import { DotacaoService } from '../dotacao/dotacao.service';
 import { OrcamentoPlanejadoService } from '../orcamento-planejado/orcamento-planejado.service';
@@ -14,14 +16,14 @@ import {
     FilterOrcamentoRealizadoDto,
     ListApenasOrcamentoRealizadoDto,
     ListOrcamentoRealizadoDto,
+    OrcamentoRealizadoStatusConcluidoAdminDto,
     OrcamentoRealizadoStatusConcluidoDto,
     OrcamentoRealizadoStatusPermissoesDto,
+    PatchOrcamentoRealizadoConcluidoComOrgaoDto,
     PatchOrcamentoRealizadoConcluidoDto,
     UpdateOrcamentoRealizadoDto,
 } from './dto/create-orcamento-realizado.dto';
 import { OrcamentoRealizado } from './entities/orcamento-realizado.entity';
-import { Cron, CronExpression } from '@nestjs/schedule';
-import { JOB_PDM_ORCAMENTO_CONCLUIDO } from '../common/dto/locks';
 
 export const MAX_BATCH_SIZE = parseInt(process.env.MAX_LINHAS_REMOVIDAS_ORCAMENTO_EM_LOTE || '', 10) || 10;
 
@@ -259,12 +261,14 @@ export class OrcamentoRealizadoService {
             throw new HttpException('Orçamento realizado não encontrado', 404);
 
         await user.verificaPermissaoOrcamentoNaMeta(orcamentoRealizado.meta_id, this.prisma);
-        const { permissoes, status } = await this.buscaPermissoesStatus(user, {
+        const { permissoes, concluidoStatus } = await this.buscaPermissoesStatus(user, {
             ano_referencia: orcamentoRealizado.ano_referencia,
             meta_id: orcamentoRealizado.meta_id,
         });
         if (permissoes.pode_editar === false)
-            throw new BadRequestException(`Sem permissão para editar o item. ${this.textoErroAnoConcluido(status)}`);
+            throw new BadRequestException(
+                `Sem permissão para editar o item. ${this.textoErroAnoConcluido(concluidoStatus)}`
+            );
 
         const { meta_id, iniciativa_id, atividade_id } = await this.orcamentoPlanejado.validaMetaIniAtv(dto);
 
@@ -785,7 +789,7 @@ export class OrcamentoRealizadoService {
         filters: FilterOrcamentoRealizadoDto,
         user: PessoaFromJwt
     ): Promise<ListOrcamentoRealizadoDto> {
-        const { permissoes, status } = await this.buscaPermissoesStatus(user, filters);
+        const { permissoes, concluidoStatus, concluidoAdmin } = await this.buscaPermissoesStatus(user, filters);
 
         const meta = await this.prisma.meta.findFirst({
             where: { id: filters.meta_id, removido_em: null },
@@ -796,7 +800,8 @@ export class OrcamentoRealizadoService {
         const ret: ListOrcamentoRealizadoDto = {
             permissoes: permissoes,
             linhas: await this.findAll(filters, user, permissoes, false, meta.pdm_id),
-            concluido: status,
+            concluido: concluidoStatus,
+            concluido_admin: concluidoAdmin,
         };
 
         return ret;
@@ -824,21 +829,61 @@ export class OrcamentoRealizadoService {
     }
 
     private async buscaPermissoesStatus(user: PessoaFromJwt, filters: { meta_id: number; ano_referencia: number }) {
-        const isAdmin = user.hasSomeRoles(['CadastroMeta.administrador_orcamento']);
+        const ehAdmin = user.hasSomeRoles(['CadastroMeta.administrador_orcamento']);
 
         // economizando query, admin não entra na condição de testar se está dentro dessa lista
-        const metasRespCp = isAdmin
+        const metasRespCp = ehAdmin
             ? []
             : await user.getMetaIdsFromAnyModel(this.prisma.view_meta_pessoa_responsavel_na_cp);
 
-        console.log(metasRespCp);
+        const estaNaMetaCp = metasRespCp.includes(+filters.meta_id);
+        const concluidoStatus =
+            ehAdmin || estaNaMetaCp
+                ? null
+                : await this.statusConcluidoPontoFocal(filters.meta_id, filters.ano_referencia, user);
 
-        const status = await this.statusConcluido(filters.meta_id, filters.ano_referencia, user, metasRespCp);
         const permissoes: OrcamentoRealizadoStatusPermissoesDto = {
-            pode_editar: status.concluido ? isAdmin : true,
-            pode_excluir_lote: isAdmin ? true : metasRespCp.includes(+filters.meta_id),
+            pode_editar: concluidoStatus && concluidoStatus.concluido ? ehAdmin : true,
+            pode_excluir_lote: ehAdmin ? true : estaNaMetaCp,
         };
-        return { permissoes, status };
+
+        let concluidoAdmin: OrcamentoRealizadoStatusConcluidoAdminDto[] | null = null;
+
+        if (concluidoStatus == null) {
+            const orgaoes = await this.prisma.metaOrgao.findMany({
+                where: {
+                    meta_id: filters.meta_id,
+                    responsavel: true,
+                },
+            });
+            const status = await this.prisma.pdmOrcamentoRealizadoConfig.findMany({
+                where: {
+                    meta_id: filters.meta_id,
+                    ano_referencia: filters.ano_referencia,
+                    orgao_id: { in: orgaoes.map((r) => r.id) },
+                    ultima_revisao: true,
+                },
+                select: {
+                    orgao_id: true,
+                    execucao_concluida: true,
+                    atualizado_em: true,
+                    atualizador: { select: { id: true, nome_exibicao: true } },
+                },
+            });
+
+            concluidoAdmin = [];
+            for (const o of orgaoes) {
+                const lookup = status.find((r) => r.orgao_id == o.id);
+
+                concluidoAdmin.push({
+                    concluido: lookup ? lookup.execucao_concluida : false,
+                    concluido_em: lookup ? lookup.atualizado_em : null,
+                    concluido_por: lookup ? lookup.atualizador : null,
+                });
+            }
+        }
+
+        return { permissoes, concluidoStatus, concluidoAdmin };
     }
 
     private async findAll(
@@ -1163,15 +1208,12 @@ export class OrcamentoRealizadoService {
         return;
     }
 
-    private async statusConcluido(
+    private async statusConcluidoPontoFocal(
         meta_id: number,
         ano_referencia: number,
-        user: PessoaFromJwt,
-        metasOk: number[]
+        user: PessoaFromJwt
     ): Promise<OrcamentoRealizadoStatusConcluidoDto> {
-        const configAtual = await this.getStatusConcluido({ meta_id, ano_referencia });
-
-        const isAdmin = user.hasSomeRoles(['CadastroMeta.administrador_orcamento']);
+        const configAtual = await this.getStatusConcluido({ meta_id, ano_referencia, orgao_id: user.orgao_id! });
 
         const ret: OrcamentoRealizadoStatusConcluidoDto = {
             concluido: false,
@@ -1186,58 +1228,127 @@ export class OrcamentoRealizadoService {
                 ret.concluido_em = configAtual.atualizado_em;
                 ret.concluido_por = configAtual.atualizador;
 
-                // se não for admin, e está concluido, então pra poder editar,
-                // precisa verificar se está na lista de responsável na CP
-                if (!isAdmin) ret.pode_editar = metasOk.includes(+meta_id);
+                ret.pode_editar = false;
             }
         }
 
         return ret;
     }
 
-    async orcamentoConcluido(dto: PatchOrcamentoRealizadoConcluidoDto, user: PessoaFromJwt) {
+    async patchOrcamentoConcluidoProprioOrgao(dto: PatchOrcamentoRealizadoConcluidoDto, user: PessoaFromJwt) {
         const isAdmin = user.hasSomeRoles(['CadastroMeta.administrador_orcamento']);
-        await user.verificaPermissaoOrcamentoNaMeta(dto.meta_id, this.prisma);
 
-        const configAtual = await this.getStatusConcluido(dto);
+        if (isAdmin) throw new BadRequestException(`Administrador de orçamento não deve utilizar esse serviço`);
+
+        await user.verificaPermissaoOrcamentoNaMeta(dto.meta_id, this.prisma);
+        if (!user.orgao_id) throw new BadRequestException('necessário ter um órgão');
+
+        const configAtual = await this.getStatusConcluido({
+            ...dto,
+            orgao_id: user.orgao_id,
+        });
 
         // só CP pode mudar depois de congelado
         if (configAtual && configAtual.execucao_concluida && !isAdmin) {
             await user.verificaPermissaoOrcamentoNaMetaRespNaCp(dto.meta_id, this.prisma);
         }
 
+        // mesmo sendo tecnico, precisa ser do órgão do responsavel
+        const podeEditar = await this.prisma.metaOrgao.findMany({
+            where: {
+                meta_id: dto.meta_id,
+                responsavel: true,
+                orgao_id: user.orgao_id,
+            },
+        });
+        if (!podeEditar) throw new BadRequestException('Necessário participar do órgão responsável da meta');
+
         const now = new Date(Date.now());
 
         await this.prisma.$transaction(async (prismaTxn: Prisma.TransactionClient) => {
-            await prismaTxn.pdmOrcamentoRealizadoConfig.updateMany({
-                where: {
-                    ano_referencia: dto.ano_referencia,
-                    meta_id: dto.meta_id,
-                    ultima_revisao: true,
-                },
-                data: { ultima_revisao: null },
-            });
-
-            await prismaTxn.pdmOrcamentoRealizadoConfig.create({
-                data: {
-                    ano_referencia: dto.ano_referencia,
-                    execucao_concluida: dto.concluido,
-                    meta_id: dto.meta_id,
-                    atualizado_em: now,
-                    atualizado_por: user.id,
-                    ultima_revisao: true,
-                },
-            });
-            return;
+            await this.updateOrcamentoRealizadoConcluido(
+                prismaTxn,
+                dto.ano_referencia,
+                dto.meta_id,
+                user.orgao_id!,
+                dto.concluido,
+                now,
+                user
+            );
         });
     }
 
-    private async getStatusConcluido(dto: { ano_referencia: number; meta_id: number }) {
+    async patchOrcamentoConcluidoMetaOrgao(dto: PatchOrcamentoRealizadoConcluidoComOrgaoDto, user: PessoaFromJwt) {
+        const isAdmin = user.hasSomeRoles(['CadastroMeta.administrador_orcamento']);
+
+        if (!isAdmin) {
+            await user.verificaPermissaoOrcamentoNaMetaRespNaCp(dto.meta_id, this.prisma);
+        }
+
+        // mesmo sendo tecnico, precisa ser do órgão do responsavel
+        const podeEditar = await this.prisma.metaOrgao.findMany({
+            where: {
+                meta_id: dto.meta_id,
+                responsavel: true,
+                orgao_id: dto.orgao_id,
+            },
+        });
+        if (!podeEditar) throw new BadRequestException('Órgão informado precisa ser responsável na meta.');
+
+        const now = new Date(Date.now());
+
+        await this.prisma.$transaction(async (prismaTxn: Prisma.TransactionClient) => {
+            await this.updateOrcamentoRealizadoConcluido(
+                prismaTxn,
+                dto.ano_referencia,
+                dto.meta_id,
+                dto.orgao_id,
+                dto.concluido,
+                now,
+                user
+            );
+        });
+    }
+
+    private async updateOrcamentoRealizadoConcluido(
+        prismaTxn: Prisma.TransactionClient,
+        ano_referencia: number,
+        meta_id: number,
+        orgao_id: number,
+        concluido: boolean,
+        now: Date,
+        user: PessoaFromJwt
+    ) {
+        await prismaTxn.pdmOrcamentoRealizadoConfig.updateMany({
+            where: {
+                ano_referencia: ano_referencia,
+                meta_id: meta_id,
+                ultima_revisao: true,
+                orgao_id: orgao_id,
+            },
+            data: { ultima_revisao: null },
+        });
+
+        await prismaTxn.pdmOrcamentoRealizadoConfig.create({
+            data: {
+                ano_referencia: ano_referencia,
+                execucao_concluida: concluido,
+                meta_id: meta_id,
+                atualizado_em: now,
+                atualizado_por: user.id,
+                orgao_id: orgao_id,
+                ultima_revisao: true,
+            },
+        });
+    }
+
+    private async getStatusConcluido(dto: { ano_referencia: number; meta_id: number; orgao_id: number }) {
         return await this.prisma.pdmOrcamentoRealizadoConfig.findUnique({
             where: {
-                meta_id_ano_referencia_ultima_revisao: {
+                meta_id_ano_referencia_orgao_id_ultima_revisao: {
                     ultima_revisao: true,
                     ano_referencia: dto.ano_referencia,
+                    orgao_id: dto.orgao_id,
                     meta_id: dto.meta_id,
                 },
             },
@@ -1277,17 +1388,20 @@ export class OrcamentoRealizadoService {
         if (!orcamentoRealizado || orcamentoRealizado.meta_id === null)
             throw new HttpException('Orçamento realizado não encontrado', 404);
 
-        const { permissoes, status } = await this.buscaPermissoesStatus(user, {
+        const { permissoes, concluidoStatus } = await this.buscaPermissoesStatus(user, {
             ano_referencia: orcamentoRealizado.ano_referencia,
             meta_id: orcamentoRealizado.meta_id,
         });
         if (permissoes.pode_editar === false)
-            throw new BadRequestException(`Sem permissão para remover o item. ${this.textoErroAnoConcluido(status)}`);
+            throw new BadRequestException(
+                `Sem permissão para remover o item. ${this.textoErroAnoConcluido(concluidoStatus)}`
+            );
 
         await user[func](orcamentoRealizado.meta_id, this.prisma);
     }
 
-    private textoErroAnoConcluido(status: OrcamentoRealizadoStatusConcluidoDto) {
+    private textoErroAnoConcluido(status: OrcamentoRealizadoStatusConcluidoDto | null) {
+        if (!status) return '';
         return status.concluido ? 'Ano está concluido, apenas os responsáveis na CP podem editar ou remover' : '';
     }
 
@@ -1542,7 +1656,7 @@ export class OrcamentoRealizadoService {
         anyAdminUser: { id: number },
         now: Date
     ) {
-        // invalida o registro anterior
+        // invalida os registros anteriores
         await prismaTxn.pdmOrcamentoRealizadoConfig.updateMany({
             where: {
                 ultima_revisao: true,
@@ -1553,20 +1667,30 @@ export class OrcamentoRealizadoService {
                 ultima_revisao: null,
             },
         });
-        // cria o novo registro
-        this.logger.verbose(
-            `Marcando meta ${meta.id} ano_referencia ${ano_referencia} como execucao_concluida=${execucao_concluida}`
-        );
-        await prismaTxn.pdmOrcamentoRealizadoConfig.create({
-            data: {
-                atualizado_por: anyAdminUser.id,
-                atualizado_em: now,
-                ultima_revisao: true,
+
+        // cria os novos registros
+        const orgoes = await prismaTxn.metaOrgao.findMany({
+            where: {
                 meta_id: meta.id,
-                ano_referencia: ano_referencia,
-                execucao_concluida: execucao_concluida,
+                responsavel: true,
             },
         });
+        for (const o of orgoes) {
+            this.logger.verbose(
+                `Marcando meta ${meta.id} ano_referencia ${ano_referencia} como execucao_concluida=${execucao_concluida} orgao=${o.orgao_id}`
+            );
+            await prismaTxn.pdmOrcamentoRealizadoConfig.create({
+                data: {
+                    atualizado_por: anyAdminUser.id,
+                    atualizado_em: now,
+                    ultima_revisao: true,
+                    meta_id: meta.id,
+                    orgao_id: o.orgao_id,
+                    ano_referencia: ano_referencia,
+                    execucao_concluida: execucao_concluida,
+                },
+            });
+        }
     }
 }
 
