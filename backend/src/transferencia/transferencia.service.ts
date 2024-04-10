@@ -796,7 +796,10 @@ export class TransferenciaService {
         const fluxo = workflow.fluxo[0];
 
         if (fluxo) {
-            for (const fase of fluxo.fases) {
+            // Apenas a primeira fase importa nesta criação
+            const fase = fluxo.fases[0];
+
+            if (fase) {
                 if (fase.responsabilidade == WorkflowResponsabilidade.OutroOrgao && !dto.workflow_orgao_responsavel_id)
                     throw new HttpException(
                         'Fase é de responsabilidade de outro órgão, portanto workflow_orgao_responsavel_id deve ser enviado',
