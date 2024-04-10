@@ -3,7 +3,7 @@ import { RecordWithId } from 'src/common/dto/record-with-id.dto';
 import { Prisma } from '@prisma/client';
 import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { CreateWorkflowfluxoFaseDto, UpsertWorkflowFluxoFaseSituacaoDto } from './dto/create-workflow-fluxo-fase.dto';
+import { CreateWorkflowfluxoFaseDto } from './dto/create-workflow-fluxo-fase.dto';
 import { FilterWorkflowfluxoFaseDto } from './dto/filter-workflow-fluxo-fase.dto';
 import { UpdateWorkflowfluxoFaseDto } from './dto/update-workflow-fluxo-fase.dto';
 import { WorkflowfluxoFaseDto } from './entities/workflow-fluxo-fase.entity';
@@ -57,6 +57,10 @@ export class WorkflowfluxoFaseService {
                     },
                     select: { id: true },
                 });
+
+                if (dto.situacao != undefined) {
+                    await this.upsertSituacao(workflowfluxoFase.id, dto.situacao, user);
+                }
 
                 return workflowfluxoFase;
             }
@@ -116,6 +120,10 @@ export class WorkflowfluxoFaseService {
                     ordem = dto.ordem;
                 }
 
+                if (dto.situacao != undefined) {
+                    await this.upsertSituacao(id, dto.situacao, user);
+                }
+
                 const workflowfluxoFase = await prismaTxn.fluxoFase.update({
                     where: { id },
                     data: {
@@ -153,17 +161,40 @@ export class WorkflowfluxoFaseService {
                         fase: true,
                     },
                 },
+
+                situacoes: {
+                    select: {
+                        situacao: {
+                            select: {
+                                id: true,
+                                situacao: true,
+                                tipo_situacao: true,
+                            },
+                        },
+                    },
+                },
             },
         });
 
         return rows.map((r) => {
             return {
-                ...r,
+                id: r.id,
+                fluxo_id: r.fluxo_id,
+                responsabilidade: r.responsabilidade,
+                ordem: r.ordem,
 
                 fase: {
                     id: r.fase.id,
                     fase: r.fase.fase,
                 },
+
+                situacao: r.situacoes.map((e) => {
+                    return {
+                        id: e.situacao.id,
+                        situacao: e.situacao.situacao,
+                        tipo_situacao: e.situacao.tipo_situacao,
+                    };
+                }),
             };
         });
     }
@@ -198,7 +229,7 @@ export class WorkflowfluxoFaseService {
         });
     }
 
-    async upsertSituacao(id: number, dto: UpsertWorkflowFluxoFaseSituacaoDto, user: PessoaFromJwt) {
+    async upsertSituacao(id: number, situacao: number[], user: PessoaFromJwt) {
         function idsIguais(arr1: number[], arr2: number[]): boolean {
             if (arr1.length !== arr2.length) {
                 return false;
@@ -231,7 +262,7 @@ export class WorkflowfluxoFaseService {
                 });
                 if (!self) throw new NotFoundException('Fase de fluxo não encontrada');
 
-                const paramIds: number[] = dto.situacao.sort((a, b) => a - b);
+                const paramIds: number[] = situacao.sort((a, b) => a - b);
                 const currentIds: number[] = self.situacoes
                     .map((s) => {
                         return s.situacao_id;
