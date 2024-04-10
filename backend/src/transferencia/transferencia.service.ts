@@ -792,8 +792,10 @@ export class TransferenciaService {
     ) {
         const workflow = await this.workflowService.findOne(workflow_id, undefined);
 
-        let primeiraEtapa: boolean = true;
-        for (const fluxo of workflow.fluxo) {
+        // Apenas a primeira etapa importa nesta criação.
+        const fluxo = workflow.fluxo[0];
+
+        if (fluxo) {
             for (const fase of fluxo.fases) {
                 if (fase.responsabilidade == WorkflowResponsabilidade.OutroOrgao && !dto.workflow_orgao_responsavel_id)
                     throw new HttpException(
@@ -824,7 +826,7 @@ export class TransferenciaService {
                             workflow_fase_id: fase.id!,
                             workflow_situacao_id: primeiraSituacao.id,
                             orgao_responsavel_id: dto.workflow_orgao_responsavel_id,
-                            data_inicio: primeiraEtapa ? new Date(Date.now()) : null,
+                            data_inicio: new Date(Date.now()),
                             criado_por: user.id,
                             criado_em: new Date(Date.now()),
 
@@ -844,8 +846,6 @@ export class TransferenciaService {
                     });
                 }
             }
-
-            primeiraEtapa = false;
         }
     }
 }
