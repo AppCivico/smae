@@ -10,6 +10,7 @@ export const useOrcamentosStore = defineStore({
     OrcamentoPlanejado: {},
     OrcamentoRealizado: {},
     OrcamentoRealizadoConclusao: {},
+    OrcamentoRealizadoConclusaoAdmin: {},
     OrcamentoRealizadoPermissões: {},
 
     previstoEhZero: {},
@@ -87,6 +88,9 @@ export const useOrcamentosStore = defineStore({
 
         if (r.concluido) {
           this.OrcamentoRealizadoConclusao[ano] = r.concluido;
+        }
+        if (r.concluido_admin) {
+          this.OrcamentoRealizadoConclusaoAdmin[ano] = r.concluido_admin;
         }
         if (r.permissoes) {
           this.OrcamentoRealizadoPermissões[ano] = r.permissoes;
@@ -241,6 +245,9 @@ export const useOrcamentosStore = defineStore({
     async closeOrcamentoRealizado(params) {
       if (await this.requestS.patch(`${baseUrl}/orcamento-realizado/orcamento-concluido`, params)) return true;
       return false;
+    },
+    async closeOrcamentoRealizadoPorOrgao(params) {
+      return !!await this.requestS.patch(`${baseUrl}/orcamento-realizado/orcamento-concluido-admin`, params);
     },
     async insertOrcamentoRealizado(params) {
       const segmento1 = params.projeto_id
