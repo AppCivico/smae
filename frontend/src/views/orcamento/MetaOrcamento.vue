@@ -192,9 +192,13 @@ export default {
           <button
             v-if="OrcamentoRealizadoConclusaoAdmin[ano]?.length"
             type="button"
-            class="btn outline bgnone tcprimary"
+            class="btn with-icon bgnone tcprimary p0"
             @click="diálogoDeConclusãoEstáAberto= true"
           >
+            <svg
+              width="20"
+              height="20"
+            ><use xlink:href="#i_edit" /></svg>
             Conclusão por órgãos
           </button>
         </template>
