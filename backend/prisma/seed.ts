@@ -1,4 +1,4 @@
-import { EleicaoTipo, ModuloSistema, PerfilAcesso, PrismaClient, Privilegio } from '@prisma/client';
+import { EleicaoTipo, ModuloSistema, PerfilAcesso, Prisma, PrismaClient, Privilegio } from '@prisma/client';
 import { ListaDePrivilegios } from '../src/common/ListaDePrivilegios';
 const prisma = new PrismaClient({ log: ['query'] });
 
@@ -921,6 +921,33 @@ async function atualizar_superadmin() {
                 pessoa_id: pessoa.id,
                 perfil_acesso_id: idPerfilAcesso,
             },
+        });
+    }
+
+    if ((await prisma.pessoa.count({ where: { id: -1 } })) == 0) {
+        prisma.$transaction(async (prismaTx: Prisma.TransactionClient) => {
+            const pf = await prismaTx.pessoaFisica.create({
+                data: {
+                    cargo: '',
+                    cpf: '',
+                    lotacao: '',
+                    orgao_id: 1,
+                    registro_funcionario: '',
+                },
+                select: { id: true },
+            });
+            await prismaTx.pessoa.create({
+                data: {
+                    id: -1,
+                    pessoa_fisica_id: pf.id,
+                    senha_bloqueada: false,
+                    qtde_senha_invalida: 0,
+                    nome_completo: 'Robô/Sistema',
+                    nome_exibicao: 'Robô/Sistema',
+                    email: 'bot@email.com',
+                    senha: '--',
+                },
+            });
         });
     }
 }
