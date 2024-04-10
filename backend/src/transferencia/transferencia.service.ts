@@ -792,10 +792,8 @@ export class TransferenciaService {
     ) {
         const workflow = await this.workflowService.findOne(workflow_id, undefined);
 
-        // Apenas a primeira etapa importa nesta criação.
-        const fluxo = workflow.fluxo[0];
-
-        if (fluxo) {
+        let primeiraEtapa: boolean = true;
+        for (const fluxo of workflow.fluxo) {
             for (const fase of fluxo.fases) {
                 if (fase.responsabilidade == WorkflowResponsabilidade.OutroOrgao && !dto.workflow_orgao_responsavel_id)
                     throw new HttpException(
@@ -818,18 +816,15 @@ export class TransferenciaService {
                     },
                 });
 
-                // TODO: investigar o pq fase.id pode ser undefined (DetailWorkflowFluxoFaseDto)
-                if (!fase.id) continue;
-
                 if (!jaExiste) {
                     await prismaTxn.transferenciaAndamento.create({
                         data: {
                             transferencia_id: transferencia_id,
                             workflow_etapa_id: fluxo.workflow_etapa_de!.id, // Sempre será o "dê" do "dê-para".
-                            workflow_fase_id: fase.id,
+                            workflow_fase_id: fase.id!,
                             workflow_situacao_id: primeiraSituacao.id,
                             orgao_responsavel_id: dto.workflow_orgao_responsavel_id,
-                            data_inicio: new Date(Date.now()),
+                            data_inicio: primeiraEtapa ? new Date(Date.now()) : null,
                             criado_por: user.id,
                             criado_em: new Date(Date.now()),
 
@@ -849,6 +844,8 @@ export class TransferenciaService {
                     });
                 }
             }
+
+            primeiraEtapa = false;
         }
     }
 }
