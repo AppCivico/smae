@@ -1,5 +1,6 @@
 <script setup>
 import EnvelopeDeAbas from '@/components/EnvelopeDeAbas.vue';
+import ConcluirPorOrgao from '@/components/orcamento/ConcluirPorOrgao.vue';
 import { default as SimpleOrcamentoCusteio } from '@/components/orcamento/SimpleOrcamentoCusteio.vue';
 import { default as SimpleOrcamentoPlanejado } from '@/components/orcamento/SimpleOrcamentoPlanejado.vue';
 import { default as SimpleOrcamentoRealizado } from '@/components/orcamento/SimpleOrcamentoRealizado.vue';
@@ -37,10 +38,14 @@ const parentLabel = ref(atividade_id ? '-' : iniciativa_id ? '-' : meta_id ? 'Me
 
 const conclusãoPendente = ref(false);
 const campoPlanoConcluído = ref(null);
+const diálogoDeConclusãoEstáAberto = ref(false);
 
 const OrcamentosStore = useOrcamentosStore();
 
-const { OrcamentoRealizadoConclusao } = storeToRefs(OrcamentosStore);
+const {
+  OrcamentoRealizadoConclusao,
+  OrcamentoRealizadoConclusaoAdmin,
+} = storeToRefs(OrcamentosStore);
 
 OrcamentosStore.clear();
 
@@ -176,6 +181,22 @@ export default {
               Concluir
             </template>
           </label>
+
+          <ConcluirPorOrgao
+            v-if="diálogoDeConclusãoEstáAberto"
+            :ano="ano"
+            :meta="meta_id"
+            @close="() => { diálogoDeConclusãoEstáAberto = false; }"
+          />
+
+          <button
+            v-if="OrcamentoRealizadoConclusaoAdmin[ano]?.length"
+            type="button"
+            class="btn outline bgnone tcprimary"
+            @click="diálogoDeConclusãoEstáAberto= true"
+          >
+            Conclusão por órgãos
+          </button>
         </template>
       </SimpleOrcamento>
     </template>
