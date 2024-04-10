@@ -25,24 +25,21 @@ const opçõesDeData = { timeStyle: 'short' };
 
 const salvamentoPendente = ref([]);
 
-async function concluirOrçamento(evento, índice) {
+async function concluirOrçamento(concluir, órgãoId, índice) {
   salvamentoPendente.value.push(índice);
 
   const posiçãoDoÍndice = salvamentoPendente.value.indexOf(índice);
 
   try {
-    const resultado = await OrcamentosStore.closeOrcamentoRealizadoPorOrgao({
+    await OrcamentosStore.closeOrcamentoRealizadoPorOrgao({
       meta_id: Number(props.meta),
       ano_referencia: Number(props.ano),
-      concluido: evento.target.checked,
-      orgao_id: Number(evento.target.value),
+      concluido: concluir,
+      orgao_id: Number(órgãoId),
     });
 
-    console.debug('resultado', resultado);
-
-    OrcamentoRealizadoConclusaoAdmin.value[props.ano][índice].concluido = !!resultado;
-  } catch (error) {
-    evento.preventDefault();
+    // eslint-disable-next-line max-len
+    OrcamentoRealizadoConclusaoAdmin.value[props.ano][índice].concluido = !OrcamentoRealizadoConclusaoAdmin.value[props.ano][índice].concluido;
   } finally {
     salvamentoPendente.value.splice(posiçãoDoÍndice, 1);
   }
@@ -120,14 +117,12 @@ async function concluirOrçamento(evento, índice) {
           </td>
           <td>
             <input
-              ref="campoPlanoConcluído"
+              v-model="item.concluido"
               type="checkbox"
               name="plano-concluído"
               class="interruptor"
-              :checked="item.concluido"
-              :value="item.orgao.id"
               @click.prevent="($e) => {
-                concluirOrçamento($e, i);
+                concluirOrçamento($e.target.checked, item.orgao.id, i);
               }"
             >
           </td>
