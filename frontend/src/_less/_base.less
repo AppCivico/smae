@@ -1629,6 +1629,10 @@ input[type='checkbox'] {
     cursor: pointer;
     vertical-align: text-bottom;
 
+    .tablemain tr:nth-of-type(2n) & {
+      outline: 2px solid @branco;
+    }
+
     &::before {
       background: @branco;
       color: @c100;
