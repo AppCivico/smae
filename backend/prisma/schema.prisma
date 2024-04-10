@@ -5182,6 +5182,7 @@ model TransferenciaAndamentoTarefa {
     atualizador Pessoa? @relation("Atualizador", fields: [atualizado_por], references: [id])
     removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
 
+    @@index([transferencia_andamento_id, workflow_tarefa_fluxo_id])
     @@map("transferencia_andamento_tarefa")
 }
 
