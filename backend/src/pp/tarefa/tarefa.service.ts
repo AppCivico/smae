@@ -375,6 +375,7 @@ export class TarefaService {
                 db_projecao_atraso: true,
                 db_projecao_inicio: true,
                 db_projecao_termino: true,
+                recursos: true,
             },
         });
     }
@@ -410,7 +411,7 @@ export class TarefaService {
         let max_term_proj: DateTime | undefined = undefined;
 
         // Recursive function to calculate projections
-        const jaPassou = new Set<number>;
+        const jaPassou = new Set<number>();
         const calculaProjecoes = (tarefa: TarefaItemProjetadoDto) => {
             if (jaPassou.has(tarefa.id)) return;
             jaPassou.add(tarefa.id);

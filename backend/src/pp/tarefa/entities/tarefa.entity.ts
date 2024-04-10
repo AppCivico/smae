@@ -43,6 +43,8 @@ export class TarefaItemDto {
     atraso: number | null;
 
     dependencias: TarefaDependenciaDto[];
+
+    recursos: string;
 }
 
 export class TarefaItemDbDto extends TarefaItemDto {
