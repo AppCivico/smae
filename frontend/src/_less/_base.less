@@ -2474,7 +2474,7 @@ caption {
 }
 
 .cell--nowrap {
-  white-space: nowrap;
+  white-space: nowrap !important;
 }
 
 .cell--minimum {
@@ -2488,8 +2488,8 @@ caption {
 }
 
 .cell--data {
+  .cell--nowrap;
   text-align: right !important;
-  white-space: nowrap !important;
 
   thead & {
     white-space: normal;
@@ -2498,6 +2498,7 @@ caption {
 
 .cell--number {
   .cell--nowrap;
+
   text-align: right !important;
   font-variant-numeric: tabular-nums;
 
