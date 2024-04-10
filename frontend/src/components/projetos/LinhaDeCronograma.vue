@@ -96,7 +96,9 @@ export default {
           stroke="none"
         /></svg>
       <router-link
-        v-if="!apenasLeitura || souResponsável || $route.meta.prefixoParaFilhas === 'TransferenciasVoluntarias'"
+        v-if="!apenasLeitura
+          || souResponsável
+          || $route.meta.prefixoParaFilhas === 'TransferenciasVoluntarias'"
         :to="{
           name: $route.meta.prefixoParaFilhas + 'TarefasProgresso',
           params: {
@@ -175,7 +177,8 @@ export default {
           type="button"
           class="like-a__text"
           title="Excluir"
-          :hidden="linha.n_filhos_imediatos > 0 || (!oProjetoÉPrioritário && $route.meta.prefixoParaFilhas === 'projeto')"
+          :hidden="linha.n_filhos_imediatos > 0
+            || (!oProjetoÉPrioritário && $route.meta.prefixoParaFilhas === 'projeto')"
           @click="excluirTarefa(linha.id)"
         >
           <svg
@@ -190,7 +193,8 @@ export default {
       >
         <router-link
           v-if="linha.nivel < nivelMaximoTarefa || nivelMaximoTarefa === -1"
-          :hidden="(!oProjetoÉPrioritário || linha.dependencias?.length) && $route.meta.prefixoParaFilhas !== 'TransferenciasVoluntarias'"
+          :hidden="(!oProjetoÉPrioritário || linha.dependencias?.length)
+            && $route.meta.prefixoParaFilhas !== 'TransferenciasVoluntarias'"
           :title="`Criar tarefa filha de ${linha.hierarquia}`"
           :to="{
             name: $route.meta.prefixoParaFilhas + 'TarefasCriar',
