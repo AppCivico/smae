@@ -850,26 +850,30 @@ export class OrcamentoRealizadoService {
         let concluidoAdmin: OrcamentoRealizadoStatusConcluidoAdminDto[] | null = null;
 
         if (concluidoStatus == null) {
-            const orgaoes = await this.prisma.metaOrgao.findMany({
-                where: {
-                    meta_id: filters.meta_id,
-                    responsavel: true,
-                },
-            });
-            const status = await this.prisma.pdmOrcamentoRealizadoConfig.findMany({
-                where: {
-                    meta_id: filters.meta_id,
-                    ano_referencia: filters.ano_referencia,
-                    orgao_id: { in: orgaoes.map((r) => r.id) },
-                    ultima_revisao: true,
-                },
-                select: {
-                    orgao_id: true,
-                    execucao_concluida: true,
-                    atualizado_em: true,
-                    atualizador: { select: { id: true, nome_exibicao: true } },
-                },
-            });
+            const [orgaoes, status] = await Promise.all([
+                this.prisma.metaOrgao.findMany({
+                    where: {
+                        meta_id: filters.meta_id,
+                        responsavel: true,
+                    },
+                    include: {
+                        orgao: { select: { sigla: true } },
+                    },
+                }),
+                this.prisma.pdmOrcamentoRealizadoConfig.findMany({
+                    where: {
+                        meta_id: filters.meta_id,
+                        ano_referencia: filters.ano_referencia,
+                        ultima_revisao: true,
+                    },
+                    select: {
+                        orgao_id: true,
+                        execucao_concluida: true,
+                        atualizado_em: true,
+                        atualizador: { select: { id: true, nome_exibicao: true } },
+                    },
+                }),
+            ]);
 
             concluidoAdmin = [];
             for (const o of orgaoes) {
@@ -879,6 +883,10 @@ export class OrcamentoRealizadoService {
                     concluido: lookup ? lookup.execucao_concluida : false,
                     concluido_em: lookup ? lookup.atualizado_em : null,
                     concluido_por: lookup ? lookup.atualizador : null,
+                    orgao: {
+                        id: o.id,
+                        sigla: o.orgao.sigla,
+                    },
                 });
             }
         }
