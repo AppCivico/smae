@@ -885,7 +885,7 @@ export class OrcamentoRealizadoService {
                         concluido_em: lookup.atualizado_em,
                         concluido_por: lookup.atualizador,
                         orgao: {
-                            id: o.id,
+                            id: o.orgao_id,
                             sigla: o.orgao.sigla,
                         },
                     });
@@ -895,7 +895,7 @@ export class OrcamentoRealizadoService {
                         concluido_em: null,
                         concluido_por: null,
                         orgao: {
-                            id: o.id,
+                            id: o.orgao_id,
                             sigla: o.orgao.sigla,
                         },
                     });
