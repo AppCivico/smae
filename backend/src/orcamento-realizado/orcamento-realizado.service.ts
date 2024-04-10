@@ -879,15 +879,27 @@ export class OrcamentoRealizadoService {
             for (const o of orgaoes) {
                 const lookup = status.find((r) => r.orgao_id == o.orgao_id);
 
-                concluidoAdmin.push({
-                    concluido: lookup ? lookup.execucao_concluida : false,
-                    concluido_em: lookup ? lookup.atualizado_em : null,
-                    concluido_por: lookup ? lookup.atualizador : null,
-                    orgao: {
-                        id: o.id,
-                        sigla: o.orgao.sigla,
-                    },
-                });
+                if (lookup && lookup.execucao_concluida) {
+                    concluidoAdmin.push({
+                        concluido: lookup.execucao_concluida,
+                        concluido_em: lookup.atualizado_em,
+                        concluido_por: lookup.atualizador,
+                        orgao: {
+                            id: o.id,
+                            sigla: o.orgao.sigla,
+                        },
+                    });
+                } else {
+                    concluidoAdmin.push({
+                        concluido: false,
+                        concluido_em: null,
+                        concluido_por: null,
+                        orgao: {
+                            id: o.id,
+                            sigla: o.orgao.sigla,
+                        },
+                    });
+                }
             }
         }
 
