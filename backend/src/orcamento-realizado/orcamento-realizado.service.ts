@@ -877,7 +877,7 @@ export class OrcamentoRealizadoService {
 
             concluidoAdmin = [];
             for (const o of orgaoes) {
-                const lookup = status.find((r) => r.orgao_id == o.id);
+                const lookup = status.find((r) => r.orgao_id == o.orgao_id);
 
                 concluidoAdmin.push({
                     concluido: lookup ? lookup.execucao_concluida : false,
