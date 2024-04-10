@@ -400,6 +400,7 @@ export class PessoaService {
         const self = await this.prisma.pessoa.findFirstOrThrow({
             where: {
                 id: pessoaId,
+                AND: [{ id: { gt: 0 } }],
             },
             include: {
                 pessoa_fisica: true,
@@ -1036,6 +1037,7 @@ export class PessoaService {
         const listActive = await this.prisma.pessoa.findMany({
             orderBy: [{ desativado: 'asc' }, { nome_exibicao: 'asc' }],
             where: {
+                id: { gt: 0 },
                 NOT: { pessoa_fisica_id: null },
                 AND: filtrosExtra,
                 pessoa_fisica: {
@@ -1108,12 +1110,12 @@ export class PessoaService {
     }
 
     async findByEmail(email: string) {
-        const pessoa = await this.prisma.pessoa.findUnique({ where: { email: email } });
+        const pessoa = await this.prisma.pessoa.findUnique({ where: { email: email, AND: [{ id: { gt: 0 } }] } });
         return pessoa;
     }
 
     async findById(id: number) {
-        const pessoa = await this.prisma.pessoa.findUnique({ where: { id: id } });
+        const pessoa = await this.prisma.pessoa.findUnique({ where: { id: id, AND: [{ id: { gt: 0 } }] } });
         return pessoa;
     }
 

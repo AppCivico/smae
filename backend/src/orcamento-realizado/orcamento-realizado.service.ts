@@ -1385,12 +1385,8 @@ export class OrcamentoRealizadoService {
         });
         if (!pdm) return;
 
-        const anyAdminUser = await this.prisma.pessoa.findFirstOrThrow({
-            where: {
-                desativado: false,
-            },
-            take: 1,
-            orderBy: { id: 'asc' },
+        const botUser = await this.prisma.pessoa.findUniqueOrThrow({
+            where: { id: -1 },
             select: { id: true },
         });
 
@@ -1461,7 +1457,7 @@ export class OrcamentoRealizadoService {
                             meta,
                             ano_referencia,
                             execucao_concluida,
-                            anyAdminUser,
+                            botUser,
                             now
                         );
 
@@ -1506,7 +1502,7 @@ export class OrcamentoRealizadoService {
                         meta,
                         ano_referencia,
                         execucao_concluida,
-                        anyAdminUser,
+                        botUser,
                         now
                     );
 
