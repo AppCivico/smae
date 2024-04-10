@@ -176,13 +176,13 @@ watch(órgãoEUnidadeSelecionados, (novoValor) => {
               </template>
             </ul>
           </div>
-        <span
-          v-else
-          class="addlink disabled mt1 mb1"
-        ><svg
-          width="20"
-          height="20"
-        ><use xlink:href="#i_+" /></svg> <span>Informar execução orçamentária</span></span>
+          <span
+            v-else
+            class="addlink disabled mt1 mb1"
+          ><svg
+            width="20"
+            height="20"
+          ><use xlink:href="#i_+" /></svg> <span>Informar execução orçamentária</span></span>
         </div>
       </header>
 
