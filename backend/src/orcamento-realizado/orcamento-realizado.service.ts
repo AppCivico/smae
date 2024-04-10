@@ -857,7 +857,7 @@ export class OrcamentoRealizadoService {
                         responsavel: true,
                     },
                     include: {
-                        orgao: { select: { sigla: true } },
+                        orgao: { select: { sigla: true, descricao: true } },
                     },
                 }),
                 this.prisma.pdmOrcamentoRealizadoConfig.findMany({
@@ -887,6 +887,7 @@ export class OrcamentoRealizadoService {
                         orgao: {
                             id: o.orgao_id,
                             sigla: o.orgao.sigla,
+                            descricao: o.orgao.descricao,
                         },
                     });
                 } else {
@@ -897,6 +898,7 @@ export class OrcamentoRealizadoService {
                         orgao: {
                             id: o.orgao_id,
                             sigla: o.orgao.sigla,
+                            descricao: o.orgao.descricao,
                         },
                     });
                 }
