@@ -60,7 +60,7 @@ function userToken(url: RequestInfo | URL): HeadersInit {
     return {
       Authorization: `Bearer ${authStore.token}`,
       'smae-sistemas': !authStore.sistemaEscolhido || authStore.sistemaEscolhido === 'SMAE'
-        ? 'SMAE'
+        ? 'SMAE,PDM,CasaCivil,Projetos,PlanoSetorial'
         : `SMAE,${authStore.sistemaEscolhido}`,
     };
   }
