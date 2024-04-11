@@ -22,8 +22,15 @@ const { lista: listaDeDistribuição } = storeToRefs(distribuicaoRecursos);
 TransferenciasVoluntarias.buscarItem(props.transferenciaId);
 distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
 </script>
-
 <template>
+  <header class="flex flexwrap spacebetween center mb2 g2">
+    <MigalhasDePão />
+
+    <TítuloDePágina />
+
+    <hr class="f1">
+  </header>
+
   <pre v-scrollLockDebug>transferênciaEmFoco:{{ transferênciaEmFoco }}</pre>
   <pre v-scrollLockDebug>listaDeDistribuição:{{ listaDeDistribuição }}</pre>
   <ModalNotas></ModalNotas>
