@@ -235,7 +235,16 @@ export class WorkflowService {
         if (!row) throw new NotFoundException('Workflow não encontrado');
 
         return {
-            ...row,
+            id: row.id,
+            nome: row.nome,
+            ativo: row.ativo,
+            inicio: row.inicio,
+            termino: row.termino,
+
+            transferencia_tipo: {
+                id: row.transferencia_tipo.id,
+                nome: row.transferencia_tipo.nome,
+            },
 
             fluxo: row.etapasFluxo.map((fluxo) => {
                 return {
