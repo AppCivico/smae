@@ -175,17 +175,19 @@ export class WorkflowAndamentoService {
             concluida: row.data_termino ? true : false,
             pode_concluir: pode_concluir,
 
-            necessita_preencher_orgao:
+            /* necessita_preencher_orgao:
                 !row.orgao_responsavel &&
                 row.workflow_fase.fluxos[0].responsabilidade == WorkflowResponsabilidade.OutroOrgao
                     ? true
-                    : false,
+                    : false, */
+            necessita_preencher_orgao: true,
 
-            necessita_preencher_pessoa:
+            /* necessita_preencher_pessoa:
                 !row.pessoa_responsavel &&
                 row.workflow_fase.fluxos[0].responsabilidade == WorkflowResponsabilidade.OutroOrgao
                     ? true
-                    : false,
+                    : false, */
+            necessita_preencher_pessoa: true,
 
             situacao: {
                 id: row.workflow_situacao.id,
@@ -257,11 +259,12 @@ export class WorkflowAndamentoService {
 
         return {
             concluida: row.feito,
-            necessita_preencher_orgao:
+            necessita_preencher_orgao: true,
+            /* necessita_preencher_orgao:
                 !row.orgao_responsavel &&
                 row.workflow_tarefa.fluxoTarefas[0].responsabilidade == WorkflowResponsabilidade.OutroOrgao
                     ? true
-                    : false,
+                    : false, */
             orgao_responsavel: row.orgao_responsavel
                 ? {
                       id: row.orgao_responsavel.id,
