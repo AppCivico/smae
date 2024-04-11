@@ -297,7 +297,7 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
           Valor
         </dt>
         <dd>
-          {{ `R$${dinheiro(transferênciaEmFoco?.valor)}` || '-' }}
+          {{ transferênciaEmFoco?.valor ? `R$${dinheiro(transferênciaEmFoco.valor)}` : '-' }}
         </dd>
       </dl>
       <dl class="mb1">
@@ -305,7 +305,9 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
           Valor contra-partida
         </dt>
         <dd>
-          {{ `R$${dinheiro(transferênciaEmFoco?.valor_contrapartida)}` || '-' }}
+          {{ transferênciaEmFoco?.valor_contrapartida
+            ? `R$${dinheiro(transferênciaEmFoco.valor_contrapartida)}`
+            : '-' }}
         </dd>
       </dl>
       <dl class="mb1">
@@ -313,7 +315,9 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
           Valor total
         </dt>
         <dd>
-          {{ `R$${dinheiro(transferênciaEmFoco?.valor_total)}` || '-' }}
+          {{ transferênciaEmFoco?.valor_total
+            ? `R$${dinheiro(transferênciaEmFoco.valor_total)}`
+            : '-' }}
         </dd>
       </dl>
     </div>
@@ -448,9 +452,9 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
           Gestor municipal
         </dt>
         <dd>
-          {{ distribuição.orgao_gestor ?
-            `${distribuição.orgao_gestor.sigla} - ${distribuição.orgao_gestor.descricao}` : '-'
-          }}
+          {{ distribuição.orgao_gestor
+            ? `${distribuição.orgao_gestor.sigla} - ${distribuição.orgao_gestor.descricao}`
+            : '-' }}
         </dd>
       </dl>
       <dl class="f1">
@@ -470,7 +474,7 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
             Valor
           </dt>
           <dd>
-            {{ `R$${dinheiro(distribuição.valor)}` || '-' }}
+            {{ distribuição.valor ? `R$${dinheiro(distribuição.valor)}` : '-' }}
           </dd>
         </dl>
         <dl class="mb1">
@@ -478,7 +482,9 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
             Valor contra-partida
           </dt>
           <dd>
-            {{ `R$${dinheiro(distribuição.valor_contrapartida)}` || '-' }}
+            {{ distribuição.valor_contrapartida
+              ? `R$${dinheiro(distribuição.valor_contrapartida)}`
+              : '-' }}
           </dd>
         </dl>
         <dl class="mb1">
@@ -486,7 +492,9 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
             Valor total
           </dt>
           <dd>
-            {{ `R$${dinheiro(distribuição.valor_total)}` || '-' }}
+            {{ distribuição.valor_total
+              ? `R$${dinheiro(distribuição.valor_total)}`
+              : '-' }}
           </dd>
         </dl>
       </div>
