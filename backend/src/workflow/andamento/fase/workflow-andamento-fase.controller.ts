@@ -9,7 +9,7 @@ import { WorkflowAndamentoFaseService } from './workflow-andamento-fase.service'
 
 @ApiTags('Workflow - Andamento')
 @Controller('workflow-andamento-fase')
-export class WorkflowAndamentoTarefasController {
+export class WorkflowAndamentoFaseController {
     constructor(private readonly workflowAndamentoFaseService: WorkflowAndamentoFaseService) {}
 
     @Patch('')
