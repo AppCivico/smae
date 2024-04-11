@@ -810,8 +810,9 @@ export class TransferenciaService {
                     );
 
                 const primeiraSituacao = fase.situacoes.find((s) => {
-                    s.tipo_situacao == WorkflowSituacaoTipo.NaoIniciado;
+                    return s.tipo_situacao == WorkflowSituacaoTipo.NaoIniciado;
                 });
+                console.log(primeiraSituacao);
                 if (!primeiraSituacao) throw new Error('Não foi encontrada situação inicial, "Não iniciado".');
 
                 const jaExiste = await prismaTxn.transferenciaAndamento.count({
