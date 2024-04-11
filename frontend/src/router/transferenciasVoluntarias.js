@@ -193,7 +193,7 @@ export default {
             rotasParaMenuSecundário,
             rotasParaMigalhasDePão: [
               'TransferenciasVoluntariasListar',
-              'TransferenciasVoluntariasResumo',
+              'TransferenciasVoluntariasDetalhes',
               'TransferenciasVoluntariasTarefasListar',
             ],
           },
@@ -261,7 +261,7 @@ export default {
 
                 rotasParaMigalhasDePão: [
                   'TransferenciasVoluntariasListar',
-                  'TransferenciasVoluntariasResumo',
+                  'TransferenciasVoluntariasDetalhes',
                   'TransferenciasVoluntariasTarefasListar',
                   'tarefasEditar',
                 ],
@@ -287,7 +287,7 @@ export default {
 
                 rotasParaMigalhasDePão: [
                   'TransferenciasVoluntariasListar',
-                  'TransferenciasVoluntariasResumo',
+                  'TransferenciasVoluntariasDetalhes',
                   'TransferenciasVoluntariasTarefasListar',
                   'TransferenciasVoluntariasTarefasProgresso',
                 ],
