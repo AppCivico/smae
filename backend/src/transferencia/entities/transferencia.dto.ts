@@ -66,6 +66,8 @@ export class TransferenciaDetailDto {
     numero_identificacao: string | null;
     tipo: IdNomeDto | null;
 
+    workflow_id: number | null;
+
     partido: IdSigla | null;
     parlamentar: ParlamnetarIdNomes | null;
     orgao_concedente: IdSiglaDescricao;
