@@ -73,8 +73,11 @@ export class TransferenciaService {
                         id: true,
                     },
                 });
+                console.log(workflow);
+                console.log('===============================');
                 const workflow_id: number | null = workflow?.id ?? null;
-
+                console.log('===============================');
+                console.log(workflow_id);
                 const transferencia = await prismaTxn.transferencia.create({
                     data: {
                         tipo_id: dto.tipo_id,
