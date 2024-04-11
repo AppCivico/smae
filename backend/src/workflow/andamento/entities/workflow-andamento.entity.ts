@@ -39,9 +39,12 @@ export class AndamentoFaseDto {
     data_termino: Date | null;
     pode_concluir: boolean;
     concluida: boolean;
+    necessita_preencher_orgao: boolean;
+    necessita_preencher_pessoa: boolean;
 }
 
 export class AndamentoTarefaDto {
     orgao_responsavel: IdSiglaDescricao | null;
+    necessita_preencher_orgao: boolean;
     concluida: boolean;
 }

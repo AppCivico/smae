@@ -4,6 +4,7 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { WorkflowService } from 'src/workflow/configuracao/workflow.service';
 import { FilterWorkflowAndamentoDto } from './dto/filter-andamento.dto';
 import { AndamentoFaseDto, AndamentoTarefaDto, WorkflowAndamentoDto } from './entities/workflow-andamento.entity';
+import { WorkflowResponsabilidade, WorkflowSituacaoTipo } from '@prisma/client';
 
 @Injectable()
 export class WorkflowAndamentoService {
@@ -24,9 +25,23 @@ export class WorkflowAndamentoService {
             select: {
                 id: true,
                 workflow_id: true,
+                andamentoWorkflow: {
+                    where: {
+                        removido_em: null,
+                        data_termino: null,
+                        data_inicio: { not: undefined },
+                    },
+                    select: {
+                        id: true,
+                        workflow_etapa_id: true,
+                    },
+                },
             },
         });
         if (!transferencia || !transferencia.workflow_id) throw new Error('Transferência inválida ou não configurada');
+
+        if (transferencia.andamentoWorkflow.length > 1)
+            throw new Error('Erro interno ao definir etapa relevante para acompanhamento');
 
         const workflow = await this.workflowService.findOne(transferencia.workflow_id, user);
 
@@ -36,38 +51,49 @@ export class WorkflowAndamentoService {
             pode_passar_para_proxima_etapa: true,
 
             fluxo: await Promise.all(
-                workflow.fluxo.map(async (fluxo) => {
-                    return {
-                        ...fluxo,
+                workflow.fluxo
+                    .filter((e) => e.workflow_etapa_de!.id == transferencia.andamentoWorkflow[0].workflow_etapa_id)
+                    .map(async (fluxo) => {
+                        return {
+                            ...fluxo,
 
-                        fases: await Promise.all(
-                            fluxo.fases.map(async (fase) => {
-                                return {
-                                    ...fase,
-                                    andamento: await this.getAndamentoFaseRet(transferencia.id, fase.id!),
+                            fases: await Promise.all(
+                                fluxo.fases.map(async (fase) => {
+                                    return {
+                                        ...fase,
+                                        andamento: await this.getAndamentoFaseRet(
+                                            transferencia.id,
+                                            fase.id!,
+                                            transferencia.workflow_id!
+                                        ),
 
-                                    tarefas: await Promise.all(
-                                        fase.tarefas.map(async (tarefa) => {
-                                            return {
-                                                ...tarefa,
+                                        tarefas: await Promise.all(
+                                            fase.tarefas.map(async (tarefa) => {
+                                                return {
+                                                    ...tarefa,
 
-                                                andamento: await this.getAndamentoTarefaRet(
-                                                    transferencia.id,
-                                                    tarefa.workflow_tarefa!.id
-                                                ),
-                                            };
-                                        })
-                                    ),
-                                };
-                            })
-                        ),
-                    };
-                })
+                                                    andamento: await this.getAndamentoTarefaRet(
+                                                        transferencia.id,
+                                                        tarefa.workflow_tarefa!.id,
+                                                        transferencia.workflow_id!
+                                                    ),
+                                                };
+                                            })
+                                        ),
+                                    };
+                                })
+                            ),
+                        };
+                    })
             ),
         };
     }
 
-    private async getAndamentoFaseRet(transferencia_id: number, fase_id: number): Promise<AndamentoFaseDto | null> {
+    private async getAndamentoFaseRet(
+        transferencia_id: number,
+        fase_id: number,
+        workflow_id: number
+    ): Promise<AndamentoFaseDto | null> {
         const row = await this.prisma.transferenciaAndamento.findFirst({
             where: {
                 removido_em: null,
@@ -105,16 +131,61 @@ export class WorkflowAndamentoService {
                     where: { feito: false },
                     select: { id: true },
                 },
+
+                workflow_fase: {
+                    select: {
+                        fluxos: {
+                            take: 1,
+                            where: {
+                                fluxo: {
+                                    workflow_id: workflow_id,
+                                },
+                            },
+                            select: {
+                                responsabilidade: true,
+                            },
+                        },
+                    },
+                },
             },
         });
 
         if (!row) return null;
 
+        // Regras que definem se fase pode ser concluída:
+        // 1. Todas tarefas concluídas.
+        // 2. Fase sem tarefas.
+        // 3. Situação é: suspensa, cancelada ou terminal.
+        let pode_concluir: boolean;
+
+        if (
+            row.tarefas.length == 0 ||
+            row.workflow_situacao.tipo_situacao == WorkflowSituacaoTipo.Cancelado ||
+            row.workflow_situacao.tipo_situacao == WorkflowSituacaoTipo.Suspenso ||
+            row.workflow_situacao.tipo_situacao == WorkflowSituacaoTipo.Terminal
+        ) {
+            pode_concluir = true;
+        } else {
+            pode_concluir = false;
+        }
+
         return {
             data_inicio: row.data_inicio,
             data_termino: row.data_termino,
             concluida: row.data_termino ? true : false,
-            pode_concluir: true,
+            pode_concluir: pode_concluir,
+
+            necessita_preencher_orgao:
+                !row.orgao_responsavel &&
+                row.workflow_fase.fluxos[0].responsabilidade == WorkflowResponsabilidade.OutroOrgao
+                    ? true
+                    : false,
+
+            necessita_preencher_pessoa:
+                !row.pessoa_responsavel &&
+                row.workflow_fase.fluxos[0].responsabilidade == WorkflowResponsabilidade.OutroOrgao
+                    ? true
+                    : false,
 
             situacao: {
                 id: row.workflow_situacao.id,
@@ -141,7 +212,8 @@ export class WorkflowAndamentoService {
 
     private async getAndamentoTarefaRet(
         transferencia_id: number,
-        tarefa_id: number
+        tarefa_id: number,
+        workflow_id: number
     ): Promise<AndamentoTarefaDto | null> {
         const row = await this.prisma.transferenciaAndamentoTarefa.findFirst({
             where: {
@@ -161,12 +233,35 @@ export class WorkflowAndamentoService {
                         descricao: true,
                     },
                 },
+
+                workflow_tarefa: {
+                    select: {
+                        fluxoTarefas: {
+                            take: 1,
+                            where: {
+                                fluxo_fase: {
+                                    fluxo: {
+                                        workflow_id: workflow_id,
+                                    },
+                                },
+                            },
+                            select: {
+                                responsabilidade: true,
+                            },
+                        },
+                    },
+                },
             },
         });
         if (!row) return null;
 
         return {
             concluida: row.feito,
+            necessita_preencher_orgao:
+                !row.orgao_responsavel &&
+                row.workflow_tarefa.fluxoTarefas[0].responsabilidade == WorkflowResponsabilidade.OutroOrgao
+                    ? true
+                    : false,
             orgao_responsavel: row.orgao_responsavel
                 ? {
                       id: row.orgao_responsavel.id,
