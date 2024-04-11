@@ -54,13 +54,21 @@ export class WorkflowfluxoFaseService {
                         responsabilidade: dto.responsabilidade,
                         criado_por: user.id,
                         criado_em: new Date(Date.now()),
+                        situacoes: {
+                            createMany: {
+                                data:
+                                    dto.situacao != undefined
+                                        ? dto.situacao.map((situacaoId) => {
+                                              return {
+                                                  situacao_id: situacaoId,
+                                              };
+                                          })
+                                        : [],
+                            },
+                        },
                     },
                     select: { id: true },
                 });
-
-                if (dto.situacao != undefined) {
-                    await this.upsertSituacao(workflowfluxoFase.id, dto.situacao, user);
-                }
 
                 return workflowfluxoFase;
             }
