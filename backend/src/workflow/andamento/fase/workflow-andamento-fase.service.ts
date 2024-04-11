@@ -141,7 +141,7 @@ export class WorkflowAndamentoFaseService {
                         pessoa_responsavel_id: true,
                         workflow_fase_id: true,
                         workflow_etapa_id: true,
-
+                        data_termino: true,
                         workflow_situacao: {
                             select: {
                                 id: true,
@@ -167,6 +167,10 @@ export class WorkflowAndamentoFaseService {
 
                 if (!self.transferencia.workflow_id)
                     throw new Error('Transferência não possui configuração de Workflow.');
+
+                if (self.data_termino != null) {
+                    throw new HttpException('Fase já foi finalizada.', 400);
+                }
 
                 // Verificando situação da fase.
                 // Caso a fase seja Suspensa, Cancelada ou Terminal.
