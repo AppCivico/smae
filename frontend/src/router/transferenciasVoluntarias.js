@@ -98,8 +98,7 @@ export default {
         ...{ transferenciaId: Number.parseInt(params.transferenciaId, 10) || undefined },
       }),
       meta: {
-        título: 'Resumo da transferência',
-        títuloParaMenu: 'Resumo',
+        título: 'Resumo',
         rotasParaMenuSecundário,
         rotasParaMigalhasDePão: [
           'TransferenciasVoluntariasListar',
