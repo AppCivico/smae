@@ -1,8 +1,31 @@
 <script setup>
 import SmallModal from "@/components/SmallModal.vue";
+import { storeToRefs } from "pinia";
 import { ref } from "vue";
 
+import { useBlocoDeNotasStore } from "@/stores/blocoNotas.store";
+const blocoStore = useBlocoDeNotasStore();
+const { lista, erro, chamadasPendentes } = storeToRefs(blocoStore);
+
+import { useTipoDeNotasStore } from "@/stores/tipoNotas.store";
+const tipoStore = useTipoDeNotasStore();
+const { lista: listaTipo, erro: erroTipo } = storeToRefs(tipoStore);
+
 const exibeModalNotas = ref(false);
+
+const props = defineProps({
+  blocosToken: {
+    type: String,
+    default:''
+  },
+});
+
+function iniciar() {
+  blocoStore.buscarTudo('eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJibG9jb19pZCI6MSwiYXVkIjoiYm4iLCJpYXQiOjE3MTI3Nzk1NTksImV4cCI6MTcxNTM3MTU1OX0.ryPCczMPVn7aspnBmY8Y4aF1JFi2jV1HjaYUs0ShkJM');
+  tipoStore.buscarTudo();
+}
+
+iniciar();
 </script>
 
 <template>
@@ -27,5 +50,57 @@ const exibeModalNotas = ref(false);
       <hr class="ml2 f1" />
       <CheckClose @close="exibeModalNotas = false" />
     </div>
+
+    <div class="mb4"></div>
+    <table class="tablemain mb1">
+      <col />
+      <col />
+      <col />
+      <col class="col--botão-de-ação" />
+      <col class="col--botão-de-ação" />
+      <thead>
+        <tr>
+          <th>Nota</th>
+          <th>Status</th>
+          <th>Tipo</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr v-for="(item, key) in lista" :key="key">
+          <td>
+            {{ item.nota }}
+          </td>
+          <td>
+            {{ item.status }}
+          </td>
+          <td>
+            {{
+              listaTipo.find((tipo) => tipo.id === item.tipo_nota_id)?.codigo
+            }}
+          </td>
+          <td>
+            <button class="like-a__text" arial-label="excluir" title="excluir">
+              <svg width="20" height="20">
+                <use xlink:href="#i_remove" />
+              </svg>
+            </button>
+          </td>
+          <td>
+            <svg width="20" height="20">
+              <use xlink:href="#i_edit" />
+            </svg>
+          </td>
+        </tr>
+        <tr v-if="chamadasPendentes.lista">
+          <td colspan="10">Carregando</td>
+        </tr>
+        <tr v-else-if="erro">
+          <td colspan="10">Erro: {{ erro }}</td>
+        </tr>
+        <tr v-else-if="!lista.length">
+          <td colspan="10">Nenhum resultado encontrado.</td>
+        </tr>
+      </tbody>
+    </table>
   </SmallModal>
 </template>
