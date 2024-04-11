@@ -1,10 +1,18 @@
 <script setup>
+import LoadingComponent from '@/components/LoadingComponent.vue';
 import dateToField from '@/helpers/dateToField';
 import dinheiro from '@/helpers/dinheiro';
 import ModalNotas from '@/components/notas/ModalNotas.vue'
 import { useDistribuicaoRecursosStore } from '@/stores/transferenciasDistribuicaoRecursos.store';
 import { useTransferenciasVoluntariasStore } from '@/stores/transferenciasVoluntarias.store';
+import { useWorkflowAndamentoStore } from '@/stores/workflow.andamento.store.ts';
 import { storeToRefs } from 'pinia';
+import { defineAsyncComponent } from 'vue';
+
+const FasesDoWorkflow = defineAsyncComponent({
+  loader: () => import('@/components/transferencia/FasesDoWorkflow.vue'),
+  loadingComponent: LoadingComponent,
+});
 
 const props = defineProps({
   transferenciaId: {
@@ -15,9 +23,11 @@ const props = defineProps({
 
 const TransferenciasVoluntarias = useTransferenciasVoluntariasStore();
 const distribuicaoRecursos = useDistribuicaoRecursosStore();
+const workflowAndamento = useWorkflowAndamentoStore();
 
 const { emFoco: transferênciaEmFoco } = storeToRefs(TransferenciasVoluntarias);
 const { lista: listaDeDistribuição } = storeToRefs(distribuicaoRecursos);
+const { emFoco: workflow } = storeToRefs(workflowAndamento);
 
 TransferenciasVoluntarias.buscarItem(props.transferenciaId);
 distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
@@ -29,7 +39,29 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
     <TítuloDePágina />
 
     <hr class="f1">
+
+    <template
+      v-if="workflow"
+    >
+      <button
+        type="button"
+        class="btn"
+      >
+        Iniciar fase
+      </button>
+
+      <button
+        v-if="workflow"
+        type="button"
+        class="btn"
+        :disabled="!workflow?.pode_passar_para_proxima_etapa"
+      >
+        Próxima etapa
+      </button>
+    </template>
   </header>
+
+  <FasesDoWorkflow v-if="transferênciaEmFoco?.workflow_id" />
 
   <pre v-scrollLockDebug>transferênciaEmFoco:{{ transferênciaEmFoco }}</pre>
   <pre v-scrollLockDebug>listaDeDistribuição:{{ listaDeDistribuição }}</pre>
