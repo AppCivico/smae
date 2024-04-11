@@ -14,14 +14,17 @@ export class AllExceptionsFilter implements ExceptionFilter {
         let ehAdmin: boolean = false;
         if (request.user && request.user.hasSomeRoles(['SMAE.superadmin'])) ehAdmin = true;
 
-        const httpStatus =
+        const httpStatusCode =
             exception instanceof HttpException ? exception.getStatus() : HttpStatus.INTERNAL_SERVER_ERROR;
-        const httpResponse = exception instanceof HttpException ? exception.getResponse() : undefined;
+        let httpResponse = exception instanceof HttpException ? exception.getResponse() : undefined;
+
+        if (httpResponse && typeof httpResponse === 'string') httpResponse = { message: httpResponse };
+        if (typeof httpResponse !== 'object') httpResponse = {};
 
         let responseBody: any = {
-            statusCode: httpStatus,
-            message: 'Erro interno',
-            ...(typeof httpResponse == 'object' ? httpResponse : {}),
+            statusCode: httpStatusCode,
+            message: 'Erro interno/não esperado... Contate um administrador do sistema ou tente novamente.',
+            ...httpResponse,
         };
 
         if (ehAdmin) {
@@ -34,6 +37,6 @@ export class AllExceptionsFilter implements ExceptionFilter {
             };
         }
 
-        httpAdapter.reply(ctx.getResponse(), responseBody, httpStatus);
+        httpAdapter.reply(ctx.getResponse(), responseBody, httpStatusCode);
     }
 }
