@@ -34,10 +34,11 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
   <pre v-scrollLockDebug>transferênciaEmFoco:{{ transferênciaEmFoco }}</pre>
   <pre v-scrollLockDebug>listaDeDistribuição:{{ listaDeDistribuição }}</pre>
   <ModalNotas></ModalNotas>
-  <div class="flex g2 center mt2 mb1">
-    <h1>
+
+  <div class="flex g2 center mt3 mb2">
+    <h3 class="w400 tc300 t20 mb0">
       Identificação
-    </h1>
+    </h3>
     <hr class="ml2 f1">
     <router-link
       :to="{ name: 'TransferenciasVoluntariaEditar' }"
@@ -53,7 +54,7 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
   </div>
 
   <div>
-    <div class="flex g2 flexwrap mb1">
+    <div class="flex g2 flexwrap mb2">
       <dl class="f1">
         <dt>
           Identificador
@@ -79,7 +80,7 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
         </dd>
       </dl>
     </div>
-    <div class="flex g2 flexwrap mb1">
+    <div class="flex g2 flexwrap mb2">
       <dl class="f1">
         <dt>
           Interface
@@ -105,7 +106,7 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
         </dd>
       </dl>
     </div>
-    <div class="flex g2 flexwrap mb1">
+    <div class="flex g2 flexwrap mb2">
       <dl class="f1">
         <dt>
           Emenda unitária
@@ -126,15 +127,15 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
     </div>
   </div>
 
-  <div class="flex center mt2 mb1">
-    <h3 class="title mb0">
+  <div class="flex center mt3 mb2">
+    <h3 class="w400 tc300 t20 mb0">
       Origem
     </h3>
     <hr class="ml2 f1">
   </div>
 
   <div>
-    <div class="flex g2 flexwrap mb1">
+    <div class="flex g2 flexwrap mb2">
       <dl class="f1">
         <dt>
           Órgão concedente
@@ -160,7 +161,7 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
         </dd>
       </dl>
     </div>
-    <div class="flex g2 flexwrap mb1">
+    <div class="flex g2 flexwrap mb2">
       <dl class="f1">
         <dt>
           Número de identificação
@@ -188,8 +189,8 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
     </div>
   </div>
 
-  <div class="flex center mt2 mb1">
-    <h3 class="title mb0">
+  <div class="flex center mt3 mb2">
+    <h3 class="w400 tc300 t20 mb0">
       Transferência
     </h3>
     <hr class="ml2 f1">
@@ -197,7 +198,7 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
 
   <div>
     <div>
-      <div class="flex g2 flexwrap mb1">
+      <div class="flex g2 flexwrap mb2">
         <dl class="f1">
           <dt>
             Ano
@@ -287,11 +288,11 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
     </div>
   </div>
 
-  <div class="flex g2 center mt2 mb1">
-    <h1>
+  <div class="flex g2 flexwrap center mt2 mb1">
+    <h3 class="w400 tc300 mb0 t20">
       Recurso Financeiro
-    </h1>
-    <hr class="ml2 f1">
+    </h3>
+    <hr class="f1">
     <router-link
       :to="{ name: 'RegistroDeTransferenciaEditar' }"
       title="Editar recursos financeiros"
@@ -305,7 +306,7 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
     </router-link>
   </div>
 
-  <div class="flex g2 mb3">
+  <div class="flex flexwrap g2 mb3">
     <div class="grid valores f1">
       <dl class="mb1">
         <dt>
@@ -374,14 +375,14 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
     </div>
   </div>
 
-  <div class="flex g2 center mb1 mt2">
-    <h3 class="title">
+  <div class="flex g2 center mt3 mb2">
+    <h3 class="w400 tc300 mb0 t20">
       Dados Bancários de Aceite
     </h3>
-    <hr class="ml2 f1">
+    <hr class="f1">
   </div>
 
-  <div class="flex g2 start mb1">
+  <div class="flex g2 flexwrap mb1">
     <dl class="f1">
       <dt>
         Banco
@@ -408,14 +409,14 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
     </dl>
   </div>
 
-  <div class="flex g2 center mb1 mt2">
-    <h3 class="title">
+  <div class="flex g2 center mt3 mb2">
+    <h3 class="w400 tc300 t20 mb0">
       Dados bancários secretaria fim
     </h3>
-    <hr class="ml2 f1">
+    <hr class="f1">
   </div>
 
-  <div class="flex g2 start mb1">
+  <div class="flex g2 flexwrap mb1">
     <dl class="f1">
       <dt>
         Banco
@@ -442,11 +443,11 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
     </dl>
   </div>
 
-  <div class="flex g2 center mb1 mt2">
-    <h1>
+  <div class="flex g2 center mt3 mb2">
+    <h3 class="w400 tc300 mb0 t20">
       Distribuição de Recursos
-    </h1>
-    <hr class="ml2 f1">
+    </h3>
+    <hr class="f1">
     <router-link
       :to="{ name: 'TransferenciaDistribuicaoDeRecursosEditar' }"
       title="Editar distribuição de recursos"
@@ -486,7 +487,7 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
       </dl>
     </div>
 
-    <div class="flex g2 mb2">
+    <div class="flex flexwrap g2 mb2">
       <div class="grid valores f1">
         <dl class="mb1">
           <dt>
@@ -556,7 +557,7 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
     </div>
 
     <div>
-      <div class="flex g2 start mb1">
+      <div class="flex g2 flexwrap mb1">
         <dl class="f1">
           <dt>
             Número SEI
@@ -567,7 +568,6 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
               <li
                 v-for="(registro, i) in distribuição.registros_sei"
                 :key="i"
-                class="mb1"
               >
                 {{ registro.processo_sei || '-' }}
               </li>
@@ -594,7 +594,7 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
           </dd>
         </dl>
       </div>
-      <div class="flex g2 start mb1">
+      <div class="flex g2 flexwrap mb1">
         <dl class="f1">
           <dt>
             Número do contrato
@@ -626,14 +626,14 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
       </div>
     </div>
 
-    <div class="flex g2 center mb3">
-      <h3 class="title">
+    <div class="flex g2 center mt3 mb2">
+      <h3 class="w400 tc300 t20 mb0">
         Assinaturas
       </h3>
-      <hr class="ml2 f1">
+      <hr class="f1">
     </div>
 
-    <div class="flex g2 start mb2">
+    <div class="flex g2 flexwrap mb2">
       <dl class="f1">
         <dt>
           Data da assinatura do termo de aceite
@@ -662,11 +662,6 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
   </section>
 </template>
 <style scoped lang="less">
-.title {
-    color: #607a9f;
-    font-weight: 700;
-    font-size: 22px;
-}
 section {
   box-shadow: 0px 4px 16px 0px rgba(21, 39, 65, 0.1);
   padding: 1rem 2rem 4rem 2rem;
