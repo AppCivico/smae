@@ -37,7 +37,7 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
       title="Editar identificação"
       class="btn big ml2"
     >
-    Editar
+      Editar
     </router-link>
   </div>
 
@@ -449,7 +449,7 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
         </dt>
         <dd>
           {{ distribuição.orgao_gestor ?
-          `${distribuição.orgao_gestor.sigla} - ${distribuição.orgao_gestor.descricao}` : '-'
+            `${distribuição.orgao_gestor.sigla} - ${distribuição.orgao_gestor.descricao}` : '-'
           }}
         </dd>
       </dl>
@@ -634,14 +634,13 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
     </div>
   </section>
 </template>
-
 <style scoped lang="less">
-.title{
+.title {
     color: #607a9f;
     font-weight: 700;
     font-size: 22px;
 }
-section{
+section {
   box-shadow: 0px 4px 16px 0px rgba(21, 39, 65, 0.1);
   padding: 1rem 2rem 4rem 2rem;
   border-radius: 20px;
@@ -660,7 +659,7 @@ dd {
   padding-top: 4px;
 }
 
-.text{
+.text {
   line-height: 24px;
 }
 
