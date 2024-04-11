@@ -35,8 +35,12 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
     <router-link
       :to="{ name: 'TransferenciasVoluntariaEditar' }"
       title="Editar identificação"
-      class="btn big ml2"
+      class="btn with-icon bgnone tcprimary p0"
     >
+      <svg
+        width="20"
+        height="20"
+      ><use xlink:href="#i_edit" /></svg>
       Editar
     </router-link>
   </div>
@@ -284,8 +288,12 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
     <router-link
       :to="{ name: 'RegistroDeTransferenciaEditar' }"
       title="Editar recursos financeiros"
-      class="btn big ml2"
+      class="btn with-icon bgnone tcprimary p0"
     >
+      <svg
+        width="20"
+        height="20"
+      ><use xlink:href="#i_edit" /></svg>
       Editar
     </router-link>
   </div>
@@ -435,8 +443,12 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
     <router-link
       :to="{ name: 'TransferenciaDistribuicaoDeRecursosEditar' }"
       title="Editar distribuição de recursos"
-      class="btn big ml2"
+      class="btn with-icon bgnone tcprimary p0"
     >
+      <svg
+        width="20"
+        height="20"
+      ><use xlink:href="#i_edit" /></svg>
       Editar
     </router-link>
   </div>
