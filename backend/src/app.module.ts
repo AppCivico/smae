@@ -46,6 +46,7 @@ import { WorkflowFluxoTarefaModule } from './workflow/configuracao/fluxo-tarefa/
 import { BlocoNotasModule } from './bloco-nota/bloco-notas.module';
 import { WorkflowAndamentoTarefasModule } from './workflow/andamento/tarefas/workflow-andamento-tarefas.module';
 import { WorkflowAndamentoFaseModule } from './workflow/andamento/fase/workflow-andamento-fase.module';
+import { WorkflowAndamentoModule } from './workflow/andamento/workflow-andamento.module';
 
 // Hacks pro JS
 /*
@@ -92,6 +93,7 @@ import { WorkflowAndamentoFaseModule } from './workflow/andamento/fase/workflow-
         WorkflowFluxoModule,
         WorkflowfluxoFaseModule,
         WorkflowFluxoTarefaModule,
+        WorkflowAndamentoModule,
         WorkflowAndamentoFaseModule,
         WorkflowAndamentoTarefasModule,
         BlocoNotasModule,
