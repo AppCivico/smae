@@ -5,11 +5,11 @@ import { ref } from "vue";
 
 import { useBlocoDeNotasStore } from "@/stores/blocoNotas.store";
 const blocoStore = useBlocoDeNotasStore();
-const { lista, erro, chamadasPendentes } = storeToRefs(blocoStore);
+const { lista:listaNotas, erro, chamadasPendentes } = storeToRefs(blocoStore);
 
 import { useTipoDeNotasStore } from "@/stores/tipoNotas.store";
 const tipoStore = useTipoDeNotasStore();
-const { lista: listaTipo, erro: erroTipo } = storeToRefs(tipoStore);
+const { lista:listaTipo, erro: erroTipo } = storeToRefs(tipoStore);
 
 const exibeModalNotas = ref(false);
 
@@ -20,9 +20,11 @@ const props = defineProps({
   },
 });
 
-function iniciar() {
-  blocoStore.buscarTudo('eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJibG9jb19pZCI6MSwiYXVkIjoiYm4iLCJpYXQiOjE3MTI3Nzk1NTksImV4cCI6MTcxNTM3MTU1OX0.ryPCczMPVn7aspnBmY8Y4aF1JFi2jV1HjaYUs0ShkJM');
-  tipoStore.buscarTudo();
+ function iniciar() {
+  if (props.blocosToken) {
+    blocoStore.buscarTudo(props.blocosToken);
+    tipoStore.buscarTudo();
+  }
 }
 
 iniciar();
@@ -48,7 +50,7 @@ iniciar();
     <div class="flex spacebetween center mb2">
       <h2>Notas</h2>
       <hr class="ml2 f1" />
-      <CheckClose @close="exibeModalNotas = false" />
+      <CheckClose @close="exibeModalNotas = false" :apenas-emitir="true" />
     </div>
 
     <div class="mb4"></div>
@@ -66,7 +68,7 @@ iniciar();
         </tr>
       </thead>
       <tbody>
-        <tr v-for="(item, key) in lista" :key="key">
+        <tr v-for="(item, key) in listaNotas" :key="key">
           <td>
             {{ item.nota }}
           </td>
@@ -91,13 +93,13 @@ iniciar();
             </svg>
           </td>
         </tr>
-        <tr v-if="chamadasPendentes.lista">
+        <tr v-if="chamadasPendentes.listaNotas">
           <td colspan="10">Carregando</td>
         </tr>
         <tr v-else-if="erro">
           <td colspan="10">Erro: {{ erro }}</td>
         </tr>
-        <tr v-else-if="!lista.length">
+        <tr v-else-if="!listaNotas.length">
           <td colspan="10">Nenhum resultado encontrado.</td>
         </tr>
       </tbody>
