@@ -437,6 +437,7 @@ export class TransferenciaService {
                 esfera: true,
                 cargo: true,
                 secretaria_concedente_str: true,
+                workflow_id: true,
                 partido: {
                     select: {
                         id: true,
