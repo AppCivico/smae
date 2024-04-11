@@ -73,11 +73,8 @@ export class TransferenciaService {
                         id: true,
                     },
                 });
-                console.log(workflow);
-                console.log('===============================');
                 const workflow_id: number | null = workflow?.id ?? null;
-                console.log('===============================');
-                console.log(workflow_id);
+
                 const transferencia = await prismaTxn.transferencia.create({
                     data: {
                         tipo_id: dto.tipo_id,
@@ -111,7 +108,7 @@ export class TransferenciaService {
                     select: { id: true },
                 });
 
-                if (workflow_id) this.startWorkflow(transferencia.id, workflow_id, dto, prismaTxn, user);
+                if (workflow_id) await this.startWorkflow(transferencia.id, workflow_id, dto, prismaTxn, user);
 
                 return transferencia;
             }
@@ -812,7 +809,6 @@ export class TransferenciaService {
                 const primeiraSituacao = fase.situacoes.find((s) => {
                     return s.tipo_situacao == WorkflowSituacaoTipo.NaoIniciado;
                 });
-                console.log(primeiraSituacao);
                 if (!primeiraSituacao) throw new Error('Não foi encontrada situação inicial, "Não iniciado".');
 
                 const jaExiste = await prismaTxn.transferenciaAndamento.count({
