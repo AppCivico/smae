@@ -3,21 +3,26 @@ import { IsArray, IsBoolean, IsInt, IsOptional, ValidateNested } from 'class-val
 
 export class UpdateWorkflowAndamentoFaseDto {
     @IsInt()
+    @Type(() => Number)
     transferencia_id: number;
 
     @IsInt()
+    @Type(() => Number)
     fase_id: number;
 
     @IsOptional()
     @IsInt()
+    @Type(() => Number)
     situacao_id: number;
 
     @IsOptional()
     @IsInt()
+    @Type(() => Number)
     orgao_responsavel_id: number;
 
     @IsOptional()
     @IsInt()
+    @Type(() => Number)
     pessoa_responsavel_id: number;
 
     //@IsOptional()
@@ -29,6 +34,7 @@ export class UpdateWorkflowAndamentoFaseDto {
 
 export class WorkflowTarefaUpdateParamDto {
     @IsInt()
+    @Type(() => Number)
     id: number;
 
     @IsOptional()
@@ -39,10 +45,12 @@ export class WorkflowTarefaUpdateParamDto {
     concluida: boolean;
 }
 
-export class WorkflowFinalizarFaseDto {
+export class WorkflowFinalizarIniciarFaseDto {
     @IsInt()
+    @Type(() => Number)
     transferencia_id: number;
 
     @IsInt()
+    @Type(() => Number)
     fase_id: number;
 }
