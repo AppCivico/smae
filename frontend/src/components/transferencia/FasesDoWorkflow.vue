@@ -138,13 +138,13 @@ watch(itemParaEdição, () => {
         :key="item.id"
         class="p1 tc dedo-duro__fase"
         :class="{
-          'dedo-duro__fase--iniciada': !!item?.andamento,
-          concluida: item?.andamento?.concluida
+          'dedo-duro__fase--iniciada': !!item?.andamento
         }"
       >
         <button
           type="button"
           class="w400 like-a__text dedo-duro__nome-da-fase"
+          :disabled="item?.andamento?.concluida"
           @click="faseSelecionada = item.id"
         >
           {{ item.fase.fase }}
@@ -439,6 +439,10 @@ watch(itemParaEdição, () => {
   display: block;
   margin-left: auto;
   margin-right: auto;
+
+  &:disabled {
+    opacity: 1;
+  }
 
   &::before {
     width: @tamanho-da-bolinha;
