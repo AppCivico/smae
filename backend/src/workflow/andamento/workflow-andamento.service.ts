@@ -4,7 +4,9 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { WorkflowService } from 'src/workflow/configuracao/workflow.service';
 import { FilterWorkflowAndamentoDto } from './dto/filter-andamento.dto';
 import { AndamentoFaseDto, AndamentoTarefaDto, WorkflowAndamentoDto } from './entities/workflow-andamento.entity';
-import { WorkflowResponsabilidade, WorkflowSituacaoTipo } from '@prisma/client';
+import { Prisma, WorkflowResponsabilidade, WorkflowSituacaoTipo } from '@prisma/client';
+import { RecordWithId } from 'src/common/dto/record-with-id.dto';
+import { WorkflowIniciarProxEtapaDto } from './dto/iniciar-prox-etapa.dto';
 
 @Injectable()
 export class WorkflowAndamentoService {
@@ -273,5 +275,175 @@ export class WorkflowAndamentoService {
                   }
                 : null,
         };
+    }
+
+    async iniciarProximaEtapa(dto: WorkflowIniciarProxEtapaDto, user: PessoaFromJwt) {
+        await this.prisma.$transaction(async (prismaTxn: Prisma.TransactionClient): Promise<RecordWithId> => {
+            // Verificando se a etapa atual está concluída e se a configuração para a prox etapa existe.
+            const transferencia = await prismaTxn.transferencia.findFirst({
+                where: {
+                    id: dto.transferencia_id,
+                    removido_em: null,
+                    workflow_id: { not: null },
+                },
+                select: {
+                    id: true,
+                    workflow_id: true,
+
+                    andamentoWorkflow: {
+                        orderBy: { data_termino: 'desc' },
+                        select: {
+                            workflow_etapa_id: true,
+                            data_termino: true,
+
+                            workflow_etapa: {
+                                select: {
+                                    fluxoDestino: {
+                                        where: { removido_em: null },
+                                        select: {
+                                            id: true,
+                                            fluxo_etapa_para_id: true,
+                                            workflow_id: true,
+                                        },
+                                    },
+                                },
+                            },
+                        },
+                    },
+                },
+            });
+            if (!transferencia)
+                throw new HttpException('transferencia_id| Transferência com workflow, não encontrada.', 400);
+
+            if (
+                transferencia.andamentoWorkflow.find((e) => {
+                    return e.data_termino == null;
+                })
+            )
+                throw new HttpException('Ainda há fase(s) abertas na etapa atual desta transferência.', 400);
+
+            if (!transferencia.andamentoWorkflow.length)
+                throw new HttpException('Transferência sem linhas de andamento', 400);
+
+            // rows de Andamento estão com order by por ultima data de conclusão desc.
+            const andamentoMaisRecente = transferencia.andamentoWorkflow[0];
+            if (andamentoMaisRecente.workflow_etapa.fluxoDestino.length) {
+                // Garantindo que a config de workflow é a correta.
+                // Só deve ter uma linha de 'fluxo'.
+                const configFluxo = andamentoMaisRecente.workflow_etapa.fluxoDestino.find((e) => {
+                    return e.workflow_id == transferencia.workflow_id;
+                });
+                if (!configFluxo) throw new HttpException('Configuração de fluxo não encontrada para o workflow.', 400);
+
+                // Buscando config da próxima etapa.
+                const configProxEtapa = await prismaTxn.fluxo.findFirst({
+                    where: {
+                        fluxo_etapa_de_id: configFluxo.fluxo_etapa_para_id,
+                        workflow_id: transferencia.workflow_id!,
+                        removido_em: null,
+                    },
+                    select: {
+                        fluxo_etapa_de_id: true,
+                        fases: {
+                            where: { removido_em: null },
+                            orderBy: { ordem: 'asc' },
+                            take: 1,
+                            select: {
+                                id: true,
+                                ordem: true,
+                                responsabilidade: true,
+                                fase: {
+                                    select: {
+                                        fase: true, // Nome da fase
+                                    },
+                                },
+
+                                tarefas: {
+                                    where: { removido_em: null },
+                                    orderBy: { ordem: 'asc' },
+                                    select: {
+                                        responsabilidade: true,
+                                        workflow_tarefa: {
+                                            select: {
+                                                id: true,
+                                                tarefa_fluxo: true,
+                                            },
+                                        },
+                                    },
+                                },
+
+                                situacoes: {
+                                    where: {
+                                        situacao: {
+                                            OR: [
+                                                { tipo_situacao: WorkflowSituacaoTipo.NaoIniciado },
+                                                { tipo_situacao: WorkflowSituacaoTipo.EmAndamento },
+                                            ],
+                                        },
+                                    },
+                                    select: {
+                                        situacao: {
+                                            select: {
+                                                id: true,
+                                                tipo_situacao: true,
+                                            },
+                                        },
+                                    },
+                                },
+                            },
+                        },
+                    },
+                });
+                if (!configProxEtapa)
+                    throw new HttpException('Não foi possível encontrar configuração da próxima Etapa', 400);
+
+                if (!configProxEtapa.fases.length) throw new HttpException('Próxima etapa não possui fases', 400);
+
+                if (!configProxEtapa.fases[0].situacoes.length)
+                    throw new Error('Primeira fase da próxima etapa não possui configuração de status Inicial');
+
+                const primeiraFase = configProxEtapa.fases[0];
+                const situacaoFaseInicial = primeiraFase.situacoes!.find((s) => {
+                    return (
+                        s.situacao.tipo_situacao == WorkflowSituacaoTipo.NaoIniciado ||
+                        s.situacao.tipo_situacao == WorkflowSituacaoTipo.EmAndamento
+                    );
+                });
+                if (!situacaoFaseInicial) throw new HttpException('Falha ao encontrar situação inicial', 400);
+
+                return await prismaTxn.transferenciaAndamento.create({
+                    data: {
+                        transferencia_id: transferencia.id,
+                        workflow_etapa_id: configProxEtapa.fluxo_etapa_de_id,
+                        workflow_fase_id: primeiraFase.id,
+                        workflow_situacao_id: situacaoFaseInicial.situacao.id,
+                        pessoa_responsavel_id:
+                            primeiraFase.responsabilidade == WorkflowResponsabilidade.Propria ? user.id : null,
+                        data_inicio: new Date(Date.now()),
+                        criado_por: user.id,
+                        criado_em: new Date(Date.now()),
+
+                        tarefas: {
+                            createMany: {
+                                data: primeiraFase.tarefas.map((e) => {
+                                    return {
+                                        workflow_tarefa_fluxo_id: e.workflow_tarefa!.id,
+                                        criado_por: user.id,
+                                        criado_em: new Date(Date.now()),
+                                    };
+                                }),
+                            },
+                        },
+                    },
+                    select: {
+                        id: true,
+                    },
+                });
+            } else {
+                throw new Error(
+                    'Não foi possível encontrar configurações de fluxo para este workflow seguindo estes parâmetros'
+                );
+            }
+        });
     }
 }

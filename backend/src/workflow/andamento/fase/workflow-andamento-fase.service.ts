@@ -3,7 +3,10 @@ import { RecordWithId } from 'src/common/dto/record-with-id.dto';
 import { Prisma, WorkflowResponsabilidade, WorkflowSituacaoTipo } from '@prisma/client';
 import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { UpdateWorkflowAndamentoFaseDto, WorkflowFinalizarFaseDto } from './dto/patch-workflow-andamento-fase.dto';
+import {
+    UpdateWorkflowAndamentoFaseDto,
+    WorkflowFinalizarIniciarFaseDto,
+} from './dto/patch-workflow-andamento-fase.dto';
 import { WorkflowService } from 'src/workflow/configuracao/workflow.service';
 
 @Injectable()
@@ -242,7 +245,7 @@ export class WorkflowAndamentoFaseService {
         return idsAtualizados;
     }
 
-    async finalizarFase(dto: WorkflowFinalizarFaseDto, user: PessoaFromJwt): Promise<RecordWithId> {
+    async finalizarFase(dto: WorkflowFinalizarIniciarFaseDto, user: PessoaFromJwt): Promise<RecordWithId> {
         const updated = await this.prisma.$transaction(
             async (prismaTxn: Prisma.TransactionClient): Promise<RecordWithId> => {
                 // Encontrando row na table transferencia_andamento
@@ -318,14 +321,54 @@ export class WorkflowAndamentoFaseService {
                     },
                 });
 
+                return { id: self.id };
+            }
+        );
+
+        return updated;
+    }
+
+    async iniciarFase(dto: WorkflowFinalizarIniciarFaseDto, user: PessoaFromJwt): Promise<RecordWithId> {
+        const updated = await this.prisma.$transaction(
+            async (prismaTxn: Prisma.TransactionClient): Promise<RecordWithId> => {
+                // Verificando se fase já foi iniciada.
+                const andamentoFase = await prismaTxn.transferenciaAndamento.findFirst({
+                    where: {
+                        transferencia_id: dto.transferencia_id,
+                        workflow_fase_id: dto.fase_id,
+                        removido_em: null,
+                    },
+                    select: {
+                        id: true,
+                    },
+                });
+                if (andamentoFase) throw new HttpException('Fase já foi iniciada', 400);
+
+                // Buscando fase atual.
+                const faseAtual = await prismaTxn.transferenciaAndamento.findFirst({
+                    where: {
+                        transferencia_id: dto.transferencia_id,
+                        removido_em: null,
+                    },
+                    select: {
+                        id: true,
+                        workflow_fase_id: true,
+                        workflow_etapa_id: true,
+                        data_termino: true,
+                    },
+                });
+                if (!faseAtual) throw new HttpException('Não foi possível verificar conclusão da fase anterior', 400);
+                if (!faseAtual.data_termino)
+                    throw new HttpException('Fase atual precisa ser finalizada antes de iniciar uma nova', 400);
+
                 // Procurando a próxima fase e iniciando-a.
                 // Caso não exista. Procura pela próxima etapa.
                 const configFluxoFaseAtual = await prismaTxn.fluxoFase.findFirst({
                     where: {
                         removido_em: null,
-                        fase_id: self.workflow_fase_id,
+                        fase_id: faseAtual.workflow_fase_id,
                         fluxo: {
-                            fluxo_etapa_de_id: self.workflow_etapa_id,
+                            fluxo_etapa_de_id: faseAtual.workflow_etapa_id,
                             removido_em: null,
                         },
                     },
@@ -341,7 +384,7 @@ export class WorkflowAndamentoFaseService {
                         removido_em: null,
                         ordem: configFluxoFaseAtual.ordem + 1,
                         fluxo: {
-                            fluxo_etapa_de_id: self.workflow_etapa_id,
+                            fluxo_etapa_de_id: faseAtual.workflow_etapa_id,
                             removido_em: null,
                         },
                     },
@@ -374,96 +417,49 @@ export class WorkflowAndamentoFaseService {
                         },
                     },
                 });
+                if (!configFluxoFaseSeguinte)
+                    throw new HttpException('Não foi possível encontrar configuração da próxima fase', 400);
 
-                if (configFluxoFaseSeguinte) {
-                    if (!configFluxoFaseSeguinte.situacoes.length)
-                        throw new Error('Fase não possui configuração de status Inicial');
+                if (!configFluxoFaseSeguinte.situacoes.length)
+                    throw new HttpException(
+                        'Fase não está configurada corretamente. Não possui configuração de situação Inicial',
+                        400
+                    );
 
-                    const situacao_id: number = configFluxoFaseSeguinte.situacoes[0].situacao_id;
+                const situacao_id: number = configFluxoFaseSeguinte.situacoes[0].situacao_id;
 
-                    await prismaTxn.transferenciaAndamento.create({
-                        data: {
-                            transferencia_id: self.transferencia_id,
-                            workflow_etapa_id: self.workflow_etapa_id,
-                            workflow_fase_id: configFluxoFaseSeguinte.fase_id,
-                            workflow_situacao_id: situacao_id,
-                            pessoa_responsavel_id:
-                                configFluxoFaseSeguinte.responsabilidade == WorkflowResponsabilidade.Propria
-                                    ? user.id
-                                    : null,
-                            data_inicio: new Date(Date.now()),
-                            criado_por: user.id,
-                            criado_em: new Date(Date.now()),
+                const andamentoNovaFase = await prismaTxn.transferenciaAndamento.create({
+                    data: {
+                        transferencia_id: dto.transferencia_id,
+                        workflow_etapa_id: faseAtual.workflow_etapa_id, // Aqui não tem problema reaproveitar o workflow_etapa_id, pois está na mesma etapa.
+                        workflow_fase_id: configFluxoFaseSeguinte.fase_id,
+                        workflow_situacao_id: situacao_id,
+                        pessoa_responsavel_id:
+                            configFluxoFaseSeguinte.responsabilidade == WorkflowResponsabilidade.Propria
+                                ? user.id
+                                : null,
+                        data_inicio: new Date(Date.now()),
+                        criado_por: user.id,
+                        criado_em: new Date(Date.now()),
 
-                            tarefas: {
-                                createMany: {
-                                    data: configFluxoFaseSeguinte.tarefas.map((e) => {
-                                        return {
-                                            workflow_tarefa_fluxo_id: e.workflow_tarefa.id,
-                                            criado_por: user.id,
-                                            criado_em: new Date(Date.now()),
-                                        };
-                                    }),
-                                },
+                        tarefas: {
+                            createMany: {
+                                data: configFluxoFaseSeguinte.tarefas.map((e) => {
+                                    return {
+                                        workflow_tarefa_fluxo_id: e.workflow_tarefa.id,
+                                        criado_por: user.id,
+                                        criado_em: new Date(Date.now()),
+                                    };
+                                }),
                             },
                         },
-                    });
-                } else {
-                    const workflow = await this.workflowService.findOne(self.transferencia.workflow_id, user);
+                    },
+                    select: {
+                        id: true,
+                    },
+                });
 
-                    // Buscando pela próxima etapa.
-                    const configEtapaAtual = workflow.fluxo.find((f) => {
-                        return f.workflow_etapa_de?.id == self.workflow_etapa_id;
-                    });
-                    if (!configEtapaAtual) throw new Error('Erro interno ao buscar configuração de etapa atual');
-
-                    const proxEtapa = workflow.fluxo.find((f) => {
-                        return f.workflow_etapa_de?.id == configEtapaAtual.workflow_etapa_para?.id;
-                    });
-                    if (proxEtapa) {
-                        // Pegando sempre a primeira fase.
-                        // No endpoint FindOne, já vem ordenado.
-                        const primeiraFase = proxEtapa.fases[0];
-                        if (!primeiraFase) throw new Error('Erro ao encontrar primeira fase de próxima Etapa');
-
-                        const situacaoFaseInicial = primeiraFase.situacao?.find((s) => {
-                            return (
-                                s.tipo_situacao == WorkflowSituacaoTipo.NaoIniciado ||
-                                s.tipo_situacao == WorkflowSituacaoTipo.EmAndamento
-                            );
-                        });
-                        if (!situacaoFaseInicial)
-                            throw new Error('Fase não possui configuração de status Inicial para fase seguinte');
-
-                        await prismaTxn.transferenciaAndamento.create({
-                            data: {
-                                transferencia_id: self.transferencia_id,
-                                workflow_etapa_id: proxEtapa.workflow_etapa_de!.id,
-                                workflow_fase_id: primeiraFase.id!,
-                                workflow_situacao_id: situacaoFaseInicial.id,
-                                pessoa_responsavel_id:
-                                    primeiraFase.responsabilidade == WorkflowResponsabilidade.Propria ? user.id : null,
-                                data_inicio: new Date(Date.now()),
-                                criado_por: user.id,
-                                criado_em: new Date(Date.now()),
-
-                                tarefas: {
-                                    createMany: {
-                                        data: primeiraFase.tarefas.map((e) => {
-                                            return {
-                                                workflow_tarefa_fluxo_id: e.workflow_tarefa!.id,
-                                                criado_por: user.id,
-                                                criado_em: new Date(Date.now()),
-                                            };
-                                        }),
-                                    },
-                                },
-                            },
-                        });
-                    }
-                }
-
-                return { id: self.id };
+                return { id: andamentoNovaFase.id };
             }
         );
 
