@@ -18,6 +18,29 @@ export class WorkflowFluxoTarefaService {
     async create(dto: CreateWorkflowFluxoTarefaDto, user: PessoaFromJwt): Promise<RecordWithId> {
         const created = await this.prisma.$transaction(
             async (prismaTxn: Prisma.TransactionClient): Promise<RecordWithId> => {
+                // Verificando se já tem transferência.
+                const fluxoFase = await prismaTxn.fluxoFase.findFirst({
+                    where: {
+                        id: dto.fluxo_fase_id,
+                        removido_em: null,
+                    },
+                    select: {
+                        fluxo: {
+                            select: {
+                                workflow_id: true,
+                            },
+                        },
+                    },
+                });
+                if (!fluxoFase) throw new HttpException('fluxo_fase_id| Fluxo fase não encontrado', 400);
+
+                const emUso = await prismaTxn.transferencia.count({
+                    where: {
+                        workflow_id: fluxoFase.fluxo.workflow_id,
+                    },
+                });
+                if (emUso) throw new HttpException('Tarefa não pode ser criada, pois workflow já está em uso', 400);
+
                 const jaExiste = await prismaTxn.fluxoTarefa.count({
                     where: {
                         workflow_tarefa_id: dto.workflow_tarefa_id,
