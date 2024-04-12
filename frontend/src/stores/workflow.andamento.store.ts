@@ -44,7 +44,7 @@ export const useWorkflowAndamentoStore = defineStore('workflowAndamento', {
       this.chamadasPendentes.emFoco = false;
     },
 
-    async iniciarFase(params = {}): Promise<boolean> {
+    async editarFase(params = {}): Promise<boolean> {
       this.chamadasPendentes.fase = true;
 
       try {

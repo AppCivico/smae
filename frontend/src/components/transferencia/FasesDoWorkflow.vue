@@ -1,22 +1,112 @@
 <script setup>
+import SmallModal from '@/components/SmallModal.vue';
+import nulificadorTotal from '@/helpers/nulificadorTotal.ts';
+import truncate from '@/helpers/truncate';
+import { useAlertStore } from '@/stores/alert.store';
+import { useOrgansStore } from '@/stores/organs.store';
+import { useUsersStore } from '@/stores/users.store';
 import { useWorkflowAndamentoStore } from '@/stores/workflow.andamento.store.ts';
 import { storeToRefs } from 'pinia';
+
 import {
-  computed, defineOptions, nextTick, ref,
+  ErrorMessage,
+  Field,
+  useForm,
+  useIsFormDirty,
+} from 'vee-validate';
+import {
+  computed, defineOptions, nextTick, ref, watch,
 } from 'vue';
+import { useRoute } from 'vue-router';
 
 defineOptions({ inheritAttrs: false });
+
+const route = useRoute();
+const schema = {};
+const props = defineProps({
+  transferenciaId: {
+    type: [Number, String],
+    default: 0,
+  },
+});
+
+const alertStore = useAlertStore();
+
+const UserStore = useUsersStore();
+const { pessoasSimplificadas } = storeToRefs(UserStore);
+
+const ÓrgãosStore = useOrgansStore();
+const { organs, órgãosComoLista } = storeToRefs(ÓrgãosStore);
 
 const workflowAndamento = useWorkflowAndamentoStore();
 const { emFoco: workflow, chamadasPendentes } = storeToRefs(workflowAndamento);
 
-const etapaCorrente = computed(() => workflow.value?.fluxo?.[0] || {});
+const faseSelecionada = ref(0);
 const listaDeFases = ref(null);
+
+const etapaCorrente = computed(() => workflow.value?.fluxo?.[0] || {});
+
+const faseEmFoco = computed(() => (!faseSelecionada.value
+  ? null
+  : etapaCorrente.value?.fases?.find((x) => x.id === faseSelecionada.value) || null));
+
+const itemParaEdição = computed(() => ({
+  transferencia_id: props.transferenciaId || Number(route.params.transferenciaId) || 0,
+  fase_id: faseEmFoco.value?.id,
+  orgao_responsavel_id: faseEmFoco.value?.andamento?.orgao_responsavel?.id || 0,
+  pessoa_responsavel_id: faseEmFoco.value?.andamento?.pessoal_responsavel?.id || 0,
+  situacao_id: faseEmFoco.value?.andamento?.situacao?.id || 0,
+  tarefas: faseEmFoco.value?.tarefas?.map((x) => ({
+    id: x.id,
+    orgao_responsavel_id: x.andamento?.orgao_responsavel?.id,
+    concluida: x.andamento?.concluida || false,
+  }))
+  || [],
+}));
+
+const {
+  errors, handleSubmit, isSubmitting, resetForm, setFieldValue, values,
+} = useForm({
+  initialValues: itemParaEdição.value,
+  validationSchema: schema,
+});
+
+const pessoasDisponíveis = computed(() => (!Array.isArray(pessoasSimplificadas.value)
+  ? []
+  : pessoasSimplificadas.value
+    .filter((x) => (x.orgao_id === Number(values.orgao_responsavel_id)))));
+
+const onSubmit = handleSubmit.withControlled(async (valoresControlados) => {
+  const cargaManipulada = nulificadorTotal(valoresControlados);
+
+  console.debug('cargaManipulada', cargaManipulada);
+
+  if (1) return;
+
+  try {
+    await workflowAndamento.editarFase(cargaManipulada);
+    alertStore.success('Dados salvos!');
+    faseSelecionada.value = 0;
+  } catch (error) {
+    alertStore.error(error);
+  }
+});
+
+const formulárioSujo = useIsFormDirty();
 
 workflowAndamento.buscar().then(async () => {
   await nextTick();
   listaDeFases.value.scrollLeft = listaDeFases.value.scrollWidth;
 });
+
+watch(itemParaEdição, (novoValor) => {
+  resetForm({ values: novoValor });
+});
+
+watch(itemParaEdição, () => {
+  ÓrgãosStore.getAll();
+  UserStore.buscarPessoasSimplificadas();
+}, { once: true });
 </script>
 <template>
   <LoadingComponent
@@ -52,9 +142,13 @@ workflowAndamento.buscar().then(async () => {
           concluida: item?.andamento?.concluida
         }"
       >
-        <strong class="w400 dedo-duro__nome-da-fase">
+        <button
+          type="button"
+          class="w400 like-a__text dedo-duro__nome-da-fase"
+          @click="faseSelecionada = item.id"
+        >
           {{ item.fase.fase }}
-        </strong>
+        </button>
 
         <span class="dedo-duro__dados-da-fase">
           {{ item.andamento?.pessoa_responsavel }}
@@ -62,6 +156,206 @@ workflowAndamento.buscar().then(async () => {
       </li>
     </ul>
   </div>
+
+  <SmallModal
+    v-if="faseSelecionada"
+    class="small"
+  >
+    <div class="flex spacebetween center mb2">
+      <h2>
+        Editar fase
+      </h2>
+      <hr class="ml2 f1">
+
+      <CheckClose
+        :formulário-sujo="formulárioSujo"
+        :apenas-emitir="true"
+        @close="faseSelecionada = 0"
+      />
+    </div>
+
+    <form
+      :disabled="isSubmitting"
+      @submit.prevent="onSubmit"
+    >
+      <div class="mb1">
+        <LabelFromYup
+          name="situacao_id"
+          :schema="schema"
+        />
+        <Field
+          name="situacao_id"
+          as="select"
+          rows="5"
+          class="inputtext light mb1"
+          :class="{ 'error': errors.situacao_id }"
+        >
+          <option value="" />
+          <option
+            v-for="item in faseEmFoco?.situacoes"
+            :key="item.id"
+            :value="item.id"
+          >
+            {{ item.situacao }}
+          </option>
+        </Field>
+        <ErrorMessage
+          class="error-msg mb2"
+          name="situacao_id"
+        />
+      </div>
+      <div class="mb1">
+        <LabelFromYup
+          name="orgao_responsavel_id"
+          :schema="schema"
+        />
+        <Field
+          name="orgao_responsavel_id"
+          as="select"
+          class="inputtext light mb1"
+          :class="{
+            error: errors.orgao_responsavel_id,
+            loading: organs?.loading
+          }"
+          :disabled="!órgãosComoLista?.length"
+        >
+          <option :value="null">
+            Selecionar
+          </option>
+          <option
+            v-for="item in órgãosComoLista"
+            :key="item"
+            :value="item.id"
+            :title="item.descricao?.length > 36 ? item.descricao : null"
+          >
+            {{ item.sigla }} - {{ truncate(item.descricao, 36) }}
+          </option>
+        </Field>
+        <ErrorMessage
+          class="error-msg mb2"
+          name="orgao_responsavel_id"
+        />
+      </div>
+
+      <div class="mb1">
+        <LabelFromYup
+          name="pessoa_responsavel_id"
+          :schema="schema"
+        />
+        <Field
+          name="pessoa_responsavel_id"
+          as="select"
+          class="inputtext light mb1"
+          :class="{
+            error: errors.pessoa_responsavel_id,
+            loading: pessoasSimplificadas?.loading
+          }"
+          :disabled="!pessoasDisponíveis?.length"
+        >
+          <option :value="null">
+            Selecionar
+          </option>
+          <option
+            v-for="item in pessoasDisponíveis"
+            :key="item"
+            :value="item.id"
+          >
+            {{ item.nome_exibicao }}
+          </option>
+        </Field>
+        <ErrorMessage
+          class="error-msg mb2"
+          name="pessoa_responsavel_id"
+        />
+      </div>
+      <pre>values:{{ values }}</pre>
+      <fieldset v-if="faseEmFoco?.tarefas?.length">
+        <legend class="label mt2 mb1">
+          Tarefas
+        </legend>
+        <div
+          v-for="(tarefa, idx) in faseEmFoco.tarefas"
+          :key="`tarefas--${tarefa.id}`"
+          class="mb2"
+        >
+          <Field
+            :name="`tarefas[${idx}].id`"
+            :value="tarefa.id"
+            type="hidden"
+          />
+
+          <label class="block mb1 tc600">
+            <Field
+              :name="`tarefas[${idx}].concluida`"
+              type="checkbox"
+              :value="true"
+              :unchecked-value="false"
+              class="interruptor"
+            />
+            <span>
+              {{ tarefa.workflow_tarefa.descricao }}
+            </span>
+          </label>
+
+          <Field
+            v-if="values.tarefas[idx].orgao_responsavel_id > -1
+              && values.tarefas[idx].orgao_responsavel_id !== ''"
+            :name="`tarefas[${idx}].orgao_responsavel_id`"
+            as="select"
+            class="inputtext light mb1"
+            :class="{
+              error: errors[`tarefas[${idx}].orgao_responsavel_id`],
+              loading: organs?.loading
+            }"
+            :disabled="!órgãosComoLista?.length"
+          >
+            <option value="">
+              Selecionar
+            </option>
+            <option
+              v-for="item in órgãosComoLista"
+              :key="item"
+              :value="item.id"
+              :title="item.descricao?.length > 36 ? item.descricao : null"
+            >
+              {{ item.sigla }} - {{ truncate(item.descricao, 36) }}
+            </option>
+          </Field>
+
+          <button
+            v-else
+            type="button"
+            class="like-a__link block addlink ml3"
+            @click="setFieldValue(`tarefas[${idx}].orgao_responsavel_id`, 0)"
+          >
+            <svg
+              width="20"
+              height="20"
+            >
+              <use xlink:href="#i_+" />
+            </svg>
+            Associar órgão responsável
+          </button>
+        </div>
+      </fieldset>
+      <FormErrorsList
+        :errors="errors"
+        class="mb1"
+      />
+
+      <div class="flex spacebetween center mb2">
+        <hr class="mr2 f1">
+        <button
+          type="submit"
+          class="btn big"
+          :disabled="isSubmitting"
+        >
+          Salvar
+        </button>
+        <hr class="ml2 f1">
+      </div>
+    </form>
+  </SmallModal>
 </template>
 <style lang="less" scoped>
 @tamanho-da-bolinha: 1.8rem;
