@@ -94,18 +94,6 @@ export class WorkflowAndamentoFaseService {
                                 400
                             );
                     }
-
-                    // Caso seja modificado a pessoa responsável, é necessário verificar o tipo de responsabilidade da fase.
-                    if (dto.orgao_responsavel_id != undefined) {
-                        if (
-                            configFluxoFase.responsabilidade === WorkflowResponsabilidade.Propria &&
-                            dto.pessoa_responsavel_id != user.id
-                        )
-                            throw new HttpException(
-                                'pessoa_responsavel_id| Fase é de responsabilidade própria e portanto não deve ser atribuida à outra pessoa.',
-                                400
-                            );
-                    }
                 }
 
                 const updated = await prismaTxn.transferenciaAndamento.update({
@@ -384,7 +372,6 @@ export class WorkflowAndamentoFaseService {
                 const configFluxoFaseSeguinte = await prismaTxn.fluxoFase.findFirst({
                     where: {
                         removido_em: null,
-                        ordem: configFluxoFaseAtual.ordem + 1,
                         fluxo: {
                             fluxo_etapa_de_id: faseAtual.workflow_etapa_id,
                             removido_em: null,
@@ -436,10 +423,6 @@ export class WorkflowAndamentoFaseService {
                         workflow_etapa_id: faseAtual.workflow_etapa_id, // Aqui não tem problema reaproveitar o workflow_etapa_id, pois está na mesma etapa.
                         workflow_fase_id: configFluxoFaseSeguinte.fase_id,
                         workflow_situacao_id: situacao_id,
-                        pessoa_responsavel_id:
-                            configFluxoFaseSeguinte.responsabilidade == WorkflowResponsabilidade.Propria
-                                ? user.id
-                                : null,
                         data_inicio: new Date(Date.now()),
                         criado_por: user.id,
                         criado_em: new Date(Date.now()),
