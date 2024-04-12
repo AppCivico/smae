@@ -83,16 +83,9 @@ const pessoasDisponíveis = computed(() => (!Array.isArray(pessoasSimplificadas.
 const onSubmit = handleSubmit.withControlled(async (valoresControlados) => {
   const cargaManipulada = nulificadorTotal(valoresControlados);
 
-  console.debug('cargaManipulada', cargaManipulada);
-
-  if (1) return;
-
-  try {
-    await workflowAndamento.editarFase(cargaManipulada);
-    alertStore.success('Dados salvos!');
+  if (await workflowAndamento.editarFase(cargaManipulada)) {
+    alertStore.success('Fase editada!');
     faseSelecionada.value = 0;
-  } catch (error) {
-    alertStore.error(error);
   }
 });
 
