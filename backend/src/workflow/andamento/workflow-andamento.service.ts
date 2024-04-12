@@ -141,6 +141,7 @@ export class WorkflowAndamentoService {
                             where: {
                                 fluxo: {
                                     workflow_id: workflow_id,
+                                    removido_em: null,
                                 },
                             },
                             select: {
@@ -171,6 +172,11 @@ export class WorkflowAndamentoService {
             pode_concluir = false;
         }
 
+        if (!row.workflow_fase.fluxos.length)
+            throw new HttpException('Falha ao buscar configuração de fase para o Workflow', 400);
+
+        const responsabilidadeFase: WorkflowResponsabilidade = row.workflow_fase.fluxos[0].responsabilidade;
+
         return {
             data_inicio: row.data_inicio,
             data_termino: row.data_termino,
@@ -182,7 +188,10 @@ export class WorkflowAndamentoService {
                 row.workflow_fase.fluxos[0].responsabilidade == WorkflowResponsabilidade.OutroOrgao
                     ? true
                     : false, */
-            necessita_preencher_orgao: true,
+            necessita_preencher_orgao:
+                row.orgao_responsavel == null && responsabilidadeFase == WorkflowResponsabilidade.OutroOrgao
+                    ? true
+                    : false,
 
             /* necessita_preencher_pessoa:
                 !row.pessoa_responsavel &&
