@@ -27,7 +27,9 @@ const workflowAndamento = useWorkflowAndamentoStore();
 
 const { emFoco: transferênciaEmFoco } = storeToRefs(TransferenciasVoluntarias);
 const { lista: listaDeDistribuição } = storeToRefs(distribuicaoRecursos);
-const { emFoco: workflow } = storeToRefs(workflowAndamento);
+const {
+  workflow,
+} = storeToRefs(workflowAndamento);
 
 TransferenciasVoluntarias.buscarItem(props.transferenciaId);
 distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
