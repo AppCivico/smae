@@ -38,7 +38,7 @@ const ÓrgãosStore = useOrgansStore();
 const { organs, órgãosComoLista } = storeToRefs(ÓrgãosStore);
 
 const workflowAndamento = useWorkflowAndamentoStore();
-const { emFoco: workflow, chamadasPendentes } = storeToRefs(workflowAndamento);
+const { workflow, chamadasPendentes } = storeToRefs(workflowAndamento);
 
 const faseSelecionada = ref(0);
 const listaDeFases = ref(null);
@@ -126,7 +126,7 @@ watch(itemParaEdição, () => {
 </script>
 <template>
   <LoadingComponent
-    v-if="chamadasPendentes.emFoco"
+    v-if="chamadasPendentes.workflow"
     class="horizontal"
     v-bind="$attrs"
   />

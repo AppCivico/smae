@@ -5,13 +5,13 @@ import { defineStore } from 'pinia';
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
 interface ChamadasPendentes {
-  emFoco: boolean;
+  workflow: boolean;
   fase: boolean;
   tarefas: boolean;
 }
 
 interface Estado {
-  emFoco: WorkflowAndamentoDto | null;
+  workflow: WorkflowAndamentoDto | null;
   chamadasPendentes: ChamadasPendentes;
 
   erro: null | unknown;
@@ -19,10 +19,10 @@ interface Estado {
 
 export const useWorkflowAndamentoStore = defineStore('workflowAndamento', {
   state: (): Estado => ({
-    emFoco: null,
+    workflow: null,
 
     chamadasPendentes: {
-      emFoco: false,
+      workflow: false,
       fase: false,
       tarefas: false,
     },
@@ -30,18 +30,18 @@ export const useWorkflowAndamentoStore = defineStore('workflowAndamento', {
   }),
   actions: {
     async buscar(params = {}): Promise<void> {
-      this.chamadasPendentes.emFoco = true;
+      this.chamadasPendentes.workflow = true;
       await new Promise((resolve) => { setTimeout(resolve, 5000); });
       try {
         const resposta = await this.requestS.get(`${baseUrl}/workflow-andamento/`, {
           transferencia_id: Number(this.route.params.transferenciaId) || undefined,
           ...params,
         });
-        this.emFoco = resposta;
+        this.workflow = resposta;
       } catch (erro: unknown) {
         this.erro = erro;
       }
-      this.chamadasPendentes.emFoco = false;
+      this.chamadasPendentes.workflow = false;
     },
 
     async editarFase(params = {}): Promise<boolean> {
