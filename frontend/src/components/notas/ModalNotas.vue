@@ -21,9 +21,12 @@ const props = defineProps({
 });
 
 watch(() => props.blocosToken, () => {
-  blocoStore.buscarTudo(props.blocosToken);
-  tipoStore.buscarTudo();
+  if(props.blocosToken){
+    blocoStore.buscarTudo(props.blocosToken);
+  }
 },{ immediate: true });
+
+tipoStore.buscarTudo();
 
 </script>
 
