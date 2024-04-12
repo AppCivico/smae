@@ -829,7 +829,6 @@ export class TransferenciaService {
                             workflow_etapa_id: fluxo.workflow_etapa_de!.id, // Sempre será o "dê" do "dê-para".
                             workflow_fase_id: fase.fase!.id,
                             workflow_situacao_id: primeiraSituacao.id,
-                            orgao_responsavel_id: dto.workflow_orgao_responsavel_id,
                             data_inicio: new Date(Date.now()),
                             criado_por: user.id,
                             criado_em: new Date(Date.now()),
@@ -839,7 +838,6 @@ export class TransferenciaService {
                                     data: fase.tarefas.map((t) => {
                                         return {
                                             workflow_tarefa_fluxo_id: t.workflow_tarefa!.id,
-                                            orgao_responsavel_id: dto.workflow_orgao_responsavel_id,
                                             criado_por: user.id,
                                             criado_em: new Date(Date.now()),
                                         };

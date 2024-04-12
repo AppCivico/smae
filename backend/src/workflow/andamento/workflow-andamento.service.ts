@@ -425,8 +425,6 @@ export class WorkflowAndamentoService {
                         workflow_etapa_id: configProxEtapa.fluxo_etapa_de_id,
                         workflow_fase_id: primeiraFase.id,
                         workflow_situacao_id: situacaoFaseInicial.situacao.id,
-                        pessoa_responsavel_id:
-                            primeiraFase.responsabilidade == WorkflowResponsabilidade.Propria ? user.id : null,
                         data_inicio: new Date(Date.now()),
                         criado_por: user.id,
                         criado_em: new Date(Date.now()),
