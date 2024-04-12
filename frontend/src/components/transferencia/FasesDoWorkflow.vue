@@ -93,7 +93,7 @@ const formulárioSujo = useIsFormDirty();
 
 workflowAndamento.buscar().then(async () => {
   await nextTick();
-  listaDeFases.value.scrollLeft = listaDeFases.value.scrollWidth;
+  listaDeFases.value.scrollLeft = listaDeFases.value?.scrollWidth || 0;
 });
 
 watch(itemParaEdição, (novoValor) => {
