@@ -172,10 +172,10 @@ export class WorkflowAndamentoService {
             pode_concluir = false;
         }
 
-        // if (!row.workflow_fase.fluxos.length)
-        //     throw new HttpException('Falha ao buscar configuração de fase para o Workflow', 400);
+        if (!row.workflow_fase.fluxos.length)
+            throw new HttpException('Falha ao buscar configuração de fase para o Workflow', 400);
 
-        // const responsabilidadeFase: WorkflowResponsabilidade = row.workflow_fase.fluxos[0].responsabilidade;
+        const responsabilidadeFase: WorkflowResponsabilidade = row.workflow_fase.fluxos[0].responsabilidade;
 
         return {
             data_inicio: row.data_inicio,
@@ -183,18 +183,15 @@ export class WorkflowAndamentoService {
             concluida: row.data_termino ? true : false,
             pode_concluir: pode_concluir,
 
-            // necessita_preencher_orgao:
-            //     row.orgao_responsavel == null && responsabilidadeFase == WorkflowResponsabilidade.OutroOrgao
-            //         ? true
-            //         : false,
-            necessita_preencher_orgao: true,
-
-            /* necessita_preencher_pessoa:
-                !row.pessoa_responsavel &&
-                row.workflow_fase.fluxos[0].responsabilidade == WorkflowResponsabilidade.OutroOrgao
+            necessita_preencher_orgao:
+                row.orgao_responsavel == null && responsabilidadeFase == WorkflowResponsabilidade.OutroOrgao
                     ? true
-                    : false, */
-            necessita_preencher_pessoa: true,
+                    : false,
+
+            necessita_preencher_pessoa:
+                row.pessoa_responsavel == null && responsabilidadeFase == WorkflowResponsabilidade.OutroOrgao
+                    ? true
+                    : false,
 
             situacao: {
                 id: row.workflow_situacao.id,
@@ -266,12 +263,11 @@ export class WorkflowAndamentoService {
 
         return {
             concluida: row.feito,
-            necessita_preencher_orgao: true,
-            /* necessita_preencher_orgao:
+            necessita_preencher_orgao:
                 !row.orgao_responsavel &&
                 row.workflow_tarefa.fluxoTarefas[0].responsabilidade == WorkflowResponsabilidade.OutroOrgao
                     ? true
-                    : false, */
+                    : false,
             orgao_responsavel: row.orgao_responsavel
                 ? {
                       id: row.orgao_responsavel.id,
