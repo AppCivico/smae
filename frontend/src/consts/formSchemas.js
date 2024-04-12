@@ -129,6 +129,64 @@ export const acompanhamento = object()
       ),
   });
 
+export const andamentoDaFase = (órgãoRequerido = false, pessoaRequerida = false) => object({
+  fase_id: number()
+    .label('Fase')
+    .min(1, '${label} inválido')
+    .required(),
+  orgao_responsavel_id: (() => {
+    const validação = number()
+      .label('Órgão responsável')
+      .min(1, '${label} inválido')
+      .transform((v) => (!v ? null : v))
+      .when('pessoa_responsavel_id', (pessoaResponsavelId, field) => (pessoaResponsavelId
+        ? field.required()
+        : field.nullable()));
+
+    return órgãoRequerido
+      ? validação.required()
+      : validação.nullable();
+  })(),
+  pessoa_responsavel_id: (() => {
+    const validação = number()
+      .label('Pessoa responsável')
+      .min(1, '${label} inválido')
+      .nullable()
+      .transform((v) => (!v ? null : v));
+
+    return pessoaRequerida
+      ? validação.required()
+      : validação.nullable();
+  })(),
+  situacao_id: number()
+    .label('Situação')
+    .min(1, '${label} inválida')
+    .nullable()
+    .transform((v) => (!v ? null : v)),
+  tarefas: array()
+    .label('Tarefas')
+    .of(
+      object({
+        id: number()
+          .label('Tarefa')
+          .min(1, '${label} inválido')
+          .required(),
+        orgao_responsavel_id: number()
+          .label('Órgão responsável pela tarefa')
+          .min(1, '${label} inválido')
+          .nullable(),
+        concluida: boolean()
+          .label('Concluída?')
+          .required(),
+      }),
+    )
+    .nullable(),
+  transferencia_id: number()
+    .label('Transferência')
+    .min(1, '${label} inválido')
+    .required(),
+});
+
 export const arquivo = (semEnvio) => object()
   .shape({
     arquivo: string()
