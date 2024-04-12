@@ -157,12 +157,12 @@ watch(itemParaEdição, () => {
         :key="item.id"
         class="p1 tc dedo-duro__fase"
         :class="{
-          'dedo-duro__fase--iniciada': !!item?.andamento?.iniciada,
+          'dedo-duro__fase--iniciada': item?.andamento?.concluida === false,
           'dedo-duro__fase--concluída': !!item?.andamento?.concluida,
         }"
       >
         <button
-          v-if="item?.andamento?.iniciada"
+          v-if="item?.andamento?.concluida === false"
           type="button"
           class="w400 like-a__text dedo-duro__nome-da-fase"
           @click="faseSelecionada = item.id"
