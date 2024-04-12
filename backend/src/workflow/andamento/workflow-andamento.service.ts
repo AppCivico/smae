@@ -7,6 +7,7 @@ import { AndamentoFaseDto, AndamentoTarefaDto, WorkflowAndamentoDto } from './en
 import { Prisma, WorkflowResponsabilidade, WorkflowSituacaoTipo } from '@prisma/client';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
 import { WorkflowIniciarProxEtapaDto } from './dto/iniciar-prox-etapa.dto';
+import { DateTime } from 'luxon';
 
 @Injectable()
 export class WorkflowAndamentoService {
@@ -177,9 +178,14 @@ export class WorkflowAndamentoService {
 
         const responsabilidadeFase: WorkflowResponsabilidade = row.workflow_fase.fluxos[0].responsabilidade;
 
+        const now = DateTime.now().startOf('day');
+
         return {
             data_inicio: row.data_inicio,
             data_termino: row.data_termino,
+            dias_na_fase: row.data_termino
+                ? DateTime.fromJSDate(row.data_termino).diff(DateTime.fromJSDate(row.data_inicio)).days
+                : Math.trunc(now.diff(DateTime.fromJSDate(row.data_inicio, { zone: 'utc' })).as('days')),
             concluida: row.data_termino ? true : false,
             pode_concluir: pode_concluir,
 

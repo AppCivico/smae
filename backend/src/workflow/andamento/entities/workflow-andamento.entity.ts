@@ -41,6 +41,7 @@ export class AndamentoFaseDto {
     concluida: boolean;
     necessita_preencher_orgao: boolean;
     necessita_preencher_pessoa: boolean;
+    dias_na_fase: number;
 }
 
 export class AndamentoTarefaDto {
