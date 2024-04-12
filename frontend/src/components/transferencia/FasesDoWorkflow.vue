@@ -91,9 +91,25 @@ const onSubmit = handleSubmit.withControlled(async (valoresControlados) => {
 
 const formulárioSujo = useIsFormDirty();
 
-workflowAndamento.buscar().then(async () => {
-  await nextTick();
-  listaDeFases.value.scrollLeft = listaDeFases.value?.scrollWidth || 0;
+async function rolarParaFaseCorrente() {
+  if (Array.isArray(etapaCorrente.value?.fases)) {
+    const índiceDaFaseCorrente = etapaCorrente.value.fases
+      .findIndex((x) => x.andamento?.concluida === false);
+
+    await nextTick();
+
+    if (listaDeFases.value) {
+      const { children: filhas } = listaDeFases.value;
+
+      if (filhas[índiceDaFaseCorrente]) {
+        listaDeFases.value.scrollLeft = filhas[índiceDaFaseCorrente].offsetLeft;
+      }
+    }
+  }
+}
+
+workflowAndamento.buscar().then(() => {
+  rolarParaFaseCorrente();
 });
 
 watch(itemParaEdição, (novoValor) => {
@@ -141,30 +157,51 @@ watch(itemParaEdição, () => {
         :key="item.id"
         class="p1 tc dedo-duro__fase"
         :class="{
-          'dedo-duro__fase--iniciada': !!item?.andamento
+          'dedo-duro__fase--iniciada': !!item?.andamento?.iniciada,
+          'dedo-duro__fase--concluída': !!item?.andamento?.concluida,
         }"
       >
         <button
+          v-if="item?.andamento?.iniciada"
           type="button"
           class="w400 like-a__text dedo-duro__nome-da-fase"
-          :disabled="item?.andamento?.concluida"
           @click="faseSelecionada = item.id"
         >
           {{ item.fase.fase }}
         </button>
+        <strong
+          v-else
+          class="w400 like-a__text dedo-duro__nome-da-fase"
+        >
+          {{ item.fase.fase }}
+        </strong>
 
-        <span class="card-shadow tc500 p1 mt1 block dedo-duro__dados-da-fase">
-          <span v-if="item.andamento?.pessoa_responsavel">
+        <span
+          v-if="item.andamento?.dias_na_fase
+            && item.andamento?.pessoa_responsavel
+            && item.andamento?.orgao_responsavel"
+          class="card-shadow tc500 p1 mt1 block dedo-duro__dados-da-fase"
+        >
+          <span
+            v-if="item.andamento?.dias_na_fase"
+            class="w600 dedo-duro__dias-da-fase"
+          >
+            +{{ item.andamento?.dias_na_fase }} dias
+          </span>
+
+          <span
+            v-if="item.andamento?.pessoa_responsavel"
+            class="dedo-duro__responsável-pela-fase"
+          >
             {{ item.andamento?.pessoa_responsavel }}
           </span>
           <abbr
             v-if="item.andamento?.orgao_responsavel"
             :title="item.andamento?.orgao_responsavel?.descricao"
+            class="dedo-duro__responsável-pela-fase"
           >
             {{ item.andamento?.orgao_responsavel?.sigla || item.andamento?.orgao_responsavel }}
           </abbr>
-
-          {{ item.andamento?.dias_na_fase || '-' }}
         </span>
       </li>
     </ul>
@@ -400,6 +437,7 @@ watch(itemParaEdição, () => {
 .dedo-duro__lista-de-fases {
   overflow-x: auto;
   overflow-y: clip;
+  scroll-behavior: smooth;
 }
 
 .dedo-duro__fase {
@@ -430,7 +468,7 @@ watch(itemParaEdição, () => {
   }
 }
 
-.dedo-duro__fase--iniciada {
+.dedo-duro__fase--concluída {
   &::after {
     color: @amarelo;
   }
@@ -458,12 +496,15 @@ watch(itemParaEdição, () => {
     display: block;
     background-color: currentColor;
     color: @c300;
-    background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABEAAAARCAYAAAA7bUf6AAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAD9SURBVHgBrZK9DcIwEIXfXaChYoSwAaNAT+FMQDokGqAAiY4FUMIGbAAbkA2ADaigAnM4/AVsR0I8yfLPne8+PRv4g8gXVL0kBFMXJz1KZ9HBlce+IhJVIB2jxl38QmIoAqxkGco44IiGi4a9FHmBm+o+GvJQbO/bpYyWj8ZOEtDAzBrrdBK1pVXmo2ErBbQqntK9+yVWcVIvLfKksMtKw+UUnxIak+co8kVBaKp+oqB1WKAJMCimvVO8XqRcZ3mpabQrkti9WAZUDaVX+hV5o+EnhdULzubjzh52qYc3OUmFHL/xMhRPNk6zOb9XMRutF7gZ5lZmPSVz7z+6AjAITco9Fq1nAAAAAElFTkSuQmCC);
     background-position: 50% 50%;
     background-repeat: no-repeat;
   }
 
   .dedo-duro__fase--iniciada &::before {
+    background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABEAAAARCAYAAAA7bUf6AAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAD9SURBVHgBrZK9DcIwEIXfXaChYoSwAaNAT+FMQDokGqAAiY4FUMIGbAAbkA2ADaigAnM4/AVsR0I8yfLPne8+PRv4g8gXVL0kBFMXJz1KZ9HBlce+IhJVIB2jxl38QmIoAqxkGco44IiGi4a9FHmBm+o+GvJQbO/bpYyWj8ZOEtDAzBrrdBK1pVXmo2ErBbQqntK9+yVWcVIvLfKksMtKw+UUnxIak+co8kVBaKp+oqB1WKAJMCimvVO8XqRcZ3mpabQrkti9WAZUDaVX+hV5o+EnhdULzubjzh52qYc3OUmFHL/xMhRPNk6zOb9XMRutF7gZ5lZmPSVz7z+6AjAITco9Fq1nAAAAAElFTkSuQmCC);
+  }
+
+  .dedo-duro__fase--concluída &::before {
     color: @amarelo;
     background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABEAAAARCAYAAAA7bUf6AAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAC9SURBVHgB7ZAxDoIwFIb7UHZ3WIxx1oXQwoJLS1z0BngDjiCeQI/gDdx1YmN118QELkFiqCWxxoApYhz5pte+/l/bh1DHXyCEhZ7nDeRaQy0hxN8DoF2e6xO512+Rfwp4UBQ8SpJTXDtgWfMpIXSpEjgO4xjTdbX3+o6u3xcAcMDYD9QvOG6q/Z4s0vQam+ZoqGkoMozxLcsu528EJVC/lYoQiBCsxABnTYKPkndRWTcJlLgu29o2C1HHTzwAp05KMEpINHYAAAAASUVORK5CYII=);
   }
@@ -473,5 +514,10 @@ watch(itemParaEdição, () => {
   width: max-content;
   margin-left: auto;
   margin-right: auto;
+}
+
+.dedo-duro__dias-da-fase {}
+
+.dedo-duro__responsável-pela-fase {
 }
 </style>
