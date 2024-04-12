@@ -16,7 +16,7 @@ const listaDeStatuses = arrayToValueAndLabel(statuses);
 
 const ÓrgãosStore = useOrgansStore();
 const portfolioStore = usePortfolioStore();
-const { órgãosComoLista } = storeToRefs(ÓrgãosStore);
+const { organs, órgãosComoLista } = storeToRefs(ÓrgãosStore);
 
 const alertStore = useAlertStore();
 const relatoriosStore = useRelatoriosStore();
@@ -122,7 +122,7 @@ iniciar();
           class="inputtext light mb1"
           :class="{
             error: errors['parametros.orgao_responsavel_id'],
-            loading: portfolioStore.chamadasPendentes.lista
+            loading: organs?.loading
           }"
           :disabled="!órgãosComoLista?.length"
         >
