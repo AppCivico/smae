@@ -323,7 +323,9 @@ watch(itemParaEdição, () => {
           name="pessoa_responsavel_id"
         />
       </div>
-      <pre>values:{{ values }}</pre>
+
+      <pre v-scrollLockDebug>values:{{ values }}</pre>
+
       <fieldset v-if="faseEmFoco?.tarefas?.length">
         <LabelFromYup
           class="label mt2 mb1"
