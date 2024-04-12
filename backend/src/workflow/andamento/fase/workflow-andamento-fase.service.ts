@@ -302,7 +302,7 @@ export class WorkflowAndamentoFaseService {
                 if (
                     !situacaoPodeFecharSemTarefa.has(self.workflow_situacao.tipo_situacao) &&
                     self.tarefas.find((t) => {
-                        t.feito == false;
+                        return t.feito == false;
                     })
                 ) {
                     throw new Error('Há tarefas que não foram finalizadas.');
@@ -412,25 +412,26 @@ export class WorkflowAndamentoFaseService {
                     const workflow = await this.workflowService.findOne(self.transferencia.workflow_id, user);
 
                     // Buscando pela próxima etapa.
-                    const configEtapaAtual = workflow.fluxo.find(
-                        (f) => f.workflow_etapa_de?.id == self.workflow_etapa_id
-                    );
+                    const configEtapaAtual = workflow.fluxo.find((f) => {
+                        return f.workflow_etapa_de?.id == self.workflow_etapa_id;
+                    });
                     if (!configEtapaAtual) throw new Error('Erro interno ao buscar configuração de etapa atual');
 
-                    const proxEtapa = workflow.fluxo.find(
-                        (f) => f.workflow_etapa_de?.id == configEtapaAtual.workflow_etapa_para?.id
-                    );
+                    const proxEtapa = workflow.fluxo.find((f) => {
+                        return f.workflow_etapa_de?.id == configEtapaAtual.workflow_etapa_para?.id;
+                    });
                     if (proxEtapa) {
                         // Pegando sempre a primeira fase.
                         // No endpoint FindOne, já vem ordenado.
                         const primeiraFase = proxEtapa.fases[0];
                         if (!primeiraFase) throw new Error('Erro ao encontrar primeira fase de próxima Etapa');
 
-                        const situacaoFaseInicial = primeiraFase.situacao?.find(
-                            (s) =>
+                        const situacaoFaseInicial = primeiraFase.situacao?.find((s) => {
+                            return (
                                 s.tipo_situacao == WorkflowSituacaoTipo.NaoIniciado ||
                                 s.tipo_situacao == WorkflowSituacaoTipo.EmAndamento
-                        );
+                            );
+                        });
                         if (!situacaoFaseInicial)
                             throw new Error('Fase não possui configuração de status Inicial para fase seguinte');
 
