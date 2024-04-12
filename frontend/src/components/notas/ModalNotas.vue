@@ -1,7 +1,7 @@
 <script setup>
 import SmallModal from "@/components/SmallModal.vue";
 import { storeToRefs } from "pinia";
-import { ref } from "vue";
+import { ref, watch } from "vue";
 
 import { useBlocoDeNotasStore } from "@/stores/blocoNotas.store";
 const blocoStore = useBlocoDeNotasStore();
@@ -16,18 +16,15 @@ const exibeModalNotas = ref(false);
 const props = defineProps({
   blocosToken: {
     type: String,
-    default:''
+    required: true,
   },
 });
 
- function iniciar() {
-  if (props.blocosToken) {
-    blocoStore.buscarTudo(props.blocosToken);
-    tipoStore.buscarTudo();
-  }
-}
+watch(() => props.blocosToken, () => {
+  blocoStore.buscarTudo(props.blocosToken);
+  tipoStore.buscarTudo();
+},{ immediate: true });
 
-iniciar();
 </script>
 
 <template>
