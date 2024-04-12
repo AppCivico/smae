@@ -13,23 +13,23 @@ export class UpdateWorkflowAndamentoFaseDto {
     @IsOptional()
     @IsInt()
     @Type(() => Number)
-    situacao_id: number;
+    situacao_id?: number;
 
     @IsOptional()
     @IsInt()
     @Type(() => Number)
-    orgao_responsavel_id: number;
+    orgao_responsavel_id?: number;
 
     @IsOptional()
     @IsInt()
     @Type(() => Number)
-    pessoa_responsavel_id: number;
+    pessoa_responsavel_id?: number;
 
-    //@IsOptional()
+    @IsOptional()
     @IsArray({ message: '$property| tarefa(s): precisa ser uma array.' })
     @Type(() => WorkflowTarefaUpdateParamDto)
     @ValidateNested({ each: true })
-    tarefas: WorkflowTarefaUpdateParamDto[];
+    tarefas?: WorkflowTarefaUpdateParamDto[];
 }
 
 export class WorkflowTarefaUpdateParamDto {

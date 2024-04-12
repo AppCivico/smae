@@ -7,7 +7,6 @@ import { WorkflowAndamentoDto } from './entities/workflow-andamento.entity';
 import { FilterWorkflowAndamentoDto } from './dto/filter-andamento.dto';
 import { WorkflowAndamentoService } from './workflow-andamento.service';
 import { WorkflowIniciarProxEtapaDto } from './dto/iniciar-prox-etapa.dto';
-import { RecordWithId } from 'src/common/dto/record-with-id.dto';
 
 @ApiTags('Workflow - Andamento')
 @Controller('workflow-andamento')
