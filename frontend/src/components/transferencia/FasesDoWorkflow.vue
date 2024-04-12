@@ -120,8 +120,11 @@ watch(itemParaEdição, () => {
     class="dedo-duro"
   >
     <h2 class="dedo-duro__título w400">
-      Etapa de
-      <strong class="w600">{{ etapaCorrente.fluxo_etapa_de.etapa_fluxo }}</strong>
+      Etapa
+      <template v-if="etapaCorrente?.fluxo_etapa_de?.etapa_fluxo">
+        de
+        <strong class="w600">{{ etapaCorrente.fluxo_etapa_de.etapa_fluxo }}</strong>
+      </template>
     </h2>
 
     <p class="tc400 t14 dedo-duro__info">
