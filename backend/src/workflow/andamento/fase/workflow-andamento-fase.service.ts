@@ -171,7 +171,7 @@ export class WorkflowAndamentoFaseService {
                         workflow_tarefa_id: tarefa.id,
 
                         fluxo_fase: {
-                            id: dto.fase_id,
+                            fase_id: dto.fase_id,
                             fluxo: {
                                 workflow_id: transferenciaAndamento.transferencia.workflow_id,
                             },
