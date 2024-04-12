@@ -65,7 +65,7 @@ export class WorkflowAndamentoService {
                                         ...fase,
                                         andamento: await this.getAndamentoFaseRet(
                                             transferencia.id,
-                                            fase.id!,
+                                            fase.fase!.id,
                                             transferencia.workflow_id!
                                         ),
 
