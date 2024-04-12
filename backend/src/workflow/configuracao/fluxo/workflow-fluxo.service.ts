@@ -19,6 +19,8 @@ export class WorkflowFluxoService {
     async create(dto: CreateWorkflowFluxoDto, user: PessoaFromJwt): Promise<RecordWithId> {
         const created = await this.prisma.$transaction(
             async (prismaTxn: Prisma.TransactionClient): Promise<RecordWithId> => {
+                await this.workflowService.verificaEdicao(dto.workflow_id, prismaTxn);
+
                 const saidaJaExiste = await prismaTxn.fluxo.count({
                     where: {
                         workflow_id: dto.workflow_id,
