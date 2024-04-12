@@ -817,7 +817,7 @@ export class TransferenciaService {
                         removido_em: null,
                         transferencia_id: transferencia_id,
                         workflow_etapa_id: fluxo.workflow_etapa_de!.id,
-                        workflow_fase_id: fase.id,
+                        workflow_fase_id: fase.fase!.id,
                         workflow_situacao_id: primeiraSituacao.id,
                     },
                 });
@@ -827,7 +827,7 @@ export class TransferenciaService {
                         data: {
                             transferencia_id: transferencia_id,
                             workflow_etapa_id: fluxo.workflow_etapa_de!.id, // Sempre será o "dê" do "dê-para".
-                            workflow_fase_id: fase.id!,
+                            workflow_fase_id: fase.fase!.id,
                             workflow_situacao_id: primeiraSituacao.id,
                             orgao_responsavel_id: dto.workflow_orgao_responsavel_id,
                             data_inicio: new Date(Date.now()),
