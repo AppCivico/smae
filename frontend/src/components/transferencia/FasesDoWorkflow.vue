@@ -1,5 +1,6 @@
 <script setup>
 import SmallModal from '@/components/SmallModal.vue';
+import { andamentoDaFase } from '@/consts/formSchemas';
 import nulificadorTotal from '@/helpers/nulificadorTotal.ts';
 import truncate from '@/helpers/truncate';
 import { useAlertStore } from '@/stores/alert.store';
@@ -7,7 +8,6 @@ import { useOrgansStore } from '@/stores/organs.store';
 import { useUsersStore } from '@/stores/users.store';
 import { useWorkflowAndamentoStore } from '@/stores/workflow.andamento.store.ts';
 import { storeToRefs } from 'pinia';
-
 import {
   ErrorMessage,
   Field,
@@ -22,7 +22,6 @@ import { useRoute } from 'vue-router';
 defineOptions({ inheritAttrs: false });
 
 const route = useRoute();
-const schema = {};
 const props = defineProps({
   transferenciaId: {
     type: [Number, String],
@@ -50,12 +49,17 @@ const faseEmFoco = computed(() => (!faseSelecionada.value
   ? null
   : etapaCorrente.value?.fases?.find((x) => x.id === faseSelecionada.value) || null));
 
+const schema = computed(() => andamentoDaFase(
+  !!faseEmFoco.value?.andamento?.necessita_preencher_orgao,
+  !!faseEmFoco.value?.andamento?.necessita_preencher_pessoa,
+));
+
 const itemParaEdição = computed(() => ({
   transferencia_id: props.transferenciaId || Number(route.params.transferenciaId) || 0,
-  fase_id: faseEmFoco.value?.id,
-  orgao_responsavel_id: faseEmFoco.value?.andamento?.orgao_responsavel?.id || 0,
-  pessoa_responsavel_id: faseEmFoco.value?.andamento?.pessoal_responsavel?.id || 0,
-  situacao_id: faseEmFoco.value?.andamento?.situacao?.id || 0,
+  fase_id: faseEmFoco.value?.fase?.id,
+  orgao_responsavel_id: faseEmFoco.value?.andamento?.orgao_responsavel?.id || null,
+  pessoa_responsavel_id: faseEmFoco.value?.andamento?.pessoal_responsavel?.id || null,
+  situacao_id: faseEmFoco.value?.andamento?.situacao?.id || null,
   tarefas: faseEmFoco.value?.tarefas?.map((x) => ({
     id: x.id,
     orgao_responsavel_id: x.andamento?.orgao_responsavel?.id,
@@ -68,7 +72,7 @@ const {
   errors, handleSubmit, isSubmitting, resetForm, setFieldValue, values,
 } = useForm({
   initialValues: itemParaEdição.value,
-  validationSchema: schema,
+  validationSchema: schema.value,
 });
 
 const pessoasDisponíveis = computed(() => (!Array.isArray(pessoasSimplificadas.value)
@@ -100,7 +104,10 @@ workflowAndamento.buscar().then(async () => {
 });
 
 watch(itemParaEdição, (novoValor) => {
-  resetForm({ values: novoValor });
+  resetForm({
+    values: novoValor,
+    validationSchema: schema.value,
+  });
 });
 
 watch(itemParaEdição, () => {
@@ -178,6 +185,15 @@ watch(itemParaEdição, () => {
       :disabled="isSubmitting"
       @submit.prevent="onSubmit"
     >
+      <Field
+        name="transferencia_id"
+        type="hidden"
+      />
+      <Field
+        name="fase_id"
+        type="hidden"
+      />
+
       <div class="mb1">
         <LabelFromYup
           name="situacao_id"
@@ -219,9 +235,7 @@ watch(itemParaEdição, () => {
           }"
           :disabled="!órgãosComoLista?.length"
         >
-          <option :value="null">
-            Selecionar
-          </option>
+          <option value="" />
           <option
             v-for="item in órgãosComoLista"
             :key="item"
@@ -252,9 +266,7 @@ watch(itemParaEdição, () => {
           }"
           :disabled="!pessoasDisponíveis?.length"
         >
-          <option :value="null">
-            Selecionar
-          </option>
+          <option value="" />
           <option
             v-for="item in pessoasDisponíveis"
             :key="item"
@@ -270,17 +282,21 @@ watch(itemParaEdição, () => {
       </div>
       <pre>values:{{ values }}</pre>
       <fieldset v-if="faseEmFoco?.tarefas?.length">
-        <legend class="label mt2 mb1">
-          Tarefas
-        </legend>
+        <LabelFromYup
+          class="label mt2 mb1"
+          name="tarefas"
+          :schema="schema"
+          as="legend"
+        />
+
         <div
           v-for="(tarefa, idx) in faseEmFoco.tarefas"
-          :key="`tarefas--${tarefa.id}`"
+          :key="`tarefas--${tarefa.workflow_tarefa.id}`"
           class="mb2"
         >
           <Field
             :name="`tarefas[${idx}].id`"
-            :value="tarefa.id"
+            :value="tarefa.workflow_tarefa.id"
             type="hidden"
           />
 
@@ -290,11 +306,15 @@ watch(itemParaEdição, () => {
               type="checkbox"
               :value="true"
               :unchecked-value="false"
-              class="interruptor"
             />
             <span>
-              {{ tarefa.workflow_tarefa.descricao }}
+              concluir
+              <strong class="w600">{{ tarefa.workflow_tarefa.descricao }}</strong>
             </span>
+            <ErrorMessage
+              class="error-msg mb2"
+              :name="`tarefas[${idx}].concluida`"
+            />
           </label>
 
           <Field
@@ -325,7 +345,7 @@ watch(itemParaEdição, () => {
           <button
             v-else
             type="button"
-            class="like-a__link block addlink ml3"
+            class="like-a__link block addlink ml2"
             @click="setFieldValue(`tarefas[${idx}].orgao_responsavel_id`, 0)"
           >
             <svg
