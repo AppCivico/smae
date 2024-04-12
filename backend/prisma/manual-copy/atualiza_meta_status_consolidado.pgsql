@@ -285,26 +285,37 @@ BEGIN
           -- se já passou 1 ano, considera que só 1 registro como concluido já ta ok
           WHEN ano_referencia < EXTRACT(YEAR FROM CURRENT_TIMESTAMP AT TIME ZONE 'America/Sao_Paulo') THEN 1
           -- se o ano for igual, o ano interior precisa de um registro nos últimos 3 meses (dezembro, por exemplo fica ok até março)
+          -- todos os órgãos responsáveis da meta precisam estar concluídos
+
+          -- aqui como provavelmente não vamos ter mais ciclos de orçamento
+          -- então só vai ter como editar o concluido no periodo "now" para o ano corrente, provavelmente para tirar
+          -- o hardcoded dos 3 meses tem q ler da tabela do execucao_disponivel_meses e pensar em alguma logica para quando for
+          -- janeiro (ou talvez menor que o primeiro mes que está na array) vale o ano que passou como concluido
+          -- depois vale qualquer registro do ano corrente
           WHEN ano_referencia = EXTRACT(YEAR FROM CURRENT_TIMESTAMP AT TIME ZONE 'America/Sao_Paulo') THEN
             CASE
-              WHEN EXISTS (
+              WHEN (
+                SELECT count(1)
+                FROM pdm_orcamento_realizado_config porc
+                JOIN meta_orgao mo ON mo.meta_id = porc.meta_id AND mo.responsavel = true AND porc.orgao_id = porc.orgao_id
+                WHERE porc.ano_referencia = EXTRACT(YEAR FROM CURRENT_TIMESTAMP AT TIME ZONE 'America/Sao_Paulo') - 1
+                  AND porc.atualizado_em >= (CURRENT_DATE - INTERVAL '3 months')::date
+                  AND porc.ultima_revisao = true
+                  AND porc.execucao_concluida = true
+                  AND porc.meta_id = pMetaId
+              ) = (SELECT count(1) FROM meta_orgao mo WHERE mo.meta_id = pMetaId and mo.responsavel = TRUE )
+                THEN 1
+              WHEN (
                 SELECT 1
-                FROM pdm_orcamento_realizado_config
-                WHERE ano_referencia = EXTRACT(YEAR FROM CURRENT_TIMESTAMP AT TIME ZONE 'America/Sao_Paulo') - 1
-                  AND atualizado_em >= (CURRENT_DATE - INTERVAL '3 months')::date
-                  AND ultima_revisao = true
-                  AND execucao_concluida = true
-                  AND meta_id = pMetaId
-              ) THEN 1
-              WHEN EXISTS (
-                SELECT 1
-                FROM pdm_orcamento_realizado_config
-                WHERE ano_referencia = EXTRACT(YEAR FROM CURRENT_TIMESTAMP AT TIME ZONE 'America/Sao_Paulo')
-                  AND atualizado_em < (CURRENT_DATE - INTERVAL '3 months')::date
-                  AND ultima_revisao = true
-                  AND execucao_concluida = true
-                  AND meta_id = pMetaId
-              ) THEN 1
+                FROM pdm_orcamento_realizado_config porc
+                JOIN meta_orgao mo ON mo.meta_id = porc.meta_id AND mo.responsavel = true AND porc.orgao_id = porc.orgao_id
+                WHERE porc.ano_referencia = EXTRACT(YEAR FROM CURRENT_TIMESTAMP AT TIME ZONE 'America/Sao_Paulo')
+                  AND porc.atualizado_em < (CURRENT_DATE - INTERVAL '3 months')::date
+                  AND porc.ultima_revisao = true
+                  AND porc.execucao_concluida = true
+                  AND porc.meta_id = pMetaId
+              ) = (SELECT count(1) FROM meta_orgao mo WHERE mo.meta_id = pMetaId and mo.responsavel = TRUE )
+                THEN 1
               ELSE 0
             END
           ELSE 0
@@ -515,4 +526,4 @@ $$
 LANGUAGE plpgsql;
 
 
--- select atualiza_meta_status_consolidado(id, (select id from ciclo_fisico where ativo)) from meta where pdm_id = (select id from pdm where ativo) and removido_em is null;
+select atualiza_meta_status_consolidado(id, (select id from ciclo_fisico where ativo)) from meta where pdm_id = (select id from pdm where ativo) and removido_em is null;
