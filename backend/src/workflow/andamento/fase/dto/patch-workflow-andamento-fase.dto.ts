@@ -39,7 +39,7 @@ export class WorkflowTarefaUpdateParamDto {
 
     @IsOptional()
     @IsInt()
-    orgao_responsavel_id: number;
+    orgao_responsavel_id?: number;
 
     @IsBoolean()
     concluida: boolean;
