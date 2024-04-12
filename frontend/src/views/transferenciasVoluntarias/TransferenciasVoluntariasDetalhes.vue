@@ -68,7 +68,7 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
 
   <pre v-scrollLockDebug>transferênciaEmFoco:{{ transferênciaEmFoco }}</pre>
   <pre v-scrollLockDebug>listaDeDistribuição:{{ listaDeDistribuição }}</pre>
-  <ModalNotas :blocos-token="transferênciaEmFoco?.bloco_nota_token"></ModalNotas>
+  <ModalNotas v-if="transferênciaEmFoco?.bloco_nota_token" :blocos-token="transferênciaEmFoco?.bloco_nota_token"></ModalNotas>
 
   <div class="flex g2 flexwrap center mt3 mb2">
     <h3 class="w400 tc300 t20 mb0">
