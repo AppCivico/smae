@@ -31,9 +31,10 @@ export class WorkflowAndamentoService {
                 andamentoWorkflow: {
                     where: {
                         removido_em: null,
-                        data_termino: null,
                         data_inicio: { not: undefined },
                     },
+                    take: 1,
+                    orderBy: { data_inicio: 'desc' },
                     select: {
                         id: true,
                         workflow_etapa_id: true,
