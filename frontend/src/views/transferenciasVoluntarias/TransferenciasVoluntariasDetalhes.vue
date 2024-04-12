@@ -3,11 +3,14 @@ import LoadingComponent from '@/components/LoadingComponent.vue';
 import dateToField from '@/helpers/dateToField';
 import dinheiro from '@/helpers/dinheiro';
 import ModalNotas from '@/components/notas/ModalNotas.vue'
+import { useAlertStore } from '@/stores/alert.store';
 import { useDistribuicaoRecursosStore } from '@/stores/transferenciasDistribuicaoRecursos.store';
 import { useTransferenciasVoluntariasStore } from '@/stores/transferenciasVoluntarias.store';
 import { useWorkflowAndamentoStore } from '@/stores/workflow.andamento.store.ts';
 import { storeToRefs } from 'pinia';
 import { defineAsyncComponent } from 'vue';
+
+const alertStore = useAlertStore();
 
 const FasesDoWorkflow = defineAsyncComponent({
   loader: () => import('@/components/transferencia/FasesDoWorkflow.vue'),
@@ -29,7 +32,28 @@ const { emFoco: transferênciaEmFoco } = storeToRefs(TransferenciasVoluntarias);
 const { lista: listaDeDistribuição } = storeToRefs(distribuicaoRecursos);
 const {
   workflow,
+  avançoDeEtapaPermitido,
+  inícioDeFasePermitido,
+  idDaPróximaFasePendente,
 } = storeToRefs(workflowAndamento);
+
+function iniciarFase(idDaFase) {
+  alertStore.confirmAction('Tem certeza?', async () => {
+    if (await workflowAndamento.iniciarFase(idDaFase)) {
+      workflowAndamento.buscar();
+      alertStore.success('Foi-se!');
+    }
+  }, 'Prosseguir');
+}
+
+function avançarEtapa() {
+  alertStore.confirmAction('Tem certeza?', async () => {
+    if (await workflowAndamento.avançarEtapa(props.transferenciaId)) {
+      workflowAndamento.buscar();
+      alertStore.success('Foi-se!');
+    }
+  }, 'Prosseguir');
+}
 
 TransferenciasVoluntarias.buscarItem(props.transferenciaId);
 distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
@@ -48,6 +72,8 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
       <button
         type="button"
         class="btn"
+        :disabled="!inícioDeFasePermitido"
+        @click="iniciarFase(idDaPróximaFasePendente)"
       >
         Iniciar fase
       </button>
@@ -56,12 +82,21 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
         v-if="workflow"
         type="button"
         class="btn"
-        :disabled="!workflow?.pode_passar_para_proxima_etapa"
+        :disabled="!avançoDeEtapaPermitido"
+        @click="avançarEtapa"
       >
         Avançar etapa
       </button>
     </template>
   </header>
+
+  <pre>
+inícioDeFasePermitido:{{ inícioDeFasePermitido }}
+avançoDeEtapaPermitido:{{ avançoDeEtapaPermitido }}
+</pre>
+  <pre>
+idDaPróximaFasePendente:{{ idDaPróximaFasePendente }}
+</pre>
 
   <FasesDoWorkflow
     v-if="transferênciaEmFoco?.workflow_id"
