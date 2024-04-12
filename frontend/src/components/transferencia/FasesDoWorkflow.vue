@@ -131,12 +131,12 @@ watch(itemParaEdição, () => {
     <ul
       v-if="etapaCorrente?.fases?.length"
       ref="listaDeFases"
-      class="flex dedo-duro__lista-de-fases"
+      class="flex pb1 dedo-duro__lista-de-fases"
     >
       <li
         v-for="item in etapaCorrente.fases"
         :key="item.id"
-        class="p1 tcamarelo tc dedo-duro__fase"
+        class="p1 tc dedo-duro__fase"
         :class="{
           'dedo-duro__fase--iniciada': !!item?.andamento,
           concluida: item?.andamento?.concluida
@@ -150,8 +150,18 @@ watch(itemParaEdição, () => {
           {{ item.fase.fase }}
         </button>
 
-        <span class="dedo-duro__dados-da-fase">
-          {{ item.andamento?.pessoa_responsavel }}
+        <span class="card-shadow tc500 p1 mt1 block dedo-duro__dados-da-fase">
+          <span v-if="item.andamento?.pessoa_responsavel">
+            {{ item.andamento?.pessoa_responsavel }}
+          </span>
+          <abbr
+            v-if="item.andamento?.orgao_responsavel"
+            :title="item.andamento?.orgao_responsavel?.descricao"
+          >
+            {{ item.andamento?.orgao_responsavel?.sigla || item.andamento?.orgao_responsavel }}
+          </abbr>
+
+          {{ item.andamento?.dias_na_fase || '-' }}
         </span>
       </li>
     </ul>
@@ -392,22 +402,6 @@ watch(itemParaEdição, () => {
   position: relative;
   flex-grow: 1;
 
-  &::before {
-    width: @tamanho-da-bolinha;
-    height: @tamanho-da-bolinha;
-    margin-left: auto;
-    margin-right: auto;
-    margin-bottom: 1rem;
-    border-radius: 100%;
-    content: '';
-    display: block;
-    background-color: currentColor;
-    color: @c300;
-    background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABEAAAARCAYAAAA7bUf6AAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAD9SURBVHgBrZK9DcIwEIXfXaChYoSwAaNAT+FMQDokGqAAiY4FUMIGbAAbkA2ADaigAnM4/AVsR0I8yfLPne8+PRv4g8gXVL0kBFMXJz1KZ9HBlce+IhJVIB2jxl38QmIoAqxkGco44IiGi4a9FHmBm+o+GvJQbO/bpYyWj8ZOEtDAzBrrdBK1pVXmo2ErBbQqntK9+yVWcVIvLfKksMtKw+UUnxIak+co8kVBaKp+oqB1WKAJMCimvVO8XqRcZ3mpabQrkti9WAZUDaVX+hV5o+EnhdULzubjzh52qYc3OUmFHL/xMhRPNk6zOb9XMRutF7gZ5lZmPSVz7z+6AjAITco9Fq1nAAAAAElFTkSuQmCC);
-    background-position: 50% 50%;
-    background-repeat: no-repeat;
-  }
-
   &::after {
     position: absolute;
     content: '';
@@ -432,13 +426,8 @@ watch(itemParaEdição, () => {
 }
 
 .dedo-duro__fase--iniciada {
-  &::before,
   &::after {
     color: @amarelo;
-  }
-
-  &::before {
-    background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABEAAAARCAYAAAA7bUf6AAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAC9SURBVHgB7ZAxDoIwFIb7UHZ3WIxx1oXQwoJLS1z0BngDjiCeQI/gDdx1YmN118QELkFiqCWxxoApYhz5pte+/l/bh1DHXyCEhZ7nDeRaQy0hxN8DoF2e6xO512+Rfwp4UBQ8SpJTXDtgWfMpIXSpEjgO4xjTdbX3+o6u3xcAcMDYD9QvOG6q/Z4s0vQam+ZoqGkoMozxLcsu528EJVC/lYoQiBCsxABnTYKPkndRWTcJlLgu29o2C1HHTzwAp05KMEpINHYAAAAASUVORK5CYII=);
   }
 }
 
@@ -448,7 +437,32 @@ watch(itemParaEdição, () => {
   display: block;
   margin-left: auto;
   margin-right: auto;
+
+  &::before {
+    width: @tamanho-da-bolinha;
+    height: @tamanho-da-bolinha;
+    margin-left: auto;
+    margin-right: auto;
+    margin-bottom: 1rem;
+    border-radius: 100%;
+    content: '';
+    display: block;
+    background-color: currentColor;
+    color: @c300;
+    background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABEAAAARCAYAAAA7bUf6AAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAD9SURBVHgBrZK9DcIwEIXfXaChYoSwAaNAT+FMQDokGqAAiY4FUMIGbAAbkA2ADaigAnM4/AVsR0I8yfLPne8+PRv4g8gXVL0kBFMXJz1KZ9HBlce+IhJVIB2jxl38QmIoAqxkGco44IiGi4a9FHmBm+o+GvJQbO/bpYyWj8ZOEtDAzBrrdBK1pVXmo2ErBbQqntK9+yVWcVIvLfKksMtKw+UUnxIak+co8kVBaKp+oqB1WKAJMCimvVO8XqRcZ3mpabQrkti9WAZUDaVX+hV5o+EnhdULzubjzh52qYc3OUmFHL/xMhRPNk6zOb9XMRutF7gZ5lZmPSVz7z+6AjAITco9Fq1nAAAAAElFTkSuQmCC);
+    background-position: 50% 50%;
+    background-repeat: no-repeat;
+  }
+
+  .dedo-duro__fase--iniciada &::before {
+    color: @amarelo;
+    background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABEAAAARCAYAAAA7bUf6AAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAC9SURBVHgB7ZAxDoIwFIb7UHZ3WIxx1oXQwoJLS1z0BngDjiCeQI/gDdx1YmN118QELkFiqCWxxoApYhz5pte+/l/bh1DHXyCEhZ7nDeRaQy0hxN8DoF2e6xO512+Rfwp4UBQ8SpJTXDtgWfMpIXSpEjgO4xjTdbX3+o6u3xcAcMDYD9QvOG6q/Z4s0vQam+ZoqGkoMozxLcsu528EJVC/lYoQiBCsxABnTYKPkndRWTcJlLgu29o2C1HHTzwAp05KMEpINHYAAAAASUVORK5CYII=);
+  }
 }
 
-.dedo-duro__dados-da-fase {}
+.dedo-duro__dados-da-fase {
+  width: max-content;
+  margin-left: auto;
+  margin-right: auto;
+}
 </style>
