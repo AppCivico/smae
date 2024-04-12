@@ -320,45 +320,47 @@ watch(itemParaEdição, () => {
             />
           </label>
 
-          <Field
-            v-if="values.tarefas[idx].orgao_responsavel_id > -1
-              && values.tarefas[idx].orgao_responsavel_id !== ''"
-            :name="`tarefas[${idx}].orgao_responsavel_id`"
-            as="select"
-            class="inputtext light mb1"
-            :class="{
-              error: errors[`tarefas[${idx}].orgao_responsavel_id`],
-              loading: organs?.loading
-            }"
-            :disabled="!órgãosComoLista?.length"
-          >
-            <option value="">
-              Selecionar
-            </option>
-            <option
-              v-for="item in órgãosComoLista"
-              :key="item"
-              :value="item.id"
-              :title="item.descricao?.length > 36 ? item.descricao : null"
+          <template v-if="tarefa.responsabilidade !== 'Propria'">
+            <Field
+              v-if="values.tarefas[idx].orgao_responsavel_id > -1
+                && values.tarefas[idx].orgao_responsavel_id !== ''"
+              :name="`tarefas[${idx}].orgao_responsavel_id`"
+              as="select"
+              class="inputtext light mb1"
+              :class="{
+                error: errors[`tarefas[${idx}].orgao_responsavel_id`],
+                loading: organs?.loading
+              }"
+              :disabled="!órgãosComoLista?.length"
             >
-              {{ item.sigla }} - {{ truncate(item.descricao, 36) }}
-            </option>
-          </Field>
+              <option value="">
+                Selecionar
+              </option>
+              <option
+                v-for="item in órgãosComoLista"
+                :key="item"
+                :value="item.id"
+                :title="item.descricao?.length > 36 ? item.descricao : null"
+              >
+                {{ item.sigla }} - {{ truncate(item.descricao, 36) }}
+              </option>
+            </Field>
 
-          <button
-            v-else
-            type="button"
-            class="like-a__link block addlink ml2"
-            @click="setFieldValue(`tarefas[${idx}].orgao_responsavel_id`, 0)"
-          >
-            <svg
-              width="20"
-              height="20"
+            <button
+              v-else
+              type="button"
+              class="like-a__link block addlink ml2"
+              @click="setFieldValue(`tarefas[${idx}].orgao_responsavel_id`, 0)"
             >
-              <use xlink:href="#i_+" />
-            </svg>
-            Associar órgão responsável
-          </button>
+              <svg
+                width="20"
+                height="20"
+              >
+                <use xlink:href="#i_+" />
+              </svg>
+              Associar órgão responsável
+            </button>
+          </template>
         </div>
       </fieldset>
       <FormErrorsList
