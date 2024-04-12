@@ -18,6 +18,8 @@ import {
     UpdateNotaDto,
 } from './dto/nota.dto';
 import { HtmlSanitizer } from '../../common/html-sanitizer';
+import { DateTime } from 'luxon';
+import { SYSTEM_TIMEZONE } from '../../common/date2ymd';
 
 const JWT_AUD = 'nt';
 type JwtToken = {
@@ -151,6 +153,8 @@ export class NotaService {
             orderBy: [{ bloco_nota_id: 'asc' }, { data_nota: 'desc' }, { rever_em: 'desc' }],
         });
 
+        const today = DateTime.local({ zone: SYSTEM_TIMEZONE }).startOf('day').valueOf();
+
         return rows
             .map((r): TipoNotaItem => {
                 return {
@@ -162,7 +166,10 @@ export class NotaService {
                     status: r.status,
                     tipo_nota_id: r.tipo_nota_id,
                     orgao_responsavel: r.orgao_responsavel,
-                    data_ordenacao: r.rever_em ? r.rever_em : r.data_nota,
+                    data_ordenacao:
+                        r.rever_em && r.rever_em.valueOf() >= today && r.rever_em >= r.data_nota
+                            ? r.rever_em
+                            : r.data_nota,
                     bloco_id: r.bloco_nota_id,
                     pessoa_responsavel: r.pessoa_responsavel,
                     n_enderecamentos: r.n_enderecamentos,
