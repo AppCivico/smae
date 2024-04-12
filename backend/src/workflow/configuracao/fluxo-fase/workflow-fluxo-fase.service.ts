@@ -44,6 +44,25 @@ export class WorkflowfluxoFaseService {
                     ordem = ultimaOrdem?.ordem ?? 1;
                 }
 
+                // Verificando se já tem transferência.
+                const fluxo = await prismaTxn.fluxo.findFirst({
+                    where: {
+                        id: dto.fluxo_id,
+                        removido_em: null,
+                    },
+                    select: {
+                        workflow_id: true,
+                    },
+                });
+                if (!fluxo) throw new HttpException('fluxo_id| Fluxo não encontrado', 400);
+
+                const emUso = await prismaTxn.transferencia.count({
+                    where: {
+                        workflow_id: fluxo.workflow_id,
+                    },
+                });
+                if (emUso) throw new HttpException('Fase não pode ser criada, pois workflow já está em uso', 400);
+
                 // TODO: tratar fluxoFase circular
 
                 const workflowfluxoFase = await prismaTxn.fluxoFase.create({
