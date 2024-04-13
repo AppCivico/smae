@@ -6,6 +6,7 @@ import { ref, watch } from "vue";
 import { useBlocoDeNotasStore } from "@/stores/blocoNotas.store";
 import { nota as schema } from "@/consts/formSchemas";
 import { useAlertStore } from "@/stores/alert.store";
+import { useTipoDeNotasStore } from "@/stores/tipoNotas.store";
 
 const alertStore = useAlertStore();
 const status = [
@@ -30,7 +31,6 @@ const status = [
 const blocoStore = useBlocoDeNotasStore();
 const { lista:listaNotas, erro, chamadasPendentes } = storeToRefs(blocoStore);
 
-import { useTipoDeNotasStore } from "@/stores/tipoNotas.store";
 const tipoStore = useTipoDeNotasStore();
 const { lista:listaTipo, erro: erroTipo } = storeToRefs(tipoStore);
 
@@ -147,8 +147,13 @@ tipoStore.buscarTudo();
         <div class="flex">
           <div class="f1">
             <LabelFromYup name="dispara_email" :schema="schema" />
-            <Field name="dispara_email" type="checkbox" class="inputcheckbox" :value="true"
-              :unchecked-value="false"/>
+            <Field
+              name="dispara_email"
+              type="checkbox"
+              class="inputcheckbox"
+              :value="true"
+              :unchecked-value="false"
+            />
           </div>
           <div class="f1">
             <LabelFromYup name="data_nota" :schema="schema" />
@@ -157,7 +162,13 @@ tipoStore.buscarTudo();
         </div>
         <div class="mb2">
           <LabelFromYup name="nota" :schema="schema" />
-          <Field name="nota" type="textarea" class="inputtext light mb1" as="textarea" rows="10"/>
+          <Field
+            name="nota"
+            type="textarea"
+            class="inputtext light mb1"
+            as="textarea"
+            rows="10"
+          />
         </div>
         <FormErrorsList :errors="errors" class="mb1" />
         <div class="flex spacebetween center mb2">
@@ -197,6 +208,7 @@ tipoStore.buscarTudo();
             {{ item.nota }}
           </td>
           <td>
+            <!-- formatar -->
             {{ item.status }}
           </td>
           <td>
