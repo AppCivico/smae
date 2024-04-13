@@ -11,6 +11,7 @@ import regEx from '@/consts/patterns';
 import tiposDeMunicípio from '@/consts/tiposDeMunicipio';
 import tiposNaEquipeDeParlamentar from '@/consts/tiposNaEquipeDeParlamentar';
 import tiposSituacaoSchema from '@/consts/tiposSituacaoSchema';
+import tiposSituacao from '@/consts/tiposSituacao';
 import {
   array,
   boolean,
@@ -1839,7 +1840,7 @@ export const workflow = object({
     .label('Esfera')
     .oneOf(Object.keys(esferasDeTransferencia)),
   inicio: date()
-    .label('Data de criação')
+    .label('Início da vigência')
     .nullable()
     .min(new Date(2003, 0, 1))
     .transform((v) => (!v ? null : v))
@@ -1848,7 +1849,7 @@ export const workflow = object({
     .label('Nome do fluxo')
     .required(),
   termino: date()
-    .label('Data de criação')
+    .label('fim da vigência')
     .nullable()
     .min(new Date(2003, 0, 1))
     .transform((v) => (!v ? null : v)),
@@ -1859,14 +1860,27 @@ export const workflow = object({
 });
 
 export const fasesFluxo = object({
-  workflow_etapa_de_id: number()
-    .label('De etapa')
-    .required(),
   ordem: number()
     .label('posição dentro da etapa')
     .required(),
-    workflow_etapa_para_id: number()
+  workflow_etapa_de_id: number()
+    .label('De etapa')
+    .required(),
+  workflow_etapa_para_id: number()
     .label('Para etapa')
+    .required(),
+});
+
+export const tarefaFluxo = object({
+  fluxo_fase_id: number()
+    .label('Tarefa')
+    .required(),
+  responsabilidade: mixed()
+    .label('Responsabilidade')
+    .oneOf(Object.keys(responsabilidadeEtapaFluxo))
+    .required(),
+  ordem: number()
+    .label('posição dentro da etapa')
     .required(),
 });
 
@@ -1878,9 +1892,8 @@ export const etapasFluxo = object({
     .label('Responsabilidade')
     .oneOf(Object.keys(responsabilidadeEtapaFluxo))
     .required(),
-  situacao: object()
-    .label('Situação')
-    .required('Selecione ao menos uma situação'),
+  situacao: array()
+    .label('Situação'),
   ordem: number()
     .label('posição dentro da etapa')
     .required(),
