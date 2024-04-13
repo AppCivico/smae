@@ -89,7 +89,13 @@ async function excluirNota(id) {
 }
 
 function editarNota(id) {
+  exibeForm.value = true;
   blocoStore.buscarItem(id);
+}
+
+function fecharForm(){
+  emFoco.value = null
+  exibeForm.value = false;
 }
 
 watch(() => props.blocosToken, () => {
@@ -129,17 +135,22 @@ watch(itemParaEdição, (novosValores) => {
       <CheckClose
         @close="
           exibeModalNotas = false;
-          exibeForm = false;
+          fecharForm();
         "
         :apenas-emitir="true"
       />
     </div>
-    <button class="like-a__text addlink mb2" @click="exibeForm = true">
+    <button
+      v-if="!exibeForm"
+      class="like-a__text addlink mb2"
+      @click="exibeForm = true"
+    >
       <svg width="20" height="20">
         <use xlink:href="#i_+" />
       </svg>
       Adicionar nova nota
     </button>
+    <button v-else  class="like-a__text addlink mb2" @click.prevent="fecharForm()">Cancelar</button>
     <div class="mb4" v-if="exibeForm">
       <form @submit.prevent="onSubmit">
         <div class="flex mb2 flexwrap g2">
@@ -183,7 +194,7 @@ watch(itemParaEdição, (novosValores) => {
           </div>
           <div class="f1">
             <LabelFromYup name="data_nota" :schema="schema" />
-            <Field name="data_nota" type="date" class="inputtext light" />
+            <Field name="data_nota" type="date" class="inputtext light"  placeholder="dd/mm/aaaa"/>
           </div>
         </div>
         <div class="mb2">
