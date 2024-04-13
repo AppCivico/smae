@@ -54,12 +54,12 @@ async function onSubmit(values) {
     resposta = await blocoStore.salvarItem(valoresAuxiliares);
     if (resposta) {
       alertStore.success(msg);
+      blocoStore.$reset();
       blocoStore.buscarTudo(props.blocosToken);
     }
   } catch (error) {
     alertStore.error(error);
   }
-  console.log('submit: ', valoresAuxiliares)
 }
 
 async function excluirNota(id) {
