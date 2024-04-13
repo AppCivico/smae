@@ -35,6 +35,7 @@ const tipoStore = useTipoDeNotasStore();
 const { lista:listaTipo, erro: erroTipo } = storeToRefs(tipoStore);
 
 const exibeModalNotas = ref(false);
+const exibeForm = ref(false);
 
 const props = defineProps({
   blocosToken: {
@@ -107,15 +108,21 @@ tipoStore.buscarTudo();
     <div class="flex spacebetween center mb2">
       <h2>Notas</h2>
       <hr class="ml2 f1" />
-      <CheckClose @close="exibeModalNotas = false" :apenas-emitir="true" />
+      <CheckClose
+        @close="
+          exibeModalNotas = false;
+          exibeForm = false;
+        "
+        :apenas-emitir="true"
+      />
     </div>
-
-    <div class="mb4">
-      <Form
-        v-slot="{ errors, isSubmitting }"
-        :validation-schema="schema"
-        @submit="onSubmit"
-      >
+    <button class="like-a__text addlink mb2" @click="exibeForm = true">
+      <svg width="20" height="20">
+        <use xlink:href="#i_+" />
+      </svg>
+      Adicionar nova nota
+    </button>
+    <div class="mb4" v-if="exibeForm">
         <div class="flex mb2 flexwrap g2">
           <div class="f1">
             <LabelFromYup name="status" :schema="schema" />
