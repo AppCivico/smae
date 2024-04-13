@@ -203,7 +203,10 @@ export class TransferenciaService {
                     });
                     const workflow_id: number | null = workflow?.id ?? null;
 
-                    if (workflow_id) {
+                    const workflowJaAtivo = await prismaTxn.transferenciaAndamento.count({
+                        where: { transferencia_id: transferencia.id },
+                    });
+                    if (workflow_id && !workflowJaAtivo) {
                         await prismaTxn.transferencia.update({
                             where: { id },
                             data: { workflow_id: workflow_id },
