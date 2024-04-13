@@ -9,34 +9,7 @@ import SmallModal from "@/components/SmallModal.vue";
 import { useAlertStore } from '@/stores/alert.store';
 import { useRouter } from "vue-router";
 import { storeToRefs } from 'pinia';
-import { ref, computed } from 'vue';
-
-const etapasProjetosStore = useEtapasProjetosStore();
-const fluxosEtapasProjetos = useFluxosEtapasProjetosStore();
-const fluxosProjetoStore = useFluxosProjetosStore();
-
-const { lista: batata } = storeToRefs(fluxosEtapasProjetos);
-const { lista } = storeToRefs(etapasProjetosStore);
-const { emFoco } = storeToRefs(fluxosProjetoStore);
-const alertStore = useAlertStore();
-const exibeModalEtapa = ref(true);
-const router = useRouter();
-const erro = ref(null);
-
-const itemParaEdição = computed(() => batata.value.find((x) => {
-   return x.id === Number(params.etapaId);
- }) || {
-  id: 0,
-  ordem: '',
-  workflow_etapa_de_id:"",
-  workflow_etapa_para_id:""
-});
-
-const { errors, isSubmitting, handleSubmit, values }
-= useForm({
-    validationSchema: schema,
-    initialValues: itemParaEdição
-});
+import { computed, ref, watch } from 'vue';
 
 const props = defineProps({
   etapaId: {
@@ -63,6 +36,34 @@ const props = defineProps({
 
 const emits = defineEmits(['close', 'saved']);
 
+const etapasProjetosStore = useEtapasProjetosStore();
+const fluxosEtapasProjetos = useFluxosEtapasProjetosStore();
+const fluxosProjetoStore = useFluxosProjetosStore();
+
+const { lista } = storeToRefs(etapasProjetosStore);
+const { emFoco } = storeToRefs(fluxosProjetoStore);
+const alertStore = useAlertStore();
+const exibeModalEtapa = ref(true);
+const router = useRouter();
+const erro = ref(null);
+
+const itemParaEdição = computed(() => {
+  const etapaDoFluxo = emFoco.value?.fluxo?.find((x) => (x.id === Number(props.etapaId)));
+
+  return {
+    ...etapaDoFluxo,
+    workflow_etapa_de_id: etapaDoFluxo?.workflow_etapa_de?.id || null,
+    workflow_etapa_para_id: etapaDoFluxo?.workflow_etapa_para?.id || null,
+  };
+});
+
+const {
+  errors, isSubmitting, resetForm, handleSubmit, values,
+} = useForm({
+  validationSchema: schema,
+  initialValues: itemParaEdição,
+});
+
 const onSubmit = handleSubmit.withControlled(async (valoresControlados) => {
   try {
     const msg = props.etapaId
@@ -80,23 +81,42 @@ const onSubmit = handleSubmit.withControlled(async (valoresControlados) => {
 });
 
 function iniciar() {
-  etapasProjetosStore.buscarTudo()
+  etapasProjetosStore.buscarTudo();
+
+  if (props.etapaId) {
+    fluxosEtapasProjetos.buscarTudo();
+  }
 }
+
 iniciar();
 
+watch(itemParaEdição, (novoValor) => {
+  resetForm({
+    initialValues: novoValor,
+  });
+});
 </script>
 <template>
   <SmallModal
     @close="$emit('close')"
   >
     <div class="flex spacebetween center mb2">
-      <h2>Adicionar etapa</h2>
+      <h2>
+        <template v-if="etapaId">
+          Editar
+        </template>
+        <template v-else>
+          Adicionar
+        </template>
+        etapa
+      </h2>
       <hr class="ml2 f1" />
       <CheckClose
         :apenas-emitir="true"
         @close="$emit('close')"
       />
     </div>
+
     <form
       :disabled="isSubmitting"
       @submit.prevent="onSubmit"
