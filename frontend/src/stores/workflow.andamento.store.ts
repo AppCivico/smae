@@ -31,7 +31,7 @@ export const useWorkflowAndamentoStore = defineStore('workflowAndamento', {
   actions: {
     async buscar(params = {}): Promise<void> {
       this.chamadasPendentes.workflow = true;
-      await new Promise((resolve) => { setTimeout(resolve, 5000); });
+
       try {
         const resposta = await this.requestS.get(`${baseUrl}/workflow-andamento/`, {
           transferencia_id: Number(this.route.params.transferenciaId) || undefined,
@@ -65,7 +65,6 @@ export const useWorkflowAndamentoStore = defineStore('workflowAndamento', {
 
     async iniciarFase(faseId: Number, transferênciaId: Number): Promise<boolean> {
       this.chamadasPendentes.fase = true;
-      await new Promise((resolve) => { setTimeout(resolve, 5000); });
 
       try {
         const resposta = await this.requestS.post(`${baseUrl}/workflow-andamento-fase/iniciar`, {
@@ -104,7 +103,6 @@ export const useWorkflowAndamentoStore = defineStore('workflowAndamento', {
 
     async avançarEtapa(transferênciaId: Number): Promise<boolean> {
       this.chamadasPendentes.fase = true;
-      await new Promise((resolve) => { setTimeout(resolve, 5000); });
 
       try {
         const resposta = await this.requestS.post(`${baseUrl}/workflow-andamento/iniciar-prox-etapa`, {
