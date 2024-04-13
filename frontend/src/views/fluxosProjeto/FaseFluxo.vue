@@ -14,7 +14,7 @@ import { computed, ref } from 'vue';
 
 const emits = defineEmits(['close']);
 const props = defineProps({
-  faseId: {
+  relacionamentoId: {
     type: Number,
     default: 0,
   },
@@ -36,7 +36,7 @@ const { lista: listaSituacao } = storeToRefs(situacaoProjetosStore);
 const { lista } = storeToRefs(fluxosFasesProjetosStore);
 
 const itemParaEdição = computed(() => {
-  const fase = lista.value.find((x) => (x.id === Number(props.faseId)));
+  const fase = lista.value.find((x) => (x.id === Number(props.relacionamentoId)));
 
   return {
     ...fase,
@@ -53,11 +53,11 @@ const { errors, isSubmitting, values, handleSubmit } = useForm({
 
 const onSubmit = handleSubmit.withControlled(async (valoresControlados) => {
   try {
-    const msg = props.faseId
+    const msg = props.relacionamentoId
       ? "Dados salvos com sucesso!"
       : "Item adicionado com sucesso!";
 
-    const resposta =  await fluxosFasesProjetosStore.salvarItem(valoresControlados, props.faseId)
+    const resposta =  await fluxosFasesProjetosStore.salvarItem(valoresControlados, props.relacionamentoId)
     if (resposta) {
       alertStore.success(msg);
       fluxosFasesProjetosStore.$reset();
@@ -73,7 +73,7 @@ function iniciar() {
   fasesProjetosStore.buscarTudo();
   situacaoProjetosStore.buscarTudo();
 
-  if (props.faseId) {
+  if (props.relacionamentoId) {
     fluxosFasesProjetosStore.buscarTudo();
   }
 }
@@ -85,7 +85,7 @@ iniciar();
   >
     <div class="flex spacebetween center mb2">
       <h2>
-        <template v-if="faseId">
+        <template v-if="relacionamentoId">
           Editar
         </template>
         <template v-else>
