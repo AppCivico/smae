@@ -167,6 +167,13 @@ export class WorkflowAndamentoFaseService {
                     },
                     select: {
                         responsabilidade: true,
+
+                        workflow_tarefa: {
+                            select: {
+                                id: true,
+                                tarefa_fluxo: true,
+                            },
+                        },
                     },
                 });
                 if (!tarefaWorkfloConfig) throw new Error('Tarefa não existe na configuração do Workflow.');
@@ -177,7 +184,7 @@ export class WorkflowAndamentoFaseService {
                     tarefa.orgao_responsavel_id != undefined
                 )
                     throw new HttpException(
-                        `orgao_responsavel_id| Órgão não deve ser enviado para tarefa ${tarefa.id}, pois é de responsabilidade própria.`,
+                        `orgao_responsavel_id| Órgão não deve ser enviado para tarefa ${tarefaWorkfloConfig.workflow_tarefa.tarefa_fluxo}, pois é de responsabilidade própria.`,
                         400
                     );
 
@@ -203,7 +210,7 @@ export class WorkflowAndamentoFaseService {
                     (!tarefa.orgao_responsavel_id || !transferenciaAndamentoTarefaRow.orgao_responsavel_id)
                 )
                     throw new HttpException(
-                        `orgao_responsavel_id| Órgão deve ser enviado para tarefa ${tarefa.id}, pois é de responsabilidade de outro órgão.`,
+                        `orgao_responsavel_id| Órgão deve ser enviado para tarefa "${tarefaWorkfloConfig.workflow_tarefa.tarefa_fluxo}", pois é de responsabilidade de outro órgão.`,
                         400
                     );
 
