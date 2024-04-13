@@ -4,7 +4,7 @@ import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import { PrismaService } from '../../prisma/prisma.service';
 import { Prisma } from '@prisma/client';
 import { CreateWorkflowDto } from './dto/create-workflow.dto';
-import { DateTime } from 'luxon';
+import { DateTime, Zone } from 'luxon';
 import { UpdateWorkflowDto } from './dto/update-workflow.dto';
 import { FilterWorkflowDto } from './dto/filter-workflow.dto';
 import { WorkflowDetailDto, WorkflowDto } from './entities/workflow.entity';
@@ -39,18 +39,25 @@ export class WorkflowService {
                 const now = DateTime.now().startOf('day');
 
                 // Se o início for =< now, ele é elegível para ser o ativo, mas deve ser verificado.
-                if (DateTime.fromJSDate(dto.inicio) <= now) {
+                if (DateTime.fromJSDate(dto.inicio).setZone('utc') <= now) {
                     // Verificando se já existe um ativo.
                     const workflowAtivo = await prismaTxn.workflow.count({
                         where: {
                             ativo: true,
+                            transferencia_tipo_id: dto.transferencia_tipo_id,
                             inicio: { lte: now.toJSDate() },
                             removido_em: null,
                             OR: [{ termino: { gt: now.toJSDate() } }, { termino: null }],
                         },
                     });
-
+                    console.log('==================================');
+                    console.log('ta aqui');
+                    console.log(now);
+                    console.log(DateTime.fromJSDate(dto.inicio));
+                    console.log(workflowAtivo);
                     ativo = !workflowAtivo ?? true;
+                    console.log(ativo);
+                    console.log('==================================');
                 }
 
                 const workflow = await prismaTxn.workflow.create({
