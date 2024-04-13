@@ -19,7 +19,6 @@ const alertStore = useAlertStore();
 const router = useRouter();
 const erro = ref(null);
 
-const { itemParaEdição } = storeToRefs(fluxosFasesProjetosStore);
 const { lista: listaFase } = storeToRefs(fasesProjetosStore);
 const { lista: listaSituacao } = storeToRefs(situacaoProjetosStore);
 const { errors, isSubmitting, values, handleSubmit }
