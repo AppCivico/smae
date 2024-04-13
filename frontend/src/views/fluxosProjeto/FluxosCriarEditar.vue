@@ -29,7 +29,7 @@ const { chamadasPendentes: tarefasPendentes } = storeToRefs(fluxosTarefasProjeto
 
 const esferaSelecionada = ref('');
 const exibeModalTarefa = ref(false);
-const exibeModalEtapa = ref(false);
+const idDaEtapaEmFoco = ref(-1);
 const idDaFaseEmFoco = ref(-1);
 
 const props = defineProps({
@@ -70,11 +70,16 @@ const onSubmit = handleSubmit.withControlled(async (controlledValues) => {
   }
 });
 
-async function iniciar() {
-  tipoDeTransferenciaStore.buscarTudo();
-  if(props.fluxoId){
+async function carregarFluxo() {
+  if (props.fluxoId) {
+    // PRA-FAZER: reavaliar a necessidade desse `await`
     await fluxosProjetoStore.buscarItem(props.fluxoId);
   }
+}
+
+function iniciar() {
+  tipoDeTransferenciaStore.buscarTudo();
+  carregarFluxo();
 }
 
 function excluirFase(idDaFase) {
@@ -106,12 +111,14 @@ iniciar()
   </div>
 
   <EtapaFluxo
-    v-if="exibeModalEtapa"
-    @close="exibeModalEtapa = false"
+    v-if="idDaEtapaEmFoco > -1"
     :ordem="item?.ordem || null"
     :item="item"
     :workflow_etapa_de_id="workflow_etapa_de_id"
     :workflow_etapa_para_id="workflow_etapa_para_id"
+    :etapa-id="idDaEtapaEmFoco"
+    @close="idDaEtapaEmFoco = -1"
+    @saved="carregarFluxo()"
   />
 
   <form :disabled="isSubmitting"
@@ -278,7 +285,7 @@ iniciar()
   <div class="flex spacebetween center mb2" v-if="props.fluxoId">
     <h1>Etapas do fluxo</h1>
     <hr class="ml2 f1">
-    <button class="btn ml2" @click="exibeModalEtapa = true">
+    <button class="btn ml2" @click="idDaEtapaEmFoco = 0">
       Adicionar etapa
     </button>
   </div>
@@ -301,11 +308,11 @@ iniciar()
           </button>
           <button
             class="btn outline bgnone tcprimary mtauto"
-            @click="exibeModalEtapa = true"
             :ordem="item.ordem"
             :workflow_etapa_de_id="item.workflow_etapa_de_id"
             :workflow_etapa_para_id="item.workflow_etapa_para_id"
-            >
+            @click="idDaEtapaEmFoco = item.id"
+          >
             Editar
           </button>
           <FaseFluxo
