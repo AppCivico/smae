@@ -301,9 +301,9 @@ iniciar()
             </th>
           </tr>
         </thead>
-        <tbody >
-          <tr v-for="fase in item.fases" >
-            <td>{{ item.fluxo_etapa_de.etapa_fluxo }}</td>
+        <tbody v-for="fase in item.fases">
+          <tr>
+            <td>{{ fase.fase.fase  }}</td>
             <td>
               <span v-if="fase.situacoes && fase.situacoes.length">
                 <span v-for="situacao in fase.situacoes" :key="situacao.id">
@@ -342,9 +342,9 @@ iniciar()
               </button>
             </td>
           </tr>
-          <tr class="tarefaTabela" v-for="fase in item.fases.length">
-            <td v-for="tarefa in fase.tarefas" :key="tarefa.id">
-              Tarefa<span></span>
+          <tr class="tarefaTabela" v-for="tarefa in fase.tarefas" :key="tarefa.id">
+            <td>
+              <span class="tarefa pl3">Tarefa</span>
               {{ tarefa.workflow_tarefa.descricao || "-"}}
             </td>
             <td/>
@@ -433,14 +433,19 @@ iniciar()
       background: transparent;
   }
 
-  .tarefaTabela span {
+  .tarefa{
+    color: #4074BF;
+    font-weight: 700;
+  }
+
+  .tarefaTabela span::after {
       content: '';
       display: inline-block;
       width: 40px;
       height: 2px;
       background: #4074BF;
       vertical-align: middle;
-      margin-left: 24px;
+      margin: 0 24px 0 24px;
 
   }
 
