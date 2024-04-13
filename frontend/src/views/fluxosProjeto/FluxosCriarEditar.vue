@@ -1,29 +1,43 @@
 <script setup>
-import { workflow as schema } from '@/consts/formSchemas';
-import { ErrorMessage, Field, Form, useForm,} from 'vee-validate';
-import { storeToRefs } from 'pinia';
-import { useAlertStore } from '@/stores/alert.store';
-import { useRouter } from "vue-router";
-import { computed, ref, watch } from 'vue';
+// Não finalizado
 import { useTipoDeTransferenciaStore } from '@/stores/tipoDeTransferencia.store';
 import { useFluxosProjetosStore } from '@/stores/fluxosProjeto.store';
 import esferasDeTransferencia from '@/consts/esferasDeTransferencia';
+import { ErrorMessage, Field, Form, useForm,} from 'vee-validate';
+import TarefaFluxo from '@/views/fluxosProjeto/TarefaFluxo.vue';
+import EtapaFluxo from '@/views/fluxosProjeto/EtapaFluxo.vue';
+import FaseFluxo from '@/views/fluxosProjeto/FaseFluxo.vue';
+import { workflow as schema } from '@/consts/formSchemas';
+import { useAlertStore } from '@/stores/alert.store';
+import { computed, ref, watch } from 'vue';
+import { useRouter } from "vue-router";
+import { storeToRefs } from 'pinia';
 
-const router = useRouter();
-const alertStore = useAlertStore();
 const tipoDeTransferenciaStore = useTipoDeTransferenciaStore();
 const fluxosProjetoStore = useFluxosProjetosStore();
+const alertStore = useAlertStore();
+const router = useRouter();
+
 const { lista: tipoTransferenciaComoLista } = storeToRefs(tipoDeTransferenciaStore);
-const { chamadasPendentes, erro, itemParaEdição, emFoco} = storeToRefs(fluxosProjetoStore);
+const { lista, chamadasPendentes, erro, itemParaEdição,  emFoco} = storeToRefs(fluxosProjetoStore);
+
+const esferaSelecionada = ref('');
+const exibeModalTarefa = ref(false);
+const exibeModalEtapa = ref(false);
+const exibeModalFase = ref(false);
 
 const props = defineProps({
   fluxoId: {
     type: Number,
     default: 0,
   },
+  item: {
+    type: Object,
+    required: true,
+  },
 });
-const esferaSelecionada = ref('');
-const { errors, isSubmitting, setFieldValue, values } = useForm({
+
+const { errors, isSubmitting, setFieldValue, values, handleSubmit } = useForm({
   initialValues: itemParaEdição,
   validationSchema: schema,
 });
@@ -32,13 +46,13 @@ const tiposDisponíveis = computed(() => (values.esfera
   ? tipoTransferenciaComoLista.value.filter((x) => x.esfera === values.esfera)
   : []));
 
-async function onSubmit(_, { controlledValues: carga }) {
+const onSubmit = handleSubmit.withControlled(async (controlledValues) => {
   try {
     const msg = props.fluxoId
       ? "Dados salvos com sucesso!"
       : "Item adicionado com sucesso!";
 
-    const resposta =  await fluxosProjetoStore.salvarItem(carga, props.fluxoId)
+    const resposta =  await fluxosProjetoStore.salvarItem(controlledValues, props.fluxoId)
     if (resposta) {
       alertStore.success(msg);
       fluxosProjetoStore.$reset();
@@ -48,7 +62,7 @@ async function onSubmit(_, { controlledValues: carga }) {
   } catch (error) {
     alertStore.error(error);
   }
-}
+});
 
 async function iniciar() {
   tipoDeTransferenciaStore.buscarTudo();
@@ -58,6 +72,7 @@ async function iniciar() {
 }
 iniciar()
 
+
 </script>
 <template>
   <div class="flex spacebetween center mb2">
@@ -65,7 +80,15 @@ iniciar()
     <hr class="ml2 f1">
   </div>
 
-  <form @submit="onSubmit">
+  <EtapaFluxo v-if="exibeModalEtapa"
+    :ordem="item?.ordem || null"
+    :item="item"
+    :workflow_etapa_de_id="workflow_etapa_de_id"
+    :workflow_etapa_para_id="workflow_etapa_para_id"
+  />
+
+  <form :disabled="isSubmitting"
+      @submit.prevent="onSubmit">
     <div class="flex g2 mb1 center">
       <div class="f1">
         <LabelFromYup
@@ -219,24 +242,207 @@ iniciar()
     class="spinner"
   >Carregando</span>
 
-  <div
-    v-if="erro"
-    class="error p1"
-  >
+  <div v-if="erro" class="error p1">
     <div class="error-msg">
       {{ erro }}
     </div>
   </div>
-  <template v-if="props.fluxoId">
-    <div class="flex spacebetween center mb2">
-      <h1>Etapas do fluxo</h1>
-      <hr class="ml2 f1">
-      <router-link
-        :to="{ name: 'etapaFluxoCriarEditar' }"
-        class="btn big ml2"
-      >
-        Adicionar etapa
-      </router-link>
+
+  <div class="flex spacebetween center mb2">
+    <h1>Etapas do fluxo</h1>
+    <hr class="ml2 f1">
+    <button class="btn ml2" @click="exibeModalEtapa = true">
+      Adicionar etapa
+    </button>
+  </div>
+
+  <div class="cadaTabela">
+    <div v-for="item in emFoco?.fluxo"
+        :key="item.id">
+      <div class="flex center">
+        <div class="flex center">
+          <span class="ordem">{{ item && item.ordem ? item.ordem : ''  }}</span>
+          <h2 class="mb0 tituloTabela">
+            Etapa <span>{{ item.fluxo_etapa_de.etapa_fluxo }}</span>
+            para <span>{{ item.fluxo_etapa_para.etapa_fluxo }}</span>
+          </h2>
+        </div>
+        <hr class="ml2 f1">
+        <div class="flex spacebetween g1 center">
+          <button class="btn ml2" @click="exibeModalFase = true">
+            Adicionar fase
+          </button>
+          <button
+            class="btn outline bgnone tcprimary mtauto"
+            @click="exibeModalEtapa = true"
+            :ordem="item.ordem"
+            :workflow_etapa_de_id="item.workflow_etapa_de_id"
+            :workflow_etapa_para_id="item.workflow_etapa_para_id"
+            >
+            Editar
+          </button>
+          <FaseFluxo v-if="exibeModalFase" :fluxoId="item.id"/>
+        </div>
+      </div>
+
+      <table class="tablemain mb4">
+        <col>
+        <col>
+        <col class="col--botão-de-ação">
+        <col class="col--botão-de-ação">
+        <col class="col--botão-de-ação">
+        <thead>
+          <tr>
+            <th>
+              Fase
+            </th>
+            <th>
+              Situação
+            </th>
+          </tr>
+        </thead>
+        <tbody >
+          <tr v-for="fase in item.fases" >
+            <td>{{ item.fluxo_etapa_de.etapa_fluxo }}</td>
+            <td>
+              <span v-if="fase.situacoes && fase.situacoes.length">
+                <span v-for="situacao in fase.situacoes" :key="situacao.id">
+                  {{ situacao.situacao }}
+                </span>
+              </span>
+              <span v-else>-</span>
+            </td>
+            <td>
+              <button class="bgnone like-a__text" @click="exibeModalTarefa = true">
+                <svg width="20" height="20">
+                  <use xlink:href="#i_+" />
+                </svg>
+              </button>
+              <TarefaFluxo v-if="exibeModalTarefa"/>
+            </td>
+            <td>
+              <button
+                class="like-a__text"
+                arial-label="excluir"
+                title="excluir"
+                @click="excluirFluxo(item.id)"
+              >
+                <svg
+                  width="20"
+                  height="20"
+                ><use xlink:href="#i_remove" /></svg>
+              </button>
+            </td>
+            <td>
+              <button class="bgnone like-a__text" @click="exibeModalFase = true">
+                <svg
+                  width="20"
+                  height="20"
+                ><use xlink:href="#i_edit" /></svg>
+              </button>
+            </td>
+          </tr>
+          <tr class="tarefaTabela" v-for="fase in item.fases.length">
+            <td v-for="tarefa in fase.tarefas" :key="tarefa.id">
+              Tarefa<span></span>
+              {{ tarefa.workflow_tarefa.descricao || "-"}}
+            </td>
+            <td/>
+            <td/>
+            <td>
+              <button
+                class="like-a__text"
+                arial-label="excluir"
+                title="excluir"
+                @click="excluirFluxo(item.id)"
+              >
+                <svg
+                  width="20"
+                  height="20"
+                ><use xlink:href="#i_remove" /></svg>
+              </button>
+            </td>
+            <td>
+              <button class="bgnone like-a__text" @click="exibeModalTarefa = true">
+                <svg
+                  width="20"
+                  height="20"
+                ><use xlink:href="#i_edit" /></svg>
+              </button>
+            </td>
+          </tr>
+
+          <tr v-if="chamadasPendentes.lista">
+            <td colspan="3">
+              Carregando
+            </td>
+          </tr>
+          <tr v-else-if="erro">
+            <td colspan="3">
+              Erro: {{ erro }}
+            </td>
+          </tr>
+          <tr v-else-if="!lista.length">
+            <td colspan="3">
+              Nenhum resultado encontrado.
+            </td>
+          </tr>
+        </tbody>
+      </table>
     </div>
-  </template>
+  </div>
+
 </template>
+
+<style scoped>
+  .tituloTabela span{
+    color:#607A9F
+  }
+  span.ordem{
+      width: 46px;
+      height: 46px;
+      color: #fff;
+      padding: 16px;
+      text-align: center;
+      border-radius: 50%;
+      position: relative;
+      right: 20px;
+  }
+
+  .tablemain td {
+    padding: 4px 1em;
+  }
+
+  .cadaTabela > div:nth-child(odd) .ordem {
+    background-color:#4074BF;
+  }
+
+  .cadaTabela > div:nth-child(even) .ordem  {
+    background-color: #F7C234;
+  }
+
+  .cadaTabela > div:nth-child(even) .tablemain {
+    border-left: 4px solid #F7C234;
+  }
+
+  .cadaTabela > div:nth-child(odd) .tablemain {
+    border-left: 4px solid #4074BF;
+  }
+
+  .tablemain tr:nth-of-type(even), .tablemain tz:nth-of-type(even) {
+      background: transparent;
+  }
+
+  .tarefaTabela span {
+      content: '';
+      display: inline-block;
+      width: 40px;
+      height: 2px;
+      background: #4074BF;
+      vertical-align: middle;
+      margin-left: 24px;
+
+  }
+
+</style>
+
