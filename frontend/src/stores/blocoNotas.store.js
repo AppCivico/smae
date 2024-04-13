@@ -79,14 +79,14 @@ export const useBlocoDeNotasStore = defineStore("blocoDeNotasStore", {
     },
   },
   getters: {
-    itemParaEdição({ emFoco }) {
-      return {
-        ...emFoco,
-        enderecamentos: emFoco?.map((x) => ({
+    itemParaEdição: ({ emFoco }) => ({
+      ...emFoco,
+      dispara_email: emFoco?.dispara_email || false,
+      enderecamentos:
+        emFoco?.map((x) => ({
           orgao_enderecado_id: x.orgao_enderecado?.id || 0,
           pessoa_enderecado_id: x.pessoa_enderecado?.id || 0,
-        })),
-      };
-    },
+        })) || [],
+    }),
   },
 });
