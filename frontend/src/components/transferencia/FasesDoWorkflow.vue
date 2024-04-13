@@ -84,6 +84,7 @@ const onSubmit = handleSubmit.withControlled(async (valoresControlados) => {
   const cargaManipulada = nulificadorTotal(valoresControlados);
 
   if (await workflowAndamento.editarFase(cargaManipulada)) {
+    workflowAndamento.buscar();
     alertStore.success('Fase editada!');
     faseSelecionada.value = 0;
   }
