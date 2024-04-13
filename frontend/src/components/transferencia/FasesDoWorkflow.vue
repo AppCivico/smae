@@ -209,12 +209,15 @@ watch(itemParaEdição, () => {
 
   <SmallModal
     v-if="faseSelecionada"
-    class="small"
   >
-    <div class="flex spacebetween center mb2">
-      <h2>
-        Editar fase
+    <div class="flex center mb2">
+      <h2
+        v-if="faseEmFoco.fase?.fase"
+        class="título-da-fase-selecionada"
+      >
+        {{ faseEmFoco.fase.fase }}
       </h2>
+
       <hr class="ml2 f1">
 
       <CheckClose
@@ -236,6 +239,89 @@ watch(itemParaEdição, () => {
         name="fase_id"
         type="hidden"
       />
+
+      <fieldset
+        v-if="faseEmFoco?.tarefas?.length"
+        class="campos-de-tarefas mb2"
+      >
+        <LabelFromYup
+          class="label mb1"
+          name="tarefas"
+          :schema="schema"
+          as="legend"
+        />
+
+        <div
+          v-for="(tarefa, idx) in faseEmFoco.tarefas"
+          :key="`tarefas--${tarefa.workflow_tarefa.id}`"
+          class="mb2"
+        >
+          <Field
+            :name="`tarefas[${idx}].id`"
+            :value="tarefa.workflow_tarefa.id"
+            type="hidden"
+          />
+
+          <label class="block mb1 tc600">
+            <Field
+              :name="`tarefas[${idx}].concluida`"
+              type="checkbox"
+              :value="true"
+              :unchecked-value="false"
+            />
+            <span>
+              concluir
+              <strong class="w600">{{ tarefa.workflow_tarefa.descricao }}</strong>
+            </span>
+            <ErrorMessage
+              class="error-msg mb2"
+              :name="`tarefas[${idx}].concluida`"
+            />
+          </label>
+
+          <template v-if="tarefa.responsabilidade !== 'Propria'">
+            <Field
+              v-if="values.tarefas[idx].orgao_responsavel_id > -1
+                && values.tarefas[idx].orgao_responsavel_id !== ''"
+              :name="`tarefas[${idx}].orgao_responsavel_id`"
+              as="select"
+              class="inputtext light mb1"
+              :class="{
+                error: errors[`tarefas[${idx}].orgao_responsavel_id`],
+                loading: organs?.loading
+              }"
+              :disabled="!órgãosComoLista?.length"
+            >
+              <option value="">
+                Selecionar
+              </option>
+              <option
+                v-for="item in órgãosComoLista"
+                :key="item"
+                :value="item.id"
+                :title="item.descricao?.length > 36 ? item.descricao : null"
+              >
+                {{ item.sigla }} - {{ truncate(item.descricao, 36) }}
+              </option>
+            </Field>
+
+            <button
+              v-else
+              type="button"
+              class="like-a__link block addlink ml2"
+              @click="setFieldValue(`tarefas[${idx}].orgao_responsavel_id`, 0)"
+            >
+              <svg
+                width="20"
+                height="20"
+              >
+                <use xlink:href="#i_+" />
+              </svg>
+              Associar órgão responsável
+            </button>
+          </template>
+        </div>
+      </fieldset>
 
       <div class="mb1">
         <LabelFromYup
@@ -326,85 +412,6 @@ watch(itemParaEdição, () => {
 
       <pre v-scrollLockDebug>values:{{ values }}</pre>
 
-      <fieldset v-if="faseEmFoco?.tarefas?.length">
-        <LabelFromYup
-          class="label mt2 mb1"
-          name="tarefas"
-          :schema="schema"
-          as="legend"
-        />
-
-        <div
-          v-for="(tarefa, idx) in faseEmFoco.tarefas"
-          :key="`tarefas--${tarefa.workflow_tarefa.id}`"
-          class="mb2"
-        >
-          <Field
-            :name="`tarefas[${idx}].id`"
-            :value="tarefa.workflow_tarefa.id"
-            type="hidden"
-          />
-
-          <label class="block mb1 tc600">
-            <Field
-              :name="`tarefas[${idx}].concluida`"
-              type="checkbox"
-              :value="true"
-              :unchecked-value="false"
-            />
-            <span>
-              concluir
-              <strong class="w600">{{ tarefa.workflow_tarefa.descricao }}</strong>
-            </span>
-            <ErrorMessage
-              class="error-msg mb2"
-              :name="`tarefas[${idx}].concluida`"
-            />
-          </label>
-
-          <template v-if="tarefa.responsabilidade !== 'Propria'">
-            <Field
-              v-if="values.tarefas[idx].orgao_responsavel_id > -1
-                && values.tarefas[idx].orgao_responsavel_id !== ''"
-              :name="`tarefas[${idx}].orgao_responsavel_id`"
-              as="select"
-              class="inputtext light mb1"
-              :class="{
-                error: errors[`tarefas[${idx}].orgao_responsavel_id`],
-                loading: organs?.loading
-              }"
-              :disabled="!órgãosComoLista?.length"
-            >
-              <option value="">
-                Selecionar
-              </option>
-              <option
-                v-for="item in órgãosComoLista"
-                :key="item"
-                :value="item.id"
-                :title="item.descricao?.length > 36 ? item.descricao : null"
-              >
-                {{ item.sigla }} - {{ truncate(item.descricao, 36) }}
-              </option>
-            </Field>
-
-            <button
-              v-else
-              type="button"
-              class="like-a__link block addlink ml2"
-              @click="setFieldValue(`tarefas[${idx}].orgao_responsavel_id`, 0)"
-            >
-              <svg
-                width="20"
-                height="20"
-              >
-                <use xlink:href="#i_+" />
-              </svg>
-              Associar órgão responsável
-            </button>
-          </template>
-        </div>
-      </fieldset>
       <FormErrorsList
         :errors="errors"
         class="mb1"
@@ -521,5 +528,14 @@ watch(itemParaEdição, () => {
 .dedo-duro__dias-da-fase {}
 
 .dedo-duro__responsável-pela-fase {
+}
+
+.título-da-fase-selecionada {
+  flex-basis: 50%;
+  flex-grow: 1;
+}
+
+.campos-de-tarefas {
+  border-bottom: 1px solid @c100;
 }
 </style>
