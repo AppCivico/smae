@@ -105,7 +105,9 @@ iniciar()
     <hr class="ml2 f1">
   </div>
 
-  <EtapaFluxo v-if="exibeModalEtapa"
+  <EtapaFluxo
+    v-if="exibeModalEtapa"
+    @close="exibeModalEtapa = false"
     :ordem="item?.ordem || null"
     :item="item"
     :workflow_etapa_de_id="workflow_etapa_de_id"
