@@ -1,5 +1,5 @@
 <script setup>
-import { Field, Form } from "vee-validate";
+import { Field, Form, useForm } from "vee-validate";
 import SmallModal from "@/components/SmallModal.vue";
 import { storeToRefs } from "pinia";
 import { ref, watch } from "vue";
@@ -29,13 +29,24 @@ const status = [
 ];
 
 const blocoStore = useBlocoDeNotasStore();
-const { lista:listaNotas, erro, chamadasPendentes } = storeToRefs(blocoStore);
+const {
+  lista: listaNotas,
+  erro,
+  chamadasPendentes,
+  emFoco,
+  itemParaEdição,
+} = storeToRefs(blocoStore);
 
 const tipoStore = useTipoDeNotasStore();
-const { lista:listaTipo, erro: erroTipo } = storeToRefs(tipoStore);
+const { lista: listaTipo, erro: erroTipo } = storeToRefs(tipoStore);
 
 const exibeModalNotas = ref(false);
 const exibeForm = ref(false);
+
+const { errors, handleSubmit, isSubmitting, resetForm, values } = useForm({
+  initialValues: itemParaEdição.value,
+  validationSchema: schema,
+});
 
 const props = defineProps({
   blocosToken: {
@@ -44,7 +55,7 @@ const props = defineProps({
   },
 });
 
-async function onSubmit(values) {
+const onSubmit = handleSubmit.withControlled(async (valoresControlados) => {
   const valoresAuxiliares = {
     ...values,
     bloco_token: props.blocosToken,
@@ -61,7 +72,7 @@ async function onSubmit(values) {
   } catch (error) {
     alertStore.error(error);
   }
-}
+});
 
 async function excluirNota(id) {
   useAlertStore().confirmAction(
@@ -77,6 +88,10 @@ async function excluirNota(id) {
   );
 }
 
+function editarNota(id) {
+  blocoStore.buscarItem(id);
+}
+
 watch(() => props.blocosToken, () => {
   if(props.blocosToken){
     blocoStore.buscarTudo(props.blocosToken);
@@ -85,6 +100,9 @@ watch(() => props.blocosToken, () => {
 
 tipoStore.buscarTudo();
 
+watch(itemParaEdição, (novosValores) => {
+  resetForm({ values: novosValores });
+});
 </script>
 
 <template>
@@ -228,8 +246,8 @@ tipoStore.buscarTudo();
             <button
               @click="excluirNota(item.id_jwt)"
               class="like-a__text"
-              arial-label="excluir"
-              title="excluir"
+              arial-label="Excluir"
+              title="Excluir"
             >
               <svg width="20" height="20">
                 <use xlink:href="#i_remove" />
@@ -237,9 +255,15 @@ tipoStore.buscarTudo();
             </button>
           </td>
           <td>
-            <svg width="20" height="20">
-              <use xlink:href="#i_edit" />
-            </svg>
+            <button
+              @click="editarNota(item.id_jwt)"
+              arial-label="Editar"
+              title="Editar"
+            >
+              <svg width="20" height="20">
+                <use xlink:href="#i_edit" />
+              </svg>
+            </button>
           </td>
         </tr>
         <tr v-if="chamadasPendentes.listaNotas">
