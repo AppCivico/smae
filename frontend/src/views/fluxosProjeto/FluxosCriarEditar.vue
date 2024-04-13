@@ -342,9 +342,7 @@ iniciar()
               >{{ fase.fase.fase  }}</td>
             <td>
               <span v-if="fase.situacoes && fase.situacoes.length">
-                <span v-for="situacao in fase.situacoes" :key="situacao.id">
-                  {{ situacao.situacao }}
-                </span>
+                {{ fase.situacoes.map(situacao => situacao.situacao).join(', ') }}
               </span>
               <span v-else>-</span>
             </td>
