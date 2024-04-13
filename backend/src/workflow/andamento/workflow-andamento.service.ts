@@ -34,7 +34,7 @@ export class WorkflowAndamentoService {
                         data_inicio: { not: undefined },
                     },
                     take: 1,
-                    orderBy: { data_inicio: 'desc' },
+                    orderBy: [{ data_inicio: 'desc' }, { criado_em: 'desc' }],
                     select: {
                         id: true,
                         workflow_etapa_id: true,
@@ -296,25 +296,15 @@ export class WorkflowAndamentoService {
                         select: {
                             workflow_etapa_id: true,
                             data_termino: true,
-
-                            workflow_etapa: {
-                                select: {
-                                    fluxoDestino: {
-                                        where: { removido_em: null },
-                                        select: {
-                                            id: true,
-                                            fluxo_etapa_para_id: true,
-                                            workflow_id: true,
-                                        },
-                                    },
-                                },
-                            },
                         },
                     },
                 },
             });
             if (!transferencia)
                 throw new HttpException('transferencia_id| Transferência com workflow, não encontrada.', 400);
+
+            if (!transferencia.andamentoWorkflow.length)
+                throw new HttpException('Transferência sem linhas de andamento', 400);
 
             if (
                 transferencia.andamentoWorkflow.find((e) => {
@@ -323,23 +313,23 @@ export class WorkflowAndamentoService {
             )
                 throw new HttpException('Ainda há fase(s) abertas na etapa atual desta transferência.', 400);
 
-            if (!transferencia.andamentoWorkflow.length)
-                throw new HttpException('Transferência sem linhas de andamento', 400);
+            const etapaAtual = await prismaTxn.fluxo.findFirst({
+                where: {
+                    workflow_id: transferencia.workflow_id!,
+                    removido_em: null,
+                    fluxo_etapa_de_id: transferencia.andamentoWorkflow[0].workflow_etapa_id,
+                },
+                select: {
+                    fluxo_etapa_para_id: true,
+                },
+            });
+            if (!etapaAtual) throw new Error('Erro ao encontrar etapa atual');
 
-            // rows de Andamento estão com order by por ultima data de conclusão desc.
-            const andamentoMaisRecente = transferencia.andamentoWorkflow[0];
-            if (andamentoMaisRecente.workflow_etapa.fluxoDestino.length) {
-                // Garantindo que a config de workflow é a correta.
-                // Só deve ter uma linha de 'fluxo'.
-                const configFluxo = andamentoMaisRecente.workflow_etapa.fluxoDestino.find((e) => {
-                    return e.workflow_id == transferencia.workflow_id;
-                });
-                if (!configFluxo) throw new HttpException('Configuração de fluxo não encontrada para o workflow.', 400);
-
+            if (etapaAtual.fluxo_etapa_para_id) {
                 // Buscando config da próxima etapa.
                 const configProxEtapa = await prismaTxn.fluxo.findFirst({
                     where: {
-                        fluxo_etapa_de_id: configFluxo.fluxo_etapa_para_id,
+                        fluxo_etapa_de_id: etapaAtual.fluxo_etapa_para_id,
                         workflow_id: transferencia.workflow_id!,
                         removido_em: null,
                     },
@@ -355,6 +345,7 @@ export class WorkflowAndamentoService {
                                 responsabilidade: true,
                                 fase: {
                                     select: {
+                                        id: true,
                                         fase: true, // Nome da fase
                                     },
                                 },
@@ -395,6 +386,8 @@ export class WorkflowAndamentoService {
                         },
                     },
                 });
+                console.log(configProxEtapa);
+                console.log(configProxEtapa?.fases);
                 if (!configProxEtapa)
                     throw new HttpException('Não foi possível encontrar configuração da próxima Etapa', 400);
 
@@ -416,7 +409,7 @@ export class WorkflowAndamentoService {
                     data: {
                         transferencia_id: transferencia.id,
                         workflow_etapa_id: configProxEtapa.fluxo_etapa_de_id,
-                        workflow_fase_id: primeiraFase.id,
+                        workflow_fase_id: primeiraFase.fase.id,
                         workflow_situacao_id: situacaoFaseInicial.situacao.id,
                         data_inicio: new Date(Date.now()),
                         criado_por: user.id,
