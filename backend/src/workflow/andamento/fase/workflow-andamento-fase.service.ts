@@ -152,6 +152,10 @@ export class WorkflowAndamentoFaseService {
         const idsAtualizados: RecordWithId[] = [];
         if (dto.tarefas != undefined) {
             for (const tarefa of dto.tarefas) {
+                console.log('===========================');
+                console.log(tarefa);
+                console.log('===========================');
+
                 // Verificando se esta tarefa está de fato na configuração do Workflow.
                 const tarefaWorkfloConfig = await prismaTxn.fluxoTarefa.findFirst({
                     where: {
