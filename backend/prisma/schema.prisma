@@ -5153,7 +5153,7 @@ model TransferenciaAndamento {
 
     tarefas TransferenciaAndamentoTarefa[]
 
-    @@index([transferencia_id, workflow_etapa_id, workflow_situacao_id])
+    @@index([transferencia_id, workflow_etapa_id, workflow_fase_id])
     @@map("transferencia_andamento")
 }
 
