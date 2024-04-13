@@ -902,9 +902,6 @@ export const nota = object({
   data_nota: date()
     .label("Data da nota")
     .required(),
-  bloco_token:string()
-  .label("Token do bloco")
-  .required(),
   tipo_nota_id: number()
     .label("Tipo de nota")
     .required(),
