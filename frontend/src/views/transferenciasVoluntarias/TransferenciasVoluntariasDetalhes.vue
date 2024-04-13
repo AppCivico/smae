@@ -90,11 +90,11 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
     </template>
   </header>
 
-  <pre>
+  <pre class="debug">
 inícioDeFasePermitido:{{ inícioDeFasePermitido }}
 avançoDeEtapaPermitido:{{ avançoDeEtapaPermitido }}
 </pre>
-  <pre>
+  <pre class="debug">
 idDaPróximaFasePendente:{{ idDaPróximaFasePendente }}
 </pre>
 
