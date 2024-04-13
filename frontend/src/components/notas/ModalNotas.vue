@@ -1,9 +1,32 @@
 <script setup>
+import { Field, Form } from "vee-validate";
 import SmallModal from "@/components/SmallModal.vue";
 import { storeToRefs } from "pinia";
 import { ref, watch } from "vue";
-
 import { useBlocoDeNotasStore } from "@/stores/blocoNotas.store";
+import { nota as schema } from "@/consts/formSchemas";
+import { useAlertStore } from "@/stores/alert.store";
+
+const alertStore = useAlertStore();
+const status = [
+  {
+    value: "Programado",
+    text: "Programado",
+  },
+  {
+    value: "Em_Curso",
+    text: "Em curso",
+  },
+  {
+    value: "Suspenso",
+    text: "Suspenso",
+  },
+  {
+    value: "Cancelado",
+    text: "Cancelado",
+  },
+];
+
 const blocoStore = useBlocoDeNotasStore();
 const { lista:listaNotas, erro, chamadasPendentes } = storeToRefs(blocoStore);
 
@@ -20,6 +43,25 @@ const props = defineProps({
   },
 });
 
+async function onSubmit(values) {
+  const valoresAuxiliares = {
+    ...values,
+    bloco_token: props.blocosToken,
+  };
+  try {
+    let resposta;
+    const msg = "Dados salvos com sucesso!";
+    resposta = await blocoStore.salvarItem(valoresAuxiliares);
+    if (resposta) {
+      alertStore.success(msg);
+      blocoStore.buscarTudo(props.blocosToken);
+    }
+  } catch (error) {
+    alertStore.error(error);
+  }
+  console.log('submit: ', valoresAuxiliares)
+}
+
 watch(() => props.blocosToken, () => {
   if(props.blocosToken){
     blocoStore.buscarTudo(props.blocosToken);
@@ -31,6 +73,7 @@ tipoStore.buscarTudo();
 </script>
 
 <template>
+  <!-- em desenvolvimento -->
   <button class="flex center g1 like-a__text" @click="exibeModalNotas = true">
     <svg
       width="16"
@@ -53,7 +96,77 @@ tipoStore.buscarTudo();
       <CheckClose @close="exibeModalNotas = false" :apenas-emitir="true" />
     </div>
 
-    <div class="mb4"></div>
+    <div class="mb4">
+      <Form
+        v-slot="{ errors, isSubmitting }"
+        :validation-schema="schema"
+        @submit="onSubmit"
+      >
+        <div class="flex mb2 flexwrap g2">
+          <div class="f1">
+            <LabelFromYup name="status" :schema="schema" />
+            <Field name="status" as="select" class="inputtext light mb1">
+              <option value>Selecionar</option>
+              <option
+                v-for="(item, key) in status"
+                :key="key"
+                :value="item.value"
+              >
+                {{ item.text }}
+              </option>
+            </Field>
+          </div>
+          <div class="f1">
+            <LabelFromYup name="tipo_nota_id" :schema="schema" />
+            <Field name="tipo_nota_id" as="select" class="inputtext light mb1">
+              <option value>Selecionar</option>
+              <option
+                v-for="(tipo, key) in listaTipo"
+                :key="key"
+                :value="tipo.id"
+              >
+                {{ tipo.codigo }}
+              </option>
+            </Field>
+          </div>
+        </div>
+        <div class="flex">
+          <div class="f1">
+            <LabelFromYup name="dispara_email" :schema="schema" />
+            <Field
+              name="dispara_email"
+              type="checkbox"
+              :value="true"
+              class="inputcheckbox"
+            />
+          </div>
+          <div class="f1">
+            <LabelFromYup name="data_nota" :schema="schema" />
+            <Field name="data_nota" type="date" class="inputtext light" />
+          </div>
+        </div>
+        <div class="mb2">
+          <LabelFromYup name="nota" :schema="schema" />
+          <Field name="nota" type="textarea" class="inputtext light mb1" as="textarea" rows="10"/>
+        </div>
+        <div class="flex spacebetween center mb2">
+          <hr class="mr2 f1" />
+          <button
+            class="btn big"
+            :disabled="isSubmitting || Object.keys(errors)?.length"
+            :title="
+              Object.keys(errors)?.length
+                ? `Erros de preenchimento: ${Object.keys(errors)?.length}`
+                : null
+            "          
+          >
+            Salvar
+          </button>
+          <hr class="ml2 f1" />
+        </div>
+      </Form>
+    </div>
+
     <table class="tablemain mb1">
       <col />
       <col />
