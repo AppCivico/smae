@@ -28,6 +28,7 @@ const { errors, isSubmitting, values, handleSubmit }
   initialValues: itemParaEdição
 });
 
+const emits = defineEmits(['close']);
 const props = defineProps({
   faseId: {
     type: Number,
@@ -50,7 +51,7 @@ const onSubmit = handleSubmit.withControlled(async (valoresControlados) => {
       alertStore.success(msg);
       fluxosFasesProjetosStore.$reset();
       fluxosFasesProjetosStore.buscarTudo();
-      router.push({ name: "fluxosListar" });
+      emits('close');
     }
   } catch (error) {
     alertStore.error(error);
@@ -65,11 +66,14 @@ iniciar();
 </script>
 
 <template>
-  <SmallModal>
+  <SmallModal  @close="$emit('close')">
     <div class="flex spacebetween center mb2">
       <h2>Adicionar fase</h2>
       <hr class="ml2 f1" />
-      <CheckClose @close="exibeModalFase = false"  :apenas-emitir="false"/>
+      <CheckClose
+        :apenas-emitir="true"
+        @close="$emit('close')"
+      />
     </div>
     <form
       :disabled="isSubmitting"

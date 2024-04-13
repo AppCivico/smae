@@ -308,7 +308,11 @@ iniciar()
             >
             Editar
           </button>
-          <FaseFluxo v-if="exibeModalFase" :fluxoId="item.id"/>
+          <FaseFluxo
+            v-if="exibeModalFase"
+            @close="exibeModalFase = false"
+            :fluxoId="item.id"
+          />
         </div>
       </div>
 
@@ -349,7 +353,10 @@ iniciar()
                   <use xlink:href="#i_+" />
                 </svg>
               </button>
-              <TarefaFluxo v-if="exibeModalTarefa"/>
+              <TarefaFluxo
+                @close="exibeModalTarefa = false"
+                v-if="exibeModalTarefa"
+              />
             </td>
             <td>
               <button
@@ -374,7 +381,7 @@ iniciar()
             </td>
           </tr>
           <tr class="tarefaTabela" v-for="tarefa in fase.tarefas" :key="tarefa.id">
-            <td            
+            <td
               :class="{
                 loading: tarefasPendentes?.lista
               }"
