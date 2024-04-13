@@ -48,8 +48,22 @@ export const useBlocoDeNotasStore = defineStore("blocoDeNotasStore", {
         return false;
       }
     },
+    
+    async excluirItem(id) {
+      this.chamadasPendentes.lista = true;
+      this.erro = null;
+  
+      try {
+        await this.requestS.delete(`${baseUrl}/nota/${id}`);
+        this.chamadasPendentes.lista = false;
+        return true;
+      } catch (erro) {
+        this.erro = erro;
+        this.chamadasPendentes.lista = false;
+        return false;
+      }
+    },
   },
-
   getters: {
     itemParaEdição({ emFoco }) {
       return {
