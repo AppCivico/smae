@@ -63,11 +63,29 @@ export const useBlocoDeNotasStore = defineStore("blocoDeNotasStore", {
         return false;
       }
     },
+    async buscarItem(id = 0) {
+      this.chamadasPendentes.emFoco = true;
+      this.erro = null;
+
+      try {
+        const resposta = await this.requestS.get(`${baseUrl}/nota/${id}`);
+        this.emFoco = {
+          ...resposta,
+        };
+      } catch (erro) {
+        this.erro = erro;
+      }
+      this.chamadasPendentes.emFoco = false;
+    },
   },
   getters: {
     itemParaEdição({ emFoco }) {
       return {
         ...emFoco,
+        enderecamentos: emFoco?.map((x) => ({
+          orgao_enderecado_id: x.orgao_enderecado?.id || 0,
+          pessoa_enderecado_id: x.pessoa_enderecado?.id || 0,
+        })),
       };
     },
   },
