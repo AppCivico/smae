@@ -1,76 +1,116 @@
 <!-- não finalizado -->
 <script setup>
-import { ErrorMessage, Field, useForm, useIsFormDirty} from 'vee-validate';
-import { useEtapasProjetosStore } from '@/stores/etapasProjeto.store.js';
 import { useFluxosEtapasProjetosStore } from '@/stores/fluxosEtapasProjeto.store.js';
+import { useEtapasProjetosStore } from '@/stores/etapasProjeto.store.js';
+import { useFluxosProjetosStore } from '@/stores/fluxosProjeto.store';
+import { ErrorMessage, Field, useForm} from 'vee-validate';
 import { fasesFluxo as schema } from '@/consts/formSchemas';
-import SmallModal from '@/components/SmallModal.vue';
+import SmallModal from "@/components/SmallModal.vue";
 import { useAlertStore } from '@/stores/alert.store';
+import { useRouter } from "vue-router";
 import { storeToRefs } from 'pinia';
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 
-const alertStore = useAlertStore();
-const { errors, isSubmitting, handleSubmit, values } = useForm({validationSchema: schema,});
 const etapasProjetosStore = useEtapasProjetosStore();
 const fluxosEtapasProjetos = useFluxosEtapasProjetosStore();
-const erro = ref(null);
-const { lista } = storeToRefs(etapasProjetosStore);
+const fluxosProjetoStore = useFluxosProjetosStore();
 
-const emit = defineEmits(['close']);
+const { lista: batata } = storeToRefs(fluxosEtapasProjetos);
+const { lista } = storeToRefs(etapasProjetosStore);
+const { emFoco } = storeToRefs(fluxosProjetoStore);
+const alertStore = useAlertStore();
+const exibeModalEtapa = ref(true);
+const router = useRouter();
+const erro = ref(null);
+
+const itemParaEdição = computed(() => batata.value.find((x) => {
+   return x.id === Number(params.etapaId);
+ }) || {
+  id: 0,
+  ordem: '',
+  workflow_etapa_de_id:"",
+  workflow_etapa_para_id:""
+});
+
+const { errors, isSubmitting, handleSubmit, values }
+= useForm({
+    validationSchema: schema,
+    initialValues: itemParaEdição
+});
+
 const props = defineProps({
-  apenasEmitir: {
-    type: Boolean,
-    default: false,
+  etapaId: {
+    type: Number,
+    default: 0,
   },
   fluxoId: {
     type: Number,
     default: 0,
   },
+  ordem:{
+    type: Number,
+    required: true,
+  },
+  workflow_etapa_de_id:{
+    type: Number,
+    required: true,
+  },
+  workflow_etapa_para_id:{
+    type: Number,
+    required: true,
+  }
 });
 
 const onSubmit = handleSubmit.withControlled(async (valoresControlados) => {
   try {
-    const msg = props.fluxoId
+    const msg = props.etapaId
       ? "Dados salvos com sucesso!"
       : "Item adicionado com sucesso!";
-
-    const resposta =  await fluxosEtapasProjetos.salvarItem(valoresControlados, props.fluxoId)
+    const resposta =  await fluxosEtapasProjetos.salvarItem(valoresControlados, props.etapaId)
     if (resposta) {
       alertStore.success(msg);
       fluxosEtapasProjetos.$reset();
       fluxosEtapasProjetos.buscarTudo();
-      router.push({ name: "fluxosCriar" });
+      router.push({ name: "fluxosListar" });
     }
   } catch (error) {
     alertStore.error(error);
   }
 });
 
-const formulárioSujo = useIsFormDirty();
-
 function iniciar() {
   etapasProjetosStore.buscarTudo()
 }
-
 iniciar();
+
 </script>
-
 <template>
-  <SmallModal @close="emit('close')">
+  <SmallModal>
     <div class="flex spacebetween center mb2">
-      <TítuloDePágina>Adicionar etapa</TítuloDePágina>
-      <hr class="ml2 f1">
-      <CheckClose
-        :apenas-emitir="props.apenasEmitir"
-        :formulário-sujo="formulárioSujo"
-        @close="emit('close')"
-      />
+      <h2>Adicionar etapa</h2>
+      <hr class="ml2 f1" />
+      <CheckClose @close="exibeModalEtapa = false"/>
     </div>
-
     <form
       :disabled="isSubmitting"
       @submit.prevent="onSubmit"
-    >
+        >
+       <div>
+        <LabelFromYup
+          :name="emFoco.id"
+          :schema="schema"
+        />
+        <Field
+          name="workflow_id"
+          type="hidden"
+          class="inputtext light mb1"
+          :value="emFoco.id"
+        />
+        <ErrorMessage
+          class="error-msg mb1"
+          name="nome"
+        />
+      </div>
       <div class="flex flexwrap g2 mb1">
         <div class="f1">
           <LabelFromYup
@@ -174,3 +214,4 @@ iniciar();
     </div>
   </SmallModal>
 </template>
+

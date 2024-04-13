@@ -1,39 +1,32 @@
-<!-- não finalizado -->
 <script setup>
-import { useFluxosFasesProjetosStore } from '@/stores/fluxosFasesProjeto.store.js';
 import  responsabilidadeEtapaFluxo  from '@/consts/responsabilidadeEtapaFluxo.js';
-import { useFasesProjetosStore } from '@/stores/fasesProjeto.store.js';
-import { etapasFluxo as schema } from '@/consts/formSchemas';
+import { useFluxosTarefasProjetosStore } from '@/stores/fluxosTarefaProjeto.store';
+import { useTarefasProjetosStore } from '@/stores/tarefasProjeto.store';
+import { tarefaFluxo as schema } from '@/consts/formSchemas';
 import { ErrorMessage, Field, useForm} from 'vee-validate';
-import { useSituacaoStore } from '@/stores/situacao.store';
 import SmallModal from "@/components/SmallModal.vue";
-import { useAlertStore } from '@/stores/alert.store';
 import { useRouter } from "vue-router";
+import { useAlertStore } from '@/stores/alert.store';
 import { storeToRefs } from 'pinia';
 import { ref } from 'vue';
 
-const fluxosFasesProjetosStore = useFluxosFasesProjetosStore();
-const fasesProjetosStore = useFasesProjetosStore();
-const situacaoProjetosStore = useSituacaoStore();
+const fluxoTarefasProjetosStore = useFluxosTarefasProjetosStore();
+const tarefasProjetosStore = useTarefasProjetosStore();
+const { lista: listaTarefa } = storeToRefs(tarefasProjetosStore);
+const { itemParaEdição } = storeToRefs(fluxoTarefasProjetosStore);
 const alertStore = useAlertStore();
 const router = useRouter();
 const erro = ref(null);
+const exibeModal = ref(false);
 
-const { itemParaEdição } = storeToRefs(fluxosFasesProjetosStore);
-const { lista: listaFase } = storeToRefs(fasesProjetosStore);
-const { lista: listaSituacao } = storeToRefs(situacaoProjetosStore);
-const { errors, isSubmitting, values, handleSubmit }
+const { errors, isSubmitting, values, handleSubmit, setFieldValue }
 = useForm({
   validationSchema: schema,
   initialValues: itemParaEdição
 });
 
 const props = defineProps({
-  faseId: {
-    type: Number,
-    default: 0,
-  },
-  fluxoId: {
+  tarefaFluxoId: {
     type: Number,
     default: 0,
   },
@@ -41,15 +34,15 @@ const props = defineProps({
 
 const onSubmit = handleSubmit.withControlled(async (valoresControlados) => {
   try {
-    const msg = props.faseId
+    const msg = props.tarefaFluxoId
       ? "Dados salvos com sucesso!"
       : "Item adicionado com sucesso!";
 
-    const resposta =  await fluxosFasesProjetosStore.salvarItem(valoresControlados, props.faseId)
+    const resposta =  await fluxoTarefasProjetosStore.salvarItem(valoresControlados, props.tarefaFluxoId)
     if (resposta) {
       alertStore.success(msg);
-      fluxosFasesProjetosStore.$reset();
-      fluxosFasesProjetosStore.buscarTudo();
+      fluxoTarefasProjetosStore.$reset();
+      fluxoTarefasProjetosStore.buscarTudo();
       router.push({ name: "fluxosListar" });
     }
   } catch (error) {
@@ -57,9 +50,13 @@ const onSubmit = handleSubmit.withControlled(async (valoresControlados) => {
   }
 })
 
+const updateWorkflowTarefaId = (event) => {
+  const selectedId = event.target.value;
+  setFieldValue('workflow_tarefa_id', selectedId);
+};
+
 function iniciar() {
-  fasesProjetosStore.buscarTudo()
-  situacaoProjetosStore.buscarTudo()
+  tarefasProjetosStore.buscarTudo()
 }
 iniciar();
 </script>
@@ -67,55 +64,58 @@ iniciar();
 <template>
   <SmallModal>
     <div class="flex spacebetween center mb2">
-      <h2>Adicionar fase</h2>
+      <h2>Adicionar tarefa</h2>
       <hr class="ml2 f1" />
-      <CheckClose @close="exibeModalFase = false"  :apenas-emitir="false"/>
+      <CheckClose @close="exibeModal = false"/>
     </div>
+
     <form
       :disabled="isSubmitting"
       @submit.prevent="onSubmit"
       >
+      {{ values }}
       <div>
-          <LabelFromYup
-            :name="fluxoId"
-            :schema="schema"
-          />
-          <Field
-            name="fluxo_id"
-            type="hidden"
-            class="inputtext light mb1"
-            :value="fluxoId"
-          />
-          <ErrorMessage
-            class="error-msg mb1"
-            name="nome"
-          />
-        </div>
-      <div class="flex flexwrap g2">
+        <LabelFromYup
+          :name="values.workflow_tarefa_id"
+          :schema="schema"
+        />
+        <Field
+          name="workflow_tarefa_id"
+          type="hidden"
+          class="inputtext light mb1"
+          :value="values.workflow_tarefa_id"
+        />
+        <ErrorMessage
+          class="error-msg mb1"
+          name="nome"
+        />
+      </div>
+      <div class="flex flexwrap g2 mb1">
         <div class="f1">
           <LabelFromYup
-            name="fase_id"
+            name="fluxo_fase_id"
             :schema="schema"
           />
           <Field
-            name="fase_id"
+            name="fluxo_fase_id"
             as="select"
             class="inputtext light mb1"
+            @change="updateWorkflowTarefaId"
           >
             <option value="">
               Selecionar
             </option>
             <option
-              v-for="item in listaFase"
+              v-for="item in listaTarefa"
               :key="item"
               :value="item.id"
             >
-              {{ item.fase }}
+              {{ item.descricao }}
             </option>
           </Field>
           <ErrorMessage
             class="error-msg"
-            name="fase_id"
+            name="fluxo_fase_id"
           />
         </div>
         <div class="mb1">
@@ -148,7 +148,7 @@ iniciar();
           <Field
             name="responsabilidade"
             as="select"
-            class="inputtext light mb2"
+            class="inputtext light mb1"
           >
             <option value="">
               Selecionar
@@ -165,28 +165,6 @@ iniciar();
             class="error-msg"
             name="responsabilidade"
           />
-        </div>
-        <div class="f1 mb1">
-          <div class="label mb1">Situações da fase</div>
-          <label
-            v-for="item in listaSituacao"
-            :key="item.id"
-            class="block mb1"
-            >
-              <Field
-                name="situacao"
-                class="inputcheckbox"
-                type="checkbox"
-                :class="{ 'error': errors.item }"
-                :value="item.id"
-              />
-              <span>
-                {{ item.situacao }}
-              </span>
-            </label>
-            <div class="error-msg">
-              {{ errors.situacao }}
-            </div>
         </div>
       </div>
       <FormErrorsList :errors="errors" />
