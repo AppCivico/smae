@@ -1,4 +1,5 @@
 import { defineStore } from "pinia";
+import dateTimeToDate from '@/helpers/dateTimeToDate';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
@@ -79,14 +80,18 @@ export const useBlocoDeNotasStore = defineStore("blocoDeNotasStore", {
     },
   },
   getters: {
-    itemParaEdição: ({ emFoco }) => ({
-      ...emFoco,
-      dispara_email: emFoco?.dispara_email || false,
-      enderecamentos:
-        emFoco?.map((x) => ({
-          orgao_enderecado_id: x.orgao_enderecado?.id || 0,
-          pessoa_enderecado_id: x.pessoa_enderecado?.id || 0,
-        })) || [],
-    }),
+    itemParaEdição: ({ emFoco }) => {
+      return {
+        ...emFoco,
+        dispara_email: emFoco?.dispara_email || false,
+        data_nota: dateTimeToDate(emFoco?.data_nota),
+        enderecamentos: (emFoco && Array.isArray(emFoco) ? emFoco : []).map(
+          (x) => ({
+            orgao_enderecado_id: x.orgao_enderecado?.id || 0,
+            pessoa_enderecado_id: x.pessoa_enderecado?.id || 0,
+          })
+        ),
+      };
+    },
   },
 });
