@@ -303,31 +303,45 @@ watch(itemParaEdição, () => {
           </label>
 
           <template v-if="tarefa.responsabilidade !== 'Propria'">
-            <Field
-              v-if="values.tarefas[idx].orgao_responsavel_id > -1
-                && values.tarefas[idx].orgao_responsavel_id !== ''"
-              :name="`tarefas[${idx}].orgao_responsavel_id`"
-              as="select"
-              class="inputtext light mb1"
-              :class="{
-                error: errors[`tarefas[${idx}].orgao_responsavel_id`],
-                loading: organs?.loading
-              }"
-              :disabled="!órgãosComoLista?.length"
+            <div
+              v-if="(values.tarefas[idx].orgao_responsavel_id > -1
+                && values.tarefas[idx].orgao_responsavel_id !== '')
+                || tarefa.andamento?.necessita_preencher_orgao"
+              class="mb1"
             >
-              <option value="">
-                Selecionar
-              </option>
-              <option
-                v-for="item in órgãosComoLista"
-                :key="item"
-                :value="item.id"
-                :title="item.descricao?.length > 36 ? item.descricao : null"
+              <label :for="`tarefas[${idx}].orgao_responsavel_id`">
+                Órgão associado&nbsp;<span
+                  v-if="tarefa.andamento?.necessita_preencher_orgao"
+                  class="tvermelho"
+                >*</span>
+              </label>
+              <Field
+                :id="`tarefas[${idx}].orgao_responsavel_id`"
+                :name="`tarefas[${idx}].orgao_responsavel_id`"
+                as="select"
+                class="inputtext light mb1"
+                :class="{
+                  error: errors[`tarefas[${idx}].orgao_responsavel_id`],
+                  loading: organs?.loading
+                }"
+                :required="tarefa.andamento?.necessita_preencher_orgao"
+                :disabled="!órgãosComoLista?.length"
               >
-                {{ item.sigla }} - {{ truncate(item.descricao, 36) }}
-              </option>
-            </Field>
-
+                <option value="">
+                  <template v-if="tarefa.andamento?.necessita_preencher_orgao">
+                    Selecionar
+                  </template>
+                </option>
+                <option
+                  v-for="item in órgãosComoLista"
+                  :key="item"
+                  :value="item.id"
+                  :title="item.descricao?.length > 36 ? item.descricao : null"
+                >
+                  {{ item.sigla }} - {{ truncate(item.descricao, 36) }}
+                </option>
+              </Field>
+            </div>
             <button
               v-else
               type="button"
