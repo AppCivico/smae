@@ -38,7 +38,6 @@ const { errors, isSubmitting, handleSubmit, values }
     initialValues: itemParaEdição
 });
 
-const emits = defineEmits(['close']);
 const props = defineProps({
   etapaId: {
     type: Number,
@@ -62,6 +61,8 @@ const props = defineProps({
   }
 });
 
+const emits = defineEmits(['close', 'saved']);
+
 const onSubmit = handleSubmit.withControlled(async (valoresControlados) => {
   try {
     const msg = props.etapaId
@@ -71,8 +72,7 @@ const onSubmit = handleSubmit.withControlled(async (valoresControlados) => {
     if (resposta) {
       alertStore.success(msg);
       fluxosEtapasProjetos.$reset();
-      fluxosEtapasProjetos.buscarTudo();
-      emits('close');
+      emits('saved');
     }
   } catch (error) {
     alertStore.error(error);
