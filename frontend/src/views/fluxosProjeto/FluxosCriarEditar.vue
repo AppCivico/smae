@@ -2,6 +2,7 @@
 // Não finalizado
 import { useTipoDeTransferenciaStore } from '@/stores/tipoDeTransferencia.store';
 import { useFluxosProjetosStore } from '@/stores/fluxosProjeto.store';
+import { useFluxosFasesProjetosStore } from '@/stores/fluxosFasesProjeto.store';
 import esferasDeTransferencia from '@/consts/esferasDeTransferencia';
 import { ErrorMessage, Field, Form, useForm,} from 'vee-validate';
 import TarefaFluxo from '@/views/fluxosProjeto/TarefaFluxo.vue';
@@ -15,11 +16,13 @@ import { storeToRefs } from 'pinia';
 
 const tipoDeTransferenciaStore = useTipoDeTransferenciaStore();
 const fluxosProjetoStore = useFluxosProjetosStore();
+const fluxosFasesProjetos = useFluxosFasesProjetosStore();
 const alertStore = useAlertStore();
 const router = useRouter();
 
 const { lista: tipoTransferenciaComoLista } = storeToRefs(tipoDeTransferenciaStore);
 const { lista, chamadasPendentes, erro, itemParaEdição,  emFoco} = storeToRefs(fluxosProjetoStore);
+const { chamadasPendentes: fasesPendentes } = storeToRefs(fluxosFasesProjetos);
 
 const esferaSelecionada = ref('');
 const exibeModalTarefa = ref(false);
@@ -70,6 +73,16 @@ async function iniciar() {
     await fluxosProjetoStore.buscarItem(props.fluxoId);
   }
 }
+
+function excluirFase(idDaFase) {
+  alertStore.confirmAction('Tem certeza?', async () => {
+    if (await fluxosFasesProjetos.excluirItem(idDaFase)) {
+      alertStore.success('Fase excluída!');
+      iniciar();
+    }
+  }, 'Excluir');
+}
+
 iniciar()
 
 
@@ -303,7 +316,11 @@ iniciar()
         </thead>
         <tbody v-for="fase in item.fases">
           <tr>
-            <td>{{ fase.fase.fase  }}</td>
+            <td
+              :class="{
+                loading: fasesPendentes?.lista
+              }"
+              >{{ fase.fase.fase  }}</td>
             <td>
               <span v-if="fase.situacoes && fase.situacoes.length">
                 <span v-for="situacao in fase.situacoes" :key="situacao.id">
@@ -325,7 +342,7 @@ iniciar()
                 class="like-a__text"
                 arial-label="excluir"
                 title="excluir"
-                @click="excluirFluxo(item.id)"
+                @click="excluirFase(fase.id)"
               >
                 <svg
                   width="20"
