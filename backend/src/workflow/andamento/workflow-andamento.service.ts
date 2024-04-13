@@ -192,7 +192,7 @@ export class WorkflowAndamentoService {
 
             necessita_preencher_orgao: responsabilidadeFase == WorkflowResponsabilidade.OutroOrgao ? true : false,
 
-            necessita_preencher_pessoa: true,
+            necessita_preencher_pessoa: responsabilidadeFase == WorkflowResponsabilidade.OutroOrgao ? true : false,
 
             situacao: {
                 id: row.workflow_situacao.id,
