@@ -83,13 +83,13 @@ export const useWorkflowAndamentoStore = defineStore('workflowAndamento', {
       }
     },
 
-    async encerrarFase(params = {}): Promise<boolean> {
+    async encerrarFase(faseId: Number, transferênciaId: Number): Promise<boolean> {
       this.chamadasPendentes.fase = true;
 
       try {
         const resposta = await this.requestS.post(`${baseUrl}/workflow-andamento-fase/finalizar`, {
-          transferencia_id: Number(this.route.params.transferenciaId) || undefined,
-          ...params,
+          transferencia_id: transferênciaId || Number(this.route.params.transferenciaId),
+          fase_id: faseId,
         });
 
         this.chamadasPendentes.fase = false;
