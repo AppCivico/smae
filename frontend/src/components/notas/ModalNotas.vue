@@ -123,6 +123,7 @@ tipoStore.buscarTudo();
       Adicionar nova nota
     </button>
     <div class="mb4" v-if="exibeForm">
+      <form @submit.prevent="onSubmit">
         <div class="flex mb2 flexwrap g2">
           <div class="f1">
             <LabelFromYup name="status" :schema="schema" />
@@ -187,13 +188,13 @@ tipoStore.buscarTudo();
               Object.keys(errors)?.length
                 ? `Erros de preenchimento: ${Object.keys(errors)?.length}`
                 : null
-            "          
+            "
           >
             Salvar
           </button>
           <hr class="ml2 f1" />
         </div>
-      </Form>
+      </form>
     </div>
 
     <table class="tablemain mb1">
