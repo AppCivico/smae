@@ -165,7 +165,7 @@ export class AvisoEmailTaskService implements TaskableService {
                 return false;
             }
 
-            const diffAsDay = DateTime.fromJSDate(ultimo_envio_em).diffNow().as('days');
+            const diffAsDay = DateTime.now().diff(DateTime.fromJSDate(ultimo_envio_em)).as('days');
             this.logger.verbose(
                 `aviso_email.ultimo_envio_em = ${ultimo_envio_em}, diff as days=${diffAsDay}, aviso-email recorrencia_dias=${aviso_email.recorrencia_dias}`
             );
@@ -210,7 +210,7 @@ export class AvisoEmailTaskService implements TaskableService {
         if (aviso_email.ultimo_envio_em && aviso_email.recorrencia_dias === 0) {
             return 'recorrência é dias zero e já teve envio';
         } else if (aviso_email.ultimo_envio_em && aviso_email.recorrencia_dias > 0) {
-            const diffAsDay = DateTime.fromJSDate(aviso_email.ultimo_envio_em).diffNow().as('days');
+            const diffAsDay = DateTime.now().diff(DateTime.fromJSDate(aviso_email.ultimo_envio_em)).as('days');
             return `diferencia de dias é menor que recorrência: ${diffAsDay} < ${aviso_email.recorrencia_dias}`;
         }
 
