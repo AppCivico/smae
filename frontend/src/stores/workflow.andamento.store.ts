@@ -63,7 +63,7 @@ export const useWorkflowAndamentoStore = defineStore('workflowAndamento', {
       }
     },
 
-    async iniciarFase(faseId: Number, transferênciaId: Number): Promise<boolean> {
+    async iniciarFase(faseId: number, transferênciaId: number): Promise<boolean> {
       this.chamadasPendentes.fase = true;
 
       try {
@@ -82,7 +82,7 @@ export const useWorkflowAndamentoStore = defineStore('workflowAndamento', {
       }
     },
 
-    async encerrarFase(faseId: Number, transferênciaId: Number): Promise<boolean> {
+    async encerrarFase(faseId: number, transferênciaId: number): Promise<boolean> {
       this.chamadasPendentes.fase = true;
 
       try {
@@ -101,7 +101,7 @@ export const useWorkflowAndamentoStore = defineStore('workflowAndamento', {
       }
     },
 
-    async avançarEtapa(transferênciaId: Number): Promise<boolean> {
+    async avançarEtapa(transferênciaId: number): Promise<boolean> {
       this.chamadasPendentes.fase = true;
 
       try {
