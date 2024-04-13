@@ -124,7 +124,11 @@ export const useWorkflowAndamentoStore = defineStore('workflowAndamento', {
     etapaCorrente: ({ workflow }): WorkflowAndamentoFluxoDto | null => workflow?.fluxo?.[0] || null,
 
     inícioDeFasePermitido() {
-      return this.etapaCorrente?.fases?.some((x: WorkflowAndamentoFasesDto) => x.andamento === null)
+      return this.etapaCorrente?.fases?.some((
+        x: WorkflowAndamentoFasesDto,
+        i: number,
+        lista: WorkflowAndamentoFasesDto[],
+      ) => x.andamento?.concluida && lista[i + 1]?.andamento === null)
       || false;
     },
 
