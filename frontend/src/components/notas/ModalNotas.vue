@@ -259,6 +259,7 @@ watch(itemParaEdição, (novosValores) => {
               @click="editarNota(item.id_jwt)"
               arial-label="Editar"
               title="Editar"
+              class="like-a__text"
             >
               <svg width="20" height="20">
                 <use xlink:href="#i_edit" />
