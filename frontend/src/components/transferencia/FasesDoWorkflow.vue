@@ -38,12 +38,10 @@ const ÓrgãosStore = useOrgansStore();
 const { organs, órgãosComoLista } = storeToRefs(ÓrgãosStore);
 
 const workflowAndamento = useWorkflowAndamentoStore();
-const { workflow, chamadasPendentes } = storeToRefs(workflowAndamento);
+const { etapaCorrente, chamadasPendentes } = storeToRefs(workflowAndamento);
 
 const faseSelecionada = ref(0);
 const listaDeFases = ref(null);
-
-const etapaCorrente = computed(() => workflow.value?.fluxo?.[0] || {});
 
 const faseEmFoco = computed(() => (!faseSelecionada.value
   ? null
