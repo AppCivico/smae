@@ -3,6 +3,7 @@
 import { useTipoDeTransferenciaStore } from '@/stores/tipoDeTransferencia.store';
 import { useFluxosProjetosStore } from '@/stores/fluxosProjeto.store';
 import { useFluxosFasesProjetosStore } from '@/stores/fluxosFasesProjeto.store';
+import { useFluxosTarefasProjetosStore } from '@/stores/fluxosTarefaProjeto.store';
 import esferasDeTransferencia from '@/consts/esferasDeTransferencia';
 import { ErrorMessage, Field, Form, useForm,} from 'vee-validate';
 import TarefaFluxo from '@/views/fluxosProjeto/TarefaFluxo.vue';
@@ -17,12 +18,14 @@ import { storeToRefs } from 'pinia';
 const tipoDeTransferenciaStore = useTipoDeTransferenciaStore();
 const fluxosProjetoStore = useFluxosProjetosStore();
 const fluxosFasesProjetos = useFluxosFasesProjetosStore();
+const fluxosTarefasProjetos = useFluxosTarefasProjetosStore();
 const alertStore = useAlertStore();
 const router = useRouter();
 
 const { lista: tipoTransferenciaComoLista } = storeToRefs(tipoDeTransferenciaStore);
 const { lista, chamadasPendentes, erro, itemParaEdição,  emFoco} = storeToRefs(fluxosProjetoStore);
 const { chamadasPendentes: fasesPendentes } = storeToRefs(fluxosFasesProjetos);
+const { chamadasPendentes: tarefasPendentes } = storeToRefs(fluxosTarefasProjetos);
 
 const esferaSelecionada = ref('');
 const exibeModalTarefa = ref(false);
@@ -78,6 +81,15 @@ function excluirFase(idDaFase) {
   alertStore.confirmAction('Tem certeza?', async () => {
     if (await fluxosFasesProjetos.excluirItem(idDaFase)) {
       alertStore.success('Fase excluída!');
+      iniciar();
+    }
+  }, 'Excluir');
+}
+
+function excluirTarefa(idDaTarefa) {
+  alertStore.confirmAction('Tem certeza?', async () => {
+    if (await fluxosTarefasProjetos.excluirItem(idDaTarefa)) {
+      alertStore.success('Tarefa excluída!');
       iniciar();
     }
   }, 'Excluir');
@@ -360,7 +372,11 @@ iniciar()
             </td>
           </tr>
           <tr class="tarefaTabela" v-for="tarefa in fase.tarefas" :key="tarefa.id">
-            <td>
+            <td            
+              :class="{
+                loading: tarefasPendentes?.lista
+              }"
+            >
               <span class="tarefa pl3">Tarefa</span>
               {{ tarefa.workflow_tarefa.descricao || "-"}}
             </td>
@@ -371,7 +387,7 @@ iniciar()
                 class="like-a__text"
                 arial-label="excluir"
                 title="excluir"
-                @click="excluirFluxo(item.id)"
+                @click="excluirTarefa(tarefa.id)"
               >
                 <svg
                   width="20"
