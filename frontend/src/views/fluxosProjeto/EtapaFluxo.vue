@@ -39,7 +39,6 @@ const { errors, isSubmitting, handleSubmit, values }
 });
 
 const emits = defineEmits(['close']);
-
 const props = defineProps({
   etapaId: {
     type: Number,

@@ -25,6 +25,7 @@ const { errors, isSubmitting, values, handleSubmit, setFieldValue }
   initialValues: itemParaEdição
 });
 
+const emits = defineEmits(['close']);
 const props = defineProps({
   tarefaFluxoId: {
     type: Number,
@@ -43,7 +44,7 @@ const onSubmit = handleSubmit.withControlled(async (valoresControlados) => {
       alertStore.success(msg);
       fluxoTarefasProjetosStore.$reset();
       fluxoTarefasProjetosStore.buscarTudo();
-      router.push({ name: "fluxosListar" });
+      emits('close');
     }
   } catch (error) {
     alertStore.error(error);
@@ -62,11 +63,14 @@ iniciar();
 </script>
 
 <template>
-  <SmallModal>
+  <SmallModal @close="$emit('close')">
     <div class="flex spacebetween center mb2">
       <h2>Adicionar tarefa</h2>
       <hr class="ml2 f1" />
-      <CheckClose @close="exibeModal = false"/>
+      <CheckClose
+        :apenas-emitir="true"
+        @close="$emit('close')"
+      />
     </div>
 
     <form
