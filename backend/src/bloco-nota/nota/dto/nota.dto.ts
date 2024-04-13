@@ -55,11 +55,14 @@ export class CreateNotaDto {
 
     @IsOptional()
     @IsOnlyDate()
+    @ValidateIf((object, value) => value !== null)
     @Type(() => Date)
-    rever_em?: Date;
+    rever_em?: Date | null;
 
+    @IsOptional()
+    @ValidateIf((object, value) => value !== null)
     @IsBoolean()
-    dispara_email: boolean;
+    dispara_email: boolean | null;
 
     @ApiProperty({ enum: StatusNota, enumName: 'StatusNota' })
     @IsEnum(StatusNota)
@@ -68,8 +71,9 @@ export class CreateNotaDto {
     @IsOptional()
     @IsArray()
     @ValidateNested()
+    @ValidateIf((object, value) => value !== null)
     @Type(() => NotaEnderecamentoDto)
-    enderecamentos?: NotaEnderecamentoDto[];
+    enderecamentos?: NotaEnderecamentoDto[] | null;
 }
 
 export class BuscaNotaDto {
@@ -116,7 +120,7 @@ export class NotaEnderecamentoRespostas {
     criador: IdNomeExibicao;
     criado_em: Date;
     id: number;
-    pode_remover: boolean
+    pode_remover: boolean;
 }
 
 export class ListTipoNotaDto {

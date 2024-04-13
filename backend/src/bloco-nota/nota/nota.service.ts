@@ -56,6 +56,9 @@ export class NotaService {
 
         if (!user.orgao_id) throw new BadRequestException('Necessário ter órgão para criar uma nota');
 
+        if (Array.isArray(dto.enderecamentos) && dto.enderecamentos.length && tipo.eh_publico == false)
+            throw new BadRequestException('Não é possível encaminhar notas privadas.');
+
         const now = new Date(Date.now());
         const token = await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient) => {
             const nota = await prismaTx.nota.create({
@@ -63,7 +66,7 @@ export class NotaService {
                     data_nota: dto.data_nota,
                     nota: dto.nota,
                     status: dto.status,
-                    dispara_email: dto.dispara_email,
+                    dispara_email: dto.dispara_email === undefined ? undefined : !!dto.dispara_email,
                     rever_em: dto.rever_em,
 
                     bloco_nota_id: blocoId,
@@ -395,11 +398,14 @@ export class NotaService {
                 id: true,
                 dispara_email: true,
                 nota: true,
-                tipo_nota: { select: { permite_revisao: true, permite_enderecamento: true } },
+                tipo_nota: { select: { permite_revisao: true, permite_enderecamento: true, eh_publico: true } },
             },
         });
 
         if (nota.tipo_nota.permite_revisao && dto.rever_em) delete dto.rever_em;
+
+        if (Array.isArray(dto.enderecamentos) && dto.enderecamentos.length && nota.tipo_nota.eh_publico == false)
+            throw new BadRequestException('Não é possível encaminhar notas privadas.');
 
         const now = new Date(Date.now());
         await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient) => {
@@ -414,7 +420,7 @@ export class NotaService {
                     nota: dto.nota,
                     status: dto.status,
                     data_nota: dto.data_nota,
-                    dispara_email: dto.dispara_email,
+                    dispara_email: dto.dispara_email === undefined ? undefined : !!dto.dispara_email,
                     rever_em: dto.rever_em,
                 },
                 select: {
