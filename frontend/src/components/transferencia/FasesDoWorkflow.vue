@@ -327,7 +327,10 @@ watch(itemParaEdição, () => {
                 :required="tarefa.andamento?.necessita_preencher_orgao"
                 :disabled="!órgãosComoLista?.length"
               >
-                <option value="">
+                <option
+                  value=""
+                  :disabled="tarefa.andamento?.necessita_preencher_orgao"
+                >
                   <template v-if="tarefa.andamento?.necessita_preencher_orgao">
                     Selecionar
                   </template>
