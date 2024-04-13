@@ -133,12 +133,8 @@ tipoStore.buscarTudo();
         <div class="flex">
           <div class="f1">
             <LabelFromYup name="dispara_email" :schema="schema" />
-            <Field
-              name="dispara_email"
-              type="checkbox"
-              :value="true"
-              class="inputcheckbox"
-            />
+            <Field name="dispara_email" type="checkbox" class="inputcheckbox" :value="true"
+              :unchecked-value="false"/>
           </div>
           <div class="f1">
             <LabelFromYup name="data_nota" :schema="schema" />
