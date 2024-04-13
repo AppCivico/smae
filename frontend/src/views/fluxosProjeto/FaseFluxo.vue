@@ -74,26 +74,18 @@ iniciar();
         @close="$emit('close')"
       />
     </div>
+
     <form
       :disabled="isSubmitting"
       @submit.prevent="onSubmit"
-      >
-      <div>
-          <LabelFromYup
-            :name="fluxoId"
-            :schema="schema"
-          />
-          <Field
-            name="fluxo_id"
-            type="hidden"
-            class="inputtext light mb1"
-            :value="fluxoId"
-          />
-          <ErrorMessage
-            class="error-msg mb1"
-            name="nome"
-          />
-        </div>
+    >
+      <Field
+        name="fluxo_id"
+        type="hidden"
+        class="inputtext light mb1"
+        :value="fluxoId"
+      />
+
       <div class="flex flexwrap g2">
         <div class="f1">
           <LabelFromYup
