@@ -145,6 +145,7 @@ tipoStore.buscarTudo();
           <LabelFromYup name="nota" :schema="schema" />
           <Field name="nota" type="textarea" class="inputtext light mb1" as="textarea" rows="10"/>
         </div>
+        <FormErrorsList :errors="errors" class="mb1" />
         <div class="flex spacebetween center mb2">
           <hr class="mr2 f1" />
           <button
