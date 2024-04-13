@@ -13,7 +13,7 @@ function caminhoParaApi(rota){
   }
 }
 
-export const useEtapasProjetosStore = defineStore('paineisExternos', {
+export const useEtapasProjetosStore = defineStore('etapasProjetosStore', {
   state: () => ({
     lista: [],
     chamadasPendentes: {
