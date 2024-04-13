@@ -30,7 +30,7 @@ const { chamadasPendentes: tarefasPendentes } = storeToRefs(fluxosTarefasProjeto
 const esferaSelecionada = ref('');
 const exibeModalTarefa = ref(false);
 const idDaEtapaEmFoco = ref(-1);
-const idDaFaseEmFoco = ref(-1);
+const idDoRelacionamentoComFase = ref(-1);
 
 const props = defineProps({
   fluxoId: {
@@ -303,7 +303,10 @@ iniciar()
         </div>
         <hr class="ml2 f1">
         <div class="flex spacebetween g1 center">
-          <button class="btn ml2" @click="idDaFaseEmFoco = 0">
+          <button
+            class="btn ml2"
+            @click="idDoRelacionamentoComFase = 0"
+          >
             Adicionar fase
           </button>
           <button
@@ -316,10 +319,10 @@ iniciar()
             Editar
           </button>
           <FaseFluxo
-            v-if="idDaFaseEmFoco > -1"
-            :fase-id="idDaFaseEmFoco"
+            v-if="idDoRelacionamentoComFase > -1"
+            :relacionamento-id="idDoRelacionamentoComFase"
             :fluxo-id="item.id"
-            @close="idDaFaseEmFoco = -1"
+            @close="idDoRelacionamentoComFase = -1"
           />
         </div>
       </div>
@@ -378,7 +381,7 @@ iniciar()
               </button>
             </td>
             <td>
-              <button class="bgnone like-a__text" @click="idDaFaseEmFoco = fase.id">
+              <button class="bgnone like-a__text" @click="idDoRelacionamentoComFase = fase.id">
                 <svg
                   width="20"
                   height="20"
