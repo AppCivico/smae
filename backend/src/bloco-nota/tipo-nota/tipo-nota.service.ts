@@ -1,5 +1,5 @@
-import { HttpException, Injectable, NotFoundException } from '@nestjs/common';
-import { Prisma } from '@prisma/client';
+import { BadRequestException, HttpException, Injectable, NotFoundException } from '@nestjs/common';
+import { Prisma, TipoNota } from '@prisma/client';
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import { PrismaService } from '../../prisma/prisma.service';
 import { CreateTipoNotaDto, FilterTipoNota, TipoNotaItem, UpdateTipoNotaDto } from './dto/tipo-nota.dto';
@@ -16,31 +16,34 @@ export class TipoNotaService {
         });
 
         if (similarExists > 0)
-            throw new HttpException('codigo| Descrição igual ou semelhante já existe em outro registro ativo', 400);
+            throw new BadRequestException('codigo| Descrição igual ou semelhante já existe em outro registro ativo');
 
-        const created = await this.prisma.tipoNota.create({
-            data: {
-                criado_em: new Date(Date.now()),
-                codigo: dto.codigo,
-                permite_email: dto.permite_email,
-                permite_enderecamento: dto.permite_enderecamento,
-                permite_replica: dto.permite_replica,
-                permite_revisao: dto.permite_revisao,
-                visivel_resp_orgao: dto.visivel_resp_orgao,
-                eh_publico: dto.eh_publico,
-                TipoNotaModulo: {
-                    createMany: {
-                        data: dto.modulos.map((m) => {
-                            return {
-                                modulo_sistema: m,
-                            };
-                        }),
+        const created = await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient) => {
+            const created = await prismaTx.tipoNota.create({
+                data: {
+                    criado_em: new Date(Date.now()),
+                    codigo: dto.codigo,
+                    permite_email: dto.permite_email,
+                    permite_enderecamento: dto.permite_enderecamento,
+                    permite_replica: dto.permite_replica,
+                    permite_revisao: dto.permite_revisao,
+                    visivel_resp_orgao: dto.visivel_resp_orgao,
+                    eh_publico: dto.eh_publico,
+                    TipoNotaModulo: {
+                        createMany: {
+                            data: dto.modulos.map((m) => {
+                                return {
+                                    modulo_sistema: m,
+                                };
+                            }),
+                        },
                     },
                 },
-            },
-            select: { id: true },
-        });
+            });
+            this.verificaRegras(created);
 
+            return created;
+        });
         return created;
     }
 
@@ -108,7 +111,7 @@ export class TipoNotaService {
         }
 
         await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient) => {
-            await prismaTx.tipoNota.update({
+            const updated = await prismaTx.tipoNota.update({
                 where: { id: id },
                 data: {
                     atualizado_em: new Date(Date.now()),
@@ -121,6 +124,8 @@ export class TipoNotaService {
                     eh_publico: dto.eh_publico,
                 },
             });
+
+            this.verificaRegras(updated);
 
             if (Array.isArray(dto.modulos)) {
                 await prismaTx.tipoNotaModulo.deleteMany({
@@ -140,6 +145,18 @@ export class TipoNotaService {
         });
 
         return { id };
+    }
+
+    private verificaRegras(tipoNota: TipoNota) {
+        if (tipoNota.permite_enderecamento && tipoNota.eh_publico == false)
+            throw new BadRequestException(
+                'Não é permitido encaminhar notas que são privadas, pois não é possível encaminhar.'
+            );
+
+        if (tipoNota.permite_replica && tipoNota.eh_publico == false)
+            throw new BadRequestException(
+                'Não é permitido replica notas que são privadas, pois não é possível encaminhar.'
+            );
     }
 
     async remove(id: number, user: PessoaFromJwt) {
