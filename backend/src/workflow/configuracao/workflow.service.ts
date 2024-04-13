@@ -4,7 +4,7 @@ import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import { PrismaService } from '../../prisma/prisma.service';
 import { Prisma } from '@prisma/client';
 import { CreateWorkflowDto } from './dto/create-workflow.dto';
-import { DateTime, Zone } from 'luxon';
+import { DateTime } from 'luxon';
 import { UpdateWorkflowDto } from './dto/update-workflow.dto';
 import { FilterWorkflowDto } from './dto/filter-workflow.dto';
 import { WorkflowDetailDto, WorkflowDto } from './entities/workflow.entity';
