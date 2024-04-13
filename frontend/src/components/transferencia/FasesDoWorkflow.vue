@@ -108,6 +108,16 @@ async function rolarParaFaseCorrente() {
   }
 }
 
+function finalizarFase(idDaFase) {
+  alertStore.confirmAction('Tem certeza?', async () => {
+    if (await workflowAndamento.encerrarFase(idDaFase)) {
+      faseSelecionada.value = 0;
+      workflowAndamento.buscar();
+      alertStore.success('Fase finalizada!');
+    }
+  }, 'Finalizar');
+}
+
 workflowAndamento.buscar().then(() => {
   rolarParaFaseCorrente();
 });
@@ -220,12 +230,25 @@ watch(itemParaEdição, () => {
 
       <hr class="ml2 f1">
 
+      <button
+        type="button"
+        class="btn ml2"
+        :disabled="!faseEmFoco.andamento.pode_concluir"
+        @click="finalizarFase(faseEmFoco.fase?.id)"
+      >
+        Finalizar
+      </button>
+
       <CheckClose
         :formulário-sujo="formulárioSujo"
         :apenas-emitir="true"
         @close="faseSelecionada = 0"
       />
     </div>
+
+    <pre v-scrollLockDebug>faseEmFoco:
+  {{ faseEmFoco }}
+</pre>
 
     <form
       :disabled="isSubmitting"
