@@ -62,6 +62,20 @@ async function onSubmit(values) {
   console.log('submit: ', valoresAuxiliares)
 }
 
+async function excluirNota(id) {
+  useAlertStore().confirmAction(
+    "Deseja mesmo remover a nota?",
+    async () => {
+      if (await blocoStore.excluirItem(id)) {
+        blocoStore.$reset();
+        blocoStore.buscarTudo(props.blocosToken);
+        useAlertStore().success("Tarefa removida.");
+      }
+    },
+    "Remover"
+  );
+}
+
 watch(() => props.blocosToken, () => {
   if(props.blocosToken){
     blocoStore.buscarTudo(props.blocosToken);
@@ -191,7 +205,12 @@ tipoStore.buscarTudo();
             }}
           </td>
           <td>
-            <button class="like-a__text" arial-label="excluir" title="excluir">
+            <button
+              @click="excluirNota(item.id_jwt)"
+              class="like-a__text"
+              arial-label="excluir"
+              title="excluir"
+            >
               <svg width="20" height="20">
                 <use xlink:href="#i_remove" />
               </svg>
