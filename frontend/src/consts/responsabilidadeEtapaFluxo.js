@@ -4,7 +4,7 @@ export default {
     valor: 'Propria',
   },
   OutroOrgao : {
-    nome: 'Outro órgão ',
-    valor: 'OutroOrgao ',
+    nome: 'Outro órgão',
+    valor: 'OutroOrgao',
   },
 };
