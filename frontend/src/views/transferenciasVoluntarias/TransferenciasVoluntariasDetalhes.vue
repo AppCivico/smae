@@ -41,18 +41,18 @@ function iniciarFase(idDaFase) {
   alertStore.confirmAction('Tem certeza?', async () => {
     if (await workflowAndamento.iniciarFase(idDaFase)) {
       workflowAndamento.buscar();
-      alertStore.success('Foi-se!');
+      alertStore.success('Fase iniciada!');
     }
-  }, 'Prosseguir');
+  }, 'Iniciar');
 }
 
 function avançarEtapa() {
   alertStore.confirmAction('Tem certeza?', async () => {
     if (await workflowAndamento.avançarEtapa(props.transferenciaId)) {
       workflowAndamento.buscar();
-      alertStore.success('Foi-se!');
+      alertStore.success('Nova etapa iniciada!');
     }
-  }, 'Prosseguir');
+  }, 'Avançar');
 }
 
 TransferenciasVoluntarias.buscarItem(props.transferenciaId);
