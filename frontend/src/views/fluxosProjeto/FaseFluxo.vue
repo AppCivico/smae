@@ -10,22 +10,7 @@ import SmallModal from "@/components/SmallModal.vue";
 import { useAlertStore } from '@/stores/alert.store';
 import { useRouter } from "vue-router";
 import { storeToRefs } from 'pinia';
-import { ref } from 'vue';
-
-const fluxosFasesProjetosStore = useFluxosFasesProjetosStore();
-const fasesProjetosStore = useFasesProjetosStore();
-const situacaoProjetosStore = useSituacaoStore();
-const alertStore = useAlertStore();
-const router = useRouter();
-const erro = ref(null);
-
-const { lista: listaFase } = storeToRefs(fasesProjetosStore);
-const { lista: listaSituacao } = storeToRefs(situacaoProjetosStore);
-const { errors, isSubmitting, values, handleSubmit }
-= useForm({
-  validationSchema: schema,
-  initialValues: itemParaEdição
-});
+import { computed, ref } from 'vue';
 
 const emits = defineEmits(['close']);
 const props = defineProps({
@@ -37,6 +22,33 @@ const props = defineProps({
     type: Number,
     default: 0,
   },
+});
+
+const fluxosFasesProjetosStore = useFluxosFasesProjetosStore();
+const fasesProjetosStore = useFasesProjetosStore();
+const situacaoProjetosStore = useSituacaoStore();
+const alertStore = useAlertStore();
+const router = useRouter();
+const erro = ref(null);
+
+const { lista: listaFase } = storeToRefs(fasesProjetosStore);
+const { lista: listaSituacao } = storeToRefs(situacaoProjetosStore);
+const { lista } = storeToRefs(fluxosFasesProjetosStore);
+
+const itemParaEdição = computed(() => {
+  const fase = lista.value.find((x) => (x.id === Number(props.faseId)));
+
+  return {
+    ...fase,
+    fase_id: fase?.fase?.id,
+    responsabilidade: fase?.responsabilidade || '',
+    situacao: fase?.situacao?.map((x)=> x.id) || null,
+  };
+});
+
+const { errors, isSubmitting, values, handleSubmit } = useForm({
+  validationSchema: schema,
+  initialValues: itemParaEdição
 });
 
 const onSubmit = handleSubmit.withControlled(async (valoresControlados) => {
@@ -55,19 +67,32 @@ const onSubmit = handleSubmit.withControlled(async (valoresControlados) => {
   } catch (error) {
     alertStore.error(error);
   }
-})
+});
 
 function iniciar() {
-  fasesProjetosStore.buscarTudo()
-  situacaoProjetosStore.buscarTudo()
+  fasesProjetosStore.buscarTudo();
+  situacaoProjetosStore.buscarTudo();
+
+  if (props.faseId) {
+    fluxosFasesProjetosStore.buscarTudo();
+  }
 }
 iniciar();
 </script>
-
 <template>
-  <SmallModal  @close="$emit('close')">
+  <SmallModal
+    @close="$emit('close')"
+  >
     <div class="flex spacebetween center mb2">
-      <h2>Adicionar fase</h2>
+      <h2>
+        <template v-if="faseId">
+          Editar
+        </template>
+        <template v-else>
+          Adicionar
+        </template>
+        fase
+      </h2>
       <hr class="ml2 f1" />
       <CheckClose
         :apenas-emitir="true"
