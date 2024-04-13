@@ -58,7 +58,7 @@ const itemParaEdição = computed(() => ({
   transferencia_id: props.transferenciaId || Number(route.params.transferenciaId) || 0,
   fase_id: faseEmFoco.value?.fase?.id,
   orgao_responsavel_id: faseEmFoco.value?.andamento?.orgao_responsavel?.id || null,
-  pessoa_responsavel_id: faseEmFoco.value?.andamento?.pessoal_responsavel?.id || null,
+  pessoa_responsavel_id: faseEmFoco.value?.andamento?.pessoa_responsavel?.id || null,
   situacao_id: faseEmFoco.value?.andamento?.situacao?.id || null,
   tarefas: faseEmFoco.value?.tarefas?.map((x) => ({
     id: x.id,
@@ -194,21 +194,22 @@ watch(itemParaEdição, () => {
         >
           <span
             v-if="item.andamento?.dias_na_fase"
-            class="w600 dedo-duro__dias-da-fase"
+            class="w700 dedo-duro__dias-da-fase"
           >
             +{{ item.andamento?.dias_na_fase }} dias
           </span>
 
           <span
             v-if="item.andamento?.pessoa_responsavel"
-            class="dedo-duro__responsável-pela-fase"
+            class="block dedo-duro__responsável-pela-fase"
           >
-            {{ item.andamento?.pessoa_responsavel }}
+            {{ item.andamento?.pessoa_responsavel?.nome_exibicao
+              || item.andamento?.pessoa_responsavel }}
           </span>
           <abbr
-            v-if="item.andamento?.orgao_responsavel"
+            v-else-if="item.andamento?.orgao_responsavel"
             :title="item.andamento?.orgao_responsavel?.descricao"
-            class="dedo-duro__responsável-pela-fase"
+            class="block dedo-duro__responsável-pela-fase"
           >
             {{ item.andamento?.orgao_responsavel?.sigla || item.andamento?.orgao_responsavel }}
           </abbr>
