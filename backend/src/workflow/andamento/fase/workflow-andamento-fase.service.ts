@@ -152,10 +152,6 @@ export class WorkflowAndamentoFaseService {
         const idsAtualizados: RecordWithId[] = [];
         if (dto.tarefas != undefined) {
             for (const tarefa of dto.tarefas) {
-                console.log('===========================');
-                console.log(tarefa);
-                console.log('===========================');
-
                 // Verificando se esta tarefa está de fato na configuração do Workflow.
                 const tarefaWorkfloConfig = await prismaTxn.fluxoTarefa.findFirst({
                     where: {
@@ -211,7 +207,8 @@ export class WorkflowAndamentoFaseService {
 
                 if (
                     tarefaWorkfloConfig.responsabilidade == WorkflowResponsabilidade.OutroOrgao &&
-                    (!tarefa.orgao_responsavel_id || !transferenciaAndamentoTarefaRow.orgao_responsavel_id)
+                    !tarefa.orgao_responsavel_id &&
+                    !transferenciaAndamentoTarefaRow.orgao_responsavel_id
                 )
                     throw new HttpException(
                         `orgao_responsavel_id| Órgão deve ser enviado para tarefa "${tarefaWorkfloConfig.workflow_tarefa.tarefa_fluxo}", pois é de responsabilidade de outro órgão.`,
