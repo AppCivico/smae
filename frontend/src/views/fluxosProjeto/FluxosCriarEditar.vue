@@ -11,7 +11,7 @@ import EtapaFluxo from '@/views/fluxosProjeto/EtapaFluxo.vue';
 import FaseFluxo from '@/views/fluxosProjeto/FaseFluxo.vue';
 import { workflow as schema } from '@/consts/formSchemas';
 import { useAlertStore } from '@/stores/alert.store';
-import { computed, ref, watch } from 'vue';
+import { computed, ref } from 'vue';
 import { useRouter } from "vue-router";
 import { storeToRefs } from 'pinia';
 
@@ -275,7 +275,7 @@ iniciar()
     </div>
   </div>
 
-  <div class="flex spacebetween center mb2">
+  <div class="flex spacebetween center mb2" v-if="props.fluxoId">
     <h1>Etapas do fluxo</h1>
     <hr class="ml2 f1">
     <button class="btn ml2" @click="exibeModalEtapa = true">
@@ -490,6 +490,5 @@ iniciar()
       margin: 0 24px 0 24px;
 
   }
-
 </style>
 
