@@ -371,6 +371,7 @@ export class WorkflowAndamentoFaseService {
                         },
                     },
                     select: {
+                        fase_id: true,
                         ordem: true,
                     },
                 });
@@ -380,7 +381,7 @@ export class WorkflowAndamentoFaseService {
                 const configFluxoFaseSeguinte = await prismaTxn.fluxoFase.findFirst({
                     where: {
                         removido_em: null,
-                        ordem: { gt: configFluxoFaseAtual.ordem },
+                        fase_id: dto.fase_id,
                         fluxo: {
                             fluxo_etapa_de_id: faseAtual.workflow_etapa_id,
                             removido_em: null,
@@ -423,6 +424,9 @@ export class WorkflowAndamentoFaseService {
                         'Fase não está configurada corretamente. Não possui configuração de situação Inicial',
                         400
                     );
+
+                if (configFluxoFaseAtual.fase_id == configFluxoFaseSeguinte.fase_id)
+                    throw new Error('Erro ao definir próxima fase.');
 
                 const situacao_id: number = configFluxoFaseSeguinte.situacoes[0].situacao_id;
 
