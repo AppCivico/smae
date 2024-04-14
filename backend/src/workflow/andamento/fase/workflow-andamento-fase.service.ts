@@ -73,6 +73,7 @@ export class WorkflowAndamentoFaseService {
                             removido_em: null,
                             fase_id: self.workflow_fase_id,
                             fluxo: {
+                                workflow_id: self.transferencia.workflow_id!,
                                 fluxo_etapa_de_id: self.workflow_etapa_id,
                                 removido_em: null,
                             },
