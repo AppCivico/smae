@@ -18,7 +18,7 @@ const props = defineProps({
     type: Number,
     default: 0,
   },
-  fluxoId: {
+  etapaId: {
     type: Number,
     default: 0,
   },
@@ -109,7 +109,7 @@ iniciar();
         name="fluxo_id"
         type="hidden"
         class="inputtext light mb1"
-        :value="fluxoId"
+        :value="etapaId"
       />
 
       <div class="flex flexwrap g2">
