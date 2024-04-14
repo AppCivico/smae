@@ -329,13 +329,13 @@ watch(itemParaEdição, (novoValor) => {
     </button>
   </div>
 
-  <div class="cadaTabela">
-    <div v-for="item in emFoco?.fluxo"
+  <div class="todasTabela">
+    <div class="cadaTabela" v-for="item in emFoco?.fluxo"
         :key="item.id">
       <div class="flex flexwrap center">
-        <div class="flex center">
+        <div class="flex">
           <span class="ordem">{{ item && item.ordem ? item.ordem : ''  }}</span>
-          <h2 class="mb0 fb50 f1 tituloTabela">
+          <h2 class="mb0 fb50 f1 tituloTabela flex g1 center">
             Etapa <span>{{ item.fluxo_etapa_de.etapa_fluxo }}</span>
             para <span>{{ item.fluxo_etapa_para.etapa_fluxo }}</span>
           </h2>
@@ -502,8 +502,9 @@ watch(itemParaEdição, (novoValor) => {
 
 <style scoped>
   .tituloTabela span{
-    color:#607A9F
+    color:#607A9F;
   }
+
   span.ordem{
       width: 46px;
       height: 46px;
@@ -512,26 +513,26 @@ watch(itemParaEdição, (novoValor) => {
       text-align: center;
       border-radius: 50%;
       position: relative;
-      right: 20px;
+      right: 25px;
   }
 
   .tablemain td {
     padding: 4px 1em;
   }
 
-  .cadaTabela > div:nth-child(odd) .ordem {
+  .todasTabela > div:nth-child(odd) .ordem {
     background-color:#4074BF;
   }
 
-  .cadaTabela > div:nth-child(even) .ordem  {
+  .todasTabela > div:nth-child(even) .ordem  {
     background-color: #F7C234;
   }
 
-  .cadaTabela > div:nth-child(even) .tablemain {
+  .todasTabela > .cadaTabela:nth-child(even) {
     border-left: 4px solid #F7C234;
   }
 
-  .cadaTabela > div:nth-child(odd) .tablemain {
+  .todasTabela > .cadaTabela:nth-child(odd) {
     border-left: 4px solid #4074BF;
   }
 
