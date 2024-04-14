@@ -132,6 +132,13 @@ watch(itemParaEdição, (novoValor) => {
     @saved="carregarFluxo()"
   />
 
+  <FaseFluxo
+    v-if="idDoRelacionamentoComFase > -1"
+    :relacionamento-id="idDoRelacionamentoComFase"
+    :fluxo-id="fluxoId"
+    @close="idDoRelacionamentoComFase = -1"
+  />
+
   <form
       :disabled="isSubmitting"
       @submit.prevent="onSubmit">
@@ -329,12 +336,6 @@ watch(itemParaEdição, (novoValor) => {
           >
             Editar etapa
           </button>
-          <FaseFluxo
-            v-if="idDoRelacionamentoComFase > -1"
-            :relacionamento-id="idDoRelacionamentoComFase"
-            :fluxo-id="item.id"
-            @close="idDoRelacionamentoComFase = -1"
-          />
         </div>
       </div>
 
