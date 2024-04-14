@@ -59,6 +59,7 @@ const onSubmit = handleSubmit.withControlled(async (valoresControlados) => {
   const valoresAuxiliares = {
     ...values,
     bloco_token: props.blocosToken,
+    id: itemParaEdição.value.id_jwt ? itemParaEdição.value.id_jwt : undefined,
   };
   try {
     let resposta;
@@ -81,7 +82,7 @@ async function excluirNota(id) {
       if (await blocoStore.excluirItem(id)) {
         blocoStore.$reset();
         blocoStore.buscarTudo(props.blocosToken);
-        useAlertStore().success("Tarefa removida.");
+        useAlertStore().success("Nota removida.");
       }
     },
     "Remover"
