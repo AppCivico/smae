@@ -7,6 +7,10 @@ import { useBlocoDeNotasStore } from "@/stores/blocoNotas.store";
 import { nota as schema } from "@/consts/formSchemas";
 import { useAlertStore } from "@/stores/alert.store";
 import { useTipoDeNotasStore } from "@/stores/tipoNotas.store";
+import { useOrgansStore } from '@/stores/organs.store';
+
+const ÓrgãosStore = useOrgansStore();
+const { órgãosComoLista } = storeToRefs(ÓrgãosStore);
 
 const alertStore = useAlertStore();
 const status = [
@@ -190,7 +194,7 @@ watch(itemParaEdição, (novosValores) => {
           </div>
         </div>
         <!--TODO: por em uma computed -->
-        <div class="flex" >
+        <div class="flex mb1" >
           <div class="f1" v-if="listaTipo.find(tipo => tipo.id === tipo_nota_id && tipo.permite_email)">
             <LabelFromYup name="dispara_email" :schema="schema" />
             <Field
@@ -207,6 +211,11 @@ watch(itemParaEdição, (novosValores) => {
             <Field name="rever_em" type="date" class="inputtext light"  placeholder="dd/mm/aaaa"/>
           </div>
         </div>
+
+        <div class="flex" v-if="listaTipo.find((tipo) => tipo.id === tipo_nota_id && tipo.permite_enderecamento)">
+          <!-- endereçamento aqui -->
+        </div>
+
         <div class="mb2">
           <LabelFromYup name="nota" :schema="schema" />
           <Field
