@@ -32,6 +32,7 @@ const esferaSelecionada = ref('');
 const exibeModalTarefa = ref(false);
 const idDaEtapaEmFoco = ref(-1);
 const idDoRelacionamentoComFase = ref(-1);
+const idDaMãeDaFase = ref(0);
 
 const props = defineProps({
   fluxoId: {
@@ -147,7 +148,7 @@ watch(itemParaEdição, (novoValor) => {
   <FaseFluxo
     v-if="idDoRelacionamentoComFase > -1"
     :relacionamento-id="idDoRelacionamentoComFase"
-    :fluxo-id="fluxoId"
+    :etapa-id="idDaMãeDaFase"
     @close="idDoRelacionamentoComFase = -1"
     @saved="carregarFluxo()"
   />
@@ -344,7 +345,10 @@ watch(itemParaEdição, (novoValor) => {
           <button
             v-if="emFoco && !emFoco?.edicao_restrita"
             class="btn ml2"
-            @click="idDoRelacionamentoComFase = 0"
+            @click="() => {
+              idDoRelacionamentoComFase = 0;
+              idDaMãeDaFase = item.id;
+            }"
           >
             Adicionar fase
           </button>
@@ -423,7 +427,10 @@ watch(itemParaEdição, (novoValor) => {
               <button
                 v-if="emFoco && !emFoco?.edicao_restrita"
                 class="bgnone like-a__text"
-                @click="idDoRelacionamentoComFase = fase.id"
+                @click="() => {
+                  idDoRelacionamentoComFase = fase.id;
+                  idDaMãeDaFase = item.id;
+                }"
               >
                 <svg
                   width="20"
