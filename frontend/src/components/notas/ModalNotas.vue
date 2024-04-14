@@ -409,7 +409,6 @@ watch(itemParaEdição, (novosValores) => {
               ><use xlink:href="#i_+" /></svg>Adicionar endereçamento
             </button>
           </FieldArray>
-          <h1>até aqui, sobral!</h1>
         </div>
 
         <div class="mb2">
