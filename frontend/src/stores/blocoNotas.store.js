@@ -1,9 +1,9 @@
-import { defineStore } from "pinia";
 import dateTimeToDate from '@/helpers/dateTimeToDate';
+import { defineStore } from 'pinia';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
-export const useBlocoDeNotasStore = defineStore("blocoDeNotasStore", {
+export const useBlocoDeNotasStore = defineStore('blocoDeNotasStore', {
   state: () => ({
     lista: [],
     emFoco: null,
@@ -20,16 +20,16 @@ export const useBlocoDeNotasStore = defineStore("blocoDeNotasStore", {
       this.erro = null;
       try {
         const { linhas } = await this.requestS.get(
-          `${baseUrl}/nota/busca-por-bloco?blocos_token=${params}`
+          `${baseUrl}/nota/busca-por-bloco?blocos_token=${params}`,
         );
         this.lista = linhas;
       } catch (erro) {
         this.erro = erro;
-        console.log("erro: ", erro);
+        console.log('erro: ', erro);
       }
       this.chamadasPendentes.lista = false;
     },
-    
+
     async salvarItem(params = {}, id = 0) {
       this.chamadasPendentes.emFoco = true;
       this.erro = null;
@@ -49,11 +49,11 @@ export const useBlocoDeNotasStore = defineStore("blocoDeNotasStore", {
         return false;
       }
     },
-    
+
     async excluirItem(id) {
       this.chamadasPendentes.lista = true;
       this.erro = null;
-  
+
       try {
         await this.requestS.delete(`${baseUrl}/nota/${id}`);
         this.chamadasPendentes.lista = false;
