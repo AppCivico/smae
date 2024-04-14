@@ -15,12 +15,16 @@ export const useBlocoDeNotasStore = defineStore('blocoDeNotasStore', {
     erro: null,
   }),
   actions: {
-    async buscarTudo(params = {}) {
+    async buscarTudo(blocosToken, params = {}) {
       this.chamadasPendentes.lista = true;
       this.erro = null;
       try {
         const { linhas } = await this.requestS.get(
-          `${baseUrl}/nota/busca-por-bloco?blocos_token=${params}`,
+          `${baseUrl}/nota/busca-por-bloco`, 
+          { 
+            ...params,
+            blocos_token : blocosToken
+          },
         );
         this.lista = linhas;
       } catch (erro) {
