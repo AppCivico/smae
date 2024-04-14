@@ -6,8 +6,8 @@ import { useBlocoDeNotasStore } from '@/stores/blocoNotas.store';
 import { useOrgansStore } from '@/stores/organs.store';
 import { useTipoDeNotasStore } from '@/stores/tipoNotas.store';
 import { storeToRefs } from 'pinia';
-import { Field, Form, useForm } from 'vee-validate';
-import { ref, watch } from 'vue';
+import { Field, useForm } from 'vee-validate';
+import { computed, ref, watch } from 'vue';
 
 const ÓrgãosStore = useOrgansStore();
 const { órgãosComoLista } = storeToRefs(ÓrgãosStore);
@@ -46,7 +46,7 @@ const { lista: listaTipo, erro: erroTipo } = storeToRefs(tipoStore);
 
 const exibeModalNotas = ref(false);
 const exibeForm = ref(false);
-const tipo_nota_id = ref(null);
+const tipoNotaId = ref(null);
 
 const {
   errors, handleSubmit, isSubmitting, resetForm, values,
@@ -61,6 +61,15 @@ const props = defineProps({
     required: true,
   },
 });
+
+const camposPermitidos = computed(() => ({
+  email: listaTipo.value
+    .find((tipo) => tipo.id === tipoNotaId.value && tipo.permite_email),
+  revisao: listaTipo.value
+    .find((tipo) => tipo.id === tipoNotaId.value && tipo.permite_revisao),
+  enderecamento: listaTipo.value
+    .find((tipo) => tipo.id === tipoNotaId.value && tipo.permite_enderecamento),
+}));
 
 const onSubmit = handleSubmit.withControlled(async (valoresControlados) => {
   const valoresAuxiliares = {
@@ -220,7 +229,7 @@ watch(itemParaEdição, (novosValores) => {
               :schema="schema"
             />
             <Field
-              v-model="tipo_nota_id"
+              v-model="tipoNotaId"
               name="tipo_nota_id"
               as="select"
               class="inputtext light mb1"
@@ -238,10 +247,10 @@ watch(itemParaEdição, (novosValores) => {
             </Field>
           </div>
         </div>
-        <!--TODO: por em uma computed -->
+
         <div class="flex mb1">
           <div
-            v-if="listaTipo.find(tipo => tipo.id === tipo_nota_id && tipo.permite_email)"
+            v-if="camposPermitidos.email"
             class="f1"
           >
             <LabelFromYup
@@ -262,7 +271,7 @@ watch(itemParaEdição, (novosValores) => {
             type="hidden"
           />
           <div
-            v-if="listaTipo.find(tipo => tipo.id === tipo_nota_id && tipo.permite_revisao)"
+            v-if="camposPermitidos.revisao"
             class="f1"
           >
             <LabelFromYup
@@ -279,7 +288,7 @@ watch(itemParaEdição, (novosValores) => {
         </div>
 
         <div
-          v-if="listaTipo.find((tipo) => tipo.id === tipo_nota_id && tipo.permite_enderecamento)"
+          v-if="camposPermitidos.enderecamento"
           class="flex"
         >
           <!-- endereçamento aqui -->
