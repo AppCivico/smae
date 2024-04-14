@@ -187,8 +187,8 @@ watch(itemParaEdição, () => {
 
         <span
           v-if="item.andamento?.dias_na_fase
-            && item.andamento?.pessoa_responsavel
-            && item.andamento?.orgao_responsavel"
+            || item.andamento?.pessoa_responsavel
+            || item.andamento?.orgao_responsavel"
           class="card-shadow tc500 p1 mt1 block andamento-fluxo__dados-da-fase"
         >
           <span
@@ -569,6 +569,9 @@ watch(itemParaEdição, () => {
 .andamento-fluxo__dias-da-fase {}
 
 .andamento-fluxo__responsável-pela-fase {
+  margin-right: auto;
+  margin-left: auto;
+  max-width: max-content;
 }
 
 .título-da-fase-selecionada {
