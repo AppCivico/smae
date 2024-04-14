@@ -42,6 +42,7 @@ const { lista: listaTipo, erro: erroTipo } = storeToRefs(tipoStore);
 
 const exibeModalNotas = ref(false);
 const exibeForm = ref(false);
+const tipo_nota_id = ref(null);
 
 const { errors, handleSubmit, isSubmitting, resetForm, values } = useForm({
   initialValues: itemParaEdição.value,
@@ -170,8 +171,12 @@ watch(itemParaEdição, (novosValores) => {
             </Field>
           </div>
           <div class="f1">
+            <LabelFromYup name="data_nota" :schema="schema" />
+            <Field name="data_nota" type="date" class="inputtext light"  placeholder="dd/mm/aaaa"/>
+          </div>
+          <div class="f1">
             <LabelFromYup name="tipo_nota_id" :schema="schema" />
-            <Field name="tipo_nota_id" as="select" class="inputtext light mb1">
+            <Field v-model="tipo_nota_id" name="tipo_nota_id" as="select" class="inputtext light mb1">
               <option value>Selecionar</option>
               <option
                 v-for="(tipo, key) in listaTipo"
@@ -183,7 +188,7 @@ watch(itemParaEdição, (novosValores) => {
             </Field>
           </div>
         </div>
-        <div class="flex">
+        <div class="flex" v-if="listaTipo.find(tipo => tipo.id === tipo_nota_id && tipo.permite_revisao)" >
           <div class="f1">
             <LabelFromYup name="dispara_email" :schema="schema" />
             <Field
@@ -195,10 +200,15 @@ watch(itemParaEdição, (novosValores) => {
             />
           </div>
           <div class="f1">
-            <LabelFromYup name="data_nota" :schema="schema" />
-            <Field name="data_nota" type="date" class="inputtext light"  placeholder="dd/mm/aaaa"/>
+            <LabelFromYup name="rever_em" :schema="schema" />
+            <Field name="rever_em" type="date" class="inputtext light"  placeholder="dd/mm/aaaa"/>
           </div>
         </div>
+        <Field
+          v-else
+          name="dispara_email"
+          type="hidden"
+        />
         <div class="mb2">
           <LabelFromYup name="nota" :schema="schema" />
           <Field
