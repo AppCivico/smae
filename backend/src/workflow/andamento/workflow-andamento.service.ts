@@ -174,9 +174,9 @@ export class WorkflowAndamentoService {
 
         if (
             row.tarefas.length == 0 ||
-            row.workflow_situacao.tipo_situacao == WorkflowSituacaoTipo.Cancelado ||
-            row.workflow_situacao.tipo_situacao == WorkflowSituacaoTipo.Suspenso ||
-            row.workflow_situacao.tipo_situacao == WorkflowSituacaoTipo.Terminal
+            row.workflow_situacao?.tipo_situacao == WorkflowSituacaoTipo.Cancelado ||
+            row.workflow_situacao?.tipo_situacao == WorkflowSituacaoTipo.Suspenso ||
+            row.workflow_situacao?.tipo_situacao == WorkflowSituacaoTipo.Terminal
         ) {
             pode_concluir = true;
         } else {
@@ -203,11 +203,13 @@ export class WorkflowAndamentoService {
 
             necessita_preencher_pessoa: responsabilidadeFase == WorkflowResponsabilidade.OutroOrgao ? true : false,
 
-            situacao: {
-                id: row.workflow_situacao.id,
-                situacao: row.workflow_situacao.situacao,
-                tipo_situacao: row.workflow_situacao.tipo_situacao,
-            },
+            situacao: row.workflow_situacao
+                ? {
+                      id: row.workflow_situacao.id,
+                      situacao: row.workflow_situacao.situacao,
+                      tipo_situacao: row.workflow_situacao.tipo_situacao,
+                  }
+                : null,
 
             orgao_responsavel: row.orgao_responsavel
                 ? {

@@ -304,6 +304,7 @@ export class WorkflowAndamentoFaseService {
                 ]);
 
                 if (
+                    self.workflow_situacao &&
                     !situacaoPodeFecharSemTarefa.has(self.workflow_situacao.tipo_situacao) &&
                     self.tarefas.find((t) => {
                         return t.feito == false;
@@ -403,34 +404,13 @@ export class WorkflowAndamentoFaseService {
                                 },
                             },
                         },
-                        situacoes: {
-                            where: {
-                                situacao: {
-                                    OR: [
-                                        { tipo_situacao: WorkflowSituacaoTipo.NaoIniciado },
-                                        { tipo_situacao: WorkflowSituacaoTipo.EmAndamento },
-                                    ],
-                                },
-                            },
-                            select: {
-                                situacao_id: true,
-                            },
-                        },
                     },
                 });
                 if (!configFluxoFaseSeguinte)
                     throw new HttpException('Não foi possível encontrar configuração da próxima fase', 400);
 
-                if (!configFluxoFaseSeguinte.situacoes.length)
-                    throw new HttpException(
-                        'Fase não está configurada corretamente. Não possui configuração de situação Inicial',
-                        400
-                    );
-
                 if (configFluxoFaseAtual.fase_id == configFluxoFaseSeguinte.fase_id)
                     throw new Error('Erro ao definir próxima fase.');
-
-                const situacao_id: number = configFluxoFaseSeguinte.situacoes[0].situacao_id;
 
                 // Caso a fase seja de responsabilidade própria, pegando órgão da casa civil.
                 let orgao_id: number | null = null;
@@ -458,7 +438,6 @@ export class WorkflowAndamentoFaseService {
                         transferencia_id: dto.transferencia_id,
                         workflow_etapa_id: faseAtual.workflow_etapa_id, // Aqui não tem problema reaproveitar o workflow_etapa_id, pois está na mesma etapa.
                         workflow_fase_id: configFluxoFaseSeguinte.fase_id,
-                        workflow_situacao_id: situacao_id,
                         orgao_responsavel_id: orgao_id,
                         data_inicio: new Date(Date.now()),
                         criado_por: user.id,
