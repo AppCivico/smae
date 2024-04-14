@@ -165,6 +165,7 @@ watch(itemParaEdição, (novoValor) => {
           name="nome"
           type="text"
           class="inputtext light mb1"
+          :disabled="emFoco?.edicao_restrita"
         />
         <ErrorMessage
           class="error-msg mb1"
@@ -181,6 +182,7 @@ watch(itemParaEdição, (novoValor) => {
           name="esfera"
           class="inputtext light mb1"
           :class="{ 'error': errors.esfera }"
+          :disabled="emFoco?.edicao_restrita"
           @change="setFieldValue('transferencia_tipo_id', null)"
         >
           <option value="">
@@ -211,7 +213,7 @@ watch(itemParaEdição, (novoValor) => {
             error: errors.transferencia_tipo_id,
             loading: tipoDeTransferenciaStore.chamadasPendentes?.lista,
           }"
-          :disabled="!tiposDisponíveis.length"
+          :disabled="!tiposDisponíveis.length || emFoco?.edicao_restrita"
         >
           <option value="">
             Selecionar
@@ -243,6 +245,7 @@ watch(itemParaEdição, (novoValor) => {
           class="inputtext light mb1"
           :class="{ errors: errors.inicio }"
           maxlength="10"
+          :disabled="emFoco?.edicao_restrita"
         />
         <ErrorMessage
           name="inicio"
@@ -316,7 +319,11 @@ watch(itemParaEdição, (novoValor) => {
   <div class="flex spacebetween center mb2" v-if="props.fluxoId">
     <h1>Etapas do fluxo</h1>
     <hr class="ml2 f1">
-    <button class="btn ml2" @click="idDaEtapaEmFoco = 0">
+    <button
+      v-if="emFoco && !emFoco?.edicao_restrita"
+      class="btn ml2"
+      @click="idDaEtapaEmFoco = 0"
+    >
       Adicionar etapa
     </button>
   </div>
@@ -335,12 +342,14 @@ watch(itemParaEdição, (novoValor) => {
         <hr class="ml2 f1">
         <div class="flex f0 spacebetween g1 center mlauto mr0">
           <button
+            v-if="emFoco && !emFoco?.edicao_restrita"
             class="btn ml2"
             @click="idDoRelacionamentoComFase = 0"
           >
             Adicionar fase
           </button>
           <button
+            v-if="emFoco && !emFoco?.edicao_restrita"
             class="btn outline bgnone tcprimary mtauto"
             :ordem="item.ordem"
             :workflow_etapa_de_id="item.workflow_etapa_de_id"
@@ -382,7 +391,11 @@ watch(itemParaEdição, (novoValor) => {
               <span v-else>-</span>
             </td>
             <td>
-              <button class="bgnone like-a__text" @click="exibeModalTarefa = true">
+              <button
+                v-if="emFoco && !emFoco?.edicao_restrita"
+                class="bgnone like-a__text"
+                @click="exibeModalTarefa = true"
+              >
                 <svg width="20" height="20">
                   <use xlink:href="#i_+" />
                 </svg>
@@ -394,6 +407,7 @@ watch(itemParaEdição, (novoValor) => {
             </td>
             <td>
               <button
+                v-if="emFoco && !emFoco?.edicao_restrita"
                 class="like-a__text"
                 arial-label="excluir"
                 title="excluir"
@@ -406,7 +420,11 @@ watch(itemParaEdição, (novoValor) => {
               </button>
             </td>
             <td>
-              <button class="bgnone like-a__text" @click="idDoRelacionamentoComFase = fase.id">
+              <button
+                v-if="emFoco && !emFoco?.edicao_restrita"
+                class="bgnone like-a__text"
+                @click="idDoRelacionamentoComFase = fase.id"
+              >
                 <svg
                   width="20"
                   height="20"
@@ -427,6 +445,7 @@ watch(itemParaEdição, (novoValor) => {
             <td/>
             <td>
               <button
+                v-if="emFoco && !emFoco?.edicao_restrita"
                 class="like-a__text"
                 arial-label="excluir"
                 title="excluir"
@@ -439,7 +458,11 @@ watch(itemParaEdição, (novoValor) => {
               </button>
             </td>
             <td>
-              <button class="bgnone like-a__text" @click="exibeModalTarefa = true">
+              <button
+                v-if="emFoco && !emFoco?.edicao_restrita"
+                class="bgnone like-a__text"
+                @click="exibeModalTarefa = true"
+              >
                 <svg
                   width="20"
                   height="20"
@@ -525,4 +548,3 @@ watch(itemParaEdição, (novoValor) => {
 
   }
 </style>
-
