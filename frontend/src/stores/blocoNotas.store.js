@@ -80,18 +80,17 @@ export const useBlocoDeNotasStore = defineStore('blocoDeNotasStore', {
     },
   },
   getters: {
-    itemParaEdição: ({ emFoco }) => {
-      return {
-        ...emFoco,
-        dispara_email: emFoco?.dispara_email || false,
-        data_nota: dateTimeToDate(emFoco?.data_nota),
-        enderecamentos: (emFoco && Array.isArray(emFoco) ? emFoco : []).map(
-          (x) => ({
-            orgao_enderecado_id: x.orgao_enderecado?.id || 0,
-            pessoa_enderecado_id: x.pessoa_enderecado?.id || 0,
-          })
-        ),
-      };
-    },
+    itemParaEdição: ({ emFoco }) => ({
+      ...emFoco,
+      dispara_email: emFoco?.dispara_email || false,
+      data_nota: dateTimeToDate(emFoco?.data_nota),
+      enderecamentos: !Array.isArray(emFoco?.enderecamentos)
+        ? null
+        : emFoco?.enderecamentos.map((x) => ({
+          orgao_enderecado_id: x.orgao_enderecado?.id || 0,
+          pessoa_enderecado_id: x.pessoa_enderecado?.id || 0,
+        })
+        || null),
+    }),
   },
 });
