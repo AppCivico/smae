@@ -1893,7 +1893,8 @@ export const etapasFluxo = object({
     .oneOf(Object.keys(responsabilidadeEtapaFluxo))
     .required(),
   situacao: array()
-    .label('Situação'),
+    .label('Situação')
+    .nullable(),
   ordem: number()
     .label('posição dentro da etapa')
     .required(),

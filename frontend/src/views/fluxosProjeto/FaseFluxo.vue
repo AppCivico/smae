@@ -42,7 +42,7 @@ const itemParaEdição = computed(() => {
     ...fase,
     fase_id: fase?.fase?.id,
     responsabilidade: fase?.responsabilidade || '',
-    situacao: fase?.situacao?.map((x)=> x.id) || null,
+    situacao: fase?.situacao?.map((x) => x.id) || null,
   };
 });
 
