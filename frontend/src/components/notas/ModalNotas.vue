@@ -54,6 +54,7 @@ const { lista: listaTipo, erro: erroTipo } = storeToRefs(tipoStore);
 const exibeModalNotas = ref(false);
 const exibeForm = ref(false);
 const tipoNotaId = ref(null);
+const statusSelecionado = ref('');
 
 const {
   errors, handleSubmit, isSubmitting, resetForm, setFieldValue, values,
@@ -128,6 +129,10 @@ watch(() => props.blocosToken, () => {
     blocoStore.buscarTudo(props.blocosToken);
   }
 }, { immediate: true });
+
+watch (statusSelecionado, (novoValor) => {
+  blocoStore.buscarTudo(props.blocosToken, {status: novoValor});
+})
 
 tipoStore.buscarTudo();
 ÓrgãosStore.getAll();
@@ -445,7 +450,24 @@ watch(itemParaEdição, (novosValores) => {
         </div>
       </form>
     </div>
-
+    <div class="mb1">
+      <label class="label">Filtrar por status</label>
+      <select
+        class="inputtext light mb1"
+        v-model="statusSelecionado"
+      >
+        <option value>
+          Selecionar
+        </option>
+        <option
+          v-for="(item, key) in status"
+          :key="key"
+          :value="item.value"
+        >
+          {{ item.text }}
+        </option>
+      </select>
+    </div>
     <table class="tablemain mb1">
       <col>
       <col>
