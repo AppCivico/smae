@@ -116,6 +116,17 @@ watch(itemParaEdição, (novoValor) => {
 </script>
 
 <template>
+  <span
+    v-if="chamadasPendentes?.emFoco"
+    class="spinner"
+  >Carregando</span>
+
+  <div v-if="erro" class="error p1">
+    <div class="error-msg">
+      {{ erro }}
+    </div>
+  </div>
+
   <div class="flex spacebetween center mb2">
     <h1>{{ route?.meta?.título || 'Cadastro de Fluxo' }}</h1>
     <hr class="ml2 f1">
