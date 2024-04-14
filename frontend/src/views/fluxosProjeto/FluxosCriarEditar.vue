@@ -11,7 +11,7 @@ import EtapaFluxo from '@/views/fluxosProjeto/EtapaFluxo.vue';
 import FaseFluxo from '@/views/fluxosProjeto/FaseFluxo.vue';
 import { workflow as schema } from '@/consts/formSchemas';
 import { useAlertStore } from '@/stores/alert.store';
-import { computed, ref } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { useRouter } from "vue-router";
 import { storeToRefs } from 'pinia';
 
@@ -23,7 +23,7 @@ const alertStore = useAlertStore();
 const router = useRouter();
 
 const { lista: tipoTransferenciaComoLista } = storeToRefs(tipoDeTransferenciaStore);
-const { lista, chamadasPendentes, erro, itemParaEdição,  emFoco} = storeToRefs(fluxosProjetoStore);
+const { lista, chamadasPendentes, resetForm, erro, itemParaEdição,  emFoco} = storeToRefs(fluxosProjetoStore);
 const { chamadasPendentes: fasesPendentes } = storeToRefs(fluxosFasesProjetos);
 const { chamadasPendentes: tarefasPendentes } = storeToRefs(fluxosTarefasProjetos);
 
@@ -70,6 +70,14 @@ const onSubmit = handleSubmit.withControlled(async (controlledValues) => {
   }
 });
 
+watch(itemParaEdição, (novosValores) => {
+  if (resetForm && typeof resetForm.value === 'function') {
+    resetForm.value({ values: novosValores });
+    const transferenciaLista = tipoTransferenciaComoLista.value.find((x) => x.id === novosValores.transferencia_tipo.id);
+    esferaSelecionada.value = transferenciaLista?.esfera;
+  }
+});
+
 async function carregarFluxo() {
   if (props.fluxoId) {
     // PRA-FAZER: reavaliar a necessidade desse `await`
@@ -99,11 +107,9 @@ function excluirTarefa(idDaTarefa) {
     }
   }, 'Excluir');
 }
-
 iniciar()
-
-
 </script>
+
 <template>
   <div class="flex spacebetween center mb2">
     <h1>Cadastro de Fluxo</h1>
@@ -493,7 +499,7 @@ iniciar()
       content: '';
       display: inline-block;
       width: 40px;
-      height: 2px;
+      height: 1px;
       background: #4074BF;
       vertical-align: middle;
       margin: 0 24px 0 24px;
