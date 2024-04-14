@@ -142,9 +142,9 @@ watch(itemParaEdição, () => {
   <div
     v-else
     v-bind="$attrs"
-    class="dedo-duro"
+    class="andamento-fluxo"
   >
-    <h2 class="dedo-duro__título w400">
+    <h2 class="andamento-fluxo__título w400">
       Etapa
       <template v-if="etapaCorrente?.fluxo_etapa_de?.etapa_fluxo">
         de
@@ -152,35 +152,35 @@ watch(itemParaEdição, () => {
       </template>
     </h2>
 
-    <p class="tc400 t14 dedo-duro__info">
+    <p class="tc400 t14 andamento-fluxo__info">
       Clique em uma fase para visualizar tarefas e editar situação.
     </p>
 
     <ul
       v-if="etapaCorrente?.fases?.length"
       ref="listaDeFases"
-      class="flex pb1 dedo-duro__lista-de-fases"
+      class="flex pb1 andamento-fluxo__lista-de-fases"
     >
       <li
         v-for="item in etapaCorrente.fases"
         :key="item.id"
-        class="p1 tc dedo-duro__fase"
+        class="p1 tc andamento-fluxo__fase"
         :class="{
-          'dedo-duro__fase--iniciada': item?.andamento?.concluida === false,
-          'dedo-duro__fase--concluída': !!item?.andamento?.concluida,
+          'andamento-fluxo__fase--iniciada': item?.andamento?.concluida === false,
+          'andamento-fluxo__fase--concluída': !!item?.andamento?.concluida,
         }"
       >
         <button
           v-if="item?.andamento?.concluida === false"
           type="button"
-          class="w400 like-a__text dedo-duro__nome-da-fase"
+          class="w400 like-a__text andamento-fluxo__nome-da-fase"
           @click="faseSelecionada = item.id"
         >
           {{ item.fase.fase }}
         </button>
         <strong
           v-else
-          class="w400 like-a__text dedo-duro__nome-da-fase"
+          class="w400 like-a__text andamento-fluxo__nome-da-fase"
         >
           {{ item.fase.fase }}
         </strong>
@@ -189,18 +189,18 @@ watch(itemParaEdição, () => {
           v-if="item.andamento?.dias_na_fase
             && item.andamento?.pessoa_responsavel
             && item.andamento?.orgao_responsavel"
-          class="card-shadow tc500 p1 mt1 block dedo-duro__dados-da-fase"
+          class="card-shadow tc500 p1 mt1 block andamento-fluxo__dados-da-fase"
         >
           <span
             v-if="item.andamento?.dias_na_fase"
-            class="w700 dedo-duro__dias-da-fase"
+            class="w700 andamento-fluxo__dias-da-fase"
           >
             +{{ item.andamento?.dias_na_fase }} dias
           </span>
 
           <span
             v-if="item.andamento?.pessoa_responsavel"
-            class="block dedo-duro__responsável-pela-fase"
+            class="block andamento-fluxo__responsável-pela-fase"
           >
             {{ item.andamento?.pessoa_responsavel?.nome_exibicao
               || item.andamento?.pessoa_responsavel }}
@@ -208,7 +208,7 @@ watch(itemParaEdição, () => {
           <abbr
             v-else-if="item.andamento?.orgao_responsavel"
             :title="item.andamento?.orgao_responsavel?.descricao"
-            class="block dedo-duro__responsável-pela-fase"
+            class="block andamento-fluxo__responsável-pela-fase"
           >
             {{ item.andamento?.orgao_responsavel?.sigla || item.andamento?.orgao_responsavel }}
           </abbr>
@@ -475,22 +475,22 @@ watch(itemParaEdição, () => {
 <style lang="less" scoped>
 @tamanho-da-bolinha: 1.8rem;
 
-.dedo-duro {
+.andamento-fluxo {
 }
 
-.dedo-duro__título {
+.andamento-fluxo__título {
 }
 
-.dedo-duro__info {
+.andamento-fluxo__info {
 }
 
-.dedo-duro__lista-de-fases {
+.andamento-fluxo__lista-de-fases {
   overflow-x: auto;
   overflow-y: clip;
   scroll-behavior: smooth;
 }
 
-.dedo-duro__fase {
+.andamento-fluxo__fase {
   min-width: 18rem;
   position: relative;
   flex-grow: 1;
@@ -518,13 +518,13 @@ watch(itemParaEdição, () => {
   }
 }
 
-.dedo-duro__fase--concluída {
+.andamento-fluxo__fase--concluída {
   &::after {
     color: @amarelo;
   }
 }
 
-.dedo-duro__nome-da-fase {
+.andamento-fluxo__nome-da-fase {
   text-wrap: balance;
   width: 50%;
   display: block;
@@ -550,25 +550,25 @@ watch(itemParaEdição, () => {
     background-repeat: no-repeat;
   }
 
-  .dedo-duro__fase--iniciada &::before {
+  .andamento-fluxo__fase--iniciada &::before {
     background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABEAAAARCAYAAAA7bUf6AAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAD9SURBVHgBrZK9DcIwEIXfXaChYoSwAaNAT+FMQDokGqAAiY4FUMIGbAAbkA2ADaigAnM4/AVsR0I8yfLPne8+PRv4g8gXVL0kBFMXJz1KZ9HBlce+IhJVIB2jxl38QmIoAqxkGco44IiGi4a9FHmBm+o+GvJQbO/bpYyWj8ZOEtDAzBrrdBK1pVXmo2ErBbQqntK9+yVWcVIvLfKksMtKw+UUnxIak+co8kVBaKp+oqB1WKAJMCimvVO8XqRcZ3mpabQrkti9WAZUDaVX+hV5o+EnhdULzubjzh52qYc3OUmFHL/xMhRPNk6zOb9XMRutF7gZ5lZmPSVz7z+6AjAITco9Fq1nAAAAAElFTkSuQmCC);
   }
 
-  .dedo-duro__fase--concluída &::before {
+  .andamento-fluxo__fase--concluída &::before {
     color: @amarelo;
     background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABEAAAARCAYAAAA7bUf6AAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAC9SURBVHgB7ZAxDoIwFIb7UHZ3WIxx1oXQwoJLS1z0BngDjiCeQI/gDdx1YmN118QELkFiqCWxxoApYhz5pte+/l/bh1DHXyCEhZ7nDeRaQy0hxN8DoF2e6xO512+Rfwp4UBQ8SpJTXDtgWfMpIXSpEjgO4xjTdbX3+o6u3xcAcMDYD9QvOG6q/Z4s0vQam+ZoqGkoMozxLcsu528EJVC/lYoQiBCsxABnTYKPkndRWTcJlLgu29o2C1HHTzwAp05KMEpINHYAAAAASUVORK5CYII=);
   }
 }
 
-.dedo-duro__dados-da-fase {
+.andamento-fluxo__dados-da-fase {
   width: max-content;
   margin-left: auto;
   margin-right: auto;
 }
 
-.dedo-duro__dias-da-fase {}
+.andamento-fluxo__dias-da-fase {}
 
-.dedo-duro__responsável-pela-fase {
+.andamento-fluxo__responsável-pela-fase {
 }
 
 .título-da-fase-selecionada {
