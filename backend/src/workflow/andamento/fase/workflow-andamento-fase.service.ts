@@ -87,12 +87,14 @@ export class WorkflowAndamentoFaseService {
                         );
 
                     // Caso seja modificado o órgão responsável, é necessário verificar o tipo de responsabilidade da fase.
-                    if (dto.orgao_responsavel_id != undefined) {
-                        if (configFluxoFase.responsabilidade === WorkflowResponsabilidade.Propria)
-                            throw new HttpException(
-                                'orgao_responsavel_id| Fase é de responsabilidade própria e portanto não deve ser atribuida a outro órgão.',
-                                400
-                            );
+                    if (
+                        dto.orgao_responsavel_id != undefined &&
+                        configFluxoFase.responsabilidade === WorkflowResponsabilidade.Propria
+                    ) {
+                        throw new HttpException(
+                            'orgao_responsavel_id| Fase é de responsabilidade própria e portanto não deve ser atribuida a outro órgão.',
+                            400
+                        );
                     }
                 }
 
