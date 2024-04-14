@@ -885,6 +885,7 @@ export const nota = object({
           .required(),
         pessoa_enderecado_id: number()
           .label("Pessoas")
+          .transform((v) => (!v ? null : v))
           .nullable(),
       })
     ),
