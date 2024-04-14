@@ -207,11 +207,6 @@ watch(itemParaEdição, (novosValores) => {
             <Field name="rever_em" type="date" class="inputtext light"  placeholder="dd/mm/aaaa"/>
           </div>
         </div>
-        <Field
-          v-else
-          name="dispara_email"
-          type="hidden"
-        />
         <div class="mb2">
           <LabelFromYup name="nota" :schema="schema" />
           <Field
