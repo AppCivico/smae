@@ -74,6 +74,7 @@ const onSubmit = handleSubmit.withControlled(async (valoresControlados) => {
       alertStore.success(msg);
       fluxosEtapasProjetos.$reset();
       emits('saved');
+      emits('close');
     }
   } catch (error) {
     alertStore.error(error);
@@ -114,9 +115,9 @@ watch(itemParaEdição, (novoValor) => {
       <CheckClose
         :apenas-emitir="true"
         @close="$emit('close')"
+
       />
     </div>
-
     <form
       :disabled="isSubmitting"
       @submit.prevent="onSubmit"
