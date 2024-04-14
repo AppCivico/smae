@@ -212,11 +212,22 @@ export class WorkflowAndamentoService {
 
         const now = DateTime.now().startOf('day');
 
+        console.log('================================');
+        if (row.data_inicio) {
+            console.log(DateTime.fromJSDate(row.data_termino!).diff(DateTime.fromJSDate(row.data_inicio)).as('days'));
+            console.log(
+                DateTime.fromJSDate(row.data_termino!, { zone: 'utc' })
+                    .diff(DateTime.fromJSDate(row.data_inicio, { zone: 'utc' }))
+                    .as('days')
+            );
+        }
+        console.log('================================');
+
         return {
             data_inicio: row.data_inicio,
             data_termino: row.data_termino,
             dias_na_fase: row.data_termino
-                ? DateTime.fromJSDate(row.data_termino).diff(DateTime.fromJSDate(row.data_inicio)).days
+                ? DateTime.fromJSDate(row.data_termino).diff(DateTime.fromJSDate(row.data_inicio)).as('days')
                 : Math.trunc(now.diff(DateTime.fromJSDate(row.data_inicio, { zone: 'utc' })).as('days')),
             concluida: row.data_termino ? true : false,
             pode_concluir: pode_concluir,
