@@ -70,6 +70,7 @@ const onSubmit = handleSubmit.withControlled(async (valoresControlados) => {
       blocoStore.$reset();
       blocoStore.buscarTudo(props.blocosToken);
     }
+    emFoco.value = null
   } catch (error) {
     alertStore.error(error);
   }
