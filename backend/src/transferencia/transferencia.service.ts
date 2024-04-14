@@ -826,18 +826,12 @@ export class TransferenciaService {
                     orgao_id = orgaoCasaCivil.id;
                 }
 
-                const primeiraSituacao = fase.situacoes.find((s) => {
-                    return s.tipo_situacao == WorkflowSituacaoTipo.NaoIniciado;
-                });
-                if (!primeiraSituacao) throw new Error('Não foi encontrada situação inicial, "Não iniciado".');
-
                 const jaExiste = await prismaTxn.transferenciaAndamento.count({
                     where: {
                         removido_em: null,
                         transferencia_id: transferencia_id,
                         workflow_etapa_id: fluxo.workflow_etapa_de!.id,
                         workflow_fase_id: fase.fase!.id,
-                        workflow_situacao_id: primeiraSituacao.id,
                     },
                 });
 
@@ -847,7 +841,6 @@ export class TransferenciaService {
                             transferencia_id: transferencia_id,
                             workflow_etapa_id: fluxo.workflow_etapa_de!.id, // Sempre será o "dê" do "dê-para".
                             workflow_fase_id: fase.fase!.id,
-                            workflow_situacao_id: primeiraSituacao.id,
                             orgao_responsavel_id: orgao_id,
                             data_inicio: new Date(Date.now()),
                             criado_por: user.id,
