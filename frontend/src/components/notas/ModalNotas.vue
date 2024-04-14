@@ -114,6 +114,7 @@ watch(() => props.blocosToken, () => {
 }, { immediate: true });
 
 tipoStore.buscarTudo();
+ÓrgãosStore.getAll();
 
 // deveria funcionar
 watch(itemParaEdição, (novosValores) => {
