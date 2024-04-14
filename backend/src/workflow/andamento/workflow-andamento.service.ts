@@ -290,7 +290,7 @@ export class WorkflowAndamentoService {
     }
 
     async iniciarProximaEtapa(dto: WorkflowIniciarProxEtapaDto, user: PessoaFromJwt) {
-        await this.prisma.$transaction(async (prismaTxn: Prisma.TransactionClient): Promise<RecordWithId> => {
+        await this.prisma.$transaction(async (prismaTxn: Prisma.TransactionClient): Promise<RecordWithId | void> => {
             // Verificando se a etapa atual está concluída e se a configuração para a prox etapa existe.
             const transferencia = await prismaTxn.transferencia.findFirst({
                 where: {
@@ -374,25 +374,6 @@ export class WorkflowAndamentoService {
                                         },
                                     },
                                 },
-
-                                situacoes: {
-                                    where: {
-                                        situacao: {
-                                            OR: [
-                                                { tipo_situacao: WorkflowSituacaoTipo.NaoIniciado },
-                                                { tipo_situacao: WorkflowSituacaoTipo.EmAndamento },
-                                            ],
-                                        },
-                                    },
-                                    select: {
-                                        situacao: {
-                                            select: {
-                                                id: true,
-                                                tipo_situacao: true,
-                                            },
-                                        },
-                                    },
-                                },
                             },
                         },
                     },
@@ -402,46 +383,39 @@ export class WorkflowAndamentoService {
                 if (!configProxEtapa)
                     throw new HttpException('Não foi possível encontrar configuração da próxima Etapa', 400);
 
-                if (!configProxEtapa.fases.length) throw new HttpException('Próxima etapa não possui fases', 400);
+                // Caso a próx. Etapa não possua fases.
+                // É o fim do workflow
+                if (configProxEtapa.fases.length) {
+                    const primeiraFase = configProxEtapa.fases[0];
 
-                if (!configProxEtapa.fases[0].situacoes.length)
-                    throw new Error('Primeira fase da próxima etapa não possui configuração de status Inicial');
+                    return await prismaTxn.transferenciaAndamento.create({
+                        data: {
+                            transferencia_id: transferencia.id,
+                            workflow_etapa_id: configProxEtapa.fluxo_etapa_de_id,
+                            workflow_fase_id: primeiraFase.fase.id,
+                            data_inicio: new Date(Date.now()),
+                            criado_por: user.id,
+                            criado_em: new Date(Date.now()),
 
-                const primeiraFase = configProxEtapa.fases[0];
-                const situacaoFaseInicial = primeiraFase.situacoes!.find((s) => {
-                    return (
-                        s.situacao.tipo_situacao == WorkflowSituacaoTipo.NaoIniciado ||
-                        s.situacao.tipo_situacao == WorkflowSituacaoTipo.EmAndamento
-                    );
-                });
-                if (!situacaoFaseInicial) throw new HttpException('Falha ao encontrar situação inicial', 400);
-
-                return await prismaTxn.transferenciaAndamento.create({
-                    data: {
-                        transferencia_id: transferencia.id,
-                        workflow_etapa_id: configProxEtapa.fluxo_etapa_de_id,
-                        workflow_fase_id: primeiraFase.fase.id,
-                        workflow_situacao_id: situacaoFaseInicial.situacao.id,
-                        data_inicio: new Date(Date.now()),
-                        criado_por: user.id,
-                        criado_em: new Date(Date.now()),
-
-                        tarefas: {
-                            createMany: {
-                                data: primeiraFase.tarefas.map((e) => {
-                                    return {
-                                        workflow_tarefa_fluxo_id: e.workflow_tarefa!.id,
-                                        criado_por: user.id,
-                                        criado_em: new Date(Date.now()),
-                                    };
-                                }),
+                            tarefas: {
+                                createMany: {
+                                    data: primeiraFase.tarefas.map((e) => {
+                                        return {
+                                            workflow_tarefa_fluxo_id: e.workflow_tarefa!.id,
+                                            criado_por: user.id,
+                                            criado_em: new Date(Date.now()),
+                                        };
+                                    }),
+                                },
                             },
                         },
-                    },
-                    select: {
-                        id: true,
-                    },
-                });
+                        select: {
+                            id: true,
+                        },
+                    });
+                } else {
+                    return;
+                }
             } else {
                 throw new Error(
                     'Não foi possível encontrar configurações de fluxo para este workflow seguindo estes parâmetros'

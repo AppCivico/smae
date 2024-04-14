@@ -3,7 +3,7 @@ import { RecordWithId } from 'src/common/dto/record-with-id.dto';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateTransferenciaTipoDto } from './dto/create-transferencia-tipo.dto';
-import { Prisma, WorkflowResponsabilidade, WorkflowSituacaoTipo } from '@prisma/client';
+import { Prisma, WorkflowResponsabilidade } from '@prisma/client';
 import { UpdateTransferenciaTipoDto } from './dto/update-transferencia-tipo.dto';
 import { TransferenciaTipoDto } from './entities/transferencia-tipo.dto';
 import { CreateTransferenciaAnexoDto, CreateTransferenciaDto } from './dto/create-transferencia.dto';
@@ -75,6 +75,19 @@ export class TransferenciaService {
                 });
                 const workflow_id: number | null = workflow?.id ?? null;
 
+                // Verificando match de esferas.
+                const tipo = await prismaTxn.transferenciaTipo.findFirstOrThrow({
+                    where: {
+                        id: dto.tipo_id,
+                        removido_em: null,
+                    },
+                    select: {
+                        esfera: true,
+                    },
+                });
+                if (tipo.esfera != dto.esfera)
+                    throw new HttpException('esfera| Esfera da transferência e esfera do tipo devem ser iguais', 400);
+
                 const transferencia = await prismaTxn.transferencia.create({
                     data: {
                         tipo_id: dto.tipo_id,
@@ -125,6 +138,22 @@ export class TransferenciaService {
             },
         });
         if (!self) throw new HttpException('id| Transferência não encontrada', 404);
+
+        if (self.esfera != dto.esfera || self.tipo_id != dto.tipo_id) {
+            const tipo_id: number = dto.tipo_id ? dto.tipo_id : self.tipo_id;
+            // Verificando match de esferas.
+            const tipo = await this.prisma.transferenciaTipo.findFirstOrThrow({
+                where: {
+                    id: tipo_id,
+                    removido_em: null,
+                },
+                select: {
+                    esfera: true,
+                },
+            });
+            if (tipo.esfera != dto.esfera)
+                throw new HttpException('esfera| Esfera da transferência e esfera do tipo devem ser iguais', 400);
+        }
 
         const updated = await this.prisma.$transaction(
             async (prismaTxn: Prisma.TransactionClient): Promise<RecordWithId> => {

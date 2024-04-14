@@ -77,8 +77,9 @@ export class WorkflowService {
     async update(id: number, dto: UpdateWorkflowDto, user: PessoaFromJwt): Promise<RecordWithId> {
         const updated = await this.prisma.$transaction(
             async (prismaTxn: Prisma.TransactionClient): Promise<RecordWithId> => {
-                // Caso o Workflow já possua uma transferência ativa, não pode ser editado.
-                await this.verificaEdicao(id, prismaTxn);
+                // Caso o Workflow já possua uma transferência ativa, só algumas colunas podem ser editadas.
+                if (dto.inicio != undefined || dto.transferencia_tipo_id != undefined || dto.nome != undefined)
+                    await this.verificaEdicao(id, prismaTxn);
 
                 const self = await this.prisma.workflow.findFirst({
                     where: {
