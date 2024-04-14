@@ -50,13 +50,35 @@ export class WorkflowAndamentoService {
         const workflow = await this.workflowService.findOne(transferencia.workflow_id, user);
 
         // Processando booleans de controle de etapa.
-        const fluxoAtual = workflow.fluxo.find(
+        let possui_proxima_etapa: boolean;
+        const proxEtapa = workflow.fluxo.find(
             (e) => e.workflow_etapa_de!.id == transferencia.andamentoWorkflow[0].workflow_etapa_id
-        );
+        )?.workflow_etapa_para;
 
-        // Caso o dê seja igual ao "para", é o fim do workflow
-        const possui_proxima_etapa: boolean =
-            fluxoAtual!.workflow_etapa_de!.id == fluxoAtual!.workflow_etapa_para!.id ? false : true;
+        // Caso a prox etapa não possua fases. É o fim do workflow
+        if (proxEtapa) {
+            const fluxoProxEtapa = await this.prisma.fluxo.findFirstOrThrow({
+                where: {
+                    workflow_id: transferencia.workflow_id,
+                    fluxo_etapa_de_id: proxEtapa.id,
+                    removido_em: null,
+                },
+                select: {
+                    id: true,
+
+                    fases: {
+                        where: { removido_em: null },
+                        select: {
+                            fase_id: true,
+                        },
+                    },
+                },
+            });
+
+            possui_proxima_etapa = fluxoProxEtapa.fases.length ? true : false;
+        } else {
+            possui_proxima_etapa = false;
+        }
 
         return {
             ...workflow,
