@@ -73,8 +73,8 @@ const {
   validationSchema: schema.value,
 });
 
-const pessoasDisponíveis = computed(() => (!Array.isArray(pessoasSimplificadas.value)
-  ? []
+const pessoasDisponíveis = computed(() => (!values.orgao_responsavel_id
+  ? pessoasSimplificadas.value
   : pessoasSimplificadas.value
     .filter((x) => (x.orgao_id === Number(values.orgao_responsavel_id)))));
 
@@ -402,7 +402,8 @@ watch(itemParaEdição, () => {
             error: errors.orgao_responsavel_id,
             loading: organs?.loading
           }"
-          :disabled="!órgãosComoLista?.length"
+          :disabled="!órgãosComoLista?.length || faseEmFoco.responsabilidade === 'Propria'"
+          @change="setFieldValue('pessoa_responsavel_id', null)"
         >
           <option value="" />
           <option
