@@ -77,7 +77,6 @@ iniciar();
       :disabled="isSubmitting"
       @submit.prevent="onSubmit"
       >
-      {{ values }}
       <div>
         <LabelFromYup
           :name="values.workflow_tarefa_id"
