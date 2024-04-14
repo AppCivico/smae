@@ -913,11 +913,14 @@ export const nota = object({
     .label("Disparo de e-mail")
     .required(),
   enderecamentos:array()
+    .nullable()
   .of(
     object().shape({
     orgao_enderecado_id: number()
+      .label("Órgão")
       .required(),
     pessoa_enderecado_id: number()
+      .label("Pessoas")
       .required(),
   })),
 });
