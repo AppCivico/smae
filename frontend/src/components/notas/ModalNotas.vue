@@ -190,8 +190,8 @@ watch(itemParaEdição, (novosValores) => {
           </div>
         </div>
         <!--TODO: por em uma computed -->
-        <div class="flex" v-if="listaTipo.find(tipo => tipo.id === tipo_nota_id && tipo.permite_revisao)" >
-          <div class="f1">
+        <div class="flex" >
+          <div class="f1" v-if="listaTipo.find(tipo => tipo.id === tipo_nota_id && tipo.permite_email)">
             <LabelFromYup name="dispara_email" :schema="schema" />
             <Field
               name="dispara_email"
@@ -201,7 +201,8 @@ watch(itemParaEdição, (novosValores) => {
               :unchecked-value="false"
             />
           </div>
-          <div class="f1">
+          <Field v-else name="dispara_email" type="hidden" />
+          <div class="f1" v-if="listaTipo.find(tipo => tipo.id === tipo_nota_id && tipo.permite_revisao)">
             <LabelFromYup name="rever_em" :schema="schema" />
             <Field name="rever_em" type="date" class="inputtext light"  placeholder="dd/mm/aaaa"/>
           </div>
