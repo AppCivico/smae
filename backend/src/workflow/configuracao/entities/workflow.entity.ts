@@ -25,7 +25,7 @@ export class WorkflowDetailDto {
     inicio: Date;
     termino: Date | null;
     transferencia_tipo: IdNomeDto;
-
+    edicao_restrita: boolean;
     fluxo: DetailWorkflowFluxoDto[];
 }
 
