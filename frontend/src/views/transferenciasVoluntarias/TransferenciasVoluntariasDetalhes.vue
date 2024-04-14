@@ -12,8 +12,8 @@ import { defineAsyncComponent } from 'vue';
 
 const alertStore = useAlertStore();
 
-const FasesDoWorkflow = defineAsyncComponent({
-  loader: () => import('@/components/transferencia/FasesDoWorkflow.vue'),
+const AndamentoDoWorkflow = defineAsyncComponent({
+  loader: () => import('@/components/transferencia/AndamentoDoWorkflow.vue'),
   loadingComponent: LoadingComponent,
 });
 
@@ -98,7 +98,7 @@ avançoDeEtapaPermitido:{{ avançoDeEtapaPermitido }}
 idDaPróximaFasePendente:{{ idDaPróximaFasePendente }}
 </pre>
 
-  <FasesDoWorkflow
+  <AndamentoDoWorkflow
     v-if="transferênciaEmFoco?.workflow_id"
     class="mb2"
   />
