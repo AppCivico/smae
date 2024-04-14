@@ -363,7 +363,6 @@ export class WorkflowAndamentoFaseService {
                     throw new HttpException('Fase atual precisa ser finalizada antes de iniciar uma nova', 400);
 
                 // Procurando a próxima fase e iniciando-a.
-                // Caso não exista. Procura pela próxima etapa.
                 const configFluxoFaseAtual = await prismaTxn.fluxoFase.findFirst({
                     where: {
                         removido_em: null,
@@ -433,12 +432,34 @@ export class WorkflowAndamentoFaseService {
 
                 const situacao_id: number = configFluxoFaseSeguinte.situacoes[0].situacao_id;
 
+                // Caso a fase seja de responsabilidade própria, pegando órgão da casa civil.
+                let orgao_id: number | null = null;
+                if (configFluxoFaseSeguinte.responsabilidade == WorkflowResponsabilidade.Propria) {
+                    const orgaoCasaCivil = await prismaTxn.orgao.findFirst({
+                        where: {
+                            removido_em: null,
+                            sigla: 'SERI',
+                        },
+                        select: {
+                            id: true,
+                        },
+                    });
+                    if (!orgaoCasaCivil)
+                        throw new HttpException(
+                            'Fase é de responsabilidade própria, mas não foi encontrado órgão da Casa Civil',
+                            400
+                        );
+
+                    orgao_id = orgaoCasaCivil.id;
+                }
+
                 const andamentoNovaFase = await prismaTxn.transferenciaAndamento.create({
                     data: {
                         transferencia_id: dto.transferencia_id,
                         workflow_etapa_id: faseAtual.workflow_etapa_id, // Aqui não tem problema reaproveitar o workflow_etapa_id, pois está na mesma etapa.
                         workflow_fase_id: configFluxoFaseSeguinte.fase_id,
                         workflow_situacao_id: situacao_id,
+                        orgao_responsavel_id: orgao_id,
                         data_inicio: new Date(Date.now()),
                         criado_por: user.id,
                         criado_em: new Date(Date.now()),
