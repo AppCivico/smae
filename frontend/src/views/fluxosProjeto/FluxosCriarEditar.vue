@@ -11,8 +11,8 @@ import EtapaFluxo from '@/views/fluxosProjeto/EtapaFluxo.vue';
 import FaseFluxo from '@/views/fluxosProjeto/FaseFluxo.vue';
 import { workflow as schema } from '@/consts/formSchemas';
 import { useAlertStore } from '@/stores/alert.store';
-import { computed, ref, watch } from 'vue';
-import { useRouter } from "vue-router";
+import { computed, ref, watch, onMounted } from 'vue';
+import { useRouter, useRoute } from "vue-router";
 import { storeToRefs } from 'pinia';
 
 const tipoDeTransferenciaStore = useTipoDeTransferenciaStore();
@@ -21,9 +21,10 @@ const fluxosFasesProjetos = useFluxosFasesProjetosStore();
 const fluxosTarefasProjetos = useFluxosTarefasProjetosStore();
 const alertStore = useAlertStore();
 const router = useRouter();
+const route = useRoute();
 
 const { lista: tipoTransferenciaComoLista } = storeToRefs(tipoDeTransferenciaStore);
-const { lista, chamadasPendentes, resetForm, erro, itemParaEdição,  emFoco} = storeToRefs(fluxosProjetoStore);
+const { lista, chamadasPendentes, erro, itemParaEdição,  emFoco} = storeToRefs(fluxosProjetoStore);
 const { chamadasPendentes: fasesPendentes } = storeToRefs(fluxosFasesProjetos);
 const { chamadasPendentes: tarefasPendentes } = storeToRefs(fluxosTarefasProjetos);
 
@@ -43,7 +44,7 @@ const props = defineProps({
   },
 });
 
-const { errors, isSubmitting, setFieldValue, values, handleSubmit } = useForm({
+const { errors, isSubmitting, setFieldValue, handleSubmit } = useForm({
   initialValues: itemParaEdição,
   validationSchema: schema,
 });
@@ -71,16 +72,15 @@ const onSubmit = handleSubmit.withControlled(async (controlledValues) => {
   }
 });
 
-async function carregarFluxo() {
-  if (props.fluxoId) {
-    // PRA-FAZER: reavaliar a necessidade desse `await`
-    await fluxosProjetoStore.buscarItem(props.fluxoId);
-  }
+function carregarFluxo() {
+
 }
 
 async function iniciar() {
   await tipoDeTransferenciaStore.buscarTudo();
-  carregarFluxo();
+  if (props.fluxoId) {
+     fluxosProjetoStore.buscarItem(props.fluxoId);
+  }
 }
 
 function excluirFase(idDaFase) {
@@ -102,17 +102,22 @@ function excluirTarefa(idDaTarefa) {
 }
 iniciar()
 
+onMounted(() => {
+  iniciar();
+});
+
 watch(itemParaEdição, (novoValor) => {
   if (novoValor.transferencia_tipo?.id) {
     esferaSelecionada.value = tipoTransferenciaComoLista.value
       .find((x) => x.id === novoValor.transferencia_tipo.id)?.esfera || '';
   }
 }, { immediate: true });
+
 </script>
 
 <template>
   <div class="flex spacebetween center mb2">
-    <h1>Cadastro de Fluxo</h1>
+    <h1>{{ route?.meta?.título || 'Cadastro de Fluxo' }}</h1>
     <hr class="ml2 f1">
   </div>
 
@@ -127,7 +132,8 @@ watch(itemParaEdição, (novoValor) => {
     @saved="carregarFluxo()"
   />
 
-  <form :disabled="isSubmitting"
+  <form
+      :disabled="isSubmitting"
       @submit.prevent="onSubmit">
     <div class="flex g2 mb1 center">
       <div class="f1">
