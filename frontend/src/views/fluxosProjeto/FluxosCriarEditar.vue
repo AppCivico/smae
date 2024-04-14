@@ -48,8 +48,9 @@ const { errors, isSubmitting, setFieldValue, values, handleSubmit } = useForm({
   validationSchema: schema,
 });
 
-const tiposDisponíveis = computed(() => (values.esfera
-  ? tipoTransferenciaComoLista.value.filter((x) => x.esfera === values.esfera)
+const tiposDisponíveis = computed(() => (esferaSelecionada.value
+  ? tipoTransferenciaComoLista.value
+    .filter((x) => x.esfera === esferaSelecionada.value)
   : []));
 
 const onSubmit = handleSubmit.withControlled(async (controlledValues) => {
@@ -70,14 +71,6 @@ const onSubmit = handleSubmit.withControlled(async (controlledValues) => {
   }
 });
 
-watch(itemParaEdição, (novosValores) => {
-  if (resetForm && typeof resetForm.value === 'function') {
-    resetForm.value({ values: novosValores });
-    const transferenciaLista = tipoTransferenciaComoLista.value.find((x) => x.id === novosValores.transferencia_tipo.id);
-    esferaSelecionada.value = transferenciaLista?.esfera;
-  }
-});
-
 async function carregarFluxo() {
   if (props.fluxoId) {
     // PRA-FAZER: reavaliar a necessidade desse `await`
@@ -85,8 +78,8 @@ async function carregarFluxo() {
   }
 }
 
-function iniciar() {
-  tipoDeTransferenciaStore.buscarTudo();
+async function iniciar() {
+  await tipoDeTransferenciaStore.buscarTudo();
   carregarFluxo();
 }
 
@@ -108,6 +101,13 @@ function excluirTarefa(idDaTarefa) {
   }, 'Excluir');
 }
 iniciar()
+
+watch(itemParaEdição, (novoValor) => {
+  if (novoValor.transferencia_tipo?.id) {
+    esferaSelecionada.value = tipoTransferenciaComoLista.value
+      .find((x) => x.id === novoValor.transferencia_tipo.id)?.esfera || '';
+  }
+}, { immediate: true });
 </script>
 
 <template>
@@ -150,10 +150,9 @@ iniciar()
           name="esfera"
           :schema="schema"
         />
-        <Field
+        <select
           v-model="esferaSelecionada"
           name="esfera"
-          as="select"
           class="inputtext light mb1"
           :class="{ 'error': errors.esfera }"
           @change="setFieldValue('transferencia_tipo_id', null)"
@@ -168,7 +167,7 @@ iniciar()
           >
             {{ item.nome }}
           </option>
-        </Field>
+        </select>
         <div class="error-msg">
           {{ errors.esfera }}
         </div>

@@ -82,7 +82,7 @@ export const useFluxosProjetosStore = defineStore('fluxosProjetos', {
         ...emFoco,
         inicio: dateTimeToDate(emFoco?.inicio),
         termino: dateTimeToDate(emFoco?.termino),
-        transferencia_tipo_id: emFoco?.transferencia_tipo_id?.id || null,
+        transferencia_tipo_id: emFoco?.transferencia_tipo?.id || null,
       };
     },
   },
