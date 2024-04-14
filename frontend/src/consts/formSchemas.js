@@ -885,7 +885,7 @@ export const nota = object({
           .required(),
         pessoa_enderecado_id: number()
           .label("Pessoas")
-          .required(),
+          .nullable(),
       })
     ),
   nota: string()
