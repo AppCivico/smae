@@ -236,13 +236,20 @@ export class WorkflowService {
         });
         if (!row) throw new NotFoundException('Workflow não encontrado');
 
+        const emUso = await this.prisma.transferencia.count({
+            where: {
+                removido_em: null,
+                workflow_id: row.id,
+            },
+        });
+
         return {
             id: row.id,
             nome: row.nome,
             ativo: row.ativo,
             inicio: row.inicio,
             termino: row.termino,
-
+            edicao_restrita: emUso ? true : false,
             transferencia_tipo: {
                 id: row.transferencia_tipo.id,
                 nome: row.transferencia_tipo.nome,
