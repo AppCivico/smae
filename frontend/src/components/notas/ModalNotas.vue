@@ -70,8 +70,8 @@ const onSubmit = handleSubmit.withControlled(async (valoresControlados) => {
       alertStore.success(msg);
       blocoStore.$reset();
       blocoStore.buscarTudo(props.blocosToken);
+      resetForm({ values: itemParaEdição.value });
     }
-    emFoco.value = null
   } catch (error) {
     alertStore.error(error);
   }
@@ -109,6 +109,7 @@ watch(() => props.blocosToken, () => {
 
 tipoStore.buscarTudo();
 
+// deveria funcionar 
 watch(itemParaEdição, (novosValores) => {
   resetForm({ values: novosValores });
 });
@@ -188,6 +189,7 @@ watch(itemParaEdição, (novosValores) => {
             </Field>
           </div>
         </div>
+        <!--TODO: por em uma computed -->
         <div class="flex" v-if="listaTipo.find(tipo => tipo.id === tipo_nota_id && tipo.permite_revisao)" >
           <div class="f1">
             <LabelFromYup name="dispara_email" :schema="schema" />
