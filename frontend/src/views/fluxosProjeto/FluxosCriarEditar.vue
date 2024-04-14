@@ -11,7 +11,7 @@ import EtapaFluxo from '@/views/fluxosProjeto/EtapaFluxo.vue';
 import FaseFluxo from '@/views/fluxosProjeto/FaseFluxo.vue';
 import { workflow as schema } from '@/consts/formSchemas';
 import { useAlertStore } from '@/stores/alert.store';
-import { computed, ref, watch } from 'vue';
+import { computed, onUnmounted, ref, watch } from 'vue';
 import { useRouter, useRoute } from "vue-router";
 import { storeToRefs } from 'pinia';
 
@@ -82,9 +82,6 @@ async function carregarFluxo() {
 async function iniciar() {
   await tipoDeTransferenciaStore.buscarTudo();
   carregarFluxo();
-  if (props.fluxoId) {
-     fluxosProjetoStore.buscarItem(props.fluxoId);
-  }
 }
 
 function excluirFase(idDaFase) {
@@ -105,6 +102,10 @@ function excluirTarefa(idDaTarefa) {
   }, 'Excluir');
 }
 iniciar()
+
+onUnmounted(() => {
+  emFoco.value = null;
+});
 
 watch(itemParaEdição, (novoValor) => {
   if (novoValor.transferencia_tipo?.id) {
