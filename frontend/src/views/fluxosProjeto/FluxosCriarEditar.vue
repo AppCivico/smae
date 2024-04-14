@@ -312,16 +312,16 @@ watch(itemParaEdição, (novoValor) => {
   <div class="cadaTabela">
     <div v-for="item in emFoco?.fluxo"
         :key="item.id">
-      <div class="flex center">
+      <div class="flex flexwrap center">
         <div class="flex center">
           <span class="ordem">{{ item && item.ordem ? item.ordem : ''  }}</span>
-          <h2 class="mb0 tituloTabela">
+          <h2 class="mb0 fb50 f1 tituloTabela">
             Etapa <span>{{ item.fluxo_etapa_de.etapa_fluxo }}</span>
             para <span>{{ item.fluxo_etapa_para.etapa_fluxo }}</span>
           </h2>
         </div>
         <hr class="ml2 f1">
-        <div class="flex spacebetween g1 center">
+        <div class="flex f0 spacebetween g1 center mlauto mr0">
           <button
             class="btn ml2"
             @click="idDoRelacionamentoComFase = 0"
