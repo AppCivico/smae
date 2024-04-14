@@ -50,14 +50,8 @@ export class WorkflowService {
                             OR: [{ termino: { gt: now.toJSDate() } }, { termino: null }],
                         },
                     });
-                    console.log('==================================');
-                    console.log('ta aqui');
-                    console.log(now);
-                    console.log(DateTime.fromJSDate(dto.inicio));
-                    console.log(workflowAtivo);
+
                     ativo = !workflowAtivo ?? true;
-                    console.log(ativo);
-                    console.log('==================================');
                 }
 
                 const workflow = await prismaTxn.workflow.create({

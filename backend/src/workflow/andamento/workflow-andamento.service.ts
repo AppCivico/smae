@@ -49,9 +49,18 @@ export class WorkflowAndamentoService {
 
         const workflow = await this.workflowService.findOne(transferencia.workflow_id, user);
 
+        // Processando booleans de controle de etapa.
+        const fluxoAtual = workflow.fluxo.find(
+            (e) => e.workflow_etapa_de!.id == transferencia.andamentoWorkflow[0].workflow_etapa_id
+        );
+
+        // Caso o dê seja igual ao "para", é o fim do workflow
+        const possui_proxima_etapa: boolean =
+            fluxoAtual!.workflow_etapa_de!.id == fluxoAtual!.workflow_etapa_para!.id ? false : true;
+
         return {
             ...workflow,
-            possui_proxima_etapa: true,
+            possui_proxima_etapa: possui_proxima_etapa,
             pode_passar_para_proxima_etapa: true,
 
             fluxo: await Promise.all(

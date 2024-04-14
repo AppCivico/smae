@@ -804,11 +804,27 @@ export class TransferenciaService {
             const fase = fluxo.fases[0];
 
             if (fase) {
-                if (fase.responsabilidade == WorkflowResponsabilidade.OutroOrgao && !dto.workflow_orgao_responsavel_id)
-                    throw new HttpException(
-                        'Fase é de responsabilidade de outro órgão, portanto workflow_orgao_responsavel_id deve ser enviado',
-                        400
-                    );
+                // Caso a fase seja de responsabilidade própria.
+                // Deve ser iniciada já sob a Casa Civil.
+                let orgao_id: number | null = null;
+                if (fase.responsabilidade == WorkflowResponsabilidade.Propria) {
+                    const orgaoCasaCivil = await prismaTxn.orgao.findFirst({
+                        where: {
+                            removido_em: null,
+                            sigla: 'SERI',
+                        },
+                        select: {
+                            id: true,
+                        },
+                    });
+                    if (!orgaoCasaCivil)
+                        throw new HttpException(
+                            'Fase é de responsabilidade própria, mas não foi encontrado órgão da Casa Civil',
+                            400
+                        );
+
+                    orgao_id = orgaoCasaCivil.id;
+                }
 
                 const primeiraSituacao = fase.situacoes.find((s) => {
                     return s.tipo_situacao == WorkflowSituacaoTipo.NaoIniciado;
@@ -832,6 +848,7 @@ export class TransferenciaService {
                             workflow_etapa_id: fluxo.workflow_etapa_de!.id, // Sempre será o "dê" do "dê-para".
                             workflow_fase_id: fase.fase!.id,
                             workflow_situacao_id: primeiraSituacao.id,
+                            orgao_responsavel_id: orgao_id,
                             data_inicio: new Date(Date.now()),
                             criado_por: user.id,
                             criado_em: new Date(Date.now()),
