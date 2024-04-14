@@ -1,16 +1,23 @@
 <script setup>
 import SmallModal from '@/components/SmallModal.vue';
 import { nota as schema } from '@/consts/formSchemas';
+import truncate from '@/helpers/truncate';
 import { useAlertStore } from '@/stores/alert.store';
 import { useBlocoDeNotasStore } from '@/stores/blocoNotas.store';
 import { useOrgansStore } from '@/stores/organs.store';
 import { useTipoDeNotasStore } from '@/stores/tipoNotas.store';
+import { useUsersStore } from '@/stores/users.store';
 import { storeToRefs } from 'pinia';
-import { Field, useForm } from 'vee-validate';
+import {
+  ErrorMessage, Field, FieldArray, useForm,
+} from 'vee-validate';
 import { computed, ref, watch } from 'vue';
 
 const ÓrgãosStore = useOrgansStore();
-const { órgãosComoLista } = storeToRefs(ÓrgãosStore);
+const { organs, órgãosComoLista } = storeToRefs(ÓrgãosStore);
+
+const UserStore = useUsersStore();
+const { pessoasSimplificadas, pessoasSimplificadasPorÓrgão } = storeToRefs(UserStore);
 
 const alertStore = useAlertStore();
 const status = [
@@ -49,7 +56,7 @@ const exibeForm = ref(false);
 const tipoNotaId = ref(null);
 
 const {
-  errors, handleSubmit, isSubmitting, resetForm, values,
+  errors, handleSubmit, isSubmitting, resetForm, setFieldValue, values,
 } = useForm({
   initialValues: itemParaEdição.value,
   validationSchema: schema,
@@ -124,6 +131,10 @@ watch(() => props.blocosToken, () => {
 
 tipoStore.buscarTudo();
 ÓrgãosStore.getAll();
+
+// PRA-FAZER: Buscar só na primeira abertura do formulário
+ÓrgãosStore.getAll();
+UserStore.buscarPessoasSimplificadas();
 
 // deveria funcionar
 watch(itemParaEdição, (novosValores) => {
@@ -289,9 +300,116 @@ watch(itemParaEdição, (novosValores) => {
 
         <div
           v-if="camposPermitidos.enderecamento"
-          class="flex"
+          class="mb2"
         >
-          <!-- endereçamento aqui -->
+          <LabelFromYup
+            class="label mt2 mb1"
+            as="legend"
+            name="enderecamentos"
+            :schema="schema"
+          />
+
+          <FieldArray
+            v-slot="{ fields, push, remove }"
+            name="enderecamentos"
+          >
+            <div
+              v-for="(field, idx) in fields"
+              :key="field.key"
+              class="flex g2 mb1"
+            >
+              <div class="f1">
+                <LabelFromYup
+                  name="orgao_enderecado_id"
+                  :schema="schema.fields.enderecamentos.innerType"
+                />
+                <Field
+                  :name="`enderecamentos[${idx}].orgao_enderecado_id`"
+                  as="select"
+                  class="inputtext light mb1"
+                  :class="{
+                    error: errors[`enderecamentos[${idx}].orgao_enderecado_id`],
+                    loading: organs?.loading
+                  }"
+                  :disabled="!órgãosComoLista?.length"
+                  @change="setFieldValue(`enderecamentos[${idx}].pessoa_enderecado_id`, null)"
+                >
+                  <option value="" />
+                  <option
+                    v-for="item in órgãosComoLista"
+                    :key="item"
+                    :value="item.id"
+                    :title="item.descricao?.length > 36 ? item.descricao : null"
+                  >
+                    {{ item.sigla }} - {{ truncate(item.descricao, 36) }}
+                  </option>
+                </Field>
+                <ErrorMessage
+                  class="error-msg mb2"
+                  :name="`enderecamentos[${idx}].orgao_enderecado_id`"
+                />
+              </div>
+
+              <div class="f1">
+                <LabelFromYup
+                  name="pessoa_enderecado_id"
+                  :schema="schema.fields.enderecamentos.innerType"
+                />
+                <Field
+                  :name="`enderecamentos[${idx}].pessoa_enderecado_id`"
+                  as="select"
+                  class="inputtext light mb1"
+                  :class="{
+                    error: errors[`enderecamentos[${idx}].pessoa_enderecado_id`],
+                    loading: pessoasSimplificadas?.loading
+                  }"
+                  :disabled="
+                    !pessoasSimplificadasPorÓrgão[values.enderecamentos?.[idx]?.orgao_enderecado_id]?.length
+                  "
+                >
+                  <option value="" />
+                  <option
+                    v-for="item in pessoasSimplificadasPorÓrgão[values.enderecamentos?.[idx]?.orgao_enderecado_id]"
+                    :key="item"
+                    :value="item.id"
+                  >
+                    {{ item.nome_exibicao }}
+                  </option>
+                </Field>
+                <ErrorMessage
+                  class="error-msg mb2"
+                  :name="`enderecamentos[${idx}].pessoa_enderecado_id`"
+                />
+              </div>
+
+              <button
+                class="like-a__text addlink"
+                arial-label="excluir"
+                title="excluir"
+                @click="remove(idx)"
+              >
+                <svg
+                  width="20"
+                  height="20"
+                ><use xlink:href="#i_remove" /></svg>
+              </button>
+            </div>
+
+            <button
+              class="like-a__text addlink"
+              type="button"
+              @click="push({
+                orgao_enderecado_id: null,
+                pessoa_enderecado_id: null,
+              })"
+            >
+              <svg
+                width="20"
+                height="20"
+              ><use xlink:href="#i_+" /></svg>Adicionar endereçamento
+            </button>
+          </FieldArray>
+          <h1>até aqui, sobral!</h1>
         </div>
 
         <div class="mb2">

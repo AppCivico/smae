@@ -132,4 +132,16 @@ export const useUsersStore = defineStore({
       }
     },
   },
+  getters: {
+    pessoasSimplificadasPorÓrgão: (({ pessoasSimplificadas }) => (Array
+      .isArray(pessoasSimplificadas)
+      ? pessoasSimplificadas.reduce((acc, cur) => {
+        if (!acc[cur.orgao_id]) {
+          acc[cur.orgao_id] = [];
+        }
+        acc[cur.orgao_id].push(cur);
+        return acc;
+      }, {})
+      : {})),
+  },
 });
