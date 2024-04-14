@@ -221,7 +221,7 @@ export class WorkflowAndamentoService {
                     : DateTime.fromJSDate(row.data_termino).diff(DateTime.fromJSDate(row.data_inicio)).as('days');
         } else {
             dias_na_fase =
-                DateTime.fromJSDate(row.data_inicio).startOf('day') == now
+                DateTime.fromJSDate(row.data_inicio).startOf('day').toMillis() == now.toMillis()
                     ? 1
                     : Math.trunc(now.diff(DateTime.fromJSDate(row.data_inicio, { zone: 'utc' })).as('days'));
         }
