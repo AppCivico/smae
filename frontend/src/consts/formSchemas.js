@@ -868,61 +868,38 @@ export const bancada = object({
     ),
 });
 
-export const blocoNotas = object({
-  modulos: string()
-    .label("Módulos"),
-  codigo: string()
-    .label('Código'),
-  permite_revisao:  boolean()
-    .label('Permite revisão?')
-    .required(),
-  visivel_resp_orgao: boolean()
-    .label('Visivel para o órgão responsável')
-    .required(),
-  eh_publico: boolean()
-    .label('Público')
-    .required(),
-  permite_enderecamento: boolean()
-    .label('Permite endereçamento?')
-    .required(),
-  permite_email: boolean()
-    .label('Permite E-mail?')
-    .required(),
-  permite_replica: boolean()
-    .label('Permite réplica?')
-    .required(),
-});
-
 export const nota = object({
-  status:string()
-  .label("Status")
-  .required(),
-  nota:string()
-  .label("Nota")
-  .required(),
   data_nota: date()
     .label("Data da nota")
+    .required(),
+  dispara_email: boolean()
+    .label("Disparo de e-mail")
+    .required(),
+  enderecamentos: array()
+    .label("Endereçamento")
+    .nullable()
+    .of(
+      object().shape({
+        orgao_enderecado_id: number()
+          .label("Órgão")
+          .required(),
+        pessoa_enderecado_id: number()
+          .label("Pessoas")
+          .required(),
+      })
+    ),
+  nota: string()
+    .label("Nota")
+    .required(),
+  rever_em: date()
+    .label("Rever em")
+    .nullable(),
+  status: string()
+    .label("Status")
     .required(),
   tipo_nota_id: number()
     .label("Tipo de nota")
     .required(),
-  rever_em: date()
-  .label("Rever em")
-  .nullable(),
-  dispara_email: boolean()
-    .label("Disparo de e-mail")
-    .required(),
-  enderecamentos:array()
-    .nullable()
-  .of(
-    object().shape({
-    orgao_enderecado_id: number()
-      .label("Órgão")
-      .required(),
-    pessoa_enderecado_id: number()
-      .label("Pessoas")
-      .required(),
-  })),
 });
 
 export const parlamentar = object({
