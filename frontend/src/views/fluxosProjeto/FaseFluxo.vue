@@ -12,7 +12,7 @@ import { useRouter } from "vue-router";
 import { storeToRefs } from 'pinia';
 import { computed, ref } from 'vue';
 
-const emits = defineEmits(['close']);
+const emits = defineEmits(['close', 'saved']);
 const props = defineProps({
   relacionamentoId: {
     type: Number,
@@ -62,6 +62,7 @@ const onSubmit = handleSubmit.withControlled(async (valoresControlados) => {
       alertStore.success(msg);
       fluxosFasesProjetosStore.$reset();
       fluxosFasesProjetosStore.buscarTudo();
+      emits('saved');
       emits('close');
     }
   } catch (error) {
