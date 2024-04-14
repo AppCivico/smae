@@ -327,7 +327,7 @@ watch(itemParaEdição, (novoValor) => {
             :workflow_etapa_para_id="item.workflow_etapa_para_id"
             @click="idDaEtapaEmFoco = item.id"
           >
-            Editar
+            Editar etapa
           </button>
           <FaseFluxo
             v-if="idDoRelacionamentoComFase > -1"
