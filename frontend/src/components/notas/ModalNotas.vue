@@ -20,24 +20,24 @@ const UserStore = useUsersStore();
 const { pessoasSimplificadas, pessoasSimplificadasPorÓrgão } = storeToRefs(UserStore);
 
 const alertStore = useAlertStore();
-const status = [
-  {
+const status = {
+  Programado: {
     value: 'Programado',
     text: 'Programado',
   },
-  {
+  Em_Curso:{
     value: 'Em_Curso',
     text: 'Em curso',
   },
-  {
+  Suspenso: {
     value: 'Suspenso',
     text: 'Suspenso',
   },
-  {
+  Cancelado: {
     value: 'Cancelado',
     text: 'Cancelado',
-  },
-];
+  },  
+};
 
 const blocoStore = useBlocoDeNotasStore();
 const {
@@ -219,7 +219,7 @@ watch(itemParaEdição, (novosValores) => {
                 Selecionar
               </option>
               <option
-                v-for="(item, key) in status"
+                v-for="(item, key) in Object.values(status)"
                 :key="key"
                 :value="item.value"
               >
@@ -460,7 +460,7 @@ watch(itemParaEdição, (novosValores) => {
           Selecionar
         </option>
         <option
-          v-for="(item, key) in status"
+          v-for="(item, key) in Object.values(status)"
           :key="key"
           :value="item.value"
         >
@@ -489,9 +489,8 @@ watch(itemParaEdição, (novosValores) => {
           <td>
             {{ item.nota }}
           </td>
-          <td>
-            <!-- formatar -->
-            {{ item.status }}
+          <td class="cell--nowrap">
+            {{ status[item.status]?.text || item.status }}
           </td>
           <td>
             {{
