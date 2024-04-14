@@ -1,13 +1,13 @@
 <script setup>
-import { Field, Form, useForm } from "vee-validate";
-import SmallModal from "@/components/SmallModal.vue";
-import { storeToRefs } from "pinia";
-import { ref, watch } from "vue";
-import { useBlocoDeNotasStore } from "@/stores/blocoNotas.store";
-import { nota as schema } from "@/consts/formSchemas";
-import { useAlertStore } from "@/stores/alert.store";
-import { useTipoDeNotasStore } from "@/stores/tipoNotas.store";
+import SmallModal from '@/components/SmallModal.vue';
+import { nota as schema } from '@/consts/formSchemas';
+import { useAlertStore } from '@/stores/alert.store';
+import { useBlocoDeNotasStore } from '@/stores/blocoNotas.store';
 import { useOrgansStore } from '@/stores/organs.store';
+import { useTipoDeNotasStore } from '@/stores/tipoNotas.store';
+import { storeToRefs } from 'pinia';
+import { Field, Form, useForm } from 'vee-validate';
+import { ref, watch } from 'vue';
 
 const ÓrgãosStore = useOrgansStore();
 const { órgãosComoLista } = storeToRefs(ÓrgãosStore);
@@ -15,20 +15,20 @@ const { órgãosComoLista } = storeToRefs(ÓrgãosStore);
 const alertStore = useAlertStore();
 const status = [
   {
-    value: "Programado",
-    text: "Programado",
+    value: 'Programado',
+    text: 'Programado',
   },
   {
-    value: "Em_Curso",
-    text: "Em curso",
+    value: 'Em_Curso',
+    text: 'Em curso',
   },
   {
-    value: "Suspenso",
-    text: "Suspenso",
+    value: 'Suspenso',
+    text: 'Suspenso',
   },
   {
-    value: "Cancelado",
-    text: "Cancelado",
+    value: 'Cancelado',
+    text: 'Cancelado',
   },
 ];
 
@@ -48,7 +48,9 @@ const exibeModalNotas = ref(false);
 const exibeForm = ref(false);
 const tipo_nota_id = ref(null);
 
-const { errors, handleSubmit, isSubmitting, resetForm, values } = useForm({
+const {
+  errors, handleSubmit, isSubmitting, resetForm, values,
+} = useForm({
   initialValues: itemParaEdição.value,
   validationSchema: schema,
 });
@@ -68,7 +70,7 @@ const onSubmit = handleSubmit.withControlled(async (valoresControlados) => {
   };
   try {
     let resposta;
-    const msg = "Dados salvos com sucesso!";
+    const msg = 'Dados salvos com sucesso!';
     resposta = await blocoStore.salvarItem(valoresAuxiliares);
     if (resposta) {
       alertStore.success(msg);
@@ -83,15 +85,15 @@ const onSubmit = handleSubmit.withControlled(async (valoresControlados) => {
 
 async function excluirNota(id) {
   useAlertStore().confirmAction(
-    "Deseja mesmo remover a nota?",
+    'Deseja mesmo remover a nota?',
     async () => {
       if (await blocoStore.excluirItem(id)) {
         blocoStore.$reset();
         blocoStore.buscarTudo(props.blocosToken);
-        useAlertStore().success("Nota removida.");
+        useAlertStore().success('Nota removida.');
       }
     },
-    "Remover"
+    'Remover',
   );
 }
 
@@ -100,20 +102,20 @@ function editarNota(id) {
   blocoStore.buscarItem(id);
 }
 
-function fecharForm(){
-  emFoco.value = null
+function fecharForm() {
+  emFoco.value = null;
   exibeForm.value = false;
 }
 
 watch(() => props.blocosToken, () => {
-  if(props.blocosToken){
+  if (props.blocosToken) {
     blocoStore.buscarTudo(props.blocosToken);
   }
-},{ immediate: true });
+}, { immediate: true });
 
 tipoStore.buscarTudo();
 
-// deveria funcionar 
+// deveria funcionar
 watch(itemParaEdição, (novosValores) => {
   resetForm({ values: novosValores });
 });
@@ -121,7 +123,10 @@ watch(itemParaEdição, (novosValores) => {
 
 <template>
   <!-- em desenvolvimento -->
-  <button class="flex center g1 like-a__text" @click="exibeModalNotas = true">
+  <button
+    class="flex center g1 like-a__text"
+    @click="exibeModalNotas = true"
+  >
     <svg
       width="16"
       height="20"
@@ -139,13 +144,13 @@ watch(itemParaEdição, (novosValores) => {
   <SmallModal v-if="exibeModalNotas">
     <div class="flex spacebetween center mb2">
       <h2>Notas</h2>
-      <hr class="ml2 f1" />
+      <hr class="ml2 f1">
       <CheckClose
+        :apenas-emitir="true"
         @close="
           exibeModalNotas = false;
           fecharForm();
         "
-        :apenas-emitir="true"
       />
     </div>
     <button
@@ -153,19 +158,40 @@ watch(itemParaEdição, (novosValores) => {
       class="like-a__text addlink mb2"
       @click="exibeForm = true"
     >
-      <svg width="20" height="20">
+      <svg
+        width="20"
+        height="20"
+      >
         <use xlink:href="#i_+" />
       </svg>
       Adicionar nova nota
     </button>
-    <button v-else  class="like-a__text addlink mb2" @click.prevent="fecharForm()">Cancelar</button>
-    <div class="mb4" v-if="exibeForm">
+    <button
+      v-else
+      class="like-a__text addlink mb2"
+      @click.prevent="fecharForm()"
+    >
+      Cancelar
+    </button>
+    <div
+      v-if="exibeForm"
+      class="mb4"
+    >
       <form @submit.prevent="onSubmit">
         <div class="flex mb2 flexwrap g2">
           <div class="f1">
-            <LabelFromYup name="status" :schema="schema" />
-            <Field name="status" as="select" class="inputtext light mb1">
-              <option value>Selecionar</option>
+            <LabelFromYup
+              name="status"
+              :schema="schema"
+            />
+            <Field
+              name="status"
+              as="select"
+              class="inputtext light mb1"
+            >
+              <option value>
+                Selecionar
+              </option>
               <option
                 v-for="(item, key) in status"
                 :key="key"
@@ -176,13 +202,31 @@ watch(itemParaEdição, (novosValores) => {
             </Field>
           </div>
           <div class="f1">
-            <LabelFromYup name="data_nota" :schema="schema" />
-            <Field name="data_nota" type="date" class="inputtext light"  placeholder="dd/mm/aaaa"/>
+            <LabelFromYup
+              name="data_nota"
+              :schema="schema"
+            />
+            <Field
+              name="data_nota"
+              type="date"
+              class="inputtext light"
+              placeholder="dd/mm/aaaa"
+            />
           </div>
           <div class="f1">
-            <LabelFromYup name="tipo_nota_id" :schema="schema" />
-            <Field v-model="tipo_nota_id" name="tipo_nota_id" as="select" class="inputtext light mb1">
-              <option value>Selecionar</option>
+            <LabelFromYup
+              name="tipo_nota_id"
+              :schema="schema"
+            />
+            <Field
+              v-model="tipo_nota_id"
+              name="tipo_nota_id"
+              as="select"
+              class="inputtext light mb1"
+            >
+              <option value>
+                Selecionar
+              </option>
               <option
                 v-for="(tipo, key) in listaTipo"
                 :key="key"
@@ -194,9 +238,15 @@ watch(itemParaEdição, (novosValores) => {
           </div>
         </div>
         <!--TODO: por em uma computed -->
-        <div class="flex mb1" >
-          <div class="f1" v-if="listaTipo.find(tipo => tipo.id === tipo_nota_id && tipo.permite_email)">
-            <LabelFromYup name="dispara_email" :schema="schema" />
+        <div class="flex mb1">
+          <div
+            v-if="listaTipo.find(tipo => tipo.id === tipo_nota_id && tipo.permite_email)"
+            class="f1"
+          >
+            <LabelFromYup
+              name="dispara_email"
+              :schema="schema"
+            />
             <Field
               name="dispara_email"
               type="checkbox"
@@ -205,19 +255,40 @@ watch(itemParaEdição, (novosValores) => {
               :unchecked-value="false"
             />
           </div>
-          <Field v-else name="dispara_email" type="hidden" />
-          <div class="f1" v-if="listaTipo.find(tipo => tipo.id === tipo_nota_id && tipo.permite_revisao)">
-            <LabelFromYup name="rever_em" :schema="schema" />
-            <Field name="rever_em" type="date" class="inputtext light"  placeholder="dd/mm/aaaa"/>
+          <Field
+            v-else
+            name="dispara_email"
+            type="hidden"
+          />
+          <div
+            v-if="listaTipo.find(tipo => tipo.id === tipo_nota_id && tipo.permite_revisao)"
+            class="f1"
+          >
+            <LabelFromYup
+              name="rever_em"
+              :schema="schema"
+            />
+            <Field
+              name="rever_em"
+              type="date"
+              class="inputtext light"
+              placeholder="dd/mm/aaaa"
+            />
           </div>
         </div>
 
-        <div class="flex" v-if="listaTipo.find((tipo) => tipo.id === tipo_nota_id && tipo.permite_enderecamento)">
+        <div
+          v-if="listaTipo.find((tipo) => tipo.id === tipo_nota_id && tipo.permite_enderecamento)"
+          class="flex"
+        >
           <!-- endereçamento aqui -->
         </div>
 
         <div class="mb2">
-          <LabelFromYup name="nota" :schema="schema" />
+          <LabelFromYup
+            name="nota"
+            :schema="schema"
+          />
           <Field
             name="nota"
             type="textarea"
@@ -226,9 +297,12 @@ watch(itemParaEdição, (novosValores) => {
             rows="10"
           />
         </div>
-        <FormErrorsList :errors="errors" class="mb1" />
+        <FormErrorsList
+          :errors="errors"
+          class="mb1"
+        />
         <div class="flex spacebetween center mb2">
-          <hr class="mr2 f1" />
+          <hr class="mr2 f1">
           <button
             class="btn big"
             :disabled="isSubmitting || Object.keys(errors)?.length"
@@ -240,17 +314,17 @@ watch(itemParaEdição, (novosValores) => {
           >
             Salvar
           </button>
-          <hr class="ml2 f1" />
+          <hr class="ml2 f1">
         </div>
       </form>
     </div>
 
     <table class="tablemain mb1">
-      <col />
-      <col />
-      <col />
-      <col class="col--botão-de-ação" />
-      <col class="col--botão-de-ação" />
+      <col>
+      <col>
+      <col>
+      <col class="col--botão-de-ação">
+      <col class="col--botão-de-ação">
       <thead>
         <tr>
           <th>Nota</th>
@@ -259,7 +333,10 @@ watch(itemParaEdição, (novosValores) => {
         </tr>
       </thead>
       <tbody>
-        <tr v-for="(item, key) in listaNotas" :key="key">
+        <tr
+          v-for="(item, key) in listaNotas"
+          :key="key"
+        >
           <td>
             {{ item.nota }}
           </td>
@@ -274,37 +351,49 @@ watch(itemParaEdição, (novosValores) => {
           </td>
           <td>
             <button
-              @click="excluirNota(item.id_jwt)"
               class="like-a__text"
               arial-label="Excluir"
               title="Excluir"
+              @click="excluirNota(item.id_jwt)"
             >
-              <svg width="20" height="20">
+              <svg
+                width="20"
+                height="20"
+              >
                 <use xlink:href="#i_remove" />
               </svg>
             </button>
           </td>
           <td>
             <button
-              @click="editarNota(item.id_jwt)"
               arial-label="Editar"
               title="Editar"
               class="like-a__text"
+              @click="editarNota(item.id_jwt)"
             >
-              <svg width="20" height="20">
+              <svg
+                width="20"
+                height="20"
+              >
                 <use xlink:href="#i_edit" />
               </svg>
             </button>
           </td>
         </tr>
         <tr v-if="chamadasPendentes.listaNotas">
-          <td colspan="10">Carregando</td>
+          <td colspan="10">
+            Carregando
+          </td>
         </tr>
         <tr v-else-if="erro">
-          <td colspan="10">Erro: {{ erro }}</td>
+          <td colspan="10">
+            Erro: {{ erro }}
+          </td>
         </tr>
         <tr v-else-if="!listaNotas.length">
-          <td colspan="10">Nenhum resultado encontrado.</td>
+          <td colspan="10">
+            Nenhum resultado encontrado.
+          </td>
         </tr>
       </tbody>
     </table>
