@@ -137,6 +137,7 @@ watch(itemParaEdição, (novoValor) => {
     :relacionamento-id="idDoRelacionamentoComFase"
     :fluxo-id="fluxoId"
     @close="idDoRelacionamentoComFase = -1"
+    @saved="carregarFluxo()"
   />
 
   <form
