@@ -5128,8 +5128,8 @@ model TransferenciaAndamento {
     workflow_fase_id Int
     workflow_fase    WorkflowFase @relation(fields: [workflow_fase_id], references: [id])
 
-    workflow_situacao_id Int
-    workflow_situacao    WorkflowSituacao @relation(fields: [workflow_situacao_id], references: [id])
+    workflow_situacao_id Int?
+    workflow_situacao    WorkflowSituacao? @relation(fields: [workflow_situacao_id], references: [id])
 
     orgao_responsavel_id Int?
     orgao_responsavel    Orgao? @relation(fields: [orgao_responsavel_id], references: [id])
