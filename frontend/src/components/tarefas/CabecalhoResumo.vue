@@ -2,7 +2,7 @@
 import dateToField from '@/helpers/dateToField';
 import dinheiro from '@/helpers/dinheiro';
 import { useRoute } from 'vue-router';
-
+import { computed } from 'vue';
 const route = useRoute();
 
 const props = defineProps({
@@ -20,6 +20,10 @@ const props = defineProps({
   }
 });
 
+const emFocoFiltrado = computed(() => {
+  return props.emFoco.tarefa_cronograma || props.emFoco;
+});
+
 </script>
 <template>
   <div class="boards mb2">
@@ -30,8 +34,8 @@ const props = defineProps({
         </dt>
         <dd class="t13 dado-estimado">
           {{
-            emFoco?.previsao_inicio
-              ? dateToField(emFoco.previsao_inicio)
+            emFocoFiltrado?.previsao_inicio
+              ? dateToField(emFocoFiltrado.previsao_inicio)
               : '--/--/----'
           }}
         </dd>
@@ -42,8 +46,8 @@ const props = defineProps({
         </dt>
         <dd class="t13 dado-estimado">
           {{
-            emFoco?.previsao_termino
-              ? dateToField(emFoco.previsao_termino)
+            emFocoFiltrado?.previsao_termino
+              ? dateToField(emFocoFiltrado.previsao_termino)
               : '--/--/----'
           }}
         </dd>
@@ -54,8 +58,8 @@ const props = defineProps({
         </dt>
         <dd class="t13 dado-efetivo">
           {{
-            emFoco?.realizado_inicio
-              ? dateToField(emFoco.realizado_inicio)
+            emFocoFiltrado?.realizado_inicio
+              ? dateToField(emFocoFiltrado.realizado_inicio)
               : '--/--/----'
           }}
         </dd>
@@ -66,8 +70,8 @@ const props = defineProps({
         </dt>
         <dd class="t13 dado-efetivo">
           {{
-            emFoco?.realizado_termino
-              ? dateToField(emFoco.realizado_termino)
+            emFocoFiltrado?.realizado_termino
+              ? dateToField(emFocoFiltrado.realizado_termino)
               : '--/--/----'
           }}
         </dd>
@@ -78,8 +82,8 @@ const props = defineProps({
         </dt>
         <dd class="t13 dado-efetivo">
           {{
-            emFoco?.termino_planejado
-              ? dateToField(emFoco.termino_planejado)
+            emFocoFiltrado?.termino_planejado
+              ? dateToField(emFocoFiltrado.termino_planejado)
               : '--/--/----'
           }}
         </dd>
@@ -89,8 +93,8 @@ const props = defineProps({
           Duração
         </dt>
         <dd class="t13">
-          {{ emFoco?.realizado_duracao
-            ? emFoco?.realizado_duracao + ' dias'
+          {{ emFocoFiltrado?.realizado_duracao
+            ? emFocoFiltrado?.realizado_duracao + ' dias'
             : '-' }}
         </dd>
       </div>
@@ -99,8 +103,8 @@ const props = defineProps({
           Percentual concluído
         </dt>
         <dd class="t13">
-          {{ typeof emFoco?.percentual_concluido === 'number'
-            ? emFoco?.percentual_concluido + '%'
+          {{ typeof emFocoFiltrado?.percentual_concluido === 'number'
+            ? emFocoFiltrado.percentual_concluido + '%'
             : '-' }}
         </dd>
       </div>
@@ -109,8 +113,8 @@ const props = defineProps({
           Atraso
         </dt>
         <dd class="t13">
-          {{ emFoco?.atraso
-            ? emFoco?.atraso + ' dias'
+          {{ emFocoFiltrado?.atraso
+            ? emFocoFiltrado?.atraso + ' dias'
             : '-' }}
         </dd>
       </div>
@@ -119,8 +123,8 @@ const props = defineProps({
           Custo total planejado
         </dt>
         <dd class="t13 dado-estimado">
-          {{ typeof emFoco?.previsao_custo === 'number'
-            ? `R$${dinheiro(emFoco?.previsao_custo)}`
+          {{ typeof emFocoFiltrado?.previsao_custo === 'number'
+            ? `R$${dinheiro(emFocoFiltrado?.previsao_custo)}`
             : '-' }}
         </dd>
       </div>
@@ -129,8 +133,8 @@ const props = defineProps({
           Custo real
         </dt>
         <dd class="t13 dado-efetivo">
-          {{ typeof emFoco?.realizado_custo === 'number'
-            ? `R$${dinheiro(emFoco?.realizado_custo)}`
+          {{ typeof emFocoFiltrado?.realizado_custo === 'number'
+            ? `R$${dinheiro(emFocoFiltrado.realizado_custo)}`
             : '-' }}
         </dd>
       </div>
@@ -148,5 +152,5 @@ const props = defineProps({
       </div>
     </dl>
   </div>
-</template>import { type } from 'os';
+</template>
 
