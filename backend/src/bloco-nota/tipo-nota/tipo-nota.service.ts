@@ -147,16 +147,16 @@ export class TipoNotaService {
         return { id };
     }
 
-    private verificaRegras(tipoNota: TipoNota) {
-        if (tipoNota.permite_enderecamento && tipoNota.eh_publico == false)
-            throw new BadRequestException(
-                'Não é permitido encaminhar notas que são privadas, pois não é possível encaminhar.'
-            );
-
-        if (tipoNota.permite_replica && tipoNota.eh_publico == false)
-            throw new BadRequestException(
-                'Não é permitido replica notas que são privadas, pois não é possível encaminhar.'
-            );
+    private verificaRegras(_tipoNota: TipoNota) {
+//        if (tipoNota.permite_enderecamento && tipoNota.eh_publico == false)
+//            throw new BadRequestException(
+//                'Não é permitido encaminhar notas que são privadas, pois não é possível encaminhar.'
+//            );
+//
+//        if (tipoNota.permite_replica && tipoNota.eh_publico == false)
+//            throw new BadRequestException(
+//                'Não é permitido replica notas que são privadas, pois não é possível encaminhar.'
+//            );
     }
 
     async remove(id: number, user: PessoaFromJwt) {

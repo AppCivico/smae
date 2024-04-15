@@ -27,7 +27,9 @@ export class AeNotaTaskService implements TaskableService {
         await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient) => {
             const info = await this.notaService.geraDadosEmail(nota.id, prismaTx);
 
+            let enviaParaOrgao: boolean = nota.tipo_nota.visivel_resp_orgao;
             if (nota.tipo_nota.eh_publico == false) {
+                enviaParaOrgao = false;
                 this.logger.log(`Enviando e-mail apenas para o criador e cópia`);
 
                 const globalEmailQueue = await prismaTx.emaildbQueue.create({
@@ -52,61 +54,63 @@ export class AeNotaTaskService implements TaskableService {
                             emaildb_queue_id: globalEmailQueue.id,
                         },
                     });
-            } else {
-                const orgaoEnviado = new Set<number>();
+            }
 
-                for (const encaminhamento of nota.NotaEnderecamento) {
-                    if (encaminhamento.pessoa_enderecado) {
-                        const globalEmailQueue = await prismaTx.emaildbQueue.create({
+            const orgaoEnviado = new Set<number>();
+
+            for (const encaminhamento of nota.NotaEnderecamento) {
+                if (encaminhamento.pessoa_enderecado) {
+                    const globalEmailQueue = await prismaTx.emaildbQueue.create({
+                        data: {
+                            id: uuidv7(),
+                            config_id: 1,
+                            subject: `Aviso para nota - ${info.objeto}`,
+                            template: 'ae-nota-aviso.html',
+                            to: encaminhamento.pessoa_enderecado.email,
+                            variables: {
+                                ':cc': config.cc.join(','),
+                                ...info,
+                            },
+                        },
+                    });
+                    if (config.aviso_email_id)
+                        await prismaTx.avisoEmailDisparos.create({
                             data: {
-                                id: uuidv7(),
-                                config_id: 1,
-                                subject: `Aviso para nota - ${info.objeto}`,
-                                template: 'ae-nota-aviso.html',
-                                to: encaminhamento.pessoa_enderecado.email,
-                                variables: {
-                                    ':cc': config.cc.join(','),
-                                    ...info,
-                                },
+                                aviso_email_id: config.aviso_email_id,
+                                para: globalEmailQueue.to,
+                                com_copia: config.cc,
+                                emaildb_queue_id: globalEmailQueue.id,
                             },
                         });
-                        if (config.aviso_email_id)
-                            await prismaTx.avisoEmailDisparos.create({
-                                data: {
-                                    aviso_email_id: config.aviso_email_id,
-                                    para: globalEmailQueue.to,
-                                    com_copia: config.cc,
-                                    emaildb_queue_id: globalEmailQueue.id,
-                                },
-                            });
-                    } else if (encaminhamento.orgao_enderecado && encaminhamento.orgao_enderecado.email) {
-                        orgaoEnviado.add(encaminhamento.orgao_enderecado.id);
+                } else if (encaminhamento.orgao_enderecado && encaminhamento.orgao_enderecado.email) {
+                    orgaoEnviado.add(encaminhamento.orgao_enderecado.id);
 
-                        const globalEmailQueue = await prismaTx.emaildbQueue.create({
+                    const globalEmailQueue = await prismaTx.emaildbQueue.create({
+                        data: {
+                            id: uuidv7(),
+                            config_id: 1,
+                            subject: `Aviso para nota - ${info.objeto}`,
+                            template: 'ae-nota-aviso.html',
+                            to: encaminhamento.orgao_enderecado.email,
+                            variables: {
+                                ':cc': config.cc.join(','),
+                                ...info,
+                            },
+                        },
+                    });
+                    if (config.aviso_email_id)
+                        await prismaTx.avisoEmailDisparos.create({
                             data: {
-                                id: uuidv7(),
-                                config_id: 1,
-                                subject: `Aviso para nota - ${info.objeto}`,
-                                template: 'ae-nota-aviso.html',
-                                to: encaminhamento.orgao_enderecado.email,
-                                variables: {
-                                    ':cc': config.cc.join(','),
-                                    ...info,
-                                },
+                                aviso_email_id: config.aviso_email_id,
+                                para: globalEmailQueue.to,
+                                com_copia: config.cc,
+                                emaildb_queue_id: globalEmailQueue.id,
                             },
                         });
-                        if (config.aviso_email_id)
-                            await prismaTx.avisoEmailDisparos.create({
-                                data: {
-                                    aviso_email_id: config.aviso_email_id,
-                                    para: globalEmailQueue.to,
-                                    com_copia: config.cc,
-                                    emaildb_queue_id: globalEmailQueue.id,
-                                },
-                            });
-                    }
                 }
+            }
 
+            if (enviaParaOrgao) {
                 // avisa o órgão responsável se já não foi um dos encaminhamentos
                 if (!orgaoEnviado.has(nota.orgao_responsavel.id) && nota.orgao_responsavel.email) {
                     const globalEmailQueue = await prismaTx.emaildbQueue.create({
