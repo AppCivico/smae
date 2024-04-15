@@ -422,11 +422,33 @@ export class WorkflowAndamentoService {
                 if (configProxEtapa.fases.length) {
                     const primeiraFase = configProxEtapa.fases[0];
 
+                    // Caso a fase seja de responsabilidade própria, pegando órgão da casa civil.
+                    let orgao_id: number | null = null;
+                    if (primeiraFase.responsabilidade == WorkflowResponsabilidade.Propria) {
+                        const orgaoCasaCivil = await prismaTxn.orgao.findFirst({
+                            where: {
+                                removido_em: null,
+                                sigla: 'SERI',
+                            },
+                            select: {
+                                id: true,
+                            },
+                        });
+                        if (!orgaoCasaCivil)
+                            throw new HttpException(
+                                'Fase é de responsabilidade própria, mas não foi encontrado órgão da Casa Civil',
+                                400
+                            );
+
+                        orgao_id = orgaoCasaCivil.id;
+                    }
+
                     return await prismaTxn.transferenciaAndamento.create({
                         data: {
                             transferencia_id: transferencia.id,
                             workflow_etapa_id: configProxEtapa.fluxo_etapa_de_id,
                             workflow_fase_id: primeiraFase.fase.id,
+                            orgao_responsavel_id: orgao_id,
                             data_inicio: new Date(Date.now()),
                             criado_por: user.id,
                             criado_em: new Date(Date.now()),
