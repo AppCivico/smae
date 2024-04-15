@@ -116,28 +116,6 @@ export default {
     <div class="flex g2">
       <div class="f1 mb1">
         <dt class="t12 uc w700 mb05 tamarelo">
-          {{ schema.fields.observacao.spec.label }}
-        </dt>
-        <dd class="t13">
-          {{ emFoco?.observacao || '-' }}
-        </dd>
-      </div>
-    </div>
-
-    <div class="flex g2">
-      <div class="f1 mb1">
-        <dt class="t12 uc w700 mb05 tamarelo">
-          {{ schema.fields.detalhamento_status.spec.label }}
-        </dt>
-        <dd class="t13">
-          {{ emFoco?.detalhamento_status || '-' }}
-        </dd>
-      </div>
-    </div>
-
-    <div class="flex g2">
-      <div class="f1 mb1">
-        <dt class="t12 uc w700 mb05 tamarelo">
           {{ schema.fields.pontos_atencao.spec.label }}
         </dt>
         <dd class="t13">
