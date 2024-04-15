@@ -7,24 +7,17 @@ import { useFluxosTarefasProjetosStore } from '@/stores/fluxosTarefaProjeto.stor
 import { useTarefasProjetosStore } from '@/stores/tarefasProjeto.store';
 import { storeToRefs } from 'pinia';
 import { ErrorMessage, Field, useForm } from 'vee-validate';
-import { computed, ref } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { useRouter } from 'vue-router';
 
 const fluxoTarefasProjetosStore = useFluxosTarefasProjetosStore();
 const tarefasProjetosStore = useTarefasProjetosStore();
 const { lista } = storeToRefs(tarefasProjetosStore);
-const { itemParaEdição } = storeToRefs(fluxoTarefasProjetosStore);
+const { lista: listaDeTarefasNoFluxo } = storeToRefs(fluxoTarefasProjetosStore);
 const alertStore = useAlertStore();
 const router = useRouter();
 const erro = ref(null);
 const exibeModal = ref(false);
-
-const {
-  errors, isSubmitting, values, handleSubmit, setFieldValue,
-} = useForm({
-  validationSchema: schema,
-  initialValues: itemParaEdição,
-});
 
 const emits = defineEmits(['close', 'saved']);
 const props = defineProps({
@@ -32,19 +25,44 @@ const props = defineProps({
     type: Number,
     required: true,
   },
-  tarefaFluxoId: {
+  relacionamentoId: {
     type: Number,
     default: 0,
   },
 });
 
+const itemParaEdição = computed(() => {
+  const tarefa = listaDeTarefasNoFluxo.value.find((x) => (x.id === Number(props.relacionamentoId)));
+
+  return tarefa
+    ? {
+      ...tarefa,
+      workflow_tarefa_id: tarefa?.workflow_tarefa?.id || null,
+    }
+    : {
+      responsabilidade: '',
+      workflow_tarefa_id: 0,
+      ordem: 0,
+    };
+});
+
+const {
+  errors, isSubmitting, values, handleSubmit, resetForm, setFieldValue,
+} = useForm({
+  validationSchema: schema,
+  initialValues: itemParaEdição.value,
+});
+
 const onSubmit = handleSubmit.withControlled(async (valoresControlados) => {
   try {
-    const msg = props.tarefaFluxoId
+    const msg = props.relacionamentoId
       ? 'Dados salvos com sucesso!'
       : 'Item adicionado com sucesso!';
 
-    const resposta = await fluxoTarefasProjetosStore.salvarItem(valoresControlados, props.tarefaFluxoId);
+    const resposta = await fluxoTarefasProjetosStore.salvarItem(
+      valoresControlados,
+      props.relacionamentoId,
+    );
     if (resposta) {
       alertStore.success(msg);
       fluxoTarefasProjetosStore.$reset();
@@ -67,14 +85,30 @@ const listaOrdenada = computed(() => lista.value
 
 function iniciar() {
   tarefasProjetosStore.buscarTudo();
+  if (props.relacionamentoId) {
+    fluxoTarefasProjetosStore.buscarTudo();
+  }
 }
 iniciar();
-</script>
 
+watch(itemParaEdição, (novoValor) => {
+  resetForm({
+    values: novoValor,
+  });
+});
+</script>
 <template>
   <SmallModal @close="$emit('close')">
     <div class="flex spacebetween center mb2">
-      <h2>Adicionar tarefa</h2>
+      <h2>
+        <template v-if="relacionamentoId">
+          Editar
+        </template>
+        <template v-else>
+          Adicionar
+        </template>
+        tarefa
+      </h2>
       <hr class="ml2 f1">
       <CheckClose
         :apenas-emitir="true"
