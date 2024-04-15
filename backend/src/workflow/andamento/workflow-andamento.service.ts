@@ -323,7 +323,7 @@ export class WorkflowAndamentoService {
                     workflow_id: true,
 
                     andamentoWorkflow: {
-                        orderBy: { data_termino: 'desc' },
+                        orderBy: { id: 'desc' },
                         select: {
                             workflow_etapa_id: true,
                             data_termino: true,
@@ -336,7 +336,7 @@ export class WorkflowAndamentoService {
 
             if (!transferencia.andamentoWorkflow.length)
                 throw new HttpException('Transferência sem linhas de andamento', 400);
-
+            console.log(transferencia.andamentoWorkflow);
             if (
                 transferencia.andamentoWorkflow.find((e) => {
                     return e.data_termino == null;
