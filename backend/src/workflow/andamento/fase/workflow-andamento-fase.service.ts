@@ -151,6 +151,16 @@ export class WorkflowAndamentoFaseService {
         if (!transferenciaAndamento.transferencia.workflow_id)
             throw new Error('Transferência não possui configuração de Workflow.');
 
+        const orgaoCasaCivil = await prismaTxn.orgao.findFirstOrThrow({
+            where: {
+                removido_em: null,
+                sigla: 'SERI',
+            },
+            select: {
+                id: true,
+            },
+        });
+
         const operations = [];
         const idsAtualizados: RecordWithId[] = [];
         if (dto.tarefas != undefined) {
@@ -184,7 +194,8 @@ export class WorkflowAndamentoFaseService {
                 // Verificando necessidade de preencher órgão responsável.
                 if (
                     tarefaWorkfloConfig.responsabilidade == WorkflowResponsabilidade.Propria &&
-                    tarefa.orgao_responsavel_id != undefined
+                    tarefa.orgao_responsavel_id != undefined &&
+                    tarefa.orgao_responsavel_id != orgaoCasaCivil.id
                 )
                     throw new HttpException(
                         `orgao_responsavel_id| Órgão não deve ser enviado para tarefa ${tarefaWorkfloConfig.workflow_tarefa.tarefa_fluxo}, pois é de responsabilidade própria.`,
