@@ -8,16 +8,13 @@ import { useTarefasProjetosStore } from '@/stores/tarefasProjeto.store';
 import { storeToRefs } from 'pinia';
 import { ErrorMessage, Field, useForm } from 'vee-validate';
 import { computed, ref, watch } from 'vue';
-import { useRouter } from 'vue-router';
 
 const fluxoTarefasProjetosStore = useFluxosTarefasProjetosStore();
 const tarefasProjetosStore = useTarefasProjetosStore();
 const { lista } = storeToRefs(tarefasProjetosStore);
 const { lista: listaDeTarefasNoFluxo } = storeToRefs(fluxoTarefasProjetosStore);
 const alertStore = useAlertStore();
-const router = useRouter();
 const erro = ref(null);
-const exibeModal = ref(false);
 
 const emits = defineEmits(['close', 'saved']);
 const props = defineProps({
