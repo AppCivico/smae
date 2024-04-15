@@ -29,7 +29,6 @@ const { chamadasPendentes: fasesPendentes } = storeToRefs(fluxosFasesProjetos);
 const { chamadasPendentes: tarefasPendentes } = storeToRefs(fluxosTarefasProjetos);
 
 const esferaSelecionada = ref('');
-const exibeModalTarefa = ref(false);
 const idDaEtapaEmFoco = ref(-1);
 const idDaTarefaEmFoco = ref(-1);
 const idDoRelacionamentoComFase = ref(-1);
