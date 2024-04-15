@@ -187,24 +187,6 @@ export class WorkflowAndamentoService {
         });
 
         if (!row) return null;
-
-        // Regras que definem se fase pode ser concluída:
-        // 1. Todas tarefas concluídas.
-        // 2. Fase sem tarefas.
-        // 3. Situação é: suspensa, cancelada ou terminal.
-        let pode_concluir: boolean;
-
-        if (
-            row.tarefas.length == 0 ||
-            row.workflow_situacao?.tipo_situacao == WorkflowSituacaoTipo.Cancelado ||
-            row.workflow_situacao?.tipo_situacao == WorkflowSituacaoTipo.Suspenso ||
-            row.workflow_situacao?.tipo_situacao == WorkflowSituacaoTipo.Terminal
-        ) {
-            pode_concluir = true;
-        } else {
-            pode_concluir = false;
-        }
-
         if (!row.workflow_fase.fluxos.length)
             throw new HttpException('Falha ao buscar configuração de fase para o Workflow', 400);
 
@@ -231,7 +213,7 @@ export class WorkflowAndamentoService {
             data_termino: row.data_termino,
             dias_na_fase: dias_na_fase,
             concluida: row.data_termino ? true : false,
-            pode_concluir: pode_concluir,
+            pode_concluir: true,
 
             necessita_preencher_orgao: responsabilidadeFase == WorkflowResponsabilidade.OutroOrgao ? true : false,
 
