@@ -8,12 +8,12 @@ import SmallModal from "@/components/SmallModal.vue";
 import { useRouter } from "vue-router";
 import { useAlertStore } from '@/stores/alert.store';
 import { storeToRefs } from 'pinia';
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
 
 const fluxoTarefasProjetosStore = useFluxosTarefasProjetosStore();
 const tarefasProjetosStore = useTarefasProjetosStore();
-const { lista: listaTarefa } = storeToRefs(tarefasProjetosStore);
-const { itemParaEdição } = storeToRefs(fluxoTarefasProjetosStore);
+const { lista } = storeToRefs(tarefasProjetosStore);
+const { itemParaEdição  } = storeToRefs(fluxoTarefasProjetosStore);
 const alertStore = useAlertStore();
 const router = useRouter();
 const erro = ref(null);
@@ -55,6 +55,10 @@ const updateWorkflowTarefaId = (event) => {
   const selectedId = event.target.value;
   setFieldValue('workflow_tarefa_id', selectedId);
 };
+
+const listaOrdenada = computed(() => {
+  return lista.value.sort((a, b) => a.descricao.localeCompare(b.descricao));
+});
 
 function iniciar() {
   tarefasProjetosStore.buscarTudo()
@@ -109,7 +113,7 @@ iniciar();
               Selecionar
             </option>
             <option
-              v-for="item in listaTarefa"
+              v-for="item in listaOrdenada"
               :key="item"
               :value="item.id"
             >
