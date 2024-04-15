@@ -2,9 +2,9 @@
 import { acompanhamento as schema } from '@/consts/formSchemas';
 import dateToField from '@/helpers/dateToField';
 import { useAcompanhamentosStore } from '@/stores/acompanhamentos.store.ts';
+import { useProjetosStore } from '@/stores/projetos.store.ts';
 import { useRiscosStore } from '@/stores/riscos.store.ts';
 import { storeToRefs } from 'pinia';
-import { useProjetosStore } from '@/stores/projetos.store.ts';
 
 const acompanhamentosStore = useAcompanhamentosStore();
 const projetosStore = useProjetosStore();
@@ -109,6 +109,34 @@ export default {
         </dt>
         <dd class="t13">
           {{ emFoco?.detalhamento || '-' }}
+        </dd>
+      </div>
+    </div>
+
+    <div
+      v-if="emFoco?.observacao"
+      class="flex g2"
+    >
+      <div class="f1 mb1">
+        <dt class="t12 uc w700 mb05 tamarelo">
+          {{ schema.fields.observacao.spec.label }}
+        </dt>
+        <dd class="t13">
+          {{ emFoco?.observacao }}
+        </dd>
+      </div>
+    </div>
+
+    <div
+      v-if="emFoco?.detalhamento_status"
+      class="flex g2"
+    >
+      <div class="f1 mb1">
+        <dt class="t12 uc w700 mb05 tamarelo">
+          {{ schema.fields.detalhamento_status.spec.label }}
+        </dt>
+        <dd class="t13">
+          {{ emFoco?.detalhamento_status }}
         </dd>
       </div>
     </div>
