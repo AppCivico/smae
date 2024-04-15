@@ -83,7 +83,7 @@ export class WorkflowAndamentoService {
         return {
             ...workflow,
             possui_proxima_etapa: possui_proxima_etapa,
-            pode_passar_para_proxima_etapa: true,
+            pode_passar_para_proxima_etapa: possui_proxima_etapa,
 
             fluxo: await Promise.all(
                 workflow.fluxo
