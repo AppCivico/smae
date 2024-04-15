@@ -34,7 +34,7 @@ export class WorkflowAndamentoService {
                         data_inicio: { not: undefined },
                     },
                     take: 1,
-                    orderBy: [{ data_inicio: 'desc' }, { criado_em: 'desc' }],
+                    orderBy: [{ id: 'desc' }, { criado_em: 'desc' }],
                     select: {
                         id: true,
                         workflow_etapa_id: true,
