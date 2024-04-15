@@ -1,6 +1,6 @@
 import { HttpException, Injectable } from '@nestjs/common';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
-import { Prisma, WorkflowResponsabilidade, WorkflowSituacaoTipo } from '@prisma/client';
+import { Prisma, WorkflowResponsabilidade } from '@prisma/client';
 import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
 import { PrismaService } from 'src/prisma/prisma.service';
 import {
@@ -314,25 +314,6 @@ export class WorkflowAndamentoFaseService {
 
                 if (self.data_termino != null) {
                     throw new HttpException('Fase já foi finalizada.', 400);
-                }
-
-                // Verificando situação da fase.
-                // Caso a fase seja Suspensa, Cancelada ou Terminal.
-                // Pode ser finalizada sem concluir as tarefas.
-                const situacaoPodeFecharSemTarefa = new Set<WorkflowSituacaoTipo>([
-                    WorkflowSituacaoTipo.Suspenso,
-                    WorkflowSituacaoTipo.Cancelado,
-                    WorkflowSituacaoTipo.Terminal,
-                ]);
-
-                if (
-                    self.workflow_situacao &&
-                    !situacaoPodeFecharSemTarefa.has(self.workflow_situacao.tipo_situacao) &&
-                    self.tarefas.find((t) => {
-                        return t.feito == false;
-                    })
-                ) {
-                    throw new Error('Há tarefas que não foram finalizadas.');
                 }
 
                 // Finalizando a fase.
