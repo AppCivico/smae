@@ -4,7 +4,6 @@ import { useAlertStore } from '@/stores/alert.store';
 import { useFluxosProjetosStore } from '@/stores/fluxosProjeto.store';
 import { storeToRefs } from 'pinia';
 import dateToField from '@/helpers/dateToField';
-import { computed } from 'vue';
 
 const tipoDeTransferenciaStore = useTipoDeTransferenciaStore();
 const fluxosProjetoStore = useFluxosProjetosStore();
@@ -26,6 +25,16 @@ function ordenarListaAlfabeticamente() {
    lista.value.sort((a, b) => a.nome.localeCompare(b.nome));
 }
 
+const getTipoTransferencia = (tipoTransferenciaId) => {
+  return tipoTransferenciaComoLista.value.find(t => t.id === tipoTransferenciaId);
+};
+
+const getEsfera = (tipoTransferenciaId) => {
+  const tipoTransferencia = getTipoTransferencia(tipoTransferenciaId);
+  return tipoTransferencia ? tipoTransferencia.esfera : '-';
+};
+
+tipoDeTransferenciaStore.buscarTudo()
 fluxosProjetoStore.buscarTudo().then(ordenarListaAlfabeticamente);
 </script>
 <template>
@@ -75,8 +84,8 @@ fluxosProjetoStore.buscarTudo().then(ordenarListaAlfabeticamente);
         :key="item.id"
       >
         <td>{{ item.nome }}</td>
-        <td>{{ item.esfera }}</td>
-        <td>{{ item.transferencia_tipo?.nome }}</td>
+        <td>{{ getEsfera(item.transferencia_tipo.id) }}</td>
+        <td>{{ item.transferencia_tipo.nome }}</td>
         <td>{{ item.termino? dateToField(item.termino) : '-'}}</td>
         <td>{{ item.ativo? 'Sim' : 'Não' }}</td>
         <td>{{ item.inicio? dateToField(item.inicio) : '-'}}</td>
