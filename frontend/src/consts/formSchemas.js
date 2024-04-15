@@ -95,16 +95,8 @@ export const acompanhamento = object()
     data_registro: date()
       .label('Data do registro')
       .required(),
-    detalhamento_status: string()
-      .label('Detalhamento do status')
-      .max(50000)
-      .nullable(),
     detalhamento: string()
       .label('Detalhamento')
-      .max(50000)
-      .nullable(),
-    observacao: string()
-      .label('Observação')
       .max(50000)
       .nullable(),
     participantes: string()
