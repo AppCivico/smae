@@ -25,8 +25,12 @@ const { errors, isSubmitting, values, handleSubmit, setFieldValue }
   initialValues: itemParaEdição
 });
 
-const emits = defineEmits(['close']);
+const emits = defineEmits(['close', 'saved']);
 const props = defineProps({
+  faseId: {
+    type: Number,
+    required: true,
+  },
   tarefaFluxoId: {
     type: Number,
     default: 0,
@@ -44,6 +48,7 @@ const onSubmit = handleSubmit.withControlled(async (valoresControlados) => {
       alertStore.success(msg);
       fluxoTarefasProjetosStore.$reset();
       fluxoTarefasProjetosStore.buscarTudo();
+      emits('saved');
       emits('close');
     }
   } catch (error) {
@@ -77,34 +82,27 @@ iniciar();
       />
     </div>
 
+    <pre v-scrollLockDebug>values:{{ values }}</pre>
+
     <form
       :disabled="isSubmitting"
       @submit.prevent="onSubmit"
-      >
-      <div>
-        <LabelFromYup
-          :name="values.workflow_tarefa_id"
-          :schema="schema"
-        />
-        <Field
-          name="workflow_tarefa_id"
-          type="hidden"
-          class="inputtext light mb1"
-          :value="values.workflow_tarefa_id"
-        />
-        <ErrorMessage
-          class="error-msg mb1"
-          name="nome"
-        />
-      </div>
+    >
+      <Field
+        name="fluxo_fase_id"
+        type="hidden"
+        class="inputtext light mb1"
+        :value="props.faseId"
+      />
+
       <div class="flex flexwrap g2 mb1">
         <div class="f1">
           <LabelFromYup
-            name="fluxo_fase_id"
+            name="workflow_tarefa_id"
             :schema="schema"
           />
           <Field
-            name="fluxo_fase_id"
+            name="workflow_tarefa_id"
             as="select"
             class="inputtext light mb1"
             @change="updateWorkflowTarefaId"
@@ -122,7 +120,7 @@ iniciar();
           </Field>
           <ErrorMessage
             class="error-msg"
-            name="fluxo_fase_id"
+            name="workflow_tarefa_id"
           />
         </div>
         <div class="mb1">
