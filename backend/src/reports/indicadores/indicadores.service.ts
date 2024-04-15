@@ -183,7 +183,7 @@ export class IndicadoresService implements ReportableService {
         left join iniciativa i2 on i2.id = atividade.iniciativa_id
         left join meta m2 on m2.id = iniciativa.meta_id OR m2.id = i2.meta_id`;
 
-        const ano = await this.capturaAnoSerieIndicador(dto, queryFromWhere);
+        const anoInicial = await this.capturaAnoSerieIndicadorInicial(dto, queryFromWhere);
 
         const sql = `CREATE TEMP TABLE _report_data ON COMMIT DROP AS SELECT
         i.id as indicador_id,
@@ -220,11 +220,15 @@ export class IndicadoresService implements ReportableService {
 
         await this.prisma.$transaction(async (prismaTxn: Prisma.TransactionClient) => {
             if (dto.periodo == 'Anual' && dto.tipo == 'Analitico') {
-                await this.rodaQueryAnualAnalitico(prismaTxn, sql, ano);
+                await this.rodaQueryAnualAnalitico(prismaTxn, sql, anoInicial);
+
+                for (let ano = anoInicial + 1; ano < dto.ano; ano++) {
+                    await this.rodaQueryAnualAnalitico(prismaTxn, this.replaceCreateToInsert(sql), ano);
+                }
 
                 await this.streamRowsInto(null, stream, prismaTxn);
             } else if (dto.periodo == 'Anual' && dto.tipo == 'Consolidado') {
-                await this.rodaQueryAnualConsolidado(prismaTxn, sql, ano);
+                await this.rodaQueryAnualConsolidado(prismaTxn, sql, dto.ano);
 
                 await this.streamRowsInto(null, stream, prismaTxn);
             } else if (dto.periodo == 'Semestral' && dto.tipo == 'Consolidado') {
@@ -236,11 +240,22 @@ export class IndicadoresService implements ReportableService {
                 await this.streamRowsInto(null, stream, prismaTxn);
             } else if (dto.periodo == 'Semestral' && dto.tipo == 'Analitico') {
                 const tipo = dto.semestre == 'Primeiro' ? 'Primeiro' : 'Segundo';
-                const ano = dto.ano;
+                const ano = anoInicial;
 
                 const semestreInicio = tipo === 'Segundo' ? ano + '-12-01' : ano + '-06-01';
 
                 await this.rodaQuerySemestralAnalitico(prismaTxn, sql, semestreInicio, tipo);
+
+                for (let ano = anoInicial + 1; ano < dto.ano; ano++) {
+                    const semestreInicio = tipo === 'Segundo' ? ano + '-12-01' : ano + '-06-01';
+
+                    await this.rodaQuerySemestralAnalitico(
+                        prismaTxn,
+                        this.replaceCreateToInsert(sql),
+                        semestreInicio,
+                        tipo
+                    );
+                }
 
                 await this.streamRowsInto(null, stream, prismaTxn);
             }
@@ -273,15 +288,14 @@ export class IndicadoresService implements ReportableService {
     ) {
         if (tipo == 'Segundo') {
             await this.rodaQuerySemestreConsolidado('Primeiro', ano, prismaTxn, sql);
-            await this.rodaQuerySemestreConsolidado(
-                tipo,
-                ano,
-                prismaTxn,
-                sql.replace('CREATE TEMP TABLE _report_data ON COMMIT DROP AS', 'INSERT INTO _report_data')
-            );
+            await this.rodaQuerySemestreConsolidado(tipo, ano, prismaTxn, this.replaceCreateToInsert(sql));
         } else {
             await this.rodaQuerySemestreConsolidado('Primeiro', ano, prismaTxn, sql);
         }
+    }
+
+    private replaceCreateToInsert(sql: string): string {
+        return sql.replace('CREATE TEMP TABLE _report_data ON COMMIT DROP AS', 'INSERT INTO _report_data');
     }
 
     private async rodaQueryAnualConsolidado(prismaTxn: Prisma.TransactionClient, sql: string, ano: number) {
@@ -295,28 +309,28 @@ export class IndicadoresService implements ReportableService {
         );
     }
 
-    private async capturaAnoSerieIndicador(dto: CreateRelIndicadorDto, _queryFromWhere: string) {
-//        if (dto.analitico_desde_o_inicio !== false) {
-//            const buscaInicio: { min: Date }[] = await this.prisma.$queryRawUnsafe(`SELECT min(si.data_valor::date)
-//            FROM (select 'Realizado'::"Serie" as serie UNION ALL select 'RealizadoAcumulado'::"Serie" as serie ) series
-//            JOIN serie_indicador si ON si.serie = series.serie
-//            JOIN ${queryFromWhere} and si.indicador_id = i.id`);
-//
-//            if (buscaInicio.length && buscaInicio[0].min) return buscaInicio[0].min.getFullYear();
-//        }
+    private async capturaAnoSerieIndicadorInicial(dto: CreateRelIndicadorDto, queryFromWhere: string) {
+        if (dto.analitico_desde_o_inicio !== false && dto.tipo == 'Analitico') {
+            const buscaInicio: { min: Date }[] = await this.prisma.$queryRawUnsafe(`SELECT min(si.data_valor::date)
+            FROM (select 'Realizado'::"Serie" as serie UNION ALL select 'RealizadoAcumulado'::"Serie" as serie ) series
+            JOIN serie_indicador si ON si.serie = series.serie
+            JOIN ${queryFromWhere} and si.indicador_id = i.id`);
+
+            if (buscaInicio.length && buscaInicio[0].min) return buscaInicio[0].min.getFullYear();
+        }
 
         return dto.ano;
     }
 
-    private async capturaAnoSerieVariavel(dto: CreateRelIndicadorDto, _queryFromWhere: string) {
-//        if (dto.analitico_desde_o_inicio !== false) {
-//            const buscaInicio: { min: Date }[] = await this.prisma.$queryRawUnsafe(`SELECT min(sv.data_valor::date)
-//        FROM (select 'Realizado'::"Serie" as serie UNION ALL select 'RealizadoAcumulado'::"Serie" as serie ) series
-//        JOIN serie_variavel sv ON sv.serie = series.serie
-//        JOIN ${queryFromWhere} and sv.variavel_id = v.id`);
-//
-//            if (buscaInicio.length && buscaInicio[0].min) return buscaInicio[0].min.getFullYear();
-//        }
+    private async capturaAnoSerieVariavelInicial(dto: CreateRelIndicadorDto, queryFromWhere: string) {
+        if (dto.analitico_desde_o_inicio !== false) {
+            const buscaInicio: { min: Date }[] = await this.prisma.$queryRawUnsafe(`SELECT min(sv.data_valor::date)
+        FROM (select 'Realizado'::"Serie" as serie UNION ALL select 'RealizadoAcumulado'::"Serie" as serie ) series
+        JOIN serie_variavel sv ON sv.serie = series.serie
+        JOIN ${queryFromWhere} and sv.variavel_id = v.id`);
+
+            if (buscaInicio.length && buscaInicio[0].min) return buscaInicio[0].min.getFullYear();
+        }
 
         return dto.ano;
     }
@@ -352,7 +366,10 @@ export class IndicadoresService implements ReportableService {
     }
 
     private async queryDataRegiao(indicadoresOrVar: number[], dto: CreateRelIndicadorRegioesDto, stream: Readable) {
-        if (indicadoresOrVar.length == 0) return;
+        if (indicadoresOrVar.length == 0) {
+            stream.push(null);
+            return;
+        }
         this.invalidatePreparedStatement++;
 
         let queryFromWhere = `indicador i ON i.id IN (${indicadoresOrVar.join(',')})
@@ -371,7 +388,7 @@ export class IndicadoresService implements ReportableService {
             queryFromWhere = `${queryFromWhere} AND v.regiao_id IN (${numbers})`;
         }
 
-        const ano = await this.capturaAnoSerieVariavel(dto, queryFromWhere);
+        const anoInicial = await this.capturaAnoSerieVariavelInicial(dto, queryFromWhere);
 
         const sql = `CREATE TEMP TABLE _report_data ON COMMIT DROP AS SELECT
         i.id as indicador_id,
@@ -414,12 +431,17 @@ export class IndicadoresService implements ReportableService {
             where: { removido_em: null },
         });
         await this.prisma.$transaction(async (prismaTxn: Prisma.TransactionClient) => {
+            console.log(dto);
             if (dto.periodo == 'Anual' && dto.tipo == 'Analitico') {
-                await this.rodaQueryAnualAnalitico(prismaTxn, sql, ano);
+                await this.rodaQueryAnualAnalitico(prismaTxn, sql, anoInicial);
+
+                for (let ano = anoInicial + 1; ano < dto.ano; ano++) {
+                    await this.rodaQueryAnualAnalitico(prismaTxn, this.replaceCreateToInsert(sql), ano);
+                }
 
                 await this.streamRowsInto(regioes, stream, prismaTxn);
             } else if (dto.periodo == 'Anual' && dto.tipo == 'Consolidado') {
-                await this.rodaQueryAnualConsolidado(prismaTxn, sql, ano);
+                await this.rodaQueryAnualConsolidado(prismaTxn, sql, dto.ano);
 
                 await this.streamRowsInto(regioes, stream, prismaTxn);
             } else if (dto.periodo == 'Semestral' && dto.tipo == 'Consolidado') {
@@ -431,11 +453,22 @@ export class IndicadoresService implements ReportableService {
                 await this.streamRowsInto(regioes, stream, prismaTxn);
             } else if (dto.periodo == 'Semestral' && dto.tipo == 'Analitico') {
                 const tipo = dto.semestre == 'Primeiro' ? 'Primeiro' : 'Segundo';
-                const ano = dto.ano;
+                const ano = anoInicial;
 
                 const semestreInicio = tipo === 'Segundo' ? ano + '-12-01' : ano + '-06-01';
 
                 await this.rodaQuerySemestralAnalitico(prismaTxn, sql, semestreInicio, tipo);
+
+                for (let ano = anoInicial + 1; ano < dto.ano; ano++) {
+                    const semestreInicio = tipo === 'Segundo' ? ano + '-12-01' : ano + '-06-01';
+
+                    await this.rodaQuerySemestralAnalitico(
+                        prismaTxn,
+                        this.replaceCreateToInsert(sql),
+                        semestreInicio,
+                        tipo
+                    );
+                }
 
                 await this.streamRowsInto(regioes, stream, prismaTxn);
             }
