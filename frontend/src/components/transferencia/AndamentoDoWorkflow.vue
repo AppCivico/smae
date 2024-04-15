@@ -190,7 +190,7 @@ watch(itemParaEdição, () => {
             v-if="item.andamento?.dias_na_fase"
             class="w700 andamento-fluxo__dias-da-fase"
           >
-            +{{ item.andamento?.dias_na_fase }} dias
+            {{ item.andamento?.dias_na_fase }} {{ item.andamento?.dias_na_fase === 1 ? 'dia' : 'dias' }}
           </span>
 
           <span
