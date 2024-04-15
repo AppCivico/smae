@@ -171,19 +171,12 @@ watch(itemParaEdição, () => {
         }"
       >
         <button
-          v-if="item?.andamento?.concluida === false"
           type="button"
           class="w400 like-a__text andamento-fluxo__nome-da-fase"
           @click="faseSelecionada = item.id"
         >
           {{ item.fase.fase }}
         </button>
-        <strong
-          v-else
-          class="w400 like-a__text andamento-fluxo__nome-da-fase"
-        >
-          {{ item.fase.fase }}
-        </strong>
 
         <span
           v-if="item.andamento?.dias_na_fase
@@ -231,6 +224,7 @@ watch(itemParaEdição, () => {
       <hr class="ml2 f1">
 
       <button
+        v-if="item?.andamento?.concluida === false"
         type="button"
         class="btn ml2"
         :disabled="!faseEmFoco.andamento.pode_concluir"
@@ -251,7 +245,7 @@ watch(itemParaEdição, () => {
 </pre>
 
     <form
-      :disabled="isSubmitting"
+      :disabled="isSubmitting || item?.andamento?.concluida === false"
       @submit.prevent="onSubmit"
     >
       <Field
@@ -458,7 +452,10 @@ watch(itemParaEdição, () => {
         class="mb1"
       />
 
-      <div class="flex spacebetween center mb2">
+      <div
+        v-if="item?.andamento?.concluida === false"
+        class="flex spacebetween center mb2"
+      >
         <hr class="mr2 f1">
         <button
           type="submit"
