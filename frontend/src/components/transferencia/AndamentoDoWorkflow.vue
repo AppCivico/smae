@@ -245,7 +245,7 @@ watch(itemParaEdição, () => {
 </pre>
 
     <form
-      :disabled="isSubmitting || item?.andamento?.concluida === false"
+      :disabled="isSubmitting"
       @submit.prevent="onSubmit"
     >
       <Field
@@ -283,6 +283,7 @@ watch(itemParaEdição, () => {
             <Field
               :name="`tarefas[${idx}].concluida`"
               type="checkbox"
+              :disabled="faseEmFoco?.andamento?.concluida"
               :value="true"
               :unchecked-value="false"
             />
@@ -319,7 +320,7 @@ watch(itemParaEdição, () => {
                   loading: organs?.loading
                 }"
                 :required="tarefa.andamento?.necessita_preencher_orgao"
-                :disabled="!órgãosComoLista?.length"
+                :disabled="!órgãosComoLista?.length || faseEmFoco?.andamento?.concluida"
               >
                 <option
                   value=""
@@ -367,6 +368,7 @@ watch(itemParaEdição, () => {
           as="select"
           rows="5"
           class="inputtext light mb1"
+          :disabled="faseEmFoco?.andamento?.concluida"
           :class="{ 'error': errors.situacao_id }"
         >
           <option value="" />
@@ -396,7 +398,9 @@ watch(itemParaEdição, () => {
             error: errors.orgao_responsavel_id,
             loading: organs?.loading
           }"
-          :disabled="!órgãosComoLista?.length || faseEmFoco.responsabilidade === 'Propria'"
+          :disabled="!órgãosComoLista?.length
+            || faseEmFoco.responsabilidade === 'Propria'
+            || faseEmFoco?.andamento?.concluida"
           @change="setFieldValue('pessoa_responsavel_id', null)"
         >
           <option value="" />
@@ -428,7 +432,7 @@ watch(itemParaEdição, () => {
             error: errors.pessoa_responsavel_id,
             loading: pessoasSimplificadas?.loading
           }"
-          :disabled="!pessoasDisponíveis?.length"
+          :disabled="!pessoasDisponíveis?.length || faseEmFoco?.andamento?.concluida"
         >
           <option value="" />
           <option
