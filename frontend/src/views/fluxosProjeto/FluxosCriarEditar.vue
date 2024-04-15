@@ -284,6 +284,7 @@ watch(itemParaEdição, (novoValor) => {
           name="ativo"
           type="checkbox"
           :value="true"
+          :unchecked-value="false"
           class="inputcheckbox mr1"
         />
         <LabelFromYup
