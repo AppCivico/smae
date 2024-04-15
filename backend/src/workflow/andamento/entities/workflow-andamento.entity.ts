@@ -45,6 +45,7 @@ export class AndamentoFaseDto {
 }
 
 export class AndamentoTarefaDto {
+    id: number;
     orgao_responsavel: IdSiglaDescricao | null;
     necessita_preencher_orgao: boolean;
     concluida: boolean;
