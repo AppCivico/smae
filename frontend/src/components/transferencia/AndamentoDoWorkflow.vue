@@ -81,11 +81,13 @@ const pessoasDisponíveis = computed(() => (!values.orgao_responsavel_id
 const onSubmit = handleSubmit.withControlled(async (valoresControlados) => {
   const cargaManipulada = nulificadorTotal(valoresControlados);
 
-  if (await workflowAndamento.editarFase(cargaManipulada)) {
+  const resposta = await workflowAndamento.editarFase(cargaManipulada);
+  if (resposta) {
     workflowAndamento.buscar();
     alertStore.success('Fase editada!');
     faseSelecionada.value = 0;
   }
+  return resposta;
 });
 
 const formulárioSujo = useIsFormDirty();
@@ -109,7 +111,7 @@ async function rolarParaFaseCorrente() {
 
 function finalizarFase(idDaFase) {
   alertStore.confirmAction('Tem certeza?', async () => {
-    if (await workflowAndamento.encerrarFase(idDaFase)) {
+    if (await onSubmit() && await workflowAndamento.encerrarFase(idDaFase)) {
       faseSelecionada.value = 0;
       workflowAndamento.buscar();
       alertStore.success('Fase finalizada!');
@@ -216,22 +218,12 @@ watch(itemParaEdição, () => {
     <div class="flex center mb2">
       <h2
         v-if="faseEmFoco.fase?.fase"
-        class="título-da-fase-selecionada"
+        class="título-da-fase-selecionada f1"
       >
         {{ faseEmFoco.fase.fase }}
       </h2>
 
       <hr class="ml2 f1">
-
-      <button
-        v-if="faseEmFoco?.andamento?.concluida === false"
-        type="button"
-        class="btn ml2"
-        :disabled="!faseEmFoco.andamento.pode_concluir"
-        @click="finalizarFase(faseEmFoco.fase?.id)"
-      >
-        Finalizar
-      </button>
 
       <CheckClose
         :formulário-sujo="formulárioSujo"
@@ -457,10 +449,20 @@ watch(itemParaEdição, () => {
       />
 
       <div
-        class="flex spacebetween center mb2"
         v-if="faseEmFoco?.andamento?.concluida === false"
+        class="flex spacebetween center g2 mb2"
       >
-        <hr class="mr2 f1">
+        <hr class="f1">
+        <button
+          v-if="faseEmFoco?.andamento?.concluida === false"
+          type="button"
+          class="btn "
+          :disabled="!faseEmFoco.andamento.pode_concluir"
+          @click="finalizarFase(faseEmFoco.fase?.id)"
+        >
+          Finalizar
+        </button>
+
         <button
           type="submit"
           class="btn big"
@@ -468,7 +470,7 @@ watch(itemParaEdição, () => {
         >
           Salvar
         </button>
-        <hr class="ml2 f1">
+        <hr class="f1">
       </div>
     </form>
   </SmallModal>
