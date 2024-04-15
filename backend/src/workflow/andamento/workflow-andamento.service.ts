@@ -458,6 +458,10 @@ export class WorkflowAndamentoService {
                                     data: primeiraFase.tarefas.map((e) => {
                                         return {
                                             workflow_tarefa_fluxo_id: e.workflow_tarefa!.id,
+                                            orgao_responsavel_id:
+                                                e.responsabilidade == WorkflowResponsabilidade.Propria
+                                                    ? orgao_id
+                                                    : null,
                                             criado_por: user.id,
                                             criado_em: new Date(Date.now()),
                                         };
