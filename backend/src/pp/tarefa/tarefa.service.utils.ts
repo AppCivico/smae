@@ -1,5 +1,5 @@
 import { HttpException, Injectable } from '@nestjs/common';
-import { Prisma, ProjetoFase } from '@prisma/client';
+import { Prisma, ProjetoStatus } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 
 @Injectable()
@@ -85,14 +85,14 @@ export class TarefaUtilsService {
     async verifica_nivel_maximo_portfolio(projetoId: number, nivel: number) {
         const portConfig = await this.prisma.projeto.findFirstOrThrow({
             where: { id: projetoId },
-            select: { fase: true, portfolio: { select: { nivel_maximo_tarefa: true } } },
+            select: { status: true, portfolio: { select: { nivel_maximo_tarefa: true } } },
         });
 
         // Agora o cronograma sempre será liberado para uso. No entanto, se for projeto, e o projeto estiver em Registro.
         // Deve ser limitado ao nível 1.
-        if (portConfig.fase == ProjetoFase.Registro && nivel > 1)
+        if (portConfig.status == ProjetoStatus.Registrado && nivel > 1)
             throw new HttpException(
-                'Projeto está na fase de Registro, portanto só pode criar tarefas de nível 1.',
+                'Projeto está no status de Registrado, portanto só pode criar tarefas de nível 1.',
                 400
             );
 
