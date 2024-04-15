@@ -1,11 +1,15 @@
 <script setup>
+import { useTipoDeTransferenciaStore } from '@/stores/tipoDeTransferencia.store';
 import { useAlertStore } from '@/stores/alert.store';
 import { useFluxosProjetosStore } from '@/stores/fluxosProjeto.store';
 import { storeToRefs } from 'pinia';
 import dateToField from '@/helpers/dateToField';
+import { computed } from 'vue';
 
+const tipoDeTransferenciaStore = useTipoDeTransferenciaStore();
 const fluxosProjetoStore = useFluxosProjetosStore();
 const { lista, chamadasPendentes, erro} = storeToRefs(fluxosProjetoStore);
+const { lista: tipoTransferenciaComoLista } = storeToRefs(tipoDeTransferenciaStore);
 
 const alertStore = useAlertStore();
 
@@ -49,16 +53,19 @@ fluxosProjetoStore.buscarTudo().then(ordenarListaAlfabeticamente);
           Nome
         </th>
         <th>
-          Tipo de transferência
+          Esfera
         </th>
         <th>
-          Início da vigência
+          Tipo de transferência
         </th>
         <th>
           Fim da vigência
         </th>
         <th>
           Ativo
+        </th>
+        <th>
+          Início da vigência
         </th>
       </tr>
     </thead>
@@ -68,10 +75,11 @@ fluxosProjetoStore.buscarTudo().then(ordenarListaAlfabeticamente);
         :key="item.id"
       >
         <td>{{ item.nome }}</td>
+        <td>{{ item.esfera }}</td>
         <td>{{ item.transferencia_tipo?.nome }}</td>
-        <td>{{ item.inicio? dateToField(item.inicio) : '-'}}</td>
         <td>{{ item.termino? dateToField(item.termino) : '-'}}</td>
         <td>{{ item.ativo? 'Sim' : 'Não' }}</td>
+        <td>{{ item.inicio? dateToField(item.inicio) : '-'}}</td>
         <td>
           <button
             class="like-a__text"
