@@ -92,7 +92,7 @@ iniciar();
         title="Editar tarefa"
         class="btn"
       >
-        Editar tarefa yy
+        Editar tarefa
       </router-link>
     </div>
 
