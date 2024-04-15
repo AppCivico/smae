@@ -33,6 +33,7 @@ const exibeModalTarefa = ref(false);
 const idDaEtapaEmFoco = ref(-1);
 const idDoRelacionamentoComFase = ref(-1);
 const idDaMãeDaFase = ref(0);
+const idDaMãeDaTarefa = ref(0);
 
 const props = defineProps({
   fluxoId: {
@@ -154,10 +155,12 @@ watch(itemParaEdição, (novoValor) => {
   />
 
   <TarefaFluxo
-      @close="exibeModalTarefa = false"
-      v-if="exibeModalTarefa"
-      :relacionamento-id="idDoRelacionamentoComFase"
-    />
+    v-if="exibeModalTarefa"
+    :fase-id="idDaMãeDaTarefa"
+    @close="exibeModalTarefa = false"
+    @saved="carregarFluxo()"
+  />
+
   <form
       :disabled="isSubmitting"
       @submit.prevent="onSubmit">
@@ -387,6 +390,11 @@ watch(itemParaEdição, (novoValor) => {
           </tr>
         </thead>
         <tbody v-for="fase in item.fases">
+          <tr v-scrollLockDebug>
+            <td colspan="5">
+              <pre>fase:{{ fase }}</pre>
+            </td>
+          </tr>
           <tr>
             <td
               :class="{
@@ -403,7 +411,10 @@ watch(itemParaEdição, (novoValor) => {
               <button
                 v-if="emFoco && !emFoco?.edicao_restrita"
                 class="bgnone like-a__text"
-                @click="exibeModalTarefa = true"
+                @click="() => {
+                  exibeModalTarefa = true;
+                  idDaMãeDaTarefa = fase.id;
+                }"
               >
                 <svg width="20" height="20">
                   <use xlink:href="#i_+" />
