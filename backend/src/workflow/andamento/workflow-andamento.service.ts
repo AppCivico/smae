@@ -108,6 +108,7 @@ export class WorkflowAndamentoService {
                                                     ...tarefa,
 
                                                     andamento: await this.getAndamentoTarefaRet(
+                                                        fase.fase!.id,
                                                         transferencia.id,
                                                         tarefa.workflow_tarefa!.id,
                                                         transferencia.workflow_id!
@@ -245,6 +246,7 @@ export class WorkflowAndamentoService {
     }
 
     private async getAndamentoTarefaRet(
+        fase_id: number,
         transferencia_id: number,
         tarefa_id: number,
         workflow_id: number
@@ -255,6 +257,7 @@ export class WorkflowAndamentoService {
                 workflow_tarefa_fluxo_id: tarefa_id,
                 transferencia_andamento: {
                     transferencia_id: transferencia_id,
+                    workflow_fase_id: fase_id,
                 },
             },
             select: {
