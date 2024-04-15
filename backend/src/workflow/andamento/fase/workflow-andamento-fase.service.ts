@@ -68,6 +68,16 @@ export class WorkflowAndamentoFaseService {
                     (self.orgao_responsavel_id != dto.orgao_responsavel_id ||
                         self.pessoa_responsavel_id != dto.pessoa_responsavel_id)
                 ) {
+                    const orgaoCasaCivil = await prismaTxn.orgao.findFirstOrThrow({
+                        where: {
+                            removido_em: null,
+                            sigla: 'SERI',
+                        },
+                        select: {
+                            id: true,
+                        },
+                    });
+
                     const configFluxoFase = await prismaTxn.fluxoFase.findFirst({
                         where: {
                             removido_em: null,
@@ -90,6 +100,7 @@ export class WorkflowAndamentoFaseService {
                     // Caso seja modificado o órgão responsável, é necessário verificar o tipo de responsabilidade da fase.
                     if (
                         dto.orgao_responsavel_id != undefined &&
+                        dto.orgao_responsavel_id != orgaoCasaCivil.id &&
                         configFluxoFase.responsabilidade === WorkflowResponsabilidade.Propria
                     ) {
                         throw new HttpException(
