@@ -153,6 +153,11 @@ watch(itemParaEdição, (novoValor) => {
     @saved="carregarFluxo()"
   />
 
+  <TarefaFluxo
+      @close="exibeModalTarefa = false"
+      v-if="exibeModalTarefa"
+      :relacionamento-id="idDoRelacionamentoComFase"
+    />
   <form
       :disabled="isSubmitting"
       @submit.prevent="onSubmit">
@@ -404,10 +409,6 @@ watch(itemParaEdição, (novoValor) => {
                   <use xlink:href="#i_+" />
                 </svg>
               </button>
-              <TarefaFluxo
-                @close="exibeModalTarefa = false"
-                v-if="exibeModalTarefa"
-              />
             </td>
             <td>
               <button
