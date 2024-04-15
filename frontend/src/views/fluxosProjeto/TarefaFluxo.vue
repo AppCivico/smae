@@ -1,28 +1,29 @@
 <script setup>
-import  responsabilidadeEtapaFluxo  from '@/consts/responsabilidadeEtapaFluxo.js';
+import SmallModal from '@/components/SmallModal.vue';
+import { tarefaFluxo as schema } from '@/consts/formSchemas';
+import responsabilidadeEtapaFluxo from '@/consts/responsabilidadeEtapaFluxo.js';
+import { useAlertStore } from '@/stores/alert.store';
 import { useFluxosTarefasProjetosStore } from '@/stores/fluxosTarefaProjeto.store';
 import { useTarefasProjetosStore } from '@/stores/tarefasProjeto.store';
-import { tarefaFluxo as schema } from '@/consts/formSchemas';
-import { ErrorMessage, Field, useForm} from 'vee-validate';
-import SmallModal from "@/components/SmallModal.vue";
-import { useRouter } from "vue-router";
-import { useAlertStore } from '@/stores/alert.store';
 import { storeToRefs } from 'pinia';
-import { ref, computed } from 'vue';
+import { ErrorMessage, Field, useForm } from 'vee-validate';
+import { computed, ref } from 'vue';
+import { useRouter } from 'vue-router';
 
 const fluxoTarefasProjetosStore = useFluxosTarefasProjetosStore();
 const tarefasProjetosStore = useTarefasProjetosStore();
 const { lista } = storeToRefs(tarefasProjetosStore);
-const { itemParaEdição  } = storeToRefs(fluxoTarefasProjetosStore);
+const { itemParaEdição } = storeToRefs(fluxoTarefasProjetosStore);
 const alertStore = useAlertStore();
 const router = useRouter();
 const erro = ref(null);
 const exibeModal = ref(false);
 
-const { errors, isSubmitting, values, handleSubmit, setFieldValue }
-= useForm({
+const {
+  errors, isSubmitting, values, handleSubmit, setFieldValue,
+} = useForm({
   validationSchema: schema,
-  initialValues: itemParaEdição
+  initialValues: itemParaEdição,
 });
 
 const emits = defineEmits(['close', 'saved']);
@@ -40,10 +41,10 @@ const props = defineProps({
 const onSubmit = handleSubmit.withControlled(async (valoresControlados) => {
   try {
     const msg = props.tarefaFluxoId
-      ? "Dados salvos com sucesso!"
-      : "Item adicionado com sucesso!";
+      ? 'Dados salvos com sucesso!'
+      : 'Item adicionado com sucesso!';
 
-    const resposta =  await fluxoTarefasProjetosStore.salvarItem(valoresControlados, props.tarefaFluxoId)
+    const resposta = await fluxoTarefasProjetosStore.salvarItem(valoresControlados, props.tarefaFluxoId);
     if (resposta) {
       alertStore.success(msg);
       fluxoTarefasProjetosStore.$reset();
@@ -54,19 +55,18 @@ const onSubmit = handleSubmit.withControlled(async (valoresControlados) => {
   } catch (error) {
     alertStore.error(error);
   }
-})
+});
 
 const updateWorkflowTarefaId = (event) => {
   const selectedId = event.target.value;
   setFieldValue('workflow_tarefa_id', selectedId);
 };
 
-const listaOrdenada = computed(() => {
-  return lista.value.sort((a, b) => a.descricao.localeCompare(b.descricao));
-});
+const listaOrdenada = computed(() => lista.value
+  .sort((a, b) => a.descricao.localeCompare(b.descricao)));
 
 function iniciar() {
-  tarefasProjetosStore.buscarTudo()
+  tarefasProjetosStore.buscarTudo();
 }
 iniciar();
 </script>
@@ -75,7 +75,7 @@ iniciar();
   <SmallModal @close="$emit('close')">
     <div class="flex spacebetween center mb2">
       <h2>Adicionar tarefa</h2>
-      <hr class="ml2 f1" />
+      <hr class="ml2 f1">
       <CheckClose
         :apenas-emitir="true"
         @close="$emit('close')"
@@ -127,8 +127,7 @@ iniciar();
           <LabelFromYup
             name="ordem"
             :schema="schema"
-          >
-          </LabelFromYup>
+          />
           <Field
             name="ordem"
             type="number"
@@ -188,7 +187,10 @@ iniciar();
         <hr class="ml2 f1">
       </div>
     </form>
-    <div v-if="erro" class="error p1">
+    <div
+      v-if="erro"
+      class="error p1"
+    >
       <div class="error-msg">
         {{ erro }}
       </div>
