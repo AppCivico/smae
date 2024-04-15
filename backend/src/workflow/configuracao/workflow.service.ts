@@ -77,16 +77,13 @@ export class WorkflowService {
     async update(id: number, dto: UpdateWorkflowDto, user: PessoaFromJwt): Promise<RecordWithId> {
         const updated = await this.prisma.$transaction(
             async (prismaTxn: Prisma.TransactionClient): Promise<RecordWithId> => {
-                // Caso o Workflow já possua uma transferência ativa, só algumas colunas podem ser editadas.
-                if (dto.inicio != undefined || dto.transferencia_tipo_id != undefined || dto.nome != undefined)
-                    await this.verificaEdicao(id, prismaTxn);
-
-                const self = await this.prisma.workflow.findFirst({
+                const self = await prismaTxn.workflow.findFirst({
                     where: {
                         id,
                         removido_em: null,
                     },
                     select: {
+                        nome: true,
                         ativo: true,
                         inicio: true,
                         termino: true,
@@ -94,6 +91,15 @@ export class WorkflowService {
                     },
                 });
                 if (!self) throw new NotFoundException('Workflow não encontrado');
+
+                // Caso o Workflow já possua uma transferência ativa, só algumas colunas podem ser editadas.
+                if (
+                    (dto.inicio != undefined && dto.inicio != self.inicio) ||
+                    (dto.transferencia_tipo_id != undefined &&
+                        self.transferencia_tipo_id != dto.transferencia_tipo_id) ||
+                    (dto.nome != undefined && self.nome != dto.nome)
+                )
+                    await this.verificaEdicao(id, prismaTxn);
 
                 if (dto.ativo != undefined && dto.ativo != self.ativo && dto.ativo == true) {
                     // Verificando se já não existe workflow ativo.
