@@ -1067,7 +1067,7 @@ export class ProjetoService {
                         // Agora o cronograma sempre será liberado para uso. No entanto, se o projeto estiver em Registro.
                         // Deve ser limitado ao nível 1.
                         nivel_maximo_tarefa:
-                            projeto.fase == ProjetoFase.Registro ? 1 : projeto.portfolio.nivel_maximo_tarefa,
+                            projeto.status == ProjetoStatus.Registrado ? 1 : projeto.portfolio.nivel_maximo_tarefa,
                     },
                 },
                 tarefa_cronograma: projeto.TarefaCronograma[0] ?? null,
