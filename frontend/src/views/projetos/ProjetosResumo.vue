@@ -452,7 +452,7 @@ if (!Array.isArray(organs.value) || !organs.value.length) {
       </dl>
       <dl class="f2 mb1">
         <dt class="t12 uc w700 mb05 tamarelo">
-          Total de custos planejados
+          Custo total planejado
         </dt>
         <dd class="t13">
           {{ custoTotalPlanejado ? `R$ ${dinheiro(custoTotalPlanejado)}` : '-' }}
