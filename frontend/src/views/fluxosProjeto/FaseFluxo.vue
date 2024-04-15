@@ -70,6 +70,10 @@ const onSubmit = handleSubmit.withControlled(async (valoresControlados) => {
   }
 });
 
+const listaOrdenada = computed(() => {
+  return listaFase.value.sort((a, b) => a.fase.localeCompare(b.fase));
+});
+
 function iniciar() {
   fasesProjetosStore.buscarTudo();
   situacaoProjetosStore.buscarTudo();
@@ -127,7 +131,7 @@ iniciar();
               Selecionar
             </option>
             <option
-              v-for="item in listaFase"
+              v-for="item in listaOrdenada"
               :key="item"
               :value="item.id"
             >

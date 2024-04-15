@@ -91,6 +91,10 @@ function iniciar() {
 
 iniciar();
 
+const listaOrdenada = computed(() => {
+  return lista.value.sort((a, b) => a.descricao.localeCompare(b.descricao));
+});
+
 watch(itemParaEdição, (novoValor) => {
   resetForm({
     initialValues: novoValor,
@@ -153,7 +157,7 @@ watch(itemParaEdição, (novoValor) => {
               Selecionar
             </option>
             <option
-              v-for="item in lista"
+              v-for="item in listaOrdenada"
               :key="item"
               :value="item.id"
             >
@@ -179,7 +183,7 @@ watch(itemParaEdição, (novoValor) => {
               Selecionar
             </option>
             <option
-              v-for="item in lista"
+              v-for="item in listaOrdenada"
               :key="item"
               :value="item.id"
             >
