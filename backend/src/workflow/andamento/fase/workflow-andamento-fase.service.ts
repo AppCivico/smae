@@ -334,17 +334,14 @@ export class WorkflowAndamentoFaseService {
         const updated = await this.prisma.$transaction(
             async (prismaTxn: Prisma.TransactionClient): Promise<RecordWithId> => {
                 // Verificando se fase já foi iniciada.
-                const andamentoFase = await prismaTxn.transferenciaAndamento.findFirst({
+                const proxFaseJaExiste = await prismaTxn.transferenciaAndamento.count({
                     where: {
                         transferencia_id: dto.transferencia_id,
                         workflow_fase_id: dto.fase_id,
                         removido_em: null,
                     },
-                    select: {
-                        id: true,
-                    },
                 });
-                if (andamentoFase) throw new HttpException('Fase já foi iniciada', 400);
+                if (proxFaseJaExiste) throw new HttpException('Fase já foi iniciada', 400);
 
                 // Buscando fase atual.
                 const faseAtual = await prismaTxn.transferenciaAndamento.findFirst({
@@ -352,6 +349,7 @@ export class WorkflowAndamentoFaseService {
                         transferencia_id: dto.transferencia_id,
                         removido_em: null,
                     },
+                    orderBy: { id: 'desc' },
                     select: {
                         id: true,
                         workflow_fase_id: true,
@@ -385,11 +383,13 @@ export class WorkflowAndamentoFaseService {
                     where: {
                         removido_em: null,
                         fase_id: dto.fase_id,
+                        ordem: { gt: configFluxoFaseAtual.ordem },
                         fluxo: {
                             fluxo_etapa_de_id: faseAtual.workflow_etapa_id,
                             removido_em: null,
                         },
                     },
+                    orderBy: { ordem: 'asc' },
                     select: {
                         fase_id: true,
                         ordem: true,
