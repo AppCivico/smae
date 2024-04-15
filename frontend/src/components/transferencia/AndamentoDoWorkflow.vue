@@ -449,12 +449,12 @@ watch(itemParaEdição, () => {
       />
 
       <div
-        v-if="faseEmFoco?.andamento?.concluida === false"
+        v-if="!faseEmFoco?.andamento?.concluida"
         class="flex spacebetween center g2 mb2"
       >
         <hr class="f1">
         <button
-          v-if="faseEmFoco?.andamento?.concluida === false"
+          v-if="!faseEmFoco?.andamento?.concluida"
           type="button"
           class="btn "
           :disabled="!faseEmFoco.andamento.pode_concluir"
