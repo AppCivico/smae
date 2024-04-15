@@ -141,6 +141,8 @@ export default {
             rotasParaMigalhasDePão: [
               'projetosListar',
               'projetosResumo',
+              'riscosListar',
+              'planosDeAçãoListar',
               'detalhes',
             ],
           },
