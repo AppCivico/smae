@@ -63,7 +63,7 @@ const updateWorkflowTarefaId = (event) => {
 };
 
 const listaOrdenada = computed(() => lista.value
-  .sort((a, b) => a.descricao.localeCompare(b.descricao)));
+  .toSorted((a, b) => a.descricao.localeCompare(b.descricao)));
 
 function iniciar() {
   tarefasProjetosStore.buscarTudo();
