@@ -57,7 +57,7 @@ export class WorkflowAndamentoService {
 
         // Caso a prox etapa não possua fases. É o fim do workflow
         if (proxEtapa) {
-            const fluxoProxEtapa = await this.prisma.fluxo.findFirstOrThrow({
+            const fluxoProxEtapa = await this.prisma.fluxo.findFirst({
                 where: {
                     workflow_id: transferencia.workflow_id,
                     fluxo_etapa_de_id: proxEtapa.id,
@@ -75,7 +75,7 @@ export class WorkflowAndamentoService {
                 },
             });
 
-            possui_proxima_etapa = fluxoProxEtapa.fases.length ? true : false;
+            possui_proxima_etapa = fluxoProxEtapa && fluxoProxEtapa.fases.length ? true : false;
         } else {
             possui_proxima_etapa = false;
         }
