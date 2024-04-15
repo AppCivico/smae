@@ -31,6 +31,7 @@ const { chamadasPendentes: tarefasPendentes } = storeToRefs(fluxosTarefasProjeto
 const esferaSelecionada = ref('');
 const exibeModalTarefa = ref(false);
 const idDaEtapaEmFoco = ref(-1);
+const idDaTarefaEmFoco = ref(-1);
 const idDoRelacionamentoComFase = ref(-1);
 const idDaMãeDaFase = ref(0);
 const idDaMãeDaTarefa = ref(0);
@@ -155,9 +156,13 @@ watch(itemParaEdição, (novoValor) => {
   />
 
   <TarefaFluxo
-    v-if="exibeModalTarefa"
+    v-if="idDaTarefaEmFoco > -1"
     :fase-id="idDaMãeDaTarefa"
-    @close="exibeModalTarefa = false"
+    :relacionamento-id="idDaTarefaEmFoco"
+    @close="() => {
+      idDaTarefaEmFoco = -1;
+      idDaMãeDaTarefa = 0;
+    }"
     @saved="carregarFluxo()"
   />
 
@@ -413,7 +418,7 @@ watch(itemParaEdição, (novoValor) => {
                 v-if="emFoco && !emFoco?.edicao_restrita"
                 class="bgnone like-a__text"
                 @click="() => {
-                  exibeModalTarefa = true;
+                  idDaTarefaEmFoco = 0;
                   idDaMãeDaTarefa = fase.id;
                 }"
               >
@@ -481,7 +486,10 @@ watch(itemParaEdição, (novoValor) => {
               <button
                 v-if="emFoco && !emFoco?.edicao_restrita"
                 class="bgnone like-a__text"
-                @click="exibeModalTarefa = true"
+                @click="() => {
+                  idDaTarefaEmFoco = tarefa.id;
+                  idDaMãeDaTarefa = fase.id;
+                }"
               >
                 <svg
                   width="20"
