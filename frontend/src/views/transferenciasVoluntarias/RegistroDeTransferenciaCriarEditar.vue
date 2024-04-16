@@ -9,7 +9,9 @@ import { ErrorMessage, Field, Form } from 'vee-validate';
 import { useRouter } from 'vue-router';
 
 const TransferenciasVoluntarias = useTransferenciasVoluntariasStore();
-const { chamadasPendentes, erro, itemParaEdição, emFoco: transferenciaEmFoco, } = storeToRefs(TransferenciasVoluntarias);
+const {
+  chamadasPendentes, erro, itemParaEdição, emFoco: transferenciaEmFoco,
+} = storeToRefs(TransferenciasVoluntarias);
 
 const router = useRouter();
 const props = defineProps({
@@ -52,7 +54,9 @@ TransferenciasVoluntarias.buscarItem(props.transferenciaId);
 </script>
 
 <template>
-  <pre v-scrollLockDebug>transferenciaEmFoco:{{ transferenciaEmFoco?.pendente_preenchimento_valores }}</pre>
+  <pre v-scrollLockDebug>
+    transferenciaEmFoco:{{ transferenciaEmFoco?.pendente_preenchimento_valores }}
+  </pre>
   <div class="flex spacebetween center mb2">
     <h1>Formulário de registro</h1>
     <hr class="ml2 f1">
