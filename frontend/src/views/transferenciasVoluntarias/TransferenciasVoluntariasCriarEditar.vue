@@ -143,6 +143,21 @@ watch(itemParaEdição, (novosValores) => {
     <div class="flex g2 mb1">
       <div class="f1">
         <LabelFromYup
+          name="ano"
+          :schema="schema"
+        />
+        <Field
+          name="ano"
+          type="text"
+          class="inputtext light mb1"
+        />
+        <ErrorMessage
+          class="error-msg mb1"
+          name="ano"
+        />
+      </div>
+      <div class="f1">
+        <LabelFromYup
           name="identificador"
           :schema="schema"
         />
@@ -514,22 +529,6 @@ watch(itemParaEdição, (novosValores) => {
     </div>
 
     <div class="flex g2 mb1">
-      <div class="f1">
-        <LabelFromYup
-          name="ano"
-          :schema="schema"
-        />
-        <Field
-          name="ano"
-          type="text"
-          class="inputtext light mb1"
-        />
-        <ErrorMessage
-          class="error-msg mb1"
-          name="ano"
-        />
-      </div>
-
       <div class="f1">
         <LabelFromYup
           name="nome_programa"
