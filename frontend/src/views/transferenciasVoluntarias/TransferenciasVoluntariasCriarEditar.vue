@@ -156,21 +156,20 @@ watch(itemParaEdição, (novosValores) => {
           name="ano"
         />
       </div>
-      <div class="f1" v-if="props.transferenciaId">
-        <LabelFromYup
-          name="identificador"
-          :schema="schema"
-        />
-        <Field
+      <div
+        v-if="props.transferenciaId"
+        class="f1"
+      >
+        <label class="label tc300">
+          Identificador
+        </label>
+        <input
           name="identificador"
           type="text"
           class="inputtext light mb1"
           :disabled="props.transferenciaId"
-        />
-        <ErrorMessage
-          class="error-msg mb1"
-          name="identificador"
-        />
+          :value="itemParaEdição?.identificador"
+        >
       </div>
 
       <div class="f1">
