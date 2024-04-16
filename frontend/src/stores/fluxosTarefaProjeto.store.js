@@ -4,7 +4,6 @@ const baseUrl = `${import.meta.env.VITE_API_URL}`;
 export const useFluxosTarefasProjetosStore = defineStore('fluxosTarefasProjetos', {
   state: () => ({
     lista: [],
-    emFoco: null,
     chamadasPendentes: {
       lista: false,
       emFoco: false,
@@ -12,21 +11,6 @@ export const useFluxosTarefasProjetosStore = defineStore('fluxosTarefasProjetos'
     erro: null,
   }),
   actions: {
-    async buscarItem(id = 0, params = {}) {
-      this.chamadasPendentes.emFoco = true;
-      this.erro = null;
-
-      try {
-        const resposta = await this.requestS.get(`${baseUrl}/workflow-fluxo-tarefa/${id}`, params);
-        this.emFoco = {
-          ...resposta,
-        };
-      } catch (erro) {
-        this.erro = erro;
-      }
-      this.chamadasPendentes.emFoco = false;
-    },
-
     async buscarTudo(params = {}) {
       this.chamadasPendentes.lista = true;
       this.erro = null;
@@ -73,13 +57,6 @@ export const useFluxosTarefasProjetosStore = defineStore('fluxosTarefasProjetos'
         this.chamadasPendentes.emFoco = false;
         return false;
       }
-    },
-  },
-  getters: {
-    itemParaEdição({ emFoco }) {
-      return {
-        ...emFoco,
-      };
     },
   },
 });
