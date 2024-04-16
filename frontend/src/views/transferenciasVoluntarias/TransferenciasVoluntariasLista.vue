@@ -170,6 +170,7 @@ watch([
     <col>
     <col>
     <col>
+    <col>
     <col class="col--botão-de-ação">
     <col class="col--botão-de-ação">
     <thead>
@@ -180,6 +181,9 @@ watch([
         </th>
         <th>
           Esfera
+        </th>
+        <th>
+          Etapa
         </th>
         <th>
           Tipo
@@ -229,10 +233,13 @@ watch([
           {{ item.esfera }}
         </td>
         <td>
+          {{ item.etapa? item.etapa : '-' }}
+        </td>
+        <td>
           {{ item.tipo.nome }}
         </td>
         <td>
-          {{ item.partido?.sigla }}
+          {{ item.partido?.sigla ? item.partido?.sigla : '-' }}
         </td>
         <td>
           {{ item.objeto }}
