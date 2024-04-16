@@ -39,15 +39,13 @@ export class WorkflowService {
                 const now = DateTime.now().startOf('day');
 
                 // Se o início for =< now, ele é elegível para ser o ativo, mas deve ser verificado.
-                if (DateTime.fromJSDate(dto.inicio).setZone('utc') <= now) {
+                if (DateTime.fromJSDate(dto.inicio).setZone('utc').toMillis() <= now.toMillis()) {
                     // Verificando se já existe um ativo.
                     const workflowAtivo = await prismaTxn.workflow.count({
                         where: {
                             ativo: true,
                             transferencia_tipo_id: dto.transferencia_tipo_id,
-                            inicio: { lte: now.toJSDate() },
                             removido_em: null,
-                            OR: [{ termino: { gt: now.toJSDate() } }, { termino: null }],
                         },
                     });
 
@@ -110,12 +108,34 @@ export class WorkflowService {
 
                 if (dto.ativo != undefined && dto.ativo != self.ativo && dto.ativo == true) {
                     // Verificando se já não existe workflow ativo.
-                    // É necessário verificar se está mudando o início e término ao mesmo tempo
-                    // if (dto.inicio != undefined && DateTime.fromJSDate(dto.inicio) != DateTime.fromJSDate(self.inicio) )
+                    const workflowJaAtivo = await prismaTxn.workflow.count({
+                        where: {
+                            removido_em: null,
+                            ativo: true,
+                            transferencia_tipo_id: dto.transferencia_tipo_id
+                                ? dto.transferencia_tipo_id
+                                : self.transferencia_tipo_id,
+                        },
+                    });
+                    if (workflowJaAtivo)
+                        throw new HttpException(
+                            'ativo| Já existe um workflow ativo para este tipo de transferência.',
+                            400
+                        );
                 }
 
-                // TODO se alguma transferencia já estiver usando o workflow.
-                // Bloquear o edit.
+                // Se for modificada a data de término e estiver ativo.
+                // e o término for menor ou igual a "agora".
+                // Desativar o workflow.
+                const now = DateTime.now().startOf('day');
+                if (
+                    dto.termino != undefined &&
+                    self.termino != null &&
+                    self.ativo &&
+                    DateTime.fromJSDate(dto.termino).startOf('day').toMillis() <= now.toMillis()
+                ) {
+                    dto.ativo = false;
+                }
 
                 const workflow = await prismaTxn.workflow.update({
                     where: { id },
