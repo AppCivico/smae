@@ -3,6 +3,7 @@ import dateToField from '@/helpers/dateToField';
 import dinheiro from '@/helpers/dinheiro';
 import { useRoute } from 'vue-router';
 import { computed } from 'vue';
+
 const route = useRoute();
 
 const props = defineProps({
@@ -10,19 +11,17 @@ const props = defineProps({
     type: Object,
     required: true,
   },
-  existeEmail:{
+  existeEmail: {
     type: Boolean,
-    default: false
+    default: false,
   },
-  emailAtivo:{
+  emailAtivo: {
     type: Boolean,
-    default: false
-  }
+    default: false,
+  },
 });
 
-const emFocoFiltrado = computed(() => {
-  return props.emFoco.tarefa_cronograma || props.emFoco;
-});
+const emFocoFiltrado = computed(() => props.emFoco.tarefa_cronograma || props.emFoco);
 
 </script>
 <template>
@@ -82,8 +81,8 @@ const emFocoFiltrado = computed(() => {
         </dt>
         <dd class="t13 dado-efetivo">
           {{
-            emFocoFiltrado?.termino_planejado
-              ? dateToField(emFocoFiltrado.termino_planejado)
+            emFocoFiltrado?.projecao_termino
+              ? dateToField(emFocoFiltrado.projecao_termino)
               : '--/--/----'
           }}
         </dd>
@@ -138,13 +137,27 @@ const emFocoFiltrado = computed(() => {
             : '-' }}
         </dd>
       </div>
-      <div v-if="route.meta.prefixoParaFilhas === 'TransferenciasVoluntarias'" class="f1 mb1"  >
-        <dt class="t12 uc w700 mb05 tamarelo">Envio de e-mail?</dt>
+      <div
+        v-if="route.meta.prefixoParaFilhas === 'TransferenciasVoluntarias'"
+        class="f1 mb1"
+      >
+        <dt class="t12 uc w700 mb05 tamarelo">
+          Envio de e-mail?
+        </dt>
         <dd class="t13 dado-efetivo">
-          <div class="flex g1" v-if="emailAtivo">
+          <div
+            v-if="emailAtivo"
+            class="flex g1"
+          >
             <span>Sim</span>
-            <router-link :to="{name: 'transferenciaEmailModal'}" title="Editar e-mail">
-              <svg width="18" height="17"><use xlink:href="#i_edit" /></svg>
+            <router-link
+              :to="{name: 'transferenciaEmailModal'}"
+              title="Editar e-mail"
+            >
+              <svg
+                width="18"
+                height="17"
+              ><use xlink:href="#i_edit" /></svg>
             </router-link>
           </div>
           <span v-else>Não</span>
@@ -153,4 +166,3 @@ const emFocoFiltrado = computed(() => {
     </dl>
   </div>
 </template>
-
