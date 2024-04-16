@@ -79,7 +79,7 @@ const emFocoFiltrado = computed(() => props.emFoco.tarefa_cronograma || props.em
         <dt class="t12 uc w700 mb05 tamarelo">
           Término Projetado
         </dt>
-        <dd class="t13 dado-efetivo">
+        <dd class="t13 dado-estimado">
           {{
             emFocoFiltrado?.projecao_termino
               ? dateToField(emFocoFiltrado.projecao_termino)
