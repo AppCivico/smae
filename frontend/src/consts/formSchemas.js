@@ -24,6 +24,9 @@ import {
   string,
 } from 'yup';
 
+const dataMin = import.meta.env.VITE_DATA_MIN ? new Date(`${import.meta.env.VITE_DATA_MIN}`) : new Date('1900-01-01T00:00:00Z');
+const dataMax = import.meta.env.VITE_DATA_MAX ? new Date(`${import.meta.env.VITE_DATA_MAX}`) : new Date('2100-12-31T23:59:59Z');
+
 setLocale({
   array: {
     min: ({ label, min }) => (label
@@ -83,9 +86,13 @@ export const acompanhamento = object()
               .nullable(),
             prazo_encaminhamento: date()
               .label('Prazo para encaminhamento')
+              .max(dataMax)
+              .min(dataMin)
               .nullable(),
             prazo_realizado: date()
               .label('Data de realização')
+              .max(dataMax)
+              .min(dataMin)
               .nullable(),
           }),
       ),
@@ -94,6 +101,8 @@ export const acompanhamento = object()
       .nullable(),
     data_registro: date()
       .label('Data do registro')
+      .max(dataMax)
+      .min(dataMin)
       .required(),
     detalhamento: string()
       .label('Detalhamento')
@@ -189,6 +198,8 @@ export const arquivo = (semEnvio) => object()
         : field.required('Selecione um arquivo')))),
     data: date()
       .label('Data')
+      .max(dataMax)
+      .min(dataMin)
       .nullable(),
     descricao: string()
       .label('Descrição')
@@ -538,6 +549,8 @@ export const liçãoAprendida = object()
       .required(),
     data_registro: date()
       .label('Data do registro')
+      .max(dataMax)
+      .min(dataMin)
       .required(),
     descricao: string()
       .label('O que foi feito')
@@ -620,6 +633,8 @@ export const monitoramentoDePlanoDeAção = object()
     descricao: string()
       .required(),
     data_afericao: date()
+      .max(dataMax)
+      .min(dataMin)
       .required(),
   });
 
@@ -704,6 +719,8 @@ export const perdidoDeComplementação = object()
           .shape({
             data_valor: date()
               .label('Data do registro do valor da variável')
+              .max(dataMax)
+              .min(dataMin)
               .required(),
             variavel_id: number()
               .min(1)
@@ -734,6 +751,8 @@ export const planoDeAção = object()
       .transform((v) => (v === '' || Number.isNaN(v) ? null : v)),
     data_termino: date()
       .label('Data de término efetivo')
+      .max(dataMax)
+      .min(dataMin)
       .nullable(),
     medidas_de_contingencia: string()
       .label('Medidas de contingência')
@@ -744,6 +763,8 @@ export const planoDeAção = object()
       .required(),
     prazo_contramedida: date()
       .label('Data de término previsto')
+      .max(dataMax)
+      .min(dataMin)
       .required(),
     responsavel: string()
       .label('Responsável')
@@ -755,6 +776,7 @@ export const portfolio = object({
   data_criacao: date()
     .label('Data de criação')
     .nullable()
+    .max(dataMax)
     .min(new Date(2003, 0, 1))
     .transform((v) => (!v ? null : v)),
   descricao: string()
@@ -863,6 +885,8 @@ export const bancada = object({
 export const nota = object({
   data_nota: date()
     .label("Data da nota")
+    .max(dataMax)
+    .min(dataMin)
     .required(),
   dispara_email: boolean()
     .label("Disparo de e-mail")
@@ -886,6 +910,8 @@ export const nota = object({
     .required(),
   rever_em: date()
     .label("Rever em")
+    .max(dataMax)
+    .min(dataMin)
     .nullable(),
   status: string()
     .label("Status")
@@ -905,6 +931,7 @@ export const parlamentar = object({
     .min(1)
     .max(250),
   nascimento: date()
+    .max(dataMax)
     .min(new Date(1910, 0, 1))
     .label('Nascimento'),
   telefone: string()
@@ -986,16 +1013,19 @@ export const transferenciaDistribuicaoDeRecursos = object({
   assinatura_municipio: date()
     .label('Data de assinatura do representante do município')
     .nullable()
+    .max(dataMax)
     .min(new Date(2003, 0, 1))
     .transform((v) => (!v ? null : v)),
   assinatura_estado: date()
     .label('Data de assinatura do representante do estado')
     .nullable()
+    .max(dataMax)
     .min(new Date(2003, 0, 1))
     .transform((v) => (!v ? null : v)),
   assinatura_termo_aceite: date()
     .label('Data de assinatura do termo de aceite')
     .nullable()
+    .max(dataMax)
     .min(new Date(2003, 0, 1))
     .transform((v) => (!v ? null : v)),
   contrato: string()
@@ -1007,6 +1037,7 @@ export const transferenciaDistribuicaoDeRecursos = object({
   conclusao_suspensiva: date()
     .label('Data de conclusão da suspensiva')
     .nullable()
+    .max(dataMax)
     .min(new Date(2003, 0, 1))
     .transform((v) => (!v ? null : v)),
   dotacao: string()
@@ -1030,6 +1061,7 @@ export const transferenciaDistribuicaoDeRecursos = object({
   vigencia: date()
     .label('Data de vigência')
     .nullable()
+    .max(dataMax)
     .min(new Date(2003, 0, 1))
     .transform((v) => (!v ? null : v)),
   objeto: string()
@@ -1116,6 +1148,7 @@ export const transferenciasVoluntarias = object({
     .required(),
   clausula_suspensiva_vencimento: date()
     .label('data de vencimento da cláusula suspensiva')
+    .max(dataMax)
     .min(new Date(2003, 0, 1))
     .transform((v) => (!v ? null : v))
     .when('clausula_suspensiva', (clausulaSuspensiva, field) => (clausulaSuspensiva
@@ -1242,10 +1275,12 @@ export const projeto = object()
     data_aprovacao: date()
       .label('Data de aprovação')
       .nullable()
+      .max(dataMax)
       .min(new Date(2003, 0, 1)),
     data_revisao: date()
       .label('Data de revisão')
       .nullable()
+      .max(dataMax)
       .min(new Date(2003, 0, 1)),
     equipe: array()
       .label('Equipe')
@@ -1388,9 +1423,12 @@ export const projeto = object()
       .required(),
     previsao_inicio: date()
       .label('Previsão de início')
+      .max(dataMax)
+      .min(dataMin)
       .nullable(),
     previsao_termino: date()
       .label('Previsão de término')
+      .max(dataMax)
       .min(ref('previsao_inicio'), 'Precisa ser posterior à data de início')
       .nullable(),
     principais_etapas: string()
@@ -1565,11 +1603,13 @@ export const relatórioDeStatus = object({
   parametros: object({
     periodo_inicio: date()
       .label('Início do período')
+      .max(dataMax)
       .min(new Date(2003, 0, 1))
       .nullable()
       .transform((v) => (!v ? null : v)),
     periodo_fim: date()
       .label('Final do período')
+      .max(dataMax)
       .min(new Date(2003, 0, 1))
       .nullable()
       .transform((v) => (!v ? null : v)),
@@ -1818,6 +1858,7 @@ export const workflow = object({
   inicio: date()
     .label('Início da vigência')
     .nullable()
+    .max(dataMax)
     .min(new Date(2003, 0, 1))
     .transform((v) => (!v ? null : v))
     .required(),
@@ -1827,6 +1868,7 @@ export const workflow = object({
   termino: date()
     .label('fim da vigência')
     .nullable()
+    .max(dataMax)
     .min(new Date(2003, 0, 1))
     .transform((v) => (!v ? null : v)),
   transferencia_tipo_id: number()
@@ -1928,6 +1970,8 @@ export const risco = object()
       .nullable(),
     registrado_em: date()
       .label('Data de registro')
+      .max(dataMax)
+      .min(dataMin)
       .required(),
     risco_tarefa_outros: string()
       .label('Outras tarefas afetadas')
@@ -1991,9 +2035,13 @@ export const tarefa = object()
       .nullable(),
     inicio_planejado: date()
       .label('Previsão de início')
+      .max(dataMax)
+      .min(dataMin)
       .nullable(),
     inicio_real: date()
       .label('Data de início real')
+      .max(dataMax)
+      .min(dataMin)
       .when('atualizacao_do_realizado', (atualizacaoDoRealizado, field) => (atualizacaoDoRealizado
         ? field.required()
         : field.nullable())),
@@ -2034,10 +2082,12 @@ export const tarefa = object()
       .transform((v) => (v === '' || Number.isNaN(v) ? null : v)),
     termino_planejado: date()
       .label('Previsão de término')
+      .max(dataMax)
       .min(ref('inicio_planejado'), 'Precisa ser posterior à data de início')
       .nullable(),
     termino_real: date()
       .label('Data de término real')
+      .max(dataMax)
       .min(ref('inicio_real'), 'Precisa ser posterior à data de início')
       .nullable(),
   });
@@ -2184,6 +2234,8 @@ export const valoresRealizadoEmLote = object()
         analise_qualitativa: string(),
         data_ciclo: date()
           .label('Data do registro do valor da variável')
+          .max(dataMax)
+          .min(dataMin)
           .required(),
         enviar_para_cp: boolean()
           .label('Enviar composta para CP')
@@ -2201,6 +2253,8 @@ export const valoresRealizadoEmLote = object()
             analise_qualitativa: string(),
             data_valor: date()
               .label('Data do registro do valor da variável')
+              .max(dataMax)
+              .min(dataMin)
               .required(),
             enviar_para_cp: boolean()
               .label('Enviar para CP')
