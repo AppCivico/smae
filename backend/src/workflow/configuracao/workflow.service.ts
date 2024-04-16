@@ -94,12 +94,19 @@ export class WorkflowService {
 
                 // Caso o Workflow já possua uma transferência ativa, só algumas colunas podem ser editadas.
                 if (
-                    (dto.inicio != undefined && dto.inicio != self.inicio) ||
+                    (dto.inicio != undefined &&
+                        DateTime.fromJSDate(dto.inicio).startOf('day').toMillis() !=
+                            DateTime.fromJSDate(self.inicio).startOf('day').toMillis()) ||
                     (dto.transferencia_tipo_id != undefined &&
                         self.transferencia_tipo_id != dto.transferencia_tipo_id) ||
                     (dto.nome != undefined && self.nome != dto.nome)
-                )
+                ) {
+                    console.log(dto);
+                    console.log(self.inicio);
+                    console.log(self.transferencia_tipo_id);
+                    console.log(self.nome);
                     await this.verificaEdicao(id, prismaTxn);
+                }
 
                 if (dto.ativo != undefined && dto.ativo != self.ativo && dto.ativo == true) {
                     // Verificando se já não existe workflow ativo.
