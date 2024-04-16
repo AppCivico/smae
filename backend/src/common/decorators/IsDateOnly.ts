@@ -14,10 +14,13 @@ export function IsOnlyDate(validationOptions?: ValidationOptions) {
             validator: {
                 validate(value: any) {
                     // é uma data, e não tem o horário setado
-                    const x= value instanceof Date && !isNaN(value as any) && /T00:00:00/.test(value.toISOString());
-                    console.log(x);
+                    if (value instanceof Date && !isNaN(value as any)) {
+                        const isValidDate = /T00:00:00/.test(value.toISOString());
 
-                    return x;
+                        const isYearValid = value.getFullYear() <= 9999;
+                        return isValidDate && isYearValid;
+                    }
+                    return false;
                 },
             },
         });
