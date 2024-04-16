@@ -170,7 +170,6 @@ watch([
     <col>
     <col>
     <col>
-    <col>
     <col class="col--botão-de-ação">
     <col class="col--botão-de-ação">
     <thead>
@@ -187,9 +186,6 @@ watch([
         </th>
         <th>
           Partido
-        </th>
-        <th>
-          Ano
         </th>
         <th>
           Objeto/Empreendimento
@@ -226,7 +222,7 @@ watch([
             }"
             class="tprimary"
           >
-            {{ item.identificador }}
+            {{ item.identificador }}/{{ item.ano }}
           </router-link>
         </th>
         <td>
@@ -237,9 +233,6 @@ watch([
         </td>
         <td>
           {{ item.partido?.sigla }}
-        </td>
-        <td>
-          {{ item.ano }}
         </td>
         <td>
           {{ item.objeto }}
