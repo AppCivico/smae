@@ -156,7 +156,7 @@ watch(itemParaEdição, (novosValores) => {
           name="ano"
         />
       </div>
-      <div class="f1">
+      <div class="f1" v-if="props.transferenciaId">
         <LabelFromYup
           name="identificador"
           :schema="schema"
@@ -165,6 +165,7 @@ watch(itemParaEdição, (novosValores) => {
           name="identificador"
           type="text"
           class="inputtext light mb1"
+          :disabled="props.transferenciaId"
         />
         <ErrorMessage
           class="error-msg mb1"
