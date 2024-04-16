@@ -627,7 +627,10 @@ watch(itemParaEdição, (novosValores) => {
           {{ errors.clausula_suspensiva }}
         </div>
       </div>
-      <div class="f1">
+      <div
+        v-if="values.clausula_suspensiva"
+        class="f1"
+      >
         <LabelFromYup
           name="clausula_suspensiva_vencimento"
           :schema="schema"
