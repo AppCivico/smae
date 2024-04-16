@@ -1,19 +1,19 @@
 <script setup>
 // Não finalizado
-import { useTipoDeTransferenciaStore } from '@/stores/tipoDeTransferencia.store';
-import { useFluxosProjetosStore } from '@/stores/fluxosProjeto.store';
-import { useFluxosFasesProjetosStore } from '@/stores/fluxosFasesProjeto.store';
-import { useFluxosTarefasProjetosStore } from '@/stores/fluxosTarefaProjeto.store';
 import esferasDeTransferencia from '@/consts/esferasDeTransferencia';
-import { ErrorMessage, Field, Form, useForm,} from 'vee-validate';
-import TarefaFluxo from '@/views/fluxosProjeto/TarefaFluxo.vue';
-import EtapaFluxo from '@/views/fluxosProjeto/EtapaFluxo.vue';
-import FaseFluxo from '@/views/fluxosProjeto/FaseFluxo.vue';
 import { workflow as schema } from '@/consts/formSchemas';
 import { useAlertStore } from '@/stores/alert.store';
-import { computed, onUnmounted, ref, watch } from 'vue';
-import { useRouter, useRoute } from "vue-router";
+import { useFluxosFasesProjetosStore } from '@/stores/fluxosFasesProjeto.store';
+import { useFluxosProjetosStore } from '@/stores/fluxosProjeto.store';
+import { useFluxosTarefasProjetosStore } from '@/stores/fluxosTarefaProjeto.store';
+import { useTipoDeTransferenciaStore } from '@/stores/tipoDeTransferencia.store';
+import EtapaFluxo from '@/views/fluxosProjeto/EtapaFluxo.vue';
+import FaseFluxo from '@/views/fluxosProjeto/FaseFluxo.vue';
+import TarefaFluxo from '@/views/fluxosProjeto/TarefaFluxo.vue';
 import { storeToRefs } from 'pinia';
+import { ErrorMessage, Field, useForm } from 'vee-validate';
+import { computed, onUnmounted, ref, watch } from 'vue';
+import { useRoute, useRouter } from "vue-router";
 
 const tipoDeTransferenciaStore = useTipoDeTransferenciaStore();
 const fluxosProjetoStore = useFluxosProjetosStore();
@@ -24,7 +24,9 @@ const router = useRouter();
 const route = useRoute();
 
 const { lista: tipoTransferenciaComoLista } = storeToRefs(tipoDeTransferenciaStore);
-const { lista, chamadasPendentes, erro, itemParaEdição,  emFoco} = storeToRefs(fluxosProjetoStore);
+const {
+  lista, chamadasPendentes, erro, itemParaEdição, emFoco,
+} = storeToRefs(fluxosProjetoStore);
 const { chamadasPendentes: fasesPendentes } = storeToRefs(fluxosFasesProjetos);
 const { chamadasPendentes: tarefasPendentes } = storeToRefs(fluxosTarefasProjetos);
 
@@ -62,7 +64,7 @@ const onSubmit = handleSubmit.withControlled(async (controlledValues) => {
       ? "Dados salvos com sucesso!"
       : "Item adicionado com sucesso!";
 
-    const resposta =  await fluxosProjetoStore.salvarItem(controlledValues, props.fluxoId)
+    const resposta = await fluxosProjetoStore.salvarItem(controlledValues, props.fluxoId)
     if (resposta) {
       alertStore.success(msg);
       fluxosProjetoStore.$reset();
@@ -166,8 +168,8 @@ watch(itemParaEdição, (novoValor) => {
   />
 
   <form
-      :disabled="isSubmitting"
-      @submit.prevent="onSubmit">
+    :disabled="isSubmitting"
+    @submit.prevent="onSubmit">
     <div class="flex g2 mb1 center">
       <div class="f1">
         <LabelFromYup
@@ -283,7 +285,10 @@ watch(itemParaEdição, (novoValor) => {
           class="error-msg"
         />
       </div>
-      <div class="f1 flex">
+      <div
+        v-if="props.fluxoId"
+        class="f1 flex"
+      >
         <Field
           name="ativo"
           type="checkbox"
@@ -330,7 +335,9 @@ watch(itemParaEdição, (novoValor) => {
     </div>
   </div>
 
-  <div class="flex spacebetween center mb2" v-if="props.fluxoId">
+  <div
+    v-if="props.fluxoId"
+    class="flex spacebetween center mb2">
     <h1>Etapas do fluxo</h1>
     <hr class="ml2 f1">
     <button
@@ -347,7 +354,7 @@ watch(itemParaEdição, (novoValor) => {
         :key="item.id">
       <div class="flex flexwrap center">
         <div class="flex">
-          <span class="ordem">{{ item && item.ordem ? item.ordem : ''  }}</span>
+          <span class="ordem">{{ item && item.ordem ? item.ordem : '' }}</span>
           <h2 class="mb0 fb50 f1 tituloTabela flex g1 center">
             Etapa <span>{{ item.fluxo_etapa_de.etapa_fluxo }}</span>
             para <span>{{ item.fluxo_etapa_para.etapa_fluxo }}</span>
@@ -405,7 +412,8 @@ watch(itemParaEdição, (novoValor) => {
               :class="{
                 loading: fasesPendentes?.lista
               }"
-              >{{ fase.fase.fase  }}</td>
+            >
+              {{ fase.fase.fase }}</td>
             <td>
               <span v-if="fase.situacoes && fase.situacoes.length">
                 {{ fase.situacoes.map(situacao => situacao.situacao).join(', ') }}
@@ -421,7 +429,10 @@ watch(itemParaEdição, (novoValor) => {
                   idDaMãeDaTarefa = fase.id;
                 }"
               >
-                <svg width="20" height="20">
+                <svg
+                  width="20"
+                  height="20"
+                >
                   <use xlink:href="#i_+" />
                 </svg>
               </button>
@@ -465,8 +476,8 @@ watch(itemParaEdição, (novoValor) => {
               <span class="tarefa pl3">Tarefa</span>
               {{ tarefa.workflow_tarefa.descricao || "-"}}
             </td>
-            <td/>
-            <td/>
+            <td />
+            <td />
             <td>
               <button
                 v-if="emFoco && !emFoco?.edicao_restrita"
