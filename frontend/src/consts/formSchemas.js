@@ -1159,10 +1159,6 @@ export const transferenciasVoluntarias = object({
   demanda: string()
     .label('Número da Demanda')
     .nullable(),
-  identificador: string()
-    .label('Identificador')
-    .nullable()
-    .required(),
   interface: string()
     .label('Interface')
     .nullable()
