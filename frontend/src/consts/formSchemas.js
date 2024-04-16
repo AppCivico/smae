@@ -1834,7 +1834,7 @@ export const workflow = object({
 
 export const fasesFluxo = object({
   ordem: number()
-    .label('posição dentro da etapa')
+    .label('Posição dentro do fluxo')
     .required(),
   workflow_etapa_de_id: number()
     .label('De etapa')
@@ -1853,7 +1853,7 @@ export const tarefaFluxo = object({
     .oneOf(Object.keys(responsabilidadeEtapaFluxo))
     .required(),
   ordem: number()
-    .label('posição dentro da etapa')
+    .label('Posição dentro da fase')
     .required(),
 });
 
