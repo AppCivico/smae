@@ -1,8 +1,8 @@
 <script setup>
 import LoadingComponent from '@/components/LoadingComponent.vue';
+import ModalNotas from '@/components/notas/ModalNotas.vue';
 import dateToField from '@/helpers/dateToField';
 import dinheiro from '@/helpers/dinheiro';
-import ModalNotas from '@/components/notas/ModalNotas.vue'
 import { useAlertStore } from '@/stores/alert.store';
 import { useDistribuicaoRecursosStore } from '@/stores/transferenciasDistribuicaoRecursos.store';
 import { useTransferenciasVoluntariasStore } from '@/stores/transferenciasVoluntarias.store';
@@ -97,7 +97,10 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
 
   <pre v-scrollLockDebug>transferênciaEmFoco:{{ transferênciaEmFoco }}</pre>
   <pre v-scrollLockDebug>listaDeDistribuição:{{ listaDeDistribuição }}</pre>
-  <ModalNotas v-if="transferênciaEmFoco?.bloco_nota_token" :blocos-token="transferênciaEmFoco?.bloco_nota_token"></ModalNotas>
+  <ModalNotas
+    v-if="transferênciaEmFoco?.bloco_nota_token"
+    :blocos-token="transferênciaEmFoco?.bloco_nota_token"
+  />
 
   <div class="flex g2 flexwrap center mt3 mb2">
     <h3 class="w400 tc300 t20 mb0">
@@ -382,7 +385,7 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
       </dl>
       <dl class="mb1">
         <dt>
-          Valor contra-partida
+          Valor contrapartida
         </dt>
         <dd>
           {{ transferênciaEmFoco?.valor_contrapartida
@@ -563,7 +566,7 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
         </dl>
         <dl class="mb1">
           <dt>
-            Valor contra-partida
+            Valor contrapartida
           </dt>
           <dd>
             {{ distribuição.valor_contrapartida
