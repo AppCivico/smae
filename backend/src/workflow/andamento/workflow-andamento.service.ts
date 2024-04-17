@@ -99,8 +99,6 @@ export class WorkflowAndamentoService {
             },
         });
 
-        console.log(possui_proxima_etapa);
-        console.log(fasesNaoConcluidas);
         const pode_passar_para_proxima_etapa: boolean =
             fasesPendentesParaEtapaAtual == 0 && fasesNaoConcluidas == 0 && possui_proxima_etapa ? true : false;
 
