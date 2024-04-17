@@ -6,6 +6,7 @@ import { CreateRefreshMetaDto } from './refresh_meta/dto/create-refresh-mv.dto';
 import { CreateAvisoEmailJobDto } from './aviso_email/dto/create-aviso_email.dto';
 import { CreateAeCronogramaTpJobDto } from './aviso_email_cronograma_tp/dto/ae_cronograma_tp.dto';
 import { CreateNotaJobDto } from './aviso_email_nota/dto/ae_nota.dto';
+import { CreateRefreshTransferenciaDto } from './refresh_transferencia/dto/create-refresh-transferencia.dto';
 
 export function ParseParams(taskType: task_type, value: any): any {
     let theClass: any = undefined;
@@ -18,6 +19,9 @@ export function ParseParams(taskType: task_type, value: any): any {
             break;
         case 'refresh_meta':
             theClass = CreateRefreshMetaDto;
+            break;
+        case 'refresh_transferencia':
+            theClass = CreateRefreshTransferenciaDto;
             break;
         case 'aviso_email':
             theClass = CreateAvisoEmailJobDto;

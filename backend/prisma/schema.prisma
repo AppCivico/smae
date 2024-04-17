@@ -4013,6 +4013,7 @@ enum task_type {
     aviso_email
     aviso_email_cronograma_tp
     aviso_email_nota
+    refresh_transferencia
 }
 
 enum task_status {
@@ -4773,14 +4774,15 @@ model Transferencia {
     removido_por   Int?
     removido_em    DateTime? @db.Timestamptz(6)
 
-    criador               Pessoa                   @relation("Criador", fields: [criado_por], references: [id])
-    atualizador           Pessoa?                  @relation("Atualizador", fields: [atualizado_por], references: [id])
-    removedor             Pessoa?                  @relation("Removedor", fields: [removido_por], references: [id])
-    anexos                TransferenciaAnexo[]
-    diretorios            Diretorio[]
-    TarefaCronograma      TarefaCronograma[]
-    distribuicao_recursos DistribuicaoRecurso[]
-    andamentoWorkflow     TransferenciaAndamento[]
+    criador                        Pessoa                           @relation("Criador", fields: [criado_por], references: [id])
+    atualizador                    Pessoa?                          @relation("Atualizador", fields: [atualizado_por], references: [id])
+    removedor                      Pessoa?                          @relation("Removedor", fields: [removido_por], references: [id])
+    anexos                         TransferenciaAnexo[]
+    diretorios                     Diretorio[]
+    TarefaCronograma               TarefaCronograma[]
+    distribuicao_recursos          DistribuicaoRecurso[]
+    andamentoWorkflow              TransferenciaAndamento[]
+    TransferenciaStatusConsolidado TransferenciaStatusConsolidado[]
 
     @@map("transferencia")
 }
@@ -5425,4 +5427,18 @@ model NotaEnderecamentoResposta {
     removedor          Pessoa?           @relation("Removedor", fields: [removido_por], references: [id])
 
     @@map("nota_enderecamento_resposta")
+}
+
+model TransferenciaStatusConsolidado {
+    transferencia_id  Int       @id
+    situacao          String
+    orgaos_envolvidos Int[]
+    data              DateTime? @db.Date
+    data_origem       String
+
+    atualizado_em DateTime
+
+    transferencia Transferencia @relation(fields: [transferencia_id], references: [id])
+
+    @@map("transferencia_status_consolidado")
 }
