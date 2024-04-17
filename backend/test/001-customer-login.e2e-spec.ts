@@ -36,7 +36,7 @@ describe('AppController (e2e)', () => {
         const authService = app.get(AuthService);
         console.log(authService);
 
-        session = await authService.criarSession(findCustomer.id);
+        session = await authService.criarSession(findCustomer.id, '0.0.0.0');
 
         await app.init();
     });

@@ -27,7 +27,7 @@
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-    "test:e2e": "jest --config ./test/jest-e2e.json --forceExit",
+    "test:e2e": "jest --config ./test/jest-e2e.json --forceExit --detectOpenHandles --maxWorkers=4",
     "test:e2e:watch": "jest --config ./test/jest-e2e.json --watch",
     "test:e2e:cov": "jest --config ./test/jest-e2e.json --coverage --forceExit",
     "test:e2e:ci": "jest --config ./test/jest-e2e.json --coverage --forceExit --ci --reporters=default --reporters=jest-junit"
@@ -48,6 +48,7 @@
     "@types/geojson": "^7946.0.14",
     "adm-zip": "^0.5.10",
     "bcrypt": "^5.1.1",
+    "bun-types": "^1.1.4",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.1",
     "csv-parse": "^5.5.3",
@@ -94,7 +95,6 @@
     "@types/jsdom": "^21.1.6",
     "@types/minio": "^7.1.0",
     "@types/multer": "^1.4.11",
-    "@types/node": "^18.11.9",
     "@types/passport-jwt": "^4.0.1",
     "@types/passport-local": "^1.0.38",
     "@types/request-ip": "^0.0.41",
@@ -112,7 +112,6 @@
     "supertest": "^6.3.4",
     "ts-jest": "29.1.2",
     "ts-loader": "^9.5.1",
-    "ts-node": "^10.9.2",
     "tsconfig-paths": "4.2.0",
     "typescript": "^5.3.3"
   },
