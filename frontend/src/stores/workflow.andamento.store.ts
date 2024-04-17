@@ -132,12 +132,6 @@ export const useWorkflowAndamentoStore = defineStore('workflowAndamento', {
       || false;
     },
 
-    avançoDeEtapaPermitido() {
-      // eslint-disable-next-line max-len
-      return !this.etapaCorrente?.fases?.some((x: WorkflowAndamentoFasesDto) => !x.andamento?.concluida)
-      || false;
-    },
-
     idDaPróximaFasePendente() {
       // eslint-disable-next-line max-len
       return this.etapaCorrente?.fases?.find((x: WorkflowAndamentoFasesDto) => x.andamento === null)?.fase?.id
