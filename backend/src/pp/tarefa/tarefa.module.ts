@@ -8,7 +8,7 @@ import { TarefaController } from './tarefa.controller';
 import { TarefaDotTemplate } from './tarefa.dot.template';
 import { TarefaService } from './tarefa.service';
 import { TarefaUtilsService } from './tarefa.service.utils';
-import { TransferenciaModule } from 'src/transferencia/transferencia.module';
+import { TransferenciaModule } from 'src/casa-civil/transferencia/transferencia.module';
 
 @Module({
     imports: [
