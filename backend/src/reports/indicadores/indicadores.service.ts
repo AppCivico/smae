@@ -9,7 +9,7 @@ import { CreateRelIndicadorDto, CreateRelIndicadorRegioesDto } from './dto/creat
 import { ListIndicadoresDto, RelIndicadoresDto, RelIndicadoresVariaveisDto } from './entities/indicadores.entity';
 import { DateTime } from 'luxon';
 const BATCH_SIZE = 500;
-
+const CREATE_TEMP_TABLE = 'CREATE TEMP TABLE _report_data ON COMMIT DROP AS';
 class RetornoDb {
     data: string;
     data_referencia: string;
@@ -185,7 +185,7 @@ export class IndicadoresService implements ReportableService {
 
         const anoInicial = await this.capturaAnoSerieIndicadorInicial(dto, queryFromWhere);
 
-        const sql = `CREATE TEMP TABLE _report_data ON COMMIT DROP AS SELECT
+        const sql = `${CREATE_TEMP_TABLE} SELECT
         i.id as indicador_id,
         i.codigo as indicador_codigo,
         i.titulo as indicador_titulo,
@@ -216,13 +216,14 @@ export class IndicadoresService implements ReportableService {
         from generate_series($1::date, $2::date, $3::interval) dt
         cross join (select 'Realizado'::"Serie" as serie UNION ALL select 'RealizadoAcumulado'::"Serie" as serie ) series
         join ${queryFromWhere}
+        where dt.dt >= i.inicio_medicao AND dt.dt < i.fim_medicao + (select periodicidade_intervalo(i.periodicidade))
         `;
 
         await this.prisma.$transaction(async (prismaTxn: Prisma.TransactionClient) => {
             if (dto.periodo == 'Anual' && dto.tipo == 'Analitico') {
                 await this.rodaQueryAnualAnalitico(prismaTxn, sql, anoInicial);
 
-                for (let ano = anoInicial + 1; ano < dto.ano; ano++) {
+                for (let ano = anoInicial + 1; ano <= dto.ano; ano++) {
                     await this.rodaQueryAnualAnalitico(prismaTxn, this.replaceCreateToInsert(sql), ano);
                 }
 
@@ -246,7 +247,7 @@ export class IndicadoresService implements ReportableService {
 
                 await this.rodaQuerySemestralAnalitico(prismaTxn, sql, semestreInicio, tipo);
 
-                for (let ano = anoInicial + 1; ano < dto.ano; ano++) {
+                for (let ano = anoInicial + 1; ano <= dto.ano; ano++) {
                     const semestreInicio = tipo === 'Segundo' ? ano + '-12-01' : ano + '-06-01';
 
                     await this.rodaQuerySemestralAnalitico(
@@ -295,7 +296,7 @@ export class IndicadoresService implements ReportableService {
     }
 
     private replaceCreateToInsert(sql: string): string {
-        return sql.replace('CREATE TEMP TABLE _report_data ON COMMIT DROP AS', 'INSERT INTO _report_data');
+        return sql.replace(CREATE_TEMP_TABLE, 'INSERT INTO _report_data');
     }
 
     private async rodaQueryAnualConsolidado(prismaTxn: Prisma.TransactionClient, sql: string, ano: number) {
@@ -390,7 +391,7 @@ export class IndicadoresService implements ReportableService {
 
         const anoInicial = await this.capturaAnoSerieVariavelInicial(dto, queryFromWhere);
 
-        const sql = `CREATE TEMP TABLE _report_data ON COMMIT DROP AS SELECT
+        const sql = `${CREATE_TEMP_TABLE} SELECT
         i.id as indicador_id,
         i.codigo as indicador_codigo,
         i.titulo as indicador_titulo,
@@ -425,6 +426,7 @@ export class IndicadoresService implements ReportableService {
         from generate_series($1::date, $2::date, $3::interval) dt
         cross join (select 'Realizado'::"Serie" as serie UNION ALL select 'RealizadoAcumulado'::"Serie" as serie ) series
         join ${queryFromWhere}
+        AND dt.dt >= i.inicio_medicao AND dt.dt < i.fim_medicao + (select periodicidade_intervalo(i.periodicidade))
         `;
 
         const regioes = await this.prisma.regiao.findMany({
@@ -435,7 +437,7 @@ export class IndicadoresService implements ReportableService {
             if (dto.periodo == 'Anual' && dto.tipo == 'Analitico') {
                 await this.rodaQueryAnualAnalitico(prismaTxn, sql, anoInicial);
 
-                for (let ano = anoInicial + 1; ano < dto.ano; ano++) {
+                for (let ano = anoInicial + 1; ano <= dto.ano; ano++) {
                     await this.rodaQueryAnualAnalitico(prismaTxn, this.replaceCreateToInsert(sql), ano);
                 }
 
@@ -459,7 +461,7 @@ export class IndicadoresService implements ReportableService {
 
                 await this.rodaQuerySemestralAnalitico(prismaTxn, sql, semestreInicio, tipo);
 
-                for (let ano = anoInicial + 1; ano < dto.ano; ano++) {
+                for (let ano = anoInicial + 1; ano <= dto.ano; ano++) {
                     const semestreInicio = tipo === 'Segundo' ? ano + '-12-01' : ano + '-06-01';
 
                     await this.rodaQuerySemestralAnalitico(
