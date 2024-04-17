@@ -3,13 +3,13 @@ CREATE OR REPLACE FUNCTION atualiza_transferencia_status_consolidado(pTransferen
     AS $$
 DECLARE
 
-v_situacao int;
+v_situacao varchar;
 v_orgaos_envolvidos int[];
 v_data date;
 v_data_origem varchar;
 
 
-v_esfera varchar;
+v_xpto varchar;
 v_id int;
 
 v_debug varchar;
@@ -30,11 +30,11 @@ BEGIN
     SELECT
         id,
         clausula_suspensiva_vencimento,
-        esfera
+        cargo::text
     INTO
         v_id,
-        data
-        v_esfera
+        v_data
+        v_xpto
     FROM transferencia
     WHERE id = pTransferenciaId
     AND removido_em is null;
@@ -45,18 +45,18 @@ BEGIN
 
 
     --
-    situacao := case when v_esfera = 'Estadual' then 'Situação 0' ELSE 'Situação 4' end;
+    v_situacao := case when (v_id % 2)::int = 0 then 'Situação 0' ELSE 'Situação 4' end;
     v_data_origem:='Dia corrente';
-    orgaos_envolvidos := [];
+    v_orgaos_envolvidos := '{}'::int[];
 
     if (v_data is not null) then
-        situacao := case when v_esfera = 'Estadual' then 'Situação 2' ELSE 'Situação 3' end;
+        v_situacao := case when v_xpto = 'Vereador' then 'Situação 2' ELSE 'Situação 3' end;
         v_data_origem:='xis pê tê ó';
     end if;
 
     v_data := coalesce(v_data, CURRENT_DATE);
 
-    insert into meta_status_consolidado_cf (
+    insert into transferencia_status_consolidado (
         transferencia_id,
         situacao,
         orgaos_envolvidos,
@@ -80,4 +80,4 @@ $$
 LANGUAGE plpgsql;
 
 
-select atualiza_transferencia_status_consolidado(id) from transferencia;
+select atualiza_transferencia_status_consolidado(id) from transferencia where removido_em is null;
