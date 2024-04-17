@@ -51,9 +51,11 @@ export class WorkflowAndamentoService {
 
         // Processando booleans de controle de etapa.
         let possui_proxima_etapa: boolean;
-        const proxEtapa = workflow.fluxo.find(
-            (e) => e.workflow_etapa_de!.id == transferencia.andamentoWorkflow[0].workflow_etapa_id
-        );
+
+        const etapaAtual = workflow.fluxo.find((e) => {
+            return e.workflow_etapa_de!.id == transferencia.andamentoWorkflow[0].workflow_etapa_id;
+        });
+        const proxEtapa = etapaAtual!.workflow_etapa_para;
 
         // Caso a prox etapa não possua fases. É o fim do workflow
         if (proxEtapa) {
@@ -80,10 +82,32 @@ export class WorkflowAndamentoService {
             possui_proxima_etapa = false;
         }
 
+        const fasesNaoConcluidas = await this.prisma.transferenciaAndamento.count({
+            where: {
+                removido_em: null,
+                data_termino: null,
+                transferencia_id: transferencia.id,
+                workflow_etapa_id: etapaAtual!.workflow_etapa_de!.id,
+            },
+        });
+
+        const fasesPendentesParaEtapaAtual = await this.prisma.fluxo.count({
+            where: {
+                removido_em: null,
+                workflow_id: transferencia.workflow_id,
+                fluxo_etapa_de_id: etapaAtual!.workflow_etapa_de!.id,
+            },
+        });
+
+        console.log(possui_proxima_etapa);
+        console.log(fasesNaoConcluidas);
+        const pode_passar_para_proxima_etapa: boolean =
+            fasesPendentesParaEtapaAtual == 0 && fasesNaoConcluidas == 0 && possui_proxima_etapa ? true : false;
+
         return {
             ...workflow,
             possui_proxima_etapa: possui_proxima_etapa,
-            pode_passar_para_proxima_etapa: possui_proxima_etapa,
+            pode_passar_para_proxima_etapa: pode_passar_para_proxima_etapa,
 
             fluxo: await Promise.all(
                 workflow.fluxo
@@ -398,8 +422,12 @@ export class WorkflowAndamentoService {
                         },
                     },
                 });
+                console.log('================================================');
+                console.log(etapaAtual);
                 console.log(configProxEtapa);
                 console.log(configProxEtapa?.fases);
+                console.log('================================================');
+
                 if (!configProxEtapa)
                     throw new HttpException('Não foi possível encontrar configuração da próxima Etapa', 400);
 
