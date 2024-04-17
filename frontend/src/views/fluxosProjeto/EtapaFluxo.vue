@@ -1,14 +1,13 @@
 <!-- não finalizado -->
 <script setup>
-import { useFluxosEtapasProjetosStore } from '@/stores/fluxosEtapasProjeto.store.js';
-import { useEtapasProjetosStore } from '@/stores/etapasProjeto.store.js';
-import { useFluxosProjetosStore } from '@/stores/fluxosProjeto.store';
-import { ErrorMessage, Field, useForm} from 'vee-validate';
-import { fasesFluxo as schema } from '@/consts/formSchemas';
 import SmallModal from "@/components/SmallModal.vue";
+import { fasesFluxo as schema } from '@/consts/formSchemas';
 import { useAlertStore } from '@/stores/alert.store';
-import { useRouter } from "vue-router";
+import { useEtapasProjetosStore } from '@/stores/etapasProjeto.store.js';
+import { useFluxosEtapasProjetosStore } from '@/stores/fluxosEtapasProjeto.store.js';
+import { useFluxosProjetosStore } from '@/stores/fluxosProjeto.store';
 import { storeToRefs } from 'pinia';
+import { ErrorMessage, Field, useForm } from 'vee-validate';
 import { computed, ref, watch } from 'vue';
 
 const props = defineProps({
@@ -20,18 +19,18 @@ const props = defineProps({
     type: Number,
     default: 0,
   },
-  ordem:{
+  ordem: {
     type: Number,
     required: true,
   },
-  workflow_etapa_de_id:{
+  workflow_etapa_de_id: {
     type: Number,
     required: true,
   },
-  workflow_etapa_para_id:{
+  workflow_etapa_para_id: {
     type: Number,
     required: true,
-  }
+  },
 });
 
 const emits = defineEmits(['close', 'saved']);
@@ -43,15 +42,24 @@ const fluxosProjetoStore = useFluxosProjetosStore();
 const { lista } = storeToRefs(etapasProjetosStore);
 const { emFoco } = storeToRefs(fluxosProjetoStore);
 const alertStore = useAlertStore();
-const exibeModalEtapa = ref(true);
-const router = useRouter();
 const erro = ref(null);
+
+const proximaOrdemDisponivel = computed(() => {
+  if (!emFoco.value?.fluxo || emFoco.value.fluxo.length === 0) {
+    return 1;
+  }
+  const ultimaOrdem = emFoco.value.fluxo
+    .reduce((acc, etapa) => (
+      etapa.ordem > acc ? etapa.ordem : acc
+    ), 0);
+  return ultimaOrdem + 1;
+});
 
 const itemParaEdição = computed(() => {
   const etapaDoFluxo = emFoco.value?.fluxo?.find((x) => (x.id === Number(props.etapaId)));
-
   return {
     ...etapaDoFluxo,
+    ordem: etapaDoFluxo?.ordem || proximaOrdemDisponivel.value,
     workflow_etapa_de_id: etapaDoFluxo?.workflow_etapa_de?.id || null,
     workflow_etapa_para_id: etapaDoFluxo?.workflow_etapa_para?.id || null,
   };
@@ -69,7 +77,7 @@ const onSubmit = handleSubmit.withControlled(async (valoresControlados) => {
     const msg = props.etapaId
       ? "Dados salvos com sucesso!"
       : "Item adicionado com sucesso!";
-    const resposta =  await fluxosEtapasProjetos.salvarItem(valoresControlados, props.etapaId)
+    const resposta = await fluxosEtapasProjetos.salvarItem(valoresControlados, props.etapaId)
     if (resposta) {
       alertStore.success(msg);
       fluxosEtapasProjetos.$reset();
@@ -119,14 +127,16 @@ watch(itemParaEdição, (novoValor) => {
       <CheckClose
         :apenas-emitir="true"
         @close="$emit('close')"
-
       />
     </div>
+    <pre v-scrollLockDebug>ordem: {{ emFoco.fluxo }}</pre>
+    <pre v-scrollLockDebug>ordem: {{ itemParaEdição }}</pre>
+    <pre v-scrollLockDebug>ordem: {{ props.fluxoId }}</pre>
     <form
       :disabled="isSubmitting"
       @submit.prevent="onSubmit"
-        >
-       <div>
+    >
+      <div>
         <LabelFromYup
           :name="emFoco.id"
           :schema="schema"
@@ -201,8 +211,7 @@ watch(itemParaEdição, (novoValor) => {
           <LabelFromYup
             name="ordem"
             :schema="schema"
-          >
-          </LabelFromYup>
+          />
           <Field
             name="ordem"
             type="number"
