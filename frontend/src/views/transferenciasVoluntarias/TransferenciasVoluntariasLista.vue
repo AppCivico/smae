@@ -226,7 +226,7 @@ watch([
             }"
             class="tprimary"
           >
-            {{ item.identificador }}/{{ item.ano }}
+            {{ item.identificador }}
           </router-link>
         </th>
         <td>
