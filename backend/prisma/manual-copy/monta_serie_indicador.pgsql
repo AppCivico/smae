@@ -45,6 +45,7 @@ BEGIN
     END IF;
 
 
+
     FOR serieRecord IN
 
         WITH series AS (
@@ -69,18 +70,29 @@ BEGIN
         -- filtra apenas as series do tipo escolhido para recalcular, ou todas se for null
         ((vTipoSerie is null) OR ( s.serie::text like vTipoSerie::text || '%' ))
         LOOP
-            ----RAISE NOTICE '==> delete serie_indicador (indicador=%', pIndicador_id::text || ', serie=' || serieRecord.serie::text ||', vInicio = '|| coalesce(vInicio::text,'(todos)') || ', fim=' || coalesce(vFim::text,'todos') ||') vAcumuladoUsaFormula ' || vAcumuladoUsaFormula;
 
             vStartTime := clock_timestamp();
-            --raise NOTICE 'apagando serie_indicador... %s', serieRecord.serie;
-            -- apaga o periodo escolhido
-            DELETE FROM serie_indicador
-            WHERE indicador_id = pIndicador_id
-                AND serie = serieRecord.serie
-                AND data_valor >= vInicio
-                AND data_valor <= vFim -- aqui acho que precisa virar < e na hora de calcular tbm tirar 1 periodo
-                ;
-            --raise NOTICE 'apagou serie_indicador em %s', clock_timestamp() - vStartTime;
+
+            -- se a função (e não as variaveis da função) foram null, reprocessa todo o indicador
+            IF (pPeriodoStart IS NULL AND pPeriodoEnd IS NULL) THEN
+
+                -- apaga todo o periodo do indicador, sendo acumulado ou não
+                DELETE FROM serie_indicador
+                WHERE indicador_id = pIndicador_id
+                    AND serie = serieRecord.serie;
+
+            ELSE
+
+                ----RAISE NOTICE '==> delete serie_indicador (indicador=%', pIndicador_id::text || ', serie=' || serieRecord.serie::text ||', vInicio = '|| coalesce(vInicio::text,'(todos)') || ', fim=' || coalesce(vFim::text,'todos') ||') vAcumuladoUsaFormula ' || vAcumuladoUsaFormula;
+                --raise NOTICE 'apagando serie_indicador... %s', serieRecord.serie;
+                -- apaga o periodo escolhido
+                --raise NOTICE 'apagou serie_indicador em %s', clock_timestamp() - vStartTime;
+                DELETE FROM serie_indicador
+                WHERE indicador_id = pIndicador_id
+                    AND serie = serieRecord.serie
+                    AND data_valor >= vInicio
+                    AND data_valor < vFim + (select periodicidade_intervalo(vPeriodicidade)) ;
+            END IF;
 
             vStartTime := clock_timestamp();
             --raise NOTICE 'recalculando serie_indicador... %', serieRecord.serie;
@@ -120,12 +132,12 @@ BEGIN
         --raise NOTICE 'recalculou serie_indicador em %', clock_timestamp() - vStartTime;
 
 
-        -- se não é pra usar a formula, entrao vamos recalcular automaticamente a serie acumulada usando os resultados
+        -- se não é pra usar a formula, então vamos recalcular automaticamente a serie acumulada usando os resultados
         IF (vAcumuladoUsaFormula = false) THEN
             vStartTime := clock_timestamp();
 
             --raise NOTICE 'recalculando acumulado... %', serieRecord.serie;
-            -- muito arriscado fazer usando os periodos, entao recaclula tudo
+            -- muito arriscado fazer usando os periodos, então recalcula tudo
             DELETE FROM serie_indicador
             WHERE indicador_id = pIndicador_id
                 AND serie = (serieRecord.serie::text || 'Acumulado')::"Serie";
