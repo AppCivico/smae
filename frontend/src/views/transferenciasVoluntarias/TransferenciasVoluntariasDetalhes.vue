@@ -32,7 +32,6 @@ const { emFoco: transferênciaEmFoco } = storeToRefs(TransferenciasVoluntarias);
 const { lista: listaDeDistribuição } = storeToRefs(distribuicaoRecursos);
 const {
   workflow,
-  avançoDeEtapaPermitido,
   inícioDeFasePermitido,
   idDaPróximaFasePendente,
 } = storeToRefs(workflowAndamento);
@@ -82,7 +81,7 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
         v-if="workflow"
         type="button"
         class="btn"
-        :disabled="!avançoDeEtapaPermitido"
+        :disabled="!workflow.pode_passar_para_proxima_etapa"
         @click="avançarEtapa"
       >
         Avançar etapa
