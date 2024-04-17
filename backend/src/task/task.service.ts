@@ -18,6 +18,7 @@ import { ParseParams } from './task.parseParams';
 import { AvisoEmailTaskService } from './aviso_email/aviso_email.service';
 import { AeCronogramaTpTaskService } from './aviso_email_cronograma_tp/ae_cronograma_tp.service';
 import { AeNotaTaskService } from './aviso_email_nota/ae_nota.service';
+import { RefreshTransferenciaService } from './refresh_transferencia/refresh-transferencia.service';
 function areJsonObjectsEquivalent(obj1: object, obj2: object): boolean {
     return JSON.stringify(sortObjectKeys(obj1)) === JSON.stringify(sortObjectKeys(obj2));
 }
@@ -50,12 +51,25 @@ export class TaskService {
 
     constructor(
         private readonly prisma: PrismaService,
-        @Inject(forwardRef(() => EchoService)) private readonly echoService: EchoService,
-        @Inject(forwardRef(() => RefreshMvService)) private readonly refreshMvService: RefreshMvService,
-        @Inject(forwardRef(() => RefreshMetaService)) private readonly refreshMetaService: RefreshMetaService,
-        @Inject(forwardRef(() => AvisoEmailTaskService)) private readonly avisoEmailTaskService: AvisoEmailTaskService,
+        //
+        @Inject(forwardRef(() => EchoService))
+        private readonly echoService: EchoService,
+        //
+        @Inject(forwardRef(() => RefreshMvService))
+        private readonly refreshMvService: RefreshMvService,
+        //
+        @Inject(forwardRef(() => RefreshMetaService))
+        private readonly refreshMetaService: RefreshMetaService,
+        //
+        @Inject(forwardRef(() => RefreshTransferenciaService))
+        private readonly refreshTransferenciaService: RefreshTransferenciaService,
+        //
+        @Inject(forwardRef(() => AvisoEmailTaskService))
+        private readonly avisoEmailTaskService: AvisoEmailTaskService,
+        //
         @Inject(forwardRef(() => AeCronogramaTpTaskService))
         private readonly aeCronoTpService: AeCronogramaTpTaskService,
+        //
         @Inject(forwardRef(() => AeNotaTaskService))
         private readonly aeNotaService: AeNotaTaskService
     ) {
@@ -424,6 +438,9 @@ export class TaskService {
                 break;
             case 'refresh_meta':
                 service = this.refreshMetaService;
+                break;
+            case 'refresh_transferencia':
+                service = this.refreshTransferenciaService;
                 break;
             case 'aviso_email':
                 service = this.avisoEmailTaskService;
