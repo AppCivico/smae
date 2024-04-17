@@ -17,6 +17,7 @@
         "^.+\\.(t|j)s$": [
             "ts-jest",
             {
+                "maxWorkers": "4",
                 "astTransformers": {
                     "before": [
                         "test/e2e.swagger.ts"
