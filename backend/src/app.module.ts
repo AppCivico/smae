@@ -34,7 +34,7 @@ import { OrcamentoModule } from './reports/orcamento/orcamento.module';
 import { ReportsModule } from './reports/relatorios/reports.module';
 import { UtilsService } from './reports/utils/utils.service';
 import { RequestLogModule } from './request_log/request_log.module';
-import { TransferenciaModule } from './transferencia/transferencia.module';
+import { TransferenciaModule } from './casa-civil/transferencia/transferencia.module';
 import { WorkflowModule } from './workflow/configuracao/workflow.module';
 import { WorkflowEtapaModule } from './workflow/configuracao/etapa/workflow-etapa.module';
 import { WorkflowFaseModule } from './workflow/configuracao/fase/workflow-fase.module';
