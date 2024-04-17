@@ -24,24 +24,22 @@ import {
 } from '@nestjs/swagger';
 import { plainToClass } from 'class-transformer';
 import { Response } from 'express';
-import { GraphvizContentTypeMap } from 'src/graphviz/graphviz.service';
-import { TransferenciaService } from './transferencia.service';
-import { TarefaService } from 'src/pp/tarefa/tarefa.service';
-import { ListTarefaTransferenciaDto } from './entities/transferencia-tarefa.dto';
 import { CurrentUser } from 'src/auth/decorators/current-user.decorator';
-import { Roles } from 'src/auth/decorators/roles.decorator';
 import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
-import { ListaDePrivilegios } from 'src/common/ListaDePrivilegios';
 import { FindOneParams, FindTwoParams } from 'src/common/decorators/find-params';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
+import { GraphvizContentTypeMap } from 'src/graphviz/graphviz.service';
 import {
-    CreateTarefaDto,
-    FilterPPTarefa,
-    FilterEAPDto,
     CheckDependenciasDto,
+    CreateTarefaDto,
+    FilterEAPDto,
+    FilterPPTarefa,
 } from 'src/pp/tarefa/dto/create-tarefa.dto';
 import { UpdateTarefaDto, UpdateTarefaRealizadoDto } from 'src/pp/tarefa/dto/update-tarefa.dto';
-import { TarefaDetailDto, DependenciasDatasDto } from 'src/pp/tarefa/entities/tarefa.entity';
+import { DependenciasDatasDto, TarefaDetailDto } from 'src/pp/tarefa/entities/tarefa.entity';
+import { TarefaService } from 'src/pp/tarefa/tarefa.service';
+import { ListTarefaTransferenciaDto } from './entities/transferencia-tarefa.dto';
+import { TransferenciaService } from './transferencia.service';
 
 @Controller('transferencia-tarefa')
 @ApiTags('Transferência')
