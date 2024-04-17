@@ -1,7 +1,7 @@
 import { HttpException, Injectable } from '@nestjs/common';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
-import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
-import { PrismaService } from '../prisma/prisma.service';
+import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
+import { PrismaService } from '../../prisma/prisma.service';
 import { CreateTransferenciaTipoDto } from './dto/create-transferencia-tipo.dto';
 import { Prisma, WorkflowResponsabilidade } from '@prisma/client';
 import { UpdateTransferenciaTipoDto } from './dto/update-transferencia-tipo.dto';
@@ -18,7 +18,7 @@ import { FilterTransferenciaDto } from './dto/filter-transferencia.dto';
 import { JwtService } from '@nestjs/jwt';
 import { PaginatedDto } from 'src/common/dto/paginated.dto';
 import { TarefaCronogramaDto } from 'src/common/dto/TarefaCronograma.dto';
-import { BlocoNotaService } from '../bloco-nota/bloco-nota/bloco-nota.service';
+import { BlocoNotaService } from '../../bloco-nota/bloco-nota/bloco-nota.service';
 import { WorkflowService } from 'src/workflow/configuracao/workflow.service';
 
 class NextPageTokenJwtBody {
