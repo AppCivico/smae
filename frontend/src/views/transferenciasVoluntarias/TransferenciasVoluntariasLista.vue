@@ -192,6 +192,9 @@ watch([
           Partido
         </th>
         <th>
+          Ano
+        </th>
+        <th>
           Objeto/Empreendimento
         </th>
         <th class="cell--number">
@@ -226,7 +229,7 @@ watch([
             }"
             class="tprimary"
           >
-            {{ item.identificador }}/{{ item.ano }}
+            {{ item.identificador }}
           </router-link>
         </th>
         <td>
@@ -240,6 +243,9 @@ watch([
         </td>
         <td>
           {{ item.partido?.sigla ? item.partido?.sigla : '-' }}
+        </td>
+        <td>
+          {{ item.ano }}
         </td>
         <td>
           {{ item.objeto }}
