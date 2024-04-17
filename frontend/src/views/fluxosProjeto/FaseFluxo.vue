@@ -1,15 +1,14 @@
 <!-- não finalizado -->
 <script setup>
-import { useFluxosFasesProjetosStore } from '@/stores/fluxosFasesProjeto.store.js';
-import  responsabilidadeEtapaFluxo  from '@/consts/responsabilidadeEtapaFluxo.js';
-import { useFasesProjetosStore } from '@/stores/fasesProjeto.store.js';
+import SmallModal from '@/components/SmallModal.vue';
 import { etapasFluxo as schema } from '@/consts/formSchemas';
-import { ErrorMessage, Field, useForm} from 'vee-validate';
-import { useSituacaoStore } from '@/stores/situacao.store';
-import SmallModal from "@/components/SmallModal.vue";
+import responsabilidadeEtapaFluxo from '@/consts/responsabilidadeEtapaFluxo';
 import { useAlertStore } from '@/stores/alert.store';
-import { useRouter } from "vue-router";
+import { useFasesProjetosStore } from '@/stores/fasesProjeto.store';
+import { useFluxosFasesProjetosStore } from '@/stores/fluxosFasesProjeto.store';
+import { useSituacaoStore } from '@/stores/situacao.store';
 import { storeToRefs } from 'pinia';
+import { ErrorMessage, Field, useForm } from 'vee-validate';
 import { computed, ref } from 'vue';
 
 const emits = defineEmits(['close', 'saved']);
@@ -28,7 +27,6 @@ const fluxosFasesProjetosStore = useFluxosFasesProjetosStore();
 const fasesProjetosStore = useFasesProjetosStore();
 const situacaoProjetosStore = useSituacaoStore();
 const alertStore = useAlertStore();
-const router = useRouter();
 const erro = ref(null);
 
 const { lista: listaFase } = storeToRefs(fasesProjetosStore);
@@ -46,18 +44,21 @@ const itemParaEdição = computed(() => {
   };
 });
 
-const { errors, isSubmitting, values, handleSubmit } = useForm({
+const {
+  errors, isSubmitting, values, handleSubmit,
+} = useForm({
   validationSchema: schema,
-  initialValues: itemParaEdição
+  initialValues: itemParaEdição,
 });
 
 const onSubmit = handleSubmit.withControlled(async (valoresControlados) => {
   try {
     const msg = props.relacionamentoId
-      ? "Dados salvos com sucesso!"
-      : "Item adicionado com sucesso!";
+      ? 'Dados salvos com sucesso!'
+      : 'Item adicionado com sucesso!';
 
-    const resposta =  await fluxosFasesProjetosStore.salvarItem(valoresControlados, props.relacionamentoId)
+    const resposta = await fluxosFasesProjetosStore
+      .salvarItem(valoresControlados, props.relacionamentoId);
     if (resposta) {
       alertStore.success(msg);
       fluxosFasesProjetosStore.$reset();
@@ -70,9 +71,8 @@ const onSubmit = handleSubmit.withControlled(async (valoresControlados) => {
   }
 });
 
-const listaOrdenada = computed(() => {
-  return listaFase.value.sort((a, b) => a.fase.localeCompare(b.fase));
-});
+// eslint-disable-next-line vue/no-side-effects-in-computed-properties
+const listaOrdenada = computed(() => listaFase.value.sort((a, b) => a.fase.localeCompare(b.fase)));
 
 function iniciar() {
   fasesProjetosStore.buscarTudo();
@@ -98,7 +98,7 @@ iniciar();
         </template>
         fase
       </h2>
-      <hr class="ml2 f1" />
+      <hr class="ml2 f1">
       <CheckClose
         :apenas-emitir="true"
         @close="$emit('close')"
@@ -147,8 +147,7 @@ iniciar();
           <LabelFromYup
             name="ordem"
             :schema="schema"
-          >
-          </LabelFromYup>
+          />
           <Field
             name="ordem"
             type="number"
@@ -197,21 +196,21 @@ iniciar();
             v-for="item in listaSituacao"
             :key="item.id"
             class="block mb1"
-            >
-              <Field
-                name="situacao"
-                class="inputcheckbox"
-                type="checkbox"
-                :class="{ 'error': errors.item }"
-                :value="item.id"
-              />
-              <span>
-                {{ item.situacao }}
-              </span>
-            </label>
-            <div class="error-msg">
-              {{ errors.situacao }}
-            </div>
+          >
+            <Field
+              name="situacao"
+              class="inputcheckbox"
+              type="checkbox"
+              :class="{ 'error': errors.item }"
+              :value="item.id"
+            />
+            <span>
+              {{ item.situacao }}
+            </span>
+          </label>
+          <div class="error-msg">
+            {{ errors.situacao }}
+          </div>
         </div>
       </div>
       <FormErrorsList :errors="errors" />
@@ -230,7 +229,10 @@ iniciar();
         <hr class="ml2 f1">
       </div>
     </form>
-    <div v-if="erro" class="error p1">
+    <div
+      v-if="erro"
+      class="error p1"
+    >
       <div class="error-msg">
         {{ erro }}
       </div>
