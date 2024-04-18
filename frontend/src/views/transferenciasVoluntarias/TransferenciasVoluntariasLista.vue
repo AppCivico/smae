@@ -233,7 +233,7 @@ watch([
           {{ item.esfera }}
         </td>
         <td>
-          {{ item.etapa? item.etapa : '-' }}
+          {{ item.andamento_etapa? item.andamento_etapa : '-' }}
         </td>
         <td>
           {{ item.tipo.nome }}
