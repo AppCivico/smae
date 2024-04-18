@@ -2,6 +2,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 import { IsEnum, IsInt, IsOptional, IsString, MaxLength, ValidateIf } from 'class-validator';
 import { TipoUpload } from '../entities/tipo-upload';
+import { FileUploadDto } from 'src/common/dto/FileUpload.dto';
 
 export class CreateUploadDto {
     /**
@@ -33,5 +34,5 @@ export class CreateUploadDto {
     descricao?: string;
 
     @ApiProperty({ type: 'string', format: 'binary', required: true })
-    arquivo: Express.Multer.File | Buffer;
+    arquivo: FileUploadDto | Buffer;
 }

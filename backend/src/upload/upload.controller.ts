@@ -11,6 +11,7 @@ import { DownloadOptions } from './dto/download-options';
 import { Upload } from './entities/upload.entity';
 import { UploadService } from './upload.service';
 import { PatchDiretorioDto } from './dto/diretorio.dto';
+import { FileUploadDto } from 'src/common/dto/FileUpload.dto';
 
 @Controller('')
 @ApiTags('Upload')
@@ -24,7 +25,7 @@ export class UploadController {
     async create(
         @Body() createUploadDto: CreateUploadDto,
         @CurrentUser() user: PessoaFromJwt,
-        @UploadedFile() file: Express.Multer.File,
+        @UploadedFile() file: FileUploadDto,
         @IpAddress() ipAddress: string
     ): Promise<Upload> {
         const uploadFile = await this.uploadService.upload(createUploadDto, user, file, ipAddress);
