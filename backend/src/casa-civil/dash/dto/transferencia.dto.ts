@@ -66,7 +66,7 @@ export class FilterDashTransferenciasDto {
 
     @IsOptional()
     @IsString()
-    busca_livre?: string;
+    palavra_chave?: string;
 }
 
 function ValidateTransferenciaTipoEsfera(item: any) {
