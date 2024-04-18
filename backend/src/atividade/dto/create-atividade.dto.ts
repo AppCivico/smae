@@ -84,15 +84,6 @@ export class CreateAtividadeDto {
     compoe_indicador_iniciativa: boolean;
 
     /**
-     * status
-     */
-    @IsString({ message: '$property| status: Precisa ser alfanumérico, campo obrigatório' })
-    @MinLength(1, { message: '$property| status: pelo menos um caractere' })
-    @IsOptional()
-    @MaxLength(250, { message: '$property| status: 250 caracteres' })
-    status?: string;
-
-    /**
      * Quais são os orgaos participantes e seus membros responsáveis
      */
     @IsArray({ message: 'precisa ser uma array, campo obrigatório' })
