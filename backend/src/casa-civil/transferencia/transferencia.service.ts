@@ -20,6 +20,7 @@ import { PaginatedDto } from 'src/common/dto/paginated.dto';
 import { TarefaCronogramaDto } from 'src/common/dto/TarefaCronograma.dto';
 import { BlocoNotaService } from '../../bloco-nota/bloco-nota/bloco-nota.service';
 import { WorkflowService } from 'src/workflow/configuracao/workflow.service';
+import { TextToTSQuery } from '../../common/TextToTSQuery';
 
 class NextPageTokenJwtBody {
     offset: number;
@@ -346,12 +347,7 @@ export class TransferenciaService {
             ipp = decodedPageToken.ipp;
         }
 
-        let palavrasChave: { id: number }[] | undefined = undefined;
-        if (filters.palavra_chave != undefined) {
-            const tsQuery = this.formatToTSQuery(filters.palavra_chave);
-            palavrasChave = await this.prisma
-                .$queryRaw`SELECT id FROM transferencia WHERE vetores_busca @@ to_tsquery(${tsQuery})`;
-        }
+        const palavrasChave = await this.buscaIdsPalavraChave(filters.palavra_chave);
 
         const rows = await this.prisma.transferencia.findMany({
             where: {
@@ -363,7 +359,7 @@ export class TransferenciaService {
 
                 // Filtro por palavras-chave com tsvector
                 id: {
-                    in: palavrasChave != undefined ? palavrasChave.map((row) => row.id) : undefined,
+                    in: palavrasChave != undefined ? palavrasChave : undefined,
                 },
             },
             orderBy: [{ pendente_preenchimento_valores: 'asc' }, { identificador: 'asc' }],
@@ -464,6 +460,17 @@ export class TransferenciaService {
             tem_mais: tem_mais,
             token_proxima_pagina: token_proxima_pagina,
         };
+    }
+
+    async buscaIdsPalavraChave(input: string | undefined): Promise<number[] | undefined> {
+        let palavrasChave: number[] | undefined = undefined;
+        if (input) {
+            const tsQuery = TextToTSQuery(input);
+            const rows: { id: number }[] = await this.prisma
+                .$queryRaw`SELECT id FROM transferencia WHERE vetores_busca @@ to_tsquery(${tsQuery})`;
+            palavrasChave = rows.map((row) => row.id);
+        }
+        return palavrasChave;
     }
 
     async findOneTransferencia(id: number, user: PessoaFromJwt): Promise<TransferenciaDetailDto> {
@@ -828,30 +835,6 @@ export class TransferenciaService {
             status_cronograma: transferenciaCronograma.status_cronograma,
             nivel_maximo_tarefa: transferenciaCronograma.transferencia!.nivel_maximo_tarefa,
         };
-    }
-
-    private formatToTSQuery(input: string): string {
-        if (input.includes(',')) throw new HttpException('Vírgula não suportada para busca', 400);
-
-        let words = input.trim().split(' ');
-
-        // Replace Portuguese operators with their TSQuery equivalents
-        words = words.map((word) => {
-            if (word.toLowerCase() === 'e') {
-                return '&';
-            } else if (word.toLowerCase() === 'ou') {
-                return '|';
-            } else {
-                return `${word}:*`;
-            }
-        });
-
-        // Join the words into a TSQuery string
-        if (words.length > 1) {
-        }
-        const formattedWords = words.join(' ');
-
-        return formattedWords;
     }
 
     private async startWorkflow(
