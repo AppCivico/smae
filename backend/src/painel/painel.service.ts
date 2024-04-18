@@ -549,7 +549,7 @@ export class PainelService {
     ) {
         await this.prisma.$transaction(async (prisma: Prisma.TransactionClient): Promise<RecordWithId> => {
             const painel_conteudo = await prisma.painelConteudo.findFirstOrThrow({ where: { id: painel_conteudo_id } });
-            if (painel_conteudo.painel_id !== painel_id) throw new Error('painel_conteudo inválido');
+            if (painel_conteudo.painel_id !== painel_id) throw new BadRequestException('painel_conteudo inválido');
 
             const updated_painel_conteudo = await prisma.painelConteudo.update({
                 where: {
@@ -577,7 +577,7 @@ export class PainelService {
                 const painel_conteudo = await prisma.painelConteudo.findFirstOrThrow({
                     where: { id: painel_conteudo_id },
                 });
-                if (painel_conteudo.painel_id !== painel_id) throw new Error('painel_conteudo inválido');
+                if (painel_conteudo.painel_id !== painel_id) throw new BadRequestException('painel_conteudo inválido');
 
                 const operations = [];
                 if (
@@ -1021,7 +1021,7 @@ export class PainelService {
         };
 
         if (periodo === Periodo.Anteriores) {
-            if (!periodo_valor) throw new Error('Faltando periodo_valor na configuração do conteúdo do painel');
+            if (!periodo_valor) throw new BadRequestException('Faltando periodo_valor na configuração do conteúdo do painel');
 
             const multiplier = await this.getMultiplierForPeriodicidade(periodicidade);
 
@@ -1086,10 +1086,10 @@ export class PainelService {
                 ret.start = DateTime.now().startOf('month').minus({ months: periodo_valor }).toJSDate();
                 ret.end = DateTime.now().startOf('month').minus({ day: 1 }).toJSDate();
             } else {
-                throw new Error('faltando tratamento para periodicidade: ' + periodicidade);
+                throw new BadRequestException('faltando tratamento para periodicidade: ' + periodicidade);
             }
         } else if (periodo === Periodo.EntreDatas) {
-            if (!periodo_inicio || !periodo_fim) throw new Error('Faltando configuração de periodos');
+            if (!periodo_inicio || !periodo_fim) throw new BadRequestException('Faltando configuração de periodos');
 
             ret.start = periodo_inicio;
             ret.end = periodo_fim;
@@ -1178,7 +1178,7 @@ export class PainelService {
         }
 
         if (!config.multiplier || !config.time_unit)
-            throw new Error('Faltando tratamento para configuração do painel, na geração de janelas de tempo');
+            throw new BadRequestException('Faltando tratamento para configuração do painel, na geração de janelas de tempo');
 
         if (!periodo_valor) periodo_valor = 1;
 
@@ -1231,7 +1231,7 @@ export class PainelService {
         const series_order = await this.buildSeriesOrder(config.mostrar_planejado, config.mostrar_acumulado);
 
         if (config.periodo === Periodo.Anteriores) {
-            if (!config.periodo_valor) throw new Error('Faltando periodo_valor na configuração do conteúdo do painel');
+            if (!config.periodo_valor) throw new BadRequestException('Faltando periodo_valor na configuração do conteúdo do painel');
 
             const date_range = await this.getStartEndDate(
                 config.periodo,
@@ -1251,7 +1251,7 @@ export class PainelService {
                 series_order.length
             );
         } else if (config.periodo === Periodo.EntreDatas) {
-            if (!config.periodo_inicio || !config.periodo_fim) throw new Error('Faltando configuração de periodos');
+            if (!config.periodo_inicio || !config.periodo_fim) throw new BadRequestException('Faltando configuração de periodos');
 
             gte = config.periodo_inicio;
             lte = config.periodo_fim;

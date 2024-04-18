@@ -1,4 +1,4 @@
-import { HttpException, Injectable, Logger } from '@nestjs/common';
+import { BadRequestException, HttpException, Injectable, Logger } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { RecordWithId } from '../common/dto/record-with-id.dto';
@@ -81,7 +81,9 @@ export class AtividadeService {
                     });
 
                     if (iniciativaAtivaCount === 0)
-                        throw new Error('Iniciativa está desativada, ative-a antes de criar uma Atividade ativa');
+                        throw new BadRequestException(
+                            'Iniciativa está desativada, ative-a antes de criar uma Atividade ativa'
+                        );
                 }
 
                 const atividade = await prismaTx.atividade.create({
@@ -386,7 +388,7 @@ export class AtividadeService {
                 });
 
                 if (!atividade?.iniciativa.ativo)
-                    throw new Error('Iniciativa está desativada, ative-a antes de ativar a Atividade');
+                    throw new BadRequestException('Iniciativa está desativada, ative-a antes de ativar a Atividade');
             }
 
             const atividade = await prismaTx.atividade.update({
