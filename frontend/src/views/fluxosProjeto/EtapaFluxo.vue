@@ -1,10 +1,10 @@
 <!-- não finalizado -->
 <script setup>
-import SmallModal from "@/components/SmallModal.vue";
+import SmallModal from '@/components/SmallModal.vue';
 import { fasesFluxo as schema } from '@/consts/formSchemas';
 import { useAlertStore } from '@/stores/alert.store';
-import { useEtapasProjetosStore } from '@/stores/etapasProjeto.store.js';
-import { useFluxosEtapasProjetosStore } from '@/stores/fluxosEtapasProjeto.store.js';
+import { useEtapasProjetosStore } from '@/stores/etapasProjeto.store';
+import { useFluxosEtapasProjetosStore } from '@/stores/fluxosEtapasProjeto.store';
 import { useFluxosProjetosStore } from '@/stores/fluxosProjeto.store';
 import { storeToRefs } from 'pinia';
 import { ErrorMessage, Field, useForm } from 'vee-validate';
@@ -75,9 +75,9 @@ const {
 const onSubmit = handleSubmit.withControlled(async (valoresControlados) => {
   try {
     const msg = props.etapaId
-      ? "Dados salvos com sucesso!"
-      : "Item adicionado com sucesso!";
-    const resposta = await fluxosEtapasProjetos.salvarItem(valoresControlados, props.etapaId)
+      ? 'Dados salvos com sucesso!'
+      : 'Item adicionado com sucesso!';
+    const resposta = await fluxosEtapasProjetos.salvarItem(valoresControlados, props.etapaId);
     if (resposta) {
       alertStore.success(msg);
       fluxosEtapasProjetos.$reset();
@@ -99,9 +99,8 @@ function iniciar() {
 
 iniciar();
 
-const listaOrdenada = computed(() => {
-  return lista.value.sort((a, b) => a.descricao.localeCompare(b.descricao));
-});
+// eslint-disable-next-line max-len, vue/no-side-effects-in-computed-properties
+const listaOrdenada = computed(() => lista.value.sort((a, b) => a.descricao.localeCompare(b.descricao)));
 
 watch(itemParaEdição, (novoValor) => {
   resetForm({
