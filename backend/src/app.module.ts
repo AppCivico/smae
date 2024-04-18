@@ -46,6 +46,7 @@ import { WorkflowFluxoTarefaModule } from './workflow/configuracao/fluxo-tarefa/
 import { BlocoNotasModule } from './bloco-nota/bloco-notas.module';
 import { WorkflowAndamentoFaseModule } from './workflow/andamento/fase/workflow-andamento-fase.module';
 import { WorkflowAndamentoModule } from './workflow/andamento/workflow-andamento.module';
+import { DashTransferenciaModule } from './casa-civil/dash/transferencia.module';
 
 // Hacks pro JS
 /*
@@ -95,6 +96,7 @@ import { WorkflowAndamentoModule } from './workflow/andamento/workflow-andamento
         WorkflowAndamentoModule,
         WorkflowAndamentoFaseModule,
         BlocoNotasModule,
+        DashTransferenciaModule,
     ],
     controllers: [AppController],
     providers: [
