@@ -43,6 +43,8 @@ export class RelProjetosDto {
     fonte_recurso: ProjetoRecursos | null;
 
     versao: string | null;
+
+    projeto_etapa: string | null;
 }
 
 export class RelProjetosCronogramaDto {
