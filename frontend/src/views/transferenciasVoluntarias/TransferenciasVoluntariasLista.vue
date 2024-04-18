@@ -186,6 +186,9 @@ watch([
           Etapa
         </th>
         <th>
+          Fase
+        </th>
+        <th>
           Tipo
         </th>
         <th>
@@ -234,6 +237,9 @@ watch([
         </td>
         <td>
           {{ item.andamento_etapa? item.andamento_etapa : '-' }}
+        </td>
+        <td>
+          {{ item.andamento_fase? item.andamento_fase : '-' }}
         </td>
         <td>
           {{ item.tipo.nome }}
