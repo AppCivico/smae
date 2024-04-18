@@ -1,4 +1,4 @@
-import { HttpException, Injectable } from '@nestjs/common';
+import { BadRequestException, HttpException, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import AdmZip from 'adm-zip';
 import { ColunasNecessarias, OrcamentoImportacaoHelpers } from 'src/importacao-orcamento/importacao-orcamento.common';
@@ -224,14 +224,14 @@ export class UploadService {
             });
 
             if (planilia.SheetNames.length !== 1)
-                throw new Error(
-                    `deve ter apenas uma página (planilla), recebidas ${
+                throw new BadRequestException(
+                    `deve ter apenas uma página (planilha), recebidas ${
                         planilia.SheetNames.length
                     }: ${planilia.SheetNames.join(', ')}`
                 );
 
             const folha = planilia.Sheets[planilia.SheetNames[0]];
-            if (!folha['!ref']) throw new Error('primeira folha não definida');
+            if (!folha['!ref']) throw new BadRequestException('primeira folha não definida');
 
             const colunasIdx = OrcamentoImportacaoHelpers.createColumnHeaderIndex(folha, [...ColunasNecessarias]);
 
@@ -239,11 +239,11 @@ export class UploadService {
 
             const missingColumns = ColunasNecessarias.filter((column) => !colunas.includes(column));
             if (missingColumns.length > 0) {
-                throw new Error(`Colunas não encontradas: ${missingColumns.join(', ')}`);
+                throw new BadRequestException(`Colunas não encontradas: ${missingColumns.join(', ')}`);
             }
         } catch (error) {
             console.log(error);
-            throw new HttpException(`Não foi possivel efetuar a leitura do arquivo: ${error}`, 400);
+            throw new HttpException(`Não foi possível efetuar a leitura do arquivo: ${error}`, 400);
         }
     }
 
