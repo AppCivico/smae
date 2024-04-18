@@ -1,11 +1,12 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsArray, IsInt, IsOptional, IsString } from 'class-validator';
-
 import { TransferenciaTipoEsfera } from '@prisma/client';
-import { Transform } from 'class-transformer';
+import { Transform, TransformFnParams } from 'class-transformer';
+import { IsArray, IsInt, IsOptional, IsString, MaxLength } from 'class-validator';
 import { NumberArrayTransform } from '../../../auth/transforms/number-array.transform';
+import { BadRequestException } from '@nestjs/common';
 
 export class MfDashTransferenciasDto {
+    @ApiProperty({ description: 'ID da transferência' })
     transferencia_id: number;
     identificador: string;
     situacao: string;
@@ -17,11 +18,32 @@ export class ListMfDashTransferenciasDto {
     linhas: MfDashTransferenciasDto[];
 }
 
+const TransformTransferenciaTipoEsfera = (a: TransformFnParams): TransferenciaTipoEsfera[] | undefined => {
+    if (!a.value) return undefined;
+
+    if (!Array.isArray(a.value)) a.value = a.value.split(',');
+
+    const validatedArray = a.value.map((item: any) => {
+        const parsedValue = ValidateTransferenciaTipoEsfera(item);
+        return parsedValue;
+    });
+
+    return validatedArray;
+};
+
 export class FilterDashTransferenciasDto {
     @IsOptional()
-    @ApiProperty({ enum: TransferenciaTipoEsfera, enumName: 'TransferenciaTipoEsfera' })
-    esfera?: TransferenciaTipoEsfera;
-    @ApiProperty({ description: 'Contém qualquer um dos partidos' })
+    @IsArray()
+    @ApiProperty({
+        isArray: true,
+        enum: TransferenciaTipoEsfera,
+        enumName: 'TransferenciaTipoEsfera',
+        description: 'Esfera da transferência',
+    })
+    @Transform(TransformTransferenciaTipoEsfera)
+    esfera?: TransferenciaTipoEsfera[];
+
+    @ApiProperty({ description: 'Contém qualquer um dos partidos', example: '[]' })
     @IsOptional()
     @IsArray()
     @IsInt({ each: true, message: '$property| Cada item precisa ser um número inteiro' })
@@ -29,13 +51,28 @@ export class FilterDashTransferenciasDto {
     partido_ids?: number[];
 
     @IsOptional()
-    @IsString()
-    situacao?: string;
+    @IsArray()
+    @MaxLength(1000, { each: true })
+    @IsString({ each: true })
+    @ApiProperty({ description: 'Situação da transferência' })
+    situacao?: string[];
 
-    @ApiProperty({ description: 'Contém qualquer um dos órgãos' })
+    @ApiProperty({ description: 'Contém qualquer um dos órgãos', example: '[]' })
     @IsOptional()
     @IsArray()
     @IsInt({ each: true, message: '$property| Cada item precisa ser um número inteiro' })
     @Transform(NumberArrayTransform)
     orgaos_ids?: number[];
+
+    @IsOptional()
+    @IsString()
+    busca_livre?: string;
+}
+
+function ValidateTransferenciaTipoEsfera(item: any) {
+    const parsedValue = TransferenciaTipoEsfera[item as TransferenciaTipoEsfera];
+    if (parsedValue === undefined) {
+        throw new BadRequestException(`Valor '${item}' não é válido para TransferenciaTipoEsfera`);
+    }
+    return parsedValue;
 }

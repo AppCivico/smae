@@ -10,10 +10,10 @@ export class DashTransferenciaService {
         const rows = await this.prisma.transferenciaStatusConsolidado.findMany({
             where: {
                 orgaos_envolvidos: filter.orgaos_ids ? { hasSome: filter.orgaos_ids } : undefined,
-                situacao: filter.situacao,
+                situacao: filter.situacao ? { in: filter.situacao } : undefined,
                 transferencia: {
                     partido_id: filter.partido_ids ? { in: filter.partido_ids } : undefined,
-                    esfera: filter.esfera,
+                    esfera: filter.esfera ? { in: filter.esfera } : undefined,
                 },
             },
             include: {
