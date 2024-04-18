@@ -18,6 +18,7 @@ import { IsOnlyDate } from '../../../common/decorators/IsDateOnly';
 import { IdSigla } from '../../../common/dto/IdSigla.dto';
 import { IdNomeExibicao } from '../../../meta/entities/meta.entity';
 import { FindOneParams } from '../../../common/decorators/find-params';
+import { StringArrayTransform } from '../../../auth/transforms/string-array.transform';
 
 const TransformStatusNota = (a: TransformFnParams): StatusNota[] | undefined => {
     if (!a.value) return undefined;
@@ -30,11 +31,6 @@ const TransformStatusNota = (a: TransformFnParams): StatusNota[] | undefined => 
     });
 
     return validatedArray;
-};
-
-const StrArrTransform = (a: TransformFnParams): string[] | undefined => {
-    if (Array.isArray(a.value)) return a.value;
-    return a.value === '' ? undefined : [a.value];
 };
 
 export class CreateNotaDto {
@@ -79,7 +75,7 @@ export class CreateNotaDto {
 export class BuscaNotaDto {
     @IsString({ each: true })
     @IsArray()
-    @Transform(StrArrTransform)
+    @Transform(StringArrayTransform)
     blocos_token: string[];
 
     @IsOptional()
