@@ -64,7 +64,8 @@ export class PessoaController {
         'Projeto.administrador_no_orgao',
         'CadastroGrupoPortfolio.administrador',
         'CadastroGrupoPortfolio.administrador_no_orgao',
-        'CadastroPessoa.editar_responsabilidade'
+        'CadastroPessoa.editar_responsabilidade',
+        'CadastroTransferencia.listar'
     )
     async findAllReduced(
         @Query() filters: FilterPessoaDto,
