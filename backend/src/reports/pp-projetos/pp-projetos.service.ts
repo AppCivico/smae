@@ -86,6 +86,8 @@ class RetornoDbProjeto {
     orgao_id: number;
     orgao_sigla: string;
     orgao_descricao: string;
+
+    projeto_etapa: string | null;
 }
 
 class RetornoDbCronograma {
@@ -429,7 +431,8 @@ export class PPProjetosService implements ReportableService {
             pr.restricao,
             o.id AS orgao_id,
             o.sigla AS orgao_sigla,
-            o.descricao AS orgao_descricao
+            o.descricao AS orgao_descricao,
+            pe.descricao AS projeto_etapa
         FROM projeto
           LEFT JOIN tarefa_cronograma tc ON tc.projeto_id = projeto.id AND tc.removido_em IS NULL
           LEFT JOIN portfolio ON portfolio.id = projeto.portfolio_id
@@ -444,6 +447,7 @@ export class PPProjetosService implements ReportableService {
           LEFT JOIN orgao orgao_responsavel ON orgao_responsavel.id = projeto.orgao_responsavel_id
           LEFT JOIN orgao orgao_gestor ON orgao_gestor.id = projeto.orgao_gestor_id
           LEFT JOIN pessoa resp ON resp.id = projeto.responsavel_id
+          LEFT JOIN projeto_etapa pe ON pe.id = projeto.projeto_etapa_id 
         ${whereCond.whereString}
 
         UNION
@@ -499,7 +503,8 @@ export class PPProjetosService implements ReportableService {
             pr.restricao,
             o.id AS orgao_id,
             o.sigla AS orgao_sigla,
-            o.descricao AS orgao_descricao
+            o.descricao AS orgao_descricao,
+            pe.descricao AS projeto_etapa
         FROM projeto
         LEFT JOIN tarefa_cronograma tc ON tc.projeto_id = projeto.id AND tc.removido_em IS NULL
           JOIN portfolio_projeto_compartilhado ppc ON ppc.projeto_id = projeto.id
@@ -515,6 +520,7 @@ export class PPProjetosService implements ReportableService {
           LEFT JOIN orgao orgao_responsavel ON orgao_responsavel.id = projeto.orgao_responsavel_id
           LEFT JOIN orgao orgao_gestor ON orgao_gestor.id = projeto.orgao_gestor_id
           LEFT JOIN pessoa resp ON resp.id = projeto.responsavel_id
+          LEFT JOIN projeto_etapa pe ON pe.id = projeto.projeto_etapa_id 
           WHERE ppc.removido_em IS NULL AND projeto.removido_em IS NULL AND ppc.portfolio_id = $${portfolioParamIdx}
         `;
 
@@ -550,7 +556,7 @@ export class PPProjetosService implements ReportableService {
                 data_revisao: db.data_revisao,
                 versao: db.versao ? db.versao : null,
                 status: db.status,
-
+                projeto_etapa: db.projeto_etapa ? db.projeto_etapa : null,
                 orgao_participante: {
                     id: db.orgao_id,
                     sigla: db.orgao_sigla,
