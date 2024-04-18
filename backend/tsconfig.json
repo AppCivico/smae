@@ -17,11 +17,7 @@
         "strictBindCallApply": true,
         "forceConsistentCasingInFileNames": true,
         "noFallthroughCasesInSwitch": true,
-        "allowJs": false,//,
-        //"strictFunctionTypes": false, // ready not yet
-        //"lib": ["ESNext"],
-        //"module": "esnext",
-        //"target": "esnext",
+        "allowJs": false,
         "types": ["bun-types"]
 
     }
