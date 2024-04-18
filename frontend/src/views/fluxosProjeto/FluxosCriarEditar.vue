@@ -12,8 +12,10 @@ import FaseFluxo from '@/views/fluxosProjeto/FaseFluxo.vue';
 import TarefaFluxo from '@/views/fluxosProjeto/TarefaFluxo.vue';
 import { storeToRefs } from 'pinia';
 import { ErrorMessage, Field, useForm } from 'vee-validate';
-import { computed, onUnmounted, ref, watch } from 'vue';
-import { useRoute, useRouter } from "vue-router";
+import {
+  computed, onUnmounted, ref, watch,
+} from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 
 const tipoDeTransferenciaStore = useTipoDeTransferenciaStore();
 const fluxosProjetoStore = useFluxosProjetosStore();
@@ -48,7 +50,9 @@ const props = defineProps({
   },
 });
 
-const { errors, isSubmitting, setFieldValue, handleSubmit } = useForm({
+const {
+  errors, isSubmitting, setFieldValue, handleSubmit,
+} = useForm({
   initialValues: itemParaEdição,
   validationSchema: schema,
 });
@@ -61,15 +65,15 @@ const tiposDisponíveis = computed(() => (esferaSelecionada.value
 const onSubmit = handleSubmit.withControlled(async (controlledValues) => {
   try {
     const msg = props.fluxoId
-      ? "Dados salvos com sucesso!"
-      : "Item adicionado com sucesso!";
+      ? 'Dados salvos com sucesso!'
+      : 'Item adicionado com sucesso!';
 
-    const resposta = await fluxosProjetoStore.salvarItem(controlledValues, props.fluxoId)
+    const resposta = await fluxosProjetoStore.salvarItem(controlledValues, props.fluxoId);
     if (resposta) {
       alertStore.success(msg);
       fluxosProjetoStore.$reset();
       fluxosProjetoStore.buscarTudo();
-      router.push({ name: "fluxosListar" });
+      router.push({ name: 'fluxosListar' });
     }
   } catch (error) {
     alertStore.error(error);
@@ -105,7 +109,7 @@ function excluirTarefa(idDaTarefa) {
     }
   }, 'Excluir');
 }
-iniciar()
+iniciar();
 
 onUnmounted(() => {
   emFoco.value = null;
@@ -329,7 +333,10 @@ watch(itemParaEdição, (novoValor) => {
     class="spinner"
   >Carregando</span>
 
-  <div v-if="erro" class="error p1">
+  <div
+    v-if="erro"
+    class="error p1"
+  >
     <div class="error-msg">
       {{ erro }}
     </div>
@@ -350,8 +357,11 @@ watch(itemParaEdição, (novoValor) => {
   </div>
 
   <div class="todasTabela">
-    <div class="cadaTabela" v-for="item in emFoco?.fluxo"
-        :key="item.id">
+    <div
+      v-for="item in emFoco?.fluxo"
+      :key="item.id"
+      class="cadaTabela"
+    >
       <div class="flex flexwrap center">
         <div class="flex">
           <span class="ordem">{{ item && item.ordem ? item.ordem : '' }}</span>
@@ -401,7 +411,10 @@ watch(itemParaEdição, (novoValor) => {
             </th>
           </tr>
         </thead>
-        <tbody v-for="fase in item.fases">
+        <tbody
+          v-for="fase in item.fases"
+          :key="fase.id"
+        >
           <tr v-scrollLockDebug>
             <td colspan="5">
               <pre>fase:{{ fase }}</pre>
@@ -413,7 +426,8 @@ watch(itemParaEdição, (novoValor) => {
                 loading: fasesPendentes?.lista
               }"
             >
-              {{ fase.fase.fase }}</td>
+              {{ fase.fase.fase }}
+            </td>
             <td>
               <span v-if="fase.situacoes && fase.situacoes.length">
                 {{ fase.situacoes.map(situacao => situacao.situacao).join(', ') }}
@@ -467,7 +481,11 @@ watch(itemParaEdição, (novoValor) => {
               </button>
             </td>
           </tr>
-          <tr class="tarefaTabela" v-for="tarefa in fase.tarefas" :key="tarefa.id">
+          <tr
+            v-for="tarefa in fase.tarefas"
+            :key="tarefa.id"
+            class="tarefaTabela"
+          >
             <td
               :class="{
                 loading: tarefasPendentes?.lista
@@ -528,7 +546,6 @@ watch(itemParaEdição, (novoValor) => {
       </table>
     </div>
   </div>
-
 </template>
 
 <style scoped>
