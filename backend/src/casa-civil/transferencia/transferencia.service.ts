@@ -407,6 +407,24 @@ export class TransferenciaService {
                         sigla: true,
                     },
                 },
+
+                andamentoWorkflow: {
+                    where: { removido_em: null },
+                    orderBy: [{ id: 'desc' }, { data_inicio: 'desc' }],
+                    take: 1,
+                    select: {
+                        workflow_etapa: {
+                            select: {
+                                etapa_fluxo: true,
+                            },
+                        },
+                        workflow_fase: {
+                            select: {
+                                fase: true,
+                            },
+                        },
+                    },
+                },
             },
         });
 
@@ -419,8 +437,28 @@ export class TransferenciaService {
         return {
             linhas: rows.map((r) => {
                 return {
-                    ...r,
+                    id: r.id,
+                    ano: r.ano,
+                    identificador: r.identificador,
+                    valor: r.valor,
+                    partido: r.partido,
+                    tipo: r.tipo,
+                    objeto: r.objeto,
+                    detalhamento: r.detalhamento,
+                    critico: r.critico,
+                    clausula_suspensiva: r.clausula_suspensiva,
+                    clausula_suspensiva_vencimento: r.clausula_suspensiva_vencimento,
+                    normativa: r.normativa,
+                    observacoes: r.observacoes,
+                    programa: r.programa,
+                    pendente_preenchimento_valores: r.pendente_preenchimento_valores,
+                    esfera: r.esfera,
+                    orgao_concedente: r.orgao_concedente,
                     secretaria_concedente: r.secretaria_concedente_str,
+                    andamento_etapa: r.andamentoWorkflow.length
+                        ? r.andamentoWorkflow[0].workflow_etapa.etapa_fluxo
+                        : null,
+                    andamento_fase: r.andamentoWorkflow.length ? r.andamentoWorkflow[0].workflow_fase.fase : null,
                 };
             }),
             tem_mais: tem_mais,
