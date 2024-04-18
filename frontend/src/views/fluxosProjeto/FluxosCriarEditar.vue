@@ -130,7 +130,10 @@ watch(itemParaEdição, (novoValor) => {
     class="spinner"
   >Carregando</span>
 
-  <div v-if="erro" class="error p1">
+  <div
+    v-if="erro"
+    class="error p1 mb1"
+  >
     <div class="error-msg">
       {{ erro }}
     </div>
@@ -334,15 +337,6 @@ watch(itemParaEdição, (novoValor) => {
   >Carregando</span>
 
   <div
-    v-if="erro"
-    class="error p1"
-  >
-    <div class="error-msg">
-      {{ erro }}
-    </div>
-  </div>
-
-  <div
     v-if="props.fluxoId"
     class="flex spacebetween center mb2">
     <h1>Etapas do fluxo</h1>
@@ -524,22 +518,6 @@ watch(itemParaEdição, (novoValor) => {
                   height="20"
                 ><use xlink:href="#i_edit" /></svg>
               </button>
-            </td>
-          </tr>
-
-          <tr v-if="chamadasPendentes.lista">
-            <td colspan="3">
-              Carregando
-            </td>
-          </tr>
-          <tr v-else-if="erro">
-            <td colspan="3">
-              Erro: {{ erro }}
-            </td>
-          </tr>
-          <tr v-else-if="!lista.length">
-            <td colspan="3">
-              Nenhum resultado encontrado.
             </td>
           </tr>
         </tbody>
