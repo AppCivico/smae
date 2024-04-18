@@ -14,6 +14,7 @@ import { UploadBody } from './entities/upload.body';
 import { Upload } from './entities/upload.entity';
 import { StorageService } from './storage-service';
 import { UploadDiretorioService } from './upload.diretorio.service';
+import { FileUploadDto } from 'src/common/dto/FileUpload.dto';
 
 const AdmZipLib = require('adm-zip');
 
@@ -46,7 +47,7 @@ export class UploadService {
     async upload(
         createUploadDto: CreateUploadDto,
         user: PessoaFromJwt,
-        file: Express.Multer.File | { buffer: Buffer },
+        file: FileUploadDto | { buffer: Buffer },
         ip: string
     ) {
         let originalname = '';
@@ -164,7 +165,7 @@ export class UploadService {
         return arquivoId;
     }
 
-    private checkShapeFile(file: Express.Multer.File) {
+    private checkShapeFile(file: FileUploadDto) {
         if (/\.zip$/i.test(file.originalname) == false || ZipContentTypes.includes(file.mimetype) == false) {
             throw new HttpException(
                 `O arquivo precisa ser do tipo arquivo ZIP\n\nRecebido mimetype=${
@@ -216,7 +217,7 @@ export class UploadService {
         }
     }
 
-    private async checkOrcamentoFile(file: Express.Multer.File) {
+    private async checkOrcamentoFile(file: FileUploadDto) {
         try {
             const planilia = read(file.buffer, {
                 type: 'buffer',
