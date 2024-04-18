@@ -96,6 +96,7 @@ export class PPProjetoService implements ReportableService {
             responsaveis_no_orgao_gestor: projetoRow.responsaveis_no_orgao_gestor.length
                 ? projetoRow.responsaveis_no_orgao_gestor.map((e) => e.nome_exibicao).join('|')
                 : null,
+            projeto_etapa: projetoRow.projeto_etapa,
 
             fonte_recursos: projetoRow.fonte_recursos
                 ? (
