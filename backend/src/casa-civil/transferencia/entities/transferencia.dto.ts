@@ -24,9 +24,10 @@ export class TransferenciaDto {
     pendente_preenchimento_valores: boolean;
     @ApiProperty({ enum: TransferenciaTipoEsfera, enumName: 'TransferenciaTipoEsfera' })
     esfera: TransferenciaTipoEsfera;
-
     orgao_concedente: IdSiglaDescricao;
     secretaria_concedente: string | null;
+    andamento_etapa: string | null;
+    andamento_fase: string | null;
 }
 
 export class ListTransferenciaDto {
