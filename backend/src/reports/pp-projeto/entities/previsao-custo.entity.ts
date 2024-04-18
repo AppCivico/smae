@@ -80,10 +80,10 @@ export class RelProjetoPlanoAcaoDto {
 }
 
 export class RelProjetoAcompanhamentoDto {
-    id: number
+    id: number;
     acompanhamento_tipo: string | null;
     numero: number;
-    data_registro: string | null
+    data_registro: string | null;
     participantes: string;
     detalhamento: string | null;
     observacao: string | null;
