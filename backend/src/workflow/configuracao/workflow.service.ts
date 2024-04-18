@@ -228,6 +228,7 @@ export class WorkflowService {
                             select: {
                                 id: true,
                                 responsabilidade: true,
+                                ordem: true,
                                 fase: {
                                     select: {
                                         id: true,
@@ -253,6 +254,7 @@ export class WorkflowService {
                                     select: {
                                         id: true,
                                         responsabilidade: true,
+                                        ordem: true,
                                         workflow_tarefa: {
                                             select: {
                                                 id: true,
