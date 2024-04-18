@@ -94,7 +94,7 @@ export class AtividadeService {
                         contexto: dto.contexto,
                         complemento: dto.complemento,
                         compoe_indicador_iniciativa: dto.compoe_indicador_iniciativa,
-                        status: dto.status,
+                        status: '',
                         ativo: dto.ativo,
                     },
                     select: { id: true },
