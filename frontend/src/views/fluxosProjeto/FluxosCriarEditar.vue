@@ -125,20 +125,6 @@ watch(itemParaEdição, (novoValor) => {
 </script>
 
 <template>
-  <span
-    v-if="chamadasPendentes?.emFoco"
-    class="spinner"
-  >Carregando</span>
-
-  <div
-    v-if="erro"
-    class="error p1 mb1"
-  >
-    <div class="error-msg">
-      {{ erro }}
-    </div>
-  </div>
-
   <div class="flex spacebetween center mb2">
     <h1>{{ route?.meta?.título || 'Cadastro de Fluxo' }}</h1>
     <hr class="ml2 f1">
@@ -316,6 +302,19 @@ watch(itemParaEdição, (novoValor) => {
     </div>
     <FormErrorsList :errors="errors" />
 
+    <span
+      v-if="chamadasPendentes?.emFoco"
+      class="spinner"
+    >Carregando</span>
+    <div
+      v-if="erro"
+      class="error p1 mb1"
+    >
+      <div class="error-msg">
+        {{ erro }}
+      </div>
+    </div>
+
     <div class="flex spacebetween center mb2">
       <hr class="mr2 f1">
       <button
@@ -330,11 +329,6 @@ watch(itemParaEdição, (novoValor) => {
       <hr class="ml2 f1">
     </div>
   </form>
-
-  <span
-    v-if="chamadasPendentes?.emFoco"
-    class="spinner"
-  >Carregando</span>
 
   <div
     v-if="props.fluxoId"
