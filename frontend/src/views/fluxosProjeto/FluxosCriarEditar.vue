@@ -27,7 +27,7 @@ const route = useRoute();
 
 const { lista: tipoTransferenciaComoLista } = storeToRefs(tipoDeTransferenciaStore);
 const {
-  lista, chamadasPendentes, erro, itemParaEdição, emFoco,
+  chamadasPendentes, erro, itemParaEdição, emFoco,
 } = storeToRefs(fluxosProjetoStore);
 const { chamadasPendentes: fasesPendentes } = storeToRefs(fluxosFasesProjetos);
 const { chamadasPendentes: tarefasPendentes } = storeToRefs(fluxosTarefasProjetos);
