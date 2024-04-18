@@ -48,13 +48,9 @@ export class AtividadeService {
         const now = new Date(Date.now());
         const created = await this.prisma.$transaction(
             async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
-                const op = dto.orgaos_participantes!;
-                const cp = dto.coordenadores_cp!;
-                delete dto.orgaos_participantes;
-                delete dto.coordenadores_cp;
-
-                const tags = dto.tags || [];
-                delete dto.tags;
+                const orgaos_participantes = dto.orgaos_participantes;
+                const coordenadores_cp = dto.coordenadores_cp;
+                const tags = dto.tags;
 
                 const codigoJaEmUso = await prismaTx.atividade.count({
                     where: {
@@ -92,17 +88,24 @@ export class AtividadeService {
                     data: {
                         criado_por: user.id,
                         criado_em: now,
-                        ...dto,
+                        iniciativa_id: dto.iniciativa_id,
+                        codigo: dto.codigo,
+                        titulo: dto.titulo,
+                        contexto: dto.contexto,
+                        complemento: dto.complemento,
+                        compoe_indicador_iniciativa: dto.compoe_indicador_iniciativa,
+                        status: dto.status,
+                        ativo: dto.ativo,
                     },
                     select: { id: true },
                 });
 
                 await prismaTx.atividadeOrgao.createMany({
-                    data: await this.buildOrgaosParticipantes(atividade.id, op),
+                    data: await this.buildOrgaosParticipantes(atividade.id, orgaos_participantes),
                 });
 
                 await prismaTx.atividadeResponsavel.createMany({
-                    data: await this.buildAtividadeResponsaveis(atividade.id, op, cp),
+                    data: await this.buildAtividadeResponsaveis(atividade.id, orgaos_participantes, coordenadores_cp),
                 });
 
                 await prismaTx.atividadeTag.createMany({
@@ -123,12 +126,10 @@ export class AtividadeService {
         return created;
     }
 
-    async buildAtividadeTags(atividadeId: number, tags: number[]): Promise<Prisma.AtividadeTagCreateManyInput[]> {
-        const arr: Prisma.AtividadeTagCreateManyInput[] = [];
+    async buildAtividadeTags(atividadeId: number, tags?: number[]): Promise<Prisma.AtividadeTagCreateManyInput[]> {
+        if (Array.isArray(tags) === false) return [];
 
-        if (typeof tags !== 'object') {
-            tags = [];
-        }
+        const arr: Prisma.AtividadeTagCreateManyInput[] = [];
 
         for (const tag of tags) {
             arr.push({
@@ -142,8 +143,9 @@ export class AtividadeService {
 
     async buildOrgaosParticipantes(
         atividadeId: number,
-        orgaos_participantes: MetaOrgaoParticipante[]
+        orgaos_participantes: MetaOrgaoParticipante[] | undefined
     ): Promise<Prisma.AtividadeOrgaoCreateManyInput[]> {
+        if (Array.isArray(orgaos_participantes) === false) return [];
         const arr: Prisma.AtividadeOrgaoCreateManyInput[] = [];
 
         const orgaoVisto: Record<number, boolean> = {};
@@ -168,9 +170,12 @@ export class AtividadeService {
     }
     async buildAtividadeResponsaveis(
         atividadeId: number,
-        orgaos_participantes: AtividadeOrgaoParticipante[],
-        coordenadores_cp: number[]
+        orgaos_participantes: AtividadeOrgaoParticipante[] | undefined,
+        coordenadores_cp: number[] | undefined
     ): Promise<Prisma.AtividadeResponsavelCreateManyInput[]> {
+        if (Array.isArray(orgaos_participantes) === false) return [];
+        if (Array.isArray(coordenadores_cp) === false) return [];
+
         const arr: Prisma.AtividadeResponsavelCreateManyInput[] = [];
 
         for (const orgao of orgaos_participantes) {
@@ -338,13 +343,9 @@ export class AtividadeService {
         const now = new Date(Date.now());
 
         await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
-            const op = dto.orgaos_participantes!;
-            const cp = dto.coordenadores_cp!;
-            delete dto.orgaos_participantes;
-            delete dto.coordenadores_cp;
-
-            const tags = dto.tags!;
-            delete dto.tags;
+            const orgaos_participantes = dto.orgaos_participantes;
+            const coordenadores_cp = dto.coordenadores_cp;
+            const tags = dto.tags;
 
             if (dto.codigo) {
                 const codigoJaEmUso = await prismaTx.atividade.count({
@@ -395,7 +396,11 @@ export class AtividadeService {
                     atualizado_em: now,
                     status: '',
                     ativo: true,
-                    ...dto,
+                    codigo: dto.codigo,
+                    titulo: dto.titulo,
+                    contexto: dto.contexto,
+                    complemento: dto.complemento,
+                    compoe_indicador_iniciativa: dto.compoe_indicador_iniciativa,
                 },
                 select: { id: true },
             });
@@ -407,10 +412,10 @@ export class AtividadeService {
 
             await Promise.all([
                 prismaTx.atividadeOrgao.createMany({
-                    data: await this.buildOrgaosParticipantes(atividade.id, op),
+                    data: await this.buildOrgaosParticipantes(atividade.id, orgaos_participantes),
                 }),
                 prismaTx.atividadeResponsavel.createMany({
-                    data: await this.buildAtividadeResponsaveis(atividade.id, op, cp),
+                    data: await this.buildAtividadeResponsaveis(atividade.id, orgaos_participantes, coordenadores_cp),
                 }),
                 prismaTx.atividadeTag.createMany({
                     data: await this.buildAtividadeTags(atividade.id, tags),
