@@ -1,16 +1,20 @@
 <script setup>
 import SmallModal from '@/components/SmallModal.vue';
 import { tarefaFluxo as schema } from '@/consts/formSchemas';
-import responsabilidadeEtapaFluxo from '@/consts/responsabilidadeEtapaFluxo.js';
+import responsabilidadeEtapaFluxo from '@/consts/responsabilidadeEtapaFluxo';
 import { useAlertStore } from '@/stores/alert.store';
+import { useFluxosProjetosStore } from '@/stores/fluxosProjeto.store';
 import { useFluxosTarefasProjetosStore } from '@/stores/fluxosTarefaProjeto.store';
 import { useTarefasProjetosStore } from '@/stores/tarefasProjeto.store';
 import { storeToRefs } from 'pinia';
 import { ErrorMessage, Field, useForm } from 'vee-validate';
 import { computed, ref, watch } from 'vue';
 
+const fluxosProjetoStore = useFluxosProjetosStore();
 const fluxoTarefasProjetosStore = useFluxosTarefasProjetosStore();
 const tarefasProjetosStore = useTarefasProjetosStore();
+
+const { emFoco } = storeToRefs(fluxosProjetoStore);
 const { lista } = storeToRefs(tarefasProjetosStore);
 const { lista: listaDeTarefasNoFluxo } = storeToRefs(fluxoTarefasProjetosStore);
 const alertStore = useAlertStore();
@@ -20,12 +24,39 @@ const emits = defineEmits(['close', 'saved']);
 const props = defineProps({
   faseId: {
     type: Number,
-    required: true,
+    default: 0,
   },
   relacionamentoId: {
     type: Number,
     default: 0,
   },
+  etapaId: {
+    type: Number,
+    default: 0,
+  },
+});
+
+const proximaOrdemDisponivel = computed(() => {
+  if (!emFoco.value?.fluxo || emFoco.value.fluxo.length === 0) {
+    return 1;
+  }
+
+  let maxOrdem = 0;
+  // eslint-disable-next-line max-len
+  const fluxoCorrespondente = emFoco.value.fluxo.find((fluxo) => fluxo.fases.some((fase) => fase.id === props.faseId));
+
+  if (fluxoCorrespondente) {
+    const faseCorrespondente = fluxoCorrespondente.fases.find((fase) => fase.id === props.faseId);
+
+    if (faseCorrespondente && faseCorrespondente.tarefas && faseCorrespondente.tarefas.length > 0) {
+      faseCorrespondente.tarefas.forEach((tarefa) => {
+        if (tarefa.ordem > maxOrdem) {
+          maxOrdem = tarefa.ordem;
+        }
+      });
+    }
+  }
+  return maxOrdem + 1;
 });
 
 const itemParaEdição = computed(() => {
@@ -34,12 +65,13 @@ const itemParaEdição = computed(() => {
   return tarefa
     ? {
       ...tarefa,
+      ordem: tarefa?.ordem || proximaOrdemDisponivel.value,
       workflow_tarefa_id: tarefa?.workflow_tarefa?.id || null,
     }
     : {
       responsabilidade: '',
       workflow_tarefa_id: 0,
-      ordem: 0,
+      ordem: proximaOrdemDisponivel.value,
     };
 });
 
@@ -113,7 +145,7 @@ watch(itemParaEdição, (novoValor) => {
       />
     </div>
 
-    <pre v-scrollLockDebug>values:{{ values }}</pre>
+    <pre v-scrollLockDebug>values:{{ emFoco.fluxo }}</pre>
 
     <form
       :disabled="isSubmitting"
@@ -123,7 +155,7 @@ watch(itemParaEdição, (novoValor) => {
         name="fluxo_fase_id"
         type="hidden"
         class="inputtext light mb1"
-        :value="props.faseId"
+        :value="faseId"
       />
 
       <div class="flex flexwrap g2 mb1">
