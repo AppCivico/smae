@@ -89,6 +89,27 @@ export class TransferenciaService {
                 if (tipo.esfera != dto.esfera)
                     throw new HttpException('esfera| Esfera da transferência e esfera do tipo devem ser iguais', 400);
 
+                // Criando identificador
+                // Identificador segue a seguinte regra: count(1) + 1 de transf / ano
+                // O count é relativo ao ano.
+                const idParaAno: number =
+                    (await prismaTxn.transferencia.count({
+                        where: {
+                            ano: dto.ano,
+                        },
+                    })) + 1;
+
+                const identificador: string = `${idParaAno}/${dto.ano}`;
+
+                // Garantindo que não houve erro e duplicou identificador.
+                const identificadorExiste = await prismaTxn.transferencia.count({
+                    where: {
+                        identificador: identificador,
+                    },
+                });
+                if (identificadorExiste)
+                    throw new Error(`Erro ao gerar identificador, já está em uso: ${identificador}`);
+
                 const transferencia = await prismaTxn.transferencia.create({
                     data: {
                         tipo_id: dto.tipo_id,
@@ -100,7 +121,7 @@ export class TransferenciaService {
                         critico: dto.critico,
                         interface: dto.interface,
                         esfera: dto.esfera,
-                        identificador: dto.identificador,
+                        identificador: identificador,
                         clausula_suspensiva: dto.clausula_suspensiva,
                         clausula_suspensiva_vencimento: dto.clausula_suspensiva_vencimento,
                         ano: dto.ano,
@@ -132,32 +153,88 @@ export class TransferenciaService {
     }
 
     async updateTransferencia(id: number, dto: UpdateTransferenciaDto, user: PessoaFromJwt): Promise<RecordWithId> {
-        const self = await this.prisma.transferencia.findFirst({
-            where: {
-                id,
-                removido_em: null,
-            },
-        });
-        if (!self) throw new HttpException('id| Transferência não encontrada', 404);
-
-        if (self.esfera != dto.esfera || self.tipo_id != dto.tipo_id) {
-            const tipo_id: number = dto.tipo_id ? dto.tipo_id : self.tipo_id;
-            // Verificando match de esferas.
-            const tipo = await this.prisma.transferenciaTipo.findFirstOrThrow({
-                where: {
-                    id: tipo_id,
-                    removido_em: null,
-                },
-                select: {
-                    esfera: true,
-                },
-            });
-            if (tipo.esfera != dto.esfera)
-                throw new HttpException('esfera| Esfera da transferência e esfera do tipo devem ser iguais', 400);
-        }
-
         const updated = await this.prisma.$transaction(
             async (prismaTxn: Prisma.TransactionClient): Promise<RecordWithId> => {
+                const self = await prismaTxn.transferencia.findFirst({
+                    where: {
+                        id,
+                        removido_em: null,
+                    },
+                    select: {
+                        esfera: true,
+                        tipo_id: true,
+                        identificador: true,
+                        ano: true,
+                    },
+                });
+                if (!self) throw new HttpException('id| Transferência não encontrada', 404);
+
+                if (self.esfera != dto.esfera || self.tipo_id != dto.tipo_id) {
+                    const tipo_id: number = dto.tipo_id ? dto.tipo_id : self.tipo_id;
+                    // Verificando match de esferas.
+                    const tipo = await prismaTxn.transferenciaTipo.findFirstOrThrow({
+                        where: {
+                            id: tipo_id,
+                            removido_em: null,
+                        },
+                        select: {
+                            esfera: true,
+                        },
+                    });
+                    if (tipo.esfera != dto.esfera)
+                        throw new HttpException(
+                            'esfera| Esfera da transferência e esfera do tipo devem ser iguais',
+                            400
+                        );
+                }
+
+                if (dto.ano != undefined && dto.ano != self.ano) {
+                    // Caso o ano seja modificado, deve-se verificar se pode mudar o ano.
+                    // E caso possa mudar o ano, deve mudar o identificador.
+
+                    // Caso a transferência tenha movimentação de workflow, não pode trocar o ano.
+                    const temMovimentacaoWorkflow = await prismaTxn.transferenciaAndamento.count({
+                        where: {
+                            transferencia_id: id,
+                            OR: [
+                                { atualizado_em: { not: undefined } },
+                                { data_termino: { not: null } },
+                                {
+                                    tarefas: {
+                                        some: {
+                                            atualizado_em: { not: undefined },
+                                        },
+                                    },
+                                },
+                            ],
+                        },
+                    });
+                    if (temMovimentacaoWorkflow)
+                        throw new HttpException(
+                            'ano| Ano não pode ser modificado, pois transferência já está em progresso.',
+                            400
+                        );
+
+                    // Gerando novo identificador
+                    const idParaAno: number =
+                        (await prismaTxn.transferencia.count({
+                            where: {
+                                ano: dto.ano,
+                            },
+                        })) + 1;
+
+                    const identificador: string = `${idParaAno}/${dto.ano}`;
+
+                    // Garantindo que não houve erro e duplicou identificador.
+                    const identificadorExiste = await prismaTxn.transferencia.count({
+                        where: {
+                            identificador: identificador,
+                        },
+                    });
+                    if (identificadorExiste)
+                        throw new Error(`Erro ao gerar identificador, já está em uso: ${identificador}`);
+                }
+
                 const transferencia = await prismaTxn.transferencia.update({
                     where: { id },
                     data: {
@@ -170,7 +247,6 @@ export class TransferenciaService {
                         critico: dto.critico,
                         interface: dto.interface,
                         esfera: dto.esfera,
-                        identificador: dto.identificador,
                         clausula_suspensiva: dto.clausula_suspensiva,
                         clausula_suspensiva_vencimento: dto.clausula_suspensiva_vencimento,
                         ano: dto.ano,
@@ -191,7 +267,7 @@ export class TransferenciaService {
                     select: { id: true },
                 });
 
-                const self = await this.prisma.transferencia.findFirstOrThrow({
+                const updatedSelf = await this.prisma.transferencia.findFirstOrThrow({
                     where: {
                         id,
                         removido_em: null,
@@ -207,10 +283,10 @@ export class TransferenciaService {
                 });
 
                 if (
-                    self.valor &&
-                    self.valor_contrapartida &&
-                    self.valor_total &&
-                    self.pendente_preenchimento_valores == true
+                    updatedSelf.valor &&
+                    updatedSelf.valor_contrapartida &&
+                    updatedSelf.valor_total &&
+                    updatedSelf.pendente_preenchimento_valores == true
                 ) {
                     await prismaTxn.transferencia.update({
                         where: { id },
@@ -220,7 +296,7 @@ export class TransferenciaService {
                     });
                 }
 
-                if (!self.workflow_id) {
+                if (!updatedSelf.workflow_id) {
                     const workflow = await prismaTxn.workflow.findFirst({
                         where: {
                             transferencia_tipo_id: self.tipo_id,

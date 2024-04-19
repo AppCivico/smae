@@ -65,11 +65,6 @@ export class CreateTransferenciaDto {
     })
     cargo?: ParlamentarCargo;
 
-    @IsString()
-    @MinLength(1)
-    @MaxLength(250)
-    identificador: string;
-
     @IsBoolean()
     clausula_suspensiva: boolean;
 
