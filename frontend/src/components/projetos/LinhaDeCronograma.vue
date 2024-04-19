@@ -59,7 +59,6 @@ export default {
 <template>
   <tr
     class="t13"
-    :class="class"
   >
     <td
       class="genealogia"
@@ -116,7 +115,7 @@ export default {
     </th>
 
     <td>
-      {{ linha.orgao?.sigla }} - {{ linha.recursos }}
+      {{ linha.orgao?.sigla }} {{ linha.recursos ? ' - ' + linha.recursos : '' }}
     </td>
 
     <td class="cell--number dado-efetivo">
