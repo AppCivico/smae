@@ -188,6 +188,7 @@ export class TransferenciaService {
                         );
                 }
 
+                let identificador: string | undefined = undefined;
                 if (dto.ano != undefined && dto.ano != self.ano) {
                     // Caso o ano seja modificado, deve-se verificar se pode mudar o ano.
                     // E caso possa mudar o ano, deve mudar o identificador.
@@ -223,7 +224,7 @@ export class TransferenciaService {
                             },
                         })) + 1;
 
-                    const identificador: string = `${idParaAno}/${dto.ano}`;
+                    identificador = `${idParaAno}/${dto.ano}`;
 
                     // Garantindo que não houve erro e duplicou identificador.
                     const identificadorExiste = await prismaTxn.transferencia.count({
@@ -238,6 +239,7 @@ export class TransferenciaService {
                 const transferencia = await prismaTxn.transferencia.update({
                     where: { id },
                     data: {
+                        identificador: identificador,
                         tipo_id: dto.tipo_id,
                         orgao_concedente_id: dto.orgao_concedente_id,
                         secretaria_concedente_str: dto.secretaria_concedente,
