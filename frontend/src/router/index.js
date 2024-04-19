@@ -21,7 +21,7 @@ import parlamentares from './parlamentares';
 import projetos from './projetos';
 import relatorios from './relatorios';
 import transferenciasVoluntarias from './transferenciasVoluntarias.js';
-import atividades from './atividades';
+import panoramaTransferencias from './panoramaTransferencias';
 
 // eslint-disable-next-line import/prefer-default-export
 export const router = createRouter({
@@ -56,7 +56,7 @@ export const router = createRouter({
     relatorios,
     envios,
     transferenciasVoluntarias,
-    atividades,
+    panoramaTransferencias,
 
     { path: '/:pathMatch(.*)*', redirect: '/' },
   ],
