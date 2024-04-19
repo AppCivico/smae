@@ -3,6 +3,11 @@ import { TransferenciaInterface, TransferenciaTipoEsfera } from '@prisma/client'
 import { Transform } from 'class-transformer';
 import { IsEnum, IsNumber, IsOptional, IsString } from 'class-validator';
 
+export enum TipoRelatorioTransferencia {
+    'Geral' = 'Geral',
+    'Resumido' = 'Resumido',
+}
+
 export class CreateRelTransferenciasDto {
     @IsOptional()
     @ApiProperty({ enum: TransferenciaTipoEsfera, enumName: 'TransferenciaTipoEsfera' })
@@ -44,4 +49,14 @@ export class CreateRelTransferenciasDto {
     @IsOptional()
     @IsString()
     gestor_contrato?: string;
+
+    /**
+     * @example "Analitico"
+     */
+    @ApiProperty({ enum: TipoRelatorioTransferencia, enumName: 'TipoRelatorioTransferencia' })
+    @IsEnum(TipoRelatorioTransferencia, {
+        message:
+            '$property| Precisa ser um dos seguintes valores: ' + Object.values(TipoRelatorioTransferencia).join(', '),
+    })
+    tipo: TipoRelatorioTransferencia;
 }
