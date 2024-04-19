@@ -508,8 +508,8 @@ export class TransferenciaService {
             token_proxima_pagina = this.encodeNextPageToken({ ipp: ipp, offset: offset + ipp });
         }
 
-        return {
-            linhas: rows.map((r) => {
+        const linhas = rows
+            .map((r) => {
                 return {
                     id: r.id,
                     ano: r.ano,
@@ -534,7 +534,16 @@ export class TransferenciaService {
                         : null,
                     andamento_fase: r.andamentoWorkflow.length ? r.andamentoWorkflow[0].workflow_fase.fase : null,
                 };
-            }),
+            })
+            .sort((a, b) => {
+                const idA = Number(a.identificador.split('/')[0]);
+                const idB = Number(b.identificador.split('/')[0]);
+
+                return idA - idB;
+            });
+
+        return {
+            linhas: linhas,
             tem_mais: tem_mais,
             token_proxima_pagina: token_proxima_pagina,
         };
