@@ -378,6 +378,8 @@ model Pessoa {
     BlocoNotaQCriei                          BlocoNota[]                               @relation("Criador")
     BlocoNotaQRemovi                         BlocoNota[]                               @relation("Removedor")
     BlocoNotaQAtualizei                      BlocoNota[]                               @relation("Atualizador")
+    view_atividade_pessoa_responsavel        view_atividade_pessoa_responsavel[]
+    view_iniciativa_pessoa_responsavel       view_iniciativa_pessoa_responsavel[]
 
     @@index([email])
     @@map("pessoa")
@@ -3809,6 +3811,27 @@ view view_meta_pessoa_responsavel {
     pessoa_id Int
     pessoa    Pessoa @relation(fields: [pessoa_id], references: [id])
     orgao_id  Int
+}
+
+view view_atividade_pessoa_responsavel {
+    id Int @id @default(autoincrement())
+
+    atividade_id  Int
+    iniciativa_id Int
+    meta_id       Int
+    pessoa_id     Int
+    pessoa        Pessoa @relation(fields: [pessoa_id], references: [id])
+    orgao_id      Int
+}
+
+view view_iniciativa_pessoa_responsavel {
+    id Int @id @default(autoincrement())
+
+    iniciativa_id Int
+    meta_id       Int
+    pessoa_id     Int
+    pessoa        Pessoa @relation(fields: [pessoa_id], references: [id])
+    orgao_id      Int
 }
 
 // view que já faz o join o filtro onde PDM.coordenador_responsavel_cp=true
