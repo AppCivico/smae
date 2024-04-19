@@ -1,4 +1,4 @@
-import { HttpException, Injectable } from '@nestjs/common';
+import { BadRequestException, HttpException, Injectable } from '@nestjs/common';
 import { PainelConteudoTipoDetalhe, Periodicidade, Periodo, Prisma } from '@prisma/client';
 import { Decimal } from '@prisma/client/runtime/library';
 import { DateTime } from 'luxon';
