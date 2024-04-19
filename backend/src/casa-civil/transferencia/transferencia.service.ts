@@ -536,8 +536,12 @@ export class TransferenciaService {
                 };
             })
             .sort((a, b) => {
-                const idA = Number(a.identificador.split('/')[0]);
-                const idB = Number(b.identificador.split('/')[0]);
+                const [idA, yearA] = a.identificador.split('/').map(Number);
+                const [idB, yearB] = b.identificador.split('/').map(Number);
+
+                if (yearA !== yearB) {
+                    return yearA - yearB;
+                }
 
                 return idA - idB;
             });
