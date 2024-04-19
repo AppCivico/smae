@@ -440,7 +440,7 @@ export class TransferenciaService {
                     in: palavrasChave != undefined ? palavrasChave : undefined,
                 },
             },
-            orderBy: [{ pendente_preenchimento_valores: 'asc' }, { ano: 'asc' }, { criado_em: 'asc' }],
+            orderBy: [{ pendente_preenchimento_valores: 'asc' }, { ano: 'asc' }],
             skip: offset,
             take: ipp + 1,
             select: {
