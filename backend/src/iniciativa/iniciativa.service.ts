@@ -208,8 +208,12 @@ export class IniciativaService {
 
         let filterIdIn: undefined | number[] = undefined;
         if (!user.hasSomeRoles(['CadastroMeta.inserir'])) {
-            filterIdIn = await user.getMetaIdsFromAnyModel(this.prisma.view_meta_pessoa_responsavel_na_cp);
-            // TODO: notei que existe responsavel na iniciativa, então talvez seja necessario na verdade,
+            if (user.hasSomeRoles(['PDM.ponto_focal'])) {
+                filterIdIn = await user.getMetaIdsFromAnyModel(this.prisma.view_iniciativa_pessoa_responsavel);
+            } else {
+                filterIdIn = await user.getMetaIdsFromAnyModel(this.prisma.view_meta_pessoa_responsavel_na_cp);
+            }
+            // Maybe TODO: notei que existe responsavel na iniciativa, então talvez seja necessário na verdade,
             // filtrar usando o responsavel da iniciativa e não da meta
             // o mesmo vale pra atividade
         }
