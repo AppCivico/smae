@@ -456,11 +456,11 @@ watch(itemParaEdição, () => {
         <button
           v-if="!faseEmFoco?.andamento?.concluida"
           type="button"
-          class="btn "
+          class="btn outline bgnone tcprimary big mr1"
           :disabled="!faseEmFoco.andamento.pode_concluir"
           @click="finalizarFase(faseEmFoco.fase?.id)"
         >
-          Finalizar
+          Salvar e finalizar
         </button>
 
         <button
