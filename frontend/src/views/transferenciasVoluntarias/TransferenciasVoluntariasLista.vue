@@ -98,8 +98,9 @@ watch([
         inputmode="numeric"
         class="inputtext mb1"
         name="ano"
-        type="text"
+        type="number"
         min="2003"
+        max="9999"
       >
     </div>
 
