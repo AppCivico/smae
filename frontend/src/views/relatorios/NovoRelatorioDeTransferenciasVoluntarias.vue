@@ -33,6 +33,7 @@ const valoresIniciais = {
     orgao_concedente_id: null,
     partido_id: null,
     secretaria_concedente: null,
+    tipo: 'Geral',
   },
   salvar_arquivo: false,
 };
@@ -41,7 +42,7 @@ const { órgãosComoLista } = storeToRefs(ÓrgãosStore);
 const { lista: partidoComoLista } = storeToRefs(partidosStore);
 
 const {
-  errors, handleSubmit, isSubmitting, setFieldValue, setValues, values,
+  errors, handleSubmit, isSubmitting, setFieldValue, values,
 } = useForm({
   initialValues: valoresIniciais,
   validationSchema: schema,
@@ -158,7 +159,8 @@ partidosStore.buscarTudo();
             loading: ÓrgãosStore.organs?.loading,
           }"
           :disabled="!órgãosComoLista?.length"
-          @change="!$event.target.value ? setFieldValue('parametros.orgao_concedente_id',null) : null"
+          @change="!$event.target.value ?
+            setFieldValue('parametros.orgao_concedente_id',null) : null"
         >
           <option value="">
             Selecionar
@@ -298,6 +300,34 @@ partidosStore.buscarTudo();
           class="error-msg mb1"
           name="parametros.objeto"
         />
+      </div>
+    </div>
+
+    <div class="mb2">
+      <div class="pl2">
+        <label class="block mb1">
+          <Field
+            name="parametros.tipo"
+            type="radio"
+            value="Geral"
+            class="inputcheckbox"
+            :class="{ 'error': errors['parametros.tipo'] }"
+          />
+          <span>Geral</span>
+        </label>
+        <label class="block mb1">
+          <Field
+            name="parametros.tipo"
+            type="radio"
+            value="Resumido"
+            class="inputcheckbox"
+            :class="{ 'error': errors['parametros.tipo'] }"
+          />
+          <span>Resumido</span>
+        </label>
+      </div>
+      <div class="error-msg">
+        {{ errors['parametros.tipo'] }}
       </div>
     </div>
 

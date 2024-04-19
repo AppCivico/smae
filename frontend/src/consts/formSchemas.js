@@ -1655,6 +1655,13 @@ export const relatórioDeTransferênciasVoluntárias = object({
       .label('Secretaria concedente')
       .max(250)
       .nullable(),
+    tipo: mixed()
+      .label('Tipo')
+      .oneOf([
+        'Geral',
+        'Resumido',
+      ])
+      .required('Escolha o tipo'),
   }),
   salvar_arquivo: boolean(),
 });
