@@ -220,7 +220,15 @@ export class AtividadeService {
 
         let filterIdIn: undefined | number[] = undefined;
         if (!user.hasSomeRoles(['CadastroMeta.inserir'])) {
-            const metas = await user.getMetaIdsFromAnyModel(this.prisma.view_meta_pessoa_responsavel_na_cp);
+            let metas: number[];
+            if (user.hasSomeRoles(['PDM.ponto_focal'])) {
+                metas = await user.getMetaIdsFromAnyModel(this.prisma.view_atividade_pessoa_responsavel);
+            } else {
+                metas = await user.getMetaIdsFromAnyModel(this.prisma.view_meta_pessoa_responsavel_na_cp);
+                // Maybe TODO: assim como na atividade, conferir se não era melhor verificar era responsavel na iniciativa
+                // aqui em teoria são os acessos dos técnicos
+            }
+
             filterIdIn = (
                 await this.prisma.iniciativa.findMany({
                     where: { removido_em: null, meta_id: { in: metas } },
