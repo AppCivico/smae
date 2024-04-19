@@ -1,4 +1,5 @@
 import { IdSiglaDescricao } from 'src/common/dto/IdSigla.dto';
+import { TipoRelatorioTransferencia } from '../dto/create-transferencias.dto';
 
 export class RelTransferenciasDto {
     id: number;
@@ -50,6 +51,7 @@ export class RelTransferenciasDto {
         id: number;
         transferencia_id: number;
         orgao_gestor_id: number;
+        orgao_gestor_descricao: string;
         objeto: string;
         valor: number;
         valor_total: number;
@@ -73,6 +75,7 @@ export class RelTransferenciasDto {
 export class TransferenciasRelatorioDto {
     linhas: RelTransferenciasDto[];
     linhas_cronograma: RelTransferenciaCronogramaDto[];
+    tipo: TipoRelatorioTransferencia;
 }
 
 export class RelTransferenciaCronogramaDto {
