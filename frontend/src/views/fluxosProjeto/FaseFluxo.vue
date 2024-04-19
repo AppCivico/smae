@@ -1,4 +1,3 @@
-<!-- não finalizado -->
 <script setup>
 import SmallModal from '@/components/SmallModal.vue';
 import { etapasFluxo as schema } from '@/consts/formSchemas';
@@ -6,6 +5,7 @@ import responsabilidadeEtapaFluxo from '@/consts/responsabilidadeEtapaFluxo';
 import { useAlertStore } from '@/stores/alert.store';
 import { useFasesProjetosStore } from '@/stores/fasesProjeto.store';
 import { useFluxosFasesProjetosStore } from '@/stores/fluxosFasesProjeto.store';
+import { useFluxosProjetosStore } from '@/stores/fluxosProjeto.store';
 import { useSituacaoStore } from '@/stores/situacao.store';
 import { storeToRefs } from 'pinia';
 import { ErrorMessage, Field, useForm } from 'vee-validate';
@@ -21,23 +21,49 @@ const props = defineProps({
     type: Number,
     default: 0,
   },
+  ordem: {
+    type: Number,
+    required: true,
+  },
 });
 
 const fluxosFasesProjetosStore = useFluxosFasesProjetosStore();
 const fasesProjetosStore = useFasesProjetosStore();
 const situacaoProjetosStore = useSituacaoStore();
+const fluxosProjetoStore = useFluxosProjetosStore();
 const alertStore = useAlertStore();
 const erro = ref(null);
 
+const { emFoco } = storeToRefs(fluxosProjetoStore);
 const { lista: listaFase } = storeToRefs(fasesProjetosStore);
 const { lista: listaSituacao } = storeToRefs(situacaoProjetosStore);
 const { lista } = storeToRefs(fluxosFasesProjetosStore);
+
+const proximaOrdemDisponivel = computed(() => {
+  if (!emFoco.value?.fluxo || emFoco.value.fluxo.length === 0) {
+    return 1;
+  }
+
+  let maxOrdem = 0;
+  const etapaAtual = emFoco.value.fluxo.find((etapa) => etapa.id === props.etapaId);
+
+  if (etapaAtual && etapaAtual.fases && etapaAtual.fases.length > 0) {
+    etapaAtual.fases.forEach((fase) => {
+      if (fase.ordem > maxOrdem) {
+        maxOrdem = fase.ordem;
+      }
+    });
+  }
+
+  return maxOrdem + 1;
+});
 
 const itemParaEdição = computed(() => {
   const fase = lista.value.find((x) => (x.id === Number(props.relacionamentoId)));
 
   return {
     ...fase,
+    ordem: fase?.ordem || proximaOrdemDisponivel.value,
     fase_id: fase?.fase?.id,
     responsabilidade: fase?.responsabilidade || '',
     situacao: fase?.situacao?.map((x) => x.id) || null,
@@ -191,7 +217,9 @@ iniciar();
           />
         </div>
         <div class="f1 mb1">
-          <div class="label mb1">Situações da fase</div>
+          <div class="label mb1">
+            Situações da fase
+          </div>
           <label
             v-for="item in listaSituacao"
             :key="item.id"
