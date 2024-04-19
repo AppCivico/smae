@@ -119,6 +119,7 @@ group by 1, 2;
 
 CREATE OR REPLACE VIEW view_atividade_pessoa_responsavel AS
 SELECT
+    a.id,
     mr.meta_id,
     mr.pessoa_id,
     mr.orgao_id,
@@ -141,6 +142,7 @@ AND a.removido_em is null
 
 CREATE OR REPLACE VIEW view_iniciativa_pessoa_responsavel AS
 SELECT
+    i.id,
     mr.meta_id,
     mr.pessoa_id,
     mr.orgao_id,
