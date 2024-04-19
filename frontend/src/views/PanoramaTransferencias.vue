@@ -16,7 +16,6 @@ onUnmounted(() => {
 </script>
 <template>
   <Dashboard>
-    <MigalhasDePão class="mb1" />
     <div class="flex spacebetween center mb2">
       <h1>Quadro de atividades</h1>
       <hr class="ml2 f1">
