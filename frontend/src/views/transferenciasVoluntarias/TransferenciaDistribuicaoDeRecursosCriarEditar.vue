@@ -17,7 +17,12 @@ import {
   useForm,
   useIsFormDirty,
 } from 'vee-validate';
-import { onUnmounted, ref, watch } from 'vue';
+import {
+  computed,
+  onUnmounted,
+  ref,
+  watch,
+} from 'vue';
 
 const distribuicaoRecursos = useDistribuicaoRecursosStore();
 const ÓrgãosStore = useOrgansStore();
@@ -36,6 +41,7 @@ const props = defineProps({
 
 const alertStore = useAlertStore();
 const mostrarDistribuicaoRegistroForm = ref(false);
+const camposModificados = ref(false);
 
 const {
   errors, handleSubmit, isSubmitting, resetForm, setFieldValue, values,
@@ -117,6 +123,22 @@ watch(itemParaEdição, (novosValores) => {
 onUnmounted(() => {
   distribuicaoRecursos.$reset();
 });
+
+// eslint-disable-next-line no-shadow
+const updateValorTotal = (fieldName, newValue, setFieldValue) => {
+  camposModificados.value = true;
+  const valor = fieldName === 'valor' ? parseFloat(newValue) || 0 : parseFloat(values.valor) || 0;
+  const valorContraPartida = fieldName === 'valor_contrapartida' ? parseFloat(newValue) || 0 : parseFloat(values.valor_contrapartida) || 0;
+  const total = (valor + valorContraPartida).toFixed(2);
+  setFieldValue('valor_total', total);
+};
+
+const isSomaCorreta = computed(() => {
+  if (!props.transferenciaId || !camposModificados.value) return true;
+  const soma = parseFloat(values.valor || 0) + parseFloat(values.valor_contrapartida || 0);
+  return soma === parseFloat(values.valor_total);
+});
+
 </script>
 <template>
   <div class="flex spacebetween center mb2">
@@ -312,6 +334,8 @@ onUnmounted(() => {
           class="inputtext light mb2"
           :value="values.valor"
           converter-para="string"
+          @update:model-value="(newValue) =>
+            updateValorTotal('valor', newValue, setFieldValue)"
         />
         <ErrorMessage
           class="error-msg mb2"
@@ -329,6 +353,8 @@ onUnmounted(() => {
           class="inputtext light mb2"
           :value="values.valor_contrapartida"
           converter-para="string"
+          @update:model-value="(newValue) =>
+            updateValorTotal('valor_contrapartida', newValue, setFieldValue)"
         />
         <ErrorMessage
           class="error-msg mb2"
@@ -354,6 +380,12 @@ onUnmounted(() => {
           class="error-msg mb1"
           name="valor_total"
         />
+        <div
+          v-if="!props.transferenciaId || !isSomaCorreta"
+          class="tamarelo"
+        >
+          A soma dos valores não corresponde ao valor total.
+        </div>
       </div>
       <div class="f1">
         <LabelFromYup

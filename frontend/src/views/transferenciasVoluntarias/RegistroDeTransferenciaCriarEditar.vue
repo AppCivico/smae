@@ -5,7 +5,8 @@ import nulificadorTotal from '@/helpers/nulificadorTotal.ts';
 import { useAlertStore } from '@/stores/alert.store';
 import { useTransferenciasVoluntariasStore } from '@/stores/transferenciasVoluntarias.store';
 import { storeToRefs } from 'pinia';
-import { ErrorMessage, Field, Form } from 'vee-validate';
+import { ErrorMessage, Field, useForm } from 'vee-validate';
+import { computed } from 'vue';
 import { useRouter } from 'vue-router';
 
 const TransferenciasVoluntarias = useTransferenciasVoluntariasStore();
@@ -21,9 +22,16 @@ const props = defineProps({
   },
 });
 
+const {
+  errors, isSubmitting, setFieldValue, values, handleSubmit,
+} = useForm({
+  initialValues: itemParaEdição,
+  validationSchema: schema,
+});
+
 const alertStore = useAlertStore();
 
-async function onSubmit(_, { controlledValues }) {
+const onSubmit = handleSubmit.withControlled(async (controlledValues) => {
   // necessário por causa de 🤬
   const cargaManipulada = nulificadorTotal(controlledValues);
   try {
@@ -48,7 +56,19 @@ async function onSubmit(_, { controlledValues }) {
   } catch (error) {
     alertStore.error(error);
   }
-}
+});
+
+const updateValorTotal = (fieldName, newValue, setFieldValue) => {
+  const valor = fieldName === 'valor' ? parseFloat(newValue) || 0 : parseFloat(values.valor) || 0;
+  const valorContraPartida = fieldName === 'valor_contrapartida' ? parseFloat(newValue) || 0 : parseFloat(values.valor_contrapartida) || 0;
+  const total = (valor + valorContraPartida).toFixed(2);
+  setFieldValue('valor_total', total);
+};
+
+const isSomaCorreta = computed(() => {
+  const soma = parseFloat(values.valor || 0) + parseFloat(values.valor_contrapartida || 0);
+  return soma === parseFloat(values.valor_total);
+});
 
 TransferenciasVoluntarias.buscarItem(props.transferenciaId);
 </script>
@@ -70,11 +90,8 @@ TransferenciasVoluntarias.buscarItem(props.transferenciaId);
     <hr class="ml2 f1">
   </div>
 
-  <Form
-    v-slot="{ errors, isSubmitting, values }"
-    :validation-schema="schema"
-    :initial-values="itemParaEdição"
-    @submit="onSubmit"
+  <form
+    @submit.prevent="onSubmit"
   >
     <div class="flex g2 mb1">
       <div class="f1">
@@ -88,6 +105,8 @@ TransferenciasVoluntarias.buscarItem(props.transferenciaId);
           class="inputtext light mb1"
           :value="values.valor"
           converter-para="string"
+          @update:model-value="(newValue) =>
+            updateValorTotal('valor', newValue, setFieldValue)"
         />
         <ErrorMessage
           class="error-msg mb1"
@@ -133,6 +152,8 @@ TransferenciasVoluntarias.buscarItem(props.transferenciaId);
           class="inputtext light mb1"
           :value="values.valor_contrapartida"
           converter-para="string"
+          @update:model-value="(newValue) =>
+            updateValorTotal('valor_contrapartida', newValue, setFieldValue)"
         />
         <ErrorMessage
           class="error-msg mb1"
@@ -173,6 +194,12 @@ TransferenciasVoluntarias.buscarItem(props.transferenciaId);
           class="error-msg mb1"
           name="valor_total"
         />
+        <div
+          v-if="!isSomaCorreta"
+          class="tamarelo"
+        >
+          A soma dos valores não corresponde ao valor total.
+        </div>
       </div>
       <div class="f1">
         <LabelFromYup
@@ -333,7 +360,7 @@ TransferenciasVoluntarias.buscarItem(props.transferenciaId);
       </button>
       <hr class="ml2 f1">
     </div>
-  </Form>
+  </form>
 
   <span
     v-if="chamadasPendentes?.emFoco"
