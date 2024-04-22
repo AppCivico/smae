@@ -98,7 +98,7 @@ const valoresIniciais = computed(() => (singleEtapa.value?.loading
     geolocalizacao: [],
   }
   : {
-    ...singleEtapa.value,
+    ...singleEtapa.value?.etapa,
     geolocalizacao: singleEtapa.value?.geolocalizacao?.map((x) => x.token) || [],
   }));
 
