@@ -735,11 +735,11 @@ export const planoDeAção = object()
       .label('Contato do responsável')
       .nullable(),
     contramedida: string()
-      .label('Contra-medidas')
+      .label('Contramedidas')
       .max(50000)
       .required(),
     custo: number()
-      .label('Custo da contra-medida')
+      .label('Custo da contramedida')
       .min(0)
       .nullable()
       .transform((v) => (v === '' || Number.isNaN(v) ? null : v)),
