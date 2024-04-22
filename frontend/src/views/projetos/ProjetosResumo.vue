@@ -34,6 +34,22 @@ const equipeAgrupadaPorÓrgão = computed(() => (Array.isArray(emFoco.value?.equ
   }, {})
   : {}));
 
+const mapasAgrupados = computed(() => (Array.isArray(emFoco.value?.geolocalizacao)
+  ? emFoco.value.geolocalizacao.reduce((acc, cur) => {
+    if (!acc?.endereços) {
+      acc.endereços = [];
+    }
+    acc.endereços.push(cur.endereco);
+
+    if (!acc?.camadas) {
+      acc.camadas = [];
+    }
+    acc.camadas = acc.camadas.concat(cur.camadas);
+
+    return acc;
+  }, {})
+  : {}));
+
 defineProps({
   projetoId: {
     type: Number,
@@ -202,7 +218,10 @@ if (!Array.isArray(organs.value) || !organs.value.length) {
       </dl>
     </div>
 
-    <hr class="mb1 f1">
+    <hr
+      v-if="emFoco?.geolocalizacao?.length"
+      class="mb1 f1"
+    >
 
     <div
       v-if="emFoco?.geolocalizacao?.length"
@@ -212,34 +231,16 @@ if (!Array.isArray(organs.value) || !organs.value.length) {
         Localização
       </h3>
 
-      <div
-        v-for="(item, i) in emFoco.geolocalizacao"
-        :key="i"
+      <MapaExibir
+        :geo-json="mapasAgrupados.endereços"
+        :camadas="mapasAgrupados.camadas"
         class="mb1"
-      >
-        <dl class="f1 mb1">
-          <dt class="t12 uc w700 mb05 tamarelo">
-            {{ item.endereco_exibicao }}
-          </dt>
-          <dd>
-            <MapaExibir
-              :marcador="[
-                item.endereco.geometry.coordinates[1],
-                item.endereco.geometry.coordinates[0]
-              ]"
-              :latitude="item.endereco.geometry.coordinates[1]"
-              :longitude="item.endereco.geometry.coordinates[0]"
-              :camadas="item.camadas"
-              class="mb1"
-              :opções-do-polígono="{
-                fill: true,
-                opacity: 0.5,
-              }"
-              zoom="16"
-            />
-          </dd>
-        </dl>
-      </div>
+        :opções-do-polígono="{
+          fill: true,
+          opacity: 0.5,
+        }"
+        zoom="16"
+      />
     </div>
 
     <hr class="mb1 f1">
