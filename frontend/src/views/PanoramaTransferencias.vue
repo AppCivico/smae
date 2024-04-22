@@ -43,7 +43,7 @@ onUnmounted(() => {
               <router-link
                 :to="{
                   name: 'TransferenciasVoluntariasDetalhes',
-                  params: { transferenciaId: item.identificador },
+                  params: { transferenciaId: item.transferencia_id },
                 }"
                 class="tprimary"
               >
