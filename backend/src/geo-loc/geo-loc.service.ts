@@ -22,6 +22,16 @@ class GeoTokenJwtBody {
     id: number;
 }
 
+export class UpsertEnderecoRegiaoDto {
+    nivel: number;
+    id: number;
+}
+
+export class UpsertEnderecoIdDto {
+    endereco_id: number;
+    regioes: UpsertEnderecoRegiaoDto[];
+}
+
 @Injectable()
 export class GeoLocService {
     private readonly logger = new Logger(GeoLocService.name);
@@ -298,8 +308,8 @@ export class GeoLocService {
         user: PessoaFromJwt,
         prismaTx: Prisma.TransactionClient,
         now: Date
-    ): Promise<void> {
-        if (!dto.tokens) return;
+    ): Promise<UpsertEnderecoIdDto[]> {
+        if (!dto.tokens) return [];
 
         dto.validaReferencia();
 
@@ -312,8 +322,41 @@ export class GeoLocService {
 
         const endereco = await prismaTx.geoLocalizacao.findMany({
             where: { id: { in: inputIds } },
-            select: { id: true, tipo: true },
+            select: {
+                id: true,
+                tipo: true,
+                GeoEnderecoCamada: {
+                    select: {
+                        geo_camada: {
+                            select: {
+                                GeoCamadaRegiao: {
+                                    select: {
+                                        regiao: {
+                                            select: {
+                                                nivel: true,
+                                                id: true,
+                                            },
+                                        },
+                                    },
+                                },
+                            },
+                        },
+                    },
+                },
+            },
         });
+
+        const regioes: UpsertEnderecoIdDto[] = endereco.map((endereco) => {
+            return {
+                endereco_id: endereco.id,
+                regioes: endereco.GeoEnderecoCamada.flatMap((camada) => {
+                    return camada.geo_camada.GeoCamadaRegiao.flatMap((camadaRegiao) => {
+                        return camadaRegiao.regiao;
+                    });
+                }),
+            };
+        });
+
         const enderecoById: Record<number, (typeof endereco)[0]> = {};
         for (const r of endereco) {
             enderecoById[r.id] = r;
@@ -388,7 +431,7 @@ export class GeoLocService {
             });
         }
 
-        return;
+        return regioes;
     }
 
     async carregaReferencias(dto: FindGeoEnderecoReferenciaDto): Promise<Map<number, GeolocalizacaoDto[]>> {
