@@ -83,6 +83,7 @@ export class WorkflowFluxoService {
                         fluxo_etapa_para_id: true,
                     },
                 });
+                console.log(fluxoAnterior);
                 if (fluxoAnterior && dto.workflow_etapa_de_id != fluxoAnterior.fluxo_etapa_para_id)
                     throw new HttpException(
                         'workflow_etapa_de_id| Etapa de entrada deve ser a mesma de saída do passo anterior do fluxo.',
