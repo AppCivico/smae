@@ -77,6 +77,7 @@ export class WorkflowFluxoService {
                 const fluxoAnterior = await prismaTxn.fluxo.findFirst({
                     where: {
                         ordem: { lt: ordem },
+                        workflow_id: dto.workflow_id,
                     },
                     select: {
                         fluxo_etapa_para_id: true,
