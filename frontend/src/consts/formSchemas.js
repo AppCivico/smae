@@ -884,40 +884,40 @@ export const bancada = object({
 
 export const nota = object({
   data_nota: date()
-    .label("Data da nota")
+    .label('Data da nota')
     .max(dataMax)
     .min(dataMin)
     .required(),
   dispara_email: boolean()
-    .label("Disparo de e-mail")
+    .label('Disparo de e-mail')
     .required(),
   enderecamentos: array()
-    .label("Endereçamento")
+    .label('Endereçamento')
     .nullable()
     .of(
       object().shape({
         orgao_enderecado_id: number()
-          .label("Órgão")
+          .label('Órgão')
           .required(),
         pessoa_enderecado_id: number()
-          .label("Pessoas")
+          .label('Pessoas')
           .transform((v) => (!v ? null : v))
           .nullable(),
-      })
+      }),
     ),
   nota: string()
-    .label("Nota")
+    .label('Nota')
     .required(),
   rever_em: date()
-    .label("Rever em")
+    .label('Rever em')
     .max(dataMax)
     .min(dataMin)
     .nullable(),
   status: string()
-    .label("Status")
+    .label('Status')
     .required(),
   tipo_nota_id: number()
-    .label("Tipo de nota")
+    .label('Tipo de nota')
     .required(),
 });
 
