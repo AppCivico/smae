@@ -94,6 +94,8 @@ BEGIN
 
         from mv_variavel_pdm iv
         join variavel v on v.id = iv.variavel_id
+        join serie_variavel sv on sv.variavel_id = v.id and sv.serie = 'PrevistoAcumulado'
+            and sv.data_valor = v_data_ciclo + (v.atraso_meses * '-1 month'::interval)
         left join status_variavel_ciclo_fisico svcf ON svcf.variavel_id = v.id
             AND svcf.ciclo_fisico_id = pCicloFisicoIdAtual
         where iv.meta_id = pMetaId and iv.pdm_id = v_pdm_id
