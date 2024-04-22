@@ -1,4 +1,5 @@
 <script setup>
+// eslint-disable-next-line import/no-named-default
 import { default as LinhaCusteio } from '@/components/orcamento/LinhaCusteio.vue';
 import dateToField from '@/helpers/dateToField';
 import formataValor from '@/helpers/formataValor';
@@ -12,6 +13,7 @@ import somaItems from './helpers/somaItems';
 
 const alertStore = useAlertStore();
 const props = defineProps(['parentlink', 'config']);
+// eslint-disable-next-line vue/no-setup-props-destructure
 const ano = props.config.ano_referencia;
 const OrcamentosStore = useOrcamentosStore();
 const {
@@ -26,6 +28,19 @@ const linhasFiltradas = computed(() => (Array.isArray(OrcamentoCusteio.value[ano
   : OrcamentoCusteio.value[ano] || []));
 
 const groups = computed(() => agrupaFilhos(linhasFiltradas.value));
+const somasDaMeta = computed(() => (Array.isArray(linhasFiltradas.value)
+  ? linhasFiltradas.value.reduce((acc, cur) => {
+    if (acc === null) {
+      // eslint-disable-next-line no-param-reassign
+      acc = { custo_previsto: 0 };
+    }
+
+    if (!cur.iniciativa && !cur.atividade) {
+      acc.custo_previsto += Number.parseFloat(cur.custo_previsto) || 0;
+    }
+    return acc;
+  }, null)
+  : null));
 
 const somaDasLinhas = computed(() => ({
   custo_previsto: formataValor(somaItems(linhasFiltradas.value, 'custo_previsto')),
@@ -135,6 +150,17 @@ function restringirAZero() {
             </th>
             <th style="width: 50px" />
           </tr>
+          <template v-if="linhasFiltradas?.length">
+            <td class="tc600 w700 pl1">
+              <strong>Totais da meta</strong>
+            </td>
+            <td class="w700">
+              {{ somasDaMeta.custo_previsto
+                ? formataValor(somasDaMeta.custo_previsto)
+                : '-'
+              }}
+            </td>
+          </template>
         </thead>
         <template v-if="groups">
           <tbody>
