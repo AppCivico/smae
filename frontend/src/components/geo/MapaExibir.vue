@@ -132,7 +132,7 @@ function criarMarcadores(marcadores = []) {
         marcadorNoMapa.on('move', moverMarcador);
       }
       // aqui a gente dá "nome" para poder identificar o marcador.
-      // Poderia ser  um nome melhor, né?
+      // Poderia ser um nome melhor, né?
       marcadorNoMapa.índice = i;
       marcadorNoMapa.addTo(mapa);
     }
@@ -182,7 +182,8 @@ function criarPolígono(dadosDoPolígono) {
 
   if (dadosDoPolígono.titulo) {
     polígono.bindTooltip(dadosDoPolígono.titulo, {
-      permanent: true, direction: 'center',
+      permanent: true,
+      direction: 'center',
     });
   }
 
@@ -261,7 +262,11 @@ async function iniciarMapa(element) {
   }
 
   if (props.geoJson) {
-    prepararGeoJsonS(props.geoJson);
+    if (Array.isArray(props.geoJson)) {
+      prepararGeoJsonS(props.geoJson);
+    } else {
+      prepararGeoJsonS([props.geoJson]);
+    }
   }
 
   for (let i = 0; i < props.polígonos.length; i += 1) {
