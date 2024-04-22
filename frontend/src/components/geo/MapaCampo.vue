@@ -7,6 +7,7 @@ import requestS from '@/helpers/requestS.ts';
 import { useAlertStore } from '@/stores/alert.store';
 import { useRegionsStore } from '@/stores/regions.store';
 import { cloneDeep, isArray, merge } from 'lodash';
+import { vMaska } from 'maska';
 import { storeToRefs } from 'pinia';
 import {
   ErrorMessage,
@@ -103,6 +104,9 @@ function adicionarItem() {
     abrirEdição(model.value.length - 1);
   });
 }
+
+const buscarItemPorToken = (token) => props.geolocalizaçãoPorToken?.[token]
+  || endereçosTemporários.value?.[token] || null;
 
 async function preencherFormulário(item) {
   if (isArray(item?.endereco?.geometry?.coordinates)) {
@@ -222,354 +226,382 @@ const onSubmit = handleSubmit(async () => {
 const formulárioSujo = useIsFormDirty();
 </script>
 <template>
-  <ul v-bind="$attrs">
-    <template
-      v-for="(token, i) in model"
-      :key="token"
-    >
-      <li class="flex g1 mb1">
-        <span class="f1">
-          {{ geolocalizaçãoPorToken[token]?.endereco_exibicao
-            || endereçosTemporários[token]?.endereco?.properties?.string_endereco
-            || '-' }}
-        </span>
+  <table
+    v-bind="$attrs"
+    class="tablemain"
+  >
+    <col>
+    <col>
+    <col class="col--number">
+    <col class="col--botão-de-ação">
+    <col class="col--botão-de-ação">
 
-        <button
-          class="block like-a__text addlink tipinfo"
-          type="button"
-          @click="abrirEdição(i)"
-        >
-          <svg
-            width="20"
-            height="20"
-          ><use xlink:href="#i_edit" /></svg><div>Editar endereço</div>
-        </button>
-
-        <button
-          class="block like-a__text addlink tipinfo"
-          type="button"
-          @click="model.splice(i, 1)"
-        >
-          <svg
-            width="20"
-            height="20"
-          ><use xlink:href="#i_remove" /></svg><div>remover endereço</div>
-        </button>
-      </li>
-
-      <SmallModal
-        v-if="ediçãoDeEndereçoAberta === i"
+    <thead>
+      <th />
+      <th>Endereço</th>
+      <th>
+        <abbr title="Código de Endereçamento Postal">CEP</abbr>
+      </th>
+      <th />
+      <th />
+    </thead>
+    <tbody>
+      <tr
+        v-for="(token, i) in model"
+        :key="token"
       >
-        <div class="flex spacebetween center mb2">
-          <h2>
-            {{ props.título || 'Registro de endereço' }}
-          </h2>
-          <hr class="ml2 f1">
+        <th>
+          {{ buscarItemPorToken(token)?.endereco?.properties?.rotulo || '-' }}
+        </th>
+        <td class="f1">
+          {{ buscarItemPorToken(token)?.endereco_exibicao
+            || buscarItemPorToken(token)?.endereco?.properties?.string_endereco
+            || '-' }}
+        </td>
+        <td class="cell--number">
+          {{ buscarItemPorToken(token)?.endereco?.properties?.cep || '-' }}
+        </td>
+        <td>
+          <button
+            class="block like-a__text addlink tipinfo"
+            type="button"
+            @click="abrirEdição(i)"
+          >
+            <svg
+              width="20"
+              height="20"
+            ><use xlink:href="#i_edit" /></svg><div>Editar endereço</div>
+          </button>
+        </td>
+        <td>
+          <button
+            class="block like-a__text addlink tipinfo"
+            type="button"
+            @click="model.splice(i, 1)"
+          >
+            <svg
+              width="20"
+              height="20"
+            ><use xlink:href="#i_remove" /></svg><div>remover endereço</div>
+          </button>
+        </td>
 
-          <CheckClose
-            :formulário-sujo="formulárioSujo"
-            :apenas-emitir="true"
-            @close="ediçãoDeEndereçoAberta = -1"
-          />
-        </div>
-
-        <form
-          :disabled="isSubmitting || buscandoEndereços"
-          @submit.prevent="onSubmit"
+        <SmallModal
+          v-if="ediçãoDeEndereçoAberta === i"
         >
-          <div class="flex g2 flexwrap">
-            <div class="f1 mb1">
-              <LabelFromYup
-                name="termo_de_busca"
-                :schema="schema"
-              />
+          <div class="flex spacebetween center mb2">
+            <h2>
+              {{ props.título || 'Registro de endereço' }}
+            </h2>
+            <hr class="ml2 f1">
 
-              <Field
-                v-model="termoDeBusca"
-                name="termo_de_busca"
-                type="search"
-                class="inputtext light mb1"
-                autocomplete="street-address"
-                minlength="3"
-                :class="{
-                  loading: buscandoEndereços,
-                }"
-                @keypress.enter.prevent="buscarEndereço(termoDeBusca)"
-              />
+            <CheckClose
+              :formulário-sujo="formulárioSujo"
+              :apenas-emitir="true"
+              @close="ediçãoDeEndereçoAberta = -1"
+            />
+          </div>
 
-              <ErrorMessage
-                v-if="errors.termo_de_busca"
-                name="termo_de_busca"
-                class="error-msg"
-              />
+          <form
+            :disabled="isSubmitting || buscandoEndereços"
+            @submit.prevent="onSubmit"
+          >
+            <div class="flex g2 flexwrap">
+              <div class="f1 mb1">
+                <LabelFromYup
+                  name="termo_de_busca"
+                  :schema="schema"
+                />
 
-              <div
-                v-else-if="erroNaBuscaDeEndereço || buscandoEndereços"
-                class="error-msg mb1"
-              >
-                {{ erroNaBuscaDeEndereço }}
+                <Field
+                  v-model="termoDeBusca"
+                  name="termo_de_busca"
+                  type="search"
+                  class="inputtext light mb1"
+                  autocomplete="street-address"
+                  minlength="3"
+                  :class="{
+                    loading: buscandoEndereços,
+                  }"
+                  @keypress.enter.prevent="buscarEndereço(termoDeBusca)"
+                />
+
+                <ErrorMessage
+                  v-if="errors.termo_de_busca"
+                  name="termo_de_busca"
+                  class="error-msg"
+                />
+
+                <div
+                  v-else-if="erroNaBuscaDeEndereço || buscandoEndereços"
+                  class="error-msg mb1"
+                >
+                  {{ erroNaBuscaDeEndereço }}
+                </div>
+              </div>
+
+              <div class="center">
+                <button
+                  type="button"
+                  class="btn small bgnone outline mt2"
+                  :disabled="isSubmitting"
+                  @click="buscarEndereço(termoDeBusca)"
+                >
+                  Procurar no mapa
+                </button>
               </div>
             </div>
 
-            <div class="center">
-              <button
-                type="button"
-                class="btn small bgnone outline mt2"
-                :disabled="isSubmitting"
-                @click="buscarEndereço(termoDeBusca)"
-              >
-                Procurar no mapa
-              </button>
-            </div>
-          </div>
-
-          <Transition
-            name="expand"
-          >
-            <table
-              v-if="sugestõesDeEndereços.length"
-              class="mb1 tablemain"
+            <Transition
+              name="expand"
             >
-              <col class="col--botão-de-ação">
-              <col>
-              <col>
-              <col>
-              <col class="col--number">
-              <col class="col--number">
-              <thead>
-                <th />
-                <th>Endereço</th>
-                <th>Bairro</th>
-                <th><abbr title="Código de Endereçamento Postal">CEP</abbr></th>
-                <th class="cell--number">
-                  Latitude
-                </th>
-                <th class="cell--number">
-                  Longitude
-                </th>
-              </thead>
-              <tr
-                v-for="(item, j) in sugestõesDeEndereços"
-                :key="j"
+              <table
+                v-if="sugestõesDeEndereços.length"
+                class="mb1 tablemain"
               >
-                <td>
-                  <Field
-                    :id="`item--${j}`"
-                    v-model="sugestãoSelecionada"
-                    type="radio"
-                    class="mr1"
-                    name="localização"
-                    :value="item"
-                    @change="preencherFormulário(item)"
-                  />
-                </td>
-                <td>
-                  <label :for="`item--${j}`">
-                    {{ item.endereco?.properties?.string_endereco }}
-                  </label>
-                </td>
-                <td>
-                  {{ item.endereco?.properties?.bairro || '-' }}
-                </td>
-                <td>
-                  {{ item.endereco?.properties?.cep || '-' }}
-                </td>
-                <td class="cell--number">
-                  {{ item.endereco?.geometry?.coordinates[1] }}
-                </td>
-                <td class="cell--number">
-                  {{ item.endereco?.geometry?.coordinates[0] }}
-                </td>
-              </tr>
-            </table>
-          </Transition>
-
-          <div
-            v-ScrollLockDebug
-            class="flex g1 flexwrap"
-          >
-            <div class="f1">
-              <label class="label f1">
-                marcador para carga no mapa
-              </label>
-              <input
-                v-model="marcador"
-                type="text"
-                readonly
-                style="width: 100%;"
-                class="inputtext light mb1 f1"
-              >
-            </div>
-            <div class="f1">
-              <label class="label f1">
-                marcador com posição atualizada
-              </label>
-              <input
-                v-model="coordenadasSelecionadas"
-                type="text"
-                readonly
-                style="width: 100%;"
-                class="inputtext light mb1 f1"
-              >
-            </div>
-          </div>
-
-          <LoadingComponent
-            v-if="chamadasPendentes.camadas"
-            class="mb1"
-          >
-            buscando dados
-          </LoadingComponent>
-
-          <Transition
-            name="expand"
-          >
-            <MapaExibir
-              v-if="sugestãoSelecionada"
-              v-model="coordenadasSelecionadas"
-              :marcador="marcador"
-              :polígonos="camadasSelecionadas"
-              class="mb1"
-              :latitude="marcador[0]"
-              :longitude="marcador[1]"
-              :opções-do-polígono="{
-                fill: true,
-                opacity: 0.5,
-              }"
-              zoom="16"
-              :opções-do-marcador="{ draggable: true }"
-            />
-          </Transition>
-
-          <div class="flex g2 flexwrap">
-            <div class="f2 fb100">
-              <LabelFromYup
-                name="cep"
-                :schema="schema"
-              />
-              <Field
-                id="cep"
-                v-model.trim="logradouroCep"
-                name="cep"
-                class="inputtext light mb1"
-                :disabled="!sugestãoSelecionada"
-              />
-              <ErrorMessage
-                class="error-msg mb1"
-                name="cep"
-              />
-            </div>
-
-            <div class="f1">
-              <LabelFromYup
-                name="tipo"
-                :schema="schema"
-              />
-              <Field
-                id="tipo"
-                v-model="logradouroTipo"
-                name="tipo"
-                class="inputtext light mb1"
-                as="select"
-                :disabled="!sugestãoSelecionada"
-              >
-                <option :value="null" />
-                <option
-                  v-for="item in tiposDeLogradouro"
-                  :key="item"
-                  :value="item"
+                <col class="col--botão-de-ação">
+                <col>
+                <col>
+                <col>
+                <col class="col--number">
+                <col class="col--number">
+                <thead>
+                  <th />
+                  <th>Endereço</th>
+                  <th>Bairro</th>
+                  <th><abbr title="Código de Endereçamento Postal">CEP</abbr></th>
+                  <th class="cell--number">
+                    Latitude
+                  </th>
+                  <th class="cell--number">
+                    Longitude
+                  </th>
+                </thead>
+                <tr
+                  v-for="(item, j) in sugestõesDeEndereços"
+                  :key="j"
                 >
-                  {{ item }}
-                </option>
-              </Field>
-              <ErrorMessage
-                class="error-msg mb1"
-                name="tipo"
-              />
-            </div>
-            <div class="f4">
-              <LabelFromYup
-                name="rua"
-                :schema="schema"
-              />
+                  <td>
+                    <Field
+                      :id="`item--${j}`"
+                      v-model="sugestãoSelecionada"
+                      type="radio"
+                      class="mr1"
+                      name="localização"
+                      :value="item"
+                      @change="preencherFormulário(item)"
+                    />
+                  </td>
+                  <td>
+                    <label :for="`item--${j}`">
+                      {{ item.endereco?.properties?.string_endereco }}
+                    </label>
+                  </td>
+                  <td>
+                    {{ item.endereco?.properties?.bairro || '-' }}
+                  </td>
+                  <td>
+                    {{ item.endereco?.properties?.cep || '-' }}
+                  </td>
+                  <td class="cell--number">
+                    {{ item.endereco?.geometry?.coordinates[1] }}
+                  </td>
+                  <td class="cell--number">
+                    {{ item.endereco?.geometry?.coordinates[0] }}
+                  </td>
+                </tr>
+              </table>
+            </Transition>
 
-              <Field
-                id="rua"
-                v-model.trim="logradouroNome"
-                name="rua"
-                type="text"
-                class="inputtext light mb1"
-                :disabled="!sugestãoSelecionada"
-              />
-              <ErrorMessage
-                class="error-msg mb1"
-                name="rua"
-              />
-            </div>
-            <div class="f1">
-              <LabelFromYup
-                name="numero"
-                :schema="schema"
-              />
-
-              <Field
-                id="numero"
-                v-model.trim="logradouroNúmero"
-                name="numero"
-                type="text"
-                class="inputtext light mb1"
-                :disabled="!sugestãoSelecionada"
-              />
-              <ErrorMessage
-                class="error-msg mb1"
-                name="numero"
-              />
-            </div>
-
-            <div class="fb100">
-              <LabelFromYup
-                name="rotulo"
-                :schema="schema"
-              />
-
-              <Field
-                id="rotulo"
-                v-model.trim="logradouroRótulo"
-                name="rotulo"
-                type="text"
-                class="inputtext light mb1"
-                :disabled="!sugestãoSelecionada"
-              />
-              <ErrorMessage
-                class="error-msg mb1"
-                name="rotulo"
-              />
-            </div>
-          </div>
-
-          <FormErrorsList
-            :errors="errors"
-            class="mb1"
-          />
-
-          <div class="flex spacebetween center g2 mb2">
-            <hr class="f1">
-            <button
-              type="submit"
-              class="btn big"
-              :disabled="isSubmitting || Object.keys(errors)?.length"
-              :class="{
-                loading: isSubmitting
-              }"
+            <div
+              v-ScrollLockDebug
+              class="flex g1 flexwrap"
             >
-              Salvar
-            </button>
-            <hr class="f1">
-          </div>
-        </form>
-      </SmallModal>
-    </template>
-  </ul>
+              <div class="f1">
+                <label class="label f1">
+                  marcador para carga no mapa
+                </label>
+                <input
+                  v-model="marcador"
+                  type="text"
+                  readonly
+                  style="width: 100%;"
+                  class="inputtext light mb1 f1"
+                >
+              </div>
+              <div class="f1">
+                <label class="label f1">
+                  marcador com posição atualizada
+                </label>
+                <input
+                  v-model="coordenadasSelecionadas"
+                  type="text"
+                  readonly
+                  style="width: 100%;"
+                  class="inputtext light mb1 f1"
+                >
+              </div>
+            </div>
+
+            <LoadingComponent
+              v-if="chamadasPendentes.camadas"
+              class="mb1"
+            >
+              buscando dados
+            </LoadingComponent>
+
+            <Transition
+              name="expand"
+            >
+              <MapaExibir
+                v-if="sugestãoSelecionada"
+                v-model="coordenadasSelecionadas"
+                :marcador="marcador"
+                :polígonos="camadasSelecionadas"
+                class="mb1"
+                :latitude="marcador[0]"
+                :longitude="marcador[1]"
+                :opções-do-polígono="{
+                  fill: true,
+                  opacity: 0.5,
+                }"
+                zoom="16"
+                :opções-do-marcador="{ draggable: true }"
+              />
+            </Transition>
+
+            <div class="flex g2 flexwrap">
+              <div class="f2 fb100">
+                <LabelFromYup
+                  name="cep"
+                  :schema="schema"
+                />
+                <Field
+                  id="cep"
+                  v-model.trim="logradouroCep"
+                  v-maska
+                  name="cep"
+                  class="inputtext light mb1"
+                  :disabled="!sugestãoSelecionada"
+                  data-maska="#####-###'"
+                />
+                <ErrorMessage
+                  class="error-msg mb1"
+                  name="cep"
+                />
+              </div>
+
+              <div class="f1">
+                <LabelFromYup
+                  name="tipo"
+                  :schema="schema"
+                />
+                <Field
+                  id="tipo"
+                  v-model="logradouroTipo"
+                  name="tipo"
+                  class="inputtext light mb1"
+                  as="select"
+                  :disabled="!sugestãoSelecionada"
+                >
+                  <option :value="null" />
+                  <option
+                    v-for="item in tiposDeLogradouro"
+                    :key="item"
+                    :value="item"
+                  >
+                    {{ item }}
+                  </option>
+                </Field>
+                <ErrorMessage
+                  class="error-msg mb1"
+                  name="tipo"
+                />
+              </div>
+              <div class="f4">
+                <LabelFromYup
+                  name="rua"
+                  :schema="schema"
+                />
+
+                <Field
+                  id="rua"
+                  v-model.trim="logradouroNome"
+                  name="rua"
+                  type="text"
+                  class="inputtext light mb1"
+                  :disabled="!sugestãoSelecionada"
+                />
+                <ErrorMessage
+                  class="error-msg mb1"
+                  name="rua"
+                />
+              </div>
+              <div class="f1">
+                <LabelFromYup
+                  name="numero"
+                  :schema="schema"
+                />
+
+                <Field
+                  id="numero"
+                  v-model.trim="logradouroNúmero"
+                  name="numero"
+                  type="text"
+                  class="inputtext light mb1"
+                  :disabled="!sugestãoSelecionada"
+                />
+                <ErrorMessage
+                  class="error-msg mb1"
+                  name="numero"
+                />
+              </div>
+
+              <div class="fb100">
+                <LabelFromYup
+                  name="rotulo"
+                  :schema="schema"
+                />
+
+                <Field
+                  id="rotulo"
+                  v-model.trim="logradouroRótulo"
+                  name="rotulo"
+                  type="text"
+                  class="inputtext light mb1"
+                  :disabled="!sugestãoSelecionada"
+                />
+                <ErrorMessage
+                  class="error-msg mb1"
+                  name="rotulo"
+                />
+              </div>
+            </div>
+
+            <FormErrorsList
+              :errors="errors"
+              class="mb1"
+            />
+
+            <div class="flex spacebetween center g2 mb2">
+              <hr class="f1">
+              <button
+                type="submit"
+                class="btn big"
+                :disabled="isSubmitting || Object.keys(errors)?.length"
+                :class="{
+                  loading: isSubmitting
+                }"
+              >
+                Salvar
+              </button>
+              <hr class="f1">
+            </div>
+          </form>
+        </SmallModal>
+      </tr>
+    </tbody>
+  </table>
 
   <button
     :disabled="!(model.length < Number(props.max)) "
