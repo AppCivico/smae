@@ -62,8 +62,7 @@ const ediçãoDeEndereçoAberta = ref(-1);
 const erroNaBuscaDeEndereço = ref(null);
 const termoDeBusca = ref('');
 const sugestãoSelecionada = ref(null);
-const sugestõesDeEndereços = ref([
-]);
+const sugestõesDeEndereços = ref([]);
 const coordenadasSelecionadas = ref([]);
 const logradouroCep = ref('');
 const logradouroNome = ref('');
@@ -146,9 +145,8 @@ async function buscarEndereço(valor) {
   if (buscaVálida) {
     erroNaBuscaDeEndereço.value = null;
     sugestãoSelecionada.value = null;
-    sugestõesDeEndereços.value = [];
-
-    coordenadasSelecionadas.value = [];
+    sugestõesDeEndereços.value.splice(0, sugestõesDeEndereços.value.length);
+    coordenadasSelecionadas.value.splice(0, coordenadasSelecionadas.value.length);
     buscandoEndereços.value = true;
 
     resetField('cep', { value: undefined });
