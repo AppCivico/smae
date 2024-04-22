@@ -421,6 +421,10 @@ export const geoLocalização = object({
     .label('CEP')
     .max(1024)
     .nullable(),
+  rotulo: string()
+    .label('Rótulo para marcador')
+    .max(1024)
+    .nullable(),
   rua: string()
     .label('Logradouro')
     .max(1024)
