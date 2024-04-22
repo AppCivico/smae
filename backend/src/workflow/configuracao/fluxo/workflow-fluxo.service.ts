@@ -69,7 +69,24 @@ export class WorkflowFluxoService {
                     ordem = ultimaOrdem?.ordem ?? 1;
                 }
 
-                // TODO: tratar fluxo circular
+                if (dto.workflow_etapa_de_id == dto.workflow_etapa_para_id)
+                    throw new HttpException('Etapa de entrada não pode ser a mesma etapa de saída,', 400);
+
+                // Caso a ordem seja > 1.
+                // Deve ser verificado se está correto o "dê". Ou seja, deve ser o "para" do passo anterior.
+                const fluxoAnterior = await prismaTxn.fluxo.findFirst({
+                    where: {
+                        ordem: { lt: ordem },
+                    },
+                    select: {
+                        fluxo_etapa_para_id: true,
+                    },
+                });
+                if (fluxoAnterior && dto.workflow_etapa_de_id != fluxoAnterior.fluxo_etapa_para_id)
+                    throw new HttpException(
+                        'workflow_etapa_de_id| Etapa de entrada deve ser a mesma de saída do passo anterior do fluxo.',
+                        400
+                    );
 
                 const workflowFluxo = await prismaTxn.fluxo.create({
                     data: {
