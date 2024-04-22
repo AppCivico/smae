@@ -79,6 +79,7 @@ export class WorkflowFluxoService {
                         ordem: { lt: ordem },
                         workflow_id: dto.workflow_id,
                     },
+                    orderBy: { ordem: 'desc' },
                     select: {
                         fluxo_etapa_para_id: true,
                     },
