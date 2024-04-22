@@ -3,8 +3,8 @@ import LegendaEstimadoVsEfetivo from '@/components/LegendaEstimadoVsEfetivo.vue'
 import LinhaDeCronograma from '@/components/projetos/LinhaDeCronograma.vue';
 import CabecalhoResumo from '@/components/tarefas/CabecalhoResumo.vue';
 import { useAlertStore } from '@/stores/alert.store';
-import { useEmailsStore } from "@/stores/envioEmail.store";
-import { useEtapasProjetosStore } from '@/stores/etapasProjeto.store.js';
+import { useEmailsStore } from '@/stores/envioEmail.store';
+import { useEtapasProjetosStore } from '@/stores/etapasProjeto.store';
 import { useProjetosStore } from '@/stores/projetos.store.ts';
 import { useTarefasStore } from '@/stores/tarefas.store.ts';
 import { storeToRefs } from 'pinia';
@@ -14,12 +14,14 @@ import { useRoute } from 'vue-router';
 const route = useRoute();
 const tarefasStore = useTarefasStore();
 const emailsStore = useEmailsStore();
-const { emFoco:emailEmFoco } = storeToRefs(emailsStore);
+const { emFoco: emailEmFoco } = storeToRefs(emailsStore);
 const etapasProjetosStore = useEtapasProjetosStore();
 const { árvoreDeTarefas, chamadasPendentes, erro } = storeToRefs(tarefasStore);
 const alertStore = useAlertStore();
 const projetosStore = useProjetosStore();
-const projetoEmFoco = computed(() => tarefasStore?.extra?.projeto || tarefasStore?.extra?.cabecalho || {});
+const projetoEmFoco = computed(
+  () => tarefasStore?.extra?.projeto || tarefasStore?.extra?.cabecalho || {},
+);
 const apenasLeitura = computed(
   () => !!projetoEmFoco.value?.permissoes?.apenas_leitura,
 );
@@ -40,7 +42,7 @@ const nivelMáximoDisponível = computed(() => Math.max(
 
 const nívelMáximoVisível = ref(0);
 
-const { lista:listaDeEtapas } = storeToRefs(etapasProjetosStore);
+const { lista: listaDeEtapas } = storeToRefs(etapasProjetosStore);
 
 async function iniciar() {
   etapasProjetosStore.buscarTudo();
@@ -55,11 +57,11 @@ async function iniciar() {
 
 async function mudarEtapa(idEtapa) {
   const carga = {
-    projeto_etapa_id: idEtapa
-  }
+    projeto_etapa_id: idEtapa,
+  };
   try {
     const msg = 'Etapa salva com sucesso!';
-    const resposta =  await projetosStore.salvarItem(carga, projetoEmFoco.value.id)
+    const resposta = await projetosStore.salvarItem(carga, projetoEmFoco.value.id);
     if (resposta) {
       alertStore.success(msg);
       tarefasStore.buscarTudo();
@@ -115,7 +117,7 @@ export default {
         }"
         class="dropbtn"
       >
-       <span class="btn">Nova tarefa</span>
+        <span class="btn">Nova tarefa</span>
       </router-link>
 
       <router-link
@@ -131,18 +133,41 @@ export default {
     </nav>
   </div>
 
-  <LoadingComponent v-if="chamadasPendentes.lista" class="mb2 horizontal"/>
-  <LoadingComponent v-if="projetosStore.chamadasPendentes.emFoco && $route.meta.entidadeMãe === 'projeto'" class="mb2 horizontal">Salvando</LoadingComponent>
-  <div v-if="$route.meta.entidadeMãe === 'projeto' && projetoEmFoco.projeto_etapa" class="etapa mb2">
+  <LoadingComponent
+    v-if="chamadasPendentes.lista"
+    class="mb2 horizontal"
+  />
+  <LoadingComponent
+    v-if="projetosStore.chamadasPendentes.emFoco && $route.meta.entidadeMãe === 'projeto'"
+    class="mb2 horizontal">
+    Salvando
+  </LoadingComponent>
+  <div
+    v-if="$route.meta.entidadeMãe === 'projeto' && projetoEmFoco.projeto_etapa"
+    class="etapa mb2"
+  >
     <span>
       Etapa atual: {{ projetoEmFoco.projeto_etapa.descricao }}
     </span>
   </div>
-  <CabecalhoResumo :em-foco="projetoEmFoco" :existe-email="emailEmFoco?.linhas[0]?.id !== undefined" :email-ativo="emailEmFoco?.linhas[0]?.ativo"/>
+  <CabecalhoResumo
+    :em-foco="projetoEmFoco"
+    :existe-email="emailEmFoco?.linhas[0]?.id !== undefined"
+    :email-ativo="emailEmFoco?.linhas[0]?.ativo"
+  />
 
-  <div class="flex center mb4" v-if="route.meta.prefixoParaFilhas === 'TransferenciasVoluntarias'" >
-    <router-link :to="{ name: 'transferenciaEmailModal' }" class="addlink mb1">
-      <svg width="20" height="20">
+  <div
+    v-if="route.meta.prefixoParaFilhas === 'TransferenciasVoluntarias'"
+    class="flex center mb4"
+  >
+    <router-link
+      :to="{ name: 'transferenciaEmailModal' }"
+      class="addlink mb1"
+    >
+      <svg
+        width="20"
+        height="20"
+      >
         <use xlink:href="#i_+" />
       </svg>
       <span v-if="emailEmFoco?.linhas[0]?.id">Editar envio de e-mail </span>
