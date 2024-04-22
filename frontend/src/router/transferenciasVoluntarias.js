@@ -9,6 +9,8 @@ import TransferenciasVoluntariasEnviarArquivo from '@/views/transferenciasVolunt
 import TransferenciasVoluntariasLista from '@/views/transferenciasVoluntarias/TransferenciasVoluntariasLista.vue';
 import TransferenciasVoluntariasRaiz from '@/views/transferenciasVoluntarias/TransferenciasVoluntariasRaiz.vue';
 
+import NotasLista from '@/components/notas/NotasLista.vue';
+
 import EmailModal from '@/components/EmailModal.vue';
 import { useTarefasStore } from '@/stores/tarefas.store.ts';
 import TarefasCriarEditar from '@/views/tarefas/TarefasCriarEditar.vue';
@@ -20,6 +22,7 @@ const rotasParaMenuSecundário = [
   {
     rotas: [
       'TransferenciasVoluntariasDetalhes',
+      'TransferenciasVoluntariasNotas',
       'TransferenciasVoluntariasDocumentos',
       'TransferenciaCronograma',
     ],
@@ -99,6 +102,22 @@ export default {
       }),
       meta: {
         título: 'Resumo',
+        rotasParaMenuSecundário,
+        rotasParaMigalhasDePão: [
+          'TransferenciasVoluntariasListar',
+        ],
+      },
+    },
+    {
+      name: 'TransferenciasVoluntariasNotas',
+      path: ':transferenciaId/notas',
+      component: NotasLista,
+      props: ({ params }) => ({
+        ...params,
+        ...{ transferenciaId: Number.parseInt(params.transferenciaId, 10) || undefined },
+      }),
+      meta: {
+        título: 'Notas z',
         rotasParaMenuSecundário,
         rotasParaMigalhasDePão: [
           'TransferenciasVoluntariasListar',
