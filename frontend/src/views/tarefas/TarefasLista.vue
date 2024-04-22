@@ -109,7 +109,7 @@ export default {
       </div>
 
       <router-link
-        v-if="(projetoEmFoco?.eh_prioritario && !apenasLeitura)
+        v-if="(!apenasLeitura)
           || route.meta.prefixoParaFilhas === 'TransferenciasVoluntarias'"
         :to="{
           name: $route.meta.prefixoParaFilhas + 'TarefasCriar',
