@@ -16,7 +16,7 @@ import {
   useIsFormDirty,
 } from 'vee-validate';
 import {
-  computed, defineModel, defineOptions, ref,
+  computed, defineModel, defineOptions, nextTick, ref,
 } from 'vue';
 
 const RegionsStore = useRegionsStore();
@@ -93,6 +93,14 @@ const { handleChange } = useField(props.name, undefined, {
 
 function abrirEdição(índice) {
   ediçãoDeEndereçoAberta.value = índice;
+}
+
+function adicionarItem() {
+  model.value.push('');
+
+  nextTick().then(() => {
+    abrirEdição(model.value.length - 1);
+  });
 }
 
 async function preencherFormulário(item) {
@@ -547,7 +555,7 @@ const formulárioSujo = useIsFormDirty();
     :disabled="!(model.length < Number(props.max)) "
     class="block like-a__text addlink mb1 mt1"
     type="button"
-    @click="model.push('')"
+    @click="adicionarItem"
   >
     <svg
       width="20"
