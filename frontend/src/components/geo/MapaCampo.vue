@@ -233,14 +233,23 @@ const formulárioSujo = useIsFormDirty();
     <col>
     <col>
     <col class="col--number">
+    <col class="col--number">
+    <col class="col--number">
     <col class="col--botão-de-ação">
     <col class="col--botão-de-ação">
 
     <thead>
       <th />
       <th>Endereço</th>
+      <th>Bairro</th>
       <th>
         <abbr title="Código de Endereçamento Postal">CEP</abbr>
+      </th>
+      <th class="cell--number">
+        Latitude
+      </th>
+      <th class="cell--number">
+        Longitude
       </th>
       <th />
       <th />
@@ -258,8 +267,17 @@ const formulárioSujo = useIsFormDirty();
             || buscarItemPorToken(token)?.endereco?.properties?.string_endereco
             || '-' }}
         </td>
+        <td>
+          {{ buscarItemPorToken(token).endereco?.properties?.bairro || '-' }}
+        </td>
         <td class="cell--number">
           {{ buscarItemPorToken(token)?.endereco?.properties?.cep || '-' }}
+        </td>
+        <td class="cell--number">
+          {{ buscarItemPorToken(token).endereco?.geometry?.coordinates[1] }}
+        </td>
+        <td class="cell--number">
+          {{ buscarItemPorToken(token).endereco?.geometry?.coordinates[0] }}
         </td>
         <td>
           <button
