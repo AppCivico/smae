@@ -1,26 +1,25 @@
 import { HttpException, Injectable } from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
+import { Prisma, WorkflowResponsabilidade } from '@prisma/client';
+import { TarefaCronogramaDto } from 'src/common/dto/TarefaCronograma.dto';
+import { PaginatedDto } from 'src/common/dto/paginated.dto';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
+import { UploadService } from 'src/upload/upload.service';
+import { WorkflowService } from 'src/workflow/configuracao/workflow.service';
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
+import { BlocoNotaService } from '../../bloco-nota/bloco-nota/bloco-nota.service';
 import { PrismaService } from '../../prisma/prisma.service';
 import { CreateTransferenciaTipoDto } from './dto/create-transferencia-tipo.dto';
-import { Prisma, WorkflowResponsabilidade } from '@prisma/client';
-import { UpdateTransferenciaTipoDto } from './dto/update-transferencia-tipo.dto';
-import { TransferenciaTipoDto } from './entities/transferencia-tipo.dto';
 import { CreateTransferenciaAnexoDto, CreateTransferenciaDto } from './dto/create-transferencia.dto';
+import { FilterTransferenciaDto } from './dto/filter-transferencia.dto';
+import { UpdateTransferenciaTipoDto } from './dto/update-transferencia-tipo.dto';
 import {
     CompletarTransferenciaDto,
     UpdateTransferenciaAnexoDto,
     UpdateTransferenciaDto,
 } from './dto/update-transferencia.dto';
+import { TransferenciaTipoDto } from './entities/transferencia-tipo.dto';
 import { TransferenciaAnexoDto, TransferenciaDetailDto, TransferenciaDto } from './entities/transferencia.dto';
-import { UploadService } from 'src/upload/upload.service';
-import { FilterTransferenciaDto } from './dto/filter-transferencia.dto';
-import { JwtService } from '@nestjs/jwt';
-import { PaginatedDto } from 'src/common/dto/paginated.dto';
-import { TarefaCronogramaDto } from 'src/common/dto/TarefaCronograma.dto';
-import { BlocoNotaService } from '../../bloco-nota/bloco-nota/bloco-nota.service';
-import { WorkflowService } from 'src/workflow/configuracao/workflow.service';
-import { TextToTSQuery } from '../../common/TextToTSQuery';
 
 class NextPageTokenJwtBody {
     offset: number;
@@ -556,9 +555,8 @@ export class TransferenciaService {
     async buscaIdsPalavraChave(input: string | undefined): Promise<number[] | undefined> {
         let palavrasChave: number[] | undefined = undefined;
         if (input) {
-            const tsQuery = TextToTSQuery(input);
             const rows: { id: number }[] = await this.prisma
-                .$queryRaw`SELECT id FROM transferencia WHERE vetores_busca @@ to_tsquery(${tsQuery})`;
+                .$queryRaw`SELECT id FROM transferencia WHERE vetores_busca @@ websearch_to_tsquery('portuguese', ${input})`;
             palavrasChave = rows.map((row) => row.id);
         }
         return palavrasChave;
