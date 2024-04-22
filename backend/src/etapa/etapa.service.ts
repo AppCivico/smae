@@ -86,12 +86,16 @@ export class EtapaService {
                     geoDto.tokens = geolocalizacao;
                     geoDto.tipo = 'Endereco';
 
-                    await this.geolocService.upsertGeolocalizacao(geoDto, user, prismaTx, now);
+                    const regioes = await this.geolocService.upsertGeolocalizacao(geoDto, user, prismaTx, now);
+                    console.log(regioes);
                 }
 
                 // TODO validar a falta do endereço e data de termino, assim como no patch
 
                 return etapa;
+            },
+            {
+                isolationLevel: 'Serializable',
             }
         );
 
@@ -261,7 +265,8 @@ export class EtapaService {
                 geoDto.tokens = geolocalizacao;
                 geoDto.tipo = 'Endereco';
 
-                await this.geolocService.upsertGeolocalizacao(geoDto, user, prismaTx, now);
+                const regioes = await this.geolocService.upsertGeolocalizacao(geoDto, user, prismaTx, now);
+                console.log(regioes);
             }
 
             const etapaAtualizada = await prismaTx.etapa.update({
