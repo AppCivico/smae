@@ -386,9 +386,9 @@ BEGIN
         v_pendente_cp_cronograma := true;
     END IF;
 
-    if (v_pendente_cp_variavel AND array_length(variaveis_total, 1) = 0  ) then
-        v_pendente_cp := pendente_cp_cronograma;
-        pendente_cp_variavel := false;
+    if (v_pendente_cp_variavel AND v_variaveis_total = ARRAY[]::int[] ) then
+        v_pendente_cp := v_pendente_cp_cronograma;
+        v_pendente_cp_variavel := FALSE;
     end if;
 
     --
