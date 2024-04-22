@@ -316,26 +316,62 @@ const formulárioSujo = useIsFormDirty();
           <Transition
             name="expand"
           >
-            <ul v-if="sugestõesDeEndereços.length">
-              <li
+            <table
+              v-if="sugestõesDeEndereços.length"
+              class="mb1 tablemain"
+            >
+              <col class="col--botão-de-ação">
+              <col>
+              <col>
+              <col>
+              <col class="col--number">
+              <col class="col--number">
+              <thead>
+                <th />
+                <th>Endereço</th>
+                <th>Bairro</th>
+                <th><abbr title="Código de Endereçamento Postal">CEP</abbr></th>
+                <th class="cell--number">
+                  Latitude
+                </th>
+                <th class="cell--number">
+                  Longitude
+                </th>
+              </thead>
+              <tr
                 v-for="(item, j) in sugestõesDeEndereços"
                 :key="j"
-                class="mb1"
               >
-                <Field
-                  :id="`item--${j}`"
-                  v-model="sugestãoSelecionada"
-                  type="radio"
-                  class="mr1"
-                  name="localização"
-                  :value="item"
-                  @change="preencherFormulário(item)"
-                />
-                <label :for="`item--${j}`">
-                  {{ item.endereco?.properties?.string_endereco }}
-                </label>
-              </li>
-            </ul>
+                <td>
+                  <Field
+                    :id="`item--${j}`"
+                    v-model="sugestãoSelecionada"
+                    type="radio"
+                    class="mr1"
+                    name="localização"
+                    :value="item"
+                    @change="preencherFormulário(item)"
+                  />
+                </td>
+                <td>
+                  <label :for="`item--${j}`">
+                    {{ item.endereco?.properties?.string_endereco }}
+                  </label>
+                </td>
+                <td>
+                  {{ item.endereco?.properties?.bairro || '-' }}
+                </td>
+                <td>
+                  {{ item.endereco?.properties?.cep || '-' }}
+                </td>
+                <td class="cell--number">
+                  {{ item.endereco?.geometry?.coordinates[1] }}
+                </td>
+                <td class="cell--number">
+                  {{ item.endereco?.geometry?.coordinates[0] }}
+                </td>
+              </tr>
+            </table>
           </Transition>
 
           <div
