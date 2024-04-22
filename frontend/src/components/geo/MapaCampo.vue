@@ -88,7 +88,9 @@ const {
   validationSchema: schema,
 });
 
-const { handleChange } = useField(props.name, undefined, {
+const nomeDoCampo = toRef(props, 'name');
+
+const { handleChange } = useField(nomeDoCampo, undefined, {
   initialValue: model.value,
 });
 
