@@ -68,6 +68,7 @@ const logradouroCep = ref('');
 const logradouroNome = ref('');
 const logradouroNúmero = ref('');
 const logradouroTipo = ref('');
+const logradouroRótulo = ref('');
 
 const marcador = ref([]);
 
@@ -191,6 +192,7 @@ const onSubmit = handleSubmit(async () => {
           string_endereco: `${carga.tipo} ${carga.rua}${carga.numero
             ? `, ${carga.numero}`
             : ''}`.trim(),
+          rotulo: carga.rotulo || '',
         },
         geometry: {
           coordinates: coordenadasSelecionadas.value.toReversed(),
@@ -440,7 +442,7 @@ const formulárioSujo = useIsFormDirty();
           </Transition>
 
           <div class="flex g2 flexwrap">
-            <div class="mb1 f2">
+            <div class="f2 fb100">
               <LabelFromYup
                 name="cep"
                 :schema="schema"
@@ -457,10 +459,8 @@ const formulárioSujo = useIsFormDirty();
                 name="cep"
               />
             </div>
-          </div>
 
-          <div class="flex g2 flexwrap">
-            <div class="mb1 f1">
+            <div class="f1">
               <LabelFromYup
                 name="tipo"
                 :schema="schema"
@@ -487,7 +487,7 @@ const formulárioSujo = useIsFormDirty();
                 name="tipo"
               />
             </div>
-            <div class="f4 mb1">
+            <div class="f4">
               <LabelFromYup
                 name="rua"
                 :schema="schema"
@@ -506,7 +506,7 @@ const formulárioSujo = useIsFormDirty();
                 name="rua"
               />
             </div>
-            <div class="f1 mb1">
+            <div class="f1">
               <LabelFromYup
                 name="numero"
                 :schema="schema"
@@ -523,6 +523,26 @@ const formulárioSujo = useIsFormDirty();
               <ErrorMessage
                 class="error-msg mb1"
                 name="numero"
+              />
+            </div>
+
+            <div class="fb100">
+              <LabelFromYup
+                name="rotulo"
+                :schema="schema"
+              />
+
+              <Field
+                id="rotulo"
+                v-model.trim="logradouroRótulo"
+                name="rotulo"
+                type="text"
+                class="inputtext light mb1"
+                :disabled="!sugestãoSelecionada"
+              />
+              <ErrorMessage
+                class="error-msg mb1"
+                name="rotulo"
               />
             </div>
           </div>
