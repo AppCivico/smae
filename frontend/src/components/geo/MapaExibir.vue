@@ -9,17 +9,21 @@
   </KeepAlive>
 </template>
 <script setup>
-import {
-  ref, onMounted, defineProps, defineEmits, watch,
-} from 'vue';
-import { storeToRefs } from 'pinia';
-import 'leaflet/dist/leaflet.css';
-import L from 'leaflet';
 import { useRegionsStore } from '@/stores/regions.store';
+import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
+import { storeToRefs } from 'pinia';
+import {
+  defineEmits,
+  defineProps,
+  onMounted,
+  ref,
+  watch,
+} from 'vue';
 // prevenir erro de encapsulamento do Vite
 // https://cescobaz.com/2023/06/14/setup-leaflet-with-svelte-and-vite/
-import markerIconUrl from '@/../node_modules/leaflet/dist/images/marker-icon.png';
 import markerIconRetinaUrl from '@/../node_modules/leaflet/dist/images/marker-icon-2x.png';
+import markerIconUrl from '@/../node_modules/leaflet/dist/images/marker-icon.png';
 import markerShadowUrl from '@/../node_modules/leaflet/dist/images/marker-shadow.png';
 
 const RegionsStore = useRegionsStore();
