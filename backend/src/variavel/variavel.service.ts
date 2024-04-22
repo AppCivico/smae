@@ -1201,6 +1201,7 @@ export class VariavelService {
         const valoresValidos = this.validarValoresJwt(valores);
 
         const variaveisModificadas: Record<number, boolean> = {};
+        const now = new Date(Date.now());
 
         await this.prisma.$transaction(
             async (prismaTxn: Prisma.TransactionClient) => {
@@ -1245,10 +1246,11 @@ export class VariavelService {
                                     },
                                     data: {
                                         valor_nominal: valor.valor,
-                                        atualizado_em: new Date(Date.now()),
+                                        atualizado_em: now,
                                         atualizado_por: user.id,
                                         conferida: true,
                                         conferida_por: user.id,
+                                        conferida_em: now,
                                     },
                                 })
                             );
@@ -1260,6 +1262,8 @@ export class VariavelService {
                                 serie: valor.referencia.s,
                                 data_valor: Date2YMD.fromString(valor.referencia.p),
                                 conferida: true,
+                                conferida_em: now,
+                                conferida_por: user.id,
                             });
                         }
                     } // else "não há valor" e não tem ID, ou seja, n precisa acontecer nada no banco
