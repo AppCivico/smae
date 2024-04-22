@@ -94,18 +94,6 @@ const { handleChange } = useField(nomeDoCampo, undefined, {
   initialValue: model.value,
 });
 
-function abrirEdição(índice) {
-  ediçãoDeEndereçoAberta.value = índice;
-}
-
-function adicionarItem() {
-  model.value.push('');
-
-  nextTick().then(() => {
-    abrirEdição(model.value.length - 1);
-  });
-}
-
 const buscarItemPorToken = (token) => props.geolocalizaçãoPorToken?.[token]
   || endereçosTemporários.value?.[token] || null;
 
@@ -179,6 +167,18 @@ async function buscarEndereço(valor) {
       buscandoEndereços.value = false;
     }
   }
+}
+
+function abrirEdição(índice) {
+  ediçãoDeEndereçoAberta.value = índice;
+}
+
+function adicionarItem() {
+  model.value.push('');
+
+  nextTick().then(() => {
+    abrirEdição(model.value.length - 1);
+  });
 }
 
 const onSubmit = handleSubmit(async () => {
