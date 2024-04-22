@@ -146,8 +146,10 @@ function criarMarcadores(marcadores = []) {
 function criarGeoJson(item) {
   const geoJson = L.geoJSON(item).addTo(mapa);
 
-  if (item.properties?.string_endereco) {
-    geoJson.bindTooltip(item.properties.string_endereco);
+  if (item.properties?.rotulo && item.properties?.string_endereco) {
+    geoJson.bindTooltip(`<strong>${item.properties.rotulo}</strong><br/>${item.properties.string_endereco}`);
+  } else if (item.properties?.rotulo || item.properties?.string_endereco) {
+    geoJson.bindTooltip(item.properties?.rotulo || item.properties?.string_endereco);
   }
 
   geoJsonsNoMapa.push(geoJson);
