@@ -556,7 +556,7 @@ export class TransferenciaService {
         let palavrasChave: number[] | undefined = undefined;
         if (input) {
             const rows: { id: number }[] = await this.prisma
-                .$queryRaw`SELECT id FROM transferencia WHERE vetores_busca @@ websearch_to_tsquery('portuguese', ${input})`;
+                .$queryRaw`SELECT id FROM transferencia WHERE vetores_busca @@ websearch_to_tsquery('simple', ${input})`;
             palavrasChave = rows.map((row) => row.id);
         }
         return palavrasChave;
