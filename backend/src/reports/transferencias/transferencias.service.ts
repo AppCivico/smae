@@ -229,37 +229,37 @@ export class TransferenciasService implements ReportableService {
         let paramIndex = 1;
 
         if (filters.esfera) {
-            whereConditions.push(`t.vetores_busca @@ to_tsquery('portuguese', $${paramIndex} || ':*')`);
+            whereConditions.push(`t.vetores_busca @@ to_tsquery('simple', $${paramIndex} || ':*')`);
             queryParams.push(filters.esfera);
             paramIndex++;
         }
 
         if (filters.interface) {
-            whereConditions.push(`t.vetores_busca @@ to_tsquery('portuguese', $${paramIndex} || ':*')`);
+            whereConditions.push(`t.vetores_busca @@ to_tsquery('simple', $${paramIndex} || ':*')`);
             queryParams.push(filters.interface);
             paramIndex++;
         }
 
         if (filters.ano) {
-            whereConditions.push(`t.vetores_busca @@ to_tsquery('portuguese', $${paramIndex} || ':*')`);
+            whereConditions.push(`t.vetores_busca @@ to_tsquery('simple', $${paramIndex} || ':*')`);
             queryParams.push(filters.ano);
             paramIndex++;
         }
 
         if (filters.objeto) {
-            whereConditions.push(`t.vetores_busca @@ to_tsquery('portuguese', $${paramIndex} || ':*')`);
+            whereConditions.push(`t.vetores_busca @@ to_tsquery('simple', $${paramIndex} || ':*')`);
             queryParams.push(filters.objeto);
             paramIndex++;
         }
 
         if (filters.gestor_contrato) {
-            whereConditions.push(`t.vetores_busca @@ to_tsquery('portuguese', $${paramIndex} || ':*')`);
+            whereConditions.push(`t.vetores_busca @@ to_tsquery('simple', $${paramIndex} || ':*')`);
             queryParams.push(filters.gestor_contrato);
             paramIndex++;
         }
 
         if (filters.secretaria_concedente) {
-            whereConditions.push(`t.vetores_busca @@ to_tsquery('portuguese', $${paramIndex} || ':*')`);
+            whereConditions.push(`t.vetores_busca @@ to_tsquery('simple', $${paramIndex} || ':*')`);
             queryParams.push(filters.secretaria_concedente);
             paramIndex++;
         }
