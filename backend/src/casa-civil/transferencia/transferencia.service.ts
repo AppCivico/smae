@@ -555,6 +555,8 @@ export class TransferenciaService {
     async buscaIdsPalavraChave(input: string | undefined): Promise<number[] | undefined> {
         let palavrasChave: number[] | undefined = undefined;
         if (input) {
+            input = input.replace(/\be\b/g, 'and');
+            input = input.replace(/\bou\b/g, 'or');
             const rows: { id: number }[] = await this.prisma
                 .$queryRaw`SELECT id FROM transferencia WHERE vetores_busca @@ websearch_to_tsquery('simple', ${input})`;
             palavrasChave = rows.map((row) => row.id);
