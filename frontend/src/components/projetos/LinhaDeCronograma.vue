@@ -113,11 +113,6 @@ export default {
         {{ linha.tarefa }}
       </template>
     </th>
-
-    <td>
-      {{ linha.orgao?.sigla }} {{ linha.recursos ? ' - ' + linha.recursos : '' }}
-    </td>
-
     <td class="cell--number dado-efetivo">
       {{ typeof linha.percentual_concluido === 'number' ? linha.percentual_concluido + '%' : '-' }}
     </td>
@@ -167,6 +162,9 @@ export default {
         class="tooltip tooltip--danger"
         title="Último dia"
       >!</i>
+    </td>
+    <td>
+      {{ linha.orgao?.sigla }} {{ linha.recursos ? ' - ' + linha.recursos : '' }}
     </td>
     <template v-if="!apenasLeitura">
       <td

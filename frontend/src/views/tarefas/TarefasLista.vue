@@ -2,14 +2,14 @@
 import LegendaEstimadoVsEfetivo from '@/components/LegendaEstimadoVsEfetivo.vue';
 import LinhaDeCronograma from '@/components/projetos/LinhaDeCronograma.vue';
 import CabecalhoResumo from '@/components/tarefas/CabecalhoResumo.vue';
+import { useAlertStore } from '@/stores/alert.store';
+import { useEmailsStore } from "@/stores/envioEmail.store";
+import { useEtapasProjetosStore } from '@/stores/etapasProjeto.store.js';
+import { useProjetosStore } from '@/stores/projetos.store.ts';
 import { useTarefasStore } from '@/stores/tarefas.store.ts';
 import { storeToRefs } from 'pinia';
 import { computed, ref } from 'vue';
 import { useRoute } from 'vue-router';
-import { useEmailsStore } from "@/stores/envioEmail.store";
-import { useEtapasProjetosStore } from '@/stores/etapasProjeto.store.js';
-import { useAlertStore } from '@/stores/alert.store';
-import { useProjetosStore } from '@/stores/projetos.store.ts';
 
 const route = useRoute();
 const tarefasStore = useTarefasStore();
@@ -231,9 +231,6 @@ export default {
       <tr class="pl3 center mb05 tc300 w700 t12 uc">
         <th />
         <th />
-        <th>
-          Responsável
-        </th>
         <th class="cell--number nowrap">
           % conclusão
         </th>
@@ -260,6 +257,9 @@ export default {
         </th>
         <th class="cell--number">
           Atraso
+        </th>
+        <th>
+          Responsável
         </th>
         <template v-if="!apenasLeitura">
           <th />
