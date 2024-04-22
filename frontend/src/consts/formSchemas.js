@@ -739,7 +739,7 @@ export const planoDeAção = object()
       .label('Contato do responsável')
       .nullable(),
     contramedida: string()
-      .label('Contramedidas')
+      .label('Contramedida')
       .max(50000)
       .required(),
     custo: number()
