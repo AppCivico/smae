@@ -1,8 +1,8 @@
 <script setup>
 import MaskedFloatInput from '@/components/MaskedFloatInput.vue';
 import { planoDeAção as schema } from '@/consts/formSchemas';
-import { useAlertStore } from '@/stores/alert.store';
 import truncate from '@/helpers/truncate';
+import { useAlertStore } from '@/stores/alert.store';
 import { useOrgansStore } from '@/stores/organs.store';
 import { usePlanosDeAçãoStore } from '@/stores/planosDeAcao.store.ts';
 import { useProjetosStore } from '@/stores/projetos.store.ts';
@@ -108,7 +108,7 @@ iniciar();
 
   <Form
     v-if="!planoId || emFoco"
-    v-slot="{ errors, isSubmitting, setFieldValue, values }"
+    v-slot="{ errors, isSubmitting, values }"
     :disabled="chamadasPendentes.emFoco"
     :initial-values="itemParaEdição"
     :validation-schema="schema"
