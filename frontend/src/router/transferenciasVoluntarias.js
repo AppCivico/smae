@@ -117,7 +117,7 @@ export default {
         ...{ transferenciaId: Number.parseInt(params.transferenciaId, 10) || undefined },
       }),
       meta: {
-        título: 'Notas z',
+        título: 'Notas',
         rotasParaMenuSecundário,
         rotasParaMigalhasDePão: [
           'TransferenciasVoluntariasListar',
