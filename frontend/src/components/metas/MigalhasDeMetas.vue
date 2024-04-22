@@ -1,4 +1,5 @@
 <script setup>
+import rotasDosNiveisDeMetas from '@/consts/rotasDosNiveisDeMetas';
 import {
   useAtividadesStore,
   useIniciativasStore, useMetasStore,
@@ -28,25 +29,8 @@ if (atividade_id && singleAtividade.value.id != atividade_id) {
   AtividadesStore.getById(iniciativa_id, atividade_id);
 }
 
-const groupBy = localStorage.getItem('groupBy') ?? 'macro_tema';
-let groupByRoute;
-
-switch (groupBy) {
-  case 'macro_tema':
-    groupByRoute = 'macrotemas';
-    break;
-  case 'tema':
-    groupByRoute = 'temas';
-    break;
-  case 'sub_tema':
-    groupByRoute = 'subtemas';
-    break;
-  default:
-    console.error(`Valor inválido salvo em \`localStorage.getItem('groupBy')\`:${localStorage.getItem('groupBy')}`);
-    break;
-}
+const groupBy = localStorage.getItem('groupBy') ?? 'todas';
 </script>
-
 <template>
   <nav class="migalhas-de-pão migalhas-de-pão--metas">
     <ul class="migalhas-de-pão__lista">
@@ -61,17 +45,27 @@ switch (groupBy) {
           {{ activePdm.nome }}
         </router-link>
       </li>
-      <li
-        v-if="meta_id && activePdm.id && activePdm['possui_' + groupBy] && singleMeta[groupBy]"
-        class="migalhas-de-pão__item"
-      >
-        <router-link
-          :to="`/metas/${groupByRoute}/${singleMeta[groupBy]?.id}`"
-          class="migalhas-de-pão__link"
+      <template v-if="meta_id && activePdm.id">
+        <template
+          v-for="item in Object.values(rotasDosNiveisDeMetas)"
+          :key="item.nível"
         >
-          {{ activePdm['rotulo_' + groupBy] }} {{ singleMeta[groupBy]?.descricao }}
-        </router-link>
-      </li>
+          <li
+            v-if="activePdm['possui_' + item.nível]
+              && singleMeta[item.nível]
+              && [item.nível, 'todas'].includes(groupBy)
+            "
+            class="migalhas-de-pão__item"
+          >
+            <router-link
+              :to="`/metas/${item.segmento}/${singleMeta[item.nível]?.id}`"
+              class="migalhas-de-pão__link"
+            >
+              {{ activePdm['rotulo_' + item.nível] }} {{ singleMeta[item.nível]?.descricao }}
+            </router-link>
+          </li>
+        </template>
+      </template>
       <li
         v-if="meta_id && singleMeta.id"
         class="migalhas-de-pão__item"
