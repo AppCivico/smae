@@ -386,6 +386,11 @@ BEGIN
         v_pendente_cp_cronograma := true;
     END IF;
 
+    if (v_pendente_cp_variavel AND array_length(variaveis_total, 1) = 0  ) then
+        v_pendente_cp := pendente_cp_cronograma;
+        pendente_cp_variavel := false;
+    end if;
+
     --
     delete from meta_status_consolidado_cf where meta_id = pMetaId;
     --
