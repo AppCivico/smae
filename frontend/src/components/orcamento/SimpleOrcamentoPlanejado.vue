@@ -1,4 +1,5 @@
 <script setup>
+// eslint-disable-next-line import/no-named-default
 import { default as LinhaPlanejado } from '@/components/orcamento/LinhaPlanejado.vue';
 import formataValor from '@/helpers/formataValor';
 import { useOrcamentosStore } from '@/stores/orcamentos.store';
@@ -9,6 +10,7 @@ import agrupaFilhos from './helpers/agrupaFilhos';
 import somaItems from './helpers/somaItems';
 
 const props = defineProps(['parentlink', 'config']);
+// eslint-disable-next-line vue/no-setup-props-destructure
 const ano = props.config.ano_referencia;
 const OrcamentosStore = useOrcamentosStore();
 const { OrcamentoPlanejado } = storeToRefs(OrcamentosStore);
@@ -22,9 +24,26 @@ const linhasFiltradas = computed(() => (Array.isArray(OrcamentoPlanejado.value[a
 
 const groups = computed(() => agrupaFilhos(linhasFiltradas.value));
 
+const somasDaMeta = computed(() => (Array.isArray(linhasFiltradas.value)
+  ? linhasFiltradas.value.reduce((acc, cur) => {
+    if (acc === null) {
+      // eslint-disable-next-line no-param-reassign
+      acc = { valor_planejado: 0, pressao_orcamentaria_valor: 0 };
+    }
+
+    if (!cur.iniciativa && !cur.atividade) {
+      acc.valor_planejado += Number.parseFloat(cur.valor_planejado) || 0;
+      acc.pressao_orcamentaria_valor += Number.parseFloat(cur.pressao_orcamentaria_valor) || 0;
+    }
+    return acc;
+  }, null)
+  : null));
+
 const somaDasLinhas = computed(() => ({
   valor_planejado: formataValor(somaItems(linhasFiltradas.value, 'valor_planejado')),
+  pressao_orcamentaria_valor: formataValor(somaItems(linhasFiltradas.value, 'pressao_orcamentaria_valor')),
 }));
+
 </script>
 <template>
   <div class="mb2">
@@ -51,7 +70,12 @@ const somaDasLinhas = computed(() => ({
           v-if="linhasFiltradas?.length"
           class="t12 lh1 w700"
         >
-          <span class="tc300">Planejado total:</span> <span class="tvermelho">{{ somaDasLinhas.valor_planejado }}</span>
+          <span class="tc300">
+            Planejado total:
+          </span>
+          <span class="tvermelho">
+            {{ somaDasLinhas.valor_planejado }}
+          </span>
         </div>
       </div>
 
@@ -79,11 +103,31 @@ const somaDasLinhas = computed(() => ({
                 <svg
                   width="20"
                   height="20"
-                ><use xlink:href="#i_i" /></svg><div>Excedente no PdM em relação ao valor da dotação</div>
+                >
+                  <use xlink:href="#i_i" />
+                </svg>
+                <div>Excedente no PdM em relação ao valor da dotação</div>
               </div>
             </th>
             <th style="width: 50px" />
           </tr>
+          <template v-if="linhasFiltradas?.length">
+            <td class="tc600 w700 pl1">
+              <strong>Totais da meta</strong>
+            </td>
+            <td class="w700">
+              {{ somasDaMeta.valor_planejado
+                ? formataValor(somasDaMeta.valor_planejado)
+                : '-'
+              }}
+            </td>
+            <td class="w700">
+              {{ somasDaMeta.pressao_orcamentaria_valor
+                ? formataValor(somasDaMeta.pressao_orcamentaria_valor)
+                : '-'
+              }}
+            </td>
+          </template>
         </thead>
         <template v-if="groups">
           <tbody>
@@ -124,7 +168,8 @@ const somaDasLinhas = computed(() => ({
                   </td>
                   <td class="w700">
                     {{ gg.items.length
-                      ? formataValor(gg.items.reduce((red, x) => red + Number(x.valor_planejado), 0))
+                      ? formataValor(gg.items.reduce(
+                        (red, x) => red + Number(x.valor_planejado), 0))
                       : '-' }}
                   </td>
                   <td class="w700" />
