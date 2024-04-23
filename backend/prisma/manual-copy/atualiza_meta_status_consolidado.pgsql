@@ -94,10 +94,10 @@ BEGIN
 
         from mv_variavel_pdm iv
         join variavel v on v.id = iv.variavel_id
-        join serie_variavel sv on sv.variavel_id = v.id and sv.serie = 'PrevistoAcumulado'
-            and sv.data_valor = v_data_ciclo + (v.atraso_meses * '-1 month'::interval)
         left join status_variavel_ciclo_fisico svcf ON svcf.variavel_id = v.id
             AND svcf.ciclo_fisico_id = pCicloFisicoIdAtual
+        join serie_variavel sv on sv.variavel_id = v.id and sv.serie = 'PrevistoAcumulado'
+            and sv.data_valor = v_data_ciclo + (v.atraso_meses * '-1 month'::interval)
         where iv.meta_id = pMetaId and iv.pdm_id = v_pdm_id
     ),
     cte_variaveis_preenchidas as (
@@ -305,6 +305,8 @@ BEGIN
                   AND porc.ultima_revisao = true
                   AND porc.execucao_concluida = true
                   AND porc.meta_id = pMetaId
+                  AND porc.atualizado_em < '2024-03-01'::date + '1 month'::interval
+                  AND CURRENT_DATE < '2024-03-01'::date + '1 month'::interval
               ) = (SELECT count(1) FROM meta_orgao mo WHERE mo.meta_id = pMetaId and mo.responsavel = TRUE )
                 THEN 1
               WHEN (
@@ -316,6 +318,8 @@ BEGIN
                   AND porc.ultima_revisao = true
                   AND porc.execucao_concluida = true
                   AND porc.meta_id = pMetaId
+                  AND porc.atualizado_em >= '2024-03-01'::date + '1 month'::interval
+                  AND CURRENT_DATE >= '2024-03-01'::date + '1 month'::interval
               ) = (SELECT count(1) FROM meta_orgao mo WHERE mo.meta_id = pMetaId and mo.responsavel = TRUE )
                 THEN 1
               ELSE 0
