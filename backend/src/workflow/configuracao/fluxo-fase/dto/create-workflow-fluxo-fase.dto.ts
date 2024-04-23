@@ -39,4 +39,9 @@ export class CreateWorkflowfluxoFaseDto {
     @IsOptional()
     @IsBoolean({ message: '$property| precisa ser um boolean' })
     marco?: boolean;
+
+    @IsOptional()
+    @IsInt()
+    @Type(() => Number)
+    duracao: number;
 }
