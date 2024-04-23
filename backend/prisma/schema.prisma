@@ -5087,7 +5087,8 @@ model FluxoFase {
     tarefas   FluxoTarefa[]
     situacoes FluxoFaseSituacao[]
 
-    marco Boolean @default(false)
+    marco   Boolean @default(false)
+    duracao Int?
 
     criado_por     Int
     criado_em      DateTime  @default(now()) @db.Timestamptz(6)
@@ -5128,6 +5129,7 @@ model FluxoTarefa {
     responsabilidade WorkflowResponsabilidade
     ordem            Int
     marco            Boolean                  @default(false)
+    duracao          Int?
 
     criado_por     Int
     criado_em      DateTime  @default(now()) @db.Timestamptz(6)

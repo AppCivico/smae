@@ -9,6 +9,7 @@ export class WorkflowfluxoFaseDto {
     fase: WorkflowFaseDto;
     ordem: number;
     marco: boolean;
+    duracao: number | null;
     @IsEnum(WorkflowResponsabilidade)
     responsabilidade: WorkflowResponsabilidade;
     situacao: WorkflowSituacaoDto[];
