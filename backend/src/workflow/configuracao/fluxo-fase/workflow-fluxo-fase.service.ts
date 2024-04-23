@@ -71,6 +71,7 @@ export class WorkflowfluxoFaseService {
                         fase_id: dto.fase_id,
                         ordem: ordem,
                         responsabilidade: dto.responsabilidade,
+                        marco: dto.marco,
                         criado_por: user.id,
                         criado_em: new Date(Date.now()),
                         situacoes: {
@@ -157,6 +158,7 @@ export class WorkflowfluxoFaseService {
                         fase_id: dto.fase_id,
                         responsabilidade: dto.responsabilidade,
                         ordem: ordem,
+                        marco: dto.marco,
                         atualizado_por: user.id,
                         atualizado_em: new Date(Date.now()),
                     },
@@ -182,6 +184,7 @@ export class WorkflowfluxoFaseService {
                 fluxo_id: true,
                 ordem: true,
                 responsabilidade: true,
+                marco: true,
                 fase: {
                     select: {
                         id: true,
@@ -209,7 +212,7 @@ export class WorkflowfluxoFaseService {
                 fluxo_id: r.fluxo_id,
                 responsabilidade: r.responsabilidade,
                 ordem: r.ordem,
-
+                marco: r.marco,
                 fase: {
                     id: r.fase.id,
                     fase: r.fase.fase,
