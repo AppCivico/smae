@@ -141,7 +141,7 @@ defineProps({
             ><use xlink:href="#i_$" /></svg><div>Orçamento</div>
           </component>
         </li>
-        <template v-if="perfil !== 'ponto_focal'">
+        <template v-if="perfil !== 'ponto_focal' && meta.variaveis?.total > 0">
           <li
             v-if="meta.analise_qualitativa_enviada !== null"
             class="meta__icones-item"
