@@ -256,6 +256,21 @@ onUpdated(() => { start(); });
         v-if="!singleCronogramaEtapas?.loading && singleCronogramaEtapas.length"
         class="etapas"
       >
+        <ul class="flex flexwrap g1 mb2 justifyright">
+          <li class="flex g1 tr">
+            <img
+              src="@/assets/icons/mapas/map-pin--endereco-ausente.svg"
+            >
+            Endereço obrigatório não preenchido
+          </li>
+          <li class="flex g1 tr">
+            <img
+              src="@/assets/icons/mapas/map-pin--endereco-preenchido.svg"
+            >
+            Endereço obrigatório
+          </li>
+        </ul>
+
         <div
           v-for="(r, index) in singleCronogramaEtapas?.filter(x => !x.inativo)"
           :key="r.etapa.id"
@@ -292,6 +307,7 @@ onUpdated(() => { start(); });
             <div class="ml1 f1">
               Atraso
             </div>
+            <div class="ml1 f0" />
             <div
               class="ml1 f0"
               style="flex-basis:20px;"
@@ -322,6 +338,26 @@ onUpdated(() => { start(); });
             </div>
             <div class="ml1 f1">
               {{ r.etapa.atraso ? r.etapa.atraso + ' dias' : '-' }}
+            </div>
+            <div class="ml1 f0">
+              <span
+                v-if="r?.etapa?.endereco_obrigatorio && !r?.etapa?.geolocalizacao?.length"
+                class="tipinfo left"
+              >
+                <img
+                  src="@/assets/icons/mapas/map-pin--endereco-ausente.svg"
+                >
+                <div>Endereço obrigatório não preenchido</div>
+              </span>
+              <span
+                v-else
+                class="tipinfo left"
+              >
+                <img
+                  src="@/assets/icons/mapas/map-pin--endereco-preenchido.svg"
+                >
+                <div>Endereço obrigatório</div>
+              </span>
             </div>
             <div
               class="ml1 f0"
@@ -448,6 +484,7 @@ onUpdated(() => { start(); });
               <div class="ml1 f1">
                 Atraso
               </div>
+              <div class="ml1 f0" />
               <div
                 v-if="temPermissãoPara('CadastroCronograma.remover')"
                 class="ml1 f0"
@@ -483,6 +520,22 @@ onUpdated(() => { start(); });
               </div>
               <div class="ml1 f1">
                 {{ rr.atraso ? rr.atraso + ' dias' : '-' }}
+              </div>
+              <div class="ml1 f0">
+                <span
+                  v-if="rr?.etapa?.endereco_obrigatorio && !rr?.etapa?.geolocalizacao?.length"
+                  class="tipinfo left"
+                >
+                  <img
+                    src="../../assets/icons/mapas/map-pin--endereco-ausente.svg"
+                  ><div>Endereço obrigatório não preenchido</div></span>
+                <span
+                  v-else
+                  class="tipinfo left"
+                >
+                  <img
+                    src="../../assets/icons/mapas/map-pin--endereco-preenchido.svg"
+                  ><div>Endereço obrigatório</div></span>
               </div>
               <div
                 v-if="temPermissãoPara('CadastroCronograma.remover')"
@@ -554,6 +607,7 @@ onUpdated(() => { start(); });
                 <div class="ml1 f1">
                   Atraso
                 </div>
+                <div class="ml1 f0" />
                 <div
                   v-if="temPermissãoPara('CadastroCronograma.remover')"
                   class="ml1 f0"
@@ -604,7 +658,24 @@ onUpdated(() => { start(); });
                   <div class="ml1 f1">
                     {{ rrr.atraso ? rrr.atraso + ' dias' : '-' }}
                   </div>
-
+                  <div class="ml1 f0">
+                    <span
+                      v-if="rrr?.etapa?.endereco_obrigatorio && !rrr?.etapa?.geolocalizacao?.length"
+                      class="tipinfo left"
+                    >
+                      <img
+                        src="@/assets/icons/mapas/map-pin--endereco-ausente.svg"
+                      ><div>Endereço obrigatório não preenchido</div>
+                    </span>
+                    <span
+                      v-else
+                      class="tipinfo left"
+                    >
+                      <img
+                        src="@/assets/icons/mapas/map-pin--endereco-preenchido.svg"
+                      ><div>Endereço obrigatório</div>
+                    </span>
+                  </div>
                   <div
                     v-if="temPermissãoPara('CadastroCronograma.remover')"
                     class="ml1 f0 flex center mr05"
