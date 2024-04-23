@@ -39,9 +39,13 @@ defineProps({
     class="meta bgc50 p1 br6"
   >
     <h2 class="meta__título w900 t14 spacebetween uc br8">
-      <router-link
+      <component
+        :is="meta.cronograma?.total || meta.variaveis?.total ? 'router-link' : 'span'"
         :to="{
-          name: 'monitoramentoPorVariáveis',
+          name: 'monitoramentoDeEvoluçãoDeMetaEspecífica',
+          params: {
+            meta_id: meta.id
+          },
           query: $route.query,
         }"
       >
@@ -53,7 +57,7 @@ defineProps({
         >
           (<code>meta {{ meta.id }} atualizada em {{ meta.atualizado_em }}</code>)
         </small>
-      </router-link>
+      </component>
     </h2>
     <div class="meta__meta-dados flex flexwrap spacebetween tc g1">
       <ul class="meta__icones-lista flex g1">
