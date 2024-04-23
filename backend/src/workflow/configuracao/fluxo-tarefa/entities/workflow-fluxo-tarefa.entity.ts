@@ -7,6 +7,7 @@ export class WorkflowFluxoTarefaDto {
     workflow_tarefa: WorkflowTarefaDto;
     fluxo_fase_id: number;
     ordem: number;
+    marco: boolean;
     @IsEnum(WorkflowResponsabilidade)
     responsabilidade: WorkflowResponsabilidade;
 }
