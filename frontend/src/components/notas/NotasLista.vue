@@ -1,16 +1,10 @@
 <script setup>
 import { useAlertStore } from '@/stores/alert.store';
 import { useBlocoDeNotasStore } from '@/stores/blocoNotas.store';
-import { useOrgansStore } from '@/stores/organs.store';
 import { useTipoDeNotasStore } from '@/stores/tipoNotas.store';
-import { useUsersStore } from '@/stores/users.store';
+import { useTransferenciasVoluntariasStore } from '@/stores/transferenciasVoluntarias.store';
 import { storeToRefs } from 'pinia';
-
-import { ref, watch } from 'vue';
-
-const ÓrgãosStore = useOrgansStore();
-
-const UserStore = useUsersStore();
+import { computed, ref, watch } from 'vue';
 
 const status = {
   Programado: {
@@ -31,26 +25,33 @@ const status = {
   },
 };
 
-const blocoStore = useBlocoDeNotasStore();
-const {
-  lista: listaNotas,
-  erro,
-  chamadasPendentes,
-} = storeToRefs(blocoStore);
+// TODO: pegar transferenciaId do $route
+const props = defineProps({
+  transferenciaId: {
+    type: [String, Number],
+    default: 0,
+  },
+});
 
+const TransferenciasVoluntarias = useTransferenciasVoluntariasStore();
+const { emFoco: transferênciaEmFoco } = storeToRefs(TransferenciasVoluntarias);
+const blocoStore = useBlocoDeNotasStore();
+const { lista: listaNotas, erro, chamadasPendentes } = storeToRefs(blocoStore);
 const tipoStore = useTipoDeNotasStore();
 const { lista: listaTipo } = storeToRefs(tipoStore);
 
-const exibeModalNotas = ref(false);
-const exibeForm = ref(false);
 const statusSelecionado = ref('');
 
-const props = defineProps({
-  blocosToken: {
-    type: String,
-    required: true,
-  },
-});
+const blocosToken = computed(
+  () => transferênciaEmFoco?.value?.bloco_nota_token,
+);
+
+async function iniciar() {
+  if (props.transferenciaId !== transferênciaEmFoco.value.id) {
+    await TransferenciasVoluntarias.buscarItem(props.transferenciaId);
+  }
+  blocoStore.buscarTudo(blocosToken.value);
+}
 
 async function excluirNota(id) {
   useAlertStore().confirmAction(
@@ -58,7 +59,7 @@ async function excluirNota(id) {
     async () => {
       if (await blocoStore.excluirItem(id)) {
         blocoStore.$reset();
-        blocoStore.buscarTudo(props.blocosToken);
+        blocoStore.buscarTudo(blocosToken.value);
         useAlertStore().success('Nota removida.');
       }
     },
@@ -67,38 +68,45 @@ async function excluirNota(id) {
 }
 
 function editarNota(id) {
-  exibeForm.value = true;
   blocoStore.buscarItem(id);
 }
 
-watch(
-  () => props.blocosToken,
-  () => {
-    if (props.blocosToken) {
-      blocoStore.buscarTudo(props.blocosToken);
-    }
-  },
-  { immediate: true },
-);
-
 watch(statusSelecionado, (novoValor) => {
-  blocoStore.buscarTudo(props.blocosToken, { status: novoValor });
+  blocoStore.buscarTudo(blocosToken.value, { status: novoValor });
 });
 
-tipoStore.buscarTudo();
-ÓrgãosStore.getAll();
-
-// PRA-FAZER: Buscar só na primeira abertura do formulário
-ÓrgãosStore.getAll();
-UserStore.buscarPessoasSimplificadas();
+iniciar();
 </script>
 
 <template>
   <div class="flex spacebetween center mb2">
     <h2>Notas</h2>
     <hr class="ml2 f1">
+    <router-link
+      :to="{ TransferenciasVoluntariasNotas }"
+      class="btn ml2"
+    >
+      Nova nota
+    </router-link>
   </div>
-
+  <div class="mb1">
+    <label class="label">Filtrar por status</label>
+    <select
+      v-model="statusSelecionado"
+      class="inputtext light mb1"
+    >
+      <option value>
+        Selecionar
+      </option>
+      <option
+        v-for="(item, key) in Object.values(status)"
+        :key="key"
+        :value="item.value"
+      >
+        {{ item.text }}
+      </option>
+    </select>
+  </div>
   <table class="tablemain mb1">
     <col>
     <col>
