@@ -311,10 +311,10 @@ async function checkClose() {
     <template v-if="singleCronograma?.loading">
       <span class="spinner">Carregando</span>
     </template>
-    <template v-if="singleCronograma?.error || error">
+    <template v-if="singleCronograma?.error">
       <div class="error p1">
         <div class="error-msg">
-          {{ singleCronograma.error ?? error }}
+          {{ singleCronograma.error }}
         </div>
       </div>
     </template>
