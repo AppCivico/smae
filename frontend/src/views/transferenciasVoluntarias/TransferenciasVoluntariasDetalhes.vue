@@ -1,6 +1,5 @@
 <script setup>
 import LoadingComponent from '@/components/LoadingComponent.vue';
-import ModalNotas from '@/components/notas/ModalNotas.vue';
 import dateToField from '@/helpers/dateToField';
 import dinheiro from '@/helpers/dinheiro';
 import { useAlertStore } from '@/stores/alert.store';
@@ -96,10 +95,6 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
 
   <pre v-scrollLockDebug>transferênciaEmFoco:{{ transferênciaEmFoco }}</pre>
   <pre v-scrollLockDebug>listaDeDistribuição:{{ listaDeDistribuição }}</pre>
-  <ModalNotas
-    v-if="transferênciaEmFoco?.bloco_nota_token"
-    :blocos-token="transferênciaEmFoco?.bloco_nota_token"
-  />
 
   <div class="flex g2 flexwrap center mt3 mb2">
     <h3 class="w400 tc300 t20 mb0">
