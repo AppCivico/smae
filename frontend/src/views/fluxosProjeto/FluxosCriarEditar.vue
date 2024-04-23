@@ -3,6 +3,7 @@
 import esferasDeTransferencia from '@/consts/esferasDeTransferencia';
 import { workflow as schema } from '@/consts/formSchemas';
 import { useAlertStore } from '@/stores/alert.store';
+import { useFluxosEtapasProjetosStore } from '@/stores/fluxosEtapasProjeto.store';
 import { useFluxosFasesProjetosStore } from '@/stores/fluxosFasesProjeto.store';
 import { useFluxosProjetosStore } from '@/stores/fluxosProjeto.store';
 import { useFluxosTarefasProjetosStore } from '@/stores/fluxosTarefaProjeto.store';
@@ -17,6 +18,7 @@ import {
 } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
+const fluxosEtapasProjetos = useFluxosEtapasProjetosStore();
 const tipoDeTransferenciaStore = useTipoDeTransferenciaStore();
 const fluxosProjetoStore = useFluxosProjetosStore();
 const fluxosFasesProjetos = useFluxosFasesProjetosStore();
@@ -105,6 +107,15 @@ function excluirTarefa(idDaTarefa) {
   alertStore.confirmAction('Tem certeza?', async () => {
     if (await fluxosTarefasProjetos.excluirItem(idDaTarefa)) {
       alertStore.success('Tarefa excluída!');
+      iniciar();
+    }
+  }, 'Excluir');
+}
+
+function excluirEtapa(idDaEtapa) {
+  alertStore.confirmAction('Tem certeza?', async () => {
+    if (await fluxosEtapasProjetos.excluirItem(idDaEtapa)) {
+      alertStore.success('Etapa excluída!');
       iniciar();
     }
   }, 'Excluir');
@@ -379,6 +390,18 @@ watch(itemParaEdição, (novoValor) => {
             @click="idDaEtapaEmFoco = item.id"
           >
             Editar etapa
+          </button>
+          <button
+            v-if="emFoco && !emFoco?.edicao_restrita"
+            class="like-a__text"
+            arial-label="excluir"
+            title="excluir"
+            @click="excluirEtapa(item.id)"
+          >
+            <svg
+              width="20"
+              height="20"
+            ><use xlink:href="#i_waste" /></svg>
           </button>
         </div>
       </div>
