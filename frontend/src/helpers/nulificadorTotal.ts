@@ -1,4 +1,4 @@
-interface AnyObject {
+interface QualquerObjeto {
   [key: string]: any;
 }
 
@@ -7,16 +7,20 @@ const nulificadorTotal = (obj: any): any => {
     return obj.map((item: any) => nulificadorTotal(item));
   } if (typeof obj === 'object' && obj !== null) {
     return Object.keys(obj)
-      .reduce((acc: AnyObject, key: string) => {
+      .reduce((acc: QualquerObjeto, key: string) => {
         if (typeof obj[key] === 'object' && obj[key] !== null) {
           acc[key] = nulificadorTotal(obj[key]);
+        } else if (typeof obj[key] === 'string') {
+          acc[key] = obj[key].trim() || null;
         } else {
-          acc[key] = obj[key] === '' ? null : obj[key];
+          acc[key] = obj[key];
         }
         return acc;
       }, {});
   }
-  return obj === '' ? null : obj;
+  return typeof obj === 'string'
+    ? (obj.trim() || null)
+    : obj;
 };
 
 export default nulificadorTotal;
