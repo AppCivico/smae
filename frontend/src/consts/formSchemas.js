@@ -1907,6 +1907,9 @@ export const tarefaFluxo = object({
 });
 
 export const etapasFluxo = object({
+  duracao: number()
+    .label('Duração')
+    .required(),
   fase_id: number()
     .label('Tipo de fase')
     .required(),
@@ -1920,6 +1923,8 @@ export const etapasFluxo = object({
   ordem: number()
     .label('posição dentro da etapa')
     .required(),
+  marco: boolean()
+    .label('Marco?'),
 });
 
 export const etapasProjeto = object({
