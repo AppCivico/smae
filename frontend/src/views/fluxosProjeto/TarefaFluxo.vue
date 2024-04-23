@@ -196,7 +196,7 @@ watch(itemParaEdição, (novoValor) => {
             type="number"
             class="inputtext light mb1"
             min="1"
-            max="10"
+            max="1000"
             step="1"
             @update:model-value="values.ordem = Number(values.ordem)"
           />
@@ -206,7 +206,7 @@ watch(itemParaEdição, (novoValor) => {
           />
         </div>
       </div>
-      <div>
+      <div class="flex flexwrap center g2">
         <div class="f1">
           <LabelFromYup
             name="responsabilidade"
@@ -231,6 +231,42 @@ watch(itemParaEdição, (novoValor) => {
           <ErrorMessage
             class="error-msg"
             name="responsabilidade"
+          />
+        </div>
+        <div>
+          <LabelFromYup
+            name="duracao"
+            :schema="schema"
+          />
+          <Field
+            name="duracao"
+            type="number"
+            class="inputtext light mb1"
+            min="1"
+            max="1000"
+            step="1"
+            @update:model-value="values.duracao = Number(values.duracao)"
+          />
+          <ErrorMessage
+            class="error-msg mb1"
+            name="duracao"
+          />
+        </div>
+        <div class="flex">
+          <Field
+            name="marco"
+            type="checkbox"
+            :value="true"
+            :unchecked-value="false"
+            class="inputcheckbox mr1"
+          />
+          <LabelFromYup
+            name="marco"
+            :schema="schema"
+          />
+          <ErrorMessage
+            class="error-msg"
+            name="marco"
           />
         </div>
       </div>
