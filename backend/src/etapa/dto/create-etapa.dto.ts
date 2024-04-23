@@ -22,16 +22,16 @@ export class CreateEtapaDto {
      * @example "[4, 5, 6]"
      */
     @IsOptional()
-    @IsArray({ message: '$property| precisa ser um array' })
-    @ArrayMaxSize(100, { message: '$property| precisa ter no máximo 100 items' })
-    @ArrayMinSize(1, { message: '$property| precisa ter no mínimo 1 item' })
-    @IsInt({ each: true, message: '$property| Cada item precisa ser um número inteiro' })
+    @IsArray({ message: 'Responsáveis precisa ser um array' })
+    @ArrayMaxSize(100, { message: 'Responsáveis precisa ter no máximo 100 items' })
+    @ArrayMinSize(1, { message: 'Responsáveis precisa ter no mínimo 1 item' })
+    @IsInt({ each: true, message: 'Responsáveis: Cada item precisa ser um número inteiro' })
     responsaveis: number[];
 
     /**
      * etapa_pai_id
      */
-    @IsInt({ message: '$property| Etapa pai precisa ser um número ou null' })
+    @IsInt({ message: 'Etapa pai precisa ser um número ou null' })
     @Type(() => Number)
     @IsOptional()
     etapa_pai_id?: number;
@@ -39,7 +39,7 @@ export class CreateEtapaDto {
     /**
      * regiao_id
      */
-    @IsInt({ message: '$property| região precisa ser um número ou null' })
+    @IsInt({ message: 'região precisa ser um número ou null' })
     @Type(() => Number)
     @IsOptional()
     regiao_id?: number;
@@ -47,31 +47,31 @@ export class CreateEtapaDto {
     /**
      * descricao
      */
-    @IsString({ message: '$property| contexto: Precisa ser alfanumérico' })
+    @IsString({ message: 'contexto: Precisa ser alfanumérico' })
     @IsOptional()
     descricao?: string;
 
     /**
      * status
      */
-    @IsString({ message: '$property| status: Precisa ser alfanumérico' })
-    @MinLength(1, { message: '$property| status: pelo menos um caractere' })
+    @IsString({ message: 'status: Precisa ser alfanumérico' })
+    @MinLength(1, { message: 'status: pelo menos um caractere' })
     @IsOptional()
-    @MaxLength(250, { message: '$property| status: 250 caracteres' })
+    @MaxLength(250, { message: 'status: 250 caracteres' })
     status?: string;
 
     @IsNumber()
-    @IsInt({ message: '$property| ordem precisa ser um número ou null' })
+    @IsInt({ message: 'ordem precisa ser um número ou null' })
     @IsOptional()
     ordem?: number;
 
     /**
      * titulo
      */
-    @IsString({ message: '$property| titulo: Precisa ser alfanumérico' })
-    @MinLength(1, { message: '$property| titulo: pelo menos um caractere' })
+    @IsString({ message: 'titulo: Precisa ser alfanumérico' })
+    @MinLength(1, { message: 'titulo: pelo menos um caractere' })
     @IsOptional()
-    @MaxLength(250, { message: '$property| titulo: 250 caracteres' })
+    @MaxLength(250, { message: 'titulo: 250 caracteres' })
     titulo?: string;
 
     /**
@@ -135,7 +135,7 @@ export class CreateEtapaDto {
     prazo_termino?: Date | null;
 
     @IsOptional()
-    @IsInt({ message: '$property| Peso precisa ser um número ou null' })
+    @IsInt({ message: 'Peso precisa ser um número ou null' })
     @Type(() => Number)
     @ValidateIf((object, value) => value !== null)
     peso?: number;
@@ -143,8 +143,8 @@ export class CreateEtapaDto {
     @IsOptional()
     @IsNumber()
     @ValidateIf((object, value) => value !== null)
-    @Min(0, { message: '$property| Percentual de execução precisa ser positivo ou zero' })
-    @Max(100, { message: '$property| Percentual de execução máximo é 100' })
+    @Min(0, { message: 'Percentual de execução precisa ser positivo ou zero' })
+    @Max(100, { message: 'Percentual de execução máximo é 100' })
     percentual_execucao?: number;
 
     @IsOptional()
