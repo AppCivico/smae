@@ -1894,8 +1894,8 @@ export const fasesFluxo = object({
 });
 
 export const tarefaFluxo = object({
-  workflow_tarefa_id: number()
-    .label('Tarefa')
+  duracao: number()
+    .label('Duração')
     .required(),
   responsabilidade: mixed()
     .label('Responsabilidade')
@@ -1903,6 +1903,11 @@ export const tarefaFluxo = object({
     .required(),
   ordem: number()
     .label('Posição dentro da fase')
+    .required(),
+  marco: boolean()
+    .label('Marco?'),
+  workflow_tarefa_id: number()
+    .label('Tarefa')
     .required(),
 });
 
