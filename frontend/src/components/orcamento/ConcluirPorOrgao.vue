@@ -64,6 +64,8 @@ async function concluirOrçamento(concluir, órgãoId, índice) {
       />
     </div>
 
+    <pre v-scrollLockDebug>ano:{{ ano }}</pre>
+
     <table class="tablemain">
       <col>
       <col class="col--minimum">

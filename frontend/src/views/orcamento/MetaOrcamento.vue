@@ -38,7 +38,7 @@ const parentLabel = ref(atividade_id ? '-' : iniciativa_id ? '-' : meta_id ? 'Me
 
 const conclusãoPendente = ref(false);
 const campoPlanoConcluído = ref(null);
-const diálogoDeConclusãoEstáAberto = ref(false);
+const anoDoDiálogoDeConclusãoAberto = ref(false);
 
 const OrcamentosStore = useOrcamentosStore();
 
@@ -181,19 +181,18 @@ export default {
               Concluir
             </template>
           </label>
-
+          <!-- Estamos dentro de um loop! Vamos ter certeza de que só um diálogo abriu!-->
           <ConcluirPorOrgao
-            v-if="diálogoDeConclusãoEstáAberto"
+            v-if="anoDoDiálogoDeConclusãoAberto === ano"
             :ano="ano"
             :meta="meta_id"
-            @close="() => { diálogoDeConclusãoEstáAberto = false; }"
+            @close="() => { anoDoDiálogoDeConclusãoAberto = 0; }"
           />
-
           <button
             v-if="OrcamentoRealizadoConclusaoAdmin[ano]?.length"
             type="button"
             class="btn with-icon bgnone tcprimary p0"
-            @click="diálogoDeConclusãoEstáAberto= true"
+            @click="anoDoDiálogoDeConclusãoAberto = ano"
           >
             <svg
               width="20"
