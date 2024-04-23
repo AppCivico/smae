@@ -330,6 +330,7 @@ BEGIN
       WHERE meta_id = pMetaId
       AND ultima_revisao = true
       AND execucao_concluida = true
+      GROUP BY 1, 2
     ),
     cte_calc AS (
       SELECT
