@@ -1,6 +1,6 @@
 <script setup>
-import { storeToRefs } from 'pinia';
 import { useAuthStore } from '@/stores/auth.store';
+import { storeToRefs } from 'pinia';
 
 const authStore = useAuthStore();
 
@@ -51,7 +51,7 @@ defineProps({
           v-if="meta.atualizado_em"
           v-ScrollLockDebug
         >
-          (<code>meta.atualizado_em:&nbsp;{{ meta.atualizado_em }}</code>)
+          (<code>meta {{ meta.id }} atualizada em {{ meta.atualizado_em }}</code>)
         </small>
       </router-link>
     </h2>
