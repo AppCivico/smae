@@ -138,7 +138,6 @@ watch([
         name="palavra_chave"
         type="text"
       >
-      <small class="tc200 t13">pode-se usar <strong>e</strong> ou <strong>ou</strong></small>
     </div>
 
     <div class="flex f0 center g1 mb1">
