@@ -322,7 +322,7 @@ export class EtapaService {
 
             // Esta func verifica se as rows acima (etapa_pai_id) possuem esse boolean "endereco_obrigatorio"
             // E se está sendo respeitado
-            if (dto.termino_real && dto.termino_real !== null && self.termino_real !== etapaAtualizada.termino_real) {
+            if (dto.termino_real && self.termino_real?.valueOf() !== etapaAtualizada.termino_real?.valueOf()) {
                 await this.verificaEtapaEnderecoObrigatorioPais(prismaTx, id, self.cronograma.id);
             }
 
@@ -353,7 +353,7 @@ export class EtapaService {
 
             if (pendentes.length > 0)
                 throw new BadRequestException(
-                    `Seguintes etapas precisam ter o endereço preenchido: ${pendentes.join(',')}`
+                    `Para que esta etapa seja finalizada, as seguintes etapas precisam ter o endereço preenchido: ${pendentes.join(',')}`
                 );
         }
     }
