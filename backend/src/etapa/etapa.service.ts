@@ -1,4 +1,4 @@
-import { HttpException, Injectable, Logger } from '@nestjs/common';
+import { BadRequestException, HttpException, Injectable, Logger } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { RecordWithId } from '../common/dto/record-with-id.dto';
@@ -322,19 +322,8 @@ export class EtapaService {
 
             // Esta func verifica se as rows acima (etapa_pai_id) possuem esse boolean "endereco_obrigatorio"
             // E se está sendo respeitado
-            if (dto.termino_real && dto.termino_real !== null) {
-                const paisComPendencias: { assert_geoloc_rule: string }[] =
-                    await prismaTx.$queryRaw`SELECT CAST(assert_geoloc_rule(${id}::integer, ${self.cronograma.id}::integer) AS VARCHAR)`;
-                if (paisComPendencias[0].assert_geoloc_rule && paisComPendencias[0].assert_geoloc_rule !== null) {
-                    const pendentesStr = paisComPendencias[0].assert_geoloc_rule.slice(1, -1);
-                    const pendentes = pendentesStr.split(',').filter((e) => e.length > 1);
-
-                    if (pendentes.length > 0)
-                        throw new HttpException(
-                            `Seguintes etapas precisam ter o endereço preenchido: ${pendentes.join(',')}`,
-                            400
-                        );
-                }
+            if (dto.termino_real && dto.termino_real !== null && self.termino_real !== etapaAtualizada.termino_real) {
+                await this.verificaEtapaEnderecoObrigatorioPais(prismaTx, id, self.cronograma.id);
             }
 
             return etapaAtualizada;
@@ -349,6 +338,24 @@ export class EtapaService {
         }
 
         return { id };
+    }
+
+    private async verificaEtapaEnderecoObrigatorioPais(
+        prismaTx: Prisma.TransactionClient,
+        id: number,
+        cronograma_id: number
+    ) {
+        const paisComPendencias: { assert_geoloc_rule: string }[] =
+            await prismaTx.$queryRaw`SELECT CAST(assert_geoloc_rule(${id}::integer, ${cronograma_id}::integer) AS VARCHAR)`;
+        if (paisComPendencias[0].assert_geoloc_rule && paisComPendencias[0].assert_geoloc_rule !== null) {
+            const pendentesStr = paisComPendencias[0].assert_geoloc_rule.slice(1, -1);
+            const pendentes = pendentesStr.split(',').filter((e) => e.length > 1);
+
+            if (pendentes.length > 0)
+                throw new BadRequestException(
+                    `Seguintes etapas precisam ter o endereço preenchido: ${pendentes.join(',')}`
+                );
+        }
     }
 
     private async updateResponsaveis(
