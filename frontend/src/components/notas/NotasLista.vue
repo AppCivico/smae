@@ -61,7 +61,7 @@ const {
 const {
   errors, handleSubmit, isSubmitting, resetForm, setFieldValue, values,
 } = useForm({
-  initialValues: itemParaEdição.value,
+  initialValues: itemParaEdição,
   validationSchema: schema,
 });
 
@@ -69,6 +69,7 @@ const tipoStore = useTipoDeNotasStore();
 const { lista: listaTipo } = storeToRefs(tipoStore);
 
 const statusSelecionado = ref('');
+// eslint-disable-next-line prefer-const
 let exibeForm = ref(false);
 const tipoNotaId = ref(null);
 
@@ -107,7 +108,13 @@ async function excluirNota(id) {
 }
 
 function editarNota(id) {
+  exibeForm.value = true;
   blocoStore.buscarItem(id);
+}
+
+function fecharModal() {
+  emFoco.value = null;
+  exibeForm.value = false;
 }
 
 const onSubmit = handleSubmit.withControlled(async (valoresControlados) => {
@@ -117,15 +124,14 @@ const onSubmit = handleSubmit.withControlled(async (valoresControlados) => {
     id: itemParaEdição.value.id_jwt ? itemParaEdição.value.id_jwt : undefined,
   };
   try {
-    let resposta;
     const msg = 'Dados salvos com sucesso!';
-    resposta = await blocoStore.salvarItem(valoresAuxiliares);
+    const resposta = await blocoStore.salvarItem(valoresAuxiliares);
     if (resposta) {
       alertStore.success(msg);
       blocoStore.$reset();
       blocoStore.buscarTudo(blocosToken.value);
       resetForm({ values: itemParaEdição.value });
-      exibeForm = false;
+      exibeForm.value = false;
     }
   } catch (error) {
     alertStore.error(error);
@@ -159,7 +165,7 @@ iniciar();
       <hr class="ml2 f1">
       <CheckClose
         :apenas-emitir="true"
-        @close="exibeForm = false"
+        @close="fecharModal()"
       />
     </div>
     <div class="mb4">
