@@ -49,8 +49,7 @@ export class EtapaService {
         const now = new Date(Date.now());
         const created = await this.prisma.$transaction(
             async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
-                const geolocalizacao = dto.geolocalizacao;
-                delete dto.geolocalizacao;
+                this.logger.log(`Criando etapa... ${JSON.stringify(dto)}`);
 
                 const etapa = await prismaTx.etapa.create({
                     data: {
@@ -66,7 +65,6 @@ export class EtapaService {
                         inicio_previsto: dto.inicio_previsto,
                         termino_previsto: dto.termino_previsto,
                         inicio_real: dto.inicio_real,
-                        termino_real: dto.termino_real,
                         prazo_inicio: dto.prazo_inicio,
                         prazo_termino: dto.prazo_termino,
                         peso: dto.peso,
@@ -80,12 +78,14 @@ export class EtapaService {
                     data: await this.buildEtapaResponsaveis(etapa.id, responsaveis),
                 });
 
-                if (dto.regiao_id || geolocalizacao) {
+                if (dto.regiao_id || dto.termino_real || dto.geolocalizacao) {
+                    this.logger.log('encaminhando para método de atualização e validações restantes...');
                     await this.update(
                         etapa.id,
                         {
                             regiao_id: dto.regiao_id,
-                            geolocalizacao: geolocalizacao,
+                            termino_real: dto.termino_real,
+                            geolocalizacao: dto.geolocalizacao,
                         },
                         user,
                         prismaTx
@@ -186,6 +186,7 @@ export class EtapaService {
     }
 
     async update(id: number, dto: UpdateEtapaDto, user: PessoaFromJwt, prismaCtx?: Prisma.TransactionClient) {
+        this.logger.log(`atualizando etapa id=${id}: ${JSON.stringify(dto)}`);
         const responsaveis = dto.responsaveis === null ? [] : dto.responsaveis;
         const geolocalizacao = dto.geolocalizacao;
         delete dto.geolocalizacao;
