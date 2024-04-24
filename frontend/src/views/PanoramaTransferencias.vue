@@ -63,17 +63,17 @@ onUnmounted(() => {
             </td>
           </tr>
           <tr v-if="chamadasPendentes.lista">
-            <td colspan="10">
+            <td colspan="4">
               Carregando
             </td>
           </tr>
           <tr v-else-if="erro">
-            <td colspan="10">
+            <td colspan="4">
               Erro: {{ erro }}
             </td>
           </tr>
           <tr v-else-if="!lista.length">
-            <td colspan="10">
+            <td colspan="4">
               Nenhum resultado encontrado.
             </td>
           </tr>
