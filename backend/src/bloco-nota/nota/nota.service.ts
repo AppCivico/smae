@@ -79,8 +79,11 @@ export class NotaService {
                     id: true,
                     nota: true,
                     dispara_email: true,
+                    rever_em: true,
+                    data_nota: true,
                 },
             });
+            this.validateReverEm(nota);
 
             if (tipo.permite_enderecamento)
                 await this.upsertEnderecamentos(prismaTx, nota.id, dto, now, user, nota, nota);
@@ -91,6 +94,16 @@ export class NotaService {
         return {
             id_jwt: token,
         };
+    }
+
+    private validateReverEm(nota: { rever_em: Date | null; data_nota: Date }) {
+        if (
+            nota.rever_em &&
+            nota.rever_em.valueOf() < DateTime.local({ zone: SYSTEM_TIMEZONE }).startOf('day').valueOf()
+        )
+            throw new BadRequestException('Data de revisão inválida, deve ser após a data de hoje.');
+        if (nota.rever_em && nota.rever_em.valueOf() < nota.data_nota.valueOf())
+            throw new BadRequestException('Data de revisão inválida, deve ser após a data da nota.');
     }
 
     async findAll(filters: BuscaNotaDto, user: PessoaFromJwt): Promise<TipoNotaItem[]> {
@@ -169,10 +182,8 @@ export class NotaService {
                     status: r.status,
                     tipo_nota_id: r.tipo_nota_id,
                     orgao_responsavel: r.orgao_responsavel,
-                    data_ordenacao:
-                        r.rever_em && r.rever_em.valueOf() >= today && r.rever_em >= r.data_nota
-                            ? r.rever_em
-                            : r.data_nota,
+                    data_ordenacao: r.data_nota.valueOf() <= today && r.rever_em ? r.rever_em : r.data_nota,
+
                     bloco_id: r.bloco_nota_id,
                     pessoa_responsavel: r.pessoa_responsavel,
                     n_enderecamentos: r.n_enderecamentos,
@@ -399,6 +410,8 @@ export class NotaService {
                 dispara_email: true,
                 nota: true,
                 tipo_nota: { select: { permite_revisao: true, permite_enderecamento: true, eh_publico: true } },
+                rever_em: true,
+                data_nota: true,
             },
         });
 
@@ -425,8 +438,16 @@ export class NotaService {
                 },
                 select: {
                     nota: true,
+                    rever_em: true,
+                    data_nota: true,
                 },
             });
+
+            if (
+                nota.data_nota.valueOf() != updated.data_nota.valueOf() ||
+                nota.rever_em?.valueOf() != updated.rever_em?.valueOf()
+            )
+                this.validateReverEm(updated);
 
             if (nota.tipo_nota.permite_enderecamento)
                 await this.upsertEnderecamentos(prismaTx, id, dto, now, user, nota, updated);
