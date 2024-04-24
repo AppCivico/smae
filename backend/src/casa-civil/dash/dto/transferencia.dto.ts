@@ -12,6 +12,9 @@ export class MfDashTransferenciasDto {
     situacao: string;
     data: Date | null;
     data_origem: string;
+    orgaos: number[];
+    esfera: string;
+    partido_id: number | null;
 }
 
 export class ListMfDashTransferenciasDto {
