@@ -94,8 +94,10 @@ const { handleChange } = useField(nomeDoCampo, undefined, {
   initialValue: model.value,
 });
 
-const buscarItemPorToken = (token) => props.geolocalizaçãoPorToken?.[token]
-  || endereçosTemporários.value?.[token] || null;
+const endereçosConsolidadosPorToken = computed(() => ({
+  ...props.geolocalizaçãoPorToken,
+  ...endereçosTemporários.value,
+}));
 
 async function preencherFormulário(item) {
   if (isArray(item?.endereco?.geometry?.coordinates)) {
@@ -253,18 +255,18 @@ const formulárioSujo = useIsFormDirty();
         :key="token"
       >
         <th>
-          {{ buscarItemPorToken(token)?.endereco?.properties?.rotulo || '-' }}
+          {{ endereçosConsolidadosPorToken[token]?.endereco?.properties?.rotulo || '-' }}
         </th>
         <td class="f1">
-          {{ buscarItemPorToken(token)?.endereco_exibicao
-            || buscarItemPorToken(token)?.endereco?.properties?.string_endereco
+          {{ endereçosConsolidadosPorToken[token]?.endereco_exibicao
+            || endereçosConsolidadosPorToken[token]?.endereco?.properties?.string_endereco
             || '-' }}
         </td>
         <td>
-          {{ buscarItemPorToken(token)?.endereco?.properties?.bairro || '-' }}
+          {{ endereçosConsolidadosPorToken[token]?.endereco?.properties?.bairro || '-' }}
         </td>
         <td class="cell--number">
-          {{ buscarItemPorToken(token)?.endereco?.properties?.cep || '-' }}
+          {{ endereçosConsolidadosPorToken[token]?.endereco?.properties?.cep || '-' }}
         </td>
         <td>
           <button
