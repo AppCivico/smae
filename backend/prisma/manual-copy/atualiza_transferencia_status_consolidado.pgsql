@@ -9,6 +9,7 @@ v_data date;
 v_data_origem varchar;
 
 v_orgao_concedente_id int;
+v_secretaria_concedente_id int;
 v_xpto varchar;
 v_id int;
 
@@ -31,11 +32,13 @@ BEGIN
     SELECT
         id,
         clausula_suspensiva_vencimento,
-        orgao_concedente_id
+        orgao_concedente_id,
+        secretaria_concedente_id
     INTO
         v_id,
         v_data,
-        v_orgao_concedente_id
+        v_orgao_concedente_id,
+        v_secretaria_concedente_id
     FROM transferencia
     WHERE id = pTransferenciaId
     AND removido_em is null;
@@ -53,6 +56,10 @@ BEGIN
     v_situacao := case when (v_id % 2)::int = 0 then 'Situação 0' ELSE 'Situação 4' end;
     v_data_origem:='Dia corrente';
     v_orgaos_envolvidos := ARRAY[ v_orgao_concedente_id ]::int[];
+    -- append v_secretaria_concedente_id v_orgaos_envolvidos if not null
+    IF v_secretaria_concedente_id IS NOT NULL THEN
+        v_orgaos_envolvidos := v_orgaos_envolvidos || ARRAY[v_secretaria_concedente_id]::int[];
+    END IF;
     raise notice 'v_orgao_concedente_id: %', v_orgao_concedente_id;
     raise notice 'v_xpto: %', v_xpto;
 
