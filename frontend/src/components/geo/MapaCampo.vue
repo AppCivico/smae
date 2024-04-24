@@ -17,7 +17,7 @@ import {
   useIsFormDirty,
 } from 'vee-validate';
 import {
-  computed, defineModel, defineOptions, nextTick, ref,
+  computed, defineModel, defineOptions, nextTick, ref, toRef,
 } from 'vue';
 
 const RegionsStore = useRegionsStore();
