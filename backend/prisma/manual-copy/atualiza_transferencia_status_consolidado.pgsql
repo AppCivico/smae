@@ -8,7 +8,7 @@ v_orgaos_envolvidos int[];
 v_data date;
 v_data_origem varchar;
 
-
+v_orgao_concedente_id int;
 v_xpto varchar;
 v_id int;
 
@@ -27,27 +27,34 @@ BEGIN
     --
     delete from transferencia_status_consolidado where transferencia_id = pTransferenciaId;
 
+    raise notice 'pTransferenciaId: %', pTransferenciaId;
     SELECT
         id,
         clausula_suspensiva_vencimento,
-        cargo::text
+        orgao_concedente_id
     INTO
         v_id,
-        v_data
-        v_xpto
+        v_data,
+        v_orgao_concedente_id
     FROM transferencia
     WHERE id = pTransferenciaId
     AND removido_em is null;
+
+    raise notice 'v_id: %', v_id;
+    raise notice 'v_data: %', v_data;
+    raise notice 'v_xpto: %', v_xpto;
+    raise notice 'v_orgao_concedente_id: %',v_orgao_concedente_id;
 
     if (v_id is null) then
         return 'removido';
     end if;
 
-
     --
     v_situacao := case when (v_id % 2)::int = 0 then 'Situação 0' ELSE 'Situação 4' end;
     v_data_origem:='Dia corrente';
-    v_orgaos_envolvidos := '{}'::int[];
+    v_orgaos_envolvidos := ARRAY[ v_orgao_concedente_id ]::int[];
+    raise notice 'v_orgao_concedente_id: %', v_orgao_concedente_id;
+    raise notice 'v_xpto: %', v_xpto;
 
     if (v_data is not null) then
         v_situacao := case when v_xpto = 'Vereador' then 'Situação 2' ELSE 'Situação 3' end;
@@ -80,4 +87,4 @@ $$
 LANGUAGE plpgsql;
 
 
-select atualiza_transferencia_status_consolidado(id) from transferencia where removido_em is null;
+select atualiza_transferencia_status_consolidado(id) from transferencia where removido_em is null and id=65;

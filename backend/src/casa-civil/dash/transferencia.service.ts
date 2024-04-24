@@ -1,7 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
-import { FilterDashTransferenciasDto, ListMfDashTransferenciasDto } from './dto/transferencia.dto';
 import { TransferenciaService } from '../transferencia/transferencia.service';
+import {
+    FilterDashTransferenciasDto,
+    ListMfDashTransferenciasDto,
+    MfDashTransferenciasDto,
+} from './dto/transferencia.dto';
 
 @Injectable()
 export class DashTransferenciaService {
@@ -28,6 +32,8 @@ export class DashTransferenciaService {
                     select: {
                         id: true,
                         identificador: true,
+                        esfera: true,
+                        partido_id: true,
                     },
                 },
             },
@@ -35,13 +41,16 @@ export class DashTransferenciaService {
         });
 
         const ret: ListMfDashTransferenciasDto = {
-            linhas: rows.map((r) => {
+            linhas: rows.map((r): MfDashTransferenciasDto => {
                 return {
                     data: r.data,
                     data_origem: r.data_origem,
                     situacao: r.situacao,
                     identificador: r.transferencia.identificador,
                     transferencia_id: r.transferencia.id,
+                    esfera: r.transferencia.esfera,
+                    orgaos: r.orgaos_envolvidos,
+                    partido_id: r.transferencia.partido_id,
                 };
             }),
         };
