@@ -49,18 +49,48 @@ const CronogramasStore = useCronogramasStore();
 const { singleCronograma, singleCronogramaEtapas } = storeToRefs(CronogramasStore);
 const editModalStore = useEditModalStore();
 
+function mapearAtrasoParaCor(grau) {
+  switch (grau.toLowerCase()) {
+    case 'alto':
+      return 'vermelho';
+
+    case 'moderado':
+      return 'laranja';
+
+    case 'concluido':
+      return 'verde';
+
+    default:
+      return null;
+  }
+}
+
 function achatarGeoLocalização(data) {
   let geoLocalizaçãoAchatada = [];
 
   data.forEach((item) => {
     if (item?.etapa?.geolocalizacao?.length > 0) {
       geoLocalizaçãoAchatada = geoLocalizaçãoAchatada
-        .concat(item.etapa.geolocalizacao);
+        .concat(item.etapa.geolocalizacao.map((x) => {
+          if (!x?.endereco?.properties?.atraso_grau) {
+            // eslint-disable-next-line no-param-reassign
+            x.endereco.properties.cor_do_marcador = mapearAtrasoParaCor(item.atraso_grau);
+          }
+
+          return x;
+        }));
     }
 
     if (item?.geolocalizacao?.length > 0) {
       geoLocalizaçãoAchatada = geoLocalizaçãoAchatada
-        .concat(item.geolocalizacao);
+        .concat(item.geolocalizacao.map((x) => {
+          if (!x?.endereco?.properties?.atraso_grau) {
+            // eslint-disable-next-line no-param-reassign
+            x.endereco.properties.cor_do_marcador = mapearAtrasoParaCor(item.atraso_grau);
+          }
+
+          return x;
+        }));
     }
 
     if (item?.etapa?.etapa_filha?.length > 0) {
@@ -80,7 +110,8 @@ function achatarGeoLocalização(data) {
 const marcadoresDasEtapas = computed(() => (singleCronogramaEtapas.value?.loading
   || !singleCronogramaEtapas.value.length
   ? []
-  : achatarGeoLocalização(singleCronogramaEtapas.value).map((x) => x.endereco)));
+  : achatarGeoLocalização(singleCronogramaEtapas.value)
+    .map((x) => x.endereco)));
 
 function excluirEtapa(id) {
   alertStore.confirmAction('Deseja mesmo excluir?', async () => {
