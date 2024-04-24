@@ -82,4 +82,3 @@ onUnmounted(() => {
     </div>
   </Dashboard>
 </template>
-@/stores/panoramaTransferencias.store
