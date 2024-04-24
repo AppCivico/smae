@@ -367,7 +367,7 @@ model Pessoa {
     ProjetoEtapaQCriei                       ProjetoEtapa[]                            @relation("Criador")
     ProjetoEtapaQRemovi                      ProjetoEtapa[]                            @relation("Removedor")
     ProjetoEtapaQAtualizei                   ProjetoEtapa[]                            @relation("Atualizador")
-    Nota                                     Nota[]
+    Nota                                     Nota[]                                    @relation("Resp")
     NotaEnderecamentoQSouEnderecado          NotaEnderecamento[]                       @relation("Enderecado")
     NotaEnderecamentoQCriei                  NotaEnderecamento[]                       @relation("Criador")
     NotaEnderecamentoQRemovi                 NotaEnderecamento[]                       @relation("Removedor")
@@ -380,6 +380,9 @@ model Pessoa {
     BlocoNotaQAtualizei                      BlocoNota[]                               @relation("Atualizador")
     view_atividade_pessoa_responsavel        view_atividade_pessoa_responsavel[]
     view_iniciativa_pessoa_responsavel       view_iniciativa_pessoa_responsavel[]
+    ViewNotaComOrdemQCriei                   ViewNotas[]                               @relation("Criador")
+    ViewNotaComOrdemQRemovi                  ViewNotas[]                               @relation("Removedor")
+    ViewNotaComOrdemQSouResp                 ViewNotas[]                               @relation("Resp")
 
     @@index([email])
     @@map("pessoa")
@@ -466,6 +469,7 @@ model Orgao {
     transferenciaAndamento       TransferenciaAndamento[]
     transferenciaAndamentoTarefa TransferenciaAndamentoTarefa[]
     PdmOrcamentoRealizadoConfig  PdmOrcamentoRealizadoConfig[]
+    ViewNotaComOrdem             ViewNotas[]
 
     @@map("orgao")
 }
@@ -5256,12 +5260,14 @@ model AvisoEmail {
 
     AvisoEmailDisparos AvisoEmailDisparos[]
 
-    criado_por     Int?
-    criado_em      DateTime  @default(now()) @db.Timestamptz(6)
-    atualizado_por Int?
-    atualizado_em  DateTime  @default(now()) @db.Timestamptz(6)
-    removido_por   Int?
-    removido_em    DateTime? @db.Timestamptz(6)
+    criado_por         Int?
+    criado_em          DateTime   @default(now()) @db.Timestamptz(6)
+    atualizado_por     Int?
+    atualizado_em      DateTime   @default(now()) @db.Timestamptz(6)
+    removido_por       Int?
+    removido_em        DateTime?  @db.Timestamptz(6)
+    ViewNotaComOrdem   ViewNotas? @relation(fields: [viewNotaComOrdemId], references: [id])
+    viewNotaComOrdemId Int?
 
     @@map("aviso_email")
 }
@@ -5309,9 +5315,10 @@ model BlocoNota {
     removido_por Int?
     removido_em  DateTime? @db.Timestamptz(6)
 
-    criador     Pessoa  @relation("Criador", fields: [criado_por], references: [id])
-    atualizador Pessoa? @relation("Atualizador", fields: [atualizado_por], references: [id])
-    removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
+    criador          Pessoa      @relation("Criador", fields: [criado_por], references: [id])
+    atualizador      Pessoa?     @relation("Atualizador", fields: [atualizado_por], references: [id])
+    removedor        Pessoa?     @relation("Removedor", fields: [removido_por], references: [id])
+    ViewNotaComOrdem ViewNotas[]
 
     @@map("bloco_nota")
 }
@@ -5327,11 +5334,12 @@ model TipoNota {
     visivel_resp_orgao    Boolean
     eh_publico            Boolean
 
-    TipoNotaModulo TipoNotaModulo[]
-    Nota           Nota[]
-    criado_em      DateTime         @default(now()) @db.Timestamptz(6)
-    removido_em    DateTime?        @db.Timestamptz(6)
-    atualizado_em  DateTime?        @db.Timestamptz(6)
+    TipoNotaModulo   TipoNotaModulo[]
+    Nota             Nota[]
+    criado_em        DateTime         @default(now()) @db.Timestamptz(6)
+    removido_em      DateTime?        @db.Timestamptz(6)
+    atualizado_em    DateTime?        @db.Timestamptz(6)
+    ViewNotaComOrdem ViewNotas[]
 
     @@map("tipo_nota")
 }
@@ -5362,11 +5370,11 @@ model Nota {
 
     bloco_nota_id         Int
     tipo_nota_id          Int
-    data_nota             DateTime
+    data_nota             DateTime   @db.Date
     orgao_responsavel_id  Int
     pessoa_responsavel_id Int
     nota                  String
-    rever_em              DateTime?
+    rever_em              DateTime?  @db.Date
     dispara_email         Boolean    @default(false)
     status                StatusNota
 
@@ -5383,7 +5391,7 @@ model Nota {
     tipo_nota                 TipoNota                    @relation(fields: [tipo_nota_id], references: [id])
     bloco_nota                BlocoNota                   @relation(fields: [bloco_nota_id], references: [id])
     orgao_responsavel         Orgao                       @relation(fields: [orgao_responsavel_id], references: [id])
-    pessoa_responsavel        Pessoa                      @relation(fields: [pessoa_responsavel_id], references: [id])
+    pessoa_responsavel        Pessoa                      @relation("Resp", fields: [pessoa_responsavel_id], references: [id])
     criador                   Pessoa                      @relation("Criador", fields: [criado_por], references: [id])
     removedor                 Pessoa?                     @relation("Removedor", fields: [removido_por], references: [id])
     NotaEnderecamento         NotaEnderecamento[]
@@ -5391,9 +5399,47 @@ model Nota {
     revisoes                  NotaRevisao[]
     AvisoEmail                AvisoEmail[]
 
-    @@index([data_nota, status])
-    @@index([rever_em])
+    @@index([bloco_nota_id])
     @@map("nota")
+}
+
+view ViewNotas {
+    id Int @id @default(autoincrement())
+
+    bloco_nota_id         Int
+    tipo_nota_id          Int
+    data_nota             DateTime   @db.Date
+    orgao_responsavel_id  Int
+    pessoa_responsavel_id Int
+    nota                  String
+    rever_em              DateTime?  @db.Date
+    dispara_email         Boolean    @default(false)
+    status                StatusNota
+
+    n_enderecamentos Int       @default(0)
+    n_repostas       Int       @default(0)
+    ultima_resposta  DateTime?
+
+    criado_por Int
+    criado_em  DateTime @default(now()) @db.Timestamptz(6)
+
+    removido_por Int?
+    removido_em  DateTime? @db.Timestamptz(6)
+
+    data_ordenacao DateTime
+
+    tipo_nota                 TipoNota                    @relation(fields: [tipo_nota_id], references: [id])
+    bloco_nota                BlocoNota                   @relation(fields: [bloco_nota_id], references: [id])
+    orgao_responsavel         Orgao                       @relation(fields: [orgao_responsavel_id], references: [id])
+    pessoa_responsavel        Pessoa                      @relation("Resp", fields: [pessoa_responsavel_id], references: [id])
+    criador                   Pessoa                      @relation("Criador", fields: [criado_por], references: [id])
+    removedor                 Pessoa?                     @relation("Removedor", fields: [removido_por], references: [id])
+    NotaEnderecamento         NotaEnderecamento[]
+    NotaEnderecamentoResposta NotaEnderecamentoResposta[]
+    revisoes                  NotaRevisao[]
+    AvisoEmail                AvisoEmail[]
+
+    @@map("view_nota")
 }
 
 model NotaRevisao {
@@ -5404,8 +5450,10 @@ model NotaRevisao {
 
     nota_fk Nota @relation(fields: [nota_id], references: [id])
 
-    criado_por Int
-    criado_em  DateTime @default(now()) @db.Timestamptz(6)
+    criado_por         Int
+    criado_em          DateTime   @default(now()) @db.Timestamptz(6)
+    ViewNotaComOrdem   ViewNotas? @relation(fields: [viewNotaComOrdemId], references: [id])
+    viewNotaComOrdemId Int?
 
     @@map("nota_revisao")
 }
@@ -5431,6 +5479,8 @@ model NotaEnderecamento {
     criador                   Pessoa                      @relation("Criador", fields: [criado_por], references: [id])
     removedor                 Pessoa?                     @relation("Removedor", fields: [removido_por], references: [id])
     NotaEnderecamentoResposta NotaEnderecamentoResposta[]
+    ViewNotaComOrdem          ViewNotas?                  @relation(fields: [viewNotaComOrdemId], references: [id])
+    viewNotaComOrdemId        Int?
 
     @@index([nota_id])
     @@map("nota_enderecamento")
@@ -5453,6 +5503,8 @@ model NotaEnderecamentoResposta {
     nota_enderecamento NotaEnderecamento @relation(fields: [nota_enderecamento_id], references: [id])
     criador            Pessoa            @relation("Criador", fields: [criado_por], references: [id])
     removedor          Pessoa?           @relation("Removedor", fields: [removido_por], references: [id])
+    ViewNotaComOrdem   ViewNotas?        @relation(fields: [viewNotaComOrdemId], references: [id])
+    viewNotaComOrdemId Int?
 
     @@map("nota_enderecamento_resposta")
 }

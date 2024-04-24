@@ -109,7 +109,7 @@ export class NotaService {
     async findAll(filters: BuscaNotaDto, user: PessoaFromJwt): Promise<TipoNotaItem[]> {
         if (!filters.status) filters.status = ['Programado', 'Em_Curso'];
 
-        const rows = await this.prisma.nota.findMany({
+        const rows = await this.prisma.viewNotas.findMany({
             where: {
                 removido_em: null,
                 bloco_nota_id: {
@@ -169,8 +169,6 @@ export class NotaService {
             orderBy: [{ bloco_nota_id: 'asc' }, { data_nota: 'desc' }, { rever_em: 'desc' }],
         });
 
-        const today = DateTime.local({ zone: SYSTEM_TIMEZONE }).startOf('day').valueOf();
-
         return rows
             .map((r): TipoNotaItem => {
                 return {
@@ -182,7 +180,7 @@ export class NotaService {
                     status: r.status,
                     tipo_nota_id: r.tipo_nota_id,
                     orgao_responsavel: r.orgao_responsavel,
-                    data_ordenacao: r.data_nota.valueOf() <= today && r.rever_em ? r.rever_em : r.data_nota,
+                    data_ordenacao: r.data_ordenacao,
 
                     bloco_id: r.bloco_nota_id,
                     pessoa_responsavel: r.pessoa_responsavel,
