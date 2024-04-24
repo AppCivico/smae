@@ -28,7 +28,6 @@ const esfera = ref(route.query.esfera
   ? Object.keys(esferasDeTransferencia)
     .find((x) => x.toLowerCase() === route.query.esfera.toLocaleLowerCase())
   : undefined);
-const palavraChave = ref(route.query.palavra_chave);
 const partido = ref(route.query.partido_ids);
 const orgao = ref(route.query.orgaos_ids);
 
@@ -39,7 +38,6 @@ function atualizarUrl() {
       partido_ids: partido.value || undefined,
       orgaos_ids: orgao.value || undefined,
       esfera: esfera.value || undefined,
-      palavra_chave: palavraChave.value || undefined,
     },
   });
 }
@@ -48,17 +46,11 @@ watch([
   () => route.query.esfera,
   () => route.query.partido_ids,
   () => route.query.orgaos_ids,
-  () => route.query.palavra_chave,
 ], () => {
   const {
-    palavra_chave: palavraChaveParaBusca,
     partido_ids: partidoFiltro,
     orgaos_ids: orgaoFiltro,
   } = route.query;
-  if (typeof palavraChaveParaBusca === 'string') {
-    // eslint-disable-next-line no-const-assign
-    palavraChaveParaBusca = palavraChaveParaBusca.trim();
-  }
   panoramaTransferenciasStore.$reset();
   panoramaTransferenciasStore.buscarTudo({
     esfera: route.query.esfera
@@ -66,7 +58,6 @@ watch([
         .find((x) => x.toLowerCase() === route.query.esfera.toLocaleLowerCase())
       : undefined,
     partido_ids: partidoFiltro,
-    palavra_chave: palavraChaveParaBusca,
     orgaos_ids: orgaoFiltro,
   });
 }, { immediate: true });
@@ -171,27 +162,12 @@ onUnmounted(() => {
             v-for="item in órgãosComoLista"
             :key="item"
             :value="item.id"
-            :title="item.descricao?.length > 36 ? item.descricao : null"
           >
             {{ item.sigla }} - {{ truncate(item.descricao, 36) }}
           </option>
         </select>
       </div>
 
-      <div class="f1">
-        <label
-          for="palavra_chave"
-          class="label tc300"
-        >Palavra-chave</label>
-        <input
-          id="palavra_chave"
-          v-model.trim="palavraChave"
-          class="inputtext"
-          name="palavra_chave"
-          type="text"
-        >
-        <small class="tc200 t13">pode-se usar <strong>e</strong> ou <strong>ou</strong></small>
-      </div>
       <button class="btn outline bgnone tcprimary mtauto mb1">
         Pesquisar
       </button>
