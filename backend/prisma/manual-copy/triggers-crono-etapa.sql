@@ -222,6 +222,7 @@ SET n_filhos_imediatos = (
 )
 WHERE n_filhos_imediatos IS NULL;
 
+/* - removendo
 CREATE OR REPLACE FUNCTION increment_n_filhos_imediatos()
   RETURNS TRIGGER AS
 $$
@@ -239,6 +240,50 @@ CREATE TRIGGER increment_n_filhos_imediatos_trigger
 AFTER INSERT ON etapa
 FOR EACH ROW
 EXECUTE FUNCTION increment_n_filhos_imediatos();
+
+drop trigger increment_n_filhos_imediatos_trigger on etapa;
+
+
+
+*/
+
+CREATE OR REPLACE FUNCTION update_n_filhos_imediatos()
+RETURNS TRIGGER AS $$
+DECLARE
+    parent_id integer;
+BEGIN
+    IF TG_OP = 'INSERT' THEN
+        parent_id := NEW.etapa_pai_id;
+    ELSIF TG_OP = 'UPDATE' THEN
+        IF NEW.removido_em IS NULL AND OLD.removido_em IS NOT NULL THEN
+            parent_id := NEW.etapa_pai_id;
+        ELSIF NEW.removido_em IS NOT NULL AND OLD.removido_em IS NULL THEN
+            parent_id := OLD.etapa_pai_id;
+        ELSE
+            RETURN NEW;
+        END IF;
+    ELSIF TG_OP = 'DELETE' THEN
+        parent_id := OLD.etapa_pai_id;
+    END IF;
+
+    UPDATE etapa
+    SET n_filhos_imediatos = (
+        SELECT COUNT(*)
+        FROM etapa c
+        WHERE c.etapa_pai_id = etapa.id
+        AND c.removido_em IS NULL
+    )
+    WHERE id = parent_id;
+
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trg_update_n_filhos_imediatos
+AFTER INSERT OR UPDATE OR DELETE ON etapa
+FOR EACH ROW
+EXECUTE PROCEDURE update_n_filhos_imediatos();
+
 
 CREATE OR REPLACE FUNCTION calculate_percentual_execucao_for_id(p_id INTEGER, is_cronograma BOOLEAN DEFAULT FALSE)
 RETURNS INTEGER AS $$
@@ -274,7 +319,7 @@ BEGIN
         UPDATE etapa
         SET percentual_execucao = total_percentual_execucao_peso / NULLIF(total_peso, 0)
         WHERE id = p_id;
-    ELSIF is_cronograma = true THEN 
+    ELSIF is_cronograma = true THEN
         UPDATE cronograma
         SET percentual_execucao = total_percentual_execucao_peso / NULLIF(total_peso, 0)
         WHERE id = p_id;
@@ -326,7 +371,7 @@ BEGIN
             )
         THEN e3.titulo ELSE NULL END as e3_titulo
     INTO rec
-    FROM cronograma_etapa ce1 
+    FROM cronograma_etapa ce1
     JOIN etapa e1 ON ce1.etapa_id = e1.id
     LEFT JOIN etapa e2 ON e2.id = e1.etapa_pai_id AND e2.removido_em IS NULL
     LEFT JOIN etapa e3 ON e3.id = e2.etapa_pai_id AND e3.removido_em IS NULL
