@@ -303,21 +303,18 @@ watch(emFoco, () => {
 </script>
 
 <template>
-  <div class="flex spacebetween center mb2">
-    <header>
-      <h1>
-        {{ emFoco?.nome || (projetoId ? 'Projeto' : 'Novo projeto') }}
-      </h1>
-    </header>
+  <header class="flex flexwrap spacebetween g1 center mb2">
+    <h1 class="mb0">
+      {{ emFoco?.nome || (projetoId ? 'Projeto' : 'Novo projeto') }}
+    </h1>
 
-    <hr class="ml2 f1">
+    <hr class="f1">
 
     <MenuDeMudançaDeStatusDeProjeto
       v-if="projetoId"
-      class="mr1"
     />
     <CheckClose />
-  </div>
+  </header>
 
   <Form
     v-if="!projetoId || emFoco"
@@ -767,7 +764,7 @@ watch(emFoco, () => {
     </div>
 
     <template v-if="projetoId">
-      <div class="g2 mb2">
+      <div class="mb2">
         <legend class="label mt2 mb1">
           {{ schema.fields.fonte_recursos.spec.label }}
         </legend>
@@ -779,7 +776,7 @@ watch(emFoco, () => {
           <div
             v-for="(field, idx) in fields"
             :key="`fonteRecursos--${field.key}`"
-            class="flex g2"
+            class="flex flexwrap g2 mb2"
           >
             <Field
               :name="`fonte_recursos[${idx}].id`"
@@ -914,7 +911,7 @@ watch(emFoco, () => {
     <fieldset class="p0">
       <hr class="mb2 f1">
 
-      <div class="flex g2">
+      <div class="flex flexwrap g2">
         <div class="f1 mb1">
           <LabelFromYup
             name="origem_tipo"
@@ -1040,7 +1037,7 @@ watch(emFoco, () => {
 
       <div
         v-if="values.origem_tipo === 'PdmSistema'"
-        class="flex g2"
+        class="flex flexwrap g2"
       >
         <div class="f1 mb1">
           <label class="label tc300">
@@ -1114,7 +1111,7 @@ watch(emFoco, () => {
 
       <div
         v-if="['PdmAntigo', 'Outro'].indexOf(values.origem_tipo) > -1"
-        class="flex g2"
+        class="flex flexwrap g2"
       >
         <div class="f1 mb1">
           <LabelFromYup
@@ -1142,7 +1139,7 @@ watch(emFoco, () => {
     </fieldset>
 
     <fieldset>
-      <div class="flex g2">
+      <div class="flex flexwrap g2">
         <div class="f1 mb1">
           <LabelFromYup
             name="previsao_inicio"
@@ -1209,7 +1206,7 @@ watch(emFoco, () => {
 
       <div
         v-show="projetoId"
-        class="flex g2"
+        class="flex flexwrap g2"
       >
         <div class="f1 mb1">
           <LabelFromYup
@@ -1234,7 +1231,7 @@ watch(emFoco, () => {
         Órgãos
       </legend>
 
-      <div class="flex g2">
+      <div class="flex flexwrap g2">
         <div class="f1 mb1">
           <LabelFromYup
             class="tc300"
@@ -1311,7 +1308,7 @@ watch(emFoco, () => {
         </div>
       </div>
 
-      <div class="flex g2">
+      <div class="flex flexwrap g2">
         <div class="f1 mb1">
           <LabelFromYup
             name="orgao_responsavel_id"
@@ -1388,7 +1385,7 @@ watch(emFoco, () => {
         </div>
       </div>
 
-      <div class="flex g2">
+      <div class="flex flexwrap g2">
         <div class="f1 mb1">
           <LabelFromYup
             name="orgaos_participantes"
@@ -1419,7 +1416,7 @@ watch(emFoco, () => {
 
     <div
       v-show="projetoId"
-      class="flex g2"
+      class="flex flexwrap g2"
     >
       <div class="f1 mb1">
         <LabelFromYup
@@ -1444,7 +1441,7 @@ watch(emFoco, () => {
 
     <div
       v-if="projetoId"
-      class="flex g2 mb1"
+      class="flex flexwrap g2 mb1"
     >
       <div class="f1 mb1">
         <LabelFromYup
@@ -1483,7 +1480,7 @@ watch(emFoco, () => {
 
     <div
       v-show="projetoId"
-      class="flex g2"
+      class="flex flexwrap g2"
     >
       <div
         :disabled="!emFoco?.permissoes?.campo_versao"
@@ -1547,7 +1544,7 @@ watch(emFoco, () => {
       </div>
     </div>
 
-    <div class="flex g2">
+    <div class="flex flexwrap g2">
       <div class="f1 mb1">
         <LabelFromYup
           name="grupo_portfolio"
