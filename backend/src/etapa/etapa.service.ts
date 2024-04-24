@@ -256,6 +256,20 @@ export class EtapaService {
                             `A região da etapa precisa ser a mesma região ou ser filho imediato da região "${self.etapa_pai.regiao.descricao}"`
                         );
                 }
+            } else if (dto.regiao_id && !self.etapa_pai?.regiao) {
+                // garante para os registros novos que sempre vai ter uma região iniciada com o nível do cronograma
+
+                if (!self.cronograma.nivel_regionalizacao)
+                    throw new BadRequestException('O cronograma não possui nível de regionalização');
+
+                const regiao = await prismaTx.regiao.findFirstOrThrow({
+                    where: { id: dto.regiao_id },
+                    select: { nivel: true, descricao: true },
+                });
+                if (regiao.nivel < self.cronograma.nivel_regionalizacao)
+                    throw new BadRequestException(
+                        `A região da etapa precisa ser de nível ${self.cronograma.nivel_regionalizacao} ou superior, região atual: ${regiao.descricao} (nível ${regiao.nivel})`
+                    );
             }
 
             if (
@@ -334,6 +348,7 @@ export class EtapaService {
             await this.updateResponsaveis(responsaveis, self, prismaTx);
 
             // apaga tudo por enquanto, não só as que têm algum crono dessa meta
+            // isso aqui pq tem q cruzar com atv->ini-> chegar na meta
             await prismaTx.statusMetaCicloFisico.deleteMany();
 
             if (
