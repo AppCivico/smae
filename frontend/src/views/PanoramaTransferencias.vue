@@ -1,5 +1,6 @@
 <script setup>
 import { Dashboard } from '@/components';
+import QuadroNotas from '@/components/notas/QuadroNotas.vue';
 import esferasDeTransferencia from '@/consts/esferasDeTransferencia';
 import truncate from '@/helpers/truncate';
 import { useOrgansStore } from '@/stores/organs.store';
@@ -195,8 +196,8 @@ onUnmounted(() => {
         Pesquisar
       </button>
     </form>
-    <div>
-      <table class="tablemain mb1">
+    <div class="flex flexwrap g2 start">
+      <table class="tablemain mb1 f1">
         <col>
         <col>
         <col>
@@ -254,6 +255,7 @@ onUnmounted(() => {
           </tr>
         </tbody>
       </table>
+      <QuadroNotas />
     </div>
   </Dashboard>
 </template>
