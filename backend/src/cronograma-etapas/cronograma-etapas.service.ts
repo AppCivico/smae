@@ -3,13 +3,12 @@ import { CronogramaEtapaNivel, Prisma } from '@prisma/client';
 import { DateTime } from 'luxon';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { SYSTEM_TIMEZONE } from '../common/date2ymd';
-import { RecordWithId } from '../common/dto/record-with-id.dto';
+import { ReferenciasValidasBase } from '../geo-loc/entities/geo-loc.entity';
+import { GeoLocService } from '../geo-loc/geo-loc.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { FilterCronogramaEtapaDto } from './dto/filter-cronograma-etapa.dto';
 import { UpdateCronogramaEtapaDto } from './dto/update-cronograma-etapa.dto';
 import { CECronogramaEtapaDto, CronogramaEtapaAtrasoGrau } from './entities/cronograma-etapa.entity';
-import { GeoLocService } from '../geo-loc/geo-loc.service';
-import { ReferenciasValidasBase } from '../geo-loc/entities/geo-loc.entity';
 
 class NivelOrdemForUpsert {
     nivel: CronogramaEtapaNivel;
@@ -444,7 +443,7 @@ export class CronogramaEtapaService {
         return ret_arr;
     }
 
-    async update(dto: UpdateCronogramaEtapaDto, user: PessoaFromJwt) {
+    async update(dto: UpdateCronogramaEtapaDto, user: PessoaFromJwt, prismaCtx?: Prisma.TransactionClient) {
         if (!user.hasSomeRoles(['CadastroCronograma.editar', 'PDM.admin_cp'])) {
             // logo, é um tecnico_cp
             // TODO buscar o ID da meta pelo cronograma, pra verificar
@@ -452,142 +451,141 @@ export class CronogramaEtapaService {
 
         if (dto.ordem && dto.ordem <= 0) dto.ordem = 1;
 
-        let id;
-        await this.prisma.$transaction(
-            async (prisma: Prisma.TransactionClient): Promise<RecordWithId> => {
-                const self = await prisma.cronogramaEtapa.findFirst({
-                    where: {
+        const performUpdate = async (prismaTx: Prisma.TransactionClient): Promise<number> => {
+            const self = await prismaTx.cronogramaEtapa.findFirst({
+                where: {
+                    cronograma_id: dto.cronograma_id,
+                    etapa_id: dto.etapa_id,
+                },
+                select: {
+                    nivel: true,
+                    ordem: true,
+                    etapa: {
+                        select: {
+                            etapa_pai_id: true,
+                        },
+                    },
+                },
+            });
+
+            const selfExiste: boolean = self ? true : false;
+            const nivelOrdemForUpsert: NivelOrdemForUpsert = await this.getNivelOrdemForUpsert(
+                selfExiste,
+                dto.ordem,
+                dto.cronograma_id,
+                dto.etapa_id,
+                prismaTx
+            );
+            const rowMaxOrdem = await prismaTx.cronogramaEtapa.findFirst({
+                where: {
+                    cronograma_id: dto.cronograma_id,
+                    nivel: nivelOrdemForUpsert.nivel,
+                },
+                select: { ordem: true },
+                orderBy: { ordem: 'desc' },
+                take: 1,
+            });
+            const maxOrdem: number = rowMaxOrdem ? rowMaxOrdem.ordem : nivelOrdemForUpsert.ordem;
+            const ordemUtilizada = dto.ordem && dto.ordem <= maxOrdem ? dto.ordem : nivelOrdemForUpsert.ordem;
+            this.logger.debug('===========================');
+            this.logger.debug('dto.ordem = ' + dto.ordem);
+            this.logger.debug('maxOrdem = ' + maxOrdem);
+            this.logger.debug('self : ');
+            this.logger.debug(self);
+            this.logger.debug('selfExiste = ' + selfExiste);
+            this.logger.debug('nivelOrdemForUpsert : ');
+            this.logger.debug(nivelOrdemForUpsert);
+            this.logger.debug('ordemUtilizada = ' + ordemUtilizada);
+            this.logger.debug('===========================');
+
+            const cronogramaEtapa = await prismaTx.cronogramaEtapa.upsert({
+                where: {
+                    CronogramaEtapaUniq: {
                         cronograma_id: dto.cronograma_id,
                         etapa_id: dto.etapa_id,
                     },
-                    select: {
-                        nivel: true,
-                        ordem: true,
-                        etapa: {
-                            select: {
-                                etapa_pai_id: true,
-                            },
-                        },
-                    },
-                });
+                },
+                update: {
+                    ordem: ordemUtilizada,
+                    inativo: dto.inativo,
+                },
+                create: {
+                    ...dto,
+                    nivel: nivelOrdemForUpsert.nivel,
+                    ordem: ordemUtilizada,
+                },
+                select: { id: true, ordem: true, nivel: true, etapa: { select: { etapa_pai_id: true } } },
+            });
 
-                const selfExiste: boolean = self ? true : false;
-                const nivelOrdemForUpsert: NivelOrdemForUpsert = await this.getNivelOrdemForUpsert(
-                    selfExiste,
-                    dto.ordem,
-                    dto.cronograma_id,
-                    dto.etapa_id,
-                    prisma
-                );
-                const rowMaxOrdem = await prisma.cronogramaEtapa.findFirst({
+            if (dto.ordem && ((self && dto.ordem != self.ordem) || (!self && dto.ordem != nivelOrdemForUpsert.ordem))) {
+                const rows = await prismaTx.cronogramaEtapa.findMany({
                     where: {
                         cronograma_id: dto.cronograma_id,
-                        nivel: nivelOrdemForUpsert.nivel,
-                    },
-                    select: { ordem: true },
-                    orderBy: { ordem: 'desc' },
-                    take: 1,
-                });
-                const maxOrdem: number = rowMaxOrdem ? rowMaxOrdem.ordem : nivelOrdemForUpsert.ordem;
-                const ordemUtilizada = dto.ordem && dto.ordem <= maxOrdem ? dto.ordem : nivelOrdemForUpsert.ordem;
-                this.logger.debug('===========================');
-                this.logger.debug('dto.ordem = ' + dto.ordem);
-                this.logger.debug('maxOrdem = ' + maxOrdem);
-                this.logger.debug('self : ');
-                this.logger.debug(self);
-                this.logger.debug('selfExiste = ' + selfExiste);
-                this.logger.debug('nivelOrdemForUpsert : ');
-                this.logger.debug(nivelOrdemForUpsert);
-                this.logger.debug('ordemUtilizada = ' + ordemUtilizada);
-                this.logger.debug('===========================');
-
-                const cronogramaEtapa = await prisma.cronogramaEtapa.upsert({
-                    where: {
-                        CronogramaEtapaUniq: {
-                            cronograma_id: dto.cronograma_id,
-                            etapa_id: dto.etapa_id,
+                        nivel: cronogramaEtapa.nivel,
+                        id: { not: cronogramaEtapa.id },
+                        etapa: {
+                            etapa_pai_id: cronogramaEtapa.etapa.etapa_pai_id,
                         },
                     },
-                    update: {
-                        ordem: ordemUtilizada,
-                        inativo: dto.inativo,
+                    select: {
+                        id: true,
+                        ordem: true,
                     },
-                    create: {
-                        ...dto,
-                        nivel: nivelOrdemForUpsert.nivel,
-                        ordem: ordemUtilizada,
-                    },
-                    select: { id: true, ordem: true, nivel: true, etapa: { select: { etapa_pai_id: true } } },
+                    orderBy: { ordem: 'asc' },
                 });
 
-                if (
-                    dto.ordem &&
-                    ((self && dto.ordem != self.ordem) || (!self && dto.ordem != nivelOrdemForUpsert.ordem))
-                ) {
-                    const rows = await prisma.cronogramaEtapa.findMany({
-                        where: {
-                            cronograma_id: dto.cronograma_id,
-                            nivel: cronogramaEtapa.nivel,
-                            id: { not: cronogramaEtapa.id },
-                            etapa: {
-                                etapa_pai_id: cronogramaEtapa.etapa.etapa_pai_id,
-                            },
-                        },
-                        select: {
-                            id: true,
-                            ordem: true,
-                        },
-                        orderBy: { ordem: 'asc' },
-                    });
+                const updates = [];
+                let startOrdem = self ? self.ordem : Number.MAX_VALUE;
+                let endOrdem = ordemUtilizada;
 
-                    const updates = [];
-                    let startOrdem = self ? self.ordem : Number.MAX_VALUE;
-                    let endOrdem = ordemUtilizada;
-
-                    if (startOrdem > endOrdem) {
-                        [startOrdem, endOrdem] = [endOrdem, startOrdem];
-                    }
-
-                    for (const row of rows) {
-                        if (row.ordem >= startOrdem && row.ordem <= endOrdem) {
-                            let newOrdem;
-                            this.logger.debug('=======================');
-                            this.logger.debug('rowOrdem = ' + row.ordem);
-
-                            if (
-                                (self && ordemUtilizada < self.ordem) ||
-                                (!self && (ordemUtilizada == row.ordem || ordemUtilizada < row.ordem)) ||
-                                (self && self.ordem - ordemUtilizada != -1 && self.ordem - ordemUtilizada > -2)
-                            ) {
-                                this.logger.debug('ordem irá subir');
-                                newOrdem = row.ordem + 1;
-                            } else {
-                                this.logger.debug('ordem irá descer');
-                                newOrdem = row.ordem - 1;
-                                if (newOrdem <= 0) break;
-                            }
-                            this.logger.debug('=======================');
-
-                            updates.push(
-                                prisma.cronogramaEtapa.update({
-                                    where: { id: row.id },
-                                    data: { ordem: newOrdem },
-                                })
-                            );
-                        }
-                    }
-
-                    await Promise.all(updates);
+                if (startOrdem > endOrdem) {
+                    [startOrdem, endOrdem] = [endOrdem, startOrdem];
                 }
 
-                id = cronogramaEtapa.id;
-                return cronogramaEtapa;
-            },
-            {
-                maxWait: 10000,
-                timeout: 10000,
+                for (const row of rows) {
+                    if (row.ordem >= startOrdem && row.ordem <= endOrdem) {
+                        let newOrdem;
+                        this.logger.debug('=======================');
+                        this.logger.debug('rowOrdem = ' + row.ordem);
+
+                        if (
+                            (self && ordemUtilizada < self.ordem) ||
+                            (!self && (ordemUtilizada == row.ordem || ordemUtilizada < row.ordem)) ||
+                            (self && self.ordem - ordemUtilizada != -1 && self.ordem - ordemUtilizada > -2)
+                        ) {
+                            this.logger.debug('ordem irá subir');
+                            newOrdem = row.ordem + 1;
+                        } else {
+                            this.logger.debug('ordem irá descer');
+                            newOrdem = row.ordem - 1;
+                            if (newOrdem <= 0) break;
+                        }
+                        this.logger.debug('=======================');
+
+                        updates.push(
+                            prismaTx.cronogramaEtapa.update({
+                                where: { id: row.id },
+                                data: { ordem: newOrdem },
+                            })
+                        );
+                    }
+                }
+
+                await Promise.all(updates);
             }
-        );
+
+            return cronogramaEtapa.id;
+        };
+
+        let id;
+
+        if (prismaCtx) {
+            id = await performUpdate(prismaCtx);
+        } else {
+            id = await this.prisma.$transaction(async (prisma: Prisma.TransactionClient) => {
+                return await performUpdate(prisma);
+            });
+        }
 
         return { id };
     }
