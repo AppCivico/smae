@@ -59,7 +59,7 @@ export class EtapaService {
                         cronograma_id: cronogramaId,
 
                         etapa_pai_id: dto.etapa_pai_id,
-                        regiao_id: dto.regiao_id,
+
                         descricao: dto.descricao,
                         status: dto.status,
                         titulo: dto.titulo,
@@ -80,17 +80,17 @@ export class EtapaService {
                     data: await this.buildEtapaResponsaveis(etapa.id, responsaveis),
                 });
 
-                if (geolocalizacao) {
-                    const geoDto = new CreateGeoEnderecoReferenciaDto();
-                    geoDto.etapa_id = etapa.id;
-                    geoDto.tokens = geolocalizacao;
-                    geoDto.tipo = 'Endereco';
-
-                    const regioes = await this.geolocService.upsertGeolocalizacao(geoDto, user, prismaTx, now);
-                    console.log(regioes);
+                if (dto.regiao_id || geolocalizacao) {
+                    await this.update(
+                        etapa.id,
+                        {
+                            regiao_id: dto.regiao_id,
+                            geolocalizacao: geolocalizacao,
+                        },
+                        user,
+                        prismaTx
+                    );
                 }
-
-                // TODO validar a falta do endereço e data de termino, assim como no patch
 
                 return etapa;
             },
@@ -185,16 +185,18 @@ export class EtapaService {
         return ret;
     }
 
-    async update(id: number, dto: UpdateEtapaDto, user: PessoaFromJwt) {
+    async update(id: number, dto: UpdateEtapaDto, user: PessoaFromJwt, prismaCtx?: Prisma.TransactionClient) {
         const responsaveis = dto.responsaveis === null ? [] : dto.responsaveis;
         const geolocalizacao = dto.geolocalizacao;
         delete dto.geolocalizacao;
 
         const now = new Date(Date.now());
-        await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
+
+        const performUpdate = async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
             const self = await prismaTx.etapa.findFirstOrThrow({
                 where: { id },
                 select: {
+                    id: true,
                     n_filhos_imediatos: true,
                     percentual_execucao: true,
                     inicio_previsto: true,
@@ -206,7 +208,7 @@ export class EtapaService {
                         select: {
                             pessoa_id: true,
                         },
-                        orderBy: { pessoa_id: 'asc' },
+                        orderBy: { pessoa_id: 'asc' }, // manter esse order-by, se não o cache do updateResponsaveis quebra
                     },
                     GeoLocalizacaoReferencia: {
                         where: { removido_em: null },
@@ -300,37 +302,7 @@ export class EtapaService {
                 },
             });
 
-            if (Array.isArray(responsaveis)) {
-                const currentVersion = self.responsaveis.map((r) => r.pessoa_id).join(',');
-                const newVersionStr = responsaveis.sort((a, b) => a - b).join(',');
-
-                if (currentVersion !== newVersionStr) {
-                    this.logger.debug(`responsaveis mudaram: old ${currentVersion} !== new ${newVersionStr}`);
-                    const promises = [];
-                    for (const responsavel of responsaveis) {
-                        promises.push(
-                            prismaTx.etapaResponsavel.upsert({
-                                where: {
-                                    etapa_pessoa_uniq: {
-                                        pessoa_id: responsavel,
-                                        etapa_id: etapaAtualizada.id,
-                                    },
-                                },
-                                create: {
-                                    pessoa_id: responsavel,
-                                    etapa_id: etapaAtualizada.id,
-                                },
-                                update: {},
-                            })
-                        );
-                    }
-                    await Promise.all(promises);
-                } else {
-                    this.logger.debug(
-                        `responsaveis continuam iguais, o banco não será chamado para evitar o recálculo do trigger`
-                    );
-                }
-            }
+            await this.updateResponsaveis(responsaveis, self, prismaTx);
 
             // apaga tudo por enquanto, não só as que têm algum crono dessa meta
             await prismaTx.statusMetaCicloFisico.deleteMany();
@@ -374,9 +346,58 @@ export class EtapaService {
             }
 
             return etapaAtualizada;
-        });
+        };
+
+        if (prismaCtx) {
+            await performUpdate(prismaCtx);
+        } else {
+            await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient) => {
+                return await performUpdate(prismaTx);
+            });
+        }
 
         return { id };
+    }
+
+    private async updateResponsaveis(
+        responsaveis: number[] | undefined,
+        etapa: {
+            id: number;
+            responsaveis: { pessoa_id: number }[];
+        },
+        prismaTx: Prisma.TransactionClient
+    ) {
+        if (Array.isArray(responsaveis)) {
+            const currentVersion = etapa.responsaveis.map((r) => r.pessoa_id).join(',');
+            const newVersionStr = responsaveis.sort((a, b) => a - b).join(',');
+
+            if (currentVersion !== newVersionStr) {
+                this.logger.debug(`responsaveis mudaram: old ${currentVersion} !== new ${newVersionStr}`);
+                const promises = [];
+                for (const responsavel of responsaveis) {
+                    promises.push(
+                        prismaTx.etapaResponsavel.upsert({
+                            where: {
+                                etapa_pessoa_uniq: {
+                                    pessoa_id: responsavel,
+                                    etapa_id: etapa.id,
+                                },
+                            },
+                            create: {
+                                pessoa_id: responsavel,
+                                etapa_id: etapa.id,
+                            },
+                            update: {},
+                        })
+                    );
+                }
+                await Promise.all(promises);
+            } else {
+                this.logger.debug(
+                    `responsaveis continuam iguais, o banco não será chamado para evitar o recálculo do trigger`
+                );
+            }
+        }
     }
 
     async remove(id: number, user: PessoaFromJwt) {
