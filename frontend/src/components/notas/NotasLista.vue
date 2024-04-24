@@ -87,7 +87,7 @@ const camposPermitidos = computed(() => ({
 }));
 
 async function iniciar() {
-  if (props.transferenciaId !== transferênciaEmFoco.value.id) {
+  if (props.transferenciaId !== transferênciaEmFoco?.value?.id) {
     await TransferenciasVoluntarias.buscarItem(props.transferenciaId);
   }
   blocoStore.buscarTudo(blocosToken.value);
