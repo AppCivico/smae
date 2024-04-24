@@ -161,7 +161,12 @@ iniciar();
   </div>
   <SmallModal v-if="exibeForm">
     <div class="flex spacebetween center mb2">
-      <h2>Nova nota ou editar nota</h2>
+      <h2 v-if="itemParaEdição.id_jwt">
+        Editar nota
+      </h2>
+      <h2 v-else>
+        Nova nota
+      </h2>
       <hr class="ml2 f1">
       <CheckClose
         :apenas-emitir="true"
