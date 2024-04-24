@@ -12,6 +12,11 @@ import { FilterEtapaDto } from './dto/filter-etapa.dto';
 import { UpdateEtapaDto } from './dto/update-etapa.dto';
 import { Etapa } from './entities/etapa.entity';
 
+const MSG_INI_POSTERIOR_TERM_PREV = 'A data de início previsto não pode ser posterior à data de término previsto.';
+const MSG_INI_POSTERIOR_TERM_REAL = 'A data de início real não pode ser posterior à data de término real.';
+const MSG_TERM_ANTERIOR_INI_PREV = 'A data de término previsto não pode ser anterior à data de início previsto.';
+const MSG_TERM_ANTERIOR_INI_REAL = 'A data de término real não pode ser anterior à data de início real.';
+
 @Injectable()
 export class EtapaService {
     private readonly logger = new Logger(EtapaService.name);
@@ -28,23 +33,17 @@ export class EtapaService {
             // TODO buscar o ID da meta pelo cronograma, pra verificar
         }
 
-        const responsaveis = dto.responsaveis || [];
-
-        const ordem: number | undefined = dto.ordem;
-        delete dto.ordem;
-        delete (dto as any).responsaveis;
-
         if (dto.inicio_previsto && dto.termino_previsto && dto.inicio_previsto > dto.termino_previsto)
-            throw new HttpException('inicio_previsto| Não pode ser maior que termino_previsto', 400);
+            throw new BadRequestException(MSG_INI_POSTERIOR_TERM_PREV);
 
         if (dto.inicio_real && dto.termino_real && dto.inicio_real > dto.termino_real)
-            throw new HttpException('inicio_real| Não pode ser maior que termino_real', 400);
+            throw new BadRequestException(MSG_INI_POSTERIOR_TERM_REAL);
 
         if (dto.termino_previsto && dto.inicio_previsto && dto.termino_previsto < dto.inicio_previsto)
-            throw new HttpException('termino_previsto| Não pode ser menor que inicio_previsto', 400);
+            throw new BadRequestException(MSG_TERM_ANTERIOR_INI_PREV);
 
         if (dto.termino_real && dto.inicio_real && dto.termino_real < dto.inicio_real)
-            throw new HttpException('termino_real| Não pode ser menor que inicio_real', 400);
+            throw new BadRequestException(MSG_TERM_ANTERIOR_INI_REAL);
 
         const now = new Date(Date.now());
         const created = await this.prisma.$transaction(
@@ -76,14 +75,15 @@ export class EtapaService {
                     select: { id: true },
                 });
 
-                await prismaTx.etapaResponsavel.createMany({
-                    data: await this.buildEtapaResponsaveis(etapa.id, responsaveis),
-                });
+                if (Array.isArray(dto.responsaveis))
+                    await prismaTx.etapaResponsavel.createMany({
+                        data: await this.buildEtapaResponsaveis(etapa.id, dto.responsaveis),
+                    });
 
                 const dadosUpsertCronogramaEtapa: UpdateCronogramaEtapaDto = {
                     cronograma_id: cronogramaId,
                     etapa_id: etapa.id,
-                    ordem: ordem,
+                    ordem: dto.ordem,
                 };
                 await this.cronogramaEtapaService.update(dadosUpsertCronogramaEtapa, user, prismaTx);
 
@@ -272,23 +272,23 @@ export class EtapaService {
                     (dto.termino_previsto && dto.termino_previsto.getTime() != self.termino_previsto?.getTime()) ||
                     (dto.termino_real && dto.termino_real.getTime() != self.termino_real?.getTime()))
             )
-                throw new HttpException('Datas não podem ser modificadas pois há dependentes.', 400);
+                throw new BadRequestException('As datas não podem ser modificadas pois existem dependências.');
 
             const terminoPrevisto: Date | null = dto.termino_previsto ? dto.termino_previsto : self.termino_previsto;
             if (dto.inicio_previsto && terminoPrevisto && dto.inicio_previsto > terminoPrevisto)
-                throw new HttpException('inicio_previsto| Não pode ser maior que termino_previsto', 400);
+                throw new BadRequestException(MSG_INI_POSTERIOR_TERM_PREV);
 
             const terminoReal: Date | null = dto.termino_real ? dto.termino_real : self.termino_real;
             if (dto.inicio_real && terminoReal && dto.inicio_real > terminoReal)
-                throw new HttpException('inicio_real| Não pode ser maior que termino_real', 400);
+                throw new BadRequestException(MSG_INI_POSTERIOR_TERM_REAL);
 
             const inicioPrevisto: Date | null = dto.inicio_previsto ? dto.inicio_previsto : self.inicio_previsto;
             if (dto.termino_previsto && inicioPrevisto && dto.termino_previsto < inicioPrevisto)
-                throw new HttpException('termino_previsto| Não pode ser menor que inicio_previsto', 400);
+                throw new BadRequestException(MSG_TERM_ANTERIOR_INI_PREV);
 
             const inicioReal: Date | null = dto.inicio_real ? dto.inicio_real : self.inicio_real;
             if (dto.termino_real && inicioReal && dto.termino_real < inicioReal)
-                throw new HttpException('termino_real| Não pode ser menor que inicio_real', 400);
+                throw new BadRequestException(MSG_TERM_ANTERIOR_INI_REAL);
 
             if (geolocalizacao) {
                 const geoDto = new CreateGeoEnderecoReferenciaDto();
