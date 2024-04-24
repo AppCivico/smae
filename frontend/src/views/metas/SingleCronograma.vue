@@ -259,13 +259,13 @@ onUpdated(() => { start(); });
         <ul class="flex flexwrap g1 mb2 justifyright">
           <li class="flex g1 tr">
             <img
-              src="@/assets/icons/mapas/map-pin--endereco-ausente.svg"
+              src="@/assets/icons/mapas/map-pin--larnaja-contorno.svg"
             >
             Endereço obrigatório não preenchido
           </li>
           <li class="flex g1 tr">
             <img
-              src="@/assets/icons/mapas/map-pin--endereco-preenchido.svg"
+              src="@/assets/icons/mapas/map-pin--preto.svg"
             >
             Endereço obrigatório
           </li>
@@ -345,7 +345,7 @@ onUpdated(() => { start(); });
                 class="tipinfo left"
               >
                 <img
-                  src="@/assets/icons/mapas/map-pin--endereco-ausente.svg"
+                  src="@/assets/icons/mapas/map-pin--larnaja-contorno.svg"
                 >
                 <div>Endereço obrigatório não preenchido</div>
               </span>
@@ -354,7 +354,7 @@ onUpdated(() => { start(); });
                 class="tipinfo left"
               >
                 <img
-                  src="@/assets/icons/mapas/map-pin--endereco-preenchido.svg"
+                  src="@/assets/icons/mapas/map-pin--preto.svg"
                 >
                 <div>Endereço obrigatório</div>
               </span>
@@ -527,14 +527,14 @@ onUpdated(() => { start(); });
                   class="tipinfo left"
                 >
                   <img
-                    src="../../assets/icons/mapas/map-pin--endereco-ausente.svg"
+                    src="../../assets/icons/mapas/map-pin--larnaja-contorno.svg"
                   ><div>Endereço obrigatório não preenchido</div></span>
                 <span
                   v-else
                   class="tipinfo left"
                 >
                   <img
-                    src="../../assets/icons/mapas/map-pin--endereco-preenchido.svg"
+                    src="../../assets/icons/mapas/map-pin--preto.svg"
                   ><div>Endereço obrigatório</div></span>
               </div>
               <div
@@ -664,7 +664,7 @@ onUpdated(() => { start(); });
                       class="tipinfo left"
                     >
                       <img
-                        src="@/assets/icons/mapas/map-pin--endereco-ausente.svg"
+                        src="@/assets/icons/mapas/map-pin--larnaja-contorno.svg"
                       ><div>Endereço obrigatório não preenchido</div>
                     </span>
                     <span
@@ -672,7 +672,7 @@ onUpdated(() => { start(); });
                       class="tipinfo left"
                     >
                       <img
-                        src="@/assets/icons/mapas/map-pin--endereco-preenchido.svg"
+                        src="@/assets/icons/mapas/map-pin--preto.svg"
                       ><div>Endereço obrigatório</div>
                     </span>
                   </div>
