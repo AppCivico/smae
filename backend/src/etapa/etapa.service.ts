@@ -219,6 +219,12 @@ export class EtapaService {
                     termino_previsto: true,
                     termino_real: true,
                     endereco_obrigatorio: true,
+                    regiao_id: true,
+                    etapa_pai: {
+                        select: {
+                            regiao: { select: { id: true, nivel: true, descricao: true } },
+                        },
+                    },
                     responsaveis: {
                         select: {
                             pessoa_id: true,
@@ -231,17 +237,33 @@ export class EtapaService {
                     },
 
                     cronograma: {
-                        select: { id: true },
+                        select: { id: true, nivel_regionalizacao: true },
                     },
                 },
             });
+
+            if (self.etapa_pai?.regiao && 'regiao_id' in dto && dto.regiao_id === undefined) {
+                dto.regiao_id = self.etapa_pai.regiao.id;
+            } else if (self.etapa_pai?.regiao && dto.regiao_id && dto.regiao_id !== self.regiao_id) {
+                // se for uma igual, tudo bem, agora se for uma diferente, precisa ser imediatamente filha
+                // do pai
+                if (self.etapa_pai.regiao.id !== dto.regiao_id) {
+                    const regiaoEhfilha = await prismaTx.regiao.count({
+                        where: { id: dto.regiao_id, parente_id: self.etapa_pai.regiao.id },
+                    });
+                    if (!regiaoEhfilha)
+                        throw new BadRequestException(
+                            `A região da etapa precisa ser a mesma região ou ser filho imediato da região "${self.etapa_pai.regiao.descricao}"`
+                        );
+                }
+            }
 
             if (
                 self.n_filhos_imediatos &&
                 dto.percentual_execucao &&
                 dto.percentual_execucao != self.percentual_execucao
             )
-                throw new HttpException('percentual_execucao| Não pode ser enviado pois há dependentes.', 400);
+                throw new BadRequestException('Percentual de execução não pode ser enviado pois há dependentes.');
 
             if (
                 self.n_filhos_imediatos &&
