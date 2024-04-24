@@ -111,7 +111,7 @@ export class MfDashMetasService {
                 },
                 orcamento: {
                     preenchido: Arr.intersection(r.orcamento_pendentes, r.orcamento_preenchido).length,
-                    total: r.orcamento_pendentes.length,
+                    total: r.orcamento_pendentes.length, // precisa ter um total de pendentes no ano corrente ou no 'mes/ciclo' que está aberto
                 },
                 atualizado_em: r.atualizado_em,
                 fase: r.fase,
