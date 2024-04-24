@@ -9,6 +9,11 @@
   </KeepAlive>
 </template>
 <script setup>
+import marcadorLaranja from '@/assets/icons/mapas/map-pin--laranja.svg';
+import marcadorVerde from '@/assets/icons/mapas/map-pin--verde.svg';
+import marcadorVermelho from '@/assets/icons/mapas/map-pin--vermelho.svg';
+import marcador from '@/assets/icons/mapas/map-pin.svg';
+import sombraDoMarcador from '@/assets/icons/mapas/map-pin__sombra.svg';
 import { useRegionsStore } from '@/stores/regions.store';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -20,15 +25,6 @@ import {
   ref,
   watch,
 } from 'vue';
-// prevenir erro de encapsulamento do Vite
-// https://cescobaz.com/2023/06/14/setup-leaflet-with-svelte-and-vite/
-import markerIconRetinaUrl from '@/../node_modules/leaflet/dist/images/marker-icon-2x.png';
-import markerIconUrl from '@/../node_modules/leaflet/dist/images/marker-icon.png';
-import markerShadowUrl from '@/../node_modules/leaflet/dist/images/marker-shadow.png';
-import marcadorLaranja from '@/assets/icons/mapas/map-pin--laranja.svg';
-import marcadorPreenchido from '@/assets/icons/mapas/map-pin--preto.svg';
-import marcadorVerde from '@/assets/icons/mapas/map-pin--verde.svg';
-import marcadorVermelho from '@/assets/icons/mapas/map-pin--vermelho.svg';
 
 const RegionsStore = useRegionsStore();
 
@@ -151,7 +147,7 @@ function criarGeoJson(item) {
   let geoJson;
 
   if (item.geometry?.type === 'Point') {
-    let urlDoÍcone = marcadorPreenchido;
+    let urlDoÍcone = marcador;
 
     switch (item.properties?.cor_do_marcador) {
       case 'vermelho':
@@ -170,6 +166,9 @@ function criarGeoJson(item) {
     const ícone = L.icon({
       iconUrl: urlDoÍcone,
       className: 'foobar',
+      iconAnchor: [24, 42],
+      shadowUrl: sombraDoMarcador,
+      shadowSize: [48, 48],
       iconSize: [48, 48],
     });
 
@@ -287,11 +286,8 @@ async function iniciarMapa(element) {
     attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
   }).addTo(mapa);
 
-  // prevenir erro de encapsulamento do Vite
-  // https://cescobaz.com/2023/06/14/setup-leaflet-with-svelte-and-vite/
-  L.Icon.Default.prototype.options.iconUrl = markerIconUrl;
-  L.Icon.Default.prototype.options.iconRetinaUrl = markerIconRetinaUrl;
-  L.Icon.Default.prototype.options.shadowUrl = markerShadowUrl;
+  L.Icon.Default.prototype.options.iconUrl = marcador;
+  L.Icon.Default.prototype.options.shadowUrl = sombraDoMarcador;
   L.Icon.Default.imagePath = '';
 
   if (!props.opçõesDoMapa?.scrollWheelZoom) {
