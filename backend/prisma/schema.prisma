@@ -5439,7 +5439,7 @@ view ViewNotas {
     revisoes                  NotaRevisao[]
     AvisoEmail                AvisoEmail[]
 
-    @@map("view_nota")
+    @@map("view_notas")
 }
 
 model NotaRevisao {
