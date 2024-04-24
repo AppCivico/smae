@@ -381,7 +381,7 @@ onUpdated(() => { start(); });
                 <div>Endereço obrigatório não preenchido</div>
               </span>
               <span
-                v-else
+                v-else-if="r?.etapa?.endereco_obrigatorio"
                 class="tipinfo left"
               >
                 <img
@@ -561,7 +561,7 @@ onUpdated(() => { start(); });
                     src="../../assets/icons/mapas/map-pin--laranja-contorno.svg"
                   ><div>Endereço obrigatório não preenchido</div></span>
                 <span
-                  v-else
+                  v-else-if="rr?.etapa?.endereco_obrigatorio"
                   class="tipinfo left"
                 >
                   <img
@@ -699,7 +699,7 @@ onUpdated(() => { start(); });
                       ><div>Endereço obrigatório não preenchido</div>
                     </span>
                     <span
-                      v-else
+                      v-else-if="rrr?.etapa?.endereco_obrigatorio"
                       class="tipinfo left"
                     >
                       <img
