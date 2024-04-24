@@ -290,7 +290,7 @@ onUpdated(() => { start(); });
         <ul class="flex flexwrap g1 mb2 justifyright">
           <li class="flex g1 tr">
             <img
-              src="@/assets/icons/mapas/map-pin--laranja-contorno.svg"
+              src="@/assets/icons/mapas/map-pin--laranja-so-contorno.svg"
             >
             Endereço obrigatório não preenchido
           </li>
@@ -376,7 +376,7 @@ onUpdated(() => { start(); });
                 class="tipinfo left"
               >
                 <img
-                  src="@/assets/icons/mapas/map-pin--laranja-contorno.svg"
+                  src="@/assets/icons/mapas/map-pin--laranja-so-contorno.svg"
                 >
                 <div>Endereço obrigatório não preenchido</div>
               </span>
@@ -558,7 +558,7 @@ onUpdated(() => { start(); });
                   class="tipinfo left"
                 >
                   <img
-                    src="../../assets/icons/mapas/map-pin--laranja-contorno.svg"
+                    src="../../assets/icons/mapas/map-pin--laranja-so-contorno.svg"
                   ><div>Endereço obrigatório não preenchido</div></span>
                 <span
                   v-else-if="rr?.etapa?.endereco_obrigatorio"
@@ -695,7 +695,7 @@ onUpdated(() => { start(); });
                       class="tipinfo left"
                     >
                       <img
-                        src="@/assets/icons/mapas/map-pin--laranja-contorno.svg"
+                        src="@/assets/icons/mapas/map-pin--laranja-so-contorno.svg"
                       ><div>Endereço obrigatório não preenchido</div>
                     </span>
                     <span
