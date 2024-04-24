@@ -368,20 +368,12 @@ const formulárioSujo = useIsFormDirty();
                 <col>
                 <col>
                 <col>
-                <col class="col--number">
-                <col class="col--number">
                 <thead>
                   <th />
                   <th>Endereço</th>
                   <th>Bairro</th>
                   <th class="cell--number">
                     <abbr title="Código de Endereçamento Postal">CEP</abbr>
-                  </th>
-                  <th class="cell--number">
-                    Latitude
-                  </th>
-                  <th class="cell--number">
-                    Longitude
                   </th>
                 </thead>
                 <tr
@@ -409,12 +401,6 @@ const formulárioSujo = useIsFormDirty();
                   </td>
                   <td>
                     {{ item.endereco?.properties?.cep || '-' }}
-                  </td>
-                  <td class="cell--number">
-                    {{ item.endereco?.geometry?.coordinates[1] }}
-                  </td>
-                  <td class="cell--number">
-                    {{ item.endereco?.geometry?.coordinates[0] }}
                   </td>
                 </tr>
               </table>
@@ -460,21 +446,59 @@ const formulárioSujo = useIsFormDirty();
             <Transition
               name="expand"
             >
-              <MapaExibir
-                v-if="sugestãoSelecionada"
-                v-model="coordenadasSelecionadas"
-                :marcador="marcador"
-                :polígonos="camadasSelecionadas"
-                class="mb1"
-                :latitude="marcador[0]"
-                :longitude="marcador[1]"
-                :opções-do-polígono="{
-                  fill: true,
-                  opacity: 0.5,
-                }"
-                zoom="16"
-                :opções-do-marcador="{ draggable: true }"
-              />
+              <div class="mb1">
+                <MapaExibir
+                  v-if="sugestãoSelecionada"
+                  v-model="coordenadasSelecionadas"
+                  :marcador="marcador"
+                  :polígonos="camadasSelecionadas"
+                  class="mb1"
+                  :latitude="marcador[0]"
+                  :longitude="marcador[1]"
+                  :opções-do-polígono="{
+                    fill: true,
+                    opacity: 0.5,
+                  }"
+                  zoom="16"
+                  :opções-do-marcador="{ draggable: true }"
+                />
+
+                <dl class="flex g2">
+                  <div class="f1 mb1">
+                    <dt class="t12 uc w700 mb05 tamarelo">
+                      Latitude
+                    </dt>
+                    <dd class="t13">
+                      {{ coordenadasSelecionadas[0] }}
+                    </dd>
+                  </div>
+
+                  <div class="f1 mb1">
+                    <dt class="t12 uc w700 mb05 tamarelo">
+                      Longitude
+                    </dt>
+                    <dd class="t13">
+                      {{ coordenadasSelecionadas[1] }}
+                    </dd>
+                  </div>
+
+                  <template v-if="Array.isArray(sugestãoSelecionada?.camadas)">
+                    <div
+                      v-for="camada in
+                        sugestãoSelecionada.camadas"
+                      :key="camada.id"
+                      class="f2 mb1"
+                    >
+                      <dt class="t12 uc w700 mb05 tamarelo">
+                        {{ camada.descricao }}
+                      </dt>
+                      <dd class="t13">
+                        {{ camada.titulo }}
+                      </dd>
+                    </div>
+                  </template>
+                </dl>
+              </div>
             </Transition>
 
             <div class="flex g2 flexwrap">
