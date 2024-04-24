@@ -25,6 +25,10 @@ import {
 import markerIconRetinaUrl from '@/../node_modules/leaflet/dist/images/marker-icon-2x.png';
 import markerIconUrl from '@/../node_modules/leaflet/dist/images/marker-icon.png';
 import markerShadowUrl from '@/../node_modules/leaflet/dist/images/marker-shadow.png';
+import marcadorLaranja from '@/assets/icons/mapas/map-pin--laranja.svg';
+import marcadorPreenchido from '@/assets/icons/mapas/map-pin--preto.svg';
+import marcadorVerde from '@/assets/icons/mapas/map-pin--verde.svg';
+import marcadorVermelho from '@/assets/icons/mapas/map-pin--vermelho.svg';
 
 const RegionsStore = useRegionsStore();
 
@@ -144,7 +148,39 @@ function criarMarcadores(marcadores = []) {
 }
 
 function criarGeoJson(item) {
-  const geoJson = L.geoJSON(item).addTo(mapa);
+  let geoJson;
+
+  if (item.geometry?.type === 'Point') {
+    let urlDoÍcone = marcadorPreenchido;
+
+    switch (item.properties?.cor_do_marcador) {
+      case 'vermelho':
+        urlDoÍcone = marcadorVermelho;
+        break;
+      case 'laranja':
+        urlDoÍcone = marcadorLaranja;
+        break;
+      case 'verde':
+        urlDoÍcone = marcadorVerde;
+        break;
+      default:
+        break;
+    }
+
+    const ícone = L.icon({
+      iconUrl: urlDoÍcone,
+      className: 'foobar',
+      iconSize: [48, 48],
+    });
+
+    geoJson = L.geoJSON(item, {
+      pointToLayer: (_geoJsonPoint, latlng) => L.marker(latlng, { icon: ícone }),
+    });
+  } else {
+    geoJson = L.geoJSON(item);
+  }
+
+  geoJson.addTo(mapa);
 
   if (item.properties?.rotulo && item.properties?.string_endereco) {
     geoJson.bindTooltip(`<strong>${item.properties.rotulo}</strong><br/>${item.properties.string_endereco}`);
