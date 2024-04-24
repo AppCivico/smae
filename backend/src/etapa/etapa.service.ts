@@ -1,16 +1,16 @@
 import { BadRequestException, HttpException, Injectable, Logger } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
+import { CronogramaEtapaService } from 'src/cronograma-etapas/cronograma-etapas.service';
+import { UpdateCronogramaEtapaDto } from 'src/cronograma-etapas/dto/update-cronograma-etapa.dto';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { RecordWithId } from '../common/dto/record-with-id.dto';
+import { CreateGeoEnderecoReferenciaDto, ReferenciasValidasBase } from '../geo-loc/entities/geo-loc.entity';
+import { GeoLocService } from '../geo-loc/geo-loc.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateEtapaDto } from './dto/create-etapa.dto';
 import { FilterEtapaDto } from './dto/filter-etapa.dto';
 import { UpdateEtapaDto } from './dto/update-etapa.dto';
 import { Etapa } from './entities/etapa.entity';
-import { CronogramaEtapaService } from 'src/cronograma-etapas/cronograma-etapas.service';
-import { UpdateCronogramaEtapaDto } from 'src/cronograma-etapas/dto/update-cronograma-etapa.dto';
-import { CreateGeoEnderecoReferenciaDto, ReferenciasValidasBase } from '../geo-loc/entities/geo-loc.entity';
-import { GeoLocService } from '../geo-loc/geo-loc.service';
 
 @Injectable()
 export class EtapaService {
@@ -49,6 +49,8 @@ export class EtapaService {
         const now = new Date(Date.now());
         const created = await this.prisma.$transaction(
             async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
+                await this.lockCronograma(cronogramaId);
+
                 this.logger.log(`Criando etapa... ${JSON.stringify(dto)}`);
 
                 const etapa = await prismaTx.etapa.create({
@@ -78,6 +80,13 @@ export class EtapaService {
                     data: await this.buildEtapaResponsaveis(etapa.id, responsaveis),
                 });
 
+                const dadosUpsertCronogramaEtapa: UpdateCronogramaEtapaDto = {
+                    cronograma_id: cronogramaId,
+                    etapa_id: etapa.id,
+                    ordem: ordem,
+                };
+                await this.cronogramaEtapaService.update(dadosUpsertCronogramaEtapa, user, prismaTx);
+
                 if (dto.regiao_id || dto.termino_real || dto.geolocalizacao) {
                     this.logger.log('encaminhando para método de atualização e validações restantes...');
                     await this.update(
@@ -93,20 +102,14 @@ export class EtapaService {
                 }
 
                 return etapa;
-            },
-            {
-                isolationLevel: 'Serializable',
             }
         );
 
-        const dadosUpsertCronogramaEtapa: UpdateCronogramaEtapaDto = {
-            cronograma_id: cronogramaId,
-            etapa_id: created.id,
-            ordem: ordem,
-        };
-        await this.cronogramaEtapaService.update(dadosUpsertCronogramaEtapa, user);
-
         return created;
+    }
+
+    private async lockCronograma(cronogramaId: number) {
+        await this.prisma.$queryRaw`SELECT id FROM cronograma WHERE id = ${cronogramaId} FOR UPDATE`;
     }
 
     async findAll(filters: FilterEtapaDto | undefined = undefined) {
@@ -186,13 +189,24 @@ export class EtapaService {
     }
 
     async update(id: number, dto: UpdateEtapaDto, user: PessoaFromJwt, prismaCtx?: Prisma.TransactionClient) {
+        const prisma = prismaCtx || this.prisma;
+
+        const basicSelf = await prisma.etapa.findFirstOrThrow({
+            where: { id, removido_em: null },
+            select: {
+                cronograma_id: true,
+            },
+        });
+
+        if (!prismaCtx) await this.lockCronograma(basicSelf.cronograma_id);
+
         this.logger.log(`atualizando etapa id=${id}: ${JSON.stringify(dto)}`);
         const responsaveis = dto.responsaveis === null ? [] : dto.responsaveis;
         const geolocalizacao = dto.geolocalizacao;
         delete dto.geolocalizacao;
 
-        const now = new Date(Date.now());
-
+        const now = prismaCtx ? undefined : new Date(Date.now());
+        const createdNow = now || new Date(Date.now());
         const performUpdate = async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
             const self = await prismaTx.etapa.findFirstOrThrow({
                 where: { id },
@@ -260,7 +274,7 @@ export class EtapaService {
                 geoDto.tokens = geolocalizacao;
                 geoDto.tipo = 'Endereco';
 
-                const regioes = await this.geolocService.upsertGeolocalizacao(geoDto, user, prismaTx, now);
+                const regioes = await this.geolocService.upsertGeolocalizacao(geoDto, user, prismaTx, createdNow);
                 console.log(regioes);
             }
 
@@ -346,8 +360,10 @@ export class EtapaService {
         id: number,
         cronograma_id: number
     ) {
+        this.logger.debug(`verificando se etapa ${id} tem endereço obrigatório`);
         const paisComPendencias: { assert_geoloc_rule: string }[] =
             await prismaTx.$queryRaw`SELECT CAST(assert_geoloc_rule(${id}::integer, ${cronograma_id}::integer) AS VARCHAR)`;
+        console.log(paisComPendencias);
         if (paisComPendencias[0].assert_geoloc_rule && paisComPendencias[0].assert_geoloc_rule !== null) {
             const pendentesStr = paisComPendencias[0].assert_geoloc_rule.slice(1, -1);
             const pendentes = pendentesStr.split(',').filter((e) => e.length > 1);
