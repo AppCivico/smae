@@ -215,16 +215,8 @@ export class EtapaService {
                         select: { id: true },
                     },
 
-                    // Por agora pegando apenas uma única row de cronograma
-                    // No entanto, o sistema foi construído com a possibilidade
-                    // de uma etapa estar em N cronogramas.
-                    CronogramaEtapa: {
-                        take: 1,
-                        where: {
-                            etapa_id: id,
-                            inativo: false,
-                        },
-                        select: { cronograma_id: true },
+                    cronograma: {
+                        select: { id: true },
                     },
                 },
             });
@@ -332,7 +324,7 @@ export class EtapaService {
             // E se está sendo respeitado
             if (dto.termino_real && dto.termino_real !== null) {
                 const paisComPendencias: { assert_geoloc_rule: string }[] =
-                    await prismaTx.$queryRaw`SELECT CAST(assert_geoloc_rule(${id}::integer, ${self.CronogramaEtapa[0].cronograma_id}::integer) AS VARCHAR)`;
+                    await prismaTx.$queryRaw`SELECT CAST(assert_geoloc_rule(${id}::integer, ${self.cronograma.id}::integer) AS VARCHAR)`;
                 if (paisComPendencias[0].assert_geoloc_rule && paisComPendencias[0].assert_geoloc_rule !== null) {
                     const pendentesStr = paisComPendencias[0].assert_geoloc_rule.slice(1, -1);
                     const pendentes = pendentesStr.split(',').filter((e) => e.length > 1);
