@@ -1,18 +1,16 @@
 import { HttpException, Injectable } from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
+import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
+import { NotaService } from '../../bloco-nota/nota/nota.service';
+import { PaginatedDto } from '../../common/dto/paginated.dto';
 import { PrismaService } from '../../prisma/prisma.service';
 import { TransferenciaService } from '../transferencia/transferencia.service';
+import { FilterDashNotasDto, MfDashNotasDto } from './dto/notas.dto';
 import {
     FilterDashTransferenciasDto,
     ListMfDashTransferenciasDto,
     MfDashTransferenciasDto,
 } from './dto/transferencia.dto';
-import { FilterDashNotasDto, MfDashNotasDto } from './dto/notas.dto';
-import { PaginatedDto } from '../../common/dto/paginated.dto';
-import { JwtService } from '@nestjs/jwt';
-import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
-import { DateTime } from 'luxon';
-import { SYSTEM_TIMEZONE } from '../../common/date2ymd';
-import { NotaService } from '../../bloco-nota/nota/nota.service';
 
 class NextPageTokenJwtBody {
     offset: number;
@@ -30,6 +28,8 @@ export class DashTransferenciaService {
     async transferencias(filter: FilterDashTransferenciasDto): Promise<ListMfDashTransferenciasDto> {
         const ids = await this.transferenciaService.buscaIdsPalavraChave(filter.palavra_chave);
 
+        // eh marco, ter data de termino (ter data planejado), não ter data de termino real
+        //
         const rows = await this.prisma.transferenciaStatusConsolidado.findMany({
             where: {
                 transferencia_id: ids ? { in: ids } : undefined,
@@ -84,18 +84,18 @@ export class DashTransferenciaService {
             ipp = decodedPageToken.ipp;
         }
 
-        const nextDay = DateTime.local({ zone: SYSTEM_TIMEZONE }).plus({ days: 1 }).toJSDate();
-
         const rows = await this.prisma.viewNotasTransferencias.findMany({
             where: {
-                data_nota: { lt: nextDay },
-
                 status: {
                     in: ['Em_Curso', 'Programado'],
                 },
-
+                removido_em: null,
                 // TODO: Implementar permissões para a transferencia da mesma forma  que foi feito para a nota
                 notaReferencia: {
+                    status: {
+                        in: ['Em_Curso', 'Programado'],
+                    },
+                    removido_em: null,
                     AND: this.notaService.permissionSet(user),
                 },
             },
