@@ -140,6 +140,7 @@ export class TipoNotaItem {
     n_enderecamentos: number;
     n_repostas: number;
     ultima_resposta: Date | null;
+    pode_editar: boolean;
 }
 
 export class NotaEnderecamentoItem {
