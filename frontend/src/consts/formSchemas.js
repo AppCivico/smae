@@ -1235,7 +1235,6 @@ export const transferenciasVoluntarias = object({
     .nullable(),
   parlamentar_id: number()
     .label('Parlamentar')
-    .min(1, 'Selecione um parlamentar')
     .nullable(),
   secretaria_concedente: string()
     .label('Secretaria do órgão concedente')
