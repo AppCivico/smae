@@ -4,13 +4,21 @@
       NOTAS
     </p>
     <div
-      v-for="(item, index) in listaPanorama"
+      v-for="(item, index) in lista"
       :key="index"
       class="flex center notas"
     >
       <div class="bullet" />
       <p class="identificador">
-        {{ item.transferencia_identificador }}
+      <router-link
+          :to="{
+            name: 'TransferenciasVoluntariasDetalhes',
+            params: { transferenciaId: item.transferencia_id }
+          }"
+          class="tprimary"
+        >
+          {{ item.transferencia_identificador }}
+        </router-link>
       </p>
       <div class="text">
         <p v-html="item.nota" />
@@ -19,20 +27,33 @@
         </p>
       </div>
     </div>
+    <button
+      v-if="paginação.temMais && paginação.tokenDaPróximaPágina"
+      :disabled="chamadasPendentes.lista"
+      class="btn bgnone outline center mt2"
+      @click="blocoStore.buscarTudoPanorama({
+        ...route.query,
+        token_proxima_pagina: paginação.tokenDaPróximaPágina
+      })"
+    >
+      carregar mais
+    </button>
   </div>
 </template>
 
 <script setup>
 import { useBlocoDeNotasStore } from '@/stores/blocoNotas.store';
 import { storeToRefs } from 'pinia';
+import { useRoute } from 'vue-router';
 
 const blocoStore = useBlocoDeNotasStore();
 const {
-  erro,
+  lista,
   chamadasPendentes,
-  listaPanorama,
+  paginação,
 } = storeToRefs(blocoStore);
 
+const route = useRoute();
 blocoStore.buscarTudoPanorama();
 
 function formatarData(data) {
