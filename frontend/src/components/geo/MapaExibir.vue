@@ -103,7 +103,10 @@ const props = defineProps({
   },
 });
 
-const emits = defineEmits(['update:modelValue']);
+const emits = defineEmits([
+  'marcadorFoiMovido',
+  'update:modelValue',
+]);
 
 function adicionarMarcadorNoPonto(e) {
   // PRA-FAZER: não funciona ainda!
@@ -121,6 +124,11 @@ function moverMarcador(e) {
     console.error('propriedade latLng ausente do evento');
   }
 }
+
+function marcadorFoiMovido() {
+  emits('marcadorFoiMovido');
+}
+
 // aceitar uma lista de marcadores, ao invés de um só, para a gente poder
 // identificar um entre muitos marcadores (no futuro)
 function criarMarcadores(marcadores = []) {
@@ -134,6 +142,7 @@ function criarMarcadores(marcadores = []) {
 
       if (opções.draggable) {
         marcadorNoMapa.on('move', moverMarcador);
+        marcadorNoMapa.on('moveend', marcadorFoiMovido);
       }
       // aqui a gente dá "nome" para poder identificar o marcador.
       // Poderia ser um nome melhor, né?
