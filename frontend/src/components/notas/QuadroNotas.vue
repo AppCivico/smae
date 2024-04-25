@@ -15,7 +15,8 @@
       <div class="text">
         <p>{{ item.nota }}</p>
         <p>
-          <strong>{{ item.data_nota }}</strong>
+          <strong>{{ formatarData(item.data_nota).diaMesAno }}</strong>
+          às {{ formatarData(item.data_nota).horaMinutos }}
         </p>
       </div>
     </div>
@@ -34,6 +35,25 @@ const {
 } = storeToRefs(blocoStore);
 
 blocoStore.buscarTudoPanorama();
+
+function formatarData(data) {
+  if (!data) return '';
+
+  const dataObj = new Date(data);
+
+  const diaMesAno = dataObj.toLocaleDateString('pt-BR', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+  });
+
+  const horaMinutos = dataObj.toLocaleTimeString('pt-BR', {
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+
+  return { diaMesAno, horaMinutos };
+}
 </script>
 
 <style scoped lang="less">
