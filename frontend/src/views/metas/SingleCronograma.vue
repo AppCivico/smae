@@ -276,6 +276,21 @@ onUpdated(() => { start(); });
         <hr class="mt2 mb2">
       </div>
 
+      <ul class="flex flexwrap g1 mb1 justifyright">
+        <li class="flex g1 tr">
+          <img src="@/assets/icons/mapas/map-pin--verde.svg">
+          Concluído
+        </li>
+        <li class="flex g1 tr">
+          <img src="@/assets/icons/mapas/map-pin--laranja.svg">
+          Atraso moderado
+        </li>
+        <li class="flex g1 tr">
+          <img src="@/assets/icons/mapas/map-pin--vermelho.svg">
+          Atraso alto
+        </li>
+      </ul>
+
       <MapaExibir
         v-if="marcadoresDasEtapas.length"
         :geo-json="marcadoresDasEtapas"
@@ -283,11 +298,13 @@ onUpdated(() => { start(); });
         zoom="16"
       />
 
+      <hr class="mb2">
+
       <div
         v-if="!singleCronogramaEtapas?.loading && singleCronogramaEtapas.length"
         class="etapas"
       >
-        <ul class="flex flexwrap g1 mb2 justifyright">
+        <ul class="flex flexwrap g1 mb1 justifyright">
           <li class="flex g1 tr">
             <img
               src="@/assets/icons/mapas/map-pin--laranja-so-contorno.svg"
