@@ -286,9 +286,13 @@ async function iniciarMapa(element) {
     attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
   }).addTo(mapa);
 
-  L.Icon.Default.prototype.options.iconUrl = marcadorPadrão;
-  L.Icon.Default.prototype.options.shadowUrl = sombraDoMarcador;
-  L.Icon.Default.imagePath = '';
+  L.Marker.prototype.options.icon = L.icon({
+    iconUrl: marcadorPadrão,
+    iconSize: [48, 48],
+    shadowUrl: sombraDoMarcador,
+    iconAnchor: [24, 42],
+    shadowSize: [48, 48],
+  });
 
   if (!props.opçõesDoMapa?.scrollWheelZoom) {
     mapa.on('focus', () => { mapa.scrollWheelZoom.enable(); });
