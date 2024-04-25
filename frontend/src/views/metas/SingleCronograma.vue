@@ -307,15 +307,21 @@ onUpdated(() => { start(); });
         <ul class="flex flexwrap g1 mb1 justifyright">
           <li class="flex g1 tr">
             <img
+              src="@/assets/icons/mapas/map-pin--sem-contorno.svg"
+            >
+            Endereço preenchido
+          </li>
+          <li class="flex g1 tr">
+            <img
               src="@/assets/icons/mapas/map-pin--laranja-so-contorno.svg"
             >
             Endereço obrigatório não preenchido
           </li>
           <li class="flex g1 tr">
             <img
-              src="@/assets/icons/mapas/map-pin--preto.svg"
+              src="@/assets/icons/mapas/map-pin--com-contorno-laranja.svg"
             >
-            Endereço obrigatório
+            Endereço obrigatório preenchido
           </li>
         </ul>
 
@@ -388,6 +394,11 @@ onUpdated(() => { start(); });
               {{ r.etapa.atraso ? r.etapa.atraso + ' dias' : '-' }}
             </div>
             <div class="ml1 f0">
+              <pre v-scrollLockDebug>
+                endereco obrigatório: {{ !!r?.etapa?.endereco_obrigatorio }}
+                geolocalizações: {{ r?.etapa?.geolocalizacao?.length || 0 }}
+              </pre>
+
               <span
                 v-if="r?.etapa?.endereco_obrigatorio && !r?.etapa?.geolocalizacao?.length"
                 class="tipinfo left"
@@ -402,9 +413,18 @@ onUpdated(() => { start(); });
                 class="tipinfo left"
               >
                 <img
-                  src="@/assets/icons/mapas/map-pin--preto.svg"
+                  src="@/assets/icons/mapas/map-pin--com-contorno-laranja.svg"
                 >
-                <div>Endereço obrigatório</div>
+                <div>Endereço obrigatório preenchido</div>
+              </span>
+              <span
+                v-else-if="r?.etapa?.geolocalizacao?.length"
+                class="tipinfo left"
+              >
+                <img
+                  src="@/assets/icons/mapas/map-pin--sem-contorno.svg"
+                >
+                <div>Endereço preenchido</div>
               </span>
             </div>
             <div
@@ -570,20 +590,38 @@ onUpdated(() => { start(); });
                 {{ rr.atraso ? rr.atraso + ' dias' : '-' }}
               </div>
               <div class="ml1 f0">
+                <pre v-scrollLockDebug>
+                  endereco obrigatório: {{ !!rr?.endereco_obrigatorio }}
+                  geolocalizações: {{ rr?.geolocalizacao?.length || 0 }}
+                </pre>
+
                 <span
-                  v-if="rr?.etapa?.endereco_obrigatorio && !rr?.etapa?.geolocalizacao?.length"
+                  v-if="rr?.endereco_obrigatorio && !rr?.geolocalizacao?.length"
                   class="tipinfo left"
                 >
                   <img
                     src="../../assets/icons/mapas/map-pin--laranja-so-contorno.svg"
-                  ><div>Endereço obrigatório não preenchido</div></span>
+                  >
+                  <div>Endereço obrigatório não preenchido</div>
+                </span>
                 <span
-                  v-else-if="rr?.etapa?.endereco_obrigatorio"
+                  v-else-if="rr?.endereco_obrigatorio"
                   class="tipinfo left"
                 >
                   <img
-                    src="../../assets/icons/mapas/map-pin--preto.svg"
-                  ><div>Endereço obrigatório</div></span>
+                    src="../../assets/icons/mapas/map-pin--com-contorno-laranja.svg"
+                  >
+                  <div>Endereço obrigatório preenchido</div>
+                </span>
+                <span
+                  v-else-if="rr?.geolocalizacao?.length"
+                  class="tipinfo left"
+                >
+                  <img
+                    src="../../assets/icons/mapas/map-pin--sem-contorno.svg"
+                  >
+                  <div>Endereço preenchido</div>
+                </span>
               </div>
               <div
                 v-if="temPermissãoPara('CadastroCronograma.remover')"
@@ -707,21 +745,37 @@ onUpdated(() => { start(); });
                     {{ rrr.atraso ? rrr.atraso + ' dias' : '-' }}
                   </div>
                   <div class="ml1 f0">
+                    <pre v-scrollLockDebug>
+                      endereco obrigatório: {{ !!rrr?.endereco_obrigatorio }}
+                      geolocalizações: {{ rrr?.geolocalizacao?.length || 0 }}
+                    </pre>
+
                     <span
-                      v-if="rrr?.etapa?.endereco_obrigatorio && !rrr?.etapa?.geolocalizacao?.length"
+                      v-if="rrr?.endereco_obrigatorio && !rrr?.geolocalizacao?.length"
                       class="tipinfo left"
                     >
                       <img
                         src="@/assets/icons/mapas/map-pin--laranja-so-contorno.svg"
-                      ><div>Endereço obrigatório não preenchido</div>
+                      >
+                      <div>Endereço obrigatório não preenchido</div>
                     </span>
                     <span
-                      v-else-if="rrr?.etapa?.endereco_obrigatorio"
+                      v-else-if="rrr?.endereco_obrigatorio"
                       class="tipinfo left"
                     >
                       <img
-                        src="@/assets/icons/mapas/map-pin--preto.svg"
-                      ><div>Endereço obrigatório</div>
+                        src="@/assets/icons/mapas/map-pin--com-contorno-laranja.svg"
+                      >
+                      <div>Endereço obrigatório preenchido</div>
+                    </span>
+                    <span
+                      v-else-if="rrr?.geolocalizacao?.length"
+                      class="tipinfo left"
+                    >
+                      <img
+                        src="@/assets/icons/mapas/map-pin--sem-contorno.svg"
+                      >
+                      <div>Endereço preenchido</div>
                     </span>
                   </div>
                   <div
