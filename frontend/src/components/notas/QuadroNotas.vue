@@ -77,6 +77,7 @@ blocoStore.buscarTudoPanorama();
   line-height: 55px;
   width: 55px;
   height: 55px;
+  text-align: center;
 }
 
 .notas:nth-child(3n + 1) .identificador {
