@@ -2129,6 +2129,14 @@ input[type='radio'] {
       padding-left: 0;
     }
   }
+  &.tbody-zebra {
+    tbody:nth-of-type(odd) tr{
+      background: @c50 !important;
+    }
+    tbody tr {
+      background-color: transparent !important;
+    }
+  }
 }
 
 .tablepreinfo {
