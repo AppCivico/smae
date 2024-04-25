@@ -16,7 +16,6 @@
         <p>{{ item.nota }}</p>
         <p>
           <strong>{{ formatarData(item.data_nota).diaMesAno }}</strong>
-          às {{ formatarData(item.data_nota).horaMinutos }}
         </p>
       </div>
     </div>
@@ -47,12 +46,7 @@ function formatarData(data) {
     year: 'numeric',
   });
 
-  const horaMinutos = dataObj.toLocaleTimeString('pt-BR', {
-    hour: '2-digit',
-    minute: '2-digit',
-  });
-
-  return { diaMesAno, horaMinutos };
+  return { diaMesAno };
 }
 </script>
 
