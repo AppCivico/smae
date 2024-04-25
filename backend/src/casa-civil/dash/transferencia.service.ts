@@ -58,7 +58,7 @@ export class DashTransferenciaService {
                 return {
                     data: r.data,
                     data_origem: r.data_origem,
-                    situacao: r.situacao,
+                    atividade: r.situacao,
                     identificador: r.transferencia.identificador,
                     transferencia_id: r.transferencia.id,
                     esfera: r.transferencia.esfera,
