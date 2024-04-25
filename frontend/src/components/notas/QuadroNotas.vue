@@ -13,7 +13,7 @@
         {{ item.transferencia_identificador }}
       </p>
       <div class="text">
-        <p>{{ item.nota }}</p>
+        <p v-html="item.nota" />
         <p>
           <strong>{{ formatarData(item.data_nota).diaMesAno }}</strong>
         </p>
@@ -115,6 +115,7 @@ function formatarData(data) {
 .text p:first-child {
   max-width: 151px;
   max-height: 28px;
+  overflow:hidden;
   margin-bottom: 5px;
   font-size: 11px;
 }
