@@ -9,7 +9,7 @@ export class MfDashTransferenciasDto {
     @ApiProperty({ description: 'ID da transferência' })
     transferencia_id: number;
     identificador: string;
-    situacao: string;
+    atividade: string;
     data: Date | null;
     data_origem: string;
     orgaos: number[];
