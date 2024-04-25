@@ -1,9 +1,12 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { Nota, Prisma, TipoNota } from '@prisma/client';
+import { DateTime } from 'luxon';
 import { uuidv7 } from 'uuidv7';
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
+import { SYSTEM_TIMEZONE } from '../../common/date2ymd';
 import { RecordWithId } from '../../common/dto/record-with-id.dto';
+import { HtmlSanitizer } from '../../common/html-sanitizer';
 import { PrismaService } from '../../prisma/prisma.service';
 import { BlocoNotaService } from '../bloco-nota/bloco-nota.service';
 import { TipoNotaService } from '../tipo-nota/tipo-nota.service';
@@ -17,9 +20,6 @@ import {
     TipoNotaItem,
     UpdateNotaDto,
 } from './dto/nota.dto';
-import { HtmlSanitizer } from '../../common/html-sanitizer';
-import { DateTime } from 'luxon';
-import { SYSTEM_TIMEZONE } from '../../common/date2ymd';
 
 const JWT_AUD = 'nt';
 type JwtToken = {
@@ -184,8 +184,9 @@ export class NotaService {
 
         return rows
             .map((r): TipoNotaItem => {
+                const idPerm = this.getTokenWithPerm(r.id, user, r);
                 return {
-                    id_jwt: this.getTokenWithPerm(r.id, user, r),
+                    id_jwt: idPerm.token,
                     bloco_token: this.blocoService.getToken(r.bloco_nota_id),
                     data_nota: r.data_nota,
                     dispara_email: r.dispara_email,
@@ -201,6 +202,7 @@ export class NotaService {
                     n_enderecamentos: r.n_enderecamentos,
                     n_repostas: r.n_repostas,
                     ultima_resposta: r.ultima_resposta,
+                    pode_editar: idPerm.write,
                 };
             })
             .sort((a, b) => {
@@ -270,8 +272,10 @@ export class NotaService {
         });
         if (!r) throw new NotFoundException('Nota não encontrada');
 
+        const idPerm = this.getTokenWithPerm(r.id, user, r);
         return {
-            id_jwt: this.getTokenWithPerm(r.id, user, r),
+            id_jwt: idPerm.token,
+            pode_editar: idPerm.write,
             bloco_token: this.blocoService.getToken(r.bloco_nota_id),
             data_nota: r.data_nota,
             dispara_email: r.dispara_email,
@@ -671,7 +675,11 @@ export class NotaService {
         );
     }
 
-    private getTokenWithPerm(id: number, user: PessoaFromJwt, nota: Nota & { tipo_nota: TipoNota }): string {
+    private getTokenWithPerm(
+        id: number,
+        user: PessoaFromJwt,
+        nota: Nota & { tipo_nota: TipoNota }
+    ): { token: string; write: boolean } {
         let write = nota.pessoa_responsavel_id == user.id;
 
         if (nota.tipo_nota.eh_publico && !write && user.orgao_id) {
@@ -679,13 +687,16 @@ export class NotaService {
             write = nota.orgao_responsavel_id == user.orgao_id;
         }
 
-        return this.jwtService.sign(
-            {
-                nota_id: id,
-                write: write,
-                aud: JWT_AUD,
-            } satisfies JwtToken,
-            { expiresIn: '30d' }
-        );
+        return {
+            token: this.jwtService.sign(
+                {
+                    nota_id: id,
+                    write: write,
+                    aud: JWT_AUD,
+                } satisfies JwtToken,
+                { expiresIn: '30d' }
+            ),
+            write,
+        };
     }
 }
