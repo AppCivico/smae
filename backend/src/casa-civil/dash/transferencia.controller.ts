@@ -3,7 +3,9 @@ import { ApiBearerAuth, ApiExtraModels, ApiOkResponse, ApiTags, refs } from '@ne
 import { CurrentUser } from '../../auth/decorators/current-user.decorator';
 import { Roles } from '../../auth/decorators/roles.decorator';
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
+import { PaginatedDto } from '../../common/dto/paginated.dto';
 import { RequestInfoDto } from '../../mf/metas/dto/mf-meta.dto';
+import { FilterDashNotasDto, MfDashNotasDto } from './dto/notas.dto';
 import { FilterDashTransferenciasDto, ListMfDashTransferenciasDto } from './dto/transferencia.dto';
 import { DashTransferenciaService } from './transferencia.service';
 
@@ -31,5 +33,16 @@ export class DashTransferenciaController {
             ...transferencias,
             requestInfo: { queryTook: Date.now() - start },
         };
+    }
+
+    @Get('notas')
+    @ApiBearerAuth('access-token')
+    @Roles('CadastroTransferencia.listar')
+    @ApiExtraModels(MfDashNotasDto)
+    async notas(
+        @Query() params: FilterDashNotasDto,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<PaginatedDto<MfDashNotasDto>> {
+        return await this.metasDashService.notas(params, user);
     }
 }
