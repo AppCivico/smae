@@ -935,14 +935,12 @@ export class TransferenciaService {
     ) {
         const workflow = await this.workflowService.findOne(workflow_id, undefined);
 
-        // Apenas a primeira etapa importa nesta criação.
-        const fluxo = workflow.fluxo[0];
+        // Caso seja a primeira fase, já é iniciada.
+        // Ou seja, o timestamp de data_inicio é preenchido.
+        let primeiraFase: boolean = true;
 
-        if (fluxo) {
-            // Apenas a primeira fase importa nesta criação
-            const fase = fluxo.fases[0];
-
-            if (fase) {
+        for (const fluxo of workflow.fluxo) {
+            for (const fase of fluxo.fases) {
                 // Caso a fase seja de responsabilidade própria.
                 // Deve ser iniciada já sob a Casa Civil.
                 let orgao_id: number | null = null;
@@ -981,7 +979,7 @@ export class TransferenciaService {
                             workflow_etapa_id: fluxo.workflow_etapa_de!.id, // Sempre será o "dê" do "dê-para".
                             workflow_fase_id: fase.fase!.id,
                             orgao_responsavel_id: orgao_id,
-                            data_inicio: new Date(Date.now()),
+                            data_inicio: primeiraFase ? new Date(Date.now()) : null,
                             criado_por: user.id,
                             criado_em: new Date(Date.now()),
 
@@ -999,7 +997,12 @@ export class TransferenciaService {
                         },
                     });
                 }
+
+                primeiraFase = false;
             }
         }
+        console.log('======================');
+        await prismaTxn.$queryRaw`CALL create_workflow_cronograma(${transferencia_id}::int, ${workflow_id}::int);`;
+        console.log('======================');
     }
 }
