@@ -13,13 +13,19 @@ export const useBlocoDeNotasStore = defineStore('blocoDeNotasStore', {
       emFoco: false,
     },
     erro: null,
+    paginação: {
+      temMais: false,
+      tokenDaPróximaPágina: '',
+    },
   }),
   actions: {
     async buscarTudo(blocosToken, params = {}) {
       this.chamadasPendentes.lista = true;
       this.erro = null;
       try {
-        const { linhas } = await this.requestS.get(
+        const {
+          linhas
+        } = await this.requestS.get(
           `${baseUrl}/nota/busca-por-bloco`,
           {
             ...params,
@@ -88,13 +94,24 @@ export const useBlocoDeNotasStore = defineStore('blocoDeNotasStore', {
       this.chamadasPendentes.lista = true;
       this.erro = null;
       try {
-        const { linhas } = await this.requestS.get(
+        const {
+          linhas,
+          tem_mais: temMais,
+          token_proxima_pagina: tokenDaPróximaPágina,
+        } = await this.requestS.get(
           `${baseUrl}/panorama/notas`,
           {
             ...params,
           },
         );
-        this.listaPanorama = linhas;
+        if (Array.isArray(linhas)) {
+          this.lista = params.token_proxima_pagina
+            ? this.lista.concat(linhas)
+            : linhas;
+
+          this.paginação.temMais = temMais || false;
+          this.paginação.tokenDaPróximaPágina = tokenDaPróximaPágina || '';
+        }
       } catch (erro) {
         this.erro = erro;
         console.log('erro: ', erro);
