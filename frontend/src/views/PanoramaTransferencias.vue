@@ -30,6 +30,7 @@ const esfera = ref(route.query.esfera
   : undefined);
 const partido = ref(route.query.partido_ids);
 const orgao = ref(route.query.orgaos_ids);
+const palavraChave = ref(route.query.palavra_chave);
 
 function atualizarUrl() {
   router.push({
@@ -38,6 +39,7 @@ function atualizarUrl() {
       partido_ids: partido.value || undefined,
       orgaos_ids: orgao.value || undefined,
       esfera: esfera.value || undefined,
+      palavra_chave: palavraChave.value || undefined,
     },
   });
 }
@@ -46,11 +48,17 @@ watch([
   () => route.query.esfera,
   () => route.query.partido_ids,
   () => route.query.orgaos_ids,
+  () => route.query.palavra_chave,
 ], () => {
-  const {
+  let {
     partido_ids: partidoFiltro,
     orgaos_ids: orgaoFiltro,
+    palavra_chave: palavraChaveParaBusca,
   } = route.query;
+  if (typeof palavraChaveParaBusca === 'string') {
+    // eslint-disable-next-line no-const-assign
+    palavraChaveParaBusca = palavraChaveParaBusca.trim();
+  }
   panoramaTransferenciasStore.$reset();
   panoramaTransferenciasStore.buscarTudo({
     esfera: route.query.esfera
@@ -59,6 +67,7 @@ watch([
       : undefined,
     partido_ids: partidoFiltro,
     orgaos_ids: orgaoFiltro,
+    palavra_chave: palavraChaveParaBusca,
   });
 }, { immediate: true });
 
@@ -166,6 +175,20 @@ onUnmounted(() => {
             {{ item.sigla }} - {{ truncate(item.descricao, 36) }}
           </option>
         </select>
+      </div>
+
+      <div class="f1">
+        <label
+          for="palavra_chave"
+          class="label tc300"
+        >Palavra-chave</label>
+        <input
+          id="palavra_chave"
+          v-model.trim="palavraChave"
+          class="inputtext"
+          name="palavra_chave"
+          type="text"
+        >
       </div>
 
       <button class="btn outline bgnone tcprimary mtauto mb1">
