@@ -7,7 +7,7 @@ export const useBlocoDeNotasStore = defineStore('blocoDeNotasStore', {
   state: () => ({
     lista: [],
     emFoco: null,
-
+    listaPanorama: [],
     chamadasPendentes: {
       lista: false,
       emFoco: false,
@@ -20,10 +20,10 @@ export const useBlocoDeNotasStore = defineStore('blocoDeNotasStore', {
       this.erro = null;
       try {
         const { linhas } = await this.requestS.get(
-          `${baseUrl}/nota/busca-por-bloco`, 
-          { 
+          `${baseUrl}/nota/busca-por-bloco`,
+          {
             ...params,
-            blocos_token : blocosToken
+            blocos_token: blocosToken,
           },
         );
         this.lista = linhas;
@@ -68,6 +68,7 @@ export const useBlocoDeNotasStore = defineStore('blocoDeNotasStore', {
         return false;
       }
     },
+
     async buscarItem(id = 0) {
       this.chamadasPendentes.emFoco = true;
       this.erro = null;
@@ -82,19 +83,52 @@ export const useBlocoDeNotasStore = defineStore('blocoDeNotasStore', {
       }
       this.chamadasPendentes.emFoco = false;
     },
+
+    async buscarTudoPanorama(params = {}) {
+      this.chamadasPendentes.lista = true;
+      this.erro = null;
+      try {
+        const { linhas } = await this.requestS.get(
+          `${baseUrl}/panorama/notas`,
+          {
+            ...params,
+          },
+        );
+        this.listaPanorama = linhas;
+      } catch (erro) {
+        this.erro = erro;
+        console.log('erro: ', erro);
+      }
+      this.chamadasPendentes.lista = false;
+    },
   },
   getters: {
     itemParaEdição: ({ emFoco }) => ({
       ...emFoco,
       dispara_email: emFoco?.dispara_email || false,
-      data_nota: dateTimeToDate(emFoco?.data_nota),
+      data_nota: dateTimeToDate(emFoco?.data_nota) || null,
       enderecamentos: !Array.isArray(emFoco?.enderecamentos)
         ? null
-        : emFoco?.enderecamentos.map((x) => ({
-          orgao_enderecado_id: x.orgao_enderecado?.id || 0,
-          pessoa_enderecado_id: x.pessoa_enderecado?.id || 0,
-        })
-        || null),
+        : emFoco?.enderecamentos.map(
+          (x) => ({
+            orgao_enderecado_id: x.orgao_enderecado?.id || 0,
+            pessoa_enderecado_id: x.pessoa_enderecado?.id || 0,
+          } || null),
+        ),
+      nota: emFoco?.nota || null,
+      status: emFoco?.status || null,
     }),
   },
 });
+// data_nota
+// dispara_email
+// enderecamentos
+// orgao_enderecado_id
+// pessoa_enderecado_id
+// nota
+// rever_em
+// status
+// tipo_nota_id
+// Data da nota não é opcional
+// Nota não é opcional
+// Status não é opcional
