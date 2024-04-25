@@ -106,56 +106,69 @@ export class NotaService {
             throw new BadRequestException('Data de revisão inválida, deve ser após a data da nota.');
     }
 
+    permissionSet(user: PessoaFromJwt) {
+        const permissionsSet: Prisma.Enumerable<Prisma.NotaWhereInput> = [];
+
+        permissionsSet.push({
+            OR: [
+                {
+                    tipo_nota: { eh_publico: true },
+                },
+                {
+                    tipo_nota: {
+                        eh_publico: false,
+                        removido_em: null,
+                    },
+                    pessoa_responsavel_id: user.id,
+                },
+                user.orgao_id
+                    ? {
+                          NotaEnderecamento: {
+                              some: {
+                                  removido_em: null,
+                                  orgao_enderecado_id: user.orgao_id,
+                              },
+                          },
+                      }
+                    : {},
+                {
+                    NotaEnderecamento: {
+                        some: {
+                            removido_em: null,
+                            pessoa_enderecado_id: user.id,
+                        },
+                    },
+                },
+                user.orgao_id
+                    ? {
+                          tipo_nota: {
+                              visivel_resp_orgao: true,
+                              removido_em: null,
+                          },
+                          orgao_responsavel_id: user.orgao_id,
+                      }
+                    : {},
+            ],
+        });
+
+        return permissionsSet;
+    }
+
     async findAll(filters: BuscaNotaDto, user: PessoaFromJwt): Promise<TipoNotaItem[]> {
         if (!filters.status) filters.status = ['Programado', 'Em_Curso'];
 
-        const rows = await this.prisma.viewNotas.findMany({
+        const permissionSet: Prisma.Enumerable<Prisma.NotaWhereInput[]> = this.permissionSet(user);
+        const today = DateTime.local({ zone: SYSTEM_TIMEZONE }).startOf('day').valueOf();
+        const rows = await this.prisma.nota.findMany({
             where: {
                 removido_em: null,
                 bloco_nota_id: {
                     in: filters.blocos_token.map((b) => this.blocoService.checkToken(b)),
                 },
+
                 status: { in: filters.status },
 
-                OR: [
-                    {
-                        tipo_nota: { eh_publico: true },
-                    },
-                    {
-                        tipo_nota: {
-                            eh_publico: false,
-                            removido_em: null,
-                        },
-                        pessoa_responsavel_id: user.id,
-                    },
-                    user.orgao_id
-                        ? {
-                              NotaEnderecamento: {
-                                  some: {
-                                      removido_em: null,
-                                      orgao_enderecado_id: user.orgao_id,
-                                  },
-                              },
-                          }
-                        : {},
-                    {
-                        NotaEnderecamento: {
-                            some: {
-                                removido_em: null,
-                                pessoa_enderecado_id: user.id,
-                            },
-                        },
-                    },
-                    user.orgao_id
-                        ? {
-                              tipo_nota: {
-                                  visivel_resp_orgao: true,
-                                  removido_em: null,
-                              },
-                              orgao_responsavel_id: user.orgao_id,
-                          }
-                        : {},
-                ],
+                AND: permissionSet,
             },
             include: {
                 pessoa_responsavel: {
@@ -180,7 +193,8 @@ export class NotaService {
                     status: r.status,
                     tipo_nota_id: r.tipo_nota_id,
                     orgao_responsavel: r.orgao_responsavel,
-                    data_ordenacao: r.data_ordenacao,
+                    // voltando o calculo aqui, pra não ter que fazer join com a view sendo que já estamos na nota...
+                    data_ordenacao: r.data_nota.valueOf() <= today && r.rever_em ? r.rever_em : r.data_nota,
 
                     bloco_id: r.bloco_nota_id,
                     pessoa_responsavel: r.pessoa_responsavel,

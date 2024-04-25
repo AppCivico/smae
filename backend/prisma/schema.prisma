@@ -4810,6 +4810,7 @@ model Transferencia {
     distribuicao_recursos          DistribuicaoRecurso[]
     andamentoWorkflow              TransferenciaAndamento[]
     TransferenciaStatusConsolidado TransferenciaStatusConsolidado[]
+    ViewNotasTransferencias        ViewNotasTransferencias[]
 
     @@map("transferencia")
 }
@@ -5315,11 +5316,13 @@ model BlocoNota {
     removido_por Int?
     removido_em  DateTime? @db.Timestamptz(6)
 
-    criador          Pessoa      @relation("Criador", fields: [criado_por], references: [id])
-    atualizador      Pessoa?     @relation("Atualizador", fields: [atualizado_por], references: [id])
-    removedor        Pessoa?     @relation("Removedor", fields: [removido_por], references: [id])
-    ViewNotaComOrdem ViewNotas[]
+    criador                 Pessoa                    @relation("Criador", fields: [criado_por], references: [id])
+    atualizador             Pessoa?                   @relation("Atualizador", fields: [atualizado_por], references: [id])
+    removedor               Pessoa?                   @relation("Removedor", fields: [removido_por], references: [id])
+    ViewNotaComOrdem        ViewNotas[]
+    ViewNotasTransferencias ViewNotasTransferencias[]
 
+    @@index([bloco])
     @@map("bloco_nota")
 }
 
@@ -5398,8 +5401,10 @@ model Nota {
     NotaEnderecamentoResposta NotaEnderecamentoResposta[]
     revisoes                  NotaRevisao[]
     AvisoEmail                AvisoEmail[]
+    ViewNotasTransferencias   ViewNotasTransferencias[]
 
-    @@index([bloco_nota_id])
+    @@index([data_nota, rever_em, removido_em])
+    @@index([bloco_nota_id, removido_em, status])
     @@map("nota")
 }
 
@@ -5440,6 +5445,27 @@ view ViewNotas {
     AvisoEmail                AvisoEmail[]
 
     @@map("view_notas")
+}
+
+view ViewNotasTransferencias {
+    id Int @id @default(autoincrement())
+
+    bloco_nota_id Int
+    data_nota     DateTime   @db.Date
+    nota          String
+    status        StatusNota
+    removido_em   DateTime?  @db.Timestamptz(6)
+
+    data_ordenacao              DateTime
+    transferencia_id            Int
+    transferencia_identificador String
+
+    notaReferencia Nota @relation(fields: [id], references: [id])
+
+    bloco_nota    BlocoNota     @relation(fields: [bloco_nota_id], references: [id])
+    transferencia Transferencia @relation(fields: [transferencia_id], references: [id])
+
+    @@map("view_notas_transferencias")
 }
 
 model NotaRevisao {
