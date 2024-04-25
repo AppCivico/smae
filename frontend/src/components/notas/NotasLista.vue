@@ -441,7 +441,9 @@ iniciar();
       </option>
     </select>
   </div>
-  <table class="tablemain mb1">
+
+  <table class="tablemain mb1 tbody-zebra">
+    <col>
     <col>
     <col>
     <col>
@@ -449,19 +451,19 @@ iniciar();
     <col class="col--botão-de-ação">
     <thead>
       <tr>
-        <th>Nota</th>
         <th>Status</th>
         <th>Tipo</th>
+        <th>Data</th>
+        <th>Ordenação</th>
+        <th />
+        <th />
       </tr>
     </thead>
-    <tbody>
-      <tr
-        v-for="(item, key) in listaNotas"
-        :key="key"
-      >
-        <td>
-          {{ item.nota }}
-        </td>
+    <tbody
+      v-for="(item, key) in listaNotas"
+      :key="key"
+    >
+      <tr>
         <td class="cell--nowrap">
           {{ status[item.status]?.text || item.status }}
         </td>
@@ -469,6 +471,20 @@ iniciar();
           {{ listaTipo.find((tipo) => tipo.id === item.tipo_nota_id)?.codigo }}
         </td>
         <td>
+          {{
+            item.data_nota
+              ? new Date(item.data_nota).toLocaleDateString("pt-BR")
+              : " - "
+          }}
+        </td>
+        <td>
+          {{
+            item.data_ordenacao
+              ? new Date( item.data_ordenacao).toLocaleDateString("pt-BR")
+              : " - "
+          }}
+        </td>
+        <td v-if="item.pode_editar">
           <button
             class="like-a__text"
             arial-label="Excluir"
@@ -483,7 +499,7 @@ iniciar();
             </svg>
           </button>
         </td>
-        <td>
+        <td v-if="item.pode_editar">
           <button
             arial-label="Editar"
             title="Editar"
@@ -499,18 +515,24 @@ iniciar();
           </button>
         </td>
       </tr>
+      <tr>
+        <td colspan="6">
+          {{ item.nota }}
+        </td>
+      </tr>
+
       <tr v-if="chamadasPendentes.listaNotas">
-        <td colspan="10">
+        <td colspan="6">
           Carregando
         </td>
       </tr>
       <tr v-else-if="erro">
-        <td colspan="10">
+        <td colspan="6">
           Erro: {{ erro }}
         </td>
       </tr>
       <tr v-else-if="!listaNotas.length">
-        <td colspan="10">
+        <td colspan="6">
           Nenhum resultado encontrado.
         </td>
       </tr>
