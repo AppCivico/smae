@@ -12,7 +12,7 @@
 import marcadorLaranja from '@/assets/icons/mapas/map-pin--laranja.svg';
 import marcadorVerde from '@/assets/icons/mapas/map-pin--verde.svg';
 import marcadorVermelho from '@/assets/icons/mapas/map-pin--vermelho.svg';
-import marcador from '@/assets/icons/mapas/map-pin.svg';
+import marcadorPadrão from '@/assets/icons/mapas/map-pin.svg';
 import sombraDoMarcador from '@/assets/icons/mapas/map-pin__sombra.svg';
 import { useRegionsStore } from '@/stores/regions.store';
 import L from 'leaflet';
@@ -147,7 +147,7 @@ function criarGeoJson(item) {
   let geoJson;
 
   if (item.geometry?.type === 'Point') {
-    let urlDoÍcone = marcador;
+    let urlDoÍcone = marcadorPadrão;
 
     switch (item.properties?.cor_do_marcador) {
       case 'vermelho':
@@ -286,7 +286,7 @@ async function iniciarMapa(element) {
     attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>',
   }).addTo(mapa);
 
-  L.Icon.Default.prototype.options.iconUrl = marcador;
+  L.Icon.Default.prototype.options.iconUrl = marcadorPadrão;
   L.Icon.Default.prototype.options.shadowUrl = sombraDoMarcador;
   L.Icon.Default.imagePath = '';
 
