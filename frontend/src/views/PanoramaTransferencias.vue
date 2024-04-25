@@ -229,7 +229,7 @@ onUnmounted(() => {
               {{ item.transferencia_id }}
             </td>
             <td>
-              {{ item.situacao }}
+              {{ item.atividade }}
             </td>
             <td>
               {{
