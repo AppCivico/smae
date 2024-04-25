@@ -31,7 +31,7 @@ export class WorkflowAndamentoService {
                 andamentoWorkflow: {
                     where: {
                         removido_em: null,
-                        data_inicio: { not: undefined },
+                        data_inicio: { not: null },
                     },
                     take: 1,
                     orderBy: [{ id: 'desc' }, { criado_em: 'desc' }],
@@ -218,7 +218,9 @@ export class WorkflowAndamentoService {
         const now = DateTime.now().startOf('day');
 
         let dias_na_fase: number;
-        if (row.data_termino) {
+        if (!row.data_inicio) {
+            dias_na_fase = 0;
+        } else if (row.data_termino) {
             dias_na_fase =
                 DateTime.fromJSDate(row.data_termino).startOf('day').toMillis ==
                 DateTime.fromJSDate(row.data_inicio).startOf('day').toMillis
@@ -420,11 +422,6 @@ export class WorkflowAndamentoService {
                         },
                     },
                 });
-                console.log('================================================');
-                console.log(etapaAtual);
-                console.log(configProxEtapa);
-                console.log(configProxEtapa?.fases);
-                console.log('================================================');
 
                 if (!configProxEtapa)
                     throw new HttpException('Não foi possível encontrar configuração da próxima Etapa', 400);
