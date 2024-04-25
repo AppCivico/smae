@@ -205,7 +205,7 @@ onUnmounted(() => {
           <tr>
             <th>Identificador</th>
             <th>Transferência</th>
-            <th>Situação</th>
+            <th>Atividade</th>
             <th>Prazo</th>
           </tr>
         </thead>
