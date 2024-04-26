@@ -197,6 +197,7 @@ export class NotaService {
                     // voltando o calculo aqui, pra não ter que fazer join com a view sendo que já estamos na nota...
                     data_ordenacao: r.data_nota.valueOf() <= today && r.rever_em ? r.rever_em : r.data_nota,
 
+                    rever_em: r.rever_em,
                     bloco_id: r.bloco_nota_id,
                     pessoa_responsavel: r.pessoa_responsavel,
                     n_enderecamentos: r.n_enderecamentos,
@@ -290,6 +291,7 @@ export class NotaService {
             n_repostas: r.n_repostas,
             ultima_resposta: r.ultima_resposta,
             enderecamentos: r.NotaEnderecamento,
+            rever_em: r.rever_em,
             respostas: r.NotaEnderecamentoResposta.map((resp): NotaEnderecamentoRespostas => {
                 return {
                     id: resp.id,
