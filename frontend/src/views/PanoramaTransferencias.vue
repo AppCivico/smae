@@ -212,7 +212,7 @@ onUnmounted(() => {
         <tbody>
           <tr
             v-for="item in lista"
-            :key="item.id"
+            :key="item.transferencia_id"
           >
             <th>
               <router-link
