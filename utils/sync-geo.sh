@@ -7,3 +7,4 @@ rsync -av $HOME/projetos/appcivico/sepep_geoloc/README.md $HOME/projetos/appcivi
 rsync -av $HOME/projetos/appcivico/sepep_geoloc/.env.* $HOME/projetos/appcivico/smae/backend-geoloc/
 cp ./backend-geoloc-requirements.txt $HOME/projetos/appcivico/smae/backend-geoloc/
 
+rm -f $HOME/projetos/appcivico/smae/backend-geoloc/windows_requirements.txt

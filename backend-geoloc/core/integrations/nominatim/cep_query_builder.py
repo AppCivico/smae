@@ -1,5 +1,6 @@
+from core.utils.misc import check_cep
 
-class QueryBuilder:
+class CepQueryBuilder:
 
     def __init__(self, city:str, state:str, country_iso:str, 
                 contact_email:str, bbox_bound:dict=None)->None:
@@ -83,10 +84,12 @@ class QueryBuilder:
         self.set_country(query)
         self.set_bbox_param(query)
 
-    def search_address(self, query:dict, address:str)->None:
 
-        #rua e numero apenas o resto vai ser pre definido
-        query['street'] = address
+    def search_cep(self, query:dict, cep:str)->None:
+
+        #apenas o numero do cep o resto vai pre definido
+        check_cep(cep)
+        query['postalcode'] = cep
 
     def build_query_str(self, query:dict)->str:
 
@@ -97,13 +100,13 @@ class QueryBuilder:
     def build_full_query(self, address:str)->dict:
 
         query = dict()
-        self.search_address(query, address)
+        self.search_cep(query, address)
         self.set_search_boundaries(query)
         self.set_config_params(query)
 
         return self.build_query_str(query)
 
-    def __call__(self, address:str)->str:
-        '''Addess as street name and street number. Rest is pre-defined'''
+    def __call__(self, cep:str)->str:
+        '''CEP as str in format \d{5}-\d{3}'''
 
-        return self.build_full_query(address)
+        return self.build_full_query(cep)
