@@ -6,7 +6,7 @@ import {
     CreateEnderecoDto,
     FilterCamadasDto,
     GeoLocDto,
-    GeoLocDtoByLotLong,
+    GeoLocDtoByLatLong,
     RetornoCreateEnderecoDto,
     RetornoGeoLoc,
     RetornoGeoLocCamadaFullDto,
@@ -28,7 +28,7 @@ export class GeoLocController {
     @Post('geolocalizar-reverso')
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
-    async findGeoLocByLotLong(@Body() dto: GeoLocDtoByLotLong): Promise<RetornoGeoLoc> {
+    async findGeoLocByLatLong(@Body() dto: GeoLocDtoByLatLong): Promise<RetornoGeoLoc> {
         return await this.geoService.findGeoLocByLatLong(dto);
     }
 

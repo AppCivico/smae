@@ -13,7 +13,7 @@ import {
     GeoLocCamadaFullDto,
     GeoLocCamadaSimplesDto,
     GeoLocDto,
-    GeoLocDtoByLotLong as GeoLocDtoByLatLong,
+    GeoLocDtoByLatLong as GeoLocDtoByLatLong,
     GeolocalizacaoDto,
     RetornoCreateEnderecoDto,
     RetornoGeoLoc,

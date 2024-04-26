@@ -18,7 +18,7 @@ export class GeoLocDto {
     tipo: string;
 }
 
-export class GeoLocDtoByLotLong {
+export class GeoLocDtoByLatLong {
     @IsNumber()
     @Transform(NumberTransform)
     lat: number;
