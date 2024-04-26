@@ -4,6 +4,7 @@ import { Transform, TransformFnParams } from 'class-transformer';
 import { IsArray, IsInt, IsOptional, IsString, MaxLength } from 'class-validator';
 import { NumberArrayTransform } from '../../../auth/transforms/number-array.transform';
 import { BadRequestException } from '@nestjs/common';
+import { StringArrayTransform } from '../../../auth/transforms/string-array.transform';
 
 export class MfDashTransferenciasDto {
     @ApiProperty({ description: 'ID da transferência' })
@@ -59,6 +60,7 @@ export class FilterDashTransferenciasDto {
     @MaxLength(1000, { each: true })
     @IsString({ each: true })
     @ApiProperty({ description: 'Atividade do cronograma' })
+    @Transform(StringArrayTransform)
     atividade?: string[];
 
     @ApiProperty({ description: 'Contém qualquer um dos órgãos', example: '[]' })
