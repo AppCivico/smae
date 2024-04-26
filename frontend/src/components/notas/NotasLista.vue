@@ -516,7 +516,7 @@ iniciar();
         </td>
       </tr>
       <tr>
-        <td colspan="6">
+        <td :colspan="item.pode_editar ? 6 : 4">
           {{ item.nota }}
         </td>
       </tr>
