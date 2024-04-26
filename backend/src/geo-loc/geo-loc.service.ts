@@ -96,7 +96,7 @@ export class GeoLocService {
             cor: string | null;
             simplificar_em: number | null;
         }[]
-    ): import('/home/renato/projetos/appcivico/smae/backend/src/geo-api/geo-api.service').InputGeolocalizarCamadas[] {
+    ) {
         return camadasConfig.map((r) => {
             return { alias: r.id.toString(), layer_name: r.tipo_camada };
         });
