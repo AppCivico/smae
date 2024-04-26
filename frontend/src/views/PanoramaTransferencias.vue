@@ -23,7 +23,6 @@ const { chamadasPendentes, erro, lista } = storeToRefs(
 const { lista: partidoComoLista } = storeToRefs(partidoStore);
 const { órgãosComoLista } = storeToRefs(OrgaosStore);
 
-// não finalizado
 const esfera = ref(route.query.esfera
   ? Object.keys(esferasDeTransferencia)
     .find((x) => x.toLowerCase() === route.query.esfera.toLocaleLowerCase())
@@ -31,6 +30,7 @@ const esfera = ref(route.query.esfera
 const partido = ref(route.query.partido_ids);
 const orgao = ref(route.query.orgaos_ids);
 const palavraChave = ref(route.query.palavra_chave);
+const atividade = ref(route.query.situacao);
 
 function atualizarUrl() {
   router.push({
@@ -40,6 +40,7 @@ function atualizarUrl() {
       orgaos_ids: orgao.value || undefined,
       esfera: esfera.value || undefined,
       palavra_chave: palavraChave.value || undefined,
+      situacao: atividade.value ? [atividade.value] : undefined,
     },
   });
 }
@@ -49,11 +50,13 @@ watch([
   () => route.query.partido_ids,
   () => route.query.orgaos_ids,
   () => route.query.palavra_chave,
+  () => route.query.situacao,
 ], () => {
   let {
     partido_ids: partidoFiltro,
     orgaos_ids: orgaoFiltro,
     palavra_chave: palavraChaveParaBusca,
+    situacao: atividadeFiltro,
   } = route.query;
   if (typeof palavraChaveParaBusca === 'string') {
     // eslint-disable-next-line no-const-assign
@@ -68,6 +71,7 @@ watch([
     partido_ids: partidoFiltro,
     orgaos_ids: orgaoFiltro,
     palavra_chave: palavraChaveParaBusca,
+    situacao: atividadeFiltro,
   });
 }, { immediate: true });
 
@@ -133,27 +137,28 @@ onUnmounted(() => {
         </select>
       </div>
 
-      <!-- <div class="f1">
+      <!-- não finalizado -->
+      <div class="f1">
         <label
-          for="situacao"
+          for="atividade"
           class="label tc300"
-        >Situação</label>
+        >Atividades</label>
         <select
-          id="situacao"
-          v-model.trim="situacao"
+          id="atividade"
+          v-model.trim="atividade"
           class="inputtext mb1"
-          name="situacao"
+          name="atividade"
         >
           <option value="" />
           <option
             v-for="item in lista"
             :key="item.id"
-            :value="item.id"
+            :value="item.atividade"
           >
-            {{ item.situacao }}
+            {{ item.atividade }}
           </option>
         </select>
-      </div> -->
+      </div>
 
       <div class="f1">
         <label
