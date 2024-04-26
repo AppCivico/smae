@@ -20,24 +20,10 @@ class WithinQueryBuilder:
         query['outputFormat']='application/json'
         query['exceptions']='application/json'
 
-    def solve_geom_type(self, geom_type:str)->str:
-
-        tipos = {
-            'poligono' : 'ge_poligono',
-            'linha' : 'ge_linha',
-            'multipoligono' : 'ge_multipoligono',
-        }
-
-        try:
-            return tipos[geom_type]
-        except KeyError:
-            raise ValueError(f'Tipo de geometria {geom_type} não aceito.')
-
-    def distance_within(self, x:float, y:float, precision:int,geom_type:str, query:dict)->None:
+    def distance_within(self, x:float, y:float, precision:int, geom_col:str, query:dict)->None:
 
 
-        geom_type = self.solve_geom_type(geom_type)
-        query['cql_filter'] = f'DWITHIN({geom_type},POINT({x} {y}),{precision},meters)'
+        query['cql_filter'] = f'DWITHIN({geom_col},POINT({x} {y}),{precision},meters)'
 
 
     def build_query_config(self, query:dict)->None:
@@ -46,16 +32,16 @@ class WithinQueryBuilder:
         self.set_to_json(query)
 
     def build_within_query(self, camada:str, x:float, y:float, precision:float, 
-                           geom_type:str, query:dict)->None:
+                           geom_col:str, query:dict)->None:
         
         self.set_camada(camada, query)
-        self.distance_within(x, y, precision, geom_type, query)
+        self.distance_within(x, y, precision, geom_col, query)
 
 
-    def __call__(self, camada:str, x:float, y:float, precision:float, geom_type='poligono')->str:
+    def __call__(self, camada:str, x:float, y:float, precision:float, geom_col:str)->str:
 
         query = dict()
         self.build_query_config(query)
-        self.build_within_query(camada, x, y, precision, geom_type, query)
+        self.build_within_query(camada, x, y, precision, geom_col, query)
 
         return query

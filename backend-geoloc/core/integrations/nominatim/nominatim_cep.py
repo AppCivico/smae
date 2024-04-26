@@ -1,12 +1,12 @@
 from requests import Session, Response
 
 from core.decorators.response_parsing import json_decode_error_handling
-from .query_builder import QueryBuilder
+from .cep_query_builder import CepQueryBuilder
 
 
 
-class Nominatim:
-    '''Classe que implementa busca por endereços usando a API do nominatim.
+class NominatimCep:
+    '''Classe que implementa busca por CEP usando a API do nominatim.
     city: str -> parametro que define a cidade limite da pesquisa;
     state: str -> parametro que define o Estado limite da pesquisa;
     country_iso: str -> parametro que define o país limite da pesquisa
@@ -20,13 +20,13 @@ class Nominatim:
     def __init__(self, city:str, state:str, country_iso:str, contact_email:str, bbox_bound:dict=None)->None:
 
         
-        self.build_query = QueryBuilder(city, state, country_iso, 
+        self.build_query = CepQueryBuilder(city, state, country_iso, 
                                         contact_email, bbox_bound)
 
         self.session = Session()
         self.add_language_headers()
 
-        self.base_url = self.build_base_url()    
+        self.base_url = self.build_base_url()
         
     def build_base_url(self)->str:
 
@@ -42,14 +42,14 @@ class Nominatim:
         self.session.headers.update({'Accept-Language' : 'en-US'})
 
     @json_decode_error_handling
-    def address_request(self, address:str)->dict:
+    def cep_request(self, cep:str)->dict:
 
-        query = self.build_query(address)
+        query = self.build_query(cep)
         url = self.base_url+'?'+query
         print('Searching nominatim: ', url)
         with self.session.get(url) as r:
             return r
 
-    def __call__(self, address:str)->dict:
+    def __call__(self, cep:str)->dict:
 
-        return self.address_request(address)
+        return self.cep_request(cep)

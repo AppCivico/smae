@@ -1,21 +1,21 @@
-from core.integrations import nominatim_address_search
+from core.integrations import nomimatim_cep_search
 from .parsers.nominatim import AddressParser
 from typing import List
 
 from .geosampa import geosampa_address_query
 from core.utils.geo import geojson_envelop
 
-class AddresSearch:
+class CepSearch:
 
     def __init__(self):
 
-        self.nominatim = nominatim_address_search
-        self.nominatim_parser = AddressParser()
+        self.nominatim = nomimatim_cep_search
+        self.nominatim_parser = AddressParser(street_level=False)
         self.geosampa_query = geosampa_address_query
 
-    def nominatim_address_search(self, address:str)->List[dict]:
+    def nominatim_cep_search(self, cep:str)->List[dict]:
 
-        resp = self.nominatim(address)
+        resp = self.nominatim(cep)
         geojson_data = self.nominatim_parser(resp)
 
         return geojson_data
@@ -56,7 +56,7 @@ class AddresSearch:
     def __call__(self, address:str, convert_to_wgs_84:bool=True, **camadas)->List[dict]:
 
 
-        geoloc_resp = self.nominatim_address_search(address)
+        geoloc_resp = self.nominatim_cep_search(address)
         self.filter_address_sp(geoloc_resp)
         nominatim_crs = geoloc_resp['crs']
         data = []
@@ -65,12 +65,3 @@ class AddresSearch:
             data.append(self.format_address_data(add, nominatim_crs, convert_to_wgs_84, **camadas))
 
         return data
-            
-
-
-    
-    
-    
-
-
-
