@@ -86,6 +86,8 @@ const camposPermitidos = computed(() => ({
     .find((tipo) => tipo.id === tipoNotaId.value && tipo.permite_enderecamento),
 }));
 
+const podeEditarDisponivel = computed(() => listaNotas.value.some((item) => item.pode_editar));
+
 async function iniciar() {
   if (props.transferenciaId !== transferênciaEmFoco?.value?.id) {
     await TransferenciasVoluntarias.buscarItem(props.transferenciaId);
@@ -447,16 +449,22 @@ iniciar();
     <col>
     <col>
     <col>
-    <col class="col--botão-de-ação">
-    <col class="col--botão-de-ação">
+    <col
+      v-if="podeEditarDisponivel"
+      class="col--botão-de-ação"
+    >
+    <col
+      v-if="podeEditarDisponivel"
+      class="col--botão-de-ação"
+    >
     <thead>
       <tr>
         <th>Status</th>
         <th>Tipo</th>
         <th>Data</th>
         <th>Rever Em</th>
-        <th />
-        <th />
+        <th v-if="podeEditarDisponivel" />
+        <th v-if="podeEditarDisponivel" />
       </tr>
     </thead>
     <tbody
