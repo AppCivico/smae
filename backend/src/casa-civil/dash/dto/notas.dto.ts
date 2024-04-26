@@ -2,6 +2,7 @@ import { ApiProperty } from '@nestjs/swagger';
 import { StatusNota } from '@prisma/client';
 import { Transform, TransformFnParams } from 'class-transformer';
 import { IsInt, IsOptional, IsString, Max, MaxLength, Min } from 'class-validator';
+import { FilterDashTransferenciasDto } from './transferencia.dto';
 
 export class MfDashNotasDto {
     @ApiProperty({ description: 'ID da transferência' })
@@ -19,7 +20,7 @@ export class MfDashNotasDto {
     transferencia_identificador: string;
 }
 
-export class FilterDashNotasDto {
+export class FilterDashNotasDto extends FilterDashTransferenciasDto {
     @IsOptional()
     @IsString()
     @MaxLength(1000)

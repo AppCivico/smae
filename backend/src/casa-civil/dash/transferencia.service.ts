@@ -74,6 +74,8 @@ export class DashTransferenciaService {
     }
 
     async notas(filters: FilterDashNotasDto, user: PessoaFromJwt): Promise<PaginatedDto<MfDashNotasDto>> {
+        const transferenciasIds = await this.transferenciaService.buscaIdsPalavraChave(filters.palavra_chave);
+
         let tem_mais = false;
         let token_proxima_pagina: string | null = null;
 
@@ -99,6 +101,23 @@ export class DashTransferenciaService {
                     },
                     removido_em: null,
                     AND: this.notaService.permissionSet(user),
+                },
+                transferencia: {
+                    id: transferenciasIds ? { in: transferenciasIds } : undefined,
+                    partido_id: filters.partido_ids ? { in: filters.partido_ids } : undefined,
+                    esfera: filters.esfera ? { in: filters.esfera } : undefined,
+
+                    TransferenciaStatusConsolidado:
+                        filters.orgaos_ids || filters.atividade
+                            ? {
+                                  some: {
+                                      orgaos_envolvidos: filters.orgaos_ids
+                                          ? { hasSome: filters.orgaos_ids }
+                                          : undefined,
+                                      situacao: filters.atividade ? { in: filters.atividade } : undefined,
+                                  },
+                              }
+                            : undefined,
                 },
             },
             orderBy: [{ data_ordenacao: 'desc' }],
