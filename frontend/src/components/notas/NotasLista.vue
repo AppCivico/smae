@@ -454,7 +454,7 @@ iniciar();
         <th>Status</th>
         <th>Tipo</th>
         <th>Data</th>
-        <th>Ordenação</th>
+        <th>Rever Em</th>
         <th />
         <th />
       </tr>
@@ -479,8 +479,8 @@ iniciar();
         </td>
         <td>
           {{
-            item.data_ordenacao
-              ? new Date( item.data_ordenacao).toLocaleDateString("pt-BR")
+            item.rever_em
+              ? new Date( item.rever_em).toLocaleDateString("pt-BR")
               : " - "
           }}
         </td>
