@@ -30,7 +30,14 @@ const esfera = ref(route.query.esfera
 const partido = ref(route.query.partido_ids);
 const orgao = ref(route.query.orgaos_ids);
 const palavraChave = ref(route.query.palavra_chave);
-const atividade = ref(route.query.situacao);
+const atividade = ref(route.query.atividade);
+const atividadesUnicas = ref(new Set());
+
+function atualizarAtividadesUnicas(lista) {
+  const atividades = new Set(lista.map((item) => item.atividade));
+  atividades.forEach((atividade) => atividadesUnicas.value.add(atividade));
+}
+atualizarAtividadesUnicas([]);
 
 function atualizarUrl() {
   router.push({
@@ -40,7 +47,7 @@ function atualizarUrl() {
       orgaos_ids: orgao.value || undefined,
       esfera: esfera.value || undefined,
       palavra_chave: palavraChave.value || undefined,
-      situacao: atividade.value ? [atividade.value] : undefined,
+      atividade: atividade.value || undefined,
     },
   });
 }
@@ -50,16 +57,15 @@ watch([
   () => route.query.partido_ids,
   () => route.query.orgaos_ids,
   () => route.query.palavra_chave,
-  () => route.query.situacao,
+  () => route.query.atividade,
 ], () => {
   let {
     partido_ids: partidoFiltro,
     orgaos_ids: orgaoFiltro,
     palavra_chave: palavraChaveParaBusca,
-    situacao: atividadeFiltro,
+    atividade: atividadeFiltro,
   } = route.query;
   if (typeof palavraChaveParaBusca === 'string') {
-    // eslint-disable-next-line no-const-assign
     palavraChaveParaBusca = palavraChaveParaBusca.trim();
   }
   panoramaTransferenciasStore.$reset();
@@ -71,13 +77,17 @@ watch([
     partido_ids: partidoFiltro,
     orgaos_ids: orgaoFiltro,
     palavra_chave: palavraChaveParaBusca,
-    situacao: atividadeFiltro,
+    atividade: atividadeFiltro,
   });
 }, { immediate: true });
 
 OrgaosStore.getAll();
 panoramaTransferenciasStore.buscarTudo();
 partidoStore.buscarTudo();
+
+watch(lista, (newValue) => {
+  atualizarAtividadesUnicas(newValue);
+});
 
 onUnmounted(() => {
   panoramaTransferenciasStore.$reset();
@@ -100,7 +110,7 @@ onUnmounted(() => {
         >Esfera</label>
         <select
           id="esfera"
-          v-model.trim="esfera"
+          v-model="esfera"
           class="inputtext mb1"
           name="esfera"
         >
@@ -122,7 +132,7 @@ onUnmounted(() => {
         >Partido</label>
         <select
           id="partido"
-          v-model.trim="partido"
+          v-model="partido"
           class="inputtext mb1"
           name="partido"
         >
@@ -137,7 +147,6 @@ onUnmounted(() => {
         </select>
       </div>
 
-      <!-- não finalizado -->
       <div class="f1">
         <label
           for="atividade"
@@ -145,17 +154,17 @@ onUnmounted(() => {
         >Atividades</label>
         <select
           id="atividade"
-          v-model.trim="atividade"
+          v-model="atividade"
           class="inputtext mb1"
           name="atividade"
         >
           <option value="" />
           <option
-            v-for="item in lista"
-            :key="item.id"
-            :value="item.atividade"
+            v-for="atividade in atividadesUnicas"
+            :key="atividade"
+            :value="atividade"
           >
-            {{ item.atividade }}
+            {{ atividade }}
           </option>
         </select>
       </div>
@@ -164,10 +173,12 @@ onUnmounted(() => {
         <label
           for="orgao"
           class="label tc300"
-        >orgão</label>
+        >
+          orgão
+        </label>
         <select
           id="orgao"
-          v-model.trim="orgao"
+          v-model="orgao"
           class="inputtext mb1"
           name="orgao"
         >
