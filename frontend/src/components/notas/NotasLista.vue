@@ -6,13 +6,13 @@ import { useAlertStore } from '@/stores/alert.store';
 import { useBlocoDeNotasStore } from '@/stores/blocoNotas.store';
 import { useOrgansStore } from '@/stores/organs.store';
 import { useTipoDeNotasStore } from '@/stores/tipoNotas.store';
-import { useUsersStore } from '@/stores/users.store';
 import { useTransferenciasVoluntariasStore } from '@/stores/transferenciasVoluntarias.store';
+import { useUsersStore } from '@/stores/users.store';
 import { storeToRefs } from 'pinia';
-import { computed, ref, watch } from 'vue';
 import {
   ErrorMessage, Field, FieldArray, useForm,
 } from 'vee-validate';
+import { computed, ref, watch } from 'vue';
 
 const alertStore = useAlertStore();
 const status = {
