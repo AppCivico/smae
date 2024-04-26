@@ -10,7 +10,7 @@
     >
       <div class="bullet" />
       <p class="identificador">
-      <router-link
+        <router-link
           :to="{
             name: 'TransferenciasVoluntariasDetalhes',
             params: { transferenciaId: item.transferencia_id }
