@@ -1,5 +1,5 @@
-import { defineStore } from 'pinia';
 import dateTimeToDate from '@/helpers/dateTimeToDate';
+import { defineStore } from 'pinia';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
@@ -87,5 +87,7 @@ export const usePartidosStore = defineStore('partidosStore', {
         encerramento: dateTimeToDate(emFoco?.encerramento),
       };
     },
+    partidosPorId: ({ lista }) => lista
+      .reduce((acc, cur) => ({ ...acc, [cur.id]: cur }), {}),
   },
 });
