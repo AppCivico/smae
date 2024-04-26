@@ -287,7 +287,6 @@ onUnmounted(() => {
 
 .tablemain tbody tr:nth-child(5n+1) td:nth-child(4) {
   color: #EE3B2B;
-;
 }
 
 .tablemain tbody tr:nth-child(5n+2) td:nth-child(4),
