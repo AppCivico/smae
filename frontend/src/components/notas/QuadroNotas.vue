@@ -27,6 +27,14 @@
         </p>
       </div>
     </div>
+
+    <LoadingComponent
+      v-if="chamadasPendentes.lista"
+      class="mb1"
+    >
+      buscando notas
+    </LoadingComponent>
+
     <button
       v-if="paginação.temMais && paginação.tokenDaPróximaPágina"
       :disabled="chamadasPendentes.lista"
