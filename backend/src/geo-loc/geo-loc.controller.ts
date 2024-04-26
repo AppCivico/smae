@@ -29,7 +29,7 @@ export class GeoLocController {
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
     async findGeoLocByLotLong(@Body() dto: GeoLocDtoByLotLong): Promise<RetornoGeoLoc> {
-        return await this.geoService.findGeoLocByLotLong(dto);
+        return await this.geoService.findGeoLocByLatLong(dto);
     }
 
     @Get('camada')
