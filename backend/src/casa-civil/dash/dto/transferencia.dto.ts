@@ -58,8 +58,8 @@ export class FilterDashTransferenciasDto {
     @IsArray()
     @MaxLength(1000, { each: true })
     @IsString({ each: true })
-    @ApiProperty({ description: 'Situação da transferência' })
-    situacao?: string[];
+    @ApiProperty({ description: 'Atividade do cronograma' })
+    atividade?: string[];
 
     @ApiProperty({ description: 'Contém qualquer um dos órgãos', example: '[]' })
     @IsOptional()

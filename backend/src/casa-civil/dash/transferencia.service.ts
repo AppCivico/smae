@@ -34,7 +34,7 @@ export class DashTransferenciaService {
             where: {
                 transferencia_id: ids ? { in: ids } : undefined,
                 orgaos_envolvidos: filter.orgaos_ids ? { hasSome: filter.orgaos_ids } : undefined,
-                situacao: filter.situacao ? { in: filter.situacao } : undefined,
+                situacao: filter.atividade ? { in: filter.atividade } : undefined,
                 transferencia: {
                     partido_id: filter.partido_ids ? { in: filter.partido_ids } : undefined,
                     esfera: filter.esfera ? { in: filter.esfera } : undefined,
