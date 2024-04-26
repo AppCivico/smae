@@ -465,7 +465,7 @@ const formulárioSujo = useIsFormDirty();
                   :opções-do-marcador="{ draggable: true }"
                 />
 
-                <dl class="flex g2">
+                <dl class="flex flexwrap g2">
                   <div class="f1 mb1">
                     <dt class="t12 uc w700 mb05 tamarelo">
                       Latitude
