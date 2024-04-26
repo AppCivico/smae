@@ -62,7 +62,7 @@ const {
 } = storeToRefs(blocoStore);
 
 const route = useRoute();
-blocoStore.buscarTudoPanorama();
+blocoStore.buscarTudoPanorama({ ipp: 10 });
 
 function formatarData(data) {
   if (!data) return '';
