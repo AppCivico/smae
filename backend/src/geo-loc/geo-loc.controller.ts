@@ -1,5 +1,7 @@
 import { Body, Controller, Get, Post, Query } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
+import { CurrentUser } from '../auth/decorators/current-user.decorator';
+import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import {
     CreateEnderecoDto,
     FilterCamadasDto,
@@ -10,9 +12,6 @@ import {
     RetornoGeoLocCamadaFullDto,
 } from './entities/geo-loc.entity';
 import { GeoLocService } from './geo-loc.service';
-import { CurrentUser } from '../auth/decorators/current-user.decorator';
-import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
-import { IsPublic } from '../auth/decorators/is-public.decorator';
 
 @Controller('')
 @ApiTags('GeoLocation')
