@@ -14,6 +14,7 @@ export class MfDashTransferenciasDto {
     data_origem: string;
     orgaos: number[];
     esfera: string;
+    objeto: string;
     partido_id: number | null;
 }
 
