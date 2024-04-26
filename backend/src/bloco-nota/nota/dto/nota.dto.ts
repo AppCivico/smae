@@ -133,7 +133,7 @@ export class TipoNotaItem {
     tipo_nota_id: number;
     pessoa_responsavel: IdNomeExibicao;
     orgao_responsavel: IdSigla;
-    rever_em?: Date;
+    rever_em: Date | null;
     dispara_email: boolean;
     status: StatusNota;
 
