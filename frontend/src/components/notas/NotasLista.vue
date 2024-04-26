@@ -524,23 +524,24 @@ iniciar();
         </td>
       </tr>
       <tr>
-        <td :colspan="item.pode_editar ? 6 : 4">
+        <td :colspan="podeEditarDisponivel ? 6 : 4">
           {{ item.nota }}
         </td>
       </tr>
-
+    </tbody>
+    <tbody v-if="chamadasPendentes.lista || !listaNotas.length || erro">
       <tr v-if="chamadasPendentes.lista">
-        <td colspan="6">
+        <td :colspan="podeEditarDisponivel ? 6 : 4">
           Carregando
         </td>
       </tr>
       <tr v-else-if="erro">
-        <td colspan="6">
+        <td :colspan="podeEditarDisponivel ? 6 : 4">
           Erro: {{ erro }}
         </td>
       </tr>
       <tr v-else-if="!listaNotas.length">
-        <td colspan="6">
+        <td :colspan="podeEditarDisponivel ? 6 : 4">
           Nenhum resultado encontrado.
         </td>
       </tr>
