@@ -10,7 +10,7 @@ class WGS84_conversor:
 
     def __call__(self, geojson:dict, retrieve_geometry_name:bool=False)->dict:
 
-        gdf = geojson_dict_to_geodf(geojson)
+        gdf = geojson_dict_to_geodf(geojson, long_lat=True)
         gdf_converted = geopandas_to_wgs_84(gdf)
         new_geojson = geopandas_to_geojson_dict(gdf_converted, epsg_num=4326)
 

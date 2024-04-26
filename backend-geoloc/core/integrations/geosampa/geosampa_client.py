@@ -57,12 +57,12 @@ class GeoSampa:
 
         return url
         
-    def point_within_pol(self, camada:str, x:float, y:float, precision:float=None, geom_type='poligono')->dict:
+    def point_within_dist(self, camada:str, x:float, y:float, geom_col:str, precision:float=None)->dict:
 
         if precision is None:
             precision = self.precision
 
-        query_args = self.within_query(camada, x, y, precision, geom_type)
+        query_args = self.within_query(camada, x, y, precision, geom_col)
         url = self.build_query_url(query_args)
 
         return self.wfs_geojson_request(url)

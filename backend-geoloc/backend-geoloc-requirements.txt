@@ -1,0 +1,9 @@
+fastapi==0.110.0
+geopandas==0.14.3
+pydantic==2.6.3
+pyproj==3.6.1
+python-dotenv==1.0.1
+Requests==2.31.0
+Shapely==2.0.3
+xmltodict==0.13.0
+uvicorn==0.27.1
