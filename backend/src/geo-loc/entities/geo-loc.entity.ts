@@ -1,11 +1,12 @@
+import { BadRequestException } from '@nestjs/common';
 import { ApiProperty } from '@nestjs/swagger';
 import { GeoReferenciaTipo } from '@prisma/client';
 import { Transform } from 'class-transformer';
-import { IsArray, IsEnum, IsInt, IsOptional, IsString, MaxLength } from 'class-validator';
+import { IsArray, IsEnum, IsInt, IsNumber, IsOptional, IsString, MaxLength } from 'class-validator';
 import { GeoJSON } from 'geojson';
-import { NumberArrayTransform } from '../../auth/transforms/number-array.transform';
 import { IsGeoJSON } from '../../auth/decorators/is-geojson.decorator';
-import { BadRequestException } from '@nestjs/common';
+import { NumberArrayTransform } from '../../auth/transforms/number-array.transform';
+import { NumberTransform } from '../../auth/transforms/number.transform';
 
 export class GeoLocDto {
     @IsString()
@@ -16,6 +17,21 @@ export class GeoLocDto {
     @IsEnum(GeoReferenciaTipo)
     tipo: string;
 }
+
+export class GeoLocDtoByLotLong {
+    @IsNumber()
+    @Transform(NumberTransform)
+    lat: number;
+
+    @IsNumber()
+    @Transform(NumberTransform)
+    long: number;
+
+    @ApiProperty({ enum: GeoReferenciaTipo, enumName: 'GeoReferenciaTipo' })
+    @IsEnum(GeoReferenciaTipo)
+    tipo: string;
+}
+
 
 export class GeoLocCamadaSimplesDto {
     id: number;
