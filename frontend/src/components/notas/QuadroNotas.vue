@@ -34,6 +34,12 @@
     >
       buscando notas
     </LoadingComponent>
+    <div v-else-if="erro">
+      Erro: {{ erro }}
+    </div>
+    <div class="mt1" v-else-if="!lista.length">
+      Nenhum resultado encontrado.
+    </div>
 
     <button
       v-if="paginação.temMais && paginação.tokenDaPróximaPágina"
@@ -50,21 +56,23 @@
 </template>
 
 <script setup>
+import esferasDeTransferencia from '@/consts/esferasDeTransferencia';
 import removerHtml from '@/helpers/removerHtml';
 import truncate from '@/helpers/truncate';
 import { useBlocoDeNotasStore } from '@/stores/blocoNotas.store';
 import { storeToRefs } from 'pinia';
+import { watch } from 'vue';
 import { useRoute } from 'vue-router';
 
 const blocoStore = useBlocoDeNotasStore();
 const {
   lista,
   chamadasPendentes,
+  erro,
   paginação,
 } = storeToRefs(blocoStore);
 
 const route = useRoute();
-blocoStore.buscarTudoPanorama({ ipp: 15 });
 
 function formatarData(data) {
   if (!data) return '';
@@ -79,6 +87,37 @@ function formatarData(data) {
 
   return { diaMesAno };
 }
+
+watch([
+  () => route.query.esfera,
+  () => route.query.partido_ids,
+  () => route.query.orgaos_ids,
+  () => route.query.palavra_chave,
+  () => route.query.atividade,
+], () => {
+  let {
+    partido_ids: partidoFiltro,
+    orgaos_ids: orgaoFiltro,
+    palavra_chave: palavraChaveParaBusca,
+    atividade: atividadeFiltro,
+  } = route.query;
+  if (typeof palavraChaveParaBusca === 'string') {
+    palavraChaveParaBusca = palavraChaveParaBusca.trim();
+  }
+  blocoStore.$reset();
+  blocoStore.buscarTudoPanorama({
+    esfera: route.query.esfera
+      ? Object.keys(esferasDeTransferencia)
+        .find((x) => x.toLowerCase() === route.query.esfera.toLocaleLowerCase())
+      : undefined,
+    partido_ids: partidoFiltro,
+    orgaos_ids: orgaoFiltro,
+    palavra_chave: palavraChaveParaBusca,
+    atividade: atividadeFiltro,
+  });
+}, { immediate: true });
+
+blocoStore.buscarTudoPanorama({ ipp: 15 });
 </script>
 
 <style scoped lang="less">
