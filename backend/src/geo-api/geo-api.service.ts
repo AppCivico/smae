@@ -27,18 +27,6 @@ export class RetornoEndereco {
     camadas_geosampa?: Record<string, GeoJSON>;
 }
 
-export class InputGeolocalizarByLatLong {
-    @IsNumber()
-    lat: number;
-    @IsNumber()
-    long: number;
-
-    @ValidateNested()
-    @IsArray()
-    @Type(() => InputGeolocalizarCamadas)
-    camadas: InputGeolocalizarCamadas[];
-}
-
 export class RetornoIntegracaoGeoSampa {
     @IsGeoJSON()
     point: GeoJSON;
@@ -67,6 +55,18 @@ export class InputGeolocalizarEndereco {
     @IsString()
     @MaxLength(100)
     busca_endereco: string;
+
+    @ValidateNested()
+    @IsArray()
+    @Type(() => InputGeolocalizarCamadas)
+    camadas: InputGeolocalizarCamadas[];
+}
+
+export class InputGeolocalizarByLatLong {
+    @IsNumber()
+    lat: number;
+    @IsNumber()
+    long: number;
 
     @ValidateNested()
     @IsArray()
