@@ -13,7 +13,7 @@ import {
     GeoLocCamadaFullDto,
     GeoLocCamadaSimplesDto,
     GeoLocDto,
-    GeoLocDtoByLotLong,
+    GeoLocDtoByLotLong as GeoLocDtoByLatLong,
     GeolocalizacaoDto,
     RetornoCreateEnderecoDto,
     RetornoGeoLoc,
@@ -102,7 +102,7 @@ export class GeoLocService {
         });
     }
 
-    async findGeoLocByLotLong(input: GeoLocDtoByLotLong): Promise<RetornoGeoLoc> {
+    async findGeoLocByLatLong(input: GeoLocDtoByLatLong): Promise<RetornoGeoLoc> {
         const ret: RetornoGeoLoc = { linhas: [] };
 
         const camadasConfig = await this.prisma.geoCamadaConfig.findMany();
@@ -123,12 +123,12 @@ export class GeoLocService {
         if (closestPoint.geometry.type != 'Point')
             throw new InternalServerErrorException('Retorno inesperado para tipo de busca executada.');
 
-        const buscaCamdas = await this.geoApi.buscaCamadasGeoSampa({
+        const buscaCamadas = await this.geoApi.buscaCamadasGeoSampa({
             camadas: this.apelidosCamadas(camadasConfig),
             lat: closestPoint.geometry.coordinates[1],
             long: closestPoint.geometry.coordinates[0],
         });
-        const geoCamadas = await this.upsertCamadas(buscaCamdas.camadas_geosampa, camadasConfig);
+        const geoCamadas = await this.upsertCamadas(buscaCamadas.camadas_geosampa, camadasConfig);
 
         ret.linhas.push({
             endereco: closestPoint,
