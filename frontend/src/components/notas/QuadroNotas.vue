@@ -17,11 +17,11 @@
           }"
           class="tprimary"
         >
-          {{ item.transferencia_identificador }}
+          {{ item.transferencia_identificador}}
         </router-link>
       </p>
       <div class="text">
-        <p v-html="item.nota" />
+        <p>{{ truncate(removerHtml(item.nota)) }}</p>
         <p>
           <strong>{{ formatarData(item.data_nota).diaMesAno }}</strong>
         </p>
@@ -50,6 +50,8 @@
 </template>
 
 <script setup>
+import removerHtml from '@/helpers/removerHtml';
+import truncate from '@/helpers/truncate';
 import { useBlocoDeNotasStore } from '@/stores/blocoNotas.store';
 import { storeToRefs } from 'pinia';
 import { useRoute } from 'vue-router';
@@ -62,7 +64,7 @@ const {
 } = storeToRefs(blocoStore);
 
 const route = useRoute();
-blocoStore.buscarTudoPanorama({ ipp: 10 });
+blocoStore.buscarTudoPanorama({ ipp: 15 });
 
 function formatarData(data) {
   if (!data) return '';
