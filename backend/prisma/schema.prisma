@@ -5403,8 +5403,7 @@ model Nota {
     AvisoEmail                AvisoEmail[]
     ViewNotasTransferencias   ViewNotasTransferencias[]
 
-    @@index([data_nota, rever_em, removido_em])
-    @@index([bloco_nota_id, removido_em, status])
+    @@index([status, removido_em])
     @@map("nota")
 }
 
