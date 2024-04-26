@@ -130,7 +130,7 @@ onUpdated(() => { start(); });
                     fill="currentColor"
                   /> </svg>
                   <h2 class="mt1 mb1 ml1">
-                    {{ ind.titulo }}
+                    {{ ind.codigo }} - {{ ind.titulo }}
                   </h2>
                 </div>
                 <div class="f0 ml2">
@@ -233,7 +233,7 @@ onUpdated(() => { start(); });
                       fill="currentColor"
                     /> </svg>
                     <h2 class="mt1 mb1 ml1 f1">
-                      {{ v.titulo }}
+                      {{ v.codigo }} - {{ v.titulo }}
                     </h2>
                     <div
                       v-if="v.suspendida"
