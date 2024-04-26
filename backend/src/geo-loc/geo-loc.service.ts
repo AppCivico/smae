@@ -13,6 +13,7 @@ import {
     GeoLocCamadaFullDto,
     GeoLocCamadaSimplesDto,
     GeoLocDto,
+    GeoLocDtoByLotLong,
     GeolocalizacaoDto,
     RetornoCreateEnderecoDto,
     RetornoGeoLoc,
@@ -32,6 +33,21 @@ export class UpsertEnderecoIdDto {
     regioes: UpsertEnderecoRegiaoDto[];
 }
 
+// resultado aproximado, ta bom pra distancias curtas
+function getDistance(lat1: number, lon1: number, lat2: number, lon2: number) {
+    const R = 6371; // raio da terra, em km, para terror dos terraplanistas
+    const φ1 = (lat1 * Math.PI) / 180;
+    const φ2 = (lat2 * Math.PI) / 180;
+    const dφ = ((lat2 - lat1) * Math.PI) / 180;
+    const dl = ((lon2 - lon1) * Math.PI) / 180;
+
+    const a = Math.sin(dφ / 2) * Math.sin(dφ / 2) + Math.cos(φ1) * Math.cos(φ2) * Math.sin(dl / 2) * Math.sin(dl / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    const d = R * c;
+
+    return d;
+}
+
 @Injectable()
 export class GeoLocService {
     private readonly logger = new Logger(GeoLocService.name);
@@ -47,9 +63,7 @@ export class GeoLocService {
         const camadasConfig = await this.prisma.geoCamadaConfig.findMany();
         const buscaEndereco = await this.geoApi.buscaEndereco({
             busca_endereco: input.busca_endereco,
-            camadas: camadasConfig.map((r) => {
-                return { alias: r.id.toString(), layer_name: r.tipo_camada };
-            }),
+            camadas: this.apelidosCamadas(camadasConfig),
         });
 
         for (const apiEndereco of buscaEndereco) {
@@ -69,6 +83,83 @@ export class GeoLocService {
         }
 
         return ret;
+    }
+
+    private apelidosCamadas(
+        camadasConfig: {
+            id: number;
+            tipo_camada: string;
+            chave_camada: string;
+            titulo_camada: string;
+            descricao: string;
+            nivel_regionalizacao: number | null;
+            cor: string | null;
+            simplificar_em: number | null;
+        }[]
+    ): import('/home/renato/projetos/appcivico/smae/backend/src/geo-api/geo-api.service').InputGeolocalizarCamadas[] {
+        return camadasConfig.map((r) => {
+            return { alias: r.id.toString(), layer_name: r.tipo_camada };
+        });
+    }
+
+    async findGeoLocByLotLong(input: GeoLocDtoByLotLong): Promise<RetornoGeoLoc> {
+        const ret: RetornoGeoLoc = { linhas: [] };
+
+        const camadasConfig = await this.prisma.geoCamadaConfig.findMany();
+        const buscaPontos = await this.geoApi.buscaEnderecoReverso(input.lat, input.long);
+
+        if (buscaPontos.endereco.type != 'FeatureCollection') {
+            throw new InternalServerErrorException('Retorno inesperado para tipo de busca executada.');
+        }
+
+        const pointFeatures = buscaPontos.endereco.features.filter((f) => f.geometry.type == 'Point');
+        if (pointFeatures.length == 0) {
+            throw new BadRequestException('Nenhum endereço encontrado para as coordenadas informadas.');
+        }
+
+        const { closestPoint, minDistance } = findClosestPoint();
+        this.logger.debug(`closestPoint ${JSON.stringify(closestPoint)}, distance ${minDistance}`);
+
+        if (closestPoint.geometry.type != 'Point')
+            throw new InternalServerErrorException('Retorno inesperado para tipo de busca executada.');
+
+        const buscaCamdas = await this.geoApi.buscaCamadasGeoSampa({
+            camadas: this.apelidosCamadas(camadasConfig),
+            lat: closestPoint.geometry.coordinates[1],
+            long: closestPoint.geometry.coordinates[0],
+        });
+        const geoCamadas = await this.upsertCamadas(buscaCamdas.camadas_geosampa, camadasConfig);
+
+        ret.linhas.push({
+            endereco: closestPoint,
+            camadas: geoCamadas,
+        });
+
+        return ret;
+
+        function findClosestPoint() {
+            let closestPoint = pointFeatures[0];
+            let minDistance = getDistance(
+                input.lat,
+                input.long,
+                (closestPoint.geometry as any).coordinates[1],
+                (closestPoint.geometry as any).coordinates[0]
+            );
+
+            for (let i = 1; i < pointFeatures.length; i++) {
+                const distance = getDistance(
+                    input.lat,
+                    input.long,
+                    (pointFeatures[i].geometry as any).coordinates[1],
+                    (pointFeatures[i].geometry as any).coordinates[0]
+                );
+                if (distance < minDistance) {
+                    minDistance = distance;
+                    closestPoint = pointFeatures[i];
+                }
+            }
+            return { closestPoint, minDistance };
+        }
     }
 
     private async upsertCamadas(
