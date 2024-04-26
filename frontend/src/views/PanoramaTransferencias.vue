@@ -230,7 +230,9 @@ onUnmounted(() => {
                 {{ item.identificador }}
               </router-link>
             </th>
-            <td>
+            <td
+              style="max-width: 200px;"
+            >
               {{ item.objeto ? item.objeto : " - " }}
             </td>
             <td>
@@ -264,6 +266,14 @@ onUnmounted(() => {
   </Dashboard>
 </template>
 <style scoped>
+
+.tablemain tbody td:nth-child(2) {
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .tablemain tbody tr:nth-child(5n+1) td:nth-child(4) {
   color: #EE3B2B;
 ;
