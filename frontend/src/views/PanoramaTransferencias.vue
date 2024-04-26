@@ -20,8 +20,8 @@ const router = useRouter();
 const { chamadasPendentes, erro, lista } = storeToRefs(
   panoramaTransferenciasStore,
 );
-const { lista: partidoComoListaCompleta } = storeToRefs(partidoStore);
-const { órgãosComoLista } = storeToRefs(OrgaosStore);
+const { partidosPorId } = storeToRefs(partidoStore);
+const { órgãosPorId } = storeToRefs(OrgaosStore);
 
 const esfera = ref(route.query.esfera
   ? Object.keys(esferasDeTransferencia)
@@ -31,13 +31,49 @@ const partido = ref(route.query.partido_ids);
 const orgao = ref(route.query.orgaos_ids);
 const palavraChave = ref(route.query.palavra_chave);
 const atividade = ref(route.query.atividade);
-const atividadesUnicas = ref(new Set());
 
-function atualizarAtividadesUnicas(lista) {
-  const atividades = new Set(lista.map((item) => item.atividade));
-  atividades.forEach((atividade) => atividadesUnicas.value.add(atividade));
-}
-atualizarAtividadesUnicas([]);
+const atividadesDisponíveis = ref([]);
+const partidosDisponíveis = ref([]);
+const órgãosDisponíveis = ref([]);
+
+const iniciar = async () => {
+  const atividades = [];
+  let órgãos = [];
+  const partidos = [];
+
+  const requisições = [
+    OrgaosStore.getAll(),
+    partidoStore.buscarTudo(),
+    panoramaTransferenciasStore.buscarTudo(),
+  ];
+
+  await Promise.allSettled(requisições);
+
+  lista.value.forEach((item) => {
+    if (item.atividade) {
+      atividades.push(item.atividade);
+    }
+
+    if (Array.isArray(item.orgaos)) {
+      órgãos = órgãos.concat(item.orgaos);
+    }
+
+    if (item.partido_id) {
+      partidos.push(item.partido_id);
+    }
+  });
+
+  atividadesDisponíveis.value = [...new Set(atividades)]
+    .sort((a, b) => a.localeCompare(b));
+  partidosDisponíveis.value = [...new Set(partidos)]
+    .map((x) => partidosPorId.value[x])
+    .sort((a, b) => a.sigla?.localeCompare(b.sigla));
+  órgãosDisponíveis.value = [...new Set(órgãos)]
+    .map((x) => órgãosPorId.value[x])
+    .sort((a, b) => a.sigla?.localeCompare(b.sigla));
+
+  panoramaTransferenciasStore.$reset();
+};
 
 function atualizarUrl() {
   router.push({
@@ -59,6 +95,13 @@ watch([
   () => route.query.palavra_chave,
   () => route.query.atividade,
 ], () => {
+  if (!partidosDisponíveis.value.length
+    && !atividadesDisponíveis.value.length
+    && !órgãosDisponíveis.value.length
+  ) {
+    iniciar();
+  }
+
   let {
     partido_ids: partidoFiltro,
     orgaos_ids: orgaoFiltro,
@@ -81,19 +124,7 @@ watch([
   });
 }, { immediate: true });
 
-OrgaosStore.getAll();
-panoramaTransferenciasStore.buscarTudo();
-partidoStore.buscarTudo();
-
-const partidoComoLista = computed(
-  () => partidoComoListaCompleta.value.filter(
-    (p) => lista.value.some((l) => l.partido_id === p.id),
-  ),
-);
-
-watch(lista, (newValue) => {
-  atualizarAtividadesUnicas(newValue);
-});
+iniciar();
 
 onUnmounted(() => {
   panoramaTransferenciasStore.$reset();
@@ -144,11 +175,11 @@ onUnmounted(() => {
         >
           <option value="" />
           <option
-            v-for="item in partidoComoLista"
+            v-for="item in partidosDisponíveis"
             :key="item"
             :value="item.id"
           >
-            {{ item.nome }} - {{ item.sigla }}
+            {{ item.sigla }}
           </option>
         </select>
       </div>
@@ -166,11 +197,11 @@ onUnmounted(() => {
         >
           <option value="" />
           <option
-            v-for="atividade in atividadesUnicas"
-            :key="atividade"
-            :value="atividade"
+            v-for="item in atividadesDisponíveis"
+            :key="item"
+            :value="item"
           >
-            {{ atividade }}
+            {{ item }}
           </option>
         </select>
       </div>
@@ -180,7 +211,7 @@ onUnmounted(() => {
           for="orgao"
           class="label tc300"
         >
-          orgão
+          Órgão
         </label>
         <select
           id="orgao"
@@ -190,7 +221,7 @@ onUnmounted(() => {
         >
           <option value="" />
           <option
-            v-for="item in órgãosComoLista"
+            v-for="item in órgãosDisponíveis"
             :key="item"
             :value="item.id"
           >
