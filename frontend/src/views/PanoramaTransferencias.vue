@@ -226,7 +226,7 @@ onUnmounted(() => {
               </router-link>
             </th>
             <td>
-              {{ item.transferencia_id }}
+              {{ item.objeto ? item.objeto : " - " }}
             </td>
             <td>
               {{ item.atividade }}
