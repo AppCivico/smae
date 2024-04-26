@@ -529,7 +529,7 @@ iniciar();
         </td>
       </tr>
 
-      <tr v-if="chamadasPendentes.listaNotas">
+      <tr v-if="chamadasPendentes.lista">
         <td colspan="6">
           Carregando
         </td>
