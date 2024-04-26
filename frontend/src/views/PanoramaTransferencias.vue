@@ -7,7 +7,7 @@ import { useOrgansStore } from '@/stores/organs.store';
 import { usePanoramaTransferenciasStore } from '@/stores/panoramaTransferencias.store';
 import { usePartidosStore } from '@/stores/partidos.store';
 import { storeToRefs } from 'pinia';
-import { onUnmounted, ref, watch } from 'vue';
+import { computed, onUnmounted, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
 const panoramaTransferenciasStore = usePanoramaTransferenciasStore();
@@ -20,7 +20,7 @@ const router = useRouter();
 const { chamadasPendentes, erro, lista } = storeToRefs(
   panoramaTransferenciasStore,
 );
-const { lista: partidoComoLista } = storeToRefs(partidoStore);
+const { lista: partidoComoListaCompleta } = storeToRefs(partidoStore);
 const { órgãosComoLista } = storeToRefs(OrgaosStore);
 
 const esfera = ref(route.query.esfera
@@ -84,6 +84,12 @@ watch([
 OrgaosStore.getAll();
 panoramaTransferenciasStore.buscarTudo();
 partidoStore.buscarTudo();
+
+const partidoComoLista = computed(
+  () => partidoComoListaCompleta.value.filter(
+    (p) => lista.value.some((l) => l.partido_id === p.id),
+  ),
+);
 
 watch(lista, (newValue) => {
   atualizarAtividadesUnicas(newValue);
