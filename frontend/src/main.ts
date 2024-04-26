@@ -5,6 +5,7 @@ import LabelFromYup from '@/components/LabelFromYup.vue';
 import LoadingComponent from '@/components/LoadingComponent.vue';
 import MigalhasDePão from '@/components/MigalhasDePao.vue';
 import TítuloDePágina from '@/components/TituloDaPagina.vue';
+import consoleNaTemplate from '@/plugins/consoleNaTemplate';
 // usamos o `.ts` aqui para não entrar em conflito com a versão JS ainda usada
 // @ts-ignore
 import requestS from '@/helpers/requestS.ts';
@@ -98,6 +99,8 @@ app.directive('focus', {
     }
   },
 });
+
+app.use(consoleNaTemplate);
 
 app.component('CheckClose', CheckClose);
 app.component('ErrorComponent', ErrorComponent);
