@@ -46,6 +46,7 @@ export class DashTransferenciaService {
                         id: true,
                         identificador: true,
                         esfera: true,
+                        objeto: true,
                         partido_id: true,
                     },
                 },
@@ -63,6 +64,7 @@ export class DashTransferenciaService {
                     transferencia_id: r.transferencia.id,
                     esfera: r.transferencia.esfera,
                     orgaos: r.orgaos_envolvidos,
+                    objeto: r.transferencia.objeto,
                     partido_id: r.transferencia.partido_id,
                 };
             }),
