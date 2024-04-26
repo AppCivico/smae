@@ -258,3 +258,31 @@ onUnmounted(() => {
     </div>
   </Dashboard>
 </template>
+<style scoped>
+.tablemain tbody tr:nth-child(5n+1) td:nth-child(4) {
+  color: #EE3B2B;
+;
+}
+
+.tablemain tbody tr:nth-child(5n+2) td:nth-child(4) {
+  color: #F2890D;
+;
+}
+
+.tablemain tbody tr:nth-child(5n+3) td:nth-child(4) {
+  color: #F2890D;
+;
+}
+
+.tablemain tbody tr:nth-child(5n+4) td:nth-child(4) {
+ color: #F7C234;
+}
+
+.tablemain tbody tr:nth-child(5n+5) td:nth-child(4) {
+ color: #F7C234;
+}
+
+.tablemain tbody tr:nth-child(n+6) td:nth-child(4) {
+ color: #F7C234;
+}
+</style>
