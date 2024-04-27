@@ -71,8 +71,6 @@ const iniciar = async () => {
   órgãosDisponíveis.value = [...new Set(órgãos)]
     .map((x) => órgãosPorId.value[x])
     .sort((a, b) => a.sigla?.localeCompare(b.sigla));
-
-  panoramaTransferenciasStore.$reset();
 };
 
 function atualizarUrl() {
@@ -100,6 +98,8 @@ watch([
     && !órgãosDisponíveis.value.length
   ) {
     await iniciar();
+
+    panoramaTransferenciasStore.$reset();
   }
 
   let {
