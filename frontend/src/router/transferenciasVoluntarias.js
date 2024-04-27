@@ -11,6 +11,7 @@ import TransferenciasVoluntariasRaiz from '@/views/transferenciasVoluntarias/Tra
 
 import NotasRaiz from '@/components/notas/NotasRaiz.vue';
 import NotasLista from '@/components/notas/NotasLista.vue';
+import NotaDetalhe from '@/components/notas/NotaDetalhe.vue';
 import NotasCriarEditar from '@/components/notas/NotasCriarEditar.vue';
 
 import EmailModal from '@/components/EmailModal.vue';
@@ -130,6 +131,21 @@ export default {
           component: NotasLista,
           meta: {
             título: 'Notas',
+          },
+        },
+        {
+          path: ':notaId/detalhes',
+          name: 'notaDetalhe',
+          component: NotaDetalhe,
+          props: ({ params }) => ({
+            ...params,
+            ...{ notaId: params.notaId || undefined },
+          }),
+          meta: {
+            título: 'Nota',
+            rotasParaMigalhasDePão: [
+              'notasListar',
+            ],
           },
         },
         {
