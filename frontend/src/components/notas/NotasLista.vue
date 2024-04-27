@@ -4,7 +4,6 @@ import { useBlocoDeNotasStore } from '@/stores/blocoNotas.store';
 import { useTipoDeNotasStore } from '@/stores/tipoNotas.store';
 import { useTransferenciasVoluntariasStore } from '@/stores/transferenciasVoluntarias.store';
 import { storeToRefs } from 'pinia';
-
 import {
   computed, ref, watch, onMounted,
 } from 'vue';
@@ -45,8 +44,6 @@ const tipoStore = useTipoDeNotasStore();
 const { lista: listaTipo } = storeToRefs(tipoStore);
 
 const statusSelecionado = ref('');
-// eslint-disable-next-line prefer-const
-let exibeForm = ref(false);
 
 const blocosToken = ref([]);
 
@@ -74,10 +71,6 @@ async function excluirNota(id) {
   );
 }
 
-function editarNota(id) {
-  exibeForm.value = true;
-  blocoStore.buscarItem(id);
-}
 watch(statusSelecionado, (novoValor) => {
   blocoStore.buscarTudo(blocosToken.value, { status: novoValor });
 });
