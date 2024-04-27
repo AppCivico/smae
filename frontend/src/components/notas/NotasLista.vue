@@ -185,7 +185,15 @@ watch(statusSelecionado, (novoValor) => {
       </tr>
       <tr>
         <td :colspan="item.pode_editar ? 6 : 4">
-          {{ removerHtml(item.nota) }}
+          <router-link
+            :to="{
+              name: 'notaDetalhe',
+              params: { notaId: item.id_jwt },
+            }"
+            class="tprimary"
+          >
+            {{ removerHtml(item.nota) }}
+          </router-link>
         </td>
       </tr>
     </tbody>
