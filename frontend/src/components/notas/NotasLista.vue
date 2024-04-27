@@ -178,19 +178,15 @@ watch(statusSelecionado, (novoValor) => {
           </button>
         </td>
         <td v-if="item.pode_editar">
-          <button
-            arial-label="Editar"
-            title="Editar"
-            class="like-a__text"
-            @click="editarNota(item.id_jwt)"
+          <router-link
+            :to="{ name: 'notasEditar', params: { notaId: item.id_jwt } }"
+            class="tprimary"
           >
             <svg
               width="20"
               height="20"
-            >
-              <use xlink:href="#i_edit" />
-            </svg>
-          </button>
+            ><use xlink:href="#i_edit" /></svg>
+          </router-link>
         </td>
       </tr>
       <tr>
