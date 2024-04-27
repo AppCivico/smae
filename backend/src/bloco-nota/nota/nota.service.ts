@@ -31,6 +31,7 @@ type JwtToken = {
 type DadosEmailInfo = {
     objeto: string;
     link: string;
+    nota: string;
 };
 
 @Injectable()
@@ -593,17 +594,22 @@ export class NotaService {
     }
 
     async geraDadosEmail(notaId: number, prismaTx: Prisma.TransactionClient): Promise<DadosEmailInfo> {
-        const bloco = await prismaTx.blocoNota.findFirst({
+        const bloco = await prismaTx.blocoNota.findFirstOrThrow({
             where: { Nota: { some: { id: notaId } } },
             select: {
                 bloco: true,
+                Nota: {
+                    select: {
+                        nota: true,
+                    },
+                },
             },
         });
         const ret: DadosEmailInfo = {
             objeto: '',
             link: '',
+            nota: bloco.Nota[0].nota,
         };
-        if (!bloco) return ret;
 
         if (bloco.bloco.startsWith('Transf:')) {
             const transferencia = await prismaTx.transferencia.findFirstOrThrow({
@@ -612,7 +618,7 @@ export class NotaService {
             });
 
             ret.objeto = `transferência ${transferencia.identificador}`;
-            ret.link = [this.baseUrl, 'transferencias-voluntarias', transferencia.id, 'detalhes'].join('/');
+            ret.link = [this.baseUrl, 'transferencias-voluntarias', transferencia.id, 'notas'].join('/');
         } else if (bloco.bloco.startsWith('Proj:')) {
             const projeto = await prismaTx.projeto.findFirstOrThrow({
                 where: { id: +bloco.bloco.split(':')[1] },
