@@ -406,7 +406,6 @@ export class NotaService {
                         template: 'nota-nova-resposta.html',
                         to: emailTo,
                         variables: {
-                            nota: nota.nota,
                             resposta: dto.resposta,
                             ...objeto,
                         },
