@@ -114,6 +114,7 @@ watch([
     orgaos_ids: orgaoFiltro,
     palavra_chave: palavraChaveParaBusca,
     atividade: atividadeFiltro,
+    ipp: 15,
   });
 }, { immediate: true });
 
