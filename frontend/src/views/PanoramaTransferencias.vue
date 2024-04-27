@@ -94,12 +94,12 @@ watch([
   () => route.query.orgaos_ids,
   () => route.query.palavra_chave,
   () => route.query.atividade,
-], () => {
+], async () => {
   if (!partidosDisponíveis.value.length
     && !atividadesDisponíveis.value.length
     && !órgãosDisponíveis.value.length
   ) {
-    iniciar();
+    await iniciar();
   }
 
   let {
