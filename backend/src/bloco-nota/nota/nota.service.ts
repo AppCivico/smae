@@ -86,8 +86,7 @@ export class NotaService {
             });
             this.validateReverEm(nota);
 
-            if (tipo.permite_enderecamento)
-                await this.upsertEnderecamentos(prismaTx, nota.id, dto, now, user, nota, nota);
+            if (tipo.permite_enderecamento) await this.upsertEnderecamentos(prismaTx, nota.id, dto, now, user, nota);
 
             return this.getToken(nota.id);
         });
@@ -468,7 +467,7 @@ export class NotaService {
                 this.validateReverEm(updated);
 
             if (nota.tipo_nota.permite_enderecamento)
-                await this.upsertEnderecamentos(prismaTx, id, dto, now, user, nota, updated);
+                await this.upsertEnderecamentos(prismaTx, id, dto, now, user, nota);
         });
 
         return { id_jwt: this.getToken(id) };
@@ -480,8 +479,7 @@ export class NotaService {
         dto: UpdateNotaDto,
         now: Date,
         user: PessoaFromJwt,
-        nota: { nota: string; id: number; dispara_email: boolean },
-        updated: { nota: string }
+        nota: { nota: string; id: number; dispara_email: boolean }
     ) {
         if (!Array.isArray(dto.enderecamentos)) return;
 
@@ -555,7 +553,6 @@ export class NotaService {
                         template: 'nota-novo-encaminhamento.html',
                         to: emailTo,
                         variables: {
-                            nota: updated.nota,
                             ...objeto,
                         },
                     },
