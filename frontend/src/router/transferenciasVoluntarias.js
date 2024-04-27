@@ -9,7 +9,9 @@ import TransferenciasVoluntariasEnviarArquivo from '@/views/transferenciasVolunt
 import TransferenciasVoluntariasLista from '@/views/transferenciasVoluntarias/TransferenciasVoluntariasLista.vue';
 import TransferenciasVoluntariasRaiz from '@/views/transferenciasVoluntarias/TransferenciasVoluntariasRaiz.vue';
 
+import NotasRaiz from '@/components/notas/NotasRaiz.vue';
 import NotasLista from '@/components/notas/NotasLista.vue';
+import NotasCriarEditar from '@/components/notas/NotasCriarEditar.vue';
 
 import EmailModal from '@/components/EmailModal.vue';
 import { useTarefasStore } from '@/stores/tarefas.store.ts';
@@ -111,18 +113,50 @@ export default {
     {
       name: 'TransferenciasVoluntariasNotas',
       path: ':transferenciaId/notas',
-      component: NotasLista,
+      component: NotasRaiz,
       props: ({ params }) => ({
         ...params,
         ...{ transferenciaId: Number.parseInt(params.transferenciaId, 10) || undefined },
       }),
       meta: {
         título: 'Notas',
+        rotaPrescindeDeChave: true,
         rotasParaMenuSecundário,
-        rotasParaMigalhasDePão: [
-          'TransferenciasVoluntariasListar',
-        ],
       },
+      children: [
+        {
+          name: 'notasListar',
+          path: '',
+          component: NotasLista,
+          meta: {
+            título: 'Notas',
+          },
+        },
+        {
+          name: 'notasCriar',
+          path: 'nova',
+          component: NotasCriarEditar,
+          meta: {
+            título: 'Nova nota',
+            rotaDeEscape: 'notasListar',
+
+          },
+        },
+        {
+          path: ':notaId',
+          name: 'notasEditar',
+          component: NotasCriarEditar,
+          props: ({ params }) => ({
+            ...params,
+            ...{ notaId: Number.parseInt(params.notaId, 10) || undefined },
+          }),
+
+          meta: {
+            título: 'Editar nota',
+            rotaDeEscape: 'notasListar',
+          },
+        },
+      ],
     },
     {
       path: ':transferenciaId',
