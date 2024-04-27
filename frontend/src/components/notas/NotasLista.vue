@@ -1,4 +1,5 @@
 <script setup>
+import removerHtml from '@/helpers/removerHtml';
 import { useAlertStore } from '@/stores/alert.store';
 import { useBlocoDeNotasStore } from '@/stores/blocoNotas.store';
 import { useTipoDeNotasStore } from '@/stores/tipoNotas.store';
@@ -184,7 +185,7 @@ watch(statusSelecionado, (novoValor) => {
       </tr>
       <tr>
         <td :colspan="item.pode_editar ? 6 : 4">
-          {{ item.nota }}
+          {{ removerHtml(item.nota) }}
         </td>
       </tr>
     </tbody>
