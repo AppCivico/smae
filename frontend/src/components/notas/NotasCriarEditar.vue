@@ -38,13 +38,9 @@ const status = {
 };
 
 const props = defineProps({
-  transferenciaId: {
-    type: [String, Number],
-    default: 0,
-  },
   notaId: {
-    type: Number,
-    default: 0,
+    type: String,
+    default: '',
   },
 });
 const TransferenciasVoluntarias = useTransferenciasVoluntariasStore();
