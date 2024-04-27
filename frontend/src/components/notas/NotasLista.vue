@@ -524,7 +524,7 @@ iniciar();
         </td>
       </tr>
       <tr>
-        <td :colspan="podeEditarDisponivel ? 6 : 4">
+        <td :colspan="item.pode_editar ? 6 : 4">
           {{ item.nota }}
         </td>
       </tr>
