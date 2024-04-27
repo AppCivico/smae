@@ -148,7 +148,7 @@ export default {
           component: NotasCriarEditar,
           props: ({ params }) => ({
             ...params,
-            ...{ notaId: Number.parseInt(params.notaId, 10) || undefined },
+            ...{ notaId: params.notaId || undefined },
           }),
 
           meta: {
