@@ -62,6 +62,17 @@ export class InputGeolocalizarEndereco {
     camadas: InputGeolocalizarCamadas[];
 }
 
+export class InputGeolocalizarCEP {
+    @IsString()
+    @MaxLength(9)
+    cep: string;
+
+    @ValidateNested()
+    @IsArray()
+    @Type(() => InputGeolocalizarCamadas)
+    camadas: InputGeolocalizarCamadas[];
+}
+
 export class InputGeolocalizarByLatLong {
     @IsNumber()
     lat: number;
@@ -103,6 +114,12 @@ export class GeoApiService {
         const errors = await validate(dto, { enableDebugMessages: true });
         if (errors.length) throw new Error(JSON.stringify(errors));
 
+        dto.busca_endereco = dto.busca_endereco.trim();
+        // encaminha para busca por CEP se for um CEP
+        if (dto.busca_endereco.match(/^(\d{8}|\d{5}-\d{3})$/)) {
+            return this.buscaCEP({ cep: dto.busca_endereco, camadas: dto.camadas });
+        }
+
         const endpoint = 'geolocalizar_endereco/';
         const ret: RetornoEndereco[] = [];
 
@@ -112,6 +129,47 @@ export class GeoApiService {
                 .post<any>(endpoint, {
                     json: {
                         endereco: dto.busca_endereco,
+                        camadas: dto.camadas,
+                    },
+                })
+                .json();
+            this.logger.debug(`resposta: ${JSON.stringify(responseAsJson)}`);
+
+            if (Array.isArray(responseAsJson)) {
+                for (const r of responseAsJson) {
+                    const obj = plainToClass(RetornoEndereco, r);
+                    const errors = await validate(obj, { enableDebugMessages: true });
+                    if (errors.length) throw new Error(JSON.stringify(errors));
+
+                    ret.push(obj);
+                }
+            } else {
+                throw new Error('Resposta fora do padrão esperado');
+            }
+
+            return ret;
+        } catch (error: any) {
+            this.handleGotError(error, endpoint);
+        }
+    }
+
+    async buscaCEP(input: InputGeolocalizarCEP): Promise<RetornoEndereco[]> {
+        const dto = plainToClass(InputGeolocalizarCEP, input);
+        const errors = await validate(dto, { enableDebugMessages: true });
+        if (errors.length) throw new Error(JSON.stringify(errors));
+        dto.cep = dto.cep.replace(/\-+/g, '');
+        if (dto.cep.length != 8) throw new Error('CEP inválido');
+        dto.cep = dto.cep.substring(0, 5) + '-' + dto.cep.substring(5, 8);
+
+        const endpoint = 'geolocalizar_endereco/';
+        const ret: RetornoEndereco[] = [];
+
+        this.logger.debug(`chamando POST ${endpoint}`);
+        try {
+            const responseAsJson = await this.got
+                .post<any>(endpoint, {
+                    json: {
+                        cep: dto.cep,
                         camadas: dto.camadas,
                     },
                 })
