@@ -2,7 +2,7 @@ from core.utils.misc import check_cep
 
 class CepQueryBuilder:
 
-    def __init__(self, city:str, state:str, country_iso:str, 
+    def __init__(self, city:str, state:str, country_iso:str,
                 contact_email:str, bbox_bound:dict=None)->None:
 
         self.check_country_iso(country_iso)
@@ -76,11 +76,11 @@ class CepQueryBuilder:
         self.set_accept_language_param(query)
         self.set_email_param(query)
         self.set_address_details_param(query)
-    
+
     def set_search_boundaries(self, query:dict)->None:
 
-        self.set_city(query)
-        self.set_state(query)
+        #self.set_city(query)
+        #self.set_state(query)
         self.set_country(query)
         self.set_bbox_param(query)
 
