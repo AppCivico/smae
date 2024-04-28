@@ -125,27 +125,7 @@ export class GeoApiService {
 
         this.logger.debug(`chamando POST ${endpoint}`);
         try {
-            const responseAsJson = await this.got
-                .post<any>(endpoint, {
-                    json: {
-                        endereco: dto.busca_endereco,
-                        camadas: dto.camadas,
-                    },
-                })
-                .json();
-            this.logger.debug(`resposta: ${JSON.stringify(responseAsJson)}`);
-
-            if (Array.isArray(responseAsJson)) {
-                for (const r of responseAsJson) {
-                    const obj = plainToClass(RetornoEndereco, r);
-                    const errors = await validate(obj, { enableDebugMessages: true });
-                    if (errors.length) throw new Error(JSON.stringify(errors));
-
-                    ret.push(obj);
-                }
-            } else {
-                throw new Error('Resposta fora do padrão esperado');
-            }
+            await this.buscaGeoEndereco(endpoint, dto, ret);
 
             return ret;
         } catch (error: any) {
@@ -161,36 +141,45 @@ export class GeoApiService {
         if (dto.cep.length != 8) throw new Error('CEP inválido');
         dto.cep = dto.cep.substring(0, 5) + '-' + dto.cep.substring(5, 8);
 
-        const endpoint = 'geolocalizar_endereco/';
+        const endpoint = 'geolocalizar_cep/';
         const ret: RetornoEndereco[] = [];
 
         this.logger.debug(`chamando POST ${endpoint}`);
         try {
-            const responseAsJson = await this.got
-                .post<any>(endpoint, {
-                    json: {
-                        cep: dto.cep,
-                        camadas: dto.camadas,
-                    },
-                })
-                .json();
-            this.logger.debug(`resposta: ${JSON.stringify(responseAsJson)}`);
-
-            if (Array.isArray(responseAsJson)) {
-                for (const r of responseAsJson) {
-                    const obj = plainToClass(RetornoEndereco, r);
-                    const errors = await validate(obj, { enableDebugMessages: true });
-                    if (errors.length) throw new Error(JSON.stringify(errors));
-
-                    ret.push(obj);
-                }
-            } else {
-                throw new Error('Resposta fora do padrão esperado');
-            }
+            await this.buscaGeoEndereco(endpoint, dto, ret);
 
             return ret;
         } catch (error: any) {
             this.handleGotError(error, endpoint);
+        }
+    }
+
+    private async buscaGeoEndereco(
+        endpoint: string,
+        dto: InputGeolocalizarCEP | InputGeolocalizarEndereco,
+        ret: RetornoEndereco[]
+    ) {
+        const responseAsJson = await this.got
+            .post<any>(endpoint, {
+                json: {
+                    endereco: 'busca_endereco' in dto ? dto.busca_endereco : undefined,
+                    cep: 'cep' in dto ? dto.cep : undefined,
+                    camadas: dto.camadas,
+                },
+            })
+            .json();
+        this.logger.debug(`resposta: ${JSON.stringify(responseAsJson)}`);
+
+        if (Array.isArray(responseAsJson)) {
+            for (const r of responseAsJson) {
+                const obj = plainToClass(RetornoEndereco, r);
+                const errors = await validate(obj, { enableDebugMessages: true });
+                if (errors.length) throw new Error(JSON.stringify(errors));
+
+                ret.push(obj);
+            }
+        } else {
+            throw new Error('Resposta fora do padrão esperado');
         }
     }
 
