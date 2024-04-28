@@ -60,7 +60,7 @@ const {
 const {
   errors, handleSubmit, isSubmitting, setFieldValue, values,
 } = useForm({
-  initialValues: itemParaEdição,
+  initialValues: props.notaId ? itemParaEdição : null,
   validationSchema: schema,
 });
 
