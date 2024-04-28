@@ -156,8 +156,9 @@ watch(statusSelecionado, (novoValor) => {
               : " - "
           }}
         </td>
-        <td v-if="item.pode_editar">
+        <td>
           <button
+            v-if="item.pode_editar"
             class="like-a__text"
             arial-label="Excluir"
             title="Excluir"
@@ -171,8 +172,9 @@ watch(statusSelecionado, (novoValor) => {
             </svg>
           </button>
         </td>
-        <td v-if="item?.pode_editar">
+        <td>
           <router-link
+            v-if="item?.pode_editar"
             :to="{ name: 'notasEditar', params: { notaId: item?.id_jwt } }"
             class="tprimary"
           >
@@ -184,7 +186,7 @@ watch(statusSelecionado, (novoValor) => {
         </td>
       </tr>
       <tr>
-        <td :colspan="item?.pode_editar ? 6 : 4">
+        <td colspan="6">
           <router-link
             :to="{
               name: 'notaDetalhe',
@@ -199,17 +201,17 @@ watch(statusSelecionado, (novoValor) => {
     </tbody>
     <tbody v-if="chamadasPendentes.lista || !listaNotas.length || erro">
       <tr v-if="chamadasPendentes.lista">
-        <td :colspan="podeEditarDisponivel ? 6 : 4">
+        <td colspan="6">
           Carregando
         </td>
       </tr>
       <tr v-else-if="erro">
-        <td :colspan="podeEditarDisponivel ? 6 : 4">
+        <td colspan="6">
           Erro: {{ erro }}
         </td>
       </tr>
       <tr v-else-if="!listaNotas.length">
-        <td :colspan="podeEditarDisponivel ? 6 : 4">
+        <td colspan="6">
           Nenhum resultado encontrado.
         </td>
       </tr>
