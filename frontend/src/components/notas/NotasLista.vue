@@ -5,9 +5,7 @@ import { useBlocoDeNotasStore } from '@/stores/blocoNotas.store';
 import { useTipoDeNotasStore } from '@/stores/tipoNotas.store';
 import { useTransferenciasVoluntariasStore } from '@/stores/transferenciasVoluntarias.store';
 import { storeToRefs } from 'pinia';
-import {
-  computed, ref, watch, onMounted,
-} from 'vue';
+import { ref, watch, onMounted } from 'vue';
 
 const status = {
   Programado: {
@@ -113,22 +111,16 @@ watch(statusSelecionado, (novoValor) => {
     <col>
     <col>
     <col>
-    <col
-      v-if="podeEditarDisponivel"
-      class="col--botão-de-ação"
-    >
-    <col
-      v-if="podeEditarDisponivel"
-      class="col--botão-de-ação"
-    >
+    <col class="col--botão-de-ação">
+    <col class="col--botão-de-ação">
     <thead>
       <tr>
         <th>Status</th>
         <th>Tipo</th>
         <th>Data</th>
         <th>Rever Em</th>
-        <th v-if="podeEditarDisponivel" />
-        <th v-if="podeEditarDisponivel" />
+        <th />
+        <th />
       </tr>
     </thead>
     <tbody
