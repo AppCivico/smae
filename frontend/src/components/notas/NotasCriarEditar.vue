@@ -11,8 +11,12 @@ import { storeToRefs } from 'pinia';
 import {
   ErrorMessage, Field, FieldArray, useForm,
 } from 'vee-validate';
-import { computed, ref, watch } from 'vue';
+import {
+  computed, ref, watch, defineOptions,
+} from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+
+defineOptions({ inheritAttrs: false });
 
 const router = useRouter();
 const route = useRoute();
