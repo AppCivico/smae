@@ -63,7 +63,7 @@ const erroNaBuscaDeEndereço = ref(null);
 const termoDeBusca = ref('');
 const sugestãoSelecionada = ref(null);
 const sugestõesDeEndereços = ref([]);
-const coordenadasSelecionadas = ref([]);
+const logradouroCoordenadas = ref([]);
 const logradouroCep = ref('');
 const logradouroNome = ref('');
 const logradouroNúmero = ref('');
@@ -101,7 +101,7 @@ const endereçosConsolidadosPorToken = computed(() => ({
 
 async function preencherFormulário(item) {
   if (isArray(item?.endereco?.geometry?.coordinates)) {
-    coordenadasSelecionadas.value = item.endereco.geometry.coordinates.toReversed();
+    logradouroCoordenadas.value = item.endereco?.geometry?.coordinates?.toReversed();
   }
   if (isArray(item?.endereco?.geometry?.coordinates)) {
     marcador.value = item?.endereco?.geometry?.coordinates?.toReversed();
@@ -140,7 +140,7 @@ async function buscarEndereço(valor) {
     erroNaBuscaDeEndereço.value = null;
     sugestãoSelecionada.value = null;
     sugestõesDeEndereços.value.splice(0, sugestõesDeEndereços.value.length);
-    coordenadasSelecionadas.value.splice(0, coordenadasSelecionadas.value.length);
+    logradouroCoordenadas.value.splice(0, logradouroCoordenadas.value.length);
     buscandoEndereços.value = true;
 
     // Redefinição manual porque o `resetForm()` conflita com o model
@@ -210,7 +210,7 @@ const onSubmit = handleSubmit(async () => {
           rotulo: carga.rotulo || '',
         },
         geometry: {
-          coordinates: coordenadasSelecionadas.value.toReversed(),
+          coordinates: logradouroCoordenadas.value.toReversed(),
         },
       },
       camadas: cópiaDaSeleção.camadas.map((x) => x.id),
@@ -453,7 +453,7 @@ const formulárioSujo = useIsFormDirty();
             marcador com posição atualizada
           </label>
           <input
-            v-model="coordenadasSelecionadas"
+            v-model="logradouroCoordenadas"
             type="text"
             readonly
             style="width: 100%;"
@@ -475,7 +475,7 @@ const formulárioSujo = useIsFormDirty();
         <div class="mb1">
           <MapaExibir
             v-if="sugestãoSelecionada"
-            v-model="coordenadasSelecionadas"
+            v-model="logradouroCoordenadas"
             :marcador="marcador"
             :polígonos="camadasSelecionadas"
             class="mb1"
@@ -495,7 +495,7 @@ const formulárioSujo = useIsFormDirty();
                 Latitude
               </dt>
               <dd class="t13">
-                {{ coordenadasSelecionadas[0] }}
+                {{ logradouroCoordenadas[0] }}
               </dd>
             </div>
 
@@ -504,7 +504,7 @@ const formulárioSujo = useIsFormDirty();
                 Longitude
               </dt>
               <dd class="t13">
-                {{ coordenadasSelecionadas[1] }}
+                {{ logradouroCoordenadas[1] }}
               </dd>
             </div>
 
