@@ -15,12 +15,14 @@ if (props.notaId) {
 }
 </script>
 <template>
+  <MigalhasDePão class="mb1" />
+
   <div class="flex spacebetween center mb2">
     <h1>Nota</h1>
     <hr class="ml2 f1">
     <router-link
       v-if="emFoco?.id_jwt && emFoco?.pode_editar"
-      :to="{ name: 'notasEditar', params: { notaId: emFoco.id_jwt } }"
+      :to="{ name: 'notasEditar', params: { notaId: emFoco?.id_jwt } }"
       class="btn big ml2"
     >
       Editar
@@ -38,6 +40,10 @@ if (props.notaId) {
     <div class="f1">
       <dt>Data</dt>
       <dd>{{ new Date(emFoco?.data_nota).toLocaleDateString("pt-BR") }}</dd>
+    </div>
+    <div class="f1">
+      <dt>Rever em</dt>
+      <dd>{{ emFoco?.rever_em ? emFoco.rever_em : " - " }}</dd>
     </div>
     <div class="f1">
       <dt>Status</dt>
@@ -63,11 +69,9 @@ if (props.notaId) {
     </div>
     <div class="f1">
       <dt>Endereçamentos</dt>
-      <dd>{{ emFoco?.enderecamentos.length ? emFoco?.enderecamentos : " - " }}</dd>
-    </div>
-    <div class="f1">
-      <dt>Rever em</dt>
-      <dd>{{ emFoco?.rever_em ? emFoco.rever_em : " - " }}</dd>
+      <dd>
+        {{ emFoco?.enderecamentos.length ? emFoco?.enderecamentos : " - " }}
+      </dd>
     </div>
   </dl>
 </template>
