@@ -79,8 +79,8 @@ class CepQueryBuilder:
 
     def set_search_boundaries(self, query:dict)->None:
 
-        #self.set_city(query)
-        #self.set_state(query)
+        self.set_city(query)
+        self.set_state(query)
         self.set_country(query)
         self.set_bbox_param(query)
 
