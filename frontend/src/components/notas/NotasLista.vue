@@ -54,7 +54,6 @@ onMounted(async () => {
     blocoStore.buscarTudo(blocosToken?.value);
   }
 });
-const podeEditarDisponivel = computed(() => listaNotas.value.some((item) => item.pode_editar));
 
 async function excluirNota(id) {
   useAlertStore().confirmAction(
