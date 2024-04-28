@@ -72,11 +72,12 @@ const tipoStore = useTipoDeNotasStore();
 const { lista: listaTipo } = storeToRefs(tipoStore);
 
 const statusSelecionado = ref('');
-const tipoNotaId = ref(null);
 
 const blocosToken = computed(
   () => transferênciaEmFoco?.value?.bloco_nota_token,
 );
+
+const tipoNotaId = computed(() => itemParaEdição.value?.tipo_nota_id || null);
 
 const camposPermitidos = computed(() => ({
   email: listaTipo.value.find(
