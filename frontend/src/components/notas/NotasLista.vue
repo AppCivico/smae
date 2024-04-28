@@ -173,7 +173,7 @@ watch(statusSelecionado, (novoValor) => {
         </td>
         <td v-if="item.pode_editar">
           <router-link
-            :to="{ name: 'notasEditar', params: { notaId: item.id_jwt } }"
+            :to="{ name: 'notasEditar', params: { notaId: item?.id_jwt } }"
             class="tprimary"
           >
             <svg
@@ -188,7 +188,7 @@ watch(statusSelecionado, (novoValor) => {
           <router-link
             :to="{
               name: 'notaDetalhe',
-              params: { notaId: item.id_jwt },
+              params: { notaId: item?.id_jwt },
             }"
             class="tprimary"
           >
