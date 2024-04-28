@@ -104,10 +104,10 @@ async function preencherFormulário(item) {
     coordenadasSelecionadas.value = item.endereco.geometry.coordinates.toReversed();
   }
   if (isArray(item?.endereco?.geometry?.coordinates)) {
-    marcador.value = item.endereco.geometry.coordinates.toReversed();
+    marcador.value = item?.endereco?.geometry?.coordinates?.toReversed();
   }
 
-  const palavrasDaRua = typeof item.endereco?.properties?.rua === 'string'
+  const palavrasDaRua = typeof item?.endereco?.properties?.rua === 'string'
     ? item.endereco.properties.rua.split(' ')
     : [];
 
@@ -117,10 +117,12 @@ async function preencherFormulário(item) {
 
   logradouroNome.value = logradouroTipo.value
     ? palavrasDaRua.slice(1).join(' ')
-    : item.endereco?.properties?.rua;
-  logradouroNúmero.value = item.endereco?.properties?.numero ?? '';
+    : item?.endereco?.properties?.rua;
+  logradouroNúmero.value = item?.endereco?.properties?.numero ?? '';
+  logradouroCep.value = item?.endereco?.properties?.cep ?? '';
+  logradouroRótulo.value = item?.endereco?.properties?.rotulo ?? '';
 
-  if (Array.isArray(item.camadas)) {
+  if (Array.isArray(item?.camadas)) {
     const camadasABuscar = item.camadas.reduce((acc, cur) => (!camadas?.value?.[cur.id]
       ? acc.concat([cur.id])
       : acc), []);
@@ -141,10 +143,12 @@ async function buscarEndereço(valor) {
     coordenadasSelecionadas.value.splice(0, coordenadasSelecionadas.value.length);
     buscandoEndereços.value = true;
 
+    // Redefinição manual porque o `resetForm()` conflita com o model
     resetField('cep', { value: undefined });
     resetField('tipo', { value: undefined });
     resetField('rua', { value: undefined });
     resetField('numero', { value: undefined });
+    resetField('rotulo', { value: undefined });
 
     try {
       const { linhas } = await requestS.post(`${baseUrl}/geolocalizar`, {
@@ -173,6 +177,11 @@ async function buscarEndereço(valor) {
 
 function abrirEdição(índice) {
   ediçãoDeEndereçoAberta.value = índice;
+
+  const token = model.value[índice];
+  const item = endereçosConsolidadosPorToken.value[token];
+
+  preencherFormulário(item);
 }
 
 function adicionarItem() {
