@@ -269,6 +269,7 @@ onUnmounted(() => {
           >
             <th>
               <router-link
+                v-if="item?.transferencia_id"
                 :to="{
                   name: 'TransferenciasVoluntariasDetalhes',
                   params: { transferenciaId: item.transferencia_id },
