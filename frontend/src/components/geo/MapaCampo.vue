@@ -69,6 +69,7 @@ const logradouroNome = ref('');
 const logradouroNúmero = ref('');
 const logradouroTipo = ref('');
 const logradouroRótulo = ref('');
+const logradouroCamadas = ref([]);
 
 const marcador = ref([]);
 
@@ -83,6 +84,9 @@ const camadasSelecionadas = computed(() => (Array.isArray(sugestãoSelecionada.v
 
 const {
   errors, handleSubmit, isSubmitting, resetField, validateField, values: carga,
+
+  setFieldValue,
+  setFieldError,
 } = useForm({
   initialValues: valoresIniciais,
   validationSchema: schema,
@@ -98,6 +102,21 @@ const endereçosConsolidadosPorToken = computed(() => ({
   ...props.geolocalizaçãoPorToken,
   ...endereçosTemporários.value,
 }));
+
+function redefinirFormulário() {
+  // Redefinição manual porque o `resetForm()` conflita com o model
+  // e o resetField() não parecem funcionar direito
+  setFieldValue('cep', null);
+  setFieldError('cep', []);
+  setFieldValue('tipo', null);
+  setFieldError('tipo', []);
+  setFieldValue('rua', null);
+  setFieldError('rua', []);
+  setFieldValue('numero', null);
+  setFieldError('numero', []);
+  setFieldValue('rotulo', null);
+  setFieldError('rotulo', []);
+}
 
 async function preencherFormulário(item) {
   if (isArray(item?.endereco?.geometry?.coordinates)) {
@@ -121,6 +140,7 @@ async function preencherFormulário(item) {
   logradouroNúmero.value = item?.endereco?.properties?.numero ?? '';
   logradouroCep.value = item?.endereco?.properties?.cep ?? '';
   logradouroRótulo.value = item?.endereco?.properties?.rotulo ?? '';
+  logradouroCoordenadas.value = item?.endereco?.geometry?.coordinates?.toReversed() || [];
 
   if (Array.isArray(item?.camadas)) {
     const camadasABuscar = item.camadas.reduce((acc, cur) => (!camadas?.value?.[cur.id]
@@ -143,12 +163,7 @@ async function buscarEndereço(valor) {
     logradouroCoordenadas.value.splice(0, logradouroCoordenadas.value.length);
     buscandoEndereços.value = true;
 
-    // Redefinição manual porque o `resetForm()` conflita com o model
-    resetField('cep', { value: undefined });
-    resetField('tipo', { value: undefined });
-    resetField('rua', { value: undefined });
-    resetField('numero', { value: undefined });
-    resetField('rotulo', { value: undefined });
+    redefinirFormulário();
 
     try {
       const { linhas } = await requestS.post(`${baseUrl}/geolocalizar`, {
@@ -176,6 +191,8 @@ async function buscarEndereço(valor) {
 }
 
 function abrirEdição(índice) {
+  redefinirFormulário();
+
   ediçãoDeEndereçoAberta.value = índice;
 
   const token = model.value[índice];
@@ -474,7 +491,7 @@ const formulárioSujo = useIsFormDirty();
       >
         <div class="mb1">
           <MapaExibir
-            v-if="sugestãoSelecionada"
+            v-if="logradouroCoordenadas[0] && logradouroCoordenadas[1]"
             v-model="logradouroCoordenadas"
             :marcador="marcador"
             :polígonos="camadasSelecionadas"
@@ -489,7 +506,7 @@ const formulárioSujo = useIsFormDirty();
             :opções-do-marcador="{ draggable: true }"
           />
 
-          <dl class="flex flexwrap g2">
+          <dl class="flex flexwrap g2 mb1">
             <div class="f1 mb1">
               <dt class="t12 uc w700 mb05 tamarelo">
                 Latitude
@@ -539,7 +556,7 @@ const formulárioSujo = useIsFormDirty();
             v-maska
             name="cep"
             class="inputtext light mb1"
-            :disabled="!sugestãoSelecionada"
+            :disabled="!logradouroCoordenadas[0] || !logradouroCoordenadas[1]"
             data-maska="#####-###'"
           />
           <ErrorMessage
@@ -559,7 +576,7 @@ const formulárioSujo = useIsFormDirty();
             name="tipo"
             class="inputtext light mb1"
             as="select"
-            :disabled="!sugestãoSelecionada"
+            :disabled="!logradouroCoordenadas[0] || !logradouroCoordenadas[1]"
           >
             <option :value="null" />
             <option
@@ -587,7 +604,7 @@ const formulárioSujo = useIsFormDirty();
             name="rua"
             type="text"
             class="inputtext light mb1"
-            :disabled="!sugestãoSelecionada"
+            :disabled="!logradouroCoordenadas[0] || !logradouroCoordenadas[1]"
           />
           <ErrorMessage
             class="error-msg mb1"
@@ -606,7 +623,7 @@ const formulárioSujo = useIsFormDirty();
             name="numero"
             type="text"
             class="inputtext light mb1"
-            :disabled="!sugestãoSelecionada"
+            :disabled="!logradouroCoordenadas[0] || !logradouroCoordenadas[1]"
           />
           <ErrorMessage
             class="error-msg mb1"
@@ -626,7 +643,7 @@ const formulárioSujo = useIsFormDirty();
             name="rotulo"
             type="text"
             class="inputtext light mb1"
-            :disabled="!sugestãoSelecionada"
+            :disabled="!logradouroCoordenadas[0] || !logradouroCoordenadas[1]"
           />
           <ErrorMessage
             class="error-msg mb1"
