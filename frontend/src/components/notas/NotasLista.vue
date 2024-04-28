@@ -171,7 +171,7 @@ watch(statusSelecionado, (novoValor) => {
             </svg>
           </button>
         </td>
-        <td v-if="item.pode_editar">
+        <td v-if="item?.pode_editar">
           <router-link
             :to="{ name: 'notasEditar', params: { notaId: item?.id_jwt } }"
             class="tprimary"
@@ -184,7 +184,7 @@ watch(statusSelecionado, (novoValor) => {
         </td>
       </tr>
       <tr>
-        <td :colspan="item.pode_editar ? 6 : 4">
+        <td :colspan="item?.pode_editar ? 6 : 4">
           <router-link
             :to="{
               name: 'notaDetalhe',
@@ -192,7 +192,7 @@ watch(statusSelecionado, (novoValor) => {
             }"
             class="tprimary"
           >
-            {{ removerHtml(item.nota) }}
+            {{ removerHtml(item?.nota) }}
           </router-link>
         </td>
       </tr>
