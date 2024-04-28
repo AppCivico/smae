@@ -243,7 +243,7 @@ const formulárioSujo = useIsFormDirty();
       <th />
       <th>Endereço</th>
       <th>Bairro</th>
-      <th class="cell--number">
+      <th class="cell--nowrap">
         <abbr title="Código de Endereçamento Postal">CEP</abbr>
       </th>
       <th />
@@ -265,7 +265,7 @@ const formulárioSujo = useIsFormDirty();
         <td>
           {{ endereçosConsolidadosPorToken[token]?.endereco?.properties?.bairro || '-' }}
         </td>
-        <td class="cell--number">
+        <td class="cell--nowrap">
           {{ endereçosConsolidadosPorToken[token]?.endereco?.properties?.cep || '-' }}
         </td>
         <td>
@@ -389,7 +389,7 @@ const formulárioSujo = useIsFormDirty();
             <th />
             <th>Endereço</th>
             <th>Bairro</th>
-            <th class="cell--number">
+            <th class="cell--nowrap">
               <abbr title="Código de Endereçamento Postal">CEP</abbr>
             </th>
           </thead>
