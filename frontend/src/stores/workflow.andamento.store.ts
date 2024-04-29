@@ -37,7 +37,10 @@ export const useWorkflowAndamentoStore = defineStore('workflowAndamento', {
           transferencia_id: Number(this.route.params.transferenciaId) || undefined,
           ...params,
         });
-        this.workflow = resposta;
+
+        if (typeof resposta === 'object') {
+          this.workflow = resposta;
+        }
       } catch (erro: unknown) {
         this.erro = erro;
       }

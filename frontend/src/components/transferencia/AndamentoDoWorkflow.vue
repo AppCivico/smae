@@ -38,7 +38,7 @@ const ÓrgãosStore = useOrgansStore();
 const { organs, órgãosComoLista } = storeToRefs(ÓrgãosStore);
 
 const workflowAndamento = useWorkflowAndamentoStore();
-const { etapaCorrente, chamadasPendentes } = storeToRefs(workflowAndamento);
+const { workflow, etapaCorrente, chamadasPendentes } = storeToRefs(workflowAndamento);
 
 const faseSelecionada = ref(0);
 const listaDeFases = ref(null);
@@ -142,7 +142,7 @@ watch(itemParaEdição, () => {
     v-bind="$attrs"
   />
   <div
-    v-else
+    v-else-if="workflow"
     v-bind="$attrs"
     class="andamento-fluxo"
   >
