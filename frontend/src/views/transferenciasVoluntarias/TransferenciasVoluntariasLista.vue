@@ -183,16 +183,16 @@ watch([
           Esfera
         </th>
         <th>
-          Etapa
-        </th>
-        <th>
-          Fase
-        </th>
-        <th>
           Tipo
         </th>
         <th>
           Partido
+        </th>
+        <th>
+          Etapa
+        </th>
+        <th>
+          Fase
         </th>
         <th>
           Objeto/Empreendimento
@@ -236,16 +236,16 @@ watch([
           {{ item.esfera }}
         </td>
         <td>
-          {{ item.andamento_etapa? item.andamento_etapa : '-' }}
-        </td>
-        <td>
-          {{ item.andamento_fase? item.andamento_fase : '-' }}
-        </td>
-        <td>
           {{ item.tipo.nome }}
         </td>
         <td>
           {{ item.partido?.sigla ? item.partido?.sigla : '-' }}
+        </td>
+        <td>
+          {{ item.andamento_etapa? item.andamento_etapa : '-' }}
+        </td>
+        <td>
+          {{ item.andamento_fase? item.andamento_fase : '-' }}
         </td>
         <td>
           {{ item.objeto }}
