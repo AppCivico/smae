@@ -7,7 +7,7 @@ import { useOrgansStore } from '@/stores/organs.store';
 import { usePanoramaTransferenciasStore } from '@/stores/panoramaTransferencias.store';
 import { usePartidosStore } from '@/stores/partidos.store';
 import { storeToRefs } from 'pinia';
-import { computed, onUnmounted, ref, watch } from 'vue';
+import { onUnmounted, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
 const panoramaTransferenciasStore = usePanoramaTransferenciasStore();
@@ -124,6 +124,45 @@ watch([
   });
 }, { immediate: true });
 
+function diferencaEmDias(data1, data2) {
+  const umDia = 1000 * 60 * 60 * 24;
+  const diferencaTempo = Math.abs(data1.getTime() - data2.getTime());
+  return Math.floor(diferencaTempo / umDia);
+}
+
+function dataColor(data) {
+  const hoje = new Date();
+  const dataNota = new Date(data);
+
+  hoje.setHours(0, 0, 0, 0);
+  dataNota.setHours(0, 0, 0, 0);
+
+  const diferenca = diferencaEmDias(hoje, dataNota);
+
+  let cor;
+  if (dataNota.getTime() === hoje.getTime()) {
+    cor = '#000';
+  } else if (dataNota > hoje) {
+    cor = '#607A9F';
+  } else {
+    switch (true) {
+      case diferenca >= 15:
+        cor = '#EE3B2B';
+        break;
+      case diferenca >= 8:
+        cor = '#F2890D';
+        break;
+      case diferenca >= 1 && diferenca <= 7:
+        cor = '#F7C234';
+        break;
+      default:
+        cor = '#000';
+    }
+  }
+
+  return cor;
+}
+
 iniciar();
 
 onUnmounted(() => {
@@ -136,6 +175,7 @@ onUnmounted(() => {
       <h1>Quadro de atividades</h1>
       <hr class="ml2 f1">
     </div>
+
     <form
       class="flex flexwrap bottom mb2 g1"
       @submit.prevent="atualizarUrl"
@@ -287,10 +327,8 @@ onUnmounted(() => {
             <td>
               {{ item.atividade }}
             </td>
-            <td>
-              {{
-                item.data ? new Date(item.data).toLocaleDateString("pt-BR") : ""
-              }}
+            <td :style="{color: dataColor(item.data)}">
+              {{ item.data ? new Date(item.data).toLocaleDateString("pt-BR") : "" }}
             </td>
           </tr>
           <tr v-if="chamadasPendentes.lista">
@@ -314,27 +352,12 @@ onUnmounted(() => {
     </div>
   </Dashboard>
 </template>
-<style scoped>
 
+<style scoped>
 .tablemain tbody td:nth-child(2) {
   max-width: 200px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-}
-
-.tablemain tbody tr:nth-child(5n+1) td:nth-child(4) {
-  color: #EE3B2B;
-}
-
-.tablemain tbody tr:nth-child(5n+2) td:nth-child(4),
-.tablemain tbody tr:nth-child(5n+3) td:nth-child(4) {
-  color: #F2890D;
-}
-
-.tablemain tbody tr:nth-child(5n+4) td:nth-child(4),
-.tablemain tbody tr:nth-child(5n+5) td:nth-child(4),
-.tablemain tbody tr:nth-child(n+6) td:nth-child(4) {
- color: #F7C234;
 }
 </style>
