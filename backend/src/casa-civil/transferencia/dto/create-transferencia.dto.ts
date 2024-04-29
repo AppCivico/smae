@@ -35,7 +35,7 @@ export class CreateTransferenciaDto {
 
     @IsOptional()
     @IsNumber()
-    parlamentar_id: number;
+    parlamentar_id: number | null;
 
     @IsString()
     @MinLength(1)
