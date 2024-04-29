@@ -46,8 +46,13 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE TRIGGER trg_refresh_transferencia_tarefa
-AFTER INSERT OR UPDATE ON tarefa
+CREATE TRIGGER trg_refresh_transferencia_tarefa_insert
+AFTER INSERT ON tarefa
+FOR EACH ROW
+EXECUTE FUNCTION f_tarefa_refresh_transferencia_trigger();
+
+CREATE TRIGGER trg_refresh_transferencia_tarefa_update
+AFTER UPDATE ON tarefa
 FOR EACH ROW
 WHEN (
     (OLD.removido_em IS DISTINCT FROM NEW.removido_em)
@@ -73,8 +78,13 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
-CREATE TRIGGER trg_refresh_transferencia
-AFTER INSERT OR UPDATE ON transferencia
+CREATE TRIGGER trg_refresh_transferencia_insert
+AFTER INSERT ON transferencia
+FOR EACH ROW
+EXECUTE FUNCTION f_tarefa_refresh_transferencia_trigger();
+
+CREATE TRIGGER trg_refresh_transferencia_update
+AFTER UPDATE ON transferencia
 FOR EACH ROW
 WHEN (
     (OLD.removido_em IS DISTINCT FROM NEW.removido_em)
