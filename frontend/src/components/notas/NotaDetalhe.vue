@@ -43,7 +43,10 @@ if (props.notaId) {
     </div>
     <div class="f1">
       <dt>Rever em</dt>
-      <dd>{{ emFoco?.rever_em ? emFoco.rever_em : " - " }}</dd>
+      <dd>
+        {{ emFoco?.rever_em ? new Date(emFoco.rever_em).toLocaleDateString("pt-BR")
+          : " - " }}
+      </dd>
     </div>
     <div class="f1">
       <dt>Status</dt>
@@ -69,9 +72,21 @@ if (props.notaId) {
     </div>
     <div class="f1">
       <dt>Endereçamentos</dt>
-      <dd>
-        {{ emFoco?.enderecamentos.length ? emFoco?.enderecamentos : " - " }}
-      </dd>
+      <div v-if="emFoco?.enderecamentos.length">
+        <div
+          v-for="enderecamento in emFoco.enderecamentos"
+          :key="enderecamento.id"
+          class="flex"
+        >
+          <dd class="orgao">
+            {{ enderecamento.orgao_enderecado.sigla }}
+          </dd>
+          <dd>&nbsp;{{ ' - ' + enderecamento.pessoa_enderecado.nome_exibicao }}</dd>
+        </div>
+      </div>
+      <div v-else>
+        -
+      </div>
     </div>
   </dl>
 </template>
@@ -86,5 +101,9 @@ dl div {
 dl div dt {
   color: #607a9f;
   font-weight: 600;
+}
+.orgao {
+  font-weight: 600;
+  margin-bottom: 5px;
 }
 </style>
