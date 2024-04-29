@@ -15,7 +15,7 @@ import {
   useIsFormDirty,
 } from 'vee-validate';
 import {
-  computed, defineOptions, nextTick, ref, watch,
+  computed, defineOptions, nextTick, onUnmounted, ref, watch,
 } from 'vue';
 import { useRoute } from 'vue-router';
 
@@ -121,6 +121,10 @@ function finalizarFase(idDaFase) {
 
 workflowAndamento.buscar().then(() => {
   rolarParaFaseCorrente();
+});
+
+onUnmounted(() => {
+  workflowAndamento.$reset();
 });
 
 watch(itemParaEdição, (novoValor) => {
