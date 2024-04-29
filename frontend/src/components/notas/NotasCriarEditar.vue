@@ -76,8 +76,14 @@ const statusSelecionado = ref('');
 const blocosToken = computed(
   () => transferênciaEmFoco?.value?.bloco_nota_token,
 );
+const tipoNotaId = ref(null);
 
-const tipoNotaId = computed(() => itemParaEdição.value?.tipo_nota_id || null);
+watch(tipoNotaId, (novoValor) => {
+  blocoStore.buscarTudo(blocosToken.value, {
+    status: statusSelecionado.value,
+    tipoNotaId: novoValor,
+  });
+});
 
 const camposPermitidos = computed(() => ({
   email: listaTipo.value.find(
