@@ -1,3 +1,17 @@
+/*
+  Warnings:
+
+  - The primary key for the `transferencia_status_consolidado` table will be changed. If it partially fails, the table could be left without primary key constraint.
+  - Added the required column `id` to the `transferencia_status_consolidado` table without a default value. This is not possible if the table is not empty.
+
+*/
+-- AlterTable
+ALTER TABLE "transferencia_status_consolidado" DROP CONSTRAINT "transferencia_status_consolidado_pkey",
+ADD COLUMN     "id" INTEGER NOT NULL,
+ADD CONSTRAINT "transferencia_status_consolidado_pkey" PRIMARY KEY ("id");
+
+
+
 CREATE OR REPLACE PROCEDURE add_refresh_transferencia_task(p_transferencia_id INTEGER)
 AS $$
 DECLARE
