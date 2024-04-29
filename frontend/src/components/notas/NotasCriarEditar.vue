@@ -76,24 +76,16 @@ const statusSelecionado = ref('');
 const blocosToken = computed(
   () => transferênciaEmFoco?.value?.bloco_nota_token,
 );
-const tipoNotaId = ref(null);
-
-watch(tipoNotaId, (novoValor) => {
-  blocoStore.buscarTudo(blocosToken.value, {
-    status: statusSelecionado.value,
-    tipoNotaId: novoValor,
-  });
-});
 
 const camposPermitidos = computed(() => ({
   email: listaTipo.value.find(
-    (tipo) => tipo.id === tipoNotaId.value && tipo.permite_email,
+    (tipo) => tipo.id === values.tipo_nota_id && tipo.permite_email,
   ),
   revisao: listaTipo.value.find(
-    (tipo) => tipo.id === tipoNotaId.value && tipo.permite_revisao,
+    (tipo) => tipo.id === values.tipo_nota_id && tipo.permite_revisao,
   ),
   enderecamento: listaTipo.value.find(
-    (tipo) => tipo.id === tipoNotaId.value && tipo.permite_enderecamento,
+    (tipo) => tipo.id === values.tipo_nota_id && tipo.permite_enderecamento,
   ),
 }));
 
@@ -177,7 +169,6 @@ if (props.notaId) {
             :schema="schema"
           />
           <Field
-            v-model="tipoNotaId"
             name="tipo_nota_id"
             as="select"
             class="inputtext light mb1"
