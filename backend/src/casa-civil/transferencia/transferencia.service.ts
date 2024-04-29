@@ -1,11 +1,10 @@
 import { HttpException, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { Prisma, WorkflowResponsabilidade } from '@prisma/client';
+import { Prisma } from '@prisma/client';
 import { TarefaCronogramaDto } from 'src/common/dto/TarefaCronograma.dto';
 import { PaginatedDto } from 'src/common/dto/paginated.dto';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
 import { UploadService } from 'src/upload/upload.service';
-import { WorkflowService } from 'src/workflow/configuracao/workflow.service';
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import { BlocoNotaService } from '../../bloco-nota/bloco-nota/bloco-nota.service';
 import { PrismaService } from '../../prisma/prisma.service';
@@ -32,8 +31,7 @@ export class TransferenciaService {
         private readonly prisma: PrismaService,
         private readonly uploadService: UploadService,
         private readonly jwtService: JwtService,
-        private readonly blocoNotaService: BlocoNotaService,
-        private readonly workflowService: WorkflowService
+        private readonly blocoNotaService: BlocoNotaService
     ) {}
 
     async createTransferencia(dto: CreateTransferenciaDto, user: PessoaFromJwt): Promise<RecordWithId> {
@@ -141,8 +139,6 @@ export class TransferenciaService {
                     },
                     select: { id: true },
                 });
-
-                if (workflow_id) await this.startWorkflow(transferencia.id, workflow_id, dto, prismaTxn, user);
 
                 return transferencia;
             }
@@ -295,32 +291,6 @@ export class TransferenciaService {
                             pendente_preenchimento_valores: false,
                         },
                     });
-                }
-
-                if (!updatedSelf.workflow_id) {
-                    const workflow = await prismaTxn.workflow.findFirst({
-                        where: {
-                            transferencia_tipo_id: self.tipo_id,
-                            removido_em: null,
-                            ativo: true,
-                        },
-                        select: {
-                            id: true,
-                        },
-                    });
-                    const workflow_id: number | null = workflow?.id ?? null;
-
-                    const workflowJaAtivo = await prismaTxn.transferenciaAndamento.count({
-                        where: { transferencia_id: transferencia.id },
-                    });
-                    if (workflow_id && !workflowJaAtivo) {
-                        await prismaTxn.transferencia.update({
-                            where: { id },
-                            data: { workflow_id: workflow_id },
-                        });
-
-                        await this.startWorkflow(id, workflow_id, dto, prismaTxn, user);
-                    }
                 }
 
                 return transferencia;
@@ -924,85 +894,5 @@ export class TransferenciaService {
             status_cronograma: transferenciaCronograma.status_cronograma,
             nivel_maximo_tarefa: transferenciaCronograma.transferencia!.nivel_maximo_tarefa,
         };
-    }
-
-    private async startWorkflow(
-        transferencia_id: number,
-        workflow_id: number,
-        dto: CreateTransferenciaDto | UpdateTransferenciaDto,
-        prismaTxn: Prisma.TransactionClient,
-        user: PessoaFromJwt
-    ) {
-        const workflow = await this.workflowService.findOne(workflow_id, undefined);
-
-        // Caso seja a primeira fase, já é iniciada.
-        // Ou seja, o timestamp de data_inicio é preenchido.
-        let primeiraFase: boolean = true;
-
-        for (const fluxo of workflow.fluxo) {
-            for (const fase of fluxo.fases) {
-                // Caso a fase seja de responsabilidade própria.
-                // Deve ser iniciada já sob a Casa Civil.
-                let orgao_id: number | null = null;
-                if (fase.responsabilidade == WorkflowResponsabilidade.Propria) {
-                    const orgaoCasaCivil = await prismaTxn.orgao.findFirst({
-                        where: {
-                            removido_em: null,
-                            sigla: 'SERI',
-                        },
-                        select: {
-                            id: true,
-                        },
-                    });
-                    if (!orgaoCasaCivil)
-                        throw new HttpException(
-                            'Fase é de responsabilidade própria, mas não foi encontrado órgão da Casa Civil',
-                            400
-                        );
-
-                    orgao_id = orgaoCasaCivil.id;
-                }
-
-                const jaExiste = await prismaTxn.transferenciaAndamento.count({
-                    where: {
-                        removido_em: null,
-                        transferencia_id: transferencia_id,
-                        workflow_etapa_id: fluxo.workflow_etapa_de!.id,
-                        workflow_fase_id: fase.fase!.id,
-                    },
-                });
-
-                if (!jaExiste) {
-                    await prismaTxn.transferenciaAndamento.create({
-                        data: {
-                            transferencia_id: transferencia_id,
-                            workflow_etapa_id: fluxo.workflow_etapa_de!.id, // Sempre será o "dê" do "dê-para".
-                            workflow_fase_id: fase.fase!.id,
-                            orgao_responsavel_id: orgao_id,
-                            data_inicio: primeiraFase ? new Date(Date.now()) : null,
-                            criado_por: user.id,
-                            criado_em: new Date(Date.now()),
-
-                            tarefas: {
-                                createMany: {
-                                    data: fase.tarefas.map((t) => {
-                                        return {
-                                            workflow_tarefa_fluxo_id: t.workflow_tarefa!.id,
-                                            criado_por: user.id,
-                                            criado_em: new Date(Date.now()),
-                                        };
-                                    }),
-                                },
-                            },
-                        },
-                    });
-                }
-
-                primeiraFase = false;
-            }
-        }
-        console.log('======================');
-        await prismaTxn.$queryRaw`CALL create_workflow_cronograma(${transferencia_id}::int, ${workflow_id}::int);`;
-        console.log('======================');
     }
 }

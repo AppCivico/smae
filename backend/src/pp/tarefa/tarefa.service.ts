@@ -1148,7 +1148,7 @@ export class TarefaService {
                     delete dto.tarefa_pai_id;
                 }
 
-                await prismaTx.tarefa.update({
+                const updatedSelf = await prismaTx.tarefa.update({
                     where: {
                         id: tarefa.id,
                     },
@@ -1157,7 +1157,43 @@ export class TarefaService {
                         dependencias: undefined,
                         atualizado_em: now,
                     },
+                    select: {
+                        transferencia_fase_id: true,
+                        transferencia_tarefa_id: true,
+
+                        tarefa_cronograma: {
+                            select: {
+                                transferencia_id: true,
+                            },
+                        },
+                    },
                 });
+
+                // Caso seja uma tarefa que vem do Workflow.
+                // E o termino_real for definido.
+                // As mudanças devem refletir no workflow.
+                if (dto.termino_real != undefined && updatedSelf.tarefa_cronograma.transferencia_id) {
+                    if (updatedSelf.transferencia_fase_id) {
+                        // TODO? tratar casos de data_inicio null em transferencia_andamento
+                        await prismaTx.transferenciaAndamento.update({
+                            where: { id: updatedSelf.transferencia_fase_id },
+                            data: {
+                                data_termino: dto.termino_real ?? null,
+                                atualizado_em: new Date(Date.now()),
+                                atualizado_por: user.id,
+                            },
+                        });
+                    } else if (updatedSelf.transferencia_tarefa_id) {
+                        await prismaTx.transferenciaAndamentoTarefa.update({
+                            where: { id: updatedSelf.transferencia_tarefa_id },
+                            data: {
+                                feito: dto.termino_real != null ? true : false,
+                                atualizado_em: new Date(Date.now()),
+                                atualizado_por: user.id,
+                            },
+                        });
+                    }
+                }
 
                 return { id: tarefa.id };
             },
