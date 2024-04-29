@@ -131,6 +131,9 @@ export default {
           component: NotasLista,
           meta: {
             título: 'Notas',
+            rotasParaMigalhasDePão: [
+              'TransferenciasVoluntariasListar',
+            ],
           },
         },
         {
@@ -144,6 +147,7 @@ export default {
           meta: {
             título: 'Nota',
             rotasParaMigalhasDePão: [
+              'TransferenciasVoluntariasListar',
               'notasListar',
             ],
           },
