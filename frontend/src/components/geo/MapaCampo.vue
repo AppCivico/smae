@@ -60,7 +60,12 @@ const valoresIniciais = {};
 const buscandoEndereços = ref(false);
 const ediçãoDeEndereçoAberta = ref(-1);
 const erroNaBuscaDeEndereço = ref(null);
+
+const modoDeBusca = ref('termo');
 const termoDeBusca = ref('');
+const latitudeDeBusca = ref(null);
+const longitudeDeBusca = ref(null);
+
 const sugestãoSelecionada = ref(null);
 const sugestõesDeEndereços = ref([]);
 const logradouroCoordenadas = ref([]);
@@ -154,39 +159,60 @@ async function preencherFormulário(item) {
 }
 
 async function buscarEndereço(valor) {
-  const { valid: buscaVálida } = await validateField('termo_de_busca');
+  erroNaBuscaDeEndereço.value = null;
+  sugestãoSelecionada.value = null;
+  sugestõesDeEndereços.value.splice(0, sugestõesDeEndereços.value.length);
+  buscandoEndereços.value = true;
 
-  if (buscaVálida) {
-    erroNaBuscaDeEndereço.value = null;
-    sugestãoSelecionada.value = null;
-    sugestõesDeEndereços.value.splice(0, sugestõesDeEndereços.value.length);
-    logradouroCoordenadas.value.splice(0, logradouroCoordenadas.value.length);
-    buscandoEndereços.value = true;
-
-    redefinirFormulário();
-
-    try {
-      const { linhas } = await requestS.post(`${baseUrl}/geolocalizar`, {
+  redefinirFormulário();
+  try {
+    const { linhas } = Array.isArray(valor)
+      ? await requestS.post(`${baseUrl}/geolocalizar-reverso`, {
+        tipo: 'Endereco',
+        lat: valor[0],
+        long: valor[1],
+      }, false)
+      : await requestS.post(`${baseUrl}/geolocalizar`, {
         tipo: 'Endereco',
         busca_endereco: valor,
       }, false);
 
-      if (Array.isArray(linhas)) {
-        sugestõesDeEndereços.value = linhas;
+    if (Array.isArray(linhas)) {
+      sugestõesDeEndereços.value = linhas;
 
-        if (linhas.length === 1) {
-          preencherFormulário(linhas[0]);
-        } else if (!linhas.length) {
-          erroNaBuscaDeEndereço.value = 'Sem resultados';
-        }
-      } else {
-        throw new Error('Lista de endereços fora do formato esperado');
+      if (linhas.length === 1) {
+        [sugestãoSelecionada.value] = linhas;
+
+        preencherFormulário(linhas[0]);
+      } else if (!linhas.length) {
+        erroNaBuscaDeEndereço.value = 'Sem resultados';
       }
-    } catch (erro) {
-      erroNaBuscaDeEndereço.value = erro;
-    } finally {
-      buscandoEndereços.value = false;
+    } else {
+      throw new Error('Lista de endereços fora do formato esperado');
     }
+  } catch (erro) {
+    erroNaBuscaDeEndereço.value = erro;
+  } finally {
+    buscandoEndereços.value = false;
+  }
+}
+
+async function buscarPorTermo(termo) {
+  const { valid: buscaVálida } = await validateField('termo_de_busca');
+
+  if (buscaVálida) {
+    buscarEndereço(termo);
+  }
+}
+
+async function buscarPorCoordenadas(latLong) {
+  const [validaçãoDeLat, validaçãoDeLong] = await Promise.all([
+    validateField('latitude_de_busca'),
+    validateField('longitude_de_busca'),
+  ]);
+
+  if (validaçãoDeLat.valid && validaçãoDeLong.valid) {
+    buscarEndereço(latLong);
   }
 }
 
@@ -354,7 +380,30 @@ const formulárioSujo = useIsFormDirty();
       :disabled="isSubmitting || buscandoEndereços"
       @submit.prevent="onSubmit"
     >
-      <div class="flex g2 flexwrap">
+      <div class="flex g1 flexwrap mb1">
+        <legend class="label fb100 mb0">
+          Buscar por
+        </legend>
+        <label class="f1 tc300">
+          <input
+            v-model="modoDeBusca"
+            type="radio"
+            class="inputcheckbox"
+            value="termo"
+          ><span>termo</span></label>
+        <label class="f1 tc300">
+          <input
+            v-model="modoDeBusca"
+            type="radio"
+            class="inputcheckbox"
+            value="coordenadas"
+          ><span>coordenadas</span></label>
+      </div>
+
+      <div
+        v-if="modoDeBusca === 'termo'"
+        class="flex g2 flexwrap"
+      >
         <div class="f1 mb1">
           <LabelFromYup
             name="termo_de_busca"
@@ -371,7 +420,7 @@ const formulárioSujo = useIsFormDirty();
             :class="{
               loading: buscandoEndereços,
             }"
-            @keypress.enter.prevent="buscarEndereço(termoDeBusca)"
+            @keypress.enter.prevent="buscarPorTermo(termoDeBusca)"
           />
 
           <ErrorMessage
@@ -379,13 +428,6 @@ const formulárioSujo = useIsFormDirty();
             name="termo_de_busca"
             class="error-msg"
           />
-
-          <div
-            v-else-if="erroNaBuscaDeEndereço || buscandoEndereços"
-            class="error-msg mb1"
-          >
-            {{ erroNaBuscaDeEndereço }}
-          </div>
         </div>
 
         <div class="center">
@@ -393,18 +435,94 @@ const formulárioSujo = useIsFormDirty();
             type="button"
             class="btn small bgnone outline mt2"
             :disabled="isSubmitting"
-            @click="buscarEndereço(termoDeBusca)"
+            @click="buscarPorTermo(termoDeBusca)"
           >
-            Procurar no mapa
+            Procurar
           </button>
         </div>
       </div>
+
+      <div
+        v-if="modoDeBusca === 'coordenadas'"
+        class="flex g2 flexwrap"
+      >
+        <div class="f1 mb1">
+          <LabelFromYup
+            name="latitude_de_busca"
+            :schema="schema"
+          />
+
+          <Field
+            v-model="latitudeDeBusca"
+            name="latitude_de_busca"
+            type="search"
+            class="inputtext light mb1"
+            autocomplete="street-address"
+            minlength="3"
+            :class="{
+              loading: buscandoEndereços,
+            }"
+            @keypress.enter.prevent="buscarPorCoordenadas([latitudeDeBusca, longitudeDeBusca])"
+          />
+
+          <ErrorMessage
+            v-if="errors.latitude_de_busca"
+            name="latitude_de_busca"
+            class="error-msg"
+          />
+        </div>
+        <div class="f1 mb1">
+          <LabelFromYup
+            name="longitude_de_busca"
+            :schema="schema"
+          />
+
+          <Field
+            v-model="longitudeDeBusca"
+            name="longitude_de_busca"
+            type="search"
+            class="inputtext light mb1"
+            autocomplete="street-address"
+            minlength="3"
+            :class="{
+              loading: buscandoEndereços,
+            }"
+            @keypress.enter.prevent="buscarPorCoordenadas([latitudeDeBusca, longitudeDeBusca])"
+          />
+
+          <ErrorMessage
+            v-if="errors.longitude_de_busca"
+            name="longitude_de_busca"
+            class="error-msg"
+          />
+        </div>
+
+        <div class="center">
+          <button
+            type="button"
+            class="btn small bgnone outline mt2"
+            :disabled="isSubmitting && !errors.latitude_de_busca && !errors.longitude_de_busca"
+            @click="buscarPorCoordenadas([latitudeDeBusca, longitudeDeBusca])"
+          >
+            Procurar
+          </button>
+        </div>
+      </div>
+
+      <div
+        v-if="erroNaBuscaDeEndereço || buscandoEndereços"
+        class="error-msg mb1 fb100"
+      >
+        {{ erroNaBuscaDeEndereço }}
+      </div>
+
+      <hr class="mb1">
 
       <Transition
         name="expand"
       >
         <table
-          v-if="sugestõesDeEndereços.length"
+          v-if="sugestõesDeEndereços.length > 1"
           class="mb1 tablemain"
         >
           <col class="col--botão-de-ação">
@@ -491,7 +609,8 @@ const formulárioSujo = useIsFormDirty();
       >
         <div class="mb1">
           <MapaExibir
-            v-if="logradouroCoordenadas[0] && logradouroCoordenadas[1]"
+            v-if="![null, undefined].includes(logradouroCoordenadas[0])
+              && ![null, undefined].includes(logradouroCoordenadas[1])"
             v-model="logradouroCoordenadas"
             :marcador="marcador"
             :polígonos="camadasSelecionadas"
@@ -504,6 +623,7 @@ const formulárioSujo = useIsFormDirty();
             }"
             zoom="16"
             :opções-do-marcador="{ draggable: true }"
+            @marcador-foi-movido="buscarPorCoordenadas"
           />
 
           <dl class="flex flexwrap g2 mb1">
