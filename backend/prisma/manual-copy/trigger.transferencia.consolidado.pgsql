@@ -36,7 +36,7 @@ DECLARE
 BEGIN
 
     select transferencia_id into v_transferencia_id
-    from tarefa_cronograma where tarefa_cronograma_id = NEW.tarefa_cronograma_id;
+    from tarefa_cronograma where id = NEW.tarefa_cronograma_id;
 
     IF (transferencia_id IS NOT NULL) THEN
         CALL add_refresh_transferencia_task(v_transferencia_id);
