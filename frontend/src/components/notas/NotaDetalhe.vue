@@ -1,18 +1,29 @@
 <script setup>
 import { useBlocoDeNotasStore } from '@/stores/blocoNotas.store';
+import { useTipoDeNotasStore } from '@/stores/tipoNotas.store';
 import { storeToRefs } from 'pinia';
+
+const tipoStore = useTipoDeNotasStore();
+const { lista: listaTipo } = storeToRefs(tipoStore);
 
 const blocoStore = useBlocoDeNotasStore();
 const { emFoco } = storeToRefs(blocoStore);
+
 const props = defineProps({
   notaId: {
     type: String,
     default: '',
   },
 });
+
 if (props.notaId) {
   blocoStore.buscarItem(props.notaId);
 }
+
+if (listaTipo.value.length === 0) {
+  tipoStore.buscarTudo();
+}
+
 </script>
 <template>
   <MigalhasDePão class="mb1" />
@@ -44,17 +55,12 @@ if (props.notaId) {
     <div class="f1">
       <dt>Rever em</dt>
       <dd>
-        {{ emFoco?.rever_em ? new Date(emFoco?.rever_em).toLocaleDateString("pt-BR")
-          : " - " }}
+        {{
+          emFoco?.rever_em
+            ? new Date(emFoco?.rever_em).toLocaleDateString("pt-BR")
+            : " - "
+        }}
       </dd>
-    </div>
-    <div class="f1">
-      <dt>Status</dt>
-      <dd>{{ emFoco?.status }}</dd>
-    </div>
-    <div class="f1">
-      <dt>Órgão responsável</dt>
-      <dd>{{ emFoco?.orgao_responsavel?.sigla }}</dd>
     </div>
     <div class="f1">
       <dt>Data de ordenacao</dt>
@@ -67,10 +73,28 @@ if (props.notaId) {
       </dd>
     </div>
     <div class="f1">
+      <dt>Órgão responsável</dt>
+      <dd>{{ emFoco?.orgao_responsavel?.sigla }}</dd>
+    </div>
+    <div class="f1">
       <dt>Pessoa responsável</dt>
       <dd>{{ emFoco?.pessoa_responsavel?.nome_exibicao }}</dd>
     </div>
     <div class="f1">
+      <dt>Status</dt>
+      <dd>{{ emFoco?.status.replace(/_/g, " ") }}</dd>
+    </div>
+    <div class="f1">
+      <dt>Dispara e-mail</dt>
+      <dd>{{ emFoco?.dispara_email ? "Sim" : "Não" }}</dd>
+    </div>
+    <div class="f1">
+      <dt>Tipo</dt>
+      <dd>
+        {{ listaTipo?.find((tipo) => tipo.id === emFoco?.tipo_nota_id)?.codigo }}
+      </dd>
+    </div>
+    <div class="enderecamento">
       <dt>Endereçamentos</dt>
       <div v-if="emFoco?.enderecamentos.length > 0">
         <div
@@ -81,7 +105,9 @@ if (props.notaId) {
           <dd class="orgao">
             {{ enderecamento?.orgao_enderecado.sigla }}
           </dd>
-          <dd>&nbsp;{{ ' - ' + enderecamento?.pessoa_enderecado?.nome_exibicao }}</dd>
+          <dd>
+            &nbsp;{{ " - " + enderecamento?.pessoa_enderecado?.nome_exibicao }}
+          </dd>
         </div>
       </div>
       <div v-else>
@@ -96,6 +122,7 @@ h3 {
 }
 dl div {
   min-width: 300px;
+  max-width: 300px;
 }
 
 dl div dt {
@@ -105,5 +132,9 @@ dl div dt {
 .orgao {
   font-weight: 600;
   margin-bottom: 5px;
+}
+
+.enderecamento {
+  min-width: 600px;
 }
 </style>
