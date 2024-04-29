@@ -237,7 +237,7 @@ function criarPolígono(dadosDoPolígono) {
     });
   }
 
-  polígonosNoMapa.push(polígono.id);
+  polígonosNoMapa.push(polígono);
 }
 
 function chamarDesenhoDePolígonosNovos(polígonos) {
