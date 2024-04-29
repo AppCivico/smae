@@ -327,7 +327,6 @@ async function iniciarMapa(element) {
   if (props.camadas.length) {
     await prepararCamadas(props.camadas);
 
-    chamarDesenhoDePolígonosNovos(props.camadas);
   }
 }
 
