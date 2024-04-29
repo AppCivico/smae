@@ -5547,7 +5547,7 @@ model NotaEnderecamentoResposta {
 }
 
 model TransferenciaStatusConsolidado {
-    id                Int       @id
+    id                Int       @id @default(autoincrement())
     transferencia_id  Int
     situacao          String
     orgaos_envolvidos Int[]
