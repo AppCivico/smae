@@ -16,7 +16,7 @@ export class WorkflowAndamentoService {
         private readonly workflowService: WorkflowService
     ) {}
 
-    async findAndamento(filter: FilterWorkflowAndamentoDto, user: PessoaFromJwt): Promise<WorkflowAndamentoDto> {
+    async findAndamento(filter: FilterWorkflowAndamentoDto, user: PessoaFromJwt): Promise<WorkflowAndamentoDto | void> {
         if (!filter.transferencia_id)
             throw new HttpException('transferencia_id| É obrigatório para uso deste endpoint.', 400);
 
@@ -43,6 +43,10 @@ export class WorkflowAndamentoService {
             },
         });
         if (!transferencia || !transferencia.workflow_id) throw new Error('Transferência inválida ou não configurada');
+
+        if (!transferencia.andamentoWorkflow.length) {
+            return;
+        }
 
         if (transferencia.andamentoWorkflow.length > 1)
             throw new Error('Erro interno ao definir etapa relevante para acompanhamento');
