@@ -223,6 +223,13 @@ export class WorkflowAndamentoFaseService {
                         id: true,
                         orgao_responsavel_id: true,
                         feito: true,
+                        tarefaEspelhada: {
+                            select: {
+                                id: true,
+                                termino_real: true,
+                                percentual_concluido: true,
+                            },
+                        },
                     },
                 });
                 if (!transferenciaAndamentoTarefaRow)
@@ -253,6 +260,17 @@ export class WorkflowAndamentoFaseService {
                                 feito: tarefa.concluida,
                                 orgao_responsavel_id: tarefa.orgao_responsavel_id,
                                 atualizado_por: user.id,
+                                atualizado_em: new Date(Date.now()),
+                            },
+                        })
+                    );
+
+                    operations.push(
+                        prismaTxn.tarefa.update({
+                            where: { id: transferenciaAndamentoTarefaRow.tarefaEspelhada[0].id },
+                            data: {
+                                termino_real: tarefa.concluida == true ? new Date(Date.now()) : null,
+                                percentual_concluido: tarefa.concluida == true ? 100 : 0,
                                 atualizado_em: new Date(Date.now()),
                             },
                         })
@@ -305,6 +323,12 @@ export class WorkflowAndamentoFaseService {
                                 workflow_id: true,
                             },
                         },
+
+                        tarefaEspelhada: {
+                            select: {
+                                id: true,
+                            },
+                        },
                     },
                 });
                 if (!self) throw new Error('Não foi encontrada um registro de andamento para esta fase');
@@ -326,6 +350,15 @@ export class WorkflowAndamentoFaseService {
                     },
                 });
 
+                await prismaTxn.tarefa.update({
+                    where: { id: self.tarefaEspelhada[0].id },
+                    data: {
+                        percentual_concluido: 100,
+                        termino_real: new Date(Date.now()),
+                        atualizado_em: new Date(Date.now()),
+                    },
+                });
+
                 return { id: self.id };
             }
         );
@@ -336,23 +369,15 @@ export class WorkflowAndamentoFaseService {
     async iniciarFase(dto: WorkflowFinalizarIniciarFaseDto, user: PessoaFromJwt): Promise<RecordWithId> {
         const updated = await this.prisma.$transaction(
             async (prismaTxn: Prisma.TransactionClient): Promise<RecordWithId> => {
-                // Verificando se fase já foi iniciada.
-                const proxFaseJaExiste = await prismaTxn.transferenciaAndamento.count({
-                    where: {
-                        transferencia_id: dto.transferencia_id,
-                        workflow_fase_id: dto.fase_id,
-                        removido_em: null,
-                    },
-                });
-                if (proxFaseJaExiste) throw new HttpException('Fase já foi iniciada', 400);
-
                 // Buscando fase atual.
                 const faseAtual = await prismaTxn.transferenciaAndamento.findFirst({
                     where: {
                         transferencia_id: dto.transferencia_id,
                         removido_em: null,
+                        data_inicio: { not: null },
+                        data_termino: { not: null },
                     },
-                    orderBy: { id: 'desc' },
+                    orderBy: { data_termino: 'desc' },
                     select: {
                         id: true,
                         workflow_fase_id: true,
@@ -436,30 +461,39 @@ export class WorkflowAndamentoFaseService {
                     orgao_id = orgaoCasaCivil.id;
                 }
 
-                const andamentoNovaFase = await prismaTxn.transferenciaAndamento.create({
-                    data: {
+                const andamentoNovaFase = await prismaTxn.transferenciaAndamento.findFirst({
+                    where: {
                         transferencia_id: dto.transferencia_id,
                         workflow_etapa_id: faseAtual.workflow_etapa_id, // Aqui não tem problema reaproveitar o workflow_etapa_id, pois está na mesma etapa.
                         workflow_fase_id: configFluxoFaseSeguinte.fase_id,
-                        orgao_responsavel_id: orgao_id,
-                        data_inicio: new Date(Date.now()),
-                        criado_por: user.id,
-                        criado_em: new Date(Date.now()),
-
-                        tarefas: {
-                            createMany: {
-                                data: configFluxoFaseSeguinte.tarefas.map((e) => {
-                                    return {
-                                        workflow_tarefa_fluxo_id: e.workflow_tarefa.id,
-                                        criado_por: user.id,
-                                        criado_em: new Date(Date.now()),
-                                    };
-                                }),
-                            },
-                        },
+                        data_inicio: null,
                     },
                     select: {
                         id: true,
+                        tarefaEspelhada: {
+                            select: {
+                                id: true,
+                            },
+                        },
+                    },
+                });
+                if (!andamentoNovaFase) throw new HttpException('Erro interno, fase já deveria estar populada.', 400);
+
+                await prismaTxn.transferenciaAndamento.update({
+                    where: { id: andamentoNovaFase.id },
+                    data: {
+                        data_inicio: new Date(Date.now()),
+                        orgao_responsavel_id: orgao_id,
+                        atualizado_em: new Date(Date.now()),
+                        atualizado_por: user.id,
+                    },
+                });
+
+                await prismaTxn.tarefa.update({
+                    where: { id: andamentoNovaFase.tarefaEspelhada[0].id },
+                    data: {
+                        inicio_real: new Date(Date.now()),
+                        atualizado_em: new Date(Date.now()),
                     },
                 });
 

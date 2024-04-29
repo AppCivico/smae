@@ -3404,6 +3404,15 @@ model Tarefa {
     RiscoTarefa RiscoTarefa[]
     AvisoEmail  AvisoEmail[]
 
+    // Colunas de mapeamento para fases e tarefas do Workflow da transferência.
+    transferencia_fase_id Int?
+    transferencia_fase    TransferenciaAndamento? @relation(fields: [transferencia_fase_id], references: [id])
+
+    transferencia_tarefa_id Int?
+    transferencia_tarefa    TransferenciaAndamentoTarefa? @relation(fields: [transferencia_tarefa_id], references: [id])
+
+    @@unique([transferencia_fase_id])
+    @@unique([transferencia_tarefa_id])
     @@index([tarefa_pai_id])
     @@index([tarefa_cronograma_id, removido_em])
     @@index([tarefa_pai_id, removido_em])
@@ -5186,7 +5195,8 @@ model TransferenciaAndamento {
     atualizador Pessoa? @relation("Atualizador", fields: [atualizado_por], references: [id])
     removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
 
-    tarefas TransferenciaAndamentoTarefa[]
+    tarefas         TransferenciaAndamentoTarefa[]
+    tarefaEspelhada Tarefa[]
 
     @@index([transferencia_id, workflow_etapa_id, workflow_fase_id])
     @@map("transferencia_andamento")
@@ -5216,6 +5226,8 @@ model TransferenciaAndamentoTarefa {
     criador     Pessoa  @relation("Criador", fields: [criado_por], references: [id])
     atualizador Pessoa? @relation("Atualizador", fields: [atualizado_por], references: [id])
     removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
+
+    tarefaEspelhada Tarefa[]
 
     @@index([transferencia_andamento_id, workflow_tarefa_fluxo_id])
     @@map("transferencia_andamento_tarefa")
