@@ -91,16 +91,7 @@ export class WorkflowAndamentoService {
             },
         });
 
-        const fasesPendentesParaEtapaAtual = await this.prisma.fluxo.count({
-            where: {
-                removido_em: null,
-                workflow_id: transferencia.workflow_id,
-                fluxo_etapa_de_id: etapaAtual!.workflow_etapa_de!.id,
-            },
-        });
-
-        const pode_passar_para_proxima_etapa: boolean =
-            fasesPendentesParaEtapaAtual == 0 && fasesNaoConcluidas == 0 && possui_proxima_etapa ? true : false;
+        const pode_passar_para_proxima_etapa: boolean = fasesNaoConcluidas == 0 && possui_proxima_etapa ? true : false;
 
         return {
             ...workflow,
@@ -348,6 +339,9 @@ export class WorkflowAndamentoService {
 
                     andamentoWorkflow: {
                         orderBy: { id: 'desc' },
+                        where: {
+                            data_termino: { not: null },
+                        },
                         select: {
                             workflow_etapa_id: true,
                             data_termino: true,
@@ -360,13 +354,6 @@ export class WorkflowAndamentoService {
 
             if (!transferencia.andamentoWorkflow.length)
                 throw new HttpException('Transferência sem linhas de andamento', 400);
-            console.log(transferencia.andamentoWorkflow);
-            if (
-                transferencia.andamentoWorkflow.find((e) => {
-                    return e.data_termino == null;
-                })
-            )
-                throw new HttpException('Ainda há fase(s) abertas na etapa atual desta transferência.', 400);
 
             const etapaAtual = await prismaTxn.fluxo.findFirst({
                 where: {
@@ -452,31 +439,39 @@ export class WorkflowAndamentoService {
                         orgao_id = orgaoCasaCivil.id;
                     }
 
-                    return await prismaTxn.transferenciaAndamento.create({
-                        data: {
+                    const andamentoProxEtapa = await prismaTxn.transferenciaAndamento.findFirst({
+                        where: {
                             transferencia_id: transferencia.id,
                             workflow_etapa_id: configProxEtapa.fluxo_etapa_de_id,
                             workflow_fase_id: primeiraFase.fase.id,
-                            orgao_responsavel_id: orgao_id,
-                            data_inicio: new Date(Date.now()),
-                            criado_por: user.id,
-                            criado_em: new Date(Date.now()),
-
-                            tarefas: {
-                                createMany: {
-                                    data: primeiraFase.tarefas.map((e) => {
-                                        return {
-                                            workflow_tarefa_fluxo_id: e.workflow_tarefa!.id,
-                                            orgao_responsavel_id:
-                                                e.responsabilidade == WorkflowResponsabilidade.Propria
-                                                    ? orgao_id
-                                                    : null,
-                                            criado_por: user.id,
-                                            criado_em: new Date(Date.now()),
-                                        };
-                                    }),
+                            data_inicio: null,
+                        },
+                        select: {
+                            id: true,
+                            tarefaEspelhada: {
+                                select: {
+                                    id: true,
                                 },
                             },
+                        },
+                    });
+                    if (!andamentoProxEtapa) throw new Error('Próxima fase já deveria estar populada.');
+
+                    await prismaTxn.tarefa.update({
+                        where: { id: andamentoProxEtapa.tarefaEspelhada[0].id },
+                        data: {
+                            inicio_real: new Date(Date.now()),
+                            atualizado_em: new Date(Date.now()),
+                        },
+                    });
+
+                    return await prismaTxn.transferenciaAndamento.update({
+                        where: { id: andamentoProxEtapa.id },
+                        data: {
+                            orgao_responsavel_id: orgao_id,
+                            data_inicio: new Date(Date.now()),
+                            atualizado_por: user.id,
+                            atualizado_em: new Date(Date.now()),
                         },
                         select: {
                             id: true,
