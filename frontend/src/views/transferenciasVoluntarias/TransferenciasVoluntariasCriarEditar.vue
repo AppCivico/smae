@@ -408,7 +408,7 @@ watch(itemParaEdição, (novosValores) => {
             setFieldValue('cargo', parlamentaresPorId[$e.target.value]?.cargo || null);
           }"
         >
-          <option :value="0">
+          <option value="">
             Selecionar
           </option>
 
