@@ -21,7 +21,7 @@
         </router-link>
       </p>
       <div class="text">
-        <p>{{ removerHtml(truncate(item.nota, 60)) }}</p>
+        <p>{{ removerHtml(truncate(item.nota, 50)) }}</p>
         <p>
           <strong>{{ formatarData(item.data_nota).diaMesAno }}</strong>
         </p>
@@ -37,7 +37,10 @@
     <div v-else-if="erro">
       Erro: {{ erro }}
     </div>
-    <div class="mt1" v-else-if="!lista.length">
+    <div
+      v-else-if="!lista.length"
+      class="mt1"
+    >
       Nenhum resultado encontrado.
     </div>
 
@@ -188,6 +191,7 @@ blocoStore.buscarTudoPanorama({ ipp: 15 });
   max-height: 28px;
   margin-bottom: 5px;
   font-size: 11px;
+  overflow: hidden;
 }
 
 p {
