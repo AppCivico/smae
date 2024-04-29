@@ -416,33 +416,58 @@ export const fase = object()
       .required('Preencha o título'),
   });
 
-export const geoLocalização = object({
-  cep: string()
-    .label('CEP')
-    .max(1024)
-    .nullable(),
-  rotulo: string()
-    .label('Rótulo para marcador')
-    .max(1024)
-    .nullable(),
-  rua: string()
-    .label('Logradouro')
-    .max(1024)
-    .required()
-    .nullable(),
-  numero: string()
-    .label('Número')
-    .max(1024)
-    .nullable(),
-  tipo: string()
-    .label('Tipo')
-    .max(1024)
-    .nullable(),
-  termo_de_busca: string()
-    .label('Termo de busca')
-    .min(3)
-    .nullable(),
-});
+export const geoLocalização = object()
+// shape() necessário para não cair num ciclo infinito com na validação recursiva
+  .shape({
+    cep: string()
+      .label('CEP')
+      .max(1024)
+      .nullable(),
+    latitude_de_busca: number()
+      .label('Latitude')
+      .max(+90)
+      .min(-90)
+      .transform((v) => (v === '' || Number.isNaN(v) ? null : v))
+      .when('longitude_de_busca', {
+        is: (longitudeDeBusca) => ![null, undefined].includes(longitudeDeBusca),
+        then: (field) => field.required(),
+        otherwise: (field) => field.nullable(),
+      }),
+    longitude_de_busca: number()
+      .label('Longitude')
+      .max(+180)
+      .min(-180)
+      .transform((v) => (v === '' || Number.isNaN(v) ? null : v))
+      .when('latitude_de_busca', {
+        is: (latitudeDeBusca) => ![null, undefined].includes(latitudeDeBusca),
+        then: (field) => field.required(),
+        otherwise: (field) => field.nullable(),
+      }),
+    rotulo: string()
+      .label('Rótulo para marcador')
+      .max(1024)
+      .nullable(),
+    rua: string()
+      .label('Logradouro')
+      .max(1024)
+      .required()
+      .nullable(),
+    numero: string()
+      .label('Número')
+      .max(1024)
+      .nullable(),
+    tipo: string()
+      .label('Tipo')
+      .max(1024)
+      .nullable(),
+    termo_de_busca: string()
+      .label('Termo de busca')
+      .min(3)
+      .nullable(),
+  // necessário para não cair num ciclo infinito com na validação recursiva
+  }, [
+    ['longitude_de_busca', 'latitude_de_busca'],
+  ]);
 
 export const geraçãoDeVariávelComposta = (tiposDeOperações = []) => object()
   .shape({
