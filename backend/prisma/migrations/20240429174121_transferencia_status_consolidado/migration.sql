@@ -3,6 +3,10 @@ TRUNCATE transferencia_status_consolidado;
 ALTER TABLE "transferencia_status_consolidado" DROP CONSTRAINT "transferencia_status_consolidado_pkey",
 ADD COLUMN     "id" INTEGER NOT NULL,
 ADD CONSTRAINT "transferencia_status_consolidado_pkey" PRIMARY KEY ("id");
+-- AlterTable
+CREATE SEQUENCE transferencia_status_consolidado_id_seq;
+ALTER TABLE "transferencia_status_consolidado" ALTER COLUMN "id" SET DEFAULT nextval('transferencia_status_consolidado_id_seq');
+ALTER SEQUENCE transferencia_status_consolidado_id_seq OWNED BY "transferencia_status_consolidado"."id";
 
 
 
