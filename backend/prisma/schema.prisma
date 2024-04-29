@@ -5547,7 +5547,8 @@ model NotaEnderecamentoResposta {
 }
 
 model TransferenciaStatusConsolidado {
-    transferencia_id  Int       @id
+    id                Int       @id
+    transferencia_id  Int
     situacao          String
     orgaos_envolvidos Int[]
     data              DateTime? @db.Date
