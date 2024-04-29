@@ -126,7 +126,7 @@ function moverMarcador(e) {
 }
 
 function marcadorFoiMovido() {
-  emits('marcadorFoiMovido');
+  emits('marcadorFoiMovido', props.modelValue);
 }
 
 // aceitar uma lista de marcadores, ao invés de um só, para a gente poder
