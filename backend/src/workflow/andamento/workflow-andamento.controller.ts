@@ -19,7 +19,7 @@ export class WorkflowAndamentoController {
     async find(
         @Query() filters: FilterWorkflowAndamentoDto,
         @CurrentUser() user: PessoaFromJwt
-    ): Promise<WorkflowAndamentoDto> {
+    ): Promise<WorkflowAndamentoDto | void> {
         return this.workflowAndamentoService.findAndamento(filters, user);
     }
 
