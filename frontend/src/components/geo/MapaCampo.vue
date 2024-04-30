@@ -243,10 +243,10 @@ const onSubmit = handleSubmit(async () => {
       tipo: 'Endereco',
       endereco: {
         properties: {
-          rua: `${carga.tipo} ${carga.rua}`,
+          rua: `${carga.tipo || ''} ${carga.rua}`.trim(),
           numero: carga.numero || undefined,
           cep: carga.cep || undefined,
-          string_endereco: `${carga.tipo} ${carga.rua}${carga.numero
+          string_endereco: `${carga.tipo || ''} ${carga.rua}${carga.numero
             ? `, ${carga.numero}`
             : ''}`.trim(),
           rotulo: carga.rotulo || '',
