@@ -81,7 +81,7 @@ $$ LANGUAGE plpgsql;
 CREATE TRIGGER trg_refresh_transferencia_insert
 AFTER INSERT ON transferencia
 FOR EACH ROW
-EXECUTE FUNCTION f_tarefa_refresh_transferencia_trigger();
+EXECUTE FUNCTION f_transferencia_refresh_trigger();
 
 CREATE TRIGGER trg_refresh_transferencia_update
 AFTER UPDATE ON transferencia
@@ -89,4 +89,4 @@ FOR EACH ROW
 WHEN (
     (OLD.removido_em IS DISTINCT FROM NEW.removido_em)
 )
-EXECUTE FUNCTION f_tarefa_refresh_transferencia_trigger();
+EXECUTE FUNCTION f_transferencia_refresh_trigger();
