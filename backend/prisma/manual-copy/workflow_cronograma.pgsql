@@ -4,7 +4,10 @@ LANGUAGE plpgsql
 AS $$
 DECLARE
     _tarefa_cronograma_id INT;
+    _orgao_seri_id INT;
 BEGIN
+    SELECT id FROM orgao WHERE sigla = 'SERI' INTO _orgao_seri_id;
+
     INSERT INTO tarefa_cronograma (transferencia_id) VALUES (_transferencia_id) RETURNING id INTO _tarefa_cronograma_id;
 
     UPDATE transferencia SET nivel_maximo_tarefa = 3 WHERE id = _transferencia_id;
@@ -21,11 +24,12 @@ BEGIN
         JOIN workflow_etapa e2 ON fluxo.fluxo_etapa_para_id = e2.id
         WHERE workflow_id = _workflow_id AND fluxo.removido_em IS NULL
     ), tarefas_etapas AS (
-        INSERT INTO tarefa (tarefa_cronograma_id, tarefa, descricao, recursos, numero, nivel)
+        INSERT INTO tarefa (tarefa_cronograma_id, tarefa, descricao, recursos, numero, nivel, orgao_id)
         SELECT
             _tarefa_cronograma_id,
             etapa_de, etapa_de, '',
-            numero, 1
+            numero, 1,
+            _orgao_seri_id
         FROM etapas
         RETURNING id, tarefa
     ), fases AS (
@@ -60,7 +64,7 @@ BEGIN
             fases.marco,
             CASE
                 WHEN fases.responsabilidade::varchar = 'Propria'
-                THEN ( SELECT id FROM orgao WHERE sigla = 'SERI' )
+                THEN _orgao_seri_id
                 ELSE NULL
             END
         FROM fases
@@ -112,7 +116,7 @@ BEGIN
             tarefas.marco,
             CASE
                 WHEN tarefas.responsabilidade::varchar = 'Propria'
-                THEN ( SELECT id FROM orgao WHERE sigla = 'SERI' )
+                THEN _orgao_seri_id
                 ELSE NULL
             END
         FROM tarefas
