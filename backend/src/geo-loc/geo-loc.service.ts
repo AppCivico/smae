@@ -33,6 +33,11 @@ export class UpsertEnderecoIdDto {
     regioes: UpsertEnderecoRegiaoDto[];
 }
 
+export class UpsertEnderecoDto {
+    enderecos: UpsertEnderecoIdDto[];
+    novos_enderecos: UpsertEnderecoIdDto[];
+}
+
 // resultado aproximado, ta bom pra distancias curtas
 function getDistance(lat1: number, lon1: number, lat2: number, lon2: number) {
     const R = 6371; // raio da terra, em km, para terror dos terraplanistas
@@ -399,8 +404,12 @@ export class GeoLocService {
         user: PessoaFromJwt,
         prismaTx: Prisma.TransactionClient,
         now: Date
-    ): Promise<UpsertEnderecoIdDto[]> {
-        if (!dto.tokens) return [];
+    ): Promise<UpsertEnderecoDto> {
+        if (!dto.tokens)
+            return {
+                novos_enderecos: [],
+                enderecos: [],
+            };
 
         dto.validaReferencia();
 
@@ -437,7 +446,8 @@ export class GeoLocService {
             },
         });
 
-        const regioes: UpsertEnderecoIdDto[] = endereco.map((endereco) => {
+        const novos: UpsertEnderecoIdDto[] = [];
+        const enderecos: UpsertEnderecoIdDto[] = endereco.map((endereco) => {
             return {
                 endereco_id: endereco.id,
                 regioes: endereco.GeoEnderecoCamada.flatMap((camada) => {
@@ -492,6 +502,8 @@ export class GeoLocService {
             // se já existe, n precisa recriar
             if (prevRelationRecords.filter((r) => r.geo_localizacao.id == end.id)[0]) continue;
 
+            novos.push(enderecos.find((r) => r.endereco_id == end.id)!);
+
             // cria o relacionamento
             await prismaTx.geoLocalizacaoReferencia.create({
                 data: {
@@ -522,7 +534,7 @@ export class GeoLocService {
             });
         }
 
-        return regioes;
+        return { enderecos: enderecos, novos_enderecos: novos };
     }
 
     async carregaReferencias(dto: FindGeoEnderecoReferenciaDto): Promise<Map<number, GeolocalizacaoDto[]>> {
