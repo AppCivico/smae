@@ -81,6 +81,7 @@ export type ListaDePrivilegios =
     | 'CadastroParlamentar.editar'
     | 'CadastroParlamentar.remover'
     | 'CadastroTransferencia.inserir'
+    | 'CadastroTransferencia.administrador'
     | 'CadastroTransferencia.listar'
     | 'CadastroTransferencia.editar'
     | 'CadastroTransferencia.remover'

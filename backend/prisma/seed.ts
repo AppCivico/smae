@@ -227,8 +227,9 @@ const PrivConfig: Record<string, false | [ListaDePrivilegios, string | false][]>
         ['SMAE.acesso_telefone', 'Ver todos os telefones do parlamentar'],
     ],
     CadastroTransferencia: [
+        ['CadastroTransferencia.administrador', 'Inserir, Listar e remover transferência de qualquer órgão'],
         ['CadastroTransferencia.editar', 'Editar Transferência'],
-        ['CadastroTransferencia.listar', 'Listar Transferência'],
+        ['CadastroTransferencia.listar', 'Listar Transferência dos órgãos ao qual pertence'],
         ['CadastroTransferencia.inserir', 'Inserir Transferência'],
         ['CadastroTransferencia.remover', 'Remover Transferência'],
     ],
@@ -529,6 +530,7 @@ const PerfilAcessoConfig: {
             'CadastroTransferencia.editar',
             'CadastroTransferencia.listar',
             'CadastroTransferencia.inserir',
+            'CadastroTransferencia.administrador',
             'CadastroTransferencia.remover',
             'CadastroWorkflows.editar',
             'CadastroWorkflows.listar',
