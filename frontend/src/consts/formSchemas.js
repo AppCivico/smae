@@ -2098,7 +2098,7 @@ export const tarefa = object()
       .min(1, 'Selecione um órgão responsável')
       .required('Escolha um órgão responsável pela tarefa'),
     percentual_concluido: number()
-      .label('Porcentual concluído')
+      .label('Percentual concluído')
       .min(0)
       .max(100)
       .transform((v) => (v === '' || Number.isNaN(v) ? null : v))
