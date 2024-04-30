@@ -124,6 +124,8 @@ function redefinirFormulário() {
 }
 
 async function preencherFormulário(item) {
+  sugestãoSelecionada.value = item;
+
   if (isArray(item?.endereco?.geometry?.coordinates)) {
     logradouroCoordenadas.value = item.endereco?.geometry?.coordinates?.toReversed();
   }
@@ -181,8 +183,6 @@ async function buscarEndereço(valor) {
       sugestõesDeEndereços.value = linhas;
 
       if (linhas.length === 1) {
-        [sugestãoSelecionada.value] = linhas;
-
         preencherFormulário(linhas[0]);
       } else if (!linhas.length) {
         erroNaBuscaDeEndereço.value = 'Sem resultados';
@@ -544,7 +544,6 @@ const formulárioSujo = useIsFormDirty();
             <td>
               <Field
                 :id="`item--${j}`"
-                v-model="sugestãoSelecionada"
                 type="radio"
                 class="mr1"
                 name="localização"
@@ -609,8 +608,7 @@ const formulárioSujo = useIsFormDirty();
       >
         <div class="mb1">
           <MapaExibir
-            v-if="![null, undefined].includes(logradouroCoordenadas[0])
-              && ![null, undefined].includes(logradouroCoordenadas[1])"
+            v-if="sugestãoSelecionada"
             v-model="logradouroCoordenadas"
             :marcador="marcador"
             :polígonos="camadasSelecionadas"
