@@ -269,8 +269,6 @@ const onSubmit = handleSubmit(async () => {
     endereçosTemporários.value[resposta.token] = cloneDeep(dadosParaEnvio);
     handleChange(model.value);
 
-    alertStore.success('Endereço salvo!');
-
     ediçãoDeEndereçoAberta.value = -1;
   } catch (error) {
     alertStore.error(error);
