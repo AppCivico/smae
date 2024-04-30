@@ -157,6 +157,8 @@ export class DistribuicaoRecursoService {
                             );
                         }
                     }
+
+                    await Promise.all(operations);
                 }
 
                 return { id: distribuicaoRecurso.id };
