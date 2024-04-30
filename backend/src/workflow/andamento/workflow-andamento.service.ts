@@ -457,10 +457,22 @@ export class WorkflowAndamentoService {
                                     id: true,
                                 },
                             },
+
+                            tarefas: {
+                                select: {
+                                    id: true,
+                                    tarefaEspelhada: {
+                                        select: {
+                                            id: true,
+                                        },
+                                    },
+                                },
+                            },
                         },
                     });
                     if (!andamentoProxEtapa) throw new Error('Próxima fase já deveria estar populada.');
 
+                    // Tarefa referente à etapa.
                     await prismaTxn.tarefa.update({
                         where: { id: andamentoProxEtapa.tarefaEspelhada[0].id },
                         data: {
@@ -468,6 +480,17 @@ export class WorkflowAndamentoService {
                             atualizado_em: new Date(Date.now()),
                         },
                     });
+
+                    // Tarefa(s) referente ao nível de tarefas.
+                    for (const tarefa of andamentoProxEtapa.tarefas) {
+                        await prismaTxn.tarefa.updateMany({
+                            where: { id: tarefa.tarefaEspelhada[0].id },
+                            data: {
+                                inicio_real: new Date(Date.now()),
+                                atualizado_em: new Date(Date.now()),
+                            },
+                        });
+                    }
 
                     return await prismaTxn.transferenciaAndamento.update({
                         where: { id: andamentoProxEtapa.id },

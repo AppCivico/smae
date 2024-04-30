@@ -487,6 +487,16 @@ export class WorkflowAndamentoFaseService {
                                 id: true,
                             },
                         },
+
+                        tarefas: {
+                            select: {
+                                tarefaEspelhada: {
+                                    select: {
+                                        id: true,
+                                    },
+                                },
+                            },
+                        },
                     },
                 });
                 if (!andamentoNovaFase) throw new HttpException('Erro interno, fase já deveria estar populada.', 400);
@@ -508,6 +518,16 @@ export class WorkflowAndamentoFaseService {
                         atualizado_em: new Date(Date.now()),
                     },
                 });
+
+                for (const tarefa of andamentoNovaFase.tarefas) {
+                    await prismaTxn.tarefa.update({
+                        where: { id: tarefa.tarefaEspelhada[0].id },
+                        data: {
+                            inicio_real: new Date(Date.now()),
+                            atualizado_em: new Date(Date.now()),
+                        },
+                    });
+                }
 
                 return { id: andamentoNovaFase.id };
             }
