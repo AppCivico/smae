@@ -40,13 +40,13 @@ export const useBlocoDeNotasStore = defineStore('blocoDeNotasStore', {
       this.chamadasPendentes.lista = false;
     },
 
-    async salvarItem(params = {}, id = 0) {
+    async salvarItem(params = {}, id = '') {
       this.chamadasPendentes.emFoco = true;
       this.erro = null;
 
       try {
-        if (params.id) {
-          await this.requestS.patch(`${baseUrl}/nota/${params.id}`, params);
+        if (id) {
+          await this.requestS.patch(`${baseUrl}/nota/${id}`, params);
         } else {
           await this.requestS.post(`${baseUrl}/nota`, params);
         }
@@ -133,6 +133,7 @@ export const useBlocoDeNotasStore = defineStore('blocoDeNotasStore', {
           } || null),
         ),
       nota: emFoco?.nota || null,
+      rever_em: dateTimeToDate(emFoco?.rever_em) || null,
       status: emFoco?.status || null,
     }),
   },
