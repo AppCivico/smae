@@ -24,7 +24,7 @@ export const useBlocoDeNotasStore = defineStore('blocoDeNotasStore', {
       this.erro = null;
       try {
         const {
-          linhas
+          linhas,
         } = await this.requestS.get(
           `${baseUrl}/nota/busca-por-bloco`,
           {
@@ -137,15 +137,3 @@ export const useBlocoDeNotasStore = defineStore('blocoDeNotasStore', {
     }),
   },
 });
-// data_nota
-// dispara_email
-// enderecamentos
-// orgao_enderecado_id
-// pessoa_enderecado_id
-// nota
-// rever_em
-// status
-// tipo_nota_id
-// Data da nota não é opcional
-// Nota não é opcional
-// Status não é opcional
