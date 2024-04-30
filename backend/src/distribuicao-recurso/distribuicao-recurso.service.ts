@@ -438,5 +438,45 @@ export class DistribuicaoRecursoService {
             }
         }
         await prismaTxn.$queryRaw`CALL create_workflow_cronograma(${transferencia_id}::int, ${workflow_id}::int);`;
+
+        // Atualizando data de início de primeiro nível.
+        const andamentoPrimeiraFase = await prismaTxn.transferenciaAndamento.findFirstOrThrow({
+            where: {
+                transferencia_id: transferencia_id,
+                data_inicio: { not: null },
+            },
+            select: {
+                tarefaEspelhada: {
+                    select: {
+                        id: true,
+                    },
+                },
+                tarefas: {
+                    select: {
+                        tarefaEspelhada: {
+                            select: {
+                                id: true,
+                            },
+                        },
+                    },
+                },
+            },
+        });
+
+        await prismaTxn.tarefa.update({
+            where: { id: andamentoPrimeiraFase.tarefaEspelhada[0].id },
+            data: {
+                inicio_real: new Date(Date.now()),
+            },
+        });
+
+        for (const tarefa of andamentoPrimeiraFase.tarefas) {
+            await prismaTxn.tarefa.update({
+                where: { id: tarefa.tarefaEspelhada[0].id },
+                data: {
+                    inicio_real: new Date(Date.now()),
+                },
+            });
+        }
     }
 }
