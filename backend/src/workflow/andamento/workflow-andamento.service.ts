@@ -233,7 +233,7 @@ export class WorkflowAndamentoService {
             data_termino: row.data_termino,
             dias_na_fase: dias_na_fase,
             concluida: row.data_termino ? true : false,
-            pode_concluir: true,
+            pode_concluir: row.data_inicio ? true : false,
 
             necessita_preencher_orgao: responsabilidadeFase == WorkflowResponsabilidade.OutroOrgao ? true : false,
 
