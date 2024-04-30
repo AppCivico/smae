@@ -171,6 +171,7 @@ export default {
         class="center"
       >
         <button
+          v-if="linha.pode_editar"
           type="button"
           class="like-a__text"
           title="Excluir"
@@ -189,7 +190,7 @@ export default {
         class="center"
       >
         <router-link
-          v-if="linha.nivel < nivelMaximoTarefa || nivelMaximoTarefa === -1"
+          v-if="linha.nivel < nivelMaximoTarefa || nivelMaximoTarefa === -1 && linha.pode_editar"
           :hidden="(!oProjetoÉPrioritário || linha.dependencias?.length)
             && $route.meta.prefixoParaFilhas !== 'TransferenciasVoluntarias'"
           :title="`Criar tarefa filha de ${linha.hierarquia}`"
@@ -215,6 +216,7 @@ export default {
         class="center"
       >
         <router-link
+          v-if="linha.pode_editar"
           :to="{
             name: $route.meta.prefixoParaFilhas + 'TarefasEditar',
             params: {
