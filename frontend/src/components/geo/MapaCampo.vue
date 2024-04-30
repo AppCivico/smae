@@ -605,7 +605,7 @@ const formulárioSujo = useIsFormDirty();
       >
         <div class="mb1">
           <MapaExibir
-            v-if="sugestãoSelecionada"
+            v-if="sugestãoSelecionada || (logradouroCoordenadas[0] && logradouroCoordenadas[1])"
             v-model="logradouroCoordenadas"
             :marcador="marcador"
             :polígonos="camadasSelecionadas"
