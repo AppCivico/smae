@@ -544,6 +544,7 @@ const PerfilAcessoConfig: {
         nome: 'Gestor de Distribuição de Recurso',
         descricao: 'Pode visualizar todas as distribuições de recurso para seu órgão.',
         privilegios: [
+            'CadastroTransferencia.listar',
             'AndamentoWorkflow.listar',
             'CadastroCronogramaTransferencia.inserir',
             'CadastroCronogramaTransferencia.listar',
