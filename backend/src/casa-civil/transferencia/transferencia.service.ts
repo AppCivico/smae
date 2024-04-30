@@ -382,6 +382,19 @@ export class TransferenciaService {
         filters: FilterTransferenciaDto,
         user: PessoaFromJwt
     ): Promise<PaginatedDto<TransferenciaDto>> {
+        // Caso seja perfil "Gestor de Distribuição de Recurso"
+        // Só deve ver as transferências do seu órgão.
+        // O campo de órgão fica na row de distribuição de recurso.
+        let filterOrgao: any = undefined;
+        if (
+            !user.hasSomeRoles(['CadastroTransferencia.inserir']) &&
+            user.hasSomeRoles(['CadastroTransferencia.listar'])
+        ) {
+            filterOrgao = {
+                some: { orgao_gestor_id: user.orgao_id },
+            };
+        }
+
         let tem_mais = false;
         let token_proxima_pagina: string | null = null;
 
@@ -408,6 +421,8 @@ export class TransferenciaService {
                 id: {
                     in: palavrasChave != undefined ? palavrasChave : undefined,
                 },
+
+                distribuicao_recursos: filterOrgao,
             },
             orderBy: [{ pendente_preenchimento_valores: 'asc' }, { ano: 'asc' }],
             skip: offset,
