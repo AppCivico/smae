@@ -1,4 +1,5 @@
 <script setup>
+import { useAuthStore } from '@/stores/auth.store';
 import esferasDeTransferencia from '@/consts/esferasDeTransferencia';
 import dinheiro from '@/helpers/dinheiro';
 import { useAlertStore } from '@/stores/alert.store';
@@ -11,6 +12,8 @@ const transferenciasVoluntarias = useTransferenciasVoluntariasStore();
 const route = useRoute();
 const router = useRouter();
 const alertStore = useAlertStore();
+const authStore = useAuthStore();
+const { temPermissãoPara } = storeToRefs(authStore);
 
 const {
   lista, chamadasPendentes, erro, paginação,
@@ -76,10 +79,11 @@ watch([
     <TítuloDePágina />
     <hr class="ml2 f1">
     <router-link
+      v-if="temPermissãoPara('CadastroTransferencia.administrador')"
       :to="{ name: 'TransferenciasVoluntariaCriar' }"
       class="btn big ml1"
     >
-      Novo transferência voluntária
+      Nova transferência
     </router-link>
   </div>
 
@@ -255,6 +259,7 @@ watch([
         </td>
         <td>
           <button
+            v-if="temPermissãoPara('CadastroTransferencia.administrador')"
             class="like-a__text"
             arial-label="excluir"
             title="excluir"
@@ -270,6 +275,7 @@ watch([
         </td>
         <td>
           <router-link
+            v-if="temPermissãoPara('CadastroTransferencia.administrador')"
             :to="{ name: 'TransferenciasVoluntariaEditar', params: { transferenciaId: item.id } }"
             class="tprimary"
           >
