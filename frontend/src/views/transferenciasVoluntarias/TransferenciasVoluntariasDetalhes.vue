@@ -3,13 +3,12 @@ import LoadingComponent from '@/components/LoadingComponent.vue';
 import dateToField from '@/helpers/dateToField';
 import dinheiro from '@/helpers/dinheiro';
 import { useAlertStore } from '@/stores/alert.store';
+import { useAuthStore } from '@/stores/auth.store';
 import { useDistribuicaoRecursosStore } from '@/stores/transferenciasDistribuicaoRecursos.store';
 import { useTransferenciasVoluntariasStore } from '@/stores/transferenciasVoluntarias.store';
 import { useWorkflowAndamentoStore } from '@/stores/workflow.andamento.store.ts';
 import { storeToRefs } from 'pinia';
 import { defineAsyncComponent } from 'vue';
-
-const alertStore = useAlertStore();
 
 const AndamentoDoWorkflow = defineAsyncComponent({
   loader: () => import('@/components/transferencia/AndamentoDoWorkflow.vue'),
@@ -23,6 +22,8 @@ const props = defineProps({
   },
 });
 
+const authStore = useAuthStore();
+const alertStore = useAlertStore();
 const TransferenciasVoluntarias = useTransferenciasVoluntariasStore();
 const distribuicaoRecursos = useDistribuicaoRecursosStore();
 const workflowAndamento = useWorkflowAndamentoStore();
@@ -34,6 +35,7 @@ const {
   inícioDeFasePermitido,
   idDaPróximaFasePendente,
 } = storeToRefs(workflowAndamento);
+const { temPermissãoPara } = storeToRefs(authStore);
 
 function iniciarFase(idDaFase) {
   alertStore.confirmAction('Tem certeza?', async () => {
@@ -65,7 +67,7 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
     <hr class="f1">
 
     <template
-      v-if="workflow"
+      v-if="temPermissãoPara('AndamentoWorkflow.listar') && workflow"
     >
       <button
         type="button"
@@ -89,7 +91,7 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
   </header>
 
   <AndamentoDoWorkflow
-    v-if="transferênciaEmFoco?.workflow_id"
+    v-if="temPermissãoPara('AndamentoWorkflow.listar') && transferênciaEmFoco?.workflow_id"
     class="mb2"
   />
 
