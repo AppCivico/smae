@@ -223,7 +223,7 @@ export class AeCronogramaTpTaskService implements TaskableService {
     }
 
     private async resolveTarefas(tarefa_cronograma_id: number, config: CreateAeCronogramaTpJobDto) {
-        const tarefas = await this.tarefaService.buscaLinhasRecalcProjecao(tarefa_cronograma_id);
+        const tarefas = await this.tarefaService.buscaLinhasRecalcProjecao(tarefa_cronograma_id, null);
         const hierarquiaRef = await this.tarefaService.tarefasHierarquia(tarefa_cronograma_id);
 
         // se for por tarefa, mostra o resumo dela + filhas
