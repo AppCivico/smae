@@ -1,4 +1,4 @@
-import { HttpException, Injectable } from '@nestjs/common';
+import { BadRequestException, HttpException, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { Prisma, WorkflowResponsabilidade } from '@prisma/client';
 import { TarefaCronogramaDto } from 'src/common/dto/TarefaCronograma.dto';
@@ -382,23 +382,33 @@ export class TransferenciaService {
         return this.jwtService.sign(opt);
     }
 
+    permissionSet(user: PessoaFromJwt) {
+        const permissionsSet: Prisma.Enumerable<Prisma.TransferenciaWhereInput> = [];
+
+        if (!user.hasSomeRoles(['CadastroTransferencia.administrador'])) {
+            if (!user.orgao_id) throw new BadRequestException('Usuário sem órgão associado.');
+
+            permissionsSet.push({
+                OR: [
+                    {
+                        distribuicao_recursos: {
+                            some: {
+                                removido_em: null,
+                                orgao_gestor_id: user.orgao_id,
+                            },
+                        },
+                    },
+                ],
+            });
+        }
+
+        return permissionsSet;
+    }
+
     async findAllTransferencia(
         filters: FilterTransferenciaDto,
         user: PessoaFromJwt
     ): Promise<PaginatedDto<TransferenciaDto>> {
-        // Caso seja perfil "Gestor de Distribuição de Recurso"
-        // Só deve ver as transferências do seu órgão.
-        // O campo de órgão fica na row de distribuição de recurso.
-        let filterOrgao: any = undefined;
-        if (
-            !user.hasSomeRoles(['CadastroTransferencia.inserir']) &&
-            user.hasSomeRoles(['CadastroTransferencia.listar'])
-        ) {
-            filterOrgao = {
-                some: { orgao_gestor_id: user.orgao_id },
-            };
-        }
-
         let tem_mais = false;
         let token_proxima_pagina: string | null = null;
 
@@ -416,6 +426,7 @@ export class TransferenciaService {
         const rows = await this.prisma.transferencia.findMany({
             where: {
                 removido_em: null,
+                AND: this.permissionSet(user),
                 esfera: filters.esfera,
                 pendente_preenchimento_valores:
                     filters.preenchimento_completo != undefined ? !filters.preenchimento_completo : undefined,
@@ -425,8 +436,6 @@ export class TransferenciaService {
                 id: {
                     in: palavrasChave != undefined ? palavrasChave : undefined,
                 },
-
-                distribuicao_recursos: filterOrgao,
             },
             orderBy: [{ pendente_preenchimento_valores: 'asc' }, { ano: 'asc' }],
             skip: offset,
@@ -556,6 +565,7 @@ export class TransferenciaService {
             where: {
                 id,
                 removido_em: null,
+                AND: this.permissionSet(user),
             },
             select: {
                 id: true,

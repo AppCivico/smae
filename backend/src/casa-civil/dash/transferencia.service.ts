@@ -94,7 +94,6 @@ export class DashTransferenciaService {
                     in: ['Em_Curso', 'Programado'],
                 },
                 removido_em: null,
-                // TODO: Implementar permissões para a transferencia da mesma forma  que foi feito para a nota
                 notaReferencia: {
                     status: {
                         in: ['Em_Curso', 'Programado'],
@@ -103,6 +102,7 @@ export class DashTransferenciaService {
                     AND: this.notaService.permissionSet(user),
                 },
                 transferencia: {
+                    AND: this.transferenciaService.permissionSet(user),
                     removido_em: null,
                     id: transferenciasIds ? { in: transferenciasIds } : undefined,
                     partido_id: filters.partido_ids ? { in: filters.partido_ids } : undefined,
