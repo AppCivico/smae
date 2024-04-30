@@ -131,13 +131,13 @@ export const useWorkflowAndamentoStore = defineStore('workflowAndamento', {
         x: WorkflowAndamentoFasesDto,
         i: number,
         lista: WorkflowAndamentoFasesDto[],
-      ) => x.andamento?.concluida && lista[i + 1]?.andamento === null)
+      ) => x.andamento?.concluida && lista[i + 1]?.andamento?.data_inicio === null)
       || false;
     },
 
     idDaPróximaFasePendente() {
       // eslint-disable-next-line max-len
-      return this.etapaCorrente?.fases?.find((x: WorkflowAndamentoFasesDto) => x.andamento === null)?.fase?.id
+      return this.etapaCorrente?.fases?.find((x: WorkflowAndamentoFasesDto) => x.andamento?.data_inicio === null)?.fase?.id
        || 0;
     },
   },
