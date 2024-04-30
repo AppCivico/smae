@@ -501,13 +501,14 @@ watch(itemParaEdição, () => {
   min-width: 18rem;
   position: relative;
   flex-grow: 1;
+  flex-basis: 0;
 
   &::after {
     position: absolute;
     content: '';
     left: 50%;
     right: -50%;
-    top: calc(@tamanho-da-bolinha *0.5 + 1rem);
+    top: calc(@tamanho-da-bolinha * 0.5 + 1rem);
     height: 2px;
     background-color: currentColor;
     margin-top: -1px;
