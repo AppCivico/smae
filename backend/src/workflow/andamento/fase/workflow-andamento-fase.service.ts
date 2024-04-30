@@ -149,7 +149,7 @@ export class WorkflowAndamentoFaseService {
                 id: true,
                 orgao_responsavel_id: true,
                 pessoa_responsavel_id: true,
-
+                data_inicio: true,
                 transferencia: {
                     select: {
                         workflow_id: true,
@@ -158,6 +158,8 @@ export class WorkflowAndamentoFaseService {
             },
         });
         if (!transferenciaAndamento) throw new Error('Não foi encontrada um registro de andamento para esta fase');
+
+        if (transferenciaAndamento.data_inicio == null) throw new HttpException('Fase deve ser iniciada.', 400);
 
         if (!transferenciaAndamento.transferencia.workflow_id)
             throw new Error('Transferência não possui configuração de Workflow.');
