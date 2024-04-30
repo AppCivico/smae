@@ -8,6 +8,7 @@ import { AvisoEmailService } from './aviso-email.service';
 import { CreateAvisoEmailDto } from './dto/create-aviso-email.dto';
 import { UpdateAvisoEmailDto } from './dto/update-aviso-email.dto';
 import { FilterAvisoEamilDto, ListAvisoEmailDto } from './entities/aviso-email.entity';
+import { Prisma } from '@prisma/client';
 
 //const roles: ListaDePrivilegios[] = [];
 
@@ -32,7 +33,15 @@ export class AvisoEmailController {
         @Query() filter: FilterAvisoEamilDto,
         @CurrentUser() user: PessoaFromJwt
     ): Promise<ListAvisoEmailDto> {
-        return { linhas: await this.avisoEmailService.findAll(filter, user) };
+        try {
+            return { linhas: await this.avisoEmailService.findAll(filter, user) };
+        } catch (error) {
+            if (error instanceof Prisma.PrismaClientKnownRequestError) {
+                if (error.code == 'P2025') return { linhas: [] };
+            }
+
+            throw error;
+        }
     }
 
     @Patch(':id')
