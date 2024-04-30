@@ -265,6 +265,18 @@ export class WorkflowAndamentoFaseService {
                         })
                     );
 
+                    const tarefaExistente = await prismaTxn.tarefa.findFirst({
+                        where: { id: transferenciaAndamentoTarefaRow.tarefaEspelhada[0].id },
+                        select: {
+                            id: true,
+                            inicio_real: true,
+                            termino_real: true,
+                        },
+                    });
+                    console.log('========================');
+                    console.log(tarefaExistente);
+                    console.log('========================');
+
                     operations.push(
                         prismaTxn.tarefa.update({
                             where: { id: transferenciaAndamentoTarefaRow.tarefaEspelhada[0].id },
