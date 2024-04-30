@@ -19,6 +19,7 @@ import { IdSigla } from '../../../common/dto/IdSigla.dto';
 import { IdNomeExibicao } from '../../../meta/entities/meta.entity';
 import { FindOneParams } from '../../../common/decorators/find-params';
 import { StringArrayTransform } from '../../../auth/transforms/string-array.transform';
+import { NumberTransform } from '../../../auth/transforms/number.transform';
 
 const TransformStatusNota = (a: TransformFnParams): StatusNota[] | undefined => {
     if (!a.value) return undefined;
@@ -77,6 +78,11 @@ export class BuscaNotaDto {
     @IsArray()
     @Transform(StringArrayTransform)
     blocos_token: string[];
+
+    @IsOptional()
+    @IsInt()
+    @Transform(NumberTransform)
+    nota_id: number | null;
 
     @IsOptional()
     @IsEnum(StatusNota, { each: true })

@@ -162,6 +162,7 @@ export class NotaService {
         const rows = await this.prisma.nota.findMany({
             where: {
                 removido_em: null,
+                id: filters.nota_id ? filters.nota_id : undefined,
                 bloco_nota_id: {
                     in: filters.blocos_token.map((b) => this.blocoService.checkToken(b)),
                 },
