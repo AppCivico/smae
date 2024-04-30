@@ -244,7 +244,11 @@ export class EtapaService {
 
             if (self.etapa_pai?.regiao && 'regiao_id' in dto && dto.regiao_id === undefined) {
                 dto.regiao_id = self.etapa_pai.regiao.id;
-            } else if (self.etapa_pai?.regiao && dto.regiao_id && dto.regiao_id !== self.regiao_id) {
+            } else if (self.etapa_pai && dto.regiao_id && dto.regiao_id !== self.regiao_id) {
+                if (!self.etapa_pai.regiao)
+                    throw new BadRequestException(
+                        'A etapa pai não possui região, que é obrigatória para o cadastro dos filhos.'
+                    );
                 // se for uma igual, tudo bem, agora se for uma diferente, precisa ser imediatamente filha
                 // do pai
                 if (self.etapa_pai.regiao.id !== dto.regiao_id) {
