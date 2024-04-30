@@ -317,7 +317,7 @@ iniciar();
     <FormErrorsList :errors="errors" />
 
     <div
-      v-if="emFoco.n_filhos_imediatos === 0"
+      v-if="emFoco.n_filhos_imediatos === 0 && emFoco.pode_editar_realizado"
       class="flex spacebetween center mb2"
     >
       <hr class="mr2 f1">
