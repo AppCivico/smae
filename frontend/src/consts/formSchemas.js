@@ -2,16 +2,16 @@
 import cargosDeParlamentar from '@/consts/cargosDeParlamentar';
 import categoriaDeTransferencia from '@/consts/categoriaDeTransferencia';
 import esferasDeTransferencia from '@/consts/esferasDeTransferencia';
-import responsabilidadeEtapaFluxo from '@/consts/responsabilidadeEtapaFluxo';
 import estadosDoBrasil from '@/consts/estadosDoBrasil';
 import interfacesDeTransferências from '@/consts/interfacesDeTransferências';
 import níveisDeRepresentatividade from '@/consts/niveisDeRepresentatividade';
 import níveisDeSuplência from '@/consts/niveisDeSuplencia';
 import regEx from '@/consts/patterns';
+import responsabilidadeEtapaFluxo from '@/consts/responsabilidadeEtapaFluxo';
+import tiposDeLogradouro from '@/consts/tiposDeLogradouro';
 import tiposDeMunicípio from '@/consts/tiposDeMunicipio';
 import tiposNaEquipeDeParlamentar from '@/consts/tiposNaEquipeDeParlamentar';
 import tiposSituacaoSchema from '@/consts/tiposSituacaoSchema';
-import tiposSituacao from '@/consts/tiposSituacao';
 import {
   array,
   boolean,
@@ -456,10 +456,10 @@ export const geoLocalização = object()
       .label('Número')
       .max(1024)
       .nullable(),
-    tipo: string()
+    tipo: mixed()
       .label('Tipo')
-      .max(1024)
-      .nullable(),
+      .oneOf(tiposDeLogradouro)
+      .required(),
     termo_de_busca: string()
       .label('Termo de busca')
       .min(3)
