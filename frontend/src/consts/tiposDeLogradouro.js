@@ -17,5 +17,4 @@ export default [
   'Via',
   'Viela',
   'Vila',
-  'Vila',
 ];
