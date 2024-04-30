@@ -42,7 +42,7 @@ const { emFoco: transferênciaEmFoco } = storeToRefs(TransferenciasVoluntarias);
 
 const blocoStore = useBlocoDeNotasStore();
 const {
-  lista: listaNotas, erro, chamadasPendentes, emFoco,
+  lista: listaNotas, erro, chamadasPendentes,
 } = storeToRefs(blocoStore);
 
 const tipoStore = useTipoDeNotasStore();
