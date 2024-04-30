@@ -267,7 +267,10 @@ export class AvisoEmailService {
                     executou_em: { lt: today },
                     AND: [
                         {
-                            OR: [{ nota_id: null }, { nota: { status: { notIn: ['Encerrado'] } } }],
+                            OR: [
+                                { nota_id: null },
+                                { nota: { status: { notIn: ['Encerrado', 'Suspenso', 'Cancelado'] } } },
+                            ],
                         },
                     ],
                 },
