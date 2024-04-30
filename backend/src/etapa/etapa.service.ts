@@ -260,8 +260,9 @@ export class EtapaService {
                             `A região da etapa precisa ser a mesma região ou ser filho imediato da região "${self.etapa_pai.regiao.descricao}"`
                         );
                 }
-            } else if (dto.regiao_id && !self.etapa_pai?.regiao) {
+            } else if (dto.regiao_id && !self.etapa_pai) {
                 // garante para os registros novos que sempre vai ter uma região iniciada com o nível do cronograma
+                // aqui sempre entra só no nivel da etapa (não tem pai)
 
                 if (!self.cronograma.nivel_regionalizacao)
                     throw new BadRequestException('O cronograma não possui nível de regionalização');
@@ -270,9 +271,9 @@ export class EtapaService {
                     where: { id: dto.regiao_id },
                     select: { nivel: true, descricao: true },
                 });
-                if (regiao.nivel < self.cronograma.nivel_regionalizacao)
+                if (regiao.nivel !== self.cronograma.nivel_regionalizacao)
                     throw new BadRequestException(
-                        `A região da etapa precisa ser de nível ${self.cronograma.nivel_regionalizacao} ou superior, região atual: ${regiao.descricao} (nível ${regiao.nivel})`
+                        `A região da etapa precisa ser de nível ${self.cronograma.nivel_regionalizacao}, região enviada: ${regiao.descricao} (nível ${regiao.nivel})`
                     );
             }
 
