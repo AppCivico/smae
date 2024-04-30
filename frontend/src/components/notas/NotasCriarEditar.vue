@@ -212,6 +212,7 @@ watch(blocosToken, (novoValor) => {
             :schema="schema"
           />
           <Field
+            :disabled="itemParaEdição.id_jwt"
             name="tipo_nota_id"
             as="select"
             class="inputtext light mb1"
