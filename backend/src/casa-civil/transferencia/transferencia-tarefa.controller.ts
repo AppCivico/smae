@@ -40,6 +40,7 @@ import { DependenciasDatasDto, TarefaDetailDto } from 'src/pp/tarefa/entities/ta
 import { TarefaService } from 'src/pp/tarefa/tarefa.service';
 import { ListTarefaTransferenciaDto } from './entities/transferencia-tarefa.dto';
 import { TransferenciaService } from './transferencia.service';
+import { Roles } from 'src/auth/decorators/roles.decorator';
 
 @Controller('transferencia-tarefa')
 @ApiTags('Transferência')
@@ -50,6 +51,7 @@ export class TransferenciaTarefaController {
     ) {}
 
     @Post(':id/tarefa')
+    @Roles('CadastroCronogramaTransferencia.inserir')
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
     async create(
@@ -63,6 +65,7 @@ export class TransferenciaTarefaController {
     }
 
     @Get(':id/tarefa')
+    @Roles('CadastroCronogramaTransferencia.listar')
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
     async findAll(
@@ -79,6 +82,7 @@ export class TransferenciaTarefaController {
     }
 
     @Get(':id/tarefas-eap')
+    @Roles('CadastroCronogramaTransferencia.listar')
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
     @ApiResponse({ status: 200, description: 'Imagem da EAP' })
@@ -105,6 +109,7 @@ export class TransferenciaTarefaController {
     }
 
     @Get(':id/tarefas-hierarquia')
+    @Roles('CadastroCronogramaTransferencia.listar')
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
     @ApiResponse({ status: 200, description: 'Responde com Record<ID_TAREFA, HIERARQUIA_NO_CRONOGRAMA>' })
@@ -115,6 +120,7 @@ export class TransferenciaTarefaController {
     }
 
     @Get(':id/tarefa/:id2')
+    @Roles('CadastroCronogramaTransferencia.listar')
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
     async findOne(@Param() params: FindTwoParams, @CurrentUser() user: PessoaFromJwt): Promise<TarefaDetailDto> {
@@ -122,6 +128,7 @@ export class TransferenciaTarefaController {
     }
 
     @Patch(':id/tarefa/:id2')
+    @Roles('CadastroCronogramaTransferencia.listar')
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
     @ApiExtraModels(UpdateTarefaDto, UpdateTarefaRealizadoDto)
@@ -157,6 +164,7 @@ export class TransferenciaTarefaController {
     }
 
     @Delete(':id/tarefa/:id2')
+    @Roles('CadastroCronogramaTransferencia.remover')
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
     @ApiNoContentResponse()
@@ -169,6 +177,7 @@ export class TransferenciaTarefaController {
     }
 
     @Post(':id/dependencias')
+    @Roles('CadastroCronogramaTransferencia.inserir')
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
     async calcula_dependencias_tarefas(

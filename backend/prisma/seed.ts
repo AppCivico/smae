@@ -237,6 +237,10 @@ const PrivConfig: Record<string, false | [ListaDePrivilegios, string | false][]>
         ['CadastroWorkflows.listar', 'Listar Workflows'],
         ['CadastroWorkflows.inserir', 'Inserir Workflows'],
         ['CadastroWorkflows.remover', 'Remover Workflows'],
+        ['AndamentoWorkflow.listar', 'Listar Andamento de Workflows'],
+        ['CadastroCronogramaTransferencia.inserir', 'Inserir tarefas do cronograma de Transferências.'],
+        ['CadastroCronogramaTransferencia.listar', 'Listar tarefas do cronograma de Transferências.'],
+        ['CadastroCronogramaTransferencia.remover', 'Remover tarefas do cronograma de Transferências.'],
     ],
     Reports: [
         ['Reports.dashboard_pdm', false], // lembrar que o delete sempre precisa vir antes do update/insert das novas
@@ -530,6 +534,19 @@ const PerfilAcessoConfig: {
             'CadastroWorkflows.listar',
             'CadastroWorkflows.inserir',
             'CadastroWorkflows.remover',
+            'CadastroCronogramaTransferencia.inserir',
+            'CadastroCronogramaTransferencia.listar',
+            'CadastroCronogramaTransferencia.remover',
+            'AndamentoWorkflow.listar',
+        ],
+    },
+    {
+        nome: 'Gestor de Distribuição de Recurso',
+        descricao: 'Pode visualizar todas as distribuições de recurso para seu órgão.',
+        privilegios: [
+            'AndamentoWorkflow.listar',
+            'CadastroCronogramaTransferencia.inserir',
+            'CadastroCronogramaTransferencia.listar',
         ],
     },
     removerNomePerfil('Técnico CP'),
