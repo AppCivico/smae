@@ -1,6 +1,6 @@
 import { HttpException, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { Prisma } from '@prisma/client';
+import { Prisma, WorkflowResponsabilidade } from '@prisma/client';
 import { TarefaCronogramaDto } from 'src/common/dto/TarefaCronograma.dto';
 import { PaginatedDto } from 'src/common/dto/paginated.dto';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
@@ -19,6 +19,7 @@ import {
 } from './dto/update-transferencia.dto';
 import { TransferenciaTipoDto } from './entities/transferencia-tipo.dto';
 import { TransferenciaAnexoDto, TransferenciaDetailDto, TransferenciaDto } from './entities/transferencia.dto';
+import { WorkflowService } from 'src/workflow/configuracao/workflow.service';
 
 class NextPageTokenJwtBody {
     offset: number;
@@ -31,7 +32,8 @@ export class TransferenciaService {
         private readonly prisma: PrismaService,
         private readonly uploadService: UploadService,
         private readonly jwtService: JwtService,
-        private readonly blocoNotaService: BlocoNotaService
+        private readonly blocoNotaService: BlocoNotaService,
+        private readonly workflowService: WorkflowService
     ) {}
 
     async createTransferencia(dto: CreateTransferenciaDto, user: PessoaFromJwt): Promise<RecordWithId> {
@@ -139,6 +141,8 @@ export class TransferenciaService {
                     },
                     select: { id: true },
                 });
+
+                if (workflow_id) await this.startWorkflow(transferencia.id, workflow_id, prismaTxn, user);
 
                 return transferencia;
             }
@@ -909,5 +913,122 @@ export class TransferenciaService {
             status_cronograma: transferenciaCronograma.status_cronograma,
             nivel_maximo_tarefa: transferenciaCronograma.transferencia!.nivel_maximo_tarefa,
         };
+    }
+
+    private async startWorkflow(
+        transferencia_id: number,
+        workflow_id: number,
+        prismaTxn: Prisma.TransactionClient,
+        user: PessoaFromJwt
+    ) {
+        const workflow = await this.workflowService.findOne(workflow_id, undefined);
+
+        // Caso seja a primeira fase, já é iniciada.
+        // Ou seja, o timestamp de data_inicio é preenchido.
+        let primeiraFase: boolean = true;
+
+        for (const fluxo of workflow.fluxo) {
+            for (const fase of fluxo.fases) {
+                // Caso a fase seja de responsabilidade própria.
+                // Deve ser iniciada já sob a Casa Civil.
+                let orgao_id: number | null = null;
+                if (fase.responsabilidade == WorkflowResponsabilidade.Propria) {
+                    const orgaoCasaCivil = await prismaTxn.orgao.findFirst({
+                        where: {
+                            removido_em: null,
+                            sigla: 'SERI',
+                        },
+                        select: {
+                            id: true,
+                        },
+                    });
+                    if (!orgaoCasaCivil)
+                        throw new HttpException(
+                            'Fase é de responsabilidade própria, mas não foi encontrado órgão da Casa Civil',
+                            400
+                        );
+
+                    orgao_id = orgaoCasaCivil.id;
+                }
+
+                const jaExiste = await prismaTxn.transferenciaAndamento.count({
+                    where: {
+                        removido_em: null,
+                        transferencia_id: transferencia_id,
+                        workflow_etapa_id: fluxo.workflow_etapa_de!.id,
+                        workflow_fase_id: fase.fase!.id,
+                    },
+                });
+
+                if (!jaExiste) {
+                    await prismaTxn.transferenciaAndamento.create({
+                        data: {
+                            transferencia_id: transferencia_id,
+                            workflow_etapa_id: fluxo.workflow_etapa_de!.id, // Sempre será o "dê" do "dê-para".
+                            workflow_fase_id: fase.fase!.id,
+                            orgao_responsavel_id: orgao_id,
+                            data_inicio: primeiraFase ? new Date(Date.now()) : null,
+                            criado_por: user.id,
+                            criado_em: new Date(Date.now()),
+
+                            tarefas: {
+                                createMany: {
+                                    data: fase.tarefas.map((t: any) => {
+                                        return {
+                                            workflow_tarefa_fluxo_id: t.workflow_tarefa!.id,
+                                            criado_por: user.id,
+                                            criado_em: new Date(Date.now()),
+                                        };
+                                    }),
+                                },
+                            },
+                        },
+                    });
+                }
+
+                primeiraFase = false;
+            }
+        }
+        await prismaTxn.$queryRaw`CALL create_workflow_cronograma(${transferencia_id}::int, ${workflow_id}::int);`;
+
+        // Atualizando data de início de primeiro nível.
+        const andamentoPrimeiraFase = await prismaTxn.transferenciaAndamento.findFirstOrThrow({
+            where: {
+                transferencia_id: transferencia_id,
+                data_inicio: { not: null },
+            },
+            select: {
+                tarefaEspelhada: {
+                    select: {
+                        id: true,
+                    },
+                },
+                tarefas: {
+                    select: {
+                        tarefaEspelhada: {
+                            select: {
+                                id: true,
+                            },
+                        },
+                    },
+                },
+            },
+        });
+
+        await prismaTxn.tarefa.update({
+            where: { id: andamentoPrimeiraFase.tarefaEspelhada[0].id },
+            data: {
+                inicio_real: new Date(Date.now()),
+            },
+        });
+
+        for (const tarefa of andamentoPrimeiraFase.tarefas) {
+            await prismaTxn.tarefa.update({
+                where: { id: tarefa.tarefaEspelhada[0].id },
+                data: {
+                    inicio_real: new Date(Date.now()),
+                },
+            });
+        }
     }
 }
