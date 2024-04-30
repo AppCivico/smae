@@ -103,6 +103,7 @@ export class DashTransferenciaService {
                     AND: this.notaService.permissionSet(user),
                 },
                 transferencia: {
+                    removido_em: null,
                     id: transferenciasIds ? { in: transferenciasIds } : undefined,
                     partido_id: filters.partido_ids ? { in: filters.partido_ids } : undefined,
                     esfera: filters.esfera ? { in: filters.esfera } : undefined,
