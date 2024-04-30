@@ -74,7 +74,6 @@ const logradouroNome = ref('');
 const logradouroNúmero = ref('');
 const logradouroTipo = ref('');
 const logradouroRótulo = ref('');
-const logradouroCamadas = ref([]);
 
 const marcador = ref([]);
 
@@ -88,7 +87,7 @@ const camadasSelecionadas = computed(() => (Array.isArray(sugestãoSelecionada.v
   : []));
 
 const {
-  errors, handleSubmit, isSubmitting, resetField, validateField, values: carga,
+  errors, handleSubmit, isSubmitting, validateField, values: carga,
 
   setFieldValue,
   setFieldError,
