@@ -1151,9 +1151,8 @@ watch(emFoco, () => {
             class="inputtext light mb1"
             :class="{ 'error': errors.previsao_inicio }"
             maxlength="10"
-            @update:model-value="values.previsao_inicio === ''
-              ? values.previsao_inicio = null
-              : null"
+            @blur="($e) => { !$e.target.value ? $e.target.value = '' : null; }"
+            @update:model-value="($v) => { setFieldValue('previsao_inicio', $v || null); }"
           />
           <ErrorMessage
             name="previsao_inicio"
@@ -1171,9 +1170,8 @@ watch(emFoco, () => {
             class="inputtext light mb1"
             :class="{ 'error': errors.previsao_termino }"
             maxlength="10"
-            @update:model-value="values.previsao_termino === ''
-              ? values.previsao_termino = null
-              : null"
+            @blur="($e) => { !$e.target.value ? $e.target.value = '' : null; }"
+            @update:model-value="($v) => { setFieldValue('previsao_termino', $v || null); }"
           />
           <ErrorMessage
             name="previsao_termino"
@@ -1516,6 +1514,8 @@ watch(emFoco, () => {
           class="inputtext light mb1"
           :class="{ 'error': errors.data_aprovacao }"
           maxlength="10"
+          @blur="($e) => { !$e.target.value ? $e.target.value = '' : null; }"
+          @update:model-value="($v) => { setFieldValue('data_aprovacao', $v || null); }"
         />
         <ErrorMessage
           name="data_aprovacao"
@@ -1536,6 +1536,8 @@ watch(emFoco, () => {
           class="inputtext light mb1"
           :class="{ 'error': errors.data_revisao }"
           maxlength="10"
+          @blur="($e) => { !$e.target.value ? $e.target.value = '' : null; }"
+          @update:model-value="($v) => { setFieldValue('data_revisao', $v || null); }"
         />
         <ErrorMessage
           name="data_revisao"
