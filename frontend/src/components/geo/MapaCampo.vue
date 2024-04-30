@@ -621,7 +621,12 @@ const formulárioSujo = useIsFormDirty();
             @marcador-foi-movido="buscarPorCoordenadas"
           />
 
-          <dl class="flex flexwrap g2 mb1">
+          <dl
+            class="flex flexwrap g2 mb1"
+            :class="{
+              loading: buscandoEndereços
+            }"
+          >
             <div class="f1 mb1">
               <dt class="t12 uc w700 mb05 tamarelo">
                 Latitude
