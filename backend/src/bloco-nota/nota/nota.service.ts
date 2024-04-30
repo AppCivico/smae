@@ -610,6 +610,7 @@ export class NotaService {
             nota: bloco.Nota[0].nota,
         };
 
+        let url: URL;
         if (bloco.bloco.startsWith('Transf:')) {
             const transferencia = await prismaTx.transferencia.findFirstOrThrow({
                 where: { id: +bloco.bloco.split(':')[1] },
@@ -617,16 +618,21 @@ export class NotaService {
             });
 
             ret.objeto = `transferência ${transferencia.identificador}`;
-            ret.link = [this.baseUrl, 'transferencias-voluntarias', transferencia.id, 'notas'].join('/');
+            url = new URL([this.baseUrl, 'transferencias-voluntarias', transferencia.id, 'notas'].join('/'));
         } else if (bloco.bloco.startsWith('Proj:')) {
             const projeto = await prismaTx.projeto.findFirstOrThrow({
                 where: { id: +bloco.bloco.split(':')[1] },
                 select: { id: true, codigo: true, nome: true },
             });
 
+            url = new URL([this.baseUrl, 'projetos', projeto.id, 'escopo'].join('/'));
             ret.objeto = `projeto ${projeto.codigo ? projeto.codigo + ' -' : ''} ${projeto.nome}`;
-            ret.link = [this.baseUrl, 'projetos', projeto.id, 'escopo'].join('/');
+        } else {
+            throw new Error(`Bloco não identificado ${bloco.bloco}`);
         }
+
+        url.searchParams.append('nota_id', notaId.toString());
+        ret.link = url.toString();
 
         return ret;
     }
