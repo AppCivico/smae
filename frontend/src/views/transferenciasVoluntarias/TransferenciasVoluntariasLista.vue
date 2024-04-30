@@ -79,7 +79,10 @@ watch([
     <TítuloDePágina />
     <hr class="ml2 f1">
     <router-link
-      v-if="temPermissãoPara('CadastroTransferencia.administrador')"
+      v-if="temPermissãoPara([
+        'CadastroTransferencia.administrador',
+        'CadastroTransferencia.inserir'
+      ]) "
       :to="{ name: 'TransferenciasVoluntariaCriar' }"
       class="btn big ml1"
     >
@@ -259,7 +262,10 @@ watch([
         </td>
         <td>
           <button
-            v-if="temPermissãoPara('CadastroTransferencia.administrador')"
+            v-if="temPermissãoPara([
+              'CadastroTransferencia.administrador',
+              'CadastroTransferencia.remover'
+            ])"
             class="like-a__text"
             arial-label="excluir"
             title="excluir"
@@ -275,7 +281,10 @@ watch([
         </td>
         <td>
           <router-link
-            v-if="temPermissãoPara('CadastroTransferencia.administrador')"
+            v-if="temPermissãoPara([
+              'CadastroTransferencia.administrador',
+              'CadastroTransferencia.editar'
+            ])"
             :to="{ name: 'TransferenciasVoluntariaEditar', params: { transferenciaId: item.id } }"
             class="tprimary"
           >
