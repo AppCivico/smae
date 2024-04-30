@@ -160,7 +160,8 @@ if (props.notaId) {
             name="data_nota"
             type="date"
             class="inputtext light"
-            placeholder="dd/mm/aaaa"
+            @blur="($e) => { !$e.target.value ? $e.target.value = '' : null; }"
+            @update:model-value="($v) => { setFieldValue('data_nota', $v || null); }"
           />
         </div>
         <div class="f1">
@@ -220,7 +221,8 @@ if (props.notaId) {
             name="rever_em"
             type="date"
             class="inputtext light"
-            placeholder="dd/mm/aaaa"
+            @blur="($e) => { !$e.target.value ? $e.target.value = '' : null; }"
+            @update:model-value="($v) => { setFieldValue('rever_em', $v || null); }"
           />
         </div>
       </div>
