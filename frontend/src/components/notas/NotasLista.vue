@@ -24,6 +24,10 @@ const status = {
     value: 'Cancelado',
     text: 'Cancelado',
   },
+  Encerrado: {
+    value: 'Encerrado',
+    text: 'Encerrado',
+  },
 };
 
 const props = defineProps({
@@ -95,7 +99,7 @@ watch(statusSelecionado, (novoValor) => {
       class="inputtext light mb1"
     >
       <option value>
-        Selecionar
+        Programadas e Em curso
       </option>
       <option
         v-for="(item, key) in Object.values(status)"
