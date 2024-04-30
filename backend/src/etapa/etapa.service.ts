@@ -580,32 +580,6 @@ export class EtapaService {
                     },
                 });
             }
-
-            // acho que esse código não é necessário, pois já sabemos que é incompatível, e precisa de update
-            // agora é só sair tentando fazer o update
-            //const etapaRoot = etapasDb.find((e) => e.etapa_pai_id === null);
-            //if (!etapaRoot) throw new BadRequestException('Etapa raiz não encontrada');
-            //if (!etapaRoot.regiao_id) throw new BadRequestException('Etapa raiz deveria ter região');
-            //console.log('etapaRoot', etapaRoot);
-            //const etapaRootRegiaoCarregou = regioesDb.find((r) => r.id === etapaRoot.regiao_id);
-            //if (!etapaRootRegiaoCarregou) {
-            //    const regiaoInfo = await prismaTx.regiao.findFirstOrThrow({
-            //        where: { id: etapaRoot.regiao_id },
-            //        select: { descricao: true },
-            //    });
-            //
-            //    let descricaoEquivalente: string = '';
-            //    for (const r of regioesDb) {
-            //        if (r.nivel === etapaRoot.nivel_regiao_ok) {
-            //            descricaoEquivalente = r.descricao || `região ${r.id}`;
-            //        }
-            //    }
-            //
-            //    if (!podeAtualizar)
-            //        throw new BadRequestException(
-            //            `Endereços não puderam ser adicionados. A região da etapa raiz (${regiaoInfo.descricao}) é incompatível com a região do novo endereço (${descricaoEquivalente}).`
-            //        );
-            //}
         }
     }
 
