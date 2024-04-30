@@ -139,7 +139,8 @@ export default {
   />
   <LoadingComponent
     v-if="projetosStore.chamadasPendentes.emFoco && $route.meta.entidadeMãe === 'projeto'"
-    class="mb2 horizontal">
+    class="mb2 horizontal"
+  >
     Salvando
   </LoadingComponent>
   <div
@@ -230,7 +231,6 @@ export default {
         <th />
         <th />
         <th />
-        <th />
         <th
           colspan="2"
           class="dado-estimado"
@@ -246,6 +246,7 @@ export default {
         <th colspan="2">
           Custo <small>(R$)</small>
         </th>
+        <th />
         <th />
         <template v-if="!apenasLeitura">
           <th />
