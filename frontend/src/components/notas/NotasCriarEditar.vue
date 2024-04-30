@@ -39,6 +39,10 @@ const status = {
     value: 'Cancelado',
     text: 'Cancelado',
   },
+  Encerrado: {
+    value: 'Encerrado',
+    text: 'Encerrado',
+  },
 };
 
 const props = defineProps({
