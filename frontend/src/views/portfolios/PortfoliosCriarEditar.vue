@@ -77,7 +77,7 @@ observadoresStore.buscarTudo();
 
   <Form
     v-if="órgãosComoLista?.length"
-    v-slot="{ errors, isSubmitting, values }"
+    v-slot="{ errors, isSubmitting, setFieldValue, values }"
     :validation-schema="schema"
     :initial-values="itemParaEdição"
     @submit="onSubmit"
@@ -133,9 +133,8 @@ observadoresStore.buscarTudo();
           class="inputtext light mb1"
           :class="{ 'error': errors.data_criacao }"
           maxlength="10"
-          @update:model-value="values.data_criacao === ''
-            ? values.data_criacao = null
-            : null"
+          @blur="($e) => { !$e.target.value ? $e.target.value = '' : null; }"
+          @update:model-value="($v) => { setFieldValue('data_criacao', $v || null); }"
         />
         <ErrorMessage
           name="data_criacao"
