@@ -146,7 +146,7 @@ export class PPProjetoService implements ReportableService {
         if (tarefaCronoId) tarefasHierarquia = await this.tarefaService.tarefasHierarquia(tarefaCronoId.id);
 
         const tarefasRows = tarefaCronoId
-            ? await this.tarefaService.buscaLinhasRecalcProjecao(tarefaCronoId.id)
+            ? await this.tarefaService.buscaLinhasRecalcProjecao(tarefaCronoId.id, null)
             : { linhas: [] };
 
         const tarefasOut: RelProjetoCronogramaDto[] = tarefasRows.linhas.map((e) => {
