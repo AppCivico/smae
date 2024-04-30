@@ -5,7 +5,7 @@ import { UpdateCronogramaEtapaDto } from 'src/cronograma-etapas/dto/update-crono
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { RecordWithId } from '../common/dto/record-with-id.dto';
 import { CreateGeoEnderecoReferenciaDto, ReferenciasValidasBase } from '../geo-loc/entities/geo-loc.entity';
-import { GeoLocService } from '../geo-loc/geo-loc.service';
+import { GeoLocService, UpsertEnderecoDto } from '../geo-loc/geo-loc.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateEtapaDto } from './dto/create-etapa.dto';
 import { FilterEtapaDto } from './dto/filter-etapa.dto';
@@ -16,6 +16,37 @@ const MSG_INI_POSTERIOR_TERM_PREV = 'A data de início previsto não pode ser po
 const MSG_INI_POSTERIOR_TERM_REAL = 'A data de início real não pode ser posterior à data de término real.';
 const MSG_TERM_ANTERIOR_INI_PREV = 'A data de término previsto não pode ser anterior à data de início previsto.';
 const MSG_TERM_ANTERIOR_INI_REAL = 'A data de término real não pode ser anterior à data de início real.';
+
+type DadosBaseRegiao = { parente_id: number | null; id: number; nivel: number; descricao: string };
+type DadosBaseEtapa = {
+    id: number;
+    titulo: string;
+    nivel_regiao_ok: number;
+    geo_loc_count: number;
+    regiao_id: number | null;
+    etapa_pai_id: number | null;
+    numero_irmao_regiao: number;
+};
+
+const findRootParent = (
+    regionId: number,
+    nivel_regionalizacao: number,
+    regioesDb: DadosBaseRegiao[]
+): DadosBaseRegiao => {
+    const region = regioesDb.find((r) => r.id === regionId);
+    if (!region) throw new Error(`Região id ${regionId} não foi carregada do banco de dados`);
+
+    // aqui ta ao mesmo tempo variavel, mas como só volta regiões nivel 2 e 3 no
+    // retorno do regiosDb, então vai ter problema se o cronograma começar em nivel 1 ou 4
+    // ainda pensando no que fazer aqui, se o nivel coloco hardcoded pra 2 já que o nivel das camadas no máximo é 2
+    // ou se altero o regioesDb pra carregar o nivel 1, por exemplo, então todo mundo de Sao-Paulo tbm teria que ser de SP
+    // mas pode ter basicamente qualquer de qualquer camada (acho que faz sentido)
+
+    console.log('region', region);
+    return region.parente_id && region.nivel > nivel_regionalizacao
+        ? findRootParent(region.parente_id, nivel_regionalizacao, regioesDb)
+        : region;
+};
 
 @Injectable()
 export class EtapaService {
@@ -247,7 +278,7 @@ export class EtapaService {
             } else if (self.etapa_pai && dto.regiao_id && dto.regiao_id !== self.regiao_id) {
                 if (!self.etapa_pai.regiao)
                     throw new BadRequestException(
-                        'A etapa pai não possui região, que é obrigatória para o cadastro dos filhos.'
+                        'A etapa pai não possui região, que é obrigatória para o cadastro dos filhos com região.'
                     );
                 // se for uma igual, tudo bem, agora se for uma diferente, precisa ser imediatamente filha
                 // do pai
@@ -265,7 +296,9 @@ export class EtapaService {
                 // aqui sempre entra só no nivel da etapa (não tem pai)
 
                 if (!self.cronograma.nivel_regionalizacao)
-                    throw new BadRequestException('O cronograma não possui nível de regionalização');
+                    throw new BadRequestException(
+                        'O cronograma não possui nível de regionalização, que é obrigatório para o cadastro de etapas com região.'
+                    );
 
                 const regiao = await prismaTx.regiao.findFirstOrThrow({
                     where: { id: dto.regiao_id },
@@ -309,16 +342,6 @@ export class EtapaService {
             if (dto.termino_real && inicioReal && dto.termino_real < inicioReal)
                 throw new BadRequestException(MSG_TERM_ANTERIOR_INI_REAL);
 
-            if (geolocalizacao) {
-                const geoDto = new CreateGeoEnderecoReferenciaDto();
-                geoDto.etapa_id = id;
-                geoDto.tokens = geolocalizacao;
-                geoDto.tipo = 'Endereco';
-
-                const regioes = await this.geolocService.upsertGeolocalizacao(geoDto, user, prismaTx, createdNow);
-                console.log(regioes);
-            }
-
             const etapaAtualizada = await prismaTx.etapa.update({
                 where: { id: id },
                 data: {
@@ -343,6 +366,11 @@ export class EtapaService {
                     id: true,
                     termino_real: true,
                     endereco_obrigatorio: true,
+                    regiao_id: true,
+                    titulo: true,
+                    regiao: {
+                        select: { id: true, descricao: true },
+                    },
                     GeoLocalizacaoReferencia: {
                         where: { removido_em: null },
                         select: { id: true },
@@ -350,16 +378,53 @@ export class EtapaService {
                 },
             });
 
+            if (geolocalizacao) {
+                const geoDto = new CreateGeoEnderecoReferenciaDto();
+                geoDto.etapa_id = id;
+                geoDto.tokens = geolocalizacao;
+                geoDto.tipo = 'Endereco';
+                const cronoNivelRegiao = self.cronograma.nivel_regionalizacao;
+
+                const regioes = await this.geolocService.upsertGeolocalizacao(geoDto, user, prismaTx, createdNow);
+
+                if (regioes.novos_enderecos.length > 0 && cronoNivelRegiao && etapaAtualizada.regiao_id) {
+                    // todos os endereços precisam ser compatíveis entre si
+                    // ou seja, se um endereço é de um município, todos os outros também precisam ser do mesmo
+                    // município ou um filho desse município
+                    const idRegioesEnderecos = regioes.enderecos.flatMap((r) => r.regioes).map((r) => r.id);
+                    const regioesDb = await this.carregaArvoreRegioes(prismaTx, idRegioesEnderecos);
+
+                    await this.validaOuAtualizaRegiaoPeloGeoLoc(
+                        regioes,
+                        cronoNivelRegiao,
+                        regioesDb,
+                        prismaTx,
+                        etapaAtualizada,
+                        createdNow
+                    );
+                }
+            }
+
             await this.updateResponsaveis(responsaveis, self, prismaTx);
 
             // apaga tudo por enquanto, não só as que têm algum crono dessa meta
             // isso aqui pq tem q cruzar com atv->ini-> chegar na meta
             await prismaTx.statusMetaCicloFisico.deleteMany();
 
+            const etapaAtualizadaGeo = await prismaTx.etapa.findFirstOrThrow({
+                where: { id: id },
+                select: {
+                    GeoLocalizacaoReferencia: {
+                        where: { removido_em: null },
+                        select: { id: true },
+                    },
+                },
+            });
+
             if (
                 etapaAtualizada.endereco_obrigatorio &&
                 etapaAtualizada.termino_real &&
-                etapaAtualizada.GeoLocalizacaoReferencia.length == 0 &&
+                etapaAtualizadaGeo.GeoLocalizacaoReferencia.length == 0 &&
                 self.GeoLocalizacaoReferencia.length > 0
             )
                 throw new HttpException(
@@ -372,7 +437,7 @@ export class EtapaService {
             // Se possuir endereço, ou seja, rows de GeoLocalizacaoReferencia
             if (
                 etapaAtualizada.endereco_obrigatorio &&
-                etapaAtualizada.GeoLocalizacaoReferencia.length === 0 &&
+                etapaAtualizadaGeo.GeoLocalizacaoReferencia.length === 0 &&
                 etapaAtualizada.termino_real !== null
             )
                 throw new HttpException('Endereço é obrigatório para adicionar a data de término.', 400);
@@ -395,6 +460,240 @@ export class EtapaService {
         }
 
         return { id };
+    }
+
+    private async validaOuAtualizaRegiaoPeloGeoLoc(
+        regioes: UpsertEnderecoDto,
+        cronoNivelRegiao: number,
+        regioesDb: DadosBaseRegiao[],
+        prismaTx: Prisma.TransactionClient,
+        etapaAtual: {
+            regiao: { id: number; descricao: string } | null;
+            id: number;
+            titulo: string | null;
+            regiao_id: number | null;
+            GeoLocalizacaoReferencia: { id: number }[];
+        },
+        now: Date
+    ) {
+        // creio que não precisamos disso
+        // const primeiroRegistro =
+        //  etapaAtualizada.GeoLocalizacaoReferencia.length == 0 && geolocalizacao.length > 0;
+        const rootParents = regioes.enderecos.map((endereco) => {
+            const highestRegionId = endereco.regioes.reduce(
+                (minId, regiao) => (regiao.nivel > minId ? regiao.id : minId),
+                0
+            );
+            const root = findRootParent(highestRegionId, cronoNivelRegiao, regioesDb);
+            return { root, regioes: endereco.regioes };
+        });
+
+        const regioesLevels: string[] = [];
+        const isValid = rootParents.every((parent) => {
+            const rootInfo = regioesDb.find((r) => r.id === parent.root.id)!;
+
+            const str: string[] = [];
+            for (const regiao of parent.regioes) {
+                const regiaoInfo = regioesDb.find((r) => r.id === regiao.id)!;
+                str.push(`${regiaoInfo.descricao} (nível ${regiaoInfo.nivel})`);
+            }
+            regioesLevels.push(`${str.join(', ')} -> ${rootInfo.descricao}`);
+            return parent.root.id === rootParents[0].root.id;
+        });
+        if (!isValid) {
+            throw new BadRequestException(
+                `Endereços não puderam ser adicionados. As regiões dos endereços são incompatíveis: ${regioesLevels.join(', ')}.`
+            );
+        }
+
+        const etapasDb = await this.carregaArvoreEtapas(prismaTx, etapaAtual.id);
+
+        let enderecoCompativel: boolean = false;
+        const dadosEtapa = etapasDb.find((e) => e.id === etapaAtual.id)!;
+
+        // se um dia entrar endereços nivel 5 no smae, mas não existir ainda na parte de camadas
+        // ai vai precisar mudar o código do regioesDb, pra carregar a arvore de regiões tanto pra cima,
+        // e depois novamente completa arvore pra baixo, semelhante ao que é feito com etapas
+        const existeEndereco = regioesDb.find((r) => r.id === dadosEtapa.regiao_id);
+        if (existeEndereco) enderecoCompativel = true;
+
+        if (!enderecoCompativel) {
+            const temFilhas = etapasDb.some((e) => e.etapa_pai_id === etapaAtual.id);
+            if (temFilhas) {
+                // aqui talvez de pra mudar, se todas as filhas tiver regiao_id==etapaAtual.regiao_id, então
+                // considerar que é possível fazer o update
+                throw new BadRequestException(
+                    `Endereços não puderam ser adicionados. A etapa atual ("${etapaAtual.titulo}" em ${etapaAtual.regiao?.descricao}) tem sub-etapas e os endereços não são compatíveis.`
+                );
+            }
+
+            const comGeoLoc = etapasDb.filter((e) => e.geo_loc_count > 0 && e.id !== etapaAtual.id);
+            if (comGeoLoc.length) {
+                const incompativeis = comGeoLoc.map((e) => e.titulo).join(', ');
+
+                throw new BadRequestException(
+                    `Endereços não puderam ser adicionados. Já existem endereços incompatíveis na mesma hierarquia (${incompativeis}). Por favor, revise e tente novamente.`
+                );
+            }
+
+            const msgErro: string[] = [];
+            let podeAtualizar: boolean = true;
+
+            const recurRoot = (etapaId: number): void => {
+                const etapa = etapasDb.find((e) => e.id === etapaId);
+                if (!etapa) throw new Error(`Etapa id ${etapaId} não foi carregada do banco de dados`);
+
+                if (etapa.numero_irmao_regiao > 0) {
+                    podeAtualizar = false;
+                    if (etapa.numero_irmao_regiao == 1) {
+                        msgErro.push(`Etapa "${etapa.titulo}" já tem 1 irmão com região`);
+                    } else {
+                        msgErro.push(`Etapa "${etapa.titulo}" já têm ${etapa.numero_irmao_regiao} irmãos com região`);
+                    }
+                    return;
+                }
+
+                if (etapa.etapa_pai_id) recurRoot(etapa.etapa_pai_id);
+
+                return;
+            };
+
+            recurRoot(etapaAtual.id);
+
+            if (!podeAtualizar) {
+                throw new BadRequestException(`Endereços não puderam ser adicionados. ${msgErro.join('. ')}`);
+            }
+
+            const comRegiao = etapasDb.filter((e) => e.regiao_id !== null);
+            for (const etapa of comRegiao) {
+                const regiaoInfo = regioesDb.find((r) => r.nivel == etapa.nivel_regiao_ok);
+                if (!regiaoInfo)
+                    throw new Error(
+                        `Região com nível ${etapa.nivel_regiao_ok} não foi encontrada com base na geolocalização`
+                    );
+
+                await prismaTx.etapa.update({
+                    where: { id: etapa.id },
+                    data: {
+                        regiao_id: regiaoInfo.id,
+                        atualizado_em: now,
+                    },
+                });
+            }
+
+            // acho que esse código não é necessário, pois já sabemos que é incompatível, e precisa de update
+            // agora é só sair tentando fazer o update
+            //const etapaRoot = etapasDb.find((e) => e.etapa_pai_id === null);
+            //if (!etapaRoot) throw new BadRequestException('Etapa raiz não encontrada');
+            //if (!etapaRoot.regiao_id) throw new BadRequestException('Etapa raiz deveria ter região');
+            //console.log('etapaRoot', etapaRoot);
+            //const etapaRootRegiaoCarregou = regioesDb.find((r) => r.id === etapaRoot.regiao_id);
+            //if (!etapaRootRegiaoCarregou) {
+            //    const regiaoInfo = await prismaTx.regiao.findFirstOrThrow({
+            //        where: { id: etapaRoot.regiao_id },
+            //        select: { descricao: true },
+            //    });
+            //
+            //    let descricaoEquivalente: string = '';
+            //    for (const r of regioesDb) {
+            //        if (r.nivel === etapaRoot.nivel_regiao_ok) {
+            //            descricaoEquivalente = r.descricao || `região ${r.id}`;
+            //        }
+            //    }
+            //
+            //    if (!podeAtualizar)
+            //        throw new BadRequestException(
+            //            `Endereços não puderam ser adicionados. A região da etapa raiz (${regiaoInfo.descricao}) é incompatível com a região do novo endereço (${descricaoEquivalente}).`
+            //        );
+            //}
+        }
+    }
+
+    private async carregaArvoreEtapas(prismaTx: Prisma.TransactionClient, idEtapa: number): Promise<DadosBaseEtapa[]> {
+        return await prismaTx.$queryRaw`
+        WITH t AS (
+            WITH RECURSIVE root_parent AS (
+                WITH RECURSIVE etapa_path AS (
+                    SELECT id, etapa_pai_id
+                    FROM etapa m
+                    WHERE m.id = ${idEtapa}::int
+                    AND m.removido_em IS NULL
+                    UNION ALL
+                    SELECT t.id, t.etapa_pai_id
+                    FROM etapa t
+                    JOIN etapa_path tp ON tp.etapa_pai_id = t.id
+                    AND t.removido_em IS NULL
+                )
+                SELECT id
+                FROM etapa_path
+                WHERE etapa_pai_id IS NULL
+            ),
+            etapa_children AS (
+                SELECT id, etapa_pai_id, 0::int AS depth
+                FROM etapa m
+                WHERE m.id IN (SELECT id FROM root_parent)
+                AND m.removido_em IS NULL
+                UNION ALL
+                SELECT t.id, t.etapa_pai_id, tp.depth + 1
+                FROM etapa t
+                JOIN etapa_children tp ON tp.id = t.etapa_pai_id
+                AND t.removido_em IS NULL
+            )
+            SELECT
+              ec.id,
+              c.nivel_regionalizacao + ec.depth as nivel_regiao_ok,
+              e.titulo,
+              e.regiao_id,
+              e.etapa_pai_id,
+              count(gf.id) as geo_loc_count
+            FROM etapa_children ec
+            JOIN etapa e ON e.id = ec.id AND e.removido_em IS NULL
+            JOIN cronograma c ON c.id = e.cronograma_id AND c.removido_em IS NULL
+            LEFT JOIN geo_localizacao_referencia gf ON gf.etapa_id = e.id AND gf.removido_em IS NULL
+            GROUP BY 1,2,3,4,5
+        ),
+        numero_irmao_regiao AS (
+            SELECT
+                t.etapa_pai_id,
+                count(1)
+            FROM t
+            WHERE t.regiao_id IS NOT NULL
+            GROUP BY 1
+        )
+        SELECT
+            t.*,
+            coalesce(n.count - 1, 0) as numero_irmao_regiao
+        FROM t
+        LEFT JOIN numero_irmao_regiao n ON n.etapa_pai_id = t.etapa_pai_id
+    `;
+    }
+
+    private async carregaArvoreRegioes(
+        prismaTx: Prisma.TransactionClient,
+        idRegioesEnderecos: number[]
+    ): Promise<DadosBaseRegiao[]> {
+        return await prismaTx.$queryRaw`
+            WITH RECURSIVE regiao_path AS (
+                SELECT id, parente_id
+                FROM regiao m
+                WHERE m.id = ANY(${idRegioesEnderecos}::integer[])
+                AND m.removido_em IS NULL
+                UNION ALL
+                SELECT t.id, t.parente_id
+                FROM regiao t
+                JOIN regiao_path tp ON tp.parente_id = t.id
+                AND t.removido_em IS NULL
+            ), dados AS (
+                SELECT
+                    id,
+                    parente_id,
+                    nivel,
+                    descricao
+                FROM regiao
+                WHERE id IN (SELECT id FROM regiao_path)
+            )
+            SELECT *
+            FROM dados`;
     }
 
     private async verificaEtapaEnderecoObrigatorioPais(
