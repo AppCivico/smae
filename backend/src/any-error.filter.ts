@@ -27,6 +27,10 @@ export class AllExceptionsFilter implements ExceptionFilter {
             ...httpResponse,
         };
 
+        if (exception instanceof Error) {
+            console.error(exception);
+        }
+
         if (ehAdmin) {
             responseBody = {
                 ...responseBody,
