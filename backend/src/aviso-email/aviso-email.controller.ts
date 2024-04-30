@@ -20,7 +20,6 @@ export class AvisoEmailController {
     @Post()
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
-    //    @Roles(...roles)
     async create(@Body() dto: CreateAvisoEmailDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
         return await this.avisoEmailService.create(dto, user);
     }
@@ -28,7 +27,6 @@ export class AvisoEmailController {
     @Get()
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
-    //@Roles(...roles)
     async findAll(
         @Query() filter: FilterAvisoEamilDto,
         @CurrentUser() user: PessoaFromJwt
@@ -50,7 +48,6 @@ export class AvisoEmailController {
     @Patch(':id')
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
-    //@Roles(...roles)
     async update(
         @Param() id: FindOneParams,
         @Body() dto: UpdateAvisoEmailDto,
@@ -62,7 +59,6 @@ export class AvisoEmailController {
     @Delete(':id')
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
-    //@Roles(...roles)
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.ACCEPTED)
     async remove(@Param() id: FindOneParams, @CurrentUser() user: PessoaFromJwt) {
