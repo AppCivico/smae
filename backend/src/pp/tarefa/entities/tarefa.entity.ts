@@ -45,6 +45,9 @@ export class TarefaItemDto {
     dependencias: TarefaDependenciaDto[];
 
     recursos: string;
+
+    pode_editar: boolean;
+    pode_editar_realizado: boolean;
 }
 
 export class TarefaItemDbDto extends TarefaItemDto {
