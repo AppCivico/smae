@@ -155,7 +155,7 @@ export class NotaService {
     }
 
     async findAll(filters: BuscaNotaDto, user: PessoaFromJwt): Promise<TipoNotaItem[]> {
-        if (!filters.status) filters.status = ['Programado', 'Em_Curso'];
+        if (!filters.status && !filters.nota_id) filters.status = ['Programado', 'Em_Curso'];
 
         const permissionSet: Prisma.Enumerable<Prisma.NotaWhereInput[]> = this.permissionSet(user);
         const today = DateTime.local({ zone: SYSTEM_TIMEZONE }).startOf('day').valueOf();
