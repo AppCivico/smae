@@ -46,6 +46,10 @@ const status = {
 };
 
 const props = defineProps({
+  transferenciaId: {
+    type: Number,
+    default: '',
+  },
   notaId: {
     type: String,
     default: '',
@@ -112,16 +116,26 @@ const onSubmit = handleSubmit.withControlled(async () => {
   }
 });
 
+function iniciar() {
+  if (Number(props.transferenciaId) !== transferênciaEmFoco.id) {
+    TransferenciasVoluntarias.buscarItem(props.transferenciaId);
+  }
+
+  ÓrgãosStore.getAll();
+  tipoStore.buscarTudo();
+  UserStore.buscarPessoasSimplificadas();
+
+  if (props.notaId) {
+      blocoStore.buscarItem(props.notaId);
+  }
+}
+
+iniciar();
+
 watch(statusSelecionado, (novoValor) => {
   blocoStore.buscarTudo(blocosToken.value, { status: novoValor });
 });
 
-ÓrgãosStore.getAll();
-tipoStore.buscarTudo();
-UserStore.buscarPessoasSimplificadas();
-if (props.notaId) {
-  blocoStore.buscarItem(props.notaId);
-}
 </script>
 
 <template>
