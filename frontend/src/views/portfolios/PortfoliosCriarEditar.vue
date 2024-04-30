@@ -188,24 +188,31 @@ observadoresStore.buscarTudo();
       </div>
     </div>
 
-    <div class="f1 mb1 flex row-reverse label justifyright">
-      <LabelFromYup
-        name="modelo_clonagem"
-        :schema="schema"
-      />
-      <Field
-        name="modelo_clonagem"
-        type="checkbox"
-        :value="true"
-        class="inputcheckbox"
-        :disabled="props.portfolioId ? true : false"
-      />
+    <div class="f1 mb1">
+      <label
+        for="modelo-clonagem"
+        class="flex center"
+      >
+        <Field
+          id="modelo-clonagem"
+          name="modelo_clonagem"
+          type="checkbox"
+          :value="true"
+          class="inputcheckbox"
+          :disabled="props.portfolioId ? true : false"
+        />
+        <LabelFromYup
+          as="span"
+          name="modelo_clonagem"
+          :schema="schema"
+          class="mb0"
+        />
+      </label>
 
-   
-      <!-- <ErrorMessage
-          name="nivel_regionalizacao"
-          class="error-msg"
-        /> -->
+      <ErrorMessage
+        name="modelo_clonagem"
+        class="error-msg"
+      />
     </div>
 
     <div class="f1 mb2">
