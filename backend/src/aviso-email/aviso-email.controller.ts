@@ -37,7 +37,10 @@ export class AvisoEmailController {
             return { linhas: await this.avisoEmailService.findAll(filter, user) };
         } catch (error) {
             if (error instanceof Prisma.PrismaClientKnownRequestError) {
-                if (error.code == 'P2025') return { linhas: [] };
+                if (error.code == 'P2025') {
+                    console.error('Erro P2025, retorno lista vazia');
+                    return { linhas: [] };
+                }
             }
 
             throw error;
