@@ -12,7 +12,10 @@ import {
   ErrorMessage, Field, FieldArray, useForm,
 } from 'vee-validate';
 import {
-  computed, ref, watch, defineOptions,
+  computed,
+  defineOptions,
+  ref,
+  watch,
 } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
@@ -67,12 +70,13 @@ const { pessoasSimplificadas, pessoasSimplificadasPorÓrgão } = storeToRefs(Use
 const blocoStore = useBlocoDeNotasStore();
 const {
   itemParaEdição,
+  emFoco,
 } = storeToRefs(blocoStore);
 
 const {
-  errors, handleSubmit, isSubmitting, setFieldValue, values,
+  errors, handleSubmit, isSubmitting, setFieldValue, resetForm, values, controlledValues,
 } = useForm({
-  initialValues: props.notaId ? itemParaEdição : { dispara_email: false },
+  initialValues: itemParaEdição.value,
   validationSchema: schema,
 });
 
@@ -81,9 +85,7 @@ const { lista: listaTipo } = storeToRefs(tipoStore);
 
 const statusSelecionado = ref('');
 
-const blocosToken = computed(
-  () => transferênciaEmFoco?.value?.bloco_nota_token,
-);
+const blocosToken = computed(() => transferênciaEmFoco?.value?.bloco_nota_token);
 
 const camposPermitidos = computed(() => ({
   email: listaTipo.value.find(
@@ -100,12 +102,10 @@ const camposPermitidos = computed(() => ({
 const onSubmit = handleSubmit.withControlled(async () => {
   const valoresAuxiliares = {
     ...values,
-    bloco_token: blocosToken.value,
-    id: itemParaEdição.value.id_jwt ? itemParaEdição.value.id_jwt : undefined,
   };
   try {
     const msg = 'Dados salvos com sucesso!';
-    const resposta = await blocoStore.salvarItem(valoresAuxiliares);
+    const resposta = await blocoStore.salvarItem(valoresAuxiliares, props.notaId);
     if (resposta) {
       alertStore.success(msg);
       blocoStore.$reset();
@@ -125,8 +125,12 @@ function iniciar() {
   tipoStore.buscarTudo();
   UserStore.buscarPessoasSimplificadas();
 
-  if (props.notaId) {
+  if (props.notaId !== emFoco.value?.id_jwt) {
+    emFoco.value = null;
+
+    if (props.notaId) {
       blocoStore.buscarItem(props.notaId);
+    }
   }
 }
 
@@ -136,8 +140,21 @@ watch(statusSelecionado, (novoValor) => {
   blocoStore.buscarTudo(blocosToken.value, { status: novoValor });
 });
 
-</script>
+watch(itemParaEdição, (novosValores) => {
+  resetForm({
+    values: novosValores,
+  });
+});
 
+watch(blocosToken, (novoValor) => {
+  resetForm({
+    values: {
+      ...itemParaEdição.value,
+      bloco_token: novoValor,
+    },
+  });
+});
+</script>
 <template>
   <div class="flex spacebetween center mb2">
     <h1>{{ route?.meta?.título || "Nota" }}</h1>
@@ -146,6 +163,13 @@ watch(statusSelecionado, (novoValor) => {
   </div>
   <div class="mb4">
     <form @submit.prevent="onSubmit">
+      <Field
+        v-if="!props.notaId"
+        name="bloco_token"
+        type="hidden"
+        :value="blocosToken"
+        class="inputtext light mb1"
+      />
       <div class="flex mb2 flexwrap g2">
         <div class="f1">
           <LabelFromYup
