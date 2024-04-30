@@ -75,7 +75,7 @@ export class TarefaController {
         @Query() filter: FilterPPTarefa,
         @CurrentUser() user: PessoaFromJwt
     ): Promise<ListTarefaProjetoDto> {
-        const tarefasProj = await this.tarefaService.findAll({ projeto_id: params.id }, user, filter);
+        const tarefasProj = await this.tarefaService.findAll({ projeto_id: params.id }, user, filter, );
 
         return {
             linhas: tarefasProj.linhas,

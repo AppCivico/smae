@@ -298,7 +298,7 @@ export class TarefaService {
     ): Promise<ListTarefaGenericoDto> {
         const tarefaCronoId = await this.loadOrCreateByInput(tarefaCronoInput, user);
 
-        const ret = await this.buscaLinhasRecalcProjecao(tarefaCronoId);
+        const ret = await this.buscaLinhasRecalcProjecao(tarefaCronoId, user);
 
         // sempre carregando o projeto depois, pois as triggers tbm só vão carregar os dados após o update da projeção
         // antes os dados eram atualizados no banco e tbm diretamente na referencia que seria retornada
@@ -319,7 +319,7 @@ export class TarefaService {
         };
     }
 
-    async buscaLinhasRecalcProjecao(tarefaCronoId: number) {
+    async buscaLinhasRecalcProjecao(tarefaCronoId: number, user: PessoaFromJwt | null) {
         const antesQuery = Date.now();
         const rows = await this.findAllRows(tarefaCronoId);
         this.logger.warn(`query took ${Date.now() - antesQuery} ms`);
@@ -327,6 +327,7 @@ export class TarefaService {
         const rowsWithAtraso = rows.map((r) => {
             return {
                 ...r,
+                ...this.calcPodeEditar(r, user),
                 atraso: CalculaAtraso.emDias(hoje, r.termino_planejado, r.termino_real),
             };
         });
@@ -335,6 +336,46 @@ export class TarefaService {
         const ret = await this.calculaAtrasoCronograma(rowsWithAtraso, tarefaCronoId);
         this.logger.warn(`calculaAtrasoCronograma took ${Date.now() - antesCalc} ms`);
         return ret;
+    }
+
+    private calcPodeEditar(
+        r: {
+            orgao: { id: number } | null;
+        },
+        user: PessoaFromJwt | null
+    ): { pode_editar: boolean; pode_editar_realizado: boolean } {
+        if (user !== null) {
+            const pode_editar_realizado = r.orgao !== null;
+            // se o órgão estiver null,
+            // a tela do realizado não tem esse campo, portanto ainda não terminaram de configurar o cronograma
+            // que pode ter sido clonado ou puxado de um workflow
+            if (
+                user.hasSomeRoles([
+                    // tudo igual para quem é de projetos, fica sempre true, e segue a regra do frontend
+                    'Projeto.administrador',
+                    'Projeto.administrador_no_orgao',
+                    'SMAE.gestor_de_projeto',
+                    'SMAE.colaborador_de_projeto',
+                    // para quem é de transferência, só pode editar quem é administrador
+                    'CadastroTransferencia.administrador',
+                ])
+            ) {
+                return {
+                    pode_editar: true,
+                    pode_editar_realizado: pode_editar_realizado,
+                };
+            }
+
+            return {
+                pode_editar: !!r.orgao && !!user.orgao_id && r.orgao.id == user.orgao_id,
+                pode_editar_realizado: pode_editar_realizado,
+            };
+        }
+
+        return {
+            pode_editar: false,
+            pode_editar_realizado: false,
+        };
     }
 
     private async findAllRows(tarefa_cronograma_id: number) {
@@ -871,6 +912,7 @@ export class TarefaService {
         const hoje = DateTime.local({ zone: SYSTEM_TIMEZONE }).startOf('day');
         return {
             ...row,
+            ...this.calcPodeEditar(row, user),
             atraso: CalculaAtraso.emDias(hoje, row.termino_planejado, row.termino_real),
             projeto: projeto,
         };
@@ -904,9 +946,17 @@ export class TarefaService {
                         inicio_planejado: true,
                         termino_planejado: true,
                         duracao_planejado: true,
+                        orgao: { select: { id: true } },
                     },
                 });
                 if (!tarefa) throw new HttpException('Tarefa não encontrada.', 404);
+                const permissoes = this.calcPodeEditar(tarefa, user);
+
+                if (!permissoes.pode_editar && dto instanceof UpdateTarefaDto)
+                    throw new HttpException('Usuário não tem permissão para editar esta tarefa.', 403);
+
+                if (!permissoes.pode_editar_realizado && dto instanceof UpdateTarefaRealizadoDto)
+                    throw new HttpException('Usuário não tem permissão para editar esta tarefa.', 403);
 
                 if ('dependencias' in dto && dto.dependencias !== undefined && tarefa.n_filhos_imediatos == 0) {
                     const calcDependencias = await this.calcDataDependencias(tarefaCronoId, prismaTx, {
@@ -1600,7 +1650,7 @@ export class TarefaService {
         for (const item of projetosOuTransf) {
             this.logger.debug(`Recalculando atraso e projeções das tarefas crongorama ${JSON.stringify(item)}`);
 
-            await this.buscaLinhasRecalcProjecao(item.id);
+            await this.buscaLinhasRecalcProjecao(item.id, null);
             await this.prisma.tarefaCronograma.update({
                 where: { id: item.id },
                 data: {
