@@ -488,6 +488,8 @@ export class NotaService {
         });
 
         for (const enderecamento of dto.enderecamentos) {
+            if (enderecamento.pessoa_enderecado_id == 0) enderecamento.pessoa_enderecado_id = null;
+
             if (
                 prevVersions.filter(
                     (r) =>
