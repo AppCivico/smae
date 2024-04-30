@@ -5,7 +5,7 @@ import { useBlocoDeNotasStore } from '@/stores/blocoNotas.store';
 import { useTipoDeNotasStore } from '@/stores/tipoNotas.store';
 import { useTransferenciasVoluntariasStore } from '@/stores/transferenciasVoluntarias.store';
 import { storeToRefs } from 'pinia';
-import { ref, watch, onMounted } from 'vue';
+import { onMounted, ref, watch } from 'vue';
 
 const status = {
   Programado: {
@@ -41,7 +41,9 @@ const TransferenciasVoluntarias = useTransferenciasVoluntariasStore();
 const { emFoco: transferênciaEmFoco } = storeToRefs(TransferenciasVoluntarias);
 
 const blocoStore = useBlocoDeNotasStore();
-const { lista: listaNotas, erro, chamadasPendentes } = storeToRefs(blocoStore);
+const {
+  lista: listaNotas, erro, chamadasPendentes, emFoco,
+} = storeToRefs(blocoStore);
 
 const tipoStore = useTipoDeNotasStore();
 const { lista: listaTipo } = storeToRefs(tipoStore);
@@ -76,9 +78,7 @@ async function excluirNota(id) {
 watch(statusSelecionado, (novoValor) => {
   blocoStore.buscarTudo(blocosToken.value, { status: novoValor });
 });
-
 </script>
-
 <template>
   <MigalhasDePão class="mb1" />
   <div class="flex spacebetween center mb2">
