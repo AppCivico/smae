@@ -1,7 +1,7 @@
 import { BadRequestException, HttpException, Inject, Injectable, Logger, forwardRef } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
 import { Prisma, TarefaCronograma, TarefaDependente, TarefaDependenteTipo } from '@prisma/client';
-import { Type, plainToInstance } from 'class-transformer';
+import { Transform, Type, plainToInstance } from 'class-transformer';
 import { Graph } from 'graphlib'; // ta os types de da lib "graphlib" que é por enquanto pure-js
 import { DateTime } from 'luxon';
 import { GraphvizService, GraphvizServiceFormat } from 'src/graphviz/graphviz.service';
@@ -31,6 +31,7 @@ import {
 } from './entities/tarefa.entity';
 import { TarefaDotTemplate } from './tarefa.dot.template';
 import { TarefaUtilsService } from './tarefa.service.utils';
+import { DateTransform } from '../../auth/transforms/date.transform';
 
 // e temos um fork mais atualizado por esse projeto, @dagrejs
 const graphlib = require('@dagrejs/graphlib');
@@ -42,9 +43,9 @@ class LoopError extends Error {
 }
 
 export class InferenciaDatasDto {
-    @Type(() => Date)
+    @Transform(DateTransform)
     inicio_planejado: Date | null;
-    @Type(() => Date)
+    @Transform(DateTransform)
     termino_planejado: Date | null;
     @Type(() => Number)
     duracao_planejado: number | null;

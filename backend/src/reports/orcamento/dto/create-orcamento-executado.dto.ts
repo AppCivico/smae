@@ -1,7 +1,8 @@
 import { ApiProperty, IntersectionType, OmitType } from '@nestjs/swagger';
 import { TipoRelatorio } from '@prisma/client';
-import { Transform, Type } from 'class-transformer';
+import { Transform } from 'class-transformer';
 import { ArrayMaxSize, ArrayMinSize, IsArray, IsEnum, IsInt, IsOptional, IsString, MaxLength } from 'class-validator';
+import { DateTransform } from '../../../auth/transforms/date.transform';
 import { IsOnlyDate } from '../../../common/decorators/IsDateOnly';
 import { FiltroMetasIniAtividadeDto } from '../../relatorios/dto/filtros.dto';
 
@@ -19,14 +20,14 @@ export class OrcamentoExecutadoParams {
      * @example "2020-01-01"
      */
     @IsOnlyDate()
-    @Type(() => Date)
+    @Transform(DateTransform)
     inicio: Date;
 
     /**
      * @example "2022-01-01"
      */
     @IsOnlyDate()
-    @Type(() => Date)
+    @Transform(DateTransform)
     fim: Date;
 
     /**

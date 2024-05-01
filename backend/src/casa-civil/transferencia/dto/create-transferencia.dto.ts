@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { ParlamentarCargo, TransferenciaInterface, TransferenciaTipoEsfera } from '@prisma/client';
-import { Type } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
 import {
     IsBoolean,
     IsEnum,
@@ -15,6 +15,7 @@ import {
     ValidateIf,
 } from 'class-validator';
 import { IsOnlyDate } from 'src/common/decorators/IsDateOnly';
+import { DateTransform } from '../../../auth/transforms/date.transform';
 
 export class CreateTransferenciaDto {
     @IsNumber()
@@ -74,7 +75,7 @@ export class CreateTransferenciaDto {
      */
     @IsOptional()
     @IsOnlyDate()
-    @Type(() => Date)
+    @Transform(DateTransform)
     @ValidateIf((object, value) => value !== null)
     clausula_suspensiva_vencimento?: Date | null;
 
@@ -170,7 +171,7 @@ export class CreateTransferenciaAnexoDto {
      */
     @IsOptional()
     @IsOnlyDate()
-    @Type(() => Date)
+    @Transform(DateTransform)
     @ValidateIf((object, value) => value !== null)
     data?: Date;
 

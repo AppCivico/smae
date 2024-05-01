@@ -1,6 +1,7 @@
-import { Transform, Type } from 'class-transformer';
+import { Transform } from 'class-transformer';
 import { IsInt, IsOptional } from 'class-validator';
 import { IsOnlyDate } from 'src/common/decorators/IsDateOnly';
+import { DateTransform } from '../../../auth/transforms/date.transform';
 
 export class CreateRelProjetoStatusDto {
     @IsInt()
@@ -14,11 +15,11 @@ export class CreateRelProjetoStatusDto {
 
     @IsOptional()
     @IsOnlyDate()
-    @Type(() => Date)
+    @Transform(DateTransform)
     periodo_inicio?: Date | null;
 
     @IsOptional()
     @IsOnlyDate()
-    @Type(() => Date)
+    @Transform(DateTransform)
     periodo_fim?: Date | null;
 }

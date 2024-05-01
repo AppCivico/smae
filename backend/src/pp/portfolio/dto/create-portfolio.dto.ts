@@ -1,3 +1,4 @@
+import { Transform } from 'class-transformer';
 import {
     ArrayMaxSize,
     ArrayMinSize,
@@ -12,8 +13,8 @@ import {
     MinLength,
     ValidateIf,
 } from 'class-validator';
+import { DateTransform } from '../../../auth/transforms/date.transform';
 import { IsOnlyDate } from '../../../common/decorators/IsDateOnly';
-import { Transform, Type } from 'class-transformer';
 
 export class CreatePortfolioDto {
     /**
@@ -48,7 +49,7 @@ export class CreatePortfolioDto {
 
     @IsOptional()
     @IsOnlyDate()
-    @Type(() => Date)
+    @Transform(DateTransform)
     @ValidateIf((object, value) => value !== null)
     data_criacao?: Date | null;
 

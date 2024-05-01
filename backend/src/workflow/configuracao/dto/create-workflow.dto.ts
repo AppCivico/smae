@@ -1,6 +1,7 @@
-import { Type } from 'class-transformer';
+import { Transform } from 'class-transformer';
 import { IsNumber, IsOptional, IsString, MaxLength, MinLength, ValidateIf } from 'class-validator';
 import { IsOnlyDate } from 'src/common/decorators/IsDateOnly';
+import { DateTransform } from '../../../auth/transforms/date.transform';
 
 export class CreateWorkflowDto {
     @IsNumber()
@@ -16,7 +17,7 @@ export class CreateWorkflowDto {
      * @example YYYY-MM-DD
      */
     @IsOnlyDate()
-    @Type(() => Date)
+    @Transform(DateTransform)
     @ValidateIf((object, value) => value !== null)
     inicio: Date;
 
@@ -26,7 +27,7 @@ export class CreateWorkflowDto {
      */
     @IsOptional()
     @IsOnlyDate()
-    @Type(() => Date)
+    @Transform(DateTransform)
     @ValidateIf((object, value) => value !== null)
     termino?: Date;
 }

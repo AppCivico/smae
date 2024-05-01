@@ -16,6 +16,7 @@ import {
     Min,
     ValidateIf,
 } from 'class-validator';
+import { DateTransform } from '../../auth/transforms/date.transform';
 import { IsOnlyDate } from '../../common/decorators/IsDateOnly';
 
 // o js ta bugando depois de 13, ta criado com decimal até 30, pg nativamente vai até 1000 sem recompilar.
@@ -117,7 +118,7 @@ export class CreateVariavelDto {
      */
     @IsOptional()
     @IsOnlyDate()
-    @Type(() => Date)
+    @Transform(DateTransform)
     inicio_medicao: Date | null;
 
     /**
@@ -126,7 +127,7 @@ export class CreateVariavelDto {
      */
     @IsOptional()
     @IsOnlyDate()
-    @Type(() => Date)
+    @Transform(DateTransform)
     fim_medicao: Date | null;
 
     @IsOptional()

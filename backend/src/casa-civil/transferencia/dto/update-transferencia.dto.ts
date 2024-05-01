@@ -1,8 +1,9 @@
 import { PartialType } from '@nestjs/swagger';
-import { CreateTransferenciaDto } from './create-transferencia.dto';
+import { Transform } from 'class-transformer';
 import { IsBoolean, IsNumberString, IsOptional, IsString, MaxLength, MinLength, ValidateIf } from 'class-validator';
-import { Type } from 'class-transformer';
 import { IsOnlyDate } from 'src/common/decorators/IsDateOnly';
+import { DateTransform } from '../../../auth/transforms/date.transform';
+import { CreateTransferenciaDto } from './create-transferencia.dto';
 
 export class UpdateTransferenciaDto extends PartialType(CreateTransferenciaDto) {}
 
@@ -113,7 +114,7 @@ export class UpdateTransferenciaAnexoDto {
 
     @IsOptional()
     @IsOnlyDate()
-    @Type(() => Date)
+    @Transform(DateTransform)
     @ValidateIf((object, value) => value !== null)
     data?: Date | null;
 }

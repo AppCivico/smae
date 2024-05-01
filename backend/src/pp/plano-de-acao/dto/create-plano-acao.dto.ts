@@ -1,6 +1,7 @@
-import { Type } from 'class-transformer';
+import { Transform } from 'class-transformer';
 import { IsInt, IsNumber, IsOptional, IsString, Max, MaxLength, Min, ValidateIf } from 'class-validator';
 import { IsOnlyDate } from 'src/common/decorators/IsDateOnly';
+import { DateTransform } from '../../../auth/transforms/date.transform';
 
 export class CreatePlanoAcaoDto {
     @IsInt()
@@ -19,7 +20,7 @@ export class CreatePlanoAcaoDto {
     contramedida: string;
 
     @IsOnlyDate()
-    @Type(() => Date)
+    @Transform(DateTransform)
     @ValidateIf((object, value) => value !== null)
     prazo_contramedida: Date | null;
 
@@ -54,7 +55,7 @@ export class CreatePlanoAcaoDto {
 
     @IsOptional()
     @IsOnlyDate()
-    @Type(() => Date)
+    @Transform(DateTransform)
     @ValidateIf((object, value) => value !== null)
     data_termino: Date | null;
 }

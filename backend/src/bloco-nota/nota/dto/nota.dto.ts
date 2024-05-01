@@ -14,12 +14,13 @@ import {
     ValidateIf,
     ValidateNested,
 } from 'class-validator';
+import { DateTransform } from '../../../auth/transforms/date.transform';
+import { NumberTransform } from '../../../auth/transforms/number.transform';
+import { StringArrayTransform } from '../../../auth/transforms/string-array.transform';
 import { IsOnlyDate } from '../../../common/decorators/IsDateOnly';
+import { FindOneParams } from '../../../common/decorators/find-params';
 import { IdSigla } from '../../../common/dto/IdSigla.dto';
 import { IdNomeExibicao } from '../../../meta/entities/meta.entity';
-import { FindOneParams } from '../../../common/decorators/find-params';
-import { StringArrayTransform } from '../../../auth/transforms/string-array.transform';
-import { NumberTransform } from '../../../auth/transforms/number.transform';
 
 const TransformStatusNota = (a: TransformFnParams): StatusNota[] | undefined => {
     if (!a.value) return undefined;
@@ -40,7 +41,7 @@ export class CreateNotaDto {
     @MaxLength(5000, { message: '$property| nota: Máximo 5000 caracteres' })
     nota: string;
 
-    @Type(() => Date)
+    @Transform(DateTransform)
     @IsOnlyDate()
     data_nota: Date;
 
@@ -53,7 +54,7 @@ export class CreateNotaDto {
     @IsOptional()
     @IsOnlyDate()
     @ValidateIf((object, value) => value !== null)
-    @Type(() => Date)
+    @Transform(DateTransform)
     rever_em?: Date | null;
 
     @IsOptional()

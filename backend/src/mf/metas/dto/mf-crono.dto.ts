@@ -1,5 +1,6 @@
-import { Type } from 'class-transformer';
+import { Transform } from 'class-transformer';
 import { IsArray, IsNumber, IsOptional, IsString, Max, Min, ValidateIf } from 'class-validator';
+import { DateTransform } from '../../../auth/transforms/date.transform';
 import { IsOnlyDate } from '../../../common/decorators/IsDateOnly';
 import { IdCodTituloRespDto } from './mf-meta.dto';
 
@@ -10,7 +11,7 @@ export class MfEtapaDto {
      */
     @IsOptional()
     @IsOnlyDate()
-    @Type(() => Date)
+    @Transform(DateTransform)
     inicio_real?: Date;
 
     /**
@@ -19,7 +20,7 @@ export class MfEtapaDto {
      */
     @IsOptional()
     @IsOnlyDate()
-    @Type(() => Date)
+    @Transform(DateTransform)
     termino_real?: Date;
 
     @IsOptional()

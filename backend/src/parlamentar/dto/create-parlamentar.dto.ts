@@ -7,9 +7,10 @@ import {
     ParlamentarSuplente,
     ParlamentarUF,
 } from '@prisma/client';
-import { Transform, TransformFnParams, Type } from 'class-transformer';
+import { Transform, TransformFnParams } from 'class-transformer';
 import { IsBoolean, IsEnum, IsNumber, IsOptional, IsString, MaxLength, MinLength, ValidateIf } from 'class-validator';
 import { IsOnlyDate } from 'src/common/decorators/IsDateOnly';
+import { DateTransform } from '../../auth/transforms/date.transform';
 
 export class CreateParlamentarDto {
     @IsString({ message: '$property| nome: Precisa ser alfanumérico' })
@@ -26,7 +27,7 @@ export class CreateParlamentarDto {
      * @example YYYY-MM-DD
      */
     @IsOnlyDate()
-    @Type(() => Date)
+    @Transform(DateTransform)
     @ValidateIf((object, value) => value !== null)
     nascimento?: Date;
 

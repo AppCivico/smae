@@ -16,8 +16,9 @@ import {
     ValidateIf,
     ValidateNested,
 } from 'class-validator';
-import { IsOnlyDate } from '../../../common/decorators/IsDateOnly';
 import { GraphvizServiceFormat } from 'src/graphviz/graphviz.service';
+import { DateTransform } from '../../../auth/transforms/date.transform';
+import { IsOnlyDate } from '../../../common/decorators/IsDateOnly';
 
 export class TarefaDependenciaDto {
     @IsInt({ message: '$property| precisa ser inteiro' })
@@ -98,7 +99,7 @@ export class CreateTarefaDto {
      */
     @IsOptional()
     @IsOnlyDate()
-    @Type(() => Date)
+    @Transform(DateTransform)
     @ValidateIf((object, value) => value !== null)
     inicio_planejado?: Date | null;
 
@@ -107,7 +108,7 @@ export class CreateTarefaDto {
      */
     @IsOptional()
     @IsOnlyDate()
-    @Type(() => Date)
+    @Transform(DateTransform)
     @ValidateIf((object, value) => value !== null)
     termino_planejado?: Date | null;
 
@@ -126,7 +127,7 @@ export class CreateTarefaDto {
      */
     @IsOptional()
     @IsOnlyDate()
-    @Type(() => Date)
+    @Transform(DateTransform)
     @ValidateIf((object, value) => value !== null)
     inicio_real?: Date | null;
 
@@ -135,7 +136,7 @@ export class CreateTarefaDto {
      */
     @IsOptional()
     @IsOnlyDate()
-    @Type(() => Date)
+    @Transform(DateTransform)
     @ValidateIf((object, value) => value !== null)
     termino_real?: Date | null;
 

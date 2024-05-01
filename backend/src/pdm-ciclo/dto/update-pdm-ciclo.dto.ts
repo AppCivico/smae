@@ -1,5 +1,6 @@
-import { Transform, Type } from 'class-transformer';
+import { Transform } from 'class-transformer';
 import { IsBoolean, IsInt, IsOptional } from 'class-validator';
+import { DateTransform } from '../../auth/transforms/date.transform';
 import { IsOnlyDate } from '../../common/decorators/IsDateOnly';
 
 export class UpdatePdmCicloDto {
@@ -9,7 +10,7 @@ export class UpdatePdmCicloDto {
      */
     @IsOptional()
     @IsOnlyDate()
-    @Type(() => Date)
+    @Transform(DateTransform)
     inicio_coleta: Date;
 
     /**
@@ -18,7 +19,7 @@ export class UpdatePdmCicloDto {
      */
     @IsOptional()
     @IsOnlyDate()
-    @Type(() => Date)
+    @Transform(DateTransform)
     inicio_qualificacao: Date;
 
     /**
@@ -27,7 +28,7 @@ export class UpdatePdmCicloDto {
      */
     @IsOptional()
     @IsOnlyDate()
-    @Type(() => Date)
+    @Transform(DateTransform)
     inicio_analise_risco: Date;
 
     /**
@@ -36,7 +37,7 @@ export class UpdatePdmCicloDto {
      */
     @IsOptional()
     @IsOnlyDate()
-    @Type(() => Date)
+    @Transform(DateTransform)
     inicio_fechamento: Date;
 
     /**
@@ -45,7 +46,7 @@ export class UpdatePdmCicloDto {
      */
     @IsOptional()
     @IsOnlyDate()
-    @Type(() => Date)
+    @Transform(DateTransform)
     fechamento: Date;
 }
 

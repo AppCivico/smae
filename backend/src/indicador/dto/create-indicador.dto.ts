@@ -4,6 +4,7 @@ import { Transform, TransformFnParams, Type } from 'class-transformer';
 import { IsBoolean, IsEnum, IsInt, IsOptional, IsString, Max, MaxLength, Min, ValidateIf } from 'class-validator';
 import { IsOnlyDate } from '../../common/decorators/IsDateOnly';
 import { MAX_CASAS_DECIMAIS } from '../../variavel/dto/create-variavel.dto';
+import { DateTransform } from '../../auth/transforms/date.transform';
 
 export class CreateIndicadorDto {
     /**
@@ -61,7 +62,7 @@ export class CreateIndicadorDto {
      */
     @IsOptional()
     @IsOnlyDate()
-    @Type(() => Date)
+    @Transform(DateTransform)
     inicio_medicao: Date;
 
     /**
@@ -70,7 +71,7 @@ export class CreateIndicadorDto {
      */
     @IsOptional()
     @IsOnlyDate()
-    @Type(() => Date)
+    @Transform(DateTransform)
     fim_medicao: Date;
 
     /**
