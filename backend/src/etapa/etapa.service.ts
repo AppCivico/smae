@@ -280,7 +280,7 @@ export class EtapaService {
                 throw new BadRequestException(
                     'A região da fase/subfase não pode ser removida, utilize o id da região superior.'
                 );
-            } else if (self.etapa_pai && dto.regiao_id !== self.regiao_id) {
+            } else if ('regiao_id' in dto && self.etapa_pai && dto.regiao_id !== self.regiao_id) {
                 this.logger.debug(`Validando região da etapa ${id} com base na região do pai`);
                 if (!self.etapa_pai.regiao)
                     throw new BadRequestException(
@@ -300,7 +300,7 @@ export class EtapaService {
                 verificaFilhos = true;
             } else if (dto.regiao_id === null && !self.etapa_pai) {
                 verificaFilhos = true;
-            } else if (dto.regiao_id && !self.etapa_pai) {
+            } else if ('regiao_id' in dto && dto.regiao_id && !self.etapa_pai) {
                 this.logger.debug(`Validando região da etapa ${id} com base no cronograma`);
                 // garante para os registros novos que sempre vai ter uma região iniciada com o nível do cronograma
                 // aqui sempre entra só no nivel da etapa (não tem pai)
