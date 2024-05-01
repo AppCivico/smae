@@ -417,7 +417,7 @@ export const fase = object()
   });
 
 export const geoLocalização = object()
-// shape() necessário para não cair num ciclo infinito com na validação recursiva
+// shape() necessário para não cair num ciclo infinito na validação de coordenadas
   .shape({
     cep: string()
       .label('CEP')
@@ -463,7 +463,7 @@ export const geoLocalização = object()
     termo_de_busca: string()
       .label('Termo de busca')
       .nullable(),
-  // necessário para não cair num ciclo infinito com na validação recursiva
+  // necessário para não cair num ciclo infinito na validação de coordenadas
   }, [
     ['longitude_de_busca', 'latitude_de_busca'],
   ]);
