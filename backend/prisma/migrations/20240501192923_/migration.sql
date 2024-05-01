@@ -36,7 +36,7 @@ BEGIN
         FROM etapas
         RETURNING id, tarefa
     ), tarefa_de_acompanhamento_etapa AS (
-        INSERT INTO tarefa (tarefa_cronograma_id, tarefa, descricao, recursos, tarefa_pai_id, numero, nivel, orgao_id)
+        INSERT INTO tarefa (tarefa_cronograma_id, tarefa, descricao, recursos, tarefa_pai_id, numero, nivel, orgao_id, inicio_real)
         SELECT
             _tarefa_cronograma_id,
             'Acompanhamento da etapa ' || te.tarefa,
@@ -45,7 +45,11 @@ BEGIN
             te.id,
             1,
             2,
-            _orgao_seri_id
+            _orgao_seri_id,
+            CASE
+                WHEN te.id = (SELECT min(id) FROM tarefas_etapas) THEN current_date
+                ELSE NULL
+            END 
         FROM tarefas_etapas te
         RETURNING id, tarefa_pai_id, numero
     ), fases AS (
