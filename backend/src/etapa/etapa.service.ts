@@ -378,8 +378,10 @@ export class EtapaService {
                 },
             });
 
+            let etapasDb: DadosBaseEtapa[] = [];
+            let mudouDeRegiao = etapaAtualizada.regiao_id !== self.regiao_id;
+
             if (geolocalizacao) {
-                const mudouDeRegiao = etapaAtualizada.regiao_id !== self.regiao_id;
                 const geoDto = new CreateGeoEnderecoReferenciaDto();
                 geoDto.etapa_id = id;
                 geoDto.tokens = geolocalizacao;
@@ -389,25 +391,49 @@ export class EtapaService {
                 const regioes = await this.geolocService.upsertGeolocalizacao(geoDto, user, prismaTx, createdNow);
 
                 if (
-                    (regioes.novos_enderecos.length > 0 || mudouDeRegiao) &&
+                    ((regioes.enderecos.length && mudouDeRegiao) || regioes.novos_enderecos.length) &&
                     cronoNivelRegiao &&
                     etapaAtualizada.regiao_id
                 ) {
+                    // carrega pois a região não foi alterada
+                    if (etapasDb.length == 0) etapasDb = await this.carregaArvoreEtapas(prismaTx, id);
+
                     // todos os endereços precisam ser compatíveis entre si
                     // ou seja, se um endereço é de um município, todos os outros também precisam ser do mesmo
                     // município ou um filho desse município
                     const idRegioesEnderecos = regioes.enderecos.flatMap((r) => r.regioes).map((r) => r.id);
                     const regioesDb = await this.carregaArvoreRegioes(prismaTx, idRegioesEnderecos);
 
-                    await this.validaOuAtualizaRegiaoPeloGeoLoc(
+                    const eraCompativel = await this.validaOuAtualizaRegiaoPeloGeoLoc(
                         regioes,
                         cronoNivelRegiao,
                         regioesDb,
+                        etapasDb,
                         prismaTx,
                         etapaAtualizada,
                         createdNow
                     );
+                    // desliga o proximo check, já que migrou de cidade
+                    if (!eraCompativel) mudouDeRegiao = false;
                 }
+            }
+
+            if (mudouDeRegiao) {
+                // commit coentando só pra tirar o erro interno, esse código precisa ser pensando melhor ainda.
+                // // considerando que o usuário pode pre-ativamente mudar a Região e enviar pra api junto com a nova
+                // // geoloc que irá migrar depois do update do endereço da geoloc se for incompatível,
+                // // mas não sabemos se isso sempre irá ou não acontecer, então como geoloc tem preferencia,
+                //
+                // // se já tinha um geoloc em qualquer nível, o update não ocorreu, então nem vai chegar aqui
+                // // se não tinha e migrou de cidade, não precisa mais verificar pois os dados da região recebida está
+                // // desatualizada
+                //
+                // if (etapasDb.length == 0) etapasDb = await this.carregaArvoreEtapas(prismaTx, id);
+                //
+                // if (etapasDb.some((e) => e.geo_loc_count >= 1))
+                // throw new BadRequestException(
+                // 'Não é possível alterar a região de uma etapa que possui endereços cadastrados em sua hierarquia.'
+                // );
             }
 
             await this.updateResponsaveis(responsaveis, self, prismaTx);
@@ -471,6 +497,7 @@ export class EtapaService {
         regioes: UpsertEnderecoDto,
         cronoNivelRegiao: number,
         regioesDb: DadosBaseRegiao[],
+        etapasDb: DadosBaseEtapa[],
         prismaTx: Prisma.TransactionClient,
         etapaAtual: {
             regiao: { id: number; descricao: string } | null;
@@ -480,7 +507,7 @@ export class EtapaService {
             GeoLocalizacaoReferencia: { id: number }[];
         },
         now: Date
-    ) {
+    ): Promise<boolean> {
         // creio que não precisamos disso
         // const primeiroRegistro =
         //  etapaAtualizada.GeoLocalizacaoReferencia.length == 0 && geolocalizacao.length > 0;
@@ -510,8 +537,6 @@ export class EtapaService {
                 `Endereços não puderam ser adicionados. As regiões dos endereços são incompatíveis: ${regioesLevels.join(', ')}.`
             );
         }
-
-        const etapasDb = await this.carregaArvoreEtapas(prismaTx, etapaAtual.id);
 
         let enderecoCompativel: boolean = false;
         const dadosEtapa = etapasDb.find((e) => e.id === etapaAtual.id)!;
@@ -586,6 +611,8 @@ export class EtapaService {
                 });
             }
         }
+
+        return enderecoCompativel;
     }
 
     private async carregaArvoreEtapas(prismaTx: Prisma.TransactionClient, idEtapa: number): Promise<DadosBaseEtapa[]> {
