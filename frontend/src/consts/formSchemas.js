@@ -462,7 +462,6 @@ export const geoLocalização = object()
       .required(),
     termo_de_busca: string()
       .label('Termo de busca')
-      .min(3)
       .nullable(),
   // necessário para não cair num ciclo infinito com na validação recursiva
   }, [
