@@ -273,6 +273,7 @@ export class EtapaService {
                 },
             });
 
+            let verificaFilhos: boolean = false;
             if (self.etapa_pai?.regiao && 'regiao_id' in dto && dto.regiao_id === undefined) {
                 dto.regiao_id = self.etapa_pai.regiao.id;
             } else if (self.etapa_pai && dto.regiao_id && dto.regiao_id !== self.regiao_id) {
@@ -291,6 +292,7 @@ export class EtapaService {
                             `A região da etapa precisa ser a mesma região ou ser filho imediato da região "${self.etapa_pai.regiao.descricao}"`
                         );
                 }
+                verificaFilhos = true;
             } else if (dto.regiao_id && !self.etapa_pai) {
                 // garante para os registros novos que sempre vai ter uma região iniciada com o nível do cronograma
                 // aqui sempre entra só no nivel da etapa (não tem pai)
@@ -307,6 +309,18 @@ export class EtapaService {
                 if (regiao.nivel !== self.cronograma.nivel_regionalizacao)
                     throw new BadRequestException(
                         `A região da etapa precisa ser de nível ${self.cronograma.nivel_regionalizacao}, região enviada: ${regiao.descricao} (nível ${regiao.nivel})`
+                    );
+                verificaFilhos = true;
+            }
+
+            if (verificaFilhos) {
+                const etapasFilhas = await prismaTx.etapa.count({
+                    where: { etapa_pai_id: id, removido_em: null, regiao_id: { not: null } },
+                    select: { id: true, regiao_id: true },
+                });
+                if (etapasFilhas)
+                    throw new BadRequestException(
+                        'Não é possível alterar a região de uma etapa/fase que possui filhos com região cadastrada.'
                     );
             }
 
@@ -382,6 +396,7 @@ export class EtapaService {
             let mudouDeRegiao = etapaAtualizada.regiao_id !== self.regiao_id;
 
             if (geolocalizacao) {
+                this.logger.debug(`Atualizando geolocalização da etapa ${id}`);
                 const geoDto = new CreateGeoEnderecoReferenciaDto();
                 geoDto.etapa_id = id;
                 geoDto.tokens = geolocalizacao;
@@ -395,6 +410,7 @@ export class EtapaService {
                     cronoNivelRegiao &&
                     etapaAtualizada.regiao_id
                 ) {
+                    this.logger.debug(`Validando região da etapa ${id} com base na geolocalização`);
                     // carrega pois a região não foi alterada
                     if (etapasDb.length == 0) etapasDb = await this.carregaArvoreEtapas(prismaTx, id);
 
@@ -415,6 +431,8 @@ export class EtapaService {
                     );
                     // desliga o proximo check, já que migrou de cidade
                     if (!eraCompativel) mudouDeRegiao = false;
+                } else {
+                    this.logger.debug(`Não foi necessário validar a região da etapa ${id} com base na geolocalização`);
                 }
             }
 
@@ -546,6 +564,7 @@ export class EtapaService {
         // e depois novamente completa arvore pra baixo, semelhante ao que é feito com etapas
         const existeEndereco = regioesDb.find((r) => r.id === dadosEtapa.regiao_id);
         if (existeEndereco) enderecoCompativel = true;
+        this.logger.debug(`Endereço compatível: ${enderecoCompativel}`);
 
         if (!enderecoCompativel) {
             const temFilhas = etapasDb.some((e) => e.etapa_pai_id === etapaAtual.id);
