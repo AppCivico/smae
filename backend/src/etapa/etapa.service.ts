@@ -276,7 +276,12 @@ export class EtapaService {
             let verificaFilhos: boolean = false;
             if (self.etapa_pai?.regiao && 'regiao_id' in dto && dto.regiao_id === undefined) {
                 dto.regiao_id = self.etapa_pai.regiao.id;
-            } else if (self.etapa_pai && dto.regiao_id && dto.regiao_id !== self.regiao_id) {
+            } else if (self.etapa_pai?.regiao && 'regiao_id' in dto && dto.regiao_id === null) {
+                throw new BadRequestException(
+                    'A região da fase/subfase não pode ser removida, utilize o id da região superior.'
+                );
+            } else if (self.etapa_pai && dto.regiao_id !== self.regiao_id) {
+                this.logger.debug(`Validando região da etapa ${id} com base na região do pai`);
                 if (!self.etapa_pai.regiao)
                     throw new BadRequestException(
                         'A etapa pai não possui região, que é obrigatória para o cadastro dos filhos com região.'
@@ -293,7 +298,10 @@ export class EtapaService {
                         );
                 }
                 verificaFilhos = true;
+            } else if (dto.regiao_id === null && !self.etapa_pai) {
+                verificaFilhos = true;
             } else if (dto.regiao_id && !self.etapa_pai) {
+                this.logger.debug(`Validando região da etapa ${id} com base no cronograma`);
                 // garante para os registros novos que sempre vai ter uma região iniciada com o nível do cronograma
                 // aqui sempre entra só no nivel da etapa (não tem pai)
 
@@ -355,6 +363,8 @@ export class EtapaService {
             const inicioReal: Date | null = dto.inicio_real ? dto.inicio_real : self.inicio_real;
             if (dto.termino_real && inicioReal && dto.termino_real < inicioReal)
                 throw new BadRequestException(MSG_TERM_ANTERIOR_INI_REAL);
+
+            if (dto.descricao) throw new BadRequestException('XXX.');
 
             const etapaAtualizada = await prismaTx.etapa.update({
                 where: { id: id },
