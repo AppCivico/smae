@@ -364,8 +364,6 @@ export class EtapaService {
             if (dto.termino_real && inicioReal && dto.termino_real < inicioReal)
                 throw new BadRequestException(MSG_TERM_ANTERIOR_INI_REAL);
 
-            if (dto.descricao) throw new BadRequestException('XXX.');
-
             const etapaAtualizada = await prismaTx.etapa.update({
                 where: { id: id },
                 data: {
