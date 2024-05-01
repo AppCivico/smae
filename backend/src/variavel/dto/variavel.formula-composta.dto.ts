@@ -1,4 +1,5 @@
-import { Type } from 'class-transformer';
+import { Transform } from 'class-transformer';
+import { DateTransform } from '../../auth/transforms/date.transform';
 import { IsOnlyDate } from '../../common/decorators/IsDateOnly';
 
 export class PeriodoFormulaCompostaDto {
@@ -15,6 +16,6 @@ export class ListaPeriodoFormulaCompostaDto {
 
 export class FilterPeriodoFormulaCompostaDto {
     @IsOnlyDate()
-    @Type(() => Date)
+    @Transform(DateTransform)
     periodo: Date;
 }

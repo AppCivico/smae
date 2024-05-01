@@ -18,6 +18,7 @@ import { IdCodTituloDto } from '../../../common/dto/IdCodTitulo.dto';
 import { TipoDocumentoDto } from '../../../tipo-documento/entities/tipo-documento.entity';
 import { SerieValorNomimal } from '../../../variavel/entities/variavel.entity';
 import { DateYMD } from '../../../common/date2ymd';
+import { DateTransform } from '../../../auth/transforms/date.transform';
 
 export const MfPerfilDto = {
     'ponto_focal': 'ponto_focal',
@@ -231,7 +232,7 @@ export class VariavelComplementacaoDto {
      */
     @IsOptional()
     @IsOnlyDate()
-    @Type(() => Date)
+    @Transform(DateTransform)
     data_valor: Date;
 
     /**
@@ -252,7 +253,7 @@ export class VariavelConferidaDto {
      */
     @IsOptional()
     @IsOnlyDate()
-    @Type(() => Date)
+    @Transform(DateTransform)
     data_valor: Date;
 
     /**
@@ -269,7 +270,7 @@ export class VariavelAnaliseQualitativaDto {
      * @example YYYY-MM-DD
      */
     @IsOnlyDate()
-    @Type(() => Date)
+    @Transform(DateTransform)
     data_valor: Date;
 
     /**
@@ -334,7 +335,7 @@ export class FormulaCompostaAnaliseQualitativaDto extends OmitType(VariavelAnali
      * @example YYYY-MM-DD
      */
     @IsOnlyDate()
-    @Type(() => Date)
+    @Transform(DateTransform)
     data_ciclo: Date;
 
     /**
@@ -372,7 +373,7 @@ export class FilterVariavelAnaliseQualitativaDto {
      */
     @IsOptional()
     @IsOnlyDate()
-    @Type(() => Date)
+    @Transform(DateTransform)
     data_valor: Date;
 
     /**
@@ -401,7 +402,7 @@ export class FilterVariavelAnaliseQualitativaUltimaRevisaoDto extends PickType(F
      * @example YYYY-MM-DD
      */
     @IsOnlyDate()
-    @Type(() => Date)
+    @Transform(DateTransform)
     data_valor: Date;
 }
 
@@ -497,7 +498,7 @@ export class VariavelAnaliseQualitativaDocumentoDto {
      */
     @IsOptional()
     @IsOnlyDate()
-    @Type(() => Date)
+    @Transform(DateTransform)
     data_valor: Date;
 
     /**
@@ -521,7 +522,7 @@ export class FilterFormulaCompostaAnaliseQualitativaDto {
      */
     @IsOptional()
     @IsOnlyDate()
-    @Type(() => Date)
+    @Transform(DateTransform)
     data_ciclo: Date;
 
     /**
@@ -560,7 +561,7 @@ export class FormulaCompostaAnaliseQualitativaDocumentoDto {
      */
     @IsOptional()
     @IsOnlyDate()
-    @Type(() => Date)
+    @Transform(DateTransform)
     data_ciclo: Date;
 
     /**

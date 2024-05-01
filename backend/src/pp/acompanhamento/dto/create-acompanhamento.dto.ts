@@ -13,6 +13,7 @@ import {
     ValidateNested,
 } from 'class-validator';
 import { IsOnlyDate } from 'src/common/decorators/IsDateOnly';
+import { DateTransform } from '../../../auth/transforms/date.transform';
 
 export class ProjetoAcompanhamentoDto {
     @IsOptional()
@@ -33,13 +34,13 @@ export class ProjetoAcompanhamentoDto {
 
     @IsOptional()
     @IsOnlyDate()
-    @Type(() => Date)
+    @Transform(DateTransform)
     @ValidateIf((object, value) => value !== null)
     prazo_encaminhamento?: Date;
 
     @IsOptional()
     @IsOnlyDate()
-    @Type(() => Date)
+    @Transform(DateTransform)
     @ValidateIf((object, value) => value !== null)
     prazo_realizado?: Date;
 }
@@ -51,7 +52,7 @@ export class CreateProjetoAcompanhamentoDto {
     pauta?: string;
 
     @IsOnlyDate()
-    @Type(() => Date)
+    @Transform(DateTransform)
     @ValidateIf((object, value) => value !== null)
     data_registro: Date;
 

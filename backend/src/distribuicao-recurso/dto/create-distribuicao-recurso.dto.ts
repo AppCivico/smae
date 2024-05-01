@@ -1,4 +1,4 @@
-import { Type } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
 import {
     IsArray,
     IsBoolean,
@@ -12,6 +12,7 @@ import {
     ValidateNested,
 } from 'class-validator';
 import { IsOnlyDate } from 'src/common/decorators/IsDateOnly';
+import { DateTransform } from '../../auth/transforms/date.transform';
 
 export class CreateDistribuicaoRecursoDto {
     @IsNumber()
@@ -101,7 +102,7 @@ export class CreateDistribuicaoRecursoDto {
      */
     @IsOptional()
     @IsOnlyDate()
-    @Type(() => Date)
+    @Transform(DateTransform)
     @ValidateIf((object, value) => value !== null)
     assinatura_termo_aceite?: Date;
 
@@ -112,7 +113,7 @@ export class CreateDistribuicaoRecursoDto {
      */
     @IsOptional()
     @IsOnlyDate()
-    @Type(() => Date)
+    @Transform(DateTransform)
     @ValidateIf((object, value) => value !== null)
     assinatura_municipio?: Date;
 
@@ -123,7 +124,7 @@ export class CreateDistribuicaoRecursoDto {
      */
     @IsOptional()
     @IsOnlyDate()
-    @Type(() => Date)
+    @Transform(DateTransform)
     @ValidateIf((object, value) => value !== null)
     assinatura_estado?: Date;
 
@@ -134,7 +135,7 @@ export class CreateDistribuicaoRecursoDto {
      */
     @IsOptional()
     @IsOnlyDate()
-    @Type(() => Date)
+    @Transform(DateTransform)
     @ValidateIf((object, value) => value !== null)
     vigencia?: Date;
 
@@ -145,7 +146,7 @@ export class CreateDistribuicaoRecursoDto {
      */
     @IsOptional()
     @IsOnlyDate()
-    @Type(() => Date)
+    @Transform(DateTransform)
     @ValidateIf((object, value) => value !== null)
     conclusao_suspensiva?: Date;
 

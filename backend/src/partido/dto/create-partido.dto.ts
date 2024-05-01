@@ -1,6 +1,7 @@
-import { Type } from 'class-transformer';
+import { Transform } from 'class-transformer';
 import { IsNumber, IsOptional, IsString, Max, MaxLength } from 'class-validator';
 import { IsOnlyDate } from 'src/common/decorators/IsDateOnly';
+import { DateTransform } from '../../auth/transforms/date.transform';
 
 export class CreatePartidoDto {
     @IsNumber()
@@ -26,7 +27,7 @@ export class CreatePartidoDto {
      */
     @IsOptional()
     @IsOnlyDate()
-    @Type(() => Date)
+    @Transform(DateTransform)
     fundacao?: Date;
 
     /**
@@ -35,6 +36,6 @@ export class CreatePartidoDto {
      */
     @IsOptional()
     @IsOnlyDate()
-    @Type(() => Date)
+    @Transform(DateTransform)
     encerramento?: Date;
 }
