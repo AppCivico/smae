@@ -379,6 +379,7 @@ export class EtapaService {
             });
 
             if (geolocalizacao) {
+                const mudouDeRegiao = etapaAtualizada.regiao_id !== self.regiao_id;
                 const geoDto = new CreateGeoEnderecoReferenciaDto();
                 geoDto.etapa_id = id;
                 geoDto.tokens = geolocalizacao;
@@ -387,7 +388,11 @@ export class EtapaService {
 
                 const regioes = await this.geolocService.upsertGeolocalizacao(geoDto, user, prismaTx, createdNow);
 
-                if (regioes.novos_enderecos.length > 0 && cronoNivelRegiao && etapaAtualizada.regiao_id) {
+                if (
+                    (regioes.novos_enderecos.length > 0 || mudouDeRegiao) &&
+                    cronoNivelRegiao &&
+                    etapaAtualizada.regiao_id
+                ) {
                     // todos os endereços precisam ser compatíveis entre si
                     // ou seja, se um endereço é de um município, todos os outros também precisam ser do mesmo
                     // município ou um filho desse município
