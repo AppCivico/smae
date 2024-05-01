@@ -18,6 +18,7 @@ import {
     ValidateIf,
 } from 'class-validator';
 import { IsOnlyDate } from 'src/common/decorators/IsDateOnly';
+import { DateTransform } from '../../../auth/transforms/date.transform';
 
 export class CreateProjetoDto {
     /**
@@ -170,7 +171,7 @@ export class CreateProjetoDto {
      * @example "2020-01-01"
      */
     @IsOnlyDate()
-    @Type(() => Date)
+    @Transform(DateTransform)
     @ValidateIf((object, value) => value !== null)
     previsao_inicio: Date | null;
 
@@ -179,7 +180,7 @@ export class CreateProjetoDto {
      * @example "2020-01-01"
      */
     @IsOnlyDate()
-    @Type(() => Date)
+    @Transform(DateTransform)
     @ValidateIf((object, value) => value !== null)
     previsao_termino: Date | null;
 
@@ -260,7 +261,7 @@ export class CreateProjetoDocumentDto {
      */
     @IsOptional()
     @IsOnlyDate()
-    @Type(() => Date)
+    @Transform(DateTransform)
     @ValidateIf((object, value) => value !== null)
     data?: Date;
 

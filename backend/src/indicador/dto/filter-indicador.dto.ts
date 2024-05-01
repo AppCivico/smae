@@ -1,7 +1,8 @@
 import { PickType } from '@nestjs/swagger';
-import { Type } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
 import { IsInt, IsOptional } from 'class-validator';
 import { IsOnlyDate } from '../../common/decorators/IsDateOnly';
+import { DateTransform } from '../../auth/transforms/date.transform';
 
 export class FilterIndicadorDto {
     /**
@@ -48,7 +49,7 @@ export class FilterSerieVariavelDto {
      */
     @IsOptional()
     @IsOnlyDate()
-    @Type(() => Date)
+    @Transform(DateTransform)
     data_inicio?: Date;
 
     /**
@@ -57,7 +58,7 @@ export class FilterSerieVariavelDto {
      */
     @IsOptional()
     @IsOnlyDate()
-    @Type(() => Date)
+    @Transform(DateTransform)
     data_fim?: Date;
 
     /**

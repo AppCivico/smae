@@ -1,4 +1,4 @@
-import { Type } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
 import {
     ArrayMaxSize,
     ArrayMinSize,
@@ -15,6 +15,7 @@ import {
     ValidateIf,
 } from 'class-validator';
 import { IsOnlyDate } from '../../common/decorators/IsDateOnly';
+import { DateTransform } from '../../auth/transforms/date.transform';
 
 export class CreateEtapaDto {
     /**
@@ -80,7 +81,7 @@ export class CreateEtapaDto {
      */
     @IsOptional()
     @IsOnlyDate()
-    @Type(() => Date)
+    @Transform(DateTransform)
     @ValidateIf((object, value) => value !== null)
     inicio_previsto?: Date | null;
 
@@ -90,7 +91,7 @@ export class CreateEtapaDto {
      */
     @IsOptional()
     @IsOnlyDate()
-    @Type(() => Date)
+    @Transform(DateTransform)
     @ValidateIf((object, value) => value !== null)
     termino_previsto?: Date | null;
 
@@ -100,7 +101,7 @@ export class CreateEtapaDto {
      */
     @IsOptional()
     @IsOnlyDate()
-    @Type(() => Date)
+    @Transform(DateTransform)
     @ValidateIf((object, value) => value !== null)
     inicio_real?: Date | null;
 
@@ -110,7 +111,7 @@ export class CreateEtapaDto {
      */
     @IsOptional()
     @IsOnlyDate()
-    @Type(() => Date)
+    @Transform(DateTransform)
     @ValidateIf((object, value) => value !== null)
     termino_real?: Date | null;
 
@@ -120,7 +121,7 @@ export class CreateEtapaDto {
      */
     @IsOptional()
     @IsOnlyDate()
-    @Type(() => Date)
+    @Transform(DateTransform)
     @ValidateIf((object, value) => value !== null)
     prazo_inicio?: Date | null;
 
@@ -130,7 +131,7 @@ export class CreateEtapaDto {
      */
     @IsOptional()
     @IsOnlyDate()
-    @Type(() => Date)
+    @Transform(DateTransform)
     @ValidateIf((object, value) => value !== null)
     prazo_termino?: Date | null;
 

@@ -1,7 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Periodicidade, Periodo } from '@prisma/client';
-import { Type } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
 import { IsArray, IsBoolean, IsEnum, IsInt, IsNumber, IsOptional, ValidateIf } from 'class-validator';
+import { DateTransform } from '../../auth/transforms/date.transform';
 import { IsOnlyDate } from '../../common/decorators/IsDateOnly';
 
 export class CreateParamsPainelConteudoDto {
@@ -54,12 +55,12 @@ export class CreatePainelConteudoDto {
 
     @IsOptional()
     @IsOnlyDate()
-    @Type(() => Date)
+    @Transform(DateTransform)
     periodo_fim?: Date;
 
     @IsOptional()
     @IsOnlyDate()
-    @Type(() => Date)
+    @Transform(DateTransform)
     periodo_inicio?: Date;
 
     @IsOptional()

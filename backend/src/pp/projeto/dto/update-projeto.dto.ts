@@ -15,6 +15,7 @@ import {
     ValidateNested,
 } from 'class-validator';
 import { IsOnlyDate } from 'src/common/decorators/IsDateOnly';
+import { DateTransform } from '../../../auth/transforms/date.transform';
 import { CreateProjetoDto, CreateProjetoSeiDto } from './create-projeto.dto';
 
 export class PPfonteRecursoDto {
@@ -87,13 +88,13 @@ export class UpdateProjetoRegistroSeiDto extends PartialType(CreateProjetoSeiDto
 // esses campos serão updated apenas via sistema (pelas tarefas)
 //    @IsOptional()
 //    @IsOnlyDate()
-//    @Type(() => Date)
+//    @Transform(DateTransform)
 //    @ValidateIf((object, value) => value !== null)
 //    realizado_inicio?: Date
 //
 //    @IsOptional()
 //    @IsOnlyDate()
-//    @Type(() => Date)
+//    @Transform(DateTransform)
 //    @ValidateIf((object, value) => value !== null)
 //    realizado_termino?: Date
 //
@@ -184,7 +185,7 @@ export class UpdateProjetoDto extends OmitType(PartialType(CreateProjetoDto), ['
      */
     @IsOptional()
     @IsOnlyDate()
-    @Type(() => Date)
+    @Transform(DateTransform)
     @ValidateIf((object, value) => value !== null)
     data_aprovacao?: Date | null;
 
@@ -194,7 +195,7 @@ export class UpdateProjetoDto extends OmitType(PartialType(CreateProjetoDto), ['
      */
     @IsOptional()
     @IsOnlyDate()
-    @Type(() => Date)
+    @Transform(DateTransform)
     @ValidateIf((object, value) => value !== null)
     data_revisao?: Date | null;
 
@@ -244,7 +245,7 @@ export class UpdateProjetoDocumentDto {
 
     @IsOptional()
     @IsOnlyDate()
-    @Type(() => Date)
+    @Transform(DateTransform)
     @ValidateIf((object, value) => value !== null)
     data?: Date | null;
 }

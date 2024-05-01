@@ -1,7 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { NivelOrcamento } from '@prisma/client';
-import { Type } from 'class-transformer';
+import { Transform } from 'class-transformer';
 import { IsBoolean, IsEnum, IsOptional, IsString, MaxLength, MinLength, ValidateIf } from 'class-validator';
+import { DateTransform } from '../../auth/transforms/date.transform';
 import { IsOnlyDate } from '../../common/decorators/IsDateOnly';
 
 export class CreatePdmDto {
@@ -42,7 +43,7 @@ export class CreatePdmDto {
      */
     @IsOptional()
     @IsOnlyDate()
-    @Type(() => Date)
+    @Transform(DateTransform)
     data_inicio: Date | null;
 
     /**
@@ -51,7 +52,7 @@ export class CreatePdmDto {
      */
     @IsOptional()
     @IsOnlyDate()
-    @Type(() => Date)
+    @Transform(DateTransform)
     data_fim: Date | null;
 
     /**
@@ -59,7 +60,7 @@ export class CreatePdmDto {
      */
     @IsOptional()
     @IsOnlyDate()
-    @Type(() => Date)
+    @Transform(DateTransform)
     data_publicacao?: Date | null;
 
     /**
@@ -67,7 +68,7 @@ export class CreatePdmDto {
      */
     @IsOptional()
     @IsOnlyDate()
-    @Type(() => Date)
+    @Transform(DateTransform)
     periodo_do_ciclo_participativo_inicio?: Date | null;
 
     /**
@@ -75,7 +76,7 @@ export class CreatePdmDto {
      */
     @IsOptional()
     @IsOnlyDate()
-    @Type(() => Date)
+    @Transform(DateTransform)
     periodo_do_ciclo_participativo_fim?: Date | null;
 
     /**
