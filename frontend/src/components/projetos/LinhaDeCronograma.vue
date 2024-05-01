@@ -190,7 +190,7 @@ export default {
         class="center"
       >
         <router-link
-          v-if="linha.nivel < nivelMaximoTarefa || nivelMaximoTarefa === -1 && linha.pode_editar"
+          v-if="(linha.nivel < nivelMaximoTarefa || nivelMaximoTarefa === -1) && linha.pode_editar"
           :hidden="(!oProjetoÉPrioritário || linha.dependencias?.length)
             && $route.meta.prefixoParaFilhas !== 'TransferenciasVoluntarias'"
           :title="`Criar tarefa filha de ${linha.hierarquia}`"
