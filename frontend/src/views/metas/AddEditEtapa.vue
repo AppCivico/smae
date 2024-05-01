@@ -82,7 +82,7 @@ const geolocalizaçãoPorToken = computed(() => (
     || singleEtapa.value?.error
     || !singleEtapa.value?.id
     ? {}
-    : singleEtapa.value?.geolocalizacao?.reduce((acc, cur) => {
+    : singleEtapa.value?.etapa?.geolocalizacao?.reduce((acc, cur) => {
       acc[cur.token] = cur;
       return acc;
     }, {})
@@ -99,7 +99,7 @@ const valoresIniciais = computed(() => (singleEtapa.value?.loading
   }
   : {
     ...singleEtapa.value?.etapa,
-    geolocalizacao: singleEtapa.value?.geolocalizacao?.map((x) => x.token) || [],
+    geolocalizacao: singleEtapa.value?.etapa?.geolocalizacao?.map((x) => x.token) || [],
   }));
 
 if (etapa_id) {
