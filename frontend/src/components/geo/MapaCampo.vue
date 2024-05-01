@@ -197,10 +197,11 @@ async function buscarEndereço(valor) {
 }
 
 async function buscarPorTermo(termo) {
-  const { valid: buscaVálida } = await validateField('termo_de_busca');
-
-  if (buscaVálida) {
+  if (termo.length >= 3) {
     buscarEndereço(termo);
+    setFieldError('termo_de_busca', []);
+  } else {
+    setFieldError('termo_de_busca', 'Termo de busca está menor que 3');
   }
 }
 
@@ -408,7 +409,7 @@ const formulárioSujo = useIsFormDirty();
           />
 
           <Field
-            v-model="termoDeBusca"
+            v-model.trim="termoDeBusca"
             name="termo_de_busca"
             type="search"
             class="inputtext light mb1"
@@ -418,6 +419,7 @@ const formulárioSujo = useIsFormDirty();
               loading: buscandoEndereços,
             }"
             @keypress.enter.prevent="buscarPorTermo(termoDeBusca)"
+            @change="setFieldError('termo_de_busca', [])"
           />
 
           <ErrorMessage
