@@ -400,8 +400,7 @@ export class EtapaService {
                 },
             });
 
-            let etapasDb: DadosBaseEtapa[] = [];
-            let mudouDeRegiao = etapaAtualizada.regiao_id !== self.regiao_id;
+            const mudouDeRegiao = etapaAtualizada.regiao_id !== self.regiao_id;
 
             if (geolocalizacao) {
                 this.logger.debug(`Atualizando geolocalização da etapa ${id}`);
@@ -420,7 +419,7 @@ export class EtapaService {
                 ) {
                     this.logger.debug(`Validando região da etapa ${id} com base na geolocalização`);
                     // carrega pois a região não foi alterada
-                    if (etapasDb.length == 0) etapasDb = await this.carregaArvoreEtapas(prismaTx, id);
+                    const etapasDb = await this.carregaArvoreEtapas(prismaTx, id);
 
                     // todos os endereços precisam ser compatíveis entre si
                     // ou seja, se um endereço é de um município, todos os outros também precisam ser do mesmo
@@ -437,29 +436,10 @@ export class EtapaService {
                         etapaAtualizada,
                         createdNow
                     );
-                    // desliga o proximo check, já que migrou de cidade
-                    if (!eraCompativel) mudouDeRegiao = false;
+                    this.logger.debug(`Região da etapa ${id} validada com base na geolocalização: ${eraCompativel}`);
                 } else {
                     this.logger.debug(`Não foi necessário validar a região da etapa ${id} com base na geolocalização`);
                 }
-            }
-
-            if (mudouDeRegiao) {
-                // commit coentando só pra tirar o erro interno, esse código precisa ser pensando melhor ainda.
-                // // considerando que o usuário pode pre-ativamente mudar a Região e enviar pra api junto com a nova
-                // // geoloc que irá migrar depois do update do endereço da geoloc se for incompatível,
-                // // mas não sabemos se isso sempre irá ou não acontecer, então como geoloc tem preferencia,
-                //
-                // // se já tinha um geoloc em qualquer nível, o update não ocorreu, então nem vai chegar aqui
-                // // se não tinha e migrou de cidade, não precisa mais verificar pois os dados da região recebida está
-                // // desatualizada
-                //
-                // if (etapasDb.length == 0) etapasDb = await this.carregaArvoreEtapas(prismaTx, id);
-                //
-                // if (etapasDb.some((e) => e.geo_loc_count >= 1))
-                // throw new BadRequestException(
-                // 'Não é possível alterar a região de uma etapa que possui endereços cadastrados em sua hierarquia.'
-                // );
             }
 
             await this.updateResponsaveis(responsaveis, self, prismaTx);
