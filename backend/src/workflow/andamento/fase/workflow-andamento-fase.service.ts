@@ -38,6 +38,12 @@ export class WorkflowAndamentoFaseService {
                                 workflow_id: true,
                             },
                         },
+
+                        tarefaEspelhada: {
+                            select: {
+                                id: true,
+                            },
+                        },
                     },
                 });
                 if (!self) throw new Error('Não foi encontrada um registro de andamento para esta fase');
@@ -120,6 +126,25 @@ export class WorkflowAndamentoFaseService {
                         atualizado_por: user.id,
                     },
                     select: { id: true },
+                });
+
+                // Atualizando tarefa no cronograma.
+                let recursos: string | undefined;
+                if (dto.pessoa_responsavel_id != undefined) {
+                    const pessoa = await prismaTxn.pessoa.findFirstOrThrow({
+                        where: { id: dto.pessoa_responsavel_id },
+                        select: { nome_exibicao: true },
+                    });
+
+                    recursos = pessoa.nome_exibicao;
+                }
+
+                await prismaTxn.tarefa.update({
+                    where: { id: self.tarefaEspelhada[0].id },
+                    data: {
+                        orgao_id: dto.orgao_responsavel_id,
+                        recursos: recursos,
+                    },
                 });
 
                 if (dto.tarefas != undefined && dto.tarefas.length > 0) {
@@ -284,6 +309,7 @@ export class WorkflowAndamentoFaseService {
                             where: { id: transferenciaAndamentoTarefaRow.tarefaEspelhada[0].id },
                             data: {
                                 termino_real: tarefa.concluida == true ? new Date(Date.now()) : null,
+                                orgao_id: tarefa.orgao_responsavel_id,
                                 percentual_concluido: tarefa.concluida == true ? 100 : 0,
                                 atualizado_em: new Date(Date.now()),
                             },
