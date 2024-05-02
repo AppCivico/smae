@@ -11,6 +11,10 @@ defineProps({
     type: String,
     default: '',
   },
+  required: {
+    type: Boolean,
+    default: false,
+  },
   schema: {
     type: Object,
     default: () => null,
@@ -35,7 +39,7 @@ defineProps({
         <template v-if="schema">
           {{ schema.fields?.[name]?.spec?.label || `Campo: ${name}` }}
         </template>&nbsp;<span
-          v-if="schema.fields[name]?.spec?.presence === 'required'"
+          v-if="required || schema.fields[name]?.spec?.presence === 'required'"
           class="tvermelho"
         >*</span>
       </template>
