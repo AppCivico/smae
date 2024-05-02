@@ -2,7 +2,7 @@ import { TransformFnParams } from 'class-transformer';
 
 export function DateTransform(a: TransformFnParams): Date | undefined | null {
     if (a.value === '' || a.value === null) return a.value;
-    if (a.value instanceof Date) a.value = a.value.toDateString();
+    if (a.value instanceof Date) return a.value;
 
     const dateStr = a.value.substring(0, 10);
     const dateParts = dateStr.split('-');
