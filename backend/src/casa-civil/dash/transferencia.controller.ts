@@ -27,7 +27,7 @@ export class DashTransferenciaController {
     ): Promise<ListMfDashTransferenciasDto & RequestInfoDto> {
         const start = Date.now();
 
-        const transferencias = await this.metasDashService.transferencias(params);
+        const transferencias = await this.metasDashService.transferencias(params, user);
 
         return {
             ...transferencias,
