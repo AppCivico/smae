@@ -19,7 +19,7 @@ export class DistribuicaoRecursoController {
     @Post()
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
-    @Roles('CadastroBancada.inserir')
+    @Roles('CadastroTransferencia.inserir')
     async create(@Body() dto: CreateDistribuicaoRecursoDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
         return await this.distribuicaoRecursoService.create(dto, user);
     }
@@ -33,7 +33,7 @@ export class DistribuicaoRecursoController {
     @Get(':id')
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
-    @Roles('CadastroBancada.editar', 'CadastroBancada.inserir')
+    @Roles('CadastroTransferencia.listar')
     async findOne(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt): Promise<DistribuicaoRecursoDto> {
         return await this.distribuicaoRecursoService.findOne(params.id, user);
     }
@@ -41,7 +41,7 @@ export class DistribuicaoRecursoController {
     @Patch(':id')
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
-    @Roles('CadastroBancada.editar')
+    @Roles('CadastroTransferencia.editar')
     async update(
         @Param() params: FindOneParams,
         @Body() dto: UpdateDistribuicaoRecursoDto,
@@ -53,7 +53,7 @@ export class DistribuicaoRecursoController {
     @Delete(':id')
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
-    @Roles('CadastroBancada.remover')
+    @Roles('CadastroTransferencia.remover')
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.ACCEPTED)
     async remove(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt) {
