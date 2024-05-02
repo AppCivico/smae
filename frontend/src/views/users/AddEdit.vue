@@ -119,229 +119,227 @@ async function onSubmit(payload) {
       <hr class="mb1">
     </div>
 
-    <template v-if="!(user?.loading || user?.error)">
-      <Form
-        v-slot="{ errors, isSubmitting, setFieldValue, values }"
-        :validation-schema="schema"
-        :initial-values="user"
-        @submit="onSubmit"
+    <Form
+      v-slot="{ errors, isSubmitting, setFieldValue, values }"
+      :validation-schema="schema"
+      :initial-values="user"
+      @submit="onSubmit"
+    >
+      <div
+        v-if="user && id"
+        class="flex g2 mb2"
       >
+        <div class="">
+          <label class="block mb1">
+            <Field
+              name="desativado"
+              class="inputcheckbox"
+              type="checkbox"
+              value="1"
+              :checked="desativado"
+            /><span>Inativar usuário</span>
+          </label>
+        </div>
+        <div class="f1">
+          <label class="label">Motivo <span class="tvermelho">*</span></label>
+          <Field
+            name="desativado_motivo"
+            type="text"
+            class="inputtext light mb1"
+            :class="{ 'error': errors.desativado_motivo }"
+          />
+          <div class="error-msg">
+            {{ errors.desativado_motivo }}
+          </div>
+        </div>
+      </div>
+
+      <div class="flex g2">
+        <div class="f1">
+          <label class="label">E-mail <span class="tvermelho">*</span></label>
+          <Field
+            name="email"
+            type="text"
+            class="inputtext light mb1"
+            :class="{ 'error': errors.email }"
+          />
+          <div class="error-msg">
+            {{ errors.email }}
+          </div>
+        </div>
+        <div class="f1">
+          <label class="label">Nome Completo <span class="tvermelho">*</span></label>
+          <Field
+            name="nome_completo"
+            type="text"
+            class="inputtext light mb1"
+            :class="{ 'error': errors.nome_completo }"
+            @change="!personalizarNomeParaExibição
+              ? setFieldValue('nome_exibicao', values.nome_completo)
+              : null"
+          />
+          <div class="error-msg">
+            {{ errors.nome_completo }}
+          </div>
+        </div>
+      </div>
+
+      <div class="flex g2 mb2">
+        <div class="mt2">
+          <label class="block">
+            <input
+              v-model="personalizarNomeParaExibição"
+              class="inputcheckbox"
+              type="checkbox"
+            ><span>Personalizar nome para exibição</span>
+          </label>
+        </div>
+
         <div
-          v-if="user && id"
-          class="flex g2 mb2"
+          v-show="personalizarNomeParaExibição"
+          class="f1"
         >
-          <div class="">
-            <label class="block mb1">
-              <Field
-                name="desativado"
-                class="inputcheckbox"
-                type="checkbox"
-                value="1"
-                :checked="desativado"
-              /><span>Inativar usuário</span>
-            </label>
-          </div>
-          <div class="f1">
-            <label class="label">Motivo <span class="tvermelho">*</span></label>
-            <Field
-              name="desativado_motivo"
-              type="text"
-              class="inputtext light mb1"
-              :class="{ 'error': errors.desativado_motivo }"
-            />
-            <div class="error-msg">
-              {{ errors.desativado_motivo }}
-            </div>
+          <label class="label">Nome para exibição <span class="tvermelho">*</span></label>
+          <Field
+            name="nome_exibicao"
+            type="text"
+            class="inputtext light mb1"
+            :class="{ 'error': errors.nome_exibicao }"
+            @change="!personalizarNomeParaExibição
+              ? setFieldValue('nome_exibicao', values.nome_completo)
+              : null"
+          />
+          <div class="error-msg">
+            {{ errors.nome_exibicao }}
           </div>
         </div>
-
-        <div class="flex g2">
-          <div class="f1">
-            <label class="label">E-mail <span class="tvermelho">*</span></label>
-            <Field
-              name="email"
-              type="text"
-              class="inputtext light mb1"
-              :class="{ 'error': errors.email }"
-            />
-            <div class="error-msg">
-              {{ errors.email }}
-            </div>
-          </div>
-          <div class="f1">
-            <label class="label">Nome Completo <span class="tvermelho">*</span></label>
-            <Field
-              name="nome_completo"
-              type="text"
-              class="inputtext light mb1"
-              :class="{ 'error': errors.nome_completo }"
-              @change="!personalizarNomeParaExibição
-                ? setFieldValue('nome_exibicao', values.nome_completo)
-                : null"
-            />
-            <div class="error-msg">
-              {{ errors.nome_completo }}
-            </div>
+        <div class="f1">
+          <label class="label">Lotação <span class="tvermelho">*</span></label>
+          <Field
+            name="lotacao"
+            type="text"
+            class="inputtext light mb1"
+            :class="{ 'error': errors.lotacao }"
+          />
+          <div class="error-msg">
+            {{ errors.lotacao }}
           </div>
         </div>
-
-        <div class="flex g2 mb2">
-          <div class="mt2">
-            <label class="block">
-              <input
-                v-model="personalizarNomeParaExibição"
-                class="inputcheckbox"
-                type="checkbox"
-              ><span>Personalizar nome para exibição</span>
-            </label>
-          </div>
-
-          <div
-            v-show="personalizarNomeParaExibição"
-            class="f1"
+        <div class="f1">
+          <label class="label">Órgão <span class="tvermelho">*</span></label>
+          <Field
+            name="orgao_id"
+            as="select"
+            class="inputtext light mb1"
+            :class="{ 'error': errors.orgao_id }"
           >
-            <label class="label">Nome para exibição <span class="tvermelho">*</span></label>
-            <Field
-              name="nome_exibicao"
-              type="text"
-              class="inputtext light mb1"
-              :class="{ 'error': errors.nome_exibicao }"
-              @change="!personalizarNomeParaExibição
-                ? setFieldValue('nome_exibicao', values.nome_completo)
-                : null"
-            />
-            <div class="error-msg">
-              {{ errors.nome_exibicao }}
-            </div>
-          </div>
-          <div class="f1">
-            <label class="label">Lotação <span class="tvermelho">*</span></label>
-            <Field
-              name="lotacao"
-              type="text"
-              class="inputtext light mb1"
-              :class="{ 'error': errors.lotacao }"
-            />
-            <div class="error-msg">
-              {{ errors.lotacao }}
-            </div>
-          </div>
-          <div class="f1">
-            <label class="label">Órgão <span class="tvermelho">*</span></label>
-            <Field
-              name="orgao_id"
-              as="select"
-              class="inputtext light mb1"
-              :class="{ 'error': errors.orgao_id }"
-            >
-              <option value="">
-                Selecionar
+            <option value="">
+              Selecionar
+            </option>
+            <template v-if="organs.length">
+              <option
+                v-for="organ in organs"
+                :key="organ.id"
+                :value="organ.id"
+                :selected="orgao_id && organ.id == orgao_id"
+                :title="organ.descricao?.length > 36 ? organ.descricao : null"
+              >
+                {{ organ.sigla }} - {{ truncate(organ.descricao, 36) }}
               </option>
-              <template v-if="organs.length">
-                <option
-                  v-for="organ in organs"
-                  :key="organ.id"
-                  :value="organ.id"
-                  :selected="orgao_id && organ.id == orgao_id"
-                  :title="organ.descricao?.length > 36 ? organ.descricao : null"
-                >
-                  {{ organ.sigla }} - {{ truncate(organ.descricao, 36) }}
-                </option>
-              </template>
-            </Field>
-            <div class="error-msg">
-              {{ errors.orgao_id }}
-            </div>
+            </template>
+          </Field>
+          <div class="error-msg">
+            {{ errors.orgao_id }}
           </div>
         </div>
+      </div>
 
-        <div class="mb2">
-          <div class="label">
-            Perfil de acesso
-          </div>
-          <template v-if="accessProfiles?.loading">
-            <span class="spinner">Carregando</span>
-          </template>
-          <template v-if="accessProfiles.length">
-            <label
-              v-for="profile in accessProfiles"
-              :key="profile.id"
-              class="block mb1"
-            >
-              <Field
-                name="perfil_acesso_ids"
-                class="inputcheckbox"
-                type="checkbox"
-                :class="{ 'error': errors.perfil_acesso_ids }"
-                :value="profile.id"
-                :checked="perfil_acesso_ids && perfil_acesso_ids.includes(profile.id)"
-              /><span>
-                {{ profile.nome }}
-                <span class="qtipitem">i <div class="qtip">
-                  <p class="label">Privilegios</p>
-                  <ul>
-                    <li
-                      v-for="privilegio in profile.perfil_privilegio"
-                      :key="privilegio.privilegio.nome"
-                    >{{ privilegio.privilegio.nome }}</li>
-                  </ul>
-                </div></span></span>
-
-              <small class="block tc300">
-                {{ profile.descricao }}
-              </small>
-            </label>
-            <div class="error-msg">
-              {{ errors.perfil_acesso_ids }}
-            </div>
-          </template>
+      <div class="mb2">
+        <div class="label">
+          Perfil de acesso
         </div>
-
-        <div
-          v-if="sistemaEscolhido.valueOf() === 'PDM'"
-          class="mb2"
-        >
-          <div class="label">
-            Grupos de paineis da meta
-          </div>
-          <template v-if="PaineisGrupos?.loading">
-            <span class="spinner">Carregando</span>
-          </template>
-          <template v-if="PaineisGrupos.length">
-            <label
-              v-for="p in PaineisGrupos"
-              :key="p.id"
-              class="block mb1"
-            >
-              <Field
-                name="grupos"
-                class="inputcheckbox"
-                type="checkbox"
-                :class="{ 'error': errors.grupos }"
-                :value="p.id"
-                :checked="grupos && grupos.includes(p.id)"
-              /><span>{{ p.nome }}</span>
-            </label>
-            <div class="error-msg">
-              {{ errors.grupos }}
-            </div>
-          </template>
-        </div>
-
-        <FormErrorsList :errors="errors" />
-
-        <div class="flex spacebetween center mb2">
-          <hr class="mr2 f1">
-          <button
-            class="btn big"
-            :disabled="isSubmitting"
+        <template v-if="accessProfiles?.loading">
+          <span class="spinner">Carregando</span>
+        </template>
+        <template v-if="accessProfiles.length">
+          <label
+            v-for="profile in accessProfiles"
+            :key="profile.id"
+            class="block mb1"
           >
-            Salvar cadastro
-          </button>
-          <hr class="ml2 f1">
+            <Field
+              name="perfil_acesso_ids"
+              class="inputcheckbox"
+              type="checkbox"
+              :class="{ 'error': errors.perfil_acesso_ids }"
+              :value="profile.id"
+              :checked="perfil_acesso_ids && perfil_acesso_ids.includes(profile.id)"
+            /><span>
+              {{ profile.nome }}
+              <span class="qtipitem">i <div class="qtip">
+                <p class="label">Privilegios</p>
+                <ul>
+                  <li
+                    v-for="privilegio in profile.perfil_privilegio"
+                    :key="privilegio.privilegio.nome"
+                  >{{ privilegio.privilegio.nome }}</li>
+                </ul>
+              </div></span></span>
+
+            <small class="block tc300">
+              {{ profile.descricao }}
+            </small>
+          </label>
+          <div class="error-msg">
+            {{ errors.perfil_acesso_ids }}
+          </div>
+        </template>
+      </div>
+
+      <div
+        v-if="sistemaEscolhido.valueOf() === 'PDM'"
+        class="mb2"
+      >
+        <div class="label">
+          Grupos de paineis da meta
         </div>
-      </Form>
-    </template>
+        <template v-if="PaineisGrupos?.loading">
+          <span class="spinner">Carregando</span>
+        </template>
+        <template v-if="PaineisGrupos.length">
+          <label
+            v-for="p in PaineisGrupos"
+            :key="p.id"
+            class="block mb1"
+          >
+            <Field
+              name="grupos"
+              class="inputcheckbox"
+              type="checkbox"
+              :class="{ 'error': errors.grupos }"
+              :value="p.id"
+              :checked="grupos && grupos.includes(p.id)"
+            /><span>{{ p.nome }}</span>
+          </label>
+          <div class="error-msg">
+            {{ errors.grupos }}
+          </div>
+        </template>
+      </div>
+
+      <FormErrorsList :errors="errors" />
+
+      <div class="flex spacebetween center mb2">
+        <hr class="mr2 f1">
+        <button
+          class="btn big"
+          :disabled="isSubmitting"
+        >
+          Salvar cadastro
+        </button>
+        <hr class="ml2 f1">
+      </div>
+    </Form>
     <template v-if="user?.loading">
       <span class="spinner">Carregando</span>
     </template>
