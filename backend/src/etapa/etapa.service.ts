@@ -323,9 +323,13 @@ export class EtapaService {
 
             if (verificaFilhos) {
                 const etapasFilhas = await prismaTx.etapa.count({
-                    where: { etapa_pai_id: id, removido_em: null, regiao_id: { not: null } },
-                    select: { id: true, regiao_id: true },
+                    where: {
+                        etapa_pai_id: id,
+                        removido_em: null,
+                        regiao_id: { not: null },
+                    },
                 });
+                console.log(etapasFilhas);
                 if (etapasFilhas)
                     throw new BadRequestException(
                         'Não é possível alterar a região de uma etapa/fase que possui filhos com região cadastrada.'
