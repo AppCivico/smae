@@ -1199,6 +1199,10 @@ export class TarefaService {
                     delete dto.tarefa_pai_id;
                 }
 
+                console.log('=======================');
+                console.log(dto.termino_real);
+                console.log(typeof dto.termino_real);
+                console.log('=======================');
                 const updatedSelf = await prismaTx.tarefa.update({
                     where: {
                         id: tarefa.id,
