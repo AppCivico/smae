@@ -582,7 +582,7 @@ watch(itemParaEdição, (novosValores) => {
       />
     </div>
 
-    <div class="flex g1 end mb1">
+    <div class="flex g1 mb1">
       <div class="f1">
         <LabelFromYup
           name="clausula_suspensiva"
@@ -612,6 +612,7 @@ watch(itemParaEdição, (novosValores) => {
         <LabelFromYup
           name="clausula_suspensiva_vencimento"
           :schema="schema"
+          :required="true"
         />
         <Field
           name="clausula_suspensiva_vencimento"
@@ -619,6 +620,10 @@ watch(itemParaEdição, (novosValores) => {
           class="inputtext light mb1"
           :class="{ 'error': errors.clausula_suspensiva_vencimento }"
           maxlength="10"
+          @blur="($e) => { !$e.target.value ? $e.target.value = '' : null; }"
+          @update:model-value="($v) => {
+            setFieldValue('clausula_suspensiva_vencimento', $v || null);
+          }"
         />
         <ErrorMessage
           name="clausula_suspensiva_vencimento"
