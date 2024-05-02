@@ -14,7 +14,7 @@ export class WorkflowAndamentoController {
     constructor(private readonly workflowAndamentoService: WorkflowAndamentoService) {}
 
     @ApiBearerAuth('access-token')
-    @Roles('CadastroWorkflows.listar')
+    @Roles('AndamentoWorkflow.listar')
     @Get()
     async find(
         @Query() filters: FilterWorkflowAndamentoDto,
