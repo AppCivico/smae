@@ -19,6 +19,8 @@ import {
 import { computed, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
+const biografia = ref('');
+
 const route = useRoute();
 const router = useRouter();
 const alertStore = useAlertStore();
@@ -74,8 +76,12 @@ const cargosDisponíveisParaEdição = computed(() => Object.values(cargosDeParl
   .filter((x) => x.tipo === dadosDaEleiçãoEscolhida.value?.tipo) || []);
 
 const onSubmit = handleSubmit.withControlled(async (valoresControlados) => {
+  const novosValoresControlados = { ...valoresControlados };
+  novosValoresControlados.biografia = biografia.value;
+
   try {
     if (await parlamentaresStore.salvarMandato(
+      novosValoresControlados,
       valoresControlados,
       props.mandatoId,
       props.parlamentarId,
@@ -122,6 +128,10 @@ watch(mandatoParaEdição, (novoValor) => {
   resetForm({ values: novoValor });
 
   eleiçãoEscolhida.value = novoValor.eleicao_id;
+
+  if (mandatoParaEdição.value) {
+    biografia.value = mandatoParaEdição.value.biografia;
+  }
 });
 </script>
 
@@ -535,13 +545,16 @@ watch(mandatoParaEdição, (novoValor) => {
             name="biografia"
             :schema="schema"
           />
-          <Field
+          <TextEditor
+            v-model="biografia"
+          />
+          <!-- <Field
             name="biografia"
             as="textarea"
             rows="10"
             class="inputtext light mb1"
             :class="{ error: errors.biografia, loading: chamadasPendentes.emFoco }"
-          />
+          /> -->
           <ErrorMessage
             class="error-msg"
             name="biografia"
