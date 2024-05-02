@@ -51,7 +51,7 @@ const status = {
 const props = defineProps({
   transferenciaId: {
     type: Number,
-    default: '',
+    default: 0,
   },
   notaId: {
     type: String,
@@ -74,7 +74,7 @@ const {
 } = storeToRefs(blocoStore);
 
 const {
-  errors, handleSubmit, isSubmitting, setFieldValue, resetForm, values, controlledValues,
+  errors, handleSubmit, isSubmitting, setFieldValue, resetForm, values,
 } = useForm({
   initialValues: itemParaEdição.value,
   validationSchema: schema,
@@ -99,13 +99,10 @@ const camposPermitidos = computed(() => ({
   ),
 }));
 
-const onSubmit = handleSubmit.withControlled(async () => {
-  const valoresAuxiliares = {
-    ...values,
-  };
+const onSubmit = handleSubmit.withControlled(async (controlledValues) => {
   try {
     const msg = 'Dados salvos com sucesso!';
-    const resposta = await blocoStore.salvarItem(valoresAuxiliares, props.notaId);
+    const resposta = await blocoStore.salvarItem(controlledValues, props.notaId);
     if (resposta) {
       alertStore.success(msg);
       blocoStore.$reset();
@@ -168,7 +165,6 @@ watch(blocosToken, (novoValor) => {
         name="bloco_token"
         type="hidden"
         :value="blocosToken"
-        class="inputtext light mb1"
       />
       <div class="flex mb2 flexwrap g2">
         <div class="f1">
