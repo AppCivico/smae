@@ -326,7 +326,6 @@ async function iniciarMapa(element) {
 
   if (props.camadas.length) {
     await prepararCamadas(props.camadas);
-
   }
 }
 
@@ -387,7 +386,7 @@ watch(() => props.polígonos, (valorNovo) => {
 </script>
 <style lang="less">
 .mapa {
-  height: 24rem;
+  height: 32rem;
 
   &:focus {
     outline: 1px solid @c400;
