@@ -40,12 +40,18 @@ const nivelMáximoDisponível = computed(() => Math.max(
   nívelMáximoEmUso.value,
 ));
 
+const podeMudarDeEtapaProjeto = computed(() => projetoEmFoco.value?.eh_prioritario
+  && !apenasLeitura.value
+  && route.meta.entidadeMãe === 'projeto');
+
 const nívelMáximoVisível = ref(0);
 
 const { lista: listaDeEtapas } = storeToRefs(etapasProjetosStore);
 
 async function iniciar() {
-  etapasProjetosStore.buscarTudo();
+  if (podeMudarDeEtapaProjeto.value) {
+    etapasProjetosStore.buscarTudo();
+  }
   emailsStore.buscarItem({ transferencia_id: route.params.transferenciaId });
   tarefasStore.$reset();
   await tarefasStore.buscarTudo();
@@ -84,11 +90,7 @@ export default {
     <hr class="f1">
     <nav class="flex g1">
       <div
-        v-if="
-          projetoEmFoco?.eh_prioritario
-            && !apenasLeitura
-            && $route.meta.entidadeMãe === 'projeto'
-        "
+        v-if="podeMudarDeEtapaProjeto"
         class="dropbtn"
       >
         <span class="btn">Mudar etapa</span>
