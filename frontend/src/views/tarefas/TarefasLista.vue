@@ -8,7 +8,7 @@ import { useEtapasProjetosStore } from '@/stores/etapasProjeto.store';
 import { useProjetosStore } from '@/stores/projetos.store.ts';
 import { useTarefasStore } from '@/stores/tarefas.store.ts';
 import { storeToRefs } from 'pinia';
-import { computed, ref } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 
 const route = useRoute();
@@ -49,9 +49,6 @@ const nívelMáximoVisível = ref(0);
 const { lista: listaDeEtapas } = storeToRefs(etapasProjetosStore);
 
 async function iniciar() {
-  if (podeMudarDeEtapaProjeto.value) {
-    etapasProjetosStore.buscarTudo();
-  }
   emailsStore.buscarItem({ transferencia_id: route.params.transferenciaId });
   tarefasStore.$reset();
   await tarefasStore.buscarTudo();
@@ -77,6 +74,12 @@ async function mudarEtapa(idEtapa) {
   }
 }
 iniciar();
+
+watch(podeMudarDeEtapaProjeto, (novoValor) => {
+  if (novoValor) {
+    etapasProjetosStore.buscarTudo();
+  }
+}, { immediate: true });
 </script>
 <script>
 // use normal <script> to declare options
