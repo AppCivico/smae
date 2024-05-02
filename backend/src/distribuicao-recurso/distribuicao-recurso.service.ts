@@ -95,7 +95,7 @@ export class DistribuicaoRecursoService {
                     },
                 });
 
-                if (countLinhas == 1) {
+                if (countLinhas == 1 && distribuicaoRecurso.transferencia.workflow_id != null) {
                     const rows = await prismaTx.transferenciaAndamento.findMany({
                         where: {
                             transferencia_id: dto.transferencia_id,
