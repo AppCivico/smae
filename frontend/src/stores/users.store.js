@@ -93,6 +93,7 @@ export const useUsersStore = defineStore({
         return true;
       } catch (error) {
         this.user = { error };
+        return false;
       }
     },
     /* async delete(id) {
