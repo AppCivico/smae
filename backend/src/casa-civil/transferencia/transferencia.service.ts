@@ -389,16 +389,12 @@ export class TransferenciaService {
             if (!user.orgao_id) throw new BadRequestException('Usuário sem órgão associado.');
 
             permissionsSet.push({
-                OR: [
-                    {
-                        distribuicao_recursos: {
-                            some: {
-                                removido_em: null,
-                                orgao_gestor_id: user.orgao_id,
-                            },
-                        },
+                distribuicao_recursos: {
+                    some: {
+                        removido_em: null,
+                        orgao_gestor_id: user.orgao_id,
                     },
-                ],
+                },
             });
         }
 
