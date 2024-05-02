@@ -135,26 +135,30 @@ export class DistribuicaoRecursoService {
 
                     const operations = [];
                     for (const fase of rows) {
-                        operations.push(
-                            prismaTx.tarefa.update({
-                                where: { id: fase.tarefaEspelhada[0].id },
-                                data: {
-                                    orgao_id: dto.orgao_gestor_id,
-                                    atualizado_em: new Date(Date.now()),
-                                },
-                            })
-                        );
-
-                        for (const tarefa of fase.tarefas) {
+                        for (const tarefaEspelhada of fase.tarefaEspelhada) {
                             operations.push(
                                 prismaTx.tarefa.update({
-                                    where: { id: tarefa.tarefaEspelhada[0].id },
+                                    where: { id: tarefaEspelhada.id },
                                     data: {
                                         orgao_id: dto.orgao_gestor_id,
                                         atualizado_em: new Date(Date.now()),
                                     },
                                 })
                             );
+                        }
+
+                        for (const tarefa of fase.tarefas) {
+                            for (const tarefaEspelhada of tarefa.tarefaEspelhada) {
+                                operations.push(
+                                    prismaTx.tarefa.update({
+                                        where: { id: tarefaEspelhada.id },
+                                        data: {
+                                            orgao_id: dto.orgao_gestor_id,
+                                            atualizado_em: new Date(Date.now()),
+                                        },
+                                    })
+                                );
+                            }
                         }
                     }
 
