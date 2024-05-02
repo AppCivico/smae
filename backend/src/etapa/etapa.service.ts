@@ -318,7 +318,7 @@ export class EtapaService {
                     throw new BadRequestException(
                         `A região da etapa precisa ser de nível ${self.cronograma.nivel_regionalizacao}, região enviada: ${regiao.descricao} (nível ${regiao.nivel})`
                     );
-                verificaFilhos = true;
+                if (dto.regiao_id != self.regiao_id) verificaFilhos = true;
             }
 
             if (verificaFilhos) {
