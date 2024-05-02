@@ -11,10 +11,13 @@ export function DateTransform(a: TransformFnParams): Date | undefined | null {
     const year = parseInt(dateParts[0], 10);
     const month = parseInt(dateParts[1], 10);
     const day = parseInt(dateParts[2], 10);
-
+    console.log(year);
+    console.log(month);
+    console.log(day);
     if (isNaN(year) || isNaN(month) || isNaN(day)) return NaN as any as Date; // invalid date parts
 
     const date = new Date(year, month - 1, day);
+    console.log(date);
     if (date.getFullYear() !== year || date.getMonth() !== month - 1 || date.getDate() !== day) {
         return NaN as any as Date; // invalid date (e.g., Feb 31)
     }
