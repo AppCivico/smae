@@ -2,8 +2,8 @@ import { TransformFnParams } from 'class-transformer';
 
 export function DateTransform(a: TransformFnParams): Date | undefined | null {
     if (a.value === '' || a.value === null) return a.value;
-    console.log(a.value);
-    console.log(typeof a.value);
+    if (a.value instanceof Date) a.value = a.value.toDateString();
+
     const dateStr = a.value.substring(0, 10);
     const dateParts = dateStr.split('-');
     if (dateParts.length !== 3) return NaN as any as Date;
