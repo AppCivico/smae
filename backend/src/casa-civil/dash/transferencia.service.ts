@@ -25,7 +25,7 @@ export class DashTransferenciaService {
         private readonly notaService: NotaService
     ) {}
 
-    async transferencias(filter: FilterDashTransferenciasDto): Promise<ListMfDashTransferenciasDto> {
+    async transferencias(filter: FilterDashTransferenciasDto, user: PessoaFromJwt): Promise<ListMfDashTransferenciasDto> {
         const ids = await this.transferenciaService.buscaIdsPalavraChave(filter.palavra_chave);
 
         // eh marco, ter data de termino (ter data planejado), não ter data de termino real
@@ -36,6 +36,7 @@ export class DashTransferenciaService {
                 orgaos_envolvidos: filter.orgaos_ids ? { hasSome: filter.orgaos_ids } : undefined,
                 situacao: filter.atividade ? { in: filter.atividade } : undefined,
                 transferencia: {
+                    AND: this.transferenciaService.permissionSet(user),
                     partido_id: filter.partido_ids ? { in: filter.partido_ids } : undefined,
                     esfera: filter.esfera ? { in: filter.esfera } : undefined,
                 },
