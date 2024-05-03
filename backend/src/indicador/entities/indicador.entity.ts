@@ -22,4 +22,7 @@ export class Indicador {
     acumulado_valor_base: Decimal | null;
     formula_variaveis: FormulaVariaveis[];
     casas_decimais: number | null;
+    recalculando: boolean;
+    recalculo_erro: string | null;
+    recalculo_tempo: Decimal | null;
 }
