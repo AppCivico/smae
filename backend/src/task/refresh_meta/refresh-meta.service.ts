@@ -1,9 +1,9 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { RetryOperation } from '../../common/RetryOperation';
 import { RetryPromise } from '../../common/retryPromise';
 import { PrismaService } from '../../prisma/prisma.service';
 import { TaskableService } from '../entities/task.entity';
 import { CreateRefreshMetaDto } from './dto/create-refresh-mv.dto';
-import { sleepFor } from '../../common/sleepFor';
 
 @Injectable()
 export class RefreshMetaService implements TaskableService {
@@ -23,31 +23,27 @@ export class RefreshMetaService implements TaskableService {
         AND status='pending' AND id != ${task.id}
         AND (params::text, criado_em) = (select params::text, criado_em from task_queue where id = ${task.id})
         `;
-        let tries = 0;
-        do {
-            try {
-                tries++;
+
+        await RetryOperation(
+            5,
+            async () => {
                 await RetryPromise(
                     () =>
-                        this.prisma.$queryRaw`
-                    select atualiza_meta_status_consolidado(
-                      ${inputParams.meta_id}::int,
-                      (select id from ciclo_fisico where ativo)
-                    );
-                `,
+                        this.prisma.$queryRaw`select atualiza_meta_status_consolidado(
+                                ${inputParams.meta_id}::int,
+                                (select id from ciclo_fisico where ativo)
+                              );`,
                     10,
                     100,
                     20
                 );
-                // sai fora do loop no sucesso
-                tries = Number.MAX_SAFE_INTEGER;
-            } catch (error) {
-                this.logger.error(error);
-                this.logger.error('Erro desconhecido, tentando novamente em 1s');
-                await sleepFor(1000);
-                if (tries >= 5) throw error;
+            },
+            async (error) => {
+                this.logger.error(`Erro ao recalcular meta: ${error}`);
+
+                throw error;
             }
-        } while (tries < 5); // just in case, pra n ter loop infinito
+        );
 
         const took = Date.now() - before;
         return {
