@@ -314,6 +314,7 @@ const isSomaCorreta = computed(() => {
           as="textarea"
           class="inputtext light mb1"
           rows="5"
+          maxlength="1000"
         />
         <ErrorMessage
           class="error-msg mb1"
