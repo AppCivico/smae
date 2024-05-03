@@ -22,6 +22,7 @@ import { TransferenciaAnexoDto, TransferenciaDetailDto, TransferenciaDto } from 
 import { WorkflowService } from 'src/workflow/configuracao/workflow.service';
 import { TarefaService } from 'src/pp/tarefa/tarefa.service';
 import { CheckDependenciasDto } from 'src/pp/tarefa/dto/create-tarefa.dto';
+import { UpdateTarefaDto } from 'src/pp/tarefa/dto/update-tarefa.dto';
 
 class NextPageTokenJwtBody {
     offset: number;
@@ -175,19 +176,19 @@ export class TransferenciaService {
         });
 
         for (const tarefa of tarefas) {
-            const dto: CheckDependenciasDto = {
-                tarefa_corrente_id: tarefa.id,
-                dependencias: tarefa.dependencias.map((e) => {
-                    return {
-                        dependencia_tarefa_id: e.dependencia_tarefa_id,
-                        tipo: e.tipo,
-                        latencia: e.latencia,
-                    };
-                }),
-            };
-            //return await this.tarefaService.update({ transferencia_id: transferencia.id }, params.id2, dto, user);
+            if (tarefa.dependencias.length) {
+                const dto: UpdateTarefaDto = {
+                    dependencias: tarefa.dependencias.map((e) => {
+                        return {
+                            dependencia_tarefa_id: e.dependencia_tarefa_id,
+                            tipo: e.tipo,
+                            latencia: e.latencia,
+                        };
+                    }),
+                };
 
-            await this.tarefaService.update({ transferencia_id: created.id }, tarefa.id, dto, user);
+                await this.tarefaService.update({ transferencia_id: created.id }, tarefa.id, dto, user);
+            }
         }
 
         return created;
