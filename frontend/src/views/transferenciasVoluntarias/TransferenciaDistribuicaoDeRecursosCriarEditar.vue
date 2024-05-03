@@ -417,6 +417,29 @@ const isSomaCorreta = computed(() => {
           {{ errors.empenho }}
         </div>
       </div>
+      <div
+        v-if="values.empenho"
+        class="f1 mb1"
+      >
+        <LabelFromYup
+          name="data_empenho"
+          :schema="schema"
+        />
+        <Field
+          name="data_empenho"
+          type="date"
+          class="inputtext light mb1"
+          :class="{ 'error': errors.data_empenho }"
+          maxlength="10"
+          @change="($event) => {
+            if ($event?.target?.value === '') setFieldValue('data_empenho', null);
+          }"
+        />
+        <ErrorMessage
+          name="conclusao_suspensiva"
+          class="error-msg"
+        />
+      </div>
     </div>
 
     <div class="mb1">
