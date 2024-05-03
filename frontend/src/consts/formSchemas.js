@@ -1075,7 +1075,7 @@ export const transferenciaDistribuicaoDeRecursos = object({
     .label('Empenho')
     .required(),
   valor: number()
-    .label('Valor')
+    .label('Valor do Repasse')
     .required()
     .nullable(),
   valor_contrapartida: number()
@@ -1150,7 +1150,7 @@ export const registroDeTransferencia = object({
     .label('Empenho')
     .required(),
   valor: number()
-    .label('Valor')
+    .label('Valor do Repasse')
     .nullable()
     .required(),
   valor_contrapartida: number()
