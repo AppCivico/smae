@@ -1192,9 +1192,6 @@ export const transferenciasVoluntarias = object({
     .label('Tipo')
     .nullable()
     .required(),
-  critico: boolean()
-    .label('Crítico')
-    .required(),
   cargo: mixed()
     .label('Cargo')
     // feio, mas... Algo parece bugado no Yup e não posso atualizá-lo agora
