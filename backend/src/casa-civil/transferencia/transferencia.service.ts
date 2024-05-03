@@ -1079,7 +1079,7 @@ export class TransferenciaService {
                 }),
             };
 
-            await this.tarefaService.calcula_dependencias_tarefas(transferencia_id, dto, user);
+            await this.tarefaService.update({ transferencia_id: transferencia_id }, tarefa.id, dto, user);
         }
     }
 }
