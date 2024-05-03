@@ -370,7 +370,7 @@ watch(itemParaEdição, (novosValores) => {
           class="error-msg"
         />
       </div>
-      <div class="f1">
+      <div v-if="esferaSelecionada == 'Estadual'" class="f1">
         <LabelFromYup
           name="secretaria_concedente"
           :schema="schema"
