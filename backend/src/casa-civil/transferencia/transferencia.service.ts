@@ -1,4 +1,4 @@
-import { BadRequestException, HttpException, Injectable } from '@nestjs/common';
+import { BadRequestException, HttpException, Inject, Injectable, forwardRef } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { Prisma, WorkflowResponsabilidade } from '@prisma/client';
 import { TarefaCronogramaDto } from 'src/common/dto/TarefaCronograma.dto';
@@ -20,6 +20,8 @@ import {
 import { TransferenciaTipoDto } from './entities/transferencia-tipo.dto';
 import { TransferenciaAnexoDto, TransferenciaDetailDto, TransferenciaDto } from './entities/transferencia.dto';
 import { WorkflowService } from 'src/workflow/configuracao/workflow.service';
+import { TarefaService } from 'src/pp/tarefa/tarefa.service';
+import { CheckDependenciasDto } from 'src/pp/tarefa/dto/create-tarefa.dto';
 
 class NextPageTokenJwtBody {
     offset: number;
@@ -33,7 +35,10 @@ export class TransferenciaService {
         private readonly uploadService: UploadService,
         private readonly jwtService: JwtService,
         private readonly blocoNotaService: BlocoNotaService,
-        private readonly workflowService: WorkflowService
+        private readonly workflowService: WorkflowService,
+
+        @Inject(forwardRef(() => TarefaService))
+        private readonly tarefaService: TarefaService
     ) {}
 
     async createTransferencia(dto: CreateTransferenciaDto, user: PessoaFromJwt): Promise<RecordWithId> {
@@ -1029,12 +1034,52 @@ export class TransferenciaService {
         });
 
         for (const tarefa of andamentoPrimeiraFase.tarefas) {
-            await prismaTxn.tarefa.update({
-                where: { id: tarefa.tarefaEspelhada[0].id },
-                data: {
-                    inicio_real: new Date(Date.now()),
+            // Sempre só tem uma tarefa, na table esta FK é unique.
+            // No entanto, escrevendo com for const. De maneira defensiva.
+            for (const tarefaEspelhada of tarefa.tarefaEspelhada) {
+                await prismaTxn.tarefa.update({
+                    where: { id: tarefaEspelhada.id },
+                    data: {
+                        inicio_real: new Date(Date.now()),
+                    },
+                });
+            }
+        }
+
+        // Disparando update para validar topologia.
+        const tarefas = await prismaTxn.tarefa.findMany({
+            where: {
+                tarefa_cronograma: {
+                    transferencia_id: transferencia_id,
                 },
-            });
+            },
+            select: {
+                id: true,
+                dependencias: {
+                    select: {
+                        id: true,
+                        tarefa_id: true,
+                        dependencia_tarefa_id: true,
+                        tipo: true,
+                        latencia: true,
+                    },
+                },
+            },
+        });
+
+        for (const tarefa of tarefas) {
+            const dto: CheckDependenciasDto = {
+                tarefa_corrente_id: tarefa.id,
+                dependencias: tarefa.dependencias.map((e) => {
+                    return {
+                        dependencia_tarefa_id: e.dependencia_tarefa_id,
+                        tipo: e.tipo,
+                        latencia: e.latencia,
+                    };
+                }),
+            };
+
+            await this.tarefaService.calcula_dependencias_tarefas(transferencia_id, dto, user);
         }
     }
 }
