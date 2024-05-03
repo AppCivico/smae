@@ -1257,9 +1257,8 @@ export const transferenciasVoluntarias = object({
     .nullable()
     .required(),
   programa: string()
-    .label('Programa')
-    .nullable()
-    .required(),
+    .label('Código do programa')
+    .nullable(),
   partido_id: number()
     .label('Partido')
     .nullable(),
