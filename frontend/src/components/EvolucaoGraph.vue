@@ -296,7 +296,7 @@ class smaeChart {
           if (tipArray[k].date.getTime() == (new Date(data[dataKeys[i]][j].date)).getTime()) {
             aux[dataKeys[i]] = aux[dataKeys[i]] || 0;
             tipArray[k][`${dataKeys[i]}Acum`] = data[dataKeys[i]][j].value || 0;
-            tipArray[k][dataKeys[i]] = data[dataKeys[i]][j].value - aux[dataKeys[i]];
+            tipArray[k][dataKeys[i]] = Big(data[dataKeys[i]][j].value).minus(aux[dataKeys[i]]);
             aux[dataKeys[i]] = data[dataKeys[i]][j].value;
             break;
           }
