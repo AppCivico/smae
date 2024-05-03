@@ -1373,7 +1373,7 @@ export class VariavelService {
         this.logger.log(`query.indicadores => ${uniqueIndicadores.join(',')}`);
         for (const indicador_id of uniqueIndicadores) {
             this.logger.log(`Recalculando indicador ... ${indicador_id}`);
-            await prismaTxn.$queryRaw`select monta_serie_indicador(${indicador_id}::int, null, null, null)`;
+            await prismaTxn.$queryRaw`select refresh_serie_indicador(${indicador_id}::int, null)`;
         }
     }
 

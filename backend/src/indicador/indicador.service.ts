@@ -436,6 +436,9 @@ export class IndicadorService {
                 acumulado_usa_formula: true,
                 acumulado_valor_base: true,
                 casas_decimais: true,
+                recalculando: true,
+                recalculo_erro: true,
+                recalculo_tempo: true,
             },
             orderBy: { criado_em: 'desc' },
         });
@@ -574,7 +577,7 @@ export class IndicadorService {
             {
                 isolationLevel: 'ReadCommitted',
                 maxWait: 60 * 1000,
-                timeout: 120 * 1000,
+                timeout: 15 * 1000,
             }
         );
 
@@ -583,7 +586,7 @@ export class IndicadorService {
 
     async recalcIndicador(prismaTx: Prisma.TransactionClient, indicador_id: number) {
         this.logger.log(`Indicador recalculando...`);
-        await prismaTx.$queryRaw`select monta_serie_indicador(${indicador_id}::int, null, null, null)`;
+        await prismaTx.$queryRaw`select refresh_serie_indicador(${indicador_id}::int, null)`;
     }
 
     private static getIndicadorHash(indicador: {

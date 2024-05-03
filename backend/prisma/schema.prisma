@@ -1173,6 +1173,10 @@ model Indicador {
     complemento           String?
     casas_decimais        Int?          @db.SmallInt
 
+    recalculando    Boolean  @default(false)
+    recalculo_erro  String?
+    recalculo_tempo Decimal?
+
     atualizador                   Pessoa?                         @relation("Atualizador", fields: [atualizado_por], references: [id])
     criador                       Pessoa?                         @relation("Criador", fields: [criado_por], references: [id])
     removedor                     Pessoa?                         @relation("Removedor", fields: [removido_por], references: [id])
@@ -4050,6 +4054,7 @@ enum task_type {
     aviso_email_cronograma_tp
     aviso_email_nota
     refresh_transferencia
+    refresh_indicador
 }
 
 enum task_status {
