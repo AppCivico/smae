@@ -212,15 +212,15 @@ export default {
       <col>
       <col>
       <col>
-      <col>
 
       <col class="col--data">
       <col class="col--data">
       <col class="col--data">
       <col class="col--data">
 
-      <col>
-      <col>
+      <col class="col--number">
+      <col class="col--number">
+      <col class="col--number">
       <col>
 
       <template v-if="!apenasLeitura">
