@@ -261,21 +261,6 @@ watch(itemParaEdição, (novosValores) => {
           {{ errors.interface }}
         </div>
       </div>
-      <div class="f1">
-        <LabelFromYup
-          name="programa"
-          :schema="schema"
-        />
-        <Field
-          name="programa"
-          type="text"
-          class="inputtext light mb1"
-        />
-        <ErrorMessage
-          class="error-msg mb1"
-          name="programa"
-        />
-      </div>
     </div>
     <div class="flex g2 mb1">
       <div class="f1">
@@ -531,6 +516,21 @@ watch(itemParaEdição, (novosValores) => {
     <div class="flex g2 mb1">
       <div class="f1">
         <LabelFromYup
+          name="programa"
+          :schema="schema"
+        />
+        <Field
+          name="programa"
+          type="text"
+          class="inputtext light mb1"
+        />
+        <ErrorMessage
+          class="error-msg mb1"
+          name="programa"
+        />
+      </div>
+      <div class="f1">
+        <LabelFromYup
           name="nome_programa"
           :schema="schema"
         />
@@ -583,28 +583,6 @@ watch(itemParaEdição, (novosValores) => {
     </div>
 
     <div class="flex g1 end mb1">
-      <div class="f1">
-        <LabelFromYup
-          name="critico"
-          :schema="schema"
-        />
-        <Field
-          name="critico"
-          as="select"
-          class="inputtext light mb1"
-          :class="{ 'error': errors.critico }"
-        >
-          <option :value="true">
-            Sim
-          </option>
-          <option :value="false">
-            Não
-          </option>
-        </Field>
-        <div class="error-msg">
-          {{ errors.critico }}
-        </div>
-      </div>
       <div class="f1">
         <LabelFromYup
           name="clausula_suspensiva"
