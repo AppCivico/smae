@@ -82,7 +82,6 @@ const onSubmit = handleSubmit.withControlled(async (valoresControlados) => {
   try {
     if (await parlamentaresStore.salvarMandato(
       novosValoresControlados,
-      valoresControlados,
       props.mandatoId,
       props.parlamentarId,
     )) {
@@ -106,6 +105,16 @@ const onSubmit = handleSubmit.withControlled(async (valoresControlados) => {
 
 const formulárioSujo = useIsFormDirty();
 
+watch(mandatoParaEdição, (novoValor) => {
+  resetForm({ values: novoValor });
+
+  eleiçãoEscolhida.value = novoValor.eleicao_id;
+
+  if (mandatoParaEdição.value) {
+    biografia.value = mandatoParaEdição.value.biografia;
+  }
+});
+
 function iniciar() {
   parlamentaresStore.buscarEleições();
 
@@ -124,15 +133,6 @@ function iniciar() {
 
 iniciar();
 
-watch(mandatoParaEdição, (novoValor) => {
-  resetForm({ values: novoValor });
-
-  eleiçãoEscolhida.value = novoValor.eleicao_id;
-
-  if (mandatoParaEdição.value) {
-    biografia.value = mandatoParaEdição.value.biografia;
-  }
-});
 </script>
 
 <template>
