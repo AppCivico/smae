@@ -8,6 +8,7 @@ import truncate from '@/helpers/truncate';
 import { useAlertStore } from '@/stores/alert.store';
 import { useOrgansStore } from '@/stores/organs.store';
 import { useDistribuicaoRecursosStore } from '@/stores/transferenciasDistribuicaoRecursos.store';
+import { useTransferenciasVoluntariasStore } from '@/stores/transferenciasVoluntarias.store';
 import { vMaska } from 'maska';
 import { storeToRefs } from 'pinia';
 import {
@@ -25,11 +26,13 @@ import {
 } from 'vue';
 
 const distribuicaoRecursos = useDistribuicaoRecursosStore();
+const TransferenciasVoluntarias = useTransferenciasVoluntariasStore();
 const ÓrgãosStore = useOrgansStore();
 
 const {
   chamadasPendentes, erro, lista, itemParaEdição, emFoco,
 } = storeToRefs(distribuicaoRecursos);
+const { emFoco: transferenciasVoluntariasObjeto } = storeToRefs(TransferenciasVoluntarias);
 const { órgãosComoLista } = storeToRefs(ÓrgãosStore);
 
 const props = defineProps({
@@ -110,7 +113,7 @@ function registrarNovaDistribuicaoRecursos() {
 
 function iniciar() {
   distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
-
+  TransferenciasVoluntarias.buscarItem(props.transferenciaId);
   ÓrgãosStore.getAll();
 }
 
@@ -310,6 +313,7 @@ const isSomaCorreta = computed(() => {
           :schema="schema"
         />
         <Field
+          v-model="transferenciasVoluntariasObjeto.objeto"
           name="objeto"
           as="textarea"
           class="inputtext light mb1"
