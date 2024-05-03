@@ -1227,8 +1227,7 @@ export const transferenciasVoluntarias = object({
     .nullable(),
   interface: string()
     .label('Interface')
-    .nullable()
-    .required(),
+    .nullable(),
   nome_programa: string()
     .label('Nome do programa')
     .nullable(),
