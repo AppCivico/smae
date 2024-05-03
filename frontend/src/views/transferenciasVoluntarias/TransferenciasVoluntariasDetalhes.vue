@@ -154,20 +154,13 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
       </dl>
       <dl class="f1">
         <dt>
-          Programa
-        </dt>
-        <dd>
-          {{ transferênciaEmFoco?.programa || '-' }}
-        </dd>
-      </dl>
-      <dl class="f1">
-        <dt>
           Emenda
         </dt>
         <dd>
           {{ transferênciaEmFoco?.emenda || '-' }}
         </dd>
       </dl>
+      <dl class="f1 mb3" />
     </div>
     <div class="flex g2 flexwrap mb2">
       <dl class="f1">
@@ -272,13 +265,20 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
         </dl>
         <dl class="f1">
           <dt>
+            Código do programa
+          </dt>
+          <dd>
+            {{ transferênciaEmFoco?.programa || '-' }}
+          </dd>
+        </dl>
+        <dl class="f1">
+          <dt>
             Nome do Programa
           </dt>
           <dd>
             {{ transferênciaEmFoco?.nome_programa || '-' }}
           </dd>
         </dl>
-        <dl class="f1 mb3" />
       </div>
       <div>
         <dl class="f1 mb1">
