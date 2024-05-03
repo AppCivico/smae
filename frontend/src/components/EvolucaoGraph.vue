@@ -1,8 +1,8 @@
 <script setup>
+import Big from 'big.js';
 import * as d3 from 'd3';
 import { niceNumber } from 'nice-number';
 import { onMounted, onUpdated, ref } from 'vue';
-import Big from 'big.js';
 
 const props = defineProps(['dataserie']);
 const evolucao = ref(null);
