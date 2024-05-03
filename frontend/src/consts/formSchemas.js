@@ -1074,6 +1074,12 @@ export const transferenciaDistribuicaoDeRecursos = object({
   empenho: boolean()
     .label('Empenho')
     .required(),
+  data_empenho: date()
+    .label('Data do empenho')
+    .nullable()
+    .max(dataMax)
+    .min(new Date(2003, 0, 1))
+    .transform((v) => (!v ? null : v)),
   valor: number()
     .label('Valor do Repasse')
     .required()
