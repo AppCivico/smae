@@ -1,6 +1,6 @@
 <script setup>
 import SmallModal from '@/components/SmallModal.vue';
-import { default as TextEditor } from '@/components/TextEditor.vue';
+import TextEditor from '@/components/TextEditor.vue';
 import cargosDeParlamentar from '@/consts/cargosDeParlamentar';
 import estadosDoBrasil from '@/consts/estadosDoBrasil';
 import { mandato as schema } from '@/consts/formSchemas';
