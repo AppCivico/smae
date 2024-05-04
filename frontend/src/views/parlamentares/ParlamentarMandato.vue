@@ -548,13 +548,6 @@ iniciar();
           <TextEditor
             v-model="biografia"
           />
-          <!-- <Field
-            name="biografia"
-            as="textarea"
-            rows="10"
-            class="inputtext light mb1"
-            :class="{ error: errors.biografia, loading: chamadasPendentes.emFoco }"
-          /> -->
           <ErrorMessage
             class="error-msg"
             name="biografia"
