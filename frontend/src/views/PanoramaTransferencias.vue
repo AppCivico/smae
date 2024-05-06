@@ -69,7 +69,13 @@ const iniciar = async () => {
     .map((x) => partidosPorId.value[x])
     .sort((a, b) => a.sigla?.localeCompare(b.sigla));
   órgãosDisponíveis.value = [...new Set(órgãos)]
-    .map((x) => órgãosPorId.value[x])
+    .reduce((acc, cur) => {
+      const órgão = órgãosPorId.value[cur];
+      if (órgão) {
+        acc.push(órgão);
+      }
+      return acc;
+    }, [])
     .sort((a, b) => a.sigla?.localeCompare(b.sigla));
 };
 
