@@ -4,11 +4,11 @@ import ParlamentaresExibirRepresentatividade from '@/components/parlamentares/Pa
 import { vMaska } from "maska"
 import { parlamentar as schema } from '@/consts/formSchemas';
 import nulificadorTotal from '@/helpers/nulificadorTotal.ts';
+import requestS from '@/helpers/requestS.ts';
 import { useAlertStore } from '@/stores/alert.store';
 import { useAuthStore } from '@/stores/auth.store';
 import { useParlamentaresStore } from '@/stores/parlamentares.store';
 import { storeToRefs } from 'pinia';
-import { requestS } from '@/helpers';
 
 import {
   ErrorMessage,
