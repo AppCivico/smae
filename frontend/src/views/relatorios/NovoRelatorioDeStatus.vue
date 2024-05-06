@@ -153,11 +153,8 @@ projetosStore.buscarTudo();
           type="date"
           class="inputtext light mb1"
           :class="{ 'error': errors['parametros.periodo_inicio'] }"
-          @update:model-value="() => {
-            if (values.parametros.periodo_inicio === '') {
-              setFieldValue('parametros.periodo_inicio', null);
-            }
-          }"
+          @blur="($e) => { !$e.target.value ? $e.target.value = '' : null; }"
+          @update:model-value="($v) => { setFieldValue('parametros.periodo_inicio', $v || null); }"
         />
         <div
           v-if="errors['parametros.periodo_inicio']"
@@ -177,11 +174,8 @@ projetosStore.buscarTudo();
           type="date"
           class="inputtext light mb1"
           :class="{ 'error': errors['parametros.periodo_fim'] }"
-          @update:model-value="() => {
-            if (values.parametros.periodo_fim === '') {
-              setFieldValue('parametros.periodo_fim', null);
-            }
-          }"
+          @blur="($e) => { !$e.target.value ? $e.target.value = '' : null; }"
+          @update:model-value="($v) => { setFieldValue('parametros.periodo_fim', $v || null); }"
         />
         <div
           v-if="errors['parametros.periodo_fim']"
