@@ -576,9 +576,8 @@ iniciar();
             loading: chamadasPendentes.validaçãoDeDependências
           }"
           maxlength="10"
-          @update:model-value="values.inicio_planejado === ''
-            ? values.inicio_planejado = null
-            : null"
+          @blur="($e) => { !$e.target.value ? $e.target.value = '' : null; }"
+          @update:model-value="($v) => { setFieldValue('inicio_planejado', $v || null); }"
           @change="values.duracao_planejado
             && !values?.termino_planejado_calculado
             ? setFieldValue(
@@ -661,9 +660,8 @@ iniciar();
             loading: chamadasPendentes.validaçãoDeDependências
           }"
           maxlength="10"
-          @update:model-value="values.termino_planejado === ''
-            ? values.termino_planejado = null
-            : null"
+          @blur="($e) => { !$e.target.value ? $e.target.value = '' : null; }"
+          @update:model-value="($v) => { setFieldValue('termino_planejado', $v || null); }"
           @change="values.termino_planejado && values.inicio_planejado
             && !values?.duracao_planejado_calculado
             ? setFieldValue(
