@@ -20,6 +20,7 @@ import {
 } from 'vee-validate';
 import {
   computed,
+  onMounted,
   onUnmounted,
   ref,
   watch,
@@ -47,7 +48,7 @@ const mostrarDistribuicaoRegistroForm = ref(false);
 const camposModificados = ref(false);
 
 const {
-  errors, handleSubmit, isSubmitting, resetForm, setFieldValue, values,
+  errors, handleSubmit, isSubmitting, resetField, resetForm, setFieldValue, values,
 } = useForm({
   initialValues: itemParaEdição,
   validationSchema: schema,
@@ -113,11 +114,16 @@ function registrarNovaDistribuicaoRecursos() {
 
 function iniciar() {
   distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
-  TransferenciasVoluntarias.buscarItem(props.transferenciaId);
+  TransferenciasVoluntarias.buscarItem(props.transferenciaId).then(() => {
+    setFieldValue('objeto', transferenciasVoluntariasObjeto.value.objeto);
+    resetField('objeto');
+  });
   ÓrgãosStore.getAll();
 }
 
-iniciar();
+onMounted(() => {
+  iniciar();
+});
 
 watch(itemParaEdição, (novosValores) => {
   resetForm({ values: novosValores });
@@ -313,12 +319,13 @@ const isSomaCorreta = computed(() => {
           :schema="schema"
         />
         <Field
-          v-model="transferenciasVoluntariasObjeto.objeto"
           name="objeto"
           as="textarea"
           class="inputtext light mb1"
           rows="5"
           maxlength="1000"
+          :value="transferenciasVoluntariasObjeto.objeto"
+          @input="e => setFieldValue('objeto', e.target.value)"
         />
         <ErrorMessage
           class="error-msg mb1"
