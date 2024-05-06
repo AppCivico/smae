@@ -105,15 +105,6 @@ const onSubmit = handleSubmit.withControlled(async (valoresControlados) => {
 
 const formulárioSujo = useIsFormDirty();
 
-watch(mandatoParaEdição, (novoValor) => {
-  resetForm({ values: novoValor });
-
-  eleiçãoEscolhida.value = novoValor.eleicao_id;
-  if (novoValor) {
-    biografia.value = novoValor.biografia;
-  }
-});
-
 function iniciar() {
   parlamentaresStore.buscarEleições();
 
@@ -129,6 +120,15 @@ function iniciar() {
     }
   }
 }
+
+watch(mandatoParaEdição, (novoValor) => {
+  resetForm({ values: novoValor });
+
+  eleiçãoEscolhida.value = novoValor.eleicao_id;
+  if (novoValor) {
+    biografia.value = novoValor.biografia;
+  }
+});
 
 iniciar();
 
