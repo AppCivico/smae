@@ -637,9 +637,8 @@ const isSomaCorreta = computed(() => {
           class="inputtext light mb1"
           :class="{ 'error': errors.assinatura_termo_aceite }"
           maxlength="10"
-          @change="($event) => {
-            if ($event?.target?.value === '') setFieldValue('assinatura_termo_aceite', null);
-          }"
+          @blur="($e) => { !$e.target.value ? $e.target.value = '' : null; }"
+          @update:model-value="($v) => { setFieldValue('assinatura_termo_aceite', $v || null); }"
         />
         <ErrorMessage
           name="assinatura_termo_aceite"
@@ -660,9 +659,8 @@ const isSomaCorreta = computed(() => {
           class="inputtext light"
           :class="{ 'error': errors.assinatura_estado }"
           maxlength="10"
-          @change="($event) => {
-            if ($event?.target?.value === '') setFieldValue('assinatura_estado', null);
-          }"
+          @blur="($e) => { !$e.target.value ? $e.target.value = '' : null; }"
+          @update:model-value="($v) => { setFieldValue('assinatura_estado', $v || null); }"
         />
         <ErrorMessage
           name="assinatura_estado"
@@ -680,9 +678,8 @@ const isSomaCorreta = computed(() => {
           class="inputtext light mb1"
           :class="{ 'error': errors.assinatura_municipio }"
           maxlength="10"
-          @change="($event) => {
-            if ($event?.target?.value === '') setFieldValue('assinatura_municipio', null);
-          }"
+          @blur="($e) => { !$e.target.value ? $e.target.value = '' : null; }"
+          @update:model-value="($v) => { setFieldValue('assinatura_municipio', $v || null); }"
         />
         <ErrorMessage
           name="assinatura_municipio"
@@ -703,9 +700,8 @@ const isSomaCorreta = computed(() => {
           class="inputtext light mb1"
           :class="{ 'error': errors.vigencia }"
           maxlength="10"
-          @change="($event) => {
-            if ($event?.target?.value === '') setFieldValue('vigencia', null);
-          }"
+          @blur="($e) => { !$e.target.value ? $e.target.value = '' : null; }"
+          @update:model-value="($v) => { setFieldValue('vigencia', $v || null); }"
         />
         <ErrorMessage
           name="vigencia"
@@ -723,9 +719,8 @@ const isSomaCorreta = computed(() => {
           class="inputtext light mb1"
           :class="{ 'error': errors.conclusao_suspensiva }"
           maxlength="10"
-          @change="($event) => {
-            if ($event?.target?.value === '') setFieldValue('conclusao_suspensiva', null);
-          }"
+          @blur="($e) => { !$e.target.value ? $e.target.value = '' : null; }"
+          @update:model-value="($v) => { setFieldValue('conclusao_suspensiva', $v || null); }"
         />
         <ErrorMessage
           name="conclusao_suspensiva"
