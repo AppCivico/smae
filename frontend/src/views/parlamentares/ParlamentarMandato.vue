@@ -109,9 +109,8 @@ watch(mandatoParaEdição, (novoValor) => {
   resetForm({ values: novoValor });
 
   eleiçãoEscolhida.value = novoValor.eleicao_id;
-
-  if (mandatoParaEdição.value) {
-    biografia.value = mandatoParaEdição.value.biografia;
+  if (novoValor) {
+    biografia.value = novoValor.biografia;
   }
 });
 
