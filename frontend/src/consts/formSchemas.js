@@ -1100,7 +1100,7 @@ export const transferenciaDistribuicaoDeRecursos = object({
     .transform((v) => (!v ? null : v)),
   objeto: string()
     .label('Objeto/Empreendimento')
-    .max(50000)
+    .max(1000)
     .required(),
   orgao_gestor_id: number()
     .label('Gestor Municipal')
@@ -1243,7 +1243,7 @@ export const transferenciasVoluntarias = object({
     .nullable(),
   objeto: string()
     .label('Objeto/Empreendimento')
-    .max(50000)
+    .max(1000)
     .nullable()
     .required(),
   orgao_concedente_id: number()
