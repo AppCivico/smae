@@ -152,9 +152,8 @@ iniciar();
             loading: chamadasPendentes.validaçãoDeDependências
           }"
           maxlength="10"
-          @update:model-value="values.registrado_em === ''
-            ? values.registrado_em = null
-            : null"
+          @blur="($e) => { !$e.target.value ? $e.target.value = '' : null; }"
+          @update:model-value="($v) => { setFieldValue('registrado_em', $v || null); }"
         />
         <ErrorMessage
           name="registrado_em"
