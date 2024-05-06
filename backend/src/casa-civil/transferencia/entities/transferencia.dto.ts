@@ -15,8 +15,7 @@ export class TransferenciaDto {
     tipo: IdNomeDto | null;
     objeto: string;
     detalhamento: string | null;
-    critico: boolean;
-    clausula_suspensiva: boolean;
+    clausula_suspensiva: boolean | null;
     clausula_suspensiva_vencimento: Date | null;
     normativa: string | null;
     observacoes: string | null;
@@ -40,8 +39,7 @@ export class TransferenciaDetailDto {
     ano: number | null;
     objeto: string;
     detalhamento: string | null;
-    critico: boolean;
-    clausula_suspensiva: boolean;
+    clausula_suspensiva: boolean | null;
     clausula_suspensiva_vencimento: Date | null;
     normativa: string | null;
     observacoes: string | null;
@@ -75,7 +73,7 @@ export class TransferenciaDetailDto {
     secretaria_concedente: string | null;
 
     @ApiProperty({ enum: TransferenciaInterface, enumName: 'TransferenciaInterface' })
-    interface: TransferenciaInterface;
+    interface: TransferenciaInterface | null;
 
     @ApiProperty({ enum: TransferenciaTipoEsfera, enumName: 'TransferenciaTipoEsfera' })
     esfera: TransferenciaTipoEsfera;

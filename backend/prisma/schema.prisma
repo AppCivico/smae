@@ -4766,11 +4766,10 @@ model Transferencia {
     workflow    Workflow? @relation(fields: [workflow_id], references: [id])
 
     objeto                         String
-    critico                        Boolean
-    interface                      TransferenciaInterface
+    interface                      TransferenciaInterface?
     identificador                  String
     esfera                         TransferenciaTipoEsfera
-    clausula_suspensiva            Boolean
+    clausula_suspensiva            Boolean?
     clausula_suspensiva_vencimento DateTime?               @db.Date()
     empenho                        Boolean?
 

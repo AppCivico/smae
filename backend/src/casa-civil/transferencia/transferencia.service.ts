@@ -21,7 +21,6 @@ import { TransferenciaTipoDto } from './entities/transferencia-tipo.dto';
 import { TransferenciaAnexoDto, TransferenciaDetailDto, TransferenciaDto } from './entities/transferencia.dto';
 import { WorkflowService } from 'src/workflow/configuracao/workflow.service';
 import { TarefaService } from 'src/pp/tarefa/tarefa.service';
-import { CheckDependenciasDto } from 'src/pp/tarefa/dto/create-tarefa.dto';
 import { UpdateTarefaDto } from 'src/pp/tarefa/dto/update-tarefa.dto';
 
 class NextPageTokenJwtBody {
@@ -123,7 +122,6 @@ export class TransferenciaService {
                         partido_id: dto.partido_id,
                         parlamentar_id: dto.parlamentar_id,
                         objeto: dto.objeto,
-                        critico: dto.critico,
                         interface: dto.interface,
                         esfera: dto.esfera,
                         identificador: identificador,
@@ -288,7 +286,6 @@ export class TransferenciaService {
                         partido_id: dto.partido_id,
                         parlamentar_id: dto.parlamentar_id,
                         objeto: dto.objeto,
-                        critico: dto.critico,
                         interface: dto.interface,
                         esfera: dto.esfera,
                         clausula_suspensiva: dto.clausula_suspensiva,
@@ -486,7 +483,6 @@ export class TransferenciaService {
                 objeto: true,
                 esfera: true,
                 detalhamento: true,
-                critico: true,
                 clausula_suspensiva: true,
                 clausula_suspensiva_vencimento: true,
                 normativa: true,
@@ -555,7 +551,6 @@ export class TransferenciaService {
                     tipo: r.tipo,
                     objeto: r.objeto,
                     detalhamento: r.detalhamento,
-                    critico: r.critico,
                     clausula_suspensiva: r.clausula_suspensiva,
                     clausula_suspensiva_vencimento: r.clausula_suspensiva_vencimento,
                     normativa: r.normativa,
@@ -612,7 +607,6 @@ export class TransferenciaService {
                 ano: true,
                 objeto: true,
                 detalhamento: true,
-                critico: true,
                 clausula_suspensiva: true,
                 clausula_suspensiva_vencimento: true,
                 normativa: true,
