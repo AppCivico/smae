@@ -573,6 +573,7 @@ async function main() {
     await atualizar_perfil_acesso();
 
     await atualizar_superadmin();
+    await ensure_bot_user();
 
     await populateEleicao();
 }
@@ -943,7 +944,9 @@ async function atualizar_superadmin() {
             },
         });
     }
+}
 
+async function ensure_bot_user() {
     if ((await prisma.pessoa.count({ where: { id: -1 } })) == 0) {
         prisma.$transaction(async (prismaTx: Prisma.TransactionClient) => {
             const pf = await prismaTx.pessoaFisica.create({
