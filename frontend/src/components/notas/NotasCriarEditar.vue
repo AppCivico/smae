@@ -188,6 +188,10 @@ watch(blocosToken, (novoValor) => {
               {{ item.text }}
             </option>
           </Field>
+          <ErrorMessage
+            name="status"
+            class="error-msg"
+          />
         </div>
         <div class="f1">
           <LabelFromYup
@@ -200,6 +204,10 @@ watch(blocosToken, (novoValor) => {
             class="inputtext light"
             @blur="($e) => { !$e.target.value ? $e.target.value = '' : null; }"
             @update:model-value="($v) => { setFieldValue('data_nota', $v || null); }"
+          />
+          <ErrorMessage
+            name="data_nota"
+            class="error-msg"
           />
         </div>
         <div class="f1">
@@ -224,6 +232,10 @@ watch(blocosToken, (novoValor) => {
               {{ tipo.codigo }}
             </option>
           </Field>
+          <ErrorMessage
+            name="tipo_nota_id"
+            class="error-msg"
+          />
         </div>
       </div>
       <div class="flex mb1">
@@ -262,6 +274,10 @@ watch(blocosToken, (novoValor) => {
             class="inputtext light"
             @blur="($e) => { !$e.target.value ? $e.target.value = '' : null; }"
             @update:model-value="($v) => { setFieldValue('rever_em', $v || null); }"
+          />
+          <ErrorMessage
+            name="rever_em"
+            class="error-msg"
           />
         </div>
       </div>
@@ -402,6 +418,10 @@ watch(blocosToken, (novoValor) => {
           class="inputtext light mb1"
           as="textarea"
           rows="10"
+        />
+        <ErrorMessage
+          name="nota"
+          class="error-msg"
         />
       </div>
       <FormErrorsList
