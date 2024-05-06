@@ -265,6 +265,8 @@ watch(itemParaEdição, (novoValor) => {
           :class="{ errors: errors.inicio }"
           maxlength="10"
           :disabled="emFoco?.edicao_restrita"
+          @blur="($e) => { !$e.target.value ? $e.target.value = '' : null; }"
+          @update:model-value="($v) => { setFieldValue('inicio', $v || null); }"
         />
         <ErrorMessage
           name="inicio"
@@ -283,6 +285,8 @@ watch(itemParaEdição, (novoValor) => {
           class="inputtext light mb1"
           :class="{ errors: errors.termino }"
           maxlength="10"
+          @blur="($e) => { !$e.target.value ? $e.target.value = '' : null; }"
+          @update:model-value="($v) => { setFieldValue('termino', $v || null); }"
         />
         <ErrorMessage
           name="termino"
