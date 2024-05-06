@@ -113,7 +113,7 @@ if (!riscosStore?.lista?.length) {
 
   <Form
     v-if="!acompanhamentoId || emFoco"
-    v-slot="{ errors, isSubmitting }"
+    v-slot="{ errors, isSubmitting, setFieldValue }"
     :disabled="chamadasPendentes.emFoco"
     :initial-values="itemParaEdição"
     :validation-schema="schema"
@@ -132,6 +132,8 @@ if (!riscosStore?.lista?.length) {
           required
           class="inputtext light mb1"
           :class="{ 'error': errors.data_registro }"
+          @blur="($e) => { !$e.target.value ? $e.target.value = '' : null; }"
+          @update:model-value="($v) => { setFieldValue('data_registro', $v || null); }"
         />
         <ErrorMessage
           class="error-msg mb1"
@@ -412,6 +414,10 @@ if (!riscosStore?.lista?.length) {
                 required
                 class="inputtext light mb1"
                 :class="{ 'error': errors[`acompanhamentos[${idx}].prazo_encaminhamento`] }"
+                @blur="($e) => { !$e.target.value ? $e.target.value = '' : null; }"
+                @update:model-value="($v) => {
+                  setFieldValue(`acompanhamentos[${idx}].prazo_encaminhamento`, $v || null);
+                }"
               />
               <ErrorMessage
                 class="error-msg mb1"
@@ -432,6 +438,10 @@ if (!riscosStore?.lista?.length) {
                 required
                 class="inputtext light mb1"
                 :class="{ 'error': errors[`acompanhamentos[${idx}].prazo_realizado`] }"
+                @blur="($e) => { !$e.target.value ? $e.target.value = '' : null; }"
+                @update:model-value="($v) => {
+                  setFieldValue(`acompanhamentos[${idx}].prazo_realizado`, $v || null);
+                }"
               />
               <ErrorMessage
                 class="error-msg mb1"
