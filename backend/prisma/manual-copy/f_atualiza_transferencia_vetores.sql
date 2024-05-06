@@ -20,13 +20,11 @@ BEGIN
                 COALESCE(o2.sigla, '') || '' ||
                 COALESCE(o2.descricao, '')
             )
-        FROM transferencia t
+        FROM (SELECT new.partido_id, new.orgao_concedente_id, new.secretaria_concedente_id, new.tipo_id ) t
         JOIN transferencia_tipo tt ON tt.id = t.tipo_id
         LEFT JOIN partido p ON p.id = t.partido_id
         LEFT JOIN orgao o1 ON o1.id = t.orgao_concedente_id
         LEFT JOIN orgao o2 ON o2.id = t.secretaria_concedente_id
-        WHERE
-            t.id = NEW.id
     );
 
     RETURN NEW;
