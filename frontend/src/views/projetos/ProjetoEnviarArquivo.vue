@@ -8,7 +8,9 @@ import {
 } from '@/stores';
 import { useProjetosStore } from '@/stores/projetos.store.ts';
 import { storeToRefs } from 'pinia';
-import { Field, useForm, useIsFormDirty } from 'vee-validate';
+import {
+  ErrorMessage, Field, useForm, useIsFormDirty,
+} from 'vee-validate';
 import {
   computed, reactive, watch,
 } from 'vue';
@@ -124,9 +126,10 @@ watch(arquivoParaEdição, (novosValores) => {
             class="inputtext light mb1"
             :class="{ 'error': errors.descricao }"
           />
-          <div class="error-msg">
-            {{ errors.descricao }}
-          </div>
+          <ErrorMessage
+            class="error-msg mb1"
+            name="descricao"
+          />
         </div>
       </div>
 
@@ -144,9 +147,10 @@ watch(arquivoParaEdição, (novosValores) => {
             @blur="($e) => { !$e.target.value ? $e.target.value = '' : null; }"
             @update:model-value="($v) => { setFieldValue('data', $v || null); }"
           />
-          <div class="error-msg">
-            {{ errors.data }}
-          </div>
+          <ErrorMessage
+            class="error-msg mb1"
+            name="data"
+          />
         </div>
 
         <div
@@ -178,9 +182,10 @@ watch(arquivoParaEdição, (novosValores) => {
               {{ d.titulo }}
             </option>
           </Field>
-          <div class="error-msg">
-            {{ errors.tipo_documento_id }}
-          </div>
+          <ErrorMessage
+            class="error-msg mb1"
+            name="tipo_documento_id"
+          />
         </div>
       </div>
 
@@ -255,9 +260,10 @@ watch(arquivoParaEdição, (novosValores) => {
             name="arquivo"
             type="hidden"
           />
-          <div class="error-msg">
-            {{ errors.arquivo }}
-          </div>
+          <ErrorMessage
+            class="error-msg mb1"
+            name="arquivo"
+          />
         </div>
       </div>
 
