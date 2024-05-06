@@ -43,14 +43,12 @@ export class CreateTransferenciaDto {
     @MaxLength(1024)
     objeto: string;
 
-    @IsBoolean()
-    critico: boolean;
-
+    @IsOptional()
     @ApiProperty({ enum: TransferenciaInterface, enumName: 'TransferenciaInterface' })
     @IsEnum(TransferenciaInterface, {
         message: '$property| Precisa ser um dos seguintes valores: ' + Object.values(TransferenciaInterface).join(', '),
     })
-    interface: TransferenciaInterface;
+    interface?: TransferenciaInterface;
 
     @ApiProperty({ enum: TransferenciaTipoEsfera, enumName: 'TransferenciaTipoEsfera' })
     @IsEnum(TransferenciaTipoEsfera, {
@@ -66,8 +64,9 @@ export class CreateTransferenciaDto {
     })
     cargo?: ParlamentarCargo;
 
+    @IsOptional()
     @IsBoolean()
-    clausula_suspensiva: boolean;
+    clausula_suspensiva?: boolean;
 
     /**
      * clausula_suspensiva_vencimento
