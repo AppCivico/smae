@@ -98,10 +98,6 @@ iniciar();
     </h1>
 
     <hr class="ml2 f1">
-    <MenuDeMudançaDeStatusDeLicoesAprendida
-      v-if="emFoco?.id"
-    />
-
     <CheckClose />
   </div>
 
