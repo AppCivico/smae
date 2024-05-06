@@ -186,9 +186,8 @@ iniciar();
           :class="{ 'error': errors.inicio_real }"
           maxlength="10"
           :disabled="emFoco.n_filhos_imediatos > 0"
-          @update:model-value="values.inicio_real === ''
-            ? values.inicio_real = null
-            : null"
+          @blur="($e) => { !$e.target.value ? $e.target.value = '' : null; }"
+          @update:model-value="($v) => { setFieldValue('inicio_real', $v || null); }"
           @change="values.duracao_real
             ? setFieldValue(
               'termino_real',
@@ -238,9 +237,8 @@ iniciar();
           :class="{ 'error': errors.termino_real }"
           maxlength="10"
           :disabled="emFoco.n_filhos_imediatos > 0"
-          @update:model-value="values.termino_real === ''
-            ? values.termino_real = null
-            : null"
+          @blur="($e) => { !$e.target.value ? $e.target.value = '' : null; }"
+          @update:model-value="($v) => { setFieldValue('termino_real', $v || null); }"
           @change="values.termino_real && values.inicio_real
             ? setFieldValue(
               'duracao_real',
