@@ -128,7 +128,7 @@ iniciar();
     <CheckClose />
   </div>
   <Form
-    v-slot="{ errors, isSubmitting, }"
+    v-slot="{ errors, isSubmitting, setFieldValue }"
     :validation-schema="schema"
     :initial-values="itemParaEdição"
     @submit="onSubmit"
@@ -181,7 +181,8 @@ iniciar();
             type="date"
             class="inputtext light mb1"
             maxlength="10"
-            placeholder="dd/mm/aaaa"
+            @blur="($e) => { !$e.target.value ? $e.target.value = '' : null; }"
+            @update:model-value="($v) => { setFieldValue('nascimento', $v || null); }"
           />
           <ErrorMessage
             class="error-msg mb1"
