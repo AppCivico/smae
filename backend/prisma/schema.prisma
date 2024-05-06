@@ -4860,12 +4860,12 @@ model DistribuicaoRecurso {
     orgao_gestor_id Int
     orgao_gestor    Orgao @relation(fields: [orgao_gestor_id], references: [id])
 
-    objeto              String
-    valor               Decimal @default(0) @db.Decimal(15, 2)
-    valor_total         Decimal @default(0) @db.Decimal(15, 2)
-    valor_contrapartida Decimal @default(0) @db.Decimal(15, 2)
-    empenho             Boolean
-
+    objeto                          String
+    valor                           Decimal   @default(0) @db.Decimal(15, 2)
+    valor_total                     Decimal   @default(0) @db.Decimal(15, 2)
+    valor_contrapartida             Decimal   @default(0) @db.Decimal(15, 2)
+    empenho                         Boolean
+    data_empenho                    DateTime? @db.Date()
     programa_orcamentario_estadual  String?
     programa_orcamentario_municipal String?
     dotacao                         String?
