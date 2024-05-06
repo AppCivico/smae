@@ -61,7 +61,7 @@ if (props.partidoId) {
     <CheckClose />
   </div>
   <Form
-    v-slot="{ errors, isSubmitting, }"
+    v-slot="{ errors, isSubmitting, setFieldValue }"
     :validation-schema="schema"
     :initial-values="itemParaEdição"
     @submit="onSubmit"
@@ -148,6 +148,8 @@ if (props.partidoId) {
           name="fundacao"
           type="date"
           class="inputtext light mb1"
+          @blur="($e) => { !$e.target.value ? $e.target.value = '' : null; }"
+          @update:model-value="($v) => { setFieldValue('fundacao', $v || null); }"
         />
         <ErrorMessage
           class="error-msg mb1"
@@ -166,6 +168,8 @@ if (props.partidoId) {
           name="encerramento"
           type="date"
           class="inputtext light mb1"
+          @blur="($e) => { !$e.target.value ? $e.target.value = '' : null; }"
+          @update:model-value="($v) => { setFieldValue('encerramento', $v || null); }"
         />
         <ErrorMessage
           class="error-msg mb1"
