@@ -1675,21 +1675,9 @@ export class OrcamentoRealizadoService {
         },
         ano_referencia: number,
         execucao_concluida: boolean,
-        anyAdminUser: { id: number },
+        botUser: { id: number },
         now: Date
     ) {
-        // invalida os registros anteriores
-        await prismaTxn.pdmOrcamentoRealizadoConfig.updateMany({
-            where: {
-                ultima_revisao: true,
-                meta_id: meta.id,
-                ano_referencia: ano_referencia,
-            },
-            data: {
-                ultima_revisao: null,
-            },
-        });
-
         // cria os novos registros
         const orgoes = await prismaTxn.metaOrgao.findMany({
             where: {
@@ -1698,12 +1686,47 @@ export class OrcamentoRealizadoService {
             },
         });
         for (const o of orgoes) {
+            const lastRecord = await prismaTxn.pdmOrcamentoRealizadoConfig.findUnique({
+                where: {
+                    meta_id_ano_referencia_orgao_id_ultima_revisao: {
+                        ano_referencia: ano_referencia,
+                        meta_id: meta.id,
+                        orgao_id: o.id,
+                        ultima_revisao: true,
+                    },
+                },
+                select: {
+                    id: true,
+                    execucao_concluida: true,
+                },
+            });
+
+            if (lastRecord && lastRecord.execucao_concluida === execucao_concluida) {
+                this.logger.debug(
+                    `Meta ${meta.id} ano_referencia ${ano_referencia} orgao ${o.orgao_id} já está marcado como execucao_concluida=${execucao_concluida}`
+                );
+                continue;
+            }
+
+            // invalida os registros anteriores
+            await prismaTxn.pdmOrcamentoRealizadoConfig.updateMany({
+                where: {
+                    ultima_revisao: true,
+                    meta_id: meta.id,
+                    orgao_id: o.orgao_id,
+                    ano_referencia: ano_referencia,
+                },
+                data: {
+                    ultima_revisao: null,
+                },
+            });
+
             this.logger.verbose(
                 `Marcando meta ${meta.id} ano_referencia ${ano_referencia} como execucao_concluida=${execucao_concluida} orgao=${o.orgao_id}`
             );
             await prismaTxn.pdmOrcamentoRealizadoConfig.create({
                 data: {
-                    atualizado_por: anyAdminUser.id,
+                    atualizado_por: botUser.id,
                     atualizado_em: now,
                     ultima_revisao: true,
                     meta_id: meta.id,
