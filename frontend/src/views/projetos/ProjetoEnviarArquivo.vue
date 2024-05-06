@@ -43,7 +43,7 @@ const arquivoParaEdição = computed(() => ({
 }));
 
 const {
-  errors, handleSubmit, isSubmitting, resetForm, values,
+  errors, handleSubmit, isSubmitting, resetForm, setFieldValue, values,
 } = useForm({
   validationSchema: schema.value,
   initialValues: arquivoParaEdição,
@@ -141,6 +141,8 @@ watch(arquivoParaEdição, (novosValores) => {
             type="date"
             class="inputtext light mb1"
             :class="{ 'error': errors.data }"
+            @blur="($e) => { !$e.target.value ? $e.target.value = '' : null; }"
+            @update:model-value="($v) => { setFieldValue('data', $v || null); }"
           />
           <div class="error-msg">
             {{ errors.data }}
