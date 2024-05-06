@@ -953,15 +953,18 @@ export const parlamentar = object({
   nome_popular: string()
     .label('Nome')
     .min(1)
-    .max(250),
+    .max(250)
+    .required(),
   nome: string()
     .label('Nome Civil')
     .min(1)
-    .max(250),
+    .max(250)
+    .required(),
   nascimento: date()
     .max(dataMax)
-    .min(new Date(1910, 0, 1))
-    .label('Nascimento'),
+    .min(new Date(1933, 0, 1))
+    .label('Nascimento')
+    .required(),
   telefone: string()
     .label('Telefone Fixo')
     .nullable(),
