@@ -60,6 +60,17 @@ export class CreateDistribuicaoRecursoDto {
     empenho: boolean;
 
     @IsOptional()
+    /**
+     * data de empenho
+     * @example YYYY-MM-DD
+     */
+    @IsOptional()
+    @IsOnlyDate()
+    @Transform(DateTransform)
+    @ValidateIf((object, value) => value !== null)
+    data_empenho?: Date;
+
+    @IsOptional()
     @IsString()
     @MinLength(1)
     @MaxLength(250)
