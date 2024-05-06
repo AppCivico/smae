@@ -236,7 +236,8 @@ watch(itemParaEdição, (novosValores) => {
               name="data_nota"
               type="date"
               class="inputtext light"
-              placeholder="dd/mm/aaaa"
+              @blur="($e) => { !$e.target.value ? $e.target.value = '' : null; }"
+              @update:model-value="($v) => { setFieldValue('data_nota', $v || null); }"
             />
           </div>
           <div class="f1">
@@ -298,7 +299,8 @@ watch(itemParaEdição, (novosValores) => {
               name="rever_em"
               type="date"
               class="inputtext light"
-              placeholder="dd/mm/aaaa"
+              @blur="($e) => { !$e.target.value ? $e.target.value = '' : null; }"
+              @update:model-value="($v) => { setFieldValue('data_nota', $v || null); }"
             />
           </div>
         </div>
