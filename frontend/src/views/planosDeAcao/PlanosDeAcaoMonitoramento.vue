@@ -71,7 +71,7 @@ async function onSubmit(_, { controlledValues: carga }) {
 
   <Form
     v-if="!planoId || emFoco"
-    v-slot="{ errors, isSubmitting }"
+    v-slot="{ errors, isSubmitting, setFieldValue }"
     :disabled="chamadasPendentes.emFoco"
     :initial-values="itemParaEdição"
     :validation-schema="schema"
@@ -114,6 +114,8 @@ async function onSubmit(_, { controlledValues: carga }) {
           class="inputtext light mb1"
           :class="{ 'error': errors.data_afericao }"
           maxlength="10"
+          @blur="($e) => { !$e.target.value ? $e.target.value = '' : null; }"
+          @update:model-value="($v) => { setFieldValue('data_afericao', $v || null); }"
         />
         <ErrorMessage
           name="data_afericao"
