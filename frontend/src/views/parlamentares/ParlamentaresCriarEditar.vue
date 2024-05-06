@@ -3,6 +3,7 @@ import InputImageProfile from '@/components/InputImageProfile.vue';
 import ParlamentaresExibirRepresentatividade from '@/components/parlamentares/ParlamentaresExibirRepresentatividade.vue';
 import { vMaska } from "maska"
 import { parlamentar as schema } from '@/consts/formSchemas';
+import nulificadorTotal from '@/helpers/nulificadorTotal.ts';
 import { useAlertStore } from '@/stores/alert.store';
 import { useAuthStore } from '@/stores/auth.store';
 import { useParlamentaresStore } from '@/stores/parlamentares.store';
@@ -34,7 +35,7 @@ const { chamadasPendentes, erro, itemParaEdição } = storeToRefs(parlamentaresS
 const avatar = ref(null);
 
 async function onSubmit(values) {
-  const newValues = { ...values };
+  const newValues = nulificadorTotal(values);
   newValues.upload_foto = avatar.value ? avatar.value : itemParaEdição.value.foto;
   try {
     let r;
