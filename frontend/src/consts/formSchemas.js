@@ -880,6 +880,7 @@ export const partido = object({
     .required(),
   numero: number()
     .label('Número')
+    .max(99)
     .required(),
   observacao: string()
     .label('Presidente nacional')
