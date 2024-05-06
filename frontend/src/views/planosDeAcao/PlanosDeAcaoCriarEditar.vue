@@ -238,9 +238,8 @@ iniciar();
             loading: chamadasPendentes.validaçãoDeDependências
           }"
           maxlength="10"
-          @update:model-value="values.prazo_contramedida === ''
-            ? values.prazo_contramedida = null
-            : null"
+          @blur="($e) => { !$e.target.value ? $e.target.value = '' : null; }"
+          @update:model-value="($v) => { setFieldValue('prazo_contramedida', $v || null); }"
         />
         <ErrorMessage
           name="prazo_contramedida"
@@ -263,9 +262,8 @@ iniciar();
             loading: chamadasPendentes.validaçãoDeDependências
           }"
           maxlength="10"
-          @update:model-value="values.data_termino === ''
-            ? values.data_termino = null
-            : null"
+          @blur="($e) => { !$e.target.value ? $e.target.value = '' : null; }"
+          @update:model-value="($v) => { setFieldValue('data_termino', $v || null); }"
         />
         <ErrorMessage
           name="data_termino"
