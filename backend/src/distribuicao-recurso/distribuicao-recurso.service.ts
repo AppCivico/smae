@@ -9,7 +9,7 @@ import { UpdateDistribuicaoRecursoDto } from './dto/update-distribuicao-recurso.
 import { FilterDistribuicaoRecursoDto } from './dto/filter-distribuicao-recurso.dto';
 import { formataSEI } from 'src/common/formata-sei';
 
-type operationsRegistroSEI = {
+type OperationsRegistroSEI = {
     id?: number;
     processo_sei: string;
 }[];
@@ -365,12 +365,12 @@ export class DistribuicaoRecursoService {
 
     private async checkDiffSei(
         distribuicaoRecursoId: number,
-        sentRegistrosSei: operationsRegistroSEI,
-        currRegistrosSei: operationsRegistroSEI,
+        sentRegistrosSei: OperationsRegistroSEI,
+        currRegistrosSei: OperationsRegistroSEI,
         prismaTx: Prisma.TransactionClient,
         user: PessoaFromJwt
     ) {
-        const updated: operationsRegistroSEI = sentRegistrosSei
+        const updated: OperationsRegistroSEI = sentRegistrosSei
             .filter((r) => r.id != undefined)
             .filter((rNew) => {
                 const rOld = currRegistrosSei.find((r) => r.id == rNew.id);
@@ -378,7 +378,7 @@ export class DistribuicaoRecursoService {
                 return rNew.processo_sei !== rOld!.processo_sei;
             });
 
-        const created: operationsRegistroSEI = sentRegistrosSei.filter((r) => r.id == undefined);
+        const created: OperationsRegistroSEI = sentRegistrosSei.filter((r) => r.id == undefined);
 
         const deleted: number[] = currRegistrosSei
             .filter((r) => {
