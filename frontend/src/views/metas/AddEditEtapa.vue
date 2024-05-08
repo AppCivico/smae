@@ -385,7 +385,7 @@ function maskDate(el) {
 
       <label class="label">Responsável<span class="tvermelho">*</span></label>
       <div class="flex">
-        <div class="f1">
+        <div class="f1 mb1">
           <AutocompleteField
             :controlador="responsaveis"
             :grupo="usersAvailable"
