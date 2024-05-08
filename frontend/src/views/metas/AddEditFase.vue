@@ -579,7 +579,7 @@ const geolocalizaçãoPorToken = computed(() => (currentFase.value?.loading
           <button
             class="btn big"
             type="submit"
-            :disabled="isSubmitting"
+            :disabled="isSubmitting || Object.keys(errors)?.length"
           >
             Salvar
           </button>

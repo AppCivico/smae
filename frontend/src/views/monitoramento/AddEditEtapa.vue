@@ -237,7 +237,7 @@ function maskDate(el) {
         <hr class="mr2 f1">
         <button
           class="btn big"
-          :disabled="isSubmitting"
+          :disabled="isSubmitting || Object.keys(errors)?.length"
         >
           Salvar
         </button>
