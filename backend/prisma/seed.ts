@@ -17,6 +17,7 @@ const ModuloDescricao: Record<string, [string, ModuloSistema | null]> = {
     CadastroRegiao: ['Regiões', 'SMAE'],
     CadastroMeta: ['Metas', 'PDM'],
     CadastroIndicador: ['Indicadores', 'PDM'],
+    CadastroVariavelCategorica: ['Variável Categórica', 'PDM'],
     CadastroUnidadeMedida: ['Unidades de Medida', 'PDM'],
     CadastroIniciativa: ['Iniciativas', 'PDM'],
     CadastroAtividade: ['Atividades', 'PDM'],
@@ -183,6 +184,9 @@ const PrivConfig: Record<string, false | [ListaDePrivilegios, string | false][]>
         ['CadastroIndicador.inserir', 'Inserir Indicadores e variáveis quando for responsável'],
         ['CadastroIndicador.editar', 'Editar Indicadores e variáveis quando for responsável'],
         ['CadastroIndicador.remover', 'Remover Indicadores e variáveis quando for responsável'],
+    ],
+    CadastroVariavelCategorica: [
+        ['CadastroVariavelCategorica.administrador', 'Inserir, Editar e Remover e variáveis categóricas'],
     ],
     CadastroIniciativa: [
         ['CadastroIniciativa.inserir', 'Inserir Iniciativas pelas quais for responsável'],
@@ -366,6 +370,7 @@ const PerfilAcessoConfig: {
             'No monitoramento, pode visualizar e editar dados de todas as metas, em todos os ciclos. Gerenciar parcialmente as metas e PDM.',
         privilegios: [
             'PDM.admin_cp',
+            'CadastroVariavelCategorica.administrador',
             'CadastroMeta.administrador_orcamento',
             'CadastroPdm.editar',
             'CadastroMacroTema.inserir',
@@ -574,8 +579,38 @@ async function main() {
 
     await atualizar_superadmin();
     await ensure_bot_user();
+    await ensure_categorica_cronograma();
 
     await populateEleicao();
+}
+
+async function ensure_categorica_cronograma() {
+    await prisma.variavelCategorica.upsert({
+        where: { tipo: 'Cronograma', id: -1 },
+        create: {
+            id: -1,
+            tipo: 'Cronograma',
+            titulo: 'Situação do Cronograma',
+            descricao: 'Se a tarefa está concluída ou em andamento/pendente',
+            valores: {
+                createMany: {
+                    data: [
+                        {
+                            titulo: 'Preenchido',
+                            valor_variavel: 1,
+                            ordem: 1,
+                        },
+                        {
+                            titulo: 'Atrasado',
+                            valor_variavel: 2,
+                            ordem: 2,
+                        },
+                    ],
+                },
+            },
+        },
+        update: {},
+    });
 }
 
 async function atualizar_modulos_e_privilegios() {

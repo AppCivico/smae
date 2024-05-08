@@ -378,11 +378,20 @@ model Pessoa {
     BlocoNotaQCriei                          BlocoNota[]                               @relation("Criador")
     BlocoNotaQRemovi                         BlocoNota[]                               @relation("Removedor")
     BlocoNotaQAtualizei                      BlocoNota[]                               @relation("Atualizador")
-    view_atividade_pessoa_responsavel        view_atividade_pessoa_responsavel[]
-    view_iniciativa_pessoa_responsavel       view_iniciativa_pessoa_responsavel[]
-    ViewNotaComOrdemQCriei                   ViewNotas[]                               @relation("Criador")
-    ViewNotaComOrdemQRemovi                  ViewNotas[]                               @relation("Removedor")
-    ViewNotaComOrdemQSouResp                 ViewNotas[]                               @relation("Resp")
+
+    VariavelCategoricaQCriei     VariavelCategorica[] @relation("Criador")
+    VariavelCategoricaQRemovi    VariavelCategorica[] @relation("Removedor")
+    VariavelCategoricaQAtualizei VariavelCategorica[] @relation("Atualizador")
+
+    VariavelCategoricaValorQCriei     VariavelCategoricaValor[] @relation("Criador")
+    VariavelCategoricaValorQRemovi    VariavelCategoricaValor[] @relation("Removedor")
+    VariavelCategoricaValorQAtualizei VariavelCategoricaValor[] @relation("Atualizador")
+
+    view_atividade_pessoa_responsavel  view_atividade_pessoa_responsavel[]
+    view_iniciativa_pessoa_responsavel view_iniciativa_pessoa_responsavel[]
+    ViewNotaComOrdemQCriei             ViewNotas[]                          @relation("Criador")
+    ViewNotaComOrdemQRemovi            ViewNotas[]                          @relation("Removedor")
+    ViewNotaComOrdemQSouResp           ViewNotas[]                          @relation("Resp")
 
     @@index([email])
     @@map("pessoa")
@@ -1328,6 +1337,9 @@ model Variavel {
     unidade_medida_id Int
     unidade_medida    UnidadeMedida @relation(fields: [unidade_medida_id], references: [id])
 
+    variavel_categorica_id Int?
+    variavel_categorica    VariavelCategorica? @relation(fields: [variavel_categorica_id], references: [id])
+
     codigo String
 
     supraregional Boolean @default(false)
@@ -1470,6 +1482,65 @@ model SerieIndicador {
     @@map("serie_indicador")
 }
 
+enum TipoVariavelCategorica {
+    Binaria
+    Cronograma
+    Qualitativa
+}
+
+model VariavelCategorica {
+    id Int @id @default(autoincrement())
+
+    tipo      TipoVariavelCategorica
+    titulo    String
+    descricao String?
+
+    criado_por     Int?
+    criado_em      DateTime  @default(now()) @db.Timestamptz(6)
+    atualizado_por Int?
+    atualizado_em  DateTime  @default(now()) @db.Timestamptz(6)
+    removido_por   Int?
+    removido_em    DateTime? @db.Timestamptz(6)
+
+    atualizador   Pessoa?                   @relation("Atualizador", fields: [atualizado_por], references: [id])
+    criador       Pessoa?                   @relation("Criador", fields: [criado_por], references: [id])
+    removedor     Pessoa?                   @relation("Removedor", fields: [removido_por], references: [id])
+    valores       VariavelCategoricaValor[]
+    Variavel      Variavel[]
+    SerieVariavel SerieVariavel[]
+
+    @@index([titulo])
+    @@map("variavel_categorica")
+}
+
+model VariavelCategoricaValor {
+    id Int @id @default(autoincrement())
+
+    titulo         String
+    valor_variavel Int
+    descricao      String?
+    ordem          Int     @default(0)
+
+    variavel_categorica_id Int
+    variavel_categorica    VariavelCategorica @relation(fields: [variavel_categorica_id], references: [id])
+
+    criado_por     Int?
+    criado_em      DateTime  @default(now()) @db.Timestamptz(6)
+    atualizado_por Int?
+    atualizado_em  DateTime  @default(now()) @db.Timestamptz(6)
+    removido_por   Int?
+    removido_em    DateTime? @db.Timestamptz(6)
+
+    atualizador   Pessoa?         @relation("Atualizador", fields: [atualizado_por], references: [id])
+    criador       Pessoa?         @relation("Criador", fields: [criado_por], references: [id])
+    removedor     Pessoa?         @relation("Removedor", fields: [removido_por], references: [id])
+    SerieVariavel SerieVariavel[]
+
+    @@unique([variavel_categorica_id, valor_variavel])
+    @@unique([variavel_categorica_id, id])
+    @@map("variavel_categorica_valor")
+}
+
 model SerieVariavel {
     id          Int      @id @default(autoincrement())
     variavel_id Int
@@ -1479,6 +1550,12 @@ model SerieVariavel {
 
     data_valor    DateTime @db.Date()
     valor_nominal Decimal  @db.Decimal(65, 30)
+
+    variavel_categorica_id Int?
+    variavel_categorica    VariavelCategorica? @relation(fields: [variavel_categorica_id], references: [id])
+
+    variavel_categorica_valor_id Int?
+    variavel_categorica_valor    VariavelCategoricaValor? @relation(fields: [variavel_categorica_id, variavel_categorica_valor_id], references: [variavel_categorica_id, id])
 
     atualizado_em  DateTime @default(now()) @db.Timestamptz(6)
     atualizado_por Int?
