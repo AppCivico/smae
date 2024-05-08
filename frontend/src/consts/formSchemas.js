@@ -12,7 +12,9 @@ import tiposDeLogradouro from '@/consts/tiposDeLogradouro';
 import tiposDeMunicípio from '@/consts/tiposDeMunicipio';
 import tiposNaEquipeDeParlamentar from '@/consts/tiposNaEquipeDeParlamentar';
 import tiposSituacaoSchema from '@/consts/tiposSituacaoSchema';
+import fieldToDate from '@/helpers/fieldToDate';
 import {
+  addMethod,
   array,
   boolean,
   date,
@@ -26,6 +28,25 @@ import {
 
 const dataMin = import.meta.env.VITE_DATA_MIN ? new Date(`${import.meta.env.VITE_DATA_MIN}`) : new Date('1900-01-01T00:00:00Z');
 const dataMax = import.meta.env.VITE_DATA_MAX ? new Date(`${import.meta.env.VITE_DATA_MAX}`) : new Date('2100-12-31T23:59:59Z');
+
+addMethod(string, 'fieldUntilToday', function (errorMessage = 'Valor de ${path} futuro') {
+  return this.test('teste', errorMessage, function (value) {
+    const { path, createError } = this;
+
+    try {
+      const cleanDate = fieldToDate(value).replace(/-/g, '');
+      const cleanNow = new Date()
+        .toISOString()
+        .substring(0, 10)
+        .replace(/-/g, '');
+
+      return Number(cleanDate) <= Number(cleanNow)
+        || createError({ path });
+    } catch (error) {
+      return createError({ path, message: 'Valor de ${path} inválido' });
+    }
+  });
+});
 
 setLocale({
   array: {
@@ -303,7 +324,9 @@ export const etapa = object()
       .required('Preencha a data')
       .matches(regEx['day/month/year'], 'Formato inválido'),
     termino_real: string()
+      .label('Término real')
       .nullable()
+      .fieldUntilToday()
       .matches(regEx['day/month/year'], 'Formato inválido'),
     titulo: string()
       .required('Preencha o título'),
@@ -329,7 +352,9 @@ export const etapaDeMonitoramento = object()
       .required('Preencha a data')
       .matches(regEx['day/month/year'], 'Formato inválido'),
     termino_real: string()
+      .label('Término real')
       .nullable()
+      .fieldUntilToday()
       .matches(regEx['day/month/year'], 'Formato inválido'),
   });
 
@@ -410,7 +435,9 @@ export const fase = object()
       .required('Preencha a data')
       .matches(regEx['day/month/year'], 'Formato inválido'),
     termino_real: string()
+      .label('Término real')
       .nullable()
+      .fieldUntilToday()
       .matches(regEx['day/month/year'], 'Formato inválido'),
     titulo: string()
       .required('Preencha o título'),
