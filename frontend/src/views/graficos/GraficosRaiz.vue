@@ -19,7 +19,7 @@ import { Dashboard } from '@/components';
 <style lang="less">
 .dashboard--graficos {
   background-image: url('@{u}graficos__lines.svg'),
-  linear-gradient(to right, hsl(45, 90%, 92%), hsl(215, 14%, 74%));
+  linear-gradient(to right, #fdf4d8, #b3bbc6);
   background-repeat: no-repeat;
   background-size: cover;
 }
