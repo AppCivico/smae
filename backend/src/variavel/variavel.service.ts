@@ -16,7 +16,12 @@ import { CreateGeradorVariavelDto, CreateVariavelDto } from './dto/create-variav
 import { FilterVariavelDto } from './dto/filter-variavel.dto';
 import { ListSeriesAgrupadas } from './dto/list-variavel.dto';
 import { UpdateVariavelDto } from './dto/update-variavel.dto';
-import { SerieValorNomimal, SerieValorPorPeriodo, ValorSerieExistente } from './entities/variavel.entity';
+import {
+    SerieValorNomimal,
+    SerieValorPorPeriodo,
+    ValorSerieExistente,
+    VariavelItemDto,
+} from './entities/variavel.entity';
 
 /**
  * ordem que é populado na função populaSeriesExistentes, usada no serviço do VariavelFormulaCompostaService
@@ -56,26 +61,27 @@ export class VariavelService {
         return arr;
     }
 
-    async create(createVariavelDto: CreateVariavelDto, user: PessoaFromJwt) {
-        // TODO: verificar se todos os membros de createVariavelDto.responsaveis estão ativos e sao realmente do orgão createVariavelDto.orgao_id
+    async create(dto: CreateVariavelDto, user: PessoaFromJwt) {
+        // TODO: verificar se todos os membros de createVariavelDto.responsaveis estão ativos
+        // e sao realmente do órgão createVariavelDto.orgao_id
 
-        if (createVariavelDto.supraregional === null) delete createVariavelDto.supraregional;
+        if (dto.supraregional === null) delete dto.supraregional;
 
-        await this.checkPermissions(createVariavelDto, user);
+        await this.checkPermissions(dto, user);
 
-        const responsaveis = createVariavelDto.responsaveis!;
-        const indicador_id = createVariavelDto.indicador_id!;
-        delete createVariavelDto.responsaveis;
-        delete createVariavelDto.indicador_id;
-        const indicador = await this.loadIndicador(indicador_id);
+        const indicador = await this.loadIndicador(dto.indicador_id);
 
-        this.fixIndicadorInicioFim(createVariavelDto, indicador);
+        this.fixIndicadorInicioFim(dto, indicador);
 
         const created = await this.prisma.$transaction(
-            async (prismaThx: Prisma.TransactionClient): Promise<RecordWithId> => {
-                if (indicador.regionalizavel && createVariavelDto.regiao_id) {
+            async (prismaTxn: Prisma.TransactionClient): Promise<RecordWithId> => {
+                if (dto.variavel_categorica_id !== null && dto.variavel_categorica_id) {
+                    await this.carregaVariavelCategorica(prismaTxn, dto.variavel_categorica_id);
+                }
+
+                if (indicador.regionalizavel && dto.regiao_id) {
                     const regiao = await this.prisma.regiao.findFirstOrThrow({
-                        where: { id: createVariavelDto.regiao_id },
+                        where: { id: dto.regiao_id },
                         select: { nivel: true },
                     });
 
@@ -85,16 +91,10 @@ export class VariavelService {
                         );
                 }
 
-                if (!indicador.regionalizavel && createVariavelDto.regiao_id)
+                if (!indicador.regionalizavel && dto.regiao_id)
                     throw new BadRequestException(`Indicador sem regionalização, não é possível enviar região.`);
 
-                return await this.performVariavelSave(
-                    prismaThx,
-                    createVariavelDto,
-                    indicador_id,
-                    indicador,
-                    responsaveis
-                );
+                return await this.performVariavelSave(prismaTxn, dto, dto.indicador_id, indicador, dto.responsaveis);
             },
             {
                 isolationLevel: 'Serializable',
@@ -124,16 +124,15 @@ export class VariavelService {
 
         await this.checkPermissions(dto, user);
 
-        const responsaveis = dto.responsaveis!;
-        const indicador_id = dto.indicador_id!;
-        delete dto.responsaveis;
-        delete dto.indicador_id;
+        const responsaveis = dto.responsaveis;
+        const indicador_id = dto.indicador_id;
+
         const indicador = await this.loadIndicador(indicador_id);
 
         this.fixIndicadorInicioFim(dto, indicador);
 
         const created = await this.prisma.$transaction(
-            async (prismaThx: Prisma.TransactionClient): Promise<RecordWithId[]> => {
+            async (prismaTxn: Prisma.TransactionClient): Promise<RecordWithId[]> => {
                 const ids: number[] = [];
 
                 const regions = await this.prisma.regiao.findMany({
@@ -146,9 +145,9 @@ export class VariavelService {
                 delete (dto as any).codigo;
                 for (const regiao of regions) {
                     const variavel = await this.performVariavelSave(
-                        prismaThx,
+                        prismaTxn,
                         {
-                            ...dto,
+                            ...dto, // aqui eu passo tudo
                             titulo: dto.titulo + ' ' + regiao.descricao,
                             codigo: prefixo + regiao.pdm_codigo_sufixo,
                             regiao_id: regiao.id,
@@ -162,9 +161,9 @@ export class VariavelService {
 
                 if (dto.supraregional) {
                     await this.performVariavelSave(
-                        prismaThx,
+                        prismaTxn,
                         {
-                            ...dto,
+                            ...dto, // aqui eu deixo tudo tbm, só pra não duplicar 100%
                             titulo: dto.titulo,
                             codigo: prefixo,
                         },
@@ -187,16 +186,16 @@ export class VariavelService {
     }
 
     private async performVariavelSave(
-        prismaThx: Prisma.TransactionClient,
-        createVariavelDto: CreateVariavelDto,
+        prismaTxn: Prisma.TransactionClient,
+        dto: CreateVariavelDto,
         indicador_id: number,
         indicador: IndicadorInfo,
         responsaveis: number[]
     ) {
-        const jaEmUso = await prismaThx.variavel.count({
+        const jaEmUso = await prismaTxn.variavel.count({
             where: {
                 removido_em: null,
-                codigo: createVariavelDto.codigo,
+                codigo: dto.codigo,
                 indicador_variavel: {
                     some: {
                         indicador_id: indicador_id,
@@ -204,12 +203,26 @@ export class VariavelService {
                 },
             },
         });
-        if (jaEmUso > 0)
-            throw new HttpException(`Código ${createVariavelDto.codigo} já está em uso no indicador.`, 400);
+        if (jaEmUso > 0) throw new HttpException(`Código ${dto.codigo} já está em uso no indicador.`, 400);
 
-        const variavel = await prismaThx.variavel.create({
+        const variavel = await prismaTxn.variavel.create({
             data: {
-                ...createVariavelDto,
+                titulo: dto.titulo,
+                codigo: dto.codigo,
+                acumulativa: dto.acumulativa,
+                mostrar_monitoramento: dto.mostrar_monitoramento,
+                unidade_medida_id: dto.unidade_medida_id,
+                ano_base: dto.ano_base,
+                valor_base: dto.valor_base,
+                periodicidade: dto.periodicidade,
+                orgao_id: dto.orgao_id,
+                regiao_id: dto.regiao_id,
+                variavel_categorica_id: dto.variavel_categorica_id,
+                casas_decimais: dto.casas_decimais,
+                atraso_meses: dto.atraso_meses,
+                inicio_medicao: dto.inicio_medicao,
+                fim_medicao: dto.fim_medicao,
+                supraregional: dto.supraregional,
 
                 indicador_variavel: {
                     create: {
@@ -220,13 +233,13 @@ export class VariavelService {
             select: { id: true },
         });
 
-        await this.resyncIndicadorVariavel(indicador, variavel.id, prismaThx);
+        await this.resyncIndicadorVariavel(indicador, variavel.id, prismaTxn);
 
-        await prismaThx.variavelResponsavel.createMany({
+        await prismaTxn.variavelResponsavel.createMany({
             data: await this.buildVarResponsaveis(variavel.id, responsaveis),
         });
 
-        await this.recalc_variaveis_acumulada([variavel.id], prismaThx);
+        await this.recalc_variaveis_acumulada([variavel.id], prismaTxn);
 
         return variavel;
     }
@@ -407,7 +420,7 @@ export class VariavelService {
         }
     }
 
-    async findAll(filters: FilterVariavelDto | undefined = undefined) {
+    async findAll(filters: FilterVariavelDto | undefined = undefined): Promise<VariavelItemDto[]> {
         let filterQuery: any = {};
 
         const removidoStatus = filters?.remover_desativados == true ? false : undefined;
@@ -569,6 +582,7 @@ export class VariavelService {
                         pessoa: { select: { id: true, nome_exibicao: true } },
                     },
                 },
+                variavel_categorica_id: true,
             },
         });
 
@@ -610,7 +624,7 @@ export class VariavelService {
         return ret;
     }
 
-    async update(variavelId: number, updateVariavelDto: UpdateVariavelDto, user: PessoaFromJwt) {
+    async update(variavelId: number, dto: UpdateVariavelDto, user: PessoaFromJwt) {
         // TODO: verificar se todos os membros de createVariavelDto.responsaveis estão ativos e sao realmente do orgão createVariavelDto.orgao_id
 
         // buscando apenas pelo indicador pai verdadeiro desta variavel
@@ -618,7 +632,14 @@ export class VariavelService {
             where: { variavel_id: variavelId, indicador_origem_id: null },
             select: {
                 indicador_id: true,
-                variavel: { select: { valor_base: true, periodicidade: true, supraregional: true } },
+                variavel: {
+                    select: {
+                        valor_base: true,
+                        periodicidade: true,
+                        supraregional: true,
+                        variavel_categorica_id: true,
+                    },
+                },
             },
         });
         if (!selfIndicadorVariavel)
@@ -635,7 +656,7 @@ export class VariavelService {
         const jaEmUso = await this.prisma.variavel.count({
             where: {
                 removido_em: null,
-                codigo: updateVariavelDto.codigo,
+                codigo: dto.codigo,
                 NOT: { id: variavelId },
                 indicador_variavel: {
                     some: {
@@ -644,8 +665,7 @@ export class VariavelService {
                 },
             },
         });
-        if (jaEmUso > 0)
-            throw new HttpException(`Código ${updateVariavelDto.codigo} já está em uso no indicador.`, 400);
+        if (jaEmUso > 0) throw new HttpException(`Código ${dto.codigo} já está em uso no indicador.`, 400);
 
         const oldValorBase = selfIndicadorVariavel.variavel.valor_base;
         // e com o indicador verdadeiro, temos os dados para recalcular os niveis
@@ -662,14 +682,14 @@ export class VariavelService {
         if (!indicador) throw new HttpException('Indicador não encontrado', 400);
 
         let oldValue = selfIndicadorVariavel.variavel.periodicidade;
-        if (updateVariavelDto.periodicidade) oldValue = updateVariavelDto.periodicidade;
+        if (dto.periodicidade) oldValue = dto.periodicidade;
 
         if (oldValue === indicador.periodicidade) {
-            updateVariavelDto.fim_medicao = null;
-            updateVariavelDto.inicio_medicao = null;
+            dto.fim_medicao = null;
+            dto.inicio_medicao = null;
         } else {
             ['inicio_medicao', 'fim_medicao'].forEach((e: 'inicio_medicao' | 'fim_medicao') => {
-                if (updateVariavelDto[e] === null) {
+                if (dto[e] === null) {
                     throw new HttpException(`${e}| ${InicioFimErrMsg}`, 400);
                 }
             });
@@ -677,15 +697,12 @@ export class VariavelService {
 
         // Quando a variável é supraregional, está sendo enviado regiao_id = 0
         // Portanto tratando para não dar problema com a FK no Prisma.
-        if (updateVariavelDto.regiao_id == 0 && selfIndicadorVariavel.variavel.supraregional == true)
-            delete updateVariavelDto.regiao_id;
+        if (dto.regiao_id == 0 && selfIndicadorVariavel.variavel.supraregional == true) delete dto.regiao_id;
 
+        const now = new Date(Date.now());
         await this.prisma.$transaction(async (prismaTxn: Prisma.TransactionClient) => {
-            const responsaveis = updateVariavelDto.responsaveis;
-            delete updateVariavelDto.responsaveis;
-
-            const suspendida: boolean | undefined = updateVariavelDto.suspendida;
-            delete updateVariavelDto.suspendida;
+            const responsaveis = dto.responsaveis;
+            const suspendida = dto.suspendida;
 
             if (suspendida == true) {
                 const self = await prismaTxn.variavel.findFirstOrThrow({
@@ -695,23 +712,69 @@ export class VariavelService {
 
                 // Caso a variável já esteja com mostrar_monitoramento == true, ou esteja sendo modificada agora para true.
                 // E o boolean de suspendida seja enviado como true, mostrar_monitoramento deve ser false.
-                if (self.mostrar_monitoramento || updateVariavelDto.mostrar_monitoramento)
-                    updateVariavelDto.mostrar_monitoramento = false;
+                if (self.mostrar_monitoramento || dto.mostrar_monitoramento) dto.mostrar_monitoramento = false;
+            }
+            const old_variavel_categorica_id = selfIndicadorVariavel.variavel.variavel_categorica_id;
+
+            if (dto.variavel_categorica_id !== null && dto.variavel_categorica_id) {
+                const variavelCategorica = await this.carregaVariavelCategorica(prismaTxn, dto.variavel_categorica_id);
+
+                if (old_variavel_categorica_id == variavelCategorica.id) {
+                    this.logger.debug(`variavel_categorica_id já é igual, não há necessidade de alterar`);
+
+                    dto.variavel_categorica_id = undefined;
+                }
+
+                if (dto.variavel_categorica_id) {
+                    const existentes = await prismaTxn.serieVariavel.count({
+                        where: { variavel_id: variavelId, variavel_categorica_id: dto.variavel_categorica_id },
+                    });
+                    if (existentes > 0)
+                        throw new BadRequestException(
+                            'Não é possível alterar a variável categórica de uma variável que já possui valores salvos.'
+                        );
+                }
+            } else if (dto.variavel_categorica_id === null && old_variavel_categorica_id !== null) {
+                await prismaTxn.serieVariavel.updateMany({
+                    where: {
+                        variavel_id: variavelId,
+                        variavel_categorica_id: old_variavel_categorica_id,
+                    },
+                    data: {
+                        variavel_categorica_id: null,
+                    },
+                });
+
+                this.logger.debug(`variavel_categorica_id foi removido, valores em serie-variavel mantidos`);
             }
 
             const updated = await prismaTxn.variavel.update({
                 where: { id: variavelId },
                 data: {
-                    ...updateVariavelDto,
-                    suspendida_em: suspendida ? new Date(Date.now()) : null,
+                    titulo: dto.titulo,
+                    codigo: dto.codigo,
+                    acumulativa: dto.acumulativa,
+                    mostrar_monitoramento: dto.mostrar_monitoramento,
+                    unidade_medida_id: dto.unidade_medida_id,
+                    ano_base: dto.ano_base,
+                    valor_base: dto.valor_base,
+                    periodicidade: dto.periodicidade,
+                    orgao_id: dto.orgao_id,
+                    regiao_id: dto.regiao_id,
+                    variavel_categorica_id: dto.variavel_categorica_id,
+                    casas_decimais: dto.casas_decimais,
+                    atraso_meses: dto.atraso_meses,
+                    inicio_medicao: dto.inicio_medicao,
+                    fim_medicao: dto.fim_medicao,
+
+                    suspendida_em: suspendida ? now : null,
                 },
                 select: {
-                    mostrar_monitoramento: true,
                     valor_base: true,
                 },
             });
 
-            if (suspendida != undefined) {
+            if (suspendida !== undefined) {
                 await prismaTxn.variavelSuspensaoLog.upsert({
                     where: {
                         variavel_id: variavelId,
@@ -719,18 +782,18 @@ export class VariavelService {
                     update: {
                         pessoa_id: user.id,
                         suspendida: suspendida,
-                        criado_em: new Date(Date.now()),
+                        criado_em: now,
                     },
                     create: {
                         variavel_id: variavelId,
                         pessoa_id: user.id,
                         suspendida: suspendida,
-                        criado_em: new Date(Date.now()),
+                        criado_em: now,
                     },
                 });
             }
 
-            if (responsaveis) {
+            if (Array.isArray(responsaveis)) {
                 await this.resyncIndicadorVariavel(indicador, variavelId, prismaTxn);
                 await prismaTxn.variavelResponsavel.deleteMany({
                     where: { variavel_id: variavelId },
@@ -747,6 +810,16 @@ export class VariavelService {
         });
 
         return { id: variavelId };
+    }
+
+    private async carregaVariavelCategorica(prismaTxn: Prisma.TransactionClient, variavel_categorica_id: number) {
+        const variavelCategorica = await prismaTxn.variavelCategorica.findFirstOrThrow({
+            where: { id: variavel_categorica_id },
+            select: { tipo: true, id: true },
+        });
+        if (variavelCategorica.tipo == 'Cronograma')
+            throw new BadRequestException('Variável categórica de cronograma não pode ser criada manualmente');
+        return variavelCategorica;
     }
 
     async processVariaveisSuspensas(prismaTx: Prisma.TransactionClient): Promise<number[]> {

@@ -591,17 +591,17 @@ async function ensure_categorica_cronograma() {
             id: -1,
             tipo: 'Cronograma',
             titulo: 'Situação do Cronograma',
-            descricao: 'Se a tarefa está concluída ou em andamento/pendente',
+            descricao: 'Se a tarefa está concluída ou não concluido',
             valores: {
                 createMany: {
                     data: [
                         {
-                            titulo: 'Preenchido',
+                            titulo: 'Feito',
                             valor_variavel: 1,
                             ordem: 1,
                         },
                         {
-                            titulo: 'Atrasado',
+                            titulo: 'Não feito',
                             valor_variavel: 2,
                             ordem: 2,
                         },

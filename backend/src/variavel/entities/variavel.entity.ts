@@ -24,7 +24,7 @@ export class IndicadorVariavel {
     indicador_origem: IndicadorVariavelOrigemDto | null;
 }
 
-export class Variavel {
+export class VariavelItemDto {
     id: number;
     titulo: string;
     acumulativa: boolean;
@@ -47,6 +47,7 @@ export class Variavel {
     fim_medicao: string | null;
     suspendida: boolean;
     mostrar_monitoramento: boolean;
+    variavel_categorica_id: number | null;
 }
 
 export class SerieValorNomimal {

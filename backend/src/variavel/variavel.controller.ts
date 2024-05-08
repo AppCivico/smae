@@ -12,7 +12,13 @@ import { ListSeriesAgrupadas, ListVariavelDto } from './dto/list-variavel.dto';
 import { UpdateVariavelDto } from './dto/update-variavel.dto';
 import { SerieIndicadorValorNominal, SerieValorNomimal } from './entities/variavel.entity';
 import { VariavelService } from './variavel.service';
+import { ListaDePrivilegios } from '../common/ListaDePrivilegios';
 
+export const ROLES_ACESSO_VARIAVEL: ListaDePrivilegios[] = [
+    'CadastroIndicador.inserir',
+    'CadastroIndicador.editar',
+    'CadastroMeta.listar',
+];
 @ApiTags('Indicador')
 @Controller('')
 export class VariavelController {
@@ -32,7 +38,7 @@ export class VariavelController {
     @Get('indicador-variavel')
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
-    @Roles('CadastroIndicador.inserir', 'CadastroIndicador.editar', 'CadastroMeta.listar')
+    @Roles(...ROLES_ACESSO_VARIAVEL)
     async listAll(@Query() filters: FilterVariavelDto, @CurrentUser() user: PessoaFromJwt): Promise<ListVariavelDto> {
         return { linhas: await this.variavelService.findAll(filters) };
     }
