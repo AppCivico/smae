@@ -8,6 +8,7 @@ import {
     IsBoolean,
     IsEnum,
     IsInt,
+    IsNumber,
     IsNumberString,
     IsOptional,
     IsString,
@@ -29,7 +30,7 @@ export class CreateVariavelDto {
      */
     @IsInt({ message: '$property| indicador precisa existir' })
     @Type(() => Number)
-    indicador_id?: number; // manter undefined pq precisamos apagar antes do insert
+    indicador_id: number; // manter undefined pq precisamos apagar antes do insert
 
     /**
      * lista dos responsáveis pelo preenchimento? pelo menos uma pessoa
@@ -38,7 +39,7 @@ export class CreateVariavelDto {
     @IsArray({ message: '$property| precisa ser um array' })
     @ArrayMinSize(1, { message: '$property| precisa ter um item' })
     @ArrayMaxSize(100, { message: '$property| precisa ter no máximo 100 items' })
-    responsaveis?: number[]; // manter undefined pq precisamos apagar antes do insert
+    responsaveis: number[]; // manter undefined pq precisamos apagar antes do insert
 
     /**
      * ID do órgão
@@ -140,6 +141,15 @@ export class CreateVariavelDto {
     @IsBoolean()
     @ValidateIf((object, value) => value !== null)
     supraregional?: boolean;
+
+    /* se recebido no update, se existir valor na serie-variavel realizado irá voltar 400
+     * se não existir, pode mudar. Se existir valor, mas pediu para virar null, irá remover a marcação de
+     * variavel_categorica_id mas manter o registro na tabela serie-variavel
+     */
+    @IsOptional()
+    @IsNumber()
+    @ValidateIf((object, value) => value !== null)
+    variavel_categorica_id?: number | null;
 }
 
 export class CreateGeradorVariavelDto extends OmitType(CreateVariavelDto, ['codigo']) {
