@@ -26,21 +26,7 @@ export class VariavelCategoricaService {
         const now = new Date(Date.now());
         const created = await this.prisma.$transaction(
             async (prismaThx: Prisma.TransactionClient): Promise<RecordWithId> => {
-                if (dto.tipo == 'Binaria') {
-                    if (dto.valores.length != 2)
-                        throw new BadRequestException(
-                            `Valores de variável categórica binária deve ter exatamente 2 valores.`
-                        );
-                    dto.valores.sort((a, b) => a.valor_variavel - b.valor_variavel);
-
-                    // garante que é 0 e 1
-                    for (let i = 0; i < dto.valores.length; i++) {
-                        if (dto.valores[i].valor_variavel != i)
-                            throw new BadRequestException(
-                                `Valores de variável categórica binária deve ser exatamente 0 e 1.`
-                            );
-                    }
-                }
+                if (dto.tipo == 'Binaria') this.checkTipoBinaria(dto);
 
                 return await this.performVariavelSave(prismaThx, dto, now, user);
             },
@@ -50,6 +36,20 @@ export class VariavelCategoricaService {
         );
 
         return { id: created.id };
+    }
+
+    private checkTipoBinaria(dto: CreateVariavelCategoricaDto | UpdateVariavelCategoricaDto) {
+        if (!Array.isArray(dto.valores)) return;
+
+        if (dto.valores.length != 2)
+            throw new BadRequestException(`Valores de variável categórica binária deve ter exatamente 2 valores.`);
+        dto.valores.sort((a, b) => a.valor_variavel - b.valor_variavel);
+
+        // garante que é 0 e 1
+        for (let i = 0; i < dto.valores.length; i++) {
+            if (dto.valores[i].valor_variavel != i)
+                throw new BadRequestException(`Valores de variável categórica binária deve ser exatamente 0 e 1.`);
+        }
     }
 
     private async performVariavelSave(
@@ -64,7 +64,7 @@ export class VariavelCategoricaService {
                 titulo: dto.titulo,
             },
         });
-        console.log(jaEmUso);
+
         if (jaEmUso > 0)
             throw new HttpException(`Título ${dto.titulo} já está em uso em outra variável categórica.`, 400);
 
@@ -148,10 +148,10 @@ export class VariavelCategoricaService {
         if (selfVariavelCat.tipo == 'Cronograma')
             throw new BadRequestException('Tipo de variável categórica cronograma não pode ser editado.');
 
-        console.log(selfVariavelCat);
-
         if (Array.isArray(dto.valores)) {
-            throw new BadRequestException(`Valores de variável categórica deve ter pelo menos 1 valor.`);
+            if (dto.valores.length == 0)
+                throw new BadRequestException(`Valores de variável categórica deve ter pelo menos 1 valor.`);
+            if (selfVariavelCat.tipo == 'Binaria') this.checkTipoBinaria(dto);
         }
 
         const jaEmUso = await this.prisma.variavelCategorica.count({
