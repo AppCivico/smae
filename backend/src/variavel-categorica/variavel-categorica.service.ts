@@ -25,10 +25,10 @@ export class VariavelCategoricaService {
 
         const now = new Date(Date.now());
         const created = await this.prisma.$transaction(
-            async (prismaThx: Prisma.TransactionClient): Promise<RecordWithId> => {
+            async (prismaTxn: Prisma.TransactionClient): Promise<RecordWithId> => {
                 if (dto.tipo == 'Binaria') this.checkTipoBinaria(dto);
 
-                return await this.performVariavelSave(prismaThx, dto, now, user);
+                return await this.performVariavelSave(prismaTxn, dto, now, user);
             },
             {
                 isolationLevel: 'Serializable',
@@ -53,12 +53,12 @@ export class VariavelCategoricaService {
     }
 
     private async performVariavelSave(
-        prismaThx: Prisma.TransactionClient,
+        prismaTxn: Prisma.TransactionClient,
         dto: CreateVariavelCategoricaDto,
         now: Date,
         user: PessoaFromJwt
     ) {
-        const jaEmUso = await prismaThx.variavelCategorica.count({
+        const jaEmUso = await prismaTxn.variavelCategorica.count({
             where: {
                 removido_em: null,
                 titulo: dto.titulo,
@@ -68,7 +68,7 @@ export class VariavelCategoricaService {
         if (jaEmUso > 0)
             throw new HttpException(`Título ${dto.titulo} já está em uso em outra variável categórica.`, 400);
 
-        const variavelCategorica = await prismaThx.variavelCategorica.create({
+        const variavelCategorica = await prismaTxn.variavelCategorica.create({
             data: {
                 tipo: dto.tipo,
                 titulo: dto.titulo,
@@ -79,7 +79,7 @@ export class VariavelCategoricaService {
             select: { id: true },
         });
 
-        await this.upsertValores(variavelCategorica.id, dto.valores, prismaThx, user, now);
+        await this.upsertValores(variavelCategorica.id, dto.valores, prismaTxn, user, now);
 
         return variavelCategorica;
     }
@@ -224,7 +224,7 @@ export class VariavelCategoricaService {
 
     private async upsertValores(
         variavel_categorica_id: number,
-        sentRegistrosSei: CreateVariavelCategoricaValorDto[],
+        sentCatValor: CreateVariavelCategoricaValorDto[],
         prismaTx: Prisma.TransactionClient,
         user: PessoaFromJwt,
         now: Date
@@ -236,7 +236,7 @@ export class VariavelCategoricaService {
             },
         });
 
-        const updated: CreateVariavelCategoricaValorDto[] = sentRegistrosSei
+        const updated: CreateVariavelCategoricaValorDto[] = sentCatValor
             .filter((r) => r.id !== undefined)
             .filter((rNew) => {
                 const rOld = currentCatValor.find((r) => r.id === rNew.id);
@@ -251,13 +251,14 @@ export class VariavelCategoricaService {
                 throw new BadRequestException(`Registro anterior com ID ${rNew.id} não encontrado.`);
             });
 
-        const created: CreateVariavelCategoricaValorDto[] = sentRegistrosSei.filter((r) => r.id == undefined);
+        const created: CreateVariavelCategoricaValorDto[] = sentCatValor.filter((r) => r.id == undefined);
 
         const deleted: number[] = currentCatValor
             .filter((r) => {
-                return !sentRegistrosSei.filter((rNew) => rNew.id != undefined).find((rNew) => rNew.id == r.id);
+                return !sentCatValor.filter((rNew) => rNew.id != undefined).find((rNew) => rNew.id == r.id);
             })
             .map((r) => {
+                // buscar no serieVariavel se tem algum valor associado, se tiver bloqueia a exclusão
                 return r.id!;
             });
 
@@ -301,6 +302,7 @@ export class VariavelCategoricaService {
                         },
                     })
                 );
+                // todo atualizar o indicador.
             }
         }
 

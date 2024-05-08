@@ -12,6 +12,7 @@ import {
     UpdateVariavelCategoricaDto,
 } from './dto/variavel-categorica.dto';
 import { VariavelCategoricaService } from './variavel-categorica.service';
+import { ROLES_ACESSO_VARIAVEL } from '../variavel/variavel.controller';
 
 @ApiTags('Variavel Categórica')
 @Controller('variavel-categorica')
@@ -29,7 +30,7 @@ export class VariavelCategoricaController {
     @Get('')
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse()
-    @Roles('CadastroVariavelCategorica.administrador')
+    @Roles('CadastroVariavelCategorica.administrador', ...ROLES_ACESSO_VARIAVEL)
     async listAll(
         @Query() filters: FilterVariavelCategoricaDto,
         @CurrentUser() user: PessoaFromJwt
