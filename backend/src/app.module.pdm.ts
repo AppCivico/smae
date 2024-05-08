@@ -15,6 +15,7 @@ import { PdmCicloModule } from './pdm-ciclo/pdm-ciclo.module';
 import { PdmModule } from './pdm/pdm.module';
 import { IndicadoresModule } from './reports/indicadores/indicadores.module';
 import { MonitoramentoMensalModule } from './reports/monitoramento-mensal/monitoramento-mensal.module';
+import { VariavelCategoricaModule } from './variavel-categorica/variavel-categorica.module';
 import { VariavelModule } from './variavel/variavel.module';
 
 @Module({
@@ -41,6 +42,7 @@ import { VariavelModule } from './variavel/variavel.module';
         PdmCicloModule,
         IndicadoresModule,
         MonitoramentoMensalModule,
+        VariavelCategoricaModule
     ],
     controllers: [ ],
     providers: [

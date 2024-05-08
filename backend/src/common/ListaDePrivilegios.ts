@@ -55,6 +55,7 @@ export type ListaDePrivilegios =
     | 'CadastroIndicador.inserir'
     | 'CadastroIndicador.editar'
     | 'CadastroIndicador.remover'
+    | 'CadastroVariavelCategorica.administrador'
     | 'CadastroIniciativa.inserir'
     | 'CadastroIniciativa.editar'
     | 'CadastroIniciativa.remover'
