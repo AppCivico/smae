@@ -13,6 +13,7 @@ import { Login, LostPassword, NewPassword } from '@/views/auth';
 import Panorama from '@/views/Panorama.vue';
 import administracao from './administracao';
 import análise from './analise';
+import graficos from './graficos';
 import configuracoes from './configuracoes';
 import envios from './envios';
 import metas from './metas';
@@ -53,6 +54,7 @@ export const router = createRouter({
     parlamentares,
     projetos,
     análise,
+    graficos,
     relatorios,
     envios,
     transferenciasVoluntarias,
