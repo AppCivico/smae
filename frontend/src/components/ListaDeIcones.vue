@@ -122,6 +122,17 @@
       <div>
         <dt>
           <svg
+            width="30"
+            height="30"
+            viewBox="0 0 30 30"
+            fill="none"
+          ><use xlink:href="#i_filter-button" /></svg>
+        </dt>
+        <dd>i_filter-button</dd>
+      </div>
+      <div>
+        <dt>
+          <svg
             width="24"
             height="24"
           ><use xlink:href="#i_folder" /></svg>
