@@ -20,7 +20,7 @@ import {
 } from 'vee-validate';
 import {
   computed,
-  onMounted,
+  nextTick,
   onUnmounted,
   ref,
   watch,
@@ -33,7 +33,7 @@ const ÓrgãosStore = useOrgansStore();
 const {
   chamadasPendentes, erro, lista, itemParaEdição, emFoco,
 } = storeToRefs(distribuicaoRecursos);
-const { emFoco: transferenciasVoluntariasObjeto } = storeToRefs(TransferenciasVoluntarias);
+const { emFoco: transferenciasVoluntariaEmFoco } = storeToRefs(TransferenciasVoluntarias);
 const { órgãosComoLista } = storeToRefs(ÓrgãosStore);
 
 const props = defineProps({
@@ -102,23 +102,33 @@ async function excluirDistribuição(id) {
   }, 'Remover');
 }
 
-function registrarNovaDistribuicaoRecursos() {
+async function registrarNovaDistribuicaoRecursos() {
   if (mostrarDistribuicaoRegistroForm.value) {
     mostrarDistribuicaoRegistroForm.value = false;
   } else {
     emFoco.value = null;
-    resetForm({ values: {} });
+    // aguardando o watcher causado pela linha anterior
+    await nextTick();
+    resetForm({
+      values: {
+        objeto: transferenciasVoluntariaEmFoco.value.objeto,
+      },
+    });
     mostrarDistribuicaoRegistroForm.value = true;
   }
 }
 
 function iniciar() {
   distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
-  TransferenciasVoluntarias.buscarItem(props.transferenciaId).then(() => {
-    resetField('objeto', { value: '' });
-  });
+
+  if (transferenciasVoluntariaEmFoco.value?.id !== Number(props.transferenciaId)) {
+    TransferenciasVoluntarias
+      .buscarItem(props.transferenciaId);
+  }
+
   ÓrgãosStore.getAll();
 }
+
 iniciar();
 
 watch(itemParaEdição, (novosValores) => {
@@ -143,7 +153,6 @@ const isSomaCorreta = computed(() => {
   const soma = parseFloat(values.valor || 0) + parseFloat(values.valor_contrapartida || 0);
   return soma === parseFloat(values.valor_total);
 });
-
 </script>
 <template>
   <div class="flex spacebetween center mb2">
@@ -320,7 +329,6 @@ const isSomaCorreta = computed(() => {
           class="inputtext light mb1"
           rows="5"
           maxlength="1000"
-          :value="transferenciasVoluntariasObjeto.objeto"
         />
         <ErrorMessage
           class="error-msg mb1"
