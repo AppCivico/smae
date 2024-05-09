@@ -115,15 +115,11 @@ function registrarNovaDistribuicaoRecursos() {
 function iniciar() {
   distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
   TransferenciasVoluntarias.buscarItem(props.transferenciaId).then(() => {
-    setFieldValue('objeto', transferenciasVoluntariasObjeto.value.objeto);
-    resetField('objeto');
+    resetField('objeto', { value: '' });
   });
   ÓrgãosStore.getAll();
 }
-
-onMounted(() => {
-  iniciar();
-});
+iniciar();
 
 watch(itemParaEdição, (novosValores) => {
   resetForm({ values: novosValores });
@@ -325,7 +321,6 @@ const isSomaCorreta = computed(() => {
           rows="5"
           maxlength="1000"
           :value="transferenciasVoluntariasObjeto.objeto"
-          @input="e => setFieldValue('objeto', e.target.value)"
         />
         <ErrorMessage
           class="error-msg mb1"
