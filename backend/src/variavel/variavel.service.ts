@@ -779,6 +779,43 @@ export class VariavelService {
                         throw new BadRequestException(
                             'Não é possível alterar a variável categórica de uma variável que já possui valores salvos.'
                         );
+                } else {
+                    const categoriaValores = await prismaTxn.variavelCategoricaValor.findMany({
+                        where: { id: dto.variavel_categorica_id },
+                    });
+
+                    const serieValores = await prismaTxn.serieVariavel.groupBy({
+                        where: {
+                            variavel_id: variavelId,
+                            serie: { in: ['Realizado', 'Previsto'] },
+                        },
+                        by: ['valor_nominal'],
+                    });
+                    const promises: Promise<unknown>[] = [];
+                    for (const sv of serieValores) {
+                        const catValor = categoriaValores.find(
+                            (cv) => cv.valor_variavel == +sv.valor_nominal.toString()
+                        );
+                        if (!catValor)
+                            throw new BadRequestException(
+                                'Não é possível adicionar classificação da categórica, pois há valores salvos incompatíveis.'
+                            );
+
+                        promises.push(
+                            prismaTxn.serieVariavel.updateMany({
+                                where: {
+                                    variavel_id: variavelId,
+                                    serie: { in: ['Realizado', 'Previsto'] },
+                                    valor_nominal: sv.valor_nominal,
+                                },
+                                data: {
+                                    variavel_categorica_id: dto.variavel_categorica_id,
+                                    variavel_categorica_valor_id: catValor.id,
+                                },
+                            })
+                        );
+                    }
+                    await Promise.all(promises);
                 }
             } else if (dto.variavel_categorica_id === null && old_variavel_categorica_id !== null) {
                 await prismaTxn.serieVariavel.updateMany({
