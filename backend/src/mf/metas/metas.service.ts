@@ -1,4 +1,4 @@
-import { BadRequestException, HttpException, Injectable } from '@nestjs/common';
+import { BadRequestException, HttpException, Injectable, Logger } from '@nestjs/common';
 import { CicloFase, Prisma, Serie } from '@prisma/client';
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import { Date2YMD, DateYMD } from '../../common/date2ymd';
@@ -8,9 +8,10 @@ import { MathRandom } from '../../common/math-random';
 import { PrismaService } from '../../prisma/prisma.service';
 import { UploadService } from '../../upload/upload.service';
 import { SerieValorNomimal } from '../../variavel/entities/variavel.entity';
-import { VariavelService } from '../../variavel/variavel.service';
-import { MfService, MfPessoaAcessoPdm } from './../mf.service';
+import { VariavelComCategorica, VariavelService } from '../../variavel/variavel.service';
+import { MfPessoaAcessoPdm, MfService } from './../mf.service';
 import {
+    CamposAcumulado,
     CamposRealizado,
     CamposRealizadoParaSerie,
     CicloAtivoDto,
@@ -83,6 +84,8 @@ type VariavelDetalhePorID = Record<number, VariavelDetalhe>;
 
 @Injectable()
 export class MetasService {
+    private readonly logger = new Logger(MetasService.name);
+
     constructor(
         private readonly variavelService: VariavelService,
         private readonly prisma: PrismaService,
@@ -1332,9 +1335,10 @@ export class MetasService {
         const id = await this.prisma.$transaction(
             async (prismaTxn: Prisma.TransactionClient): Promise<number> => {
                 // isolation lock
-                await prismaTxn.variavel.findFirst({ where: { id: dto.variavel_id }, select: { id: true } });
+                const variavelInfo = await this.variavelService.loadVariavelComCategorica(prismaTxn, dto.variavel_id);
 
                 const needRecalc = await this.atualizaSerieVariaveis(
+                    variavelInfo,
                     dto,
                     prismaTxn,
                     now,
@@ -1455,9 +1459,13 @@ export class MetasService {
 
                     const { dadosCiclo, ehPontoFocal, meta_id } = batchResultados[i];
 
-                    await prismaTxn.variavel.findFirst({ where: { id: linha.variavel_id }, select: { id: true } });
+                    const variavelInfo = await this.variavelService.loadVariavelComCategorica(
+                        prismaTxn,
+                        linha.variavel_id
+                    );
 
                     const needRecalc = await this.atualizaSerieVariaveis(
+                        variavelInfo,
                         {
                             simular_ponto_focal: dto.simular_ponto_focal,
                             ...linha,
@@ -1506,6 +1514,7 @@ export class MetasService {
     }
 
     private async atualizaSerieVariaveis(
+        variavelInfo: VariavelComCategorica,
         dto: VariavelAnaliseQualitativaDto,
         prismaTxn: Prisma.TransactionClient,
         now: Date,
@@ -1517,6 +1526,22 @@ export class MetasService {
         for (const campo of CamposRealizado) {
             const valor_nominal = dto[campo] === null ? '' : dto[campo];
             if (valor_nominal === undefined) continue;
+
+            if (variavelInfo.acumulativa && CamposAcumulado.includes(campo)) {
+                this.logger.debug(`Variável é acumulativa, então não atualiza o campo ${campo}`);
+                continue;
+            }
+
+            let variavel_categorica_valor_id: number | null = null;
+
+            if (variavelInfo.variavel_categorica) {
+                const valorExiste = variavelInfo.variavel_categorica.valores.find(
+                    (v) => v.valor_variavel === +valor_nominal
+                );
+                if (!valorExiste)
+                    throw new HttpException(`Valor ${valor_nominal} não é permitido para a variável categórica`, 400);
+                variavel_categorica_valor_id = valorExiste.id;
+            }
 
             const existeValor = await prismaTxn.serieVariavel.findFirst({
                 where: {
@@ -1550,6 +1575,8 @@ export class MetasService {
                         atualizado_por: user.id,
                         ciclo_fisico_id: dadosCiclo.id,
                         conferida: ehPontoFocal ? false : true,
+                        variavel_categorica_id: variavelInfo.variavel_categorica?.id,
+                        variavel_categorica_valor_id: variavel_categorica_valor_id,
                     },
                 });
             } else if (existeValor && valor_nominal !== '') {
@@ -1566,6 +1593,8 @@ export class MetasService {
                             atualizado_por: user.id,
                             ciclo_fisico_id: dadosCiclo.id,
                             conferida: valorModificado ? (ehPontoFocal ? false : true) : undefined,
+                            variavel_categorica_id: variavelInfo.variavel_categorica?.id,
+                            variavel_categorica_valor_id: variavel_categorica_valor_id,
                         },
                     });
                 }
