@@ -1,6 +1,6 @@
 import { BadRequestException, HttpException, Injectable, Logger } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { Periodicidade, Prisma, Serie } from '@prisma/client';
+import { Periodicidade, Prisma, Serie, TipoVariavelCategorica, VariavelCategoricaValor } from '@prisma/client';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { Date2YMD, DateYMD } from '../common/date2ymd';
 import { RecordWithId } from '../common/dto/record-with-id.dto';
@@ -39,6 +39,16 @@ type IndicadorInfo = {
     periodicidade?: Periodicidade;
 };
 
+export type VariavelComCategorica = {
+    id: number;
+    acumulativa: boolean;
+    variavel_categorica: {
+        id: number;
+        tipo: TipoVariavelCategorica;
+        valores: VariavelCategoricaValor[];
+    } | null;
+};
+
 @Injectable()
 export class VariavelService {
     private readonly logger = new Logger(VariavelService.name);
@@ -46,6 +56,42 @@ export class VariavelService {
         private readonly jwtService: JwtService,
         private readonly prisma: PrismaService
     ) {}
+
+    async loadVariaveisComCategorica(
+        prismaTxn: Prisma.TransactionClient,
+        variavelId: number[]
+    ): Promise<VariavelComCategorica[]> {
+        const rows = await prismaTxn.variavel.findMany({
+            where: { id: { in: variavelId } },
+            select: {
+                id: true,
+                acumulativa: true,
+                variavel_categorica: {
+                    select: {
+                        id: true,
+                        tipo: true,
+                        valores: true,
+                    },
+                },
+            },
+        });
+        for (const v of rows) {
+            if (v && v.variavel_categorica?.tipo == 'Cronograma')
+                throw new HttpException('Variável do tipo Cronograma não pode ser atualizada', 400);
+        }
+
+        return rows;
+    }
+
+    async loadVariavelComCategorica(
+        prismaTxn: Prisma.TransactionClient,
+        variavelId: number
+    ): Promise<VariavelComCategorica> {
+        const v = await this.loadVariaveisComCategorica(prismaTxn, [variavelId]);
+
+        if (v.length == 0) throw new HttpException('Variável não encontrada', 400);
+        return v[0];
+    }
 
     async buildVarResponsaveis(
         variableId: number,
@@ -1273,6 +1319,11 @@ export class VariavelService {
 
         const valoresValidos = this.validarValoresJwt(valores);
 
+        const variaveisInfo = await this.loadVariaveisComCategorica(
+            this.prisma,
+            valoresValidos.map((e) => e.referencia.v)
+        );
+
         const variaveisModificadas: Record<number, boolean> = {};
         const now = new Date(Date.now());
 
@@ -1284,6 +1335,10 @@ export class VariavelService {
                 let anySerieIsToBeCreatedOnVariable: number | undefined;
 
                 for (const valor of valoresValidos) {
+                    const variavelInfo = variaveisInfo.filter((e) => e.id === valor.referencia.v)[0];
+                    if (!variavelInfo) throw new Error('Variável não encontrada, mas deveria já ter sido carregada.');
+
+                    let variavel_categorica_valor_id: number | null = null;
                     // busca os valores vazios mas que já existem, para serem removidos
                     if (valor.valor === '' && 'id' in valor.referencia) {
                         idsToBeRemoved.push(valor.referencia.id);
@@ -1294,6 +1349,17 @@ export class VariavelService {
                     } else if (valor.valor !== '') {
                         if (!variaveisModificadas[valor.referencia.v]) {
                             variaveisModificadas[valor.referencia.v] = true;
+                        }
+                        if (variavelInfo.variavel_categorica) {
+                            const valorExiste = variavelInfo.variavel_categorica.valores.find(
+                                (v) => v.valor_variavel === +valor.valor
+                            );
+                            if (!valorExiste)
+                                throw new HttpException(
+                                    `Valor ${valor.valor} não é permitido para a variável categórica`,
+                                    400
+                                );
+                            variavel_categorica_valor_id = valorExiste.id;
                         }
 
                         if ('id' in valor.referencia) {
@@ -1324,6 +1390,8 @@ export class VariavelService {
                                         conferida: true,
                                         conferida_por: user.id,
                                         conferida_em: now,
+                                        variavel_categorica_id: variavelInfo.variavel_categorica?.id,
+                                        variavel_categorica_valor_id,
                                     },
                                 })
                             );
@@ -1337,6 +1405,8 @@ export class VariavelService {
                                 conferida: true,
                                 conferida_em: now,
                                 conferida_por: user.id,
+                                variavel_categorica_id: variavelInfo.variavel_categorica?.id,
+                                variavel_categorica_valor_id,
                             });
                         }
                     } // else "não há valor" e não tem ID, ou seja, n precisa acontecer nada no banco
