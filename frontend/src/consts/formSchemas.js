@@ -2,6 +2,7 @@
 import cargosDeParlamentar from '@/consts/cargosDeParlamentar';
 import categoriaDeTransferencia from '@/consts/categoriaDeTransferencia';
 import esferasDeTransferencia from '@/consts/esferasDeTransferencia';
+import variavelCategoria from '@/consts/variavelCategoria';
 import estadosDoBrasil from '@/consts/estadosDoBrasil';
 import interfacesDeTransferências from '@/consts/interfacesDeTransferências';
 import níveisDeRepresentatividade from '@/consts/niveisDeRepresentatividade';
@@ -2342,3 +2343,38 @@ export const valoresRealizadoEmLote = object()
           }),
       ),
   });
+
+export const variavelCategoriaSchema = object({
+  descricao: string()
+    .label('Descrição')
+    .required(),
+  tipo: mixed()
+    .label('Tipo')
+    .oneOf(Object.keys(variavelCategoria))
+    .required(),
+  titulo: string()
+    .label('Titulo')
+    .required(),
+  valores: array()
+    .label('Valores')
+    .of(
+      object()
+        .shape({
+          descricao: string()
+            .label('Descrição')
+            .max(2048)
+            .nullable()
+            .required(),
+          ordem: number()
+            .label('Ordem')
+            .required(),
+          titulo: string()
+            .label('Titulo')
+            .max(256)
+            .required(),
+          valor_variavel: number()
+            .label('Valor variável')
+            .required(),
+        }),
+    ),
+});

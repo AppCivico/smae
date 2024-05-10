@@ -43,6 +43,10 @@ import SituacaoCriarEditar from '@/views/situacao/SituacaoCriarEditar.vue';
 import SituacaoLista from '@/views/situacao/SituacaoLista.vue';
 import SituacaoRaiz from '@/views/situacao/SituacaoRaiz.vue';
 
+import VariavelCategoriaCriarEditar from '@/views/variavelCategoria/VariavelCategoriaCriarEditar.vue';
+import VariavelCategoriaLista from '@/views/variavelCategoria/VariavelCategoriaLista.vue';
+import VariavelCategoriaRaiz from '@/views/variavelCategoria/VariavelCategoriaRaiz.vue';
+
 const PortfoliosCriarEditar = defineAsyncComponent({
   loader: () => import('@/views/portfolios/PortfoliosCriarEditar.vue'),
   loadingComponent: LoadingComponent,
@@ -436,6 +440,48 @@ export default [
                 },
               },
             ]
+          },
+          {
+            path: 'variavelCategoria',
+            name: 'variavelCategoriaRaiz',
+            component: VariavelCategoriaRaiz,
+            meta: {
+              título: 'variavelCategoria',
+              rotaPrescindeDeChave: true,
+            },
+
+            children: [
+              {
+                name: 'variavelCategoriaListar',
+                path: '',
+                component: VariavelCategoriaLista,
+                meta: {
+                  título: 'Variável da Categoria',
+                },
+              },
+              {
+                name: 'variavelCategoriaCriar',
+                path: 'nova',
+                component: VariavelCategoriaCriarEditar,
+                meta: {
+                  título: 'Nova variável da Categoria',
+                },
+              },
+              {
+                path: ':variavelCategoriaId',
+                name: 'variavelCategoriaEditar',
+                component: VariavelCategoriaCriarEditar,
+                props: ({ params }) => ({
+                  ...params,
+                  // eslint-disable-next-line max-len
+                  ...{ variavelCategoriaId: Number.parseInt(params.variavelCategoriaId, 10) || undefined },
+                }),
+
+                meta: {
+                  título: 'Editar variável da Categoria',
+                },
+              },
+            ],
           },
         ],
       },
