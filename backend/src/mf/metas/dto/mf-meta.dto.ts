@@ -210,11 +210,12 @@ export class RetornoMetaVariaveisDto {
 }
 
 type ColunasAtualizaveis = 'valor_realizado' | 'valor_realizado_acumulado';
-export const CamposRealizado: ColunasAtualizaveis[] = ['valor_realizado', 'valor_realizado_acumulado'];
+export const CamposAcumulado: ColunasAtualizaveis[] = ['valor_realizado_acumulado'] as const;
+export const CamposRealizado: ColunasAtualizaveis[] = ['valor_realizado', 'valor_realizado_acumulado'] as const;
 export const CamposRealizadoParaSerie: Record<ColunasAtualizaveis, Serie> = {
     valor_realizado: 'Realizado',
     valor_realizado_acumulado: 'RealizadoAcumulado',
-};
+} as const;
 
 export class CicloFaseDto {
     /**
