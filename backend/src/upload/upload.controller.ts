@@ -41,18 +41,31 @@ export class UploadController {
         type: '',
     })
     async get(@Query() filters: DownloadOptions, @Param('token') dlToken: string, @Res() res: Response) {
-        const data = await this.uploadService.getReadableStreamByToken(dlToken);
+        try {
+            const data = await this.uploadService.getReadableStreamByToken(dlToken);
 
-        if (!filters.inline) {
+            if (!filters.inline) {
+                res.set({
+                    'Content-Disposition': 'attachment; filename="' + data.nome.replace(/"/g, '') + '"',
+                });
+            }
             res.set({
-                'Content-Disposition': 'attachment; filename="' + data.nome.replace(/"/g, '') + '"',
+                'Content-Type': data.mime_type,
             });
-        }
-        res.set({
-            'Content-Type': data.mime_type,
-        });
 
-        data.stream.pipe(res);
+            data.stream.pipe(res);
+        } catch (err) {
+            console.error('Erro ao baixar arquivo do storage');
+            console.error(err);
+
+            if ('code' in err && err.code === 'NoSuchKey') {
+                res.status(404).send(`Arquivo solicitado não encontrado no storage, recurso: ${err.resource}`);
+            } else {
+                res.status(500).send(
+                    'Erro ao baixar arquivo do storage. Entre em contato com o administrador do sistema.'
+                );
+            }
+        }
     }
 
     @Patch('diretorio/:token')
