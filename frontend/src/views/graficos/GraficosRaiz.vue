@@ -1,16 +1,18 @@
 <script setup>
 import { Dashboard } from '@/components';
+import GraficosTransferenciasVoluntarias from './GraficosTransferenciasVoluntarias.vue';
+
 </script>
 <template>
   <Dashboard class="dashboard--graficos">
     <div class="flex spacebetween center flexwrap">
       <header>
         <TítuloDePágina>
-          Análise
+          Painel Estratégico
         </TítuloDePágina>
       </header>
     </div>
-
+    <GraficosTransferenciasVoluntarias />
     <pre>
       &lt;component :is="componenteParaCaregar" /&gt;
     </pre>
