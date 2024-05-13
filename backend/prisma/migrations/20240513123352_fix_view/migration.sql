@@ -1,4 +1,4 @@
-CREATE OR REPLACE view_transferencia_analise AS
+CREATE OR REPLACE VIEW view_transferencia_analise AS
 SELECT
     t.id AS transferencia_id,
     t.workflow_finalizado,
