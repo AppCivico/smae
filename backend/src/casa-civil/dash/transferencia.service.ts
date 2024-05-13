@@ -17,6 +17,7 @@ import {
     MfDashTransferenciasDto,
 } from './dto/transferencia.dto';
 import { TransferenciaTipoEsfera } from '@prisma/client';
+import { UploadService } from 'src/upload/upload.service';
 
 class NextPageTokenJwtBody {
     offset: number;
@@ -28,7 +29,8 @@ export class DashTransferenciaService {
         private readonly prisma: PrismaService,
         private readonly transferenciaService: TransferenciaService,
         private readonly jwtService: JwtService,
-        private readonly notaService: NotaService
+        private readonly notaService: NotaService,
+        private readonly uploadService: UploadService
     ) {}
 
     async transferencias(
@@ -204,11 +206,11 @@ export class DashTransferenciaService {
                         (
                             (100 * rows.filter((e) => e.esfera == TransferenciaTipoEsfera.Federal).length) /
                             countAll
-                        ).toString(),
+                        ).toFixed(2),
                         (
                             (100 * rows.filter((e) => e.esfera == TransferenciaTipoEsfera.Estadual).length) /
                             countAll
-                        ).toString(),
+                        ).toFixed(2),
                     ],
                 },
             ],
@@ -323,6 +325,10 @@ export class DashTransferenciaService {
             ],
         };
 
+        const valor_por_parlamentar = await this.prisma.viewRankingTransferenciaParlamentar.findMany({
+            take: 3,
+        });
+
         return {
             valor_total: valorTotal,
             numero_por_esfera: chartPorEsfera,
@@ -330,7 +336,19 @@ export class DashTransferenciaService {
             numero_por_partido: chartNroPorPartido,
             valor_por_partido: chartValPorPartido,
             valor_por_orgao: chartValPorOrgao,
-            valor_por_parlamentar: [],
+            valor_por_parlamentar: valor_por_parlamentar.map((e) => {
+                return {
+                    parlamentar: {
+                        id: e.parlamentar_id,
+                        nome_popular: e.nome_popular,
+                        foto: e.parlamentar_foto_id
+                            ? this.uploadService.getDownloadToken(e.parlamentar_foto_id, '1 days').download_token
+                            : null,
+                    },
+
+                    valor: e.valor.toNumber(),
+                };
+            }),
         };
     }
 
