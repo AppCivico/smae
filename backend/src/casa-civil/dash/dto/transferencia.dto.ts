@@ -1,4 +1,4 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, OmitType, PartialType } from '@nestjs/swagger';
 import { TransferenciaTipoEsfera } from '@prisma/client';
 import { Transform, TransformFnParams } from 'class-transformer';
 import { IsArray, IsInt, IsOptional, IsString, MaxLength } from 'class-validator';
@@ -83,6 +83,31 @@ function ValidateTransferenciaTipoEsfera(item: any) {
         throw new BadRequestException(`Valor '${item}' não é válido para TransferenciaTipoEsfera`);
     }
     return parsedValue;
+}
+
+export class FilterDashTransferenciasAnaliseDto extends PartialType(
+    OmitType(FilterDashTransferenciasDto, ['esfera', 'atividade', 'palavra_chave'])
+) {
+    @ApiProperty({ description: 'Contém qualquer um dos parlamentares', example: '[]' })
+    @IsOptional()
+    @IsArray()
+    @IsInt({ each: true, message: '$property| Cada item precisa ser um número inteiro' })
+    @Transform(NumberArrayTransform)
+    parlamentar_ids?: number[];
+
+    @ApiProperty({ description: 'Contém qualquer um dos anos', example: '[]' })
+    @IsOptional()
+    @IsArray()
+    @IsInt({ each: true, message: '$property| Cada item precisa ser um número inteiro' })
+    @Transform(NumberArrayTransform)
+    anos?: number[];
+
+    @ApiProperty({ description: 'Contém qualquer uma das etapas', example: '[]' })
+    @IsOptional()
+    @IsArray()
+    @IsInt({ each: true, message: '$property| Cada item precisa ser um número inteiro' })
+    @Transform(NumberArrayTransform)
+    etapa_ids?: number[];
 }
 
 export class DashAnaliseTranferenciasDto {

@@ -9,6 +9,7 @@ import { FilterDashNotasDto, MfDashNotasDto } from './dto/notas.dto';
 import {
     DashAnaliseTranferenciasChartsDto,
     DashAnaliseTranferenciasDto,
+    FilterDashTransferenciasAnaliseDto,
     FilterDashTransferenciasDto,
     ListMfDashTransferenciasDto,
 } from './dto/transferencia.dto';
@@ -55,7 +56,7 @@ export class DashTransferenciaController {
     @ApiBearerAuth('access-token')
     @Roles('CadastroTransferencia.listar')
     async analiseTranferencias(
-        @Query() params: FilterDashTransferenciasDto,
+        @Query() params: FilterDashTransferenciasAnaliseDto,
         @CurrentUser() user: PessoaFromJwt
     ): Promise<DashAnaliseTranferenciasChartsDto & RequestInfoDto> {
         const start = Date.now();
