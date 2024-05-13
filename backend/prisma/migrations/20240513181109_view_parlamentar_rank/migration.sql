@@ -1,3 +1,4 @@
+drop view view_transferencia_analise cascade;
 CREATE OR REPLACE VIEW view_transferencia_analise AS
 SELECT
     t.id AS transferencia_id,
@@ -6,7 +7,6 @@ SELECT
     t.workflow_etapa_atual_id,
     t.workflow_fase_atual_id,
     t.parlamentar_id,
-    p.foto_upload_id AS parlamentar_foto_id,
     t.valor_total,
     dr.orgao_gestor_id AS distribuicao_orgao_id,
     dr.valor_total AS distribuicao_valor_total,
@@ -23,9 +23,10 @@ SELECT
     t.parlamentar_id,
     count(1) AS count,
     SUM(valor_total) AS valor,
-    p.foto_upload_id AS parlamentar_foto_id
+    p.foto_upload_id AS parlamentar_foto_id,
+    p.nome_popular
 FROM view_transferencia_analise t
 JOIN parlamentar p ON t.parlamentar_id = p.id AND p.removido_em IS NULL
 WHERE t.parlamentar_id IS NOT NULL
-GROUP BY t.parlamentar_id, p.foto_upload_id
+GROUP BY t.parlamentar_id, p.foto_upload_id, p.nome_popular
 ORDER BY valor DESC;
