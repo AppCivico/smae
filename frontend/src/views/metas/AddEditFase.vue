@@ -191,7 +191,9 @@ function maskDate(el) {
 const valoresIniciais = computed(() => (currentFase.value?.loading
   || currentFase.value?.error
   || !oktogo.value
-  ? {}
+  ? {
+    variavel: null,
+  }
   : {
     ...currentFase.value,
     geolocalizacao: currentFase.value?.geolocalizacao?.map((x) => x.token) || [],
@@ -274,7 +276,7 @@ const geolocalizaçãoPorToken = computed(() => (currentFase.value?.loading
     </div>
     <template v-if="!(currentFase?.loading || currentFase?.error) && oktogo">
       <Form
-        v-slot="{ errors, isSubmitting, values }"
+        v-slot="{ errors, isSubmitting, setFieldValue, values }"
         :validation-schema="schema"
         :initial-values="valoresIniciais"
         @submit="onSubmit"
@@ -503,6 +505,75 @@ const geolocalizaçãoPorToken = computed(() => (currentFase.value?.loading
             name="geolocalizacao"
             class="error-msg"
           />
+        </div>
+
+        <hr class="mt2 mb2">
+
+        <div class="flex flexwrap g2">
+          <div class="fb100">
+            <input
+              id="associar-variavel"
+              name="associar-variavel"
+              type="checkbox"
+              :checked="!!values.variavel"
+              :value="{}"
+              :unchecked-value="null"
+              class="inputcheckbox"
+              @change="($e) => {
+                setFieldValue('variavel', $e.target.checked
+                  ? {
+                    codigo: '',
+                    titulo: '',
+                  }
+                  : null
+                );
+              }"
+            >
+            <label
+              for="associar-variavel"
+            >
+              Associar variável
+            </label>
+          </div>
+          <div
+            v-if="!!values.variavel"
+            class="fb100 flex g2"
+          >
+            <div class="f1">
+              <LabelFromYup
+                :schema="schema.fields.variavel"
+                :required="true"
+                name="codigo"
+              />
+              <Field
+                name="variavel.codigo"
+                type="text"
+                class="inputtext light mb1"
+                :class="{ 'error': errors['variavel.codigo'] }"
+                maxlength="60"
+              />
+              <div class="error-msg">
+                {{ errors['variavel.codigo'] }}
+              </div>
+            </div>
+            <div class="f1">
+              <LabelFromYup
+                :schema="schema.fields.variavel"
+                :required="true"
+                name="titulo"
+              />
+              <Field
+                name="variavel.titulo"
+                type="text"
+                class="inputtext light mb1"
+                :class="{ 'error': errors['variavel.titulo'] }"
+                maxlength="256"
+              />
+              <div class="error-msg">
+                {{ errors['variavel.titulo'] }}
+              </div>
+            </div>
+          </div>
         </div>
 
         <hr class="mt2 mb2">
