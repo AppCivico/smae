@@ -169,7 +169,7 @@ export class DashTransferenciaService {
         const partidosRows = await this.prisma.partido.findMany({
             where: {
                 removido_em: null,
-                id: { in: rows.map((r) => r.partido_id) },
+                id: { in: rows.filter((r) => r.partido_id != null).map((r) => r.partido_id!) },
             },
             select: {
                 id: true,
