@@ -441,6 +441,24 @@ export const fase = object()
       .matches(regEx['day/month/year'], 'Formato inválido'),
     titulo: string()
       .required('Preencha o título'),
+    variavel: object()
+      .shape({
+        codigo: string()
+          .label('Código')
+          .when(['titulo'], {
+            is: (titulo) => titulo !== undefined && titulo !== null,
+            then: (field) => field.required(),
+            otherwise: (field) => field.nullable(),
+          }),
+        titulo: string()
+          .label('Título')
+          .when(['codigo'], {
+            is: (codigo) => codigo !== undefined && codigo !== null,
+            then: (field) => field.required(),
+            otherwise: (field) => field.nullable(),
+          }),
+      }, [['codigo', 'titulo']])
+      .nullable(),
   });
 
 export const geoLocalização = object()
