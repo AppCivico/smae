@@ -12,7 +12,7 @@ import {
     SerieUpsert,
     ValidatedUpsert,
 } from './dto/batch-serie-upsert.dto';
-import { CreateGeradorVariavelDto, CreateVariavelDto } from './dto/create-variavel.dto';
+import { CreateGeradorVariavelDto, CreatePeloIndicadorDto, CreateVariavelDto } from './dto/create-variavel.dto';
 import { FilterVariavelDto } from './dto/filter-variavel.dto';
 import { ListSeriesAgrupadas } from './dto/list-variavel.dto';
 import { UpdateVariavelDto } from './dto/update-variavel.dto';
@@ -22,6 +22,7 @@ import {
     ValorSerieExistente,
     VariavelItemDto,
 } from './entities/variavel.entity';
+import { CONST_CRONO_VAR_CATEGORICA_ID } from '../common/consts';
 
 /**
  * ordem que é populado na função populaSeriesExistentes, usada no serviço do VariavelFormulaCompostaService
@@ -699,19 +700,21 @@ export class VariavelService {
                 throw new HttpException('Sem permissão para criar variável nesta meta', 400);
         }
 
-        const jaEmUso = await this.prisma.variavel.count({
-            where: {
-                removido_em: null,
-                codigo: dto.codigo,
-                NOT: { id: variavelId },
-                indicador_variavel: {
-                    some: {
-                        indicador_id: selfIndicadorVariavel.indicador_id,
+        if (dto.codigo !== undefined) {
+            const jaEmUso = await this.prisma.variavel.count({
+                where: {
+                    removido_em: null,
+                    codigo: dto.codigo,
+                    NOT: { id: variavelId },
+                    indicador_variavel: {
+                        some: {
+                            indicador_id: selfIndicadorVariavel.indicador_id,
+                        },
                     },
                 },
-            },
-        });
-        if (jaEmUso > 0) throw new HttpException(`Código ${dto.codigo} já está em uso no indicador.`, 400);
+            });
+            if (jaEmUso > 0) throw new HttpException(`Código ${dto.codigo} já está em uso no indicador.`, 400);
+        }
 
         const oldValorBase = selfIndicadorVariavel.variavel.valor_base;
         // e com o indicador verdadeiro, temos os dados para recalcular os niveis
@@ -777,9 +780,9 @@ export class VariavelService {
                     });
                     if (existentes > 0)
                         throw new BadRequestException(
-                            'Não é possível alterar a variável categórica de uma variável que já possui valores salvos.'
+                            'Não é possível alterar a variável categórica de uma variável que já possui valores salvos como variável categórica.'
                         );
-                } else {
+
                     const categoriaValores = await prismaTxn.variavelCategoricaValor.findMany({
                         where: { id: dto.variavel_categorica_id },
                     });
@@ -791,6 +794,7 @@ export class VariavelService {
                         },
                         by: ['valor_nominal'],
                     });
+
                     const promises: Promise<unknown>[] = [];
                     for (const sv of serieValores) {
                         const catValor = categoriaValores.find(
@@ -798,7 +802,11 @@ export class VariavelService {
                         );
                         if (!catValor)
                             throw new BadRequestException(
-                                'Não é possível adicionar classificação da categórica, pois há valores salvos incompatíveis.'
+                                'Não é possível adicionar classificação da categórica, pois há valores salvos incompatíveis. Valores encontrados: ' +
+                                    serieValores
+                                        .slice(0, 10)
+                                        .map((v) => v.valor_nominal)
+                                        .join(', ')
                             );
 
                         promises.push(
@@ -825,6 +833,7 @@ export class VariavelService {
                     },
                     data: {
                         variavel_categorica_id: null,
+                        variavel_categorica_valor_id: null,
                     },
                 });
 
@@ -1680,5 +1689,58 @@ export class VariavelService {
 
         if (!result[0].meta_id) throw `getMetaIdDoIndicador: nenhum resultado para indicador ${indicador_id}`;
         return result[0].meta_id;
+    }
+
+    async criarVariavelCronograma(
+        dto: CreatePeloIndicadorDto,
+        user: PessoaFromJwt,
+        prismaTxn: Prisma.TransactionClient,
+        now: Date
+    ): Promise<RecordWithId> {
+        const indicador = await prismaTxn.indicador.findFirstOrThrow({
+            where: { id: dto.indicador_id },
+        });
+        const jaEmUso = await prismaTxn.variavel.count({
+            where: {
+                removido_em: null,
+                codigo: dto.codigo,
+                indicador_variavel: {
+                    some: {
+                        indicador_id: indicador.id,
+                    },
+                },
+            },
+        });
+        if (jaEmUso > 0) throw new HttpException(`Código ${dto.codigo} já está em uso no indicador.`, 400);
+
+        const variavel = await prismaTxn.variavel.create({
+            data: {
+                codigo: dto.codigo,
+                titulo: dto.titulo,
+                orgao_id: dto.orgao_id,
+                casas_decimais: 0,
+                acumulativa: true,
+                variavel_categorica_id: CONST_CRONO_VAR_CATEGORICA_ID,
+                mostrar_monitoramento: false,
+                suspendida_em: now,
+                unidade_medida_id: 1,
+                valor_base: 0,
+                atraso_meses: 0, // acho que não faz sentido ser 1, vou de 0
+                periodicidade: indicador.periodicidade,
+                inicio_medicao: indicador.inicio_medicao,
+                fim_medicao: indicador.fim_medicao,
+            },
+            select: { id: true },
+        });
+
+        await prismaTxn.indicadorVariavel.create({
+            data: {
+                variavel_id: variavel.id,
+                indicador_id: dto.indicador_id,
+                desativado: false,
+            },
+        });
+
+        return { id: variavel.id };
     }
 }

@@ -1,6 +1,7 @@
+import { EtapaVariavelItemDto } from '../../cronograma-etapas/entities/cronograma-etapa.entity';
 import { GeolocalizacaoDto } from '../../geo-loc/entities/geo-loc.entity';
 
-export class Etapa {
+export class EtapaItemDto {
     id: number;
     cronograma_id: number;
     etapa_pai_id: number | null;
@@ -21,4 +22,5 @@ export class Etapa {
     ordem: number | null;
     n_filhos_imediatos: number | null;
     geolocalizacao: GeolocalizacaoDto[];
+    variavel: EtapaVariavelItemDto | null;
 }
