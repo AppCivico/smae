@@ -6,7 +6,12 @@ import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import { PaginatedDto } from '../../common/dto/paginated.dto';
 import { RequestInfoDto } from '../../mf/metas/dto/mf-meta.dto';
 import { FilterDashNotasDto, MfDashNotasDto } from './dto/notas.dto';
-import { FilterDashTransferenciasDto, ListMfDashTransferenciasDto } from './dto/transferencia.dto';
+import {
+    DashAnaliseTranferenciasChartsDto,
+    DashAnaliseTranferenciasDto,
+    FilterDashTransferenciasDto,
+    ListMfDashTransferenciasDto,
+} from './dto/transferencia.dto';
 import { DashTransferenciaService } from './transferencia.service';
 
 @ApiTags('Transferências')
@@ -44,5 +49,22 @@ export class DashTransferenciaController {
         @CurrentUser() user: PessoaFromJwt
     ): Promise<PaginatedDto<MfDashNotasDto>> {
         return await this.metasDashService.notas(params, user);
+    }
+
+    @Get('analise-transferencias')
+    @ApiBearerAuth('access-token')
+    @Roles('CadastroTransferencia.listar')
+    async analiseTranferencias(
+        @Query() params: FilterDashTransferenciasDto,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<DashAnaliseTranferenciasChartsDto & RequestInfoDto> {
+        const start = Date.now();
+
+        const analiseTransferencias = await this.metasDashService.analiseTransferenciasFormattedCharts(params, user);
+
+        return {
+            ...analiseTransferencias,
+            requestInfo: { queryTook: Date.now() - start },
+        };
     }
 }
