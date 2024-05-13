@@ -4621,10 +4621,11 @@ model Parlamentar {
     removido_em    DateTime? @db.Timestamptz(6)
 
     // Criador nullable, pois provavelmente faremos carga inicial de dados.
-    criador        Pessoa?         @relation("Criador", fields: [criado_por], references: [id])
-    atualizador    Pessoa?         @relation("Atualizador", fields: [atualizado_por], references: [id])
-    removedor      Pessoa?         @relation("Removedor", fields: [removido_por], references: [id])
-    transferencias Transferencia[]
+    criador                     Pessoa?                               @relation("Criador", fields: [criado_por], references: [id])
+    atualizador                 Pessoa?                               @relation("Atualizador", fields: [atualizado_por], references: [id])
+    removedor                   Pessoa?                               @relation("Removedor", fields: [removido_por], references: [id])
+    transferencias              Transferencia[]
+    view_ranking_transferencias ViewRankingTransferenciaParlamentar[]
 
     @@map("parlamentar")
 }
@@ -5684,7 +5685,6 @@ view ViewTransferenciaAnalise {
     workflow_etapa_atual_id Int?
     workflow_fase_atual_id  Int?
     parlamentar_id          Int?
-    parlamentar_foto_id     Int?
     valor_total             Decimal
 
     distribuicao_orgao_id    Int?
@@ -5694,4 +5694,17 @@ view ViewTransferenciaAnalise {
     esfera TransferenciaTipoEsfera
 
     @@map("view_transferencia_analise")
+}
+
+view ViewRankingTransferenciaParlamentar {
+    parlamentar_id Int         @id
+    parlamentar    Parlamentar @relation(fields: [parlamentar_id], references: [id])
+
+    nome_popular        String
+    parlamentar_foto_id Int?
+
+    count Int
+    valor Decimal
+
+    @@map("view_ranking_transferencia_parlamentar")
 }
