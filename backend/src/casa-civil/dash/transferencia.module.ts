@@ -5,6 +5,7 @@ import { PrismaModule } from '../../prisma/prisma.module';
 import { TransferenciaModule } from '../transferencia/transferencia.module';
 import { DashTransferenciaController } from './transferencia.controller';
 import { DashTransferenciaService } from './transferencia.service';
+import { UploadModule } from 'src/upload/upload.module';
 
 @Module({
     imports: [
@@ -15,6 +16,7 @@ import { DashTransferenciaService } from './transferencia.service';
             signOptions: { expiresIn: '30d' },
         }),
         NotaModule,
+        UploadModule,
     ],
     controllers: [DashTransferenciaController],
     providers: [DashTransferenciaService],
