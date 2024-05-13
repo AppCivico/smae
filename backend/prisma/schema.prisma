@@ -5679,6 +5679,7 @@ view ViewTransferenciaAnalise {
     transferencia    Transferencia @relation(fields: [transferencia_id], references: [id])
 
     workflow_finalizado     Boolean
+    ano                     Int
     partido_id              Int?
     workflow_etapa_atual_id Int?
     workflow_fase_atual_id  Int?
