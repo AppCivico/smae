@@ -22,11 +22,11 @@ export class CronogramaEtapaService {
         private readonly geolocService: GeoLocService
     ) {}
 
-    async findAll(filters: FilterCronogramaEtapaDto | undefined = undefined) {
-        const cronogramaId = filters!.cronograma_id;
+    async findAll(filters: FilterCronogramaEtapaDto): Promise<CECronogramaEtapaDto[]> {
+        const cronogramaId = filters.cronograma_id;
 
-        const etapaId = filters?.etapa_id;
-        const inativo = filters?.inativo;
+        const etapaId = filters.etapa_id;
+        const inativo = filters.inativo;
 
         if (filters && filters.cronograma_etapa_ids && etapaId) {
             if (filters.cronograma_etapa_ids.includes(etapaId)) {
@@ -87,7 +87,7 @@ export class CronogramaEtapaService {
                                 },
                             },
                         },
-
+                        variavel: { select: { id: true, codigo: true, titulo: true } },
                         cronograma: {
                             select: {
                                 id: true,
@@ -175,6 +175,7 @@ export class CronogramaEtapaService {
                                         },
                                     },
                                 },
+                                variavel: { select: { id: true, codigo: true, titulo: true } },
                                 CronogramaEtapa: {
                                     orderBy: { ordem: 'asc' },
                                 },
@@ -210,7 +211,7 @@ export class CronogramaEtapaService {
                                                 },
                                             },
                                         },
-
+                                        variavel: { select: { id: true, codigo: true, titulo: true } },
                                         CronogramaEtapa: {
                                             orderBy: { ordem: 'asc' },
                                         },
@@ -318,6 +319,7 @@ export class CronogramaEtapaService {
                     }),
 
                     geolocalizacao: geolocalizacao.get(cronogramaEtapa.etapa.id) || [],
+                    variavel: cronogramaEtapa.etapa.variavel,
                     etapa_filha: await Promise.all(
                         cronogramaEtapa.etapa.etapa_filha.map(async (f) => {
                             const atrasoFase = await this.getAtraso(
@@ -365,7 +367,7 @@ export class CronogramaEtapaService {
                                         nome_exibicao: r.pessoa.nome_exibicao,
                                     };
                                 }),
-
+                                variavel: f.variavel,
                                 etapa_filha: await Promise.all(
                                     f.etapa_filha.map(async (ff) => {
                                         const atrasoSubFase = await this.getAtraso(
@@ -402,7 +404,7 @@ export class CronogramaEtapaService {
                                             atraso: atrasoSubFase,
                                             atraso_grau: atrasoSubFaseGrau,
                                             endereco_obrigatorio: ff.endereco_obrigatorio,
-
+                                            variavel: ff.variavel,
                                             responsaveis: ff.responsaveis.map((r) => {
                                                 return {
                                                     id: r.pessoa.id,

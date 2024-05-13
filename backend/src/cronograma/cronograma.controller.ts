@@ -1,5 +1,11 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post, Query } from '@nestjs/common';
-import { ApiBearerAuth, ApiNoContentResponse, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
+import {
+    ApiBearerAuth,
+    ApiNoContentResponse,
+    ApiOperation,
+    ApiTags,
+    ApiUnauthorizedResponse
+} from '@nestjs/swagger';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
@@ -91,12 +97,13 @@ export class CronogramaController {
         'PDM.coordenador_responsavel_cp',
         'PDM.ponto_focal'
     )
+    @ApiOperation({ deprecated: true, description: 'Use o endpoint /api/cronograma-etapa' })
     async findAllEtapas(
         @Query() filters: FilterEtapaSemCronoIdDto,
         @Param() params: FindOneParams
     ): Promise<ListEtapaDto> {
         return {
-            linhas: await this.etapaService.findAll({
+            linhas: await this.etapaService.findAllDeprecated({
                 ...filters,
                 cronograma_id: +params.id,
             }),

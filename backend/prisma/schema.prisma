@@ -1380,6 +1380,7 @@ model Variavel {
     suspensao_log            VariavelSuspensaoLog[]
     suspensao_controle       VariavelSuspensaControle[]
     MetaStatusAtrasoVariavel MetaStatusAtrasoVariavel[]
+    Etapa                    Etapa[]
 
     @@index([regiao_id])
     @@map("variavel")
@@ -1827,9 +1828,12 @@ model Etapa {
     removido_por   Int?
     removido_em    DateTime? @db.Timestamptz(6)
 
-    atualizador Pessoa? @relation("Atualizador", fields: [atualizado_por], references: [id])
-    criador     Pessoa? @relation("Criador", fields: [criado_por], references: [id])
-    removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
+    variavel_id Int?
+
+    variavel    Variavel? @relation(fields: [variavel_id], references: [id])
+    atualizador Pessoa?   @relation("Atualizador", fields: [atualizado_por], references: [id])
+    criador     Pessoa?   @relation("Criador", fields: [criado_por], references: [id])
+    removedor   Pessoa?   @relation("Removedor", fields: [removido_por], references: [id])
 
     responsaveis             EtapaResponsavel[]
     GeoLocalizacaoReferencia GeoLocalizacaoReferencia[]
@@ -4243,6 +4247,18 @@ view view_etapa_rel_meta {
     iniciativa_id Int?
 
     @@map("view_etapa_rel_meta")
+}
+
+view view_etapa_rel_meta_indicador {
+    etapa_id Int @id @default(autoincrement())
+
+    meta_id       Int
+    atividade_id  Int?
+    iniciativa_id Int?
+
+    indicador_id Int
+
+    @@map("view_etapa_rel_meta_indicador")
 }
 
 model GeoLocalizacao {

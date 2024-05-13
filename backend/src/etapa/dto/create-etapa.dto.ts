@@ -13,9 +13,14 @@ import {
     Min,
     MinLength,
     ValidateIf,
+    ValidateNested,
 } from 'class-validator';
 import { IsOnlyDate } from '../../common/decorators/IsDateOnly';
 import { DateTransform } from '../../auth/transforms/date.transform';
+import { PartialType, PickType } from '@nestjs/swagger';
+import { CreateVariavelDto } from '../../variavel/dto/create-variavel.dto';
+
+export class UpsertEtapaVariavelDto extends PartialType(PickType(CreateVariavelDto, ['codigo', 'titulo'])) {}
 
 export class CreateEtapaDto {
     /**
@@ -156,4 +161,10 @@ export class CreateEtapaDto {
     @IsString({ each: true })
     @IsArray()
     geolocalizacao?: string[];
+
+    @IsOptional()
+    @Type(() => UpsertEtapaVariavelDto)
+    @ValidateIf((object, value) => value !== null)
+    @ValidateNested()
+    variavel?: UpsertEtapaVariavelDto | null;
 }

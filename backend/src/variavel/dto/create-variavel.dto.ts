@@ -1,4 +1,4 @@
-import { ApiProperty, OmitType } from '@nestjs/swagger';
+import { ApiProperty, OmitType, PickType } from '@nestjs/swagger';
 import { Periodicidade } from '@prisma/client';
 import { Transform, TransformFnParams, Type } from 'class-transformer';
 import {
@@ -15,6 +15,7 @@ import {
     Max,
     MaxLength,
     Min,
+    MinLength,
     ValidateIf,
 } from 'class-validator';
 import { DateTransform } from '../../auth/transforms/date.transform';
@@ -111,6 +112,7 @@ export class CreateVariavelDto {
 
     @IsString()
     @MaxLength(60)
+    @MinLength(1)
     codigo: string;
 
     /**
@@ -150,6 +152,11 @@ export class CreateVariavelDto {
     @IsNumber()
     @ValidateIf((object, value) => value !== null)
     variavel_categorica_id?: number | null;
+}
+
+export class CreatePeloIndicadorDto extends PickType(CreateVariavelDto, ['codigo', 'titulo', 'orgao_id']) {
+    @IsInt()
+    indicador_id: number;
 }
 
 export class CreateGeradorVariavelDto extends OmitType(CreateVariavelDto, ['codigo']) {

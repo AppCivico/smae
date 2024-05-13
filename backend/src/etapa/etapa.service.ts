@@ -10,7 +10,8 @@ import { PrismaService } from '../prisma/prisma.service';
 import { CreateEtapaDto } from './dto/create-etapa.dto';
 import { FilterEtapaDto } from './dto/filter-etapa.dto';
 import { UpdateEtapaDto } from './dto/update-etapa.dto';
-import { Etapa } from './entities/etapa.entity';
+import { EtapaItemDto } from './entities/etapa.entity';
+import { VariavelService } from '../variavel/variavel.service';
 
 const MSG_INI_POSTERIOR_TERM_PREV = 'A data de início previsto não pode ser posterior à data de término previsto.';
 const MSG_INI_POSTERIOR_TERM_REAL = 'A data de início real não pode ser posterior à data de término real.';
@@ -55,7 +56,8 @@ export class EtapaService {
     constructor(
         private readonly prisma: PrismaService,
         private readonly cronogramaEtapaService: CronogramaEtapaService,
-        private readonly geolocService: GeoLocService
+        private readonly geolocService: GeoLocService,
+        private readonly variavelService: VariavelService
     ) {}
 
     async create(cronogramaId: number, dto: CreateEtapaDto, user: PessoaFromJwt) {
@@ -118,7 +120,7 @@ export class EtapaService {
                 };
                 await this.cronogramaEtapaService.update(dadosUpsertCronogramaEtapa, user, prismaTx);
 
-                if (dto.regiao_id || dto.termino_real || dto.geolocalizacao) {
+                if (dto.regiao_id || dto.termino_real || dto.geolocalizacao || dto.variavel) {
                     this.logger.log('encaminhando para método de atualização e validações restantes...');
                     await this.update(
                         etapa.id,
@@ -126,6 +128,7 @@ export class EtapaService {
                             regiao_id: dto.regiao_id,
                             termino_real: dto.termino_real,
                             geolocalizacao: dto.geolocalizacao,
+                            variavel: dto.variavel,
                         },
                         user,
                         prismaTx
@@ -143,8 +146,11 @@ export class EtapaService {
         await this.prisma.$queryRaw`SELECT id FROM cronograma WHERE id = ${cronogramaId} FOR UPDATE`;
     }
 
-    async findAll(filters: FilterEtapaDto | undefined = undefined) {
-        const ret: Etapa[] = [];
+    /**
+     * Esse endpoint não está sendo usado no frontend, e pelo retorno, está com os filtros errados
+     **/
+    async findAllDeprecated(filters: FilterEtapaDto | undefined = undefined): Promise<EtapaItemDto[]> {
+        const ret: EtapaItemDto[] = [];
 
         const etapaPaiId = filters?.etapa_pai_id;
         const regiaoId = filters?.regiao_id;
@@ -157,21 +163,35 @@ export class EtapaService {
                 cronograma_id: cronogramaId,
                 removido_em: null,
 
-                etapa_filha: {
-                    some: {
-                        cronograma_id: cronogramaId,
+                OR: [
+                    {
+                        CronogramaEtapa: {
+                            some: { cronograma_id: cronogramaId },
+                        },
+                    },
+                    {
                         etapa_filha: {
                             some: {
-                                cronograma_id: cronogramaId,
+                                CronogramaEtapa: {
+                                    some: { cronograma_id: cronogramaId },
+                                },
                             },
                         },
                     },
-                },
-                CronogramaEtapa: {
-                    every: {
-                        cronograma_id: cronogramaId,
+                    {
+                        etapa_filha: {
+                            some: {
+                                etapa_filha: {
+                                    some: {
+                                        CronogramaEtapa: {
+                                            some: { cronograma_id: cronogramaId },
+                                        },
+                                    },
+                                },
+                            },
+                        },
                     },
-                },
+                ],
             },
             include: {
                 etapa_filha: {
@@ -180,6 +200,13 @@ export class EtapaService {
                     },
                 },
                 CronogramaEtapa: true,
+                variavel: {
+                    select: {
+                        id: true,
+                        codigo: true,
+                        titulo: true,
+                    },
+                },
             },
         });
 
@@ -213,6 +240,7 @@ export class EtapaService {
                 ordem: cronograma_etapa[0].ordem,
                 endereco_obrigatorio: etapa.endereco_obrigatorio,
                 geolocalizacao: geolocalizacao.get(etapa.id) || [],
+                variavel: etapa.variavel,
             });
         }
 
@@ -270,6 +298,7 @@ export class EtapaService {
                     cronograma: {
                         select: { id: true, nivel_regionalizacao: true },
                     },
+                    variavel_id: true,
                 },
             });
 
@@ -459,6 +488,11 @@ export class EtapaService {
                         where: { removido_em: null },
                         select: { id: true },
                     },
+                    responsaveis: {
+                        select: {
+                            pessoa_id: true,
+                        },
+                    },
                 },
             });
 
@@ -489,6 +523,8 @@ export class EtapaService {
                 await this.verificaEtapaEnderecoObrigatorioPais(prismaTx, id, self.cronograma.id);
             }
 
+            await this.upsertVariavel(self, dto, etapaAtualizadaGeo, prismaTx, id, user, createdNow);
+
             return etapaAtualizada;
         };
 
@@ -501,6 +537,90 @@ export class EtapaService {
         }
 
         return { id };
+    }
+
+    private async upsertVariavel(
+        self: {
+            variavel_id: number | null;
+        },
+        dto: UpdateEtapaDto,
+        etapaAtualizada: {
+            responsaveis: { pessoa_id: number }[];
+        },
+        prismaTx: Prisma.TransactionClient,
+        id: number,
+        user: PessoaFromJwt,
+        now: Date
+    ) {
+        if (self.variavel_id === null && dto.variavel) {
+            if (!dto.variavel.codigo || !dto.variavel.titulo)
+                throw new BadRequestException('Código e título da variável são obrigatórios');
+            let orgao_id: number | null = null;
+
+            for (const r of etapaAtualizada.responsaveis) {
+                const pessoa = await prismaTx.pessoa.findFirstOrThrow({
+                    where: { id: r.pessoa_id },
+                    select: { pessoa_fisica: { select: { orgao_id: true } } },
+                });
+                if (pessoa.pessoa_fisica?.orgao_id) orgao_id = pessoa.pessoa_fisica.orgao_id;
+            }
+            if (!orgao_id)
+                throw new BadRequestException(
+                    'Órgão da etapa não foi encontrado, necessário ter pelo menos um responsável com órgão'
+                );
+
+            const indicadorInfo = await prismaTx.view_etapa_rel_meta_indicador.findFirst({
+                where: { etapa_id: id },
+            });
+            if (!indicadorInfo)
+                throw new BadRequestException(`Indicador da etapa não foi encontrado, não é possível criar a variável`);
+
+            const variavel = await this.variavelService.criarVariavelCronograma(
+                {
+                    titulo: dto.variavel.titulo,
+                    codigo: dto.variavel.codigo,
+                    orgao_id: orgao_id,
+                    indicador_id: indicadorInfo.indicador_id,
+                },
+                user,
+                prismaTx,
+                now
+            );
+
+            for (const r of etapaAtualizada.responsaveis) {
+                await prismaTx.variavelResponsavel.create({
+                    data: {
+                        variavel_id: variavel.id,
+                        pessoa_id: r.pessoa_id,
+                    },
+                });
+            }
+
+            await prismaTx.etapa.update({
+                where: { id },
+                data: {
+                    variavel_id: variavel.id,
+                },
+            });
+        } else if (self.variavel_id && dto.variavel) {
+            // se é uma atualização, então já tinha o id da variável antes
+            // na criação já vem com o codigo e titulo corretos
+            await prismaTx.variavel.update({
+                where: { id: self.variavel_id },
+                data: {
+                    titulo: dto.variavel.titulo,
+                    codigo: dto.variavel.codigo,
+                },
+            });
+        } else if (self.variavel_id && dto.variavel === null) {
+            // remove que a trigger faz o delete da variavel
+            await prismaTx.etapa.update({
+                where: { id },
+                data: {
+                    variavel_id: null,
+                },
+            });
+        }
     }
 
     private async validaOuAtualizaRegiaoPeloGeoLoc(
@@ -738,40 +858,91 @@ export class EtapaService {
         etapa: {
             id: number;
             responsaveis: { pessoa_id: number }[];
+            variavel_id: number | null;
         },
         prismaTx: Prisma.TransactionClient
     ) {
-        if (Array.isArray(responsaveis)) {
+        let doUpdate = Array.isArray(responsaveis);
+        if (doUpdate) {
             const currentVersion = etapa.responsaveis.map((r) => r.pessoa_id).join(',');
-            const newVersionStr = responsaveis.sort((a, b) => a - b).join(',');
+            const newVersionStr = responsaveis!.sort((a, b) => a - b).join(',');
+            doUpdate = currentVersion !== newVersionStr;
+        }
+        if (!doUpdate) return;
 
-            if (currentVersion !== newVersionStr) {
-                this.logger.debug(`responsaveis mudaram: old ${currentVersion} !== new ${newVersionStr}`);
-                const promises = [];
-                for (const responsavel of responsaveis) {
-                    promises.push(
-                        prismaTx.etapaResponsavel.upsert({
-                            where: {
-                                etapa_pessoa_uniq: {
-                                    pessoa_id: responsavel,
-                                    etapa_id: etapa.id,
-                                },
-                            },
-                            create: {
+        const currentVersion = etapa.responsaveis.map((r) => r.pessoa_id);
+        const newVersion = responsaveis!;
+
+        const promises = [];
+
+        // Adiciona os responsaveis que faltam
+        for (const responsavel of newVersion) {
+            promises.push(
+                prismaTx.etapaResponsavel.upsert({
+                    where: {
+                        etapa_pessoa_uniq: {
+                            pessoa_id: responsavel,
+                            etapa_id: etapa.id,
+                        },
+                    },
+                    create: {
+                        pessoa_id: responsavel,
+                        etapa_id: etapa.id,
+                    },
+                    update: {},
+                })
+            );
+
+            // se já tem variável, então faz o sync na responsável na variável
+            if (etapa.variavel_id) {
+                promises.push(
+                    prismaTx.variavelResponsavel.upsert({
+                        where: {
+                            pessoa_id_variavel_id: {
                                 pessoa_id: responsavel,
-                                etapa_id: etapa.id,
+                                variavel_id: etapa.id,
                             },
-                            update: {},
-                        })
-                    );
-                }
-                await Promise.all(promises);
-            } else {
-                this.logger.debug(
-                    `responsaveis continuam iguais, o banco não será chamado para evitar o recálculo do trigger`
+                        },
+                        create: {
+                            pessoa_id: responsavel,
+                            variavel_id: etapa.id,
+                        },
+                        update: {},
+                    })
                 );
             }
         }
+
+        // Remove os responsaveis removidos
+        for (const currentResponsavel of currentVersion) {
+            if (!newVersion.includes(currentResponsavel)) {
+                promises.push(
+                    prismaTx.etapaResponsavel.delete({
+                        where: {
+                            etapa_pessoa_uniq: {
+                                pessoa_id: currentResponsavel,
+                                etapa_id: etapa.id,
+                            },
+                        },
+                    })
+                );
+
+                if (etapa.variavel_id) {
+                    promises.push(
+                        prismaTx.variavelResponsavel.delete({
+                            where: {
+                                pessoa_id_variavel_id: {
+                                    pessoa_id: currentResponsavel,
+                                    variavel_id: etapa.id,
+                                },
+                            },
+                        })
+                    );
+                }
+            }
+        }
+
+        await Promise.all(promises);
     }
 
     async remove(id: number, user: PessoaFromJwt) {
