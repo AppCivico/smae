@@ -11,10 +11,12 @@ import {
     DashAnaliseTranferenciasDto,
     DashTransferenciaBasicChartDto,
     DashTransferenciaStatusChartDto,
+    FilterDashTransferenciasAnaliseDto,
     FilterDashTransferenciasDto,
     ListMfDashTransferenciasDto,
     MfDashTransferenciasDto,
 } from './dto/transferencia.dto';
+import { TransferenciaTipoEsfera } from '@prisma/client';
 
 class NextPageTokenJwtBody {
     offset: number;
@@ -161,10 +163,17 @@ export class DashTransferenciaService {
     }
 
     async analiseTransferenciasFormattedCharts(
-        filter: FilterDashTransferenciasDto,
+        filter: FilterDashTransferenciasAnaliseDto,
         user: PessoaFromJwt
     ): Promise<DashAnaliseTranferenciasChartsDto> {
-        const rows = await this.prisma.viewTransferenciaAnalise.findMany();
+        const rows = await this.prisma.viewTransferenciaAnalise.findMany({
+            where: {
+                parlamentar_id: filter.parlamentar_ids ? { in: filter.parlamentar_ids } : undefined,
+                ano: filter.anos ? { in: filter.anos } : undefined,
+                partido_id: filter.partido_ids ? { in: filter.partido_ids } : undefined,
+                workflow_etapa_atual_id: filter.etapa_ids ? { in: filter.etapa_ids } : undefined,
+            },
+        });
 
         const partidosRows = await this.prisma.partido.findMany({
             where: {
@@ -179,6 +188,7 @@ export class DashTransferenciaService {
 
         const valorTotal: number = rows.reduce((sum, current) => sum + +current.valor_total, 0);
 
+        const countAll: number = rows.length;
         const chartPorEsfera: DashTransferenciaBasicChartDto = {
             xAxis: {
                 type: 'category',
@@ -190,7 +200,16 @@ export class DashTransferenciaService {
             series: [
                 {
                     type: 'bar',
-                    data: ['40', '60'],
+                    data: [
+                        (
+                            (100 * rows.filter((e) => e.esfera == TransferenciaTipoEsfera.Federal).length) /
+                            countAll
+                        ).toString(),
+                        (
+                            (100 * rows.filter((e) => e.esfera == TransferenciaTipoEsfera.Estadual).length) /
+                            countAll
+                        ).toString(),
+                    ],
                 },
             ],
         };
@@ -204,45 +223,104 @@ export class DashTransferenciaService {
             series: [
                 {
                     type: 'bar',
-                    data: ['0', '10', '20', '30'],
+                    data: [
+                        rows.filter((e) => e.prejudicada == true).length.toString(),
+                        rows.filter((e) => e.workflow_finalizado == true).length.toString(),
+                        rows
+                            .filter((e) => e.workflow_etapa_atual_id != null && e.workflow_finalizado == false)
+                            .length.toString(),
+                        countAll.toString(),
+                    ],
                 },
             ],
         };
 
-        const partidoSiglasArr = partidosRows.map((p) => p.sigla);
+        const dadosPorPartido = partidosRows.map((partido) => {
+            return {
+                sigla: partido.sigla,
+                count_estadual: rows
+                    .filter((r) => r.partido_id == partido.id)
+                    .filter((r) => r.esfera == TransferenciaTipoEsfera.Estadual).length,
+                count_federal: rows
+                    .filter((r) => r.partido_id == partido.id)
+                    .filter((r) => r.esfera == TransferenciaTipoEsfera.Federal).length,
+
+                valor: rows
+                    .filter((r) => r.partido_id == partido.id)
+                    .reduce((sum, current) => sum + +current.valor_total, 0),
+            };
+        });
         const chartNroPorPartido: DashTransferenciaBasicChartDto = {
             xAxis: { type: 'value' },
             yAxis: {
                 type: 'category',
-                data: partidoSiglasArr,
+                data: dadosPorPartido.map((e) => e.sigla),
             },
-            series: partidosRows.map((p) => {
-                return {
+            series: [
+                {
+                    name: 'Estadual',
+                    type: 'bar',
+                    stack: 'total',
+                    label: { show: true },
+                    data: dadosPorPartido.map((e) => e.count_estadual.toString()),
+                },
+                {
                     name: 'Federal',
                     type: 'bar',
                     stack: 'total',
                     label: { show: true },
-                    data: ['10', '20'],
-                };
-            }),
+                    data: dadosPorPartido.map((e) => e.count_federal.toString()),
+                },
+            ],
         };
 
         const chartValPorPartido: DashTransferenciaBasicChartDto = {
             xAxis: {
                 type: 'category',
-                data: partidoSiglasArr,
+                data: dadosPorPartido.map((e) => e.sigla),
             },
             yAxis: { type: 'value' },
-            series: [],
+            series: [
+                {
+                    type: 'bar',
+                    label: { show: true },
+                    data: dadosPorPartido.map((e) => e.valor.toString()),
+                },
+            ],
         };
+
+        const orgaoIds = rows.filter((e) => e.distribuicao_orgao_id != null).map((e) => e.distribuicao_orgao_id!);
+        const orgaoSiglas = orgaoIds.length
+            ? await this.prisma.orgao.findMany({
+                  where: { id: { in: orgaoIds } },
+                  select: { id: true, descricao: true },
+              })
+            : null;
+
+        const dadosPorOrgao = orgaoSiglas
+            ? orgaoSiglas.map((o) => {
+                  return {
+                      sigla: o.descricao,
+                      valor: rows
+                          .filter((r) => r.distribuicao_orgao_id == o.id)
+                          .reduce((sum, current) => sum + +current.valor_total, 0),
+                  };
+              })
+            : [];
 
         const chartValPorOrgao: DashTransferenciaBasicChartDto = {
             xAxis: {
                 type: 'category',
-                data: partidoSiglasArr,
+                data: dadosPorOrgao.map((o) => o.sigla),
             },
             yAxis: { type: 'value' },
-            series: [],
+            series: [
+                {
+                    type: 'bar',
+                    label: { show: true },
+                    data: dadosPorOrgao.map((o) => o.valor.toString()),
+                },
+            ],
         };
 
         return {
