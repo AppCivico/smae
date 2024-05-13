@@ -1,5 +1,5 @@
-import { Etapa } from '../entities/etapa.entity';
+import { EtapaItemDto } from '../entities/etapa.entity';
 
 export class ListEtapaDto {
-    linhas: Etapa[];
+    linhas: EtapaItemDto[];
 }

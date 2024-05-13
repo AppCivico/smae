@@ -1,4 +1,4 @@
-import { GeolocalizacaoDto } from "../../geo-loc/entities/geo-loc.entity";
+import { GeolocalizacaoDto } from '../../geo-loc/entities/geo-loc.entity';
 
 export enum CronogramaEtapaAtrasoGrau {
     Concluido,
@@ -57,6 +57,12 @@ export class CECronogramaEtapaCronoId {
     ordem: number;
 }
 
+export class EtapaVariavelItemDto {
+    id: number;
+    codigo: string;
+    titulo: string;
+}
+
 export class CEEtapaDto {
     id: number;
     etapa_id: number;
@@ -79,11 +85,12 @@ export class CEEtapaDto {
     percentual_execucao: number | null;
     n_filhos_imediatos: number | null;
     endereco_obrigatorio: boolean;
-    geolocalizacao: GeolocalizacaoDto[]
+    geolocalizacao: GeolocalizacaoDto[];
 
     responsaveis: CronogramaEtapaResponsavel[] | null;
     etapa_filha?: CEEtapaDto[] | null;
     CronogramaEtapa: CECronogramaEtapaCronoId[];
+    variavel: EtapaVariavelItemDto | null;
 }
 
 export class CronogramaEtapaResponsavel {

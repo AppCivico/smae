@@ -1,0 +1,1 @@
+export const CONST_CRONO_VAR_CATEGORICA_ID = -1;

@@ -1,5 +1,6 @@
 import { EleicaoTipo, ModuloSistema, PerfilAcesso, Prisma, PrismaClient, Privilegio } from '@prisma/client';
 import { ListaDePrivilegios } from '../src/common/ListaDePrivilegios';
+import { CONST_CRONO_VAR_CATEGORICA_ID } from '../src/common/consts';
 const prisma = new PrismaClient({ log: ['query'] });
 
 const ModuloDescricao: Record<string, [string, ModuloSistema | null]> = {
@@ -586,9 +587,9 @@ async function main() {
 
 async function ensure_categorica_cronograma() {
     await prisma.variavelCategorica.upsert({
-        where: { tipo: 'Cronograma', id: -1 },
+        where: { tipo: 'Cronograma', id: CONST_CRONO_VAR_CATEGORICA_ID },
         create: {
-            id: -1,
+            id: CONST_CRONO_VAR_CATEGORICA_ID,
             tipo: 'Cronograma',
             titulo: 'Situação do Cronograma',
             descricao: 'Se a tarefa está concluída ou não concluido',

@@ -40,3 +40,9 @@ join meta m1 on m1.id = coalesce( c.meta_id, i1.meta_id )
 where  b.removido_em is null;
 
 
+create or replace view view_etapa_rel_meta_indicador AS
+select
+    v.*,
+    ia.id as indicador_id
+from view_etapa_rel_meta v
+join indicador ia on ia.atividade_id = v.atividade_id or ia.iniciativa_id = v.iniciativa_id or ia.meta_id = v.meta_id;
