@@ -4884,6 +4884,15 @@ model Transferencia {
 
     nivel_maximo_tarefa Int @default(5) @db.SmallInt
 
+    // Cols para facilitar processamento de dashboard.
+    workflow_finalizado     Boolean        @default(false)
+    workflow_etapa_atual_id Int?
+    workflow_etapa_atual    WorkflowEtapa? @relation(fields: [workflow_etapa_atual_id], references: [id])
+    workflow_fase_atual_id  Int?
+    workflow_fase_atual     WorkflowFase?  @relation(fields: [workflow_fase_atual_id], references: [id])
+
+    prejudicada Boolean @default(false)
+
     criado_por     Int
     criado_em      DateTime  @default(now()) @db.Timestamptz(6)
     atualizado_por Int?
@@ -4901,6 +4910,7 @@ model Transferencia {
     andamentoWorkflow              TransferenciaAndamento[]
     TransferenciaStatusConsolidado TransferenciaStatusConsolidado[]
     ViewNotasTransferencias        ViewNotasTransferencias[]
+    ViewDashboardAnalise           ViewTransferenciaAnalise[]
 
     @@map("transferencia")
 }
@@ -5047,6 +5057,9 @@ model WorkflowEtapa {
     fluxoDestino           Fluxo[]                  @relation("EtapaDestino")
     transferenciaAndamento TransferenciaAndamento[]
 
+    // Esta relação fica na table de transferências para facilitar processamento de dashboard.
+    transferencias Transferencia[]
+
     atualizador Pessoa? @relation("Atualizador", fields: [atualizado_por], references: [id])
     criador     Pessoa? @relation("Criador", fields: [criado_por], references: [id])
     removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
@@ -5061,6 +5074,9 @@ model WorkflowFase {
 
     fluxos                 FluxoFase[]
     transferenciaAndamento TransferenciaAndamento[]
+
+    // Esta relação fica na table de transferências para facilitar processamento de dashboard.
+    transferencias Transferencia[]
 
     criado_por     Int
     criado_em      DateTime  @default(now()) @db.Timestamptz(6)
@@ -5640,4 +5656,25 @@ model TransferenciaStatusConsolidado {
     transferencia Transferencia @relation(fields: [transferencia_id], references: [id])
 
     @@map("transferencia_status_consolidado")
+}
+
+view ViewTransferenciaAnalise {
+    transferencia_id Int           @id
+    transferencia    Transferencia @relation(fields: [transferencia_id], references: [id])
+
+    workflow_finalizado     Boolean
+    partido_id              Int
+    workflow_etapa_atual_id Int?
+    workflow_fase_atual_id  Int?
+    parlamentar_id          Int
+    parlamentar_foto_id     Int?
+    valor_total             Decimal
+
+    distribuicao_orgao_id    Int?
+    distribuicao_valor_total Decimal?
+    prejudicada              Boolean  @default(false)
+
+    esfera TransferenciaTipoEsfera
+
+    @@map("view_transferencia_analise")
 }

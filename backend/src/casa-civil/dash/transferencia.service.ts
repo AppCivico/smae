@@ -7,6 +7,10 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { TransferenciaService } from '../transferencia/transferencia.service';
 import { FilterDashNotasDto, MfDashNotasDto } from './dto/notas.dto';
 import {
+    DashAnaliseTranferenciasChartsDto,
+    DashAnaliseTranferenciasDto,
+    DashTransferenciaBasicChartDto,
+    DashTransferenciaStatusChartDto,
     FilterDashTransferenciasDto,
     ListMfDashTransferenciasDto,
     MfDashTransferenciasDto,
@@ -25,7 +29,10 @@ export class DashTransferenciaService {
         private readonly notaService: NotaService
     ) {}
 
-    async transferencias(filter: FilterDashTransferenciasDto, user: PessoaFromJwt): Promise<ListMfDashTransferenciasDto> {
+    async transferencias(
+        filter: FilterDashTransferenciasDto,
+        user: PessoaFromJwt
+    ): Promise<ListMfDashTransferenciasDto> {
         const ids = await this.transferenciaService.buscaIdsPalavraChave(filter.palavra_chave);
 
         // eh marco, ter data de termino (ter data planejado), não ter data de termino real
@@ -150,6 +157,102 @@ export class DashTransferenciaService {
             tem_mais: tem_mais,
             token_proxima_pagina: token_proxima_pagina,
             linhas,
+        };
+    }
+
+    async analiseTransferenciasFormattedCharts(
+        filter: FilterDashTransferenciasDto,
+        user: PessoaFromJwt
+    ): Promise<DashAnaliseTranferenciasChartsDto> {
+        const rows = await this.prisma.viewTransferenciaAnalise.findMany();
+
+        const partidosRows = await this.prisma.partido.findMany({
+            where: {
+                removido_em: null,
+                id: { in: rows.map((r) => r.partido_id) },
+            },
+            select: {
+                id: true,
+                sigla: true,
+            },
+        });
+
+        const valorTotal: number = rows.reduce((sum, current) => sum + +current.valor_total, 0);
+
+        const chartPorEsfera: DashTransferenciaBasicChartDto = {
+            xAxis: {
+                type: 'category',
+                data: ['Federal', 'Estadual'],
+            },
+            yAxis: {
+                type: 'value',
+            },
+            series: [
+                {
+                    type: 'bar',
+                    data: ['40', '60'],
+                },
+            ],
+        };
+
+        const chartPorStatus: DashTransferenciaStatusChartDto = {
+            xAxis: { type: 'value' },
+            yAxis: {
+                type: 'category',
+                data: ['Prejudicadas', 'Concluídas', 'Em Andamento', 'Disponibilizadas'],
+            },
+            series: [
+                {
+                    type: 'bar',
+                    data: ['0', '10', '20', '30'],
+                },
+            ],
+        };
+
+        const partidoSiglasArr = partidosRows.map((p) => p.sigla);
+        const chartNroPorPartido: DashTransferenciaBasicChartDto = {
+            xAxis: { type: 'value' },
+            yAxis: {
+                type: 'category',
+                data: partidoSiglasArr,
+            },
+            series: partidosRows.map((p) => {
+                return {
+                    name: 'Federal',
+                    type: 'bar',
+                    stack: 'total',
+                    label: { show: true },
+                    data: ['10', '20'],
+                };
+            }),
+        };
+
+        const chartValPorPartido: DashTransferenciaBasicChartDto = {
+            xAxis: {
+                type: 'category',
+                data: partidoSiglasArr,
+            },
+            yAxis: { type: 'value' },
+            series: [],
+        };
+
+        const chartValPorOrgao: DashTransferenciaBasicChartDto = {
+            xAxis: {
+                type: 'category',
+                data: partidoSiglasArr,
+            },
+            yAxis: { type: 'value' },
+            series: [],
+        };
+
+        return {
+            valor_total: valorTotal,
+            numero_por_esfera: chartPorEsfera,
+            numero_por_status: chartPorStatus,
+            numero_por_partido: chartNroPorPartido,
+            valor_por_partido: chartValPorPartido,
+            valor_por_orgao: chartValPorOrgao,
+            valor_por_parlamentar: [],
         };
     }
 

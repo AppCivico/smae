@@ -5,6 +5,8 @@ import { IsArray, IsInt, IsOptional, IsString, MaxLength } from 'class-validator
 import { NumberArrayTransform } from '../../../auth/transforms/number-array.transform';
 import { BadRequestException } from '@nestjs/common';
 import { StringArrayTransform } from '../../../auth/transforms/string-array.transform';
+import { IdSigla, IdSiglaDescricao } from 'src/common/dto/IdSigla.dto';
+import { ParlamnetarIdNomes } from 'src/parlamentar/entities/parlamentar.entity';
 
 export class MfDashTransferenciasDto {
     @ApiProperty({ description: 'ID da transferência' })
@@ -81,4 +83,95 @@ function ValidateTransferenciaTipoEsfera(item: any) {
         throw new BadRequestException(`Valor '${item}' não é válido para TransferenciaTipoEsfera`);
     }
     return parsedValue;
+}
+
+export class DashAnaliseTranferenciasDto {
+    valor_total: number;
+
+    numero_por_esfera: DashNumeroTransferenciasPorEsferaDto;
+    numero_por_status: DashNumeroTransferenciasPorStatusDto;
+    numero_por_partido: DashNumeroTransferenciasPorPartidoDto[];
+    valor_por_partido: DashValorTransferenciasPorPartidoDto[];
+    valor_por_orgao: DashValorTransferenciasPorOrgaoDto[];
+    valor_por_parlamentar: DashValorTransferenciasPorParlamentarDto[];
+}
+
+export class DashNumeroTransferenciasPorEsferaDto {
+    federal: number;
+    estadual: number;
+}
+
+export class DashNumeroTransferenciasPorStatusDto {
+    prejudicadas: number;
+    concluidas: number;
+    em_andamento: number;
+    disponibilizadas: number;
+}
+
+export class DashNumeroTransferenciasPorPartidoDto {
+    partido: IdSigla;
+    @ApiProperty({ enum: TransferenciaTipoEsfera, enumName: 'TransferenciaTipoEsfera' })
+    esfera: TransferenciaTipoEsfera;
+    numero: number;
+}
+
+export class DashValorTransferenciasPorPartidoDto {
+    partido: IdSigla;
+    valor: number;
+}
+
+export class DashValorTransferenciasPorOrgaoDto {
+    orgao: IdSiglaDescricao;
+    valor: number;
+}
+
+export class DashValorTransferenciasPorParlamentarDto {
+    parlamentar: DashParlamentar;
+    valor: number;
+}
+
+export class DashParlamentar {
+    id: number;
+    nome_popular: string;
+    foto: string | null;
+}
+
+export class DashAnaliseTranferenciasChartsDto {
+    valor_total: number;
+
+    numero_por_esfera: DashTransferenciaBasicChartDto;
+    numero_por_status: DashTransferenciaStatusChartDto;
+    numero_por_partido: DashTransferenciaBasicChartDto;
+    valor_por_partido: DashTransferenciaBasicChartDto;
+    valor_por_orgao: DashTransferenciaBasicChartDto;
+    valor_por_parlamentar: DashValorTransferenciasPorParlamentarDto[];
+}
+
+export class ChartDataDto {
+    type: string;
+    name?: string;
+    data?: string[];
+    stack?: string;
+    encode?: {
+        x: string;
+        y: string;
+    };
+    label?: {
+        show: boolean;
+    };
+}
+
+export class ChartDatasetDto {
+    source: string[];
+}
+export class DashTransferenciaBasicChartDto {
+    xAxis: ChartDataDto;
+    yAxis: ChartDataDto;
+    series: ChartDataDto[];
+}
+
+export class DashTransferenciaStatusChartDto {
+    xAxis: ChartDataDto;
+    yAxis: ChartDataDto;
+    series: ChartDataDto[];
 }
