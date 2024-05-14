@@ -17,7 +17,7 @@
   </div>
   <div
     v-if="exibirFiltros"
-    class="flex g1 start"
+    class="flex g1 start bgb p15 w100"
   >
     <div class="f1">
       <label class="tc300">Etapas</label>
@@ -45,7 +45,6 @@
         }"
         :grupo="anos"
         label="ano"
-        class="bgb"
       />
     </div>
 
@@ -188,5 +187,12 @@ input,
 select,
 .white {
   background-color: #ffffff !important;
+}
+
+.w100{
+  width: calc(100% + 100px);
+  margin-left: -50px;
+  margin-right: -50px;
+  box-shadow: 0px 8px 16px 0px #1527411A;
 }
 </style>
