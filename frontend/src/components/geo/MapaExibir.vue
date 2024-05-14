@@ -342,9 +342,11 @@ function removerMapa() {
 }
 
 const observer = new IntersectionObserver((entries) => {
-  if (entries[0].isIntersecting === true && elementoMapa.value) {
-    removerMapa();
-    iniciarMapa(elementoMapa.value);
+  if (!mapa) {
+    if (entries[0].isIntersecting === true && elementoMapa.value) {
+      removerMapa();
+      iniciarMapa(elementoMapa.value);
+    }
   }
 }, { threshold: [1] });
 
