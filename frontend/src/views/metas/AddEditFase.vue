@@ -667,10 +667,10 @@ const geolocalizaçãoPorToken = computed(() => (currentFase.value?.loading
     <template v-if="currentFase?.loading || !oktogo">
       <span class="spinner">Carregando</span>
     </template>
-    <template v-if="currentFase?.error || error">
+    <template v-if="currentFase?.error">
       <div class="error p1">
         <div class="error-msg">
-          {{ currentFase.error ?? error }}
+          {{ currentFase.error }}
         </div>
       </div>
     </template>
