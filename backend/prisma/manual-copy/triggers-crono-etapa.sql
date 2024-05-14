@@ -525,8 +525,8 @@ BEGIN
                 END IF;
 
                 -- Sincroniza as séries da variável com base nas datas da etapa
-                PERFORM proc_sync_serie_variavel(NEW.variavel_id, 'Previsto', NEW.termino_previsto);
-                PERFORM proc_sync_serie_variavel(NEW.variavel_id, 'Realizado', NEW.termino_real);
+                CALL proc_sync_serie_variavel(NEW.variavel_id, 'Previsto'::"Serie", NEW.termino_previsto);
+                CALL proc_sync_serie_variavel(NEW.variavel_id, 'Realizado'::"Serie", NEW.termino_real);
 
                 v_inserida_agora := true;
             END IF;
@@ -553,18 +553,19 @@ BEGIN
     IF TG_OP = 'UPDATE' AND v_inserida_agora = FALSE AND NEW.variavel_id IS NOT NULL THEN
         -- Se a data de término prevista foi alterada
         IF OLD.termino_previsto IS DISTINCT FROM NEW.termino_previsto THEN
-            PERFORM proc_resync_serie_variavel(NEW.variavel_id, 'Previsto', NEW.termino_previsto);
+            CALL proc_sync_serie_variavel(NEW.variavel_id, 'Previsto'::"Serie", NEW.termino_previsto);
         END IF;
 
         -- Se a data de término real foi alterada
         IF OLD.termino_real IS DISTINCT FROM NEW.termino_real THEN
-            PERFORM proc_sync_serie_variavel(NEW.variavel_id, 'Realizado', NEW.termino_real);
+            CALL proc_sync_serie_variavel(NEW.variavel_id, 'Realizado'::"Serie", NEW.termino_real);
         END IF;
     END IF;
 
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
+
 
 CREATE TRIGGER etapa_update_variavel
 BEFORE INSERT OR UPDATE OR DELETE ON etapa
