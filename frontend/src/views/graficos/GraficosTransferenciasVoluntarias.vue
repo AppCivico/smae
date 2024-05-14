@@ -1,11 +1,9 @@
 <template>
-  <div
-    class="flex spacebetween fixed"
-  >
-    <h5>ÚLTIMA ATUALIZAÇÃO {{ formatarData(data) }}</h5>
+  <div class="flex spacebetween fixed">
+    <h5>ÚLTIMA ATUALIZAÇÃO {{ localizeDate(data) }}</h5>
     <button
       class="like-a__text margintop"
-      @click="exibirFiltros=!exibirFiltros"
+      @click="exibirFiltros = !exibirFiltros"
     >
       <svg
         width="30"
@@ -19,50 +17,83 @@
   </div>
   <div
     v-if="exibirFiltros"
-    class="flex g1"
+    class="flex g1 start"
   >
-    <!-- - Etapas
-      - Datas
-      - Partidos
-      - Parlamentos -->
-    <Field
-      name="data"
-      type="date"
-      class="inputtext light"
-    />
-    <select class="inputtext  light">
-      <option value>
-        Partido
-      </option>
-      <option
-        v-for="partido in Object.values(listaPartidos)"
-        :key="partido.id"
-        :value="partido.id"
-      >
-        {{ partido.sigla }}
-      </option>
-    </select>
-    <select class="inputtext light ">
-      <option value>
-        Parlamentar
-      </option>
-      <option
-        v-for="parlamentar in Object.values(listaParlamentares)"
-        :key="parlamentar.id"
-        :value="parlamentar.id"
-      >
-        {{ parlamentar.nome }}
-      </option>
-    </select>
+    <div class="f1">
+      <label class="tc300">Etapas</label>
+      <AutocompleteField
+        :disabled="!listaEtapas.length"
+        :controlador="{
+          busca: '',
+          participantes: filtrosAtivos.etapas || [],
+        }"
+        :class="{
+          loading: chamadasPendentesEtapas.lista,
+        }"
+        :grupo="listaEtapas"
+        label="descricao"
+      />
+    </div>
+
+    <div class="f1">
+      <label class="tc300">Anos</label>
+      <AutocompleteField
+        :disabled="!anos.length"
+        :controlador="{
+          busca: '',
+          participantes: filtrosAtivos.anos || [],
+        }"
+        :grupo="anos"
+        label="ano"
+        class="bgb"
+      />
+    </div>
+
+    <div class="f1">
+      <label class="tc300">Partidos</label>
+      <AutocompleteField
+        :disabled="!listaPartidos.length"
+        :controlador="{
+          busca: '',
+          participantes: filtrosAtivos.partidos || [],
+        }"
+        :class="{
+          loading: chamadasPendentesPartidos.lista,
+        }"
+        :grupo="listaPartidos"
+        label="sigla"
+      />
+    </div>
+
+    <div class="f1">
+      <label class="tc300">Parlamentares</label>
+      <AutocompleteField
+        :disabled="!listaParlamentares.length"
+        name="teste1"
+        :controlador="{
+          busca: '',
+          participantes: filtrosAtivos.parlamentares || [],
+        }"
+        :class="{
+          loading: chamadasPendentesParlamentares.lista,
+        }"
+        :grupo="listaParlamentares"
+        label="nome"
+      />
+    </div>
     <button
-      class="btn small"
+      class="btn small mt1"
+      :disabled="true"
       @click="filtrar"
     >
       Filtrar
     </button>
   </div>
 
-  <div class="g1">
+  <div
+    v-if="!exibirFiltros"
+    class="g1"
+  >
     <button
       v-for="(filtro, index) in filtrosAtivos"
       :key="index"
@@ -81,19 +112,30 @@
 </template>
 
 <script setup>
-import { Field } from 'vee-validate';
-import { ref } from 'vue';
-import { storeToRefs } from 'pinia';
+import dateToDate from '@/helpers/dateToDate';
+import AutocompleteField from '@/components/AutocompleteField2.vue';
+import { useEtapasProjetosStore } from '@/stores/etapasProjeto.store';
 import { usePartidosStore } from '@/stores/partidos.store';
 import { useParlamentaresStore } from '@/stores/parlamentares.store';
+import { ref } from 'vue';
+import { storeToRefs } from 'pinia';
 import ValorTransferencia from '../../components/graficos/ValorTransferencia.vue';
 
+const localizeDate = (d) => dateToDate(d, { timeStyle: 'short' });
+
+const fluxosEtapasProjetos = useEtapasProjetosStore();
 const partidoStore = usePartidosStore();
 const parlamentarStore = useParlamentaresStore();
 
+// eslint-disable-next-line max-len
+const { lista: listaEtapas, chamadasPendentes: chamadasPendentesEtapas } = storeToRefs(fluxosEtapasProjetos);
+
+// eslint-disable-next-line max-len
 const { lista: listaPartidos, chamadasPendentes: chamadasPendentesPartidos } = storeToRefs(partidoStore);
+
 const {
-  lista: listaParlamentares, chamadasPendentes: chamadasPendentesParlamentares, erro,
+  lista: listaParlamentares,
+  chamadasPendentes: chamadasPendentesParlamentares,
 } = storeToRefs(parlamentarStore);
 
 const valor = 984675909;
@@ -109,23 +151,21 @@ const filtrosAtivos = [
   'Parlamentar',
 ];
 
-const formatarData = (dataToFormat) => {
-  const novaData = new Date(dataToFormat);
+const anoAtual = new Date().getFullYear();
 
-  const dia = novaData.getDate().toString().padStart(2, '0');
-  const mes = (novaData.getMonth() + 1).toString().padStart(2, '0');
-  const ano = novaData.getFullYear();
-  const hora = novaData.getHours().toString().padStart(2, '0');
-  const minuto = novaData.getMinutes().toString().padStart(2, '0');
-  // const data = novaData.toLocaleDateString();
-  // const [hora, min] = novaData.toLocaleTimeString().split(':');
-  return `${dia}/${mes}/${ano} ÁS ${hora}:${minuto}`;
-};
+const anos = [];
 
-if (exibirFiltros.value) {
-  parlamentarStore.buscarTudo();
-  partidoStore.buscarTudo();
+for (let ano = 2004; ano <= anoAtual; ano += 1) {
+  anos.push({ ano: ano.toString(), id: ano });
 }
+
+function filtrar() {
+  console.log('filtrou');
+}
+
+fluxosEtapasProjetos.buscarTudo();
+parlamentarStore.buscarTudo();
+partidoStore.buscarTudo();
 </script>
 
 <style scoped>
@@ -140,12 +180,13 @@ if (exibirFiltros.value) {
   margin: 5px 5px 0 0;
 }
 
-.margintop{
+.margintop {
   margin-top: -105px;
 }
 
-input, select{
+input,
+select,
+.white {
   background-color: #ffffff !important;
 }
-
 </style>
