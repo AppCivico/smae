@@ -2,14 +2,13 @@ import { defineStore } from 'pinia';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
-function caminhoParaApi(rota){
-  
-  if(rota === 'projeto'){
-    return 'projeto-etapa'
+function caminhoParaApi(rota) {
+  if (rota === 'projeto') {
+    return 'projeto-etapa';
   }
-  
-  if( rota === 'TransferenciasVoluntarias'){
-    return 'workflow-etapa'
+
+  if (rota === 'TransferenciasVoluntarias' || rota === 'analise') {
+    return 'workflow-etapa';
   }
 }
 
@@ -27,7 +26,10 @@ export const useEtapasProjetosStore = defineStore('etapasProjetosStore', {
       this.erro = null;
 
       try {
-        const { linhas } = await this.requestS.get(`${baseUrl}/${caminhoParaApi(this.route.meta.prefixoParaFilhas)}`, params);
+        const { linhas } = await this.requestS.get(
+          `${baseUrl}/${caminhoParaApi(this.route.meta.prefixoParaFilhas)}`,
+          params,
+        );
         this.lista = linhas;
       } catch (erro) {
         this.erro = erro;
@@ -40,7 +42,11 @@ export const useEtapasProjetosStore = defineStore('etapasProjetosStore', {
       this.erro = null;
 
       try {
-        await this.requestS.delete(`${baseUrl}/${caminhoParaApi(this.route.meta.prefixoParaFilhas)}/${id}`);
+        await this.requestS.delete(
+          `${baseUrl}/${caminhoParaApi(
+            this.route.meta.prefixoParaFilhas,
+          )}/${id}`,
+        );
         this.chamadasPendentes.lista = false;
         return true;
       } catch (erro) {
@@ -56,9 +62,17 @@ export const useEtapasProjetosStore = defineStore('etapasProjetosStore', {
 
       try {
         if (id) {
-          await this.requestS.patch(`${baseUrl}/${caminhoParaApi(this.route.meta.prefixoParaFilhas)}/${id}`, params);
+          await this.requestS.patch(
+            `${baseUrl}/${caminhoParaApi(
+              this.route.meta.prefixoParaFilhas,
+            )}/${id}`,
+            params,
+          );
         } else {
-          await this.requestS.post(`${baseUrl}/${caminhoParaApi(this.route.meta.prefixoParaFilhas)}`, params);
+          await this.requestS.post(
+            `${baseUrl}/${caminhoParaApi(this.route.meta.prefixoParaFilhas)}`,
+            params,
+          );
         }
 
         this.chamadasPendentes.emFoco = false;
@@ -73,13 +87,13 @@ export const useEtapasProjetosStore = defineStore('etapasProjetosStore', {
 
   getters: {
     itemParaEdição() {
-      this.lista
+      this.lista;
     },
     tiposPorId() {
       return this.lista.reduce((acc, cur) => {
         acc[cur.id] = cur;
         return acc;
       }, {});
-    }
+    },
   },
 });
