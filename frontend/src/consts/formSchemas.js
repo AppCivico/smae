@@ -330,6 +330,25 @@ export const etapa = object()
       .matches(regEx['day/month/year'], 'Formato inválido'),
     titulo: string()
       .required('Preencha o título'),
+    variavel: object()
+      .label('Variável associada')
+      .shape({
+        codigo: string()
+          .label('Código')
+          .when(['titulo'], {
+            is: (titulo) => titulo !== undefined && titulo !== null,
+            then: (field) => field.required(),
+            otherwise: (field) => field.nullable(),
+          }),
+        titulo: string()
+          .label('Título')
+          .when(['codigo'], {
+            is: (codigo) => codigo !== undefined && codigo !== null,
+            then: (field) => field.required(),
+            otherwise: (field) => field.nullable(),
+          }),
+      }, [['codigo', 'titulo']])
+      .nullable(),
   });
 
 export const etapaDeMonitoramento = object()
@@ -442,6 +461,7 @@ export const fase = object()
     titulo: string()
       .required('Preencha o título'),
     variavel: object()
+      .label('Variável Associada')
       .shape({
         codigo: string()
           .label('Código')
