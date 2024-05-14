@@ -7,7 +7,7 @@ import {
   useAlertStore, useCronogramasStore, useEditModalStore, useEtapasStore, useRegionsStore,
 } from '@/stores';
 import { storeToRefs } from 'pinia';
-import { Field, Form } from 'vee-validate';
+import { ErrorMessage, Field, Form } from 'vee-validate';
 import { computed, ref } from 'vue';
 import { useRoute } from 'vue-router';
 import temDescendenteEmOutraRegião from './auxiliares/temDescendenteEmOutraRegiao.ts';
