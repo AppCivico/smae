@@ -597,15 +597,15 @@ async function ensure_categorica_cronograma() {
                 createMany: {
                     data: [
                         {
-                            titulo: 'Feito',
-                            valor_variavel: 1,
+                            titulo: 'Não feito',
+                            valor_variavel: 0,
                             ordem: 1,
                         },
                         {
-                            titulo: 'Não feito',
-                            valor_variavel: 2,
+                            titulo: 'Feito',
+                            valor_variavel: 1,
                             ordem: 2,
-                        },
+                        }
                     ],
                 },
             },
