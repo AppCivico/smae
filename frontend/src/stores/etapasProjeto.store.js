@@ -2,14 +2,14 @@ import { defineStore } from 'pinia';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
-function caminhoParaApi(rota) {
-  if (rota === 'projeto') {
-    return 'projeto-etapa';
-  }
-
-  if (rota === 'TransferenciasVoluntarias' || rota === 'analise') {
+function caminhoParaApi(rotaMeta) {
+  if (
+    rotaMeta.prefixoParaFilhas === 'TransferenciasVoluntarias'
+    || rotaMeta.entidadeMãe === 'TransferenciasVoluntarias'
+  ) {
     return 'workflow-etapa';
   }
+  return 'projeto-etapa';
 }
 
 export const useEtapasProjetosStore = defineStore('etapasProjetosStore', {
@@ -27,7 +27,7 @@ export const useEtapasProjetosStore = defineStore('etapasProjetosStore', {
 
       try {
         const { linhas } = await this.requestS.get(
-          `${baseUrl}/${caminhoParaApi(this.route.meta.prefixoParaFilhas)}`,
+          `${baseUrl}/${caminhoParaApi(this.route.meta)}`,
           params,
         );
         this.lista = linhas;
@@ -86,9 +86,6 @@ export const useEtapasProjetosStore = defineStore('etapasProjetosStore', {
   },
 
   getters: {
-    itemParaEdição() {
-      this.lista;
-    },
     tiposPorId() {
       return this.lista.reduce((acc, cur) => {
         acc[cur.id] = cur;
