@@ -522,8 +522,8 @@ const geolocalizaçãoPorToken = computed(() => (currentFase.value?.loading
               @change="($e) => {
                 setFieldValue('variavel', $e.target.checked
                   ? {
-                    codigo: '',
-                    titulo: '',
+                    codigo: valoresIniciais.variavel.codigo || '',
+                    titulo: valoresIniciais.variavel.titulo || '',
                   }
                   : null
                 );
@@ -573,6 +573,9 @@ const geolocalizaçãoPorToken = computed(() => (currentFase.value?.loading
                 {{ errors['variavel.titulo'] }}
               </div>
             </div>
+          </div>
+          <div v-if="valoresIniciais.variavel.id && !values.variavel">
+            A variável será excluída! Sabe o que está fazendo???
           </div>
         </div>
 
