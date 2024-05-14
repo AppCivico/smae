@@ -299,9 +299,10 @@ function maskDate(el) {
       ><use xlink:href="#i_x" /></svg>
     </button>
   </div>
+
   <template v-if="!(singleEtapa?.loading || singleEtapa?.error)&&singleCronograma?.id">
     <Form
-      v-slot="{ errors, isSubmitting, values }"
+      v-slot="{ errors, isSubmitting, setFieldValue, values }"
       :validation-schema="schema"
       :initial-values="valoresIniciais"
       @submit="onSubmit"
@@ -542,6 +543,81 @@ function maskDate(el) {
 
       <hr class="mt2 mb2">
 
+      <div class="flex flexwrap g2">
+        <div class="fb100">
+          <input
+            id="associar-variavel"
+            name="associar-variavel"
+            type="checkbox"
+            :checked="!!values.variavel"
+            :value="{}"
+            :unchecked-value="null"
+            class="inputcheckbox"
+            @change="($e) => {
+              setFieldValue('variavel', $e.target.checked
+                ? {
+                  codigo: valoresIniciais?.variavel?.codigo || '',
+                  titulo: valoresIniciais?.variavel?.titulo || '',
+                }
+                : null
+              );
+            }"
+          >
+          <label
+            for="associar-variavel"
+          >
+            Associar variável
+          </label>
+        </div>
+        <div
+          v-if="!!values.variavel"
+          class="fb100 flex g2"
+        >
+          <div class="f1">
+            <LabelFromYup
+              :schema="schema.fields.variavel"
+              :required="true"
+              name="codigo"
+            />
+            <Field
+              name="variavel.codigo"
+              type="text"
+              class="inputtext light mb1"
+              :class="{ 'error': errors['variavel.codigo'] }"
+              maxlength="60"
+            />
+            <div class="error-msg">
+              {{ errors['variavel.codigo'] }}
+            </div>
+          </div>
+          <div class="f1">
+            <LabelFromYup
+              :schema="schema.fields.variavel"
+              :required="true"
+              name="titulo"
+            />
+            <Field
+              name="variavel.titulo"
+              type="text"
+              class="inputtext light mb1"
+              :class="{ 'error': errors['variavel.titulo'] }"
+              maxlength="256"
+            />
+            <div class="error-msg">
+              {{ errors['variavel.titulo'] }}
+            </div>
+          </div>
+        </div>
+        <div
+          v-if="valoresIniciais.variavel?.id && !values.variavel"
+          class="error-msg"
+        >
+          Atenção! Prosseguir excluirá a variável!
+        </div>
+      </div>
+
+      <hr class="mt2 mb2">
+
       <div class="flex g2">
         <div class="f1">
           <label class="label">Início previsto <span class="tvermelho">*</span></label>
@@ -686,6 +762,8 @@ function maskDate(el) {
           </div>
         </template>
       </template>
+
+      <FormErrorsList :errors="errors" />
 
       <div class="flex spacebetween center mb2">
         <hr class="mr2 f1">
