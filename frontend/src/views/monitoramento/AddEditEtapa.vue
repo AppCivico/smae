@@ -231,6 +231,17 @@ function maskDate(el) {
         />
       </div>
 
+      <dl
+        v-if="SingleEtapa?.variavel"
+      >
+        <dt class="label">
+          Variável vinculada
+        </dt>
+        <dd>
+          {{ SingleEtapa.variavel?.codigo }} - {{ SingleEtapa.variavel?.titulo }}
+        </dd>
+      </dl>
+
       <FormErrorsList :errors="errors" />
 
       <div class="flex spacebetween center mb2">
