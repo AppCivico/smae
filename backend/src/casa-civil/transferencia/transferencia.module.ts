@@ -9,6 +9,7 @@ import { TransferenciaTarefaController } from './transferencia-tarefa.controller
 import { TarefaModule } from 'src/pp/tarefa/tarefa.module';
 import { BlocoNotaModule } from '../../bloco-nota/bloco-nota/bloco-nota.module';
 import { WorkflowModule } from 'src/workflow/configuracao/workflow.module';
+import { DistribuicaoRecursoModule } from 'src/distribuicao-recurso/distribuicao-recurso.module';
 
 @Module({
     imports: [
@@ -21,6 +22,7 @@ import { WorkflowModule } from 'src/workflow/configuracao/workflow.module';
             signOptions: { expiresIn: '30d' },
         }),
         BlocoNotaModule,
+        DistribuicaoRecursoModule,
     ],
     controllers: [TransferenciaController, TransferenciaTipoController, TransferenciaTarefaController],
     providers: [TransferenciaService],
