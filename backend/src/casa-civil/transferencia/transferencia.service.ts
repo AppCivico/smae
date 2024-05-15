@@ -22,6 +22,7 @@ import { TransferenciaAnexoDto, TransferenciaDetailDto, TransferenciaDto } from 
 import { WorkflowService } from 'src/workflow/configuracao/workflow.service';
 import { TarefaService } from 'src/pp/tarefa/tarefa.service';
 import { UpdateTarefaDto } from 'src/pp/tarefa/dto/update-tarefa.dto';
+import { DistribuicaoRecursoService } from 'src/distribuicao-recurso/distribuicao-recurso.service';
 
 class NextPageTokenJwtBody {
     offset: number;
@@ -36,7 +37,7 @@ export class TransferenciaService {
         private readonly jwtService: JwtService,
         private readonly blocoNotaService: BlocoNotaService,
         private readonly workflowService: WorkflowService,
-
+        private readonly distribuicaoService: DistribuicaoRecursoService,
         @Inject(forwardRef(() => TarefaService))
         private readonly tarefaService: TarefaService
     ) {}
@@ -412,19 +413,32 @@ export class TransferenciaService {
                     },
                 });
 
-                /* if (!jaTemDistribuicao) {
-                    await prismaTxn.distribuicaoRecurso.create({
-                        data: {
-                            transferencia_id: transferencia.id,
-                            objeto: self.objeto,
-                            valor: self.valor!,
-                            valor_total: self.valor_total!,
-                            valor_contrapartida: self.valor_contrapartida!,
-                            dotacao: self.dotacao,
-                            empenho: self.empenho ?? false,
+                if (!jaTemDistribuicao) {
+                    const orgaoCasaCivil = await prismaTxn.orgao.findFirst({
+                        where: {
+                            removido_em: null,
+                            sigla: 'SERI',
+                        },
+                        select: {
+                            id: true,
                         },
                     });
-                } */
+                    if (!orgaoCasaCivil) throw new HttpException('Órgão da casa civil não foi encontrado', 400);
+
+                    await this.distribuicaoService.create(
+                        {
+                            transferencia_id: transferencia.id,
+                            dotacao: self.dotacao ? self.dotacao : undefined,
+                            valor: self.valor!.toNumber(),
+                            valor_contrapartida: self.valor_contrapartida!.toNumber(),
+                            valor_total: self.valor_total!.toNumber(),
+                            empenho: self.empenho ?? false,
+                            objeto: self.objeto,
+                            orgao_gestor_id: orgaoCasaCivil.id,
+                        },
+                        user
+                    );
+                }
 
                 return transferencia;
             }

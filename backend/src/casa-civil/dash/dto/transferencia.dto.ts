@@ -6,7 +6,6 @@ import { NumberArrayTransform } from '../../../auth/transforms/number-array.tran
 import { BadRequestException } from '@nestjs/common';
 import { StringArrayTransform } from '../../../auth/transforms/string-array.transform';
 import { IdSigla, IdSiglaDescricao } from 'src/common/dto/IdSigla.dto';
-import { ParlamnetarIdNomes } from 'src/parlamentar/entities/parlamentar.entity';
 
 export class MfDashTransferenciasDto {
     @ApiProperty({ description: 'ID da transferência' })
