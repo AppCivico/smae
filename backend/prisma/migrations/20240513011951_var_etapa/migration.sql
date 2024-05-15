@@ -71,8 +71,10 @@ BEGIN
                 valor_nominal := 1;
                 v_variavel_categorica_valor_id := v_cat_sim;
                 v_added := true;
+            ELSIF currentDate <= date_trunc('month', CURRENT_DATE)  THEN
+                valor_nominal := 0;
+                v_variavel_categorica_valor_id := v_cat_nao;
             ELSE
-                -- pula todos os proximos
                 EXIT;
             END IF;
 
