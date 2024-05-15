@@ -14,7 +14,7 @@ const router = useRouter();
 const route = useRoute();
 const authStore = useAuthStore();
 const { temPermissãoPara } = storeToRefs(authStore);
-const { chamadasPendentes, erro, tiposPorId } = storeToRefs(etapasProjetosStore);
+const { chamadasPendentes, erro, etapasPorId } = storeToRefs(etapasProjetosStore);
 
 const props = defineProps({
   etapaDoProjetoId: {
@@ -23,7 +23,7 @@ const props = defineProps({
   },
 });
 
-const emFoco = computed(() => tiposPorId.value[props.etapaDoProjetoId] || null);
+const emFoco = computed(() => etapasPorId.value[props.etapaDoProjetoId] || null);
 
 async function onSubmit(_, { controlledValues }) {
   const carga = controlledValues;
