@@ -86,7 +86,7 @@ export const useEtapasProjetosStore = defineStore('etapasProjetosStore', {
   },
 
   getters: {
-    tiposPorId() {
+    etapasPorId() {
       return this.lista.reduce((acc, cur) => {
         acc[cur.id] = cur;
         return acc;
