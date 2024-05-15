@@ -165,7 +165,7 @@ export class DashAnaliseTranferenciasChartsDto {
     valor_total: number;
 
     numero_por_esfera: DashTransferenciaBasicChartDto;
-    numero_por_status: DashTransferenciaStatusChartDto;
+    numero_por_status: DashTransferenciaBasicChartDto;
     numero_por_partido: DashTransferenciaBasicChartDto;
     valor_por_partido: DashTransferenciaBasicChartDto;
     valor_por_orgao: DashTransferenciaBasicChartDto;
@@ -190,13 +190,15 @@ export class ChartDatasetDto {
     source: string[];
 }
 export class DashTransferenciaBasicChartDto {
+    tooltip: DashChartTooltip;
     xAxis: ChartDataDto;
     yAxis: ChartDataDto;
     series: ChartDataDto[];
 }
 
-export class DashTransferenciaStatusChartDto {
-    xAxis: ChartDataDto;
-    yAxis: ChartDataDto;
-    series: ChartDataDto[];
+export class DashChartTooltip {
+    trigger: string;
+    axisPointer: {
+        type: string;
+    };
 }
