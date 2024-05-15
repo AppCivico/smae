@@ -17,7 +17,7 @@
   </div>
   <div
     v-if="exibirFiltros"
-    class="flex g1 start bgb p15 w100"
+    class="flex flexwrap g1 start bgb p15 w100"
   >
     <div class="f1">
       <label class="tc300">Etapas</label>
@@ -25,7 +25,7 @@
         :disabled="!listaEtapas.length"
         :controlador="{
           busca: '',
-          participantes: filtrosAtivos.etapas || [],
+          participantes: filtrosEscolhidos.etapa_ids || [],
         }"
         :class="{
           loading: chamadasPendentesEtapas.lista,
@@ -41,7 +41,7 @@
         :disabled="!anos.length"
         :controlador="{
           busca: '',
-          participantes: filtrosAtivos.anos || [],
+          participantes: filtrosEscolhidos.anos || [],
         }"
         :grupo="anos"
         label="ano"
@@ -54,7 +54,7 @@
         :disabled="!listaPartidos.length"
         :controlador="{
           busca: '',
-          participantes: filtrosAtivos.partidos || [],
+          participantes: filtrosEscolhidos.partido_ids || [],
         }"
         :class="{
           loading: chamadasPendentesPartidos.lista,
@@ -71,7 +71,7 @@
         name="teste1"
         :controlador="{
           busca: '',
-          participantes: filtrosAtivos.parlamentares || [],
+          participantes: filtrosEscolhidos.parlamentar_ids || [],
         }"
         :class="{
           loading: chamadasPendentesParlamentares.lista,
@@ -82,23 +82,21 @@
     </div>
     <button
       class="btn small mt1"
-      :disabled="true"
-      @click="filtrar"
+      @click="atualizarQuery"
     >
       Filtrar
     </button>
   </div>
-
   <div
     v-if="!exibirFiltros"
     class="g1"
   >
     <button
-      v-for="(filtro, index) in filtrosAtivos"
-      :key="index"
+      v-for="etapa in filtrosAtivos.etapa_ids"
+      :key="etapa"
       class="tagfilter"
     >
-      {{ filtro }}
+      {{ etapa }}
       <svg
         width="12"
         height="12"
@@ -111,13 +109,15 @@
 </template>
 
 <script setup>
+import requestS from '@/helpers/requestS.ts';
 import dateToDate from '@/helpers/dateToDate';
 import AutocompleteField from '@/components/AutocompleteField2.vue';
 import { useEtapasProjetosStore } from '@/stores/etapasProjeto.store';
 import { usePartidosStore } from '@/stores/partidos.store';
 import { useParlamentaresStore } from '@/stores/parlamentares.store';
-import { ref } from 'vue';
+import { ref, watch } from 'vue';
 import { storeToRefs } from 'pinia';
+import { useRoute, useRouter } from 'vue-router';
 import ValorTransferencia from '../../components/graficos/ValorTransferencia.vue';
 
 const localizeDate = (d) => dateToDate(d, { timeStyle: 'short' });
@@ -137,34 +137,62 @@ const {
   chamadasPendentes: chamadasPendentesParlamentares,
 } = storeToRefs(parlamentarStore);
 
-const valor = 984675909;
-const data = '2024-05-08T15:30:00Z';
 // eslint-disable-next-line prefer-const
 let exibirFiltros = ref(false);
 
-const filtrosAtivos = [
-  'SGM/SEPEP - Projetos Especiais',
-  'Em contratação de obras',
-  'De 2023 até 2024',
-  'Partido',
-  'Parlamentar',
-];
+const route = useRoute();
+const router = useRouter();
 
+const valor = 984675909;
+const data = '2024-05-08T15:30:00Z';
+const baseUrl = `${import.meta.env.VITE_API_URL}`;
+const filtrosAtivos = ref({});
+
+const filtrosEscolhidos = ref({
+  etapa_idss: [],
+  anos: [],
+  partido_ids: [],
+  parlamentar_ids: [],
+});
 const anoAtual = new Date().getFullYear();
 
 const anos = [];
 
-for (let ano = 2004; ano <= anoAtual; ano += 1) {
+for (let ano = anoAtual; ano >= 2004; ano -= 1) {
   anos.push({ ano: ano.toString(), id: ano });
 }
 
-function filtrar() {
-  console.log('filtrou');
+function atualizarQuery() {
+  router.push({
+    query: {
+      ...route.query,
+      ...filtrosEscolhidos.value,
+    },
+  });
+}
+
+async function buscarGraficos() {
+  try {
+    const retorno = await requestS.get(
+      `${baseUrl}/panorama/analise-transferencias`,
+      route.query,
+    );
+    console.log('retorno: ', retorno);
+  } catch (error) {
+    console.log('error:', error);
+  }
 }
 
 fluxosEtapasProjetos.buscarTudo();
 parlamentarStore.buscarTudo();
 partidoStore.buscarTudo();
+
+watch(
+  () => route.query,
+  () => {
+    buscarGraficos();
+  },
+);
 </script>
 
 <style scoped>
@@ -189,10 +217,10 @@ select,
   background-color: #ffffff !important;
 }
 
-.w100{
+.w100 {
   width: calc(100% + 100px);
   margin-left: -50px;
   margin-right: -50px;
-  box-shadow: 0px 8px 16px 0px #1527411A;
+  box-shadow: 0px 8px 16px 0px #1527411a;
 }
 </style>
