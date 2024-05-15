@@ -254,8 +254,23 @@ export class EtapaService {
             where: { id, removido_em: null },
             select: {
                 cronograma_id: true,
+                variavel_id: true,
             },
         });
+
+        if (basicSelf.variavel_id && dto.variavel === null) {
+            const qtdeIndicador = await prisma.indicadorVariavel.count({
+                where: { variavel_id: basicSelf.variavel_id },
+            });
+            if (qtdeIndicador)
+                throw new BadRequestException('Não é possível remover a variável pois ela possui indicadores.');
+
+            const qtdeFC = await prisma.formulaCompostaVariavel.count({
+                where: { variavel_id: basicSelf.variavel_id },
+            });
+            if (qtdeFC)
+                throw new BadRequestException('Não é possível remover a variável pois ela possui variáveis compostas.');
+        }
 
         if (!prismaCtx) await this.lockCronograma(basicSelf.cronograma_id);
 
