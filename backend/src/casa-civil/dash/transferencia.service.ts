@@ -8,9 +8,7 @@ import { TransferenciaService } from '../transferencia/transferencia.service';
 import { FilterDashNotasDto, MfDashNotasDto } from './dto/notas.dto';
 import {
     DashAnaliseTranferenciasChartsDto,
-    DashAnaliseTranferenciasDto,
     DashTransferenciaBasicChartDto,
-    DashTransferenciaStatusChartDto,
     FilterDashTransferenciasAnaliseDto,
     FilterDashTransferenciasDto,
     ListMfDashTransferenciasDto,
@@ -192,6 +190,12 @@ export class DashTransferenciaService {
 
         const countAll: number = rows.length;
         const chartPorEsfera: DashTransferenciaBasicChartDto = {
+            tooltip: {
+                trigger: 'axis',
+                axisPointer: {
+                    type: 'shadow',
+                },
+            },
             xAxis: {
                 type: 'category',
                 data: ['Federal', 'Estadual'],
@@ -216,7 +220,13 @@ export class DashTransferenciaService {
             ],
         };
 
-        const chartPorStatus: DashTransferenciaStatusChartDto = {
+        const chartPorStatus: DashTransferenciaBasicChartDto = {
+            tooltip: {
+                trigger: 'axis',
+                axisPointer: {
+                    type: 'shadow',
+                },
+            },
             xAxis: { type: 'value' },
             yAxis: {
                 type: 'category',
@@ -253,6 +263,12 @@ export class DashTransferenciaService {
             };
         });
         const chartNroPorPartido: DashTransferenciaBasicChartDto = {
+            tooltip: {
+                trigger: 'axis',
+                axisPointer: {
+                    type: 'shadow',
+                },
+            },
             xAxis: { type: 'value' },
             yAxis: {
                 type: 'category',
@@ -277,6 +293,12 @@ export class DashTransferenciaService {
         };
 
         const chartValPorPartido: DashTransferenciaBasicChartDto = {
+            tooltip: {
+                trigger: 'axis',
+                axisPointer: {
+                    type: 'shadow',
+                },
+            },
             xAxis: {
                 type: 'category',
                 data: dadosPorPartido.map((e) => e.sigla),
@@ -311,6 +333,12 @@ export class DashTransferenciaService {
             : [];
 
         const chartValPorOrgao: DashTransferenciaBasicChartDto = {
+            tooltip: {
+                trigger: 'axis',
+                axisPointer: {
+                    type: 'shadow',
+                },
+            },
             xAxis: {
                 type: 'category',
                 data: dadosPorOrgao.map((o) => o.sigla),

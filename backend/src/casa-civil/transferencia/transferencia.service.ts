@@ -374,7 +374,7 @@ export class TransferenciaService {
                     select: { id: true },
                 });
 
-                const self = await this.prisma.transferencia.findFirstOrThrow({
+                const self = await prismaTxn.transferencia.findFirstOrThrow({
                     where: {
                         id,
                         removido_em: null,
@@ -384,6 +384,9 @@ export class TransferenciaService {
                         valor_total: true,
                         valor_contrapartida: true,
                         pendente_preenchimento_valores: true,
+                        empenho: true,
+                        objeto: true,
+                        dotacao: true,
                     },
                 });
 
@@ -400,6 +403,28 @@ export class TransferenciaService {
                         },
                     });
                 }
+
+                // Criando a primeira distribuição.
+                const jaTemDistribuicao = await prismaTxn.distribuicaoRecurso.count({
+                    where: {
+                        transferencia_id: transferencia.id,
+                        removido_em: null,
+                    },
+                });
+
+                /* if (!jaTemDistribuicao) {
+                    await prismaTxn.distribuicaoRecurso.create({
+                        data: {
+                            transferencia_id: transferencia.id,
+                            objeto: self.objeto,
+                            valor: self.valor!,
+                            valor_total: self.valor_total!,
+                            valor_contrapartida: self.valor_contrapartida!,
+                            dotacao: self.dotacao,
+                            empenho: self.empenho ?? false,
+                        },
+                    });
+                } */
 
                 return transferencia;
             }
