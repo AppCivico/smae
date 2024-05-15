@@ -1,12 +1,12 @@
 <script setup>
-import { etapasProjeto as schema } from "@/consts/formSchemas";
-import { useAlertStore } from "@/stores/alert.store";
-import { useAuthStore } from "@/stores/auth.store";
-import { useEtapasProjetosStore } from "@/stores/etapasProjeto.store.js";
-import { storeToRefs } from "pinia";
-import { ErrorMessage, Field, Form } from "vee-validate";
-import { computed } from "vue";
-import { useRoute, useRouter } from "vue-router";
+import { etapasProjeto as schema } from '@/consts/formSchemas';
+import { useAlertStore } from '@/stores/alert.store';
+import { useAuthStore } from '@/stores/auth.store';
+import { useEtapasProjetosStore } from '@/stores/etapasProjeto.store';
+import { storeToRefs } from 'pinia';
+import { ErrorMessage, Field, Form } from 'vee-validate';
+import { computed } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 
 const alertStore = useAlertStore();
 const etapasProjetosStore = useEtapasProjetosStore();
@@ -14,8 +14,7 @@ const router = useRouter();
 const route = useRoute();
 const authStore = useAuthStore();
 const { temPermissãoPara } = storeToRefs(authStore);
-const { chamadasPendentes, erro, tiposPorId } =
-  storeToRefs(etapasProjetosStore);
+const { chamadasPendentes, erro, tiposPorId } = storeToRefs(etapasProjetosStore);
 
 const props = defineProps({
   etapaDoProjetoId: {
@@ -24,17 +23,15 @@ const props = defineProps({
   },
 });
 
-const emFoco = computed(
-  () => tiposPorId.value[props.etapaDoProjetoId] || null //
-);
+const emFoco = computed(() => tiposPorId.value[props.etapaDoProjetoId] || null);
 
 async function onSubmit(_, { controlledValues }) {
   const carga = controlledValues;
-  const redirect = route.meta.prefixoParaFilhas === 'TransferenciasVoluntarias' ? "etapasListar": "etapasDoProjetoListar";
+  const redirect = route.meta.prefixoParaFilhas === 'TransferenciasVoluntarias' ? 'etapasListar' : 'etapasDoProjetoListar';
   try {
     const msg = props.etapaDoProjetoId
-      ? "Dados salvos com sucesso!"
-      : "Item adicionado com sucesso!";
+      ? 'Dados salvos com sucesso!'
+      : 'Item adicionado com sucesso!';
 
     const resposta = props.etapaDoProjetoId
       ? await etapasProjetosStore.salvarItem(carga, props.etapaDoProjetoId)
@@ -53,43 +50,44 @@ async function onSubmit(_, { controlledValues }) {
 
 function excluirEtapaDoProjeto(id) {
   alertStore.confirmAction(
-    "Deseja mesmo remover esse item?",
+    'Deseja mesmo remover esse item?',
     async () => {
       if (await etapasProjetosStore.excluirItem(id)) {
         etapasProjetosStore.$reset();
         etapasProjetosStore.buscarTudo();
-        alertStore.success("Etapa removida.");
+        alertStore.success('Etapa removida.');
 
         const rotaDeEscape = route.meta?.rotaDeEscape;
 
         if (rotaDeEscape) {
           router.push(
-            typeof rotaDeEscape === "string"
+            typeof rotaDeEscape === 'string'
               ? { name: rotaDeEscape }
-              : rotaDeEscape
+              : rotaDeEscape,
           );
         }
       }
     },
-    "Remover"
+    'Remover',
   );
 }
 </script>
 <template>
   <div class="flex spacebetween center mb2">
     <h1>
-      <div v-if="etapaDoProjetoId" class="t12 uc w700 tamarelo">
+      <div
+        v-if="etapaDoProjetoId"
+        class="t12 uc w700 tamarelo"
+      >
         {{ "Editar etapa" }}
       </div>
-      {{
-        emFoco?.descricao
-          ? emFoco?.descricao
-          : etapaDoProjetoId
+      {{ emFoco?.descricao
+        ? emFoco?.descricao
+        : etapaDoProjetoId
           ? "Etapa"
-          : "Nova etapa"
-      }}
+          : "Nova etapa" }}
     </h1>
-    <hr class="ml2 f1" />
+    <hr class="ml2 f1">
     <CheckClose />
   </div>
 
@@ -103,7 +101,10 @@ function excluirEtapaDoProjeto(id) {
   >
     <div class="flex g2 mb1">
       <div class="f2 mb1">
-        <LabelFromYup name="descricao" :schema="schema" />
+        <LabelFromYup
+          name="descricao"
+          :schema="schema"
+        />
         <Field
           id="descricao"
           name="descricao"
@@ -115,40 +116,54 @@ function excluirEtapaDoProjeto(id) {
             error: errors.nome,
           }"
         />
-        <ErrorMessage name="descricao" class="error-msg" />
+        <ErrorMessage
+          name="descricao"
+          class="error-msg"
+        />
       </div>
     </div>
 
     <FormErrorsList :errors="errors" />
 
     <div class="flex spacebetween center mb2">
-      <hr class="mr2 f1" />
+      <hr class="mr2 f1">
       <button
         class="btn big"
         :disabled="isSubmitting || Object.keys(errors)?.length"
-        :title="
-          Object.keys(errors)?.length
-            ? `Erros de preenchimento: ${Object.keys(errors)?.length}`
-            : null
+        :title="Object.keys(errors)?.length
+          ? `Erros de preenchimento: ${Object.keys(errors)?.length}`
+          : null
         "
       >
         Salvar
       </button>
-      <hr class="ml2 f1" />
+      <hr class="ml2 f1">
     </div>
   </Form>
 
-  <div v-if="chamadasPendentes?.emFoco" class="spinner">Carregando</div>
+  <div
+    v-if="chamadasPendentes?.emFoco"
+    class="spinner"
+  >
+    Carregando
+  </div>
 
   <button
-    v-else-if="emFoco?.id && (temPermissãoPara('CadastroProjetoEtapa.remover' || route.meta.prefixoParaFilhas === 'TransferenciasVoluntarias'))"
+    v-else-if="emFoco?.id && (
+      temPermissãoPara('CadastroProjetoEtapa.remover'
+        || route.meta.prefixoParaFilhas === 'TransferenciasVoluntarias'
+      )
+    )"
     class="btn amarelo big"
     @click="excluirEtapaDoProjeto(emFoco.id)"
   >
     Remover item
   </button>
 
-  <div v-if="erro" class="error p1">
+  <div
+    v-if="erro"
+    class="error p1"
+  >
     <div class="error-msg">
       {{ erro }}
     </div>
