@@ -18,6 +18,7 @@ import {
   array,
   boolean,
   date,
+  lazy,
   mixed,
   number,
   object,
@@ -719,6 +720,43 @@ export const mandato = object({
   em_atividade: boolean()
     .label('Em exercício')
     .nullable(),
+});
+
+export const meta = (activePdm) => object().shape({
+  codigo: string()
+    .label('Código'),
+  complemento: string()
+    .label('Complemento')
+    .nullable(),
+  contexto: lazy(() => (activePdm?.possui_contexto_meta
+    ? string()
+      .label(activePdm?.rotulo_contexto_meta || 'Contexto')
+      .required()
+    : mixed()
+      .nullable())),
+  macro_tema_id: lazy(() => (activePdm?.possui_macro_tema
+    ? string()
+      .label(activePdm?.rotulo_macro_tema || 'Macro tema')
+      .required()
+    : mixed()
+      .nullable())),
+  pdm_id: string()
+    .label('PdM')
+    .nullable(),
+  sub_tema_id: lazy(() => (activePdm?.possui_sub_tema
+    ? string()
+      .label(activePdm?.rotulo_sub_tema || 'Sub_tema')
+      .required()
+    : mixed()
+      .nullable())),
+  tema_id: lazy(() => (activePdm?.possui_tema
+    ? string()
+      .label(activePdm?.rotulo_tema || 'Tema')
+      .required()
+    : mixed()
+      .nullable())),
+  titulo: string()
+    .label('Título'),
 });
 
 export const monitoramentoDePlanoDeAção = object()
