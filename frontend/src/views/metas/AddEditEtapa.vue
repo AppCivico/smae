@@ -19,6 +19,8 @@ import temDescendenteEmOutraRegião from './auxiliares/temDescendenteEmOutraRegi
 
 defineOptions({ inheritAttrs: false });
 
+const alertaDeExclusãoDeVariável = 'Atenção! Prosseguir excluirá a variável!';
+
 const editModalStore = useEditModalStore();
 const alertStore = useAlertStore();
 
@@ -173,79 +175,91 @@ async function onSubmit(values) {
     let msg;
     let r;
 
-    values.regiao_id = singleCronograma.value.regionalizavel && Number(values.regiao_id)
-      ? Number(values.regiao_id)
-      : null;
-    values.ordem = Number(values.ordem) ?? null;
-    values.etapa_pai_id = null;
+    const concluirEnvio = async () => {
+      values.regiao_id = singleCronograma.value.regionalizavel && Number(values.regiao_id)
+        ? Number(values.regiao_id)
+        : null;
+      values.ordem = Number(values.ordem) ?? null;
+      values.etapa_pai_id = null;
 
-    values.peso = Number(values.peso) ?? null;
-    values.percentual_execucao = Number(values.percentual_execucao) ?? null;
-    values.responsaveis = responsaveis.value.participantes;
+      values.peso = Number(values.peso) ?? null;
+      values.percentual_execucao = Number(values.percentual_execucao) ?? null;
+      values.responsaveis = responsaveis.value.participantes;
 
-    let rota = false;
-    let etapa_id_gen = false;
-    if (etapa_id) {
-      if (singleEtapa.value.etapa_id == etapa_id) {
-        r = await EtapasStore.update(etapa_id, values);
-        msg = 'Dados salvos com sucesso!';
-        rota = currentEdit;
-        etapa_id_gen = etapa_id;
+      let rota = false;
+      let etapa_id_gen = false;
+      if (etapa_id) {
+        if (singleEtapa.value.etapa_id == etapa_id) {
+          r = await EtapasStore.update(etapa_id, values);
+          msg = 'Dados salvos com sucesso!';
+          rota = currentEdit;
+          etapa_id_gen = etapa_id;
 
-        if (values.ordem != singleEtapa.value.ordem) {
-          await EtapasStore.monitorar({
-            cronograma_id: Number(cronograma_id),
-            etapa_id: Number(etapa_id_gen),
-            inativo: false,
-            ordem: Number(values.ordem) ?? null,
-          });
-        }
-      }
-    } else {
-      r = await EtapasStore.insert(Number(cronograma_id), values);
-      msg = 'Item adicionado com sucesso!';
-      rota = currentEdit;
-      etapa_id_gen = r;
-    }
-
-    if (r) {
-      if (etapa_id_gen) {
-        if (values.acumulativa_iniciativa) {
-          const ri = await CronogramasStore.getItemByParent(iniciativa_id, 'iniciativa_id');
-          if (ri.id) {
+          if (values.ordem != singleEtapa.value.ordem) {
             await EtapasStore.monitorar({
-              cronograma_id: ri.id,
+              cronograma_id: Number(cronograma_id),
               etapa_id: Number(etapa_id_gen),
-              inativo: !values.acumulativa_iniciativa,
-              ordem: Number(values.acumulativa_iniciativa_o) ?? null,
-            });
-          }
-        }
-        if (values.acumulativa_meta) {
-          const rm = await CronogramasStore.getItemByParent(meta_id, 'meta_id');
-          if (rm.id) {
-            await EtapasStore.monitorar({
-              cronograma_id: rm.id,
-              etapa_id: Number(etapa_id_gen),
-              inativo: !values.acumulativa_meta,
-              ordem: Number(values.acumulativa_meta_o) ?? null,
+              inativo: false,
+              ordem: Number(values.ordem) ?? null,
             });
           }
         }
       } else {
-        throw 'Ocorreu um erro inesperado.';
+        r = await EtapasStore.insert(Number(cronograma_id), values);
+        msg = 'Item adicionado com sucesso!';
+        rota = currentEdit;
+        etapa_id_gen = r;
       }
 
-      EtapasStore.clear();
-      CronogramasStore.clear();
-      (async () => {
-        await EtapasStore.getAll(cronograma_id);
-        CronogramasStore.getById(parentVar, parentField, cronograma_id);
-      })();
+      if (r) {
+        if (etapa_id_gen) {
+          if (values.acumulativa_iniciativa) {
+            const ri = await CronogramasStore.getItemByParent(iniciativa_id, 'iniciativa_id');
+            if (ri.id) {
+              await EtapasStore.monitorar({
+                cronograma_id: ri.id,
+                etapa_id: Number(etapa_id_gen),
+                inativo: !values.acumulativa_iniciativa,
+                ordem: Number(values.acumulativa_iniciativa_o) ?? null,
+              });
+            }
+          }
+          if (values.acumulativa_meta) {
+            const rm = await CronogramasStore.getItemByParent(meta_id, 'meta_id');
+            if (rm.id) {
+              await EtapasStore.monitorar({
+                cronograma_id: rm.id,
+                etapa_id: Number(etapa_id_gen),
+                inativo: !values.acumulativa_meta,
+                ordem: Number(values.acumulativa_meta_o) ?? null,
+              });
+            }
+          }
+        } else {
+          throw 'Ocorreu um erro inesperado.';
+        }
 
-      alertStore.success(msg);
-      editModalStore.clear();
-      if (rota) router.push(rota);
+        EtapasStore.clear();
+        CronogramasStore.clear();
+        (async () => {
+          await EtapasStore.getAll(cronograma_id);
+          CronogramasStore.getById(parentVar, parentField, cronograma_id);
+        })();
+
+        alertStore.success(msg);
+        editModalStore.clear();
+        if (rota) router.push(rota);
+      }
+    };
+
+    if (valoresIniciais.value.variavel?.id && !values.variavel) {
+      alertStore.confirmAction(
+        alertaDeExclusãoDeVariável,
+        concluirEnvio,
+        'Prosseguir',
+      );
+    } else {
+      concluirEnvio();
     }
   } catch (error) {
     alertStore.error(error);
@@ -612,7 +626,7 @@ function maskDate(el) {
           v-if="valoresIniciais.variavel?.id && !values.variavel"
           class="error-msg"
         >
-          Atenção! Prosseguir excluirá a variável!
+          {{ alertaDeExclusãoDeVariável }}
         </div>
       </div>
 
