@@ -302,14 +302,6 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
 
     <div>
       <div class="flex g2 flexwrap">
-        <dl class="f1 mb1">
-          <dt>
-            Crítico
-          </dt>
-          <dd>
-            {{ transferênciaEmFoco?.critico ? 'Sim' : 'Não' }}
-          </dd>
-        </dl>
         <dl class="f1">
           <dt>
             Cláusula suspensiva
