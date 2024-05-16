@@ -2,6 +2,7 @@ import { BadRequestException, HttpException, Injectable, Logger } from '@nestjs/
 import { JwtService } from '@nestjs/jwt';
 import { Periodicidade, Prisma, Serie, TipoVariavelCategorica, VariavelCategoricaValor } from '@prisma/client';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
+import { CONST_CRONO_VAR_CATEGORICA_ID } from '../common/consts';
 import { Date2YMD, DateYMD } from '../common/date2ymd';
 import { RecordWithId } from '../common/dto/record-with-id.dto';
 import { PrismaService } from '../prisma/prisma.service';
@@ -22,7 +23,6 @@ import {
     ValorSerieExistente,
     VariavelItemDto,
 } from './entities/variavel.entity';
-import { CONST_CRONO_VAR_CATEGORICA_ID } from '../common/consts';
 
 /**
  * ordem que é populado na função populaSeriesExistentes, usada no serviço do VariavelFormulaCompostaService
@@ -530,6 +530,7 @@ export class VariavelService {
         const listActive = await this.prisma.variavel.findMany({
             where: {
                 removido_em: null,
+                id: filters?.id,
                 ...filterQuery,
             },
             select: {
@@ -633,6 +634,25 @@ export class VariavelService {
             },
         });
 
+        const variaveisCrono = listActive.filter((v) => v.variavel_categorica_id === CONST_CRONO_VAR_CATEGORICA_ID);
+        const etapaDoCrono = await this.prisma.etapa.findMany({
+            where: {
+                variavel_id: { in: variaveisCrono.map((v) => v.id) },
+            },
+            select: {
+                id: true,
+                variavel_id: true,
+                titulo: true,
+            },
+        });
+        const mapEtapa = etapaDoCrono.reduce((acc: Record<string, any>, etapa: any) => {
+            acc[etapa.variavel_id!] = {
+                id: etapa.id,
+                titulo: etapa.titulo ?? '',
+            };
+            return acc;
+        }, {});
+
         const ret = listActive.map((row) => {
             const responsaveis = row.variavel_responsavel.map((responsavel) => {
                 return {
@@ -659,6 +679,7 @@ export class VariavelService {
 
             return {
                 ...row,
+                etapa: row.variavel_categorica_id === CONST_CRONO_VAR_CATEGORICA_ID ? mapEtapa[row.id] : null,
                 inicio_medicao: Date2YMD.toStringOrNull(row.inicio_medicao),
                 fim_medicao: Date2YMD.toStringOrNull(row.fim_medicao),
                 variavel_responsavel: undefined,
@@ -691,6 +712,9 @@ export class VariavelService {
         });
         if (!selfIndicadorVariavel)
             throw new HttpException('Variavel não encontrada, confira se você está no indicador base', 400);
+
+        if (selfIndicadorVariavel.variavel.variavel_categorica_id === CONST_CRONO_VAR_CATEGORICA_ID)
+            throw new HttpException('Variável do tipo Cronograma não pode ser atualizada', 400);
 
         const meta_id = await this.getMetaIdDoIndicador(selfIndicadorVariavel.indicador_id, this.prisma);
         // OBS: como que chega aqui sem ser pela controller? na controller pede pelo [CadastroIndicador.editar]
@@ -728,7 +752,7 @@ export class VariavelService {
                 periodicidade: true,
             },
         });
-        if (!indicador) throw new HttpException('Indicador não encontrado', 400);
+        if (!indicador) throw new HttpException('Indicador não encontrado.', 400);
 
         let oldValue = selfIndicadorVariavel.variavel.periodicidade;
         if (dto.periodicidade) oldValue = dto.periodicidade;
