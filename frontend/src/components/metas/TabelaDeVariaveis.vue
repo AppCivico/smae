@@ -179,76 +179,93 @@ function permitirEdição(indicadorVariavel) {
       </td>
       <td>{{ v.acumulativa ? 'Sim' : 'Não' }}</td>
       <td style="white-space: nowrap; text-align: right;">
-        <button
-          class="like-a__link tipinfo tprimary"
-          :disabled="!permitirEdição(v.indicador_variavel)"
-          @click="apagarVariável(v.id)"
+        <span
+          v-if="v.etapa"
+          class="tipinfo left"
         >
           <svg
-            width="20"
-            height="20"
-          ><use xlink:href="#i_remove" /></svg><div>Apagar</div>
-        </button>
-        <router-link
-          :to="{
-            path: `${parentlink}/indicadores/${indicadorId}/variaveis/novo/${v.id}`,
-            query: $route.query,
-          }"
-          class="tipinfo tprimary ml1"
-        >
-          <svg
-            width="20"
-            height="20"
-          ><use xlink:href="#i_copy" /></svg><div>Duplicar</div>
-        </router-link>
-        <router-link
-          v-if="permitirEdição(v.indicador_variavel)"
-          :to="{
-            path: `${parentlink}/indicadores/${indicadorId}/variaveis/${v.id}`,
-            query: $route.query,
-          }"
-          class="tipinfo tprimary ml1"
-        >
-          <svg
-            width="20"
-            height="20"
-          ><use xlink:href="#i_edit" /></svg><div>Editar</div>
-        </router-link>
-        <button
-          v-else
-          disabled
-          class="like-a__link tipinfo tprimary ml1"
-        >
-          <svg
-            width="20"
-            height="20"
-          ><use xlink:href="#i_edit" /></svg><div>Editar</div>
-        </button>
-        <router-link
-          :to="{
-            path: `${parentlink}/indicadores/${indicadorId}/variaveis/${v.id}/valores`,
-            query: $route.query,
-          }"
-          class="tipinfo tprimary ml1"
-        >
-          <svg
-            width="20"
-            height="20"
-          ><use xlink:href="#i_valores" /></svg><div>Valores Previstos e Acumulados</div>
-        </router-link>
-        <router-link
-          v-if="permissions.CadastroPessoa?.administrador"
-          :to="{
-            path: `${parentlink}/indicadores/${indicadorId}/variaveis/${v.id}/retroativos`,
-            query: $route.query,
-          }"
-          class="tipinfo tprimary ml1"
-        >
-          <svg
-            width="20"
-            height="20"
-          ><use xlink:href="#i_check" /></svg><div>Valores Realizados Retroativos</div>
-        </router-link>
+            width="24"
+            height="24"
+          ><use xlink:href="#i_clock" /></svg>
+          <div>
+            Vínculada à
+            <strong>{{ v.etapa?.titulo || v.etapa }}</strong>
+            do cronograma
+          </div>
+        </span>
+
+        <template v-else>
+          <button
+            class="like-a__link tipinfo tprimary"
+            :disabled="!permitirEdição(v.indicador_variavel)"
+            @click="apagarVariável(v.id)"
+          >
+            <svg
+              width="20"
+              height="20"
+            ><use xlink:href="#i_remove" /></svg><div>Apagar</div>
+          </button>
+          <router-link
+            :to="{
+              path: `${parentlink}/indicadores/${indicadorId}/variaveis/novo/${v.id}`,
+              query: $route.query,
+            }"
+            class="tipinfo tprimary ml1"
+          >
+            <svg
+              width="20"
+              height="20"
+            ><use xlink:href="#i_copy" /></svg><div>Duplicar</div>
+          </router-link>
+          <router-link
+            v-if="permitirEdição(v.indicador_variavel)"
+            :to="{
+              path: `${parentlink}/indicadores/${indicadorId}/variaveis/${v.id}`,
+              query: $route.query,
+            }"
+            class="tipinfo tprimary ml1"
+          >
+            <svg
+              width="20"
+              height="20"
+            ><use xlink:href="#i_edit" /></svg><div>Editar</div>
+          </router-link>
+          <button
+            v-else
+            disabled
+            class="like-a__link tipinfo tprimary ml1"
+          >
+            <svg
+              width="20"
+              height="20"
+            ><use xlink:href="#i_edit" /></svg><div>Editar</div>
+          </button>
+          <router-link
+            :to="{
+              path: `${parentlink}/indicadores/${indicadorId}/variaveis/${v.id}/valores`,
+              query: $route.query,
+            }"
+            class="tipinfo tprimary ml1"
+          >
+            <svg
+              width="20"
+              height="20"
+            ><use xlink:href="#i_valores" /></svg><div>Valores Previstos e Acumulados</div>
+          </router-link>
+          <router-link
+            v-if="permissions.CadastroPessoa?.administrador"
+            :to="{
+              path: `${parentlink}/indicadores/${indicadorId}/variaveis/${v.id}/retroativos`,
+              query: $route.query,
+            }"
+            class="tipinfo tprimary ml1"
+          >
+            <svg
+              width="20"
+              height="20"
+            ><use xlink:href="#i_check" /></svg><div>Valores Realizados Retroativos</div>
+          </router-link>
+        </template>
       </td>
     </tr>
   </table>
