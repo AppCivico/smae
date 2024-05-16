@@ -25,6 +25,9 @@ const { fase_id } = route.params;
 const { subfase_id } = route.params;
 
 const props = defineProps(['props']);
+
+const alertaDeExclusãoDeVariável = 'Atenção! Prosseguir excluirá a variável!';
+
 const group = ref(props?.props?.group);
 
 const parentVar = atividade_id ?? iniciativa_id ?? meta_id ?? false;
@@ -101,49 +104,61 @@ async function onSubmit(values) {
     let msg;
     let r;
 
-    values.responsaveis = responsaveis.value.participantes;
+    const concluirEnvio = async () => {
+      values.responsaveis = responsaveis.value.participantes;
 
-    values.regiao_id = singleCronograma.value.regionalizavel && Number(values.regiao_id) ? Number(values.regiao_id) : null;
-    values.ordem = Number(values.ordem) ?? null;
-    values.peso = Number(values.peso) ?? null;
-    values.percentual_execucao = Number(values.percentual_execucao) ?? null;
-    values.etapa_pai_id = currentParent;
+      values.regiao_id = singleCronograma.value.regionalizavel && Number(values.regiao_id) ? Number(values.regiao_id) : null;
+      values.ordem = Number(values.ordem) ?? null;
+      values.peso = Number(values.peso) ?? null;
+      values.percentual_execucao = Number(values.percentual_execucao) ?? null;
+      values.etapa_pai_id = currentParent;
 
-    let rota = false;
-    let etapa_id_gen = null;
-    if (currentId) {
-      if (currentFase.value.id == currentId) {
-        r = await EtapasStore.update(currentId, values);
-        msg = 'Dados salvos com sucesso!';
-        rota = currentEdit;
-        etapa_id_gen = currentId;
+      let rota = false;
+      let etapa_id_gen = null;
+      if (currentId) {
+        if (currentFase.value.id == currentId) {
+          r = await EtapasStore.update(currentId, values);
+          msg = 'Dados salvos com sucesso!';
+          rota = currentEdit;
+          etapa_id_gen = currentId;
 
-        if (values.ordem != currentFase.value.ordem) {
-          await EtapasStore.monitorar({
-            cronograma_id: Number(cronograma_id),
-            etapa_id: Number(etapa_id_gen),
-            inativo: false,
-            ordem: Number(values.ordem) ?? null,
-          });
+          if (values.ordem != currentFase.value.ordem) {
+            await EtapasStore.monitorar({
+              cronograma_id: Number(cronograma_id),
+              etapa_id: Number(etapa_id_gen),
+              inativo: false,
+              ordem: Number(values.ordem) ?? null,
+            });
+          }
         }
+      } else {
+        r = await EtapasStore.insert(Number(cronograma_id), values);
+        msg = 'Item adicionado com sucesso!';
+        rota = currentEdit;
+        etapa_id_gen = r;
       }
-    } else {
-      r = await EtapasStore.insert(Number(cronograma_id), values);
-      msg = 'Item adicionado com sucesso!';
-      rota = currentEdit;
-      etapa_id_gen = r;
-    }
 
-    if (r) {
-      EtapasStore.clear();
-      CronogramasStore.clear();
-      (async () => {
-        await EtapasStore.getAll(cronograma_id);
-        await CronogramasStore.getById(parentVar, parentField, cronograma_id);
-        router.push(rota);
-      })();
-      alertStore.success(msg);
-      editModalStore.clear();
+      if (r) {
+        EtapasStore.clear();
+        CronogramasStore.clear();
+        (async () => {
+          await EtapasStore.getAll(cronograma_id);
+          await CronogramasStore.getById(parentVar, parentField, cronograma_id);
+          router.push(rota);
+        })();
+        alertStore.success(msg);
+        editModalStore.clear();
+      }
+    };
+
+    if (currentFase.value?.variavel?.id && !values.variavel) {
+      alertStore.confirmAction(
+        alertaDeExclusãoDeVariável,
+        concluirEnvio,
+        'Prosseguir',
+      );
+    } else {
+      concluirEnvio();
     }
   } catch (error) {
     alertStore.error(error);
@@ -578,7 +593,7 @@ const geolocalizaçãoPorToken = computed(() => (currentFase.value?.loading
             v-if="valoresIniciais?.variavel?.id && !values.variavel"
             class="error-msg"
           >
-            Atenção! Prosseguir excluirá a variável!
+            {{ alertaDeExclusãoDeVariável }}
           </div>
         </div>
 
