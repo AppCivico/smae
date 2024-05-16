@@ -259,14 +259,24 @@ export class EtapaService {
         });
 
         if (basicSelf.variavel_id && dto.variavel === null) {
-            const qtdeIndicador = await prisma.indicadorVariavel.count({
-                where: { variavel_id: basicSelf.variavel_id },
+            const quaisIndicadores = await prisma.indicadorFormulaVariavel.findMany({
+                where: {
+                    variavel_id: basicSelf.variavel_id,
+                    indicador: { removido_em: null },
+                },
+                select: { indicador: { select: { titulo: true } } },
             });
-            if (qtdeIndicador)
-                throw new BadRequestException('Não é possível remover a variável pois ela possui indicadores.');
+            if (quaisIndicadores.length)
+                throw new BadRequestException(
+                    'Não é possível remover a variável pois está em uso em indicadores: ' +
+                        quaisIndicadores.map((r) => r.indicador.titulo).join(', ')
+                );
 
             const qtdeFC = await prisma.formulaCompostaVariavel.count({
-                where: { variavel_id: basicSelf.variavel_id },
+                where: {
+                    variavel_id: basicSelf.variavel_id,
+                    formula_composta: { removido_em: null },
+                },
             });
             if (qtdeFC)
                 throw new BadRequestException('Não é possível remover a variável pois ela possui variáveis compostas.');
