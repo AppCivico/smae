@@ -373,7 +373,7 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
     <div class="grid valores f1">
       <dl class="mb1">
         <dt>
-          Valor
+          Valor do repasse
         </dt>
         <dd>
           {{ transferênciaEmFoco?.valor ? `R$${dinheiro(transferênciaEmFoco.valor)}` : '-' }}
@@ -554,7 +554,7 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
       <div class="grid valores f1">
         <dl class="mb1">
           <dt>
-            Valor
+            Valor do repasse
           </dt>
           <dd>
             {{ distribuição.valor ? `R$${dinheiro(distribuição.valor)}` : '-' }}
