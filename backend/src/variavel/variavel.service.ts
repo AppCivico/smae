@@ -1062,10 +1062,23 @@ export class VariavelService {
         // buscando apenas pelo indicador pai verdadeiro desta variavel
         const selfIdicadorVariavel = await this.prisma.indicadorVariavel.findFirst({
             where: { variavel_id: variavelId, indicador_origem_id: null },
-            select: { indicador_id: true, variavel: { select: { valor_base: true, periodicidade: true } } },
+            select: {
+                indicador_id: true,
+                variavel: {
+                    select: {
+                        valor_base: true,
+                        periodicidade: true,
+                        variavel_categorica_id: true,
+                    },
+                },
+            },
         });
         if (!selfIdicadorVariavel)
             throw new BadRequestException('Variavel não encontrada, confira se você está no indicador base');
+        if (selfIdicadorVariavel.variavel.variavel_categorica_id === CONST_CRONO_VAR_CATEGORICA_ID)
+            throw new BadRequestException(
+                'Variável do tipo Cronograma não pode ser removida pela variável, remova pela etapa'
+            );
 
         await this.prisma.$transaction(
             async (prismaTxn: Prisma.TransactionClient) => {
