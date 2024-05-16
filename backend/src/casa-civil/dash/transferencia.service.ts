@@ -206,15 +206,22 @@ export class DashTransferenciaService {
             series: [
                 {
                     type: 'bar',
+                    barWidth: '20%',
                     data: [
-                        (
-                            (100 * rows.filter((e) => e.esfera == TransferenciaTipoEsfera.Federal).length) /
-                            countAll
-                        ).toFixed(2),
-                        (
-                            (100 * rows.filter((e) => e.esfera == TransferenciaTipoEsfera.Estadual).length) /
-                            countAll
-                        ).toFixed(2),
+                        {
+                            value: (
+                                (100 * rows.filter((e) => e.esfera == TransferenciaTipoEsfera.Federal).length) /
+                                countAll
+                            ).toFixed(2),
+                            itemStyle: { color: '#C6C1FB' },
+                        },
+                        {
+                            value: (
+                                (100 * rows.filter((e) => e.esfera == TransferenciaTipoEsfera.Estadual).length) /
+                                countAll
+                            ).toFixed(2),
+                            itemStyle: { color: '#372EA2' },
+                        },
                     ],
                 },
             ],
@@ -235,13 +242,26 @@ export class DashTransferenciaService {
             series: [
                 {
                     type: 'bar',
+                    barWidth: '20%',
                     data: [
-                        rows.filter((e) => e.prejudicada == true).length.toString(),
-                        rows.filter((e) => e.workflow_finalizado == true).length.toString(),
-                        rows
-                            .filter((e) => e.workflow_etapa_atual_id != null && e.workflow_finalizado == false)
-                            .length.toString(),
-                        countAll.toString(),
+                        {
+                            value: rows.filter((e) => e.prejudicada == true).length.toString(),
+                            itemStyle: { color: '#8AC4D6' },
+                        },
+                        {
+                            value: rows.filter((e) => e.workflow_finalizado == true).length.toString(),
+                            itemStyle: { color: '#B5E48C' },
+                        },
+                        {
+                            value: rows
+                                .filter((e) => e.workflow_etapa_atual_id != null && e.workflow_finalizado == false)
+                                .length.toString(),
+                            itemStyle: { color: '#76C893' },
+                        },
+                        {
+                            value: countAll.toString(),
+                            itemStyle: { color: '#4F8562' },
+                        },
                     ],
                 },
             ],
@@ -281,6 +301,8 @@ export class DashTransferenciaService {
                     stack: 'total',
                     label: { show: true },
                     data: dadosPorPartido.map((e) => e.count_estadual.toString()),
+                    color: '#372EA2',
+                    barWidth: '20%',
                 },
                 {
                     name: 'Federal',
@@ -288,6 +310,8 @@ export class DashTransferenciaService {
                     stack: 'total',
                     label: { show: true },
                     data: dadosPorPartido.map((e) => e.count_federal.toString()),
+                    color: '#C6C1FB',
+                    barWidth: '20%',
                 },
             ],
         };
@@ -307,6 +331,7 @@ export class DashTransferenciaService {
             series: [
                 {
                     type: 'bar',
+                    barWidth: '20%',
                     label: { show: true },
                     data: dadosPorPartido.map((e) => e.valor.toString()),
                 },
@@ -347,6 +372,7 @@ export class DashTransferenciaService {
             series: [
                 {
                     type: 'bar',
+                    barWidth: '20%',
                     label: { show: true },
                     data: dadosPorOrgao.map((o) => o.valor.toString()),
                 },
