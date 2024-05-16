@@ -301,7 +301,11 @@ export class DashTransferenciaService {
                     type: 'shadow',
                 },
             },
-            xAxis: { type: 'value' },
+            xAxis: {
+                name: 'Número de transferências',
+                nameLocation: 'start',
+                type: 'value',
+            },
             yAxis: {
                 type: 'category',
                 data: dadosPorPartido.map((e) => e.sigla),
@@ -340,8 +344,6 @@ export class DashTransferenciaService {
                 },
             },
             xAxis: {
-                name: 'Número de transferências',
-                nameLocation: 'start',
                 type: 'category',
                 data: dadosPorPartido.map((e) => e.sigla),
             },
