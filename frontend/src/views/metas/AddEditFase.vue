@@ -321,7 +321,7 @@ const geolocalizaçãoPorToken = computed(() => (currentFase.value?.loading
             </div>
           </div>
           <div class="f1">
-            <label class="label">Execução</label>
+            <label class="label">Execução %</label>
             <Field
               :disabled="values.n_filhos_imediatos"
               name="percentual_execucao"
@@ -642,6 +642,14 @@ const geolocalizaçãoPorToken = computed(() => (currentFase.value?.loading
               maxlength="10"
               placeholder="dd/mm/aaaa"
               @keyup="maskDate"
+              @change="($e) => {
+                if (!currentFase.n_filhos_imediatos) {
+                  setFieldValue('percentual_execucao', $e.target.value
+                    ? 100
+                    : valoresIniciais.percentual_execucao
+                  );
+                }
+              }"
             />
             <div class="error-msg">
               {{ errors.termino_real }}

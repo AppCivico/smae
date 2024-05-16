@@ -167,7 +167,7 @@ if (etapa_id) {
     }
   }
 })();
-
+// sobral
 async function onSubmit(values) {
   try {
     let msg;
@@ -350,7 +350,7 @@ function maskDate(el) {
           </div>
         </div>
         <div class="f1">
-          <label class="label">Execução</label>
+          <label class="label">Execução %</label>
           <Field
             :disabled="values.n_filhos_imediatos"
             name="percentual_execucao"
@@ -676,6 +676,14 @@ function maskDate(el) {
             maxlength="10"
             placeholder="dd/mm/aaaa"
             @keyup="maskDate"
+            @change="($e) => {
+              if (!singleEtapa.n_filhos_imediatos) {
+                setFieldValue('percentual_execucao', $e.target.value
+                  ? 100
+                  : valoresIniciais.percentual_execucao
+                );
+              }
+            }"
           />
           <div class="error-msg">
             {{ errors.termino_real }}
