@@ -120,7 +120,7 @@ function maskDate(el) {
       SingleEtapa?.id"
   >
     <Form
-      v-slot="{ errors, isSubmitting, values }"
+      v-slot="{ errors, isSubmitting, setFieldValue, values }"
       :validation-schema="schema"
       :initial-values="valoresIniciais"
       @submit="onSubmit"
@@ -165,13 +165,21 @@ function maskDate(el) {
             maxlength="10"
             placeholder="dd/mm/aaaa"
             @keyup="maskDate"
+            @change="($e) => {
+              if (!SingleEtapa.n_filhos_imediatos) {
+                setFieldValue('percentual_execucao', $e.target.value
+                  ? 100
+                  : valoresIniciais.percentual_execucao
+                );
+              }
+            }"
           />
           <div class="error-msg">
             {{ errors.termino_real }}
           </div>
         </div>
         <div class="f1">
-          <label class="label">Execução</label>
+          <label class="label">Execução %</label>
           <Field
             :disabled="values.n_filhos_imediatos"
             name="percentual_execucao"
