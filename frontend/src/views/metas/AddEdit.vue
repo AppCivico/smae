@@ -244,12 +244,12 @@ function filterResponsible(orgao_id) {
                 Selecionar
               </option>
               <option
-                v-for="type in tempMacrotemas"
-                :key="type.id"
-                :value="type.id"
-                :selected="values.macro_tema_id && type.id == values.macro_tema_id"
+                v-for="item in tempMacrotemas"
+                :key="item.id"
+                :value="item.id"
+                :selected="values.macro_tema_id && item.id == values.macro_tema_id"
               >
-                {{ type['descricao'] }}
+                {{ item['descricao'] }}
               </option>
             </Field>
             <div class="error-msg">
@@ -275,12 +275,12 @@ function filterResponsible(orgao_id) {
                 Selecionar
               </option>
               <option
-                v-for="type in tempTemas"
-                :key="type.id"
-                :value="type.id"
-                :selected="values.tema_id && type.id == values.tema_id"
+                v-for="item in tempTemas"
+                :key="item.id"
+                :value="item.id"
+                :selected="values.tema_id && item.id == values.tema_id"
               >
-                {{ type.descricao }}
+                {{ item.descricao }}
               </option>
             </Field>
             <div class="error-msg">
@@ -304,12 +304,12 @@ function filterResponsible(orgao_id) {
                 Selecionar
               </option>
               <option
-                v-for="type in tempSubtemas"
-                :key="type.id"
-                :value="type.id"
-                :selected="values.sub_tema_id && type.id == values.sub_tema_id"
+                v-for="item in tempSubtemas"
+                :key="item.id"
+                :value="item.id"
+                :selected="values.sub_tema_id && item.id == values.sub_tema_id"
               >
-                {{ type.descricao }}
+                {{ item.descricao }}
               </option>
             </Field>
             <div class="error-msg">
