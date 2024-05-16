@@ -2,6 +2,7 @@
 import { Dashboard } from '@/components';
 import { default as AutocompleteField } from '@/components/AutocompleteField.vue';
 import MigalhasDeMetas from '@/components/metas/MigalhasDeMetas.vue';
+import { meta as metaSchema } from '@/consts/formSchemas';
 import truncate from '@/helpers/truncate';
 import { router } from '@/router';
 import { useAlertStore } from '@/stores/alert.store';
@@ -14,9 +15,8 @@ import { useTemasStore } from '@/stores/temas.store';
 import { useUsersStore } from '@/stores/users.store';
 import { storeToRefs } from 'pinia';
 import { Field, Form } from 'vee-validate';
-import { ref, unref } from 'vue';
+import { computed, ref, unref } from 'vue';
 import { useRoute } from 'vue-router';
-import * as Yup from 'yup';
 
 const alertStore = useAlertStore();
 const route = useRoute();
@@ -109,17 +109,7 @@ const { pessoasSimplificadas } = storeToRefs(UserStore);
   oktogo.value = true;
 })();
 
-const schema = Yup.object().shape({
-  codigo: Yup.string().required('Preencha o código'),
-  titulo: Yup.string().required('Preencha o titulo'),
-  contexto: Yup.string().required(() => `Preencha o ${activePdm.value.possui_contexto_meta ? activePdm.value.rotulo_contexto_meta : 'texto'}`),
-  complemento: Yup.string().nullable(),
-
-  pdm_id: Yup.string().nullable(),
-  macro_tema_id: Yup.string().test('macro_tema_id', `Selecione um(a) ${activePdm.value?.rotulo_macro_tema}.`, (value) => !activePdm.value?.possui_macro_tema || value),
-  tema_id: Yup.string().test('tema_id', `Selecione um(a) ${activePdm.value?.rotulo_tema}.`, (value) => !activePdm.value?.possui_tema || value),
-  sub_tema_id: Yup.string().test('sub_tema_id', `Selecione um(a) ${activePdm.value?.rotulo_sub_tema}.`, (value) => !activePdm.value?.possui_sub_tema || value),
-});
+const schema = computed(() => metaSchema(activePdm.value));
 
 async function onSubmit(values) {
   try {
@@ -533,6 +523,8 @@ function filterResponsible(orgao_id) {
             />
           </div>
         </div>
+
+        <FormErrorsList :errors="errors" />
 
         <div class="flex spacebetween center mb2">
           <hr class="mr2 f1">
