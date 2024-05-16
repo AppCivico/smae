@@ -4,7 +4,7 @@ import { IsBoolean, IsInt, IsOptional } from 'class-validator';
 export class FilterVariavelDto {
     /**
      * Filtrar por meta_id? (Se usado, não pode filtra via indicador_id)
-     * @example "1"
+     * @example ""
      */
     @IsOptional()
     @IsInt({ message: '$property| meta_id' })
@@ -13,7 +13,7 @@ export class FilterVariavelDto {
 
     /**
      * Filtrar por iniciativa_id? (Se usado, não pode filtra via indicador_id)
-     * @example "1"
+     * @example ""
      */
     @IsOptional()
     @IsInt({ message: '$property| iniciativa_id' })
@@ -22,7 +22,7 @@ export class FilterVariavelDto {
 
     /**
      * Filtrar por atividade_id?
-     * @example "1"
+     * @example ""
      */
     @IsOptional()
     @IsInt({ message: '$property| atividade_id' })
@@ -31,7 +31,7 @@ export class FilterVariavelDto {
 
     /**
      * Filtrar por indicador_id? (Se usado, não pode filtra via meta_id)
-     * @example "1"
+     * @example ""
      */
     @IsOptional()
     @IsInt({ message: '$property| indicador_id' })
@@ -40,10 +40,15 @@ export class FilterVariavelDto {
 
     /**
      * Não retornar as variáveis desativadas? envie true
-     * @example "1"
+     * @example ""
      */
     @IsOptional()
     @IsBoolean()
     @Transform(({ value }: any) => value === 'true')
     remover_desativados?: boolean;
+
+    @IsOptional()
+    @IsInt({ message: '$property| id' })
+    @Type(() => Number)
+    id?: number;
 }
