@@ -400,6 +400,23 @@ onUpdated(() => { start(); });
               </pre>
 
               <span
+                v-if="r?.variavel"
+                class="tipinfo left"
+              >
+                <svg
+                  width="24"
+                  height="24"
+                ><use xlink:href="#i_variavel" /></svg>
+                <div>
+                  Vínculada à variável
+                  <strong v-if="r.variavel?.codigo">
+                    {{ r.variavel.codigo }}
+                  </strong>
+                  {{ r.variavel?.titulo }}
+                </div>
+              </span>
+
+              <span
                 v-if="r?.etapa?.endereco_obrigatorio && !r?.etapa?.geolocalizacao?.length"
                 class="tipinfo left"
               >
@@ -596,6 +613,23 @@ onUpdated(() => { start(); });
                 </pre>
 
                 <span
+                  v-if="rr?.variavel"
+                  class="tipinfo left"
+                >
+                  <svg
+                    width="24"
+                    height="24"
+                  ><use xlink:href="#i_variavel" /></svg>
+                  <div>
+                    Vínculada à variável
+                    <strong v-if="rr.variavel?.codigo">
+                      {{ rr.variavel.codigo }}
+                    </strong>
+                    {{ rr.variavel?.titulo }}
+                  </div>
+                </span>
+
+                <span
                   v-if="rr?.endereco_obrigatorio && !rr?.geolocalizacao?.length"
                   class="tipinfo left"
                 >
@@ -749,6 +783,23 @@ onUpdated(() => { start(); });
                       endereco obrigatório: {{ !!rrr?.endereco_obrigatorio }}
                       geolocalizações: {{ rrr?.geolocalizacao?.length || 0 }}
                     </pre>
+
+                    <span
+                      v-if="rrr?.variavel"
+                      class="tipinfo left"
+                    >
+                      <svg
+                        width="24"
+                        height="24"
+                      ><use xlink:href="#i_variavel" /></svg>
+                      <div>
+                        Vínculada à variável
+                        <strong v-if="rrr.variavel?.codigo">
+                          {{ rrr.variavel.codigo }}
+                        </strong>
+                        {{ rrr.variavel?.titulo }}
+                      </div>
+                    </span>
 
                     <span
                       v-if="rrr?.endereco_obrigatorio && !rrr?.geolocalizacao?.length"
