@@ -187,6 +187,11 @@ export class ChartDataDto {
     barWidth?: string;
 }
 
+export class ChartDataTitleDto {
+    id: string;
+    text: string;
+}
+
 export class ChartDataWithColor {
     value: string;
     itemStyle: {
@@ -197,6 +202,7 @@ export class ChartDatasetDto {
     source: string[];
 }
 export class DashTransferenciaBasicChartDto {
+    title?: ChartDataTitleDto;
     tooltip: DashChartTooltip;
     xAxis: ChartDataDto;
     yAxis: ChartDataDto;
