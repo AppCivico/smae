@@ -174,6 +174,7 @@ export class DashAnaliseTranferenciasChartsDto {
 export class ChartDataDto {
     type: string;
     name?: string;
+    nameLocation?: string;
     data?: string[] | ChartDataWithColor[];
     stack?: string;
     encode?: {
