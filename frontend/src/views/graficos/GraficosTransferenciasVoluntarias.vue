@@ -106,6 +106,36 @@
   <section>
     <ValorTransferencia :valor="valor" />
   </section>
+  <section v-if="filtrosAuxiliares?.values?.numero_por_esfera">
+    <v-chart
+      class="chart"
+      :option="filtrosAuxiliares.values.numero_por_esfera"
+    />
+  </section>
+  <section v-if="filtrosAuxiliares?.values?.numero_por_status">
+    <v-chart
+      class="chart"
+      :option="filtrosAuxiliares.values.numero_por_status"
+    />
+  </section>
+  <section v-if="filtrosAuxiliares?.values?.numero_por_partido">
+    <v-chart
+      class="chart"
+      :option="filtrosAuxiliares.values.numero_por_partido"
+    />
+  </section>
+  <section v-if="filtrosAuxiliares?.values?.valor_por_partido">
+    <v-chart
+      class="chart"
+      :option="filtrosAuxiliares.values.valor_por_partido"
+    />
+  </section>
+  <section v-if="filtrosAuxiliares?.values?.valor_por_orgao">
+    <v-chart
+      class="chart"
+      :option="filtrosAuxiliares.values.valor_por_orgao"
+    />
+  </section>
 </template>
 
 <script setup>
@@ -115,10 +145,33 @@ import AutocompleteField from '@/components/AutocompleteField2.vue';
 import { useEtapasProjetosStore } from '@/stores/etapasProjeto.store';
 import { usePartidosStore } from '@/stores/partidos.store';
 import { useParlamentaresStore } from '@/stores/parlamentares.store';
-import { ref, watch } from 'vue';
+import { ref, watch, provide } from 'vue';
 import { storeToRefs } from 'pinia';
 import { useRoute, useRouter } from 'vue-router';
+
+import { use } from 'echarts/core';
+import {
+  TitleComponent,
+  TooltipComponent,
+  LegendComponent,
+  GridComponent,
+} from 'echarts/components';
+import VChart, { THEME_KEY } from 'vue-echarts';
+
+import { BarChart } from 'echarts/charts';
+import { CanvasRenderer } from 'echarts/renderers';
 import ValorTransferencia from '../../components/graficos/ValorTransferencia.vue';
+
+use([
+  CanvasRenderer,
+  TitleComponent,
+  TooltipComponent,
+  LegendComponent,
+  GridComponent,
+  BarChart,
+]);
+
+provide(THEME_KEY, 'light');
 
 const localizeDate = (d) => dateToDate(d, { timeStyle: 'short' });
 
@@ -147,6 +200,7 @@ const valor = 984675909;
 const data = '2024-05-08T15:30:00Z';
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 const filtrosAtivos = ref({});
+const filtrosAuxiliares = ref({});
 
 const filtrosEscolhidos = ref({
   etapa_idss: [],
@@ -177,7 +231,7 @@ async function buscarGraficos() {
       `${baseUrl}/panorama/analise-transferencias`,
       route.query,
     );
-    console.log('retorno: ', retorno);
+    filtrosAuxiliares.value.values = retorno;
   } catch (error) {
     console.log('error:', error);
   }
@@ -193,9 +247,15 @@ watch(
     buscarGraficos();
   },
 );
+
+buscarGraficos();
 </script>
 
 <style scoped>
+.chart {
+  height: 400px;
+}
+
 .tagfilter {
   background-color: #e2eafe;
   color: #152741;
