@@ -48,6 +48,7 @@ export class VariavelItemDto {
     suspendida: boolean;
     mostrar_monitoramento: boolean;
     variavel_categorica_id: number | null;
+    etapa: IdTituloDto | null;
 }
 
 export class SerieValorNomimal {
