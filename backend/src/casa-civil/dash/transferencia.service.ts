@@ -166,6 +166,10 @@ export class DashTransferenciaService {
         filter: FilterDashTransferenciasAnaliseDto,
         user: PessoaFromJwt
     ): Promise<DashAnaliseTranferenciasChartsDto> {
+        interface EtapaSum {
+            [etapa: number]: number;
+        }
+
         const rows = await this.prisma.viewTransferenciaAnalise.findMany({
             where: {
                 parlamentar_id: filter.parlamentar_ids ? { in: filter.parlamentar_ids } : undefined,
@@ -276,6 +280,25 @@ export class DashTransferenciaService {
         };
 
         const dadosPorPartido = partidosRows.map((partido) => {
+            const etapasSoma = rows
+                .filter((r) => r.partido_id === partido.id && r.workflow_etapa_atual_id !== null)
+                .reduce(
+                    (acc, curr) => {
+                        const etapaId = curr.workflow_etapa_atual_id!;
+                        const valor = Number(curr.valor_total);
+
+                        const existingObjIndex = acc.findIndex((obj) => obj.workflow_etapa_atual_id === etapaId);
+
+                        if (existingObjIndex !== -1) {
+                            acc[existingObjIndex].sum += valor;
+                        } else {
+                            acc.push({ workflow_etapa_atual_id: etapaId, sum: valor });
+                        }
+                        return acc;
+                    },
+                    [] as { workflow_etapa_atual_id: number; sum: number }[]
+                );
+
             return {
                 sigla: partido.sigla,
                 count_estadual: rows
@@ -288,8 +311,11 @@ export class DashTransferenciaService {
                 valor: rows
                     .filter((r) => r.partido_id == partido.id)
                     .reduce((sum, current) => sum + +current.valor_total, 0),
+
+                etapas: etapasSoma,
             };
         });
+
         const chartNroPorPartido: DashTransferenciaBasicChartDto = {
             title: {
                 id: 'chart__NroPartido',
@@ -332,6 +358,16 @@ export class DashTransferenciaService {
             ],
         };
 
+        const etapas = await this.prisma.workflowEtapa.findMany({
+            where: {
+                removido_em: null,
+            },
+            select: {
+                id: true,
+                etapa_fluxo: true,
+            },
+        });
+
         const chartValPorPartido: DashTransferenciaBasicChartDto = {
             title: {
                 id: 'chart__ValPartido',
@@ -348,31 +384,55 @@ export class DashTransferenciaService {
                 data: dadosPorPartido.map((e) => e.sigla),
             },
             yAxis: { type: 'value' },
-            series: [
-                {
+            series: etapas.map((etapa) => {
+                return {
+                    name: etapa.etapa_fluxo,
                     type: 'bar',
+                    stack: 'total',
                     barWidth: '20%',
                     label: { show: true },
-                    data: dadosPorPartido.map((e) => e.valor.toString()),
-                },
-            ],
+                    data: dadosPorPartido.map((partidoDados) => {
+                        const valorParaEtapa = partidoDados.etapas.find(
+                            (agregado) => agregado.workflow_etapa_atual_id == etapa.id
+                        );
+
+                        return valorParaEtapa ? valorParaEtapa.sum.toString() : '0';
+                    }),
+                };
+            }),
         };
 
         const orgaoIds = rows.filter((e) => e.distribuicao_orgao_id != null).map((e) => e.distribuicao_orgao_id!);
         const orgaoSiglas = orgaoIds.length
             ? await this.prisma.orgao.findMany({
                   where: { id: { in: orgaoIds } },
-                  select: { id: true, descricao: true },
+                  select: { id: true, sigla: true },
               })
             : null;
 
         const dadosPorOrgao = orgaoSiglas
             ? orgaoSiglas.map((o) => {
+                  const etapasSoma = rows
+                      .filter((r) => r.distribuicao_orgao_id == o.id && r.workflow_etapa_atual_id != null)
+                      .reduce(
+                          (acc, curr) => {
+                              const etapaId = curr.workflow_etapa_atual_id!;
+                              const valor = Number(curr.valor_total);
+
+                              const existingObjIndex = acc.findIndex((obj) => obj.workflow_etapa_atual_id === etapaId);
+
+                              if (existingObjIndex !== -1) {
+                                  acc[existingObjIndex].sum += valor;
+                              } else {
+                                  acc.push({ workflow_etapa_atual_id: etapaId, sum: valor });
+                              }
+                              return acc;
+                          },
+                          [] as { workflow_etapa_atual_id: number; sum: number }[]
+                      );
                   return {
-                      sigla: o.descricao,
-                      valor: rows
-                          .filter((r) => r.distribuicao_orgao_id == o.id)
-                          .reduce((sum, current) => sum + +current.valor_total, 0),
+                      sigla: o.sigla,
+                      valor: etapasSoma,
                   };
               })
             : [];
@@ -393,14 +453,22 @@ export class DashTransferenciaService {
                 data: dadosPorOrgao.map((o) => o.sigla),
             },
             yAxis: { type: 'value' },
-            series: [
-                {
+            series: etapas.map((etapa) => {
+                return {
+                    name: etapa.etapa_fluxo,
                     type: 'bar',
+                    stack: 'total',
                     barWidth: '20%',
                     label: { show: true },
-                    data: dadosPorOrgao.map((o) => o.valor.toString()),
-                },
-            ],
+                    data: dadosPorOrgao.map((orgaoDados) => {
+                        const valorParaEtapa = orgaoDados.valor.find(
+                            (agregado) => agregado.workflow_etapa_atual_id == etapa.id
+                        );
+
+                        return valorParaEtapa ? valorParaEtapa.sum.toString() : '0';
+                    }),
+                };
+            }),
         };
 
         const valor_por_parlamentar = await this.prisma.viewRankingTransferenciaParlamentar.findMany({
