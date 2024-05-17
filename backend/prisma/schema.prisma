@@ -4249,6 +4249,9 @@ view view_etapa_rel_meta {
     @@map("view_etapa_rel_meta")
 }
 
+// essa view na vdd retorna o indicador que estiver mais proximo da atividade, iniciativa ou meta
+// e não todos os indicadores possiveis para cada uma delas
+// usado na criação da variavel da etapa
 view view_etapa_rel_meta_indicador {
     etapa_id Int @id @default(autoincrement())
 
