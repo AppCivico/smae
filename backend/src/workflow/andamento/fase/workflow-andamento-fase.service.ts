@@ -510,6 +510,7 @@ export class WorkflowAndamentoFaseService {
                     },
                     select: {
                         id: true,
+                        workflow_fase_id: true,
                         tarefaEspelhada: {
                             select: {
                                 id: true,
@@ -556,6 +557,13 @@ export class WorkflowAndamentoFaseService {
                         },
                     });
                 }
+
+                await prismaTxn.transferencia.update({
+                    where: { id: dto.transferencia_id },
+                    data: {
+                        workflow_fase_atual_id: andamentoNovaFase.workflow_fase_id,
+                    },
+                });
 
                 return { id: andamentoNovaFase.id };
             }

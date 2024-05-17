@@ -28,6 +28,7 @@ export class WorkflowAndamentoService {
             select: {
                 id: true,
                 workflow_id: true,
+                workflow_finalizado: true,
                 andamentoWorkflow: {
                     where: {
                         removido_em: null,
@@ -84,6 +85,16 @@ export class WorkflowAndamentoService {
             possui_proxima_etapa = fluxoProxEtapa && fluxoProxEtapa.fases.length ? true : false;
         } else {
             possui_proxima_etapa = false;
+
+            // Verificando se precisa ajustar col de controle.
+            if (transferencia.workflow_finalizado == false) {
+                await this.prisma.transferencia.update({
+                    where: { id: transferencia.id },
+                    data: {
+                        workflow_finalizado: true,
+                    },
+                });
+            }
         }
 
         const fasesNaoConcluidas = await this.prisma.transferenciaAndamento.count({
@@ -452,6 +463,8 @@ export class WorkflowAndamentoService {
                         },
                         select: {
                             id: true,
+                            workflow_etapa_id: true,
+                            workflow_fase_id: true,
                             tarefaEspelhada: {
                                 select: {
                                     id: true,
@@ -492,6 +505,14 @@ export class WorkflowAndamentoService {
                         });
                     }
 
+                    await prismaTxn.transferencia.update({
+                        where: { id: dto.transferencia_id },
+                        data: {
+                            workflow_etapa_atual_id: andamentoProxEtapa.workflow_etapa_id,
+                            workflow_fase_atual_id: andamentoProxEtapa.workflow_fase_id,
+                        },
+                    });
+
                     return await prismaTxn.transferenciaAndamento.update({
                         where: { id: andamentoProxEtapa.id },
                         data: {
@@ -505,6 +526,12 @@ export class WorkflowAndamentoService {
                         },
                     });
                 } else {
+                    await prismaTxn.transferencia.update({
+                        where: { id: dto.transferencia_id },
+                        data: {
+                            workflow_finalizado: true,
+                        },
+                    });
                     return;
                 }
             } else {
