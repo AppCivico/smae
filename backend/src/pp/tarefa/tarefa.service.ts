@@ -268,7 +268,7 @@ export class TarefaService {
             );
     }
 
-    async calcInfereDataPeloPeriodo(
+    private async calcInfereDataPeloPeriodo(
         prismaTx: Prisma.TransactionClient,
         dto: {
             inicio_planejado?: Date | null;
@@ -1377,7 +1377,7 @@ export class TarefaService {
         dto: CheckDependenciasDto
     ): Promise<ValidacaoDatas> {
         const deps = dto.dependencias;
-        if (!deps)
+        if (!deps || (Array.isArray(deps) && deps.length == 0))
             return {
                 dependencias_datas: null,
                 ordem_topologica_inicio_planejado: [],
@@ -1411,6 +1411,7 @@ export class TarefaService {
             if (buscaParents[0].parents?.includes(dep.dependencia_tarefa_id))
                 throw new HttpException('Você não pode ter como dependência uma tarefa superior a sua tarefa', 400);
         }
+        console.log('calcDataDependencias');
 
         // carrega todas as dependencias, exceto as da tarefa correte (ou nova tarefa, no caso do zero)
         const tarefaDepsProj = await prismaTx.tarefaDependente.findMany({
@@ -1423,17 +1424,18 @@ export class TarefaService {
         const grafoInicio: Graph = new graphlib.Graph({ directed: true });
         const grafoTermino: Graph = new graphlib.Graph({ directed: true });
 
+        const selfTasks = deps.map((d) => ({ ...d, id: 0, tarefa_id: dto.tarefa_corrente_id ?? 0 }));
+
         const ordemInicio = await this.valida_grafo_dependencias(
             grafoInicio,
-            tarefaDepsProj,
+            [...tarefaDepsProj, ...selfTasks],
             ['termina_pro_inicio', 'inicia_pro_inicio'],
             deps,
             tarefa_corrente_id
         );
-
         const ordemTermino = await this.valida_grafo_dependencias(
             grafoTermino,
-            tarefaDepsProj,
+            [...tarefaDepsProj, ...selfTasks],
             ['inicia_pro_termino', 'termina_pro_termino'],
             deps,
             tarefa_corrente_id
