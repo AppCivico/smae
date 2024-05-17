@@ -1080,6 +1080,8 @@ export class TransferenciaService {
                 data_inicio: { not: null },
             },
             select: {
+                workflow_etapa_id: true,
+                workflow_fase_id: true,
                 tarefaEspelhada: {
                     select: {
                         id: true,
@@ -1116,5 +1118,14 @@ export class TransferenciaService {
                 });
             }
         }
+
+        // Atualizando cols de controle na transferência
+        await prismaTxn.transferencia.update({
+            where: { id: transferencia_id },
+            data: {
+                workflow_etapa_atual_id: andamentoPrimeiraFase.workflow_etapa_id,
+                workflow_fase_atual_id: andamentoPrimeiraFase.workflow_fase_id,
+            },
+        });
     }
 }
