@@ -150,11 +150,11 @@ export class DashValorTransferenciasPorOrgaoDto {
 }
 
 export class DashValorTransferenciasPorParlamentarDto {
-    parlamentar: DashParlamentar;
+    parlamentar: DashParlamentarDto;
     valor: number;
 }
 
-export class DashParlamentar {
+export class DashParlamentarDto {
     id: number;
     nome_popular: string;
     foto: string | null;
@@ -175,17 +175,25 @@ export class ChartDataDto {
     type: string;
     name?: string;
     nameLocation?: string;
-    data?: string[] | ChartDataWithColor[];
+    data?: string[] | ChartDataWithColorDto[];
     stack?: string;
-    encode?: {
-        x: string;
-        y: string;
-    };
-    label?: {
-        show: boolean;
-    };
+    encode?: ChartEncodeDto;
+    label?: ChartLabelDto;
     color?: string;
     barWidth?: string;
+}
+
+export class ChartLegendDto {
+    data: string[];
+}
+
+export class ChartEncodeDto {
+    x: string;
+    y: string;
+}
+
+export class ChartLabelDto {
+    show: boolean;
 }
 
 export class ChartDataTitleDto {
@@ -193,7 +201,7 @@ export class ChartDataTitleDto {
     text: string;
 }
 
-export class ChartDataWithColor {
+export class ChartDataWithColorDto {
     value: string;
     itemStyle: {
         color: string;
@@ -204,13 +212,14 @@ export class ChartDatasetDto {
 }
 export class DashTransferenciaBasicChartDto {
     title?: ChartDataTitleDto;
-    tooltip: DashChartTooltip;
+    legend?: ChartLegendDto;
+    tooltip: DashChartTooltipDto;
     xAxis: ChartDataDto;
     yAxis: ChartDataDto;
     series: ChartDataDto[];
 }
 
-export class DashChartTooltip {
+export class DashChartTooltipDto {
     trigger: string;
     axisPointer: {
         type: string;

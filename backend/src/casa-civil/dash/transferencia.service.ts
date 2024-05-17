@@ -166,10 +166,6 @@ export class DashTransferenciaService {
         filter: FilterDashTransferenciasAnaliseDto,
         user: PessoaFromJwt
     ): Promise<DashAnaliseTranferenciasChartsDto> {
-        interface EtapaSum {
-            [etapa: number]: number;
-        }
-
         const rows = await this.prisma.viewTransferenciaAnalise.findMany({
             where: {
                 parlamentar_id: filter.parlamentar_ids ? { in: filter.parlamentar_ids } : undefined,
@@ -383,20 +379,26 @@ export class DashTransferenciaService {
                 type: 'category',
                 data: dadosPorPartido.map((e) => e.sigla),
             },
-            yAxis: { type: 'value' },
+            legend: {
+                data: etapas.map((e) => e.etapa_fluxo),
+            },
+            yAxis: {
+                name: 'R$ MIL',
+                nameLocation: 'end',
+                type: 'value',
+            },
             series: etapas.map((etapa) => {
                 return {
                     name: etapa.etapa_fluxo,
                     type: 'bar',
                     stack: 'total',
                     barWidth: '20%',
-                    label: { show: true },
                     data: dadosPorPartido.map((partidoDados) => {
                         const valorParaEtapa = partidoDados.etapas.find(
                             (agregado) => agregado.workflow_etapa_atual_id == etapa.id
                         );
 
-                        return valorParaEtapa ? valorParaEtapa.sum.toString() : '0';
+                        return valorParaEtapa ? (valorParaEtapa.sum / 1000).toFixed().toString() : '0';
                     }),
                 };
             }),
@@ -452,20 +454,26 @@ export class DashTransferenciaService {
                 type: 'category',
                 data: dadosPorOrgao.map((o) => o.sigla),
             },
-            yAxis: { type: 'value' },
+            yAxis: {
+                name: 'R$ MIL',
+                nameLocation: 'end',
+                type: 'value',
+            },
+            legend: {
+                data: etapas.map((e) => e.etapa_fluxo),
+            },
             series: etapas.map((etapa) => {
                 return {
                     name: etapa.etapa_fluxo,
                     type: 'bar',
                     stack: 'total',
                     barWidth: '20%',
-                    label: { show: true },
                     data: dadosPorOrgao.map((orgaoDados) => {
                         const valorParaEtapa = orgaoDados.valor.find(
                             (agregado) => agregado.workflow_etapa_atual_id == etapa.id
                         );
 
-                        return valorParaEtapa ? valorParaEtapa.sum.toString() : '0';
+                        return valorParaEtapa ? (valorParaEtapa.sum / 1000).toFixed().toString() : '0';
                     }),
                 };
             }),
