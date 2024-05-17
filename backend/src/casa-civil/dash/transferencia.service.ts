@@ -213,17 +213,21 @@ export class DashTransferenciaService {
                     barWidth: '20%',
                     data: [
                         {
-                            value: (
-                                (100 * rows.filter((e) => e.esfera == TransferenciaTipoEsfera.Federal).length) /
-                                countAll
-                            ).toFixed(2),
+                            value: rows.length
+                                ? (
+                                      (100 * rows.filter((e) => e.esfera == TransferenciaTipoEsfera.Federal).length) /
+                                      countAll
+                                  ).toFixed(2)
+                                : '0',
                             itemStyle: { color: '#C6C1FB' },
                         },
                         {
-                            value: (
-                                (100 * rows.filter((e) => e.esfera == TransferenciaTipoEsfera.Estadual).length) /
-                                countAll
-                            ).toFixed(2),
+                            value: rows.length
+                                ? (
+                                      (100 * rows.filter((e) => e.esfera == TransferenciaTipoEsfera.Estadual).length) /
+                                      countAll
+                                  ).toFixed(2)
+                                : '0',
                             itemStyle: { color: '#372EA2' },
                         },
                     ],
