@@ -47,7 +47,6 @@
         label="ano"
       />
     </div>
-
     <div class="f1">
       <label class="tc300">Partidos</label>
       <AutocompleteField
@@ -92,11 +91,46 @@
     class="g1"
   >
     <button
-      v-for="etapa in filtrosAtivos.etapa_ids"
+      v-for="etapa in route.query.etapa_ids"
       :key="etapa"
       class="tagfilter"
     >
       {{ etapa }}
+      <svg
+        width="12"
+        height="12"
+      ><use xlink:href="#i_x" /></svg>
+    </button>
+
+    <button
+      v-for="ano in route.query.anos"
+      :key="ano"
+      class="tagfilter"
+    >
+      {{ ano }}
+      <svg
+        width="12"
+        height="12"
+      ><use xlink:href="#i_x" /></svg>
+    </button>
+
+    <button
+      v-for="partido in route.query.partido_ids"
+      :key="partido"
+      class="tagfilter"
+    >
+      {{ partidosPorId[partido]?.nome || partido }}
+      <svg
+        width="12"
+        height="12"
+      ><use xlink:href="#i_x" /></svg>
+    </button>
+    <button
+      v-for="parlamentar in route.query.parlamentar_ids"
+      :key="parlamentar"
+      class="tagfilter"
+    >
+      {{ parlamentar }}
       <svg
         width="12"
         height="12"
@@ -193,7 +227,7 @@ const parlamentarStore = useParlamentaresStore();
 const { lista: listaEtapas, chamadasPendentes: chamadasPendentesEtapas } = storeToRefs(fluxosEtapasProjetos);
 
 // eslint-disable-next-line max-len
-const { lista: listaPartidos, chamadasPendentes: chamadasPendentesPartidos } = storeToRefs(partidoStore);
+const { lista: listaPartidos, chamadasPendentes: chamadasPendentesPartidos, partidosPorId } = storeToRefs(partidoStore);
 
 const {
   lista: listaParlamentares,
@@ -212,11 +246,20 @@ const filtrosAtivos = ref({});
 const graficos = ref({});
 
 const filtrosEscolhidos = ref({
-  etapa_idss: [],
-  anos: [],
-  partido_ids: [],
-  parlamentar_ids: [],
+  etapa_ids: Array.isArray(route.query.etapa_ids)
+    ? [...route.query.etapa_ids]
+    : [],
+  anos: Array.isArray(route.query.anos)
+    ? [...route.query.anos]
+    : [],
+  partido_ids: Array.isArray(route.query.partido_ids)
+    ? [...route.query.partido_ids]
+    : [],
+  parlamentar_ids: Array.isArray(route.query.parlamentar_ids)
+    ? [...route.query.parlamentar_ids]
+    : [],
 });
+
 const anoAtual = new Date().getFullYear();
 
 const anos = [];
@@ -226,14 +269,17 @@ for (let ano = anoAtual; ano >= 2004; ano -= 1) {
 }
 
 function atualizarQuery() {
-  const filtrosLimpos = Object.keys(filtrosEscolhidos.value).reduce((acc, cur) => {
-    if (filtrosEscolhidos.value[cur].length) {
-      acc[cur] = [...filtrosEscolhidos.value[cur]];
-    } else {
-      acc[cur] = undefined;
-    }
-    return acc;
-  }, {});
+  const filtrosLimpos = Object.keys(filtrosEscolhidos.value).reduce(
+    (acc, cur) => {
+      if (filtrosEscolhidos.value[cur].length) {
+        acc[cur] = [...filtrosEscolhidos.value[cur]];
+      } else {
+        acc[cur] = undefined;
+      }
+      return acc;
+    },
+    {},
+  );
 
   router.replace({
     query: {
@@ -241,6 +287,24 @@ function atualizarQuery() {
       ...filtrosLimpos,
     },
   });
+}
+
+function iniciar() {
+  fluxosEtapasProjetos.buscarTudo();
+  parlamentarStore.buscarTudo();
+  partidoStore.buscarTudo();
+
+  atualizarQuery();
+
+  if (!route.query.ano) {
+    router.replace({
+      query: {
+        ...route.query,
+        anos: [2024],
+      },
+    });
+    filtrosEscolhidos.value.anos.push(2024);
+  }
 }
 
 async function buscarGraficos() {
@@ -255,9 +319,7 @@ async function buscarGraficos() {
   }
 }
 
-fluxosEtapasProjetos.buscarTudo();
-parlamentarStore.buscarTudo();
-partidoStore.buscarTudo();
+iniciar();
 
 watch(
   () => route.query,
@@ -265,8 +327,6 @@ watch(
     buscarGraficos();
   },
 );
-
-buscarGraficos();
 </script>
 
 <style scoped>
