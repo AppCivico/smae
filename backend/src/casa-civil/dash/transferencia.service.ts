@@ -404,6 +404,7 @@ export class DashTransferenciaService {
         };
 
         const valor_por_parlamentar = await this.prisma.viewRankingTransferenciaParlamentar.findMany({
+            orderBy: { 'valor': 'desc' },
             take: 3,
         });
 
