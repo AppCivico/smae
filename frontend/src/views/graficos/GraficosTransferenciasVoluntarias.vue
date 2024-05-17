@@ -1,6 +1,6 @@
 <template>
   <div class="flex spacebetween fixed">
-    <h5>ÚLTIMA ATUALIZAÇÃO {{ localizeDate(data) }}</h5>
+    <h5>ANÁLISE GERADA EM {{ localizeDate(data) }}</h5>
     <button
       class="like-a__text margintop"
       @click="exibirFiltros = !exibirFiltros"
@@ -103,39 +103,49 @@
       ><use xlink:href="#i_x" /></svg>
     </button>
   </div>
-  <section>
-    <ValorTransferencia :valor="valor" />
-  </section>
-  <section v-if="filtrosAuxiliares?.values?.numero_por_esfera">
-    <v-chart
-      class="chart"
-      :option="filtrosAuxiliares.values.numero_por_esfera"
+  <div class="flex flexwrap g1 mt2 mb2">
+    <ValorTransferencia
+      v-if="filtrosAuxiliares?.values?.valor_total"
+      class="f1"
+      :valor="filtrosAuxiliares?.values?.valor_total"
     />
-  </section>
-  <section v-if="filtrosAuxiliares?.values?.numero_por_status">
-    <v-chart
-      class="chart"
-      :option="filtrosAuxiliares.values.numero_por_status"
-    />
-  </section>
-  <section v-if="filtrosAuxiliares?.values?.numero_por_partido">
+    <div
+      v-if="filtrosAuxiliares?.values?.numero_por_esfera"
+      class="bgb br20 p15 f1"
+    >
+      <v-chart
+        class="chart"
+        :option="filtrosAuxiliares.values.numero_por_esfera"
+      />
+    </div>
+  </div>
+  <div
+    v-if="filtrosAuxiliares?.values?.numero_por_partido"
+    class="w100 bgb mt2 p15"
+  >
     <v-chart
       class="chart"
       :option="filtrosAuxiliares.values.numero_por_partido"
     />
-  </section>
-  <section v-if="filtrosAuxiliares?.values?.valor_por_partido">
+  </div>
+  <div
+    v-if="filtrosAuxiliares?.values?.valor_por_partido"
+    class="w100 bgb mt2 p15"
+  >
     <v-chart
       class="chart"
       :option="filtrosAuxiliares.values.valor_por_partido"
     />
-  </section>
-  <section v-if="filtrosAuxiliares?.values?.valor_por_orgao">
+  </div>
+  <div
+    v-if="filtrosAuxiliares?.values?.valor_por_orgao"
+    class="w100 bgb mt2 p15"
+  >
     <v-chart
       class="chart"
       :option="filtrosAuxiliares.values.valor_por_orgao"
     />
-  </section>
+  </div>
 </template>
 
 <script setup>
@@ -196,7 +206,6 @@ let exibirFiltros = ref(false);
 const route = useRoute();
 const router = useRouter();
 
-const valor = 984675909;
 const data = '2024-05-08T15:30:00Z';
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 const filtrosAtivos = ref({});
@@ -254,6 +263,9 @@ buscarGraficos();
 <style scoped>
 .chart {
   height: 400px;
+  max-width: 800px;
+  min-width: 500px;
+  min-height: 400px;
 }
 
 .tagfilter {
@@ -269,12 +281,6 @@ buscarGraficos();
 
 .margintop {
   margin-top: -105px;
-}
-
-input,
-select,
-.white {
-  background-color: #ffffff !important;
 }
 
 .w100 {

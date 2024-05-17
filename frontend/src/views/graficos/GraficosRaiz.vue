@@ -13,9 +13,6 @@ import GraficosTransferenciasVoluntarias from './GraficosTransferenciasVoluntari
       </header>
     </div>
     <GraficosTransferenciasVoluntarias />
-    <pre>
-      &lt;component :is="componenteParaCaregar" /&gt;
-    </pre>
   </Dashboard>
 </template>
 <style lang="less">
