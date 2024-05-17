@@ -95,7 +95,7 @@
       :key="etapa"
       class="tagfilter"
     >
-      {{ etapa }}
+      {{ etapasPorId[etapa]?.descricao || etapa }}
       <svg
         width="12"
         height="12"
@@ -130,7 +130,7 @@
       :key="parlamentar"
       class="tagfilter"
     >
-      {{ parlamentar }}
+      {{ parlamentaresPorId[parlamentar]?.nome_popular || parlamentar }}
       <svg
         width="12"
         height="12"
@@ -224,7 +224,7 @@ const partidoStore = usePartidosStore();
 const parlamentarStore = useParlamentaresStore();
 
 // eslint-disable-next-line max-len
-const { lista: listaEtapas, chamadasPendentes: chamadasPendentesEtapas } = storeToRefs(fluxosEtapasProjetos);
+const { lista: listaEtapas, chamadasPendentes: chamadasPendentesEtapas, etapasPorId } = storeToRefs(fluxosEtapasProjetos);
 
 // eslint-disable-next-line max-len
 const { lista: listaPartidos, chamadasPendentes: chamadasPendentesPartidos, partidosPorId } = storeToRefs(partidoStore);
@@ -232,6 +232,7 @@ const { lista: listaPartidos, chamadasPendentes: chamadasPendentesPartidos, part
 const {
   lista: listaParlamentares,
   chamadasPendentes: chamadasPendentesParlamentares,
+  parlamentaresPorId,
 } = storeToRefs(parlamentarStore);
 
 // eslint-disable-next-line prefer-const
