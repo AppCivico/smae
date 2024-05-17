@@ -400,7 +400,7 @@ onUpdated(() => { start(); });
               </pre>
 
               <span
-                v-if="r?.variavel"
+                v-if="r?.etapa?.variavel"
                 class="tipinfo left"
               >
                 <svg
@@ -409,10 +409,10 @@ onUpdated(() => { start(); });
                 ><use xlink:href="#i_variavel" /></svg>
                 <div>
                   Vínculada à variável
-                  <strong v-if="r.variavel?.codigo">
-                    {{ r.variavel.codigo }}
+                  <strong v-if="r.etapa?.variavel?.codigo">
+                    {{ r.etapa.variavel.codigo }}
                   </strong>
-                  {{ r.variavel?.titulo }}
+                  {{ r.etapa.variavel?.titulo }}
                 </div>
               </span>
 
