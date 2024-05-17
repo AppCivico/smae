@@ -94,6 +94,7 @@
       v-for="etapa in route.query.etapa_ids"
       :key="etapa"
       class="tagfilter"
+      @click="excluirParametro('etapa_ids', etapa)"
     >
       {{ etapasPorId[etapa]?.descricao || etapa }}
       <svg
@@ -106,6 +107,7 @@
       v-for="ano in route.query.anos"
       :key="ano"
       class="tagfilter"
+      @click="excluirParametro('anos', ano)"
     >
       {{ ano }}
       <svg
@@ -118,6 +120,7 @@
       v-for="partido in route.query.partido_ids"
       :key="partido"
       class="tagfilter"
+      @click="excluirParametro('partido_ids', partido)"
     >
       {{ partidosPorId[partido]?.nome || partido }}
       <svg
@@ -125,10 +128,12 @@
         height="12"
       ><use xlink:href="#i_x" /></svg>
     </button>
+
     <button
       v-for="parlamentar in route.query.parlamentar_ids"
       :key="parlamentar"
       class="tagfilter"
+      @click="excluirParametro('parlamentar_ids', parlamentar)"
     >
       {{ parlamentaresPorId[parlamentar]?.nome_popular || parlamentar }}
       <svg
@@ -243,7 +248,7 @@ const router = useRouter();
 
 const data = '2024-05-08T15:30:00Z';
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
-const filtrosAtivos = ref({});
+// const filtrosAtivos = ref({});
 const graficos = ref({});
 
 const filtrosEscolhidos = ref({
@@ -267,6 +272,14 @@ const anos = [];
 
 for (let ano = anoAtual; ano >= 2004; ano -= 1) {
   anos.push({ ano: ano.toString(), id: ano });
+}
+
+function excluirParametro(parametro, id) {
+  const queryAtualizada = { ...route.query };
+  if (Array.isArray(queryAtualizada[parametro])) {
+    queryAtualizada[parametro] = queryAtualizada[parametro].filter((item) => item !== id);
+  }
+  router.replace({ query: queryAtualizada });
 }
 
 function atualizarQuery() {
