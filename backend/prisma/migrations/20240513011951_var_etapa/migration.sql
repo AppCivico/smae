@@ -198,6 +198,8 @@ EXECUTE PROCEDURE f_tgr_atualiza_variavel_na_troca_da_etapa();
 create or replace view view_etapa_rel_meta_indicador AS
 select
     v.*,
-    ia.id as indicador_id
+    coalesce(ia.id, ii.id, im.id) as indicador_id
 from view_etapa_rel_meta v
-join indicador ia on ia.atividade_id = v.atividade_id or ia.iniciativa_id = v.iniciativa_id or ia.meta_id = v.meta_id;
+left join indicador ia on ia.atividade_id = v.atividade_id
+left join indicador ii on ii.iniciativa_id = v.iniciativa_id
+left join indicador im on im.meta_id = v.meta_id;
