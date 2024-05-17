@@ -250,7 +250,7 @@ onUpdated(() => { start(); });
                   </div>
 
                   <div
-                    v-if="perm?.CadastroIndicador?.editar"
+                    v-if="!v.etapa && perm?.CadastroIndicador?.editar"
                     class="f0 dropbtn right"
                   >
                     <span class="tamarelo"><svg
