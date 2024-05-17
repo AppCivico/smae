@@ -74,6 +74,7 @@ CREATE OR REPLACE FUNCTION calcula_dependencias_tarefas(config jsonb)
 DECLARE
     ret jsonb;
 BEGIN
+    raise notice 'calcula_dependencias_tarefas %', config;
 
     with conf as (
         select
@@ -375,7 +376,7 @@ DECLARE
     v_tmp_termino_calc boolean;
     v_tmp_duracao_calc boolean;
 
-    rows_affected INTEGER;
+--    rows_affected INTEGER;
     r record;
 BEGIN
 
@@ -421,18 +422,21 @@ BEGIN
             WHERE dependencia_tarefa_id = NEW.id
             AND tipo in ('termina_pro_inicio', 'inicia_pro_inicio')
         ) AS td
-        JOIN LATERAL unnest(td.ordem_topologica_inicio_planejado) AS u(id) ON TRUE
+        JOIN LATERAL unnest(td.ordem_topologica_inicio_planejado) AS u(id) ON u.id != NEW.id
         JOIN tarefa t ON t.id = u.id
     LOOP
-        SELECT
-            calcula_dependencias_tarefas(
-                jsonb_agg(
-                    jsonb_build_object('dependencia_tarefa_id', dependencia_tarefa_id, 'tipo', tipo, 'latencia', latencia)
-                )
-            ) AS result into v_tmp
+        SELECT jsonb_agg(
+                jsonb_build_object('dependencia_tarefa_id', dependencia_tarefa_id, 'tipo', tipo, 'latencia', latencia)
+            ) into v_tmp
         FROM tarefa_dependente td
         where tarefa_id = r.tarefa_id
         and tipo in ('termina_pro_inicio', 'inicia_pro_inicio');
+        if (v_tmp is null) then
+            RAISE NOTICE '%', current_setting('myvars.my_trigger_depth', true) || '| ->> calcula_dependencias_tarefas=NULL tarefa.dep=' || ROW_TO_JSON(r)::text;
+            continue;
+        end if;
+
+        SELECT calcula_dependencias_tarefas(v_tmp) into v_tmp;
 
 --        RAISE NOTICE '%', current_setting('myvars.my_trigger_depth', true) || '| ->> calcula_dependencias_tarefas=' || v_tmp::text || ' tarefa.dep=' || ROW_TO_JSON(r)::text;
 
@@ -470,6 +474,8 @@ BEGIN
 
     END LOOP;
 
+--    RAISE NOTICE '%', current_setting('myvars.my_trigger_depth', true) || '| ->> indo atras das dependencias ordem_topologica_termino_planejado para TAREFA ' || NEW.id::text;
+
     FOR r IN
         SELECT
             t.id as tarefa_id,
@@ -495,20 +501,24 @@ BEGIN
             AND tipo NOT IN ('termina_pro_inicio', 'inicia_pro_inicio')
         ) AS td
         -- JOIN laeral mantem a ordem
-        JOIN LATERAL unnest(td.ordem_topologica_termino_planejado) AS u(id) ON TRUE
+        JOIN LATERAL unnest(td.ordem_topologica_termino_planejado) AS u(id) ON u.id != NEW.id
         JOIN tarefa t ON t.id = u.id
     LOOP
-        SELECT
-            calcula_dependencias_tarefas(
-                jsonb_agg(
-                    jsonb_build_object('dependencia_tarefa_id', dependencia_tarefa_id, 'tipo', tipo, 'latencia', latencia)
-                )
-            ) AS result into v_tmp
+        SELECT jsonb_agg(
+                jsonb_build_object('dependencia_tarefa_id', dependencia_tarefa_id, 'tipo', tipo, 'latencia', latencia)
+            ) into v_tmp
         FROM tarefa_dependente td
         where tarefa_id = r.tarefa_id
         and tipo not in ('termina_pro_inicio', 'inicia_pro_inicio');
 
-        --RAISE NOTICE '->> calcula_dependencias_tarefas %', v_tmp::text || ' ' || ROW_TO_JSON(r)::text;
+        if (v_tmp is null) then
+            RAISE NOTICE '%', current_setting('myvars.my_trigger_depth', true) || '| ->> calcula_dependencias_tarefas=NULL tarefa.dep=' || ROW_TO_JSON(r)::text;
+            continue;
+        end if;
+
+        SELECT calcula_dependencias_tarefas(v_tmp) into v_tmp;
+
+--        RAISE NOTICE '->> calcula_dependencias_tarefas =%', v_tmp::text || ' tarefa.dep=' || ROW_TO_JSON(r)::text;
 
         v_tmp_inicio_calc := (v_tmp->>'inicio_planejado_calculado')::boolean;
         v_tmp_termino_calc := (v_tmp->>'termino_planejado_calculado')::boolean;
@@ -525,7 +535,7 @@ BEGIN
             )
         ) into v_tmp;
 
-        --RAISE NOTICE '->> infere_data_inicio_ou_termino %', v_tmp::text;
+--        RAISE NOTICE '->> infere_data_inicio_ou_termino %', v_tmp::text;
 
         update tarefa me
         set
@@ -847,7 +857,7 @@ DECLARE
     ret jsonb;
 BEGIN
 
-    --raise notice 'infere_data_inicio_ou_termino args %', config;
+--    raise notice 'infere_data_inicio_ou_termino args %', config;
 
     with conf as (
         select
