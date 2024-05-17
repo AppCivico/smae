@@ -33,7 +33,9 @@ const dataMax = import.meta.env.VITE_DATA_MAX ? new Date(`${import.meta.env.VITE
 addMethod(string, 'fieldUntilToday', function (errorMessage = 'Valor de ${path} futuro') {
   return this.test('teste', errorMessage, function (value) {
     const { path, createError } = this;
-    if (value === '' || value === null) return true;
+
+    if (!value) return true;
+
     try {
       const cleanDate = fieldToDate(value).replace(/-/g, '');
       const cleanNow = new Date()
