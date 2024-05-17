@@ -478,6 +478,48 @@ BEGIN
 END;
 $$;
 
+CREATE OR REPLACE FUNCTION f_private_troca_regiao_variavel_na_troca_da_etapa(
+    _variavel_id INT,
+    _regiao_id INT
+)
+RETURNS BOOLEAN AS $$
+DECLARE
+    _regionalizavel BOOLEAN;
+    _nivel_regionalizacao INT;
+    _nivel_regiao INT;
+
+    rows_affected int;
+BEGIN
+    UPDATE variavel
+    SET regiao_id = _regiao_id
+    WHERE id = _variavel_id AND regiao_id IS DISTINCT FROM _regiao_id;
+    GET DIAGNOSTICS rows_affected = ROW_COUNT;
+
+    SELECT
+        i.regionalizavel,
+        i.nivel_regionalizacao,
+        r.nivel as nivel_regiao
+        into
+        _regionalizavel,
+        _nivel_regionalizacao,
+        _nivel_regiao
+    FROM indicador i
+    JOIN indicador_variavel iv ON iv.indicador_id = i.id
+    JOIN regiao r ON r.id = _regiao_id
+    WHERE iv.variavel_id = _variavel_id;
+
+    IF (_regionalizavel AND _nivel_regionalizacao > _nivel_regiao) THEN
+        RAISE EXCEPTION '__HTTP__ % __EOF__', jsonb_build_object(
+            'message', 'A região da etapa não é suficiente para o indicador associado à variável',
+            'code', 400
+        );
+    END IF;
+
+    RETURN TRUE;
+END;
+$$ LANGUAGE plpgsql;
+
+
 CREATE OR REPLACE FUNCTION f_tgr_atualiza_variavel_na_troca_da_etapa()
 RETURNS TRIGGER AS $$
 DECLARE
@@ -509,9 +551,9 @@ BEGIN
             -- Se uma nova variável foi associada
             ELSE
                 -- Atualiza a região da variável, se necessário
-                UPDATE variavel
-                SET regiao_id = NEW.regiao_id
-                WHERE id = NEW.variavel_id AND regiao_id IS DISTINCT FROM NEW.regiao_id;
+                IF NOT f_private_troca_regiao_variavel_na_troca_da_etapa(NEW.variavel_id, NEW.regiao_id) THEN
+                    RAISE EXCEPTION 'Erro interno';
+                END IF;
 
                 -- Verifica se a variável já está associada a outra etapa
                 IF EXISTS (
@@ -535,9 +577,9 @@ BEGIN
         -- Se a região da etapa foi alterada
         ELSIF OLD.regiao_id IS DISTINCT FROM NEW.regiao_id THEN
             -- Atualiza a região da variável
-            UPDATE variavel
-            SET regiao_id = NEW.regiao_id
-            WHERE id = NEW.variavel_id;
+            IF NOT f_private_troca_regiao_variavel_na_troca_da_etapa(NEW.variavel_id, NEW.regiao_id) THEN
+                RAISE EXCEPTION 'Erro interno';
+            END IF;
         END IF;
 
     ELSIF TG_OP = 'DELETE' THEN

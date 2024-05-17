@@ -76,9 +76,8 @@ export class CreateEtapaDto {
      */
     @IsString({ message: 'titulo: Precisa ser alfanumérico' })
     @MinLength(1, { message: 'titulo: pelo menos um caractere' })
-    @IsOptional()
     @MaxLength(250, { message: 'titulo: 250 caracteres' })
-    titulo?: string;
+    titulo: string;
 
     /**
      * inicio_previsto
