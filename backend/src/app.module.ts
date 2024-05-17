@@ -47,6 +47,7 @@ import { BlocoNotasModule } from './bloco-nota/bloco-notas.module';
 import { WorkflowAndamentoFaseModule } from './workflow/andamento/fase/workflow-andamento-fase.module';
 import { WorkflowAndamentoModule } from './workflow/andamento/workflow-andamento.module';
 import { DashTransferenciaModule } from './casa-civil/dash/transferencia.module';
+import { PrismaErrorFilterUnknown } from './prisma-error-unknown.filter';
 
 // Hacks pro JS
 /*
@@ -116,6 +117,10 @@ import { DashTransferenciaModule } from './casa-civil/dash/transferencia.module'
         {
             provide: APP_FILTER,
             useClass: PrismaErrorFilter,
+        },
+        {
+            provide: APP_FILTER,
+            useClass: PrismaErrorFilterUnknown,
         },
         {
             provide: APP_INTERCEPTOR,
