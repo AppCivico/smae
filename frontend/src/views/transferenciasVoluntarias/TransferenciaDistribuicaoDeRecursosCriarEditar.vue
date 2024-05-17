@@ -500,7 +500,7 @@ const isSomaCorreta = computed(() => {
           name="dotacao"
           type="text"
           class="inputtext light mb1"
-          placeholder="16.24.12.306.3016.2.873.33903900.00"
+          placeholder="00.00.00.000.0000.0.000.00000000.00"
         />
         <ErrorMessage
           class="error-msg mb1"
