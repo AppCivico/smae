@@ -105,45 +105,45 @@
   </div>
   <div class="flex flexwrap g1 mt2 mb2">
     <ValorTransferencia
-      v-if="filtrosAuxiliares?.values?.valor_total"
+      v-if="graficos?.values?.valor_total"
       class="f1"
-      :valor="filtrosAuxiliares?.values?.valor_total"
+      :valor="graficos?.values?.valor_total"
     />
     <div
-      v-if="filtrosAuxiliares?.values?.numero_por_esfera"
+      v-if="graficos?.values?.numero_por_esfera"
       class="bgb br20 p15 f1"
     >
       <v-chart
         class="chart"
-        :option="filtrosAuxiliares.values.numero_por_esfera"
+        :option="graficos.values.numero_por_esfera"
       />
     </div>
   </div>
   <div
-    v-if="filtrosAuxiliares?.values?.numero_por_partido"
+    v-if="graficos?.values?.numero_por_partido"
     class="w100 bgb mt2 p15"
   >
     <v-chart
       class="chart"
-      :option="filtrosAuxiliares.values.numero_por_partido"
+      :option="graficos.values.numero_por_partido"
     />
   </div>
   <div
-    v-if="filtrosAuxiliares?.values?.valor_por_partido"
+    v-if="graficos?.values?.valor_por_partido"
     class="w100 bgb mt2 p15"
   >
     <v-chart
       class="chart"
-      :option="filtrosAuxiliares.values.valor_por_partido"
+      :option="graficos.values.valor_por_partido"
     />
   </div>
   <div
-    v-if="filtrosAuxiliares?.values?.valor_por_orgao"
+    v-if="graficos?.values?.valor_por_orgao"
     class="w100 bgb mt2 p15"
   >
     <v-chart
       class="chart"
-      :option="filtrosAuxiliares.values.valor_por_orgao"
+      :option="graficos.values.valor_por_orgao"
     />
   </div>
 </template>
@@ -209,7 +209,7 @@ const router = useRouter();
 const data = '2024-05-08T15:30:00Z';
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 const filtrosAtivos = ref({});
-const filtrosAuxiliares = ref({});
+const graficos = ref({});
 
 const filtrosEscolhidos = ref({
   etapa_idss: [],
@@ -249,7 +249,7 @@ async function buscarGraficos() {
       `${baseUrl}/panorama/analise-transferencias`,
       route.query,
     );
-    filtrosAuxiliares.value.values = retorno;
+    graficos.value.values = retorno;
   } catch (error) {
     console.log('error:', error);
   }
