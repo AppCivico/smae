@@ -226,10 +226,19 @@ for (let ano = anoAtual; ano >= 2004; ano -= 1) {
 }
 
 function atualizarQuery() {
-  router.push({
+  const filtrosLimpos = Object.keys(filtrosEscolhidos.value).reduce((acc, cur) => {
+    if (filtrosEscolhidos.value[cur].length) {
+      acc[cur] = [...filtrosEscolhidos.value[cur]];
+    } else {
+      acc[cur] = undefined;
+    }
+    return acc;
+  }, {});
+
+  router.replace({
     query: {
       ...route.query,
-      ...filtrosEscolhidos.value,
+      ...filtrosLimpos,
     },
   });
 }
