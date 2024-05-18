@@ -1,20 +1,17 @@
 <template>
   <div class="container br20">
-    <strong>R$</strong>{{ formattedValue }}
+    <strong>R$</strong>{{ valor.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') }}
     <p>valor das emendas</p>
   </div>
 </template>
 
 <script setup>
-const props = defineProps({
+defineProps({
   valor: {
-    type: Number || null,
+    type: Number,
     default: null,
   },
 });
-const formattedValue = props.valor !== null
-  ? props.valor.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.')
-  : '';
 </script>
 
 <style scoped>
