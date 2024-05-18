@@ -185,6 +185,21 @@
       :option="graficos.values.valor_por_orgao"
     />
   </div>
+  <div class="w100 bgb mt2 p15 flex">
+    <div
+      v-for="parlamentar in graficos?.values?.valor_por_parlamentar"
+      :key="parlamentar.id"
+    >
+      <div class="img-container">
+        <img
+          class="img"
+          :src="`${baseUrl}/download/${parlamentar.parlamentar.foto}`"
+        >
+      </div>
+      <p>{{ parlamentar.parlamentar.nome_popular }}</p>
+      <p>R${{ parlamentar.valor }}</p>
+    </div>
+  </div>
 </template>
 
 <script setup>
@@ -371,5 +386,18 @@ watch(
   margin-left: -50px;
   margin-right: -50px;
   box-shadow: 0px 8px 16px 0px #1527411a;
+}
+
+.img-container {
+  width: 280px;
+  height: 280px;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 </style>
