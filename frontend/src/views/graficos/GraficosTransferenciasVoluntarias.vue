@@ -185,10 +185,11 @@
       :option="graficos.values.valor_por_orgao"
     />
   </div>
-  <div class="w100 bgb mt2 p15 flex">
+  <div class="w100 bgb mt2 p15 flex flexwrap g2">
     <div
       v-for="parlamentar in graficos?.values?.valor_por_parlamentar"
       :key="parlamentar.id"
+      class="parlamentar"
     >
       <div class="img-container">
         <img
@@ -197,7 +198,7 @@
         >
       </div>
       <p>{{ parlamentar.parlamentar.nome_popular }}</p>
-      <p>R${{ parlamentar.valor }}</p>
+      <p>R${{ parlamentar.valor.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".") }}</p>
     </div>
   </div>
 </template>
@@ -387,12 +388,25 @@ watch(
   margin-right: -50px;
   box-shadow: 0px 8px 16px 0px #1527411a;
 }
+.parlamentar{
+  box-shadow: 0px 8px 16px 0px #1527411A;
+  padding: 10px 40px;
+  p{
+    text-align: center;
+    font-size: 30px;
+    margin-bottom: 0px;
+  }
 
+  p:last-child{
+    font-size: 20px;
+  }
+}
 .img-container {
-  width: 280px;
-  height: 280px;
+  width: 240px;
+  height: 240px;
   border-radius: 10px;
   overflow: hidden;
+  margin-bottom: 10px
 }
 
 .img {
