@@ -17,74 +17,78 @@
   </div>
   <div
     v-if="exibirFiltros"
-    class="flex flexwrap g1 start bgb p15 w100"
+    class="bgb p15 w100"
   >
-    <div class="f1">
-      <label class="tc300">Etapas</label>
-      <AutocompleteField
-        :disabled="!listaEtapas.length"
-        :controlador="{
-          busca: '',
-          participantes: filtrosEscolhidos.etapa_ids || [],
-        }"
-        :class="{
-          loading: chamadasPendentesEtapas.lista,
-        }"
-        :grupo="listaEtapas"
-        label="descricao"
-      />
-    </div>
-
-    <div class="f1">
-      <label class="tc300">Anos</label>
-      <AutocompleteField
-        :disabled="!anos.length"
-        :controlador="{
-          busca: '',
-          participantes: filtrosEscolhidos.anos || [],
-        }"
-        :grupo="anos"
-        label="ano"
-      />
-    </div>
-    <div class="f1">
-      <label class="tc300">Partidos</label>
-      <AutocompleteField
-        :disabled="!listaPartidos.length"
-        :controlador="{
-          busca: '',
-          participantes: filtrosEscolhidos.partido_ids || [],
-        }"
-        :class="{
-          loading: chamadasPendentesPartidos.lista,
-        }"
-        :grupo="listaPartidos"
-        label="sigla"
-      />
-    </div>
-
-    <div class="f1">
-      <label class="tc300">Parlamentares</label>
-      <AutocompleteField
-        :disabled="!listaParlamentares.length"
-        name="teste1"
-        :controlador="{
-          busca: '',
-          participantes: filtrosEscolhidos.parlamentar_ids || [],
-        }"
-        :class="{
-          loading: chamadasPendentesParlamentares.lista,
-        }"
-        :grupo="listaParlamentares"
-        label="nome"
-      />
-    </div>
-    <button
-      class="btn small mt1"
-      @click="atualizarQuery"
+    <form
+      class="flex flexwrap g1 start"
+      @submit.prevent="onSubmit"
     >
-      Filtrar
-    </button>
+      <div class="f1">
+        <label class="tc300">Etapas</label>
+        <AutocompleteField
+          :disabled="!listaEtapas.length"
+          :controlador="{
+            busca: '',
+            participantes: filtrosEscolhidos.etapa_ids || [],
+          }"
+          :class="{
+            loading: chamadasPendentesEtapas.lista,
+          }"
+          :grupo="listaEtapas"
+          label="descricao"
+        />
+      </div>
+
+      <div class="f1">
+        <label class="tc300">Anos</label>
+        <AutocompleteField
+          :disabled="!anos.length"
+          :controlador="{
+            busca: '',
+            participantes: filtrosEscolhidos.anos || [],
+          }"
+          :grupo="anos"
+          label="ano"
+        />
+      </div>
+      <div class="f1">
+        <label class="tc300">Partidos</label>
+        <AutocompleteField
+          :disabled="!listaPartidos.length"
+          :controlador="{
+            busca: '',
+            participantes: filtrosEscolhidos.partido_ids || [],
+          }"
+          :class="{
+            loading: chamadasPendentesPartidos.lista,
+          }"
+          :grupo="listaPartidos"
+          label="sigla"
+        />
+      </div>
+
+      <div class="f1">
+        <label class="tc300">Parlamentares</label>
+        <AutocompleteField
+          :disabled="!listaParlamentares.length"
+          name="teste1"
+          :controlador="{
+            busca: '',
+            participantes: filtrosEscolhidos.parlamentar_ids || [],
+          }"
+          :class="{
+            loading: chamadasPendentesParlamentares.lista,
+          }"
+          :grupo="listaParlamentares"
+          label="nome"
+        />
+      </div>
+      <button
+        class="btn small mt1"
+      >
+        Filtrar
+      </button>
+    </form>
   </div>
   <div
     v-if="!exibirFiltros"
@@ -317,6 +321,11 @@ function atualizarQuery() {
       ...filtrosLimpos,
     },
   });
+}
+
+function onSubmit() {
+  atualizarQuery();
+  exibirFiltros.value = false;
 }
 
 function iniciar() {
