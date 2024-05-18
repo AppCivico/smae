@@ -126,6 +126,7 @@ function vazio(s) {
             <div class="ml1 f1">
               Atraso
             </div>
+            <div class="ml1 f0" />
             <div
               class="ml1 f0"
               style="flex-basis:20px;"
@@ -152,6 +153,26 @@ function vazio(s) {
             <div class="ml1 f1">
               {{ r.etapa.atraso ? r.etapa.atraso + ' dias' : '-' }}
             </div>
+
+            <div class="ml1 f0">
+              <span
+                v-if="r?.etapa?.variavel"
+                class="tipinfo left"
+              >
+                <svg
+                  width="24"
+                  height="24"
+                ><use xlink:href="#i_variavel" /></svg>
+                <div>
+                  Vínculada à variável
+                  <strong v-if="r.etapa?.variavel?.codigo">
+                    {{ r.etapa.variavel.codigo }}
+                  </strong>
+                  {{ r.etapa.variavel?.titulo }}
+                </div>
+              </span>
+            </div>
+
             <div
               class="ml1 f0 flex center"
               style="flex-basis:20px; height: calc(20px + 1rem);"
@@ -236,6 +257,7 @@ function vazio(s) {
               <div class="ml1 f1">
                 Atraso
               </div>
+              <div class="ml1 f0" />
               <div
                 class="ml1 f0"
                 style="flex-basis:20px;"
@@ -261,6 +283,26 @@ function vazio(s) {
               <div class="ml1 f1">
                 {{ rr.atraso ? rr.atraso + ' dias' : '-' }}
               </div>
+
+              <div class="ml1 f0">
+                <span
+                  v-if="rr?.variavel"
+                  class="tipinfo left"
+                >
+                  <svg
+                    width="24"
+                    height="24"
+                  ><use xlink:href="#i_variavel" /></svg>
+                  <div>
+                    Vínculada à variável
+                    <strong v-if="rr.variavel?.codigo">
+                      {{ rr.variavel.codigo }}
+                    </strong>
+                    {{ rr.variavel?.titulo }}
+                  </div>
+                </span>
+              </div>
+
               <div
                 class="ml1 f0 flex center"
                 style="flex-basis:20px; height: calc(20px + 1rem);"
@@ -307,6 +349,7 @@ function vazio(s) {
                 <div class="ml1 f1">
                   Atraso
                 </div>
+                <div class="ml1 f0" />
                 <div
                   class="ml1 f0"
                   style="flex-basis:20px;"
@@ -346,6 +389,26 @@ function vazio(s) {
                   <div class="ml1 f1">
                     {{ rrr.atraso ? rrr.atraso + ' dias' : '-' }}
                   </div>
+
+                  <div class="ml1 f0">
+                    <span
+                      v-if="rrr?.variavel"
+                      class="tipinfo left"
+                    >
+                      <svg
+                        width="24"
+                        height="24"
+                      ><use xlink:href="#i_variavel" /></svg>
+                      <div>
+                        Vínculada à variável
+                        <strong v-if="rrr.variavel?.codigo">
+                          {{ rrr.variavel.codigo }}
+                        </strong>
+                        {{ rrr.variavel?.titulo }}
+                      </div>
+                    </span>
+                  </div>
+
                   <div
                     class="ml1 f0 flex center"
                     style="flex-basis:20px; height: calc(20px + 1rem);"
