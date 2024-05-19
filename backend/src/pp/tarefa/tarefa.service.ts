@@ -119,6 +119,8 @@ export class TarefaService {
         user: PessoaFromJwt
     ): Promise<RecordWithId> {
         const tarefaCronoId = await this.loadOrCreateByInput(tarefaCronoInput, user);
+        this.checkIntervalosPlanejado(dto);
+        this.checkIntervalosRealizado(dto);
 
         if (tarefaCronoInput.projeto_id)
             await this.utils.verifica_nivel_maximo_portfolio(tarefaCronoInput.projeto_id, dto.nivel);
@@ -285,6 +287,9 @@ export class TarefaService {
             inicio_planejado_calculado: dataDependencias.inicio_planejado,
             termino_planejado_calculado: dataDependencias.termino_planejado,
             duracao_planejado_calculado: dataDependencias.duracao_planejado,
+
+            inicio_planejado_calculado_flag: dataDependencias.inicio_planejado_calculado,
+            termino_planejado_calculado_flag: dataDependencias.termino_planejado_calculado,
         });
 
         const res = (await prismaTx.$queryRaw`select infere_data_inicio_ou_termino(${json}::jsonb)`) as any;
@@ -927,6 +932,9 @@ export class TarefaService {
     ): Promise<RecordWithId> {
         const tarefaCronoId = await this.loadOrCreateByInput(tarefaCronoInput, user);
 
+        this.checkIntervalosPlanejado(dto);
+        this.checkIntervalosRealizado(dto);
+
         const tarefa = await this.prisma.$transaction(
             async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
                 const now = new Date(Date.now());
@@ -1260,6 +1268,83 @@ export class TarefaService {
         );
 
         return { id: tarefa.id };
+    }
+
+    private checkIntervalosPlanejado(dto: UpdateTarefaDto) {
+        if (
+            ('inicio_planejado' in dto || 'termino_planejado' in dto || 'duracao_planejado' in dto) &&
+            !('inicio_planejado' in dto && 'termino_planejado' in dto && 'duracao_planejado' in dto)
+        ) {
+            throw new BadRequestException(
+                'Todas as três propriedades (inicio_planejado, termino_planejado, duracao_planejado) devem estar presentes ou nenhuma delas'
+            );
+        }
+
+        if ('inicio_planejado' in dto && 'termino_planejado' in dto && 'duracao_planejado' in dto) {
+            if (dto.duracao_planejado == null && dto.inicio_planejado !== null && dto.termino_planejado !== null) {
+                throw new BadRequestException(
+                    'Se a duração planejada é nula, então as datas de início e término planejadas devem ser nulas'
+                );
+            }
+
+            if (dto.inicio_planejado && dto.termino_planejado && dto.inicio_planejado > dto.termino_planejado) {
+                throw new BadRequestException(
+                    'Data de início planejado não pode ser maior que a data de término planejado'
+                );
+            }
+
+            if (
+                dto.inicio_planejado &&
+                dto.termino_planejado &&
+                dto.duracao_planejado !== undefined &&
+                dto.duracao_planejado !== null
+            ) {
+                const duracao = dto.duracao_planejado;
+                // tira 1 por regra do sistema, o primeiro dia não conta (é o mesmo dia da atividade)
+                const termino = DateTime.fromJSDate(dto.inicio_planejado).plus({ days: duracao - 1 });
+
+                if (termino.valueOf() !== dto.termino_planejado.valueOf()) {
+                    throw new BadRequestException(
+                        'Data de término planejado não corresponde à duração e data de início planejado'
+                    );
+                }
+            }
+        }
+    }
+
+    private checkIntervalosRealizado(dto: UpdateTarefaDto) {
+        if (
+            ('inicio_real' in dto || 'termino_real' in dto || 'duracao_real' in dto) &&
+            !('inicio_real' in dto && 'termino_real' in dto && 'duracao_real' in dto)
+        ) {
+            throw new BadRequestException(
+                'Todas as três propriedades (inicio_real, termino_real, duracao_real) devem estar presentes ou nenhuma delas'
+            );
+        }
+
+        if ('inicio_real' in dto && 'termino_real' in dto && 'duracao_real' in dto) {
+            if (dto.duracao_real == null && dto.inicio_real !== null && dto.termino_real !== null) {
+                throw new BadRequestException(
+                    'Se a duração real é nula, então as datas de início e término realizado também devem ser nulas'
+                );
+            }
+
+            if (dto.inicio_real && dto.termino_real && dto.inicio_real > dto.termino_real) {
+                throw new BadRequestException('Data de início real não pode ser maior que a data de término real');
+            }
+
+            if (dto.inicio_real && dto.termino_real && dto.duracao_real !== undefined && dto.duracao_real !== null) {
+                const duracao = dto.duracao_real;
+                // tira 1 por regra do sistema, o primeiro dia não conta (é o mesmo dia da atividade)
+                const termino = DateTime.fromJSDate(dto.inicio_real).plus({ days: duracao - 1 });
+
+                if (termino.valueOf() !== dto.termino_real.valueOf()) {
+                    throw new BadRequestException(
+                        'Data de término real não corresponde à duração e data de início real'
+                    );
+                }
+            }
+        }
     }
 
     private async verifica_nivel_maximo_e_filhos_portfolio(
