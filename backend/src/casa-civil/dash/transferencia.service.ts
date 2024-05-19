@@ -185,10 +185,16 @@ export class DashTransferenciaService {
                 sigla: true,
             },
         });
+        console.log(rows);
+        console.log(rows.length);
 
-        const valorTotal: number = rows.reduce((sum, current) => sum + +current.valor_total, 0);
+        const uniqueTransferencias = rows.filter((elem, index, self) => {
+            return index === self.findIndex((t) => t.transferencia_id === elem.transferencia_id);
+        });
 
-        const countAll: number = rows.length;
+        const valorTotal: number = uniqueTransferencias.reduce((sum, current) => sum + +current.valor_total, 0);
+
+        const countAll: number = uniqueTransferencias.length;
         const chartPorEsfera: DashTransferenciaBasicChartDto = {
             title: {
                 id: 'chart__Esferas',
@@ -213,18 +219,24 @@ export class DashTransferenciaService {
                     barWidth: '20%',
                     data: [
                         {
-                            value: rows.length
+                            value: uniqueTransferencias.length
                                 ? (
-                                      (100 * rows.filter((e) => e.esfera == TransferenciaTipoEsfera.Federal).length) /
+                                      (100 *
+                                          uniqueTransferencias.filter(
+                                              (e) => e.esfera == TransferenciaTipoEsfera.Federal
+                                          ).length) /
                                       countAll
                                   ).toFixed(2)
                                 : '0',
                             itemStyle: { color: '#C6C1FB' },
                         },
                         {
-                            value: rows.length
+                            value: uniqueTransferencias.length
                                 ? (
-                                      (100 * rows.filter((e) => e.esfera == TransferenciaTipoEsfera.Estadual).length) /
+                                      (100 *
+                                          uniqueTransferencias.filter(
+                                              (e) => e.esfera == TransferenciaTipoEsfera.Estadual
+                                          ).length) /
                                       countAll
                                   ).toFixed(2)
                                 : '0',
@@ -257,15 +269,15 @@ export class DashTransferenciaService {
                     barWidth: '20%',
                     data: [
                         {
-                            value: rows.filter((e) => e.prejudicada == true).length.toString(),
+                            value: uniqueTransferencias.filter((e) => e.prejudicada == true).length.toString(),
                             itemStyle: { color: '#8AC4D6' },
                         },
                         {
-                            value: rows.filter((e) => e.workflow_finalizado == true).length.toString(),
+                            value: uniqueTransferencias.filter((e) => e.workflow_finalizado == true).length.toString(),
                             itemStyle: { color: '#B5E48C' },
                         },
                         {
-                            value: rows
+                            value: uniqueTransferencias
                                 .filter((e) => e.workflow_etapa_atual_id != null && e.workflow_finalizado == false)
                                 .length.toString(),
                             itemStyle: { color: '#76C893' },
@@ -280,7 +292,7 @@ export class DashTransferenciaService {
         };
 
         const dadosPorPartido = partidosRows.map((partido) => {
-            const etapasSoma = rows
+            const etapasSoma = uniqueTransferencias
                 .filter((r) => r.partido_id === partido.id && r.workflow_etapa_atual_id !== null)
                 .reduce(
                     (acc, curr) => {
@@ -301,14 +313,14 @@ export class DashTransferenciaService {
 
             return {
                 sigla: partido.sigla,
-                count_estadual: rows
+                count_estadual: uniqueTransferencias
                     .filter((r) => r.partido_id == partido.id)
                     .filter((r) => r.esfera == TransferenciaTipoEsfera.Estadual).length,
-                count_federal: rows
+                count_federal: uniqueTransferencias
                     .filter((r) => r.partido_id == partido.id)
                     .filter((r) => r.esfera == TransferenciaTipoEsfera.Federal).length,
 
-                valor: rows
+                valor: uniqueTransferencias
                     .filter((r) => r.partido_id == partido.id)
                     .reduce((sum, current) => sum + +current.valor_total, 0),
 
