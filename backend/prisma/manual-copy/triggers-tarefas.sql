@@ -451,7 +451,10 @@ BEGIN
                 'inicio_planejado_corrente', case when v_tmp_inicio_calc then (v_tmp->>'inicio_planejado')::date else r.inicio_planejado end,
                 'termino_planejado_corrente', case when v_tmp_termino_calc then (v_tmp->>'termino_planejado')::date else r.termino_planejado end,
                 'inicio_planejado_calculado', (v_tmp->>'inicio_planejado')::date,
-                'termino_planejado_calculado', (v_tmp->>'termino_planejado')::date
+                'termino_planejado_calculado', (v_tmp->>'termino_planejado')::date,
+
+                'inicio_planejado_calculado_flag', v_tmp_inicio_calc,
+                'termino_planejado_calculado_flag', v_tmp_termino_calc
             )
         ) into v_tmp;
 
@@ -531,7 +534,11 @@ BEGIN
                 'inicio_planejado_corrente', case when v_tmp_inicio_calc then (v_tmp->>'inicio_planejado')::date else r.inicio_planejado end,
                 'termino_planejado_corrente', case when v_tmp_termino_calc then (v_tmp->>'termino_planejado')::date else r.termino_planejado end,
                 'inicio_planejado_calculado', (v_tmp->>'inicio_planejado')::date,
-                'termino_planejado_calculado', (v_tmp->>'termino_planejado')::date
+                'termino_planejado_calculado', (v_tmp->>'termino_planejado')::date,
+
+                'inicio_planejado_calculado_flag', v_tmp_inicio_calc,
+                'termino_planejado_calculado_flag', v_tmp_termino_calc
+
             )
         ) into v_tmp;
 
@@ -828,109 +835,161 @@ $emp_stamp$ LANGUAGE plpgsql;
 
 
 /*
+
+Função `infere_data_inicio_ou_termino`:
+
+Esta função tem como objetivo calcular a data de início, término e duração de uma tarefa, considerando as informações existentes da tarefa,
+bem como as dependências que podem influenciar esses valores.
+
 input:
-    inicio_planejado_corrente: dto.inicio_planejado,
-    termino_planejado_corrente: dto.termino_planejado,
-    duracao_planejado_corrente: dto.duracao_planejado,
 
-    inicio_planejado_calculado: dataDependencias.inicio_planejado,
-    termino_planejado_calculado: dataDependencias.termino_planejado,
-    duracao_planejado_calculado: dataDependencias.duracao_planejado,
+    inicio_planejado_corrente: Data de início planejada atual da tarefa.
+    termino_planejado_corrente: Data de término planejada atual da tarefa.
+    duracao_planejado_corrente: Duração planejada atual da tarefa.
+    inicio_planejado_calculado: Data de início calculada com base nas dependências da tarefa.
+    termino_planejado_calculado: Data de término calculada com base nas dependências da tarefa.
+    inicio_planejado_calculado_flag: Indica se a data de início é calculada pelas dependências.
+    termino_planejado_calculado_flag: Indica se a data de término é calculada pelas dependências.
+
 output:
-    inicio_planejado
-    termino_planejado
-    duracao_planejado
+    inicio_planejado: Nova data de início planejada da tarefa.
+    termino_planejado: Nova data de término planejada da tarefa.
+    duracao_planejado: Nova duração planejada da tarefa.
 
-deve receber os dados existentes de tarefa, e retornar os novos dados, se existir alguma forma de fazer o complemento.
+Lógica:
 
-Se eu tenho numa tarefa X, uma duração 5, data de inicio = 1, e coloco uma dependencia no fim da tarefa Y
+A lógica principal da função é priorizar a duração planejada da tarefa,
+a menos que ambas as datas de início e término tenham sido calculadas por dependências.
 
-Nesse caso, que tem a data de duração preenchida, devo manter a duração da tarefa,
-exceto caso a duração seja por motivo maiores (inicio e termino calculados pelo sistema),
-então a data de termino é quem sofre a alteração, e não a duração
+Cenários:
+
+- Ambas as datas de início e término calculadas (inicio_planejado_calculado_flag e termino_planejado_calculado_flag são true):
+
+    - Utiliza as datas de início e término calculadas.
+    - Recalcula a duração com base nessas datas.
+
+- Somente a data de término calculada (termino_planejado_calculado_flag é true):
+
+    - Calcula a data de início subtraindo a duração planejada da data de término calculada, adicionando um dia para
+      garantir que tarefas com duração de um dia comecem e terminem no mesmo dia.
+    - Utiliza a data de término calculada.
+    - Mantém a duração planejada.
+
+- Somente a data de início calculada (inicio_planejado_calculado_flag é true):
+    - Utiliza a data de início calculada.
+    - Calcula a data de término adicionando a duração planejada à data de início calculada, subtraindo um dia para
+      garantir que tarefas com duração de um dia comecem e terminem no mesmo dia.
+    - Mantém a duração planejada.
+
+- Nenhuma data calculada:
+    - Utiliza a data de início e término existentes, priorizando os valores corrente sobre os valores calculados,
+      caso existam.
+    - Mantém a duração planejada.
+
+Exemplo:
+
+    Considere a tarefa X com duração 5 e data de início 1. Se adicionarmos uma dependência no final da tarefa Y,
+        a data de término de X será recalculada para respeitar a dependência, mas a duração permanecerá 5.
+
+    A exceção a essa regra ocorre quando ambas as datas de início e término de X são calculadas por dependências.
+    Nesse caso, a duração também será recalculada com base nas datas calculadas.
+
+scenario | Tanto inicio quanto termino calculados
+config   | {"inicio_planejado_corrente": "2024-05-20", "duracao_planejado_corrente": 5,
+            "inicio_planejado_calculado": "2024-05-22",
+            "termino_planejado_corrente": "2024-05-24", "termino_planejado_calculado": "2024-05-26",
+            "inicio_planejado_calculado_flag": true, "termino_planejado_calculado_flag": true}
+result   | {"inicio_planejado": "2024-05-22", "duracao_planejado": 5, "termino_planejado": "2024-05-26"}
+-[ RECORD 2 ]--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+scenario | Somente termino calculado
+config   | {"inicio_planejado_corrente": "2024-05-15", "duracao_planejado_corrente": 3,
+            "inicio_planejado_calculado": null, "termino_planejado_corrente": "2024-05-17",
+            "termino_planejado_calculado": "2024-05-19", "inicio_planejado_calculado_flag": false, "termino_planejado_calculado_flag": true}
+result   | {"inicio_planejado": "2024-05-17", "duracao_planejado": 3, "termino_planejado": "2024-05-17"}
+-[ RECORD 3 ]--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+scenario | Somente inicio calculado
+config   | {"inicio_planejado_corrente": "2024-05-18", "duracao_planejado_corrente": 10,
+            "inicio_planejado_calculado": "2024-05-20", "termino_planejado_corrente": "2024-05-27",
+            "termino_planejado_calculado": null, "inicio_planejado_calculado_flag": true, "termino_planejado_calculado_flag": false}
+result   | {"inicio_planejado": "2024-05-18", "duracao_planejado": 10, "termino_planejado": "2024-05-29"}
+-[ RECORD 4 ]--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+scenario | Nenhum valor calculado (use os existentes)
+config   | {"inicio_planejado_corrente": "2024-05-06", "duracao_planejado_corrente": 7,
+            "inicio_planejado_calculado": null, "termino_planejado_corrente": "2024-05-12",
+            "termino_planejado_calculado": null, "inicio_planejado_calculado_flag": false, "termino_planejado_calculado_flag": false}
+result   | {"inicio_planejado": "2024-05-06", "duracao_planejado": 7, "termino_planejado": "2024-05-12"}
+-[ RECORD 5 ]--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+scenario | Nenhum valor calculado (use calculado se não existir)
+config   | {"inicio_planejado_corrente": null, "duracao_planejado_corrente": 2, "inicio_planejado_calculado": "2024-06-03",
+            "termino_planejado_corrente": null, "termino_planejado_calculado": null, "inicio_planejado_calculado_flag": false,
+             "termino_planejado_calculado_flag": false}
+result   | {"inicio_planejado": "2024-06-03", "duracao_planejado": 2, "termino_planejado": null}
 
 */
+
 CREATE OR REPLACE FUNCTION infere_data_inicio_ou_termino(config jsonb)
     RETURNS jsonb
     AS $$
 DECLARE
     ret jsonb;
 BEGIN
-
 --    raise notice 'infere_data_inicio_ou_termino args %', config;
 
     with conf as (
         select
             ((x->>'duracao_planejado_corrente')::int::varchar || ' days')::interval as duracao_planejado_corrente,
-            ((x->>'duracao_planejado_corrente')::int )  as duracao_planejado_corrente_dias,
-            ((x->>'duracao_planejado_calculado')::int::varchar || ' days')::interval as duracao_planejado_calculado,
+            ((x->>'duracao_planejado_corrente')::int) as duracao_planejado_corrente_dias,
             (x->>'inicio_planejado_corrente')::date as inicio_planejado_corrente,
             (x->>'termino_planejado_corrente')::date as termino_planejado_corrente,
             (x->>'inicio_planejado_calculado')::date as inicio_planejado_calculado,
-            (x->>'termino_planejado_calculado')::date as termino_planejado_calculado
+            (x->>'termino_planejado_calculado')::date as termino_planejado_calculado,
+            (x->>'inicio_planejado_calculado_flag')::boolean as inicio_planejado_calculado_flag,
+            (x->>'termino_planejado_calculado_flag')::boolean as termino_planejado_calculado_flag
         from jsonb_array_elements(('[' || config::text || ']')::jsonb) x
     ),
-    compute0 as (
-        select
-            case
-            -- se já tem valor calculado, ele sempre vence
-            when inicio_planejado_calculado is not null then inicio_planejado_calculado
-            -- se o campo tinha um valor, usa ele
-            when inicio_planejado_corrente is not null then inicio_planejado_corrente else
-                -- cenario onde é possível calcular a data de inicio pela duracao sugerida da tarefa
-                -- usando a data de termino e a duração
-                case when termino_planejado_calculado is not null and duracao_planejado_corrente is not null then
-                    termino_planejado_calculado - duracao_planejado_corrente + '1 day'::interval -- adiciona um dia, pra se a task ter o valor de 1, ela deve começar e acabar no mesmo dia
-                end
-            end as inicio_planejado,
-            duracao_planejado_corrente_dias,
-            termino_planejado_calculado,
-            inicio_planejado_calculado,
-            termino_planejado_corrente,
-            duracao_planejado_corrente
-
-        from conf
-    ),
     compute as (
-            select inicio_planejado,
+        select
+            -- calc do inicio:
+            -- Se tanto o inicio quanto o termino forem calculados, vai por ele
+            case when inicio_planejado_calculado_flag and termino_planejado_calculado_flag then
+                inicio_planejado_calculado
+            -- Se o termino for calculado, calcule o inicio com base na duração
+            when termino_planejado_calculado_flag then
+                termino_planejado_calculado - duracao_planejado_corrente + '1 day'::interval
+            -- Caso contrário, use inicio existente ou calculado
+            else
+                coalesce(inicio_planejado_corrente, inicio_planejado_calculado)
+            end as inicio_planejado,
 
-            case
-            -- se tem começo e fim calculado, então retorna o termino calculado, passando na frente
-            -- de qualquer valor que possa existir no corrente
-            when termino_planejado_calculado is not null and inicio_planejado_calculado is not null then
+            -- calc do termino:
+            -- mesma logica de cima, só que retornando a coluna de termino
+            case when inicio_planejado_calculado_flag and termino_planejado_calculado_flag then
                 termino_planejado_calculado
-                -- se tem inicio calculado e duração, retorna sempre a soma do inicio calculado
-                -- + duração (termino não tem a prioridade nesse caso, se tivesse iria entrar em cima)
-            when inicio_planejado_calculado is not null and duracao_planejado_corrente is not null then
-                inicio_planejado + duracao_planejado_corrente - '1 day'::interval
-            when
-                termino_planejado_calculado is not null
-            then
-                termino_planejado_calculado
-                -- outras situações realmente é pra perder o valor atual
+            when inicio_planejado_calculado_flag then
+                inicio_planejado_calculado + duracao_planejado_corrente - '1 day'::interval
+            else
+                coalesce(termino_planejado_corrente, termino_planejado_calculado)
             end as termino_planejado,
 
-            duracao_planejado_corrente,
-            duracao_planejado_corrente_dias
-
-        from compute0
+            duracao_planejado_corrente_dias,
+            inicio_planejado_calculado_flag,
+            termino_planejado_calculado_flag
+        from conf
     ),
     proc as (
         select
             inicio_planejado,
             termino_planejado,
-
-            -- se tem inicio/fim, calcula o real inicio/fim
-            case when termino_planejado is not null and inicio_planejado is not null then
+            -- Recalcular a duração se inicio e término forem calculados
+            -- não precisa passar a flag pq seria true tbm
+            case when inicio_planejado_calculado_flag and termino_planejado_calculado_flag then
                 termino_planejado::date - inicio_planejado::date + 1
-
-            -- se não, usa o valor anterior do banco
-            when duracao_planejado_corrente is not null then duracao_planejado_corrente_dias
-
+            -- Caso contrário, use a duração atual
+            else duracao_planejado_corrente_dias
             end as duracao_planejado
         from compute
-
     )
+    -- única parte que sobreviveu do código antigo, rs
     select
         jsonb_build_object(
             'duracao_planejado',
