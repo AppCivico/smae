@@ -4,6 +4,7 @@ import { usuário as schema } from '@/consts/formSchemas';
 import truncate from '@/helpers/truncate';
 import { router } from '@/router';
 import { useAlertStore } from '@/stores/alert.store';
+import { useAuthStore } from '@/stores/auth.store';
 import { useOrgansStore } from '@/stores/organs.store';
 import { usePaineisGruposStore } from '@/stores/paineisGrupos.store';
 import { useUsersStore } from '@/stores/users.store';
@@ -11,7 +12,6 @@ import { storeToRefs } from 'pinia';
 import { Field, Form } from 'vee-validate';
 import { ref } from 'vue';
 import { useRoute } from 'vue-router';
-import { useAuthStore } from '@/stores/auth.store';
 
 const usersStore = useUsersStore();
 usersStore.clear();
@@ -55,7 +55,7 @@ async function onSubmit(payload) {
     let r;
 
     if (id && user) {
-      r = await usersStore.update(user.value.id, values);
+      r = await usersStore.update(id, values);
       msg = 'Dados salvos com sucesso!';
     } else {
       r = await usersStore.register(values);
