@@ -196,10 +196,6 @@ export class DashTransferenciaService {
 
         const countAll: number = uniqueTransferencias.length;
         const chartPorEsfera: DashTransferenciaBasicChartDto = {
-            title: {
-                id: 'chart__Esferas',
-                text: 'Total das transferências por esfera',
-            },
             tooltip: {
                 trigger: 'axis',
                 axisPointer: {
@@ -248,10 +244,6 @@ export class DashTransferenciaService {
         };
 
         const chartPorStatus: DashTransferenciaBasicChartDto = {
-            title: {
-                id: 'chart__Status',
-                text: 'Distribuição de transferências',
-            },
             tooltip: {
                 trigger: 'axis',
                 axisPointer: {
@@ -329,10 +321,6 @@ export class DashTransferenciaService {
         });
 
         const chartNroPorPartido: DashTransferenciaBasicChartDto = {
-            title: {
-                id: 'chart__NroPartido',
-                text: 'Transferências por partido',
-            },
             tooltip: {
                 trigger: 'axis',
                 axisPointer: {
@@ -381,10 +369,6 @@ export class DashTransferenciaService {
         });
 
         const chartValPorPartido: DashTransferenciaBasicChartDto = {
-            title: {
-                id: 'chart__ValPartido',
-                text: 'Valor por partido',
-            },
             tooltip: {
                 trigger: 'axis',
                 axisPointer: {
@@ -456,10 +440,6 @@ export class DashTransferenciaService {
             : [];
 
         const chartValPorOrgao: DashTransferenciaBasicChartDto = {
-            title: {
-                id: 'chart__ValOrgao',
-                text: 'Valor por órgão',
-            },
             tooltip: {
                 trigger: 'axis',
                 axisPointer: {
