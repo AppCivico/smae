@@ -419,7 +419,7 @@ export class DashTransferenciaService {
                       .reduce(
                           (acc, curr) => {
                               const etapaId = curr.workflow_etapa_atual_id!;
-                              const valor = Number(curr.valor_total);
+                              const valor = Number(curr.distribuicao_valor_total);
 
                               const existingObjIndex = acc.findIndex((obj) => obj.workflow_etapa_atual_id === etapaId);
 
