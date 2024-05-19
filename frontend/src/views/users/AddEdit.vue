@@ -136,7 +136,6 @@ async function onSubmit(payload) {
               class="inputcheckbox"
               type="checkbox"
               value="1"
-              :checked="desativado"
             /><span>Inativar usuário</span>
           </label>
         </div>
@@ -241,7 +240,6 @@ async function onSubmit(payload) {
                 v-for="organ in organs"
                 :key="organ.id"
                 :value="organ.id"
-                :selected="orgao_id && organ.id == orgao_id"
                 :title="organ.descricao?.length > 36 ? organ.descricao : null"
               >
                 {{ organ.sigla }} - {{ truncate(organ.descricao, 36) }}
@@ -273,7 +271,6 @@ async function onSubmit(payload) {
               type="checkbox"
               :class="{ 'error': errors.perfil_acesso_ids }"
               :value="profile.id"
-              :checked="perfil_acesso_ids && perfil_acesso_ids.includes(profile.id)"
             /><span>
               {{ profile.nome }}
               <span class="qtipitem">i <div class="qtip">
@@ -318,7 +315,6 @@ async function onSubmit(payload) {
               type="checkbox"
               :class="{ 'error': errors.grupos }"
               :value="p.id"
-              :checked="grupos && grupos.includes(p.id)"
             /><span>{{ p.nome }}</span>
           </label>
           <div class="error-msg">
@@ -343,10 +339,10 @@ async function onSubmit(payload) {
     <template v-if="user?.loading">
       <span class="spinner">Carregando</span>
     </template>
-    <template v-if="user?.error || error">
+    <template v-if="user?.error">
       <div class="error p1">
         <div class="error-msg">
-          {{ user.error ?? error }}
+          {{ user.error }}
         </div>
       </div>
     </template>
