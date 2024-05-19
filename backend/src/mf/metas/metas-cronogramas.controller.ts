@@ -94,7 +94,7 @@ export class MetasCronogramaController {
             throw new HttpException('Etapa não encontrada', 404);
         }
 
-        const ret = await this.etapaService.update(+params.id, updateEtapaDto, user);
+        const ret = await this.etapaService.update(+params.id, updateEtapaDto, user, undefined, config);
 
         // basicamente, todos esses valores não temos aqui
         // então o melhor é na trigger do update da etapa, apagar invalidar esse status, pq ai
