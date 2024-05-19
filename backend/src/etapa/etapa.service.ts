@@ -12,6 +12,7 @@ import { FilterEtapaDto } from './dto/filter-etapa.dto';
 import { UpdateEtapaDto } from './dto/update-etapa.dto';
 import { EtapaItemDto } from './entities/etapa.entity';
 import { VariavelService } from '../variavel/variavel.service';
+import { MfPessoaAcessoPdm } from '../mf/mf.service';
 
 const MSG_INI_POSTERIOR_TERM_PREV = 'A data de início previsto não pode ser posterior à data de término previsto.';
 const MSG_INI_POSTERIOR_TERM_REAL = 'A data de início real não pode ser posterior à data de término real.';
@@ -247,7 +248,13 @@ export class EtapaService {
         return ret;
     }
 
-    async update(id: number, dto: UpdateEtapaDto, user: PessoaFromJwt, prismaCtx?: Prisma.TransactionClient) {
+    async update(
+        id: number,
+        dto: UpdateEtapaDto,
+        user: PessoaFromJwt,
+        prismaCtx?: Prisma.TransactionClient | undefined,
+        config?: MfPessoaAcessoPdm
+    ) {
         const prisma = prismaCtx || this.prisma;
 
         const basicSelf = await prisma.etapa.findFirstOrThrow({
@@ -255,8 +262,14 @@ export class EtapaService {
             select: {
                 cronograma_id: true,
                 variavel_id: true,
+                termino_real: true,
             },
         });
+        if (config && config.perfil == 'ponto_focal') {
+            // Verificar se é só a data, ou se é pra cancelar tudo como está agora
+            // e se é só quanto tem uma variavel ou não
+            if (basicSelf.termino_real) throw new BadRequestException('Etapa já finalizada, não é possível alterar.');
+        }
 
         if (basicSelf.variavel_id && dto.variavel === null) {
             const quaisIndicadores = await prisma.indicadorFormulaVariavel.findMany({
