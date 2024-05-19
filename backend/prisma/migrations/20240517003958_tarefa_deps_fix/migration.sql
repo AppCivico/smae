@@ -93,7 +93,10 @@ BEGIN
                 'inicio_planejado_corrente', case when v_tmp_inicio_calc then (v_tmp->>'inicio_planejado')::date else r.inicio_planejado end,
                 'termino_planejado_corrente', case when v_tmp_termino_calc then (v_tmp->>'termino_planejado')::date else r.termino_planejado end,
                 'inicio_planejado_calculado', (v_tmp->>'inicio_planejado')::date,
-                'termino_planejado_calculado', (v_tmp->>'termino_planejado')::date
+                'termino_planejado_calculado', (v_tmp->>'termino_planejado')::date,
+
+                'inicio_planejado_calculado_flag', v_tmp_inicio_calc,
+                'termino_planejado_calculado_flag', v_tmp_termino_calc
             )
         ) into v_tmp;
 
@@ -173,7 +176,11 @@ BEGIN
                 'inicio_planejado_corrente', case when v_tmp_inicio_calc then (v_tmp->>'inicio_planejado')::date else r.inicio_planejado end,
                 'termino_planejado_corrente', case when v_tmp_termino_calc then (v_tmp->>'termino_planejado')::date else r.termino_planejado end,
                 'inicio_planejado_calculado', (v_tmp->>'inicio_planejado')::date,
-                'termino_planejado_calculado', (v_tmp->>'termino_planejado')::date
+                'termino_planejado_calculado', (v_tmp->>'termino_planejado')::date,
+
+                'inicio_planejado_calculado_flag', v_tmp_inicio_calc,
+                'termino_planejado_calculado_flag', v_tmp_termino_calc
+
             )
         ) into v_tmp;
 
@@ -475,81 +482,63 @@ CREATE OR REPLACE FUNCTION infere_data_inicio_ou_termino(config jsonb)
 DECLARE
     ret jsonb;
 BEGIN
-
 --    raise notice 'infere_data_inicio_ou_termino args %', config;
 
     with conf as (
         select
             ((x->>'duracao_planejado_corrente')::int::varchar || ' days')::interval as duracao_planejado_corrente,
-            ((x->>'duracao_planejado_corrente')::int )  as duracao_planejado_corrente_dias,
-            ((x->>'duracao_planejado_calculado')::int::varchar || ' days')::interval as duracao_planejado_calculado,
+            ((x->>'duracao_planejado_corrente')::int) as duracao_planejado_corrente_dias,
             (x->>'inicio_planejado_corrente')::date as inicio_planejado_corrente,
             (x->>'termino_planejado_corrente')::date as termino_planejado_corrente,
             (x->>'inicio_planejado_calculado')::date as inicio_planejado_calculado,
-            (x->>'termino_planejado_calculado')::date as termino_planejado_calculado
+            (x->>'termino_planejado_calculado')::date as termino_planejado_calculado,
+            (x->>'inicio_planejado_calculado_flag')::boolean as inicio_planejado_calculado_flag,
+            (x->>'termino_planejado_calculado_flag')::boolean as termino_planejado_calculado_flag
         from jsonb_array_elements(('[' || config::text || ']')::jsonb) x
     ),
-    compute0 as (
-        select
-            case
-            -- se já tem valor calculado, ele sempre vence
-            when inicio_planejado_calculado is not null then inicio_planejado_calculado
-            -- se o campo tinha um valor, usa ele
-            when inicio_planejado_corrente is not null then inicio_planejado_corrente else
-                -- cenario onde é possível calcular a data de inicio pela duracao sugerida da tarefa
-                -- usando a data de termino e a duração
-                case when termino_planejado_calculado is not null and duracao_planejado_corrente is not null then
-                    termino_planejado_calculado - duracao_planejado_corrente + '1 day'::interval -- adiciona um dia, pra se a task ter o valor de 1, ela deve começar e acabar no mesmo dia
-                end
-            end as inicio_planejado,
-            duracao_planejado_corrente_dias,
-            termino_planejado_calculado,
-            inicio_planejado_calculado,
-            termino_planejado_corrente,
-            duracao_planejado_corrente
-
-        from conf
-    ),
     compute as (
-            select inicio_planejado,
+        select
+            -- calc do inicio:
+            -- Se tanto o inicio quanto o termino forem calculados, vai por ele
+            case when inicio_planejado_calculado_flag and termino_planejado_calculado_flag then
+                inicio_planejado_calculado
+            -- Se o termino for calculado, calcule o inicio com base na duração
+            when termino_planejado_calculado_flag then
+                termino_planejado_calculado - duracao_planejado_corrente + '1 day'::interval
+            -- Caso contrário, use inicio existente ou calculado
+            else
+                coalesce(inicio_planejado_corrente, inicio_planejado_calculado)
+            end as inicio_planejado,
 
-            case
-            -- se tem começo e fim calculado, então retorna o termino calculado, passando na frente
-            -- de qualquer valor que possa existir no corrente
-            when termino_planejado_calculado is not null and inicio_planejado_calculado is not null then
+            -- calc do termino:
+            -- mesma logica de cima, só que retornando a coluna de termino
+            case when inicio_planejado_calculado_flag and termino_planejado_calculado_flag then
                 termino_planejado_calculado
-                -- se tem inicio calculado e duração, retorna sempre a soma do inicio calculado
-                -- + duração (termino não tem a prioridade nesse caso, se tivesse iria entrar em cima)
-            when inicio_planejado_calculado is not null and duracao_planejado_corrente is not null then
-                inicio_planejado + duracao_planejado_corrente - '1 day'::interval
-            when
-                termino_planejado_calculado is not null
-            then
-                termino_planejado_calculado
-                -- outras situações realmente é pra perder o valor atual
+            when inicio_planejado_calculado_flag then
+                inicio_planejado_calculado + duracao_planejado_corrente - '1 day'::interval
+            else
+                coalesce(termino_planejado_corrente, termino_planejado_calculado)
             end as termino_planejado,
 
-            duracao_planejado_corrente,
-            duracao_planejado_corrente_dias
-
-        from compute0
+            duracao_planejado_corrente_dias,
+            inicio_planejado_calculado_flag,
+            termino_planejado_calculado_flag
+        from conf
     ),
     proc as (
         select
             inicio_planejado,
             termino_planejado,
-
-            -- se tem inicio/fim, calcula o real inicio/fim
-            case when termino_planejado is not null and inicio_planejado is not null then
+            -- Recalcular a duração se inicio e término forem calculados
+            -- não precisa passar a flag pq seria true tbm
+            case when inicio_planejado_calculado_flag and termino_planejado_calculado_flag then
                 termino_planejado::date - inicio_planejado::date + 1
-
-            -- se não, usa o valor anterior do banco
-            when duracao_planejado_corrente is not null then duracao_planejado_corrente_dias
-
+            -- Caso contrário, use a duração atual
+            else duracao_planejado_corrente_dias
             end as duracao_planejado
         from compute
-
     )
+    -- única parte que sobreviveu do código antigo, rs
     select
         jsonb_build_object(
             'duracao_planejado',
