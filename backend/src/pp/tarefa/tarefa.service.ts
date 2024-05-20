@@ -1284,7 +1284,10 @@ export class TarefaService {
                                 orgao_responsavel_id: true,
                             },
                         });
-
+                        console.log('=====update-tarefa======');
+                        console.log(tarefaWorkflow.orgao_responsavel_id);
+                        console.log(updatedSelf.orgao_id);
+                        console.log('=====update-tarefa======');
                         await prismaTx.transferenciaAndamentoTarefa.update({
                             where: { id: updatedSelf.transferencia_tarefa_id },
                             data: {
