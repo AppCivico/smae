@@ -499,7 +499,12 @@ export class WorkflowAndamentoFaseService {
 
                     orgao_id = orgaoCasaCivil.id;
                 }
-
+                console.log('========================');
+                console.log(configFluxoFaseAtual);
+                console.log(configFluxoFaseSeguinte);
+                console.log(faseAtual.workflow_etapa_id);
+                console.log(configFluxoFaseSeguinte.fase_id);
+                console.log('========================');
                 const andamentoNovaFase = await prismaTxn.transferenciaAndamento.findFirst({
                     where: {
                         transferencia_id: dto.transferencia_id,
