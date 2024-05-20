@@ -1,11 +1,13 @@
 <template>
   <div class="container br20">
-    <strong>R$</strong>{{ valor.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') }}
+    <strong>R$</strong> {{ dinheiro(valor, true) }}
     <p>valor das emendas</p>
   </div>
 </template>
 
 <script setup>
+import dinheiro from '@/helpers/dinheiro';
+
 defineProps({
   valor: {
     type: Number,
