@@ -335,6 +335,7 @@ export class WorkflowAndamentoFaseService {
                         transferencia_id: dto.transferencia_id,
                         workflow_fase_id: dto.fase_id,
                         removido_em: null,
+                        data_termino: null,
                     },
                     select: {
                         id: true,
