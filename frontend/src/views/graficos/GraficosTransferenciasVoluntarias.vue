@@ -243,7 +243,7 @@ use([
 
 provide(THEME_KEY, 'light');
 
-const localizeDate = (d) => dateToDate(d, { timeStyle: 'short' });
+const localizeDate = (d) => dateToDate(d, { timeStyle: 'short', timeZone: 'America/Sao_Paulo' });
 
 const fluxosEtapasProjetos = useEtapasProjetosStore();
 const partidoStore = usePartidosStore();
