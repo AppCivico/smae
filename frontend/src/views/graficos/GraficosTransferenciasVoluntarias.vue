@@ -356,7 +356,6 @@ async function iniciar() {
         anos: [2024],
       },
     });
-    filtrosEscolhidos.value.anos.push(2024);
   }
   buscarGraficos();
 }
