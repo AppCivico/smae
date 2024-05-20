@@ -1,16 +1,16 @@
 <script setup>
+import { Dashboard } from '@/components';
 import EnvelopeDeAbas from '@/components/EnvelopeDeAbas.vue';
 import FeedbackEmptyList from '@/components/FeedbackEmptyList.vue';
+import CalendárioDoPdM from '@/components/panorama/CalendarioDoPdM.vue';
 import FiltroDeMetas from '@/components/panorama/FiltroDeMetas.vue';
 import LegendaDeAtrasadas from '@/components/panorama/LegendaDeAtrasadas.vue';
 import LegendaPadrão from '@/components/panorama/LegendaPadrao.vue';
-import MetaNormal from '@/components/panorama/MetaNormal.vue';
 import MetaAtrasada from '@/components/panorama/MetaAtrasada.vue';
-import CalendárioDoPdM from '@/components/panorama/CalendarioDoPdM.vue';
-import { storeToRefs } from 'pinia';
-import { Dashboard } from '@/components';
+import MetaNormal from '@/components/panorama/MetaNormal.vue';
 import { usePanoramaStore } from '@/stores/panorama.store.ts';
 import { usePdMStore } from '@/stores/pdm.store';
+import { storeToRefs } from 'pinia';
 import { watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
