@@ -16,6 +16,7 @@ import {
 } from './dto/transferencia.dto';
 import { TransferenciaTipoEsfera } from '@prisma/client';
 import { UploadService } from 'src/upload/upload.service';
+import { Decimal } from '@prisma/client/runtime/library';
 
 class NextPageTokenJwtBody {
     offset: number;
@@ -289,42 +290,44 @@ export class DashTransferenciaService {
             ],
         };
 
-        const dadosPorPartido = partidosRows.map((partido) => {
-            const etapasSoma = uniqueTransferencias
-                .filter((r) => r.partido_id === partido.id && r.workflow_etapa_atual_id !== null)
-                .reduce(
-                    (acc, curr) => {
-                        const etapaId = curr.workflow_etapa_atual_id!;
-                        const valor = Number(curr.valor_total);
+        const dadosPorPartido = partidosRows
+            .map((partido) => {
+                const etapasSoma = uniqueTransferencias
+                    .filter((r) => r.partido_id === partido.id && r.workflow_etapa_atual_id !== null)
+                    .reduce(
+                        (acc, curr) => {
+                            const etapaId = curr.workflow_etapa_atual_id!;
+                            const valor = Number(curr.valor_total);
 
-                        const existingObjIndex = acc.findIndex((obj) => obj.workflow_etapa_atual_id === etapaId);
+                            const existingObjIndex = acc.findIndex((obj) => obj.workflow_etapa_atual_id === etapaId);
 
-                        if (existingObjIndex !== -1) {
-                            acc[existingObjIndex].sum += valor;
-                        } else {
-                            acc.push({ workflow_etapa_atual_id: etapaId, sum: valor });
-                        }
-                        return acc;
-                    },
-                    [] as { workflow_etapa_atual_id: number; sum: number }[]
-                );
+                            if (existingObjIndex !== -1) {
+                                acc[existingObjIndex].sum += valor;
+                            } else {
+                                acc.push({ workflow_etapa_atual_id: etapaId, sum: valor });
+                            }
+                            return acc;
+                        },
+                        [] as { workflow_etapa_atual_id: number; sum: number }[]
+                    );
 
-            return {
-                sigla: partido.sigla,
-                count_estadual: uniqueTransferencias
-                    .filter((r) => r.partido_id == partido.id)
-                    .filter((r) => r.esfera == TransferenciaTipoEsfera.Estadual).length,
-                count_federal: uniqueTransferencias
-                    .filter((r) => r.partido_id == partido.id)
-                    .filter((r) => r.esfera == TransferenciaTipoEsfera.Federal).length,
+                return {
+                    sigla: partido.sigla,
+                    count_estadual: uniqueTransferencias
+                        .filter((r) => r.partido_id == partido.id)
+                        .filter((r) => r.esfera == TransferenciaTipoEsfera.Estadual).length,
+                    count_federal: uniqueTransferencias
+                        .filter((r) => r.partido_id == partido.id)
+                        .filter((r) => r.esfera == TransferenciaTipoEsfera.Federal).length,
 
-                valor: uniqueTransferencias
-                    .filter((r) => r.partido_id == partido.id)
-                    .reduce((sum, current) => sum + +current.valor_total, 0),
+                    valor: uniqueTransferencias
+                        .filter((r) => r.partido_id == partido.id)
+                        .reduce((sum, current) => sum + +current.valor_total, 0),
 
-                etapas: etapasSoma,
-            };
-        });
+                    etapas: etapasSoma,
+                };
+            })
+            .sort((a, b) => b.valor - a.valor);
 
         const chartNroPorPartido: DashTransferenciaBasicChartDto = {
             title: {
@@ -495,10 +498,27 @@ export class DashTransferenciaService {
             }),
         };
 
-        const valor_por_parlamentar = await this.prisma.viewRankingTransferenciaParlamentar.findMany({
-            orderBy: { 'valor': 'desc' },
-            take: 3,
-        });
+        const transferenciaIds = rows.map((r) => Number(r.transferencia_id));
+        const valor_por_parlamentar: {
+            parlamentar_id: number;
+            nome_popular: string;
+            parlamentar_foto_id: number | null;
+            count: number;
+            valor: Decimal;
+        }[] = await this.prisma.$queryRaw`SELECT
+            t.parlamentar_id,
+            count(1) AS count,
+            SUM(valor_total) AS valor,
+            p.foto_upload_id AS parlamentar_foto_id
+        FROM (
+            SELECT DISTINCT ON (transferencia_id) * FROM view_transferencia_analise
+        ) AS t
+        JOIN parlamentar p ON t.parlamentar_id = p.id AND p.removido_em IS NULL
+        WHERE t.parlamentar_id IS NOT NULL
+        AND t.transferencia_id = ANY ( ${transferenciaIds} )
+        GROUP BY t.parlamentar_id, p.foto_upload_id
+        ORDER BY valor DESC
+        LIMIT 3`;
 
         return {
             valor_total: valorTotal,
