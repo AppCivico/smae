@@ -185,6 +185,9 @@ export class ChartDataDto {
 
 export class ChartLegendDto {
     data: string[];
+    layout?: string;
+    align?: string;
+    verticalAlign?: string;
 }
 
 export class ChartEncodeDto {
