@@ -451,7 +451,6 @@ export class WorkflowAndamentoFaseService {
                     where: {
                         removido_em: null,
                         fase_id: dto.fase_id,
-                        ordem: { gt: configFluxoFaseAtual.ordem },
                         fluxo: {
                             fluxo_etapa_de_id: faseAtual.workflow_etapa_id,
                             removido_em: null,
