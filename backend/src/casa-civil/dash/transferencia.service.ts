@@ -185,8 +185,6 @@ export class DashTransferenciaService {
                 sigla: true,
             },
         });
-        console.log(rows);
-        console.log(rows.length);
 
         const uniqueTransferencias = rows.filter((elem, index, self) => {
             return index === self.findIndex((t) => t.transferencia_id === elem.transferencia_id);
@@ -198,7 +196,7 @@ export class DashTransferenciaService {
         const chartPorEsfera: DashTransferenciaBasicChartDto = {
             title: {
                 id: 'chart__Esferas',
-                text: 'Total das transferências por esfera',
+                text: '% do valor por esfera',
             },
             tooltip: {
                 trigger: 'axis',
@@ -211,6 +209,8 @@ export class DashTransferenciaService {
                 data: ['Federal', 'Estadual'],
             },
             yAxis: {
+                name: '%',
+                nameLocation: 'end',
                 type: 'value',
             },
             series: [
@@ -222,10 +222,10 @@ export class DashTransferenciaService {
                             value: uniqueTransferencias.length
                                 ? (
                                       (100 *
-                                          uniqueTransferencias.filter(
-                                              (e) => e.esfera == TransferenciaTipoEsfera.Federal
-                                          ).length) /
-                                      countAll
+                                          uniqueTransferencias
+                                              .filter((e) => e.esfera == TransferenciaTipoEsfera.Federal)
+                                              .reduce((sum, current) => sum + +current.valor_total, 0)) /
+                                      valorTotal
                                   ).toFixed(2)
                                 : '0',
                             itemStyle: { color: '#C6C1FB' },
@@ -234,10 +234,10 @@ export class DashTransferenciaService {
                             value: uniqueTransferencias.length
                                 ? (
                                       (100 *
-                                          uniqueTransferencias.filter(
-                                              (e) => e.esfera == TransferenciaTipoEsfera.Estadual
-                                          ).length) /
-                                      countAll
+                                          uniqueTransferencias
+                                              .filter((e) => e.esfera == TransferenciaTipoEsfera.Estadual)
+                                              .reduce((sum, current) => sum + +current.valor_total, 0)) /
+                                      valorTotal
                                   ).toFixed(2)
                                 : '0',
                             itemStyle: { color: '#372EA2' },
@@ -331,7 +331,7 @@ export class DashTransferenciaService {
         const chartNroPorPartido: DashTransferenciaBasicChartDto = {
             title: {
                 id: 'chart__NroPartido',
-                text: 'Transferências por partido',
+                text: 'Quantidade de transferências por partido',
             },
             tooltip: {
                 trigger: 'axis',
@@ -397,6 +397,9 @@ export class DashTransferenciaService {
             },
             legend: {
                 data: etapas.map((e) => e.etapa_fluxo),
+                layout: 'vertical',
+                align: 'right',
+                verticalAlign: 'bottom',
             },
             yAxis: {
                 name: 'R$ MIL',
