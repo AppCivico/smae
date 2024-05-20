@@ -507,6 +507,7 @@ export class DashTransferenciaService {
             valor: Decimal;
         }[] = await this.prisma.$queryRaw`SELECT
             t.parlamentar_id,
+            p.nome_popular,
             count(1) AS count,
             SUM(valor_total) AS valor,
             p.foto_upload_id AS parlamentar_foto_id
@@ -516,7 +517,7 @@ export class DashTransferenciaService {
         JOIN parlamentar p ON t.parlamentar_id = p.id AND p.removido_em IS NULL
         WHERE t.parlamentar_id IS NOT NULL
         AND t.transferencia_id = ANY ( ${transferenciaIds} )
-        GROUP BY t.parlamentar_id, p.foto_upload_id
+        GROUP BY t.parlamentar_id, p.foto_upload_id, p.nome_popular
         ORDER BY valor DESC
         LIMIT 3`;
 
