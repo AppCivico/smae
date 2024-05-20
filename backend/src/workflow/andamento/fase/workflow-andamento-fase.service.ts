@@ -417,7 +417,7 @@ export class WorkflowAndamentoFaseService {
                         data_inicio: { not: null },
                         data_termino: { not: null },
                     },
-                    orderBy: { data_termino: 'desc' },
+                    orderBy: [{ data_termino: 'asc' }, { atualizado_em: 'desc' }],
                     select: {
                         id: true,
                         workflow_fase_id: true,
