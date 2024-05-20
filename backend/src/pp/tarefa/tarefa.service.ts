@@ -1278,16 +1278,26 @@ export class TarefaService {
                             },
                         });
                     } else if (updatedSelf.transferencia_tarefa_id) {
-                        const tarefaWorkflow = await prismaTx.transferenciaAndamentoTarefa.findFirstOrThrow({
+                        await prismaTx.transferenciaAndamentoTarefa.update({
                             where: { id: updatedSelf.transferencia_tarefa_id },
-                            select: {
-                                orgao_responsavel_id: true,
+                            data: {
+                                feito: dto.termino_real != null ? true : false,
+                                atualizado_em: new Date(Date.now()),
+                                atualizado_por: user.id,
                             },
                         });
-                        console.log('=====update-tarefa======');
-                        console.log(tarefaWorkflow.orgao_responsavel_id);
-                        console.log(updatedSelf.orgao_id);
-                        console.log('=====update-tarefa======');
+                    }
+                }
+
+                if (updatedSelf.transferencia_tarefa_id) {
+                    const tarefaWorkflow = await prismaTx.transferenciaAndamentoTarefa.findFirstOrThrow({
+                        where: { id: updatedSelf.transferencia_tarefa_id },
+                        select: {
+                            orgao_responsavel_id: true,
+                        },
+                    });
+
+                    if (updatedSelf.orgao_id != tarefaWorkflow.orgao_responsavel_id) {
                         await prismaTx.transferenciaAndamentoTarefa.update({
                             where: { id: updatedSelf.transferencia_tarefa_id },
                             data: {
@@ -1295,7 +1305,6 @@ export class TarefaService {
                                     updatedSelf.orgao_id != tarefaWorkflow.orgao_responsavel_id
                                         ? updatedSelf.orgao_id
                                         : undefined,
-                                feito: dto.termino_real != null ? true : false,
                                 atualizado_em: new Date(Date.now()),
                                 atualizado_por: user.id,
                             },
