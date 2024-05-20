@@ -196,7 +196,7 @@ export class DashTransferenciaService {
         const chartPorEsfera: DashTransferenciaBasicChartDto = {
             title: {
                 id: 'chart__Esferas',
-                text: '% do valor por esfera',
+                text: 'Percentual do valor por esfera',
             },
             tooltip: {
                 trigger: 'axis',
@@ -209,8 +209,6 @@ export class DashTransferenciaService {
                 data: ['Federal', 'Estadual'],
             },
             yAxis: {
-                name: '%',
-                nameLocation: 'end',
                 type: 'value',
             },
             series: [
@@ -397,9 +395,7 @@ export class DashTransferenciaService {
             },
             legend: {
                 data: etapas.map((e) => e.etapa_fluxo),
-                layout: 'vertical',
-                align: 'right',
-                verticalAlign: 'bottom',
+                bottom: 0,
             },
             yAxis: {
                 name: 'R$ MIL',
@@ -480,6 +476,7 @@ export class DashTransferenciaService {
             },
             legend: {
                 data: etapas.map((e) => e.etapa_fluxo),
+                bottom: 0,
             },
             series: etapas.map((etapa) => {
                 return {
