@@ -330,24 +330,6 @@ function onSubmit() {
   exibirFiltros.value = false;
 }
 
-function iniciar() {
-  fluxosEtapasProjetos.buscarTudo();
-  parlamentarStore.buscarTudo();
-  partidoStore.buscarTudo();
-
-  atualizarQuery();
-
-  if (!route.query.ano) {
-    router.replace({
-      query: {
-        ...route.query,
-        anos: [2024],
-      },
-    });
-    filtrosEscolhidos.value.anos.push(2024);
-  }
-}
-
 async function buscarGraficos() {
   try {
     const retorno = await requestS.get(
@@ -358,6 +340,25 @@ async function buscarGraficos() {
   } catch (error) {
     console.log('error:', error);
   }
+}
+
+async function iniciar() {
+  fluxosEtapasProjetos.buscarTudo();
+  parlamentarStore.buscarTudo();
+  partidoStore.buscarTudo();
+
+  atualizarQuery();
+
+  if (!route.query.ano) {
+    await router.replace({
+      query: {
+        ...route.query,
+        anos: [2024],
+      },
+    });
+    filtrosEscolhidos.value.anos.push(2024);
+  }
+  buscarGraficos();
 }
 
 iniciar();
