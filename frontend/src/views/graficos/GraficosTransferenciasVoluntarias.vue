@@ -146,7 +146,7 @@
       ><use xlink:href="#i_x" /></svg>
     </button>
   </div>
-  <div class="flex flexwrap g1 mt2 mb2">
+  <div class="flex flexwrap center g1 mt2 mb2">
     <ValorTransferencia
       v-if="graficos?.values?.valor_total"
       class="f1"
