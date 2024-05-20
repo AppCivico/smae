@@ -119,6 +119,17 @@ export class TarefaService {
         user: PessoaFromJwt
     ): Promise<RecordWithId> {
         const tarefaCronoId = await this.loadOrCreateByInput(tarefaCronoInput, user);
+
+        // no create, podemos assumir que é nulo se não receber
+        if (!isNaN(dto.duracao_planejado!) && !('inicio_planejado' in dto) && !('termino_planejado' in dto)) {
+            dto.inicio_planejado = null;
+            dto.termino_planejado = null;
+        }
+        if (!isNaN(dto.duracao_real!) && !('inicio_real' in dto) && !('termino_real' in dto)) {
+            dto.inicio_real = null;
+            dto.termino_real = null;
+        }
+
         this.checkIntervalosPlanejado(dto);
         this.checkIntervalosRealizado(dto);
 
@@ -932,9 +943,6 @@ export class TarefaService {
     ): Promise<RecordWithId> {
         const tarefaCronoId = await this.loadOrCreateByInput(tarefaCronoInput, user);
 
-        this.checkIntervalosPlanejado(dto);
-        this.checkIntervalosRealizado(dto);
-
         const tarefa = await this.prisma.$transaction(
             async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
                 const now = new Date(Date.now());
@@ -955,10 +963,37 @@ export class TarefaService {
                         inicio_planejado: true,
                         termino_planejado: true,
                         duracao_planejado: true,
+
+                        inicio_real: true,
+                        termino_real: true,
                         orgao: { select: { id: true } },
                     },
                 });
                 if (!tarefa) throw new HttpException('Tarefa não encontrada.', 404);
+
+                if (
+                    'duracao_planejado' in dto &&
+                    !isNaN(dto.duracao_planejado!) &&
+                    !('inicio_planejado' in dto) &&
+                    !('termino_planejado' in dto)
+                ) {
+                    dto.inicio_planejado = tarefa.inicio_planejado;
+                    dto.termino_planejado = tarefa.termino_planejado;
+                }
+
+                if (
+                    'duracao_real' in dto &&
+                    !isNaN(dto.duracao_real!) &&
+                    !('inicio_real' in dto) &&
+                    !('termino_real' in dto)
+                ) {
+                    dto.inicio_real = tarefa.inicio_real;
+                    dto.termino_real = tarefa.termino_real;
+                }
+
+                this.checkIntervalosPlanejado(dto);
+                this.checkIntervalosRealizado(dto);
+
                 const permissoes = this.calcPodeEditar(tarefa, user);
 
                 if (!permissoes.pode_editar && dto instanceof UpdateTarefaDto)
