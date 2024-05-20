@@ -154,41 +154,44 @@ export class TransferenciaService {
         );
 
         // Disparando update para validar topologia.
-        const tarefas = await this.prisma.tarefa.findMany({
-            where: {
-                tarefa_cronograma: {
-                    transferencia_id: created.id,
-                },
-            },
-            select: {
-                id: true,
-                dependencias: {
-                    select: {
-                        id: true,
-                        tarefa_id: true,
-                        dependencia_tarefa_id: true,
-                        tipo: true,
-                        latencia: true,
+        await this.prisma.$transaction(async (prismaTxn: Prisma.TransactionClient) => {
+            const tarefas = await prismaTxn.tarefa.findMany({
+                where: {
+                    tarefa_cronograma: {
+                        transferencia_id: created.id,
                     },
                 },
-            },
-        });
+                select: {
+                    id: true,
+                    dependencias: {
+                        select: {
+                            id: true,
+                            tarefa_id: true,
+                            dependencia_tarefa_id: true,
+                            tipo: true,
+                            latencia: true,
+                        },
+                    },
+                },
+            });
 
-        for (const tarefa of tarefas) {
-            if (tarefa.dependencias.length) {
-                const dto: UpdateTarefaDto = {
-                    dependencias: tarefa.dependencias.map((e) => {
-                        return {
-                            dependencia_tarefa_id: e.dependencia_tarefa_id,
-                            tipo: e.tipo,
-                            latencia: e.latencia,
-                        };
-                    }),
-                };
+            for (const tarefa of tarefas) {
+                if (tarefa.dependencias.length) {
+                    console.log('tarefa_id:' + tarefa.id);
+                    const dto: UpdateTarefaDto = {
+                        dependencias: tarefa.dependencias.map((e) => {
+                            return {
+                                dependencia_tarefa_id: e.dependencia_tarefa_id,
+                                tipo: e.tipo,
+                                latencia: e.latencia,
+                            };
+                        }),
+                    };
 
-                await this.tarefaService.update({ transferencia_id: created.id }, tarefa.id, dto, user);
+                    await this.tarefaService.update({ transferencia_id: created.id }, tarefa.id, dto, user);
+                }
             }
-        }
+        });
 
         return created;
     }
