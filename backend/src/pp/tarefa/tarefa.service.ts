@@ -1242,10 +1242,6 @@ export class TarefaService {
                     delete dto.tarefa_pai_id;
                 }
 
-                console.log('=======================');
-                console.log(dto.termino_real);
-                console.log(typeof dto.termino_real);
-                console.log('=======================');
                 const updatedSelf = await prismaTx.tarefa.update({
                     where: {
                         id: tarefa.id,
@@ -1258,7 +1254,7 @@ export class TarefaService {
                     select: {
                         transferencia_fase_id: true,
                         transferencia_tarefa_id: true,
-
+                        orgao_id: true,
                         tarefa_cronograma: {
                             select: {
                                 transferencia_id: true,
@@ -1282,9 +1278,20 @@ export class TarefaService {
                             },
                         });
                     } else if (updatedSelf.transferencia_tarefa_id) {
+                        const tarefaWorkflow = await prismaTx.transferenciaAndamentoTarefa.findFirstOrThrow({
+                            where: { id: updatedSelf.transferencia_tarefa_id },
+                            select: {
+                                orgao_responsavel_id: true,
+                            },
+                        });
+
                         await prismaTx.transferenciaAndamentoTarefa.update({
                             where: { id: updatedSelf.transferencia_tarefa_id },
                             data: {
+                                orgao_responsavel_id:
+                                    updatedSelf.orgao_id != tarefaWorkflow.orgao_responsavel_id
+                                        ? updatedSelf.orgao_id
+                                        : undefined,
                                 feito: dto.termino_real != null ? true : false,
                                 atualizado_em: new Date(Date.now()),
                                 atualizado_por: user.id,
