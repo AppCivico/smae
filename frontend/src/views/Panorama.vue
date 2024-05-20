@@ -67,7 +67,7 @@ async function iniciar() {
     });
   }
 
-  if (!activePdm.value.id) {
+  if (!activePdm.value?.id) {
     await PdmStore.getActive();
   }
 
