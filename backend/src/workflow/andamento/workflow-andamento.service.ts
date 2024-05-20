@@ -127,7 +127,8 @@ export class WorkflowAndamentoService {
                                         andamento: await this.getAndamentoFaseRet(
                                             transferencia.id,
                                             fase.fase!.id,
-                                            transferencia.workflow_id!
+                                            transferencia.workflow_id!,
+                                            fluxo.workflow_etapa_de!.id
                                         ),
 
                                         tarefas: await Promise.all(
@@ -156,13 +157,15 @@ export class WorkflowAndamentoService {
     private async getAndamentoFaseRet(
         transferencia_id: number,
         fase_id: number,
-        workflow_id: number
+        workflow_id: number,
+        etapa_id: number
     ): Promise<AndamentoFaseDto | null> {
         const row = await this.prisma.transferenciaAndamento.findFirst({
             where: {
                 removido_em: null,
                 transferencia_id: transferencia_id,
                 workflow_fase_id: fase_id,
+                workflow_etapa_id: etapa_id,
             },
             select: {
                 data_inicio: true,
