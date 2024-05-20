@@ -202,7 +202,7 @@
         >
       </div>
       <p>{{ parlamentar.parlamentar.nome_popular }}</p>
-      <p>R${{ parlamentar.valor.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".") }}</p>
+      <p>R${{ dinheiro(parlamentar.valor, true) }}</p>
     </div>
   </div>
 </template>
@@ -217,6 +217,7 @@ import { useParlamentaresStore } from '@/stores/parlamentares.store';
 import { ref, watch, provide } from 'vue';
 import { storeToRefs } from 'pinia';
 import { useRoute, useRouter } from 'vue-router';
+import dinheiro from '@/helpers/dinheiro';
 
 import { use } from 'echarts/core';
 import {
