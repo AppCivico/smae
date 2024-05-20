@@ -267,7 +267,7 @@ let exibirFiltros = ref(false);
 const route = useRoute();
 const router = useRouter();
 
-const data = '2024-05-08T15:30:00Z';
+let data = new Date();
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 // const filtrosAtivos = ref({});
 const graficos = ref({});
@@ -326,6 +326,7 @@ function atualizarQuery() {
 
 function onSubmit() {
   atualizarQuery();
+  data = new Date();
   exibirFiltros.value = false;
 }
 
