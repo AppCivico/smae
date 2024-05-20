@@ -366,6 +366,20 @@ iniciar();
 watch(
   () => route.query,
   () => {
+    filtrosEscolhidos.value = {
+      etapa_ids: Array.isArray(route.query.etapa_ids)
+        ? [...route.query.etapa_ids]
+        : [],
+      anos: Array.isArray(route.query.anos)
+        ? [...route.query.anos]
+        : [],
+      partido_ids: Array.isArray(route.query.partido_ids)
+        ? [...route.query.partido_ids]
+        : [],
+      parlamentar_ids: Array.isArray(route.query.parlamentar_ids)
+        ? [...route.query.parlamentar_ids]
+        : [],
+    };
     buscarGraficos();
   },
 );
