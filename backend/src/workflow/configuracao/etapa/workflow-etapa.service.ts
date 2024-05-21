@@ -6,6 +6,7 @@ import { UpdateWorkflowEtapaDto } from './dto/update-workflow-etapa.dto';
 import { WorkflowEtapaDto } from './entities/workflow-etapa.entity';
 import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
 import { PrismaService } from 'src/prisma/prisma.service';
+import { FilterWorkflowEtapaDto } from '../dto/filter-workflow.dto';
 
 @Injectable()
 export class WorkflowEtapaService {
@@ -87,10 +88,10 @@ export class WorkflowEtapaService {
         return updated;
     }
 
-    async findAll(user: PessoaFromJwt): Promise<WorkflowEtapaDto[]> {
+    async findAll(filters: FilterWorkflowEtapaDto, user: PessoaFromJwt): Promise<WorkflowEtapaDto[]> {
         const rows = await this.prisma.workflowEtapa.findMany({
             where: {
-                removido_em: null,
+                removido_em: filters.incluir_removidas ? undefined : null,
             },
             select: {
                 id: true,
