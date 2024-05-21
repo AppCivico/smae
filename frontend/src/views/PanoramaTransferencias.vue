@@ -7,7 +7,10 @@ import { useOrgansStore } from '@/stores/organs.store';
 import { usePanoramaTransferenciasStore } from '@/stores/panoramaTransferencias.store';
 import { usePartidosStore } from '@/stores/partidos.store';
 import { storeToRefs } from 'pinia';
-import { onUnmounted, ref, watch } from 'vue';
+import {
+  computed,
+  onUnmounted, ref, watch,
+} from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
 const panoramaTransferenciasStore = usePanoramaTransferenciasStore();
@@ -32,22 +35,10 @@ const orgao = ref(route.query.orgaos_ids);
 const palavraChave = ref(route.query.palavra_chave);
 const atividade = ref(route.query.atividade);
 
-const atividadesDisponíveis = ref([]);
-const partidosDisponíveis = ref([]);
-const órgãosDisponíveis = ref([]);
-
-const iniciar = async () => {
+const itensEmUso = computed(() => {
   const atividades = [];
   let órgãos = [];
   const partidos = [];
-
-  const requisições = [
-    OrgaosStore.getAll(),
-    partidoStore.buscarTudo(),
-    panoramaTransferenciasStore.buscarTudo(),
-  ];
-
-  await Promise.allSettled(requisições);
 
   lista.value.forEach((item) => {
     if (item.atividade) {
@@ -63,20 +54,32 @@ const iniciar = async () => {
     }
   });
 
-  atividadesDisponíveis.value = [...new Set(atividades)]
-    .sort((a, b) => a.localeCompare(b));
-  partidosDisponíveis.value = [...new Set(partidos)]
-    .map((x) => partidosPorId.value[x])
-    .sort((a, b) => a.sigla?.localeCompare(b.sigla));
-  órgãosDisponíveis.value = [...new Set(órgãos)]
-    .reduce((acc, cur) => {
-      const órgão = órgãosPorId.value[cur];
-      if (órgão) {
-        acc.push(órgão);
-      }
-      return acc;
-    }, [])
-    .sort((a, b) => a.sigla?.localeCompare(b.sigla));
+  return {
+    atividade,
+    órgãos,
+    partidos,
+  };
+});
+
+const atividadesDisponíveis = computed(() => [...new Set(itensEmUso.value.atividades)]
+  .sort((a, b) => a.localeCompare(b)));
+
+const partidosDisponíveis = computed(() => [...new Set(itensEmUso.value.partidos)]
+  .map((x) => partidosPorId.value[x] || x)
+  .sort((a, b) => a.sigla?.localeCompare(b.sigla)));
+
+const órgãosDisponíveis = computed(() => [...new Set(itensEmUso.value.órgãos)]
+  .map((x) => órgãosPorId.value[x] || x)
+  .sort((a, b) => a.sigla?.localeCompare(b.sigla)));
+
+const iniciar = async () => {
+  const requisições = [
+    OrgaosStore.getAll(),
+    partidoStore.buscarTudo(),
+    panoramaTransferenciasStore.buscarTudo(),
+  ];
+
+  await Promise.allSettled(requisições);
 };
 
 function atualizarUrl() {
@@ -203,7 +206,7 @@ onUnmounted(() => {
             :key="item.valor"
             :value="item.valor"
           >
-            {{ item.nome }}
+            {{ item.nome || item }}
           </option>
         </select>
       </div>
@@ -225,7 +228,7 @@ onUnmounted(() => {
             :key="item"
             :value="item.id"
           >
-            {{ item.sigla }}
+            {{ item.sigla || item }}
           </option>
         </select>
       </div>
