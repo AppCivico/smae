@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Patch, Param, Get, Delete, HttpCode, HttpStatus } from '@nestjs/common';
+import { Controller, Post, Body, Patch, Param, Get, Delete, HttpCode, HttpStatus, Query } from '@nestjs/common';
 import { ApiTags, ApiBearerAuth, ApiUnauthorizedResponse, ApiNoContentResponse } from '@nestjs/swagger';
 import { CurrentUser } from 'src/auth/decorators/current-user.decorator';
 import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
@@ -9,6 +9,7 @@ import { WorkflowEtapaService } from './workflow-etapa.service';
 import { CreateWorkflowEtapaDto } from './dto/create-workflow-etapa.dto';
 import { ListWorkflowEtapaDto } from './entities/workflow-etapa.entity';
 import { UpdateWorkflowEtapaDto } from './dto/update-workflow-etapa.dto';
+import { FilterWorkflowEtapaDto } from '../dto/filter-workflow.dto';
 
 @ApiTags('Workflow - Configuração')
 @Controller('workflow-etapa')
@@ -26,8 +27,11 @@ export class WorkflowEtapaController {
     @ApiBearerAuth('access-token')
     @Roles('CadastroWorkflows.listar')
     @Get()
-    async findAll(@CurrentUser() user: PessoaFromJwt): Promise<ListWorkflowEtapaDto> {
-        return { linhas: await this.workflowEtapaService.findAll(user) };
+    async findAll(
+        @Query() filters: FilterWorkflowEtapaDto,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<ListWorkflowEtapaDto> {
+        return { linhas: await this.workflowEtapaService.findAll(filters, user) };
     }
 
     // @Get(':id')
