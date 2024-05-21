@@ -55,7 +55,7 @@ const itensEmUso = computed(() => {
   });
 
   return {
-    atividade,
+    atividades,
     órgãos,
     partidos,
   };
