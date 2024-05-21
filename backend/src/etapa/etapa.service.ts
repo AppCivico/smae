@@ -266,8 +266,6 @@ export class EtapaService {
             },
         });
         if (config && config.perfil == 'ponto_focal') {
-            // Verificar se é só a data, ou se é pra cancelar tudo como está agora
-            // e se é só quanto tem uma variavel ou não
             if (basicSelf.termino_real) throw new BadRequestException('Etapa já finalizada, não é possível alterar.');
         }
 
@@ -531,6 +529,13 @@ export class EtapaService {
                             pessoa_id: true,
                         },
                     },
+                    cronograma: {
+                        select: {
+                            meta_id: true,
+                            iniciativa_id: true,
+                            atividade_id: true,
+                        },
+                    },
                 },
             });
 
@@ -584,6 +589,11 @@ export class EtapaService {
         dto: UpdateEtapaDto,
         etapaAtualizada: {
             responsaveis: { pessoa_id: number }[];
+            cronograma: {
+                meta_id: number | null;
+                iniciativa_id: number | null;
+                atividade_id: number | null;
+            };
         },
         prismaTx: Prisma.TransactionClient,
         id: number,
@@ -606,12 +616,17 @@ export class EtapaService {
                 throw new BadRequestException(
                     'Órgão da etapa não foi encontrado, necessário ter pelo menos um responsável com órgão'
                 );
+            const tipo = etapaAtualizada.cronograma.meta_id
+                ? 'meta'
+                : etapaAtualizada.cronograma.iniciativa_id
+                  ? 'iniciativa'
+                  : 'atividade';
 
             const indicadorInfo = await prismaTx.view_etapa_rel_meta_indicador.findFirst({
-                where: { etapa_id: id },
+                where: { etapa_id: id, tipo: tipo },
             });
-            if (!indicadorInfo)
-                throw new BadRequestException(`Indicador da etapa não foi encontrado, não é possível criar a variável`);
+            if (!indicadorInfo || !indicadorInfo.indicador_id)
+                throw new BadRequestException('Indicador da etapa não foi encontrado, não é possível criar a variável');
 
             const variavel = await this.variavelService.criarVariavelCronograma(
                 {

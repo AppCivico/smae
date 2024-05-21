@@ -238,10 +238,37 @@ FOR EACH ROW
 EXECUTE PROCEDURE f_tgr_atualiza_variavel_na_troca_da_etapa();
 
 create or replace view view_etapa_rel_meta_indicador AS
-select
-    v.*,
-    coalesce(ia.id, ii.id, im.id) as indicador_id
-from view_etapa_rel_meta v
-left join indicador ia on ia.atividade_id = v.atividade_id
-left join indicador ii on ii.iniciativa_id = v.iniciativa_id
-left join indicador im on im.meta_id = v.meta_id;
+WITH tipos AS (
+    SELECT
+        v.*,
+        'atividade' AS tipo
+    FROM view_etapa_rel_meta v
+    UNION ALL
+    SELECT
+        v.*,
+        'iniciativa' AS tipo
+    FROM view_etapa_rel_meta v
+    UNION ALL
+    SELECT
+        v.*,
+        'meta' AS tipo
+    FROM view_etapa_rel_meta v
+)
+SELECT
+    tf.*,
+    CASE
+        WHEN tf.tipo = 'atividade' THEN ia.id
+        ELSE NULL
+    END AS atividade_indicador_id,
+    CASE
+        WHEN tf.tipo = 'iniciativa' THEN ii.id
+        ELSE NULL
+    END AS iniciativa_indicador_id,
+    CASE
+        WHEN tf.tipo = 'meta' THEN im.id
+        ELSE NULL
+    END AS meta_indicador_id
+FROM tipos tf
+LEFT JOIN indicador ia ON ia.atividade_id = tf.atividade_id
+LEFT JOIN indicador ii ON ii.iniciativa_id = tf.iniciativa_id
+LEFT JOIN indicador im ON im.meta_id = tf.meta_id;
