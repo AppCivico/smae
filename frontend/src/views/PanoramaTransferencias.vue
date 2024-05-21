@@ -111,11 +111,13 @@ watch([
     panoramaTransferenciasStore.$reset();
   }
 
-  let {
+  const {
     partido_ids: partidoFiltro,
     orgaos_ids: orgaoFiltro,
-    palavra_chave: palavraChaveParaBusca,
     atividade: atividadeFiltro,
+  } = route.query;
+  let {
+    palavra_chave: palavraChaveParaBusca,
   } = route.query;
   if (typeof palavraChaveParaBusca === 'string') {
     palavraChaveParaBusca = palavraChaveParaBusca.trim();
