@@ -16,6 +16,7 @@ import { FilterIndicadorDto, FilterIndicadorSerieDto } from './dto/filter-indica
 import { FormulaVariaveis, UpdateIndicadorDto } from './dto/update-indicador.dto';
 import { Indicador } from './entities/indicador.entity';
 import { IndicadorFormulaCompostaEmUsoDto } from './entities/indicador.formula-composta.entity';
+import { CONST_CRONO_VAR_CATEGORICA_ID } from '../common/consts';
 
 const FP = require('../../public/js/formula_parser.js');
 
@@ -637,6 +638,17 @@ export class IndicadorService {
             });
 
             if (varsInUse > 0) throw new HttpException('Indicador possui variáveis em uso.', 400);
+
+            const cronoEmUso = await prismaTx.indicadorVariavel.count({
+                where: {
+                    indicador_origem_id: id,
+                    variavel: {
+                        removido_em: null,
+                        variavel_categorica_id: CONST_CRONO_VAR_CATEGORICA_ID,
+                    },
+                },
+            });
+            if (cronoEmUso > 0) throw new HttpException('Indicador possui variáveis de cronograma em uso.', 400);
 
             prismaTx.variavel.updateMany({
                 where: {
