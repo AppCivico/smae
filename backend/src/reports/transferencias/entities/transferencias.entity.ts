@@ -7,7 +7,6 @@ export class RelTransferenciasDto {
     ano: number | null;
     objeto: string;
     detalhamento: string | null;
-    critico: string;
     clausula_suspensiva: string;
     clausula_suspensiva_vencimento: string | null;
     normativa: string | null;
