@@ -2153,6 +2153,13 @@ export class ProjetoService {
                     .catch(() => {
                         throw new HttpException('portfolio_id| Não foi encontrado', 400);
                     });
+                const estaCompartilhado = projeto.portfolios_compartilhados?.some((p) => p.id == dto.portfolio_id);
+                if (estaCompartilhado)
+                    throw new HttpException(
+                        'portfolio_id| Projeto está compartilhado com o Portfolio destino.' +
+                            ' Remova primeiro o compartilhamento, e poderá transferir o projeto.',
+                        400
+                    );
 
                 // Nível de tarefas, do port novo, não pode ser menor.
                 if (portfolioNovo.nivel_maximo_tarefa < portfolioAntigo.nivel_maximo_tarefa)
