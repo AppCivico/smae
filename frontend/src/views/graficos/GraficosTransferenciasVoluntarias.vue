@@ -357,8 +357,7 @@ async function iniciar() {
   partidoStore.buscarTudo();
 
   atualizarQuery();
-
-  if (!route.query.ano) {
+  if (!Object.keys(route.query).length) {
     await router.replace({
       query: {
         ...route.query,
