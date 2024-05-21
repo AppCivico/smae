@@ -641,7 +641,7 @@ export class IndicadorService {
 
             const cronoEmUso = await prismaTx.indicadorVariavel.count({
                 where: {
-                    indicador_origem_id: id,
+                    indicador_id: id,
                     variavel: {
                         removido_em: null,
                         variavel_categorica_id: CONST_CRONO_VAR_CATEGORICA_ID,
