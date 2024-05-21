@@ -23,7 +23,6 @@ defineProps({
   padding: 20px;
   width: 100%;
   max-width: 450px;
-  max-height: 194px;
   font-size: 58px;
   text-align: center;
   color: #76c893;
