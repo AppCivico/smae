@@ -28,7 +28,6 @@ class RetornoDbTransferencias {
     ano: number | null;
     objeto: string;
     detalhamento: string | null;
-    critico: boolean;
     clausula_suspensiva: boolean;
     clausula_suspensiva_vencimento: Date | null;
     normativa: string | null;
@@ -111,7 +110,6 @@ export class TransferenciasService implements ReportableService {
                 t.ano,
                 t.objeto,
                 t.detalhamento,
-                t.critico,
                 t.clausula_suspensiva,
                 t.clausula_suspensiva_vencimento,
                 t.normativa,
@@ -290,7 +288,6 @@ export class TransferenciasService implements ReportableService {
                 ano: db.ano,
                 objeto: db.objeto,
                 detalhamento: db.detalhamento,
-                critico: db.critico ? 'Sim' : 'Não',
                 clausula_suspensiva: db.clausula_suspensiva ? 'Sim' : 'Não',
                 clausula_suspensiva_vencimento: Date2YMD.toStringOrNull(db.clausula_suspensiva_vencimento),
                 normativa: db.normativa,
@@ -385,7 +382,6 @@ export class TransferenciasService implements ReportableService {
                 { value: 'ano', label: 'Ano' },
                 { value: 'objeto', label: 'Objeto' },
                 { value: 'detalhamento', label: 'Detalhamento' },
-                { value: 'critico', label: 'Crítico' },
                 { value: 'clausula_suspensiva', label: 'Clausula Suspensiva' },
                 { value: 'clausula_suspensiva_vencimento', label: 'Data de vencimento da Suspensiva' },
                 { value: 'normativa', label: 'Normativa' },
