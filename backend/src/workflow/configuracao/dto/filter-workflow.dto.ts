@@ -11,3 +11,10 @@ export class FilterWorkflowDto {
     @IsNumber()
     transferencia_tipo_id?: number;
 }
+
+export class FilterWorkflowEtapaDto {
+    @IsOptional()
+    @IsBoolean({ message: '$property| Precisa ser um boolean' })
+    @Transform(({ value }: any) => value === 'true')
+    incluir_removidas?: boolean;
+}

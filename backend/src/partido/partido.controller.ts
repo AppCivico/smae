@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post, Query } from '@nestjs/common';
 import { ApiBearerAuth, ApiNoContentResponse, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { Roles } from '../auth/decorators/roles.decorator';
@@ -9,6 +9,7 @@ import { CreatePartidoDto } from './dto/create-partido.dto';
 import { ListPartidoDto, PartidoOneDto } from './entities/partido.entity';
 import { UpdatePartidoDto } from './dto/update-partido.dto';
 import { PartidoService } from './partido.service';
+import { FilterPartidoDto } from './dto/filter-partido.dto';
 
 @ApiTags('Partido')
 @Controller('partido')
@@ -25,8 +26,8 @@ export class PartidoController {
 
     @ApiBearerAuth('access-token')
     @Get()
-    async findAll(): Promise<ListPartidoDto> {
-        return { linhas: await this.partidoService.findAll() };
+    async findAll(@Query() filters: FilterPartidoDto): Promise<ListPartidoDto> {
+        return { linhas: await this.partidoService.findAll(filters) };
     }
 
     @Get(':id')

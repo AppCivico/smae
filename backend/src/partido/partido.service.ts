@@ -3,6 +3,7 @@ import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreatePartidoDto } from './dto/create-partido.dto';
 import { UpdatePartidoDto } from './dto/update-partido.dto';
+import { FilterPartidoDto } from './dto/filter-partido.dto';
 
 @Injectable()
 export class PartidoService {
@@ -50,10 +51,10 @@ export class PartidoService {
         return created;
     }
 
-    async findAll() {
+    async findAll(filters?: FilterPartidoDto) {
         const listActive = await this.prisma.partido.findMany({
             where: {
-                removido_em: null,
+                removido_em: filters && filters.incluir_removidos ? undefined : null,
             },
             select: {
                 id: true,
