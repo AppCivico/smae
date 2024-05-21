@@ -2,11 +2,27 @@
 import Big from 'big.js';
 import * as d3 from 'd3';
 import { niceNumber } from 'nice-number';
-import { onMounted, onUpdated, ref } from 'vue';
+import {
+  computed, onMounted, onUpdated, ref,
+} from 'vue';
 
-const props = defineProps(['dataserie']);
+const props = defineProps({
+  dataserie: {
+    type: Object,
+    default: () => ({}),
+  },
+  casasDecimais: {
+    type: Number,
+    default: 0,
+    validator: (value) => typeof value === 'number',
+  },
+});
 const evolucao = ref(null);
 const tooltipEl = ref(null);
+
+const casasDecimais = computed(() => props.casasDecimais
+  || props.dataserie.variavel?.casas_decimais
+  || 0);
 
 class smaeChart {
   constructor(ratio, sizes, transitionDuration, locale) {
@@ -295,8 +311,11 @@ class smaeChart {
         for (let k = 0; k < tipArray.length; k += 1) {
           if (tipArray[k].date.getTime() == (new Date(data[dataKeys[i]][j].date)).getTime()) {
             aux[dataKeys[i]] = aux[dataKeys[i]] || 0;
-            tipArray[k][`${dataKeys[i]}Acum`] = data[dataKeys[i]][j].value || 0;
-            tipArray[k][dataKeys[i]] = Big(data[dataKeys[i]][j].value).minus(aux[dataKeys[i]]);
+            tipArray[k][`${dataKeys[i]}Acum`] = Big(data[dataKeys[i]][j].value)
+              .toFixed(casasDecimais.value) || 0;
+            tipArray[k][dataKeys[i]] = Big(data[dataKeys[i]][j].value)
+              .minus(aux[dataKeys[i]])
+              .toFixed(casasDecimais.value);
             aux[dataKeys[i]] = data[dataKeys[i]][j].value;
             break;
           }
@@ -479,8 +498,6 @@ const chart = new smaeChart();
 
 function start() {
   if (props.dataserie?.linhas?.length && evolucao.value) {
-    const casasDecimais = props.dataserie.variavel?.casas_decimais || 0;
-
     const data = {};
 
     const iPrevistoAcumulado = props.dataserie.ordem_series.indexOf('PrevistoAcumulado');
@@ -488,18 +505,12 @@ function start() {
     data.projetado = props.dataserie.linhas
       .map((x) => ({
         date: x.series[iPrevistoAcumulado].data_valor,
-        value: x.series[iPrevistoAcumulado].valor_nominal
-          && !isNaN(x.series[iPrevistoAcumulado].valor_nominal)
-          ? new Big(x.series[iPrevistoAcumulado].valor_nominal).toFixed(casasDecimais)
-          : x.series[iPrevistoAcumulado].valor_nominal,
+        value: x.series[iPrevistoAcumulado].valor_nominal,
       }));
     data.realizado = props.dataserie.linhas
       .map((x) => ({
         date: x.series[iRealizadoAcumulado].data_valor,
-        value: x.series[iRealizadoAcumulado].valor_nominal
-          && !isNaN(x.series[iRealizadoAcumulado].valor_nominal)
-          ? new Big(x.series[iRealizadoAcumulado].valor_nominal).toFixed(casasDecimais)
-          : x.series[iRealizadoAcumulado].valor_nominal,
+        value: x.series[iRealizadoAcumulado].valor_nominal,
       }));
     chart.drawChart(data, evolucao.value);
   }
