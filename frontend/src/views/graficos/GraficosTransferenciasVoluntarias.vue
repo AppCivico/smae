@@ -80,7 +80,7 @@
             loading: chamadasPendentesParlamentares.lista,
           }"
           :grupo="listaParlamentares"
-          label="nome"
+          label="nome_popular"
         />
       </div>
       <button
