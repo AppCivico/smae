@@ -152,7 +152,10 @@ onUpdated(() => { start(); });
                   ><use xlink:href="#i_edit" /></svg>
                 </router-link>
               </div>
-              <EvolucaoGraph :dataserie="ValoresInd[ind.id]" />
+              <EvolucaoGraph
+                :dataserie="ValoresInd[ind.id]"
+                :casas-decimais="ind.casas_decimais"
+              />
             </header>
             <div>
               <div class="tablepreinfo">
