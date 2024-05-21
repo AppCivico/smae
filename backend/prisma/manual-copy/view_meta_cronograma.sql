@@ -59,19 +59,8 @@ WITH tipos AS (
 )
 SELECT
     tf.*,
-    CASE
-        WHEN tf.tipo = 'atividade' THEN ia.id
-        ELSE NULL
-    END AS atividade_indicador_id,
-    CASE
-        WHEN tf.tipo = 'iniciativa' THEN ii.id
-        ELSE NULL
-    END AS iniciativa_indicador_id,
-    CASE
-        WHEN tf.tipo = 'meta' THEN im.id
-        ELSE NULL
-    END AS meta_indicador_id
+    coalesce(ia.id, ii.id, im.id) AS indicador_id
 FROM tipos tf
-LEFT JOIN indicador ia ON ia.atividade_id = tf.atividade_id
-LEFT JOIN indicador ii ON ii.iniciativa_id = tf.iniciativa_id
-LEFT JOIN indicador im ON im.meta_id = tf.meta_id;
+LEFT JOIN indicador ia ON ia.removido_em is null AND ia.atividade_id = tf.atividade_id
+LEFT JOIN indicador ii ON ii.removido_em is null AND ii.iniciativa_id = tf.iniciativa_id
+LEFT JOIN indicador im ON im.removido_em is null AND im.meta_id = tf.meta_id;
