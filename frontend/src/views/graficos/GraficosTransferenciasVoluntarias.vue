@@ -163,6 +163,15 @@
     </div>
   </div>
   <div
+    v-if="graficos?.values?.numero_por_status"
+    class="w100 bgb mt2 p15"
+  >
+    <v-chart
+      class="chart"
+      :option="graficos.values.numero_por_status"
+    />
+  </div>
+  <div
     v-if="graficos?.values?.numero_por_partido"
     class="w100 bgb mt2 p15"
   >
