@@ -282,18 +282,10 @@ const baseUrl = `${import.meta.env.VITE_API_URL}`;
 const graficos = ref({});
 
 const filtrosEscolhidos = ref({
-  etapa_ids: Array.isArray(route.query.etapa_ids)
-    ? [...route.query.etapa_ids]
-    : [],
-  anos: Array.isArray(route.query.anos)
-    ? [...route.query.anos]
-    : [],
-  partido_ids: Array.isArray(route.query.partido_ids)
-    ? [...route.query.partido_ids]
-    : [],
-  parlamentar_ids: Array.isArray(route.query.parlamentar_ids)
-    ? [...route.query.parlamentar_ids]
-    : [],
+  etapa_ids: route.query.etapa_ids?.map((id) => Number(id)) || [],
+  anos: route.query.anos?.map((ano) => Number(ano)) || [],
+  partido_ids: route.query.partido_ids?.map((id) => Number(id)) || [],
+  parlamentar_ids: route.query.parlamentar_ids?.map((id) => Number(id)) || [],
 });
 
 const anoAtual = new Date().getFullYear();
@@ -374,18 +366,10 @@ watch(
   () => route.query,
   () => {
     filtrosEscolhidos.value = {
-      etapa_ids: Array.isArray(route.query.etapa_ids)
-        ? [...route.query.etapa_ids]
-        : [],
-      anos: Array.isArray(route.query.anos)
-        ? [...route.query.anos]
-        : [],
-      partido_ids: Array.isArray(route.query.partido_ids)
-        ? [...route.query.partido_ids]
-        : [],
-      parlamentar_ids: Array.isArray(route.query.parlamentar_ids)
-        ? [...route.query.parlamentar_ids]
-        : [],
+      etapa_ids: route.query.etapa_ids?.map((id) => Number(id)) || [],
+      anos: route.query.anos?.map((ano) => Number(ano)) || [],
+      partido_ids: route.query.partido_ids?.map((id) => Number(id)) || [],
+      parlamentar_ids: route.query.parlamentar_ids?.map((id) => Number(id)) || [],
     };
     buscarGraficos();
   },
