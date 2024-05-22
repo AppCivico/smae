@@ -1164,7 +1164,7 @@ export class TransferenciaService {
 
         const updates = [];
         for (const row of tarefaEtapasAcompanhamentos) {
-            if (row.nivel == 1) {
+            if (row.nivel == 1 && row.tarefa_pai_id == null) {
                 // Tarefa referente à própia etapa.
 
                 // Buscando tarefa filha de maior número.
@@ -1172,8 +1172,6 @@ export class TransferenciaService {
                     where: {
                         tarefa_pai_id: row.id,
                         removido_em: null,
-                        termino_planejado: { not: null },
-                        db_projecao_termino: { not: null },
                     },
                     orderBy: { numero: 'desc' },
                     select: {
@@ -1193,15 +1191,13 @@ export class TransferenciaService {
                         },
                     })
                 );
-            } else if (row.nivel == 2) {
+            } else if (row.nivel == 2 && row.tarefa_pai_id != null) {
                 // Buscando tarefa irmã de maior número.
                 const tarefaIrma = await prismaTxn.tarefa.findFirst({
                     where: {
                         tarefa_pai_id: row.tarefa_pai_id,
 
                         removido_em: null,
-                        termino_planejado: { not: null },
-                        db_projecao_termino: { not: null },
                     },
                     orderBy: { numero: 'desc' },
                     select: {
