@@ -1,7 +1,16 @@
 <template>
-  <div class="container br20">
+  <div
+    v-if="valor"
+    class="container br20"
+  >
     <strong>R$</strong> {{ dinheiro(valor, true) }}
     <p>valor das emendas</p>
+  </div>
+  <div
+    v-else
+    class="container br20"
+  >
+    <p>Não foram encontrados dados para os parâmetros selecionados</p>
   </div>
 </template>
 
