@@ -411,6 +411,9 @@ export class DashTransferenciaService {
             legend: {
                 data: etapas.map((e) => e.etapa_fluxo),
                 bottom: 0,
+                selectorLabel: {
+                    rotate: 45,
+                },
             },
             yAxis: {
                 name: 'R$ MIL',
@@ -511,6 +514,9 @@ export class DashTransferenciaService {
             legend: {
                 data: etapas.map((e) => e.etapa_fluxo),
                 bottom: 0,
+                selectorLabel: {
+                    rotate: 45,
+                },
             },
             series: etapas.map((etapa) => {
                 return {
