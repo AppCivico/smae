@@ -352,7 +352,7 @@ export class DashTransferenciaService {
                 type: 'category',
                 data: dadosPorPartido
                     .filter((e) => e.count_all != 0)
-                    .sort((a, b) => b.count_all - a.count_all)
+                    .sort((a, b) => a.count_all - b.count_all)
                     .map((e) => e.sigla),
             },
             series: [
@@ -363,7 +363,7 @@ export class DashTransferenciaService {
                     label: { show: true },
                     data: dadosPorPartido
                         .filter((e) => e.count_all != 0)
-                        .sort((a, b) => b.count_all - a.count_all)
+                        .sort((a, b) => a.count_all - b.count_all)
                         .map((e) => e.count_estadual.toString()),
                     color: '#372EA2',
                     barWidth: '20%',
@@ -375,7 +375,7 @@ export class DashTransferenciaService {
                     label: { show: true },
                     data: dadosPorPartido
                         .filter((e) => e.count_all != 0)
-                        .sort((a, b) => b.count_all - a.count_all)
+                        .sort((a, b) => a.count_all - b.count_all)
                         .map((e) => e.count_federal.toString()),
                     color: '#C6C1FB',
                     barWidth: '20%',
