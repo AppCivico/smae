@@ -181,6 +181,10 @@ export class ChartDataDto {
     label?: ChartLabelDto;
     color?: string;
     barWidth?: string;
+    axisLabel?: {
+        overflow: string;
+        width: number;
+    };
 }
 
 export class ChartLegendDto {
