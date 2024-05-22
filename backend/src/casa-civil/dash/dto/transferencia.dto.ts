@@ -175,7 +175,7 @@ export class ChartDataDto {
     type: string;
     name?: string;
     nameLocation?: string;
-    data?: string[] | ChartDataWithColorDto[];
+    data?: string[] | ChartDataWithConfigDto[];
     stack?: string;
     encode?: ChartEncodeDto;
     label?: ChartLabelDto;
@@ -189,6 +189,9 @@ export class ChartLegendDto {
     align?: string;
     verticalAlign?: string;
     bottom: number;
+    selectorLabel?: {
+        rotate?: number;
+    };
 }
 
 export class ChartEncodeDto {
@@ -205,7 +208,7 @@ export class ChartDataTitleDto {
     text: string;
 }
 
-export class ChartDataWithColorDto {
+export class ChartDataWithConfigDto {
     value: string;
     itemStyle: {
         color: string;
