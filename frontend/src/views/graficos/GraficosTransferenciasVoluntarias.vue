@@ -155,47 +155,47 @@
       v-if="graficos?.values?.numero_por_esfera && graficos?.values?.valor_total"
       class="bgb br20 p15 f1"
     >
-      <v-chart
-        class="chart"
-        :option="graficos.values.numero_por_esfera"
-      />
+      <h2 class="t36">
+        {{ graficos?.values?.numero_por_esfera.title.text }}
+      </h2>
+      <Grafico :option="removeTitleProperty(graficos?.values?.numero_por_esfera)" />
     </div>
   </div>
   <div
     v-if="graficos?.values?.numero_por_status && graficos?.values?.valor_total"
     class="w100 bgb mt4 p15"
   >
-    <v-chart
-      class="chart"
-      :option="graficos.values.numero_por_status"
-    />
+    <h2 class="t36">
+      {{ graficos.values.numero_por_status.title.text }}
+    </h2>
+    <Grafico :option="removeTitleProperty(graficos.values.numero_por_status)" />
   </div>
   <div
     v-if="graficos?.values?.numero_por_partido && graficos?.values?.valor_total"
     class="w100 bgb mt4 p15"
   >
-    <v-chart
-      class="chart"
-      :option="graficos.values.numero_por_partido"
-    />
+    <h2 class="t36">
+      {{ graficos.values.numero_por_partido.title.text }}
+    </h2>
+    <Grafico :option="removeTitleProperty(graficos.values.numero_por_partido)" />
   </div>
   <div
     v-if="graficos?.values?.valor_por_partido && graficos?.values?.valor_total"
     class="w100 bgb mt4 p15"
   >
-    <v-chart
-      class="chart"
-      :option="graficos.values.valor_por_partido"
-    />
+    <h2 class="t36">
+      {{ graficos.values.valor_por_partido.title.text }}
+    </h2>
+    <Grafico :option="removeTitleProperty(graficos.values.valor_por_partido)" />
   </div>
   <div
     v-if="graficos?.values?.valor_por_orgao && graficos?.values?.valor_total"
     class="w100 bgb mt4 p15"
   >
-    <v-chart
-      class="chart"
-      :option="graficos.values.valor_por_orgao"
-    />
+    <h2 class="t36">
+      {{ graficos.values.valor_por_orgao.title.text }}
+    </h2>
+    <Grafico :option="removeTitleProperty(graficos.values.valor_por_orgao)" />
   </div>
   <div
     v-if=" graficos?.values?.valor_por_parlamentar.length && graficos?.values?.valor_total"
@@ -204,9 +204,7 @@
     <h2 class="t36 block">
       Hall da fama
     </h2>
-    <div
-      class="flex flexwrap g2"
-    >
+    <div class="flex flexwrap g2">
       <div
         v-for="parlamentar in graficos?.values?.valor_por_parlamentar"
         :key="parlamentar.id"
@@ -229,40 +227,17 @@
 import requestS from '@/helpers/requestS.ts';
 import dateToDate from '@/helpers/dateToDate';
 import AutocompleteField from '@/components/AutocompleteField2.vue';
+import Grafico from '@/components/graficos/GraficoDashboard.vue';
 import { useEtapasProjetosStore } from '@/stores/etapasProjeto.store';
 import { usePartidosStore } from '@/stores/partidos.store';
 import { useParlamentaresStore } from '@/stores/parlamentares.store';
-import { ref, watch, provide } from 'vue';
+import { ref, watch } from 'vue';
 import { storeToRefs } from 'pinia';
 import { useRoute, useRouter } from 'vue-router';
 import dinheiro from '@/helpers/dinheiro';
-
-import { use } from 'echarts/core';
-import {
-  TitleComponent,
-  TooltipComponent,
-  LegendComponent,
-  GridComponent,
-} from 'echarts/components';
-import VChart, { THEME_KEY } from 'vue-echarts';
-
-import { BarChart } from 'echarts/charts';
-import { CanvasRenderer } from 'echarts/renderers';
 import ValorTransferencia from '../../components/graficos/ValorTransferencia.vue';
 
-use([
-  CanvasRenderer,
-  TitleComponent,
-  TooltipComponent,
-  LegendComponent,
-  GridComponent,
-  BarChart,
-]);
-
-provide(THEME_KEY, 'light');
-
 const localizeDate = (d) => dateToDate(d, { timeStyle: 'short', timeZone: 'America/Sao_Paulo' });
-
 const fluxosEtapasProjetos = useEtapasProjetosStore();
 const partidoStore = usePartidosStore();
 const parlamentarStore = useParlamentaresStore();
@@ -340,6 +315,11 @@ function onSubmit() {
   exibirFiltros.value = false;
 }
 
+function removeTitleProperty(obj) {
+  const { title, ...rest } = obj;
+  return rest;
+}
+
 async function buscarGraficos() {
   try {
     const retorno = await requestS.get(
@@ -413,9 +393,6 @@ watch(
   margin-left: -50px;
   margin-right: -50px;
   box-shadow: 0px 8px 16px 0px #1527411a;
-  h2{
-    margin-top: -45px;
-  }
 }
 .parlamentar {
   box-shadow: 0px 8px 16px 0px #1527411a;
@@ -442,5 +419,9 @@ watch(
   width: 100%;
   height: 100%;
   object-fit: cover;
+}
+
+h2 {
+  margin-top: -45px;
 }
 </style>
