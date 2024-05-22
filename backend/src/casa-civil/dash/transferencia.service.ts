@@ -262,7 +262,7 @@ export class DashTransferenciaService {
                 data: ['Prejudicadas', 'Concluídas', 'Em Andamento', 'Disponibilizadas'],
                 axisLabel: {
                     overflow: 'break',
-                    width: 50,
+                    width: 70,
                 },
             },
             series: [
