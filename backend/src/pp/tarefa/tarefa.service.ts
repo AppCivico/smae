@@ -1312,6 +1312,29 @@ export class TarefaService {
                     }
                 }
 
+                if (updatedSelf.transferencia_fase_id) {
+                    const tarefaWorkflow = await prismaTx.transferenciaAndamento.findFirstOrThrow({
+                        where: { id: updatedSelf.transferencia_fase_id },
+                        select: {
+                            orgao_responsavel_id: true,
+                        },
+                    });
+
+                    if (updatedSelf.orgao_id != tarefaWorkflow.orgao_responsavel_id) {
+                        await prismaTx.transferenciaAndamentoTarefa.update({
+                            where: { id: updatedSelf.transferencia_fase_id },
+                            data: {
+                                orgao_responsavel_id:
+                                    updatedSelf.orgao_id != tarefaWorkflow.orgao_responsavel_id
+                                        ? updatedSelf.orgao_id
+                                        : undefined,
+                                atualizado_em: new Date(Date.now()),
+                                atualizado_por: user.id,
+                            },
+                        });
+                    }
+                }
+
                 return { id: tarefa.id };
             },
             {
