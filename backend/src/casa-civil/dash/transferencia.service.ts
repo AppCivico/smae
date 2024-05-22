@@ -318,12 +318,12 @@ export class DashTransferenciaService {
                     count_federal: uniqueTransferencias
                         .filter((r) => r.partido_id == partido.id)
                         .filter((r) => r.esfera == TransferenciaTipoEsfera.Federal).length,
-
+                    count_all: uniqueTransferencias.filter((r) => r.partido_id == partido.id).length,
                     valor: uniqueTransferencias
                         .filter((r) => r.partido_id == partido.id)
                         .reduce((sum, current) => sum + +current.valor_total, 0),
 
-                    etapas: etapasSoma,
+                    etapas: etapasSoma.sort((a, b) => b.sum - a.sum),
                 };
             })
             .sort((a, b) => b.valor - a.valor);
@@ -346,7 +346,7 @@ export class DashTransferenciaService {
             },
             yAxis: {
                 type: 'category',
-                data: dadosPorPartido.map((e) => e.sigla),
+                data: dadosPorPartido.sort((a, b) => b.count_all - a.count_all).map((e) => e.sigla),
             },
             series: [
                 {
@@ -354,7 +354,9 @@ export class DashTransferenciaService {
                     type: 'bar',
                     stack: 'total',
                     label: { show: true },
-                    data: dadosPorPartido.map((e) => e.count_estadual.toString()),
+                    data: dadosPorPartido
+                        .sort((a, b) => b.count_all - a.count_all)
+                        .map((e) => e.count_estadual.toString()),
                     color: '#372EA2',
                     barWidth: '20%',
                 },
@@ -363,7 +365,9 @@ export class DashTransferenciaService {
                     type: 'bar',
                     stack: 'total',
                     label: { show: true },
-                    data: dadosPorPartido.map((e) => e.count_federal.toString()),
+                    data: dadosPorPartido
+                        .sort((a, b) => b.count_all - a.count_all)
+                        .map((e) => e.count_federal.toString()),
                     color: '#C6C1FB',
                     barWidth: '20%',
                 },
