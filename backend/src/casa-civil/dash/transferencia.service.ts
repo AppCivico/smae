@@ -340,16 +340,25 @@ export class DashTransferenciaService {
                     type: 'shadow',
                 },
             },
-            xAxis: {
-                name: 'Número de transferências',
-                nameLocation: 'start',
-                type: 'value',
+            legend: {
+                data: ['Estadual', 'Federal'],
+                right: 0,
+                orient: 'vertical',
+                textStyle: {
+                    overflow: 'break',
+                    width: 100,
+                },
             },
             yAxis: {
+                name: 'Número de transferências',
+                nameLocation: 'end',
+                type: 'value',
+            },
+            xAxis: {
                 type: 'category',
                 data: dadosPorPartido
                     .filter((e) => e.count_all != 0)
-                    .sort((a, b) => a.count_all - b.count_all)
+                    .sort((a, b) => b.count_all - a.count_all)
                     .map((e) => e.sigla),
             },
             series: [
@@ -360,7 +369,7 @@ export class DashTransferenciaService {
                     label: { show: true },
                     data: dadosPorPartido
                         .filter((e) => e.count_all != 0)
-                        .sort((a, b) => a.count_all - b.count_all)
+                        .sort((a, b) => b.count_all - a.count_all)
                         .map((e) => e.count_estadual.toString()),
                     color: '#372EA2',
                     barWidth: '20%',
@@ -372,7 +381,7 @@ export class DashTransferenciaService {
                     label: { show: true },
                     data: dadosPorPartido
                         .filter((e) => e.count_all != 0)
-                        .sort((a, b) => a.count_all - b.count_all)
+                        .sort((a, b) => b.count_all - a.count_all)
                         .map((e) => e.count_federal.toString()),
                     color: '#C6C1FB',
                     barWidth: '20%',
@@ -412,6 +421,10 @@ export class DashTransferenciaService {
                 data: etapas.map((e) => e.etapa_fluxo),
                 orient: 'vertical',
                 right: 0,
+                textStyle: {
+                    overflow: 'break',
+                    width: 100,
+                },
             },
             yAxis: {
                 name: 'R$ MIL',
@@ -513,6 +526,10 @@ export class DashTransferenciaService {
                 data: etapas.map((e) => e.etapa_fluxo),
                 right: 0,
                 orient: 'vertical',
+                textStyle: {
+                    overflow: 'break',
+                    width: 100,
+                },
             },
             series: etapas.map((etapa) => {
                 return {
