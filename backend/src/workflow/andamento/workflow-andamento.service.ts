@@ -365,6 +365,12 @@ export class WorkflowAndamentoService {
                             data_termino: true,
                         },
                     },
+
+                    TarefaCronograma: {
+                        select: {
+                            id: true,
+                        },
+                    },
                 },
             });
             if (!transferencia)
@@ -380,6 +386,11 @@ export class WorkflowAndamentoService {
                     fluxo_etapa_de_id: transferencia.andamentoWorkflow[0].workflow_etapa_id,
                 },
                 select: {
+                    fluxo_etapa_de: {
+                        select: {
+                            etapa_fluxo: true,
+                        },
+                    },
                     fluxo_etapa_para_id: true,
                 },
             });
@@ -507,6 +518,29 @@ export class WorkflowAndamentoService {
                             },
                         });
                     }
+
+                    // Tarefa do cronograma referente à fase anterior e acompanhamento.
+                    await prismaTxn.tarefa.updateMany({
+                        where: {
+                            tarefa_cronograma_id: transferencia.TarefaCronograma[0].id!,
+                            OR: [
+                                {
+                                    tarefa: etapaAtual.fluxo_etapa_de.etapa_fluxo,
+                                    nivel: 1,
+                                },
+                                {
+                                    tarefa_pai: {
+                                        tarefa: etapaAtual.fluxo_etapa_de.etapa_fluxo,
+                                    },
+                                    nivel: 2,
+                                },
+                            ],
+                        },
+                        data: {
+                            termino_real: new Date(Date.now()),
+                            atualizado_em: new Date(Date.now()),
+                        },
+                    });
 
                     await prismaTxn.transferencia.update({
                         where: { id: dto.transferencia_id },
