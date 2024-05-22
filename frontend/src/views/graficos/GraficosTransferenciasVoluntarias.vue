@@ -148,12 +148,11 @@
   </div>
   <div class="flex flexwrap center g1 mt2 mb2">
     <ValorTransferencia
-      v-if="graficos?.values?.valor_total"
       class="f1"
       :valor="graficos?.values?.valor_total"
     />
     <div
-      v-if="graficos?.values?.numero_por_esfera"
+      v-if="graficos?.values?.numero_por_esfera && graficos?.values?.valor_total"
       class="bgb br20 p15 f1"
     >
       <v-chart
@@ -163,7 +162,7 @@
     </div>
   </div>
   <div
-    v-if="graficos?.values?.numero_por_status"
+    v-if="graficos?.values?.numero_por_status && graficos?.values?.valor_total"
     class="w100 bgb mt2 p15"
   >
     <v-chart
@@ -172,7 +171,7 @@
     />
   </div>
   <div
-    v-if="graficos?.values?.numero_por_partido"
+    v-if="graficos?.values?.numero_por_partido && graficos?.values?.valor_total"
     class="w100 bgb mt2 p15"
   >
     <v-chart
@@ -181,7 +180,7 @@
     />
   </div>
   <div
-    v-if="graficos?.values?.valor_por_partido"
+    v-if="graficos?.values?.valor_por_partido && graficos?.values?.valor_total"
     class="w100 bgb mt2 p15"
   >
     <v-chart
@@ -190,7 +189,7 @@
     />
   </div>
   <div
-    v-if="graficos?.values?.valor_por_orgao"
+    v-if="graficos?.values?.valor_por_orgao && graficos?.values?.valor_total"
     class="w100 bgb mt2 p15"
   >
     <v-chart
@@ -198,7 +197,10 @@
       :option="graficos.values.valor_por_orgao"
     />
   </div>
-  <div class="w100 bgb mt2 p15 flex flexwrap g2">
+  <div
+    v-if=" graficos?.values?.valor_por_parlamentar.length && graficos?.values?.valor_total"
+    class="w100 bgb mt2 p15 flex flexwrap g2"
+  >
     <div
       v-for="parlamentar in graficos?.values?.valor_por_parlamentar"
       :key="parlamentar.id"
