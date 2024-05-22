@@ -355,7 +355,7 @@ async function iniciar() {
     await router.replace({
       query: {
         ...route.query,
-        anos: [2024],
+        anos: [data.getFullYear()],
       },
     });
   }
