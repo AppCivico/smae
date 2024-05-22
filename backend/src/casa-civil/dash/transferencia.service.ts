@@ -390,7 +390,7 @@ export class DashTransferenciaService {
         // Etapa "virtual" para indicar Workflow não iniciado
         etapas.push({
             id: -1,
-            etapa_fluxo: 'Workflow não inciado',
+            etapa_fluxo: 'Workflow não iniciado',
         });
 
         const chartValPorPartido: DashTransferenciaBasicChartDto = {
