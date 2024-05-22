@@ -413,17 +413,20 @@ watch(
   margin-left: -50px;
   margin-right: -50px;
   box-shadow: 0px 8px 16px 0px #1527411a;
+  h2{
+    margin-top: -45px;
+  }
 }
-.parlamentar{
-  box-shadow: 0px 8px 16px 0px #1527411A;
+.parlamentar {
+  box-shadow: 0px 8px 16px 0px #1527411a;
   padding: 10px 40px;
-  p{
+  p {
     text-align: center;
     font-size: 30px;
     margin-bottom: 0px;
   }
 
-  p:last-child{
+  p:last-child {
     font-size: 20px;
   }
 }
@@ -432,16 +435,12 @@ watch(
   height: 240px;
   border-radius: 10px;
   overflow: hidden;
-  margin-bottom: 10px
+  margin-bottom: 10px;
 }
 
 .img {
   width: 100%;
   height: 100%;
   object-fit: cover;
-}
-
-h2{
-  margin-top: -45px;
 }
 </style>
