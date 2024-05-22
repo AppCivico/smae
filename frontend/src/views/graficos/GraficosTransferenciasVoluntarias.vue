@@ -146,7 +146,7 @@
       ><use xlink:href="#i_x" /></svg>
     </button>
   </div>
-  <div class="flex flexwrap center g1 mt2 mb2">
+  <div class="flex flexwrap center g1 mt4 mb2">
     <ValorTransferencia
       class="f1"
       :valor="graficos?.values?.valor_total"
@@ -163,7 +163,7 @@
   </div>
   <div
     v-if="graficos?.values?.numero_por_status && graficos?.values?.valor_total"
-    class="w100 bgb mt2 p15"
+    class="w100 bgb mt4 p15"
   >
     <v-chart
       class="chart"
@@ -172,7 +172,7 @@
   </div>
   <div
     v-if="graficos?.values?.numero_por_partido && graficos?.values?.valor_total"
-    class="w100 bgb mt2 p15"
+    class="w100 bgb mt4 p15"
   >
     <v-chart
       class="chart"
@@ -181,7 +181,7 @@
   </div>
   <div
     v-if="graficos?.values?.valor_por_partido && graficos?.values?.valor_total"
-    class="w100 bgb mt2 p15"
+    class="w100 bgb mt4 p15"
   >
     <v-chart
       class="chart"
@@ -190,7 +190,7 @@
   </div>
   <div
     v-if="graficos?.values?.valor_por_orgao && graficos?.values?.valor_total"
-    class="w100 bgb mt2 p15"
+    class="w100 bgb mt4 p15"
   >
     <v-chart
       class="chart"
@@ -199,21 +199,28 @@
   </div>
   <div
     v-if=" graficos?.values?.valor_por_parlamentar.length && graficos?.values?.valor_total"
-    class="w100 bgb mt2 p15 flex flexwrap g2"
+    class="w100 bgb mt4 p15 "
   >
+    <h2 class="t36 block">
+      Hall da fama
+    </h2>
     <div
-      v-for="parlamentar in graficos?.values?.valor_por_parlamentar"
-      :key="parlamentar.id"
-      class="parlamentar"
+      class="flex flexwrap g2"
     >
-      <div class="img-container">
-        <img
-          class="img"
-          :src="`${baseUrl}/download/${parlamentar.parlamentar.foto}`"
-        >
+      <div
+        v-for="parlamentar in graficos?.values?.valor_por_parlamentar"
+        :key="parlamentar.id"
+        class="parlamentar"
+      >
+        <div class="img-container">
+          <img
+            class="img"
+            :src="`${baseUrl}/download/${parlamentar.parlamentar.foto}`"
+          >
+        </div>
+        <p>{{ parlamentar.parlamentar.nome_popular }}</p>
+        <p>R${{ dinheiro(parlamentar.valor, true) }}</p>
       </div>
-      <p>{{ parlamentar.parlamentar.nome_popular }}</p>
-      <p>R${{ dinheiro(parlamentar.valor, true) }}</p>
     </div>
   </div>
 </template>
@@ -432,5 +439,9 @@ watch(
   width: 100%;
   height: 100%;
   object-fit: cover;
+}
+
+h2{
+  margin-top: -45px;
 }
 </style>
