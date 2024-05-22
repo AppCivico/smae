@@ -190,6 +190,10 @@ export class ChartLegendDto {
     verticalAlign?: string;
     right: number;
     orient: string;
+    textStyle?: {
+        overflow: string;
+        width: number;
+    };
 }
 
 export class ChartEncodeDto {
