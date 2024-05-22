@@ -327,7 +327,11 @@ export class DashTransferenciaService {
                 };
             })
             .sort((a, b) => b.valor - a.valor);
-
+        for (const foo of dadosPorPartido) {
+            console.log('==============');
+            console.log(foo);
+            console.log('==============');
+        }
         const chartNroPorPartido: DashTransferenciaBasicChartDto = {
             title: {
                 id: 'chart__NroPartido',
