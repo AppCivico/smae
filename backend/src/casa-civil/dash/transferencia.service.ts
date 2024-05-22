@@ -346,7 +346,10 @@ export class DashTransferenciaService {
             },
             yAxis: {
                 type: 'category',
-                data: dadosPorPartido.sort((a, b) => b.count_all - a.count_all).map((e) => e.sigla),
+                data: dadosPorPartido
+                    .filter((e) => e.count_all > 0)
+                    .sort((a, b) => b.count_all - a.count_all)
+                    .map((e) => e.sigla),
             },
             series: [
                 {
@@ -355,6 +358,7 @@ export class DashTransferenciaService {
                     stack: 'total',
                     label: { show: true },
                     data: dadosPorPartido
+                        .filter((e) => e.count_all > 0)
                         .sort((a, b) => b.count_all - a.count_all)
                         .map((e) => e.count_estadual.toString()),
                     color: '#372EA2',
@@ -366,6 +370,7 @@ export class DashTransferenciaService {
                     stack: 'total',
                     label: { show: true },
                     data: dadosPorPartido
+                        .filter((e) => e.count_all > 0)
                         .sort((a, b) => a.count_all - b.count_all)
                         .map((e) => e.count_federal.toString()),
                     color: '#C6C1FB',
@@ -394,7 +399,7 @@ export class DashTransferenciaService {
             },
             xAxis: {
                 type: 'category',
-                data: dadosPorPartido.sort((a, b) => a.valor - b.valor).map((e) => e.sigla),
+                data: dadosPorPartido.sort((a, b) => b.valor - a.valor).map((e) => e.sigla),
             },
             legend: {
                 data: etapas.map((e) => e.etapa_fluxo),
@@ -412,7 +417,7 @@ export class DashTransferenciaService {
                     stack: 'total',
                     barWidth: '20%',
                     data: dadosPorPartido
-                        .sort((a, b) => a.valor - b.valor)
+                        .sort((a, b) => b.valor - a.valor)
                         .map((partidoDados) => {
                             const valorParaEtapa = partidoDados.etapas.find(
                                 (agregado) => agregado.workflow_etapa_atual_id == etapa.id
