@@ -489,6 +489,7 @@ export class PessoaResponsabilidadesMetaService {
         return;
     }
 
+    // TODO não deixar ficar com o responsáveis vazios depois de removido, tem que dar rollback.
     async removerResponsabilidades(
         pessoaId: number,
         metas: number[],
