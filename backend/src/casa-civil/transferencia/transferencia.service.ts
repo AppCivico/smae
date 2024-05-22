@@ -176,9 +176,11 @@ export class TransferenciaService {
             });
 
             for (const tarefa of tarefas) {
+                let dto: UpdateTarefaDto = {};
+
                 if (tarefa.dependencias.length) {
                     console.log('tarefa_id:' + tarefa.id);
-                    const dto: UpdateTarefaDto = {
+                    dto = {
                         dependencias: tarefa.dependencias.map((e) => {
                             return {
                                 dependencia_tarefa_id: e.dependencia_tarefa_id,
@@ -187,9 +189,8 @@ export class TransferenciaService {
                             };
                         }),
                     };
-
-                    await this.tarefaService.update({ transferencia_id: created.id }, tarefa.id, dto, user);
                 }
+                await this.tarefaService.update({ transferencia_id: created.id }, tarefa.id, dto, user);
             }
         });
 
