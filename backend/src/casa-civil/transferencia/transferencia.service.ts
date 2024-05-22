@@ -1164,6 +1164,7 @@ export class TransferenciaService {
 
         const updates = [];
         for (const row of tarefaEtapasAcompanhamentos) {
+            console.log(row);
             if (row.nivel == 1 && row.tarefa_pai_id == null) {
                 // Tarefa referente à própia etapa.
 
@@ -1179,6 +1180,8 @@ export class TransferenciaService {
                         db_projecao_termino: true,
                     },
                 });
+                console.log('tarefa filha');
+                console.log(tarefaFilha);
 
                 if (!tarefaFilha) throw new Error('Erro ao encontrar tarefa filha para base de projeção.');
 
@@ -1193,6 +1196,7 @@ export class TransferenciaService {
                 );
             } else if (row.nivel == 2 && row.tarefa_pai_id != null) {
                 // Buscando tarefa irmã de maior número.
+
                 const tarefaIrma = await prismaTxn.tarefa.findFirst({
                     where: {
                         tarefa_pai_id: row.tarefa_pai_id,
@@ -1206,7 +1210,8 @@ export class TransferenciaService {
                     },
                 });
                 if (!tarefaIrma) throw new Error('Erro ao encontrar tarefa filha para base de projeção.');
-
+                console.log('tarefa irmã');
+                console.log(tarefaIrma);
                 updates.push(
                     prismaTxn.tarefa.update({
                         where: { id: row.id },
