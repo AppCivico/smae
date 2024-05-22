@@ -188,10 +188,8 @@ export class ChartLegendDto {
     layout?: string;
     align?: string;
     verticalAlign?: string;
-    bottom: number;
-    selectorLabel?: {
-        rotate?: number;
-    };
+    right: number;
+    orient: string;
 }
 
 export class ChartEncodeDto {
