@@ -189,8 +189,9 @@ export class TransferenciaService {
                             };
                         }),
                     };
+
+                    await this.tarefaService.update({ transferencia_id: created.id }, tarefa.id, dto, user);
                 }
-                await this.tarefaService.update({ transferencia_id: created.id }, tarefa.id, dto, user);
             }
         });
 
@@ -209,6 +210,7 @@ export class TransferenciaService {
                         esfera: true,
                         tipo_id: true,
                         identificador: true,
+                        workflow_id: true,
                         ano: true,
                     },
                 });
@@ -281,10 +283,27 @@ export class TransferenciaService {
                         throw new Error(`Erro ao gerar identificador, já está em uso: ${identificador}`);
                 }
 
+                let workflow_id: number | undefined;
+
+                if (!self.workflow_id) {
+                    const workflow = await prismaTxn.workflow.findFirst({
+                        where: {
+                            transferencia_tipo_id: dto.tipo_id,
+                            removido_em: null,
+                            ativo: true,
+                        },
+                        select: {
+                            id: true,
+                        },
+                    });
+                    if (workflow) workflow_id = workflow?.id;
+                }
+
                 const transferencia = await prismaTxn.transferencia.update({
                     where: { id },
                     data: {
                         identificador: identificador,
+                        workflow_id: workflow_id,
                         tipo_id: dto.tipo_id,
                         orgao_concedente_id: dto.orgao_concedente_id,
                         secretaria_concedente_str: dto.secretaria_concedente,
@@ -341,6 +360,8 @@ export class TransferenciaService {
                         },
                     });
                 }
+
+                if (workflow_id) await this.startWorkflow(id, workflow_id, prismaTxn, user);
 
                 return transferencia;
             }
