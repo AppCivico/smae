@@ -366,7 +366,7 @@ export class DashTransferenciaService {
                     stack: 'total',
                     label: { show: true },
                     data: dadosPorPartido
-                        .sort((a, b) => b.count_all - a.count_all)
+                        .sort((a, b) => a.count_all - b.count_all)
                         .map((e) => e.count_federal.toString()),
                     color: '#C6C1FB',
                     barWidth: '20%',
@@ -394,7 +394,7 @@ export class DashTransferenciaService {
             },
             xAxis: {
                 type: 'category',
-                data: dadosPorPartido.map((e) => e.sigla),
+                data: dadosPorPartido.sort((a, b) => a.valor - b.valor).map((e) => e.sigla),
             },
             legend: {
                 data: etapas.map((e) => e.etapa_fluxo),
@@ -411,13 +411,15 @@ export class DashTransferenciaService {
                     type: 'bar',
                     stack: 'total',
                     barWidth: '20%',
-                    data: dadosPorPartido.map((partidoDados) => {
-                        const valorParaEtapa = partidoDados.etapas.find(
-                            (agregado) => agregado.workflow_etapa_atual_id == etapa.id
-                        );
+                    data: dadosPorPartido
+                        .sort((a, b) => a.valor - b.valor)
+                        .map((partidoDados) => {
+                            const valorParaEtapa = partidoDados.etapas.find(
+                                (agregado) => agregado.workflow_etapa_atual_id == etapa.id
+                            );
 
-                        return valorParaEtapa ? (valorParaEtapa.sum / 1000).toFixed().toString() : '0';
-                    }),
+                            return valorParaEtapa ? (valorParaEtapa.sum / 1000).toFixed().toString() : '0';
+                        }),
                 };
             }),
         };
