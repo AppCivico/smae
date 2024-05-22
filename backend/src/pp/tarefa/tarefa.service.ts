@@ -1319,15 +1319,16 @@ export class TarefaService {
                             orgao_responsavel_id: true,
                         },
                     });
+                    console.log('======================');
+                    console.log(tarefaWorkflow);
 
                     if (updatedSelf.orgao_id != tarefaWorkflow.orgao_responsavel_id) {
+                        console.log(updatedSelf.orgao_id);
+                        console.log(tarefaWorkflow.orgao_responsavel_id);
                         await prismaTx.transferenciaAndamentoTarefa.update({
                             where: { id: updatedSelf.transferencia_fase_id },
                             data: {
-                                orgao_responsavel_id:
-                                    updatedSelf.orgao_id != tarefaWorkflow.orgao_responsavel_id
-                                        ? updatedSelf.orgao_id
-                                        : undefined,
+                                orgao_responsavel_id: updatedSelf.orgao_id,
                                 atualizado_em: new Date(Date.now()),
                                 atualizado_por: user.id,
                             },
