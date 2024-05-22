@@ -324,14 +324,11 @@ export class DashTransferenciaService {
                         .reduce((sum, current) => sum + +current.valor_total, 0),
 
                     etapas: etapasSoma.sort((a, b) => b.sum - a.sum),
+                    valor_etapas: etapasSoma.reduce((acc, curr) => acc + curr.sum, 0),
                 };
             })
             .sort((a, b) => b.valor - a.valor);
-        for (const foo of dadosPorPartido) {
-            console.log('==============');
-            console.log(foo);
-            console.log('==============');
-        }
+
         const chartNroPorPartido: DashTransferenciaBasicChartDto = {
             title: {
                 id: 'chart__NroPartido',
@@ -390,6 +387,12 @@ export class DashTransferenciaService {
             },
         });
 
+        // Etapa "virtual" para indicar Workflow não iniciado
+        etapas.push({
+            id: -1,
+            etapa_fluxo: 'Workflow não inciado',
+        });
+
         const chartValPorPartido: DashTransferenciaBasicChartDto = {
             title: {
                 id: 'chart__ValPartido',
@@ -423,11 +426,21 @@ export class DashTransferenciaService {
                     data: dadosPorPartido
                         .sort((a, b) => b.valor - a.valor)
                         .map((partidoDados) => {
-                            const valorParaEtapa = partidoDados.etapas.find(
-                                (agregado) => agregado.workflow_etapa_atual_id == etapa.id
-                            );
+                            let valor: string;
 
-                            return valorParaEtapa ? (valorParaEtapa.sum / 1000).toFixed().toString() : '0';
+                            if (etapa.id != -1) {
+                                const valorParaEtapa = partidoDados.etapas.find(
+                                    (agregado) => agregado.workflow_etapa_atual_id == etapa.id
+                                );
+                                valor = valorParaEtapa ? (valorParaEtapa.sum / 1000).toFixed().toString() : '0';
+                            } else {
+                                valor =
+                                    partidoDados.valor_etapas != partidoDados.valor
+                                        ? ((partidoDados.valor - partidoDados.valor_etapas) / 1000).toFixed()
+                                        : '0';
+                            }
+
+                            return valor;
                         }),
                 };
             }),
