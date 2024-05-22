@@ -457,10 +457,10 @@ export class DashTransferenciaService {
         const dadosPorOrgao = orgaoSiglas
             ? orgaoSiglas.map((o) => {
                   const etapasSoma = rows
-                      .filter((r) => r.distribuicao_orgao_id == o.id && r.workflow_etapa_atual_id != null)
+                      .filter((r) => r.distribuicao_orgao_id == o.id)
                       .reduce(
                           (acc, curr) => {
-                              const etapaId = curr.workflow_etapa_atual_id!;
+                              const etapaId = curr.workflow_etapa_atual_id ?? -1;
                               const valor = Number(curr.distribuicao_valor_total);
 
                               const existingObjIndex = acc.findIndex((obj) => obj.workflow_etapa_atual_id === etapaId);
