@@ -126,7 +126,7 @@
       class="tagfilter"
       @click="excluirParametro('partido_ids', partido)"
     >
-      {{ partidosPorId[partido]?.nome || partido }}
+      {{ partidosPorId[partido]?.sigla || partido }}
       <svg
         width="12"
         height="12"
