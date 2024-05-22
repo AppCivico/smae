@@ -260,6 +260,10 @@ export class DashTransferenciaService {
             yAxis: {
                 type: 'category',
                 data: ['Prejudicadas', 'Concluídas', 'Em Andamento', 'Disponibilizadas'],
+                axisLabel: {
+                    overflow: 'break',
+                    width: 100,
+                },
             },
             series: [
                 {
