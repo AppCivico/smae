@@ -347,7 +347,7 @@ export class DashTransferenciaService {
             yAxis: {
                 type: 'category',
                 data: dadosPorPartido
-                    .filter((e) => e.count_all > 0)
+                    .filter((e) => e.count_all != 0)
                     .sort((a, b) => b.count_all - a.count_all)
                     .map((e) => e.sigla),
             },
@@ -358,7 +358,7 @@ export class DashTransferenciaService {
                     stack: 'total',
                     label: { show: true },
                     data: dadosPorPartido
-                        .filter((e) => e.count_all > 0)
+                        .filter((e) => e.count_all != 0)
                         .sort((a, b) => b.count_all - a.count_all)
                         .map((e) => e.count_estadual.toString()),
                     color: '#372EA2',
@@ -370,7 +370,7 @@ export class DashTransferenciaService {
                     stack: 'total',
                     label: { show: true },
                     data: dadosPorPartido
-                        .filter((e) => e.count_all > 0)
+                        .filter((e) => e.count_all != 0)
                         .sort((a, b) => a.count_all - b.count_all)
                         .map((e) => e.count_federal.toString()),
                     color: '#C6C1FB',
@@ -477,7 +477,14 @@ export class DashTransferenciaService {
             },
             xAxis: {
                 type: 'category',
-                data: dadosPorOrgao.map((o) => o.sigla),
+                data: dadosPorOrgao
+                    .sort((a, b) => {
+                        const sumA = a.valor.reduce((acc, curr) => acc + curr.sum, 0);
+                        const sumB = b.valor.reduce((acc, curr) => acc + curr.sum, 0);
+
+                        return sumB - sumA;
+                    })
+                    .map((o) => o.sigla),
             },
             yAxis: {
                 name: 'R$ MIL',
@@ -494,13 +501,20 @@ export class DashTransferenciaService {
                     type: 'bar',
                     stack: 'total',
                     barWidth: '20%',
-                    data: dadosPorOrgao.map((orgaoDados) => {
-                        const valorParaEtapa = orgaoDados.valor.find(
-                            (agregado) => agregado.workflow_etapa_atual_id == etapa.id
-                        );
+                    data: dadosPorOrgao
+                        .sort((a, b) => {
+                            const sumA = a.valor.reduce((acc, curr) => acc + curr.sum, 0);
+                            const sumB = b.valor.reduce((acc, curr) => acc + curr.sum, 0);
 
-                        return valorParaEtapa ? (valorParaEtapa.sum / 1000).toFixed().toString() : '0';
-                    }),
+                            return sumB - sumA;
+                        })
+                        .map((orgaoDados) => {
+                            const valorParaEtapa = orgaoDados.valor.find(
+                                (agregado) => agregado.workflow_etapa_atual_id == etapa.id
+                            );
+
+                            return valorParaEtapa ? (valorParaEtapa.sum / 1000).toFixed().toString() : '0';
+                        }),
                 };
             }),
         };
