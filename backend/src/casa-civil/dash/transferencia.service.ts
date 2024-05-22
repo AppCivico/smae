@@ -375,7 +375,7 @@ export class DashTransferenciaService {
                     label: { show: true },
                     data: dadosPorPartido
                         .filter((e) => e.count_all != 0)
-                        .sort((a, b) => a.count_all - b.count_all)
+                        .sort((a, b) => b.count_all - a.count_all)
                         .map((e) => e.count_federal.toString()),
                     color: '#C6C1FB',
                     barWidth: '20%',
