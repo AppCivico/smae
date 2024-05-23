@@ -389,11 +389,20 @@ export class DashTransferenciaService {
             ],
         };
 
-        const etapas = await this.prisma.workflowEtapa.findMany({
+        let etapas = await this.prisma.workflowEtapa.findMany({
             select: {
                 id: true,
                 etapa_fluxo: true,
             },
+        });
+
+        // Filtrando arr de etapas para conter apenas etapas com valor atrelado.
+        etapas = etapas.filter((etapa) => {
+            const existe = dadosPorPartido.find((d) => {
+                return d.etapas.find((de) => de.workflow_etapa_atual_id == etapa.id);
+            });
+
+            if (existe) return etapa;
         });
 
         // Etapa "virtual" para indicar Workflow não iniciado
