@@ -123,7 +123,7 @@ BEGIN
           st.id AS r_source_id,
           nt.id AS new_id
         FROM temp_source_tarefas st
-        JOIN temp_new_tarefas nt ON st.tarefa = nt.tarefa AND st.numero = nt.numero AND st.nivel = nt.nivel
+        JOIN temp_new_tarefas nt ON st.tarefa = nt.tarefa AND st.numero = nt.numero AND st.nivel = nt.nivel AND st.tarefa_pai_id = nt.tarefa_pai_id
     ), dependencias AS (
         INSERT INTO tarefa_dependente (tarefa_id, dependencia_tarefa_id, tipo, latencia)
         SELECT
