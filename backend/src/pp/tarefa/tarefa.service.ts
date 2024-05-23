@@ -1313,12 +1313,15 @@ export class TarefaService {
                 }
 
                 if (updatedSelf.transferencia_fase_id) {
+                    console.log('================================');
+                    console.log(updatedSelf.transferencia_fase_id);
                     const tarefaWorkflow = await prismaTx.transferenciaAndamento.findFirstOrThrow({
                         where: { id: updatedSelf.transferencia_fase_id },
                         select: {
                             orgao_responsavel_id: true,
                         },
                     });
+                    console.log(tarefaWorkflow);
 
                     if (updatedSelf.orgao_id != tarefaWorkflow.orgao_responsavel_id) {
                         await prismaTx.transferenciaAndamentoTarefa.update({
@@ -1330,6 +1333,7 @@ export class TarefaService {
                             },
                         });
                     }
+                    console.log('================================');
                 }
 
                 return { id: tarefa.id };
