@@ -20,6 +20,7 @@ import { computed, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
 const biografia = ref('');
+const atuacao = ref('');
 
 const route = useRoute();
 const router = useRouter();
@@ -78,6 +79,7 @@ const cargosDisponíveisParaEdição = computed(() => Object.values(cargosDeParl
 const onSubmit = handleSubmit.withControlled(async (valoresControlados) => {
   const novosValoresControlados = { ...valoresControlados };
   novosValoresControlados.biografia = biografia.value;
+  novosValoresControlados.atuacao = atuacao.value;
 
   try {
     if (await parlamentaresStore.salvarMandato(
@@ -127,6 +129,7 @@ watch(mandatoParaEdição, (novoValor) => {
   eleiçãoEscolhida.value = novoValor.eleicao_id;
   if (novoValor) {
     biografia.value = novoValor.biografia;
+    atuacao.value = novoValor.atuacao;
   }
 });
 
@@ -524,12 +527,8 @@ iniciar();
             name="atuacao"
             :schema="schema"
           />
-          <Field
-            name="atuacao"
-            as="textarea"
-            rows="5"
-            class="inputtext light mb1"
-            :class="{ error: errors.atuacao, loading: chamadasPendentes.emFoco }"
+          <TextEditor
+            v-model="atuacao"
           />
           <ErrorMessage
             class="error-msg"
