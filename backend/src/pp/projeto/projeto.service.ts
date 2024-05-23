@@ -1,4 +1,4 @@
-import { BadRequestException, HttpException, Injectable, Logger } from '@nestjs/common';
+import { BadRequestException, HttpException, Inject, Injectable, Logger, forwardRef } from '@nestjs/common';
 import { Prisma, ProjetoFase, ProjetoOrigemTipo, ProjetoStatus } from '@prisma/client';
 import { DateTime } from 'luxon';
 import { IdCodTituloDto } from 'src/common/dto/IdCodTitulo.dto';
@@ -33,6 +33,8 @@ import { HtmlSanitizer } from '../../common/html-sanitizer';
 import { GeoLocService } from '../../geo-loc/geo-loc.service';
 import { CreateGeoEnderecoReferenciaDto, ReferenciasValidasBase } from '../../geo-loc/entities/geo-loc.entity';
 import { BlocoNotaService } from '../../bloco-nota/bloco-nota/bloco-nota.service';
+import { TarefaService } from '../tarefa/tarefa.service';
+import { UpdateTarefaDto } from '../tarefa/dto/update-tarefa.dto';
 
 const FASES_LIBERAR_COLABORADOR: ProjetoStatus[] = ['Registrado', 'Selecionado', 'EmPlanejamento'];
 const StatusParaFase: Record<ProjetoStatus, ProjetoFase> = {
@@ -88,7 +90,9 @@ export class ProjetoService {
         private readonly portfolioService: PortfolioService,
         private readonly uploadService: UploadService,
         private readonly geolocService: GeoLocService,
-        private readonly blocoNotaService: BlocoNotaService
+        private readonly blocoNotaService: BlocoNotaService,
+        @Inject(forwardRef(() => TarefaService))
+        private readonly tarefaService: TarefaService
     ) {}
 
     private async processaOrigem(dto: CreateProjetoDto) {
@@ -2120,10 +2124,51 @@ export class ProjetoService {
     }
 
     async cloneTarefas(projetoId: number, dto: CloneProjetoTarefasDto, user: PessoaFromJwt) {
-        // O true é para indicar que é clone de projeto e não de transferência.
-        await this.prisma
-            .$queryRaw`CALL clone_tarefas('true'::boolean, ${dto.projeto_fonte_id}::int, ${projetoId}::int);`;
-        console.log('exec de procedure');
+        await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient) => {
+            // O true é para indicar que é clone de projeto e não de transferência.
+            await prismaTx.$queryRaw`CALL clone_tarefas('true'::boolean, ${dto.projeto_fonte_id}::int, ${projetoId}::int);`;
+
+            // Buscando tarefas criadas e disparando calc de topologia.
+            const tarefas = await prismaTx.tarefa.findMany({
+                where: {
+                    tarefa_cronograma: {
+                        projeto_id: projetoId,
+                        removido_em: null,
+                    },
+                    removido_em: null,
+                },
+                select: {
+                    id: true,
+                    dependencias: {
+                        select: {
+                            id: true,
+                            tarefa_id: true,
+                            dependencia_tarefa_id: true,
+                            tipo: true,
+                            latencia: true,
+                        },
+                    },
+                },
+            });
+
+            for (const tarefa of tarefas) {
+                let dto: UpdateTarefaDto = {};
+
+                if (tarefa.dependencias.length) {
+                    dto = {
+                        dependencias: tarefa.dependencias.map((e) => {
+                            return {
+                                dependencia_tarefa_id: e.dependencia_tarefa_id,
+                                tipo: e.tipo,
+                                latencia: e.latencia,
+                            };
+                        }),
+                    };
+
+                    await this.tarefaService.update({ projeto_id: projetoId }, tarefa.id, dto, user);
+                }
+            }
+        });
     }
 
     async transferPortfolio(

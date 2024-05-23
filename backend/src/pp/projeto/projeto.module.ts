@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, forwardRef } from '@nestjs/common';
 import { UploadModule } from 'src/upload/upload.module';
 import { MetaModule } from '../../meta/meta.module';
 import { PrismaModule } from '../../prisma/prisma.module';
@@ -10,9 +10,18 @@ import { ProjetoSeiService } from './projeto.sei.service';
 import { ProjetoService } from './projeto.service';
 import { GeoLocModule } from '../../geo-loc/geo-loc.module';
 import { BlocoNotaModule } from '../../bloco-nota/bloco-nota/bloco-nota.module';
+import { TarefaModule } from '../tarefa/tarefa.module';
 
 @Module({
-    imports: [PrismaModule, GeoLocModule, MetaModule, UploadModule, PortfolioModule, BlocoNotaModule],
+    imports: [
+        PrismaModule,
+        GeoLocModule,
+        MetaModule,
+        UploadModule,
+        PortfolioModule,
+        BlocoNotaModule,
+        forwardRef(() => TarefaModule),
+    ],
     controllers: [ProjetoController, ProjetoProxyPdmMetasController],
     providers: [ProjetoService, ProjetoProxyPdmMetasService, ProjetoSeiService],
     exports: [ProjetoService],
