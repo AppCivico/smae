@@ -342,7 +342,7 @@ export class DashTransferenciaService {
             },
             legend: {
                 data: ['Estadual', 'Federal'],
-                right: 0,
+                left: 0,
                 orient: 'vertical',
                 textStyle: {
                     overflow: 'break',
@@ -420,7 +420,7 @@ export class DashTransferenciaService {
             legend: {
                 data: etapas.map((e) => e.etapa_fluxo),
                 orient: 'vertical',
-                right: 0,
+                left: 0,
                 textStyle: {
                     overflow: 'break',
                     width: 100,
@@ -524,7 +524,7 @@ export class DashTransferenciaService {
             },
             legend: {
                 data: etapas.map((e) => e.etapa_fluxo),
-                right: 0,
+                left: 0,
                 orient: 'vertical',
                 textStyle: {
                     overflow: 'break',
