@@ -6,6 +6,14 @@
       @click="exibirFiltros = !exibirFiltros"
     >
       <svg
+        v-if="exibirFiltros"
+        width="20"
+        height="20"
+      >
+        <use xlink:href="#i_x" />
+      </svg>
+      <svg
+        v-else
         width="30"
         height="30"
         viewBox="0 0 30 30"
