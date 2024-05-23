@@ -17,7 +17,7 @@
   </div>
   <div
     v-if="exibirFiltros"
-    class="bgb p15 w100"
+    class="bgb p15 w100 filtro-de-graficos"
   >
     <form
       class="flex flexwrap g1 start"
@@ -423,5 +423,12 @@ watch(
 
 h2 {
   margin-top: -45px;
+}
+</style>
+
+<style>
+.filtro-de-graficos ~ * div,
+.filtro-de-graficos ~ * h2 {
+  filter: saturate(10%) grayscale(80%) blur(2px);;
 }
 </style>
