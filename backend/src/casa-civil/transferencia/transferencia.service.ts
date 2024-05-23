@@ -637,6 +637,16 @@ export class TransferenciaService {
                 pendente_preenchimento_valores: true,
                 valor: true,
                 secretaria_concedente_str: true,
+                workflow_etapa_atual: {
+                    select: {
+                        etapa_fluxo: true,
+                    },
+                },
+                workflow_fase_atual: {
+                    select: {
+                        fase: true,
+                    },
+                },
 
                 tipo: {
                     select: {
@@ -657,24 +667,6 @@ export class TransferenciaService {
                         id: true,
                         descricao: true,
                         sigla: true,
-                    },
-                },
-
-                andamentoWorkflow: {
-                    where: { removido_em: null },
-                    orderBy: [{ id: 'desc' }, { data_inicio: 'desc' }],
-                    take: 1,
-                    select: {
-                        workflow_etapa: {
-                            select: {
-                                etapa_fluxo: true,
-                            },
-                        },
-                        workflow_fase: {
-                            select: {
-                                fase: true,
-                            },
-                        },
                     },
                 },
             },
@@ -706,10 +698,8 @@ export class TransferenciaService {
                     esfera: r.esfera,
                     orgao_concedente: r.orgao_concedente,
                     secretaria_concedente: r.secretaria_concedente_str,
-                    andamento_etapa: r.andamentoWorkflow.length
-                        ? r.andamentoWorkflow[0].workflow_etapa.etapa_fluxo
-                        : null,
-                    andamento_fase: r.andamentoWorkflow.length ? r.andamentoWorkflow[0].workflow_fase.fase : null,
+                    andamento_etapa: r.workflow_etapa_atual ? r.workflow_etapa_atual.etapa_fluxo : null,
+                    andamento_fase: r.workflow_fase_atual ? r.workflow_fase_atual.fase : null,
                 };
             })
             .sort((a, b) => {
