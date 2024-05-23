@@ -2127,7 +2127,9 @@ export class ProjetoService {
         await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient) => {
             // O true é para indicar que é clone de projeto e não de transferência.
             await prismaTx.$queryRaw`CALL clone_tarefas('true'::boolean, ${dto.projeto_fonte_id}::int, ${projetoId}::int);`;
+        });
 
+        await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient) => {
             // Buscando tarefas criadas e disparando calc de topologia.
             const tarefas = await prismaTx.tarefa.findMany({
                 where: {
