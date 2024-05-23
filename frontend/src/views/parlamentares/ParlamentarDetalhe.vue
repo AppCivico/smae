@@ -37,9 +37,7 @@
           <dt>
             Área de Atuação
           </dt>
-          <dd>
-            {{ emFoco.mandato_atual.atuacao }}
-          </dd>
+          <dd v-html="emFoco.mandato_atual.atuacao" />
         </dl>
       </div>
 
@@ -111,7 +109,10 @@
             </tr>
           </thead>
           <tbody v-if="emFoco.equipe">
-            <tr v-for="(item, index) in emFoco.equipe" :key="index">
+            <tr
+              v-for="(item, index) in emFoco.equipe"
+              :key="index"
+            >
               <td>{{ item.nome }}</td>
               <td>{{ item.telefone }}</td>
               <td>{{ item.email }}</td>
@@ -303,7 +304,6 @@
           </div>
         </div>
       </div>
-
 
       <ParlamentaresExibirRepresentatividade />
     </div>
