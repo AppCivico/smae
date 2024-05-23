@@ -275,9 +275,7 @@ export class DashTransferenciaService {
                             itemStyle: { color: '#B5E48C' },
                         },
                         {
-                            value: uniqueTransferencias
-                                .filter((e) => e.workflow_etapa_atual_id != null && e.workflow_finalizado == false)
-                                .length.toString(),
+                            value: uniqueTransferencias.filter((e) => e.workflow_finalizado == false).length.toString(),
                             itemStyle: { color: '#76C893' },
                         },
                         {
