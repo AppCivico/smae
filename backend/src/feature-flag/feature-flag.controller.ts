@@ -1,5 +1,5 @@
 import { Body, Controller, Patch } from '@nestjs/common';
-import { ApiBearerAuth, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { UpsertFeatureFlagDto } from './dto/feature-flag.dto';
 import { FeatureFlagService } from './feature-flag.service';
@@ -11,8 +11,7 @@ export class FeatureFlagController {
 
     @Patch('')
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles('SMAE.superadmin')
+    @Roles(['SMAE.superadmin'])
     async update(@Body() dto: UpsertFeatureFlagDto) {
         return await this.featureFlagService.update(dto);
     }

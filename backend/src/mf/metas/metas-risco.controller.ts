@@ -12,11 +12,14 @@ import { MetasRiscoService } from './../metas/metas-risco.service';
 @ApiTags('Monitoramento Fisico - Risco')
 @Controller('metas')
 export class MetasRiscoController {
-    constructor(private readonly metasRiscoService: MetasRiscoService, private readonly mfService: MfService) {}
+    constructor(
+        private readonly metasRiscoService: MetasRiscoService,
+        private readonly mfService: MfService
+    ) {}
 
     @ApiBearerAuth('access-token')
     @Get('risco')
-    @Roles('PDM.admin_cp', 'PDM.tecnico_cp')
+    @Roles(['PDM.admin_cp', 'PDM.tecnico_cp'])
     @ApiExtraModels(RecordWithId, RequestInfoDto)
     @ApiOkResponse({
         schema: { allOf: refs(MfListRiscoDto, RequestInfoDto) },
@@ -36,7 +39,7 @@ export class MetasRiscoController {
 
     @ApiBearerAuth('access-token')
     @Patch('risco')
-    @Roles('PDM.admin_cp', 'PDM.tecnico_cp')
+    @Roles(['PDM.admin_cp', 'PDM.tecnico_cp'])
     @ApiExtraModels(RecordWithId, RequestInfoDto)
     @ApiOkResponse({
         schema: { allOf: refs(RecordWithId, RequestInfoDto) },

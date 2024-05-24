@@ -1,5 +1,5 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post, Query } from '@nestjs/common';
-import { ApiBearerAuth, ApiExtraModels, ApiNoContentResponse, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiExtraModels, ApiNoContentResponse, ApiTags } from '@nestjs/swagger';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
@@ -26,8 +26,7 @@ export class VariavelController {
 
     @Post('indicador-variavel')
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles('CadastroIndicador.inserir')
+    @Roles(['CadastroIndicador.inserir'])
     async create(
         @Body() createVariavelDto: CreateVariavelDto,
         @CurrentUser() user: PessoaFromJwt
@@ -37,16 +36,14 @@ export class VariavelController {
 
     @Get('indicador-variavel')
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles(...ROLES_ACESSO_VARIAVEL)
+    @Roles([...ROLES_ACESSO_VARIAVEL])
     async listAll(@Query() filters: FilterVariavelDto, @CurrentUser() user: PessoaFromJwt): Promise<ListVariavelDto> {
         return { linhas: await this.variavelService.findAll(filters) };
     }
 
     @Patch('indicador-variavel/:id')
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles('CadastroIndicador.editar')
+    @Roles(['CadastroIndicador.editar'])
     async update(
         @Param() params: FindOneParams,
         @Body() updateUnidadeMedidaDto: UpdateVariavelDto,
@@ -57,8 +54,7 @@ export class VariavelController {
 
     @Delete('indicador-variavel/:id')
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles('CadastroIndicador.editar')
+    @Roles(['CadastroIndicador.editar'])
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.ACCEPTED)
     async remove(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt) {
@@ -69,10 +65,9 @@ export class VariavelController {
     // patch precisa ficar antes da rota do :id/serie-previsto
     @Patch('indicador-variavel-serie')
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.NO_CONTENT)
-    @Roles('CadastroIndicador.inserir')
+    @Roles(['CadastroIndicador.inserir'])
     async patchSeriePrevisto(@Body() series: BatchSerieUpsert, @CurrentUser() user: PessoaFromJwt) {
         await this.variavelService.batchUpsertSerie(series.valores, user);
 
@@ -82,8 +77,7 @@ export class VariavelController {
     // manter antes da proxima rota
     @Post('indicador-variavel/gerador-regionalizado')
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles('CadastroIndicador.inserir')
+    @Roles(['CadastroIndicador.inserir'])
     async create_generated(
         @Body() dto: CreateGeradorVariavelDto,
         @CurrentUser() user: PessoaFromJwt
@@ -95,8 +89,7 @@ export class VariavelController {
     @ApiTags('Indicador')
     @Get('indicador-variavel/:id/serie')
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles('CadastroIndicador.editar', 'CadastroIndicador.inserir', 'CadastroMeta.listar')
+    @Roles(['CadastroIndicador.editar', 'CadastroIndicador.inserir', 'CadastroMeta.listar'])
     async getSeriePrevistoRealizado(
         @Param() params: FindOneParams,
         @CurrentUser() user: PessoaFromJwt

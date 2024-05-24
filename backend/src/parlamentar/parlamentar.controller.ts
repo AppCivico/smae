@@ -1,5 +1,5 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post, Query } from '@nestjs/common';
-import { ApiBearerAuth, ApiNoContentResponse, ApiOperation, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiNoContentResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
@@ -30,8 +30,7 @@ export class ParlamentarController {
 
     @Post()
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles('CadastroParlamentar.inserir')
+    @Roles(['CadastroParlamentar.inserir'])
     async create(@Body() dto: CreateParlamentarDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
         return await this.parlamentarService.create(dto, user);
     }
@@ -44,16 +43,14 @@ export class ParlamentarController {
 
     @Get(':id')
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles('CadastroParlamentar.inserir')
+    @Roles(['CadastroParlamentar.inserir'])
     async findOne(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt): Promise<ParlamentarDetailDto> {
         return await this.parlamentarService.findOne(params.id, user);
     }
 
     @Patch(':id')
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles('CadastroParlamentar.editar')
+    @Roles(['CadastroParlamentar.editar'])
     async update(
         @Param() params: FindOneParams,
         @Body() dto: UpdateParlamentarDto,
@@ -64,8 +61,7 @@ export class ParlamentarController {
 
     @Delete(':id')
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles('CadastroParlamentar.remover')
+    @Roles(['CadastroParlamentar.remover'])
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.ACCEPTED)
     async remove(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt) {
@@ -76,8 +72,7 @@ export class ParlamentarController {
     // Equipe
     @Post(':id/equipe')
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles('CadastroParlamentar.inserir')
+    @Roles(['CadastroParlamentar.inserir'])
     async createEquipe(
         @Param() params: FindOneParams,
         @Body() dto: CreateEquipeDto,
@@ -88,8 +83,7 @@ export class ParlamentarController {
 
     @Patch(':id/equipe/:id2')
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles('CadastroParlamentar.editar')
+    @Roles(['CadastroParlamentar.editar'])
     async updateEquipe(
         @Param() params: FindTwoParams,
         @Body() dto: UpdateEquipeDto,
@@ -100,10 +94,9 @@ export class ParlamentarController {
 
     @Delete(':id/equipe/:id2')
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.ACCEPTED)
-    @Roles('CadastroParlamentar.remover')
+    @Roles(['CadastroParlamentar.remover'])
     async removeEquipe(@Param() params: FindTwoParams, @CurrentUser() user: PessoaFromJwt) {
         await this.parlamentarService.removeEquipe(+params.id2, user);
         return '';
@@ -112,8 +105,7 @@ export class ParlamentarController {
     // Mandato
     @Post(':id/mandato')
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles('CadastroParlamentar.inserir')
+    @Roles(['CadastroParlamentar.inserir'])
     async createMandato(
         @Param() params: FindOneParams,
         @Body() dto: CreateMandatoDto,
@@ -124,8 +116,7 @@ export class ParlamentarController {
 
     @Patch(':id/mandato/:id2')
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles('CadastroParlamentar.editar')
+    @Roles(['CadastroParlamentar.editar'])
     async updateMandato(
         @Param() params: FindTwoParams,
         @Body() dto: UpdateMandatoDto,
@@ -136,10 +127,9 @@ export class ParlamentarController {
 
     @Delete(':id/mandato/:id2')
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.ACCEPTED)
-    @Roles('CadastroParlamentar.remover')
+    @Roles(['CadastroParlamentar.remover'])
     async removeMandatoo(@Param() params: FindTwoParams, @CurrentUser() user: PessoaFromJwt) {
         await this.parlamentarService.removeMandato(+params.id2, user);
         return '';
@@ -148,8 +138,7 @@ export class ParlamentarController {
     // Mandato - Representatividade
     @Post(':id/representatividade')
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles('CadastroParlamentar.inserir')
+    @Roles(['CadastroParlamentar.inserir'])
     async createRepresentatividade(
         @Param() params: FindOneParams,
         @Body() dto: CreateMandatoRepresentatividadeDto,
@@ -160,8 +149,7 @@ export class ParlamentarController {
 
     @Patch(':id/representatividade/:id2')
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles('CadastroParlamentar.editar')
+    @Roles(['CadastroParlamentar.editar'])
     async updateRepresentatividade(
         @Param() params: FindTwoParams,
         @Body() dto: UpdateRepresentatividadeDto,
@@ -172,10 +160,9 @@ export class ParlamentarController {
 
     @Delete(':id/representatividade/:id2')
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.ACCEPTED)
-    @Roles('CadastroParlamentar.remover')
+    @Roles(['CadastroParlamentar.remover'])
     async removeRepresentatividade(
         @Param() params: FindTwoParams,
         @Body() dto: RemoveMandatoDepsDto,
@@ -188,8 +175,7 @@ export class ParlamentarController {
     // Mandato - Suplente
     @Post(':id/suplente')
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles('CadastroParlamentar.inserir')
+    @Roles(['CadastroParlamentar.inserir'])
     @ApiOperation({
         deprecated: true,
         summary: 'Endpoint desativado por regra de negócio, por agora.',
@@ -205,10 +191,9 @@ export class ParlamentarController {
 
     @Delete(':id/suplente/:id2')
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.ACCEPTED)
-    @Roles('CadastroParlamentar.remover')
+    @Roles(['CadastroParlamentar.remover'])
     @ApiOperation({
         deprecated: true,
         summary: 'Endpoint desativado por regra de negócio, por agora.',

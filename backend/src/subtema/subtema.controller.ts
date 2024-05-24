@@ -1,5 +1,5 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post, Query } from '@nestjs/common';
-import { ApiBearerAuth, ApiNoContentResponse, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiNoContentResponse, ApiTags } from '@nestjs/swagger';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
@@ -18,8 +18,7 @@ export class SubTemaController {
 
     @Post()
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles('CadastroSubTema.inserir')
+    @Roles(['CadastroSubTema.inserir'])
     async create(
         @Body() createSubTemaDto: CreateSubTemaDto,
         @CurrentUser() user: PessoaFromJwt
@@ -35,8 +34,7 @@ export class SubTemaController {
 
     @Patch(':id')
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles('CadastroSubTema.editar')
+    @Roles(['CadastroSubTema.editar'])
     async update(
         @Param() params: FindOneParams,
         @Body() updateSubTemaDto: UpdateSubTemaDto,
@@ -47,8 +45,7 @@ export class SubTemaController {
 
     @Delete(':id')
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles('CadastroSubTema.remover')
+    @Roles(['CadastroSubTema.remover'])
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.ACCEPTED)
     async remove(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt) {

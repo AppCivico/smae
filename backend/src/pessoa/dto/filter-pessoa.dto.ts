@@ -8,6 +8,9 @@ export const FilterPermsPessoa2Priv: Record<keyof FilterPermsPessoaDto, ListaDeP
     colaborador_de_projeto: 'SMAE.colaborador_de_projeto',
     espectador_de_painel_externo: 'SMAE.espectador_de_painel_externo',
     espectador_de_projeto: 'SMAE.espectador_de_projeto',
+    ps_admin_cp: 'PS.admin_cp',
+    ps_tecnico_cp: 'PS.tecnico_cp',
+    ps_ponto_focal: 'PS.ponto_focal',
 } as const;
 
 export class FilterPermsPessoaDto {
@@ -21,6 +24,39 @@ export class FilterPermsPessoaDto {
     @IsBoolean()
     @Transform(({ value }: any) => value === 'true')
     coordenador_responsavel_cp?: boolean;
+
+    /**
+     * Filtrar pessoa com privilegio `PS.tecnico_cp` ?
+     *
+     *  true filtra quem tem a `PS.tecnico_cp`; false filtra quem não tem
+     * @example ""
+     */
+    @IsOptional()
+    @IsBoolean()
+    @Transform(({ value }: any) => value === 'true')
+    ps_tecnico_cp?: boolean;
+
+    /**
+     * Filtrar pessoa com privilegio `PS.admin_cp` ?
+     *
+     *  true filtra quem tem a `PS.admin_cp`; false filtra quem não tem
+     * @example ""
+     */
+    @IsOptional()
+    @IsBoolean()
+    @Transform(({ value }: any) => value === 'true')
+    ps_admin_cp?: boolean;
+
+    /**
+     * Filtrar pessoa com privilegio `PS.ponto_focal` ?
+     *
+     *  true filtra quem tem a `PS.ponto_focal`; false filtra quem não tem
+     * @example ""
+     */
+    @IsOptional()
+    @IsBoolean()
+    @Transform(({ value }: any) => value === 'true')
+    ps_ponto_focal?: boolean;
 
     /**
      * Filtrar pessoa com privilegio `SMAE.espectador_de_painel_externo` ?

@@ -1,5 +1,5 @@
 import { Controller, Get, Query } from '@nestjs/common';
-import { ApiBearerAuth, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { FilterRequestLogDto, GroupByFieldsDto, GroupByFilterDto } from './dto/request_log.dto';
 import { RequestSummaryDto } from './entities/request_log.entity';
@@ -12,16 +12,14 @@ export class RequestLogController {
 
     @Get()
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles('SMAE.superadmin')
+    @Roles(['SMAE.superadmin'])
     async findAll(@Query() filters: FilterRequestLogDto) {
         return await this.requestLogService.findAll(filters);
     }
 
     @Get('/summary')
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles('SMAE.superadmin')
+    @Roles(['SMAE.superadmin'])
     async getSummary(
         @Query() filters: GroupByFilterDto,
         @Query() groupBy: GroupByFieldsDto

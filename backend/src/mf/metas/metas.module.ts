@@ -37,7 +37,7 @@ import { MfDashMetasService } from './dash/metas.service';
         MetasRiscoController,
         MetasFechamentoController,
         MetasCronogramaController,
-        MfDashMetasController
+        MfDashMetasController,
     ],
     providers: [
         MetasService,
@@ -45,7 +45,7 @@ import { MfDashMetasService } from './dash/metas.service';
         MetasRiscoService,
         MetasFechamentoService,
         MetasCronogramaService,
-        MfDashMetasService
+        MfDashMetasService,
     ],
     exports: [MetasAnaliseQualiService, MetasRiscoService, MetasFechamentoService, MetasService],
 })

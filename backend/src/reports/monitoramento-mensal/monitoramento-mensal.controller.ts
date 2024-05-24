@@ -1,5 +1,5 @@
 import { Body, Controller, Post } from '@nestjs/common';
-import { ApiBearerAuth, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { Roles } from '../../auth/decorators/roles.decorator';
 import { CreateRelMonitoramentoMensalDto } from './dto/create-monitoramento-mensal.dto';
 import { RetMonitoramentoMensal } from './entities/monitoramento-mensal.entity';
@@ -12,8 +12,7 @@ export class MonitoramentoMensalController {
 
     @Post()
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles('Reports.executar.PDM')
+    @Roles(['Reports.executar.PDM'])
     async create(
         @Body() createOrcamentoExecutadoDto: CreateRelMonitoramentoMensalDto
     ): Promise<RetMonitoramentoMensal> {

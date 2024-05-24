@@ -1,5 +1,5 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post, Query } from '@nestjs/common';
-import { ApiBearerAuth, ApiNoContentResponse, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiNoContentResponse, ApiTags } from '@nestjs/swagger';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
@@ -18,8 +18,7 @@ export class PartidoController {
 
     @Post()
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles('CadastroPartido.inserir')
+    @Roles(['CadastroPartido.inserir'])
     async create(@Body() dto: CreatePartidoDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
         return await this.partidoService.create(dto, user);
     }
@@ -32,16 +31,14 @@ export class PartidoController {
 
     @Get(':id')
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles('CadastroPartido.editar', 'CadastroPartido.inserir')
+    @Roles(['CadastroPartido.editar', 'CadastroPartido.inserir'])
     async findOne(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt): Promise<PartidoOneDto> {
         return await this.partidoService.findOne(params.id, user);
     }
 
     @Patch(':id')
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles('CadastroPartido.editar')
+    @Roles(['CadastroPartido.editar'])
     async update(
         @Param() params: FindOneParams,
         @Body() dto: UpdatePartidoDto,
@@ -52,8 +49,7 @@ export class PartidoController {
 
     @Delete(':id')
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles('CadastroPartido.remover')
+    @Roles(['CadastroPartido.remover'])
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.ACCEPTED)
     async remove(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt) {

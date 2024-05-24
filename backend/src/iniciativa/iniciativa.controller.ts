@@ -1,5 +1,5 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post, Query } from '@nestjs/common';
-import { ApiBearerAuth, ApiNoContentResponse, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiNoContentResponse, ApiTags } from '@nestjs/swagger';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
@@ -18,8 +18,7 @@ export class IniciativaController {
 
     @Post()
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles('CadastroIniciativa.inserir', 'CadastroMeta.inserir')
+    @Roles(['CadastroIniciativa.inserir', 'CadastroMeta.inserir'])
     async create(
         @Body() createIniciativaDto: CreateIniciativaDto,
         @CurrentUser() user: PessoaFromJwt
@@ -29,8 +28,7 @@ export class IniciativaController {
 
     @ApiBearerAuth('access-token')
     @Get()
-    @ApiUnauthorizedResponse()
-    @Roles('CadastroMeta.listar')
+    @Roles(['CadastroMeta.listar'])
     async findAll(
         @Query() filters: FilterIniciativaDto,
         @CurrentUser() user: PessoaFromJwt
@@ -40,8 +38,7 @@ export class IniciativaController {
 
     @Patch(':id')
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles('CadastroIniciativa.editar', 'CadastroMeta.inserir')
+    @Roles(['CadastroIniciativa.editar', 'CadastroMeta.inserir'])
     async update(
         @Param() params: FindOneParams,
         @Body() updateIniciativaDto: UpdateIniciativaDto,
@@ -52,8 +49,7 @@ export class IniciativaController {
 
     @Delete(':id')
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles('CadastroIniciativa.remover', 'CadastroMeta.inserir')
+    @Roles(['CadastroIniciativa.remover', 'CadastroMeta.inserir'])
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.ACCEPTED)
     async remove(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt) {

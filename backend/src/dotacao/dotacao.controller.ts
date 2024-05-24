@@ -12,6 +12,8 @@ import {
     ValorPlanejadoDto,
 } from './entities/dotacao.entity';
 
+const summary = 'Consulta SOF para receber empenho e liquidação para incluir Orçamento Realizado';
+
 // o controller de dotação só verifica se o usuário está autenticado,
 // mas não confere se tem os privilégios de orçamento, como ele é apenas read-only
 // não tem muito problema qualquer usuário fazer chamadas nele
@@ -42,7 +44,7 @@ export class DotacaoController {
     @Patch('valor-realizado')
     @ApiBearerAuth('access-token')
     @ApiOperation({
-        summary: 'Consulta SOF para receber empenho e liquidação para incluir Orçamento Realizado',
+        summary,
         description:
             'Realiza a busca e cache dos dados da dotação, utilizando sempre o mês mais atualizado possível.\n\n' +
             'Caso o SOF esteja com problemas (offline), não será possível utilizar a função de Orçamento Realizado\n\n' +
@@ -58,7 +60,7 @@ export class DotacaoController {
     @Patch('valor-realizado-processo')
     @ApiBearerAuth('access-token')
     @ApiOperation({
-        summary: 'Consulta SOF para receber empenho e liquidação para incluir Orçamento Realizado',
+        summary,
         description:
             'Realiza a busca e cache dos dados de dotação a partir do Processo SEI, utilizando sempre o mês mais atualizado possível.\n\n' +
             'Caso o SOF esteja com problemas (offline), não será possível utilizar a função de Orçamento Realizado\n\n' +
@@ -74,7 +76,7 @@ export class DotacaoController {
     @Patch('valor-realizado-nota-empenho')
     @ApiBearerAuth('access-token')
     @ApiOperation({
-        summary: 'Consulta SOF para receber empenho e liquidação para incluir Orçamento Realizado',
+        summary,
         description:
             'Realiza a busca e cache dos dados de dotação a partir da Nota de Empenho, utilizando sempre o mês mais atualizado possível.\n\n' +
             'Caso o SOF esteja com problemas (offline), não será possível utilizar a função de Orçamento Realizado\n\n' +

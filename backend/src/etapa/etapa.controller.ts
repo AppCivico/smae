@@ -1,5 +1,5 @@
 import { Body, Controller, Delete, HttpCode, HttpStatus, Param, Patch } from '@nestjs/common';
-import { ApiBearerAuth, ApiNoContentResponse, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiNoContentResponse, ApiTags } from '@nestjs/swagger';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
@@ -14,8 +14,7 @@ export class EtapaController {
 
     @Patch(':id')
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles('CadastroCronograma.editar', 'CadastroMeta.inserir')
+    @Roles(['CadastroCronograma.editar', 'CadastroMeta.inserir'])
     async update(
         @Param() params: FindOneParams,
         @Body() updateEtapaDto: UpdateEtapaDto,
@@ -26,9 +25,8 @@ export class EtapaController {
 
     @Delete(':id')
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
     @ApiNoContentResponse()
-    @Roles('CadastroCronograma.editar', 'CadastroMeta.inserir')
+    @Roles(['CadastroCronograma.editar', 'CadastroMeta.inserir'])
     @HttpCode(HttpStatus.ACCEPTED)
     async remove(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt) {
         await this.etapaService.remove(+params.id, user);

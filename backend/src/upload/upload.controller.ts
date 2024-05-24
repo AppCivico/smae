@@ -13,7 +13,7 @@ import { UploadService } from './upload.service';
 import { PatchDiretorioDto } from './dto/diretorio.dto';
 
 @Controller('')
-@ApiTags('Upload')
+@ApiTags('Upload, Download e Diretórios')
 export class UploadController {
     constructor(private readonly uploadService: UploadService) {}
 
@@ -69,11 +69,9 @@ export class UploadController {
     }
 
     @Patch('diretorio/:token')
+    @ApiBearerAuth('access-token')
     @IsPublic()
-    @ApiNoContentResponse({
-        description: 'Configura diretório virtual do arquivo',
-        type: '',
-    })
+    @ApiNoContentResponse({ description: 'Configura diretório virtual do arquivo' })
     async patch_dir(@Query() dto: PatchDiretorioDto, @Param('token') uploadOrDlToken: string): Promise<void> {
         await this.uploadService.updateDir(dto, uploadOrDlToken);
     }

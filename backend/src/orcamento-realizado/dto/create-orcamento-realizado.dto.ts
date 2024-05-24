@@ -293,7 +293,7 @@ export class OrcamentoRealizadoStatusConcluidoDto {
 export class OrcamentoRealizadoStatusConcluidoAdminDto {
     concluido: boolean;
     concluido_por: IdNomeExibicaoDto | null;
-    orgao: IdSiglaDescricao
+    orgao: IdSiglaDescricao;
     concluido_em: Date | null;
 }
 

@@ -6,9 +6,7 @@ import { UpdateProjetoEtapaDto } from './dto/update-projeto-etapa.dto';
 
 @Injectable()
 export class ProjetoEtapaService {
-    constructor(
-        private readonly prisma: PrismaService
-    ) {}
+    constructor(private readonly prisma: PrismaService) {}
 
     async create(dto: CreateProjetoEtapaDto, user: PessoaFromJwt) {
         const similarExists = await this.prisma.projetoEtapa.count({

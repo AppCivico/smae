@@ -20,7 +20,10 @@ export class ProjetoOrcamentoUpdatedRet {
 
 @Injectable()
 export class OrcamentoPrevistoService {
-    constructor(private readonly prisma: PrismaService, private readonly dotacaoService: DotacaoService) {}
+    constructor(
+        private readonly prisma: PrismaService,
+        private readonly dotacaoService: DotacaoService
+    ) {}
 
     async create(projeto_id: number, dto: CreateOrcamentoPrevistoDto, user: PessoaFromJwt): Promise<RecordWithId> {
         // não tem meta, logo, não tem ciclo/PDM, provavelmente vamos criar outra table
@@ -31,12 +34,12 @@ export class OrcamentoPrevistoService {
                     where: { id: projeto_id },
                     select: {
                         portfolio: {
-                            select: { modelo_clonagem: true }
-                        }
-                    }
+                            select: { modelo_clonagem: true },
+                        },
+                    },
                 });
                 if (projetoPortfolio.portfolio.modelo_clonagem)
-                  throw new HttpException('Projeto pertence a Portfolio de modelo de clonagem', 400);
+                    throw new HttpException('Projeto pertence a Portfolio de modelo de clonagem', 400);
 
                 const now = new Date(Date.now());
 

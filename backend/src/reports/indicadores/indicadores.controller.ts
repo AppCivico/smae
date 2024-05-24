@@ -5,7 +5,7 @@ import {
     ApiOkResponse,
     ApiProduces,
     ApiTags,
-    ApiUnauthorizedResponse,
+
     refs,
 } from '@nestjs/swagger';
 import { Response as ExpressResponse } from 'express';
@@ -22,16 +22,14 @@ export class IndicadoresController {
 
     @Post()
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles('Reports.executar.PDM')
+    @Roles(['Reports.executar.PDM'])
     async create(@Body() dto: CreateRelIndicadorDto): Promise<ListIndicadoresDto> {
         return await this.indicadoresService.create(dto);
     }
 
     @Post('/stream-linhas')
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles('Reports.executar.PDM')
+    @Roles(['Reports.executar.PDM'])
     @ApiOkResponse({
         content: {
             'application/jsonlines+json': {
@@ -55,8 +53,7 @@ export class IndicadoresController {
 
     @Post('/stream-regioes')
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles('Reports.executar.PDM')
+    @Roles(['Reports.executar.PDM'])
     @ApiOkResponse({
         content: {
             'application/jsonlines+json': {

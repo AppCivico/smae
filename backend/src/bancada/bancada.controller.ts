@@ -1,5 +1,5 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post } from '@nestjs/common';
-import { ApiBearerAuth, ApiNoContentResponse, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiNoContentResponse, ApiTags } from '@nestjs/swagger';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
@@ -17,8 +17,7 @@ export class BancadaController {
 
     @Post()
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles('CadastroBancada.inserir')
+    @Roles(['CadastroBancada.inserir'])
     async create(@Body() dto: CreateBancadaDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
         return await this.bancadaService.create(dto, user);
     }
@@ -31,16 +30,14 @@ export class BancadaController {
 
     @Get(':id')
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles('CadastroBancada.editar', 'CadastroBancada.inserir')
+    @Roles(['CadastroBancada.editar', 'CadastroBancada.inserir'])
     async findOne(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt): Promise<BancadaOneDto> {
         return await this.bancadaService.findOne(params.id, user);
     }
 
     @Patch(':id')
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles('CadastroBancada.editar')
+    @Roles(['CadastroBancada.editar'])
     async update(
         @Param() params: FindOneParams,
         @Body() dto: UpdateBancadaDto,
@@ -51,12 +48,11 @@ export class BancadaController {
 
     @Delete(':id')
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles('CadastroBancada.remover')
+    @Roles(['CadastroBancada.remover'])
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.ACCEPTED)
     async remove(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt) {
         await this.bancadaService.remove(+params.id, user);
-        return  '';
+        return '';
     }
 }

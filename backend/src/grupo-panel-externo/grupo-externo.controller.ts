@@ -1,5 +1,5 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post, Query } from '@nestjs/common';
-import { ApiBearerAuth, ApiNoContentResponse, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiNoContentResponse, ApiTags } from '@nestjs/swagger';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
@@ -23,16 +23,14 @@ export class GrupoPainelExternoController {
 
     @Post()
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles(...roles)
+    @Roles([...roles])
     async create(@Body() dto: CreateGrupoPainelExternoDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
         return await this.grupoPainelExternoService.create(dto, user);
     }
 
     @Get()
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles(...roles)
+    @Roles([...roles])
     async findAll(
         @Query() filter: FilterGrupoPainelExternoDto,
         @CurrentUser() user: PessoaFromJwt
@@ -42,8 +40,7 @@ export class GrupoPainelExternoController {
 
     @Patch(':id')
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles(...roles)
+    @Roles([...roles])
     async update(
         @Param() id: FindOneParams,
         @Body() dto: UpdateGrupoPainelExternoDto,
@@ -54,8 +51,7 @@ export class GrupoPainelExternoController {
 
     @Delete(':id')
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles(...roles)
+    @Roles([...roles])
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.ACCEPTED)
     async remove(@Param() id: FindOneParams, @CurrentUser() user: PessoaFromJwt) {

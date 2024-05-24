@@ -1,3 +1,45 @@
+-- CreateEnum
+CREATE TYPE "TipoPdm" AS ENUM ('PDM', 'PS');
+
+-- CreateEnum
+CREATE TYPE "PdmPerfilTipo" AS ENUM ('ADMIN', 'CP');
+
+-- AlterTable
+ALTER TABLE "pdm" ADD COLUMN     "tipo" "TipoPdm" NOT NULL DEFAULT 'PDM';
+
+-- CreateTable
+CREATE TABLE "pdm_perfil" (
+    "id" SERIAL NOT NULL,
+    "pdm_id" INTEGER NOT NULL,
+    "tipo" "PdmPerfilTipo" NOT NULL,
+    "orgao_id" INTEGER NOT NULL,
+    "pessoa_id" INTEGER NOT NULL,
+    "criado_por" INTEGER NOT NULL,
+    "criado_em" TIMESTAMPTZ(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "removido_por" INTEGER,
+    "removido_em" TIMESTAMPTZ(6) DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "pdm_perfil_pkey" PRIMARY KEY ("id")
+);
+
+-- AddForeignKey
+ALTER TABLE "pdm_perfil" ADD CONSTRAINT "pdm_perfil_pdm_id_fkey" FOREIGN KEY ("pdm_id") REFERENCES "pdm"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "pdm_perfil" ADD CONSTRAINT "pdm_perfil_orgao_id_fkey" FOREIGN KEY ("orgao_id") REFERENCES "orgao"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "pdm_perfil" ADD CONSTRAINT "pdm_perfil_pessoa_id_fkey" FOREIGN KEY ("pessoa_id") REFERENCES "pessoa"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "pdm_perfil" ADD CONSTRAINT "pdm_perfil_criado_por_fkey" FOREIGN KEY ("criado_por") REFERENCES "pessoa"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "pdm_perfil" ADD CONSTRAINT "pdm_perfil_removido_por_fkey" FOREIGN KEY ("removido_por") REFERENCES "pessoa"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+drop index ix_pdm_uniq_ativo;
+create unique index ix_pdm_uniq_ativo on pdm(ativo) where ativo=true and tipo='PDM';
+
 CREATE OR REPLACE FUNCTION monta_ciclos_pdm (pPdmId int, pApagarCiclo boolean)
     RETURNS varchar
     AS $$
@@ -128,3 +170,12 @@ END
 $$
 LANGUAGE plpgsql;
 
+-- AlterTable
+ALTER TABLE "pdm" ADD COLUMN     "removido_em" TIMESTAMPTZ(6),
+ADD COLUMN     "removido_por" INTEGER;
+
+-- AddForeignKey
+ALTER TABLE "pdm" ADD CONSTRAINT "pdm_removido_por_fkey" FOREIGN KEY ("removido_por") REFERENCES "pessoa"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AlterTable
+ALTER TABLE "pdm" ADD COLUMN     "ps_admin_cps" JSON NOT NULL DEFAULT '[]';

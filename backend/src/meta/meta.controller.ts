@@ -40,7 +40,7 @@ export class MetaController {
     @Post()
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse({ description: 'Precisa: CadastroMeta.inserir' })
-    @Roles('CadastroMeta.inserir')
+    @Roles(['CadastroMeta.inserir'])
     async create(@Body() createMetaDto: CreateMetaDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
         return await this.metaService.create(createMetaDto, user);
     }
@@ -54,7 +54,7 @@ export class MetaController {
         'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
     )
     @ApiUnauthorizedResponse({ description: 'Precisa: CadastroMeta.listar' })
-    @Roles('CadastroMeta.listar')
+    @Roles(['CadastroMeta.listar'])
     async findAll(@Query() filters: FilterMetaDto, @CurrentUser() user: PessoaFromJwt): Promise<ListMetaDto> {
         return { linhas: await this.metaService.findAll(filters, user) };
     }
@@ -62,7 +62,7 @@ export class MetaController {
     @ApiBearerAuth('access-token')
     @Get('iniciativas-atividades')
     @ApiUnauthorizedResponse({ description: 'Precisa: CadastroMeta.listar' })
-    @Roles('CadastroMeta.listar')
+    @Roles(['CadastroMeta.listar'])
     async buscaMetasIniciativaAtividades(
         @Query('meta_ids', new ParseArrayPipe({ items: Number, separator: ',' })) ids: number[]
     ): Promise<ListDadosMetaIniciativaAtividadesDto> {
@@ -74,7 +74,7 @@ export class MetaController {
     @ApiNotFoundResponse()
     @Get(':id')
     @ApiUnauthorizedResponse({ description: 'Precisa: CadastroMeta.listar' })
-    @Roles('CadastroMeta.listar')
+    @Roles(['CadastroMeta.listar'])
     async findOne(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt): Promise<Meta> {
         const r = await this.metaService.findAll({ id: params.id }, user);
         if (!r.length) throw new HttpException('Meta não encontrada.', 404);
@@ -84,7 +84,7 @@ export class MetaController {
     @Patch(':id')
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse({ description: 'Precisa: CadastroMeta.editar ou CadastroMeta.inserir' })
-    @Roles('CadastroMeta.editar', 'CadastroMeta.inserir')
+    @Roles(['CadastroMeta.editar', 'CadastroMeta.inserir'])
     async update(
         @Param() params: FindOneParams,
         @Body() updateMetaDto: UpdateMetaDto,
@@ -96,7 +96,7 @@ export class MetaController {
     @Delete(':id')
     @ApiBearerAuth('access-token')
     @ApiUnauthorizedResponse({ description: 'Precisa: CadastroMeta.remover ou CadastroMeta.inserir' })
-    @Roles('CadastroMeta.remover', 'CadastroMeta.inserir')
+    @Roles(['CadastroMeta.remover', 'CadastroMeta.inserir'])
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.ACCEPTED)
     async remove(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt) {

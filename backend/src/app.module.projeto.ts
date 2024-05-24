@@ -39,7 +39,7 @@ import { ProjetoEtapaModule } from './projeto-etapa/projeto-etapa.module';
         AcompanhamentoTipoModule,
         GrupoPortfolioModule,
         AcaoModule,
-        ProjetoEtapaModule
+        ProjetoEtapaModule,
     ],
     controllers: [],
     providers: [],

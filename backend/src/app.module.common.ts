@@ -49,7 +49,7 @@ import { PainelExternoModule } from './painel-externo/painel-externo.module';
         FeatureFlagModule,
         GeoApiModule,
         GrupoPainelExternoModule,
-        PainelExternoModule
+        PainelExternoModule,
     ],
     controllers: [],
     providers: [],

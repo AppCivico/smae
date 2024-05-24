@@ -3,10 +3,8 @@ import {
     ApiBearerAuth,
     ApiExtraModels,
     ApiOkResponse,
-    ApiOperation,
     ApiTags,
-    ApiUnauthorizedResponse,
-    refs,
+    refs
 } from '@nestjs/swagger';
 import { CurrentUser } from '../../auth/decorators/current-user.decorator';
 import { Roles } from '../../auth/decorators/roles.decorator';
@@ -37,7 +35,7 @@ export class MetasCronogramaController {
 
     @Get('cronograma')
     @ApiBearerAuth('access-token')
-    @Roles('PDM.admin_cp', 'PDM.tecnico_cp', 'PDM.ponto_focal')
+    @Roles(['PDM.admin_cp', 'PDM.tecnico_cp', 'PDM.ponto_focal'])
     @ApiExtraModels(ListCronogramaDto, RequestInfoDto)
     @ApiOkResponse({
         schema: { allOf: refs(ListCronogramaDto, RequestInfoDto) },
@@ -59,7 +57,7 @@ export class MetasCronogramaController {
 
     @Get('cronograma-etapa')
     @ApiBearerAuth('access-token')
-    @Roles('PDM.admin_cp', 'PDM.tecnico_cp', 'PDM.ponto_focal')
+    @Roles(['PDM.admin_cp', 'PDM.tecnico_cp', 'PDM.ponto_focal'])
     @ApiExtraModels(ListCronogramaEtapaDto, RequestInfoDto)
     @ApiOkResponse({
         schema: { allOf: refs(ListCronogramaEtapaDto, RequestInfoDto) },
@@ -81,8 +79,7 @@ export class MetasCronogramaController {
 
     @Patch('cronograma/etapa/:id')
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles('PDM.admin_cp', 'PDM.tecnico_cp', 'PDM.ponto_focal')
+    @Roles(['PDM.admin_cp', 'PDM.tecnico_cp', 'PDM.ponto_focal'])
     async patch_crono_etapa(
         @Param() params: FindOneParams,
         @Body() updateEtapaDto: MfEtapaDto,
@@ -105,10 +102,11 @@ export class MetasCronogramaController {
     }
 
     @Get(':id/iniciativas-e-atividades')
-    @ApiOperation({ summary: 'Para uso apenas quando existir CRONOGRAMA na meta, se não irá voltar meta=null' })
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles('PDM.admin_cp', 'PDM.tecnico_cp', 'PDM.ponto_focal')
+    @Roles(
+        ['PDM.admin_cp', 'PDM.tecnico_cp', 'PDM.ponto_focal'],
+        'Para uso apenas quando existir CRONOGRAMA na meta, se não irá voltar meta=null'
+    )
     async iniciativa_atividades(
         @Param() params: FindOneParams,
         @CurrentUser() user: PessoaFromJwt

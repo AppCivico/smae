@@ -1,5 +1,5 @@
 import { Body, Controller, Post } from '@nestjs/common';
-import { ApiBearerAuth, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { Roles } from '../../auth/decorators/roles.decorator';
 import { CreateRelTransferenciasDto } from './dto/create-transferencias.dto';
 import { TransferenciasService } from './transferencias.service';
@@ -12,8 +12,7 @@ export class TransferenciasController {
 
     @Post()
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles('Reports.executar.CasaCivil')
+    @Roles(['Reports.executar.CasaCivil'])
     async create(@Body() createTransferenciasDto: CreateRelTransferenciasDto): Promise<TransferenciasRelatorioDto> {
         return await this.transferencias.create(createTransferenciasDto);
     }

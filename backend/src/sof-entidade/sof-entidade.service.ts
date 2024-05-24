@@ -10,7 +10,10 @@ import { DateTime } from 'luxon';
 @Injectable()
 export class SofEntidadeService {
     private readonly logger = new Logger(SofEntidadeService.name);
-    constructor(private readonly prisma: PrismaService, private readonly sof: SofApiService) {}
+    constructor(
+        private readonly prisma: PrismaService,
+        private readonly sof: SofApiService
+    ) {}
 
     async findByYear(ano: number) {
         let dados = await this.prisma.sofEntidade.findFirst({ where: { ano: ano } });

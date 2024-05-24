@@ -1,5 +1,5 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Post, Query, Res } from '@nestjs/common';
-import { ApiBearerAuth, ApiOkResponse, ApiResponse, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOkResponse, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { Response } from 'express';
 import { DateTime } from 'luxon';
 import { CurrentUser } from '../../auth/decorators/current-user.decorator';
@@ -25,8 +25,7 @@ export class ReportsController {
 
     @Post()
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles('Reports.executar.CasaCivil', 'Reports.executar.PDM', 'Reports.executar.Projetos')
+    @Roles(['Reports.executar.CasaCivil', 'Reports.executar.PDM', 'Reports.executar.Projetos'])
     @ApiOkResponse({
         description: 'Recebe o arquivo do relatório, ou msg de erro em JSON',
         type: '',
@@ -64,7 +63,7 @@ export class ReportsController {
 
     @ApiBearerAuth('access-token')
     @Get()
-    @Roles('Reports.executar.CasaCivil', 'Reports.executar.PDM', 'Reports.executar.Projetos')
+    @Roles(['Reports.executar.CasaCivil', 'Reports.executar.PDM', 'Reports.executar.Projetos'])
     @ApiPaginatedResponse(RelatorioDto)
     async findAll(@Query() filters: FilterRelatorioDto): Promise<PaginatedDto<RelatorioDto>> {
         return await this.reportsService.findAll(filters);
@@ -72,8 +71,7 @@ export class ReportsController {
 
     @Delete(':id')
     @ApiBearerAuth('access-token')
-    @Roles('Reports.remover.CasaCivil', 'Reports.remover.PDM', 'Reports.remover.Projetos')
-    @ApiUnauthorizedResponse()
+    @Roles(['Reports.remover.CasaCivil', 'Reports.remover.PDM', 'Reports.remover.Projetos'])
     @ApiResponse({ description: 'sucesso ao remover', status: 204 })
     @HttpCode(HttpStatus.NO_CONTENT)
     async remover(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt) {

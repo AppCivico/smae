@@ -6,7 +6,7 @@ import { SubTemaModule } from '../subtema/subtema.module';
 import { TagModule } from '../tag/tag.module';
 import { UploadModule } from '../upload/upload.module';
 import { VariavelModule } from '../variavel/variavel.module';
-import { PdmController } from './pdm.controller';
+import { PdmController, PlanoSetorialController } from './pdm.controller';
 import { PdmService } from './pdm.service';
 
 @Module({
@@ -19,7 +19,7 @@ import { PdmService } from './pdm.service';
         VariavelModule,
         UploadModule,
     ],
-    controllers: [PdmController],
+    controllers: [PdmController, PlanoSetorialController],
     providers: [PdmService],
 })
 export class PdmModule {}

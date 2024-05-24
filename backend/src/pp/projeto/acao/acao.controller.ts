@@ -1,5 +1,5 @@
 import { Body, Controller, HttpCode, HttpStatus, Patch } from '@nestjs/common';
-import { ApiBearerAuth, ApiResponse, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { CurrentUser } from '../../../auth/decorators/current-user.decorator';
 import { Roles } from '../../../auth/decorators/roles.decorator';
 import { PessoaFromJwt } from '../../../auth/models/PessoaFromJwt';
@@ -13,13 +13,12 @@ export class AcaoController {
 
     @Patch()
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles(
+    @Roles([
         'Projeto.administrador',
         'Projeto.administrador_no_orgao',
         'SMAE.gestor_de_projeto',
-        'SMAE.colaborador_de_projeto'
-    )
+        'SMAE.colaborador_de_projeto',
+    ])
     @ApiResponse({ description: 'sucesso ao executar ação', status: 204 })
     @HttpCode(HttpStatus.NO_CONTENT)
     async create(@Body() dto: CreateAcaoDto, @CurrentUser() user: PessoaFromJwt) {

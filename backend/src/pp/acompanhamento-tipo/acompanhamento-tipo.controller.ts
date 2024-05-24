@@ -1,5 +1,5 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post } from '@nestjs/common';
-import { ApiBearerAuth, ApiNoContentResponse, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiNoContentResponse, ApiTags } from '@nestjs/swagger';
 import { ListaDePrivilegios } from 'src/common/ListaDePrivilegios';
 import { CurrentUser } from '../../auth/decorators/current-user.decorator';
 import { Roles } from '../../auth/decorators/roles.decorator';
@@ -22,8 +22,7 @@ export class AcompanhamentoTipoController {
 
     @Post('')
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles(...roles)
+    @Roles([...roles])
     async create(
         @Body() createAcompanhamentoTipoDto: CreateTipoAcompanhamentoDto,
         @CurrentUser() user: PessoaFromJwt
@@ -33,8 +32,7 @@ export class AcompanhamentoTipoController {
 
     @Get('')
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles(...roles, ...PROJETO_READONLY_ROLES)
+    @Roles([...roles, ...PROJETO_READONLY_ROLES])
     async findAll(@CurrentUser() user: PessoaFromJwt): Promise<ListAcompanhamentoTipoDto> {
         return {
             linhas: await this.acompanhamentoTipoService.findAll(user),
@@ -43,8 +41,7 @@ export class AcompanhamentoTipoController {
 
     @Patch(':id')
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles(...roles)
+    @Roles([...roles])
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.ACCEPTED)
     async update(
@@ -57,8 +54,7 @@ export class AcompanhamentoTipoController {
 
     @Delete(':id')
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles(...roles)
+    @Roles([...roles])
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.ACCEPTED)
     async remove(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt) {

@@ -1,5 +1,5 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post } from '@nestjs/common';
-import { ApiBearerAuth, ApiNoContentResponse, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiNoContentResponse, ApiTags } from '@nestjs/swagger';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
@@ -17,8 +17,7 @@ export class UnidadeMedidaController {
 
     @Post()
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles('CadastroUnidadeMedida.inserir')
+    @Roles(['CadastroUnidadeMedida.inserir'])
     async create(
         @Body() createUnidadeMedidaDto: CreateUnidadeMedidaDto,
         @CurrentUser() user: PessoaFromJwt
@@ -34,8 +33,7 @@ export class UnidadeMedidaController {
 
     @Patch(':id')
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles('CadastroUnidadeMedida.editar')
+    @Roles(['CadastroUnidadeMedida.editar'])
     async update(
         @Param() params: FindOneParams,
         @Body() updateUnidadeMedidaDto: UpdateUnidadeMedidaDto,
@@ -46,8 +44,7 @@ export class UnidadeMedidaController {
 
     @Delete(':id')
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles('CadastroUnidadeMedida.remover')
+    @Roles(['CadastroUnidadeMedida.remover'])
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.ACCEPTED)
     async remove(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt) {

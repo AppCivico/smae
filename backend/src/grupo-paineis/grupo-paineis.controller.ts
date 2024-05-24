@@ -1,5 +1,5 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post, Query } from '@nestjs/common';
-import { ApiBearerAuth, ApiNoContentResponse, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiNoContentResponse, ApiTags } from '@nestjs/swagger';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
@@ -19,8 +19,7 @@ export class GrupoPaineisController {
 
     @Post('')
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles('CadastroGrupoPaineis.inserir')
+    @Roles(['CadastroGrupoPaineis.inserir'])
     async create(
         @Body() createGrupoPaineisDto: CreateGrupoPaineisDto,
         @CurrentUser() user: PessoaFromJwt
@@ -30,20 +29,19 @@ export class GrupoPaineisController {
 
     @ApiBearerAuth('access-token')
     @Get('')
-    @Roles(
+    @Roles([
         'CadastroPessoa.inserir',
         'CadastroGrupoPaineis.inserir',
         'CadastroGrupoPaineis.editar',
-        'CadastroGrupoPaineis.remover'
-    )
+        'CadastroGrupoPaineis.remover',
+    ])
     async findAll(@Query() filters: FilterGrupoPaineisDto): Promise<ListGrupoPaineisDto> {
         return { linhas: await this.grupoPaineisService.findAll(filters) };
     }
 
     @Patch(':id')
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles('CadastroGrupoPaineis.editar')
+    @Roles(['CadastroGrupoPaineis.editar'])
     async update(
         @Param() params: FindOneParams,
         @Body() updateGrupoPaineisDto: UpdateGrupoPaineisDto,
@@ -54,8 +52,7 @@ export class GrupoPaineisController {
 
     @Delete(':id')
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles('CadastroGrupoPaineis.remover')
+    @Roles(['CadastroGrupoPaineis.remover'])
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.ACCEPTED)
     async remove(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt) {
@@ -65,12 +62,12 @@ export class GrupoPaineisController {
 
     @ApiBearerAuth('access-token')
     @Get(':id')
-    @Roles(
+    @Roles([
         'CadastroPainel.visualizar',
         'CadastroGrupoPaineis.inserir',
         'CadastroGrupoPaineis.editar',
-        'CadastroGrupoPaineis.remover'
-    )
+        'CadastroGrupoPaineis.remover',
+    ])
     async getDetail(@Param() params: FindOneParams): Promise<DetailGrupoPaineisDto> {
         return await this.grupoPaineisService.getDetail(params.id);
     }

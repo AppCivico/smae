@@ -14,7 +14,10 @@ import { OrcamentoPlanejado } from './entities/orcamento-planejado.entity';
 
 @Injectable()
 export class OrcamentoPlanejadoService {
-    constructor(private readonly prisma: PrismaService, private readonly dotacaoService: DotacaoService) {}
+    constructor(
+        private readonly prisma: PrismaService,
+        private readonly dotacaoService: DotacaoService
+    ) {}
 
     async create(dto: CreateOrcamentoPlanejadoDto, user: PessoaFromJwt): Promise<RecordWithId> {
         const dotacao = await this.prisma.dotacaoPlanejado.findFirst({

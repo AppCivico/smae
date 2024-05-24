@@ -1,5 +1,5 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post, Query } from '@nestjs/common';
-import { ApiBearerAuth, ApiNoContentResponse, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiNoContentResponse, ApiTags } from '@nestjs/swagger';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
@@ -24,8 +24,7 @@ export class OrcamentoRealizadoController {
 
     @Post()
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles('CadastroMeta.orcamento', 'PDM.tecnico_cp', 'PDM.admin_cp')
+    @Roles(['CadastroMeta.orcamento', 'PDM.tecnico_cp', 'PDM.admin_cp'])
     async create(
         @Body() createMetaDto: CreateOrcamentoRealizadoDto,
         @CurrentUser() user: PessoaFromJwt
@@ -35,8 +34,7 @@ export class OrcamentoRealizadoController {
 
     @Patch('orcamento-concluido')
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles('CadastroMeta.orcamento', 'PDM.tecnico_cp', 'PDM.admin_cp')
+    @Roles(['CadastroMeta.orcamento', 'PDM.tecnico_cp', 'PDM.admin_cp'])
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.ACCEPTED)
     async patchProprioOrgaoOrcamentoConcluido(
@@ -49,8 +47,7 @@ export class OrcamentoRealizadoController {
 
     @Patch('orcamento-concluido-admin')
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles('CadastroMeta.orcamento', 'PDM.tecnico_cp', 'PDM.admin_cp')
+    @Roles(['CadastroMeta.orcamento', 'PDM.tecnico_cp', 'PDM.admin_cp'])
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.ACCEPTED)
     async patchOrcamentoConcluidoAdmin(
@@ -63,8 +60,7 @@ export class OrcamentoRealizadoController {
 
     @Patch(':id')
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles('CadastroMeta.orcamento', 'PDM.tecnico_cp', 'PDM.admin_cp')
+    @Roles(['CadastroMeta.orcamento', 'PDM.tecnico_cp', 'PDM.admin_cp'])
     async update(
         @Param() params: FindOneParams,
         @Body() createMetaDto: UpdateOrcamentoRealizadoDto,
@@ -75,7 +71,7 @@ export class OrcamentoRealizadoController {
 
     @ApiBearerAuth('access-token')
     @Get()
-    @Roles('CadastroMeta.orcamento', 'PDM.tecnico_cp', 'PDM.admin_cp')
+    @Roles(['CadastroMeta.orcamento', 'PDM.tecnico_cp', 'PDM.admin_cp'])
     async findAll(
         @Query() filters: FilterOrcamentoRealizadoDto,
         @CurrentUser() user: PessoaFromJwt
@@ -85,7 +81,7 @@ export class OrcamentoRealizadoController {
 
     @ApiBearerAuth('access-token')
     @Get('compartilhados-no-pdm')
-    @Roles('CadastroMeta.orcamento', 'PDM.tecnico_cp', 'PDM.admin_cp')
+    @Roles(['CadastroMeta.orcamento', 'PDM.tecnico_cp', 'PDM.admin_cp'])
     async findCompartilhado(
         @Query() filters: FilterOrcamentoRealizadoCompartilhadoDto,
         @CurrentUser() user: PessoaFromJwt
@@ -95,8 +91,7 @@ export class OrcamentoRealizadoController {
 
     @Delete('em-lote')
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles('CadastroMeta.orcamento', 'PDM.tecnico_cp', 'PDM.admin_cp')
+    @Roles(['CadastroMeta.orcamento', 'PDM.tecnico_cp', 'PDM.admin_cp'])
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.ACCEPTED)
     async removeEmLote(@Body() params: BatchRecordWithId, @CurrentUser() user: PessoaFromJwt) {
@@ -106,8 +101,7 @@ export class OrcamentoRealizadoController {
 
     @Delete(':id')
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles('CadastroMeta.orcamento', 'PDM.tecnico_cp', 'PDM.admin_cp')
+    @Roles(['CadastroMeta.orcamento', 'PDM.tecnico_cp', 'PDM.admin_cp'])
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.ACCEPTED)
     async remove(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt) {

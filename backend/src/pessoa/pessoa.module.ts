@@ -7,7 +7,7 @@ import { PessoaResponsabilidadesMetaService } from './pessoa.responsabilidades.m
 @Module({
     imports: [PrismaModule],
     controllers: [PessoaController],
-    providers: [PessoaService,PessoaResponsabilidadesMetaService],
+    providers: [PessoaService, PessoaResponsabilidadesMetaService],
     exports: [PessoaService],
 })
 export class PessoaModule {}
