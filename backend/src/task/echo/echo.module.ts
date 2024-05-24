@@ -3,6 +3,6 @@ import { EchoService } from './echo.service';
 
 @Module({
     providers: [EchoService],
-    exports: [EchoService]
+    exports: [EchoService],
 })
 export class EchoModule {}

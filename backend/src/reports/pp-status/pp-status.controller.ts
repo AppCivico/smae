@@ -1,5 +1,5 @@
 import { Body, Controller, Post } from '@nestjs/common';
-import { ApiBearerAuth, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { Roles } from '../../auth/decorators/roles.decorator';
 import { PPStatusService } from './pp-status.service';
 import { CreateRelProjetoStatusDto } from './dto/create-projeto-status.dto';
@@ -12,8 +12,7 @@ export class PPStatusController {
 
     @Post()
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles('Reports.executar.Projetos')
+    @Roles(['Reports.executar.Projetos'])
     async create(@Body() createProjetoStatusDto: CreateRelProjetoStatusDto): Promise<PPProjetoStatusRelatorioDto> {
         return await this.projetoStatusService.create(createProjetoStatusDto);
     }

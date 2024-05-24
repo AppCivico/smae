@@ -8,10 +8,9 @@ import { RequestInfoDto } from '../../mf/metas/dto/mf-meta.dto';
 import { FilterDashNotasDto, MfDashNotasDto } from './dto/notas.dto';
 import {
     DashAnaliseTranferenciasChartsDto,
-    DashAnaliseTranferenciasDto,
     FilterDashTransferenciasAnaliseDto,
     FilterDashTransferenciasDto,
-    ListMfDashTransferenciasDto,
+    ListMfDashTransferenciasDto
 } from './dto/transferencia.dto';
 import { DashTransferenciaService } from './transferencia.service';
 
@@ -22,7 +21,7 @@ export class DashTransferenciaController {
 
     @Get('transferencias')
     @ApiBearerAuth('access-token')
-    @Roles('CadastroTransferencia.listar')
+    @Roles(['CadastroTransferencia.listar'])
     @ApiExtraModels(ListMfDashTransferenciasDto, RequestInfoDto)
     @ApiOkResponse({
         schema: { allOf: refs(ListMfDashTransferenciasDto, RequestInfoDto) },
@@ -43,7 +42,7 @@ export class DashTransferenciaController {
 
     @Get('notas')
     @ApiBearerAuth('access-token')
-    @Roles('CadastroTransferencia.listar')
+    @Roles(['CadastroTransferencia.listar'])
     @ApiExtraModels(MfDashNotasDto)
     async notas(
         @Query() params: FilterDashNotasDto,
@@ -54,7 +53,7 @@ export class DashTransferenciaController {
 
     @Get('analise-transferencias')
     @ApiBearerAuth('access-token')
-    @Roles('CadastroTransferencia.listar')
+    @Roles(['CadastroTransferencia.listar'])
     async analiseTranferencias(
         @Query() params: FilterDashTransferenciasAnaliseDto,
         @CurrentUser() user: PessoaFromJwt

@@ -6,8 +6,8 @@ import {
     ApiNoContentResponse,
     ApiOkResponse,
     ApiTags,
-    ApiUnauthorizedResponse,
-    refs
+
+    refs,
 } from '@nestjs/swagger';
 import { IpAddress } from '../common/decorators/current-ip';
 import { Pessoa } from '../pessoa/entities/pessoa.entity';
@@ -47,7 +47,6 @@ export class AuthController {
     @Post('sair')
     @HttpCode(HttpStatus.ACCEPTED)
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
     @ApiNoContentResponse()
     async logout(@CurrentUser() user: Pessoa, @IpAddress() ipAddress: string) {
         await this.authService.logout(user, ipAddress);

@@ -34,7 +34,7 @@ export class CTPConfigController {
 
     @Patch('')
     @ApiBearerAuth('access-token')
-    @Roles('SMAE.superadmin')
+    @Roles(['SMAE.superadmin'])
     async patchCTPConfig(@Body() dto: UpdateCTPConfigDto): Promise<string> {
         await this.configSerivce.update(dto);
         return '';

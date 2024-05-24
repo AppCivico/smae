@@ -1,5 +1,5 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post, Query } from '@nestjs/common';
-import { ApiBearerAuth, ApiNoContentResponse, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiNoContentResponse, ApiTags } from '@nestjs/swagger';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
@@ -21,16 +21,14 @@ export class VariavelCategoricaController {
 
     @Post('')
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles('CadastroVariavelCategorica.administrador')
+    @Roles(['CadastroVariavelCategorica.administrador'])
     async create(@Body() dto: CreateVariavelCategoricaDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
         return await this.variavelCatService.create(dto, user);
     }
 
     @Get('')
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles('CadastroVariavelCategorica.administrador', ...ROLES_ACESSO_VARIAVEL)
+    @Roles(['CadastroVariavelCategorica.administrador', ...ROLES_ACESSO_VARIAVEL])
     async listAll(
         @Query() filters: FilterVariavelCategoricaDto,
         @CurrentUser() user: PessoaFromJwt
@@ -40,8 +38,7 @@ export class VariavelCategoricaController {
 
     @Patch(':id')
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles('CadastroVariavelCategorica.administrador')
+    @Roles(['CadastroVariavelCategorica.administrador'])
     async update(
         @Param() params: FindOneParams,
         @Body() dto: UpdateVariavelCategoricaDto,
@@ -52,8 +49,7 @@ export class VariavelCategoricaController {
 
     @Delete(':id')
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles('CadastroVariavelCategorica.administrador')
+    @Roles(['CadastroVariavelCategorica.administrador'])
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.ACCEPTED)
     async remove(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt) {

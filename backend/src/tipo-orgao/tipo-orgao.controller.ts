@@ -1,5 +1,5 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post } from '@nestjs/common';
-import { ApiBearerAuth, ApiNoContentResponse, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiNoContentResponse, ApiTags } from '@nestjs/swagger';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
@@ -17,8 +17,7 @@ export class TipoOrgaoController {
 
     @Post()
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles('CadastroTipoOrgao.inserir')
+    @Roles(['CadastroTipoOrgao.inserir'])
     async create(
         @Body() createTipoOrgaoDto: CreateTipoOrgaoDto,
         @CurrentUser() user: PessoaFromJwt
@@ -34,8 +33,7 @@ export class TipoOrgaoController {
 
     @Patch(':id')
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles('CadastroTipoOrgao.editar')
+    @Roles(['CadastroTipoOrgao.editar'])
     async update(
         @Param() params: FindOneParams,
         @Body() updateTipoOrgaoDto: UpdateTipoOrgaoDto,
@@ -46,8 +44,7 @@ export class TipoOrgaoController {
 
     @Delete(':id')
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles('CadastroTipoOrgao.remover')
+    @Roles(['CadastroTipoOrgao.remover'])
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.ACCEPTED)
     async remove(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt) {

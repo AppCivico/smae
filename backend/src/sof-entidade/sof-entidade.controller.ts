@@ -1,5 +1,5 @@
 import { Controller, Get, Header, Param } from '@nestjs/common';
-import { ApiBearerAuth, ApiOperation, ApiUnauthorizedResponse } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 import { FindAnoParams } from '../common/decorators/find-params';
 import { SofEntidadeDto } from './entities/sof-entidade.entity';
 import { SofEntidadeService } from './sof-entidade.service';
@@ -10,7 +10,6 @@ export class SofEntidadeController {
 
     @Get(':ano')
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
     @Header('Cache-Control', 'max-age=3600')
     @ApiOperation({
         summary:

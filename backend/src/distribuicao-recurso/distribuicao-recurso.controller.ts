@@ -1,5 +1,5 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post, Query } from '@nestjs/common';
-import { ApiBearerAuth, ApiNoContentResponse, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiNoContentResponse, ApiTags } from '@nestjs/swagger';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
@@ -18,8 +18,7 @@ export class DistribuicaoRecursoController {
 
     @Post()
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles('CadastroTransferencia.inserir')
+    @Roles(['CadastroTransferencia.inserir'])
     async create(@Body() dto: CreateDistribuicaoRecursoDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
         return await this.distribuicaoRecursoService.create(dto, user);
     }
@@ -32,16 +31,14 @@ export class DistribuicaoRecursoController {
 
     @Get(':id')
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles('CadastroTransferencia.listar')
+    @Roles(['CadastroTransferencia.listar'])
     async findOne(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt): Promise<DistribuicaoRecursoDto> {
         return await this.distribuicaoRecursoService.findOne(params.id, user);
     }
 
     @Patch(':id')
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles('CadastroTransferencia.editar')
+    @Roles(['CadastroTransferencia.editar'])
     async update(
         @Param() params: FindOneParams,
         @Body() dto: UpdateDistribuicaoRecursoDto,
@@ -52,8 +49,7 @@ export class DistribuicaoRecursoController {
 
     @Delete(':id')
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles('CadastroTransferencia.remover')
+    @Roles(['CadastroTransferencia.remover'])
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.ACCEPTED)
     async remove(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt) {

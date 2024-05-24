@@ -16,7 +16,7 @@ export class AppController {
     }
 
     @ApiBearerAuth('access-token')
-    @Roles('SMAE.superadmin')
+    @Roles(['SMAE.superadmin'])
     @Get('/system/usage')
     async systemUsage() {
         return {
@@ -26,7 +26,7 @@ export class AppController {
     }
 
     @ApiBearerAuth('access-token')
-    @Roles('SMAE.superadmin')
+    @Roles(['SMAE.superadmin'])
     @Get('/system/performance-check')
     async performanceCheck() {
         return {

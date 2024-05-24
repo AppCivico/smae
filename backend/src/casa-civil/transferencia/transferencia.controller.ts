@@ -1,5 +1,5 @@
 import { Controller, Post, Body, Patch, Param, Get, Delete, HttpCode, HttpStatus, Query } from '@nestjs/common';
-import { ApiTags, ApiBearerAuth, ApiUnauthorizedResponse, ApiNoContentResponse, ApiResponse } from '@nestjs/swagger';
+import { ApiTags, ApiBearerAuth, ApiNoContentResponse, ApiResponse } from '@nestjs/swagger';
 import { CurrentUser } from 'src/auth/decorators/current-user.decorator';
 import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
@@ -24,14 +24,13 @@ export class TransferenciaController {
 
     @Post('')
     @ApiBearerAuth('access-token')
-    @Roles('CadastroTransferencia.inserir')
-    @ApiUnauthorizedResponse()
+    @Roles(['CadastroTransferencia.inserir'])
     async create(@Body() dto: CreateTransferenciaDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
         return await this.transferenciaService.createTransferencia(dto, user);
     }
 
     @ApiBearerAuth('access-token')
-    @Roles('CadastroTransferencia.listar')
+    @Roles(['CadastroTransferencia.listar'])
     @ApiPaginatedResponse(TransferenciaDto)
     @Get()
     async findAll(
@@ -43,16 +42,14 @@ export class TransferenciaController {
 
     @Get(':id')
     @ApiBearerAuth('access-token')
-    @Roles('CadastroTransferencia.listar')
-    @ApiUnauthorizedResponse()
+    @Roles(['CadastroTransferencia.listar'])
     async findOne(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt): Promise<TransferenciaDetailDto> {
         return await this.transferenciaService.findOneTransferencia(params.id, user);
     }
 
     @Patch(':id')
     @ApiBearerAuth('access-token')
-    @Roles('CadastroTransferencia.editar')
-    @ApiUnauthorizedResponse()
+    @Roles(['CadastroTransferencia.editar'])
     async update(
         @Param() params: FindOneParams,
         @Body() dto: UpdateTransferenciaDto,
@@ -63,8 +60,7 @@ export class TransferenciaController {
 
     @Patch(':id/completar-registro')
     @ApiBearerAuth('access-token')
-    @Roles('CadastroTransferencia.editar')
-    @ApiUnauthorizedResponse()
+    @Roles(['CadastroTransferencia.editar'])
     async completeRegister(
         @Param() params: FindOneParams,
         @Body() dto: CompletarTransferenciaDto,
@@ -75,8 +71,7 @@ export class TransferenciaController {
 
     @Delete(':id')
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles('CadastroTransferencia.remover')
+    @Roles(['CadastroTransferencia.remover'])
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.ACCEPTED)
     async remove(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt) {
@@ -86,8 +81,7 @@ export class TransferenciaController {
 
     @Post(':id/anexo')
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles('CadastroTransferencia.inserir')
+    @Roles(['CadastroTransferencia.inserir'])
     async upload(
         @Param() params: FindOneParams,
         @Body() createTransferenciaAnexo: CreateTransferenciaAnexoDto,
@@ -98,8 +92,7 @@ export class TransferenciaController {
 
     @Get(':id/anexo')
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles('CadastroTransferencia.listar')
+    @Roles(['CadastroTransferencia.listar'])
     async download(
         @Param() params: FindOneParams,
         @CurrentUser() user: PessoaFromJwt
@@ -109,8 +102,7 @@ export class TransferenciaController {
 
     @Patch(':id/anexo/:id2')
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles('CadastroTransferencia.editar')
+    @Roles(['CadastroTransferencia.editar'])
     async updateDocumento(
         @Param() params: FindTwoParams,
         @Body() dto: UpdateTransferenciaAnexoDto,
@@ -121,8 +113,7 @@ export class TransferenciaController {
 
     @Delete(':id/anexo/:id2')
     @ApiBearerAuth('access-token')
-    @Roles('CadastroTransferencia.remover')
-    @ApiUnauthorizedResponse()
+    @Roles(['CadastroTransferencia.remover'])
     @ApiResponse({ description: 'sucesso ao remover', status: 204 })
     @HttpCode(HttpStatus.NO_CONTENT)
     async removerDownload(@Param() params: FindTwoParams, @CurrentUser() user: PessoaFromJwt) {

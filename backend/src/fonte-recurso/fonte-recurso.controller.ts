@@ -1,5 +1,5 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post } from '@nestjs/common';
-import { ApiBearerAuth, ApiNoContentResponse, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiNoContentResponse, ApiTags } from '@nestjs/swagger';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
@@ -17,8 +17,7 @@ export class FonteRecursoController {
 
     @Post()
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles('CadastroFonteRecurso.inserir')
+    @Roles(['CadastroFonteRecurso.inserir'])
     async create(
         @Body() createFonteRecursoDto: CreateFonteRecursoDto,
         @CurrentUser() user: PessoaFromJwt
@@ -34,8 +33,7 @@ export class FonteRecursoController {
 
     @Patch(':id')
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles('CadastroFonteRecurso.editar')
+    @Roles(['CadastroFonteRecurso.editar'])
     async update(
         @Param() params: FindOneParams,
         @Body() updateFonteRecursoDto: UpdateFonteRecursoDto,
@@ -46,8 +44,7 @@ export class FonteRecursoController {
 
     @Delete(':id')
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles('CadastroFonteRecurso.remover')
+    @Roles(['CadastroFonteRecurso.remover'])
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.ACCEPTED)
     async remove(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt) {

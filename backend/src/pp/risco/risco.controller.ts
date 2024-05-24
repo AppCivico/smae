@@ -1,5 +1,5 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post } from '@nestjs/common';
-import { ApiBearerAuth, ApiNoContentResponse, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiNoContentResponse, ApiTags } from '@nestjs/swagger';
 import { CurrentUser } from '../../auth/decorators/current-user.decorator';
 import { Roles } from '../../auth/decorators/roles.decorator';
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
@@ -30,8 +30,7 @@ export class RiscoController {
 
     @Post(':id/risco')
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles(...roles)
+    @Roles([...roles])
     async create(
         @Param() params: FindOneParams,
         @Body() dto: CreateRiscoDto,
@@ -44,8 +43,7 @@ export class RiscoController {
 
     @Get(':id/risco')
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles(...roles, ...PROJETO_READONLY_ROLES)
+    @Roles([...roles, ...PROJETO_READONLY_ROLES])
     async findAll(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt): Promise<ListProjetoRiscoDto> {
         const projeto = await this.projetoService.findOne(params.id, user, 'ReadOnly');
         return {
@@ -55,8 +53,7 @@ export class RiscoController {
 
     @Get(':id/risco/:id2')
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles(...roles, ...PROJETO_READONLY_ROLES)
+    @Roles([...roles, ...PROJETO_READONLY_ROLES])
     async findOne(@Param() params: FindTwoParams, @CurrentUser() user: PessoaFromJwt): Promise<ProjetoRiscoDetailDto> {
         const projeto = await this.projetoService.findOne(params.id, user, 'ReadOnly');
         return await this.riscoService.findOne(projeto.id, params.id2, user);
@@ -64,8 +61,7 @@ export class RiscoController {
 
     @Patch(':id/risco/:id2')
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles(...roles)
+    @Roles([...roles])
     async update(
         @Param() params: FindTwoParams,
         @Body() updateRiscoDto: UpdateRiscoDto,
@@ -77,8 +73,7 @@ export class RiscoController {
 
     @Delete(':id/risco/:id2')
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles(...roles)
+    @Roles([...roles])
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.ACCEPTED)
     async remove(@Param() params: FindTwoParams, @CurrentUser() user: PessoaFromJwt) {

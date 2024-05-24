@@ -1,5 +1,5 @@
 import { Body, Controller, Get, HttpCode, HttpStatus, Post } from '@nestjs/common';
-import { ApiBearerAuth, ApiNoContentResponse, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiNoContentResponse, ApiTags } from '@nestjs/swagger';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { PessoaService } from '../pessoa/pessoa.service';
@@ -13,14 +13,12 @@ export class MinhaContaController {
 
     @Get('minha-conta')
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
     getMe(@CurrentUser() user: PessoaFromJwt): MinhaContaDto {
         return { sessao: user };
     }
 
     @Post('trocar-senha')
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.NO_CONTENT)
     async updatePassword(@Body() novaSenhaDto: NovaSenhaDto, @CurrentUser() user: PessoaFromJwt) {

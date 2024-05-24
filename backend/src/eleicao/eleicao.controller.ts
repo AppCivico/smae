@@ -1,9 +1,8 @@
 import { Controller, Get } from '@nestjs/common';
-import { ApiBearerAuth, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { EleicaoService } from './eleicao.service';
-
 
 @ApiTags('Eleição')
 @Controller('eleicao')
@@ -12,8 +11,7 @@ export class EleicaoController {
 
     @Get()
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    async getList( @CurrentUser() user: PessoaFromJwt ) {
+    async getList(@CurrentUser() user: PessoaFromJwt) {
         return await this.eleicaoService.findAll();
     }
 }

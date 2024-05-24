@@ -13,7 +13,7 @@ export class AuxiliarController {
 
     @ApiBearerAuth('access-token')
     @Patch('auto-preencher')
-    @Roles('PDM.admin_cp', 'PDM.tecnico_cp', 'PDM.ponto_focal')
+    @Roles(['PDM.admin_cp', 'PDM.tecnico_cp', 'PDM.ponto_focal'])
     @HttpCode(HttpStatus.NO_CONTENT)
     async auto_preencher(@Body() dto: AutoPreencherValorDto, @CurrentUser() user: PessoaFromJwt): Promise<void> {
         await this.utilitarioService.auto_preencher(dto, user);
@@ -21,7 +21,7 @@ export class AuxiliarController {
 
     @ApiBearerAuth('access-token')
     @Patch('enviar-para-cp')
-    @Roles('PDM.admin_cp', 'PDM.tecnico_cp', 'PDM.ponto_focal')
+    @Roles(['PDM.admin_cp', 'PDM.tecnico_cp', 'PDM.ponto_focal'])
     @HttpCode(HttpStatus.NO_CONTENT)
     async enviar_cp(@Body() dto: EnviarParaCpDto, @CurrentUser() user: PessoaFromJwt): Promise<void> {
         await this.utilitarioService.enviar_cp(dto, user);

@@ -42,13 +42,9 @@ import { VariavelModule } from './variavel/variavel.module';
         PdmCicloModule,
         IndicadoresModule,
         MonitoramentoMensalModule,
-        VariavelCategoricaModule
+        VariavelCategoricaModule,
     ],
-    controllers: [ ],
-    providers: [
-
-    ],
+    controllers: [],
+    providers: [],
 })
-export class AppModulePdm  {
-
-}
+export class AppModulePdm {}

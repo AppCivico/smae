@@ -25,7 +25,7 @@ export class CreateAvisoEmailDto {
     tipo: TipoAviso;
 
     @IsBoolean()
-    ativo: boolean
+    ativo: boolean;
 
     @IsEmail(undefined, { each: true, message: '$property| E-mail: Precisa ser um endereço válido' })
     @IsArray()

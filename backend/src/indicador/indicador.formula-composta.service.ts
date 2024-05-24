@@ -20,7 +20,10 @@ import { IndicadorService } from './indicador.service';
 export class IndicadorFormulaCompostaService {
     private readonly logger = new Logger(IndicadorFormulaCompostaService.name);
 
-    constructor(private readonly prisma: PrismaService, private readonly indicadorService: IndicadorService) {}
+    constructor(
+        private readonly prisma: PrismaService,
+        private readonly indicadorService: IndicadorService
+    ) {}
 
     async create(indicador_id: number, dto: CreateIndicadorFormulaCompostaDto, user: PessoaFromJwt) {
         const indicador = await this.indicadorService.findOne(indicador_id, user);

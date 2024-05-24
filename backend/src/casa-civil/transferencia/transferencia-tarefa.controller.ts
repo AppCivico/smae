@@ -19,7 +19,7 @@ import {
     ApiNoContentResponse,
     ApiResponse,
     ApiTags,
-    ApiUnauthorizedResponse,
+
     refs,
 } from '@nestjs/swagger';
 import { plainToClass } from 'class-transformer';
@@ -51,9 +51,8 @@ export class TransferenciaTarefaController {
     ) {}
 
     @Post(':id/tarefa')
-    @Roles('CadastroCronogramaTransferencia.inserir')
+    @Roles(['CadastroCronogramaTransferencia.inserir'])
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
     async create(
         @Param() params: FindOneParams,
         @Body() dto: CreateTarefaDto,
@@ -65,9 +64,8 @@ export class TransferenciaTarefaController {
     }
 
     @Get(':id/tarefa')
-    @Roles('CadastroCronogramaTransferencia.listar')
+    @Roles(['CadastroCronogramaTransferencia.listar'])
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
     async findAll(
         @Param() params: FindOneParams,
         @Query() filter: FilterPPTarefa,
@@ -82,9 +80,8 @@ export class TransferenciaTarefaController {
     }
 
     @Get(':id/tarefas-eap')
-    @Roles('CadastroCronogramaTransferencia.listar')
+    @Roles(['CadastroCronogramaTransferencia.listar'])
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
     @ApiResponse({ status: 200, description: 'Imagem da EAP' })
     async getEAP(
         @Param() params: FindOneParams,
@@ -109,9 +106,8 @@ export class TransferenciaTarefaController {
     }
 
     @Get(':id/tarefas-hierarquia')
-    @Roles('CadastroCronogramaTransferencia.listar')
+    @Roles(['CadastroCronogramaTransferencia.listar'])
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
     @ApiResponse({ status: 200, description: 'Responde com Record<ID_TAREFA, HIERARQUIA_NO_CRONOGRAMA>' })
     async getTarefasHierarquia(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt) {
         const tarefaCronoId = await this.tarefaService.loadOrCreateByInput({ transferencia_id: params.id }, user);
@@ -120,17 +116,15 @@ export class TransferenciaTarefaController {
     }
 
     @Get(':id/tarefa/:id2')
-    @Roles('CadastroCronogramaTransferencia.listar')
+    @Roles(['CadastroCronogramaTransferencia.listar'])
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
     async findOne(@Param() params: FindTwoParams, @CurrentUser() user: PessoaFromJwt): Promise<TarefaDetailDto> {
         return await this.tarefaService.findOne({ transferencia_id: params.id }, params.id2, user);
     }
 
     @Patch(':id/tarefa/:id2')
-    @Roles('CadastroCronogramaTransferencia.listar')
+    @Roles(['CadastroCronogramaTransferencia.listar'])
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
     @ApiExtraModels(UpdateTarefaDto, UpdateTarefaRealizadoDto)
     @ApiBody({
         schema: { oneOf: refs(UpdateTarefaDto, UpdateTarefaRealizadoDto) },
@@ -164,9 +158,8 @@ export class TransferenciaTarefaController {
     }
 
     @Delete(':id/tarefa/:id2')
-    @Roles('CadastroCronogramaTransferencia.remover')
+    @Roles(['CadastroCronogramaTransferencia.remover'])
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.ACCEPTED)
     async remove(@Param() params: FindTwoParams, @CurrentUser() user: PessoaFromJwt) {
@@ -177,9 +170,8 @@ export class TransferenciaTarefaController {
     }
 
     @Post(':id/dependencias')
-    @Roles('CadastroCronogramaTransferencia.inserir')
+    @Roles(['CadastroCronogramaTransferencia.inserir'])
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
     async calcula_dependencias_tarefas(
         @Param() params: FindOneParams,
         @Body() dto: CheckDependenciasDto,

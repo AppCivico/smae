@@ -9,7 +9,10 @@ type TipoAcaoOrcamentaria = 'custeio' | 'investimento' | '';
 
 @Injectable()
 export class DotacaoService {
-    constructor(private readonly prisma: PrismaService, private readonly sof: SofApiService) {}
+    constructor(
+        private readonly prisma: PrismaService,
+        private readonly sof: SofApiService
+    ) {}
 
     // 11.13.08.091.*.1.278.*.00 => 11.13.08.091.****.1.278.********.00
     // 11.*.08.091.*.1.278.*.00 => 11.**.08.091.****.1.278.********.00

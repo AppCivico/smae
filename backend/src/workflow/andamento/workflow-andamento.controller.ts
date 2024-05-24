@@ -1,5 +1,5 @@
 import { Body, Controller, Get, Post, Query } from '@nestjs/common';
-import { ApiTags, ApiBearerAuth, ApiUnauthorizedResponse } from '@nestjs/swagger';
+import { ApiTags, ApiBearerAuth } from '@nestjs/swagger';
 import { CurrentUser } from 'src/auth/decorators/current-user.decorator';
 import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
 import { Roles } from 'src/auth/decorators/roles.decorator';
@@ -14,7 +14,7 @@ export class WorkflowAndamentoController {
     constructor(private readonly workflowAndamentoService: WorkflowAndamentoService) {}
 
     @ApiBearerAuth('access-token')
-    @Roles('AndamentoWorkflow.listar')
+    @Roles(['AndamentoWorkflow.listar'])
     @Get()
     async find(
         @Query() filters: FilterWorkflowAndamentoDto,
@@ -25,8 +25,7 @@ export class WorkflowAndamentoController {
 
     @Post('iniciar-prox-etapa')
     @ApiBearerAuth('access-token')
-    @Roles('CadastroWorkflows.inserir')
-    @ApiUnauthorizedResponse()
+    @Roles(['CadastroWorkflows.inserir'])
     async iniciarFase(@Body() dto: WorkflowIniciarProxEtapaDto, @CurrentUser() user: PessoaFromJwt) {
         return await this.workflowAndamentoService.iniciarProximaEtapa(dto, user);
     }

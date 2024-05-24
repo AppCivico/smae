@@ -1,5 +1,5 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post } from '@nestjs/common';
-import { ApiBearerAuth, ApiNoContentResponse, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiNoContentResponse, ApiTags } from '@nestjs/swagger';
 import { FindOneParams } from '../common/decorators/find-params';
 import { RecordWithId } from '../common/dto/record-with-id.dto';
 import { CurrentUser } from './decorators/current-user.decorator';
@@ -15,8 +15,7 @@ export class PerfilAcessoController {
 
     @Post()
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles('PerfilAcesso.administrador')
+    @Roles(['PerfilAcesso.administrador'])
     async create(@Body() dto: CreatePerfilAcessoDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
         return await this.perfilAcessoService.create(dto, user);
     }
@@ -29,8 +28,7 @@ export class PerfilAcessoController {
 
     @Patch(':id')
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles('PerfilAcesso.administrador')
+    @Roles(['PerfilAcesso.administrador'])
     async update(
         @Param() params: FindOneParams,
         @Body() dto: UpdatePerfilAcessoDto,
@@ -41,8 +39,7 @@ export class PerfilAcessoController {
 
     @Delete(':id')
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles('PerfilAcesso.administrador')
+    @Roles(['PerfilAcesso.administrador'])
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.ACCEPTED)
     async remove(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt) {

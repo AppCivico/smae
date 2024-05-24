@@ -1,5 +1,5 @@
 import { Controller, Post, Body, Patch, Param, Get, Delete, HttpCode, HttpStatus, Query } from '@nestjs/common';
-import { ApiTags, ApiBearerAuth, ApiUnauthorizedResponse, ApiNoContentResponse } from '@nestjs/swagger';
+import { ApiTags, ApiBearerAuth, ApiNoContentResponse } from '@nestjs/swagger';
 import { CurrentUser } from 'src/auth/decorators/current-user.decorator';
 import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
@@ -18,14 +18,13 @@ export class WorkflowFluxoController {
 
     @Post('')
     @ApiBearerAuth('access-token')
-    @Roles('CadastroWorkflows.inserir')
-    @ApiUnauthorizedResponse()
+    @Roles(['CadastroWorkflows.inserir'])
     async create(@Body() dto: CreateWorkflowFluxoDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
         return await this.workflowFluxoService.create(dto, user);
     }
 
     @ApiBearerAuth('access-token')
-    @Roles('CadastroWorkflows.listar')
+    @Roles(['CadastroWorkflows.listar'])
     @Get()
     async findAll(
         @Query() filters: FilterWorkflowFluxoDto,
@@ -36,16 +35,14 @@ export class WorkflowFluxoController {
 
     // @Get(':id')
     // @ApiBearerAuth('access-token')
-    // @Roles('CadastroWorkflows.listar')
-    // @ApiUnauthorizedResponse()
-    // async findOne(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt): Promise<TransferenciaDetailDto> {
+    // @Roles(['CadastroWorkflows.listar'])
+    //     // async findOne(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt): Promise<TransferenciaDetailDto> {
     //     return await this.workflowFluxoService.f(params.id, user);
     // }
 
     @Patch(':id')
     @ApiBearerAuth('access-token')
-    @Roles('CadastroWorkflows.editar')
-    @ApiUnauthorizedResponse()
+    @Roles(['CadastroWorkflows.editar'])
     async update(
         @Param() params: FindOneParams,
         @Body() dto: UpdateWorkflowFluxoDto,
@@ -56,8 +53,7 @@ export class WorkflowFluxoController {
 
     @Delete(':id')
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles('CadastroWorkflows.remover')
+    @Roles(['CadastroWorkflows.remover'])
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.ACCEPTED)
     async remove(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt) {

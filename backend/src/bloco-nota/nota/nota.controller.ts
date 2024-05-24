@@ -1,5 +1,5 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post, Query } from '@nestjs/common';
-import { ApiBearerAuth, ApiNoContentResponse, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiNoContentResponse, ApiTags } from '@nestjs/swagger';
 import { CurrentUser } from '../../auth/decorators/current-user.decorator';
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import {
@@ -23,7 +23,6 @@ export class NotaController {
 
     @Post()
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
     async create(@Body() createTagDto: CreateNotaDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithIdJwt> {
         return await this.tipoNotaService.create(createTagDto, user);
     }
@@ -42,7 +41,6 @@ export class NotaController {
 
     @Delete(':id_jwt/resposta/:id')
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
     @HttpCode(HttpStatus.ACCEPTED)
     async deleteResposta(@Param() params: DeleteNotaRespostaParam, @CurrentUser() user: PessoaFromJwt) {
         await this.tipoNotaService.removeResposta(params.id_jwt, params.id, user);
@@ -51,7 +49,6 @@ export class NotaController {
 
     @Patch(':id_jwt/resposta')
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
     async novaResposta(
         @Param() params: FindNotaParam,
         @Body() dto: NovaRespostaDto,
@@ -62,7 +59,6 @@ export class NotaController {
 
     @Patch(':id_jwt')
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
     async update(
         @Param() params: FindNotaParam,
         @Body() updateTagDto: UpdateNotaDto,
@@ -73,7 +69,6 @@ export class NotaController {
 
     @Delete(':id_jwt')
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.ACCEPTED)
     async remove(@Param() params: FindNotaParam, @CurrentUser() user: PessoaFromJwt) {

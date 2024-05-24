@@ -13,4 +13,3 @@ export class GruposPaineisExternosItemDto {
 export class ListGruposPaineisExternosDto {
     linhas: GruposPaineisExternosItemDto[];
 }
-

@@ -7,7 +7,7 @@ import {
     IsInt,
     IsNumber,
     IsOptional,
-    ValidateNested
+    ValidateNested,
 } from 'class-validator';
 
 export class UpdatePdmOrcamentoConfigDto {

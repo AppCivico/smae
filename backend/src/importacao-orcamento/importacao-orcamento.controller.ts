@@ -1,5 +1,5 @@
 import { Body, Controller, Get, Post, Query } from '@nestjs/common';
-import { ApiBearerAuth, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { CurrentUser } from 'src/auth/decorators/current-user.decorator';
 import { Roles } from 'src/auth/decorators/roles.decorator';
 import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
@@ -18,16 +18,14 @@ export class ImportacaoOrcamentoController {
 
     @Post()
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles('CadastroMeta.orcamento', 'Projeto.orcamento')
+    @Roles(['CadastroMeta.orcamento', 'Projeto.orcamento'])
     async create(@Body() dto: CreateImportacaoOrcamentoDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
         return this.importacaoOrcamentoService.create(dto, user);
     }
 
     @Get()
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles('CadastroMeta.orcamento', 'Projeto.orcamento')
+    @Roles(['CadastroMeta.orcamento', 'Projeto.orcamento'])
     @ApiPaginatedResponse(ImportacaoOrcamentoDto)
     async findAll(
         @Query() filters: FilterImportacaoOrcamentoDto,
@@ -38,8 +36,7 @@ export class ImportacaoOrcamentoController {
 
     @Get('portfolio')
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles('CadastroMeta.orcamento', 'Projeto.orcamento')
+    @Roles(['CadastroMeta.orcamento', 'Projeto.orcamento'])
     async findAll_portfolio(@CurrentUser() user: PessoaFromJwt): Promise<PortfolioDto[]> {
         return await this.importacaoOrcamentoService.findAll_portfolio(user);
     }

@@ -79,9 +79,7 @@ export class PessoaExpert {
                 nome_exibicao: cusData.nome_exibicao ?? 'nome_exibicao ' + randomStr,
                 orgao_id:
                     cusData.orgao_id ??
-                    (
-                        await OrganizacaoExpert.getOrCreateOrg(app, { descricao: randomStr, sigla: randomStr })
-                    ).id,
+                    (await OrganizacaoExpert.getOrCreateOrg(app, { descricao: randomStr, sigla: randomStr })).id,
             });
 
             const findPessoa = await pessoaService.findAll({

@@ -21,7 +21,9 @@ export class RolesGuard implements CanActivate {
         const { user } = request;
         const requestUrl = request.originalUrl || request.url;
         if (!user)
-            throw new UnauthorizedException(`Faltando usuário para verificar o acesso: ${requiredRoles.join(', ')}, requestUrl = ${requestUrl}`);
+            throw new UnauthorizedException(
+                `Faltando usuário para verificar o acesso: ${requiredRoles.join(', ')}, requestUrl = ${requestUrl}`
+            );
 
         const JwtUser = user as PessoaFromJwt;
         if (JwtUser.hasSomeRoles(requiredRoles)) {

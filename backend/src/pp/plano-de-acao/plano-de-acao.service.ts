@@ -16,7 +16,7 @@ export class PlanoAcaoService {
         const projeto = await this.prisma.projeto.findFirst({
             where: {
                 id: projetoId,
-                portfolio: { modelo_clonagem: false }
+                portfolio: { modelo_clonagem: false },
             },
             select: { id: true },
         });

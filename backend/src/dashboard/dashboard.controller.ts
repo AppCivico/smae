@@ -16,7 +16,7 @@ export class DashboardController {
 
     @Get()
     @ApiBearerAuth('access-token')
-    @Roles('Reports.dashboard_pdm', 'Reports.dashboard_portfolios', 'SMAE.espectador_de_painel_externo')
+    @Roles(['Reports.dashboard_pdm', 'Reports.dashboard_portfolios', 'SMAE.espectador_de_painel_externo'])
     async findAll(@CurrentUser() user: PessoaFromJwt, @Req() req: Request): Promise<DashboardLinhasDto> {
         const hostname = process.env.API_HOST_NAME || req.hostname;
         return {

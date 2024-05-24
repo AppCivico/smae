@@ -4,9 +4,7 @@ import { VariavelCategoricaController } from './variavel-categorica.controller';
 import { VariavelCategoricaService } from './variavel-categorica.service';
 
 @Module({
-    imports: [
-        PrismaModule,
-    ],
+    imports: [PrismaModule],
     controllers: [VariavelCategoricaController],
     providers: [VariavelCategoricaService],
     exports: [VariavelCategoricaService],

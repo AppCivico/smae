@@ -1,5 +1,5 @@
 import { Controller, Post, Body, Patch, Param, Get, Delete, HttpCode, HttpStatus } from '@nestjs/common';
-import { ApiTags, ApiBearerAuth, ApiUnauthorizedResponse, ApiNoContentResponse } from '@nestjs/swagger';
+import { ApiTags, ApiBearerAuth, ApiNoContentResponse } from '@nestjs/swagger';
 import { CurrentUser } from 'src/auth/decorators/current-user.decorator';
 import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
@@ -17,14 +17,13 @@ export class WorkflowFluxoTarefaController {
 
     @Post('')
     @ApiBearerAuth('access-token')
-    @Roles('CadastroWorkflows.inserir')
-    @ApiUnauthorizedResponse()
+    @Roles(['CadastroWorkflows.inserir'])
     async create(@Body() dto: CreateWorkflowFluxoTarefaDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
         return await this.workflowFluxoTarefaService.create(dto, user);
     }
 
     @ApiBearerAuth('access-token')
-    @Roles('CadastroWorkflows.listar')
+    @Roles(['CadastroWorkflows.listar'])
     @Get()
     async findAll(@CurrentUser() user: PessoaFromJwt): Promise<ListWorkflowFluxoTarefaDto> {
         return { linhas: await this.workflowFluxoTarefaService.findAll(user) };
@@ -32,16 +31,14 @@ export class WorkflowFluxoTarefaController {
 
     // @Get(':id')
     // @ApiBearerAuth('access-token')
-    // @Roles('CadastroWorkflows.listar')
-    // @ApiUnauthorizedResponse()
-    // async findOne(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt): Promise<TransferenciaDetailDto> {
+    // @Roles(['CadastroWorkflows.listar'])
+    //     // async findOne(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt): Promise<TransferenciaDetailDto> {
     //     return await this.workflowFluxoTarefaService.f(params.id, user);
     // }
 
     @Patch(':id')
     @ApiBearerAuth('access-token')
-    @Roles('CadastroWorkflows.editar')
-    @ApiUnauthorizedResponse()
+    @Roles(['CadastroWorkflows.editar'])
     async update(
         @Param() params: FindOneParams,
         @Body() dto: UpdateWorkflowFluxoTarefaDto,
@@ -52,8 +49,7 @@ export class WorkflowFluxoTarefaController {
 
     @Delete(':id')
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles('CadastroWorkflows.remover')
+    @Roles(['CadastroWorkflows.remover'])
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.ACCEPTED)
     async remove(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt) {

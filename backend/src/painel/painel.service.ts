@@ -1021,7 +1021,8 @@ export class PainelService {
         };
 
         if (periodo === Periodo.Anteriores) {
-            if (!periodo_valor) throw new BadRequestException('Faltando periodo_valor na configuração do conteúdo do painel');
+            if (!periodo_valor)
+                throw new BadRequestException('Faltando periodo_valor na configuração do conteúdo do painel');
 
             const multiplier = await this.getMultiplierForPeriodicidade(periodicidade);
 
@@ -1178,7 +1179,9 @@ export class PainelService {
         }
 
         if (!config.multiplier || !config.time_unit)
-            throw new BadRequestException('Faltando tratamento para configuração do painel, na geração de janelas de tempo');
+            throw new BadRequestException(
+                'Faltando tratamento para configuração do painel, na geração de janelas de tempo'
+            );
 
         if (!periodo_valor) periodo_valor = 1;
 
@@ -1215,7 +1218,7 @@ export class PainelService {
             });
 
             window_start = window_end;
-         }
+        }
 
         return series_template;
     }
@@ -1231,7 +1234,8 @@ export class PainelService {
         const series_order = await this.buildSeriesOrder(config.mostrar_planejado, config.mostrar_acumulado);
 
         if (config.periodo === Periodo.Anteriores) {
-            if (!config.periodo_valor) throw new BadRequestException('Faltando periodo_valor na configuração do conteúdo do painel');
+            if (!config.periodo_valor)
+                throw new BadRequestException('Faltando periodo_valor na configuração do conteúdo do painel');
 
             const date_range = await this.getStartEndDate(
                 config.periodo,
@@ -1251,7 +1255,8 @@ export class PainelService {
                 series_order.length
             );
         } else if (config.periodo === Periodo.EntreDatas) {
-            if (!config.periodo_inicio || !config.periodo_fim) throw new BadRequestException('Faltando configuração de periodos');
+            if (!config.periodo_inicio || !config.periodo_fim)
+                throw new BadRequestException('Faltando configuração de periodos');
 
             gte = config.periodo_inicio;
             lte = config.periodo_fim;

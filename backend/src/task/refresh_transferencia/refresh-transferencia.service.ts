@@ -44,7 +44,6 @@ export class RefreshTransferenciaService implements TaskableService {
             }
         );
 
-
         const took = Date.now() - before;
         return {
             success: true,

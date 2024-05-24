@@ -11,7 +11,7 @@ import {
     Post,
     Query,
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiNoContentResponse, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiNoContentResponse, ApiTags } from '@nestjs/swagger';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
@@ -31,8 +31,7 @@ export class PainelExternoController {
 
     @Post()
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles('CadastroPainelExterno.inserir')
+    @Roles(['CadastroPainelExterno.inserir'])
     async create(
         @Body() createPainelDto: CreatePainelExternoDto,
         @CurrentUser() user: PessoaFromJwt
@@ -42,7 +41,7 @@ export class PainelExternoController {
 
     @Get()
     @ApiBearerAuth('access-token')
-    @Roles('CadastroPainelExterno.inserir', 'CadastroPainelExterno.editar', 'CadastroPainelExterno.remover')
+    @Roles(['CadastroPainelExterno.inserir', 'CadastroPainelExterno.editar', 'CadastroPainelExterno.remover'])
     async findAll(
         @Query() filters: FilterPainelExternoDto,
         @CurrentUser() user: PessoaFromJwt
@@ -52,7 +51,7 @@ export class PainelExternoController {
 
     @ApiBearerAuth('access-token')
     @Get(':id')
-    @Roles('CadastroPainelExterno.editar', 'CadastroPainelExterno.inserir', 'CadastroPainelExterno.remover')
+    @Roles(['CadastroPainelExterno.editar', 'CadastroPainelExterno.inserir', 'CadastroPainelExterno.remover'])
     async findOne(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt): Promise<PainelExternoDto> {
         const item = await this.painelService.findAll({ id: +params.id }, user);
 
@@ -62,8 +61,7 @@ export class PainelExternoController {
 
     @Patch(':id')
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles('CadastroPainelExterno.editar')
+    @Roles(['CadastroPainelExterno.editar'])
     async update(
         @Param() params: FindOneParams,
         @Body() updatePainelDto: UpdatePainelExternoDto,
@@ -74,8 +72,7 @@ export class PainelExternoController {
 
     @Delete(':id')
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles('CadastroPainelExterno.remover')
+    @Roles(['CadastroPainelExterno.remover'])
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.ACCEPTED)
     async remove(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt) {

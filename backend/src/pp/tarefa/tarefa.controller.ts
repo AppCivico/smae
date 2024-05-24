@@ -19,7 +19,7 @@ import {
     ApiNoContentResponse,
     ApiResponse,
     ApiTags,
-    ApiUnauthorizedResponse,
+
     refs,
 } from '@nestjs/swagger';
 import { plainToClass } from 'class-transformer';
@@ -54,8 +54,7 @@ export class TarefaController {
 
     @Post(':id/tarefa')
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles(...roles)
+    @Roles([...roles])
     async create(
         @Param() params: FindOneParams,
         @Body() dto: CreateTarefaDto,
@@ -68,14 +67,13 @@ export class TarefaController {
 
     @Get(':id/tarefa')
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles(...roles, 'SMAE.espectador_de_projeto')
+    @Roles([...roles, 'SMAE.espectador_de_projeto'])
     async findAll(
         @Param() params: FindOneParams,
         @Query() filter: FilterPPTarefa,
         @CurrentUser() user: PessoaFromJwt
     ): Promise<ListTarefaProjetoDto> {
-        const tarefasProj = await this.tarefaService.findAll({ projeto_id: params.id }, user, filter, );
+        const tarefasProj = await this.tarefaService.findAll({ projeto_id: params.id }, user, filter);
 
         return {
             linhas: tarefasProj.linhas,
@@ -86,8 +84,7 @@ export class TarefaController {
 
     @Get(':id/tarefas-eap')
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles(...roles)
+    @Roles([...roles])
     @ApiResponse({ status: 200, description: 'Imagem da EAP' })
     async getEAP(
         @Param() params: FindOneParams,
@@ -113,8 +110,7 @@ export class TarefaController {
 
     @Get(':id/tarefas-hierarquia')
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles(...roles, 'SMAE.espectador_de_projeto')
+    @Roles([...roles, 'SMAE.espectador_de_projeto'])
     @ApiResponse({ status: 200, description: 'Responde com Record<ID_TAREFA, HIERARQUIA_NO_CRONOGRAMA>' })
     async getTarefasHierarquia(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt) {
         await this.projetoService.findOne(params.id, user, 'ReadOnly');
@@ -126,16 +122,14 @@ export class TarefaController {
 
     @Get(':id/tarefa/:id2')
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles(...roles, 'SMAE.espectador_de_projeto')
+    @Roles([...roles, 'SMAE.espectador_de_projeto'])
     async findOne(@Param() params: FindTwoParams, @CurrentUser() user: PessoaFromJwt): Promise<TarefaDetailDto> {
         return await this.tarefaService.findOne({ projeto_id: params.id }, params.id2, user);
     }
 
     @Patch(':id/tarefa/:id2')
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles(...roles)
+    @Roles([...roles])
     @ApiExtraModels(UpdateTarefaDto, UpdateTarefaRealizadoDto)
     @ApiBody({
         schema: { oneOf: refs(UpdateTarefaDto, UpdateTarefaRealizadoDto) },
@@ -170,8 +164,7 @@ export class TarefaController {
 
     @Delete(':id/tarefa/:id2')
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles(...roles)
+    @Roles([...roles])
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.ACCEPTED)
     async remove(@Param() params: FindTwoParams, @CurrentUser() user: PessoaFromJwt) {
@@ -183,8 +176,7 @@ export class TarefaController {
 
     @Post(':id/dependencias')
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles(...roles)
+    @Roles([...roles])
     async calcula_dependencias_tarefas(
         @Param() params: FindOneParams,
         @Body() dto: CheckDependenciasDto,

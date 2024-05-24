@@ -1,5 +1,5 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post } from '@nestjs/common';
-import { ApiBearerAuth, ApiNoContentResponse, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiNoContentResponse, ApiTags } from '@nestjs/swagger';
 import { CurrentUser } from '../../auth/decorators/current-user.decorator';
 import { Roles } from '../../auth/decorators/roles.decorator';
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
@@ -17,7 +17,7 @@ import { PROJETO_READONLY_ROLES } from '../projeto/projeto.controller';
 const roles: ListaDePrivilegios[] = [
     'Projeto.administrador',
     'Projeto.administrador_no_orgao',
-    ...PROJETO_READONLY_ROLES
+    ...PROJETO_READONLY_ROLES,
 ];
 
 @Controller('projeto')
@@ -30,8 +30,7 @@ export class LicoesAprendidasController {
 
     @Post(':id/licoes-aprendidas')
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles(...roles)
+    @Roles([...roles])
     async create(
         @Param() params: FindOneParams,
         @Body() createLicoesAprendidasDto: CreateLicoesApreendidasDto,
@@ -44,8 +43,7 @@ export class LicoesAprendidasController {
 
     @Get(':id/licoes-aprendidas')
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles(...roles)
+    @Roles([...roles])
     async findAll(
         @Param() params: FindOneParams,
         @CurrentUser() user: PessoaFromJwt
@@ -58,8 +56,7 @@ export class LicoesAprendidasController {
 
     @Get(':id/licoes-aprendidas/:id2')
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles(...roles)
+    @Roles([...roles])
     async findOne(@Param() params: FindTwoParams, @CurrentUser() user: PessoaFromJwt): Promise<LicaoAprendida> {
         await this.projetoService.findOne(params.id, user, 'ReadOnly');
 
@@ -68,8 +65,7 @@ export class LicoesAprendidasController {
 
     @Patch(':id/licoes-aprendidas/:id2')
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles(...roles)
+    @Roles([...roles])
     async update(
         @Param() params: FindTwoParams,
         @Body() dto: UpdateLicoesAprendidasDto,
@@ -82,8 +78,7 @@ export class LicoesAprendidasController {
 
     @Delete(':id/licoes-aprendidas/:id2')
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles(...roles)
+    @Roles([...roles])
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.ACCEPTED)
     async remove(@Param() params: FindTwoParams, @CurrentUser() user: PessoaFromJwt) {

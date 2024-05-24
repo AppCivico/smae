@@ -1,5 +1,5 @@
 import { Controller, Get, Param, Query } from '@nestjs/common';
-import { ApiBearerAuth, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { FindOneParams } from '../common/decorators/find-params';
 import { ListSeriesAgrupadas } from './dto/list-variavel.dto';
@@ -13,8 +13,7 @@ export class VariavelFormulaCompostaController {
 
     @Get('formula-variavel/:id/periodos')
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles('CadastroIndicador.editar', 'CadastroIndicador.inserir', 'CadastroMeta.listar')
+    @Roles(['CadastroIndicador.editar', 'CadastroIndicador.inserir', 'CadastroMeta.listar'])
     async getFormulaCompostaPeriodos(@Param() params: FindOneParams): Promise<ListaPeriodoFormulaCompostaDto> {
         return {
             linhas: await this.variavelFCService.getFormulaCompostaPeriodos(params.id),
@@ -23,8 +22,7 @@ export class VariavelFormulaCompostaController {
 
     @Get('formula-variavel/:id/series')
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles('CadastroIndicador.editar', 'CadastroIndicador.inserir', 'CadastroMeta.listar')
+    @Roles(['CadastroIndicador.editar', 'CadastroIndicador.inserir', 'CadastroMeta.listar'])
     async getFormulaCompostaSeries(
         @Param() params: FindOneParams,
         @Query() filter: FilterPeriodoFormulaCompostaDto

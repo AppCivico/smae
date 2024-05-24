@@ -11,15 +11,7 @@ import {
     Post,
     Query,
 } from '@nestjs/common';
-import {
-    ApiBearerAuth,
-    ApiExtraModels,
-    ApiNoContentResponse,
-    ApiOkResponse,
-    ApiOperation,
-    ApiTags,
-    refs,
-} from '@nestjs/swagger';
+import { ApiBearerAuth, ApiExtraModels, ApiNoContentResponse, ApiOkResponse, ApiTags, refs } from '@nestjs/swagger';
 import { CurrentUser } from '../../auth/decorators/current-user.decorator';
 import { Roles } from '../../auth/decorators/roles.decorator';
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
@@ -55,11 +47,14 @@ import { MetasService } from './metas.service';
 @ApiTags('Monitoramento Fisico - Metas e variáveis')
 @Controller('metas')
 export class MetasController {
-    constructor(private readonly metasService: MetasService, private readonly mfService: MfService) {}
+    constructor(
+        private readonly metasService: MetasService,
+        private readonly mfService: MfService
+    ) {}
 
     @Get('')
     @ApiBearerAuth('access-token')
-    @Roles('PDM.admin_cp', 'PDM.tecnico_cp', 'PDM.ponto_focal')
+    @Roles(['PDM.admin_cp', 'PDM.tecnico_cp', 'PDM.ponto_focal'])
     @ApiExtraModels(ListMfMetasDto, RequestInfoDto)
     @ApiOkResponse({
         schema: { allOf: refs(ListMfMetasDto, RequestInfoDto) },
@@ -82,7 +77,7 @@ export class MetasController {
 
     @ApiBearerAuth('access-token')
     @Get(':id/variaveis')
-    @Roles('PDM.admin_cp', 'PDM.tecnico_cp', 'PDM.ponto_focal')
+    @Roles(['PDM.admin_cp', 'PDM.tecnico_cp', 'PDM.ponto_focal'])
     @ApiExtraModels(RetornoMetaVariaveisDto, RequestInfoDto)
     @ApiOkResponse({
         schema: { allOf: refs(RetornoMetaVariaveisDto, RequestInfoDto) },
@@ -113,7 +108,7 @@ export class MetasController {
 
     @ApiBearerAuth('access-token')
     @Patch('variaveis/analise-qualitativa')
-    @Roles('PDM.admin_cp', 'PDM.tecnico_cp', 'PDM.ponto_focal')
+    @Roles(['PDM.admin_cp', 'PDM.tecnico_cp', 'PDM.ponto_focal'])
     @ApiExtraModels(RecordWithId, RequestInfoDto)
     @ApiOkResponse({
         schema: { allOf: refs(RecordWithId, RequestInfoDto) },
@@ -134,7 +129,7 @@ export class MetasController {
 
     @ApiBearerAuth('access-token')
     @Patch('variaveis/analise-qualitativa-em-lote')
-    @Roles('PDM.admin_cp', 'PDM.tecnico_cp', 'PDM.ponto_focal')
+    @Roles(['PDM.admin_cp', 'PDM.tecnico_cp', 'PDM.ponto_focal'])
     @ApiExtraModels(RecordWithId, RequestInfoDto)
     @ApiOkResponse({
         schema: { allOf: refs(RecordWithId, RequestInfoDto) },
@@ -155,7 +150,7 @@ export class MetasController {
 
     @ApiBearerAuth('access-token')
     @Get('variaveis/analise-qualitativa')
-    @Roles('PDM.admin_cp', 'PDM.tecnico_cp', 'PDM.ponto_focal')
+    @Roles(['PDM.admin_cp', 'PDM.tecnico_cp', 'PDM.ponto_focal'])
     @ApiExtraModels(MfListVariavelAnaliseQualitativaDto, RequestInfoDto)
     @ApiOkResponse({
         schema: { allOf: refs(MfListVariavelAnaliseQualitativaDto, RequestInfoDto) },
@@ -175,7 +170,10 @@ export class MetasController {
 
     @ApiBearerAuth('access-token')
     @Post('variaveis/busca-analise-qualitativa')
-    @Roles('PDM.admin_cp', 'PDM.tecnico_cp', 'PDM.ponto_focal')
+    @Roles(
+        ['PDM.admin_cp', 'PDM.tecnico_cp', 'PDM.ponto_focal'],
+        'Retorna informações das variaveis, última análise qualitativa e arquivos em lote, não retorna série valores'
+    )
     @ApiExtraModels(
         MfListVariavelAnaliseQualitativaEmLoteDto,
         MfListVariavelAnaliseQualitativaReducedDto,
@@ -183,10 +181,6 @@ export class MetasController {
     )
     @ApiOkResponse({
         schema: { allOf: refs(MfListVariavelAnaliseQualitativaEmLoteDto, RequestInfoDto) },
-    })
-    @ApiOperation({
-        summary:
-            'Retorna informações das variaveis, última análise qualitativa e arquivos em lote, não retorna série valores',
     })
     async BuscaMetaVariavelAnaliseQualitativaEmLote(
         @Body() dto: FilterVariavelAnaliseQualitativaEmLoteDto,
@@ -203,7 +197,7 @@ export class MetasController {
 
     @ApiBearerAuth('access-token')
     @Patch('variaveis/analise-qualitativa/documento')
-    @Roles('PDM.admin_cp', 'PDM.tecnico_cp', 'PDM.ponto_focal')
+    @Roles(['PDM.admin_cp', 'PDM.tecnico_cp', 'PDM.ponto_focal'])
     @ApiExtraModels(RecordWithId, RequestInfoDto)
     @ApiOkResponse({
         schema: { allOf: refs(RecordWithId, RequestInfoDto) },
@@ -224,7 +218,7 @@ export class MetasController {
 
     @ApiBearerAuth('access-token')
     @Delete('variaveis/analise-qualitativa/documento/:id')
-    @Roles('PDM.admin_cp', 'PDM.tecnico_cp', 'PDM.ponto_focal')
+    @Roles(['PDM.admin_cp', 'PDM.tecnico_cp', 'PDM.ponto_focal'])
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.NO_CONTENT)
     async DeleteMetaVariavelAnaliseQualitativaDocumento(
@@ -239,7 +233,7 @@ export class MetasController {
 
     @ApiBearerAuth('access-token')
     @Patch('variaveis/conferida')
-    @Roles('PDM.admin_cp', 'PDM.tecnico_cp', 'PDM.ponto_focal')
+    @Roles(['PDM.admin_cp', 'PDM.tecnico_cp', 'PDM.ponto_focal'])
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.NO_CONTENT)
     async AddVariavelConferida(@Body() dto: VariavelConferidaDto, @CurrentUser() user: PessoaFromJwt) {
@@ -252,7 +246,7 @@ export class MetasController {
 
     @ApiBearerAuth('access-token')
     @Patch('variaveis/complemento')
-    @Roles('PDM.admin_cp', 'PDM.tecnico_cp', 'PDM.ponto_focal')
+    @Roles(['PDM.admin_cp', 'PDM.tecnico_cp', 'PDM.ponto_focal'])
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.NO_CONTENT)
     async AddVariavelPedidoComplementacao(@Body() dto: VariavelComplementacaoDto, @CurrentUser() user: PessoaFromJwt) {
@@ -263,13 +257,15 @@ export class MetasController {
         return '';
     }
 
-
     @ApiBearerAuth('access-token')
     @Patch('variaveis/complemento-em-lote')
-    @Roles('PDM.admin_cp', 'PDM.tecnico_cp', 'PDM.ponto_focal')
+    @Roles(['PDM.admin_cp', 'PDM.tecnico_cp', 'PDM.ponto_focal'])
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.NO_CONTENT)
-    async AddVariavelPedidoComplementacaoEmLote(@Body() dto: VariavelPedidoComplementacaoEmLoteDto, @CurrentUser() user: PessoaFromJwt) {
+    async AddVariavelPedidoComplementacaoEmLote(
+        @Body() dto: VariavelPedidoComplementacaoEmLoteDto,
+        @CurrentUser() user: PessoaFromJwt
+    ) {
         const config = await this.mfService.pessoaAcessoPdm(user);
 
         await this.metasService.addVariavelPedidoComplementacaoEmLote(dto, config, user);
@@ -279,7 +275,7 @@ export class MetasController {
 
     @ApiBearerAuth('access-token')
     @Patch(':id/fase')
-    @Roles('PDM.admin_cp', 'PDM.tecnico_cp', 'PDM.ponto_focal')
+    @Roles(['PDM.admin_cp', 'PDM.tecnico_cp', 'PDM.ponto_focal'])
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.NO_CONTENT)
     async MudarMetaCicloFase(
@@ -298,7 +294,7 @@ export class MetasController {
 
     @ApiBearerAuth('access-token')
     @Patch('formula-composta/analise-qualitativa')
-    @Roles('PDM.admin_cp', 'PDM.tecnico_cp', 'PDM.ponto_focal')
+    @Roles(['PDM.admin_cp', 'PDM.tecnico_cp', 'PDM.ponto_focal'])
     @ApiExtraModels(RecordWithId, RequestInfoDto)
     @ApiOkResponse({
         schema: { allOf: refs(RecordWithId, RequestInfoDto) },
@@ -319,7 +315,7 @@ export class MetasController {
 
     @ApiBearerAuth('access-token')
     @Get('formula-composta/analise-qualitativa')
-    @Roles('PDM.admin_cp', 'PDM.tecnico_cp', 'PDM.ponto_focal')
+    @Roles(['PDM.admin_cp', 'PDM.tecnico_cp', 'PDM.ponto_focal'])
     @ApiExtraModels(MfListFormulaCompostaAnaliseQualitativaDto, RequestInfoDto)
     @ApiOkResponse({
         schema: { allOf: refs(MfListFormulaCompostaAnaliseQualitativaDto, RequestInfoDto) },
@@ -339,7 +335,7 @@ export class MetasController {
 
     @ApiBearerAuth('access-token')
     @Patch('formula-composta/analise-qualitativa/documento')
-    @Roles('PDM.admin_cp', 'PDM.tecnico_cp', 'PDM.ponto_focal')
+    @Roles(['PDM.admin_cp', 'PDM.tecnico_cp', 'PDM.ponto_focal'])
     @ApiExtraModels(RecordWithId, RequestInfoDto)
     @ApiOkResponse({
         schema: { allOf: refs(RecordWithId, RequestInfoDto) },
@@ -365,7 +361,7 @@ export class MetasController {
 
     @ApiBearerAuth('access-token')
     @Delete('formula-composta/analise-qualitativa/documento/:id')
-    @Roles('PDM.admin_cp', 'PDM.tecnico_cp', 'PDM.ponto_focal')
+    @Roles(['PDM.admin_cp', 'PDM.tecnico_cp', 'PDM.ponto_focal'])
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.NO_CONTENT)
     async DeleteMetaFormulaCompostaAnaliseQualitativaDocumento(

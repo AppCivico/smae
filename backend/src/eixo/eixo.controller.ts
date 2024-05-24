@@ -1,5 +1,5 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post, Query } from '@nestjs/common';
-import { ApiBearerAuth, ApiNoContentResponse, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiNoContentResponse, ApiTags } from '@nestjs/swagger';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
@@ -18,8 +18,7 @@ export class EixoController {
 
     @Post()
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles('CadastroMacroTema.inserir')
+    @Roles(['CadastroMacroTema.inserir'])
     async create(@Body() createEixoDto: CreateEixoDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
         return await this.eixoService.create(createEixoDto, user);
     }
@@ -32,8 +31,7 @@ export class EixoController {
 
     @Patch(':id')
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles('CadastroMacroTema.editar')
+    @Roles(['CadastroMacroTema.editar'])
     async update(
         @Param() params: FindOneParams,
         @Body() updateEixoDto: UpdateEixoDto,
@@ -44,8 +42,7 @@ export class EixoController {
 
     @Delete(':id')
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles('CadastroMacroTema.remover')
+    @Roles(['CadastroMacroTema.remover'])
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.ACCEPTED)
     async remove(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt) {
@@ -61,8 +58,7 @@ export class EixoController2 {
 
     @Post()
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles('CadastroMacroTema.inserir')
+    @Roles(['CadastroMacroTema.inserir'])
     async create(@Body() createEixoDto: CreateEixoDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
         return await this.eixoService.create(createEixoDto, user);
     }
@@ -75,8 +71,7 @@ export class EixoController2 {
 
     @Patch(':id')
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles('CadastroMacroTema.editar')
+    @Roles(['CadastroMacroTema.editar'])
     async update(
         @Param() params: FindOneParams,
         @Body() updateEixoDto: UpdateEixoDto,
@@ -87,8 +82,7 @@ export class EixoController2 {
 
     @Delete(':id')
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles('CadastroMacroTema.remover')
+    @Roles(['CadastroMacroTema.remover'])
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.ACCEPTED)
     async remove(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt) {

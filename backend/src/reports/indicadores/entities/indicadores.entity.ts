@@ -17,7 +17,7 @@ export class RelIndicadoresDto {
      **/
     data: string;
 
-    data_referencia: string
+    data_referencia: string;
     /**
      * Valor inteiro ou null
      **/

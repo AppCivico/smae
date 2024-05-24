@@ -26,4 +26,5 @@ export class Pdm {
     possui_atividade: boolean;
     nivel_orcamento: string;
     id: number;
+    pode_editar: boolean;
 }

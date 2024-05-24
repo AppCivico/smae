@@ -5,7 +5,7 @@ import {
     ApiNoContentResponse,
     ApiOperation,
     ApiTags,
-    ApiUnauthorizedResponse,
+
 } from '@nestjs/swagger';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { Roles } from '../auth/decorators/roles.decorator';
@@ -26,9 +26,7 @@ import { FilterIndicadorDto, FilterIndicadorSerieDto } from './dto/filter-indica
 import { ListIndicadorDto } from './dto/list-indicador.dto';
 import { ListIndicadorFormulaCompostaItemDto } from './dto/list-indicador.formula-composta.dto';
 import { UpdateIndicadorDto } from './dto/update-indicador.dto';
-import {
-    ListIndicadorFormulaCompostaEmUsoDto
-} from './entities/indicador.formula-composta.entity';
+import { ListIndicadorFormulaCompostaEmUsoDto } from './entities/indicador.formula-composta.entity';
 import { IndicadorFormulaCompostaService } from './indicador.formula-composta.service';
 import { IndicadorService } from './indicador.service';
 
@@ -44,8 +42,7 @@ export class IndicadorController {
     // reposta: meta ta dentro do indicador, logo, se pode meta, tem que poder indicador
     @Post('indicador')
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles('CadastroIndicador.inserir', 'CadastroMeta.inserir')
+    @Roles(['CadastroIndicador.inserir', 'CadastroMeta.inserir'])
     async create(
         @Body() createIndicadorDto: CreateIndicadorDto,
         @CurrentUser() user: PessoaFromJwt
@@ -55,15 +52,14 @@ export class IndicadorController {
 
     @ApiBearerAuth('access-token')
     @Get('indicador')
-    @Roles('CadastroMeta.listar')
+    @Roles(['CadastroMeta.listar'])
     async findAll(@Query() filters: FilterIndicadorDto, @CurrentUser() user: PessoaFromJwt): Promise<ListIndicadorDto> {
         return { linhas: await this.indicadorService.findAll(filters, user) };
     }
 
     @Patch('indicador/:id')
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles('CadastroIndicador.editar', 'CadastroMeta.inserir')
+    @Roles(['CadastroIndicador.editar', 'CadastroMeta.inserir'])
     async update(
         @Param() params: FindOneParams,
         @Body() updateIndicadorDto: UpdateIndicadorDto,
@@ -74,8 +70,7 @@ export class IndicadorController {
 
     @Delete('indicador/:id')
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles('CadastroIndicador.remover', 'CadastroMeta.inserir')
+    @Roles(['CadastroIndicador.remover', 'CadastroMeta.inserir'])
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.ACCEPTED)
     async remove(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt) {
@@ -87,8 +82,7 @@ export class IndicadorController {
     @ApiTags('Indicador')
     @Get('indicador/:id/serie')
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles('CadastroIndicador.editar', 'CadastroMeta.inserir', 'CadastroMeta.listar')
+    @Roles(['CadastroIndicador.editar', 'CadastroMeta.inserir', 'CadastroMeta.listar'])
     @ApiOperation({
         summary: 'Recebe o ID do indicador como parâmetro',
         description:
@@ -104,8 +98,7 @@ export class IndicadorController {
 
     @Post('indicador/:id/formula-composta')
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles('CadastroIndicador.inserir', 'CadastroMeta.inserir')
+    @Roles(['CadastroIndicador.inserir', 'CadastroMeta.inserir'])
     async create_fc(
         @Param() params: FindOneParams,
         @Body() createIndicadorDto: CreateIndicadorFormulaCompostaDto,
@@ -117,8 +110,7 @@ export class IndicadorController {
 
     @Get('indicador/:id/formula-composta')
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles('CadastroIndicador.inserir', 'CadastroMeta.inserir')
+    @Roles(['CadastroIndicador.inserir', 'CadastroMeta.inserir'])
     async list_fc(
         @Param() params: FindOneParams,
         @CurrentUser() user: PessoaFromJwt
@@ -128,8 +120,7 @@ export class IndicadorController {
 
     @Get('indicador/:id/formula-composta-em-uso')
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles('CadastroIndicador.inserir', 'CadastroMeta.inserir')
+    @Roles(['CadastroIndicador.inserir', 'CadastroMeta.inserir'])
     async listFcEmUso(
         @Param() params: FindOneParams,
         @CurrentUser() user: PessoaFromJwt
@@ -139,8 +130,7 @@ export class IndicadorController {
 
     @Patch('indicador/:id/formula-composta/:id2')
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles('CadastroIndicador.inserir', 'CadastroMeta.inserir')
+    @Roles(['CadastroIndicador.inserir', 'CadastroMeta.inserir'])
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.ACCEPTED)
     async patch_fc(
@@ -153,8 +143,7 @@ export class IndicadorController {
 
     @Delete('indicador/:id/formula-composta/:id2')
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles('CadastroIndicador.inserir', 'CadastroMeta.inserir')
+    @Roles(['CadastroIndicador.inserir', 'CadastroMeta.inserir'])
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.ACCEPTED)
     async delete_fc(@Param() params: FindTwoParams, @CurrentUser() user: PessoaFromJwt) {
@@ -164,8 +153,7 @@ export class IndicadorController {
 
     @Get('indicador/:id/auxiliar-formula-composta/variavel')
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles('CadastroIndicador.inserir', 'CadastroMeta.inserir')
+    @Roles(['CadastroIndicador.inserir', 'CadastroMeta.inserir'])
     async auxiliar_formula_composta_variavel(
         @Param() params: FindOneParams,
         @Query() dto: FilterFormulaCompostaFormDto,
@@ -176,8 +164,7 @@ export class IndicadorController {
 
     @Post('indicador/:id/gerador-formula-composta')
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles('CadastroIndicador.inserir', 'CadastroMeta.inserir')
+    @Roles(['CadastroIndicador.inserir', 'CadastroMeta.inserir'])
     async auxiliar_formula_composta(
         @Param() params: FindOneParams,
         @Body() dto: GeneratorFormulaCompostaFormDto,

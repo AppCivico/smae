@@ -1,9 +1,45 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { NivelOrcamento } from '@prisma/client';
-import { Transform } from 'class-transformer';
-import { IsBoolean, IsEnum, IsOptional, IsString, MaxLength, MinLength, ValidateIf } from 'class-validator';
+import { NivelOrcamento, TipoPdm } from '@prisma/client';
+import { Transform, Type } from 'class-transformer';
+import {
+    ArrayMaxSize,
+    IsArray,
+    IsBoolean,
+    IsEnum,
+    IsInt,
+    IsOptional,
+    IsString,
+    MaxLength,
+    MinLength,
+    ValidateIf,
+    ValidateNested,
+} from 'class-validator';
 import { DateTransform } from '../../auth/transforms/date.transform';
 import { IsOnlyDate } from '../../common/decorators/IsDateOnly';
+
+export class CreatePdmAdminCPDto {
+    /**
+     * lista dos participantes do PS.admin_cp? pode ficar vazio
+     * cada pessoa precisa ter o privilégio "PS.admin_cp"
+     * @example "[4, 5, 6]"
+     */
+    @IsArray({ message: '$property| precisa ser um array' })
+    @ArrayMaxSize(10000, { message: '$property| precisa ter no máximo 10000 items' })
+    @IsInt({ each: true, message: '$property| Cada item precisa ser um número inteiro' })
+    participantes: number[];
+}
+
+export class CreatePdmTecnicoCPDto {
+    /**
+     * lista dos participantes do PS.tecnico_cp? pode ficar vazio
+     * cada pessoa precisa ter o privilégio "PS.tecnico_cp"
+     * @example "[4, 5, 6]"
+     */
+    @IsArray({ message: '$property| precisa ser um array' })
+    @ArrayMaxSize(10000, { message: '$property| precisa ter no máximo 10000 items' })
+    @IsInt({ each: true, message: '$property| Cada item precisa ser um número inteiro' })
+    participantes: number[];
+}
 
 export class CreatePdmDto {
     /**
@@ -199,4 +235,23 @@ export class CreatePdmDto {
         message: '$property| Precisa ser um dos seguintes valores: ' + Object.values(NivelOrcamento).join(', '),
     })
     nivel_orcamento: NivelOrcamento;
+
+    @IsOptional()
+    @IsEnum(TipoPdm, {
+        message: '$property| Precisa ser um dos seguintes valores: ' + Object.values(TipoPdm).join(', '),
+    })
+    @ApiProperty({ enum: TipoPdm, enumName: 'TipoPdm' })
+    tipo?: TipoPdm;
+
+    @IsOptional()
+    @ValidateIf((object, value) => value !== null)
+    @Type(() => CreatePdmTecnicoCPDto)
+    @ValidateNested()
+    ps_tecnico_cp?: CreatePdmTecnicoCPDto;
+
+    @IsOptional()
+    @ValidateIf((object, value) => value !== null)
+    @Type(() => CreatePdmAdminCPDto)
+    @ValidateNested()
+    ps_admin_cp?: CreatePdmAdminCPDto;
 }
