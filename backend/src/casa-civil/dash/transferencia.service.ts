@@ -411,6 +411,8 @@ export class DashTransferenciaService {
             etapa_fluxo: 'Workflow não iniciado',
         });
 
+        const coresLegenda = ['#8AC4D6', '#7CC3F8', '#3B8FD8', '#184E77', '#DEEF9F', '#B5E48C', '#76C893', '#4F8562'];
+
         const chartValPorPartido: DashTransferenciaBasicChartDto = {
             title: {
                 id: 'chart__ValPartido',
@@ -443,12 +445,13 @@ export class DashTransferenciaService {
                 nameLocation: 'end',
                 type: 'value',
             },
-            series: etapas.map((etapa) => {
+            series: etapas.map((etapa, itt) => {
                 return {
                     name: etapa.etapa_fluxo,
                     type: 'bar',
                     stack: 'total',
                     barWidth: '20%',
+                    color: coresLegenda[itt] ?? '',
                     data: dadosPorPartido
                         .sort((a, b) => b.valor - a.valor)
                         .map((partidoDados) => {
@@ -546,12 +549,13 @@ export class DashTransferenciaService {
                     width: 100,
                 },
             },
-            series: etapas.map((etapa) => {
+            series: etapas.map((etapa, itt) => {
                 return {
                     name: etapa.etapa_fluxo,
                     type: 'bar',
                     stack: 'total',
                     barWidth: '20%',
+                    color: coresLegenda[itt],
                     data: dadosPorOrgao
                         .sort((a, b) => {
                             const sumA = a.valor.reduce((acc, curr) => acc + curr.sum, 0);
