@@ -230,6 +230,10 @@ export class DashTransferenciaBasicChartDto {
     xAxis: ChartDataDto;
     yAxis: ChartDataDto;
     series: ChartDataDto[];
+    top?: string;
+    grid?: {
+        left: string;
+    };
 }
 
 export class DashChartTooltipDto {
