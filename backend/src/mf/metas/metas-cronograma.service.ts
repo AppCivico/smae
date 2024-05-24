@@ -5,7 +5,10 @@ import { MfService } from './../mf.service';
 
 @Injectable()
 export class MetasCronogramaService {
-    constructor(private readonly prisma: PrismaService, private readonly mfService: MfService) {}
+    constructor(
+        private readonly prisma: PrismaService,
+        private readonly mfService: MfService
+    ) {}
 
     async metaIniciativaAtividadesComCrono(meta_id: number): Promise<RetornoMetaCronogramaDto> {
         const dadosMetas: {

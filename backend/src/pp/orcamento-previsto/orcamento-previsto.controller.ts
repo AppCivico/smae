@@ -1,5 +1,5 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Logger, Param, Patch, Post, Query } from '@nestjs/common';
-import { ApiBearerAuth, ApiNoContentResponse, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiNoContentResponse, ApiTags } from '@nestjs/swagger';
 import { CurrentUser } from '../../auth/decorators/current-user.decorator';
 import { Roles } from '../../auth/decorators/roles.decorator';
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
@@ -27,8 +27,7 @@ export class OrcamentoPrevistoController {
 
     @Post(':id/orcamento-previsto')
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles('Projeto.orcamento')
+    @Roles(['Projeto.orcamento'])
     async create(
         @Param() params: FindOneParams,
         @Body() createMetaDto: CreateOrcamentoPrevistoDto,
@@ -43,7 +42,7 @@ export class OrcamentoPrevistoController {
 
     @ApiBearerAuth('access-token')
     @Get(':id/orcamento-previsto')
-    @Roles('Projeto.orcamento')
+    @Roles(['Projeto.orcamento'])
     async findAll(
         @Param() params: FindOneParams,
         @Query() filters: FilterOrcamentoPrevistoDto,
@@ -61,8 +60,7 @@ export class OrcamentoPrevistoController {
 
     @Patch(':id/orcamento-previsto/zerado')
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles('Projeto.orcamento')
+    @Roles(['Projeto.orcamento'])
     @HttpCode(HttpStatus.ACCEPTED)
     @ApiNoContentResponse()
     async patchZerado(
@@ -80,8 +78,7 @@ export class OrcamentoPrevistoController {
 
     @Patch(':id/orcamento-previsto/:id2')
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles('Projeto.orcamento')
+    @Roles(['Projeto.orcamento'])
     @HttpCode(HttpStatus.ACCEPTED)
     async patch(
         @Param() params: FindTwoParams,
@@ -97,8 +94,7 @@ export class OrcamentoPrevistoController {
 
     @Delete(':id/orcamento-previsto/:id2')
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles('Projeto.orcamento')
+    @Roles(['Projeto.orcamento'])
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.ACCEPTED)
     async remove(@Param() params: FindTwoParams, @CurrentUser() user: PessoaFromJwt) {

@@ -1,5 +1,5 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post, Query } from '@nestjs/common';
-import { ApiBearerAuth, ApiNoContentResponse, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiNoContentResponse, ApiTags } from '@nestjs/swagger';
 import { CurrentUser } from '../../auth/decorators/current-user.decorator';
 import { Roles } from '../../auth/decorators/roles.decorator';
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
@@ -24,8 +24,7 @@ export class OrcamentoRealizadoController {
 
     @Post(':id/orcamento-realizado')
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles('Projeto.orcamento')
+    @Roles(['Projeto.orcamento'])
     async create(
         @Param() params: FindOneParams,
         @Body() createMetaDto: CreatePPOrcamentoRealizadoDto,
@@ -38,7 +37,7 @@ export class OrcamentoRealizadoController {
 
     @Get(':id/orcamento-realizado')
     @ApiBearerAuth('access-token')
-    @Roles('Projeto.orcamento')
+    @Roles(['Projeto.orcamento'])
     async findAll(
         @Param() params: FindOneParams,
         @Query() filters: FilterPPOrcamentoRealizadoDto,
@@ -50,8 +49,7 @@ export class OrcamentoRealizadoController {
 
     @Patch(':id/orcamento-realizado/:id2')
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles('Projeto.orcamento')
+    @Roles(['Projeto.orcamento'])
     async update(
         @Param() params: FindTwoParams,
         @Body() createMetaDto: UpdatePPOrcamentoRealizadoDto,
@@ -64,8 +62,7 @@ export class OrcamentoRealizadoController {
 
     @Delete(':id/orcamento-realizado/em-lote')
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles('CadastroMeta.orcamento', 'PDM.tecnico_cp', 'PDM.admin_cp')
+    @Roles(['CadastroMeta.orcamento', 'PDM.tecnico_cp', 'PDM.admin_cp'])
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.ACCEPTED)
     async removeEmLote(
@@ -81,8 +78,7 @@ export class OrcamentoRealizadoController {
 
     @Delete(':id/orcamento-realizado/:id2')
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles('Projeto.orcamento')
+    @Roles(['Projeto.orcamento'])
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.ACCEPTED)
     async remove(@Param() params: FindTwoParams, @CurrentUser() user: PessoaFromJwt) {

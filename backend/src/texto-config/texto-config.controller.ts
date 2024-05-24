@@ -9,7 +9,10 @@ import { Roles } from '../auth/decorators/roles.decorator';
 
 @Controller('texto-config')
 export class TextoConfigController {
-    constructor(private readonly textoConfigService: TextoConfigService, private readonly prisma: PrismaService) {}
+    constructor(
+        private readonly textoConfigService: TextoConfigService,
+        private readonly prisma: PrismaService
+    ) {}
 
     @ApiTags('Público')
     @IsPublic()
@@ -25,7 +28,7 @@ export class TextoConfigController {
     @ApiTags('default')
     @Patch('/texto-tos')
     @ApiBearerAuth('access-token')
-    @Roles('SMAE.superadmin')
+    @Roles(['SMAE.superadmin'])
     async patchTextoTos(@Body() dto: UpdateTextoConfigDto): Promise<string> {
         await this.textoConfigService.update(dto);
         return '';

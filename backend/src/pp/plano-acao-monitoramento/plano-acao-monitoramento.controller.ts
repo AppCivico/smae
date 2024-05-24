@@ -1,16 +1,5 @@
-import {
-    Body,
-    Controller,
-    Delete,
-    Get,
-    HttpCode,
-    HttpStatus,
-    Param,
-    Patch,
-    Post,
-    Query
-} from '@nestjs/common';
-import { ApiBearerAuth, ApiNoContentResponse, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post, Query } from '@nestjs/common';
+import { ApiBearerAuth, ApiNoContentResponse, ApiTags } from '@nestjs/swagger';
 import { CurrentUser } from '../../auth/decorators/current-user.decorator';
 import { Roles } from '../../auth/decorators/roles.decorator';
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
@@ -30,7 +19,7 @@ import { PROJETO_READONLY_ROLES } from '../projeto/projeto.controller';
 const roles: ListaDePrivilegios[] = [
     'Projeto.administrador',
     'Projeto.administrador_no_orgao',
-    ...PROJETO_READONLY_ROLES
+    ...PROJETO_READONLY_ROLES,
 ];
 
 @Controller('projeto')
@@ -43,8 +32,7 @@ export class PlanoAcaoMonitoramentoController {
 
     @Post(':id/plano-acao-monitoramento')
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles(...roles)
+    @Roles([...roles])
     async create(
         @Param() params: FindOneParams,
         @Body() dto: CreatePlanoAcaoMonitoramentoDto,
@@ -57,8 +45,7 @@ export class PlanoAcaoMonitoramentoController {
 
     @Get(':id/plano-acao-monitoramento')
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles(...roles)
+    @Roles([...roles])
     async findAll(
         @Param() params: FindOneParams,
         @Query() filters: FilterPlanoAcaoMonitoramentoDto,
@@ -72,8 +59,7 @@ export class PlanoAcaoMonitoramentoController {
 
     @Patch(':id/plano-acao-monitoramento/:id2')
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles(...roles)
+    @Roles([...roles])
     async update(
         @Param() params: FindTwoParams,
         @Body() dto: UpdatePlanoAcaoMonitoramentoDto,
@@ -86,8 +72,7 @@ export class PlanoAcaoMonitoramentoController {
 
     @Delete(':id/plano-acao-monitoramento/:id2')
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles(...roles)
+    @Roles([...roles])
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.ACCEPTED)
     async remove(@Param() params: FindTwoParams, @CurrentUser() user: PessoaFromJwt) {

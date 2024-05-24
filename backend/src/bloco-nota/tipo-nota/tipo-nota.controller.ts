@@ -1,5 +1,5 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post, Query } from '@nestjs/common';
-import { ApiBearerAuth, ApiNoContentResponse, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiNoContentResponse, ApiTags } from '@nestjs/swagger';
 
 import { TipoNotaService } from './tipo-nota.service';
 import { Roles } from '../../auth/decorators/roles.decorator';
@@ -16,8 +16,7 @@ export class TipoNotaController {
 
     @Post()
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles('SMAE.superadmin')
+    @Roles(['SMAE.superadmin'])
     async create(@Body() createTagDto: CreateTipoNotaDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
         return await this.tipoNotaService.create(createTagDto, user);
     }
@@ -30,8 +29,7 @@ export class TipoNotaController {
 
     @Patch(':id')
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles('SMAE.superadmin')
+    @Roles(['SMAE.superadmin'])
     async update(
         @Param() params: FindOneParams,
         @Body() updateTagDto: UpdateTipoNotaDto,
@@ -42,8 +40,7 @@ export class TipoNotaController {
 
     @Delete(':id')
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles('SMAE.superadmin')
+    @Roles(['SMAE.superadmin'])
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.ACCEPTED)
     async remove(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt) {

@@ -547,6 +547,7 @@ export class PessoaService {
 
                     const perfilDeInteresse: ListaDePrivilegios[] = [
                         'PDM.coordenador_responsavel_cp',
+                        'PS.tecnico_cp',
                         'SMAE.gestor_de_projeto',
                         'SMAE.colaborador_de_projeto',
                         'SMAE.espectador_de_painel_externo',
@@ -614,7 +615,7 @@ export class PessoaService {
             if (!privDepoisUpdate.find((r) => r.codigo == priv) && privAntesUpdate.find((r) => r.codigo == priv)) {
                 logger.log(`Privilégio ${priv} foi removido, removendo acesso das tabelas...`);
 
-                if (priv == 'PDM.coordenador_responsavel_cp') {
+                if (priv == 'PDM.coordenador_responsavel_cp' || priv == 'PS.tecnico_cp') {
                     const metaResp = await prismaTx.meta.findMany({
                         where: {
                             removido_em: null,
@@ -1259,6 +1260,7 @@ export class PessoaService {
         filterModulos: ModuloSistema[] | undefined
     ): Promise<ListaPrivilegiosModulos> {
         if (!filterModulos) filterModulos = Object.keys(ModuloSistema) as ModuloSistema[];
+        console.log(filterModulos)
 
         const dados: ListaPrivilegiosModulos[] = await this.prisma.$queryRaw`
             with perms as (

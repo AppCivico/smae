@@ -1,5 +1,5 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post, Query } from '@nestjs/common';
-import { ApiBearerAuth, ApiNoContentResponse, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiNoContentResponse, ApiTags } from '@nestjs/swagger';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
@@ -21,8 +21,7 @@ export class MetaOrcamentoController {
 
     @Post()
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles('CadastroMeta.orcamento', 'PDM.tecnico_cp', 'PDM.admin_cp')
+    @Roles(['CadastroMeta.orcamento', 'PDM.tecnico_cp', 'PDM.admin_cp'])
     async create(
         @Body() createMetaDto: CreateMetaOrcamentoDto,
         @CurrentUser() user: PessoaFromJwt
@@ -32,7 +31,7 @@ export class MetaOrcamentoController {
 
     @ApiBearerAuth('access-token')
     @Get()
-    @Roles('CadastroMeta.orcamento', 'PDM.tecnico_cp', 'PDM.admin_cp')
+    @Roles(['CadastroMeta.orcamento', 'PDM.tecnico_cp', 'PDM.admin_cp'])
     async findAll(
         @Query() filters: FilterMetaOrcamentoDto,
         @CurrentUser() user: PessoaFromJwt
@@ -45,8 +44,7 @@ export class MetaOrcamentoController {
 
     @Patch('zerado')
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles('CadastroMeta.orcamento', 'PDM.tecnico_cp', 'PDM.admin_cp')
+    @Roles(['CadastroMeta.orcamento', 'PDM.tecnico_cp', 'PDM.admin_cp'])
     @HttpCode(HttpStatus.ACCEPTED)
     @ApiNoContentResponse()
     async patchZerado(@Body() updateZeradoDto: UpdateOrcamentoPrevistoZeradoDto, @CurrentUser() user: PessoaFromJwt) {
@@ -56,8 +54,7 @@ export class MetaOrcamentoController {
 
     @Patch(':id')
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles('CadastroMeta.orcamento', 'PDM.tecnico_cp', 'PDM.admin_cp')
+    @Roles(['CadastroMeta.orcamento', 'PDM.tecnico_cp', 'PDM.admin_cp'])
     @HttpCode(HttpStatus.ACCEPTED)
     async patch(
         @Param() params: FindOneParams,
@@ -69,8 +66,7 @@ export class MetaOrcamentoController {
 
     @Delete(':id')
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles('CadastroMeta.orcamento', 'PDM.tecnico_cp', 'PDM.admin_cp')
+    @Roles(['CadastroMeta.orcamento', 'PDM.tecnico_cp', 'PDM.admin_cp'])
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.ACCEPTED)
     async remove(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt) {

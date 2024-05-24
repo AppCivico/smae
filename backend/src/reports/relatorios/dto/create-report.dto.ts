@@ -8,9 +8,7 @@ import { CreateRelProjetoOrcamentoDto } from 'src/reports/projeto-orcamento/dto/
 import { CreateRelProjetoPrevisaoCustoDto } from 'src/reports/projeto-previsao-custo/dto/create-projeto-previsao-custo.dto';
 import { CreateRelIndicadorDto } from '../../indicadores/dto/create-indicadores.dto';
 import { CreateRelMonitoramentoMensalDto } from '../../monitoramento-mensal/dto/create-monitoramento-mensal.dto';
-import {
-    PdmCreateOrcamentoExecutadoDto
-} from '../../orcamento/dto/create-orcamento-executado.dto';
+import { PdmCreateOrcamentoExecutadoDto } from '../../orcamento/dto/create-orcamento-executado.dto';
 import { CreateRelProjetoDto } from '../../pp-projeto/dto/create-previsao-custo.dto';
 import { ReportValidatorOf } from '../report-validator-of';
 

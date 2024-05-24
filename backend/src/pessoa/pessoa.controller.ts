@@ -1,5 +1,5 @@
 import { Body, Controller, Get, Param, Patch, Post, Query } from '@nestjs/common';
-import { ApiBearerAuth, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
@@ -24,15 +24,14 @@ export class PessoaController {
 
     @Post()
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles('CadastroPessoa.inserir')
+    @Roles(['CadastroPessoa.inserir'])
     create(@Body() createPessoaDto: CreatePessoaDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
         return this.pessoaService.criarPessoa(createPessoaDto, user);
     }
 
     @ApiBearerAuth('access-token')
     @Get()
-    @Roles(
+    @Roles([
         'CadastroPessoa.inserir',
         'CadastroPessoa.editar',
         'CadastroPessoa.inativar',
@@ -42,15 +41,15 @@ export class PessoaController {
         'SMAE.colaborador_de_projeto',
         'SMAE.gestor_de_projeto',
         'Projeto.administrador',
-        'Projeto.administrador_no_orgao'
-    )
+        'Projeto.administrador_no_orgao',
+    ])
     async findAll(@Query() filters: FilterPessoaDto, @CurrentUser() user: PessoaFromJwt): Promise<ListPessoaDto> {
         return { linhas: await this.pessoaService.findAll(filters, user) };
     }
 
     @ApiBearerAuth('access-token')
     @Get('reduzido')
-    @Roles(
+    @Roles([
         'CadastroPessoa.inserir',
         'CadastroPessoa.editar',
         'CadastroPessoa.inativar',
@@ -65,8 +64,8 @@ export class PessoaController {
         'CadastroGrupoPortfolio.administrador',
         'CadastroGrupoPortfolio.administrador_no_orgao',
         'CadastroPessoa.editar_responsabilidade',
-        'CadastroTransferencia.listar'
-    )
+        'CadastroTransferencia.listar',
+    ])
     async findAllReduced(
         @Query() filters: FilterPessoaDto,
         @CurrentUser() user: PessoaFromJwt
@@ -86,8 +85,7 @@ export class PessoaController {
 
     @Patch(':id')
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles('CadastroPessoa.editar')
+    @Roles(['CadastroPessoa.editar'])
     async update(
         @Param() params: FindOneParams,
         @Body() updatePessoaDto: UpdatePessoaDto,
@@ -98,8 +96,7 @@ export class PessoaController {
 
     @Get('responsabilidades')
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles('CadastroPessoa.editar_responsabilidade')
+    @Roles(['CadastroPessoa.editar_responsabilidade'])
     async getResponsabilidades(
         @Query() dto: BuscaResponsabilidades,
         @CurrentUser() user: PessoaFromJwt
@@ -109,8 +106,7 @@ export class PessoaController {
 
     @Post('responsabilidades')
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles('CadastroPessoa.editar_responsabilidade')
+    @Roles(['CadastroPessoa.editar_responsabilidade'])
     async executaTransferenciaResponsabilidades(
         @Body() dto: ExecutaTransferenciaResponsabilidades,
         @CurrentUser() user: PessoaFromJwt
@@ -121,13 +117,12 @@ export class PessoaController {
 
     @Get(':id')
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles(
+    @Roles([
         'CadastroPessoa.inserir',
         'CadastroPessoa.editar',
         'CadastroPessoa.inativar',
-        'CadastroPessoa.editar_responsabilidade'
-    )
+        'CadastroPessoa.editar_responsabilidade',
+    ])
     async get(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt): Promise<DetalhePessoaDto> {
         return await this.pessoaService.getDetail(+params.id, user);
     }

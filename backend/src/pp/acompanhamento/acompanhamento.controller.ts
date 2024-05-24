@@ -1,5 +1,5 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post } from '@nestjs/common';
-import { ApiBearerAuth, ApiNoContentResponse, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiNoContentResponse, ApiTags } from '@nestjs/swagger';
 import { ListaDePrivilegios } from 'src/common/ListaDePrivilegios';
 import { CurrentUser } from '../../auth/decorators/current-user.decorator';
 import { Roles } from '../../auth/decorators/roles.decorator';
@@ -16,8 +16,7 @@ import { PROJETO_READONLY_ROLES } from '../projeto/projeto.controller';
 const roles: ListaDePrivilegios[] = [
     'Projeto.administrador',
     'Projeto.administrador_no_orgao',
-    ...PROJETO_READONLY_ROLES
-
+    ...PROJETO_READONLY_ROLES,
 ];
 
 @Controller('projeto')
@@ -30,8 +29,7 @@ export class AcompanhamentoController {
 
     @Post(':id/acompanhamento')
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles(...roles)
+    @Roles([...roles])
     async create(
         @Param() params: FindOneParams,
         @Body() createAcompanhamentoDto: CreateProjetoAcompanhamentoDto,
@@ -44,8 +42,7 @@ export class AcompanhamentoController {
 
     @Get(':id/acompanhamento')
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles(...roles)
+    @Roles([...roles])
     async findAll(
         @Param() params: FindOneParams,
         @CurrentUser() user: PessoaFromJwt
@@ -58,8 +55,7 @@ export class AcompanhamentoController {
 
     @Get(':id/acompanhamento/:id2')
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles(...roles)
+    @Roles([...roles])
     async findOne(
         @Param() params: FindTwoParams,
         @CurrentUser() user: PessoaFromJwt
@@ -70,8 +66,7 @@ export class AcompanhamentoController {
 
     @Patch(':id/acompanhamento/:id2')
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles(...roles)
+    @Roles([...roles])
     async update(
         @Param() params: FindTwoParams,
         @Body() dto: UpdateProjetoAcompanhamentoDto,
@@ -83,8 +78,7 @@ export class AcompanhamentoController {
 
     @Delete(':id/acompanhamento/:id2')
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles(...roles)
+    @Roles([...roles])
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.ACCEPTED)
     async remove(@Param() params: FindTwoParams, @CurrentUser() user: PessoaFromJwt) {

@@ -1,5 +1,5 @@
 import { Body, Controller, Post } from '@nestjs/common';
-import { ApiBearerAuth, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { Roles } from '../../auth/decorators/roles.decorator';
 import { CreateRelParlamentaresDto } from './dto/create-parlamentares.dto';
 import { ParlamentaresRelatorioDto } from './entities/parlamentares.entity';
@@ -12,8 +12,7 @@ export class ParlamentaresController {
 
     @Post()
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles('Reports.executar.CasaCivil')
+    @Roles(['Reports.executar.CasaCivil'])
     async create(@Body() createParlamentaresDto: CreateRelParlamentaresDto): Promise<ParlamentaresRelatorioDto> {
         return await this.parlamentares.create(createParlamentaresDto);
     }

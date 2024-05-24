@@ -14,7 +14,10 @@ import {
 
 @Injectable()
 export class MetasAnaliseQualiService {
-    constructor(private readonly prisma: PrismaService, private readonly uploadService: UploadService) {}
+    constructor(
+        private readonly prisma: PrismaService,
+        private readonly uploadService: UploadService
+    ) {}
 
     private async carregaCicloPorId(ciclo_fisico_id: number) {
         const ret = await this.prisma.cicloFisico.findFirst({

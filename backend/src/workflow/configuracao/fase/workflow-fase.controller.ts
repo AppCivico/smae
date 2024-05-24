@@ -1,5 +1,5 @@
 import { Controller, Post, Body, Patch, Param, Get, Delete, HttpCode, HttpStatus } from '@nestjs/common';
-import { ApiTags, ApiBearerAuth, ApiUnauthorizedResponse, ApiNoContentResponse } from '@nestjs/swagger';
+import { ApiTags, ApiBearerAuth, ApiNoContentResponse } from '@nestjs/swagger';
 import { CurrentUser } from 'src/auth/decorators/current-user.decorator';
 import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
@@ -17,14 +17,13 @@ export class WorkflowFaseController {
 
     @Post('')
     @ApiBearerAuth('access-token')
-    @Roles('CadastroWorkflows.inserir')
-    @ApiUnauthorizedResponse()
+    @Roles(['CadastroWorkflows.inserir'])
     async create(@Body() dto: CreateWorkflowFaseDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
         return await this.workflowFaseService.create(dto, user);
     }
 
     @ApiBearerAuth('access-token')
-    @Roles('CadastroWorkflows.listar')
+    @Roles(['CadastroWorkflows.listar'])
     @Get()
     async findAll(@CurrentUser() user: PessoaFromJwt): Promise<ListWorkflowFaseDto> {
         return { linhas: await this.workflowFaseService.findAll(user) };
@@ -32,16 +31,14 @@ export class WorkflowFaseController {
 
     // @Get(':id')
     // @ApiBearerAuth('access-token')
-    // @Roles('CadastroWorkflows.listar')
-    // @ApiUnauthorizedResponse()
-    // async findOne(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt): Promise<TransferenciaDetailDto> {
+    // @Roles(['CadastroWorkflows.listar'])
+    //     // async findOne(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt): Promise<TransferenciaDetailDto> {
     //     return await this.workflowFaseService.f(params.id, user);
     // }
 
     @Patch(':id')
     @ApiBearerAuth('access-token')
-    @Roles('CadastroWorkflows.editar')
-    @ApiUnauthorizedResponse()
+    @Roles(['CadastroWorkflows.editar'])
     async update(
         @Param() params: FindOneParams,
         @Body() dto: UpdateWorkflowFaseDto,
@@ -52,8 +49,7 @@ export class WorkflowFaseController {
 
     @Delete(':id')
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles('CadastroWorkflows.remover')
+    @Roles(['CadastroWorkflows.remover'])
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.ACCEPTED)
     async remove(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt) {

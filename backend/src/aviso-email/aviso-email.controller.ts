@@ -1,5 +1,5 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post, Query } from '@nestjs/common';
-import { ApiBearerAuth, ApiNoContentResponse, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiNoContentResponse, ApiTags } from '@nestjs/swagger';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { FindOneParams } from '../common/decorators/find-params';
@@ -19,14 +19,12 @@ export class AvisoEmailController {
 
     @Post()
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
     async create(@Body() dto: CreateAvisoEmailDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
         return await this.avisoEmailService.create(dto, user);
     }
 
     @Get()
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
     async findAll(
         @Query() filter: FilterAvisoEamilDto,
         @CurrentUser() user: PessoaFromJwt
@@ -47,7 +45,6 @@ export class AvisoEmailController {
 
     @Patch(':id')
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
     async update(
         @Param() id: FindOneParams,
         @Body() dto: UpdateAvisoEmailDto,
@@ -58,7 +55,6 @@ export class AvisoEmailController {
 
     @Delete(':id')
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.ACCEPTED)
     async remove(@Param() id: FindOneParams, @CurrentUser() user: PessoaFromJwt) {

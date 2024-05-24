@@ -1,14 +1,17 @@
-import { ForbiddenException, HttpException, Injectable, Logger } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, HttpException, Injectable, Logger } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
-import { CicloFisicoFase, Prisma } from '@prisma/client';
+import { CicloFisicoFase, PdmPerfilTipo, Prisma, TipoPdm } from '@prisma/client';
+import { plainToInstance } from 'class-transformer';
 import { DateTime } from 'luxon';
+import { VariavelService } from 'src/variavel/variavel.service';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
+import { ReadOnlyBooleanType } from '../common/TypeReadOnly';
 import { Date2YMD, DateYMD, SYSTEM_TIMEZONE } from '../common/date2ymd';
 import { JOB_PDM_CICLO_LOCK } from '../common/dto/locks';
 import { PrismaService } from '../prisma/prisma.service';
 import { UploadService } from '../upload/upload.service';
 import { CreatePdmDocumentDto } from './dto/create-pdm-document.dto';
-import { CreatePdmDto } from './dto/create-pdm.dto';
+import { CreatePdmAdminCPDto, CreatePdmDto, CreatePdmTecnicoCPDto } from './dto/create-pdm.dto';
 import { FilterPdmDto } from './dto/filter-pdm.dto';
 import { CicloFisicoDto, OrcamentoConfig } from './dto/list-pdm.dto';
 import { Pdm } from './dto/pdm.dto';
@@ -16,7 +19,6 @@ import { UpdatePdmOrcamentoConfigDto } from './dto/update-pdm-orcamento-config.d
 import { UpdatePdmDto } from './dto/update-pdm.dto';
 import { ListPdm } from './entities/list-pdm.entity';
 import { PdmDocument } from './entities/pdm-document.entity';
-import { VariavelService } from 'src/variavel/variavel.service';
 
 type CicloFisicoResumo = {
     id: number;
@@ -25,6 +27,11 @@ type CicloFisicoResumo = {
     ciclo_fase_atual_id: number | null;
     CicloFaseAtual: CicloFisicoFase | null;
 };
+
+class AdminCpDbItem {
+    orgao_id: number;
+    pessoa_id: number;
+}
 
 @Injectable()
 export class PdmService {
@@ -36,9 +43,21 @@ export class PdmService {
     ) {}
 
     async create(createPdmDto: CreatePdmDto, user: PessoaFromJwt) {
+        const tipo = createPdmDto.tipo !== undefined ? createPdmDto.tipo : 'PDM';
+        if (tipo == 'PDM') {
+            if (!user.hasSomeRoles(['CadastroPdm.inserir'])) {
+                throw new ForbiddenException('Você não tem permissão para inserir Plano de Metas');
+            }
+        } else if (tipo == 'PS') {
+            if (!user.hasSomeRoles(['CadastroPS.administrador', 'CadastroPS.administrador_no_orgao'])) {
+                throw new ForbiddenException('Você não tem permissão para inserir Plano Setorial');
+            }
+        }
+
         const similarExists = await this.prisma.pdm.count({
             where: {
-                descricao: { endsWith: createPdmDto.nome, mode: 'insensitive' },
+                tipo: tipo,
+                descricao: { equals: createPdmDto.nome, mode: 'insensitive' },
             },
         });
         if (similarExists > 0)
@@ -55,7 +74,14 @@ export class PdmService {
             throw new HttpException('possui_atividade| possui_iniciativa precisa ser True para ativar Atividades', 400);
 
         const created = await this.prisma.$transaction(async (prisma: Prisma.TransactionClient) => {
-            const c = await prisma.pdm.create({
+            let ps_admin_cp: CreatePdmAdminCPDto | undefined = undefined;
+            let ps_tecnico_cp: CreatePdmTecnicoCPDto | undefined = undefined;
+            if (createPdmDto.ps_admin_cp) ps_admin_cp = createPdmDto.ps_admin_cp;
+            if (createPdmDto.ps_tecnico_cp) ps_tecnico_cp = createPdmDto.ps_tecnico_cp;
+            delete createPdmDto.ps_admin_cp;
+            delete createPdmDto.ps_tecnico_cp;
+
+            const pdm = await prisma.pdm.create({
                 data: {
                     criado_por: user.id,
                     criado_em: new Date(Date.now()),
@@ -65,21 +91,81 @@ export class PdmService {
                 select: { id: true },
             });
 
-            this.logger.log(`chamando monta_ciclos_pdm...`);
-            await prisma.$queryRaw`select monta_ciclos_pdm(${c.id}::int, false)`;
+            if (ps_admin_cp || ps_tecnico_cp) {
+                this.logger.log(`criando ps_admin_cp e ps_tecnico_cp`);
+                await this.update(pdm.id, { ps_admin_cp, ps_tecnico_cp }, user);
+            }
 
-            return c;
+            if (createPdmDto.tipo == 'PDM') {
+                this.logger.log(`Chamando monta_ciclos_pdm...`);
+                await prisma.$queryRaw`select monta_ciclos_pdm(${pdm.id}::int, false)`;
+            }
+
+            return pdm;
         });
 
         return created;
     }
 
-    async findAll(filters: FilterPdmDto | undefined = undefined): Promise<ListPdm[]> {
-        const active = filters?.ativo;
+    private async getPermissionSet(user: PessoaFromJwt) {
+        const permissionsSet: Prisma.Enumerable<Prisma.PdmWhereInput> = [];
+
+        const tipoList: Prisma.Enumerable<Prisma.PdmWhereInput> = [];
+
+        if (user.hasSomeRoles(['PS.ponto_focal', 'PS.admin_cp', 'PS.tecnico_cp', 'CadastroPS.administrador'])) {
+            tipoList.push({
+                tipo: 'PS',
+            });
+        }
+        if (user.hasSomeRoles(['CadastroPS.administrador_no_orgao'])) {
+            // TODO validar se vai ser assim mesmo
+            tipoList.push({
+                tipo: 'PS',
+                PdmPerfil: {
+                    some: {
+                        removido_em: null,
+                        tipo: 'ADMIN',
+                        pessoa_id: user.id,
+                        orgao_id: user.orgao_id,
+                    },
+                },
+            });
+        }
+
+        // talvez tenha que liberar pra mais pessoas, mas na teoria seria isso
+        // mas tem GET no /pdm o tempo inteiro no frontend, então talvez precise liberar pra mais perfis
+        if (
+            user.hasSomeRoles([
+                'PDM.ponto_focal',
+                'PDM.tecnico_cp',
+                'PDM.admin_cp',
+                'CadastroPdm.inserir',
+                'CadastroPdm.ativar',
+                'CadastroPdm.editar',
+                'CadastroPdm.inativar',
+            ])
+        ) {
+            tipoList.push({
+                tipo: 'PDM',
+            });
+        }
+
+        console.log(tipoList);
+        permissionsSet.push({
+            OR: tipoList,
+        });
+
+        return permissionsSet;
+    }
+
+    async findAll(tipo: TipoPdm, filters: FilterPdmDto, user: PessoaFromJwt): Promise<ListPdm[]> {
+        const active = filters.ativo;
 
         const listActive = await this.prisma.pdm.findMany({
             where: {
                 ativo: active,
+                tipo: tipo,
+                AND: await this.getPermissionSet(user),
             },
             select: {
                 id: true,
@@ -109,6 +195,8 @@ export class PdmService {
                 possui_iniciativa: true,
                 arquivo_logo_id: true,
                 nivel_orcamento: true,
+                tipo: true,
+                ps_admin_cps: true,
             },
             orderBy: [{ ativo: 'desc' }, { data_inicio: 'desc' }, { data_fim: 'desc' }],
         });
@@ -121,6 +209,7 @@ export class PdmService {
 
             return {
                 ...pdm,
+                pode_editar: this.calcPodeEditar(pdm, user),
                 arquivo_logo_id: undefined,
                 logo: logo,
                 data_fim: Date2YMD.toStringOrNull(pdm.data_fim),
@@ -136,13 +225,39 @@ export class PdmService {
         return listActiveTmp;
     }
 
-    async getDetail(id: number, user: PessoaFromJwt): Promise<Pdm> {
-        const pdm = await this.prisma.pdm.findFirst({
-            where: {
-                id: id,
-            },
-        });
-        if (!pdm) throw new HttpException('PDM não encontrado', 404);
+    calcPodeEditar(pdm: { tipo: TipoPdm; ps_admin_cps: Prisma.JsonValue | null }, user: PessoaFromJwt): boolean {
+        if (pdm.tipo == 'PS') {
+            let podeEditar = user.hasSomeRoles(['CadastroPS.administrador']);
+
+            if (!podeEditar) {
+                const dbValue = pdm.ps_admin_cps?.valueOf();
+
+                if (
+                    user.orgao_id &&
+                    Array.isArray(dbValue) &&
+                    user.hasSomeRoles(['CadastroPS.administrador_no_orgao'])
+                ) {
+                    const parsed = plainToInstance(AdminCpDbItem, dbValue);
+
+                    // está em algum item
+                    podeEditar = parsed.some((item) => +item.pessoa_id == +user.id);
+
+                    // e todos os itens são do mesmo órgão
+                    podeEditar = podeEditar && parsed.every((item) => +item.orgao_id == +user.orgao_id!);
+                }
+
+                podeEditar = false;
+            }
+
+            return podeEditar;
+        } else if (pdm.tipo == 'PDM') {
+            return user.hasSomeRoles(['CadastroPdm.editar']);
+        }
+        return false;
+    }
+
+    async getDetail(id: number, user: PessoaFromJwt, readonly: ReadOnlyBooleanType): Promise<Pdm> {
+        const pdm = await this.loadPdm(id, user, readonly);
 
         if (pdm.arquivo_logo_id) {
             pdm.logo = this.uploadService.getDownloadToken(pdm.arquivo_logo_id, '30d').download_token;
@@ -150,6 +265,7 @@ export class PdmService {
 
         return {
             ...pdm,
+            pode_editar: this.calcPodeEditar(pdm, user),
             data_fim: Date2YMD.toStringOrNull(pdm.data_fim),
             data_inicio: Date2YMD.toStringOrNull(pdm.data_inicio),
             data_publicacao: Date2YMD.toStringOrNull(pdm.data_publicacao),
@@ -158,30 +274,60 @@ export class PdmService {
         };
     }
 
-    private async verificarPrivilegiosEdicao(updatePdmDto: UpdatePdmDto, user: PessoaFromJwt, pdm: { ativo: boolean }) {
+    private async loadPdm(id: number, user: PessoaFromJwt, readonly: ReadOnlyBooleanType) {
+        const pdm = await this.prisma.pdm.findFirst({
+            where: {
+                id: id,
+                removido_em: null,
+            },
+        });
+        if (!pdm) throw new HttpException('PDM não encontrado', 404);
+
+        const pode_editar = this.calcPodeEditar(pdm, user);
+        if (!pode_editar && readonly == 'ReadWrite') {
+            throw new ForbiddenException(
+                `Você não tem permissão para editar este ${pdm.tipo == 'PDM' ? 'Plano de Metas' : 'Plano Setorial'}`
+            );
+        }
+
+        return pdm;
+    }
+
+    private async verificarPrivilegiosEdicao(
+        updatePdmDto: UpdatePdmDto,
+        user: PessoaFromJwt,
+        pdm: { ativo: boolean; tipo: TipoPdm; ps_admin_cps: Prisma.JsonValue | null }
+    ) {
         if (
+            pdm.tipo == 'PDM' &&
             updatePdmDto.ativo !== pdm.ativo &&
             updatePdmDto.ativo === true &&
             user.hasSomeRoles(['CadastroPdm.ativar']) === false
         ) {
             throw new ForbiddenException(`Você não pode ativar Plano de Metas`);
         } else if (
+            pdm.tipo == 'PDM' &&
             updatePdmDto.ativo !== pdm.ativo &&
             updatePdmDto.ativo === false &&
             user.hasSomeRoles(['CadastroPdm.inativar']) === false
         ) {
             throw new ForbiddenException(`Você não pode inativar Plano de Metas`);
         }
+
+        this.calcPodeEditar(pdm, user);
+
+        // TODO: plano setorial verificar se é admin no órgão, se só tiver pessoas do órgão dele, pode desativar/ativar
     }
 
-    async update(id: number, updatePdmDto: UpdatePdmDto, user: PessoaFromJwt) {
-        const pdm = await this.prisma.pdm.findFirstOrThrow({ where: { id: id } });
-        await this.verificarPrivilegiosEdicao(updatePdmDto, user, pdm);
+    async update(id: number, dto: UpdatePdmDto, user: PessoaFromJwt) {
+        const pdm = await this.loadPdm(id, user, 'ReadWrite');
+        await this.verificarPrivilegiosEdicao(dto, user, pdm);
 
-        if (updatePdmDto.nome) {
+        if (dto.nome) {
             const similarExists = await this.prisma.pdm.count({
                 where: {
-                    descricao: { endsWith: updatePdmDto.nome, mode: 'insensitive' },
+                    tipo: pdm.tipo,
+                    descricao: { equals: dto.nome, mode: 'insensitive' },
                     NOT: { id: id },
                 },
             });
@@ -194,44 +340,63 @@ export class PdmService {
 
         let arquivo_logo_id: number | undefined | null;
         // se enviar vazio, transformar em null para limpar o logo
-        if (updatePdmDto.upload_logo == '') updatePdmDto.upload_logo = null;
-        if (updatePdmDto.upload_logo) {
-            arquivo_logo_id = this.uploadService.checkUploadOrDownloadToken(updatePdmDto.upload_logo);
-        } else if (updatePdmDto.upload_logo === null) {
+        if (dto.upload_logo == '') dto.upload_logo = null;
+        if (dto.upload_logo) {
+            arquivo_logo_id = this.uploadService.checkUploadOrDownloadToken(dto.upload_logo);
+        } else if (dto.upload_logo === null) {
             arquivo_logo_id = null;
         }
-        delete updatePdmDto.upload_logo;
+        delete dto.upload_logo;
 
         const now = new Date(Date.now());
         let verificarCiclos = false;
         let ativarPdm: boolean | undefined = undefined;
         await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient) => {
-            if (updatePdmDto.ativo === true && pdm.ativo == false) {
-                ativarPdm = true;
+            if (pdm.tipo == 'PDM') {
+                if (dto.ativo === true && pdm.ativo == false) {
+                    ativarPdm = true;
+                    await this.desativaPdmAtivo(prismaTx, now, user);
+                    verificarCiclos = true;
+                } else if (dto.ativo === false && pdm.ativo == true) {
+                    ativarPdm = false;
+                    await this.desativaPdm(prismaTx, id, now, user);
+                    verificarCiclos = true;
+                }
 
-                await this.desativaPdmAtivo(prismaTx, now, user);
-
-                verificarCiclos = true;
-            } else if (updatePdmDto.ativo === false && pdm.ativo == true) {
-                ativarPdm = false;
-
-                await this.desativaPdm(prismaTx, id, now, user);
-
-                verificarCiclos = true;
+                delete dto.ativo;
+            } else if (typeof dto.ativo == 'boolean' && dto.ativo !== pdm.ativo) {
+                ativarPdm = dto.ativo;
+                if (ativarPdm == false)
+                    await prismaTx.pdm.update({
+                        where: { id: id },
+                        data: {
+                            desativado_por: user.id,
+                            desativado_em: now,
+                        },
+                    });
             }
-            delete updatePdmDto.ativo;
+
+            const ps_admin_cp = dto.ps_admin_cp;
+            delete dto.ps_admin_cp;
+            const ps_tecnico_cp = dto.ps_tecnico_cp;
+            delete dto.ps_tecnico_cp;
+
+            console.log(ps_admin_cp)
 
             await prismaTx.pdm.update({
                 where: { id: id },
                 data: {
                     atualizado_por: user.id,
-                    atualizado_em: new Date(Date.now()),
-                    ...updatePdmDto,
+                    atualizado_em: now,
+                    ...dto,
                     ativo: ativarPdm,
                     arquivo_logo_id: arquivo_logo_id,
                 },
                 select: { id: true },
             });
+
+            if (ps_admin_cp) await this.upsertPerfil(id, 'ADMIN', user, prismaTx, now, ps_admin_cp);
+            if (ps_tecnico_cp) await this.upsertPerfil(id, 'CP', user, prismaTx, now, ps_tecnico_cp);
 
             if (verificarCiclos) {
                 this.logger.log(`chamando monta_ciclos_pdm...`);
@@ -245,6 +410,87 @@ export class PdmService {
         await this.getOrcamentoConfig(id, true);
 
         return { id: id };
+    }
+
+    private async upsertPerfil(
+        pdm_id: number,
+        tipo: PdmPerfilTipo,
+        user: PessoaFromJwt,
+        prismaTx: Prisma.TransactionClient,
+        now: Date,
+        data: {
+            participantes: number[];
+        }
+    ) {
+        const prevVersion = await prismaTx.pdmPerfil.findMany({
+            where: { pdm_id, removido_em: null },
+            select: { pessoa_id: true },
+        });
+
+        const pComPriv: { pessoa_id: number; orgao_id: number }[] = await (
+            this.prisma[tipo == 'ADMIN' ? 'view_pessoa_ps_admin_cp' : 'view_pessoa_ps_tecnico_cp'] as any
+        ).findMany({
+            where: {
+                pessoa_id: { in: data.participantes },
+            },
+        });
+
+        console.log('pComPriv' , pComPriv);
+
+        const keptRecord: number[] = prevVersion.map((r) => r.pessoa_id);
+
+        for (const pessoaId of keptRecord) {
+            if (!data.participantes.includes(pessoaId)) {
+                // O participante estava presente na versão anterior, mas não na nova versão
+                this.logger.log(`participante removido: ${pessoaId}`);
+                await prismaTx.pdmPerfil.updateMany({
+                    where: {
+                        pessoa_id: pessoaId,
+                        pdm_id,
+                        tipo: tipo,
+                        removido_em: null,
+                    },
+                    data: { removido_em: now },
+                });
+            }
+        }
+
+        const cpItens: AdminCpDbItem[] = [];
+        for (const pessoaId of data.participantes) {
+            const pessoa = pComPriv.filter((r) => r.pessoa_id == pessoaId)[0];
+            if (!pessoa)
+                throw new BadRequestException(
+                    `Pessoa ID ${pessoaId} não pode ser ${tipo == 'ADMIN' ? 'administrador' : 'coordenador'}. Necessário ter o privilégio.`
+                );
+            cpItens.push({
+                orgao_id: pessoa.orgao_id,
+                pessoa_id: pessoa.pessoa_id,
+            });
+
+            if (!keptRecord.includes(pessoaId)) {
+                // O participante é novo, crie um novo registro
+                this.logger.log(`Novo participante: ${pessoa.pessoa_id}`);
+                await prismaTx.pdmPerfil.create({
+                    data: {
+                        pdm_id,
+                        tipo,
+                        criado_por: user.id,
+                        criado_em: now,
+                        orgao_id: pessoa.orgao_id,
+                        pessoa_id: pessoa.pessoa_id,
+                    },
+                });
+            } else {
+                this.logger.log(`participante mantido sem alterações: ${pessoaId}`);
+            }
+        }
+        if (tipo == 'ADMIN')
+            await prismaTx.pdm.update({
+                where: { id: pdm_id },
+                data: {
+                    ps_admin_cps: cpItens as any,
+                },
+            });
     }
 
     private async executaJobCicloFisico(ativo: boolean | undefined, pdmId: number, now: Date) {
@@ -302,7 +548,7 @@ export class PdmService {
     }
 
     private async desativaPdmAtivo(prismaTx: Prisma.TransactionClient, now: Date, user: PessoaFromJwt) {
-        const pdmAtivoExistente = await prismaTx.pdm.findFirst({ where: { ativo: true } });
+        const pdmAtivoExistente = await prismaTx.pdm.findFirst({ where: { ativo: true, tipo: 'PDM' } });
         if (!pdmAtivoExistente) return;
 
         await prismaTx.cicloFisico.updateMany({
@@ -761,14 +1007,20 @@ export class PdmService {
         return rows;
     }
 
-    async updatePdmOrcamentoConfig(pdm_id: number, updatePdmOrcamentoConfigDto: UpdatePdmOrcamentoConfigDto) {
+    async updatePdmOrcamentoConfig(
+        pdm_id: number,
+        updatePdmOrcamentoConfigDto: UpdatePdmOrcamentoConfigDto,
+        user: PessoaFromJwt
+    ) {
+        const pdm = await this.loadPdm(pdm_id, user, 'ReadWrite');
+
         return await this.prisma.$transaction(async (prisma: Prisma.TransactionClient) => {
             const operations = [];
 
             for (const orcamentoConfig of Object.values(updatePdmOrcamentoConfigDto.orcamento_config)) {
                 const pdmOrcamentoConfig = await prisma.pdmOrcamentoConfig.findFirst({
                     where: {
-                        pdm_id: pdm_id,
+                        pdm_id: pdm.id,
                         id: orcamentoConfig.id,
                     },
                 });

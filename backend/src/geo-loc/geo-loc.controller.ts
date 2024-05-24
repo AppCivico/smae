@@ -1,5 +1,5 @@
 import { Body, Controller, Get, Post, Query } from '@nestjs/common';
-import { ApiBearerAuth, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import {
@@ -20,28 +20,24 @@ export class GeoLocController {
 
     @Post('geolocalizar')
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
     async findGeoLoc(@Body() dto: GeoLocDto): Promise<RetornoGeoLoc> {
         return await this.geoService.geoLoc(dto);
     }
 
     @Post('geolocalizar-reverso')
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
     async findGeoLocByLatLong(@Body() dto: GeoLocDtoByLatLong): Promise<RetornoGeoLoc> {
         return await this.geoService.findGeoLocByLatLong(dto);
     }
 
     @Get('camada')
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
     async findCamadas(@Query() dto: FilterCamadasDto): Promise<RetornoGeoLocCamadaFullDto> {
         return { linhas: await this.geoService.buscaCamadas(dto) };
     }
 
     @Post('geolocalizacao')
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
     async createEndereco(
         @Body() dto: CreateEnderecoDto,
         @CurrentUser() user: PessoaFromJwt

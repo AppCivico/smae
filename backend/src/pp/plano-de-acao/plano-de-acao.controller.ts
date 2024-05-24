@@ -1,5 +1,5 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post } from '@nestjs/common';
-import { ApiBearerAuth, ApiNoContentResponse, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiNoContentResponse, ApiTags } from '@nestjs/swagger';
 import { CurrentUser } from '../../auth/decorators/current-user.decorator';
 import { Roles } from '../../auth/decorators/roles.decorator';
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
@@ -17,7 +17,7 @@ import { PROJETO_READONLY_ROLES } from '../projeto/projeto.controller';
 const roles: ListaDePrivilegios[] = [
     'Projeto.administrador',
     'Projeto.administrador_no_orgao',
-    ...PROJETO_READONLY_ROLES
+    ...PROJETO_READONLY_ROLES,
 ];
 
 @Controller('projeto')
@@ -30,8 +30,7 @@ export class PlanoAcaoController {
 
     @Post(':id/plano-de-acao')
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles(...roles)
+    @Roles([...roles])
     async create(
         @Param() params: FindOneParams,
         @Body() dto: CreatePlanoAcaoDto,
@@ -44,8 +43,7 @@ export class PlanoAcaoController {
 
     @Get(':id/plano-de-acao')
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles(...roles)
+    @Roles([...roles])
     async findAll(
         @Param() params: FindOneParams,
         @Body() dto: FilterPlanoAcaoDto,
@@ -59,8 +57,7 @@ export class PlanoAcaoController {
 
     @Get(':id/plano-de-acao/:id2')
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles(...roles)
+    @Roles([...roles])
     async findOne(@Param() params: FindTwoParams, @CurrentUser() user: PessoaFromJwt): Promise<PlanoAcaoDetailDto> {
         await this.projetoService.findOne(params.id, user, 'ReadOnly');
         return await this.planoAcaoService.findOne(params.id, params.id2, user);
@@ -68,8 +65,7 @@ export class PlanoAcaoController {
 
     @Patch(':id/plano-de-acao/:id2')
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles(...roles)
+    @Roles([...roles])
     async update(
         @Param() params: FindTwoParams,
         @Body() updatePlanoAcaoDto: UpdatePlanoAcaoDto,
@@ -82,8 +78,7 @@ export class PlanoAcaoController {
 
     @Delete(':id/plano-de-acao/:id2')
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles(...roles)
+    @Roles([...roles])
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.ACCEPTED)
     async remove(@Param() params: FindTwoParams, @CurrentUser() user: PessoaFromJwt) {

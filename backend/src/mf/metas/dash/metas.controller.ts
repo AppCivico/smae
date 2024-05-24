@@ -27,7 +27,7 @@ export class MfDashMetasController {
 
     @Get('metas')
     @ApiBearerAuth('access-token')
-    @Roles('PDM.admin_cp', 'PDM.tecnico_cp', 'PDM.ponto_focal')
+    @Roles(['PDM.admin_cp', 'PDM.tecnico_cp', 'PDM.ponto_focal'])
     @ApiExtraModels(ListMfDashMetasDto, RequestInfoDto)
     @ApiOkResponse({
         schema: { allOf: refs(ListMfDashMetasDto, RequestInfoDto) },
@@ -49,14 +49,14 @@ export class MfDashMetasController {
 
     @Get('filtros-metas')
     @ApiBearerAuth('access-token')
-    @Roles('PDM.admin_cp', 'PDM.tecnico_cp', 'PDM.ponto_focal')
+    @Roles(['PDM.admin_cp', 'PDM.tecnico_cp', 'PDM.ponto_focal'])
     async filtroMetas(@Query() filters: FilterMetaDto, @CurrentUser() user: PessoaFromJwt): Promise<ListMetaDto> {
         return { linhas: await this.metaService.findAll(filters, user.cloneWithRoles(['SMAE.acesso_bi'])) };
     }
 
     @Get('etapa-hierarquia')
     @ApiBearerAuth('access-token')
-    @Roles('PDM.admin_cp', 'PDM.tecnico_cp', 'PDM.ponto_focal')
+    @Roles(['PDM.admin_cp', 'PDM.tecnico_cp', 'PDM.ponto_focal'])
     async etapaHierarquia(
         @Query() filters: FilterMfDashEtapasDto,
         @CurrentUser() user: PessoaFromJwt

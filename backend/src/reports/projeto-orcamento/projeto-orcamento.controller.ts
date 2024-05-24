@@ -1,5 +1,5 @@
 import { Body, Controller, Post } from '@nestjs/common';
-import { ApiBearerAuth, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { Roles } from 'src/auth/decorators/roles.decorator';
 import { OrcamentoService } from '../orcamento/orcamento.service';
 import { CreateRelProjetoOrcamentoDto } from './dto/create-projeto-orcamento.dto';
@@ -12,8 +12,7 @@ export class ProjetoOrcamentoController {
 
     @Post()
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles('Reports.executar.Projetos')
+    @Roles(['Reports.executar.Projetos'])
     async create(@Body() createPrevisaoCustDto: CreateRelProjetoOrcamentoDto): Promise<ListOrcamentoExecutadoDto> {
         return await this.orcamentoExecutadoService.create(createPrevisaoCustDto);
     }

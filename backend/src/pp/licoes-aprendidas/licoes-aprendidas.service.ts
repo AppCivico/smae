@@ -21,12 +21,12 @@ export class LicoesAprendidasService {
                     where: { id: projetoId },
                     select: {
                         portfolio: {
-                            select: { modelo_clonagem: true }
-                        }
-                    }
+                            select: { modelo_clonagem: true },
+                        },
+                    },
                 });
                 if (projetoPortfolio.portfolio.modelo_clonagem)
-                  throw new HttpException('Projeto pertence a Portfolio de modelo de clonagem', 400);
+                    throw new HttpException('Projeto pertence a Portfolio de modelo de clonagem', 400);
 
                 let sequencial: number | undefined = dto.sequencial;
 

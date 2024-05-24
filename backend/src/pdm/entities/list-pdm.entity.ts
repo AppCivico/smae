@@ -61,4 +61,5 @@ export class ListPdm {
     nivel_orcamento: string;
 
     id: number;
+    pode_editar: boolean;
 }

@@ -1,16 +1,5 @@
-import {
-    Body,
-    Controller,
-    Delete,
-    Get,
-    HttpCode,
-    HttpStatus,
-    Param,
-    Patch,
-    Post,
-    Query
-} from '@nestjs/common';
-import { ApiBearerAuth, ApiNoContentResponse, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post, Query } from '@nestjs/common';
+import { ApiBearerAuth, ApiNoContentResponse, ApiTags } from '@nestjs/swagger';
 import { CurrentUser } from '../../auth/decorators/current-user.decorator';
 import { Roles } from '../../auth/decorators/roles.decorator';
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
@@ -35,8 +24,7 @@ export class OrcamentoPlanejadoController {
 
     @Post(':id/orcamento-planejado')
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles('Projeto.orcamento')
+    @Roles(['Projeto.orcamento'])
     async create(
         @Param() params: FindOneParams,
         @Body() createMetaDto: CreatePPOrcamentoPlanejadoDto,
@@ -48,7 +36,7 @@ export class OrcamentoPlanejadoController {
 
     @ApiBearerAuth('access-token')
     @Get(':id/orcamento-planejado')
-    @Roles('Projeto.orcamento')
+    @Roles(['Projeto.orcamento'])
     async findAll(
         @Param() params: FindOneParams,
         @Query() filters: FilterPPOrcamentoPlanejadoDto,
@@ -63,8 +51,7 @@ export class OrcamentoPlanejadoController {
 
     @Patch(':id/orcamento-planejado/:id2')
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles('Projeto.orcamento')
+    @Roles(['Projeto.orcamento'])
     async update(
         @Param() params: FindTwoParams,
         @Body() createMetaDto: UpdatePPOrcamentoPlanejadoDto,
@@ -77,8 +64,7 @@ export class OrcamentoPlanejadoController {
 
     @Delete(':id/orcamento-planejado/:id2')
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles('Projeto.orcamento')
+    @Roles(['Projeto.orcamento'])
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.ACCEPTED)
     async remove(@Param() params: FindTwoParams, @CurrentUser() user: PessoaFromJwt) {

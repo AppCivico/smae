@@ -1,5 +1,5 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post, Query } from '@nestjs/common';
-import { ApiBearerAuth, ApiNoContentResponse, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiNoContentResponse, ApiTags } from '@nestjs/swagger';
 import { CurrentUser } from '../../auth/decorators/current-user.decorator';
 import { Roles } from '../../auth/decorators/roles.decorator';
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
@@ -24,24 +24,21 @@ export class GrupoPortfolioController {
 
     @Post()
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles(...roles)
+    @Roles([...roles])
     async create(@Body() dto: CreateGrupoPortfolioDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
         return await this.grupoPortfolioService.create(dto, user);
     }
 
     @Get()
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles(...roles, ...PROJETO_READONLY_ROLES)
+    @Roles([...roles, ...PROJETO_READONLY_ROLES])
     async findAll(@Query() filter: FilterGrupoPortfolioDto): Promise<ListGrupoPortfolioDto> {
         return { linhas: await this.grupoPortfolioService.findAll(filter) };
     }
 
     @Patch(':id')
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles(...roles)
+    @Roles([...roles])
     async update(
         @Param() id: FindOneParams,
         @Body() dto: UpdateGrupoPortfolioDto,
@@ -52,8 +49,7 @@ export class GrupoPortfolioController {
 
     @Delete(':id')
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles(...roles)
+    @Roles([...roles])
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.ACCEPTED)
     async remove(@Param() id: FindOneParams, @CurrentUser() user: PessoaFromJwt) {

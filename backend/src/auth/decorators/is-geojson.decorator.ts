@@ -12,7 +12,8 @@ export function IsGeoJSON(validationOptions?: ValidationOptions) {
             validator: {
                 validate(value: any, args: ValidationArguments) {
                     const trace = gjv_valid(value, true);
-                    if (trace.length) throw new BadRequestException({ error: `${args.property} invalid`, message: trace });
+                    if (trace.length)
+                        throw new BadRequestException({ error: `${args.property} invalid`, message: trace });
 
                     return true;
                 },

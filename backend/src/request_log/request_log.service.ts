@@ -29,7 +29,10 @@ const validGroupByFields: Prisma.View_api_request_logScalarFieldEnum[] = [
 
 @Injectable()
 export class RequestLogService {
-    constructor(private readonly prisma: PrismaService, private readonly jwtService: JwtService) {}
+    constructor(
+        private readonly prisma: PrismaService,
+        private readonly jwtService: JwtService
+    ) {}
 
     async findAll(filters: FilterRequestLogDto): Promise<PaginatedDto<RequestLogDto>> {
         let tem_mais = false;

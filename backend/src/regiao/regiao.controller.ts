@@ -1,5 +1,5 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post, Query } from '@nestjs/common';
-import { ApiBearerAuth, ApiNoContentResponse, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiNoContentResponse, ApiTags } from '@nestjs/swagger';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
@@ -18,8 +18,7 @@ export class RegiaoController {
 
     @Post()
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles('CadastroRegiao.inserir')
+    @Roles(['CadastroRegiao.inserir'])
     async create(@Body() createRegiaoDto: CreateRegiaoDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
         return await this.regiaoService.create(createRegiaoDto, user);
     }
@@ -32,8 +31,7 @@ export class RegiaoController {
 
     @Patch(':id')
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles('CadastroRegiao.editar')
+    @Roles(['CadastroRegiao.editar'])
     async update(
         @Param() params: FindOneParams,
         @Body() updateRegiaoDto: UpdateRegiaoDto,
@@ -44,8 +42,7 @@ export class RegiaoController {
 
     @Delete(':id')
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles('CadastroRegiao.remover')
+    @Roles(['CadastroRegiao.remover'])
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.ACCEPTED)
     async remove(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt) {
@@ -55,8 +52,7 @@ export class RegiaoController {
 
     @Get(':id')
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles('CadastroRegiao.remover')
+    @Roles(['CadastroRegiao.remover'])
     async get(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt): Promise<DetalheRegiaoDto> {
         return await this.regiaoService.getDetail(+params.id, user);
     }

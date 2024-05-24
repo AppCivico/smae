@@ -1,5 +1,5 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post, Query } from '@nestjs/common';
-import { ApiBearerAuth, ApiNoContentResponse, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiNoContentResponse, ApiTags } from '@nestjs/swagger';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
@@ -18,8 +18,7 @@ export class ObjetivoEstrategicoController {
 
     @Post()
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles('CadastroTema.inserir')
+    @Roles(['CadastroTema.inserir'])
     async create(
         @Body() createObjetivoEstrategicoDto: CreateObjetivoEstrategicoDto,
         @CurrentUser() user: PessoaFromJwt
@@ -35,8 +34,7 @@ export class ObjetivoEstrategicoController {
 
     @Patch(':id')
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles('CadastroTema.editar')
+    @Roles(['CadastroTema.editar'])
     async update(
         @Param() params: FindOneParams,
         @Body() updateObjetivoEstrategicoDto: UpdateObjetivoEstrategicoDto,
@@ -47,8 +45,7 @@ export class ObjetivoEstrategicoController {
 
     @Delete(':id')
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles('CadastroTema.remover')
+    @Roles(['CadastroTema.remover'])
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.ACCEPTED)
     async remove(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt) {
@@ -64,8 +61,7 @@ export class ObjetivoEstrategicoController2 {
 
     @Post()
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles('CadastroTema.inserir')
+    @Roles(['CadastroTema.inserir'])
     async create(
         @Body() createObjetivoEstrategicoDto: CreateObjetivoEstrategicoDto,
         @CurrentUser() user: PessoaFromJwt
@@ -81,8 +77,7 @@ export class ObjetivoEstrategicoController2 {
 
     @Patch(':id')
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles('CadastroTema.editar')
+    @Roles(['CadastroTema.editar'])
     async update(
         @Param() params: FindOneParams,
         @Body() updateObjetivoEstrategicoDto: UpdateObjetivoEstrategicoDto,
@@ -93,8 +88,7 @@ export class ObjetivoEstrategicoController2 {
 
     @Delete(':id')
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles('CadastroTema.remover')
+    @Roles(['CadastroTema.remover'])
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.ACCEPTED)
     async remove(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt) {

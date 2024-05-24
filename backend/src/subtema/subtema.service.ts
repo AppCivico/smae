@@ -77,7 +77,7 @@ export class SubTemaService {
                             },
                             NOT: {
                                 id,
-                            }
+                            },
                         },
                     });
                     if (descricaoExists)
@@ -103,8 +103,7 @@ export class SubTemaService {
 
     async remove(id: number, user: PessoaFromJwt) {
         const emUso = await this.prisma.meta.count({ where: { macro_tema_id: id, removido_em: null } });
-        if (emUso > 0)
-            throw new HttpException('Tema em uso em Metas.', 400);
+        if (emUso > 0) throw new HttpException('Tema em uso em Metas.', 400);
 
         const created = await this.prisma.subTema.updateMany({
             where: { id: id },

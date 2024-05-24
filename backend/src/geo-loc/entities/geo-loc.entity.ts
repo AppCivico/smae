@@ -32,7 +32,6 @@ export class GeoLocDtoByLatLong {
     tipo: string;
 }
 
-
 export class GeoLocCamadaSimplesDto {
     id: number;
     titulo: string;

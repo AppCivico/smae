@@ -19,12 +19,12 @@ export class RiscoService {
             where: { id: projetoId },
             select: {
                 portfolio: {
-                    select: { modelo_clonagem: true }
-                }
-            }
+                    select: { modelo_clonagem: true },
+                },
+            },
         });
         if (projetoPortfolio.portfolio.modelo_clonagem)
-          throw new HttpException('Projeto pertence a Portfolio de modelo de clonagem', 400);
+            throw new HttpException('Projeto pertence a Portfolio de modelo de clonagem', 400);
 
         const calcResult =
             dto.probabilidade && dto.impacto ? RiscoCalc.getResult(dto.probabilidade, dto.impacto) : undefined;

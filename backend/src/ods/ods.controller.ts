@@ -1,5 +1,5 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post } from '@nestjs/common';
-import { ApiBearerAuth, ApiNoContentResponse, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiNoContentResponse, ApiTags } from '@nestjs/swagger';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
@@ -17,8 +17,7 @@ export class OdsController {
 
     @Post()
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles('CadastroOds.inserir')
+    @Roles(['CadastroOds.inserir'])
     async create(@Body() createOdsDto: CreateOdsDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
         return await this.odsService.create(createOdsDto, user);
     }
@@ -31,8 +30,7 @@ export class OdsController {
 
     @Patch(':id')
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles('CadastroOds.editar')
+    @Roles(['CadastroOds.editar'])
     async update(
         @Param() params: FindOneParams,
         @Body() updateOdsDto: UpdateOdsDto,
@@ -43,8 +41,7 @@ export class OdsController {
 
     @Delete(':id')
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles('CadastroOds.remover')
+    @Roles(['CadastroOds.remover'])
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.ACCEPTED)
     async remove(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt) {

@@ -1,5 +1,5 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post, Query } from '@nestjs/common';
-import { ApiBearerAuth, ApiNoContentResponse, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiNoContentResponse, ApiTags } from '@nestjs/swagger';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
@@ -18,8 +18,7 @@ export class AtividadeController {
 
     @Post()
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles('CadastroAtividade.inserir', 'CadastroMeta.inserir')
+    @Roles(['CadastroAtividade.inserir', 'CadastroMeta.inserir'])
     async create(
         @Body() createAtividadeDto: CreateAtividadeDto,
         @CurrentUser() user: PessoaFromJwt
@@ -29,16 +28,14 @@ export class AtividadeController {
 
     @ApiBearerAuth('access-token')
     @Get()
-    @ApiUnauthorizedResponse()
-    @Roles('CadastroMeta.listar')
+    @Roles(['CadastroMeta.listar'])
     async findAll(@Query() filters: FilterAtividadeDto, @CurrentUser() user: PessoaFromJwt): Promise<ListAtividadeDto> {
         return { linhas: await this.atividadeService.findAll(filters, user) };
     }
 
     @Patch(':id')
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles('CadastroAtividade.editar', 'CadastroMeta.inserir')
+    @Roles(['CadastroAtividade.editar', 'CadastroMeta.inserir'])
     async update(
         @Param() params: FindOneParams,
         @Body() updateAtividadeDto: UpdateAtividadeDto,
@@ -49,8 +46,7 @@ export class AtividadeController {
 
     @Delete(':id')
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles('CadastroAtividade.remover', 'CadastroMeta.inserir')
+    @Roles(['CadastroAtividade.remover', 'CadastroMeta.inserir'])
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.ACCEPTED)
     async remove(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt) {

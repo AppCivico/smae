@@ -1,5 +1,5 @@
 import { Controller, Body, Patch, Post } from '@nestjs/common';
-import { ApiTags, ApiBearerAuth, ApiUnauthorizedResponse } from '@nestjs/swagger';
+import { ApiTags, ApiBearerAuth } from '@nestjs/swagger';
 import { CurrentUser } from 'src/auth/decorators/current-user.decorator';
 import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
@@ -17,8 +17,7 @@ export class WorkflowAndamentoFaseController {
 
     @Patch('')
     @ApiBearerAuth('access-token')
-    @Roles('CadastroWorkflows.inserir')
-    @ApiUnauthorizedResponse()
+    @Roles(['CadastroWorkflows.inserir'])
     async update(
         @Body() dto: UpdateWorkflowAndamentoFaseDto,
         @CurrentUser() user: PessoaFromJwt
@@ -28,8 +27,7 @@ export class WorkflowAndamentoFaseController {
 
     @Post('finalizar')
     @ApiBearerAuth('access-token')
-    @Roles('CadastroWorkflows.inserir')
-    @ApiUnauthorizedResponse()
+    @Roles(['CadastroWorkflows.inserir'])
     async finalizarFase(
         @Body() dto: WorkflowFinalizarIniciarFaseDto,
         @CurrentUser() user: PessoaFromJwt
@@ -39,8 +37,7 @@ export class WorkflowAndamentoFaseController {
 
     @Post('iniciar')
     @ApiBearerAuth('access-token')
-    @Roles('CadastroWorkflows.inserir')
-    @ApiUnauthorizedResponse()
+    @Roles(['CadastroWorkflows.inserir'])
     async iniciarFase(
         @Body() dto: WorkflowFinalizarIniciarFaseDto,
         @CurrentUser() user: PessoaFromJwt

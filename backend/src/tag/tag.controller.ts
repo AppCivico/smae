@@ -1,5 +1,5 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post, Query } from '@nestjs/common';
-import { ApiBearerAuth, ApiNoContentResponse, ApiTags, ApiUnauthorizedResponse } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiNoContentResponse, ApiTags } from '@nestjs/swagger';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
@@ -18,8 +18,7 @@ export class TagController {
 
     @Post()
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles('CadastroTag.inserir')
+    @Roles(['CadastroTag.inserir'])
     async create(@Body() createTagDto: CreateTagDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
         return await this.tagService.create(createTagDto, user);
     }
@@ -32,8 +31,7 @@ export class TagController {
 
     @Patch(':id')
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles('CadastroTag.editar')
+    @Roles(['CadastroTag.editar'])
     async update(
         @Param() params: FindOneParams,
         @Body() updateTagDto: UpdateTagDto,
@@ -44,8 +42,7 @@ export class TagController {
 
     @Delete(':id')
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles('CadastroTag.remover')
+    @Roles(['CadastroTag.remover'])
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.ACCEPTED)
     async remove(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt) {

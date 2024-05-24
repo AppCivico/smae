@@ -77,7 +77,7 @@ export class EixoService {
                             },
                             NOT: {
                                 id,
-                            }
+                            },
                         },
                     });
                     if (descricaoExists)
@@ -103,8 +103,7 @@ export class EixoService {
 
     async remove(id: number, user: PessoaFromJwt) {
         const emUso = await this.prisma.meta.count({ where: { macro_tema_id: id, removido_em: null } });
-        if (emUso > 0)
-            throw new HttpException('Eixo em uso em Metas.', 400);
+        if (emUso > 0) throw new HttpException('Eixo em uso em Metas.', 400);
 
         const created = await this.prisma.macroTema.updateMany({
             where: { id: id },

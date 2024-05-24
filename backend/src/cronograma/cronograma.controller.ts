@@ -1,11 +1,5 @@
 import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post, Query } from '@nestjs/common';
-import {
-    ApiBearerAuth,
-    ApiNoContentResponse,
-    ApiOperation,
-    ApiTags,
-    ApiUnauthorizedResponse
-} from '@nestjs/swagger';
+import { ApiBearerAuth, ApiNoContentResponse, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
@@ -31,8 +25,7 @@ export class CronogramaController {
 
     @Post()
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles('CadastroCronograma.inserir', 'CadastroMeta.inserir')
+    @Roles(['CadastroCronograma.inserir', 'CadastroMeta.inserir'])
     async create(
         @Body() createCronogramaDto: CreateCronogramaDto,
         @CurrentUser() user: PessoaFromJwt
@@ -42,21 +35,20 @@ export class CronogramaController {
 
     @ApiBearerAuth('access-token')
     @Get()
-    @Roles(
+    @Roles([
         'CadastroCronograma.editar',
         'CadastroMeta.inserir',
         'PDM.admin_cp',
         'PDM.coordenador_responsavel_cp',
-        'PDM.ponto_focal'
-    )
+        'PDM.ponto_focal',
+    ])
     async findAll(@Query() filters: FilterCronogramaDto): Promise<ListCronogramaDto> {
         return { linhas: await this.cronogramaService.findAll(filters) };
     }
 
     @Patch(':id')
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles('CadastroCronograma.editar', 'CadastroMeta.inserir')
+    @Roles(['CadastroCronograma.editar', 'CadastroMeta.inserir'])
     async update(
         @Param() params: FindOneParams,
         @Body() updateCronogramaDto: UpdateCronogramaDto,
@@ -67,8 +59,7 @@ export class CronogramaController {
 
     @Delete(':id')
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles('CadastroCronograma.remover', 'CadastroMeta.inserir')
+    @Roles(['CadastroCronograma.remover', 'CadastroMeta.inserir'])
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.ACCEPTED)
     async remove(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt) {
@@ -78,8 +69,7 @@ export class CronogramaController {
 
     @Post(':id/etapa')
     @ApiBearerAuth('access-token')
-    @ApiUnauthorizedResponse()
-    @Roles('CadastroCronograma.inserir', 'CadastroMeta.inserir')
+    @Roles(['CadastroCronograma.inserir', 'CadastroMeta.inserir'])
     async createEtapa(
         @Body() createEtapaDto: CreateEtapaDto,
         @Param() params: FindOneParams,
@@ -90,13 +80,13 @@ export class CronogramaController {
 
     @ApiBearerAuth('access-token')
     @Get(':id/etapa')
-    @Roles(
+    @Roles([
         'CadastroCronograma.editar',
         'CadastroMeta.inserir',
         'PDM.admin_cp',
         'PDM.coordenador_responsavel_cp',
-        'PDM.ponto_focal'
-    )
+        'PDM.ponto_focal',
+    ])
     @ApiOperation({ deprecated: true, description: 'Use o endpoint /api/cronograma-etapa' })
     async findAllEtapas(
         @Query() filters: FilterEtapaSemCronoIdDto,

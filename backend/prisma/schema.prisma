@@ -68,6 +68,7 @@ model Pessoa {
     PDMQueCriei     Pdm[] @relation("Criador")
     PDMQueDesativei Pdm[] @relation("Desativador")
     PDMQueAtualizei Pdm[] @relation("Atualizador")
+    PDMQueRemovi    Pdm[] @relation("Removedor")
 
     FormulaCompostaQueCriei     FormulaComposta[] @relation("Criador")
     FormulaCompostaQueDesativei FormulaComposta[] @relation("Removedor")
@@ -393,6 +394,12 @@ model Pessoa {
     ViewNotaComOrdemQRemovi            ViewNotas[]                          @relation("Removedor")
     ViewNotaComOrdemQSouResp           ViewNotas[]                          @relation("Resp")
 
+    PdmPerfil                 PdmPerfil[]                @relation("fk")
+    PdmPerfilQueDesativei     PdmPerfil[]                @relation("Removedor")
+    PdmPerfilQueCriei         PdmPerfil[]                @relation("Criador")
+    view_pessoa_ps_tecnico_cp view_pessoa_ps_tecnico_cp?
+    view_pessoa_ps_admin_cp   view_pessoa_ps_admin_cp?
+
     @@index([email])
     @@map("pessoa")
 }
@@ -479,6 +486,7 @@ model Orgao {
     transferenciaAndamentoTarefa TransferenciaAndamentoTarefa[]
     PdmOrcamentoRealizadoConfig  PdmOrcamentoRealizadoConfig[]
     ViewNotaComOrdem             ViewNotas[]
+    PdmPerfil                    PdmPerfil[]
 
     @@map("orgao")
 }
@@ -638,6 +646,11 @@ model Ods {
     @@map("ods")
 }
 
+enum TipoPdm {
+    PDM
+    PS
+}
+
 model Pdm {
     id Int @id @default(autoincrement())
 
@@ -678,11 +691,15 @@ model Pdm {
     desativado_por Int?
     desativado_em  DateTime? @db.Timestamptz(6)
 
+    removido_por Int?
+    removido_em  DateTime? @db.Timestamptz(6)
+
     considerar_atraso_apos DateTime? @db.Date()
 
     atualizador         Pessoa?            @relation("Atualizador", fields: [atualizado_por], references: [id])
     criador             Pessoa?            @relation("Criador", fields: [criado_por], references: [id])
     desativador         Pessoa?            @relation("Desativador", fields: [desativado_por], references: [id])
+    removedor           Pessoa?            @relation("Removedor", fields: [removido_por], references: [id])
     Eixo                MacroTema[]
     Tag                 Tag[]
     ObjetivoEstrategico Tema[]
@@ -690,7 +707,11 @@ model Pdm {
     SubTema             SubTema[]
     Meta                Meta[]
 
+    tipo TipoPdm @default(PDM)
+
     paineis_de_meta Painel[]
+
+    ps_admin_cps Json @default("[]") @db.Json
 
     orcamento_dia_abertura   Int @default(1) @db.SmallInt
     orcamento_dia_fechamento Int @default(20) @db.SmallInt
@@ -708,8 +729,42 @@ model Pdm {
     PdmDotacaoProcessoNota PdmDotacaoProcessoNota[]
     ImportacaoLog          ImportacaoOrcamento[]
 
+    // index continua existindo para quem é PDM
+    // create unique index ix_pdm_uniq_ativo on pdm(ativo) where ativo=true and tipo='PDM';
+    PdmPerfil PdmPerfil[]
+
     @@index([ativo])
     @@map("pdm")
+}
+
+enum PdmPerfilTipo {
+    ADMIN
+    CP
+}
+
+model PdmPerfil {
+    id Int @id @default(autoincrement())
+
+    pdm_id Int
+    pdm    Pdm @relation(fields: [pdm_id], references: [id])
+
+    tipo PdmPerfilTipo
+
+    orgao_id Int
+    orgao    Orgao @relation(fields: [orgao_id], references: [id])
+
+    pessoa_id Int
+    pessoa    Pessoa @relation("fk", fields: [pessoa_id], references: [id])
+
+    criado_por   Int
+    criado_em    DateTime  @default(now()) @db.Timestamptz(6)
+    removido_por Int?
+    removido_em  DateTime? @default(now()) @db.Timestamptz(6)
+
+    criador   Pessoa  @relation("Criador", fields: [criado_por], references: [id])
+    removedor Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
+
+    @@map("pdm_perfil")
 }
 
 model PdmOrcamentoRealizadoControleConcluido {
@@ -2108,6 +2163,9 @@ model CicloFisico {
     VariaveisSuspensasCicloBase     VariavelSuspensaControle[] @relation("CicloFisicoBase")
     VariaveisSuspensasCicloCorrente VariavelSuspensaControle[] @relation("CicloFisicoCorrente")
     MetaStatusConsolidadoCf         MetaStatusConsolidadoCf[]
+
+    // create unique index ix_ciclo_fisico_uniq_ativo on ciclo_fisico(ativo) where ativo=true;
+    // existe mais um index aqui, que não está no prisma que não suporta partial index
 
     @@index([pdm_id])
     @@index([data_ciclo])
@@ -3994,6 +4052,24 @@ model PessoaAtividadeLog {
 // view que já faz o join das pessoas tem o privilegio SMAE.espectador_de_projeto
 // tbm faz um WHERE orgao_id is not null
 view view_pessoa_espectador_de_projeto {
+    pessoa_id Int
+    pessoa    Pessoa @relation(fields: [pessoa_id], references: [id])
+
+    orgao_id Int
+
+    @@unique([pessoa_id])
+}
+
+view view_pessoa_ps_tecnico_cp {
+    pessoa_id Int
+    pessoa    Pessoa @relation(fields: [pessoa_id], references: [id])
+
+    orgao_id Int
+
+    @@unique([pessoa_id])
+}
+
+view view_pessoa_ps_admin_cp {
     pessoa_id Int
     pessoa    Pessoa @relation(fields: [pessoa_id], references: [id])
 
