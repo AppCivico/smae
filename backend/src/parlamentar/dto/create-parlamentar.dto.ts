@@ -134,7 +134,7 @@ export class CreateMandatoDto {
 
     @IsOptional()
     @IsString({ message: '$property| ocupação: Precisa ser alfanumérico' })
-    @MaxLength(250, { message: '$property| ocupação: Máximo 250 caracteres' })
+    @MaxLength(1000000, { message: '$property| ocupação: Máximo 1000000 caracteres' })
     atuacao?: string;
 
     @IsOptional()
