@@ -360,7 +360,7 @@ export class DashTransferenciaService {
                     .map((e) => e.sigla),
             },
             top: 'middle',
-            grid: { left: '20%' },
+            grid: { left: '30%' },
             series: [
                 {
                     name: 'Estadual',
@@ -436,7 +436,7 @@ export class DashTransferenciaService {
                 },
             },
             top: 'middle',
-            grid: { left: '20%' },
+            grid: { left: '30%' },
             yAxis: {
                 name: 'R$ MIL',
                 nameLocation: 'end',
@@ -518,7 +518,7 @@ export class DashTransferenciaService {
                 },
             },
             top: 'middle',
-            grid: { left: '20%' },
+            grid: { left: '30%' },
             xAxis: {
                 type: 'category',
                 data: dadosPorOrgao
