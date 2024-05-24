@@ -194,6 +194,7 @@ export class ChartLegendDto {
     verticalAlign?: string;
     left: number;
     orient: string;
+    top: string;
     textStyle?: {
         overflow: string;
         width: number;
