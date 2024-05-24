@@ -359,6 +359,8 @@ export class DashTransferenciaService {
                     .sort((a, b) => b.count_all - a.count_all)
                     .map((e) => e.sigla),
             },
+            top: 'middle',
+            grid: { left: '20%' },
             series: [
                 {
                     name: 'Estadual',
@@ -433,6 +435,8 @@ export class DashTransferenciaService {
                     width: 100,
                 },
             },
+            top: 'middle',
+            grid: { left: '20%' },
             yAxis: {
                 name: 'R$ MIL',
                 nameLocation: 'end',
@@ -513,6 +517,8 @@ export class DashTransferenciaService {
                     type: 'shadow',
                 },
             },
+            top: 'middle',
+            grid: { left: '20%' },
             xAxis: {
                 type: 'category',
                 data: dadosPorOrgao
