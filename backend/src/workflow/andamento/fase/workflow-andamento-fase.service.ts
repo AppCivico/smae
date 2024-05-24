@@ -410,6 +410,17 @@ export class WorkflowAndamentoFaseService {
     async iniciarFase(dto: WorkflowFinalizarIniciarFaseDto, user: PessoaFromJwt): Promise<RecordWithId> {
         const updated = await this.prisma.$transaction(
             async (prismaTxn: Prisma.TransactionClient): Promise<RecordWithId> => {
+                const transferencia = await prismaTxn.transferencia.findFirstOrThrow({
+                    where: {
+                        id: dto.transferencia_id,
+                        removido_em: null,
+                    },
+                    select: {
+                        workflow_etapa_atual_id: true,
+                        workflow_fase_atual_id: true,
+                    },
+                });
+
                 // Buscando fase atual.
                 const faseAtual = await prismaTxn.transferenciaAndamento.findFirst({
                     where: {
@@ -417,6 +428,12 @@ export class WorkflowAndamentoFaseService {
                         removido_em: null,
                         data_inicio: { not: null },
                         data_termino: { not: null },
+                        workflow_etapa_id: transferencia.workflow_etapa_atual_id
+                            ? transferencia.workflow_etapa_atual_id
+                            : undefined,
+                        workflow_fase_id: transferencia.workflow_fase_atual_id
+                            ? transferencia.workflow_fase_atual_id
+                            : undefined,
                     },
                     orderBy: [{ data_termino: 'asc' }, { atualizado_em: 'desc' }],
                     select: {
