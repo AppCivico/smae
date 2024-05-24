@@ -638,6 +638,12 @@ export const grupoDeObservadores = object({
     .required(),
 });
 
+export const gruposTematicos = object({
+  nome: string()
+    .label('Nome')
+    .required(),
+});
+
 export const liçãoAprendida = object()
   .shape({
     contexto: string()
