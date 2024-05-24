@@ -6,6 +6,10 @@ import CadastrosBasicosRaiz from '@/views/CadastrosBasicosRaiz.vue';
 import BancadasCriarEditar from '@/views/bancada/BancadasCriarEditar.vue';
 import BancadasLista from '@/views/bancada/BancadasLista.vue';
 import BancadasRaiz from '@/views/bancada/BancadasRaiz.vue';
+import GruposTematicosCriarEditar from '@/views/gruposTematicos/GruposTematicosCriarEditar.vue';
+import GruposTematicosLista from '@/views/gruposTematicos/GruposTematicosLista.vue';
+import GruposTematicosRaiz from '@/views/gruposTematicos/GruposTematicosRaiz.vue';
+
 import {
   AddEditDocumentTypes,
   ListDocumentTypes,
@@ -65,6 +69,7 @@ const rotasParaMenuSecundário = [
       'gerenciarRegiões',
       'tipoDeTransferenciaListar',
       'etapasDoProjetoListar',
+      'gruposTematicosObras',
     ],
   },
   {
@@ -91,7 +96,7 @@ export default [
         'CadastroRegiao.',
         'Projeto.administrar_portfolios',
         'CadastroPainelExterno.',
-        'CadastroProjetoEtapa.'
+        'CadastroProjetoEtapa.',
       ],
       presenteNoMenu: true,
       pesoNoMenu: Infinity,
@@ -146,6 +151,46 @@ export default [
               título: 'Editar partido',
             },
           },
+        ],
+      },
+      {
+        path: 'grupos-tematicos',
+        component: GruposTematicosRaiz,
+        meta: {
+          título: 'Grupos temáticos',
+          rotaPrescindeDeChave: true,
+          rotasParaMenuSecundário,
+          // limitarÀsPermissões: 'CadastroGrupoTematico.',
+        },
+        children: [
+          {
+            name: 'gruposTematicosObras',
+            path: '',
+            component: GruposTematicosLista,
+            meta: {
+              título: 'Grupos temáticos',
+            },
+          },
+          {
+            name: 'grupoTematicoCriar',
+            path: 'novo',
+            component: GruposTematicosCriarEditar,
+            meta: {
+              título: 'Novo grupo temático',
+            },
+          },
+          // {
+          //   path: ':grupoTematicoId',
+          //   name: 'grupoTematicoEditar',
+          //   component: GruposTematicosCriarEditar,
+          //   props: ({ params }) => ({
+          //    ...params,
+          //    ...{ grupoTematicoId: Number.parseInt(params.grupoTematicoId, 10) || undefined },
+          //    }),
+          //   meta: {
+          //     título: 'Editar grupo temático',
+          //   },
+          // },
         ],
       },
       {
@@ -557,5 +602,44 @@ export default [
     ],
   },
 
-
+  // {
+  //   path: 'grupos-tematicos',
+  //   component: GruposTematicosRaiz,
+  //   meta: {
+  //     título: 'Grupos temáticos',
+  //     rotaPrescindeDeChave: true,
+  //     rotasParaMenuSecundário,
+  //     limitarÀsPermissões: 'CadastroGrupoTematico.',
+  //   },
+  //   children: [
+  //     {
+  //       name: 'gruposTematicosObras',
+  //       path: '',
+  //       component: GruposTematicosLista,
+  //       meta: {
+  //         título: 'Grupos temáticos de obras',
+  //       },
+  //     },
+  //     {
+  //       name: 'grupoTematicoCriar',
+  //       path: 'novo',
+  //       component: GruposTematicosCriarEditar,
+  //       meta: {
+  //         título: 'Novo grupo temático',
+  //       },
+  //     },
+  //     {
+  //       path: ':grupoTematicoId',
+  //       name: 'grupoTematicoEditar',
+  //       component: GruposTematicosCriarEditar,
+  //       props: ({ params }) => ({
+  //         ...params,
+  //         ...{ grupoTematicoId: Number.parseInt(params.grupoTematicoId, 10) || undefined },
+  //       }),
+  //       meta: {
+  //         título: 'Editar grupo temático',
+  //       },
+  //     },
+  //   ],
+  // },
 ];
