@@ -340,6 +340,7 @@ export class DashTransferenciaService {
             },
             legend: {
                 data: ['Estadual', 'Federal'],
+                top: 'middle',
                 left: 0,
                 orient: 'vertical',
                 textStyle: {
@@ -359,7 +360,6 @@ export class DashTransferenciaService {
                     .sort((a, b) => b.count_all - a.count_all)
                     .map((e) => e.sigla),
             },
-            top: 'middle',
             grid: { left: '30%' },
             series: [
                 {
@@ -429,6 +429,7 @@ export class DashTransferenciaService {
             legend: {
                 data: etapas.map((e) => e.etapa_fluxo),
                 orient: 'vertical',
+                top: 'middle',
                 left: 0,
                 textStyle: {
                     overflow: 'break',
@@ -538,6 +539,7 @@ export class DashTransferenciaService {
             legend: {
                 data: etapas.map((e) => e.etapa_fluxo),
                 left: 0,
+                top: 'middle',
                 orient: 'vertical',
                 textStyle: {
                     overflow: 'break',
