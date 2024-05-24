@@ -375,6 +375,7 @@ watch(
 .parlamentar {
   box-shadow: 0px 8px 16px 0px #1527411a;
   padding: 10px 40px;
+  border-radius: 10px;
   p {
     text-align: center;
     font-size: 30px;
