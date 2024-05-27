@@ -7,8 +7,10 @@ import { useAlertStore } from '@/stores/alert.store';
 import { useCiclosStore } from '@/stores/ciclos.store';
 import { useEditModalStore } from '@/stores/editModal.store';
 import { storeToRefs } from 'pinia';
-import { ErrorMessage, Field, Form } from 'vee-validate';
-import { computed, defineOptions } from 'vue';
+import {
+  ErrorMessage, Field, useForm, useIsFormDirty,
+} from 'vee-validate';
+import { computed, defineOptions, watch } from 'vue';
 import { useRoute } from 'vue-router';
 
 defineOptions({ inheritAttrs: false });
@@ -45,7 +47,14 @@ const valoresIniciais = computed(() => (SingleEtapa.value?.loading
     geolocalizacao: SingleEtapa.value?.geolocalizacao?.map((x) => x.token) || [],
   }));
 
-async function onSubmit(values) {
+const {
+  errors, handleSubmit, isSubmitting, resetForm, setFieldValue, values,
+} = useForm({
+  initialValues: valoresIniciais,
+  validationSchema: schema,
+});
+
+const onSubmit = handleSubmit(async () => {
   try {
     let msg;
     let r;
@@ -70,21 +79,15 @@ async function onSubmit(values) {
       CiclosStore.clear();
       CiclosStore.getMetaByIdCron(meta_id);
       CiclosStore.getCronogramasActiveByParent(meta_id, 'meta_id');
-      await router.push(`/monitoramento/cronograma/${meta_id}`);
+      await router.push({ name: route.meta.rotaDeEscape });
       alertStore.success(msg);
       editModalStore.clear();
     }
   } catch (error) {
     alertStore.error(error);
   }
-}
-async function checkClose() {
-  alertStore.confirm('Deseja sair sem salvar as alterações?', () => {
-    router.go(-1);
-    editModalStore.clear();
-    alertStore.clear();
-  });
-}
+});
+
 function maskDate(el) {
   const kC = event.keyCode;
   let data = el.target.value.replace(/[^0-9/]/g, '');
@@ -98,6 +101,12 @@ function maskDate(el) {
     }
   }
 }
+
+const formulárioSujo = useIsFormDirty();
+
+watch(valoresIniciais, (novoValor) => {
+  resetForm({ values: novoValor });
+});
 </script>
 <template>
   <div class="flex spacebetween center mb2">
@@ -105,25 +114,17 @@ function maskDate(el) {
       <strong>Atualizar</strong><br>{{ SingleEtapa?.titulo }}
     </div>
     <hr class="ml2 f1">
-    <button
-      class="btn round ml2"
-      @click="checkClose"
-    >
-      <svg
-        width="12"
-        height="12"
-      ><use xlink:href="#i_x" /></svg>
-    </button>
+
+    <CheckClose
+      :formulário-sujo="formulárioSujo"
+    />
   </div>
   <template
     v-if="!(SingleEtapa?.loading || SingleEtapa?.error) &&
       SingleEtapa?.id"
   >
-    <Form
-      v-slot="{ errors, isSubmitting, setFieldValue, values }"
-      :validation-schema="schema"
-      :initial-values="valoresIniciais"
-      @submit="onSubmit"
+    <form
+      @submit.prevent="onSubmit"
     >
       <div class="flex g2 mb2">
         <div class="f1">
@@ -262,7 +263,7 @@ function maskDate(el) {
         </button>
         <hr class="ml2 f1">
       </div>
-    </Form>
+    </form>
   </template>
   <template v-else-if="SingleEtapa?.loading">
     <span class="spinner">Carregando</span>

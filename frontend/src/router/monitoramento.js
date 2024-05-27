@@ -169,6 +169,7 @@ export default {
       component: MonitoramentoMetasCronograma,
       meta: {
         rotasParaMigalhasDePão: rotasParaMigalhasDePão('cronograma', true),
+        rotaDeEscape: 'monitoramentoDeCronogramaDeMetaEspecífica',
       },
     },
     {
