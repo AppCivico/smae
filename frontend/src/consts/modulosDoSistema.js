@@ -28,6 +28,6 @@ export default {
   PlanoSetorial: {
     nome: 'Planos setoriais',
     ícone: planosSetoriais,
-    rotaInicial: null,
+    rotaInicial: 'planosSetoriaisListar',
   },
 };
