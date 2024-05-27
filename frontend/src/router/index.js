@@ -104,7 +104,7 @@ router.afterEach((to) => {
 });
 
 router.beforeEach((to, from, next) => {
-  if (typeof to.matched[0]?.components.default === 'function') {
+  if (typeof to.matched.find((rota) => rota.name !== undefined)?.components?.default === 'function') {
     $eventHub.emit('chamadaPendenteIniciada', to); // Start progress bar
   }
   next();
