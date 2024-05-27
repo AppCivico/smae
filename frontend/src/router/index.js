@@ -1,3 +1,4 @@
+import $eventHub from '@/components/eventHub';
 import qs from 'qs';
 import { watch } from 'vue';
 import { createRouter, createWebHistory } from 'vue-router';
@@ -100,4 +101,16 @@ router.afterEach((to) => {
   } else if (document.title !== 'SMAE') {
     document.title = 'SMAE';
   }
+});
+
+router.beforeEach((to, from, next) => {
+  if (typeof to.matched[0]?.components.default === 'function') {
+    $eventHub.emit('chamadaPendenteIniciada', to); // Start progress bar
+  }
+  next();
+});
+
+router.beforeResolve((to, from, next) => {
+  $eventHub.emit('chamadaPendenteEncerrada'); // Stop progress bar
+  next();
 });

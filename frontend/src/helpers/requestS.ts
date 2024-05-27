@@ -1,3 +1,4 @@
+import $eventHub from '@/components/eventHub';
 import responseDownload from '@/helpers/responseDownload';
 import { useAlertStore } from '@/stores/alert.store';
 import { useAuthStore } from '@/stores/auth.store';
@@ -101,9 +102,14 @@ function request(method: Method, upload = false) {
         break;
     }
 
+    $eventHub.emit('chamadaPendenteIniciada');
+
     // return fetch(urlFinal, requestOptions).then(handleResponse);
     return fetch(urlFinal, requestOptions)
-      .then((response) => handleResponse(response, AlertarErros));
+      .then((response) => handleResponse(response, AlertarErros))
+      .finally(() => {
+        $eventHub.emit('chamadaPendenteEncerrada');
+      });
   };
 }
 
