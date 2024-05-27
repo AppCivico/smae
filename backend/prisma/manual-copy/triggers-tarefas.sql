@@ -429,8 +429,8 @@ BEGIN
                 jsonb_build_object('dependencia_tarefa_id', dependencia_tarefa_id, 'tipo', tipo, 'latencia', latencia)
             ) into v_tmp
         FROM tarefa_dependente td
-        where tarefa_id = r.tarefa_id
-        and tipo in ('termina_pro_inicio', 'inicia_pro_inicio');
+        where tarefa_id = r.tarefa_id;
+
         if (v_tmp is null) then
             RAISE NOTICE '%', current_setting('myvars.my_trigger_depth', true) || '| ->> calcula_dependencias_tarefas=NULL tarefa.dep=' || ROW_TO_JSON(r)::text;
             continue;
@@ -511,8 +511,7 @@ BEGIN
                 jsonb_build_object('dependencia_tarefa_id', dependencia_tarefa_id, 'tipo', tipo, 'latencia', latencia)
             ) into v_tmp
         FROM tarefa_dependente td
-        where tarefa_id = r.tarefa_id
-        and tipo not in ('termina_pro_inicio', 'inicia_pro_inicio');
+        where tarefa_id = r.tarefa_id;
 
         if (v_tmp is null) then
             RAISE NOTICE '%', current_setting('myvars.my_trigger_depth', true) || '| ->> calcula_dependencias_tarefas=NULL tarefa.dep=' || ROW_TO_JSON(r)::text;
