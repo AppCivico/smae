@@ -5,12 +5,13 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { CreateProjetoSeiDto } from './dto/create-projeto.dto';
 import { UpdateProjetoRegistroSeiDto } from './dto/update-projeto.dto';
 import { ProjetoDetailDto, ProjetoSeiDto } from './entities/projeto.entity';
+import { TipoProjeto } from '@prisma/client';
 
 @Injectable()
 export class ProjetoSeiService {
     constructor(private readonly prisma: PrismaService) {}
 
-    async append_sei(projeto: ProjetoDetailDto, dto: CreateProjetoSeiDto, user: PessoaFromJwt) {
+    async append_sei(tipo: TipoProjeto, projeto: ProjetoDetailDto, dto: CreateProjetoSeiDto, user: PessoaFromJwt) {
         dto.processo_sei = dto.processo_sei.replace(/[^0-9]/g, '');
 
         const existenteProjetoSei = await this.prisma.projetoRegistroSei.count({
@@ -18,6 +19,7 @@ export class ProjetoSeiService {
                 projeto_id: projeto.id,
                 processo_sei: dto.processo_sei,
                 removido_em: null,
+                projeto: { tipo: tipo, id: projeto.id },
             },
         });
 
@@ -43,6 +45,7 @@ export class ProjetoSeiService {
     }
 
     async list_sei(
+        tipo: TipoProjeto,
         projeto: ProjetoDetailDto,
         user: PessoaFromJwt,
         filterId: number | undefined = undefined
@@ -50,6 +53,7 @@ export class ProjetoSeiService {
         const projetosSei = await this.prisma.projetoRegistroSei.findMany({
             where: {
                 projeto_id: projeto.id,
+                projeto: { tipo: tipo, id: projeto.id },
                 removido_em: null,
                 id: filterId,
             },
@@ -69,13 +73,20 @@ export class ProjetoSeiService {
         return projetosSei;
     }
 
-    async update_sei(projeto: ProjetoDetailDto, seiID: number, dto: UpdateProjetoRegistroSeiDto, user: PessoaFromJwt) {
+    async update_sei(
+        tipo: TipoProjeto,
+        projeto: ProjetoDetailDto,
+        seiID: number,
+        dto: UpdateProjetoRegistroSeiDto,
+        user: PessoaFromJwt
+    ) {
         if (dto.processo_sei) {
             dto.processo_sei = dto.processo_sei.replace(/[^0-9]/g, '');
 
             const existenteProjetoSei = await this.prisma.projetoRegistroSei.count({
                 where: {
                     projeto_id: projeto.id,
+                    projeto: { tipo: tipo, id: projeto.id },
                     processo_sei: dto.processo_sei,
                     removido_em: null,
                     id: {
@@ -94,6 +105,7 @@ export class ProjetoSeiService {
         const self = await this.prisma.projetoRegistroSei.findFirstOrThrow({
             where: {
                 projeto_id: projeto.id,
+                projeto: { tipo: tipo, id: projeto.id },
                 id: seiID,
                 removido_em: null,
             },
@@ -119,10 +131,11 @@ export class ProjetoSeiService {
         return { id: seiID };
     }
 
-    async remove_sei(projeto: ProjetoDetailDto, seiID: number, user: PessoaFromJwt) {
+    async remove_sei(tipo: TipoProjeto, projeto: ProjetoDetailDto, seiID: number, user: PessoaFromJwt) {
         const self = await this.prisma.projetoRegistroSei.findFirstOrThrow({
             where: {
                 projeto_id: projeto.id,
+                projeto: { tipo: tipo, id: projeto.id },
                 id: seiID,
                 removido_em: null,
             },

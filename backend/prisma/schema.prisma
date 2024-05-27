@@ -3092,10 +3092,17 @@ model ProjetoRegistroSei {
     @@map("projeto_registro_sei")
 }
 
+enum TipoProjeto {
+    PP
+    MDO
+}
+
 model Projeto {
     id           Int       @id @default(autoincrement())
     portfolio_id Int
     portfolio    Portfolio @relation(fields: [portfolio_id], references: [id])
+
+    tipo TipoProjeto @default(PP)
 
     portfolios_compartilhados PortfolioProjetoCompartilhado[]
 
@@ -4617,6 +4624,7 @@ enum ModuloSistema {
     CasaCivil
     Projetos
     PlanoSetorial
+    MDO
 }
 
 enum EleicaoTipo {

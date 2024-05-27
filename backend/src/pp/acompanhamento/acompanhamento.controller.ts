@@ -35,7 +35,7 @@ export class AcompanhamentoController {
         @Body() createAcompanhamentoDto: CreateProjetoAcompanhamentoDto,
         @CurrentUser() user: PessoaFromJwt
     ): Promise<RecordWithId> {
-        await this.projetoService.findOne(params.id, user, 'ReadWriteTeam');
+        await this.projetoService.findOne('PP', params.id, user, 'ReadWriteTeam');
 
         return await this.acompanhamentoService.create(params.id, createAcompanhamentoDto, user);
     }
@@ -47,7 +47,7 @@ export class AcompanhamentoController {
         @Param() params: FindOneParams,
         @CurrentUser() user: PessoaFromJwt
     ): Promise<ListProjetoAcompanhamentoDto> {
-        await this.projetoService.findOne(params.id, user, 'ReadOnly');
+        await this.projetoService.findOne('PP', params.id, user, 'ReadOnly');
         return {
             linhas: await this.acompanhamentoService.findAll(params.id, user),
         };
@@ -60,7 +60,7 @@ export class AcompanhamentoController {
         @Param() params: FindTwoParams,
         @CurrentUser() user: PessoaFromJwt
     ): Promise<DetailProjetoAcompanhamentoDto> {
-        await this.projetoService.findOne(params.id, user, 'ReadOnly');
+        await this.projetoService.findOne('PP', params.id, user, 'ReadOnly');
         return await this.acompanhamentoService.findOne(params.id, params.id2, user);
     }
 
@@ -72,7 +72,7 @@ export class AcompanhamentoController {
         @Body() dto: UpdateProjetoAcompanhamentoDto,
         @CurrentUser() user: PessoaFromJwt
     ): Promise<RecordWithId> {
-        await this.projetoService.findOne(params.id, user, 'ReadWriteTeam');
+        await this.projetoService.findOne('PP', params.id, user, 'ReadWriteTeam');
         return await this.acompanhamentoService.update(params.id, params.id2, dto, user);
     }
 
@@ -82,7 +82,7 @@ export class AcompanhamentoController {
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.ACCEPTED)
     async remove(@Param() params: FindTwoParams, @CurrentUser() user: PessoaFromJwt) {
-        await this.projetoService.findOne(params.id, user, 'ReadWriteTeam');
+        await this.projetoService.findOne('PP', params.id, user, 'ReadWriteTeam');
         await this.acompanhamentoService.remove(params.id, params.id2, user);
         return '';
     }

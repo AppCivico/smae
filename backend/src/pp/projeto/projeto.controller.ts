@@ -51,6 +51,18 @@ const roles: ListaDePrivilegios[] = [
     ...PROJETO_READONLY_ROLES,
 ];
 
+export const PROJETO_READONLY_ROLES_MDO: ListaDePrivilegios[] = [
+    'MDO.gestor_de_projeto',
+    'MDO.colaborador_de_projeto',
+    'MDO.espectador_de_projeto',
+];
+
+const rolesMDO: ListaDePrivilegios[] = [
+    'ProjetoMDO.administrador',
+    'ProjetoMDO.administrador_no_orgao',
+    ...PROJETO_READONLY_ROLES_MDO,
+];
+
 @ApiTags('Projeto')
 @Controller('projeto')
 export class ProjetoController {
@@ -67,14 +79,14 @@ export class ProjetoController {
         @Body() createProjetoDto: CreateProjetoDto,
         @CurrentUser() user: PessoaFromJwt
     ): Promise<RecordWithId> {
-        return await this.projetoService.create(createProjetoDto, user);
+        return await this.projetoService.create('PP', createProjetoDto, user);
     }
 
     @Get()
     @ApiBearerAuth('access-token')
     @Roles([...roles])
     async findAll(@Query() filters: FilterProjetoDto, @CurrentUser() user: PessoaFromJwt): Promise<ListProjetoDto> {
-        return { linhas: await this.projetoService.findAll(filters, user) };
+        return { linhas: await this.projetoService.findAll('PP', filters, user) };
     }
 
     //@IsPublic()
@@ -85,7 +97,7 @@ export class ProjetoController {
         @CurrentUser() user: PessoaFromJwt,
         @Res() res: Response
     ): Promise<void> {
-        const dados = await this.projetoService.getDadosProjetoUe(params.id, user);
+        const dados = await this.projetoService.getDadosProjetoUe('PP', params.id, user);
 
         //const templatesDir = join(__dirname, '..', 'templates');
         //ejs.renderFile(join(templatesDir, 'users.ejs'), { users })
@@ -103,7 +115,7 @@ export class ProjetoController {
     @ApiBearerAuth('access-token')
     @Roles([...roles])
     async findOne(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt): Promise<ProjetoDetailDto> {
-        return await this.projetoService.findOne(params.id, user, 'ReadOnly');
+        return await this.projetoService.findOne('PP', params.id, user, 'ReadOnly');
     }
 
     @Patch(':id')
@@ -114,9 +126,9 @@ export class ProjetoController {
         @Body() updateProjetoDto: UpdateProjetoDto,
         @CurrentUser() user: PessoaFromJwt
     ): Promise<RecordWithId> {
-        const projeto = await this.projetoService.findOne(params.id, user, 'ReadWrite');
+        const projeto = await this.projetoService.findOne('PP', params.id, user, 'ReadWrite');
 
-        return await this.projetoService.update(projeto.id, updateProjetoDto, user);
+        return await this.projetoService.update('PP', projeto.id, updateProjetoDto, user);
     }
 
     @Delete(':id')
@@ -125,9 +137,9 @@ export class ProjetoController {
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.ACCEPTED)
     async remove(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt) {
-        const projeto = await this.projetoService.findOne(params.id, user, 'ReadWrite');
+        const projeto = await this.projetoService.findOne('PP', params.id, user, 'ReadWrite');
 
-        await this.projetoService.remove(projeto.id, user);
+        await this.projetoService.remove('PP', projeto.id, user);
         return '';
     }
 
@@ -139,16 +151,16 @@ export class ProjetoController {
         @Body() createPdmDocDto: CreateProjetoDocumentDto,
         @CurrentUser() user: PessoaFromJwt
     ): Promise<RecordWithId> {
-        await this.projetoService.findOne(params.id, user, 'ReadWriteTeam');
+        await this.projetoService.findOne('PP', params.id, user, 'ReadWriteTeam');
 
-        return await this.projetoService.append_document(params.id, createPdmDocDto, user);
+        return await this.projetoService.append_document('PP', params.id, createPdmDocDto, user);
     }
 
     @Get(':id/documento')
     @ApiBearerAuth('access-token')
     @Roles([...roles])
     async download(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt): Promise<ListProjetoDocumento> {
-        return { linhas: await this.projetoService.list_document(params.id, user) };
+        return { linhas: await this.projetoService.list_document('PP', params.id, user) };
     }
 
     @Patch(':id/documento/:id2')
@@ -159,8 +171,8 @@ export class ProjetoController {
         @Body() dto: UpdateProjetoDocumentDto,
         @CurrentUser() user: PessoaFromJwt
     ): Promise<RecordWithId> {
-        await this.projetoService.findOne(params.id, user, 'ReadWriteTeam');
-        return await this.projetoService.updateDocumento(params.id, params.id2, dto, user);
+        await this.projetoService.findOne('PP', params.id, user, 'ReadWriteTeam');
+        return await this.projetoService.updateDocumento('PP', params.id, params.id2, dto, user);
     }
 
     @Delete(':id/documento/:id2')
@@ -169,8 +181,8 @@ export class ProjetoController {
     @ApiResponse({ description: 'sucesso ao remover', status: 204 })
     @HttpCode(HttpStatus.NO_CONTENT)
     async removerDownload(@Param() params: FindTwoParams, @CurrentUser() user: PessoaFromJwt) {
-        await this.projetoService.findOne(params.id, user, 'ReadWriteTeam');
-        await this.projetoService.remove_document(params.id, params.id2, user);
+        await this.projetoService.findOne('PP', params.id, user, 'ReadWriteTeam');
+        await this.projetoService.remove_document('PP', params.id, params.id2, user);
         return null;
     }
 
@@ -182,24 +194,24 @@ export class ProjetoController {
         @Body() createProjetoRegistroSei: CreateProjetoSeiDto,
         @CurrentUser() user: PessoaFromJwt
     ): Promise<RecordWithId> {
-        const projeto = await this.projetoService.findOne(params.id, user, 'ReadWriteTeam');
-        return await this.projetoSeiService.append_sei(projeto, createProjetoRegistroSei, user);
+        const projeto = await this.projetoService.findOne('PP', params.id, user, 'ReadWriteTeam');
+        return await this.projetoSeiService.append_sei('PP', projeto, createProjetoRegistroSei, user);
     }
 
     @Get(':id/sei')
     @ApiBearerAuth('access-token')
     @Roles([...roles])
     async listSEI(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt): Promise<ListProjetoSeiDto> {
-        const projeto = await this.projetoService.findOne(params.id, user, 'ReadOnly');
-        return { linhas: await this.projetoSeiService.list_sei(projeto, user) };
+        const projeto = await this.projetoService.findOne('PP', params.id, user, 'ReadOnly');
+        return { linhas: await this.projetoSeiService.list_sei('PP', projeto, user) };
     }
 
     @Get(':id/sei/:id2')
     @ApiBearerAuth('access-token')
     @Roles([...roles])
     async findOneSEI(@Param() params: FindTwoParams, @CurrentUser() user: PessoaFromJwt): Promise<ProjetoSeiDto> {
-        const projeto = await this.projetoService.findOne(params.id, user, 'ReadOnly');
-        const rows = await this.projetoSeiService.list_sei(projeto, user, params.id2);
+        const projeto = await this.projetoService.findOne('PP', params.id, user, 'ReadOnly');
+        const rows = await this.projetoSeiService.list_sei('PP', projeto, user, params.id2);
         if (!rows[0]) throw new HttpException('SEI não encontrado', 404);
         return rows[0];
     }
@@ -212,8 +224,8 @@ export class ProjetoController {
         @Body() updateProjetoRegistroSeiDto: UpdateProjetoRegistroSeiDto,
         @CurrentUser() user: PessoaFromJwt
     ): Promise<RecordWithId> {
-        const projeto = await this.projetoService.findOne(params.id, user, 'ReadWriteTeam');
-        return await this.projetoSeiService.update_sei(projeto, params.id2, updateProjetoRegistroSeiDto, user);
+        const projeto = await this.projetoService.findOne('PP', params.id, user, 'ReadWriteTeam');
+        return await this.projetoSeiService.update_sei('PP', projeto, params.id2, updateProjetoRegistroSeiDto, user);
     }
 
     @Delete(':id/sei/:id2')
@@ -222,8 +234,8 @@ export class ProjetoController {
     @ApiResponse({ description: 'sucesso ao remover', status: 204 })
     @HttpCode(HttpStatus.NO_CONTENT)
     async removeSEI(@Param() params: FindTwoParams, @CurrentUser() user: PessoaFromJwt) {
-        const projeto = await this.projetoService.findOne(params.id, user, 'ReadWriteTeam');
-        await this.projetoSeiService.remove_sei(projeto, params.id2, user);
+        const projeto = await this.projetoService.findOne('PP', params.id, user, 'ReadWriteTeam');
+        await this.projetoSeiService.remove_sei('PP', projeto, params.id2, user);
         return null;
     }
 
@@ -234,8 +246,9 @@ export class ProjetoController {
         @Param() params: FindOneParams,
         @Body() cloneProjetoTarefasdto: CloneProjetoTarefasDto,
         @CurrentUser() user: PessoaFromJwt
-    ) {
-        await this.projetoService.cloneTarefas(params.id, cloneProjetoTarefasdto, user);
+    ): Promise<void> {
+        await this.projetoService.cloneTarefas('PP', params.id, cloneProjetoTarefasdto, user);
+        return;
     }
 
     @Post(':id/transferir-portfolio')
@@ -246,6 +259,206 @@ export class ProjetoController {
         @Body() transferProjetoPortfolio: TransferProjetoPortfolioDto,
         @CurrentUser() user: PessoaFromJwt
     ): Promise<RecordWithId> {
-        return await this.projetoService.transferPortfolio(params.id, transferProjetoPortfolio, user);
+        return await this.projetoService.transferPortfolio('PP', params.id, transferProjetoPortfolio, user);
+    }
+}
+
+@ApiTags('Projeto - MdO')
+@Controller('mdo')
+export class ProjetoMDOController {
+    constructor(
+        private readonly projetoService: ProjetoService,
+        private readonly projetoSeiService: ProjetoSeiService
+    ) {}
+
+    // só o administrador do órgão pode iniciar novos projetos
+    @Post()
+    @ApiBearerAuth('access-token')
+    @Roles(['ProjetoMDO.administrador_no_orgao'])
+    async create(
+        @Body() createProjetoDto: CreateProjetoDto,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<RecordWithId> {
+        return await this.projetoService.create('MDO', createProjetoDto, user);
+    }
+
+    @Get()
+    @ApiBearerAuth('access-token')
+    @Roles([...rolesMDO])
+    async findAll(@Query() filters: FilterProjetoDto, @CurrentUser() user: PessoaFromJwt): Promise<ListProjetoDto> {
+        return { linhas: await this.projetoService.findAll('MDO', filters, user) };
+    }
+
+    //@IsPublic()
+    @ApiBearerAuth('access-token')
+    @Get(':id/html-unidade-entrega')
+    async getHtmlUnidadeEntrega(
+        @Param() params: FindOneParams,
+        @CurrentUser() user: PessoaFromJwt,
+        @Res() res: Response
+    ): Promise<void> {
+        const dados = await this.projetoService.getDadosProjetoUe('MDO', params.id, user);
+
+        //const templatesDir = join(__dirname, '..', 'templates');
+        //ejs.renderFile(join(templatesDir, 'users.ejs'), { users })
+        //    .then(renderedHtml => {
+        //        res.json({ html: renderedHtml });
+        //    })
+        //    .catch(error => {
+        //        res.status(500).json({ error: 'An error occurred while rendering the template.' });
+        //    });
+
+        return res.render('projeto-ue', { ...dados });
+    }
+
+    @Get(':id')
+    @ApiBearerAuth('access-token')
+    @Roles([...rolesMDO])
+    async findOne(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt): Promise<ProjetoDetailDto> {
+        return await this.projetoService.findOne('MDO', params.id, user, 'ReadOnly');
+    }
+
+    @Patch(':id')
+    @ApiBearerAuth('access-token')
+    @Roles([...rolesMDO])
+    async update(
+        @Param() params: FindOneParams,
+        @Body() updateProjetoDto: UpdateProjetoDto,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<RecordWithId> {
+        const projeto = await this.projetoService.findOne('MDO', params.id, user, 'ReadWrite');
+
+        return await this.projetoService.update('MDO', projeto.id, updateProjetoDto, user);
+    }
+
+    @Delete(':id')
+    @ApiBearerAuth('access-token')
+    @Roles([...rolesMDO])
+    @ApiNoContentResponse()
+    @HttpCode(HttpStatus.ACCEPTED)
+    async remove(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt) {
+        const projeto = await this.projetoService.findOne('MDO', params.id, user, 'ReadWrite');
+
+        await this.projetoService.remove('MDO', projeto.id, user);
+        return '';
+    }
+
+    @Post(':id/documento')
+    @ApiBearerAuth('access-token')
+    @Roles([...rolesMDO])
+    async upload(
+        @Param() params: FindOneParams,
+        @Body() createPdmDocDto: CreateProjetoDocumentDto,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<RecordWithId> {
+        await this.projetoService.findOne('MDO', params.id, user, 'ReadWriteTeam');
+
+        return await this.projetoService.append_document('MDO', params.id, createPdmDocDto, user);
+    }
+
+    @Get(':id/documento')
+    @ApiBearerAuth('access-token')
+    @Roles([...rolesMDO])
+    async download(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt): Promise<ListProjetoDocumento> {
+        return { linhas: await this.projetoService.list_document('MDO', params.id, user) };
+    }
+
+    @Patch(':id/documento/:id2')
+    @ApiBearerAuth('access-token')
+    @Roles([...rolesMDO])
+    async updateDocumento(
+        @Param() params: FindTwoParams,
+        @Body() dto: UpdateProjetoDocumentDto,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<RecordWithId> {
+        await this.projetoService.findOne('MDO', params.id, user, 'ReadWriteTeam');
+        return await this.projetoService.updateDocumento('MDO', params.id, params.id2, dto, user);
+    }
+
+    @Delete(':id/documento/:id2')
+    @ApiBearerAuth('access-token')
+    @Roles([...rolesMDO])
+    @ApiResponse({ description: 'sucesso ao remover', status: 204 })
+    @HttpCode(HttpStatus.NO_CONTENT)
+    async removerDownload(@Param() params: FindTwoParams, @CurrentUser() user: PessoaFromJwt) {
+        await this.projetoService.findOne('MDO', params.id, user, 'ReadWriteTeam');
+        await this.projetoService.remove_document('MDO', params.id, params.id2, user);
+        return null;
+    }
+
+    @Post(':id/sei')
+    @ApiBearerAuth('access-token')
+    @Roles([...rolesMDO])
+    async createSEI(
+        @Param() params: FindOneParams,
+        @Body() createProjetoRegistroSei: CreateProjetoSeiDto,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<RecordWithId> {
+        const projeto = await this.projetoService.findOne('MDO', params.id, user, 'ReadWriteTeam');
+        return await this.projetoSeiService.append_sei('MDO', projeto, createProjetoRegistroSei, user);
+    }
+
+    @Get(':id/sei')
+    @ApiBearerAuth('access-token')
+    @Roles([...rolesMDO])
+    async listSEI(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt): Promise<ListProjetoSeiDto> {
+        const projeto = await this.projetoService.findOne('MDO', params.id, user, 'ReadOnly');
+        return { linhas: await this.projetoSeiService.list_sei('MDO', projeto, user) };
+    }
+
+    @Get(':id/sei/:id2')
+    @ApiBearerAuth('access-token')
+    @Roles([...rolesMDO])
+    async findOneSEI(@Param() params: FindTwoParams, @CurrentUser() user: PessoaFromJwt): Promise<ProjetoSeiDto> {
+        const projeto = await this.projetoService.findOne('MDO', params.id, user, 'ReadOnly');
+        const rows = await this.projetoSeiService.list_sei('MDO', projeto, user, params.id2);
+        if (!rows[0]) throw new HttpException('SEI não encontrado', 404);
+        return rows[0];
+    }
+
+    @Patch(':id/sei/:id2')
+    @ApiBearerAuth('access-token')
+    @Roles([...rolesMDO])
+    async updateSEI(
+        @Param() params: FindTwoParams,
+        @Body() updateProjetoRegistroSeiDto: UpdateProjetoRegistroSeiDto,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<RecordWithId> {
+        const projeto = await this.projetoService.findOne('MDO', params.id, user, 'ReadWriteTeam');
+        return await this.projetoSeiService.update_sei('MDO', projeto, params.id2, updateProjetoRegistroSeiDto, user);
+    }
+
+    @Delete(':id/sei/:id2')
+    @ApiBearerAuth('access-token')
+    @Roles([...rolesMDO])
+    @ApiResponse({ description: 'sucesso ao remover', status: 204 })
+    @HttpCode(HttpStatus.NO_CONTENT)
+    async removeSEI(@Param() params: FindTwoParams, @CurrentUser() user: PessoaFromJwt) {
+        const projeto = await this.projetoService.findOne('MDO', params.id, user, 'ReadWriteTeam');
+        await this.projetoSeiService.remove_sei('MDO', projeto, params.id2, user);
+        return null;
+    }
+
+    @Post(':id/clone-tarefas')
+    @ApiBearerAuth('access-token')
+    @Roles([...rolesMDO])
+    async cloneTarefas(
+        @Param() params: FindOneParams,
+        @Body() cloneProjetoTarefasdto: CloneProjetoTarefasDto,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<void> {
+        await this.projetoService.cloneTarefas('MDO', params.id, cloneProjetoTarefasdto, user);
+        return;
+    }
+
+    @Post(':id/transferir-portfolio')
+    @ApiBearerAuth('access-token')
+    @Roles([...rolesMDO])
+    async transferPortfolio(
+        @Param() params: FindOneParams,
+        @Body() transferProjetoPortfolio: TransferProjetoPortfolioDto,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<RecordWithId> {
+        return await this.projetoService.transferPortfolio('MDO', params.id, transferProjetoPortfolio, user);
     }
 }
