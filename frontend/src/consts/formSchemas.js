@@ -639,8 +639,10 @@ export const grupoDeObservadores = object({
 });
 
 export const gruposTematicos = object({
-  nome: string()
-    .label('Nome')
+  grupo_tematico: string()
+    .label('Grupo temático')
+    .min(3)
+    .max(250)
     .required(),
 });
 
