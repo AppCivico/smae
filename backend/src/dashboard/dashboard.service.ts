@@ -100,7 +100,7 @@ export class DashboardService {
     ) {
         if (config && config['params'] && config['params']['projetos_ids']) {
             if (memory['projetos_ids'] === undefined) {
-                memory['projetos_ids'] = (await this.projetoService.findAllIds(user)).map((p) => p.id);
+                memory['projetos_ids'] = (await this.projetoService.findAllIds('PP', user)).map((p) => p.id);
                 if (memory['projetos_ids'].length == 0) memory['projetos_ids'] = [-1];
             }
 

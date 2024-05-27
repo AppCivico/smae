@@ -141,7 +141,7 @@ export class ImportacaoOrcamentoService {
         const filtros: Prisma.Enumerable<Prisma.PortfolioWhereInput> = [];
 
         if (user.hasSomeRoles(['Projeto.orcamento'])) {
-            const projetos = await this.projetoService.findAllIds(user);
+            const projetos = await this.projetoService.findAllIds('PP', user);
             this.logger.warn(`só pode ver os projetos ${projetos.map((r) => r.id).join(',')}`);
 
             filtros.push({
@@ -226,7 +226,7 @@ export class ImportacaoOrcamentoService {
         }
 
         if (user.hasSomeRoles(['Projeto.orcamento']) && (filters.portfolio_id || filters.apenas_com_portfolio)) {
-            const projetos = await this.projetoService.findAllIds(user);
+            const projetos = await this.projetoService.findAllIds('PP', user);
             this.logger.warn(`só pode ver os projetos ${projetos.map((r) => r.id).join(',')}`);
 
             filtros.push({
@@ -491,7 +491,7 @@ export class ImportacaoOrcamentoService {
         const user = await this.authService.pessoaJwtFromId(job.criado_por);
 
         if (job.portfolio_id) {
-            const projetosDoUser = await this.projetoService.findAllIds(user, job.portfolio_id);
+            const projetosDoUser = await this.projetoService.findAllIds('PP', user, job.portfolio_id);
             projetosIds.push(...projetosDoUser.map((r) => r.id));
         } else if (job.pdm_id) {
             const metasDoUser = await this.metaService.findAllIds(user, job.pdm_id);

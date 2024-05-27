@@ -30,7 +30,7 @@ export class OrcamentoRealizadoController {
         @Body() createMetaDto: CreatePPOrcamentoRealizadoDto,
         @CurrentUser() user: PessoaFromJwt
     ): Promise<RecordWithId> {
-        const projeto = await this.projetoService.findOne(params.id, user, 'ReadWriteTeam');
+        const projeto = await this.projetoService.findOne('PP', params.id, user, 'ReadWriteTeam');
 
         return await this.orcamentoRealizadoService.create(projeto, createMetaDto, user);
     }
@@ -43,7 +43,7 @@ export class OrcamentoRealizadoController {
         @Query() filters: FilterPPOrcamentoRealizadoDto,
         @CurrentUser() user: PessoaFromJwt
     ): Promise<ListPPOrcamentoRealizadoDto> {
-        const projeto = await this.projetoService.findOne(params.id, user, 'ReadOnly');
+        const projeto = await this.projetoService.findOne('PP', params.id, user, 'ReadOnly');
         return { linhas: await this.orcamentoRealizadoService.findAll(projeto, filters, user) };
     }
 
@@ -55,7 +55,7 @@ export class OrcamentoRealizadoController {
         @Body() createMetaDto: UpdatePPOrcamentoRealizadoDto,
         @CurrentUser() user: PessoaFromJwt
     ): Promise<RecordWithId> {
-        const projeto = await this.projetoService.findOne(params.id, user, 'ReadWriteTeam');
+        const projeto = await this.projetoService.findOne('PP', params.id, user, 'ReadWriteTeam');
 
         return await this.orcamentoRealizadoService.update(projeto, params.id2, createMetaDto, user);
     }
@@ -70,7 +70,7 @@ export class OrcamentoRealizadoController {
         @Body() paramIds: BatchRecordWithId,
         @CurrentUser() user: PessoaFromJwt
     ) {
-        await this.projetoService.findOne(paramProj.id, user, 'ReadWriteTeam');
+        await this.projetoService.findOne('PP', paramProj.id, user, 'ReadWriteTeam');
 
         await this.orcamentoRealizadoService.removeEmLote(paramIds, user);
         return '';
@@ -82,7 +82,7 @@ export class OrcamentoRealizadoController {
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.ACCEPTED)
     async remove(@Param() params: FindTwoParams, @CurrentUser() user: PessoaFromJwt) {
-        await this.projetoService.findOne(params.id, user, 'ReadWriteTeam');
+        await this.projetoService.findOne('PP', params.id, user, 'ReadWriteTeam');
 
         await this.orcamentoRealizadoService.remove(+params.id2, user);
         return '';

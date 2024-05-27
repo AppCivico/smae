@@ -38,7 +38,7 @@ export class PlanoAcaoMonitoramentoController {
         @Body() dto: CreatePlanoAcaoMonitoramentoDto,
         @CurrentUser() user: PessoaFromJwt
     ): Promise<RecordWithId> {
-        await this.projetoService.findOne(params.id, user, 'ReadWriteTeam');
+        await this.projetoService.findOne('PP', params.id, user, 'ReadWriteTeam');
 
         return await this.planoAcaoMonitoramentoService.create(params.id, dto, user);
     }
@@ -51,7 +51,7 @@ export class PlanoAcaoMonitoramentoController {
         @Query() filters: FilterPlanoAcaoMonitoramentoDto,
         @CurrentUser() user: PessoaFromJwt
     ): Promise<ListPlanoAcaoMonitoramentoDto> {
-        await this.projetoService.findOne(params.id, user, 'ReadOnly');
+        await this.projetoService.findOne('PP', params.id, user, 'ReadOnly');
         return {
             linhas: await this.planoAcaoMonitoramentoService.findAll(params.id, filters, user),
         };
@@ -65,7 +65,7 @@ export class PlanoAcaoMonitoramentoController {
         @Body() dto: UpdatePlanoAcaoMonitoramentoDto,
         @CurrentUser() user: PessoaFromJwt
     ): Promise<RecordWithId> {
-        await this.projetoService.findOne(params.id, user, 'ReadWriteTeam');
+        await this.projetoService.findOne('PP', params.id, user, 'ReadWriteTeam');
 
         return await this.planoAcaoMonitoramentoService.update(params.id, params.id2, dto, user);
     }
@@ -76,7 +76,7 @@ export class PlanoAcaoMonitoramentoController {
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.ACCEPTED)
     async remove(@Param() params: FindTwoParams, @CurrentUser() user: PessoaFromJwt) {
-        await this.projetoService.findOne(params.id, user, 'ReadWrite');
+        await this.projetoService.findOne('PP', params.id, user, 'ReadWrite');
 
         await this.planoAcaoMonitoramentoService.remove(params.id, params.id2, user);
         return '';

@@ -447,7 +447,7 @@ export class PPProjetosService implements ReportableService {
           LEFT JOIN orgao orgao_responsavel ON orgao_responsavel.id = projeto.orgao_responsavel_id
           LEFT JOIN orgao orgao_gestor ON orgao_gestor.id = projeto.orgao_gestor_id
           LEFT JOIN pessoa resp ON resp.id = projeto.responsavel_id
-          LEFT JOIN projeto_etapa pe ON pe.id = projeto.projeto_etapa_id 
+          LEFT JOIN projeto_etapa pe ON pe.id = projeto.projeto_etapa_id
         ${whereCond.whereString}
 
         UNION
@@ -520,7 +520,7 @@ export class PPProjetosService implements ReportableService {
           LEFT JOIN orgao orgao_responsavel ON orgao_responsavel.id = projeto.orgao_responsavel_id
           LEFT JOIN orgao orgao_gestor ON orgao_gestor.id = projeto.orgao_gestor_id
           LEFT JOIN pessoa resp ON resp.id = projeto.responsavel_id
-          LEFT JOIN projeto_etapa pe ON pe.id = projeto.projeto_etapa_id 
+          LEFT JOIN projeto_etapa pe ON pe.id = projeto.projeto_etapa_id
           WHERE ppc.removido_em IS NULL AND projeto.removido_em IS NULL AND ppc.portfolio_id = $${portfolioParamIdx}
         `;
 
@@ -661,7 +661,7 @@ export class PPProjetosService implements ReportableService {
                 latencia: number;
             }
 
-            await this.projetoService.findOne(db.projeto_id, undefined, 'ReadOnly');
+            await this.projetoService.findOne('PP', db.projeto_id, undefined, 'ReadOnly');
 
             const tarefaCronoId = await this.prisma.tarefaCronograma.findFirst({
                 where: {

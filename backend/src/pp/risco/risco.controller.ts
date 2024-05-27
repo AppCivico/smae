@@ -36,7 +36,7 @@ export class RiscoController {
         @Body() dto: CreateRiscoDto,
         @CurrentUser() user: PessoaFromJwt
     ): Promise<RecordWithId> {
-        const projeto = await this.projetoService.findOne(params.id, user, 'ReadWriteTeam');
+        const projeto = await this.projetoService.findOne('PP', params.id, user, 'ReadWriteTeam');
 
         return await this.riscoService.create(projeto.id, dto, user);
     }
@@ -45,7 +45,7 @@ export class RiscoController {
     @ApiBearerAuth('access-token')
     @Roles([...roles, ...PROJETO_READONLY_ROLES])
     async findAll(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt): Promise<ListProjetoRiscoDto> {
-        const projeto = await this.projetoService.findOne(params.id, user, 'ReadOnly');
+        const projeto = await this.projetoService.findOne('PP', params.id, user, 'ReadOnly');
         return {
             linhas: await this.riscoService.findAll(projeto.id, user),
         };
@@ -55,7 +55,7 @@ export class RiscoController {
     @ApiBearerAuth('access-token')
     @Roles([...roles, ...PROJETO_READONLY_ROLES])
     async findOne(@Param() params: FindTwoParams, @CurrentUser() user: PessoaFromJwt): Promise<ProjetoRiscoDetailDto> {
-        const projeto = await this.projetoService.findOne(params.id, user, 'ReadOnly');
+        const projeto = await this.projetoService.findOne('PP', params.id, user, 'ReadOnly');
         return await this.riscoService.findOne(projeto.id, params.id2, user);
     }
 
@@ -67,7 +67,7 @@ export class RiscoController {
         @Body() updateRiscoDto: UpdateRiscoDto,
         @CurrentUser() user: PessoaFromJwt
     ): Promise<RecordWithId> {
-        await this.projetoService.findOne(params.id, user, 'ReadWriteTeam');
+        await this.projetoService.findOne('PP', params.id, user, 'ReadWriteTeam');
         return await this.riscoService.update(params.id2, updateRiscoDto, user);
     }
 
@@ -78,7 +78,7 @@ export class RiscoController {
     @HttpCode(HttpStatus.ACCEPTED)
     async remove(@Param() params: FindTwoParams, @CurrentUser() user: PessoaFromJwt) {
         // Verificar se a equipe vai poder remover o risco (e editar tbm)
-        const projeto = await this.projetoService.findOne(params.id, user, 'ReadWriteTeam');
+        const projeto = await this.projetoService.findOne('PP', params.id, user, 'ReadWriteTeam');
         await this.riscoService.remove(projeto.id, params.id2, user);
         return '';
     }

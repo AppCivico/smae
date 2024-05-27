@@ -15,7 +15,7 @@ export class AcaoService {
     ) {}
 
     async create(dto: CreateAcaoDto, user: PessoaFromJwt) {
-        const projeto = await this.projetoService.findOne(dto.projeto_id, user, 'ReadWrite');
+        const projeto = await this.projetoService.findOne('PP', dto.projeto_id, user, 'ReadWrite');
 
         const acaoDesejada = 'acao_' + dto.acao;
         if (!(projeto.permissoes as any)[acaoDesejada])
