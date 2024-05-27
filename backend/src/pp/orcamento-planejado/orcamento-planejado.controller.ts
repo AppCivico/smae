@@ -30,7 +30,7 @@ export class OrcamentoPlanejadoController {
         @Body() createMetaDto: CreatePPOrcamentoPlanejadoDto,
         @CurrentUser() user: PessoaFromJwt
     ): Promise<RecordWithId> {
-        await this.projetoService.findOne(params.id, user, 'ReadWriteTeam');
+        await this.projetoService.findOne('PP', params.id, user, 'ReadWriteTeam');
         return await this.orcamentoPlanejadoService.create(+params.id, createMetaDto, user);
     }
 
@@ -42,7 +42,7 @@ export class OrcamentoPlanejadoController {
         @Query() filters: FilterPPOrcamentoPlanejadoDto,
         @CurrentUser() user: PessoaFromJwt
     ): Promise<ListPPOrcamentoPlanejadoDto> {
-        const projeto = await this.projetoService.findOne(+params.id, user, 'ReadOnly');
+        const projeto = await this.projetoService.findOne('PP', +params.id, user, 'ReadOnly');
 
         return {
             linhas: await this.orcamentoPlanejadoService.findAll(projeto, filters, user),
@@ -57,7 +57,7 @@ export class OrcamentoPlanejadoController {
         @Body() createMetaDto: UpdatePPOrcamentoPlanejadoDto,
         @CurrentUser() user: PessoaFromJwt
     ): Promise<RecordWithId> {
-        await this.projetoService.findOne(+params.id, user, 'ReadWriteTeam');
+        await this.projetoService.findOne('PP', +params.id, user, 'ReadWriteTeam');
 
         return await this.orcamentoPlanejadoService.update(+params.id, +params.id2, createMetaDto, user);
     }
@@ -68,7 +68,7 @@ export class OrcamentoPlanejadoController {
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.ACCEPTED)
     async remove(@Param() params: FindTwoParams, @CurrentUser() user: PessoaFromJwt) {
-        await this.projetoService.findOne(params.id, user, 'ReadWriteTeam');
+        await this.projetoService.findOne('PP', params.id, user, 'ReadWriteTeam');
 
         await this.orcamentoPlanejadoService.remove(+params.id, +params.id2, user);
         return '';

@@ -116,7 +116,7 @@ function createSwaggerConfig(title: string, description: string) {
             name: 'smae-sistemas',
             in: 'header',
             required: false,
-            example: 'SMAE,PDM,CasaCivil,Projetos,PlanoSetorial',
+            example: 'SMAE,PDM,CasaCivil,Projetos,PlanoSetorial,MDO',
         });
 }
 

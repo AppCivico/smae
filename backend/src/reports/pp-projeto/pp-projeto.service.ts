@@ -40,7 +40,12 @@ export class PPProjetoService implements ReportableService {
     ) {}
 
     async create(dto: CreateRelProjetoDto): Promise<PPProjetoRelatorioDto> {
-        const projetoRow: ProjetoDetailDto = await this.projetoService.findOne(dto.projeto_id, undefined, 'ReadOnly');
+        const projetoRow: ProjetoDetailDto = await this.projetoService.findOne(
+            'PP',
+            dto.projeto_id,
+            undefined,
+            'ReadOnly'
+        );
 
         const anoCorrente = DateTime.local({ locale: SYSTEM_TIMEZONE }).year;
         const detail: RelProjetoRelatorioDto = {

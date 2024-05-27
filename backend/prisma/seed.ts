@@ -35,6 +35,7 @@ const ModuloDescricao: Record<string, [string, ModuloSistema | null]> = {
     CadastroPainel: ['Painéis', 'PDM'],
     CadastroGrupoPaineis: ['Grupos de Painéis', 'PDM'],
     PDM: ['Regras de Negócio do Programas de Metas', 'PDM'],
+    MDO: ['Regras de Negócio do Monitoramento de obras', 'MDO'],
     ReportsPdm: ['Relatórios de PDM', 'PDM'],
 
     CadastroPS: ['Plano Setorial', 'PlanoSetorial'],
@@ -56,9 +57,13 @@ const ModuloDescricao: Record<string, [string, ModuloSistema | null]> = {
     ReportsPS: ['Relatórios de Plano Setorial', 'PlanoSetorial'],
 
     CadastroGrupoPortfolio: ['Grupos de Portfólio', 'Projetos'],
+    CadastroGrupoPortfolioMDO: ['Grupos de Portfólio de MdO', 'Projetos'],
     Projeto: ['Projetos', 'Projetos'],
+    ProjetoMDO: ['Projetos de Obras', 'MDO'],
     CadastroProjetoEtapa: ['Etapas', 'Projetos'],
+    CadastroProjetoEtapaMDO: ['Etapas', 'Projetos'],
     ReportsProjetos: ['Relatórios de Projetos', 'Projetos'],
+    ReportsMDO: ['Relatórios de MDO', 'MDO'],
 
     CadastroPartido: ['Partidos', 'CasaCivil'],
     CadastroBancada: ['Bancadas', 'CasaCivil'],
@@ -92,6 +97,13 @@ const PrivConfig: Record<string, false | [ListaDePrivilegios, string | false][]>
     CadastroGrupoPortfolio: [
         ['CadastroGrupoPortfolio.administrador', 'Gerenciar Grupos de Portfólio de qualquer órgão'],
         ['CadastroGrupoPortfolio.administrador_no_orgao', 'Gerenciar Grupos de Portfólio do órgão ao qual pertence'],
+    ],
+    CadastroGrupoPortfolioMDO: [
+        ['CadastroGrupoPortfolioMDO.administrador', 'Gerenciar Grupos de Portfólio de qualquer órgão de MdO'],
+        [
+            'CadastroGrupoPortfolioMDO.administrador_no_orgao',
+            'Gerenciar Grupos de Portfólio do órgão ao qual pertence de MdO',
+        ],
     ],
     CadastroPainelExterno: [
         ['CadastroPainelExterno.inserir', 'Cadastrar novos Painéis Externos'],
@@ -160,6 +172,11 @@ const PrivConfig: Record<string, false | [ListaDePrivilegios, string | false][]>
         ['CadastroProjetoEtapa.inserir', 'Inserir cadastro básico de Etapa'],
         ['CadastroProjetoEtapa.editar', 'Editar cadastro básico de Etapa'],
         ['CadastroProjetoEtapa.remover', 'Remover cadastro básico de Etapa'],
+    ],
+    CadastroProjetoEtapaMDO: [
+        ['CadastroProjetoEtapaMDO.inserir', 'Inserir cadastro básico de Etapa de MdO'],
+        ['CadastroProjetoEtapaMDO.editar', 'Editar cadastro básico de Etapa de MdO'],
+        ['CadastroProjetoEtapaMDO.remover', 'Remover cadastro básico de Etapa de MdO'],
     ],
     // cadastros de PDM e metas
     CadastroPdm: [
@@ -360,6 +377,11 @@ const PrivConfig: Record<string, false | [ListaDePrivilegios, string | false][]>
         ['Reports.executar.Projetos', 'Executar relatórios de projetos'],
         ['Reports.remover.Projetos', 'Executar relatórios de projetos'],
     ],
+    ReportsMDO: [
+        ['Reports.dashboard_mdo', 'Dashboard de portfólios de MdO'],
+        ['Reports.executar.MDO', 'Executar relatórios de projetos de MdO'],
+        ['Reports.remover.MDO', 'Executar relatórios de projetos de MdO'],
+    ],
     ReportsCasaCivil: [
         ['Reports.executar.CasaCivil', 'Executar relatórios de transferências voluntárias'],
         ['Reports.remover.CasaCivil', 'Executar relatórios de transferências voluntárias'],
@@ -385,6 +407,22 @@ const PrivConfig: Record<string, false | [ListaDePrivilegios, string | false][]>
         ['SMAE.espectador_de_projeto', 'Participante de Grupos de Portfólio'],
         ['SMAE.gestor_de_projeto', 'Gestor de Projeto'],
         ['SMAE.colaborador_de_projeto', 'Colaborador de projeto'],
+    ],
+    ProjetoMDO: [
+        ['ProjetoMDO.administrar_portfolios', 'Administrar todos os portfólios de MdO, sem acesso aos projetos'],
+        [
+            'ProjetoMDO.administrar_portfolios_no_orgao',
+            'Criar e editar portfólios de MdO exclusivamente do órgão ao qual pertence',
+        ],
+        ['ProjetoMDO.administrador', 'Acesso total aos projetos de MdO.'],
+        [
+            'ProjetoMDO.administrador_no_orgao',
+            'Acesso total aos projetos de MdO com o portfólio do órgão ao qual pertence',
+        ],
+        ['ProjetoMDO.orcamento', 'Atualizar a Execução Orçamentária de MdO pelas quais for responsável'],
+        ['MDO.espectador_de_projeto', 'Participante de Grupos de Portfólio de MdO'],
+        ['MDO.gestor_de_projeto', 'Gestor de Projeto de MdO'],
+        ['MDO.colaborador_de_projeto', 'Colaborador de projeto de MdO'],
     ],
     PDM: [
         ['PDM.coordenador_responsavel_cp', 'Pode ser designado como Coordenador Responsável na CP'],
@@ -492,7 +530,7 @@ const PerfilAcessoConfig: {
     {
         nome: atualizarNomePerfil('Administrador Geral do SMAE', ['Administrador Geral']),
         descricao: 'Administrador Geral - Todas as permissões do sistema, exceto monitoramento e gerência de projeto',
-        privilegios: ['SMAE.superadmin', ...todosPrivilegios.filter((e) => /^(PDM|SMAE|PS)\./.test(e) === false)],
+        privilegios: ['SMAE.superadmin', ...todosPrivilegios.filter((e) => /^(PDM|SMAE|PS|MDO)\./.test(e) === false)],
     },
     {
         nome: atualizarNomePerfil('Administrador Coordenadoria de Planejamento', ['Administrador CP']),
@@ -656,12 +694,19 @@ const PerfilAcessoConfig: {
         privilegios: ['Projeto.orcamento'],
     },
     {
+        nome: 'Orçamento - MdO',
+        descricao: 'Pode criar orçamento para os projetos de obra que tem acesso.',
+        privilegios: ['ProjetoMDO.orcamento'],
+    },
+    {
         nome: 'Administrador de Portfólio',
         descricao: 'Gerenciar os Portfólios',
-        privilegios: [
-            'Projeto.administrar_portfolios',
-            'CadastroGrupoPortfolio.administrador', // verificar se vamos criar um novo perfil para essa
-        ],
+        privilegios: ['Projeto.administrar_portfolios', 'CadastroGrupoPortfolio.administrador'],
+    },
+    {
+        nome: 'Administrador de Portfólio do MdO',
+        descricao: 'Gerenciar os Portfólios',
+        privilegios: ['ProjetoMDO.administrar_portfolios', 'CadastroGrupoPortfolioMDO.administrador'],
     },
     {
         nome: 'Gestor de Projetos no Órgão',
@@ -671,7 +716,7 @@ const PerfilAcessoConfig: {
             'Projeto.administrador_no_orgao',
             'Reports.dashboard_portfolios',
             'Projeto.administrar_portfolios_no_orgao',
-            'CadastroGrupoPortfolio.administrador_no_orgao', // verificar se vamos criar um novo perfil para essa tbm
+            'CadastroGrupoPortfolio.administrador_no_orgao',
             'CadastroProjetoEtapa.inserir',
             'CadastroProjetoEtapa.editar',
             'CadastroProjetoEtapa.remover',
@@ -690,6 +735,18 @@ const PerfilAcessoConfig: {
         ],
     },
     {
+        nome: atualizarNomePerfil('Gestor da Obra', []),
+        descricao: 'Pode ser escolhido como responsável no órgão gestor de MdO',
+        privilegios: [
+            'Reports.executar.MDO', // TODO remoer, afinal, precisa dos filtros no reports
+            'MDO.gestor_de_projeto',
+            'Reports.dashboard_mdo',
+            'CadastroProjetoEtapaMDO.inserir',
+            'CadastroProjetoEtapaMDO.editar',
+            'CadastroProjetoEtapaMDO.remover',
+        ],
+    },
+    {
         nome: 'Colaborador de Projetos',
         descricao:
             'Pode ser escolhido como responsável no órgão responsável pelo projeto e contribuir durante a fase de registro e planejamento, e dados de execução do cronograma e acompanhamento do risco',
@@ -700,6 +757,19 @@ const PerfilAcessoConfig: {
             'CadastroProjetoEtapa.inserir',
             'CadastroProjetoEtapa.editar',
             'CadastroProjetoEtapa.remover',
+        ],
+    },
+    {
+        nome: 'Colaborador de obra no órgão',
+        descricao:
+            'Pode ser escolhido como responsável no órgão responsável pelo projeto e contribuir durante a fase de registro e planejamento, e dados de execução do cronograma e acompanhamento do risco',
+        privilegios: [
+            'Reports.executar.MDO', // TODO remoer, afinal, precisa dos filtros no reports
+            'MDO.colaborador_de_projeto',
+            'Reports.dashboard_mdo',
+            'CadastroProjetoEtapaMDO.inserir',
+            'CadastroProjetoEtapaMDO.editar',
+            'CadastroProjetoEtapaMDO.remover',
         ],
     },
     {
@@ -716,6 +786,11 @@ const PerfilAcessoConfig: {
         nome: atualizarNomePerfil('Observador de projetos', ['Espectador de projetos', 'Consulta multissetorial']),
         descricao: 'Pode participar como leitor em portfólio e projetos',
         privilegios: ['SMAE.espectador_de_projeto'],
+    },
+    {
+        nome: atualizarNomePerfil('Observador de obra', []),
+        descricao: 'Pode participar como leitor em portfólio e projetos',
+        privilegios: ['MDO.espectador_de_projeto'],
     },
     {
         nome: atualizarNomePerfil('Observador de painéis externos', []),

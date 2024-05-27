@@ -35,7 +35,7 @@ export class OrcamentoPrevistoController {
     ): Promise<RecordWithId> {
         this.logger.debug('create orçamento previsto projeto');
 
-        await this.projetoService.findOne(params.id, user, 'ReadWriteTeam');
+        await this.projetoService.findOne('PP', params.id, user, 'ReadWriteTeam');
 
         return await this.metaOrcamentoService.create(+params.id, createMetaDto, user);
     }
@@ -50,7 +50,7 @@ export class OrcamentoPrevistoController {
     ): Promise<ListOrcamentoPrevistoDto> {
         this.logger.debug('findAll orçamento previsto projeto');
 
-        await this.projetoService.findOne(params.id, user, 'ReadOnly');
+        await this.projetoService.findOne('PP', params.id, user, 'ReadOnly');
 
         return {
             linhas: await this.metaOrcamentoService.findAll(params.id, filters, user),
@@ -70,7 +70,7 @@ export class OrcamentoPrevistoController {
     ) {
         this.logger.debug('zerado orçamento previsto projeto');
 
-        await this.projetoService.findOne(+params.id, user, 'ReadWriteTeam');
+        await this.projetoService.findOne('PP', +params.id, user, 'ReadWriteTeam');
 
         await this.metaOrcamentoService.patchZerado(+params.id, updateZeradoDto, user);
         return '';
@@ -87,7 +87,7 @@ export class OrcamentoPrevistoController {
     ): Promise<void> {
         this.logger.debug('patch orçamento previsto projeto');
 
-        await this.projetoService.findOne(+params.id, user, 'ReadWriteTeam');
+        await this.projetoService.findOne('PP', +params.id, user, 'ReadWriteTeam');
 
         await this.metaOrcamentoService.update(+params.id, +params.id2, updateMetaDto, user);
     }
@@ -100,7 +100,7 @@ export class OrcamentoPrevistoController {
     async remove(@Param() params: FindTwoParams, @CurrentUser() user: PessoaFromJwt) {
         this.logger.debug('remove orçamento previsto projeto');
 
-        await this.projetoService.findOne(params.id, user, 'ReadWriteTeam');
+        await this.projetoService.findOne('PP', params.id, user, 'ReadWriteTeam');
 
         await this.metaOrcamentoService.remove(+params.id, +params.id2, user);
         return '';

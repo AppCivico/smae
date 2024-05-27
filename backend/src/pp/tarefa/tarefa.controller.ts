@@ -19,7 +19,6 @@ import {
     ApiNoContentResponse,
     ApiResponse,
     ApiTags,
-
     refs,
 } from '@nestjs/swagger';
 import { plainToClass } from 'class-transformer';
@@ -60,7 +59,7 @@ export class TarefaController {
         @Body() dto: CreateTarefaDto,
         @CurrentUser() user: PessoaFromJwt
     ): Promise<RecordWithId> {
-        const projeto = await this.projetoService.findOne(params.id, user, 'ReadWrite');
+        const projeto = await this.projetoService.findOne('PP', params.id, user, 'ReadWrite');
 
         return await this.tarefaService.create({ projeto_id: projeto.id }, dto, user);
     }
@@ -113,7 +112,7 @@ export class TarefaController {
     @Roles([...roles, 'SMAE.espectador_de_projeto'])
     @ApiResponse({ status: 200, description: 'Responde com Record<ID_TAREFA, HIERARQUIA_NO_CRONOGRAMA>' })
     async getTarefasHierarquia(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt) {
-        await this.projetoService.findOne(params.id, user, 'ReadOnly');
+        await this.projetoService.findOne('PP', params.id, user, 'ReadOnly');
 
         const tarefaCronoId = await this.tarefaService.loadOrCreateByInput({ projeto_id: params.id }, user);
 
@@ -141,7 +140,7 @@ export class TarefaController {
     ): Promise<RecordWithId> {
         if (dto.atualizacao_do_realizado) {
             // acessa como read-only pra personalizar a mensagem de erro, caso aconteça
-            const projeto = await this.projetoService.findOne(params.id, user, 'ReadOnly');
+            const projeto = await this.projetoService.findOne('PP', params.id, user, 'ReadOnly');
             console.log(`dto.atualizacao_do_realizado=true`);
             dto = plainToClass(UpdateTarefaRealizadoDto, dto, { excludeExtraneousValues: true });
             console.log(`after plainToClass UpdateTarefaRealizadoDto ${JSON.stringify(dto)}`);
@@ -156,7 +155,7 @@ export class TarefaController {
 
             return await this.tarefaService.update({ projeto_id: projeto.id }, params.id2, dto, user);
         } else {
-            const projeto = await this.projetoService.findOne(params.id, user, 'ReadWrite');
+            const projeto = await this.projetoService.findOne('PP', params.id, user, 'ReadWrite');
 
             return await this.tarefaService.update({ projeto_id: projeto.id }, params.id2, dto, user);
         }
@@ -168,7 +167,7 @@ export class TarefaController {
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.ACCEPTED)
     async remove(@Param() params: FindTwoParams, @CurrentUser() user: PessoaFromJwt) {
-        const projeto = await this.projetoService.findOne(params.id, user, 'ReadWrite');
+        const projeto = await this.projetoService.findOne('PP', params.id, user, 'ReadWrite');
 
         await this.tarefaService.remove({ projeto_id: projeto.id }, params.id2, user);
         return '';
@@ -182,7 +181,7 @@ export class TarefaController {
         @Body() dto: CheckDependenciasDto,
         @CurrentUser() user: PessoaFromJwt
     ): Promise<DependenciasDatasDto> {
-        const projeto = await this.projetoService.findOne(params.id, user, 'ReadWrite');
+        const projeto = await this.projetoService.findOne('PP', params.id, user, 'ReadWrite');
 
         const result = await this.tarefaService.calcula_dependencias_tarefas(projeto.id, dto, user);
         if (!result) throw new HttpException('Faltando dependências', 400);

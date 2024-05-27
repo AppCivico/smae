@@ -1,5 +1,5 @@
 import { BadRequestException, HttpException, Inject, Injectable, Logger, forwardRef } from '@nestjs/common';
-import { Prisma, ProjetoFase, ProjetoOrigemTipo, ProjetoStatus } from '@prisma/client';
+import { Prisma, ProjetoFase, ProjetoOrigemTipo, ProjetoStatus, TipoProjeto } from '@prisma/client';
 import { DateTime } from 'luxon';
 import { IdCodTituloDto } from 'src/common/dto/IdCodTitulo.dto';
 
@@ -257,7 +257,7 @@ export class ProjetoService {
      * ³: chute total, pode ser totalmente diferente o uso ou a secretaria
      * *: essa pessoa tem acesso de escrita até a hora que o status do projeto passar de "EmPlanejamento", depois disso vira read-only
      * */
-    async create(dto: CreateProjetoDto, user: PessoaFromJwt): Promise<RecordWithId> {
+    async create(tipo: TipoProjeto, dto: CreateProjetoDto, user: PessoaFromJwt): Promise<RecordWithId> {
         // pra criar, verifica se a pessoa pode realmente acessar o portfolio, então
         // começa listando todos os portfolios
         const portfolios = await this.portfolioService.findAll(user, true);
@@ -296,6 +296,7 @@ export class ProjetoService {
             async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
                 const row = await prismaTx.projeto.create({
                     data: {
+                        tipo: tipo,
                         registrado_por: user.id,
                         registrado_em: new Date(Date.now()),
                         portfolio_id: dto.portfolio_id,
@@ -404,12 +405,14 @@ export class ProjetoService {
     }
 
     async findAllIds(
+        tipo: TipoProjeto,
         user: PessoaFromJwt | undefined,
         portfolio_id: number | undefined = undefined
     ): Promise<{ id: number }[]> {
-        const permissionsSet: Prisma.Enumerable<Prisma.ProjetoWhereInput> = this.getProjetoWhereSet(user, true);
+        const permissionsSet: Prisma.Enumerable<Prisma.ProjetoWhereInput> = this.getProjetoWhereSet(tipo, user, true);
         return await this.prisma.projeto.findMany({
             where: {
+                tipo: tipo,
                 portfolio_id,
                 AND:
                     permissionsSet.length > 0
@@ -424,14 +427,15 @@ export class ProjetoService {
         });
     }
 
-    async findAll(filters: FilterProjetoDto, user: PessoaFromJwt): Promise<ProjetoDto[]> {
+    async findAll(tipo: TipoProjeto, filters: FilterProjetoDto, user: PessoaFromJwt): Promise<ProjetoDto[]> {
         const ret: ProjetoDto[] = [];
-        const permissionsSet: Prisma.Enumerable<Prisma.ProjetoWhereInput> = this.getProjetoWhereSet(user, false);
+        const permissionsSet: Prisma.Enumerable<Prisma.ProjetoWhereInput> = this.getProjetoWhereSet(tipo, user, false);
 
         console.log(permissionsSet);
 
         const rows = await this.prisma.projeto.findMany({
             where: {
+                tipo: tipo,
                 eh_prioritario: filters.eh_prioritario,
                 orgao_responsavel_id: filters.orgao_responsavel_id,
                 arquivado: filters.arquivado,
@@ -562,9 +566,10 @@ export class ProjetoService {
         return ret;
     }
 
-    private getProjetoWhereSet(user: PessoaFromJwt | undefined, isBi: boolean) {
+    private getProjetoWhereSet(tipo: TipoProjeto, user: PessoaFromJwt | undefined, isBi: boolean) {
         const permissionsBaseSet: Prisma.Enumerable<Prisma.ProjetoWhereInput> = [
             {
+                tipo: tipo,
                 removido_em: null,
                 portfolio: { removido_em: null },
             },
@@ -702,8 +707,8 @@ export class ProjetoService {
         return permissionsBaseSet;
     }
 
-    async getDadosProjetoUe(id: number, user: PessoaFromJwt | undefined): Promise<HtmlProjetoUe> {
-        const projeto = await this.findOne(id, user, 'ReadOnly');
+    async getDadosProjetoUe(tipo: TipoProjeto, id: number, user: PessoaFromJwt | undefined): Promise<HtmlProjetoUe> {
+        const projeto = await this.findOne(tipo, id, user, 'ReadOnly');
 
         const fonte_recursos: string[] = [];
 
@@ -752,16 +757,18 @@ export class ProjetoService {
     // na fase de execução, o responsavel só vai poder mudar as datas do realizado da tarefa
     // o órgão gestor continua podendo preencher os dados realizado
     async findOne(
+        tipo: TipoProjeto,
         id: number,
         user: PessoaFromJwt | undefined,
         readonly: ReadOnlyBooleanType
     ): Promise<ProjetoDetailDto> {
         console.log({ id, user, readonly });
 
-        const permissionsSet: Prisma.Enumerable<Prisma.ProjetoWhereInput> = this.getProjetoWhereSet(user, false);
+        const permissionsSet: Prisma.Enumerable<Prisma.ProjetoWhereInput> = this.getProjetoWhereSet(tipo, user, false);
         const projeto = await this.prisma.projeto.findFirst({
             where: {
                 id: id,
+                tipo: tipo,
                 removido_em: null,
                 AND:
                     permissionsSet.length > 0
@@ -1383,9 +1390,14 @@ export class ProjetoService {
         return pessoaPodeEscrever;
     }
 
-    async update(projetoId: number, dto: UpdateProjetoDto, user: PessoaFromJwt): Promise<RecordWithId> {
+    async update(
+        tipo: TipoProjeto,
+        projetoId: number,
+        dto: UpdateProjetoDto,
+        user: PessoaFromJwt
+    ): Promise<RecordWithId> {
         // aqui é feito a verificação se esse usuário pode realmente acessar esse recurso
-        const projeto = await this.findOne(projetoId, user, 'ReadWrite');
+        const projeto = await this.findOne(tipo, projetoId, user, 'ReadWrite');
 
         // migrou de status, verificar se  realmente poderia mudar
         if (dto.status && dto.status != projeto.status) {
@@ -1986,9 +1998,13 @@ export class ProjetoService {
         });
     }
 
-    async remove(id: number, user: PessoaFromJwt) {
+    async remove(tipo: TipoProjeto, id: number, user: PessoaFromJwt) {
         await this.prisma.projeto.updateMany({
-            where: { id: id, removido_em: null },
+            where: {
+                tipo: tipo,
+                id: id,
+                removido_em: null,
+            },
             data: {
                 removido_por: user.id,
                 removido_em: new Date(Date.now()),
@@ -1997,9 +2013,9 @@ export class ProjetoService {
         return;
     }
 
-    async append_document(projetoId: number, dto: CreateProjetoDocumentDto, user: PessoaFromJwt) {
+    async append_document(tipo: TipoProjeto, projetoId: number, dto: CreateProjetoDocumentDto, user: PessoaFromJwt) {
         // aqui é feito a verificação se esse usuário pode realmente acessar esse recurso
-        await this.findOne(projetoId, user, 'ReadWriteTeam');
+        await this.findOne(tipo, projetoId, user, 'ReadWriteTeam');
 
         const arquivoId = this.uploadService.checkUploadOrDownloadToken(dto.upload_token);
         if (dto.diretorio_caminho)
@@ -2031,9 +2047,9 @@ export class ProjetoService {
         return { id: documento.id };
     }
 
-    async list_document(projetoId: number, user: PessoaFromJwt) {
+    async list_document(tipo: TipoProjeto, projetoId: number, user: PessoaFromJwt) {
         // aqui é feito a verificação se esse usuário pode realmente acessar esse recurso
-        await this.findOne(projetoId, user, 'ReadOnly');
+        await this.findOne(tipo, projetoId, user, 'ReadOnly');
 
         const arquivos: ProjetoDocumentoDto[] = await this.findAllDocumentos(projetoId);
         for (const item of arquivos) {
@@ -2084,7 +2100,13 @@ export class ProjetoService {
         return documentosRet;
     }
 
-    async updateDocumento(projetoId: number, documentoId: number, dto: UpdateProjetoDocumentDto, user: PessoaFromJwt) {
+    async updateDocumento(
+        tipo: TipoProjeto,
+        projetoId: number,
+        documentoId: number,
+        dto: UpdateProjetoDocumentDto,
+        user: PessoaFromJwt
+    ) {
         this.uploadService.checkUploadOrDownloadToken(dto.upload_token);
         if (dto.diretorio_caminho)
             await this.uploadService.updateDir({ caminho: dto.diretorio_caminho }, dto.upload_token);
@@ -2110,9 +2132,9 @@ export class ProjetoService {
         return { id: documento.id };
     }
 
-    async remove_document(projetoId: number, projetoDocId: number, user: PessoaFromJwt) {
+    async remove_document(tipo: TipoProjeto, projetoId: number, projetoDocId: number, user: PessoaFromJwt) {
         // aqui é feito a verificação se esse usuário pode realmente acessar esse recurso
-        await this.findOne(projetoId, user, 'ReadWriteTeam');
+        await this.findOne(tipo, projetoId, user, 'ReadWriteTeam');
 
         await this.prisma.projetoDocumento.updateMany({
             where: { projeto_id: projetoId, removido_em: null, id: projetoDocId },
@@ -2123,7 +2145,7 @@ export class ProjetoService {
         });
     }
 
-    async cloneTarefas(projetoId: number, dto: CloneProjetoTarefasDto, user: PessoaFromJwt) {
+    async cloneTarefas(tipo: TipoProjeto, projetoId: number, dto: CloneProjetoTarefasDto, user: PessoaFromJwt) {
         await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient) => {
             // O true é para indicar que é clone de projeto e não de transferência.
             await prismaTx.$queryRaw`CALL clone_tarefas('true'::boolean, ${dto.projeto_fonte_id}::int, ${projetoId}::int);`;
@@ -2174,11 +2196,12 @@ export class ProjetoService {
     }
 
     async transferPortfolio(
+        tipo: TipoProjeto,
         projetoId: number,
         dto: TransferProjetoPortfolioDto,
         user: PessoaFromJwt
     ): Promise<RecordWithId> {
-        const projeto = await this.findOne(projetoId, user, 'ReadWrite');
+        const projeto = await this.findOne(tipo, projetoId, user, 'ReadWrite');
 
         const updated = await this.prisma.$transaction(
             async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {

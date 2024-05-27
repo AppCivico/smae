@@ -36,7 +36,7 @@ export class LicoesAprendidasController {
         @Body() createLicoesAprendidasDto: CreateLicoesApreendidasDto,
         @CurrentUser() user: PessoaFromJwt
     ): Promise<RecordWithId> {
-        await this.projetoService.findOne(params.id, user, 'ReadWriteTeam');
+        await this.projetoService.findOne('PP', params.id, user, 'ReadWriteTeam');
 
         return await this.licoesAprendidasService.create(params.id, createLicoesAprendidasDto, user);
     }
@@ -48,7 +48,7 @@ export class LicoesAprendidasController {
         @Param() params: FindOneParams,
         @CurrentUser() user: PessoaFromJwt
     ): Promise<ListLicoesAprendidasDto> {
-        await this.projetoService.findOne(params.id, user, 'ReadOnly');
+        await this.projetoService.findOne('PP', params.id, user, 'ReadOnly');
         return {
             linhas: await this.licoesAprendidasService.findAll(params.id, user),
         };
@@ -58,7 +58,7 @@ export class LicoesAprendidasController {
     @ApiBearerAuth('access-token')
     @Roles([...roles])
     async findOne(@Param() params: FindTwoParams, @CurrentUser() user: PessoaFromJwt): Promise<LicaoAprendida> {
-        await this.projetoService.findOne(params.id, user, 'ReadOnly');
+        await this.projetoService.findOne('PP', params.id, user, 'ReadOnly');
 
         return await this.licoesAprendidasService.findOne(params.id, params.id2, user);
     }
@@ -71,7 +71,7 @@ export class LicoesAprendidasController {
         @Body() dto: UpdateLicoesAprendidasDto,
         @CurrentUser() user: PessoaFromJwt
     ): Promise<RecordWithId> {
-        await this.projetoService.findOne(params.id, user, 'ReadWriteTeam');
+        await this.projetoService.findOne('PP', params.id, user, 'ReadWriteTeam');
 
         return await this.licoesAprendidasService.update(params.id, params.id2, dto, user);
     }
@@ -82,7 +82,7 @@ export class LicoesAprendidasController {
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.ACCEPTED)
     async remove(@Param() params: FindTwoParams, @CurrentUser() user: PessoaFromJwt) {
-        await this.projetoService.findOne(params.id, user, 'ReadWriteTeam');
+        await this.projetoService.findOne('PP', params.id, user, 'ReadWriteTeam');
 
         await this.licoesAprendidasService.remove(params.id, params.id2, user);
         return '';

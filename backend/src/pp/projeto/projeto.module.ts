@@ -3,7 +3,7 @@ import { UploadModule } from 'src/upload/upload.module';
 import { MetaModule } from '../../meta/meta.module';
 import { PrismaModule } from '../../prisma/prisma.module';
 import { PortfolioModule } from '../portfolio/portfolio.module';
-import { ProjetoController } from './projeto.controller';
+import { ProjetoController, ProjetoMDOController } from './projeto.controller';
 import { ProjetoProxyPdmMetasController } from './projeto.proxy-pdm-metas.controller';
 import { ProjetoProxyPdmMetasService } from './projeto.proxy-pdm-metas.service';
 import { ProjetoSeiService } from './projeto.sei.service';
@@ -22,7 +22,7 @@ import { TarefaModule } from '../tarefa/tarefa.module';
         BlocoNotaModule,
         forwardRef(() => TarefaModule),
     ],
-    controllers: [ProjetoController, ProjetoProxyPdmMetasController],
+    controllers: [ProjetoController, ProjetoProxyPdmMetasController, ProjetoMDOController],
     providers: [ProjetoService, ProjetoProxyPdmMetasService, ProjetoSeiService],
     exports: [ProjetoService],
 })

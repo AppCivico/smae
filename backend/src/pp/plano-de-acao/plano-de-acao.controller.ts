@@ -36,7 +36,7 @@ export class PlanoAcaoController {
         @Body() dto: CreatePlanoAcaoDto,
         @CurrentUser() user: PessoaFromJwt
     ): Promise<RecordWithId> {
-        await this.projetoService.findOne(params.id, user, 'ReadWriteTeam');
+        await this.projetoService.findOne('PP', params.id, user, 'ReadWriteTeam');
 
         return await this.planoAcaoService.create(params.id, dto, user);
     }
@@ -49,7 +49,7 @@ export class PlanoAcaoController {
         @Body() dto: FilterPlanoAcaoDto,
         @CurrentUser() user: PessoaFromJwt
     ): Promise<ListPlanoAcaoDto> {
-        const projeto = await this.projetoService.findOne(params.id, user, 'ReadOnly');
+        const projeto = await this.projetoService.findOne('PP', params.id, user, 'ReadOnly');
         return {
             linhas: await this.planoAcaoService.findAll(projeto.id, dto, user),
         };
@@ -59,7 +59,7 @@ export class PlanoAcaoController {
     @ApiBearerAuth('access-token')
     @Roles([...roles])
     async findOne(@Param() params: FindTwoParams, @CurrentUser() user: PessoaFromJwt): Promise<PlanoAcaoDetailDto> {
-        await this.projetoService.findOne(params.id, user, 'ReadOnly');
+        await this.projetoService.findOne('PP', params.id, user, 'ReadOnly');
         return await this.planoAcaoService.findOne(params.id, params.id2, user);
     }
 
@@ -71,7 +71,7 @@ export class PlanoAcaoController {
         @Body() updatePlanoAcaoDto: UpdatePlanoAcaoDto,
         @CurrentUser() user: PessoaFromJwt
     ): Promise<RecordWithId> {
-        await this.projetoService.findOne(params.id, user, 'ReadWriteTeam');
+        await this.projetoService.findOne('PP', params.id, user, 'ReadWriteTeam');
 
         return await this.planoAcaoService.update(params.id2, updatePlanoAcaoDto, user);
     }
@@ -82,7 +82,7 @@ export class PlanoAcaoController {
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.ACCEPTED)
     async remove(@Param() params: FindTwoParams, @CurrentUser() user: PessoaFromJwt) {
-        await this.projetoService.findOne(params.id, user, 'ReadWriteTeam');
+        await this.projetoService.findOne('PP', params.id, user, 'ReadWriteTeam');
 
         await this.planoAcaoService.remove(params.id2, user);
         return '';
