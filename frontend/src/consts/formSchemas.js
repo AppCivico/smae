@@ -2285,6 +2285,14 @@ export const tipoDeAcompanhamento = object()
       .required(),
   });
 
+export const tipoDeIntervencao = object({
+  tipo_intervencao: string()
+    .label('Tipo de intervenção')
+    .min(3)
+    .max(250)
+    .required(),
+});
+
 export const usuário = object()
   .shape({
     desativado: string()
