@@ -13,11 +13,9 @@ export class SubTemaService {
 
     async create(createSubTemaDto: CreateSubTemaDto, user: PessoaFromJwt) {
         const created = await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient) => {
-            const pdmTipo = createSubTemaDto.pdm_tipo ?? 'PDM';
             const pdm = await prismaTx.pdm.count({
                 where: {
                     id: createSubTemaDto.pdm_id,
-                    tipo: pdmTipo,
                     removido_em: null,
                 },
             });
