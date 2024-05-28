@@ -13,6 +13,7 @@ import { BlocoNotaModule } from '../../bloco-nota/bloco-nota/bloco-nota.module';
 import { TarefaModule } from '../tarefa/tarefa.module';
 import { EquipamentoModule } from '../equipamento/equipamento.module';
 import { GrupoTematicoModule } from '../grupo-tematico/grupo-tematico.module';
+import { TipoIntervencaoModule } from '../tipo-intervencao/tipo-intervencao.module';
 
 @Module({
     imports: [
@@ -25,6 +26,7 @@ import { GrupoTematicoModule } from '../grupo-tematico/grupo-tematico.module';
         forwardRef(() => TarefaModule),
         EquipamentoModule,
         GrupoTematicoModule,
+        TipoIntervencaoModule,
     ],
     controllers: [ProjetoController, ProjetoProxyPdmMetasController, ProjetoMDOController],
     providers: [ProjetoService, ProjetoProxyPdmMetasService, ProjetoSeiService],
