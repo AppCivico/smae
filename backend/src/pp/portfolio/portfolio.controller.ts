@@ -16,6 +16,11 @@ export const PORT_ROLES: ListaDePrivilegios[] = [
     'Projeto.administrar_portfolios',
     'Projeto.administrar_portfolios_no_orgao',
 ];
+
+export const PORT_ROLES_MDO: ListaDePrivilegios[] = [
+    'ProjetoMDO.administrar_portfolios',
+    'ProjetoMDO.administrar_portfolios_no_orgao',
+];
 @ApiTags('Portfólio')
 @Controller('portfolio')
 export class PortfolioController {
@@ -28,7 +33,7 @@ export class PortfolioController {
         @Body() createPortfolioDto: CreatePortfolioDto,
         @CurrentUser() user: PessoaFromJwt
     ): Promise<RecordWithId> {
-        return await this.portfolioService.create(createPortfolioDto, user);
+        return await this.portfolioService.create('PP', createPortfolioDto, user);
     }
 
     @Get()
@@ -36,7 +41,7 @@ export class PortfolioController {
     @Roles([...PORT_ROLES])
     async findAll(@CurrentUser() user: PessoaFromJwt): Promise<ListPortfolioDto> {
         return {
-            linhas: await this.portfolioService.findAll(user, false),
+            linhas: await this.portfolioService.findAll('PP', user, false),
         };
     }
 
@@ -45,7 +50,7 @@ export class PortfolioController {
     @Roles([...PORT_ROLES, 'Projeto.administrador', 'Projeto.administrador_no_orgao', ...PROJETO_READONLY_ROLES])
     async findAllParaProjetos(@CurrentUser() user: PessoaFromJwt): Promise<ListPortfolioDto> {
         return {
-            linhas: await this.portfolioService.findAll(user, true),
+            linhas: await this.portfolioService.findAll('PP', user, true),
         };
     }
 
@@ -53,7 +58,7 @@ export class PortfolioController {
     @ApiBearerAuth('access-token')
     @Roles([...PORT_ROLES, 'Projeto.administrador', 'Projeto.administrador_no_orgao', ...PROJETO_READONLY_ROLES])
     async findOne(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt): Promise<PortfolioOneDto> {
-        return await this.portfolioService.findOne(params.id, user);
+        return await this.portfolioService.findOne('PP', params.id, user);
     }
 
     @Patch(':id')
@@ -64,7 +69,7 @@ export class PortfolioController {
         @Body() updatePortfolioDto: UpdatePortfolioDto,
         @CurrentUser() user: PessoaFromJwt
     ): Promise<RecordWithId> {
-        return await this.portfolioService.update(params.id, updatePortfolioDto, user);
+        return await this.portfolioService.update('PP', params.id, updatePortfolioDto, user);
     }
 
     @Delete(':id')
@@ -73,7 +78,79 @@ export class PortfolioController {
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.ACCEPTED)
     async remove(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt) {
-        await this.portfolioService.remove(params.id, user);
+        await this.portfolioService.remove('PP', params.id, user);
+        return '';
+    }
+}
+
+@ApiTags('Portfólio de obras')
+@Controller('portfolio-mdo')
+export class PortfolioMDOController {
+    constructor(private readonly portfolioService: PortfolioService) {}
+
+    @Post()
+    @ApiBearerAuth('access-token')
+    @Roles([...PORT_ROLES_MDO])
+    async create(
+        @Body() createPortfolioDto: CreatePortfolioDto,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<RecordWithId> {
+        return await this.portfolioService.create('MDO', createPortfolioDto, user);
+    }
+
+    @Get()
+    @ApiBearerAuth('access-token')
+    @Roles([...PORT_ROLES_MDO])
+    async findAll(@CurrentUser() user: PessoaFromJwt): Promise<ListPortfolioDto> {
+        return {
+            linhas: await this.portfolioService.findAll('MDO', user, false),
+        };
+    }
+
+    @Get('para-projetos')
+    @ApiBearerAuth('access-token')
+    @Roles([
+        ...PORT_ROLES_MDO,
+        'ProjetoMDO.administrador',
+        'ProjetoMDO.administrador_no_orgao',
+        ...PROJETO_READONLY_ROLES,
+    ])
+    async findAllParaProjetos(@CurrentUser() user: PessoaFromJwt): Promise<ListPortfolioDto> {
+        return {
+            linhas: await this.portfolioService.findAll('MDO', user, true),
+        };
+    }
+
+    @Get(':id')
+    @ApiBearerAuth('access-token')
+    @Roles([
+        ...PORT_ROLES_MDO,
+        'ProjetoMDO.administrador',
+        'ProjetoMDO.administrador_no_orgao',
+        ...PROJETO_READONLY_ROLES,
+    ])
+    async findOne(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt): Promise<PortfolioOneDto> {
+        return await this.portfolioService.findOne('MDO', params.id, user);
+    }
+
+    @Patch(':id')
+    @ApiBearerAuth('access-token')
+    @Roles([...PORT_ROLES_MDO])
+    async update(
+        @Param() params: FindOneParams,
+        @Body() updatePortfolioDto: UpdatePortfolioDto,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<RecordWithId> {
+        return await this.portfolioService.update('MDO', params.id, updatePortfolioDto, user);
+    }
+
+    @Delete(':id')
+    @ApiBearerAuth('access-token')
+    @Roles([...PORT_ROLES_MDO])
+    @ApiNoContentResponse()
+    @HttpCode(HttpStatus.ACCEPTED)
+    async remove(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt) {
+        await this.portfolioService.remove('MDO', params.id, user);
         return '';
     }
 }

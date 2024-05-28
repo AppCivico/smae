@@ -260,7 +260,7 @@ export class ProjetoService {
     async create(tipo: TipoProjeto, dto: CreateProjetoDto, user: PessoaFromJwt): Promise<RecordWithId> {
         // pra criar, verifica se a pessoa pode realmente acessar o portfolio, então
         // começa listando todos os portfolios
-        const portfolios = await this.portfolioService.findAll(user, true);
+        const portfolios = await this.portfolioService.findAll(tipo, user, true);
 
         const portfolio = portfolios.filter((r) => r.id == dto.portfolio_id)[0];
         if (!portfolio)
@@ -1428,7 +1428,7 @@ export class ProjetoService {
             meta_codigo = origemVerification.meta_codigo;
         }
 
-        const portfolios = await this.portfolioService.findAll(user, true);
+        const portfolios = await this.portfolioService.findAll(tipo, user, true);
 
         const portfolio = portfolios.filter((r) => r.id == projeto.portfolio_id)[0];
         if (!portfolio)

@@ -3004,6 +3004,8 @@ model Portfolio {
     Projeto Projeto[]
     orgaos  PortfolioOrgao[]
 
+    tipo_projeto TipoProjeto @default(PP)
+
     criado_por     Int?
     criado_em      DateTime  @default(now()) @db.Timestamptz(6)
     atualizado_por Int?
