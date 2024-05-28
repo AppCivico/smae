@@ -1,11 +1,11 @@
 import { Module } from '@nestjs/common';
 import { PrismaModule } from 'src/prisma/prisma.module';
-import { PortfolioController } from './portfolio.controller';
+import { PortfolioController, PortfolioMDOController } from './portfolio.controller';
 import { PortfolioService } from './portfolio.service';
 
 @Module({
     imports: [PrismaModule],
-    controllers: [PortfolioController],
+    controllers: [PortfolioController, PortfolioMDOController],
     providers: [PortfolioService],
     exports: [PortfolioService],
 })

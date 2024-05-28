@@ -1,5 +1,5 @@
 import { BadRequestException, HttpException, Injectable, Logger, NotFoundException } from '@nestjs/common';
-import { Prisma } from '@prisma/client';
+import { Prisma, TipoProjeto } from '@prisma/client';
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import { RecordWithId } from '../../common/dto/record-with-id.dto';
 import { PrismaService } from '../../prisma/prisma.service';
@@ -12,7 +12,7 @@ export class PortfolioService {
     private readonly logger = new Logger(PortfolioService.name);
     constructor(private readonly prisma: PrismaService) {}
 
-    async create(dto: CreatePortfolioDto, user: PessoaFromJwt): Promise<RecordWithId> {
+    async create(tipoProjeto: TipoProjeto, dto: CreatePortfolioDto, user: PessoaFromJwt): Promise<RecordWithId> {
         const similarExists = await this.prisma.portfolio.count({
             where: {
                 titulo: { endsWith: dto.titulo, mode: 'insensitive' },
@@ -34,6 +34,7 @@ export class PortfolioService {
             async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
                 const row = await prismaTx.portfolio.create({
                     data: {
+                        tipo_projeto: tipoProjeto,
                         criado_por: user.id,
                         criado_em: now,
                         titulo: dto.titulo,
@@ -86,9 +87,9 @@ export class PortfolioService {
         return created;
     }
 
-    async findOne(id: number, user: PessoaFromJwt | null): Promise<PortfolioOneDto> {
+    async findOne(tipoProjeto: TipoProjeto, id: number, user: PessoaFromJwt | null): Promise<PortfolioOneDto> {
         // faz o check de permissão pelo endpoint de listagem, se existir user
-        if (user) await this.findAll(user, false, id);
+        if (user) await this.findAll(tipoProjeto, user, false, id);
 
         const r = await this.prisma.portfolio.findFirstOrThrow({
             where: {
@@ -126,6 +127,7 @@ export class PortfolioService {
     }
 
     async findAll(
+        tipoProjeto: TipoProjeto,
         user: PessoaFromJwt,
         listaParaProjetos: boolean,
         filterId: number | undefined = undefined
@@ -166,6 +168,7 @@ export class PortfolioService {
 
         const listActive = await this.prisma.portfolio.findMany({
             where: {
+                tipo_projeto: tipoProjeto,
                 id: filterId,
                 removido_em: null,
                 orgaos: orgao_id ? { some: { orgao_id: orgao_id } } : undefined,
@@ -209,8 +212,13 @@ export class PortfolioService {
         });
     }
 
-    async update(id: number, dto: UpdatePortfolioDto, user: PessoaFromJwt): Promise<RecordWithId> {
-        const self = await this.findAll(user, false, id);
+    async update(
+        tipoProjeto: TipoProjeto,
+        id: number,
+        dto: UpdatePortfolioDto,
+        user: PessoaFromJwt
+    ): Promise<RecordWithId> {
+        const self = await this.findAll(tipoProjeto, user, false, id);
         if (!self[0].pode_editar) throw new BadRequestException('Sem permissão para editar o portfólio');
 
         if (dto.titulo !== undefined) {
@@ -377,12 +385,13 @@ export class PortfolioService {
         }
     }
 
-    async remove(id: number, user: PessoaFromJwt) {
-        const self = await this.findAll(user, false, id);
+    async remove(tipoProjeto: TipoProjeto, id: number, user: PessoaFromJwt) {
+        const self = await this.findAll(tipoProjeto, user, false, id);
         if (!self[0].pode_editar) throw new BadRequestException('Sem permissão para remover o portfólio');
 
         const count = await this.prisma.projeto.count({
             where: {
+                tipo: tipoProjeto,
                 removido_em: null,
                 portfolio_id: +id,
             },
