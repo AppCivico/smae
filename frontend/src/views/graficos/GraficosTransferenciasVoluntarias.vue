@@ -23,6 +23,10 @@
       </svg>
     </button>
   </div>
+  <LoadingComponent
+    v-if="graficosPendentes"
+    class="loading"
+  />
   <div
     v-if="exibirFiltros"
     class="bgb p15 w100 filtro-de-graficos"
@@ -133,7 +137,10 @@
       {{ parlamentaresPorId[parlamentar]?.nome_popular || parlamentar }}
     </span>
   </div>
-  <div class="flex flexwrap center g1 mt4 mb2">
+  <div
+    v-if="graficos?.values?.valor_total"
+    class="flex flexwrap gap50 center mt4 mb2"
+  >
     <ValorTransferencia
       class="f1"
       :valor="graficos?.values?.valor_total"
@@ -249,9 +256,8 @@ const router = useRouter();
 
 let data = new Date();
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
-// const filtrosAtivos = ref({});
 const graficos = ref({});
-
+let graficosPendentes = false;
 const filtrosEscolhidos = ref({
   etapa_ids: route.query.etapa_ids?.map((id) => Number(id)) || [],
   anos: route.query.anos?.map((ano) => Number(ano)) || [],
@@ -300,13 +306,16 @@ function removeTitleProperty(obj) {
 }
 
 async function buscarGraficos() {
+  graficosPendentes = true;
   try {
     const retorno = await requestS.get(
       `${baseUrl}/panorama/analise-transferencias`,
       route.query,
     );
     graficos.value.values = retorno;
+    graficosPendentes = false;
   } catch (error) {
+    graficosPendentes = false;
     console.log('error:', error);
   }
 }
@@ -402,6 +411,15 @@ watch(
 
 h2 {
   margin-top: -45px;
+}
+
+.gap50{
+  gap:50px;
+}
+
+.loading{
+  margin-top: 25px;
+  color: #152741;
 }
 </style>
 
