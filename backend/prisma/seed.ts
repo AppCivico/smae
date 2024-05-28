@@ -706,7 +706,11 @@ const PerfilAcessoConfig: {
     {
         nome: 'Administrador de Portfólio do MdO',
         descricao: 'Gerenciar os Portfólios',
-        privilegios: ['ProjetoMDO.administrar_portfolios', 'CadastroGrupoPortfolioMDO.administrador'],
+        privilegios: [
+            'ProjetoMDO.administrar_portfolios',
+            'CadastroGrupoPortfolioMDO.administrador',
+            // ...
+        ],
     },
     {
         nome: 'Gestor de Projetos no Órgão',
