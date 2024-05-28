@@ -388,6 +388,18 @@ model Pessoa {
     VariavelCategoricaValorQRemovi    VariavelCategoricaValor[] @relation("Removedor")
     VariavelCategoricaValorQAtualizei VariavelCategoricaValor[] @relation("Atualizador")
 
+    GruposTematicosQueCriei     GrupoTematico[] @relation("Criador")
+    GruposTematicosQueRemovi    GrupoTematico[] @relation("Removedor")
+    GruposTematicosQueAtualizei GrupoTematico[] @relation("Atualizador")
+
+    TipoIntervencaoQueCriei     TipoIntervencao[] @relation("Criador")
+    TipoIntervencaoQueRemovi    TipoIntervencao[] @relation("Removedor")
+    TipoIntervencaoQueAtualizei TipoIntervencao[] @relation("Atualizador")
+
+    EquipamentosQueCriei     Equipamento[] @relation("Criador")
+    EquipamentosQueRemovi    Equipamento[] @relation("Removedor")
+    EquipamentosQueAtualizei Equipamento[] @relation("Atualizador")
+
     view_atividade_pessoa_responsavel  view_atividade_pessoa_responsavel[]
     view_iniciativa_pessoa_responsavel view_iniciativa_pessoa_responsavel[]
     ViewNotaComOrdemQCriei             ViewNotas[]                          @relation("Criador")
@@ -3263,6 +3275,11 @@ model Projeto {
     equipe                   ProjetoEquipe[]
     GeoEnderecoReferencia    GeoLocalizacaoReferencia[]
 
+    // Módulo de gestão de obras
+    gruposTematicos  GrupoTematico[]
+    tiposIntervencao TipoIntervencao[]
+    equipamentos     Equipamento[]
+
     @@index([removido_em])
     @@map("projeto")
 }
@@ -5793,4 +5810,76 @@ view ViewRankingTransferenciaParlamentar {
     valor Decimal
 
     @@map("view_ranking_transferencia_parlamentar")
+}
+
+model GrupoTematico {
+    id Int @id @default(autoincrement())
+
+    projeto_id Int
+    projeto    Projeto @relation(fields: [projeto_id], references: [id])
+
+    nome String
+
+    criado_por Int
+    criado_em  DateTime @default(now()) @db.Timestamptz(6)
+
+    atualizado_por Int?
+    atualizado_em  DateTime? @db.Timestamptz(6)
+
+    removido_por Int?
+    removido_em  DateTime? @db.Timestamptz(6)
+
+    criador     Pessoa  @relation("Criador", fields: [criado_por], references: [id])
+    atualizador Pessoa? @relation("Atualizador", fields: [atualizado_por], references: [id])
+    removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
+
+    @@map("grupo_tematico")
+}
+
+model TipoIntervencao {
+    id Int @id @default(autoincrement())
+
+    projeto_id Int
+    projeto    Projeto @relation(fields: [projeto_id], references: [id])
+
+    nome String
+
+    criado_por Int
+    criado_em  DateTime @default(now()) @db.Timestamptz(6)
+
+    atualizado_por Int?
+    atualizado_em  DateTime? @db.Timestamptz(6)
+
+    removido_por Int?
+    removido_em  DateTime? @db.Timestamptz(6)
+
+    criador     Pessoa  @relation("Criador", fields: [criado_por], references: [id])
+    atualizador Pessoa? @relation("Atualizador", fields: [atualizado_por], references: [id])
+    removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
+
+    @@map("tipo_intervencao")
+}
+
+model Equipamento {
+    id Int @id @default(autoincrement())
+
+    projeto_id Int
+    projeto    Projeto @relation(fields: [projeto_id], references: [id])
+
+    nome String
+
+    criado_por Int
+    criado_em  DateTime @default(now()) @db.Timestamptz(6)
+
+    atualizado_por Int?
+    atualizado_em  DateTime? @db.Timestamptz(6)
+
+    removido_por Int?
+    removido_em  DateTime? @db.Timestamptz(6)
+
+    criador     Pessoa  @relation("Criador", fields: [criado_por], references: [id])
+    atualizador Pessoa? @relation("Atualizador", fields: [atualizado_por], references: [id])
+    removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
+
+    @@map("equipamento")
 }

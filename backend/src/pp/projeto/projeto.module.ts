@@ -11,6 +11,8 @@ import { ProjetoService } from './projeto.service';
 import { GeoLocModule } from '../../geo-loc/geo-loc.module';
 import { BlocoNotaModule } from '../../bloco-nota/bloco-nota/bloco-nota.module';
 import { TarefaModule } from '../tarefa/tarefa.module';
+import { EquipamentoModule } from '../equipamento/equipamento.module';
+import { GrupoTematicoModule } from '../grupo-tematico/grupo-tematico.module';
 
 @Module({
     imports: [
@@ -21,6 +23,8 @@ import { TarefaModule } from '../tarefa/tarefa.module';
         PortfolioModule,
         BlocoNotaModule,
         forwardRef(() => TarefaModule),
+        EquipamentoModule,
+        GrupoTematicoModule,
     ],
     controllers: [ProjetoController, ProjetoProxyPdmMetasController, ProjetoMDOController],
     providers: [ProjetoService, ProjetoProxyPdmMetasService, ProjetoSeiService],
