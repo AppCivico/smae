@@ -6,8 +6,8 @@ import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { ListaDePrivilegios } from '../common/ListaDePrivilegios';
 import { FindOneParams, FindTwoParams } from '../common/decorators/find-params';
 import { RecordWithId } from '../common/dto/record-with-id.dto';
-import { EixoService } from '../eixo/eixo.service';
-import { ObjetivoEstrategicoService } from '../objetivo-estrategico/objetivo-estrategico.service';
+import { MacroTemaService } from '../macro-tema/macro-tema.service';
+import { TemaService } from '../tema/tema.service';
 import { SubTemaService } from '../subtema/subtema.service';
 import { TagService } from '../tag/tag.service';
 import { CreatePdmDocumentDto } from './dto/create-pdm-document.dto';
@@ -26,9 +26,9 @@ import { PdmService } from './pdm.service';
 export class PdmController {
     constructor(
         private readonly pdmService: PdmService,
-        private readonly objetivoEstrategicoService: ObjetivoEstrategicoService,
+        private readonly objetivoEstrategicoService: TemaService,
         private readonly subTemaService: SubTemaService,
-        private readonly eixoService: EixoService,
+        private readonly eixoService: MacroTemaService,
         private readonly tagService: TagService
     ) {}
 
@@ -73,13 +73,7 @@ export class PdmController {
 
     @Get(':id')
     @ApiBearerAuth('access-token')
-    @Roles([
-        'CadastroPdm.inserir',
-        'CadastroPdm.editar',
-        'CadastroPdm.inativar',
-        'PDM.tecnico_cp',
-        'PDM.admin_cp',
-    ])
+    @Roles(['CadastroPdm.inserir', 'CadastroPdm.editar', 'CadastroPdm.inativar', 'PDM.tecnico_cp', 'PDM.admin_cp'])
     @ApiExtraModels(Pdm, DetalhePdmDto)
     @ApiOkResponse({
         schema: { anyOf: refs(Pdm, DetalhePdmDto) },
@@ -159,9 +153,9 @@ const PermsPS: ListaDePrivilegios[] = ['CadastroPS.administrador', 'CadastroPS.a
 export class PlanoSetorialController {
     constructor(
         private readonly pdmService: PdmService,
-        private readonly objetivoEstrategicoService: ObjetivoEstrategicoService,
+        private readonly objetivoEstrategicoService: TemaService,
         private readonly subTemaService: SubTemaService,
-        private readonly eixoService: EixoService,
+        private readonly eixoService: MacroTemaService,
         private readonly tagService: TagService
     ) {}
 

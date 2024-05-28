@@ -1,48 +1,56 @@
 import { HttpException, Injectable } from '@nestjs/common';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { PrismaService } from '../prisma/prisma.service';
-import { CreateObjetivoEstrategicoDto } from './dto/create-objetivo-estrategico.dto';
-import { FilterObjetivoEstrategicoDto } from './dto/filter-objetivo-estrategico.dto';
-import { UpdateObjetivoEstrategicoDto } from './dto/update-objetivo-estrategico.dto';
+import { CreateEixoDto } from './dto/create-macro-tema.dto';
+import { FilterEixoDto } from './dto/filter-macro-tema.dto';
+import { UpdateEixoDto } from './dto/update-macro-tema.dto';
 import { Prisma } from '@prisma/client';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
 
 @Injectable()
-export class ObjetivoEstrategicoService {
+export class MacroTemaService {
     constructor(private readonly prisma: PrismaService) {}
 
-    async create(createObjetivoEstrategicoDto: CreateObjetivoEstrategicoDto, user: PessoaFromJwt) {
+    async create(createEixoDto: CreateEixoDto, user: PessoaFromJwt) {
         const created = await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient) => {
-            const descricaoExists = await prismaTx.tema.count({
+            const pdm = await prismaTx.pdm.count({
                 where: {
-                    pdm_id: createObjetivoEstrategicoDto.pdm_id,
+                    id: createEixoDto.pdm_id,
+                    removido_em: null,
+                },
+            });
+            if (!pdm) throw new HttpException('pdm| Não foi encontrado linha de PDM correspondente.', 400);
+
+            const descricaoExists = await prismaTx.macroTema.count({
+                where: {
+                    pdm_id: createEixoDto.pdm_id,
                     descricao: {
-                        equals: createObjetivoEstrategicoDto.descricao,
+                        equals: createEixoDto.descricao,
                         mode: 'insensitive',
                     },
                 },
             });
-            if (descricaoExists) throw new HttpException('descricao| Já existe um Tema com esta descrição.', 400);
+            if (descricaoExists) throw new HttpException('descricao| Já existe um Macro Tema com esta descrição.', 400);
 
-            const tema = await prismaTx.tema.create({
+            const macroTema = await prismaTx.macroTema.create({
                 data: {
                     criado_por: user.id,
                     criado_em: new Date(Date.now()),
-                    ...createObjetivoEstrategicoDto,
+                    ...createEixoDto,
                 },
                 select: { id: true, descricao: true },
             });
 
-            return tema;
+            return macroTema;
         });
 
         return created;
     }
 
-    async findAll(filters: FilterObjetivoEstrategicoDto | undefined = undefined) {
+    async findAll(filters: FilterEixoDto | undefined = undefined) {
         const pdmId = filters?.pdm_id;
 
-        const listActive = await this.prisma.tema.findMany({
+        const listActive = await this.prisma.macroTema.findMany({
             where: {
                 removido_em: null,
                 pdm_id: pdmId,
@@ -57,22 +65,22 @@ export class ObjetivoEstrategicoService {
         return listActive;
     }
 
-    async update(id: number, updateObjetivoEstrategicoDto: UpdateObjetivoEstrategicoDto, user: PessoaFromJwt) {
-        delete updateObjetivoEstrategicoDto.pdm_id; // nao deixa editar o PDM
+    async update(id: number, updateEixoDto: UpdateEixoDto, user: PessoaFromJwt) {
+        delete updateEixoDto.pdm_id; // nao deixa editar o PDM
 
         const updated = await this.prisma.$transaction(
             async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
-                if (updateObjetivoEstrategicoDto.descricao) {
-                    const self = await prismaTx.tema.findFirstOrThrow({
+                if (updateEixoDto.descricao) {
+                    const self = await prismaTx.macroTema.findFirstOrThrow({
                         where: { id },
                         select: { pdm_id: true },
                     });
 
-                    const descricaoExists = await prismaTx.tema.count({
+                    const descricaoExists = await prismaTx.macroTema.count({
                         where: {
                             pdm_id: self.pdm_id,
                             descricao: {
-                                equals: updateObjetivoEstrategicoDto.descricao,
+                                equals: updateEixoDto.descricao,
                                 mode: 'insensitive',
                             },
                             NOT: {
@@ -81,20 +89,20 @@ export class ObjetivoEstrategicoService {
                         },
                     });
                     if (descricaoExists)
-                        throw new HttpException('descricao| Já existe um Tema com esta descrição.', 400);
+                        throw new HttpException('descricao| Já existe um Macro Tema com esta descrição.', 400);
                 }
 
-                const tema = await this.prisma.tema.update({
+                const macroTema = await prismaTx.macroTema.update({
                     where: { id: id },
                     data: {
                         atualizado_por: user.id,
                         atualizado_em: new Date(Date.now()),
-                        ...updateObjetivoEstrategicoDto,
+                        ...updateEixoDto,
                     },
                     select: { id: true },
                 });
 
-                return tema;
+                return macroTema;
             }
         );
 
@@ -102,10 +110,10 @@ export class ObjetivoEstrategicoService {
     }
 
     async remove(id: number, user: PessoaFromJwt) {
-        const emUso = await this.prisma.meta.count({ where: { tema_id: id, removido_em: null } });
-        if (emUso > 0) throw new HttpException('Objetivo Estratégico em uso em Metas.', 400);
+        const emUso = await this.prisma.meta.count({ where: { macro_tema_id: id, removido_em: null } });
+        if (emUso > 0) throw new HttpException('Eixo em uso em Metas.', 400);
 
-        const created = await this.prisma.tema.updateMany({
+        const created = await this.prisma.macroTema.updateMany({
             where: { id: id },
             data: {
                 removido_por: user.id,

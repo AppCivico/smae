@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
-import { EixoModule } from '../eixo/eixo.module';
-import { ObjetivoEstrategicoModule } from '../objetivo-estrategico/objetivo-estrategico.module';
+import { MacroTemaModule } from '../macro-tema/macro-tema.module';
+import { TemaModule } from '../tema/tema.module';
 import { PrismaModule } from '../prisma/prisma.module';
 import { SubTemaModule } from '../subtema/subtema.module';
 import { TagModule } from '../tag/tag.module';
@@ -10,15 +10,7 @@ import { PdmController, PlanoSetorialController } from './pdm.controller';
 import { PdmService } from './pdm.service';
 
 @Module({
-    imports: [
-        PrismaModule,
-        SubTemaModule,
-        EixoModule,
-        TagModule,
-        ObjetivoEstrategicoModule,
-        VariavelModule,
-        UploadModule,
-    ],
+    imports: [PrismaModule, SubTemaModule, MacroTemaModule, TagModule, TemaModule, VariavelModule, UploadModule],
     controllers: [PdmController, PlanoSetorialController],
     providers: [PdmService],
 })

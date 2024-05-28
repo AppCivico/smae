@@ -10,6 +10,7 @@ import { FilterSubTemaDto } from './dto/filter-subtema.dto';
 import { ListSubTemaDto } from './dto/list-subtema.dto';
 import { UpdateSubTemaDto } from './dto/update-subtema.dto';
 import { SubTemaService } from './subtema.service';
+import { ListaDePrivilegios } from 'src/common/ListaDePrivilegios';
 
 @ApiTags('SubTema')
 @Controller('subtema')
@@ -46,6 +47,55 @@ export class SubTemaController {
     @Delete(':id')
     @ApiBearerAuth('access-token')
     @Roles(['CadastroSubTema.remover'])
+    @ApiNoContentResponse()
+    @HttpCode(HttpStatus.ACCEPTED)
+    async remove(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt) {
+        await this.subTemaService.remove(+params.id, user);
+        return '';
+    }
+}
+
+const PermsPS: ListaDePrivilegios[] = [
+    'CadastroSubTemaPS.inserir',
+    'CadastroSubTemaPS.editar',
+    'CadastroSubTemaPS.remover',
+];
+
+@ApiTags('Plano Setorial - SubTema')
+@Controller('subtema')
+export class PlanoSetorialSubTemaController {
+    constructor(private readonly subTemaService: SubTemaService) {}
+
+    @Post()
+    @ApiBearerAuth('access-token')
+    @Roles(PermsPS)
+    async create(
+        @Body() createSubTemaDto: CreateSubTemaDto,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<RecordWithId> {
+        return await this.subTemaService.create(createSubTemaDto, user);
+    }
+
+    @ApiBearerAuth('access-token')
+    @Get()
+    async findAll(@Query() filters: FilterSubTemaDto): Promise<ListSubTemaDto> {
+        return { linhas: await this.subTemaService.findAll(filters) };
+    }
+
+    @Patch(':id')
+    @ApiBearerAuth('access-token')
+    @Roles(PermsPS)
+    async update(
+        @Param() params: FindOneParams,
+        @Body() updateSubTemaDto: UpdateSubTemaDto,
+        @CurrentUser() user: PessoaFromJwt
+    ) {
+        return await this.subTemaService.update(+params.id, updateSubTemaDto, user);
+    }
+
+    @Delete(':id')
+    @ApiBearerAuth('access-token')
+    @Roles(PermsPS)
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.ACCEPTED)
     async remove(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt) {
