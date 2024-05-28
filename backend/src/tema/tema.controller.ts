@@ -5,16 +5,16 @@ import { Roles } from '../auth/decorators/roles.decorator';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { FindOneParams } from '../common/decorators/find-params';
 import { RecordWithId } from '../common/dto/record-with-id.dto';
-import { CreateObjetivoEstrategicoDto } from './dto/create-objetivo-estrategico.dto';
-import { FilterObjetivoEstrategicoDto } from './dto/filter-objetivo-estrategico.dto';
-import { ListObjetivoEstrategicoDto } from './dto/list-objetivo-estrategico.dto';
-import { UpdateObjetivoEstrategicoDto } from './dto/update-objetivo-estrategico.dto';
-import { ObjetivoEstrategicoService } from './objetivo-estrategico.service';
+import { CreateObjetivoEstrategicoDto } from './dto/create-tema.dto';
+import { FilterObjetivoEstrategicoDto } from './dto/filter-tema.dto';
+import { ListObjetivoEstrategicoDto } from './dto/list-tema.dto';
+import { UpdateObjetivoEstrategicoDto } from './dto/update-tema.dto';
+import { TemaService } from './tema.service';
 
 @ApiTags('Objetivo Estratégico (Acessa via Tema)')
 @Controller('objetivo-estrategico')
-export class ObjetivoEstrategicoController {
-    constructor(private readonly objetivoEstrategicoService: ObjetivoEstrategicoService) {}
+export class TemaController {
+    constructor(private readonly objetivoEstrategicoService: TemaService) {}
 
     @Post()
     @ApiBearerAuth('access-token')
@@ -56,8 +56,8 @@ export class ObjetivoEstrategicoController {
 
 @ApiTags('Tema (Antigo Objetivo Estratégico)')
 @Controller('tema')
-export class ObjetivoEstrategicoController2 {
-    constructor(private readonly objetivoEstrategicoService: ObjetivoEstrategicoService) {}
+export class TemaController2 {
+    constructor(private readonly objetivoEstrategicoService: TemaService) {}
 
     @Post()
     @ApiBearerAuth('access-token')
