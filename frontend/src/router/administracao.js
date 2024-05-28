@@ -9,6 +9,9 @@ import BancadasRaiz from '@/views/bancada/BancadasRaiz.vue';
 import GruposTematicosCriarEditar from '@/views/gruposTematicos/GruposTematicosCriarEditar.vue';
 import GruposTematicosLista from '@/views/gruposTematicos/GruposTematicosLista.vue';
 import GruposTematicosRaiz from '@/views/gruposTematicos/GruposTematicosRaiz.vue';
+import TiposDeIntervencaoCriarEditar from '@/views/tiposDeIntervencao/TiposDeIntervencaoCriarEditar.vue';
+import TiposDeIntervencaoLista from '@/views/tiposDeIntervencao/TiposDeIntervencaoLista.vue';
+import TiposDeIntervencaoRaiz from '@/views/tiposDeIntervencao/TiposDeIntervencaoRaiz.vue';
 
 import {
   AddEditDocumentTypes,
@@ -70,6 +73,7 @@ const rotasParaMenuSecundário = [
       'tipoDeTransferenciaListar',
       'etapasDoProjetoListar',
       'gruposTematicosObras',
+      'tiposDeIntervencao',
     ],
   },
   {
@@ -196,6 +200,53 @@ export default [
           //    }),
           //   meta: {
           //     título: 'Editar grupo temático',
+          //   },
+          // },
+        ],
+      },
+      {
+        path: 'tipo-intervencao',
+        component: TiposDeIntervencaoRaiz,
+        meta: {
+          título: 'Tipos de intervenção',
+          rotaPrescindeDeChave: true,
+          rotasParaMenuSecundário,
+          // limitarÀsPermissões: '.',
+        },
+        children: [
+          {
+            name: 'tiposDeIntervencao',
+            path: '',
+            component: TiposDeIntervencaoLista,
+            meta: {
+              título: 'Tipos de intervenção',
+              rotasParaMigalhasDePão: [
+                'cadastrosBasicos',
+              ],
+            },
+          },
+          {
+            name: 'tiposDeIntervencaoCriar',
+            path: 'novo',
+            component: TiposDeIntervencaoCriarEditar,
+            meta: {
+              título: 'Novo tipo de intervenção',
+              rotasParaMigalhasDePão: [
+                'cadastrosBasicos',
+                'tiposDeIntervencao',
+              ],
+            },
+          },
+          // {
+          //   path: ':tipoDeIntervencaoId',
+          //   name: 'tiposDeIntervencaoEditar',
+          //   component: TiposDeIntervencaoCriarEditar,
+          //   props: ({ params }) => ({
+          //    ...params,
+          //    ...{ tipoDeIntervencaoId: Number.parseInt(params.tipoDeIntervencaoId, 10) || undefined },
+          //    }),
+          //   meta: {
+          //     título: 'Editar tipo de intervenção',
           //   },
           // },
         ],
