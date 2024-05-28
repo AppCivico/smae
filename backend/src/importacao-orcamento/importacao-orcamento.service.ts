@@ -1,4 +1,4 @@
-import { HttpException, Inject, Injectable, Logger, forwardRef } from '@nestjs/common';
+import { BadRequestException, HttpException, Inject, Injectable, Logger, forwardRef } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
 import { Prisma } from '@prisma/client';
 import { plainToInstance } from 'class-transformer';
@@ -99,6 +99,13 @@ export class ImportacaoOrcamentoService {
 
     async create(dto: CreateImportacaoOrcamentoDto, user: PessoaFromJwt): Promise<RecordWithId> {
         const arquivo_id = this.uploadService.checkUploadOrDownloadToken(dto.upload);
+
+        if (dto.pdm_id !== undefined)
+            if (!user.hasSomeRoles(['CadastroMeta.orcamento'])) throw new BadRequestException('Você não tem permissão para Meta');
+        if (dto.portfolio_id !== undefined && dto.tipo_projeto == 'PP')
+            if (!user.hasSomeRoles(['Projeto.orcamento'])) throw new BadRequestException('Você não tem permissão para PP');
+        if (dto.portfolio_id !== undefined && dto.tipo_projeto == 'MDO')
+            if (!user.hasSomeRoles(['ProjetoMDO.orcamento'])) throw new BadRequestException('Você não tem permissão para MDO');
 
         const created = await this.prisma.$transaction(
             async (prismaTxn: Prisma.TransactionClient): Promise<RecordWithId> => {
@@ -250,6 +257,32 @@ export class ImportacaoOrcamentoService {
             filtros.push({ portfolio_id: null });
         }
 
+        if (user.hasSomeRoles(['ProjetoMDO.orcamento']) && (filters.portfolio_id || filters.apenas_com_portfolio)) {
+            const projetos = await this.projetoService.findAllIds('MDO', user);
+            this.logger.warn(`só pode ver os projetos ${projetos.map((r) => r.id).join(',')}`);
+
+            filtros.push({
+                OR: [
+                    { pdm_id: { not: null } },
+                    {
+                        portfolio: {
+                            Projeto: {
+                                some: {
+                                    id: {
+                                        in: projetos.map((r) => r.id),
+                                    },
+                                },
+                            },
+                        },
+                    },
+                ],
+            });
+        } else {
+            this.logger.warn('não pode ver os projetos');
+            filtros.push({ portfolio_id: null });
+        }
+
+        // TODO PlanoSetorial tbm vai precisar mexer aqui
         if (user.hasSomeRoles(['CadastroMeta.orcamento']) && filters.pdm_id) {
             const metas = await this.metaService.findAllIds(user);
             this.logger.warn(`só pode as metas ${metas.map((r) => r.id)}`);
