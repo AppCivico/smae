@@ -10,6 +10,7 @@ import { FilterEixoDto } from './dto/filter-eixo.dto';
 import { ListEixoDto } from './dto/list-eixo.dto';
 import { UpdateEixoDto } from './dto/update-eixo.dto';
 import { EixoService } from './eixo.service';
+import { ListaDePrivilegios } from 'src/common/ListaDePrivilegios';
 
 @ApiTags('Eixo (Acessa via MacroTema)')
 @Controller('eixo')
@@ -83,6 +84,53 @@ export class EixoController2 {
     @Delete(':id')
     @ApiBearerAuth('access-token')
     @Roles(['CadastroMacroTema.remover'])
+    @ApiNoContentResponse()
+    @HttpCode(HttpStatus.ACCEPTED)
+    async remove(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt) {
+        await this.eixoService.remove(+params.id, user);
+        return '';
+    }
+}
+
+const PermsPS: ListaDePrivilegios[] = [
+    'CadastroMacroTemaPS.inserir',
+    'CadastroMacroTemaPS.editar',
+    'CadastroMacroTemaPS.remover',
+];
+
+@ApiTags('Plano Setorial - Macro Tema (Antigo Eixo)')
+@Controller('plano-setorial-macrotema')
+export class PlanoSetorialEixoController {
+    constructor(private readonly eixoService: EixoService) {}
+
+    @Post()
+    @ApiBearerAuth('access-token')
+    @Roles(PermsPS)
+    async create(@Body() createEixoDto: CreateEixoDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
+        return await this.eixoService.create(createEixoDto, user);
+    }
+
+    @ApiBearerAuth('access-token')
+    @Get()
+    @Roles(PermsPS)
+    async findAll(@Query() filters: FilterEixoDto): Promise<ListEixoDto> {
+        return { linhas: await this.eixoService.findAll(filters) };
+    }
+
+    @Patch(':id')
+    @ApiBearerAuth('access-token')
+    @Roles(PermsPS)
+    async update(
+        @Param() params: FindOneParams,
+        @Body() updateEixoDto: UpdateEixoDto,
+        @CurrentUser() user: PessoaFromJwt
+    ) {
+        return await this.eixoService.update(+params.id, updateEixoDto, user);
+    }
+
+    @Delete(':id')
+    @ApiBearerAuth('access-token')
+    @Roles(PermsPS)
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.ACCEPTED)
     async remove(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt) {

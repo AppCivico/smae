@@ -13,6 +13,16 @@ export class EixoService {
 
     async create(createEixoDto: CreateEixoDto, user: PessoaFromJwt) {
         const created = await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient) => {
+            const pdmTipo = createEixoDto.pdm_tipo ?? 'PDM';
+            const pdm = await prismaTx.pdm.count({
+                where: {
+                    id: createEixoDto.pdm_id,
+                    tipo: pdmTipo,
+                    removido_em: null,
+                },
+            });
+            if (!pdm) throw new HttpException('pdm_id| Não foi encontrado linha de PDM correspondente.', 400);
+
             const descricaoExists = await prismaTx.macroTema.count({
                 where: {
                     pdm_id: createEixoDto.pdm_id,
