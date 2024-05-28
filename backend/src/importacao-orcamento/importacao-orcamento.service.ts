@@ -100,6 +100,8 @@ export class ImportacaoOrcamentoService {
     async create(dto: CreateImportacaoOrcamentoDto, user: PessoaFromJwt): Promise<RecordWithId> {
         const arquivo_id = this.uploadService.checkUploadOrDownloadToken(dto.upload);
 
+        if (!dto.tipo_projeto) dto.tipo_projeto = 'PP';
+
         if (dto.pdm_id !== undefined)
             if (!user.hasSomeRoles(['CadastroMeta.orcamento']))
                 throw new BadRequestException('Você não tem permissão para Meta');
@@ -109,6 +111,9 @@ export class ImportacaoOrcamentoService {
         if (dto.portfolio_id !== undefined && dto.tipo_projeto == 'MDO')
             if (!user.hasSomeRoles(['ProjetoMDO.orcamento']))
                 throw new BadRequestException('Você não tem permissão para MDO');
+
+        if (!dto.portfolio_id && !dto.pdm_id)
+            throw new BadRequestException('Você deve informar um portfolio ou um pdm para importar o orçamento.');
 
         const created = await this.prisma.$transaction(
             async (prismaTxn: Prisma.TransactionClient): Promise<RecordWithId> => {
@@ -568,12 +573,17 @@ export class ImportacaoOrcamentoService {
         const projetosIds: number[] = [];
         const metasIds: number[] = [];
 
-        // se foi criado sem dono, pode todos Meta|Projeto, os metodos foram findAllIds
+        // se foi criado sem dono, pode todos Meta|Projeto, os métodos foram findAllIds
         // foram adaptados pra retornar todos os ids dos items não removidos
         const user = await this.authService.pessoaJwtFromId(job.criado_por);
 
         if (job.portfolio_id) {
-            const projetosDoUser = await this.projetoService.findAllIds('PP', user, job.portfolio_id);
+            const portfolio = await this.prisma.portfolio.findFirstOrThrow({
+                where: { id: job.portfolio_id },
+                select: { tipo_projeto: true },
+            });
+
+            const projetosDoUser = await this.projetoService.findAllIds(portfolio.tipo_projeto, user, job.portfolio_id);
             projetosIds.push(...projetosDoUser.map((r) => r.id));
         } else if (job.pdm_id) {
             const metasDoUser = await this.metaService.findAllIds(user, job.pdm_id);
