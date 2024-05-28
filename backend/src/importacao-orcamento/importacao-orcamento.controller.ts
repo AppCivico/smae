@@ -18,14 +18,14 @@ export class ImportacaoOrcamentoController {
 
     @Post()
     @ApiBearerAuth('access-token')
-    @Roles(['CadastroMeta.orcamento', 'Projeto.orcamento', 'ProjetoMDO.orcamento'])
+    @Roles(['CadastroMeta.orcamento', 'CadastroMetaPS.orcamento', 'Projeto.orcamento', 'ProjetoMDO.orcamento'])
     async create(@Body() dto: CreateImportacaoOrcamentoDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
         return this.importacaoOrcamentoService.create(dto, user);
     }
 
     @Get()
     @ApiBearerAuth('access-token')
-    @Roles(['CadastroMeta.orcamento', 'Projeto.orcamento', 'ProjetoMDO.orcamento'])
+    @Roles(['CadastroMeta.orcamento', 'CadastroMetaPS.orcamento', 'Projeto.orcamento', 'ProjetoMDO.orcamento'])
     @ApiPaginatedResponse(ImportacaoOrcamentoDto)
     async findAll(
         @Query() filters: FilterImportacaoOrcamentoDto,
@@ -36,7 +36,7 @@ export class ImportacaoOrcamentoController {
 
     @Get('portfolio')
     @ApiBearerAuth('access-token')
-    @Roles(['CadastroMeta.orcamento', 'Projeto.orcamento', 'ProjetoMDO.orcamento'])
+    @Roles(['CadastroMeta.orcamento', 'CadastroMetaPS.orcamento', 'Projeto.orcamento', 'ProjetoMDO.orcamento'])
     async findAll_portfolio(@CurrentUser() user: PessoaFromJwt): Promise<PortfolioDto[]> {
         return await this.importacaoOrcamentoService.findAll_portfolio(user);
     }
