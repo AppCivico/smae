@@ -102,7 +102,7 @@
     </form>
   </div>
   <div
-    v-if="!exibirFiltros"
+    v-if="!exibirFiltros && !graficosPendentes"
     class="g1"
   >
     <span
