@@ -56,6 +56,5 @@ useResizeObserver(el, debounce(async (entries) => {
 <style scoped>
 .chart {
   height: 400px;
-  /* background-color: pink */
 }
 </style>
