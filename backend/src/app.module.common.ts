@@ -1,12 +1,12 @@
 import { Module } from '@nestjs/common';
 import { ScheduleModule } from '@nestjs/schedule';
 import { AuthModule } from './auth/auth.module';
-import { EixoModule } from './eixo/eixo.module';
+import { MacroTemaModule } from './macro-tema/macro-tema.module';
 import { FeatureFlagModule } from './feature-flag/feature-flag.module';
 import { FonteRecursoModule } from './fonte-recurso/fonte-recurso.module';
 import { GeoApiModule } from './geo-api/geo-api.module';
 import { GeoLocModule } from './geo-loc/geo-loc.module';
-import { ObjetivoEstrategicoModule } from './objetivo-estrategico/objetivo-estrategico.module';
+import { TemaModule } from './tema/tema.module';
 import { OdsModule } from './ods/ods.module';
 import { OrgaoModule } from './orgao/orgao.module';
 import { PessoaModule } from './pessoa/pessoa.module';
@@ -36,11 +36,11 @@ import { PainelExternoModule } from './painel-externo/painel-externo.module';
         OrgaoModule,
         TipoOrgaoModule,
         OdsModule,
-        EixoModule,
+        MacroTemaModule,
         TagModule,
         FonteRecursoModule,
         TipoDocumentoModule,
-        ObjetivoEstrategicoModule,
+        TemaModule,
         RegiaoModule,
         UploadModule,
         SubTemaModule,

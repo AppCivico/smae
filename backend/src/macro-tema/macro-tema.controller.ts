@@ -5,17 +5,17 @@ import { Roles } from '../auth/decorators/roles.decorator';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { FindOneParams } from '../common/decorators/find-params';
 import { RecordWithId } from '../common/dto/record-with-id.dto';
-import { CreateEixoDto } from './dto/create-eixo.dto';
-import { FilterEixoDto } from './dto/filter-eixo.dto';
-import { ListEixoDto } from './dto/list-eixo.dto';
-import { UpdateEixoDto } from './dto/update-eixo.dto';
-import { EixoService } from './eixo.service';
+import { CreateEixoDto } from './dto/create-macro-tema.dto';
+import { FilterEixoDto } from './dto/filter-macro-tema.dto';
+import { ListEixoDto } from './dto/list-macro-tema.dto';
+import { UpdateEixoDto } from './dto/update-macro-tema.dto';
+import { MacroTemaService } from './macro-tema.service';
 import { ListaDePrivilegios } from 'src/common/ListaDePrivilegios';
 
 @ApiTags('Eixo (Acessa via MacroTema)')
 @Controller('eixo')
-export class EixoController {
-    constructor(private readonly eixoService: EixoService) {}
+export class MacroTemaController {
+    constructor(private readonly eixoService: MacroTemaService) {}
 
     @Post()
     @ApiBearerAuth('access-token')
@@ -54,8 +54,8 @@ export class EixoController {
 
 @ApiTags('Macro Tema (Antigo Eixo)')
 @Controller('macrotema')
-export class EixoController2 {
-    constructor(private readonly eixoService: EixoService) {}
+export class MacroTemaController2 {
+    constructor(private readonly eixoService: MacroTemaService) {}
 
     @Post()
     @ApiBearerAuth('access-token')
@@ -100,8 +100,8 @@ const PermsPS: ListaDePrivilegios[] = [
 
 @ApiTags('Plano Setorial - Macro Tema (Antigo Eixo)')
 @Controller('plano-setorial-macrotema')
-export class PlanoSetorialEixoController {
-    constructor(private readonly eixoService: EixoService) {}
+export class PlanoSetorialMacroTemaController {
+    constructor(private readonly eixoService: MacroTemaService) {}
 
     @Post()
     @ApiBearerAuth('access-token')

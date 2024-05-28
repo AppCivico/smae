@@ -1,6 +1,6 @@
-import { Eixo } from '../../eixo/entities/eixo.entity';
+import { Eixo } from '../../macro-tema/entities/macro-tema.entity';
 import { Meta } from '../../meta/entities/meta.entity';
-import { ObjetivoEstrategico } from '../../objetivo-estrategico/entities/objetivo-estrategico.entity';
+import { ObjetivoEstrategico } from '../../tema/entities/objetivo-estrategico.entity';
 import { SubTema } from '../../subtema/entities/subtema.entity';
 import { Tag } from '../../tag/entities/tag.entity';
 import { ListPdm } from '../entities/list-pdm.entity';

@@ -13,6 +13,16 @@ export class SubTemaService {
 
     async create(createSubTemaDto: CreateSubTemaDto, user: PessoaFromJwt) {
         const created = await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient) => {
+            const pdmTipo = createSubTemaDto.pdm_tipo ?? 'PDM';
+            const pdm = await prismaTx.pdm.count({
+                where: {
+                    id: createSubTemaDto.pdm_id,
+                    tipo: pdmTipo,
+                    removido_em: null,
+                },
+            });
+            if (!pdm) throw new HttpException('pdm_id| Não foi encontrado linha de PDM correspondente.', 400);
+
             const descricaoExists = await prismaTx.subTema.count({
                 where: {
                     pdm_id: createSubTemaDto.pdm_id,
