@@ -384,7 +384,14 @@ export class ParlamentarService {
     }
 
     async remove(id: number, user: PessoaFromJwt) {
-        // TODO verificar dependentes
+        const countTransferencias = await this.prisma.transferencia.count({
+            where: {
+                parlamentar_id: id,
+                removido_em: null,
+            },
+        });
+        if (countTransferencias)
+            throw new HttpException('Parlamentar não pode ser excluído, pois possui transferência(s).', 400);
 
         const deleted = await this.prisma.parlamentar.updateMany({
             where: { id: id },

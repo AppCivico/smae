@@ -143,7 +143,25 @@ export class PartidoService {
     }
 
     async remove(id: number, user: PessoaFromJwt) {
-        // TODO verificar dependentes
+        const countMandatos = await this.prisma.parlamentarMandato.count({
+            where: {
+                OR: [{ partido_atual_id: id }, { partido_candidatura_id: id }],
+                removido_em: null,
+                parlamentar: {
+                    removido_em: null,
+                },
+            },
+        });
+        if (countMandatos) throw new HttpException('Partido não pode ser excluído, pois possui mandato(s).', 400);
+
+        const countTransferencias = await this.prisma.transferencia.count({
+            where: {
+                partido_id: id,
+                removido_em: null,
+            },
+        });
+        if (countTransferencias)
+            throw new HttpException('Partido não pode ser excluído, pois possui transferência(s).', 400);
 
         const deleted = await this.prisma.partido.updateMany({
             where: { id: id },
