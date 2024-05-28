@@ -24,7 +24,7 @@ import parlamentares from './parlamentares';
 import planosSetoriais from './planosSetoriais';
 import projetos from './projetos';
 import relatorios from './relatorios';
-import transferenciasVoluntarias from './transferenciasVoluntarias.js';
+import transferenciasVoluntarias from './transferenciasVoluntarias';
 
 // eslint-disable-next-line import/prefer-default-export
 export const router = createRouter({
