@@ -169,6 +169,9 @@ export default [
             component: GruposTematicosLista,
             meta: {
               título: 'Grupos temáticos',
+              rotasParaMigalhasDePão: [
+                'cadastrosBasicos',
+              ],
             },
           },
           {
@@ -177,6 +180,10 @@ export default [
             component: GruposTematicosCriarEditar,
             meta: {
               título: 'Novo grupo temático',
+              rotasParaMigalhasDePão: [
+                'cadastrosBasicos',
+                'gruposTematicosObras',
+              ],
             },
           },
           // {
