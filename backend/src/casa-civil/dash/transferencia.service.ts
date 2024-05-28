@@ -411,7 +411,7 @@ export class DashTransferenciaService {
             etapa_fluxo: 'Workflow não iniciado',
         });
 
-        const coresLegenda = ['#8AC4D6', '#7CC3F8', '#3B8FD8', '#184E77', '#DEEF9F', '#B5E48C', '#76C893', '#4F8562'];
+        const coresLegenda = ['#4F8562', '#7CC3F8', '#3B8FD8', '#184E77', '#DEEF9F', '#B5E48C', '#76C893', '#4F8562'];
 
         const chartValPorPartido: DashTransferenciaBasicChartDto = {
             title: {
