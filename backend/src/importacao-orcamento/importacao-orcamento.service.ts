@@ -101,11 +101,14 @@ export class ImportacaoOrcamentoService {
         const arquivo_id = this.uploadService.checkUploadOrDownloadToken(dto.upload);
 
         if (dto.pdm_id !== undefined)
-            if (!user.hasSomeRoles(['CadastroMeta.orcamento'])) throw new BadRequestException('Você não tem permissão para Meta');
+            if (!user.hasSomeRoles(['CadastroMeta.orcamento']))
+                throw new BadRequestException('Você não tem permissão para Meta');
         if (dto.portfolio_id !== undefined && dto.tipo_projeto == 'PP')
-            if (!user.hasSomeRoles(['Projeto.orcamento'])) throw new BadRequestException('Você não tem permissão para PP');
+            if (!user.hasSomeRoles(['Projeto.orcamento']))
+                throw new BadRequestException('Você não tem permissão para PP');
         if (dto.portfolio_id !== undefined && dto.tipo_projeto == 'MDO')
-            if (!user.hasSomeRoles(['ProjetoMDO.orcamento'])) throw new BadRequestException('Você não tem permissão para MDO');
+            if (!user.hasSomeRoles(['ProjetoMDO.orcamento']))
+                throw new BadRequestException('Você não tem permissão para MDO');
 
         const created = await this.prisma.$transaction(
             async (prismaTxn: Prisma.TransactionClient): Promise<RecordWithId> => {
@@ -145,11 +148,29 @@ export class ImportacaoOrcamentoService {
     }
 
     async findAll_portfolio(user: PessoaFromJwt): Promise<PortfolioDto[]> {
+        const sistema = user.assertOneModuloSistema('buscar', 'portfólios');
         const filtros: Prisma.Enumerable<Prisma.PortfolioWhereInput> = [];
 
-        if (user.hasSomeRoles(['Projeto.orcamento'])) {
+        if (sistema == 'Projetos' && user.hasSomeRoles(['Projeto.orcamento'])) {
             const projetos = await this.projetoService.findAllIds('PP', user);
             this.logger.warn(`só pode ver os projetos ${projetos.map((r) => r.id).join(',')}`);
+
+            filtros.push({
+                OR: [
+                    {
+                        Projeto: {
+                            some: {
+                                id: {
+                                    in: projetos.map((r) => r.id),
+                                },
+                            },
+                        },
+                    },
+                ],
+            });
+        } else if (sistema == 'MDO' && user.hasSomeRoles(['ProjetoMDO.orcamento'])) {
+            const projetos = await this.projetoService.findAllIds('MDO', user);
+            this.logger.warn(`só pode ver os projetos MDO ${projetos.map((r) => r.id).join(',')}`);
 
             filtros.push({
                 OR: [
@@ -207,6 +228,8 @@ export class ImportacaoOrcamentoService {
         filters: FilterImportacaoOrcamentoDto,
         user: PessoaFromJwt
     ): Promise<PaginatedDto<ImportacaoOrcamentoDto>> {
+        const sistema = user.assertOneModuloSistema('buscar', 'importações');
+
         let tem_mais = false;
         let token_proxima_pagina: string | null = null;
 
@@ -232,7 +255,11 @@ export class ImportacaoOrcamentoService {
             filtros.push({ portfolio_id: { not: null } });
         }
 
-        if (user.hasSomeRoles(['Projeto.orcamento']) && (filters.portfolio_id || filters.apenas_com_portfolio)) {
+        if (
+            sistema == 'Projetos' &&
+            user.hasSomeRoles(['Projeto.orcamento']) &&
+            (filters.portfolio_id || filters.apenas_com_portfolio)
+        ) {
             const projetos = await this.projetoService.findAllIds('PP', user);
             this.logger.warn(`só pode ver os projetos ${projetos.map((r) => r.id).join(',')}`);
 
@@ -241,6 +268,7 @@ export class ImportacaoOrcamentoService {
                     { pdm_id: { not: null } },
                     {
                         portfolio: {
+                            tipo_projeto: 'PP',
                             Projeto: {
                                 some: {
                                     id: {
@@ -252,12 +280,11 @@ export class ImportacaoOrcamentoService {
                     },
                 ],
             });
-        } else {
-            this.logger.warn('não pode ver os projetos');
-            filtros.push({ portfolio_id: null });
-        }
-
-        if (user.hasSomeRoles(['ProjetoMDO.orcamento']) && (filters.portfolio_id || filters.apenas_com_portfolio)) {
+        } else if (
+            sistema == 'MDO' &&
+            user.hasSomeRoles(['ProjetoMDO.orcamento']) &&
+            (filters.portfolio_id || filters.apenas_com_portfolio)
+        ) {
             const projetos = await this.projetoService.findAllIds('MDO', user);
             this.logger.warn(`só pode ver os projetos ${projetos.map((r) => r.id).join(',')}`);
 
@@ -266,6 +293,7 @@ export class ImportacaoOrcamentoService {
                     { pdm_id: { not: null } },
                     {
                         portfolio: {
+                            tipo_projeto: 'MDO',
                             Projeto: {
                                 some: {
                                     id: {
@@ -282,8 +310,7 @@ export class ImportacaoOrcamentoService {
             filtros.push({ portfolio_id: null });
         }
 
-        // TODO PlanoSetorial tbm vai precisar mexer aqui
-        if (user.hasSomeRoles(['CadastroMeta.orcamento']) && filters.pdm_id) {
+        if (sistema == 'PDM' && user.hasSomeRoles(['CadastroMeta.orcamento']) && filters.pdm_id) {
             const metas = await this.metaService.findAllIds(user);
             this.logger.warn(`só pode as metas ${metas.map((r) => r.id)}`);
 
@@ -292,6 +319,28 @@ export class ImportacaoOrcamentoService {
                     { portfolio_id: { not: null } },
                     {
                         pdm: {
+                            tipo: 'PDM',
+                            Meta: {
+                                some: {
+                                    id: {
+                                        in: metas.map((r) => r.id),
+                                    },
+                                },
+                            },
+                        },
+                    },
+                ],
+            });
+        } else if (sistema == 'PlanoSetorial' && user.hasSomeRoles(['CadastroMetaPS.orcamento']) && filters.pdm_id) {
+            const metas = await this.metaService.findAllIds(user);
+            this.logger.warn(`só pode as metas plano setorial ${metas.map((r) => r.id)}`);
+
+            filtros.push({
+                OR: [
+                    { portfolio_id: { not: null } },
+                    {
+                        pdm: {
+                            tipo: 'PS',
                             Meta: {
                                 some: {
                                     id: {
