@@ -1,8 +1,8 @@
 <script setup>
 import { useAlertStore } from '@/stores/alert.store';
+import { usePartidosStore } from '@/stores/partidos.store';
 import { storeToRefs } from 'pinia';
 import { useRoute } from 'vue-router';
-import { usePartidosStore } from '@/stores/partidos.store';
 
 const partidoStore = usePartidosStore();
 const {
