@@ -6,7 +6,9 @@ import { useAuthStore } from '@/stores/auth.store';
 import { useIniciativasStore } from '@/stores/iniciativas.store';
 import { useMetasStore } from '@/stores/metas.store';
 import { storeToRefs } from 'pinia';
+import { nextTick } from 'vue';
 import { useRoute } from 'vue-router';
+import rolarTelaPara from '@/helpers/rolarTelaPara.ts';
 import { classeParaFarolDeAtraso, textoParaFarolDeAtraso } from './helpers/auxiliaresParaFaroisDeAtraso.ts';
 
 const { temPermissãoPara } = useAuthStore();
@@ -21,12 +23,32 @@ const parentlink = `${meta_id ? `/metas/${meta_id}` : ''}`;
 
 const MetasStore = useMetasStore();
 const { activePdm, singleMeta } = storeToRefs(MetasStore);
-if (meta_id && singleMeta.value.id != meta_id) MetasStore.getById(meta_id);
-if (meta_id && !activePdm.value.id) MetasStore.getPdM();
-
 const IniciativasStore = useIniciativasStore();
 const { Iniciativas } = storeToRefs(IniciativasStore);
-if (!Iniciativas.value[meta_id]) IniciativasStore.getAll(meta_id);
+
+async function iniciar() {
+  const promessas = [];
+
+  if (meta_id && singleMeta.value.id != meta_id) {
+    promessas.push(MetasStore.getById(meta_id));
+  }
+  if (meta_id && !activePdm.value.id) {
+    promessas.push(MetasStore.getPdM());
+  }
+  if (!Iniciativas.value[meta_id]) {
+    promessas.push(IniciativasStore.getAll(meta_id));
+  }
+
+  if (promessas.length) {
+    await Promise.allSettled(promessas);
+  }
+
+  nextTick().then(() => {
+    rolarTelaPara();
+  });
+}
+
+iniciar();
 </script>
 <template>
   <Dashboard>
@@ -175,6 +197,7 @@ if (!Iniciativas.value[meta_id]) IniciativasStore.getAll(meta_id);
 
           <div
             v-for="ini in Iniciativas[meta_id]"
+            :id="`iniciativa__${ini.id}`"
             :key="ini.id"
             class="board_variavel mb2"
           >

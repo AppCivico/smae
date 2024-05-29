@@ -6,6 +6,8 @@ import { IniciativaAtiva } from '@/helpers/IniciativaAtiva';
 import {
   useAtividadesStore, useAuthStore, useIniciativasStore, useMetasStore,
 } from '@/stores';
+import { nextTick } from 'vue';
+import rolarTelaPara from '@/helpers/rolarTelaPara.ts';
 import { storeToRefs } from 'pinia';
 import { useRoute } from 'vue-router';
 import { classeParaFarolDeAtraso, textoParaFarolDeAtraso } from './helpers/auxiliaresParaFaroisDeAtraso.ts';
@@ -28,12 +30,29 @@ MetasStore.getPdM();
 
 const IniciativasStore = useIniciativasStore();
 const { singleIniciativa, órgãosResponsáveisNaIniciativaEmFoco } = storeToRefs(IniciativasStore);
-if (singleIniciativa.value.id != iniciativa_id) IniciativasStore.getById(meta_id, iniciativa_id);
-
 const AtividadesStore = useAtividadesStore();
 const { Atividades } = storeToRefs(AtividadesStore);
-if (!Atividades.value[iniciativa_id]) AtividadesStore.getAll(iniciativa_id);
 
+async function iniciar() {
+  const promessas = [];
+
+  if (singleIniciativa.value.id != iniciativa_id) {
+    promessas.push(IniciativasStore.getById(meta_id, iniciativa_id));
+  }
+  if (!Atividades.value[iniciativa_id]) {
+    promessas.push(AtividadesStore.getAll(iniciativa_id));
+  }
+
+  if (promessas.length) {
+    await Promise.allSettled(promessas);
+  }
+
+  nextTick().then(() => {
+    rolarTelaPara();
+  });
+}
+
+iniciar();
 </script>
 <template>
   <Dashboard>
@@ -145,6 +164,7 @@ if (!Atividades.value[iniciativa_id]) AtividadesStore.getAll(iniciativa_id);
           <template v-if="Atividades[iniciativa_id].length">
             <div
               v-for="ini in Atividades[iniciativa_id]"
+              :id="`atividade__${ini.id}`"
               :key="ini.id"
               class="board_variavel mb2"
             >
