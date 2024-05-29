@@ -278,7 +278,9 @@ export class ParlamentarService {
             },
         });
 
-        const mandatoCorrente = parlamentar.mandatos.find((m) => m.eleicao.atual_para_mandatos == true);
+        const mandatoCorrente = parlamentar.mandatos
+            .sort((a, b) => b.eleicao.ano - a.eleicao.ano)
+            .find((m) => m.eleicao.atual_para_mandatos == true);
 
         return {
             ...parlamentar,
