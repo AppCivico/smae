@@ -3,6 +3,8 @@ import { default as EvolucaoGraph } from '@/components/EvolucaoGraph.vue';
 import { useAuthStore } from '@/stores/auth.store';
 import { useIndicadoresStore } from '@/stores/indicadores.store';
 import { storeToRefs } from 'pinia';
+import { nextTick } from 'vue';
+import rolarTelaPara from '@/helpers/rolarTelaPara.ts';
 
 const authStore = useAuthStore();
 const { permissions } = storeToRefs(authStore);
@@ -14,10 +16,18 @@ const IndicadoresStore = useIndicadoresStore();
 const { tempIndicadores, ValoresInd } = storeToRefs(IndicadoresStore);
 
 (async () => {
-  if (!tempIndicadores.value.length || tempIndicadores.value[0][props.parent_field] != props.parent_id) await IndicadoresStore.filterIndicadores(props.parent_id, props.parent_field);
-  if (tempIndicadores.value[0]?.id) {
-    IndicadoresStore.getValores(tempIndicadores.value[0]?.id);
+  if (!tempIndicadores.value.length
+    || tempIndicadores.value[0][props.parent_field] != props.parent_id
+  ) {
+    await IndicadoresStore.filterIndicadores(props.parent_id, props.parent_field);
   }
+  if (tempIndicadores.value[0]?.id) {
+    await IndicadoresStore.getValores(tempIndicadores.value[0]?.id);
+  }
+
+  nextTick().then(() => {
+    rolarTelaPara();
+  });
 })();
 </script>
 <template>
