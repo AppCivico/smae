@@ -48,6 +48,8 @@ async function onSubmit(values) {
   }
 }
 
+partidosStore.$reset();
+
 if (props.partidoId) {
   partidosStore.buscarItem(props.partidoId);
 }
