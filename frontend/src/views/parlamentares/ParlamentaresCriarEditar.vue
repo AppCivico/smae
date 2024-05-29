@@ -59,6 +59,8 @@ async function onSubmit(values) {
 }
 
 function iniciar() {
+  parlamentaresStore.$reset();
+
   if (props.parlamentarId) {
     parlamentaresStore.buscarItem(props.parlamentarId);
   }
