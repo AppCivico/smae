@@ -12,7 +12,9 @@ import GruposTematicosRaiz from '@/views/gruposTematicos/GruposTematicosRaiz.vue
 import TiposDeIntervencaoCriarEditar from '@/views/tiposDeIntervencao/TiposDeIntervencaoCriarEditar.vue';
 import TiposDeIntervencaoLista from '@/views/tiposDeIntervencao/TiposDeIntervencaoLista.vue';
 import TiposDeIntervencaoRaiz from '@/views/tiposDeIntervencao/TiposDeIntervencaoRaiz.vue';
-
+import EquipamentosCriarEditar from '@/views/equipamentos/EquipamentosCriarEditar.vue';
+import EquipamentosLista from '@/views/equipamentos/EquipamentosLista.vue';
+import EquipamentosRaiz from '@/views/equipamentos/EquipamentosRaiz.vue';
 import {
   AddEditDocumentTypes,
   ListDocumentTypes,
@@ -74,6 +76,7 @@ const rotasParaMenuSecundário = [
       'etapasDoProjetoListar',
       'gruposTematicosObras',
       'tiposDeIntervencao',
+      'equipamentosLista',
     ],
   },
   {
@@ -247,6 +250,57 @@ export default [
           //    }),
           //   meta: {
           //     título: 'Editar tipo de intervenção',
+          //   },
+          // },
+        ],
+      },
+      {
+        path: 'equipamentos',
+        component: EquipamentosRaiz,
+        meta: {
+          título: 'Equipamentos',
+          rotaPrescindeDeChave: true,
+          rotasParaMenuSecundário,
+          // limitarÀsPermissões: '.',
+        },
+        children: [
+          {
+            name: 'equipamentosLista',
+            path: '',
+            component: EquipamentosLista,
+            meta: {
+              título: 'Equipamentos',
+              rotasParaMigalhasDePão: [
+                'cadastrosBasicos',
+              ],
+            },
+          },
+          {
+            name: 'equipamentosCriar',
+            path: 'novo',
+            component: EquipamentosCriarEditar,
+            meta: {
+              título: 'Novo equipamento',
+              rotasParaMigalhasDePão: [
+                'cadastrosBasicos',
+                'equipamentosLista',
+              ],
+            },
+          },
+          // {
+          //   path: ':equipamentoId',
+          //   name: 'equipamentoEditar',
+          //   component: EquipamentosCriarEditar,
+          //   props: ({ params }) => ({
+          //    ...params,
+          //    ...{ equipamentoId: Number.parseInt(params.equipamentoId, 10) || undefined },
+          //    }),
+          //   meta: {
+          //     título: 'Editar equipamento',
+          //     rotasParaMigalhasDePão: [
+          //      'cadastrosBasicos',
+          //      'equipamentosLista',
+          //      ],
           //   },
           // },
         ],
