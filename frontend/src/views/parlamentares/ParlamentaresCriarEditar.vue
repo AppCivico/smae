@@ -1,13 +1,13 @@
 <script setup>
 import InputImageProfile from '@/components/InputImageProfile.vue';
 import ParlamentaresExibirRepresentatividade from '@/components/parlamentares/ParlamentaresExibirRepresentatividade.vue';
-import { vMaska } from "maska"
 import { parlamentar as schema } from '@/consts/formSchemas';
 import nulificadorTotal from '@/helpers/nulificadorTotal.ts';
 import requestS from '@/helpers/requestS.ts';
 import { useAlertStore } from '@/stores/alert.store';
 import { useAuthStore } from '@/stores/auth.store';
 import { useParlamentaresStore } from '@/stores/parlamentares.store';
+import { vMaska } from 'maska';
 import { storeToRefs } from 'pinia';
 
 import {
@@ -202,11 +202,11 @@ iniciar();
             />
             <div>LGPD - Evite cadastrar dados pessoais</div>
             <Field
+              v-maska
               name="telefone"
               type="text"
               class="inputtext light mb1"
               maxlength="15"
-              v-maska
               data-maska="(##) #####-####'"
             />
             <ErrorMessage
@@ -255,7 +255,8 @@ iniciar();
         <tbody>
           <tr
             v-for="item in equipeOrdenada"
-            :key="item.id">
+            :key="item.id"
+          >
             <td>{{ item.nome }}</td>
             <td>{{ item.tipo }}</td>
             <td>
