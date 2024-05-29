@@ -3,7 +3,10 @@ import { partido as schema } from '@/consts/formSchemas';
 import { useAlertStore } from '@/stores/alert.store';
 import { usePartidosStore } from '@/stores/partidos.store';
 import { storeToRefs } from 'pinia';
-import { ErrorMessage, Field, Form } from 'vee-validate';
+import {
+  ErrorMessage, Field, useForm, useIsFormDirty,
+} from 'vee-validate';
+import { watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
 const router = useRouter();
@@ -19,7 +22,16 @@ const alertStore = useAlertStore();
 const partidosStore = usePartidosStore();
 const { chamadasPendentes, erro, itemParaEdição } = storeToRefs(partidosStore);
 
-async function onSubmit(values) {
+const {
+  errors, handleSubmit, isSubmitting, resetForm, setFieldValue, values,
+} = useForm({
+  initialValues: itemParaEdição,
+  validationSchema: schema,
+});
+
+const formulárioSujo = useIsFormDirty();
+
+const onSubmit = handleSubmit(async () => {
   try {
     let r;
     const msg = props.partidoId
@@ -46,7 +58,7 @@ async function onSubmit(values) {
   } catch (error) {
     alertStore.error(error);
   }
-}
+});
 
 partidosStore.$reset();
 
@@ -54,19 +66,19 @@ if (props.partidoId) {
   partidosStore.buscarItem(props.partidoId);
 }
 
+watch(itemParaEdição, (novoValor) => {
+  resetForm({ values: novoValor });
+});
 </script>
-
 <template>
   <div class="flex spacebetween center mb2">
     <h1>{{ route?.meta?.título || 'Partido' }}</h1>
     <hr class="ml2 f1">
-    <CheckClose />
+    <CheckClose :formulário-sujo="formulárioSujo" />
   </div>
-  <Form
-    v-slot="{ errors, isSubmitting, setFieldValue }"
-    :validation-schema="schema"
-    :initial-values="itemParaEdição"
-    @submit="onSubmit"
+
+  <form
+    @submit.prevent="onSubmit"
   >
     <div class="flex g2 mb1">
       <div class="f1">
@@ -194,7 +206,7 @@ if (props.partidoId) {
       </button>
       <hr class="ml2 f1">
     </div>
-  </Form>
+  </form>
 
   <span
     v-if="chamadasPendentes?.emFoco"
