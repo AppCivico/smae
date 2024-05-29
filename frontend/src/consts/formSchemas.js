@@ -284,6 +284,14 @@ export const dotação = string()
   .label('Dotação')
   .matches(regEx.dotaçãoComComplemento, 'regex em dotação');
 
+export const equipamento = object({
+  equipamento: string()
+    .label('Equipamento')
+    .min(3)
+    .max(250)
+    .required(),
+});
+
 export const etapa = object()
   .shape({
     descricao: string()
