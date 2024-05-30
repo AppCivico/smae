@@ -82,27 +82,27 @@ iniciar();
       <ul class="abas__lista flex">
         <li
           v-for="nomeDaAba in Object.keys(slots)"
-          :key="kebabCase(nomeDaAba)"
+          :key="nomeDaAba"
           class="pt1 pb1"
         >
           <router-link
             class="abas__link like-a__link t20 w700"
             :class="{
-              tc300: abaAberta !== dadosConsolidadosPorId[nomeDaAba].hash
+              tc300: abaAberta !== (dadosConsolidadosPorId?.[nomeDaAba]?.hash || nomeDaAba)
             }"
             :to="{
               name: nomeDaRotaRaiz || $route.meta.rotaDeEscape || $route.name,
               params: $route.params,
               query: {
                 ...$route.query,
-                [nomeDaChaveDeAbas]: dadosConsolidadosPorId[nomeDaAba].hash,
+                [nomeDaChaveDeAbas]: dadosConsolidadosPorId?.[nomeDaAba]?.hash || nomeDaAba,
               }
             }"
-            :aria-current="abaAberta === dadosConsolidadosPorId[nomeDaAba].hash
+            :aria-current="abaAberta === (dadosConsolidadosPorId?.[nomeDaAba]?.hash || nomeDaAba)
               ? 'page'
               : undefined"
           >
-            {{ dadosConsolidadosPorId[nomeDaAba].etiqueta }}
+            {{ dadosConsolidadosPorId?.[nomeDaAba]?.etiqueta || nomeDaAba }}
           </router-link>
         </li>
       </ul>
@@ -115,13 +115,15 @@ iniciar();
       name="slide"
     >
       <div
-        v-show="(!abaAberta && i === 0) || (abaAberta === dadosConsolidadosPorId[nomeDaAba].hash)"
-        :id="dadosConsolidadosPorId[nomeDaAba].id"
+        v-show="!abaAberta
+          ? i === 0
+          : abaAberta === (dadosConsolidadosPorId?.[nomeDaAba]?.hash || nomeDaAba)"
+        :id="dadosConsolidadosPorId?.[nomeDaAba]?.id || nomeDaAba"
         class="abas__conteúdo"
       >
         <slot
           :name="nomeDaAba"
-          :está-aberta="abaAberta === dadosConsolidadosPorId[nomeDaAba].hash"
+          :está-aberta="abaAberta === (dadosConsolidadosPorId?.[nomeDaAba]?.hash || nomeDaAba)"
         />
       </div>
     </Transition>
