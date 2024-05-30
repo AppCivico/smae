@@ -91,7 +91,7 @@ iniciar();
               tc300: abaAberta !== (dadosConsolidadosPorId?.[nomeDaAba]?.hash || nomeDaAba)
             }"
             :to="{
-              name: nomeDaRotaRaiz || $route.meta.rotaDeEscape || $route.name,
+              name: nomeDaRotaRaiz || $route.name,
               params: $route.params,
               query: {
                 ...$route.query,
