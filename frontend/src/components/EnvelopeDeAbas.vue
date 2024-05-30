@@ -35,23 +35,25 @@ const props = defineProps({
     default: () => ({}),
   },
 });
+
 // PRA-FAZER: um registro secundário da aba aberta em paralelo à query na rota
 // para cobrir todas as bases. Infelizmente, não adiantará muito enquanto houver
 // chaves de rota no componente raiz. Ver `App.vue`.
 const abaAberta = computed(() => route.query[props.nomeDaChaveDeAbas]);
-const dadosConsolidadosPorId = computed(() => Object.keys(slots).reduce((acc, cur) => {
-  acc[cur] = {
-    aberta: props.metaDadosPorId?.[cur]?.aberta,
-    etiqueta: props.metaDadosPorId?.[cur]?.etiqueta || cur,
-    hash: props.metaDadosPorId?.[cur]?.hash
-      || props.metaDadosPorId?.[cur]?.id
-      || kebabCase(cur),
-    id: props.metaDadosPorId?.[cur]?.id
-      || props.metaDadosPorId?.[cur]?.hash
-      || kebabCase(cur),
-  };
-  return acc;
-}, {}));
+const dadosConsolidadosPorId = computed(() => Object.keys(props.metaDadosPorId)
+  .reduce((acc, cur) => {
+    acc[cur] = {
+      aberta: props.metaDadosPorId?.[cur]?.aberta,
+      etiqueta: props.metaDadosPorId?.[cur]?.etiqueta || cur,
+      hash: props.metaDadosPorId?.[cur]?.hash
+        || props.metaDadosPorId?.[cur]?.id
+        || kebabCase(cur),
+      id: props.metaDadosPorId?.[cur]?.id
+        || props.metaDadosPorId?.[cur]?.hash
+        || kebabCase(cur),
+    };
+    return acc;
+  }, {}));
 
 watch(slots, () => {
   const idDaAbaPadrão = Object.keys(slots).find((x) => dadosConsolidadosPorId.value[x]?.aberta);
