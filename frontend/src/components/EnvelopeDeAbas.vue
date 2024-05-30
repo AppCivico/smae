@@ -1,6 +1,8 @@
 <script setup>
 import { kebabCase } from 'lodash';
-import { computed, useSlots } from 'vue';
+import {
+  computed, useSlots, watch,
+} from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
 const route = useRoute();
@@ -51,7 +53,7 @@ const dadosConsolidadosPorId = computed(() => Object.keys(slots).reduce((acc, cu
   return acc;
 }, {}));
 
-function iniciar() {
+watch(slots, () => {
   const idDaAbaPadrão = Object.keys(slots).find((x) => dadosConsolidadosPorId.value[x]?.aberta);
   const dadosDaAbaPadrão = dadosConsolidadosPorId.value[idDaAbaPadrão];
 
@@ -69,9 +71,7 @@ function iniciar() {
       },
     });
   }
-}
-
-iniciar();
+}, { immediate: true });
 </script>
 <template>
   <div class="abas">
