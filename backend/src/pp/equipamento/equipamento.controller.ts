@@ -44,14 +44,14 @@ export class EquipamentoController {
         return { linhas: await this.equipamentoService.findAll(user) };
     }
 
-    @Get('equipamento/:id2')
+    @Get('equipamento/:id')
     @ApiBearerAuth('access-token')
     @Roles([...rolesMDO])
     async findOne(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt): Promise<Equipamento> {
         return await this.equipamentoService.findOne(params.id, user);
     }
 
-    @Patch('equipamento/:id2')
+    @Patch('equipamento/:id')
     @ApiBearerAuth('access-token')
     @Roles([...rolesMDO])
     async update(
@@ -62,7 +62,7 @@ export class EquipamentoController {
         return await this.equipamentoService.update(params.id, updateProjetoDto, user);
     }
 
-    @Delete('equipamento/:id2')
+    @Delete('equipamento/:id')
     @ApiBearerAuth('access-token')
     @Roles([...rolesMDO])
     @ApiNoContentResponse()
