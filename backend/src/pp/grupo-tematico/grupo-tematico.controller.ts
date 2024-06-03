@@ -62,7 +62,7 @@ export class GrupoTematicoController {
         return await this.grupoTematicoService.update(params.id, updateProjetoDto, user);
     }
 
-    @Delete('grupo-tematico/:id2')
+    @Delete('grupo-tematico/:id')
     @ApiBearerAuth('access-token')
     @Roles([...rolesMDO])
     @ApiNoContentResponse()
