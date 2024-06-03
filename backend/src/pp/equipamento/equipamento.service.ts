@@ -11,12 +11,11 @@ import { UpdateEquipamentoDto } from './dto/update-equipamento.dto';
 export class EquipamentoService {
     constructor(private readonly prisma: PrismaService) {}
 
-    async create(projetoId: number, dto: CreateEquipamentoDto, user: PessoaFromJwt): Promise<RecordWithId> {
+    async create(dto: CreateEquipamentoDto, user: PessoaFromJwt): Promise<RecordWithId> {
         const created = await this.prisma.$transaction(
             async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
                 const similarExists = await prismaTx.equipamento.count({
                     where: {
-                        projeto_id: projetoId,
                         nome: { endsWith: dto.nome, mode: 'insensitive' },
                         removido_em: null,
                     },
@@ -26,7 +25,6 @@ export class EquipamentoService {
 
                 const equipamento = await prismaTx.equipamento.create({
                     data: {
-                        projeto_id: projetoId,
                         nome: dto.nome,
                         criado_em: new Date(Date.now()),
                         criado_por: user.id,
@@ -40,10 +38,9 @@ export class EquipamentoService {
         return { id: created.id };
     }
 
-    async findAll(projetoId: number, user: PessoaFromJwt): Promise<Equipamento[]> {
+    async findAll(user: PessoaFromJwt): Promise<Equipamento[]> {
         const equipamentos = await this.prisma.equipamento.findMany({
             where: {
-                projeto_id: projetoId,
                 removido_em: null,
             },
             orderBy: [{ nome: 'asc' }],
@@ -56,11 +53,10 @@ export class EquipamentoService {
         return equipamentos;
     }
 
-    async findOne(projetoId: number, id: number, user: PessoaFromJwt): Promise<Equipamento> {
+    async findOne(id: number, user: PessoaFromJwt): Promise<Equipamento> {
         const equipamento = await this.prisma.equipamento.findFirst({
             where: {
                 id,
-                projeto_id: projetoId,
                 removido_em: null,
             },
             select: {
@@ -113,12 +109,11 @@ export class EquipamentoService {
         return updated;
     }
 
-    async remove(projeto_id: number, id: number, user: PessoaFromJwt) {
+    async remove(id: number, user: PessoaFromJwt) {
         await this.prisma.equipamento.findFirstOrThrow({
             where: {
                 id,
                 removido_em: null,
-                projeto_id: projeto_id,
             },
             select: { id: true },
         });
@@ -126,7 +121,6 @@ export class EquipamentoService {
         return await this.prisma.equipamento.updateMany({
             where: {
                 id,
-                projeto_id: projeto_id,
             },
             data: {
                 removido_em: new Date(Date.now()),

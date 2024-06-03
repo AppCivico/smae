@@ -27,38 +27,31 @@ export class EquipamentoController {
         private readonly projetoService: ProjetoService
     ) {}
 
-    @Post(':id/equipamento')
+    @Post('equipamento')
     @ApiBearerAuth('access-token')
     @Roles([...rolesMDO])
     async create(
         @Body() createEquipamentoDto: CreateEquipamentoDto,
-        @Param() params: FindOneParams,
         @CurrentUser() user: PessoaFromJwt
     ): Promise<RecordWithId> {
-        const projeto = await this.projetoService.findOne('MDO', params.id, user, 'ReadWrite');
-
-        return await this.equipamentoService.create(projeto.id, createEquipamentoDto, user);
+        return await this.equipamentoService.create(createEquipamentoDto, user);
     }
 
-    @Get(':id/equipamento')
+    @Get('equipamento')
     @ApiBearerAuth('access-token')
     @Roles([...rolesMDO])
     async findAll(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt): Promise<ListEquipamentoDto> {
-        const projeto = await this.projetoService.findOne('MDO', params.id, user, 'ReadWrite');
-
-        return { linhas: await this.equipamentoService.findAll(projeto.id, user) };
+        return { linhas: await this.equipamentoService.findAll(user) };
     }
 
-    @Get(':id/equipamento/:id2')
+    @Get('equipamento/:id2')
     @ApiBearerAuth('access-token')
     @Roles([...rolesMDO])
-    async findOne(@Param() params: FindTwoParams, @CurrentUser() user: PessoaFromJwt): Promise<Equipamento> {
-        const projeto = await this.projetoService.findOne('MDO', params.id, user, 'ReadWrite');
-
-        return await this.equipamentoService.findOne(projeto.id, params.id2, user);
+    async findOne(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt): Promise<Equipamento> {
+        return await this.equipamentoService.findOne(params.id, user);
     }
 
-    @Patch(':id/equipamento/:id2')
+    @Patch('equipamento/:id2')
     @ApiBearerAuth('access-token')
     @Roles([...rolesMDO])
     async update(
@@ -66,20 +59,16 @@ export class EquipamentoController {
         @Body() updateProjetoDto: UpdateProjetoDto,
         @CurrentUser() user: PessoaFromJwt
     ): Promise<RecordWithId> {
-        const projeto = await this.projetoService.findOne('MDO', params.id, user, 'ReadWrite');
-
-        return await this.equipamentoService.update(projeto.id, updateProjetoDto, user);
+        return await this.equipamentoService.update(params.id, updateProjetoDto, user);
     }
 
-    @Delete(':id/equipamento/:id2')
+    @Delete('equipamento/:id2')
     @ApiBearerAuth('access-token')
     @Roles([...rolesMDO])
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.ACCEPTED)
     async remove(@Param() params: FindTwoParams, @CurrentUser() user: PessoaFromJwt) {
-        const projeto = await this.projetoService.findOne('MDO', params.id, user, 'ReadWrite');
-
-        await this.equipamentoService.remove(projeto.id, params.id2, user);
+        await this.equipamentoService.remove(params.id, user);
         return '';
     }
 }

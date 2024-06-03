@@ -11,12 +11,11 @@ import { TipoIntervencao } from './entities/tipo-intervencao.entity';
 export class TipoIntervencaoService {
     constructor(private readonly prisma: PrismaService) {}
 
-    async create(projetoId: number, dto: CreateTipoIntervencaoDto, user: PessoaFromJwt): Promise<RecordWithId> {
+    async create(dto: CreateTipoIntervencaoDto, user: PessoaFromJwt): Promise<RecordWithId> {
         const created = await this.prisma.$transaction(
             async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
                 const similarExists = await prismaTx.tipoIntervencao.count({
                     where: {
-                        projeto_id: projetoId,
                         nome: { endsWith: dto.nome, mode: 'insensitive' },
                         removido_em: null,
                     },
@@ -26,7 +25,6 @@ export class TipoIntervencaoService {
 
                 const tipoIntervencao = await prismaTx.tipoIntervencao.create({
                     data: {
-                        projeto_id: projetoId,
                         nome: dto.nome,
                         criado_em: new Date(Date.now()),
                         criado_por: user.id,
@@ -40,10 +38,9 @@ export class TipoIntervencaoService {
         return { id: created.id };
     }
 
-    async findAll(projetoId: number, user: PessoaFromJwt): Promise<TipoIntervencao[]> {
+    async findAll(user: PessoaFromJwt): Promise<TipoIntervencao[]> {
         const gruposTematicos = await this.prisma.tipoIntervencao.findMany({
             where: {
-                projeto_id: projetoId,
                 removido_em: null,
             },
             orderBy: [{ nome: 'asc' }],
@@ -56,11 +53,10 @@ export class TipoIntervencaoService {
         return gruposTematicos;
     }
 
-    async findOne(projetoId: number, id: number, user: PessoaFromJwt): Promise<TipoIntervencao> {
+    async findOne(id: number, user: PessoaFromJwt): Promise<TipoIntervencao> {
         const tipoIntervencao = await this.prisma.tipoIntervencao.findFirst({
             where: {
                 id,
-                projeto_id: projetoId,
                 removido_em: null,
             },
             select: {
@@ -113,12 +109,11 @@ export class TipoIntervencaoService {
         return updated;
     }
 
-    async remove(projeto_id: number, id: number, user: PessoaFromJwt) {
+    async remove(id: number, user: PessoaFromJwt) {
         await this.prisma.tipoIntervencao.findFirstOrThrow({
             where: {
                 id,
                 removido_em: null,
-                projeto_id: projeto_id,
             },
             select: { id: true },
         });
@@ -126,7 +121,6 @@ export class TipoIntervencaoService {
         return await this.prisma.tipoIntervencao.updateMany({
             where: {
                 id,
-                projeto_id: projeto_id,
             },
             data: {
                 removido_em: new Date(Date.now()),
