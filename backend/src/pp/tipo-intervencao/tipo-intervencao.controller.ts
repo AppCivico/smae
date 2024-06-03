@@ -3,7 +3,7 @@ import { ApiTags, ApiBearerAuth, ApiNoContentResponse } from '@nestjs/swagger';
 import { CurrentUser } from 'src/auth/decorators/current-user.decorator';
 import { Roles } from 'src/auth/decorators/roles.decorator';
 import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
-import { FindOneParams, FindTwoParams } from 'src/common/decorators/find-params';
+import { FindOneParams } from 'src/common/decorators/find-params';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
 import { UpdateProjetoDto } from '../projeto/dto/update-projeto.dto';
 import { ProjetoService } from '../projeto/projeto.service';
@@ -27,7 +27,7 @@ export class TipoIntervencaoController {
         private readonly projetoService: ProjetoService
     ) {}
 
-    @Post(':id/tipo-intervencao')
+    @Post('tipo-intervencao')
     @ApiBearerAuth('access-token')
     @Roles([...rolesMDO])
     async create(
@@ -35,30 +35,24 @@ export class TipoIntervencaoController {
         @Param() params: FindOneParams,
         @CurrentUser() user: PessoaFromJwt
     ): Promise<RecordWithId> {
-        const projeto = await this.projetoService.findOne('MDO', params.id, user, 'ReadWrite');
-
-        return await this.grupoTematicoService.create(projeto.id, createTipoIntervencaoDto, user);
+        return await this.grupoTematicoService.create(createTipoIntervencaoDto, user);
     }
 
-    @Get(':id/tipo-intervencao')
+    @Get('tipo-intervencao')
     @ApiBearerAuth('access-token')
     @Roles([...rolesMDO])
-    async findAll(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt): Promise<ListTipoIntervencaoDto> {
-        const projeto = await this.projetoService.findOne('MDO', params.id, user, 'ReadWrite');
-
-        return { linhas: await this.grupoTematicoService.findAll(projeto.id, user) };
+    async findAll(@CurrentUser() user: PessoaFromJwt): Promise<ListTipoIntervencaoDto> {
+        return { linhas: await this.grupoTematicoService.findAll(user) };
     }
 
-    @Get(':id/tipo-intervencao/:id2')
+    @Get('tipo-intervencao/:id')
     @ApiBearerAuth('access-token')
     @Roles([...rolesMDO])
-    async findOne(@Param() params: FindTwoParams, @CurrentUser() user: PessoaFromJwt): Promise<TipoIntervencao> {
-        const projeto = await this.projetoService.findOne('MDO', params.id, user, 'ReadWrite');
-
-        return await this.grupoTematicoService.findOne(projeto.id, params.id2, user);
+    async findOne(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt): Promise<TipoIntervencao> {
+        return await this.grupoTematicoService.findOne(params.id, user);
     }
 
-    @Patch(':id/tipo-intervencao/:id2')
+    @Patch('tipo-intervencao/:id')
     @ApiBearerAuth('access-token')
     @Roles([...rolesMDO])
     async update(
@@ -66,20 +60,16 @@ export class TipoIntervencaoController {
         @Body() updateProjetoDto: UpdateProjetoDto,
         @CurrentUser() user: PessoaFromJwt
     ): Promise<RecordWithId> {
-        const projeto = await this.projetoService.findOne('MDO', params.id, user, 'ReadWrite');
-
-        return await this.grupoTematicoService.update(projeto.id, updateProjetoDto, user);
+        return await this.grupoTematicoService.update(params.id, updateProjetoDto, user);
     }
 
-    @Delete(':id/tipo-intervencao/:id2')
+    @Delete('tipo-intervencao/:id')
     @ApiBearerAuth('access-token')
     @Roles([...rolesMDO])
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.ACCEPTED)
-    async remove(@Param() params: FindTwoParams, @CurrentUser() user: PessoaFromJwt) {
-        const projeto = await this.projetoService.findOne('MDO', params.id, user, 'ReadWrite');
-
-        await this.grupoTematicoService.remove(projeto.id, params.id2, user);
+    async remove(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt) {
+        await this.grupoTematicoService.remove(params.id, user);
         return '';
     }
 }
