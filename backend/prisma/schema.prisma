@@ -3276,9 +3276,9 @@ model Projeto {
     GeoEnderecoReferencia    GeoLocalizacaoReferencia[]
 
     // Módulo de gestão de obras
-    gruposTematicos  GrupoTematico[]
-    tiposIntervencao TipoIntervencao[]
-    equipamentos     Equipamento[]
+    gruposTematicos  ProjetoGrupoTematico[]
+    tiposIntervencao ProjetoTipoIntervencao[]
+    equipamentos     ProjetoEquipamento[]
 
     @@index([removido_em])
     @@map("projeto")
@@ -5815,9 +5815,6 @@ view ViewRankingTransferenciaParlamentar {
 model GrupoTematico {
     id Int @id @default(autoincrement())
 
-    projeto_id Int
-    projeto    Projeto @relation(fields: [projeto_id], references: [id])
-
     nome String
 
     criado_por Int
@@ -5832,6 +5829,8 @@ model GrupoTematico {
     criador     Pessoa  @relation("Criador", fields: [criado_por], references: [id])
     atualizador Pessoa? @relation("Atualizador", fields: [atualizado_por], references: [id])
     removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
+
+    projetos ProjetoGrupoTematico[]
 
     @@map("grupo_tematico")
 }
@@ -5839,9 +5838,6 @@ model GrupoTematico {
 model TipoIntervencao {
     id Int @id @default(autoincrement())
 
-    projeto_id Int
-    projeto    Projeto @relation(fields: [projeto_id], references: [id])
-
     nome String
 
     criado_por Int
@@ -5856,6 +5852,8 @@ model TipoIntervencao {
     criador     Pessoa  @relation("Criador", fields: [criado_por], references: [id])
     atualizador Pessoa? @relation("Atualizador", fields: [atualizado_por], references: [id])
     removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
+
+    projetos ProjetoTipoIntervencao[]
 
     @@map("tipo_intervencao")
 }
@@ -5863,9 +5861,6 @@ model TipoIntervencao {
 model Equipamento {
     id Int @id @default(autoincrement())
 
-    projeto_id Int
-    projeto    Projeto @relation(fields: [projeto_id], references: [id])
-
     nome String
 
     criado_por Int
@@ -5881,5 +5876,40 @@ model Equipamento {
     atualizador Pessoa? @relation("Atualizador", fields: [atualizado_por], references: [id])
     removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
 
+    projetos ProjetoEquipamento[]
+
     @@map("equipamento")
+}
+
+model ProjetoEquipamento {
+    projeto_id Int
+    projeto    Projeto @relation(fields: [projeto_id], references: [id])
+
+    equipamento_id Int
+    equipamento    Equipamento @relation(fields: [equipamento_id], references: [id])
+
+    @@unique([projeto_id, equipamento_id])
+    @@map("projeto_equipamento")
+}
+
+model ProjetoTipoIntervencao {
+    projeto_id Int
+    projeto    Projeto @relation(fields: [projeto_id], references: [id])
+
+    tipo_intervencao_id Int
+    tipo_intervencao    TipoIntervencao @relation(fields: [tipo_intervencao_id], references: [id])
+
+    @@unique([projeto_id, tipo_intervencao_id])
+    @@map("projeto_tipo_intervencao")
+}
+
+model ProjetoGrupoTematico {
+    projeto_id Int
+    projeto    Projeto @relation(fields: [projeto_id], references: [id])
+
+    grupo_tematico_id Int
+    grupo_tematico    GrupoTematico @relation(fields: [grupo_tematico_id], references: [id])
+
+    @@unique([projeto_id, grupo_tematico_id])
+    @@map("projeto_grupo_tematico")
 }
