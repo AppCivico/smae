@@ -459,7 +459,7 @@ watch(itemParaEdição, (novoValor) => {
               {{ fase.fase.fase }}
             </td>
             <td class="cell--number">
-              {{ fase.duracao }}
+              {{ fase.duracao ? `${fase.duracao} dias` : '-' }}
             </td>
             <td class="cell--nowrap">
               {{ fase.marco ? 'sim' : 'não' }}
@@ -538,7 +538,7 @@ watch(itemParaEdição, (novoValor) => {
               {{ tarefa.workflow_tarefa.descricao || "-" }}
             </td>
             <td class="cell--number">
-              {{ tarefa.duracao }}
+              {{ tarefa.duracao ? `${tarefa.duracao} dias` : '-' }}
             </td>
             <td class="cell--nowrap">
               {{ tarefa.marco ? 'sim' : 'não' }}
