@@ -173,7 +173,8 @@ watch(itemParaEdição, (novoValor) => {
 
   <form
     :disabled="isSubmitting"
-    @submit.prevent="onSubmit">
+    @submit.prevent="onSubmit"
+  >
     <div class="flex g2 mb1 center">
       <div class="f1">
         <LabelFromYup
@@ -208,11 +209,11 @@ watch(itemParaEdição, (novoValor) => {
             Selecionar
           </option>
           <option
-            v-for="item in Object.values(esferasDeTransferencia)"
-            :key="item.valor"
-            :value="item.valor"
+            v-for="esfera in Object.values(esferasDeTransferencia)"
+            :key="esfera.valor"
+            :value="esfera.valor"
           >
-            {{ item.nome }}
+            {{ esfera.nome }}
           </option>
         </select>
         <div class="error-msg">
@@ -238,11 +239,11 @@ watch(itemParaEdição, (novoValor) => {
             Selecionar
           </option>
           <option
-            v-for="item in tiposDisponíveis"
-            :key="item"
-            :value="item.id"
+            v-for="tipo in tiposDisponíveis"
+            :key="tipo"
+            :value="tipo.id"
           >
-            {{ item.nome }}
+            {{ tipo.nome }}
           </option>
         </Field>
         <ErrorMessage
@@ -347,7 +348,8 @@ watch(itemParaEdição, (novoValor) => {
 
   <div
     v-if="props.fluxoId"
-    class="flex spacebetween center mb2">
+    class="flex spacebetween center mb2"
+  >
     <h1>Etapas do fluxo</h1>
     <hr class="ml2 f1">
     <button
@@ -361,16 +363,16 @@ watch(itemParaEdição, (novoValor) => {
 
   <div class="todasTabela">
     <div
-      v-for="item in emFoco?.fluxo"
-      :key="item.id"
+      v-for="etapa in emFoco?.fluxo"
+      :key="etapa.id"
       class="cadaTabela"
     >
       <div class="flex flexwrap center">
         <div class="flex">
-          <span class="ordem">{{ item && item.ordem ? item.ordem : '' }}</span>
+          <span class="ordem">{{ etapa && etapa.ordem ? etapa.ordem : '' }}</span>
           <h2 class="mb0 fb50 f1 tituloTabela flex g1 center">
-            Etapa <span>{{ item.fluxo_etapa_de.etapa_fluxo }}</span>
-            para <span>{{ item.fluxo_etapa_para.etapa_fluxo }}</span>
+            Etapa <span>{{ etapa.fluxo_etapa_de.etapa_fluxo }}</span>
+            para <span>{{ etapa.fluxo_etapa_para.etapa_fluxo }}</span>
           </h2>
         </div>
         <hr class="ml2 f1">
@@ -380,7 +382,7 @@ watch(itemParaEdição, (novoValor) => {
             class="btn ml2"
             @click="() => {
               idDoRelacionamentoComFase = 0;
-              idDaMãeDaFase = item.id;
+              idDaMãeDaFase = etapa.id;
             }"
           >
             Adicionar fase
@@ -388,10 +390,10 @@ watch(itemParaEdição, (novoValor) => {
           <button
             v-if="emFoco && !emFoco?.edicao_restrita"
             class="btn outline bgnone tcprimary mtauto"
-            :ordem="item.ordem"
-            :workflow_etapa_de_id="item.workflow_etapa_de_id"
-            :workflow_etapa_para_id="item.workflow_etapa_para_id"
-            @click="idDaEtapaEmFoco = item.id"
+            :ordem="etapa.ordem"
+            :workflow_etapa_de_id="etapa.workflow_etapa_de_id"
+            :workflow_etapa_para_id="etapa.workflow_etapa_para_id"
+            @click="idDaEtapaEmFoco = etapa.id"
           >
             Editar etapa
           </button>
@@ -400,7 +402,7 @@ watch(itemParaEdição, (novoValor) => {
             class="like-a__text"
             arial-label="excluir"
             title="excluir"
-            @click="excluirEtapa(item.id)"
+            @click="excluirEtapa(etapa.id)"
           >
             <svg
               width="20"
@@ -427,7 +429,7 @@ watch(itemParaEdição, (novoValor) => {
           </tr>
         </thead>
         <tbody
-          v-for="fase in item.fases"
+          v-for="fase in etapa.fases"
           :key="fase.id"
         >
           <tr v-scrollLockDebug>
@@ -486,7 +488,7 @@ watch(itemParaEdição, (novoValor) => {
                 class="bgnone like-a__text"
                 @click="() => {
                   idDoRelacionamentoComFase = fase.id;
-                  idDaMãeDaFase = item.id;
+                  idDaMãeDaFase = etapa.id;
                 }"
               >
                 <svg
