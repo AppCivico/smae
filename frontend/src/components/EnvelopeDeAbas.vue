@@ -1,7 +1,8 @@
 <script setup>
-import { kebabCase } from 'lodash';
+import { useResizeObserver } from '@vueuse/core';
+import { debounce, kebabCase } from 'lodash';
 import {
-  computed, useSlots, watch,
+  computed, nextTick, ref, useSlots,
 } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
@@ -36,6 +37,8 @@ const props = defineProps({
   },
 });
 
+const listaDeAbas = ref(null);
+
 // PRA-FAZER: um registro secundário da aba aberta em paralelo à query na rota
 // para cobrir todas as bases. Infelizmente, não adiantará muito enquanto houver
 // chaves de rota no componente raiz. Ver `App.vue`.
@@ -55,17 +58,30 @@ const dadosConsolidadosPorId = computed(() => Object.keys(props.metaDadosPorId)
     return acc;
   }, {}));
 
-watch(slots, () => {
-  const idDaAbaPadrão = Object.keys(slots).find((x) => dadosConsolidadosPorId.value[x]?.aberta);
+async function rolarParaAbaCorrente() {
+  if (listaDeAbas.value) {
+    await nextTick();
+    const índiceDaAbaCorrente = Array.from(listaDeAbas.value.querySelectorAll('a'))
+      .findIndex((x) => x.hasAttribute('aria-current'));
+    const { children: filhas } = listaDeAbas.value;
+
+    if (filhas[índiceDaAbaCorrente]) {
+      listaDeAbas.value.scrollLeft = filhas[índiceDaAbaCorrente].offsetLeft;
+    }
+  }
+}
+
+async function iniciar() {
+  const idDaAbaPadrão = Object.keys(slots).find((x) => dadosConsolidadosPorId.value[x]?.aberta)
+    || Object.keys(slots)?.[0];
   const dadosDaAbaPadrão = dadosConsolidadosPorId.value[idDaAbaPadrão];
 
   const hashDaAbaPadrão = dadosDaAbaPadrão?.hash
     || dadosDaAbaPadrão?.id;
-  // PRA-FAZER: conferir se um hash correspondente
-  // a uma aba inexistente está em uso
+
   if (hashDaAbaPadrão && !abaAberta.value) {
     router.replace({
-      name: props.nomeDaRotaRaiz || route.meta.rotaDeEscape || route.name,
+      name: props.nomeDaRotaRaiz || route.name,
       params: route.params,
       query: {
         ...route.query,
@@ -73,7 +89,16 @@ watch(slots, () => {
       },
     });
   }
-}, { immediate: true });
+  await nextTick();
+  rolarParaAbaCorrente();
+}
+
+useResizeObserver(listaDeAbas, debounce(async () => {
+  await nextTick();
+  rolarParaAbaCorrente();
+}, 400));
+
+iniciar();
 </script>
 <template>
   <div class="abas">
@@ -81,7 +106,10 @@ watch(slots, () => {
       class="abas__navegação mb3"
       :class="`abas__navegação--${alinhamento}`"
     >
-      <ul class="abas__lista flex">
+      <ul
+        ref="listaDeAbas"
+        class="abas__lista flex"
+      >
         <li
           v-for="nomeDaAba in Object.keys(slots)"
           :key="nomeDaAba"
@@ -150,13 +178,17 @@ watch(slots, () => {
 }
 
 .abas__lista {
+  overflow: auto;
+  overflow-x: auto;
+  overflow-y: clip;
+
   > li {
     padding-right: 2rem;
     display: flex;
     align-items: center;
     flex-basis: 0;
     flex-grow: 1;
-    min-width: 0;
+    min-width: min-content;
     text-wrap: balance;
     max-width: max-content;
   }
