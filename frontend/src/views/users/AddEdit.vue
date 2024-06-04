@@ -329,7 +329,12 @@ watch(accessProfiles, () => {
           checkbox para selecionar o perfil desejado.
         </p>
 
+        <!--
+          `v-if` em uso para contornar que não é possível ver a chegada
+          atrasada de slots para aplicar a rota da aba inicial
+        -->
         <EnvelopeDeAbas
+          v-if="módulosOrdenados.length"
           :meta-dados-por-id="dadosExtrasDeAbas"
           nome-da-chave-de-abas="modulo"
           class="mb2"
