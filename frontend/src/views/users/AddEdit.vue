@@ -38,7 +38,7 @@ const { sistemaEscolhido } = storeToRefs(authStore);
 
 let title = 'Cadastro de Usuário';
 const personalizarNomeParaExibição = ref(false);
-const { user, accessProfiles, perfisPorId } = storeToRefs(usersStore);
+const { user, accessProfiles } = storeToRefs(usersStore);
 
 const {
   errors, handleSubmit, isSubmitting, resetForm, setFieldValue, values,
@@ -111,10 +111,10 @@ if (id) {
 }
 
 const onSubmit = handleSubmit.withControlled(async (controlledValues) => {
-  const values = controlledValues;
+  const carga = controlledValues;
 
   if (!personalizarNomeParaExibição.value) {
-    values.nome_exibicao = values.nome_completo;
+    carga.nome_exibicao = carga.nome_completo;
   }
 
   try {
@@ -122,10 +122,10 @@ const onSubmit = handleSubmit.withControlled(async (controlledValues) => {
     let r;
 
     if (id && user) {
-      r = await usersStore.update(id, values);
+      r = await usersStore.update(id, carga);
       msg = 'Dados salvos com sucesso!';
     } else {
-      r = await usersStore.register(values);
+      r = await usersStore.register(carga);
       msg = 'Usuário adicionado com sucesso!';
     }
     if (r == true) {
