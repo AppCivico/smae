@@ -387,7 +387,7 @@ watch(accessProfiles, () => {
                     <li
                       v-for="privilegio in perfil.perfil_privilegio"
                       :key="privilegio.privilegio.nome"
-                      class="lista-de-privilegios__item mb1"
+                      class="lista-de-privilegios__item"
                     >
                       {{ privilegio.privilegio.nome }}
                     </li>
@@ -511,5 +511,10 @@ watch(accessProfiles, () => {
 .lista-de-privilegios__item {
   list-style-type: disc;
   list-style-position: outside;
+  margin-bottom: 1rem;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
 }
 </style>
