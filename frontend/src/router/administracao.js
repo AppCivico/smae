@@ -515,6 +515,7 @@ export default [
         name: 'criarUsuários',
         component: AddEditUsers,
         meta: {
+          título: 'Cadastro de Usuário',
           rotaDeEscape: 'gerenciarUsuários',
         },
       },
