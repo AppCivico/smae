@@ -333,6 +333,30 @@ export class DistribuicaoRecursoService {
                 },
             });
 
+            // Caso seja a única distribuição.
+            // E o órgão for atualizado, a atualização deve refletir no cronograma.
+            const countDistribuicoes = await prismaTx.distribuicaoRecurso.count({
+                where: {
+                    removido_em: null,
+                    transferencia_id: self.transferencia_id,
+                },
+            });
+
+            if (self.orgao_gestor.id != dto.orgao_gestor_id && countDistribuicoes == 1) {
+                await prismaTx.tarefa.updateMany({
+                    where: {
+                        tarefa_cronograma: {
+                            transferencia_id: self.transferencia_id,
+                            removido_em: null,
+                        },
+                        removido_em: null,
+                    },
+                    data: {
+                        orgao_id: dto.orgao_gestor_id,
+                    },
+                });
+            }
+
             return { id };
         });
 
