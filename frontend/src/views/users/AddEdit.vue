@@ -371,11 +371,17 @@ watch(accessProfiles, () => {
                 <button
                   type="button"
                   class="perfil__interruptor-de-privilegios btn bgnone uc tcprimary p0 tc600"
-                  @click=" perfilParaDetalhar = perfilParaDetalhar === perfil.id
+                  @click="perfilParaDetalhar = perfilParaDetalhar === perfil.id
                     ? 0
                     : perfil.id"
                 >
-                  exibir privilégios
+                  <template v-if="perfilParaDetalhar === perfil.id">
+                    ocultar
+                  </template>
+                  <template v-else>
+                    exibir
+                  </template>
+                  privilégios
                 </button>
                 <TransitionExpand>
                   <ul
