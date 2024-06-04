@@ -554,7 +554,7 @@ watch(itemParaEdição, (novoValor) => {
     color:#607A9F;
   }
 
-  span.ordem{
+  span.ordem {
       width: 46px;
       height: 46px;
       color: #fff;
@@ -589,7 +589,7 @@ watch(itemParaEdição, (novoValor) => {
       background: transparent;
   }
 
-  .tarefa{
+  .tarefa {
     color: #4074BF;
     font-weight: 700;
   }
