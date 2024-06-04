@@ -702,7 +702,6 @@ export class VariavelService {
                 indicador_id: true,
                 variavel: {
                     select: {
-                        valor_base: true,
                         periodicidade: true,
                         supraregional: true,
                         variavel_categorica_id: true,
@@ -740,7 +739,6 @@ export class VariavelService {
             if (jaEmUso > 0) throw new HttpException(`Código ${dto.codigo} já está em uso no indicador.`, 400);
         }
 
-        const oldValorBase = selfIndicadorVariavel.variavel.valor_base;
         // e com o indicador verdadeiro, temos os dados para recalcular os niveis
         const indicador = await this.prisma.indicador.findFirst({
             where: { id: selfIndicadorVariavel.indicador_id },
@@ -777,16 +775,30 @@ export class VariavelService {
             const responsaveis = dto.responsaveis;
             const suspendida = dto.suspendida;
 
-            if (suspendida == true) {
-                const self = await prismaTxn.variavel.findFirstOrThrow({
-                    where: { id: variavelId },
-                    select: { mostrar_monitoramento: true },
+            const self = await prismaTxn.variavel.findFirstOrThrow({
+                where: { id: variavelId },
+                select: {
+                    mostrar_monitoramento: true,
+                    suspendida_em: true,
+                    valor_base: true,
+                },
+            });
+            const currentSuspendida = self.suspendida_em !== null;
+
+            if (suspendida === true && currentSuspendida == false) {
+                dto.mostrar_monitoramento = false;
+            } else if (suspendida === false && currentSuspendida == true) {
+                // retorna ao state que estava antes de desativar
+                const prevDesativado = await prismaTxn.variavelSuspensaoLog.findFirst({
+                    where: { variavel_id: variavelId },
+                    orderBy: { criado_em: 'desc' },
+                    select: { previo_status_mostrar_monitoramento: true },
+                    take: 1,
                 });
 
-                // Caso a variável já esteja com mostrar_monitoramento == true, ou esteja sendo modificada agora para true.
-                // E o boolean de suspendida seja enviado como true, mostrar_monitoramento deve ser false.
-                if (self.mostrar_monitoramento || dto.mostrar_monitoramento) dto.mostrar_monitoramento = false;
+                dto.mostrar_monitoramento = prevDesativado?.previo_status_mostrar_monitoramento ?? true;
             }
+
             const old_variavel_categorica_id = selfIndicadorVariavel.variavel.variavel_categorica_id;
 
             if (dto.variavel_categorica_id !== null && dto.variavel_categorica_id) {
@@ -890,21 +902,14 @@ export class VariavelService {
                 },
             });
 
-            if (suspendida !== undefined) {
-                await prismaTxn.variavelSuspensaoLog.upsert({
-                    where: {
-                        variavel_id: variavelId,
-                    },
-                    update: {
-                        pessoa_id: user.id,
-                        suspendida: suspendida,
-                        criado_em: now,
-                    },
-                    create: {
+            if (suspendida !== undefined && suspendida !== currentSuspendida) {
+                await prismaTxn.variavelSuspensaoLog.create({
+                    data: {
                         variavel_id: variavelId,
                         pessoa_id: user.id,
                         suspendida: suspendida,
                         criado_em: now,
+                        previo_status_mostrar_monitoramento: self.mostrar_monitoramento,
                     },
                 });
             }
@@ -920,7 +925,7 @@ export class VariavelService {
                 });
             }
 
-            if (Number(oldValorBase).toString() !== Number(updated.valor_base).toString()) {
+            if (Number(self.valor_base).toString() !== Number(updated.valor_base).toString()) {
                 await this.recalc_variaveis_acumulada([variavelId], prismaTxn);
             }
         });

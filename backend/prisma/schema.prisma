@@ -1454,7 +1454,8 @@ model Variavel {
 }
 
 model VariavelSuspensaoLog {
-    variavel_id Int      @unique
+    id          Int      @id @default(autoincrement())
+    variavel_id Int
     variavel    Variavel @relation(fields: [variavel_id], references: [id])
 
     pessoa_id Int
@@ -1462,6 +1463,8 @@ model VariavelSuspensaoLog {
 
     suspendida Boolean
     criado_em  DateTime @db.Timestamptz(6)
+
+    previo_status_mostrar_monitoramento Boolean @default(true)
 
     @@map("variavel_suspensao_log")
 }
