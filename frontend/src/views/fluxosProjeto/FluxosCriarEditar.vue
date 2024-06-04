@@ -416,6 +416,8 @@ watch(itemParaEdição, (novoValor) => {
       <table class="tablemain mb4">
         <col>
         <col class="col--minimum">
+        <col class="col--minimum">
+        <col>
         <col>
         <col class="col--botão-de-ação">
         <col class="col--botão-de-ação">
@@ -424,6 +426,12 @@ watch(itemParaEdição, (novoValor) => {
           <tr>
             <th>
               Fase
+            </th>
+            <th class="cell--number">
+              Duração
+            </th>
+            <th>
+              Marco
             </th>
             <th class="cell--nowrap">
               Responsabilidade
@@ -449,6 +457,12 @@ watch(itemParaEdição, (novoValor) => {
               }"
             >
               {{ fase.fase.fase }}
+            </td>
+            <td class="cell--number">
+              {{ fase.duracao }}
+            </td>
+            <td class="cell--nowrap">
+              {{ fase.marco ? 'sim' : 'não' }}
             </td>
             <td class="cell--nowrap">
               {{ responsabilidadeEtapaFluxo[fase.responsabilidade]?.nome
@@ -523,7 +537,16 @@ watch(itemParaEdição, (novoValor) => {
               <span class="tarefa pl3">Tarefa</span>
               {{ tarefa.workflow_tarefa.descricao || "-" }}
             </td>
-            <td />
+            <td class="cell--number">
+              {{ tarefa.duracao }}
+            </td>
+            <td class="cell--nowrap">
+              {{ tarefa.marco ? 'sim' : 'não' }}
+            </td>
+            <td class="cell--nowrap">
+              {{ responsabilidadeEtapaFluxo[tarefa.responsabilidade]?.nome
+                || tarefa.responsabilidade }}
+            </td>
             <td />
             <td />
             <td>
