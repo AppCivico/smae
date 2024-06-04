@@ -19,7 +19,7 @@ export const useEquipamentosStore = defineStore('equipamentosStore', {
       this.erro = null;
 
       try {
-        const resposta = await this.requestS.get(`${baseUrl}/mdo/equipamento/${id}`, params);
+        const resposta = await this.requestS.get(`${baseUrl}/equipamento/${id}`, params);
         this.emFoco = {
           ...resposta,
         };
@@ -34,7 +34,7 @@ export const useEquipamentosStore = defineStore('equipamentosStore', {
       this.erro = null;
 
       try {
-        const { linhas } = await this.requestS.get(`${baseUrl}/mdo/equipamento`, params);
+        const { linhas } = await this.requestS.get(`${baseUrl}/equipamento`, params);
         this.lista = linhas;
       } catch (erro) {
         this.erro = erro;
@@ -47,7 +47,7 @@ export const useEquipamentosStore = defineStore('equipamentosStore', {
       this.erro = null;
 
       try {
-        await this.requestS.delete(`${baseUrl}/mdo/equipamento/${id}`);
+        await this.requestS.delete(`${baseUrl}/equipamento/${id}`);
         this.chamadasPendentes.lista = false;
         return true;
       } catch (erro) {
@@ -63,9 +63,9 @@ export const useEquipamentosStore = defineStore('equipamentosStore', {
 
       try {
         if (id) {
-          await this.requestS.patch(`${baseUrl}/mdo/equipamento/${id}`, params);
+          await this.requestS.patch(`${baseUrl}/equipamento/${id}`, params);
         } else {
-          await this.requestS.post(`${baseUrl}/mdo/equipamento`, params);
+          await this.requestS.post(`${baseUrl}/equipamento`, params);
         }
 
         this.chamadasPendentes.emFoco = false;

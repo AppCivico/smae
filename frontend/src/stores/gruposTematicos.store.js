@@ -19,7 +19,7 @@ export const useGruposTematicosStore = defineStore('gruposTematicosStore', {
       this.erro = null;
 
       try {
-        const resposta = await this.requestS.get(`${baseUrl}/mdo/grupo-tematico/${id}`, params);
+        const resposta = await this.requestS.get(`${baseUrl}/grupo-tematico/${id}`, params);
         this.emFoco = {
           ...resposta,
         };
@@ -34,7 +34,7 @@ export const useGruposTematicosStore = defineStore('gruposTematicosStore', {
       this.erro = null;
 
       try {
-        const { linhas } = await this.requestS.get(`${baseUrl}/mdo/grupo-tematico`, params);
+        const { linhas } = await this.requestS.get(`${baseUrl}/grupo-tematico`, params);
         this.lista = linhas;
       } catch (erro) {
         this.erro = erro;
@@ -47,7 +47,7 @@ export const useGruposTematicosStore = defineStore('gruposTematicosStore', {
       this.erro = null;
 
       try {
-        await this.requestS.delete(`${baseUrl}/mdo/grupo-tematico/${id}`);
+        await this.requestS.delete(`${baseUrl}/grupo-tematico/${id}`);
         this.chamadasPendentes.lista = false;
         return true;
       } catch (erro) {
@@ -63,9 +63,9 @@ export const useGruposTematicosStore = defineStore('gruposTematicosStore', {
 
       try {
         if (id) {
-          await this.requestS.patch(`${baseUrl}/mdo/grupo-tematico/${id}`, params);
+          await this.requestS.patch(`${baseUrl}/grupo-tematico/${id}`, params);
         } else {
-          await this.requestS.post(`${baseUrl}/mdo/grupo-tematico`, params);
+          await this.requestS.post(`${baseUrl}/grupo-tematico`, params);
         }
 
         this.chamadasPendentes.emFoco = false;
