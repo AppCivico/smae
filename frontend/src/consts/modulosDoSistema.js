@@ -1,4 +1,5 @@
 import gestaoDeProjetos from '@/assets/modulos/gestao-de-projetos.svg';
+import monitoramentoDeObras from '@/assets/modulos/monitoramento-de-obras.svg';
 import planosSetoriais from '@/assets/modulos/planos-setoriais.svg';
 import programaDeMetas from '@/assets/modulos/programa-de-metas.svg';
 import transferenciasVoluntarias from '@/assets/modulos/transferencias-voluntarias.svg';
@@ -23,6 +24,13 @@ export default {
     ícone: transferenciasVoluntarias,
     rotaInicial: {
       name: 'PanoramaTransferenciasListar',
+    },
+  },
+  MDO: {
+    nome: 'Monitoramento de Obras',
+    ícone: monitoramentoDeObras,
+    rotaInicial: {
+      name: 'cadastrosBasicos',
     },
   },
   PlanoSetorial: {
