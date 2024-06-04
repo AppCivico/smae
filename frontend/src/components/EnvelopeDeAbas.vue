@@ -116,7 +116,7 @@ iniciar();
           class="pt1 pb1"
         >
           <router-link
-            class="abas__link like-a__link t20 w700"
+            class="abas__link like-a__link t16 w700"
             :class="{
               tc300: abaAberta !== (dadosConsolidadosPorId?.[nomeDaAba]?.hash || nomeDaAba)
             }"
@@ -164,7 +164,6 @@ iniciar();
   max-width: max-content;
   margin-left: auto;
   margin-right: auto;
-  text-transform: uppercase;
 }
 
 .abas__navegação--esquerda {
