@@ -6,7 +6,6 @@ import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
 import { FindOneParams } from 'src/common/decorators/find-params';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
 import { UpdateProjetoDto } from '../projeto/dto/update-projeto.dto';
-import { ProjetoService } from '../projeto/projeto.service';
 import { GrupoTematicoService } from './grupo-tematico.service';
 import { CreateGrupoTematicoDto } from './dto/create-grupo-tematico.dto';
 import { ListaDePrivilegios } from 'src/common/ListaDePrivilegios';
@@ -22,10 +21,7 @@ const rolesMDO: ListaDePrivilegios[] = [
 @Controller('mdo')
 @ApiTags('Projeto - MdO')
 export class GrupoTematicoController {
-    constructor(
-        private readonly grupoTematicoService: GrupoTematicoService,
-        private readonly projetoService: ProjetoService
-    ) {}
+    constructor(private readonly grupoTematicoService: GrupoTematicoService) {}
 
     @Post('grupo-tematico')
     @ApiBearerAuth('access-token')

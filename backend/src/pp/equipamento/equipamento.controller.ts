@@ -6,7 +6,6 @@ import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
 import { FindOneParams, FindTwoParams } from 'src/common/decorators/find-params';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
 import { UpdateProjetoDto } from '../projeto/dto/update-projeto.dto';
-import { ProjetoService } from '../projeto/projeto.service';
 import { EquipamentoService } from './equipamento.service';
 import { CreateEquipamentoDto } from './dto/create-equipamento.dto';
 import { ListaDePrivilegios } from 'src/common/ListaDePrivilegios';
@@ -22,10 +21,7 @@ const rolesMDO: ListaDePrivilegios[] = [
 @Controller('mdo')
 @ApiTags('Projeto - MdO')
 export class EquipamentoController {
-    constructor(
-        private readonly equipamentoService: EquipamentoService,
-        private readonly projetoService: ProjetoService
-    ) {}
+    constructor(private readonly equipamentoService: EquipamentoService) {}
 
     @Post('equipamento')
     @ApiBearerAuth('access-token')
@@ -40,7 +36,7 @@ export class EquipamentoController {
     @Get('equipamento')
     @ApiBearerAuth('access-token')
     @Roles([...rolesMDO])
-    async findAll(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt): Promise<ListEquipamentoDto> {
+    async findAll(@CurrentUser() user: PessoaFromJwt): Promise<ListEquipamentoDto> {
         return { linhas: await this.equipamentoService.findAll(user) };
     }
 

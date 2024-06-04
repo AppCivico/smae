@@ -6,7 +6,6 @@ import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
 import { FindOneParams } from 'src/common/decorators/find-params';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
 import { UpdateProjetoDto } from '../projeto/dto/update-projeto.dto';
-import { ProjetoService } from '../projeto/projeto.service';
 import { TipoIntervencaoService } from './tipo-intervencao.service';
 import { CreateTipoIntervencaoDto } from './dto/create-tipo-intervencao.dto';
 import { ListaDePrivilegios } from 'src/common/ListaDePrivilegios';
@@ -22,10 +21,7 @@ const rolesMDO: ListaDePrivilegios[] = [
 @Controller('mdo')
 @ApiTags('Projeto - MdO')
 export class TipoIntervencaoController {
-    constructor(
-        private readonly grupoTematicoService: TipoIntervencaoService,
-        private readonly projetoService: ProjetoService
-    ) {}
+    constructor(private readonly tipoIntervencaoService: TipoIntervencaoService) {}
 
     @Post('tipo-intervencao')
     @ApiBearerAuth('access-token')
@@ -34,21 +30,21 @@ export class TipoIntervencaoController {
         @Body() createTipoIntervencaoDto: CreateTipoIntervencaoDto,
         @CurrentUser() user: PessoaFromJwt
     ): Promise<RecordWithId> {
-        return await this.grupoTematicoService.create(createTipoIntervencaoDto, user);
+        return await this.tipoIntervencaoService.create(createTipoIntervencaoDto, user);
     }
 
     @Get('tipo-intervencao')
     @ApiBearerAuth('access-token')
     @Roles([...rolesMDO])
     async findAll(@CurrentUser() user: PessoaFromJwt): Promise<ListTipoIntervencaoDto> {
-        return { linhas: await this.grupoTematicoService.findAll(user) };
+        return { linhas: await this.tipoIntervencaoService.findAll(user) };
     }
 
     @Get('tipo-intervencao/:id')
     @ApiBearerAuth('access-token')
     @Roles([...rolesMDO])
     async findOne(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt): Promise<TipoIntervencao> {
-        return await this.grupoTematicoService.findOne(params.id, user);
+        return await this.tipoIntervencaoService.findOne(params.id, user);
     }
 
     @Patch('tipo-intervencao/:id')
@@ -59,7 +55,7 @@ export class TipoIntervencaoController {
         @Body() updateProjetoDto: UpdateProjetoDto,
         @CurrentUser() user: PessoaFromJwt
     ): Promise<RecordWithId> {
-        return await this.grupoTematicoService.update(params.id, updateProjetoDto, user);
+        return await this.tipoIntervencaoService.update(params.id, updateProjetoDto, user);
     }
 
     @Delete('tipo-intervencao/:id')
@@ -68,7 +64,7 @@ export class TipoIntervencaoController {
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.ACCEPTED)
     async remove(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt) {
-        await this.grupoTematicoService.remove(params.id, user);
+        await this.tipoIntervencaoService.remove(params.id, user);
         return '';
     }
 }
