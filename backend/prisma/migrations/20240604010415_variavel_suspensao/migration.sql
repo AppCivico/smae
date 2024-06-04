@@ -1,3 +1,10 @@
+-- DropIndex
+DROP INDEX "variavel_suspensao_log_variavel_id_key";
+
+-- AlterTable
+ALTER TABLE "variavel_suspensao_log" ADD COLUMN     "id" SERIAL NOT NULL,
+ADD COLUMN     "previo_status_mostrar_monitoramento" BOOLEAN NOT NULL DEFAULT true,
+ADD CONSTRAINT "variavel_suspensao_log_pkey" PRIMARY KEY ("id");
 CREATE OR REPLACE FUNCTION atualiza_meta_status_consolidado(pMetaId int, pCicloFisicoIdAtual int)
     RETURNS varchar
     AS $$
@@ -521,6 +528,3 @@ BEGIN
 END
 $$
 LANGUAGE plpgsql;
-
-
-select atualiza_meta_status_consolidado(id, (select id from ciclo_fisico where ativo)) from meta where pdm_id = (select id from pdm where ativo) and removido_em is null ;
