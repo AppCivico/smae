@@ -18,12 +18,12 @@ const rolesMDO: ListaDePrivilegios[] = [
     ...PROJETO_READONLY_ROLES_MDO,
 ];
 
-@Controller('mdo')
+@Controller('equipamento')
 @ApiTags('Projeto - MdO')
 export class EquipamentoController {
     constructor(private readonly equipamentoService: EquipamentoService) {}
 
-    @Post('equipamento')
+    @Post('')
     @ApiBearerAuth('access-token')
     @Roles([...rolesMDO])
     async create(
@@ -33,21 +33,21 @@ export class EquipamentoController {
         return await this.equipamentoService.create(createEquipamentoDto, user);
     }
 
-    @Get('equipamento')
+    @Get('')
     @ApiBearerAuth('access-token')
     @Roles([...rolesMDO])
     async findAll(@CurrentUser() user: PessoaFromJwt): Promise<ListEquipamentoDto> {
         return { linhas: await this.equipamentoService.findAll(user) };
     }
 
-    @Get('equipamento/:id')
+    @Get(':id')
     @ApiBearerAuth('access-token')
     @Roles([...rolesMDO])
     async findOne(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt): Promise<Equipamento> {
         return await this.equipamentoService.findOne(params.id, user);
     }
 
-    @Patch('equipamento/:id')
+    @Patch(':id')
     @ApiBearerAuth('access-token')
     @Roles([...rolesMDO])
     async update(
@@ -58,7 +58,7 @@ export class EquipamentoController {
         return await this.equipamentoService.update(params.id, updateProjetoDto, user);
     }
 
-    @Delete('equipamento/:id')
+    @Delete(':id')
     @ApiBearerAuth('access-token')
     @Roles([...rolesMDO])
     @ApiNoContentResponse()

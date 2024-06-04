@@ -18,12 +18,12 @@ const rolesMDO: ListaDePrivilegios[] = [
     ...PROJETO_READONLY_ROLES_MDO,
 ];
 
-@Controller('mdo')
+@Controller('grupo-tematico')
 @ApiTags('Projeto - MdO')
 export class GrupoTematicoController {
     constructor(private readonly grupoTematicoService: GrupoTematicoService) {}
 
-    @Post('grupo-tematico')
+    @Post('')
     @ApiBearerAuth('access-token')
     @Roles([...rolesMDO])
     async create(
@@ -33,21 +33,21 @@ export class GrupoTematicoController {
         return await this.grupoTematicoService.create(createGrupoTematicoDto, user);
     }
 
-    @Get('grupo-tematico')
+    @Get('')
     @ApiBearerAuth('access-token')
     @Roles([...rolesMDO])
     async findAll(@CurrentUser() user: PessoaFromJwt): Promise<ListGrupoTematicoDto> {
         return { linhas: await this.grupoTematicoService.findAll(user) };
     }
 
-    @Get('grupo-tematico/:id')
+    @Get(':id')
     @ApiBearerAuth('access-token')
     @Roles([...rolesMDO])
     async findOne(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt): Promise<GrupoTematico> {
         return await this.grupoTematicoService.findOne(params.id, user);
     }
 
-    @Patch('grupo-tematico/:id')
+    @Patch(':id')
     @ApiBearerAuth('access-token')
     @Roles([...rolesMDO])
     async update(
@@ -58,7 +58,7 @@ export class GrupoTematicoController {
         return await this.grupoTematicoService.update(params.id, updateProjetoDto, user);
     }
 
-    @Delete('grupo-tematico/:id')
+    @Delete(':id')
     @ApiBearerAuth('access-token')
     @Roles([...rolesMDO])
     @ApiNoContentResponse()

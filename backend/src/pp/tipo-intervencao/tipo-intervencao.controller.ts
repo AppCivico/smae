@@ -18,12 +18,12 @@ const rolesMDO: ListaDePrivilegios[] = [
     ...PROJETO_READONLY_ROLES_MDO,
 ];
 
-@Controller('mdo')
+@Controller('tipo-intervencao')
 @ApiTags('Projeto - MdO')
 export class TipoIntervencaoController {
     constructor(private readonly tipoIntervencaoService: TipoIntervencaoService) {}
 
-    @Post('tipo-intervencao')
+    @Post('')
     @ApiBearerAuth('access-token')
     @Roles([...rolesMDO])
     async create(
@@ -33,21 +33,21 @@ export class TipoIntervencaoController {
         return await this.tipoIntervencaoService.create(createTipoIntervencaoDto, user);
     }
 
-    @Get('tipo-intervencao')
+    @Get('')
     @ApiBearerAuth('access-token')
     @Roles([...rolesMDO])
     async findAll(@CurrentUser() user: PessoaFromJwt): Promise<ListTipoIntervencaoDto> {
         return { linhas: await this.tipoIntervencaoService.findAll(user) };
     }
 
-    @Get('tipo-intervencao/:id')
+    @Get(':id')
     @ApiBearerAuth('access-token')
     @Roles([...rolesMDO])
     async findOne(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt): Promise<TipoIntervencao> {
         return await this.tipoIntervencaoService.findOne(params.id, user);
     }
 
-    @Patch('tipo-intervencao/:id')
+    @Patch(':id')
     @ApiBearerAuth('access-token')
     @Roles([...rolesMDO])
     async update(
@@ -58,7 +58,7 @@ export class TipoIntervencaoController {
         return await this.tipoIntervencaoService.update(params.id, updateProjetoDto, user);
     }
 
-    @Delete('tipo-intervencao/:id')
+    @Delete(':id')
     @ApiBearerAuth('access-token')
     @Roles([...rolesMDO])
     @ApiNoContentResponse()
