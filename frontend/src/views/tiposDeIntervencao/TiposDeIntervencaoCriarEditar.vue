@@ -13,17 +13,17 @@
     <div class="flex g2 mb1">
       <div class="f1">
         <LabelFromYup
-          name="tipo_intervencao"
+          name="nome"
           :schema="schema"
         />
         <Field
-          name="tipo_intervencao"
+          name="nome"
           type="text"
           class="inputtext light mb1"
         />
         <ErrorMessage
           class="error-msg mb1"
-          name="tipo_intervencao"
+          name="nome"
         />
       </div>
     </div>
@@ -64,10 +64,10 @@
 <script setup>
 import { tipoDeIntervencao as schema } from '@/consts/formSchemas';
 import { useAlertStore } from '@/stores/alert.store';
+import { useTiposDeIntervencaoStore } from '@/stores/tiposDeIntervencao.store';
 import { storeToRefs } from 'pinia';
 import { ErrorMessage, Field, Form } from 'vee-validate';
 import { useRoute, useRouter } from 'vue-router';
-import { useTiposDeIntervencaoStore } from '@/stores/tiposDeIntervencao.store';
 
 const alertStore = useAlertStore();
 const tiposDeIntervencaoStore = useTiposDeIntervencaoStore();
