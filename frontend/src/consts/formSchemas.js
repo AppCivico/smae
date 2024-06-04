@@ -285,7 +285,7 @@ export const dotação = string()
   .matches(regEx.dotaçãoComComplemento, 'regex em dotação');
 
 export const equipamento = object({
-  equipamento: string()
+  nome: string()
     .label('Equipamento')
     .min(3)
     .max(250)
@@ -647,7 +647,7 @@ export const grupoDeObservadores = object({
 });
 
 export const gruposTematicos = object({
-  grupo_tematico: string()
+  nome: string()
     .label('Grupo temático')
     .min(3)
     .max(250)
@@ -2294,7 +2294,7 @@ export const tipoDeAcompanhamento = object()
   });
 
 export const tipoDeIntervencao = object({
-  tipo_intervencao: string()
+  nome: string()
     .label('Tipo de intervenção')
     .min(3)
     .max(250)

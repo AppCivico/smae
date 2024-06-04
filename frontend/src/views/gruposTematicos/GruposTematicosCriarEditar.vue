@@ -13,17 +13,17 @@
     <div class="flex g2 mb1">
       <div class="f1">
         <LabelFromYup
-          name="grupo_tematico"
+          name="nome"
           :schema="schema"
         />
         <Field
-          name="grupo_tematico"
+          name="nome"
           type="text"
           class="inputtext light mb1"
         />
         <ErrorMessage
           class="error-msg mb1"
-          name="grupo_tematico"
+          name="nome"
         />
       </div>
     </div>
