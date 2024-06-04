@@ -32,7 +32,6 @@ export class TipoIntervencaoController {
     @Roles([...rolesMDO])
     async create(
         @Body() createTipoIntervencaoDto: CreateTipoIntervencaoDto,
-        @Param() params: FindOneParams,
         @CurrentUser() user: PessoaFromJwt
     ): Promise<RecordWithId> {
         return await this.grupoTematicoService.create(createTipoIntervencaoDto, user);
