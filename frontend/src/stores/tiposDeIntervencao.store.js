@@ -19,7 +19,7 @@ export const useTiposDeIntervencaoStore = defineStore('tiposDeIntervencaoStore',
       this.erro = null;
 
       try {
-        const resposta = await this.requestS.get(`${baseUrl}/tipos-intervencao/${id}`, params);
+        const resposta = await this.requestS.get(`${baseUrl}/mdo/tipo-intervencao/${id}`, params);
         this.emFoco = {
           ...resposta,
         };
@@ -34,7 +34,7 @@ export const useTiposDeIntervencaoStore = defineStore('tiposDeIntervencaoStore',
       this.erro = null;
 
       try {
-        const { linhas } = await this.requestS.get(`${baseUrl}/tipos-intervencao`, params);
+        const { linhas } = await this.requestS.get(`${baseUrl}/mdo/tipo-intervencao`, params);
         this.lista = linhas;
       } catch (erro) {
         this.erro = erro;
@@ -47,7 +47,7 @@ export const useTiposDeIntervencaoStore = defineStore('tiposDeIntervencaoStore',
       this.erro = null;
 
       try {
-        await this.requestS.delete(`${baseUrl}/tipos-intervencao/${id}`);
+        await this.requestS.delete(`${baseUrl}/mdo/tipo-intervencao/${id}`);
         this.chamadasPendentes.lista = false;
         return true;
       } catch (erro) {
@@ -63,9 +63,9 @@ export const useTiposDeIntervencaoStore = defineStore('tiposDeIntervencaoStore',
 
       try {
         if (id) {
-          await this.requestS.patch(`${baseUrl}/tipos-intervencao/${id}`, params);
+          await this.requestS.patch(`${baseUrl}/mdo/tipo-intervencao/${id}`, params);
         } else {
-          await this.requestS.post(`${baseUrl}/tipos-intervencao`, params);
+          await this.requestS.post(`${baseUrl}/mdo/tipo-intervencao`, params);
         }
 
         this.chamadasPendentes.emFoco = false;
