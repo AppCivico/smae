@@ -6,19 +6,16 @@ import CadastrosBasicosRaiz from '@/views/CadastrosBasicosRaiz.vue';
 import BancadasCriarEditar from '@/views/bancada/BancadasCriarEditar.vue';
 import BancadasLista from '@/views/bancada/BancadasLista.vue';
 import BancadasRaiz from '@/views/bancada/BancadasRaiz.vue';
-import GruposTematicosCriarEditar from '@/views/gruposTematicos/GruposTematicosCriarEditar.vue';
-import GruposTematicosLista from '@/views/gruposTematicos/GruposTematicosLista.vue';
-import GruposTematicosRaiz from '@/views/gruposTematicos/GruposTematicosRaiz.vue';
-import TiposDeIntervencaoCriarEditar from '@/views/tiposDeIntervencao/TiposDeIntervencaoCriarEditar.vue';
-import TiposDeIntervencaoLista from '@/views/tiposDeIntervencao/TiposDeIntervencaoLista.vue';
-import TiposDeIntervencaoRaiz from '@/views/tiposDeIntervencao/TiposDeIntervencaoRaiz.vue';
-import EquipamentosCriarEditar from '@/views/equipamentos/EquipamentosCriarEditar.vue';
-import EquipamentosLista from '@/views/equipamentos/EquipamentosLista.vue';
-import EquipamentosRaiz from '@/views/equipamentos/EquipamentosRaiz.vue';
 import {
   AddEditDocumentTypes,
   ListDocumentTypes,
 } from '@/views/documentTypes';
+import EquipamentosCriarEditar from '@/views/equipamentos/EquipamentosCriarEditar.vue';
+import EquipamentosLista from '@/views/equipamentos/EquipamentosLista.vue';
+import EquipamentosRaiz from '@/views/equipamentos/EquipamentosRaiz.vue';
+import GruposTematicosCriarEditar from '@/views/gruposTematicos/GruposTematicosCriarEditar.vue';
+import GruposTematicosLista from '@/views/gruposTematicos/GruposTematicosLista.vue';
+import GruposTematicosRaiz from '@/views/gruposTematicos/GruposTematicosRaiz.vue';
 import {
   AddEditODS,
   ListODS,
@@ -37,6 +34,9 @@ import {
   AddEditResources,
   ListResources,
 } from '@/views/resources';
+import TiposDeIntervencaoCriarEditar from '@/views/tiposDeIntervencao/TiposDeIntervencaoCriarEditar.vue';
+import TiposDeIntervencaoLista from '@/views/tiposDeIntervencao/TiposDeIntervencaoLista.vue';
+import TiposDeIntervencaoRaiz from '@/views/tiposDeIntervencao/TiposDeIntervencaoRaiz.vue';
 import {
   AddEditUsers,
   ListUsers,
@@ -46,9 +46,9 @@ import TipoDeTransferenciaCriarEditar from '@/views/tipoDeTransferencia/TipoDeTr
 import TipoDeTransferenciaLista from '@/views/tipoDeTransferencia/TipoDeTransferenciaLista.vue';
 import TipoDeTransferenciaRaiz from '@/views/tipoDeTransferencia/TipoDeTransferenciaRaiz.vue';
 
-import EtapasRaiz from '@/views/etapasProjeto/EtapasRaiz.vue';
-import EtapasLista from '@/views/etapasProjeto/EtapasLista.vue';
 import EtapasCriarEditar from '@/views/etapasProjeto/EtapasCriarEditar.vue';
+import EtapasLista from '@/views/etapasProjeto/EtapasLista.vue';
+import EtapasRaiz from '@/views/etapasProjeto/EtapasRaiz.vue';
 
 const TiposDeAcompanhamentoLista = defineAsyncComponent({
   loader: () => import('@/views/tiposDeAcompanhamento/TiposLista.vue'),
