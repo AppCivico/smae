@@ -259,11 +259,12 @@ export class TaskService {
         process.env.INTERNAL_DISABLE_QUERY_LOG = '';
 
         for (const task of pendingTasks) {
-            // já tem um job da org na fila, pula
+            // lock por quem colocou na fila
             if (task.pessoa_id && this.current_jobs_pessoa_ids.has(task.pessoa_id)) continue;
             if (task.pessoa_id) this.current_jobs_pessoa_ids.add(task.pessoa_id);
-            if (task.type == 'refresh_meta' && this.current_jobs_types.has(task.type)) continue;
-            if (task.type == 'refresh_meta') this.current_jobs_types.add(task.type);
+            // lock por tipo de job, os que são refresh geralmente podem cancelar mais de um job numa execução
+            if (task.type.toString().startsWith('refresh_') && this.current_jobs_types.has(task.type)) continue;
+            if (task.type.toString().startsWith('refresh_')) this.current_jobs_types.add(task.type);
 
             this.running_jobs.add(task.id);
 
@@ -409,6 +410,7 @@ export class TaskService {
             echo: true,
             refresh_mv: true, // só chama uma função no banco, n tem risco de leak
             refresh_meta: true, // tbm só chama função no banco
+            refresh_indicador: true, // tbm só chama função no banco
         };
 
         if (map[type]) return true;
