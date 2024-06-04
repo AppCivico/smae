@@ -1,11 +1,10 @@
-import { Module, forwardRef } from '@nestjs/common';
-import { ProjetoModule } from '../projeto/projeto.module';
+import { Module } from '@nestjs/common';
 import { TipoIntervencaoController } from './tipo-intervencao.controller';
 import { TipoIntervencaoService } from './tipo-intervencao.service';
 import { PrismaModule } from 'src/prisma/prisma.module';
 
 @Module({
-    imports: [PrismaModule, forwardRef(() => ProjetoModule)],
+    imports: [PrismaModule],
     controllers: [TipoIntervencaoController],
     providers: [TipoIntervencaoService],
 })
