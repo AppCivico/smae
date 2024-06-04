@@ -2,6 +2,7 @@
 // Não finalizado
 import esferasDeTransferencia from '@/consts/esferasDeTransferencia';
 import { workflow as schema } from '@/consts/formSchemas';
+import responsabilidadeEtapaFluxo from '@/consts/responsabilidadeEtapaFluxo';
 import { useAlertStore } from '@/stores/alert.store';
 import { useFluxosEtapasProjetosStore } from '@/stores/fluxosEtapasProjeto.store';
 import { useFluxosFasesProjetosStore } from '@/stores/fluxosFasesProjeto.store';
@@ -414,6 +415,7 @@ watch(itemParaEdição, (novoValor) => {
 
       <table class="tablemain mb4">
         <col>
+        <col class="col--minimum">
         <col>
         <col class="col--botão-de-ação">
         <col class="col--botão-de-ação">
@@ -422,6 +424,9 @@ watch(itemParaEdição, (novoValor) => {
           <tr>
             <th>
               Fase
+            </th>
+            <th class="cell--nowrap">
+              Responsabilidade
             </th>
             <th>
               Situação
@@ -433,7 +438,7 @@ watch(itemParaEdição, (novoValor) => {
           :key="fase.id"
         >
           <tr v-scrollLockDebug>
-            <td colspan="5">
+            <td colspan="6">
               <pre>fase:{{ fase }}</pre>
             </td>
           </tr>
@@ -445,11 +450,17 @@ watch(itemParaEdição, (novoValor) => {
             >
               {{ fase.fase.fase }}
             </td>
+            <td class="cell--nowrap">
+              {{ responsabilidadeEtapaFluxo[fase.responsabilidade]?.nome
+                || fase.responsabilidade }}
+            </td>
             <td>
-              <span v-if="fase.situacoes && fase.situacoes.length">
+              <template v-if="fase.situacoes && fase.situacoes.length">
                 {{ fase.situacoes.map(situacao => situacao.situacao).join(', ') }}
-              </span>
-              <span v-else>-</span>
+              </template>
+              <template v-else>
+                -
+              </template>
             </td>
             <td>
               <button
@@ -504,13 +515,15 @@ watch(itemParaEdição, (novoValor) => {
             class="tarefaTabela"
           >
             <td
+              class="cell--nowrap"
               :class="{
                 loading: tarefasPendentes?.lista
               }"
             >
               <span class="tarefa pl3">Tarefa</span>
-              {{ tarefa.workflow_tarefa.descricao || "-"}}
+              {{ tarefa.workflow_tarefa.descricao || "-" }}
             </td>
+            <td />
             <td />
             <td />
             <td>
