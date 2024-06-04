@@ -1,9 +1,9 @@
 export default {
   Propria: {
-    nome: 'Propria',
+    nome: 'Própria',
     valor: 'Propria',
   },
-  OutroOrgao : {
+  OutroOrgao: {
     nome: 'Outro órgão',
     valor: 'OutroOrgao',
   },
