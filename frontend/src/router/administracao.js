@@ -167,7 +167,13 @@ export default [
           título: 'Grupos temáticos',
           rotaPrescindeDeChave: true,
           rotasParaMenuSecundário,
-          // limitarÀsPermissões: 'CadastroGrupoTematico.',
+          limitarÀsPermissões: [
+            'ProjetoMDO.administrador',
+            'ProjetoMDO.administrador_no_orgao',
+            'MDO.gestor_de_projeto',
+            'MDO.colaborador_de_projeto',
+            'MDO.espectador_de_projeto',
+          ],
         },
         children: [
           {
@@ -214,7 +220,13 @@ export default [
           título: 'Tipos de intervenção',
           rotaPrescindeDeChave: true,
           rotasParaMenuSecundário,
-          // limitarÀsPermissões: '.',
+          limitarÀsPermissões: [
+            'ProjetoMDO.administrador',
+            'ProjetoMDO.administrador_no_orgao',
+            'MDO.gestor_de_projeto',
+            'MDO.colaborador_de_projeto',
+            'MDO.espectador_de_projeto',
+          ],
         },
         children: [
           {
@@ -261,7 +273,13 @@ export default [
           título: 'Equipamentos',
           rotaPrescindeDeChave: true,
           rotasParaMenuSecundário,
-          // limitarÀsPermissões: '.',
+          limitarÀsPermissões: [
+            'ProjetoMDO.administrador',
+            'ProjetoMDO.administrador_no_orgao',
+            'MDO.gestor_de_projeto',
+            'MDO.colaborador_de_projeto',
+            'MDO.espectador_de_projeto',
+          ],
         },
         children: [
           {
