@@ -585,7 +585,7 @@ watch(itemParaEdição, (novoValor) => {
     border-left: 4px solid #4074BF;
   }
 
-  .tablemain tr:nth-of-type(even), .tablemain tz:nth-of-type(even) {
+  .tablemain tr:nth-of-type(even) {
       background: transparent;
   }
 
