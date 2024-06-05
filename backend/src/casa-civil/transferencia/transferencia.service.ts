@@ -259,8 +259,7 @@ export class TransferenciaService {
                         },
                     });
                     if (!tarefaIrma) throw new Error('Erro ao encontrar tarefa filha para base de projeção.');
-                    console.log('tarefa irmã');
-                    console.log(tarefaIrma);
+
                     updates.push(
                         prismaTxn.tarefa.update({
                             where: { id: row.id },

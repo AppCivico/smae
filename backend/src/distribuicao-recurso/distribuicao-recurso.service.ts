@@ -11,6 +11,7 @@ import { formataSEI } from 'src/common/formata-sei';
 
 type OperationsRegistroSEI = {
     id?: number;
+    nome: string | null;
     processo_sei: string;
 }[];
 
@@ -37,10 +38,25 @@ export class DistribuicaoRecursoService {
 
         const created = await this.prisma.$transaction(
             async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
+                if (dto.nome) {
+                    const similarExists = await prismaTx.distribuicaoRecurso.count({
+                        where: {
+                            nome: { endsWith: dto.nome, mode: 'insensitive' },
+                            removido_em: null,
+                        },
+                    });
+                    if (similarExists > 0)
+                        throw new HttpException(
+                            'nome| Nome de distribuição, igual ou semelhante já existe em outro registro ativo',
+                            400
+                        );
+                }
+
                 const distribuicaoRecurso = await prismaTx.distribuicaoRecurso.create({
                     data: {
                         transferencia_id: dto.transferencia_id,
                         orgao_gestor_id: dto.orgao_gestor_id,
+                        nome: dto.nome,
                         objeto: dto.objeto,
                         valor: dto.valor,
                         valor_total: dto.valor_total,
@@ -67,6 +83,7 @@ export class DistribuicaoRecursoService {
                                         ? dto.registros_sei!.map((r) => {
                                               return {
                                                   processo_sei: r.processo_sei.replace(/\D/g, ''),
+                                                  nome: r.nome,
                                                   registro_sei_info: '{}',
                                                   criado_em: new Date(Date.now()),
                                                   criado_por: user.id,
@@ -182,6 +199,7 @@ export class DistribuicaoRecursoService {
             select: {
                 id: true,
                 transferencia_id: true,
+                nome: true,
                 objeto: true,
                 valor: true,
                 valor_total: true,
@@ -210,6 +228,7 @@ export class DistribuicaoRecursoService {
                     where: { removido_em: null },
                     select: {
                         id: true,
+                        nome: true,
                         processo_sei: true,
                     },
                 },
@@ -222,6 +241,7 @@ export class DistribuicaoRecursoService {
                 registros_sei: r.registros_sei.map((s) => {
                     return {
                         id: s.id,
+                        nome: s.nome,
                         processo_sei: formataSEI(s.processo_sei),
                     };
                 }),
@@ -238,6 +258,7 @@ export class DistribuicaoRecursoService {
             select: {
                 id: true,
                 transferencia_id: true,
+                nome: true,
                 objeto: true,
                 valor: true,
                 valor_total: true,
@@ -266,6 +287,7 @@ export class DistribuicaoRecursoService {
                     where: { removido_em: null },
                     select: {
                         id: true,
+                        nome: true,
                         processo_sei: true,
                     },
                 },
@@ -278,6 +300,7 @@ export class DistribuicaoRecursoService {
             registros_sei: row.registros_sei.map((s) => {
                 return {
                     id: s.id,
+                    nome: s.nome,
                     processo_sei: formataSEI(s.processo_sei),
                 };
             }),
@@ -303,6 +326,18 @@ export class DistribuicaoRecursoService {
                 await this.checkDiffSei(id, dto.registros_sei, currRegistrosSei, prismaTx, user);
             }
             delete dto.registros_sei;
+
+            if (dto.nome && dto.nome != self.nome) {
+                const similarExists = await prismaTx.distribuicaoRecurso.count({
+                    where: {
+                        nome: { endsWith: dto.nome, mode: 'insensitive' },
+                        removido_em: null,
+                        id: { not: id },
+                    },
+                });
+                if (similarExists > 0)
+                    throw new HttpException('nome| Nome igual ou semelhante já existe em outro registro ativo', 400);
+            }
 
             await prismaTx.distribuicaoRecurso.update({
                 where: { id },
@@ -422,6 +457,7 @@ export class DistribuicaoRecursoService {
                         removido_em: null,
                     },
                     data: {
+                        nome: updatedRow.nome,
                         processo_sei: updatedRow.processo_sei.replace(/\D/g, ''),
                         atualizado_em: new Date(Date.now()),
                         atualizado_por: user.id,
@@ -435,6 +471,7 @@ export class DistribuicaoRecursoService {
                 prismaTx.distribuicaoRecursoSei.create({
                     data: {
                         distribuicao_recurso_id: distribuicaoRecursoId,
+                        nome: createdRow.nome,
                         processo_sei: createdRow.processo_sei.replace(/\D/g, ''),
                         registro_sei_info: '{}',
                         criado_em: new Date(Date.now()),
