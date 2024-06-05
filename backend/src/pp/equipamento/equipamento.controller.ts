@@ -63,7 +63,7 @@ export class EquipamentoController {
     @Roles([...rolesMDO])
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.ACCEPTED)
-    async remove(@Param() params: FindTwoParams, @CurrentUser() user: PessoaFromJwt) {
+    async remove(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt) {
         await this.equipamentoService.remove(params.id, user);
         return '';
     }
