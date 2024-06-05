@@ -1324,7 +1324,8 @@ export const transferenciasVoluntarias = object({
     .nullable()
     .transform((v) => (v === '' ? null : v)),
   clausula_suspensiva: boolean()
-    .label('Cláusula suspensiva'),
+    .label('Cláusula suspensiva')
+    .nullable(),
   detalhamento: string()
     .label('Detalhamento')
     .max(50000)
