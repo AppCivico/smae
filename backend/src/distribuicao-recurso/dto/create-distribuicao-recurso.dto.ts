@@ -184,7 +184,7 @@ class CreateDistribuicaoRegistroSEIDto {
     @IsString()
     @MinLength(1)
     @MaxLength(1024)
-    nome: string;
+    nome?: string;
 
     @IsString()
     @MaxLength(40)
