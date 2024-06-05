@@ -209,6 +209,10 @@ export default [
             }),
             meta: {
               título: 'Editar grupo temático',
+              rotasParaMigalhasDePão: [
+                'cadastrosBasicos',
+                'gruposTematicosObras',
+              ],
             },
           },
         ],
