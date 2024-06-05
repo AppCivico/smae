@@ -732,45 +732,4 @@ export default [
       },
     ],
   },
-
-  // {
-  //   path: 'grupos-tematicos',
-  //   component: GruposTematicosRaiz,
-  //   meta: {
-  //     título: 'Grupos temáticos',
-  //     rotaPrescindeDeChave: true,
-  //     rotasParaMenuSecundário,
-  //     limitarÀsPermissões: 'CadastroGrupoTematico.',
-  //   },
-  //   children: [
-  //     {
-  //       name: 'gruposTematicosObras',
-  //       path: '',
-  //       component: GruposTematicosLista,
-  //       meta: {
-  //         título: 'Grupos temáticos de obras',
-  //       },
-  //     },
-  //     {
-  //       name: 'grupoTematicoCriar',
-  //       path: 'novo',
-  //       component: GruposTematicosCriarEditar,
-  //       meta: {
-  //         título: 'Novo grupo temático',
-  //       },
-  //     },
-  //     {
-  //       path: ':grupoTematicoId',
-  //       name: 'grupoTematicoEditar',
-  //       component: GruposTematicosCriarEditar,
-  //       props: ({ params }) => ({
-  //         ...params,
-  //         ...{ grupoTematicoId: Number.parseInt(params.grupoTematicoId, 10) || undefined },
-  //       }),
-  //       meta: {
-  //         título: 'Editar grupo temático',
-  //       },
-  //     },
-  //   ],
-  // },
 ];
