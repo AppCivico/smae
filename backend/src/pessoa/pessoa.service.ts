@@ -1224,6 +1224,12 @@ export class PessoaService {
     async listaPerfilAcessoParaPessoas(filter: FilterPrivDto, user: PessoaFromJwt): Promise<PerfilAcessoPrivilegios[]> {
         const ehAdmin = user.hasSomeRoles(['CadastroPessoa.administrador']);
 
+        if (filter.sistemas && !ehAdmin)
+            throw new BadRequestException(
+                'Você não tem permissão para filtrar por sistemas, apenas administradores podem fazer isso.'
+            );
+
+        console.log(filter.sistemas);
         const dados = await this.prisma.perfilAcesso.findMany({
             where: {
                 removido_em: null,
@@ -1252,7 +1258,15 @@ export class PessoaService {
             },
         });
 
-        return dados as PerfilAcessoPrivilegios[];
+        if (ehAdmin) return dados;
+
+        const sistema = user.assertOneModuloSistema('buscar', 'pérfil de acesso');
+
+        for (const r of dados) {
+            r.modulos_sistemas = [sistema];
+        }
+
+        return dados;
     }
 
     async listaPrivilegiosModulos(
@@ -1260,7 +1274,7 @@ export class PessoaService {
         filterModulos: ModuloSistema[] | undefined
     ): Promise<ListaPrivilegiosModulos> {
         if (!filterModulos) filterModulos = Object.keys(ModuloSistema) as ModuloSistema[];
-        console.log(filterModulos)
+        console.log(filterModulos);
 
         const dados: ListaPrivilegiosModulos[] = await this.prisma.$queryRaw`
             with perms as (
