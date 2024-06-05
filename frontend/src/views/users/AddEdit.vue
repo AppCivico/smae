@@ -368,6 +368,8 @@ watch(accessProfiles, () => {
                   </small>
                 </label>
 
+                <pre v-ScrollLockDebug>modulos_sistemas:{{ perfil.modulos_sistemas }}</pre>
+
                 <button
                   type="button"
                   class="perfil__interruptor-de-privilegios btn bgnone uc tcprimary p0 tc600"
