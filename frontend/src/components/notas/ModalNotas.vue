@@ -328,6 +328,7 @@ watch(itemParaEdição, (novosValores) => {
               <div class="f1">
                 <LabelFromYup
                   name="orgao_enderecado_id"
+                  class="tc300"
                   :schema="schema.fields.enderecamentos.innerType"
                 />
                 <Field
@@ -360,6 +361,7 @@ watch(itemParaEdição, (novosValores) => {
               <div class="f1">
                 <LabelFromYup
                   name="pessoa_enderecado_id"
+                  class="tc300"
                   :schema="schema.fields.enderecamentos.innerType"
                 />
                 <Field
