@@ -49,6 +49,7 @@ export class TaskService {
     private current_jobs_types = new Set<task_type>();
     private running_jobs = new Set<number>();
     private running_job_counter = 0;
+    private is_running = false;
 
     constructor(
         private readonly prisma: PrismaService,
@@ -207,6 +208,8 @@ export class TaskService {
     @Interval(250)
     async handleCron() {
         if (!this.enabled) return;
+        if (this.is_running) return;
+        this.is_running = true;
 
         process.env.INTERNAL_DISABLE_QUERY_LOG = '1';
         await this.prisma.$transaction(
@@ -233,6 +236,7 @@ export class TaskService {
             }
         );
         process.env.INTERNAL_DISABLE_QUERY_LOG = '';
+        this.is_running = false;
     }
 
     async startPendingJobs() {
