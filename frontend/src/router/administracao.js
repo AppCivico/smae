@@ -262,6 +262,10 @@ export default [
             }),
             meta: {
               título: 'Editar tipo de intervenção',
+              rotasParaMigalhasDePão: [
+                'cadastrosBasicos',
+                'tiposDeIntervencao',
+              ],
             },
           },
         ],
