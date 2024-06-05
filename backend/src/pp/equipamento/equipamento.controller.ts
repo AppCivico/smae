@@ -3,7 +3,7 @@ import { ApiTags, ApiBearerAuth, ApiNoContentResponse } from '@nestjs/swagger';
 import { CurrentUser } from 'src/auth/decorators/current-user.decorator';
 import { Roles } from 'src/auth/decorators/roles.decorator';
 import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
-import { FindOneParams, FindTwoParams } from 'src/common/decorators/find-params';
+import { FindOneParams } from 'src/common/decorators/find-params';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
 import { UpdateProjetoDto } from '../projeto/dto/update-projeto.dto';
 import { EquipamentoService } from './equipamento.service';
