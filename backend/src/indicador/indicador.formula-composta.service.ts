@@ -195,7 +195,7 @@ export class IndicadorFormulaCompostaService {
         );
 
         return await this.prisma.$transaction(
-            async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
+            async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId & { formula_compilada: string }> => {
                 const self = await prismaTx.formulaComposta.findFirstOrThrow({
                     where: {
                         id: id,
@@ -209,22 +209,24 @@ export class IndicadorFormulaCompostaService {
                     select: { id: true, formula_compilada: true },
                 });
 
-                const sameTitle = await prismaTx.formulaComposta.count({
-                    where: {
-                        removido_em: null,
-                        NOT: { id: self.id },
-                        titulo: {
-                            mode: 'insensitive',
-                            equals: dto.titulo,
-                        },
-                        IndicadorFormulaComposta: {
-                            some: {
-                                indicador_id: indicador_id,
+                if (dto.titulo !== undefined) {
+                    const sameTitle = await prismaTx.formulaComposta.count({
+                        where: {
+                            removido_em: null,
+                            NOT: { id: self.id },
+                            titulo: {
+                                mode: 'insensitive',
+                                equals: dto.titulo,
+                            },
+                            IndicadorFormulaComposta: {
+                                some: {
+                                    indicador_id: indicador_id,
+                                },
                             },
                         },
-                    },
-                });
-                if (sameTitle) throw new HttpException('Já existe uma fórmula composta com o mesmo título', 400);
+                    });
+                    if (sameTitle) throw new HttpException('Já existe uma fórmula composta com o mesmo título', 400);
+                }
 
                 await prismaTx.formulaComposta.update({
                     where: { id: self.id },
@@ -274,7 +276,10 @@ export class IndicadorFormulaCompostaService {
 
                 await this.indicadorService.recalcIndicador(prismaTx, indicador.id);
 
-                return self;
+                return {
+                    id: self.id,
+                    formula_compilada: formula_compilada,
+                };
             },
             {
                 isolationLevel: 'ReadCommitted',
