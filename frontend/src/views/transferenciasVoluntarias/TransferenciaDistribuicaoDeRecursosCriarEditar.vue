@@ -48,7 +48,7 @@ const mostrarDistribuicaoRegistroForm = ref(false);
 const camposModificados = ref(false);
 
 const {
-  errors, handleSubmit, isSubmitting, resetField, resetForm, setFieldValue, values,
+  errors, handleSubmit, isSubmitting, resetForm, setFieldValue, values,
 } = useForm({
   initialValues: itemParaEdição,
   validationSchema: schema,
@@ -112,6 +112,7 @@ async function registrarNovaDistribuicaoRecursos() {
     resetForm({
       values: {
         objeto: transferenciasVoluntariaEmFoco.value.objeto,
+        nome: truncate(transferenciasVoluntariaEmFoco.value.objeto, 100),
       },
     });
     mostrarDistribuicaoRegistroForm.value = true;
@@ -174,8 +175,8 @@ const isSomaCorreta = computed(() => {
     <table class="tablemain mb1">
       <col>
       <col class="col--number">
-      <col>
       <col class="col--data">
+      <col>
       <col class="col--botão-de-ação">
       <col class="col--botão-de-ação">
       <thead>
@@ -186,12 +187,14 @@ const isSomaCorreta = computed(() => {
           <th class="cell--number">
             Valor total
           </th>
-          <th>
-            empenho
+          <th class="cell--data">
+            Data de vigência
           </th>
           <th>
-            data de vigência
+            Nome
           </th>
+          <th />
+          <th />
         </tr>
       </thead>
       <tbody>
@@ -207,8 +210,10 @@ const isSomaCorreta = computed(() => {
                 : '-'
             }}
           </td>
-          <td>{{ item.empenho? 'Sim' : 'Não' }}</td>
-          <td>{{ dateToField(item.vigencia) }}</td>
+          <td class="cell--data">
+            {{ dateToField(item.vigencia) }}
+          </td>
+          <td>{{ item.nome || '-' }}</td>
           <td>
             <button
               class="like-a__text"
@@ -284,37 +289,59 @@ const isSomaCorreta = computed(() => {
       <hr class="ml2 f1">
     </div>
 
-    <div class="f1 mb2">
-      <LabelFromYup
-        name="orgao_gestor_id"
-        :schema="schema"
-      />
-      <Field
-        name="orgao_gestor_id"
-        as="select"
-        class="inputtext light mb1"
-        :class="{
-          error: errors.orgao_gestor_id,
-          loading: ÓrgãosStore.chamadasPendentes?.lista,
-        }"
-        :disabled="!órgãosComoLista?.length"
-      >
-        <option :value="0">
-          Selecionar
-        </option>
-        <option
-          v-for="item in órgãosComoLista"
-          :key="item"
-          :value="item.id"
-          :title="item.descricao?.length > 36 ? item.descricao : null"
+    <div class="flex g2 mb1">
+      <div class="f1 mb2">
+        <LabelFromYup
+          name="orgao_gestor_id"
+          :schema="schema"
+        />
+        <Field
+          name="orgao_gestor_id"
+          as="select"
+          class="inputtext light mb1"
+          :class="{
+            error: errors.orgao_gestor_id,
+            loading: ÓrgãosStore.chamadasPendentes?.lista,
+          }"
+          :disabled="!órgãosComoLista?.length"
         >
-          {{ item.sigla }} - {{ truncate(item.descricao, 36) }}
-        </option>
-      </Field>
-      <ErrorMessage
-        name="orgao_gestor_id"
-        class="error-msg"
-      />
+          <option :value="0">
+            Selecionar
+          </option>
+          <option
+            v-for="item in órgãosComoLista"
+            :key="item"
+            :value="item.id"
+            :title="item.descricao?.length > 36 ? item.descricao : null"
+          >
+            {{ item.sigla }} - {{ truncate(item.descricao, 36) }}
+          </option>
+        </Field>
+        <ErrorMessage
+          name="orgao_gestor_id"
+          class="error-msg"
+        />
+      </div>
+    </div>
+
+    <div class="flex g2 mb1">
+      <div class="f1 mb2">
+        <LabelFromYup
+          name="nome"
+          :schema="schema"
+        />
+        <Field
+          name="nome"
+          class="inputtext light mb1"
+          :class="{
+            error: errors.nome,
+          }"
+        />
+        <ErrorMessage
+          name="nome"
+          class="error-msg"
+        />
+      </div>
     </div>
 
     <div class="flex g2 mb1">
@@ -337,7 +364,7 @@ const isSomaCorreta = computed(() => {
       </div>
     </div>
 
-    <div class=" g2 mb2">
+    <div class="mb2">
       <div class="halfInput">
         <LabelFromYup
           name="valor"
