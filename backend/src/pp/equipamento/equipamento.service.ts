@@ -16,12 +16,12 @@ export class EquipamentoService {
             async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
                 const similarExists = await prismaTx.equipamento.count({
                     where: {
-                        nome: { endsWith: dto.nome, mode: 'insensitive' },
+                        nome: dto.nome,
                         removido_em: null,
                     },
                 });
                 if (similarExists > 0)
-                    throw new HttpException('fonte| Nome igual ou semelhante já existe em outro registro ativo', 400);
+                    throw new HttpException('nome| Nome igual ou semelhante já existe em outro registro ativo', 400);
 
                 const equipamento = await prismaTx.equipamento.create({
                     data: {
@@ -83,13 +83,13 @@ export class EquipamentoService {
                 if (dto.nome && dto.nome != self.nome) {
                     const similarExists = await prismaTx.equipamento.count({
                         where: {
-                            nome: { endsWith: dto.nome, mode: 'insensitive' },
+                            nome: dto.nome,
                             removido_em: null,
                         },
                     });
                     if (similarExists > 0)
                         throw new HttpException(
-                            'fonte| Nome igual ou semelhante já existe em outro registro ativo',
+                            'nome| Nome igual ou semelhante já existe em outro registro ativo',
                             400
                         );
                 }
