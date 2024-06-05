@@ -16,7 +16,7 @@ export class TipoIntervencaoService {
             async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
                 const similarExists = await prismaTx.tipoIntervencao.count({
                     where: {
-                        nome: dto.nome,
+                        nome: { endsWith: dto.nome, mode: 'insensitive' },
                         removido_em: null,
                     },
                 });
@@ -83,8 +83,9 @@ export class TipoIntervencaoService {
                 if (dto.nome && dto.nome != self.nome) {
                     const similarExists = await prismaTx.tipoIntervencao.count({
                         where: {
-                            nome: dto.nome,
+                            nome: { endsWith: dto.nome, mode: 'insensitive' },
                             removido_em: null,
+                            id: { not: id },
                         },
                     });
                     if (similarExists > 0)
