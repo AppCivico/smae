@@ -9,6 +9,7 @@ export class UpdateDistribuicaoRecursoDto extends PartialType(
     @IsArray()
     registros_sei?: {
         id?: number;
+        nome: string | null;
         processo_sei: string;
     }[];
 }

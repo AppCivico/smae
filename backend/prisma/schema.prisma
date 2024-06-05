@@ -5074,6 +5074,8 @@ model DistribuicaoRecurso {
     orgao_gestor_id Int
     orgao_gestor    Orgao @relation(fields: [orgao_gestor_id], references: [id])
 
+    nome String?
+
     objeto                          String
     valor                           Decimal   @default(0) @db.Decimal(15, 2)
     valor_total                     Decimal   @default(0) @db.Decimal(15, 2)
@@ -5114,6 +5116,7 @@ model DistribuicaoRecursoSei {
     distribuicao_recurso_id Int
     distribuicao_recurso    DistribuicaoRecurso @relation(fields: [distribuicao_recurso_id], references: [id])
 
+    nome         String?
     processo_sei String
 
     registro_sei_info   Json    @default("{}")
