@@ -1205,6 +1205,11 @@ export const transferenciaDistribuicaoDeRecursos = object({
   empenho: boolean()
     .label('Empenho')
     .required(),
+  nome: string()
+    .label('Nome')
+    .min(1)
+    .max(1024)
+    .required(),
   objeto: string()
     .label('Objeto/Empreendimento')
     .max(1000)
