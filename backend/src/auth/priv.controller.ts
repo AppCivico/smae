@@ -16,8 +16,9 @@ export class PrivController {
     @HttpCode(HttpStatus.OK)
     @ApiResponse({
         type: PerfilDeAcessoLinhaDto,
-        description:
-            'Retorna todos os perfis de acesso do sistema (pelo header) exceto se sobre-escrito pelo parâmetro. Usuários com Privilégio CadastroPessoa.administrador retornam tudo sempre, no caso de não enviar o paramento, para conseguir editar os usuários em qualquer sistema.',
+        description: `Retorna todos os perfis de acesso do sistema (pelo header) exceto se sobre-escrito pelo parâmetro.
+            Para cada modulo, se o usuário não tiver \`CadastroPessoa.administrador\`, só será carregado os módulos que são SMAE como se fossem apenas daquele sistema.
+            Usuários com Privilégio \`CadastroPessoa.administrador\` sempre retornam tudo, no caso de não enviar o paramento, para conseguir editar os usuários em qualquer sistema.`,
     })
     async perfilDeAcesso(
         @Query() filter: FilterPrivDto,
