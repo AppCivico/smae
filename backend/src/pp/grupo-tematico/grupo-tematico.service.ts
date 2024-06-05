@@ -16,7 +16,7 @@ export class GrupoTematicoService {
             async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
                 const similarExists = await prismaTx.grupoTematico.count({
                     where: {
-                        nome: dto.nome,
+                        nome: { endsWith: dto.nome, mode: 'insensitive' },
                         removido_em: null,
                     },
                 });
@@ -83,13 +83,14 @@ export class GrupoTematicoService {
                 if (dto.nome && dto.nome != self.nome) {
                     const similarExists = await prismaTx.grupoTematico.count({
                         where: {
-                            nome: dto.nome,
+                            id: { not: id },
+                            nome: { endsWith: dto.nome, mode: 'insensitive' },
                             removido_em: null,
                         },
                     });
                     if (similarExists > 0)
                         throw new HttpException(
-                            'nome| Nome igual ou semelhante já existe em outro registro ativo',
+                            'fonte| Nome igual ou semelhante já existe em outro registro ativo',
                             400
                         );
                 }
