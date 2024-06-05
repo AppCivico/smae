@@ -5,7 +5,7 @@ import { useAuthStore } from '@/stores/auth.store';
 import { useEtapasProjetosStore } from '@/stores/etapasProjeto.store';
 import { storeToRefs } from 'pinia';
 import { ErrorMessage, Field, Form } from 'vee-validate';
-import { computed } from 'vue';
+import { computed, defineOptions } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
 const alertStore = useAlertStore();
@@ -15,6 +15,8 @@ const route = useRoute();
 const authStore = useAuthStore();
 const { temPermissãoPara } = storeToRefs(authStore);
 const { chamadasPendentes, erro, etapasPorId } = storeToRefs(etapasProjetosStore);
+
+defineOptions({ inheritAttrs: false });
 
 const props = defineProps({
   etapaDoProjetoId: {
