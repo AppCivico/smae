@@ -1163,23 +1163,29 @@ export const tipoDeTransferencia = object({
 });
 
 export const transferenciaDistribuicaoDeRecursos = object({
-  assinatura_municipio: date()
-    .label('Data de assinatura do representante do município')
-    .nullable()
-    .max(dataMax)
-    .min(new Date(2003, 0, 1))
-    .transform((v) => (!v ? null : v)),
   assinatura_estado: date()
     .label('Data de assinatura do representante do estado')
-    .nullable()
     .max(dataMax)
     .min(new Date(2003, 0, 1))
+    .nullable()
+    .transform((v) => (!v ? null : v)),
+  assinatura_municipio: date()
+    .label('Data de assinatura do representante do município')
+    .max(dataMax)
+    .min(new Date(2003, 0, 1))
+    .nullable()
     .transform((v) => (!v ? null : v)),
   assinatura_termo_aceite: date()
     .label('Data de assinatura do termo de aceite')
-    .nullable()
     .max(dataMax)
     .min(new Date(2003, 0, 1))
+    .nullable()
+    .transform((v) => (!v ? null : v)),
+  conclusao_suspensiva: date()
+    .label('Data de conclusão da suspensiva')
+    .max(dataMax)
+    .min(new Date(2003, 0, 1))
+    .nullable()
     .transform((v) => (!v ? null : v)),
   contrato: string()
     .label('Número do contrato')
@@ -1187,11 +1193,11 @@ export const transferenciaDistribuicaoDeRecursos = object({
   convenio: string()
     .label('Número convênio/pré-convênio')
     .nullable(),
-  conclusao_suspensiva: date()
-    .label('Data de conclusão da suspensiva')
-    .nullable()
+  data_empenho: date()
+    .label('Data do empenho')
     .max(dataMax)
     .min(new Date(2003, 0, 1))
+    .nullable()
     .transform((v) => (!v ? null : v)),
   dotacao: string()
     .label('Dotacao')
@@ -1199,30 +1205,6 @@ export const transferenciaDistribuicaoDeRecursos = object({
   empenho: boolean()
     .label('Empenho')
     .required(),
-  data_empenho: date()
-    .label('Data do empenho')
-    .nullable()
-    .max(dataMax)
-    .min(new Date(2003, 0, 1))
-    .transform((v) => (!v ? null : v)),
-  valor: number()
-    .label('Valor do Repasse')
-    .required()
-    .nullable(),
-  valor_contrapartida: number()
-    .label('Valor contrapartida')
-    .required()
-    .nullable(),
-  valor_total: number()
-    .label('Valor total')
-    .required()
-    .nullable(),
-  vigencia: date()
-    .label('Data de vigência')
-    .nullable()
-    .max(dataMax)
-    .min(new Date(2003, 0, 1))
-    .transform((v) => (!v ? null : v)),
   objeto: string()
     .label('Objeto/Empreendimento')
     .max(1000)
@@ -1242,17 +1224,33 @@ export const transferenciaDistribuicaoDeRecursos = object({
     .nullable(),
   registros_sei: array()
     .label('Número SEI')
-    .of(
-      object()
-        .shape({
-          id: number()
-            .nullable(),
-          processo_sei: string()
-            .required()
-            .max(40),
-        }),
-    )
+    .of(object()
+      .shape({
+        id: number()
+          .nullable(),
+        processo_sei: string()
+          .max(40)
+          .required(),
+      }))
     .strict(),
+  valor_contrapartida: number()
+    .label('Valor contrapartida')
+    .required()
+    .nullable(),
+  valor_total: number()
+    .label('Valor total')
+    .required()
+    .nullable(),
+  valor: number()
+    .label('Valor do Repasse')
+    .required()
+    .nullable(),
+  vigencia: date()
+    .label('Data de vigência')
+    .max(dataMax)
+    .min(new Date(2003, 0, 1))
+    .nullable()
+    .transform((v) => (!v ? null : v)),
 });
 
 export const registroDeTransferencia = object({
