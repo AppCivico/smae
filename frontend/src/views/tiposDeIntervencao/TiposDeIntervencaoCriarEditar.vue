@@ -93,7 +93,7 @@ async function onSubmit(values) {
     if (props.intervencaoId) {
       response = await tiposDeIntervencaoStore.salvarItem(
         dataToSend,
-        props.partidoId,
+        props.intervencaoId,
       );
     } else {
       response = await tiposDeIntervencaoStore.salvarItem(dataToSend);
