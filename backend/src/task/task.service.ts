@@ -411,6 +411,10 @@ export class TaskService {
             refresh_mv: true, // só chama uma função no banco, n tem risco de leak
             refresh_meta: true, // tbm só chama função no banco
             refresh_indicador: true, // tbm só chama função no banco
+            refresh_transferencia: true, // tbm só chama função no banco
+            aviso_email: true, // tbm só chama função no banco
+            aviso_email_cronograma_tp: true, // tbm só chama função no banco
+            aviso_email_nota: true, // tbm só chama função no banco
         };
 
         if (map[type]) return true;
