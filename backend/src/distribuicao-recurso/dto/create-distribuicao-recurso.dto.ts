@@ -26,6 +26,12 @@ export class CreateDistribuicaoRecursoDto {
     @MaxLength(1024)
     objeto: string;
 
+    @IsOptional()
+    @IsString()
+    @MinLength(1)
+    @MaxLength(1024)
+    nome?: string;
+
     @IsNumberString(
         {},
         {
@@ -173,6 +179,12 @@ class CreateDistribuicaoRegistroSEIDto {
     @IsOptional()
     @IsNumber()
     id?: number;
+
+    @IsOptional()
+    @IsString()
+    @MinLength(1)
+    @MaxLength(1024)
+    nome: string;
 
     @IsString()
     @MaxLength(40)

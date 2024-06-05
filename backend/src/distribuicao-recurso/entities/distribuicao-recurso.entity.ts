@@ -3,6 +3,7 @@ import { IdSiglaDescricao } from 'src/common/dto/IdSigla.dto';
 
 export class DistribuicaoRecursoDto {
     id: number;
+    nome: string | null;
     transferencia_id: number;
     orgao_gestor: IdSiglaDescricao;
     objeto: String;
@@ -31,5 +32,6 @@ export class ListDistribuicaoRecursoDto {
 
 export class DistribuicaoRecursoSeiDto {
     id: number;
+    nome: string | null;
     processo_sei: string;
 }
