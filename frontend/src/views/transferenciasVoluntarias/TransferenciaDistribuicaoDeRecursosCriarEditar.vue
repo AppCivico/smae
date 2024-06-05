@@ -141,7 +141,7 @@ onUnmounted(() => {
 });
 
 // eslint-disable-next-line no-shadow
-const updateValorTotal = (fieldName, newValue, setFieldValue) => {
+const atualizarValorTotal = (fieldName, newValue, setFieldValue) => {
   camposModificados.value = true;
   const valor = fieldName === 'valor' ? parseFloat(newValue) || 0 : parseFloat(values.valor) || 0;
   const valorContraPartida = fieldName === 'valor_contrapartida' ? parseFloat(newValue) || 0 : parseFloat(values.valor_contrapartida) || 0;
@@ -151,7 +151,8 @@ const updateValorTotal = (fieldName, newValue, setFieldValue) => {
 
 const isSomaCorreta = computed(() => {
   if (!props.transferenciaId || !camposModificados.value) return true;
-  const soma = parseFloat(values.valor || 0) + parseFloat(values.valor_contrapartida || 0);
+  const soma = (parseFloat(values.valor) || 0) + (parseFloat(values.valor_contrapartida) || 0);
+
   return soma === parseFloat(values.valor_total);
 });
 </script>
@@ -376,8 +377,9 @@ const isSomaCorreta = computed(() => {
           class="inputtext light mb2"
           :value="values.valor"
           converter-para="string"
-          @update:model-value="(newValue) =>
-            updateValorTotal('valor', newValue, setFieldValue)"
+          @update:model-value="(newValue) => {
+            atualizarValorTotal('valor', newValue, setFieldValue);
+          }"
         />
         <ErrorMessage
           class="error-msg mb2"
@@ -395,8 +397,9 @@ const isSomaCorreta = computed(() => {
           class="inputtext light mb2"
           :value="values.valor_contrapartida"
           converter-para="string"
-          @update:model-value="(newValue) =>
-            updateValorTotal('valor_contrapartida', newValue, setFieldValue)"
+          @update:model-value="(newValue) => {
+            atualizarValorTotal('valor_contrapartida', newValue, setFieldValue);
+          }"
         />
         <ErrorMessage
           class="error-msg mb2"
