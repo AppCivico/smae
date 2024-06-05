@@ -28,7 +28,7 @@
         <td>{{ item.nome }}</td>
         <td>
           <router-link
-            :to="{ name: 'tiposDeIntervencaoEditar', params: { tipoDeIntervencaoId: item.id } }"
+            :to="{ name: 'tiposDeIntervencaoEditar', params: { intervencaoId: item.id } }"
             class="tprimary"
           >
             <svg
@@ -42,7 +42,7 @@
             class="like-a__text"
             arial-label="excluir"
             title="excluir"
-            @click="excluirGrupoTematico(item.id)"
+            @click="excluirTipo(item.id)"
           >
             <svg
               width="20"
@@ -81,14 +81,14 @@ const alertStore = useAlertStore();
 const tiposDeIntervencaoStore = useTiposDeIntervencaoStore();
 const { lista, chamadasPendentes, erro } = storeToRefs(tiposDeIntervencaoStore);
 
-async function excluirGrupoTematico(id) {
+async function excluirTipo(id) {
   alertStore.confirmAction(
     'Deseja mesmo remover esse item?',
     async () => {
       if (await tiposDeIntervencaoStore.excluirItem(id)) {
         tiposDeIntervencaoStore.$reset();
         tiposDeIntervencaoStore.buscarTudo();
-        alertStore.success('Grupo removido.');
+        alertStore.success('Tipo removido.');
       }
     },
     'Remover',

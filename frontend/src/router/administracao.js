@@ -252,18 +252,18 @@ export default [
               ],
             },
           },
-          // {
-          //   path: ':tipoDeIntervencaoId',
-          //   name: 'tiposDeIntervencaoEditar',
-          //   component: TiposDeIntervencaoCriarEditar,
-          //   props: ({ params }) => ({
-          //    ...params,
-          //    ...{ tipoDeIntervencaoId: Number.parseInt(params.tipoDeIntervencaoId, 10) || undefined },
-          //    }),
-          //   meta: {
-          //     título: 'Editar tipo de intervenção',
-          //   },
-          // },
+          {
+            path: ':intervencaoId',
+            name: 'tiposDeIntervencaoEditar',
+            component: TiposDeIntervencaoCriarEditar,
+            props: ({ params }) => ({
+              ...params,
+              ...{ intervencaoId: Number.parseInt(params.intervencaoId, 10) || undefined },
+            }),
+            meta: {
+              título: 'Editar tipo de intervenção',
+            },
+          },
         ],
       },
       {
