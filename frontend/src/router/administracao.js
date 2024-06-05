@@ -313,22 +313,22 @@ export default [
               ],
             },
           },
-          // {
-          //   path: ':equipamentoId',
-          //   name: 'equipamentoEditar',
-          //   component: EquipamentosCriarEditar,
-          //   props: ({ params }) => ({
-          //    ...params,
-          //    ...{ equipamentoId: Number.parseInt(params.equipamentoId, 10) || undefined },
-          //    }),
-          //   meta: {
-          //     título: 'Editar equipamento',
-          //     rotasParaMigalhasDePão: [
-          //      'cadastrosBasicos',
-          //      'equipamentosLista',
-          //      ],
-          //   },
-          // },
+          {
+            path: ':equipamentoId',
+            name: 'equipamentoEditar',
+            component: EquipamentosCriarEditar,
+            props: ({ params }) => ({
+              ...params,
+              ...{ equipamentoId: Number.parseInt(params.equipamentoId, 10) || undefined },
+            }),
+            meta: {
+              título: 'Editar equipamento',
+              rotasParaMigalhasDePão: [
+                'cadastrosBasicos',
+                'equipamentosLista',
+              ],
+            },
+          },
         ],
       },
       {
