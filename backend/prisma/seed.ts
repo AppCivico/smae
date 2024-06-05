@@ -57,11 +57,11 @@ const ModuloDescricao: Record<string, [string, ModuloSistema | null]> = {
     ReportsPS: ['Relatórios de Plano Setorial', 'PlanoSetorial'],
 
     CadastroGrupoPortfolio: ['Grupos de Portfólio', 'Projetos'],
-    CadastroGrupoPortfolioMDO: ['Grupos de Portfólio de MdO', 'Projetos'],
+    CadastroGrupoPortfolioMDO: ['Grupos de Portfólio de MdO', 'MDO'],
     Projeto: ['Projetos', 'Projetos'],
     ProjetoMDO: ['Projetos de Obras', 'MDO'],
     CadastroProjetoEtapa: ['Etapas', 'Projetos'],
-    CadastroProjetoEtapaMDO: ['Etapas', 'Projetos'],
+    CadastroProjetoEtapaMDO: ['Etapas', 'MDO'],
     ReportsProjetos: ['Relatórios de Projetos', 'Projetos'],
     ReportsMDO: ['Relatórios de MDO', 'MDO'],
 
