@@ -1233,7 +1233,14 @@ export const transferenciaDistribuicaoDeRecursos = object({
       .shape({
         id: number()
           .nullable(),
+        nome: string()
+          .label('Nome')
+          .max(1024)
+          .min(1)
+          .nullable()
+          .transform((v) => (!v ? null : v)),
         processo_sei: string()
+          .label('Processo')
           .max(40)
           .required(),
       }))
