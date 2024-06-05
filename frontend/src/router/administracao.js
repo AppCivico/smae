@@ -199,18 +199,18 @@ export default [
               ],
             },
           },
-          // {
-          //   path: ':grupoTematicoId',
-          //   name: 'grupoTematicoEditar',
-          //   component: GruposTematicosCriarEditar,
-          //   props: ({ params }) => ({
-          //    ...params,
-          //    ...{ grupoTematicoId: Number.parseInt(params.grupoTematicoId, 10) || undefined },
-          //    }),
-          //   meta: {
-          //     título: 'Editar grupo temático',
-          //   },
-          // },
+          {
+            path: ':grupoTematicoId',
+            name: 'grupoTematicoEditar',
+            component: GruposTematicosCriarEditar,
+            props: ({ params }) => ({
+              ...params,
+              ...{ grupoTematicoId: Number.parseInt(params.grupoTematicoId, 10) || undefined },
+            }),
+            meta: {
+              título: 'Editar grupo temático',
+            },
+          },
         ],
       },
       {
