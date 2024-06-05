@@ -43,9 +43,7 @@ export const useEtapasProjetosStore = defineStore('etapasProjetosStore', {
 
       try {
         await this.requestS.delete(
-          `${baseUrl}/${caminhoParaApi(
-            this.route.meta.prefixoParaFilhas,
-          )}/${id}`,
+          `${baseUrl}/${caminhoParaApi(this.route.meta)}/${id}`,
         );
         this.chamadasPendentes.lista = false;
         return true;
@@ -63,14 +61,12 @@ export const useEtapasProjetosStore = defineStore('etapasProjetosStore', {
       try {
         if (id) {
           await this.requestS.patch(
-            `${baseUrl}/${caminhoParaApi(
-              this.route.meta.prefixoParaFilhas,
-            )}/${id}`,
+            `${baseUrl}/${caminhoParaApi(this.route.meta)}/${id}`,
             params,
           );
         } else {
           await this.requestS.post(
-            `${baseUrl}/${caminhoParaApi(this.route.meta.prefixoParaFilhas)}`,
+            `${baseUrl}/${caminhoParaApi(this.route.meta)}`,
             params,
           );
         }
