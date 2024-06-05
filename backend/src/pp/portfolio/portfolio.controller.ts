@@ -107,7 +107,7 @@ export class PortfolioMDOController {
         };
     }
 
-    @Get('para-projetos')
+    @Get('para-obras')
     @ApiBearerAuth('access-token')
     @Roles([
         ...PORT_ROLES_MDO,
@@ -115,7 +115,7 @@ export class PortfolioMDOController {
         'ProjetoMDO.administrador_no_orgao',
         ...PROJETO_READONLY_ROLES,
     ])
-    async findAllParaProjetos(@CurrentUser() user: PessoaFromJwt): Promise<ListPortfolioDto> {
+    async findAllParaObras(@CurrentUser() user: PessoaFromJwt): Promise<ListPortfolioDto> {
         return {
             linhas: await this.portfolioService.findAll('MDO', user, true),
         };
