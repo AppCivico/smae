@@ -31,7 +31,7 @@ const TransferenciasVoluntarias = useTransferenciasVoluntariasStore();
 const ÓrgãosStore = useOrgansStore();
 
 const {
-  chamadasPendentes, erro, lista, itemParaEdição, emFoco,
+  chamadasPendentes, erro, lista, itemParaEdição, emFoco: distribuiçãoEmFoco,
 } = storeToRefs(distribuicaoRecursos);
 const { emFoco: transferenciasVoluntariaEmFoco } = storeToRefs(TransferenciasVoluntarias);
 const { órgãosComoLista } = storeToRefs(ÓrgãosStore);
@@ -77,7 +77,7 @@ const onSubmit = handleSubmit.withControlled(async (controlledValues) => {
       mostrarDistribuicaoRegistroForm.value = false;
 
       if (itemParaEdição.value.id) {
-        emFoco.value = null;
+        distribuiçãoEmFoco.value = null;
       }
 
       distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
@@ -106,7 +106,7 @@ async function registrarNovaDistribuicaoRecursos() {
   if (mostrarDistribuicaoRegistroForm.value) {
     mostrarDistribuicaoRegistroForm.value = false;
   } else {
-    emFoco.value = null;
+    distribuiçãoEmFoco.value = null;
     // aguardando o watcher causado pela linha anterior
     await nextTick();
     resetForm({
