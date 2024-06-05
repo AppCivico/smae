@@ -94,7 +94,7 @@ async function onSubmit(values) {
     if (props.equipamentoId) {
       response = await equipamentosStore.salvarItem(
         dataToSend,
-        props.partidoId,
+        props.equipamentoId,
       );
     } else {
       response = await equipamentosStore.salvarItem(dataToSend);
