@@ -550,44 +550,72 @@ const isSomaCorreta = computed(() => {
         v-slot="{ fields, push, remove }"
         name="registros_sei"
       >
-        <div class="g2 registros-sei">
+        <div
+          v-for="(field, idx) in fields"
+          :key="field.key"
+          class="flex flexwrap justifyright g2 mb2"
+        >
+          <Field
+            :name="`registros_sei[${idx}].id`"
+            type="hidden"
+            class="inputtext light"
+          />
           <div
-            v-for="(field, idx) in fields"
-            :key="field.key"
-            class="mb1 registros-sei__item"
+            class="f1 fb15em"
           >
-            <Field
-              :name="`registros_sei[${idx}].id`"
-              type="hidden"
-              class="inputtext light"
+            <LabelFromYup
+              name="processo_sei"
+              :schema="schema.fields.registros_sei.innerType"
+              class="tc300"
             />
-            <div class="flex g1 center">
-              <Field
-                v-maska
-                :name="`registros_sei[${idx}].processo_sei`"
-                type="text"
-                class="inputtext light"
-                maxlength="40"
-                data-maska="####.####/#######-#"
-              />
-
-              <button
-                class="like-a__text addlink"
-                arial-label="excluir"
-                title="excluir"
-                @click="remove(idx)"
-              >
-                <svg
-                  width="20"
-                  height="20"
-                ><use xlink:href="#i_remove" /></svg>
-              </button>
-            </div>
+            <Field
+              v-maska
+              :name="`registros_sei[${idx}].processo_sei`"
+              type="text"
+              class="inputtext light"
+              maxlength="40"
+              data-maska="####.####/#######-#"
+            />
 
             <ErrorMessage
               class="error-msg mb1"
-              :name="`registros_sei[${idx}]`"
+              :name="`registros_sei[${idx}].processo_sei`"
             />
+          </div>
+
+          <div
+            class="f1 fb15em"
+          >
+            <LabelFromYup
+              name="nome"
+              :schema="schema.fields.registros_sei.innerType"
+              class="tc300"
+            />
+            <Field
+              :name="`registros_sei[${idx}].nome`"
+              type="text"
+              class="inputtext light"
+              maxlength="1024"
+            />
+
+            <ErrorMessage
+              class="error-msg mb1"
+              :name="`registros_sei[${idx}].nome`"
+            />
+          </div>
+
+          <div class="align-end">
+            <button
+              class="like-a__text addlink"
+              arial-label="excluir"
+              title="excluir"
+              @click="remove(idx)"
+            >
+              <svg
+                width="20"
+                height="20"
+              ><use xlink:href="#i_remove" /></svg>
+            </button>
           </div>
         </div>
 
@@ -793,13 +821,3 @@ const isSomaCorreta = computed(() => {
     </div>
   </div>
 </template>
-<style lang="less">
-.registros-sei {
-  display: grid;
-  gap: 2rem;
-  grid-template-columns: repeat( auto-fit, minmax(20em, 1fr) );
-}
-
-.registros-sei__item {
-}
-</style>
