@@ -343,6 +343,7 @@ export class DistribuicaoRecursoService {
                 where: { id },
                 data: {
                     orgao_gestor_id: dto.orgao_gestor_id,
+                    nome: dto.nome,
                     objeto: dto.objeto,
                     valor: dto.valor,
                     valor_total: dto.valor_total,
