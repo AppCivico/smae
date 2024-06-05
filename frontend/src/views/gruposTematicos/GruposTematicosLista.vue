@@ -15,7 +15,7 @@
     <col class="col--botão-de-ação">
     <thead>
       <tr>
-        <th>Nome</th>
+        <th>Grupo</th>
         <th />
         <th />
       </tr>

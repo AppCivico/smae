@@ -72,7 +72,7 @@ import { useRoute, useRouter } from 'vue-router';
 const router = useRouter();
 const route = useRoute();
 const props = defineProps({
-  grupoId: {
+  grupoTematicoId: {
     type: Number,
     default: 0,
   },
@@ -85,16 +85,16 @@ const { chamadasPendentes, erro, itemParaEdição } = storeToRefs(gruposTematico
 async function onSubmit(values) {
   try {
     let response;
-    const msg = props.grupoId
+    const msg = props.grupoTematicoId
       ? 'Dados salvos com sucesso!'
       : 'Item adicionado com sucesso!';
 
     const dataToSend = { ...values };
 
-    if (props.grupoId) {
+    if (props.grupoTematicoId) {
       response = await gruposTematicosStore.salvarItem(
         dataToSend,
-        props.partidoId,
+        props.grupoTematicoId,
       );
     } else {
       response = await gruposTematicosStore.salvarItem(dataToSend);
@@ -109,8 +109,8 @@ async function onSubmit(values) {
   }
 }
 
-if (props.grupoId) {
-  gruposTematicosStore.buscarItem(props.grupoId);
+if (props.grupoTematicoId) {
+  gruposTematicosStore.buscarItem(props.grupoTematicoId);
 }
 </script>
 
