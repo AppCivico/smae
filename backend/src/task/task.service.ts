@@ -214,19 +214,21 @@ export class TaskService {
         process.env.INTERNAL_DISABLE_QUERY_LOG = '1';
         await this.prisma.$transaction(
             async (prisma: Prisma.TransactionClient) => {
-                const locked: {
-                    locked: boolean;
-                }[] = await prisma.$queryRaw`SELECT pg_try_advisory_xact_lock(${TASK_JOB_LOCK_NUMBER}) as locked`;
-                process.env.INTERNAL_DISABLE_QUERY_LOG = '';
-                if (!locked[0].locked) {
-                    return;
-                }
+                const lockPromise: Promise<{ locked: boolean }[]> =
+                    prisma.$queryRaw`SELECT pg_try_advisory_xact_lock(${TASK_JOB_LOCK_NUMBER}) as locked`;
+
+                // Immediately set the INTERNAL_DISABLE_QUERY_LOG to ''
+                lockPromise.then(() => {
+                    process.env.INTERNAL_DISABLE_QUERY_LOG = '';
+                });
+
+                const locked = await lockPromise;
+                if (!locked[0].locked) return;
 
                 await this.startPendingJobs();
 
                 await this.handleActiveJobs();
                 await this.handleOldJobs();
-
                 process.env.INTERNAL_DISABLE_QUERY_LOG = '1';
             },
             {

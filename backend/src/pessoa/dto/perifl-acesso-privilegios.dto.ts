@@ -17,7 +17,7 @@ export class PerfilAcessoPrivilegios {
     @ApiProperty({ description: 'nome' })
     nome: string;
     @ApiProperty({ description: 'Descrição' })
-    descricao?: string;
+    descricao?: string | null;
 
     @ApiProperty({ description: 'Lista dos privilégios' })
     perfil_privilegio: PrivilegioData[];
