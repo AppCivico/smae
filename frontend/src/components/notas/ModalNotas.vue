@@ -36,7 +36,7 @@ const status = {
   Cancelado: {
     value: 'Cancelado',
     text: 'Cancelado',
-  },  
+  },
 };
 
 const blocoStore = useBlocoDeNotasStore();

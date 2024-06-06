@@ -40,6 +40,7 @@ const parentVar = atividade_id ?? iniciativa_id ?? meta_id ?? false;
 const parentField = atividade_id ? 'atividade' : iniciativa_id ? 'iniciativa' : meta_id ? 'meta' : false;
 const parentFieldId = atividade_id ? 'atividade_id' : iniciativa_id ? 'iniciativa_id' : meta_id ? 'meta_id' : false;
 const parentLabel = ref(atividade_id ? activePdm.value?.rotulo_atividade : iniciativa_id ? activePdm.value?.rotulo_iniciativa : meta_id ? 'Meta' : false);
+
 watch(activePdm, async (v, vold) => {
   if (atividade_id) parentLabel.value = v.rotulo_atividade;
   else if (iniciativa_id) parentLabel.value = v.rotulo_iniciativa;
