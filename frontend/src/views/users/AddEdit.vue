@@ -38,7 +38,9 @@ const { sistemaEscolhido } = storeToRefs(authStore);
 
 let title = 'Cadastro de Usuário';
 const personalizarNomeParaExibição = ref(false);
-const { user, accessProfiles } = storeToRefs(usersStore);
+const {
+  user, accessProfiles, erros, chamadasPendentes,
+} = storeToRefs(usersStore);
 
 const {
   errors, handleSubmit, isSubmitting, resetForm, setFieldValue, values,
@@ -180,22 +182,32 @@ watch(accessProfiles, () => {
               : 'Projetos pelos quais é responsável' }}
           </h2>
         </summary>
-        <ol class="pl0 mt1 mb0">
-          <li
-            v-for="item in user.responsavel_pelos_projetos"
-            :key="item.id"
-            class="mb05"
-          >
-            <strong v-if="item.codigo">
-              {{ item.codigo }}
-            </strong>
 
-            {{ item.nome }}
-          </li>
-        </ol>
+        <div class="contentStyle">
+          <ol class="pl0 mt1 mb0">
+            <li
+              v-for="item in user.responsavel_pelos_projetos"
+              :key="item.id"
+              class="mb05"
+            >
+              <strong v-if="item.codigo">
+                {{ item.codigo }}
+              </strong>
+
+              {{ item.nome }}
+            </li>
+          </ol>
+        </div>
       </details>
       <hr class="mb1">
     </div>
+
+    <ErrorComponent
+      v-if="erros.user"
+      class="mb1"
+    >
+      {{ erros.user }}
+    </ErrorComponent>
 
     <form
       @submit.prevent="onSubmit"
@@ -449,16 +461,17 @@ watch(accessProfiles, () => {
         <hr class="ml2 f1">
       </div>
     </form>
-    <template v-if="user?.loading">
-      <span class="spinner">Carregando</span>
-    </template>
-    <template v-if="user?.error">
-      <div class="error p1">
-        <div class="error-msg">
-          {{ user.error }}
-        </div>
-      </div>
-    </template>
+
+    <LoadingComponent
+      v-if="chamadasPendentes.user"
+    />
+
+    <ErrorComponent
+      v-if="erros.user"
+      class="mb1"
+    >
+      {{ erros.user }}
+    </ErrorComponent>
   </Dashboard>
 </template>
 <style lang="less">
