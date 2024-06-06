@@ -88,6 +88,10 @@ export const useDistribuicaoRecursosStore = defineStore('distribuicaoRecursos', 
       conclusao_suspensiva: dateTimeToDate(emFoco?.conclusao_suspensiva),
       orgao_gestor_id: emFoco?.orgao_gestor?.id || null,
       vigencia: dateTimeToDate(emFoco?.vigencia),
+      justificativa_aditamento: emFoco?.aditamentos
+        ?.find((aditamento) => aditamento?.data_vigencia === emFoco?.vigencia)
+        ?.justificativa
+        || null,
     }),
   },
 });
