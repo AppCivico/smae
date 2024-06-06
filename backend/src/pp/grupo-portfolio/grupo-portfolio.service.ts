@@ -1,5 +1,5 @@
 import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
-import { Prisma } from '@prisma/client';
+import { Prisma, TipoProjeto } from '@prisma/client';
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import { RecordWithId } from '../../common/dto/record-with-id.dto';
 import { PrismaService } from '../../prisma/prisma.service';
@@ -12,12 +12,12 @@ export class GrupoPortfolioService {
     private readonly logger = new Logger(GrupoPortfolioService.name);
     constructor(private readonly prisma: PrismaService) {}
 
-    async create(dto: CreateGrupoPortfolioDto, user: PessoaFromJwt): Promise<RecordWithId> {
+    async create(tipoProjeto: TipoProjeto, dto: CreateGrupoPortfolioDto, user: PessoaFromJwt): Promise<RecordWithId> {
         const orgao_id = dto.orgao_id ? dto.orgao_id : user.orgao_id;
 
         if (!orgao_id) throw new BadRequestException('Não foi possível determinar o órgão');
 
-        if (!user.hasSomeRoles(['CadastroGrupoPortfolio.administrador'])) {
+        if (!user.hasSomeRoles(['CadastroGrupoPortfolio.administrador', 'CadastroGrupoPortfolioMDO.administrador'])) {
             if (orgao_id != user.orgao_id)
                 throw new BadRequestException('Você só tem permissão para criar Grupo de Portfólio no mesmo órgão.');
         }
@@ -26,12 +26,14 @@ export class GrupoPortfolioService {
             async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
                 const exists = await prismaTx.grupoPortfolio.count({
                     where: {
+                        tipo_projeto: tipoProjeto,
                         titulo: { mode: 'insensitive', equals: dto.titulo },
                         removido_em: null,
                     },
                 });
                 if (exists) throw new BadRequestException('Título já está em uso.');
 
+                // TODO esse priv é diferente no MDO
                 const pComPriv = await this.prisma.view_pessoa_espectador_de_projeto.findMany({
                     where: {
                         pessoa_id: { in: dto.participantes },
@@ -45,6 +47,7 @@ export class GrupoPortfolioService {
 
                 const gp = await prismaTx.grupoPortfolio.create({
                     data: {
+                        tipo_projeto: tipoProjeto,
                         orgao_id,
                         titulo: dto.titulo,
 
@@ -74,9 +77,10 @@ export class GrupoPortfolioService {
         return { id: created.id };
     }
 
-    async findAll(filter: FilterGrupoPortfolioDto): Promise<GrupoPortfolioItemDto[]> {
+    async findAll(tipoProjeto: TipoProjeto, filter: FilterGrupoPortfolioDto): Promise<GrupoPortfolioItemDto[]> {
         const rows = await this.prisma.grupoPortfolio.findMany({
             where: {
+                tipo_projeto: tipoProjeto,
                 id: filter.id,
                 removido_em: null,
             },
@@ -150,10 +154,16 @@ export class GrupoPortfolioService {
         });
     }
 
-    async update(id: number, dto: UpdateGrupoPortfolioDto, user: PessoaFromJwt): Promise<RecordWithId> {
+    async update(
+        tipoProjeto: TipoProjeto,
+        id: number,
+        dto: UpdateGrupoPortfolioDto,
+        user: PessoaFromJwt
+    ): Promise<RecordWithId> {
         const gp = await this.prisma.grupoPortfolio.findFirst({
             where: {
                 id,
+                tipo_projeto: tipoProjeto,
                 removido_em: null,
             },
             select: {
@@ -164,7 +174,7 @@ export class GrupoPortfolioService {
 
         if (!gp) throw new NotFoundException('Grupo Portfólio não foi encontrado.');
 
-        if (!user.hasSomeRoles(['CadastroGrupoPortfolio.administrador'])) {
+        if (!user.hasSomeRoles(['CadastroGrupoPortfolio.administrador', 'CadastroGrupoPortfolioMDO.administrador'])) {
             if (user.orgao_id != gp.orgao_id)
                 throw new BadRequestException('Você só tem permissão para editar Grupo de Portfólio no mesmo órgão.');
         }
@@ -262,10 +272,11 @@ export class GrupoPortfolioService {
         return { id: gp.id };
     }
 
-    async remove(id: number, user: PessoaFromJwt) {
+    async remove(tipoProjeto: TipoProjeto, id: number, user: PessoaFromJwt) {
         const exists = await this.prisma.grupoPortfolio.findFirst({
             where: {
                 id,
+                tipo_projeto: tipoProjeto,
                 removido_em: null,
             },
             select: { id: true, orgao_id: true },
@@ -273,7 +284,7 @@ export class GrupoPortfolioService {
 
         if (!exists) return;
 
-        if (!user.hasSomeRoles(['CadastroGrupoPortfolio.administrador'])) {
+        if (!user.hasSomeRoles(['CadastroGrupoPortfolio.administrador', 'CadastroGrupoPortfolioMDO.administrador'])) {
             if (user.orgao_id != exists.orgao_id)
                 throw new BadRequestException('Você só tem permissão para remover Grupo de Portfólio no mesmo órgão.');
         }
@@ -281,6 +292,7 @@ export class GrupoPortfolioService {
         await this.prisma.grupoPortfolio.updateMany({
             where: {
                 id,
+                tipo_projeto: tipoProjeto,
                 removido_em: null,
             },
             data: {
