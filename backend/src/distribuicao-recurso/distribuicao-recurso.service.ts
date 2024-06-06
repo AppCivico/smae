@@ -472,7 +472,7 @@ export class DistribuicaoRecursoService {
             .filter((rNew) => {
                 const rOld = currRegistrosSei.find((r) => r.id == rNew.id);
 
-                return rNew.processo_sei !== rOld!.processo_sei;
+                return rNew.processo_sei !== rOld!.processo_sei || rNew.nome !== rOld!.nome;
             });
 
         const created: OperationsRegistroSEI = sentRegistrosSei.filter((r) => r.id == undefined);
