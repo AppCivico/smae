@@ -19,7 +19,7 @@ async function excluirPortfolio(id) {
     if (await portfolioStore.excluirItem(id)) {
       portfolioStore.$reset();
       portfolioStore.buscarTudo({}, false);
-      alertStore.success('Portfolio removido.');
+      alertStore.success('Portfólio removido.');
     }
   }, 'Remover');
 }
@@ -40,7 +40,7 @@ if (!organs.length) {
       :to="{name: 'portfoliosCriar'}"
       class="btn big ml1"
     >
-      Novo portfolio bonito
+      Novo portfólio
     </router-link>
   </div>
 
@@ -52,7 +52,7 @@ if (!organs.length) {
     <thead>
       <tr>
         <th>
-          Portfolio
+          Portfólio
         </th>
         <th>
           Órgãos
