@@ -9,7 +9,14 @@ function caminhoParaApi(rotaMeta) {
   ) {
     return 'workflow-etapa';
   }
-  return 'projeto-etapa';
+  if (
+    rotaMeta.prefixoParaFilhas === 'projeto'
+    || rotaMeta.entidadeMãe === 'projeto'
+  ) {
+    return 'projeto-etapa';
+  }
+
+  throw new Error('Você precisa estar em algum módulo para executar essa ação.');
 }
 
 export const useEtapasProjetosStore = defineStore('etapasProjetosStore', {

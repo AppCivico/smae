@@ -46,7 +46,7 @@ const podeMudarDeEtapaProjeto = computed(() => projetoEmFoco.value?.eh_prioritar
 
 const nívelMáximoVisível = ref(0);
 
-const { lista: listaDeEtapas } = storeToRefs(etapasProjetosStore);
+const { lista: listaDeEtapas, erro: erroNaListaDeEtapas } = storeToRefs(etapasProjetosStore);
 
 async function iniciar() {
   emailsStore.buscarItem({ transferencia_id: route.params.transferenciaId });
@@ -137,6 +137,13 @@ export default {
       </router-link>
     </nav>
   </div>
+
+  <ErrorComponent
+    v-if="erroNaListaDeEtapas"
+    class="mb1"
+  >
+    {{ erroNaListaDeEtapas }}
+  </ErrorComponent>
 
   <LoadingComponent
     v-if="chamadasPendentes.lista"
