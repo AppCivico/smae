@@ -152,7 +152,7 @@ export default [
             path: 'novo',
             component: PortfoliosCriarEditar,
             meta: {
-              título: 'Novo portfolio',
+              título: 'Novo portfólio',
             },
           },
           {
@@ -201,7 +201,10 @@ export default [
             path: 'novo',
             component: () => import('@/views/portfolios.mdo/PortfoliosCriarEditar.vue'),
             meta: {
-              título: 'Novo portfolio',
+              título: 'Novo portfólio',
+              rotasParaMigalhasDePão: [
+                'portfoliosListar',
+              ],
             },
           },
           {
@@ -215,6 +218,9 @@ export default [
 
             meta: {
               título: 'Editar portfolio',
+              rotasParaMigalhasDePão: [
+                'portfoliosListar',
+              ],
             },
           },
         ],

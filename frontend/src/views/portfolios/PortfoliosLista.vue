@@ -40,7 +40,7 @@ if (!organs.length) {
       :to="{name: 'portfoliosCriar'}"
       class="btn big ml1"
     >
-      Novo portfolio
+      Novo portfólio
     </router-link>
   </div>
 
