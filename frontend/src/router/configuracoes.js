@@ -108,7 +108,7 @@ export default [
         'Projeto.administrar_portfolios',
         'Projeto.administrar_portfolios_no_orgao',
         'CadastroPainelExterno.',
-        'CadastroWorkflows.'
+        'CadastroWorkflows.',
       ],
       presenteNoMenu: true,
       pesoNoMenu: 1,
@@ -125,7 +125,7 @@ export default [
         path: 'portfolios',
         component: PortfoliosRaiz,
         meta: {
-          título: 'Portfolios',
+          título: 'Portfólios',
           rotaPrescindeDeChave: true,
           limitarÀsPermissões: [
             'Projeto.administrar_portfolios',
@@ -290,7 +290,7 @@ export default [
               rotaPrescindeDeChave: true,
             },
 
-            children:[
+            children: [
               {
                 name: 'fluxosListar',
                 path: '',
@@ -319,7 +319,7 @@ export default [
                   título: 'Editar fluxo',
                 },
               },
-            ]
+            ],
           },
           {
             path: 'etapa',
@@ -330,7 +330,7 @@ export default [
               rotaPrescindeDeChave: true,
             },
 
-            children:[
+            children: [
               {
                 name: 'etapasListar',
                 path: '',
@@ -360,7 +360,7 @@ export default [
                   título: 'Editar etapa',
                 },
               },
-            ]
+            ],
           },
           {
             path: 'fases',
@@ -371,7 +371,7 @@ export default [
               rotaPrescindeDeChave: true,
             },
 
-            children:[
+            children: [
               {
                 name: 'fasesListar',
                 path: '',
@@ -401,7 +401,7 @@ export default [
                   título: 'Editar fase',
                 },
               },
-            ]
+            ],
           },
           {
             path: 'tarefas',
@@ -412,7 +412,7 @@ export default [
               rotaPrescindeDeChave: true,
             },
 
-            children:[
+            children: [
               {
                 name: 'tarefasListar',
                 path: '',
@@ -442,7 +442,7 @@ export default [
                   título: 'Editar tarefas',
                 },
               },
-            ]
+            ],
           },
           {
             path: 'situacoes',
@@ -453,7 +453,7 @@ export default [
               rotaPrescindeDeChave: true,
             },
 
-            children:[
+            children: [
               {
                 name: 'situacaoListar',
                 path: '',
@@ -483,7 +483,7 @@ export default [
                   título: 'Editar situação',
                 },
               },
-            ]
+            ],
           },
         ],
       },
@@ -497,7 +497,7 @@ export default [
           limitarÀsPermissões: 'CadastroPainelExterno.',
           rotasParaMenuSecundário: [
             'paineisExternosListar',
-            'grupospaineisExternosListar'
+            'grupospaineisExternosListar',
           ],
         },
         children: [
