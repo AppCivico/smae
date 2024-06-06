@@ -166,8 +166,8 @@ export class UploadService {
                 throw new HttpException('O arquivo de imagem do parlamentar precisa ser menor que 5 Megabyte', 400);
             }
         } else if (createUploadDto.tipo === TipoUpload.IMPORTACAO_PARLAMENTAR) {
-            if (/(\.csv)$/i.test(file.originalname) == false) {
-                throw new HttpException('O arquivo para importação de parlamentares precisa ser um .csv.', 400);
+            if (/(\.sqlite)$/i.test(file.originalname) == false) {
+                throw new HttpException('O arquivo para importação de parlamentares precisa ser um .sqlite.', 400);
             } else if (file.size > 1048576 * 100) {
                 throw new HttpException(
                     'O arquivo para importação de parlamentares precisa ser menor que 100 Megabyte',
