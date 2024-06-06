@@ -1,11 +1,11 @@
 import { Module } from '@nestjs/common';
-import { GrupoPortfolioController } from './grupo-portfolio.controller';
+import { GrupoPortfolioController, GrupoPortfolioMDOController } from './grupo-portfolio.controller';
 import { GrupoPortfolioService } from './grupo-portfolio.service';
 import { PrismaModule } from '../../prisma/prisma.module';
 
 @Module({
     imports: [PrismaModule],
-    controllers: [GrupoPortfolioController],
+    controllers: [GrupoPortfolioController, GrupoPortfolioMDOController],
     providers: [GrupoPortfolioService],
 })
 export class GrupoPortfolioModule {}
