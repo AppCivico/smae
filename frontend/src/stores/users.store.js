@@ -12,6 +12,13 @@ export const useUsersStore = defineStore({
     user: {},
     temp: {},
     pessoasSimplificadas: {},
+    // desrespeitando o padrão legado porque temos que manter o `user` limpo
+    chamadasPendentes: {
+      user: false,
+    },
+    erros: {
+      user: null,
+    },
   }),
   actions: {
     clear() {
@@ -36,16 +43,20 @@ export const useUsersStore = defineStore({
       }
     },
     async getById(id) {
-      this.user = { loading: true };
+      this.chamadasPendentes.user = true;
+      this.erros.user = null;
       try {
         const r = await this.requestS.get(`${baseUrl}/pessoa/${id}`);
-        if (!r.id) throw 'Usuário não encontrado';
+        if (!r.id) {
+          throw new Error('Usuário não encontrado');
+        }
         r.desativado = r.desativado ? '1' : false;
         if (r.grupos) r.grupos = r.grupos.map((g) => g.id);
         this.user = r;
       } catch (error) {
-        this.user = { error };
+        this.erros.user = error;
       }
+      this.chamadasPendentes.user = false;
     },
     async buscarPessoasSimplificadas(params) {
       try {
@@ -58,6 +69,8 @@ export const useUsersStore = defineStore({
       }
     },
     async update(id, params) {
+      this.erros.user = null;
+      this.chamadasPendentes.user = true;
       try {
         const m = {
           email: params.email,
@@ -90,9 +103,11 @@ export const useUsersStore = defineStore({
           authStore.user = user;
         }
         this.users = {};
+        this.chamadasPendentes.user = true;
         return true;
       } catch (error) {
-        this.user = { error };
+        this.erros.user = error;
+        this.chamadasPendentes.user = true;
         return false;
       }
     },
@@ -106,6 +121,7 @@ export const useUsersStore = defineStore({
         } */
     async filterUsers(f) {
       this.temp = { loading: true };
+      this.erros.user = null;
       try {
         if (!this.users.length) {
           await this.getAll();
@@ -120,8 +136,9 @@ export const useUsersStore = defineStore({
                 : 1))
           : this.users;
       } catch (error) {
-        this.user = { error };
+        this.erros.user = error;
       }
+      this.chamadasPendentes.user = true;
     },
     async getProfiles() {
       this.accessProfiles = { loading: true };
