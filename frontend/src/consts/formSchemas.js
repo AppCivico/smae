@@ -1205,6 +1205,10 @@ export const transferenciaDistribuicaoDeRecursos = object({
   empenho: boolean()
     .label('Empenho')
     .required(),
+  justificativa_aditamento: string()
+    .label('Justificativa para aditamento')
+    .max(250)
+    .nullable(),
   nome: string()
     .label('Nome')
     .min(1)

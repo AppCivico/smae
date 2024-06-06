@@ -136,6 +136,16 @@ watch(itemParaEdição, (novosValores) => {
   resetForm({ values: novosValores });
 });
 
+watch(() => values.vigencia, (novoValor) => {
+  if (
+    itemParaEdição.value?.vigencia
+    && !itemParaEdição.value?.justificativa_aditamento
+    && novoValor !== itemParaEdição.value?.vigencia
+  ) {
+    setFieldValue('justificativa_aditamento', '');
+  }
+});
+
 onUnmounted(() => {
   distribuicaoRecursos.$reset();
 });
@@ -771,6 +781,28 @@ const isSomaCorreta = computed(() => {
         />
         <ErrorMessage
           name="vigencia"
+          class="error-msg"
+        />
+      </div>
+      <div
+        v-if="values.justificativa_aditamento
+          || values.justificativa_aditamento === ''"
+        class="f1 fb25em mb1"
+      >
+        <LabelFromYup
+          name="justificativa_aditamento"
+          :schema="schema"
+          :required="true"
+        />
+        <Field
+          name="justificativa_aditamento"
+          type="text"
+          class="inputtext light mb1"
+          :class="{ 'error': errors.justificativa_aditamento }"
+          maxlength="250"
+        />
+        <ErrorMessage
+          name="justificativa_aditamento"
           class="error-msg"
         />
       </div>
