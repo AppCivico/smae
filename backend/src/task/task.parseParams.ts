@@ -8,6 +8,7 @@ import { CreateAeCronogramaTpJobDto } from './aviso_email_cronograma_tp/dto/ae_c
 import { CreateNotaJobDto } from './aviso_email_nota/dto/ae_nota.dto';
 import { CreateRefreshTransferenciaDto } from './refresh_transferencia/dto/create-refresh-transferencia.dto';
 import { CreateRefreshIndicadorDto } from './refresh_indicador/dto/create-refresh-indicador.dto';
+import { CreateImportacaoParlamentarDto } from './importacao_parlamentar/dto/create-parlamentar.dto';
 
 export function ParseParams(taskType: task_type, value: any): any {
     let theClass: any = undefined;
@@ -36,6 +37,10 @@ export function ParseParams(taskType: task_type, value: any): any {
         case 'aviso_email_nota':
             theClass = CreateNotaJobDto;
             break;
+        case 'importacao_parlamentar':
+            theClass = CreateImportacaoParlamentarDto;
+            break;
+
         default:
             taskType satisfies never;
     }

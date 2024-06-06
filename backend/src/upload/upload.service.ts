@@ -78,35 +78,7 @@ export class UploadService {
                 }
             }
 
-            if (createUploadDto.tipo === TipoUpload.SHAPEFILE) {
-                this.checkShapeFile(file);
-            } else if (createUploadDto.tipo === TipoUpload.ICONE_TAG) {
-                if (file.size > 204800) {
-                    throw new HttpException('O arquivo de ícone precisa ser menor que 200 kilobytes.', 400);
-                } else if (/\.(png|jpg|jpeg|svg)$/i.test(file.originalname) == false) {
-                    throw new HttpException('O arquivo de ícone precisa ser PNG, JPEG ou SVG.', 400);
-                }
-            } else if (createUploadDto.tipo === TipoUpload.IMPORTACAO_ORCAMENTO) {
-                if (file.size > 1048576 * 10) {
-                    throw new HttpException('O arquivo de importação precisa ser menor que 10 megabytes.', 400);
-                } else if (/\.(xls|xlsx|csv)$/i.test(file.originalname) == false) {
-                    throw new HttpException('O arquivo de ícone precisa ser xls, XLSX ou CSV.', 400);
-                }
-
-                await this.checkOrcamentoFile(file);
-            } else if (createUploadDto.tipo === TipoUpload.LOGO_PDM) {
-                if (/(\.png|svg)$/i.test(file.originalname) == false) {
-                    throw new HttpException('O arquivo do Logo do PDM precisa ser um arquivo SVG ou PNG', 400);
-                } else if (file.size > 1048576) {
-                    throw new HttpException('O arquivo de Logo do PDM precisa ser menor que 1 Megabyte', 400);
-                }
-            } else if (createUploadDto.tipo === TipoUpload.FOTO_PARLAMENTAR) {
-                if (/(\.png|jpg|jpeg)$/i.test(file.originalname) == false) {
-                    throw new HttpException('O arquivo do Logo do PDM precisa ser um arquivo PNG, JPG ou JPEG', 400);
-                } else if (file.size > 1048576 * 5) {
-                    throw new HttpException('O arquivo de imagem do parlamentar precisa ser menor que 5 Megabyte', 400);
-                }
-            }
+            await this.checkSizeAndFileType(createUploadDto, file);
 
             originalname = file.originalname;
             // bug do Multer, ele faz o decode pra latin1, entao vamos voltar de volta pra utf8
@@ -162,6 +134,47 @@ export class UploadService {
         });
 
         return arquivoId;
+    }
+
+    private async checkSizeAndFileType(createUploadDto: CreateUploadDto, file: Express.Multer.File) {
+        if (createUploadDto.tipo === TipoUpload.SHAPEFILE) {
+            this.checkShapeFile(file);
+        } else if (createUploadDto.tipo === TipoUpload.ICONE_TAG) {
+            if (file.size > 204800) {
+                throw new HttpException('O arquivo de ícone precisa ser menor que 200 kilobytes.', 400);
+            } else if (/\.(png|jpg|jpeg|svg)$/i.test(file.originalname) == false) {
+                throw new HttpException('O arquivo de ícone precisa ser PNG, JPEG ou SVG.', 400);
+            }
+        } else if (createUploadDto.tipo === TipoUpload.IMPORTACAO_ORCAMENTO) {
+            if (file.size > 1048576 * 10) {
+                throw new HttpException('O arquivo de importação precisa ser menor que 10 megabytes.', 400);
+            } else if (/\.(xls|xlsx|csv)$/i.test(file.originalname) == false) {
+                throw new HttpException('O arquivo de ícone precisa ser xls, XLSX ou CSV.', 400);
+            }
+
+            await this.checkOrcamentoFile(file);
+        } else if (createUploadDto.tipo === TipoUpload.LOGO_PDM) {
+            if (/(\.png|svg)$/i.test(file.originalname) == false) {
+                throw new HttpException('O arquivo do Logo do PDM precisa ser um arquivo SVG ou PNG', 400);
+            } else if (file.size > 1048576) {
+                throw new HttpException('O arquivo de Logo do PDM precisa ser menor que 1 Megabyte', 400);
+            }
+        } else if (createUploadDto.tipo === TipoUpload.FOTO_PARLAMENTAR) {
+            if (/(\.png|jpg|jpeg)$/i.test(file.originalname) == false) {
+                throw new HttpException('O arquivo do Logo do PDM precisa ser um arquivo PNG, JPG ou JPEG', 400);
+            } else if (file.size > 1048576 * 5) {
+                throw new HttpException('O arquivo de imagem do parlamentar precisa ser menor que 5 Megabyte', 400);
+            }
+        } else if (createUploadDto.tipo === TipoUpload.IMPORTACAO_PARLAMENTAR) {
+            if (/(\.csv)$/i.test(file.originalname) == false) {
+                throw new HttpException('O arquivo para importação de parlamentares precisa ser um .csv.', 400);
+            } else if (file.size > 1048576 * 100) {
+                throw new HttpException(
+                    'O arquivo para importação de parlamentares precisa ser menor que 100 Megabyte',
+                    400
+                );
+            }
+        }
     }
 
     private checkShapeFile(file: Express.Multer.File) {
@@ -392,6 +405,15 @@ export class UploadService {
             nome: arquivo.nome_original,
             mime_type: arquivo.mime_type || 'application/octet-stream',
         };
+    }
+
+    async getPathById(id: number): Promise<string> {
+        const arquivo = await this.prisma.arquivo.findFirstOrThrow({
+            where: { id: id },
+            select: { caminho: true },
+        });
+
+        return arquivo.caminho;
     }
 
     async updateDir(dto: PatchDiretorioDto, uploadOrDlToken: string): Promise<void> {
