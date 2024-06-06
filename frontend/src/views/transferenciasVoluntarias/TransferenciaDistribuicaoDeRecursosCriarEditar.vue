@@ -627,7 +627,7 @@ const isSomaCorreta = computed(() => {
         <button
           class="like-a__text addlink"
           type="button"
-          @click="push({processo_sei: ''})"
+          @click="push({ nome: '', processo_sei: '' })"
         >
           <svg
             width="20"
