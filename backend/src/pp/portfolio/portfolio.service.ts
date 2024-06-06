@@ -129,16 +129,20 @@ export class PortfolioService {
     async findAll(
         tipoProjeto: TipoProjeto,
         user: PessoaFromJwt,
-        listaParaProjetos: boolean,
+        listaParaProjetosOuObras: boolean,
         filterId: number | undefined = undefined
     ): Promise<PortfolioDto[]> {
         let orgao_id: undefined | number = undefined;
 
-        const isFullAdmin = user.hasSomeRoles(['Projeto.administrar_portfolios']);
-        const isAdminNoOrgao = user.hasSomeRoles(['Projeto.administrar_portfolios_no_orgao']);
+        const isFullAdmin = user.hasSomeRoles(['Projeto.administrar_portfolios', 'ProjetoMDO.administrar_portfolios']);
+        const isAdminNoOrgao = user.hasSomeRoles([
+            'Projeto.administrar_portfolios_no_orgao',
+            'ProjetoMDO.administrar_portfolios_no_orgao',
+        ]);
 
-        if (listaParaProjetos) {
+        if (listaParaProjetosOuObras) {
             if (
+                // TODO conferir isso para o MDO
                 !user.hasSomeRoles(['Projeto.administrador']) &&
                 user.hasSomeRoles(['Projeto.administrador_no_orgao'])
             ) {
