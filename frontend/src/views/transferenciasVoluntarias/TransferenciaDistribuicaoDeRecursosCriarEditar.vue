@@ -140,8 +140,7 @@ onUnmounted(() => {
   distribuicaoRecursos.$reset();
 });
 
-// eslint-disable-next-line no-shadow
-const atualizarValorTotal = (fieldName, newValue, setFieldValue) => {
+const atualizarValorTotal = (fieldName, newValue) => {
   camposModificados.value = true;
   const valor = fieldName === 'valor' ? parseFloat(newValue) || 0 : parseFloat(values.valor) || 0;
   const valorContraPartida = fieldName === 'valor_contrapartida' ? parseFloat(newValue) || 0 : parseFloat(values.valor_contrapartida) || 0;
