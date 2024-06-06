@@ -88,7 +88,7 @@ if (!organs.length) {
             ><use xlink:href="#i_remove" /></svg>
           </button>
         </td>
-        <td>
+        <!-- <td>
           <router-link
             v-if="item?.pode_editar"
             :to="{ name: 'portfoliosEditar', params: { portfolioId: item.id } }"
@@ -99,7 +99,7 @@ if (!organs.length) {
               height="20"
             ><use xlink:href="#i_edit" /></svg>
           </router-link>
-        </td>
+        </td> -->
       </tr>
       <tr v-if="chamadasPendentes.lista">
         <td colspan="3">
