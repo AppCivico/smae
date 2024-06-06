@@ -377,11 +377,14 @@ export class DistribuicaoRecursoService {
             }
 
             if (dto.vigencia && dto.vigencia != self.vigencia) {
+                if (!dto.justificativa_aditamento)
+                    throw new HttpException('justificativa_aditamento| Deve ser enviada.', 400);
+
                 await prismaTx.distribuicaoRecursoAditamento.create({
                     data: {
                         distribuicao_recurso_id: id,
                         data_vigencia: self.vigencia!,
-                        justificativa: dto.justificativa_aditamento ?? '',
+                        justificativa: dto.justificativa_aditamento,
                         criado_por: user.id,
                         criado_em: new Date(Date.now()),
                     },
