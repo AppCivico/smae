@@ -1,6 +1,6 @@
 import { OmitType, PartialType } from '@nestjs/swagger';
 import { CreateDistribuicaoRecursoDto } from './create-distribuicao-recurso.dto';
-import { IsArray, IsOptional } from 'class-validator';
+import { IsArray, IsOptional, IsString, MaxLength } from 'class-validator';
 
 export class UpdateDistribuicaoRecursoDto extends PartialType(
     OmitType(CreateDistribuicaoRecursoDto, ['transferencia_id', 'registros_sei'])
@@ -12,4 +12,9 @@ export class UpdateDistribuicaoRecursoDto extends PartialType(
         nome: string | null;
         processo_sei: string;
     }[];
+
+    @IsOptional()
+    @IsString()
+    @MaxLength(250)
+    justificativa_aditamento?: string;
 }
