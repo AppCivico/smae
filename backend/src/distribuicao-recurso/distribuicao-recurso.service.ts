@@ -232,12 +232,24 @@ export class DistribuicaoRecursoService {
                         processo_sei: true,
                     },
                 },
+                aditamentos: {
+                    select: {
+                        data_vigencia: true,
+                        justificativa: true,
+                    },
+                },
             },
         });
 
         return rows.map((r) => {
             return {
                 ...r,
+                aditamentos_vigencia: r.aditamentos.map((aditamento) => {
+                    return {
+                        data_vigencia: aditamento.data_vigencia,
+                        justificativa: aditamento.justificativa,
+                    };
+                }),
                 registros_sei: r.registros_sei.map((s) => {
                     return {
                         id: s.id,
@@ -291,12 +303,25 @@ export class DistribuicaoRecursoService {
                         processo_sei: true,
                     },
                 },
+
+                aditamentos: {
+                    select: {
+                        data_vigencia: true,
+                        justificativa: true,
+                    },
+                },
             },
         });
         if (!row) throw new HttpException('id| Distribuição de recurso não encontrada.', 404);
 
         return {
             ...row,
+            aditamentos_vigencia: row.aditamentos.map((aditamento) => {
+                return {
+                    data_vigencia: aditamento.data_vigencia,
+                    justificativa: aditamento.justificativa,
+                };
+            }),
             registros_sei: row.registros_sei.map((s) => {
                 return {
                     id: s.id,
@@ -337,6 +362,18 @@ export class DistribuicaoRecursoService {
                 });
                 if (similarExists > 0)
                     throw new HttpException('nome| Nome igual ou semelhante já existe em outro registro ativo', 400);
+            }
+
+            if (dto.vigencia && dto.vigencia != self.vigencia) {
+                await prismaTx.distribuicaoRecursoAditamento.create({
+                    data: {
+                        distribuicao_recurso_id: id,
+                        data_vigencia: self.vigencia!,
+                        justificativa: dto.justificativa_aditamento ?? '',
+                        criado_por: user.id,
+                        criado_em: new Date(Date.now()),
+                    },
+                });
             }
 
             await prismaTx.distribuicaoRecurso.update({

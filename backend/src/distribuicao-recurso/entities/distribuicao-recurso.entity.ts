@@ -22,8 +22,14 @@ export class DistribuicaoRecursoDto {
     assinatura_municipio: Date | null;
     assinatura_estado: Date | null;
     vigencia: Date | null;
+    aditamentos_vigencia: AditamentosDto[];
     conclusao_suspensiva: Date | null;
     registros_sei: DistribuicaoRecursoSeiDto[] | null;
+}
+
+export class AditamentosDto {
+    data_vigencia: Date;
+    justificativa: String;
 }
 
 export class ListDistribuicaoRecursoDto {
