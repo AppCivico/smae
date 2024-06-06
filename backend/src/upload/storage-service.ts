@@ -1,6 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import * as MinioJS from 'minio';
 
+function headerEscape(str: string) {
+    return str.replace(/[^\x20-\x7E]/g, '').replace(/([\s;"\\])/g, '\\$1');
+}
+
 @Injectable()
 export class StorageService {
     private S3: MinioJS.Client;
@@ -40,5 +44,31 @@ export class StorageService {
             console.log(error);
             throw error;
         }
+    }
+
+    async getSignedUrlForDownload(key: string, ttl_secs: number, response_content_disposition = ''): Promise<string> {
+        return new Promise((resolve, reject) => {
+            this.S3.presignedGetObject(
+                this.BUCKET,
+                key,
+                ttl_secs,
+                {
+                    ...(response_content_disposition
+                        ? {
+                              'response-content-disposition': `attachment; filename="${headerEscape(
+                                  response_content_disposition
+                              )}"`,
+                          }
+                        : {}),
+                },
+                (err, url) => {
+                    if (err) {
+                        reject(err);
+                    } else {
+                        resolve(url);
+                    }
+                }
+            );
+        });
     }
 }

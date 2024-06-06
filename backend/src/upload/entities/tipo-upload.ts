@@ -5,5 +5,6 @@ export const TipoUpload = {
     LOGO_PDM: 'LOGO_PDM',
     IMPORTACAO_ORCAMENTO: 'IMPORTACAO_ORCAMENTO',
     FOTO_PARLAMENTAR: 'FOTO_PARLAMENTAR',
+    IMPORTACAO_PARLAMENTAR: 'IMPORTACAO_PARLAMENTAR',
 };
 export type TipoUpload = (typeof TipoUpload)[keyof typeof TipoUpload];

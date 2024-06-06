@@ -10,6 +10,7 @@ import { RefreshMvModule } from './refresh_mv/refresh-mv.module';
 import { RefreshTransferenciaModule } from './refresh_transferencia/refresh-transferencia.module';
 import { TaskController } from './task.controller';
 import { TaskService } from './task.service';
+import { ImportacaoParlamentarModule } from './importacao_parlamentar/parlamentar.module';
 
 @Module({
     imports: [
@@ -22,6 +23,7 @@ import { TaskService } from './task.service';
         forwardRef(() => AeCronogramaTpModule),
         forwardRef(() => AeNotaModule),
         forwardRef(() => RefreshTransferenciaModule),
+        forwardRef(() => ImportacaoParlamentarModule),
     ],
     controllers: [TaskController],
     providers: [TaskService],
