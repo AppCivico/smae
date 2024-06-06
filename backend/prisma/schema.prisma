@@ -4245,6 +4245,7 @@ enum task_type {
     aviso_email_nota
     refresh_transferencia
     refresh_indicador
+    importacao_parlamentar
 }
 
 enum task_status {
