@@ -4,14 +4,14 @@ import TabelaGenérica from '@/components/TabelaGenerica.vue';
 import { useRoute } from 'vue-router';
 import { useAlertStore } from '@/stores/alert.store';
 import { useAuthStore } from '@/stores/auth.store';
-import { useEtapasProjetosStore } from '@/stores/etapasProjeto.store.js';
+import { useEtapasProjetosStore } from '@/stores/etapasProjeto.store';
 import { storeToRefs } from 'pinia';
 import { computed, ref } from 'vue';
 
 const route = useRoute();
 const authStore = useAuthStore();
 const { temPermissãoPara } = authStore;
-const etapasProjetosStore = useEtapasProjetosStore(); 
+const etapasProjetosStore = useEtapasProjetosStore();
 const {
   lista, chamadasPendentes, erro,
 } = storeToRefs(etapasProjetosStore);
@@ -62,7 +62,7 @@ const listaPreparada = computed(() => {
         },
       };
     }
-    
+
     if (route.meta.prefixoParaFilhas === 'TransferenciasVoluntarias') {
       item.editar = {
         rota: {
@@ -73,7 +73,7 @@ const listaPreparada = computed(() => {
         },
       };
     }
-  
+
     if (temPermissãoPara('CadastroProjetoEtapa.remover') || route.meta.prefixoParaFilhas === 'TransferenciasVoluntarias') {
       item.excluir = {
         ação: () => excluirEtapa(x.id),
