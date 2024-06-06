@@ -170,7 +170,55 @@ export default [
           },
         ],
       },
+      // MDO
+      {
+        path: 'mdo/portfolios',
+        component: () => import('@/views/portfolios.mdo/PortfoliosRaiz.vue'),
+        meta: {
+          título: 'Portfólios',
+          rotaPrescindeDeChave: true,
+          limitarÀsPermissões: [
+            'ProjetoMDO.administrar_portfolios',
+            'ProjetoMDO.administrar_portfolios_no_orgao',
+          ],
+          presenteNoMenu: true,
+          rotasParaMenuSecundário: [
+            'portfoliosListar',
+            'gruposDeObservadoresListar',
+          ],
+        },
+        children: [
+          {
+            name: 'portfoliosListar',
+            path: '',
+            component: () => import('@/views/portfolios.mdo/PortfoliosLista.vue'),
+            meta: {
+              título: 'Portfolios',
+            },
+          },
+          {
+            name: 'portfoliosCriar',
+            path: 'novo',
+            component: () => import('@/views/portfolios.mdo/PortfoliosCriarEditar.vue'),
+            meta: {
+              título: 'Novo portfolio',
+            },
+          },
+          {
+            path: ':portfolioId',
+            name: 'portfoliosEditar',
+            component: () => import('@/views/portfolios.mdo/PortfoliosCriarEditar.vue'),
+            props: ({ params }) => ({
+              ...params,
+              ...{ portfolioId: Number.parseInt(params.portfolioId, 10) || undefined },
+            }),
 
+            meta: {
+              título: 'Editar portfolio',
+            },
+          },
+        ],
+      },
       {
         path: '/paineis-externos',
         component: PaineisExternosRaiz,
