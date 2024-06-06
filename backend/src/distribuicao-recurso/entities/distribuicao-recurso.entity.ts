@@ -29,7 +29,7 @@ export class DistribuicaoRecursoDto {
 
 export class AditamentosDto {
     data_vigencia: Date;
-    justificativa: String;
+    justificativa: string;
 }
 
 export class ListDistribuicaoRecursoDto {
