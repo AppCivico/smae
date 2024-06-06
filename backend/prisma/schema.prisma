@@ -213,6 +213,8 @@ model Pessoa {
     ProjetoLicoesAprendidasQCriei  ProjetoLicaoAprendida[] @relation("criador")
     ProjetoLicoesAprendidasQRemovi ProjetoLicaoAprendida[] @relation("removedor")
 
+    AditamentosQueCriei DistribuicaoRecursoAditamento[]
+
     ppResponsavel     Projeto[] @relation("ppResponsavel")
     ppQueCriei        Projeto[] @relation("criador")
     ppSelecionado     Projeto[] @relation("ppSelecionado")
@@ -5108,8 +5110,25 @@ model DistribuicaoRecurso {
     removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
 
     registros_sei DistribuicaoRecursoSei[]
+    aditamentos   DistribuicaoRecursoAditamento[]
 
     @@map("distribuicao_recurso")
+}
+
+model DistribuicaoRecursoAditamento {
+    id Int @id @default(autoincrement())
+
+    distribuicao_recurso_id Int
+    distribuicao_recurso    DistribuicaoRecurso @relation(fields: [distribuicao_recurso_id], references: [id])
+
+    data_vigencia DateTime @db.Date()
+    justificativa String
+
+    criado_por Int
+    criado_em  DateTime @default(now()) @db.Timestamptz(6)
+    criador    Pessoa   @relation(fields: [criado_por], references: [id])
+
+    @@map("distribuicao_recurso_aditamento")
 }
 
 model DistribuicaoRecursoSei {
