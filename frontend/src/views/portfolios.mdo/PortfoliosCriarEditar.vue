@@ -321,11 +321,11 @@ observadoresStore.buscarTudo();
   >Carregando</span>
 
   <div
-    v-if="erro"
+    v-if="erro.emFoco"
     class="error p1"
   >
     <div class="error-msg">
-      {{ erro }}
+      {{ erro.emFoco }}
     </div>
   </div>
 </template>
