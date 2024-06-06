@@ -414,8 +414,8 @@ const isSomaCorreta = computed(() => {
       </div>
     </div>
 
-    <div class="flex g2 mb1">
-      <div class="f1">
+    <div class="flex flexwrap g2 mb1">
+      <div class="f1 fb10em">
         <LabelFromYup
           name="valor_total"
           :schema="schema"
@@ -438,7 +438,7 @@ const isSomaCorreta = computed(() => {
           A soma dos valores não corresponde ao valor total.
         </div>
       </div>
-      <div class="f1">
+      <div class="f1 fb5em">
         <LabelFromYup
           name="empenho"
           :schema="schema"
@@ -465,7 +465,7 @@ const isSomaCorreta = computed(() => {
       </div>
       <div
         v-if="values.empenho"
-        class="f1 mb1"
+        class="f1 fb10em mb1"
       >
         <LabelFromYup
           name="data_empenho"
@@ -638,8 +638,8 @@ const isSomaCorreta = computed(() => {
       </FieldArray>
     </div>
 
-    <div class="flex g2">
-      <div class="f1 mb1">
+    <div class="flex flexwrap g2">
+      <div class="f1 fb10em mb1">
         <LabelFromYup
           name="proposta"
           :schema="schema"
@@ -657,7 +657,7 @@ const isSomaCorreta = computed(() => {
           name="proposta"
         />
       </div>
-      <div class="f1 mb1">
+      <div class="f1 fb10em mb1">
         <LabelFromYup
           name="convenio"
           :schema="schema"
@@ -677,8 +677,8 @@ const isSomaCorreta = computed(() => {
       </div>
     </div>
 
-    <div class="flex g2">
-      <div class="f1 mb1">
+    <div class="flex flexwrap g2">
+      <div class="f1 fb10em mb1">
         <LabelFromYup
           name="contrato"
           :schema="schema"
@@ -693,7 +693,7 @@ const isSomaCorreta = computed(() => {
           name="contrato"
         />
       </div>
-      <div class="f1 mb1">
+      <div class="f1 fb10em mb1">
         <LabelFromYup
           name="assinatura_termo_aceite"
           :schema="schema"
@@ -714,8 +714,8 @@ const isSomaCorreta = computed(() => {
       </div>
     </div>
 
-    <div class="flex g2 mb1">
-      <div class="f1">
+    <div class="flex flexwrap g2 mb1">
+      <div class="f1 fb10em">
         <LabelFromYup
           name="assinatura_estado"
           :schema="schema"
@@ -734,7 +734,7 @@ const isSomaCorreta = computed(() => {
           class="error-msg"
         />
       </div>
-      <div class="f1">
+      <div class="f1 fb10em">
         <LabelFromYup
           name="assinatura_municipio"
           :schema="schema"
@@ -755,8 +755,8 @@ const isSomaCorreta = computed(() => {
       </div>
     </div>
 
-    <div class="flex g2 mb3">
-      <div class="f1 mb1">
+    <div class="flex flexwrap g2 mb3">
+      <div class="f1 fb10em mb1">
         <LabelFromYup
           name="vigencia"
           :schema="schema"
@@ -775,7 +775,7 @@ const isSomaCorreta = computed(() => {
           class="error-msg"
         />
       </div>
-      <div class="f1 mb1">
+      <div class="f1 fb10em mb1">
         <LabelFromYup
           name="conclusao_suspensiva"
           :schema="schema"
