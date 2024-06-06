@@ -176,6 +176,7 @@ export default [
         component: () => import('@/views/portfolios.mdo/PortfoliosRaiz.vue'),
         meta: {
           título: 'Portfólios',
+          entidadeMãe: 'mdo',
           rotaPrescindeDeChave: true,
           limitarÀsPermissões: [
             'ProjetoMDO.administrar_portfolios',
@@ -545,7 +546,7 @@ export default [
         meta: {
           título: 'Grupos de observadores',
           títuloParaMenu: 'Grupos de observadores',
-
+          entidadeMãe: 'projetos',
           limitarÀsPermissões: [
             'Projeto.administrar_portfolios',
             'Projeto.administrador_no_orgao',
