@@ -143,31 +143,35 @@ export class PortfolioService {
         if (listaParaProjetosOuObras) {
             if (
                 // TODO conferir isso para o MDO
-                !user.hasSomeRoles(['Projeto.administrador']) &&
-                user.hasSomeRoles(['Projeto.administrador_no_orgao'])
+                !user.hasSomeRoles(['Projeto.administrador', 'ProjetoMDO.administrador']) &&
+                user.hasSomeRoles(['Projeto.administrador_no_orgao', 'ProjetoMDO.administrador_no_orgao'])
             ) {
                 if (!user.orgao_id)
                     throw new BadRequestException(
-                        'Usuário Projeto.administrador_no_orgao precisa ter um órgão definido'
+                        'Usuário Projeto.administrador_no_orgao ou ProjetoMDO.administrador_no_orgao precisa ter um órgão definido'
                     );
 
                 orgao_id = user.orgao_id;
-                this.logger.debug(`Filtro Projeto.administrador_no_orgao: orgao_id=${orgao_id}`);
+                this.logger.debug(
+                    `Filtro Projeto.administrador_no_orgao/ProjetoMDO.administrador_no_orgao: orgao_id=${orgao_id}`
+                );
             }
         } else if (!isFullAdmin) {
             // else do listaParaProjetos = listando para edição
             if (!isAdminNoOrgao)
                 throw new BadRequestException(
-                    'Necessário Projeto.administrar_portfolios_no_orgao para listar em modo edição.'
+                    'Necessário Projeto.administrar_portfolios_no_orgao/ProjetoMDO.administrar_portfolios_no_orgao para listar em modo edição.'
                 );
 
             if (!user.orgao_id)
                 throw new BadRequestException(
-                    'Usuário com Projeto.administrar_portfolios_no_orgao precisa ter um órgão definido para utilizar a listar em modo edição.'
+                    'Usuário com Projeto.administrar_portfolios_no_orgao/ProjetoMDO.administrar_portfolios_no_orgao precisa ter um órgão definido para utilizar a listar em modo edição.'
                 );
 
             orgao_id = user.orgao_id;
-            this.logger.debug(`Filtro Projeto.administrar_portfolios_no_orgao: orgao_id=${orgao_id}`);
+            this.logger.debug(
+                `Filtro Projeto.administrar_portfolios_no_orgao/ProjetoMDO.administrar_portfolios_no_orgao: orgao_id=${orgao_id}`
+            );
         }
 
         const listActive = await this.prisma.portfolio.findMany({
