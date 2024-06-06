@@ -349,6 +349,18 @@ export class DistribuicaoRecursoService {
             if (dto.registros_sei != undefined) {
                 const currRegistrosSei = self.registros_sei ?? [];
                 await this.checkDiffSei(id, dto.registros_sei, currRegistrosSei, prismaTx, user);
+            } else {
+                // Front não envia o param quando tiver vazio.
+                await prismaTx.distribuicaoRecursoSei.updateMany({
+                    where: {
+                        distribuicao_recurso_id: id,
+                        removido_em: null,
+                    },
+                    data: {
+                        removido_em: new Date(Date.now()),
+                        removido_por: user.id,
+                    },
+                });
             }
             delete dto.registros_sei;
 
