@@ -233,6 +233,7 @@ export class DistribuicaoRecursoService {
                     },
                 },
                 aditamentos: {
+                    orderBy: { criado_em: 'desc' },
                     select: {
                         data_vigencia: true,
                         justificativa: true,
@@ -305,6 +306,7 @@ export class DistribuicaoRecursoService {
                 },
 
                 aditamentos: {
+                    orderBy: { criado_em: 'desc' },
                     select: {
                         data_vigencia: true,
                         justificativa: true,
