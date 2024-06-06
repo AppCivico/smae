@@ -412,175 +412,180 @@ watch(itemParaEdição, (novoValor) => {
           </button>
         </div>
       </div>
-
-      <table class="tablemain mb4">
-        <col>
-        <col class="col--minimum">
-        <col class="col--minimum">
-        <col>
-        <col>
-        <col class="col--botão-de-ação">
-        <col class="col--botão-de-ação">
-        <col class="col--botão-de-ação">
-        <thead>
-          <tr>
-            <th>
-              Fase
-            </th>
-            <th class="cell--number">
-              Duração
-            </th>
-            <th>
-              Marco
-            </th>
-            <th class="cell--nowrap">
-              Responsabilidade
-            </th>
-            <th>
-              Situação
-            </th>
-          </tr>
-        </thead>
-        <tbody
-          v-for="fase in etapa.fases"
-          :key="fase.id"
-        >
-          <tr v-scrollLockDebug>
-            <td colspan="6">
-              <pre>fase:{{ fase }}</pre>
-            </td>
-          </tr>
-          <tr>
-            <td
-              :class="{
-                loading: fasesPendentes?.lista
-              }"
-            >
-              {{ fase.fase.fase }}
-            </td>
-            <td class="cell--number">
-              {{ fase.duracao ? `${fase.duracao} dias` : '-' }}
-            </td>
-            <td class="cell--nowrap">
-              {{ fase.marco ? 'sim' : 'não' }}
-            </td>
-            <td class="cell--nowrap">
-              {{ responsabilidadeEtapaFluxo[fase.responsabilidade]?.nome
-                || fase.responsabilidade }}
-            </td>
-            <td>
-              <template v-if="fase.situacoes && fase.situacoes.length">
-                {{ fase.situacoes.map(situacao => situacao.situacao).join(', ') }}
-              </template>
-              <template v-else>
-                -
-              </template>
-            </td>
-            <td>
-              <button
-                v-if="emFoco && !emFoco?.edicao_restrita"
-                class="bgnone like-a__text"
-                @click="() => {
-                  idDaTarefaEmFoco = 0;
-                  idDaMãeDaTarefa = fase.id;
-                }"
-              >
-                <svg
-                  width="20"
-                  height="20"
-                >
-                  <use xlink:href="#i_+" />
-                </svg>
-              </button>
-            </td>
-            <td>
-              <button
-                v-if="emFoco && !emFoco?.edicao_restrita"
-                class="like-a__text"
-                arial-label="excluir"
-                title="excluir"
-                @click="excluirFase(fase.id)"
-              >
-                <svg
-                  width="20"
-                  height="20"
-                ><use xlink:href="#i_remove" /></svg>
-              </button>
-            </td>
-            <td>
-              <button
-                v-if="emFoco && !emFoco?.edicao_restrita"
-                class="bgnone like-a__text"
-                @click="() => {
-                  idDoRelacionamentoComFase = fase.id;
-                  idDaMãeDaFase = etapa.id;
-                }"
-              >
-                <svg
-                  width="20"
-                  height="20"
-                ><use xlink:href="#i_edit" /></svg>
-              </button>
-            </td>
-          </tr>
-          <tr
-            v-for="tarefa in fase.tarefas"
-            :key="tarefa.id"
-            class="tarefaTabela"
+      <div
+        role="region"
+        aria-label="Tabela de etapas do fluxo"
+        tabindex="0"
+      >
+        <table class="tablemain mb4">
+          <col>
+          <col class="col--minimum">
+          <col class="col--minimum">
+          <col>
+          <col>
+          <col class="col--botão-de-ação">
+          <col class="col--botão-de-ação">
+          <col class="col--botão-de-ação">
+          <thead>
+            <tr>
+              <th>
+                Fase
+              </th>
+              <th class="cell--number">
+                Duração
+              </th>
+              <th>
+                Marco
+              </th>
+              <th class="cell--nowrap">
+                Responsabilidade
+              </th>
+              <th>
+                Situação
+              </th>
+            </tr>
+          </thead>
+          <tbody
+            v-for="fase in etapa.fases"
+            :key="fase.id"
           >
-            <td
-              class="cell--nowrap"
-              :class="{
-                loading: tarefasPendentes?.lista
-              }"
-            >
-              <span class="tarefa pl3">Tarefa</span>
-              {{ tarefa.workflow_tarefa.descricao || "-" }}
-            </td>
-            <td class="cell--number">
-              {{ tarefa.duracao ? `${tarefa.duracao} dias` : '-' }}
-            </td>
-            <td class="cell--nowrap">
-              {{ tarefa.marco ? 'sim' : 'não' }}
-            </td>
-            <td class="cell--nowrap">
-              {{ responsabilidadeEtapaFluxo[tarefa.responsabilidade]?.nome
-                || tarefa.responsabilidade }}
-            </td>
-            <td />
-            <td />
-            <td>
-              <button
-                v-if="emFoco && !emFoco?.edicao_restrita"
-                class="like-a__text"
-                arial-label="excluir"
-                title="excluir"
-                @click="excluirTarefa(tarefa.id)"
-              >
-                <svg
-                  width="20"
-                  height="20"
-                ><use xlink:href="#i_remove" /></svg>
-              </button>
-            </td>
-            <td>
-              <button
-                v-if="emFoco && !emFoco?.edicao_restrita"
-                class="bgnone like-a__text"
-                @click="() => {
-                  idDaTarefaEmFoco = tarefa.id;
-                  idDaMãeDaTarefa = fase.id;
+            <tr v-scrollLockDebug>
+              <td colspan="6">
+                <pre>fase:{{ fase }}</pre>
+              </td>
+            </tr>
+            <tr>
+              <td
+                :class="{
+                  loading: fasesPendentes?.lista
                 }"
               >
-                <svg
-                  width="20"
-                  height="20"
-                ><use xlink:href="#i_edit" /></svg>
-              </button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+                {{ fase.fase.fase }}
+              </td>
+              <td class="cell--number">
+                {{ fase.duracao ? `${fase.duracao} dias` : '-' }}
+              </td>
+              <td class="cell--nowrap">
+                {{ fase.marco ? 'sim' : 'não' }}
+              </td>
+              <td class="cell--nowrap">
+                {{ responsabilidadeEtapaFluxo[fase.responsabilidade]?.nome
+                  || fase.responsabilidade }}
+              </td>
+              <td>
+                <template v-if="fase.situacoes && fase.situacoes.length">
+                  {{ fase.situacoes.map(situacao => situacao.situacao).join(', ') }}
+                </template>
+                <template v-else>
+                  -
+                </template>
+              </td>
+              <td>
+                <button
+                  v-if="emFoco && !emFoco?.edicao_restrita"
+                  class="bgnone like-a__text"
+                  @click="() => {
+                    idDaTarefaEmFoco = 0;
+                    idDaMãeDaTarefa = fase.id;
+                  }"
+                >
+                  <svg
+                    width="20"
+                    height="20"
+                  >
+                    <use xlink:href="#i_+" />
+                  </svg>
+                </button>
+              </td>
+              <td>
+                <button
+                  v-if="emFoco && !emFoco?.edicao_restrita"
+                  class="like-a__text"
+                  arial-label="excluir"
+                  title="excluir"
+                  @click="excluirFase(fase.id)"
+                >
+                  <svg
+                    width="20"
+                    height="20"
+                  ><use xlink:href="#i_remove" /></svg>
+                </button>
+              </td>
+              <td>
+                <button
+                  v-if="emFoco && !emFoco?.edicao_restrita"
+                  class="bgnone like-a__text"
+                  @click="() => {
+                    idDoRelacionamentoComFase = fase.id;
+                    idDaMãeDaFase = etapa.id;
+                  }"
+                >
+                  <svg
+                    width="20"
+                    height="20"
+                  ><use xlink:href="#i_edit" /></svg>
+                </button>
+              </td>
+            </tr>
+            <tr
+              v-for="tarefa in fase.tarefas"
+              :key="tarefa.id"
+              class="tarefaTabela"
+            >
+              <td
+                class="cell--nowrap"
+                :class="{
+                  loading: tarefasPendentes?.lista
+                }"
+              >
+                <span class="tarefa pl3">Tarefa</span>
+                {{ tarefa.workflow_tarefa.descricao || "-" }}
+              </td>
+              <td class="cell--number">
+                {{ tarefa.duracao ? `${tarefa.duracao} dias` : '-' }}
+              </td>
+              <td class="cell--nowrap">
+                {{ tarefa.marco ? 'sim' : 'não' }}
+              </td>
+              <td class="cell--nowrap">
+                {{ responsabilidadeEtapaFluxo[tarefa.responsabilidade]?.nome
+                  || tarefa.responsabilidade }}
+              </td>
+              <td />
+              <td />
+              <td>
+                <button
+                  v-if="emFoco && !emFoco?.edicao_restrita"
+                  class="like-a__text"
+                  arial-label="excluir"
+                  title="excluir"
+                  @click="excluirTarefa(tarefa.id)"
+                >
+                  <svg
+                    width="20"
+                    height="20"
+                  ><use xlink:href="#i_remove" /></svg>
+                </button>
+              </td>
+              <td>
+                <button
+                  v-if="emFoco && !emFoco?.edicao_restrita"
+                  class="bgnone like-a__text"
+                  @click="() => {
+                    idDaTarefaEmFoco = tarefa.id;
+                    idDaMãeDaTarefa = fase.id;
+                  }"
+                >
+                  <svg
+                    width="20"
+                    height="20"
+                  ><use xlink:href="#i_edit" /></svg>
+                </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
   </div>
 </template>
