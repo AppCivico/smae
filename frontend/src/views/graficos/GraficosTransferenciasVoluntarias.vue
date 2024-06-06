@@ -27,6 +27,14 @@
     v-if="graficosPendentes"
     class="loading"
   />
+
+  <ErrorComponent
+    v-if="erroNaListaDeEtapas"
+    class="mb1"
+  >
+    {{ erroNaListaDeEtapas }}
+  </ErrorComponent>
+
   <div
     v-if="exibirFiltros"
     class="bgb p15 w100 filtro-de-graficos"
@@ -216,7 +224,6 @@
     </div>
   </div>
 </template>
-
 <script setup>
 import requestS from '@/helpers/requestS.ts';
 import dateToDate from '@/helpers/dateToDate';
@@ -237,7 +244,12 @@ const partidoStore = usePartidosStore();
 const parlamentarStore = useParlamentaresStore();
 
 // eslint-disable-next-line max-len
-const { lista: listaEtapas, chamadasPendentes: chamadasPendentesEtapas, etapasPorId } = storeToRefs(fluxosEtapasProjetos);
+const {
+  lista: listaEtapas,
+  chamadasPendentes: chamadasPendentesEtapas,
+  etapasPorId,
+  erro: erroNaListaDeEtapas,
+} = storeToRefs(fluxosEtapasProjetos);
 
 // eslint-disable-next-line max-len
 const { lista: listaPartidos, chamadasPendentes: chamadasPendentesPartidos, partidosPorId } = storeToRefs(partidoStore);
