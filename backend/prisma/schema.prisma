@@ -4163,6 +4163,8 @@ model GrupoPortfolio {
     atualizador Pessoa? @relation("Atualizador", fields: [atualizado_por], references: [id])
     removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
 
+    tipo_projeto TipoProjeto @default(PP)
+
     orgao_id                Int
     orgao                   Orgao                     @relation(fields: [orgao_id], references: [id])
     ProjetoGrupoPortfolio   ProjetoGrupoPortfolio[]
