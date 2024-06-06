@@ -12,8 +12,7 @@ export class ImportacaoParlamentarService implements TaskableService {
     private readonly logger = new Logger(ImportacaoParlamentarService.name);
     constructor(
         private readonly prisma: PrismaService,
-        @Inject(forwardRef(() => UploadService)) private readonly uploadService: UploadService,
-        @Inject(forwardRef(() => StorageService)) private readonly storageService: StorageService
+        @Inject(forwardRef(() => UploadService)) private readonly uploadService: UploadService
     ) {}
 
     private getTmpFilePath(fileName: string, taskId: string): string {
@@ -35,6 +34,7 @@ export class ImportacaoParlamentarService implements TaskableService {
         db.all('LOAD https; LOAD postgres; LOAD sqlite;');
 
         db.run('ATTACH ? (TYPE SQLITE) AS importacao;', path);
+        //db.run('CREATE TABLE temp_eleicao ()')
 
         await db.close();
 
