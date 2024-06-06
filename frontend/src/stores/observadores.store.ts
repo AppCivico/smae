@@ -4,6 +4,22 @@ import { GrupoPortfolioItemDto, ListGrupoPortfolioDto } from '@/../../backend/sr
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
+function caminhoParaApi(rotaMeta) {
+  if (
+    rotaMeta.prefixoParaFilhas === 'projetos'
+    || rotaMeta.entidadeMãe === 'projetos'
+  ) {
+    return 'grupo-portfolio';
+  }
+  if (
+    rotaMeta.prefixoParaFilhas === 'mdo'
+    || rotaMeta.entidadeMãe === 'mdo'
+  ) {
+    return 'grupo-portfolio-mdo';
+  }
+  throw new Error('Você precisa estar em algum módulo para executar essa ação.');
+}
+
 interface ChamadasPendentes {
   lista: boolean;
   emFoco: boolean;
@@ -31,7 +47,7 @@ export const useObservadoresStore = defineStore('observadores', {
     async buscarItem(id:number, params = {}): Promise<void> {
       this.chamadasPendentes.emFoco = true;
       try {
-        const resposta = await this.requestS.get(`${baseUrl}/grupo-portfolio/`, { id, ...params });
+        const resposta = await this.requestS.get(`${baseUrl}/${caminhoParaApi(this.route.meta)}/`, { id, ...params });
         this.emFoco = Array.isArray(resposta.linhas) && resposta.linhas[0]
           ? resposta.linhas[0]
           : {
@@ -46,7 +62,7 @@ export const useObservadoresStore = defineStore('observadores', {
     async buscarTudo(params = {}): Promise<void> {
       this.chamadasPendentes.lista = true;
       try {
-        const { linhas } = await this.requestS.get(`${baseUrl}/grupo-portfolio/`, params);
+        const { linhas } = await this.requestS.get(`${baseUrl}/${caminhoParaApi(this.route.meta)}/`, params);
         this.lista = linhas;
       } catch (erro: unknown) {
         this.erro = erro;
@@ -58,7 +74,7 @@ export const useObservadoresStore = defineStore('observadores', {
       this.chamadasPendentes.lista = true;
 
       try {
-        await this.requestS.delete(`${baseUrl}/grupo-portfolio/${id}`);
+        await this.requestS.delete(`${baseUrl}/${caminhoParaApi(this.route.meta)}/${id}`);
 
         this.chamadasPendentes.lista = false;
         return true;
@@ -74,9 +90,9 @@ export const useObservadoresStore = defineStore('observadores', {
 
       try {
         if (id) {
-          await this.requestS.patch(`${baseUrl}/grupo-portfolio/${id}`, params);
+          await this.requestS.patch(`${baseUrl}/${caminhoParaApi(this.route.meta)}/${id}`, params);
         } else {
-          await this.requestS.post(`${baseUrl}/grupo-portfolio`, params);
+          await this.requestS.post(`${baseUrl}/${caminhoParaApi(this.route.meta)}`, params);
         }
 
         this.chamadasPendentes.emFoco = false;
