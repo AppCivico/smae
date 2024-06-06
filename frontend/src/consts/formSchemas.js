@@ -1229,21 +1229,20 @@ export const transferenciaDistribuicaoDeRecursos = object({
     .nullable(),
   registros_sei: array()
     .label('Número SEI')
-    .of(object()
-      .shape({
-        id: number()
-          .nullable(),
-        nome: string()
-          .label('Nome')
-          .max(1024)
-          .min(1)
-          .nullable()
-          .transform((v) => (!v ? null : v)),
-        processo_sei: string()
-          .label('Processo')
-          .max(40)
-          .required(),
-      }))
+    .of(object({
+      id: number()
+        .nullable(),
+      nome: string()
+        .label('Nome')
+        .max(1024)
+        .min(1)
+        .nullable()
+        .transform((v) => (!v ? null : v)),
+      processo_sei: string()
+        .label('Processo')
+        .max(40)
+        .required(),
+    }))
     .strict(),
   valor_contrapartida: number()
     .label('Valor contrapartida')
