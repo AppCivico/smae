@@ -37,7 +37,7 @@ if (!organs.length) {
     <h1>{{ route?.meta?.título || 'Portfolios' }}</h1>
     <hr class="ml2 f1">
     <router-link
-      :to="{name: 'portfoliosCriar'}"
+      :to="{ name: 'mdoPortfoliosCriar' }"
       class="btn big ml1"
     >
       Novo portfólio
@@ -45,6 +45,7 @@ if (!organs.length) {
   </div>
 
   <table class="tablemain">
+    <col>
     <col>
     <col>
     <col class="col--botão-de-ação">
@@ -88,10 +89,10 @@ if (!organs.length) {
             ><use xlink:href="#i_remove" /></svg>
           </button>
         </td>
-        <!-- <td>
+        <td>
           <router-link
             v-if="item?.pode_editar"
-            :to="{ name: 'portfoliosEditar', params: { portfolioId: item.id } }"
+            :to="{ name: 'mdoPortfoliosEditar', params: { portfolioId: item.id } }"
             class="tprimary"
           >
             <svg
@@ -99,7 +100,7 @@ if (!organs.length) {
               height="20"
             ><use xlink:href="#i_edit" /></svg>
           </router-link>
-        </td> -->
+        </td>
       </tr>
       <tr v-if="chamadasPendentes.lista">
         <td colspan="3">

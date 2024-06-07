@@ -184,13 +184,12 @@ export default [
           ],
           presenteNoMenu: true,
           rotasParaMenuSecundário: [
-            'portfoliosListar',
-            'gruposDeObservadoresListar',
+            'mdoPortfoliosListar',
           ],
         },
         children: [
           {
-            name: 'portfoliosListar',
+            name: 'mdoPortfoliosListar',
             path: '',
             component: () => import('@/views/portfolios.mdo/PortfoliosLista.vue'),
             meta: {
@@ -198,19 +197,19 @@ export default [
             },
           },
           {
-            name: 'portfoliosCriar',
+            name: 'mdoPortfoliosCriar',
             path: 'novo',
             component: () => import('@/views/portfolios.mdo/PortfoliosCriarEditar.vue'),
             meta: {
               título: 'Novo portfólio',
               rotasParaMigalhasDePão: [
-                'portfoliosListar',
+                'mdoPortfoliosListar',
               ],
             },
           },
           {
             path: ':portfolioId',
-            name: 'portfoliosEditar',
+            name: 'mdoPortfoliosEditar',
             component: () => import('@/views/portfolios.mdo/PortfoliosCriarEditar.vue'),
             props: ({ params }) => ({
               ...params,
@@ -220,7 +219,7 @@ export default [
             meta: {
               título: 'Editar portfólio',
               rotasParaMigalhasDePão: [
-                'portfoliosListar',
+                'mdoPortfoliosListar',
               ],
             },
           },
