@@ -1272,9 +1272,9 @@ export class PessoaService {
         // exceto a linha de administrador, que não pode ser editada se você não for administrador
         for (const r of dadosRetorno) {
             r.modulos_sistemas = [sistema];
-            if (r.perfil_privilegio.some((v) => v.privilegio.nome == 'CadastroPessoa.administrador')) {
+
+            if (r.perfil_privilegio.some((v) => v.privilegio.codigo == 'CadastroPessoa.administrador'))
                 r.pode_editar = false;
-            }
         }
 
         return dadosRetorno;
