@@ -12,6 +12,7 @@ export class ImportacaoParlamentarService implements TaskableService {
     private readonly logger = new Logger(ImportacaoParlamentarService.name);
     constructor(
         private readonly prisma: PrismaService,
+        @Inject(forwardRef(() => StorageService)) private readonly storageService: StorageService,
         @Inject(forwardRef(() => UploadService)) private readonly uploadService: UploadService
     ) {}
 
@@ -21,7 +22,7 @@ export class ImportacaoParlamentarService implements TaskableService {
     async executeJob(inputParams: CreateImportacaoParlamentarDto, taskId: string): Promise<any> {
         this.logger.verbose(`Carregando importação parlamentar id ${inputParams.upload_token}`);
 
-        //this.storageService.saveAsFile(inputParams.upload_token, '/tmp/import-parlamentar');
+        this.storageService.saveAsFile(inputParams.upload_token, '/tmp/import-parlamentar');
 
         const db = await Database.create(this.getTmpFilePath('db-at-' + Date.now() + '.duckdb', taskId));
 
