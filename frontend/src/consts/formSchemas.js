@@ -1244,7 +1244,7 @@ export const transferenciaDistribuicaoDeRecursos = object({
         .label('Nome')
         .max(1024)
         .min(1)
-        .nullable()
+        .required()
         .transform((v) => (!v ? null : v)),
       processo_sei: string()
         .label('Processo')
