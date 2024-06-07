@@ -13,7 +13,7 @@ import {
     CreateMandatoSuplenteDto,
     CreateEquipeDto,
 } from './dto/create-parlamentar.dto';
-import { ListParlamentarDto, ParlamentarDetailDto } from './entities/parlamentar.entity';
+import { ParlamentarDetailDto, ParlamentarDto } from './entities/parlamentar.entity';
 import {
     UpdateEquipeDto,
     UpdateMandatoDto,
@@ -22,6 +22,7 @@ import {
 } from './dto/update-parlamentar.dto';
 import { RemoveMandatoDepsDto } from './dto/remove-mandato-deps.dto';
 import { FilterParlamentarDto } from './dto/filter-parlamentar.dto';
+import { PaginatedDto } from 'src/common/dto/paginated.dto';
 
 @ApiTags('Parlamentar')
 @Controller('parlamentar')
@@ -37,8 +38,8 @@ export class ParlamentarController {
 
     @ApiBearerAuth('access-token')
     @Get()
-    async findAll(@Query() filters: FilterParlamentarDto): Promise<ListParlamentarDto> {
-        return { linhas: await this.parlamentarService.findAll(filters) };
+    async findAll(@Query() filters: FilterParlamentarDto): Promise<PaginatedDto<ParlamentarDto>> {
+        return await this.parlamentarService.findAll(filters);
     }
 
     @Get(':id')

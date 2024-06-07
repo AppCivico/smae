@@ -21,12 +21,19 @@ import {
     UpdateRepresentatividadeDto,
 } from './dto/update-parlamentar.dto';
 import { ParlamentarDetailDto, ParlamentarDto } from './entities/parlamentar.entity';
+import { PaginatedDto } from 'src/common/dto/paginated.dto';
+import { JwtService } from '@nestjs/jwt';
 
+class NextPageTokenJwtBody {
+    offset: number;
+    ipp: number;
+}
 @Injectable()
 export class ParlamentarService {
     constructor(
         private readonly prisma: PrismaService,
-        private readonly uploadService: UploadService
+        private readonly uploadService: UploadService,
+        private readonly jwtService: JwtService
     ) {}
 
     async create(dto: CreateParlamentarDto, user: PessoaFromJwt): Promise<RecordWithId> {
@@ -58,7 +65,7 @@ export class ParlamentarService {
         return created;
     }
 
-    async findAll(filters: FilterParlamentarDto | undefined): Promise<ParlamentarDto[]> {
+    async findAll(filters: FilterParlamentarDto): Promise<PaginatedDto<ParlamentarDto>> {
         let filterSuplente:
             | {
                   cargo: ParlamentarCargo;
@@ -92,6 +99,18 @@ export class ParlamentarService {
                 eleicao_id: mandatoPrincipal.eleicao_id,
                 mandato_principal_id: null,
             };
+        }
+
+        let tem_mais = false;
+        let token_proxima_pagina: string | null = null;
+
+        let ipp = filters.ipp ? filters.ipp : 25;
+        let offset = 0;
+        const decodedPageToken = this.decodeNextPageToken(filters.token_proxima_pagina);
+
+        if (decodedPageToken) {
+            offset = decodedPageToken.offset;
+            ipp = decodedPageToken.ipp;
         }
 
         const listActive = await this.prisma.parlamentar.findMany({
@@ -133,7 +152,13 @@ export class ParlamentarService {
             orderBy: [{ nome: 'asc' }],
         });
 
-        return listActive.map((p) => {
+        if (listActive.length > ipp) {
+            tem_mais = true;
+            listActive.pop();
+            token_proxima_pagina = this.encodeNextPageToken({ ipp: ipp, offset: offset + ipp });
+        }
+
+        const linhas = listActive.map((p) => {
             const mandatoAtual = p.mandatos
                 .sort((a, b) => b.eleicao.ano - a.eleicao.ano)
                 .find((m) => {
@@ -150,6 +175,26 @@ export class ParlamentarService {
                 }),
             };
         });
+
+        return {
+            linhas: linhas,
+            tem_mais: tem_mais,
+            token_proxima_pagina: token_proxima_pagina,
+        };
+    }
+
+    private decodeNextPageToken(jwt: string | undefined): NextPageTokenJwtBody | null {
+        let tmp: NextPageTokenJwtBody | null = null;
+        try {
+            if (jwt) tmp = this.jwtService.verify(jwt) as NextPageTokenJwtBody;
+        } catch {
+            throw new HttpException('Param next_page_token is invalid', 400);
+        }
+        return tmp;
+    }
+
+    private encodeNextPageToken(opt: NextPageTokenJwtBody): string {
+        return this.jwtService.sign(opt);
     }
 
     async findOne(id: number, user: PessoaFromJwt | undefined): Promise<ParlamentarDetailDto> {
