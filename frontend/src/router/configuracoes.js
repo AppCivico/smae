@@ -18,10 +18,10 @@ import PaineisExternosCriarEditar from '@/views/paineisExternos/PaineisExternosC
 import PaineisExternosLista from '@/views/paineisExternos/PaineisExternosLista.vue';
 import PaineisExternosRaiz from '@/views/paineisExternos/PaineisExternosRaiz.vue';
 
-import WorkflowRaiz from '@/views/workflow/WorkflowRaiz.vue';
 import FluxosCriarEditar from '@/views/fluxosProjeto/FluxosCriarEditar.vue';
 import FluxosLista from '@/views/fluxosProjeto/FluxosLista.vue';
 import FluxosRaiz from '@/views/fluxosProjeto/FluxosRaiz.vue';
+import WorkflowRaiz from '@/views/workflow/WorkflowRaiz.vue';
 
 import EtapasCriarEditar from '@/views/etapasProjeto/EtapasCriarEditar.vue';
 import EtapasLista from '@/views/etapasProjeto/EtapasLista.vue';
