@@ -1643,6 +1643,7 @@ p {
     outline: 1px solid @c400;
   }
 
+  &:read-only,
   &:disabled {
     color: @c200;
     cursor: not-allowed;
@@ -1683,6 +1684,7 @@ input[type='checkbox'] {
     background-color: currentColor;
   }
 
+  &:read-only,
   &:disabled {
     &:checked {
       background-image: url("@{u}check.svg");
@@ -1733,6 +1735,7 @@ input[type='checkbox'] {
       }
     }
 
+    &:read-only,
     &:disabled {
       background-image: none;
     }
