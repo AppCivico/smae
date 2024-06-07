@@ -351,7 +351,7 @@ iniciar();
           >
             <td>{{ item.eleicao.ano }}</td>
             <td>{{ item.cargo }}</td>
-            <td>{{ item.votos }}</td>
+            <td>{{ item.votos_estado }}</td>
 
             <td>
               <button
