@@ -4711,12 +4711,13 @@ model EleicaoComparecimento {
 model Parlamentar {
     id Int @id @default(autoincrement())
 
-    nome         String
-    nome_popular String
-    nascimento   DateTime? @db.Date()
-    telefone     String?
-    email        String?
-    em_atividade Boolean   @default(false)
+    nome          String
+    nome_popular  String
+    nascimento    DateTime?      @db.Date()
+    telefone      String?
+    email         String?
+    em_atividade  Boolean        @default(false)
+    uf_nascimento ParlamentarUF?
 
     foto_upload_id Int?
     foto           Arquivo? @relation(fields: [foto_upload_id], references: [id])
@@ -4727,7 +4728,7 @@ model Parlamentar {
     criado_por     Int?
     criado_em      DateTime? @default(now()) @db.Timestamptz(6)
     atualizado_por Int?
-    atualizado_em  DateTime  @default(now()) @db.Timestamptz(6)
+    atualizado_em  DateTime? @default(now()) @db.Timestamptz(6)
     removido_por   Int?
     removido_em    DateTime? @db.Timestamptz(6)
 
@@ -4815,6 +4816,9 @@ model ParlamentarMandato {
     votos_estado   BigInt?
     votos_capital  BigInt?
     votos_interior BigInt?
+
+    // Nas bases, como por exemplo do TSE, cada candidato tem um código.
+    codigo_identificador String?
 
     mandato_principal_id Int?
     mandato_principal    ParlamentarMandato? @relation("Suplentes", fields: [mandato_principal_id], references: [id])
