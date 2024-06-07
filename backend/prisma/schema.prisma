@@ -4722,6 +4722,9 @@ model Parlamentar {
     foto_upload_id Int?
     foto           Arquivo? @relation(fields: [foto_upload_id], references: [id])
 
+    cargo_mais_recente   ParlamentarCargo?
+    partido_mais_recente String?
+
     mandatos ParlamentarMandato[]
     equipe   ParlamentarEquipe[]
 
