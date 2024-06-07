@@ -5099,6 +5099,13 @@ model DistribuicaoRecurso {
     vigencia                        DateTime? @db.Date()
     conclusao_suspensiva            DateTime? @db.Date()
 
+    // caso seja criado um aditamento, será criada uma nota com um aviso por email na transferência
+    // e toda vez que a vigência for alterada, será alterada a data de vigência do aviso e data da nota
+    nota_id        Int?
+    nota           Nota?       @relation(fields: [nota_id], references: [id])
+    aviso_email_id Int?
+    aviso_email    AvisoEmail? @relation(fields: [aviso_email_id], references: [id])
+
     criado_por     Int?
     criado_em      DateTime  @default(now()) @db.Timestamptz(6)
     atualizado_por Int?
@@ -5518,14 +5525,15 @@ model AvisoEmail {
 
     AvisoEmailDisparos AvisoEmailDisparos[]
 
-    criado_por         Int?
-    criado_em          DateTime   @default(now()) @db.Timestamptz(6)
-    atualizado_por     Int?
-    atualizado_em      DateTime   @default(now()) @db.Timestamptz(6)
-    removido_por       Int?
-    removido_em        DateTime?  @db.Timestamptz(6)
-    ViewNotaComOrdem   ViewNotas? @relation(fields: [viewNotaComOrdemId], references: [id])
-    viewNotaComOrdemId Int?
+    criado_por          Int?
+    criado_em           DateTime              @default(now()) @db.Timestamptz(6)
+    atualizado_por      Int?
+    atualizado_em       DateTime              @default(now()) @db.Timestamptz(6)
+    removido_por        Int?
+    removido_em         DateTime?             @db.Timestamptz(6)
+    ViewNotaComOrdem    ViewNotas?            @relation(fields: [viewNotaComOrdemId], references: [id])
+    viewNotaComOrdemId  Int?
+    DistribuicaoRecurso DistribuicaoRecurso[]
 
     @@map("aviso_email")
 }
@@ -5594,6 +5602,8 @@ model TipoNota {
     visivel_resp_orgao    Boolean
     eh_publico            Boolean
 
+    autogerenciavel Boolean @default(false)
+
     TipoNotaModulo   TipoNotaModulo[]
     Nota             Nota[]
     criado_em        DateTime         @default(now()) @db.Timestamptz(6)
@@ -5659,6 +5669,7 @@ model Nota {
     revisoes                  NotaRevisao[]
     AvisoEmail                AvisoEmail[]
     ViewNotasTransferencias   ViewNotasTransferencias[]
+    DistribuicaoRecurso       DistribuicaoRecurso[]
 
     @@index([status, removido_em])
     @@map("nota")
