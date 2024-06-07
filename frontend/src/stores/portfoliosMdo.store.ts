@@ -17,7 +17,10 @@ interface Estado {
   lista: Lista;
   emFoco: PortfolioOneDto | null;
   chamadasPendentes: ChamadasPendentes;
-  erro: null | unknown;
+  erro: {
+    lista: null | unknown;
+    emFoco: null | unknown;
+  };
 }
 
 export const usePortfolioStore = defineStore('portfoliosMdo', {
@@ -37,7 +40,7 @@ export const usePortfolioStore = defineStore('portfoliosMdo', {
   actions: {
     async buscarItem(id = 0, params = {}): Promise<void> {
       this.chamadasPendentes.emFoco = true;
-      this.erro = null;
+      this.erro.emFoco = null;
 
       try {
         const resposta = await this.requestS.get(`${baseUrl}/portfolio-mdo/${id}`, params);
@@ -45,27 +48,27 @@ export const usePortfolioStore = defineStore('portfoliosMdo', {
           ...resposta,
         };
       } catch (erro: unknown) {
-        this.erro = erro;
+        this.erro.emFoco = erro;
       }
       this.chamadasPendentes.emFoco = false;
     },
 
     async buscarTudo(params = {}): Promise<void> {
       this.chamadasPendentes.lista = true;
-      this.erro = null;
+      this.erro.lista = null;
 
       try {
         const { linhas } = await this.requestS.get(`${baseUrl}/portfolio-mdo`, params);
         this.lista = linhas;
       } catch (erro: unknown) {
-        this.erro = erro;
+        this.erro.lista = erro;
       }
       this.chamadasPendentes.lista = false;
     },
 
     async excluirItem(id: number): Promise<boolean> {
       this.chamadasPendentes.lista = true;
-      this.erro = null;
+      this.erro.lista = null;
 
       try {
         await this.requestS.delete(`${baseUrl}/portfolio-mdo/${id}`);
@@ -73,7 +76,7 @@ export const usePortfolioStore = defineStore('portfoliosMdo', {
         this.chamadasPendentes.lista = false;
         return true;
       } catch (erro) {
-        this.erro = erro;
+        this.erro.lista = erro;
         this.chamadasPendentes.lista = false;
         return false;
       }
@@ -81,7 +84,7 @@ export const usePortfolioStore = defineStore('portfoliosMdo', {
 
     async salvarItem(params = {}, id = 0): Promise<boolean> {
       this.chamadasPendentes.emFoco = true;
-      this.erro = null;
+      this.erro.emFoco = null;
 
       try {
         if (id) {
@@ -93,7 +96,7 @@ export const usePortfolioStore = defineStore('portfoliosMdo', {
         this.chamadasPendentes.emFoco = false;
         return true;
       } catch (erro) {
-        this.erro = erro;
+        this.erro.emFoco = erro;
         this.chamadasPendentes.emFoco = false;
         return false;
       }
