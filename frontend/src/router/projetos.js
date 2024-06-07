@@ -81,8 +81,8 @@ export default {
       path: 'todos',
       component: ProjetosLista,
       meta: {
-        título: 'Portfólios',
-        títuloParaMenu: 'Portfólios',
+        título: 'Portfolios',
+        títuloParaMenu: 'Portfolios',
       },
       props: ({ params, query }) => ({
         ...params,
