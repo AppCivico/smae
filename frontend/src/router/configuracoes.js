@@ -86,6 +86,7 @@ const rotasParaMenuSecundário = [
 const rotasParaMenuPrincipal = [
   'gerenciarPdm',
   'portfoliosListar',
+  'mdoPortfoliosListar',
   'gerenciarPainéisDeMetas',
   'parlamentaresListar',
   'paineisExternosListar',
