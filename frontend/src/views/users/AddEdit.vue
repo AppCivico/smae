@@ -373,6 +373,7 @@ watch(accessProfiles, () => {
                     class="perfil__campo"
                     :class="{ 'error': errors.perfil_acesso_ids }"
                     :value="perfil.id"
+                    :read-only="!perfil.pode_editar"
                   />
                   {{ perfil.nome }}
                   <small class="block t12 tc500 w700 mt1">
@@ -380,6 +381,7 @@ watch(accessProfiles, () => {
                   </small>
                 </label>
 
+                <pre v-ScrollLockDebug>pode_editar:{{ perfil.pode_editar }}</pre>
                 <pre v-ScrollLockDebug>modulos_sistemas:{{ perfil.modulos_sistemas }}</pre>
 
                 <button
