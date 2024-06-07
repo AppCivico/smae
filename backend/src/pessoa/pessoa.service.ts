@@ -1252,7 +1252,7 @@ export class PessoaService {
                 autogerenciavel: true,
                 perfil_privilegio: {
                     select: {
-                        privilegio: { select: { nome: true } },
+                        privilegio: { select: { nome: true, codigo: true } },
                     },
                 },
             },
@@ -1272,11 +1272,7 @@ export class PessoaService {
         // exceto a linha de administrador, que não pode ser editada se você não for administrador
         for (const r of dadosRetorno) {
             r.modulos_sistemas = [sistema];
-            if (
-                r.perfil_privilegio.some(
-                    (v) => (v.privilegio.nome as ListaDePrivilegios) == 'CadastroPessoa.administrador'
-                )
-            ) {
+            if (r.perfil_privilegio.some((v) => v.privilegio.nome == 'CadastroPessoa.administrador')) {
                 r.pode_editar = false;
             }
         }

@@ -4,6 +4,9 @@ import { ModuloSistema } from '@prisma/client';
 class Privilegio {
     @ApiProperty({ description: 'Nome do privilégio' })
     nome: string;
+
+    @ApiProperty({ description: 'Código do privilégio', type: 'string' })
+    codigo: string;
 }
 
 class PrivilegioData {
