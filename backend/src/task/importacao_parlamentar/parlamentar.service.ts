@@ -4,6 +4,7 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { UploadService } from '../../upload/upload.service';
 import { TaskableService } from '../entities/task.entity';
 import { CreateImportacaoParlamentarDto } from './dto/create-parlamentar.dto';
+import { StorageService } from 'src/upload/storage-service';
 
 const TMP_PATH = '/tmp/';
 @Injectable()
@@ -11,6 +12,7 @@ export class ImportacaoParlamentarService implements TaskableService {
     private readonly logger = new Logger(ImportacaoParlamentarService.name);
     constructor(
         private readonly prisma: PrismaService,
+        private readonly storageService: StorageService,
         @Inject(forwardRef(() => UploadService)) private readonly uploadService: UploadService
     ) {}
 
@@ -20,19 +22,14 @@ export class ImportacaoParlamentarService implements TaskableService {
     async executeJob(inputParams: CreateImportacaoParlamentarDto, taskId: string): Promise<any> {
         this.logger.verbose(`Carregando importação parlamentar id ${inputParams.upload_token}`);
 
-        const uploadId = this.uploadService.checkUploadOrDownloadToken(inputParams.upload_token);
-        if (!uploadId) {
-            throw new Error('Upload não encontrado');
-        }
-
-        const path = this.uploadService.getPathById(uploadId);
+        this.storageService.saveAsFile(inputParams.upload_token, '/tmp/import-parlamentar');
 
         const db = await Database.create(this.getTmpFilePath('db-at-' + Date.now() + '.duckdb', taskId));
 
         await db.all('INSTALL https; INSTALL postgres; INSTALL sqlite;');
         await db.all('LOAD https; LOAD postgres; LOAD sqlite;');
 
-        await db.run(`ATTACH '${path}' AS importacao (TYPE SQLITE);`);
+        await db.run(`ATTACH '/tmp/import-parlamentar' AS importacao (TYPE SQLITE);`);
 
         let psqlUrl = process.env.DATABASE_URL;
         const index = psqlUrl!.indexOf('?');
