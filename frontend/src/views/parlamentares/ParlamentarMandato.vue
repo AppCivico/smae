@@ -333,7 +333,7 @@ iniciar();
               :key="partido.id"
               :value="partido.id"
             >
-              {{ partido.sigla }} - {{ partido.nome }}
+              {{ partido.sigla }}
             </option>
           </Field>
           <ErrorMessage
@@ -363,7 +363,7 @@ iniciar();
               :key="partido.id"
               :value="partido.id"
             >
-              {{ partido.sigla }} - {{ partido.nome }}
+              {{ partido.sigla }}
             </option>
           </Field>
           <ErrorMessage
