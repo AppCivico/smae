@@ -80,9 +80,13 @@ setLocale({
   },
   string: {
     email: ({ label }) => (label ? `${label} não é e-mail válido` : 'E-mail inválido'),
-    min: ({ label, min }) => (label ? `${label} está menor que ${min}` : 'Esse texto é menor que ${min}'),
+    min: ({ label, min }) => (label
+      ? `${label} está menor que ${min} caracter`
+      : 'Esse texto é menor que ${min}'),
     matches: ({ label }) => (label ? `${label} está fora do formato` : 'Formato inválido'),
-    max: ({ label, max }) => (label ? `${label} está maior que ${max}` : 'Esse texto é maior que ${max}'),
+    max: ({ label, max }) => (label
+      ? `${label} está maior que ${max}`
+      : 'Esse texto é maior que ${max} caracteres'),
     required: ({ label }) => (label ? `${label} não é opcional` : 'Campo obrigatório'),
   },
 });
