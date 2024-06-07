@@ -32,14 +32,14 @@ export class ImportacaoParlamentarService implements TaskableService {
         db.all('INSTALL https; INSTALL postgres; INSTALL sqlite;');
         db.all('LOAD https; LOAD postgres; LOAD sqlite;');
 
-        db.run('ATTACH ? AS importacao (TYPE SQLITE);', path);
+        db.run(`ATTACH '${path}' AS importacao (TYPE SQLITE);`);
 
         let psqlUrl = process.env.DATABASE_URL;
         const index = psqlUrl!.indexOf('?');
         if (index !== -1) {
             psqlUrl = psqlUrl!.substring(0, index);
         }
-        db.run('ATTACH ? AS smae (TYPE POSTGRES);', psqlUrl);
+        db.run(`ATTACH '${psqlUrl}' AS smae (TYPE POSTGRES);`);
 
         db.run(`INSERT INTO smae.eleicao (tipo, ano, atual_para_mandatos)
             SELECT 
