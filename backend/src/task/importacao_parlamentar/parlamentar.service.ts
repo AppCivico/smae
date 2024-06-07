@@ -20,7 +20,7 @@ export class ImportacaoParlamentarService implements TaskableService {
     async executeJob(inputParams: CreateImportacaoParlamentarDto, taskId: string): Promise<any> {
         this.logger.verbose(`Carregando importação parlamentar id ${inputParams.upload_token}`);
 
-        const uploadId = this.uploadService.checkDownloadToken(inputParams.upload_token);
+        const uploadId = this.uploadService.checkUploadOrDownloadToken(inputParams.upload_token);
         if (!uploadId) {
             throw new Error('Upload não encontrado');
         }
