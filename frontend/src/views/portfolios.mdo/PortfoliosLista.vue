@@ -103,13 +103,13 @@ if (!organs.length) {
         </td>
       </tr>
       <tr v-if="chamadasPendentes.lista">
-        <td colspan="3">
+        <td colspan="5">
           Carregando
         </td>
       </tr>
-      <tr v-else-if="erro">
-        <td colspan="3">
-          Erro: {{ erro }}
+      <tr v-else-if="erro.lista">
+        <td colspan="5">
+          Erro: {{ erro.lista }}
         </td>
       </tr>
       <tr v-else-if="!lista.length">
