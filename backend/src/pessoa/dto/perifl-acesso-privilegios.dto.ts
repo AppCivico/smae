@@ -25,5 +25,7 @@ export class PerfilAcessoPrivilegios {
     @ApiProperty({ isArray: true, enumName: 'ModuloSistema', enum: ModuloSistema })
     modulos_sistemas: ModuloSistema[];
 
+    pode_editar: boolean;
+
     autogerenciavel: boolean;
 }

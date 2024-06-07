@@ -1258,15 +1258,30 @@ export class PessoaService {
             },
         });
 
-        if (ehAdmin) return dados;
+        // considera que pode editar tudo
+        const dadosRetorno: PerfilAcessoPrivilegios[] = dados.map((r) => {
+            return {
+                ...r,
+                pode_editar: true,
+            };
+        });
+        if (ehAdmin) return dadosRetorno;
 
         const sistema = user.assertOneModuloSistema('buscar', 'pérfil de acesso');
 
-        for (const r of dados) {
+        // exceto a linha de administrador, que não pode ser editada se você não for administrador
+        for (const r of dadosRetorno) {
             r.modulos_sistemas = [sistema];
+            if (
+                r.perfil_privilegio.some(
+                    (v) => (v.privilegio.nome as ListaDePrivilegios) == 'CadastroPessoa.administrador'
+                )
+            ) {
+                r.pode_editar = false;
+            }
         }
 
-        return dados;
+        return dadosRetorno;
     }
 
     async listaPrivilegiosModulos(
