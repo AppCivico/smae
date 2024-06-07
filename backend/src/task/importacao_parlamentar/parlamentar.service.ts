@@ -60,12 +60,22 @@ export class ImportacaoParlamentarService implements TaskableService {
         `);
 
         await db.run(`
-           INSERT INTO smae.parlamentar (nome, nome_popular, email)
+           INSERT INTO smae.parlamentar (nome, nome_popular, email, cargo_mais_recente, partido_mais_recente)
             SELECT
                 dp.nome,
-                '' nome_popular,
-                dp.email
+                c.nome_urna nome_popular,
+                dp.email,
+                (
+                    CASE
+                        WHEN c.cargo_que_concorre = 'deputado federal' THEN 'DeputadoFederal'
+                        WHEN c.cargo_que_concorre = 'deputado estadual' THEN 'DeputadoEstadual'
+                        WHEN c.cargo_que_concorre = 'vereador' THEN 'Vereador'
+                        ELSE 'Senador'
+                    END
+                ),
+                c.sigla_partido
             FROM importacao.dadospessoais dp
+            JOIN importacao.candidatura c ON dp.codigo_candidato_eleicao = c.codigo_candidato
             WHERE dp.cpf != '-4000000000'; 
         `);
 
