@@ -29,19 +29,19 @@ export class ImportacaoParlamentarService implements TaskableService {
 
         const db = await Database.create(this.getTmpFilePath('db-at-' + Date.now() + '.duckdb', taskId));
 
-        db.all('INSTALL https; INSTALL postgres; INSTALL sqlite;');
-        db.all('LOAD https; LOAD postgres; LOAD sqlite;');
+        await db.all('INSTALL https; INSTALL postgres; INSTALL sqlite;');
+        await db.all('LOAD https; LOAD postgres; LOAD sqlite;');
 
-        db.run(`ATTACH '${path}' AS importacao (TYPE SQLITE);`);
+        await db.run(`ATTACH '${path}' AS importacao (TYPE SQLITE);`);
 
         let psqlUrl = process.env.DATABASE_URL;
         const index = psqlUrl!.indexOf('?');
         if (index !== -1) {
             psqlUrl = psqlUrl!.substring(0, index);
         }
-        db.run(`ATTACH '${psqlUrl}' AS smae (TYPE POSTGRES);`);
+        await db.run(`ATTACH '${psqlUrl}' AS smae (TYPE POSTGRES);`);
 
-        db.run(`INSERT INTO smae.eleicao (tipo, ano, atual_para_mandatos)
+        await db.run(`INSERT INTO smae.eleicao (tipo, ano, atual_para_mandatos)
             SELECT 
             (
                 CASE WHEN de.abrangencia = 'municipal' THEN 'Municipal'
@@ -52,7 +52,7 @@ export class ImportacaoParlamentarService implements TaskableService {
             false as atual_para_mandatos
         FROM importacao.eleicao de;`);
 
-        db.run(`INSERT INTO smae.partido (nome, sigla, numero)
+        await db.run(`INSERT INTO smae.partido (nome, sigla, numero)
             SELECT
                 c.sigla_partido,
                 c.sigla_partido,
@@ -62,7 +62,7 @@ export class ImportacaoParlamentarService implements TaskableService {
             GROUP BY c.sigla_partido, c.numero_partido;
         `);
 
-        db.run(`
+        await db.run(`
            INSERT INTO smae.parlamentar (nome, nome_popular, email)
             SELECT
                 dp.nome,
@@ -72,7 +72,7 @@ export class ImportacaoParlamentarService implements TaskableService {
             WHERE dp.cpf != '-4000000000'; 
         `);
 
-        db.run(`
+        await db.run(`
             INSERT INTO smae.parlamentar_mandato (parlamentar_id, eleicao_id, partido_candidatura_id, partido_atual_id, eleito, cargo, uf, suplencia, codigo_identificador)
             SELECT
                 ( SELECT id FROM smae.parlamentar WHERE nome = dp.nome ) parlamentar_id,
