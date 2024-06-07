@@ -1,6 +1,10 @@
 import { EleicaoTipo, ModuloSistema, PerfilAcesso, Prisma, PrismaClient, Privilegio } from '@prisma/client';
 import { ListaDePrivilegios } from '../src/common/ListaDePrivilegios';
-import { CONST_CRONO_VAR_CATEGORICA_ID } from '../src/common/consts';
+import {
+    CONST_COD_NOTA_DIST_RECURSO,
+    CONST_CRONO_VAR_CATEGORICA_ID,
+    CONST_TIPO_NOTA_DIST_RECURSO,
+} from '../src/common/consts';
 const prisma = new PrismaClient({ log: ['query'] });
 
 const ModuloDescricao: Record<string, [string, ModuloSistema | null]> = {
@@ -873,7 +877,28 @@ async function main() {
     await ensure_bot_user();
     await ensure_categorica_cronograma();
 
+    await ensure_tiponota_dist_recurso();
+
     await populateEleicao();
+}
+
+async function ensure_tiponota_dist_recurso() {
+    await prisma.tipoNota.upsert({
+        where: { codigo: CONST_COD_NOTA_DIST_RECURSO, id: CONST_TIPO_NOTA_DIST_RECURSO },
+        create: {
+            id: CONST_CRONO_VAR_CATEGORICA_ID,
+            codigo: CONST_COD_NOTA_DIST_RECURSO,
+            autogerenciavel: true,
+
+            permite_email: true,
+            visivel_resp_orgao: true,
+            eh_publico: false,
+            permite_enderecamento: false,
+            permite_replica: false,
+            permite_revisao: false,
+        },
+        update: {},
+    });
 }
 
 async function ensure_categorica_cronograma() {
