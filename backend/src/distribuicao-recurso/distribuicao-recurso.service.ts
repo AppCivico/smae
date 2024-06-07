@@ -378,7 +378,7 @@ export class DistribuicaoRecursoService {
                     throw new HttpException('nome| Nome igual ou semelhante já existe em outro registro ativo', 400);
             }
 
-            if (dto.vigencia && self.vigencia != null && dto.vigencia != self.vigencia) {
+            if (dto.vigencia && self.vigencia != null && dto.vigencia.toISOString() != self.vigencia.toISOString()) {
                 if (!dto.justificativa_aditamento)
                     throw new HttpException('justificativa_aditamento| Deve ser enviada.', 400);
 
