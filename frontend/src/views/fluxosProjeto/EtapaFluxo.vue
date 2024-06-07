@@ -99,8 +99,8 @@ function iniciar() {
 
 iniciar();
 
-// eslint-disable-next-line max-len, vue/no-side-effects-in-computed-properties
-const listaOrdenada = computed(() => lista.value.sort((a, b) => a.descricao.localeCompare(b.descricao)));
+const listaOrdenada = computed(() => lista.value
+  .toSorted((a, b) => a.descricao.localeCompare(b.descricao)));
 
 watch(itemParaEdição, (novoValor) => {
   resetForm({
@@ -122,15 +122,15 @@ watch(itemParaEdição, (novoValor) => {
         </template>
         etapa
       </h2>
-      <hr class="ml2 f1" />
+      <hr class="ml2 f1">
       <CheckClose
         :apenas-emitir="true"
         @close="$emit('close')"
       />
     </div>
-    <pre v-scrollLockDebug>ordem: {{ emFoco.fluxo }}</pre>
-    <pre v-scrollLockDebug>ordem: {{ itemParaEdição }}</pre>
-    <pre v-scrollLockDebug>ordem: {{ props.fluxoId }}</pre>
+
+    <pre v-scrollLockDebug>emFoco.fluxo: {{ emFoco.fluxo }}</pre>
+    <pre v-scrollLockDebug>itemParaEdição: {{ itemParaEdição }}</pre>
 
     <ErrorComponent
       v-if="erroNaListaDeEtapas"
