@@ -50,7 +50,7 @@ async function onSubmit(values) {
     if (r) {
       alertStore.success(msg);
       portfolioStore.$reset();
-      router.push({ name: 'portfoliosListar' });
+      router.push({ name: 'mdoPortfoliosListar' });
     }
   } catch (error) {
     alertStore.error(error);
