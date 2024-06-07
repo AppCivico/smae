@@ -39,7 +39,7 @@ const etapasProjetosStore = useEtapasProjetosStore();
 const fluxosEtapasProjetos = useFluxosEtapasProjetosStore();
 const fluxosProjetoStore = useFluxosProjetosStore();
 
-const { lista } = storeToRefs(etapasProjetosStore);
+const { lista, erro: erroNaListaDeEtapas } = storeToRefs(etapasProjetosStore);
 const { emFoco } = storeToRefs(fluxosProjetoStore);
 const alertStore = useAlertStore();
 const erro = ref(null);
@@ -131,6 +131,13 @@ watch(itemParaEdição, (novoValor) => {
     <pre v-scrollLockDebug>ordem: {{ emFoco.fluxo }}</pre>
     <pre v-scrollLockDebug>ordem: {{ itemParaEdição }}</pre>
     <pre v-scrollLockDebug>ordem: {{ props.fluxoId }}</pre>
+
+    <ErrorComponent
+      v-if="erroNaListaDeEtapas"
+      class="mb1"
+    >
+      {{ erroNaListaDeEtapas }}
+    </ErrorComponent>
     <form
       :disabled="isSubmitting"
       @submit.prevent="onSubmit"
