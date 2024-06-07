@@ -1,9 +1,28 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { ParlamentarCargo } from '@prisma/client';
 import { Transform, TransformFnParams } from 'class-transformer';
-import { IsEnum, IsNumber, IsOptional } from 'class-validator';
+import { IsEnum, IsInt, IsNumber, IsOptional, IsString, Max, MaxLength, Min } from 'class-validator';
 
 export class FilterParlamentarDto {
+    @IsOptional()
+    @IsString()
+    @MaxLength(1000)
+    /**
+     * token pra buscar proxima pagina
+     */
+    token_proxima_pagina?: string;
+
+    /**
+     * itens por pagina, padrão 25
+     * @example "25"
+     */
+    @IsOptional()
+    @IsInt()
+    @Max(500)
+    @Min(1)
+    @Transform((a: TransformFnParams) => (a.value === '' ? undefined : +a.value))
+    ipp?: number;
+
     @IsOptional()
     @IsNumber()
     @Transform((a: TransformFnParams) => (a.value === '' ? undefined : +a.value))
