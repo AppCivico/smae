@@ -46,6 +46,11 @@ export class StorageService {
         }
     }
 
+    async saveAsFile(key: string, filePath: string): Promise<void> {
+        await this.S3.fGetObject(this.BUCKET, key, filePath);
+        return;
+    }
+
     async getSignedUrlForDownload(key: string, ttl_secs: number, response_content_disposition = ''): Promise<string> {
         return new Promise((resolve, reject) => {
             this.S3.presignedGetObject(
