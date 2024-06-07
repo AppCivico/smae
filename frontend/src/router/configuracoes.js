@@ -125,7 +125,7 @@ export default [
         path: 'portfolios',
         component: PortfoliosRaiz,
         meta: {
-          título: 'Portfólios',
+          título: 'Portfolios',
           rotaPrescindeDeChave: true,
           limitarÀsPermissões: [
             'Projeto.administrar_portfolios',
@@ -165,7 +165,7 @@ export default [
             }),
 
             meta: {
-              título: 'Editar portfolio',
+              título: 'Editar portfólio',
             },
           },
         ],
@@ -175,7 +175,7 @@ export default [
         path: 'mdo/portfolios',
         component: () => import('@/views/portfolios.mdo/PortfoliosRaiz.vue'),
         meta: {
-          título: 'Portfólios',
+          título: 'Portfolios',
           entidadeMãe: 'mdo',
           rotaPrescindeDeChave: true,
           limitarÀsPermissões: [
@@ -218,7 +218,7 @@ export default [
             }),
 
             meta: {
-              título: 'Editar portfolio',
+              título: 'Editar portfólio',
               rotasParaMigalhasDePão: [
                 'portfoliosListar',
               ],
