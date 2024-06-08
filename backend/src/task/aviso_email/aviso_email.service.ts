@@ -7,6 +7,7 @@ import { TaskService } from '../task.service';
 import { CreateAvisoEmailJobDto } from './dto/create-aviso_email.dto';
 import { CreateAeCronogramaTpJobDto } from '../aviso_email_cronograma_tp/dto/ae_cronograma_tp.dto';
 import { CreateNotaJobDto } from '../aviso_email_nota/dto/ae_nota.dto';
+import { NotaService } from '../../bloco-nota/nota/nota.service';
 
 type AvisoComCronograma = AvisoEmail & { tarefa: Tarefa | null } & { tarefa_cronograma: TarefaCronograma | null };
 
@@ -15,7 +16,8 @@ export class AvisoEmailTaskService implements TaskableService {
     private readonly logger = new Logger(AvisoEmailTaskService.name);
     constructor(
         private readonly prisma: PrismaService,
-        @Inject(forwardRef(() => TaskService)) private readonly taskService: TaskService
+        @Inject(forwardRef(() => TaskService)) private readonly taskService: TaskService,
+        @Inject(forwardRef(() => NotaService)) private readonly notaService: NotaService
     ) {}
 
     async executeJob(inputParams: CreateAvisoEmailJobDto, _taskId: string): Promise<any> {
@@ -30,6 +32,30 @@ export class AvisoEmailTaskService implements TaskableService {
                 nota: true,
             },
         });
+
+        if (aviso_email.tarefa_cronograma && aviso_email.tarefa_cronograma.removido_em) {
+            await this.desativaAvisoEmail(aviso_email);
+            return { success: true, mensagem: 'Cronograma removido' };
+        }
+
+        if (aviso_email.tarefa && aviso_email.tarefa.removido_em) {
+            await this.desativaAvisoEmail(aviso_email);
+            return { success: true, mensagem: 'Tarefa removido' };
+        }
+
+        if (aviso_email.nota && aviso_email.nota.removido_em) {
+            await this.desativaAvisoEmail(aviso_email);
+            return { success: true, mensagem: 'Nota removido' };
+        }
+
+        if (aviso_email.nota) {
+            const notaValida = await this.notaService.checkNotaValida(aviso_email.nota);
+            if (notaValida) {
+                await this.desativaAvisoEmail(aviso_email);
+                return { success: true, mensagem: 'Objeto da nota foi removido' };
+            }
+        }
+
         const deveProcessar = this.deveProcessarAvisoEmail(aviso_email);
         if (!deveProcessar) {
             return { success: true, mensagem: this.geraMensagem(aviso_email) };
@@ -99,6 +125,13 @@ export class AvisoEmailTaskService implements TaskableService {
             job_id,
             success: !!job_id,
         };
+    }
+
+    private async desativaAvisoEmail(aviso_email: { id: number }) {
+        await this.prisma.avisoEmail.update({
+            where: { id: aviso_email.id },
+            data: { ativo: false },
+        });
     }
 
     private resolveDataTermPlanejadoOrUndef(aviso_email: AvisoComCronograma) {
