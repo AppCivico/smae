@@ -712,4 +712,30 @@ export class NotaService {
             write,
         };
     }
+
+    async checkNotaValida(nota: Nota): Promise<boolean> {
+        const bloco = await this.prisma.blocoNota.findFirst({
+            where: { Nota: { some: { id: nota.id } } },
+            select: { bloco: true },
+        });
+        if (!bloco) return false;
+
+        if (bloco.bloco.startsWith('Transf:')) {
+            const transferencia = await this.prisma.transferencia.findFirstOrThrow({
+                where: { id: +bloco.bloco.split(':')[1] },
+                select: { removido_em: true },
+            });
+
+            return !transferencia.removido_em;
+        } else if (bloco.bloco.startsWith('Proj:')) {
+            const projeto = await this.prisma.projeto.findFirstOrThrow({
+                where: { id: +bloco.bloco.split(':')[1] },
+                select: { removido_em: true },
+            });
+
+            return !projeto.removido_em;
+        }
+
+        return false;
+    }
 }
