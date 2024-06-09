@@ -50,7 +50,7 @@ export class AvisoEmailTaskService implements TaskableService {
 
         if (aviso_email.nota) {
             const notaValida = await this.notaService.checkNotaValida(aviso_email.nota);
-            if (notaValida) {
+            if (!notaValida) {
                 await this.desativaAvisoEmail(aviso_email);
                 return { success: true, mensagem: 'Objeto da nota foi removido' };
             }
