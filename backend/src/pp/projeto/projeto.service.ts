@@ -1108,9 +1108,7 @@ export class ProjetoService {
             atividade: atividade,
             responsaveis_no_orgao_gestor: responsaveis_no_orgao_gestor,
             permissoes: permissoes,
-            bloco_nota_token: user
-                ? await this.blocoNotaService.getTokenFor({ bloco: `Proj:${projeto.id}` }, user)
-                : '',
+            bloco_nota_token: user ? await this.blocoNotaService.getTokenFor({ projeto_id: projeto.id }, user) : '',
             orgaos_participantes: projeto.orgaos_participantes.map((o) => {
                 return {
                     id: o.orgao.id,
