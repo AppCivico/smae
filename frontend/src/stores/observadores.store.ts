@@ -4,10 +4,15 @@ import { GrupoPortfolioItemDto, ListGrupoPortfolioDto } from '@/../../backend/sr
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
-function caminhoParaApi(rotaMeta) {
+// Define the type for the `meta` object:
+type RouteMeta = {
+  [key: string]: any;
+};
+
+function caminhoParaApi(rotaMeta:RouteMeta) {
   if (
-    rotaMeta.prefixoParaFilhas === 'projetos'
-    || rotaMeta.entidadeMãe === 'projetos'
+    rotaMeta.prefixoParaFilhas === 'projeto'
+    || rotaMeta.entidadeMãe === 'projeto'
   ) {
     return 'grupo-portfolio';
   }

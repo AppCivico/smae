@@ -546,7 +546,7 @@ export default [
         meta: {
           título: 'Grupos de observadores',
           títuloParaMenu: 'Grupos de observadores',
-          entidadeMãe: 'projetos',
+          entidadeMãe: 'projeto',
           limitarÀsPermissões: [
             'Projeto.administrar_portfolios',
             'Projeto.administrador_no_orgao',
