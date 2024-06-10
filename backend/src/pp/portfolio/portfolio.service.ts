@@ -257,7 +257,7 @@ export class PortfolioService {
                     where: {
                         removido_em: null,
                         portfolio_id: id,
-                        orgao_gestor_id: id,
+                        orgao_gestor_id: orgaoRemoved.orgao.id,
                     },
                     select: {
                         nome: true,
