@@ -819,6 +819,33 @@ export class PessoaService {
         }
 
         {
+            logger.log(`Trocou de órgão: verificando o ${orgaoAntigoStr}`);
+
+            const projetosSouGestor = await prismaTx.projeto.findMany({
+                where: {
+                    removido_em: null,
+                    responsaveis_no_orgao_gestor: {
+                        has: self.id,
+                    },
+                },
+                select: {
+                    tipo: true,
+                    nome: true,
+                },
+            });
+
+            if (projetosSouGestor.length) {
+                throw new BadRequestException(
+                    `Não é possível mudar de órgão, pois ainda é gestor em: ${projetosSouGestor
+                        .map((r) => {
+                            return `${r.tipo == 'PP' ? 'Projeto' : 'Obra'} ${r.nome}`;
+                        })
+                        .join('\n')}`
+                );
+            }
+        }
+
+        {
             logger.log(`Trocou de órgão: removendo relacionamentos de projetoEquipe no ${orgaoAntigoStr}`);
             await prismaTx.projetoEquipe.updateMany({
                 where: {
