@@ -256,6 +256,7 @@ export class PortfolioService {
                 const findResp = await this.prisma.projeto.count({
                     where: {
                         removido_em: null,
+                        portfolio_id: id,
                         responsavel: {
                             pessoa_fisica: {
                                 orgao_id: orgaoRemoved.orgao.id,
