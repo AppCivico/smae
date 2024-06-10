@@ -530,7 +530,10 @@ export default [
             component: GruposDePaineisExternosCriarEditar,
             props: ({ params }) => ({
               ...params,
-              ...{ gruposPaineisExternosId: Number.parseInt(params.gruposPaineisExternosId, 10) || undefined },
+              ...{
+                gruposPaineisExternosId: Number.parseInt(params.gruposPaineisExternosId, 10)
+                  || undefined,
+              },
             }),
 
             meta: {
