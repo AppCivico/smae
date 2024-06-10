@@ -960,6 +960,7 @@ export const portfolio = object({
     .required(),
   orcamento_execucao_disponivel_meses: array()
     .label('Meses disponíveis para orçamento')
+    .min(1, 'Selecione ao menos um mês')
     .required(),
   orgaos: array()
     .label('Órgãos')
