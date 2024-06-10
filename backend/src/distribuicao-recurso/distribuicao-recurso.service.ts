@@ -522,7 +522,7 @@ export class DistribuicaoRecursoService {
             nota_id = nota.id;
         } else if (nota_id) {
             await this.notaService.update(
-                this.notaService.getToken(nota_id),
+                this.notaService.getToken(nota_id, true),
                 {
                     data_nota: self.vigencia,
                     dispara_email: true,
@@ -536,7 +536,7 @@ export class DistribuicaoRecursoService {
         if (!self.aviso_email_id && nota_id) {
             const aviso_email = await this.avisoEmailService.create(
                 {
-                    nota_jwt: this.notaService.getToken(nota_id),
+                    nota_jwt: this.notaService.getToken(nota_id, true),
                     ativo: true,
                     com_copia: [],
                     numero: 60, // acabou ficando hardcoded essas configs abaixo
