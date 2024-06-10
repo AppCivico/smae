@@ -893,11 +893,13 @@ async function ensure_tiponota_dist_recurso() {
             permite_email: true,
             visivel_resp_orgao: true,
             eh_publico: false,
-            permite_enderecamento: false,
+            permite_enderecamento: true,
             permite_replica: false,
             permite_revisao: false,
         },
-        update: {},
+        update: {
+            permite_enderecamento: true,
+        },
     });
 }
 
