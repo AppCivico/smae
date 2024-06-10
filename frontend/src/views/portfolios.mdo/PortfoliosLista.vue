@@ -14,8 +14,8 @@ const {
 const route = useRoute();
 const alertStore = useAlertStore();
 
-async function excluirPortfolio(id) {
-  alertStore.confirmAction('Deseja mesmo remover esse item?', async () => {
+async function excluirPortfolio(id, title) {
+  alertStore.confirmAction(`Deseja mesmo remover o portfólio ˜${title}˜?`, async () => {
     if (await portfolioStore.excluirItem(id)) {
       portfolioStore.$reset();
       portfolioStore.buscarTudo({}, false);
@@ -93,7 +93,7 @@ if (!organs.length) {
             class="like-a__text"
             arial-label="excluir"
             title="excluir"
-            @click="excluirPortfolio(item.id)"
+            @click="excluirPortfolio(item.id, item.titulo)"
           >
             <svg
               width="20"
