@@ -8,6 +8,9 @@ import { DistribuicaoRecursoDto } from './entities/distribuicao-recurso.entity';
 import { UpdateDistribuicaoRecursoDto } from './dto/update-distribuicao-recurso.dto';
 import { FilterDistribuicaoRecursoDto } from './dto/filter-distribuicao-recurso.dto';
 import { formataSEI } from 'src/common/formata-sei';
+import { BlocoNotaService } from '../bloco-nota/bloco-nota/bloco-nota.service';
+import { NotaService } from '../bloco-nota/nota/nota.service';
+import { AvisoEmailService } from '../aviso-email/aviso-email.service';
 
 type OperationsRegistroSEI = {
     id?: number;
@@ -17,7 +20,12 @@ type OperationsRegistroSEI = {
 
 @Injectable()
 export class DistribuicaoRecursoService {
-    constructor(private readonly prisma: PrismaService) {}
+    constructor(
+        private readonly prisma: PrismaService,
+        private readonly blocoNotaService: BlocoNotaService,
+        private readonly notaService: NotaService,
+        private readonly avisoEmailService: AvisoEmailService
+    ) {}
 
     async create(dto: CreateDistribuicaoRecursoDto, user: PessoaFromJwt): Promise<RecordWithId> {
         const orgaoGestorExiste = await this.prisma.orgao.count({
@@ -346,6 +354,7 @@ export class DistribuicaoRecursoService {
             });
             if (!orgaoGestorExiste) throw new HttpException('orgao_gestor_id| Órgão gestor inválido', 400);
         }
+        const now = new Date(Date.now());
 
         await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
             if (dto.registros_sei != undefined) {
@@ -359,7 +368,7 @@ export class DistribuicaoRecursoService {
                         removido_em: null,
                     },
                     data: {
-                        removido_em: new Date(Date.now()),
+                        removido_em: now,
                         removido_por: user.id,
                     },
                 });
@@ -379,18 +388,7 @@ export class DistribuicaoRecursoService {
             }
 
             if (dto.vigencia && self.vigencia != null && dto.vigencia.toISOString() != self.vigencia.toISOString()) {
-                if (!dto.justificativa_aditamento)
-                    throw new HttpException('justificativa_aditamento| Deve ser enviada.', 400);
-
-                await prismaTx.distribuicaoRecursoAditamento.create({
-                    data: {
-                        distribuicao_recurso_id: id,
-                        data_vigencia: self.vigencia!,
-                        justificativa: dto.justificativa_aditamento,
-                        criado_por: user.id,
-                        criado_em: new Date(Date.now()),
-                    },
-                });
+                await this.registerAditamento(prismaTx, id, dto, user, now);
             }
 
             await prismaTx.distribuicaoRecurso.update({
@@ -451,6 +449,118 @@ export class DistribuicaoRecursoService {
         });
 
         return { id };
+    }
+
+    private async registerAditamento(
+        prismaTx: Prisma.TransactionClient,
+        distribuicaoRecursoId: number,
+        dto: UpdateDistribuicaoRecursoDto,
+        user: PessoaFromJwt,
+        now: Date
+    ) {
+        const self = await prismaTx.distribuicaoRecurso.findFirstOrThrow({
+            where: {
+                id: distribuicaoRecursoId,
+                removido_em: null,
+            },
+            select: {
+                id: true,
+                nota_id: true,
+                aviso_email_id: true,
+                vigencia: true,
+                transferencia_id: true,
+                objeto: true,
+            },
+        });
+        if (!dto.justificativa_aditamento || self.vigencia == null)
+            throw new HttpException('justificativa_aditamento| Deve ser enviada.', 400);
+
+        await prismaTx.distribuicaoRecursoAditamento.create({
+            data: {
+                distribuicao_recurso_id: self.id,
+                data_vigencia: self.vigencia,
+                justificativa: dto.justificativa_aditamento,
+                criado_por: user.id,
+                criado_em: now,
+            },
+        });
+
+        let nota_id = self.nota_id;
+        if (!self.nota_id) {
+            const bloco_token = await this.blocoNotaService.getTokenFor(
+                {
+                    bloco: `Transf:{self.transferencia_id}`,
+                },
+                user,
+                prismaTx
+            );
+            const tipo_id = await this.notaService.getTipoNotaDistRecurso(prismaTx);
+
+            // Quadro de atividades, mostrar a data prazo=data de vigencia,
+            // atividade=”Distribuição de recursos: ${OBJETO/EMPREENDIMENTO}”
+            const nota = await this.notaService.create(
+                {
+                    bloco_token,
+                    nota: `Distribuição de recursos: ${self.objeto}`,
+                    data_nota: self.vigencia,
+                    dispara_email: true,
+                    status: 'Programado',
+                    tipo_nota_id: tipo_id,
+                },
+                user,
+                prismaTx
+            );
+
+            await prismaTx.distribuicaoRecurso.update({
+                where: { id: self.id },
+                data: {
+                    nota_id: nota.id,
+                },
+            });
+            nota_id = nota.id;
+        } else if (nota_id) {
+            await this.notaService.update(
+                this.notaService.getToken(nota_id),
+                {
+                    data_nota: self.vigencia,
+                    dispara_email: true,
+                },
+                user,
+                prismaTx
+            );
+        }
+
+        if (!self.aviso_email_id && nota_id) {
+            const aviso_email = await this.avisoEmailService.create(
+                {
+                    nota_jwt: this.notaService.getToken(nota_id),
+                    ativo: true,
+                    com_copia: [],
+                    numero: 60, // acabou ficando hardcoded essas configs abaixo
+                    numero_periodo: 'Dias',
+                    recorrencia_dias: 1,
+                    tipo: 'Nota',
+                },
+                user,
+                prismaTx
+            );
+
+            await prismaTx.distribuicaoRecurso.update({
+                where: { id: self.id },
+                data: {
+                    aviso_email_id: aviso_email.id,
+                },
+            });
+        } else if (self.aviso_email_id && nota_id) {
+            await this.avisoEmailService.update(
+                self.aviso_email_id,
+                {
+                    ativo: true, // só reativa
+                },
+                user,
+                prismaTx
+            );
+        }
     }
 
     async remove(id: number, user: PessoaFromJwt) {

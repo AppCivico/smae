@@ -3,6 +3,7 @@ import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import { PrismaService } from '../../prisma/prisma.service';
 import { BlocoNotaItem, CreateBlocoNotaDto, UpdateBlocoNotaDto } from './dto/bloco-nota.dto';
 import { JwtService } from '@nestjs/jwt';
+import { Prisma } from '@prisma/client';
 
 const JWT_AUD = 'bn';
 type JwtToken = {
@@ -17,8 +18,12 @@ export class BlocoNotaService {
         private readonly prisma: PrismaService
     ) {}
 
-    async getTokenFor(dto: CreateBlocoNotaDto, user: PessoaFromJwt): Promise<string> {
-        const found = await this.prisma.blocoNota.findFirst({
+    async getTokenFor(
+        dto: CreateBlocoNotaDto,
+        user: PessoaFromJwt,
+        prismaTx: Prisma.TransactionClient = this.prisma
+    ): Promise<string> {
+        const found = await prismaTx.blocoNota.findFirst({
             where: {
                 removido_em: null,
                 bloco: dto.bloco,
@@ -28,7 +33,7 @@ export class BlocoNotaService {
 
         if (found) return this.getToken(found.id);
 
-        const created = await this.prisma.blocoNota.create({
+        const created = await prismaTx.blocoNota.create({
             data: {
                 criado_por: user.id,
                 criado_em: new Date(Date.now()),
@@ -38,19 +43,6 @@ export class BlocoNotaService {
         });
 
         return this.getToken(created.id);
-    }
-
-    async create(dto: CreateBlocoNotaDto, user: PessoaFromJwt) {
-        const created = await this.prisma.blocoNota.create({
-            data: {
-                criado_por: user.id,
-                criado_em: new Date(Date.now()),
-                bloco: dto.bloco,
-            },
-            select: { id: true },
-        });
-
-        return created;
     }
 
     async findAll(): Promise<BlocoNotaItem[]> {

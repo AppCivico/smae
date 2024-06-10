@@ -20,6 +20,7 @@ import {
     TipoNotaItem,
     UpdateNotaDto,
 } from './dto/nota.dto';
+import { CONST_TIPO_NOTA_DIST_RECURSO } from '../../common/consts';
 
 const JWT_AUD = 'nt';
 type JwtToken = {
@@ -47,7 +48,21 @@ export class NotaService {
         this.baseUrl = `${parsedUrl.protocol}//${parsedUrl.hostname}:${parsedUrl.port}`;
     }
 
-    async create(dto: CreateNotaDto, user: PessoaFromJwt): Promise<RecordWithIdJwt> {
+    async getTipoNotaDistRecurso(prismaCtx: Prisma.TransactionClient = this.prisma): Promise<number> {
+        const nota = await prismaCtx.tipoNota.findFirstOrThrow({
+            where: {
+                id: CONST_TIPO_NOTA_DIST_RECURSO,
+            },
+            select: { id: true },
+        });
+        return nota.id;
+    }
+
+    async create(
+        dto: CreateNotaDto,
+        user: PessoaFromJwt,
+        prismaCtx?: Prisma.TransactionClient
+    ): Promise<RecordWithIdJwt> {
         const blocoId = this.blocoService.checkToken(dto.bloco_token);
         const tipo = await this.tipoService.findOneOrThrow(dto.tipo_nota_id);
         dto.nota = HtmlSanitizer(dto.nota);
@@ -61,7 +76,7 @@ export class NotaService {
             throw new BadRequestException('Não é possível encaminhar notas privadas.');
 
         const now = new Date(Date.now());
-        const token = await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient) => {
+        const performCreate = async (prismaTx: Prisma.TransactionClient) => {
             const nota = await prismaTx.nota.create({
                 data: {
                     data_nota: dto.data_nota,
@@ -88,11 +103,21 @@ export class NotaService {
 
             if (tipo.permite_enderecamento) await this.upsertEnderecamentos(prismaTx, nota.id, dto, now, user, nota);
 
-            return this.getToken(nota.id);
-        });
+            return nota.id;
+        };
+
+        let id: number;
+        if (prismaCtx) {
+            id = await performCreate(prismaCtx);
+        } else {
+            id = await this.prisma.$transaction(async (prisma: Prisma.TransactionClient) => {
+                return await performCreate(prisma);
+            });
+        }
 
         return {
-            id_jwt: token,
+            id_jwt: this.getToken(id),
+            id,
         };
     }
 
@@ -417,7 +442,12 @@ export class NotaService {
         });
     }
 
-    async update(signedId: string, dto: UpdateNotaDto, user: PessoaFromJwt): Promise<RecordWithIdJwt> {
+    async update(
+        signedId: string,
+        dto: UpdateNotaDto,
+        user: PessoaFromJwt,
+        prismaCtx?: Prisma.TransactionClient
+    ): Promise<RecordWithIdJwt> {
         const id = this.checkWritableToken(signedId);
         dto.nota = HtmlSanitizer(dto.nota);
 
@@ -439,7 +469,8 @@ export class NotaService {
             throw new BadRequestException('Não é possível encaminhar notas privadas.');
 
         const now = new Date(Date.now());
-        await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient) => {
+
+        const performUpdate = async (prismaTx: Prisma.TransactionClient) => {
             if (dto.nota && dto.nota !== nota.nota)
                 await prismaTx.notaRevisao.create({
                     data: { criado_por: user.id, nota: nota.nota, nota_id: nota.id },
@@ -469,9 +500,17 @@ export class NotaService {
 
             if (nota.tipo_nota.permite_enderecamento)
                 await this.upsertEnderecamentos(prismaTx, id, dto, now, user, nota);
-        });
+        };
 
-        return { id_jwt: this.getToken(id) };
+        if (prismaCtx) {
+            await performUpdate(prismaCtx);
+        } else {
+            await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient) => {
+                await performUpdate(prismaTx);
+            });
+        }
+
+        return { id_jwt: this.getToken(id), id };
     }
 
     private async upsertEnderecamentos(
@@ -677,7 +716,7 @@ export class NotaService {
         return decoded.nota_id;
     }
 
-    private getToken(id: number): string {
+    getToken(id: number): string {
         return this.jwtService.sign(
             {
                 nota_id: id,

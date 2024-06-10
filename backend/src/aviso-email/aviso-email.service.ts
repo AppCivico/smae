@@ -26,7 +26,11 @@ export class AvisoEmailService {
         this.enabled = CrontabIsEnabled('aviso_email');
     }
 
-    async create(dto: CreateAvisoEmailDto, user: PessoaFromJwt): Promise<RecordWithId> {
+    async create(
+        dto: CreateAvisoEmailDto,
+        user: PessoaFromJwt,
+        prismaCtx?: Prisma.TransactionClient
+    ): Promise<RecordWithId> {
         let tarefa_id: number | undefined = undefined;
         let tarefa_cronograma_id: number | undefined = undefined;
         let nota_id: number | undefined = undefined;
@@ -49,38 +53,46 @@ export class AvisoEmailService {
             if (!nota_id) throw new BadRequestException(`Aviso de nota precisa ser associado com uma nota.`);
         }
 
-        const created = await this.prisma.$transaction(
-            async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
-                const exists = await prismaTx.avisoEmail.count({
-                    where: {
-                        tarefa_cronograma_id,
-                        tarefa_id,
-                        nota_id,
-                        removido_em: null,
-                    },
-                });
-                if (exists)
-                    throw new BadRequestException(
-                        `Já existe um aviso configurado para essa tarefa, cronograma ou nota.`
-                    );
+        const now = new Date(Date.now());
+        const performCreate = async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
+            const exists = await prismaTx.avisoEmail.count({
+                where: {
+                    tarefa_cronograma_id,
+                    tarefa_id,
+                    nota_id,
+                    removido_em: null,
+                },
+            });
+            if (exists)
+                throw new BadRequestException(`Já existe um aviso configurado para essa tarefa, cronograma ou nota.`);
 
-                const created = await prismaTx.avisoEmail.create({
-                    data: {
-                        tarefa_cronograma_id,
-                        tarefa_id,
-                        nota_id,
-                        ativo: dto.ativo,
-                        numero: dto.numero,
-                        numero_periodo: dto.numero_periodo,
-                        tipo: dto.tipo,
-                        com_copia: dto.com_copia,
-                        recorrencia_dias: dto.recorrencia_dias,
-                    },
-                });
+            const created = await prismaTx.avisoEmail.create({
+                data: {
+                    tarefa_cronograma_id,
+                    tarefa_id,
+                    nota_id,
+                    ativo: dto.ativo,
+                    numero: dto.numero,
+                    numero_periodo: dto.numero_periodo,
+                    tipo: dto.tipo,
+                    com_copia: dto.com_copia,
+                    recorrencia_dias: dto.recorrencia_dias,
+                    criado_em: now,
+                    removido_por: user.id,
+                },
+            });
 
-                return { id: created.id };
-            }
-        );
+            return { id: created.id };
+        };
+
+        let created: RecordWithId;
+        if (prismaCtx) {
+            created = await performCreate(prismaCtx);
+        } else {
+            created = await this.prisma.$transaction(async (prisma: Prisma.TransactionClient) => {
+                return await performCreate(prisma);
+            });
+        }
 
         return { id: created.id };
     }
@@ -170,7 +182,12 @@ export class AvisoEmailService {
         });
     }
 
-    async update(id: number, dto: UpdateAvisoEmailDto, user: PessoaFromJwt): Promise<RecordWithId> {
+    async update(
+        id: number,
+        dto: UpdateAvisoEmailDto,
+        user: PessoaFromJwt,
+        prismaCtx?: Prisma.TransactionClient
+    ): Promise<RecordWithId> {
         // TODO: verificar permissões e etc. isso aqui é só o mínimo possível
         const exists = await this.prisma.avisoEmail.findFirst({
             where: {
@@ -180,7 +197,8 @@ export class AvisoEmailService {
         });
         if (!exists) throw new NotFoundException('Item não encontrado');
 
-        await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient) => {
+        const now = new Date(Date.now());
+        const performUpdate = async (prismaTx: Prisma.TransactionClient): Promise<void> => {
             await prismaTx.avisoEmail.update({
                 where: {
                     id: exists.id,
@@ -191,11 +209,19 @@ export class AvisoEmailService {
                     numero_periodo: dto.numero_periodo,
                     com_copia: dto.com_copia,
                     recorrencia_dias: dto.recorrencia_dias,
+                    atualizado_em: now,
+                    atualizado_por: user.id,
                 },
             });
+        };
 
-            return;
-        });
+        if (prismaCtx) {
+            await performUpdate(prismaCtx);
+        } else {
+            await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient) => {
+                await performUpdate(prismaTx);
+            });
+        }
 
         return { id: exists.id };
     }
