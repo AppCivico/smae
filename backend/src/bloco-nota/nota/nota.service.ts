@@ -716,11 +716,11 @@ export class NotaService {
         return decoded.nota_id;
     }
 
-    getToken(id: number): string {
+    getToken(id: number, withWrite: boolean = false): string {
         return this.jwtService.sign(
             {
                 nota_id: id,
-                write: false,
+                write: withWrite,
                 aud: JWT_AUD,
             } satisfies JwtToken,
             { expiresIn: '30d' }
