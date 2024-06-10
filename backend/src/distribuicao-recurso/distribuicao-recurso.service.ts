@@ -470,6 +470,7 @@ export class DistribuicaoRecursoService {
                 vigencia: true,
                 transferencia_id: true,
                 objeto: true,
+                orgao_gestor_id: true,
             },
         });
         if (!dto.justificativa_aditamento || self.vigencia == null)
@@ -506,6 +507,7 @@ export class DistribuicaoRecursoService {
                     dispara_email: true,
                     status: 'Programado',
                     tipo_nota_id: tipo_id,
+                    enderecamentos: [{ orgao_enderecado_id: self.orgao_gestor_id, pessoa_enderecado_id: null }],
                 },
                 user,
                 prismaTx
@@ -524,6 +526,7 @@ export class DistribuicaoRecursoService {
                 {
                     data_nota: self.vigencia,
                     dispara_email: true,
+                    enderecamentos: [{ orgao_enderecado_id: self.orgao_gestor_id, pessoa_enderecado_id: null }],
                 },
                 user,
                 prismaTx
