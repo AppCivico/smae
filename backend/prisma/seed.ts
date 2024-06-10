@@ -884,7 +884,7 @@ async function main() {
 
 async function ensure_tiponota_dist_recurso() {
     await prisma.tipoNota.upsert({
-        where: { codigo: CONST_COD_NOTA_DIST_RECURSO, id: CONST_TIPO_NOTA_DIST_RECURSO },
+        where: { id: CONST_TIPO_NOTA_DIST_RECURSO },
         create: {
             id: CONST_CRONO_VAR_CATEGORICA_ID,
             codigo: CONST_COD_NOTA_DIST_RECURSO,
