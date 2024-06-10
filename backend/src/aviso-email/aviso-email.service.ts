@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable, Logger, NotFoundException, forwardRef } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { RecordWithId } from '../common/dto/record-with-id.dto';
@@ -20,8 +20,9 @@ export class AvisoEmailService {
     private readonly logger = new Logger(AvisoEmailService.name);
     constructor(
         private readonly prisma: PrismaService,
-        private readonly taskService: TaskService,
-        private readonly notaService: NotaService
+        private readonly notaService: NotaService,
+        @Inject(forwardRef(() => TaskService))
+        private readonly taskService: TaskService
     ) {
         this.enabled = CrontabIsEnabled('aviso_email');
     }
