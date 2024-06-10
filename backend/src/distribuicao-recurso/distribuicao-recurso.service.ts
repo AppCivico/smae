@@ -489,7 +489,7 @@ export class DistribuicaoRecursoService {
         if (!self.nota_id) {
             const bloco_token = await this.blocoNotaService.getTokenFor(
                 {
-                    bloco: `Transf:{self.transferencia_id}`,
+                    transferencia_id: self.transferencia_id,
                 },
                 user,
                 prismaTx

@@ -1,9 +1,9 @@
 import { HttpException, Injectable } from '@nestjs/common';
-import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
-import { PrismaService } from '../../prisma/prisma.service';
-import { BlocoNotaItem, CreateBlocoNotaDto, UpdateBlocoNotaDto } from './dto/bloco-nota.dto';
 import { JwtService } from '@nestjs/jwt';
 import { Prisma } from '@prisma/client';
+import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
+import { PrismaService } from '../../prisma/prisma.service';
+import { BlocoNotaItem, CreateBlocoNotaDto } from './dto/bloco-nota.dto';
 
 const JWT_AUD = 'bn';
 type JwtToken = {
@@ -23,10 +23,19 @@ export class BlocoNotaService {
         user: PessoaFromJwt,
         prismaTx: Prisma.TransactionClient = this.prisma
     ): Promise<string> {
+        let bloco: string;
+        if (dto.projeto_id) {
+            bloco = `Proj:${dto.projeto_id}`;
+        } else if (dto.transferencia_id) {
+            bloco = `Transf:${dto.transferencia_id}`;
+        } else {
+            throw new HttpException('Necessário informar um projeto ou transferência', 400);
+        }
+
         const found = await prismaTx.blocoNota.findFirst({
             where: {
                 removido_em: null,
-                bloco: dto.bloco,
+                bloco: bloco,
             },
             select: { id: true },
         });
@@ -37,7 +46,7 @@ export class BlocoNotaService {
             data: {
                 criado_por: user.id,
                 criado_em: new Date(Date.now()),
-                bloco: dto.bloco,
+                bloco: bloco,
             },
             select: { id: true },
         });
@@ -58,23 +67,6 @@ export class BlocoNotaService {
         });
 
         return listActive;
-    }
-
-    async update(id: number, dto: UpdateBlocoNotaDto, user: PessoaFromJwt) {
-        await this.prisma.blocoNota.findFirstOrThrow({
-            where: { id: id, removido_em: null },
-        });
-
-        await this.prisma.blocoNota.update({
-            where: { id: id },
-            data: {
-                atualizado_por: user.id,
-                atualizado_em: new Date(Date.now()),
-                bloco: dto.bloco,
-            },
-        });
-
-        return { id };
     }
 
     async remove(id: number, user: PessoaFromJwt) {

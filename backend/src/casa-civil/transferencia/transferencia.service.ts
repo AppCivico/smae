@@ -803,7 +803,7 @@ export class TransferenciaService {
 
         return {
             ...row,
-            bloco_nota_token: await this.blocoNotaService.getTokenFor({ bloco: `Transf:${row.id}` }, user),
+            bloco_nota_token: await this.blocoNotaService.getTokenFor({ transferencia_id: row.id }, user),
             secretaria_concedente: row.secretaria_concedente_str,
         };
     }
