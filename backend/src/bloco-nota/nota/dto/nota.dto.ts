@@ -171,6 +171,7 @@ export class DeleteNotaRespostaParam extends IntersectionType(FindNotaParam, Fin
 
 export class RecordWithIdJwt {
     id_jwt: string;
+    id: number;
 }
 
 function ValidateStatusNota(item: any) {
