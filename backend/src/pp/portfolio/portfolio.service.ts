@@ -269,27 +269,6 @@ export class PortfolioService {
                         `Não é possível remover o órgão ${orgaoRemoved.orgao.sigla} pois há projetos com órgão gestor deste órgão. Projeto(s): ${findGestor.map((r) => r.nome).join(', ')}`,
                         400
                     );
-
-                const findResp = await this.prisma.projeto.findMany({
-                    where: {
-                        removido_em: null,
-                        portfolio_id: id,
-                        responsavel: {
-                            pessoa_fisica: {
-                                orgao_id: orgaoRemoved.orgao.id,
-                            },
-                        },
-                    },
-                    select: {
-                        nome: true,
-                    },
-                });
-
-                if (findResp.length > 0)
-                    throw new HttpException(
-                        `Não é possível remover o órgão ${orgaoRemoved.orgao.sigla} pois há projetos com responsáveis deste órgão. Projeto(s): ${findResp.map((r) => r.nome).join(', ')}`,
-                        400
-                    );
             }
         }
 
