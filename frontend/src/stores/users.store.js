@@ -103,11 +103,11 @@ export const useUsersStore = defineStore({
           authStore.user = user;
         }
         this.users = {};
-        this.chamadasPendentes.user = true;
+        this.chamadasPendentes.user = false;
         return true;
       } catch (error) {
         this.erros.user = error;
-        this.chamadasPendentes.user = true;
+        this.chamadasPendentes.user = false;
         return false;
       }
     },
@@ -138,7 +138,7 @@ export const useUsersStore = defineStore({
       } catch (error) {
         this.erros.user = error;
       }
-      this.chamadasPendentes.user = true;
+      this.chamadasPendentes.user = false;
     },
     async getProfiles() {
       this.accessProfiles = { loading: true };
