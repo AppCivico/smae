@@ -72,6 +72,9 @@ export class NotaService {
 
         if (!user.orgao_id) throw new BadRequestException('Necessário ter órgão para criar uma nota');
 
+        // acredito que podemos rever isso, para que notas possam sim ser private mas encaminhadas para órgãos
+        // a questão é que o publico sempre aparece na listagem, sem qualquer restrição, fazendo com que o encaminhamento
+        // seja inútil para proteger a privacidade da nota, serve apenas para as respostas que não existem no momento no frontend
         if (Array.isArray(dto.enderecamentos) && dto.enderecamentos.length && tipo.eh_publico == false)
             throw new BadRequestException('Não é possível encaminhar notas privadas.');
 
