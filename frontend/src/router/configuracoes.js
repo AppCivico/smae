@@ -127,6 +127,7 @@ export default [
         component: PortfoliosRaiz,
         meta: {
           título: 'Portfolios',
+          entidadeMãe: 'projeto',
           rotaPrescindeDeChave: true,
           limitarÀsPermissões: [
             'Projeto.administrar_portfolios',
