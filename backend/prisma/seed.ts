@@ -900,6 +900,7 @@ async function ensure_tiponota_dist_recurso() {
         update: {
             eh_publico: true,
             permite_enderecamento: true,
+            codigo: CONST_COD_NOTA_DIST_RECURSO,
         },
     });
 }

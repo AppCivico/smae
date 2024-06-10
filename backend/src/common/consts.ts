@@ -1,4 +1,3 @@
 export const CONST_CRONO_VAR_CATEGORICA_ID = -1;
 export const CONST_TIPO_NOTA_DIST_RECURSO = -1;
-export const CONST_COD_NOTA_DIST_RECURSO = 'AVISO_DIST_RECURSO';
-
+export const CONST_COD_NOTA_DIST_RECURSO = 'Aviso de distribuição de recurso';
