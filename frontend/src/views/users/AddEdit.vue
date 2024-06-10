@@ -373,7 +373,7 @@ watch(accessProfiles, () => {
                     class="perfil__campo"
                     :class="{ 'error': errors.perfil_acesso_ids }"
                     :value="perfil.id"
-                    :read-only="!perfil.pode_editar"
+                    :readonly="!perfil.pode_editar || undefined"
                   />
                   {{ perfil.nome }}
                   <small class="block t12 tc500 w700 mt1">
