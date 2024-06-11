@@ -31,10 +31,6 @@ import FasesCriarEditar from '@/views/fasesProjeto/FasesCriarEditar.vue';
 import FasesLista from '@/views/fasesProjeto/FasesLista.vue';
 import FasesRaiz from '@/views/fasesProjeto/FasesRaiz.vue';
 
-import TarefasCriarEditar from '@/views/tarefasProjetoWorkflow/TarefasCriarEditar.vue';
-import TarefasLista from '@/views/tarefasProjetoWorkflow/TarefasLista.vue';
-import TarefasRaiz from '@/views/tarefasProjetoWorkflow/TarefasRaiz.vue';
-
 import GruposDePaineisExternosCriarEditar from '@/views/gruposDePaineisExternos/GruposDePaineisExternosCriarEditar.vue';
 import GruposDePaineisExternosLista from '@/views/gruposDePaineisExternos/GruposDePaineisExternosLista.vue';
 import GruposDePaineisExternosRaiz from '@/views/gruposDePaineisExternos/GruposDePaineisExternosRaiz.vue';
@@ -42,6 +38,9 @@ import GruposDePaineisExternosRaiz from '@/views/gruposDePaineisExternos/GruposD
 import SituacaoCriarEditar from '@/views/situacao/SituacaoCriarEditar.vue';
 import SituacaoLista from '@/views/situacao/SituacaoLista.vue';
 import SituacaoRaiz from '@/views/situacao/SituacaoRaiz.vue';
+import TarefasRaiz from '@/views/tv.tarefas/TarefasRaiz.vue';
+import TarefasLista from '@/views/tv.tarefas/TarefasLista.vue';
+import TarefasCriarEditar from '@/views/tv.tarefas/TarefasCriarEditar.vue';
 
 const PortfoliosCriarEditar = defineAsyncComponent({
   loader: () => import('@/views/portfolios/PortfoliosCriarEditar.vue'),
@@ -175,7 +174,7 @@ export default [
       // MDO
       {
         path: 'mdo/portfolios',
-        component: () => import('@/views/portfolios.mdo/PortfoliosRaiz.vue'),
+        component: () => import('@/views/mdo.portfolios/PortfoliosRaiz.vue'),
         meta: {
           título: 'Portfolios',
           entidadeMãe: 'mdo',
@@ -193,7 +192,7 @@ export default [
           {
             name: 'mdoPortfoliosListar',
             path: '',
-            component: () => import('@/views/portfolios.mdo/PortfoliosLista.vue'),
+            component: () => import('@/views/mdo.portfolios/PortfoliosLista.vue'),
             meta: {
               título: 'Portfolios',
             },
@@ -201,7 +200,7 @@ export default [
           {
             name: 'mdoPortfoliosCriar',
             path: 'novo',
-            component: () => import('@/views/portfolios.mdo/PortfoliosCriarEditar.vue'),
+            component: () => import('@/views/mdo.portfolios/PortfoliosCriarEditar.vue'),
             meta: {
               título: 'Novo portfólio',
               rotasParaMigalhasDePão: [
@@ -212,7 +211,7 @@ export default [
           {
             path: ':portfolioId',
             name: 'mdoPortfoliosEditar',
-            component: () => import('@/views/portfolios.mdo/PortfoliosCriarEditar.vue'),
+            component: () => import('@/views/mdo.portfolios/PortfoliosCriarEditar.vue'),
             props: ({ params }) => ({
               ...params,
               ...{ portfolioId: Number.parseInt(params.portfolioId, 10) || undefined },

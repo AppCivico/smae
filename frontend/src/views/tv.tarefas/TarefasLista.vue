@@ -4,7 +4,7 @@ import { useTarefasProjetosStore } from '@/stores/tarefasProjeto.store.js';
 import { storeToRefs } from 'pinia';
 
 const tarefasProjetos = useTarefasProjetosStore();
-const { lista, chamadasPendentes, erro} = storeToRefs(tarefasProjetos);
+const { lista, chamadasPendentes, erro } = storeToRefs(tarefasProjetos);
 
 const alertStore = useAlertStore();
 
@@ -30,10 +30,10 @@ tarefasProjetos.buscarTudo().then(ordenarListaAlfabeticamente);
       :to="{ name: 'tarefasCriar' }"
       class="btn big ml2"
     >
-      Nova tarefa
+      Nova tarefa xx
     </router-link>
   </div>
-
+  <h2>Tarefa Projeto Workflow</h2>
   <table class="tablemain">
     <col>
     <col class="col--botão-de-ação">
