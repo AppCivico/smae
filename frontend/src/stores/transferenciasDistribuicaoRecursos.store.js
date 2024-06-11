@@ -89,7 +89,7 @@ export const useDistribuicaoRecursosStore = defineStore('distribuicaoRecursos', 
       orgao_gestor_id: emFoco?.orgao_gestor?.id || null,
       vigencia: dateTimeToDate(emFoco?.vigencia),
       justificativa_aditamento: emFoco?.aditamentos
-        ?.find((aditamento) => aditamento?.data_vigencia === emFoco?.vigencia)
+        ?.find((aditamento) => aditamento?.data_vigencia_corrente === emFoco?.vigencia)
         ?.justificativa
         || null,
     }),
