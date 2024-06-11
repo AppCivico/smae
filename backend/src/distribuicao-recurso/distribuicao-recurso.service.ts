@@ -517,6 +517,7 @@ export class DistribuicaoRecursoService {
                 {
                     data_nota: self.vigencia,
                     dispara_email: true,
+                    status: 'Programado',
                     enderecamentos: [{ orgao_enderecado_id: self.orgao_gestor_id, pessoa_enderecado_id: null }],
                 },
                 user,
