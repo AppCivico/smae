@@ -244,6 +244,7 @@ export class DistribuicaoRecursoService {
                     orderBy: { criado_em: 'desc' },
                     select: {
                         data_vigencia: true,
+                        data_vigencia_corrente: true,
                         justificativa: true,
                     },
                 },
@@ -253,12 +254,6 @@ export class DistribuicaoRecursoService {
         return rows.map((r) => {
             return {
                 ...r,
-                aditamentos_vigencia: r.aditamentos.map((aditamento) => {
-                    return {
-                        data_vigencia: aditamento.data_vigencia,
-                        justificativa: aditamento.justificativa,
-                    };
-                }),
                 registros_sei: r.registros_sei.map((s) => {
                     return {
                         id: s.id,
@@ -317,6 +312,7 @@ export class DistribuicaoRecursoService {
                     orderBy: { criado_em: 'desc' },
                     select: {
                         data_vigencia: true,
+                        data_vigencia_corrente: true,
                         justificativa: true,
                     },
                 },
@@ -326,12 +322,6 @@ export class DistribuicaoRecursoService {
 
         return {
             ...row,
-            aditamentos_vigencia: row.aditamentos.map((aditamento) => {
-                return {
-                    data_vigencia: aditamento.data_vigencia,
-                    justificativa: aditamento.justificativa,
-                };
-            }),
             registros_sei: row.registros_sei.map((s) => {
                 return {
                     id: s.id,
@@ -480,6 +470,7 @@ export class DistribuicaoRecursoService {
             data: {
                 distribuicao_recurso_id: self.id,
                 data_vigencia: self.vigencia,
+                data_vigencia_corrente: dto.vigencia!,
                 justificativa: dto.justificativa_aditamento,
                 criado_por: user.id,
                 criado_em: now,
