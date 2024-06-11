@@ -1088,8 +1088,8 @@ export const parlamentar = object({
     .max(250)
     .required(),
   nascimento: date()
-    .max(new Date(new Date().setFullYear(new Date().getFullYear() + 18)))
-    .min(new Date(1933, 0, 1))
+    .max(new Date(new Date().setFullYear(new Date().getFullYear() - 18)))
+    .min(new Date(new Date().setFullYear(new Date().getFullYear() - 95)))
     .label('Nascimento')
     .required(),
   telefone: string()
