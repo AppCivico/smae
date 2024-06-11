@@ -299,66 +299,74 @@ onUnmounted(() => {
         Pesquisar
       </button>
     </form>
+
     <div class="flex flexwrap g2 start">
-      <table class="tablemain mb1 f1">
-        <col>
-        <col>
-        <col>
-        <col>
-        <thead>
-          <tr>
-            <th>Identificador</th>
-            <th>Transferência</th>
-            <th>Atividade</th>
-            <th>Prazo</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr
-            v-for="item in lista"
-            :key="item.transferencia_id"
-          >
-            <th>
-              <router-link
-                v-if="item?.transferencia_id"
-                :to="{
-                  name: 'TransferenciasVoluntariasDetalhes',
-                  params: { transferenciaId: item.transferencia_id },
-                }"
-                class="tprimary"
-              >
-                {{ item.identificador }}
-              </router-link>
-            </th>
-            <td
-              style="max-width: 200px;"
+      <div
+        role="region"
+        aria-label="Panorama de transferências"
+        tabindex="0"
+        class="mb1 f1"
+      >
+        <table class="tablemain">
+          <col>
+          <col>
+          <col>
+          <col>
+          <thead>
+            <tr>
+              <th>Identificador</th>
+              <th>Transferência</th>
+              <th>Atividade</th>
+              <th>Prazo</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr
+              v-for="item in lista"
+              :key="item.transferencia_id"
             >
-              {{ item.objeto ? item.objeto : " - " }}
-            </td>
-            <td>
-              {{ item.atividade }}
-            </td>
-            <td :style="{color: dataColor(item.data)}">
-              {{ item.data ? new Date(item.data).toLocaleDateString("pt-BR") : "" }}
-            </td>
-          </tr>
-          <tr v-if="chamadasPendentes.lista">
-            <td colspan="4">
-              Carregando
-            </td>
-          </tr>
-          <tr v-else-if="erro">
-            <td colspan="4">
-              Erro: {{ erro }}
-            </td>
-          </tr>
-          <tr v-else-if="!lista.length">
-            <td colspan="4">
-              Nenhum resultado encontrado.
-            </td>
-          </tr>
-        </tbody>
-      </table>
+              <th>
+                <router-link
+                  v-if="item?.transferencia_id"
+                  :to="{
+                    name: 'TransferenciasVoluntariasDetalhes',
+                    params: { transferenciaId: item.transferencia_id },
+                  }"
+                  class="tprimary"
+                >
+                  {{ item.identificador }}
+                </router-link>
+              </th>
+              <td
+                style="max-width: 200px;"
+              >
+                {{ item.objeto ? item.objeto : " - " }}
+              </td>
+              <td>
+                {{ item.atividade }}
+              </td>
+              <td :style="{ color: dataColor(item.data) }">
+                {{ item.data ? new Date(item.data).toLocaleDateString("pt-BR") : "" }}
+              </td>
+            </tr>
+            <tr v-if="chamadasPendentes.lista">
+              <td colspan="4">
+                Carregando
+              </td>
+            </tr>
+            <tr v-else-if="erro">
+              <td colspan="4">
+                Erro: {{ erro }}
+              </td>
+            </tr>
+            <tr v-else-if="!lista.length">
+              <td colspan="4">
+                Nenhum resultado encontrado.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
       <QuadroNotas />
     </div>
   </Dashboard>
