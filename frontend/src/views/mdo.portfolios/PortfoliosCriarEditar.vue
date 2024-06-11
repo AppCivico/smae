@@ -141,49 +141,49 @@ observadoresStore.buscarTudo();
           class="error-msg"
         />
       </div>
-    </div>
-    <div class="f1 mb1">
-      <LabelFromYup
-        name="nivel_maximo_tarefa"
-        :schema="schema"
-      />
-      <Field
-        name="nivel_maximo_tarefa"
-        type="number"
-        min="1"
-        max="32"
-        class="inputtext light mb1"
-        :class="{ 'error': errors.nivel_maximo_tarefa }"
-      />
-      <ErrorMessage
-        name="nivel_maximo_tarefa"
-        class="error-msg"
-      />
-    </div>
+      <div class="f1 mb1">
+        <LabelFromYup
+          name="nivel_maximo_tarefa"
+          :schema="schema"
+        />
+        <Field
+          name="nivel_maximo_tarefa"
+          type="number"
+          min="1"
+          max="32"
+          class="inputtext light mb1"
+          :class="{ 'error': errors.nivel_maximo_tarefa }"
+        />
+        <ErrorMessage
+          name="nivel_maximo_tarefa"
+          class="error-msg"
+        />
+      </div>
 
-    <div class="f1 mb1">
-      <LabelFromYup
-        name="nivel_regionalizacao"
-        :schema="schema"
-      />
-      <Field
-        name="nivel_regionalizacao"
-        as="select"
-        class="inputtext light mb1"
-        :class="{ 'error': errors.nivel_regionalizacao }"
-      >
-        <option
-          v-for="nível in níveisRegionalização"
-          :key="nível.id"
-          :value="nível.id"
+      <div class="f1 mb1">
+        <LabelFromYup
+          name="nivel_regionalizacao"
+          :schema="schema"
+        />
+        <Field
+          name="nivel_regionalizacao"
+          as="select"
+          class="inputtext light mb1"
+          :class="{ 'error': errors.nivel_regionalizacao }"
         >
-          {{ nível.nome }}
-        </option>
-      </Field>
-      <ErrorMessage
-        name="nivel_regionalizacao"
-        class="error-msg"
-      />
+          <option
+            v-for="nível in níveisRegionalização"
+            :key="nível.id"
+            :value="nível.id"
+          >
+            {{ nível.nome }}
+          </option>
+        </Field>
+        <ErrorMessage
+          name="nivel_regionalizacao"
+          class="error-msg"
+        />
+      </div>
     </div>
     <div class="f1 mb1">
       <label
