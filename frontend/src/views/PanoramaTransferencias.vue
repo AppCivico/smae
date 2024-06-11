@@ -228,7 +228,7 @@ onUnmounted(() => {
           <option
             v-for="item in partidosDisponíveis"
             :key="item"
-            :value="item.id"
+            :value="item.id || item"
           >
             {{ item.sigla || item }}
           </option>
