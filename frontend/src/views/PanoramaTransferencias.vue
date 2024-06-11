@@ -61,6 +61,13 @@ const itensEmUso = computed(() => {
   };
 });
 
+const listaComÓrgãos = computed(() => lista.value.map((x) => ({
+  ...x,
+  orgaos: Array.isArray(x.orgaos)
+    ? x.orgaos.map((y) => órgãosPorId.value[y.id || y]?.sigla || y.id || y).join(', ')
+    : [],
+})));
+
 const atividadesDisponíveis = computed(() => [...new Set(itensEmUso.value.atividades)]
   .sort((a, b) => a.localeCompare(b)));
 
@@ -308,21 +315,23 @@ onUnmounted(() => {
         class="mb1 f1 fb25em"
       >
         <table class="tablemain">
+          <col class="col--minimum">
           <col>
           <col>
           <col>
-          <col>
+          <col class="col--data">
           <thead>
             <tr>
               <th>Identificador</th>
               <th>Transferência</th>
               <th>Atividade</th>
+              <th>Responsável</th>
               <th>Prazo</th>
             </tr>
           </thead>
           <tbody>
             <tr
-              v-for="item in lista"
+              v-for="item in listaComÓrgãos"
               :key="item.transferencia_id"
             >
               <th>
@@ -337,13 +346,14 @@ onUnmounted(() => {
                   {{ item.identificador }}
                 </router-link>
               </th>
-              <td
-                style="max-width: 200px;"
-              >
+              <td>
                 {{ item.objeto ? item.objeto : " - " }}
               </td>
               <td>
                 {{ item.atividade }}
+              </td>
+              <td>
+                {{ item.orgaos }}
               </td>
               <td :style="{ color: dataColor(item.data) }">
                 {{ item.data ? new Date(item.data).toLocaleDateString("pt-BR") : "" }}
@@ -355,12 +365,12 @@ onUnmounted(() => {
               </td>
             </tr>
             <tr v-else-if="erro">
-              <td colspan="4">
+              <td colspan="5">
                 Erro: {{ erro }}
               </td>
             </tr>
             <tr v-else-if="!lista.length">
-              <td colspan="4">
+              <td colspan="5">
                 Nenhum resultado encontrado.
               </td>
             </tr>
