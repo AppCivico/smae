@@ -61,7 +61,7 @@ const éPossívelAbrir = (item) => !item.children?.length
       >
         <span class="arvore-de-arquivos__linha">
           <label
-            class="like-a__text arvore-de-arquivos__abrir mr1"
+            class="like-a__text arvore-de-arquivos__abrir"
             :class="{
               'arvore-de-arquivos__abrir--desabilitada': éPossívelAbrir(item)
             }"
@@ -214,6 +214,8 @@ const éPossívelAbrir = (item) => !item.children?.length
 
   .arvore-de-arquivos__item {
     background-color: @branco;
+    min-width: 14em;
+    width: 100%;
 
     &:after {
       content: '';
@@ -228,35 +230,35 @@ const éPossívelAbrir = (item) => !item.children?.length
     }
 
     .arvore-de-arquivos__item {
-      padding-left: 1em;
-
+      padding-left: 1.8rem;
       background-color: transparent;
     }
   }
 
   &.arvore-de-arquivos--raiz {
-    position: relative;
+    .rolavel-verticalmente;
   }
 
   .arvore-de-arquivos__linha {
     display: flex;
-    padding: 0.75em 1em;
+    padding: 0.75em 1em 0.75em 0;
     align-items: center;
+    gap: 1rem;
   }
 
   .arvore-de-arquivos__nome {
-    min-width: 0;
+    min-width: 3em;
+    flex-basis: 0;
+    flex-grow: 1;
     overflow: hidden;
     text-overflow: ellipsis;
     margin-right: auto;
   }
 
   .arvore-de-arquivos__descricao {
-    margin-right: calc(20px + 2rem);
     flex-basis: 0;
     flex-grow: 1;
     color: @c600;
-    min-width: 11em;
   }
 
   .arvore-de-arquivos__data {
@@ -269,7 +271,7 @@ const éPossívelAbrir = (item) => !item.children?.length
 
   .arvore-de-arquivos__abrir {
     margin-left: 0;
-    margin-right: 0.5rem;
+    flex-shrink: 0;
 
     &:hover {
       color: @laranja;
