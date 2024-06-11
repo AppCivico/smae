@@ -121,8 +121,8 @@ observadoresStore.buscarTudo();
       </div>
     </div>
 
-    <div class="flex g2">
-      <div class="f1 mb1">
+    <div class="flex flexwrap g2">
+      <div class="f1 mb1 fb15em">
         <LabelFromYup
           name="data_criacao"
           :schema="schema"
@@ -141,7 +141,7 @@ observadoresStore.buscarTudo();
           class="error-msg"
         />
       </div>
-      <div class="f1 mb1">
+      <div class="f1 mb1 fb15em">
         <LabelFromYup
           name="nivel_maximo_tarefa"
           :schema="schema"
@@ -160,7 +160,7 @@ observadoresStore.buscarTudo();
         />
       </div>
 
-      <div class="f1 mb1">
+      <div class="f1 mb1 fb15em">
         <LabelFromYup
           name="nivel_regionalizacao"
           :schema="schema"
