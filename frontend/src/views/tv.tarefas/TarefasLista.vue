@@ -30,10 +30,9 @@ tarefasProjetos.buscarTudo().then(ordenarListaAlfabeticamente);
       :to="{ name: 'tarefasCriar' }"
       class="btn big ml2"
     >
-      Nova tarefa xx
+      Nova tarefa
     </router-link>
   </div>
-  <h2>Tarefa Projeto Workflow</h2>
   <table class="tablemain">
     <col>
     <col class="col--botão-de-ação">
