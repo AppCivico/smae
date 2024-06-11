@@ -9,6 +9,7 @@ import {
 } from '@/../../backend/src/pp/projeto/entities/projeto.entity';
 import { ListProjetoProxyPdmMetaDto } from '@/../../backend/src/pp/projeto/entities/projeto.proxy-pdm-meta.entity';
 import { DiretorioItemDto } from '@/../../backend/src/upload/dto/diretorio.dto';
+import consolidarDiretorios from '@/helpers/consolidarDiretorios';
 import dateTimeToDate from '@/helpers/dateTimeToDate';
 import { defineStore } from 'pinia';
 
@@ -346,13 +347,9 @@ export const useProjetosStore = defineStore('projetos', {
       return órgãos;
     },
 
-    diretóriosConsolidados: ({ diretórios, arquivos }): string[] => arquivos
-      .reduce((acc: DiretorioItemDto['caminho'][], cur) => {
-        const caminho = cur.arquivo.diretorio_caminho || '/';
-        return acc.indexOf(caminho) === -1
-          ? acc.concat([caminho])
-          : acc;
-      }, diretórios.map((x) => x.caminho))
-      .sort((a, b) => a.localeCompare(b)),
+    diretóriosConsolidados: ({ arquivos, diretórios }): string[] => consolidarDiretorios(
+      arquivos,
+      diretórios,
+    ),
   },
 });
