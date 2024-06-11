@@ -5136,8 +5136,9 @@ model DistribuicaoRecursoAditamento {
     distribuicao_recurso_id Int
     distribuicao_recurso    DistribuicaoRecurso @relation(fields: [distribuicao_recurso_id], references: [id])
 
-    data_vigencia DateTime @db.Date()
-    justificativa String
+    data_vigencia          DateTime @db.Date()
+    data_vigencia_corrente DateTime @db.Date()
+    justificativa          String
 
     criado_por Int
     criado_em  DateTime @default(now()) @db.Timestamptz(6)
@@ -5532,12 +5533,12 @@ model AvisoEmail {
 
     AvisoEmailDisparos AvisoEmailDisparos[]
 
-    criado_por          Int?
-    criado_em           DateTime              @default(now()) @db.Timestamptz(6)
-    atualizado_por      Int?
-    atualizado_em       DateTime              @default(now()) @db.Timestamptz(6)
-    removido_por        Int?
-    removido_em         DateTime?             @db.Timestamptz(6)
+    criado_por     Int?
+    criado_em      DateTime  @default(now()) @db.Timestamptz(6)
+    atualizado_por Int?
+    atualizado_em  DateTime  @default(now()) @db.Timestamptz(6)
+    removido_por   Int?
+    removido_em    DateTime? @db.Timestamptz(6)
 
     DistribuicaoRecurso DistribuicaoRecurso[]
 
@@ -5706,12 +5707,12 @@ view ViewNotas {
 
     data_ordenacao DateTime
 
-    tipo_nota                 TipoNota                    @relation(fields: [tipo_nota_id], references: [id])
-    bloco_nota                BlocoNota                   @relation(fields: [bloco_nota_id], references: [id])
-    orgao_responsavel         Orgao                       @relation(fields: [orgao_responsavel_id], references: [id])
-    pessoa_responsavel        Pessoa                      @relation("Resp", fields: [pessoa_responsavel_id], references: [id])
-    criador                   Pessoa                      @relation("Criador", fields: [criado_por], references: [id])
-    removedor                 Pessoa?                     @relation("Removedor", fields: [removido_por], references: [id])
+    tipo_nota          TipoNota  @relation(fields: [tipo_nota_id], references: [id])
+    bloco_nota         BlocoNota @relation(fields: [bloco_nota_id], references: [id])
+    orgao_responsavel  Orgao     @relation(fields: [orgao_responsavel_id], references: [id])
+    pessoa_responsavel Pessoa    @relation("Resp", fields: [pessoa_responsavel_id], references: [id])
+    criador            Pessoa    @relation("Criador", fields: [criado_por], references: [id])
+    removedor          Pessoa?   @relation("Removedor", fields: [removido_por], references: [id])
 
     @@map("view_notas")
 }
@@ -5745,8 +5746,8 @@ model NotaRevisao {
 
     nota_fk Nota @relation(fields: [nota_id], references: [id])
 
-    criado_por         Int
-    criado_em          DateTime   @default(now()) @db.Timestamptz(6)
+    criado_por Int
+    criado_em  DateTime @default(now()) @db.Timestamptz(6)
 
     @@map("nota_revisao")
 }
