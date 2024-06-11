@@ -1,3 +1,4 @@
+import consolidarDiretorios from '@/helpers/consolidarDiretorios';
 import dateTimeToDate from '@/helpers/dateTimeToDate';
 import { defineStore } from 'pinia';
 
@@ -204,15 +205,10 @@ export const useTransferenciasVoluntariasStore = defineStore(
       arquivosPorId: ({ arquivos }) => arquivos
         .reduce((acc, cur) => ({ ...acc, [cur.id]: cur }), {}),
 
-      diretóriosConsolidados: ({ diretórios, arquivos }) => arquivos
-        .reduce(
-          (acc, cur) => {
-            const caminho = cur.arquivo.diretorio_caminho || '/';
-            return acc.indexOf(caminho) === -1 ? acc.concat([caminho]) : acc;
-          },
-          diretórios.map((x) => x.caminho),
-        )
-        .sort((a, b) => a.localeCompare(b)),
+      diretóriosConsolidados: ({ arquivos, diretórios }) => consolidarDiretorios(
+        arquivos,
+        diretórios,
+      ),
 
       itemParaEdição: ({ emFoco }) => ({
         ...emFoco,
