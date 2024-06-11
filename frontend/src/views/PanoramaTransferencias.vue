@@ -305,7 +305,7 @@ onUnmounted(() => {
         role="region"
         aria-label="Panorama de transferências"
         tabindex="0"
-        class="mb1 f1"
+        class="mb1 f1 fb25em"
       >
         <table class="tablemain">
           <col>
