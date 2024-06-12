@@ -27,6 +27,64 @@
         />
       </div>
     </div>
+    <label
+      for="unidades_habitacionais"
+      class="flex center mb1"
+    >
+      <Field
+        id="unidades-habitacionais"
+        name="unidades_habitacionais"
+        type="checkbox"
+        :value="false"
+        class="mb0"
+        :disabled="itemParaEdição.unidades_habitacionais ? true : false"
+      />
+      <LabelFromYup
+        as="span"
+        name="unidades_habitacionais"
+        class="mb0"
+        :schema="schema"
+      />
+    </label>
+
+    <label
+      for="familias_beneficiadas"
+      class="flex center mb1"
+    >
+      <Field
+        id="familias-beneficiadas"
+        name="familias_beneficiadas"
+        type="checkbox"
+        :value="false"
+        :disabled="itemParaEdição.familias_beneficiadas ? true : false"
+      />
+      <LabelFromYup
+        as="span"
+        name="familias_beneficiadas"
+        :schema="schema"
+        class="mb0"
+      />
+    </label>
+
+    <label
+      for="programa_habitacional"
+      class="flex center mb1"
+    >
+      <Field
+        id="programa-habitacional"
+        name="programa_habitacional"
+        type="checkbox"
+        :value="false"
+        :disabled="itemParaEdição.programa_habitacional ? true : false"
+      />
+      <LabelFromYup
+        as="span"
+        name="programa_habitacional"
+        :schema="schema"
+        class="mb0"
+      />
+    </label>
+
     <FormErrorsList :errors="errors" />
 
     <div class="flex spacebetween center mb2">
