@@ -15,6 +15,7 @@ export class PortfolioService {
     async create(tipoProjeto: TipoProjeto, dto: CreatePortfolioDto, user: PessoaFromJwt): Promise<RecordWithId> {
         const similarExists = await this.prisma.portfolio.count({
             where: {
+                tipo_projeto: tipoProjeto,
                 titulo: { endsWith: dto.titulo, mode: 'insensitive' },
                 removido_em: null,
             },
@@ -232,6 +233,7 @@ export class PortfolioService {
         if (dto.titulo !== undefined) {
             const similarExists = await this.prisma.portfolio.count({
                 where: {
+                    tipo_projeto: tipoProjeto,
                     titulo: { endsWith: dto.titulo, mode: 'insensitive' },
                     removido_em: null,
                     NOT: { id: id },
