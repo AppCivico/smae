@@ -731,6 +731,20 @@ const PerfilAcessoConfig: {
         ],
     },
     {
+        nome: 'Gestor de Obras no Órgão',
+        descricao: 'Gerenciar todos as obras no órgão em qual faz parte',
+        privilegios: [
+            'Reports.executar.MDO', // TODO remoer, afinal, precisa dos filtros no reports
+            'ProjetoMDO.administrador_no_orgao',
+            'Reports.dashboard_mdo',
+            'ProjetoMDO.administrar_portfolios_no_orgao',
+            'CadastroGrupoPortfolioMDO.administrador_no_orgao',
+            'CadastroProjetoEtapaMDO.inserir',
+            'CadastroProjetoEtapaMDO.editar',
+            'CadastroProjetoEtapaMDO.remover',
+        ],
+    },
+    {
         nome: atualizarNomePerfil('Gestor de projetos', ['Órgão Gestor']),
         descricao: 'Pode ser escolhido como responsável no órgão gestor de projetos',
         privilegios: [
