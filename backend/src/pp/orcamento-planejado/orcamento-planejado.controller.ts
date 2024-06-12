@@ -31,7 +31,7 @@ export class OrcamentoPlanejadoController {
         @CurrentUser() user: PessoaFromJwt
     ): Promise<RecordWithId> {
         await this.projetoService.findOne('PP', params.id, user, 'ReadWriteTeam');
-        return await this.orcamentoPlanejadoService.create(+params.id, createMetaDto, user);
+        return await this.orcamentoPlanejadoService.create('PP', +params.id, createMetaDto, user);
     }
 
     @ApiBearerAuth('access-token')
@@ -45,7 +45,7 @@ export class OrcamentoPlanejadoController {
         const projeto = await this.projetoService.findOne('PP', +params.id, user, 'ReadOnly');
 
         return {
-            linhas: await this.orcamentoPlanejadoService.findAll(projeto, filters, user),
+            linhas: await this.orcamentoPlanejadoService.findAll('PP', projeto, filters, user),
         };
     }
 
@@ -59,7 +59,7 @@ export class OrcamentoPlanejadoController {
     ): Promise<RecordWithId> {
         await this.projetoService.findOne('PP', +params.id, user, 'ReadWriteTeam');
 
-        return await this.orcamentoPlanejadoService.update(+params.id, +params.id2, createMetaDto, user);
+        return await this.orcamentoPlanejadoService.update('PP', +params.id, +params.id2, createMetaDto, user);
     }
 
     @Delete(':id/orcamento-planejado/:id2')
@@ -70,7 +70,68 @@ export class OrcamentoPlanejadoController {
     async remove(@Param() params: FindTwoParams, @CurrentUser() user: PessoaFromJwt) {
         await this.projetoService.findOne('PP', params.id, user, 'ReadWriteTeam');
 
-        await this.orcamentoPlanejadoService.remove(+params.id, +params.id2, user);
+        await this.orcamentoPlanejadoService.remove('PP', +params.id, +params.id2, user);
+        return '';
+    }
+}
+
+@ApiTags('Projeto - Orçamento (Planejado) de Obras')
+@Controller('projeto-mdo')
+export class OrcamentoPlanejadoMDOController {
+    constructor(
+        private readonly orcamentoPlanejadoService: OrcamentoPlanejadoService,
+        private readonly projetoService: ProjetoService
+    ) {}
+
+    @Post(':id/orcamento-planejado')
+    @ApiBearerAuth('access-token')
+    @Roles(['ProjetoMDO.orcamento'])
+    async create(
+        @Param() params: FindOneParams,
+        @Body() createMetaDto: CreatePPOrcamentoPlanejadoDto,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<RecordWithId> {
+        await this.projetoService.findOne('MDO', params.id, user, 'ReadWriteTeam');
+        return await this.orcamentoPlanejadoService.create('MDO', +params.id, createMetaDto, user);
+    }
+
+    @ApiBearerAuth('access-token')
+    @Get(':id/orcamento-planejado')
+    @Roles(['ProjetoMDO.orcamento'])
+    async findAll(
+        @Param() params: FindOneParams,
+        @Query() filters: FilterPPOrcamentoPlanejadoDto,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<ListPPOrcamentoPlanejadoDto> {
+        const projeto = await this.projetoService.findOne('MDO', +params.id, user, 'ReadOnly');
+
+        return {
+            linhas: await this.orcamentoPlanejadoService.findAll('MDO', projeto, filters, user),
+        };
+    }
+
+    @Patch(':id/orcamento-planejado/:id2')
+    @ApiBearerAuth('access-token')
+    @Roles(['ProjetoMDO.orcamento'])
+    async update(
+        @Param() params: FindTwoParams,
+        @Body() createMetaDto: UpdatePPOrcamentoPlanejadoDto,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<RecordWithId> {
+        await this.projetoService.findOne('MDO', +params.id, user, 'ReadWriteTeam');
+
+        return await this.orcamentoPlanejadoService.update('MDO', +params.id, +params.id2, createMetaDto, user);
+    }
+
+    @Delete(':id/orcamento-planejado/:id2')
+    @ApiBearerAuth('access-token')
+    @Roles(['ProjetoMDO.orcamento'])
+    @ApiNoContentResponse()
+    @HttpCode(HttpStatus.ACCEPTED)
+    async remove(@Param() params: FindTwoParams, @CurrentUser() user: PessoaFromJwt) {
+        await this.projetoService.findOne('MDO', params.id, user, 'ReadWriteTeam');
+
+        await this.orcamentoPlanejadoService.remove('MDO', +params.id, +params.id2, user);
         return '';
     }
 }
