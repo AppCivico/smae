@@ -1,5 +1,5 @@
 import { HttpException, Injectable, Logger } from '@nestjs/common';
-import { Prisma, ProjetoAcompanhamentoItem } from '@prisma/client';
+import { Prisma, ProjetoAcompanhamentoItem, TipoProjeto } from '@prisma/client';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
 
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
@@ -19,14 +19,22 @@ export class AcompanhamentoService {
     private readonly logger = new Logger(AcompanhamentoService.name);
     constructor(private readonly prisma: PrismaService) {}
 
-    async create(projeto_id: number, dto: CreateProjetoAcompanhamentoDto, user: PessoaFromJwt): Promise<RecordWithId> {
+    async create(
+        tipo: TipoProjeto,
+        projeto_id: number,
+        dto: CreateProjetoAcompanhamentoDto,
+        user: PessoaFromJwt
+    ): Promise<RecordWithId> {
         //if (!dto.risco_tarefa_outros && Array.isArray(dto.risco) == false || (Array.isArray(dto.risco) && dto.risco.length == 0))
         //throw new HttpException('Se não for enviado um risco do sistema, é necessário informar um risco externo', 400);
 
         const created = await this.prisma.$transaction(
             async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
                 const projetoPortfolio = await prismaTx.projeto.findFirstOrThrow({
-                    where: { id: projeto_id },
+                    where: {
+                        id: projeto_id,
+                        tipo: tipo,
+                    },
                     select: {
                         portfolio: {
                             select: { modelo_clonagem: true },
@@ -117,10 +125,15 @@ export class AcompanhamentoService {
         return { id: created.id };
     }
 
-    async findAll(projetoId: number, user: PessoaFromJwt | undefined): Promise<ProjetoAcompanhamento[]> {
+    async findAll(
+        tipo: TipoProjeto,
+        projeto_id: number,
+        user: PessoaFromJwt | undefined
+    ): Promise<ProjetoAcompanhamento[]> {
         const projetoAcompanhamento = await this.prisma.projetoAcompanhamento.findMany({
             where: {
-                projeto_id: projetoId,
+                projeto_id: projeto_id,
+                projeto: { tipo: tipo, id: projeto_id },
                 removido_em: null,
             },
             orderBy: [{ ordem: 'desc' }],
@@ -206,11 +219,17 @@ export class AcompanhamentoService {
         };
     }
 
-    async findOne(projetoId: number, id: number, user: PessoaFromJwt): Promise<DetailProjetoAcompanhamentoDto> {
+    async findOne(
+        tipo: TipoProjeto,
+        projeto_id: number,
+        id: number,
+        user: PessoaFromJwt
+    ): Promise<DetailProjetoAcompanhamentoDto> {
         const projetoAcompanhamento = await this.prisma.projetoAcompanhamento.findFirst({
             where: {
                 id,
-                projeto_id: projetoId,
+                projeto_id: projeto_id,
+                projeto: { tipo: tipo, id: projeto_id },
                 removido_em: null,
             },
             select: {
@@ -288,12 +307,19 @@ export class AcompanhamentoService {
         };
     }
 
-    async update(projeto_id: number, id: number, dto: UpdateProjetoAcompanhamentoDto, user: PessoaFromJwt) {
+    async update(
+        tipo: TipoProjeto,
+        projeto_id: number,
+        id: number,
+        dto: UpdateProjetoAcompanhamentoDto,
+        user: PessoaFromJwt
+    ) {
         const self = await this.prisma.projetoAcompanhamento.findFirstOrThrow({
             where: {
                 id,
                 removido_em: null,
                 projeto_id: projeto_id,
+                projeto: { tipo: tipo, id: projeto_id },
             },
             select: {
                 id: true,
@@ -480,12 +506,13 @@ export class AcompanhamentoService {
         });
     }
 
-    async remove(projeto_id: number, id: number, user: PessoaFromJwt) {
+    async remove(tipo: TipoProjeto, projeto_id: number, id: number, user: PessoaFromJwt) {
         await this.prisma.projetoAcompanhamento.findFirstOrThrow({
             where: {
                 id,
                 removido_em: null,
                 projeto_id: projeto_id,
+                projeto: { tipo: tipo, id: projeto_id },
             },
             select: { id: true },
         });
