@@ -15,7 +15,7 @@ import { GrupoTematico, ListGrupoTematicoDto } from './entities/grupo-tematico.e
 const rolesMDO: ListaDePrivilegios[] = ['ProjetoMDO.administrador', 'ProjetoMDO.administrador_no_orgao'];
 
 @Controller('grupo-tematico')
-@ApiTags('Projeto - MdO')
+@ApiTags('Monitoramento de Obras, Cadastro Básico, Grupo Temático')
 export class GrupoTematicoController {
     constructor(private readonly grupoTematicoService: GrupoTematicoService) {}
 

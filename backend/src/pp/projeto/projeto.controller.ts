@@ -263,7 +263,7 @@ export class ProjetoController {
     }
 }
 
-@ApiTags('Projeto - MdO')
+@ApiTags('Cadastro de Obras (Projetos)')
 @Controller('mdo')
 export class ProjetoMDOController {
     constructor(
