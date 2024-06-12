@@ -14,6 +14,7 @@ import { PROJETO_READONLY_ROLES } from '../projeto/projeto.controller';
 
 // provavelmente não é pra PROJETO_READONLY_ROLES criar esse tipo de objeto, conferir com o Lucas/FGV
 const roles: ListaDePrivilegios[] = ['Projeto.administrador', 'Projeto.administrador_no_orgao'];
+const rolesMDO: ListaDePrivilegios[] = ['ProjetoMDO.administrador', 'ProjetoMDO.administrador_no_orgao'];
 
 @Controller('acompanhamento-tipo')
 @ApiTags('Acompanhamento - Tipo')
@@ -27,7 +28,7 @@ export class AcompanhamentoTipoController {
         @Body() createAcompanhamentoTipoDto: CreateTipoAcompanhamentoDto,
         @CurrentUser() user: PessoaFromJwt
     ): Promise<RecordWithId> {
-        return await this.acompanhamentoTipoService.create(createAcompanhamentoTipoDto, user);
+        return await this.acompanhamentoTipoService.create('PP', createAcompanhamentoTipoDto, user);
     }
 
     @Get('')
@@ -35,7 +36,7 @@ export class AcompanhamentoTipoController {
     @Roles([...roles, ...PROJETO_READONLY_ROLES])
     async findAll(@CurrentUser() user: PessoaFromJwt): Promise<ListAcompanhamentoTipoDto> {
         return {
-            linhas: await this.acompanhamentoTipoService.findAll(user),
+            linhas: await this.acompanhamentoTipoService.findAll('PP', user),
         };
     }
 
@@ -49,7 +50,7 @@ export class AcompanhamentoTipoController {
         @Body() dto: UpdateAcompanhamentoTipoDto,
         @CurrentUser() user: PessoaFromJwt
     ): Promise<RecordWithId> {
-        return await this.acompanhamentoTipoService.update(params.id, dto, user);
+        return await this.acompanhamentoTipoService.update('PP', params.id, dto, user);
     }
 
     @Delete(':id')
@@ -58,7 +59,55 @@ export class AcompanhamentoTipoController {
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.ACCEPTED)
     async remove(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt) {
-        await this.acompanhamentoTipoService.remove(params.id, user);
+        await this.acompanhamentoTipoService.remove('PP', params.id, user);
+        return '';
+    }
+}
+
+@Controller('acompanhamento-tipo-mdo')
+@ApiTags('Acompanhamento - Tipo de Obras')
+export class AcompanhamentoTipoMDOController {
+    constructor(private readonly acompanhamentoTipoService: AcompanhamentoTipoService) {}
+
+    @Post('')
+    @ApiBearerAuth('access-token')
+    @Roles([...rolesMDO])
+    async create(
+        @Body() createAcompanhamentoTipoDto: CreateTipoAcompanhamentoDto,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<RecordWithId> {
+        return await this.acompanhamentoTipoService.create('MDO', createAcompanhamentoTipoDto, user);
+    }
+
+    @Get('')
+    @ApiBearerAuth('access-token')
+    @Roles([...roles, ...PROJETO_READONLY_ROLES])
+    async findAll(@CurrentUser() user: PessoaFromJwt): Promise<ListAcompanhamentoTipoDto> {
+        return {
+            linhas: await this.acompanhamentoTipoService.findAll('MDO', user),
+        };
+    }
+
+    @Patch(':id')
+    @ApiBearerAuth('access-token')
+    @Roles([...roles])
+    @ApiNoContentResponse()
+    @HttpCode(HttpStatus.ACCEPTED)
+    async update(
+        @Param() params: FindOneParams,
+        @Body() dto: UpdateAcompanhamentoTipoDto,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<RecordWithId> {
+        return await this.acompanhamentoTipoService.update('MDO', params.id, dto, user);
+    }
+
+    @Delete(':id')
+    @ApiBearerAuth('access-token')
+    @Roles([...roles])
+    @ApiNoContentResponse()
+    @HttpCode(HttpStatus.ACCEPTED)
+    async remove(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt) {
+        await this.acompanhamentoTipoService.remove('MDO', params.id, user);
         return '';
     }
 }
