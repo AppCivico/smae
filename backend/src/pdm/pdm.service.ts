@@ -117,7 +117,7 @@ export class PdmService {
 
             if (ps_admin_cp || ps_tecnico_cp) {
                 this.logger.log(`criando ps_admin_cp e ps_tecnico_cp`);
-                await this.update(tipo, pdm.id, { ps_admin_cp, ps_tecnico_cp }, user);
+                await this.update(tipo, pdm.id, { ps_admin_cp, ps_tecnico_cp }, user, prismaTx);
             }
 
             if (tipo == 'PDM') {
@@ -298,8 +298,15 @@ export class PdmService {
         };
     }
 
-    private async loadPdm(tipo: TipoPdm, id: number, user: PessoaFromJwt, readonly: ReadOnlyBooleanType) {
-        const pdm = await this.prisma.pdm.findFirst({
+    private async loadPdm(
+        tipo: TipoPdm,
+        id: number,
+        user: PessoaFromJwt,
+        readonly: ReadOnlyBooleanType,
+        prismaCtx?: Prisma.TransactionClient
+    ) {
+        const prismaTx = prismaCtx || this.prisma;
+        const pdm = await prismaTx.pdm.findFirst({
             where: {
                 id: id,
                 tipo,
@@ -344,12 +351,19 @@ export class PdmService {
         // TODO: plano setorial verificar se é admin no órgão, se só tiver pessoas do órgão dele, pode desativar/ativar
     }
 
-    async update(tipo: TipoPdm, id: number, dto: UpdatePdmDto, user: PessoaFromJwt) {
-        const pdm = await this.loadPdm(tipo, id, user, 'ReadWrite');
+    async update(
+        tipo: TipoPdm,
+        id: number,
+        dto: UpdatePdmDto,
+        user: PessoaFromJwt,
+        prismaCtx?: Prisma.TransactionClient
+    ) {
+        const pdm = await this.loadPdm(tipo, id, user, 'ReadWrite', prismaCtx);
+        const prismaTx = prismaCtx || this.prisma;
         await this.verificarPrivilegiosEdicao(dto, user, pdm);
 
         if (dto.nome) {
-            const similarExists = await this.prisma.pdm.count({
+            const similarExists = await prismaTx.pdm.count({
                 where: {
                     tipo: pdm.tipo,
                     descricao: { equals: dto.nome, mode: 'insensitive' },
@@ -376,7 +390,8 @@ export class PdmService {
         const now = new Date(Date.now());
         let verificarCiclos = false;
         let ativarPdm: boolean | undefined = undefined;
-        await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient) => {
+
+        const performUpdate = async (prismaTx: Prisma.TransactionClient): Promise<void> => {
             if (pdm.tipo == 'PDM') {
                 if (dto.ativo === true && pdm.ativo == false) {
                     ativarPdm = true;
@@ -413,7 +428,30 @@ export class PdmService {
                 data: {
                     atualizado_por: user.id,
                     atualizado_em: now,
-                    ...dto,
+                    nome: dto.nome,
+                    descricao: dto.descricao,
+                    prefeito: dto.prefeito,
+                    equipe_tecnica: dto.equipe_tecnica,
+                    data_inicio: dto.data_inicio,
+                    data_fim: dto.data_fim,
+                    data_publicacao: dto.data_publicacao,
+                    periodo_do_ciclo_participativo_inicio: dto.periodo_do_ciclo_participativo_inicio,
+                    periodo_do_ciclo_participativo_fim: dto.periodo_do_ciclo_participativo_fim,
+                    rotulo_macro_tema: dto.rotulo_macro_tema,
+                    rotulo_tema: dto.rotulo_tema,
+                    rotulo_sub_tema: dto.rotulo_sub_tema,
+                    rotulo_contexto_meta: dto.rotulo_contexto_meta,
+                    rotulo_complementacao_meta: dto.rotulo_complementacao_meta,
+                    rotulo_iniciativa: dto.rotulo_iniciativa,
+                    rotulo_atividade: dto.rotulo_atividade,
+                    possui_macro_tema: dto.possui_macro_tema,
+                    possui_tema: dto.possui_tema,
+                    possui_sub_tema: dto.possui_sub_tema,
+                    possui_contexto_meta: dto.possui_contexto_meta,
+                    possui_complementacao_meta: dto.possui_complementacao_meta,
+                    possui_iniciativa: dto.possui_iniciativa,
+                    possui_atividade: dto.possui_atividade,
+                    nivel_orcamento: dto.nivel_orcamento,
                     ativo: ativarPdm,
                     arquivo_logo_id: arquivo_logo_id,
                 },
@@ -427,12 +465,20 @@ export class PdmService {
                 this.logger.log(`chamando monta_ciclos_pdm...`);
                 this.logger.log(JSON.stringify(await prismaTx.$queryRaw`select monta_ciclos_pdm(${id}::int, false)`));
             }
-        });
+        };
+
+        if (prismaCtx) {
+            await performUpdate(prismaCtx);
+        } else {
+            await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient) => {
+                await performUpdate(prismaTx);
+            });
+        }
 
         if (verificarCiclos) await this.executaJobCicloFisico(ativarPdm, id, now);
 
         // força o carregamento da tabela pdmOrcamentoConfig
-        await this.getOrcamentoConfig(tipo, id, true);
+        await this.getOrcamentoConfig(tipo, id, true, prismaTx);
 
         return { id: id };
     }
@@ -964,9 +1010,12 @@ export class PdmService {
     async getOrcamentoConfig(
         tipo: TipoPdm,
         pdm_id: number,
-        deleteExtraYears = false
+        deleteExtraYears = false,
+        prismaCtx?: Prisma.TransactionClient
     ): Promise<OrcamentoConfig[] | null> {
-        const pdm = await this.prisma.pdm.findFirstOrThrow({
+        this.logger.log(`getOrcamentoConfig(${tipo}, ${pdm_id}) with prismaCtx=${!!prismaCtx}`);
+        const prismaTx = prismaCtx || this.prisma;
+        const pdm = await prismaTx.pdm.findFirstOrThrow({
             where: { id: pdm_id, tipo },
             select: {
                 data_inicio: true,
@@ -982,7 +1031,7 @@ export class PdmService {
             planejado_disponivel: boolean;
             execucao_disponivel: boolean;
             execucao_disponivel_meses: number[];
-        }[] = await this.prisma.$queryRaw`
+        }[] = await prismaTx.$queryRaw`
             select
                 extract('year' from x.x)::int as ano_referencia,
                 ${pdm_id}::int as pdm_id,
@@ -998,35 +1047,45 @@ export class PdmService {
         const anoVistos: number[] = [];
         for (const r of rows) {
             anoVistos.push(r.ano_referencia);
-            if (r.id === null) {
-                const created_orcamento_config = await this.prisma.$transaction(
-                    async (prismaTx: Prisma.TransactionClient) => {
-                        await prismaTx.pdmOrcamentoConfig.deleteMany({
-                            where: {
-                                ano_referencia: r.ano_referencia,
-                                pdm_id: pdm_id,
-                            },
-                        });
+            if (r.id !== null) continue;
 
-                        return await prismaTx.pdmOrcamentoConfig.create({
-                            data: {
-                                ano_referencia: r.ano_referencia,
-                                pdm_id: pdm_id,
-                            },
-                            select: { id: true },
-                        });
+            const performUpdate = async (prismaTx: Prisma.TransactionClient): Promise<number> => {
+                await prismaTx.pdmOrcamentoConfig.deleteMany({
+                    where: {
+                        ano_referencia: r.ano_referencia,
+                        pdm_id: pdm_id,
+                    },
+                });
+
+                const created = await prismaTx.pdmOrcamentoConfig.create({
+                    data: {
+                        ano_referencia: r.ano_referencia,
+                        pdm_id: pdm_id,
+                    },
+                    select: { id: true },
+                });
+                return created.id;
+            };
+
+            let created_orcamento_config_id: number;
+            if (prismaCtx) {
+                created_orcamento_config_id = await performUpdate(prismaCtx);
+            } else {
+                await this.prisma.$transaction(
+                    async (prismaTx: Prisma.TransactionClient) => {
+                        created_orcamento_config_id = await performUpdate(prismaTx);
                     },
                     { isolationLevel: 'Serializable' }
                 );
-
-                const row_without_id_idx = rows.findIndex((rwi) => rwi.ano_referencia === r.ano_referencia);
-                rows[row_without_id_idx].id = created_orcamento_config.id;
             }
+
+            const row_without_id_idx = rows.findIndex((rwi) => rwi.ano_referencia === r.ano_referencia);
+            rows[row_without_id_idx].id = created_orcamento_config_id!;
         }
 
         if (deleteExtraYears)
             // just in case, apagar anos que estão fora do periodo
-            await this.prisma.pdmOrcamentoConfig.deleteMany({
+            await prismaTx.pdmOrcamentoConfig.deleteMany({
                 where: {
                     ano_referencia: { notIn: anoVistos },
                     pdm_id: pdm_id,
