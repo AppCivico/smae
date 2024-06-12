@@ -402,6 +402,10 @@ model Pessoa {
     EquipamentosQueRemovi    Equipamento[] @relation("Removedor")
     EquipamentosQueAtualizei Equipamento[] @relation("Atualizador")
 
+    StatusesDistribuicaoQueCriei     TransferenciaTipoDistribuicaoStatus[] @relation("Criador")
+    StatusesDistribuicaoQueRemovi    TransferenciaTipoDistribuicaoStatus[] @relation("Removedor")
+    StatusesDistribuicaoQueAtualizei TransferenciaTipoDistribuicaoStatus[] @relation("Atualizador")
+
     view_atividade_pessoa_responsavel  view_atividade_pessoa_responsavel[]
     view_iniciativa_pessoa_responsavel view_iniciativa_pessoa_responsavel[]
     ViewNotaComOrdemQCriei             ViewNotas[]                          @relation("Criador")
@@ -4954,6 +4958,8 @@ model TransferenciaTipo {
     atualizador Pessoa? @relation("Atualizador", fields: [atualizado_por], references: [id])
     removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
 
+    statuses_distribuicao TransferenciaTipoDistribuicaoStatus[]
+
     @@map("transferencia_tipo")
 }
 
@@ -5956,4 +5962,50 @@ model ProjetoGrupoTematico {
 
     @@unique([projeto_id, grupo_tematico_id])
     @@map("projeto_grupo_tematico")
+}
+
+enum DistribuicaoStatusTipo {
+    Registrada
+    Declinada
+    Redirecionada
+    Cancelada
+    ImpedidaTecnicamente
+    Finalizada
+}
+
+model DistribuicaoStatusBase {
+    id Int @id @default(autoincrement())
+
+    nome                             String
+    tipo                             DistribuicaoStatusTipo
+    valor_distribuicao_contabilizado Boolean
+
+    @@unique([nome, tipo])
+    @@map("distribuicao_status_base")
+}
+
+model TransferenciaTipoDistribuicaoStatus {
+    id Int @id @default(autoincrement())
+
+    transferencia_tipo_id Int
+    transferencia_tipo    TransferenciaTipo @relation(fields: [transferencia_tipo_id], references: [id])
+
+    nome                             String
+    tipo                             DistribuicaoStatusTipo
+    valor_distribuicao_contabilizado Boolean
+
+    criado_por Int
+    criado_em  DateTime @default(now()) @db.Timestamptz(6)
+
+    atualizado_por Int?
+    atualizado_em  DateTime? @db.Timestamptz(6)
+
+    removido_por Int?
+    removido_em  DateTime? @db.Timestamptz(6)
+
+    criador     Pessoa  @relation("Criador", fields: [criado_por], references: [id])
+    atualizador Pessoa? @relation("Atualizador", fields: [atualizado_por], references: [id])
+    removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
+
+    @@map("transferencia_tipo_distribuicao_status")
 }
