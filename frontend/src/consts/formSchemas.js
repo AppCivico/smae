@@ -658,13 +658,13 @@ export const gruposTematicos = object({
     .required(),
   programa_habitacional: boolean()
     .label('Programa habitacional')
-    .required(),
+    .nullable(),
   unidades_habitacionais: boolean()
     .label('Unidades habitacionais')
-    .required(),
+    .nullable(),
   familias_beneficiadas: boolean()
     .label('Famílias beneficiadas')
-    .required(),
+    .nullable(),
 });
 
 export const liçãoAprendida = object()
