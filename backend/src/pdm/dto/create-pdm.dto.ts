@@ -225,9 +225,9 @@ export class CreatePdmDto {
     @IsString({ message: '$property| upload_logo de um arquivo de Logo' })
     upload_logo?: string | null;
 
-    @IsOptional()
-    @IsString({ message: '$property| Precisa ser uma string' })
-    contexto?: string | null;
+//    @IsOptional()
+//    @IsString({ message: '$property| Precisa ser uma string' })
+//    contexto?: string | null;
 
     @IsOptional()
     @ApiProperty({ enum: NivelOrcamento, enumName: 'NivelOrcamento' })
@@ -235,13 +235,6 @@ export class CreatePdmDto {
         message: '$property| Precisa ser um dos seguintes valores: ' + Object.values(NivelOrcamento).join(', '),
     })
     nivel_orcamento: NivelOrcamento;
-
-    @IsOptional()
-    @IsEnum(TipoPdm, {
-        message: '$property| Precisa ser um dos seguintes valores: ' + Object.values(TipoPdm).join(', '),
-    })
-    @ApiProperty({ enum: TipoPdm, enumName: 'TipoPdm' })
-    tipo?: TipoPdm;
 
     @IsOptional()
     @ValidateIf((object, value) => value !== null)

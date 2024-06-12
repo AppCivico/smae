@@ -1,8 +1,8 @@
-import { OmitType, PartialType } from '@nestjs/swagger';
+import { PartialType } from '@nestjs/swagger';
 import { IsBoolean, IsOptional, ValidateIf } from 'class-validator';
 import { CreatePdmDto } from './create-pdm.dto';
 
-export class UpdatePdmDto extends PartialType(OmitType(CreatePdmDto, ['tipo'])) {
+export class UpdatePdmDto extends PartialType(CreatePdmDto) {
     /**
      * use true para manter ativo, false para desativar. nulo/faltando não faz nenhuma ação
      */

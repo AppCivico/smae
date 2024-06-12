@@ -42,8 +42,7 @@ export class PdmService {
         private readonly variavelService: VariavelService
     ) {}
 
-    async create(createPdmDto: CreatePdmDto, user: PessoaFromJwt) {
-        const tipo = createPdmDto.tipo !== undefined ? createPdmDto.tipo : 'PDM';
+    async create(tipo: TipoPdm, dto: CreatePdmDto, user: PessoaFromJwt) {
         if (tipo == 'PDM') {
             if (!user.hasSomeRoles(['CadastroPdm.inserir'])) {
                 throw new ForbiddenException('Você não tem permissão para inserir Plano de Metas');
@@ -57,48 +56,73 @@ export class PdmService {
         const similarExists = await this.prisma.pdm.count({
             where: {
                 tipo: tipo,
-                descricao: { equals: createPdmDto.nome, mode: 'insensitive' },
+                descricao: { equals: dto.nome, mode: 'insensitive' },
             },
         });
         if (similarExists > 0)
             throw new HttpException('descricao| Descrição igual ou semelhante já existe em outro registro ativo', 400);
 
         let arquivo_logo_id: undefined | number;
-        if (createPdmDto.upload_logo) {
-            arquivo_logo_id = this.uploadService.checkUploadOrDownloadToken(createPdmDto.upload_logo);
+        if (dto.upload_logo) {
+            arquivo_logo_id = this.uploadService.checkUploadOrDownloadToken(dto.upload_logo);
         }
 
-        delete createPdmDto.upload_logo;
+        delete dto.upload_logo;
 
-        if (createPdmDto.possui_atividade && !createPdmDto.possui_iniciativa)
+        if (dto.possui_atividade && !dto.possui_iniciativa)
             throw new HttpException('possui_atividade| possui_iniciativa precisa ser True para ativar Atividades', 400);
 
-        const created = await this.prisma.$transaction(async (prisma: Prisma.TransactionClient) => {
+        const now = new Date(Date.now());
+        const created = await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient) => {
             let ps_admin_cp: CreatePdmAdminCPDto | undefined = undefined;
             let ps_tecnico_cp: CreatePdmTecnicoCPDto | undefined = undefined;
-            if (createPdmDto.ps_admin_cp) ps_admin_cp = createPdmDto.ps_admin_cp;
-            if (createPdmDto.ps_tecnico_cp) ps_tecnico_cp = createPdmDto.ps_tecnico_cp;
-            delete createPdmDto.ps_admin_cp;
-            delete createPdmDto.ps_tecnico_cp;
+            if (dto.ps_admin_cp) ps_admin_cp = dto.ps_admin_cp;
+            if (dto.ps_tecnico_cp) ps_tecnico_cp = dto.ps_tecnico_cp;
+            delete dto.ps_admin_cp;
+            delete dto.ps_tecnico_cp;
 
-            const pdm = await prisma.pdm.create({
+            const pdm = await prismaTx.pdm.create({
                 data: {
                     criado_por: user.id,
-                    criado_em: new Date(Date.now()),
+                    criado_em: now,
                     arquivo_logo_id: arquivo_logo_id,
-                    ...(createPdmDto as any),
+                    nome: dto.nome,
+                    descricao: dto.descricao,
+                    prefeito: dto.prefeito,
+                    equipe_tecnica: dto.equipe_tecnica,
+                    data_inicio: dto.data_inicio,
+                    data_fim: dto.data_fim,
+                    data_publicacao: dto.data_publicacao,
+                    periodo_do_ciclo_participativo_inicio: dto.periodo_do_ciclo_participativo_inicio,
+                    periodo_do_ciclo_participativo_fim: dto.periodo_do_ciclo_participativo_fim,
+                    rotulo_macro_tema: dto.rotulo_macro_tema,
+                    rotulo_tema: dto.rotulo_tema,
+                    rotulo_sub_tema: dto.rotulo_sub_tema,
+                    rotulo_contexto_meta: dto.rotulo_contexto_meta,
+                    rotulo_complementacao_meta: dto.rotulo_complementacao_meta,
+                    rotulo_iniciativa: dto.rotulo_iniciativa,
+                    rotulo_atividade: dto.rotulo_atividade,
+                    possui_macro_tema: dto.possui_macro_tema,
+                    possui_tema: dto.possui_tema,
+                    possui_sub_tema: dto.possui_sub_tema,
+                    possui_contexto_meta: dto.possui_contexto_meta,
+                    possui_complementacao_meta: dto.possui_complementacao_meta,
+                    possui_iniciativa: dto.possui_iniciativa,
+                    possui_atividade: dto.possui_atividade,
+                    nivel_orcamento: dto.nivel_orcamento,
+                    tipo: tipo,
                 },
                 select: { id: true },
             });
 
             if (ps_admin_cp || ps_tecnico_cp) {
                 this.logger.log(`criando ps_admin_cp e ps_tecnico_cp`);
-                await this.update(pdm.id, { ps_admin_cp, ps_tecnico_cp }, user);
+                await this.update(tipo, pdm.id, { ps_admin_cp, ps_tecnico_cp }, user);
             }
 
-            if (createPdmDto.tipo == 'PDM') {
+            if (tipo == 'PDM') {
                 this.logger.log(`Chamando monta_ciclos_pdm...`);
-                await prisma.$queryRaw`select monta_ciclos_pdm(${pdm.id}::int, false)`;
+                await prismaTx.$queryRaw`select monta_ciclos_pdm(${pdm.id}::int, false)`;
             }
 
             return pdm;
@@ -256,8 +280,8 @@ export class PdmService {
         return false;
     }
 
-    async getDetail(id: number, user: PessoaFromJwt, readonly: ReadOnlyBooleanType): Promise<Pdm> {
-        const pdm = await this.loadPdm(id, user, readonly);
+    async getDetail(tipo: TipoPdm, id: number, user: PessoaFromJwt, readonly: ReadOnlyBooleanType): Promise<Pdm> {
+        const pdm = await this.loadPdm(tipo, id, user, readonly);
 
         if (pdm.arquivo_logo_id) {
             pdm.logo = this.uploadService.getDownloadToken(pdm.arquivo_logo_id, '30d').download_token;
@@ -274,10 +298,11 @@ export class PdmService {
         };
     }
 
-    private async loadPdm(id: number, user: PessoaFromJwt, readonly: ReadOnlyBooleanType) {
+    private async loadPdm(tipo: TipoPdm, id: number, user: PessoaFromJwt, readonly: ReadOnlyBooleanType) {
         const pdm = await this.prisma.pdm.findFirst({
             where: {
                 id: id,
+                tipo,
                 removido_em: null,
             },
         });
@@ -319,8 +344,8 @@ export class PdmService {
         // TODO: plano setorial verificar se é admin no órgão, se só tiver pessoas do órgão dele, pode desativar/ativar
     }
 
-    async update(id: number, dto: UpdatePdmDto, user: PessoaFromJwt) {
-        const pdm = await this.loadPdm(id, user, 'ReadWrite');
+    async update(tipo: TipoPdm, id: number, dto: UpdatePdmDto, user: PessoaFromJwt) {
+        const pdm = await this.loadPdm(tipo, id, user, 'ReadWrite');
         await this.verificarPrivilegiosEdicao(dto, user, pdm);
 
         if (dto.nome) {
@@ -381,7 +406,7 @@ export class PdmService {
             const ps_tecnico_cp = dto.ps_tecnico_cp;
             delete dto.ps_tecnico_cp;
 
-            console.log(ps_admin_cp)
+            console.log(ps_admin_cp);
 
             await prismaTx.pdm.update({
                 where: { id: id },
@@ -407,7 +432,7 @@ export class PdmService {
         if (verificarCiclos) await this.executaJobCicloFisico(ativarPdm, id, now);
 
         // força o carregamento da tabela pdmOrcamentoConfig
-        await this.getOrcamentoConfig(id, true);
+        await this.getOrcamentoConfig(tipo, id, true);
 
         return { id: id };
     }
@@ -435,7 +460,7 @@ export class PdmService {
             },
         });
 
-        console.log('pComPriv' , pComPriv);
+        console.log('pComPriv', pComPriv);
 
         const keptRecord: number[] = prevVersion.map((r) => r.pessoa_id);
 
@@ -573,8 +598,8 @@ export class PdmService {
         });
     }
 
-    async append_document(pdm_id: number, createPdmDocDto: CreatePdmDocumentDto, user: PessoaFromJwt) {
-        const pdm = await this.prisma.pdm.count({ where: { id: pdm_id } });
+    async append_document(tipo: TipoPdm, pdm_id: number, createPdmDocDto: CreatePdmDocumentDto, user: PessoaFromJwt) {
+        const pdm = await this.prisma.pdm.count({ where: { id: pdm_id, tipo } });
         if (!pdm) throw new HttpException('PDM não encontrado', 404);
 
         const arquivoId = this.uploadService.checkUploadOrDownloadToken(createPdmDocDto.upload_token);
@@ -594,8 +619,8 @@ export class PdmService {
         return { id: arquivo.id };
     }
 
-    async list_document(pdm_id: number, user: PessoaFromJwt) {
-        const pdm = await this.prisma.pdm.count({ where: { id: pdm_id } });
+    async list_document(tipo: TipoPdm, pdm_id: number, user: PessoaFromJwt) {
+        const pdm = await this.prisma.pdm.count({ where: { id: pdm_id, tipo } });
         if (!pdm) throw new HttpException('PDM não encontrado', 404);
 
         const arquivos: PdmDocument[] = await this.prisma.arquivoDocumento.findMany({
@@ -620,8 +645,8 @@ export class PdmService {
         return arquivos;
     }
 
-    async remove_document(pdm_id: number, pdmDocId: number, user: PessoaFromJwt) {
-        const pdm = await this.prisma.pdm.count({ where: { id: pdm_id } });
+    async remove_document(tipo: TipoPdm, pdm_id: number, pdmDocId: number, user: PessoaFromJwt) {
+        const pdm = await this.prisma.pdm.count({ where: { id: pdm_id, tipo } });
         if (!pdm) throw new HttpException('PDM não encontrado', 404);
 
         await this.prisma.arquivoDocumento.updateMany({
@@ -936,9 +961,13 @@ export class PdmService {
         return ciclo;
     }
 
-    async getOrcamentoConfig(pdm_id: number, deleteExtraYears = false): Promise<OrcamentoConfig[] | null> {
+    async getOrcamentoConfig(
+        tipo: TipoPdm,
+        pdm_id: number,
+        deleteExtraYears = false
+    ): Promise<OrcamentoConfig[] | null> {
         const pdm = await this.prisma.pdm.findFirstOrThrow({
-            where: { id: pdm_id },
+            where: { id: pdm_id, tipo },
             select: {
                 data_inicio: true,
                 data_fim: true,
@@ -1008,11 +1037,12 @@ export class PdmService {
     }
 
     async updatePdmOrcamentoConfig(
+        tipo: TipoPdm,
         pdm_id: number,
         updatePdmOrcamentoConfigDto: UpdatePdmOrcamentoConfigDto,
         user: PessoaFromJwt
     ) {
-        const pdm = await this.loadPdm(pdm_id, user, 'ReadWrite');
+        const pdm = await this.loadPdm(tipo, pdm_id, user, 'ReadWrite');
 
         return await this.prisma.$transaction(async (prisma: Prisma.TransactionClient) => {
             const operations = [];
