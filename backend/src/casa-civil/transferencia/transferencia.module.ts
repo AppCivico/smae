@@ -11,6 +11,8 @@ import { BlocoNotaModule } from '../../bloco-nota/bloco-nota/bloco-nota.module';
 import { WorkflowModule } from 'src/workflow/configuracao/workflow.module';
 import { DistribuicaoRecursoModule } from 'src/distribuicao-recurso/distribuicao-recurso.module';
 import { TransferenciaTipoService } from './tipo/transferencia-tipo.service';
+import { DistribuicaoStatusController } from './tipo/distribuicao-status/distribuicao-status.controller';
+import { DistribuicaoStatusService } from './tipo/distribuicao-status/distribuicao-status.service';
 
 @Module({
     imports: [
@@ -25,8 +27,13 @@ import { TransferenciaTipoService } from './tipo/transferencia-tipo.service';
         BlocoNotaModule,
         DistribuicaoRecursoModule,
     ],
-    controllers: [TransferenciaController, TransferenciaTipoController, TransferenciaTarefaController],
-    providers: [TransferenciaService, TransferenciaTipoService],
+    controllers: [
+        TransferenciaController,
+        TransferenciaTipoController,
+        DistribuicaoStatusController,
+        TransferenciaTarefaController,
+    ],
+    providers: [TransferenciaService, TransferenciaTipoService, DistribuicaoStatusService],
     exports: [TransferenciaService],
 })
 export class TransferenciaModule {}
