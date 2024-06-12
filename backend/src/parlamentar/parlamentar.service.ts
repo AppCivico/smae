@@ -190,6 +190,7 @@ export class ParlamentarService {
 
                 mandatos: {
                     where: { removido_em: null },
+                    orderBy: { eleicao: { ano: 'desc' } },
                     select: {
                         id: true,
                         gabinete: true,
@@ -288,9 +289,11 @@ export class ParlamentarService {
             },
         });
 
-        const mandatoCorrente = parlamentar.mandatos
+        let mandatoCorrente = parlamentar.mandatos
             .sort((a, b) => b.eleicao.ano - a.eleicao.ano)
             .find((m) => m.eleicao.atual_para_mandatos == true);
+
+        if (!mandatoCorrente) mandatoCorrente = parlamentar.mandatos[0];
 
         return {
             ...parlamentar,
@@ -300,7 +303,7 @@ export class ParlamentarService {
                 ? this.uploadService.getDownloadToken(parlamentar.foto_upload_id, '1 days').download_token
                 : null,
 
-            mandato_atual: mandatoCorrente
+            ultimo_mandato: mandatoCorrente
                 ? {
                       ...mandatoCorrente,
 
