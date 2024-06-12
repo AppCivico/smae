@@ -83,7 +83,7 @@ export class PortfolioController {
     }
 }
 
-@ApiTags('Portfólio de obras')
+@ApiTags('Portfólio de Obras')
 @Controller('portfolio-mdo')
 export class PortfolioMDOController {
     constructor(private readonly portfolioService: PortfolioService) {}
