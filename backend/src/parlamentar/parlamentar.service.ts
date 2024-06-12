@@ -23,7 +23,11 @@ import {
 import { ParlamentarDetailDto, ParlamentarDto } from './entities/parlamentar.entity';
 import { PaginatedDto } from 'src/common/dto/paginated.dto';
 import { JwtService } from '@nestjs/jwt';
-import { DateTime } from 'luxon';
+
+class NextPageTokenJwtBody {
+    offset: number;
+    ipp: number;
+}
 
 @Injectable()
 export class ParlamentarService {
@@ -42,10 +46,6 @@ export class ParlamentarService {
 
         if (dto.telefone && !user.hasSomeRoles(['SMAE.acesso_telefone']))
             throw new HttpException('Usuário sem permissão para cadastro de telefone', 400);
-
-        if (dto.nascimento != undefined) {
-            const diffAnos = DateTime.fromJSDate(dto.nascimento).diff(DateTime.now()).years;
-        }
 
         const created = await this.prisma.$transaction(
             async (prismaTxn: Prisma.TransactionClient): Promise<RecordWithId> => {
@@ -102,17 +102,17 @@ export class ParlamentarService {
             };
         }
 
-        //let tem_mais = false;
-        //let token_proxima_pagina: string | null = null;
+        let tem_mais = false;
+        let token_proxima_pagina: string | null = null;
 
-        // let ipp = filters.ipp ? filters.ipp : 25;
-        // let offset = 0;
-        //const decodedPageToken = this.decodeNextPageToken(filters.token_proxima_pagina);
+        let ipp = filters.ipp ? filters.ipp : 25;
+        let offset = 0;
+        const decodedPageToken = this.decodeNextPageToken(filters.token_proxima_pagina);
 
-        /* if (decodedPageToken) {
+        if (decodedPageToken) {
             offset = decodedPageToken.offset;
             ipp = decodedPageToken.ipp;
-        } */
+        }
 
         const partidos = await this.prisma.partido.findMany({
             where: { removido_em: null },
@@ -140,14 +140,15 @@ export class ParlamentarService {
                 partido_mais_recente: true,
             },
             orderBy: [{ nome: 'asc' }],
-            take: 50,
+            skip: offset,
+            take: ipp + 1,
         });
 
-        /* if (listActive.length > ipp) {
+        if (listActive.length > ipp) {
             tem_mais = true;
             listActive.pop();
             token_proxima_pagina = this.encodeNextPageToken({ ipp: ipp, offset: offset + ipp });
-        } */
+        }
 
         const linhas = listActive.map((p) => {
             const partido = partidos.find((e) => e.sigla == p.partido_mais_recente);
@@ -162,9 +163,23 @@ export class ParlamentarService {
 
         return {
             linhas: linhas,
-            tem_mais: false,
-            token_proxima_pagina: 'token_proxima_pagina',
+            tem_mais: tem_mais,
+            token_proxima_pagina: token_proxima_pagina,
         };
+    }
+
+    private decodeNextPageToken(jwt: string | undefined): NextPageTokenJwtBody | null {
+        let tmp: NextPageTokenJwtBody | null = null;
+        try {
+            if (jwt) tmp = this.jwtService.verify(jwt) as NextPageTokenJwtBody;
+        } catch {
+            throw new HttpException('Param next_page_token is invalid', 400);
+        }
+        return tmp;
+    }
+
+    private encodeNextPageToken(opt: NextPageTokenJwtBody): string {
+        return this.jwtService.sign(opt);
     }
 
     async findOne(id: number, user: PessoaFromJwt | undefined): Promise<ParlamentarDetailDto> {
