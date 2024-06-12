@@ -31,10 +31,14 @@ export class AcompanhamentoService {
                         portfolio: {
                             select: { modelo_clonagem: true },
                         },
+                        tipo: true,
                     },
                 });
                 if (projetoPortfolio.portfolio.modelo_clonagem)
                     throw new HttpException('Projeto pertence a Portfolio de modelo de clonagem', 400);
+
+                if (projetoPortfolio.tipo != 'PP' && dto.risco && dto.risco.length > 0)
+                    throw new HttpException('Apenas Gestão de Projetos podem ter riscos', 400);
 
                 const now = new Date(Date.now());
 
@@ -294,6 +298,7 @@ export class AcompanhamentoService {
             select: {
                 id: true,
                 ordem: true,
+                projeto: { select: { tipo: true } },
                 ProjetoAcompanhamentoItem: {
                     orderBy: { ordem: 'desc' },
                     select: {
@@ -308,6 +313,8 @@ export class AcompanhamentoService {
                 },
             },
         });
+        if (self.projeto.tipo != 'PP' && dto.risco && dto.risco.length > 0)
+            throw new HttpException('Apenas Gestão de Projetos podem ter riscos', 400);
 
         dto.detalhamento = HtmlSanitizer(dto.detalhamento);
 
