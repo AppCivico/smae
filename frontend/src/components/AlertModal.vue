@@ -4,16 +4,12 @@ import { storeToRefs } from 'pinia';
 
 const alertStore = useAlertStore();
 const { alertas } = storeToRefs(alertStore);
-async function callbackFn() {
-  await alert.value.callback();
+async function callbackFn(i) {
+  await alertas.value[i].callback();
 
-  // talvez o tipo da janela já tenha sido substituído
-  if (alert.value?.type === 'confirmAction') {
-    alertStore.$reset();
-  }
+  alertas.value.splice(i, 1);
 }
 </script>
-
 <template>
   <Teleport
     to="body"
@@ -41,7 +37,7 @@ async function callbackFn() {
         <template v-if="alert.type == 'confirmAction'">
           <button
             class="btn amarelo mr1"
-            @click="callbackFn"
+            @click="callbackFn(i)"
           >
             {{ alert.label }}
           </button>
