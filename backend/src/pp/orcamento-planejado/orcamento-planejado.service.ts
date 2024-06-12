@@ -1,5 +1,5 @@
 import { HttpException, Injectable } from '@nestjs/common';
-import { Prisma } from '@prisma/client';
+import { Prisma, TipoProjeto } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import { DotacaoService } from '../../dotacao/dotacao.service';
 import { RecordWithId } from '../../common/dto/record-with-id.dto';
@@ -20,9 +20,14 @@ export class OrcamentoPlanejadoService {
         private readonly dotacaoService: DotacaoService
     ) {}
 
-    async create(projeto_id: number, dto: CreatePPOrcamentoPlanejadoDto, user: PessoaFromJwt): Promise<RecordWithId> {
+    async create(
+        tipo: TipoProjeto,
+        projeto_id: number,
+        dto: CreatePPOrcamentoPlanejadoDto,
+        user: PessoaFromJwt
+    ): Promise<RecordWithId> {
         const projetoPortfolio = await this.prisma.projeto.findFirstOrThrow({
-            where: { id: projeto_id },
+            where: { id: projeto_id, tipo, removido_em: null },
             select: {
                 portfolio: {
                     select: { modelo_clonagem: true },
@@ -98,13 +103,14 @@ export class OrcamentoPlanejadoService {
     }
 
     async update(
+        tipo: TipoProjeto,
         projeto_id: number,
         id: number,
         dto: UpdatePPOrcamentoPlanejadoDto,
         user: PessoaFromJwt
     ): Promise<RecordWithId> {
         const orcamentoPlanejado = await this.prisma.orcamentoPlanejado.findFirst({
-            where: { id: +id, removido_em: null, projeto_id },
+            where: { id: +id, removido_em: null, projeto_id, projeto: { tipo, id: projeto_id } },
         });
         if (!orcamentoPlanejado) throw new HttpException('Orçamento planejado não encontrado', 404);
         console.log(dto);
@@ -176,6 +182,7 @@ export class OrcamentoPlanejadoService {
     }
 
     async findAll(
+        tipo: TipoProjeto,
         projeto: ProjetoDetailDto,
         filters: FilterPPOrcamentoPlanejadoDto,
         user: PessoaFromJwt
@@ -183,6 +190,7 @@ export class OrcamentoPlanejadoService {
         const queryRows = await this.prisma.orcamentoPlanejado.findMany({
             where: {
                 projeto_id: projeto.id,
+                projeto: { tipo, id: projeto.id },
                 removido_em: null,
                 dotacao: filters?.dotacao,
                 ano_referencia: filters.ano_referencia, // obrigatório para que o 'join' com a dotação seja feito sem complicações
@@ -296,9 +304,9 @@ export class OrcamentoPlanejadoService {
         return rows;
     }
 
-    async remove(projeto_id: number, id: number, user: PessoaFromJwt) {
+    async remove(tipo: TipoProjeto, projeto_id: number, id: number, user: PessoaFromJwt) {
         const orcamentoPlanejado = await this.prisma.orcamentoPlanejado.findFirst({
-            where: { id: +id, removido_em: null, projeto_id },
+            where: { id: +id, removido_em: null, projeto_id, projeto: { tipo, id: projeto_id } },
         });
         if (!orcamentoPlanejado) throw new HttpException('Orçamento planejado não encontrado', 404);
 
