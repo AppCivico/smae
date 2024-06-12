@@ -9,6 +9,7 @@ import consoleNaTemplate from '@/plugins/consoleNaTemplate';
 // usamos o `.ts` aqui para não entrar em conflito com a versão JS ainda usada
 // @ts-ignore
 import requestS from '@/helpers/requestS.ts';
+import { useAlertStore } from '@/stores/alert.store';
 import { createPinia } from 'pinia';
 import {
   createApp, markRaw, nextTick,
@@ -18,6 +19,11 @@ import App from './App.vue';
 import { router } from './router';
 
 const app = createApp(App);
+
+app.config.errorHandler = (err) => {
+  const alertStore = useAlertStore();
+  alertStore.error(err);
+};
 
 app.config.globalProperties.gblHabilitarBeta = import.meta.env.VITE_HABILITAR_BETA || false;
 app.config.globalProperties.gblLimiteDeSeleçãoSimultânea = Number.parseInt(
