@@ -18,6 +18,9 @@ import { ProjetoPrevisaoCustoModule } from './reports/projeto-previsao-custo/pro
 import { OrcamentoRealizadoModule as PPOrcamentoRealizadoModule } from './pp/orcamento-realizado/orcamento-realizado.module';
 import { AcaoModule } from './pp/projeto/acao/acao.module';
 import { ProjetoEtapaModule } from './projeto-etapa/projeto-etapa.module';
+import { EquipamentoModule } from './pp/equipamento/equipamento.module';
+import { GrupoTematicoModule } from './pp/grupo-tematico/grupo-tematico.module';
+import { TipoIntervencaoModule } from './pp/tipo-intervencao/tipo-intervencao.module';
 
 @Module({
     imports: [
@@ -40,6 +43,9 @@ import { ProjetoEtapaModule } from './projeto-etapa/projeto-etapa.module';
         GrupoPortfolioModule,
         AcaoModule,
         ProjetoEtapaModule,
+        EquipamentoModule,
+        GrupoTematicoModule,
+        TipoIntervencaoModule,
     ],
     controllers: [],
     providers: [],
