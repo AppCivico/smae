@@ -26,6 +26,9 @@ export class GrupoTematicoService {
                 const grupoTematico = await prismaTx.grupoTematico.create({
                     data: {
                         nome: dto.nome,
+                        programa_habitacional: dto.programa_habitacional || false,
+                        unidades_habitacionais: dto.unidades_habitacionais || false,
+                        familias_beneficiadas: dto.familias_beneficiadas || false,
                         criado_em: new Date(Date.now()),
                         criado_por: user.id,
                     },
@@ -47,10 +50,28 @@ export class GrupoTematicoService {
             select: {
                 id: true,
                 nome: true,
+                criado_em: true,
+                programa_habitacional: true,
+                unidades_habitacionais: true,
+                familias_beneficiadas: true,
+                criador: { select: { id: true, nome_exibicao: true } },
             },
         });
 
-        return gruposTematicos;
+        return gruposTematicos.map((grupoTematico) => {
+            return {
+                id: grupoTematico.id,
+                nome: grupoTematico.nome,
+                programa_habitacional: grupoTematico.programa_habitacional,
+                unidades_habitacionais: grupoTematico.unidades_habitacionais,
+                familias_beneficiadas: grupoTematico.familias_beneficiadas,
+                criado_em: grupoTematico.criado_em,
+                criado_por: {
+                    id: grupoTematico.criador.id,
+                    nome_exibicao: grupoTematico.criador.nome_exibicao,
+                },
+            } satisfies GrupoTematico;
+        });
     }
 
     async findOne(id: number, user: PessoaFromJwt): Promise<GrupoTematico> {
@@ -62,11 +83,27 @@ export class GrupoTematicoService {
             select: {
                 id: true,
                 nome: true,
+                criado_em: true,
+                programa_habitacional: true,
+                unidades_habitacionais: true,
+                familias_beneficiadas: true,
+                criador: { select: { id: true, nome_exibicao: true } },
             },
         });
         if (!grupoTematico) throw new NotFoundException('Não foi possível encontrar grupoTematico.');
 
-        return grupoTematico;
+        return {
+            id: grupoTematico.id,
+            nome: grupoTematico.nome,
+            programa_habitacional: grupoTematico.programa_habitacional,
+            unidades_habitacionais: grupoTematico.unidades_habitacionais,
+            familias_beneficiadas: grupoTematico.familias_beneficiadas,
+            criado_em: grupoTematico.criado_em,
+            criado_por: {
+                id: grupoTematico.criador.id,
+                nome_exibicao: grupoTematico.criador.nome_exibicao,
+            },
+        };
     }
 
     async update(id: number, dto: UpdateGrupoTematicoDto, user: PessoaFromJwt) {
@@ -84,7 +121,7 @@ export class GrupoTematicoService {
                     const similarExists = await prismaTx.grupoTematico.count({
                         where: {
                             id: { not: id },
-                            nome: { endsWith: dto.nome, mode: 'insensitive' },
+                            nome: { equals: dto.nome, mode: 'insensitive' },
                             removido_em: null,
                         },
                     });
@@ -99,6 +136,12 @@ export class GrupoTematicoService {
                     where: { id },
                     data: {
                         nome: dto.nome,
+                        programa_habitacional:
+                            dto.programa_habitacional !== null ? dto.programa_habitacional : undefined,
+                        unidades_habitacionais:
+                            dto.unidades_habitacionais !== null ? dto.unidades_habitacionais : undefined,
+                        familias_beneficiadas:
+                            dto.familias_beneficiadas !== null ? dto.familias_beneficiadas : undefined,
                         atualizado_em: new Date(Date.now()),
                         atualizado_por: user.id,
                     },
@@ -118,6 +161,15 @@ export class GrupoTematicoService {
             },
             select: { id: true },
         });
+
+        // TODO ativar:
+        //        const emUso = await this.prisma.projeto.count({
+        //            where: {
+        //                grupo_tematico_id: id,
+        //                removido_em: null,
+        //            },
+        //        });
+        //        if (emUso > 0) throw new HttpException('Grupo temático tem obras vinculadas.', 400);
 
         return await this.prisma.grupoTematico.updateMany({
             where: {
