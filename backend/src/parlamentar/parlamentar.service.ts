@@ -45,9 +45,6 @@ export class ParlamentarService {
 
         if (dto.nascimento != undefined) {
             const diffAnos = DateTime.fromJSDate(dto.nascimento).diff(DateTime.now()).years;
-
-            if (diffAnos < 18)
-                throw new HttpException('nascimento|Data inválida, o parlamentar precisa ter no mínimo 18 anos', 400);
         }
 
         const created = await this.prisma.$transaction(
