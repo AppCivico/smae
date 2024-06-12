@@ -1990,7 +1990,8 @@ export const relatórioSemestralOuAnual = object({
 export const representatividade = object()
   .shape({
     mandato_id: number()
-      .label('Mandato'),
+      .label('Mandato')
+      .required(),
     municipio_tipo: mixed()
       .label('Tipo de município')
       .oneOf(tiposDeMunicípio),
@@ -2018,7 +2019,8 @@ export const representatividade = object()
       .max(1000)
       .required(),
     regiao_id: number()
-      .label('Região'),
+      .label('Região')
+      .required(),
   });
 
 export const workflow = object({
