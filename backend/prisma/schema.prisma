@@ -5853,6 +5853,10 @@ model GrupoTematico {
 
     nome String
 
+    programa_habitacional  Boolean @default(false)
+    unidades_habitacionais Boolean @default(false)
+    familias_beneficiadas  Boolean @default(false)
+
     criado_por Int
     criado_em  DateTime @default(now()) @db.Timestamptz(6)
 
