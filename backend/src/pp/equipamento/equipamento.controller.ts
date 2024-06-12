@@ -19,7 +19,7 @@ const rolesMDO: ListaDePrivilegios[] = [
 ];
 
 @Controller('equipamento')
-@ApiTags('Projeto - MdO')
+@ApiTags('Monitoramento de Obras, Cadastro Básico, Equipamento')
 export class EquipamentoController {
     constructor(private readonly equipamentoService: EquipamentoService) {}
 

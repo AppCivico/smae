@@ -19,7 +19,7 @@ const rolesMDO: ListaDePrivilegios[] = [
 ];
 
 @Controller('tipo-intervencao')
-@ApiTags('Projeto - MdO')
+@ApiTags('Monitoramento de Obras, Cadastro Básico, Tipo de Intervenção')
 export class TipoIntervencaoController {
     constructor(private readonly tipoIntervencaoService: TipoIntervencaoService) {}
 
