@@ -66,7 +66,21 @@ export class ParlamentarService {
         return created;
     }
 
-    async findAll(filters: FilterParlamentarDto): Promise<PaginatedDto<ParlamentarDto>> {
+    private decodeNextPageToken(jwt: string | undefined): NextPageTokenJwtBody | null {
+        let tmp: NextPageTokenJwtBody | null = null;
+        try {
+            if (jwt) tmp = this.jwtService.verify(jwt) as NextPageTokenJwtBody;
+        } catch {
+            throw new HttpException('Param next_page_token is invalid', 400);
+        }
+        return tmp;
+    }
+
+    private encodeNextPageToken(opt: NextPageTokenJwtBody): string {
+        return this.jwtService.sign(opt);
+    }
+
+    async findAll(filters: FilterParlamentarDto, user: PessoaFromJwt): Promise<PaginatedDto<ParlamentarDto>> {
         let filterSuplente:
             | {
                   cargo: ParlamentarCargo;
@@ -166,20 +180,6 @@ export class ParlamentarService {
             tem_mais: tem_mais,
             token_proxima_pagina: token_proxima_pagina,
         };
-    }
-
-    private decodeNextPageToken(jwt: string | undefined): NextPageTokenJwtBody | null {
-        let tmp: NextPageTokenJwtBody | null = null;
-        try {
-            if (jwt) tmp = this.jwtService.verify(jwt) as NextPageTokenJwtBody;
-        } catch {
-            throw new HttpException('Param next_page_token is invalid', 400);
-        }
-        return tmp;
-    }
-
-    private encodeNextPageToken(opt: NextPageTokenJwtBody): string {
-        return this.jwtService.sign(opt);
     }
 
     async findOne(id: number, user: PessoaFromJwt | undefined): Promise<ParlamentarDetailDto> {
