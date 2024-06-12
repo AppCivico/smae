@@ -15,7 +15,7 @@ const route = useRoute();
 const alertStore = useAlertStore();
 
 async function excluirPortfolio(id, title) {
-  alertStore.confirmAction(`Deseja mesmo remover o portfólio ˜${title}˜?`, async () => {
+  alertStore.confirmAction(`Deseja mesmo remover o portfólio "${title}"?`, async () => {
     if (await portfolioStore.excluirItem(id)) {
       portfolioStore.$reset();
       portfolioStore.buscarTudo({}, false);
