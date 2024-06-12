@@ -583,34 +583,33 @@ export class ParlamentarService {
                 });
 
                 if (!dadosEleicao) {
-                    if (dto.numero_comparecimento == undefined)
-                        throw new HttpException('numero_comparecimento| Precisa ser enviado', 400);
+                    if (dto.numero_comparecimento != undefined) {
+                        const regiao = await prismaTxn.regiao.findFirstOrThrow({
+                            where: { id: dto.regiao_id, removido_em: null },
+                            select: { nivel: true },
+                        });
 
-                    const regiao = await prismaTxn.regiao.findFirstOrThrow({
-                        where: { id: dto.regiao_id, removido_em: null },
-                        select: { nivel: true },
-                    });
+                        let nivelDadoEleicao: DadosEleicaoNivel;
 
-                    let nivelDadoEleicao: DadosEleicaoNivel;
+                        if (regiao.nivel == 1) {
+                            nivelDadoEleicao = DadosEleicaoNivel.Municipio;
+                        } else if (regiao.nivel == 3) {
+                            nivelDadoEleicao = DadosEleicaoNivel.Subprefeitura;
+                        } else {
+                            throw new HttpException('regiao_id| Faltando tratamento para nível de região', 400);
+                        }
 
-                    if (regiao.nivel == 1) {
-                        nivelDadoEleicao = DadosEleicaoNivel.Municipio;
-                    } else if (regiao.nivel == 3) {
-                        nivelDadoEleicao = DadosEleicaoNivel.Subprefeitura;
-                    } else {
-                        throw new HttpException('regiao_id| Faltando tratamento para nível de região', 400);
+                        dadosEleicao = await prismaTxn.eleicaoComparecimento.create({
+                            data: {
+                                eleicao_id: mandato.eleicao_id,
+                                regiao_id: dto.regiao_id,
+                                nivel: nivelDadoEleicao,
+                                valor: dto.numero_comparecimento,
+                            },
+                        });
+
+                        delete dto.numero_comparecimento;
                     }
-
-                    dadosEleicao = await prismaTxn.eleicaoComparecimento.create({
-                        data: {
-                            eleicao_id: mandato.eleicao_id,
-                            regiao_id: dto.regiao_id,
-                            nivel: nivelDadoEleicao,
-                            valor: dto.numero_comparecimento,
-                        },
-                    });
-
-                    delete dto.numero_comparecimento;
                 } else {
                     if (dto.numero_comparecimento != undefined && dto.numero_comparecimento != dadosEleicao.valor) {
                         dadosEleicao = await prismaTxn.eleicaoComparecimento.update({
