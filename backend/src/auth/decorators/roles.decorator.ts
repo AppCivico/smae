@@ -7,7 +7,7 @@ export const RequerPriv = (...roles: ListaDePrivilegios[]) => SetMetadata(ROLES_
 
 export function Roles(roles: ListaDePrivilegios[], summary?: string): MethodDecorator & ClassDecorator {
     summary = summary ? `${summary} ` : '';
-    summary = `${summary}(Privilégios: ${roles.join(', ')})`;
+    summary = `${summary}(Privilégios: ${Array.isArray(roles) ? roles.join(', ') : ''})`;
     return applyDecorators(
         ApiBearerAuth('access-token'),
         ApiUnauthorizedResponse(),

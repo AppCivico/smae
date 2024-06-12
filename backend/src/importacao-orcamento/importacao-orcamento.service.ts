@@ -1,6 +1,6 @@
 import { BadRequestException, HttpException, Inject, Injectable, Logger, forwardRef } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
-import { Prisma } from '@prisma/client';
+import { Prisma, TipoPdm, TipoProjeto } from '@prisma/client';
 import { plainToInstance } from 'class-transformer';
 import { validate } from 'class-validator';
 import { DateTime } from 'luxon';
@@ -577,16 +577,27 @@ export class ImportacaoOrcamentoService {
         // foram adaptados pra retornar todos os ids dos items não removidos
         const user = await this.authService.pessoaJwtFromId(job.criado_por);
 
+        let tipo_projeto: TipoProjeto | undefined = undefined;
+        let tipo_pdm: TipoPdm | undefined = undefined;
+
         if (job.portfolio_id) {
             const portfolio = await this.prisma.portfolio.findFirstOrThrow({
                 where: { id: job.portfolio_id },
                 select: { tipo_projeto: true },
             });
 
+            tipo_projeto = portfolio.tipo_projeto;
             const projetosDoUser = await this.projetoService.findAllIds(portfolio.tipo_projeto, user, job.portfolio_id);
             projetosIds.push(...projetosDoUser.map((r) => r.id));
         } else if (job.pdm_id) {
             const metasDoUser = await this.metaService.findAllIds(user, job.pdm_id);
+
+            const pdm = await this.prisma.pdm.findFirstOrThrow({
+                where: { id: job.pdm_id },
+                select: { tipo: true },
+            });
+
+            tipo_pdm = pdm.tipo;
 
             metasIds.push(...metasDoUser.map((r) => r.id));
         }
@@ -710,7 +721,9 @@ export class ImportacaoOrcamentoService {
                         anosPdm,
                         portfolio_id: job.portfolio_id,
                     },
-                    user
+                    user,
+                    tipo_projeto,
+                    tipo_pdm
                 );
             } catch (error) {
                 feedback = `Erro durante processamento: ${error}`;
@@ -809,7 +822,13 @@ export class ImportacaoOrcamentoService {
         return { iniciativasIds, atividadesIds, iniciativasCodigos2Ids, atividadesCodigos2Ids };
     }
 
-    async processaRow(col2row: any, params: ProcessaLinhaParams, user: PessoaFromJwt): Promise<string> {
+    async processaRow(
+        col2row: any,
+        params: ProcessaLinhaParams,
+        user: PessoaFromJwt,
+        tipo_projeto: TipoProjeto | undefined,
+        _tipo_pdm: TipoPdm | undefined
+    ): Promise<string> {
         const row = plainToInstance(LinhaCsvInputDto, col2row);
         console.log({ row, col2row });
         const validations = await validate(row);
@@ -1077,6 +1096,7 @@ export class ImportacaoOrcamentoService {
             if (!projeto_id) return 'Linha inválida: faltando projeto_id';
 
             const existeNaMeta = await this.ppOrcResService.findAll(
+                tipo_projeto!,
                 {
                     id: projeto_id,
                     portfolio_id: params.portfolio_id!,
@@ -1159,6 +1179,7 @@ export class ImportacaoOrcamentoService {
                 } else if (params.eh_projeto) {
                     if (id) {
                         await this.ppOrcResService.update(
+                            tipo_projeto!,
                             {
                                 id: projeto_id!,
                                 portfolio_id: params.portfolio_id!,
@@ -1171,6 +1192,7 @@ export class ImportacaoOrcamentoService {
                         );
                     } else {
                         await this.ppOrcResService.create(
+                            tipo_projeto!,
                             {
                                 id: projeto_id!,
                                 portfolio_id: params.portfolio_id!,

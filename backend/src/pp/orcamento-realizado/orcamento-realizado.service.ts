@@ -1,5 +1,5 @@
 import { BadRequestException, HttpException, Injectable } from '@nestjs/common';
-import { Prisma } from '@prisma/client';
+import { Prisma, TipoProjeto } from '@prisma/client';
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import { FormataNotaEmpenho } from '../../common/FormataNotaEmpenho';
 import { BatchRecordWithId, RecordWithId } from '../../common/dto/record-with-id.dto';
@@ -46,12 +46,13 @@ export class OrcamentoRealizadoService {
     }
 
     async create(
+        tipo: TipoProjeto,
         projeto: ProjetoMVPDto,
         dto: CreatePPOrcamentoRealizadoDto,
         user: PessoaFromJwt
     ): Promise<RecordWithId> {
         const portfolio = await this.prisma.portfolio.findFirstOrThrow({
-            where: { id: projeto.portfolio_id },
+            where: { id: projeto.portfolio_id, tipo_projeto: tipo },
             select: { modelo_clonagem: true },
         });
         if (portfolio.modelo_clonagem)
@@ -234,13 +235,19 @@ export class OrcamentoRealizadoService {
     }
 
     async update(
+        tipo: TipoProjeto,
         projeto: ProjetoMVPDto,
         id: number,
         dto: UpdatePPOrcamentoRealizadoDto,
         user: PessoaFromJwt
     ): Promise<RecordWithId> {
         const orcamentoRealizado = await this.prisma.orcamentoRealizado.findFirst({
-            where: { id: +id, removido_em: null, projeto_id: projeto.id },
+            where: {
+                id: +id,
+                removido_em: null,
+                projeto_id: projeto.id,
+                projeto: { tipo, id: projeto.id },
+            },
         });
         if (!orcamentoRealizado) throw new HttpException('Orçamento realizado não encontrado', 404);
 
@@ -743,12 +750,14 @@ export class OrcamentoRealizadoService {
     }
 
     async findAll(
+        tipo: TipoProjeto,
         projeto: ProjetoMVPDto,
         filters: FilterPPOrcamentoRealizadoDto,
         user: PessoaFromJwt
     ): Promise<PPOrcamentoRealizado[]> {
         const queryRows = await this.prisma.orcamentoRealizado.findMany({
             where: {
+                projeto: { tipo: tipo, id: projeto.id },
                 removido_em: null,
                 dotacao: filters.dotacao,
                 dotacao_complemento: filters.dotacao_complemento,
@@ -1017,20 +1026,20 @@ export class OrcamentoRealizadoService {
         return rows;
     }
 
-    async removeEmLote(params: BatchRecordWithId, user: PessoaFromJwt) {
+    async removeEmLote(tipo: TipoProjeto, params: BatchRecordWithId, user: PessoaFromJwt) {
         const now = new Date(Date.now());
 
         if (params.ids.length > MAX_BATCH_SIZE)
             throw new BadRequestException(`Máximo permitido é de ${MAX_BATCH_SIZE} remoções de uma vez`);
 
-        const checkPermissions = params.ids.map((linha) => this.verificaPermissaoDelete(linha.id));
+        const checkPermissions = params.ids.map((linha) => this.verificaPermissaoDelete(tipo, linha.id));
 
         await Promise.all(checkPermissions);
 
         await this.prisma.$transaction(
             async (prismaTxn: Prisma.TransactionClient) => {
                 for (const linha of params.ids) {
-                    await this.performDelete(prismaTxn, linha.id, now, user);
+                    await this.performDelete(tipo, prismaTxn, linha.id, now, user);
                 }
             },
             {
@@ -1041,14 +1050,14 @@ export class OrcamentoRealizadoService {
         return;
     }
 
-    async remove(id: number, user: PessoaFromJwt) {
-        await this.verificaPermissaoDelete(id);
+    async remove(tipo: TipoProjeto, id: number, user: PessoaFromJwt) {
+        await this.verificaPermissaoDelete(tipo, id);
 
         const now = new Date(Date.now());
 
         await this.prisma.$transaction(
             async (prismaTxn: Prisma.TransactionClient) => {
-                await this.performDelete(prismaTxn, id, now, user);
+                await this.performDelete(tipo, prismaTxn, id, now, user);
                 return;
             },
             {
@@ -1057,9 +1066,15 @@ export class OrcamentoRealizadoService {
         );
     }
 
-    private async performDelete(prismaTxn: Prisma.TransactionClient, id: number, now: Date, user: PessoaFromJwt) {
+    private async performDelete(
+        tipo: TipoProjeto,
+        prismaTxn: Prisma.TransactionClient,
+        id: number,
+        now: Date,
+        user: PessoaFromJwt
+    ) {
         const linhasAfetadas = await prismaTxn.orcamentoRealizado.updateMany({
-            where: { id: +id, removido_em: null }, // nao apagar duas vezes
+            where: { id: +id, removido_em: null, projeto: { tipo } }, // nao apagar duas vezes
             data: { removido_em: now, removido_por: user.id },
         });
 
@@ -1112,9 +1127,9 @@ export class OrcamentoRealizadoService {
         }
     }
 
-    private async verificaPermissaoDelete(id: number) {
+    private async verificaPermissaoDelete(tipo: TipoProjeto, id: number) {
         const orcamentoRealizado = await this.prisma.orcamentoRealizado.findFirst({
-            where: { id: +id, removido_em: null },
+            where: { id: +id, removido_em: null, projeto: { tipo: tipo } },
         });
         if (!orcamentoRealizado || orcamentoRealizado.projeto_id === null)
             throw new HttpException('Orçamento realizado não encontrado', 404);
