@@ -23,6 +23,7 @@ import {
 import { ParlamentarDetailDto, ParlamentarDto } from './entities/parlamentar.entity';
 import { PaginatedDto } from 'src/common/dto/paginated.dto';
 import { JwtService } from '@nestjs/jwt';
+import { DateTime } from 'luxon';
 
 @Injectable()
 export class ParlamentarService {
@@ -41,6 +42,13 @@ export class ParlamentarService {
 
         if (dto.telefone && !user.hasSomeRoles(['SMAE.acesso_telefone']))
             throw new HttpException('Usuário sem permissão para cadastro de telefone', 400);
+
+        if (dto.nascimento != undefined) {
+            const diffAnos = DateTime.fromJSDate(dto.nascimento).diff(DateTime.now()).years;
+
+            if (diffAnos < 18)
+                throw new HttpException('nascimento|Data inválida, o parlamentar precisa ter no mínimo 18 anos', 400);
+        }
 
         const created = await this.prisma.$transaction(
             async (prismaTxn: Prisma.TransactionClient): Promise<RecordWithId> => {
