@@ -30,6 +30,8 @@ if (authStore.estouAutenticada) {
 
   <EditModal />
   <Alert />
+
+  <div id="modais" />
 </template>
 <style lang="less">
 @import url("@/_less/style.less");

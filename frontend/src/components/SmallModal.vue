@@ -14,7 +14,7 @@ export default {
 };
 </script>
 <template>
-  <Teleport to="body">
+  <Teleport to="#modais">
     <div
       v-if="props.active"
       class="editModal-wrap"
