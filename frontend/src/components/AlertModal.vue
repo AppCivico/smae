@@ -71,14 +71,13 @@ async function callbackFn(i) {
             Cancelar
           </button>
         </template>
-        <template v-else>
-          <button
-            class="btn amarelo"
-            @click="alertas.splice(i, 1)"
-          >
-            OK
-          </button>
-        </template>
+        <button
+          v-else
+          class="btn amarelo"
+          @click="alertas.splice(i, 1)"
+        >
+          OK
+        </button>
       </div>
     </div>
   </Teleport>
