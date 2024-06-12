@@ -1,4 +1,12 @@
-import { EleicaoTipo, ModuloSistema, PerfilAcesso, Prisma, PrismaClient, Privilegio } from '@prisma/client';
+import {
+    DistribuicaoStatusTipo,
+    EleicaoTipo,
+    ModuloSistema,
+    PerfilAcesso,
+    Prisma,
+    PrismaClient,
+    Privilegio,
+} from '@prisma/client';
 import { ListaDePrivilegios } from '../src/common/ListaDePrivilegios';
 import {
     CONST_COD_NOTA_DIST_RECURSO,
@@ -894,6 +902,7 @@ async function main() {
     await ensure_tiponota_dist_recurso();
 
     await populateEleicao();
+    await populateDistribuicaoStatusBase();
 }
 
 async function ensure_tiponota_dist_recurso() {
@@ -1372,6 +1381,41 @@ async function populateEleicao() {
                 ano: eleicao.ano,
                 tipo: eleicao.tipo,
                 atual_para_mandatos: eleicao.atual_para_mandatos,
+            },
+        });
+    }
+}
+
+async function populateDistribuicaoStatusBase() {
+    const rows = (Object.keys(DistribuicaoStatusTipo) as Array<keyof typeof DistribuicaoStatusTipo>).map((tipo) => {
+        const nome: string =
+            tipo == DistribuicaoStatusTipo.ImpedidaTecnicamente ? 'Impedida Tecnicamente' : tipo.toString();
+
+        return {
+            nome,
+            tipo,
+        };
+    });
+
+    for (const row of rows) {
+        const valor_distribuicao_contabilizado: boolean = row.tipo == DistribuicaoStatusTipo.Registrada ? true : false;
+
+        await prisma.distribuicaoStatusBase.upsert({
+            where: {
+                nome_tipo: {
+                    nome: row.nome,
+                    tipo: row.tipo,
+                },
+            },
+            create: {
+                nome: row.nome,
+                tipo: row.tipo,
+                valor_distribuicao_contabilizado,
+            },
+            update: {
+                nome: row.nome,
+                tipo: row.tipo,
+                valor_distribuicao_contabilizado,
             },
         });
     }
