@@ -11,12 +11,17 @@ import { AcompanhamentoService } from './acompanhamento.service';
 import { CreateProjetoAcompanhamentoDto } from './dto/create-acompanhamento.dto';
 import { UpdateProjetoAcompanhamentoDto } from './dto/update-acompanhamento.dto';
 import { DetailProjetoAcompanhamentoDto, ListProjetoAcompanhamentoDto } from './entities/acompanhamento.entity';
-import { PROJETO_READONLY_ROLES } from '../projeto/projeto.controller';
+import { PROJETO_READONLY_ROLES, PROJETO_READONLY_ROLES_MDO } from '../projeto/projeto.controller';
 
 const roles: ListaDePrivilegios[] = [
     'Projeto.administrador',
     'Projeto.administrador_no_orgao',
     ...PROJETO_READONLY_ROLES,
+];
+const rolesMDO: ListaDePrivilegios[] = [
+    'ProjetoMDO.administrador',
+    'ProjetoMDO.administrador_no_orgao',
+    ...PROJETO_READONLY_ROLES_MDO,
 ];
 
 @Controller('projeto')
@@ -37,7 +42,7 @@ export class AcompanhamentoController {
     ): Promise<RecordWithId> {
         await this.projetoService.findOne('PP', params.id, user, 'ReadWriteTeam');
 
-        return await this.acompanhamentoService.create(params.id, createAcompanhamentoDto, user);
+        return await this.acompanhamentoService.create('PP', params.id, createAcompanhamentoDto, user);
     }
 
     @Get(':id/acompanhamento')
@@ -49,7 +54,7 @@ export class AcompanhamentoController {
     ): Promise<ListProjetoAcompanhamentoDto> {
         await this.projetoService.findOne('PP', params.id, user, 'ReadOnly');
         return {
-            linhas: await this.acompanhamentoService.findAll(params.id, user),
+            linhas: await this.acompanhamentoService.findAll('PP', params.id, user),
         };
     }
 
@@ -61,7 +66,7 @@ export class AcompanhamentoController {
         @CurrentUser() user: PessoaFromJwt
     ): Promise<DetailProjetoAcompanhamentoDto> {
         await this.projetoService.findOne('PP', params.id, user, 'ReadOnly');
-        return await this.acompanhamentoService.findOne(params.id, params.id2, user);
+        return await this.acompanhamentoService.findOne('PP', params.id, params.id2, user);
     }
 
     @Patch(':id/acompanhamento/:id2')
@@ -73,7 +78,7 @@ export class AcompanhamentoController {
         @CurrentUser() user: PessoaFromJwt
     ): Promise<RecordWithId> {
         await this.projetoService.findOne('PP', params.id, user, 'ReadWriteTeam');
-        return await this.acompanhamentoService.update(params.id, params.id2, dto, user);
+        return await this.acompanhamentoService.update('PP', params.id, params.id2, dto, user);
     }
 
     @Delete(':id/acompanhamento/:id2')
@@ -83,7 +88,76 @@ export class AcompanhamentoController {
     @HttpCode(HttpStatus.ACCEPTED)
     async remove(@Param() params: FindTwoParams, @CurrentUser() user: PessoaFromJwt) {
         await this.projetoService.findOne('PP', params.id, user, 'ReadWriteTeam');
-        await this.acompanhamentoService.remove(params.id, params.id2, user);
+        await this.acompanhamentoService.remove('PP', params.id, params.id2, user);
+        return '';
+    }
+}
+
+@Controller('projeto-mdo')
+@ApiTags('Projeto - Acompanhamento de Obras')
+export class AcompanhamentoMDOController {
+    constructor(
+        private readonly acompanhamentoService: AcompanhamentoService,
+        private readonly projetoService: ProjetoService
+    ) {}
+
+    @Post(':id/acompanhamento')
+    @ApiBearerAuth('access-token')
+    @Roles([...rolesMDO])
+    async create(
+        @Param() params: FindOneParams,
+        @Body() createAcompanhamentoDto: CreateProjetoAcompanhamentoDto,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<RecordWithId> {
+        await this.projetoService.findOne('MDO', params.id, user, 'ReadWriteTeam');
+
+        return await this.acompanhamentoService.create('MDO', params.id, createAcompanhamentoDto, user);
+    }
+
+    @Get(':id/acompanhamento')
+    @ApiBearerAuth('access-token')
+    @Roles([...rolesMDO])
+    async findAll(
+        @Param() params: FindOneParams,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<ListProjetoAcompanhamentoDto> {
+        await this.projetoService.findOne('MDO', params.id, user, 'ReadOnly');
+        return {
+            linhas: await this.acompanhamentoService.findAll('MDO', params.id, user),
+        };
+    }
+
+    @Get(':id/acompanhamento/:id2')
+    @ApiBearerAuth('access-token')
+    @Roles([...rolesMDO])
+    async findOne(
+        @Param() params: FindTwoParams,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<DetailProjetoAcompanhamentoDto> {
+        await this.projetoService.findOne('MDO', params.id, user, 'ReadOnly');
+        return await this.acompanhamentoService.findOne('MDO', params.id, params.id2, user);
+    }
+
+    @Patch(':id/acompanhamento/:id2')
+    @ApiBearerAuth('access-token')
+    @Roles([...rolesMDO])
+    async update(
+        @Param() params: FindTwoParams,
+        @Body() dto: UpdateProjetoAcompanhamentoDto,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<RecordWithId> {
+        await this.projetoService.findOne('MDO', params.id, user, 'ReadWriteTeam');
+        return await this.acompanhamentoService.update('MDO', params.id, params.id2, dto, user);
+    }
+
+    @Delete(':id/acompanhamento/:id2')
+    @ApiBearerAuth('access-token')
+    @Roles([...rolesMDO])
+    @ApiNoContentResponse()
+    @HttpCode(HttpStatus.ACCEPTED)
+    async remove(@Param() params: FindTwoParams, @CurrentUser() user: PessoaFromJwt) {
+        await this.projetoService.findOne('MDO', params.id, user, 'ReadWriteTeam');
+        await this.acompanhamentoService.remove('MDO', params.id, params.id2, user);
         return '';
     }
 }
