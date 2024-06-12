@@ -3341,6 +3341,8 @@ model AcompanhamentoTipo {
     id   Int    @id @default(autoincrement())
     nome String
 
+    tipo_projeto TipoProjeto @default(PP)
+
     criado_por     Int?
     criado_em      DateTime?
     atualizado_por Int?
