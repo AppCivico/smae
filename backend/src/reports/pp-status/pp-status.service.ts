@@ -63,6 +63,7 @@ export class PPStatusService implements ReportableService {
                     take: 1,
                     orderBy: { data_registro: 'desc' },
                     where: {
+                        OR: [{ apresentar_no_relatorio: null }, { apresentar_no_relatorio: true }],
                         data_registro: {
                             gte: dto.periodo_inicio ? dto.periodo_inicio : undefined,
                             lte: dto.periodo_fim ? dto.periodo_fim : undefined,

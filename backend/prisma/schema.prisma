@@ -3868,6 +3868,8 @@ model ProjetoAcompanhamento {
     pontos_atencao      String?
     pauta               String?
 
+    apresentar_no_relatorio Boolean?
+
     cronograma_paralisado Boolean @default(false)
 
     criado_em  DateTime

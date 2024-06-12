@@ -133,6 +133,7 @@ export class AcompanhamentoService {
                 cronograma_paralisado: true,
                 criado_em: true,
                 atualizado_em: true,
+                apresentar_no_relatorio: true,
 
                 acompanhamento_tipo: {
                     select: { id: true, nome: true },
@@ -156,30 +157,30 @@ export class AcompanhamentoService {
             },
         });
 
-        return projetoAcompanhamento.map((a) => {
+        return projetoAcompanhamento.map((r) => {
             return {
-                id: a.id,
-                data_registro: a.data_registro,
-                participantes: a.participantes,
-                detalhamento: a.detalhamento,
-                criado_em: a.criado_em,
-                atualizado_em: a.atualizado_em,
-                pauta: a.pauta,
-                ordem: a.ordem,
-                observacao: a.observacao,
-                pontos_atencao: a.pontos_atencao,
-                detalhamento_status: a.detalhamento_status,
-                cronograma_paralisado: a.cronograma_paralisado,
-                acompanhamento_tipo: a.acompanhamento_tipo
+                id: r.id,
+                data_registro: r.data_registro,
+                participantes: r.participantes,
+                detalhamento: r.detalhamento,
+                criado_em: r.criado_em,
+                atualizado_em: r.atualizado_em,
+                pauta: r.pauta,
+                ordem: r.ordem,
+                observacao: r.observacao,
+                pontos_atencao: r.pontos_atencao,
+                detalhamento_status: r.detalhamento_status,
+                cronograma_paralisado: r.cronograma_paralisado,
+                acompanhamento_tipo: r.acompanhamento_tipo
                     ? {
-                          id: a.acompanhamento_tipo.id,
-                          nome: a.acompanhamento_tipo.nome,
+                          id: r.acompanhamento_tipo.id,
+                          nome: r.acompanhamento_tipo.nome,
                       }
                     : null,
+                apresentar_no_relatorio: r.apresentar_no_relatorio == null ? true : r.apresentar_no_relatorio,
+                acompanhamentos: r.ProjetoAcompanhamentoItem.map(this.renderAcompanhamento),
 
-                acompanhamentos: a.ProjetoAcompanhamentoItem.map(this.renderAcompanhamento),
-
-                risco: a.ProjetoAcompanhamentoRisco.map((r) => {
+                risco: r.ProjetoAcompanhamentoRisco.map((r) => {
                     return {
                         id: r.projeto_risco.id,
                         codigo: r.projeto_risco.codigo,
@@ -219,6 +220,7 @@ export class AcompanhamentoService {
                 detalhamento_status: true,
                 pontos_atencao: true,
                 pauta: true,
+                apresentar_no_relatorio: true,
 
                 cronograma_paralisado: true,
 
@@ -253,6 +255,10 @@ export class AcompanhamentoService {
             detalhamento: projetoAcompanhamento.detalhamento,
             pauta: projetoAcompanhamento.pauta,
             ordem: projetoAcompanhamento.ordem,
+            apresentar_no_relatorio:
+                projetoAcompanhamento.apresentar_no_relatorio == null
+                    ? true
+                    : projetoAcompanhamento.apresentar_no_relatorio,
 
             observacao: projetoAcompanhamento.observacao,
             detalhamento_status: projetoAcompanhamento.detalhamento_status,
@@ -344,7 +350,6 @@ export class AcompanhamentoService {
                         },
                     });
 
-                    console.log(dto.acompanhamentos);
                     let ordemEncaminhamento: number | null = null;
                     await prismaTx.projetoAcompanhamentoItem.createMany({
                         data: dto.acompanhamentos
@@ -421,6 +426,19 @@ export class AcompanhamentoService {
                 const acompanhamento_tipo_id = dto.acompanhamento_tipo_id;
                 delete dto.acompanhamento_tipo_id;
 
+                if (dto.apresentar_no_relatorio) {
+                    await prismaTx.projetoAcompanhamento.updateMany({
+                        where: {
+                            id: { not: id },
+                            projeto_id: projeto_id,
+                            removido_em: null,
+                        },
+                        data: { apresentar_no_relatorio: false },
+                    });
+                }
+
+                // pode ser que seja necessário criar uma regra para validar que pelo menos 1 ainda fica como true, ou seja
+                // não pode nunca aceitar o apresentar_no_relatorio como false no endpoint de update
                 return await prismaTx.projetoAcompanhamento.update({
                     where: {
                         id,
@@ -437,6 +455,9 @@ export class AcompanhamentoService {
                     },
                     select: { id: true },
                 });
+            },
+            {
+                isolationLevel: 'Serializable',
             }
         );
 
