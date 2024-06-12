@@ -656,6 +656,15 @@ export const gruposTematicos = object({
     .min(3)
     .max(250)
     .required(),
+  programa_habitacional: boolean()
+    .label('Programa habitacional')
+    .required(),
+  unidades_habitacionais: boolean()
+    .label('Unidades habitacionais')
+    .required(),
+  familias_beneficiadas: boolean()
+    .label('Famílias beneficiadas')
+    .required(),
 });
 
 export const liçãoAprendida = object()
