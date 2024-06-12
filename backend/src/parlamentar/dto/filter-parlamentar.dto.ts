@@ -13,8 +13,8 @@ export class FilterParlamentarDto {
     token_proxima_pagina?: string;
 
     /**
-     * itens por pagina, padrão 25
-     * @example "25"
+     * itens por pagina, padrão 50
+     * @example "50"
      */
     @IsOptional()
     @IsInt()
