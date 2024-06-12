@@ -19,6 +19,11 @@ import {
 } from 'class-validator';
 import { IsOnlyDate } from 'src/common/decorators/IsDateOnly';
 import { DateTransform } from '../../../auth/transforms/date.transform';
+import {
+    CONST_PROC_SEI_SINPROC_DESCR,
+    CONST_PROC_SEI_SINPROC_MESSAGE,
+    CONST_PROC_SEI_SINPROC_REGEXP,
+} from '../../../dotacao/dto/dotacao.dto';
 
 export class CreateProjetoDto {
     /**
@@ -278,11 +283,10 @@ export class CreateProjetoSeiDto {
      *
      * @example "6068.2021/0004861-3"
      **/
+    @ApiProperty({ description: CONST_PROC_SEI_SINPROC_DESCR, example: '6016201700379910' })
     @IsString()
-    @MaxLength(40)
-    @Matches(/^[0-9\-\.\/\\]+$/, {
-        message: '$property| Precisa ser apenas números, pontos, barras ou traços.',
-    })
+    @MaxLength(20)
+    @Matches(CONST_PROC_SEI_SINPROC_REGEXP, { message: CONST_PROC_SEI_SINPROC_MESSAGE })
     processo_sei: string;
 
     @IsOptional()
