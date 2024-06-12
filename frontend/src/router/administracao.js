@@ -170,9 +170,6 @@ export default [
           limitarÀsPermissões: [
             'ProjetoMDO.administrador',
             'ProjetoMDO.administrador_no_orgao',
-            'MDO.gestor_de_projeto',
-            'MDO.colaborador_de_projeto',
-            'MDO.espectador_de_projeto',
           ],
         },
         children: [
@@ -227,9 +224,6 @@ export default [
           limitarÀsPermissões: [
             'ProjetoMDO.administrador',
             'ProjetoMDO.administrador_no_orgao',
-            'MDO.gestor_de_projeto',
-            'MDO.colaborador_de_projeto',
-            'MDO.espectador_de_projeto',
           ],
         },
         children: [
@@ -284,9 +278,6 @@ export default [
           limitarÀsPermissões: [
             'ProjetoMDO.administrador',
             'ProjetoMDO.administrador_no_orgao',
-            'MDO.gestor_de_projeto',
-            'MDO.colaborador_de_projeto',
-            'MDO.espectador_de_projeto',
           ],
         },
         children: [
@@ -518,6 +509,10 @@ export default [
     meta: {
       título: 'Cadastros básicos',
       rotasParaMenuSecundário,
+      limitarÀsPermissões: [
+        'ProjetoMDO.administrador',
+        'ProjetoMDO.administrador_no_orgao',
+      ],
     },
   },
 
