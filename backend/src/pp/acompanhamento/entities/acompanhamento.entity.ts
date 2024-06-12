@@ -24,6 +24,7 @@ export class ProjetoAcompanhamento {
     risco: RiscoIdCod[] | null;
     acompanhamento_tipo: IdNomeDto | null;
     ordem: number;
+    apresentar_no_relatorio: boolean;
 
     pauta: string | null;
     acompanhamentos: ProjetoAcompanhamentoRowDto[];
@@ -46,6 +47,7 @@ export class DetailProjetoAcompanhamentoDto {
     risco: RiscoIdCod[] | null;
     pauta: string | null;
     acompanhamento_tipo: IdNomeDto | null;
+    apresentar_no_relatorio: boolean;
 
     acompanhamentos: ProjetoAcompanhamentoRowDto[];
 }
