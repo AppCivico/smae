@@ -132,16 +132,17 @@ export class GrupoTematicoService {
                         );
                 }
 
+                if (dto.programa_habitacional === null) delete dto.programa_habitacional;
+                if (dto.unidades_habitacionais === null) delete dto.unidades_habitacionais;
+                if (dto.familias_beneficiadas === null) delete dto.familias_beneficiadas;
+
                 return await prismaTx.grupoTematico.update({
                     where: { id },
                     data: {
                         nome: dto.nome,
-                        programa_habitacional:
-                            dto.programa_habitacional !== null ? dto.programa_habitacional : undefined,
-                        unidades_habitacionais:
-                            dto.unidades_habitacionais !== null ? dto.unidades_habitacionais : undefined,
-                        familias_beneficiadas:
-                            dto.familias_beneficiadas !== null ? dto.familias_beneficiadas : undefined,
+                        programa_habitacional: dto.programa_habitacional,
+                        unidades_habitacionais: dto.unidades_habitacionais,
+                        familias_beneficiadas: dto.familias_beneficiadas,
                         atualizado_em: new Date(Date.now()),
                         atualizado_por: user.id,
                     },
