@@ -739,6 +739,11 @@ const PerfilAcessoConfig: {
         ],
     },
     {
+        nome: 'Administrador do Módulo de Obras',
+        descricao: 'Gerenciar cadastros básicos e acesso irrestrito às obras',
+        privilegios: ['ProjetoMDO.administrador', 'CadastroPessoa.administrador'],
+    },
+    {
         nome: 'Gestor de Obras no Órgão',
         descricao: 'Gerenciar todos as obras no órgão em qual faz parte',
         privilegios: [
