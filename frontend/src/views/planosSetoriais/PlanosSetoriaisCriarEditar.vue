@@ -117,7 +117,7 @@ watch(itemParaEdição, (novoValor) => {
             as="span"
             :schema="schema"
           >
-            <template v-if="values.ativo">ativo</template>
+            <template v-if="carga.ativo">ativo</template>
             <template v-else>inativo</template>
           </LabelFromYup>
         </label>
