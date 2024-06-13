@@ -48,6 +48,10 @@ export default {
           path: '',
           name: 'planosSetoriaisEditar',
           component: () => import('@/views/planosSetoriais/PlanosSetoriaisCriarEditar.vue'),
+          props: ({ params }) => ({
+            ...params,
+            planoSetorialId: Number.parseInt(params.planoSetorialId, 10) || undefined,
+          }),
           meta: {
             limitarÀsPermissões: [
               'CadastroPS.administrador',

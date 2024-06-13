@@ -46,8 +46,8 @@ const onSubmit = handleSubmit.withControlled(async (valoresControlados) => {
   const cargaManipulada = nulificadorTotal(valoresControlados);
 
   const msg = props.planoSetorialId
-    ? `Plano "${cargaManipulada.nome}" salvos com sucesso!`
-    : `Plano "${cargaManipulada.nome}" adicionado com sucesso!`;
+    ? `Plano "${cargaManipulada.nome}" salvo!`
+    : `Plano "${cargaManipulada.nome}" adicionado!`;
   const resposta = await planosSetoriaisStore.salvarItem(cargaManipulada, props.planoSetorialId);
 
   try {
@@ -55,14 +55,13 @@ const onSubmit = handleSubmit.withControlled(async (valoresControlados) => {
       const rotaApósSalvamento = props.planoSetorialId
         ? {
           name: 'planosSetoriaisListar',
-          params: { planoSetorialId: resposta.id },
         }
         : {
           name: 'planosSetoriaisEditar',
           params: { planoSetorialId: resposta.id },
         };
 
-      if (resposta.id) {
+      if (props.planoSetorialId) {
         planosSetoriaisStore.buscarItem(props.planoSetorialId || resposta.id);
       }
 
