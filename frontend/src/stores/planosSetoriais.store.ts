@@ -90,14 +90,12 @@ export const usePlanosSetoriaisStore = defineStore('planosSetoriais', {
       this.erros.emFoco = null;
 
       try {
-        if (id) {
-          await this.requestS.patch(`${baseUrl}/plano-setorial/${id}`, params);
-        } else {
-          await this.requestS.post(`${baseUrl}/plano-setorial`, params);
-        }
+        const resposta = id
+          ? await this.requestS.patch(`${baseUrl}/plano-setorial/${id}`, params)
+          : await this.requestS.post(`${baseUrl}/plano-setorial`, params);
 
         this.chamadasPendentes.emFoco = false;
-        return true;
+        return resposta;
       } catch (erro) {
         this.erros.emFoco = erro;
         this.chamadasPendentes.emFoco = false;
