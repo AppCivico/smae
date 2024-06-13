@@ -55,9 +55,10 @@ const onSubmit = handleSubmit.withControlled(async (valoresControlados) => {
       const rotaApósSalvamento = props.planoSetorialId
         ? {
           name: 'planosSetoriaisListar',
+          params: { planoSetorialId: resposta.id },
         }
         : {
-          name: 'planosSetoriaisEditar',
+          name: 'planosSetoriaisResumo',
           params: { planoSetorialId: resposta.id },
         };
 
