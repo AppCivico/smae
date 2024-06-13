@@ -505,6 +505,7 @@ model Orgao {
     PdmOrcamentoRealizadoConfig  PdmOrcamentoRealizadoConfig[]
     ViewNotaComOrdem             ViewNotas[]
     PdmPerfil                    PdmPerfil[]
+    Pdm                          Pdm[]
 
     @@map("orgao")
 }
@@ -734,6 +735,12 @@ model Pdm {
     orcamento_dia_abertura   Int @default(1) @db.SmallInt
     orcamento_dia_fechamento Int @default(20) @db.SmallInt
 
+    monitoramento_orcamento   Boolean @default(true)
+    legislacao_de_instituicao String?
+    pdm_anteriores            Int[]   @default([])
+    orgao_admin_id            Int?
+    orgao_admin               Orgao?  @relation(fields: [orgao_admin_id], references: [id])
+
     logo                   String?
     arquivo_logo_id        Int?
     ArquivoLogo            Arquivo?                 @relation(fields: [arquivo_logo_id], references: [id])
@@ -777,7 +784,7 @@ model PdmPerfil {
     criado_por   Int
     criado_em    DateTime  @default(now()) @db.Timestamptz(6)
     removido_por Int?
-    removido_em  DateTime? @default(now()) @db.Timestamptz(6)
+    removido_em  DateTime? @db.Timestamptz(6)
 
     criador   Pessoa  @relation("Criador", fields: [criado_por], references: [id])
     removedor Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
