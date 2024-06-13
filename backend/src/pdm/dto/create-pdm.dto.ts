@@ -258,6 +258,7 @@ export class CreatePdmDto {
      * Legislação de instituição.
      */
     @IsOptional()
+    @MaxLength(50000)
     @IsString({ message: 'Legislação de instituição: Precisa ser alfanumérico' })
     legislacao_de_instituicao?: string | null;
 
