@@ -1866,6 +1866,11 @@ input[type='radio'] {
   .uc;
   line-height: 1;
   margin-bottom: .8em;
+
+  label > input[type='checkbox'] + &,
+  label > input[type='radio'] + & {
+    display: inline;
+  }
 }
 
 .halfInput {
