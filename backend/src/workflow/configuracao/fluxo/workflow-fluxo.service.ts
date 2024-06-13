@@ -78,6 +78,7 @@ export class WorkflowFluxoService {
                     where: {
                         ordem: { lt: ordem },
                         workflow_id: dto.workflow_id,
+                        removido_em: null,
                     },
                     orderBy: { ordem: 'desc' },
                     select: {
