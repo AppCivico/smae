@@ -4,6 +4,7 @@ import categoriaDeTransferencia from '@/consts/categoriaDeTransferencia';
 import esferasDeTransferencia from '@/consts/esferasDeTransferencia';
 import estadosDoBrasil from '@/consts/estadosDoBrasil';
 import interfacesDeTransferências from '@/consts/interfacesDeTransferências';
+import niveisDeOrcamento from '@/consts/niveisDeOrcamento';
 import níveisDeRepresentatividade from '@/consts/niveisDeRepresentatividade';
 import níveisDeSuplência from '@/consts/niveisDeSuplencia';
 import regEx from '@/consts/patterns';
@@ -933,6 +934,153 @@ export const planoDeAção = object()
       .required()
       .max(60),
   }, [['orgao_id', 'responsavel']]);
+
+export const planoSetorial = object({
+  ativo: boolean()
+    .label('Ativo')
+    .nullable(),
+  data_fim: date()
+    .label('Data de fim')
+    .max(dataMax)
+    .min(dataMin)
+    .nullable()
+    .required()
+    .transform((v) => (!v ? null : v)),
+  data_inicio: date()
+    .label('Data de início')
+    .max(dataMax)
+    .min(dataMin)
+    .nullable()
+    .required()
+    .transform((v) => (!v ? null : v)),
+  data_publicacao: date()
+    .label('Data de publicação')
+    .max(dataMax)
+    .min(dataMin)
+    .nullable()
+    .transform((v) => (!v ? null : v)),
+  descricao: string()
+    .label('Descrição')
+    .max(250)
+    .nullable()
+    .required('Preencha a descrição'),
+  equipe_tecnica: string()
+    .label('Equipe técnica')
+    .max(2500)
+    .nullable()
+    .required(),
+  nivel_orcamento: mixed()
+    .label('Nível de controle orçamentário')
+    .oneOf(niveisDeOrcamento)
+    .required(),
+  nome: string()
+    .label('Nome')
+    .min(1)
+    .max(250)
+    .required(),
+  periodo_do_ciclo_participativo_fim: date()
+    .label('Fim do ciclo participativo')
+    .max(dataMax)
+    .min(dataMin)
+    .nullable()
+    .transform((v) => (!v ? null : v)),
+  periodo_do_ciclo_participativo_inicio: date()
+    .label('Início do ciclo participativo')
+    .max(dataMax)
+    .min(dataMin)
+    .nullable()
+    .transform((v) => (!v ? null : v)),
+  possui_atividade: boolean()
+    .label('Habilitar atividades')
+    .nullable(),
+  possui_complementacao_meta: boolean()
+    .label('Habilitar complementação')
+    .nullable(),
+  possui_contexto_meta: boolean()
+    .label('Habilitar contexto')
+    .nullable(),
+  possui_iniciativa: boolean()
+    .label('Habilitar iniciativas')
+    .when('possui_atividade', (valor, campo) => (valor
+      ? campo.required()
+      : campo.nullable())),
+  possui_macro_tema: boolean()
+    .label('Habilitar macro-tema')
+    .nullable(),
+  possui_sub_tema: boolean()
+    .label('Habilitar sub-tema')
+    .nullable(),
+  possui_tema: boolean()
+    .label('Habilitar tema')
+    .nullable(),
+  prefeito: string()
+    .label('Prefeito/Titular')
+    .max(250)
+    .required(),
+  ps_tecnico_cp: object({
+    participantes: array()
+      .label('Técnicos participantes')
+      .of(
+        number()
+          .min(1)
+          .required(),
+      ),
+  }),
+  ps_admin_cp: object({
+    participantes: array()
+      .label('Administradores participantes')
+      .of(
+        number()
+          .min(1)
+          .required(),
+      ),
+  }),
+  rotulo_atividade: string()
+    .label('Rótulo de atividades')
+    .max(30)
+    .when('possui_atividade', (valor, campo) => (valor
+      ? campo.required()
+      : campo.nullable())),
+  rotulo_complementacao_meta: string()
+    .label('Rótulo de complementação')
+    .max(30)
+    .when('possui_complementacao_meta', (valor, campo) => (valor
+      ? campo.required()
+      : campo.nullable())),
+  rotulo_contexto_meta: string()
+    .label('Rótulo de contexto')
+    .max(30)
+    .when('possui_contexto_meta', (valor, campo) => (valor
+      ? campo.required()
+      : campo.nullable())),
+  rotulo_iniciativa: string()
+    .label('Rótulo de iniciativas')
+    .max(30)
+    .when('possui_iniciativa', (valor, campo) => (valor
+      ? campo.required()
+      : campo.nullable())),
+  rotulo_macro_tema: string()
+    .label('Rótulo de macro-temas')
+    .max(30)
+    .when('possui_macro_tema', (valor, campo) => (valor
+      ? campo.required()
+      : campo.nullable())),
+  rotulo_sub_tema: string()
+    .label('Rótulo de sub-temas')
+    .max(30)
+    .when('possui_sub_tema', (valor, campo) => (valor
+      ? campo.required()
+      : campo.nullable())),
+  rotulo_tema: string()
+    .label('Rótulo de temas')
+    .max(30)
+    .when('possui_tema', (valor, campo) => (valor
+      ? campo.required()
+      : campo.nullable())),
+  upload_logo: string()
+    .label('Logotipo')
+    .nullable(),
+});
 
 export const portfolio = object({
   data_criacao: date()

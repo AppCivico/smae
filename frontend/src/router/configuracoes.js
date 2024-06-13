@@ -38,9 +38,10 @@ import GruposDePaineisExternosRaiz from '@/views/gruposDePaineisExternos/GruposD
 import SituacaoCriarEditar from '@/views/situacao/SituacaoCriarEditar.vue';
 import SituacaoLista from '@/views/situacao/SituacaoLista.vue';
 import SituacaoRaiz from '@/views/situacao/SituacaoRaiz.vue';
-import TarefasRaiz from '@/views/tv.tarefas/TarefasRaiz.vue';
-import TarefasLista from '@/views/tv.tarefas/TarefasLista.vue';
+
 import TarefasCriarEditar from '@/views/tv.tarefas/TarefasCriarEditar.vue';
+import TarefasLista from '@/views/tv.tarefas/TarefasLista.vue';
+import TarefasRaiz from '@/views/tv.tarefas/TarefasRaiz.vue';
 
 const PortfoliosCriarEditar = defineAsyncComponent({
   loader: () => import('@/views/portfolios/PortfoliosCriarEditar.vue'),
@@ -89,6 +90,7 @@ const rotasParaMenuPrincipal = [
   'gerenciarPainéisDeMetas',
   'parlamentaresListar',
   'paineisExternosListar',
+  'planosSetoriaisListar',
   'Workflow',
 ];
 
