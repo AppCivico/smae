@@ -7,15 +7,15 @@ import { ListaDePrivilegios } from '../common/ListaDePrivilegios';
 import { FindOneParams, FindTwoParams } from '../common/decorators/find-params';
 import { RecordWithId } from '../common/dto/record-with-id.dto';
 import { MacroTemaService } from '../macro-tema/macro-tema.service';
-import { TemaService } from '../tema/tema.service';
 import { SubTemaService } from '../subtema/subtema.service';
 import { TagService } from '../tag/tag.service';
+import { TemaService } from '../tema/tema.service';
 import { CreatePdmDocumentDto } from './dto/create-pdm-document.dto';
 import { CreatePdmDto } from './dto/create-pdm.dto';
 import { DetalhePdmDto } from './dto/detalhe-pdm.dto';
 import { FilterPdmDetailDto, FilterPdmDto } from './dto/filter-pdm.dto';
 import { CicloFisicoDto, ListPdmDto, OrcamentoConfig } from './dto/list-pdm.dto';
-import { Pdm } from './dto/pdm.dto';
+import { PdmDto, PlanoSetorialDto } from './dto/pdm.dto';
 import { UpdatePdmOrcamentoConfigDto } from './dto/update-pdm-orcamento-config.dto';
 import { UpdatePdmDto } from './dto/update-pdm.dto';
 import { ListPdmDocument } from './entities/list-pdm-document.entity';
@@ -74,15 +74,15 @@ export class PdmController {
     @Get(':id')
     @ApiBearerAuth('access-token')
     @Roles(['CadastroPdm.inserir', 'CadastroPdm.editar', 'CadastroPdm.inativar', 'PDM.tecnico_cp', 'PDM.admin_cp'])
-    @ApiExtraModels(Pdm, DetalhePdmDto)
+    @ApiExtraModels(PdmDto, DetalhePdmDto)
     @ApiOkResponse({
-        schema: { anyOf: refs(Pdm, DetalhePdmDto) },
+        schema: { anyOf: refs(PdmDto, DetalhePdmDto) },
     })
     async get(
         @Param() params: FindOneParams,
         @CurrentUser() user: PessoaFromJwt,
         @Query() detail: FilterPdmDetailDto
-    ): Promise<Pdm | DetalhePdmDto> {
+    ): Promise<PdmDto | DetalhePdmDto> {
         const pdm = await this.pdmService.getDetail('PDM', +params.id, user, 'ReadOnly');
 
         if (!detail.incluir_auxiliares) return pdm;
@@ -201,36 +201,14 @@ export class PlanoSetorialController {
     @Get(':id')
     @ApiBearerAuth('access-token')
     @Roles(PermsPS)
-    @ApiExtraModels(Pdm, DetalhePdmDto)
+    @ApiExtraModels(PlanoSetorialDto)
     @ApiOkResponse({
-        schema: { anyOf: refs(Pdm, DetalhePdmDto) },
+        schema: { anyOf: refs(PlanoSetorialDto) },
     })
-    async get(
-        @Param() params: FindOneParams,
-        @CurrentUser() user: PessoaFromJwt,
-        @Query() detail: FilterPdmDetailDto
-    ): Promise<Pdm | DetalhePdmDto> {
+    async get(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt): Promise<PlanoSetorialDto> {
         const pdm = await this.pdmService.getDetail('PS', +params.id, user, 'ReadOnly');
 
-        if (!detail.incluir_auxiliares) return pdm;
-
-        const filter_opts = { pdm_id: +params.id };
-        const [tema, sub_tema, eixo, tag, orcamento_config] = await Promise.all([
-            this.objetivoEstrategicoService.findAll(filter_opts),
-            this.subTemaService.findAll(filter_opts),
-            this.eixoService.findAll(filter_opts),
-            this.tagService.findAll(filter_opts),
-            this.pdmService.getOrcamentoConfig('PS', +params.id),
-        ]);
-
-        return {
-            pdm,
-            tema,
-            sub_tema,
-            eixo,
-            tag,
-            orcamento_config,
-        };
+        return pdm as PlanoSetorialDto;
     }
 
     @Patch(':id/orcamento-config')

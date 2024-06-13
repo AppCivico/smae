@@ -14,7 +14,7 @@ import { CreatePdmDocumentDto } from './dto/create-pdm-document.dto';
 import { CreatePdmAdminCPDto, CreatePdmDto, CreatePdmTecnicoCPDto } from './dto/create-pdm.dto';
 import { FilterPdmDto } from './dto/filter-pdm.dto';
 import { CicloFisicoDto, OrcamentoConfig } from './dto/list-pdm.dto';
-import { Pdm } from './dto/pdm.dto';
+import { PdmDto, PlanoSetorialDto } from './dto/pdm.dto';
 import { UpdatePdmOrcamentoConfigDto } from './dto/update-pdm-orcamento-config.dto';
 import { UpdatePdmDto } from './dto/update-pdm.dto';
 import { ListPdm } from './entities/list-pdm.entity';
@@ -47,11 +47,16 @@ export class PdmService {
             if (!user.hasSomeRoles(['CadastroPdm.inserir'])) {
                 throw new ForbiddenException('Você não tem permissão para inserir Plano de Metas');
             }
+
+            this.removeCamposPlanoSetorial(dto);
         } else if (tipo == 'PS') {
             if (!user.hasSomeRoles(['CadastroPS.administrador', 'CadastroPS.administrador_no_orgao'])) {
                 throw new ForbiddenException('Você não tem permissão para inserir Plano Setorial');
             }
         }
+
+        await this.verificaOrgaoAdmin(dto, this.prisma);
+        await this.verificaPdmAnterioes(dto, this.prisma);
 
         const similarExists = await this.prisma.pdm.count({
             where: {
@@ -110,7 +115,12 @@ export class PdmService {
                     possui_iniciativa: dto.possui_iniciativa,
                     possui_atividade: dto.possui_atividade,
                     nivel_orcamento: dto.nivel_orcamento,
+                    legislacao_de_instituicao: dto.legislacao_de_instituicao,
+                    orgao_admin_id: dto.orgao_admin_id,
+                    monitoramento_orcamento: dto.monitoramento_orcamento,
+                    pdm_anteriores: dto.pdm_anteriores,
                     tipo: tipo,
+                    ativo: tipo == 'PDM' ? false : true,
                 },
                 select: { id: true },
             });
@@ -129,6 +139,13 @@ export class PdmService {
         });
 
         return created;
+    }
+
+    private removeCamposPlanoSetorial(dto: CreatePdmDto | UpdatePdmDto) {
+        delete dto.legislacao_de_instituicao;
+        delete dto.orgao_admin_id;
+        delete dto.monitoramento_orcamento;
+        delete dto.pdm_anteriores;
     }
 
     private async getPermissionSet(user: PessoaFromJwt) {
@@ -232,7 +249,27 @@ export class PdmService {
             }
 
             return {
-                ...pdm,
+                id: pdm.id,
+                nome: pdm.nome,
+                descricao: pdm.descricao,
+                ativo: pdm.ativo,
+                prefeito: pdm.prefeito,
+                rotulo_macro_tema: pdm.rotulo_macro_tema,
+                rotulo_tema: pdm.rotulo_tema,
+                rotulo_sub_tema: pdm.rotulo_sub_tema,
+                rotulo_contexto_meta: pdm.rotulo_contexto_meta,
+                rotulo_complementacao_meta: pdm.rotulo_complementacao_meta,
+                rotulo_iniciativa: pdm.rotulo_iniciativa,
+                rotulo_atividade: pdm.rotulo_atividade,
+                possui_macro_tema: pdm.possui_macro_tema,
+                possui_tema: pdm.possui_tema,
+                possui_sub_tema: pdm.possui_sub_tema,
+                possui_contexto_meta: pdm.possui_contexto_meta,
+                possui_complementacao_meta: pdm.possui_complementacao_meta,
+                possui_iniciativa: pdm.possui_iniciativa,
+                possui_atividade: pdm.possui_atividade,
+                nivel_orcamento: pdm.nivel_orcamento,
+
                 pode_editar: this.calcPodeEditar(pdm, user),
                 arquivo_logo_id: undefined,
                 logo: logo,
@@ -280,15 +317,42 @@ export class PdmService {
         return false;
     }
 
-    async getDetail(tipo: TipoPdm, id: number, user: PessoaFromJwt, readonly: ReadOnlyBooleanType): Promise<Pdm> {
+    async getDetail(
+        tipo: TipoPdm,
+        id: number,
+        user: PessoaFromJwt,
+        readonly: ReadOnlyBooleanType
+    ): Promise<PdmDto | PlanoSetorialDto> {
         const pdm = await this.loadPdm(tipo, id, user, readonly);
 
         if (pdm.arquivo_logo_id) {
             pdm.logo = this.uploadService.getDownloadToken(pdm.arquivo_logo_id, '30d').download_token;
         }
 
-        return {
-            ...pdm,
+        const pdmInfo: PdmDto = {
+            id: pdm.id,
+            nome: pdm.nome,
+            descricao: pdm.descricao,
+            prefeito: pdm.prefeito,
+            equipe_tecnica: pdm.equipe_tecnica,
+            rotulo_macro_tema: pdm.rotulo_macro_tema,
+            rotulo_tema: pdm.rotulo_tema,
+            rotulo_sub_tema: pdm.rotulo_sub_tema,
+            rotulo_contexto_meta: pdm.rotulo_contexto_meta,
+            rotulo_complementacao_meta: pdm.rotulo_complementacao_meta,
+            possui_macro_tema: pdm.possui_macro_tema,
+            possui_tema: pdm.possui_tema,
+            possui_sub_tema: pdm.possui_sub_tema,
+            possui_contexto_meta: pdm.possui_contexto_meta,
+            possui_complementacao_meta: pdm.possui_complementacao_meta,
+            logo: pdm.logo,
+            ativo: pdm.ativo,
+            rotulo_iniciativa: pdm.rotulo_iniciativa,
+            rotulo_atividade: pdm.rotulo_atividade,
+            possui_iniciativa: pdm.possui_iniciativa,
+            possui_atividade: pdm.possui_atividade,
+            nivel_orcamento: pdm.nivel_orcamento,
+
             pode_editar: this.calcPodeEditar(pdm, user),
             data_fim: Date2YMD.toStringOrNull(pdm.data_fim),
             data_inicio: Date2YMD.toStringOrNull(pdm.data_inicio),
@@ -296,6 +360,45 @@ export class PdmService {
             periodo_do_ciclo_participativo_fim: Date2YMD.toStringOrNull(pdm.periodo_do_ciclo_participativo_fim),
             periodo_do_ciclo_participativo_inicio: Date2YMD.toStringOrNull(pdm.periodo_do_ciclo_participativo_inicio),
         };
+
+        let merged: PdmDto | PlanoSetorialDto = pdmInfo;
+        if (tipo == 'PS') {
+            const [ps_admin_cp, ps_tecnico_cp] = await Promise.all([
+                this.prisma.pdmPerfil.findMany({
+                    where: { pdm_id: id, tipo: 'ADMIN', removido_em: null },
+                }),
+                this.prisma.pdmPerfil.findMany({
+                    where: { pdm_id: id, tipo: 'CP', removido_em: null },
+                }),
+            ]);
+
+            const pdm_anteriores = pdm.pdm_anteriores.length
+                ? await this.prisma.pdm.findMany({
+                      where: { id: { in: pdm.pdm_anteriores } },
+                      select: {
+                          id: true,
+                          orgao_admin: { select: { id: true, descricao: true, sigla: true } },
+                      },
+                  })
+                : [];
+
+            console.log(ps_admin_cp);
+            merged = {
+                ...pdmInfo,
+                legislacao_de_instituicao: pdm.legislacao_de_instituicao,
+                monitoramento_orcamento: pdm.monitoramento_orcamento,
+                orgao_admin: pdm.orgao_admin,
+                pdm_anteriores: pdm_anteriores,
+                ps_admin_cp: {
+                    participantes: ps_admin_cp.map((item) => item.pessoa_id),
+                },
+                ps_tecnico_cp: {
+                    participantes: ps_tecnico_cp.map((item) => item.pessoa_id),
+                },
+            } satisfies PlanoSetorialDto;
+        }
+
+        return merged;
     }
 
     private async loadPdm(
@@ -311,6 +414,11 @@ export class PdmService {
                 id: id,
                 tipo,
                 removido_em: null,
+            },
+            include: {
+                orgao_admin: {
+                    select: { id: true, descricao: true, sigla: true },
+                },
             },
         });
         if (!pdm) throw new HttpException('PDM não encontrado', 404);
@@ -361,6 +469,10 @@ export class PdmService {
         const pdm = await this.loadPdm(tipo, id, user, 'ReadWrite', prismaCtx);
         const prismaTx = prismaCtx || this.prisma;
         await this.verificarPrivilegiosEdicao(dto, user, pdm);
+        if (tipo == 'PDM') this.removeCamposPlanoSetorial(dto);
+
+        await this.verificaOrgaoAdmin(dto, prismaTx);
+        await this.verificaPdmAnterioes(dto, prismaTx);
 
         if (dto.nome) {
             const similarExists = await prismaTx.pdm.count({
@@ -452,6 +564,10 @@ export class PdmService {
                     possui_iniciativa: dto.possui_iniciativa,
                     possui_atividade: dto.possui_atividade,
                     nivel_orcamento: dto.nivel_orcamento,
+                    legislacao_de_instituicao: dto.legislacao_de_instituicao,
+                    orgao_admin_id: dto.orgao_admin_id,
+                    monitoramento_orcamento: dto.monitoramento_orcamento,
+                    pdm_anteriores: dto.pdm_anteriores,
                     ativo: ativarPdm,
                     arquivo_logo_id: arquivo_logo_id,
                 },
@@ -481,6 +597,26 @@ export class PdmService {
         await this.getOrcamentoConfig(tipo, id, true, prismaTx);
 
         return { id: id };
+    }
+
+    private async verificaOrgaoAdmin(dto: UpdatePdmDto, prismaTx: Prisma.TransactionClient) {
+        if (dto.orgao_admin_id) {
+            await prismaTx.orgao.findFirstOrThrow({
+                where: { id: dto.orgao_admin_id, removido_em: null },
+                select: { id: true },
+            });
+        }
+    }
+
+    private async verificaPdmAnterioes(dto: UpdatePdmDto, prismaTx: Prisma.TransactionClient) {
+        if (Array.isArray(dto.pdm_anteriores)) {
+            const qtde = await prismaTx.pdm.count({
+                where: { id: { in: dto.pdm_anteriores }, tipo: 'PS', removido_em: null },
+            });
+            if (qtde != dto.pdm_anteriores.length) {
+                throw new BadRequestException('pdm_anteriores| Um ou mais Plano Setoriais anteriores não são válidos');
+            }
+        }
     }
 
     private async upsertPerfil(
@@ -549,6 +685,8 @@ export class PdmService {
                         criado_em: now,
                         orgao_id: pessoa.orgao_id,
                         pessoa_id: pessoa.pessoa_id,
+                        removido_em: null,
+                        removido_por: null,
                     },
                 });
             } else {

@@ -45,3 +45,4 @@ export class DetalhePdmDto {
 
     orcamento_config: OrcamentoConfig[] | null;
 }
+
