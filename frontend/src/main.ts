@@ -23,6 +23,11 @@ const app = createApp(App);
 app.config.errorHandler = (err) => {
   const alertStore = useAlertStore();
   alertStore.error(err);
+  if (console.trace) {
+    console.trace(err);
+  } else {
+    console.log(err);
+  }
 };
 
 app.config.globalProperties.gblHabilitarBeta = import.meta.env.VITE_HABILITAR_BETA || false;
