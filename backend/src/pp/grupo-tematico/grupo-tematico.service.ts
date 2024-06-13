@@ -107,6 +107,7 @@ export class GrupoTematicoService {
     }
 
     async update(id: number, dto: UpdateGrupoTematicoDto, user: PessoaFromJwt) {
+        const now = new Date(Date.now());
         const updated = await this.prisma.$transaction(
             async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
                 const self = await prismaTx.grupoTematico.findFirstOrThrow({
@@ -143,7 +144,7 @@ export class GrupoTematicoService {
                         programa_habitacional: dto.programa_habitacional,
                         unidades_habitacionais: dto.unidades_habitacionais,
                         familias_beneficiadas: dto.familias_beneficiadas,
-                        atualizado_em: new Date(Date.now()),
+                        atualizado_em: now,
                         atualizado_por: user.id,
                     },
                     select: { id: true },
