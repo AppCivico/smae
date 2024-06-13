@@ -32,12 +32,11 @@
       class="flex center mb1"
     >
       <Field
-        id="unidades-habitacionais"
+        id="unidades_habitacionais"
         name="unidades_habitacionais"
         type="checkbox"
-        :value="false"
-        class="mb0"
-        :disabled="itemParaEdição.unidades_habitacionais ? true : false"
+        :value="true"
+        :unchecked-value="false"
       />
       <LabelFromYup
         as="span"
@@ -52,11 +51,11 @@
       class="flex center mb1"
     >
       <Field
-        id="familias-beneficiadas"
+        id="familias_beneficiadas"
         name="familias_beneficiadas"
         type="checkbox"
-        :value="false"
-        :disabled="itemParaEdição.familias_beneficiadas ? true : false"
+        :value="true"
+        :unchecked-value="false"
       />
       <LabelFromYup
         as="span"
@@ -71,11 +70,11 @@
       class="flex center mb1"
     >
       <Field
-        id="programa-habitacional"
+        id="programa_habitacional"
         name="programa_habitacional"
         type="checkbox"
-        :value="false"
-        :disabled="itemParaEdição.programa_habitacional ? true : false"
+        :value="true"
+        :unchecked-value="false"
       />
       <LabelFromYup
         as="span"
