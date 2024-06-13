@@ -226,10 +226,9 @@ export class CreatePdmDto {
     @IsString({ message: 'upload_logo de um arquivo de Logo' })
     upload_logo?: string | null;
 
-    //    @IsOptional()
-    //    @IsString({ message: 'Precisa ser uma string' })
-    //    contexto?: string | null;
-
+    /**
+     * Nível de orçamento.
+     */
     @IsOptional()
     @ApiProperty({ enum: NivelOrcamento, enumName: 'NivelOrcamento' })
     @IsEnum(NivelOrcamento, {
@@ -237,30 +236,48 @@ export class CreatePdmDto {
     })
     nivel_orcamento: NivelOrcamento;
 
+    /**
+     * Dados técnicos do PDM.
+     */
     @IsOptional()
     @ValidateIf((object, value) => value !== null)
     @Type(() => CreatePdmTecnicoCPDto)
     @ValidateNested()
     ps_tecnico_cp?: CreatePdmTecnicoCPDto;
 
+    /**
+     * Dados administrativos do PDM.
+     */
     @IsOptional()
     @ValidateIf((object, value) => value !== null)
     @Type(() => CreatePdmAdminCPDto)
     @ValidateNested()
     ps_admin_cp?: CreatePdmAdminCPDto;
 
+    /**
+     * Legislação de instituição.
+     */
     @IsOptional()
     @IsString({ message: 'Legislação de instituição: Precisa ser alfanumérico' })
     legislacao_de_instituicao?: string | null;
 
+    /**
+     * ID do órgão administrativo.
+     */
     @IsOptional()
     @IsInt({ message: 'Órgão precisa ser um número inteiro' })
     orgao_admin_id?: number | null;
 
+    /**
+     * Indica se o monitoramento de orçamento está habilitado.
+     */
     @IsOptional()
     @IsBoolean({ message: 'Monitoramento orcamento precisa ser um boolean' })
     monitoramento_orcamento?: boolean;
 
+    /**
+     * PDMs anteriores, lista de IDs
+     */
     @IsOptional()
     @IsArray()
     @IsInt({ each: true, message: 'PDM: Cada item precisa ser um número inteiro' })
