@@ -19,6 +19,10 @@ export const useParlamentaresStore = defineStore('parlamentaresStore', {
       representatividade: false,
     },
     erro: null,
+    paginação: {
+      temMais: false,
+      tokenDaPróximaPágina: '',
+    },
   }),
   actions: {
     async buscarItem(id = 0, params = {}) {
@@ -41,12 +45,21 @@ export const useParlamentaresStore = defineStore('parlamentaresStore', {
       this.erro = null;
 
       try {
-        const { linhas } = await this.requestS.get(`${baseUrl}/parlamentar`, params);
+        const {
+          linhas,
+          tem_mais: temMais,
+          token_proxima_pagina: tokenDaPróximaPágina,
+        } = await this.requestS.get(`${baseUrl}/parlamentar`, params);
 
         if (params.disponivel_para_suplente_parlamentar_id) {
           this.listaDeDisponíveisParaSuplência = linhas;
-        } else {
-          this.lista = linhas;
+        } else if (Array.isArray(linhas)) {
+          this.lista = params.token_proxima_pagina
+            ? this.lista.concat(linhas)
+            : linhas;
+
+          this.paginação.temMais = temMais || false;
+          this.paginação.tokenDaPróximaPágina = tokenDaPróximaPágina || '';
         }
       } catch (erro) {
         this.erro = erro;
