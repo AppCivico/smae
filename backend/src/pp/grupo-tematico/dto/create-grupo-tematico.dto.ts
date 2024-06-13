@@ -7,13 +7,13 @@ export class CreateGrupoTematicoDto {
 
     @IsBoolean()
     @IsOptional()
-    programa_habitacional: boolean | undefined;
+    programa_habitacional?: boolean | undefined;
 
     @IsBoolean()
     @IsOptional()
-    unidades_habitacionais: boolean | undefined;
+    unidades_habitacionais?: boolean | undefined;
 
     @IsBoolean()
     @IsOptional()
-    familias_beneficiadas: boolean | undefined;
+    familias_beneficiadas?: boolean | undefined;
 }

@@ -12,11 +12,7 @@ import { ListaDePrivilegios } from 'src/common/ListaDePrivilegios';
 import { PROJETO_READONLY_ROLES_MDO } from '../projeto/projeto.controller';
 import { Equipamento, ListEquipamentoDto } from './entities/equipamento.entity';
 
-const rolesMDO: ListaDePrivilegios[] = [
-    'ProjetoMDO.administrador',
-    'ProjetoMDO.administrador_no_orgao',
-    ...PROJETO_READONLY_ROLES_MDO,
-];
+const rolesMDO: ListaDePrivilegios[] = ['ProjetoMDO.administrador'];
 
 @Controller('equipamento')
 @ApiTags('Monitoramento de Obras, Cadastro Básico, Equipamento')
@@ -35,14 +31,14 @@ export class EquipamentoController {
 
     @Get('')
     @ApiBearerAuth('access-token')
-    @Roles([...rolesMDO])
+    @Roles([...rolesMDO, ...PROJETO_READONLY_ROLES_MDO])
     async findAll(@CurrentUser() user: PessoaFromJwt): Promise<ListEquipamentoDto> {
         return { linhas: await this.equipamentoService.findAll(user) };
     }
 
     @Get(':id')
     @ApiBearerAuth('access-token')
-    @Roles([...rolesMDO])
+    @Roles([...rolesMDO, ...PROJETO_READONLY_ROLES_MDO])
     async findOne(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt): Promise<Equipamento> {
         return await this.equipamentoService.findOne(params.id, user);
     }

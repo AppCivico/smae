@@ -12,11 +12,7 @@ import { ListaDePrivilegios } from 'src/common/ListaDePrivilegios';
 import { PROJETO_READONLY_ROLES_MDO } from '../projeto/projeto.controller';
 import { TipoIntervencao, ListTipoIntervencaoDto } from './entities/tipo-intervencao.entity';
 
-const rolesMDO: ListaDePrivilegios[] = [
-    'ProjetoMDO.administrador',
-    'ProjetoMDO.administrador_no_orgao',
-    ...PROJETO_READONLY_ROLES_MDO,
-];
+const rolesMDO: ListaDePrivilegios[] = ['ProjetoMDO.administrador'];
 
 @Controller('tipo-intervencao')
 @ApiTags('Monitoramento de Obras, Cadastro Básico, Tipo de Intervenção')
@@ -35,14 +31,14 @@ export class TipoIntervencaoController {
 
     @Get('')
     @ApiBearerAuth('access-token')
-    @Roles([...rolesMDO])
+    @Roles([...rolesMDO, ...PROJETO_READONLY_ROLES_MDO])
     async findAll(@CurrentUser() user: PessoaFromJwt): Promise<ListTipoIntervencaoDto> {
         return { linhas: await this.tipoIntervencaoService.findAll(user) };
     }
 
     @Get(':id')
     @ApiBearerAuth('access-token')
-    @Roles([...rolesMDO])
+    @Roles([...rolesMDO, ...PROJETO_READONLY_ROLES_MDO])
     async findOne(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt): Promise<TipoIntervencao> {
         return await this.tipoIntervencaoService.findOne(params.id, user);
     }
