@@ -169,7 +169,6 @@ export default [
           rotasParaMenuSecundário,
           limitarÀsPermissões: [
             'ProjetoMDO.administrador',
-            'ProjetoMDO.administrador_no_orgao',
           ],
         },
         children: [
@@ -223,7 +222,6 @@ export default [
           rotasParaMenuSecundário,
           limitarÀsPermissões: [
             'ProjetoMDO.administrador',
-            'ProjetoMDO.administrador_no_orgao',
           ],
         },
         children: [
@@ -277,7 +275,6 @@ export default [
           rotasParaMenuSecundário,
           limitarÀsPermissões: [
             'ProjetoMDO.administrador',
-            'ProjetoMDO.administrador_no_orgao',
           ],
         },
         children: [
