@@ -1,4 +1,7 @@
-export class Pdm {
+import { IdSiglaDescricao } from '../../common/dto/IdSigla.dto';
+import { CreatePdmAdminCPDto, CreatePdmTecnicoCPDto } from './create-pdm.dto';
+
+export class PdmDto {
     nome: string;
     descricao: string | null;
     prefeito: string;
@@ -27,4 +30,19 @@ export class Pdm {
     nivel_orcamento: string;
     id: number;
     pode_editar: boolean;
+}
+
+export class PlanoSetorialAnteriorDto {
+    id: number;
+    orgao_admin: IdSiglaDescricao | null;
+}
+
+export class PlanoSetorialDto extends PdmDto {
+    ps_tecnico_cp: CreatePdmTecnicoCPDto;
+    ps_admin_cp: CreatePdmAdminCPDto;
+
+    legislacao_de_instituicao: string | null;
+    monitoramento_orcamento: boolean;
+    orgao_admin: IdSiglaDescricao | null;
+    pdm_anteriores: PlanoSetorialAnteriorDto[];
 }
