@@ -25,7 +25,9 @@ defineProps({
   <component
     :is="as"
     class="label"
-    :for="name || $attrs.for || null"
+    :for="as !== 'label'
+      ? undefined
+      : name || $attrs.for || null"
   >
     <slot name="prepend" />
     <slot>
