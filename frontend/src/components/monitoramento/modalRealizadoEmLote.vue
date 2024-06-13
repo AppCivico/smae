@@ -1,5 +1,6 @@
 <script setup>
 import auxiliarDePreenchimento from '@/components/AuxiliarDePreenchimento.vue';
+import { valoresRealizadoEmLote as schema, arquivoSimples as uploadSchema } from '@/consts/formSchemas';
 import dateToField from '@/helpers/dateToField';
 import geradorDeAtributoStep from '@/helpers/geradorDeAtributoStep';
 import requestS from '@/helpers/requestS.ts';
@@ -8,12 +9,11 @@ import { useCiclosStore } from '@/stores/ciclos.store';
 import { useDocumentTypesStore } from '@/stores/documentTypes.store';
 import { useEditModalStore } from '@/stores/editModal.store';
 import { storeToRefs } from 'pinia';
-import { valoresRealizadoEmLote as schema, arquivoSimples as uploadSchema } from '@/consts/formSchemas';
 import {
+  ErrorMessage,
   Field,
   FieldArray,
   Form,
-  ErrorMessage,
   useForm,
 } from 'vee-validate';
 import { computed, ref, watch } from 'vue';
@@ -399,7 +399,6 @@ watch(variáveisComSuasDatas, (novoValor) => {
           <input
             v-model="valorPadrãoParaRealizado"
             type="number"
-            min="0"
             class="inputtext light mb1"
           >
         </div>
@@ -408,7 +407,6 @@ watch(variáveisComSuasDatas, (novoValor) => {
           <input
             v-model="valorPadrãoParaRealizadoAcumulado"
             type="number"
-            min="0"
             class="inputtext light mb1"
           >
         </div>
@@ -531,7 +529,6 @@ watch(variáveisComSuasDatas, (novoValor) => {
                 :step="geradorDeAtributoStep(
                   dadosExtrasPorVariávelId.value?.[field.value.variavel_id]?.variavel.casas_decimais
                 )"
-                min="0"
                 class="inputtext light"
                 :class="{ 'error': errors[`linhas[${idx}].valor_realizado`] }"
                 @update:model-value="() => {
@@ -560,7 +557,6 @@ watch(variáveisComSuasDatas, (novoValor) => {
                 :step="geradorDeAtributoStep(
                   dadosExtrasPorVariávelId.value?.[field.value.variavel_id]?.variavel.casas_decimais
                 )"
-                min="0"
                 class="inputtext light"
                 :class="{ 'error': errors[`linhas[${idx}].valor_realizado_acumulado`] }"
                 @update:model-value="() => {
