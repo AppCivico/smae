@@ -243,10 +243,11 @@ export class CreatePdmDto {
      */
     @IsOptional()
     @ApiProperty({ enum: NivelOrcamento, enumName: 'NivelOrcamento' })
+    @ValidateIf((object, value) => value !== null)
     @IsEnum(NivelOrcamento, {
         message: 'Precisa ser um dos seguintes valores: ' + Object.values(NivelOrcamento).join(', '),
     })
-    nivel_orcamento: NivelOrcamento;
+    nivel_orcamento?: NivelOrcamento | null;
 
     /**
      * Técnicos de Plano Setorial
