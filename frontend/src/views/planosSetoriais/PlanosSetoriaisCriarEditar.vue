@@ -52,24 +52,18 @@ const onSubmit = handleSubmit.withControlled(async (valoresControlados) => {
 
   try {
     if (resposta) {
-      const rotaApósSalvamento = props.planoSetorialId
-        ? {
-          name: 'planosSetoriaisListar',
-          params: { planoSetorialId: resposta.id },
-        }
-        : {
-          name: 'planosSetoriaisResumo',
-          params: { planoSetorialId: resposta.id },
-        };
-
       if (props.planoSetorialId) {
         planosSetoriaisStore.buscarItem(props.planoSetorialId || resposta.id);
       }
 
       alertStore.success(msg);
-      emFoco.value = null;
 
-      router.push(rotaApósSalvamento);
+      if (route.meta.rotaDeEscape) {
+        router.push({
+          name: route.meta.rotaDeEscape,
+          params: { planoSetorialId: resposta.id },
+        });
+      }
     }
   } catch (error) {
     alertStore.error(error);
