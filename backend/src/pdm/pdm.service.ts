@@ -584,7 +584,20 @@ export class PdmService {
                 select: { id: true },
             });
 
-            if (dto.ps_admin_cp) await this.upsertPerfil(id, 'ADMIN', user, prismaTx, now, dto.ps_admin_cp);
+            const updated = await prismaTx.pdm.findFirstOrThrow({
+                where: { id: id },
+                select: { orgao_admin_id: true },
+            });
+
+            if (dto.ps_admin_cp) {
+                const pessoas = await this.upsertPerfil(id, 'ADMIN', user, prismaTx, now, dto.ps_admin_cp);
+                const orgaosIguais = pessoas
+                    .map((p) => p.orgao_id)
+                    .every((orgaoId) => orgaoId == updated.orgao_admin_id);
+                if (!orgaosIguais) {
+                    throw new BadRequestException('Todos os administradores CP devem ser do mesmo órgão administrador');
+                }
+            }
             if (dto.ps_tecnico_cp) await this.upsertPerfil(id, 'CP', user, prismaTx, now, dto.ps_tecnico_cp);
             if (dto.ps_ponto_focal) await this.upsertPerfil(id, 'PONTO_FOCAL', user, prismaTx, now, dto.ps_ponto_focal);
 
@@ -703,6 +716,8 @@ export class PdmService {
                     ps_admin_cps: cpItens as any,
                 },
             });
+
+        return cpItens;
     }
 
     private async executaJobCicloFisico(ativo: boolean | undefined, pdmId: number, now: Date) {
