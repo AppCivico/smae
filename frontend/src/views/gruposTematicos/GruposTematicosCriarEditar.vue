@@ -27,6 +27,9 @@
         />
       </div>
     </div>
+    <p class="w700">
+      Informações adicionais a serem informadas no registro da obra:
+    </p>
 
     <label
       for="programa_habitacional"
