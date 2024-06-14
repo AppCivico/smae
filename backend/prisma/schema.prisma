@@ -270,12 +270,9 @@ model Pessoa {
     ProjetoGrupoPortfolioQueCriei  ProjetoGrupoPortfolio[] @relation("Criador")
     ProjetoGrupoPortfolioQueRemovi ProjetoGrupoPortfolio[] @relation("Removedor")
 
-    PortfolioGrupoPortfolioQueCriei    PortfolioGrupoPortfolio[]            @relation("Criador")
-    PortfolioGrupoPortfolioQueRemovi   PortfolioGrupoPortfolio[]            @relation("Removedor")
-    GrupoPortfolioPessoa               GrupoPortfolioPessoa[]
-    view_pessoa_espectador_de_projeto  view_pessoa_espectador_de_projeto?
-    view_pessoa_gestor_de_projeto      view_pessoa_gestor_de_projeto[]
-    view_pessoa_colaborador_de_projeto view_pessoa_colaborador_de_projeto[]
+    PortfolioGrupoPortfolioQueCriei  PortfolioGrupoPortfolio[] @relation("Criador")
+    PortfolioGrupoPortfolioQueRemovi PortfolioGrupoPortfolio[] @relation("Removedor")
+    GrupoPortfolioPessoa             GrupoPortfolioPessoa[]
 
     projetosCompartilhadosEmPortfolioQueCriei     PortfolioProjetoCompartilhado[] @relation("Criador")
     projetosCompartilhadosEmPortfolioQueRemovi    PortfolioProjetoCompartilhado[] @relation("Removedor")
@@ -351,36 +348,35 @@ model Pessoa {
     transferenciaAndamentoTarefaQueRemovi    TransferenciaAndamentoTarefa[] @relation("Removedor")
 
     task_queue                               task_queue[]
-    GeoEnderecoReferenciaqQueCriei           GeoLocalizacaoReferencia[]                @relation("criador")
-    GeoEnderecoReferenciaqQueRemovid         GeoLocalizacaoReferencia[]                @relation("removedor")
-    GrupoPainelExternoQueCriei               GrupoPainelExterno[]                      @relation("Criador")
-    GrupoPainelExternoQueAtualizei           GrupoPainelExterno[]                      @relation("Atualizador")
-    GrupoPainelExternoQueRemovi              GrupoPainelExterno[]                      @relation("Removedor")
+    GeoEnderecoReferenciaqQueCriei           GeoLocalizacaoReferencia[]        @relation("criador")
+    GeoEnderecoReferenciaqQueRemovid         GeoLocalizacaoReferencia[]        @relation("removedor")
+    GrupoPainelExternoQueCriei               GrupoPainelExterno[]              @relation("Criador")
+    GrupoPainelExternoQueAtualizei           GrupoPainelExterno[]              @relation("Atualizador")
+    GrupoPainelExternoQueRemovi              GrupoPainelExterno[]              @relation("Removedor")
     GrupoPainelExternoPessoa                 GrupoPainelExternoPessoa[]
-    PainelExternoGrupoPainelExternoQueRemovi PainelExternoGrupoPainelExterno[]         @relation("Removedor")
-    PainelExternoGrupoPainelExternoQueCriei  PainelExternoGrupoPainelExterno[]         @relation("Criador")
-    PainelExternoQueCriei                    PainelExterno[]                           @relation("Criador")
-    PainelExternoQueAtualizei                PainelExterno[]                           @relation("Atualizador")
-    PainelExternoQueRemovi                   PainelExterno[]                           @relation("Removedor")
-    view_pessoa_espectador_de_painel_externo view_pessoa_espectador_de_painel_externo?
-    view_pessoa_coordenador_responsavel_cp   view_pessoa_coordenador_responsavel_cp?
-    LogGenerico                              LogGenerico[]
-    TarefaCronogramaQCriei                   TarefaCronograma[]                        @relation("criador")
-    TarefaCronogramaQRemovi                  TarefaCronograma[]                        @relation("removedor")
-    ProjetoEtapaQCriei                       ProjetoEtapa[]                            @relation("Criador")
-    ProjetoEtapaQRemovi                      ProjetoEtapa[]                            @relation("Removedor")
-    ProjetoEtapaQAtualizei                   ProjetoEtapa[]                            @relation("Atualizador")
-    Nota                                     Nota[]                                    @relation("Resp")
-    NotaEnderecamentoQSouEnderecado          NotaEnderecamento[]                       @relation("Enderecado")
-    NotaEnderecamentoQCriei                  NotaEnderecamento[]                       @relation("Criador")
-    NotaEnderecamentoQRemovi                 NotaEnderecamento[]                       @relation("Removedor")
-    NotaEnderecamentoRespostaQCriei          NotaEnderecamentoResposta[]               @relation("Criador")
-    NotaEnderecamentoRespostaQRemovi         NotaEnderecamentoResposta[]               @relation("Removedor")
-    NotaQCriei                               Nota[]                                    @relation("Criador")
-    NotaQRemovi                              Nota[]                                    @relation("Removedor")
-    BlocoNotaQCriei                          BlocoNota[]                               @relation("Criador")
-    BlocoNotaQRemovi                         BlocoNota[]                               @relation("Removedor")
-    BlocoNotaQAtualizei                      BlocoNota[]                               @relation("Atualizador")
+    PainelExternoGrupoPainelExternoQueRemovi PainelExternoGrupoPainelExterno[] @relation("Removedor")
+    PainelExternoGrupoPainelExternoQueCriei  PainelExternoGrupoPainelExterno[] @relation("Criador")
+    PainelExternoQueCriei                    PainelExterno[]                   @relation("Criador")
+    PainelExternoQueAtualizei                PainelExterno[]                   @relation("Atualizador")
+    PainelExternoQueRemovi                   PainelExterno[]                   @relation("Removedor")
+
+    LogGenerico                      LogGenerico[]
+    TarefaCronogramaQCriei           TarefaCronograma[]          @relation("criador")
+    TarefaCronogramaQRemovi          TarefaCronograma[]          @relation("removedor")
+    ProjetoEtapaQCriei               ProjetoEtapa[]              @relation("Criador")
+    ProjetoEtapaQRemovi              ProjetoEtapa[]              @relation("Removedor")
+    ProjetoEtapaQAtualizei           ProjetoEtapa[]              @relation("Atualizador")
+    Nota                             Nota[]                      @relation("Resp")
+    NotaEnderecamentoQSouEnderecado  NotaEnderecamento[]         @relation("Enderecado")
+    NotaEnderecamentoQCriei          NotaEnderecamento[]         @relation("Criador")
+    NotaEnderecamentoQRemovi         NotaEnderecamento[]         @relation("Removedor")
+    NotaEnderecamentoRespostaQCriei  NotaEnderecamentoResposta[] @relation("Criador")
+    NotaEnderecamentoRespostaQRemovi NotaEnderecamentoResposta[] @relation("Removedor")
+    NotaQCriei                       Nota[]                      @relation("Criador")
+    NotaQRemovi                      Nota[]                      @relation("Removedor")
+    BlocoNotaQCriei                  BlocoNota[]                 @relation("Criador")
+    BlocoNotaQRemovi                 BlocoNota[]                 @relation("Removedor")
+    BlocoNotaQAtualizei              BlocoNota[]                 @relation("Atualizador")
 
     VariavelCategoricaQCriei     VariavelCategorica[] @relation("Criador")
     VariavelCategoricaQRemovi    VariavelCategorica[] @relation("Removedor")
@@ -412,11 +408,9 @@ model Pessoa {
     ViewNotaComOrdemQRemovi            ViewNotas[]                          @relation("Removedor")
     ViewNotaComOrdemQSouResp           ViewNotas[]                          @relation("Resp")
 
-    PdmPerfil                 PdmPerfil[]                @relation("fk")
-    PdmPerfilQueDesativei     PdmPerfil[]                @relation("Removedor")
-    PdmPerfilQueCriei         PdmPerfil[]                @relation("Criador")
-    view_pessoa_ps_tecnico_cp view_pessoa_ps_tecnico_cp?
-    view_pessoa_ps_admin_cp   view_pessoa_ps_admin_cp?
+    PdmPerfil             PdmPerfil[] @relation("fk")
+    PdmPerfilQueDesativei PdmPerfil[] @relation("Removedor")
+    PdmPerfilQueCriei     PdmPerfil[] @relation("Criador")
 
     @@index([email])
     @@map("pessoa")
@@ -4094,75 +4088,6 @@ model PessoaAtividadeLog {
 
     @@index([criado_em])
     @@map("pessoa_atividade_log")
-}
-
-// view que já faz o join das pessoas tem o privilegio SMAE.espectador_de_projeto
-// tbm faz um WHERE orgao_id is not null
-view view_pessoa_espectador_de_projeto {
-    pessoa_id Int
-    pessoa    Pessoa @relation(fields: [pessoa_id], references: [id])
-
-    orgao_id Int
-
-    @@unique([pessoa_id])
-}
-
-view view_pessoa_ps_tecnico_cp {
-    pessoa_id Int
-    pessoa    Pessoa @relation(fields: [pessoa_id], references: [id])
-
-    orgao_id Int
-
-    @@unique([pessoa_id])
-}
-
-view view_pessoa_ps_admin_cp {
-    pessoa_id Int
-    pessoa    Pessoa @relation(fields: [pessoa_id], references: [id])
-
-    orgao_id Int
-
-    @@unique([pessoa_id])
-}
-
-// view que já faz o join das pessoas tem o privilegio PDM.coordenador_responsavel_cp
-// tbm faz um WHERE orgao_id is not null
-view view_pessoa_coordenador_responsavel_cp {
-    pessoa_id Int
-    pessoa    Pessoa @relation(fields: [pessoa_id], references: [id])
-
-    orgao_id Int
-
-    @@unique([pessoa_id])
-}
-
-view view_pessoa_espectador_de_painel_externo {
-    pessoa_id Int
-    pessoa    Pessoa @relation(fields: [pessoa_id], references: [id])
-
-    orgao_id Int
-
-    @@unique([pessoa_id])
-}
-
-// view que já faz o join das pessoas tem o privilegio SMAE.gestor_de_projeto
-// tbm faz um WHERE orgao_id is not null
-view view_pessoa_gestor_de_projeto {
-    pessoa_id Int
-    pessoa    Pessoa @relation(fields: [pessoa_id], references: [id])
-    orgao_id  Int
-
-    @@unique([orgao_id, pessoa_id])
-}
-
-// view que já faz o join das pessoas tem o privilegio SMAE.colaborador_de_projeto
-// tbm faz um WHERE orgao_id is not null
-view view_pessoa_colaborador_de_projeto {
-    pessoa_id Int
-    pessoa    Pessoa @relation(fields: [pessoa_id], references: [id])
-    orgao_id  Int
-
-    @@unique([orgao_id, pessoa_id])
 }
 
 model GrupoPortfolio {

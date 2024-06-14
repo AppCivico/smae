@@ -14,6 +14,7 @@ import { TarefaModule } from '../tarefa/tarefa.module';
 import { EquipamentoModule } from '../equipamento/equipamento.module';
 import { GrupoTematicoModule } from '../grupo-tematico/grupo-tematico.module';
 import { TipoIntervencaoModule } from '../tipo-intervencao/tipo-intervencao.module';
+import { PessoaPrivilegioModule } from '../../auth/pessoaPrivilegio.module';
 
 @Module({
     imports: [
@@ -27,6 +28,7 @@ import { TipoIntervencaoModule } from '../tipo-intervencao/tipo-intervencao.modu
         EquipamentoModule,
         GrupoTematicoModule,
         TipoIntervencaoModule,
+        PessoaPrivilegioModule
     ],
     controllers: [ProjetoController, ProjetoProxyPdmMetasController, ProjetoMDOController],
     providers: [ProjetoService, ProjetoProxyPdmMetasService, ProjetoSeiService],
