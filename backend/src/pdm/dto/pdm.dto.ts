@@ -1,5 +1,5 @@
 import { IdSiglaDescricao } from '../../common/dto/IdSigla.dto';
-import { CreatePdmAdminCPDto, CreatePdmTecnicoCPDto } from './create-pdm.dto';
+import { CreatePdmAdminCPDto, CreatePdmPontoFocalDto, CreatePdmTecnicoCPDto } from './create-pdm.dto';
 
 export class PdmDto {
     nome: string;
@@ -40,6 +40,7 @@ export class PlanoSetorialAnteriorDto {
 export class PlanoSetorialDto extends PdmDto {
     ps_tecnico_cp: CreatePdmTecnicoCPDto;
     ps_admin_cp: CreatePdmAdminCPDto;
+    ps_ponto_focal: CreatePdmPontoFocalDto;
 
     legislacao_de_instituicao: string | null;
     monitoramento_orcamento: boolean;

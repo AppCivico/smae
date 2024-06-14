@@ -48,6 +48,8 @@ import { WorkflowAndamentoFaseModule } from './workflow/andamento/fase/workflow-
 import { WorkflowAndamentoModule } from './workflow/andamento/workflow-andamento.module';
 import { DashTransferenciaModule } from './casa-civil/dash/transferencia.module';
 import { PrismaErrorFilterUnknown } from './prisma-error-unknown.filter';
+import { PessoaPrivilegioService } from './auth/pessoaPrivilegio.service';
+import { PessoaPrivilegioModule } from './auth/pessoaPrivilegio.module';
 
 // Hacks pro JS
 /*
@@ -98,6 +100,7 @@ import { PrismaErrorFilterUnknown } from './prisma-error-unknown.filter';
         WorkflowAndamentoFaseModule,
         BlocoNotasModule,
         DashTransferenciaModule,
+        PessoaPrivilegioModule
     ],
     controllers: [AppController],
     providers: [
