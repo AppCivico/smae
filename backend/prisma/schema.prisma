@@ -765,6 +765,7 @@ model Pdm {
 enum PdmPerfilTipo {
     ADMIN
     CP
+    PONTO_FOCAL
 }
 
 model PdmPerfil {

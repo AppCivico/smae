@@ -42,6 +42,18 @@ export class CreatePdmTecnicoCPDto {
     participantes: number[];
 }
 
+export class CreatePdmPontoFocalDto {
+    /**
+     * lista dos participantes do PS.ponto_focal? pode ficar vazio
+     * cada pessoa precisa ter o privilégio "PS.ponto_focal"
+     * @example "[4, 5, 6]"
+     */
+    @IsArray({ message: 'precisa ser um array' })
+    @ArrayMaxSize(10000, { message: 'precisa ter no máximo 10000 items' })
+    @IsInt({ each: true, message: 'Cada item precisa ser um número inteiro' })
+    participantes: number[];
+}
+
 export class CreatePdmDto {
     /**
      * Nome
@@ -237,7 +249,7 @@ export class CreatePdmDto {
     nivel_orcamento: NivelOrcamento;
 
     /**
-     * Dados técnicos do PDM.
+     * Técnicos de Plano Setorial
      */
     @IsOptional()
     @ValidateIf((object, value) => value !== null)
@@ -246,13 +258,22 @@ export class CreatePdmDto {
     ps_tecnico_cp?: CreatePdmTecnicoCPDto;
 
     /**
-     * Dados administrativos do PDM.
+     * Admin CP de Plano Setorial
      */
     @IsOptional()
     @ValidateIf((object, value) => value !== null)
     @Type(() => CreatePdmAdminCPDto)
     @ValidateNested()
     ps_admin_cp?: CreatePdmAdminCPDto;
+
+    /**
+     * Ponto Focal Plano Setorial
+     */
+    @IsOptional()
+    @ValidateIf((object, value) => value !== null)
+    @Type(() => CreatePdmPontoFocalDto)
+    @ValidateNested()
+    ps_ponto_focal?: CreatePdmPontoFocalDto;
 
     /**
      * Legislação de instituição.
