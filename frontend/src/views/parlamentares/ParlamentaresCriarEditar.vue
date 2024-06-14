@@ -317,7 +317,7 @@ iniciar();
 
     <FormErrorsList :errors="errors" />
 
-    <div v-if="itemParaEdição.mandatos">
+    <div v-if="itemParaEdição?.mandatos">
       <div class="flex spacebetween center mb1">
         <span class="label tc300">Mandato</span>
         <hr class="mr2 f1">
@@ -344,7 +344,7 @@ iniciar();
             <th />
           </tr>
         </thead>
-        <tbody v-if="itemParaEdição.mandatos.length > 0">
+        <tbody v-if="itemParaEdição?.mandatos?.length > 0">
           <tr
             v-for="item in itemParaEdição.mandatos"
             :key="item.id"
