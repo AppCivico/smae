@@ -35,7 +35,8 @@ export class CreateProjetoDto {
     portfolio_id: number;
 
     /**
-     * IDs de Portfolios que também terão "acesso" ao projeto
+     * IDs de Portfolios que também terão "acesso" ao projeto,
+     * Desativado em MDO
      * @example "[]"
      */
     @IsOptional()
@@ -47,23 +48,61 @@ export class CreateProjetoDto {
     portfolios_compartilhados?: number[] | null;
 
     /**
-     * ID do órgão gestor
-     * @example 0
+     * nome (mínimo 1 char)
+     * ou
+     * nome da obra
+     * @example "Nome"
      */
-    @IsInt({ message: '$property| orgao_gestor_id precisa ser inteiro' })
-    @Type(() => Number)
-    orgao_gestor_id: number;
+    @IsString()
+    @MaxLength(500)
+    @MinLength(1)
+    nome: string;
 
     /**
-     * ID das pessoas responsáveis no orgao gestor [pessoas que aparecem no filtro do `gestor_de_projeto=true`]
-     * @example "[]"
+     * grupo temático, apenas MDO
+     * @example ""
      */
-    @IsArray({ message: '$property| precisa ser um array' })
-    @ArrayMinSize(0, { message: '$property| precisa ter um item' })
-    @ArrayMaxSize(100, { message: '$property| precisa ter no máximo 100 items' })
-    @IsInt({ each: true, message: '$property| Cada item precisa ser um número inteiro' })
+    @IsOptional()
+    @IsInt({ message: '$property| grupo_tematico_id precisa ser inteiro' })
+    grupo_tematico_id?: number;
+
+    /**
+     * tipo de intervenção, apenas MDO
+     * @example ""
+     */
+    @IsOptional()
+    @IsInt({ message: '$property| tipo_intervencao_id precisa ser inteiro' })
+    tipo_intervencao_id?: number;
+
+    /**
+     * equipamento, apenas MDO
+     * @example ""
+     */
+    @IsOptional()
+    @IsInt({ message: '$property| equipamento_id precisa ser inteiro' })
+    equipamento_id?: number;
+
+    @IsOptional()
+    @IsString()
+    @MaxLength(50000)
     @ValidateIf((object, value) => value !== null)
-    responsaveis_no_orgao_gestor: number[] | null;
+    mdo_detalhamento?: string | null;
+
+    @IsOptional()
+    @IsString()
+    @MaxLength(1024)
+    @ValidateIf((object, value) => value !== null)
+    mdo_programa_habitacional?: string | null;
+
+    @IsOptional()
+    @IsInt({ message: '$property| mdo_n_unidades_habitacionais precisa ser inteiro' })
+    @ValidateIf((object, value) => value !== null)
+    mdo_n_unidades_habitacionais?: number | null;
+
+    @IsOptional()
+    @IsInt({ message: '$property| mdo_n_familias_beneficiadas precisa ser inteiro' })
+    @ValidateIf((object, value) => value !== null)
+    mdo_n_familias_beneficiadas?: number | null;
 
     /**
      * tipo da origem
@@ -129,6 +168,27 @@ export class CreateProjetoDto {
     meta_codigo?: string | null;
 
     /**
+     * ID do órgão gestor do projeto em PP
+     * ou
+     * ID do órgão do gestor do portfólio no MDO
+     * @example 0
+     */
+    @IsInt({ message: '$property| orgao_gestor_id precisa ser inteiro' })
+    @Type(() => Number)
+    orgao_gestor_id: number;
+
+    /**
+     * ID das pessoas responsáveis no orgao gestor [pessoas que aparecem no filtro do `gestor_de_projeto=true`]
+     * @example "[]"
+     */
+    @IsArray({ message: '$property| precisa ser um array' })
+    @ArrayMinSize(0, { message: '$property| precisa ter um item' })
+    @ArrayMaxSize(100, { message: '$property| precisa ter no máximo 100 items' })
+    @IsInt({ each: true, message: '$property| Cada item precisa ser um número inteiro' })
+    @ValidateIf((object, value) => value !== null)
+    responsaveis_no_orgao_gestor: number[] | null;
+
+    /**
      * ID dos órgãos participantes do projeto
      * @example "[]"
      */
@@ -139,7 +199,9 @@ export class CreateProjetoDto {
     orgaos_participantes: number[];
 
     /**
-     * dentro dos órgãos participantes, qual é o órgão responsável
+     * dentro dos órgãos participantes, qual é o órgão responsável (projetos)
+     * ou
+     * órgão responsável pela obra
      */
     @IsInt({ message: '$property| orgao_responsavel_id precisa ser inteiro' })
     @Transform((a: TransformFnParams) => (a.value === null ? null : +a.value))
@@ -147,7 +209,27 @@ export class CreateProjetoDto {
     orgao_responsavel_id: number | null;
 
     /**
+     * apenas MDO
+     * órgão origem da obra (eg: secretaria da educação)
+     */
+    @IsInt({ message: '$property| orgao_responsavel_id precisa ser inteiro' })
+    @Transform((a: TransformFnParams) => (a.value === null ? null : +a.value))
+    @ValidateIf((object, value) => value !== null)
+    orgao_origem_id?: number | null;
+
+    /**
+     * apenas MDO
+     * órgão executor da obra (eg: SIURB Infraestrutura Urbana e Obras)
+     */
+    @IsInt({ message: '$property| orgao_responsavel_id precisa ser inteiro' })
+    @Transform((a: TransformFnParams) => (a.value === null ? null : +a.value))
+    @ValidateIf((object, value) => value !== null)
+    orgao_executor_id?: number | null;
+
+    /**
      * ID da pessoa responsável [pelo planejamento, são as pessoas filtradas pelo filtro `colaborador_de_projeto=true`]
+     * ou
+     * ponto focal responsável [são as pessoas filtradas pelo priv `MDO.colaborador_de_projeto`]
      */
     @IsInt({ message: '$property| responsavel_id precisa ser inteiro' })
     @Transform((a: TransformFnParams) => (a.value === null ? null : +a.value))
@@ -155,21 +237,13 @@ export class CreateProjetoDto {
     responsavel_id: number | null;
 
     /**
-     * nome (mínimo 1 char)
-     * @example "Nome"
-     */
-    @IsString()
-    @MaxLength(500)
-    @MinLength(1)
-    nome: string;
-
-    /**
      * resumo (pode enviar string vazia)
      * @example "lorem..."
      */
+    @IsOptional()
     @IsString()
     @MaxLength(50000)
-    resumo: string;
+    resumo?: string;
 
     /**
      * previsao_inicio ou null
@@ -190,9 +264,10 @@ export class CreateProjetoDto {
     previsao_termino: Date | null;
 
     @IsOptional()
-    @IsInt({ message: '$property| precisa ser inteiro' })
-    @Min(0, { message: '$property| Mínimo 0' })
-    tolerancia_atraso?: number;
+    @IsOnlyDate()
+    @Transform(DateTransform)
+    @ValidateIf((object, value) => value !== null)
+    mdo_previsao_inauguracao?: Date | null;
 
     /**
      * previsão de custo, número positivo com até 2 casas, pode enviar null
@@ -206,13 +281,25 @@ export class CreateProjetoDto {
     @ValidateIf((object, value) => value !== null)
     previsao_custo: number | null;
 
+    @IsOptional()
+    @IsString()
+    @ValidateIf((object, value) => value !== null)
+    @MaxLength(1024)
+    mdo_observacoes?: string;
+
+    @IsOptional()
+    @IsInt({ message: '$property| precisa ser inteiro' })
+    @Min(0, { message: '$property| Mínimo 0' })
+    tolerancia_atraso?: number;
+
     /**
      * principais_etapas
      * @example "1. doing xpto\n2. doing zoo"
      */
+    @IsOptional()
     @IsString()
     @MaxLength(50000)
-    principais_etapas: string;
+    principais_etapas?: string;
 
     @IsOptional()
     @IsInt({ message: '$property| regiao_id precisa ser inteiro' })

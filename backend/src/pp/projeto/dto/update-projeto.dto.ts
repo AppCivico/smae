@@ -151,12 +151,22 @@ export class UpdateProjetoDto extends OmitType(PartialType(CreateProjetoDto), ['
     @MaxLength(50000)
     nao_escopo?: string;
 
+    /*
+    * secretario gestor do projeto
+    * ou
+    * secretário gestor do portfólio
+    */
     @IsOptional()
     @IsString()
     @MaxLength(250)
     @ValidateIf((object, value) => value !== null)
     secretario_executivo?: string | null;
 
+    /*
+    * secretario responsavel
+    * ou
+    * secretario responsavel na obra
+    */
     @IsOptional()
     @IsString()
     @MaxLength(250)
@@ -177,7 +187,7 @@ export class UpdateProjetoDto extends OmitType(PartialType(CreateProjetoDto), ['
     @IsString()
     @MaxLength(20)
     @ValidateIf((object, value) => value !== null)
-    versao: string | null;
+    versao?: string | null;
 
     /**
      * data_aprovacao
