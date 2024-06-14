@@ -57,10 +57,17 @@ export class PdmService {
                 throw new ForbiddenException('Você não tem permissão para inserir Plano de Metas');
             }
 
+            if (!dto.nivel_orcamento) throw new BadRequestException('Nível de Orçamento é obrigatório');
             this.removeCamposPlanoSetorial(dto);
         } else if (tipo == 'PS') {
             if (!user.hasSomeRoles(['CadastroPS.administrador', 'CadastroPS.administrador_no_orgao'])) {
                 throw new ForbiddenException('Você não tem permissão para inserir Plano Setorial');
+            }
+
+            if (!dto.monitoramento_orcamento) {
+                dto.nivel_orcamento = 'Meta';
+            } else if (dto.nivel_orcamento && !dto.nivel_orcamento) {
+                throw new BadRequestException('Nível de Orçamento é obrigatório');
             }
         }
 
@@ -116,7 +123,7 @@ export class PdmService {
                     possui_complementacao_meta: dto.possui_complementacao_meta,
                     possui_iniciativa: dto.possui_iniciativa,
                     possui_atividade: dto.possui_atividade,
-                    nivel_orcamento: dto.nivel_orcamento,
+                    nivel_orcamento: dto.nivel_orcamento!,
                     legislacao_de_instituicao: dto.legislacao_de_instituicao,
                     orgao_admin_id: dto.orgao_admin_id,
                     monitoramento_orcamento: dto.monitoramento_orcamento,
@@ -283,7 +290,6 @@ export class PdmService {
                 nivel_orcamento: pdm.nivel_orcamento,
 
                 pode_editar: this.calcPodeEditar(pdm, user),
-                arquivo_logo_id: undefined,
                 logo: logo,
                 data_fim: Date2YMD.toStringOrNull(pdm.data_fim),
                 data_inicio: Date2YMD.toStringOrNull(pdm.data_inicio),
@@ -292,7 +298,7 @@ export class PdmService {
                 periodo_do_ciclo_participativo_inicio: Date2YMD.toStringOrNull(
                     pdm.periodo_do_ciclo_participativo_inicio
                 ),
-            };
+            } satisfies ListPdm;
         });
 
         return listActiveTmp;
@@ -486,7 +492,26 @@ export class PdmService {
         const pdm = await this.loadPdm(tipo, id, user, 'ReadWrite', prismaCtx);
         const prismaTx = prismaCtx || this.prisma;
         await this.verificarPrivilegiosEdicao(dto, user, pdm);
-        if (tipo == 'PDM') this.removeCamposPlanoSetorial(dto);
+        if (tipo == 'PDM') {
+            if (dto.nivel_orcamento == null) throw new BadRequestException('Nível de Orçamento é obrigatório no PDM.');
+
+            this.removeCamposPlanoSetorial(dto);
+        } else {
+            if ('monitoramento_orcamento' in dto && !dto.monitoramento_orcamento) {
+                dto.nivel_orcamento = 'Meta';
+            }
+
+            if ('nivel_orcamento' in dto || 'monitoramento_orcamento' in dto) {
+                if (!dto.nivel_orcamento || !dto.monitoramento_orcamento)
+                    throw new BadRequestException(
+                        'Nível de Orçamento e Monitoramento de Orçamento são obrigatórios se enviar um deles.'
+                    );
+                if (dto.monitoramento_orcamento && !dto.nivel_orcamento)
+                    throw new BadRequestException(
+                        'Nível de Orçamento é obrigatório se Monitoramento de Orçamento verdadeiro.'
+                    );
+            }
+        }
 
         await this.verificaOrgaoAdmin(dto, prismaTx);
         await this.verificaPdmAnterioes(dto, prismaTx);
@@ -573,7 +598,7 @@ export class PdmService {
                     possui_complementacao_meta: dto.possui_complementacao_meta,
                     possui_iniciativa: dto.possui_iniciativa,
                     possui_atividade: dto.possui_atividade,
-                    nivel_orcamento: dto.nivel_orcamento,
+                    nivel_orcamento: dto.nivel_orcamento!,
                     legislacao_de_instituicao: dto.legislacao_de_instituicao,
                     orgao_admin_id: dto.orgao_admin_id,
                     monitoramento_orcamento: dto.monitoramento_orcamento,

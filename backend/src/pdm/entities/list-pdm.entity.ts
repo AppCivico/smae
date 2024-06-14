@@ -58,7 +58,7 @@ export class ListPdm {
     possui_atividade: boolean;
     logo: string | null;
 
-    nivel_orcamento: string;
+    nivel_orcamento: string | null;
 
     id: number;
     pode_editar: boolean;
