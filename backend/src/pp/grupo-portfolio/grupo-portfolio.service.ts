@@ -6,11 +6,15 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { CreateGrupoPortfolioDto } from './dto/create-grupo-portfolio.dto';
 import { FilterGrupoPortfolioDto, GrupoPortfolioItemDto } from './entities/grupo-portfolio.entity';
 import { UpdateGrupoPortfolioDto } from './dto/update-grupo-portfolio.dto';
+import { PessoaPrivilegioService } from '../../auth/pessoaPrivilegio.service';
 
 @Injectable()
 export class GrupoPortfolioService {
     private readonly logger = new Logger(GrupoPortfolioService.name);
-    constructor(private readonly prisma: PrismaService) {}
+    constructor(
+        private readonly prisma: PrismaService,
+        private readonly pessoaPrivService: PessoaPrivilegioService
+    ) {}
 
     async create(tipoProjeto: TipoProjeto, dto: CreateGrupoPortfolioDto, user: PessoaFromJwt): Promise<RecordWithId> {
         const orgao_id = dto.orgao_id ? dto.orgao_id : user.orgao_id;
@@ -33,12 +37,10 @@ export class GrupoPortfolioService {
                 });
                 if (exists) throw new BadRequestException('Título já está em uso.');
 
-                // TODO esse priv é diferente no MDO
-                const pComPriv = await this.prisma.view_pessoa_espectador_de_projeto.findMany({
-                    where: {
-                        pessoa_id: { in: dto.participantes },
-                    },
-                });
+                const pComPriv = await this.pessoaPrivService.pessoasComPriv(
+                    [tipoProjeto == 'PP' ? 'SMAE.espectador_de_projeto' : 'MDO.espectador_de_projeto'],
+                    dto.participantes
+                );
                 for (const pessoaId of dto.participantes) {
                     const pessoa = pComPriv.filter((r) => r.pessoa_id == pessoaId)[0];
                     if (!pessoa)
@@ -208,11 +210,10 @@ export class GrupoPortfolioService {
                     },
                 });
 
-                const pComPriv = await this.prisma.view_pessoa_espectador_de_projeto.findMany({
-                    where: {
-                        pessoa_id: { in: dto.participantes },
-                    },
-                });
+                const pComPriv = await this.pessoaPrivService.pessoasComPriv(
+                    [tipoProjeto == 'PP' ? 'SMAE.espectador_de_projeto' : 'MDO.espectador_de_projeto'],
+                    dto.participantes
+                );
 
                 const keptRecord: number[] = prevVersion?.GrupoPortfolioPessoa.map((r) => r.pessoa_id) ?? [];
 

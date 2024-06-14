@@ -35,6 +35,7 @@ import { CreateGeoEnderecoReferenciaDto, ReferenciasValidasBase } from '../../ge
 import { BlocoNotaService } from '../../bloco-nota/bloco-nota/bloco-nota.service';
 import { TarefaService } from '../tarefa/tarefa.service';
 import { UpdateTarefaDto } from '../tarefa/dto/update-tarefa.dto';
+import { PessoaPrivilegioService } from '../../auth/pessoaPrivilegio.service';
 
 const FASES_LIBERAR_COLABORADOR: ProjetoStatus[] = ['Registrado', 'Selecionado', 'EmPlanejamento'];
 const StatusParaFase: Record<ProjetoStatus, ProjetoFase> = {
@@ -92,7 +93,8 @@ export class ProjetoService {
         private readonly geolocService: GeoLocService,
         private readonly blocoNotaService: BlocoNotaService,
         @Inject(forwardRef(() => TarefaService))
-        private readonly tarefaService: TarefaService
+        private readonly tarefaService: TarefaService,
+        private readonly pessoaPrivService: PessoaPrivilegioService
     ) {}
 
     private async processaOrigem(dto: CreateProjetoDto) {
@@ -1607,7 +1609,7 @@ export class ProjetoService {
             }
 
             await this.upsertGrupoPort(prismaTx, projeto, dto, now, user);
-            await this.upsertEquipe(prismaTx, projeto, dto, now, user);
+            await this.upsertEquipe(tipo, prismaTx, projeto, dto, now, user);
         });
 
         return { id: projetoId };
@@ -1710,6 +1712,7 @@ export class ProjetoService {
     }
 
     private async upsertEquipe(
+        tipo: TipoProjeto,
         prismaTx: Prisma.TransactionClient,
         projeto: ProjetoDetailDto,
         dto: UpdateProjetoDto,
@@ -1728,12 +1731,11 @@ export class ProjetoService {
         for (const pessoaId of dto.equipe) {
             if (prevVersions.filter((r) => r.pessoa_id == pessoaId)[0]) continue;
 
-            const pessoaComPerm = await prismaTx.view_pessoa_colaborador_de_projeto.findFirst({
-                where: {
-                    pessoa_id: pessoaId,
-                },
-                select: { pessoa_id: true, orgao_id: true },
-            });
+            const pComPriv = await this.pessoaPrivService.pessoasComPriv(
+                [tipo == 'PP' ? 'SMAE.colaborador_de_projeto' : 'MDO.colaborador_de_projeto'],
+                [pessoaId]
+            );
+            const pessoaComPerm = pComPriv[0];
 
             if (!pessoaComPerm)
                 throw new BadRequestException(

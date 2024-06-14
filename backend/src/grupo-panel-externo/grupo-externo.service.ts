@@ -6,11 +6,15 @@ import { PrismaService } from '../prisma/prisma.service';
 import { CreateGrupoPainelExternoDto } from './dto/create-grupo-externo.dto';
 import { FilterGrupoPainelExternoDto, GrupoPainelExternoItemDto } from './entities/grupo-externo.entity';
 import { UpdateGrupoPainelExternoDto } from './dto/update-grupo-externo.dto';
+import { PessoaPrivilegioService } from '../auth/pessoaPrivilegio.service';
 
 @Injectable()
 export class GrupoPainelExternoService {
     private readonly logger = new Logger(GrupoPainelExternoService.name);
-    constructor(private readonly prisma: PrismaService) {}
+    constructor(
+        private readonly prisma: PrismaService,
+        private readonly pessoaPrivService: PessoaPrivilegioService
+    ) {}
 
     async create(dto: CreateGrupoPainelExternoDto, user: PessoaFromJwt): Promise<RecordWithId> {
         const sistema = user.assertOneModuloSistema('criar', 'grupo de painel externo');
@@ -35,11 +39,10 @@ export class GrupoPainelExternoService {
                 });
                 if (exists) throw new BadRequestException('Título já está em uso.');
 
-                const pComPriv = await this.prisma.view_pessoa_espectador_de_painel_externo.findMany({
-                    where: {
-                        pessoa_id: { in: dto.participantes },
-                    },
-                });
+                const pComPriv = await this.pessoaPrivService.pessoasComPriv(
+                    ['SMAE.espectador_de_painel_externo'],
+                    dto.participantes
+                );
                 for (const pessoaId of dto.participantes) {
                     const pessoa = pComPriv.filter((r) => r.pessoa_id == pessoaId)[0];
                     if (!pessoa)
@@ -189,11 +192,10 @@ export class GrupoPainelExternoService {
                     },
                 });
 
-                const pComPriv = await this.prisma.view_pessoa_espectador_de_painel_externo.findMany({
-                    where: {
-                        pessoa_id: { in: dto.participantes },
-                    },
-                });
+                const pComPriv = await this.pessoaPrivService.pessoasComPriv(
+                    ['SMAE.espectador_de_painel_externo'],
+                    dto.participantes
+                );
 
                 const keptRecord: number[] = prevVersion?.GrupoPainelExternoPessoa.map((r) => r.pessoa_id) ?? [];
 
