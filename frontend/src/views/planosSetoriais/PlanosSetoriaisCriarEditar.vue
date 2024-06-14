@@ -116,9 +116,6 @@ watch(itemParaEdição, (novoValor) => {
             <template v-else>inativo</template>
           </LabelFromYup>
         </label>
-        <p class="t13 tc500">
-          Ao ativar um Programa de Metas, todos os demais programas serão inativados
-        </p>
       </div>
     </div>
     <div class="flex flexwrap g2 mb1">
