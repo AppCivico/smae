@@ -29,7 +29,7 @@ export default {
           'CadastroPS.administrador',
           'CadastroPS.administrador_no_orgao',
         ],
-        rotaDeEscape: 'planosSetoriaisListar',
+        rotaDeEscape: 'planosSetoriaisResumo',
         rotasParaMigalhasDePão: [
           'planosSetoriaisListar',
         ],
@@ -57,7 +57,7 @@ export default {
               'CadastroPS.administrador',
               'CadastroPS.administrador_no_orgao',
             ],
-            rotaDeEscape: 'planosSetoriaisListar',
+            rotaDeEscape: 'planosSetoriaisResumo',
             rotasParaMigalhasDePão: [
               'planosSetoriaisListar',
             ],
