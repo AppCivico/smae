@@ -129,7 +129,7 @@ export class PdmService {
                     monitoramento_orcamento: dto.monitoramento_orcamento,
                     pdm_anteriores: dto.pdm_anteriores,
                     tipo: tipo,
-                    ativo: tipo == 'PDM' ? false : true,
+                    ativo: false,
                 },
                 select: { id: true },
             });
