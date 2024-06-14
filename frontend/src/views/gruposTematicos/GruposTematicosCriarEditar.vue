@@ -27,6 +27,25 @@
         />
       </div>
     </div>
+
+    <label
+      for="programa_habitacional"
+      class="flex center mb1"
+    >
+      <Field
+        id="programa_habitacional"
+        name="programa_habitacional"
+        type="checkbox"
+        :value="true"
+        :unchecked-value="false"
+      />
+      <LabelFromYup
+        as="span"
+        name="programa_habitacional"
+        :schema="schema"
+        class="mb0"
+      />
+    </label>
     <label
       for="unidades_habitacionais"
       class="flex center mb1"
@@ -45,7 +64,6 @@
         :schema="schema"
       />
     </label>
-
     <label
       for="familias_beneficiadas"
       class="flex center mb1"
@@ -60,25 +78,6 @@
       <LabelFromYup
         as="span"
         name="familias_beneficiadas"
-        :schema="schema"
-        class="mb0"
-      />
-    </label>
-
-    <label
-      for="programa_habitacional"
-      class="flex center mb1"
-    >
-      <Field
-        id="programa_habitacional"
-        name="programa_habitacional"
-        type="checkbox"
-        :value="true"
-        :unchecked-value="false"
-      />
-      <LabelFromYup
-        as="span"
-        name="programa_habitacional"
         :schema="schema"
         class="mb0"
       />
