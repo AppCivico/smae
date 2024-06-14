@@ -679,7 +679,7 @@ export class PdmService {
         }
     ) {
         const prevVersion = await prismaTx.pdmPerfil.findMany({
-            where: { pdm_id, removido_em: null },
+            where: { pdm_id, removido_em: null, tipo: tipo },
             select: { pessoa_id: true },
         });
 
