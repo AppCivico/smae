@@ -5,13 +5,15 @@ import { plainToInstance } from 'class-transformer';
 import { DateTime } from 'luxon';
 import { VariavelService } from 'src/variavel/variavel.service';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
+import { PessoaPrivilegioService } from '../auth/pessoaPrivilegio.service';
+import { ListaDePrivilegios } from '../common/ListaDePrivilegios';
 import { ReadOnlyBooleanType } from '../common/TypeReadOnly';
 import { Date2YMD, DateYMD, SYSTEM_TIMEZONE } from '../common/date2ymd';
 import { JOB_PDM_CICLO_LOCK } from '../common/dto/locks';
 import { PrismaService } from '../prisma/prisma.service';
 import { UploadService } from '../upload/upload.service';
 import { CreatePdmDocumentDto } from './dto/create-pdm-document.dto';
-import { CreatePdmAdminCPDto, CreatePdmDto, CreatePdmTecnicoCPDto } from './dto/create-pdm.dto';
+import { CreatePdmDto } from './dto/create-pdm.dto';
 import { FilterPdmDto } from './dto/filter-pdm.dto';
 import { CicloFisicoDto, OrcamentoConfig } from './dto/list-pdm.dto';
 import { PdmDto, PlanoSetorialDto } from './dto/pdm.dto';
@@ -19,6 +21,12 @@ import { UpdatePdmOrcamentoConfigDto } from './dto/update-pdm-orcamento-config.d
 import { UpdatePdmDto } from './dto/update-pdm.dto';
 import { ListPdm } from './entities/list-pdm.entity';
 import { PdmDocument } from './entities/pdm-document.entity';
+
+const MAPA_PERFIL_PERMISSAO: Record<PdmPerfilTipo, ListaDePrivilegios[]> = {
+    ADMIN: ['PS.admin_cp'],
+    CP: ['PS.tecnico_cp'],
+    PONTO_FOCAL: ['PS.ponto_focal'],
+} as const;
 
 type CicloFisicoResumo = {
     id: number;
@@ -39,7 +47,8 @@ export class PdmService {
     constructor(
         private readonly prisma: PrismaService,
         private readonly uploadService: UploadService,
-        private readonly variavelService: VariavelService
+        private readonly variavelService: VariavelService,
+        private readonly pessoaPrivService: PessoaPrivilegioService
     ) {}
 
     async create(tipo: TipoPdm, dto: CreatePdmDto, user: PessoaFromJwt) {
@@ -79,13 +88,6 @@ export class PdmService {
 
         const now = new Date(Date.now());
         const created = await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient) => {
-            let ps_admin_cp: CreatePdmAdminCPDto | undefined = undefined;
-            let ps_tecnico_cp: CreatePdmTecnicoCPDto | undefined = undefined;
-            if (dto.ps_admin_cp) ps_admin_cp = dto.ps_admin_cp;
-            if (dto.ps_tecnico_cp) ps_tecnico_cp = dto.ps_tecnico_cp;
-            delete dto.ps_admin_cp;
-            delete dto.ps_tecnico_cp;
-
             const pdm = await prismaTx.pdm.create({
                 data: {
                     criado_por: user.id,
@@ -125,9 +127,19 @@ export class PdmService {
                 select: { id: true },
             });
 
-            if (ps_admin_cp || ps_tecnico_cp) {
-                this.logger.log(`criando ps_admin_cp e ps_tecnico_cp`);
-                await this.update(tipo, pdm.id, { ps_admin_cp, ps_tecnico_cp }, user, prismaTx);
+            if (dto.ps_admin_cp || dto.ps_tecnico_cp || dto.ps_ponto_focal) {
+                this.logger.log(`criando ps_admin_cp / ps_tecnico_cp / ps_ponto_focal`);
+                await this.update(
+                    tipo,
+                    pdm.id,
+                    {
+                        ps_admin_cp: dto.ps_admin_cp,
+                        ps_tecnico_cp: dto.ps_tecnico_cp,
+                        ps_ponto_focal: dto.ps_ponto_focal,
+                    },
+                    user,
+                    prismaTx
+                );
             }
 
             if (tipo == 'PDM') {
@@ -363,14 +375,17 @@ export class PdmService {
 
         let merged: PdmDto | PlanoSetorialDto = pdmInfo;
         if (tipo == 'PS') {
-            const [ps_admin_cp, ps_tecnico_cp] = await Promise.all([
-                this.prisma.pdmPerfil.findMany({
-                    where: { pdm_id: id, tipo: 'ADMIN', removido_em: null },
-                }),
-                this.prisma.pdmPerfil.findMany({
-                    where: { pdm_id: id, tipo: 'CP', removido_em: null },
-                }),
-            ]);
+            const pdmPerfis = await this.prisma.pdmPerfil.findMany({
+                where: {
+                    pdm_id: id,
+                    tipo: { in: ['ADMIN', 'CP', 'PONTO_FOCAL'] },
+                    removido_em: null,
+                },
+            });
+
+            const ps_admin_cp = pdmPerfis.filter((perfil) => perfil.tipo === 'ADMIN');
+            const ps_tecnico_cp = pdmPerfis.filter((perfil) => perfil.tipo === 'CP');
+            const ps_ponto_focal = pdmPerfis.filter((perfil) => perfil.tipo === 'PONTO_FOCAL');
 
             const pdm_anteriores = pdm.pdm_anteriores.length
                 ? await this.prisma.pdm.findMany({
@@ -382,7 +397,6 @@ export class PdmService {
                   })
                 : [];
 
-            console.log(ps_admin_cp);
             merged = {
                 ...pdmInfo,
                 legislacao_de_instituicao: pdm.legislacao_de_instituicao,
@@ -394,6 +408,9 @@ export class PdmService {
                 },
                 ps_tecnico_cp: {
                     participantes: ps_tecnico_cp.map((item) => item.pessoa_id),
+                },
+                ps_ponto_focal: {
+                    participantes: ps_ponto_focal.map((item) => item.pessoa_id),
                 },
             } satisfies PlanoSetorialDto;
         }
@@ -528,13 +545,6 @@ export class PdmService {
                     });
             }
 
-            const ps_admin_cp = dto.ps_admin_cp;
-            delete dto.ps_admin_cp;
-            const ps_tecnico_cp = dto.ps_tecnico_cp;
-            delete dto.ps_tecnico_cp;
-
-            console.log(ps_admin_cp);
-
             await prismaTx.pdm.update({
                 where: { id: id },
                 data: {
@@ -574,8 +584,9 @@ export class PdmService {
                 select: { id: true },
             });
 
-            if (ps_admin_cp) await this.upsertPerfil(id, 'ADMIN', user, prismaTx, now, ps_admin_cp);
-            if (ps_tecnico_cp) await this.upsertPerfil(id, 'CP', user, prismaTx, now, ps_tecnico_cp);
+            if (dto.ps_admin_cp) await this.upsertPerfil(id, 'ADMIN', user, prismaTx, now, dto.ps_admin_cp);
+            if (dto.ps_tecnico_cp) await this.upsertPerfil(id, 'CP', user, prismaTx, now, dto.ps_tecnico_cp);
+            if (dto.ps_ponto_focal) await this.upsertPerfil(id, 'PONTO_FOCAL', user, prismaTx, now, dto.ps_ponto_focal);
 
             if (verificarCiclos) {
                 this.logger.log(`chamando monta_ciclos_pdm...`);
@@ -634,15 +645,7 @@ export class PdmService {
             select: { pessoa_id: true },
         });
 
-        const pComPriv: { pessoa_id: number; orgao_id: number }[] = await (
-            this.prisma[tipo == 'ADMIN' ? 'view_pessoa_ps_admin_cp' : 'view_pessoa_ps_tecnico_cp'] as any
-        ).findMany({
-            where: {
-                pessoa_id: { in: data.participantes },
-            },
-        });
-
-        console.log('pComPriv', pComPriv);
+        const pComPriv = await this.pessoaPrivService.pessoasComPriv(MAPA_PERFIL_PERMISSAO[tipo], data.participantes);
 
         const keptRecord: number[] = prevVersion.map((r) => r.pessoa_id);
 

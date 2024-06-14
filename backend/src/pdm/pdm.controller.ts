@@ -151,13 +151,7 @@ const PermsPS: ListaDePrivilegios[] = ['CadastroPS.administrador', 'CadastroPS.a
 @ApiTags('Plano Setorial')
 @Controller('plano-setorial')
 export class PlanoSetorialController {
-    constructor(
-        private readonly pdmService: PdmService,
-        private readonly objetivoEstrategicoService: TemaService,
-        private readonly subTemaService: SubTemaService,
-        private readonly eixoService: MacroTemaService,
-        private readonly tagService: TagService
-    ) {}
+    constructor(private readonly pdmService: PdmService) {}
 
     @Post()
     @ApiBearerAuth('access-token')
