@@ -153,7 +153,7 @@ export class ParlamentarService {
                 cargo_mais_recente: true,
                 partido_mais_recente: true,
             },
-            orderBy: [{ nome: 'asc' }],
+            orderBy: [{ nome_popular: 'asc' }],
             skip: offset,
             take: ipp + 1,
         });
