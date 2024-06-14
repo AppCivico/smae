@@ -412,6 +412,10 @@ model Pessoa {
     PdmPerfilQueDesativei PdmPerfil[] @relation("Removedor")
     PdmPerfilQueCriei     PdmPerfil[] @relation("Criador")
 
+    ProjetoRegiaoQCriei     ProjetoRegiao[] @relation("Criador")
+    ProjetoRegiaoQAtualizei ProjetoRegiao[] @relation("Atualizador")
+    ProjetoRegiaoQRemovi    ProjetoRegiao[] @relation("Removedor")
+
     @@index([email])
     @@map("pessoa")
 }
@@ -480,10 +484,12 @@ model Orgao {
     tarefas                Tarefa[]
     PlanoAcao              PlanoAcao[]
     projetos_participando  ProjetoOrgaoParticipante[]
-    projetos_geridos       Projeto[]                  @relation("orgao_gestor")
 
     PortifolioOrgao              PortfolioOrgao[]
     orgao_responsavel            Projeto[]                      @relation("orgao_responsavel")
+    orgao_origem                 Projeto[]                      @relation("orgao_origem")
+    orgao_executor               Projeto[]                      @relation("orgao_executor")
+    projetos_geridos             Projeto[]                      @relation("orgao_gestor")
     GrupoPortfolio               GrupoPortfolio[]
     GrupoPortfolioPessoa         GrupoPortfolioPessoa[]
     ProjetoEquipe                ProjetoEquipe[]
@@ -1007,6 +1013,7 @@ model Regiao {
 
     eleicoesComparecimento    EleicaoComparecimento[]
     mandatoRepresentatividade MandatoRepresentatividade[]
+    ProjetoRegiao             ProjetoRegiao[]
 
     @@index([parente_id])
     @@map("regiao")
@@ -3019,6 +3026,10 @@ enum ProjetoStatus {
     EmAcompanhamento // Suspenso, fechado
     Suspenso // Volta pra EmAcompanhamento ou Fechado
     Fechado // vai para o SEI o arquivo do relatorio
+    MDO_NaoIniciada
+    MDO_EmAndamento
+    MDO_Concluida
+    MDO_Paralisada
 }
 
 model Portfolio {
@@ -3169,6 +3180,25 @@ model Projeto {
     risco_maximo String?
     qtde_riscos  Int     @default(0)
 
+    mdo_detalhamento             String?
+    mdo_programa_habitacional    String?
+    mdo_observacoes              String?
+    mdo_n_unidades_habitacionais Int?
+    mdo_n_familias_beneficiadas  Int?
+    grupo_tematico_id            Int?
+    mdo_previsao_inauguracao     DateTime?        @db.Date()
+    grupo_tematico               GrupoTematico?   @relation(fields: [grupo_tematico_id], references: [id])
+    tipo_intervencao_id          Int?
+    tipo_intervencao             TipoIntervencao? @relation(fields: [tipo_intervencao_id], references: [id])
+    equipamento_id               Int?
+    equipamento                  Equipamento?     @relation(fields: [equipamento_id], references: [id])
+
+    orgao_executor_id Int?
+    orgao_executor    Orgao? @relation("orgao_executor", fields: [orgao_executor_id], references: [id])
+
+    orgao_origem_id Int?
+    orgao_origem    Orgao? @relation("orgao_origem", fields: [orgao_origem_id], references: [id])
+
     status         ProjetoStatus
     fase           ProjetoFase
     arquivado      Boolean       @default(false)
@@ -3290,9 +3320,36 @@ model Projeto {
     gruposTematicos  ProjetoGrupoTematico[]
     tiposIntervencao ProjetoTipoIntervencao[]
     equipamentos     ProjetoEquipamento[]
+    ProjetoRegiao    ProjetoRegiao[]
 
     @@index([removido_em])
     @@map("projeto")
+}
+
+model ProjetoRegiao {
+    id Int @id @default(autoincrement())
+
+    projeto_id Int
+    projeto    Projeto @relation(fields: [projeto_id], references: [id])
+
+    regiao_id Int
+    regiao    Regiao @relation(fields: [regiao_id], references: [id])
+
+    // criado em, atualizando em, removido em
+    criado_por Int
+    criado_em  DateTime
+    criador    Pessoa   @relation("Criador", fields: [criado_por], references: [id])
+
+    atualizado_por Int?
+    atualizado_em  DateTime?
+    atualizador    Pessoa?   @relation("Atualizador", fields: [atualizado_por], references: [id])
+
+    removido_por Int?
+    removido_em  DateTime?
+    removedor    Pessoa?   @relation("Removedor", fields: [removido_por], references: [id])
+
+    @@index([projeto_id])
+    @@map("projeto_regiao")
 }
 
 model PortfolioProjetoCompartilhado {
@@ -5814,6 +5871,7 @@ model GrupoTematico {
     removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
 
     projetos ProjetoGrupoTematico[]
+    Projeto  Projeto[]
 
     @@map("grupo_tematico")
 }
@@ -5837,6 +5895,7 @@ model TipoIntervencao {
     removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
 
     projetos ProjetoTipoIntervencao[]
+    Projeto  Projeto[]
 
     @@map("tipo_intervencao")
 }
@@ -5860,6 +5919,7 @@ model Equipamento {
     removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
 
     projetos ProjetoEquipamento[]
+    Projeto  Projeto[]
 
     @@map("equipamento")
 }

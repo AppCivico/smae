@@ -47,6 +47,10 @@ const StatusParaFase: Record<ProjetoStatus, ProjetoFase> = {
     EmAcompanhamento: 'Acompanhamento',
     Suspenso: 'Acompanhamento',
     Fechado: 'Encerramento',
+    MDO_Concluida: 'Encerramento',
+    MDO_EmAndamento: 'Acompanhamento',
+    MDO_NaoIniciada: 'Planejamento',
+    MDO_Paralisada: 'Acompanhamento',
 } as const;
 
 export const ProjetoStatusParaExibicao: Record<ProjetoStatus, string> = {
@@ -58,6 +62,10 @@ export const ProjetoStatusParaExibicao: Record<ProjetoStatus, string> = {
     EmAcompanhamento: 'Em Acompanhamento',
     Suspenso: 'Suspenso',
     Fechado: 'Concluído',
+    MDO_Concluida: 'Concluída',
+    MDO_EmAndamento: 'Em Andamento',
+    MDO_NaoIniciada: 'Não Iniciada',
+    MDO_Paralisada: 'Paralisada',
 } as const;
 
 export class ProjetoOrgaoParticipante {
@@ -276,6 +284,8 @@ export class ProjetoService {
 
         if (!origem_tipo) throw new Error('origem_tipo deve estar definido no create de Projeto');
 
+        this.removeCampos(tipo, dto);
+
         if (dto.portfolios_compartilhados?.length) {
             // Caso o portfolio seja de modelo para clonagem.
             // Não permitir compartilhar com outros ports.
@@ -316,7 +326,7 @@ export class ProjetoService {
                         orgao_responsavel_id: dto.orgao_responsavel_id,
                         responsavel_id: dto.responsavel_id,
                         nome: dto.nome,
-                        resumo: dto.resumo,
+                        resumo: dto.resumo ?? '',
                         previsao_inicio: dto.previsao_inicio,
                         previsao_termino: dto.previsao_termino,
 
@@ -359,9 +369,23 @@ export class ProjetoService {
                         // No entanto, caso o Portfolio seja de compartilhamento, já deve vir pré-definida.
                         // Para permitir criação de cronograma.
                         eh_prioritario: portfolio.modelo_clonagem ? true : false,
+
+                        grupo_tematico_id: dto.grupo_tematico_id,
+                        tipo_intervencao_id: dto.tipo_intervencao_id,
+                        equipamento_id: dto.equipamento_id,
+                        orgao_origem_id: dto.orgao_origem_id,
+                        orgao_executor_id: dto.orgao_executor_id,
+                        mdo_detalhamento: dto.mdo_detalhamento,
+                        mdo_programa_habitacional: dto.mdo_programa_habitacional,
+                        mdo_n_unidades_habitacionais: dto.mdo_n_unidades_habitacionais,
+                        mdo_n_familias_beneficiadas: dto.mdo_n_familias_beneficiadas,
+                        mdo_previsao_inauguracao: dto.mdo_previsao_inauguracao,
+                        mdo_observacoes: dto.mdo_observacoes,
                     },
                     select: { id: true },
                 });
+
+                await this.verificaCampos(prismaTx, row.id, tipo);
 
                 await prismaTx.tarefaCronograma.create({
                     data: {
@@ -382,6 +406,36 @@ export class ProjetoService {
         );
 
         return created;
+    }
+
+    private removeCampos(tipo: string, dto: UpdateProjetoDto) {
+        if (tipo == 'MDO') {
+            delete dto.resumo;
+            delete dto.principais_etapas;
+            delete dto.regiao_id;
+            delete dto.logradouro_tipo;
+            delete dto.logradouro_nome;
+            delete dto.logradouro_numero;
+            delete dto.logradouro_cep;
+            delete dto.data_aprovacao;
+            delete dto.data_revisao;
+            delete dto.versao;
+            delete dto.coordenador_ue;
+            delete dto.nao_escopo;
+            delete dto.publico_alvo;
+            delete dto.objetivo;
+            delete dto.objeto;
+            delete dto.restricoes;
+            delete dto.premissas;
+        }
+    }
+
+    private async verificaCampos(prismaTx: Prisma.TransactionClient, id: number, tipo: string) {
+        const _self = await prismaTx.projeto.findFirstOrThrow({ where: { id: id } });
+        if (tipo == 'PP') {
+            // em teoria estava antes aceitando string vazia então talvez nem seja tão necessário assim
+            // if (!self.resumo) throw new HttpException('resumo| Resumo é obrigatório para Gestão de Projetos', 400);
+        }
     }
 
     private async checkPortCompartilhadoOrgaos(portPrincipal: PortfolioDto, portCompartilhados: PortfolioDto[]) {
@@ -1398,6 +1452,7 @@ export class ProjetoService {
     ): Promise<RecordWithId> {
         // aqui é feito a verificação se esse usuário pode realmente acessar esse recurso
         const projeto = await this.findOne(tipo, projetoId, user, 'ReadWrite');
+        this.removeCampos(tipo, dto);
 
         // migrou de status, verificar se  realmente poderia mudar
         if (dto.status && dto.status != projeto.status) {
@@ -1607,6 +1662,8 @@ export class ProjetoService {
                 if (codigo != projeto.codigo)
                     await prismaTx.projeto.update({ where: { id: projeto.id }, data: { codigo: codigo } });
             }
+
+            await this.verificaCampos(prismaTx, projetoId, tipo);
 
             await this.upsertGrupoPort(prismaTx, projeto, dto, now, user);
             await this.upsertEquipe(tipo, prismaTx, projeto, dto, now, user);
