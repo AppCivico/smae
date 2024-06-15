@@ -44,7 +44,7 @@ export default {
       children: [
         {
           path: '',
-          name: 'planosSetoriaisEditar',
+          name: 'paineisEditar',
           component: () => import('@/views/mdo.painelDeObras/PainelCriarEditar.vue'),
           props: ({ params }) => ({
             ...params,
@@ -63,7 +63,7 @@ export default {
         },
         {
           path: 'resumo',
-          name: 'planosSetoriaisResumo',
+          name: 'paineisResumo',
           component: () => import('@/views/mdo.painelDeObras/PainelResumo.vue'),
           props: ({ params }) => ({
             ...params,
