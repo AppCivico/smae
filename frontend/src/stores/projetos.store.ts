@@ -280,6 +280,7 @@ export const useProjetosStore = defineStore('projetos', {
       data_aprovacao: dateTimeToDate(emFoco?.data_aprovacao),
       data_revisao: dateTimeToDate(emFoco?.data_revisao),
       equipe: emFoco?.equipe.map((x) => x.pessoa.id) || [],
+      fonte_recursos: emFoco?.fonte_recursos || null,
       geolocalizacao: emFoco?.geolocalizacao?.map((x) => x.token) || [],
       meta_codigo: emFoco?.meta_codigo || '',
       orgao_gestor_id: emFoco?.orgao_gestor?.id || null,
