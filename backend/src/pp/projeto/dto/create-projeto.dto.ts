@@ -12,10 +12,12 @@ import {
     IsString,
     IsUrl,
     Matches,
+    Max,
     MaxLength,
     Min,
     MinLength,
     ValidateIf,
+    ValidateNested,
 } from 'class-validator';
 import { IsOnlyDate } from 'src/common/decorators/IsDateOnly';
 import { DateTransform } from '../../../auth/transforms/date.transform';
@@ -24,6 +26,45 @@ import {
     CONST_PROC_SEI_SINPROC_MESSAGE,
     CONST_PROC_SEI_SINPROC_REGEXP,
 } from '../../../dotacao/dto/dotacao.dto';
+
+export class PPfonteRecursoDto {
+    /**
+     * id caso já exista e deseja fazer uma atualização
+     */
+    @IsOptional()
+    @IsNumber()
+    @Transform((a: TransformFnParams) => (a.value === undefined ? undefined : +a.value))
+    id?: number;
+
+    /**
+     * código da fonte de recurso no SOF, no ano escolhido
+     */
+    @IsString({ message: '$property| precisa ser um alfanumérico' })
+    @MaxLength(2)
+    fonte_recurso_cod_sof: string;
+
+    @IsInt()
+    @Max(3000)
+    @Min(2003)
+    @Transform((a: TransformFnParams) => +a.value)
+    fonte_recurso_ano: number;
+
+    @IsNumber(
+        { maxDecimalPlaces: 2, allowInfinity: false, allowNaN: false },
+        { message: '$property| até duas casas decimais' }
+    )
+    @Transform((a: TransformFnParams) => (a.value === null ? null : +a.value))
+    @ValidateIf((object, value) => value !== null)
+    valor_percentual?: number | null;
+
+    @IsNumber(
+        { maxDecimalPlaces: 2, allowInfinity: false, allowNaN: false },
+        { message: '$property| até duas casas decimais' }
+    )
+    @Transform((a: TransformFnParams) => (a.value === null ? null : +a.value))
+    @ValidateIf((object, value) => value !== null)
+    valor_nominal?: number | null;
+}
 
 export class CreateProjetoDto {
     /**
@@ -60,7 +101,7 @@ export class CreateProjetoDto {
 
     /**
      * grupo temático, apenas MDO
-     * @example ""
+     * @example "0"
      */
     @IsOptional()
     @IsInt({ message: '$property| grupo_tematico_id precisa ser inteiro' })
@@ -68,7 +109,7 @@ export class CreateProjetoDto {
 
     /**
      * tipo de intervenção, apenas MDO
-     * @example ""
+     * @example "0"
      */
     @IsOptional()
     @IsInt({ message: '$property| tipo_intervencao_id precisa ser inteiro' })
@@ -76,7 +117,7 @@ export class CreateProjetoDto {
 
     /**
      * equipamento, apenas MDO
-     * @example ""
+     * @example "0"
      */
     @IsOptional()
     @IsInt({ message: '$property| equipamento_id precisa ser inteiro' })
@@ -212,6 +253,7 @@ export class CreateProjetoDto {
      * apenas MDO
      * órgão origem da obra (eg: secretaria da educação)
      */
+    @IsOptional()
     @IsInt({ message: '$property| orgao_responsavel_id precisa ser inteiro' })
     @Transform((a: TransformFnParams) => (a.value === null ? null : +a.value))
     @ValidateIf((object, value) => value !== null)
@@ -221,6 +263,7 @@ export class CreateProjetoDto {
      * apenas MDO
      * órgão executor da obra (eg: SIURB Infraestrutura Urbana e Obras)
      */
+    @IsOptional()
     @IsInt({ message: '$property| orgao_responsavel_id precisa ser inteiro' })
     @Transform((a: TransformFnParams) => (a.value === null ? null : +a.value))
     @ValidateIf((object, value) => value !== null)
@@ -334,6 +377,35 @@ export class CreateProjetoDto {
     @IsString({ each: true })
     @IsArray()
     geolocalizacao: string[];
+
+    /*
+     * secretario gestor do projeto
+     * ou
+     * secretário gestor do portfólio
+     */
+    @IsOptional()
+    @IsString()
+    @MaxLength(250)
+    @ValidateIf((object, value) => value !== null)
+    secretario_executivo?: string | null;
+
+    /*
+     * secretario responsavel
+     * ou
+     * secretario responsavel na obra
+     */
+    @IsOptional()
+    @IsString()
+    @MaxLength(250)
+    @ValidateIf((object, value) => value !== null)
+    secretario_responsavel?: string | null;
+
+    // manter duplicado no update
+    @IsOptional()
+    @IsArray({ message: 'precisa ser uma array, pode ter 0 items para limpar' })
+    @ValidateNested({ each: true })
+    @Type(() => PPfonteRecursoDto)
+    fonte_recursos?: PPfonteRecursoDto[];
 }
 
 export class CreateProjetoDocumentDto {
