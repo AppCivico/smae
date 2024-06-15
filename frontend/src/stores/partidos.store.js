@@ -83,8 +83,8 @@ export const usePartidosStore = defineStore('partidosStore', {
     itemParaEdição({ emFoco }) {
       return {
         ...emFoco,
-        fundacao: dateTimeToDate(emFoco?.fundacao),
-        encerramento: dateTimeToDate(emFoco?.encerramento),
+        fundacao: dateTimeToDate(emFoco?.fundacao) || null,
+        encerramento: dateTimeToDate(emFoco?.encerramento) || null,
       };
     },
     partidosPorId: ({ lista }) => lista
