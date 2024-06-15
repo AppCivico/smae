@@ -77,7 +77,7 @@ const portfolioId = Number.parseInt(route.query.portfolio_id, 10) || undefined;
 const possíveisGestores = ref([]);
 const possíveisColaboradores = ref([]);
 const portfóliosDisponíveis = computed(() => {
-  if (!emFoco.value?.portfolio_id || !emFoco.value?.portfolio_id) {
+  if (!emFoco.value?.portfolio_id) {
     return [];
   }
 
