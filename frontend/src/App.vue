@@ -27,7 +27,6 @@ onErrorCaptured((err) => {
   <ErrorComponent
     v-if="erro"
     class="pl5"
-    aria-live="assertive"
   >
     <div class="flex spacebetween center pl1">
       {{ erro }}
