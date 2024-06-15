@@ -1,5 +1,6 @@
 <script setup>
 import AutocompleteField from '@/components/AutocompleteField2.vue';
+import CampoDeArquivo from '@/components/CampoDeArquivo.vue';
 import CampoDePessoasComBuscaPorOrgao from '@/components/CampoDePessoasComBuscaPorOrgao.vue';
 import { planoSetorial as schema } from '@/consts/formSchemas';
 import nulificadorTotal from '@/helpers/nulificadorTotal.ts';
@@ -25,11 +26,7 @@ const authStore = useAuthStore();
 const { temPermissãoPara } = storeToRefs(authStore);
 
 const ÓrgãosStore = useOrgansStore();
-const {
-  órgãosComoLista,
-  órgãosQueTemResponsáveis,
-  órgãosQueTemResponsáveisEPorId,
-} = storeToRefs(ÓrgãosStore);
+const { órgãosComoLista } = storeToRefs(ÓrgãosStore);
 
 const planosSetoriaisStore = usePlanosSetoriaisStore();
 const {
@@ -130,663 +127,670 @@ watch(itemParaEdição, (novoValor) => {
     :aria-busy="chamadasPendentes.emFoco && !emFoco"
     @submit="onSubmit"
   >
-    <div
-      v-if="planoSetorialId && temPermissãoPara([
-        'CadastroPS.administrador',
-        'CadastroPS.administrador_no_orgao',
-      ])"
-      class="flex flexwrap g2 mb1"
-    >
-      <div class="f1">
-        <label class="block mb1">
-          <Field
-            name="ativo"
-            type="checkbox"
-            :value="true"
-            :unchecked-value="false"
-            class="mr1"
-          />
+    <fieldset>
+      <div
+        v-if="planoSetorialId && temPermissãoPara([
+          'CadastroPS.administrador',
+          'CadastroPS.administrador_no_orgao',
+        ])"
+        class="flex flexwrap g2 mb1"
+      >
+        <div class="f1">
+          <label class="block mb1">
+            <Field
+              name="ativo"
+              type="checkbox"
+              :value="true"
+              :unchecked-value="false"
+              class="mr1"
+            />
+            <LabelFromYup
+              name="ativo"
+              as="span"
+              :schema="schema"
+            >
+              <template v-if="carga.ativo">ativo</template>
+              <template v-else>inativo</template>
+            </LabelFromYup>
+          </label>
+        </div>
+      </div>
+      <div class="flex flexwrap g2 mb1">
+        <div class="f1">
           <LabelFromYup
-            name="ativo"
-            as="span"
+            name="nome"
             :schema="schema"
+          />
+          <Field
+            name="nome"
+            type="text"
+            class="inputtext light mb1"
+            :class="{ 'error': errors.nome }"
+          />
+          <ErrorMessage name="nome" />
+        </div>
+      </div>
+      <div class="flex flexwrap g2 mb1">
+        <div class="f1">
+          <LabelFromYup
+            name="descricao"
+            :schema="schema"
+          />
+          <Field
+            name="descricao"
+            as="textarea"
+            rows="3"
+            class="inputtext light mb1"
+            :class="{ 'error': errors.descricao }"
+            maxlength="250"
+          />
+          <ErrorMessage name="descricao" />
+        </div>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <div class="flex flexwrap g2 mb1">
+        <div class="f1 fb10em">
+          <LabelFromYup
+            name="upload_logo"
+            :schema="schema"
+            for="logo"
+          />
+          <CampoDeArquivo
+            id="logo"
+            v-model="carga.upload_logo"
+            accept=".svg,.png"
+            name="upload_logo"
+            tipo="LOGO_PDM"
           >
-            <template v-if="carga.ativo">ativo</template>
-            <template v-else>inativo</template>
-          </LabelFromYup>
-        </label>
+            Adicionar arquivo (formatos SVG ou PNG até 2mb)
+          </CampoDeArquivo>
+          <ErrorMessage name="upload_logo" />
+        </div>
       </div>
-    </div>
-    <div class="flex flexwrap g2 mb1">
-      <div class="f1">
-        <LabelFromYup
-          name="nome"
-          :schema="schema"
-        />
-        <Field
-          name="nome"
-          type="text"
-          class="inputtext light mb1"
-          :class="{ 'error': errors.nome }"
-        />
-        <ErrorMessage name="nome" />
-      </div>
-    </div>
-    <div class="flex flexwrap g2 mb1">
-      <div class="f1">
-        <LabelFromYup
-          name="descricao"
-          :schema="schema"
-        />
-        <Field
-          name="descricao"
-          as="textarea"
-          rows="3"
-          class="inputtext light mb1"
-          :class="{ 'error': errors.descricao }"
-          maxlength="250"
-        />
-        <ErrorMessage name="descricao" />
-      </div>
-    </div>
-    <!--
-<div class="mt2">
-  <label class="label tc300">Logo do Programa de Metas</label>
+    </fieldset>
 
-  <label
-    v-if="!curfile?.loading && !curfile?.name"
-    class="addlink"
-  ><svg
-     width="20"
-     height="20"
-   ><use xlink:href="#i_+" /></svg>
-    <span>
-      Adicionar arquivo (formatos SVG ou PNG até 2mb)&nbsp;<span class="tvermelho">*</span>
-    </span>
-    <input
-      type="file"
-      accept=".svg,.png"
-      :onchange="uploadshape"
-      style="display:none;"
-    ></label>
-
-  <div
-    v-else-if="curfile?.loading"
-    class="addlink"
-  >
-    <span>Carregando</span> <svg
-      width="20"
-      height="20"
-    ><use xlink:href="#i_spin" /></svg>
-  </div>
-
-  <div v-else-if="curfile?.name">
-    <img
-      v-if="singlePdm.logo == curfile?.name"
-      :src="`${baseUrl}/download/${singlePdm.logo}?inline=true`"
-      width="100"
-      class="ib mr1"
-    >
-    <span v-else>{{ curfile?.name?.slice(0, 30) }}</span>
-    <a
-      :onclick="removeshape"
-      class="addlink"
-    ><svg
-      width="20"
-      height="20"
-    ><use xlink:href="#i_remove" /></svg></a>
-  </div>
-  <Field
-    name="upload_logo"
-    type="hidden"
-    :value="curfile?.name"
-  />
-</div>
--->
-
-    <hr class="mt2 mb2">
-
-    <div class="flex flexwrap g2 mb1">
-      <div class="f1 fb10em">
-        <LabelFromYup
-          name="data_inicio"
-          :schema="schema"
-        />
-        <Field
-          name="data_inicio"
-          type="date"
-          class="inputtext light mb1"
-          :class="{ 'error': errors.data_inicio }"
-          @blur="($e) => { !$e.target.value ? $e.target.value = '' : null; }"
-          @update:model-value="($v) => { setFieldValue('data_inicio', $v || null); }"
-        />
-        <ErrorMessage name="data_inicio" />
-      </div>
-      <div class="f1 fb10em">
-        <LabelFromYup
-          name="data_fim"
-          :schema="schema"
-        />
-        <Field
-          name="data_fim"
-          type="date"
-          class="inputtext light mb1"
-          :class="{ 'error': errors.data_fim }"
-          @blur="($e) => { !$e.target.value ? $e.target.value = '' : null; }"
-          @update:model-value="($v) => { setFieldValue('data_fim', $v || null); }"
-        />
-        <ErrorMessage name="data_fim" />
-      </div>
-      <div class="f1 fb10em">
-        <LabelFromYup
-          name="data_publicacao"
-          :schema="schema"
-        />
-        <Field
-          name="data_publicacao"
-          type="date"
-          class="inputtext light mb1"
-          :class="{ 'error': errors.data_publicacao }"
-          @blur="($e) => { !$e.target.value ? $e.target.value = '' : null; }"
-          @update:model-value="($v) => { setFieldValue('data_publicacao', $v || null); }"
-        />
-        <ErrorMessage name="data_publicacao" />
-      </div>
-    </div>
-    <div class="flex flexwrap g2 mb1">
-      <div class="f1 fb10em">
-        <LabelFromYup
-          name="periodo_do_ciclo_participativo_inicio"
-          :schema="schema"
-        />
-        <Field
-          name="periodo_do_ciclo_participativo_inicio"
-          type="date"
-          class="inputtext light mb1"
-          :class="{ 'error': errors.periodo_do_ciclo_participativo_inicio }"
-          @blur="($e) => { !$e.target.value ? $e.target.value = '' : null; }"
-          @update:model-value="($v) => { setFieldValue('periodo_do_ciclo_participativo_inicio', $v || null); }"
-        />
-        <ErrorMessage name="periodo_do_ciclo_participativo_inicio" />
-      </div>
-      <div class="f1 fb10em">
-        <LabelFromYup
-          name="periodo_do_ciclo_participativo_fim"
-          :schema="schema"
-        />
-        <Field
-          name="periodo_do_ciclo_participativo_fim"
-          type="date"
-          class="inputtext light mb1"
-          :class="{ 'error': errors.periodo_do_ciclo_participativo_fim }"
-          @blur="($e) => { !$e.target.value ? $e.target.value = '' : null; }"
-          @update:model-value="($v) => { setFieldValue('periodo_do_ciclo_participativo_fim', $v || null); }"
-        />
-        <ErrorMessage name="periodo_do_ciclo_participativo_fim" />
-      </div>
-      <div class="f1 fb10em">
-        <LabelFromYup
-          name="prefeito"
-          :schema="schema"
-        />
-        <Field
-          name="prefeito"
-          type="text"
-          class="inputtext light mb1"
-          :class="{ 'error': errors.prefeito }"
-        />
-        <ErrorMessage name="prefeito" />
-      </div>
-    </div>
-    <div class="flex flexwrap g2 mb1">
-      <div class="f1">
-        <LabelFromYup
-          name="equipe_tecnica"
-          :schema="schema"
-        />
-        <Field
-          name="equipe_tecnica"
-          as="textarea"
-          rows="3"
-          class="inputtext light mb1"
-          :class="{ 'error': errors.equipe_tecnica }"
-        />
-        <p class="t13 tc500">
-          Separe os membros por vírgula ou ponto-e-vírgula
-        </p>
-        <ErrorMessage name="equipe_tecnica" />
-      </div>
-    </div>
-
-    <div
-      class="flex flexwrap g2 mb1"
-    >
-      <div class="f2 mb1">
-        <LabelFromYup
-          name="pdm_anteriores"
-          :schema="schema"
-          class="tc300"
-        />
-        <AutocompleteField
-          name="pdm_anteriores"
-          :controlador="{
-            busca: '',
-            participantes: carga.pdm_anteriores || []
-          }"
-          :grupo="lista || []"
-          :class="{
-            error: errors.pdm_anteriores,
-          }"
-          label="nome"
-        />
-        <ErrorMessage
-          name="pdm_anteriores"
-          class="error-msg"
-        />
-      </div>
-    </div>
-
-    <hr class="mt2 mb2">
-
-    <div class="flex flexwrap center g2 mb1">
-      <div
-        class="f0 fb15em"
-      >
-        <label class="block mb1">
-          <Field
-            name="possui_macro_tema"
-            class="inputcheckbox"
-            :class="{ 'error': errors.possui_macro_tema }"
-            type="checkbox"
-            :value="true"
-            :unchecked-value="false"
-          />
+    <fieldset>
+      <div class="flex flexwrap g2 mb1">
+        <div class="f1 fb10em">
           <LabelFromYup
-            name="possui_macro_tema"
-            as="span"
+            name="data_inicio"
             :schema="schema"
           />
-        </label>
-      </div>
-      <div class="f1 fb15em">
-        <LabelFromYup
-          name="rotulo_macro_tema"
-          :schema="schema"
-        />
-        <Field
-          name="rotulo_macro_tema"
-          type="text"
-          class="inputtext light mb1"
-          :class="{ 'error': errors.rotulo_macro_tema }"
-          :disabled="!carga.possui_macro_tema"
-        />
-        <ErrorMessage name="rotulo_macro_tema" />
-      </div>
-    </div>
-    <div class="flex flexwrap center g2 mb1">
-      <div
-        class="f0 fb15em"
-      >
-        <label class="block mb1">
           <Field
-            name="possui_tema"
-            class="inputcheckbox"
-            :class="{ 'error': errors.possui_tema }"
-            type="checkbox"
-            :value="true"
-            :unchecked-value="false"
+            name="data_inicio"
+            type="date"
+            class="inputtext light mb1"
+            :class="{ 'error': errors.data_inicio }"
+            @blur="($e) => { !$e.target.value ? $e.target.value = '' : null; }"
+            @update:model-value="($v) => { setFieldValue('data_inicio', $v || null); }"
           />
+        </div>
+        <div class="f1 fb10em">
           <LabelFromYup
-            name="possui_tema"
-            as="span"
+            name="data_fim"
             :schema="schema"
           />
-        </label>
-      </div>
-      <div class="f1 fb15em">
-        <LabelFromYup
-          name="rotulo_tema"
-          :schema="schema"
-        />
-        <Field
-          name="rotulo_tema"
-          type="text"
-          class="inputtext light mb1"
-          :class="{ 'error': errors.rotulo_tema }"
-          :disabled="!carga.possui_tema"
-        />
-        <ErrorMessage name="rotulo_tema" />
-      </div>
-    </div>
-    <div class="flex flexwrap center g2 mb1">
-      <div
-        class="f0 fb15em"
-      >
-        <label class="block mb1">
           <Field
-            name="possui_sub_tema"
-            class="inputcheckbox"
-            :class="{ 'error': errors.possui_sub_tema }"
-            type="checkbox"
-            :value="true"
-            :unchecked-value="false"
+            name="data_fim"
+            type="date"
+            class="inputtext light mb1"
+            :class="{ 'error': errors.data_fim }"
+            @blur="($e) => { !$e.target.value ? $e.target.value = '' : null; }"
+            @update:model-value="($v) => { setFieldValue('data_fim', $v || null); }"
           />
+          <ErrorMessage name="data_fim" />
+        </div>
+        <div class="f1 fb10em">
           <LabelFromYup
-            name="possui_sub_tema"
-            as="span"
+            name="data_publicacao"
             :schema="schema"
           />
-        </label>
-      </div>
-      <div class="f1 fb15em">
-        <LabelFromYup
-          name="rotulo_sub_tema"
-          :schema="schema"
-        />
-        <Field
-          name="rotulo_sub_tema"
-          type="text"
-          class="inputtext light mb1"
-          :class="{ 'error': errors.rotulo_sub_tema }"
-          :disabled="!carga.possui_sub_tema"
-        />
-        <ErrorMessage name="rotulo_sub_tema" />
-      </div>
-    </div>
-    <div class="flex flexwrap center g2 mb1">
-      <div
-        class="f0 fb15em"
-      >
-        <label class="block mb1">
           <Field
-            name="possui_contexto_meta"
-            class="inputcheckbox"
-            :class="{ 'error': errors.possui_contexto_meta }"
-            type="checkbox"
-            :value="true"
-            :unchecked-value="false"
+            name="data_publicacao"
+            type="date"
+            class="inputtext light mb1"
+            :class="{ 'error': errors.data_publicacao }"
+            @blur="($e) => { !$e.target.value ? $e.target.value = '' : null; }"
+            @update:model-value="($v) => { setFieldValue('data_publicacao', $v || null); }"
           />
+          <ErrorMessage name="data_publicacao" />
+        </div>
+      </div>
+      <div class="flex flexwrap g2 mb1">
+        <div class="f1 fb10em">
           <LabelFromYup
-            name="possui_contexto_meta"
-            as="span"
+            name="periodo_do_ciclo_participativo_inicio"
             :schema="schema"
           />
-        </label>
-      </div>
-      <div class="f1 fb10em">
-        <LabelFromYup
-          name="rotulo_contexto_meta"
-          :schema="schema"
-        />
-        <Field
-          name="rotulo_contexto_meta"
-          type="text"
-          class="inputtext light mb1"
-          :class="{ 'error': errors.rotulo_contexto_meta }"
-          :disabled="!carga.possui_contexto_meta"
-        />
-        <ErrorMessage name="rotulo_contexto_meta" />
-      </div>
-    </div>
-    <div class="flex flexwrap center g2 mb1">
-      <div
-        class="f0 fb15em"
-      >
-        <label class="block mb1">
           <Field
-            name="possui_complementacao_meta"
-            class="inputcheckbox"
-            :class="{ 'error': errors.possui_complementacao_meta }"
-            type="checkbox"
-            :value="true"
-            :unchecked-value="false"
+            name="periodo_do_ciclo_participativo_inicio"
+            type="date"
+            class="inputtext light mb1"
+            :class="{ 'error': errors.periodo_do_ciclo_participativo_inicio }"
+            @blur="($e) => { !$e.target.value ? $e.target.value = '' : null; }"
+            @update:model-value="($v) => { setFieldValue('periodo_do_ciclo_participativo_inicio', $v || null); }"
           />
+          <ErrorMessage name="periodo_do_ciclo_participativo_inicio" />
+        </div>
+        <div class="f1 fb10em">
           <LabelFromYup
-            name="possui_complementacao_meta"
-            as="span"
+            name="periodo_do_ciclo_participativo_fim"
             :schema="schema"
           />
-        </label>
+          <Field
+            name="periodo_do_ciclo_participativo_fim"
+            type="date"
+            class="inputtext light mb1"
+            :class="{ 'error': errors.periodo_do_ciclo_participativo_fim }"
+            @blur="($e) => { !$e.target.value ? $e.target.value = '' : null; }"
+            @update:model-value="($v) => { setFieldValue('periodo_do_ciclo_participativo_fim', $v || null); }"
+          />
+          <ErrorMessage name="periodo_do_ciclo_participativo_fim" />
+        </div>
+        <div class="f1 fb10em">
+          <LabelFromYup
+            name="prefeito"
+            :schema="schema"
+          />
+          <Field
+            name="prefeito"
+            type="text"
+            class="inputtext light mb1"
+            :class="{ 'error': errors.prefeito }"
+          />
+          <ErrorMessage name="prefeito" />
+        </div>
       </div>
-      <div class="f1 fb10em">
-        <LabelFromYup
-          name="rotulo_complementacao_meta"
-          :schema="schema"
-        />
-        <Field
-          name="rotulo_complementacao_meta"
-          type="text"
-          class="inputtext light mb1"
-          :class="{ 'error': errors.rotulo_complementacao_meta }"
-          :disabled="!carga.possui_complementacao_meta"
-        />
-        <ErrorMessage name="rotulo_complementacao_meta" />
+      <div class="flex flexwrap g2 mb1">
+        <div class="f1">
+          <LabelFromYup
+            name="equipe_tecnica"
+            :schema="schema"
+          />
+          <Field
+            name="equipe_tecnica"
+            as="textarea"
+            rows="3"
+            class="inputtext light mb1"
+            :class="{ 'error': errors.equipe_tecnica }"
+          />
+          <p class="t13 tc500">
+            Separe os membros por vírgula ou ponto-e-vírgula
+          </p>
+          <ErrorMessage name="equipe_tecnica" />
+        </div>
       </div>
-    </div>
+    </fieldset>
 
-    <hr class="mt2 mb2">
-
-    <div class="flex flexwrap center g2 mb1">
-      <div
-        class="f0 fb15em"
-      >
-        <label class="block mb1">
-          <Field
-            name="possui_iniciativa"
-            class="inputcheckbox"
-            :class="{ 'error': errors.possui_iniciativa }"
-            type="checkbox"
-            :value="true"
-            :unchecked-value="false"
-          />
+    <fieldset>
+      <div class="flex flexwrap center g2 mb1">
+        <div
+          class="f0 fb15em"
+        >
+          <label class="block mb1">
+            <Field
+              name="possui_macro_tema"
+              class="inputcheckbox"
+              :class="{ 'error': errors.possui_macro_tema }"
+              type="checkbox"
+              :value="true"
+              :unchecked-value="false"
+            />
+            <LabelFromYup
+              name="possui_macro_tema"
+              as="span"
+              :schema="schema"
+            />
+          </label>
+        </div>
+        <div class="f1 fb15em">
           <LabelFromYup
-            name="possui_iniciativa"
-            as="span"
+            name="rotulo_macro_tema"
             :schema="schema"
           />
-        </label>
-        <ErrorMessage name="possui_iniciativa" />
-      </div>
-      <div class="f1 fb10em">
-        <LabelFromYup
-          name="rotulo_iniciativa"
-          :schema="schema"
-        />
-        <Field
-          name="rotulo_iniciativa"
-          type="text"
-          class="inputtext light mb1"
-          :class="{ 'error': errors.rotulo_iniciativa }"
-          :disabled="!carga.possui_iniciativa"
-        />
-        <ErrorMessage name="rotulo_iniciativa" />
-      </div>
-    </div>
-    <div class="flex flexwrap center g2 mb1">
-      <div
-        class="f0 fb15em"
-      >
-        <label class="block mb1">
           <Field
-            name="possui_atividade"
-            class="inputcheckbox"
-            :class="{ 'error': errors.possui_atividade }"
-            type="checkbox"
-            :value="true"
-            :unchecked-value="false"
+            name="rotulo_macro_tema"
+            type="text"
+            class="inputtext light mb1"
+            :class="{ 'error': errors.rotulo_macro_tema }"
+            :disabled="!carga.possui_macro_tema"
+          />
+          <ErrorMessage name="rotulo_macro_tema" />
+        </div>
+      </div>
+      <div class="flex flexwrap center g2 mb1">
+        <div
+          class="f0 fb15em"
+        >
+          <label class="block mb1">
+            <Field
+              name="possui_tema"
+              class="inputcheckbox"
+              :class="{ 'error': errors.possui_tema }"
+              type="checkbox"
+              :value="true"
+              :unchecked-value="false"
+            />
+            <LabelFromYup
+              name="possui_tema"
+              as="span"
+              :schema="schema"
+            />
+          </label>
+        </div>
+        <div class="f1 fb15em">
+          <LabelFromYup
+            name="rotulo_tema"
+            :schema="schema"
+          />
+          <Field
+            name="rotulo_tema"
+            type="text"
+            class="inputtext light mb1"
+            :class="{ 'error': errors.rotulo_tema }"
+            :disabled="!carga.possui_tema"
+          />
+          <ErrorMessage name="rotulo_tema" />
+        </div>
+      </div>
+      <div class="flex flexwrap center g2 mb1">
+        <div
+          class="f0 fb15em"
+        >
+          <label class="block mb1">
+            <Field
+              name="possui_sub_tema"
+              class="inputcheckbox"
+              :class="{ 'error': errors.possui_sub_tema }"
+              type="checkbox"
+              :value="true"
+              :unchecked-value="false"
+            />
+            <LabelFromYup
+              name="possui_sub_tema"
+              as="span"
+              :schema="schema"
+            />
+          </label>
+        </div>
+        <div class="f1 fb15em">
+          <LabelFromYup
+            name="rotulo_sub_tema"
+            :schema="schema"
+          />
+          <Field
+            name="rotulo_sub_tema"
+            type="text"
+            class="inputtext light mb1"
+            :class="{ 'error': errors.rotulo_sub_tema }"
+            :disabled="!carga.possui_sub_tema"
+          />
+          <ErrorMessage name="rotulo_sub_tema" />
+        </div>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <div class="flex flexwrap center g2 mb1">
+        <div
+          class="f0 fb15em"
+        >
+          <label class="block mb1">
+            <Field
+              name="possui_contexto_meta"
+              class="inputcheckbox"
+              :class="{ 'error': errors.possui_contexto_meta }"
+              type="checkbox"
+              :value="true"
+              :unchecked-value="false"
+            />
+            <LabelFromYup
+              name="possui_contexto_meta"
+              as="span"
+              :schema="schema"
+            />
+          </label>
+        </div>
+        <div class="f1 fb10em">
+          <LabelFromYup
+            name="rotulo_contexto_meta"
+            :schema="schema"
+          />
+          <Field
+            name="rotulo_contexto_meta"
+            type="text"
+            class="inputtext light mb1"
+            :class="{ 'error': errors.rotulo_contexto_meta }"
+            :disabled="!carga.possui_contexto_meta"
+          />
+          <ErrorMessage name="rotulo_contexto_meta" />
+        </div>
+      </div>
+      <div class="flex flexwrap center g2 mb1">
+        <div
+          class="f0 fb15em"
+        >
+          <label class="block mb1">
+            <Field
+              name="possui_complementacao_meta"
+              class="inputcheckbox"
+              :class="{ 'error': errors.possui_complementacao_meta }"
+              type="checkbox"
+              :value="true"
+              :unchecked-value="false"
+            />
+            <LabelFromYup
+              name="possui_complementacao_meta"
+              as="span"
+              :schema="schema"
+            />
+          </label>
+        </div>
+        <div class="f1 fb10em">
+          <LabelFromYup
+            name="rotulo_complementacao_meta"
+            :schema="schema"
+          />
+          <Field
+            name="rotulo_complementacao_meta"
+            type="text"
+            class="inputtext light mb1"
+            :class="{ 'error': errors.rotulo_complementacao_meta }"
+            :disabled="!carga.possui_complementacao_meta"
+          />
+          <ErrorMessage name="rotulo_complementacao_meta" />
+        </div>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <div class="flex flexwrap center g2 mb1">
+        <div
+          class="f0 fb15em"
+        >
+          <label class="block mb1">
+            <Field
+              name="possui_iniciativa"
+              class="inputcheckbox"
+              :class="{ 'error': errors.possui_iniciativa }"
+              type="checkbox"
+              :value="true"
+              :unchecked-value="false"
+            />
+            <LabelFromYup
+              name="possui_iniciativa"
+              as="span"
+              :schema="schema"
+            />
+          </label>
+          <ErrorMessage name="possui_iniciativa" />
+        </div>
+        <div class="f1 fb10em">
+          <LabelFromYup
+            name="rotulo_iniciativa"
+            :schema="schema"
+          />
+          <Field
+            name="rotulo_iniciativa"
+            type="text"
+            class="inputtext light mb1"
+            :class="{ 'error': errors.rotulo_iniciativa }"
             :disabled="!carga.possui_iniciativa"
           />
+          <ErrorMessage name="rotulo_iniciativa" />
+        </div>
+      </div>
+      <div class="flex flexwrap center g2 mb1">
+        <div
+          class="f0 fb15em"
+        >
+          <label class="block mb1">
+            <Field
+              name="possui_atividade"
+              class="inputcheckbox"
+              :class="{ 'error': errors.possui_atividade }"
+              type="checkbox"
+              :value="true"
+              :unchecked-value="false"
+              :disabled="!carga.possui_iniciativa"
+            />
+            <LabelFromYup
+              name="possui_atividade"
+              as="span"
+              :schema="schema"
+            />
+          </label>
+          <ErrorMessage name="possui_atividade" />
+        </div>
+        <div class="f1 fb10em">
           <LabelFromYup
-            name="possui_atividade"
-            as="span"
+            name="rotulo_atividade"
             :schema="schema"
           />
-        </label>
-        <ErrorMessage name="possui_atividade" />
-      </div>
-      <div class="f1 fb10em">
-        <LabelFromYup
-          name="rotulo_atividade"
-          :schema="schema"
-        />
-        <Field
-          name="rotulo_atividade"
-          type="text"
-          class="inputtext light mb1"
-          :class="{ 'error': errors.rotulo_atividade }"
-          :disabled="!carga.possui_iniciativa || !carga.possui_atividade"
-        />
-        <ErrorMessage name="rotulo_atividade" />
-      </div>
-    </div>
-
-    <div class="flex flexwrap center g2 mb1">
-      <div
-        class="f0 fb15em"
-      >
-        <label class="block mb1">
           <Field
-            name="monitoramento_orcamento"
-            class="inputcheckbox"
-            :class="{ 'error': errors.monitoramento_orcamento }"
-            type="checkbox"
-            :value="true"
-            :unchecked-value="false"
+            name="rotulo_atividade"
+            type="text"
+            class="inputtext light mb1"
+            :class="{ 'error': errors.rotulo_atividade }"
+            :disabled="!carga.possui_iniciativa || !carga.possui_atividade"
           />
+          <ErrorMessage name="rotulo_atividade" />
+        </div>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <div class="flex flexwrap center g2 mb1">
+        <div
+          class="f0 fb15em"
+        >
+          <label class="block mb1">
+            <Field
+              name="monitoramento_orcamento"
+              class="inputcheckbox"
+              :class="{ 'error': errors.monitoramento_orcamento }"
+              type="checkbox"
+              :value="true"
+              :unchecked-value="false"
+            />
+            <LabelFromYup
+              name="monitoramento_orcamento"
+              as="span"
+              :schema="schema"
+            />
+          </label>
+          <ErrorMessage name="monitoramento_orcamento" />
+        </div>
+        <div class="f1 fb10em">
           <LabelFromYup
-            name="monitoramento_orcamento"
-            as="span"
+            name="nivel_orcamento"
             :schema="schema"
           />
-        </label>
-        <ErrorMessage name="monitoramento_orcamento" />
-      </div>
-      <div class="f1 fb10em">
-        <LabelFromYup
-          name="nivel_orcamento"
-          :schema="schema"
-        />
-        <Field
-          name="nivel_orcamento"
-          as="select"
-          class="inputtext light mb1"
-          :class="{ 'error': errors.nivel_orcamento }"
-          :disabled="!carga.monitoramento_orcamento"
-        >
-          <option value="Meta">
-            Meta
-          </option>
-          <option value="Iniciativa">
-            Iniciativa
-          </option>
-          <option value="Atividade">
-            Atividade
-          </option>
-        </Field>
-        <ErrorMessage name="nivel_orcamento" />
-      </div>
-    </div>
-
-    <hr class="mt2 mb2">
-
-    <div class="flex flexwrap g2 mb1">
-      <div class="f1 mb1">
-        <LabelFromYup
-          name="orgao_admin_id"
-          :schema="schema"
-          class="tc300"
-        />
-        <Field
-          name="orgao_admin_id"
-          as="select"
-          class="inputtext light mb1"
-          :class="{
-            error: errors.orgao_admin_id,
-          }"
-          :disabled="!órgãosComoLista?.length"
-        >
-          <option :value="0">
-            Selecionar
-          </option>
-          <option
-            v-for="item in órgãosComoLista"
-            :key="item"
-            :value="item.id"
-            :disabled="!pessoasSimplificadasPorÓrgão[item.id]?.length"
-            :title="item.descricao?.length > 36 ? item.descricao : null"
+          <Field
+            name="nivel_orcamento"
+            as="select"
+            class="inputtext light mb1"
+            :class="{ 'error': errors.nivel_orcamento }"
+            :disabled="!carga.monitoramento_orcamento"
           >
-            {{ item.sigla }} - {{ truncate(item.descricao, 36) }}
-          </option>
-        </Field>
-        <ErrorMessage
-          name="orgao_admin_id"
-        />
+            <option value="Meta">
+              Meta
+            </option>
+            <option value="Iniciativa">
+              Iniciativa
+            </option>
+            <option value="Atividade">
+              Atividade
+            </option>
+          </Field>
+          <ErrorMessage name="nivel_orcamento" />
+        </div>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <LabelFromYup
+        :schema="schema"
+        as="legend"
+      >
+        Administradores
+      </LabelFromYup>
+
+      <div class="flex flexwrap g2 mb1">
+        <div class="f1 mb1">
+          <LabelFromYup
+            name="orgao_admin_id"
+            :schema="schema"
+          />
+          <Field
+            name="orgao_admin_id"
+            as="select"
+            class="inputtext light mb1"
+            :class="{
+              error: errors.orgao_admin_id,
+            }"
+            :disabled="!órgãosComoLista?.length"
+          >
+            <option :value="0">
+              Selecionar
+            </option>
+            <option
+              v-for="item in órgãosComoLista"
+              :key="item"
+              :value="item.id"
+              :disabled="!pessoasSimplificadasPorÓrgão[item.id]?.length"
+              :title="item.descricao?.length > 36 ? item.descricao : null"
+            >
+              {{ item.sigla }} - {{ truncate(item.descricao, 36) }}
+            </option>
+          </Field>
+          <ErrorMessage
+            name="orgao_admin_id"
+          />
+        </div>
+
+        <div class="f2 mb1">
+          <LabelFromYup
+            name="ps_admin_cp.participantes"
+            :schema="schema"
+          />
+          <AutocompleteField
+            name="ps_admin_cp.participantes"
+            :controlador="{
+              busca: '',
+              participantes: carga.ps_admin_cp?.participantes || []
+            }"
+            :grupo="pessoasSimplificadasPorÓrgão[carga.orgao_admin_id] || []"
+            :class="{
+              error: errors['ps_admin_cp.participantes'],
+            }"
+            label="nome_exibicao"
+          />
+          <ErrorMessage
+            name="ps_admin_cp.participantes"
+            class="error-msg"
+          />
+        </div>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <LabelFromYup
+        name="ps_tecnico_cp.participantes"
+        :schema="schema"
+        as="legend"
+      />
+      <div
+        class="flex flexwrap g2 mb1"
+      >
+        <div class="f1 mb1">
+          <CampoDePessoasComBuscaPorOrgao
+            v-if="carga.ps_tecnico_cp?.participantes !== undefined"
+            v-model="carga.ps_tecnico_cp.participantes"
+            name="ps_tecnico_cp.participantes"
+            :pronto-para-montagem="montarCampoEstático"
+            ps-tecnico-cp
+          />
+          <ErrorMessage
+            name="ps_tecnico_cp.participantes"
+          />
+        </div>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <LabelFromYup
+        name="ps_ponto_focal.participantes"
+        :schema="schema"
+        as="legend"
+      />
+
+      <div
+        class="flex flexwrap g2 mb1"
+      >
+        <div class="f1 mb1">
+          <CampoDePessoasComBuscaPorOrgao
+            v-if="carga.ps_ponto_focal?.participantes !== undefined"
+            v-model="carga.ps_ponto_focal.participantes"
+            name="ps_ponto_focal.participantes"
+            :pronto-para-montagem="montarCampoEstático"
+            ps-ponto-focal
+          />
+          <ErrorMessage
+            name="ps_ponto_focal.participantes"
+          />
+        </div>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <div class="flex flexwrap g2 mb1">
+        <div class="f1">
+          <LabelFromYup
+            name="legislacao_de_instituicao"
+            :schema="schema"
+          />
+          <Field
+            name="legislacao_de_instituicao"
+            as="textarea"
+            rows="3"
+            class="inputtext light mb1"
+            :class="{ 'error': errors.legislacao_de_instituicao }"
+            maxlength="250"
+          />
+          <ErrorMessage name="legislacao_de_instituicao" />
+        </div>
       </div>
 
-      <div class="f2 mb1">
-        <LabelFromYup
-          name="ps_admin_cp.participantes"
-          :schema="schema"
-          class="tc300"
-        />
-        <AutocompleteField
-          name="ps_admin_cp.participantes"
-          :controlador="{
-            busca: '',
-            participantes: carga.ps_admin_cp?.participantes || []
-          }"
-          :grupo="pessoasSimplificadasPorÓrgão[carga.orgao_admin_id] || []"
-          :class="{
-            error: errors['ps_admin_cp.participantes'],
-          }"
-          label="nome_exibicao"
-        />
-        <ErrorMessage
-          name="ps_admin_cp.participantes"
-          class="error-msg"
-        />
+      <div
+        class="flex flexwrap g2 mb1"
+      >
+        <div class="f2 mb1">
+          <LabelFromYup
+            name="pdm_anteriores"
+            :schema="schema"
+          />
+          <AutocompleteField
+            name="pdm_anteriores"
+            :controlador="{
+              busca: '',
+              participantes: carga.pdm_anteriores || []
+            }"
+            :grupo="lista || []"
+            :class="{
+              error: errors.pdm_anteriores,
+            }"
+            label="nome"
+          />
+          <ErrorMessage
+            name="pdm_anteriores"
+            class="error-msg"
+          />
+        </div>
       </div>
-    </div>
-
-    <div
-      class="flex flexwrap g2 mb1"
-    >
-      <div class="f1 mb1">
-        <LabelFromYup
-          name="ps_tecnico_cp.participantes"
-          :schema="schema"
-        />
-        <CampoDePessoasComBuscaPorOrgao
-          v-model="carga.ps_tecnico_cp.participantes"
-          name="ps_tecnico_cp.participantes"
-          :pronto-para-montagem="montarCampoEstático"
-          ps-tecnico-cp
-        />
-        <ErrorMessage
-          name="ps_tecnico_cp.participantes"
-        />
-      </div>
-    </div>
-
-    <div
-      class="flex flexwrap g2 mb1"
-    >
-      <div class="f1 mb1">
-        <LabelFromYup
-          name="ps_ponto_focal.participantes"
-          :schema="schema"
-        />
-        <CampoDePessoasComBuscaPorOrgao
-          v-model="carga.ps_ponto_focal.participantes"
-          name="ps_ponto_focal.participantes"
-          :pronto-para-montagem="montarCampoEstático"
-          ps-ponto-focal
-        />
-        <ErrorMessage
-          name="ps_ponto_focal.participantes"
-        />
-      </div>
-    </div>
+    </fieldset>
 
     <FormErrorsList :errors="errors" />
 
