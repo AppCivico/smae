@@ -3,7 +3,7 @@ import { defineStore } from 'pinia';
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { ListPdmDto } from '@/../../backend/src/pdm/dto/list-pdm.dto';
 // eslint-disable-next-line import/no-extraneous-dependencies
-import { Pdm } from '@/../../backend/src/pdm/dto/pdm.dto';
+import { PlanoSetorialDto } from '@/../../backend/src/pdm/dto/pdm.dto';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
@@ -21,7 +21,7 @@ interface Erros {
 
 interface Estado {
   lista: Lista;
-  emFoco: Pdm | null;
+  emFoco: PlanoSetorialDto | null;
   chamadasPendentes: ChamadasPendentes;
   erros: Erros;
 }
@@ -116,6 +116,7 @@ export const usePlanosSetoriaisStore = defineStore('planosSetoriais', {
       data_publicacao: emFoco?.data_publicacao
         ? dateTimeToDate(emFoco.data_publicacao)
         : null,
+      upload_logo: emFoco?.logo || null,
       orgao_admin_id: emFoco?.orgao_admin?.id || null,
       pdm_anteriores: Array.isArray(emFoco?.pdm_anteriores)
         ? emFoco.pdm_anteriores.map((pdm) => pdm.id || pdm)
