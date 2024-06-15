@@ -19,11 +19,14 @@ import { router } from './router';
 
 const app = createApp(App);
 
-app.config.errorHandler = (err) => {
+app.config.errorHandler = (err, instance, info) => {
   if (console.trace) {
+    console.error(err);
     console.trace(err);
   } else {
-    console.log(err);
+    console.log('WARN: ', info);
+    console.log('TRACE: ', instance);
+    console.log('ERROR:', err);
   }
 };
 

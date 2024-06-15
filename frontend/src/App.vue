@@ -1,7 +1,7 @@
 <script setup>
 import { Alert, EditModal, SideBar } from '@/components';
 import { useAuthStore } from '@/stores/auth.store';
-import { provide } from 'vue';
+import { onErrorCaptured, provide, ref } from 'vue';
 import BarraDePendência from './components/BarraDeChamadaPendente.vue';
 
 const gblLimiteDeSeleçãoSimultânea = Number.parseInt(
@@ -16,8 +16,34 @@ const authStore = useAuthStore();
 if (authStore.estouAutenticada) {
   authStore.getDados();
 }
+
+const erro = ref(null);
+
+onErrorCaptured((err) => {
+  erro.value = err;
+});
 </script>
 <template>
+  <ErrorComponent
+    v-if="erro"
+    class="pl5"
+    aria-live="assertive"
+  >
+    <div class="flex spacebetween center pl1">
+      {{ erro }}
+      <button
+        class="like-a__link tprimary"
+        aria-label="Fechar erro"
+        title="Fechar erro"
+        @click="erro = null"
+      >
+        <svg
+          width="20"
+          height="20"
+        ><use xlink:href="#i_remove" /></svg>
+      </button>
+    </div>
+  </ErrorComponent>
   <BarraDePendência />
   <!-- vamos avançar até essa chave ser desnecessária para o sistema todo -->
   <router-view v-if="$route.meta.rotaPrescindeDeChave ?? gblHabilitarBeta" />
