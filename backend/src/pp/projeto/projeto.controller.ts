@@ -264,7 +264,7 @@ export class ProjetoController {
 }
 
 @ApiTags('Cadastro de Obras (Projetos)')
-@Controller('mdo')
+@Controller('projeto-mdo')
 export class ProjetoMDOController {
     constructor(
         private readonly projetoService: ProjetoService,
@@ -462,3 +462,5 @@ export class ProjetoMDOController {
         return await this.projetoService.transferPortfolio('MDO', params.id, transferProjetoPortfolio, user);
     }
 }
+
+

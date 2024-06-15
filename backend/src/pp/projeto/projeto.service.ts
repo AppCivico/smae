@@ -12,7 +12,7 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { UploadService } from '../../upload/upload.service';
 import { PortfolioDto } from '../portfolio/entities/portfolio.entity';
 import { PortfolioService } from '../portfolio/portfolio.service';
-import { CreateProjetoDocumentDto, CreateProjetoDto } from './dto/create-projeto.dto';
+import { CreateProjetoDocumentDto, CreateProjetoDto, PPfonteRecursoDto } from './dto/create-projeto.dto';
 import { FilterProjetoDto } from './dto/filter-projeto.dto';
 import {
     CloneProjetoTarefasDto,
@@ -302,6 +302,13 @@ export class ProjetoService {
             await this.checkPortCompartilhadoOrgaos(portfolio, portfoliosCompartilhados);
         }
 
+        if (tipo == 'MDO') {
+            if (!dto.orgao_origem_id) throw new HttpException('orgao_origem_id| Campo obrigatório para obras', 400);
+            if (!dto.grupo_tematico_id) throw new HttpException('grupo_tematico_id| Campo obrigatório para obras', 400);
+
+            await this.verificaGrupoTematico(dto);
+        }
+
         const now = new Date(Date.now());
 
         const created = await this.prisma.$transaction(
@@ -381,11 +388,15 @@ export class ProjetoService {
                         mdo_n_familias_beneficiadas: dto.mdo_n_familias_beneficiadas,
                         mdo_previsao_inauguracao: dto.mdo_previsao_inauguracao,
                         mdo_observacoes: dto.mdo_observacoes,
+                        secretario_executivo: dto.secretario_executivo,
+                        secretario_responsavel: dto.secretario_responsavel,
                     },
                     select: { id: true },
                 });
 
                 await this.verificaCampos(prismaTx, row.id, tipo);
+
+                await this.upsertFonteRecurso(dto, prismaTx, row.id);
 
                 await prismaTx.tarefaCronograma.create({
                     data: {
@@ -408,7 +419,19 @@ export class ProjetoService {
         return created;
     }
 
-    private removeCampos(tipo: string, dto: UpdateProjetoDto) {
+    private async verificaGrupoTematico(dto: CreateProjetoDto | UpdateProjetoDto) {
+        const grupo_tematico = await this.prisma.grupoTematico.findFirstOrThrow({
+            where: { id: dto.grupo_tematico_id },
+        });
+        if (grupo_tematico.familias_beneficiadas && !dto.mdo_n_familias_beneficiadas)
+            throw new HttpException('mdo_n_familias_beneficiadas| Campo obrigatório para obras', 400);
+        if (grupo_tematico.unidades_habitacionais && !dto.mdo_n_unidades_habitacionais)
+            throw new HttpException('mdo_n_unidades_habitacionais| Campo obrigatório para obras', 400);
+        if (grupo_tematico.programa_habitacional && !dto.mdo_programa_habitacional)
+            throw new HttpException('mdo_programa_habitacional| Campo obrigatório para obras', 400);
+    }
+
+    private removeCampos(tipo: string, dto: CreateProjetoDto | UpdateProjetoDto) {
         if (tipo == 'MDO') {
             delete dto.resumo;
             delete dto.principais_etapas;
@@ -417,16 +440,16 @@ export class ProjetoService {
             delete dto.logradouro_nome;
             delete dto.logradouro_numero;
             delete dto.logradouro_cep;
-            delete dto.data_aprovacao;
-            delete dto.data_revisao;
-            delete dto.versao;
-            delete dto.coordenador_ue;
-            delete dto.nao_escopo;
-            delete dto.publico_alvo;
-            delete dto.objetivo;
-            delete dto.objeto;
-            delete dto.restricoes;
-            delete dto.premissas;
+            if ('data_aprovacao' in dto) delete dto.data_aprovacao;
+            if ('data_revisao' in dto) delete dto.data_revisao;
+            if ('versao' in dto) delete dto.versao;
+            if ('coordenador_ue' in dto) delete dto.coordenador_ue;
+            if ('nao_escopo' in dto) delete dto.nao_escopo;
+            if ('publico_alvo' in dto) delete dto.publico_alvo;
+            if ('objetivo' in dto) delete dto.objetivo;
+            if ('objeto' in dto) delete dto.objeto;
+            if ('restricoes' in dto) delete dto.restricoes;
+            if ('premissas' in dto) delete dto.premissas;
         }
     }
 
@@ -1463,6 +1486,15 @@ export class ProjetoService {
             dto.status = undefined;
         }
 
+        if ('grupo_tematico_id' in dto) {
+            await this.verificaGrupoTematico(dto);
+        } else {
+            // bloqueia a mudança dos campos se não informar o grupo temático
+            dto.mdo_n_familias_beneficiadas = undefined;
+            dto.mdo_n_unidades_habitacionais = undefined;
+            dto.mdo_programa_habitacional = undefined;
+        }
+
         // TODO? se estiver arquivado, retorna 400 (estava só o comentario, sem o texto de TODO)
 
         let origem_tipo: ProjetoOrigemTipo | undefined = undefined;
@@ -1632,6 +1664,19 @@ export class ProjetoService {
                                   },
                               }
                             : undefined,
+
+                    // campos MDO
+                    grupo_tematico_id: dto.grupo_tematico_id,
+                    tipo_intervencao_id: dto.tipo_intervencao_id,
+                    equipamento_id: dto.equipamento_id,
+                    orgao_origem_id: dto.orgao_origem_id,
+                    orgao_executor_id: dto.orgao_executor_id,
+                    mdo_detalhamento: dto.mdo_detalhamento,
+                    mdo_programa_habitacional: dto.mdo_programa_habitacional,
+                    mdo_n_unidades_habitacionais: dto.mdo_n_unidades_habitacionais,
+                    mdo_n_familias_beneficiadas: dto.mdo_n_familias_beneficiadas,
+                    mdo_previsao_inauguracao: dto.mdo_previsao_inauguracao,
+                    mdo_observacoes: dto.mdo_observacoes,
                 },
             });
 
@@ -1973,7 +2018,11 @@ export class ProjetoService {
         });
     }
 
-    private async upsertFonteRecurso(dto: UpdateProjetoDto, prismaTx: Prisma.TransactionClient, projetoId: number) {
+    private async upsertFonteRecurso(
+        dto: { fonte_recursos?: PPfonteRecursoDto[] | undefined },
+        prismaTx: Prisma.TransactionClient,
+        projetoId: number
+    ) {
         if (Array.isArray(dto.fonte_recursos) == false) return;
 
         const byYearFonte: Record<string, Record<string, boolean>> = {};

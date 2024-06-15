@@ -1,6 +1,7 @@
-import { ApiProperty, OmitType, PartialType } from '@nestjs/swagger';
+import { PartialType } from '@nestjs/mapped-types';
+import { ApiProperty, OmitType } from '@nestjs/swagger';
 import { ProjetoStatus } from '@prisma/client';
-import { Transform, TransformFnParams, Type } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
 import {
     IsArray,
     IsEnum,
@@ -10,52 +11,12 @@ import {
     IsString,
     Max,
     MaxLength,
-    Min,
     ValidateIf,
-    ValidateNested,
+    ValidateNested
 } from 'class-validator';
 import { IsOnlyDate } from 'src/common/decorators/IsDateOnly';
 import { DateTransform } from '../../../auth/transforms/date.transform';
 import { CreateProjetoDto, CreateProjetoSeiDto } from './create-projeto.dto';
-
-export class PPfonteRecursoDto {
-    /**
-     * id caso já exista e deseja fazer uma atualização
-     */
-    @IsOptional()
-    @IsNumber()
-    @Transform((a: TransformFnParams) => (a.value === undefined ? undefined : +a.value))
-    id?: number;
-
-    /**
-     * código da fonte de recurso no SOF, no ano escolhido
-     */
-    @IsString({ message: '$property| precisa ser um alfanumérico' })
-    @MaxLength(2)
-    fonte_recurso_cod_sof: string;
-
-    @IsInt()
-    @Max(3000)
-    @Min(2003)
-    @Transform((a: TransformFnParams) => +a.value)
-    fonte_recurso_ano: number;
-
-    @IsNumber(
-        { maxDecimalPlaces: 2, allowInfinity: false, allowNaN: false },
-        { message: '$property| até duas casas decimais' }
-    )
-    @Transform((a: TransformFnParams) => (a.value === null ? null : +a.value))
-    @ValidateIf((object, value) => value !== null)
-    valor_percentual?: number | null;
-
-    @IsNumber(
-        { maxDecimalPlaces: 2, allowInfinity: false, allowNaN: false },
-        { message: '$property| até duas casas decimais' }
-    )
-    @Transform((a: TransformFnParams) => (a.value === null ? null : +a.value))
-    @ValidateIf((object, value) => value !== null)
-    valor_nominal?: number | null;
-}
 
 export class PPpremissaDto {
     /**
@@ -119,12 +80,6 @@ export class UpdateProjetoDto extends OmitType(PartialType(CreateProjetoDto), ['
     restricoes?: PPrestricaoDto[];
 
     @IsOptional()
-    @IsArray({ message: 'precisa ser uma array, pode ter 0 items para limpar' })
-    @ValidateNested({ each: true })
-    @Type(() => PPfonteRecursoDto)
-    fonte_recursos?: PPfonteRecursoDto[];
-
-    @IsOptional()
     @ApiProperty({
         deprecated: true,
         description: 'Não é mais possível escrever o codigo',
@@ -150,28 +105,6 @@ export class UpdateProjetoDto extends OmitType(PartialType(CreateProjetoDto), ['
     @IsString()
     @MaxLength(50000)
     nao_escopo?: string;
-
-    /*
-    * secretario gestor do projeto
-    * ou
-    * secretário gestor do portfólio
-    */
-    @IsOptional()
-    @IsString()
-    @MaxLength(250)
-    @ValidateIf((object, value) => value !== null)
-    secretario_executivo?: string | null;
-
-    /*
-    * secretario responsavel
-    * ou
-    * secretario responsavel na obra
-    */
-    @IsOptional()
-    @IsString()
-    @MaxLength(250)
-    @ValidateIf((object, value) => value !== null)
-    secretario_responsavel?: string | null;
 
     @IsOptional()
     @IsString()
