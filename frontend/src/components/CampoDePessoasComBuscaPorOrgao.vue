@@ -1,13 +1,16 @@
 <script setup>
 import AutocompleteField from '@/components/AutocompleteField2.vue';
+import requestS from '@/helpers/requestS.ts';
 import truncate from '@/helpers/truncate';
 import { useOrgansStore } from '@/stores/organs.store';
-import { useUsersStore } from '@/stores/users.store';
 import { storeToRefs } from 'pinia';
 import { useField } from 'vee-validate';
 import {
   computed, onMounted, ref, watch,
+  watchEffect,
 } from 'vue';
+
+const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
 const props = defineProps({
   modelValue: {
@@ -15,10 +18,6 @@ const props = defineProps({
     required: true,
   },
   órgãosPermitidos: {
-    type: Array,
-    default: () => [],
-  },
-  pessoas: {
     type: Array,
     default: () => [],
   },
@@ -31,6 +30,47 @@ const props = defineProps({
     type: String,
     default: '',
   },
+  // parâmetros de busca
+  colaboradorDeProjeto: {
+    type: Boolean,
+    default: undefined,
+  },
+  coordenadorResponsavelCp: {
+    type: Boolean,
+    default: undefined,
+  },
+  email: {
+    type: String,
+    default: undefined,
+  },
+  espectadorDePainelExterno: {
+    type: Boolean,
+    default: undefined,
+  },
+  espectadorDeProjeto: {
+    type: Boolean,
+    default: undefined,
+  },
+  gestorDeProjeto: {
+    type: Boolean,
+    default: undefined,
+  },
+  orgaoId: {
+    type: Number,
+    default: undefined,
+  },
+  psAdminCp: {
+    type: Boolean,
+    default: undefined,
+  },
+  psPontoFocal: {
+    type: Boolean,
+    default: undefined,
+  },
+  psTecnicoCp: {
+    type: Boolean,
+    default: undefined,
+  },
 });
 
 const emit = defineEmits(['update:modelValue']);
@@ -38,25 +78,20 @@ const emit = defineEmits(['update:modelValue']);
 const ÓrgãosStore = useOrgansStore();
 const { organs } = storeToRefs(ÓrgãosStore);
 
-const usersStore = useUsersStore();
-const { pessoasSimplificadas } = storeToRefs(usersStore);
+const pessoasSimplificadas = ref([]);
 
-const pessoasPorId = computed(() => (Array.isArray(props.pessoas)
-  ? props.pessoas.reduce((acc, cur) => {
-    acc[cur.id] = cur;
-    return acc;
-  }, {})
-  : {}));
+const pessoasPorId = computed(() => pessoasSimplificadas.value.reduce((acc, cur) => {
+  acc[cur.id] = cur;
+  return acc;
+}, {}));
 
-const pessoasPorÓrgão = computed(() => (Array.isArray(props.pessoas)
-  ? props.pessoas.reduce((acc, cur) => {
-    if (!acc[cur.orgao_id]) {
-      acc[cur.orgao_id] = [];
-    }
-    acc[cur.orgao_id].push(cur);
-    return acc;
-  }, {})
-  : {}));
+const pessoasPorÓrgão = computed(() => pessoasSimplificadas.value.reduce((acc, cur) => {
+  if (!acc[cur.orgao_id]) {
+    acc[cur.orgao_id] = [];
+  }
+  acc[cur.orgao_id].push(cur);
+  return acc;
+}, {}));
 
 const { handleChange } = useField(props.name, undefined, {
   initialValue: props.modelValue,
@@ -122,11 +157,7 @@ function adicionarPessoas(pessoas, índice) {
 async function montar() {
   if (props.prontoParaMontagem) {
     if (!Array.isArray(organs.value) || !organs.value.length) {
-      ÓrgãosStore.getAll();
-    }
-
-    if (!Array.isArray(pessoasSimplificadas.value) || !pessoasSimplificadas.value.length) {
-      await usersStore.buscarPessoasSimplificadas();
+      await ÓrgãosStore.getAll();
     }
 
     listaDeÓrgãos.value = Object.values(props.modelValue.reduce((acc, cur) => {
@@ -145,6 +176,28 @@ onMounted(() => {
   montar();
 });
 
+watchEffect(async () => {
+  const { linhas } = await requestS.get(`${baseUrl}/pessoa/reduzido`, {
+    colaborador_de_projeto: props.colaboradorDeProjeto,
+    coordenador_responsavel_cp: props.coordenadorResponsavelCp,
+    email: props.email,
+    espectador_de_painel_externo: props.espectadorDePainelExterno,
+    espectador_de_projeto: props.espectadorDeProjeto,
+    gestor_de_projeto: props.gestorDeProjeto,
+    orgao_id: props.orgaoId,
+    ps_admin_cp: props.psAdminCp,
+    ps_ponto_focal: props.psPontoFocal,
+    ps_tecnico_cp: props.psTecnicoCp,
+  });
+
+  if (Array.isArray(linhas)) {
+    pessoasSimplificadas.value = linhas;
+    montar();
+  } else {
+    throw new Error('lista de pessoas entregue fora do padrão esperado');
+  }
+});
+
 watch(() => props.prontoParaMontagem, () => {
   montar();
 }, { immediate: true });
@@ -154,7 +207,7 @@ watch(() => props.prontoParaMontagem, () => {
     <div
       v-for="(item, idx) in listaDeÓrgãos"
       :key="item.id"
-      class="flex g1 mb1"
+      class="flex g2 mb1"
     >
       <div class="f1">
         <label
