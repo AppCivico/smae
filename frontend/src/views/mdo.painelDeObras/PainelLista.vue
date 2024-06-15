@@ -9,7 +9,7 @@
       :to="{name: 'paineisCriar'}"
       class="btn big ml1"
     >
-      Novo painél
+      Novo painel
     </router-link>
   </div>
 </template>
