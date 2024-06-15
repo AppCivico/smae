@@ -9,7 +9,6 @@ import consoleNaTemplate from '@/plugins/consoleNaTemplate';
 // usamos o `.ts` aqui para não entrar em conflito com a versão JS ainda usada
 // @ts-ignore
 import requestS from '@/helpers/requestS.ts';
-import { useAlertStore } from '@/stores/alert.store';
 import { createPinia } from 'pinia';
 import {
   createApp, markRaw, nextTick,
@@ -21,8 +20,6 @@ import { router } from './router';
 const app = createApp(App);
 
 app.config.errorHandler = (err) => {
-  const alertStore = useAlertStore();
-  alertStore.error(err);
   if (console.trace) {
     console.trace(err);
   } else {
