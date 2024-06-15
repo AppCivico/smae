@@ -116,12 +116,25 @@ export const usePlanosSetoriaisStore = defineStore('planosSetoriais', {
       data_publicacao: emFoco?.data_publicacao
         ? dateTimeToDate(emFoco.data_publicacao)
         : null,
+      orgao_admin_id: emFoco?.orgao_admin?.id || null,
+      pdm_anteriores: Array.isArray(emFoco?.pdm_anteriores)
+        ? emFoco.pdm_anteriores.map((pdm) => pdm.id || pdm)
+        : [],
       periodo_do_ciclo_participativo_fim: emFoco?.periodo_do_ciclo_participativo_fim
         ? dateTimeToDate(emFoco.periodo_do_ciclo_participativo_fim)
         : null,
       periodo_do_ciclo_participativo_inicio: emFoco?.periodo_do_ciclo_participativo_inicio
         ? dateTimeToDate(emFoco.periodo_do_ciclo_participativo_inicio)
         : null,
+      ps_admin_cp: Array.isArray(emFoco?.ps_admin_cp?.participantes)
+        ? emFoco.ps_admin_cp
+        : { participantes: [] },
+      ps_ponto_focal: Array.isArray(emFoco?.ps_ponto_focal?.participantes)
+        ? emFoco.ps_ponto_focal
+        : { participantes: [] },
+      ps_tecnico_cp: Array.isArray(emFoco?.ps_tecnico_cp?.participantes)
+        ? emFoco.ps_tecnico_cp
+        : { participantes: [] },
     }),
 
     planosSetoriaisPorId: ({ lista }: Estado): { [k: number | string]: Pdm } => lista

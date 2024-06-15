@@ -1,9 +1,14 @@
 <script setup>
+import AutocompleteField from '@/components/AutocompleteField2.vue';
+import CampoDePessoasComBuscaPorOrgao from '@/components/CampoDePessoasComBuscaPorOrgao.vue';
 import { planoSetorial as schema } from '@/consts/formSchemas';
 import nulificadorTotal from '@/helpers/nulificadorTotal.ts';
+import truncate from '@/helpers/truncate';
 import { useAlertStore } from '@/stores/alert.store';
 import { useAuthStore } from '@/stores/auth.store';
+import { useOrgansStore } from '@/stores/organs.store';
 import { usePlanosSetoriaisStore } from '@/stores/planosSetoriais.store.ts';
+import { useUsersStore } from '@/stores/users.store';
 import { storeToRefs } from 'pinia';
 import {
   ErrorMessage,
@@ -11,18 +16,33 @@ import {
   useForm,
   useIsFormDirty,
 } from 'vee-validate';
-import { watch } from 'vue';
-import { useRouter } from 'vue-router';
+import { ref, watch } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 
 const alertStore = useAlertStore();
 
 const authStore = useAuthStore();
 const { temPermissãoPara } = storeToRefs(authStore);
 
+const ÓrgãosStore = useOrgansStore();
+const {
+  órgãosComoLista,
+  órgãosQueTemResponsáveis,
+  órgãosQueTemResponsáveisEPorId,
+} = storeToRefs(ÓrgãosStore);
+
 const planosSetoriaisStore = usePlanosSetoriaisStore();
 const {
-  chamadasPendentes, erros, itemParaEdição, emFoco,
+  chamadasPendentes,
+  emFoco,
+  erros,
+  itemParaEdição,
+  lista,
 } = storeToRefs(planosSetoriaisStore);
+
+const usersStore = useUsersStore();
+
+const { pessoasSimplificadasPorÓrgão } = storeToRefs(usersStore);
 
 const props = defineProps({
   planoSetorialId: {
@@ -34,6 +54,10 @@ const props = defineProps({
 });
 
 const router = useRouter();
+const route = useRoute();
+
+// necessário por causa de 🤬
+const montarCampoEstático = ref(false);
 
 const {
   errors, handleSubmit, isSubmitting, resetForm, setFieldValue, values: carga,
@@ -72,10 +96,25 @@ const onSubmit = handleSubmit.withControlled(async (valoresControlados) => {
 
 const formulárioSujo = useIsFormDirty();
 
+async function iniciar() {
+  const requisições = [
+    ÓrgãosStore.getAll(),
+    usersStore.buscarPessoasSimplificadas(),
+  ];
+
+  await Promise.allSettled(requisições);
+
+  planosSetoriaisStore.buscarTudo();
+}
+
+iniciar();
+
 watch(itemParaEdição, (novoValor) => {
+  montarCampoEstático.value = false;
   resetForm({
     initialValues: novoValor,
   });
+  montarCampoEstático.value = true;
 });
 </script>
 <template>
@@ -319,6 +358,34 @@ watch(itemParaEdição, (novoValor) => {
       </div>
     </div>
 
+    <div
+      class="flex flexwrap g2 mb1"
+    >
+      <div class="f2 mb1">
+        <LabelFromYup
+          name="pdm_anteriores"
+          :schema="schema"
+          class="tc300"
+        />
+        <AutocompleteField
+          name="pdm_anteriores"
+          :controlador="{
+            busca: '',
+            participantes: carga.pdm_anteriores || []
+          }"
+          :grupo="lista || []"
+          :class="{
+            error: errors.pdm_anteriores,
+          }"
+          label="nome"
+        />
+        <ErrorMessage
+          name="pdm_anteriores"
+          class="error-msg"
+        />
+      </div>
+    </div>
+
     <hr class="mt2 mb2">
 
     <div class="flex flexwrap center g2 mb1">
@@ -555,6 +622,7 @@ watch(itemParaEdição, (novoValor) => {
             :schema="schema"
           />
         </label>
+        <ErrorMessage name="possui_atividade" />
       </div>
       <div class="f1 fb10em">
         <LabelFromYup
@@ -571,11 +639,29 @@ watch(itemParaEdição, (novoValor) => {
         <ErrorMessage name="rotulo_atividade" />
       </div>
     </div>
-    <ErrorMessage name="possui_atividade" />
-    <hr class="mt2 mb2">
 
     <div class="flex flexwrap center g2 mb1">
-      <div class="f1">
+      <div
+        class="f0 fb15em"
+      >
+        <label class="block mb1">
+          <Field
+            name="monitoramento_orcamento"
+            class="inputcheckbox"
+            :class="{ 'error': errors.monitoramento_orcamento }"
+            type="checkbox"
+            :value="true"
+            :unchecked-value="false"
+          />
+          <LabelFromYup
+            name="monitoramento_orcamento"
+            as="span"
+            :schema="schema"
+          />
+        </label>
+        <ErrorMessage name="monitoramento_orcamento" />
+      </div>
+      <div class="f1 fb10em">
         <LabelFromYup
           name="nivel_orcamento"
           :schema="schema"
@@ -585,6 +671,7 @@ watch(itemParaEdição, (novoValor) => {
           as="select"
           class="inputtext light mb1"
           :class="{ 'error': errors.nivel_orcamento }"
+          :disabled="!carga.monitoramento_orcamento"
         >
           <option value="Meta">
             Meta
@@ -597,6 +684,107 @@ watch(itemParaEdição, (novoValor) => {
           </option>
         </Field>
         <ErrorMessage name="nivel_orcamento" />
+      </div>
+    </div>
+
+    <hr class="mt2 mb2">
+
+    <div class="flex flexwrap g2 mb1">
+      <div class="f1 mb1">
+        <LabelFromYup
+          name="orgao_admin_id"
+          :schema="schema"
+          class="tc300"
+        />
+        <Field
+          name="orgao_admin_id"
+          as="select"
+          class="inputtext light mb1"
+          :class="{
+            error: errors.orgao_admin_id,
+          }"
+          :disabled="!órgãosComoLista?.length"
+        >
+          <option :value="0">
+            Selecionar
+          </option>
+          <option
+            v-for="item in órgãosComoLista"
+            :key="item"
+            :value="item.id"
+            :disabled="!pessoasSimplificadasPorÓrgão[item.id]?.length"
+            :title="item.descricao?.length > 36 ? item.descricao : null"
+          >
+            {{ item.sigla }} - {{ truncate(item.descricao, 36) }}
+          </option>
+        </Field>
+        <ErrorMessage
+          name="orgao_admin_id"
+        />
+      </div>
+
+      <div class="f2 mb1">
+        <LabelFromYup
+          name="ps_admin_cp.participantes"
+          :schema="schema"
+          class="tc300"
+        />
+        <AutocompleteField
+          name="ps_admin_cp.participantes"
+          :controlador="{
+            busca: '',
+            participantes: carga.ps_admin_cp?.participantes || []
+          }"
+          :grupo="pessoasSimplificadasPorÓrgão[carga.orgao_admin_id] || []"
+          :class="{
+            error: errors['ps_admin_cp.participantes'],
+          }"
+          label="nome_exibicao"
+        />
+        <ErrorMessage
+          name="ps_admin_cp.participantes"
+          class="error-msg"
+        />
+      </div>
+    </div>
+
+    <div
+      class="flex flexwrap g2 mb1"
+    >
+      <div class="f1 mb1">
+        <LabelFromYup
+          name="ps_tecnico_cp.participantes"
+          :schema="schema"
+        />
+        <CampoDePessoasComBuscaPorOrgao
+          v-model="carga.ps_tecnico_cp.participantes"
+          name="ps_tecnico_cp.participantes"
+          :pronto-para-montagem="montarCampoEstático"
+          ps-tecnico-cp
+        />
+        <ErrorMessage
+          name="ps_tecnico_cp.participantes"
+        />
+      </div>
+    </div>
+
+    <div
+      class="flex flexwrap g2 mb1"
+    >
+      <div class="f1 mb1">
+        <LabelFromYup
+          name="ps_ponto_focal.participantes"
+          :schema="schema"
+        />
+        <CampoDePessoasComBuscaPorOrgao
+          v-model="carga.ps_ponto_focal.participantes"
+          name="ps_ponto_focal.participantes"
+          :pronto-para-montagem="montarCampoEstático"
+          ps-ponto-focal
+        />
+        <ErrorMessage
+          name="ps_ponto_focal.participantes"
+        />
       </div>
     </div>
 

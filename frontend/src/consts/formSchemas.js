@@ -963,21 +963,42 @@ export const planoSetorial = object({
     .label('Descrição')
     .max(250)
     .nullable()
-    .required('Preencha a descrição'),
+    .required(),
   equipe_tecnica: string()
     .label('Equipe técnica')
     .max(2500)
     .nullable()
     .required(),
+  legislacao_de_instituicao: string()
+    .label('Legislação de instituição')
+    .nullable()
+    .max(50000),
+  monitoramento_orcamento: boolean()
+    .label('Monitorar de orçamento')
+    .nullable(),
   nivel_orcamento: mixed()
     .label('Nível de controle orçamentário')
-    .oneOf(niveisDeOrcamento)
-    .required(),
+    // feio, mas... Algo parece bugado no Yup e não posso atualizá-lo agora
+    .oneOf([...niveisDeOrcamento, null])
+    .transform((v) => (!v ? null : v))
+    .when('monitoramento_orcamento', (monitoramentoOrcamento, field) => (monitoramentoOrcamento
+      ? field.required()
+      : field.nullable())),
   nome: string()
     .label('Nome')
     .min(1)
     .max(250)
     .required(),
+  orgao_admin_id: number()
+    .label('Órgão administrador')
+    .min(1, 'Órgão inválido')
+    .nullable()
+    .transform((v) => (!v ? null : v)),
+  pdm_anteriores: number()
+    .label('PdMs antecessores')
+    .min(1, 'PdM inválido')
+    .nullable()
+    .transform((v) => (!v ? null : v)),
   periodo_do_ciclo_participativo_fim: date()
     .label('Fim do ciclo participativo')
     .max(dataMax)
@@ -1017,24 +1038,27 @@ export const planoSetorial = object({
     .label('Prefeito/Titular')
     .max(250)
     .required(),
-  ps_tecnico_cp: object({
-    participantes: array()
-      .label('Técnicos participantes')
-      .of(
-        number()
-          .min(1)
-          .required(),
-      ),
-  }),
-  ps_admin_cp: object({
-    participantes: array()
-      .label('Administradores participantes')
-      .of(
-        number()
-          .min(1)
-          .required(),
-      ),
-  }),
+  'ps_admin_cp.participantes': array()
+    .label('Administradores participantes')
+    .of(
+      number()
+        .min(1)
+        .required(),
+    ),
+  'ps_ponto_focal.participantes': array()
+    .label('Pontos focais participantes')
+    .of(
+      number()
+        .min(1)
+        .required(),
+    ),
+  'ps_tecnico_cp.participantes': array()
+    .label('Técnicos participantes')
+    .of(
+      number()
+        .min(1)
+        .required(),
+    ),
   rotulo_atividade: string()
     .label('Rótulo de atividades')
     .max(30)
