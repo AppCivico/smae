@@ -86,10 +86,11 @@ a svg {
 }
 
 fieldset {
-  padding: 0;
   border: 0;
-  padding-top: 1rem;
-  padding-bottom: 1rem;
+  padding-top: 3rem;
+  padding-right: 0;
+  padding-bottom: 0;
+  padding-left: 0;
   margin-bottom: 1rem;
   clear: both;
 
@@ -97,12 +98,14 @@ fieldset {
     border-top: 1px solid @c100;
   }
 
-  legend {
+  > legend {
+    font-size: 20px;
+    color: @c300;
+    margin-bottom: 0;
     display: block;
     width: 100%;
     width: fit-content;
-    float: left;
-    clear: left;
+    padding-right: 2rem;
 
     + .addlink,
     + * {

@@ -24,7 +24,7 @@ defineProps({
 <template>
   <component
     :is="as"
-    class="label"
+    :class="{ label: as !== 'legend' }"
     :for="as !== 'label'
       ? undefined
       : name || $attrs.for || null"
