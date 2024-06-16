@@ -96,7 +96,7 @@ const formulárioSujo = useIsFormDirty();
 async function iniciar() {
   const requisições = [
     ÓrgãosStore.getAll(),
-    usersStore.buscarPessoasSimplificadas(),
+    usersStore.buscarPessoasSimplificadas({ ps_admin_cp: true }),
   ];
 
   await Promise.allSettled(requisições);
