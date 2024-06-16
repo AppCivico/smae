@@ -107,12 +107,12 @@ router.afterEach((to) => {
 
 router.beforeEach((to, from, next) => {
   if (typeof to.matched.find((rota) => rota.name !== undefined)?.components?.default === 'function') {
-    $eventHub.emit('chamadaPendenteIniciada', to); // Start progress bar
+    $eventHub.emit('recebimentoIniciado', to); // Start progress bar
   }
   next();
 });
 
 router.beforeResolve((to, from, next) => {
-  $eventHub.emit('chamadaPendenteEncerrada'); // Stop progress bar
+  $eventHub.emit('recebimentoEncerrado'); // Stop progress bar
   next();
 });
