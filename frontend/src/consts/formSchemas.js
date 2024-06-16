@@ -27,6 +27,8 @@ import {
   setLocale,
   string,
 } from 'yup';
+import statusObras from './statusObras';
+import tiposObras from './tiposObras';
 
 const dataMin = import.meta.env.VITE_DATA_MIN ? new Date(`${import.meta.env.VITE_DATA_MIN}`) : new Date('1900-01-01T00:00:00Z');
 const dataMax = import.meta.env.VITE_DATA_MAX ? new Date(`${import.meta.env.VITE_DATA_MAX}`) : new Date('2100-12-31T23:59:59Z');
@@ -1150,6 +1152,67 @@ export const portfolio = object({
   titulo: string()
     .label('Nome')
     .required('Um portfolio requer um título'),
+});
+
+export const painelDeObras = object({
+  nome_portfolio: string()
+    .label('Nome do portofólio')
+    .min(0)
+    .max(2040)
+    .required(),
+  nome_obra: string()
+    .label('Nome da obra/intervenção')
+    .min(0)
+    .max(2040)
+    .required(),
+  grupo_tematico: number()
+    .label('Grupo temático')
+    .min(1, 'Grupo temático inválido')
+    .required(),
+  tipo_obra: mixed()
+    .label('Tipo de obra/intervenção*')
+    .oneOf(tiposObras)
+    .required(),
+  equipamento: number()
+    .label('Equipamento/Estrutura pública')
+    .min(1, 'Equipamento/Estrutura pública inválida')
+    .nullable(),
+  status: mixed()
+    .label('Status')
+    .oneOf(statusObras)
+    .required(),
+  origem: number()
+    .label('Secretaria/órgão de origem')
+    .min(1, 'Secretaria/órgão de origem inválidos')
+    .required(),
+  executor: number()
+    .label('SSecretaria/órgão executor')
+    .min(1, 'Secretaria/órgão executor inválidos')
+    .required(),
+  detalhamento: string()
+    .label('Detalhamento/Escopo da obra')
+    .nullable(),
+  // programa_habitacional:
+  // numero_unidades:
+  // numero_familias:
+  // subprefeitura:
+  // distrito:
+  // origem:
+  // endereco:
+  // inicio:
+  // termino:
+  // inauguracao:
+  // custo_inicial:
+  // observacoes:
+  // orgao_gestor:
+  // assessor:
+  // secretario:
+  // orgao_responsavel:
+  // ponto_focal_responsavel:
+  // secretario_responsavel:
+  // orgaos_colaboradores:
+  // ponto_focal_colaborador:
+  // secretario_colaborador:
 });
 
 export const painelExterno = object({
