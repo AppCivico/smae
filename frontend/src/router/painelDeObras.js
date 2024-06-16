@@ -31,7 +31,7 @@ export default {
         rotasParaMigalhasDePão: [
           'paineisListar',
         ],
-        título: 'Novo Painel de Obras',
+        título: 'Cadastro de Obras',
       },
     },
     {
@@ -58,7 +58,7 @@ export default {
             rotasParaMigalhasDePão: [
               'paineisListar',
             ],
-            título: () => 'Editar Painel de Obras',
+            título: () => 'Editar Cadastro de Obras',
           },
         },
         {
@@ -70,7 +70,7 @@ export default {
             painelId: Number.parseInt(params.painelId, 10) || undefined,
           }),
           meta: {
-            título: () => 'Resumo de Painél de Obras',
+            título: () => 'Resumo da Obra',
             títuloParaMenu: 'Resumo',
           },
         },
