@@ -61,7 +61,7 @@ export const useUsersStore = defineStore({
     async buscarPessoasSimplificadas(params) {
       try {
         if (this.pessoasSimplificadas.loading) return;
-        //this.pessoasSimplificadas = { loading: true };
+        // this.pessoasSimplificadas = { loading: true };
         const r = await this.requestS.get(`${baseUrl}/pessoa/reduzido`, params);
         this.pessoasSimplificadas = r.linhas;
       } catch (error) {
@@ -168,6 +168,13 @@ export const useUsersStore = defineStore({
           acc[cur.orgao_id] = [];
         }
         acc[cur.orgao_id].push(cur);
+        return acc;
+      }, {})
+      : {})),
+    pessoasSimplificadasPorId: (({ pessoasSimplificadas }) => (Array
+      .isArray(pessoasSimplificadas)
+      ? pessoasSimplificadas.reduce((acc, cur) => {
+        acc[cur.id] = cur;
         return acc;
       }, {})
       : {})),
