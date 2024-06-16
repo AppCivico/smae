@@ -83,12 +83,14 @@ function request(method: Method, upload = false) {
 
     switch (method) {
       case 'GET':
+        $eventHub.emit('recebimentoIniciado');
         if (params && Object.keys(params).length) {
           urlFinal += `?${qs.stringify(params, { indices: false })}`;
         }
         break;
 
       default:
+        $eventHub.emit('envioIniciado');
         if (params && !upload) {
           requestOptions.headers = {
             ...requestOptions.headers,
@@ -96,19 +98,24 @@ function request(method: Method, upload = false) {
           };
           requestOptions.body = JSON.stringify(params);
         } else {
-        // requestOptions.headers['Content-Type'] = 'multipart/form-data';
+          // requestOptions.headers['Content-Type'] = 'multipart/form-data';
           requestOptions.body = params as FormData;
         }
         break;
     }
 
-    $eventHub.emit('chamadaPendenteIniciada');
-
     // return fetch(urlFinal, requestOptions).then(handleResponse);
     return fetch(urlFinal, requestOptions)
       .then((response) => handleResponse(response, AlertarErros))
       .finally(() => {
-        $eventHub.emit('chamadaPendenteEncerrada');
+        switch (method) {
+          case 'GET':
+            $eventHub.emit('recebimentoEncerrado');
+            break;
+          default:
+            $eventHub.emit('envioEncerrado');
+            break;
+        }
       });
   };
 }
