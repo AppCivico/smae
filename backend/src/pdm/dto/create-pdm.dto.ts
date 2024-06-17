@@ -10,6 +10,7 @@ import {
     IsOptional,
     IsString,
     MaxLength,
+    Min,
     MinLength,
     ValidateIf,
     ValidateNested,
@@ -27,6 +28,7 @@ export class CreatePdmAdminCPDto {
     @IsArray({ message: 'precisa ser um array' })
     @ArrayMaxSize(10000, { message: 'precisa ter no máximo 10000 items' })
     @IsInt({ each: true, message: 'Cada item precisa ser um número inteiro' })
+    @Min(1, { each: true, message: 'ID precisa ser maior que 0' })
     participantes: number[];
 }
 
@@ -39,6 +41,7 @@ export class CreatePdmTecnicoCPDto {
     @IsArray({ message: 'precisa ser um array' })
     @ArrayMaxSize(10000, { message: 'precisa ter no máximo 10000 items' })
     @IsInt({ each: true, message: 'Cada item precisa ser um número inteiro' })
+    @Min(1, { each: true, message: 'ID precisa ser maior que 0' })
     participantes: number[];
 }
 
@@ -51,6 +54,7 @@ export class CreatePdmPontoFocalDto {
     @IsArray({ message: 'precisa ser um array' })
     @ArrayMaxSize(10000, { message: 'precisa ter no máximo 10000 items' })
     @IsInt({ each: true, message: 'Cada item precisa ser um número inteiro' })
+    @Min(1, { each: true, message: 'ID precisa ser maior que 0' })
     participantes: number[];
 }
 
@@ -289,6 +293,7 @@ export class CreatePdmDto {
      */
     @IsOptional()
     @IsInt({ message: 'Órgão precisa ser um número inteiro' })
+    @Min(1, { message: 'ID precisa ser maior que 0' })
     orgao_admin_id?: number | null;
 
     /**
@@ -304,6 +309,7 @@ export class CreatePdmDto {
     @IsOptional()
     @IsArray()
     @IsInt({ each: true, message: 'PDM: Cada item precisa ser um número inteiro' })
+    @Min(1, { each: true, message: 'ID precisa ser maior que 0' })
     @Transform(NumberArrayTransform)
     pdm_anteriores?: number[];
 }
