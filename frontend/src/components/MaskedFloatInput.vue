@@ -75,7 +75,6 @@ const typedValue = computed({
   },
 });
 </script>
-
 <template>
   <input
     v-model="typedValue"
