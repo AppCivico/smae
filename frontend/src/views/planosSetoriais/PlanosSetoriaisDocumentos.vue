@@ -46,6 +46,17 @@ iniciar();
     <TítuloDePágina />
 
     <hr class="ml2 f1">
+    <router-link
+      :to="{
+        name: 'planosSetoriaisNovoDocumento',
+        params: {
+          planoSetorialId
+        }
+      }"
+      class="btn ml2"
+    >
+      Novo arquivo
+    </router-link>
   </header>
 
   <LoadingComponent
@@ -56,6 +67,9 @@ iniciar();
     :parâmetros-de-diretórios="{ pdm_id: $route.params.planoSetorialId }"
     :arquivos="arquivos"
     class="mb1"
+    :rota-de-adição="{
+      name: 'planosSetoriaisNovoDocumento'
+    }"
     @apagar="($params) => excluirArquivo($params)"
   />
 

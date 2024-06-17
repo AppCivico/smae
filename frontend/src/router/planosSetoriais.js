@@ -95,6 +95,17 @@ export default {
             título: () => usePlanosSetoriaisStore()?.emFoco?.nome || 'Documentos de Plano Setorial',
             títuloParaMenu: 'Documentos',
           },
+          children: [
+            {
+              path: 'novo',
+              name: 'planosSetoriaisNovoDocumento',
+              component: () => import('@/views/planosSetoriais/PlanosSetoriaisEnviarArquivo.vue'),
+              meta: {
+                rotaDeEscape: 'planosSetoriaisDocumentos',
+                títuloParaMenu: 'Novo documento',
+              },
+            },
+          ],
         },
       ],
     },
