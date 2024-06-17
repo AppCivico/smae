@@ -145,6 +145,22 @@ export const usePlanosSetoriaisStore = defineStore('planosSetoriais', {
         return false;
       }
     },
+
+    async associarArquivo(params = {}, idDoPlanoSetorial = 0): Promise<boolean> {
+      this.chamadasPendentes.arquivos = true;
+      this.erros.arquivos = null;
+
+      try {
+        const resposta = await this.requestS.post(`${baseUrl}/plano-setorial/${idDoPlanoSetorial || this.route.params.planoSetorialId}/documento`, params);
+
+        this.chamadasPendentes.arquivos = false;
+        return resposta;
+      } catch (erro) {
+        this.erros.arquivos = erro;
+        this.chamadasPendentes.arquivos = false;
+        return false;
+      }
+    },
   },
 
   getters: {
@@ -180,6 +196,9 @@ export const usePlanosSetoriaisStore = defineStore('planosSetoriais', {
         ? emFoco.ps_tecnico_cp
         : { participantes: [] },
     }),
+
+    arquivosPorId: ({ arquivos }: Estado) => arquivos
+      .reduce((acc, cur) => ({ ...acc, [cur.id]: cur }), {}),
 
     planosSetoriaisPorId: ({ lista }: Estado): { [k: number | string]: Pdm } => lista
       .reduce((acc, cur) => ({ ...acc, [cur.id]: cur }), {}),
