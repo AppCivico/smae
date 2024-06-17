@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { ProjetoOrigemTipo } from '@prisma/client';
+import { ProjetoOrigemTipo, ProjetoStatus } from '@prisma/client';
 import { Transform, TransformFnParams, Type } from 'class-transformer';
 import {
     ArrayMaxSize,
@@ -87,6 +87,16 @@ export class CreateProjetoDto {
     @IsInt({ each: true, message: '$property| Cada item precisa ser um número inteiro' })
     @ValidateIf((object, value) => value !== null)
     portfolios_compartilhados?: number[] | null;
+
+    /**
+     * Executa uma mudança de status, sem atualizar os campos (pode retroceder)
+     */
+    @IsOptional()
+    @ApiProperty({ enum: ProjetoStatus, enumName: 'ProjetoStatus' })
+    @IsEnum(ProjetoStatus, {
+        message: '$property| Precisa ser um dos seguintes valores: ' + Object.values(ProjetoStatus).join(', '),
+    })
+    status?: ProjetoStatus;
 
     /**
      * nome (mínimo 1 char)

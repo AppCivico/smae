@@ -47,6 +47,10 @@ export class ProjetoPermissoesDto {
     campo_data_revisao: boolean;
     campo_versao: boolean;
 
+    acao_iniciar_obra: boolean;
+    acao_concluir_obra: boolean;
+    acao_paralisar_obra: boolean;
+
     campo_nao_escopo: boolean;
     campo_objeto: boolean;
     campo_objetivo: boolean;
