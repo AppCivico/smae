@@ -212,7 +212,7 @@ watch(() => props.prontoParaMontagem, () => {
       <div class="f1">
         <label
           :for="`órgão--${idx}`"
-          class="label tc300"
+          class="label"
         >Órgão</label>
         <select
           :id="`órgão--${idx}`"
@@ -236,7 +236,7 @@ watch(() => props.prontoParaMontagem, () => {
       <div class="f2">
         <label
           :for="`pessoas--${idx}`"
-          class="label tc300"
+          class="label"
         >Pessoas</label>
         <AutocompleteField
           :id="`pessoas--${idx}`"
