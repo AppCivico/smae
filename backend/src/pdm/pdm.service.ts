@@ -398,6 +398,7 @@ export class PdmService {
                       where: { id: { in: pdm.pdm_anteriores } },
                       select: {
                           id: true,
+                          nome: true,
                           orgao_admin: { select: { id: true, descricao: true, sigla: true } },
                       },
                   })
