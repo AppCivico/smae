@@ -11,9 +11,12 @@ export class PrismaErrorFilter implements ExceptionFilter {
         const request = ctx.getRequest<Request>();
 
         console.log(exception);
-
         if (exception.code == 'P2025') {
             response.status(404).json({ message: 'Recurso acessado não foi encontrado ' + request.url });
+        } else if (exception.code == 'P2003') {
+            response.status(423).json({
+                message: `Uma restrição falhou no banco de dados: Tabela ${exception.meta?.modelName}, ${exception.meta?.field_name}`,
+            });
         } else if (exception.code == 'P2034') {
             response.status(423).json({
                 message:
