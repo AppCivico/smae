@@ -42,6 +42,11 @@ export default {
         ...params,
         planoSetorialId: Number.parseInt(params.planoSetorialId, 10) || undefined,
       }),
+      meta: {
+        rotasParaMigalhasDePão: [
+          'planosSetoriaisListar',
+        ],
+      },
       component: () => import('@/views/planosSetoriais/PlanosSetoriaisItem.vue'),
       children: [
         {
@@ -58,9 +63,6 @@ export default {
               'CadastroPS.administrador_no_orgao',
             ],
             rotaDeEscape: 'planosSetoriaisResumo',
-            rotasParaMigalhasDePão: [
-              'planosSetoriaisListar',
-            ],
             título: () => usePlanosSetoriaisStore()?.emFoco?.nome || 'Editar Plano Setorial',
           },
         },
