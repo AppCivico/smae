@@ -178,7 +178,7 @@ usersStore.buscarPessoasSimplificadas();
         class="f1 mb1 fb15em"
       >
         <dt class="t12 uc w700 mb05 tamarelo">
-          Divisões temáticas
+          Classificações temáticas
         </dt>
         <dd class="t13 contentStyle">
           <ul>
@@ -190,6 +190,25 @@ usersStore.buscarPessoasSimplificadas();
             </li>
             <li v-if="emFoco.rotulo_sub_tema">
               {{ emFoco.rotulo_sub_tema || 'Sub-tema' }}
+            </li>
+          </ul>
+        </dd>
+      </dl>
+
+      <dl
+        v-if="emFoco?.possui_iniciativa && emFoco?.possui_atividade"
+        class="f1 mb1 fb15em"
+      >
+        <dt class="t12 uc w700 mb05 tamarelo">
+          Desdobramentos da meta
+        </dt>
+        <dd class="t13 contentStyle">
+          <ul>
+            <li v-if="emFoco.possui_iniciativa">
+              {{ emFoco.rotulo_iniciativa || 'Contexto' }}
+            </li>
+            <li v-if="emFoco.possui_atividade">
+              {{ emFoco.rotulo_atividade || 'Complementação' }}
             </li>
           </ul>
         </dd>
@@ -209,25 +228,6 @@ usersStore.buscarPessoasSimplificadas();
             </li>
             <li v-if="emFoco.possui_complementacao_meta">
               {{ emFoco.rotulo_complementacao_meta || 'Complementação' }}
-            </li>
-          </ul>
-        </dd>
-      </dl>
-
-      <dl
-        v-if="emFoco?.possui_iniciativa && emFoco?.possui_atividade"
-        class="f1 mb1 fb15em"
-      >
-        <dt class="t12 uc w700 mb05 tamarelo">
-          Divisões temporais
-        </dt>
-        <dd class="t13 contentStyle">
-          <ul>
-            <li v-if="emFoco.possui_iniciativa">
-              {{ emFoco.rotulo_iniciativa || 'Contexto' }}
-            </li>
-            <li v-if="emFoco.possui_atividade">
-              {{ emFoco.rotulo_atividade || 'Complementação' }}
             </li>
           </ul>
         </dd>

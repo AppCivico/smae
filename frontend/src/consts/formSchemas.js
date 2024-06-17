@@ -997,8 +997,8 @@ export const planoSetorial = object({
     .nullable()
     .transform((v) => (!v ? null : v)),
   pdm_anteriores: number()
-    .label('PdMs antecessores')
-    .min(1, 'PdM inválido')
+    .label('Planos antecessores')
+    .min(1, 'Plano inválido')
     .nullable()
     .transform((v) => (!v ? null : v)),
   periodo_do_ciclo_participativo_fim: date()
