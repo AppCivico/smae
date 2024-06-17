@@ -17,7 +17,7 @@ const props = defineProps({
   },
   diretórios: {
     type: Array,
-    required: true,
+    default: () => [],
   },
 
   apenasLeitura: {
