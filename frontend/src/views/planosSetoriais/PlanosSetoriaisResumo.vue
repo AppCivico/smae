@@ -5,6 +5,11 @@ import { useOrgansStore } from '@/stores/organs.store';
 import { usePlanosSetoriaisStore } from '@/stores/planosSetoriais.store.ts';
 import { useUsersStore } from '@/stores/users.store';
 import { storeToRefs } from 'pinia';
+import {
+  defineOptions,
+} from 'vue';
+
+defineOptions({ inheritAttrs: false });
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
