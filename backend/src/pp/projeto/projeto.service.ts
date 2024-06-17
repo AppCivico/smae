@@ -395,7 +395,7 @@ export class ProjetoService {
                     select: { id: true },
                 });
 
-                await this.verificaCampos(prismaTx, row.id, tipo);
+                //await this.verificaCampos(prismaTx, row.id, tipo);
 
                 await this.upsertFonteRecurso(dto, prismaTx, row.id);
 
@@ -1772,7 +1772,7 @@ export class ProjetoService {
                     await prismaTx.projeto.update({ where: { id: projeto.id }, data: { codigo: codigo } });
             }
 
-            await this.verificaCampos(prismaTx, projetoId, tipo);
+            //await this.verificaCampos(prismaTx, projetoId, tipo);
 
             await this.upsertGrupoPort(prismaTx, projeto, dto, now, user);
             await this.upsertEquipe(tipo, prismaTx, projeto, dto, now, user);
