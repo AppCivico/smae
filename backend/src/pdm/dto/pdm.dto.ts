@@ -34,6 +34,7 @@ export class PdmDto {
 
 export class PlanoSetorialAnteriorDto {
     id: number;
+    nome: string;
     orgao_admin: IdSiglaDescricao | null;
 }
 
