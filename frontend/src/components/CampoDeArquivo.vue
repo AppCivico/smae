@@ -2,6 +2,7 @@
 import requestS from '@/helpers/requestS.ts';
 import { useField } from 'vee-validate';
 import {
+  computed,
   defineModel,
   defineOptions,
   ref,
@@ -9,6 +10,20 @@ import {
 } from 'vue';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
+
+const formatosDeImagem = [
+  '.apng',
+  '.avif',
+  '.gif',
+  '.jpg',
+  '.jpeg',
+  '.jfif',
+  '.pjpeg',
+  '.pjp',
+  '.png',
+  '.svg',
+  '.webp',
+];
 
 defineOptions({ inheritAttrs: false });
 
@@ -36,7 +51,10 @@ const props = defineProps({
 
   // HTML common attributes
   accept: {
-    type: String,
+    type: [
+      Array,
+      String,
+    ],
     default: undefined,
   },
   // necessária para que o vee-validate não se perca
@@ -62,6 +80,12 @@ const ativaçãoDoArquivoPendente = ref(false);
 const { handleChange } = useField(name, { required: props.required }, {
   initialValue: model.value,
 });
+
+const éImagem = computed(() => (typeof props.accept === 'string'
+  ? props.accept.split(',')
+  : props.accept)
+  .map((extensão) => extensão.trim())
+  .every((item) => formatosDeImagem.includes(item)));
 
 function removerArquivo() {
   handleChange('');
@@ -145,13 +169,15 @@ async function enviarArquivo(e) {
           </svg>
           <span class="f1">
             <slot>
-              Adicionar (ou soltar) arquivo
+              Adicionar (ou soltar) arquivo <template
+                v-if="props.accept"
+              >({{ props.accept }})</template>
             </slot><template v-if="props.required">&nbsp;<span class="tvermelho">*</span></template>
           </span>
         </template>
 
         <img
-          v-else-if="!ativaçãoDoArquivoPendente"
+          v-else-if="!ativaçãoDoArquivoPendente && éImagem"
           :src="`${baseUrl}/download/${model}?inline=true`"
           width="100"
           class="campo-de-arquivo__amostra ib mr1"
