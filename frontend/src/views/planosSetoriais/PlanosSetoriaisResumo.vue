@@ -15,7 +15,7 @@ const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
 const planosSetoriaisStore = usePlanosSetoriaisStore();
 const {
-  emFoco, planosSetoriaisPorId,
+  emFoco,
 } = storeToRefs(planosSetoriaisStore);
 
 const ÓrgãosStore = useOrgansStore();
@@ -363,19 +363,19 @@ usersStore.buscarPessoasSimplificadas();
                   }
                 }"
               >
-                {{ planosSetoriaisPorId[item.id]?.nome || planosSetoriaisPorId[item.id] }}
+                {{ item.nome || item }}
               </router-link>
               <template v-else>
                 {{ item }}
               </template>
 
               <template
-                v-if="órgãosPorId[item.orgao_admin]?.sigla"
+                v-if="item.orgao_admin"
               >
                 (<abbr
-                  :title="órgãosPorId[item.orgao_admin]?.descricao"
+                  :title="item.orgao_admin?.descricao"
                 >
-                  {{ órgãosPorId[item.orgao_admin]?.sigla }}
+                  {{ item.orgao_admin?.sigla || item.orgao_admin }}
                 </abbr>)
               </template>
             </li>
