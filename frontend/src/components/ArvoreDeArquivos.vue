@@ -168,7 +168,7 @@ const éPossívelAbrir = (item) => !item.children?.length
                   type="button"
                   class="like-a__text arvore-de-arquivos__apagar"
                   aria-label="apagar"
-                  @click="$emit('apagar', arquivo?.id)"
+                  @click="$emit('apagar', { id: arquivo?.id, nome: arquivo?.arquivo?.nome_original })"
                 >
                   <svg
                     width="20"
