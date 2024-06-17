@@ -143,6 +143,22 @@ usersStore.buscarPessoasSimplificadas();
           {{ emFoco?.prefeito || '-' }}
         </dd>
       </dl>
+      <dl class="f1 mb1 fb5em">
+        <dt class="t12 uc w700 mb05 tamarelo">
+          {{ schema.fields.orgao_admin_id.spec.label }}
+        </dt>
+        <dd class="t13">
+          <abbr
+            v-if="emFoco?.orgao_admin"
+            :title="emFoco?.orgao_admin.descricao"
+          >
+            {{ emFoco?.orgao_admin.sigla || emFoco?.orgao_admin }}
+          </abbr>
+          <template v-else>
+            -
+          </template>
+        </dd>
+      </dl>
     </div>
 
     <div class="flex flexwrap g2 mb2">
