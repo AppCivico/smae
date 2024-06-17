@@ -1,4 +1,6 @@
 <script setup>
+import formatosDeImagem from '@/consts/formatosDeImagem';
+import tiposDeArquivos from '@/consts/tiposDeArquivos';
 import requestS from '@/helpers/requestS.ts';
 import { useField } from 'vee-validate';
 import {
@@ -10,20 +12,6 @@ import {
 } from 'vue';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
-
-const formatosDeImagem = [
-  '.apng',
-  '.avif',
-  '.gif',
-  '.jpg',
-  '.jpeg',
-  '.jfif',
-  '.pjpeg',
-  '.pjp',
-  '.png',
-  '.svg',
-  '.webp',
-];
 
 defineOptions({ inheritAttrs: false });
 
@@ -38,15 +26,7 @@ const props = defineProps({
   tipo: {
     type: String,
     required: true,
-    validator: (valor) => [
-      'DOCUMENTO',
-      'FOTO_PARLAMENTAR',
-      'ICONE_TAG',
-      'IMPORTACAO_ORCAMENTO',
-      'IMPORTACAO_PARLAMENTAR',
-      'LOGO_PDM',
-      'SHAPEFILE',
-    ].indexOf(valor) > -1,
+    validator: (valor) => tiposDeArquivos.indexOf(valor) > -1,
   },
 
   // HTML common attributes
