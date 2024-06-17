@@ -43,6 +43,10 @@ export default {
         planoSetorialId: Number.parseInt(params.planoSetorialId, 10) || undefined,
       }),
       meta: {
+        rotasParaMenuSecundário: [
+          'planosSetoriaisResumo',
+          'planosSetoriaisDocumentos',
+        ],
         rotasParaMigalhasDePão: [
           'planosSetoriaisListar',
         ],
@@ -77,6 +81,19 @@ export default {
           meta: {
             título: () => usePlanosSetoriaisStore()?.emFoco?.nome || 'Resumo de Plano Setorial',
             títuloParaMenu: 'Resumo',
+          },
+        },
+        {
+          path: 'documentos',
+          name: 'planosSetoriaisDocumentos',
+          component: () => import('@/views/planosSetoriais/PlanosSetoriaisDocumentos.vue'),
+          props: ({ params }) => ({
+            ...params,
+            planoSetorialId: Number.parseInt(params.planoSetorialId, 10) || undefined,
+          }),
+          meta: {
+            título: () => usePlanosSetoriaisStore()?.emFoco?.nome || 'Documentos de Plano Setorial',
+            títuloParaMenu: 'Documentos',
           },
         },
       ],
