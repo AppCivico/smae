@@ -1,10 +1,8 @@
 import { PartialType } from '@nestjs/mapped-types';
 import { ApiProperty, OmitType } from '@nestjs/swagger';
-import { ProjetoStatus } from '@prisma/client';
 import { Transform, Type } from 'class-transformer';
 import {
     IsArray,
-    IsEnum,
     IsInt,
     IsNumber,
     IsOptional,
@@ -141,16 +139,6 @@ export class UpdateProjetoDto extends OmitType(PartialType(CreateProjetoDto), ['
     @Transform(DateTransform)
     @ValidateIf((object, value) => value !== null)
     data_revisao?: Date | null;
-
-    /**
-     * Executa uma mudança de status, sem atualizar os campos (pode retroceder)
-     */
-    @IsOptional()
-    @ApiProperty({ enum: ProjetoStatus, enumName: 'ProjetoStatus' })
-    @IsEnum(ProjetoStatus, {
-        message: '$property| Precisa ser um dos seguintes valores: ' + Object.values(ProjetoStatus).join(', '),
-    })
-    status?: ProjetoStatus;
 
     @IsOptional()
     @IsArray()

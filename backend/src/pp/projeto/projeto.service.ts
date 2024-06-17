@@ -29,13 +29,13 @@ import {
     ProjetoPermissoesDto,
 } from './entities/projeto.entity';
 
-import { HtmlSanitizer } from '../../common/html-sanitizer';
-import { GeoLocService } from '../../geo-loc/geo-loc.service';
-import { CreateGeoEnderecoReferenciaDto, ReferenciasValidasBase } from '../../geo-loc/entities/geo-loc.entity';
-import { BlocoNotaService } from '../../bloco-nota/bloco-nota/bloco-nota.service';
-import { TarefaService } from '../tarefa/tarefa.service';
-import { UpdateTarefaDto } from '../tarefa/dto/update-tarefa.dto';
 import { PessoaPrivilegioService } from '../../auth/pessoaPrivilegio.service';
+import { BlocoNotaService } from '../../bloco-nota/bloco-nota/bloco-nota.service';
+import { HtmlSanitizer } from '../../common/html-sanitizer';
+import { CreateGeoEnderecoReferenciaDto, ReferenciasValidasBase } from '../../geo-loc/entities/geo-loc.entity';
+import { GeoLocService } from '../../geo-loc/geo-loc.service';
+import { UpdateTarefaDto } from '../tarefa/dto/update-tarefa.dto';
+import { TarefaService } from '../tarefa/tarefa.service';
 
 const FASES_LIBERAR_COLABORADOR: ProjetoStatus[] = ['Registrado', 'Selecionado', 'EmPlanejamento'];
 const StatusParaFase: Record<ProjetoStatus, ProjetoFase> = {
@@ -284,7 +284,7 @@ export class ProjetoService {
 
         if (!origem_tipo) throw new Error('origem_tipo deve estar definido no create de Projeto');
 
-        this.removeCampos(tipo, dto);
+        this.removeCampos(tipo, dto, 'create');
 
         if (dto.portfolios_compartilhados?.length) {
             // Caso o portfolio seja de modelo para clonagem.
@@ -309,6 +309,7 @@ export class ProjetoService {
             await this.verificaGrupoTematico(dto);
         }
 
+        const status = dto.status ?? tipo == 'PP' ? 'Registrado' : 'MDO_NaoIniciada';
         const now = new Date(Date.now());
 
         const created = await this.prisma.$transaction(
@@ -355,8 +356,8 @@ export class ProjetoService {
                         objetivo: '',
                         objeto: '',
                         publico_alvo: '',
-                        status: 'Registrado',
-                        fase: StatusParaFase['Registrado'],
+                        status: status,
+                        fase: StatusParaFase[status],
 
                         portfolios_compartilhados: {
                             createMany: {
@@ -431,7 +432,7 @@ export class ProjetoService {
             throw new HttpException('mdo_programa_habitacional| Campo obrigatório para obras', 400);
     }
 
-    private removeCampos(tipo: string, dto: CreateProjetoDto | UpdateProjetoDto) {
+    private removeCampos(tipo: string, dto: CreateProjetoDto | UpdateProjetoDto, op: 'create' | 'update') {
         if (tipo == 'MDO') {
             delete dto.resumo;
             delete dto.principais_etapas;
@@ -450,6 +451,33 @@ export class ProjetoService {
             if ('objeto' in dto) delete dto.objeto;
             if ('restricoes' in dto) delete dto.restricoes;
             if ('premissas' in dto) delete dto.premissas;
+
+            const liberados: ProjetoStatus[] = [
+                'MDO_Concluida',
+                'MDO_EmAndamento',
+                'MDO_NaoIniciada',
+                'MDO_Paralisada',
+            ];
+            if (dto.status && !liberados.includes(dto.status))
+                throw new HttpException('status| Status inválido para Obras', 400);
+        } else if (tipo == 'PP') {
+            // mantém o default do banco, como era antes
+            if (dto.status && op == 'create') {
+                delete dto.status;
+            }
+
+            const liberados: ProjetoStatus[] = [
+                'EmAcompanhamento',
+                'EmPlanejamento',
+                'Fechado',
+                'Planejado',
+                'Selecionado',
+                'Registrado',
+                'Suspenso',
+                'Validado',
+            ];
+            if (dto.status && !liberados.includes(dto.status))
+                throw new HttpException('status| Status inválido para Projetos', 400);
         }
     }
 
@@ -1086,6 +1114,7 @@ export class ProjetoService {
                         },
                     },
                 },
+                tipo: true,
             },
         });
         if (!projeto) throw new HttpException('Projeto não encontrado ou sem permissão para acesso', 400);
@@ -1207,6 +1236,7 @@ export class ProjetoService {
 
     private async calcPermissions(
         projeto: {
+            tipo: TipoProjeto;
             arquivado: boolean;
             status: ProjetoStatus;
             portfolio: {
@@ -1222,6 +1252,8 @@ export class ProjetoService {
         user: PessoaFromJwt | undefined,
         readonly: ReadOnlyBooleanType
     ): Promise<ProjetoPermissoesDto> {
+        const camposLiberadosPorPadrao = projeto.tipo == 'MDO';
+
         const permissoes: ProjetoPermissoesDto = {
             acao_arquivar: false,
             acao_restaurar: false,
@@ -1238,17 +1270,20 @@ export class ProjetoService {
             campo_restricoes: false,
             campo_data_aprovacao: false,
             campo_data_revisao: false,
-            campo_codigo: false,
+            campo_codigo: camposLiberadosPorPadrao,
             campo_versao: false,
             campo_objeto: false,
             campo_objetivo: false,
             campo_publico_alvo: false,
-            campo_secretario_executivo: false,
-            campo_secretario_responsavel: false,
+            campo_secretario_executivo: camposLiberadosPorPadrao,
+            campo_secretario_responsavel: camposLiberadosPorPadrao,
             campo_coordenador_ue: false,
             campo_nao_escopo: false,
             apenas_leitura: true,
             sou_responsavel: false,
+            acao_iniciar_obra: camposLiberadosPorPadrao,
+            acao_concluir_obra: camposLiberadosPorPadrao,
+            acao_paralisar_obra: camposLiberadosPorPadrao,
             status_permitidos: [],
         };
 
@@ -1271,14 +1306,16 @@ export class ProjetoService {
         permissoes.apenas_leitura = pessoaPodeEscrever == false;
 
         if (projeto.arquivado == false) {
-            // se já saiu da fase de registro, então está liberado preencher o campo
-            // de código, pois esse campo de código, quando preenchido durante o status "Selecionado" irá automaticamente
-            // migrar o status para "EmPlanejamento"
-            permissoes.campo_nao_escopo = true;
-            permissoes.campo_objeto = true;
-            permissoes.campo_objetivo = true;
+            if (projeto.tipo == 'PP') {
+                // se já saiu da fase de registro, então está liberado preencher o campo
+                // de código, pois esse campo de código, quando preenchido durante o status "Selecionado" irá automaticamente
+                // migrar o status para "EmPlanejamento"
+                permissoes.campo_nao_escopo = true;
+                permissoes.campo_objeto = true;
+                permissoes.campo_objetivo = true;
+            }
 
-            if (projeto.status !== 'Registrado') {
+            if (projeto.status !== 'Registrado' && projeto.tipo == 'PP') {
                 permissoes.campo_codigo = true;
                 permissoes.campo_premissas = true;
                 permissoes.campo_restricoes = true;
@@ -1344,6 +1381,33 @@ export class ProjetoService {
                         permissoes.status_permitidos.push('EmPlanejamento');
                         permissoes.status_permitidos.push('Selecionado');
                         permissoes.status_permitidos.push('Registrado');
+                        permissoes.acao_arquivar = true;
+                        break;
+                    case 'MDO_Concluida':
+                        permissoes.status_permitidos.push('MDO_EmAndamento');
+                        permissoes.status_permitidos.push('MDO_NaoIniciada');
+                        permissoes.status_permitidos.push('MDO_Paralisada');
+                        permissoes.acao_arquivar = true;
+                        break;
+                    case 'MDO_EmAndamento':
+                        permissoes.status_permitidos.push('MDO_Concluida');
+                        permissoes.status_permitidos.push('MDO_NaoIniciada');
+                        permissoes.status_permitidos.push('MDO_Paralisada');
+                        permissoes.acao_concluir_obra = true;
+                        permissoes.acao_paralisar_obra = true;
+                        break;
+                    case 'MDO_NaoIniciada':
+                        permissoes.status_permitidos.push('MDO_Concluida');
+                        permissoes.status_permitidos.push('MDO_EmAndamento');
+                        permissoes.status_permitidos.push('MDO_Paralisada');
+                        permissoes.acao_iniciar_obra = true;
+                        permissoes.acao_arquivar = true;
+                        break;
+                    case 'MDO_Paralisada':
+                        permissoes.status_permitidos.push('MDO_Concluida');
+                        permissoes.status_permitidos.push('MDO_EmAndamento');
+                        permissoes.status_permitidos.push('MDO_NaoIniciada');
+                        permissoes.acao_iniciar_obra = true;
                         permissoes.acao_arquivar = true;
                         break;
                 }
@@ -1475,7 +1539,7 @@ export class ProjetoService {
     ): Promise<RecordWithId> {
         // aqui é feito a verificação se esse usuário pode realmente acessar esse recurso
         const projeto = await this.findOne(tipo, projetoId, user, 'ReadWrite');
-        this.removeCampos(tipo, dto);
+        this.removeCampos(tipo, dto, 'update');
 
         // migrou de status, verificar se  realmente poderia mudar
         if (dto.status && dto.status != projeto.status) {
