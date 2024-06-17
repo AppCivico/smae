@@ -49,11 +49,11 @@ usersStore.buscarPessoasSimplificadas();
   >
     <div class="flex g2 mb2 flexwrap">
       <dl
-        v-if="emFoco?.nome"
+        v-if="emFoco?.logo"
         class="f1 mb1"
       >
         <dt class="t12 uc w700 mb05 tamarelo">
-          {{ schema.fields.nome.spec.label }}
+          {{ schema.fields.upload_logo.spec.label }}
         </dt>
         <dd
           v-if="emFoco?.logo"
@@ -63,9 +63,6 @@ usersStore.buscarPessoasSimplificadas();
             :src="`${baseUrl}/download/${emFoco.logo}?inline=true`"
             width="100"
           >
-        </dd>
-        <dd class="t13">
-          {{ emFoco?.nome }}
         </dd>
       </dl>
       <dl class="f1 mb1">
