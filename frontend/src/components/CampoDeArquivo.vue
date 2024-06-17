@@ -1,5 +1,6 @@
 <script setup>
 import requestS from '@/helpers/requestS.ts';
+import truncate from '@/helpers/truncate';
 import { useField } from 'vee-validate';
 import {
   computed,
@@ -185,8 +186,7 @@ async function enviarArquivo(e) {
         <span
           v-else
           class="ib mr1"
-        >{{ model?.slice(0, 30) }}</span>
-
+        >{{ truncate(model, 30) }}</span>
         <button
           v-if="model"
           class="campo-de-arquivo__botao-de-remoção like-a__link"
