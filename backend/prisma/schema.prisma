@@ -757,6 +757,7 @@ model Pdm {
     // index continua existindo para quem é PDM
     // create unique index ix_pdm_uniq_ativo on pdm(ativo) where ativo=true and tipo='PDM';
     PdmPerfil PdmPerfil[]
+    Diretorio Diretorio[]
 
     @@index([ativo])
     @@map("pdm")
@@ -1064,6 +1065,9 @@ model Diretorio {
 
     transferencia_id Int?
     transferencia    Transferencia? @relation(fields: [transferencia_id], references: [id])
+
+    pdm_id Int?
+    pdm    Pdm? @relation(fields: [pdm_id], references: [id])
 
     @@index([projeto_id])
     @@index([transferencia_id])

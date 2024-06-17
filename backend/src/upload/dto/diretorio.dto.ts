@@ -12,6 +12,11 @@ export class DiretorioDto {
     @Transform((a: TransformFnParams) => (a.value === '' ? undefined : +a.value))
     transferencia_id?: number;
 
+    @IsOptional()
+    @IsInt()
+    @Transform((a: TransformFnParams) => (a.value === '' ? undefined : +a.value))
+    pdm_id?: number;
+
     @IsString()
     caminho: string;
 }
@@ -37,6 +42,11 @@ export class FilterDiretorioDto {
     @IsInt()
     @Transform((a: TransformFnParams) => (a.value === '' ? undefined : +a.value))
     transferencia_id?: number;
+
+    @IsOptional()
+    @IsInt()
+    @Transform((a: TransformFnParams) => (a.value === '' ? undefined : +a.value))
+    pdm_id?: number;
 }
 
 export class ListDiretorioDto {
