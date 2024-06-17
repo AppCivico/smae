@@ -102,6 +102,7 @@ async function iniciar() {
   await Promise.allSettled(requisições);
 
   planosSetoriaisStore.buscarTudo();
+  montarCampoEstático.value = true;
 }
 
 iniciar();
