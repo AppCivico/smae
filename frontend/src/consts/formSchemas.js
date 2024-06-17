@@ -976,7 +976,7 @@ export const planoSetorial = object({
     .nullable()
     .max(50000),
   monitoramento_orcamento: boolean()
-    .label('Monitorar de orçamento')
+    .label('Monitoramento de orçamento')
     .nullable(),
   nivel_orcamento: mixed()
     .label('Nível de controle orçamentário')
