@@ -4,6 +4,8 @@ import { defineStore } from 'pinia';
 import { ListPdmDto } from '@/../../backend/src/pdm/dto/list-pdm.dto';
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { PlanoSetorialDto } from '@/../../backend/src/pdm/dto/pdm.dto';
+// eslint-disable-next-line import/no-extraneous-dependencies
+import { ListPdmDocument } from '@/../../backend/src/pdm/entities/list-pdm-document.entity.ts';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
@@ -12,16 +14,20 @@ type Lista = ListPdmDto['linhas'];
 interface ChamadasPendentes {
   lista: boolean;
   emFoco: boolean;
+  arquivos: boolean;
 }
 
 interface Erros {
   lista: null | unknown;
   emFoco: null | unknown;
+  arquivos: null | unknown;
 }
 
 interface Estado {
   lista: Lista;
   emFoco: PlanoSetorialDto | null;
+  arquivos: ListPdmDocument['linhas'] | [];
+
   chamadasPendentes: ChamadasPendentes;
   erros: Erros;
 }
@@ -30,14 +36,17 @@ export const usePlanosSetoriaisStore = defineStore('planosSetoriais', {
   state: (): Estado => ({
     lista: [],
     emFoco: null,
+    arquivos: [],
 
     chamadasPendentes: {
       lista: false,
       emFoco: false,
+      arquivos: false,
     },
     erros: {
       lista: null,
       emFoco: null,
+      arquivos: null,
     },
   }),
   actions: {
@@ -99,6 +108,40 @@ export const usePlanosSetoriaisStore = defineStore('planosSetoriais', {
       } catch (erro) {
         this.erros.emFoco = erro;
         this.chamadasPendentes.emFoco = false;
+        return false;
+      }
+    },
+
+    async buscarArquivos(idDoPlanoSetorial = 0, params = {}): Promise<void> {
+      this.chamadasPendentes.arquivos = true;
+      this.erros.arquivos = null;
+
+      try {
+        const resposta: ListPdmDocument = await this.requestS.get(`${baseUrl}/plano-setorial/${idDoPlanoSetorial || this.route.params.planoSetorialId}/documento`, params);
+
+        if (Array.isArray(resposta.linhas)) {
+          this.arquivos = resposta.linhas;
+        }
+      } catch (erro: unknown) {
+        this.erros.arquivos = erro;
+      }
+      this.chamadasPendentes.arquivos = false;
+    },
+
+    async excluirArquivo(idDoArquivo: number, idDoPlanoSetorial = 0): Promise<boolean> {
+      this.chamadasPendentes.arquivos = true;
+      this.erros.arquivos = null;
+
+      try {
+        await this.requestS.delete(`${baseUrl}/plano-setorial/${idDoPlanoSetorial || this.route.params.planoSetorialId}/documento/${idDoArquivo}`);
+
+        this.arquivos = this.arquivos.filter((x) => x.id !== idDoArquivo);
+        this.chamadasPendentes.arquivos = false;
+
+        return true;
+      } catch (erro) {
+        this.erros.arquivos = erro;
+        this.chamadasPendentes.arquivos = false;
         return false;
       }
     },
