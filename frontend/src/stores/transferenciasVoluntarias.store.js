@@ -182,7 +182,7 @@ export const useTransferenciasVoluntariasStore = defineStore(
           return false;
         }
       },
-
+      // Obsoleta
       async buscarDiretórios(idDaTransferencia = 0) {
         this.chamadasPendentes.diretórios = true;
         this.erro = null;

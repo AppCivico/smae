@@ -123,6 +123,7 @@ export const useProjetosStore = defineStore('projetos', {
       this.chamadasPendentes.emFoco = false;
     },
 
+    // Obsoleta
     async buscarDiretórios(idDoProjeto = 0): Promise<void> {
       this.chamadasPendentes.diretórios = true;
       this.erro = null;

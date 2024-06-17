@@ -53,6 +53,7 @@ iniciar();
   />
 
   <GerenciadorDeArquivos
+    :parâmetros-de-diretórios="{ pdm_id: $route.params.planoSetorialId }"
     :arquivos="arquivos"
     class="mb1"
     @apagar="($params) => excluirArquivo($params)"
