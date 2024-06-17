@@ -1,6 +1,5 @@
 <script setup>
 import requestS from '@/helpers/requestS.ts';
-import truncate from '@/helpers/truncate';
 import { useField } from 'vee-validate';
 import {
   computed,
@@ -181,12 +180,12 @@ async function enviarArquivo(e) {
           v-else-if="!ativaçãoDoArquivoPendente && éImagem"
           :src="`${baseUrl}/download/${model}?inline=true`"
           width="100"
-          class="campo-de-arquivo__amostra ib mr1"
+          class="campo-de-arquivo__amostra ib"
         >
         <span
           v-else
-          class="ib mr1"
-        >{{ truncate(model, 30) }}</span>
+          class="campo-de-arquivo__token"
+        >{{ model }}</span>
         <button
           v-if="model"
           class="campo-de-arquivo__botao-de-remoção like-a__link"
@@ -258,5 +257,12 @@ async function enviarArquivo(e) {
   object-fit: cover;
 }
 
+.campo-de-arquivo__token {
+  display: inline-block;
+  max-width: 12em;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
 .campo-de-arquivo__botao-de-remoção {}
 </style>
