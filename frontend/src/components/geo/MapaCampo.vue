@@ -88,7 +88,6 @@ const camadasSelecionadas = computed(() => (Array.isArray(sugestãoSelecionada.v
 
 const {
   errors, handleSubmit, isSubmitting, validateField, values: carga,
-
   setFieldValue,
   setFieldError,
 } = useForm({
