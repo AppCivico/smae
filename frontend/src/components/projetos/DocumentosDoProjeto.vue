@@ -14,8 +14,8 @@ const {
   permissõesDoProjetoEmFoco,
 } = storeToRefs(projetosStore);
 
-function excluirArquivo(id) {
-  alertStore.confirmAction('Deseja remover o arquivo?', () => {
+function excluirArquivo({ id, nome }) {
+  alertStore.confirmAction(`Deseja remover o arquivo "${nome}"?`, () => {
     projetosStore.excluirArquivo(id);
   }, 'Remover');
 }

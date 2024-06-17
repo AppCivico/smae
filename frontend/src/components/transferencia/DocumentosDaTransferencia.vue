@@ -14,8 +14,8 @@ const {
   erro,
 } = storeToRefs(transferenciasStore);
 
-function excluirArquivo(id) {
-  alertStore.confirmAction('Deseja remover o arquivo?', () => {
+function excluirArquivo({ id, nome }) {
+  alertStore.confirmAction(`Deseja remover o arquivo "${nome}"?`, () => {
     transferenciasStore.excluirArquivo(id);
   }, 'Remover');
 }
