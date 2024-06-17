@@ -17,13 +17,13 @@ function listErrors(r: String[]) {
   return r;
 }
 
-async function handleResponse(response: Response, alertarErros:Boolean = true) {
+async function handleResponse(response: Response, alertarErros = true):Promise<object | null> {
   const isJson = response.headers?.get('content-type')?.includes('application/json');
   const isZip = response.headers?.get('content-type')?.includes('application/zip');
 
   const data = isJson ? await response.json() : true;
   if (!response.ok) {
-    if ([204].includes(response.status)) return;
+    if ([204].includes(response.status)) return Promise.resolve;
     const alertStore = useAlertStore();
     const { user } = useAuthStore();
     let msgDefault;
@@ -41,7 +41,6 @@ async function handleResponse(response: Response, alertarErros:Boolean = true) {
     if (alertarErros) {
       alertStore.error(error);
     }
-    // eslint-disable-next-line consistent-return
     return Promise.reject(error);
   }
 
@@ -49,8 +48,7 @@ async function handleResponse(response: Response, alertarErros:Boolean = true) {
     responseDownload(response);
   }
 
-  // eslint-disable-next-line consistent-return
-  return data;
+  return Promise.resolve(data);
 }
 
 function userToken(url: RequestInfo | URL): HeadersInit {
