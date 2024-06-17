@@ -9,7 +9,6 @@ const projetosStore = useProjetosStore();
 const {
   chamadasPendentes,
   arquivos,
-  diretórios,
   erro,
   permissõesDoProjetoEmFoco,
 } = storeToRefs(projetosStore);
@@ -21,7 +20,6 @@ function excluirArquivo({ id, nome }) {
 }
 
 function iniciar() {
-  projetosStore.buscarDiretórios();
   projetosStore.buscarArquivos();
 }
 
@@ -37,10 +35,10 @@ iniciar();
 
   <GerenciadorDeArquivos
     :arquivos="arquivos"
-    :diretórios="diretórios"
     class="mb1"
     :apenas-leitura="permissõesDoProjetoEmFoco.apenas_leitura
       && !permissõesDoProjetoEmFoco.sou_responsavel"
+    :parâmetros-de-diretórios="{ projeto_id: $route.params.projetoId }"
     :rota-de-adição="{
       name: 'projetosNovoDocumento'
     }"

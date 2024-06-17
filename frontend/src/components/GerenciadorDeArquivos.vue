@@ -3,7 +3,12 @@ import LoadingComponent from '@/components/LoadingComponent.vue';
 import LocalFilter from '@/components/LocalFilter.vue';
 import consolidarDiretorios from '@/helpers/consolidarDiretorios';
 import createDataTree from '@/helpers/createDataTree.ts';
-import { computed, defineAsyncComponent, ref } from 'vue';
+import requestS from '@/helpers/requestS.ts';
+import {
+  computed, defineAsyncComponent, ref, watchEffect,
+} from 'vue';
+
+const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
 const Arvore = defineAsyncComponent({
   loader: () => import('./ArvoreDeArquivos.vue'),
@@ -15,11 +20,16 @@ const props = defineProps({
     type: Array,
     required: true,
   },
-  diretórios: {
-    type: Array,
-    default: () => [],
+  // Você pode enviar:
+  // - `true` para carregar todos os diretórios
+  // - um objeto que será enviado na requisição de carga de diretórios
+  parâmetrosDeDiretórios: {
+    type: [
+      Boolean,
+      Object,
+    ],
+    default: undefined,
   },
-
   apenasLeitura: {
     type: Boolean,
     default: false,
@@ -37,9 +47,16 @@ const props = defineProps({
 
 defineEmits(['apagar', 'editar']);
 
+const diretórios = ref([]);
 const listaFiltradaPorTermoDeBusca = ref([]);
+const chamadasPendentes = ref({
+  diretórios: false,
+});
 const ordenadoPor = ref('descricao');
 const ordem = ref('crescente');
+const erros = ref({
+  diretórios: null,
+});
 
 const arquivosOrdenados = computed(() => [...props.arquivos]
   .sort((a, b) => {
@@ -64,7 +81,7 @@ const arquivosAgrupadosPorCaminho = computed(() => listaFiltradaPorTermoDeBusca.
 
 const diretóriosConsolidados = computed(() => consolidarDiretorios(
   props.arquivos,
-  props.diretórios,
+  diretórios.value,
 ));
 
 const árvoreDeDiretórios = computed(() => createDataTree(
@@ -81,6 +98,28 @@ const árvoreDeDiretórios = computed(() => createDataTree(
     ), []),
   'pai',
 ) || []);
+
+watchEffect(async () => {
+  erros.value.diretórios = null;
+
+  if (props.parâmetrosDeDiretórios) {
+    chamadasPendentes.value.diretórios = true;
+
+    try {
+      const { linhas } = typeof props.parâmetrosDeDiretórios === 'object'
+        ? await requestS.get(`${baseUrl}/diretorio`, props.parâmetrosDeDiretórios)
+        : await requestS.get(`${baseUrl}/diretorio`);
+
+      diretórios.value = linhas;
+    } catch (erro) {
+      erros.value.diretórios = erro;
+    } finally {
+      chamadasPendentes.value.diretórios = false;
+    }
+  } else {
+    diretórios.value.splice(0, diretórios.value.length);
+  }
+});
 </script>
 <template>
   <div class="gerenciador-de-arquivos">

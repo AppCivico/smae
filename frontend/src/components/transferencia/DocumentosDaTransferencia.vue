@@ -10,7 +10,6 @@ const transferenciasStore = useTransferenciasVoluntariasStore();
 const {
   chamadasPendentes,
   arquivos,
-  diretórios,
   erro,
 } = storeToRefs(transferenciasStore);
 
@@ -21,7 +20,6 @@ function excluirArquivo({ id, nome }) {
 }
 
 function iniciar() {
-  transferenciasStore.buscarDiretórios();
   transferenciasStore.buscarArquivos();
 }
 
@@ -36,7 +34,7 @@ iniciar();
   </div>
 
   <GerenciadorDeArquivos
-    :diretórios="diretórios"
+    :parâmetros-de-diretórios="{ transferencia_id: $route.params.transferenciaId }"
     class="mb1"
     :arquivos="arquivos"
     :rota-de-adição="{
