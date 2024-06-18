@@ -1,5 +1,5 @@
 export default {
-  path: '/painel-de-obras',
+  path: '/obras',
   component: () => import('@/views/mdo.obras/ObraRaiz.vue'),
   meta: {
     título: 'Painel de obras',
@@ -15,21 +15,21 @@ export default {
   },
   children: [
     {
-      name: 'paineisListar',
+      name: 'obrasListar',
       path: '',
-      component: () => import('@/views/mdo.obras/ObraLista.vue'),
+      component: () => import('@/views/mdo.obras/ObrasListar.vue'),
     },
     {
-      name: 'paineisCriar',
+      name: 'obrasCriar',
       path: 'novo',
       component: () => import('@/views/mdo.obras/ObraCriarEditar.vue'),
       meta: {
         limitarÀsPermissões: [
           'MDO.',
         ],
-        rotaDeEscape: 'paineisListar',
+        rotaDeEscape: 'obrasListar',
         rotasParaMigalhasDePão: [
-          'paineisListar',
+          'obrasListar',
         ],
         título: 'Cadastro de Obras',
       },
@@ -44,7 +44,7 @@ export default {
       children: [
         {
           path: '',
-          name: 'paineisEditar',
+          name: 'obrasEditar',
           component: () => import('@/views/mdo.obras/ObraCriarEditar.vue'),
           props: ({ params }) => ({
             ...params,
@@ -54,16 +54,16 @@ export default {
             limitarÀsPermissões: [
               'MDO.',
             ],
-            rotaDeEscape: 'paineisListar',
+            rotaDeEscape: 'obrasListar',
             rotasParaMigalhasDePão: [
-              'paineisListar',
+              'obrasListar',
             ],
             título: () => 'Editar Cadastro de Obras',
           },
         },
         {
           path: 'resumo',
-          name: 'paineisResumo',
+          name: 'obrasResumo',
           component: () => import('@/views/mdo.obras/ObraResumo.vue'),
           props: ({ params }) => ({
             ...params,
