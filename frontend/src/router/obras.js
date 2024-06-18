@@ -1,6 +1,6 @@
 export default {
   path: '/painel-de-obras',
-  component: () => import('@/views/mdo.painelDeObras/PainelRaiz.vue'),
+  component: () => import('@/views/mdo.obras/ObraRaiz.vue'),
   meta: {
     título: 'Painel de obras',
     íconeParaMenu: `<svg width="18" height="20" viewBox="0 0 18 20" fill="currentColor">
@@ -17,12 +17,12 @@ export default {
     {
       name: 'paineisListar',
       path: '',
-      component: () => import('@/views/mdo.painelDeObras/PainelLista.vue'),
+      component: () => import('@/views/mdo.obras/ObraLista.vue'),
     },
     {
       name: 'paineisCriar',
       path: 'novo',
-      component: () => import('@/views/mdo.painelDeObras/PainelCriarEditar.vue'),
+      component: () => import('@/views/mdo.obras/ObraCriarEditar.vue'),
       meta: {
         limitarÀsPermissões: [
           'MDO.',
@@ -40,12 +40,12 @@ export default {
         ...params,
         obraId: Number.parseInt(params.obraId, 10) || undefined,
       }),
-      component: () => import('@/views/mdo.painelDeObras/PainelItem.vue'),
+      component: () => import('@/views/mdo.obras/ObraItem.vue'),
       children: [
         {
           path: '',
           name: 'paineisEditar',
-          component: () => import('@/views/mdo.painelDeObras/PainelCriarEditar.vue'),
+          component: () => import('@/views/mdo.obras/ObraCriarEditar.vue'),
           props: ({ params }) => ({
             ...params,
             obraId: Number.parseInt(params.obraId, 10) || undefined,
@@ -64,7 +64,7 @@ export default {
         {
           path: 'resumo',
           name: 'paineisResumo',
-          component: () => import('@/views/mdo.painelDeObras/PainelResumo.vue'),
+          component: () => import('@/views/mdo.obras/ObraResumo.vue'),
           props: ({ params }) => ({
             ...params,
             obraId: Number.parseInt(params.obraId, 10) || undefined,

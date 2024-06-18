@@ -3,7 +3,7 @@
     v-bind="$attrs"
     class="t12 uc w700 tamarelo"
   >
-    <small class="lc">Portfolio</small>
+    <small class="lc">Obra</small>
   </div>
   <router-view />
 </template>
