@@ -305,8 +305,9 @@ export class CreateProjetoDto {
      */
     @IsOnlyDate()
     @Transform(DateTransform)
-    @ValidateIf((object, value) => value !== null)
-    previsao_inicio: Date | null;
+    //conferir se vai continuar required
+    //@ValidateIf((object, value) => value !== null)
+    previsao_inicio: Date;
 
     /**
      * previsao_inicio ou null
@@ -314,8 +315,9 @@ export class CreateProjetoDto {
      */
     @IsOnlyDate()
     @Transform(DateTransform)
-    @ValidateIf((object, value) => value !== null)
-    previsao_termino: Date | null;
+    //conferir se vai continuar required
+    //@ValidateIf((object, value) => value !== null)
+    previsao_termino: Date;
 
     @IsOptional()
     @IsOnlyDate()
@@ -424,6 +426,24 @@ export class CreateProjetoDto {
     @ValidateIf((object, value) => value !== null)
     @Transform(NumberArrayTransformOrEmpty)
     regiao_ids?: number[] | null;
+
+    @IsOptional()
+    @IsString()
+    @MaxLength(250)
+    @ValidateIf((object, value) => value !== null)
+    secretario_colaborador?: string | null;
+
+    @IsOptional()
+    @IsInt({ message: '$property| precisa ser inteiro' })
+    @Min(0, { message: '$property| Mínimo 0' })
+    orgao_colaborador_id?: number;
+
+    @IsOptional()
+    @IsArray()
+    @IsInt({ message: '$property| colaboradores_no_orgao precisa ser inteiro', each: true })
+    @ValidateIf((object, value) => value !== null)
+    @Transform(NumberArrayTransformOrEmpty)
+    colaboradores_no_orgao?: number[] | null;
 }
 
 export class CreateProjetoDocumentDto {

@@ -490,6 +490,7 @@ model Orgao {
     orgao_origem                 Projeto[]                      @relation("orgao_origem")
     orgao_executor               Projeto[]                      @relation("orgao_executor")
     projetos_geridos             Projeto[]                      @relation("orgao_gestor")
+    projeto_colaborados          Projeto[]                      @relation("orgao_colaborador")
     GrupoPortfolio               GrupoPortfolio[]
     GrupoPortfolioPessoa         GrupoPortfolioPessoa[]
     ProjetoEquipe                ProjetoEquipe[]
@@ -3196,6 +3197,11 @@ model Projeto {
     tipo_intervencao             TipoIntervencao? @relation(fields: [tipo_intervencao_id], references: [id])
     equipamento_id               Int?
     equipamento                  Equipamento?     @relation(fields: [equipamento_id], references: [id])
+
+    secretario_colaborador String?
+    orgao_colaborador_id   Int?
+    orgao_colaborador      Orgao?  @relation("orgao_colaborador", fields: [orgao_colaborador_id], references: [id])
+    colaboradores_no_orgao Int[]   @default([])
 
     orgao_executor_id Int?
     orgao_executor    Orgao? @relation("orgao_executor", fields: [orgao_executor_id], references: [id])

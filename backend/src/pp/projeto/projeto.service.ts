@@ -1209,6 +1209,9 @@ export class ProjetoService {
                         },
                     },
                 },
+                secretario_colaborador: true,
+                orgao_colaborador: { select: { id: true, sigla: true, descricao: true } },
+                colaboradores_no_orgao: true,
             },
         });
         if (!projeto) throw new HttpException('Projeto não encontrado ou sem permissão para acesso', 400);
@@ -1260,13 +1263,22 @@ export class ProjetoService {
             };
         }
 
-        const responsaveis_no_orgao_gestor = await this.prisma.pessoa.findMany({
-            where: { id: { in: projeto.responsaveis_no_orgao_gestor } },
-            select: {
-                id: true,
-                nome_exibicao: true,
-            },
-        });
+        const [responsaveis_no_orgao_gestor, colaboradores_no_orgao] = await Promise.all([
+            this.prisma.pessoa.findMany({
+                where: { id: { in: projeto.responsaveis_no_orgao_gestor } },
+                select: {
+                    id: true,
+                    nome_exibicao: true,
+                },
+            }),
+            this.prisma.pessoa.findMany({
+                where: { id: { in: projeto.colaboradores_no_orgao } },
+                select: {
+                    id: true,
+                    nome_exibicao: true,
+                },
+            }),
+        ]);
 
         const tarefaCrono = projeto.TarefaCronograma[0] ? projeto.TarefaCronograma[0] : undefined;
 
@@ -1305,6 +1317,9 @@ export class ProjetoService {
                 percentual_atraso: tarefaCrono?.percentual_atraso ?? null,
                 status_cronograma: tarefaCrono?.status_cronograma ?? null,
             },
+            secretario_colaborador: projeto.secretario_colaborador,
+            orgao_colaborador: projeto.orgao_colaborador,
+            colaboradores_no_orgao: colaboradores_no_orgao,
             regioes: projeto.ProjetoRegiao.map((r) => r.regiao),
             meta: meta,
             iniciativa: iniciativa,
