@@ -25,7 +25,7 @@ import planosSetoriais from './planosSetoriais';
 import projetos from './projetos';
 import relatorios from './relatorios';
 import transferenciasVoluntarias from './transferenciasVoluntarias';
-import painelDeObras from './painelDeObras';
+import obras from './obras';
 
 // eslint-disable-next-line import/prefer-default-export
 export const router = createRouter({
@@ -58,7 +58,7 @@ export const router = createRouter({
     planosSetoriais,
     projetos,
     análise,
-    painelDeObras,
+    obras,
     graficos,
     relatorios,
     envios,
