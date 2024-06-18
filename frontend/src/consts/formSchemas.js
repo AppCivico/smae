@@ -28,7 +28,6 @@ import {
   string,
 } from 'yup';
 import statusObras from './statusObras';
-import tiposObras from './tiposObras';
 
 const dataMin = import.meta.env.VITE_DATA_MIN ? new Date(`${import.meta.env.VITE_DATA_MIN}`) : new Date('1900-01-01T00:00:00Z');
 const dataMax = import.meta.env.VITE_DATA_MAX ? new Date(`${import.meta.env.VITE_DATA_MAX}`) : new Date('2100-12-31T23:59:59Z');
@@ -1155,64 +1154,104 @@ export const portfolio = object({
 });
 
 export const painelDeObras = object({
-  nome_portfolio: string()
-    .label('Nome do portofólio')
-    .min(0)
-    .max(2040)
+  responsaveis_no_orgao_gestor: string()
+    .label('Assessor do monitoramento')
+    .nullable(),
+  equipamento_id: number()
+    .label('Equipamento/Estrutura pública')
+    .min(1, 'Equipamento/Estrutura pública inválida')
+    .nullable(),
+  geolocalizacao: string()
+    .label('Endereço')
+    .nullable(),
+  grupo_tematico_id: number()
+    .label('Grupo temático')
+    .min(1, 'Grupo temático inválido')
     .required(),
-  nome_obra: string()
+  mdo_detalhamento: string()
+    .label('Detalhamento/Escopo da obra')
+    .max(50000)
+    .nullable(),
+  mdo_n_familias_beneficiadas: number()
+    .label('Número de famílias beneficiadas')
+    .min(0)
+    .nullable(),
+  mdo_n_unidades_habitacionais: number()
+    .label('Número de unidades')
+    .min(0)
+    .nullable(),
+  mdo_observacoes: string()
+    .label('Observações')
+    .nullable(),
+  mdo_previsao_inauguracao: date()
+    .label('Data de inauguração planejada')
+    .nullable(),
+  mdo_programa_habitacional: string()
+    .label('Programa Habitacional')
+    .max(1024)
+    .nullable(),
+  nome: string()
     .label('Nome da obra/intervenção')
     .min(0)
     .max(2040)
     .required(),
-  grupo_tematico: number()
-    .label('Grupo temático')
-    .min(1, 'Grupo temático inválido')
+  orgao_executor_id: number()
+    .label('Secretaria/órgão executor')
+    .min(1, 'Secretaria/órgão executor inválidos')
     .required(),
-  tipo_obra: mixed()
-    .label('Tipo de obra/intervenção*')
-    .oneOf(tiposObras)
+  orgao_gestor_id: number()
+    .label('Órgão gestor do portfólio')
+    .nullable(),
+  orgao_origem_id: number()
+    .label('Secretaria/órgão de origem')
+    .min(1, 'Secretaria/órgão de origem inválidos')
+    .nullable(),
+  orgao_responsavel_id: string()
+    .label('Órgão responsável pela obra')
+    .nullable(),
+  orgaos_colaboradores: string()
+    .label('Órgãos colaboradores da obra')
+    .nullable(),
+  origem_tipo: string()
+    .label('Origem')
+    .nullable(),
+  ponto_focal_colaborador: string()
+    .label('Ponto focal colaborador')
+    .nullable(),
+  ponto_focal_responsavel: string()
+    .label('Ponto focal responsável')
+    .nullable(),
+  portfolio_id: number()
+    .label('Nome do portofólio')
+    .min(1, 'Portfólio inválido')
     .required(),
-  equipamento: number()
-    .label('Equipamento/Estrutura pública')
-    .min(1, 'Equipamento/Estrutura pública inválida')
+  previsao_custo: number()
+    .label('Custo previsto inicial')
+    .min(0)
+    .nullable(),
+  previsao_inicio: date()
+    .label('Previsão de início')
+    .nullable(),
+  previsao_termino: date()
+    .label('Previsão de término')
+    .nullable(),
+  secretario: string()
+    .label('Secretário gestor do portfólio')
+    .nullable(),
+  secretario_colaborador: string()
+    .label('Secretário colaborador da obra')
+    .nullable(),
+  secretario_responsavel: string()
+    .label('Secretário responsável pela obra')
     .nullable(),
   status: mixed()
     .label('Status')
     .oneOf(statusObras)
     .required(),
-  origem: number()
-    .label('Secretaria/órgão de origem')
-    .min(1, 'Secretaria/órgão de origem inválidos')
+  tipo_intervencao_id: number()
+    .label('Tipo de obra/intervenção*')
+    .min(1, 'Tipo de obra/intervenção inválido')
     .required(),
-  executor: number()
-    .label('SSecretaria/órgão executor')
-    .min(1, 'Secretaria/órgão executor inválidos')
-    .required(),
-  detalhamento: string()
-    .label('Detalhamento/Escopo da obra')
-    .nullable(),
-  // programa_habitacional:
-  // numero_unidades:
-  // numero_familias:
-  // subprefeitura:
-  // distrito:
-  // origem:
-  // endereco:
-  // inicio:
-  // termino:
-  // inauguracao:
-  // custo_inicial:
-  // observacoes:
-  // orgao_gestor:
-  // assessor:
-  // secretario:
-  // orgao_responsavel:
-  // ponto_focal_responsavel:
-  // secretario_responsavel:
-  // orgaos_colaboradores:
-  // ponto_focal_colaborador:
-  // secretario_colaborador:
 });
 
 export const painelExterno = object({
