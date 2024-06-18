@@ -847,11 +847,13 @@ export class PdmService {
         });
     }
 
-    async append_document(tipo: TipoPdm, pdm_id: number, createPdmDocDto: CreatePdmDocumentDto, user: PessoaFromJwt) {
+    async append_document(tipo: TipoPdm, pdm_id: number, dto: CreatePdmDocumentDto, user: PessoaFromJwt) {
         const pdm = await this.prisma.pdm.count({ where: { id: pdm_id, tipo } });
         if (!pdm) throw new HttpException('PDM não encontrado', 404);
 
-        const arquivoId = this.uploadService.checkUploadOrDownloadToken(createPdmDocDto.upload_token);
+        const arquivoId = this.uploadService.checkUploadOrDownloadToken(dto.upload_token);
+        if (dto.diretorio_caminho)
+            await this.uploadService.updateDir({ caminho: dto.diretorio_caminho }, dto.upload_token);
 
         const arquivo = await this.prisma.arquivoDocumento.create({
             data: {
@@ -868,11 +870,11 @@ export class PdmService {
         return { id: arquivo.id };
     }
 
-    async list_document(tipo: TipoPdm, pdm_id: number, user: PessoaFromJwt) {
+    async list_document(tipo: TipoPdm, pdm_id: number, user: PessoaFromJwt): Promise<PdmDocument[]> {
         const pdm = await this.prisma.pdm.count({ where: { id: pdm_id, tipo } });
         if (!pdm) throw new HttpException('PDM não encontrado', 404);
 
-        const arquivos: PdmDocument[] = await this.prisma.arquivoDocumento.findMany({
+        const documentosDB = await this.prisma.arquivoDocumento.findMany({
             where: { pdm_id: pdm_id, removido_em: null },
             select: {
                 id: true,
@@ -880,18 +882,29 @@ export class PdmService {
                     select: {
                         id: true,
                         tamanho_bytes: true,
-                        TipoDocumento: true,
                         descricao: true,
                         nome_original: true,
+                        diretorio_caminho: true,
                     },
                 },
             },
         });
-        for (const item of arquivos) {
-            item.arquivo.download_token = this.uploadService.getDownloadToken(item.arquivo.id, '30d').download_token;
-        }
 
-        return arquivos;
+        const documentosRet: PdmDocument[] = documentosDB.map((d) => {
+            return {
+                id: d.id,
+                arquivo: {
+                    id: d.arquivo.id,
+                    tamanho_bytes: d.arquivo.tamanho_bytes,
+                    descricao: d.arquivo.descricao,
+                    nome_original: d.arquivo.nome_original,
+                    diretorio_caminho: d.arquivo.diretorio_caminho,
+                    download_token: this.uploadService.getDownloadToken(d.arquivo.id, '1d').download_token,
+                },
+            };
+        });
+
+        return documentosRet;
     }
 
     async remove_document(tipo: TipoPdm, pdm_id: number, pdmDocId: number, user: PessoaFromJwt) {
