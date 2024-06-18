@@ -940,6 +940,8 @@ model Tag {
 model ProjetoEtapa {
     id Int @id @default(autoincrement())
 
+    tipo_projeto TipoProjeto @default(PP)
+
     descricao String
 
     criado_por     Int?

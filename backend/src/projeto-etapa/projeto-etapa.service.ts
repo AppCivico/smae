@@ -3,14 +3,16 @@ import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateProjetoEtapaDto } from './dto/create-projeto-etapa.dto';
 import { UpdateProjetoEtapaDto } from './dto/update-projeto-etapa.dto';
+import { TipoProjeto } from '@prisma/client';
 
 @Injectable()
 export class ProjetoEtapaService {
     constructor(private readonly prisma: PrismaService) {}
 
-    async create(dto: CreateProjetoEtapaDto, user: PessoaFromJwt) {
+    async create(tipo: TipoProjeto, dto: CreateProjetoEtapaDto, user: PessoaFromJwt) {
         const similarExists = await this.prisma.projetoEtapa.count({
             where: {
+                tipo_projeto: tipo,
                 descricao: { equals: dto.descricao, mode: 'insensitive' },
                 removido_em: null,
             },
@@ -21,6 +23,7 @@ export class ProjetoEtapaService {
 
         const created = await this.prisma.projetoEtapa.create({
             data: {
+                tipo_projeto: tipo,
                 criado_por: user.id,
                 criado_em: new Date(Date.now()),
                 descricao: dto.descricao,
@@ -31,10 +34,11 @@ export class ProjetoEtapaService {
         return created;
     }
 
-    async findAll() {
+    async findAll(tipo: TipoProjeto) {
         const listActive = await this.prisma.projetoEtapa.findMany({
             where: {
                 removido_em: null,
+                tipo_projeto: tipo,
             },
             select: {
                 id: true,
@@ -46,14 +50,15 @@ export class ProjetoEtapaService {
         return listActive;
     }
 
-    async update(id: number, dto: UpdateProjetoEtapaDto, user: PessoaFromJwt) {
+    async update(tipo: TipoProjeto, id: number, dto: UpdateProjetoEtapaDto, user: PessoaFromJwt) {
         await this.prisma.projetoEtapa.findFirstOrThrow({
-            where: { id: id },
+            where: { id: id, tipo_projeto: tipo },
         });
 
         if (dto.descricao !== undefined) {
             const similarExists = await this.prisma.projetoEtapa.count({
                 where: {
+                    tipo_projeto: tipo,
                     descricao: { equals: dto.descricao, mode: 'insensitive' },
                     removido_em: null,
                     NOT: { id: id },
@@ -79,17 +84,14 @@ export class ProjetoEtapaService {
         return { id };
     }
 
-    async remove(id: number, user: PessoaFromJwt) {
+    async remove(tipo: TipoProjeto, id: number, user: PessoaFromJwt) {
         const emUso = await this.prisma.projeto.count({
-            where: {
-                removido_em: null,
-                projeto_etapa_id: id,
-            },
+            where: { tipo, removido_em: null, projeto_etapa_id: id },
         });
         if (emUso > 0) throw new HttpException('Etapa em uso em projetos.', 400);
 
         const created = await this.prisma.projetoEtapa.updateMany({
-            where: { id: id },
+            where: { id: id, tipo_projeto: tipo },
             data: {
                 removido_por: user.id,
                 removido_em: new Date(Date.now()),
