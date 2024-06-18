@@ -175,7 +175,9 @@ export const usePlanosSetoriaisStore = defineStore('planosSetoriais', {
       data_publicacao: emFoco?.data_publicacao
         ? dateTimeToDate(emFoco.data_publicacao)
         : null,
-      upload_logo: emFoco?.logo || null,
+      equipe_tecnica: emFoco?.equipe_tecnica || '',
+      monitoramento_orcamento: !!emFoco?.monitoramento_orcamento,
+      nome: emFoco?.nome || '',
       orgao_admin_id: emFoco?.orgao_admin?.id || null,
       pdm_anteriores: Array.isArray(emFoco?.pdm_anteriores)
         ? emFoco.pdm_anteriores.map((pdm) => pdm.id || pdm)
@@ -186,6 +188,14 @@ export const usePlanosSetoriaisStore = defineStore('planosSetoriais', {
       periodo_do_ciclo_participativo_inicio: emFoco?.periodo_do_ciclo_participativo_inicio
         ? dateTimeToDate(emFoco.periodo_do_ciclo_participativo_inicio)
         : null,
+      possui_atividade: !!emFoco?.possui_atividade,
+      possui_complementacao_meta: !!emFoco?.possui_complementacao_meta,
+      possui_contexto_meta: !!emFoco?.possui_contexto_meta,
+      possui_iniciativa: !!emFoco?.possui_iniciativa,
+      possui_macro_tema: !!emFoco?.possui_macro_tema,
+      possui_sub_tema: !!emFoco?.possui_sub_tema,
+      possui_tema: !!emFoco?.possui_tema,
+      prefeito: emFoco?.prefeito || '',
       ps_admin_cp: Array.isArray(emFoco?.ps_admin_cp?.participantes)
         ? emFoco.ps_admin_cp
         : { participantes: [] },
@@ -195,6 +205,14 @@ export const usePlanosSetoriaisStore = defineStore('planosSetoriais', {
       ps_tecnico_cp: Array.isArray(emFoco?.ps_tecnico_cp?.participantes)
         ? emFoco.ps_tecnico_cp
         : { participantes: [] },
+      rotulo_atividade: emFoco?.rotulo_atividade || '',
+      rotulo_complementacao_meta: emFoco?.rotulo_complementacao_meta || '',
+      rotulo_contexto_meta: emFoco?.rotulo_contexto_meta || '',
+      rotulo_iniciativa: emFoco?.rotulo_iniciativa || '',
+      rotulo_macro_tema: emFoco?.rotulo_macro_tema || '',
+      rotulo_sub_tema: emFoco?.rotulo_sub_tema || '',
+      rotulo_tema: emFoco?.rotulo_tema || '',
+      upload_logo: emFoco?.logo || null,
     }),
 
     arquivosPorId: ({ arquivos }: Estado) => arquivos
