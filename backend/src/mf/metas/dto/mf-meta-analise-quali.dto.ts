@@ -1,6 +1,6 @@
-import { TipoDocumento } from '@prisma/client';
 import { Transform } from 'class-transformer';
 import { IsBoolean, IsInt, IsOptional, IsString } from 'class-validator';
+import { ArquivoBaseDto } from '../../../upload/dto/create-upload.dto';
 
 export class AnaliseQualitativaDocumentoDto {
     @IsInt()
@@ -51,14 +51,7 @@ export class MfAnaliseQualitativaDto {
 }
 
 export class ArquivoAnaliseQualitativaDocumentoDto {
-    arquivo: {
-        id: number;
-        descricao: string | null;
-        tamanho_bytes: number;
-        TipoDocumento: TipoDocumento | null;
-        nome_original: string;
-        download_token?: string;
-    };
+    arquivo: ArquivoBaseDto;
     id: number;
     criado_em: Date;
     criador: {
