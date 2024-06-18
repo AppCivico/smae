@@ -6,7 +6,7 @@ import níveisRegionalização from '@/consts/niveisRegionalizacao';
 import { useAlertStore } from '@/stores/alert.store';
 import { useObservadoresStore } from '@/stores/observadores.store.ts';
 import { useOrgansStore } from '@/stores/organs.store';
-import { usePortfolioStore } from '@/stores/portfoliosMdo.store.ts';
+import { usePortfolioObraStore } from '@/stores/portfoliosMdo.store.ts';
 import { storeToRefs } from 'pinia';
 import { ErrorMessage, Field, Form } from 'vee-validate';
 import { useRoute, useRouter } from 'vue-router';
@@ -23,7 +23,7 @@ const props = defineProps({
 const alertStore = useAlertStore();
 const observadoresStore = useObservadoresStore();
 const ÓrgãosStore = useOrgansStore();
-const portfolioStore = usePortfolioStore();
+const portfolioStore = usePortfolioObraStore();
 const mesesDisponíveis = months.map((x, i) => ({ nome: x, id: i + 1 }));
 const { chamadasPendentes, erro, itemParaEdição } = storeToRefs(portfolioStore);
 const { órgãosComoLista } = storeToRefs(ÓrgãosStore);
