@@ -286,6 +286,13 @@ export class ProjetoService {
 
         this.removeCampos(tipo, dto, 'create');
 
+        if (dto.projeto_etapa_id) {
+            await this.prisma.projetoEtapa.findFirstOrThrow({
+                where: { id: dto.projeto_etapa_id, removido_em: null, tipo_projeto: tipo },
+                select: { id: true },
+            });
+        }
+
         if (dto.portfolios_compartilhados?.length) {
             // Caso o portfolio seja de modelo para clonagem.
             // Não permitir compartilhar com outros ports.
@@ -1798,7 +1805,7 @@ export class ProjetoService {
                 );
             }
 
-            await prismaTx.projeto.update({
+            const self = await prismaTx.projeto.update({
                 where: { id: projetoId },
                 data: {
                     // origem
@@ -1869,6 +1876,13 @@ export class ProjetoService {
                     mdo_observacoes: dto.mdo_observacoes,
                 },
             });
+
+            if (self.projeto_etapa_id && self.projeto_etapa_id != projeto.projeto_etapa?.id) {
+                await prismaTx.projetoEtapa.findFirstOrThrow({
+                    where: { id: self.projeto_etapa_id, removido_em: null, tipo_projeto: tipo },
+                    select: { id: true },
+                });
+            }
 
             if (dto.geolocalizacao) {
                 const geoDto = new CreateGeoEnderecoReferenciaDto();
