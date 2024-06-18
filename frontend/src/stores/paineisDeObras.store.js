@@ -19,7 +19,7 @@ export const usePartidosStore = defineStore('partidosStore', {
       this.erro = null;
 
       try {
-        const resposta = await this.requestS.get(`${baseUrl}/painel-de-obras/${id}`, params);
+        const resposta = await this.requestS.get(`${baseUrl}/projeto-mdo/${id}`, params);
         this.emFoco = {
           ...resposta,
         };
@@ -34,7 +34,7 @@ export const usePartidosStore = defineStore('partidosStore', {
       this.erro = null;
 
       try {
-        const { linhas } = await this.requestS.get(`${baseUrl}/painel-de-obras`, params);
+        const { linhas } = await this.requestS.get(`${baseUrl}/projeto-mdo`, params);
         this.lista = linhas;
       } catch (erro) {
         this.erro = erro;
@@ -47,7 +47,7 @@ export const usePartidosStore = defineStore('partidosStore', {
       this.erro = null;
 
       try {
-        await this.requestS.delete(`${baseUrl}/painel-de-obras/${id}`);
+        await this.requestS.delete(`${baseUrl}/projeto-mdo/${id}`);
         this.chamadasPendentes.lista = false;
         return true;
       } catch (erro) {
@@ -63,9 +63,9 @@ export const usePartidosStore = defineStore('partidosStore', {
 
       try {
         if (id) {
-          await this.requestS.patch(`${baseUrl}/painel-de-obras/${id}`, params);
+          await this.requestS.patch(`${baseUrl}/projeto-mdo/${id}`, params);
         } else {
-          await this.requestS.post(`${baseUrl}/painel-de-obras`, params);
+          await this.requestS.post(`${baseUrl}/projeto-mdo`, params);
         }
 
         this.chamadasPendentes.emFoco = false;
