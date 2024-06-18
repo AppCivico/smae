@@ -397,6 +397,8 @@ export class ProjetoService {
 
                 //await this.verificaCampos(prismaTx, row.id, tipo);
 
+                await this.upsertRegioes(dto, prismaTx, row.id, now, [], user, portfolio.nivel_regionalizacao);
+
                 await this.upsertFonteRecurso(dto, prismaTx, row.id);
 
                 await prismaTx.tarefaCronograma.create({
@@ -418,6 +420,89 @@ export class ProjetoService {
         );
 
         return created;
+    }
+
+    private async upsertRegioes(
+        dto: CreateProjetoDto | UpdateProjetoDto,
+        prismaTx: Prisma.TransactionClient,
+        projeto_id: number,
+        now: Date,
+        old_regiao_ids: number[],
+        user: PessoaFromJwt,
+        nivel_regionalizacao: number
+    ) {
+        if (!('regiao_ids' in dto) || dto.regiao_ids === undefined) return;
+
+        if (dto.regiao_ids == null) dto.regiao_ids = [];
+
+        const regiaoSorted = dto.regiao_ids.sort().join(',');
+        const oldSorted = old_regiao_ids.sort().join(',');
+        if (regiaoSorted == oldSorted) return;
+
+        if (Array.isArray(dto.regiao_ids)) {
+            await this.verificaRegioes(dto.regiao_ids, nivel_regionalizacao);
+        }
+
+        const removedIds = old_regiao_ids.filter((r) => !dto.regiao_ids!.includes(r));
+        const addedIds = dto.regiao_ids.filter((r) => !old_regiao_ids.includes(r));
+
+        for (const regiao_id of removedIds) {
+            await prismaTx.projetoRegiao.updateMany({
+                where: { projeto_id: projeto_id, regiao_id: regiao_id, removido_em: null },
+                data: { removido_em: now, removido_por: user.id },
+            });
+        }
+
+        for (const regiao_id of addedIds) {
+            await prismaTx.projetoRegiao.create({
+                data: {
+                    projeto_id: projeto_id,
+                    regiao_id: regiao_id,
+                    criado_em: now,
+                    criado_por: user.id,
+                },
+            });
+        }
+    }
+
+    private async verificaRegioes(regiao_ids: number[], nivel_regionalizacao: number) {
+        const regioes = await this.prisma.regiao.findMany({
+            where: { id: { in: regiao_ids }, removido_em: null },
+            select: { id: true, nivel: true, parente_id: true, descricao: true },
+        });
+
+        // verifica se as regiões estão no nível correto
+        for (const r_id of regiao_ids) {
+            const regiao = regioes.find((r) => r.id == r_id);
+            if (!regiao) throw new BadRequestException(`Região ${r_id} não encontrada`);
+
+            if (regiao.nivel > nivel_regionalizacao + 1 || regiao.nivel < nivel_regionalizacao)
+                throw new BadRequestException(
+                    `Região ${regiao.descricao} não é permitida para o nível de regionalização ${nivel_regionalizacao}`
+                );
+        }
+
+        // verifica se as regiões de nível X estão no mesmo pai (pra n ficar tão esquisito)
+        const regions = regioes.filter((r) => r.nivel == nivel_regionalizacao);
+        const parent = regions[0]?.parente_id;
+        if (!regions.every((r) => r.parente_id == parent))
+            throw new BadRequestException(
+                `Regiões de nível ${nivel_regionalizacao} devem ter o mesmo pai, ou nenhum pai`
+            );
+
+        // verifica se as regiões de nível X+1 tem o pai na lista
+        const regioesFilhas = regioes.filter((r) => r.nivel == nivel_regionalizacao + 1);
+        for (const r of regioesFilhas) {
+            if (r.parente_id && !regiao_ids.includes(r.parente_id)) {
+                const parentRegion = await this.prisma.regiao.findFirst({ where: { id: r.parente_id } });
+
+                throw new BadRequestException(
+                    `Região ${r.descricao} de nível ${r.nivel} exige que a região pai ${
+                        parentRegion?.descricao ?? r.parente_id
+                    } esteja na lista`
+                );
+            }
+        }
     }
 
     private async verificaGrupoTematico(dto: CreateProjetoDto | UpdateProjetoDto) {
@@ -1115,6 +1200,15 @@ export class ProjetoService {
                     },
                 },
                 tipo: true,
+                ProjetoRegiao: {
+                    where: { removido_em: null },
+                    orderBy: { regiao: { descricao: 'asc' } },
+                    select: {
+                        regiao: {
+                            select: { id: true, descricao: true, nivel: true, parente_id: true },
+                        },
+                    },
+                },
             },
         });
         if (!projeto) throw new HttpException('Projeto não encontrado ou sem permissão para acesso', 400);
@@ -1211,6 +1305,7 @@ export class ProjetoService {
                 percentual_atraso: tarefaCrono?.percentual_atraso ?? null,
                 status_cronograma: tarefaCrono?.status_cronograma ?? null,
             },
+            regioes: projeto.ProjetoRegiao.map((r) => r.regiao),
             meta: meta,
             iniciativa: iniciativa,
             atividade: atividade,
@@ -1603,6 +1698,22 @@ export class ProjetoService {
             await this.upsertPremissas(dto, prismaTx, projetoId);
             await this.upsertRestricoes(dto, prismaTx, projetoId);
             await this.upsertFonteRecurso(dto, prismaTx, projetoId);
+
+            if ('regiao_ids' in dto) {
+                const regioes = await prismaTx.projetoRegiao.findMany({
+                    where: { projeto_id: projetoId, removido_em: null },
+                    select: { regiao_id: true },
+                });
+                await this.upsertRegioes(
+                    dto,
+                    prismaTx,
+                    projeto.id,
+                    now,
+                    regioes.map((r) => r.regiao_id),
+                    user,
+                    projeto.portfolio.nivel_regionalizacao
+                );
+            }
 
             if (dto.orgaos_participantes !== undefined)
                 await prismaTx.projetoOrgaoParticipante.deleteMany({ where: { projeto_id: projetoId } });
