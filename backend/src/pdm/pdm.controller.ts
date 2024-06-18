@@ -140,9 +140,9 @@ export class PdmController {
     @Roles(['CadastroPdm.inserir', 'CadastroPdm.editar'])
     @ApiResponse({ description: 'sucesso ao remover', status: 204 })
     @HttpCode(HttpStatus.NO_CONTENT)
-    async removerDownload(@Param() params: FindTwoParams, @CurrentUser() user: PessoaFromJwt) {
+    async removerDownload(@Param() params: FindTwoParams, @CurrentUser() user: PessoaFromJwt): Promise<void> {
         await this.pdmService.remove_document('PDM', params.id, params.id2, user);
-        return null;
+        return;
     }
 }
 
@@ -192,6 +192,15 @@ export class PlanoSetorialController {
         return await this.pdmService.update('PS', +params.id, updatePdmDto, user);
     }
 
+    @Delete(':id')
+    @ApiBearerAuth('access-token')
+    @Roles(PermsPS)
+    @HttpCode(HttpStatus.NO_CONTENT)
+    async delete(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt): Promise<void> {
+        await this.pdmService.delete('PS', +params.id, user);
+        return;
+    }
+
     @Get(':id')
     @ApiBearerAuth('access-token')
     @Roles(PermsPS)
@@ -239,8 +248,8 @@ export class PlanoSetorialController {
     @Roles(PermsPS)
     @ApiResponse({ description: 'sucesso ao remover', status: 204 })
     @HttpCode(HttpStatus.NO_CONTENT)
-    async removerDownload(@Param() params: FindTwoParams, @CurrentUser() user: PessoaFromJwt) {
+    async removerDownload(@Param() params: FindTwoParams, @CurrentUser() user: PessoaFromJwt): Promise<void> {
         await this.pdmService.remove_document('PS', params.id, params.id2, user);
-        return null;
+        return;
     }
 }
