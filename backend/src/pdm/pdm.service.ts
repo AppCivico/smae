@@ -381,6 +381,8 @@ export class PdmService {
 
         let merged: PdmDto | PlanoSetorialDto = pdmInfo;
         if (tipo == 'PS') {
+            if (!pdm.monitoramento_orcamento) pdmInfo.nivel_orcamento = '';
+
             const pdmPerfis = await this.prisma.pdmPerfil.findMany({
                 where: {
                     pdm_id: id,
@@ -503,7 +505,7 @@ export class PdmService {
             }
 
             if ('nivel_orcamento' in dto || 'monitoramento_orcamento' in dto) {
-                if (!dto.nivel_orcamento || !dto.monitoramento_orcamento)
+                if (!dto.nivel_orcamento || !('monitoramento_orcamento' in dto))
                     throw new BadRequestException(
                         'Nível de Orçamento e Monitoramento de Orçamento são obrigatórios se enviar um deles.'
                     );
