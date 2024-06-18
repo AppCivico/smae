@@ -1,6 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { DistribuicaoStatusTipo } from '@prisma/client';
-import { IsBoolean, IsEnum, IsString, MaxLength, MinLength } from 'class-validator';
+import { IsBoolean, IsEnum, IsOptional, IsString, MaxLength, MinLength } from 'class-validator';
 
 export class CreateDistribuicaoStatusDto {
     @IsString()
@@ -15,5 +15,10 @@ export class CreateDistribuicaoStatusDto {
     tipo: DistribuicaoStatusTipo;
 
     @IsBoolean()
-    valor_distribuicao_contabilizado: boolean;
+    @IsOptional()
+    valor_distribuicao_contabilizado?: boolean;
+
+    @IsBoolean()
+    @IsOptional()
+    permite_novos_registros?: boolean;
 }
