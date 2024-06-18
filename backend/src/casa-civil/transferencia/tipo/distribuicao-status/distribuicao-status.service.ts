@@ -1,5 +1,5 @@
 import { HttpException, Injectable } from '@nestjs/common';
-import { Prisma } from '@prisma/client';
+import { DistribuicaoStatusTipo, Prisma } from '@prisma/client';
 import { RecordWithId } from '../../../../common/dto/record-with-id.dto';
 import { PessoaFromJwt } from '../../../../auth/models/PessoaFromJwt';
 import { PrismaService } from '../../../../prisma/prisma.service';
@@ -28,12 +28,38 @@ export class DistribuicaoStatusService {
                 if (similarExists > 0)
                     throw new HttpException('nome| Nome igual ou semelhante já existe em outro registro ativo', 400);
 
+                let valor_contabilizado_calc: boolean;
+                // let valor_contabilizado_calc: boolean | undefined = dto.valor_distribuicao_contabilizado;
+                if (dto.valor_distribuicao_contabilizado == undefined) {
+                    // Define pelo tipo
+                    valor_contabilizado_calc =
+                        dto.tipo == DistribuicaoStatusTipo.Cancelada ||
+                        dto.tipo == DistribuicaoStatusTipo.ImpedidaTecnicamente
+                            ? false
+                            : true;
+                } else {
+                    valor_contabilizado_calc = dto.valor_distribuicao_contabilizado;
+                }
+
+                let permite_novos_registros: boolean;
+                if (dto.permite_novos_registros == undefined) {
+                    permite_novos_registros =
+                        dto.tipo == DistribuicaoStatusTipo.Cancelada ||
+                        dto.tipo == DistribuicaoStatusTipo.ImpedidaTecnicamente ||
+                        dto.tipo == DistribuicaoStatusTipo.Finalizada
+                            ? false
+                            : true;
+                } else {
+                    permite_novos_registros = dto.permite_novos_registros;
+                }
+
                 const transferenciaTipoDistribuicaoStatus = await prismaTxn.transferenciaTipoDistribuicaoStatus.create({
                     data: {
                         transferencia_tipo_id,
                         nome: dto.nome,
                         tipo: dto.tipo,
-                        valor_distribuicao_contabilizado: dto.valor_distribuicao_contabilizado,
+                        valor_distribuicao_contabilizado: valor_contabilizado_calc,
+                        permite_novos_registros: permite_novos_registros,
                         criado_por: user.id,
                         criado_em: new Date(Date.now()),
                     },
@@ -59,15 +85,18 @@ export class DistribuicaoStatusService {
                 nome: true,
                 tipo: true,
                 valor_distribuicao_contabilizado: true,
+                permite_novos_registros: true,
             },
         });
 
         const rowsBase = await this.prisma.distribuicaoStatusBase.findMany({
             orderBy: { nome: 'asc' },
             select: {
+                id: true,
                 nome: true,
                 tipo: true,
                 valor_distribuicao_contabilizado: true,
+                permite_novos_registros: true,
             },
         });
 
@@ -77,17 +106,22 @@ export class DistribuicaoStatusService {
                 nome: r.nome,
                 tipo: r.tipo,
                 valor_distribuicao_contabilizado: r.valor_distribuicao_contabilizado,
+                permite_novos_registros: r.permite_novos_registros,
                 pode_editar: true,
+                status_base: false,
             };
         });
 
         ret.push(
             ...rowsBase.map((r) => {
                 return {
+                    id: r.id,
                     nome: r.nome,
                     tipo: r.tipo,
                     valor_distribuicao_contabilizado: r.valor_distribuicao_contabilizado,
+                    permite_novos_registros: r.permite_novos_registros,
                     pode_editar: false,
+                    status_base: true,
                 };
             })
         );
@@ -102,6 +136,15 @@ export class DistribuicaoStatusService {
     ): Promise<RecordWithId> {
         const updated = await this.prisma.$transaction(
             async (prismaTxn: Prisma.TransactionClient): Promise<RecordWithId> => {
+                // Não pode atualizar caso tenha rows de histórico de status em dist.
+                const emUso = await prismaTxn.distribuicaoRecursoStatus.count({
+                    where: {
+                        removido_em: null,
+                        status_id: id,
+                    },
+                });
+                if (emUso) throw new HttpException('Edição indisponível, pois tipo de status já está em uso', 400);
+
                 const transferenciaTipoDistribuicaoStatus = await prismaTxn.transferenciaTipoDistribuicaoStatus.update({
                     where: { id },
                     data: {
@@ -135,6 +178,15 @@ export class DistribuicaoStatusService {
     }
 
     async removeDistribuicaoStatus(id: number, user: PessoaFromJwt) {
+        // Não pode remover caso tenha rows de histórico de status em dist.
+        const emUso = await this.prisma.distribuicaoRecursoStatus.count({
+            where: {
+                removido_em: null,
+                status_id: id,
+            },
+        });
+        if (emUso) throw new HttpException('Remoção indisponível, pois tipo de status já está em uso', 400);
+
         await this.prisma.transferenciaTipoDistribuicaoStatus.update({
             where: { id },
             data: {
