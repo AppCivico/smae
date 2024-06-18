@@ -131,6 +131,11 @@ export class ProjetoEquipeItemDto {
     pessoa: IdNomeExibicaoDto;
 }
 
+export class IdDescRegiaoComParent extends IdDesc {
+    parente_id: number | null;
+    nivel: number;
+}
+
 export class ProjetoDetailDto {
     id: number;
     meta_id: number | null;
@@ -232,6 +237,7 @@ export class ProjetoDetailDto {
 
     tarefa_cronograma: TarefaCronogramaDto;
     bloco_nota_token: string;
+    regioes: IdDescRegiaoComParent[];
 }
 
 export class ProjetoMVPDto extends PickType(ProjetoDetailDto, ['id', 'portfolio_id']) {}

@@ -204,6 +204,7 @@ export class ImportacaoOrcamentoService {
                 id: true,
                 titulo: true,
                 nivel_maximo_tarefa: true,
+                nivel_regionalizacao: true,
                 modelo_clonagem: true,
                 orgaos: {
                     select: {

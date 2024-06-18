@@ -17,7 +17,7 @@ import {
 } from 'class-validator';
 import { DateTransform } from '../../auth/transforms/date.transform';
 import { IsOnlyDate } from '../../common/decorators/IsDateOnly';
-import { NumberArrayTransform } from '../../auth/transforms/number-array.transform';
+import { NumberArrayTransformOrUndef } from '../../auth/transforms/number-array.transform';
 
 export class CreatePdmAdminCPDto {
     /**
@@ -310,6 +310,6 @@ export class CreatePdmDto {
     @IsArray()
     @IsInt({ each: true, message: 'PDM: Cada item precisa ser um número inteiro' })
     @Min(1, { each: true, message: 'ID precisa ser maior que 0' })
-    @Transform(NumberArrayTransform)
+    @Transform(NumberArrayTransformOrUndef)
     pdm_anteriores?: number[];
 }

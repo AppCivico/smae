@@ -21,6 +21,7 @@ import {
 } from 'class-validator';
 import { IsOnlyDate } from 'src/common/decorators/IsDateOnly';
 import { DateTransform } from '../../../auth/transforms/date.transform';
+import { NumberArrayTransformOrEmpty } from '../../../auth/transforms/number-array.transform';
 import {
     CONST_PROC_SEI_SINPROC_DESCR,
     CONST_PROC_SEI_SINPROC_MESSAGE,
@@ -416,6 +417,13 @@ export class CreateProjetoDto {
     @ValidateNested({ each: true })
     @Type(() => PPfonteRecursoDto)
     fonte_recursos?: PPfonteRecursoDto[];
+
+    @IsOptional()
+    @IsArray()
+    @IsInt({ message: '$property| regiao_ids precisa ser inteiro', each: true })
+    @ValidateIf((object, value) => value !== null)
+    @Transform(NumberArrayTransformOrEmpty)
+    regiao_ids?: number[] | null;
 }
 
 export class CreateProjetoDocumentDto {

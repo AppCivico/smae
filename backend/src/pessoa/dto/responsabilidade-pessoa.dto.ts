@@ -2,7 +2,7 @@ import { Transform } from 'class-transformer';
 import { IsArray, IsEnum, IsInt, IsOptional } from 'class-validator';
 import { PositiveNumberTransform } from '../../auth/transforms/number.transform';
 import { IdCodTituloDto } from '../../common/dto/IdCodTitulo.dto';
-import { NumberArrayTransform } from '../../auth/transforms/number-array.transform';
+import { NumberArrayTransformOrUndef } from '../../auth/transforms/number-array.transform';
 import { ApiProperty } from '@nestjs/swagger';
 
 export class BuscaResponsabilidades {
@@ -46,7 +46,7 @@ export class ExecutaTransferenciaResponsabilidades {
 
     @IsArray()
     @IsInt({ each: true })
-    @Transform(NumberArrayTransform)
+    @Transform(NumberArrayTransformOrUndef)
     metas: number[];
 }
 
