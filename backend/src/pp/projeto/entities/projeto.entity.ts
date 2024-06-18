@@ -4,10 +4,10 @@ import { IdDesc } from 'src/atividade/entities/atividade.entity';
 import { IdCodTituloDto } from 'src/common/dto/IdCodTitulo.dto';
 import { IdNomeExibicaoDto } from 'src/common/dto/IdNomeExibicao.dto';
 import { IdSiglaDescricao } from 'src/common/dto/IdSigla.dto';
+import { TarefaCronogramaDto } from 'src/common/dto/TarefaCronograma.dto';
 import { IdTituloDto } from '../../../common/dto/IdTitulo.dto';
 import { GeolocalizacaoDto } from '../../../geo-loc/entities/geo-loc.entity';
 import { TipoDocumentoDto } from '../../../tipo-documento/entities/tipo-documento.entity';
-import { TarefaCronogramaDto } from 'src/common/dto/TarefaCronograma.dto';
 
 export class ProjetoDto {
     id: number;
@@ -238,6 +238,10 @@ export class ProjetoDetailDto {
     tarefa_cronograma: TarefaCronogramaDto;
     bloco_nota_token: string;
     regioes: IdDescRegiaoComParent[];
+
+    secretario_colaborador: string | null;
+    orgao_colaborador: IdSiglaDescricao | null;
+    colaboradores_no_orgao: IdNomeExibicaoDto[];
 }
 
 export class ProjetoMVPDto extends PickType(ProjetoDetailDto, ['id', 'portfolio_id']) {}
