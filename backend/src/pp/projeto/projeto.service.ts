@@ -777,7 +777,7 @@ export class ProjetoService {
 
         if (isBi && user.hasSomeRoles(['SMAE.acesso_bi'])) return permissionsBaseSet;
 
-        if (user.hasSomeRoles(['Projeto.administrador'])) {
+        if (user.hasSomeRoles([tipo == 'PP' ? 'Projeto.administrador' : 'ProjetoMDO.administrador'])) {
             this.logger.debug('roles Projeto.administrador, ver todos os projetos');
             // nenhum filtro para o administrador
             return permissionsBaseSet;
@@ -785,9 +785,11 @@ export class ProjetoService {
 
         const waterfallSet: Prisma.Enumerable<Prisma.ProjetoWhereInput> = [];
 
-        if (user.hasSomeRoles(['Projeto.administrador_no_orgao'])) {
+        if (
+            user.hasSomeRoles([tipo == 'PP' ? 'Projeto.administrador_no_orgao' : 'ProjetoMDO.administrador_no_orgao'])
+        ) {
             this.logger.verbose(
-                `Adicionando ver todos os projetos do portfolio com orgao ${user.orgao_id} (Projeto.administrador_no_orgao)`
+                `Adicionando ver todos os projetos do portfolio com orgao ${user.orgao_id} (Projeto(MDO)?.administrador_no_orgao)`
             );
             waterfallSet.push({
                 portfolio: {
@@ -800,33 +802,46 @@ export class ProjetoService {
             });
         }
 
-        if (user.hasSomeRoles(['SMAE.gestor_de_projeto'])) {
+        if (user.hasSomeRoles([tipo == 'PP' ? 'SMAE.gestor_de_projeto' : 'MDO.gestor_de_projeto'])) {
             this.logger.verbose(
-                `Adicionando projetos onde responsaveis_no_orgao_gestor contém ${user.id} (SMAE.gestor_de_projeto)`
+                `Adicionando projetos onde responsaveis_no_orgao_gestor contém ${user.id} (SMAE|MDO.gestor_de_projeto)`
             );
             waterfallSet.push({ responsaveis_no_orgao_gestor: { has: user.id } });
         }
 
-        if (user.hasSomeRoles(['SMAE.colaborador_de_projeto'])) {
-            this.logger.verbose(`Adicionar ver projetos onde responsavel_id=${user.id} (SMAE.colaborador_de_projeto)`);
+        if (user.hasSomeRoles([tipo == 'PP' ? 'SMAE.colaborador_de_projeto' : 'MDO.colaborador_de_projeto'])) {
+            this.logger.verbose(
+                `Adicionar ver projetos onde responsavel_id=${user.id} (SMAE|MDO.colaborador_de_projeto)`
+            );
             waterfallSet.push({ responsavel_id: user.id });
 
             this.logger.verbose(
-                `Adicionar ver projetos onde equipe contém pessoa_id=${user.id} (SMAE.colaborador_de_projeto)`
+                `Adicionar ver projetos onde equipe contém pessoa_id=${
+                    user.id
+                } (SMAE|MDO.colaborador_de_projeto) ou colaboradores_no_orgao contém pessoa_id=${
+                    user.id
+                } (SMAE|MDO.colaborador_de_projeto)`
             );
             waterfallSet.push({
-                equipe: {
-                    some: {
-                        removido_em: null,
-                        pessoa_id: user.id,
+                OR: [
+                    {
+                        equipe: {
+                            some: {
+                                removido_em: null,
+                                pessoa_id: user.id,
+                            },
+                        },
                     },
-                },
+                    { colaboradores_no_orgao: { has: user.id } },
+                ],
             });
         }
 
-        if (user.hasSomeRoles(['SMAE.espectador_de_projeto'])) {
+        if (user.hasSomeRoles([tipo == 'PP' ? 'SMAE.espectador_de_projeto' : 'MDO.colaborador_de_projeto'])) {
             this.logger.verbose(
-                `Adicionar ver projetos e portfolios que participam dos grupo-portfolios contendo pessoa_id=${user.id} (SMAE.espectador_de_projeto)`
+                `Adicionar ver projetos e portfolios que participam dos grupo-portfolios contendo pessoa_id=${
+                    user.id
+                } (SMAE|MDO.espectador_de_projeto)`
             );
             waterfallSet.push({
                 OR: [
