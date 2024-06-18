@@ -35,10 +35,10 @@ export default {
       },
     },
     {
-      path: ':painelId',
+      path: ':obraId',
       props: ({ params }) => ({
         ...params,
-        painelId: Number.parseInt(params.painelId, 10) || undefined,
+        obraId: Number.parseInt(params.obraId, 10) || undefined,
       }),
       component: () => import('@/views/mdo.painelDeObras/PainelItem.vue'),
       children: [
@@ -48,7 +48,7 @@ export default {
           component: () => import('@/views/mdo.painelDeObras/PainelCriarEditar.vue'),
           props: ({ params }) => ({
             ...params,
-            painelId: Number.parseInt(params.painelId, 10) || undefined,
+            obraId: Number.parseInt(params.obraId, 10) || undefined,
           }),
           meta: {
             limitarÀsPermissões: [
@@ -67,7 +67,7 @@ export default {
           component: () => import('@/views/mdo.painelDeObras/PainelResumo.vue'),
           props: ({ params }) => ({
             ...params,
-            painelId: Number.parseInt(params.painelId, 10) || undefined,
+            obraId: Number.parseInt(params.obraId, 10) || undefined,
           }),
           meta: {
             título: () => 'Resumo da Obra',
