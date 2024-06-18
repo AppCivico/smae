@@ -7,7 +7,7 @@ import { IdSiglaDescricao } from 'src/common/dto/IdSigla.dto';
 import { TarefaCronogramaDto } from 'src/common/dto/TarefaCronograma.dto';
 import { IdTituloDto } from '../../../common/dto/IdTitulo.dto';
 import { GeolocalizacaoDto } from '../../../geo-loc/entities/geo-loc.entity';
-import { TipoDocumentoDto } from '../../../tipo-documento/entities/tipo-documento.entity';
+import { ArquivoBaseDto } from '../../../upload/dto/create-upload.dto';
 
 export class ProjetoDto {
     id: number;
@@ -265,17 +265,13 @@ export class ProjetoRecursos {
     valor_nominal: number | null;
 }
 
+export class ArquivoProjetoDto extends ArquivoBaseDto {
+    @ApiProperty({ deprecated: true, description: 'Usar "data" no nivel superior, em ProjetoDocumentoDto' })
+    data: Date | null;
+}
+
 export class ProjetoDocumentoDto {
-    arquivo: {
-        id: number;
-        descricao: string | null;
-        tamanho_bytes: number;
-        nome_original: string;
-        download_token?: string;
-        diretorio_caminho: string | null;
-        data: Date | null;
-        TipoDocumento: TipoDocumentoDto | null;
-    };
+    arquivo: ArquivoProjetoDto;
     id: number;
     descricao: string | null;
     data: Date | null;

@@ -2357,16 +2357,11 @@ export class ProjetoService {
         return { id: documento.id };
     }
 
-    async list_document(tipo: TipoProjeto, projetoId: number, user: PessoaFromJwt) {
+    async list_document(tipo: TipoProjeto, projetoId: number, user: PessoaFromJwt): Promise<ProjetoDocumentoDto[]> {
         // aqui é feito a verificação se esse usuário pode realmente acessar esse recurso
         await this.findOne(tipo, projetoId, user, 'ReadOnly');
 
-        const arquivos: ProjetoDocumentoDto[] = await this.findAllDocumentos(projetoId);
-        for (const item of arquivos) {
-            item.arquivo.download_token = this.uploadService.getDownloadToken(item.arquivo.id, '30d').download_token;
-        }
-
-        return arquivos;
+        return await this.findAllDocumentos(projetoId);
     }
 
     private async findAllDocumentos(projetoId: number): Promise<ProjetoDocumentoDto[]> {
@@ -2381,7 +2376,6 @@ export class ProjetoService {
                     select: {
                         id: true,
                         tamanho_bytes: true,
-                        TipoDocumento: true,
                         descricao: true,
                         nome_original: true,
                         diretorio_caminho: true,
@@ -2389,7 +2383,6 @@ export class ProjetoService {
                 },
             },
         });
-
         const documentosRet: ProjetoDocumentoDto[] = documentosDB.map((d) => {
             return {
                 id: d.id,
@@ -2401,8 +2394,9 @@ export class ProjetoService {
                     descricao: d.arquivo.descricao,
                     nome_original: d.arquivo.nome_original,
                     diretorio_caminho: d.arquivo.diretorio_caminho,
+                    download_token: this.uploadService.getDownloadToken(d.arquivo.id, '30d').download_token,
+                    // prop extra deprecada, copia do nivel acima
                     data: d.data,
-                    TipoDocumento: d.arquivo.TipoDocumento,
                 },
             };
         });
