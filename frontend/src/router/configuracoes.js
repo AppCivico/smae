@@ -259,7 +259,7 @@ export default [
             },
           },
           {
-            path: ':painelId',
+            path: ':obraId',
             name: 'paineisExternosEditar',
             component: PaineisExternosCriarEditar,
             props: ({ params }) => ({
