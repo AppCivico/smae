@@ -303,21 +303,21 @@ export class CreateProjetoDto {
      * previsao_inicio ou null
      * @example "2020-01-01"
      */
+    @IsOptional()
     @IsOnlyDate()
     @Transform(DateTransform)
-    //conferir se vai continuar required
-    //@ValidateIf((object, value) => value !== null)
+    @ValidateIf((object, value) => value !== null)
     previsao_inicio: Date;
 
     /**
      * previsao_inicio ou null
      * @example "2020-01-01"
      */
+    @IsOptional()
     @IsOnlyDate()
     @Transform(DateTransform)
-    //conferir se vai continuar required
-    //@ValidateIf((object, value) => value !== null)
-    previsao_termino: Date;
+    @ValidateIf((object, value) => value !== null)
+    previsao_termino: Date | null;
 
     @IsOptional()
     @IsOnlyDate()
