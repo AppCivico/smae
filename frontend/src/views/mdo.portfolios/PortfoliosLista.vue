@@ -1,13 +1,13 @@
 <script setup>
 import { useAlertStore } from '@/stores/alert.store';
 import { useOrgansStore } from '@/stores/organs.store';
-import { usePortfolioStore } from '@/stores/portfoliosMdo.store.ts';
+import { usePortfolioObraStore } from '@/stores/portfoliosMdo.store.ts';
 import { storeToRefs } from 'pinia';
 import { useRoute } from 'vue-router';
 
 const organsStore = useOrgansStore();
 const { organs, órgãosPorId } = storeToRefs(organsStore);
-const portfolioStore = usePortfolioStore();
+const portfolioStore = usePortfolioObraStore();
 const {
   lista, chamadasPendentes, erro,
 } = storeToRefs(portfolioStore);
