@@ -4,7 +4,10 @@ import { MetaModule } from '../../meta/meta.module';
 import { PrismaModule } from '../../prisma/prisma.module';
 import { PortfolioModule } from '../portfolio/portfolio.module';
 import { ProjetoController, ProjetoMDOController } from './projeto.controller';
-import { ProjetoProxyPdmMetasController } from './projeto.proxy-pdm-metas.controller';
+import {
+    ProjetoMDOProxyPdmMetasController,
+    ProjetoProxyPdmMetasController,
+} from './projeto.proxy-pdm-metas.controller';
 import { ProjetoProxyPdmMetasService } from './projeto.proxy-pdm-metas.service';
 import { ProjetoSeiService } from './projeto.sei.service';
 import { ProjetoService } from './projeto.service';
@@ -28,9 +31,14 @@ import { PessoaPrivilegioModule } from '../../auth/pessoaPrivilegio.module';
         EquipamentoModule,
         GrupoTematicoModule,
         TipoIntervencaoModule,
-        PessoaPrivilegioModule
+        PessoaPrivilegioModule,
     ],
-    controllers: [ProjetoController, ProjetoProxyPdmMetasController, ProjetoMDOController],
+    controllers: [
+        ProjetoController,
+        ProjetoProxyPdmMetasController,
+        ProjetoMDOProxyPdmMetasController,
+        ProjetoMDOController,
+    ],
     providers: [ProjetoService, ProjetoProxyPdmMetasService, ProjetoSeiService],
     exports: [ProjetoService],
 })
