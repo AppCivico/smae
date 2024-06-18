@@ -57,7 +57,7 @@ const route = useRoute();
 const montarCampoEstático = ref(false);
 
 const {
-  errors, handleSubmit, isSubmitting, resetForm, setFieldValue, values: carga,
+  errors, handleSubmit, isSubmitting, resetForm, resetField, setFieldValue, values: carga,
 } = useForm({
   initialValues: itemParaEdição,
   validationSchema: schema,
@@ -595,6 +595,11 @@ watch(itemParaEdição, (novoValor) => {
               type="checkbox"
               :value="true"
               :unchecked-value="false"
+              @change="resetField('nivel_orcamento', {
+                value: carga.monitoramento_orcamento
+                  ? emFoco.nivel_orcamento
+                  : null
+              })"
             />
             <LabelFromYup
               name="monitoramento_orcamento"
