@@ -223,6 +223,7 @@ export class PdmService {
 
         const listActive = await this.prisma.pdm.findMany({
             where: {
+                removido_em: null,
                 ativo: active,
                 tipo: tipo,
                 AND: await this.getPermissionSet(user),
@@ -483,6 +484,24 @@ export class PdmService {
         this.calcPodeEditar(pdm, user);
 
         // TODO: plano setorial verificar se é admin no órgão, se só tiver pessoas do órgão dele, pode desativar/ativar
+    }
+
+    async delete(tipo: TipoPdm, id: number, user: PessoaFromJwt): Promise<void> {
+        const pdm = await this.loadPdm(tipo, id, user, 'ReadWrite');
+
+        await this.verificarPrivilegiosEdicao({}, user, pdm);
+
+        const now = new Date(Date.now());
+
+        async (prismaTx: Prisma.TransactionClient): Promise<void> => {
+            await prismaTx.pdm.update({
+                where: { id: id },
+                data: {
+                    removido_por: user.id,
+                    removido_em: now,
+                },
+            });
+        };
     }
 
     async update(
