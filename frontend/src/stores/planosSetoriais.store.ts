@@ -5,7 +5,9 @@ import { ListPdmDto } from '@/../../backend/src/pdm/dto/list-pdm.dto';
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { PlanoSetorialDto } from '@/../../backend/src/pdm/dto/pdm.dto';
 // eslint-disable-next-line import/no-extraneous-dependencies
-import { ListPdmDocument } from '@/../../backend/src/pdm/entities/list-pdm-document.entity.ts';
+import { ListPdmDocument } from '@/../../backend/src/pdm/entities/list-pdm-document.entity';
+// eslint-disable-next-line import/no-extraneous-dependencies
+import { ListPdm } from '@/../../backend/src/pdm/entities/list-pdm.entity';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
@@ -218,7 +220,7 @@ export const usePlanosSetoriaisStore = defineStore('planosSetoriais', {
     arquivosPorId: ({ arquivos }: Estado) => arquivos
       .reduce((acc, cur) => ({ ...acc, [cur.id]: cur }), {}),
 
-    planosSetoriaisPorId: ({ lista }: Estado): { [k: number | string]: Pdm } => lista
+    planosSetoriaisPorId: ({ lista }: Estado): { [k: number | string]: ListPdm } => lista
       .reduce((acc, cur) => ({ ...acc, [cur.id]: cur }), {}),
   },
 });
