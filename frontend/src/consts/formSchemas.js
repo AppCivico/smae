@@ -1153,7 +1153,7 @@ export const portfolio = object({
     .required('Um portfolio requer um título'),
 });
 
-export const painelDeObras = object({
+export const obras = object({
   responsaveis_no_orgao_gestor: string()
     .label('Assessor do monitoramento')
     .nullable(),
