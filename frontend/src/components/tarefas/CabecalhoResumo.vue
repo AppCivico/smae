@@ -1,8 +1,8 @@
 <script setup>
 import dateToField from '@/helpers/dateToField';
 import dinheiro from '@/helpers/dinheiro';
-import { useRoute } from 'vue-router';
 import { computed } from 'vue';
+import { useRoute } from 'vue-router';
 
 const route = useRoute();
 
@@ -151,7 +151,7 @@ const emFocoFiltrado = computed(() => props.emFoco.tarefa_cronograma || props.em
           >
             <span>Sim</span>
             <router-link
-              :to="{name: 'transferenciaEmailModal'}"
+              :to="{ name: 'transferenciaEmailModal' }"
               title="Editar e-mail"
             >
               <svg
