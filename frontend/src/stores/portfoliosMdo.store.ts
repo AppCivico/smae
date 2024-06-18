@@ -23,7 +23,7 @@ interface Estado {
   };
 }
 
-export const usePortfolioStore = defineStore('portfoliosMdo', {
+export const usePortfolioObraStore = defineStore('portfoliosMdo', {
   state: (): Estado => ({
     lista: [],
     emFoco: null,
