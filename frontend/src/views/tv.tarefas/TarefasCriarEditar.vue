@@ -1,11 +1,11 @@
 <script setup>
-import { tarefasProjeto as schema } from "@/consts/formSchemas";
-import { useAlertStore } from "@/stores/alert.store";
-import { useTarefasProjetosStore } from '@/stores/tarefasProjeto.store.js';
-import { storeToRefs } from "pinia";
-import { ErrorMessage, Field, Form } from "vee-validate";
-import { computed } from "vue";
-import { useRoute, useRouter } from "vue-router";
+import { tarefasProjeto as schema } from '@/consts/formSchemas';
+import { useAlertStore } from '@/stores/alert.store';
+import { useTarefasProjetosStore } from '@/stores/tarefasProjeto.store';
+import { storeToRefs } from 'pinia';
+import { ErrorMessage, Field, Form } from 'vee-validate';
+import { computed } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 
 const alertStore = useAlertStore();
 const tarefasProjetos = useTarefasProjetosStore();
@@ -20,37 +20,34 @@ const props = defineProps({
   },
 });
 
-const itemParaEdição = computed(() => lista.value.find((x) => {
-   return x.id === Number(route.params.tarefasId);
- }) || {
-   id: 0, descricao: '',
+const itemParaEdição = computed(() => lista.value
+  .find((x) => x.id === Number(route.params.tarefasId)) || {
+  id: 0, descricao: '',
 });
-
 
 async function onSubmit(_, { controlledValues: carga }) {
   try {
     const msg = props.tarefasId
-      ? "Dados salvos com sucesso!"
-      : "Item adicionado com sucesso!";
+      ? 'Dados salvos com sucesso!'
+      : 'Item adicionado com sucesso!';
 
-    const resposta =  await tarefasProjetos.salvarItem(carga, props.tarefasId)
+    const resposta = await tarefasProjetos.salvarItem(carga, props.tarefasId);
 
     if (resposta) {
       alertStore.success(msg);
       tarefasProjetos.$reset();
       tarefasProjetos.buscarTudo();
-      router.push({ name: "tarefasListar" });
+      router.push({ name: 'tarefasListar' });
     }
   } catch (error) {
     alertStore.error(error);
   }
 }
-
 </script>
 <template>
   <div class="flex spacebetween center mb2">
-    <h1><h1>{{ route?.meta?.título || 'Nova tarefa' }}</h1></h1>
-    <hr class="ml2 f1" />
+    <h1>{{ route?.meta?.título || 'Nova tarefa' }}</h1>
+    <hr class="ml2 f1">
     <CheckClose />
   </div>
 
@@ -63,7 +60,10 @@ async function onSubmit(_, { controlledValues: carga }) {
   >
     <div class="flex g2 mb1">
       <div class="f2 mb1">
-        <LabelFromYup name="descricao" :schema="schema" />
+        <LabelFromYup
+          name="descricao"
+          :schema="schema"
+        />
         <Field
           id="descricao"
           name="descricao"
@@ -71,14 +71,17 @@ async function onSubmit(_, { controlledValues: carga }) {
           maxlength="250"
           class="inputtext light mb1"
         />
-        <ErrorMessage name="descricao" class="error-msg" />
+        <ErrorMessage
+          name="descricao"
+          class="error-msg"
+        />
       </div>
     </div>
 
     <FormErrorsList :errors="errors" />
 
     <div class="flex spacebetween center mb2">
-      <hr class="mr2 f1" />
+      <hr class="mr2 f1">
       <button
         class="btn big"
         :disabled="isSubmitting || Object.keys(errors)?.length"
@@ -90,13 +93,21 @@ async function onSubmit(_, { controlledValues: carga }) {
       >
         Salvar
       </button>
-      <hr class="ml2 f1" />
+      <hr class="ml2 f1">
     </div>
   </Form>
 
-  <div v-if="chamadasPendentes?.emFoco" class="spinner">Carregando</div>
+  <div
+    v-if="chamadasPendentes?.emFoco"
+    class="spinner"
+  >
+    Carregando
+  </div>
 
-  <div v-if="erro" class="error p1">
+  <div
+    v-if="erro"
+    class="error p1"
+  >
     <div class="error-msg">
       {{ erro }}
     </div>
