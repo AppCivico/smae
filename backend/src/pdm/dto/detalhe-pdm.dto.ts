@@ -1,4 +1,4 @@
-import { Eixo } from '../../macro-tema/entities/macro-tema.entity';
+import { MacroTemaDto } from '../../macro-tema/entities/macro-tema.entity';
 import { Meta } from '../../meta/entities/meta.entity';
 import { ObjetivoEstrategico } from '../../tema/entities/objetivo-estrategico.entity';
 import { SubTema } from '../../subtema/entities/subtema.entity';
@@ -29,7 +29,7 @@ export class DetalhePdmDto {
      * Lista de objetos de
      * @example Eixo[]
      */
-    eixo?: Eixo[];
+    eixo?: MacroTemaDto[];
 
     /**
      * Lista de objetos de
