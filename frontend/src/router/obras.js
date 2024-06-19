@@ -62,6 +62,7 @@ export default {
         rotasParaMenuSecundário: [
           'obrasListar',
           'obrasTarefasListar',
+          'obrasDocumentos',
         ],
       },
       children: [
@@ -171,6 +172,38 @@ export default {
                   },
                 },
               ],
+            },
+          ],
+        },
+
+        {
+          path: 'documentos',
+          name: 'obrasDocumentos',
+          component: () => import('@/views/mdo.obras/ObrasDocumentos.vue'),
+          props: true,
+          meta: {
+            título: 'Documentos de Obra',
+            títuloParaMenu: 'Documentos',
+          },
+          children: [
+            {
+              path: 'novo',
+              name: 'obrasNovoDocumento',
+              component: () => import('@/views/mdo.obras/ObrasEnviarArquivo.vue'),
+              meta: {
+                rotaDeEscape: 'obrasDocumentos',
+                títuloParaMenu: 'Novo documento',
+              },
+            },
+            {
+              path: ':arquivoId',
+              name: 'obrasEditarDocumento',
+              component: () => import('@/views/mdo.obras/ObrasEnviarArquivo.vue'),
+              props: true,
+              meta: {
+                rotaDeEscape: 'obrasDocumentos',
+                títuloParaMenu: 'Editar documento',
+              },
             },
           ],
         },

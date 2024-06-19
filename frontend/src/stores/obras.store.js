@@ -6,12 +6,17 @@ export const useObrasStore = defineStore('obrasStore', {
   state: () => ({
     lista: [],
     emFoco: null,
+    arquivos: [],
 
     chamadasPendentes: {
       lista: false,
       emFoco: false,
+      arquivos: false,
     },
     erro: null,
+    erros: {
+      arquivos: null,
+    },
   }),
   actions: {
     async buscarItem(id = 0, params = {}) {
@@ -76,6 +81,56 @@ export const useObrasStore = defineStore('obrasStore', {
         return false;
       }
     },
+
+    async buscarArquivos(idDaObra = 0, params = {}) {
+      this.chamadasPendentes.arquivos = true;
+      this.erros.arquivos = null;
+
+      try {
+        const resposta = await this.requestS.get(`${baseUrl}/projeto-mdo/${idDaObra || this.route.params.obraId}/documento`, params);
+
+        if (Array.isArray(resposta.linhas)) {
+          this.arquivos = resposta.linhas;
+        }
+      } catch (erro) {
+        this.erros.arquivos = erro;
+      }
+      this.chamadasPendentes.arquivos = false;
+    },
+
+    async excluirArquivo(idDoArquivo, idDaObra = 0) {
+      this.chamadasPendentes.arquivos = true;
+      this.erros.arquivos = null;
+
+      try {
+        await this.requestS.delete(`${baseUrl}/projeto-mdo/${idDaObra || this.route.params.obraId}/documento/${idDoArquivo}`);
+
+        this.arquivos = this.arquivos.filter((x) => x.id !== idDoArquivo);
+        this.chamadasPendentes.arquivos = false;
+
+        return true;
+      } catch (erro) {
+        this.erros.arquivos = erro;
+        this.chamadasPendentes.arquivos = false;
+        return false;
+      }
+    },
+
+    async associarArquivo(params = {}, idDaObra = 0) {
+      this.chamadasPendentes.arquivos = true;
+      this.erros.arquivos = null;
+
+      try {
+        const resposta = await this.requestS.post(`${baseUrl}/projeto-mdo/${idDaObra || this.route.params.obraId}/documento`, params);
+
+        this.chamadasPendentes.arquivos = false;
+        return resposta;
+      } catch (erro) {
+        this.erros.arquivos = erro;
+        this.chamadasPendentes.arquivos = false;
+        return false;
+      }
+    },
   },
 
   getters: {
@@ -84,5 +139,8 @@ export const useObrasStore = defineStore('obrasStore', {
         ...emFoco,
       };
     },
+
+    arquivosPorId: ({ arquivos }) => arquivos
+      .reduce((acc, cur) => ({ ...acc, [cur.id]: cur }), {}),
   },
 });
