@@ -1,3 +1,5 @@
+import { useMdoTarefasStore } from '@/stores/mdo.tarefas.store.ts';
+
 export default {
   path: '/obras',
   component: () => import('@/views/mdo.obras/ObraRaiz.vue'),
@@ -11,6 +13,7 @@ export default {
     pesoNoMenu: 4,
     limitarÀsPermissões: [
       'MDO.',
+      'ProjetoMDO.',
     ],
   },
   children: [
@@ -18,14 +21,25 @@ export default {
       name: 'obrasListar',
       path: '',
       component: () => import('@/views/mdo.obras/ObrasListar.vue'),
+      props: true,
+      meta: {
+        limitarÀsPermissões: [
+          'ProjetoMDO.administrador',
+          'ProjetoMDO.administrador_no_orgao',
+          'MDO.gestor_de_projeto',
+          'MDO.colaborador_de_projeto',
+          'MDO.espectador_de_projeto',
+        ],
+      },
     },
     {
       name: 'obrasCriar',
       path: 'novo',
       component: () => import('@/views/mdo.obras/ObraCriarEditar.vue'),
+      props: true,
       meta: {
         limitarÀsPermissões: [
-          'MDO.',
+          'ProjetoMDO.administrador_no_orgao',
         ],
         rotaDeEscape: 'obrasListar',
         rotasParaMigalhasDePão: [
@@ -41,6 +55,15 @@ export default {
         obraId: Number.parseInt(params.obraId, 10) || undefined,
       }),
       component: () => import('@/views/mdo.obras/ObraItem.vue'),
+      meta: {
+        rotasParaMigalhasDePão: [
+          'obrasListar',
+        ],
+        rotasParaMenuSecundário: [
+          'obrasListar',
+          'obrasTarefasListar',
+        ],
+      },
       children: [
         {
           path: '',
@@ -52,12 +75,13 @@ export default {
           }),
           meta: {
             limitarÀsPermissões: [
-              'MDO.',
+              'ProjetoMDO.administrador',
+              'ProjetoMDO.administrador_no_orgao',
+              'MDO.gestor_de_projeto',
+              'MDO.colaborador_de_projeto',
+              'MDO.espectador_de_projeto',
             ],
             rotaDeEscape: 'obrasListar',
-            rotasParaMigalhasDePão: [
-              'obrasListar',
-            ],
             título: () => 'Editar Cadastro de Obras',
           },
         },
@@ -73,6 +97,82 @@ export default {
             título: () => 'Resumo da Obra',
             títuloParaMenu: 'Resumo',
           },
+        },
+        {
+          path: 'tarefas',
+          component: () => import('@/views/tarefas/TarefasRaiz.vue'),
+          props: true,
+          meta: {
+            títuloParaMenu: 'Tarefas',
+            prefixoParaFilhas: 'obras',
+            rotasParaMigalhasDePão: [
+              'obrasListar',
+              'obrasResumo',
+              'obrasTarefasListar',
+            ],
+          },
+          children: [
+            {
+              name: 'obrasTarefasListar',
+              path: '',
+              component: () => import('@/views/tarefas/TarefasLista.vue'),
+              props: true,
+              meta: {
+                título: 'Cronograma de obra',
+                títuloParaMenu: 'Cronograma',
+              },
+            },
+            {
+              name: 'obrasTarefasCriar',
+              path: 'nova',
+              component: () => import('@/views/tarefas/TarefasCriarEditar.vue'),
+              props: true,
+              meta: {
+                título: 'Nova tarefa',
+                títuloParaMenu: 'Nova tarefa',
+                rotaDeEscape: 'obrasTarefasListar',
+              },
+            },
+            {
+              path: ':tarefaId',
+              component: () => import('@/views/tarefas/TarefasItem.vue'),
+              props: true,
+              children: [
+                {
+                  path: '',
+                  name: 'obrasTarefasEditar',
+                  component: () => import('@/views/tarefas/TarefasCriarEditar.vue'),
+                  props: true,
+                  meta: {
+                    título: () => useMdoTarefasStore()?.emFoco?.tarefa || 'Editar tarefa',
+                    títuloParaMenu: 'Editar tarefa',
+                    rotaDeEscape: 'obrasTarefasListar',
+                  },
+                },
+                {
+                  path: 'progresso',
+                  name: 'obrasTarefasProgresso',
+                  component: () => import('@/views/tarefas/TarefasProgresso.vue'),
+                  props: true,
+                  meta: {
+                    título: () => (useMdoTarefasStore()?.emFoco?.tarefa
+                      ? `Registro de progresso de ${useMdoTarefasStore().emFoco.tarefa}`
+                      : 'Registrar progresso'),
+                    títuloParaMenu: 'Progresso',
+
+                    rotaDeEscape: 'obrasListar',
+
+                    rotasParaMigalhasDePão: [
+                      'obrasListar',
+                      'obrasResumo',
+                      'obrasTarefasListar',
+                      'obrasTarefasEditar',
+                    ],
+                  },
+                },
+              ],
+            },
+          ],
         },
       ],
     },
