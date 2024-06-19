@@ -694,6 +694,13 @@ export const liçãoAprendida = object()
       .required(),
   });
 
+export const macrotema = object({
+  descricao: string()
+    .label('Macrotema')
+    .max(250)
+    .required(),
+});
+
 export const mandato = object({
   atuacao: string()
     .label('Atuação')
@@ -1427,12 +1434,26 @@ export const situacao = object({
     .required(),
 });
 
+export const subtema = object({
+  descricao: string()
+    .label('Subtema')
+    .max(250)
+    .required(),
+});
+
 export const suplentes = object({
   nome: string()
     .label('Nome')
     .required(),
   ordem: mixed()
     .label('Ordem')
+    .required(),
+});
+
+export const tema = object({
+  descricao: string()
+    .label('Tema')
+    .max(250)
     .required(),
 });
 
