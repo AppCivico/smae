@@ -402,9 +402,10 @@ model Pessoa {
     StatusesDistribuicaoQueRemovi    TransferenciaTipoDistribuicaoStatus[] @relation("Removedor")
     StatusesDistribuicaoQueAtualizei TransferenciaTipoDistribuicaoStatus[] @relation("Atualizador")
 
-    RegistroStatusDistribuicaoQueCriei     DistribuicaoRecursoStatus[] @relation("Criador")
-    RegistroStatusDistribuicaoQueRemovi    DistribuicaoRecursoStatus[] @relation("Removedor")
-    RegistroStatusDistribuicaoQueAtualizei DistribuicaoRecursoStatus[] @relation("Atualizador")
+    // comentado, verificar comentario em DistribuicaoRecursoStatus
+    //RegistroStatusDistribuicaoQueCriei     DistribuicaoRecursoStatus[] @relation("Criador")
+    //RegistroStatusDistribuicaoQueRemovi    DistribuicaoRecursoStatus[] @relation("Removedor")
+    //RegistroStatusDistribuicaoQueAtualizei DistribuicaoRecursoStatus[] @relation("Atualizador")
 
     view_atividade_pessoa_responsavel  view_atividade_pessoa_responsavel[]
     view_iniciativa_pessoa_responsavel view_iniciativa_pessoa_responsavel[]
@@ -6092,9 +6093,10 @@ model DistribuicaoRecursoStatus {
     removido_por Int?
     removido_em  DateTime? @db.Timestamptz(6)
 
-    criador     Pessoa  @relation("Criador", fields: [criado_por], references: [id])
-    atualizador Pessoa? @relation("Atualizador", fields: [atualizado_por], references: [id])
-    removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
+    // comentado pq isso deixa o generate lento pra diabos, mas as FK's já estão no banco
+    //criador     Pessoa  @relation("Criador", fields: [criado_por], references: [id])
+    //atualizador Pessoa? @relation("Atualizador", fields: [atualizado_por], references: [id])
+    //removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
 
     @@map("distribuicao_recurso_status")
 }
