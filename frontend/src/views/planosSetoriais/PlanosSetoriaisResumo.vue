@@ -196,7 +196,7 @@ usersStore.buscarPessoasSimplificadas();
       </dl>
 
       <dl
-        v-if="emFoco?.possui_iniciativa && emFoco?.possui_atividade"
+        v-if="emFoco?.possui_iniciativa"
         class="f1 mb1 fb15em"
       >
         <dt class="t12 uc w700 mb05 tamarelo">
@@ -205,10 +205,10 @@ usersStore.buscarPessoasSimplificadas();
         <dd class="t13 contentStyle">
           <ul>
             <li v-if="emFoco.possui_iniciativa">
-              {{ emFoco.rotulo_iniciativa || 'Contexto' }}
+              {{ emFoco.rotulo_iniciativa || 'Iniciativa' }}
             </li>
             <li v-if="emFoco.possui_atividade">
-              {{ emFoco.rotulo_atividade || 'Complementação' }}
+              {{ emFoco.rotulo_atividade || 'Atividade' }}
             </li>
           </ul>
         </dd>
