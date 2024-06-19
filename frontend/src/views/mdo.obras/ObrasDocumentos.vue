@@ -64,7 +64,7 @@ iniciar();
   />
 
   <GerenciadorDeArquivos
-    :parâmetros-de-diretórios="{ mdo_id: $route.params.obraId }"
+    :parâmetros-de-diretórios="{ projeto_id: $route.params.obraId }"
     :arquivos="arquivos"
     class="mb1"
     :rota-de-adição="{
