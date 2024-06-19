@@ -16,9 +16,11 @@ import { ApiBearerAuth, ApiNoContentResponse, ApiResponse, ApiTags } from '@nest
 import { Response } from 'express';
 import { ListaDePrivilegios } from 'src/common/ListaDePrivilegios';
 import { CurrentUser } from '../../auth/decorators/current-user.decorator';
+import { ApiPaginatedWithPagesResponse } from '../../auth/decorators/paginated.decorator';
 import { Roles } from '../../auth/decorators/roles.decorator';
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import { FindOneParams, FindTwoParams } from '../../common/decorators/find-params';
+import { PaginatedWithPagesDto } from '../../common/dto/paginated.dto';
 import { RecordWithId } from '../../common/dto/record-with-id.dto';
 import { CreateProjetoDocumentDto, CreateProjetoDto, CreateProjetoSeiDto } from './dto/create-projeto.dto';
 import { FilterProjetoDto } from './dto/filter-projeto.dto';
@@ -34,7 +36,8 @@ import {
     ListProjetoDto,
     ListProjetoSeiDto,
     ProjetoDetailDto,
-    ProjetoSeiDto,
+    ProjetoMdoDto,
+    ProjetoSeiDto
 } from './entities/projeto.entity';
 import { ProjetoSeiService } from './projeto.sei.service';
 import { ProjetoService } from './projeto.service';
@@ -285,8 +288,12 @@ export class ProjetoMDOController {
     @Get()
     @ApiBearerAuth('access-token')
     @Roles([...rolesMDO])
-    async findAll(@Query() filters: FilterProjetoDto, @CurrentUser() user: PessoaFromJwt): Promise<ListProjetoDto> {
-        return { linhas: await this.projetoService.findAll('MDO', filters, user) };
+    @ApiPaginatedWithPagesResponse(ProjetoMdoDto)
+    async findAll(
+        @Query() filters: FilterProjetoDto,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<PaginatedWithPagesDto<ProjetoMdoDto>> {
+        return this.projetoService.findAllMDO(filters, user);
     }
 
     //@IsPublic()
@@ -462,5 +469,3 @@ export class ProjetoMDOController {
         return await this.projetoService.transferPortfolio('MDO', params.id, transferProjetoPortfolio, user);
     }
 }
-
-
