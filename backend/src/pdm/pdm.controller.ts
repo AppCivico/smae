@@ -20,10 +20,12 @@ import { UpdatePdmOrcamentoConfigDto } from './dto/update-pdm-orcamento-config.d
 import { UpdatePdmDto } from './dto/update-pdm.dto';
 import { ListPdmDocument } from './entities/list-pdm-document.entity';
 import { PdmService } from './pdm.service';
+import { TipoPdm } from '@prisma/client';
 
 @ApiTags('PDM')
 @Controller('pdm')
 export class PdmController {
+    private tipoPdm: TipoPdm = 'PDM';
     constructor(
         private readonly pdmService: PdmService,
         private readonly objetivoEstrategicoService: TemaService,
@@ -37,20 +39,20 @@ export class PdmController {
     @Roles(['CadastroPdm.inserir'])
     create(@Body() createPdmDto: CreatePdmDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
         console.log(createPdmDto);
-        return this.pdmService.create('PDM', createPdmDto, user);
+        return this.pdmService.create(this.tipoPdm, createPdmDto, user);
     }
 
     @ApiBearerAuth('access-token')
     @Get()
     //@Roles(['CadastroPdm.inserir', 'CadastroPdm.editar', 'CadastroPdm.inativar', 'PDM.tecnico_cp', 'PDM.admin_cp'])
     async findAll(@Query() filters: FilterPdmDto, @CurrentUser() user: PessoaFromJwt): Promise<ListPdmDto> {
-        const linhas = await this.pdmService.findAll('PDM', filters, user);
+        const linhas = await this.pdmService.findAll(this.tipoPdm, filters, user);
         let ciclo_fisico_ativo: CicloFisicoDto | null | undefined = undefined;
         let orcamento_config: OrcamentoConfig[] | null | undefined = undefined;
 
         if (filters.ativo && linhas[0] && linhas[0].id) {
             ciclo_fisico_ativo = await this.pdmService.getCicloAtivo(linhas[0].id);
-            orcamento_config = await this.pdmService.getOrcamentoConfig('PDM', linhas[0].id);
+            orcamento_config = await this.pdmService.getOrcamentoConfig(this.tipoPdm, linhas[0].id);
         }
 
         return {
@@ -68,7 +70,7 @@ export class PdmController {
         @Body() updatePdmDto: UpdatePdmDto,
         @CurrentUser() user: PessoaFromJwt
     ): Promise<RecordWithId> {
-        return await this.pdmService.update('PDM', +params.id, updatePdmDto, user);
+        return await this.pdmService.update(this.tipoPdm, +params.id, updatePdmDto, user);
     }
 
     @Get(':id')
@@ -83,7 +85,7 @@ export class PdmController {
         @CurrentUser() user: PessoaFromJwt,
         @Query() detail: FilterPdmDetailDto
     ): Promise<PdmDto | DetalhePdmDto> {
-        const pdm = await this.pdmService.getDetail('PDM', +params.id, user, 'ReadOnly');
+        const pdm = await this.pdmService.getDetail(this.tipoPdm, +params.id, user, 'ReadOnly');
 
         if (!detail.incluir_auxiliares) return pdm;
 
@@ -91,9 +93,9 @@ export class PdmController {
         const [tema, sub_tema, eixo, tag, orcamento_config] = await Promise.all([
             this.objetivoEstrategicoService.findAll(filter_opts),
             this.subTemaService.findAll(filter_opts),
-            this.eixoService.findAll(filter_opts),
+            this.eixoService.findAll(this.tipoPdm, filter_opts),
             this.tagService.findAll(filter_opts),
-            this.pdmService.getOrcamentoConfig('PDM', +params.id),
+            this.pdmService.getOrcamentoConfig(this.tipoPdm, +params.id),
         ]);
 
         return {
@@ -114,7 +116,12 @@ export class PdmController {
         @Body() updatePdmOrcamentoConfigDto: UpdatePdmOrcamentoConfigDto,
         @CurrentUser() user: PessoaFromJwt
     ): Promise<RecordWithId[]> {
-        return await this.pdmService.updatePdmOrcamentoConfig('PDM', +params.id, updatePdmOrcamentoConfigDto, user);
+        return await this.pdmService.updatePdmOrcamentoConfig(
+            this.tipoPdm,
+            +params.id,
+            updatePdmOrcamentoConfigDto,
+            user
+        );
     }
 
     @Post(':id/documento')
@@ -125,14 +132,14 @@ export class PdmController {
         @Body() createPdmDocDto: CreatePdmDocumentDto,
         @CurrentUser() user: PessoaFromJwt
     ): Promise<RecordWithId> {
-        return await this.pdmService.append_document('PDM', params.id, createPdmDocDto, user);
+        return await this.pdmService.append_document(this.tipoPdm, params.id, createPdmDocDto, user);
     }
 
     @Get(':id/documento')
     @ApiBearerAuth('access-token')
     @Roles(['CadastroPdm.inserir', 'CadastroPdm.editar'])
     async download(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt): Promise<ListPdmDocument> {
-        return { linhas: await this.pdmService.list_document('PDM', params.id, user) };
+        return { linhas: await this.pdmService.list_document(this.tipoPdm, params.id, user) };
     }
 
     @Delete(':id/documento/:id2')
@@ -141,7 +148,7 @@ export class PdmController {
     @ApiResponse({ description: 'sucesso ao remover', status: 204 })
     @HttpCode(HttpStatus.NO_CONTENT)
     async removerDownload(@Param() params: FindTwoParams, @CurrentUser() user: PessoaFromJwt): Promise<void> {
-        await this.pdmService.remove_document('PDM', params.id, params.id2, user);
+        await this.pdmService.remove_document(this.tipoPdm, params.id, params.id2, user);
         return;
     }
 }
@@ -151,6 +158,7 @@ const PermsPS: ListaDePrivilegios[] = ['CadastroPS.administrador', 'CadastroPS.a
 @ApiTags('Plano Setorial')
 @Controller('plano-setorial')
 export class PlanoSetorialController {
+    private tipoPdm: TipoPdm = 'PS';
     constructor(private readonly pdmService: PdmService) {}
 
     @Post()
@@ -158,7 +166,7 @@ export class PlanoSetorialController {
     @Roles(PermsPS)
     create(@Body() createPdmDto: CreatePdmDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
         console.log(createPdmDto);
-        return this.pdmService.create('PS', createPdmDto, user);
+        return this.pdmService.create(this.tipoPdm, createPdmDto, user);
     }
 
     @ApiBearerAuth('access-token')
@@ -189,7 +197,7 @@ export class PlanoSetorialController {
         @Body() updatePdmDto: UpdatePdmDto,
         @CurrentUser() user: PessoaFromJwt
     ): Promise<RecordWithId> {
-        return await this.pdmService.update('PS', +params.id, updatePdmDto, user);
+        return await this.pdmService.update(this.tipoPdm, +params.id, updatePdmDto, user);
     }
 
     @Delete(':id')
@@ -197,7 +205,7 @@ export class PlanoSetorialController {
     @Roles(PermsPS)
     @HttpCode(HttpStatus.NO_CONTENT)
     async delete(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt): Promise<void> {
-        await this.pdmService.delete('PS', +params.id, user);
+        await this.pdmService.delete(this.tipoPdm, +params.id, user);
         return;
     }
 
@@ -209,7 +217,7 @@ export class PlanoSetorialController {
         schema: { anyOf: refs(PlanoSetorialDto) },
     })
     async get(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt): Promise<PlanoSetorialDto> {
-        const pdm = await this.pdmService.getDetail('PS', +params.id, user, 'ReadOnly');
+        const pdm = await this.pdmService.getDetail(this.tipoPdm, +params.id, user, 'ReadOnly');
 
         return pdm as PlanoSetorialDto;
     }
@@ -222,7 +230,12 @@ export class PlanoSetorialController {
         @Body() updatePdmOrcamentoConfigDto: UpdatePdmOrcamentoConfigDto,
         @CurrentUser() user: PessoaFromJwt
     ): Promise<RecordWithId[]> {
-        return await this.pdmService.updatePdmOrcamentoConfig('PS', +params.id, updatePdmOrcamentoConfigDto, user);
+        return await this.pdmService.updatePdmOrcamentoConfig(
+            this.tipoPdm,
+            +params.id,
+            updatePdmOrcamentoConfigDto,
+            user
+        );
     }
 
     @Post(':id/documento')
@@ -233,14 +246,14 @@ export class PlanoSetorialController {
         @Body() createPdmDocDto: CreatePdmDocumentDto,
         @CurrentUser() user: PessoaFromJwt
     ): Promise<RecordWithId> {
-        return await this.pdmService.append_document('PS', params.id, createPdmDocDto, user);
+        return await this.pdmService.append_document(this.tipoPdm, params.id, createPdmDocDto, user);
     }
 
     @Get(':id/documento')
     @ApiBearerAuth('access-token')
     @Roles(PermsPS)
     async download(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt): Promise<ListPdmDocument> {
-        return { linhas: await this.pdmService.list_document('PS', params.id, user) };
+        return { linhas: await this.pdmService.list_document(this.tipoPdm, params.id, user) };
     }
 
     @Delete(':id/documento/:id2')
@@ -249,7 +262,7 @@ export class PlanoSetorialController {
     @ApiResponse({ description: 'sucesso ao remover', status: 204 })
     @HttpCode(HttpStatus.NO_CONTENT)
     async removerDownload(@Param() params: FindTwoParams, @CurrentUser() user: PessoaFromJwt): Promise<void> {
-        await this.pdmService.remove_document('PS', params.id, params.id2, user);
+        await this.pdmService.remove_document(this.tipoPdm, params.id, params.id2, user);
         return;
     }
 }
