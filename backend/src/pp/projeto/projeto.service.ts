@@ -1617,6 +1617,9 @@ export class ProjetoService {
 
         // Administradores no órgão do projeto podem escrever
         if (user.hasSomeRoles(['ProjetoMDO.administrador_no_orgao'])) {
+            // TODO : verificar talvez podemos mudar para orgão de origem ou algum outro,
+            // mas por enquanto vamos manter o orgão do portfolio, regra do PP
+            // no momento todas as escritas tem o mesmo peso de permissão
             pessoaPodeEscrever = projeto.portfolio.orgaos.some((r) => r.orgao_id == user.orgao_id);
 
             if (pessoaPodeEscrever) {
@@ -1627,7 +1630,7 @@ export class ProjetoService {
             }
         }
 
-        // Colaboradores de projeto podem escrever em fases específicas ou se forem responsáveis
+        // Colaboradores de projeto podem escrever todas as fases da obra (diferente do PP)
         if (user.hasSomeRoles(['MDO.colaborador_de_projeto'])) {
             const ehResp = projeto.responsavel_id && projeto.responsavel_id == +user.id;
             const ehEquipe = projeto.equipe.some((r) => r.pessoa.id == user.id);
