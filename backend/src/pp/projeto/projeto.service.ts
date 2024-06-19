@@ -1373,7 +1373,7 @@ export class ProjetoService {
 
         return {
             ...{
-                ...{ ...projeto, ProjetoGrupoPortfolio: undefined },
+                ...{ ...projeto, ProjetoGrupoPortfolio: undefined, TarefaCronograma: undefined },
                 portfolio: {
                     ...{
                         ...projeto.portfolio,
