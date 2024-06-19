@@ -3351,7 +3351,7 @@ model Projeto {
 view ViewProjetoMDO {
     id           Int       @id
     nome         String
-    codigo       String
+    codigo       String?
     portfolio_id Int
     portfolio    Portfolio @relation(fields: [portfolio_id], references: [id])
 
