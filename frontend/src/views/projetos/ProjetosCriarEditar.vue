@@ -332,7 +332,7 @@ watch(emFoco, () => {
         >
           <template #append>
             <router-link
-              v-if="portfóliosDisponíveis.length > 1"
+              v-if="portfóliosDisponíveis.length"
               :to="{
                 name: 'projetosTrocarPortfolio'
               }"
