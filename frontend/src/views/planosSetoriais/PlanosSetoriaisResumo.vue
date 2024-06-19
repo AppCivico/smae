@@ -157,7 +157,7 @@ usersStore.buscarPessoasSimplificadas();
 
     <div class="flex flexwrap g2 mb2">
       <dl
-        v-if="emFoco?.possui_tema && emFoco?.possui_sub_tema && emFoco?.rotulo_sub_tema"
+        v-if="emFoco?.possui_tema"
         class="f1 mb1 fb15em"
       >
         <dt class="t12 uc w700 mb05 tamarelo">
@@ -165,14 +165,33 @@ usersStore.buscarPessoasSimplificadas();
         </dt>
         <dd class="t13 contentStyle">
           <ul>
-            <li v-if="emFoco.possui_tema">
+            <li v-if="emFoco.possui_macro_tema">
               {{ emFoco.rotulo_macro_tema || 'Macro-tema' }}
             </li>
-            <li v-if="emFoco.possui_sub_tema">
+            <li v-if="emFoco.possui_macro_tema && emFoco.possui_tema">
               {{ emFoco.rotulo_tema || 'Tema' }}
             </li>
-            <li v-if="emFoco.rotulo_sub_tema">
+            <li v-if="emFoco.possui_macro_tema && emFoco.possui_tema && emFoco.possui_sub_tema">
               {{ emFoco.rotulo_sub_tema || 'Sub-tema' }}
+            </li>
+          </ul>
+        </dd>
+      </dl>
+
+      <dl
+        v-if="emFoco?.possui_contexto_meta"
+        class="f1 mb1 fb15em"
+      >
+        <dt class="t12 uc w700 mb05 tamarelo">
+          Campos auxiliares
+        </dt>
+        <dd class="t13 contentStyle">
+          <ul>
+            <li v-if="emFoco.possui_contexto_meta">
+              {{ emFoco.rotulo_contexto_meta || 'Contexto' }}
+            </li>
+            <li v-if="emFoco.possui_contexto_meta && emFoco.possui_complementacao_meta">
+              {{ emFoco.rotulo_complementacao_meta || 'Complementação' }}
             </li>
           </ul>
         </dd>
@@ -192,25 +211,6 @@ usersStore.buscarPessoasSimplificadas();
             </li>
             <li v-if="emFoco.possui_atividade">
               {{ emFoco.rotulo_atividade || 'Atividade' }}
-            </li>
-          </ul>
-        </dd>
-      </dl>
-
-      <dl
-        v-if="emFoco?.possui_contexto_meta && emFoco?.possui_complementacao_meta"
-        class="f1 mb1 fb15em"
-      >
-        <dt class="t12 uc w700 mb05 tamarelo">
-          Campos auxiliares
-        </dt>
-        <dd class="t13 contentStyle">
-          <ul>
-            <li v-if="emFoco.possui_contexto_meta">
-              {{ emFoco.rotulo_contexto_meta || 'Contexto' }}
-            </li>
-            <li v-if="emFoco.possui_complementacao_meta">
-              {{ emFoco.rotulo_complementacao_meta || 'Complementação' }}
             </li>
           </ul>
         </dd>
