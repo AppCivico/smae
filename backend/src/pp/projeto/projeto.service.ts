@@ -987,11 +987,19 @@ export class ProjetoService {
     // na fase de execução, o responsavel só vai poder mudar as datas do realizado da tarefa
     // o órgão gestor continua podendo preencher os dados realizado
     async findOne(
-        tipo: TipoProjeto,
+        tipo: TipoProjeto | 'AUTO',
         id: number,
         user: PessoaFromJwt | undefined,
         readonly: ReadOnlyBooleanType
     ): Promise<ProjetoDetailDto> {
+        if (tipo == 'AUTO') {
+            const projeto = await this.prisma.projeto.findFirstOrThrow({
+                where: { id: id, removido_em: null },
+                select: { tipo: true },
+            });
+            tipo = projeto.tipo;
+        }
+
         console.log({ id, user, readonly });
 
         const permissionsSet: Prisma.Enumerable<Prisma.ProjetoWhereInput> = this.getProjetoWhereSet(tipo, user, false);
