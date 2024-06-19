@@ -1,5 +1,3 @@
-import { useMdoTarefasStore } from '@/stores/mdo.tarefas.store.ts';
-
 export default {
   path: '/obras',
   component: () => import('@/views/mdo.obras/ObraRaiz.vue'),
@@ -145,7 +143,7 @@ export default {
                   component: () => import('@/views/tarefas/TarefasCriarEditar.vue'),
                   props: true,
                   meta: {
-                    título: () => useMdoTarefasStore()?.emFoco?.tarefa || 'Editar tarefa',
+                    título: 'Editar tarefa',
                     títuloParaMenu: 'Editar tarefa',
                     rotaDeEscape: 'obrasTarefasListar',
                   },
@@ -156,9 +154,7 @@ export default {
                   component: () => import('@/views/tarefas/TarefasProgresso.vue'),
                   props: true,
                   meta: {
-                    título: () => (useMdoTarefasStore()?.emFoco?.tarefa
-                      ? `Registro de progresso de ${useMdoTarefasStore().emFoco.tarefa}`
-                      : 'Registrar progresso'),
+                    título: 'Registrar progresso',
                     títuloParaMenu: 'Progresso',
 
                     rotaDeEscape: 'obrasListar',
