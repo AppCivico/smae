@@ -47,13 +47,12 @@ export class MacroTemaService {
         return created;
     }
 
-    async findAll(filters: FilterEixoDto | undefined = undefined) {
-        const pdmId = filters?.pdm_id;
-
+    async findAll(filters: FilterEixoDto) {
         const listActive = await this.prisma.macroTema.findMany({
             where: {
                 removido_em: null,
-                pdm_id: pdmId,
+                pdm_id: filters.pdm_id,
+                id: filters.id,
             },
             select: {
                 id: true,
