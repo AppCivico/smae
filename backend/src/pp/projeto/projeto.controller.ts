@@ -23,7 +23,7 @@ import { FindOneParams, FindTwoParams } from '../../common/decorators/find-param
 import { PaginatedWithPagesDto } from '../../common/dto/paginated.dto';
 import { RecordWithId } from '../../common/dto/record-with-id.dto';
 import { CreateProjetoDocumentDto, CreateProjetoDto, CreateProjetoSeiDto } from './dto/create-projeto.dto';
-import { FilterProjetoDto } from './dto/filter-projeto.dto';
+import { FilterProjetoDto, FilterProjetoMDODto } from './dto/filter-projeto.dto';
 import {
     CloneProjetoTarefasDto,
     TransferProjetoPortfolioDto,
@@ -290,7 +290,7 @@ export class ProjetoMDOController {
     @Roles([...rolesMDO])
     @ApiPaginatedWithPagesResponse(ProjetoMdoDto)
     async findAll(
-        @Query() filters: FilterProjetoDto,
+        @Query() filters: FilterProjetoMDODto,
         @CurrentUser() user: PessoaFromJwt
     ): Promise<PaginatedWithPagesDto<ProjetoMdoDto>> {
         return this.projetoService.findAllMDO(filters, user);

@@ -1,7 +1,19 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { ProjetoStatus } from '@prisma/client';
 import { Transform, TransformFnParams } from 'class-transformer';
-import { ArrayMaxSize, ArrayMinSize, IsArray, IsBoolean, IsEnum, IsNumber, IsOptional } from 'class-validator';
+import {
+    ArrayMaxSize,
+    ArrayMinSize,
+    IsArray,
+    IsBoolean,
+    IsEnum,
+    IsInt,
+    IsNumber,
+    IsOptional,
+    IsString,
+} from 'class-validator';
+import { NumberArrayTransformOrEmpty } from '../../../auth/transforms/number-array.transform';
+import { StringArrayTransform } from '../../../auth/transforms/string-array.transform';
 
 export class FilterProjetoDto {
     @IsOptional()
@@ -45,4 +57,41 @@ export class FilterProjetoDto {
     @IsNumber()
     @Transform((a: TransformFnParams) => (a.value === null ? null : +a.value))
     portfolio_id?: number;
+}
+
+export class FilterProjetoMDODto extends FilterProjetoDto {
+    @IsOptional()
+    @IsInt({ each: true })
+    @Transform(NumberArrayTransformOrEmpty)
+    orgao_origem_id?: number[];
+
+    @IsOptional()
+    @IsInt({ each: true })
+    @Transform(NumberArrayTransformOrEmpty)
+    regioes?: number[];
+
+    @IsOptional()
+    @IsString({ each: true })
+    @Transform(StringArrayTransform)
+    nome: string[];
+
+    @IsOptional()
+    @IsString({ each: true })
+    @Transform(StringArrayTransform)
+    codigo: string[];
+
+    @IsOptional()
+    @IsInt({ each: true })
+    @Transform(NumberArrayTransformOrEmpty)
+    grupo_tematico_id?: number[];
+
+    @IsOptional()
+    @IsInt({ each: true })
+    @Transform(NumberArrayTransformOrEmpty)
+    tipo_intervencao_id?: number[];
+
+    @IsOptional()
+    @IsInt({ each: true })
+    @Transform(NumberArrayTransformOrEmpty)
+    equipamento_id?: number[];
 }
