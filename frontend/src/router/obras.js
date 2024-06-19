@@ -87,7 +87,7 @@ export default {
               'MDO.espectador_de_projeto',
             ],
             rotaDeEscape: 'obrasListar',
-            título: () => 'Editar Cadastro de Obras',
+            título: 'Editar Cadastro de Obras',
           },
         },
         {
@@ -99,7 +99,7 @@ export default {
             obraId: Number.parseInt(params.obraId, 10) || undefined,
           }),
           meta: {
-            título: () => 'Resumo da Obra',
+            título: 'Resumo da Obra',
             títuloParaMenu: 'Resumo',
           },
         },
