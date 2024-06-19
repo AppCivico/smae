@@ -67,7 +67,7 @@ export default {
               'CadastroPS.administrador_no_orgao',
             ],
             rotaDeEscape: 'planosSetoriaisResumo',
-            título: () => usePlanosSetoriaisStore()?.emFoco?.nome || 'Editar Plano Setorial',
+            título: 'Editar Plano Setorial',
           },
         },
         {
@@ -79,7 +79,7 @@ export default {
             planoSetorialId: Number.parseInt(params.planoSetorialId, 10) || undefined,
           }),
           meta: {
-            título: () => usePlanosSetoriaisStore()?.emFoco?.nome || 'Resumo de Plano Setorial',
+            título: 'Resumo de Plano Setorial',
             títuloParaMenu: 'Resumo',
           },
         },
@@ -92,7 +92,7 @@ export default {
             planoSetorialId: Number.parseInt(params.planoSetorialId, 10) || undefined,
           }),
           meta: {
-            título: () => usePlanosSetoriaisStore()?.emFoco?.nome || 'Documentos de Plano Setorial',
+            título: 'Documentos de Plano Setorial',
             títuloParaMenu: 'Documentos',
           },
           children: [
