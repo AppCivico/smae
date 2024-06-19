@@ -13,7 +13,7 @@ import { UploadService } from '../../upload/upload.service';
 import { PortfolioDto } from '../portfolio/entities/portfolio.entity';
 import { PortfolioService } from '../portfolio/portfolio.service';
 import { CreateProjetoDocumentDto, CreateProjetoDto, PPfonteRecursoDto } from './dto/create-projeto.dto';
-import { FilterProjetoDto } from './dto/filter-projeto.dto';
+import { FilterProjetoDto, FilterProjetoMDODto } from './dto/filter-projeto.dto';
 import {
     CloneProjetoTarefasDto,
     TransferProjetoPortfolioDto,
@@ -783,7 +783,7 @@ export class ProjetoService {
         return ret;
     }
 
-    async findAllMDO(filters: FilterProjetoDto, user: PessoaFromJwt): Promise<PaginatedWithPagesDto<ProjetoMdoDto>> {
+    async findAllMDO(filters: FilterProjetoMDODto, user: PessoaFromJwt): Promise<PaginatedWithPagesDto<ProjetoMdoDto>> {
         let tem_mais = false;
         let token_paginacao: string | null = null;
 
@@ -804,6 +804,21 @@ export class ProjetoService {
             where: {
                 portfolio_id: filters.portfolio_id,
                 projeto: {
+                    ProjetoRegiao: filters.regioes
+                        ? {
+                              some: {
+                                  removido_em: null,
+                                  regiao_id: { in: filters.regioes },
+                              },
+                          }
+                        : undefined,
+                    orgao_origem_id: filters.orgao_origem_id ? { in: filters.orgao_origem_id } : undefined,
+                    status: filters.status ? { in: filters.status } : undefined,
+                    nome: filters.nome ? { in: filters.nome } : undefined,
+                    codigo: filters.codigo ? { in: filters.codigo } : undefined,
+                    grupo_tematico_id: filters.grupo_tematico_id ? { in: filters.grupo_tematico_id } : undefined,
+                    tipo_intervencao_id: filters.tipo_intervencao_id ? { in: filters.tipo_intervencao_id } : undefined,
+                    equipamento_id: filters.equipamento_id ? { in: filters.equipamento_id } : undefined,
                     AND: permissionsSet,
                 },
             },
