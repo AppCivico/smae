@@ -4,7 +4,11 @@ import { CreateDistribuicaoRecursoDto } from './dto/create-distribuicao-recurso.
 import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
-import { DistribuicaoRecursoDto } from './entities/distribuicao-recurso.entity';
+import {
+    DistribuicaoHistoricoStatusDto,
+    DistribuicaoRecursoDetailDto,
+    DistribuicaoRecursoDto,
+} from './entities/distribuicao-recurso.entity';
 import { UpdateDistribuicaoRecursoDto } from './dto/update-distribuicao-recurso.dto';
 import { FilterDistribuicaoRecursoDto } from './dto/filter-distribuicao-recurso.dto';
 import { formataSEI } from 'src/common/formata-sei';
@@ -265,7 +269,7 @@ export class DistribuicaoRecursoService {
         });
     }
 
-    async findOne(id: number, user: PessoaFromJwt): Promise<DistribuicaoRecursoDto> {
+    async findOne(id: number, user: PessoaFromJwt): Promise<DistribuicaoRecursoDetailDto> {
         const row = await this.prisma.distribuicaoRecurso.findFirst({
             where: {
                 id,
@@ -316,12 +320,112 @@ export class DistribuicaoRecursoService {
                         justificativa: true,
                     },
                 },
+
+                status: {
+                    orderBy: { data_troca: 'desc' },
+                    select: {
+                        id: true,
+                        data_troca: true,
+                        motivo: true,
+                        nome_responsavel: true,
+                        orgao_responsavel: {
+                            select: {
+                                id: true,
+                                sigla: true,
+                            },
+                        },
+                        status: {
+                            select: {
+                                id: true,
+                                nome: true,
+                                tipo: true,
+                                permite_novos_registros: true,
+                            },
+                        },
+                        status_base: {
+                            select: {
+                                id: true,
+                                nome: true,
+                                tipo: true,
+                                permite_novos_registros: true,
+                            },
+                        },
+                    },
+                },
             },
         });
         if (!row) throw new HttpException('id| Distribuição de recurso não encontrada.', 404);
 
+        const historico_status: DistribuicaoHistoricoStatusDto[] = row.status.map((r) => {
+            return {
+                id: r.id,
+                data_troca: r.data_troca,
+                motivo: r.motivo,
+                nome_responsavel: r.nome_responsavel,
+                orgao_responsavel: {
+                    id: r.orgao_responsavel.id,
+                    sigla: r.orgao_responsavel.sigla,
+                },
+                status: r.status
+                    ? {
+                          id: r.status.id,
+                          nome: r.status.nome,
+                          tipo: r.status.tipo,
+                          status_base: false,
+                      }
+                    : null,
+                status_base: r.status_base
+                    ? {
+                          id: r.status_base.id,
+                          nome: r.status_base.nome,
+                          tipo: r.status_base.tipo,
+                          status_base: true,
+                      }
+                    : null,
+            };
+        });
+
+        let pode_registrar_status: boolean = true;
+        if (row.status.length) {
+            if (!row.status[0].status?.permite_novos_registros || !row.status[0].status_base?.permite_novos_registros)
+                pode_registrar_status = false;
+        }
+
         return {
-            ...row,
+            id: row.id,
+            transferencia_id: row.transferencia_id,
+            nome: row.nome,
+            objeto: row.objeto,
+            valor: row.valor,
+            valor_total: row.valor_total,
+            valor_contrapartida: row.valor_contrapartida,
+            empenho: row.empenho,
+            data_empenho: row.data_empenho,
+            programa_orcamentario_estadual: row.programa_orcamentario_estadual,
+            programa_orcamentario_municipal: row.programa_orcamentario_municipal,
+            dotacao: row.dotacao,
+            proposta: row.proposta,
+            contrato: row.contrato,
+            convenio: row.convenio,
+            assinatura_termo_aceite: row.assinatura_termo_aceite,
+            assinatura_municipio: row.assinatura_municipio,
+            assinatura_estado: row.assinatura_estado,
+            vigencia: row.vigencia,
+            conclusao_suspensiva: row.conclusao_suspensiva,
+            pode_registrar_status: pode_registrar_status,
+            historico_status: historico_status,
+            orgao_gestor: {
+                id: row.orgao_gestor.id,
+                sigla: row.orgao_gestor.sigla,
+                descricao: row.orgao_gestor.descricao,
+            },
+            aditamentos: row.aditamentos.map((aditamento) => {
+                return {
+                    data_vigencia: aditamento.data_vigencia,
+                    data_vigencia_corrente: aditamento.data_vigencia_corrente,
+                    justificativa: aditamento.justificativa,
+                };
+            }),
             registros_sei: row.registros_sei.map((s) => {
                 return {
                     id: s.id,

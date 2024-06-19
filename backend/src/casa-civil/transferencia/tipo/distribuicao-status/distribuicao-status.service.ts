@@ -5,13 +5,13 @@ import { PessoaFromJwt } from '../../../../auth/models/PessoaFromJwt';
 import { PrismaService } from '../../../../prisma/prisma.service';
 import { CreateDistribuicaoStatusDto } from './dto/create-distribuicao-status.dto';
 import { UpdateDistribuicaoStatusDto } from './dto/update-distribuicao-status.dto';
-import { DistribuicaoStatusDto } from './entities/distribuicao-status.dto';
+import { ListDistribuicaoStatusDto } from './entities/distribuicao-status.dto';
 
 @Injectable()
 export class DistribuicaoStatusService {
     constructor(private readonly prisma: PrismaService) {}
 
-    async createDistribuicaoStatus(
+    async create(
         transferencia_tipo_id: number,
         dto: CreateDistribuicaoStatusDto,
         user: PessoaFromJwt
@@ -73,7 +73,7 @@ export class DistribuicaoStatusService {
         return created;
     }
 
-    async findAllDistribuicaoStatus(transferencia_tipo_id: number): Promise<DistribuicaoStatusDto[]> {
+    async findAllDistribuicaoStatus(transferencia_tipo_id: number): Promise<ListDistribuicaoStatusDto> {
         const rows = await this.prisma.transferenciaTipoDistribuicaoStatus.findMany({
             where: {
                 transferencia_tipo_id,
@@ -100,20 +100,8 @@ export class DistribuicaoStatusService {
             },
         });
 
-        const ret: DistribuicaoStatusDto[] = rows.map((r) => {
-            return {
-                id: r.id,
-                nome: r.nome,
-                tipo: r.tipo,
-                valor_distribuicao_contabilizado: r.valor_distribuicao_contabilizado,
-                permite_novos_registros: r.permite_novos_registros,
-                pode_editar: true,
-                status_base: false,
-            };
-        });
-
-        ret.push(
-            ...rowsBase.map((r) => {
+        return {
+            linhas_base: rowsBase.map((r) => {
                 return {
                     id: r.id,
                     nome: r.nome,
@@ -123,10 +111,20 @@ export class DistribuicaoStatusService {
                     pode_editar: false,
                     status_base: true,
                 };
-            })
-        );
+            }),
 
-        return ret;
+            linhas_customizadas: rows.map((r) => {
+                return {
+                    id: r.id,
+                    nome: r.nome,
+                    tipo: r.tipo,
+                    valor_distribuicao_contabilizado: r.valor_distribuicao_contabilizado,
+                    permite_novos_registros: r.permite_novos_registros,
+                    pode_editar: true,
+                    status_base: false,
+                };
+            }),
+        };
     }
 
     async updateDistribuicaoStatus(

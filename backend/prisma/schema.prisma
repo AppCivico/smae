@@ -402,6 +402,10 @@ model Pessoa {
     StatusesDistribuicaoQueRemovi    TransferenciaTipoDistribuicaoStatus[] @relation("Removedor")
     StatusesDistribuicaoQueAtualizei TransferenciaTipoDistribuicaoStatus[] @relation("Atualizador")
 
+    RegistroStatusDistribuicaoQueCriei     DistribuicaoRecursoStatus[] @relation("Criador")
+    RegistroStatusDistribuicaoQueRemovi    DistribuicaoRecursoStatus[] @relation("Removedor")
+    RegistroStatusDistribuicaoQueAtualizei DistribuicaoRecursoStatus[] @relation("Atualizador")
+
     view_atividade_pessoa_responsavel  view_atividade_pessoa_responsavel[]
     view_iniciativa_pessoa_responsavel view_iniciativa_pessoa_responsavel[]
     ViewNotaComOrdemQCriei             ViewNotas[]                          @relation("Criador")
@@ -507,6 +511,7 @@ model Orgao {
     ViewNotaComOrdem             ViewNotas[]
     PdmPerfil                    PdmPerfil[]
     Pdm                          Pdm[]
+    statusDistribuicaoRecusro    DistribuicaoRecursoStatus[]
     ViewProjetoMDO               ViewProjetoMDO[]
 
     @@map("orgao")
@@ -5171,6 +5176,7 @@ model DistribuicaoRecurso {
 
     registros_sei DistribuicaoRecursoSei[]
     aditamentos   DistribuicaoRecursoAditamento[]
+    status        DistribuicaoRecursoStatus[]
 
     @@map("distribuicao_recurso")
 }
@@ -6017,6 +6023,9 @@ model DistribuicaoStatusBase {
     nome                             String
     tipo                             DistribuicaoStatusTipo
     valor_distribuicao_contabilizado Boolean
+    permite_novos_registros          Boolean                @default(true)
+
+    distribuicoes DistribuicaoRecursoStatus[]
 
     @@unique([nome, tipo])
     @@map("distribuicao_status_base")
@@ -6031,6 +6040,7 @@ model TransferenciaTipoDistribuicaoStatus {
     nome                             String
     tipo                             DistribuicaoStatusTipo
     valor_distribuicao_contabilizado Boolean
+    permite_novos_registros          Boolean
 
     criado_por Int
     criado_em  DateTime @default(now()) @db.Timestamptz(6)
@@ -6045,5 +6055,42 @@ model TransferenciaTipoDistribuicaoStatus {
     atualizador Pessoa? @relation("Atualizador", fields: [atualizado_por], references: [id])
     removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
 
+    distribuicoes DistribuicaoRecursoStatus[]
+
     @@map("transferencia_tipo_distribuicao_status")
+}
+
+model DistribuicaoRecursoStatus {
+    id Int @id @default(autoincrement())
+
+    distribuicao_id Int
+    distribuicao    DistribuicaoRecurso @relation(fields: [distribuicao_id], references: [id])
+
+    status_base_id Int?
+    status_base    DistribuicaoStatusBase? @relation(fields: [status_base_id], references: [id])
+
+    status_id Int?
+    status    TransferenciaTipoDistribuicaoStatus? @relation(fields: [status_id], references: [id])
+
+    orgao_responsavel_id Int
+    orgao_responsavel    Orgao @relation(fields: [orgao_responsavel_id], references: [id])
+
+    nome_responsavel String
+    motivo           String
+    data_troca       DateTime @db.Date()
+
+    criado_por Int
+    criado_em  DateTime @default(now()) @db.Timestamptz(6)
+
+    atualizado_por Int?
+    atualizado_em  DateTime? @db.Timestamptz(6)
+
+    removido_por Int?
+    removido_em  DateTime? @db.Timestamptz(6)
+
+    criador     Pessoa  @relation("Criador", fields: [criado_por], references: [id])
+    atualizador Pessoa? @relation("Atualizador", fields: [atualizado_por], references: [id])
+    removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
+
+    @@map("distribuicao_recurso_status")
 }
