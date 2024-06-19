@@ -30,7 +30,7 @@ usersStore.buscarPessoasSimplificadas();
 </script>
 <template>
   <header class="flex flexwrap spacebetween center mb2 g2">
-    <TítuloDePágina />
+    <TítuloDePágina :ícone="emFoco?.logo" />
 
     <hr class="f1">
 
@@ -48,23 +48,6 @@ usersStore.buscarPessoasSimplificadas();
     class="boards"
   >
     <div class="flex g2 mb2 flexwrap">
-      <dl
-        v-if="emFoco?.logo"
-        class="f1 mb1"
-      >
-        <dt class="t12 uc w700 mb05 tamarelo">
-          {{ schema.fields.upload_logo.spec.label }}
-        </dt>
-        <dd
-          v-if="emFoco?.logo"
-          class="t13"
-        >
-          <img
-            :src="`${baseUrl}/download/${emFoco.logo}?inline=true`"
-            width="100"
-          >
-        </dd>
-      </dl>
       <dl class="f1 mb1">
         <dt class="t12 uc w700 mb05 tamarelo">
           {{ schema.fields.ativo.spec.label }}
