@@ -8,7 +8,9 @@ import { useEtapasProjetosStore } from '@/stores/etapasProjeto.store';
 import { useProjetosStore } from '@/stores/projetos.store.ts';
 import { useTarefasStore } from '@/stores/tarefas.store.ts';
 import { storeToRefs } from 'pinia';
-import { computed, defineOptions, ref, watch } from 'vue';
+import {
+  computed, defineOptions, ref, watch,
+} from 'vue';
 import { useRoute } from 'vue-router';
 
 defineOptions({ inheritAttrs: false });
@@ -91,7 +93,9 @@ export default {
 </script>
 <template>
   <div class="flex spacebetween center mb2 g2">
-    <TítuloDePágina> Cronograma </TítuloDePágina>
+    <TítuloDePágina id="titulo-da-pagina">
+      Cronograma
+    </TítuloDePágina>
     <hr class="f1">
     <nav class="flex g1">
       <div
@@ -212,116 +216,124 @@ export default {
 
   <LegendaEstimadoVsEfetivo />
 
-  <table
-    v-if="árvoreDeTarefas.length"
-    class="tabela-de-etapas"
+  <div
+    role="region"
+    aria-labelledby="titulo-da-pagina"
+    tabindex="0"
+    class="pl2"
+    style="margin-left: -2rem"
   >
-    <colgroup>
-      <col class="genealogia">
-      <col>
-      <col>
-      <col>
-
-      <col class="col--data">
-      <col class="col--data">
-      <col class="col--data">
-      <col class="col--data">
-
-      <col class="col--number">
-      <col class="col--number">
-      <col class="col--number">
-      <col>
-
-      <template v-if="!apenasLeitura">
-        <col class="col--botão-de-ação">
-        <col class="col--botão-de-ação">
-        <col class="col--botão-de-ação">
-      </template>
-    </colgroup>
-
-    <thead>
-      <tr class="pl3 center mb05 tc300 w700 t12 uc">
-        <th />
-        <th />
-        <th />
-        <th />
-        <th
-          colspan="2"
-          class="dado-estimado"
-        >
-          Planejado
-        </th>
-        <th
-          colspan="2"
-          class="dado-efetivo"
-        >
-          Real
-        </th>
-        <th colspan="2">
-          Custo <small>(R$)</small>
-        </th>
-        <th />
-        <th />
-        <template v-if="!apenasLeitura">
-          <th />
-          <th />
-          <th />
-        </template>
-      </tr>
-      <tr class="pl3 center mb05 tc300 w700 t12 uc">
-        <th />
-        <th />
-        <th class="cell--number nowrap">
-          % conclusão
-        </th>
-        <th class="cell--number">
-          Duração
-        </th>
-        <th class="cell--data">
-          Início
-        </th>
-        <th class="cell--data">
-          Término
-        </th>
-        <th class="cell--data">
-          Início
-        </th>
-        <th class="cell--data">
-          Término
-        </th>
-        <th class="cell--number dado-estimado">
-          Planejado
-        </th>
-        <th class="cell--number dado-efetivo">
-          Real
-        </th>
-        <th class="cell--number">
-          Atraso
-        </th>
-        <th>
-          Responsável
-        </th>
-        <template v-if="!apenasLeitura">
-          <th />
-          <th />
-          <th />
-        </template>
-      </tr>
-    </thead>
-
-    <tbody
-      v-for="(r, i) in árvoreDeTarefas"
-      :key="r.id"
-      class="tabela-de-etapas__item"
+    <table
+      v-if="árvoreDeTarefas.length"
+      class="tabela-de-etapas"
     >
-      <LinhaDeCronograma
+      <colgroup>
+        <col class="genealogia">
+        <col>
+        <col>
+        <col>
+
+        <col class="col--data">
+        <col class="col--data">
+        <col class="col--data">
+        <col class="col--data">
+
+        <col class="col--number">
+        <col class="col--number">
+        <col class="col--number">
+        <col>
+
+        <template v-if="!apenasLeitura">
+          <col class="col--botão-de-ação">
+          <col class="col--botão-de-ação">
+          <col class="col--botão-de-ação">
+        </template>
+      </colgroup>
+
+      <thead>
+        <tr class="pl3 center mb05 tc300 w700 t12 uc">
+          <th />
+          <th />
+          <th />
+          <th />
+          <th
+            colspan="2"
+            class="dado-estimado"
+          >
+            Planejado
+          </th>
+          <th
+            colspan="2"
+            class="dado-efetivo"
+          >
+            Real
+          </th>
+          <th colspan="2">
+            Custo <small>(R$)</small>
+          </th>
+          <th />
+          <th />
+          <template v-if="!apenasLeitura">
+            <th />
+            <th />
+            <th />
+          </template>
+        </tr>
+        <tr class="pl3 center mb05 tc300 w700 t12 uc">
+          <th />
+          <th />
+          <th class="cell--number nowrap">
+            % conclusão
+          </th>
+          <th class="cell--number">
+            Duração
+          </th>
+          <th class="cell--data">
+            Início
+          </th>
+          <th class="cell--data">
+            Término
+          </th>
+          <th class="cell--data">
+            Início
+          </th>
+          <th class="cell--data">
+            Término
+          </th>
+          <th class="cell--number dado-estimado">
+            Planejado
+          </th>
+          <th class="cell--number dado-efetivo">
+            Real
+          </th>
+          <th class="cell--number">
+            Atraso
+          </th>
+          <th>
+            Responsável
+          </th>
+          <template v-if="!apenasLeitura">
+            <th />
+            <th />
+            <th />
+          </template>
+        </tr>
+      </thead>
+
+      <tbody
+        v-for="(r, i) in árvoreDeTarefas"
         :key="r.id"
-        :linha="r"
-        :índice="i"
-        :nível-máximo-visível="nívelMáximoVisível"
-      />
-    </tbody>
-  </table>
+        class="tabela-de-etapas__item"
+      >
+        <LinhaDeCronograma
+          :key="r.id"
+          :linha="r"
+          :índice="i"
+          :nível-máximo-visível="nívelMáximoVisível"
+        />
+      </tbody>
+    </table>
+  </div>
 
   <span
     v-if="chamadasPendentes?.lista"
