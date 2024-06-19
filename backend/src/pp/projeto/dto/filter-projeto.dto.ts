@@ -73,12 +73,12 @@ export class FilterProjetoMDODto extends FilterProjetoDto {
     @IsOptional()
     @IsString({ each: true })
     @Transform(StringArrayTransform)
-    nome: string[];
+    nome?: string[];
 
     @IsOptional()
     @IsString({ each: true })
     @Transform(StringArrayTransform)
-    codigo: string[];
+    codigo?: string[];
 
     @IsOptional()
     @IsInt({ each: true })
