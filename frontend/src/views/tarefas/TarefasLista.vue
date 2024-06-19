@@ -8,8 +8,10 @@ import { useEtapasProjetosStore } from '@/stores/etapasProjeto.store';
 import { useProjetosStore } from '@/stores/projetos.store.ts';
 import { useTarefasStore } from '@/stores/tarefas.store.ts';
 import { storeToRefs } from 'pinia';
-import { computed, ref, watch } from 'vue';
+import { computed, defineOptions, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
+
+defineOptions({ inheritAttrs: false });
 
 const route = useRoute();
 const tarefasStore = useTarefasStore();
