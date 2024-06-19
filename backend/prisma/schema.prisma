@@ -3341,7 +3341,7 @@ model Projeto {
     equipamentos     ProjetoEquipamento[]
     ProjetoRegiao    ProjetoRegiao[]
 
-    vetores_busca  Unsupported("tsvector")?
+    vetores_busca  Unsupported("tsvector")? @default(dbgenerated())
     ViewProjetoMDO ViewProjetoMDO[]
 
     @@index([removido_em])
@@ -5044,6 +5044,8 @@ model Transferencia {
     valor                          Decimal? @default(0) @db.Decimal(15, 2)
     valor_total                    Decimal? @default(0) @db.Decimal(15, 2)
     valor_contrapartida            Decimal? @default(0) @db.Decimal(15, 2)
+    custeio                        Decimal? @default(0) @db.Decimal(15, 2)
+    investimento                   Decimal? @default(0) @db.Decimal(15, 2)
 
     cargo                ParlamentarCargo?
     ano                  Int?
@@ -5142,6 +5144,8 @@ model DistribuicaoRecurso {
     valor                           Decimal   @default(0) @db.Decimal(15, 2)
     valor_total                     Decimal   @default(0) @db.Decimal(15, 2)
     valor_contrapartida             Decimal   @default(0) @db.Decimal(15, 2)
+    custeio                         Decimal   @default(0) @db.Decimal(15, 2)
+    investimento                    Decimal   @default(0) @db.Decimal(15, 2)
     empenho                         Boolean
     data_empenho                    DateTime? @db.Date()
     programa_orcamentario_estadual  String?
