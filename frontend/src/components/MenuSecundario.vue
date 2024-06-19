@@ -133,7 +133,10 @@ function alternarItens(índice) {
               :to="rota.href"
               class="menu-secundário__link"
             >
-              {{ rota.meta?.títuloParaMenu
+              <!-- TODO:  transformar em função -->
+              {{ (typeof rota.meta?.títuloParaMenu === 'function'
+                ? rota.meta.títuloParaMenu()
+                : rota.meta?.títuloParaMenu)
                 || (typeof rota.meta?.título === 'function'
                   ? rota.meta.título()
                   : rota.meta?.título
