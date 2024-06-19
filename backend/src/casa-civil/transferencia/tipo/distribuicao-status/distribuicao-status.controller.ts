@@ -23,14 +23,14 @@ export class DistribuicaoStatusController {
         @Body() dto: CreateDistribuicaoStatusDto,
         @CurrentUser() user: PessoaFromJwt
     ): Promise<RecordWithId> {
-        return await this.distribuicaoStatusService.createDistribuicaoStatus(+params.id, dto, user);
+        return await this.distribuicaoStatusService.create(+params.id, dto, user);
     }
 
     @ApiBearerAuth('access-token')
     @Roles(['CadastroTransferencia.listar'])
     @Get(':id/distribuicao-status')
     async findAll(@Param() params: FindOneParams): Promise<ListDistribuicaoStatusDto> {
-        return { linhas: await this.distribuicaoStatusService.findAllDistribuicaoStatus(+params.id) };
+        return await this.distribuicaoStatusService.findAllDistribuicaoStatus(+params.id);
     }
 
     @Patch(':id/distribuicao-status/:id2')

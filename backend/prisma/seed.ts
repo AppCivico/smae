@@ -1403,7 +1403,20 @@ async function populateDistribuicaoStatusBase() {
     });
 
     for (const row of rows) {
-        const valor_distribuicao_contabilizado: boolean = row.tipo == DistribuicaoStatusTipo.Registrada ? true : false;
+        let permite_novos_registros: boolean = true;
+        let valor_distribuicao_contabilizado: boolean = true;
+
+        if (
+            row.tipo == DistribuicaoStatusTipo.Cancelada ||
+            row.tipo == DistribuicaoStatusTipo.ImpedidaTecnicamente ||
+            row.tipo == DistribuicaoStatusTipo.Finalizada
+        ) {
+            permite_novos_registros = false;
+        }
+
+        if (row.tipo == DistribuicaoStatusTipo.Cancelada || row.tipo == DistribuicaoStatusTipo.ImpedidaTecnicamente) {
+            valor_distribuicao_contabilizado = false;
+        }
 
         await prisma.distribuicaoStatusBase.upsert({
             where: {
@@ -1416,11 +1429,13 @@ async function populateDistribuicaoStatusBase() {
                 nome: row.nome,
                 tipo: row.tipo,
                 valor_distribuicao_contabilizado,
+                permite_novos_registros,
             },
             update: {
                 nome: row.nome,
                 tipo: row.tipo,
                 valor_distribuicao_contabilizado,
+                permite_novos_registros,
             },
         });
     }
