@@ -1,6 +1,6 @@
 /* eslint-disable import/no-extraneous-dependencies */
 import { ProjetoDetailDto } from '@/../../backend/src/pp/projeto/entities/projeto.entity';
-import { ListTarefaDto, TarefaDetailDto, TarefaItemDto } from '@/../../backend/src/pp/tarefa/entities/tarefa.entity';
+import { ListApenasTarefaListDto, TarefaDetailDto, TarefaItemDto } from '@/../../backend/src/pp/tarefa/entities/tarefa.entity';
 
 import createDataTree from '@/helpers/createDataTree';
 import dateTimeToDate from '@/helpers/dateTimeToDate';
@@ -10,7 +10,7 @@ import { useProjetosStore } from './projetos.store';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
-type Lista = ListTarefaDto['linhas'];
+type Lista = ListApenasTarefaListDto['linhas'];
 
 interface TarefaComHierarquia extends TarefaItemDto {
   hierarquia: string;
@@ -88,10 +88,10 @@ export const useTarefasStore = defineStore('tarefas', {
     extra: null,
   }),
   actions: {
-    async buscarItem(id = 0, params = {}, mãeComId: MãeComId = this.route.params): Promise<void> {
+    async buscarItem(id = 0, params = {}, mãeComId: MãeComId = undefined): Promise<void> {
       this.chamadasPendentes.emFoco = true;
       try {
-        const resposta = await this.requestS.get(`${baseUrl}/${gerarCaminhoParaApi(mãeComId)}/tarefa/${id}`, params);
+        const resposta = await this.requestS.get(`${baseUrl}/${gerarCaminhoParaApi(mãeComId || this.route.params)}/tarefa/${id}`, params);
         this.emFoco = resposta;
       } catch (erro: unknown) {
         this.erro = erro;
@@ -99,12 +99,14 @@ export const useTarefasStore = defineStore('tarefas', {
       this.chamadasPendentes.emFoco = false;
     },
 
-    async buscarTudo(params = {}, mãeComId: MãeComId = this.route.params): Promise<void> {
+    async buscarTudo(params = {}, mãeComId: MãeComId = undefined): Promise<void> {
       this.chamadasPendentes.lista = true;
       this.chamadasPendentes.emFoco = true;
 
       try {
-        const { linhas, portfolio, projeto, cabecalho } = await this.requestS.get(`${baseUrl}/${gerarCaminhoParaApi(mãeComId)}/tarefa`, params);
+        const {
+          linhas, portfolio, projeto, cabecalho,
+        } = await this.requestS.get(`${baseUrl}/${gerarCaminhoParaApi(mãeComId || this.route.params)}/tarefa`, params);
 
         this.lista = linhas;
         this.extra = { portfolio, projeto, cabecalho };
@@ -115,11 +117,11 @@ export const useTarefasStore = defineStore('tarefas', {
       this.chamadasPendentes.emFoco = false;
     },
 
-    async excluirItem(id: number, mãeComId: MãeComId = this.route.params): Promise<boolean> {
+    async excluirItem(id: number, mãeComId: MãeComId = undefined): Promise<boolean> {
       this.chamadasPendentes.lista = true;
 
       try {
-        await this.requestS.delete(`${baseUrl}/${gerarCaminhoParaApi(mãeComId)}/tarefa/${id}`);
+        await this.requestS.delete(`${baseUrl}/${gerarCaminhoParaApi(mãeComId || this.route.params)}/tarefa/${id}`);
         this.chamadasPendentes.lista = false;
         return true;
       } catch (erro) {
@@ -132,7 +134,7 @@ export const useTarefasStore = defineStore('tarefas', {
     async salvarItem(
       params = {},
       id = 0,
-      mãeComId: MãeComId = this.route.params,
+      mãeComId: MãeComId = undefined,
     ): Promise<boolean> {
       this.chamadasPendentes.emFoco = true;
 
@@ -140,9 +142,9 @@ export const useTarefasStore = defineStore('tarefas', {
         let resposta;
 
         if (id) {
-          resposta = await this.requestS.patch(`${baseUrl}/${gerarCaminhoParaApi(mãeComId)}/tarefa/${id}`, params);
+          resposta = await this.requestS.patch(`${baseUrl}/${gerarCaminhoParaApi(mãeComId || this.route.params)}/tarefa/${id}`, params);
         } else {
-          resposta = await this.requestS.post(`${baseUrl}/${gerarCaminhoParaApi(mãeComId)}/tarefa`, params);
+          resposta = await this.requestS.post(`${baseUrl}/${gerarCaminhoParaApi(mãeComId || this.route.params)}/tarefa`, params);
         }
 
         this.chamadasPendentes.emFoco = false;
@@ -157,13 +159,13 @@ export const useTarefasStore = defineStore('tarefas', {
 
     async clonarTarefas(
       projetoFonteId:number,
-      mãeComId: MãeComId = this.route.params,
+      mãeComId: MãeComId = undefined,
     ): Promise<boolean> {
       this.chamadasPendentes.clonarTarefas = true;
       this.erro = null;
 
       try {
-        await this.requestS.post(`${baseUrl}/${gerarCaminhoParaApi(mãeComId)}/clone-tarefas`, { projeto_fonte_id: projetoFonteId });
+        await this.requestS.post(`${baseUrl}/${gerarCaminhoParaApi(mãeComId || this.route.params)}/clone-tarefas`, { projeto_fonte_id: projetoFonteId });
 
         this.chamadasPendentes.clonarTarefas = false;
         return true;
@@ -176,7 +178,7 @@ export const useTarefasStore = defineStore('tarefas', {
 
     async validarDependências(
       params: { tarefa_corrente_id: number; dependencias: [] },
-      mãeComId: MãeComId = this.route.params,
+      mãeComId: undefined,
     ) {
       this.chamadasPendentes.validaçãoDeDependências = true;
 
@@ -190,7 +192,7 @@ export const useTarefasStore = defineStore('tarefas', {
           termino_planejado?: string | null;
         };
 
-        const resposta: Atualização = await this.requestS.post(`${baseUrl}/${gerarCaminhoParaApi(mãeComId)}/dependencias`, params);
+        const resposta: Atualização = await this.requestS.post(`${baseUrl}/${gerarCaminhoParaApi(mãeComId || this.route.params)}/dependencias`, params);
 
         this.chamadasPendentes.validaçãoDeDependências = false;
         this.erro = null;
