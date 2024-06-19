@@ -59,8 +59,14 @@ export default {
         ],
         rotasParaMenuSecundário: [
           'obrasListar',
+          'obrasResumo',
           'obrasTarefasListar',
-          'obrasDocumentos',
+          {
+            título: 'Acompanhamento',
+            rotas: [
+              'obrasDocumentos',
+            ],
+          },
         ],
       },
       children: [
