@@ -12,6 +12,8 @@ export class DistribuicaoRecursoDto {
     valor: Decimal;
     valor_total: Decimal;
     valor_contrapartida: Decimal;
+    custeio: Decimal;
+    investimento: Decimal;
     empenho: Boolean;
     data_empenho: Date | null;
     programa_orcamentario_estadual: String | null;
