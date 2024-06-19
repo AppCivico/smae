@@ -1,4 +1,16 @@
-import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post, Query } from '@nestjs/common';
+import {
+    Body,
+    Controller,
+    Delete,
+    Get,
+    HttpCode,
+    HttpStatus,
+    NotFoundException,
+    Param,
+    Patch,
+    Post,
+    Query,
+} from '@nestjs/common';
 import { ApiBearerAuth, ApiNoContentResponse, ApiTags } from '@nestjs/swagger';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { Roles } from '../auth/decorators/roles.decorator';
@@ -11,63 +23,34 @@ import { ListEixoDto } from './dto/list-macro-tema.dto';
 import { UpdateEixoDto } from './dto/update-macro-tema.dto';
 import { MacroTemaService } from './macro-tema.service';
 import { ListaDePrivilegios } from 'src/common/ListaDePrivilegios';
-
-@ApiTags('Eixo (Acessa via MacroTema)')
-@Controller('eixo')
-export class MacroTemaController {
-    constructor(private readonly eixoService: MacroTemaService) {}
-
-    @Post()
-    @ApiBearerAuth('access-token')
-    @Roles(['CadastroMacroTema.inserir'])
-    async create(@Body() createEixoDto: CreateEixoDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
-        return await this.eixoService.create(createEixoDto, user);
-    }
-
-    @ApiBearerAuth('access-token')
-    @Get()
-    async findAll(@Query() filters: FilterEixoDto): Promise<ListEixoDto> {
-        return { linhas: await this.eixoService.findAll(filters) };
-    }
-
-    @Patch(':id')
-    @ApiBearerAuth('access-token')
-    @Roles(['CadastroMacroTema.editar'])
-    async update(
-        @Param() params: FindOneParams,
-        @Body() updateEixoDto: UpdateEixoDto,
-        @CurrentUser() user: PessoaFromJwt
-    ) {
-        return await this.eixoService.update(+params.id, updateEixoDto, user);
-    }
-
-    @Delete(':id')
-    @ApiBearerAuth('access-token')
-    @Roles(['CadastroMacroTema.remover'])
-    @ApiNoContentResponse()
-    @HttpCode(HttpStatus.ACCEPTED)
-    async remove(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt) {
-        await this.eixoService.remove(+params.id, user);
-        return '';
-    }
-}
+import { TipoPdm } from '@prisma/client';
+import { MacroTemaDto } from './entities/macro-tema.entity';
 
 @ApiTags('Macro Tema (Antigo Eixo)')
 @Controller('macrotema')
-export class MacroTemaController2 {
+export class MacroTemaController {
+    private tipoPdm: TipoPdm = 'PDM';
     constructor(private readonly eixoService: MacroTemaService) {}
 
     @Post()
     @ApiBearerAuth('access-token')
     @Roles(['CadastroMacroTema.inserir'])
     async create(@Body() createEixoDto: CreateEixoDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
-        return await this.eixoService.create(createEixoDto, user);
+        return await this.eixoService.create(this.tipoPdm, createEixoDto, user);
     }
 
     @ApiBearerAuth('access-token')
     @Get()
     async findAll(@Query() filters: FilterEixoDto): Promise<ListEixoDto> {
-        return { linhas: await this.eixoService.findAll(filters) };
+        return { linhas: await this.eixoService.findAll(this.tipoPdm, filters) };
+    }
+
+    @ApiBearerAuth('access-token')
+    @Get(':id')
+    async findOne(@Param() params: FindOneParams): Promise<MacroTemaDto> {
+        const linhas = await this.eixoService.findAll(this.tipoPdm, { id: +params.id });
+        if (linhas.length === 0) throw new NotFoundException('Registro não encontrado');
+        return linhas[0];
     }
 
     @Patch(':id')
@@ -78,7 +61,7 @@ export class MacroTemaController2 {
         @Body() updateEixoDto: UpdateEixoDto,
         @CurrentUser() user: PessoaFromJwt
     ) {
-        return await this.eixoService.update(+params.id, updateEixoDto, user);
+        return await this.eixoService.update(this.tipoPdm, +params.id, updateEixoDto, user);
     }
 
     @Delete(':id')
@@ -87,7 +70,7 @@ export class MacroTemaController2 {
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.ACCEPTED)
     async remove(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt) {
-        await this.eixoService.remove(+params.id, user);
+        await this.eixoService.remove(this.tipoPdm, +params.id, user);
         return '';
     }
 }
@@ -101,20 +84,29 @@ const PermsPS: ListaDePrivilegios[] = [
 @ApiTags('Plano Setorial - Macro Tema (Antigo Eixo)')
 @Controller('plano-setorial-macrotema')
 export class PlanoSetorialMacroTemaController {
+    private tipoPdm: TipoPdm = 'PS';
     constructor(private readonly eixoService: MacroTemaService) {}
 
     @Post()
     @ApiBearerAuth('access-token')
     @Roles(PermsPS)
     async create(@Body() createEixoDto: CreateEixoDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
-        return await this.eixoService.create(createEixoDto, user);
+        return await this.eixoService.create(this.tipoPdm, createEixoDto, user);
     }
 
     @ApiBearerAuth('access-token')
     @Get()
     @Roles(PermsPS)
     async findAll(@Query() filters: FilterEixoDto): Promise<ListEixoDto> {
-        return { linhas: await this.eixoService.findAll(filters) };
+        return { linhas: await this.eixoService.findAll(this.tipoPdm, filters) };
+    }
+
+    @ApiBearerAuth('access-token')
+    @Get(':id')
+    async findOne(@Param() params: FindOneParams): Promise<MacroTemaDto> {
+        const linhas = await this.eixoService.findAll(this.tipoPdm, { id: +params.id });
+        if (linhas.length === 0) throw new NotFoundException('Registro não encontrado');
+        return linhas[0];
     }
 
     @Patch(':id')
@@ -125,7 +117,7 @@ export class PlanoSetorialMacroTemaController {
         @Body() updateEixoDto: UpdateEixoDto,
         @CurrentUser() user: PessoaFromJwt
     ) {
-        return await this.eixoService.update(+params.id, updateEixoDto, user);
+        return await this.eixoService.update(this.tipoPdm, +params.id, updateEixoDto, user);
     }
 
     @Delete(':id')
@@ -134,7 +126,7 @@ export class PlanoSetorialMacroTemaController {
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.ACCEPTED)
     async remove(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt) {
-        await this.eixoService.remove(+params.id, user);
+        await this.eixoService.remove(this.tipoPdm, +params.id, user);
         return '';
     }
 }
