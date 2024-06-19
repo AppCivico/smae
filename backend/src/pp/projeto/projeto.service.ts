@@ -91,6 +91,22 @@ export type HtmlProjetoUe = {
     orgaosEnvolvidos: string[];
 };
 
+type ProjetoResumoPermisao = {
+    arquivado: boolean;
+    status: ProjetoStatus;
+    portfolio: {
+        orgaos: {
+            orgao_id: number;
+        }[];
+    };
+    equipe: ProjetoEquipeItemDto[];
+    id: number;
+    responsaveis_no_orgao_gestor: number[];
+    colaboradores_no_orgao: number[];
+    responsavel_id: number | null;
+    tipo: TipoProjeto;
+};
+
 @Injectable()
 export class ProjetoService {
     private readonly logger = new Logger(ProjetoService.name);
@@ -1367,20 +1383,7 @@ export class ProjetoService {
     }
 
     private async calcPermissions(
-        projeto: {
-            tipo: TipoProjeto;
-            arquivado: boolean;
-            status: ProjetoStatus;
-            portfolio: {
-                orgaos: {
-                    orgao_id: number;
-                }[];
-            };
-            equipe: ProjetoEquipeItemDto[];
-            id: number;
-            responsaveis_no_orgao_gestor: number[];
-            responsavel_id: number | null;
-        },
+        projeto: ProjetoResumoPermisao,
         user: PessoaFromJwt | undefined,
         readonly: ReadOnlyBooleanType
     ): Promise<ProjetoPermissoesDto> {
@@ -1572,21 +1575,89 @@ export class ProjetoService {
     private calcPessoaPodeEscrever(
         user: PessoaFromJwt,
         pessoaPodeEscrever: boolean,
-        projeto: {
-            arquivado: boolean;
-            status: ProjetoStatus;
-            portfolio: {
-                orgaos: {
-                    orgao_id: number;
-                }[];
-            };
-            equipe: ProjetoEquipeItemDto[];
-            id: number;
-            responsaveis_no_orgao_gestor: number[];
-            responsavel_id: number | null;
-        },
+        projeto: ProjetoResumoPermisao,
         permissoes: ProjetoPermissoesDto
-    ) {
+    ): boolean {
+        if (projeto.tipo == 'PP') return this.calcPessoaPodeEscreverPP(user, pessoaPodeEscrever, projeto, permissoes);
+
+        return this.calcPessoaPodeEscreverMDO(user, pessoaPodeEscrever, projeto, permissoes);
+    }
+
+    /**
+     * MDO todo mundo que tem qualquer permissão pode escrever, exceto espectador
+     */
+    private calcPessoaPodeEscreverMDO(
+        user: PessoaFromJwt,
+        pessoaPodeEscrever: boolean,
+        projeto: ProjetoResumoPermisao,
+        permissoes: ProjetoPermissoesDto
+    ): boolean {
+        const anyPerm = user.hasSomeRoles([
+            'ProjetoMDO.administrador',
+            'MDO.gestor_de_projeto',
+            'ProjetoMDO.administrador_no_orgao',
+            'MDO.colaborador_de_projeto',
+            'MDO.espectador_de_projeto',
+        ]);
+
+        // Se não possuir nenhum dos papéis, não deveria ter acesso nem para leitura
+        if (!anyPerm) throw new HttpException('Não foi possível calcular a permissão de acesso para o projeto.', 400);
+
+        // Usuários administradores sempre podem escrever
+        if (user.hasSomeRoles(['ProjetoMDO.administrador'])) {
+            this.logger.verbose(`Pode escrever pois é administrador (ProjetoMDO.administrador)`);
+            return true;
+        }
+
+        // Gestores de projeto no órgão gestor podem escrever
+        if (user.hasSomeRoles(['MDO.gestor_de_projeto']) && projeto.responsaveis_no_orgao_gestor.includes(+user.id)) {
+            this.logger.verbose(`Pode escrever pois é gestor de projeto no órgão gestor (MDO.gestor_de_projeto)`);
+            return true;
+        }
+
+        // Administradores no órgão do projeto podem escrever
+        if (user.hasSomeRoles(['ProjetoMDO.administrador_no_orgao'])) {
+            pessoaPodeEscrever = projeto.portfolio.orgaos.some((r) => r.orgao_id == user.orgao_id);
+
+            if (pessoaPodeEscrever) {
+                this.logger.verbose(
+                    `Pode escrever pois é administrador no órgão do projeto (ProjetoMDO.administrador_no_orgao)`
+                );
+                return true;
+            }
+        }
+
+        // Colaboradores de projeto podem escrever em fases específicas ou se forem responsáveis
+        if (user.hasSomeRoles(['MDO.colaborador_de_projeto'])) {
+            const ehResp = projeto.responsavel_id && projeto.responsavel_id == +user.id;
+            const ehEquipe = projeto.equipe.some((r) => r.pessoa.id == user.id);
+            const ehColaborador = projeto.colaboradores_no_orgao.includes(+user.id);
+
+            if (ehResp || ehEquipe || ehColaborador) {
+                pessoaPodeEscrever = true;
+                permissoes.sou_responsavel = true;
+            }
+
+            this.logger.verbose(
+                `pessoa pode escrever: pessoaPodeEscrever=${pessoaPodeEscrever} sou_responsavel=${
+                    permissoes.sou_responsavel
+                } ehResp: ${ehResp} ehEquipe: ${ehEquipe} ehColaborador: ${ehColaborador}`
+            );
+
+            if (pessoaPodeEscrever) return true;
+        }
+
+        // Se não se encaixou em nenhuma regra acima, não pode escrever
+        this.logger.verbose(`Não se encaixa em nenhum critério para escrita.`);
+        return false;
+    }
+
+    private calcPessoaPodeEscreverPP(
+        user: PessoaFromJwt,
+        pessoaPodeEscrever: boolean,
+        projeto: ProjetoResumoPermisao,
+        permissoes: ProjetoPermissoesDto
+    ): boolean {
         const anyPerm = user.hasSomeRoles([
             'Projeto.administrador',
             'SMAE.gestor_de_projeto',
@@ -1629,15 +1700,18 @@ export class ProjetoService {
         if (user.hasSomeRoles(['SMAE.colaborador_de_projeto'])) {
             const ehResp = projeto.responsavel_id && projeto.responsavel_id == +user.id;
             const ehEquipe = projeto.equipe.filter((r) => r.pessoa.id == user.id)[0] != undefined;
+            const ehColaborador = projeto.colaboradores_no_orgao.includes(+user.id);
 
-            if (ehResp || ehEquipe) {
+            if (ehResp || ehEquipe || ehColaborador) {
                 pessoaPodeEscrever = FASES_LIBERAR_COLABORADOR.includes(projeto.status);
                 // mesmo não podendo escrever, ele ainda é o responsável, ele pode fazer algumas escritas (do realizado, no cronograma)
                 permissoes.sou_responsavel = true;
             }
 
             this.logger.verbose(
-                `pessoa pode escrever: pessoaPodeEscrever=${pessoaPodeEscrever} sou_responsavel=${permissoes.sou_responsavel} ehResp: ${ehResp} ehEquipe: ${ehEquipe}`
+                `pessoa pode escrever: pessoaPodeEscrever=${pessoaPodeEscrever} sou_responsavel=${
+                    permissoes.sou_responsavel
+                } ehResp: ${ehResp} ehEquipe: ${ehEquipe} ehColaborador: ${ehColaborador}`
             );
 
             if (ehResp) {
