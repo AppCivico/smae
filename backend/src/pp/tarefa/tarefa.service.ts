@@ -322,7 +322,7 @@ export class TarefaService {
         // agora fica com essa carga e verificação "atrasada" em relação ao outros endpoints que geralmente carregam o
         // projeto primeiro
         const projeto = tarefaCronoInput.projeto_id
-            ? await this.projetoService.findOne('PP', tarefaCronoInput.projeto_id, user, 'ReadOnly')
+            ? await this.projetoService.findOne('AUTO', tarefaCronoInput.projeto_id, user, 'ReadOnly')
             : null;
 
         const cabecalhoTransferencia = tarefaCronoInput.transferencia_id
@@ -878,7 +878,7 @@ export class TarefaService {
         const tarefaCronoId = await this.loadOrCreateByInput(tarefaCronoInput, user);
 
         const projeto = tarefaCronoInput.projeto_id
-            ? await this.projetoService.findOne('PP', tarefaCronoInput.projeto_id, user, 'ReadOnly')
+            ? await this.projetoService.findOne('AUTO', tarefaCronoInput.projeto_id, user, 'ReadOnly')
             : null;
 
         const row = await this.prisma.tarefa.findFirstOrThrow({
@@ -1834,7 +1834,7 @@ export class TarefaService {
     ): Promise<NodeJS.ReadableStream> {
         let rootName: string = '';
         if (tarefaCronoInput.projeto_id) {
-            const projeto = await this.projetoService.findOne('PP', tarefaCronoInput.projeto_id, undefined, 'ReadOnly');
+            const projeto = await this.projetoService.findOne('AUTO', tarefaCronoInput.projeto_id, undefined, 'ReadOnly');
             rootName = projeto.nome;
         }
 
