@@ -507,6 +507,7 @@ model Orgao {
     ViewNotaComOrdem             ViewNotas[]
     PdmPerfil                    PdmPerfil[]
     Pdm                          Pdm[]
+    ViewProjetoMDO               ViewProjetoMDO[]
 
     @@map("orgao")
 }
@@ -3079,6 +3080,7 @@ model Portfolio {
     ImportacaoLog                ImportacaoOrcamento[]
     PortfolioGrupoPortfolio      PortfolioGrupoPortfolio[]
     projetosCompartilhados       PortfolioProjetoCompartilhado[]
+    ViewProjetoMDO               ViewProjetoMDO[]
 
     @@map("portfolio")
 }
@@ -3334,8 +3336,39 @@ model Projeto {
     equipamentos     ProjetoEquipamento[]
     ProjetoRegiao    ProjetoRegiao[]
 
+    vetores_busca  Unsupported("tsvector")?
+    ViewProjetoMDO ViewProjetoMDO[]
+
     @@index([removido_em])
     @@map("projeto")
+}
+
+view ViewProjetoMDO {
+    id           Int       @id
+    nome         String
+    codigo       String
+    portfolio_id Int
+    portfolio    Portfolio @relation(fields: [portfolio_id], references: [id])
+
+    projeto Projeto @relation(fields: [id], references: [id])
+
+    grupo_tematico_id   Int
+    grupo_tematico_nome String
+
+    tipo_intervencao_id   Int?
+    tipo_intervencao_nome String?
+
+    equipamento_id   Int?
+    equipamento_nome String?
+
+    orgao_origem_id Int
+    orgao_origem    Orgao @relation(fields: [orgao_origem_id], references: [id])
+
+    regioes String
+
+    status ProjetoStatus
+
+    @@map("view_projeto_mdo")
 }
 
 model ProjetoRegiao {

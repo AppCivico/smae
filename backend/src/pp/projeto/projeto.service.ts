@@ -25,12 +25,14 @@ import {
     ProjetoDocumentoDto,
     ProjetoDto,
     ProjetoEquipeItemDto,
+    ProjetoMdoDto,
     ProjetoMetaDetailDto,
     ProjetoPermissoesDto,
 } from './entities/projeto.entity';
 
 import { PessoaPrivilegioService } from '../../auth/pessoaPrivilegio.service';
 import { BlocoNotaService } from '../../bloco-nota/bloco-nota/bloco-nota.service';
+import { PaginatedWithPagesDto } from '../../common/dto/paginated.dto';
 import { HtmlSanitizer } from '../../common/html-sanitizer';
 import { CreateGeoEnderecoReferenciaDto, ReferenciasValidasBase } from '../../geo-loc/entities/geo-loc.entity';
 import { GeoLocService } from '../../geo-loc/geo-loc.service';
@@ -779,6 +781,47 @@ export class ProjetoService {
         }
 
         return ret;
+    }
+
+    async findAllMDO(filters: FilterProjetoDto, user: PessoaFromJwt): Promise<PaginatedWithPagesDto<ProjetoMdoDto>> {
+        let tem_mais = false;
+        let token_paginacao: string | null = null;
+
+        let ipp = 25;
+        const page = 1;
+        let offset = (page - 1) * ipp;
+
+        const decodedPageToken = null;
+
+        if (decodedPageToken) {
+            //offset = decodedPageToken.offset;
+            //ipp = decodedPageToken.ipp;
+        }
+
+        const permissionsSet: Prisma.Enumerable<Prisma.ProjetoWhereInput> = this.getProjetoWhereSet('MDO', user, false);
+
+        const linhas = await this.prisma.viewProjetoMDO.findMany({
+            where: {
+                portfolio_id: filters.portfolio_id,
+                projeto: {
+                    AND: permissionsSet,
+                },
+            },
+            include: {
+                orgao_origem: { select: { id: true, sigla: true, descricao: true } },
+            },
+            orderBy: [],
+            skip: offset,
+            take: ipp,
+        });
+
+        return {
+            tem_mais: tem_mais,
+            total_registros: 0,
+            token_paginacao: token_paginacao,
+            pagina_corrente: page,
+            linhas,
+        };
     }
 
     private getProjetoWhereSet(tipo: TipoProjeto, user: PessoaFromJwt | undefined, isBi: boolean) {

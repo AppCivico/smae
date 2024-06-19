@@ -24,6 +24,8 @@ export class ProjetoDto {
     geolocalizacao: GeolocalizacaoDto[];
 }
 
+export class ProjetoMdoDto {}
+
 export class ListProjetoDto {
     linhas: ProjetoDto[];
 }
