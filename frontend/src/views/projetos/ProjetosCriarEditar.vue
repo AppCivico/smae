@@ -81,13 +81,13 @@ const portfóliosDisponíveis = computed(() => {
     return [];
   }
 
-  const órgãosDoPortfólioCorrente = portfolioStore.portfoliosPorId[emFoco.value.portfolio_id].orgaos
-    .map((x) => x.id);
+  const órgãosDoPortfólioCorrente = portfolioStore.portfoliosPorId[emFoco.value.portfolio_id]
+    ?.orgaos.map((x) => x.id) || [];
 
   return portfolioStore.lista
     .filter((x) => x.id !== emFoco.value.portfolio_id
       // limitar portfólios disponíveis aqueles com órgãos em comum com o principal
-      && x.orgaos.some((y) => órgãosDoPortfólioCorrente.includes(y.id)));
+      && x?.orgaos.some((y) => órgãosDoPortfólioCorrente.includes(y.id)));
 });
 
 const possíveisGestoresPorÓrgãoId = computed(() => possíveisGestores.value
@@ -1627,5 +1627,5 @@ watch(emFoco, () => {
     </div>
   </div>
 
-  <router-view />
+  <router-view :portfólios-disponíveis="portfóliosDisponíveis" />
 </template>
