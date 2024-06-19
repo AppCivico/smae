@@ -1,34 +1,31 @@
 <script setup>
 import SmallModal from '@/components/SmallModal.vue';
 import { useAlertStore } from '@/stores/alert.store';
+import { usePortfolioStore } from '@/stores/portfolios.store.ts';
+import { useProjetosStore } from '@/stores/projetos.store.ts';
+import { storeToRefs } from 'pinia';
 import {
   ErrorMessage,
   Field,
   useForm,
   useIsFormDirty,
 } from 'vee-validate';
+import { computed, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { number, object } from 'yup';
-import { useProjetosStore } from '@/stores/projetos.store.ts';
-import { storeToRefs } from 'pinia';
-import { computed, watch } from 'vue';
-import { usePortfolioStore } from '@/stores/portfolios.store.ts';
-import { useOrgansStore } from '@/stores/organs.store';
 
 const props = defineProps({
   projetoId: {
     type: Number,
     default: 0,
   },
+  portfóliosDisponíveis: {
+    type: Array,
+    default: () => [],
+  },
 });
 
 const alertStore = useAlertStore();
-
-const ÓrgãosStore = useOrgansStore();
-const {
-  órgãosComoLista,
-  órgãosQueTemResponsáveisEPorId,
-} = storeToRefs(ÓrgãosStore);
 
 const portfolioStore = usePortfolioStore();
 
@@ -60,10 +57,6 @@ const {
   validationSchema: schema,
 });
 
-const háÓrgãosDisponíveisNessePortfolio = (idDoPortfólio) => portfolioStore
-  .portfoliosPorId?.[idDoPortfólio]?.orgaos
-  .some((x) => órgãosQueTemResponsáveisEPorId.value?.[x.id]) || [];
-
 const onSubmit = handleSubmit.withControlled(async () => {
   try {
     if (await projetosStore.transferirDePortfolio(props.projetoId, values.portfolio_id)) {
@@ -85,10 +78,6 @@ const onSubmit = handleSubmit.withControlled(async () => {
 });
 
 const formulárioSujo = useIsFormDirty();
-
-if (!órgãosComoLista.value.length) {
-  ÓrgãosStore.getAllOrganResponsibles();
-}
 
 watch(valoresIniciais, (novoValor) => {
   resetForm({ values: novoValor });
@@ -114,6 +103,7 @@ export default {
         :formulário-sujo="formulárioSujo"
       />
     </div>
+
     <form
       :disabled="isSubmitting"
       @submit="onSubmit"
@@ -135,19 +125,11 @@ export default {
               Selecionar
             </option>
             <option
-              v-for="item in portfolioStore.lista"
+              v-for="item in portfóliosDisponíveis"
               :key="item.id"
               :value="item.id"
-              :disabled="!háÓrgãosDisponíveisNessePortfolio(item.id)
-                || item.id === emFoco?.portfolio_id"
             >
               {{ item.titulo }}
-              <template v-if="item.id === emFoco?.portfolio_id">
-                (portfolio atual)
-              </template>
-              <template v-if="!háÓrgãosDisponíveisNessePortfolio(item.id)">
-                (órgão sem responsáveis cadastrados)
-              </template>
             </option>
           </Field>
           <ErrorMessage
