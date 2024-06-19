@@ -43,9 +43,10 @@ export default {
         planoSetorialId: Number.parseInt(params.planoSetorialId, 10) || undefined,
       }),
       meta: {
-        rotasParaMenuSecundário: [
+        rotasParaMenuSecundário: () => [
           'planosSetoriaisResumo',
           'planosSetoriaisDocumentos',
+          'planosSetoriaisMacrotemas',
         ],
         rotasParaMigalhasDePão: [
           'planosSetoriaisListar',
@@ -103,6 +104,42 @@ export default {
               meta: {
                 rotaDeEscape: 'planosSetoriaisDocumentos',
                 títuloParaMenu: 'Novo documento',
+              },
+            },
+          ],
+        },
+        {
+          path: 'macrotema',
+          component: () => import('@/views/ps.macrotemas/MacrotemasRaiz.vue'),
+          children: [
+            {
+              path: '',
+              name: 'planosSetoriaisMacrotemas',
+              component: () => import('@/views/ps.macrotemas/MacrotemasLista.vue'),
+              meta: {
+                título: () => usePlanosSetoriaisStore()?.emFoco?.rotulo_macro_tema || 'Macrotema',
+              },
+            },
+            {
+              path: 'novo',
+              name: 'planosSetoriaisNovoMacrotema',
+              component: () => import('@/views/ps.macrotemas/MacrotemasCriarEditar.vue'),
+              meta: {
+                rotaDeEscape: 'planosSetoriaisMacrotemas',
+                título: () => usePlanosSetoriaisStore()?.emFoco?.rotulo_macro_tema || 'Novo Macrotema',
+              },
+            },
+            {
+              path: ':macrotemaId',
+              name: 'planosSetoriaisEditarMacrotema',
+              component: () => import('@/views/ps.macrotemas/MacrotemasCriarEditar.vue'),
+              props: ({ params }) => ({
+                ...params,
+                ...{ macrotemaId: Number.parseInt(params.macrotemaId, 10) || undefined },
+              }),
+              meta: {
+                título: () => usePlanosSetoriaisStore()?.emFoco?.rotulo_macro_tema || 'Editar Macrotema',
+                rotaDeEscape: 'planosSetoriaisMacrotemas',
               },
             },
           ],
