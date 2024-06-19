@@ -1,6 +1,6 @@
 import { BadRequestException, HttpException, Inject, Injectable, forwardRef } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { Prisma, WorkflowResponsabilidade } from '@prisma/client';
+import { DistribuicaoStatusTipo, Prisma, WorkflowResponsabilidade } from '@prisma/client';
 import { TarefaCronogramaDto } from 'src/common/dto/TarefaCronograma.dto';
 import { PaginatedDto } from 'src/common/dto/paginated.dto';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
@@ -528,7 +528,17 @@ export class TransferenciaService {
                     });
                     if (!orgaoCasaCivil) throw new HttpException('Órgão da casa civil não foi encontrado', 400);
 
-                    await this.distribuicaoService.create(
+                    // Criada com status base de "Registrada".
+                    const status = await prismaTxn.distribuicaoStatusBase.findFirstOrThrow({
+                        where: {
+                            tipo: DistribuicaoStatusTipo.Registrada,
+                        },
+                        select: {
+                            id: true,
+                        },
+                    });
+
+                    const distribuicao = await this.distribuicaoService.create(
                         {
                             transferencia_id: transferencia.id,
                             dotacao: self.dotacao ? self.dotacao : undefined,
@@ -541,6 +551,18 @@ export class TransferenciaService {
                         },
                         user
                     );
+
+                    await prismaTxn.distribuicaoRecursoStatus.create({
+                        data: {
+                            distribuicao_id: distribuicao.id,
+                            status_base_id: status.id,
+                            data_troca: new Date(Date.now()),
+                            orgao_responsavel_id: orgaoCasaCivil.id,
+                            nome_responsavel: 'SERI',
+                            motivo: 'Distribuição criada automaticamente',
+                            criado_por: user.id,
+                        },
+                    });
                 }
 
                 return transferencia;

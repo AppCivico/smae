@@ -1,5 +1,7 @@
+import { ApiProperty } from '@nestjs/swagger';
+import { DistribuicaoStatusTipo } from '@prisma/client';
 import { Decimal } from '@prisma/client/runtime/library';
-import { IdSiglaDescricao } from 'src/common/dto/IdSigla.dto';
+import { IdSigla, IdSiglaDescricao } from 'src/common/dto/IdSigla.dto';
 
 export class DistribuicaoRecursoDto {
     id: number;
@@ -27,6 +29,11 @@ export class DistribuicaoRecursoDto {
     registros_sei: DistribuicaoRecursoSeiDto[] | null;
 }
 
+export class DistribuicaoRecursoDetailDto extends DistribuicaoRecursoDto {
+    pode_registrar_status: boolean;
+    historico_status: DistribuicaoHistoricoStatusDto[];
+}
+
 export class AditamentosDto {
     data_vigencia: Date;
     data_vigencia_corrente: Date;
@@ -41,4 +48,21 @@ export class DistribuicaoRecursoSeiDto {
     id: number;
     nome: string | null;
     processo_sei: string;
+}
+
+export class DistribuicaoHistoricoStatusDto {
+    id: number;
+    data_troca: Date;
+    motivo: string;
+    orgao_responsavel: IdSigla;
+    status: StatusDistListDto | null;
+    status_base: StatusDistListDto | null;
+}
+
+export class StatusDistListDto {
+    id: number;
+    nome: string;
+    @ApiProperty({ enum: DistribuicaoStatusTipo, enumName: 'DistribuicaoStatusTipo' })
+    tipo: DistribuicaoStatusTipo;
+    status_base: boolean;
 }

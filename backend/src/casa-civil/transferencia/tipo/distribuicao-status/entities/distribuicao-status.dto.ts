@@ -13,5 +13,6 @@ export class DistribuicaoStatusDto {
 }
 
 export class ListDistribuicaoStatusDto {
-    linhas: DistribuicaoStatusDto[];
+    linhas_base: DistribuicaoStatusDto[];
+    linhas_customizadas: DistribuicaoStatusDto[];
 }
