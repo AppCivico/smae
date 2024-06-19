@@ -49,7 +49,8 @@ interface Estado {
 type MãeComId = {
   projetoId?: Number;
   transferenciaId?: Number;
-};
+  obraId?: Number;
+} | undefined;
 
 // eslint-disable-next-line max-len
 function resolverHierarquia(tarefa: TarefaItemDto, tarefasPorId: { [x: string | number]: TarefaItemDto }): string {
@@ -62,6 +63,9 @@ function gerarCaminhoParaApi(mãeComId: MãeComId): string | null {
   switch (true) {
     case !!mãeComId?.projetoId:
       return `projeto/${mãeComId?.projetoId}`;
+
+    case !!mãeComId?.obraId:
+      return `projeto-mdo/${mãeComId?.obraId}`;
 
     case !!mãeComId?.transferenciaId:
       return `transferencia-tarefa/${mãeComId?.transferenciaId}`;
