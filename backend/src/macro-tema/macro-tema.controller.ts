@@ -75,12 +75,6 @@ export class MacroTemaController {
     }
 }
 
-const PermsPS: ListaDePrivilegios[] = [
-    'CadastroMacroTemaPS.inserir',
-    'CadastroMacroTemaPS.editar',
-    'CadastroMacroTemaPS.remover',
-];
-
 @ApiTags('Macro Tema para Plano Setorial (Antigo Eixo)')
 @Controller('plano-setorial-macrotema')
 export class PlanoSetorialMacroTemaController {
@@ -89,14 +83,13 @@ export class PlanoSetorialMacroTemaController {
 
     @Post()
     @ApiBearerAuth('access-token')
-    @Roles(PermsPS)
+    @Roles(['CadastroMacroTemaPS.inserir'])
     async create(@Body() createEixoDto: CreateEixoDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
         return await this.eixoService.create(this.tipoPdm, createEixoDto, user);
     }
 
     @ApiBearerAuth('access-token')
     @Get()
-    @Roles(PermsPS)
     async findAll(@Query() filters: FilterEixoDto): Promise<ListEixoDto> {
         return { linhas: await this.eixoService.findAll(this.tipoPdm, filters) };
     }
@@ -111,7 +104,7 @@ export class PlanoSetorialMacroTemaController {
 
     @Patch(':id')
     @ApiBearerAuth('access-token')
-    @Roles(PermsPS)
+    @Roles(['CadastroMacroTemaPS.editar'])
     async update(
         @Param() params: FindOneParams,
         @Body() updateEixoDto: UpdateEixoDto,
@@ -122,7 +115,7 @@ export class PlanoSetorialMacroTemaController {
 
     @Delete(':id')
     @ApiBearerAuth('access-token')
-    @Roles(PermsPS)
+    @Roles(['CadastroMacroTemaPS.remover'])
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.ACCEPTED)
     async remove(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt) {
