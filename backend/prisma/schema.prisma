@@ -402,11 +402,6 @@ model Pessoa {
     StatusesDistribuicaoQueRemovi    TransferenciaTipoDistribuicaoStatus[] @relation("Removedor")
     StatusesDistribuicaoQueAtualizei TransferenciaTipoDistribuicaoStatus[] @relation("Atualizador")
 
-    // comentado, verificar comentario em DistribuicaoRecursoStatus
-    //RegistroStatusDistribuicaoQueCriei     DistribuicaoRecursoStatus[] @relation("Criador")
-    //RegistroStatusDistribuicaoQueRemovi    DistribuicaoRecursoStatus[] @relation("Removedor")
-    //RegistroStatusDistribuicaoQueAtualizei DistribuicaoRecursoStatus[] @relation("Atualizador")
-
     view_atividade_pessoa_responsavel  view_atividade_pessoa_responsavel[]
     view_iniciativa_pessoa_responsavel view_iniciativa_pessoa_responsavel[]
     ViewNotaComOrdemQCriei             ViewNotas[]                          @relation("Criador")
@@ -420,6 +415,15 @@ model Pessoa {
     ProjetoRegiaoQCriei     ProjetoRegiao[] @relation("Criador")
     ProjetoRegiaoQAtualizei ProjetoRegiao[] @relation("Atualizador")
     ProjetoRegiaoQRemovi    ProjetoRegiao[] @relation("Removedor")
+
+    // comentado, verificar comentario em DistribuicaoRecursoStatus
+    //RegistroStatusDistribuicaoQueCriei     DistribuicaoRecursoStatus[] @relation("Criador")
+    //RegistroStatusDistribuicaoQueRemovi    DistribuicaoRecursoStatus[] @relation("Removedor")
+    //RegistroStatusDistribuicaoQueAtualizei DistribuicaoRecursoStatus[] @relation("Atualizador")
+
+    // ProjetoTagQCriei     ProjetoTag[] @relation("Criador")
+    // ProjetoTagQAtualizei ProjetoTag[] @relation("Atualizador")
+    // ProjetoTagQRemovi    ProjetoTag[] @relation("Removedor")
 
     @@index([email])
     @@map("pessoa")
@@ -3345,6 +3349,8 @@ model Projeto {
     vetores_busca  Unsupported("tsvector")? @default(dbgenerated())
     ViewProjetoMDO ViewProjetoMDO[]
 
+    tags Int[] @default([])
+
     @@index([removido_em])
     @@map("projeto")
 }
@@ -6102,4 +6108,24 @@ model DistribuicaoRecursoStatus {
     //removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
 
     @@map("distribuicao_recurso_status")
+}
+
+model ProjetoTag {
+    id           Int         @id @default(autoincrement())
+    tipo_projeto TipoProjeto @default(PP)
+
+    descricao String
+
+    criado_por     Int?
+    criado_em      DateTime  @default(now()) @db.Timestamptz(6)
+    atualizado_por Int?
+    atualizado_em  DateTime  @default(now()) @db.Timestamptz(6)
+    removido_por   Int?
+    removido_em    DateTime? @db.Timestamptz(6)
+
+    //atualizador Pessoa? @relation("Atualizador", fields: [atualizado_por], references: [id])
+    //criador     Pessoa? @relation("Criador", fields: [criado_por], references: [id])
+    //removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
+
+    @@map("projeto_tag")
 }

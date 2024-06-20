@@ -22,6 +22,7 @@ import { EquipamentoModule } from './pp/equipamento/equipamento.module';
 import { GrupoTematicoModule } from './pp/grupo-tematico/grupo-tematico.module';
 import { TipoIntervencaoModule } from './pp/tipo-intervencao/tipo-intervencao.module';
 import { OrcamentoPrevistoModule } from './pp/orcamento-previsto/orcamento-previsto.module';
+import { ProjetoTagModule } from './pp/projeto-tag/tag.module';
 
 @Module({
     imports: [
@@ -48,6 +49,7 @@ import { OrcamentoPrevistoModule } from './pp/orcamento-previsto/orcamento-previ
         EquipamentoModule,
         GrupoTematicoModule,
         TipoIntervencaoModule,
+        ProjetoTagModule
     ],
     controllers: [],
     providers: [],
