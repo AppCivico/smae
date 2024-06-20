@@ -170,7 +170,7 @@ export default {
             {
               path: ':temaId',
               name: 'planosSetoriaisEditarTema',
-              component: () => import('@/views/ps.subtemas/SubtemasCriarEditar.vue'),
+              component: () => import('@/views/ps.temas/TemasCriarEditar.vue'),
               props: ({ params }) => ({
                 ...params,
                 ...{ temaId: Number.parseInt(params.temaId, 10) || undefined },
