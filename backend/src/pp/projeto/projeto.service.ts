@@ -344,7 +344,8 @@ export class ProjetoService {
             await this.verificaGrupoTematico(dto);
         }
 
-        const status = dto.status ?? tipo == 'PP' ? 'Registrado' : 'MDO_NaoIniciada';
+        const statusPadrao = tipo == 'PP' ? 'Registrado' : 'MDO_NaoIniciada';
+        const status = dto.status ?? statusPadrao;
         const now = new Date(Date.now());
 
         const created = await this.prisma.$transaction(
@@ -430,6 +431,13 @@ export class ProjetoService {
                     select: { id: true },
                 });
 
+                if (tipo == 'MDO') {
+                    const codigo = await this.geraProjetoMDOCodigo(row.id, prismaTx);
+                    await prismaTx.projeto.update({
+                        where: { id: row.id },
+                        data: { codigo: codigo },
+                    });
+                }
                 //await this.verificaCampos(prismaTx, row.id, tipo);
 
                 await this.upsertRegioes(dto, prismaTx, row.id, now, [], user, portfolio.nivel_regionalizacao);
@@ -2098,7 +2106,13 @@ export class ProjetoService {
                         projeto.orgao_responsavel &&
                         projeto.orgao_responsavel.id))
             ) {
-                const codigo = await this.geraProjetoCodigo(projeto.id, prismaTx);
+                let codigo;
+                if (tipo == 'MDO') {
+                    codigo = await this.geraProjetoMDOCodigo(projeto.id, prismaTx);
+                } else {
+                    codigo = await this.geraProjetoCodigo(projeto.id, prismaTx);
+                }
+
                 if (codigo != projeto.codigo)
                     await prismaTx.projeto.update({ where: { id: projeto.id }, data: { codigo: codigo } });
             }
@@ -2276,6 +2290,64 @@ export class ProjetoService {
                 },
             });
         }
+    }
+
+    async geraProjetoMDOCodigo(id: number, prismaTx: Prisma.TransactionClient): Promise<string | undefined> {
+        // buscar o ano baseado em 'selecionado_em'
+        const projeto = await prismaTx.projeto.findUniqueOrThrow({
+            where: { id },
+            select: {
+                id: true,
+                portfolio_id: true,
+                orgao_origem: {
+                    select: {
+                        sigla: true,
+                    },
+                },
+            },
+        });
+
+        if (!projeto.orgao_origem)
+            throw new HttpException('Não é possível gerar o código da obra sem um órgão de origem.', 400);
+
+        await prismaTx.$queryRaw`SELECT id FROM portfolio WHERE id = ${projeto.portfolio_id}::int FOR UPDATE`;
+        let anoSequencia = DateTime.local({ zone: SYSTEM_TIMEZONE }).year;
+        let sequencial = 0;
+
+        const buscaExistente = await prismaTx.projetoNumeroSequencial.findFirst({
+            where: {
+                projeto_id: id,
+            },
+        });
+
+        if (buscaExistente) {
+            anoSequencia = buscaExistente.ano;
+            sequencial = buscaExistente.valor;
+            this.logger.debug(
+                `Projeto não deve mudar de ano, nem portfolio. Mantendo sequencial e ano anteriores. Mantendo sequencial ${sequencial}`
+            );
+        } else {
+            this.logger.debug(`Gerando novo sequencial para o portfolio ${projeto.portfolio_id} em ${anoSequencia}.`);
+            sequencial =
+                (await prismaTx.projetoNumeroSequencial.count({
+                    where: {
+                        portfolio_id: projeto.portfolio_id,
+                        ano: anoSequencia,
+                    },
+                })) + 1;
+            this.logger.debug(`=> Registrando sequencial ${sequencial}.`);
+
+            await prismaTx.projetoNumeroSequencial.create({
+                data: {
+                    projeto_id: projeto.id,
+                    portfolio_id: projeto.portfolio_id,
+                    ano: anoSequencia,
+                    valor: sequencial,
+                },
+            });
+        }
+
+        return ['MDO', anoSequencia, projeto.orgao_origem.sigla, sequencial.toString().padStart(4, '0')].join('.');
     }
 
     async geraProjetoCodigo(id: number, prismaTx: Prisma.TransactionClient): Promise<string | undefined> {
