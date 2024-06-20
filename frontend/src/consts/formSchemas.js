@@ -696,7 +696,7 @@ export const liçãoAprendida = object()
 
 export const macrotema = object({
   descricao: string()
-    .label('Macrotema')
+    .label('Nome')
     .max(250)
     .required(),
 });
@@ -1436,7 +1436,7 @@ export const situacao = object({
 
 export const subtema = object({
   descricao: string()
-    .label('Subtema')
+    .label('Nome')
     .max(250)
     .required(),
 });
@@ -1452,7 +1452,7 @@ export const suplentes = object({
 
 export const tema = object({
   descricao: string()
-    .label('Tema')
+    .label('Nome')
     .max(250)
     .required(),
 });
