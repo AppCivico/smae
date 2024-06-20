@@ -114,8 +114,10 @@ async function onSubmit(values) {
   }
 }
 
-if (props.subtemaId) {
-  subtemasStore.buscarItem(props.subtemaId);
+subtemasStore.$reset();
+// não foi usada a prop.subtemaId pois estava vazando do edit na hora de criar uma nova
+if (route.params?.subtemaId) {
+  subtemasStore.buscarItem(route.params?.subtemaId);
 }
 </script>
 
