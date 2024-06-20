@@ -829,6 +829,7 @@ export class ProjetoService {
             },
             include: {
                 orgao_origem: { select: { id: true, sigla: true, descricao: true } },
+                portfolio: { select: { id: true, titulo: true } },
             },
             orderBy: [],
             skip: offset,
@@ -850,7 +851,22 @@ export class ProjetoService {
             total_registros: total_registros,
             token_paginacao: token_paginacao!,
             pagina_corrente: page,
-            linhas,
+            linhas: linhas.map((r): ProjetoMdoDto => {
+                return {
+                    id: r.id,
+                    codigo: r.codigo,
+                    nome: r.nome,
+                    status: r.status,
+                    orgao_origem: r.orgao_origem,
+                    grupo_tematico: { id: r.grupo_tematico_id, nome: r.grupo_tematico_nome },
+                    equipamento: r.equipamento_id ? { id: r.equipamento_id, nome: r.equipamento_nome! } : null,
+                    tipo_intervencao: r.tipo_intervencao_id
+                        ? { id: r.tipo_intervencao_id, nome: r.tipo_intervencao_nome! }
+                        : null,
+                    regioes: r.regioes,
+                    portfolio: r.portfolio,
+                };
+            }),
         };
     }
 
