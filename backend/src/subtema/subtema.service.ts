@@ -98,7 +98,7 @@ export class SubTemaService {
                 }
 
                 const subTema = await this.prisma.subTema.update({
-                    where: { id: id },
+                    where: { id: id, pdm: { tipo } },
                     data: {
                         atualizado_por: user.id,
                         atualizado_em: new Date(Date.now()),

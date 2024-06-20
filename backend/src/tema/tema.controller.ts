@@ -10,10 +10,12 @@ import { FilterObjetivoEstrategicoDto } from './dto/filter-tema.dto';
 import { ListObjetivoEstrategicoDto } from './dto/list-tema.dto';
 import { UpdateObjetivoEstrategicoDto } from './dto/update-tema.dto';
 import { TemaService } from './tema.service';
+import { TipoPdm } from '@prisma/client';
 
-@ApiTags('Objetivo Estratégico (Acessa via Tema)')
-@Controller('objetivo-estrategico')
+@ApiTags('Tema para PDM (Antigo Objetivo Estratégico)')
+@Controller('tema')
 export class TemaController {
+    private tipoPdm: TipoPdm = 'PDM';
     constructor(private readonly objetivoEstrategicoService: TemaService) {}
 
     @Post()
@@ -23,13 +25,13 @@ export class TemaController {
         @Body() createObjetivoEstrategicoDto: CreateObjetivoEstrategicoDto,
         @CurrentUser() user: PessoaFromJwt
     ): Promise<RecordWithId> {
-        return await this.objetivoEstrategicoService.create(createObjetivoEstrategicoDto, user);
+        return await this.objetivoEstrategicoService.create(this.tipoPdm, createObjetivoEstrategicoDto, user);
     }
 
     @ApiBearerAuth('access-token')
     @Get()
     async findAll(@Query() filters: FilterObjetivoEstrategicoDto): Promise<ListObjetivoEstrategicoDto> {
-        return { linhas: await this.objetivoEstrategicoService.findAll(filters) };
+        return { linhas: await this.objetivoEstrategicoService.findAll(this.tipoPdm, filters) };
     }
 
     @Patch(':id')
@@ -37,10 +39,10 @@ export class TemaController {
     @Roles(['CadastroTema.editar'])
     async update(
         @Param() params: FindOneParams,
-        @Body() updateObjetivoEstrategicoDto: UpdateObjetivoEstrategicoDto,
+        @Body() dto: UpdateObjetivoEstrategicoDto,
         @CurrentUser() user: PessoaFromJwt
     ): Promise<RecordWithId> {
-        return await this.objetivoEstrategicoService.update(+params.id, updateObjetivoEstrategicoDto, user);
+        return await this.objetivoEstrategicoService.update(this.tipoPdm, +params.id, dto, user);
     }
 
     @Delete(':id')
@@ -49,14 +51,15 @@ export class TemaController {
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.ACCEPTED)
     async remove(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt) {
-        await this.objetivoEstrategicoService.remove(+params.id, user);
+        await this.objetivoEstrategicoService.remove(this.tipoPdm, +params.id, user);
         return '';
     }
 }
 
-@ApiTags('Tema (Antigo Objetivo Estratégico)')
-@Controller('tema')
-export class TemaController2 {
+@ApiTags('Tema para Plano Setorial (Antigo Objetivo Estratégico)')
+@Controller('plano-setorial-tema')
+export class TemaControllerPS {
+    private tipoPdm: TipoPdm = 'PS';
     constructor(private readonly objetivoEstrategicoService: TemaService) {}
 
     @Post()
@@ -66,13 +69,13 @@ export class TemaController2 {
         @Body() createObjetivoEstrategicoDto: CreateObjetivoEstrategicoDto,
         @CurrentUser() user: PessoaFromJwt
     ): Promise<RecordWithId> {
-        return await this.objetivoEstrategicoService.create(createObjetivoEstrategicoDto, user);
+        return await this.objetivoEstrategicoService.create(this.tipoPdm, createObjetivoEstrategicoDto, user);
     }
 
     @ApiBearerAuth('access-token')
     @Get()
     async findAll(@Query() filters: FilterObjetivoEstrategicoDto): Promise<ListObjetivoEstrategicoDto> {
-        return { linhas: await this.objetivoEstrategicoService.findAll(filters) };
+        return { linhas: await this.objetivoEstrategicoService.findAll(this.tipoPdm, filters) };
     }
 
     @Patch(':id')
@@ -80,10 +83,10 @@ export class TemaController2 {
     @Roles(['CadastroTema.editar'])
     async update(
         @Param() params: FindOneParams,
-        @Body() updateObjetivoEstrategicoDto: UpdateObjetivoEstrategicoDto,
+        @Body() dto: UpdateObjetivoEstrategicoDto,
         @CurrentUser() user: PessoaFromJwt
     ): Promise<RecordWithId> {
-        return await this.objetivoEstrategicoService.update(+params.id, updateObjetivoEstrategicoDto, user);
+        return await this.objetivoEstrategicoService.update(this.tipoPdm, +params.id, dto, user);
     }
 
     @Delete(':id')
@@ -92,7 +95,7 @@ export class TemaController2 {
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.ACCEPTED)
     async remove(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt) {
-        await this.objetivoEstrategicoService.remove(+params.id, user);
+        await this.objetivoEstrategicoService.remove(this.tipoPdm, +params.id, user);
         return '';
     }
 }
