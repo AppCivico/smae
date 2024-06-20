@@ -97,7 +97,7 @@ export class MacroTemaService {
                 }
 
                 const macroTema = await prismaTx.macroTema.update({
-                    where: { id: id },
+                    where: { id: id, pdm: { tipo } },
                     data: {
                         atualizado_por: user.id,
                         atualizado_em: now,

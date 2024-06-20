@@ -26,7 +26,7 @@ import { ListaDePrivilegios } from 'src/common/ListaDePrivilegios';
 import { TipoPdm } from '@prisma/client';
 import { SubTemaDto } from './entities/subtema.entity';
 
-@ApiTags('SubTema')
+@ApiTags('SubTema para PDM')
 @Controller('subtema')
 export class SubTemaController {
     private tipoPdm: TipoPdm = 'PDM';
@@ -85,8 +85,8 @@ const PermsPS: ListaDePrivilegios[] = [
     'CadastroSubTemaPS.remover',
 ];
 
-@ApiTags('Plano Setorial - SubTema')
-@Controller('subtema')
+@ApiTags('SubTema para Plano Setorial')
+@Controller('plano-setorial-subtema')
 export class PlanoSetorialSubTemaController {
     private tipoPdm: TipoPdm = 'PS';
     constructor(private readonly subTemaService: SubTemaService) {}
