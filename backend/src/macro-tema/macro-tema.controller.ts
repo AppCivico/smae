@@ -12,6 +12,7 @@ import {
     Query,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiNoContentResponse, ApiTags } from '@nestjs/swagger';
+import { TipoPdm } from '@prisma/client';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
@@ -21,10 +22,8 @@ import { CreateEixoDto } from './dto/create-macro-tema.dto';
 import { FilterEixoDto } from './dto/filter-macro-tema.dto';
 import { ListEixoDto } from './dto/list-macro-tema.dto';
 import { UpdateEixoDto } from './dto/update-macro-tema.dto';
-import { MacroTemaService } from './macro-tema.service';
-import { ListaDePrivilegios } from 'src/common/ListaDePrivilegios';
-import { TipoPdm } from '@prisma/client';
 import { MacroTemaDto } from './entities/macro-tema.entity';
+import { MacroTemaService } from './macro-tema.service';
 
 @ApiTags('Macro Tema para PDM (Antigo Eixo)')
 @Controller('macrotema')
