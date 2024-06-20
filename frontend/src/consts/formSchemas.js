@@ -822,6 +822,107 @@ export const novaSenha = object()
       .oneOf([ref('password'), null], 'Senhas não coincidem'),
   });
 
+export const obras = object({
+  equipamento_id: number()
+    .label('Equipamento/Estrutura pública')
+    .min(1, 'Equipamento/Estrutura pública inválida')
+    .nullable(),
+  geolocalizacao: string()
+    .label('Endereço')
+    .nullable(),
+  grupo_tematico_id: number()
+    .label('Grupo temático')
+    .min(1, 'Grupo temático inválido')
+    .required(),
+  mdo_detalhamento: string()
+    .label('Detalhamento/Escopo da obra')
+    .max(50000)
+    .nullable(),
+  mdo_n_familias_beneficiadas: number()
+    .label('Número de famílias beneficiadas')
+    .min(0)
+    .nullable(),
+  mdo_n_unidades_habitacionais: number()
+    .label('Número de unidades')
+    .min(0)
+    .nullable(),
+  mdo_observacoes: string()
+    .label('Observações')
+    .nullable(),
+  mdo_previsao_inauguracao: date()
+    .label('Data de inauguração planejada')
+    .nullable(),
+  mdo_programa_habitacional: string()
+    .label('Programa Habitacional')
+    .max(1024)
+    .nullable(),
+  nome: string()
+    .label('Nome da obra/intervenção')
+    .min(0)
+    .max(2040)
+    .required(),
+  orgao_executor_id: number()
+    .label('Secretaria/órgão executor')
+    .min(1, 'Secretaria/órgão executor inválidos')
+    .required(),
+  orgao_gestor_id: number()
+    .label('Órgão gestor do portfólio')
+    .nullable(),
+  orgao_origem_id: number()
+    .label('Secretaria/órgão de origem')
+    .min(1, 'Secretaria/órgão de origem inválidos')
+    .nullable(),
+  orgao_responsavel_id: string()
+    .label('Órgão responsável pela obra')
+    .nullable(),
+  orgaos_colaboradores: string()
+    .label('Órgãos colaboradores da obra')
+    .nullable(),
+  origem_tipo: string()
+    .label('Origem')
+    .nullable(),
+  ponto_focal_colaborador: string()
+    .label('Ponto focal colaborador')
+    .nullable(),
+  ponto_focal_responsavel: string()
+    .label('Ponto focal responsável')
+    .nullable(),
+  portfolio_id: number()
+    .label('Nome do portofólio')
+    .min(1, 'Portfólio inválido')
+    .required(),
+  previsao_custo: number()
+    .label('Custo previsto inicial')
+    .min(0)
+    .nullable(),
+  previsao_inicio: date()
+    .label('Previsão de início')
+    .nullable(),
+  previsao_termino: date()
+    .label('Previsão de término')
+    .nullable(),
+  responsaveis_no_orgao_gestor: string()
+    .label('Assessor do monitoramento')
+    .nullable(),
+  secretario_colaborador: string()
+    .label('Secretário colaborador da obra')
+    .nullable(),
+  secretario_responsavel: string()
+    .label('Secretário responsável pela obra')
+    .nullable(),
+  secretario: string()
+    .label('Secretário gestor do portfólio')
+    .nullable(),
+  status: mixed()
+    .label('Status')
+    .oneOf(statusObras)
+    .required(),
+  tipo_intervencao_id: number()
+    .label('Tipo de obra/intervenção*')
+    .min(1, 'Tipo de obra/intervenção inválido')
+    .required(),
+});
+
 export const orçamentoRealizado = object({
   dotacao: string()
     .label('Dotação')
@@ -1158,107 +1259,6 @@ export const portfolio = object({
   titulo: string()
     .label('Nome')
     .required('Um portfolio requer um título'),
-});
-
-export const obras = object({
-  responsaveis_no_orgao_gestor: string()
-    .label('Assessor do monitoramento')
-    .nullable(),
-  equipamento_id: number()
-    .label('Equipamento/Estrutura pública')
-    .min(1, 'Equipamento/Estrutura pública inválida')
-    .nullable(),
-  geolocalizacao: string()
-    .label('Endereço')
-    .nullable(),
-  grupo_tematico_id: number()
-    .label('Grupo temático')
-    .min(1, 'Grupo temático inválido')
-    .required(),
-  mdo_detalhamento: string()
-    .label('Detalhamento/Escopo da obra')
-    .max(50000)
-    .nullable(),
-  mdo_n_familias_beneficiadas: number()
-    .label('Número de famílias beneficiadas')
-    .min(0)
-    .nullable(),
-  mdo_n_unidades_habitacionais: number()
-    .label('Número de unidades')
-    .min(0)
-    .nullable(),
-  mdo_observacoes: string()
-    .label('Observações')
-    .nullable(),
-  mdo_previsao_inauguracao: date()
-    .label('Data de inauguração planejada')
-    .nullable(),
-  mdo_programa_habitacional: string()
-    .label('Programa Habitacional')
-    .max(1024)
-    .nullable(),
-  nome: string()
-    .label('Nome da obra/intervenção')
-    .min(0)
-    .max(2040)
-    .required(),
-  orgao_executor_id: number()
-    .label('Secretaria/órgão executor')
-    .min(1, 'Secretaria/órgão executor inválidos')
-    .required(),
-  orgao_gestor_id: number()
-    .label('Órgão gestor do portfólio')
-    .nullable(),
-  orgao_origem_id: number()
-    .label('Secretaria/órgão de origem')
-    .min(1, 'Secretaria/órgão de origem inválidos')
-    .nullable(),
-  orgao_responsavel_id: string()
-    .label('Órgão responsável pela obra')
-    .nullable(),
-  orgaos_colaboradores: string()
-    .label('Órgãos colaboradores da obra')
-    .nullable(),
-  origem_tipo: string()
-    .label('Origem')
-    .nullable(),
-  ponto_focal_colaborador: string()
-    .label('Ponto focal colaborador')
-    .nullable(),
-  ponto_focal_responsavel: string()
-    .label('Ponto focal responsável')
-    .nullable(),
-  portfolio_id: number()
-    .label('Nome do portofólio')
-    .min(1, 'Portfólio inválido')
-    .required(),
-  previsao_custo: number()
-    .label('Custo previsto inicial')
-    .min(0)
-    .nullable(),
-  previsao_inicio: date()
-    .label('Previsão de início')
-    .nullable(),
-  previsao_termino: date()
-    .label('Previsão de término')
-    .nullable(),
-  secretario: string()
-    .label('Secretário gestor do portfólio')
-    .nullable(),
-  secretario_colaborador: string()
-    .label('Secretário colaborador da obra')
-    .nullable(),
-  secretario_responsavel: string()
-    .label('Secretário responsável pela obra')
-    .nullable(),
-  status: mixed()
-    .label('Status')
-    .oneOf(statusObras)
-    .required(),
-  tipo_intervencao_id: number()
-    .label('Tipo de obra/intervenção*')
-    .min(1, 'Tipo de obra/intervenção inválido')
-    .required(),
 });
 
 export const painelExterno = object({
