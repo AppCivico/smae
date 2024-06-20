@@ -14,6 +14,7 @@ import {
 } from 'class-validator';
 import { NumberArrayTransformOrEmpty } from '../../../auth/transforms/number-array.transform';
 import { StringArrayTransform } from '../../../auth/transforms/string-array.transform';
+import { NumberTransform } from '../../../auth/transforms/number.transform';
 
 export class FilterProjetoDto {
     @IsOptional()
@@ -94,4 +95,18 @@ export class FilterProjetoMDODto extends FilterProjetoDto {
     @IsInt({ each: true })
     @Transform(NumberArrayTransformOrEmpty)
     equipamento_id?: number[];
+
+    @IsOptional()
+    @IsInt()
+    @Transform(NumberTransform)
+    ipp?: number = 25;
+
+    @IsOptional()
+    @IsInt()
+    @Transform(NumberTransform)
+    pagina?: number = 1;
+
+    @IsOptional()
+    @IsString()
+    token_paginacao?: string;
 }

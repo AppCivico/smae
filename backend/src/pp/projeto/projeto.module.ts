@@ -18,6 +18,7 @@ import { EquipamentoModule } from '../equipamento/equipamento.module';
 import { GrupoTematicoModule } from '../grupo-tematico/grupo-tematico.module';
 import { TipoIntervencaoModule } from '../tipo-intervencao/tipo-intervencao.module';
 import { PessoaPrivilegioModule } from '../../auth/pessoaPrivilegio.module';
+import { JwtModule } from '@nestjs/jwt';
 
 @Module({
     imports: [
@@ -32,6 +33,10 @@ import { PessoaPrivilegioModule } from '../../auth/pessoaPrivilegio.module';
         GrupoTematicoModule,
         TipoIntervencaoModule,
         PessoaPrivilegioModule,
+        JwtModule.register({
+            secret: process.env.SESSION_JWT_SECRET + ':pagination',
+            signOptions: { expiresIn: '1d' },
+        }),
     ],
     controllers: [
         ProjetoController,
