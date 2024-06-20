@@ -53,7 +53,7 @@ export class UploadService {
 
         if ('size' in file) {
             if (file.size < 1) {
-                throw new HttpException('O arquivo precisa ter pelo menos 1 byte!', 400);
+                throw new HttpException('O arquivo precisa ter ao menos 1 byte!', 400);
             }
 
             if ('originalname' in file && createUploadDto.tipo_documento_id) {
@@ -72,7 +72,7 @@ export class UploadService {
 
                     if (!extSomeExtExists)
                         throw new HttpException(
-                            `Arquivo deve contem um das extensões: ${tipoDoc.extensoes}; Nome do arquivo: ${file.originalname}`,
+                            `Arquivo deve conter uma das extensões: ${tipoDoc.extensoes}; Nome do arquivo: ${file.originalname}`,
                             400
                         );
                 }
@@ -220,7 +220,7 @@ export class UploadService {
             if (!hasShx) missingExtensions.push('.shx');
             if (!hasCpg) missingExtensions.push('.cpg');
 
-            const errorMessage = 'O arquivo zip não contém os arquivos necessários: ' + missingExtensions.join(', ');
+            const errorMessage = 'O arquivo ZIP não contém os arquivos necessários: ' + missingExtensions.join(', ');
             throw new HttpException(errorMessage, 400);
         } else if (totalSize >= 100 * 1024 * 1024) {
             const errorMessage =
@@ -238,7 +238,7 @@ export class UploadService {
 
             if (planilia.SheetNames.length !== 1)
                 throw new BadRequestException(
-                    `deve ter apenas uma página (planilha), recebidas ${
+                    `Deve haver apenas uma página (planilha). Foram recebidas ${
                         planilia.SheetNames.length
                     }: ${planilia.SheetNames.join(', ')}`
                 );
