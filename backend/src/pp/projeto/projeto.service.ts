@@ -427,6 +427,10 @@ export class ProjetoService {
                         mdo_observacoes: dto.mdo_observacoes,
                         secretario_executivo: dto.secretario_executivo,
                         secretario_responsavel: dto.secretario_responsavel,
+
+                        colaboradores_no_orgao: dto.colaboradores_no_orgao ?? [],
+                        orgao_colaborador_id: dto.orgao_colaborador_id,
+                        secretario_colaborador: dto.secretario_colaborador,
                     },
                     select: { id: true },
                 });
@@ -2082,6 +2086,11 @@ export class ProjetoService {
                     mdo_n_familias_beneficiadas: dto.mdo_n_familias_beneficiadas,
                     mdo_previsao_inauguracao: dto.mdo_previsao_inauguracao,
                     mdo_observacoes: dto.mdo_observacoes,
+
+                    // TODO validar as permissoes
+                    colaboradores_no_orgao: dto.colaboradores_no_orgao ?? [],
+                    orgao_colaborador_id: dto.orgao_colaborador_id,
+                    secretario_colaborador: dto.secretario_colaborador,
                 },
             });
 
