@@ -1,4 +1,16 @@
-import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post, Query } from '@nestjs/common';
+import {
+    Body,
+    Controller,
+    Delete,
+    Get,
+    HttpCode,
+    HttpStatus,
+    NotFoundException,
+    Param,
+    Patch,
+    Post,
+    Query,
+} from '@nestjs/common';
 import { ApiBearerAuth, ApiNoContentResponse, ApiTags } from '@nestjs/swagger';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { Roles } from '../auth/decorators/roles.decorator';
@@ -11,6 +23,7 @@ import { ListObjetivoEstrategicoDto } from './dto/list-tema.dto';
 import { UpdateObjetivoEstrategicoDto } from './dto/update-tema.dto';
 import { TemaService } from './tema.service';
 import { TipoPdm } from '@prisma/client';
+import { ObjetivoEstrategicoDto } from './entities/objetivo-estrategico.entity';
 
 @ApiTags('Tema para PDM (Antigo Objetivo Estratégico)')
 @Controller('tema')
@@ -32,6 +45,14 @@ export class TemaController {
     @Get()
     async findAll(@Query() filters: FilterObjetivoEstrategicoDto): Promise<ListObjetivoEstrategicoDto> {
         return { linhas: await this.objetivoEstrategicoService.findAll(this.tipoPdm, filters) };
+    }
+
+    @ApiBearerAuth('access-token')
+    @Get(':id')
+    async findOne(@Param() params: FindOneParams): Promise<ObjetivoEstrategicoDto> {
+        const linhas = await this.objetivoEstrategicoService.findAll(this.tipoPdm, { id: +params.id });
+        if (linhas.length === 0) throw new NotFoundException('Registro não encontrado');
+        return linhas[0];
     }
 
     @Patch(':id')
@@ -76,6 +97,14 @@ export class TemaControllerPS {
     @Get()
     async findAll(@Query() filters: FilterObjetivoEstrategicoDto): Promise<ListObjetivoEstrategicoDto> {
         return { linhas: await this.objetivoEstrategicoService.findAll(this.tipoPdm, filters) };
+    }
+
+    @ApiBearerAuth('access-token')
+    @Get(':id')
+    async findOne(@Param() params: FindOneParams): Promise<ObjetivoEstrategicoDto> {
+        const linhas = await this.objetivoEstrategicoService.findAll(this.tipoPdm, { id: +params.id });
+        if (linhas.length === 0) throw new NotFoundException('Registro não encontrado');
+        return linhas[0];
     }
 
     @Patch(':id')
