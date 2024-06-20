@@ -29,6 +29,7 @@ export class PortfolioService {
                     throw new BadRequestException(`Você só tem permissão para criar portfólio no próprio órgão.`);
             }
         }
+        if (tipoProjeto == 'MDO') dto.nivel_regionalizacao = 3;
 
         const now = new Date(Date.now());
         const created = await this.prisma.$transaction(
@@ -229,6 +230,9 @@ export class PortfolioService {
     ): Promise<RecordWithId> {
         const self = await this.findAll(tipoProjeto, user, false, id);
         if (!self[0].pode_editar) throw new BadRequestException('Sem permissão para editar o portfólio');
+
+        if (tipoProjeto == 'MDO' && dto.nivel_regionalizacao && dto.nivel_regionalizacao != 3)
+            throw new BadRequestException('Nível de regionalização inválido para MDO');
 
         if (dto.titulo !== undefined) {
             const similarExists = await this.prisma.portfolio.count({
