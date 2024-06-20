@@ -40,7 +40,9 @@ SELECT
     FROM json_array_elements(pr.regioes_data) AS regiao
     WHERE (regiao ->> 'nivel')::int = port.nivel_regionalizacao
   ), '') AS regioes,
-  p.status
+  p.status,
+  port.titulo AS portfolio_titulo,
+  p.registrado_em
 FROM projeto AS p
 JOIN portfolio port ON p.portfolio_id = port.id
 LEFT JOIN grupo_tematico AS gt ON p.grupo_tematico_id = gt.id

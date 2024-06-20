@@ -848,7 +848,7 @@ export class ProjetoService {
                 orgao_origem: { select: { id: true, sigla: true, descricao: true } },
                 portfolio: { select: { id: true, titulo: true } },
             },
-            orderBy: [],
+            orderBy: [{ [filters.ordem_coluna]: filters.ordem_direcao === 'asc' ? 'asc' : 'desc' }, { codigo: 'asc' }],
             skip: offset,
             take: ipp,
         });
