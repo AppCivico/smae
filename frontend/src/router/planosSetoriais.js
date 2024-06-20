@@ -47,6 +47,8 @@ export default {
           'planosSetoriaisResumo',
           'planosSetoriaisDocumentos',
           'planosSetoriaisMacrotemas',
+          'planosSetoriaisTemas',
+          'planosSetoriaisSubtemas',
         ],
         rotasParaMigalhasDePão: [
           'planosSetoriaisListar',
@@ -140,6 +142,81 @@ export default {
               meta: {
                 título: () => usePlanosSetoriaisStore()?.emFoco?.rotulo_macro_tema || 'Editar Macrotema',
                 rotaDeEscape: 'planosSetoriaisMacrotemas',
+              },
+            },
+          ],
+        },
+        {
+          path: 'tema',
+          component: () => import('@/views/ps.temas/TemasRaiz.vue'),
+          children: [
+            {
+              path: '',
+              name: 'planosSetoriaisTemas',
+              component: () => import('@/views/ps.temas/TemasLista.vue'),
+              meta: {
+                título: () => usePlanosSetoriaisStore()?.emFoco?.rotulo_tema || 'Tema',
+              },
+            },
+            {
+              path: 'novo',
+              name: 'planosSetoriaisNovoTema',
+              component: () => import('@/views/ps.temas/TemasCriarEditar.vue'),
+              meta: {
+                rotaDeEscape: 'planosSetoriaisTemas',
+                título: () => usePlanosSetoriaisStore()?.emFoco?.rotulo_tema || 'Novo Tema',
+              },
+            },
+            {
+              path: ':temaId',
+              name: 'planosSetoriaisEditarTema',
+              component: () => import('@/views/ps.subtemas/SubtemasCriarEditar.vue'),
+              props: ({ params }) => ({
+                ...params,
+                ...{ temaId: Number.parseInt(params.temaId, 10) || undefined },
+              }),
+              meta: {
+                título: () => usePlanosSetoriaisStore()?.emFoco?.rotulo_tema || 'Editar Tema',
+                rotaDeEscape: 'planosSetoriaisTemas',
+              },
+            },
+          ],
+        },
+        {
+          path: 'subtema',
+          component: () => import('@/views/ps.subtemas/SubtemasRaiz.vue'),
+          children: [
+            {
+              path: '',
+              name: 'planosSetoriaisSubtemas',
+              component: () => import('@/views/ps.subtemas/SubtemasLista.vue'),
+              meta: {
+                título: () => usePlanosSetoriaisStore()?.emFoco?.rotulo_sub_tema || 'Subtema',
+              },
+            },
+            {
+              path: 'novo',
+              name: 'planosSetoriaisNovoSubtema',
+              component: () => import('@/views/ps.subtemas/SubtemasCriarEditar.vue'),
+              meta: {
+                rotaDeEscape: 'planosSetoriaisSubtemas',
+                título: () => usePlanosSetoriaisStore()?.emFoco?.rotulo_sub_tema || 'Novo Subtema',
+                limitarÀsPermissões: [
+                  'CadastroSubTema.inserir',
+                ],
+              },
+            },
+            {
+              path: ':subtemaId',
+              name: 'planosSetoriaisEditarSubtema',
+              component: () => import('@/views/ps.subtemas/SubtemasCriarEditar.vue'),
+              props: ({ params }) => ({
+                ...params,
+                ...{ subtemaId: Number.parseInt(params.subtemaId, 10) || undefined },
+              }),
+              meta: {
+                título: () => usePlanosSetoriaisStore()?.emFoco?.rotulo_sub_tema || 'Editar Subtema',
+                rotaDeEscape: 'planosSetoriaisSubtemas',
               },
             },
           ],
