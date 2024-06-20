@@ -35,11 +35,11 @@ SELECT
   p.equipamento_id,
   e.nome AS equipamento_nome,
   p.orgao_origem_id,
-  (
+  coalesce((
     SELECT string_agg(regiao->>'descricao', ', ')
     FROM json_array_elements(pr.regioes_data) AS regiao
     WHERE (regiao ->> 'nivel')::int = port.nivel_regionalizacao
-  ) AS regioes,
+  ), '') AS regioes,
   p.status
 FROM projeto AS p
 JOIN portfolio port ON p.portfolio_id = port.id
