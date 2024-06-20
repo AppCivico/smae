@@ -47,6 +47,7 @@ export class TemaService {
         const listActive = await this.prisma.tema.findMany({
             where: {
                 removido_em: null,
+                id: filters.id,
                 pdm_id: pdmId,
                 pdm: { tipo, id: pdmId },
             },
