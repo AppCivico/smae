@@ -846,10 +846,12 @@ export class ProjetoService {
             tem_mais = offset + linhas.length < total_registros;
         }
 
+        const paginas = Math.ceil(total_registros / ipp);
         return {
             tem_mais,
             total_registros: total_registros,
             token_paginacao: token_paginacao!,
+            paginas,
             pagina_corrente: page,
             linhas: linhas.map((r): ProjetoMdoDto => {
                 return {

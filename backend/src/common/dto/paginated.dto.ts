@@ -16,6 +16,9 @@ export class PaginatedWithPagesDto<TData> {
     token_paginacao: string | null;
 
     @ApiProperty()
+    paginas: number;
+
+    @ApiProperty()
     pagina_corrente: number;
 
     @ApiProperty()
