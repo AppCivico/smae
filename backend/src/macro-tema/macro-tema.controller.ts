@@ -26,7 +26,7 @@ import { ListaDePrivilegios } from 'src/common/ListaDePrivilegios';
 import { TipoPdm } from '@prisma/client';
 import { MacroTemaDto } from './entities/macro-tema.entity';
 
-@ApiTags('Macro Tema (Antigo Eixo)')
+@ApiTags('Macro Tema para PDM (Antigo Eixo)')
 @Controller('macrotema')
 export class MacroTemaController {
     private tipoPdm: TipoPdm = 'PDM';
@@ -81,7 +81,7 @@ const PermsPS: ListaDePrivilegios[] = [
     'CadastroMacroTemaPS.remover',
 ];
 
-@ApiTags('Plano Setorial - Macro Tema (Antigo Eixo)')
+@ApiTags('Macro Tema para Plano Setorial (Antigo Eixo)')
 @Controller('plano-setorial-macrotema')
 export class PlanoSetorialMacroTemaController {
     private tipoPdm: TipoPdm = 'PS';

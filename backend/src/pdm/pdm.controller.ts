@@ -91,7 +91,7 @@ export class PdmController {
 
         const filter_opts = { pdm_id: +params.id };
         const [tema, sub_tema, eixo, tag, orcamento_config] = await Promise.all([
-            this.objetivoEstrategicoService.findAll(filter_opts),
+            this.objetivoEstrategicoService.findAll(this.tipoPdm, filter_opts),
             this.subTemaService.findAll(this.tipoPdm, filter_opts),
             this.eixoService.findAll(this.tipoPdm, filter_opts),
             this.tagService.findAll(filter_opts),
