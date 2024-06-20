@@ -1,4 +1,4 @@
-import { ApiProperty, PickType } from '@nestjs/swagger';
+import { ApiProperty, IntersectionType, PickType } from '@nestjs/swagger';
 import { CategoriaProcessoSei, ProjetoFase, ProjetoOrigemTipo, ProjetoStatus } from '@prisma/client';
 import { IdDesc } from 'src/atividade/entities/atividade.entity';
 import { IdCodTituloDto } from 'src/common/dto/IdCodTitulo.dto';
@@ -266,6 +266,17 @@ export class ProjetoDetailDto {
     secretario_colaborador: string | null;
     orgao_colaborador: IdSiglaDescricao | null;
     colaboradores_no_orgao: IdNomeExibicaoDto[];
+
+    orgao_origem: IdSiglaDescricao | null;
+}
+
+export class ProjetoDetailBaseMdo {
+    grupo_tematico: IdNomeDto;
+    tipo_intervencao: IdNomeDto | null;
+    equipamento: IdNomeDto | null;
+}
+export class ProjetoDetailMdoDto extends IntersectionType(ProjetoDetailBaseMdo, ProjetoDetailDto) {
+
 }
 
 export class ProjetoMVPDto extends PickType(ProjetoDetailDto, ['id', 'portfolio_id']) {}
