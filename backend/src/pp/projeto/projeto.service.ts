@@ -38,6 +38,8 @@ import { CreateGeoEnderecoReferenciaDto, ReferenciasValidasBase } from '../../ge
 import { GeoLocService } from '../../geo-loc/geo-loc.service';
 import { UpdateTarefaDto } from '../tarefa/dto/update-tarefa.dto';
 import { TarefaService } from '../tarefa/tarefa.service';
+import { JwtService } from '@nestjs/jwt';
+import { Object2Hash } from '../../common/object2hash';
 
 const FASES_LIBERAR_COLABORADOR: ProjetoStatus[] = ['Registrado', 'Selecionado', 'EmPlanejamento'];
 const StatusParaFase: Record<ProjetoStatus, ProjetoFase> = {
@@ -109,6 +111,13 @@ type ProjetoResumoPermisao = {
     tipo: TipoProjeto;
 };
 
+class AnyPageTokenJwtBody {
+    search_hash: string;
+    total_rows: number;
+    issued_at: number;
+    ipp: number;
+}
+
 @Injectable()
 export class ProjetoService {
     private readonly logger = new Logger(ProjetoService.name);
@@ -120,7 +129,8 @@ export class ProjetoService {
         private readonly blocoNotaService: BlocoNotaService,
         @Inject(forwardRef(() => TarefaService))
         private readonly tarefaService: TarefaService,
-        private readonly pessoaPrivService: PessoaPrivilegioService
+        private readonly pessoaPrivService: PessoaPrivilegioService,
+        private readonly jwtService: JwtService
     ) {}
 
     private async processaOrigem(dto: CreateProjetoDto) {
@@ -784,42 +794,37 @@ export class ProjetoService {
     }
 
     async findAllMDO(filters: FilterProjetoMDODto, user: PessoaFromJwt): Promise<PaginatedWithPagesDto<ProjetoMdoDto>> {
+        let token_paginacao = filters.token_paginacao;
+
+        let ipp = filters.ipp ?? 25;
+        const page = filters.pagina ?? 1;
+        let total_registros = 0;
         let tem_mais = false;
-        let token_paginacao: string | null = null;
 
-        let ipp = 25;
-        const page = 1;
-        let offset = (page - 1) * ipp;
+        if (page > 1 && !token_paginacao) throw new HttpException('Campo obrigatório para paginação', 400);
 
-        const decodedPageToken = null;
+        const tokenPaginacao = filters.token_paginacao;
+        // para não atrapalhar no hash, remove o campo pagina
+        delete filters.pagina;
+        delete filters.token_paginacao;
 
-        if (decodedPageToken) {
-            //offset = decodedPageToken.offset;
-            //ipp = decodedPageToken.ipp;
+        let now = new Date(Date.now());
+        if (tokenPaginacao) {
+            const decoded = this.decodeNextPageToken(tokenPaginacao, filters);
+            total_registros = decoded.total_rows;
+            ipp = decoded.ipp;
+            now = new Date(decoded.issued_at);
         }
 
-        const permissionsSet: Prisma.Enumerable<Prisma.ProjetoWhereInput> = this.getProjetoWhereSet('MDO', user, false);
+        const offset = (page - 1) * ipp;
 
+        const permissionsSet: Prisma.Enumerable<Prisma.ProjetoWhereInput> = this.getProjetoWhereSet('MDO', user, false);
+        const filterSet = this.getProjetoMDOWhereSet(filters);
         const linhas = await this.prisma.viewProjetoMDO.findMany({
             where: {
-                portfolio_id: filters.portfolio_id,
                 projeto: {
-                    ProjetoRegiao: filters.regioes
-                        ? {
-                              some: {
-                                  removido_em: null,
-                                  regiao_id: { in: filters.regioes },
-                              },
-                          }
-                        : undefined,
-                    orgao_origem_id: filters.orgao_origem_id ? { in: filters.orgao_origem_id } : undefined,
-                    status: filters.status ? { in: filters.status } : undefined,
-                    nome: filters.nome ? { in: filters.nome } : undefined,
-                    codigo: filters.codigo ? { in: filters.codigo } : undefined,
-                    grupo_tematico_id: filters.grupo_tematico_id ? { in: filters.grupo_tematico_id } : undefined,
-                    tipo_intervencao_id: filters.tipo_intervencao_id ? { in: filters.tipo_intervencao_id } : undefined,
-                    equipamento_id: filters.equipamento_id ? { in: filters.equipamento_id } : undefined,
-                    AND: permissionsSet,
+                    registrado_em: { lte: now },
+                    AND: [...permissionsSet, ...filterSet],
                 },
             },
             include: {
@@ -830,10 +835,20 @@ export class ProjetoService {
             take: ipp,
         });
 
+        if (tokenPaginacao) {
+            token_paginacao = filters.token_paginacao;
+            tem_mais = offset + linhas.length < total_registros;
+        } else {
+            const info = await this.encodeNextPageToken(filters, now, user);
+            token_paginacao = info.jwt;
+            total_registros = info.body.total_rows;
+            tem_mais = offset + linhas.length < total_registros;
+        }
+
         return {
-            tem_mais: tem_mais,
-            total_registros: 0,
-            token_paginacao: token_paginacao,
+            tem_mais,
+            total_registros: total_registros,
+            token_paginacao: token_paginacao!,
             pagina_corrente: page,
             linhas,
         };
@@ -2765,5 +2780,76 @@ export class ProjetoService {
 
             return true;
         }
+    }
+
+    private getProjetoMDOWhereSet(filters: FilterProjetoMDODto) {
+        const permissionsBaseSet: Prisma.Enumerable<Prisma.ProjetoWhereInput> = [
+            {
+                portfolio_id: filters.portfolio_id,
+                ProjetoRegiao: filters.regioes
+                    ? {
+                          some: {
+                              removido_em: null,
+                              regiao_id: { in: filters.regioes },
+                          },
+                      }
+                    : undefined,
+                orgao_origem_id: filters.orgao_origem_id ? { in: filters.orgao_origem_id } : undefined,
+                status: filters.status ? { in: filters.status } : undefined,
+                nome: filters.nome ? { in: filters.nome } : undefined,
+                codigo: filters.codigo ? { in: filters.codigo } : undefined,
+                grupo_tematico_id: filters.grupo_tematico_id ? { in: filters.grupo_tematico_id } : undefined,
+                tipo_intervencao_id: filters.tipo_intervencao_id ? { in: filters.tipo_intervencao_id } : undefined,
+                equipamento_id: filters.equipamento_id ? { in: filters.equipamento_id } : undefined,
+            },
+        ];
+        return permissionsBaseSet;
+    }
+
+    private decodeNextPageToken(jwt: string | undefined, filters: FilterProjetoMDODto): AnyPageTokenJwtBody {
+        let tmp: AnyPageTokenJwtBody | null = null;
+
+        try {
+            if (jwt) tmp = this.jwtService.verify(jwt) as AnyPageTokenJwtBody;
+        } catch {
+            throw new HttpException('token_paginacao invalido', 400);
+        }
+        if (!tmp) throw new HttpException('token_paginacao invalido ou faltando', 400);
+
+        if (tmp.search_hash != Object2Hash(filters))
+            throw new HttpException(
+                'Parâmetros da busca não podem ser diferente da busca inicial para avançar na paginação.',
+                400
+            );
+        return tmp;
+    }
+
+    private async encodeNextPageToken(
+        filters: FilterProjetoMDODto,
+        issued_at: Date,
+        user: PessoaFromJwt
+    ): Promise<{
+        jwt: string;
+        body: AnyPageTokenJwtBody;
+    }> {
+        const permissionsSet: Prisma.Enumerable<Prisma.ProjetoWhereInput> = this.getProjetoWhereSet('MDO', user, false);
+        const filterSet = this.getProjetoMDOWhereSet(filters);
+        const total_rows = await this.prisma.projeto.count({
+            where: {
+                AND: [...permissionsSet, ...filterSet],
+            },
+        });
+
+        const body = {
+            search_hash: Object2Hash(filters),
+            ipp: filters.ipp!,
+            issued_at: issued_at.valueOf(),
+            total_rows,
+        } satisfies AnyPageTokenJwtBody;
+
+        return {
+            jwt: this.jwtService.sign(body),
+            body,
+        };
     }
 }
