@@ -3350,11 +3350,14 @@ model Projeto {
 }
 
 view ViewProjetoMDO {
-    id           Int       @id
-    nome         String
-    codigo       String?
-    portfolio_id Int
-    portfolio    Portfolio @relation(fields: [portfolio_id], references: [id])
+    id               Int       @id
+    nome             String
+    codigo           String?
+    portfolio_id     Int
+    portfolio        Portfolio @relation(fields: [portfolio_id], references: [id])
+    portfolio_titulo String
+
+    registrado_em DateTime
 
     projeto Projeto @relation(fields: [id], references: [id])
 

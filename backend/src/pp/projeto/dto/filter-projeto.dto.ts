@@ -1,4 +1,4 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, IntersectionType } from '@nestjs/swagger';
 import { ProjetoStatus } from '@prisma/client';
 import { Transform, TransformFnParams } from 'class-transformer';
 import {
@@ -60,7 +60,38 @@ export class FilterProjetoDto {
     portfolio_id?: number;
 }
 
-export class FilterProjetoMDODto extends FilterProjetoDto {
+export const AscDescEnum = {
+    asc: 'asc',
+    desc: 'desc',
+};
+export type AscDescEnum = keyof typeof AscDescEnum;
+
+export const ProjetoMdoOrderEnum = {
+    id: 'id',
+    nome: 'nome',
+    codigo: 'codigo',
+    portfolio_titulo: 'portfolio_titulo',
+    grupo_tematico_nome: 'grupo_tematico_nome',
+    tipo_intervencao_nome: 'tipo_intervencao_nome',
+    equipamento_nome: 'equipamento_nome',
+    orgao_origem_nome: 'orgao_origem_nome',
+    regioes: 'regioes',
+    status: 'status',
+    registrado_em: 'registrado_em',
+};
+export type ProjetoMdoOrderEnum = keyof typeof ProjetoMdoOrderEnum;
+
+export class ProjetoMDOOrderByDto {
+    @IsEnum(AscDescEnum)
+    @ApiProperty({ enum: AscDescEnum, default: 'asc' })
+    ordem_direcao: 'asc' | 'desc' = 'asc';
+
+    @IsEnum(ProjetoMdoOrderEnum)
+    @ApiProperty({ enum: ProjetoMdoOrderEnum, enumName: 'ProjetoMdoOrderEnum', default: 'codigo' })
+    ordem_coluna: string = 'codigo';
+}
+
+export class FilterProjetoMDODto extends IntersectionType(FilterProjetoDto, ProjetoMDOOrderByDto) {
     @IsOptional()
     @IsInt({ each: true })
     @Transform(NumberArrayTransformOrEmpty)
