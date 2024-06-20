@@ -36,8 +36,9 @@ import {
     ListProjetoDto,
     ListProjetoSeiDto,
     ProjetoDetailDto,
+    ProjetoDetailMdoDto,
     ProjetoMdoDto,
-    ProjetoSeiDto
+    ProjetoSeiDto,
 } from './entities/projeto.entity';
 import { ProjetoSeiService } from './projeto.sei.service';
 import { ProjetoService } from './projeto.service';
@@ -321,8 +322,8 @@ export class ProjetoMDOController {
     @Get(':id')
     @ApiBearerAuth('access-token')
     @Roles([...rolesMDO])
-    async findOne(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt): Promise<ProjetoDetailDto> {
-        return await this.projetoService.findOne('MDO', params.id, user, 'ReadOnly');
+    async findOne(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt): Promise<ProjetoDetailMdoDto> {
+        return (await this.projetoService.findOne('MDO', params.id, user, 'ReadOnly')) as ProjetoDetailMdoDto;
     }
 
     @Patch(':id')

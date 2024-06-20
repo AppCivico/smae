@@ -21,7 +21,9 @@ import {
     UpdateProjetoDto,
 } from './dto/update-projeto.dto';
 import {
+    ProjetoDetailBaseMdo,
     ProjetoDetailDto,
+    ProjetoDetailMdoDto,
     ProjetoDocumentoDto,
     ProjetoDto,
     ProjetoEquipeItemDto,
@@ -1103,7 +1105,7 @@ export class ProjetoService {
         id: number,
         user: PessoaFromJwt | undefined,
         readonly: ReadOnlyBooleanType
-    ): Promise<ProjetoDetailDto> {
+    ): Promise<ProjetoDetailDto | ProjetoDetailMdoDto> {
         if (tipo == 'AUTO') {
             const projeto = await this.prisma.projeto.findFirstOrThrow({
                 where: { id: id, removido_em: null },
@@ -1370,6 +1372,10 @@ export class ProjetoService {
                 secretario_colaborador: true,
                 orgao_colaborador: { select: { id: true, sigla: true, descricao: true } },
                 colaboradores_no_orgao: true,
+                orgao_origem: { select: { id: true, sigla: true, descricao: true } },
+                grupo_tematico: { select: { id: true, nome: true } },
+                tipo_intervencao: { select: { id: true, nome: true } },
+                equipamento: { select: { id: true, nome: true } },
             },
         });
         if (!projeto) throw new HttpException('Projeto não encontrado ou sem permissão para acesso', 400);
@@ -1440,43 +1446,89 @@ export class ProjetoService {
 
         const tarefaCrono = projeto.TarefaCronograma[0] ? projeto.TarefaCronograma[0] : undefined;
 
-        return {
-            ...{
-                ...{ ...projeto, ProjetoGrupoPortfolio: undefined, TarefaCronograma: undefined },
-                portfolio: {
-                    ...{
-                        ...projeto.portfolio,
-                        orgaos: undefined,
-                        // Agora o cronograma sempre será liberado para uso. No entanto, se o projeto estiver em Registro.
-                        // Deve ser limitado ao nível 1.
-                        nivel_maximo_tarefa:
-                            projeto.status == ProjetoStatus.Registrado ? 1 : projeto.portfolio.nivel_maximo_tarefa,
-                    },
-                },
-                tarefa_cronograma: projeto.TarefaCronograma[0] ?? null,
-                grupo_portfolio: projeto.ProjetoGrupoPortfolio.map((r) => r.grupo_portfolio_id),
+        let ret: ProjetoDetailDto = {
+            id: projeto.id,
+            meta_id: projeto.meta_id,
+            iniciativa_id: projeto.iniciativa_id,
+            atividade_id: projeto.atividade_id,
+            projeto_etapa: projeto.projeto_etapa,
+            nome: projeto.nome,
+            status: projeto.status,
+            fase: projeto.fase,
+            resumo: projeto.resumo,
+            portfolio_id: projeto.portfolio_id,
 
-                previsao_custo: projeto.previsao_custo,
-                previsao_duracao: projeto.previsao_duracao,
-                previsao_inicio: projeto.previsao_inicio,
-                previsao_termino: projeto.previsao_termino,
+            codigo: projeto.codigo,
+            objeto: projeto.objeto,
+            objetivo: projeto.objetivo,
+            publico_alvo: projeto.publico_alvo,
+            previsao_inicio: projeto.previsao_inicio,
+            previsao_custo: projeto.previsao_custo,
+            previsao_duracao: projeto.previsao_duracao,
+            previsao_termino: projeto.previsao_termino,
+            nao_escopo: projeto.nao_escopo,
 
-                previsao_calculada: tarefaCrono ? true : false,
+            principais_etapas: projeto.principais_etapas,
+            orgao_gestor: projeto.orgao_gestor,
+            orgao_responsavel: projeto.orgao_responsavel,
+            responsavel: projeto.responsavel,
+            premissas: projeto.premissas,
+            restricoes: projeto.restricoes,
+            fonte_recursos: projeto.fonte_recursos,
+            origem_tipo: projeto.origem_tipo,
+            origem_outro: projeto.origem_outro,
+            meta_codigo: projeto.meta_codigo,
+            selecionado_em: projeto.selecionado_em,
+            em_planejamento_em: projeto.em_planejamento_em,
+            data_aprovacao: projeto.data_aprovacao,
+            data_revisao: projeto.data_revisao,
+            versao: projeto.versao,
+            eh_prioritario: projeto.eh_prioritario,
+            arquivado: projeto.arquivado,
+            secretario_executivo: projeto.secretario_executivo,
+            secretario_responsavel: projeto.secretario_responsavel,
+            coordenador_ue: projeto.coordenador_ue,
+            equipe: projeto.equipe,
 
-                atraso: tarefaCrono?.atraso ?? null,
-                em_atraso: tarefaCrono?.em_atraso ?? false,
-                projecao_termino: tarefaCrono?.projecao_termino ?? null,
-                realizado_duracao: tarefaCrono?.realizado_duracao ?? null,
-                percentual_concluido: tarefaCrono?.percentual_concluido ?? null,
-                realizado_inicio: tarefaCrono?.realizado_inicio ?? null,
-                realizado_termino: tarefaCrono?.realizado_termino ?? null,
-                realizado_custo: tarefaCrono?.realizado_custo ?? null,
-                tolerancia_atraso: tarefaCrono?.tolerancia_atraso ?? 0,
-                percentual_atraso: tarefaCrono?.percentual_atraso ?? null,
-                status_cronograma: tarefaCrono?.status_cronograma ?? null,
-            },
+            ano_orcamento: projeto.ano_orcamento,
+            regiao: projeto.regiao,
+            logradouro_tipo: projeto.logradouro_tipo,
+            logradouro_nome: projeto.logradouro_nome,
+            logradouro_numero: projeto.logradouro_numero,
+            logradouro_cep: projeto.logradouro_cep,
+
             secretario_colaborador: projeto.secretario_colaborador,
             orgao_colaborador: projeto.orgao_colaborador,
+
+            portfolio: {
+                ...{
+                    ...projeto.portfolio,
+                    orgaos: undefined,
+                    // Agora o cronograma sempre será liberado para uso. No entanto, se o projeto estiver em Registro.
+                    // Deve ser limitado ao nível 1.
+                    nivel_maximo_tarefa:
+                        projeto.status == ProjetoStatus.Registrado ? 1 : projeto.portfolio.nivel_maximo_tarefa,
+                },
+            },
+
+            tarefa_cronograma: projeto.TarefaCronograma[0] ?? null,
+            grupo_portfolio: projeto.ProjetoGrupoPortfolio.map((r) => r.grupo_portfolio_id),
+
+            orgao_origem: projeto.orgao_origem,
+
+            previsao_calculada: tarefaCrono ? true : false,
+
+            atraso: tarefaCrono?.atraso ?? null,
+            em_atraso: tarefaCrono?.em_atraso ?? false,
+            projecao_termino: tarefaCrono?.projecao_termino ?? null,
+            realizado_duracao: tarefaCrono?.realizado_duracao ?? null,
+            percentual_concluido: tarefaCrono?.percentual_concluido ?? null,
+            realizado_inicio: tarefaCrono?.realizado_inicio ?? null,
+            realizado_termino: tarefaCrono?.realizado_termino ?? null,
+            realizado_custo: tarefaCrono?.realizado_custo ?? null,
+            tolerancia_atraso: tarefaCrono?.tolerancia_atraso ?? 0,
+            percentual_atraso: tarefaCrono?.percentual_atraso ?? null,
+            status_cronograma: tarefaCrono?.status_cronograma ?? null,
             colaboradores_no_orgao: colaboradores_no_orgao,
             regioes: projeto.ProjetoRegiao.map((r) => r.regiao),
             meta: meta,
@@ -1500,6 +1552,21 @@ export class ProjetoService {
                   })
                 : null,
         };
+
+        if (tipo == 'MDO') {
+            const retMdo: ProjetoDetailBaseMdo = {
+                equipamento: projeto.equipamento,
+                tipo_intervencao: projeto.tipo_intervencao,
+                grupo_tematico: projeto.grupo_tematico || { id: 0, nome: '' },
+            };
+
+            ret = {
+                ...ret,
+                ...retMdo,
+            };
+        }
+
+        return ret;
     }
 
     private async calcPermissions(
