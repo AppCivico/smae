@@ -8,11 +8,16 @@ import { TarefaCronogramaDto } from 'src/common/dto/TarefaCronograma.dto';
 import { IdTituloDto } from '../../../common/dto/IdTitulo.dto';
 import { GeolocalizacaoDto } from '../../../geo-loc/entities/geo-loc.entity';
 import { ArquivoBaseDto } from '../../../upload/dto/create-upload.dto';
+import { IdNomeDto } from '../../../common/dto/IdNome.dto';
 
 export class ProjetoDto {
     id: number;
     nome: string;
-    @ApiProperty({ enum: ProjetoStatus, enumName: 'ProjetoStatus' })
+    @ApiProperty({
+        enum: ProjetoStatus,
+        enumName: 'ProjetoStatus',
+        description: 'Status do projeto, apenas os que não começam com MDO...',
+    })
     status: ProjetoStatus;
     orgao_responsavel: IdSiglaDescricao | null;
     arquivado: boolean;
@@ -24,7 +29,24 @@ export class ProjetoDto {
     geolocalizacao: GeolocalizacaoDto[];
 }
 
-export class ProjetoMdoDto {}
+export class ProjetoMdoDto {
+    id: number;
+    nome: string;
+    codigo: string | null;
+    portfolio: IdTituloDto;
+    orgao_origem: IdSiglaDescricao;
+    grupo_tematico: IdNomeDto;
+    tipo_intervencao: IdNomeDto | null;
+    equipamento: IdNomeDto | null;
+    regioes: string;
+
+    @ApiProperty({
+        enum: ProjetoStatus,
+        enumName: 'ProjetoStatus',
+        description: 'Status da obra, apenas os que começam com MDO_...',
+    })
+    status: ProjetoStatus;
+}
 
 export class ListProjetoDto {
     linhas: ProjetoDto[];
