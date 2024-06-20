@@ -19,7 +19,7 @@ export const useSubtemasPsStore = defineStore('subtemasPsStore', {
       this.erro = null;
 
       try {
-        const resposta = await this.requestS.get(`${baseUrl}/subtema/${id}`, params);
+        const resposta = await this.requestS.get(`${baseUrl}/plano-setorial-subtema/${id}`, params);
         this.emFoco = {
           ...resposta,
         };
@@ -34,7 +34,7 @@ export const useSubtemasPsStore = defineStore('subtemasPsStore', {
       this.erro = null;
 
       try {
-        const { linhas } = await this.requestS.get(`${baseUrl}/subtema`, params);
+        const { linhas } = await this.requestS.get(`${baseUrl}/plano-setorial-subtema`, params);
         this.lista = linhas;
       } catch (erro) {
         this.erro = erro;
@@ -47,7 +47,7 @@ export const useSubtemasPsStore = defineStore('subtemasPsStore', {
       this.erro = null;
 
       try {
-        await this.requestS.delete(`${baseUrl}/subtema/${id}`);
+        await this.requestS.delete(`${baseUrl}/plano-setorial-subtema/${id}`);
         this.chamadasPendentes.lista = false;
         return true;
       } catch (erro) {
@@ -63,9 +63,9 @@ export const useSubtemasPsStore = defineStore('subtemasPsStore', {
 
       try {
         if (id) {
-          await this.requestS.patch(`${baseUrl}/subtema/${id}`, params);
+          await this.requestS.patch(`${baseUrl}/plano-setorial-subtema/${id}`, params);
         } else {
-          await this.requestS.post(`${baseUrl}/subtema`, params);
+          await this.requestS.post(`${baseUrl}/plano-setorial-subtema`, params);
         }
 
         this.chamadasPendentes.emFoco = false;

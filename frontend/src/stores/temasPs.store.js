@@ -19,7 +19,7 @@ export const useTemasPsStore = defineStore('temasPsStore', {
       this.erro = null;
 
       try {
-        const resposta = await this.requestS.get(`${baseUrl}/tema/${id}`, params);
+        const resposta = await this.requestS.get(`${baseUrl}/plano-setorial-tema/${id}`, params);
         this.emFoco = {
           ...resposta,
         };
@@ -34,7 +34,7 @@ export const useTemasPsStore = defineStore('temasPsStore', {
       this.erro = null;
 
       try {
-        const { linhas } = await this.requestS.get(`${baseUrl}/tema`, params);
+        const { linhas } = await this.requestS.get(`${baseUrl}/plano-setorial-tema`, params);
         this.lista = linhas;
       } catch (erro) {
         this.erro = erro;
@@ -47,7 +47,7 @@ export const useTemasPsStore = defineStore('temasPsStore', {
       this.erro = null;
 
       try {
-        await this.requestS.delete(`${baseUrl}/tema/${id}`);
+        await this.requestS.delete(`${baseUrl}/plano-setorial-tema/${id}`);
         this.chamadasPendentes.lista = false;
         return true;
       } catch (erro) {
@@ -63,9 +63,9 @@ export const useTemasPsStore = defineStore('temasPsStore', {
 
       try {
         if (id) {
-          await this.requestS.patch(`${baseUrl}/tema/${id}`, params);
+          await this.requestS.patch(`${baseUrl}/plano-setorial-tema/${id}`, params);
         } else {
-          await this.requestS.post(`${baseUrl}/tema`, params);
+          await this.requestS.post(`${baseUrl}/plano-setorial-tema`, params);
         }
 
         this.chamadasPendentes.emFoco = false;
