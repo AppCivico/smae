@@ -1,5 +1,5 @@
-import { SubTema } from '../entities/subtema.entity';
+import { SubTemaDto } from '../entities/subtema.entity';
 
 export class ListSubTemaDto {
-    linhas: SubTema[];
+    linhas: SubTemaDto[];
 }
