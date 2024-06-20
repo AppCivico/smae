@@ -114,8 +114,10 @@ async function onSubmit(values) {
   }
 }
 
-if (props.temaId) {
-  temasStore.buscarItem(props.temaId);
+temasStore.$reset();
+// não foi usada a prop.temaId pois estava vazando do edit na hora de criar uma nova
+if (route.params?.temaId) {
+  temasStore.buscarItem(route.params?.temaId);
 }
 </script>
 

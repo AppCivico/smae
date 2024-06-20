@@ -114,8 +114,10 @@ async function onSubmit(values) {
   }
 }
 
-if (props.macrotemaId) {
-  macrotemasStore.buscarItem(props.macrotemaId);
+macrotemasStore.$reset();
+// não foi usada a prop.macrotemaId pois estava vazando do edit na hora de criar uma nova
+if (route.params?.macrotemaId) {
+  macrotemasStore.buscarItem(route.params?.macrotemaId);
 }
 </script>
 
