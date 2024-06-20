@@ -2891,6 +2891,9 @@ export class ProjetoService {
                 grupo_tematico_id: filters.grupo_tematico_id ? { in: filters.grupo_tematico_id } : undefined,
                 tipo_intervencao_id: filters.tipo_intervencao_id ? { in: filters.tipo_intervencao_id } : undefined,
                 equipamento_id: filters.equipamento_id ? { in: filters.equipamento_id } : undefined,
+                eh_prioritario: filters.eh_prioritario,
+                arquivado: filters.arquivado,
+                orgao_responsavel_id: filters.orgao_responsavel_id,
             },
         ];
         return permissionsBaseSet;
