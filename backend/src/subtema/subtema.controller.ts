@@ -12,6 +12,8 @@ import {
     Query,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiNoContentResponse, ApiTags } from '@nestjs/swagger';
+import { TipoPdm } from '@prisma/client';
+import { ListaDePrivilegios } from 'src/common/ListaDePrivilegios';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
@@ -21,10 +23,8 @@ import { CreateSubTemaDto } from './dto/create-subtema.dto';
 import { FilterSubTemaDto } from './dto/filter-subtema.dto';
 import { ListSubTemaDto } from './dto/list-subtema.dto';
 import { UpdateSubTemaDto } from './dto/update-subtema.dto';
-import { SubTemaService } from './subtema.service';
-import { ListaDePrivilegios } from 'src/common/ListaDePrivilegios';
-import { TipoPdm } from '@prisma/client';
 import { SubTemaDto } from './entities/subtema.entity';
+import { SubTemaService } from './subtema.service';
 
 @ApiTags('SubTema para PDM')
 @Controller('subtema')
