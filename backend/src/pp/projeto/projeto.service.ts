@@ -525,14 +525,6 @@ export class ProjetoService {
                 );
         }
 
-        // verifica se as regiões de nível X estão no mesmo pai (pra n ficar tão esquisito)
-        const regions = regioes.filter((r) => r.nivel == nivel_regionalizacao);
-        const parent = regions[0]?.parente_id;
-        if (!regions.every((r) => r.parente_id == parent))
-            throw new BadRequestException(
-                `Regiões de nível ${nivel_regionalizacao} devem ter o mesmo pai, ou nenhum pai`
-            );
-
         // verifica se as regiões de nível X+1 tem o pai na lista
         const regioesFilhas = regioes.filter((r) => r.nivel == nivel_regionalizacao + 1);
         for (const r of regioesFilhas) {
@@ -546,6 +538,23 @@ export class ProjetoService {
                 );
             }
         }
+
+        // verifica se as regiões de nível X estão no mesmo pai (pra n ficar tão esquisito)
+
+        // como atualmente o sistema esta com fixo nivel_regionalizacao=3 (Subprefeitura) para MDO
+        // então precisamos chegar na cidade (nivel 2, região norte/sul/etc) e puxar o parente_id (nivel 1, município)
+
+        const regions3 = regioes.filter((r) => r.nivel == nivel_regionalizacao);
+        const regions2 = await this.prisma.regiao.findMany({
+            where: {
+                id: { in: regions3.map((r) => r.parente_id ?? 0) },
+            },
+            select: { parente_id: true },
+        });
+
+        const parent2 = regions2[0]?.parente_id;
+        if (!regions2.every((r) => r.parente_id == parent2))
+            throw new BadRequestException(`Todas as subprefeituras devem estar no mesmo município (região de nível 1)`);
     }
 
     private async verificaGrupoTematico(dto: CreateProjetoDto | UpdateProjetoDto) {
