@@ -70,7 +70,7 @@ export class PPStatusService implements ReportableService {
                         },
                     },
                     select: {
-                        detalhamento_status: true,
+                        detalhamento: true,
                         pontos_atencao: true,
                         cronograma_paralisado: true,
                     },
@@ -103,7 +103,7 @@ export class PPStatusService implements ReportableService {
                 cronograma: cronograma,
 
                 orgao_responsavel_sigla: p?.orgao_responsavel?.sigla ?? null,
-                detalhamento_status: acompanhamento?.detalhamento_status ?? null,
+                detalhamento: acompanhamento?.detalhamento ?? null,
                 pontos_atencao: acompanhamento?.pontos_atencao ?? null,
 
                 tarefas: p.TarefaCronograma.length
