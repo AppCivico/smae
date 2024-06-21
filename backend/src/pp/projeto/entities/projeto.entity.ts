@@ -268,6 +268,8 @@ export class ProjetoDetailDto {
     colaboradores_no_orgao: IdNomeExibicaoDto[];
 
     orgao_origem: IdSiglaDescricao | null;
+
+    tags: IdDesc[];
 }
 
 export class ProjetoDetailBaseMdo {
@@ -275,9 +277,7 @@ export class ProjetoDetailBaseMdo {
     tipo_intervencao: IdNomeDto | null;
     equipamento: IdNomeDto | null;
 }
-export class ProjetoDetailMdoDto extends IntersectionType(ProjetoDetailBaseMdo, ProjetoDetailDto) {
-
-}
+export class ProjetoDetailMdoDto extends IntersectionType(ProjetoDetailBaseMdo, ProjetoDetailDto) {}
 
 export class ProjetoMVPDto extends PickType(ProjetoDetailDto, ['id', 'portfolio_id']) {}
 
