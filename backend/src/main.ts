@@ -135,6 +135,7 @@ function setupSwaggerModule(
         swaggerOptions: {
             persistAuthorization: true,
             filter: '',
+            syntaxHighlight: false,
             docExpansion: 'list', // none
         },
     });
