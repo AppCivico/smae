@@ -9,6 +9,7 @@ import níveisDeRepresentatividade from '@/consts/niveisDeRepresentatividade';
 import níveisDeSuplência from '@/consts/niveisDeSuplencia';
 import regEx from '@/consts/patterns';
 import responsabilidadeEtapaFluxo from '@/consts/responsabilidadeEtapaFluxo';
+import statusObras from '@/consts/statusObras';
 import tiposDeLogradouro from '@/consts/tiposDeLogradouro';
 import tiposDeMunicípio from '@/consts/tiposDeMunicipio';
 import tiposNaEquipeDeParlamentar from '@/consts/tiposNaEquipeDeParlamentar';
@@ -27,7 +28,6 @@ import {
   setLocale,
   string,
 } from 'yup';
-import statusObras from './statusObras';
 
 const dataMin = import.meta.env.VITE_DATA_MIN ? new Date(`${import.meta.env.VITE_DATA_MIN}`) : new Date('1900-01-01T00:00:00Z');
 const dataMax = import.meta.env.VITE_DATA_MAX ? new Date(`${import.meta.env.VITE_DATA_MAX}`) : new Date('2100-12-31T23:59:59Z');
@@ -915,7 +915,7 @@ export const obras = object({
     .nullable(),
   status: mixed()
     .label('Status')
-    .oneOf(statusObras)
+    .oneOf(Object.keys(statusObras))
     .required(),
   tipo_intervencao_id: number()
     .label('Tipo de obra/intervenção*')
