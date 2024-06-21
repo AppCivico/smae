@@ -11,7 +11,9 @@ export default {
 </svg>`,
     rotaPrescindeDeChave: true,
     limitarÀsPermissões: [
-      'PS.',
+      'CadastroPS.',
+      'CadastroSubTema.inserir',
+
     ],
   },
   children: [
