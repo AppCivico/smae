@@ -13,7 +13,6 @@ export default {
     limitarÀsPermissões: [
       'CadastroPS.',
       'CadastroSubTema.inserir',
-
     ],
   },
   children: [
@@ -49,6 +48,7 @@ export default {
           const rotas = [
             'planosSetoriaisResumo',
             'planosSetoriaisDocumentos',
+            'planosSetoriaisTags',
           ];
 
           if (usePlanosSetoriaisStore()?.emFoco?.possui_macro_tema) {
@@ -119,6 +119,42 @@ export default {
               meta: {
                 rotaDeEscape: 'planosSetoriaisDocumentos',
                 títuloParaMenu: 'Novo documento',
+              },
+            },
+          ],
+        },
+        {
+          path: 'tag',
+          component: () => import('@/views/ps.tags/TagsRaiz.vue'),
+          children: [
+            {
+              path: '',
+              name: 'planosSetoriaisTags',
+              component: () => import('@/views/ps.tags/TagsLista.vue'),
+              meta: {
+                título: 'Tag',
+              },
+            },
+            {
+              path: 'novo',
+              name: 'planosSetoriaisNovaTag',
+              component: () => import('@/views/ps.tags/TagsCriarEditar.vue'),
+              meta: {
+                rotaDeEscape: 'planosSetoriaisTags',
+                título: 'Nova Tag',
+              },
+            },
+            {
+              path: ':tagId',
+              name: 'planosSetoriaisEditarTag',
+              component: () => import('@/views/ps.tags/TagsCriarEditar.vue'),
+              props: ({ params }) => ({
+                ...params,
+                ...{ tagId: Number.parseInt(params.tagId, 10) || undefined },
+              }),
+              meta: {
+                título: 'Editar Tag',
+                rotaDeEscape: 'planosSetoriaisTags',
               },
             },
           ],
