@@ -27,6 +27,7 @@ export class MacroTemaService {
                 where: {
                     pdm_id: createEixoDto.pdm_id,
                     pdm: { tipo, id: createEixoDto.pdm_id },
+                    removido_em: null,
                     descricao: {
                         equals: createEixoDto.descricao,
                         mode: 'insensitive',
@@ -83,6 +84,7 @@ export class MacroTemaService {
                     const descricaoExists = await prismaTx.macroTema.count({
                         where: {
                             pdm_id: self.pdm_id,
+                            removido_em: null,
                             descricao: {
                                 equals: updateEixoDto.descricao,
                                 mode: 'insensitive',

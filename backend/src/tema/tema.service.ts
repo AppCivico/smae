@@ -18,6 +18,7 @@ export class TemaService {
                 where: {
                     pdm_id: dto.pdm_id,
                     pdm: { tipo, id: dto.pdm_id },
+                    removido_em: null,
                     descricao: {
                         equals: dto.descricao,
                         mode: 'insensitive',
@@ -75,6 +76,7 @@ export class TemaService {
                     const descricaoExists = await prismaTx.tema.count({
                         where: {
                             pdm_id: self.pdm_id,
+                            removido_em: null,
                             descricao: {
                                 equals: dto.descricao,
                                 mode: 'insensitive',
