@@ -7,7 +7,7 @@ import { CreateRelMonitoramentoMensalDto } from '../monitoramento-mensal/dto/cre
 import { PdmCreateOrcamentoExecutadoDto as CreateRelPdmOrcamentoExecutadoDto } from '../orcamento/dto/create-orcamento-executado.dto';
 import { CreateRelProjetoDto } from '../pp-projeto/dto/create-previsao-custo.dto';
 import { CreateRelProjetosDto } from '../pp-projetos/dto/create-projetos.dto';
-import { CreateRelProjetoStatusDto } from '../pp-status/dto/create-projeto-status.dto';
+import { CreateRelObraStatusDto, CreateRelProjetoStatusDto } from '../pp-status/dto/create-projeto-status.dto';
 import { CreateRelPrevisaoCustoDto as CreateRelPdmPrevisaoCustoDto } from '../previsao-custo/dto/create-previsao-custo.dto';
 import { CreateRelProjetoOrcamentoDto } from '../projeto-orcamento/dto/create-projeto-orcamento.dto';
 import { CreateRelProjetoPrevisaoCustoDto } from '../projeto-previsao-custo/dto/create-projeto-previsao-custo.dto';
@@ -115,8 +115,11 @@ export function ParseParametrosDaFonte(fonte: FonteRelatorio, value: any): any {
         case 'Transferencias':
             theClass = CreateRelTransferenciasDto;
             break;
+        case 'ObraStatus':
+            theClass = CreateRelObraStatusDto;
+            break;
         default:
-            return false;
+            fonte satisfies never;
     }
     const validatorObject = plainToInstance(theClass, value);
 

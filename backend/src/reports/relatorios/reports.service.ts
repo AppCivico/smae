@@ -57,6 +57,11 @@ export class ReportsService {
         // TODO agora que existem vários sistemas, conferir se o privilégio faz sentido com o serviço
         const service: ReportableService | null = this.servicoDaFonte(dto);
 
+        // Ajusta o tipo de relatório para MDO, se for de status de obra
+        if (dto.fonte == 'ObraStatus') {
+            dto.parametros.tipo = 'MDO';
+        }
+
         // acaba sendo chamado 2x a cada request, pq já rodou 1x na validação, mas blz.
         const parametros = ParseParametrosDaFonte(dto.fonte, dto.parametros);
 
@@ -157,6 +162,7 @@ export class ReportsService {
                 service = this.ppProjetosService;
                 break;
             case 'ProjetoStatus':
+            case 'ObraStatus':
                 service = this.ppStatusService;
                 break;
             case 'Parlamentares':
@@ -165,6 +171,8 @@ export class ReportsService {
             case 'Transferencias':
                 service = this.transferenciasService;
                 break;
+            default:
+                dto.fonte satisfies never;
         }
         if (service === null) throw new HttpException(`Fonte ${dto.fonte} ainda não foi implementada`, 500);
         return service;
