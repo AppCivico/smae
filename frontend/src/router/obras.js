@@ -58,7 +58,6 @@ export default {
           'obrasListar',
         ],
         rotasParaMenuSecundário: [
-          'obrasListar',
           'obrasResumo',
           'obrasTarefasListar',
           {
@@ -87,7 +86,7 @@ export default {
               'MDO.espectador_de_projeto',
             ],
             rotaDeEscape: 'obrasListar',
-            título: 'Editar Cadastro de Obras',
+            título: 'Editar Obra',
           },
         },
         {
