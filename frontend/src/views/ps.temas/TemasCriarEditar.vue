@@ -96,10 +96,10 @@ async function onSubmit(values) {
 
     const dataToSend = { ...values, pdm_id: Number(route.params.planoSetorialId) };
 
-    if (props.temaId) {
+    if (route.params?.temaId) {
       response = await temasStore.salvarItem(
         dataToSend,
-        props.temaId,
+        route.params?.temaId,
       );
     } else {
       response = await temasStore.salvarItem(dataToSend);
