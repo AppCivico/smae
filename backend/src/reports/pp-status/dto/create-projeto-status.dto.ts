@@ -1,9 +1,16 @@
+import { ApiHideProperty, ApiProperty } from '@nestjs/swagger';
+import { TipoProjeto } from '@prisma/client';
 import { Transform } from 'class-transformer';
-import { IsInt, IsOptional } from 'class-validator';
+import { IsEnum, IsInt, IsOptional } from 'class-validator';
 import { IsOnlyDate } from 'src/common/decorators/IsDateOnly';
 import { DateTransform } from '../../../auth/transforms/date.transform';
 
 export class CreateRelProjetoStatusDto {
+    @IsOptional()
+    @IsEnum(TipoProjeto)
+    @ApiHideProperty()
+    tipo?: TipoProjeto = 'PP';
+
     @IsInt()
     @Transform(({ value }: any) => +value)
     portfolio_id: number;
@@ -22,4 +29,12 @@ export class CreateRelProjetoStatusDto {
     @IsOnlyDate()
     @Transform(DateTransform)
     periodo_fim?: Date | null;
+}
+
+export class CreateRelObraStatusDto extends CreateRelProjetoStatusDto {
+    @IsInt()
+    @IsOptional()
+    @Transform(({ value }: any) => +value)
+    @ApiProperty({ description: 'Id da obra' })
+    projeto_id?: number;
 }
