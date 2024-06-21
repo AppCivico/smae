@@ -231,7 +231,7 @@ async function buscarPossíveisColaboradores() {
 // PRA-FAZER: não usando o `controlledValues` devido à algum erro no campo de
 // mapa. Trazer de volta.
 const onSubmit = handleSubmit(async () => {
-  const carga = valores;
+  const carga = values;
 
   switch (true) {
     case !!carga.atividade_id:
