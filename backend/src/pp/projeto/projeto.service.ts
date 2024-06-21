@@ -350,6 +350,18 @@ export class ProjetoService {
         const status = dto.status ?? statusPadrao;
         const now = new Date(Date.now());
 
+        if (dto.tags === null) dto.tags = [];
+
+        if (Array.isArray(dto.tags)) {
+            const tags = await this.prisma.projetoTag.findMany({
+                where: { id: { in: dto.tags }, tipo_projeto: tipo, removido_em: null },
+                select: { id: true },
+            });
+
+            if (tags.length !== dto.tags.length)
+                throw new HttpException('tags| Uma ou mais tag não foi encontrada', 400);
+        }
+
         const created = await this.prisma.$transaction(
             async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
                 const row = await prismaTx.projeto.create({
@@ -433,6 +445,7 @@ export class ProjetoService {
                         colaboradores_no_orgao: dto.colaboradores_no_orgao ?? [],
                         orgao_colaborador_id: dto.orgao_colaborador_id,
                         secretario_colaborador: dto.secretario_colaborador,
+                        tags: dto.tags ?? [],
                     },
                     select: { id: true },
                 });
@@ -946,11 +959,7 @@ export class ProjetoService {
             waterfallSet.push({ responsavel_id: user.id });
 
             this.logger.verbose(
-                `Adicionar ver projetos onde equipe contém pessoa_id=${
-                    user.id
-                } (SMAE|MDO.colaborador_de_projeto) ou colaboradores_no_orgao contém pessoa_id=${
-                    user.id
-                } (SMAE|MDO.colaborador_de_projeto)`
+                `Adicionar ver projetos onde equipe contém pessoa_id=${user.id} (SMAE|MDO.colaborador_de_projeto) ou colaboradores_no_orgao contém pessoa_id=${user.id} (SMAE|MDO.colaborador_de_projeto)`
             );
             waterfallSet.push({
                 OR: [
@@ -969,9 +978,7 @@ export class ProjetoService {
 
         if (user.hasSomeRoles([tipo == 'PP' ? 'SMAE.espectador_de_projeto' : 'MDO.colaborador_de_projeto'])) {
             this.logger.verbose(
-                `Adicionar ver projetos e portfolios que participam dos grupo-portfolios contendo pessoa_id=${
-                    user.id
-                } (SMAE|MDO.espectador_de_projeto)`
+                `Adicionar ver projetos e portfolios que participam dos grupo-portfolios contendo pessoa_id=${user.id} (SMAE|MDO.espectador_de_projeto)`
             );
             waterfallSet.push({
                 OR: [
@@ -1376,6 +1383,7 @@ export class ProjetoService {
                 grupo_tematico: { select: { id: true, nome: true } },
                 tipo_intervencao: { select: { id: true, nome: true } },
                 equipamento: { select: { id: true, nome: true } },
+                tags: true,
             },
         });
         if (!projeto) throw new HttpException('Projeto não encontrado ou sem permissão para acesso', 400);
@@ -1427,7 +1435,7 @@ export class ProjetoService {
             };
         }
 
-        const [responsaveis_no_orgao_gestor, colaboradores_no_orgao] = await Promise.all([
+        const [responsaveis_no_orgao_gestor, colaboradores_no_orgao, tags] = await Promise.all([
             this.prisma.pessoa.findMany({
                 where: { id: { in: projeto.responsaveis_no_orgao_gestor } },
                 select: {
@@ -1440,6 +1448,13 @@ export class ProjetoService {
                 select: {
                     id: true,
                     nome_exibicao: true,
+                },
+            }),
+            this.prisma.projetoTag.findMany({
+                where: { id: { in: projeto.tags } },
+                select: {
+                    id: true,
+                    descricao: true,
                 },
             }),
         ]);
@@ -1551,6 +1566,7 @@ export class ProjetoService {
                       return { id: pc.portfolio.id, titulo: pc.portfolio.titulo };
                   })
                 : null,
+            tags,
         };
 
         if (tipo == 'MDO') {
@@ -1829,9 +1845,7 @@ export class ProjetoService {
             }
 
             this.logger.verbose(
-                `pessoa pode escrever: pessoaPodeEscrever=${pessoaPodeEscrever} sou_responsavel=${
-                    permissoes.sou_responsavel
-                } ehResp: ${ehResp} ehEquipe: ${ehEquipe} ehColaborador: ${ehColaborador}`
+                `pessoa pode escrever: pessoaPodeEscrever=${pessoaPodeEscrever} sou_responsavel=${permissoes.sou_responsavel} ehResp: ${ehResp} ehEquipe: ${ehEquipe} ehColaborador: ${ehColaborador}`
             );
 
             if (pessoaPodeEscrever) return true;
@@ -1899,9 +1913,7 @@ export class ProjetoService {
             }
 
             this.logger.verbose(
-                `pessoa pode escrever: pessoaPodeEscrever=${pessoaPodeEscrever} sou_responsavel=${
-                    permissoes.sou_responsavel
-                } ehResp: ${ehResp} ehEquipe: ${ehEquipe} ehColaborador: ${ehColaborador}`
+                `pessoa pode escrever: pessoaPodeEscrever=${pessoaPodeEscrever} sou_responsavel=${permissoes.sou_responsavel} ehResp: ${ehResp} ehEquipe: ${ehEquipe} ehColaborador: ${ehColaborador}`
             );
 
             if (ehResp) {
@@ -1995,10 +2007,30 @@ export class ProjetoService {
 
         const now = new Date(Date.now());
 
+        if (dto.tags == null) dto.tags = [];
+
         await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient) => {
             await this.upsertPremissas(dto, prismaTx, projetoId);
             await this.upsertRestricoes(dto, prismaTx, projetoId);
             await this.upsertFonteRecurso(dto, prismaTx, projetoId);
+
+            if (Array.isArray(dto.tags)) {
+                const newTagsSorted = dto.tags.sort().join(',');
+                const oldTagsSorted = projeto.tags
+                    .map((t) => t.id)
+                    .sort()
+                    .join(',');
+
+                if (newTagsSorted !== oldTagsSorted) {
+                    const tags = await prismaTx.projetoTag.findMany({
+                        where: { id: { in: dto.tags }, tipo_projeto: tipo, removido_em: null },
+                        select: { id: true },
+                    });
+
+                    if (tags.length !== dto.tags.length)
+                        throw new HttpException('tags| Uma ou mais tag não foi encontrada', 400);
+                }
+            }
 
             if ('regiao_ids' in dto) {
                 const regioes = await prismaTx.projetoRegiao.findMany({
@@ -2157,6 +2189,8 @@ export class ProjetoService {
                     colaboradores_no_orgao: dto.colaboradores_no_orgao ?? [],
                     orgao_colaborador_id: dto.orgao_colaborador_id,
                     secretario_colaborador: dto.secretario_colaborador,
+
+                    tags: dto.tags ?? [],
                 },
             });
 
