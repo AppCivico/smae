@@ -10,7 +10,6 @@
         Novo
       </router-link>
     </div>
-    lista:  <pre class="debug">{{ lista }}</pre>
     <table class="tablemain">
       <col>
       <col>
@@ -42,8 +41,6 @@
           <th>
             status da obra
           </th>
-          <th />
-          <th />
         </tr>
       </thead>
       <tbody>
@@ -51,42 +48,21 @@
           v-for="item in lista"
           :key="item.id"
         >
-          <td>{{ item.titulo }}</td>
-          <td>
-            <!-- {{ item.orgaos.map((x) => órgãosPorId[x.id]?.sigla || x.id).join(', ') }} -->
+          <td> {{ item.orgao_origem.sigla }} </td>
+          <td> {{ item.portfolio.titulo }} </td>
+          <td> {{ item.nome }} </td>
+          <td>{{ item.grupo_tematico.nome }}</td>
+          <td class="tc">
+            {{ item.tipo_intervencao ? item.tipo_intervencao : ' - ' }}
           </td>
-          <td>{{ item.modelo_clonagem ? 'Sim' : 'Não' }}</td>
-          <td>{{ item.modelo_clonagem ? 'Sim' : 'Não' }}</td>
-          <td>{{ item.modelo_clonagem ? 'Sim' : 'Não' }}</td>
-          <td>{{ item.modelo_clonagem ? 'Sim' : 'Não' }}</td>
-          <td>{{ item.modelo_clonagem ? 'Sim' : 'Não' }}</td>
-          <td>{{ item.modelo_clonagem ? 'Sim' : 'Não' }}</td>
-
-          <td>
-            <button
-              v-if="item?.pode_editar"
-              class="like-a__text"
-              arial-label="excluir"
-              title="excluir"
-              @click="excluirPortfolio(item.id)"
-            >
-              <svg
-                width="20"
-                height="20"
-              ><use xlink:href="#i_remove" /></svg>
-            </button>
+          <td class="tc">
+            {{ item.equipamento ? item.equipamento.nome : ' - ' }}
           </td>
-          <td>
-            <router-link
-              v-if="item?.pode_editar"
-              :to="{ name: 'portfoliosEditar', params: { portfolioId: item.id } }"
-              class="tprimary"
-            >
-              <svg
-                width="20"
-                height="20"
-              ><use xlink:href="#i_edit" /></svg>
-            </router-link>
+          <td class="tc">
+            {{ item.equipamento ? item.equipamento.nome : ' - ' }}
+          </td>
+          <td class="tc">
+            {{ item.regioes ? item.regioes : ' - ' }}
           </td>
         </tr>
         <tr v-if="chamadasPendentes.lista">
