@@ -34,7 +34,7 @@ export const useMacrotemasStore = defineStore('macrotemasStore', {
       this.erro = null;
 
       try {
-        const { linhas } = await this.requestS.get(`${baseUrl}/plano-setorial-macrotema?pdm_id=${params}`, params);
+        const { linhas } = await this.requestS.get(`${baseUrl}/plano-setorial-macrotema?pdm_id=${params}`);
         this.lista = linhas;
       } catch (erro) {
         this.erro = erro;
