@@ -26,6 +26,7 @@ export class SubTemaService {
                 where: {
                     pdm_id: dto.pdm_id,
                     pdm: { tipo, id: dto.pdm_id },
+                    removido_em: null,
                     descricao: {
                         equals: dto.descricao,
                         mode: 'insensitive',
@@ -84,6 +85,7 @@ export class SubTemaService {
                         where: {
                             pdm_id: self.pdm_id,
                             pdm: { tipo, id: dto.pdm_id },
+                            removido_em: null,
                             descricao: {
                                 equals: dto.descricao,
                                 mode: 'insensitive',
