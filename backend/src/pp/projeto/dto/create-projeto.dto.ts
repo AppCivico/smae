@@ -444,6 +444,13 @@ export class CreateProjetoDto {
     @ValidateIf((object, value) => value !== null)
     @Transform(NumberArrayTransformOrEmpty)
     colaboradores_no_orgao?: number[] | null;
+
+    @IsOptional()
+    @IsArray()
+    @IsInt({ message: '$property| tags precisa ser inteiro', each: true })
+    @ValidateIf((object, value) => value !== null)
+    @Transform(NumberArrayTransformOrEmpty)
+    tags?: number[] | null;
 }
 
 export class CreateProjetoDocumentDto {
