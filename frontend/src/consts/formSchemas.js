@@ -12,6 +12,7 @@ import responsabilidadeEtapaFluxo from '@/consts/responsabilidadeEtapaFluxo';
 import statusObras from '@/consts/statusObras';
 import tiposDeLogradouro from '@/consts/tiposDeLogradouro';
 import tiposDeMunicípio from '@/consts/tiposDeMunicipio';
+import tiposDeOrigens from '@/consts/tiposDeOrigens';
 import tiposNaEquipeDeParlamentar from '@/consts/tiposNaEquipeDeParlamentar';
 import tiposSituacaoSchema from '@/consts/tiposSituacaoSchema';
 import fieldToDate from '@/helpers/fieldToDate';
@@ -50,6 +51,21 @@ addMethod(string, 'fieldUntilToday', function (errorMessage = 'Valor de ${path} 
     } catch (error) {
       return createError({ path, message: 'Valor de ${path} inválido' });
     }
+  });
+});
+
+/**
+ * @link https://github.com/jquense/yup/issues/384#issuecomment-442958997
+ */
+addMethod(mixed, 'inArray', function _(arrayToCompare, message = '${path} not found in ${arrayToCompare}') {
+  return this.test({
+    message,
+    name: 'inArray',
+    exclusive: true,
+    params: { arrayToCompare },
+    test(value) {
+      return (this.resolve(arrayToCompare) || []).includes(value);
+    },
   });
 });
 
@@ -823,17 +839,80 @@ export const novaSenha = object()
   });
 
 export const obras = object({
+  atividade_id: number()
+    .when(['origem_tipo'], {
+      is: (origemTipo) => origemTipo === 'PdmSistema',
+      then: (field) => field.required(),
+      otherwise: (field) => field.nullable(),
+    }),
+  colaboradores_no_orgao: array()
+    .label('Ponto focal colaborador')
+    .of(
+      number()
+        .min(1),
+    )
+    .nullable(),
   equipamento_id: number()
     .label('Equipamento/Estrutura pública')
     .min(1, 'Equipamento/Estrutura pública inválida')
     .nullable(),
-  geolocalizacao: string()
-    .label('Endereço')
+  fonte_recursos: array()
+    .label('Fontes de recursos')
+    .nullable()
+    .of(
+      object()
+        .shape({
+          fonte_recurso_cod_sof: string()
+            .label('Código SOF')
+            .matches(/\d\d/)
+            .required('A fonte é obrigatória'),
+          fonte_recurso_ano: number()
+            .label('Ano')
+            .min(2003, 'A partir de 2003')
+            .max(3000, 'Até o ano 3000')
+            .required('Escolha um ano válido'),
+          id: number()
+            .nullable(),
+          valor_nominal: mixed()
+            .label('Previsão de custo')
+            .when('valor_percentual', {
+              is: (valorPercentual) => !valorPercentual,
+              then: number()
+                .required('Ao menos um tipo de valor é necessário.'),
+              otherwise: mixed()
+                .nullable(),
+            }),
+          valor_percentual: mixed()
+            .label('Valor percentual')
+            .when('valor_nominal', {
+              is: (valorNominal) => !valorNominal,
+              then: number()
+                .required('Ao menos um tipo de valor é necessário.')
+                .min(0.01, 'Não se pode investir menos de 0.01%')
+                .max(100, 'Não se pode investir mais de 100%'),
+              otherwise: mixed()
+                .nullable(),
+            }),
+        }, [['valor_percentual', 'valor_nominal']]),
+    ),
+  geolocalizacao: array()
+    .label('Endereços')
+    .of(
+      string()
+        .min(10, 'Endereço inválido')
+        .required(),
+    )
     .nullable(),
   grupo_tematico_id: number()
     .label('Grupo temático')
     .min(1, 'Grupo temático inválido')
     .required(),
+  iniciativa_id: number()
+    .when(['origem_tipo', 'atividade_id'], {
+      is: (origemTipo, atividadeId) => origemTipo === 'PdmSistema' && atividadeId,
+      then: (field) => field.required(),
+      otherwise: (field) => field.nullable(),
+    }),
   mdo_detalhamento: string()
     .label('Detalhamento/Escopo da obra')
     .max(50000)
@@ -848,6 +927,7 @@ export const obras = object({
     .nullable(),
   mdo_observacoes: string()
     .label('Observações')
+    .max(1024)
     .nullable(),
   mdo_previsao_inauguracao: date()
     .label('Data de inauguração planejada')
@@ -858,31 +938,52 @@ export const obras = object({
     .label('Programa Habitacional')
     .max(1024)
     .nullable(),
+  meta_codigo: string()
+    .label('Código da Meta')
+    .nullable(),
+  meta_id: number()
+    .when(['origem_tipo', 'iniciativa_id'], {
+      is: (origemTipo, iniciativaId) => origemTipo === 'PdmSistema' || iniciativaId,
+      then: (field) => field.required(),
+      otherwise: (field) => field.nullable(),
+    }),
   nome: string()
     .label('Nome da obra/intervenção')
     .min(0)
-    .max(2040)
+    .max(500)
     .required(),
+  orgao_colaborador_id: number()
+    .label('Secretaria/órgão colaborador')
+    .min(1, 'Secretaria/órgão colaborador inválidos')
+    .nullable(),
   orgao_executor_id: number()
     .label('Secretaria/órgão executor')
     .min(1, 'Secretaria/órgão executor inválidos')
-    .required(),
+    .nullable(),
   orgao_gestor_id: number()
     .label('Órgão gestor do portfólio')
+    .min(1, 'Órgão inválido')
     .nullable(),
   orgao_origem_id: number()
     .label('Secretaria/órgão de origem')
     .min(1, 'Secretaria/órgão de origem inválidos')
     .nullable(),
-  orgao_responsavel_id: string()
+  orgao_responsavel_id: mixed()
     .label('Órgão responsável pela obra')
+    .inArray('orgaos_participantes')
     .nullable(),
   orgaos_colaboradores: string()
     .label('Órgãos colaboradores da obra')
     .nullable(),
-  origem_tipo: string()
+  origem_outro: string()
+    .max(2048)
+    .when('origem_tipo', (origemTipo, field) => (origemTipo && origemTipo !== 'PdmSistema'
+      ? field.required('Descrição de origem é obrigatório caso não se escolha um Programa de Metas corrente')
+      : field.nullable())),
+  origem_tipo: mixed()
     .label('Origem')
-    .nullable(),
+    .oneOf(Object.keys(tiposDeOrigens))
+    .required(),
   ponto_focal_colaborador: string()
     .label('Ponto focal colaborador')
     .nullable(),
@@ -907,14 +1008,35 @@ export const obras = object({
     .max(dataMax)
     .min(ref('previsao_inicio'), 'Precisa ser posterior à data de início')
     .nullable(),
-  responsaveis_no_orgao_gestor: string()
+  regiao_ids: array()
+    .label('Regiões')
+    .of(
+      number()
+        .min(1),
+    )
+    .nullable(),
+  responsavel_id: number()
+    .label('Responsável')
+    .min(1)
+    .nullable(),
+  responsaveis_no_orgao_gestor: array()
     .label('Assessor do monitoramento')
+    .of(
+      number()
+        .min(1),
+    )
     .nullable(),
   secretario_colaborador: string()
     .label('Secretário colaborador da obra')
+    .max(250)
+    .nullable(),
+  secretario_executivo: string()
+    .label('Secretário gestor do portfólio')
+    .max(250)
     .nullable(),
   secretario_responsavel: string()
     .label('Secretário responsável pela obra')
+    .max(250)
     .nullable(),
   secretario: string()
     .label('Secretário gestor do portfólio')
@@ -927,6 +1049,11 @@ export const obras = object({
     .label('Tipo de obra/intervenção')
     .min(1, 'Tipo de obra/intervenção inválido')
     .required(),
+  tolerancia_atraso: number()
+    .label('Percentual de tolerância com atraso')
+    .min(0)
+    .max(100)
+    .nullable(),
 });
 
 export const orçamentoRealizado = object({
@@ -1875,7 +2002,7 @@ export const projeto = object()
     origem_tipo: mixed()
       .label('Origem')
       .required('O projeto precisa de uma origem de recursos.')
-      .oneOf(['PdmSistema', 'PdmAntigo', 'Outro'], 'A origem escolhida é inválida'),
+      .oneOf(Object.keys(tiposDeOrigens), 'A origem escolhida é inválida'),
     portfolios_compartilhados: array()
       .label('Compartilhar no portfolios')
       .nullable(),
