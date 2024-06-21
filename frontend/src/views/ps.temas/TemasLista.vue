@@ -92,7 +92,7 @@ async function excluirTema(id, descricao) {
     async () => {
       if (await temasStore.excluirItem(id)) {
         temasStore.$reset();
-        temasStore.buscarTudo();
+        temasStore.buscarTudo(route.params.planoSetorialId);
         alertStore.success(`"${descricao}" removido.`);
       }
     },
@@ -101,7 +101,7 @@ async function excluirTema(id, descricao) {
 }
 
 temasStore.$reset();
-temasStore.buscarTudo();
+temasStore.buscarTudo(route.params.planoSetorialId);
 </script>
 
 <style></style>
