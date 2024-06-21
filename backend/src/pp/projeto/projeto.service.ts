@@ -2145,7 +2145,6 @@ export class ProjetoService {
                     grupo_tematico_id: dto.grupo_tematico_id,
                     tipo_intervencao_id: dto.tipo_intervencao_id,
                     equipamento_id: dto.equipamento_id,
-                    orgao_origem_id: dto.orgao_origem_id,
                     orgao_executor_id: dto.orgao_executor_id,
                     mdo_detalhamento: dto.mdo_detalhamento,
                     mdo_programa_habitacional: dto.mdo_programa_habitacional,
