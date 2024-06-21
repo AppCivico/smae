@@ -4,7 +4,7 @@ export class RelProjetoStatusRelatorioDto {
     codigo: string | null;
     nome: string;
     tarefas: string | null;
-    detalhamento_status: string | null;
+    detalhamento: string | null;
     pontos_atencao: string | null;
     cronograma: string;
     orgao_responsavel_sigla: string | null;
