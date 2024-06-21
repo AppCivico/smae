@@ -888,7 +888,7 @@ export const obras = object({
     .label('Ponto focal responsável')
     .nullable(),
   portfolio_id: number()
-    .label('Nome do portofólio')
+    .label('Nome do portfólio')
     .min(1, 'Portfólio inválido')
     .required(),
   previsao_custo: number()
@@ -918,7 +918,7 @@ export const obras = object({
     .oneOf(Object.keys(statusObras))
     .required(),
   tipo_intervencao_id: number()
-    .label('Tipo de obra/intervenção*')
+    .label('Tipo de obra/intervenção')
     .min(1, 'Tipo de obra/intervenção inválido')
     .required(),
 });
