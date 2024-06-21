@@ -96,7 +96,7 @@ async function onSubmit(values) {
 
     const dataToSend = { ...values, pdm_id: Number(route.params.planoSetorialId) };
 
-    if (props.equipamentoId) {
+    if (props.temaId) {
       response = await temasStore.salvarItem(
         dataToSend,
         props.temaId,
