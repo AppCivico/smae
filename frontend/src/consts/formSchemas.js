@@ -851,6 +851,8 @@ export const obras = object({
     .nullable(),
   mdo_previsao_inauguracao: date()
     .label('Data de inauguração planejada')
+    .max(dataMax)
+    .min(dataMin)
     .nullable(),
   mdo_programa_habitacional: string()
     .label('Programa Habitacional')
@@ -897,9 +899,13 @@ export const obras = object({
     .nullable(),
   previsao_inicio: date()
     .label('Previsão de início')
+    .max(dataMax)
+    .min(dataMin)
     .nullable(),
   previsao_termino: date()
     .label('Previsão de término')
+    .max(dataMax)
+    .min(ref('previsao_inicio'), 'Precisa ser posterior à data de início')
     .nullable(),
   responsaveis_no_orgao_gestor: string()
     .label('Assessor do monitoramento')
