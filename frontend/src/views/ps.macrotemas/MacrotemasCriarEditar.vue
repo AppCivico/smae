@@ -96,7 +96,7 @@ async function onSubmit(values) {
 
     const dataToSend = { ...values, pdm_id: Number(route.params.planoSetorialId) };
 
-    if (props.equipamentoId) {
+    if (props.macrotemaId) {
       response = await macrotemasStore.salvarItem(
         dataToSend,
         props.macrotemaId,
