@@ -43,13 +43,24 @@ export default {
         planoSetorialId: Number.parseInt(params.planoSetorialId, 10) || undefined,
       }),
       meta: {
-        rotasParaMenuSecundário: () => [
-          'planosSetoriaisResumo',
-          'planosSetoriaisDocumentos',
-          'planosSetoriaisMacrotemas',
-          'planosSetoriaisTemas',
-          'planosSetoriaisSubtemas',
-        ],
+        rotasParaMenuSecundário: () => {
+          const rotas = [
+            'planosSetoriaisResumo',
+            'planosSetoriaisDocumentos',
+          ];
+
+          if (usePlanosSetoriaisStore()?.emFoco?.possui_macro_tema) {
+            rotas.push('planosSetoriaisMacrotemas');
+          }
+          if (usePlanosSetoriaisStore()?.emFoco?.possui_tema) {
+            rotas.push('planosSetoriaisTemas');
+          }
+          if (usePlanosSetoriaisStore()?.emFoco?.possui_sub_tema) {
+            rotas.push('planosSetoriaisSubtemas');
+          }
+
+          return rotas;
+        },
         rotasParaMigalhasDePão: [
           'planosSetoriaisListar',
         ],
