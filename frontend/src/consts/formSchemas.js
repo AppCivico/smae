@@ -33,8 +33,8 @@ import {
 const dataMin = import.meta.env.VITE_DATA_MIN ? new Date(`${import.meta.env.VITE_DATA_MIN}`) : new Date('1900-01-01T00:00:00Z');
 const dataMax = import.meta.env.VITE_DATA_MAX ? new Date(`${import.meta.env.VITE_DATA_MAX}`) : new Date('2100-12-31T23:59:59Z');
 
-addMethod(string, 'fieldUntilToday', function (errorMessage = 'Valor de ${path} futuro') {
-  return this.test('teste', errorMessage, function (value) {
+addMethod(string, 'fieldUntilToday', function _(errorMessage = 'Valor de ${path} futuro') {
+  return this.test('teste', errorMessage, function __(value) {
     const { path, createError } = this;
 
     if (!value) return true;
