@@ -63,7 +63,11 @@ export class UpdateProjetoRegistroSeiDto extends PartialType(CreateProjetoSeiDto
 //    @ValidateIf((object, value) => value !== null)
 //    realizado_custo?: number
 
-export class UpdateProjetoDto extends OmitType(PartialType(CreateProjetoDto), ['portfolio_id', 'orgao_gestor_id']) {
+export class UpdateProjetoDto extends OmitType(PartialType(CreateProjetoDto), [
+    'portfolio_id',
+    'orgao_gestor_id',
+    'orgao_origem_id',
+]) {
     @IsOptional()
     @IsArray({ message: 'precisa ser uma array, pode ter 0 items para limpar' })
     @ValidateNested({ each: true })
