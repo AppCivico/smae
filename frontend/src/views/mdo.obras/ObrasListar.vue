@@ -150,11 +150,11 @@ const listaFiltradaPorTermoDeBusca = ref([]);
 async function excluirObra(id, nome) {
   alertStore.confirmAction(`Deseja mesmo remover "${nome}"?`, async () => {
     if (await obrasStore.excluirItem(id)) {
-      obrasStore.buscarTudo({ ipp: 100 });
+      obrasStore.buscarTudo({ ipp: 5000 });
       alertStore.success('Obra removida.');
     }
   }, 'Remover');
 }
 
-obrasStore.buscarTudo({ ipp: 100 });
+obrasStore.buscarTudo({ ipp: 5000 });
 </script>
