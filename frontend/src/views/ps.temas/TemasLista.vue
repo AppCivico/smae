@@ -73,8 +73,8 @@
 <script setup>
 import { useAlertStore } from '@/stores/alert.store';
 import { storeToRefs } from 'pinia';
-import { useRoute } from 'vue-router';
 import { computed } from 'vue';
+import { useRoute } from 'vue-router';
 
 import { useTemasPsStore } from '@/stores/temasPs.store';
 
@@ -92,7 +92,7 @@ async function excluirTema(id, descricao) {
     async () => {
       if (await temasStore.excluirItem(id)) {
         temasStore.$reset();
-        temasStore.buscarTudo(route.params.planoSetorialId);
+        temasStore.buscarTudo({ pdm_id: route.params.planoSetorialId });
         alertStore.success(`"${descricao}" removido.`);
       }
     },
@@ -101,7 +101,7 @@ async function excluirTema(id, descricao) {
 }
 
 temasStore.$reset();
-temasStore.buscarTudo(route.params.planoSetorialId);
+temasStore.buscarTudo({ pdm_id: route.params.planoSetorialId });
 </script>
 
 <style></style>

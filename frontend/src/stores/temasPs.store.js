@@ -34,7 +34,7 @@ export const useTemasPsStore = defineStore('temasPsStore', {
       this.erro = null;
 
       try {
-        const { linhas } = await this.requestS.get(`${baseUrl}/plano-setorial-tema?pdm_id=${params}`);
+        const { linhas } = await this.requestS.get(`${baseUrl}/plano-setorial-tema`, params);
         this.lista = linhas;
       } catch (erro) {
         this.erro = erro;

@@ -34,7 +34,7 @@ export const useSubtemasPsStore = defineStore('subtemasPsStore', {
       this.erro = null;
 
       try {
-        const { linhas } = await this.requestS.get(`${baseUrl}/plano-setorial-subtema?pdm_id=${params}`);
+        const { linhas } = await this.requestS.get(`${baseUrl}/plano-setorial-subtema`, params);
         this.lista = linhas;
       } catch (erro) {
         this.erro = erro;

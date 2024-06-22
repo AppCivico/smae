@@ -92,7 +92,7 @@ async function excluirMacrotema(id, descricao) {
     async () => {
       if (await macrotemasStore.excluirItem(id)) {
         macrotemasStore.$reset();
-        macrotemasStore.buscarTudo(route.params.planoSetorialId);
+        macrotemasStore.buscarTudo({ pdm_id: route.params.planoSetorialId });
         alertStore.success(`"${descricao}" removido.`);
       }
     },
@@ -101,7 +101,7 @@ async function excluirMacrotema(id, descricao) {
 }
 
 macrotemasStore.$reset();
-macrotemasStore.buscarTudo(route.params.planoSetorialId);
+macrotemasStore.buscarTudo({ pdm_id: route.params.planoSetorialId });
 </script>
 
 <style></style>

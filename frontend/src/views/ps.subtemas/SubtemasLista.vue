@@ -92,7 +92,7 @@ async function excluirSubtema(id, descricao) {
     async () => {
       if (await subtemasStore.excluirItem(id)) {
         subtemasStore.$reset();
-        subtemasStore.buscarTudo(route.params.planoSetorialId);
+        subtemasStore.buscarTudo({ pdm_id: route.params.planoSetorialId });
         alertStore.success(`"${descricao}" removido.`);
       }
     },
@@ -101,7 +101,7 @@ async function excluirSubtema(id, descricao) {
 }
 
 subtemasStore.$reset();
-subtemasStore.buscarTudo(route.params.planoSetorialId);
+subtemasStore.buscarTudo({ pdm_id: route.params.planoSetorialId });
 </script>
 
 <style></style>
