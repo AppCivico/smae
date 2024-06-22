@@ -185,7 +185,8 @@ export const useObrasStore = defineStore('obrasStore', {
         grupo_tematico_id: emFoco?.grupo_tematico?.id || null,
         mdo_previsao_inauguracao: dateTimeToDate(emFoco?.mdo_previsao_inauguracao) || null,
         orgao_executor_id: emFoco?.orgao_executor?.id || null,
-        orgao_origem_id: emFoco?.orgao_origem ? undefined : null,
+        orgao_gestor_id: emFoco?.orgao_gestor?.id || null,
+        orgao_origem_id: emFoco?.orgao_origem ? emFoco?.orgao_origem.id : null, // não editável
         portfolio_id: emFoco?.portfolio_id || route.query.portfolio_id || null,
         previsao_inicio: dateTimeToDate(emFoco?.previsao_inicio) || null,
         previsao_termino: dateTimeToDate(emFoco?.previsao_termino) || null,

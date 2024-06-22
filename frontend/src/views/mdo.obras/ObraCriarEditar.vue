@@ -592,7 +592,6 @@ watch(itemParaEdição, (novoValor) => {
           :schema="schema"
         />
         <Field
-          v-if="!obraId"
           name="orgao_origem_id"
           as="select"
           class="inputtext light mb1"
@@ -614,18 +613,6 @@ watch(itemParaEdição, (novoValor) => {
             {{ item.sigla }} - {{ truncate(item.descricao, 36) }}
           </option>
         </Field>
-
-        <input
-          v-else
-          type="text"
-          :value="emFoco.orgao_origem.sigla + ' - ' + truncate(emFoco.orgao_origem.descricao, 36)"
-          class="inputtext light mb1"
-          :title="emFoco.orgao_origem.descricao?.length > 36
-            ? emFoco.orgao_origem.descricao
-            : null"
-          disabled
-        >
-
         <ErrorMessage
           name="orgao_origem_id"
           class="error-msg"
@@ -1148,7 +1135,6 @@ watch(itemParaEdição, (novoValor) => {
             :schema="schema"
           />
           <Field
-            v-if="!obraId"
             name="orgao_gestor_id"
             as="select"
             class="inputtext light mb1"
@@ -1173,16 +1159,7 @@ watch(itemParaEdição, (novoValor) => {
               {{ item.sigla }} - {{ truncate(item.descricao, 36) }}
             </option>
           </Field>
-          <input
-            v-else
-            type="text"
-            :value="emFoco.orgao_gestor.sigla + ' - ' + truncate(emFoco.orgao_gestor.descricao, 36)"
-            class="inputtext light mb1"
-            :title="emFoco.orgao_gestor.descricao?.length > 36
-              ? emFoco.orgao_gestor.descricao
-              : null"
-            disabled
-          >
+
           <ErrorMessage
             name="orgao_gestor_id"
             class="error-msg"
