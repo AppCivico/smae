@@ -19,7 +19,7 @@ export const useTagsPsStore = defineStore('tagsPsStore', {
       this.erro = null;
 
       try {
-        const resposta = await this.requestS.get(`${baseUrl}/tag/${id}`, params);
+        const resposta = await this.requestS.get(`${baseUrl}/plano-setorial-tag/${id}`, params);
         this.emFoco = {
           ...resposta,
         };
@@ -33,7 +33,7 @@ export const useTagsPsStore = defineStore('tagsPsStore', {
       this.chamadasPendentes.lista = true;
       this.erro = null;
       try {
-        const { linhas } = await this.requestS.get(`${baseUrl}/tag`, params);
+        const { linhas } = await this.requestS.get(`${baseUrl}/plano-setorial-tag`, params);
         this.lista = linhas;
       } catch (erro) {
         this.erro = erro;
@@ -46,7 +46,7 @@ export const useTagsPsStore = defineStore('tagsPsStore', {
       this.erro = null;
 
       try {
-        await this.requestS.delete(`${baseUrl}/tag/${id}`);
+        await this.requestS.delete(`${baseUrl}/plano-setorial-tag/${id}`);
         this.chamadasPendentes.lista = false;
         return true;
       } catch (erro) {
@@ -57,15 +57,14 @@ export const useTagsPsStore = defineStore('tagsPsStore', {
     },
 
     async salvarItem(params = {}, id = 0) {
-      console.log('entrou no salvarItem da tag');
       this.chamadasPendentes.emFoco = true;
       this.erro = null;
 
       try {
         if (id) {
-          await this.requestS.patch(`${baseUrl}/tag/${id}`, params);
+          await this.requestS.patch(`${baseUrl}/plano-setorial-tag/${id}`, params);
         } else {
-          await this.requestS.post(`${baseUrl}/tag`, params);
+          await this.requestS.post(`${baseUrl}/plano-setorial-tag`, params);
         }
 
         this.chamadasPendentes.emFoco = false;
