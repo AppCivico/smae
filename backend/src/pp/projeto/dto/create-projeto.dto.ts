@@ -27,6 +27,7 @@ import {
     CONST_PROC_SEI_SINPROC_MESSAGE,
     CONST_PROC_SEI_SINPROC_REGEXP,
 } from '../../../dotacao/dto/dotacao.dto';
+import { IsOptionalNonNullable } from '../../../common/helpers/IsOptionalNonNullable';
 
 export class PPfonteRecursoDto {
     /**
@@ -244,6 +245,7 @@ export class CreateProjetoDto {
      * ID dos órgãos participantes do projeto
      * @example "[]"
      */
+    @IsOptionalNonNullable()
     @IsArray({ message: '$property| precisa ser um array' })
     @ArrayMinSize(0, { message: '$property| precisa ter um item' })
     @ArrayMaxSize(100, { message: '$property| precisa ter no máximo 100 items' })
@@ -255,6 +257,7 @@ export class CreateProjetoDto {
      * ou
      * órgão responsável pela obra
      */
+    @IsOptionalNonNullable()
     @IsInt({ message: '$property| orgao_responsavel_id precisa ser inteiro' })
     @Transform((a: TransformFnParams) => (a.value === null ? null : +a.value))
     @ValidateIf((object, value) => value !== null)
@@ -285,6 +288,7 @@ export class CreateProjetoDto {
      * ou
      * ponto focal responsável [são as pessoas filtradas pelo priv `MDO.colaborador_de_projeto`]
      */
+    @IsOptionalNonNullable()
     @IsInt({ message: '$property| responsavel_id precisa ser inteiro' })
     @Transform((a: TransformFnParams) => (a.value === null ? null : +a.value))
     @ValidateIf((object, value) => value !== null)
