@@ -687,18 +687,21 @@ watch(itemParaEdição, (novoValor) => {
     </div>
 
     <div
-      v-if="gruposTemáticosPorId[values.grupo_tematico_id]?.programa_habitacional"
+      v-if="gruposTemáticosPorId[values.grupo_tematico_id]?.programa_habitacional
+        || gruposTemáticosPorId[values.grupo_tematico_id]?.unidades_habitacionais
+        || gruposTemáticosPorId[values.grupo_tematico_id]?.familias_beneficiadas"
       class="flex flexwrap g2 mb1"
     >
-      <div class="f1 mb1">
+      <div
+        v-if="gruposTemáticosPorId[values.grupo_tematico_id]?.programa_habitacional"
+        class="f1 mb1"
+      >
         <LabelFromYup
           name="mdo_programa_habitacional"
           :schema="schema"
         />
         <Field
           name="mdo_programa_habitacional"
-          as="textarea"
-          rows="5"
           class="inputtext light mb1"
           :class="{ 'error': errors.mdo_programa_habitacional }"
         />
@@ -707,13 +710,8 @@ watch(itemParaEdição, (novoValor) => {
           class="error-msg"
         />
       </div>
-    </div>
-
-    <div
-      v-if="!gruposTemáticosPorId[values.grupo_tematico_id]?.unidades_habitacionais"
-      class="flex flexwrap g2 mb1"
-    >
       <div
+        v-if="gruposTemáticosPorId[values.grupo_tematico_id]?.unidades_habitacionais"
         class="f1 mb1 fb5em"
       >
         <LabelFromYup
@@ -733,7 +731,7 @@ watch(itemParaEdição, (novoValor) => {
         />
       </div>
       <div
-        v-if="!gruposTemáticosPorId[values.grupo_tematico_id]?.familias_beneficiadas"
+        v-if="gruposTemáticosPorId[values.grupo_tematico_id]?.familias_beneficiadas"
         class="f1 mb1 fb5em"
       >
         <LabelFromYup
