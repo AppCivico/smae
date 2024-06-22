@@ -276,6 +276,7 @@ function iniciar() {
   buscarPossíveisGestores();
   buscarPossíveisColaboradores();
 
+  portfolioMdoStore.buscarTudo();
   equipamentosStore.buscarTudo();
   gruposTematicosStore.buscarTudo();
   tiposDeIntervencaoStore.buscarTudo();
