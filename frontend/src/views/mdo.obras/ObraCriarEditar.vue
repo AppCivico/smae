@@ -471,7 +471,6 @@ watch(itemParaEdição, (novoValor) => {
           as="select"
           class="inputtext light mb1"
           :class="{ error: errors.status }"
-          :disabled="!emFoco?.permissoes.status_permitidos?.length"
         >
           <option
             :value="null"
