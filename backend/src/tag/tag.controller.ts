@@ -77,12 +77,12 @@ export class TagController {
 @ApiTags('Tag Plano Setorial')
 @Controller('plano-setorial-tag')
 export class TagPSController {
-    private tipoPdm: TipoPdm = 'PDM';
+    private tipoPdm: TipoPdm = 'PS';
     constructor(private readonly tagService: TagService) {}
 
     @Post()
     @ApiBearerAuth('access-token')
-    @Roles(['CadastroTag.inserir'])
+    @Roles(['CadastroTagPS.inserir'])
     async create(@Body() createTagDto: CreateTagDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
         return await this.tagService.create(this.tipoPdm, createTagDto, user);
     }
@@ -103,7 +103,7 @@ export class TagPSController {
 
     @Patch(':id')
     @ApiBearerAuth('access-token')
-    @Roles(['CadastroTag.editar'])
+    @Roles(['CadastroTagPS.editar'])
     async update(
         @Param() params: FindOneParams,
         @Body() updateTagDto: UpdateTagDto,
@@ -114,7 +114,7 @@ export class TagPSController {
 
     @Delete(':id')
     @ApiBearerAuth('access-token')
-    @Roles(['CadastroTag.remover'])
+    @Roles(['CadastroTagPS.remover'])
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.ACCEPTED)
     async remove(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt) {
