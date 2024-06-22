@@ -142,7 +142,7 @@ async function onSubmit(values) {
 
     const dataToSend = { ...values, pdm_id: Number(route.params.planoSetorialId) };
 
-    if (route.params?.temaId) {
+    if (route.params?.tagId) {
       response = await tagsStore.salvarItem(
         dataToSend,
         route.params?.tagId,
@@ -159,8 +159,8 @@ async function onSubmit(values) {
     alertStore.error(error);
   }
 }
-if (props.tagId) {
-  tagsStore.buscarItem(props.tagId);
+if (route.params.tagId) {
+  tagsStore.buscarItem(route.params.tagId);
 }
 
 odsStore.buscarTudo();
