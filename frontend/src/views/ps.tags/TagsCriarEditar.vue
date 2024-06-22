@@ -4,30 +4,69 @@
     <hr class="ml2 f1">
     <CheckClose />
   </div>
-  <pre v-ScrollLockDebug>odsListas:{{ odsLista }}</pre>
 
   <Form
-    v-slot="{ errors, isSubmitting }"
+    v-slot="{ errors, isSubmitting, values }"
     :validation-schema="schema"
     :initial-values="itemParaEdição"
     @submit="onSubmit"
   >
-    <div class="flex g2 mb1">
-      <div class="f1">
-        <LabelFromYup
-          name="nome"
-          :schema="schema"
-        />
-        <Field
-          name="nome"
-          type="text"
-          class="inputtext light mb1"
-        />
-        <ErrorMessage
-          class="error-msg mb1"
-          name="nome"
-        />
-      </div>
+    <div>
+      <LabelFromYup
+        name="ods_id"
+        :schema="schema"
+      />
+      <Field
+        name="ods_id"
+        as="select"
+        class="inputtext light mb1"
+      >
+        <option value="">
+          Selecione
+        </option>
+        <option
+          v-for="od in odsLista"
+          :key="od.id"
+          :value="od.id"
+        >
+          {{ od.titulo }}
+        </option>
+      </Field>
+      <ErrorMessage
+        class="error-msg mb1"
+        name="ods_id"
+      />
+    </div>
+
+    <div>
+      <LabelFromYup
+        name="descricao"
+        :schema="schema"
+      />
+
+      <Field
+        name="descricao"
+        class="inputtext light mb1"
+        type="text"
+      />
+    </div>
+
+    <div>
+      <LabelFromYup
+        name="upload_icone"
+        :schema="schema"
+        for="icone"
+      />
+      <CampoDeArquivo
+        id="icone"
+        v-model="values.upload_icone"
+        accept=".svg,.png"
+        name="upload_icone"
+        tipo="LOGO_PDM"
+      >
+        Adicionar arquivo (formatos SVG ou PNG até 2mb)
+      </CampoDeArquivo>
+      <ErrorMessage name="upload_icone" />
     </div>
     <FormErrorsList :errors="errors" />
 
@@ -64,12 +103,16 @@
 </template>
 
 <script setup>
+import CampoDeArquivo from '@/components/CampoDeArquivo.vue';
 import { tag as schema } from '@/consts/formSchemas';
 import { useAlertStore } from '@/stores/alert.store';
-import { useTagsStore } from '@/stores/tags.store';
+import { useTagsPsStore } from '@/stores/tagsPs.store';
 import { useOdsStore } from '@/stores/odsPs.store';
 import { storeToRefs } from 'pinia';
-import { ErrorMessage, Field, Form } from 'vee-validate';
+import {
+  ErrorMessage,
+  Field, Form,
+} from 'vee-validate';
 import { useRoute, useRouter } from 'vue-router';
 
 const route = useRoute();
@@ -81,11 +124,14 @@ const props = defineProps({
 });
 
 const alertStore = useAlertStore();
-const tagsStore = useTagsStore();
+const tagsStore = useTagsPsStore();
 const odsStore = useOdsStore();
+const router = useRouter();
 
 const { chamadasPendentes, erro, itemParaEdição } = storeToRefs(tagsStore);
-const { lista: odsLista, chamadasPendentes: odsChamadasPendentes, erro: odsErro } = storeToRefs(odsStore);
+const {
+  lista: odsLista, chamadasPendentes: odsChamadasPendentes, erro: odsErro,
+} = storeToRefs(odsStore);
 
 async function onSubmit(values) {
   try {
