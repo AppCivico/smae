@@ -33,7 +33,7 @@ export const useTagsPsStore = defineStore('tagsPsStore', {
       this.chamadasPendentes.lista = true;
       this.erro = null;
       try {
-        const { linhas } = await this.requestS.get(`${baseUrl}/tag?pdm_id=${params}`);
+        const { linhas } = await this.requestS.get(`${baseUrl}/tag`, params);
         this.lista = linhas;
       } catch (erro) {
         this.erro = erro;
@@ -57,6 +57,7 @@ export const useTagsPsStore = defineStore('tagsPsStore', {
     },
 
     async salvarItem(params = {}, id = 0) {
+      console.log('entrou no salvarItem da tag');
       this.chamadasPendentes.emFoco = true;
       this.erro = null;
 
