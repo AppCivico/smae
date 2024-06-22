@@ -851,6 +851,8 @@ export class ProjetoService {
         delete filters.pagina;
         delete filters.token_paginacao;
 
+        const palavrasChave = await this.buscaIdsPalavraChave(filters.palavra_chave);
+
         let now = new Date(Date.now());
         if (tokenPaginacao) {
             const decoded = this.decodeNextPageToken(tokenPaginacao, filters);
@@ -865,6 +867,10 @@ export class ProjetoService {
         const filterSet = this.getProjetoMDOWhereSet(filters);
         const linhas = await this.prisma.viewProjetoMDO.findMany({
             where: {
+                // Filtro por palavras-chave com tsvector
+                id: {
+                    in: palavrasChave != undefined ? palavrasChave : undefined,
+                },
                 projeto: {
                     registrado_em: { lte: now },
                     AND: [...permissionsSet, ...filterSet],
@@ -3069,5 +3075,15 @@ export class ProjetoService {
             jwt: this.jwtService.sign(body),
             body,
         };
+    }
+
+    async buscaIdsPalavraChave(input: string | undefined): Promise<number[] | undefined> {
+        let palavrasChave: number[] | undefined = undefined;
+        if (input) {
+            const rows: { id: number }[] = await this.prisma
+                .$queryRaw`SELECT id FROM projeto WHERE vetores_busca @@ plainto_tsquery('simple', ${input})`;
+            palavrasChave = rows.map((row) => row.id);
+        }
+        return palavrasChave;
     }
 }

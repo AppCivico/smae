@@ -11,6 +11,7 @@ import {
     IsNumber,
     IsOptional,
     IsString,
+    MaxLength,
 } from 'class-validator';
 import { NumberArrayTransformOrEmpty } from '../../../auth/transforms/number-array.transform';
 import { StringArrayTransform } from '../../../auth/transforms/string-array.transform';
@@ -140,4 +141,9 @@ export class FilterProjetoMDODto extends IntersectionType(FilterProjetoDto, Proj
     @IsOptional()
     @IsString()
     token_paginacao?: string;
+
+    @IsOptional()
+    @IsString()
+    @MaxLength(250)
+    palavra_chave?: string;
 }
