@@ -600,18 +600,15 @@ watch(itemParaEdição, (novoValor) => {
           :class="{
             error: errors.orgao_origem_id,
           }"
-          :disabled="!!obraId || !órgãosDisponíveisNessePortfolio(values.portfolio_id).length"
-          @change="setFieldValue('responsaveis_no_orgao_gestor', [])"
+          :disabled="!!obraId || !órgãosComoLista.length"
         >
           <option :value="0">
             Selecionar
           </option>
           <option
-            v-for="item in
-              órgãosDisponíveisNessePortfolio(values.portfolio_id) || []"
+            v-for="item in órgãosComoLista || []"
             :key="item.id"
             :value="item.id"
-            :disabled="!possíveisGestoresPorÓrgãoId[item.id]?.length"
             :title="item.descricao?.length > 36 ? item.descricao : null"
           >
             {{ item.sigla }} - {{ truncate(item.descricao, 36) }}
@@ -647,18 +644,15 @@ watch(itemParaEdição, (novoValor) => {
           :class="{
             error: errors.orgao_executor_id,
           }"
-          :disabled="!órgãosDisponíveisNessePortfolio(values.portfolio_id).length"
-          @change="setFieldValue('responsaveis_no_orgao_gestor', [])"
+          :disabled="!órgãosComoLista.length"
         >
           <option :value="0">
             Selecionar
           </option>
           <option
-            v-for="item in
-              órgãosDisponíveisNessePortfolio(values.portfolio_id) || []"
+            v-for="item in órgãosComoLista || []"
             :key="item.id"
             :value="item.id"
-            :disabled="!possíveisGestoresPorÓrgãoId[item.id]?.length"
             :title="item.descricao?.length > 36 ? item.descricao : null"
           >
             {{ item.sigla }} - {{ truncate(item.descricao, 36) }}
