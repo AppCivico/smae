@@ -1138,8 +1138,8 @@ watch(itemParaEdição, (novoValor) => {
         Órgãos
       </legend>
 
-      <div class="flex flexwrap g2">
-        <div class="f1 mb1">
+      <div class="flex flexwrap g2 mb1">
+        <div class="f1 mb1 fb15em">
           <LabelFromYup
             name="orgao_gestor_id"
             :schema="schema"
@@ -1186,7 +1186,7 @@ watch(itemParaEdição, (novoValor) => {
           />
         </div>
 
-        <div class="f1 mb1">
+        <div class="f2 mb1 fb15em">
           <LabelFromYup
             name="responsaveis_no_orgao_gestor"
             :schema="schema"
@@ -1211,29 +1211,8 @@ watch(itemParaEdição, (novoValor) => {
             class="error-msg"
           />
         </div>
-      </div>
 
-      <div
-        class="flex flexwrap g2 mb1"
-      >
-        <div class="f1 mb1">
-          <LabelFromYup
-            :schema="schema"
-            name="secretario_responsavel"
-          />
-          <Field
-            name="secretario_responsavel"
-            type="text"
-            class="inputtext light mb1"
-            :disabled="!emFoco?.permissoes?.campo_secretario_executivo"
-          />
-          <ErrorMessage
-            class="error-msg mb1"
-            name="secretario_responsavel"
-          />
-        </div>
-
-        <div class="f1 mb1">
+        <div class="f2 mb1 fb15em">
           <LabelFromYup
             :schema="schema"
             name="secretario_executivo"
@@ -1242,7 +1221,6 @@ watch(itemParaEdição, (novoValor) => {
             name="secretario_executivo"
             type="text"
             class="inputtext light mb1"
-            :disabled="!emFoco?.permissoes?.campo_secretario_responsavel"
           />
           <ErrorMessage
             class="error-msg mb1"
@@ -1251,8 +1229,8 @@ watch(itemParaEdição, (novoValor) => {
         </div>
       </div>
 
-      <div class="flex flexwrap g2">
-        <div class="f1 mb1">
+      <div class="flex flexwrap g2 mb1">
+        <div class="f1 mb1 fb15em">
           <LabelFromYup
             name="orgao_responsavel_id"
             :schema="schema"
@@ -1288,7 +1266,8 @@ watch(itemParaEdição, (novoValor) => {
             class="error-msg"
           />
         </div>
-        <div class="f1 mb1">
+
+        <div class="f2 mb1 fb15em">
           <LabelFromYup
             name="responsavel_id"
             :schema="schema"
@@ -1324,32 +1303,107 @@ watch(itemParaEdição, (novoValor) => {
             class="error-msg"
           />
         </div>
+
+        <div class="f2 mb1 fb15em">
+          <LabelFromYup
+            :schema="schema"
+            name="secretario_responsavel"
+          />
+          <Field
+            name="secretario_responsavel"
+            type="text"
+            class="inputtext light mb1"
+          />
+          <ErrorMessage
+            class="error-msg mb1"
+            name="secretario_responsavel"
+          />
+        </div>
+      </div>
+
+      <div class="flex flexwrap g2 mb1">
+        <div class="f1 mb1 fb15em">
+          <LabelFromYup
+            name="orgao_colaborador_id"
+            :schema="schema"
+          />
+          <Field
+            name="orgao_colaborador_id"
+            as="select"
+            class="inputtext light mb1"
+            :aria-busy="portfolioMdoStore.chamadasPendentes.lista"
+            :class="{ error: errors.orgao_colaborador_id }"
+            :disabled="!órgãosQueTemResponsáveis?.length"
+            @update:model-value="($v) => {
+              setFieldValue('orgao_colaborador_id', Number($v) || null);
+            }"
+          >
+            <option :value="0">
+              Selecionar
+            </option>
+            <option
+              v-for="item in órgãosQueTemResponsáveis"
+              :key="item"
+              :value="item.id"
+              :disabled="!possíveisResponsáveisPorÓrgãoId[item.id]?.length"
+              :title="item.descricao?.length > 36 ? item.descricao : null"
+            >
+              {{ item.sigla }} - {{ truncate(item.descricao, 36) }}
+            </option>
+          </Field>
+          <ErrorMessage
+            name="orgao_colaborador_id"
+            class="error-msg"
+          />
+        </div>
+
+        <div class="f2 mb1 fb15em">
+          <LabelFromYup
+            name="colaboradores_no_orgao"
+            :schema="schema"
+          />
+
+          <AutocompleteField
+            name="colaboradores_no_orgao"
+            :controlador="{
+              busca: '',
+              participantes: values.colaboradores_no_orgao || []
+            }"
+            :grupo="possíveisGestoresPorÓrgãoId[values.orgao_colaborador_id]
+              || []"
+            :aria-busy="portfolioMdoStore.chamadasPendentes.lista"
+            :class="{
+              error: errors.colaboradores_no_orgao,
+            }"
+            label="nome_exibicao"
+          />
+
+          <ErrorMessage
+            name="colaboradores_no_orgao"
+            class="error-msg"
+          />
+        </div>
+
+        <div class="f2 mb1 fb15em">
+          <LabelFromYup
+            name="secretario_colaborador"
+            :schema="schema"
+          />
+          <Field
+            name="secretario_colaborador"
+            type="text"
+            class="inputtext light mb1"
+            maxlength="20"
+          />
+          <ErrorMessage
+            class="error-msg mb1"
+            name="secretario_colaborador"
+          />
+        </div>
       </div>
     </fieldset>
 
     <!-- PRA-FAZER: inserir campo de etiquetas -->
-
-    <div class="flex flexwrap g2">
-      <div class="f1 mb1">
-        <LabelFromYup
-          name="colaboradores_no_orgao"
-          :schema="schema"
-        />
-
-        <CampoDePessoasComBuscaPorOrgao
-          v-if="values.colaboradores_no_orgao !== undefined"
-          v-model="values.colaboradores_no_orgao"
-          name="colaboradores_no_orgao"
-          :pessoas="possíveisColaboradores"
-          :colaborador-de-projeto="true"
-          :pronto-para-montagem="montarCampoEstático"
-        />
-        <ErrorMessage
-          name="colaboradores_no_orgao"
-          class="error-msg"
-        />
-      </div>
-    </div>
 
     <div class="mb2">
       <legend class="label mt2 mb1">
@@ -1492,67 +1546,6 @@ watch(itemParaEdição, (novoValor) => {
           ><use xlink:href="#i_+" /></svg>Adicionar fonte de recursos
         </button>
       </FieldArray>
-    </div>
-
-    <div
-      class="flex flexwrap g2"
-    >
-      <div class="f1 mb1">
-        <LabelFromYup
-          name="secretario_colaborador"
-          :schema="schema"
-        />
-        <Field
-          name="secretario_colaborador"
-          type="text"
-          class="inputtext light mb1"
-          maxlength="20"
-        />
-        <ErrorMessage
-          class="error-msg mb1"
-          name="secretario_colaborador"
-        />
-      </div>
-    </div>
-
-    <div
-      class="flex flexwrap g2"
-    >
-      <div class="f1 mb1">
-        <LabelFromYup
-          name="orgao_colaborador_id"
-          :schema="schema"
-          class="tc300"
-        />
-        <Field
-          name="orgao_colaborador_id"
-          as="select"
-          class="inputtext light mb1"
-          :aria-busy="portfolioMdoStore.chamadasPendentes.lista"
-          :class="{ error: errors.orgao_colaborador_id }"
-          :disabled="!órgãosQueTemResponsáveis?.length"
-          @update:model-value="($v) => {
-            setFieldValue('orgao_colaborador_id', Number($v) || null);
-          }"
-        >
-          <option :value="0">
-            Selecionar
-          </option>
-          <option
-            v-for="item in órgãosQueTemResponsáveis"
-            :key="item"
-            :value="item.id"
-            :disabled="!possíveisResponsáveisPorÓrgãoId[item.id]?.length"
-            :title="item.descricao?.length > 36 ? item.descricao : null"
-          >
-            {{ item.sigla }} - {{ truncate(item.descricao, 36) }}
-          </option>
-        </Field>
-        <ErrorMessage
-          name="orgao_colaborador_id"
-          class="error-msg"
-        />
-      </div>
     </div>
 
     <FormErrorsList :errors="errors" />
