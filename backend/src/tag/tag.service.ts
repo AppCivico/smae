@@ -5,6 +5,8 @@ import { UploadService } from '../upload/upload.service';
 import { CreateTagDto } from './dto/create-tag.dto';
 import { FilterTagDto } from './dto/filter-tag.dto';
 import { UpdateTagDto } from './dto/update-tag.dto';
+import { TipoPdm } from '@prisma/client';
+import { TagDto } from './entities/tag.entity';
 
 @Injectable()
 export class TagService {
@@ -13,10 +15,11 @@ export class TagService {
         private readonly uploadService: UploadService
     ) {}
 
-    async create(createTagDto: CreateTagDto, user: PessoaFromJwt) {
+    async create(tipo: TipoPdm, createTagDto: CreateTagDto, user: PessoaFromJwt) {
         const similarExists = await this.prisma.tag.count({
             where: {
                 descricao: { equals: createTagDto.descricao, mode: 'insensitive' },
+                pdm: { tipo, id: createTagDto.pdm_id },
                 removido_em: null,
                 pdm_id: createTagDto.pdm_id,
             },
@@ -46,13 +49,14 @@ export class TagService {
         return created;
     }
 
-    async findAll(filters: FilterTagDto | undefined = undefined) {
-        const pdmId = filters?.pdm_id;
-
+    async findAll(tipo: TipoPdm, filters: FilterTagDto): Promise<TagDto[]> {
         const listActive = await this.prisma.tag.findMany({
             where: {
+                id: filters.id,
+                pdm_id: filters.pdm_id,
+                pdm: { id: filters.pdm_id, tipo: tipo },
+
                 removido_em: null,
-                pdm_id: pdmId,
             },
             select: {
                 id: true,
@@ -73,9 +77,9 @@ export class TagService {
         return listActive;
     }
 
-    async update(id: number, updateTagDto: UpdateTagDto, user: PessoaFromJwt) {
+    async update(tipo: TipoPdm, id: number, updateTagDto: UpdateTagDto, user: PessoaFromJwt) {
         const self = await this.prisma.tag.findFirstOrThrow({
-            where: { id: id },
+            where: { id: id, removido_em: null, pdm: { tipo } },
         });
 
         let uploadId: number | null | undefined = undefined;
@@ -90,6 +94,7 @@ export class TagService {
             const similarExists = await this.prisma.tag.count({
                 where: {
                     descricao: { equals: updateTagDto.descricao, mode: 'insensitive' },
+                    pdm: { tipo, id: self.pdm_id },
                     removido_em: null,
                     pdm_id: self.pdm_id,
                     NOT: { id: id },
@@ -116,10 +121,11 @@ export class TagService {
         return { id };
     }
 
-    async remove(id: number, user: PessoaFromJwt) {
+    async remove(tipo: TipoPdm, id: number, user: PessoaFromJwt) {
         const emUso = await this.prisma.meta.count({
             where: {
                 removido_em: null,
+                pdm: { tipo },
                 meta_tag: {
                     some: {
                         tag_id: id,
@@ -130,7 +136,7 @@ export class TagService {
         if (emUso > 0) throw new HttpException('Tag em uso em Metas.', 400);
 
         const created = await this.prisma.tag.updateMany({
-            where: { id: id },
+            where: { id: id, pdm: { tipo }, removido_em: null },
             data: {
                 removido_por: user.id,
                 removido_em: new Date(Date.now()),

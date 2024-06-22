@@ -2,7 +2,7 @@ import { MacroTemaDto } from '../../macro-tema/entities/macro-tema.entity';
 import { Meta } from '../../meta/entities/meta.entity';
 import { ObjetivoEstrategicoDto } from '../../tema/entities/objetivo-estrategico.entity';
 import { SubTemaDto } from '../../subtema/entities/subtema.entity';
-import { Tag } from '../../tag/entities/tag.entity';
+import { TagDto } from '../../tag/entities/tag.entity';
 import { ListPdm } from '../entities/list-pdm.entity';
 import { OrcamentoConfig } from './list-pdm.dto';
 
@@ -41,7 +41,7 @@ export class DetalhePdmDto {
      * Lista de objetos de
      * @example Tag[]
      */
-    tag?: Tag[];
+    tag?: TagDto[];
 
     orcamento_config: OrcamentoConfig[] | null;
 }
