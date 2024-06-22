@@ -959,7 +959,7 @@ export const obras = object({
   orgao_gestor_id: number()
     .label('Órgão gestor do portfólio')
     .min(1, 'Órgão inválido')
-    .nullable(),
+    .required(),
   orgao_origem_id: number()
     .label('Secretaria/órgão de origem')
     .min(1, 'Secretaria/órgão de origem inválidos')
