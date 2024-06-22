@@ -840,11 +840,7 @@ export const novaSenha = object()
 
 export const obras = object({
   atividade_id: number()
-    .when(['origem_tipo'], {
-      is: (origemTipo) => origemTipo === 'PdmSistema',
-      then: (field) => field.required(),
-      otherwise: (field) => field.nullable(),
-    }),
+    .nullable(),
   colaboradores_no_orgao: array()
     .label('Ponto focal colaborador')
     .of(
