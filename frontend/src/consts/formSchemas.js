@@ -2737,11 +2737,16 @@ export const emailTransferencia = object()
 
 export const tag = object()
   .shape({
-    descricao: string().required('Preencha a descrição'),
+    descricao: string()
+      .label('Descrição')
+      .required('Preencha a descrição'),
     ods_id: string()
-      .required(),
+      .label('Categoria')
+      .required('Categoria é obrigatória'),
     pdm_id: string(),
-    upload_icone: string().nullable(),
+    upload_icone: string()
+      .label('Ícone')
+      .nullable(),
   });
 
 export const tipoDeAcompanhamento = object()
