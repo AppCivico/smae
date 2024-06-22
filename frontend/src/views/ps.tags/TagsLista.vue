@@ -9,7 +9,7 @@
       Nova tag
     </router-link>
   </div>
-  <!-- route.params.planoSetorialId: {{ route.params.planoSetorialId }} -->
+
   <table class="tablemain">
     <col>
     <col class="col--botão-de-ação">
@@ -17,6 +17,7 @@
     <thead>
       <tr>
         <th>Tag</th>
+        <th>Possui ícone</th>
         <th />
         <th />
       </tr>
@@ -26,15 +27,16 @@
         v-for="item in lista"
         :key="item.id"
       >
-        <td>{{ item.nome }}</td>
+        <td>{{ item.descricao }}</td>
+        <td>{{ item.icone ? 'Sim' : 'Não' }}</td>
         <td>
           <router-link
             :to="{ name: 'planosSetoriaisEditarTag', params: { tagId: item.id } }"
             class="tprimary"
           >
             <svg
-              width="20"
-              height="20"
+              width="18"
+              height="18"
             ><use xlink:href="#i_edit" /></svg>
           </router-link>
         </td>
@@ -46,8 +48,8 @@
             @click="excluirTag(item.id)"
           >
             <svg
-              width="20"
-              height="20"
+              width="18"
+              height="18"
             ><use xlink:href="#i_remove" /></svg>
           </button>
         </td>
