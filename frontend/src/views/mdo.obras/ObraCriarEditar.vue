@@ -341,10 +341,11 @@ watch(itemParaEdição, (novoValor) => {
     </h1>
 
     <hr class="f1">
-
-    <MenuDeMudançaDeStatusDeProjeto
-      v-if="obraId"
-    />
+<!--
+  <MenuDeMudançaDeStatusDeProjeto
+    v-if="obraId"
+  />
+-->
     <CheckClose :formulário-sujo="formulárioSujo" />
   </header>
 
@@ -380,6 +381,7 @@ watch(itemParaEdição, (novoValor) => {
           name="portfolio_id"
           :schema="schema"
         >
+        <!--
           <template #append>
             <router-link
               v-if="portfóliosDisponíveis.length"
@@ -395,6 +397,7 @@ watch(itemParaEdição, (novoValor) => {
               ><use xlink:href="#i_edit" /></svg><div>Trocar de portfolio</div>
             </router-link>
           </template>
+        -->
         </LabelFromYup>
         <Field
           name="portfolio_id"
