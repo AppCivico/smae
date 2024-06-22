@@ -89,7 +89,7 @@ async function excluirTag(id) {
     async () => {
       if (await tagsStore.excluirItem(id)) {
         tagsStore.$reset();
-        tagsStore.buscarTudo(route.params.planoSetorialId);
+        tagsStore.buscarTudo({ pdm_id: route.params.planoSetorialId });
         alertStore.success('Tag removia.');
       }
     },
@@ -98,7 +98,7 @@ async function excluirTag(id) {
 }
 
 tagsStore.$reset();
-tagsStore.buscarTudo(route.params.planoSetorialId);
+tagsStore.buscarTudo({ pdm_id: route.params.planoSetorialId });
 
 </script>
 
