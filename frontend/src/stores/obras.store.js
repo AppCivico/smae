@@ -190,6 +190,7 @@ export const useObrasStore = defineStore('obrasStore', {
         previsao_inicio: dateTimeToDate(emFoco?.previsao_inicio) || null,
         previsao_termino: dateTimeToDate(emFoco?.previsao_termino) || null,
         tipo_intervencao_id: emFoco?.tipo_intervencao?.id || null,
+        regiao_ids: Array.isArray(emFoco?.regioes) ? emFoco.regioes.map((x) => x.id) : [],
       };
     },
 
