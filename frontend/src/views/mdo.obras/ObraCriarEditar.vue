@@ -744,6 +744,9 @@ watch(itemParaEdição, (novoValor) => {
           type="number"
           class="inputtext light mb1"
           :class="{ 'error': errors.mdo_n_familias_beneficiadas }"
+          @update:model-value="($v) => {
+            setFieldValue('mdo_n_familias_beneficiadas', Number($v) || null);
+          }"
         />
         <ErrorMessage
           name="mdo_n_familias_beneficiadas"
