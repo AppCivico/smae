@@ -57,7 +57,7 @@ addMethod(string, 'fieldUntilToday', function _(errorMessage = 'Valor de ${path}
 /**
  * @link https://github.com/jquense/yup/issues/384#issuecomment-442958997
  */
-addMethod(mixed, 'inArray', function _(arrayToCompare, message = '${path} not found in ${arrayToCompare}') {
+addMethod(mixed, 'inArray', function _(arrayToCompare, message = '${path} não encontrado em ${arrayToCompare}') {
   return this.test({
     message,
     name: 'inArray',
