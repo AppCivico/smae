@@ -1,4 +1,16 @@
-import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post, Query } from '@nestjs/common';
+import {
+    Body,
+    Controller,
+    Delete,
+    Get,
+    HttpCode,
+    HttpStatus,
+    NotFoundException,
+    Param,
+    Patch,
+    Post,
+    Query,
+} from '@nestjs/common';
 import { ApiBearerAuth, ApiNoContentResponse, ApiTags } from '@nestjs/swagger';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { Roles } from '../auth/decorators/roles.decorator';
@@ -10,23 +22,34 @@ import { FilterTagDto } from './dto/filter-tag.dto';
 import { ListTagDto } from './dto/list-tag.dto';
 import { UpdateTagDto } from './dto/update-tag.dto';
 import { TagService } from './tag.service';
+import { TipoPdm } from '@prisma/client';
+import { TagDto } from './entities/tag.entity';
 
 @ApiTags('Tag')
 @Controller('tag')
 export class TagController {
+    private tipoPdm: TipoPdm = 'PDM';
     constructor(private readonly tagService: TagService) {}
 
     @Post()
     @ApiBearerAuth('access-token')
     @Roles(['CadastroTag.inserir'])
     async create(@Body() createTagDto: CreateTagDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
-        return await this.tagService.create(createTagDto, user);
+        return await this.tagService.create(this.tipoPdm, createTagDto, user);
     }
 
     @ApiBearerAuth('access-token')
     @Get()
     async findAll(@Query() filters: FilterTagDto): Promise<ListTagDto> {
-        return { linhas: await this.tagService.findAll(filters) };
+        return { linhas: await this.tagService.findAll(this.tipoPdm, filters) };
+    }
+
+    @ApiBearerAuth('access-token')
+    @Get(':id')
+    async findOne(@Param() params: FindOneParams): Promise<TagDto> {
+        const linhas = await this.tagService.findAll(this.tipoPdm, { id: +params.id });
+        if (linhas.length === 0) throw new NotFoundException('Registro não encontrado');
+        return linhas[0];
     }
 
     @Patch(':id')
@@ -37,7 +60,7 @@ export class TagController {
         @Body() updateTagDto: UpdateTagDto,
         @CurrentUser() user: PessoaFromJwt
     ): Promise<RecordWithId> {
-        return await this.tagService.update(+params.id, updateTagDto, user);
+        return await this.tagService.update(this.tipoPdm, +params.id, updateTagDto, user);
     }
 
     @Delete(':id')
@@ -46,7 +69,56 @@ export class TagController {
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.ACCEPTED)
     async remove(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt) {
-        await this.tagService.remove(+params.id, user);
+        await this.tagService.remove(this.tipoPdm, +params.id, user);
+        return '';
+    }
+}
+
+@ApiTags('Tag Plano Setorial')
+@Controller('plano-setorial-tag')
+export class TagPSController {
+    private tipoPdm: TipoPdm = 'PDM';
+    constructor(private readonly tagService: TagService) {}
+
+    @Post()
+    @ApiBearerAuth('access-token')
+    @Roles(['CadastroTag.inserir'])
+    async create(@Body() createTagDto: CreateTagDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
+        return await this.tagService.create(this.tipoPdm, createTagDto, user);
+    }
+
+    @ApiBearerAuth('access-token')
+    @Get()
+    async findAll(@Query() filters: FilterTagDto): Promise<ListTagDto> {
+        return { linhas: await this.tagService.findAll(this.tipoPdm, filters) };
+    }
+
+    @ApiBearerAuth('access-token')
+    @Get(':id')
+    async findOne(@Param() params: FindOneParams): Promise<TagDto> {
+        const linhas = await this.tagService.findAll(this.tipoPdm, { id: +params.id });
+        if (linhas.length === 0) throw new NotFoundException('Registro não encontrado');
+        return linhas[0];
+    }
+
+    @Patch(':id')
+    @ApiBearerAuth('access-token')
+    @Roles(['CadastroTag.editar'])
+    async update(
+        @Param() params: FindOneParams,
+        @Body() updateTagDto: UpdateTagDto,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<RecordWithId> {
+        return await this.tagService.update(this.tipoPdm, +params.id, updateTagDto, user);
+    }
+
+    @Delete(':id')
+    @ApiBearerAuth('access-token')
+    @Roles(['CadastroTag.remover'])
+    @ApiNoContentResponse()
+    @HttpCode(HttpStatus.ACCEPTED)
+    async remove(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt) {
+        await this.tagService.remove(this.tipoPdm, +params.id, user);
         return '';
     }
 }
