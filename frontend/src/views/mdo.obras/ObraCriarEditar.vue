@@ -38,7 +38,6 @@ const alertStore = useAlertStore();
 const observadoresStore = useObservadoresStore();
 const portfolioMdoStore = usePortfolioObraStore();
 const obrasStore = useObrasStore();
-
 const equipamentosStore = useEquipamentosStore();
 
 const {
@@ -59,12 +58,6 @@ const {
   chamadasPendentes: chamadasPendentesDeTiposDeIntervenção,
   erro: erroDeTiposDeIntervenção,
 } = storeToRefs(tiposDeIntervencaoStore);
-
-const {
-  lista: gruposDeObservadores,
-  chamadasPendentes: gruposDeObservadoresPendentes,
-  erro: erroNosDadosDeObservadores,
-} = storeToRefs(observadoresStore);
 
 const {
   chamadasPendentes,
