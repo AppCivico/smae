@@ -1,7 +1,7 @@
 <script setup>
 import AutocompleteField from '@/components/AutocompleteField2.vue';
 import CampoDePessoasComBuscaPorOrgao from '@/components/CampoDePessoasComBuscaPorOrgao.vue';
-import CampoDeRegioesAgrupadas from '@/components/CampoDeRegioesAgrupadas.sincrono.vue';
+import CampoDeRegioesAgrupadas from '@/components/CampoDeRegioesAgrupadas.vue';
 import MaskedFloatInput from '@/components/MaskedFloatInput.vue';
 import MapaCampo from '@/components/geo/MapaCampo.vue';
 import MenuDeMudançaDeStatusDeProjeto from '@/components/projetos/MenuDeMudançaDeStatusDeProjeto.vue';
@@ -94,6 +94,7 @@ const montarCampoEstático = ref(false);
 const portfolioId = Number.parseInt(route.query.portfolio_id, 10) || undefined;
 const possíveisGestores = ref([]);
 const possíveisColaboradores = ref([]);
+
 const portfóliosDisponíveis = computed(() => {
   if (!emFoco.value?.portfolio_id) {
     return [];
@@ -778,8 +779,8 @@ watch(itemParaEdição, (novoValor) => {
 
       <CampoDeRegioesAgrupadas
         v-model="values.regiao_ids"
+        :valores-iniciais="itemParaEdição.regiao_ids"
         :nível="emFoco?.portfolio?.nivel_regionalizacao"
-        :pronto-para-montagem="montarCampoEstático"
       />
     </fieldset>
 
