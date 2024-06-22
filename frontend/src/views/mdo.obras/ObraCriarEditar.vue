@@ -262,20 +262,10 @@ const onSubmit = handleSubmit(async () => {
       : await obrasStore.salvarItem(carga);
 
     if (resposta) {
-      const rotaApósSalvamento = props.obraId
-        ? {
-          name: 'obrasResumo',
-          params: { obraId: resposta.id },
-        }
-        : {
-          name: 'obrasEditar',
-          params: { obraId: resposta.id },
-        };
-
       alertStore.success(msg);
       emFoco.value = null;
       obrasStore.buscarItem(props.obraId || resposta.id);
-      router.push(rotaApósSalvamento);
+      router.push({ name: route.meta.rotaDeEscape });
     }
   } catch (error) {
     alertStore.error(error);
