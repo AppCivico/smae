@@ -4,7 +4,6 @@ import { storeToRefs } from 'pinia';
 import { useField } from 'vee-validate';
 import {
   computed,
-  onMounted,
   ref,
   toRef,
   watch,
@@ -15,14 +14,14 @@ const props = defineProps({
     type: Array,
     required: true,
   },
+  valoresIniciais: {
+    type: Array,
+    required: true,
+  },
   nível: {
     type: Number,
     required: true,
     default: 0,
-  },
-  prontoParaMontagem: {
-    type: Boolean,
-    required: true,
   },
   // necessária para que o vee-validate não se perca
   name: {
@@ -74,10 +73,10 @@ async function montar() {
     await regionsStore.getAll();
   }
 
-  if (props.prontoParaMontagem) {
+  if (props.valoresIniciais) {
     const agrupadas = {};
 
-    props.modelValue.forEach((id) => {
+    props.valoresIniciais.forEach((id) => {
       if (regiõesPorId.value[id]?.nivel === nívelDoCampo.value) {
         agrupadas[id] = {
           agrupadora: id,
@@ -86,7 +85,7 @@ async function montar() {
       }
     });
 
-    props.modelValue.forEach((id) => {
+    props.valoresIniciais.forEach((id) => {
       const idDaMãe = regiõesPorId.value[id]?.parente_id;
 
       if (agrupadas[idDaMãe]) {
@@ -98,12 +97,7 @@ async function montar() {
   }
 }
 
-// assistindo mounted apenas para facilitar o desenvolvimento
-onMounted(() => {
-  montar();
-});
-
-watch(() => props.prontoParaMontagem, () => {
+watch(() => props.valoresIniciais, () => {
   montar();
 }, { immediate: true });
 
@@ -209,7 +203,7 @@ watch(() => listaDeRegiões.value, (novoValor) => {
     </button>
 
     <div
-      v-if="prontoParaMontagem && !agrupadoresDisponíveis.length"
+      v-if="!agrupadoresDisponíveis.length"
       class="error p1 error-msg"
     >
       Não há regiões disponíveis.
