@@ -19,9 +19,9 @@ export class TagService {
         const similarExists = await this.prisma.tag.count({
             where: {
                 descricao: { equals: createTagDto.descricao, mode: 'insensitive' },
+                pdm_id: createTagDto.pdm_id,
                 pdm: { tipo, id: createTagDto.pdm_id },
                 removido_em: null,
-                pdm_id: createTagDto.pdm_id,
             },
         });
 
