@@ -94,7 +94,7 @@ export class PdmController {
             this.objetivoEstrategicoService.findAll(this.tipoPdm, filter_opts),
             this.subTemaService.findAll(this.tipoPdm, filter_opts),
             this.eixoService.findAll(this.tipoPdm, filter_opts),
-            this.tagService.findAll(filter_opts),
+            this.tagService.findAll(this.tipoPdm, filter_opts),
             this.pdmService.getOrcamentoConfig(this.tipoPdm, +params.id),
         ]);
 
