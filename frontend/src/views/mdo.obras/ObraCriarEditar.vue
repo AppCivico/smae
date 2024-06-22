@@ -1280,7 +1280,7 @@ watch(itemParaEdição, (novoValor) => {
             :class="{
               error: errors.responsavel_id,
             }"
-            :disabled="!órgãosQueTemResponsáveis?.length"
+            :disabled="!possíveisResponsáveisPorÓrgãoId[values.orgao_responsavel_id]?.length"
             @update:model-value="($v) => {
               setFieldValue('responsavel_id', Number($v) || null);
             }"
