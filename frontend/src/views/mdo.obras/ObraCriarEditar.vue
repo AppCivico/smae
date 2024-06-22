@@ -1,6 +1,7 @@
 <script setup>
 import AutocompleteField from '@/components/AutocompleteField2.vue';
 import CampoDePessoasComBuscaPorOrgao from '@/components/CampoDePessoasComBuscaPorOrgao.vue';
+import CampoDeRegioesAgrupadas from '@/components/CampoDeRegioesAgrupadas.sincrono.vue';
 import MaskedFloatInput from '@/components/MaskedFloatInput.vue';
 import MapaCampo from '@/components/geo/MapaCampo.vue';
 import MenuDeMudançaDeStatusDeProjeto from '@/components/projetos/MenuDeMudançaDeStatusDeProjeto.vue';
@@ -329,9 +330,11 @@ watch(emFoco, () => {
 }, { immediate: true });
 
 watch(itemParaEdição, (novoValor) => {
+  montarCampoEstático.value = false;
   resetForm({
     initialValues: novoValor,
   });
+  montarCampoEstático.value = true;
 });
 </script>
 <template>
@@ -766,11 +769,21 @@ watch(itemParaEdição, (novoValor) => {
       </div>
     </div>
 
-    <!-- aqui, sobral! Bote o de subprefeituras aqui! -->
+    <fieldset class="mb2">
+      <LabelFromYup
+        name="regiao_ids"
+        as="legend"
+        :schema="schema"
+      />
 
-    <fieldset class="p0">
-      <hr class="mb2 f1">
+      <CampoDeRegioesAgrupadas
+        v-model="values.regiao_ids"
+        :nível="emFoco?.portfolio?.nivel_regionalizacao"
+        :pronto-para-montagem="montarCampoEstático"
+      />
+    </fieldset>
 
+    <fieldset>
       <div class="flex flexwrap g2">
         <div class="f1 mb1">
           <LabelFromYup
