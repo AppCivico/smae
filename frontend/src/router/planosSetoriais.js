@@ -48,7 +48,6 @@ export default {
           const rotas = [
             'planosSetoriaisResumo',
             'planosSetoriaisDocumentos',
-            'planosSetoriaisTags',
           ];
 
           if (usePlanosSetoriaisStore()?.emFoco?.possui_macro_tema) {
@@ -60,7 +59,7 @@ export default {
           if (usePlanosSetoriaisStore()?.emFoco?.possui_sub_tema) {
             rotas.push('planosSetoriaisSubtemas');
           }
-
+          rotas.push('planosSetoriaisTags');
           return rotas;
         },
         rotasParaMigalhasDePão: [
