@@ -953,8 +953,8 @@ export const obras = object({
     .max(500)
     .required(),
   orgao_colaborador_id: number()
-    .label('Secretaria/órgão colaborador')
-    .min(1, 'Secretaria/órgão colaborador inválidos')
+    .label('Órgão colaborador')
+    .min(1, 'Órgão colaborador inválidos')
     .nullable(),
   orgao_executor_id: number()
     .label('Secretaria/órgão executor')
@@ -967,10 +967,10 @@ export const obras = object({
   orgao_origem_id: number()
     .label('Secretaria/órgão de origem')
     .min(1, 'Secretaria/órgão de origem inválidos')
-    .nullable(),
-  orgao_responsavel_id: mixed()
+    .required(),
+  orgao_responsavel_id: number()
     .label('Órgão responsável pela obra')
-    .inArray('orgaos_participantes')
+    .min(1, 'Órgão responsável pela obra inválidos')
     .nullable(),
   orgaos_colaboradores: string()
     .label('Órgãos colaboradores da obra')
@@ -1016,8 +1016,8 @@ export const obras = object({
     )
     .nullable(),
   responsavel_id: number()
-    .label('Responsável')
-    .min(1)
+    .label('Ponto focal responsável')
+    .min(1, 'Responsável inválido')
     .nullable(),
   responsaveis_no_orgao_gestor: array()
     .label('Assessor do monitoramento')
