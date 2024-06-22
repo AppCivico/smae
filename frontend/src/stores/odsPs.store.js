@@ -32,7 +32,6 @@ export const useOdsStore = defineStore('odsStore', {
     async buscarTudo(params = {}) {
       this.chamadasPendentes.lista = true;
       this.erro = null;
-      console.log('entrou no buscar tudo do ods');
       try {
         const { linhas } = await this.requestS.get(`${baseUrl}/ods`, params);
         this.lista = linhas;

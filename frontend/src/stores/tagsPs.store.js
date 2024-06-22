@@ -32,7 +32,6 @@ export const useTagsPsStore = defineStore('tagsPsStore', {
     async buscarTudo(params = {}) {
       this.chamadasPendentes.lista = true;
       this.erro = null;
-      console.log('entrou no buscar tudo de tags, params: ', params);
       try {
         const { linhas } = await this.requestS.get(`${baseUrl}/tag?pdm_id=${params}`);
         this.lista = linhas;
