@@ -1,113 +1,160 @@
 <template>
   <div>
-    <div class="flex spacebetween center mb2">
-      <h1>{{ route?.meta?.título || 'Painel de obras' }}</h1>
-      <hr class="ml2 f1">
+    <div class="flex spacebetween center mb2 g2">
+      <TítuloDePágina id="titulo-da-pagina" />
+      <hr class="f1">
       <router-link
         :to="{name: 'obrasCriar'}"
         class="btn big ml1"
       >
-        Novo
+        Nova obra
       </router-link>
     </div>
-    <table class="tablemain">
-      <col>
-      <col>
-      <col class="col--botão-de-ação">
-      <col class="col--botão-de-ação">
-      <thead>
-        <tr>
-          <th>
-            Órgão origem
-          </th>
-          <th>
-            portfólio
-          </th>
-          <th>
-            nome da obra
-          </th>
-          <th>
-            grupo temático
-          </th>
-          <th>
-            tipo de intervenção
-          </th>
-          <th>
-            Equipamento
-          </th>
-          <th>
-            Subprefeitura
-          </th>
-          <th>
-            status da obra
-          </th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr
-          v-for="item in lista"
-          :key="item.id"
-        >
-          <td> {{ item.orgao_origem.sigla }} </td>
-          <td> {{ item.portfolio.titulo }} </td>
-          <td> {{ item.nome }} </td>
-          <td>{{ item.grupo_tematico.nome }}</td>
-          <td class="tc">
-            {{ item.tipo_intervencao ? item.tipo_intervencao : ' - ' }}
-          </td>
-          <td class="tc">
-            {{ item.equipamento ? item.equipamento.nome : ' - ' }}
-          </td>
-          <td class="tc">
-            {{ item.equipamento ? item.equipamento.nome : ' - ' }}
-          </td>
-          <td class="tc">
-            {{ item.regioes ? item.regioes : ' - ' }}
-          </td>
-        </tr>
-        <tr v-if="chamadasPendentes.lista">
-          <td colspan="3">
-            Carregando
-          </td>
-        </tr>
-        <tr v-else-if="erro">
-          <td colspan="3">
-            Erro: {{ erro }}
-          </td>
-        </tr>
-        <tr v-else-if="!lista.length">
-          <td colspan="3">
-            Nenhum resultado encontrado.
-          </td>
-        </tr>
-      </tbody>
-    </table>
+
+    <LocalFilter
+      v-model="listaFiltradaPorTermoDeBusca"
+      class="mb2"
+      :lista="lista"
+    />
+    <div
+      role="region"
+      aria-labelledby="titulo-da-pagina"
+      tabindex="0"
+    >
+      <table class="tablemain">
+        <col>
+        <col>
+        <col>
+        <col>
+        <col>
+        <col>
+        <col>
+        <col>
+
+        <col class="col--botão-de-ação">
+        <col class="col--botão-de-ação">
+        <thead>
+          <tr>
+            <th>
+              {{ schema.fields.orgao_origem_id.spec.label }}
+            </th>
+            <th>
+              {{ schema.fields.portfolio_id.spec.label }}
+            </th>
+            <th>
+              {{ schema.fields.nome.spec.label }}
+            </th>
+            <th>
+              {{ schema.fields.grupo_tematico_id.spec.label }}
+            </th>
+            <th>
+              {{ schema.fields.tipo_intervencao_id.spec.label }}
+            </th>
+            <th>
+              {{ schema.fields.equipamento_id.spec.label }}
+            </th>
+            <th>
+              {{ schema.fields.regiao_ids.spec.label }}
+            </th>
+            <th>
+              {{ schema.fields.status.spec.label }}
+            </th>
+            <th />
+            <th />
+          </tr>
+        </thead>
+        <tbody>
+          <tr
+            v-for="item in listaFiltradaPorTermoDeBusca"
+            :key="item.id"
+          >
+            <td>{{ item.orgao_origem.sigla }}</td>
+            <td>{{ item.portfolio?.titulo || item.portfolio }}</td>
+            <th>{{ item.nome }}</th>
+            <td>{{ item.grupo_tematico.nome }}</td>
+            <td>
+              {{ item.tipo_intervencao?.nome || item.tipo_intervencao || ' - ' }}
+            </td>
+            <td>
+              {{ item.equipamento ? item.equipamento.nome : ' - ' }}
+            </td>
+            <td>
+              {{ item.regioes || ' - ' }}
+            </td>
+            <td class="cell--minimum">
+              {{ statusObras[item.status]?.nome || item.status }}
+            </td>
+
+            <td>
+              <router-link
+                :to="{ name: 'obrasEditar', params: { obraId: item.id } }"
+                class="tprimary"
+              >
+                <svg
+                  width="20"
+                  height="20"
+                ><use xlink:href="#i_edit" /></svg>
+              </router-link>
+            </td>
+            <td>
+              <button
+                class="like-a__text"
+                arial-label="excluir"
+                title="excluir"
+                @click="excluirObra(item.id, item.nome)"
+              >
+                <svg
+                  width="20"
+                  height="20"
+                ><use xlink:href="#i_remove" /></svg>
+              </button>
+            </td>
+          </tr>
+          <tr v-if="chamadasPendentes.lista">
+            <td colspan="10">
+              Carregando
+            </td>
+          </tr>
+          <tr v-else-if="erro">
+            <td colspan="10">
+              Erro: {{ erro }}
+            </td>
+          </tr>
+          <tr v-else-if="!lista.length">
+            <td colspan="10">
+              Nenhum resultado encontrado.
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
   </div>
 </template>
 <script setup>
+import LocalFilter from '@/components/LocalFilter.vue';
+import { obras as schema } from '@/consts/formSchemas';
+import statusObras from '@/consts/statusObras';
 import { useAlertStore } from '@/stores/alert.store';
 import { useObrasStore } from '@/stores/obras.store';
 import { storeToRefs } from 'pinia';
-import { useRoute } from 'vue-router';
+import { ref } from 'vue';
 
 const obrasStore = useObrasStore();
 const {
   lista, chamadasPendentes, erro,
 } = storeToRefs(obrasStore);
-const route = useRoute();
 const alertStore = useAlertStore();
 
-async function excluirObra(id) {
-  alertStore.confirmAction('Deseja mesmo remover esse item?', async () => {
+const listaFiltradaPorTermoDeBusca = ref([]);
+
+async function excluirObra(id, nome) {
+  alertStore.confirmAction(`Deseja mesmo remover "${nome}"?`, async () => {
     if (await obrasStore.excluirItem(id)) {
-      // obrasStore.$reset();
-      obrasStore.buscarTudo();
-      alertStore.success('Partido removido.');
+      obrasStore.buscarTudo({ ipp: 100 });
+      alertStore.success('Obra removida.');
     }
   }, 'Remover');
 }
 
-// obrasStore.$reset();
-obrasStore.buscarTudo();
-
+obrasStore.buscarTudo({ ipp: 100 });
 </script>
