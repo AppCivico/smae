@@ -1274,20 +1274,19 @@ watch(itemParaEdição, (novoValor) => {
           <LabelFromYup
             name="orgao_responsavel_id"
             :schema="schema"
-            class="tc300"
           />
           <Field
             name="orgao_responsavel_id"
             as="select"
             class="inputtext light mb1"
-            :aria-busy="portfolioMdoStore.chamadasPendentes.lista"
             :class="{
               error: errors.orgao_responsavel_id,
             }"
             :disabled="!órgãosQueTemResponsáveis?.length"
             @change="setFieldValue('responsavel_id', 0)"
-            @update:model-value="values.orgao_responsavel_id = Number(values.orgao_responsavel_id)
-              || null"
+            @update:model-value="($v) => {
+              setFieldValue('orgao_responsavel_id', Number($v) || null);
+            }"
           >
             <option :value="0">
               Selecionar
@@ -1304,6 +1303,42 @@ watch(itemParaEdição, (novoValor) => {
           </Field>
           <ErrorMessage
             name="orgao_responsavel_id"
+            class="error-msg"
+          />
+        </div>
+        <div class="f1 mb1">
+          <LabelFromYup
+            name="responsavel_id"
+            :schema="schema"
+          />
+          <Field
+            name="responsavel_id"
+            as="select"
+            class="inputtext light mb1"
+            :aria-busy="portfolioMdoStore.chamadasPendentes.lista"
+            :class="{
+              error: errors.responsavel_id,
+            }"
+            :disabled="!órgãosQueTemResponsáveis?.length"
+            @update:model-value="($v) => {
+              setFieldValue('responsavel_id', Number($v) || null);
+            }"
+          >
+            <option :value="0">
+              Selecionar
+            </option>
+            <option
+              v-for="item in possíveisResponsáveisPorÓrgãoId[values.orgao_responsavel_id]"
+              :key="item"
+              :value="item.id"
+              :disabled="!possíveisResponsáveisPorÓrgãoId[item.id]?.length"
+              :title="item.descricao?.length > 36 ? item.descricao : null"
+            >
+              {{ item.nome_exibicao }}
+            </option>
+          </Field>
+          <ErrorMessage
+            name="responsavel_id"
             class="error-msg"
           />
         </div>
@@ -1324,6 +1359,7 @@ watch(itemParaEdição, (novoValor) => {
           v-model="values.colaboradores_no_orgao"
           name="colaboradores_no_orgao"
           :pessoas="possíveisColaboradores"
+          :colaborador-de-projeto="true"
           :pronto-para-montagem="montarCampoEstático"
         />
         <ErrorMessage
@@ -1502,22 +1538,20 @@ watch(itemParaEdição, (novoValor) => {
     >
       <div class="f1 mb1">
         <LabelFromYup
-          name="orgao_responsavel_id"
+          name="orgao_colaborador_id"
           :schema="schema"
           class="tc300"
         />
         <Field
-          name="orgao_responsavel_id"
+          name="orgao_colaborador_id"
           as="select"
           class="inputtext light mb1"
           :aria-busy="portfolioMdoStore.chamadasPendentes.lista"
-          :class="{
-            error: errors.orgao_responsavel_id,
-          }"
+          :class="{ error: errors.orgao_colaborador_id }"
           :disabled="!órgãosQueTemResponsáveis?.length"
-          @change="setFieldValue('responsavel_id', 0)"
-          @update:model-value="values.orgao_responsavel_id = Number(values.orgao_responsavel_id)
-            || null"
+          @update:model-value="($v) => {
+            setFieldValue('orgao_colaborador_id', Number($v) || null);
+          }"
         >
           <option :value="0">
             Selecionar
@@ -1533,13 +1567,11 @@ watch(itemParaEdição, (novoValor) => {
           </option>
         </Field>
         <ErrorMessage
-          name="orgao_responsavel_id"
+          name="orgao_colaborador_id"
           class="error-msg"
         />
       </div>
     </div>
-
-    <!-- Continue aqui, sobral! -->
 
     <FormErrorsList :errors="errors" />
 
