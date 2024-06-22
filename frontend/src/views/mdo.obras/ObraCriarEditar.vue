@@ -762,7 +762,7 @@ watch(itemParaEdição, (novoValor) => {
       <CampoDeRegioesAgrupadas
         v-model="values.regiao_ids"
         :valores-iniciais="itemParaEdição.regiao_ids"
-        :nível="emFoco?.portfolio?.nivel_regionalizacao"
+        :nível="portfolioMdoStore.portfoliosPorId[values.portfolio_id]?.nivel_regionalizacao"
       />
     </fieldset>
 
