@@ -236,7 +236,7 @@ const éPossívelAbrir = (item) => !item.children?.length
   }
 
   &.arvore-de-arquivos--raiz {
-    .rolavel-verticalmente;
+    .rolavel-horizontalmente;
 
     // para evitar vara de rolagem vertical, quando houver rolagem horizontal
     padding-bottom: 1px;
