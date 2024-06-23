@@ -120,14 +120,6 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
     <div class="flex g2 flexwrap mb2">
       <dl class="f1">
         <dt>
-          Identificador
-        </dt>
-        <dd>
-          {{ transferênciaEmFoco?.identificador || '-' }}
-        </dd>
-      </dl>
-      <dl class="f1">
-        <dt>
           Esfera
         </dt>
         <dd>
