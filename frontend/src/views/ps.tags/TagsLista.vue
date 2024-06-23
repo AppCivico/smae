@@ -12,6 +12,7 @@
 
   <table class="tablemain">
     <col>
+    <col>
     <col class="col--botão-de-ação">
     <col class="col--botão-de-ação">
     <thead>
