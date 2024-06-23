@@ -66,28 +66,32 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
 
     <hr class="f1">
 
-    <template
+    <menu
       v-if="temPermissãoPara('AndamentoWorkflow.listar') && workflow"
+      class="flex g1 mr0 mlauto"
     >
-      <button
-        type="button"
-        class="btn"
-        :disabled="!inícioDeFasePermitido"
-        @click="iniciarFase(idDaPróximaFasePendente)"
-      >
-        Iniciar fase
-      </button>
-
-      <button
-        v-if="workflow"
-        type="button"
-        class="btn"
-        :disabled="!workflow.pode_passar_para_proxima_etapa"
-        @click="avançarEtapa"
-      >
-        Avançar etapa
-      </button>
-    </template>
+      <li class="f0">
+        <button
+          type="button"
+          class="btn"
+          :disabled="!inícioDeFasePermitido"
+          @click="iniciarFase(idDaPróximaFasePendente)"
+        >
+          Iniciar fase
+        </button>
+      </li>
+      <li class="f0">
+        <button
+          v-if="workflow"
+          type="button"
+          class="btn"
+          :disabled="!workflow.pode_passar_para_proxima_etapa"
+          @click="avançarEtapa"
+        >
+          Avançar etapa
+        </button>
+      </li>
+    </menu>
   </header>
 
   <AndamentoDoWorkflow
