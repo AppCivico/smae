@@ -45,7 +45,7 @@
             class="like-a__text"
             arial-label="excluir"
             title="excluir"
-            @click="excluirTag(item.id)"
+            @click="excluirTag(item.id, item.descricao)"
           >
             <svg
               width="18"
@@ -85,14 +85,14 @@ const tagsStore = useTagsPsStore();
 
 const { lista, chamadasPendentes, erro } = storeToRefs(tagsStore);
 
-async function excluirTag(id) {
+async function excluirTag(id, descricao) {
   alertStore.confirmAction(
-    'Deseja mesmo remover esse item?',
+    `Deseja mesmo remover "${descricao}"?`,
     async () => {
       if (await tagsStore.excluirItem(id)) {
         tagsStore.$reset();
         tagsStore.buscarTudo({ pdm_id: route.params.planoSetorialId });
-        alertStore.success('Tag removia.');
+        alertStore.success(`Tag "${descricao}" removida.`);
       }
     },
     'Remover',
