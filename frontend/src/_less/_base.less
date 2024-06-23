@@ -952,15 +952,22 @@ p {
   }
 }
 
-.sr-only {
-  position: absolute;
-  width: 1px;
-  height: 1px;
+.hide-text {
   padding: 0;
-  margin: -1px;
   overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  border: 0;
+  text-indent: 101%;
+  white-space: nowrap;
+}
+
+.sr-only {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  border: 0 !important;
 }
 
 /* Components */
@@ -1926,6 +1933,76 @@ input[type='radio'] {
 
 .halfInput {
   width: 48%;
+}
+
+// Progress bars
+.progress-bar-bg(@content) {
+  &::-webkit-progress-bar {
+    @content();
+  }
+
+  @content();
+}
+
+.progress-bar-fg(@content) {
+  &[value]::-moz-progress-bar {
+    @content();
+  }
+
+  &[value]::-webkit-progress-value {
+    @content();
+  }
+
+  > div {
+    .hide-text;
+
+    display: block;
+
+    float: left;
+    max-width: 100%;
+    height: 100%;
+
+    line-height: inherit;
+
+    border-radius: 0;
+
+    @content();
+
+    &:first-child {
+      border-top-left-radius: 4px;
+      border-bottom-left-radius: 4px;
+    }
+
+    &:last-child {
+      border-top-right-radius: 4px;
+      border-bottom-right-radius: 4px;
+    }
+  }
+}
+
+progress,
+[role='progressbar'] {
+  .br4;
+
+  display: block;
+
+  width: 100%;
+  height: 1.15em;
+
+  color: @primary;
+
+  background: @laranja;
+  border: 0;
+
+  appearance: none;
+
+  .progress-bar-fg({
+    background: @primary 50%;
+  });
+
+  .progress-bar-bg({
+    background: @laranja 50%;
+  });
 }
 
 .link {
