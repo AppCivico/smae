@@ -299,7 +299,30 @@ export class DistribuicaoRecursoService {
             }
 
             return {
-                ...r,
+                id: r.id,
+                nome: r.nome,
+                transferencia_id: r.transferencia_id,
+                orgao_gestor: r.orgao_gestor,
+                objeto: r.objeto,
+                valor: r.valor,
+                valor_total: r.valor_total,
+                valor_contrapartida: r.valor_contrapartida,
+                custeio: r.custeio,
+                investimento: r.investimento,
+                empenho: r.empenho,
+                data_empenho: r.data_empenho,
+                programa_orcamentario_estadual: r.programa_orcamentario_estadual,
+                programa_orcamentario_municipal: r.programa_orcamentario_municipal,
+                dotacao: r.dotacao,
+                proposta: r.proposta,
+                contrato: r.contrato,
+                convenio: r.convenio,
+                assinatura_termo_aceite: r.assinatura_termo_aceite,
+                assinatura_municipio: r.assinatura_municipio,
+                assinatura_estado: r.assinatura_estado,
+                vigencia: r.vigencia,
+                aditamentos: r.aditamentos,
+                conclusao_suspensiva: r.conclusao_suspensiva,
                 pode_registrar_status: pode_registrar_status,
                 registros_sei: r.registros_sei.map((s) => {
                     return {
