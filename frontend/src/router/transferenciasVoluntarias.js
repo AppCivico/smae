@@ -1,5 +1,16 @@
+import EmailModal from '@/components/EmailModal.vue';
+import NotaDetalhe from '@/components/notas/NotaDetalhe.vue';
+import NotasCriarEditar from '@/components/notas/NotasCriarEditar.vue';
+import NotasLista from '@/components/notas/NotasLista.vue';
+import NotasRaiz from '@/components/notas/NotasRaiz.vue';
+import { useTarefasStore } from '@/stores/tarefas.store.ts';
+import { useTransferenciasVoluntariasStore } from '@/stores/transferenciasVoluntarias.store';
 import DialogWrapper from '@/views/DialogWrapper.vue';
+import TarefasCriarEditar from '@/views/tarefas/TarefasCriarEditar.vue';
+import TarefasItem from '@/views/tarefas/TarefasItem.vue';
 import TarefasLista from '@/views/tarefas/TarefasLista.vue';
+import TarefasProgresso from '@/views/tarefas/TarefasProgresso.vue';
+import TarefasRaiz from '@/views/tarefas/TarefasRaiz.vue';
 import RegistroDeTransferenciaCriarEditar from '@/views/transferenciasVoluntarias/RegistroDeTransferenciaCriarEditar.vue';
 import TransferenciaDistribuicaoDeRecursosCriarEditar from '@/views/transferenciasVoluntarias/TransferenciaDistribuicaoDeRecursosCriarEditar.vue';
 import TransferenciasVoluntariasCriarEditar from '@/views/transferenciasVoluntarias/TransferenciasVoluntariasCriarEditar.vue';
@@ -8,18 +19,6 @@ import TransferenciasVoluntariasDocumentos from '@/views/transferenciasVoluntari
 import TransferenciasVoluntariasEnviarArquivo from '@/views/transferenciasVoluntarias/TransferenciasVoluntariasEnviarArquivo.vue';
 import TransferenciasVoluntariasLista from '@/views/transferenciasVoluntarias/TransferenciasVoluntariasLista.vue';
 import TransferenciasVoluntariasRaiz from '@/views/transferenciasVoluntarias/TransferenciasVoluntariasRaiz.vue';
-
-import NotasRaiz from '@/components/notas/NotasRaiz.vue';
-import NotasLista from '@/components/notas/NotasLista.vue';
-import NotaDetalhe from '@/components/notas/NotaDetalhe.vue';
-import NotasCriarEditar from '@/components/notas/NotasCriarEditar.vue';
-
-import EmailModal from '@/components/EmailModal.vue';
-import { useTarefasStore } from '@/stores/tarefas.store.ts';
-import TarefasCriarEditar from '@/views/tarefas/TarefasCriarEditar.vue';
-import TarefasItem from '@/views/tarefas/TarefasItem.vue';
-import TarefasProgresso from '@/views/tarefas/TarefasProgresso.vue';
-import TarefasRaiz from '@/views/tarefas/TarefasRaiz.vue';
 
 const rotasParaMenuSecundário = [
   {
@@ -104,7 +103,9 @@ export default {
         ...{ transferenciaId: Number.parseInt(params.transferenciaId, 10) || undefined },
       }),
       meta: {
-        título: 'Resumo',
+        título: () => (useTransferenciasVoluntariasStore()?.emFoco?.identificador
+          ? `Resumo da transferência ${useTransferenciasVoluntariasStore()?.emFoco?.identificador}`
+          : 'Resumo de transferência'),
         rotasParaMenuSecundário,
         rotasParaMigalhasDePão: [
           'TransferenciasVoluntariasListar',
