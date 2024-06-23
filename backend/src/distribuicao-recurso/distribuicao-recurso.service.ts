@@ -342,7 +342,7 @@ export class DistribuicaoRecursoService {
                             id: r.orgao_responsavel.id,
                             sigla: r.orgao_responsavel.sigla,
                         },
-                        status: r.status
+                        status_customizado: r.status
                             ? {
                                   id: r.status.id,
                                   nome: r.status.nome,
@@ -464,7 +464,7 @@ export class DistribuicaoRecursoService {
                     id: r.orgao_responsavel.id,
                     sigla: r.orgao_responsavel.sigla,
                 },
-                status: r.status
+                status_customizado: r.status
                     ? {
                           id: r.status.id,
                           nome: r.status.nome,
