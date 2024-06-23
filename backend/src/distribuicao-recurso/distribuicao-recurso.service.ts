@@ -15,6 +15,7 @@ import { formataSEI } from 'src/common/formata-sei';
 import { BlocoNotaService } from '../bloco-nota/bloco-nota/bloco-nota.service';
 import { NotaService } from '../bloco-nota/nota/nota.service';
 import { AvisoEmailService } from '../aviso-email/aviso-email.service';
+import { DateTime } from 'luxon';
 
 type OperationsRegistroSEI = {
     id?: number;
@@ -256,17 +257,84 @@ export class DistribuicaoRecursoService {
                         justificativa: true,
                     },
                 },
+                status: {
+                    orderBy: { data_troca: 'desc' },
+                    select: {
+                        id: true,
+                        data_troca: true,
+                        motivo: true,
+                        nome_responsavel: true,
+                        orgao_responsavel: {
+                            select: {
+                                id: true,
+                                sigla: true,
+                            },
+                        },
+                        status: {
+                            select: {
+                                id: true,
+                                nome: true,
+                                tipo: true,
+                                permite_novos_registros: true,
+                            },
+                        },
+                        status_base: {
+                            select: {
+                                id: true,
+                                nome: true,
+                                tipo: true,
+                                permite_novos_registros: true,
+                            },
+                        },
+                    },
+                },
             },
         });
 
         return rows.map((r) => {
+            let pode_registrar_status: boolean = true;
+            if (r.status.length) {
+                if (!r.status[0].status?.permite_novos_registros || !r.status[0].status_base?.permite_novos_registros)
+                    pode_registrar_status = false;
+            }
+
             return {
                 ...r,
+                pode_registrar_status: pode_registrar_status,
                 registros_sei: r.registros_sei.map((s) => {
                     return {
                         id: s.id,
                         nome: s.nome,
                         processo_sei: formataSEI(s.processo_sei),
+                    };
+                }),
+                historico_status: r.status.map((r) => {
+                    return {
+                        id: r.id,
+                        data_troca: r.data_troca,
+                        dias_no_status: DateTime.fromJSDate(r.data_troca).diffNow('days').days,
+                        motivo: r.motivo,
+                        nome_responsavel: r.nome_responsavel,
+                        orgao_responsavel: {
+                            id: r.orgao_responsavel.id,
+                            sigla: r.orgao_responsavel.sigla,
+                        },
+                        status: r.status
+                            ? {
+                                  id: r.status.id,
+                                  nome: r.status.nome,
+                                  tipo: r.status.tipo,
+                                  status_base: false,
+                              }
+                            : null,
+                        status_base: r.status_base
+                            ? {
+                                  id: r.status_base.id,
+                                  nome: r.status_base.nome,
+                                  tipo: r.status_base.tipo,
+                                  status_base: true,
+                              }
+                            : null,
                     };
                 }),
             };
@@ -366,6 +434,7 @@ export class DistribuicaoRecursoService {
             return {
                 id: r.id,
                 data_troca: r.data_troca,
+                dias_no_status: DateTime.fromJSDate(r.data_troca).diffNow('days').days,
                 motivo: r.motivo,
                 nome_responsavel: r.nome_responsavel,
                 orgao_responsavel: {

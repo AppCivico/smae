@@ -29,6 +29,8 @@ export class DistribuicaoRecursoDto {
     aditamentos: AditamentosDto[];
     conclusao_suspensiva: Date | null;
     registros_sei: DistribuicaoRecursoSeiDto[] | null;
+    pode_registrar_status: boolean;
+    historico_status: DistribuicaoHistoricoStatusDto[];
 }
 
 export class DistribuicaoRecursoDetailDto extends DistribuicaoRecursoDto {
@@ -55,6 +57,7 @@ export class DistribuicaoRecursoSeiDto {
 export class DistribuicaoHistoricoStatusDto {
     id: number;
     data_troca: Date;
+    dias_no_status: number;
     motivo: string;
     orgao_responsavel: IdSigla;
     status: StatusDistListDto | null;
