@@ -142,9 +142,11 @@
   background: -o-linear-gradient(top, @startColor, @endColor @fim);
 }
 
-.rolavel-verticalmente {
+.rolavel-horizontalmente {
   position: relative;
   overflow: auto;
+  overflow-x: auto;
+  overflow-y: clip;
   background: linear-gradient(to right, #fff 30%, rgba(255, 255, 255, 0)),
     linear-gradient(to right, rgba(255, 255, 255, 0), #fff 70%) 0 100%,
     radial-gradient(farthest-side at 0% 50%,

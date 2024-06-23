@@ -492,9 +492,7 @@ watch(itemParaEdição, () => {
 }
 
 .andamento-fluxo__lista-de-fases {
-  overflow-x: auto;
-  overflow-y: clip;
-  scroll-behavior: smooth;
+  .rolavel-horizontalmente;
 }
 
 .andamento-fluxo__fase {
