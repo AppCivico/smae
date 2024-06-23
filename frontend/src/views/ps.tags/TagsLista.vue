@@ -17,7 +17,7 @@
     <col class="col--botão-de-ação">
     <thead>
       <tr>
-        <th>Tag</th>
+        <th>Tags</th>
         <th>Possui ícone</th>
         <th />
         <th />
