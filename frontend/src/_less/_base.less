@@ -57,6 +57,7 @@ a {
   cursor: pointer;
 }
 
+menu,
 ul,
 li {
   list-style: none;
@@ -296,6 +297,10 @@ input ~ span[role='alert'],
   text-overflow: ellipsis;
   display: block;
   max-width: 100%;
+}
+
+.normalwrap {
+  white-space: normal;
 }
 
 /* Tipografia */
@@ -661,6 +666,10 @@ p {
   margin-right: 2rem !important;
 }
 
+.mrauto {
+  margin-right: auto !important;
+}
+
 .ml05 {
   margin-left: 0.5rem !important;
 }
@@ -865,6 +874,7 @@ p {
     flex: 0 0 auto;
   }
 
+  // não adicionar `!important` em regras compostas
   .f1 {
     flex: 1;
   }
@@ -881,49 +891,76 @@ p {
     flex: 4;
   }
 
+  .fg999 {
+    flex-grow: 999 !important;
+  }
+
   .fb0 {
-    flex-basis: 0;
+    flex-basis: 0 !important;
+  }
+
+  .fb25 {
+    flex-basis: 25% !important;
   }
 
   .fb33 {
-    flex-basis: 33%;
+    flex-basis: 33% !important;
   }
 
   .fb50 {
-    flex-basis: 50%;
+    flex-basis: 50% !important;
+  }
+
+  .fb66 {
+    flex-basis: 66% !important;
+  }
+
+  .fb75 {
+    flex-basis: 75% !important;
   }
 
   .fb100 {
-    flex-basis: 100%;
+    flex-basis: 100% !important;
   }
 
   .fb3em {
-    flex-basis: 3em;
+    flex-basis: 3em !important;
   }
 
   .fb5em {
-    flex-basis: 5em;
+    flex-basis: 5em !important;
   }
 
   .fb10em {
-    flex-basis: 10em;
+    flex-basis: 10em !important;
   }
 
   .fb15em {
-    flex-basis: 15em;
+    flex-basis: 15em !important;
   }
 
   .fb20em {
-    flex-basis: 20em;
+    flex-basis: 20em !important;
   }
 
   .fb25em {
-    flex-basis: 25em;
+    flex-basis: 25em !important;
   }
 
   .fb50em {
-    flex-basis: 50em;
+    flex-basis: 50em !important;
   }
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  border: 0;
 }
 
 /* Components */
