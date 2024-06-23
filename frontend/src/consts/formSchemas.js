@@ -1005,7 +1005,7 @@ export const obras = object({
     .min(ref('previsao_inicio'), 'Precisa ser posterior à data de início')
     .nullable(),
   regiao_ids: array()
-    .label('Regiões')
+    .label('Subprefeitura')
     .of(
       number()
         .min(1),
