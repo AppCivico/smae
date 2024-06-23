@@ -60,7 +60,7 @@ export class DistribuicaoHistoricoStatusDto {
     dias_no_status: number;
     motivo: string;
     orgao_responsavel: IdSigla;
-    status: StatusDistListDto | null;
+    status_customizado: StatusDistListDto | null;
     status_base: StatusDistListDto | null;
 }
 
