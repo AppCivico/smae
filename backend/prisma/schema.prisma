@@ -4783,6 +4783,7 @@ model Parlamentar {
 
     cargo_mais_recente   ParlamentarCargo?
     partido_mais_recente String?
+    tem_mandato          Boolean?
 
     mandatos ParlamentarMandato[]
     equipe   ParlamentarEquipe[]
