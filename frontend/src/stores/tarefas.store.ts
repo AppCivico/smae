@@ -71,8 +71,8 @@ function gerarCaminhoParaApi(mãeComId: MãeComId): string | null {
       return `transferencia-tarefa/${mãeComId?.transferenciaId}`;
 
     default:
-      console.error('Id identificado da entidade mãe não foi provido como esperado', mãeComId);
-      throw new Error('Id identificado da entidade mãe não foi provido como esperado');
+      console.error('Id identificador da entidade mãe não foi provido como esperado:', mãeComId);
+      throw new Error('Id identificador da entidade mãe não foi provido como esperado.');
   }
 }
 
