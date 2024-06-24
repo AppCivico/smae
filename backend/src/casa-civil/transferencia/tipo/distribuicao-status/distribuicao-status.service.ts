@@ -5,7 +5,7 @@ import { PessoaFromJwt } from '../../../../auth/models/PessoaFromJwt';
 import { PrismaService } from '../../../../prisma/prisma.service';
 import { CreateDistribuicaoStatusDto } from './dto/create-distribuicao-status.dto';
 import { UpdateDistribuicaoStatusDto } from './dto/update-distribuicao-status.dto';
-import { ListDistribuicaoStatusDto } from './entities/distribuicao-status.dto';
+import { DistribuicaoStatusDto, ListDistribuicaoStatusDto } from './entities/distribuicao-status.dto';
 
 @Injectable()
 export class DistribuicaoStatusService {
@@ -67,6 +67,32 @@ export class DistribuicaoStatusService {
         );
 
         return created;
+    }
+
+    async findOne(id: number, user: PessoaFromJwt): Promise<DistribuicaoStatusDto> {
+        const row = await this.prisma.transferenciaTipoDistribuicaoStatus.findFirstOrThrow({
+            where: {
+                id,
+                removido_em: null,
+            },
+            select: {
+                id: true,
+                nome: true,
+                tipo: true,
+                valor_distribuicao_contabilizado: true,
+                permite_novos_registros: true,
+            },
+        });
+
+        return {
+            id: row.id,
+            nome: row.nome,
+            tipo: row.tipo,
+            valor_distribuicao_contabilizado: row.valor_distribuicao_contabilizado,
+            permite_novos_registros: row.permite_novos_registros,
+            pode_editar: true,
+            status_base: false,
+        };
     }
 
     async findAllDistribuicaoStatus(): Promise<ListDistribuicaoStatusDto> {
