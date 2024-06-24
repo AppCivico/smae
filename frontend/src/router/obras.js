@@ -130,6 +130,18 @@ export default {
                 título: 'Cronograma de obra',
                 títuloParaMenu: 'Cronograma',
               },
+              children: [
+                {
+                  name: 'obrasTarefasClonar',
+                  path: 'clonar',
+                  component: () => import('@/views/tarefas/TarefasClonar.vue'),
+                  meta: {
+                    título: 'Clonar tarefas',
+                    títuloParaMenu: 'Clonar tarefas',
+                    rotaDeEscape: 'obrasTarefasListar',
+                  },
+                },
+              ],
             },
             {
               name: 'obrasTarefasCriar',
