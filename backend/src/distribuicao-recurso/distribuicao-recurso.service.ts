@@ -50,6 +50,7 @@ export class DistribuicaoRecursoService {
                 custeio: true,
                 investimento: true,
                 valor_contrapartida: true,
+                valor_total: true,
             },
         });
         if (!transferencia) throw new HttpException('transferencia_id| Transferência não encontrada.', 400);
@@ -97,17 +98,20 @@ export class DistribuicaoRecursoService {
                         custeio: true,
                         investimento: true,
                         valor_contrapartida: true,
+                        valor_total: true,
                     },
                 });
 
                 let sumCusteio: number = 0;
                 let sumInvestimento: number = 0;
                 let sumContrapartida: number = 0;
+                let sumTotal: number = 0;
 
                 for (const distRow of outrasDistribuicoes) {
                     sumCusteio += distRow.custeio.toNumber();
                     sumContrapartida += distRow.valor_contrapartida.toNumber();
                     sumInvestimento += distRow.investimento.toNumber();
+                    sumTotal += distRow.valor_total.toNumber();
                 }
 
                 if (transferencia.custeio && sumCusteio && sumCusteio > transferencia.custeio.toNumber())
@@ -133,6 +137,12 @@ export class DistribuicaoRecursoService {
                 )
                     throw new HttpException(
                         'Soma de investimento de todas as distribuições não pode ser superior ao valor de investimento da transferência.',
+                        400
+                    );
+
+                if (transferencia.valor_total && sumTotal && sumTotal > transferencia.valor_total.toNumber())
+                    throw new HttpException(
+                        'Soma do total de todas as distribuições não pode ser superior ao valor total da transferência.',
                         400
                     );
 
@@ -658,7 +668,12 @@ export class DistribuicaoRecursoService {
                 await this.registerAditamento(prismaTx, id, dto, user, now);
             }
 
-            if (dto.custeio != undefined || dto.investimento != undefined || dto.valor_contrapartida != undefined) {
+            if (
+                dto.custeio != undefined ||
+                dto.investimento != undefined ||
+                dto.valor_contrapartida != undefined ||
+                dto.valor_total
+            ) {
                 const transferencia = await prismaTx.transferencia.findFirst({
                     where: {
                         id: self.transferencia_id,
@@ -668,12 +683,14 @@ export class DistribuicaoRecursoService {
                         custeio: true,
                         investimento: true,
                         valor_contrapartida: true,
+                        valor_total: true,
                     },
                 });
                 if (!transferencia) throw new HttpException('Transferência não encontrada.', 400);
 
                 const outrasDistribuicoes = await prismaTx.distribuicaoRecurso.findMany({
                     where: {
+                        id: { not: id },
                         removido_em: null,
                         status: {
                             some: {
@@ -698,17 +715,20 @@ export class DistribuicaoRecursoService {
                         custeio: true,
                         investimento: true,
                         valor_contrapartida: true,
+                        valor_total: true,
                     },
                 });
 
                 let sumCusteio: number = 0;
                 let sumInvestimento: number = 0;
                 let sumContrapartida: number = 0;
+                let sumTotal: number = 0;
 
                 for (const distRow of outrasDistribuicoes) {
                     sumCusteio += distRow.custeio.toNumber();
                     sumContrapartida += distRow.valor_contrapartida.toNumber();
                     sumInvestimento += distRow.investimento.toNumber();
+                    sumTotal += distRow.valor_total.toNumber();
                 }
 
                 if (dto.custeio != self.custeio.toNumber()) {
@@ -739,6 +759,14 @@ export class DistribuicaoRecursoService {
                     )
                         throw new HttpException(
                             'Soma de contrapartida de todas as distribuições não pode ser superior ao valor de contrapartida da transferência.',
+                            400
+                        );
+                }
+
+                if (dto.valor_total != self.valor_total.toNumber()) {
+                    if (transferencia.valor_total && sumTotal && sumTotal > transferencia.valor_total.toNumber())
+                        throw new HttpException(
+                            'Soma de total de todas as distribuições não pode ser superior ao valor total da transferência.',
                             400
                         );
                 }
