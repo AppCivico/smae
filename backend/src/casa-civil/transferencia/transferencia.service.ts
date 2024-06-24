@@ -459,6 +459,7 @@ export class TransferenciaService {
                 console.log(dto.valor);
                 console.log(dto.custeio);
                 console.log(dto.investimento);
+                console.log(+dto.custeio + +dto.investimento);
                 if (+dto.valor != +dto.custeio + +dto.investimento)
                     throw new HttpException(
                         'valor| Valor do repasse deve ser a soma dos valores de custeio e investimento.',
