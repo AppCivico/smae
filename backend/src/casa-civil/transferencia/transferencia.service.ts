@@ -460,6 +460,7 @@ export class TransferenciaService {
                 console.log(dto.valor);
                 console.log(dto.custeio);
                 console.log(dto.investimento);
+                console.log(dto.custeio + dto.investimento);
                 console.log('================');
                 if (dto.valor != dto.custeio + dto.investimento)
                     throw new HttpException(
