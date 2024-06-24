@@ -76,6 +76,7 @@ const rotasParaMenuSecundário = [
       'gerenciarCategorias',
       'gerenciarRegiões',
       'tipoDeTransferenciaListar',
+      'statusDistribuicaoListar',
       'etapasDoProjetoListar',
       'gruposTematicosObras',
       'tiposDeIntervencao',
