@@ -71,6 +71,20 @@ export class DistribuicaoRecursoService {
                         );
                 }
 
+                // “VALOR DO REPASSE”  é a soma de “Custeio” + Investimento”
+                if (dto.valor != dto.custeio + dto.investimento)
+                    throw new HttpException(
+                        'valor| Valor do repasse deve ser a soma dos valores de custeio e investimento.',
+                        400
+                    );
+
+                // “VALOR TOTAL”  é a soma de “Custeio” + Investimento” + “Contrapartida”
+                if (dto.valor_total != dto.valor + dto.valor_contrapartida)
+                    throw new HttpException(
+                        'valor| Valor total deve ser a soma dos valores de repasse e contrapartida.',
+                        400
+                    );
+
                 // A soma de custeio, investimento, contrapartida e total de todas as distribuições não pode ser superior aos valores da transferência.
                 const outrasDistribuicoes = await prismaTx.distribuicaoRecurso.findMany({
                     where: {
@@ -856,6 +870,25 @@ export class DistribuicaoRecursoService {
                     },
                 });
             }
+
+            const updatedSelf = await this.findOne(id, user);
+
+            // “VALOR DO REPASSE”  é a soma de “Custeio” + Investimento”
+            if (updatedSelf.valor.toNumber() != updatedSelf.custeio.toNumber() + updatedSelf.investimento.toNumber())
+                throw new HttpException(
+                    'valor| Valor do repasse deve ser a soma dos valores de custeio e investimento.',
+                    400
+                );
+
+            // “VALOR TOTAL”  é a soma de “Custeio” + Investimento” + “Contrapartida”
+            if (
+                updatedSelf.valor_total.toNumber() !=
+                updatedSelf.valor.toNumber() + updatedSelf.valor_contrapartida.toNumber()
+            )
+                throw new HttpException(
+                    'valor| Valor total deve ser a soma dos valores de repasse e contrapartida.',
+                    400
+                );
 
             return { id };
         });
