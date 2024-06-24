@@ -197,7 +197,7 @@ async function buscarMetaSimplificada(valorOuEvento) {
 
 async function buscarPossíveisGestores() {
   try {
-    const { linhas } = await requestS.get(`${baseUrl}/pessoa`, { gestor_de_projeto: true });
+    const { linhas } = await requestS.get(`${baseUrl}/pessoa`, { mdo_gestor_de_projeto: true });
 
     if (Array.isArray(linhas)) {
       possíveisGestores.value = linhas;
@@ -211,7 +211,7 @@ async function buscarPossíveisGestores() {
 
 async function buscarPossíveisColaboradores() {
   try {
-    const { linhas } = await requestS.get(`${baseUrl}/pessoa`, { colaborador_de_projeto: true });
+    const { linhas } = await requestS.get(`${baseUrl}/pessoa`, { mdo_colaborador_de_projeto: true });
 
     if (Array.isArray(linhas)) {
       possíveisColaboradores.value = linhas;
