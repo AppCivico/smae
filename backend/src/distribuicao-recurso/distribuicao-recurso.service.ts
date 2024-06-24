@@ -1,5 +1,5 @@
 import { HttpException, Injectable } from '@nestjs/common';
-import { Prisma, WorkflowResponsabilidade } from '@prisma/client';
+import { DistribuicaoStatusTipo, Prisma, WorkflowResponsabilidade } from '@prisma/client';
 import { CreateDistribuicaoRecursoDto } from './dto/create-distribuicao-recurso.dto';
 import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
 import { PrismaService } from 'src/prisma/prisma.service';
@@ -41,13 +41,18 @@ export class DistribuicaoRecursoService {
         });
         if (!orgaoGestorExiste) throw new HttpException('orgao_gestor_id| Órgão gestor inválido', 400);
 
-        const transferenciaExiste = await this.prisma.transferencia.count({
+        const transferencia = await this.prisma.transferencia.findFirst({
             where: {
                 id: dto.transferencia_id,
                 removido_em: null,
             },
+            select: {
+                custeio: true,
+                investimento: true,
+                valor_contrapartida: true,
+            },
         });
-        if (!transferenciaExiste) throw new HttpException('transferencia_id| Transferência não encontrada.', 400);
+        if (!transferencia) throw new HttpException('transferencia_id| Transferência não encontrada.', 400);
 
         const created = await this.prisma.$transaction(
             async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
@@ -64,6 +69,72 @@ export class DistribuicaoRecursoService {
                             400
                         );
                 }
+
+                // A soma de custeio, investimento, contrapartida e total de todas as distribuições não pode ser superior aos valores da transferência.
+                const outrasDistribuicoes = await prismaTx.distribuicaoRecurso.findMany({
+                    where: {
+                        removido_em: null,
+                        status: {
+                            some: {
+                                OR: [
+                                    {
+                                        AND: [
+                                            { NOT: { status_base: { tipo: DistribuicaoStatusTipo.Declinada } } },
+                                            { NOT: { status_base: { tipo: DistribuicaoStatusTipo.Redirecionada } } },
+                                        ],
+                                    },
+                                    {
+                                        AND: [
+                                            { NOT: { status: { tipo: DistribuicaoStatusTipo.Declinada } } },
+                                            { NOT: { status: { tipo: DistribuicaoStatusTipo.Redirecionada } } },
+                                        ],
+                                    },
+                                ],
+                            },
+                        },
+                    },
+                    select: {
+                        custeio: true,
+                        investimento: true,
+                        valor_contrapartida: true,
+                    },
+                });
+
+                let sumCusteio: number = 0;
+                let sumInvestimento: number = 0;
+                let sumContrapartida: number = 0;
+
+                for (const distRow of outrasDistribuicoes) {
+                    sumCusteio += distRow.custeio.toNumber();
+                    sumContrapartida += distRow.valor_contrapartida.toNumber();
+                    sumInvestimento += distRow.investimento.toNumber();
+                }
+
+                if (transferencia.custeio && sumCusteio && sumCusteio > transferencia.custeio.toNumber())
+                    throw new HttpException(
+                        'Soma de custeio de todas as distribuições não pode ser superior ao valor de custeio da transferência.',
+                        400
+                    );
+
+                if (
+                    transferencia.valor_contrapartida &&
+                    sumContrapartida &&
+                    sumContrapartida > transferencia.valor_contrapartida.toNumber()
+                )
+                    throw new HttpException(
+                        'Soma de contrapartida de todas as distribuições não pode ser superior ao valor de contrapartida da transferência.',
+                        400
+                    );
+
+                if (
+                    transferencia.investimento &&
+                    sumInvestimento &&
+                    sumInvestimento > transferencia.investimento.toNumber()
+                )
+                    throw new HttpException(
+                        'Soma de investimento de todas as distribuições não pode ser superior ao valor de investimento da transferência.',
+                        400
+                    );
 
                 const distribuicaoRecurso = await prismaTx.distribuicaoRecurso.create({
                     data: {
@@ -585,6 +656,92 @@ export class DistribuicaoRecursoService {
 
             if (dto.vigencia && self.vigencia != null && dto.vigencia.toISOString() != self.vigencia.toISOString()) {
                 await this.registerAditamento(prismaTx, id, dto, user, now);
+            }
+
+            if (dto.custeio != undefined || dto.investimento != undefined || dto.valor_contrapartida != undefined) {
+                const transferencia = await prismaTx.transferencia.findFirst({
+                    where: {
+                        id: self.transferencia_id,
+                        removido_em: null,
+                    },
+                    select: {
+                        custeio: true,
+                        investimento: true,
+                        valor_contrapartida: true,
+                    },
+                });
+                if (!transferencia) throw new HttpException('Transferência não encontrada.', 400);
+
+                const outrasDistribuicoes = await prismaTx.distribuicaoRecurso.findMany({
+                    where: {
+                        removido_em: null,
+                        status: {
+                            some: {
+                                OR: [
+                                    {
+                                        AND: [
+                                            { NOT: { status_base: { tipo: DistribuicaoStatusTipo.Declinada } } },
+                                            { NOT: { status_base: { tipo: DistribuicaoStatusTipo.Redirecionada } } },
+                                        ],
+                                    },
+                                    {
+                                        AND: [
+                                            { NOT: { status: { tipo: DistribuicaoStatusTipo.Declinada } } },
+                                            { NOT: { status: { tipo: DistribuicaoStatusTipo.Redirecionada } } },
+                                        ],
+                                    },
+                                ],
+                            },
+                        },
+                    },
+                    select: {
+                        custeio: true,
+                        investimento: true,
+                        valor_contrapartida: true,
+                    },
+                });
+
+                let sumCusteio: number = 0;
+                let sumInvestimento: number = 0;
+                let sumContrapartida: number = 0;
+
+                for (const distRow of outrasDistribuicoes) {
+                    sumCusteio += distRow.custeio.toNumber();
+                    sumContrapartida += distRow.valor_contrapartida.toNumber();
+                    sumInvestimento += distRow.investimento.toNumber();
+                }
+
+                if (dto.custeio != self.custeio.toNumber()) {
+                    if (transferencia.custeio && sumCusteio && sumCusteio > transferencia.custeio.toNumber())
+                        throw new HttpException(
+                            'Soma de custeio de todas as distribuições não pode ser superior ao valor de custeio da transferência.',
+                            400
+                        );
+                }
+
+                if (dto.investimento != self.investimento.toNumber()) {
+                    if (
+                        transferencia.investimento &&
+                        sumInvestimento &&
+                        sumInvestimento > transferencia.investimento.toNumber()
+                    )
+                        throw new HttpException(
+                            'Soma de investimento de todas as distribuições não pode ser superior ao valor de investimento da transferência.',
+                            400
+                        );
+                }
+
+                if (dto.valor_contrapartida != self.valor_contrapartida.toNumber()) {
+                    if (
+                        transferencia.valor_contrapartida &&
+                        sumContrapartida &&
+                        sumContrapartida > transferencia.valor_contrapartida.toNumber()
+                    )
+                        throw new HttpException(
+                            'Soma de contrapartida de todas as distribuições não pode ser superior ao valor de contrapartida da transferência.',
+                            400
+                        );
+                }
             }
 
             await prismaTx.distribuicaoRecurso.update({

@@ -5,52 +5,48 @@ import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
 import { CreateDistribuicaoStatusDto } from './dto/create-distribuicao-status.dto';
 import { UpdateDistribuicaoStatusDto } from './dto/update-distribuicao-status.dto';
-import { FindOneParams, FindTwoParams } from 'src/common/decorators/find-params';
+import { FindOneParams } from 'src/common/decorators/find-params';
 import { ListDistribuicaoStatusDto } from './entities/distribuicao-status.dto';
 import { Roles } from 'src/auth/decorators/roles.decorator';
 import { DistribuicaoStatusService } from './distribuicao-status.service';
 
-@ApiTags('Transferência')
-@Controller('transferencia-tipo')
+@ApiTags('Status de Distribuição')
+@Controller('distribuicao-status')
 export class DistribuicaoStatusController {
     constructor(private readonly distribuicaoStatusService: DistribuicaoStatusService) {}
 
-    @Post(':id/distribuicao-status')
+    @Post('')
     @ApiBearerAuth('access-token')
     @Roles(['CadastroTransferencia.inserir'])
-    async create(
-        @Param() params: FindOneParams,
-        @Body() dto: CreateDistribuicaoStatusDto,
-        @CurrentUser() user: PessoaFromJwt
-    ): Promise<RecordWithId> {
-        return await this.distribuicaoStatusService.create(+params.id, dto, user);
+    async create(@Body() dto: CreateDistribuicaoStatusDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
+        return await this.distribuicaoStatusService.create(dto, user);
     }
 
     @ApiBearerAuth('access-token')
     @Roles(['CadastroTransferencia.listar'])
-    @Get(':id/distribuicao-status')
-    async findAll(@Param() params: FindOneParams): Promise<ListDistribuicaoStatusDto> {
-        return await this.distribuicaoStatusService.findAllDistribuicaoStatus(+params.id);
+    @Get('')
+    async findAll(): Promise<ListDistribuicaoStatusDto> {
+        return await this.distribuicaoStatusService.findAllDistribuicaoStatus();
     }
 
-    @Patch(':id/distribuicao-status/:id2')
+    @Patch(':id')
     @ApiBearerAuth('access-token')
     @Roles(['CadastroTransferencia.editar'])
     async update(
-        @Param() params: FindTwoParams,
+        @Param() params: FindOneParams,
         @Body() dto: UpdateDistribuicaoStatusDto,
         @CurrentUser() user: PessoaFromJwt
     ): Promise<RecordWithId> {
-        return await this.distribuicaoStatusService.updateDistribuicaoStatus(+params.id2, dto, user);
+        return await this.distribuicaoStatusService.updateDistribuicaoStatus(+params.id, dto, user);
     }
 
-    @Delete(':id/distribuicao-status/:id2')
+    @Delete(':id')
     @ApiBearerAuth('access-token')
     @Roles(['CadastroTransferencia.remover'])
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.ACCEPTED)
-    async remove(@Param() params: FindTwoParams, @CurrentUser() user: PessoaFromJwt) {
-        await this.distribuicaoStatusService.removeDistribuicaoStatus(+params.id2, user);
+    async remove(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt) {
+        await this.distribuicaoStatusService.removeDistribuicaoStatus(+params.id, user);
         return '';
     }
 }
