@@ -92,6 +92,7 @@ export class DistribuicaoRecursoService {
                 // A soma de custeio, investimento, contrapartida e total de todas as distribuições não pode ser superior aos valores da transferência.
                 const outrasDistribuicoes = await prismaTx.distribuicaoRecurso.findMany({
                     where: {
+                        transferencia_id: dto.transferencia_id,
                         removido_em: null,
                         status: {
                             some: {
@@ -120,16 +121,13 @@ export class DistribuicaoRecursoService {
                     },
                 });
 
-                const transferencia_custeio = distribuicao_automatica ? dto.custeio : +transferencia.custeio!;
-                const transferencia_investimento = distribuicao_automatica
-                    ? dto.investimento
-                    : +transferencia.investimento!;
-                const transferencia_contrapartida = distribuicao_automatica
-                    ? dto.valor_contrapartida
-                    : +transferencia.valor_contrapartida!;
-                const transferencia_valor_total = distribuicao_automatica
-                    ? dto.valor_total
-                    : +transferencia.valor_total!;
+                const transferencia_custeio = distribuicao_automatica == true ? dto.custeio : +transferencia.custeio!;
+                const transferencia_investimento =
+                    distribuicao_automatica == true ? dto.investimento : +transferencia.investimento!;
+                const transferencia_contrapartida =
+                    distribuicao_automatica == true ? dto.valor_contrapartida : +transferencia.valor_contrapartida!;
+                const transferencia_valor_total =
+                    distribuicao_automatica == true ? dto.valor_total : +transferencia.valor_total!;
 
                 let sumCusteio: number = +dto.custeio ?? 0;
                 let sumInvestimento: number = +dto.investimento ?? 0;
@@ -745,6 +743,7 @@ export class DistribuicaoRecursoService {
                         removido_em: null,
                     },
                     select: {
+                        id: true,
                         custeio: true,
                         investimento: true,
                         valor_contrapartida: true,
@@ -756,6 +755,7 @@ export class DistribuicaoRecursoService {
                 const outrasDistribuicoes = await prismaTx.distribuicaoRecurso.findMany({
                     where: {
                         id: { not: id },
+                        transferencia_id: transferencia.id,
                         removido_em: null,
                         status: {
                             some: {
