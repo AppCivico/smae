@@ -1399,6 +1399,13 @@ export class ProjetoService {
                 tipo_intervencao: { select: { id: true, nome: true } },
                 equipamento: { select: { id: true, nome: true } },
                 tags: true,
+                mdo_detalhamento: true,
+                orgao_executor: { select: { id: true, sigla: true, descricao: true } },
+                mdo_programa_habitacional: true,
+                mdo_n_unidades_habitacionais: true,
+                mdo_n_familias_beneficiadas: true,
+                mdo_previsao_inauguracao: true,
+                mdo_observacoes: true,
             },
         });
         if (!projeto) throw new HttpException('Projeto não encontrado ou sem permissão para acesso', 400);
@@ -1589,6 +1596,14 @@ export class ProjetoService {
                 equipamento: projeto.equipamento,
                 tipo_intervencao: projeto.tipo_intervencao,
                 grupo_tematico: projeto.grupo_tematico || { id: 0, nome: '' },
+
+                orgao_executor: projeto.orgao_executor,
+                mdo_detalhamento: projeto.mdo_detalhamento,
+                mdo_programa_habitacional: projeto.mdo_programa_habitacional,
+                mdo_n_unidades_habitacionais: projeto.mdo_n_unidades_habitacionais,
+                mdo_n_familias_beneficiadas: projeto.mdo_n_familias_beneficiadas,
+                mdo_previsao_inauguracao: projeto.mdo_previsao_inauguracao,
+                mdo_observacoes: projeto.mdo_observacoes,
             };
 
             ret = {
@@ -2816,6 +2831,7 @@ export class ProjetoService {
                 return await prismaTx.projetoDocumento.update({
                     where: {
                         id: documentoId,
+                        projeto: { tipo, id: projetoId },
                         projeto_id: projetoId,
                     },
                     data: {

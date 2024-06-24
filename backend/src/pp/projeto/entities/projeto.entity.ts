@@ -276,6 +276,14 @@ export class ProjetoDetailBaseMdo {
     grupo_tematico: IdNomeDto;
     tipo_intervencao: IdNomeDto | null;
     equipamento: IdNomeDto | null;
+
+    orgao_executor: IdSiglaDescricao | null;
+    mdo_detalhamento: string | null;
+    mdo_programa_habitacional: string | null;
+    mdo_n_unidades_habitacionais: number | null;
+    mdo_n_familias_beneficiadas: number | null;
+    mdo_previsao_inauguracao: Date | null;
+    mdo_observacoes: string | null;
 }
 export class ProjetoDetailMdoDto extends IntersectionType(ProjetoDetailBaseMdo, ProjetoDetailDto) {}
 
