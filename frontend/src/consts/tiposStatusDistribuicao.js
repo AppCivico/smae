@@ -1,26 +1,30 @@
 export default {
-  Registrada: {
-    nome: 'Registrada',
-    valor: 'Registrada',
+  NaoIniciado: {
+    nome: 'Não Iniciado',
+    valor: 'NaoIniciado',
   },
-  Declinada: {
-    nome: 'Declinada',
-    valor: 'Declinada',
+  EmAndamento: {
+    nome: 'Em Andamento',
+    valor: 'EmAndamento',
   },
-  Redirecionada: {
-    nome: 'Redirecionada',
-    valor: 'Redirecionada',
+  Suspenso: {
+    nome: 'Suspenso',
+    valor: 'Suspenso',
   },
-  Cancelada: {
-    nome: 'Cancelada',
-    valor: 'Cancelada',
+  Cancelado: {
+    nome: 'Cancelado',
+    valor: 'Cancelado',
   },
-  ImpedidaTecnicamente: {
-    nome: 'Impedida Tecnicamente',
-    valor: 'ImpedidaTecnicamente',
+  ConcluidoComSucesso: {
+    nome: 'Concluido Com Sucesso',
+    valor: 'ConcluidoComSucesso',
   },
-  Finalizada: {
-    nome: 'Finalizada',
-    valor: 'Finalizada',
+  EncerradoSemSucesso: {
+    nome: 'Encerrado Sem Sucesso',
+    valor: 'EncerradoSemSucesso',
+  },
+  Terminal: {
+    nome: 'Terminal',
+    valor: 'Terminal',
   },
 };
