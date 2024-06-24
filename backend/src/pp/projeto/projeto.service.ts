@@ -517,6 +517,8 @@ export class ProjetoService {
 
         const regiaoSorted = dto.regiao_ids.sort().join(',');
         const oldSorted = old_regiao_ids.sort().join(',');
+
+        this.logger.debug(`regiao_ids: ${regiaoSorted} | old_regiao_ids: ${oldSorted}`);
         if (regiaoSorted == oldSorted) return;
 
         if (Array.isArray(dto.regiao_ids)) {
@@ -711,8 +713,6 @@ export class ProjetoService {
     async findAll(tipo: TipoProjeto, filters: FilterProjetoDto, user: PessoaFromJwt): Promise<ProjetoDto[]> {
         const ret: ProjetoDto[] = [];
         const permissionsSet: Prisma.Enumerable<Prisma.ProjetoWhereInput> = this.getProjetoWhereSet(tipo, user, false);
-
-        console.log(permissionsSet);
 
         const rows = await this.prisma.projeto.findMany({
             where: {
@@ -1144,8 +1144,6 @@ export class ProjetoService {
             });
             tipo = projeto.tipo;
         }
-
-        console.log({ id, user, readonly });
 
         const permissionsSet: Prisma.Enumerable<Prisma.ProjetoWhereInput> = this.getProjetoWhereSet(tipo, user, false);
         const projeto = await this.prisma.projeto.findFirst({
@@ -2306,10 +2304,14 @@ export class ProjetoService {
         for (const r of geo.novos_enderecos) {
             for (const rr of r.regioes) {
                 if (self.ProjetoRegiao.find((r) => r.regiao_id == rr.id)) {
+                    this.logger.verbose(`Região ${rr.id} já existe no projeto ${self.id}`);
                     continue; // região já existe
                 }
 
-                if (portfolio.nivel_regionalizacao !== rr.nivel && portfolio.nivel_regionalizacao !== rr.nivel + 1) {
+                if (portfolio.nivel_regionalizacao !== rr.nivel && portfolio.nivel_regionalizacao !== rr.nivel - 1) {
+                    this.logger.verbose(
+                        `Região ${rr.id}, nível ${rr.nivel} não é permitido para o portfolio ${portfolio.id}`
+                    );
                     continue; // Só entra região se for do mesmo nível ou um nível abaixo
                 }
 
