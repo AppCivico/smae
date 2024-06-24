@@ -391,9 +391,7 @@ export class DistribuicaoRecursoService {
             let pct_valor_transferencia: number = 0;
             if (transferencia.valor_total && r.valor_total) {
                 pct_valor_transferencia = Math.round(
-                    ((transferencia.valor_total.toNumber() - r.valor_total.toNumber()) /
-                        transferencia.valor_total.toNumber()) *
-                        100
+                    (r.valor_total.toNumber() / transferencia.valor_total.toNumber()) * 100
                 );
             }
 
@@ -598,9 +596,7 @@ export class DistribuicaoRecursoService {
         let pct_valor_transferencia: number = 0;
         if (row.transferencia.valor_total && row.valor_total) {
             pct_valor_transferencia = Math.round(
-                ((row.transferencia.valor_total.toNumber() - row.valor_total.toNumber()) /
-                    row.transferencia.valor_total.toNumber()) *
-                    100
+                (row.valor_total.toNumber() / row.transferencia.valor_total.toNumber()) * 100
             );
         }
 
