@@ -1,3 +1,4 @@
+import obrasAcompanhamentos from './obras.acompanhamentos';
 import obrasProcessos from './obras.processos';
 
 export default {
@@ -67,6 +68,7 @@ export default {
           {
             título: 'Acompanhamento',
             rotas: [
+              'acompanhamentosDeObrasListar',
               'obrasDocumentos',
               'processosDaObraListar',
             ],
@@ -228,6 +230,7 @@ export default {
           ],
         },
 
+        obrasAcompanhamentos,
         obrasProcessos,
       ],
     },
