@@ -11,6 +11,7 @@
   </div>
   <table class="tablemain">
     <col>
+    <col>
     <col class="col--botão-de-ação">
     <col class="col--botão-de-ação">
     <thead>
@@ -21,6 +22,8 @@
         <th>
           Tipo
         </th>
+        <th />
+        <th />
       </tr>
     </thead>
     <tbody>
@@ -30,8 +33,9 @@
       >
         <td>{{ item.nome }}</td>
         <td>{{ item.tipo }}</td>
-        <td v-if="item.pode_editar">
+        <td>
           <router-link
+            v-if="item.pode_editar"
             :to="{ name: 'statusDistribuicaoEditar', params: { statusDistribuicaoId: item.id } }"
             class="tprimary"
           >
@@ -41,8 +45,9 @@
             ><use xlink:href="#i_edit" /></svg>
           </router-link>
         </td>
-        <td v-if="item.pode_editar">
+        <td>
           <button
+            v-if="item.pode_editar"
             class="like-a__text"
             arial-label="excluir"
             title="excluir"
@@ -56,17 +61,17 @@
         </td>
       </tr>
       <tr v-if="chamadasPendentes.lista">
-        <td colspan="3">
+        <td colspan="4">
           Carregando
         </td>
       </tr>
       <tr v-else-if="erro">
-        <td colspan="3">
+        <td colspan="4">
           Erro: {{ erro }}
         </td>
       </tr>
       <tr v-else-if="!lista.length">
-        <td colspan="3">
+        <td colspan="4">
           Nenhum resultado encontrado.
         </td>
       </tr>
@@ -75,10 +80,10 @@
 </template>
 
 <script setup>
+import { useAlertStore } from '@/stores/alert.store';
 import { storeToRefs } from 'pinia';
 import { computed } from 'vue';
 import { useRoute } from 'vue-router';
-import { useAlertStore } from '@/stores/alert.store';
 
 import { useStatusDistribuicaoStore } from '@/stores/statusDistribuicao.store';
 
