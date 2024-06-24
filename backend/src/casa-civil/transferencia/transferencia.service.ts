@@ -455,6 +455,20 @@ export class TransferenciaService {
     ): Promise<RecordWithId> {
         const updated = await this.prisma.$transaction(
             async (prismaTxn: Prisma.TransactionClient): Promise<RecordWithId> => {
+                // “VALOR DO REPASSE”  é a soma de “Custeio” + Investimento”
+                if (dto.valor != dto.custeio + dto.investimento)
+                    throw new HttpException(
+                        'valor| Valor do repasse deve ser a soma dos valores de custeio e investimento.',
+                        400
+                    );
+
+                // “VALOR TOTAL”  é a soma de “Custeio” + Investimento” + “Contrapartida”
+                if (dto.valor_total != dto.valor + dto.valor_contrapartida)
+                    throw new HttpException(
+                        'valor| Valor total deve ser a soma dos valores de repasse e contrapartida.',
+                        400
+                    );
+
                 const transferencia = await prismaTxn.transferencia.update({
                     where: { id },
                     data: {
