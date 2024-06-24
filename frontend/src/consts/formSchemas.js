@@ -1922,8 +1922,8 @@ export const processoDeObras = object()
       .nullable(),
     processo_sei: string()
       .label('Processo SEI')
-      .max(19)
-      .min(19, '${label} está fora do formato')
+      .max(19, '${label} está fora do formato')
+      .min(16, '${label} está fora do formato')
       .matches(regEx.seiOuSinproc)
       .required(),
   });
