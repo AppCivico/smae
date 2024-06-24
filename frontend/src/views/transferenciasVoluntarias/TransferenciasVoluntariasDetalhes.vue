@@ -1,5 +1,6 @@
 <script setup>
 import LoadingComponent from '@/components/LoadingComponent.vue';
+import { dateToShortDate } from '@/helpers/dateToDate';
 import dateToField from '@/helpers/dateToField';
 import dinheiro from '@/helpers/dinheiro';
 import { useAlertStore } from '@/stores/alert.store';
@@ -262,7 +263,7 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
 
       <dl
         class="resumo-da-distribuicao-de-recursos__lista-de-status f0 fg999 fb10em
-      flex g2 align-end pb1 pl1"
+      flex g2 align-end pl1"
       >
         <div
           v-for="status in distribuição.historico_status"
@@ -276,7 +277,21 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
             v-if="status.dias_no_status"
             class="w700 tc300"
           >
-            {{ status.dias_no_status }} dias
+            <time
+              :datetime="status.data_troca"
+            >
+              {{ status.dias_no_status }} dias
+              <span
+                class="tipinfo"
+              >
+                <svg
+                  width="16"
+                  height="16"
+                ><use xlink:href="#i_i" /></svg><div>
+                  {{ dateToShortDate(status.data_troca) }}
+                </div>
+              </span>
+            </time>
           </dd>
           <dd class="mt1">
             {{ status.nome_responsavel }} (<abbr

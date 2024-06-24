@@ -14,4 +14,12 @@ export const dateToMonth = (date, format = 'numeric') => dateToDate(date, { date
 
 export const dateToDay = (date, format = 'numeric') => dateToDate(date, { dateStyle: undefined, day: format });
 
+export const dateToShortDate = (date) => dateToDate(date, {
+  year: 'numeric',
+  month: 'numeric',
+  day: 'numeric',
+  timeZone: 'America/Sao_Paulo',
+  dateStyle: undefined,
+});
+
 export default dateToDate;
