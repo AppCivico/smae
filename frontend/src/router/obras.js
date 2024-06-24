@@ -167,7 +167,7 @@ export default {
                     título: 'Registrar progresso',
                     títuloParaMenu: 'Progresso',
 
-                    rotaDeEscape: 'obrasListar',
+                    rotaDeEscape: 'obrasTarefasListar',
 
                     rotasParaMigalhasDePão: [
                       'obrasListar',
