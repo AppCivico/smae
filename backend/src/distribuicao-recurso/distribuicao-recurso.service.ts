@@ -810,6 +810,8 @@ export class DistribuicaoRecursoService {
                     valor: dto.valor,
                     valor_total: dto.valor_total,
                     valor_contrapartida: dto.valor_contrapartida,
+                    custeio: dto.custeio,
+                    investimento: dto.investimento,
                     empenho: dto.empenho,
                     data_empenho: dto.data_empenho,
                     programa_orcamentario_estadual: dto.programa_orcamentario_estadual,
