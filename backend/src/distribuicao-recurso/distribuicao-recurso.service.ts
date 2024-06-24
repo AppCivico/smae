@@ -32,7 +32,11 @@ export class DistribuicaoRecursoService {
         private readonly avisoEmailService: AvisoEmailService
     ) {}
 
-    async create(dto: CreateDistribuicaoRecursoDto, user: PessoaFromJwt): Promise<RecordWithId> {
+    async create(
+        dto: CreateDistribuicaoRecursoDto,
+        user: PessoaFromJwt,
+        distribuicao_automatica?: boolean
+    ): Promise<RecordWithId> {
         const orgaoGestorExiste = await this.prisma.orgao.count({
             where: {
                 id: dto.orgao_gestor_id,
@@ -116,16 +120,27 @@ export class DistribuicaoRecursoService {
                     },
                 });
 
+                const transferencia_custeio = distribuicao_automatica ? dto.custeio : +transferencia.custeio!;
+                const transferencia_investimento = distribuicao_automatica
+                    ? dto.investimento
+                    : +transferencia.investimento!;
+                const transferencia_contrapartida = distribuicao_automatica
+                    ? dto.valor_contrapartida
+                    : +transferencia.valor_contrapartida!;
+                const transferencia_valor_total = distribuicao_automatica
+                    ? dto.valor_total
+                    : +transferencia.valor_total!;
+
                 let sumCusteio: number = +dto.custeio ?? 0;
                 let sumInvestimento: number = +dto.investimento ?? 0;
                 let sumContrapartida: number = +dto.valor_contrapartida ?? 0;
                 let sumTotal: number = +dto.valor_total ?? 0;
 
                 for (const distRow of outrasDistribuicoes) {
-                    sumCusteio += +distRow.custeio.toNumber();
-                    sumContrapartida += +distRow.valor_contrapartida.toNumber();
-                    sumInvestimento += +distRow.investimento.toNumber();
-                    sumTotal += +distRow.valor_total.toNumber();
+                    sumCusteio += +distRow.custeio;
+                    sumContrapartida += +distRow.valor_contrapartida;
+                    sumInvestimento += +distRow.investimento;
+                    sumTotal += +distRow.valor_total;
                 }
 
                 console.log('===============');
@@ -133,10 +148,13 @@ export class DistribuicaoRecursoService {
                 console.log(sumContrapartida);
                 console.log(sumInvestimento);
                 console.log(sumTotal);
-                console.log(transferencia.custeio);
+                console.log(transferencia_custeio);
+                console.log(transferencia_investimento);
+                console.log(transferencia_contrapartida);
+                console.log(transferencia_valor_total);
                 console.log('===============');
 
-                if (transferencia.custeio && sumCusteio && sumCusteio > transferencia.custeio.toNumber())
+                if (transferencia.custeio && sumCusteio && sumCusteio > transferencia_custeio)
                     throw new HttpException(
                         'Soma de custeio de todas as distribuições não pode ser superior ao valor de custeio da transferência.',
                         400
@@ -145,24 +163,20 @@ export class DistribuicaoRecursoService {
                 if (
                     transferencia.valor_contrapartida &&
                     sumContrapartida &&
-                    sumContrapartida > transferencia.valor_contrapartida.toNumber()
+                    sumContrapartida > transferencia_contrapartida
                 )
                     throw new HttpException(
                         'Soma de contrapartida de todas as distribuições não pode ser superior ao valor de contrapartida da transferência.',
                         400
                     );
 
-                if (
-                    transferencia.investimento &&
-                    sumInvestimento &&
-                    sumInvestimento > transferencia.investimento.toNumber()
-                )
+                if (transferencia.investimento && sumInvestimento && sumInvestimento > transferencia_investimento)
                     throw new HttpException(
                         'Soma de investimento de todas as distribuições não pode ser superior ao valor de investimento da transferência.',
                         400
                     );
 
-                if (transferencia.valor_total && sumTotal && sumTotal > transferencia.valor_total.toNumber())
+                if (transferencia.valor_total && sumTotal && sumTotal > transferencia_valor_total)
                     throw new HttpException(
                         'Soma do total de todas as distribuições não pode ser superior ao valor total da transferência.',
                         400
