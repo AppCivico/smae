@@ -762,10 +762,10 @@ export class DistribuicaoRecursoService {
                     },
                 });
 
-                let sumCusteio: number = +dto.custeio ?? 0;
-                let sumInvestimento: number = +dto.investimento ?? 0;
-                let sumContrapartida: number = +dto.valor_contrapartida ?? 0;
-                let sumTotal: number = +dto.valor_total ?? 0;
+                let sumCusteio: number = dto.custeio ?? 0;
+                let sumInvestimento: number = dto.investimento ?? 0;
+                let sumContrapartida: number = dto.valor_contrapartida ?? 0;
+                let sumTotal: number = dto.valor_total ?? 0;
 
                 for (const distRow of outrasDistribuicoes) {
                     sumCusteio += +distRow.custeio.toNumber();
