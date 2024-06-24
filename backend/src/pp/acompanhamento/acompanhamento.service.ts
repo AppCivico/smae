@@ -28,6 +28,7 @@ export class AcompanhamentoService {
         //if (!dto.risco_tarefa_outros && Array.isArray(dto.risco) == false || (Array.isArray(dto.risco) && dto.risco.length == 0))
         //throw new HttpException('Se não for enviado um risco do sistema, é necessário informar um risco externo', 400);
 
+        const now = new Date(Date.now());
         const created = await this.prisma.$transaction(
             async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
                 const projetoPortfolio = await prismaTx.projeto.findFirstOrThrow({
@@ -48,14 +49,7 @@ export class AcompanhamentoService {
                 if (projetoPortfolio.tipo != 'PP' && dto.risco && dto.risco.length > 0)
                     throw new HttpException('Apenas Gestão de Projetos podem ter riscos', 400);
 
-                const now = new Date(Date.now());
-
                 dto.detalhamento = HtmlSanitizer(dto.detalhamento);
-
-                // TODO: corrigir nome do campo no schema
-                // foi criado com typo
-                const acompanhamento_tipo_id = dto.acompanhamento_tipo_id;
-                delete dto.acompanhamento_tipo_id;
 
                 // Definindo a ordem do acompanhamento.
                 // A ordem leva em consideração acompanhamentos removidos.
@@ -69,19 +63,34 @@ export class AcompanhamentoService {
                 const acompanhamento = await prismaTx.projetoAcompanhamento.create({
                     data: {
                         projeto_id: projeto_id,
-                        acompanhanmento_tipo_id: acompanhamento_tipo_id,
+                        acompanhanmento_tipo_id: dto.acompanhamento_tipo_id,
                         ordem: ordemAcompanhamento,
-                        ...{
-                            ...dto,
-                            risco: undefined,
-                            acompanhamentos: undefined,
-                        },
+                        pauta: dto.pauta,
+                        data_registro: dto.data_registro,
+                        participantes: dto.participantes,
+                        detalhamento: dto.detalhamento,
+                        observacao: dto.observacao,
+                        detalhamento_status: dto.detalhamento_status,
+                        pontos_atencao: dto.pontos_atencao,
+                        cronograma_paralisado: dto.cronograma_paralisado,
+                        apresentar_no_relatorio: dto.apresentar_no_relatorio,
 
                         criado_em: now,
                         criado_por: user.id,
                     },
                     select: { id: true },
                 });
+
+                if (dto.apresentar_no_relatorio) {
+                    await prismaTx.projetoAcompanhamento.updateMany({
+                        where: {
+                            id: { not: acompanhamento.id },
+                            projeto_id: projeto_id,
+                            removido_em: null,
+                        },
+                        data: { apresentar_no_relatorio: false },
+                    });
+                }
 
                 if (Array.isArray(dto.risco) && dto.risco.length) {
                     await prismaTx.projetoAcompanhamentoRisco.createMany({
@@ -454,11 +463,6 @@ export class AcompanhamentoService {
 
                 await this.atualizaProjeto(prismaTx, projeto_id, now);
 
-                // TODO: corrigir nome do campo no schema
-                // foi criado com typo
-                const acompanhamento_tipo_id = dto.acompanhamento_tipo_id;
-                delete dto.acompanhamento_tipo_id;
-
                 if (dto.apresentar_no_relatorio) {
                     await prismaTx.projetoAcompanhamento.updateMany({
                         where: {
@@ -477,12 +481,17 @@ export class AcompanhamentoService {
                         id,
                     },
                     data: {
-                        ...{
-                            ...dto,
-                            risco: undefined,
-                            acompanhamentos: undefined,
-                            acompanhanmento_tipo_id: acompanhamento_tipo_id,
-                        },
+                        pauta: dto.pauta,
+                        data_registro: dto.data_registro,
+                        participantes: dto.participantes,
+                        detalhamento: dto.detalhamento,
+                        observacao: dto.observacao,
+                        detalhamento_status: dto.detalhamento_status,
+                        pontos_atencao: dto.pontos_atencao,
+                        cronograma_paralisado: dto.cronograma_paralisado,
+                        apresentar_no_relatorio: dto.apresentar_no_relatorio,
+                        acompanhanmento_tipo_id: dto.acompanhamento_tipo_id,
+
                         atualizado_em: now,
                         atualizado_por: user.id,
                     },
