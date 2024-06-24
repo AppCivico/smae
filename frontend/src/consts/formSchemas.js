@@ -1646,6 +1646,10 @@ export const transferenciaDistribuicaoDeRecursos = object({
   convenio: string()
     .label('Número convênio/pré-convênio')
     .nullable(),
+  custeio: number()
+    .label('Custeio')
+    .min(0)
+    .required(),
   data_empenho: date()
     .label('Data do empenho')
     .max(dataMax)
@@ -1657,6 +1661,10 @@ export const transferenciaDistribuicaoDeRecursos = object({
     .nullable(),
   empenho: boolean()
     .label('Empenho')
+    .required(),
+  investimento: number()
+    .label('Investimento')
+    .min(0)
     .required(),
   justificativa_aditamento: string()
     .label('Justificativa para aditamento')
