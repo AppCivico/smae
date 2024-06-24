@@ -6031,6 +6031,13 @@ enum DistribuicaoStatusTipo {
     Cancelada
     ImpedidaTecnicamente
     Finalizada
+    NaoIniciado
+    EmAndamento
+    Suspenso
+    Cancelado
+    ConcluidoComSucesso
+    EncerradoSemSucesso
+    Terminal
 }
 
 model DistribuicaoStatusBase {
