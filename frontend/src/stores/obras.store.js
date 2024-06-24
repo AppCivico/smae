@@ -178,7 +178,7 @@ export const useObrasStore = defineStore('obrasStore', {
         ...emFoco,
         codigo: emFoco?.codigo ? undefined : null,
         colaboradores_no_orgao: Array.isArray(emFoco?.colaboradores_no_orgao)
-          ? emFoco.colaboradores_no_orgao
+          ? emFoco.colaboradores_no_orgao.map((x) => x.id)
           : [],
         equipamento_id: emFoco?.equipamento?.id || null,
         geolocalizacao: emFoco?.geolocalizacao?.map((x) => x.token) || [],
@@ -187,9 +187,14 @@ export const useObrasStore = defineStore('obrasStore', {
         orgao_executor_id: emFoco?.orgao_executor?.id || null,
         orgao_gestor_id: emFoco?.orgao_gestor?.id || null,
         orgao_origem_id: emFoco?.orgao_origem ? emFoco?.orgao_origem.id : null, // não editável
+        orgao_colaborador_id: emFoco?.orgao_colaborador.id || null,
+        orgao_responsavel_id: emFoco?.orgao_responsavel.id || null,
         portfolio_id: emFoco?.portfolio_id || route.query.portfolio_id || null,
         previsao_inicio: dateTimeToDate(emFoco?.previsao_inicio) || null,
         previsao_termino: dateTimeToDate(emFoco?.previsao_termino) || null,
+        responsaveis_no_orgao_gestor: Array.isArray(emFoco?.responsaveis_no_orgao_gestor)
+          ? emFoco.responsaveis_no_orgao_gestor.map((x) => x.id)
+          : [],
         tipo_intervencao_id: emFoco?.tipo_intervencao?.id || null,
         regiao_ids: Array.isArray(emFoco?.regioes) ? emFoco.regioes.map((x) => x.id) : [],
       };
@@ -242,6 +247,5 @@ export const useObrasStore = defineStore('obrasStore', {
       arquivos,
       diretórios,
     ),
-
   },
 });
