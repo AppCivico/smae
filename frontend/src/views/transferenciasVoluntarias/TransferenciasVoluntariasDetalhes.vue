@@ -42,7 +42,7 @@ const {
 const { temPermissãoPara } = storeToRefs(authStore);
 
 const totalDistribuído = computed(() => listaDeDistribuição.value
-  .reduce((acc, cur) => acc + cur.valor_total || 0, 0));
+  .reduce((acc, cur) => acc + (Number(cur.valor_total) || 0), 0));
 
 function iniciarFase(idDaFase) {
   alertStore.confirmAction('Tem certeza?', async () => {
