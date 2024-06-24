@@ -5259,8 +5259,9 @@ model Workflow {
     removido_por   Int?
     removido_em    DateTime? @db.Timestamptz(6)
 
-    etapasFluxo    Fluxo[]
-    transferencias Transferencia[]
+    etapasFluxo          Fluxo[]
+    transferencias       Transferencia[]
+    statusesDistribuicao WorkflowDistribuicaoStatus[]
 
     atualizador Pessoa? @relation("Atualizador", fields: [atualizado_por], references: [id])
     criador     Pessoa? @relation("Criador", fields: [criado_por], references: [id])
@@ -6040,6 +6041,7 @@ model DistribuicaoStatusBase {
     valor_distribuicao_contabilizado Boolean
     permite_novos_registros          Boolean                @default(true)
 
+    configWorflow WorkflowDistribuicaoStatus[]
     distribuicoes DistribuicaoRecursoStatus[]
 
     @@unique([nome, tipo])
@@ -6070,9 +6072,25 @@ model TransferenciaTipoDistribuicaoStatus {
     atualizador Pessoa? @relation("Atualizador", fields: [atualizado_por], references: [id])
     removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
 
+    configWorflow WorkflowDistribuicaoStatus[]
     distribuicoes DistribuicaoRecursoStatus[]
 
     @@map("transferencia_tipo_distribuicao_status")
+}
+
+model WorkflowDistribuicaoStatus {
+    id Int @id @default(autoincrement())
+
+    workflow_id Int
+    workflow    Workflow @relation(fields: [workflow_id], references: [id])
+
+    status_base_id Int?
+    status_base    DistribuicaoStatusBase? @relation(fields: [status_base_id], references: [id])
+
+    status_id Int?
+    status    TransferenciaTipoDistribuicaoStatus? @relation(fields: [status_id], references: [id])
+
+    @@map("workflow_distribuicao_status")
 }
 
 model DistribuicaoRecursoStatus {
