@@ -170,6 +170,7 @@ export const acompanhamento = object()
       .label('Pontos de atenção')
       .max(50000)
       .nullable(),
+    // campo não utilizado em Obras
     risco: array()
       .label('Riscos associados')
       .nullable()
