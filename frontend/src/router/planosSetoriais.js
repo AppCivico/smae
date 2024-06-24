@@ -94,7 +94,7 @@ export default {
             planoSetorialId: Number.parseInt(params.planoSetorialId, 10) || undefined,
           }),
           meta: {
-            título: 'Resumo de Plano Setorial',
+            título: () => usePlanosSetoriaisStore()?.emFoco?.nome || 'Resumo de Plano Setorial',
             títuloParaMenu: 'Resumo',
           },
         },
