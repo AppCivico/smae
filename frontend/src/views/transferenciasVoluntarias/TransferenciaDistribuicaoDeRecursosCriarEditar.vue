@@ -407,17 +407,18 @@ const isSomaCorreta = computed(() => {
           name="custeio"
           :schema="schema"
         />
-        <Field
+        <MaskedFloatInput
           name="custeio"
-          type="number"
-          min="0"
-          class="inputtext light mb1"
-          @change="($event) => {
-            if ($event?.target?.value === '') setFieldValue('custeio', null);
+          type="text"
+          class="inputtext light mb2"
+          :value="values.custeio"
+          converter-para="string"
+          @update:model-value="(newValue) => {
+            atualizarValorTotal('custeio', newValue, setFieldValue);
           }"
         />
         <ErrorMessage
-          class="error-msg mb1"
+          class="error-msg mb2"
           name="custeio"
         />
       </div>
@@ -426,17 +427,18 @@ const isSomaCorreta = computed(() => {
           name="investimento"
           :schema="schema"
         />
-        <Field
+        <MaskedFloatInput
           name="investimento"
-          type="number"
-          min="0"
-          class="inputtext light mb1"
-          @change="($event) => {
-            if ($event?.target?.value === '') setFieldValue('investimento', null);
+          type="text"
+          class="inputtext light mb2"
+          :value="values.investimento"
+          converter-para="string"
+          @update:model-value="(newValue) => {
+            atualizarValorTotal('custeio', newValue, setFieldValue);
           }"
         />
         <ErrorMessage
-          class="error-msg mb1"
+          class="error-msg mb2"
           name="investimento"
         />
       </div>
