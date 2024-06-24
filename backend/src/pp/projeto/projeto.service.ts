@@ -37,7 +37,7 @@ import { BlocoNotaService } from '../../bloco-nota/bloco-nota/bloco-nota.service
 import { PaginatedWithPagesDto } from '../../common/dto/paginated.dto';
 import { HtmlSanitizer } from '../../common/html-sanitizer';
 import { CreateGeoEnderecoReferenciaDto, ReferenciasValidasBase } from '../../geo-loc/entities/geo-loc.entity';
-import { GeoLocService } from '../../geo-loc/geo-loc.service';
+import { GeoLocService, UpsertEnderecoDto } from '../../geo-loc/geo-loc.service';
 import { UpdateTarefaDto } from '../tarefa/dto/update-tarefa.dto';
 import { TarefaService } from '../tarefa/tarefa.service';
 import { JwtService } from '@nestjs/jwt';
@@ -349,6 +349,8 @@ export class ProjetoService {
         if (tipo == 'MDO') {
             if (!dto.orgao_origem_id) throw new HttpException('orgao_origem_id| Campo obrigatório para obras', 400);
             if (!dto.grupo_tematico_id) throw new HttpException('grupo_tematico_id| Campo obrigatório para obras', 400);
+            if (!dto.tipo_intervencao_id)
+                throw new HttpException('tipo_intervencao_id| Campo obrigatório para obras', 400);
 
             await this.verificaGrupoTematico(dto);
         }
@@ -375,7 +377,7 @@ export class ProjetoService {
                     data: {
                         tipo: tipo,
                         registrado_por: user.id,
-                        registrado_em: new Date(Date.now()),
+                        registrado_em: now,
                         portfolio_id: dto.portfolio_id,
                         orgao_gestor_id: orgao_gestor_id!,
                         responsaveis_no_orgao_gestor: responsaveis_no_orgao_gestor,
@@ -424,7 +426,7 @@ export class ProjetoService {
                                     ? dto.portfolios_compartilhados.map((pc) => {
                                           return {
                                               portfolio_id: pc,
-                                              criado_em: new Date(Date.now()),
+                                              criado_em: now,
                                               criado_por: user.id,
                                           };
                                       })
@@ -470,6 +472,11 @@ export class ProjetoService {
 
                 await this.upsertRegioes(dto, prismaTx, row.id, now, [], user, portfolio.nivel_regionalizacao);
 
+                const self = await prismaTx.projeto.findFirstOrThrow({
+                    where: { id: row.id },
+                    select: { id: true, ProjetoRegiao: true },
+                });
+
                 await this.upsertFonteRecurso(dto, prismaTx, row.id);
 
                 await prismaTx.tarefaCronograma.create({
@@ -484,7 +491,9 @@ export class ProjetoService {
                 geoDto.tokens = dto.geolocalizacao;
                 geoDto.tipo = 'Endereco';
 
-                await this.geolocService.upsertGeolocalizacao(geoDto, user, prismaTx, now);
+                const geo = await this.geolocService.upsertGeolocalizacao(geoDto, user, prismaTx, now);
+
+                await this.appendRegioesByGeoLoc(geo, self, portfolio, prismaTx, now, user);
 
                 return row;
             }
@@ -2222,6 +2231,16 @@ export class ProjetoService {
 
                     tags: dto.tags ?? [],
                 },
+                select: {
+                    id: true,
+                    projeto_etapa_id: true,
+                    ProjetoRegiao: {
+                        where: { removido_em: null },
+                        select: {
+                            regiao_id: true,
+                        },
+                    },
+                },
             });
 
             if (self.projeto_etapa_id && self.projeto_etapa_id != projeto.projeto_etapa?.id) {
@@ -2237,7 +2256,9 @@ export class ProjetoService {
                 geoDto.tokens = dto.geolocalizacao;
                 geoDto.tipo = 'Endereco';
 
-                await this.geolocService.upsertGeolocalizacao(geoDto, user, prismaTx, now);
+                const geo = await this.geolocService.upsertGeolocalizacao(geoDto, user, prismaTx, now);
+
+                await this.appendRegioesByGeoLoc(geo, self, portfolio, prismaTx, now, user);
             }
 
             // se já passou da fase do planejamento, então sim pode verificar se há necessidade de gerar
@@ -2272,6 +2293,36 @@ export class ProjetoService {
         });
 
         return { id: projetoId };
+    }
+
+    private async appendRegioesByGeoLoc(
+        geo: UpsertEnderecoDto,
+        self: { id: number; ProjetoRegiao: { regiao_id: number }[] },
+        portfolio: PortfolioDto,
+        prismaTx: Prisma.TransactionClient,
+        now: Date,
+        user: PessoaFromJwt
+    ) {
+        for (const r of geo.novos_enderecos) {
+            for (const rr of r.regioes) {
+                if (self.ProjetoRegiao.find((r) => r.regiao_id == rr.id)) {
+                    continue; // região já existe
+                }
+
+                if (portfolio.nivel_regionalizacao !== rr.nivel && portfolio.nivel_regionalizacao !== rr.nivel + 1) {
+                    continue; // Só entra região se for do mesmo nível ou um nível abaixo
+                }
+
+                await prismaTx.projetoRegiao.create({
+                    data: {
+                        regiao_id: rr.id,
+                        projeto_id: self.id,
+                        criado_em: now,
+                        criado_por: user.id,
+                    },
+                });
+            }
+        }
     }
 
     private checkDiffPortfoliosCompartilhados(
