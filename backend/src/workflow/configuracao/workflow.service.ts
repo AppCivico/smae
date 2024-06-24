@@ -86,9 +86,55 @@ export class WorkflowService {
                         inicio: true,
                         termino: true,
                         transferencia_tipo_id: true,
+
+                        statusesDistribuicao: {
+                            select: {
+                                status_id: true,
+                                status_base_id: true,
+                            },
+                        },
                     },
                 });
                 if (!self) throw new NotFoundException('Workflow não encontrado');
+
+                // Tratando statuses de distribuição de recurso.
+                const currentStatusesBase = self.statusesDistribuicao
+                    .filter((e) => e.status_base_id)
+                    .sort((a, b) => a.status_base_id! - b.status_base_id!);
+                // TODO: comparar mudanças antes de delete e create.
+                if (
+                    dto.distribuicao_statuses_base != undefined &&
+                    dto.distribuicao_statuses_base.length != currentStatusesBase.length
+                ) {
+                    await prismaTxn.workflowDistribuicaoStatus.deleteMany({ where: { workflow_id: id } });
+                    await prismaTxn.workflowDistribuicaoStatus.createMany({
+                        data: dto.distribuicao_statuses_base.map((status_base_id) => {
+                            return {
+                                workflow_id: id,
+                                status_base_id: status_base_id,
+                            };
+                        }),
+                    });
+                }
+
+                const currentStatusesCustomizados = self.statusesDistribuicao
+                    .filter((e) => e.status_id)
+                    .sort((a, b) => a.status_id! - b.status_id!);
+                // TODO: comparar mudanças antes de delete e create.
+                if (
+                    dto.distribuicao_statuses_customizados != undefined &&
+                    dto.distribuicao_statuses_customizados.length != currentStatusesCustomizados.length
+                ) {
+                    await prismaTxn.workflowDistribuicaoStatus.deleteMany({ where: { workflow_id: id } });
+                    await prismaTxn.workflowDistribuicaoStatus.createMany({
+                        data: dto.distribuicao_statuses_customizados.map((status_id) => {
+                            return {
+                                workflow_id: id,
+                                status_id: status_id,
+                            };
+                        }),
+                    });
+                }
 
                 // Caso o Workflow já possua uma transferência ativa, só algumas colunas podem ser editadas.
                 if (
@@ -99,10 +145,6 @@ export class WorkflowService {
                         self.transferencia_tipo_id != dto.transferencia_tipo_id) ||
                     (dto.nome != undefined && self.nome != dto.nome)
                 ) {
-                    console.log(dto);
-                    console.log(self.inicio);
-                    console.log(self.transferencia_tipo_id);
-                    console.log(self.nome);
                     await this.verificaEdicao(id, prismaTxn);
                 }
 
@@ -201,6 +243,32 @@ export class WorkflowService {
                     },
                 },
 
+                statusesDistribuicao: {
+                    select: {
+                        id: true,
+
+                        status_base: {
+                            select: {
+                                id: true,
+                                nome: true,
+                                tipo: true,
+                                valor_distribuicao_contabilizado: true,
+                                permite_novos_registros: true,
+                            },
+                        },
+
+                        status: {
+                            select: {
+                                id: true,
+                                nome: true,
+                                tipo: true,
+                                valor_distribuicao_contabilizado: true,
+                                permite_novos_registros: true,
+                            },
+                        },
+                    },
+                },
+
                 etapasFluxo: {
                     where: { removido_em: null },
                     orderBy: { ordem: 'asc' },
@@ -293,6 +361,23 @@ export class WorkflowService {
                 id: row.transferencia_tipo.id,
                 nome: row.transferencia_tipo.nome,
             },
+
+            statuses_distribuicao: row.statusesDistribuicao.map((rowConfigStatus) => {
+                return {
+                    id: rowConfigStatus.status_base ? rowConfigStatus.status_base.id : rowConfigStatus.status!.id,
+                    nome: rowConfigStatus.status_base ? rowConfigStatus.status_base.nome : rowConfigStatus.status!.nome,
+                    tipo: rowConfigStatus.status_base ? rowConfigStatus.status_base.tipo : rowConfigStatus.status!.tipo,
+                    valor_distribuicao_contabilizado: rowConfigStatus.status_base
+                        ? rowConfigStatus.status_base.valor_distribuicao_contabilizado
+                        : rowConfigStatus.status!.valor_distribuicao_contabilizado,
+                    permite_novos_registros: rowConfigStatus.status_base
+                        ? rowConfigStatus.status_base.permite_novos_registros
+                        : rowConfigStatus.status!.permite_novos_registros,
+
+                    status_base: rowConfigStatus.status_base ? true : false,
+                    pode_editar: rowConfigStatus.status_base ? false : true,
+                };
+            }),
 
             fluxo: row.etapasFluxo.map((fluxo) => {
                 return {
