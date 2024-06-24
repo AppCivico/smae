@@ -119,8 +119,8 @@ if (!riscosStore?.lista?.length) {
     :validation-schema="schema"
     @submit="onSubmit"
   >
-    <div class="flex g2 mb1">
-      <div class="f1 mb1">
+    <div class="flex flexwrap g2 mb1">
+      <div class="f1 mb1 fb15em">
         <LabelFromYup
           name="data_registro"
           :schema="schema"
@@ -141,7 +141,7 @@ if (!riscosStore?.lista?.length) {
         />
       </div>
 
-      <div class="f1 mb1">
+      <div class="f1 mb1 fb15em">
         <LabelFromYup
           name="acompanhamento_tipo_id"
           :schema="schema"
@@ -175,7 +175,21 @@ if (!riscosStore?.lista?.length) {
         />
       </div>
 
-      <div class="f1 mb1 mt1">
+      <div class="f1 mb1 mt1 fb10em">
+        <label class="block mt1">
+          <Field
+            name="apresentar_no_relatorio"
+            type="checkbox"
+            :value="true"
+            class="inputcheckbox"
+          />
+          <span :class="{ 'error': errors.apresentar_no_relatorio }">
+            {{ schema.fields.apresentar_no_relatorio.spec.label }}
+          </span>
+        </label>
+      </div>
+
+      <div class="f1 mb1 mt1 fb10em">
         <label class="block mt1">
           <Field
             name="cronograma_paralisado"
@@ -258,8 +272,14 @@ if (!riscosStore?.lista?.length) {
       </div>
     </div>
 
-    <div class="flex g2" v-if="!acompanhamentoId || emFoco?.observacao">
-      <div class="f1 mb1" v-show="emFoco?.observacao || acompanhamentoId">
+    <div
+      v-if="!acompanhamentoId || emFoco?.observacao"
+      class="flex g2"
+    >
+      <div
+        v-show="emFoco?.observacao || acompanhamentoId"
+        class="f1 mb1"
+      >
         <LabelFromYup
           name="observacao"
           :schema="schema"
@@ -280,8 +300,14 @@ if (!riscosStore?.lista?.length) {
       </div>
     </div>
 
-    <div class="flex g2" v-if="!acompanhamentoId || emFoco?.detalhamento_status">
-      <div class="f1 mb1" v-show="emFoco?.detalhamento_status || acompanhamentoId">
+    <div
+      v-if="!acompanhamentoId || emFoco?.detalhamento_status"
+      class="flex g2"
+    >
+      <div
+        v-show="emFoco?.detalhamento_status || acompanhamentoId"
+        class="f1 mb1"
+      >
         <LabelFromYup
           name="detalhamento_status"
           :schema="schema"
