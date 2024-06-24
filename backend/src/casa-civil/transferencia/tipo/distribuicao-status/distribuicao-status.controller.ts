@@ -6,7 +6,7 @@ import { RecordWithId } from 'src/common/dto/record-with-id.dto';
 import { CreateDistribuicaoStatusDto } from './dto/create-distribuicao-status.dto';
 import { UpdateDistribuicaoStatusDto } from './dto/update-distribuicao-status.dto';
 import { FindOneParams } from 'src/common/decorators/find-params';
-import { ListDistribuicaoStatusDto } from './entities/distribuicao-status.dto';
+import { DistribuicaoStatusDto, ListDistribuicaoStatusDto } from './entities/distribuicao-status.dto';
 import { Roles } from 'src/auth/decorators/roles.decorator';
 import { DistribuicaoStatusService } from './distribuicao-status.service';
 
@@ -27,6 +27,13 @@ export class DistribuicaoStatusController {
     @Get('')
     async findAll(): Promise<ListDistribuicaoStatusDto> {
         return await this.distribuicaoStatusService.findAllDistribuicaoStatus();
+    }
+
+    @Get(':id')
+    @ApiBearerAuth('access-token')
+    @Roles(['CadastroTransferencia.editar'])
+    async findOne(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt): Promise<DistribuicaoStatusDto> {
+        return await this.distribuicaoStatusService.findOne(+params.id, user);
     }
 
     @Patch(':id')
