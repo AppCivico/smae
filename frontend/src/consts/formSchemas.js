@@ -1,4 +1,17 @@
 /* eslint-disable no-template-curly-in-string */
+import {
+  addMethod,
+  array,
+  boolean,
+  date,
+  lazy,
+  mixed,
+  number,
+  object,
+  ref,
+  setLocale,
+  string,
+} from 'yup';
 import cargosDeParlamentar from '@/consts/cargosDeParlamentar';
 import categoriaDeTransferencia from '@/consts/categoriaDeTransferencia';
 import esferasDeTransferencia from '@/consts/esferasDeTransferencia';
@@ -16,19 +29,7 @@ import tiposDeOrigens from '@/consts/tiposDeOrigens';
 import tiposNaEquipeDeParlamentar from '@/consts/tiposNaEquipeDeParlamentar';
 import tiposSituacaoSchema from '@/consts/tiposSituacaoSchema';
 import fieldToDate from '@/helpers/fieldToDate';
-import {
-  addMethod,
-  array,
-  boolean,
-  date,
-  lazy,
-  mixed,
-  number,
-  object,
-  ref,
-  setLocale,
-  string,
-} from 'yup';
+import tiposStatusDistribuicao from './tiposStatusDistribuicao';
 
 const dataMin = import.meta.env.VITE_DATA_MIN ? new Date(`${import.meta.env.VITE_DATA_MIN}`) : new Date('1900-01-01T00:00:00Z');
 const dataMax = import.meta.env.VITE_DATA_MAX ? new Date(`${import.meta.env.VITE_DATA_MAX}`) : new Date('2100-12-31T23:59:59Z');
@@ -1598,6 +1599,20 @@ export const tipoDeTransferencia = object({
     .label('Esfera')
     .required()
     .oneOf(Object.keys(esferasDeTransferencia)),
+});
+
+export const statusDistribuicao = object({
+  nome: string()
+    .label('Nome')
+    .required(),
+  tipo: mixed()
+    .label('Tipo')
+    .required()
+    .oneOf(Object.keys(tiposStatusDistribuicao)),
+  tipo_transferencia_id: number()
+    .label('Tipo de transferência')
+    .min(1, 'Selecione um tipo de transferência')
+    .required(),
 });
 
 export const transferenciaDistribuicaoDeRecursos = object({
