@@ -11,6 +11,7 @@ export default {
     rotaPrescindeDeChave: true,
     presenteNoMenu: true,
     pesoNoMenu: 4,
+    entidadeMãe: 'obras',
     limitarÀsPermissões: [
       'MDO.',
       'ProjetoMDO.',
