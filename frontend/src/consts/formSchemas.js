@@ -1748,6 +1748,10 @@ export const registroDeTransferencia = object({
   conta_aceite: string()
     .label('Número conta-corrente de aceite')
     .nullable(),
+  custeio: number()
+    .label('Custeio')
+    .min(0)
+    .required(),
   dotacao: string()
     .label('Dotação')
     .nullable(),
@@ -1772,6 +1776,10 @@ export const registroDeTransferencia = object({
   gestor_contrato: string()
     .label('Gestor do Contrato')
     .nullable(),
+  investimento: number()
+    .label('Investimento')
+    .min(0)
+    .required(),
 });
 
 export const transferenciasVoluntarias = object({
