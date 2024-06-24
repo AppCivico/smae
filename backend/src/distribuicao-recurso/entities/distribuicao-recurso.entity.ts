@@ -31,6 +31,7 @@ export class DistribuicaoRecursoDto {
     registros_sei: DistribuicaoRecursoSeiDto[] | null;
     pode_registrar_status: boolean;
     historico_status: DistribuicaoHistoricoStatusDto[];
+    pct_valor_transferencia: number;
 }
 
 export class DistribuicaoRecursoDetailDto extends DistribuicaoRecursoDto {

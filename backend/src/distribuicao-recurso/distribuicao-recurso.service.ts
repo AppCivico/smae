@@ -324,6 +324,7 @@ export class DistribuicaoRecursoService {
                 aditamentos: r.aditamentos,
                 conclusao_suspensiva: r.conclusao_suspensiva,
                 pode_registrar_status: pode_registrar_status,
+                pct_valor_transferencia: 0,
                 registros_sei: r.registros_sei.map((s) => {
                     return {
                         id: s.id,
@@ -335,7 +336,7 @@ export class DistribuicaoRecursoService {
                     return {
                         id: r.id,
                         data_troca: r.data_troca,
-                        dias_no_status: DateTime.fromJSDate(r.data_troca).diffNow('days').days,
+                        dias_no_status: Math.abs(Math.round(DateTime.fromJSDate(r.data_troca).diffNow('days').days)),
                         motivo: r.motivo,
                         nome_responsavel: r.nome_responsavel,
                         orgao_responsavel: {
@@ -457,7 +458,7 @@ export class DistribuicaoRecursoService {
             return {
                 id: r.id,
                 data_troca: r.data_troca,
-                dias_no_status: DateTime.fromJSDate(r.data_troca).diffNow('days').days,
+                dias_no_status: Math.abs(Math.round(DateTime.fromJSDate(r.data_troca).diffNow('days').days)),
                 motivo: r.motivo,
                 nome_responsavel: r.nome_responsavel,
                 orgao_responsavel: {
@@ -513,6 +514,7 @@ export class DistribuicaoRecursoService {
             vigencia: row.vigencia,
             conclusao_suspensiva: row.conclusao_suspensiva,
             pode_registrar_status: pode_registrar_status,
+            pct_valor_transferencia: 0,
             historico_status: historico_status,
             orgao_gestor: {
                 id: row.orgao_gestor.id,
