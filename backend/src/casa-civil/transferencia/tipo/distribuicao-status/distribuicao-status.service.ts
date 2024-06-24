@@ -11,11 +11,7 @@ import { ListDistribuicaoStatusDto } from './entities/distribuicao-status.dto';
 export class DistribuicaoStatusService {
     constructor(private readonly prisma: PrismaService) {}
 
-    async create(
-        transferencia_tipo_id: number,
-        dto: CreateDistribuicaoStatusDto,
-        user: PessoaFromJwt
-    ): Promise<RecordWithId> {
+    async create(dto: CreateDistribuicaoStatusDto, user: PessoaFromJwt): Promise<RecordWithId> {
         const created = await this.prisma.$transaction(
             async (prismaTxn: Prisma.TransactionClient): Promise<RecordWithId> => {
                 const similarExists = await this.prisma.transferenciaTipoDistribuicaoStatus.count({
@@ -55,7 +51,7 @@ export class DistribuicaoStatusService {
 
                 const transferenciaTipoDistribuicaoStatus = await prismaTxn.transferenciaTipoDistribuicaoStatus.create({
                     data: {
-                        transferencia_tipo_id,
+                        transferencia_tipo_id: dto.tipo_transferencia_id,
                         nome: dto.nome,
                         tipo: dto.tipo,
                         valor_distribuicao_contabilizado: valor_contabilizado_calc,
@@ -73,10 +69,9 @@ export class DistribuicaoStatusService {
         return created;
     }
 
-    async findAllDistribuicaoStatus(transferencia_tipo_id: number): Promise<ListDistribuicaoStatusDto> {
+    async findAllDistribuicaoStatus(): Promise<ListDistribuicaoStatusDto> {
         const rows = await this.prisma.transferenciaTipoDistribuicaoStatus.findMany({
             where: {
-                transferencia_tipo_id,
                 removido_em: null,
             },
             orderBy: { nome: 'asc' },
