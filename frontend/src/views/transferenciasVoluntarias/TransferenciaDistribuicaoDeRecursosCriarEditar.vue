@@ -456,7 +456,7 @@ const isSomaCorreta = computed(() => {
           name="empenho"
           as="select"
           class="inputtext light mb1"
-          :class="{ 'error': errors.empenho }"
+          :class="{ error: errors.empenho }"
         >
           <option value="">
             Selecionar
@@ -484,7 +484,7 @@ const isSomaCorreta = computed(() => {
           name="data_empenho"
           type="date"
           class="inputtext light mb1"
-          :class="{ 'error': errors.data_empenho }"
+          :class="{ error: errors.data_empenho }"
           maxlength="10"
           @change="($event) => {
             if ($event?.target?.value === '') setFieldValue('data_empenho', null);
@@ -711,7 +711,7 @@ const isSomaCorreta = computed(() => {
           name="assinatura_termo_aceite"
           type="date"
           class="inputtext light mb1"
-          :class="{ 'error': errors.assinatura_termo_aceite }"
+          :class="{ error: errors.assinatura_termo_aceite }"
           maxlength="10"
           @blur="($e) => { !$e.target.value ? $e.target.value = '' : null; }"
           @update:model-value="($v) => { setFieldValue('assinatura_termo_aceite', $v || null); }"
@@ -733,7 +733,7 @@ const isSomaCorreta = computed(() => {
           name="assinatura_estado"
           type="date"
           class="inputtext light"
-          :class="{ 'error': errors.assinatura_estado }"
+          :class="{ error: errors.assinatura_estado }"
           maxlength="10"
           @blur="($e) => { !$e.target.value ? $e.target.value = '' : null; }"
           @update:model-value="($v) => { setFieldValue('assinatura_estado', $v || null); }"
@@ -752,7 +752,7 @@ const isSomaCorreta = computed(() => {
           name="assinatura_municipio"
           type="date"
           class="inputtext light mb1"
-          :class="{ 'error': errors.assinatura_municipio }"
+          :class="{ error: errors.assinatura_municipio }"
           maxlength="10"
           @blur="($e) => { !$e.target.value ? $e.target.value = '' : null; }"
           @update:model-value="($v) => { setFieldValue('assinatura_municipio', $v || null); }"
@@ -774,7 +774,7 @@ const isSomaCorreta = computed(() => {
           name="vigencia"
           type="date"
           class="inputtext light mb1"
-          :class="{ 'error': errors.vigencia }"
+          :class="{ error: errors.vigencia }"
           maxlength="10"
           @blur="($e) => { !$e.target.value ? $e.target.value = '' : null; }"
           @update:model-value="($v) => { setFieldValue('vigencia', $v || null); }"
@@ -798,7 +798,7 @@ const isSomaCorreta = computed(() => {
           name="justificativa_aditamento"
           type="text"
           class="inputtext light mb1"
-          :class="{ 'error': errors.justificativa_aditamento }"
+          :class="{ error: errors.justificativa_aditamento }"
           maxlength="250"
         />
         <ErrorMessage
@@ -815,7 +815,7 @@ const isSomaCorreta = computed(() => {
           name="conclusao_suspensiva"
           type="date"
           class="inputtext light mb1"
-          :class="{ 'error': errors.conclusao_suspensiva }"
+          :class="{ error: errors.conclusao_suspensiva }"
           maxlength="10"
           @blur="($e) => { !$e.target.value ? $e.target.value = '' : null; }"
           @update:model-value="($v) => { setFieldValue('conclusao_suspensiva', $v || null); }"
