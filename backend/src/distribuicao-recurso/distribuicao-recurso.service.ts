@@ -287,6 +287,15 @@ export class DistribuicaoRecursoService {
     }
 
     async findAll(filters: FilterDistribuicaoRecursoDto): Promise<DistribuicaoRecursoDto[]> {
+        const transferencia = await this.prisma.transferencia.findFirstOrThrow({
+            where: {
+                id: filters.transferencia_id,
+            },
+            select: {
+                valor_total: true,
+            },
+        });
+
         const rows = await this.prisma.distribuicaoRecurso.findMany({
             where: {
                 removido_em: null,
@@ -379,6 +388,15 @@ export class DistribuicaoRecursoService {
                     pode_registrar_status = false;
             }
 
+            let pct_valor_transferencia: number = 0;
+            if (transferencia.valor_total && r.valor_total) {
+                pct_valor_transferencia = Math.round(
+                    ((transferencia.valor_total.toNumber() - r.valor_total.toNumber()) /
+                        transferencia.valor_total.toNumber()) *
+                        100
+                );
+            }
+
             return {
                 id: r.id,
                 nome: r.nome,
@@ -405,7 +423,7 @@ export class DistribuicaoRecursoService {
                 aditamentos: r.aditamentos,
                 conclusao_suspensiva: r.conclusao_suspensiva,
                 pode_registrar_status: pode_registrar_status,
-                pct_valor_transferencia: 0,
+                pct_valor_transferencia: pct_valor_transferencia,
                 registros_sei: r.registros_sei.map((s) => {
                     return {
                         id: s.id,
@@ -531,6 +549,12 @@ export class DistribuicaoRecursoService {
                         },
                     },
                 },
+
+                transferencia: {
+                    select: {
+                        valor_total: true,
+                    },
+                },
             },
         });
         if (!row) throw new HttpException('id| Distribuição de recurso não encontrada.', 404);
@@ -571,6 +595,15 @@ export class DistribuicaoRecursoService {
                 pode_registrar_status = false;
         }
 
+        let pct_valor_transferencia: number = 0;
+        if (row.transferencia.valor_total && row.valor_total) {
+            pct_valor_transferencia = Math.round(
+                ((row.transferencia.valor_total.toNumber() - row.valor_total.toNumber()) /
+                    row.transferencia.valor_total.toNumber()) *
+                    100
+            );
+        }
+
         return {
             id: row.id,
             transferencia_id: row.transferencia_id,
@@ -595,7 +628,7 @@ export class DistribuicaoRecursoService {
             vigencia: row.vigencia,
             conclusao_suspensiva: row.conclusao_suspensiva,
             pode_registrar_status: pode_registrar_status,
-            pct_valor_transferencia: 0,
+            pct_valor_transferencia: pct_valor_transferencia,
             historico_status: historico_status,
             orgao_gestor: {
                 id: row.orgao_gestor.id,
