@@ -571,6 +571,95 @@ export class TransferenciaService {
                     });
                 }
 
+                if (
+                    dto.custeio != undefined ||
+                    dto.investimento != undefined ||
+                    dto.valor_contrapartida != undefined ||
+                    dto.valor_total
+                ) {
+                    const outrasDistribuicoes = await prismaTxn.distribuicaoRecurso.findMany({
+                        where: {
+                            removido_em: null,
+                            status: {
+                                some: {
+                                    OR: [
+                                        {
+                                            AND: [
+                                                { NOT: { status_base: { tipo: DistribuicaoStatusTipo.Declinada } } },
+                                                {
+                                                    NOT: {
+                                                        status_base: { tipo: DistribuicaoStatusTipo.Redirecionada },
+                                                    },
+                                                },
+                                            ],
+                                        },
+                                        {
+                                            AND: [
+                                                { NOT: { status: { tipo: DistribuicaoStatusTipo.Declinada } } },
+                                                { NOT: { status: { tipo: DistribuicaoStatusTipo.Redirecionada } } },
+                                            ],
+                                        },
+                                    ],
+                                },
+                            },
+                        },
+                        select: {
+                            custeio: true,
+                            investimento: true,
+                            valor_contrapartida: true,
+                            valor_total: true,
+                        },
+                    });
+
+                    let sumCusteio: number = 0;
+                    let sumInvestimento: number = 0;
+                    let sumContrapartida: number = 0;
+                    let sumTotal: number = 0;
+
+                    for (const distRow of outrasDistribuicoes) {
+                        sumCusteio += distRow.custeio.toNumber();
+                        sumContrapartida += distRow.valor_contrapartida.toNumber();
+                        sumInvestimento += distRow.investimento.toNumber();
+                        sumTotal += distRow.valor_total.toNumber();
+                    }
+
+                    if (self.custeio && dto.custeio != self.custeio.toNumber()) {
+                        if (self.custeio && sumCusteio && sumCusteio > self.custeio.toNumber())
+                            throw new HttpException(
+                                'Soma de custeio de todas as distribuições não pode ser superior ao valor de custeio da transferência.',
+                                400
+                            );
+                    }
+
+                    if (self.investimento && dto.investimento != self.investimento.toNumber()) {
+                        if (self.investimento && sumInvestimento && sumInvestimento > self.investimento.toNumber())
+                            throw new HttpException(
+                                'Soma de investimento de todas as distribuições não pode ser superior ao valor de investimento da transferência.',
+                                400
+                            );
+                    }
+
+                    if (self.valor_contrapartida && dto.valor_contrapartida != self.valor_contrapartida.toNumber()) {
+                        if (
+                            self.valor_contrapartida &&
+                            sumContrapartida &&
+                            sumContrapartida > self.valor_contrapartida.toNumber()
+                        )
+                            throw new HttpException(
+                                'Soma de contrapartida de todas as distribuições não pode ser superior ao valor de contrapartida da transferência.',
+                                400
+                            );
+                    }
+
+                    if (self.valor_total && dto.valor_total != self.valor_total.toNumber()) {
+                        if (self.valor_total && sumTotal && sumTotal > self.valor_total.toNumber())
+                            throw new HttpException(
+                                'Soma de total de todas as distribuições não pode ser superior ao valor total da transferência.',
+                                400
+                            );
+                    }
+                }
+
                 return transferencia;
             }
         );
