@@ -736,12 +736,6 @@ section + section {
   border-top: 1px solid @c100;
 }
 
-dt {
-}
-
-dd {
-}
-
 .text {
   line-height: 24px;
 }
