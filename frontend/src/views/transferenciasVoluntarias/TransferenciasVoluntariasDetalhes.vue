@@ -29,7 +29,10 @@ const distribuicaoRecursos = useDistribuicaoRecursosStore();
 const workflowAndamento = useWorkflowAndamentoStore();
 
 const { emFoco: transferênciaEmFoco } = storeToRefs(TransferenciasVoluntarias);
-const { lista: listaDeDistribuição } = storeToRefs(distribuicaoRecursos);
+const {
+  lista: listaDeDistribuição,
+  chamadasPendentes: distribuicoesPendentes,
+} = storeToRefs(distribuicaoRecursos);
 const {
   workflow,
   inícioDeFasePermitido,
@@ -220,6 +223,72 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
       </div>
     </dl>
   </div>
+
+  <section class="resumo-da-distribuicao-de-recursos pt2 pb1">
+    <LoadingComponent v-if="distribuicoesPendentes.lista" />
+
+    <div
+      v-for="distribuição in listaDeDistribuição"
+      :key="distribuição.id"
+      class="resumo-da-distribuicao-de-recursos__item mb2 flex flexwrap g2"
+    >
+      <div class="resumo-da-distribuicao-de-recursos__descricao f1 fb75 mb2">
+        <hgroup class="resumo-da-distribuicao-de-recursos__titulo flex g1">
+          <h3 class="ml0 t16 w700 tc500">
+            <abbr
+              v-if="distribuição.orgao_gestor"
+              :title="distribuição.orgao_gestor.descricao"
+            >
+              {{ distribuição.orgao_gestor.sigla }}
+            </abbr>
+          </h3>
+          <h4 class="mlauto mr0 t16 w700 tc300">
+            {{ distribuição.valor_total
+              ? `R$${dinheiro(distribuição.valor_total)}`
+              : '' }}
+          </h4>
+          <h5
+            class="resumo-da-distribuicao-de-recursos__percentagem mr0 t16
+          w700 tc500"
+          >
+            {{ distribuição.pct_valor_transferencia }}%
+          </h5>
+        </hgroup>
+
+        <div class="resumo-da-distribuicao-de-recursos__objeto contentStyle f1">
+          {{ distribuição.objeto || '-' }}
+        </div>
+      </div>
+
+      <dl
+        class="resumo-da-distribuicao-de-recursos__lista-de-status f0 fg999 fb10em
+      flex g2 align-end pb1 pl1"
+      >
+        <div
+          v-for="status in distribuição.historico_status"
+          :key="status.id"
+          class="resumo-da-distribuicao-de-recursos__status-item fb100 mb1"
+        >
+          <dt class="w700 t16">
+            {{ status.status_customizado || status.status_base?.nome }}
+          </dt>
+          <dd
+            v-if="status.dias_no_status"
+            class="w700 tc300"
+          >
+            {{ status.dias_no_status }} dias
+          </dd>
+          <dd class="mt1">
+            {{ status.nome_responsavel }} (<abbr
+              :title="status.orgao_responsavel?.descricao"
+            >
+              {{ status.orgao_responsavel?.sigla }}
+            </abbr>)
+          </dd>
+        </div>
+      </dl>
+    </div>
+  </section>
 
   <div class="flex g2 center mt3 mb2">
     <h3 class="w400 tc300 t20 mb0">
@@ -682,8 +751,39 @@ dd {
   border-radius: 12px;
 }
 
-table {
-  max-width: 1000px;
-  margin: 0 auto;
+.resumo-da-distribuicao-de-recursos {
+  * + & {
+    border-top: 1px solid @c100;
+  }
+}
+
+.resumo-da-distribuicao-de-recursos__item {}
+
+.resumo-da-distribuicao-de-recursos__descricao {}
+
+.resumo-da-distribuicao-de-recursos__titulo {}
+
+.resumo-da-distribuicao-de-recursos__percentagem {
+  &::before {
+    content: '(';
+  }
+
+  &::after {
+    content: ')';
+  }
+}
+
+.resumo-da-distribuicao-de-recursos__objeto {}
+
+.resumo-da-distribuicao-de-recursos__lista-de-status {
+  .rolavel-horizontalmente;
+
+  flex-direction: row-reverse
+}
+
+.resumo-da-distribuicao-de-recursos__status-item {
+  &:first-child {
+    min-width: 100%;
+  }
 }
 </style>
