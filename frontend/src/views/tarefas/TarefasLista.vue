@@ -132,7 +132,8 @@ export default {
       </router-link>
 
       <router-link
-        v-if="route.meta.entidadeMãe === 'projeto'"
+        v-if="route.meta.entidadeMãe === 'projeto'
+          || route.meta.entidadeMãe === 'obras'"
         :to="{
           name: $route.meta.prefixoParaFilhas + 'TarefasClonar',
           params: $route.params,
