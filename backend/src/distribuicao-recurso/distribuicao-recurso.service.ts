@@ -128,6 +128,14 @@ export class DistribuicaoRecursoService {
                     sumTotal += +distRow.valor_total.toNumber();
                 }
 
+                console.log('===============');
+                console.log(sumCusteio);
+                console.log(sumContrapartida);
+                console.log(sumInvestimento);
+                console.log(sumTotal);
+                console.log(transferencia.custeio);
+                console.log('===============');
+
                 if (transferencia.custeio && sumCusteio && sumCusteio > transferencia.custeio.toNumber())
                     throw new HttpException(
                         'Soma de custeio de todas as distribuições não pode ser superior ao valor de custeio da transferência.',
