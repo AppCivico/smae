@@ -401,6 +401,45 @@ const isSomaCorreta = computed(() => {
           name="valor"
         />
       </div>
+
+      <div class="halfInput">
+        <LabelFromYup
+          name="custeio"
+          :schema="schema"
+        />
+        <Field
+          name="custeio"
+          type="number"
+          min="0"
+          class="inputtext light mb1"
+          @change="($event) => {
+            if ($event?.target?.value === '') setFieldValue('custeio', null);
+          }"
+        />
+        <ErrorMessage
+          class="error-msg mb1"
+          name="custeio"
+        />
+      </div>
+      <div class="halfInput">
+        <LabelFromYup
+          name="investimento"
+          :schema="schema"
+        />
+        <Field
+          name="investimento"
+          type="number"
+          min="0"
+          class="inputtext light mb1"
+          @change="($event) => {
+            if ($event?.target?.value === '') setFieldValue('investimento', null);
+          }"
+        />
+        <ErrorMessage
+          class="error-msg mb1"
+          name="investimento"
+        />
+      </div>
       <div class="halfInput">
         <LabelFromYup
           name="valor_contrapartida"
