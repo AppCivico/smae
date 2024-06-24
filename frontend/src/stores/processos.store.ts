@@ -20,6 +20,25 @@ interface Estado {
   erro: null | unknown;
 }
 
+type MãeComId = {
+  projetoId?: Number;
+  obraId?: Number;
+} | undefined;
+
+function gerarCaminhoParaApi(mãeComId: MãeComId): string | null {
+  switch (true) {
+    case !!mãeComId?.projetoId:
+      return `projeto/${mãeComId?.projetoId}`;
+
+    case !!mãeComId?.obraId:
+      return `projeto-mdo/${mãeComId?.obraId}`;
+
+    default:
+      console.error('Id identificado da entidade mãe não foi provido como esperado', mãeComId);
+      throw new Error('Id identificado da entidade mãe não foi provido como esperado');
+  }
+}
+
 export const useProcessosStore = defineStore('processos', {
   state: (): Estado => ({
     lista: [],
@@ -32,10 +51,10 @@ export const useProcessosStore = defineStore('processos', {
     erro: null,
   }),
   actions: {
-    async buscarItem(id = 0, params = {}, projetoId = 0): Promise<void> {
+    async buscarItem(id = 0, params = {}, mãeComId: MãeComId = undefined): Promise<void> {
       this.chamadasPendentes.emFoco = true;
       try {
-        const resposta = await this.requestS.get(`${baseUrl}/projeto/${projetoId || this.route.params.projetoId}/sei/${id}`, params);
+        const resposta = await this.requestS.get(`${baseUrl}/${gerarCaminhoParaApi(mãeComId || this.route.params)}/sei/${id}`, params);
         this.emFoco = resposta;
       } catch (erro: unknown) {
         this.erro = erro;
@@ -43,12 +62,12 @@ export const useProcessosStore = defineStore('processos', {
       this.chamadasPendentes.emFoco = false;
     },
 
-    async buscarTudo(params = {}, projetoId = 0): Promise<void> {
+    async buscarTudo(params = {}, mãeComId: MãeComId = undefined): Promise<void> {
       this.chamadasPendentes.lista = true;
       this.chamadasPendentes.emFoco = true;
 
       try {
-        const { linhas } = await this.requestS.get(`${baseUrl}/projeto/${projetoId || this.route.params.projetoId}/sei`, params);
+        const { linhas } = await this.requestS.get(`${baseUrl}/${gerarCaminhoParaApi(mãeComId || this.route.params)}/sei`, params);
 
         this.lista = linhas;
       } catch (erro: unknown) {
@@ -58,11 +77,11 @@ export const useProcessosStore = defineStore('processos', {
       this.chamadasPendentes.emFoco = false;
     },
 
-    async excluirItem(id: number, projetoId = 0): Promise<boolean> {
+    async excluirItem(id: number, mãeComId: MãeComId = undefined): Promise<boolean> {
       this.chamadasPendentes.lista = true;
 
       try {
-        await this.requestS.delete(`${baseUrl}/projeto/${projetoId || this.route.params.projetoId}/sei/${id}`);
+        await this.requestS.delete(`${baseUrl}/${gerarCaminhoParaApi(mãeComId || this.route.params)}/sei/${id}`);
 
         this.chamadasPendentes.lista = false;
         return true;
@@ -73,16 +92,16 @@ export const useProcessosStore = defineStore('processos', {
       }
     },
 
-    async salvarItem(params = {}, id = 0, projetoId = 0): Promise<boolean> {
+    async salvarItem(params = {}, id = 0, mãeComId: MãeComId = undefined): Promise<boolean> {
       this.chamadasPendentes.emFoco = true;
 
       try {
         let resposta;
 
         if (id) {
-          resposta = await this.requestS.patch(`${baseUrl}/projeto/${projetoId || this.route.params.projetoId}/sei/${id}`, params);
+          resposta = await this.requestS.patch(`${baseUrl}/${gerarCaminhoParaApi(mãeComId || this.route.params)}/sei/${id}`, params);
         } else {
-          resposta = await this.requestS.post(`${baseUrl}/projeto/${projetoId || this.route.params.projetoId}/sei`, params);
+          resposta = await this.requestS.post(`${baseUrl}/${gerarCaminhoParaApi(mãeComId || this.route.params)}/sei`, params);
         }
 
         this.chamadasPendentes.emFoco = false;

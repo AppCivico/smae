@@ -1,3 +1,5 @@
+import obrasProcessos from './obras.processos';
+
 export default {
   path: '/obras',
   component: () => import('@/views/mdo.obras/ObraRaiz.vue'),
@@ -64,6 +66,7 @@ export default {
             título: 'Acompanhamento',
             rotas: [
               'obrasDocumentos',
+              'processosDaObraListar',
             ],
           },
         ],
@@ -208,6 +211,8 @@ export default {
             },
           ],
         },
+
+        obrasProcessos,
       ],
     },
   ],

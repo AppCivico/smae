@@ -1893,6 +1893,33 @@ export const processo = object()
       .required(),
   });
 
+export const processoDeObras = object()
+  .shape({
+    comentarios: string()
+      .label('Comentários')
+      .max(1024)
+      .nullable(),
+    descricao: string()
+      .label('Descrição')
+      .max(2000)
+      .nullable(),
+    link: string()
+      .label('Link')
+      .nullable()
+      .max(2000)
+      .url(),
+    observacoes: string()
+      .label('Observações')
+      .max(1024)
+      .nullable(),
+    processo_sei: string()
+      .label('Processo SEI')
+      .max(19)
+      .min(19, '${label} está fora do formato')
+      .matches(regEx.seiOuSinproc)
+      .required(),
+  });
+
 export const projeto = object()
   .shape({
     atividade_id: number()
