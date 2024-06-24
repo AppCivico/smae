@@ -573,7 +573,8 @@ export class TransferenciaService {
                             objeto: self.objeto,
                             orgao_gestor_id: orgaoCasaCivil.id,
                         },
-                        user
+                        user,
+                        true
                     );
 
                     await prismaTxn.distribuicaoRecursoStatus.create({
