@@ -143,6 +143,9 @@ export const acompanhamento = object()
               .nullable(),
           }),
       ),
+    apresentar_no_relatorio: boolean()
+      .label('Apresentar em relatório')
+      .nullable(),
     cronograma_paralisado: boolean()
       .label('Cronograma paralisado')
       .nullable(),
