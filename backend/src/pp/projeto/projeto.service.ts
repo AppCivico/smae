@@ -380,13 +380,15 @@ export class ProjetoService {
                         orgao_gestor_id: orgao_gestor_id!,
                         responsaveis_no_orgao_gestor: responsaveis_no_orgao_gestor,
 
-                        orgaos_participantes: {
-                            createMany: {
-                                data: dto.orgaos_participantes.map((o) => {
-                                    return { orgao_id: o };
-                                }),
-                            },
-                        },
+                        orgaos_participantes: Array.isArray(dto.orgaos_participantes)
+                            ? {
+                                  createMany: {
+                                      data: dto.orgaos_participantes.map((o) => {
+                                          return { orgao_id: o };
+                                      }),
+                                  },
+                              }
+                            : undefined,
                         projeto_etapa_id: dto.projeto_etapa_id,
                         orgao_responsavel_id: dto.orgao_responsavel_id,
                         responsavel_id: dto.responsavel_id,
