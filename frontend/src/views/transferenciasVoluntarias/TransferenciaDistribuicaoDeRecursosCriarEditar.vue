@@ -922,7 +922,7 @@ const isSomaCorreta = computed(() => {
           v-for="item in distribuiçãoEmFoco.aditamentos"
           :key="item.id"
         >
-          <td> {{ item.data_vigencia? item.data_vigencia.split('T')[0].split('-').reverse().join('/').slice(0, 8).replace(/^(\d{2}\/\d{2})\/\d{4}$/, '$1/' + item.data_vigencia.split('T')[0].split('-')[0].slice(-2)) : '' }}</td>
+          <td> {{ item.data_vigencia ? item.data_vigencia.split('T')[0].split('-').reverse().join('/') : '' }}</td>
           <td>{{ item.justificativa }}</td>
         </tr>
       </tbody>
@@ -958,7 +958,7 @@ const isSomaCorreta = computed(() => {
           v-for="item in distribuiçãoEmFoco.historico_status"
           :key="item.id"
         >
-          <td> {{ item.data_troca ? item.data_troca.split('T')[0].split('-').reverse().join('/').slice(0, 8).replace(/^(\d{2}\/\d{2})\/\d{4}$/, '$1/' + item.data_troca.split('T')[0].split('-')[0].slice(-2)) : '' }}</td>
+          <td> {{ item.data_troca ? item.data_troca.split('T')[0].split('-').reverse().join('/') : '' }}</td>
           <td>{{ item.status_base.tipo }}</td>
           <td>{{ item.orgao_responsavel.sigla }}</td>
           <td>{{ item.nome_responsavel }}</td>
