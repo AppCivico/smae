@@ -700,6 +700,14 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
         </dl>
         <dl class="f1">
           <dt class="t16 w700 mb05 tc500">
+            Motivo do aditamento
+          </dt>
+          <dd>
+            {{ listaDeDistribuição[1].aditamentos[0].justificativa ? listaDeDistribuição[1].aditamentos[0].justificativa : ' - ' }}
+          </dd>
+        </dl>
+        <dl class="f1">
+          <dt class="t16 w700 mb05 tc500">
             Data de conclusão da suspensiva
           </dt>
           <dd>
