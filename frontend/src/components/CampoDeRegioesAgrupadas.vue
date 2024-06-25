@@ -150,6 +150,7 @@ watch(() => listaDeRegiões.value, (novoValor) => {
         <div class="f0 mt1">
           <button
             class="like-a__text addlink"
+            type="button"
             arial-label="excluir"
             title="excluir"
             @click="removerLinha(idx)"
