@@ -131,7 +131,7 @@ export default {
               name: 'planosSetoriaisTags',
               component: () => import('@/views/ps.tags/TagsLista.vue'),
               meta: {
-                título: 'Tag',
+                título: 'Tags',
               },
             },
             {
