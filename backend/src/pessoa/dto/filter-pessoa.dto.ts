@@ -13,6 +13,7 @@ export const FilterPermsPessoa2Priv: Record<keyof FilterPermsPessoaDto, ListaDeP
     ps_ponto_focal: 'PS.ponto_focal',
     mdo_gestor_de_projeto: 'MDO.gestor_de_projeto',
     mdo_colaborador_de_projeto: 'MDO.colaborador_de_projeto',
+    mdo_espectador_de_projeto: 'MDO.espectador_de_projeto',
 } as const;
 
 export class FilterPermsPessoaDto {
@@ -125,6 +126,17 @@ export class FilterPermsPessoaDto {
     @IsBoolean()
     @Transform(({ value }: any) => value === 'true')
     mdo_colaborador_de_projeto?: boolean;
+
+    /**
+     * Filtrar pessoa com privilegio `MDO.espectador_de_projeto` ?
+     *
+     *  true filtra quem tem a `MDO.espectador_de_projeto`; false filtra quem não tem
+     * @example ""
+     */
+    @IsOptional()
+    @IsBoolean()
+    @Transform(({ value }: any) => value === 'true')
+    mdo_espectador_de_projeto?: boolean;
 }
 
 export class FilterPessoaDto extends FilterPermsPessoaDto {
