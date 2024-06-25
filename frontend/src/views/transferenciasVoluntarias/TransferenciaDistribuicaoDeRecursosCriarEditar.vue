@@ -898,6 +898,37 @@ const isSomaCorreta = computed(() => {
       {{ erro }}
     </div>
   </div>
+  <details
+    v-if="distribuiçãoEmFoco.aditamentos.length"
+    class="mb1"
+  >
+    <summary
+      class="label mb0"
+      style="line-height: 1.5rem;"
+    >
+      Visualizar histórico de aditamentos
+    </summary>
+    <table class="tablemain">
+      <col>
+      <col>
+      <thead>
+        <tr>
+          <th>DATA</th>
+          <th>justificativa para aditamento</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr
+          v-for="item in distribuiçãoEmFoco.aditamentos"
+          :key="item.id"
+        >
+          <td> {{ item.data_vigencia? item.data_vigencia.split('T')[0].split('-').reverse().join('/').slice(0, 8).replace(/^(\d{2}\/\d{2})\/\d{4}$/, '$1/' + item.data_vigencia.split('T')[0].split('-')[0].slice(-2)) : '' }}</td>
+          <td>{{ item.justificativa }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </details>
+
   <details v-if="distribuiçãoEmFoco?.historico_status.length">
     <summary
       class="label mb0"
