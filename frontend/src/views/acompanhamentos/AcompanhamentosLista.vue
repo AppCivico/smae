@@ -229,6 +229,7 @@ vue/singleline-html-element-content-newline -->
       <col>
       <col>
       <col class="col--number">
+      <col>
       <col
         v-if="!permissõesDoProjetoEmFoco.apenas_leitura
           || permissõesDoProjetoEmFoco.sou_responsavel"
@@ -253,6 +254,7 @@ vue/singleline-html-element-content-newline -->
         <th class="cell--number">
           {{ schema.fields.acompanhamentos.spec.label }}
         </th>
+        <th :aria-label="schema.fields.apresentar_no_relatorio.spec.label" />
         <th
           v-if="!permissõesDoProjetoEmFoco.apenas_leitura
             || permissõesDoProjetoEmFoco.sou_responsavel"
@@ -301,6 +303,22 @@ vue/singleline-html-element-content-newline -->
         </td>
         <td class="cell--number">
           {{ linha.acompanhamentos.length ?? 0 }}
+        </td>
+        <td>
+          <span
+            v-if="linha.apresentar_no_relatorio"
+            class="tipinfo tprimary"
+          >
+            <svg
+              width="16"
+              height="16"
+            >
+              <use xlink:href="#i_i" />
+            </svg>
+            <div>
+              {{ schema.fields.apresentar_no_relatorio.spec.label }}
+            </div>
+          </span>
         </td>
         <td
           v-if="!permissõesDoProjetoEmFoco.apenas_leitura
