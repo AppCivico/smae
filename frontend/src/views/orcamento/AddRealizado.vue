@@ -6,12 +6,16 @@ import { orçamentoRealizado as schema } from '@/consts/formSchemas';
 import { useAlertStore } from '@/stores/alert.store';
 import { useMetasStore } from '@/stores/metas.store';
 import { useOrcamentosStore } from '@/stores/orcamentos.store';
+import { useProjetosStore } from '@/stores/projetos.store.ts';
 import { storeToRefs } from 'pinia';
 import { Field, useForm } from 'vee-validate';
-import { ref, toRaw, watch } from 'vue';
+import {
+  computed, ref, toRaw, watch,
+} from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 
 const alertStore = useAlertStore();
+const ProjetoStore = useProjetosStore();
 
 const route = useRoute();
 const router = useRouter();
@@ -21,7 +25,7 @@ const { ano } = route.params;
 const MetasStore = useMetasStore();
 const { singleMeta, activePdm } = storeToRefs(MetasStore);
 
-if (!route.params.projetoId) {
+if (route.meta.entidadeMãe === 'meta') {
   MetasStore.getPdM();
   MetasStore.getChildren(meta_id);
 }
@@ -50,6 +54,20 @@ const {
 } = useForm({
   initialValues: currentEdit.value,
   validationSchema: schema,
+});
+
+const parametrosParaValidacao = computed(() => {
+  switch (route.meta.entidadeMãe) {
+    case 'projeto':
+      return { portfolio_id: ProjetoStore.emFoco?.portfolio_id };
+
+    case 'meta':
+      return { pdm_id: activePdm.value?.id };
+
+    default:
+      console.error('Id identificado da entidade mãe não foi provido como esperado', route.meta);
+      throw new Error('Id identificado da entidade mãe não foi provido como esperado');
+  }
 });
 
 const onSubmit = handleSubmit.withControlled(async () => {
@@ -137,6 +155,7 @@ export default {
 
     <CheckClose />
   </div>
+
   <h3 class="mb2">
     <strong>{{ ano }}</strong> - {{ parent_item.codigo }} - {{ parent_item.titulo }}
   </h3>
@@ -167,6 +186,7 @@ export default {
         v-model:complemento="complemento"
         v-model:dotação="dotação"
         v-model="dotaçãoComComplemento"
+        :parametros-para-validacao="parametrosParaValidacao"
       />
 
       <ListaDeCompartilhamentos
