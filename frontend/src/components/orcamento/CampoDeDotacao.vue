@@ -3,8 +3,6 @@ import { dotação as schema } from '@/consts/formSchemas';
 import dinheiro from '@/helpers/dinheiro';
 import toFloat from '@/helpers/toFloat';
 import { useDotaçãoStore } from '@/stores/dotacao.store.ts';
-import { useMetasStore } from '@/stores/metas.store';
-import { useProjetosStore } from '@/stores/projetos.store.ts';
 import { storeToRefs } from 'pinia';
 import { ErrorMessage, useField } from 'vee-validate';
 import {
@@ -13,6 +11,11 @@ import {
 import { useRoute } from 'vue-router';
 // PRA-FAZER: preenchimento inicial dos campos de parciais
 const props = defineProps({
+  parametrosParaValidacao: {
+    type: Object,
+    default: null,
+    required: true,
+  },
   complemento: {
     type: String,
     default: '',
@@ -53,9 +56,6 @@ const {
 const route = useRoute();
 
 const DotaçãoStore = useDotaçãoStore();
-const ProjetoStore = useProjetosStore();
-const MetasStore = useMetasStore();
-const { activePdm } = storeToRefs(MetasStore);
 
 const { ano } = route.params;
 
@@ -238,11 +238,8 @@ async function validarDota() {
   if (valid) {
     try {
       emit('update:respostasof', { loading: true });
-      const params = route.params.projetoId
-        ? { portfolio_id: ProjetoStore.emFoco.portfolio_id }
-        : { pdm_id: activePdm.value.id };
       const respostaDoSof = await DotaçãoStore
-        .getDotaçãoRealizado(valorDaDotação.value, ano, params);
+        .getDotaçãoRealizado(valorDaDotação.value, ano, props.parametrosParaValidacao);
       emit('update:respostasof', respostaDoSof);
     } catch (error) {
       emit('update:respostasof', error);
