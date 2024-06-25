@@ -553,7 +553,7 @@ export class TransferenciaService {
                     // Criada com status base de "Registrada".
                     const status = await prismaTxn.distribuicaoStatusBase.findFirstOrThrow({
                         where: {
-                            tipo: DistribuicaoStatusTipo.Registrada,
+                            tipo: DistribuicaoStatusTipo.NaoIniciado,
                         },
                         select: {
                             id: true,
