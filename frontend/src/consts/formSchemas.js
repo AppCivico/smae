@@ -2564,6 +2564,12 @@ export const workflow = object({
     .label('Tipo de transferência')
     .nullable()
     .required(),
+  distribuicao_statuses_base: array()
+    .label('Statuses Base Atrelados ao Workflow')
+    .nullable(),
+  distribuicao_statuses_customizados: array()
+    .label('Statuses Customizados Atrelados ao Workflow')
+    .nullable(),
 });
 
 export const fasesFluxo = object({
