@@ -1272,7 +1272,6 @@ watch(itemParaEdição, (novoValor) => {
               v-for="item in possíveisResponsáveisPorÓrgãoId[values.orgao_responsavel_id]"
               :key="item"
               :value="item.id"
-              :disabled="!possíveisResponsáveisPorÓrgãoId[item.id]?.length"
               :title="item.descricao?.length > 36 ? item.descricao : null"
             >
               {{ item.nome_exibicao }}
@@ -1349,7 +1348,7 @@ watch(itemParaEdição, (novoValor) => {
               busca: '',
               participantes: values.colaboradores_no_orgao || []
             }"
-            :grupo="possíveisGestoresPorÓrgãoId[values.orgao_colaborador_id]
+            :grupo="possíveisResponsáveisPorÓrgãoId[values.orgao_colaborador_id]
               || []"
             :aria-busy="portfolioMdoStore.chamadasPendentes.lista"
             :class="{
