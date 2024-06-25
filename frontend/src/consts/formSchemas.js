@@ -1620,26 +1620,6 @@ export const statusDistribuicao = object({
 });
 
 export const transferenciaDistribuicaoDeRecursos = object({
-  historico_status: array()
-    .label('Registro status da distribuição de recursos')
-    .of(object({
-      data_troca: date()
-        .label('Data')
-        .max(dataMax)
-        .min(new Date(2003, 0, 1))
-        .required()
-        .transform((v) => (!v ? null : v)),
-      orgao_responsavel_id: number()
-        .lavel('')
-        .required(),
-      nome_responsavel: string()
-        .lavel('')
-        .required(),
-      motivo: string()
-        .lavel('')
-        .required(),
-    }))
-    .strict(),
   assinatura_estado: date()
     .label('Data de assinatura do representante do estado')
     .max(dataMax)
@@ -1686,6 +1666,26 @@ export const transferenciaDistribuicaoDeRecursos = object({
   empenho: boolean()
     .label('Empenho')
     .required(),
+  historico_status: array()
+    .label('Registro status da distribuição de recursos')
+    .of(object({
+      data_troca: date()
+        .label('Data')
+        .max(dataMax)
+        .min(new Date(2003, 0, 1))
+        .required()
+        .transform((v) => (!v ? null : v)),
+      orgao_responsavel_id: number()
+        .lavel('')
+        .required(),
+      nome_responsavel: string()
+        .lavel('')
+        .required(),
+      motivo: string()
+        .lavel('')
+        .required(),
+    }))
+    .strict(),
   investimento: number()
     .label('Investimento')
     .min(0)
@@ -1733,16 +1733,16 @@ export const transferenciaDistribuicaoDeRecursos = object({
         .required(),
     }))
     .strict(),
+  valor: number()
+    .label('Valor do Repasse')
+    .required()
+    .nullable(),
   valor_contrapartida: number()
     .label('Valor contrapartida')
     .required()
     .nullable(),
   valor_total: number()
     .label('Valor total')
-    .required()
-    .nullable(),
-  valor: number()
-    .label('Valor do Repasse')
     .required()
     .nullable(),
   vigencia: date()
