@@ -899,7 +899,12 @@ const isSomaCorreta = computed(() => {
     </div>
   </div>
   <details v-if="distribuiçãoEmFoco?.historico_status.length">
-    <summary>Visualizar histórico de status</summary>
+    <summary
+      class="label mb0"
+      style="line-height: 1.5rem;"
+    >
+      Visualizar histórico de status
+    </summary>
     <table class="tablemain">
       <col>
       <col>
