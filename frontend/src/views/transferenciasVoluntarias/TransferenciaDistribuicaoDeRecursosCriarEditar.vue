@@ -898,4 +898,38 @@ const isSomaCorreta = computed(() => {
       {{ erro }}
     </div>
   </div>
+  <details v-if="distribuiçãoEmFoco?.historico_status">
+    <summary>Visualizar histórico de status</summary>
+    <table class="tablemain">
+      <col>
+      <col>
+      <col>
+      <col>
+      <col>
+      <col>
+      <thead>
+        <tr>
+          <th>DATA</th>
+          <th>STATUS</th>
+          <th>ÓRGÃO</th>
+          <th>RESPONSÁVEL</th>
+          <th>MOTIVO</th>
+          <th>TOTAL DE DIAS NO STATUS</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr
+          v-for="item in distribuiçãoEmFoco.historico_status"
+          :key="item.id"
+        >
+          <td>{{ item.data_troca }}</td>
+          <td>{{ item.status_base.tipo }}</td>
+          <td>{{ item.orgao_responsavel.sigla }}</td>
+          <td>{{ item.nome_responsavel }}</td>
+          <td>{{ item.motivo }}</td>
+          <td>{{ item.dias_no_status }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </details>
 </template>
