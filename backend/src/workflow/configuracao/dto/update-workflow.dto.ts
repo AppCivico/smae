@@ -12,15 +12,7 @@ export class UpdateWorkflowDto extends PartialType(CreateWorkflowDto) {
      * @example "[1, 2, 3]"
      */
     @IsOptional()
-    @IsArray({
-        message: '$property| responsável(eis) na coordenadoria de projetos: precisa ser uma array, campo obrigatório',
-    })
-    @ArrayMinSize(1, {
-        message: '$property| responsável(eis) na coordenadoria de projetos: precisa ter pelo menos um item',
-    })
-    @ArrayMaxSize(100, {
-        message: '$property| responsável(eis) na coordenadoria de projetos: precisa ter no máximo 100 items',
-    })
+    @IsArray()
     @IsInt({ each: true, message: '$property| Cada item precisa ser um número inteiro' })
     distribuicao_statuses_base?: number[];
 
@@ -29,15 +21,7 @@ export class UpdateWorkflowDto extends PartialType(CreateWorkflowDto) {
      * @example "[1, 2, 3]"
      */
     @IsOptional()
-    @IsArray({
-        message: '$property| responsável(eis) na coordenadoria de projetos: precisa ser uma array, campo obrigatório',
-    })
-    @ArrayMinSize(1, {
-        message: '$property| responsável(eis) na coordenadoria de projetos: precisa ter pelo menos um item',
-    })
-    @ArrayMaxSize(100, {
-        message: '$property| responsável(eis) na coordenadoria de projetos: precisa ter no máximo 100 items',
-    })
+    @IsArray()
     @IsInt({ each: true, message: '$property| Cada item precisa ser um número inteiro' })
     distribuicao_statuses_customizados?: number[];
 }
