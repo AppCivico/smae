@@ -6,6 +6,7 @@ import { PrismaService } from '../../../../prisma/prisma.service';
 import { CreateDistribuicaoStatusDto } from './dto/create-distribuicao-status.dto';
 import { UpdateDistribuicaoStatusDto } from './dto/update-distribuicao-status.dto';
 import { DistribuicaoStatusDto, ListDistribuicaoStatusDto } from './entities/distribuicao-status.dto';
+import { FilterDistribuicaoStatusDto } from './dto/filter-distribuicao-status.dto';
 
 @Injectable()
 export class DistribuicaoStatusService {
@@ -95,9 +96,10 @@ export class DistribuicaoStatusService {
         };
     }
 
-    async findAllDistribuicaoStatus(): Promise<ListDistribuicaoStatusDto> {
+    async findAllDistribuicaoStatus(filters: FilterDistribuicaoStatusDto): Promise<ListDistribuicaoStatusDto> {
         const rows = await this.prisma.transferenciaTipoDistribuicaoStatus.findMany({
             where: {
+                transferencia_tipo_id: filters.tipo_transferencia_id,
                 removido_em: null,
             },
             orderBy: { nome: 'asc' },
