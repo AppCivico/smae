@@ -49,9 +49,9 @@ import TipoDeTransferenciaRaiz from '@/views/tipoDeTransferencia/TipoDeTransfere
 import EtapasCriarEditar from '@/views/etapasProjeto/EtapasCriarEditar.vue';
 import EtapasLista from '@/views/etapasProjeto/EtapasLista.vue';
 import EtapasRaiz from '@/views/etapasProjeto/EtapasRaiz.vue';
-import StatusDistribuicaoRaiz from '../views/statusesDistribuicao/StatusDistribuicaoRaiz.vue';
-import StatusDistribuicaoLista from '@/views/statusesDistribuicao/StatusDistribuicaoLista.vue';
 import StatusDistribuicaoCriarEditar from '@/views/statusesDistribuicao/StatusDistribuicaoCriarEditar.vue';
+import StatusDistribuicaoLista from '@/views/statusesDistribuicao/StatusDistribuicaoLista.vue';
+import StatusDistribuicaoRaiz from '../views/statusesDistribuicao/StatusDistribuicaoRaiz.vue';
 
 const TiposDeAcompanhamentoLista = defineAsyncComponent({
   loader: () => import('@/views/tiposDeAcompanhamento/TiposLista.vue'),
@@ -372,6 +372,7 @@ export default [
           rotaPrescindeDeChave: true,
           limitarÀsPermissões: 'Projeto.administrar_portfolios',
           rotasParaMenuSecundário,
+          entidadeMãe: 'projeto',
         },
 
         children: [
