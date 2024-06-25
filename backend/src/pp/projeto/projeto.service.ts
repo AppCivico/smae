@@ -2301,20 +2301,24 @@ export class ProjetoService {
         now: Date,
         user: PessoaFromJwt
     ) {
+        const regioesExistentes = self.ProjetoRegiao.map((r) => r.regiao_id);
+        this.logger.verbose(JSON.stringify({ 'regioesExistentes': regioesExistentes }));
         for (const r of geo.novos_enderecos) {
             for (const rr of r.regioes) {
-                if (self.ProjetoRegiao.find((r) => r.regiao_id == rr.id)) {
+                this.logger.verbose(JSON.stringify({ rr: rr }));
+                if (regioesExistentes.find((regiao_id) => regiao_id == rr.id)) {
                     this.logger.verbose(`Região ${rr.id} já existe no projeto ${self.id}`);
                     continue; // região já existe
                 }
 
-                if (portfolio.nivel_regionalizacao !== rr.nivel && portfolio.nivel_regionalizacao !== rr.nivel - 1) {
+                if (portfolio.nivel_regionalizacao != rr.nivel && portfolio.nivel_regionalizacao != rr.nivel - 1) {
                     this.logger.verbose(
                         `Região ${rr.id}, nível ${rr.nivel} não é permitido para o portfolio ${portfolio.id}`
                     );
                     continue; // Só entra região se for do mesmo nível ou um nível abaixo
                 }
 
+                regioesExistentes.push(rr.id);
                 await prismaTx.projetoRegiao.create({
                     data: {
                         regiao_id: rr.id,
