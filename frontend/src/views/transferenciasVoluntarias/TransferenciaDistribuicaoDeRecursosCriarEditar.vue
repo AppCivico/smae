@@ -401,6 +401,47 @@ const isSomaCorreta = computed(() => {
           name="valor"
         />
       </div>
+
+      <div class="halfInput">
+        <LabelFromYup
+          name="custeio"
+          :schema="schema"
+        />
+        <MaskedFloatInput
+          name="custeio"
+          type="text"
+          class="inputtext light mb2"
+          :value="values.custeio"
+          converter-para="string"
+          @update:model-value="(newValue) => {
+            atualizarValorTotal('custeio', newValue, setFieldValue);
+          }"
+        />
+        <ErrorMessage
+          class="error-msg mb2"
+          name="custeio"
+        />
+      </div>
+      <div class="halfInput">
+        <LabelFromYup
+          name="investimento"
+          :schema="schema"
+        />
+        <MaskedFloatInput
+          name="investimento"
+          type="text"
+          class="inputtext light mb2"
+          :value="values.investimento"
+          converter-para="string"
+          @update:model-value="(newValue) => {
+            atualizarValorTotal('custeio', newValue, setFieldValue);
+          }"
+        />
+        <ErrorMessage
+          class="error-msg mb2"
+          name="investimento"
+        />
+      </div>
       <div class="halfInput">
         <LabelFromYup
           name="valor_contrapartida"
@@ -456,7 +497,7 @@ const isSomaCorreta = computed(() => {
           name="empenho"
           as="select"
           class="inputtext light mb1"
-          :class="{ 'error': errors.empenho }"
+          :class="{ error: errors.empenho }"
         >
           <option value="">
             Selecionar
@@ -484,7 +525,7 @@ const isSomaCorreta = computed(() => {
           name="data_empenho"
           type="date"
           class="inputtext light mb1"
-          :class="{ 'error': errors.data_empenho }"
+          :class="{ error: errors.data_empenho }"
           maxlength="10"
           @change="($event) => {
             if ($event?.target?.value === '') setFieldValue('data_empenho', null);
@@ -711,7 +752,7 @@ const isSomaCorreta = computed(() => {
           name="assinatura_termo_aceite"
           type="date"
           class="inputtext light mb1"
-          :class="{ 'error': errors.assinatura_termo_aceite }"
+          :class="{ error: errors.assinatura_termo_aceite }"
           maxlength="10"
           @blur="($e) => { !$e.target.value ? $e.target.value = '' : null; }"
           @update:model-value="($v) => { setFieldValue('assinatura_termo_aceite', $v || null); }"
@@ -733,7 +774,7 @@ const isSomaCorreta = computed(() => {
           name="assinatura_estado"
           type="date"
           class="inputtext light"
-          :class="{ 'error': errors.assinatura_estado }"
+          :class="{ error: errors.assinatura_estado }"
           maxlength="10"
           @blur="($e) => { !$e.target.value ? $e.target.value = '' : null; }"
           @update:model-value="($v) => { setFieldValue('assinatura_estado', $v || null); }"
@@ -752,7 +793,7 @@ const isSomaCorreta = computed(() => {
           name="assinatura_municipio"
           type="date"
           class="inputtext light mb1"
-          :class="{ 'error': errors.assinatura_municipio }"
+          :class="{ error: errors.assinatura_municipio }"
           maxlength="10"
           @blur="($e) => { !$e.target.value ? $e.target.value = '' : null; }"
           @update:model-value="($v) => { setFieldValue('assinatura_municipio', $v || null); }"
@@ -774,7 +815,7 @@ const isSomaCorreta = computed(() => {
           name="vigencia"
           type="date"
           class="inputtext light mb1"
-          :class="{ 'error': errors.vigencia }"
+          :class="{ error: errors.vigencia }"
           maxlength="10"
           @blur="($e) => { !$e.target.value ? $e.target.value = '' : null; }"
           @update:model-value="($v) => { setFieldValue('vigencia', $v || null); }"
@@ -798,7 +839,7 @@ const isSomaCorreta = computed(() => {
           name="justificativa_aditamento"
           type="text"
           class="inputtext light mb1"
-          :class="{ 'error': errors.justificativa_aditamento }"
+          :class="{ error: errors.justificativa_aditamento }"
           maxlength="250"
         />
         <ErrorMessage
@@ -815,7 +856,7 @@ const isSomaCorreta = computed(() => {
           name="conclusao_suspensiva"
           type="date"
           class="inputtext light mb1"
-          :class="{ 'error': errors.conclusao_suspensiva }"
+          :class="{ error: errors.conclusao_suspensiva }"
           maxlength="10"
           @blur="($e) => { !$e.target.value ? $e.target.value = '' : null; }"
           @update:model-value="($v) => { setFieldValue('conclusao_suspensiva', $v || null); }"
@@ -857,4 +898,87 @@ const isSomaCorreta = computed(() => {
       {{ erro }}
     </div>
   </div>
+  <details
+    v-if="distribuiçãoEmFoco?.aditamentos.length"
+    class="mb1"
+  >
+    <summary
+      class="label mb0"
+      style="line-height: 1.5rem;"
+    >
+      Visualizar histórico de aditamentos
+    </summary>
+    <table class="tablemain">
+      <col>
+      <col>
+      <thead>
+        <tr>
+          <th>DATA</th>
+          <th>justificativa para aditamento</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr
+          v-for="item in distribuiçãoEmFoco.aditamentos"
+          :key="item.id"
+        >
+          <td> {{ item.data_vigencia? item.data_vigencia.split('T')[0].split('-').reverse().join('/').slice(0, 8).replace(/^(\d{2}\/\d{2})\/\d{4}$/, '$1/' + item.data_vigencia.split('T')[0].split('-')[0].slice(-2)) : '' }}</td>
+          <td>{{ item.justificativa }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </details>
+
+  <details v-if="distribuiçãoEmFoco?.historico_status.length">
+    <summary
+      class="label mb0"
+      style="line-height: 1.5rem;"
+    >
+      Visualizar histórico de status
+    </summary>
+    <table class="tablemain">
+      <col>
+      <col>
+      <col>
+      <col>
+      <col>
+      <col>
+      <thead>
+        <tr>
+          <th>DATA</th>
+          <th>STATUS</th>
+          <th>ÓRGÃO</th>
+          <th>RESPONSÁVEL</th>
+          <th>MOTIVO</th>
+          <th>TOTAL DE DIAS NO STATUS</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr
+          v-for="item in distribuiçãoEmFoco.historico_status"
+          :key="item.id"
+        >
+          <td> {{ item.data_troca ? item.data_troca.split('T')[0].split('-').reverse().join('/').slice(0, 8).replace(/^(\d{2}\/\d{2})\/\d{4}$/, '$1/' + item.data_troca.split('T')[0].split('-')[0].slice(-2)) : '' }}</td>
+          <td>{{ item.status_base.tipo }}</td>
+          <td>{{ item.orgao_responsavel.sigla }}</td>
+          <td>{{ item.nome_responsavel }}</td>
+          <td>{{ item.motivo }}</td>
+          <td>{{ item.dias_no_status }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </details>
+  <router-link
+    v-if="distribuiçãoEmFoco"
+    to=""
+    class="addlink mt1"
+  >
+    <svg
+      width="20"
+      height="20"
+    >
+      <use xlink:href="#i_+" />
+    </svg>
+    Adicionar status
+  </router-link>
 </template>

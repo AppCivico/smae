@@ -60,6 +60,13 @@ export class ReportsService {
         // acaba sendo chamado 2x a cada request, pq já rodou 1x na validação, mas blz.
         const parametros = ParseParametrosDaFonte(dto.fonte, dto.parametros);
 
+        console.log(parametros)
+        // Ajusta o tipo de relatório para MDO, se for de status de obra
+        if (dto.fonte == 'ObraStatus') {
+            parametros.tipo = 'MDO';
+        }
+        console.log(parametros)
+
         const pdmId = parametros.pdm_id !== undefined ? parametros.pdm_id : null;
 
         const result = await service.create(parametros);
@@ -157,6 +164,7 @@ export class ReportsService {
                 service = this.ppProjetosService;
                 break;
             case 'ProjetoStatus':
+            case 'ObraStatus':
                 service = this.ppStatusService;
                 break;
             case 'Parlamentares':
@@ -165,6 +173,8 @@ export class ReportsService {
             case 'Transferencias':
                 service = this.transferenciasService;
                 break;
+            default:
+                dto.fonte satisfies never;
         }
         if (service === null) throw new HttpException(`Fonte ${dto.fonte} ainda não foi implementada`, 500);
         return service;

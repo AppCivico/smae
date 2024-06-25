@@ -30,7 +30,7 @@ export default {
     nome: 'Monitoramento de Obras',
     ícone: monitoramentoDeObras,
     rotaInicial: {
-      name: 'cadastrosBasicos',
+      name: 'obrasListar',
     },
   },
   PlanoSetorial: {

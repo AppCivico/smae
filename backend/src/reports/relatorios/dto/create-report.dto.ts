@@ -2,7 +2,7 @@ import { ApiProperty, refs } from '@nestjs/swagger';
 import { FonteRelatorio } from '@prisma/client';
 import { IsBoolean, IsEnum, IsOptional } from 'class-validator';
 import { CreateRelProjetosDto } from 'src/reports/pp-projetos/dto/create-projetos.dto';
-import { CreateRelProjetoStatusDto } from 'src/reports/pp-status/dto/create-projeto-status.dto';
+import { CreateRelObraStatusDto, CreateRelProjetoStatusDto } from 'src/reports/pp-status/dto/create-projeto-status.dto';
 import { CreateRelPrevisaoCustoDto } from 'src/reports/previsao-custo/dto/create-previsao-custo.dto';
 import { CreateRelProjetoOrcamentoDto } from 'src/reports/projeto-orcamento/dto/create-projeto-orcamento.dto';
 import { CreateRelProjetoPrevisaoCustoDto } from 'src/reports/projeto-previsao-custo/dto/create-projeto-previsao-custo.dto';
@@ -35,6 +35,7 @@ export class CreateReportDto {
             CreateRelProjetoDto,
             CreateRelProjetosDto,
             CreateRelProjetoStatusDto,
+            CreateRelObraStatusDto,
             CreateRelProjetoPrevisaoCustoDto
         ),
     })

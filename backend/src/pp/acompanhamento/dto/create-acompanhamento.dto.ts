@@ -115,4 +115,8 @@ export class CreateProjetoAcompanhamentoDto {
     @Transform((a: TransformFnParams) => (a.value === null ? null : +a.value))
     @ValidateIf((object, value) => value !== null)
     acompanhamento_tipo_id?: number | null;
+
+    @IsOptional()
+    @IsBoolean()
+    apresentar_no_relatorio: boolean;
 }

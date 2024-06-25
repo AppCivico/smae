@@ -27,6 +27,7 @@ export class CreateParlamentarDto {
      * @example YYYY-MM-DD
      */
     @IsOnlyDate()
+    @IsOptional()
     @Transform(DateTransform)
     @ValidateIf((object, value) => value !== null)
     nascimento?: Date;

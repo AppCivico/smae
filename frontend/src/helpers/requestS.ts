@@ -17,13 +17,13 @@ function listErrors(r: String[]) {
   return r;
 }
 
-async function handleResponse(response: Response, alertarErros:Boolean = true) {
+async function handleResponse(response: Response, alertarErros = true):Promise<object | null> {
   const isJson = response.headers?.get('content-type')?.includes('application/json');
   const isZip = response.headers?.get('content-type')?.includes('application/zip');
 
   const data = isJson ? await response.json() : true;
   if (!response.ok) {
-    if ([204].includes(response.status)) return;
+    if ([204].includes(response.status)) return Promise.resolve;
     const alertStore = useAlertStore();
     const { user } = useAuthStore();
     let msgDefault;
@@ -41,7 +41,6 @@ async function handleResponse(response: Response, alertarErros:Boolean = true) {
     if (alertarErros) {
       alertStore.error(error);
     }
-    // eslint-disable-next-line consistent-return
     return Promise.reject(error);
   }
 
@@ -49,8 +48,7 @@ async function handleResponse(response: Response, alertarErros:Boolean = true) {
     responseDownload(response);
   }
 
-  // eslint-disable-next-line consistent-return
-  return data;
+  return Promise.resolve(data);
 }
 
 function userToken(url: RequestInfo | URL): HeadersInit {
@@ -83,12 +81,14 @@ function request(method: Method, upload = false) {
 
     switch (method) {
       case 'GET':
+        $eventHub.emit('recebimentoIniciado');
         if (params && Object.keys(params).length) {
           urlFinal += `?${qs.stringify(params, { indices: false })}`;
         }
         break;
 
       default:
+        $eventHub.emit('envioIniciado');
         if (params && !upload) {
           requestOptions.headers = {
             ...requestOptions.headers,
@@ -96,19 +96,24 @@ function request(method: Method, upload = false) {
           };
           requestOptions.body = JSON.stringify(params);
         } else {
-        // requestOptions.headers['Content-Type'] = 'multipart/form-data';
+          // requestOptions.headers['Content-Type'] = 'multipart/form-data';
           requestOptions.body = params as FormData;
         }
         break;
     }
 
-    $eventHub.emit('chamadaPendenteIniciada');
-
     // return fetch(urlFinal, requestOptions).then(handleResponse);
     return fetch(urlFinal, requestOptions)
       .then((response) => handleResponse(response, AlertarErros))
       .finally(() => {
-        $eventHub.emit('chamadaPendenteEncerrada');
+        switch (method) {
+          case 'GET':
+            $eventHub.emit('recebimentoEncerrado');
+            break;
+          default:
+            $eventHub.emit('envioEncerrado');
+            break;
+        }
       });
   };
 }

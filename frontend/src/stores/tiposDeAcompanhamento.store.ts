@@ -19,57 +19,62 @@ type Estado = {
   lista: Lista;
   chamadasPendentes: ChamadasPendentes;
   erro: null | unknown;
-
-  paginação: {
-    temMais: Boolean;
-    tokenDaPróximaPágina: String;
-  };
 };
+
+type RouteMeta = {
+  [key: string]: any;
+};
+
+function caminhoParaApi(rotaMeta:RouteMeta) {
+  if (
+    rotaMeta.prefixoParaFilhas === 'projeto'
+    || rotaMeta.entidadeMãe === 'projeto'
+  ) {
+    return 'acompanhamento-tipo';
+  }
+  if (
+    rotaMeta.prefixoParaFilhas === 'obras'
+    || rotaMeta.entidadeMãe === 'obras'
+  ) {
+    return 'acompanhamento-tipo-mdo';
+  }
+  throw new Error('Você precisa estar em algum módulo para executar essa ação.');
+}
 
 export const useTiposDeAcompanhamentoStore = defineStore('tiposDeAcompanhamento', {
   state: (): Estado => ({
     lista: [],
 
     chamadasPendentes: {
-      lista: true,
-      emFoco: true,
-    },
-
-    paginação: {
-      temMais: false,
-      tokenDaPróximaPágina: '',
+      lista: false,
+      emFoco: false,
     },
 
     erro: null,
   }),
   actions: {
-    async buscarTudo(params: { token_proxima_pagina?: String } = {}): Promise<void> {
+    async buscarTudo(params = {}): Promise<void> {
       this.chamadasPendentes.lista = true;
       this.chamadasPendentes.emFoco = true;
       try {
         const {
           linhas,
-          tem_mais: temMais,
-          token_proxima_pagina: tokenDaPróximaPágina,
-        } = await this.requestS.get(`${baseUrl}/acompanhamento-tipo`, params);
-        this.lista = params.token_proxima_pagina
-          ? this.lista.concat(linhas)
-          : linhas;
+        } = await this.requestS.get(`${baseUrl}/${caminhoParaApi(this.route.meta)}`, params);
 
-        this.paginação.temMais = temMais || false;
-        this.paginação.tokenDaPróximaPágina = tokenDaPróximaPágina || '';
+        this.lista = linhas;
       } catch (erro: unknown) {
         this.erro = erro;
+      } finally {
+        this.chamadasPendentes.lista = false;
+        this.chamadasPendentes.emFoco = false;
       }
-      this.chamadasPendentes.lista = false;
-      this.chamadasPendentes.emFoco = false;
     },
 
     async excluirItem(id: number): Promise<boolean> {
       this.chamadasPendentes.lista = true;
 
       try {
-        await this.requestS.delete(`${baseUrl}/acompanhamento-tipo/${id || this.route.params.tipoDeAtendimentoId}`);
+        await this.requestS.delete(`${baseUrl}/${caminhoParaApi(this.route.meta)}/${id || this.route.params.tipoDeAtendimentoId}`);
 
         this.chamadasPendentes.lista = false;
         return true;
@@ -85,9 +90,9 @@ export const useTiposDeAcompanhamentoStore = defineStore('tiposDeAcompanhamento'
 
       try {
         if (id) {
-          await this.requestS.patch(`${baseUrl}/acompanhamento-tipo/${id || this.route.params.tipoDeAtendimentoId}`, params);
+          await this.requestS.patch(`${baseUrl}/${caminhoParaApi(this.route.meta)}/${id || this.route.params.tipoDeAtendimentoId}`, params);
         } else {
-          await this.requestS.post(`${baseUrl}/acompanhamento-tipo`, params);
+          await this.requestS.post(`${baseUrl}/${caminhoParaApi(this.route.meta)}`, params);
         }
 
         this.chamadasPendentes.emFoco = false;

@@ -14,10 +14,15 @@ import { RiscoModule } from './pp/risco/risco.module';
 import { TarefaModule } from './pp/tarefa/tarefa.module';
 import { PPProjetoModule } from './reports/pp-projeto/pp-projeto.module';
 import { ProjetoOrcamentoModule } from './reports/projeto-orcamento/projeto-orcamento.module';
-import { ProjetoPrevisaoCustoModule } from './reports/projeto-previsao-custo/projeto-previsao-custo.module';
+import { ReportProjetoPrevisaoCustoModule } from './reports/projeto-previsao-custo/projeto-previsao-custo.module';
 import { OrcamentoRealizadoModule as PPOrcamentoRealizadoModule } from './pp/orcamento-realizado/orcamento-realizado.module';
 import { AcaoModule } from './pp/projeto/acao/acao.module';
 import { ProjetoEtapaModule } from './projeto-etapa/projeto-etapa.module';
+import { EquipamentoModule } from './pp/equipamento/equipamento.module';
+import { GrupoTematicoModule } from './pp/grupo-tematico/grupo-tematico.module';
+import { TipoIntervencaoModule } from './pp/tipo-intervencao/tipo-intervencao.module';
+import { OrcamentoPrevistoModule } from './pp/orcamento-previsto/orcamento-previsto.module';
+import { ProjetoTagModule } from './pp/projeto-tag/tag.module';
 
 @Module({
     imports: [
@@ -30,16 +35,21 @@ import { ProjetoEtapaModule } from './projeto-etapa/projeto-etapa.module';
         PlanoAcaoMonitoramentoModule,
         AcompanhamentoModule,
         LicoesAprendidasModule,
+        OrcamentoPrevistoModule,
         PPOrcamentoRealizadoModule,
         GraphvizModule,
         PPOrcamentoPlanejadoModule,
-        ProjetoPrevisaoCustoModule,
+        ReportProjetoPrevisaoCustoModule,
         ProjetoOrcamentoModule,
-        ImportacaoOrcamentoModule, // carregar depois do OrcamentoPrevistoModule
+        ImportacaoOrcamentoModule,
         AcompanhamentoTipoModule,
         GrupoPortfolioModule,
         AcaoModule,
         ProjetoEtapaModule,
+        EquipamentoModule,
+        GrupoTematicoModule,
+        TipoIntervencaoModule,
+        ProjetoTagModule
     ],
     controllers: [],
     providers: [],

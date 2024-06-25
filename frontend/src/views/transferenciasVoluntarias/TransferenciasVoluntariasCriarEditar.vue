@@ -26,7 +26,11 @@ const ParlamentaresStore = useParlamentaresStore();
 
 const { chamadasPendentes, erro, itemParaEdição } = storeToRefs(TransferenciasVoluntarias);
 const { órgãosComoLista } = storeToRefs(ÓrgãosStore);
-const { lista: parlamentarComoLista, parlamentaresPorId } = storeToRefs(ParlamentaresStore);
+const {
+  lista: parlamentarComoLista,
+  parlamentaresPorId,
+  paginação: paginaçãoDeParlamentares,
+} = storeToRefs(ParlamentaresStore);
 const { lista: tipoTransferenciaComoLista } = storeToRefs(TipoDeTransferenciaStore);
 const { lista: partidoComoLista } = storeToRefs(partidoStore);
 
@@ -112,7 +116,8 @@ function iniciar() {
   }
 
   ÓrgãosStore.getAll();
-  ParlamentaresStore.buscarTudo();
+  // Discutir uma implementação melhor
+  ParlamentaresStore.buscarTudo({ ipp: 500 });
   TipoDeTransferenciaStore.buscarTudo();
   partidoStore.buscarTudo();
 }
@@ -404,13 +409,20 @@ watch(itemParaEdição, (novosValores) => {
             v-for="item in parlamentarComoLista"
             :key="item"
             :value="item.id"
-            :disabled="!item.mandatos.length"
+            :disabled="!item?.mandatos?.length"
           >
             {{ item.nome_popular }}
 
-            <template v-if="!item.mandatos.length">
+            <template v-if="!item?.mandatos?.length">
               (sem mandatos cadastrados)
             </template>
+          </option>
+
+          <option
+            v-if="paginaçãoDeParlamentares.temMais"
+            disabled
+          >
+            &hellip;
           </option>
         </Field>
         <ErrorMessage

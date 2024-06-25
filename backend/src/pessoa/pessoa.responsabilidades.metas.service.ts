@@ -2,9 +2,12 @@ import { Injectable } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { LoggerWithLog } from '../common/LoggerWithLog';
+import { PessoaPrivilegioService } from '../auth/pessoaPrivilegio.service';
 
 @Injectable()
 export class PessoaResponsabilidadesMetaService {
+    constructor(private readonly pessoaPrivService: PessoaPrivilegioService) {}
+
     async buscaMetas(origemId: number, pdmId: number | undefined, prismaTx: Prisma.TransactionClient) {
         // a ideia é 'pecar' pelo excesso, pois os sistema pode estar com o banco
         // sujo, ou seja, ter uma pessoa atribuída no filho mas não estar atribuída corretamente na meta
@@ -195,11 +198,10 @@ export class PessoaResponsabilidadesMetaService {
         const metasInIds = { in: metas } as const;
 
         const disclaimerStr = 'pois não destino não tem permissão de coordenador CP';
-        const destinoEhCoordenadorCp =
-            (await prismaTx.view_pessoa_coordenador_responsavel_cp.count({
-                where: { pessoa_id: destinoId },
-            })) > 0;
 
+        const pComPriv = await this.pessoaPrivService.pessoasComPriv(['PDM.coordenador_responsavel_cp'], [destinoId]);
+
+        const destinoEhCoordenadorCp = pComPriv.length > 0;
         // Meta Responsavel + Responsável CP
         {
             const origMetaResponsavelRows = await prismaTx.metaResponsavel.findMany({

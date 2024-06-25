@@ -17,11 +17,15 @@ export class PPStatusService implements ReportableService {
 
     async create(dto: CreateRelProjetoStatusDto): Promise<PPProjetoStatusRelatorioDto> {
         if (!dto.portfolio_id) throw new HttpException('Faltando portfolio_id', 400);
+        if (!dto.tipo) dto.tipo = 'PP';
+
         const projetoRows = await this.prisma.projeto.findMany({
             where: {
+                tipo: dto.tipo,
                 id: dto.projeto_id ? dto.projeto_id : undefined,
                 removido_em: null,
                 portfolio: {
+                    tipo_projeto: dto.tipo,
                     id: dto.portfolio_id,
                     modelo_clonagem: false,
                 },
@@ -63,13 +67,14 @@ export class PPStatusService implements ReportableService {
                     take: 1,
                     orderBy: { data_registro: 'desc' },
                     where: {
+                        OR: [{ apresentar_no_relatorio: null }, { apresentar_no_relatorio: true }],
                         data_registro: {
                             gte: dto.periodo_inicio ? dto.periodo_inicio : undefined,
                             lte: dto.periodo_fim ? dto.periodo_fim : undefined,
                         },
                     },
                     select: {
-                        detalhamento_status: true,
+                        detalhamento: true,
                         pontos_atencao: true,
                         cronograma_paralisado: true,
                     },
@@ -102,7 +107,7 @@ export class PPStatusService implements ReportableService {
                 cronograma: cronograma,
 
                 orgao_responsavel_sigla: p?.orgao_responsavel?.sigla ?? null,
-                detalhamento_status: acompanhamento?.detalhamento_status ?? null,
+                detalhamento: acompanhamento?.detalhamento ?? null,
                 pontos_atencao: acompanhamento?.pontos_atencao ?? null,
 
                 tarefas: p.TarefaCronograma.length
@@ -130,7 +135,7 @@ export class PPStatusService implements ReportableService {
         };
     }
 
-    async getFiles(myInput: any, pdm_id: number, params: any): Promise<FileOutput[]> {
+    async getFiles(myInput: any, pdm_id: number, params: CreateRelProjetoStatusDto): Promise<FileOutput[]> {
         const dados = myInput as PPProjetoStatusRelatorioDto;
 
         const out: FileOutput[] = [];
@@ -141,7 +146,7 @@ export class PPStatusService implements ReportableService {
         });
         const linhas = json2csvParser.parse(dados.linhas);
         out.push({
-            name: 'projeto-status.csv',
+            name: params.tipo == 'PP' ? 'projeto-status.csv' : 'obra-status.csv',
             buffer: Buffer.from(linhas, 'utf8'),
         });
 

@@ -19,7 +19,7 @@ import {
 import { PositiveNumberTransform } from '../../auth/transforms/number.transform';
 import { IdNomeExibicaoDto } from '../../common/dto/IdNomeExibicao.dto';
 import { IdSiglaDescricao } from '../../common/dto/IdSigla.dto';
-import { PROCESSO_DESCRIPTION, PROCESSO_MESSAGE, PROCESSO_REGEXP } from '../../dotacao/dto/dotacao.dto';
+import { CONST_PROC_SEI_SINPROC_DESCR, CONST_PROC_SEI_SINPROC_MESSAGE, CONST_PROC_SEI_SINPROC_REGEXP } from '../../dotacao/dto/dotacao.dto';
 import { OrcamentoRealizado } from '../entities/orcamento-realizado.entity';
 
 export class CreateOrcamentoRealizadoItemDto {
@@ -159,8 +159,8 @@ export class CreateOrcamentoRealizadoDto {
     @IsOptional()
     @Type(() => String) // fazendo cast pra texto sempre, já que tem a mask
     @MaxLength(20)
-    @ApiProperty({ description: PROCESSO_DESCRIPTION, example: '6016201700379910' })
-    @Matches(PROCESSO_REGEXP, { message: PROCESSO_MESSAGE })
+    @ApiProperty({ description: CONST_PROC_SEI_SINPROC_DESCR, example: '6016201700379910' })
+    @Matches(CONST_PROC_SEI_SINPROC_REGEXP, { message: CONST_PROC_SEI_SINPROC_MESSAGE })
     @ValidateIf((object, value) => value !== null && value !== '')
     processo?: string | null;
 

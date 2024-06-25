@@ -3,6 +3,15 @@ import { IsInt, IsOptional } from 'class-validator';
 
 export class FilterEixoDto {
     /**
+     * Filtrar por id?
+     * @example "1"
+     */
+    @IsOptional()
+    @IsInt({ message: '$property| id' })
+    @Type(() => Number)
+    id?: number;
+
+    /**
      * Filtrar por pdm_id?
      * @example "1"
      */

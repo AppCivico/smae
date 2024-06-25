@@ -42,7 +42,7 @@
             class="like-a__text"
             arial-label="excluir"
             title="excluir"
-            @click="excluirGrupoTematico(item.id)"
+            @click="excluirGrupoTematico(item.id, item.nome)"
           >
             <svg
               width="20"
@@ -81,14 +81,14 @@ const alertStore = useAlertStore();
 const gruposTematicosStore = useGruposTematicosStore();
 const { lista, chamadasPendentes, erro } = storeToRefs(gruposTematicosStore);
 
-async function excluirGrupoTematico(id) {
+async function excluirGrupoTematico(id, item) {
   alertStore.confirmAction(
-    'Deseja mesmo remover esse item?',
+    `Deseja mesmo remover "${item}"?`,
     async () => {
       if (await gruposTematicosStore.excluirItem(id)) {
         gruposTematicosStore.$reset();
         gruposTematicosStore.buscarTudo();
-        alertStore.success('Grupo removido.');
+        alertStore.success('Grupo temático removido.');
       }
     },
     'Remover',

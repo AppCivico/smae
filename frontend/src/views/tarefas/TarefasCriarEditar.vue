@@ -16,7 +16,8 @@ import {
   ErrorMessage,
   Field,
   FieldArray,
-  Form,
+  useForm,
+  useIsFormDirty,
 } from 'vee-validate';
 import {
   computed, defineOptions, ref, watch,
@@ -48,12 +49,26 @@ const {
 
 const props = defineProps({
   tarefaId: {
-    type: Number,
+    type: [
+      Number,
+      String,
+    ],
     default: 0,
   },
 });
 
+const {
+  errors, handleSubmit, isSubmitting, resetForm, setFieldValue, setValues, values,
+} = useForm({
+  initialValues: itemParaEdição.value,
+  validationSchema: schema,
+});
+
 const dependênciasValidadas = ref([]);
+
+const irmãs = computed(() => tarefasAgrupadasPorMãe[values.tarefa_pai_id || 0]
+  ?.filter((x) => x.id !== Number(props.tarefaId))
+  || []);
 
 const órgãosPendentes = computed(() => (route.meta.entidadeMãe === 'projeto'
   ? projetosStore.chamadasPendentes?.emFoco
@@ -67,18 +82,11 @@ const tiposDeDependências = Object.keys(dependencyTypes)
   .map((x) => ({ valor: x, nome: dependencyTypes[x] }));
 
 const todasAsOutrasTarefas = computed(() => tarefasOrdenadas.value
-  .filter((x) => x.id !== props.tarefaId));
+  .filter((x) => x.id !== Number(props.tarefaId)));
 
-// eslint-disable-next-line max-len
-const filtrarIrmãs = (listagem = [], id = props.tarefaId) => listagem.filter((x) => x.id !== id);
+const formulárioSujo = useIsFormDirty();
 
-watch(emFoco, () => {
-  if (emFoco.value?.dependencias?.length) {
-    dependênciasValidadas.value = emFoco.value?.dependencias;
-  }
-});
-
-async function onSubmit(_, { controlledValues: valores }) {
+const onSubmit = handleSubmit.withControlled(async (valores) => {
   const carga = valores;
 
   if (!carga.dependencias && !emFoco?.n_filhos_imediatos) {
@@ -106,7 +114,7 @@ async function onSubmit(_, { controlledValues: valores }) {
   } catch (error) {
     alertStore.error(error);
   }
-}
+});
 
 async function validarDependências(dependências) {
   const params = {
@@ -160,6 +168,18 @@ async function iniciar() {
 }
 
 iniciar();
+
+watch(emFoco, () => {
+  if (emFoco.value?.dependencias?.length) {
+    dependênciasValidadas.value = emFoco.value?.dependencias;
+  }
+});
+
+watch(itemParaEdição, (novoValor) => {
+  resetForm({
+    values: novoValor,
+  });
+});
 </script>
 <template>
   <div class="flex spacebetween center mb2">
@@ -174,16 +194,15 @@ iniciar();
     </h1>
     <hr class="ml2 f1">
 
-    <CheckClose />
+    <CheckClose
+      :formulário-sujo="formulárioSujo"
+    />
   </div>
 
-  <Form
+  <form
     v-if="!tarefaId || emFoco"
-    v-slot="{ errors, isSubmitting, setFieldValue, setValues, values }"
     :disabled="chamadasPendentes.emFoco"
-    :initial-values="itemParaEdição"
-    :validation-schema="schema"
-    @submit="onSubmit"
+    @submit.prevent="onSubmit"
   >
     <div class="flex g2 mb1">
       <div class="f1 mb1">
@@ -232,12 +251,12 @@ iniciar();
             error: errors.tarefa_pai_id,
             loading: chamadasPendentes.lista,
           }"
-          :disabled="chamadasPendentes.lista"
+          :disabled="chamadasPendentes.lista || !tarefasOrdenadas.length"
           @change="() => {
             setFieldValue('nivel', (tarefasPorId[values.tarefa_pai_id]?.nivel || 0) + 1);
             setFieldValue(
               'numero',
-              (tarefasAgrupadasPorMãe[values.tarefa_pai_id || 0].length || 0) + 1
+              (tarefasAgrupadasPorMãe[values.tarefa_pai_id || 0]?.length || 0) + 1
             );
           }"
         >
@@ -338,7 +357,7 @@ iniciar();
     </div>
 
     <div
-      v-if="(irmãs = filtrarIrmãs(tarefasAgrupadasPorMãe[values.tarefa_pai_id || 0], tarefaId))?.length"
+      v-if="irmãs?.length"
       class="flex g2 mb1"
     >
       <div class="f1 mb1">
@@ -769,7 +788,7 @@ iniciar();
       </button>
       <hr class="ml2 f1">
     </div>
-  </Form>
+  </form>
 
   <span
     v-if="chamadasPendentes?.emFoco"

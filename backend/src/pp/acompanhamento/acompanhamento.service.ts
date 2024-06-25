@@ -1,5 +1,5 @@
 import { HttpException, Injectable, Logger } from '@nestjs/common';
-import { Prisma, ProjetoAcompanhamentoItem } from '@prisma/client';
+import { Prisma, ProjetoAcompanhamentoItem, TipoProjeto } from '@prisma/client';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
 
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
@@ -19,31 +19,37 @@ export class AcompanhamentoService {
     private readonly logger = new Logger(AcompanhamentoService.name);
     constructor(private readonly prisma: PrismaService) {}
 
-    async create(projeto_id: number, dto: CreateProjetoAcompanhamentoDto, user: PessoaFromJwt): Promise<RecordWithId> {
+    async create(
+        tipo: TipoProjeto,
+        projeto_id: number,
+        dto: CreateProjetoAcompanhamentoDto,
+        user: PessoaFromJwt
+    ): Promise<RecordWithId> {
         //if (!dto.risco_tarefa_outros && Array.isArray(dto.risco) == false || (Array.isArray(dto.risco) && dto.risco.length == 0))
         //throw new HttpException('Se não for enviado um risco do sistema, é necessário informar um risco externo', 400);
 
+        const now = new Date(Date.now());
         const created = await this.prisma.$transaction(
             async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
                 const projetoPortfolio = await prismaTx.projeto.findFirstOrThrow({
-                    where: { id: projeto_id },
+                    where: {
+                        id: projeto_id,
+                        tipo: tipo,
+                    },
                     select: {
                         portfolio: {
                             select: { modelo_clonagem: true },
                         },
+                        tipo: true,
                     },
                 });
                 if (projetoPortfolio.portfolio.modelo_clonagem)
                     throw new HttpException('Projeto pertence a Portfolio de modelo de clonagem', 400);
 
-                const now = new Date(Date.now());
+                if (projetoPortfolio.tipo != 'PP' && dto.risco && dto.risco.length > 0)
+                    throw new HttpException('Apenas Gestão de Projetos podem ter riscos', 400);
 
                 dto.detalhamento = HtmlSanitizer(dto.detalhamento);
-
-                // TODO: corrigir nome do campo no schema
-                // foi criado com typo
-                const acompanhamento_tipo_id = dto.acompanhamento_tipo_id;
-                delete dto.acompanhamento_tipo_id;
 
                 // Definindo a ordem do acompanhamento.
                 // A ordem leva em consideração acompanhamentos removidos.
@@ -57,19 +63,34 @@ export class AcompanhamentoService {
                 const acompanhamento = await prismaTx.projetoAcompanhamento.create({
                     data: {
                         projeto_id: projeto_id,
-                        acompanhanmento_tipo_id: acompanhamento_tipo_id,
+                        acompanhanmento_tipo_id: dto.acompanhamento_tipo_id,
                         ordem: ordemAcompanhamento,
-                        ...{
-                            ...dto,
-                            risco: undefined,
-                            acompanhamentos: undefined,
-                        },
+                        pauta: dto.pauta,
+                        data_registro: dto.data_registro,
+                        participantes: dto.participantes,
+                        detalhamento: dto.detalhamento,
+                        observacao: dto.observacao,
+                        detalhamento_status: dto.detalhamento_status,
+                        pontos_atencao: dto.pontos_atencao,
+                        cronograma_paralisado: dto.cronograma_paralisado,
+                        apresentar_no_relatorio: dto.apresentar_no_relatorio,
 
                         criado_em: now,
                         criado_por: user.id,
                     },
                     select: { id: true },
                 });
+
+                if (dto.apresentar_no_relatorio) {
+                    await prismaTx.projetoAcompanhamento.updateMany({
+                        where: {
+                            id: { not: acompanhamento.id },
+                            projeto_id: projeto_id,
+                            removido_em: null,
+                        },
+                        data: { apresentar_no_relatorio: false },
+                    });
+                }
 
                 if (Array.isArray(dto.risco) && dto.risco.length) {
                     await prismaTx.projetoAcompanhamentoRisco.createMany({
@@ -113,10 +134,15 @@ export class AcompanhamentoService {
         return { id: created.id };
     }
 
-    async findAll(projetoId: number, user: PessoaFromJwt | undefined): Promise<ProjetoAcompanhamento[]> {
+    async findAll(
+        tipo: TipoProjeto,
+        projeto_id: number,
+        user: PessoaFromJwt | undefined
+    ): Promise<ProjetoAcompanhamento[]> {
         const projetoAcompanhamento = await this.prisma.projetoAcompanhamento.findMany({
             where: {
-                projeto_id: projetoId,
+                projeto_id: projeto_id,
+                projeto: { tipo: tipo, id: projeto_id },
                 removido_em: null,
             },
             orderBy: [{ ordem: 'desc' }],
@@ -133,6 +159,7 @@ export class AcompanhamentoService {
                 cronograma_paralisado: true,
                 criado_em: true,
                 atualizado_em: true,
+                apresentar_no_relatorio: true,
 
                 acompanhamento_tipo: {
                     select: { id: true, nome: true },
@@ -156,30 +183,30 @@ export class AcompanhamentoService {
             },
         });
 
-        return projetoAcompanhamento.map((a) => {
+        return projetoAcompanhamento.map((r) => {
             return {
-                id: a.id,
-                data_registro: a.data_registro,
-                participantes: a.participantes,
-                detalhamento: a.detalhamento,
-                criado_em: a.criado_em,
-                atualizado_em: a.atualizado_em,
-                pauta: a.pauta,
-                ordem: a.ordem,
-                observacao: a.observacao,
-                pontos_atencao: a.pontos_atencao,
-                detalhamento_status: a.detalhamento_status,
-                cronograma_paralisado: a.cronograma_paralisado,
-                acompanhamento_tipo: a.acompanhamento_tipo
+                id: r.id,
+                data_registro: r.data_registro,
+                participantes: r.participantes,
+                detalhamento: r.detalhamento,
+                criado_em: r.criado_em,
+                atualizado_em: r.atualizado_em,
+                pauta: r.pauta,
+                ordem: r.ordem,
+                observacao: r.observacao,
+                pontos_atencao: r.pontos_atencao,
+                detalhamento_status: r.detalhamento_status,
+                cronograma_paralisado: r.cronograma_paralisado,
+                acompanhamento_tipo: r.acompanhamento_tipo
                     ? {
-                          id: a.acompanhamento_tipo.id,
-                          nome: a.acompanhamento_tipo.nome,
+                          id: r.acompanhamento_tipo.id,
+                          nome: r.acompanhamento_tipo.nome,
                       }
                     : null,
+                apresentar_no_relatorio: r.apresentar_no_relatorio == null ? true : r.apresentar_no_relatorio,
+                acompanhamentos: r.ProjetoAcompanhamentoItem.map(this.renderAcompanhamento),
 
-                acompanhamentos: a.ProjetoAcompanhamentoItem.map(this.renderAcompanhamento),
-
-                risco: a.ProjetoAcompanhamentoRisco.map((r) => {
+                risco: r.ProjetoAcompanhamentoRisco.map((r) => {
                     return {
                         id: r.projeto_risco.id,
                         codigo: r.projeto_risco.codigo,
@@ -201,11 +228,17 @@ export class AcompanhamentoService {
         };
     }
 
-    async findOne(projetoId: number, id: number, user: PessoaFromJwt): Promise<DetailProjetoAcompanhamentoDto> {
+    async findOne(
+        tipo: TipoProjeto,
+        projeto_id: number,
+        id: number,
+        user: PessoaFromJwt
+    ): Promise<DetailProjetoAcompanhamentoDto> {
         const projetoAcompanhamento = await this.prisma.projetoAcompanhamento.findFirst({
             where: {
                 id,
-                projeto_id: projetoId,
+                projeto_id: projeto_id,
+                projeto: { tipo: tipo, id: projeto_id },
                 removido_em: null,
             },
             select: {
@@ -219,6 +252,7 @@ export class AcompanhamentoService {
                 detalhamento_status: true,
                 pontos_atencao: true,
                 pauta: true,
+                apresentar_no_relatorio: true,
 
                 cronograma_paralisado: true,
 
@@ -253,6 +287,10 @@ export class AcompanhamentoService {
             detalhamento: projetoAcompanhamento.detalhamento,
             pauta: projetoAcompanhamento.pauta,
             ordem: projetoAcompanhamento.ordem,
+            apresentar_no_relatorio:
+                projetoAcompanhamento.apresentar_no_relatorio == null
+                    ? true
+                    : projetoAcompanhamento.apresentar_no_relatorio,
 
             observacao: projetoAcompanhamento.observacao,
             detalhamento_status: projetoAcompanhamento.detalhamento_status,
@@ -278,16 +316,24 @@ export class AcompanhamentoService {
         };
     }
 
-    async update(projeto_id: number, id: number, dto: UpdateProjetoAcompanhamentoDto, user: PessoaFromJwt) {
+    async update(
+        tipo: TipoProjeto,
+        projeto_id: number,
+        id: number,
+        dto: UpdateProjetoAcompanhamentoDto,
+        user: PessoaFromJwt
+    ) {
         const self = await this.prisma.projetoAcompanhamento.findFirstOrThrow({
             where: {
                 id,
                 removido_em: null,
                 projeto_id: projeto_id,
+                projeto: { tipo: tipo, id: projeto_id },
             },
             select: {
                 id: true,
                 ordem: true,
+                projeto: { select: { tipo: true } },
                 ProjetoAcompanhamentoItem: {
                     orderBy: { ordem: 'desc' },
                     select: {
@@ -302,6 +348,8 @@ export class AcompanhamentoService {
                 },
             },
         });
+        if (self.projeto.tipo != 'PP' && dto.risco && dto.risco.length > 0)
+            throw new HttpException('Apenas Gestão de Projetos podem ter riscos', 400);
 
         dto.detalhamento = HtmlSanitizer(dto.detalhamento);
 
@@ -344,7 +392,6 @@ export class AcompanhamentoService {
                         },
                     });
 
-                    console.log(dto.acompanhamentos);
                     let ordemEncaminhamento: number | null = null;
                     await prismaTx.projetoAcompanhamentoItem.createMany({
                         data: dto.acompanhamentos
@@ -416,27 +463,43 @@ export class AcompanhamentoService {
 
                 await this.atualizaProjeto(prismaTx, projeto_id, now);
 
-                // TODO: corrigir nome do campo no schema
-                // foi criado com typo
-                const acompanhamento_tipo_id = dto.acompanhamento_tipo_id;
-                delete dto.acompanhamento_tipo_id;
+                if (dto.apresentar_no_relatorio) {
+                    await prismaTx.projetoAcompanhamento.updateMany({
+                        where: {
+                            id: { not: id },
+                            projeto_id: projeto_id,
+                            removido_em: null,
+                        },
+                        data: { apresentar_no_relatorio: false },
+                    });
+                }
 
+                // pode ser que seja necessário criar uma regra para validar que pelo menos 1 ainda fica como true, ou seja
+                // não pode nunca aceitar o apresentar_no_relatorio como false no endpoint de update
                 return await prismaTx.projetoAcompanhamento.update({
                     where: {
                         id,
                     },
                     data: {
-                        ...{
-                            ...dto,
-                            risco: undefined,
-                            acompanhamentos: undefined,
-                            acompanhanmento_tipo_id: acompanhamento_tipo_id,
-                        },
+                        pauta: dto.pauta,
+                        data_registro: dto.data_registro,
+                        participantes: dto.participantes,
+                        detalhamento: dto.detalhamento,
+                        observacao: dto.observacao,
+                        detalhamento_status: dto.detalhamento_status,
+                        pontos_atencao: dto.pontos_atencao,
+                        cronograma_paralisado: dto.cronograma_paralisado,
+                        apresentar_no_relatorio: dto.apresentar_no_relatorio,
+                        acompanhanmento_tipo_id: dto.acompanhamento_tipo_id,
+
                         atualizado_em: now,
                         atualizado_por: user.id,
                     },
                     select: { id: true },
                 });
+            },
+            {
+                isolationLevel: 'Serializable',
             }
         );
 
@@ -452,12 +515,13 @@ export class AcompanhamentoService {
         });
     }
 
-    async remove(projeto_id: number, id: number, user: PessoaFromJwt) {
+    async remove(tipo: TipoProjeto, projeto_id: number, id: number, user: PessoaFromJwt) {
         await this.prisma.projetoAcompanhamento.findFirstOrThrow({
             where: {
                 id,
                 removido_em: null,
                 projeto_id: projeto_id,
+                projeto: { tipo: tipo, id: projeto_id },
             },
             select: { id: true },
         });

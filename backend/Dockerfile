@@ -25,6 +25,10 @@ COPY vendor/* ./vendor/
 
 RUN npm ci
 
+COPY tools/install-duckdb-extensions.js ./tools/
+
+RUN node tools/install-duckdb-extensions.js
+
 COPY prisma/schema.prisma ./prisma/
 
 RUN npx prisma generate

@@ -5,7 +5,7 @@ import { Transform } from 'class-transformer';
 import { IsArray, IsEnum, IsInt, IsNumber, IsOptional, IsString, MaxLength } from 'class-validator';
 import { GeoJSON } from 'geojson';
 import { IsGeoJSON } from '../../auth/decorators/is-geojson.decorator';
-import { NumberArrayTransform } from '../../auth/transforms/number-array.transform';
+import { NumberArrayTransformOrUndef } from '../../auth/transforms/number-array.transform';
 import { NumberTransform } from '../../auth/transforms/number.transform';
 
 export class GeoLocDto {
@@ -62,7 +62,7 @@ export class FilterCamadasDto {
     @IsOptional()
     @IsArray()
     @IsInt({ each: true })
-    @Transform(NumberArrayTransform)
+    @Transform(NumberArrayTransformOrUndef)
     camada_ids?: number[];
 }
 
@@ -70,7 +70,7 @@ export class CreateEnderecoDto {
     @IsOptional()
     @IsArray()
     @IsInt({ each: true })
-    @Transform(NumberArrayTransform)
+    @Transform(NumberArrayTransformOrUndef)
     camadas: number[];
 
     @ApiProperty({ enum: GeoReferenciaTipo, enumName: 'GeoReferenciaTipo' })

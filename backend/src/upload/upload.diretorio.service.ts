@@ -19,6 +19,7 @@ export class UploadDiretorioService {
                     caminho: path,
                     projeto_id: dto.projeto_id,
                     transferencia_id: dto.transferencia_id,
+                    pdm_id: dto.pdm_id,
                 },
             });
 
@@ -82,6 +83,7 @@ export class UploadDiretorioService {
             where: {
                 projeto_id: filters.projeto_id,
                 transferencia_id: filters.transferencia_id,
+                pdm_id: filters.pdm_id,
             },
             select: {
                 id: true,

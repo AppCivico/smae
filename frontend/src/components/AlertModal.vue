@@ -1,30 +1,29 @@
 <script setup>
-import { storeToRefs } from 'pinia';
 import { useAlertStore } from '@/stores/alert.store';
+import { storeToRefs } from 'pinia';
 
 const alertStore = useAlertStore();
-const { alert } = storeToRefs(alertStore);
-async function callbackFn() {
-  await alert.value.callback();
+const { alertas } = storeToRefs(alertStore);
+async function callbackFn(i) {
+  await alertas.value[i].callback();
 
-  // talvez o tipo da janela já tenha sido substituído
-  if (alert.value?.type === 'confirmAction') {
-    alertStore.$reset();
-  }
+  alertas.value.splice(i, 1);
 }
 </script>
-
 <template>
   <Teleport
-    v-if="alert"
     to="body"
   >
     <div
+      v-for="(alert, i) in alertas"
+      :key="i"
       class="alert-wrap"
     >
       <div
         class="overlay"
-        @click="alertStore.$reset()"
+        @click="['alert-danger', 'alert-success'].indexOf(alert.type) > -1
+          ? alertas.splice(i, 1)
+          : null"
       />
       <div
         class="alert"
@@ -38,13 +37,13 @@ async function callbackFn() {
         <template v-if="alert.type == 'confirmAction'">
           <button
             class="btn amarelo mr1"
-            @click="callbackFn"
+            @click="callbackFn(i)"
           >
             {{ alert.label }}
           </button>
           <button
             class="btn outline bgnone tcamarelo"
-            @click="alert.fallback ? alert.fallback() : alertStore.$reset()"
+            @click="alert.fallback ? alert.fallback() : alertas.splice(i, 1)"
           >
             Cancelar
           </button>
@@ -54,7 +53,7 @@ async function callbackFn() {
             v-if="typeof alert.url == 'string'"
             :to="alert.url"
             class="btn amarelo mr1"
-            @click="alertStore.$reset()"
+            @click="alertas.splice(i, 1)"
           >
             Sair sem salvar
           </router-link>
@@ -67,19 +66,18 @@ async function callbackFn() {
           </button>
           <button
             class="btn amarelo outline"
-            @click="alertStore.$reset()"
+            @click="alertas.splice(i, 1)"
           >
             Cancelar
           </button>
         </template>
-        <template v-else>
-          <button
-            class="btn amarelo"
-            @click="alertStore.$reset()"
-          >
-            OK
-          </button>
-        </template>
+        <button
+          v-else
+          class="btn amarelo"
+          @click="alertas.splice(i, 1)"
+        >
+          OK
+        </button>
       </div>
     </div>
   </Teleport>

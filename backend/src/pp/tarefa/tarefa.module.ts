@@ -4,7 +4,7 @@ import { PrismaModule } from '../../prisma/prisma.module';
 import { UploadModule } from '../../upload/upload.module';
 import { PortfolioModule } from '../portfolio/portfolio.module';
 import { ProjetoModule } from '../projeto/projeto.module';
-import { TarefaController } from './tarefa.controller';
+import { TarefaController, TarefaMDOController } from './tarefa.controller';
 import { TarefaDotTemplate } from './tarefa.dot.template';
 import { TarefaService } from './tarefa.service';
 import { TarefaUtilsService } from './tarefa.service.utils';
@@ -19,7 +19,7 @@ import { TransferenciaModule } from 'src/casa-civil/transferencia/transferencia.
         UploadModule,
         GraphvizModule,
     ],
-    controllers: [TarefaController],
+    controllers: [TarefaController, TarefaMDOController],
     providers: [TarefaService, TarefaUtilsService, TarefaDotTemplate],
     exports: [TarefaService, TarefaUtilsService],
 })

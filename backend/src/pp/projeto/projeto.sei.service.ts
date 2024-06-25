@@ -1,11 +1,11 @@
-import { HttpException, Injectable } from '@nestjs/common';
+import { BadRequestException, HttpException, Injectable } from '@nestjs/common';
 
+import { TipoProjeto } from '@prisma/client';
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import { PrismaService } from '../../prisma/prisma.service';
 import { CreateProjetoSeiDto } from './dto/create-projeto.dto';
 import { UpdateProjetoRegistroSeiDto } from './dto/update-projeto.dto';
 import { ProjetoDetailDto, ProjetoSeiDto } from './entities/projeto.entity';
-import { TipoProjeto } from '@prisma/client';
 
 @Injectable()
 export class ProjetoSeiService {
@@ -13,6 +13,8 @@ export class ProjetoSeiService {
 
     async append_sei(tipo: TipoProjeto, projeto: ProjetoDetailDto, dto: CreateProjetoSeiDto, user: PessoaFromJwt) {
         dto.processo_sei = dto.processo_sei.replace(/[^0-9]/g, '');
+
+        this.validaSeiSinproc(dto, tipo);
 
         const existenteProjetoSei = await this.prisma.projetoRegistroSei.count({
             where: {
@@ -42,6 +44,12 @@ export class ProjetoSeiService {
         });
 
         return { id: projetoSei.id };
+    }
+
+    private validaSeiSinproc(dto: CreateProjetoSeiDto | UpdateProjetoRegistroSeiDto, tipo: string) {
+        // SINPROC só pode ser cadastrado em MDO
+        if (dto.processo_sei && dto.processo_sei.length == 12 && tipo !== 'MDO')
+            throw new BadRequestException('O processo SEI informado não é válido.');
     }
 
     async list_sei(
@@ -82,6 +90,8 @@ export class ProjetoSeiService {
     ) {
         if (dto.processo_sei) {
             dto.processo_sei = dto.processo_sei.replace(/[^0-9]/g, '');
+
+            this.validaSeiSinproc(dto, tipo);
 
             const existenteProjetoSei = await this.prisma.projetoRegistroSei.count({
                 where: {

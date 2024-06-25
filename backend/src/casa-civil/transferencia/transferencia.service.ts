@@ -1,6 +1,6 @@
 import { BadRequestException, HttpException, Inject, Injectable, forwardRef } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { Prisma, WorkflowResponsabilidade } from '@prisma/client';
+import { DistribuicaoStatusTipo, Prisma, WorkflowResponsabilidade } from '@prisma/client';
 import { TarefaCronogramaDto } from 'src/common/dto/TarefaCronograma.dto';
 import { PaginatedDto } from 'src/common/dto/paginated.dto';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
@@ -8,16 +8,13 @@ import { UploadService } from 'src/upload/upload.service';
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import { BlocoNotaService } from '../../bloco-nota/bloco-nota/bloco-nota.service';
 import { PrismaService } from '../../prisma/prisma.service';
-import { CreateTransferenciaTipoDto } from './dto/create-transferencia-tipo.dto';
 import { CreateTransferenciaAnexoDto, CreateTransferenciaDto } from './dto/create-transferencia.dto';
 import { FilterTransferenciaDto } from './dto/filter-transferencia.dto';
-import { UpdateTransferenciaTipoDto } from './dto/update-transferencia-tipo.dto';
 import {
     CompletarTransferenciaDto,
     UpdateTransferenciaAnexoDto,
     UpdateTransferenciaDto,
 } from './dto/update-transferencia.dto';
-import { TransferenciaTipoDto } from './entities/transferencia-tipo.dto';
 import { TransferenciaAnexoDto, TransferenciaDetailDto, TransferenciaDto } from './entities/transferencia.dto';
 import { WorkflowService } from 'src/workflow/configuracao/workflow.service';
 import { TarefaService } from 'src/pp/tarefa/tarefa.service';
@@ -458,12 +455,32 @@ export class TransferenciaService {
     ): Promise<RecordWithId> {
         const updated = await this.prisma.$transaction(
             async (prismaTxn: Prisma.TransactionClient): Promise<RecordWithId> => {
+                // “VALOR DO REPASSE”  é a soma de “Custeio” + Investimento”
+                console.log(dto.valor);
+                console.log(dto.custeio);
+                console.log(dto.investimento);
+                console.log(+dto.custeio + +dto.investimento);
+                if (+dto.valor != +dto.custeio + +dto.investimento)
+                    throw new HttpException(
+                        'valor| Valor do repasse deve ser a soma dos valores de custeio e investimento.',
+                        400
+                    );
+
+                // “VALOR TOTAL”  é a soma de “Custeio” + Investimento” + “Contrapartida”
+                if (+dto.valor_total != +dto.valor + +dto.valor_contrapartida)
+                    throw new HttpException(
+                        'valor| Valor total deve ser a soma dos valores de repasse e contrapartida.',
+                        400
+                    );
+
                 const transferencia = await prismaTxn.transferencia.update({
                     where: { id },
                     data: {
                         valor: dto.valor,
                         valor_total: dto.valor_total,
                         valor_contrapartida: dto.valor_contrapartida,
+                        custeio: dto.custeio,
+                        investimento: dto.investimento,
                         dotacao: dto.dotacao,
                         ordenador_despesa: dto.ordenador_despesa,
                         gestor_contrato: dto.gestor_contrato,
@@ -490,6 +507,8 @@ export class TransferenciaService {
                         valor: true,
                         valor_total: true,
                         valor_contrapartida: true,
+                        custeio: true,
+                        investimento: true,
                         pendente_preenchimento_valores: true,
                         empenho: true,
                         objeto: true,
@@ -531,19 +550,133 @@ export class TransferenciaService {
                     });
                     if (!orgaoCasaCivil) throw new HttpException('Órgão da casa civil não foi encontrado', 400);
 
-                    await this.distribuicaoService.create(
+                    // Criada com status base de "Registrada".
+                    const status = await prismaTxn.distribuicaoStatusBase.findFirstOrThrow({
+                        where: {
+                            tipo: DistribuicaoStatusTipo.Registrada,
+                        },
+                        select: {
+                            id: true,
+                        },
+                    });
+
+                    const distribuicao = await this.distribuicaoService.create(
                         {
                             transferencia_id: transferencia.id,
                             dotacao: self.dotacao ? self.dotacao : undefined,
                             valor: self.valor!.toNumber(),
                             valor_contrapartida: self.valor_contrapartida!.toNumber(),
                             valor_total: self.valor_total!.toNumber(),
+                            custeio: dto.custeio,
+                            investimento: dto.investimento,
                             empenho: self.empenho ?? false,
                             objeto: self.objeto,
                             orgao_gestor_id: orgaoCasaCivil.id,
                         },
-                        user
+                        user,
+                        true
                     );
+
+                    await prismaTxn.distribuicaoRecursoStatus.create({
+                        data: {
+                            distribuicao_id: distribuicao.id,
+                            status_base_id: status.id,
+                            data_troca: new Date(Date.now()),
+                            orgao_responsavel_id: orgaoCasaCivil.id,
+                            nome_responsavel: 'SERI',
+                            motivo: 'Distribuição criada automaticamente',
+                            criado_por: user.id,
+                        },
+                    });
+                }
+
+                if (
+                    dto.custeio != undefined ||
+                    dto.investimento != undefined ||
+                    dto.valor_contrapartida != undefined ||
+                    dto.valor_total
+                ) {
+                    const outrasDistribuicoes = await prismaTxn.distribuicaoRecurso.findMany({
+                        where: {
+                            removido_em: null,
+                            status: {
+                                some: {
+                                    OR: [
+                                        {
+                                            AND: [
+                                                { NOT: { status_base: { tipo: DistribuicaoStatusTipo.Declinada } } },
+                                                {
+                                                    NOT: {
+                                                        status_base: { tipo: DistribuicaoStatusTipo.Redirecionada },
+                                                    },
+                                                },
+                                            ],
+                                        },
+                                        {
+                                            AND: [
+                                                { NOT: { status: { tipo: DistribuicaoStatusTipo.Declinada } } },
+                                                { NOT: { status: { tipo: DistribuicaoStatusTipo.Redirecionada } } },
+                                            ],
+                                        },
+                                    ],
+                                },
+                            },
+                        },
+                        select: {
+                            custeio: true,
+                            investimento: true,
+                            valor_contrapartida: true,
+                            valor_total: true,
+                        },
+                    });
+
+                    let sumCusteio: number = 0;
+                    let sumInvestimento: number = 0;
+                    let sumContrapartida: number = 0;
+                    let sumTotal: number = 0;
+
+                    for (const distRow of outrasDistribuicoes) {
+                        sumCusteio += distRow.custeio.toNumber();
+                        sumContrapartida += distRow.valor_contrapartida.toNumber();
+                        sumInvestimento += distRow.investimento.toNumber();
+                        sumTotal += distRow.valor_total.toNumber();
+                    }
+
+                    if (self.custeio && dto.custeio != self.custeio.toNumber()) {
+                        if (self.custeio && sumCusteio && sumCusteio > self.custeio.toNumber())
+                            throw new HttpException(
+                                'Soma de custeio de todas as distribuições não pode ser superior ao valor de custeio da transferência.',
+                                400
+                            );
+                    }
+
+                    if (self.investimento && dto.investimento != self.investimento.toNumber()) {
+                        if (self.investimento && sumInvestimento && sumInvestimento > self.investimento.toNumber())
+                            throw new HttpException(
+                                'Soma de investimento de todas as distribuições não pode ser superior ao valor de investimento da transferência.',
+                                400
+                            );
+                    }
+
+                    if (self.valor_contrapartida && dto.valor_contrapartida != self.valor_contrapartida.toNumber()) {
+                        if (
+                            self.valor_contrapartida &&
+                            sumContrapartida &&
+                            sumContrapartida > self.valor_contrapartida.toNumber()
+                        )
+                            throw new HttpException(
+                                'Soma de contrapartida de todas as distribuições não pode ser superior ao valor de contrapartida da transferência.',
+                                400
+                            );
+                    }
+
+                    if (self.valor_total && dto.valor_total != self.valor_total.toNumber()) {
+                        if (self.valor_total && sumTotal && sumTotal > self.valor_total.toNumber())
+                            throw new HttpException(
+                                'Soma de total de todas as distribuições não pode ser superior ao valor total da transferência.',
+                                400
+                            );
+                    }
                 }
 
                 return transferencia;
@@ -752,6 +885,8 @@ export class TransferenciaService {
                 valor: true,
                 valor_total: true,
                 valor_contrapartida: true,
+                custeio: true,
+                investimento: true,
                 emenda: true,
                 dotacao: true,
                 demanda: true,
@@ -810,103 +945,6 @@ export class TransferenciaService {
 
     async removeTransferencia(id: number, user: PessoaFromJwt) {
         await this.prisma.transferencia.update({
-            where: { id },
-            data: {
-                removido_por: user.id,
-                removido_em: new Date(Date.now()),
-            },
-        });
-    }
-
-    async createTransferenciaTipo(dto: CreateTransferenciaTipoDto, user: PessoaFromJwt): Promise<RecordWithId> {
-        const created = await this.prisma.$transaction(
-            async (prismaTxn: Prisma.TransactionClient): Promise<RecordWithId> => {
-                const similarExists = await this.prisma.transferenciaTipo.count({
-                    where: {
-                        nome: { endsWith: dto.nome, mode: 'insensitive' },
-                        categoria: dto.categoria,
-                        esfera: dto.esfera,
-                        removido_em: null,
-                    },
-                });
-                if (similarExists > 0)
-                    throw new HttpException('nome| Nome igual ou semelhante já existe em outro registro ativo', 400);
-
-                const transferenciaTipo = await prismaTxn.transferenciaTipo.create({
-                    data: {
-                        nome: dto.nome,
-                        categoria: dto.categoria,
-                        esfera: dto.esfera,
-                        criado_por: user.id,
-                        criado_em: new Date(Date.now()),
-                    },
-                    select: { id: true },
-                });
-
-                return transferenciaTipo;
-            }
-        );
-
-        return created;
-    }
-
-    async findAllTransferenciaTipo(): Promise<TransferenciaTipoDto[]> {
-        const rows = await this.prisma.transferenciaTipo.findMany({
-            where: { removido_em: null },
-            orderBy: { nome: 'asc' },
-            select: {
-                id: true,
-                nome: true,
-                categoria: true,
-                esfera: true,
-            },
-        });
-
-        return rows;
-    }
-
-    async updateTransferenciaTipo(
-        id: number,
-        dto: UpdateTransferenciaTipoDto,
-        user: PessoaFromJwt
-    ): Promise<RecordWithId> {
-        const updated = await this.prisma.$transaction(
-            async (prismaTxn: Prisma.TransactionClient): Promise<RecordWithId> => {
-                const transferenciaTipo = await prismaTxn.transferenciaTipo.update({
-                    where: { id },
-                    data: {
-                        nome: dto.nome,
-                        categoria: dto.categoria,
-                        esfera: dto.esfera,
-                        atualizado_por: user.id,
-                        atualizado_em: new Date(Date.now()),
-                    },
-                    select: {
-                        nome: true,
-                        categoria: true,
-                        esfera: true,
-                    },
-                });
-
-                const similarExists = await this.prisma.transferenciaTipo.count({
-                    where: {
-                        nome: { endsWith: transferenciaTipo.nome, mode: 'insensitive' },
-                        categoria: transferenciaTipo.categoria,
-                        esfera: transferenciaTipo.esfera,
-                        removido_em: null,
-                    },
-                });
-                if (similarExists > 1) throw new HttpException('Já existe um registro com estes campos.', 400);
-
-                return { id };
-            }
-        );
-
-        return updated;
-    }
-
-    async removeTransferenciaTipo(id: number, user: PessoaFromJwt) {
-        await this.prisma.transferenciaTipo.update({
             where: { id },
             data: {
                 removido_por: user.id,

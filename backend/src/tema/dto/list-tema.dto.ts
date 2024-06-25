@@ -1,5 +1,5 @@
-import { ObjetivoEstrategico } from '../entities/objetivo-estrategico.entity';
+import { ObjetivoEstrategicoDto } from '../entities/objetivo-estrategico.entity';
 
 export class ListObjetivoEstrategicoDto {
-    linhas: ObjetivoEstrategico[];
+    linhas: ObjetivoEstrategicoDto[];
 }

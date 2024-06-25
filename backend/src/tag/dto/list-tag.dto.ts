@@ -1,5 +1,5 @@
-import { Tag } from '../entities/tag.entity';
+import { TagDto } from '../entities/tag.entity';
 
 export class ListTagDto {
-    linhas: Tag[];
+    linhas: TagDto[];
 }

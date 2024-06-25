@@ -1,4 +1,4 @@
-export class Tag {
+export class TagDto {
     descricao: string;
     icone: string | null;
     pdm_id: number | null;

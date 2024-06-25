@@ -1,11 +1,11 @@
+import EmailModal from '@/components/EmailModal.vue';
 import { useTarefasStore } from '@/stores/tarefas.store.ts';
+import DialogWrapper from '@/views/DialogWrapper.vue';
 import TarefasCriarEditar from '@/views/tarefas/TarefasCriarEditar.vue';
 import TarefasItem from '@/views/tarefas/TarefasItem.vue';
 import TarefasLista from '@/views/tarefas/TarefasLista.vue';
 import TarefasProgresso from '@/views/tarefas/TarefasProgresso.vue';
 import TarefasRaiz from '@/views/tarefas/TarefasRaiz.vue';
-import DialogWrapper from '@/views/DialogWrapper.vue'
-import EmailModal from '@/components/EmailModal.vue'
 
 export default {
   path: 'tarefas',

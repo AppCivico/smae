@@ -1,4 +1,4 @@
-export class SubTema {
+export class SubTemaDto {
     descricao: string;
     pdm_id: number;
 }

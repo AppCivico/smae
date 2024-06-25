@@ -5,7 +5,7 @@ import { useProjetosStore } from '@/stores/projetos.store.ts';
 import { useRegionsStore } from '@/stores/regions.store';
 import { useTarefasStore } from '@/stores/tarefas.store.ts';
 import { storeToRefs } from 'pinia';
-import { watch } from 'vue';
+import { onUnmounted, watch } from 'vue';
 
 const DotaçãoStore = useDotaçãoStore();
 const portfolioStore = usePortfolioStore();
@@ -59,6 +59,13 @@ watch(emFoco, () => {
 });
 
 iniciar();
+
+onUnmounted(() => {
+  portfolioStore.$reset();
+  projetosStore.$reset();
+  RegionsStore.$reset();
+  tarefasStore.$reset();
+});
 </script>
 <template>
   <div

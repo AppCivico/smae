@@ -106,26 +106,26 @@ iniciar();
       <li
         v-for="(sistema, k) in módulos"
         :key="k"
-        class="fb100"
       >
         <button
           type="button"
-          class="escolha-de-módulos__opção uc like-a__link tprimary tl t24 w700
-        flex g05"
+          class="escolha-de-módulos__opção opção uc like-a__link tprimary tl t24 w700
+        flex g05 center"
           :disabled="!sistema?.rotaInicial || !módulosDisponíveis.includes(k)"
-          :value="k"
-          @click="(e) => { escolher(e.target.value) }"
+          @click="escolher(k)"
         >
           <img
             v-if="sistema.ícone"
             :src="sistema?.ícone"
-            class="cabeçalho__ícone-do-módulo"
+            class="opção__ícone"
             aria-hidden="true"
             width="48"
             height="48"
             alt=""
           >
-          {{ sistema?.nome || sistema }}
+          <span class="opção__nome">
+            {{ sistema?.nome || sistema }}
+          </span>
         </button>
       </li>
     </ul>
@@ -163,7 +163,7 @@ iniciar();
     Sair
   </button>
 </template>
-<style lang="less">
+<style lang="less" scoped>
 .escolha-de-módulos {
   margin: auto;
   max-width: 64rem;
@@ -174,11 +174,19 @@ iniciar();
 }
 
 .escolha-de-módulos__cumprimento {
+  flex-grow: 1;
   flex-basis: calc(65% - 2rem);
+  min-width: 22em;
+
+  p {
+    line-height: 1;
+  }
 }
 
 .escolha-de-módulos__lista {
+  flex-grow: 1;
   flex-basis: calc(35% - 2rem);
+  min-width: 15em;
 }
 
 .escolha-de-módulos :disabled {
@@ -192,6 +200,7 @@ iniciar();
 
 .escolha-de-módulos__opção {
   position: relative;
+  max-width: 100%;
 
   &:hover,
   &:focus {
@@ -208,6 +217,19 @@ iniciar();
     top: 50%;
     transform: translateY(-50%);
   }
+}
+
+.opção {
+}
+
+.opção__ícone {
+  flex-grow: 0;
+}
+
+.opção__nome {
+  min-width: 0;
+  text-overflow: ellipsis;
+  overflow: hidden;
 }
 
 .escolha-de-módulos__botão-de-saída {

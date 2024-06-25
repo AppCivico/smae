@@ -8,9 +8,19 @@ import { UploadModule } from '../upload/upload.module';
 import { VariavelModule } from '../variavel/variavel.module';
 import { PdmController, PlanoSetorialController } from './pdm.controller';
 import { PdmService } from './pdm.service';
+import { PessoaPrivilegioModule } from '../auth/pessoaPrivilegio.module';
 
 @Module({
-    imports: [PrismaModule, SubTemaModule, MacroTemaModule, TagModule, TemaModule, VariavelModule, UploadModule],
+    imports: [
+        PrismaModule,
+        SubTemaModule,
+        MacroTemaModule,
+        TagModule,
+        TemaModule,
+        VariavelModule,
+        UploadModule,
+        PessoaPrivilegioModule,
+    ],
     controllers: [PdmController, PlanoSetorialController],
     providers: [PdmService],
 })

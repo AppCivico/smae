@@ -322,7 +322,7 @@ export class TarefaService {
         // agora fica com essa carga e verificação "atrasada" em relação ao outros endpoints que geralmente carregam o
         // projeto primeiro
         const projeto = tarefaCronoInput.projeto_id
-            ? await this.projetoService.findOne('PP', tarefaCronoInput.projeto_id, user, 'ReadOnly')
+            ? await this.projetoService.findOne('AUTO', tarefaCronoInput.projeto_id, user, 'ReadOnly')
             : null;
 
         const cabecalhoTransferencia = tarefaCronoInput.transferencia_id
@@ -366,6 +366,8 @@ export class TarefaService {
             // se o órgão estiver null,
             // a tela do realizado não tem esse campo, portanto ainda não terminaram de configurar o cronograma
             // que pode ter sido clonado ou puxado de um workflow
+
+
             if (
                 user.hasSomeRoles([
                     // tudo igual para quem é de projetos, fica sempre true, e segue a regra do frontend
@@ -375,6 +377,11 @@ export class TarefaService {
                     'SMAE.colaborador_de_projeto',
                     // para quem é de transferência, só pode editar quem é administrador
                     'CadastroTransferencia.administrador',
+
+                    'ProjetoMDO.administrador',
+                    'ProjetoMDO.administrador_no_orgao',
+                    'MDO.gestor_de_projeto',
+                    'MDO.colaborador_de_projeto',
                 ])
             ) {
                 return {
@@ -382,6 +389,9 @@ export class TarefaService {
                     pode_editar_realizado: pode_editar_realizado,
                 };
             }
+
+            // TODO passar o tipo do projeto da cá, pra conseguir liberar o acesso total de editação
+            // para quem é do MDO, não há nenhum
 
             return {
                 pode_editar: !!r.orgao && !!user.orgao_id && r.orgao.id == user.orgao_id,
@@ -878,7 +888,7 @@ export class TarefaService {
         const tarefaCronoId = await this.loadOrCreateByInput(tarefaCronoInput, user);
 
         const projeto = tarefaCronoInput.projeto_id
-            ? await this.projetoService.findOne('PP', tarefaCronoInput.projeto_id, user, 'ReadOnly')
+            ? await this.projetoService.findOne('AUTO', tarefaCronoInput.projeto_id, user, 'ReadOnly')
             : null;
 
         const row = await this.prisma.tarefa.findFirstOrThrow({
@@ -1834,7 +1844,12 @@ export class TarefaService {
     ): Promise<NodeJS.ReadableStream> {
         let rootName: string = '';
         if (tarefaCronoInput.projeto_id) {
-            const projeto = await this.projetoService.findOne('PP', tarefaCronoInput.projeto_id, undefined, 'ReadOnly');
+            const projeto = await this.projetoService.findOne(
+                'AUTO',
+                tarefaCronoInput.projeto_id,
+                undefined,
+                'ReadOnly'
+            );
             rootName = projeto.nome;
         }
 

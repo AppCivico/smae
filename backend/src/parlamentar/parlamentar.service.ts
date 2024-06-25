@@ -24,6 +24,11 @@ import { ParlamentarDetailDto, ParlamentarDto } from './entities/parlamentar.ent
 import { PaginatedDto } from 'src/common/dto/paginated.dto';
 import { JwtService } from '@nestjs/jwt';
 
+class NextPageTokenJwtBody {
+    offset: number;
+    ipp: number;
+}
+
 @Injectable()
 export class ParlamentarService {
     constructor(
@@ -61,7 +66,21 @@ export class ParlamentarService {
         return created;
     }
 
-    async findAll(filters: FilterParlamentarDto): Promise<PaginatedDto<ParlamentarDto>> {
+    private decodeNextPageToken(jwt: string | undefined): NextPageTokenJwtBody | null {
+        let tmp: NextPageTokenJwtBody | null = null;
+        try {
+            if (jwt) tmp = this.jwtService.verify(jwt) as NextPageTokenJwtBody;
+        } catch {
+            throw new HttpException('Param next_page_token is invalid', 400);
+        }
+        return tmp;
+    }
+
+    private encodeNextPageToken(opt: NextPageTokenJwtBody): string {
+        return this.jwtService.sign(opt);
+    }
+
+    async findAll(filters: FilterParlamentarDto, user: PessoaFromJwt): Promise<PaginatedDto<ParlamentarDto>> {
         let filterSuplente:
             | {
                   cargo: ParlamentarCargo;
@@ -97,17 +116,17 @@ export class ParlamentarService {
             };
         }
 
-        //let tem_mais = false;
-        //let token_proxima_pagina: string | null = null;
+        let tem_mais = false;
+        let token_proxima_pagina: string | null = null;
 
-        // let ipp = filters.ipp ? filters.ipp : 25;
-        // let offset = 0;
-        //const decodedPageToken = this.decodeNextPageToken(filters.token_proxima_pagina);
+        let ipp = filters.ipp ? filters.ipp : 50;
+        let offset = 0;
+        const decodedPageToken = this.decodeNextPageToken(filters.token_proxima_pagina);
 
-        /* if (decodedPageToken) {
+        if (decodedPageToken) {
             offset = decodedPageToken.offset;
             ipp = decodedPageToken.ipp;
-        } */
+        }
 
         const partidos = await this.prisma.partido.findMany({
             where: { removido_em: null },
@@ -133,16 +152,18 @@ export class ParlamentarService {
                 em_atividade: true,
                 cargo_mais_recente: true,
                 partido_mais_recente: true,
+                tem_mandato: true,
             },
-            orderBy: [{ nome: 'asc' }],
-            take: 50,
+            orderBy: [{ nome_popular: 'asc' }],
+            skip: offset,
+            take: ipp + 1,
         });
 
-        /* if (listActive.length > ipp) {
+        if (listActive.length > ipp) {
             tem_mais = true;
             listActive.pop();
             token_proxima_pagina = this.encodeNextPageToken({ ipp: ipp, offset: offset + ipp });
-        } */
+        }
 
         const linhas = listActive.map((p) => {
             const partido = partidos.find((e) => e.sigla == p.partido_mais_recente);
@@ -152,13 +173,16 @@ export class ParlamentarService {
                 cargo: p.cargo_mais_recente ?? null,
                 partido: partido ?? null,
                 eleicoes: [2022],
+                //TODO: combinar com o front para usar o boolean e não essa arr hardcoded.
+                tem_mandato: p.tem_mandato,
+                mandatos: p.tem_mandato ? ['2022'] : null,
             };
         });
 
         return {
             linhas: linhas,
-            tem_mais: false,
-            token_proxima_pagina: 'token_proxima_pagina',
+            tem_mais: tem_mais,
+            token_proxima_pagina: token_proxima_pagina,
         };
     }
 
@@ -190,6 +214,7 @@ export class ParlamentarService {
 
                 mandatos: {
                     where: { removido_em: null },
+                    orderBy: { eleicao: { ano: 'desc' } },
                     select: {
                         id: true,
                         gabinete: true,
@@ -288,9 +313,11 @@ export class ParlamentarService {
             },
         });
 
-        const mandatoCorrente = parlamentar.mandatos
+        let mandatoCorrente = parlamentar.mandatos
             .sort((a, b) => b.eleicao.ano - a.eleicao.ano)
             .find((m) => m.eleicao.atual_para_mandatos == true);
+
+        if (!mandatoCorrente) mandatoCorrente = parlamentar.mandatos[0];
 
         return {
             ...parlamentar,
@@ -300,7 +327,7 @@ export class ParlamentarService {
                 ? this.uploadService.getDownloadToken(parlamentar.foto_upload_id, '1 days').download_token
                 : null,
 
-            mandato_atual: mandatoCorrente
+            ultimo_mandato: mandatoCorrente
                 ? {
                       ...mandatoCorrente,
 
@@ -583,34 +610,33 @@ export class ParlamentarService {
                 });
 
                 if (!dadosEleicao) {
-                    if (dto.numero_comparecimento == undefined)
-                        throw new HttpException('numero_comparecimento| Precisa ser enviado', 400);
+                    if (dto.numero_comparecimento != undefined) {
+                        const regiao = await prismaTxn.regiao.findFirstOrThrow({
+                            where: { id: dto.regiao_id, removido_em: null },
+                            select: { nivel: true },
+                        });
 
-                    const regiao = await prismaTxn.regiao.findFirstOrThrow({
-                        where: { id: dto.regiao_id, removido_em: null },
-                        select: { nivel: true },
-                    });
+                        let nivelDadoEleicao: DadosEleicaoNivel;
 
-                    let nivelDadoEleicao: DadosEleicaoNivel;
+                        if (regiao.nivel == 1) {
+                            nivelDadoEleicao = DadosEleicaoNivel.Municipio;
+                        } else if (regiao.nivel == 3) {
+                            nivelDadoEleicao = DadosEleicaoNivel.Subprefeitura;
+                        } else {
+                            throw new HttpException('regiao_id| Faltando tratamento para nível de região', 400);
+                        }
 
-                    if (regiao.nivel == 1) {
-                        nivelDadoEleicao = DadosEleicaoNivel.Municipio;
-                    } else if (regiao.nivel == 3) {
-                        nivelDadoEleicao = DadosEleicaoNivel.Subprefeitura;
-                    } else {
-                        throw new HttpException('regiao_id| Faltando tratamento para nível de região', 400);
+                        dadosEleicao = await prismaTxn.eleicaoComparecimento.create({
+                            data: {
+                                eleicao_id: mandato.eleicao_id,
+                                regiao_id: dto.regiao_id,
+                                nivel: nivelDadoEleicao,
+                                valor: dto.numero_comparecimento,
+                            },
+                        });
+
+                        delete dto.numero_comparecimento;
                     }
-
-                    dadosEleicao = await prismaTxn.eleicaoComparecimento.create({
-                        data: {
-                            eleicao_id: mandato.eleicao_id,
-                            regiao_id: dto.regiao_id,
-                            nivel: nivelDadoEleicao,
-                            valor: dto.numero_comparecimento,
-                        },
-                    });
-
-                    delete dto.numero_comparecimento;
                 } else {
                     if (dto.numero_comparecimento != undefined && dto.numero_comparecimento != dadosEleicao.valor) {
                         dadosEleicao = await prismaTxn.eleicaoComparecimento.update({

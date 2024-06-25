@@ -1867,9 +1867,9 @@ export class MetasService {
                     select: {
                         id: true,
                         tamanho_bytes: true,
-                        TipoDocumento: true,
                         descricao: true,
                         nome_original: true,
+                        diretorio_caminho: true,
                     },
                 },
             },
@@ -2150,9 +2150,9 @@ export class MetasService {
                     select: {
                         id: true,
                         tamanho_bytes: true,
-                        TipoDocumento: true,
                         descricao: true,
                         nome_original: true,
+                        diretorio_caminho: true,
                     },
                 },
             },

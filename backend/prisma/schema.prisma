@@ -270,12 +270,9 @@ model Pessoa {
     ProjetoGrupoPortfolioQueCriei  ProjetoGrupoPortfolio[] @relation("Criador")
     ProjetoGrupoPortfolioQueRemovi ProjetoGrupoPortfolio[] @relation("Removedor")
 
-    PortfolioGrupoPortfolioQueCriei    PortfolioGrupoPortfolio[]            @relation("Criador")
-    PortfolioGrupoPortfolioQueRemovi   PortfolioGrupoPortfolio[]            @relation("Removedor")
-    GrupoPortfolioPessoa               GrupoPortfolioPessoa[]
-    view_pessoa_espectador_de_projeto  view_pessoa_espectador_de_projeto?
-    view_pessoa_gestor_de_projeto      view_pessoa_gestor_de_projeto[]
-    view_pessoa_colaborador_de_projeto view_pessoa_colaborador_de_projeto[]
+    PortfolioGrupoPortfolioQueCriei  PortfolioGrupoPortfolio[] @relation("Criador")
+    PortfolioGrupoPortfolioQueRemovi PortfolioGrupoPortfolio[] @relation("Removedor")
+    GrupoPortfolioPessoa             GrupoPortfolioPessoa[]
 
     projetosCompartilhadosEmPortfolioQueCriei     PortfolioProjetoCompartilhado[] @relation("Criador")
     projetosCompartilhadosEmPortfolioQueRemovi    PortfolioProjetoCompartilhado[] @relation("Removedor")
@@ -351,36 +348,35 @@ model Pessoa {
     transferenciaAndamentoTarefaQueRemovi    TransferenciaAndamentoTarefa[] @relation("Removedor")
 
     task_queue                               task_queue[]
-    GeoEnderecoReferenciaqQueCriei           GeoLocalizacaoReferencia[]                @relation("criador")
-    GeoEnderecoReferenciaqQueRemovid         GeoLocalizacaoReferencia[]                @relation("removedor")
-    GrupoPainelExternoQueCriei               GrupoPainelExterno[]                      @relation("Criador")
-    GrupoPainelExternoQueAtualizei           GrupoPainelExterno[]                      @relation("Atualizador")
-    GrupoPainelExternoQueRemovi              GrupoPainelExterno[]                      @relation("Removedor")
+    GeoEnderecoReferenciaqQueCriei           GeoLocalizacaoReferencia[]        @relation("criador")
+    GeoEnderecoReferenciaqQueRemovid         GeoLocalizacaoReferencia[]        @relation("removedor")
+    GrupoPainelExternoQueCriei               GrupoPainelExterno[]              @relation("Criador")
+    GrupoPainelExternoQueAtualizei           GrupoPainelExterno[]              @relation("Atualizador")
+    GrupoPainelExternoQueRemovi              GrupoPainelExterno[]              @relation("Removedor")
     GrupoPainelExternoPessoa                 GrupoPainelExternoPessoa[]
-    PainelExternoGrupoPainelExternoQueRemovi PainelExternoGrupoPainelExterno[]         @relation("Removedor")
-    PainelExternoGrupoPainelExternoQueCriei  PainelExternoGrupoPainelExterno[]         @relation("Criador")
-    PainelExternoQueCriei                    PainelExterno[]                           @relation("Criador")
-    PainelExternoQueAtualizei                PainelExterno[]                           @relation("Atualizador")
-    PainelExternoQueRemovi                   PainelExterno[]                           @relation("Removedor")
-    view_pessoa_espectador_de_painel_externo view_pessoa_espectador_de_painel_externo?
-    view_pessoa_coordenador_responsavel_cp   view_pessoa_coordenador_responsavel_cp?
-    LogGenerico                              LogGenerico[]
-    TarefaCronogramaQCriei                   TarefaCronograma[]                        @relation("criador")
-    TarefaCronogramaQRemovi                  TarefaCronograma[]                        @relation("removedor")
-    ProjetoEtapaQCriei                       ProjetoEtapa[]                            @relation("Criador")
-    ProjetoEtapaQRemovi                      ProjetoEtapa[]                            @relation("Removedor")
-    ProjetoEtapaQAtualizei                   ProjetoEtapa[]                            @relation("Atualizador")
-    Nota                                     Nota[]                                    @relation("Resp")
-    NotaEnderecamentoQSouEnderecado          NotaEnderecamento[]                       @relation("Enderecado")
-    NotaEnderecamentoQCriei                  NotaEnderecamento[]                       @relation("Criador")
-    NotaEnderecamentoQRemovi                 NotaEnderecamento[]                       @relation("Removedor")
-    NotaEnderecamentoRespostaQCriei          NotaEnderecamentoResposta[]               @relation("Criador")
-    NotaEnderecamentoRespostaQRemovi         NotaEnderecamentoResposta[]               @relation("Removedor")
-    NotaQCriei                               Nota[]                                    @relation("Criador")
-    NotaQRemovi                              Nota[]                                    @relation("Removedor")
-    BlocoNotaQCriei                          BlocoNota[]                               @relation("Criador")
-    BlocoNotaQRemovi                         BlocoNota[]                               @relation("Removedor")
-    BlocoNotaQAtualizei                      BlocoNota[]                               @relation("Atualizador")
+    PainelExternoGrupoPainelExternoQueRemovi PainelExternoGrupoPainelExterno[] @relation("Removedor")
+    PainelExternoGrupoPainelExternoQueCriei  PainelExternoGrupoPainelExterno[] @relation("Criador")
+    PainelExternoQueCriei                    PainelExterno[]                   @relation("Criador")
+    PainelExternoQueAtualizei                PainelExterno[]                   @relation("Atualizador")
+    PainelExternoQueRemovi                   PainelExterno[]                   @relation("Removedor")
+
+    LogGenerico                      LogGenerico[]
+    TarefaCronogramaQCriei           TarefaCronograma[]          @relation("criador")
+    TarefaCronogramaQRemovi          TarefaCronograma[]          @relation("removedor")
+    ProjetoEtapaQCriei               ProjetoEtapa[]              @relation("Criador")
+    ProjetoEtapaQRemovi              ProjetoEtapa[]              @relation("Removedor")
+    ProjetoEtapaQAtualizei           ProjetoEtapa[]              @relation("Atualizador")
+    Nota                             Nota[]                      @relation("Resp")
+    NotaEnderecamentoQSouEnderecado  NotaEnderecamento[]         @relation("Enderecado")
+    NotaEnderecamentoQCriei          NotaEnderecamento[]         @relation("Criador")
+    NotaEnderecamentoQRemovi         NotaEnderecamento[]         @relation("Removedor")
+    NotaEnderecamentoRespostaQCriei  NotaEnderecamentoResposta[] @relation("Criador")
+    NotaEnderecamentoRespostaQRemovi NotaEnderecamentoResposta[] @relation("Removedor")
+    NotaQCriei                       Nota[]                      @relation("Criador")
+    NotaQRemovi                      Nota[]                      @relation("Removedor")
+    BlocoNotaQCriei                  BlocoNota[]                 @relation("Criador")
+    BlocoNotaQRemovi                 BlocoNota[]                 @relation("Removedor")
+    BlocoNotaQAtualizei              BlocoNota[]                 @relation("Atualizador")
 
     VariavelCategoricaQCriei     VariavelCategorica[] @relation("Criador")
     VariavelCategoricaQRemovi    VariavelCategorica[] @relation("Removedor")
@@ -402,17 +398,32 @@ model Pessoa {
     EquipamentosQueRemovi    Equipamento[] @relation("Removedor")
     EquipamentosQueAtualizei Equipamento[] @relation("Atualizador")
 
+    StatusesDistribuicaoQueCriei     TransferenciaTipoDistribuicaoStatus[] @relation("Criador")
+    StatusesDistribuicaoQueRemovi    TransferenciaTipoDistribuicaoStatus[] @relation("Removedor")
+    StatusesDistribuicaoQueAtualizei TransferenciaTipoDistribuicaoStatus[] @relation("Atualizador")
+
     view_atividade_pessoa_responsavel  view_atividade_pessoa_responsavel[]
     view_iniciativa_pessoa_responsavel view_iniciativa_pessoa_responsavel[]
     ViewNotaComOrdemQCriei             ViewNotas[]                          @relation("Criador")
     ViewNotaComOrdemQRemovi            ViewNotas[]                          @relation("Removedor")
     ViewNotaComOrdemQSouResp           ViewNotas[]                          @relation("Resp")
 
-    PdmPerfil                 PdmPerfil[]                @relation("fk")
-    PdmPerfilQueDesativei     PdmPerfil[]                @relation("Removedor")
-    PdmPerfilQueCriei         PdmPerfil[]                @relation("Criador")
-    view_pessoa_ps_tecnico_cp view_pessoa_ps_tecnico_cp?
-    view_pessoa_ps_admin_cp   view_pessoa_ps_admin_cp?
+    PdmPerfil             PdmPerfil[] @relation("fk")
+    PdmPerfilQueDesativei PdmPerfil[] @relation("Removedor")
+    PdmPerfilQueCriei     PdmPerfil[] @relation("Criador")
+
+    ProjetoRegiaoQCriei     ProjetoRegiao[] @relation("Criador")
+    ProjetoRegiaoQAtualizei ProjetoRegiao[] @relation("Atualizador")
+    ProjetoRegiaoQRemovi    ProjetoRegiao[] @relation("Removedor")
+
+    // comentado, verificar comentario em DistribuicaoRecursoStatus
+    //RegistroStatusDistribuicaoQueCriei     DistribuicaoRecursoStatus[] @relation("Criador")
+    //RegistroStatusDistribuicaoQueRemovi    DistribuicaoRecursoStatus[] @relation("Removedor")
+    //RegistroStatusDistribuicaoQueAtualizei DistribuicaoRecursoStatus[] @relation("Atualizador")
+
+    // ProjetoTagQCriei     ProjetoTag[] @relation("Criador")
+    // ProjetoTagQAtualizei ProjetoTag[] @relation("Atualizador")
+    // ProjetoTagQRemovi    ProjetoTag[] @relation("Removedor")
 
     @@index([email])
     @@map("pessoa")
@@ -482,10 +493,13 @@ model Orgao {
     tarefas                Tarefa[]
     PlanoAcao              PlanoAcao[]
     projetos_participando  ProjetoOrgaoParticipante[]
-    projetos_geridos       Projeto[]                  @relation("orgao_gestor")
 
     PortifolioOrgao              PortfolioOrgao[]
     orgao_responsavel            Projeto[]                      @relation("orgao_responsavel")
+    orgao_origem                 Projeto[]                      @relation("orgao_origem")
+    orgao_executor               Projeto[]                      @relation("orgao_executor")
+    projetos_geridos             Projeto[]                      @relation("orgao_gestor")
+    projeto_colaborados          Projeto[]                      @relation("orgao_colaborador")
     GrupoPortfolio               GrupoPortfolio[]
     GrupoPortfolioPessoa         GrupoPortfolioPessoa[]
     ProjetoEquipe                ProjetoEquipe[]
@@ -501,6 +515,9 @@ model Orgao {
     PdmOrcamentoRealizadoConfig  PdmOrcamentoRealizadoConfig[]
     ViewNotaComOrdem             ViewNotas[]
     PdmPerfil                    PdmPerfil[]
+    Pdm                          Pdm[]
+    statusDistribuicaoRecusro    DistribuicaoRecursoStatus[]
+    ViewProjetoMDO               ViewProjetoMDO[]
 
     @@map("orgao")
 }
@@ -730,6 +747,12 @@ model Pdm {
     orcamento_dia_abertura   Int @default(1) @db.SmallInt
     orcamento_dia_fechamento Int @default(20) @db.SmallInt
 
+    monitoramento_orcamento   Boolean @default(true)
+    legislacao_de_instituicao String?
+    pdm_anteriores            Int[]   @default([])
+    orgao_admin_id            Int?
+    orgao_admin               Orgao?  @relation(fields: [orgao_admin_id], references: [id])
+
     logo                   String?
     arquivo_logo_id        Int?
     ArquivoLogo            Arquivo?                 @relation(fields: [arquivo_logo_id], references: [id])
@@ -746,6 +769,7 @@ model Pdm {
     // index continua existindo para quem é PDM
     // create unique index ix_pdm_uniq_ativo on pdm(ativo) where ativo=true and tipo='PDM';
     PdmPerfil PdmPerfil[]
+    Diretorio Diretorio[]
 
     @@index([ativo])
     @@map("pdm")
@@ -754,6 +778,7 @@ model Pdm {
 enum PdmPerfilTipo {
     ADMIN
     CP
+    PONTO_FOCAL
 }
 
 model PdmPerfil {
@@ -773,7 +798,7 @@ model PdmPerfil {
     criado_por   Int
     criado_em    DateTime  @default(now()) @db.Timestamptz(6)
     removido_por Int?
-    removido_em  DateTime? @default(now()) @db.Timestamptz(6)
+    removido_em  DateTime? @db.Timestamptz(6)
 
     criador   Pessoa  @relation("Criador", fields: [criado_por], references: [id])
     removedor Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
@@ -926,6 +951,8 @@ model Tag {
 model ProjetoEtapa {
     id Int @id @default(autoincrement())
 
+    tipo_projeto TipoProjeto @default(PP)
+
     descricao String
 
     criado_por     Int?
@@ -1001,6 +1028,7 @@ model Regiao {
 
     eleicoesComparecimento    EleicaoComparecimento[]
     mandatoRepresentatividade MandatoRepresentatividade[]
+    ProjetoRegiao             ProjetoRegiao[]
 
     @@index([parente_id])
     @@map("regiao")
@@ -1051,6 +1079,9 @@ model Diretorio {
 
     transferencia_id Int?
     transferencia    Transferencia? @relation(fields: [transferencia_id], references: [id])
+
+    pdm_id Int?
+    pdm    Pdm? @relation(fields: [pdm_id], references: [id])
 
     @@index([projeto_id])
     @@index([transferencia_id])
@@ -2967,6 +2998,7 @@ enum FonteRelatorio {
     ProjetoOrcamento
     Parlamentares
     Transferencias
+    ObraStatus
 }
 
 model Relatorio {
@@ -3013,6 +3045,10 @@ enum ProjetoStatus {
     EmAcompanhamento // Suspenso, fechado
     Suspenso // Volta pra EmAcompanhamento ou Fechado
     Fechado // vai para o SEI o arquivo do relatorio
+    MDO_NaoIniciada
+    MDO_EmAndamento
+    MDO_Concluida
+    MDO_Paralisada
 }
 
 model Portfolio {
@@ -3055,6 +3091,7 @@ model Portfolio {
     ImportacaoLog                ImportacaoOrcamento[]
     PortfolioGrupoPortfolio      PortfolioGrupoPortfolio[]
     projetosCompartilhados       PortfolioProjetoCompartilhado[]
+    ViewProjetoMDO               ViewProjetoMDO[]
 
     @@map("portfolio")
 }
@@ -3162,6 +3199,30 @@ model Projeto {
 
     risco_maximo String?
     qtde_riscos  Int     @default(0)
+
+    mdo_detalhamento             String?
+    mdo_programa_habitacional    String?
+    mdo_observacoes              String?
+    mdo_n_unidades_habitacionais Int?
+    mdo_n_familias_beneficiadas  Int?
+    grupo_tematico_id            Int?
+    mdo_previsao_inauguracao     DateTime?        @db.Date()
+    grupo_tematico               GrupoTematico?   @relation(fields: [grupo_tematico_id], references: [id])
+    tipo_intervencao_id          Int?
+    tipo_intervencao             TipoIntervencao? @relation(fields: [tipo_intervencao_id], references: [id])
+    equipamento_id               Int?
+    equipamento                  Equipamento?     @relation(fields: [equipamento_id], references: [id])
+
+    secretario_colaborador String?
+    orgao_colaborador_id   Int?
+    orgao_colaborador      Orgao?  @relation("orgao_colaborador", fields: [orgao_colaborador_id], references: [id])
+    colaboradores_no_orgao Int[]   @default([])
+
+    orgao_executor_id Int?
+    orgao_executor    Orgao? @relation("orgao_executor", fields: [orgao_executor_id], references: [id])
+
+    orgao_origem_id Int?
+    orgao_origem    Orgao? @relation("orgao_origem", fields: [orgao_origem_id], references: [id])
 
     status         ProjetoStatus
     fase           ProjetoFase
@@ -3284,9 +3345,72 @@ model Projeto {
     gruposTematicos  ProjetoGrupoTematico[]
     tiposIntervencao ProjetoTipoIntervencao[]
     equipamentos     ProjetoEquipamento[]
+    ProjetoRegiao    ProjetoRegiao[]
+
+    vetores_busca  Unsupported("tsvector")? @default(dbgenerated())
+    ViewProjetoMDO ViewProjetoMDO[]
+
+    tags Int[] @default([])
 
     @@index([removido_em])
     @@map("projeto")
+}
+
+view ViewProjetoMDO {
+    id               Int       @id
+    nome             String
+    codigo           String?
+    portfolio_id     Int
+    portfolio        Portfolio @relation(fields: [portfolio_id], references: [id])
+    portfolio_titulo String
+
+    registrado_em DateTime
+
+    projeto Projeto @relation(fields: [id], references: [id])
+
+    grupo_tematico_id   Int
+    grupo_tematico_nome String
+
+    tipo_intervencao_id   Int?
+    tipo_intervencao_nome String?
+
+    equipamento_id   Int?
+    equipamento_nome String?
+
+    orgao_origem_id Int
+    orgao_origem    Orgao @relation(fields: [orgao_origem_id], references: [id])
+
+    regioes String
+
+    status ProjetoStatus
+
+    @@map("view_projeto_mdo")
+}
+
+model ProjetoRegiao {
+    id Int @id @default(autoincrement())
+
+    projeto_id Int
+    projeto    Projeto @relation(fields: [projeto_id], references: [id])
+
+    regiao_id Int
+    regiao    Regiao @relation(fields: [regiao_id], references: [id])
+
+    // criado em, atualizando em, removido em
+    criado_por Int
+    criado_em  DateTime
+    criador    Pessoa   @relation("Criador", fields: [criado_por], references: [id])
+
+    atualizado_por Int?
+    atualizado_em  DateTime?
+    atualizador    Pessoa?   @relation("Atualizador", fields: [atualizado_por], references: [id])
+
+    removido_por Int?
+    removido_em  DateTime?
+    removedor    Pessoa?   @relation("Removedor", fields: [removido_por], references: [id])
+
+    @@index([projeto_id])
+    @@map("projeto_regiao")
 }
 
 model PortfolioProjetoCompartilhado {
@@ -3340,6 +3464,8 @@ model ProjetoEquipe {
 model AcompanhamentoTipo {
     id   Int    @id @default(autoincrement())
     nome String
+
+    tipo_projeto TipoProjeto @default(PP)
 
     criado_por     Int?
     criado_em      DateTime?
@@ -3868,6 +3994,8 @@ model ProjetoAcompanhamento {
     pontos_atencao      String?
     pauta               String?
 
+    apresentar_no_relatorio Boolean?
+
     cronograma_paralisado Boolean @default(false)
 
     criado_em  DateTime
@@ -4078,75 +4206,6 @@ model PessoaAtividadeLog {
 
     @@index([criado_em])
     @@map("pessoa_atividade_log")
-}
-
-// view que já faz o join das pessoas tem o privilegio SMAE.espectador_de_projeto
-// tbm faz um WHERE orgao_id is not null
-view view_pessoa_espectador_de_projeto {
-    pessoa_id Int
-    pessoa    Pessoa @relation(fields: [pessoa_id], references: [id])
-
-    orgao_id Int
-
-    @@unique([pessoa_id])
-}
-
-view view_pessoa_ps_tecnico_cp {
-    pessoa_id Int
-    pessoa    Pessoa @relation(fields: [pessoa_id], references: [id])
-
-    orgao_id Int
-
-    @@unique([pessoa_id])
-}
-
-view view_pessoa_ps_admin_cp {
-    pessoa_id Int
-    pessoa    Pessoa @relation(fields: [pessoa_id], references: [id])
-
-    orgao_id Int
-
-    @@unique([pessoa_id])
-}
-
-// view que já faz o join das pessoas tem o privilegio PDM.coordenador_responsavel_cp
-// tbm faz um WHERE orgao_id is not null
-view view_pessoa_coordenador_responsavel_cp {
-    pessoa_id Int
-    pessoa    Pessoa @relation(fields: [pessoa_id], references: [id])
-
-    orgao_id Int
-
-    @@unique([pessoa_id])
-}
-
-view view_pessoa_espectador_de_painel_externo {
-    pessoa_id Int
-    pessoa    Pessoa @relation(fields: [pessoa_id], references: [id])
-
-    orgao_id Int
-
-    @@unique([pessoa_id])
-}
-
-// view que já faz o join das pessoas tem o privilegio SMAE.gestor_de_projeto
-// tbm faz um WHERE orgao_id is not null
-view view_pessoa_gestor_de_projeto {
-    pessoa_id Int
-    pessoa    Pessoa @relation(fields: [pessoa_id], references: [id])
-    orgao_id  Int
-
-    @@unique([orgao_id, pessoa_id])
-}
-
-// view que já faz o join das pessoas tem o privilegio SMAE.colaborador_de_projeto
-// tbm faz um WHERE orgao_id is not null
-view view_pessoa_colaborador_de_projeto {
-    pessoa_id Int
-    pessoa    Pessoa @relation(fields: [pessoa_id], references: [id])
-    orgao_id  Int
-
-    @@unique([orgao_id, pessoa_id])
 }
 
 model GrupoPortfolio {
@@ -4724,6 +4783,7 @@ model Parlamentar {
 
     cargo_mais_recente   ParlamentarCargo?
     partido_mais_recente String?
+    tem_mandato          Boolean?
 
     mandatos ParlamentarMandato[]
     equipe   ParlamentarEquipe[]
@@ -4950,6 +5010,8 @@ model TransferenciaTipo {
     atualizador Pessoa? @relation("Atualizador", fields: [atualizado_por], references: [id])
     removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
 
+    statuses_distribuicao TransferenciaTipoDistribuicaoStatus[]
+
     @@map("transferencia_tipo")
 }
 
@@ -4994,6 +5056,8 @@ model Transferencia {
     valor                          Decimal? @default(0) @db.Decimal(15, 2)
     valor_total                    Decimal? @default(0) @db.Decimal(15, 2)
     valor_contrapartida            Decimal? @default(0) @db.Decimal(15, 2)
+    custeio                        Decimal? @default(0) @db.Decimal(15, 2)
+    investimento                   Decimal? @default(0) @db.Decimal(15, 2)
 
     cargo                ParlamentarCargo?
     ano                  Int?
@@ -5092,6 +5156,8 @@ model DistribuicaoRecurso {
     valor                           Decimal   @default(0) @db.Decimal(15, 2)
     valor_total                     Decimal   @default(0) @db.Decimal(15, 2)
     valor_contrapartida             Decimal   @default(0) @db.Decimal(15, 2)
+    custeio                         Decimal   @default(0) @db.Decimal(15, 2)
+    investimento                    Decimal   @default(0) @db.Decimal(15, 2)
     empenho                         Boolean
     data_empenho                    DateTime? @db.Date()
     programa_orcamentario_estadual  String?
@@ -5126,6 +5192,7 @@ model DistribuicaoRecurso {
 
     registros_sei DistribuicaoRecursoSei[]
     aditamentos   DistribuicaoRecursoAditamento[]
+    status        DistribuicaoRecursoStatus[]
 
     @@map("distribuicao_recurso")
 }
@@ -5193,8 +5260,9 @@ model Workflow {
     removido_por   Int?
     removido_em    DateTime? @db.Timestamptz(6)
 
-    etapasFluxo    Fluxo[]
-    transferencias Transferencia[]
+    etapasFluxo          Fluxo[]
+    transferencias       Transferencia[]
+    statusesDistribuicao WorkflowDistribuicaoStatus[]
 
     atualizador Pessoa? @relation("Atualizador", fields: [atualizado_por], references: [id])
     criador     Pessoa? @relation("Criador", fields: [criado_por], references: [id])
@@ -5853,6 +5921,10 @@ model GrupoTematico {
 
     nome String
 
+    programa_habitacional  Boolean @default(false)
+    unidades_habitacionais Boolean @default(false)
+    familias_beneficiadas  Boolean @default(false)
+
     criado_por Int
     criado_em  DateTime @default(now()) @db.Timestamptz(6)
 
@@ -5867,6 +5939,7 @@ model GrupoTematico {
     removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
 
     projetos ProjetoGrupoTematico[]
+    Projeto  Projeto[]
 
     @@map("grupo_tematico")
 }
@@ -5890,6 +5963,7 @@ model TipoIntervencao {
     removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
 
     projetos ProjetoTipoIntervencao[]
+    Projeto  Projeto[]
 
     @@map("tipo_intervencao")
 }
@@ -5913,6 +5987,7 @@ model Equipamento {
     removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
 
     projetos ProjetoEquipamento[]
+    Projeto  Projeto[]
 
     @@map("equipamento")
 }
@@ -5948,4 +6023,136 @@ model ProjetoGrupoTematico {
 
     @@unique([projeto_id, grupo_tematico_id])
     @@map("projeto_grupo_tematico")
+}
+
+enum DistribuicaoStatusTipo {
+    Registrada
+    Declinada
+    Redirecionada
+    Cancelada
+    ImpedidaTecnicamente
+    Finalizada
+    NaoIniciado
+    EmAndamento
+    Suspenso
+    Cancelado
+    ConcluidoComSucesso
+    EncerradoSemSucesso
+    Terminal
+}
+
+model DistribuicaoStatusBase {
+    id Int @id @default(autoincrement())
+
+    nome                             String
+    tipo                             DistribuicaoStatusTipo
+    valor_distribuicao_contabilizado Boolean
+    permite_novos_registros          Boolean                @default(true)
+
+    configWorflow WorkflowDistribuicaoStatus[]
+    distribuicoes DistribuicaoRecursoStatus[]
+
+    @@unique([nome, tipo])
+    @@map("distribuicao_status_base")
+}
+
+model TransferenciaTipoDistribuicaoStatus {
+    id Int @id @default(autoincrement())
+
+    transferencia_tipo_id Int
+    transferencia_tipo    TransferenciaTipo @relation(fields: [transferencia_tipo_id], references: [id])
+
+    nome                             String
+    tipo                             DistribuicaoStatusTipo
+    valor_distribuicao_contabilizado Boolean
+    permite_novos_registros          Boolean
+
+    criado_por Int
+    criado_em  DateTime @default(now()) @db.Timestamptz(6)
+
+    atualizado_por Int?
+    atualizado_em  DateTime? @db.Timestamptz(6)
+
+    removido_por Int?
+    removido_em  DateTime? @db.Timestamptz(6)
+
+    criador     Pessoa  @relation("Criador", fields: [criado_por], references: [id])
+    atualizador Pessoa? @relation("Atualizador", fields: [atualizado_por], references: [id])
+    removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
+
+    configWorflow WorkflowDistribuicaoStatus[]
+    distribuicoes DistribuicaoRecursoStatus[]
+
+    @@map("transferencia_tipo_distribuicao_status")
+}
+
+model WorkflowDistribuicaoStatus {
+    id Int @id @default(autoincrement())
+
+    workflow_id Int
+    workflow    Workflow @relation(fields: [workflow_id], references: [id])
+
+    status_base_id Int?
+    status_base    DistribuicaoStatusBase? @relation(fields: [status_base_id], references: [id])
+
+    status_id Int?
+    status    TransferenciaTipoDistribuicaoStatus? @relation(fields: [status_id], references: [id])
+
+    @@map("workflow_distribuicao_status")
+}
+
+model DistribuicaoRecursoStatus {
+    id Int @id @default(autoincrement())
+
+    distribuicao_id Int
+    distribuicao    DistribuicaoRecurso @relation(fields: [distribuicao_id], references: [id])
+
+    status_base_id Int?
+    status_base    DistribuicaoStatusBase? @relation(fields: [status_base_id], references: [id])
+
+    status_id Int?
+    status    TransferenciaTipoDistribuicaoStatus? @relation(fields: [status_id], references: [id])
+
+    orgao_responsavel_id Int
+    orgao_responsavel    Orgao @relation(fields: [orgao_responsavel_id], references: [id])
+
+    nome_responsavel String
+    motivo           String
+    data_troca       DateTime @db.Date()
+
+    criado_por Int
+    criado_em  DateTime @default(now()) @db.Timestamptz(6)
+
+    atualizado_por Int?
+    atualizado_em  DateTime? @db.Timestamptz(6)
+
+    removido_por Int?
+    removido_em  DateTime? @db.Timestamptz(6)
+
+    // comentado pq isso deixa o generate lento pra diabos, mas as FK's já estão no banco
+    //criador     Pessoa  @relation("Criador", fields: [criado_por], references: [id])
+    //atualizador Pessoa? @relation("Atualizador", fields: [atualizado_por], references: [id])
+    //removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
+
+    @@map("distribuicao_recurso_status")
+}
+
+model ProjetoTag {
+    id           Int         @id @default(autoincrement())
+    tipo_projeto TipoProjeto @default(PP)
+
+    descricao String
+
+    criado_por     Int?
+    criado_em      DateTime  @default(now()) @db.Timestamptz(6)
+    atualizado_por Int?
+    atualizado_em  DateTime  @default(now()) @db.Timestamptz(6)
+    removido_por   Int?
+    removido_em    DateTime? @db.Timestamptz(6)
+
+    //atualizador Pessoa? @relation("Atualizador", fields: [atualizado_por], references: [id])
+    //criador     Pessoa? @relation("Criador", fields: [criado_por], references: [id])
+    //removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
+
+    @@map("projeto_tag")
 }

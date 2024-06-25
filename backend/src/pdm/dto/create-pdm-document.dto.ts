@@ -1,4 +1,4 @@
-import { IsString } from 'class-validator';
+import { IsOptional, IsString } from 'class-validator';
 
 export class CreatePdmDocumentDto {
     /**
@@ -6,4 +6,8 @@ export class CreatePdmDocumentDto {
      */
     @IsString({ message: '$property| upload_token de um arquivo de ícone' })
     upload_token: string;
+
+    @IsOptional()
+    @IsString({ message: '$property| Caminho do diretório de arquivos' })
+    diretorio_caminho: string;
 }

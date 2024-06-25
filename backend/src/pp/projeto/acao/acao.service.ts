@@ -1,5 +1,5 @@
 import { forwardRef, HttpException, Inject, Injectable } from '@nestjs/common';
-import { Prisma, ProjetoMotivoRelatorio, ProjetoStatus } from '@prisma/client';
+import { Prisma, ProjetoMotivoRelatorio, ProjetoStatus, TipoProjeto } from '@prisma/client';
 import { PessoaFromJwt } from '../../../auth/models/PessoaFromJwt';
 import { PrismaService } from '../../../prisma/prisma.service';
 import { ReportsService } from '../../../reports/relatorios/reports.service';
@@ -14,12 +14,18 @@ export class AcaoService {
         @Inject(forwardRef(() => ReportsService)) private readonly reportsService: ReportsService
     ) {}
 
-    async create(dto: CreateAcaoDto, user: PessoaFromJwt) {
-        const projeto = await this.projetoService.findOne('PP', dto.projeto_id, user, 'ReadWrite');
+    async create(tipo: TipoProjeto, dto: CreateAcaoDto, user: PessoaFromJwt) {
+        const projeto = await this.projetoService.findOne(tipo, dto.projeto_id, user, 'ReadWrite');
 
         const acaoDesejada = 'acao_' + dto.acao;
         if (!(projeto.permissoes as any)[acaoDesejada])
             throw new HttpException(`Não é possível executar ação ${dto.acao} no momento`, 400);
+
+        // 'MDO_NaoIniciada', 'MDO_Concluida', 'MDO_EmAndamento',  'MDO_Paralisada'
+        // nao iniciada -> Registro
+        // em andamento -> Acompanhamento
+        // paralisada -> Acompanhamento
+        // concluída -> Encerramento
 
         const dePara: Record<
             ProjetoAcao,
@@ -48,6 +54,10 @@ export class AcaoService {
             'reiniciar': { date: 'reiniciado_em', user: 'reiniciado_por', status: 'EmAcompanhamento' },
             'cancelar': { date: 'cancelado_em', user: 'cancelado_por', status: 'Fechado' },
             'terminar': { date: 'terminado_em', user: 'terminado_por', status: 'Fechado' },
+
+            'iniciar_obra': { date: 'iniciado_em', user: 'iniciado_por', status: 'MDO_EmAndamento' },
+            'concluir_obra': { date: 'terminado_em', user: 'terminado_por', status: 'MDO_Concluida' },
+            'paralisar_obra': { date: 'suspenso_em', user: 'suspenso_por', status: 'MDO_Paralisada' },
         } as const;
 
         const dbAction = dePara[dto.acao];
@@ -63,9 +73,11 @@ export class AcaoService {
 
                 if (dto.acao == 'arquivar') arquivado = true;
                 if (dto.acao == 'restaurar') arquivado = false;
-                if (dto.acao == 'selecionar') eh_prioritario = true;
-                if (dto.acao == 'iniciar_planejamento')
-                    codigo = await this.projetoService.geraProjetoCodigo(projeto.id, prismaTx);
+                if (tipo == 'PP') {
+                    if (dto.acao == 'selecionar') eh_prioritario = true;
+                    if (dto.acao == 'iniciar_planejamento')
+                        codigo = await this.projetoService.geraProjetoCodigo(projeto.id, prismaTx);
+                }
 
                 await prismaTx.projeto.update({
                     where: { id: projeto.id },
@@ -92,18 +104,21 @@ export class AcaoService {
                         break;
                 }
 
-                // basta isso para gerar um relatório
-                const fila = await prismaTx.projetoRelatorioFila.create({
-                    data: {
-                        projeto_id: projeto.id,
-                        motivado_relatorio: motivo,
-                        congelado_em: now,
-                        // coloca na fila, mas já coloca com o processamento congelado,
-                        // pois vamos forçar um processamento imediato nesta própria thread
-                    },
-                    select: { id: true },
-                });
-                reportFilaId = fila.id;
+                // aguardar os reports de MDO
+                if (tipo == 'PP') {
+                    // basta isso para gerar um relatório
+                    const fila = await prismaTx.projetoRelatorioFila.create({
+                        data: {
+                            projeto_id: projeto.id,
+                            motivado_relatorio: motivo,
+                            congelado_em: now,
+                            // coloca na fila, mas já coloca com o processamento congelado,
+                            // pois vamos forçar um processamento imediato nesta própria thread
+                        },
+                        select: { id: true },
+                    });
+                    reportFilaId = fila.id;
+                }
             },
             {
                 isolationLevel: 'Serializable',

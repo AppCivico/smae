@@ -7,7 +7,7 @@ import { FindOneParams } from '../common/decorators/find-params';
 import { RecordWithId } from '../common/dto/record-with-id.dto';
 import { DistribuicaoRecursoService } from './distribuicao-recurso.service';
 import { CreateDistribuicaoRecursoDto } from './dto/create-distribuicao-recurso.dto';
-import { DistribuicaoRecursoDto, ListDistribuicaoRecursoDto } from './entities/distribuicao-recurso.entity';
+import { DistribuicaoRecursoDetailDto, ListDistribuicaoRecursoDto } from './entities/distribuicao-recurso.entity';
 import { UpdateDistribuicaoRecursoDto } from './dto/update-distribuicao-recurso.dto';
 import { FilterDistribuicaoRecursoDto } from './dto/filter-distribuicao-recurso.dto';
 
@@ -32,7 +32,10 @@ export class DistribuicaoRecursoController {
     @Get(':id')
     @ApiBearerAuth('access-token')
     @Roles(['CadastroTransferencia.listar'])
-    async findOne(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt): Promise<DistribuicaoRecursoDto> {
+    async findOne(
+        @Param() params: FindOneParams,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<DistribuicaoRecursoDetailDto> {
         return await this.distribuicaoRecursoService.findOne(params.id, user);
     }
 

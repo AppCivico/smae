@@ -1,5 +1,11 @@
 <script setup>
 // Não finalizado
+import { storeToRefs } from 'pinia';
+import { ErrorMessage, Field, useForm } from 'vee-validate';
+import {
+  computed, onUnmounted, ref, watch,
+} from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 import esferasDeTransferencia from '@/consts/esferasDeTransferencia';
 import { workflow as schema } from '@/consts/formSchemas';
 import responsabilidadeEtapaFluxo from '@/consts/responsabilidadeEtapaFluxo';
@@ -12,23 +18,20 @@ import { useTipoDeTransferenciaStore } from '@/stores/tipoDeTransferencia.store'
 import EtapaFluxo from '@/views/fluxosProjeto/EtapaFluxo.vue';
 import FaseFluxo from '@/views/fluxosProjeto/FaseFluxo.vue';
 import TarefaFluxo from '@/views/fluxosProjeto/TarefaFluxo.vue';
-import { storeToRefs } from 'pinia';
-import { ErrorMessage, Field, useForm } from 'vee-validate';
-import {
-  computed, onUnmounted, ref, watch,
-} from 'vue';
-import { useRoute, useRouter } from 'vue-router';
+import { useStatusDistribuicaoStore } from '@/stores/statusDistribuicao.store';
 
 const fluxosEtapasProjetos = useFluxosEtapasProjetosStore();
 const tipoDeTransferenciaStore = useTipoDeTransferenciaStore();
 const fluxosProjetoStore = useFluxosProjetosStore();
 const fluxosFasesProjetos = useFluxosFasesProjetosStore();
 const fluxosTarefasProjetos = useFluxosTarefasProjetosStore();
+const statusesDistribuicaoStore = useStatusDistribuicaoStore();
 const alertStore = useAlertStore();
 const router = useRouter();
 const route = useRoute();
 
 const { lista: tipoTransferenciaComoLista } = storeToRefs(tipoDeTransferenciaStore);
+const { lista: statusesDistribuicaoComoLista } = storeToRefs(statusesDistribuicaoStore);
 const {
   chamadasPendentes, erro, itemParaEdição, emFoco,
 } = storeToRefs(fluxosProjetoStore);
@@ -36,14 +39,20 @@ const { chamadasPendentes: fasesPendentes } = storeToRefs(fluxosFasesProjetos);
 const { chamadasPendentes: tarefasPendentes } = storeToRefs(fluxosTarefasProjetos);
 
 const esferaSelecionada = ref('');
+const tipoTransferenciaSelecionado = ref('');
 const idDaEtapaEmFoco = ref(-1);
 const idDaTarefaEmFoco = ref(-1);
 const idDoRelacionamentoComFase = ref(-1);
 const idDaMãeDaFase = ref(0);
 const idDaMãeDaTarefa = ref(0);
+const statusesDistribuicaoSelecionados = ref([]);
 
 const props = defineProps({
   fluxoId: {
+    type: Number,
+    default: 0,
+  },
+  tipoDeTransferenciaId: {
     type: Number,
     default: 0,
   },
@@ -65,13 +74,32 @@ const tiposDisponíveis = computed(() => (esferaSelecionada.value
     .filter((x) => x.esfera === esferaSelecionada.value)
   : []));
 
-const onSubmit = handleSubmit.withControlled(async (controlledValues) => {
+statusesDistribuicaoSelecionados.value = [];
+console.log(statusesDistribuicaoComoLista);
+
+const statusesBaseSelecionados = computed(() => statusesDistribuicaoSelecionados.value.filter((id) => {
+  const status = statusesDistribuicaoComoLista.value.find((s) => s.id === id);
+  return status && status.status_base;
+}));
+
+const statusesCustomizadosSelecionados = computed(() => statusesDistribuicaoSelecionados.value.filter((id) => {
+  const status = statusesDistribuicaoComoLista.value.find((s) => s.id === id);
+  return status && !status.status_base;
+}));
+
+const onSubmit = handleSubmit(async (values) => {
   try {
+    const payload = {
+      ...values,
+      distribuicao_statuses_base: statusesBaseSelecionados.value,
+      distribuicao_statuses_customizados: statusesCustomizadosSelecionados.value,
+    };
+
     const msg = props.fluxoId
       ? 'Dados salvos com sucesso!'
       : 'Item adicionado com sucesso!';
 
-    const resposta = await fluxosProjetoStore.salvarItem(controlledValues, props.fluxoId);
+    const resposta = await fluxosProjetoStore.salvarItem(payload, props.fluxoId);
     if (resposta) {
       alertStore.success(msg);
       fluxosProjetoStore.$reset();
@@ -82,6 +110,14 @@ const onSubmit = handleSubmit.withControlled(async (controlledValues) => {
     alertStore.error(error);
   }
 });
+
+function markCheckboxesWithSavedValues() {
+  if (emFoco.statuses_distribuicao && emFoco.statuses_distribuicao.length > 0) {
+    // eslint-disable-next-line max-len
+    statusesDistribuicaoSelecionados.value = emFoco.statuses_distribuicao.map((status) => status.id);
+  }
+}
+markCheckboxesWithSavedValues();
 
 async function carregarFluxo() {
   if (props.fluxoId) {
@@ -129,6 +165,10 @@ onUnmounted(() => {
 
 watch(itemParaEdição, (novoValor) => {
   if (novoValor.transferencia_tipo?.id) {
+    tipoTransferenciaSelecionado.value = novoValor.transferencia_tipo.id;
+    statusesDistribuicaoStore.buscarTudo(
+      { tipo_transferencia_id: novoValor.transferencia_tipo.id },
+    );
     esferaSelecionada.value = tipoTransferenciaComoLista.value
       .find((x) => x.id === novoValor.transferencia_tipo.id)?.esfera || '';
   }
@@ -295,6 +335,25 @@ watch(itemParaEdição, (novoValor) => {
           class="error-msg"
         />
       </div>
+      <div class="f1">
+        <LabelFromYup
+          name="termino"
+          :schema="schema"
+        />
+        <Field
+          name="termino"
+          type="date"
+          class="inputtext light mb1"
+          :class="{ errors: errors.termino }"
+          maxlength="10"
+          @blur="($e) => { !$e.target.value ? $e.target.value = '' : null; }"
+          @update:model-value="($v) => { setFieldValue('termino', $v || null); }"
+        />
+        <ErrorMessage
+          name="termino"
+          class="error-msg"
+        />
+      </div>
       <div
         v-if="props.fluxoId"
         class="f1 flex"
@@ -314,6 +373,26 @@ watch(itemParaEdição, (novoValor) => {
           class="error-msg"
           name="ativo"
         />
+      </div>
+
+      <div class="flex flexwrap g1 lista-de-opções">
+        <label
+          v-for="s in statusesDistribuicaoComoLista"
+          :key="s.id"
+          class="tc600 lista-de-opções__item"
+        >
+          <Field
+            v-model="statusesDistribuicaoSelecionados"
+            name="statuses"
+            :value="s.id"
+            type="checkbox"
+            class="inputcheckbox"
+            :class="{ 'error': errors['parametros.tipo'] }"
+          />
+          <span>
+            {{ s.nome }}
+          </span>
+        </label>
       </div>
       <FormErrorsList :errors="errors" />
     </div>

@@ -7,6 +7,10 @@ export class ProjetoProxyPdmMetasService {
     constructor(private readonly prisma: PrismaService) {}
     async findAll(): Promise<ProjetoProxyPdmMetaDto[]> {
         const rows = await this.prisma.pdm.findMany({
+            where: {
+                removido_em: null,
+                tipo: 'PDM',
+            },
             orderBy: [{ ativo: 'desc' }, { atualizado_em: 'desc' }],
             select: {
                 id: true,

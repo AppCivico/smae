@@ -1,8 +1,8 @@
 import { Body, Controller, Post } from '@nestjs/common';
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiExtraModels, ApiTags } from '@nestjs/swagger';
 import { Roles } from '../../auth/decorators/roles.decorator';
 import { PPStatusService } from './pp-status.service';
-import { CreateRelProjetoStatusDto } from './dto/create-projeto-status.dto';
+import { CreateRelObraStatusDto, CreateRelProjetoStatusDto } from './dto/create-projeto-status.dto';
 import { PPProjetoStatusRelatorioDto } from './entities/projeto-status.dto';
 
 @ApiTags('Relatórios - API')
@@ -13,7 +13,23 @@ export class PPStatusController {
     @Post()
     @ApiBearerAuth('access-token')
     @Roles(['Reports.executar.Projetos'])
+    @ApiExtraModels(CreateRelObraStatusDto)
     async create(@Body() createProjetoStatusDto: CreateRelProjetoStatusDto): Promise<PPProjetoStatusRelatorioDto> {
+        createProjetoStatusDto.tipo = 'PP';
+        return await this.projetoStatusService.create(createProjetoStatusDto);
+    }
+}
+
+@ApiTags('Relatórios - API')
+@Controller('relatorio/mdo-projeto-status')
+export class MDOStatusController {
+    constructor(private readonly projetoStatusService: PPStatusService) {}
+
+    @Post()
+    @ApiBearerAuth('access-token')
+    @Roles(['Reports.executar.MDO'])
+    async create(@Body() createProjetoStatusDto: CreateRelProjetoStatusDto): Promise<PPProjetoStatusRelatorioDto> {
+        createProjetoStatusDto.tipo = 'MDO';
         return await this.projetoStatusService.create(createProjetoStatusDto);
     }
 }

@@ -83,5 +83,12 @@ export const useGruposTematicosStore = defineStore('gruposTematicosStore', {
         ...emFoco,
       };
     },
+    gruposTemáticosPorId: ({ lista }) => lista
+      .reduce((acc, cur) => {
+        if (!acc[cur.id]) {
+          acc[cur.id] = cur;
+        }
+        return acc;
+      }, {}),
   },
 });

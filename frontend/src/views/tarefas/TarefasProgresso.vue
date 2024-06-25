@@ -5,20 +5,20 @@ import addToDates from '@/helpers/addToDates';
 import dateToField from '@/helpers/dateToField';
 import subtractDates from '@/helpers/subtractDates';
 import { useAlertStore } from '@/stores/alert.store';
+import { useEmailsStore } from '@/stores/envioEmail.store';
 import { useTarefasStore } from '@/stores/tarefas.store.ts';
-import { useEmailsStore } from "@/stores/envioEmail.store";
 import { storeToRefs } from 'pinia';
 import {
   ErrorMessage, Field, Form,
 } from 'vee-validate';
-import { useRouter, useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 
 const alertStore = useAlertStore();
 const tarefasStore = useTarefasStore();
 const router = useRouter();
 const route = useRoute();
 const emailsStore = useEmailsStore();
-const { emFoco:emailEmFoco } = storeToRefs(emailsStore);
+const { emFoco: emailEmFoco } = storeToRefs(emailsStore);
 const {
   chamadasPendentes,
   emFoco,
@@ -35,10 +35,10 @@ const props = defineProps({
     type: Number,
     default: 0,
   },
-  transferenciaId:{
+  transferenciaId: {
     type: Number,
     default: 0,
-  }
+  },
 });
 
 async function onSubmit(_, { controlledValues: carga }) {
@@ -132,13 +132,27 @@ iniciar();
           </template>
         </dd>
       </div>
-      <div v-if="route.meta.prefixoParaFilhas === 'TransferenciasVoluntarias'" class="f1 mb1"  >
-        <dt class="t12 uc w700 mb05 tamarelo">Envio de e-mail?</dt>
+      <div
+        v-if="route.meta.prefixoParaFilhas === 'TransferenciasVoluntarias'"
+        class="f1 mb1"
+      >
+        <dt class="t12 uc w700 mb05 tamarelo">
+          Envio de e-mail?
+        </dt>
         <dd class="t13 dado-efetivo">
-          <div class="flex g1" v-if="emailEmFoco?.linhas[0]?.id !== undefined">
+          <div
+            v-if="emailEmFoco?.linhas[0]?.id !== undefined"
+            class="flex g1"
+          >
             <span>Sim</span>
-            <router-link :to="{name: 'transferenciaTarefaEmailModal'}" title="Editar e-mail">
-              <svg width="20" height="20"><use xlink:href="#i_edit" /></svg>
+            <router-link
+              :to="{name: 'transferenciaTarefaEmailModal'}"
+              title="Editar e-mail"
+            >
+              <svg
+                width="20"
+                height="20"
+              ><use xlink:href="#i_edit" /></svg>
             </router-link>
           </div>
           <span v-else>Não</span>
@@ -146,9 +160,18 @@ iniciar();
       </div>
     </dl>
   </div>
-  <div class="flex center mb4" v-if="route.meta.prefixoParaFilhas === 'TransferenciasVoluntarias'" >
-    <router-link :to="{ name: 'transferenciaTarefaEmailModal' }" class="addlink mb1">
-      <svg width="20" height="20">
+  <div
+    v-if="route.meta.prefixoParaFilhas === 'TransferenciasVoluntarias'"
+    class="flex center mb4"
+  >
+    <router-link
+      :to="{ name: 'transferenciaTarefaEmailModal' }"
+      class="addlink mb1"
+    >
+      <svg
+        width="20"
+        height="20"
+      >
         <use xlink:href="#i_+" />
       </svg>
       <span v-if="emailEmFoco?.linhas?.[0]?.id">Editar envio de e-mail </span>

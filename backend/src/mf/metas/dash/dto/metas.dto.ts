@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Transform, TransformFnParams } from 'class-transformer';
 import { IsArray, IsBoolean, IsInt, IsOptional } from 'class-validator';
-import { NumberArrayTransform } from '../../../../auth/transforms/number-array.transform';
+import { NumberArrayTransformOrUndef } from '../../../../auth/transforms/number-array.transform';
 import { IdCodTituloDto } from '../../../../common/dto/IdCodTitulo.dto';
 import { IdTituloOrNullDto } from '../../../../common/dto/IdTitulo.dto';
 import { MfPerfilDto } from '../../dto/mf-meta.dto';
@@ -131,19 +131,19 @@ export class FilterMfDashMetasDto {
     @IsOptional()
     @IsArray()
     @IsInt({ each: true })
-    @Transform(NumberArrayTransform)
+    @Transform(NumberArrayTransformOrUndef)
     metas?: number[];
 
     @IsOptional()
     @IsArray()
     @IsInt({ each: true })
-    @Transform(NumberArrayTransform)
+    @Transform(NumberArrayTransformOrUndef)
     orgaos?: number[];
 
     @IsOptional()
     @IsArray()
     @IsInt({ each: true })
-    @Transform(NumberArrayTransform)
+    @Transform(NumberArrayTransformOrUndef)
     coordenadores_cp?: number[];
 }
 
@@ -151,7 +151,7 @@ export class FilterMfDashEtapasDto {
     @IsOptional()
     @IsArray()
     @IsInt({ each: true })
-    @Transform(NumberArrayTransform)
+    @Transform(NumberArrayTransformOrUndef)
     etapas_ids?: number[];
 }
 

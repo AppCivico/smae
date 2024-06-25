@@ -2,6 +2,11 @@ import { Type } from 'class-transformer';
 import { IsInt, IsOptional } from 'class-validator';
 
 export class FilterSubTemaDto {
+    @IsOptional()
+    @IsInt({ message: '$property| id' })
+    @Type(() => Number)
+    id?: number;
+
     /**
      * Filtrar por pdm_id?
      * @example "1"

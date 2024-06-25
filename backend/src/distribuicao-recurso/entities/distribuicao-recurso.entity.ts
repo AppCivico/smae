@@ -1,5 +1,7 @@
+import { ApiProperty } from '@nestjs/swagger';
+import { DistribuicaoStatusTipo } from '@prisma/client';
 import { Decimal } from '@prisma/client/runtime/library';
-import { IdSiglaDescricao } from 'src/common/dto/IdSigla.dto';
+import { IdSigla, IdSiglaDescricao } from 'src/common/dto/IdSigla.dto';
 
 export class DistribuicaoRecursoDto {
     id: number;
@@ -10,6 +12,8 @@ export class DistribuicaoRecursoDto {
     valor: Decimal;
     valor_total: Decimal;
     valor_contrapartida: Decimal;
+    custeio: Decimal;
+    investimento: Decimal;
     empenho: Boolean;
     data_empenho: Date | null;
     programa_orcamentario_estadual: String | null;
@@ -25,6 +29,14 @@ export class DistribuicaoRecursoDto {
     aditamentos: AditamentosDto[];
     conclusao_suspensiva: Date | null;
     registros_sei: DistribuicaoRecursoSeiDto[] | null;
+    pode_registrar_status: boolean;
+    historico_status: DistribuicaoHistoricoStatusDto[];
+    pct_valor_transferencia: number;
+}
+
+export class DistribuicaoRecursoDetailDto extends DistribuicaoRecursoDto {
+    pode_registrar_status: boolean;
+    historico_status: DistribuicaoHistoricoStatusDto[];
 }
 
 export class AditamentosDto {
@@ -41,4 +53,22 @@ export class DistribuicaoRecursoSeiDto {
     id: number;
     nome: string | null;
     processo_sei: string;
+}
+
+export class DistribuicaoHistoricoStatusDto {
+    id: number;
+    data_troca: Date;
+    dias_no_status: number;
+    motivo: string;
+    orgao_responsavel: IdSigla;
+    status_customizado: StatusDistListDto | null;
+    status_base: StatusDistListDto | null;
+}
+
+export class StatusDistListDto {
+    id: number;
+    nome: string;
+    @ApiProperty({ enum: DistribuicaoStatusTipo, enumName: 'DistribuicaoStatusTipo' })
+    tipo: DistribuicaoStatusTipo;
+    status_base: boolean;
 }

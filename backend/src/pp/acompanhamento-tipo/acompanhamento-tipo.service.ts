@@ -5,21 +5,23 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { CreateTipoAcompanhamentoDto } from './dto/create-acompanhamento-tipo.dto';
 import { UpdateAcompanhamentoTipoDto } from './dto/update-acompanhamento-tipo.dto';
 import { AcompanhamentoTipo } from './entities/acompanhament-tipo.entities.dto';
+import { TipoProjeto } from '@prisma/client';
 
 @Injectable()
 export class AcompanhamentoTipoService {
     private readonly logger = new Logger(AcompanhamentoTipoService.name);
     constructor(private readonly prisma: PrismaService) {}
 
-    async create(dto: CreateTipoAcompanhamentoDto, user: PessoaFromJwt): Promise<RecordWithId> {
+    async create(tipo: TipoProjeto, dto: CreateTipoAcompanhamentoDto, user: PessoaFromJwt): Promise<RecordWithId> {
         const tipoJaExiste = await this.prisma.acompanhamentoTipo.count({
-            where: { nome: dto.nome, removido_em: null },
+            where: { nome: dto.nome, removido_em: null, tipo_projeto: tipo },
         });
         if (tipoJaExiste) throw new Error('Já existe um tipo de acompanhamento com este nome.');
 
         const acompanhamentoTipo = await this.prisma.acompanhamentoTipo.create({
             data: {
                 nome: dto.nome,
+                tipo_projeto: tipo,
                 criado_em: new Date(Date.now()),
                 criado_por: user.id,
             },
@@ -29,9 +31,9 @@ export class AcompanhamentoTipoService {
         return { id: acompanhamentoTipo.id };
     }
 
-    async findAll(user: PessoaFromJwt): Promise<AcompanhamentoTipo[]> {
+    async findAll(tipo: TipoProjeto, user: PessoaFromJwt): Promise<AcompanhamentoTipo[]> {
         const acompanhamentoTipoRows = await this.prisma.acompanhamentoTipo.findMany({
-            where: { removido_em: null },
+            where: { removido_em: null, tipo_projeto: tipo },
             orderBy: { nome: 'asc' },
             select: {
                 id: true,
@@ -42,9 +44,14 @@ export class AcompanhamentoTipoService {
         return acompanhamentoTipoRows;
     }
 
-    async update(id: number, dto: UpdateAcompanhamentoTipoDto, user: PessoaFromJwt) {
+    async update(
+        tipo: TipoProjeto,
+        id: number,
+        dto: UpdateAcompanhamentoTipoDto,
+        user: PessoaFromJwt
+    ): Promise<RecordWithId> {
         return await this.prisma.acompanhamentoTipo.update({
-            where: { id },
+            where: { id, tipo_projeto: tipo },
             data: {
                 nome: dto.nome,
                 atualizado_em: new Date(Date.now()),
@@ -54,7 +61,7 @@ export class AcompanhamentoTipoService {
         });
     }
 
-    async remove(id: number, user: PessoaFromJwt) {
+    async remove(tipo: TipoProjeto, id: number, user: PessoaFromJwt): Promise<void> {
         await this.prisma.$transaction(async (prismaTx) => {
             // Limpando ligação com rows de Acompanhamento
             await prismaTx.projetoAcompanhamento.updateMany({

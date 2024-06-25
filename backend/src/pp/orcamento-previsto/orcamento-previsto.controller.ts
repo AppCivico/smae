@@ -37,7 +37,7 @@ export class OrcamentoPrevistoController {
 
         await this.projetoService.findOne('PP', params.id, user, 'ReadWriteTeam');
 
-        return await this.metaOrcamentoService.create(+params.id, createMetaDto, user);
+        return await this.metaOrcamentoService.create('PP', +params.id, createMetaDto, user);
     }
 
     @ApiBearerAuth('access-token')
@@ -53,8 +53,8 @@ export class OrcamentoPrevistoController {
         await this.projetoService.findOne('PP', params.id, user, 'ReadOnly');
 
         return {
-            linhas: await this.metaOrcamentoService.findAll(params.id, filters, user),
-            ...(await this.metaOrcamentoService.orcamento_previsto_zero(+params.id, filters.ano_referencia)),
+            linhas: await this.metaOrcamentoService.findAll('PP', params.id, filters, user),
+            ...(await this.metaOrcamentoService.orcamento_previsto_zero('PP', +params.id, filters.ano_referencia)),
         };
     }
 
@@ -72,7 +72,7 @@ export class OrcamentoPrevistoController {
 
         await this.projetoService.findOne('PP', +params.id, user, 'ReadWriteTeam');
 
-        await this.metaOrcamentoService.patchZerado(+params.id, updateZeradoDto, user);
+        await this.metaOrcamentoService.patchZerado('PP', +params.id, updateZeradoDto, user);
         return '';
     }
 
@@ -89,7 +89,7 @@ export class OrcamentoPrevistoController {
 
         await this.projetoService.findOne('PP', +params.id, user, 'ReadWriteTeam');
 
-        await this.metaOrcamentoService.update(+params.id, +params.id2, updateMetaDto, user);
+        await this.metaOrcamentoService.update('PP', +params.id, +params.id2, updateMetaDto, user);
     }
 
     @Delete(':id/orcamento-previsto/:id2')
@@ -102,7 +102,99 @@ export class OrcamentoPrevistoController {
 
         await this.projetoService.findOne('PP', params.id, user, 'ReadWriteTeam');
 
-        await this.metaOrcamentoService.remove(+params.id, +params.id2, user);
+        await this.metaOrcamentoService.remove('PP', +params.id, +params.id2, user);
+        return '';
+    }
+}
+
+@Controller('projeto-mdo')
+@ApiTags('Projeto - Orçamento (Custeio e Investimento) de Obras')
+export class OrcamentoPrevistoMDOController {
+    private readonly logger = new Logger(OrcamentoPrevistoController.name);
+
+    constructor(
+        private readonly metaOrcamentoService: OrcamentoPrevistoService,
+        private readonly projetoService: ProjetoService
+    ) {}
+
+    @Post(':id/orcamento-previsto')
+    @ApiBearerAuth('access-token')
+    @Roles(['ProjetoMDO.orcamento'])
+    async create(
+        @Param() params: FindOneParams,
+        @Body() createMetaDto: CreateOrcamentoPrevistoDto,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<RecordWithId> {
+        this.logger.debug('create orçamento previsto projeto');
+
+        await this.projetoService.findOne('MDO', params.id, user, 'ReadWriteTeam');
+
+        return await this.metaOrcamentoService.create('MDO', +params.id, createMetaDto, user);
+    }
+
+    @ApiBearerAuth('access-token')
+    @Get(':id/orcamento-previsto')
+    @Roles(['ProjetoMDO.orcamento'])
+    async findAll(
+        @Param() params: FindOneParams,
+        @Query() filters: FilterOrcamentoPrevistoDto,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<ListOrcamentoPrevistoDto> {
+        this.logger.debug('findAll orçamento previsto projeto');
+
+        await this.projetoService.findOne('MDO', params.id, user, 'ReadOnly');
+
+        return {
+            linhas: await this.metaOrcamentoService.findAll('MDO', params.id, filters, user),
+            ...(await this.metaOrcamentoService.orcamento_previsto_zero('MDO', +params.id, filters.ano_referencia)),
+        };
+    }
+
+    @Patch(':id/orcamento-previsto/zerado')
+    @ApiBearerAuth('access-token')
+    @Roles(['ProjetoMDO.orcamento'])
+    @HttpCode(HttpStatus.ACCEPTED)
+    @ApiNoContentResponse()
+    async patchZerado(
+        @Param() params: FindOneParams,
+        @Body() updateZeradoDto: ProjetoUpdateOrcamentoPrevistoZeradoDto,
+        @CurrentUser() user: PessoaFromJwt
+    ) {
+        this.logger.debug('zerado orçamento previsto projeto');
+
+        await this.projetoService.findOne('MDO', +params.id, user, 'ReadWriteTeam');
+
+        await this.metaOrcamentoService.patchZerado('MDO', +params.id, updateZeradoDto, user);
+        return '';
+    }
+
+    @Patch(':id/orcamento-previsto/:id2')
+    @ApiBearerAuth('access-token')
+    @Roles(['ProjetoMDO.orcamento'])
+    @HttpCode(HttpStatus.ACCEPTED)
+    async patch(
+        @Param() params: FindTwoParams,
+        @Body() updateMetaDto: UpdateOrcamentoPrevistoDto,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<void> {
+        this.logger.debug('patch orçamento previsto projeto');
+
+        await this.projetoService.findOne('MDO', +params.id, user, 'ReadWriteTeam');
+
+        await this.metaOrcamentoService.update('MDO', +params.id, +params.id2, updateMetaDto, user);
+    }
+
+    @Delete(':id/orcamento-previsto/:id2')
+    @ApiBearerAuth('access-token')
+    @Roles(['ProjetoMDO.orcamento'])
+    @ApiNoContentResponse()
+    @HttpCode(HttpStatus.ACCEPTED)
+    async remove(@Param() params: FindTwoParams, @CurrentUser() user: PessoaFromJwt) {
+        this.logger.debug('remove orçamento previsto projeto');
+
+        await this.projetoService.findOne('MDO', params.id, user, 'ReadWriteTeam');
+
+        await this.metaOrcamentoService.remove('MDO', +params.id, +params.id2, user);
         return '';
     }
 }

@@ -1,5 +1,5 @@
 import { HttpException, Injectable } from '@nestjs/common';
-import { Prisma } from '@prisma/client';
+import { Prisma, TipoProjeto } from '@prisma/client';
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import { RecordWithId } from '../../common/dto/record-with-id.dto';
 import { DotacaoService } from '../../dotacao/dotacao.service';
@@ -25,13 +25,18 @@ export class OrcamentoPrevistoService {
         private readonly dotacaoService: DotacaoService
     ) {}
 
-    async create(projeto_id: number, dto: CreateOrcamentoPrevistoDto, user: PessoaFromJwt): Promise<RecordWithId> {
+    async create(
+        tipo: TipoProjeto,
+        projeto_id: number,
+        dto: CreateOrcamentoPrevistoDto,
+        user: PessoaFromJwt
+    ): Promise<RecordWithId> {
         // não tem meta, logo, não tem ciclo/PDM, provavelmente vamos criar outra table
 
         const created = await this.prisma.$transaction(
             async (prismaTxn: Prisma.TransactionClient): Promise<RecordWithId> => {
                 const projetoPortfolio = await prismaTxn.projeto.findFirstOrThrow({
-                    where: { id: projeto_id },
+                    where: { id: projeto_id, tipo },
                     select: {
                         portfolio: {
                             select: { modelo_clonagem: true },
@@ -85,6 +90,7 @@ export class OrcamentoPrevistoService {
     }
 
     async findAll(
+        tipo: TipoProjeto,
         projeto_id: number,
         filters: FilterOrcamentoPrevistoDto,
         user: PessoaFromJwt
@@ -95,6 +101,7 @@ export class OrcamentoPrevistoService {
                 removido_em: null,
                 ultima_revisao: true,
                 projeto_id,
+                projeto: { tipo: tipo, id: projeto_id },
                 meta_id: null,
             },
             select: {
@@ -125,13 +132,19 @@ export class OrcamentoPrevistoService {
     }
 
     async update(
+        tipo: TipoProjeto,
         projeto_id: number,
         id: number,
         dto: UpdateOrcamentoPrevistoDto,
         user: PessoaFromJwt
     ): Promise<ProjetoOrcamentoUpdatedRet> {
         const metaOrcamento = await this.prisma.orcamentoPrevisto.findFirst({
-            where: { id: +id, removido_em: null, projeto_id },
+            where: {
+                id: +id,
+                removido_em: null,
+                projeto_id,
+                projeto: { tipo: tipo, id: projeto_id },
+            },
         });
         if (!metaOrcamento) throw new HttpException('projeto orçamento não encontrada', 400);
 
@@ -209,9 +222,14 @@ export class OrcamentoPrevistoService {
         return { id: id, new_id };
     }
 
-    async remove(projeto_id: number, id: number, user: PessoaFromJwt) {
+    async remove(tipo: TipoProjeto, projeto_id: number, id: number, user: PessoaFromJwt) {
         const metaOrcamento = await this.prisma.orcamentoPrevisto.findFirst({
-            where: { id: +id, removido_em: null, projeto_id },
+            where: {
+                id: +id,
+                removido_em: null,
+                projeto_id,
+                projeto: { tipo: tipo, id: projeto_id },
+            },
         });
         if (!metaOrcamento || metaOrcamento.projeto_id == null)
             throw new HttpException('projeto orçamento não encontrada', 400);
@@ -224,12 +242,14 @@ export class OrcamentoPrevistoService {
     }
 
     async orcamento_previsto_zero(
+        tipo: TipoProjeto,
         projeto_id: number,
         ano_referencia: number
     ): Promise<OrcamentoPrevistoEhZeroStatusDto> {
         const opz = await this.prisma.orcamentoPrevistoZerado.findFirst({
             where: {
                 projeto_id: projeto_id,
+                projeto: { tipo: tipo, id: projeto_id },
                 ano_referencia: ano_referencia,
                 removido_em: null,
             },
@@ -254,6 +274,7 @@ export class OrcamentoPrevistoService {
     }
 
     async patchZerado(
+        tipo: TipoProjeto,
         projeto_id: number,
         dto: ProjetoUpdateOrcamentoPrevistoZeradoDto,
         user: PessoaFromJwt
@@ -264,6 +285,7 @@ export class OrcamentoPrevistoService {
             await prismaTxn.orcamentoPrevistoZerado.updateMany({
                 where: {
                     projeto_id: projeto_id,
+                    projeto: { tipo: tipo, id: projeto_id },
                     ano_referencia: dto.ano_referencia,
                     removido_em: null,
                 },

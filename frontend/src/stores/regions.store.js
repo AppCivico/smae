@@ -178,6 +178,15 @@ export const useRegionsStore = defineStore({
         cur,
       ],
     }), {}),
+
+    regiõesPorId: ({ listregions }) => listregions.reduce((acc, cur) => {
+      if (!acc[cur.id]) {
+        acc[cur.id] = cur;
+      }
+
+      return acc;
+    }, {}),
+
     regiõesPorNívelOrdenadas() {
       return Object.keys(this.regiõesPorNível)
         .reduce((acc, cur) => ({
@@ -186,5 +195,23 @@ export const useRegionsStore = defineStore({
             .sort((a, b) => a.descricao.localeCompare(b.descricao)),
         }), {});
     },
+
+    regiõesPorMãe({ listregions }) {
+      const agrupadas = listregions.reduce((acc, obj) => {
+        const idDaMãe = obj.parente_id;
+        if (!acc[idDaMãe]) {
+          acc[idDaMãe] = [];
+        }
+        acc[idDaMãe].push(obj);
+        return acc;
+      }, {});
+
+      Object.keys(agrupadas).forEach((idDaMãe) => {
+        agrupadas[idDaMãe].sort((a, b) => a.descricao.localeCompare(b.descricao));
+      });
+
+      return agrupadas;
+    },
+
   },
 });

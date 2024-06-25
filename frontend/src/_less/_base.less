@@ -57,6 +57,7 @@ a {
   cursor: pointer;
 }
 
+menu,
 ul,
 li {
   list-style: none;
@@ -86,10 +87,11 @@ a svg {
 }
 
 fieldset {
-  padding: 0;
   border: 0;
-  padding-top: 1rem;
-  padding-bottom: 1rem;
+  padding-top: 3rem;
+  padding-right: 0;
+  padding-bottom: 0;
+  padding-left: 0;
   margin-bottom: 1rem;
   clear: both;
 
@@ -97,12 +99,14 @@ fieldset {
     border-top: 1px solid @c100;
   }
 
-  legend {
+  > legend {
+    font-size: 20px;
+    color: @c300;
+    margin-bottom: 0;
     display: block;
     width: 100%;
     width: fit-content;
-    float: left;
-    clear: left;
+    padding-right: 2rem;
 
     + .addlink,
     + * {
@@ -265,6 +269,9 @@ details[open] summary {
   color: @efetivo !important;
 }
 
+textarea ~ span[role='alert'],
+select ~ span[role='alert'],
+input ~ span[role='alert'],
 .error-msg {
   color: @vermelho;
   .t12;
@@ -290,6 +297,10 @@ details[open] summary {
   text-overflow: ellipsis;
   display: block;
   max-width: 100%;
+}
+
+.normalwrap {
+  white-space: normal;
 }
 
 /* Tipografia */
@@ -655,6 +666,10 @@ p {
   margin-right: 2rem !important;
 }
 
+.mrauto {
+  margin-right: auto !important;
+}
+
 .ml05 {
   margin-left: 0.5rem !important;
 }
@@ -859,6 +874,7 @@ p {
     flex: 0 0 auto;
   }
 
+  // não adicionar `!important` em regras compostas
   .f1 {
     flex: 1;
   }
@@ -875,45 +891,83 @@ p {
     flex: 4;
   }
 
+  .fg999 {
+    flex-grow: 999 !important;
+  }
+
   .fb0 {
-    flex-basis: 0;
+    flex-basis: 0 !important;
+  }
+
+  .fb25 {
+    flex-basis: 25% !important;
   }
 
   .fb33 {
-    flex-basis: 33%;
+    flex-basis: 33% !important;
   }
 
   .fb50 {
-    flex-basis: 50%;
+    flex-basis: 50% !important;
+  }
+
+  .fb66 {
+    flex-basis: 66% !important;
+  }
+
+  .fb75 {
+    flex-basis: 75% !important;
   }
 
   .fb100 {
-    flex-basis: 100%;
+    flex-basis: 100% !important;
   }
 
   .fb3em {
-    flex-basis: 3em;
+    flex-basis: 3em !important;
   }
 
   .fb5em {
-    flex-basis: 5em;
+    flex-basis: 5em !important;
   }
 
   .fb10em {
-    flex-basis: 10em;
+    flex-basis: 10em !important;
   }
 
   .fb15em {
-    flex-basis: 15em;
+    flex-basis: 15em !important;
   }
 
   .fb20em {
-    flex-basis: 20em;
+    flex-basis: 20em !important;
   }
 
   .fb25em {
-    flex-basis: 25em;
+    flex-basis: 25em !important;
   }
+
+  .fb50em {
+    flex-basis: 50em !important;
+  }
+}
+
+.hide-text {
+  padding: 0;
+  overflow: hidden;
+  text-indent: 101%;
+  white-space: nowrap;
+}
+
+.sr-only {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  border: 0 !important;
 }
 
 /* Components */
@@ -1250,6 +1304,16 @@ p {
   &:disabled {
     cursor: wait;
     opacity: .5;
+  }
+
+  &[aria-busy="true"] {
+    background-repeat: no-repeat;
+    background-position: right 1em center;
+    background-image: url('data:image/svg+xml;utf8, <svg width="18" height="19" viewBox="0 0 18 19" fill="none" xmlns="http://www.w3.org/2000/svg"> <path fill-rule="evenodd" clip-rule="evenodd" d="M9.21429 0C9.68767 0 10.0714 0.391108 10.0714 0.873563V3.05747C10.0714 3.53993 9.68767 3.93103 9.21429 3.93103C8.7409 3.93103 8.35714 3.53993 8.35714 3.05747V0.873563C8.35714 0.391108 8.7409 0 9.21429 0ZM2.71849 2.84045C3.05323 2.49931 3.59594 2.49931 3.93067 2.84045L5.74895 4.69356C6.08368 5.03471 6.08368 5.58782 5.74895 5.92897C5.41421 6.27011 4.8715 6.27011 4.53677 5.92897L2.71849 4.07586C2.38376 3.73471 2.38376 3.1816 2.71849 2.84045ZM15.5326 3.02138C15.8673 3.36252 15.8673 3.91563 15.5326 4.25678L14.3204 5.49219C13.9856 5.83333 13.4429 5.83333 13.1082 5.49219C12.7735 5.15104 12.7735 4.59793 13.1082 4.25678L14.3204 3.02138C14.6551 2.68023 15.1978 2.68023 15.5326 3.02138ZM0 9.3908C0 8.90835 0.383756 8.51724 0.857143 8.51724H3.85714C4.33053 8.51724 4.71429 8.90835 4.71429 9.3908C4.71429 9.87326 4.33053 10.2644 3.85714 10.2644H0.857143C0.383756 10.2644 0 9.87326 0 9.3908ZM15 9.3908C15 8.90835 15.3838 8.51724 15.8571 8.51724H17.1429C17.6162 8.51724 18 8.90835 18 9.3908C18 9.87326 17.6162 10.2644 17.1429 10.2644H15.8571C15.3838 10.2644 15 9.87326 15 9.3908ZM6.17752 12.4857C6.51226 12.8269 6.51226 13.38 6.17752 13.7212L3.75315 16.192C3.41842 16.5331 2.87571 16.5331 2.54097 16.192C2.20624 15.8508 2.20624 15.2977 2.54097 14.9566L4.96534 12.4857C5.30007 12.1446 5.84279 12.1446 6.17752 12.4857ZM13.5368 13.7961C13.8715 13.4549 14.4142 13.4549 14.7489 13.7961L15.355 14.4138C15.6898 14.7549 15.6898 15.3081 15.355 15.6492C15.0203 15.9903 14.4776 15.9903 14.1429 15.6492L13.5368 15.0315C13.202 14.6903 13.202 14.1372 13.5368 13.7961ZM9.21429 13.7586C9.68767 13.7586 10.0714 14.1497 10.0714 14.6322V18.1264C10.0714 18.6089 9.68767 19 9.21429 19C8.7409 19 8.35714 18.6089 8.35714 18.1264V14.6322C8.35714 14.1497 8.7409 13.7586 9.21429 13.7586Z" fill="%23F7C234"><animateTransform attributeName="transform" attributeType="XML" type="rotate" from="0 9 9" to="360 9 9" dur="2s" repeatCount="indefinite" /></path> </svg>');
+    cursor: wait;
+    opacity: .5;
+
+    padding-right: 2.5rem;
   }
 
   &.disabled {
@@ -1833,6 +1897,7 @@ input[type='radio'] {
     border-color: @c100;
   }
 
+  form[aria-busy="true"] &,
   &.loading {
     .loading;
 
@@ -1859,10 +1924,85 @@ input[type='radio'] {
   .uc;
   line-height: 1;
   margin-bottom: .8em;
+
+  label > input[type='checkbox'] + &,
+  label > input[type='radio'] + & {
+    display: inline;
+  }
 }
 
 .halfInput {
   width: 48%;
+}
+
+// Progress bars
+.progress-bar-bg(@content) {
+  &::-webkit-progress-bar {
+    @content();
+  }
+
+  @content();
+}
+
+.progress-bar-fg(@content) {
+  &[value]::-moz-progress-bar {
+    @content();
+  }
+
+  &[value]::-webkit-progress-value {
+    @content();
+  }
+
+  > div {
+    .hide-text;
+
+    display: block;
+
+    float: left;
+    max-width: 100%;
+    height: 100%;
+
+    line-height: inherit;
+
+    border-radius: 0;
+
+    @content();
+
+    &:first-child {
+      border-top-left-radius: 4px;
+      border-bottom-left-radius: 4px;
+    }
+
+    &:last-child {
+      border-top-right-radius: 4px;
+      border-bottom-right-radius: 4px;
+    }
+  }
+}
+
+progress,
+[role='progressbar'] {
+  .br4;
+
+  display: block;
+
+  width: 100%;
+  height: 1.15em;
+
+  color: @primary;
+
+  background: @laranja;
+  border: 0;
+
+  appearance: none;
+
+  .progress-bar-fg({
+    background: @primary 50%;
+  });
+
+  .progress-bar-bg({
+    background: @laranja 50%;
+  });
 }
 
 .link {
@@ -2035,10 +2175,10 @@ input[type='radio'] {
     border-bottom: 1px solid @c100;
 
     &:nth-of-type(even) {
-      background: @c50;
+      background-color: fadeout(black, 95%);
 
       .tablemain {
-        background: @c50;
+        background-color: fadeout(black, 95%);
       }
     }
   }
@@ -2130,6 +2270,10 @@ input[type='radio'] {
     &:not(:last-child) {
       overflow: hidden;
     }
+  }
+
+  tbody th {
+    .tprimary;
   }
 
   td {
@@ -2231,6 +2375,10 @@ input[type='radio'] {
   display: inline-block;
   vertical-align: middle;
   color: @marrom;
+
+  > svg {
+    display: inline-block;
+  }
 
   > div {
     // posicionado em relação ao primeiro ancestral que defina um contexto.
@@ -2529,24 +2677,7 @@ div[aria-busy="true"] {
 // https: //adrianroselli.com/2020/11/under-engineered-responsive-tables.html
 [role="region"][aria-labelledby][tabindex],
 [role="region"][aria-label][tabindex] {
-  overflow: auto;
-  background: linear-gradient(to right, #fff 30%, rgba(255, 255, 255, 0)),
-    linear-gradient(to right, rgba(255, 255, 255, 0), #fff 70%) 0 100%,
-    radial-gradient(farthest-side at 0% 50%,
-      rgba(0, 0, 0, 0.2),
-      rgba(0, 0, 0, 0)),
-    radial-gradient(farthest-side at 100% 50%,
-      rgba(0, 0, 0, 0.2),
-      rgba(0, 0, 0, 0)) 0 100%;
-  background-repeat: no-repeat;
-  background-color: #fff;
-  background-size: 40px 100%, 40px 100%, 14px 100%, 14px 100%;
-  background-position: 0 0, 100%, 0 0, 100%;
-  background-attachment: local, local, scroll, scroll;
-
-  &:focus {
-    outline: 1px solid @c400;
-  }
+  .rolavel-horizontalmente;
 }
 
 caption {
@@ -2651,7 +2782,6 @@ caption {
     }
   }
 }
-
 
 .tabela-de-etapas__item--primeiro-nivel {}
 
@@ -2785,7 +2915,8 @@ caption {
 }
 
 .migalhas-de-pão {
-  text-transform: uppercase;
+  .t12;
+
   font-weight: 700;
   line-height: 1.5em;
   flex-basis: 100%;
@@ -2796,6 +2927,7 @@ caption {
 .migalhas-de-pão__item {
   display: inline;
   white-space: nowrap;
+  color: @c300;
 
   &::after {
     color: @amarelo;
@@ -2842,6 +2974,11 @@ caption {
     &::before {
       content: attr(data-debug)': ';
     }
+  }
+
+  > pre,
+  > textarea {
+    white-space: pre-wrap;
   }
 }
 

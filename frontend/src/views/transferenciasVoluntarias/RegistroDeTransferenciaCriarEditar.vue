@@ -122,7 +122,7 @@ TransferenciasVoluntarias.buscarItem(props.transferenciaId);
           name="empenho"
           as="select"
           class="inputtext light mb1"
-          :class="{ 'error': errors.empenho }"
+          :class="{ error: errors.empenho }"
         >
           <option value="">
             Selecionar
@@ -137,6 +137,46 @@ TransferenciasVoluntarias.buscarItem(props.transferenciaId);
         <ErrorMessage
           class="error-msg mb1"
           name="empenho"
+        />
+      </div>
+    </div>
+    <div class="flex g2 mb1">
+      <div class="f1">
+        <LabelFromYup
+          name="custeio"
+          :schema="schema"
+        />
+        <MaskedFloatInput
+          name="custeio"
+          type="text"
+          class="inputtext light mb1"
+          :value="values.custeio"
+          converter-para="string"
+          @update:model-value="(newValue) =>
+            updateValorTotal('custeio', newValue, setFieldValue)"
+        />
+        <ErrorMessage
+          class="error-msg mb1"
+          name="custeio"
+        />
+      </div>
+      <div class="f1">
+        <LabelFromYup
+          name="investimento"
+          :schema="schema"
+        />
+        <MaskedFloatInput
+          name="investimento"
+          type="text"
+          class="inputtext light mb1"
+          :value="values.investimento"
+          converter-para="string"
+          @update:model-value="(newValue) =>
+            updateValorTotal('investimento', newValue, setFieldValue)"
+        />
+        <ErrorMessage
+          class="error-msg mb1"
+          name="investimento"
         />
       </div>
     </div>

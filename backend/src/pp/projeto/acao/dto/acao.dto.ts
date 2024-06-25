@@ -2,6 +2,10 @@ import { ApiProperty } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
 import { IsEnum, IsInt } from 'class-validator';
 
+//nao iniciada -> Registro
+//em andamento -> Acompanhamento
+//paralisada -> Acompanhamento
+//concluída -> Encerramento
 export const ProjetoAcao = {
     'arquivar': 'arquivar',
     'restaurar': 'restaurar',
@@ -14,6 +18,9 @@ export const ProjetoAcao = {
     'reiniciar': 'reiniciar',
     'cancelar': 'cancelar',
     'terminar': 'terminar',
+    'iniciar_obra': 'iniciar_obra',
+    'concluir_obra': 'concluir_obra',
+    'paralisar_obra': 'paralisar_obra',
 };
 
 export type ProjetoAcao = (typeof ProjetoAcao)[keyof typeof ProjetoAcao];

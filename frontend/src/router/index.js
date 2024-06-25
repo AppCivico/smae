@@ -25,6 +25,7 @@ import planosSetoriais from './planosSetoriais';
 import projetos from './projetos';
 import relatorios from './relatorios';
 import transferenciasVoluntarias from './transferenciasVoluntarias';
+import obras from './obras';
 
 // eslint-disable-next-line import/prefer-default-export
 export const router = createRouter({
@@ -57,6 +58,7 @@ export const router = createRouter({
     planosSetoriais,
     projetos,
     análise,
+    obras,
     graficos,
     relatorios,
     envios,
@@ -105,12 +107,12 @@ router.afterEach((to) => {
 
 router.beforeEach((to, from, next) => {
   if (typeof to.matched.find((rota) => rota.name !== undefined)?.components?.default === 'function') {
-    $eventHub.emit('chamadaPendenteIniciada', to); // Start progress bar
+    $eventHub.emit('recebimentoIniciado', to); // Start progress bar
   }
   next();
 });
 
 router.beforeResolve((to, from, next) => {
-  $eventHub.emit('chamadaPendenteEncerrada'); // Stop progress bar
+  $eventHub.emit('recebimentoEncerrado'); // Stop progress bar
   next();
 });

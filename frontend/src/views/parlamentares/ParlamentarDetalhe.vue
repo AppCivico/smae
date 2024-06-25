@@ -32,12 +32,12 @@
         </dl>
 
         <dl
-          v-if="emFoco.mandato_atual?.atuacao"
+          v-if="emFoco.ultimo_mandato?.atuacao"
         >
           <dt>
             Área de Atuação
           </dt>
-          <dd v-html="emFoco.mandato_atual.atuacao" />
+          <dd v-html="emFoco.ultimo_mandato.atuacao" />
         </dl>
       </div>
 
@@ -74,10 +74,13 @@
     </div>
 
     <div
-      v-if="emFoco.mandato_atual?.biografia"
+      v-if="emFoco.ultimo_mandato"
       class="mb4"
     >
-      <div class="flex spacebetween center">
+      <div
+        v-if="emFoco.ultimo_mandato?.biografia"
+        class="flex spacebetween center"
+      >
         <h3 class="title">
           Biografia
         </h3>
@@ -86,7 +89,7 @@
 
       <div
         class="biografia"
-        v-html="emFoco.mandato_atual.biografia"
+        v-html="emFoco.ultimo_mandato.biografia"
       />
 
       <div class="mb4 mt2">
@@ -108,7 +111,7 @@
               <th>Tipo</th>
             </tr>
           </thead>
-          <tbody v-if="emFoco.equipe">
+          <tbody v-if="emFoco.equipe.length">
             <tr
               v-for="(item, index) in emFoco.equipe"
               :key="index"
@@ -130,12 +133,12 @@
       </div>
 
       <div
-        v-if="emFoco.mandato_atual?.eleicao"
+        v-if="emFoco.ultimo_mandato?.eleicao"
         class="mb4"
       >
         <div class="flex spacebetween center">
           <h3 class="title">
-            Eleição {{ emFoco.mandato_atual.eleicao.ano }}
+            Eleição {{ emFoco.ultimo_mandato.eleicao.ano }}
           </h3>
           <hr class="ml2 f1">
         </div>
@@ -150,7 +153,7 @@
                 v-if="emFoco"
                 class="t13"
               >
-                <span v-if="emFoco.mandato_atual.eleito">Sim</span>
+                <span v-if="emFoco.ultimo_mandato.eleito">Sim</span>
                 <span v-else>Não</span>
               </dd>
             </dl>
@@ -163,7 +166,7 @@
                 v-if="emFoco"
                 class="t13"
               >
-                <span v-if="emFoco.mandato_atual.suplencia">Sim</span>
+                <span v-if="emFoco.ultimo_mandato.suplencia">Sim</span>
                 <span v-else>Não</span>
               </dd>
             </dl>
@@ -188,10 +191,10 @@
                 UF
               </dt>
               <dd
-                v-if="emFoco.mandato_atual"
+                v-if="emFoco.ultimo_mandato"
                 class="t13"
               >
-                {{ emFoco.mandato_atual.uf }}
+                {{ emFoco.ultimo_mandato.uf }}
               </dd>
             </dl>
 
@@ -199,8 +202,8 @@
               <dt>
                 Cargo
               </dt>
-              <dd v-if="emFoco.mandato_atual?.cargo">
-                {{ emFoco.mandato_atual.cargo }}
+              <dd v-if="emFoco.ultimo_mandato?.cargo">
+                {{ emFoco.ultimo_mandato.cargo }}
               </dd>
             </dl>
           </div>
@@ -210,8 +213,8 @@
               <dt>
                 Partido Atual
               </dt>
-              <dd v-if="emFoco.mandato_atual?.partido_atual.sigla">
-                {{ emFoco.mandato_atual.partido_atual.sigla }}
+              <dd v-if="emFoco.ultimo_mandato?.partido_atual.sigla">
+                {{ emFoco.ultimo_mandato.partido_atual.sigla }}
               </dd>
             </dl>
             <dl>
@@ -219,17 +222,17 @@
                 Partido - Candidatura
               </dt>
               <dd
-                v-if="emFoco.mandato_atual?.partido_candidatura.sigla"
+                v-if="emFoco.ultimo_mandato?.partido_candidatura.sigla"
                 class="t13"
               >
-                {{ emFoco.mandato_atual.partido_candidatura.sigla }}
+                {{ emFoco.ultimo_mandato.partido_candidatura.sigla }}
               </dd>
             </dl>
           </div>
 
-          <div v-if="emFoco.mandato_atual?.votos_estado || emFoco.mandato_atual?.votos_interior || emFoco.mandato_atual?.votos_capital">
+          <div v-if="emFoco.ultimo_mandato?.votos_estado || emFoco.ultimo_mandato?.votos_interior || emFoco.ultimo_mandato?.votos_capital">
             <dl
-              v-if="emFoco.mandato_atual?.votos_estado"
+              v-if="emFoco.ultimo_mandato?.votos_estado"
             >
               <dt>
                 Votos no Estado
@@ -237,12 +240,12 @@
               <dd
                 class="t13"
               >
-                {{ formatarNumero(emFoco.mandato_atual.votos_estado) }}
+                {{ formatarNumero(emFoco.ultimo_mandato.votos_estado) }}
               </dd>
             </dl>
 
             <dl
-              v-if="emFoco.mandato_atual?.votos_interior"
+              v-if="emFoco.ultimo_mandato?.votos_interior"
             >
               <dt>
                 Votos no interior
@@ -251,12 +254,12 @@
 
                 class="t13"
               >
-                {{ formatarNumero(emFoco.mandato_atual.votos_interior) }}
+                {{ formatarNumero(emFoco.ultimo_mandato.votos_interior) }}
               </dd>
             </dl>
 
             <dl
-              v-if="emFoco.mandato_atual?.votos_capital"
+              v-if="emFoco.ultimo_mandato?.votos_capital"
             >
               <dt>
                 Votos na capital
@@ -264,7 +267,7 @@
               <dd
                 class="t13"
               >
-                {{ formatarNumero(emFoco.mandato_atual.votos_capital) }}
+                {{ formatarNumero(emFoco.ultimo_mandato.votos_capital) }}
               </dd>
             </dl>
           </div>
@@ -275,10 +278,10 @@
                 Endereço
               </dt>
               <dd
-                v-if="emFoco.mandato_atual?.endereco"
+                v-if="emFoco.ultimo_mandato?.endereco"
                 class="t13"
               >
-                {{ emFoco.mandato_atual.endereco }}
+                {{ emFoco.ultimo_mandato.endereco }}
               </dd>
             </dl>
 
@@ -287,18 +290,18 @@
                 Gabinete
               </dt>
               <dd
-                v-if="emFoco.mandato_atual?.gabinete"
+                v-if="emFoco.ultimo_mandato?.gabinete"
               >
-                {{ emFoco.mandato_atual.gabinete }}
+                {{ emFoco.ultimo_mandato.gabinete }}
               </dd>
             </dl>
 
-            <dl v-if="emFoco.mandato_atual?.email">
+            <dl v-if="emFoco.ultimo_mandato?.email">
               <dt>
                 Email
               </dt>
               <dd>
-                {{ emFoco.mandato_atual.email }}
+                {{ emFoco.ultimo_mandato.email }}
               </dd>
             </dl>
           </div>

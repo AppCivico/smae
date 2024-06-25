@@ -60,6 +60,13 @@ const rotasParaMigalhasDePão = computed(() => {
             : item.meta?.título || item.name }}
         </router-link>
       </li>
+      <li
+        class="migalhas-de-pão__item"
+      >
+        {{ typeof $route.meta?.título === 'function'
+          ? $route.meta?.título()
+          : $route.meta?.título || $route.name }}
+      </li>
     </ul>
   </nav>
 </template>

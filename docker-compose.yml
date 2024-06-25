@@ -104,8 +104,8 @@ services:
     depends_on:
       - db
       - minio
-      - smae_orcamento
-      - smae_geoloc
+      #- smae_orcamento
+      #- smae_geoloc
     logging:
       driver: "json-file"
       options:

@@ -3,10 +3,10 @@ import { Transform, Type } from 'class-transformer';
 import { IsInt, IsOptional, IsString, Matches, Max, MaxLength, Min, Validate, ValidateIf } from 'class-validator';
 import { EitherPdmOrPortfolio } from 'src/common/dto/EitherPdmOrPortfolio';
 
-export const PROCESSO_REGEXP = /^(?:\d{4}\.?\d{4}\/?\d{7}\-?\d|\d{4}\-?\d\.?\d{3}\.?\d{3}\-?\d)$/;
-export const PROCESSO_MESSAGE =
+export const CONST_PROC_SEI_SINPROC_REGEXP = /^(?:\d{4}\.?\d{4}\/?\d{7}\-?\d|\d{4}\-?\d\.?\d{3}\.?\d{3}\-?\d)$/;
+export const CONST_PROC_SEI_SINPROC_MESSAGE =
     'Processo não está no formato esperado: DDDD.DDDD/DDDDDDD-D (SEI) ou AAAA-D.DDD.DDD-D (SINPROC)';
-export const PROCESSO_DESCRIPTION = `há dois tipos de processo:
+export const CONST_PROC_SEI_SINPROC_DESCR = `há dois tipos de processo:
 - processo SEI (16 dígitos) esperado "6016.2021/00532295", "6016.2021/0053229-5" ou "6016202100532295"
 
 - processo SINPROC (12 dígitos) esperado: "AAAA-D.DDD.DDD-D" ou "201601234567"
@@ -49,10 +49,10 @@ export class AnoDotacaoDto extends AnoDto {
 }
 
 export class AnoDotacaoProcessoDto extends AnoDto {
-    @ApiProperty({ description: PROCESSO_DESCRIPTION, example: '6016201700379910' })
+    @ApiProperty({ description: CONST_PROC_SEI_SINPROC_DESCR, example: '6016201700379910' })
     @IsString()
     @MaxLength(20)
-    @Matches(PROCESSO_REGEXP, { message: PROCESSO_MESSAGE })
+    @Matches(CONST_PROC_SEI_SINPROC_REGEXP, { message: CONST_PROC_SEI_SINPROC_MESSAGE })
     processo: string;
 }
 

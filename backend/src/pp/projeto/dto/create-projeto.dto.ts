@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { ProjetoOrigemTipo } from '@prisma/client';
+import { ProjetoOrigemTipo, ProjetoStatus } from '@prisma/client';
 import { Transform, TransformFnParams, Type } from 'class-transformer';
 import {
     ArrayMaxSize,
@@ -12,13 +12,61 @@ import {
     IsString,
     IsUrl,
     Matches,
+    Max,
     MaxLength,
     Min,
     MinLength,
     ValidateIf,
+    ValidateNested,
 } from 'class-validator';
 import { IsOnlyDate } from 'src/common/decorators/IsDateOnly';
 import { DateTransform } from '../../../auth/transforms/date.transform';
+import { NumberArrayTransformOrEmpty } from '../../../auth/transforms/number-array.transform';
+import {
+    CONST_PROC_SEI_SINPROC_DESCR,
+    CONST_PROC_SEI_SINPROC_MESSAGE,
+    CONST_PROC_SEI_SINPROC_REGEXP,
+} from '../../../dotacao/dto/dotacao.dto';
+import { IsOptionalNonNullable } from '../../../common/helpers/IsOptionalNonNullable';
+
+export class PPfonteRecursoDto {
+    /**
+     * id caso já exista e deseja fazer uma atualização
+     */
+    @IsOptional()
+    @IsNumber()
+    @Transform((a: TransformFnParams) => (a.value === undefined ? undefined : +a.value))
+    id?: number;
+
+    /**
+     * código da fonte de recurso no SOF, no ano escolhido
+     */
+    @IsString({ message: '$property| precisa ser um alfanumérico' })
+    @MaxLength(2)
+    fonte_recurso_cod_sof: string;
+
+    @IsInt()
+    @Max(3000)
+    @Min(2003)
+    @Transform((a: TransformFnParams) => +a.value)
+    fonte_recurso_ano: number;
+
+    @IsNumber(
+        { maxDecimalPlaces: 2, allowInfinity: false, allowNaN: false },
+        { message: '$property| até duas casas decimais' }
+    )
+    @Transform((a: TransformFnParams) => (a.value === null ? null : +a.value))
+    @ValidateIf((object, value) => value !== null)
+    valor_percentual?: number | null;
+
+    @IsNumber(
+        { maxDecimalPlaces: 2, allowInfinity: false, allowNaN: false },
+        { message: '$property| até duas casas decimais' }
+    )
+    @Transform((a: TransformFnParams) => (a.value === null ? null : +a.value))
+    @ValidateIf((object, value) => value !== null)
+    valor_nominal?: number | null;
+}
 
 export class CreateProjetoDto {
     /**
@@ -30,7 +78,8 @@ export class CreateProjetoDto {
     portfolio_id: number;
 
     /**
-     * IDs de Portfolios que também terão "acesso" ao projeto
+     * IDs de Portfolios que também terão "acesso" ao projeto,
+     * Desativado em MDO
      * @example "[]"
      */
     @IsOptional()
@@ -42,23 +91,71 @@ export class CreateProjetoDto {
     portfolios_compartilhados?: number[] | null;
 
     /**
-     * ID do órgão gestor
-     * @example 0
+     * Executa uma mudança de status, sem atualizar os campos (pode retroceder)
      */
-    @IsInt({ message: '$property| orgao_gestor_id precisa ser inteiro' })
-    @Type(() => Number)
-    orgao_gestor_id: number;
+    @IsOptional()
+    @ApiProperty({ enum: ProjetoStatus, enumName: 'ProjetoStatus' })
+    @IsEnum(ProjetoStatus, {
+        message: '$property| Precisa ser um dos seguintes valores: ' + Object.values(ProjetoStatus).join(', '),
+    })
+    status?: ProjetoStatus;
 
     /**
-     * ID das pessoas responsáveis no orgao gestor [pessoas que aparecem no filtro do `gestor_de_projeto=true`]
-     * @example "[]"
+     * nome (mínimo 1 char)
+     * ou
+     * nome da obra
+     * @example "Nome"
      */
-    @IsArray({ message: '$property| precisa ser um array' })
-    @ArrayMinSize(0, { message: '$property| precisa ter um item' })
-    @ArrayMaxSize(100, { message: '$property| precisa ter no máximo 100 items' })
-    @IsInt({ each: true, message: '$property| Cada item precisa ser um número inteiro' })
+    @IsString()
+    @MaxLength(500)
+    @MinLength(1)
+    nome: string;
+
+    /**
+     * grupo temático, apenas MDO
+     * @example "0"
+     */
+    @IsOptional()
+    @IsInt({ message: '$property| grupo_tematico_id precisa ser inteiro' })
+    grupo_tematico_id?: number;
+
+    /**
+     * tipo de intervenção, apenas MDO
+     * @example "0"
+     */
+    @IsOptional()
+    @IsInt({ message: '$property| tipo_intervencao_id precisa ser inteiro' })
+    tipo_intervencao_id?: number;
+
+    /**
+     * equipamento, apenas MDO
+     * @example "0"
+     */
+    @IsOptional()
+    @IsInt({ message: '$property| equipamento_id precisa ser inteiro' })
+    equipamento_id?: number;
+
+    @IsOptional()
+    @IsString()
+    @MaxLength(50000)
     @ValidateIf((object, value) => value !== null)
-    responsaveis_no_orgao_gestor: number[] | null;
+    mdo_detalhamento?: string | null;
+
+    @IsOptional()
+    @IsString()
+    @MaxLength(1024)
+    @ValidateIf((object, value) => value !== null)
+    mdo_programa_habitacional?: string | null;
+
+    @IsOptional()
+    @IsInt({ message: '$property| mdo_n_unidades_habitacionais precisa ser inteiro' })
+    @ValidateIf((object, value) => value !== null)
+    mdo_n_unidades_habitacionais?: number | null;
+
+    @IsOptional()
+    @IsInt({ message: '$property| mdo_n_familias_beneficiadas precisa ser inteiro' })
+    @ValidateIf((object, value) => value !== null)
+    mdo_n_familias_beneficiadas?: number | null;
 
     /**
      * tipo da origem
@@ -124,9 +221,31 @@ export class CreateProjetoDto {
     meta_codigo?: string | null;
 
     /**
+     * ID do órgão gestor do projeto em PP
+     * ou
+     * ID do órgão do gestor do portfólio no MDO
+     * @example 0
+     */
+    @IsInt({ message: '$property| orgao_gestor_id precisa ser inteiro' })
+    @Type(() => Number)
+    orgao_gestor_id: number;
+
+    /**
+     * ID das pessoas responsáveis no orgao gestor [pessoas que aparecem no filtro do `gestor_de_projeto=true`]
+     * @example "[]"
+     */
+    @IsArray({ message: '$property| precisa ser um array' })
+    @ArrayMinSize(0, { message: '$property| precisa ter um item' })
+    @ArrayMaxSize(100, { message: '$property| precisa ter no máximo 100 items' })
+    @IsInt({ each: true, message: '$property| Cada item precisa ser um número inteiro' })
+    @ValidateIf((object, value) => value !== null)
+    responsaveis_no_orgao_gestor: number[] | null;
+
+    /**
      * ID dos órgãos participantes do projeto
      * @example "[]"
      */
+    @IsOptionalNonNullable()
     @IsArray({ message: '$property| precisa ser um array' })
     @ArrayMinSize(0, { message: '$property| precisa ter um item' })
     @ArrayMaxSize(100, { message: '$property| precisa ter no máximo 100 items' })
@@ -134,60 +253,81 @@ export class CreateProjetoDto {
     orgaos_participantes: number[];
 
     /**
-     * dentro dos órgãos participantes, qual é o órgão responsável
+     * dentro dos órgãos participantes, qual é o órgão responsável (projetos)
+     * ou
+     * órgão responsável pela obra
      */
+    @IsOptionalNonNullable()
     @IsInt({ message: '$property| orgao_responsavel_id precisa ser inteiro' })
     @Transform((a: TransformFnParams) => (a.value === null ? null : +a.value))
     @ValidateIf((object, value) => value !== null)
     orgao_responsavel_id: number | null;
 
     /**
-     * ID da pessoa responsável [pelo planejamento, são as pessoas filtradas pelo filtro `colaborador_de_projeto=true`]
+     * apenas MDO
+     * órgão origem da obra (eg: secretaria da educação)
      */
+    @IsOptional()
+    @IsInt({ message: '$property| orgao_responsavel_id precisa ser inteiro' })
+    @Transform((a: TransformFnParams) => (a.value === null ? null : +a.value))
+    @ValidateIf((object, value) => value !== null)
+    orgao_origem_id?: number | null;
+
+    /**
+     * apenas MDO
+     * órgão executor da obra (eg: SIURB Infraestrutura Urbana e Obras)
+     */
+    @IsOptional()
+    @IsInt({ message: '$property| orgao_responsavel_id precisa ser inteiro' })
+    @Transform((a: TransformFnParams) => (a.value === null ? null : +a.value))
+    @ValidateIf((object, value) => value !== null)
+    orgao_executor_id?: number | null;
+
+    /**
+     * ID da pessoa responsável [pelo planejamento, são as pessoas filtradas pelo filtro `colaborador_de_projeto=true`]
+     * ou
+     * ponto focal responsável [são as pessoas filtradas pelo priv `MDO.colaborador_de_projeto`]
+     */
+    @IsOptionalNonNullable()
     @IsInt({ message: '$property| responsavel_id precisa ser inteiro' })
     @Transform((a: TransformFnParams) => (a.value === null ? null : +a.value))
     @ValidateIf((object, value) => value !== null)
     responsavel_id: number | null;
 
     /**
-     * nome (mínimo 1 char)
-     * @example "Nome"
-     */
-    @IsString()
-    @MaxLength(500)
-    @MinLength(1)
-    nome: string;
-
-    /**
      * resumo (pode enviar string vazia)
      * @example "lorem..."
      */
+    @IsOptional()
     @IsString()
     @MaxLength(50000)
-    resumo: string;
+    resumo?: string;
 
     /**
      * previsao_inicio ou null
      * @example "2020-01-01"
      */
+    @IsOptional()
     @IsOnlyDate()
     @Transform(DateTransform)
     @ValidateIf((object, value) => value !== null)
-    previsao_inicio: Date | null;
+    previsao_inicio: Date;
 
     /**
      * previsao_inicio ou null
      * @example "2020-01-01"
      */
+    @IsOptional()
     @IsOnlyDate()
     @Transform(DateTransform)
     @ValidateIf((object, value) => value !== null)
     previsao_termino: Date | null;
 
     @IsOptional()
-    @IsInt({ message: '$property| precisa ser inteiro' })
-    @Min(0, { message: '$property| Mínimo 0' })
-    tolerancia_atraso?: number;
+    @IsOnlyDate()
+    @Transform(DateTransform)
+    @ValidateIf((object, value) => value !== null)
+    mdo_previsao_inauguracao?: Date | null;
 
     /**
      * previsão de custo, número positivo com até 2 casas, pode enviar null
@@ -201,13 +341,25 @@ export class CreateProjetoDto {
     @ValidateIf((object, value) => value !== null)
     previsao_custo: number | null;
 
+    @IsOptional()
+    @IsString()
+    @ValidateIf((object, value) => value !== null)
+    @MaxLength(1024)
+    mdo_observacoes?: string;
+
+    @IsOptional()
+    @IsInt({ message: '$property| precisa ser inteiro' })
+    @Min(0, { message: '$property| Mínimo 0' })
+    tolerancia_atraso?: number;
+
     /**
      * principais_etapas
      * @example "1. doing xpto\n2. doing zoo"
      */
+    @IsOptional()
     @IsString()
     @MaxLength(50000)
-    principais_etapas: string;
+    principais_etapas?: string;
 
     @IsOptional()
     @IsInt({ message: '$property| regiao_id precisa ser inteiro' })
@@ -242,6 +394,67 @@ export class CreateProjetoDto {
     @IsString({ each: true })
     @IsArray()
     geolocalizacao: string[];
+
+    /*
+     * secretario gestor do projeto
+     * ou
+     * secretário gestor do portfólio
+     */
+    @IsOptional()
+    @IsString()
+    @MaxLength(250)
+    @ValidateIf((object, value) => value !== null)
+    secretario_executivo?: string | null;
+
+    /*
+     * secretario responsavel
+     * ou
+     * secretario responsavel na obra
+     */
+    @IsOptional()
+    @IsString()
+    @MaxLength(250)
+    @ValidateIf((object, value) => value !== null)
+    secretario_responsavel?: string | null;
+
+    // manter duplicado no update
+    @IsOptional()
+    @IsArray({ message: 'precisa ser uma array, pode ter 0 items para limpar' })
+    @ValidateNested({ each: true })
+    @Type(() => PPfonteRecursoDto)
+    fonte_recursos?: PPfonteRecursoDto[];
+
+    @IsOptional()
+    @IsArray()
+    @IsInt({ message: '$property| regiao_ids precisa ser inteiro', each: true })
+    @ValidateIf((object, value) => value !== null)
+    @Transform(NumberArrayTransformOrEmpty)
+    regiao_ids?: number[] | null;
+
+    @IsOptional()
+    @IsString()
+    @MaxLength(250)
+    @ValidateIf((object, value) => value !== null)
+    secretario_colaborador?: string | null;
+
+    @IsOptional()
+    @IsInt({ message: '$property| precisa ser inteiro' })
+    @Min(0, { message: '$property| Mínimo 0' })
+    orgao_colaborador_id?: number;
+
+    @IsOptional()
+    @IsArray()
+    @IsInt({ message: '$property| colaboradores_no_orgao precisa ser inteiro', each: true })
+    @ValidateIf((object, value) => value !== null)
+    @Transform(NumberArrayTransformOrEmpty)
+    colaboradores_no_orgao?: number[] | null;
+
+    @IsOptional()
+    @IsArray()
+    @IsInt({ message: '$property| tags precisa ser inteiro', each: true })
+    @ValidateIf((object, value) => value !== null)
+    @Transform(NumberArrayTransformOrEmpty)
+    tags?: number[] | null;
 }
 
 export class CreateProjetoDocumentDto {
@@ -278,11 +491,10 @@ export class CreateProjetoSeiDto {
      *
      * @example "6068.2021/0004861-3"
      **/
+    @ApiProperty({ description: CONST_PROC_SEI_SINPROC_DESCR, example: '6016201700379910' })
     @IsString()
-    @MaxLength(40)
-    @Matches(/^[0-9\-\.\/\\]+$/, {
-        message: '$property| Precisa ser apenas números, pontos, barras ou traços.',
-    })
+    @MaxLength(20)
+    @Matches(CONST_PROC_SEI_SINPROC_REGEXP, { message: CONST_PROC_SEI_SINPROC_MESSAGE })
     processo_sei: string;
 
     @IsOptional()

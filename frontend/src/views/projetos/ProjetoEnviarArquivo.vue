@@ -73,7 +73,6 @@ const onSubmit = handleSubmit.withControlled(async () => {
       const rotaDeEscape = route.meta?.rotaDeEscape;
       curfile.loading = false;
 
-      projetosStore.buscarDiretórios();
       projetosStore.buscarArquivos();
 
       if (rotaDeEscape) {

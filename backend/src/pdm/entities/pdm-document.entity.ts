@@ -1,13 +1,6 @@
-import { TipoDocumentoDto } from '../../tipo-documento/entities/tipo-documento.entity';
+import { ArquivoBaseDto } from '../../upload/dto/create-upload.dto';
 
 export class PdmDocument {
-    arquivo: {
-        id: number;
-        descricao: string | null;
-        tamanho_bytes: number;
-        TipoDocumento: TipoDocumentoDto | null;
-        nome_original: string;
-        download_token?: string;
-    };
+    arquivo: ArquivoBaseDto;
     id: number;
 }

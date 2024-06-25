@@ -88,7 +88,6 @@ const camadasSelecionadas = computed(() => (Array.isArray(sugestãoSelecionada.v
 
 const {
   errors, handleSubmit, isSubmitting, validateField, values: carga,
-
   setFieldValue,
   setFieldError,
 } = useForm({
@@ -109,7 +108,7 @@ const endereçosConsolidadosPorToken = computed(() => ({
 
 function redefinirFormulário() {
   // Redefinição manual porque o `resetForm()` conflita com o model
-  // e o resetField() não parecem funcionar direito
+  // e o resetField() não parece funcionar direito
   setFieldValue('cep', null);
   setFieldError('cep', []);
   setFieldValue('tipo', null);

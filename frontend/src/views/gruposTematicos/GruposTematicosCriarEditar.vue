@@ -27,6 +27,65 @@
         />
       </div>
     </div>
+    <p class="w700">
+      Informações adicionais a serem informadas no registro da obra:
+    </p>
+
+    <label
+      for="programa_habitacional"
+      class="flex center mb1"
+    >
+      <Field
+        id="programa_habitacional"
+        name="programa_habitacional"
+        type="checkbox"
+        :value="true"
+        :unchecked-value="false"
+      />
+      <LabelFromYup
+        as="span"
+        name="programa_habitacional"
+        :schema="schema"
+        class="mb0"
+      />
+    </label>
+    <label
+      for="unidades_habitacionais"
+      class="flex center mb1"
+    >
+      <Field
+        id="unidades_habitacionais"
+        name="unidades_habitacionais"
+        type="checkbox"
+        :value="true"
+        :unchecked-value="false"
+      />
+      <LabelFromYup
+        as="span"
+        name="unidades_habitacionais"
+        class="mb0"
+        :schema="schema"
+      />
+    </label>
+    <label
+      for="familias_beneficiadas"
+      class="flex center mb1"
+    >
+      <Field
+        id="familias_beneficiadas"
+        name="familias_beneficiadas"
+        type="checkbox"
+        :value="true"
+        :unchecked-value="false"
+      />
+      <LabelFromYup
+        as="span"
+        name="familias_beneficiadas"
+        :schema="schema"
+        class="mb0"
+      />
+    </label>
+
     <FormErrorsList :errors="errors" />
 
     <div class="flex spacebetween center mb2">

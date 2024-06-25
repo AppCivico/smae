@@ -15,16 +15,12 @@ import { useObservadoresStore } from '@/stores/observadores.store.ts';
 import { useOrgansStore } from '@/stores/organs.store';
 import { usePortfolioStore } from '@/stores/portfolios.store.ts';
 import { useProjetosStore } from '@/stores/projetos.store.ts';
-import { useRegionsStore } from '@/stores/regions.store';
 import { storeToRefs } from 'pinia';
 import {
   ErrorMessage, Field, FieldArray, Form,
 } from 'vee-validate';
 import { computed, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-
-const RegionsStore = useRegionsStore();
-const { regiõesPorNívelOrdenadas } = storeToRefs(RegionsStore);
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
@@ -77,7 +73,7 @@ const portfolioId = Number.parseInt(route.query.portfolio_id, 10) || undefined;
 const possíveisGestores = ref([]);
 const possíveisColaboradores = ref([]);
 const portfóliosDisponíveis = computed(() => {
-  if (!emFoco.value?.portfolio_id || !emFoco.value?.portfolio_id) {
+  if (!emFoco.value?.portfolio_id) {
     return [];
   }
 
@@ -115,16 +111,6 @@ const órgãosDisponíveisNessePortfolio = (idDoPortfólio) => portfolioStore
 const iniciativasPorId = computed(() => (Array.isArray(metaSimplificada.value?.iniciativas)
   ? metaSimplificada.value.iniciativas.reduce((acc, cur) => ({ ...acc, [cur.id]: cur }), {})
   : {}));
-
-const regiõesDisponíveisNoPortfolio = (idDoPortfólio = 0) => {
-  const nívelRegionalização = !idDoPortfólio
-    ? 0
-    : portfolioStore.portfoliosPorId[idDoPortfólio]?.nivel_regionalizacao || 0;
-
-  return !nívelRegionalização
-    ? []
-    : regiõesPorNívelOrdenadas.value[nívelRegionalização] || [];
-};
 
 const possíveisOrigens = [
   {

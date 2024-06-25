@@ -1,18 +1,23 @@
-import { ApiProperty, PickType } from '@nestjs/swagger';
+import { ApiProperty, IntersectionType, PickType } from '@nestjs/swagger';
 import { CategoriaProcessoSei, ProjetoFase, ProjetoOrigemTipo, ProjetoStatus } from '@prisma/client';
 import { IdDesc } from 'src/atividade/entities/atividade.entity';
 import { IdCodTituloDto } from 'src/common/dto/IdCodTitulo.dto';
 import { IdNomeExibicaoDto } from 'src/common/dto/IdNomeExibicao.dto';
 import { IdSiglaDescricao } from 'src/common/dto/IdSigla.dto';
+import { TarefaCronogramaDto } from 'src/common/dto/TarefaCronograma.dto';
 import { IdTituloDto } from '../../../common/dto/IdTitulo.dto';
 import { GeolocalizacaoDto } from '../../../geo-loc/entities/geo-loc.entity';
-import { TipoDocumentoDto } from '../../../tipo-documento/entities/tipo-documento.entity';
-import { TarefaCronogramaDto } from 'src/common/dto/TarefaCronograma.dto';
+import { ArquivoBaseDto } from '../../../upload/dto/create-upload.dto';
+import { IdNomeDto } from '../../../common/dto/IdNome.dto';
 
 export class ProjetoDto {
     id: number;
     nome: string;
-    @ApiProperty({ enum: ProjetoStatus, enumName: 'ProjetoStatus' })
+    @ApiProperty({
+        enum: ProjetoStatus,
+        enumName: 'ProjetoStatus',
+        description: 'Status do projeto, apenas os que não começam com MDO...',
+    })
     status: ProjetoStatus;
     orgao_responsavel: IdSiglaDescricao | null;
     arquivado: boolean;
@@ -22,6 +27,25 @@ export class ProjetoDto {
     portfolio: PortIdTituloModeloClonagemDto;
     portfolios_compartilhados: IdTituloDto[];
     geolocalizacao: GeolocalizacaoDto[];
+}
+
+export class ProjetoMdoDto {
+    id: number;
+    nome: string;
+    codigo: string | null;
+    portfolio: IdTituloDto;
+    orgao_origem: IdSiglaDescricao;
+    grupo_tematico: IdNomeDto;
+    tipo_intervencao: IdNomeDto | null;
+    equipamento: IdNomeDto | null;
+    regioes: string;
+
+    @ApiProperty({
+        enum: ProjetoStatus,
+        enumName: 'ProjetoStatus',
+        description: 'Status da obra, apenas os que começam com MDO_...',
+    })
+    status: ProjetoStatus;
 }
 
 export class ListProjetoDto {
@@ -46,6 +70,10 @@ export class ProjetoPermissoesDto {
     campo_data_aprovacao: boolean;
     campo_data_revisao: boolean;
     campo_versao: boolean;
+
+    acao_iniciar_obra: boolean;
+    acao_concluir_obra: boolean;
+    acao_paralisar_obra: boolean;
 
     campo_nao_escopo: boolean;
     campo_objeto: boolean;
@@ -125,6 +153,11 @@ export class PortIdTituloModeloClonagemDto {
 export class ProjetoEquipeItemDto {
     orgao_id: number;
     pessoa: IdNomeExibicaoDto;
+}
+
+export class IdDescRegiaoComParent extends IdDesc {
+    parente_id: number | null;
+    nivel: number;
 }
 
 export class ProjetoDetailDto {
@@ -228,7 +261,31 @@ export class ProjetoDetailDto {
 
     tarefa_cronograma: TarefaCronogramaDto;
     bloco_nota_token: string;
+    regioes: IdDescRegiaoComParent[];
+
+    secretario_colaborador: string | null;
+    orgao_colaborador: IdSiglaDescricao | null;
+    colaboradores_no_orgao: IdNomeExibicaoDto[];
+
+    orgao_origem: IdSiglaDescricao | null;
+
+    tags: IdDesc[];
 }
+
+export class ProjetoDetailBaseMdo {
+    grupo_tematico: IdNomeDto;
+    tipo_intervencao: IdNomeDto | null;
+    equipamento: IdNomeDto | null;
+
+    orgao_executor: IdSiglaDescricao | null;
+    mdo_detalhamento: string | null;
+    mdo_programa_habitacional: string | null;
+    mdo_n_unidades_habitacionais: number | null;
+    mdo_n_familias_beneficiadas: number | null;
+    mdo_previsao_inauguracao: Date | null;
+    mdo_observacoes: string | null;
+}
+export class ProjetoDetailMdoDto extends IntersectionType(ProjetoDetailBaseMdo, ProjetoDetailDto) {}
 
 export class ProjetoMVPDto extends PickType(ProjetoDetailDto, ['id', 'portfolio_id']) {}
 
@@ -251,17 +308,13 @@ export class ProjetoRecursos {
     valor_nominal: number | null;
 }
 
+export class ArquivoProjetoDto extends ArquivoBaseDto {
+    @ApiProperty({ deprecated: true, description: 'Usar "data" no nivel superior, em ProjetoDocumentoDto' })
+    data: Date | null;
+}
+
 export class ProjetoDocumentoDto {
-    arquivo: {
-        id: number;
-        descricao: string | null;
-        tamanho_bytes: number;
-        nome_original: string;
-        download_token?: string;
-        diretorio_caminho: string | null;
-        data: Date | null;
-        TipoDocumento: TipoDocumentoDto | null;
-    };
+    arquivo: ArquivoProjetoDto;
     id: number;
     descricao: string | null;
     data: Date | null;

@@ -10,7 +10,7 @@ import { useRoute } from 'vue-router';
 
 const parlamentarStore = useParlamentaresStore();
 const {
-  lista, chamadasPendentes, erro,
+  lista, chamadasPendentes, erro, paginação,
 } = storeToRefs(parlamentarStore);
 const route = useRoute();
 const alertStore = useAlertStore();
@@ -150,4 +150,15 @@ parlamentarStore.buscarTudo();
       </tr>
     </tbody>
   </table>
+  <button
+    v-if="paginação.temMais && paginação.tokenDaPróximaPágina"
+    :disabled="chamadasPendentes.lista"
+    class="btn bgnone outline center mt2"
+    @click="parlamentarStore.buscarTudo({
+      ...route.query,
+      token_proxima_pagina: paginação.tokenDaPróximaPágina
+    })"
+  >
+    carregar mais
+  </button>
 </template>

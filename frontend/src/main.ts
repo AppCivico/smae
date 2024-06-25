@@ -19,6 +19,17 @@ import { router } from './router';
 
 const app = createApp(App);
 
+app.config.errorHandler = (err, instance, info) => {
+  if (console.trace) {
+    console.error(err);
+    console.trace(err);
+  } else {
+    console.log('WARN: ', info);
+    console.log('TRACE: ', instance);
+    console.log('ERROR:', err);
+  }
+};
+
 app.config.globalProperties.gblHabilitarBeta = import.meta.env.VITE_HABILITAR_BETA || false;
 app.config.globalProperties.gblLimiteDeSeleçãoSimultânea = Number.parseInt(
   import.meta.env.VITE_LIMITE_SELECAO,
@@ -55,31 +66,34 @@ pinia.use(() => ({
 }));
 app.directive('ScrollLockDebug', {
   beforeMount: (el, binding) => {
+    const primária = 'Control';
+    const secundária = 'CapsLock';
+
     el.classList.add('debug');
     el.setAttribute('hidden', '');
-    let shiftPressionada = false;
+    let secundáriaPressionada = false;
 
     if (binding.value) {
       el.setAttribute('data-debug', binding.value);
     }
     window.addEventListener('keydown', (event) => {
-      if (event.getModifierState && event.getModifierState('Control')) {
-        if (event.key === 'Shift') {
-          if (shiftPressionada) {
+      if (event.getModifierState && event.getModifierState(primária)) {
+        if (event.key === secundária) {
+          if (secundáriaPressionada) {
             if (el.hasAttribute('hidden')) {
               el.removeAttribute('hidden');
             } else {
               el.setAttribute('hidden', '');
             }
-            shiftPressionada = false;
+            secundáriaPressionada = false;
           } else {
-            shiftPressionada = true;
+            secundáriaPressionada = true;
             setTimeout(() => {
-              shiftPressionada = false;
+              secundáriaPressionada = false;
             }, 300);
           }
-        } else if (shiftPressionada) {
-          shiftPressionada = false;
+        } else if (secundáriaPressionada) {
+          secundáriaPressionada = false;
         }
       }
     });

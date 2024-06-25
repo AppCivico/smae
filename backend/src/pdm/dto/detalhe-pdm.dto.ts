@@ -1,8 +1,8 @@
-import { Eixo } from '../../macro-tema/entities/macro-tema.entity';
+import { MacroTemaDto } from '../../macro-tema/entities/macro-tema.entity';
 import { Meta } from '../../meta/entities/meta.entity';
-import { ObjetivoEstrategico } from '../../tema/entities/objetivo-estrategico.entity';
-import { SubTema } from '../../subtema/entities/subtema.entity';
-import { Tag } from '../../tag/entities/tag.entity';
+import { ObjetivoEstrategicoDto } from '../../tema/entities/objetivo-estrategico.entity';
+import { SubTemaDto } from '../../subtema/entities/subtema.entity';
+import { TagDto } from '../../tag/entities/tag.entity';
 import { ListPdm } from '../entities/list-pdm.entity';
 import { OrcamentoConfig } from './list-pdm.dto';
 
@@ -17,19 +17,19 @@ export class DetalhePdmDto {
      * Lista de objetos de Objetivos Estratégicos
      * @example ObjetivoEstrategico[]
      */
-    tema?: ObjetivoEstrategico[];
+    tema?: ObjetivoEstrategicoDto[];
 
     /**
      * Lista de objetos de Objetivos Estratégicos
      * @example ObjetivoEstrategico[]
      */
-    sub_tema?: SubTema[];
+    sub_tema?: SubTemaDto[];
 
     /**
      * Lista de objetos de
      * @example Eixo[]
      */
-    eixo?: Eixo[];
+    eixo?: MacroTemaDto[];
 
     /**
      * Lista de objetos de
@@ -41,7 +41,8 @@ export class DetalhePdmDto {
      * Lista de objetos de
      * @example Tag[]
      */
-    tag?: Tag[];
+    tag?: TagDto[];
 
     orcamento_config: OrcamentoConfig[] | null;
 }
+

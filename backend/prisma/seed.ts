@@ -1,4 +1,12 @@
-import { EleicaoTipo, ModuloSistema, PerfilAcesso, Prisma, PrismaClient, Privilegio } from '@prisma/client';
+import {
+    DistribuicaoStatusTipo,
+    EleicaoTipo,
+    ModuloSistema,
+    PerfilAcesso,
+    Prisma,
+    PrismaClient,
+    Privilegio,
+} from '@prisma/client';
 import { ListaDePrivilegios } from '../src/common/ListaDePrivilegios';
 import {
     CONST_COD_NOTA_DIST_RECURSO,
@@ -731,6 +739,25 @@ const PerfilAcessoConfig: {
         ],
     },
     {
+        nome: 'Administrador do Módulo de Obras',
+        descricao: 'Gerenciar cadastros básicos e acesso irrestrito às obras',
+        privilegios: ['ProjetoMDO.administrador', 'CadastroPessoa.administrador'],
+    },
+    {
+        nome: 'Gestor de Obras no Órgão',
+        descricao: 'Gerenciar todos as obras no órgão em qual faz parte',
+        privilegios: [
+            'Reports.executar.MDO', // TODO remoer, afinal, precisa dos filtros no reports
+            'ProjetoMDO.administrador_no_orgao',
+            'Reports.dashboard_mdo',
+            'ProjetoMDO.administrar_portfolios_no_orgao',
+            'CadastroGrupoPortfolioMDO.administrador_no_orgao',
+            'CadastroProjetoEtapaMDO.inserir',
+            'CadastroProjetoEtapaMDO.editar',
+            'CadastroProjetoEtapaMDO.remover',
+        ],
+    },
+    {
         nome: atualizarNomePerfil('Gestor de projetos', ['Órgão Gestor']),
         descricao: 'Pode ser escolhido como responsável no órgão gestor de projetos',
         privilegios: [
@@ -880,6 +907,7 @@ async function main() {
     await ensure_tiponota_dist_recurso();
 
     await populateEleicao();
+    //await populateDistribuicaoStatusBase();
 }
 
 async function ensure_tiponota_dist_recurso() {
@@ -1358,6 +1386,56 @@ async function populateEleicao() {
                 ano: eleicao.ano,
                 tipo: eleicao.tipo,
                 atual_para_mandatos: eleicao.atual_para_mandatos,
+            },
+        });
+    }
+}
+
+async function populateDistribuicaoStatusBase() {
+    const rows = (Object.keys(DistribuicaoStatusTipo) as Array<keyof typeof DistribuicaoStatusTipo>).map((tipo) => {
+        const nome: string =
+            tipo == DistribuicaoStatusTipo.ImpedidaTecnicamente ? 'Impedida Tecnicamente' : tipo.toString();
+
+        return {
+            nome,
+            tipo,
+        };
+    });
+
+    for (const row of rows) {
+        let permite_novos_registros: boolean = true;
+        let valor_distribuicao_contabilizado: boolean = true;
+
+        if (
+            row.tipo == DistribuicaoStatusTipo.Cancelada ||
+            row.tipo == DistribuicaoStatusTipo.ImpedidaTecnicamente ||
+            row.tipo == DistribuicaoStatusTipo.Finalizada
+        ) {
+            permite_novos_registros = false;
+        }
+
+        if (row.tipo == DistribuicaoStatusTipo.Cancelada || row.tipo == DistribuicaoStatusTipo.ImpedidaTecnicamente) {
+            valor_distribuicao_contabilizado = false;
+        }
+
+        await prisma.distribuicaoStatusBase.upsert({
+            where: {
+                nome_tipo: {
+                    nome: row.nome,
+                    tipo: row.tipo,
+                },
+            },
+            create: {
+                nome: row.nome,
+                tipo: row.tipo,
+                valor_distribuicao_contabilizado,
+                permite_novos_registros,
+            },
+            update: {
+                nome: row.nome,
+                tipo: row.tipo,
+                valor_distribuicao_contabilizado,
+                permite_novos_registros,
             },
         });
     }

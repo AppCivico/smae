@@ -192,7 +192,7 @@ export class PPProjetoService implements ReportableService {
             };
         });
 
-        const acompanhamentoRows = await this.acompanhamentoService.findAll(dto.projeto_id, undefined);
+        const acompanhamentoRows = await this.acompanhamentoService.findAll('PP', dto.projeto_id, undefined);
         const acompanhamentoOut: RelProjetoAcompanhamentoDto[] = acompanhamentoRows.map((a) => {
             return {
                 id: a.id,

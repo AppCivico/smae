@@ -49,6 +49,9 @@ import TipoDeTransferenciaRaiz from '@/views/tipoDeTransferencia/TipoDeTransfere
 import EtapasCriarEditar from '@/views/etapasProjeto/EtapasCriarEditar.vue';
 import EtapasLista from '@/views/etapasProjeto/EtapasLista.vue';
 import EtapasRaiz from '@/views/etapasProjeto/EtapasRaiz.vue';
+import StatusDistribuicaoCriarEditar from '@/views/statusesDistribuicao/StatusDistribuicaoCriarEditar.vue';
+import StatusDistribuicaoLista from '@/views/statusesDistribuicao/StatusDistribuicaoLista.vue';
+import StatusDistribuicaoRaiz from '../views/statusesDistribuicao/StatusDistribuicaoRaiz.vue';
 
 const TiposDeAcompanhamentoLista = defineAsyncComponent({
   loader: () => import('@/views/tiposDeAcompanhamento/TiposLista.vue'),
@@ -73,6 +76,7 @@ const rotasParaMenuSecundário = [
       'gerenciarCategorias',
       'gerenciarRegiões',
       'tipoDeTransferenciaListar',
+      'statusDistribuicaoListar',
       'etapasDoProjetoListar',
       'gruposTematicosObras',
       'tiposDeIntervencao',
@@ -169,10 +173,6 @@ export default [
           rotasParaMenuSecundário,
           limitarÀsPermissões: [
             'ProjetoMDO.administrador',
-            'ProjetoMDO.administrador_no_orgao',
-            'MDO.gestor_de_projeto',
-            'MDO.colaborador_de_projeto',
-            'MDO.espectador_de_projeto',
           ],
         },
         children: [
@@ -226,10 +226,6 @@ export default [
           rotasParaMenuSecundário,
           limitarÀsPermissões: [
             'ProjetoMDO.administrador',
-            'ProjetoMDO.administrador_no_orgao',
-            'MDO.gestor_de_projeto',
-            'MDO.colaborador_de_projeto',
-            'MDO.espectador_de_projeto',
           ],
         },
         children: [
@@ -283,10 +279,6 @@ export default [
           rotasParaMenuSecundário,
           limitarÀsPermissões: [
             'ProjetoMDO.administrador',
-            'ProjetoMDO.administrador_no_orgao',
-            'MDO.gestor_de_projeto',
-            'MDO.colaborador_de_projeto',
-            'MDO.espectador_de_projeto',
           ],
         },
         children: [
@@ -380,6 +372,7 @@ export default [
           rotaPrescindeDeChave: true,
           limitarÀsPermissões: 'Projeto.administrar_portfolios',
           rotasParaMenuSecundário,
+          entidadeMãe: 'projeto',
         },
 
         children: [
@@ -455,6 +448,48 @@ export default [
 
             meta: {
               título: 'Editar Tipo de Transferência',
+            },
+          },
+        ],
+      },
+      {
+        path: '/status-distribuicao',
+        component: StatusDistribuicaoRaiz,
+        meta: {
+          título: 'Status de Distribuição',
+          rotaPrescindeDeChave: true,
+          rotasParaMenuSecundário,
+          limitarÀsPermissões: 'CadastroTransferencia.listar',
+        },
+        children: [
+          {
+            name: 'statusDistribuicaoListar',
+            path: '',
+            component: StatusDistribuicaoLista,
+            meta: {
+              título: 'Status de Distribuição',
+            },
+          },
+          {
+            name: 'statusDistribuicaoCriar',
+            path: 'novo',
+            component: StatusDistribuicaoCriarEditar,
+            meta: {
+              título: 'Novo Status de Distribuição',
+            },
+          },
+          {
+            path: ':statusDistribuicaoId',
+            name: 'statusDistribuicaoEditar',
+            component: StatusDistribuicaoCriarEditar,
+            props: ({ params }) => ({
+              ...params,
+              // eslint-disable-next-line max-len
+              ...{ statusDistribuicaoId: Number.parseInt(params.statusDistribuicaoId, 10) || undefined },
+            }),
+
+            meta: {
+              título: 'Editar Status de Distribuição',
             },
           },
         ],

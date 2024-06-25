@@ -14,11 +14,11 @@ import {
 import { IsOnlyDate } from '../../../common/decorators/IsDateOnly';
 
 import { IdTituloDto } from 'src/common/dto/IdTitulo.dto';
-import { IdCodTituloDto } from '../../../common/dto/IdCodTitulo.dto';
-import { TipoDocumentoDto } from '../../../tipo-documento/entities/tipo-documento.entity';
-import { SerieValorNomimal } from '../../../variavel/entities/variavel.entity';
-import { DateYMD } from '../../../common/date2ymd';
 import { DateTransform } from '../../../auth/transforms/date.transform';
+import { DateYMD } from '../../../common/date2ymd';
+import { IdCodTituloDto } from '../../../common/dto/IdCodTitulo.dto';
+import { ArquivoBaseDto } from '../../../upload/dto/create-upload.dto';
+import { SerieValorNomimal } from '../../../variavel/entities/variavel.entity';
 
 export const MfPerfilDto = {
     'ponto_focal': 'ponto_focal',
@@ -426,19 +426,8 @@ export class DetailAnaliseQualitativaDto {
     id: number;
 }
 
-export class ArquivoVariavelOuFcAnaliseQualitativaDocumentoArquivoDto {
-    id: number;
-    descricao: string | null;
-    tamanho_bytes: number;
-    // TODO verificar se no frontend está usando isso, pois estamos voltando todos as col do banco,
-    // não só o que está documentado no DTO
-    TipoDocumento: TipoDocumentoDto | null;
-    nome_original: string;
-    download_token?: string;
-}
-
 export class ArquivoVariavelOuFcAnaliseQualitativaDocumentoDto {
-    arquivo: ArquivoVariavelOuFcAnaliseQualitativaDocumentoArquivoDto;
+    arquivo: ArquivoBaseDto;
     id: number;
     criado_em: Date;
     criador: {

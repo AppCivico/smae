@@ -1,18 +1,4 @@
 /* eslint-disable no-template-curly-in-string */
-import cargosDeParlamentar from '@/consts/cargosDeParlamentar';
-import categoriaDeTransferencia from '@/consts/categoriaDeTransferencia';
-import esferasDeTransferencia from '@/consts/esferasDeTransferencia';
-import estadosDoBrasil from '@/consts/estadosDoBrasil';
-import interfacesDeTransferências from '@/consts/interfacesDeTransferências';
-import níveisDeRepresentatividade from '@/consts/niveisDeRepresentatividade';
-import níveisDeSuplência from '@/consts/niveisDeSuplencia';
-import regEx from '@/consts/patterns';
-import responsabilidadeEtapaFluxo from '@/consts/responsabilidadeEtapaFluxo';
-import tiposDeLogradouro from '@/consts/tiposDeLogradouro';
-import tiposDeMunicípio from '@/consts/tiposDeMunicipio';
-import tiposNaEquipeDeParlamentar from '@/consts/tiposNaEquipeDeParlamentar';
-import tiposSituacaoSchema from '@/consts/tiposSituacaoSchema';
-import fieldToDate from '@/helpers/fieldToDate';
 import {
   addMethod,
   array,
@@ -26,12 +12,30 @@ import {
   setLocale,
   string,
 } from 'yup';
+import cargosDeParlamentar from '@/consts/cargosDeParlamentar';
+import categoriaDeTransferencia from '@/consts/categoriaDeTransferencia';
+import esferasDeTransferencia from '@/consts/esferasDeTransferencia';
+import estadosDoBrasil from '@/consts/estadosDoBrasil';
+import interfacesDeTransferências from '@/consts/interfacesDeTransferências';
+import niveisDeOrcamento from '@/consts/niveisDeOrcamento';
+import níveisDeRepresentatividade from '@/consts/niveisDeRepresentatividade';
+import níveisDeSuplência from '@/consts/niveisDeSuplencia';
+import regEx from '@/consts/patterns';
+import responsabilidadeEtapaFluxo from '@/consts/responsabilidadeEtapaFluxo';
+import statusObras from '@/consts/statusObras';
+import tiposDeLogradouro from '@/consts/tiposDeLogradouro';
+import tiposDeMunicípio from '@/consts/tiposDeMunicipio';
+import tiposDeOrigens from '@/consts/tiposDeOrigens';
+import tiposNaEquipeDeParlamentar from '@/consts/tiposNaEquipeDeParlamentar';
+import tiposSituacaoSchema from '@/consts/tiposSituacaoSchema';
+import fieldToDate from '@/helpers/fieldToDate';
+import tiposStatusDistribuicao from './tiposStatusDistribuicao';
 
 const dataMin = import.meta.env.VITE_DATA_MIN ? new Date(`${import.meta.env.VITE_DATA_MIN}`) : new Date('1900-01-01T00:00:00Z');
 const dataMax = import.meta.env.VITE_DATA_MAX ? new Date(`${import.meta.env.VITE_DATA_MAX}`) : new Date('2100-12-31T23:59:59Z');
 
-addMethod(string, 'fieldUntilToday', function (errorMessage = 'Valor de ${path} futuro') {
-  return this.test('teste', errorMessage, function (value) {
+addMethod(string, 'fieldUntilToday', function _(errorMessage = 'Valor de ${path} futuro') {
+  return this.test('teste', errorMessage, function __(value) {
     const { path, createError } = this;
 
     if (!value) return true;
@@ -48,6 +52,21 @@ addMethod(string, 'fieldUntilToday', function (errorMessage = 'Valor de ${path} 
     } catch (error) {
       return createError({ path, message: 'Valor de ${path} inválido' });
     }
+  });
+});
+
+/**
+ * @link https://github.com/jquense/yup/issues/384#issuecomment-442958997
+ */
+addMethod(mixed, 'inArray', function _(arrayToCompare, message = '${path} não encontrado em ${arrayToCompare}') {
+  return this.test({
+    message,
+    name: 'inArray',
+    exclusive: true,
+    params: { arrayToCompare },
+    test(value) {
+      return (this.resolve(arrayToCompare) || []).includes(value);
+    },
   });
 });
 
@@ -124,6 +143,9 @@ export const acompanhamento = object()
               .nullable(),
           }),
       ),
+    apresentar_no_relatorio: boolean()
+      .label('Apresentar em relatório')
+      .nullable(),
     cronograma_paralisado: boolean()
       .label('Cronograma paralisado')
       .nullable(),
@@ -148,6 +170,7 @@ export const acompanhamento = object()
       .label('Pontos de atenção')
       .max(50000)
       .nullable(),
+    // campo não utilizado em Obras
     risco: array()
       .label('Riscos associados')
       .nullable()
@@ -656,6 +679,15 @@ export const gruposTematicos = object({
     .min(3)
     .max(250)
     .required(),
+  programa_habitacional: boolean()
+    .label('Nome do programa habitacional')
+    .nullable(),
+  unidades_habitacionais: boolean()
+    .label('Número de unidades habitacionais')
+    .nullable(),
+  familias_beneficiadas: boolean()
+    .label('Número de famílias beneficiadas')
+    .nullable(),
 });
 
 export const liçãoAprendida = object()
@@ -682,6 +714,13 @@ export const liçãoAprendida = object()
       .label('Responsável')
       .required(),
   });
+
+export const macrotema = object({
+  descricao: string()
+    .label('Nome')
+    .max(250)
+    .required(),
+});
 
 export const mandato = object({
   atuacao: string()
@@ -804,6 +843,220 @@ export const novaSenha = object()
       .oneOf([ref('password'), null], 'Senhas não coincidem'),
   });
 
+export const obras = object({
+  atividade_id: number()
+    .nullable(),
+  colaboradores_no_orgao: array()
+    .label('Ponto focal colaborador')
+    .of(
+      number()
+        .min(1),
+    )
+    .nullable(),
+  equipamento_id: number()
+    .label('Equipamento/Estrutura pública')
+    .min(1, 'Equipamento/Estrutura pública inválida')
+    .nullable(),
+  fonte_recursos: array()
+    .label('Fontes de recursos')
+    .nullable()
+    .of(
+      object()
+        .shape({
+          fonte_recurso_cod_sof: string()
+            .label('Código SOF')
+            .matches(/\d\d/)
+            .required('A fonte é obrigatória'),
+          fonte_recurso_ano: number()
+            .label('Ano')
+            .min(2003, 'A partir de 2003')
+            .max(3000, 'Até o ano 3000')
+            .required('Escolha um ano válido'),
+          id: number()
+            .nullable(),
+          valor_nominal: mixed()
+            .label('Previsão de custo')
+            .when('valor_percentual', {
+              is: (valorPercentual) => !valorPercentual,
+              then: number()
+                .required('Ao menos um tipo de valor é necessário.'),
+              otherwise: mixed()
+                .nullable(),
+            }),
+          valor_percentual: mixed()
+            .label('Valor percentual')
+            .when('valor_nominal', {
+              is: (valorNominal) => !valorNominal,
+              then: number()
+                .required('Ao menos um tipo de valor é necessário.')
+                .min(0.01, 'Não se pode investir menos de 0.01%')
+                .max(100, 'Não se pode investir mais de 100%'),
+              otherwise: mixed()
+                .nullable(),
+            }),
+        }, [['valor_percentual', 'valor_nominal']]),
+    ),
+  geolocalizacao: array()
+    .label('Endereços')
+    .of(
+      string()
+        .min(10, 'Endereço inválido')
+        .required(),
+    )
+    .nullable(),
+  grupo_tematico_id: number()
+    .label('Grupo temático')
+    .min(1, 'Grupo temático inválido')
+    .required(),
+  iniciativa_id: number()
+    .when(['origem_tipo', 'atividade_id'], {
+      is: (origemTipo, atividadeId) => origemTipo === 'PdmSistema' && atividadeId,
+      then: (field) => field.required(),
+      otherwise: (field) => field.nullable(),
+    }),
+  mdo_detalhamento: string()
+    .label('Detalhamento/Escopo da obra')
+    .max(50000)
+    .nullable(),
+  mdo_n_familias_beneficiadas: number()
+    .label('Número de famílias beneficiadas')
+    .min(0)
+    .nullable(),
+  mdo_n_unidades_habitacionais: number()
+    .label('Número de unidades')
+    .min(0)
+    .nullable(),
+  mdo_observacoes: string()
+    .label('Observações')
+    .max(1024)
+    .nullable(),
+  mdo_previsao_inauguracao: date()
+    .label('Data de inauguração planejada')
+    .max(dataMax)
+    .min(dataMin)
+    .nullable(),
+  mdo_programa_habitacional: string()
+    .label('Programa Habitacional')
+    .max(1024)
+    .nullable(),
+  meta_codigo: string()
+    .label('Código da Meta')
+    .nullable(),
+  meta_id: number()
+    .when(['origem_tipo', 'iniciativa_id'], {
+      is: (origemTipo, iniciativaId) => origemTipo === 'PdmSistema' || iniciativaId,
+      then: (field) => field.required(),
+      otherwise: (field) => field.nullable(),
+    }),
+  nome: string()
+    .label('Nome da obra/intervenção')
+    .min(0)
+    .max(500)
+    .required(),
+  orgao_colaborador_id: number()
+    .label('Órgão colaborador')
+    .min(1, 'Órgão colaborador inválidos')
+    .nullable(),
+  orgao_executor_id: number()
+    .label('Secretaria/órgão executor')
+    .min(1, 'Secretaria/órgão executor inválidos')
+    .nullable(),
+  orgao_gestor_id: number()
+    .label('Órgão gestor do portfólio')
+    .min(1, 'Órgão inválido')
+    .required(),
+  orgao_origem_id: number()
+    .label('Secretaria/órgão de origem')
+    .min(1, 'Secretaria/órgão de origem inválidos')
+    .required(),
+  orgao_responsavel_id: number()
+    .label('Órgão responsável pela obra')
+    .min(1, 'Órgão responsável pela obra inválidos')
+    .nullable(),
+  orgaos_colaboradores: string()
+    .label('Órgãos colaboradores da obra')
+    .nullable(),
+  origem_outro: string()
+    .max(2048)
+    .when('origem_tipo', (origemTipo, field) => (origemTipo && origemTipo !== 'PdmSistema'
+      ? field.required('Descrição de origem é obrigatório caso não se escolha um Programa de Metas corrente')
+      : field.nullable())),
+  origem_tipo: mixed()
+    .label('Origem')
+    .oneOf(Object.keys(tiposDeOrigens))
+    .required(),
+  ponto_focal_colaborador: string()
+    .label('Ponto focal colaborador')
+    .nullable(),
+  ponto_focal_responsavel: string()
+    .label('Ponto focal responsável')
+    .nullable(),
+  portfolio_id: number()
+    .label('Nome do portfólio')
+    .min(1, 'Portfólio inválido')
+    .required(),
+  previsao_custo: number()
+    .label('Custo previsto inicial')
+    .min(0)
+    .nullable(),
+  previsao_inicio: date()
+    .label('Previsão de início')
+    .max(dataMax)
+    .min(dataMin)
+    .nullable(),
+  previsao_termino: date()
+    .label('Previsão de término')
+    .max(dataMax)
+    .min(ref('previsao_inicio'), 'Precisa ser posterior à data de início')
+    .nullable(),
+  regiao_ids: array()
+    .label('Subprefeitura')
+    .of(
+      number()
+        .min(1),
+    )
+    .nullable(),
+  responsavel_id: number()
+    .label('Ponto focal responsável')
+    .min(1, 'Responsável inválido')
+    .nullable(),
+  responsaveis_no_orgao_gestor: array()
+    .label('Assessor do monitoramento')
+    .of(
+      number()
+        .min(1),
+    )
+    .nullable(),
+  secretario_colaborador: string()
+    .label('Secretário colaborador da obra')
+    .max(250)
+    .nullable(),
+  secretario_executivo: string()
+    .label('Secretário gestor do portfólio')
+    .max(250)
+    .nullable(),
+  secretario_responsavel: string()
+    .label('Secretário responsável pela obra')
+    .max(250)
+    .nullable(),
+  secretario: string()
+    .label('Secretário gestor do portfólio')
+    .nullable(),
+  status: mixed()
+    .label('Status')
+    .oneOf(Object.keys(statusObras))
+    .required(),
+  tipo_intervencao_id: number()
+    .label('Tipo de obra/intervenção')
+    .min(1, 'Tipo de obra/intervenção inválido')
+    .required(),
+  tolerancia_atraso: number()
+    .label('Percentual de tolerância com atraso')
+    .min(0)
+    .max(100)
+    .nullable(),
+});
+
 export const orçamentoRealizado = object({
   dotacao: string()
     .label('Dotação')
@@ -924,6 +1177,177 @@ export const planoDeAção = object()
       .required()
       .max(60),
   }, [['orgao_id', 'responsavel']]);
+
+export const planoSetorial = object({
+  ativo: boolean()
+    .label('Ativo')
+    .nullable(),
+  data_fim: date()
+    .label('Data de fim')
+    .max(dataMax)
+    .min(dataMin)
+    .nullable()
+    .required()
+    .transform((v) => (!v ? null : v)),
+  data_inicio: date()
+    .label('Data de início')
+    .max(dataMax)
+    .min(dataMin)
+    .nullable()
+    .required()
+    .transform((v) => (!v ? null : v)),
+  data_publicacao: date()
+    .label('Data de publicação')
+    .max(dataMax)
+    .min(dataMin)
+    .nullable()
+    .transform((v) => (!v ? null : v)),
+  descricao: string()
+    .label('Descrição')
+    .max(250)
+    .nullable()
+    .required(),
+  equipe_tecnica: string()
+    .label('Equipe técnica')
+    .max(2500)
+    .nullable()
+    .required(),
+  legislacao_de_instituicao: string()
+    .label('Legislação de instituição')
+    .nullable()
+    .max(50000),
+  monitoramento_orcamento: boolean()
+    .label('Monitoramento de orçamento')
+    .nullable(),
+  nivel_orcamento: mixed()
+    .label('Nível de controle orçamentário')
+    // feio, mas... Algo parece bugado no Yup e não posso atualizá-lo agora
+    .oneOf([...niveisDeOrcamento, null])
+    .transform((v) => (!v ? null : v))
+    .when('monitoramento_orcamento', (monitoramentoOrcamento, field) => (monitoramentoOrcamento
+      ? field.required()
+      : field.nullable())),
+  nome: string()
+    .label('Nome')
+    .min(1)
+    .max(250)
+    .required(),
+  orgao_admin_id: number()
+    .label('Órgão administrador')
+    .min(1, 'Órgão inválido')
+    .nullable()
+    .transform((v) => (!v ? null : v)),
+  pdm_anteriores: number()
+    .label('Planos antecessores')
+    .min(1, 'Plano inválido')
+    .nullable()
+    .transform((v) => (!v ? null : v)),
+  periodo_do_ciclo_participativo_fim: date()
+    .label('Fim do ciclo participativo')
+    .max(dataMax)
+    .min(dataMin)
+    .nullable()
+    .transform((v) => (!v ? null : v)),
+  periodo_do_ciclo_participativo_inicio: date()
+    .label('Início do ciclo participativo')
+    .max(dataMax)
+    .min(dataMin)
+    .nullable()
+    .transform((v) => (!v ? null : v)),
+  possui_atividade: boolean()
+    .label('Habilitar atividades')
+    .nullable(),
+  possui_complementacao_meta: boolean()
+    .label('Habilitar complementação')
+    .nullable(),
+  possui_contexto_meta: boolean()
+    .label('Habilitar contexto')
+    .nullable(),
+  possui_iniciativa: boolean()
+    .label('Habilitar iniciativas')
+    .when('possui_atividade', (valor, campo) => (valor
+      ? campo.required()
+      : campo.nullable())),
+  possui_macro_tema: boolean()
+    .label('Habilitar macro-tema')
+    .nullable(),
+  possui_sub_tema: boolean()
+    .label('Habilitar sub-tema')
+    .nullable(),
+  possui_tema: boolean()
+    .label('Habilitar tema')
+    .nullable(),
+  prefeito: string()
+    .label('Prefeito/Titular')
+    .max(250)
+    .required(),
+  'ps_admin_cp.participantes': array()
+    .label('Administradores participantes')
+    .of(
+      number()
+        .min(1)
+        .required(),
+    ),
+  'ps_ponto_focal.participantes': array()
+    .label('Pontos focais participantes')
+    .of(
+      number()
+        .min(1)
+        .required(),
+    ),
+  'ps_tecnico_cp.participantes': array()
+    .label('Técnicos participantes')
+    .of(
+      number()
+        .min(1)
+        .required(),
+    ),
+  rotulo_atividade: string()
+    .label('Rótulo de atividades')
+    .max(30)
+    .when('possui_atividade', (valor, campo) => (valor
+      ? campo.required()
+      : campo.nullable())),
+  rotulo_complementacao_meta: string()
+    .label('Rótulo de complementação')
+    .max(30)
+    .when('possui_complementacao_meta', (valor, campo) => (valor
+      ? campo.required()
+      : campo.nullable())),
+  rotulo_contexto_meta: string()
+    .label('Rótulo de contexto')
+    .max(30)
+    .when('possui_contexto_meta', (valor, campo) => (valor
+      ? campo.required()
+      : campo.nullable())),
+  rotulo_iniciativa: string()
+    .label('Rótulo de iniciativas')
+    .max(30)
+    .when('possui_iniciativa', (valor, campo) => (valor
+      ? campo.required()
+      : campo.nullable())),
+  rotulo_macro_tema: string()
+    .label('Rótulo de macro-temas')
+    .max(30)
+    .when('possui_macro_tema', (valor, campo) => (valor
+      ? campo.required()
+      : campo.nullable())),
+  rotulo_sub_tema: string()
+    .label('Rótulo de sub-temas')
+    .max(30)
+    .when('possui_sub_tema', (valor, campo) => (valor
+      ? campo.required()
+      : campo.nullable())),
+  rotulo_tema: string()
+    .label('Rótulo de temas')
+    .max(30)
+    .when('possui_tema', (valor, campo) => (valor
+      ? campo.required()
+      : campo.nullable())),
+  upload_logo: string()
+    .label('Logotipo')
+    .nullable(),
+});
 
 export const portfolio = object({
   data_criacao: date()
@@ -1088,8 +1512,8 @@ export const parlamentar = object({
     .max(250)
     .required(),
   nascimento: date()
-    .max(dataMax)
-    .min(new Date(1933, 0, 1))
+    .max(new Date(new Date().setFullYear(new Date().getFullYear() - 18)), 'Data inválida, o parlamentar precisa ter no mínimo 18 anos')
+    .min(new Date(new Date().setFullYear(new Date().getFullYear() - 100)), 'Data inválida')
     .label('Nascimento')
     .required(),
   telefone: string()
@@ -1144,12 +1568,26 @@ export const situacao = object({
     .required(),
 });
 
+export const subtema = object({
+  descricao: string()
+    .label('Nome')
+    .max(250)
+    .required(),
+});
+
 export const suplentes = object({
   nome: string()
     .label('Nome')
     .required(),
   ordem: mixed()
     .label('Ordem')
+    .required(),
+});
+
+export const tema = object({
+  descricao: string()
+    .label('Nome')
+    .max(250)
     .required(),
 });
 
@@ -1165,6 +1603,20 @@ export const tipoDeTransferencia = object({
     .label('Esfera')
     .required()
     .oneOf(Object.keys(esferasDeTransferencia)),
+});
+
+export const statusDistribuicao = object({
+  nome: string()
+    .label('Nome')
+    .required(),
+  tipo: mixed()
+    .label('Tipo')
+    .required()
+    .oneOf(Object.keys(tiposStatusDistribuicao)),
+  tipo_transferencia_id: number()
+    .label('Tipo de transferência')
+    .min(1, 'Selecione um tipo de transferência')
+    .required(),
 });
 
 export const transferenciaDistribuicaoDeRecursos = object({
@@ -1198,6 +1650,10 @@ export const transferenciaDistribuicaoDeRecursos = object({
   convenio: string()
     .label('Número convênio/pré-convênio')
     .nullable(),
+  custeio: number()
+    .label('Custeio')
+    .min(0)
+    .required(),
   data_empenho: date()
     .label('Data do empenho')
     .max(dataMax)
@@ -1209,6 +1665,30 @@ export const transferenciaDistribuicaoDeRecursos = object({
     .nullable(),
   empenho: boolean()
     .label('Empenho')
+    .required(),
+  // historico_status: array()
+  //   .label('Registro status da distribuição de recursos')
+  //   .of(object({
+  //     data_troca: date()
+  //       .label('Data')
+  //       .max(dataMax)
+  //       .min(new Date(2003, 0, 1))
+  //       .required()
+  //       .transform((v) => (!v ? null : v)),
+  //     orgao_responsavel_id: number()
+  //       .lavel('')
+  //       .required(),
+  //     nome_responsavel: string()
+  //       .lavel('')
+  //       .required(),
+  //     motivo: string()
+  //       .lavel('')
+  //       .required(),
+  //   }))
+  //   .strict(),
+  investimento: number()
+    .label('Investimento')
+    .min(0)
     .required(),
   justificativa_aditamento: string()
     .label('Justificativa para aditamento')
@@ -1253,16 +1733,16 @@ export const transferenciaDistribuicaoDeRecursos = object({
         .required(),
     }))
     .strict(),
+  valor: number()
+    .label('Valor do Repasse')
+    .required()
+    .nullable(),
   valor_contrapartida: number()
     .label('Valor contrapartida')
     .required()
     .nullable(),
   valor_total: number()
     .label('Valor total')
-    .required()
-    .nullable(),
-  valor: number()
-    .label('Valor do Repasse')
     .required()
     .nullable(),
   vigencia: date()
@@ -1292,6 +1772,10 @@ export const registroDeTransferencia = object({
   conta_aceite: string()
     .label('Número conta-corrente de aceite')
     .nullable(),
+  custeio: number()
+    .label('Custeio')
+    .min(0)
+    .required(),
   dotacao: string()
     .label('Dotação')
     .nullable(),
@@ -1316,6 +1800,10 @@ export const registroDeTransferencia = object({
   gestor_contrato: string()
     .label('Gestor do Contrato')
     .nullable(),
+  investimento: number()
+    .label('Investimento')
+    .min(0)
+    .required(),
 });
 
 export const transferenciasVoluntarias = object({
@@ -1434,6 +1922,33 @@ export const processo = object()
       .max(19)
       .min(19, '${label} está fora do formato')
       .matches(regEx.sei)
+      .required(),
+  });
+
+export const processoDeObras = object()
+  .shape({
+    comentarios: string()
+      .label('Comentários')
+      .max(1024)
+      .nullable(),
+    descricao: string()
+      .label('Descrição')
+      .max(2000)
+      .nullable(),
+    link: string()
+      .label('Link')
+      .nullable()
+      .max(2000)
+      .url(),
+    observacoes: string()
+      .label('Observações')
+      .max(1024)
+      .nullable(),
+    processo_sei: string()
+      .label('Processo SEI')
+      .max(19, '${label} está fora do formato')
+      .min(16, '${label} está fora do formato')
+      .matches(regEx.seiOuSinproc)
       .required(),
   });
 
@@ -1565,7 +2080,7 @@ export const projeto = object()
     origem_tipo: mixed()
       .label('Origem')
       .required('O projeto precisa de uma origem de recursos.')
-      .oneOf(['PdmSistema', 'PdmAntigo', 'Outro'], 'A origem escolhida é inválida'),
+      .oneOf(Object.keys(tiposDeOrigens), 'A origem escolhida é inválida'),
     portfolios_compartilhados: array()
       .label('Compartilhar no portfolios')
       .nullable(),
@@ -1990,7 +2505,8 @@ export const relatórioSemestralOuAnual = object({
 export const representatividade = object()
   .shape({
     mandato_id: number()
-      .label('Mandato'),
+      .label('Mandato')
+      .required(),
     municipio_tipo: mixed()
       .label('Tipo de município')
       .oneOf(tiposDeMunicípio),
@@ -2018,7 +2534,8 @@ export const representatividade = object()
       .max(1000)
       .required(),
     regiao_id: number()
-      .label('Região'),
+      .label('Região')
+      .required(),
   });
 
 export const workflow = object({
@@ -2047,6 +2564,12 @@ export const workflow = object({
     .label('Tipo de transferência')
     .nullable()
     .required(),
+  distribuicao_statuses_base: array()
+    .label('Statuses Base Atrelados ao Workflow')
+    .nullable(),
+  distribuicao_statuses_customizados: array()
+    .label('Statuses Customizados Atrelados ao Workflow')
+    .nullable(),
 });
 
 export const fasesFluxo = object({
@@ -2298,11 +2821,16 @@ export const emailTransferencia = object()
 
 export const tag = object()
   .shape({
-    descricao: string().required('Preencha a descrição'),
+    descricao: string()
+      .label('Descrição')
+      .required('Preencha a descrição'),
     ods_id: string()
-      .required(),
+      .label('Categoria')
+      .required('Categoria é obrigatória'),
     pdm_id: string(),
-    upload_icone: string().nullable(),
+    upload_icone: string()
+      .label('Ícone')
+      .nullable(),
   });
 
 export const tipoDeAcompanhamento = object()

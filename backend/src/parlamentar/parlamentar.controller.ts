@@ -23,6 +23,7 @@ import {
 import { RemoveMandatoDepsDto } from './dto/remove-mandato-deps.dto';
 import { FilterParlamentarDto } from './dto/filter-parlamentar.dto';
 import { PaginatedDto } from 'src/common/dto/paginated.dto';
+import { ApiPaginatedResponse } from 'src/auth/decorators/paginated.decorator';
 
 @ApiTags('Parlamentar')
 @Controller('parlamentar')
@@ -37,9 +38,14 @@ export class ParlamentarController {
     }
 
     @ApiBearerAuth('access-token')
+    @Roles(['CadastroParlamentar.inserir'])
+    @ApiPaginatedResponse(ParlamentarDto)
     @Get()
-    async findAll(@Query() filters: FilterParlamentarDto): Promise<PaginatedDto<ParlamentarDto>> {
-        return await this.parlamentarService.findAll(filters);
+    async findAll(
+        @Query() filters: FilterParlamentarDto,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<PaginatedDto<ParlamentarDto>> {
+        return await this.parlamentarService.findAll(filters, user);
     }
 
     @Get(':id')

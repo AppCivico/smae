@@ -9,6 +9,7 @@ import {
 } from '@/../../backend/src/pp/projeto/entities/projeto.entity';
 import { ListProjetoProxyPdmMetaDto } from '@/../../backend/src/pp/projeto/entities/projeto.proxy-pdm-meta.entity';
 import { DiretorioItemDto } from '@/../../backend/src/upload/dto/diretorio.dto';
+import consolidarDiretorios from '@/helpers/consolidarDiretorios';
 import dateTimeToDate from '@/helpers/dateTimeToDate';
 import { defineStore } from 'pinia';
 
@@ -122,6 +123,7 @@ export const useProjetosStore = defineStore('projetos', {
       this.chamadasPendentes.emFoco = false;
     },
 
+    // Obsoleta
     async buscarDiretórios(idDoProjeto = 0): Promise<void> {
       this.chamadasPendentes.diretórios = true;
       this.erro = null;
@@ -279,6 +281,7 @@ export const useProjetosStore = defineStore('projetos', {
       data_aprovacao: dateTimeToDate(emFoco?.data_aprovacao),
       data_revisao: dateTimeToDate(emFoco?.data_revisao),
       equipe: emFoco?.equipe.map((x) => x.pessoa.id) || [],
+      fonte_recursos: emFoco?.fonte_recursos || null,
       geolocalizacao: emFoco?.geolocalizacao?.map((x) => x.token) || [],
       meta_codigo: emFoco?.meta_codigo || '',
       orgao_gestor_id: emFoco?.orgao_gestor?.id || null,
@@ -346,13 +349,9 @@ export const useProjetosStore = defineStore('projetos', {
       return órgãos;
     },
 
-    diretóriosConsolidados: ({ diretórios, arquivos }): string[] => arquivos
-      .reduce((acc: DiretorioItemDto['caminho'][], cur) => {
-        const caminho = cur.arquivo.diretorio_caminho || '/';
-        return acc.indexOf(caminho) === -1
-          ? acc.concat([caminho])
-          : acc;
-      }, diretórios.map((x) => x.caminho))
-      .sort((a, b) => a.localeCompare(b)),
+    diretóriosConsolidados: ({ arquivos, diretórios }): string[] => consolidarDiretorios(
+      arquivos,
+      diretórios,
+    ),
   },
 });

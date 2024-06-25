@@ -2,7 +2,7 @@ import { ApiProperty, OmitType, PartialType } from '@nestjs/swagger';
 import { TransferenciaTipoEsfera } from '@prisma/client';
 import { Transform, TransformFnParams } from 'class-transformer';
 import { IsArray, IsInt, IsOptional, IsString, MaxLength } from 'class-validator';
-import { NumberArrayTransform } from '../../../auth/transforms/number-array.transform';
+import { NumberArrayTransformOrUndef } from '../../../auth/transforms/number-array.transform';
 import { BadRequestException } from '@nestjs/common';
 import { StringArrayTransform } from '../../../auth/transforms/string-array.transform';
 import { IdSigla, IdSiglaDescricao } from 'src/common/dto/IdSigla.dto';
@@ -53,7 +53,7 @@ export class FilterDashTransferenciasDto {
     @IsOptional()
     @IsArray()
     @IsInt({ each: true, message: '$property| Cada item precisa ser um número inteiro' })
-    @Transform(NumberArrayTransform)
+    @Transform(NumberArrayTransformOrUndef)
     partido_ids?: number[];
 
     @IsOptional()
@@ -68,7 +68,7 @@ export class FilterDashTransferenciasDto {
     @IsOptional()
     @IsArray()
     @IsInt({ each: true, message: '$property| Cada item precisa ser um número inteiro' })
-    @Transform(NumberArrayTransform)
+    @Transform(NumberArrayTransformOrUndef)
     orgaos_ids?: number[];
 
     @IsOptional()
@@ -91,21 +91,21 @@ export class FilterDashTransferenciasAnaliseDto extends PartialType(
     @IsOptional()
     @IsArray()
     @IsInt({ each: true, message: '$property| Cada item precisa ser um número inteiro' })
-    @Transform(NumberArrayTransform)
+    @Transform(NumberArrayTransformOrUndef)
     parlamentar_ids?: number[];
 
     @ApiProperty({ description: 'Contém qualquer um dos anos', example: '[]' })
     @IsOptional()
     @IsArray()
     @IsInt({ each: true, message: '$property| Cada item precisa ser um número inteiro' })
-    @Transform(NumberArrayTransform)
+    @Transform(NumberArrayTransformOrUndef)
     anos?: number[];
 
     @ApiProperty({ description: 'Contém qualquer uma das etapas', example: '[]' })
     @IsOptional()
     @IsArray()
     @IsInt({ each: true, message: '$property| Cada item precisa ser um número inteiro' })
-    @Transform(NumberArrayTransform)
+    @Transform(NumberArrayTransformOrUndef)
     etapa_ids?: number[];
 }
 

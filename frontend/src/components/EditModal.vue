@@ -23,7 +23,7 @@ async function checkClose() {
 <template>
   <Teleport
     v-if="editModal"
-    to="body"
+    to="#modais"
   >
     <div
       class="editModal-wrap"

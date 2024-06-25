@@ -1,16 +1,21 @@
 import { HttpException, Injectable } from '@nestjs/common';
-import { Prisma, WorkflowResponsabilidade } from '@prisma/client';
+import { DistribuicaoStatusTipo, Prisma, WorkflowResponsabilidade } from '@prisma/client';
 import { CreateDistribuicaoRecursoDto } from './dto/create-distribuicao-recurso.dto';
 import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
-import { DistribuicaoRecursoDto } from './entities/distribuicao-recurso.entity';
+import {
+    DistribuicaoHistoricoStatusDto,
+    DistribuicaoRecursoDetailDto,
+    DistribuicaoRecursoDto,
+} from './entities/distribuicao-recurso.entity';
 import { UpdateDistribuicaoRecursoDto } from './dto/update-distribuicao-recurso.dto';
 import { FilterDistribuicaoRecursoDto } from './dto/filter-distribuicao-recurso.dto';
 import { formataSEI } from 'src/common/formata-sei';
 import { BlocoNotaService } from '../bloco-nota/bloco-nota/bloco-nota.service';
 import { NotaService } from '../bloco-nota/nota/nota.service';
 import { AvisoEmailService } from '../aviso-email/aviso-email.service';
+import { DateTime } from 'luxon';
 
 type OperationsRegistroSEI = {
     id?: number;
@@ -27,7 +32,11 @@ export class DistribuicaoRecursoService {
         private readonly avisoEmailService: AvisoEmailService
     ) {}
 
-    async create(dto: CreateDistribuicaoRecursoDto, user: PessoaFromJwt): Promise<RecordWithId> {
+    async create(
+        dto: CreateDistribuicaoRecursoDto,
+        user: PessoaFromJwt,
+        distribuicao_automatica?: boolean
+    ): Promise<RecordWithId> {
         const orgaoGestorExiste = await this.prisma.orgao.count({
             where: {
                 id: dto.orgao_gestor_id,
@@ -36,13 +45,19 @@ export class DistribuicaoRecursoService {
         });
         if (!orgaoGestorExiste) throw new HttpException('orgao_gestor_id| Órgão gestor inválido', 400);
 
-        const transferenciaExiste = await this.prisma.transferencia.count({
+        const transferencia = await this.prisma.transferencia.findFirst({
             where: {
                 id: dto.transferencia_id,
                 removido_em: null,
             },
+            select: {
+                custeio: true,
+                investimento: true,
+                valor_contrapartida: true,
+                valor_total: true,
+            },
         });
-        if (!transferenciaExiste) throw new HttpException('transferencia_id| Transferência não encontrada.', 400);
+        if (!transferencia) throw new HttpException('transferencia_id| Transferência não encontrada.', 400);
 
         const created = await this.prisma.$transaction(
             async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
@@ -60,6 +75,111 @@ export class DistribuicaoRecursoService {
                         );
                 }
 
+                // “VALOR DO REPASSE”  é a soma de “Custeio” + Investimento”
+                if (+dto.valor != +dto.custeio + +dto.investimento)
+                    throw new HttpException(
+                        'valor| Valor do repasse deve ser a soma dos valores de custeio e investimento.',
+                        400
+                    );
+
+                // “VALOR TOTAL”  é a soma de “Custeio” + Investimento” + “Contrapartida”
+                if (+dto.valor_total != +dto.valor + +dto.valor_contrapartida)
+                    throw new HttpException(
+                        'valor| Valor total deve ser a soma dos valores de repasse e contrapartida.',
+                        400
+                    );
+
+                // A soma de custeio, investimento, contrapartida e total de todas as distribuições não pode ser superior aos valores da transferência.
+                const outrasDistribuicoes = await prismaTx.distribuicaoRecurso.findMany({
+                    where: {
+                        transferencia_id: dto.transferencia_id,
+                        removido_em: null,
+                        status: {
+                            some: {
+                                OR: [
+                                    {
+                                        AND: [
+                                            { NOT: { status_base: { tipo: DistribuicaoStatusTipo.Declinada } } },
+                                            { NOT: { status_base: { tipo: DistribuicaoStatusTipo.Redirecionada } } },
+                                        ],
+                                    },
+                                    {
+                                        AND: [
+                                            { NOT: { status: { tipo: DistribuicaoStatusTipo.Declinada } } },
+                                            { NOT: { status: { tipo: DistribuicaoStatusTipo.Redirecionada } } },
+                                        ],
+                                    },
+                                ],
+                            },
+                        },
+                    },
+                    select: {
+                        custeio: true,
+                        investimento: true,
+                        valor_contrapartida: true,
+                        valor_total: true,
+                    },
+                });
+
+                const transferencia_custeio = distribuicao_automatica == true ? dto.custeio : +transferencia.custeio!;
+                const transferencia_investimento =
+                    distribuicao_automatica == true ? dto.investimento : +transferencia.investimento!;
+                const transferencia_contrapartida =
+                    distribuicao_automatica == true ? dto.valor_contrapartida : +transferencia.valor_contrapartida!;
+                const transferencia_valor_total =
+                    distribuicao_automatica == true ? dto.valor_total : +transferencia.valor_total!;
+
+                let sumCusteio: number = +dto.custeio ?? 0;
+                let sumInvestimento: number = +dto.investimento ?? 0;
+                let sumContrapartida: number = +dto.valor_contrapartida ?? 0;
+                let sumTotal: number = +dto.valor_total ?? 0;
+
+                for (const distRow of outrasDistribuicoes) {
+                    sumCusteio += +distRow.custeio;
+                    sumContrapartida += +distRow.valor_contrapartida;
+                    sumInvestimento += +distRow.investimento;
+                    sumTotal += +distRow.valor_total;
+                }
+
+                console.log('===============');
+                console.log(sumCusteio);
+                console.log(sumContrapartida);
+                console.log(sumInvestimento);
+                console.log(sumTotal);
+                console.log(transferencia_custeio);
+                console.log(transferencia_investimento);
+                console.log(transferencia_contrapartida);
+                console.log(transferencia_valor_total);
+                console.log('===============');
+
+                if (transferencia.custeio && sumCusteio && sumCusteio > transferencia_custeio)
+                    throw new HttpException(
+                        'Soma de custeio de todas as distribuições não pode ser superior ao valor de custeio da transferência.',
+                        400
+                    );
+
+                if (
+                    transferencia.valor_contrapartida &&
+                    sumContrapartida &&
+                    sumContrapartida > transferencia_contrapartida
+                )
+                    throw new HttpException(
+                        'Soma de contrapartida de todas as distribuições não pode ser superior ao valor de contrapartida da transferência.',
+                        400
+                    );
+
+                if (transferencia.investimento && sumInvestimento && sumInvestimento > transferencia_investimento)
+                    throw new HttpException(
+                        'Soma de investimento de todas as distribuições não pode ser superior ao valor de investimento da transferência.',
+                        400
+                    );
+
+                if (transferencia.valor_total && sumTotal && sumTotal > transferencia_valor_total)
+                    throw new HttpException(
+                        'Soma do total de todas as distribuições não pode ser superior ao valor total da transferência.',
+                        400
+                    );
+
                 const distribuicaoRecurso = await prismaTx.distribuicaoRecurso.create({
                     data: {
                         transferencia_id: dto.transferencia_id,
@@ -69,6 +189,8 @@ export class DistribuicaoRecursoService {
                         valor: dto.valor,
                         valor_total: dto.valor_total,
                         valor_contrapartida: dto.valor_contrapartida,
+                        custeio: dto.custeio,
+                        investimento: dto.investimento,
                         empenho: dto.empenho,
                         data_empenho: dto.data_empenho,
                         programa_orcamentario_estadual: dto.programa_orcamentario_estadual,
@@ -199,6 +321,15 @@ export class DistribuicaoRecursoService {
     }
 
     async findAll(filters: FilterDistribuicaoRecursoDto): Promise<DistribuicaoRecursoDto[]> {
+        const transferencia = await this.prisma.transferencia.findFirstOrThrow({
+            where: {
+                id: filters.transferencia_id,
+            },
+            select: {
+                valor_total: true,
+            },
+        });
+
         const rows = await this.prisma.distribuicaoRecurso.findMany({
             where: {
                 removido_em: null,
@@ -212,6 +343,8 @@ export class DistribuicaoRecursoService {
                 valor: true,
                 valor_total: true,
                 valor_contrapartida: true,
+                custeio: true,
+                investimento: true,
                 empenho: true,
                 data_empenho: true,
                 programa_orcamentario_estadual: true,
@@ -248,12 +381,81 @@ export class DistribuicaoRecursoService {
                         justificativa: true,
                     },
                 },
+                status: {
+                    orderBy: { data_troca: 'desc' },
+                    select: {
+                        id: true,
+                        data_troca: true,
+                        motivo: true,
+                        nome_responsavel: true,
+                        orgao_responsavel: {
+                            select: {
+                                id: true,
+                                sigla: true,
+                            },
+                        },
+                        status: {
+                            select: {
+                                id: true,
+                                nome: true,
+                                tipo: true,
+                                permite_novos_registros: true,
+                            },
+                        },
+                        status_base: {
+                            select: {
+                                id: true,
+                                nome: true,
+                                tipo: true,
+                                permite_novos_registros: true,
+                            },
+                        },
+                    },
+                },
             },
         });
 
         return rows.map((r) => {
+            let pode_registrar_status: boolean = true;
+            if (r.status.length) {
+                if (!r.status[0].status?.permite_novos_registros || !r.status[0].status_base?.permite_novos_registros)
+                    pode_registrar_status = false;
+            }
+
+            let pct_valor_transferencia: number = 0;
+            if (transferencia.valor_total && r.valor_total) {
+                pct_valor_transferencia = Math.round(
+                    (r.valor_total.toNumber() / transferencia.valor_total.toNumber()) * 100
+                );
+            }
+
             return {
-                ...r,
+                id: r.id,
+                nome: r.nome,
+                transferencia_id: r.transferencia_id,
+                orgao_gestor: r.orgao_gestor,
+                objeto: r.objeto,
+                valor: r.valor,
+                valor_total: r.valor_total,
+                valor_contrapartida: r.valor_contrapartida,
+                custeio: r.custeio,
+                investimento: r.investimento,
+                empenho: r.empenho,
+                data_empenho: r.data_empenho,
+                programa_orcamentario_estadual: r.programa_orcamentario_estadual,
+                programa_orcamentario_municipal: r.programa_orcamentario_municipal,
+                dotacao: r.dotacao,
+                proposta: r.proposta,
+                contrato: r.contrato,
+                convenio: r.convenio,
+                assinatura_termo_aceite: r.assinatura_termo_aceite,
+                assinatura_municipio: r.assinatura_municipio,
+                assinatura_estado: r.assinatura_estado,
+                vigencia: r.vigencia,
+                aditamentos: r.aditamentos,
+                conclusao_suspensiva: r.conclusao_suspensiva,
+                pode_registrar_status: pode_registrar_status,
+                pct_valor_transferencia: pct_valor_transferencia,
                 registros_sei: r.registros_sei.map((s) => {
                     return {
                         id: s.id,
@@ -261,11 +463,40 @@ export class DistribuicaoRecursoService {
                         processo_sei: formataSEI(s.processo_sei),
                     };
                 }),
+                historico_status: r.status.map((r) => {
+                    return {
+                        id: r.id,
+                        data_troca: r.data_troca,
+                        dias_no_status: Math.abs(Math.round(DateTime.fromJSDate(r.data_troca).diffNow('days').days)),
+                        motivo: r.motivo,
+                        nome_responsavel: r.nome_responsavel,
+                        orgao_responsavel: {
+                            id: r.orgao_responsavel.id,
+                            sigla: r.orgao_responsavel.sigla,
+                        },
+                        status_customizado: r.status
+                            ? {
+                                  id: r.status.id,
+                                  nome: r.status.nome,
+                                  tipo: r.status.tipo,
+                                  status_base: false,
+                              }
+                            : null,
+                        status_base: r.status_base
+                            ? {
+                                  id: r.status_base.id,
+                                  nome: r.status_base.nome,
+                                  tipo: r.status_base.tipo,
+                                  status_base: true,
+                              }
+                            : null,
+                    };
+                }),
             };
         });
     }
 
-    async findOne(id: number, user: PessoaFromJwt): Promise<DistribuicaoRecursoDto> {
+    async findOne(id: number, user: PessoaFromJwt): Promise<DistribuicaoRecursoDetailDto> {
         const row = await this.prisma.distribuicaoRecurso.findFirst({
             where: {
                 id,
@@ -279,6 +510,8 @@ export class DistribuicaoRecursoService {
                 valor: true,
                 valor_total: true,
                 valor_contrapartida: true,
+                custeio: true,
+                investimento: true,
                 empenho: true,
                 data_empenho: true,
                 programa_orcamentario_estadual: true,
@@ -316,12 +549,129 @@ export class DistribuicaoRecursoService {
                         justificativa: true,
                     },
                 },
+
+                status: {
+                    orderBy: { data_troca: 'desc' },
+                    select: {
+                        id: true,
+                        data_troca: true,
+                        motivo: true,
+                        nome_responsavel: true,
+                        orgao_responsavel: {
+                            select: {
+                                id: true,
+                                sigla: true,
+                            },
+                        },
+                        status: {
+                            select: {
+                                id: true,
+                                nome: true,
+                                tipo: true,
+                                permite_novos_registros: true,
+                            },
+                        },
+                        status_base: {
+                            select: {
+                                id: true,
+                                nome: true,
+                                tipo: true,
+                                permite_novos_registros: true,
+                            },
+                        },
+                    },
+                },
+
+                transferencia: {
+                    select: {
+                        valor_total: true,
+                    },
+                },
             },
         });
         if (!row) throw new HttpException('id| Distribuição de recurso não encontrada.', 404);
 
+        const historico_status: DistribuicaoHistoricoStatusDto[] = row.status.map((r) => {
+            return {
+                id: r.id,
+                data_troca: r.data_troca,
+                dias_no_status: Math.abs(Math.round(DateTime.fromJSDate(r.data_troca).diffNow('days').days)),
+                motivo: r.motivo,
+                nome_responsavel: r.nome_responsavel,
+                orgao_responsavel: {
+                    id: r.orgao_responsavel.id,
+                    sigla: r.orgao_responsavel.sigla,
+                },
+                status_customizado: r.status
+                    ? {
+                          id: r.status.id,
+                          nome: r.status.nome,
+                          tipo: r.status.tipo,
+                          status_base: false,
+                      }
+                    : null,
+                status_base: r.status_base
+                    ? {
+                          id: r.status_base.id,
+                          nome: r.status_base.nome,
+                          tipo: r.status_base.tipo,
+                          status_base: true,
+                      }
+                    : null,
+            };
+        });
+
+        let pode_registrar_status: boolean = true;
+        if (row.status.length) {
+            if (!row.status[0].status?.permite_novos_registros || !row.status[0].status_base?.permite_novos_registros)
+                pode_registrar_status = false;
+        }
+
+        let pct_valor_transferencia: number = 0;
+        if (row.transferencia.valor_total && row.valor_total) {
+            pct_valor_transferencia = Math.round(
+                (row.valor_total.toNumber() / row.transferencia.valor_total.toNumber()) * 100
+            );
+        }
+
         return {
-            ...row,
+            id: row.id,
+            transferencia_id: row.transferencia_id,
+            nome: row.nome,
+            objeto: row.objeto,
+            valor: row.valor,
+            valor_total: row.valor_total,
+            valor_contrapartida: row.valor_contrapartida,
+            custeio: row.custeio,
+            investimento: row.investimento,
+            empenho: row.empenho,
+            data_empenho: row.data_empenho,
+            programa_orcamentario_estadual: row.programa_orcamentario_estadual,
+            programa_orcamentario_municipal: row.programa_orcamentario_municipal,
+            dotacao: row.dotacao,
+            proposta: row.proposta,
+            contrato: row.contrato,
+            convenio: row.convenio,
+            assinatura_termo_aceite: row.assinatura_termo_aceite,
+            assinatura_municipio: row.assinatura_municipio,
+            assinatura_estado: row.assinatura_estado,
+            vigencia: row.vigencia,
+            conclusao_suspensiva: row.conclusao_suspensiva,
+            pode_registrar_status: pode_registrar_status,
+            pct_valor_transferencia: pct_valor_transferencia,
+            historico_status: historico_status,
+            orgao_gestor: {
+                id: row.orgao_gestor.id,
+                sigla: row.orgao_gestor.sigla,
+                descricao: row.orgao_gestor.descricao,
+            },
+            aditamentos: row.aditamentos.map((aditamento) => {
+                return {
+                    data_vigencia: aditamento.data_vigencia,
+                    data_vigencia_corrente: aditamento.data_vigencia_corrente,
+                    justificativa: aditamento.justificativa,
+                };
+            }),
             registros_sei: row.registros_sei.map((s) => {
                 return {
                     id: s.id,
@@ -381,6 +731,112 @@ export class DistribuicaoRecursoService {
                 await this.registerAditamento(prismaTx, id, dto, user, now);
             }
 
+            if (
+                dto.custeio != undefined ||
+                dto.investimento != undefined ||
+                dto.valor_contrapartida != undefined ||
+                dto.valor_total
+            ) {
+                const transferencia = await prismaTx.transferencia.findFirst({
+                    where: {
+                        id: self.transferencia_id,
+                        removido_em: null,
+                    },
+                    select: {
+                        id: true,
+                        custeio: true,
+                        investimento: true,
+                        valor_contrapartida: true,
+                        valor_total: true,
+                    },
+                });
+                if (!transferencia) throw new HttpException('Transferência não encontrada.', 400);
+
+                const outrasDistribuicoes = await prismaTx.distribuicaoRecurso.findMany({
+                    where: {
+                        id: { not: id },
+                        transferencia_id: transferencia.id,
+                        removido_em: null,
+                        status: {
+                            some: {
+                                OR: [
+                                    {
+                                        AND: [
+                                            { NOT: { status_base: { tipo: DistribuicaoStatusTipo.Declinada } } },
+                                            { NOT: { status_base: { tipo: DistribuicaoStatusTipo.Redirecionada } } },
+                                        ],
+                                    },
+                                    {
+                                        AND: [
+                                            { NOT: { status: { tipo: DistribuicaoStatusTipo.Declinada } } },
+                                            { NOT: { status: { tipo: DistribuicaoStatusTipo.Redirecionada } } },
+                                        ],
+                                    },
+                                ],
+                            },
+                        },
+                    },
+                    select: {
+                        custeio: true,
+                        investimento: true,
+                        valor_contrapartida: true,
+                        valor_total: true,
+                    },
+                });
+
+                let sumCusteio: number = dto.custeio ?? 0;
+                let sumInvestimento: number = dto.investimento ?? 0;
+                let sumContrapartida: number = dto.valor_contrapartida ?? 0;
+                let sumTotal: number = dto.valor_total ?? 0;
+
+                for (const distRow of outrasDistribuicoes) {
+                    sumCusteio += +distRow.custeio.toNumber();
+                    sumContrapartida += +distRow.valor_contrapartida.toNumber();
+                    sumInvestimento += +distRow.investimento.toNumber();
+                    sumTotal += +distRow.valor_total.toNumber();
+                }
+
+                if (dto.custeio != self.custeio.toNumber()) {
+                    if (transferencia.custeio && sumCusteio && sumCusteio > transferencia.custeio.toNumber())
+                        throw new HttpException(
+                            'Soma de custeio de todas as distribuições não pode ser superior ao valor de custeio da transferência.',
+                            400
+                        );
+                }
+
+                if (dto.investimento != self.investimento.toNumber()) {
+                    if (
+                        transferencia.investimento &&
+                        sumInvestimento &&
+                        sumInvestimento > transferencia.investimento.toNumber()
+                    )
+                        throw new HttpException(
+                            'Soma de investimento de todas as distribuições não pode ser superior ao valor de investimento da transferência.',
+                            400
+                        );
+                }
+
+                if (dto.valor_contrapartida != self.valor_contrapartida.toNumber()) {
+                    if (
+                        transferencia.valor_contrapartida &&
+                        sumContrapartida &&
+                        sumContrapartida > transferencia.valor_contrapartida.toNumber()
+                    )
+                        throw new HttpException(
+                            'Soma de contrapartida de todas as distribuições não pode ser superior ao valor de contrapartida da transferência.',
+                            400
+                        );
+                }
+
+                if (dto.valor_total != self.valor_total.toNumber()) {
+                    if (transferencia.valor_total && sumTotal && sumTotal > transferencia.valor_total.toNumber())
+                        throw new HttpException(
+                            'Soma de total de todas as distribuições não pode ser superior ao valor total da transferência.',
+                            400
+                        );
+                }
+            }
+
             await prismaTx.distribuicaoRecurso.update({
                 where: { id },
                 data: {
@@ -390,6 +846,8 @@ export class DistribuicaoRecursoService {
                     valor: dto.valor,
                     valor_total: dto.valor_total,
                     valor_contrapartida: dto.valor_contrapartida,
+                    custeio: dto.custeio,
+                    investimento: dto.investimento,
                     empenho: dto.empenho,
                     data_empenho: dto.data_empenho,
                     programa_orcamentario_estadual: dto.programa_orcamentario_estadual,
@@ -434,6 +892,25 @@ export class DistribuicaoRecursoService {
                     },
                 });
             }
+
+            const updatedSelf = await this.findOne(id, user);
+
+            // “VALOR DO REPASSE”  é a soma de “Custeio” + Investimento”
+            if (updatedSelf.valor.toNumber() != updatedSelf.custeio.toNumber() + updatedSelf.investimento.toNumber())
+                throw new HttpException(
+                    'valor| Valor do repasse deve ser a soma dos valores de custeio e investimento.',
+                    400
+                );
+
+            // “VALOR TOTAL”  é a soma de “Custeio” + Investimento” + “Contrapartida”
+            if (
+                updatedSelf.valor_total.toNumber() !=
+                updatedSelf.valor.toNumber() + updatedSelf.valor_contrapartida.toNumber()
+            )
+                throw new HttpException(
+                    'valor| Valor total deve ser a soma dos valores de repasse e contrapartida.',
+                    400
+                );
 
             return { id };
         });

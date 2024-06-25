@@ -62,6 +62,26 @@ export class CreateDistribuicaoRecursoDto {
     @ValidateIf((object, value) => value !== null)
     valor_contrapartida: number;
 
+    @IsNumberString(
+        {},
+        {
+            message:
+                '$property| Precisa ser um número com até 35 dígitos antes do ponto, e até 30 dígitos após, enviado em formato String',
+        }
+    )
+    @ValidateIf((object, value) => value !== null)
+    custeio: number;
+
+    @IsNumberString(
+        {},
+        {
+            message:
+                '$property| Precisa ser um número com até 35 dígitos antes do ponto, e até 30 dígitos após, enviado em formato String',
+        }
+    )
+    @ValidateIf((object, value) => value !== null)
+    investimento: number;
+
     @IsBoolean()
     empenho: boolean;
 

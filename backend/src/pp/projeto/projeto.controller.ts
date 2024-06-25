@@ -16,12 +16,14 @@ import { ApiBearerAuth, ApiNoContentResponse, ApiResponse, ApiTags } from '@nest
 import { Response } from 'express';
 import { ListaDePrivilegios } from 'src/common/ListaDePrivilegios';
 import { CurrentUser } from '../../auth/decorators/current-user.decorator';
+import { ApiPaginatedWithPagesResponse } from '../../auth/decorators/paginated.decorator';
 import { Roles } from '../../auth/decorators/roles.decorator';
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import { FindOneParams, FindTwoParams } from '../../common/decorators/find-params';
+import { PaginatedWithPagesDto } from '../../common/dto/paginated.dto';
 import { RecordWithId } from '../../common/dto/record-with-id.dto';
 import { CreateProjetoDocumentDto, CreateProjetoDto, CreateProjetoSeiDto } from './dto/create-projeto.dto';
-import { FilterProjetoDto } from './dto/filter-projeto.dto';
+import { FilterProjetoDto, FilterProjetoMDODto } from './dto/filter-projeto.dto';
 import {
     CloneProjetoTarefasDto,
     TransferProjetoPortfolioDto,
@@ -34,6 +36,8 @@ import {
     ListProjetoDto,
     ListProjetoSeiDto,
     ProjetoDetailDto,
+    ProjetoDetailMdoDto,
+    ProjetoMdoDto,
     ProjetoSeiDto,
 } from './entities/projeto.entity';
 import { ProjetoSeiService } from './projeto.sei.service';
@@ -263,8 +267,8 @@ export class ProjetoController {
     }
 }
 
-@ApiTags('Projeto - MdO')
-@Controller('mdo')
+@ApiTags('Cadastro de Obras (Projetos)')
+@Controller('projeto-mdo')
 export class ProjetoMDOController {
     constructor(
         private readonly projetoService: ProjetoService,
@@ -285,8 +289,12 @@ export class ProjetoMDOController {
     @Get()
     @ApiBearerAuth('access-token')
     @Roles([...rolesMDO])
-    async findAll(@Query() filters: FilterProjetoDto, @CurrentUser() user: PessoaFromJwt): Promise<ListProjetoDto> {
-        return { linhas: await this.projetoService.findAll('MDO', filters, user) };
+    @ApiPaginatedWithPagesResponse(ProjetoMdoDto)
+    async findAll(
+        @Query() filters: FilterProjetoMDODto,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<PaginatedWithPagesDto<ProjetoMdoDto>> {
+        return this.projetoService.findAllMDO(filters, user);
     }
 
     //@IsPublic()
@@ -314,8 +322,8 @@ export class ProjetoMDOController {
     @Get(':id')
     @ApiBearerAuth('access-token')
     @Roles([...rolesMDO])
-    async findOne(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt): Promise<ProjetoDetailDto> {
-        return await this.projetoService.findOne('MDO', params.id, user, 'ReadOnly');
+    async findOne(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt): Promise<ProjetoDetailMdoDto> {
+        return (await this.projetoService.findOne('MDO', params.id, user, 'ReadOnly')) as ProjetoDetailMdoDto;
     }
 
     @Patch(':id')
