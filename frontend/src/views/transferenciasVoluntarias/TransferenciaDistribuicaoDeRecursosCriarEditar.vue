@@ -968,4 +968,17 @@ const isSomaCorreta = computed(() => {
       </tbody>
     </table>
   </details>
+  <router-link
+    v-if="distribuiçãoEmFoco"
+    to=""
+    class="addlink mt1"
+  >
+    <svg
+      width="20"
+      height="20"
+    >
+      <use xlink:href="#i_+" />
+    </svg>
+    Adicionar status
+  </router-link>
 </template>
