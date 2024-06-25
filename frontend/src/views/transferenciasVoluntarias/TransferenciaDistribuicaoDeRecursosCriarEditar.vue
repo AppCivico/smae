@@ -899,7 +899,7 @@ const isSomaCorreta = computed(() => {
     </div>
   </div>
   <details
-    v-if="distribuiçãoEmFoco.aditamentos.length"
+    v-if="distribuiçãoEmFoco?.aditamentos.length"
     class="mb1"
   >
     <summary
