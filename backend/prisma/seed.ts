@@ -907,7 +907,7 @@ async function main() {
     await ensure_tiponota_dist_recurso();
 
     await populateEleicao();
-    await populateDistribuicaoStatusBase();
+    //await populateDistribuicaoStatusBase();
 }
 
 async function ensure_tiponota_dist_recurso() {
