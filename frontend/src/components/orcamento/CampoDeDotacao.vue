@@ -45,7 +45,7 @@ const emit = defineEmits([
 
 const name = toRef(props, 'name');
 const {
-  errors, handleChange, validate, meta,
+  errors, handleChange, validate, meta: metaDadosDoFormulario,
 } = useField(name, schema, {
   initialValue: props.value,
 });
@@ -83,6 +83,8 @@ const largurasDeCampo = {
     comComplemento: 48,
   },
 };
+
+const validando = ref(false);
 
 const órgão = ref('');
 const unidade = ref('');
@@ -227,6 +229,10 @@ const dotaçãoEComplemento = computed({
 });
 
 async function validarDota() {
+  if (!metaDadosDoFormulario?.valid) return;
+
+  validando.value = true;
+
   const { valid } = await validate();
 
   if (valid) {
@@ -242,6 +248,7 @@ async function validarDota() {
       emit('update:respostasof', error);
     }
   }
+  validando.value = false;
 }
 
 function mascararCódigos(evt, alémDoBásico = []) {
@@ -631,7 +638,8 @@ watch(valorDoComplemento, (novoValor) => {
     <button
       class="btn outline bgnone tcprimary"
       type="button"
-      :disabled="!meta?.valid"
+      :aria-disabled="!metaDadosDoFormulario?.valid"
+      :aria-busy="validando"
       @click="validarDota()"
     >
       Validar via SOF
