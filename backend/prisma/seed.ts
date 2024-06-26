@@ -1410,7 +1410,7 @@ async function populateEleicao() {
     }
 }
 
-async function populateDistribuicaoStatusBase() {
+async function _populateDistribuicaoStatusBase() {
     const rows = (Object.keys(DistribuicaoStatusTipo) as Array<keyof typeof DistribuicaoStatusTipo>).map((tipo) => {
         const nome: string =
             tipo == DistribuicaoStatusTipo.ImpedidaTecnicamente ? 'Impedida Tecnicamente' : tipo.toString();
