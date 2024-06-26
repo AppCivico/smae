@@ -1336,6 +1336,18 @@ export class PessoaService {
         if (!dados[0] || dados[0].modulos === null || !Array.isArray(dados[0].modulos)) {
             throw new BadRequestException(`Seu usuário não tem mais permissões. Entre em contato com o administrador.`);
         }
+
+        if (filterModulos.length == 2 && filterModulos.includes('SMAE') && filterModulos.includes('MDO')) {
+            dados[0].privilegios = dados[0].privilegios.filter(
+                (v) =>
+                    v != 'CadastroPainelExterno.editar' &&
+                    v != 'CadastroPainelExterno.inserir' &&
+                    v != 'CadastroPainelExterno.remover' &&
+                    v != 'CadastroGrupoPainelExterno.administrador' &&
+                    v != 'CadastroGrupoPainelExterno.administrador_no_orgao'
+            );
+        }
+
         return dados[0];
     }
 
