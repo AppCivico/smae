@@ -192,6 +192,7 @@ export const useObrasStore = defineStore('obrasStore', {
         portfolio_id: emFoco?.portfolio_id || route.query.portfolio_id || null,
         previsao_inicio: dateTimeToDate(emFoco?.previsao_inicio) || null,
         previsao_termino: dateTimeToDate(emFoco?.previsao_termino) || null,
+        responsavel_id: emFoco?.responsavel?.id || null,
         responsaveis_no_orgao_gestor: Array.isArray(emFoco?.responsaveis_no_orgao_gestor)
           ? emFoco.responsaveis_no_orgao_gestor.map((x) => x.id)
           : [],
