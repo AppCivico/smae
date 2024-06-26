@@ -69,11 +69,22 @@ const complemento = computed(() => {
 (async () => {
   DotaçãoStore.getDotaçãoSegmentos(ano);
   if (id) {
-    if (route.params.projetoId) {
-      await OrcamentosStore.buscarOrçamentosRealizadosParaAno();
-    } else {
-      await OrcamentosStore.getOrcamentoRealizadoById(meta_id, ano);
+    switch (route.meta.entidadeMãe) {
+      case 'projeto':
+      case 'obras':
+
+        await OrcamentosStore.buscarOrçamentosRealizadosParaAno();
+        break;
+
+      case 'meta':
+        await OrcamentosStore.getOrcamentoRealizadoById(meta_id, ano);
+        break;
+
+      default:
+        console.trace('Módulo para busca de orçamentos não pôde ser identificado:', route.meta);
+        throw new Error('Módulo para busca de orçamentos não pôde ser identificado');
     }
+
     currentEdit.value = OrcamentoRealizado.value[ano]?.find((x) => x.id == id);
 
     currentEdit.value.dotacao = await currentEdit.value.dotacao.split('.').map((x, i) => {
