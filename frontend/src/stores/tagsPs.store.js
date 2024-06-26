@@ -81,6 +81,7 @@ export const useTagsPsStore = defineStore('tagsPsStore', {
     itemParaEdição({ emFoco }) {
       return {
         ...emFoco,
+        upload_icone: emFoco?.icone,
       };
     },
   },
