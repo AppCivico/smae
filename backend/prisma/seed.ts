@@ -84,6 +84,9 @@ const ModuloDescricao: Record<string, [string, ModuloSistema | null]> = {
     CadastroWorkflow: ['Workflows', 'CasaCivil'],
     ReportsCasaCivil: ['Relatórios de Transferências Voluntárias', 'CasaCivil'],
 
+    ProjetoTagMDO: ['Tags', 'MDO'],
+    ProjetoTag: ['Tags', 'Projetos'],
+
     CadastroCargo: ['', null],
     CadastroCoordenadoria: ['', null],
     CadastroDepartamento: ['', null],
@@ -236,6 +239,16 @@ const PrivConfig: Record<string, false | [ListaDePrivilegios, string | false][]>
         ['CadastroTagPS.inserir', 'Inserir Tag'],
         ['CadastroTagPS.editar', 'Editar Tag'],
         ['CadastroTagPS.remover', 'Remover Tag'],
+    ],
+    ProjetoTag: [
+        ['ProjetoTag.inserir', 'Inserir Tag'],
+        ['ProjetoTag.editar', 'Editar Tag'],
+        ['ProjetoTag.remover', 'Remover Tag'],
+    ],
+    ProjetoTagMDO: [
+        ['ProjetoTagMDO.inserir', 'Inserir Tag'],
+        ['ProjetoTagMDO.editar', 'Editar Tag'],
+        ['ProjetoTagMDO.remover', 'Remover Tag'],
     ],
     CadastroMeta: [
         // de fato, esse é o administrador, mas o frontend já usava o código CadastroMeta.inserir
@@ -747,6 +760,9 @@ const PerfilAcessoConfig: {
         nome: 'Gestor de Obras no Órgão',
         descricao: 'Gerenciar todos as obras no órgão em qual faz parte',
         privilegios: [
+            'ProjetoTagMDO.inserir',
+            'ProjetoTagMDO.editar',
+            'ProjetoTagMDO.remover',
             'Reports.executar.MDO', // TODO remoer, afinal, precisa dos filtros no reports
             'ProjetoMDO.administrador_no_orgao',
             'Reports.dashboard_mdo',
@@ -773,6 +789,9 @@ const PerfilAcessoConfig: {
         nome: atualizarNomePerfil('Gestor da Obra', []),
         descricao: 'Pode ser escolhido como responsável no órgão gestor de MdO',
         privilegios: [
+            'ProjetoTagMDO.inserir',
+            'ProjetoTagMDO.editar',
+            'ProjetoTagMDO.remover',
             'Reports.executar.MDO', // TODO remoer, afinal, precisa dos filtros no reports
             'MDO.gestor_de_projeto',
             'Reports.dashboard_mdo',
