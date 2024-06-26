@@ -65,6 +65,7 @@ export class DistribuicaoRecursoService {
                     const similarExists = await prismaTx.distribuicaoRecurso.count({
                         where: {
                             nome: { endsWith: dto.nome, mode: 'insensitive' },
+                            transferencia_id: dto.transferencia_id,
                             removido_em: null,
                         },
                     });
@@ -719,6 +720,7 @@ export class DistribuicaoRecursoService {
                 const similarExists = await prismaTx.distribuicaoRecurso.count({
                     where: {
                         nome: { endsWith: dto.nome, mode: 'insensitive' },
+                        transferencia_id: self.transferencia_id,
                         removido_em: null,
                         id: { not: id },
                     },
