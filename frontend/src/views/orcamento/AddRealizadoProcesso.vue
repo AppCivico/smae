@@ -4,12 +4,9 @@ import ListaDeCompartilhamentos from '@/components/orcamento/ListaDeCompartilham
 import patterns from '@/consts/patterns';
 import formatProcesso from '@/helpers/formatProcesso';
 import { useAlertStore } from '@/stores/alert.store';
-import { useAtividadesStore } from '@/stores/atividades.store';
 import { useDotaçãoStore } from '@/stores/dotacao.store.ts';
-import { useIniciativasStore } from '@/stores/iniciativas.store';
 import { useMetasStore } from '@/stores/metas.store';
 import { useOrcamentosStore } from '@/stores/orcamentos.store';
-import { useProjetosStore } from '@/stores/projetos.store.ts';
 import { storeToRefs } from 'pinia';
 import { ErrorMessage, Field, useForm } from 'vee-validate';
 import {
@@ -31,19 +28,12 @@ const alertStore = useAlertStore();
 const route = useRoute();
 const router = useRouter();
 const DotaçãoStore = useDotaçãoStore();
-const ProjetoStore = useProjetosStore();
 const { meta_id } = route.params;
 const { ano } = route.params;
-const { id } = route.params;
 const { seiOuSinproc: regprocesso } = patterns;
 
 const MetasStore = useMetasStore();
 const { singleMeta, activePdm } = storeToRefs(MetasStore);
-
-const IniciativasStore = useIniciativasStore();
-const { singleIniciativa } = storeToRefs(IniciativasStore);
-const AtividadesStore = useAtividadesStore();
-const { singleAtividade } = storeToRefs(AtividadesStore);
 
 const parentlink = `${meta_id ? `/metas/${meta_id}` : ''}`;
 const parent_item = ref(meta_id ? singleMeta : false);
@@ -71,7 +61,7 @@ const {
   validationSchema: schema,
 });
 
-const onSubmit = handleSubmit.withControlled(async () => {
+const onSubmit = handleSubmit(async () => {
   try {
     let msg;
     let r;
@@ -131,22 +121,16 @@ async function checkDelete(id) {
     }
   }, 'Remover');
 }
-function maskFloat(el) {
-  el.target.value = dinheiro(Number(el.target.value.replace(/[\D]/g, '')) / 100);
-  el.target?._vei?.onChange(el);
-}
+
 function dinheiro(v) {
   return new Intl.NumberFormat('pt-BR', { minimumFractionDigits: 2 }).format(Number(v));
 }
-function toFloat(v) {
-  return isNaN(v) || String(v).indexOf(',') !== -1 ? Number(String(v).replace(/[^0-9\,]/g, '').replace(',', '.')) : Math.round(Number(v) * 100) / 100;
-}
+
 function maskProcesso(el) {
   el.target.value = formatProcesso(el.target.value);
 }
 
 async function validarProcesso() {
-  console.debug('validando processo');
   validando.value = true;
   try {
     respostasof.value = { loading: true };
@@ -179,8 +163,6 @@ watch(currentEdit, (novosValores) => {
   </h3>
   <template v-if="!(OrcamentoRealizado[ano]?.loading || OrcamentoRealizado[ano]?.error)">
     <form
-      :validation-schema="schema"
-      :initial-values="currentEdit"
       @submit.prevent="onSubmit"
     >
       <div class="flex center g2 mb2">
@@ -252,7 +234,7 @@ watch(currentEdit, (novosValores) => {
         </div>
         <hr class="mb05">
         <label
-          v-for="(d, i) in respostasof"
+          v-for="(d) in respostasof"
           :key="d.id"
           class="flex g2 center mb1"
         >

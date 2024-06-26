@@ -2,9 +2,9 @@
 import dinheiro from '@/helpers/dinheiro';
 import toFloat from '@/helpers/toFloat';
 import { useAlertStore } from '@/stores/alert.store';
+import { useDotaçãoStore } from '@/stores/dotacao.store.ts';
 import { useMetasStore } from '@/stores/metas.store';
 import { useOrcamentosStore } from '@/stores/orcamentos.store';
-import { useDotaçãoStore } from '@/stores/dotacao.store.ts';
 import { useProjetosStore } from '@/stores/projetos.store.ts';
 import { storeToRefs } from 'pinia';
 import { ErrorMessage, Field, useForm } from 'vee-validate';
@@ -55,7 +55,7 @@ const d_contadespesa = ref('');
 const d_fonte = ref('');
 
 (async () => {
-  /* await */ DotaçãoStore.getDotaçãoSegmentos(ano);
+  DotaçãoStore.getDotaçãoSegmentos(ano);
   if (id) {
     if (route.params.projetoId) {
       await OrcamentosStore.buscarOrçamentosPlanejadosParaAno();
@@ -678,10 +678,10 @@ export default {
   <template v-if="OrcamentoPlanejado[ano]?.loading">
     <span class="spinner">Carregando</span>
   </template>
-  <template v-if="OrcamentoPlanejado[ano]?.error || error">
+  <template v-if="OrcamentoPlanejado[ano]?.error">
     <div class="error p1">
       <div class="error-msg">
-        {{ OrcamentoPlanejado[ano].error ?? error }}
+        {{ OrcamentoPlanejado[ano].error }}
       </div>
     </div>
   </template>

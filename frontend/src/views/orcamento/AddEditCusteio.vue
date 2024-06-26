@@ -4,10 +4,10 @@ import dinheiro from '@/helpers/dinheiro';
 import toFloat from '@/helpers/toFloat';
 import { useAlertStore } from '@/stores/alert.store';
 import { useAtividadesStore } from '@/stores/atividades.store';
+import { useDotaçãoStore } from '@/stores/dotacao.store.ts';
 import { useIniciativasStore } from '@/stores/iniciativas.store';
 import { useMetasStore } from '@/stores/metas.store';
 import { useOrcamentosStore } from '@/stores/orcamentos.store';
-import { useDotaçãoStore } from '@/stores/dotacao.store.ts';
 import { storeToRefs } from 'pinia';
 import { Field, Form } from 'vee-validate';
 import { defineOptions, ref } from 'vue';
@@ -584,10 +584,10 @@ function montaDotacao(a) {
   <template v-if="OrcamentoCusteio[ano]?.loading">
     <span class="spinner">Carregando</span>
   </template>
-  <template v-if="OrcamentoCusteio[ano]?.error || error">
+  <template v-if="OrcamentoCusteio[ano]?.error">
     <div class="error p1">
       <div class="error-msg">
-        {{ OrcamentoCusteio[ano].error ?? error }}
+        {{ OrcamentoCusteio[ano].error }}
       </div>
     </div>
   </template>
