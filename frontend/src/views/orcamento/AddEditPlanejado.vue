@@ -58,7 +58,7 @@ const d_fonte = ref('');
   /* await */ DotaçãoStore.getDotaçãoSegmentos(ano);
   if (id) {
     if (route.params.projetoId) {
-      await OrcamentosStore.buscarOrçamentosPlanejadosParaProjeto();
+      await OrcamentosStore.buscarOrçamentosPlanejadosParaAno();
     } else {
       await OrcamentosStore.getOrcamentoPlanejadoById(meta_id, ano);
     }
@@ -162,7 +162,7 @@ const onSubmit = handleSubmit(async () => {
 
 async function checkDelete(id) {
   alertStore.confirmAction('Deseja mesmo remover esse item?', async () => {
-    if (await OrcamentosStore.deleteOrcamentoPlanejado(id, route.params.projetoId)) {
+    if (await OrcamentosStore.deleteOrcamentoPlanejado(id, route.params)) {
       if (parentlink) {
         router.push({
           path: `${parentlink}/orcamento`,
@@ -559,13 +559,7 @@ export default {
         </tbody>
       </table>
 
-      <Field
-        v-if="$route.params.projetoId"
-        name="projeto_id"
-        type="hidden"
-        :value="$route.params.projetoId"
-      />
-      <div v-else>
+      <div v-if="$route.meta.entidadeMãe === 'meta'">
         <label class="label">Vincular dotação<span class="tvermelho">*</span></label>
 
         <div

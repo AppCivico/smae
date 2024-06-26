@@ -58,15 +58,15 @@ function iniciar() {
   configuraçãoDeOrçamentosPorAno.value.forEach((x) => {
     switch (area) {
       case 'Custo':
-        OrcamentosStore.buscarOrçamentosPrevistosParaProjeto(x.ano_referencia, props.projetoId);
+        OrcamentosStore.buscarOrçamentosPrevistosParaAno(x.ano_referencia);
         break;
 
       case 'Planejado':
-        OrcamentosStore.buscarOrçamentosPlanejadosParaProjeto(x.ano_referencia, props.projetoId);
+        OrcamentosStore.buscarOrçamentosPlanejadosParaAno(x.ano_referencia);
         break;
 
       case 'Realizado':
-        OrcamentosStore.buscarOrçamentosRealizadosParaProjeto(x.ano_referencia, props.projetoId);
+        OrcamentosStore.buscarOrçamentosRealizadosParaAno(x.ano_referencia);
         break;
 
       default:

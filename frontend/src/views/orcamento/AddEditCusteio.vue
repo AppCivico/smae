@@ -55,10 +55,20 @@ const caret = ref(0);
 
 (async () => {
   /* await */ DotaçãoStore.getDotaçãoSegmentos(ano);
-  if (route.params.projetoId) {
-    await OrcamentosStore.buscarOrçamentosPrevistosParaProjeto();
-  } else {
-    await OrcamentosStore.getOrcamentoCusteioById(meta_id, ano);
+  // PRA-FAZER: mover para um componente de tela acima
+  switch (route.meta.entidadeMãe) {
+    case 'projeto':
+    case 'obras':
+      await OrcamentosStore.buscarOrçamentosPrevistosParaAno();
+      break;
+
+    case 'meta':
+      await OrcamentosStore.getOrcamentoCusteioById(meta_id, ano);
+      break;
+
+    default:
+      console.trace('Módulo para busca de orçamentos não pôde ser identificado:', route.meta);
+      throw new Error('Módulo para busca de orçamentos não pôde ser identificado');
   }
 
   OrcamentoCusteio.value[ano].map((x) => {
@@ -141,7 +151,7 @@ async function onSubmit(values) {
 
 async function checkDelete(id) {
   alertStore.confirmAction('Deseja mesmo remover esse item?', async () => {
-    if (await OrcamentosStore.deleteOrcamentoCusteio(id, route.params.projetoId)) {
+    if (await OrcamentosStore.deleteOrcamentoCusteio(id, route.params)) {
       if (parentlink) {
         router.push({
           path: `${parentlink}/orcamento/custo`,
@@ -464,13 +474,7 @@ function montaDotacao(a) {
         </div>
       </template>
 
-      <Field
-        v-if="$route.params.projetoId"
-        name="projeto_id"
-        type="hidden"
-        :value="$route.params.projetoId"
-      />
-      <div v-else>
+      <div v-if="$route.meta.entidadeMãe === 'meta'">
         <hr class="mt2 mb2">
         <label class="label">Vincular dotação <span class="tvermelho">*</span></label>
 

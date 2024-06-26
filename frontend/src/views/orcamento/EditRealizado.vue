@@ -70,7 +70,7 @@ const complemento = computed(() => {
   /* await */ DotaçãoStore.getDotaçãoSegmentos(ano);
   if (id) {
     if (route.params.projetoId) {
-      await OrcamentosStore.buscarOrçamentosRealizadosParaProjeto();
+      await OrcamentosStore.buscarOrçamentosRealizadosParaAno();
     } else {
       await OrcamentosStore.getOrcamentoRealizadoById(meta_id, ano);
     }
@@ -158,7 +158,7 @@ const onSubmit = handleSubmit.withControlled(async () => {
 
 async function checkDelete(id) {
   alertStore.confirmAction('Deseja mesmo remover esse item?', async () => {
-    if (await OrcamentosStore.deleteOrcamentoRealizado(id, route.params.projetoId)) {
+    if (await OrcamentosStore.deleteOrcamentoRealizado(id, route.params)) {
       if (parentlink) {
         router.push({
           path: `${parentlink}/orcamento/realizado`,
@@ -493,13 +493,7 @@ export default {
         </tbody>
       </table>
 
-      <Field
-        v-if="$route.params.projetoId"
-        name="projeto_id"
-        type="hidden"
-        :value="$route.params.projetoId"
-      />
-      <div v-else>
+      <div v-if="$route.meta.entidadeMãe === 'meta'">
         <label class="label">Vincular dotação<span class="tvermelho">*</span></label>
 
         <pre v-ScrollLockDebug>activePdm.nivel_orcamento: {{ activePdm.nivel_orcamento }}</pre>
