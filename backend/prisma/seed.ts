@@ -13,6 +13,7 @@ import {
     CONST_CRONO_VAR_CATEGORICA_ID,
     CONST_TIPO_NOTA_DIST_RECURSO,
 } from '../src/common/consts';
+import { JOB_LOCK_NUMBER } from '../src/common/dto/locks';
 const prisma = new PrismaClient({ log: ['query'] });
 
 const ModuloDescricao: Record<string, [string, ModuloSistema | null]> = {
@@ -914,18 +915,26 @@ const PerfilAcessoConfig: {
 async function main() {
     if (atualizacoesPerfil.length) await Promise.all(atualizacoesPerfil);
 
-    await criar_emaildb_config();
-    await criar_texto_config();
-    await atualizar_modulos_e_privilegios();
-    await atualizar_perfil_acesso();
+    await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient) => {
+        const locked: { locked: boolean }[] =
+            await prismaTx.$queryRaw`SELECT pg_try_advisory_xact_lock(${JOB_LOCK_NUMBER}) as locked`;
 
-    await atualizar_superadmin();
-    await ensure_bot_user();
-    await ensure_categorica_cronograma();
+        if (!locked[0].locked) return;
 
-    await ensure_tiponota_dist_recurso();
+        await criar_emaildb_config();
+        await criar_texto_config();
+        await atualizar_modulos_e_privilegios();
+        await atualizar_perfil_acesso();
 
-    await populateEleicao();
+        await atualizar_superadmin();
+        await ensure_bot_user();
+        await ensure_categorica_cronograma();
+
+        await ensure_tiponota_dist_recurso();
+
+        await populateEleicao();
+    });
+
     //await populateDistribuicaoStatusBase();
 }
 
