@@ -64,7 +64,6 @@ export default {
         ],
         rotasParaMenuSecundário: [
           'obrasResumo',
-          'obrasEditar', // PRA-FAZER: trocar pela de resumo, quando estiver pronta
           'obrasTarefasListar',
           {
             título: 'Acompanhamento',
