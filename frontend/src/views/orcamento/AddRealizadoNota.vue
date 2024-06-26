@@ -331,13 +331,6 @@ watch(currentEdit, (novosValores) => {
         </table>
       </template>
 
-      <Field
-        v-if="$route.params.projetoId"
-        name="projeto_id"
-        type="hidden"
-        :value="$route.params.projetoId"
-      />
-
       <template v-if="respostasof.dotacao">
         <ListaDeCompartilhamentos
           v-if="$route.meta.entidadeMãe === 'meta' && respostasof.dotacao"
