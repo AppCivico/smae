@@ -25,11 +25,6 @@ const { ano } = route.params;
 const MetasStore = useMetasStore();
 const { singleMeta, activePdm } = storeToRefs(MetasStore);
 
-if (route.meta.entidadeMãe === 'meta') {
-  MetasStore.getPdM();
-  MetasStore.getChildren(meta_id);
-}
-
 const parentlink = `${meta_id ? `/metas/${meta_id}` : ''}`;
 const parent_item = ref(meta_id ? singleMeta : false);
 
