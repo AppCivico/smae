@@ -3,6 +3,23 @@ import { defineStore } from 'pinia';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
+function caminhoParaApi(parametrosDeModulo = this.route.params) {
+  switch (true) {
+    case !!parametrosDeModulo.projetoId:
+      return `projeto/${parametrosDeModulo.projetoId}/`;
+
+    case !!parametrosDeModulo.meta_id:
+      return '';
+
+    case !!parametrosDeModulo.obraId:
+      return `projeto-mdo/${parametrosDeModulo.obraId}/`;
+
+    default:
+      console.trace('Caminho para orçamentos não pôde ser identificado:', parametrosDeModulo);
+      throw new Error('Caminho para orçamentos não pôde ser identificado');
+  }
+}
+
 export const useOrcamentosStore = defineStore({
   id: 'Orcamentos',
   state: () => ({
@@ -100,13 +117,13 @@ export const useOrcamentosStore = defineStore({
       }
     },
 
-    // projetos
+    // projetos & obras
     // eslint-disable-next-line max-len, default-param-last
-    async buscarOrçamentosPrevistosParaProjeto(ano = this.route.params.ano, projetoId = this.route.params.projetoId, extraParams) {
+    async buscarOrçamentosPrevistosParaAno(ano = this.route.params.ano, parametrosDeModulo = this.route.params, extraParams) {
       try {
         this.OrcamentoCusteio[ano] = { loading: true };
 
-        const r = await this.requestS.get(`${baseUrl}/projeto/${projetoId}/orcamento-previsto`, { ...extraParams, ano_referencia: ano });
+        const r = await this.requestS.get(`${baseUrl}/${caminhoParaApi(parametrosDeModulo)}orcamento-previsto`, { ...extraParams, ano_referencia: ano });
 
         this.OrcamentoCusteio[ano] = r.linhas ? r.linhas : r;
 
@@ -125,11 +142,11 @@ export const useOrcamentosStore = defineStore({
     },
 
     // eslint-disable-next-line max-len, default-param-last
-    async buscarOrçamentosPlanejadosParaProjeto(ano = this.route.params.ano, projetoId = this.route.params.projetoId, extraParams) {
+    async buscarOrçamentosPlanejadosParaAno(ano = this.route.params.ano, parametrosDeModulo = this.route.params, extraParams) {
       try {
         this.OrcamentoPlanejado[ano] = { loading: true };
 
-        const r = await this.requestS.get(`${baseUrl}/projeto/${projetoId}/orcamento-planejado`, { ...extraParams, ano_referencia: ano });
+        const r = await this.requestS.get(`${baseUrl}/${caminhoParaApi(parametrosDeModulo)}orcamento-planejado`, { ...extraParams, ano_referencia: ano });
 
         this.OrcamentoPlanejado[ano] = r.linhas ? r.linhas : r;
       } catch (error) {
@@ -138,11 +155,11 @@ export const useOrcamentosStore = defineStore({
     },
 
     // eslint-disable-next-line max-len, default-param-last
-    async buscarOrçamentosRealizadosParaProjeto(ano = this.route.params.ano, projetoId = this.route.params.projetoId, extraParams) {
+    async buscarOrçamentosRealizadosParaAno(ano = this.route.params.ano, parametrosDeModulo = this.route.params, extraParams) {
       try {
         this.OrcamentoRealizado[ano] = { loading: true };
 
-        const r = await this.requestS.get(`${baseUrl}/projeto/${projetoId}/orcamento-realizado`, { ...extraParams, ano_referencia: ano });
+        const r = await this.requestS.get(`${baseUrl}/${caminhoParaApi(parametrosDeModulo)}orcamento-realizado`, { ...extraParams, ano_referencia: ano });
 
         this.OrcamentoRealizado[ano] = r.linhas ? r.linhas : r;
       } catch (error) {
@@ -150,8 +167,8 @@ export const useOrcamentosStore = defineStore({
       }
     },
 
-    // METAS & PROJETOS
-    async restringirPrevistoAZero(ano, params) {
+    // METAS & PROJETOS & OBRAS
+    async restringirPrevistoAZero(ano, params, parametrosDeModulo = this.route.params) {
       const parâmetrosCompletos = {
         considerar_zero: true,
         ano_referencia: ano,
@@ -163,15 +180,13 @@ export const useOrcamentosStore = defineStore({
       } else if (this.route.params.projetoId && !parâmetrosCompletos.projeto_id) {
         parâmetrosCompletos.projeto_id = Number(this.route.params.projetoId);
       }
-      const segmento1 = parâmetrosCompletos.meta_id
-        ? 'meta-orcamento'
-        : `projeto/${parâmetrosCompletos.projeto_id}/orcamento-previsto`;
+
       try {
-        if (await this.requestS.patch(`${baseUrl}/${segmento1}/zerado/`, parâmetrosCompletos)) {
+        if (await this.requestS.patch(`${baseUrl}/${caminhoParaApi(parametrosDeModulo)}/orcamento-previsto/zerado/`, parâmetrosCompletos)) {
           if (parâmetrosCompletos.meta_id) {
             this.getOrcamentoCusteioById(parâmetrosCompletos.meta_id, ano);
           } else if (parâmetrosCompletos.projeto_id) {
-            this.buscarOrçamentosPrevistosParaProjeto(ano, parâmetrosCompletos.projeto_id);
+            this.buscarOrçamentosPrevistosParaAno(ano, parametrosDeModulo);
           }
         }
 
@@ -182,64 +197,36 @@ export const useOrcamentosStore = defineStore({
     },
 
     // Custeio
-    async updateOrcamentoCusteio(id, params) {
-      const segmento1 = params.projeto_id
-        ? `projeto/${params.projeto_id}/orcamento-previsto`
-        : 'meta-orcamento';
-
-      if (await this.requestS.patch(`${baseUrl}/${segmento1}/${id}`, params)) return true;
+    async updateOrcamentoCusteio(id, params, parametrosDeModulo = this.route.params) {
+      if (await this.requestS.patch(`${baseUrl}/${caminhoParaApi(parametrosDeModulo)}orcamento-previsto/${id}`, params)) return true;
       return false;
     },
-    async insertOrcamentoCusteio(params) {
-      const segmento1 = params.projeto_id
-        ? `projeto/${params.projeto_id}/orcamento-previsto`
-        : 'meta-orcamento';
-
-      if (await this.requestS.post(`${baseUrl}/${segmento1}/`, params)) return true;
+    async insertOrcamentoCusteio(params, parametrosDeModulo = this.route.params) {
+      if (await this.requestS.post(`${baseUrl}/${caminhoParaApi(parametrosDeModulo)}orcamento-previsto/`, params)) return true;
       return false;
     },
-    async deleteOrcamentoCusteio(id, projetoId = 0) {
-      const segmento1 = projetoId
-        ? `projeto/${projetoId}/orcamento-previsto`
-        : 'meta-orcamento';
-
-      if (await this.requestS.delete(`${baseUrl}/${segmento1}/${id}`)) return true;
+    async deleteOrcamentoCusteio(id, parametrosDeModulo = this.route.params) {
+      if (await this.requestS.delete(`${baseUrl}/${caminhoParaApi(parametrosDeModulo)}orcamento-previsto/${id}`)) return true;
       return false;
     },
 
     // Planejado
-    async updateOrcamentoPlanejado(id, params) {
-      const segmento1 = params.projeto_id
-        ? `projeto/${params.projeto_id}/orcamento-planejado`
-        : 'orcamento-planejado';
-
-      if (await this.requestS.patch(`${baseUrl}/${segmento1}/${id}`, params)) return true;
+    async updateOrcamentoPlanejado(id, params, parametrosDeModulo = this.route.params) {
+      if (await this.requestS.patch(`${baseUrl}/${caminhoParaApi(parametrosDeModulo)}orcamento-planejado/${id}`, params)) return true;
       return false;
     },
-    async insertOrcamentoPlanejado(params) {
-      const segmento1 = params.projeto_id
-        ? `projeto/${params.projeto_id}/orcamento-planejado`
-        : 'orcamento-planejado';
-
-      if (await this.requestS.post(`${baseUrl}/${segmento1}/`, params)) return true;
+    async insertOrcamentoPlanejado(params, parametrosDeModulo = this.route.params) {
+      if (await this.requestS.post(`${baseUrl}/${caminhoParaApi(parametrosDeModulo)}orcamento-planejado/`, params)) return true;
       return false;
     },
-    async deleteOrcamentoPlanejado(id, projetoId) {
-      const segmento1 = projetoId
-        ? `projeto/${projetoId}/orcamento-planejado`
-        : 'orcamento-planejado';
-
-      if (await this.requestS.delete(`${baseUrl}/${segmento1}/${id}`)) return true;
+    async deleteOrcamentoPlanejado(id, parametrosDeModulo = this.route.params) {
+      if (await this.requestS.delete(`${baseUrl}/${caminhoParaApi(parametrosDeModulo)}orcamento-planejado/${id}`)) return true;
       return false;
     },
 
     // Realizado
-    async updateOrcamentoRealizado(id, params) {
-      const segmento1 = params.projeto_id
-        ? `projeto/${params.projeto_id}/orcamento-realizado`
-        : 'orcamento-realizado';
-
-      if (await this.requestS.patch(`${baseUrl}/${segmento1}/${id}`, params)) return true;
+    async updateOrcamentoRealizado(id, params, parametrosDeModulo = this.route.params) {
+      if (await this.requestS.patch(`${baseUrl}/${caminhoParaApi(parametrosDeModulo)}orcamento-realizado/${id}`, params)) return true;
       return false;
     },
     async closeOrcamentoRealizado(params) {
@@ -249,28 +236,16 @@ export const useOrcamentosStore = defineStore({
     async closeOrcamentoRealizadoPorOrgao(params) {
       return !!await this.requestS.patch(`${baseUrl}/orcamento-realizado/orcamento-concluido-admin`, params);
     },
-    async insertOrcamentoRealizado(params) {
-      const segmento1 = params.projeto_id
-        ? `projeto/${params.projeto_id}/orcamento-realizado`
-        : 'orcamento-realizado';
-
-      if (await this.requestS.post(`${baseUrl}/${segmento1}/`, params)) return true;
+    async insertOrcamentoRealizado(params, parametrosDeModulo = this.route.params) {
+      if (await this.requestS.post(`${baseUrl}/${caminhoParaApi(parametrosDeModulo)}orcamento-realizado/`, params)) return true;
       return false;
     },
-    async deleteOrcamentoRealizado(id, projetoId = 0) {
-      const segmento1 = projetoId
-        ? `projeto/${projetoId}/orcamento-realizado`
-        : 'orcamento-realizado';
-
-      if (await this.requestS.delete(`${baseUrl}/${segmento1}/${id}`)) return true;
+    async deleteOrcamentoRealizado(id, parametrosDeModulo = this.route.params) {
+      if (await this.requestS.delete(`${baseUrl}/${caminhoParaApi(parametrosDeModulo)}/orcamento-realizado/${id}`)) return true;
       return false;
     },
-    async deleteOrcamentosRealizadosEmLote(ids, projetoId = 0) {
-      const segmento1 = projetoId
-        ? `projeto/${projetoId}/orcamento-realizado/em-lote`
-        : 'orcamento-realizado/em-lote';
-
-      if (await this.requestS.delete(`${baseUrl}/${segmento1}/`, ids)) return true;
+    async deleteOrcamentosRealizadosEmLote(ids, parametrosDeModulo = this.route.params) {
+      if (await this.requestS.delete(`${baseUrl}/${caminhoParaApi(parametrosDeModulo)}orcamento-realizado/em-lote/`, ids)) return true;
       return false;
     },
   },
