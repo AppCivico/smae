@@ -452,10 +452,20 @@ if (!Array.isArray(organs.value) || !organs.value.length) {
         </div>
         <div class="f1 mb1">
           <dt class="t12 uc w700 mb05 tamarelo">
-            {{ schema.fields.ponto_focal_colaborador.spec.label }}
+            {{ schema.fields.colaboradores_no_orgao.spec.label }}
           </dt>
           <dd class="t13">
-            {{ emFoco?.ponto_focal_colaborador }}
+            <ul class="listaComoTexto">
+              <li v-if="!emFoco?.colaboradores_no_orgao?.length">
+                {{ '-' }}
+              </li>
+              <li
+                v-for="item in emFoco?.colaboradores_no_orgao"
+                :key="item.id"
+              >
+                {{ item.nome_exibicao }}
+              </li>
+            </ul>
           </dd>
         </div>
       </dl>
