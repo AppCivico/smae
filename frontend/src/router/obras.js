@@ -63,7 +63,7 @@ export default {
           'obrasListar',
         ],
         rotasParaMenuSecundário: [
-          // 'obrasResumo',
+          'obrasResumo',
           'obrasEditar', // PRA-FAZER: trocar pela de resumo, quando estiver pronta
           'obrasTarefasListar',
           {
@@ -127,7 +127,7 @@ export default {
             prefixoParaFilhas: 'obras',
             rotasParaMigalhasDePão: [
               'obrasListar',
-              // 'obrasResumo',
+              'obrasResumo',
               'obrasEditar', // PRA-FAZER: trocar pela de resumo, quando estiver pronta
               'obrasTarefasListar',
             ],
@@ -195,7 +195,7 @@ export default {
 
                     rotasParaMigalhasDePão: [
                       'obrasListar',
-                      // 'obrasResumo',
+                      'obrasResumo',
                       'obrasEditar', // PRA-FAZER: trocar pela de resumo, quando estiver pronta
                       'obrasTarefasListar',
                       'obrasTarefasEditar',
