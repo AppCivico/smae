@@ -14,7 +14,7 @@ import {
 } from './dto/meta-orcamento.dto';
 import { MetaOrcamentoService } from './meta-orcamento.service';
 
-@Controller('meta-orcamento')
+@Controller(['meta-orcamento', 'orcamento-previsto'])
 @ApiTags('Orçamento - Meta (Custeio e Investimento)')
 export class MetaOrcamentoController {
     constructor(private readonly metaOrcamentoService: MetaOrcamentoService) {}
