@@ -280,6 +280,7 @@ export default [
         meta: {
           título: 'Workflow',
           prefixoParaFilhas: 'TransferenciasVoluntarias',
+          entidadeMãe: 'TransferenciasVoluntarias',
           limitarÀsPermissões: 'CadastroWorkflows.',
           rotasParaMenuSecundário: [
             'fluxosListar',
