@@ -10,9 +10,13 @@ import { useOrcamentosStore } from '@/stores/orcamentos.store';
 import { useProjetosStore } from '@/stores/projetos.store.ts';
 import { storeToRefs } from 'pinia';
 import { Field, useForm } from 'vee-validate';
-import { ref, toRaw, watch } from 'vue';
+import {
+  defineOptions, ref, toRaw, watch,
+} from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import * as Yup from 'yup';
+
+defineOptions({ inheritAttrs: false });
 
 const alertStore = useAlertStore();
 const DotaçãoStore = useDotaçãoStore();

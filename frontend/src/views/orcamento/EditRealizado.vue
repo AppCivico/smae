@@ -9,9 +9,11 @@ import { useOrcamentosStore } from '@/stores/orcamentos.store';
 import { storeToRefs } from 'pinia';
 import { Field, useForm } from 'vee-validate';
 import {
-  computed, ref, toRaw, watch,
+  defineOptions, computed, ref, toRaw, watch,
 } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+
+defineOptions({ inheritAttrs: false });
 
 const alertStore = useAlertStore();
 const DotaçãoStore = useDotaçãoStore();

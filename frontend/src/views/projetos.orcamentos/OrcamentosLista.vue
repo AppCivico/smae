@@ -5,8 +5,10 @@ import SimpleOrcamentoRealizado from '@/components/orcamento/SimpleOrcamentoReal
 import { useAlertStore } from '@/stores/alert.store';
 import { useOrcamentosStore } from '@/stores/orcamentos.store';
 import { useProjetosStore } from '@/stores/projetos.store.ts';
-import { computed, watch } from 'vue';
+import { computed, defineOptions, watch } from 'vue';
 import { useRoute } from 'vue-router';
+
+defineOptions({ inheritAttrs: false });
 
 const alertStore = useAlertStore();
 const ProjetosStore = useProjetosStore();
