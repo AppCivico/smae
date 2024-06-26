@@ -8,6 +8,8 @@ import { useProjetosStore } from '@/stores/projetos.store.ts';
 import { computed, defineOptions, watch } from 'vue';
 import { useRoute } from 'vue-router';
 
+// PRA-FAZER: esse arquivo é quase igual ao de obras. Pode-se melhorar.
+
 defineOptions({ inheritAttrs: false });
 
 const alertStore = useAlertStore();
@@ -15,7 +17,7 @@ const ProjetosStore = useProjetosStore();
 const OrcamentosStore = useOrcamentosStore();
 OrcamentosStore.clear();
 const route = useRoute();
-const props = defineProps({
+defineProps({
   projetoId: {
     type: Number,
     default: 0,

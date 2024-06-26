@@ -20,6 +20,13 @@ import * as Yup from 'yup';
 
 defineOptions({ inheritAttrs: false });
 
+const props = defineProps({
+  parametrosParaValidacao: {
+    type: Object,
+    required: true,
+  },
+});
+
 const alertStore = useAlertStore();
 const route = useRoute();
 const router = useRouter();
@@ -143,14 +150,10 @@ async function validarProcesso() {
   validando.value = true;
   try {
     respostasof.value = { loading: true };
-      const params = route.params.projetoId
-        ? { portfolio_id: ProjetoStore.emFoco.portfolio_id }
-        : { pdm_id: activePdm.value.id };
-
     const { valid } = await validateField('processo');
     if (valid) {
       const r = await DotaçãoStore
-        .getDotaçãoRealizadoProcesso(dota.value, ano, params);
+        .getDotaçãoRealizadoProcesso(dota.value, ano, props.parametrosParaValidacao);
       respostasof.value = r;
     }
   } catch (error) {
