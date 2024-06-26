@@ -8,9 +8,11 @@ import { useDotaçãoStore } from '@/stores/dotacao.store.ts';
 import { useProjetosStore } from '@/stores/projetos.store.ts';
 import { storeToRefs } from 'pinia';
 import { Field, Form } from 'vee-validate';
-import { ref } from 'vue';
+import { defineOptions, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import * as Yup from 'yup';
+
+defineOptions({ inheritAttrs: false });
 
 const DotaçãoStore = useDotaçãoStore();
 const ProjetoStore = useProjetosStore();
