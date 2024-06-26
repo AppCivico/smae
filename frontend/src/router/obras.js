@@ -1,4 +1,5 @@
 import obrasAcompanhamentos from './obras.acompanhamentos';
+import obrasOrcamentos from './obras.orcamentos';
 import obrasProcessos from './obras.processos';
 
 export default {
@@ -62,8 +63,7 @@ export default {
           'obrasListar',
         ],
         rotasParaMenuSecundário: [
-          // 'obrasResumo',
-          'obrasEditar', // PRA-FAZER: trocar pela de resumo, quando estiver pronta
+          'obrasResumo',
           'obrasTarefasListar',
           {
             título: 'Acompanhamento',
@@ -71,6 +71,14 @@ export default {
               'acompanhamentosDeObrasListar',
               'obrasDocumentos',
               'processosDaObraListar',
+            ],
+          },
+          {
+            título: 'Visão orçamentária',
+            rotas: [
+              'obrasOrçamentoCusto',
+              'obrasOrçamentoPlanejado',
+              'obrasOrçamentoRealizado',
             ],
           },
         ],
@@ -118,7 +126,7 @@ export default {
             prefixoParaFilhas: 'obras',
             rotasParaMigalhasDePão: [
               'obrasListar',
-              // 'obrasResumo',
+              'obrasResumo',
               'obrasEditar', // PRA-FAZER: trocar pela de resumo, quando estiver pronta
               'obrasTarefasListar',
             ],
@@ -186,7 +194,7 @@ export default {
 
                     rotasParaMigalhasDePão: [
                       'obrasListar',
-                      // 'obrasResumo',
+                      'obrasResumo',
                       'obrasEditar', // PRA-FAZER: trocar pela de resumo, quando estiver pronta
                       'obrasTarefasListar',
                       'obrasTarefasEditar',
@@ -232,6 +240,7 @@ export default {
 
         obrasAcompanhamentos,
         obrasProcessos,
+        obrasOrcamentos,
       ],
     },
   ],

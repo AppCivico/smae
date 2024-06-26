@@ -9,9 +9,11 @@ import { useOrcamentosStore } from '@/stores/orcamentos.store';
 import { storeToRefs } from 'pinia';
 import { Field, useForm } from 'vee-validate';
 import {
-  computed, ref, toRaw, watch,
+  defineOptions, computed, ref, toRaw, watch,
 } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+
+defineOptions({ inheritAttrs: false });
 
 const alertStore = useAlertStore();
 const DotaçãoStore = useDotaçãoStore();
@@ -23,11 +25,6 @@ const { id } = route.params;
 
 const MetasStore = useMetasStore();
 const { singleMeta, activePdm } = storeToRefs(MetasStore);
-
-if (!route.params.projetoId) {
-  MetasStore.getPdM();
-  MetasStore.getChildren(meta_id);
-}
 
 const parentlink = `${meta_id ? `/metas/${meta_id}` : ''}`;
 const parent_item = ref(meta_id ? singleMeta : false);
@@ -70,13 +67,24 @@ const complemento = computed(() => {
 });
 
 (async () => {
-  /* await */ DotaçãoStore.getDotaçãoSegmentos(ano);
+  DotaçãoStore.getDotaçãoSegmentos(ano);
   if (id) {
-    if (route.params.projetoId) {
-      await OrcamentosStore.buscarOrçamentosRealizadosParaProjeto();
-    } else {
-      await OrcamentosStore.getOrcamentoRealizadoById(meta_id, ano);
+    switch (route.meta.entidadeMãe) {
+      case 'projeto':
+      case 'obras':
+
+        await OrcamentosStore.buscarOrçamentosRealizadosParaAno();
+        break;
+
+      case 'meta':
+        await OrcamentosStore.getOrcamentoRealizadoById(meta_id, ano);
+        break;
+
+      default:
+        console.trace('Módulo para busca de orçamentos não pôde ser identificado:', route.meta);
+        throw new Error('Módulo para busca de orçamentos não pôde ser identificado');
     }
+
     currentEdit.value = OrcamentoRealizado.value[ano]?.find((x) => x.id == id);
 
     currentEdit.value.dotacao = await currentEdit.value.dotacao.split('.').map((x, i) => {
@@ -161,7 +169,7 @@ const onSubmit = handleSubmit.withControlled(async () => {
 
 async function checkDelete(id) {
   alertStore.confirmAction('Deseja mesmo remover esse item?', async () => {
-    if (await OrcamentosStore.deleteOrcamentoRealizado(id, route.params.projetoId)) {
+    if (await OrcamentosStore.deleteOrcamentoRealizado(id, route.params)) {
       if (parentlink) {
         router.push({
           path: `${parentlink}/orcamento/realizado`,
@@ -223,8 +231,6 @@ export default {
   </h3>
   <template v-if="!(OrcamentoRealizado[ano]?.loading || OrcamentoRealizado[ano]?.error)">
     <form
-      :validation-schema="schema"
-      :initial-values="currentEdit"
       @submit.prevent="onSubmit"
     >
       <div v-if="currentEdit.processo">
@@ -496,13 +502,7 @@ export default {
         </tbody>
       </table>
 
-      <Field
-        v-if="$route.params.projetoId"
-        name="projeto_id"
-        type="hidden"
-        :value="$route.params.projetoId"
-      />
-      <div v-else>
+      <div v-if="$route.meta.entidadeMãe === 'meta'">
         <label class="label">Vincular dotação<span class="tvermelho">*</span></label>
 
         <pre v-ScrollLockDebug>activePdm.nivel_orcamento: {{ activePdm.nivel_orcamento }}</pre>

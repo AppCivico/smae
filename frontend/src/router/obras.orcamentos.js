@@ -1,208 +1,209 @@
+import OrcamentosLista from '@/views/mdo.orcamentos/OrcamentosLista.vue';
+import OrcamentosRaiz from '@/views/mdo.orcamentos/OrcamentosRaiz.vue';
 import AddEditCusteio from '@/views/orcamento/AddEditCusteio.vue';
 import AddEditPlanejado from '@/views/orcamento/AddEditPlanejado.vue';
 import AddRealizado from '@/views/orcamento/AddRealizado.vue';
 import AddRealizadoNota from '@/views/orcamento/AddRealizadoNota.vue';
 import AddRealizadoProcesso from '@/views/orcamento/AddRealizadoProcesso.vue';
 import EditRealizado from '@/views/orcamento/EditRealizado.vue';
-import OrcamentosLista from '@/views/projetos.orcamentos/OrcamentosLista.vue';
-import OrcamentosRaiz from '@/views/projetos.orcamentos/OrcamentosRaiz.vue';
 
 export default {
   path: 'orcamentos',
   component: OrcamentosRaiz,
-  name: 'OrcamentosRaiz',
+  name: 'obrasOrcamentosRaiz',
 
   props: ({ params }) => ({
     ...params,
-    projetoId: Number.parseInt(params.projetoId, 10) || undefined,
+    obraId: Number.parseInt(params.obraId, 10) || undefined,
   }),
-  redirect: () => ({ name: 'ProjetoOrçamentoCusto' }),
+  redirect: () => ({ name: 'obrasOrçamentoCusto' }),
   meta: {
     título: 'Orçamentos',
     limitarÀsPermissões: [
-      'Projeto.orcamento',
+      'ProjetoMDO.orcamento',
     ],
     rotasParaMigalhasDePão: [
-      'projetosListar',
-      'projetosResumo',
-      'OrcamentosRaiz',
+      'obrasListar',
+      'obrasResumo',
+      'obrasOrcamentosRaiz',
     ],
     rotaPrescindeDeChave: false,
   },
 
   children: [
     {
-      name: 'ProjetoOrçamentoCusto',
+      name: 'obrasOrçamentoCusto',
       path: 'custo',
       component: OrcamentosLista,
       meta: {
         títuloParaMenu: 'Previsão de custo',
         título: 'Previsão de custo',
         area: 'Custo',
-        rotaParaAdição: 'ProjetoOrçamentoCustoPorAno',
-        rotaParaEdição: 'ProjetoOrçamentoCustoPorAnoPorId',
+        rotaParaAdição: 'obrasOrçamentoCustoPorAno',
+        rotaParaEdição: 'obrasOrçamentoCustoPorAnoPorId',
         rotasParaMigalhasDePão: [
-          'projetosListar',
-          'projetosResumo',
+          'obrasListar',
+          'obrasResumo',
         ],
       },
     },
     {
-      name: 'ProjetoOrçamentoCustoPorAno',
+      name: 'obrasOrçamentoCustoPorAno',
       path: 'custo/:ano',
       component: AddEditCusteio,
       meta: {
         títuloParaMenu: '',
-        rotaDeEscape: 'ProjetoOrçamentoCusto',
+        rotaDeEscape: 'obrasOrçamentoCusto',
         rotasParaMigalhasDePão: [
-          'projetosListar',
-          'projetosResumo',
-          'ProjetoOrçamentoCusto',
+          'obrasListar',
+          'obrasResumo',
+          'obrasOrçamentoCusto',
         ],
       },
     },
     {
-      name: 'ProjetoOrçamentoCustoPorAnoPorId',
+      name: 'obrasOrçamentoCustoPorAnoPorId',
       component: AddEditCusteio,
       path: 'custo/:ano/:id',
       meta: {
         títuloParaMenu: '',
-        rotaDeEscape: 'ProjetoOrçamentoCusto',
+        rotaDeEscape: 'obrasOrçamentoCusto',
         rotasParaMigalhasDePão: [
-          'projetosListar',
-          'projetosResumo',
-          'ProjetoOrçamentoCusto',
+          'obrasListar',
+          'obrasResumo',
+          'obrasOrçamentoCusto',
         ],
       },
     },
 
     {
-      name: 'ProjetoOrçamentoPlanejado',
+      name: 'obrasOrçamentoPlanejado',
       path: 'planejado',
       component: OrcamentosLista,
       meta: {
         títuloParaMenu: 'Orçamento planejado',
         título: 'Orçamento planejado',
         area: 'Planejado',
-        rotaParaAdição: 'ProjetoOrçamentoPlanejadoPorAno',
-        rotaParaEdição: 'ProjetoOrçamentoPlanejadoPorAnoPorId',
+        rotaParaAdição: 'obrasOrçamentoPlanejadoPorAno',
+        rotaParaEdição: 'obrasOrçamentoPlanejadoPorAnoPorId',
         rotasParaMigalhasDePão: [
-          'projetosListar',
-          'projetosResumo',
+          'obrasListar',
+          'obrasResumo',
         ],
       },
     },
     {
-      name: 'ProjetoOrçamentoPlanejadoPorAno',
+      name: 'obrasOrçamentoPlanejadoPorAno',
       path: 'planejado/:ano',
       component: AddEditPlanejado,
       meta: {
         títuloParaMenu: '',
-        rotaDeEscape: 'ProjetoOrçamentoPlanejado',
+        rotaDeEscape: 'obrasOrçamentoPlanejado',
         rotasParaMigalhasDePão: [
-          'projetosListar',
-          'projetosResumo',
-          'ProjetoOrçamentoPlanejado',
+          'obrasListar',
+          'obrasResumo',
+          'obrasOrçamentoPlanejado',
         ],
       },
     },
     {
-      name: 'ProjetoOrçamentoPlanejadoPorAnoPorId',
+      name: 'obrasOrçamentoPlanejadoPorAnoPorId',
       path: 'planejado/:ano/:id',
       component: AddEditPlanejado,
       meta: {
         títuloParaMenu: '',
-        rotaDeEscape: 'ProjetoOrçamentoPlanejado',
+        rotaDeEscape: 'obrasOrçamentoPlanejado',
         rotasParaMigalhasDePão: [
-          'projetosListar',
-          'projetosResumo',
-          'ProjetoOrçamentoPlanejado',
+          'obrasListar',
+          'obrasResumo',
+          'obrasOrçamentoPlanejado',
         ],
       },
     },
 
     {
-      name: 'ProjetoOrçamentoRealizado',
+      name: 'obrasOrçamentoRealizado',
       path: 'realizado',
       component: OrcamentosLista,
       meta: {
         títuloParaMenu: 'Execução orçamentária',
         título: 'Execução orçamentária',
         area: 'Realizado',
-        rotaParaEdição: 'ProjetoOrçamentoRealizadoPorAnoPorId',
+        rotaParaEdição: 'obrasOrçamentoRealizadoPorAnoPorId',
         rotasParaAdição: [
           {
             texto: 'Dotação',
-            nome: 'ProjetoOrçamentoRealizadoPorAnoPorDotação',
+            nome: 'obrasOrçamentoRealizadoPorAnoPorDotação',
           },
           {
             texto: 'Processo',
-            nome: 'ProjetoOrçamentoRealizadoPorAnoPorProcesso',
+            nome: 'obrasOrçamentoRealizadoPorAnoPorProcesso',
           },
           {
             texto: 'Nota de empenho',
-            nome: 'ProjetoOrçamentoRealizadoPorAnoPorNota',
+            nome: 'obrasOrçamentoRealizadoPorAnoPorNota',
           },
         ],
         rotasParaMigalhasDePão: [
-          'projetosListar',
-          'projetosResumo',
+          'obrasListar',
+          'obrasResumo',
         ],
       },
     },
     {
-      name: 'ProjetoOrçamentoRealizadoPorAnoPorDotação',
+      name: 'obrasOrçamentoRealizadoPorAnoPorDotação',
       path: 'realizado/:ano/dotacao',
       component: AddRealizado,
       meta: {
         títuloParaMenu: '',
-        rotaDeEscape: 'ProjetoOrçamentoRealizado',
+        rotaDeEscape: 'obrasOrçamentoRealizado',
         rotasParaMigalhasDePão: [
-          'projetosListar',
-          'projetosResumo',
-          'ProjetoOrçamentoRealizado',
+          'obrasListar',
+          'obrasResumo',
+          'obrasOrçamentoRealizado',
         ],
       },
     },
     {
-      name: 'ProjetoOrçamentoRealizadoPorAnoPorProcesso',
+      name: 'obrasOrçamentoRealizadoPorAnoPorProcesso',
       path: 'realizado/:ano/processo',
       component: AddRealizadoProcesso,
+      props: true,
       meta: {
         títuloParaMenu: '',
-        rotaDeEscape: 'ProjetoOrçamentoRealizado',
+        rotaDeEscape: 'obrasOrçamentoRealizado',
         rotasParaMigalhasDePão: [
-          'projetosListar',
-          'projetosResumo',
-          'ProjetoOrçamentoRealizado',
+          'obrasListar',
+          'obrasResumo',
+          'obrasOrçamentoRealizado',
         ],
       },
     },
     {
-      name: 'ProjetoOrçamentoRealizadoPorAnoPorNota',
+      name: 'obrasOrçamentoRealizadoPorAnoPorNota',
       path: 'realizado/:ano/nota',
       component: AddRealizadoNota,
       meta: {
         títuloParaMenu: '',
-        rotaDeEscape: 'ProjetoOrçamentoRealizado',
+        rotaDeEscape: 'obrasOrçamentoRealizado',
         rotasParaMigalhasDePão: [
-          'projetosListar',
-          'projetosResumo',
-          'ProjetoOrçamentoRealizado',
+          'obrasListar',
+          'obrasResumo',
+          'obrasOrçamentoRealizado',
         ],
       },
     },
     {
-      name: 'ProjetoOrçamentoRealizadoPorAnoPorId',
+      name: 'obrasOrçamentoRealizadoPorAnoPorId',
       path: 'realizado/:ano/:id',
       component: EditRealizado,
       meta: {
         títuloParaMenu: '',
-        rotaDeEscape: 'ProjetoOrçamentoRealizado',
+        rotaDeEscape: 'obrasOrçamentoRealizado',
         rotasParaMigalhasDePão: [
-          'projetosListar',
-          'projetosResumo',
-          'ProjetoOrçamentoRealizado',
+          'obrasListar',
+          'obrasResumo',
+          'obrasOrçamentoRealizado',
         ],
       },
     },
@@ -211,11 +212,11 @@ export default {
       component: EditRealizado,
       meta: {
         títuloParaMenu: '',
-        rotaDeEscape: 'ProjetoOrçamentoRealizado',
+        rotaDeEscape: 'obrasOrçamentoRealizado',
         rotasParaMigalhasDePão: [
-          'projetosListar',
-          'projetosResumo',
-          'ProjetoOrçamentoRealizado',
+          'obrasListar',
+          'obrasResumo',
+          'obrasOrçamentoRealizado',
         ],
       },
     },

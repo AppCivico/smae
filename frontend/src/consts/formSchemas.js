@@ -415,6 +415,14 @@ export const etapaDeMonitoramento = object()
       .matches(regEx['day/month/year'], 'Formato inválido'),
   });
 
+export const etiqueta = object({
+  descricao: string()
+    .label('Descrição')
+    .min(3)
+    .max(250)
+    .required(),
+});
+
 export const execuçãoOrçamentária = object()
   .shape({
     itens: array()
@@ -2991,3 +2999,58 @@ export const valoresRealizadoEmLote = object()
           }),
       ),
   });
+
+export const obra = projeto.concat(obras).shape({
+  grupo_tematico: object()
+    .label('Grupo temático')
+    .nullable()
+    .shape({
+      id: number()
+        .required(),
+      nome: string()
+        .required(),
+    }),
+  tipo_intervencao: object()
+    .label('Tipo de intervenção')
+    .nullable()
+    .shape({
+      id: number()
+        .required(),
+      nome: string()
+        .required(),
+    }),
+  equipamento: object()
+    .label('Equipamento')
+    .nullable()
+    .shape({
+      id: number()
+        .required(),
+      nome: string()
+        .required(),
+    }),
+  projeto_etapa: object()
+    .label('Etapa atual')
+    .nullable()
+    .shape({
+      id: number()
+        .required(),
+      nome: string()
+        .required(),
+    }),
+  regioes: array()
+    .label('Subprefeituras')
+    .nullable()
+    .of(região),
+  tags: array()
+    .label('Etiquetas')
+    .nullable()
+    .of(
+      object()
+        .shape({
+          id: number()
+            .required(),
+          descricao: string()
+            .required(),
+        }),
+    ),
+});

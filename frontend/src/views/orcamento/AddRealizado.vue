@@ -8,8 +8,17 @@ import { useMetasStore } from '@/stores/metas.store';
 import { useOrcamentosStore } from '@/stores/orcamentos.store';
 import { storeToRefs } from 'pinia';
 import { Field, useForm } from 'vee-validate';
-import { ref, toRaw, watch } from 'vue';
+import {
+  defineProps, ref, toRaw, watch,
+} from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+
+defineProps({
+  parametrosParaValidacao: {
+    type: Object,
+    required: true,
+  },
+});
 
 const alertStore = useAlertStore();
 
@@ -20,11 +29,6 @@ const { ano } = route.params;
 
 const MetasStore = useMetasStore();
 const { singleMeta, activePdm } = storeToRefs(MetasStore);
-
-if (!route.params.projetoId) {
-  MetasStore.getPdM();
-  MetasStore.getChildren(meta_id);
-}
 
 const parentlink = `${meta_id ? `/metas/${meta_id}` : ''}`;
 const parent_item = ref(meta_id ? singleMeta : false);
@@ -52,7 +56,7 @@ const {
   validationSchema: schema,
 });
 
-const onSubmit = handleSubmit.withControlled(async () => {
+const onSubmit = handleSubmit(async () => {
   try {
     const carga = { ...values };
 
@@ -104,7 +108,7 @@ complemento: 1.111.1111.1
 
 async function checkDelete(id) {
   alertStore.confirmAction('Deseja mesmo remover esse item?', async () => {
-    if (await OrcamentosStore.deleteOrcamentoRealizado(id, route.params.projetoId)) {
+    if (await OrcamentosStore.deleteOrcamentoRealizado(id, route.params)) {
       if (parentlink) {
         router.push({
           path: `${parentlink}/orcamento`,
@@ -137,6 +141,7 @@ export default {
 
     <CheckClose />
   </div>
+
   <h3 class="mb2">
     <strong>{{ ano }}</strong> - {{ parent_item.codigo }} - {{ parent_item.titulo }}
   </h3>
@@ -167,6 +172,7 @@ export default {
         v-model:complemento="complemento"
         v-model:dotação="dotação"
         v-model="dotaçãoComComplemento"
+        :parametros-para-validacao="parametrosParaValidacao"
       />
 
       <ListaDeCompartilhamentos
@@ -179,14 +185,8 @@ export default {
         class="mb1"
       />
 
-      <Field
-        v-if="$route.params.projetoId"
-        name="projeto_id"
-        type="hidden"
-        :value="$route.params.projetoId"
-      />
       <div
-        v-else-if="Object.keys(respostasof).length
+        v-if="$route.meta.entidadeMãe === 'meta' && Object.keys(respostasof).length
           && !respostasof.error
           && !respostasof.loading"
       >

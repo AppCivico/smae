@@ -4,46 +4,44 @@ import ListaDeCompartilhamentos from '@/components/orcamento/ListaDeCompartilham
 import patterns from '@/consts/patterns';
 import formatProcesso from '@/helpers/formatProcesso';
 import { useAlertStore } from '@/stores/alert.store';
-import { useAtividadesStore } from '@/stores/atividades.store';
 import { useDotaçãoStore } from '@/stores/dotacao.store.ts';
-import { useIniciativasStore } from '@/stores/iniciativas.store';
 import { useMetasStore } from '@/stores/metas.store';
 import { useOrcamentosStore } from '@/stores/orcamentos.store';
-import { useProjetosStore } from '@/stores/projetos.store.ts';
 import { storeToRefs } from 'pinia';
-import { Field, useForm } from 'vee-validate';
-import { ref, toRaw, watch } from 'vue';
+import { ErrorMessage, Field, useForm } from 'vee-validate';
+import {
+  defineOptions, ref, toRaw, watch,
+} from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import * as Yup from 'yup';
+
+defineOptions({ inheritAttrs: false });
+
+const props = defineProps({
+  parametrosParaValidacao: {
+    type: Object,
+    required: true,
+  },
+});
 
 const alertStore = useAlertStore();
 const route = useRoute();
 const router = useRouter();
 const DotaçãoStore = useDotaçãoStore();
-const ProjetoStore = useProjetosStore();
 const { meta_id } = route.params;
 const { ano } = route.params;
-const { id } = route.params;
 const { seiOuSinproc: regprocesso } = patterns;
 
 const MetasStore = useMetasStore();
 const { singleMeta, activePdm } = storeToRefs(MetasStore);
-
-if (!route.params.projetoId) {
-  MetasStore.getPdM();
-  MetasStore.getChildren(meta_id);
-}
-
-const IniciativasStore = useIniciativasStore();
-const { singleIniciativa } = storeToRefs(IniciativasStore);
-const AtividadesStore = useAtividadesStore();
-const { singleAtividade } = storeToRefs(AtividadesStore);
 
 const parentlink = `${meta_id ? `/metas/${meta_id}` : ''}`;
 const parent_item = ref(meta_id ? singleMeta : false);
 
 const OrcamentosStore = useOrcamentosStore();
 const { OrcamentoRealizado } = storeToRefs(OrcamentosStore);
+
+const validando = ref(false);
 
 const currentEdit = ref({
   itens: [],
@@ -57,13 +55,13 @@ const schema = Yup.object().shape({
 });
 
 const {
-  errors, handleSubmit, isSubmitting, resetForm, values,
+  errors, handleSubmit, isSubmitting, resetForm, values, validateField,
 } = useForm({
   initialValues: currentEdit.value,
   validationSchema: schema,
 });
 
-const onSubmit = handleSubmit.withControlled(async () => {
+const onSubmit = handleSubmit(async () => {
   try {
     let msg;
     let r;
@@ -108,7 +106,7 @@ const onSubmit = handleSubmit.withControlled(async () => {
 
 async function checkDelete(id) {
   alertStore.confirmAction('Deseja mesmo remover esse item?', async () => {
-    if (await OrcamentosStore.deleteOrcamentoRealizado(id, route.params.projetoId)) {
+    if (await OrcamentosStore.deleteOrcamentoRealizado(id, route.params)) {
       if (parentlink) {
         router.push({
           path: `${parentlink}/orcamento`,
@@ -123,38 +121,29 @@ async function checkDelete(id) {
     }
   }, 'Remover');
 }
-function maskFloat(el) {
-  el.target.value = dinheiro(Number(el.target.value.replace(/[\D]/g, '')) / 100);
-  el.target?._vei?.onChange(el);
-}
+
 function dinheiro(v) {
   return new Intl.NumberFormat('pt-BR', { minimumFractionDigits: 2 }).format(Number(v));
 }
-function toFloat(v) {
-  return isNaN(v) || String(v).indexOf(',') !== -1 ? Number(String(v).replace(/[^0-9\,]/g, '').replace(',', '.')) : Math.round(Number(v) * 100) / 100;
-}
+
 function maskProcesso(el) {
   el.target.value = formatProcesso(el.target.value);
 }
-async function validarDota() {
+
+async function validarProcesso() {
+  validando.value = true;
   try {
     respostasof.value = { loading: true };
-    const val = await schema.validate({
-      processo: dota.value,
-      valor_empenho: 1,
-      valor_liquidado: 1,
-    });
-    if (val) {
-      const params = route.params.projetoId
-        ? { portfolio_id: ProjetoStore.emFoco.portfolio_id }
-        : { pdm_id: activePdm.value.id };
-
+    const { valid } = await validateField('processo');
+    if (valid) {
       const r = await DotaçãoStore
-        .getDotaçãoRealizadoProcesso(dota.value, ano, params);
+        .getDotaçãoRealizadoProcesso(dota.value, ano, props.parametrosParaValidacao);
       respostasof.value = r;
     }
   } catch (error) {
     respostasof.value = error;
+  } finally {
+    validando.value = false;
   }
 }
 
@@ -174,8 +163,6 @@ watch(currentEdit, (novosValores) => {
   </h3>
   <template v-if="!(OrcamentoRealizado[ano]?.loading || OrcamentoRealizado[ano]?.error)">
     <form
-      :validation-schema="schema"
-      :initial-values="currentEdit"
       @submit.prevent="onSubmit"
     >
       <div class="flex center g2 mb2">
@@ -193,9 +180,9 @@ watch(currentEdit, (novosValores) => {
             placeholder="DDDD.DDDD/DDDDDDD-D (SEI) ou AAAA-D.DDD.DDD-D (SINPROC)"
             @keyup="maskProcesso"
           />
-          <div class="error-msg">
-            {{ errors.processo }}
-          </div>
+
+          <ErrorMessage name="processo" />
+
           <div
             v-if="respostasof.loading"
             class="t13 mb1 tc300"
@@ -204,10 +191,15 @@ watch(currentEdit, (novosValores) => {
           </div>
         </div>
         <div class="f0">
-          <a
+          <button
+            type="button"
             class="btn outline bgnone tcprimary"
-            @click="validarDota()"
-          >Validar via SOF</a>
+            :aria-disabled="validando"
+            :aria-busy="validando"
+            @click="validarProcesso()"
+          >
+            Validar via SOF
+          </button>
         </div>
       </div>
       <div
@@ -242,7 +234,7 @@ watch(currentEdit, (novosValores) => {
         </div>
         <hr class="mb05">
         <label
-          v-for="(d, i) in respostasof"
+          v-for="(d) in respostasof"
           :key="d.id"
           class="flex g2 center mb1"
         >
@@ -268,13 +260,6 @@ watch(currentEdit, (novosValores) => {
         </label>
       </div>
 
-      <Field
-        v-if="$route.params.projetoId"
-        name="projeto_id"
-        type="hidden"
-        :value="$route.params.projetoId"
-      />
-
       <ListaDeCompartilhamentos
         v-if="$route.meta.entidadeMãe === 'meta' && respostasof.length && values.dotacao"
         :ano="ano"
@@ -285,7 +270,7 @@ watch(currentEdit, (novosValores) => {
       />
 
       <template v-if="respostasof.length && values.dotacao">
-        <div v-if="!$route.params.projetoId">
+        <div v-if="$route.meta.entidadeMãe === 'meta'">
           <label class="label">Vincular dotação<span class="tvermelho">*</span></label>
 
           <div

@@ -70,7 +70,13 @@
           >
             <td>{{ item.orgao_origem.sigla }}</td>
             <td>{{ item.portfolio?.titulo || item.portfolio }}</td>
-            <th>{{ item.nome }}</th>
+            <th>
+              <router-link
+                :to="{ name: 'obrasResumo', params: { obraId: item.id } }"
+              >
+                {{ item.nome }}
+              </router-link>
+            </th>
             <td>{{ item.grupo_tematico.nome }}</td>
             <td>
               {{ item.tipo_intervencao?.nome || item.tipo_intervencao || ' - ' }}
@@ -131,13 +137,13 @@
   </div>
 </template>
 <script setup>
+import { storeToRefs } from 'pinia';
+import { ref } from 'vue';
 import LocalFilter from '@/components/LocalFilter.vue';
 import { obras as schema } from '@/consts/formSchemas';
 import statusObras from '@/consts/statusObras';
 import { useAlertStore } from '@/stores/alert.store';
 import { useObrasStore } from '@/stores/obras.store';
-import { storeToRefs } from 'pinia';
-import { ref } from 'vue';
 
 const obrasStore = useObrasStore();
 const {

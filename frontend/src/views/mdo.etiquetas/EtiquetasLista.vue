@@ -1,12 +1,12 @@
 <template>
   <div class="flex spacebetween center mb2">
-    <h1>{{ route?.meta?.título || "Equipamentos" }}</h1>
+    <h1>{{ route?.meta?.título || "Etiquetas" }}</h1>
     <hr class="ml2 f1">
     <router-link
-      :to="{ name: 'equipamentosCriar' }"
+      :to="{ name: 'mdoEtiquetasCriar' }"
       class="btn big ml1"
     >
-      Novo equipamento
+      Nova etiqueta
     </router-link>
   </div>
   <table class="tablemain">
@@ -15,7 +15,7 @@
     <col class="col--botão-de-ação">
     <thead>
       <tr>
-        <th>Equipamento</th>
+        <th>Etiqueta</th>
         <th />
         <th />
       </tr>
@@ -25,10 +25,10 @@
         v-for="item in lista"
         :key="item.id"
       >
-        <td>{{ item.nome }}</td>
+        <td>{{ item.descricao }}</td>
         <td>
           <router-link
-            :to="{ name: 'equipamentoEditar', params: { equipamentoId: item.id } }"
+            :to="{ name: 'mdoEtiquetasEditar', params: { etiquetaId: item.id } }"
             class="tprimary"
           >
             <svg
@@ -42,7 +42,7 @@
             class="like-a__text"
             arial-label="excluir"
             title="excluir"
-            @click="excluirEquipamento(item.id, item.nome)"
+            @click="excluirEtiqueta(item.id, item.descricao)"
           >
             <svg
               width="20"
@@ -74,29 +74,29 @@
 import { useAlertStore } from '@/stores/alert.store';
 import { storeToRefs } from 'pinia';
 import { useRoute } from 'vue-router';
-import { useEquipamentosStore } from '@/stores/equipamentos.store';
+import { useEtiquetasStore } from '@/stores/etiquetaMdo.store';
 
 const route = useRoute();
 const alertStore = useAlertStore();
-const equipamentosStore = useEquipamentosStore();
-const { lista, chamadasPendentes, erro } = storeToRefs(equipamentosStore);
+const etiquetasStore = useEtiquetasStore();
+const { lista, chamadasPendentes, erro } = storeToRefs(etiquetasStore);
 
-async function excluirEquipamento(id, descricao) {
+async function excluirEtiqueta(id, descricao) {
   alertStore.confirmAction(
     `Deseja mesmo remover "${descricao}"?`,
     async () => {
-      if (await equipamentosStore.excluirItem(id)) {
-        equipamentosStore.$reset();
-        equipamentosStore.buscarTudo();
-        alertStore.success(`"${descricao}" removido.`);
+      if (await etiquetasStore.excluirItem(id)) {
+        etiquetasStore.$reset();
+        etiquetasStore.buscarTudo({ pdm_id: route.params.planoSetorialId });
+        alertStore.success(`"${descricao}" removida.`);
       }
     },
     'Remover',
   );
 }
 
-equipamentosStore.$reset();
-equipamentosStore.buscarTudo();
+etiquetasStore.$reset();
+etiquetasStore.buscarTudo();
 </script>
 
 <style></style>

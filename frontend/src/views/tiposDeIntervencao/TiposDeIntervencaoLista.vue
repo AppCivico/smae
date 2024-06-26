@@ -42,7 +42,7 @@
             class="like-a__text"
             arial-label="excluir"
             title="excluir"
-            @click="excluirTipo(item.id)"
+            @click="excluirTipo(item.id, item.nome)"
           >
             <svg
               width="20"
@@ -81,14 +81,14 @@ const alertStore = useAlertStore();
 const tiposDeIntervencaoStore = useTiposDeIntervencaoStore();
 const { lista, chamadasPendentes, erro } = storeToRefs(tiposDeIntervencaoStore);
 
-async function excluirTipo(id) {
+async function excluirTipo(id, descricao) {
   alertStore.confirmAction(
-    'Deseja mesmo remover esse item?',
+    `Deseja mesmo remover "${descricao}"?`,
     async () => {
       if (await tiposDeIntervencaoStore.excluirItem(id)) {
         tiposDeIntervencaoStore.$reset();
         tiposDeIntervencaoStore.buscarTudo();
-        alertStore.success('Tipo removido.');
+        alertStore.success(`"${descricao}" removido.`);
       }
     },
     'Remover',

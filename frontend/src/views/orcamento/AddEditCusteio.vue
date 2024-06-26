@@ -4,14 +4,16 @@ import dinheiro from '@/helpers/dinheiro';
 import toFloat from '@/helpers/toFloat';
 import { useAlertStore } from '@/stores/alert.store';
 import { useAtividadesStore } from '@/stores/atividades.store';
+import { useDotaçãoStore } from '@/stores/dotacao.store.ts';
 import { useIniciativasStore } from '@/stores/iniciativas.store';
 import { useMetasStore } from '@/stores/metas.store';
 import { useOrcamentosStore } from '@/stores/orcamentos.store';
-import { useDotaçãoStore } from '@/stores/dotacao.store.ts';
 import { storeToRefs } from 'pinia';
 import { Field, Form } from 'vee-validate';
-import { ref } from 'vue';
+import { defineOptions, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+
+defineOptions({ inheritAttrs: false });
 
 const DotaçãoStore = useDotaçãoStore();
 
@@ -27,10 +29,6 @@ const { ano } = route.params;
 const MetasStore = useMetasStore();
 const { singleMeta, activePdm } = storeToRefs(MetasStore);
 
-if (!route.params.projetoId) {
-  MetasStore.getPdM();
-  MetasStore.getChildren(meta_id);
-}
 const IniciativasStore = useIniciativasStore();
 const { singleIniciativa } = storeToRefs(IniciativasStore);
 const AtividadesStore = useAtividadesStore();
@@ -57,10 +55,20 @@ const caret = ref(0);
 
 (async () => {
   /* await */ DotaçãoStore.getDotaçãoSegmentos(ano);
-  if (route.params.projetoId) {
-    await OrcamentosStore.buscarOrçamentosPrevistosParaProjeto();
-  } else {
-    await OrcamentosStore.getOrcamentoCusteioById(meta_id, ano);
+  // PRA-FAZER: mover para um componente de tela acima
+  switch (route.meta.entidadeMãe) {
+    case 'projeto':
+    case 'obras':
+      await OrcamentosStore.buscarOrçamentosPrevistosParaAno();
+      break;
+
+    case 'meta':
+      await OrcamentosStore.getOrcamentoCusteioById(meta_id, ano);
+      break;
+
+    default:
+      console.trace('Módulo para busca de orçamentos não pôde ser identificado:', route.meta);
+      throw new Error('Módulo para busca de orçamentos não pôde ser identificado');
   }
 
   OrcamentoCusteio.value[ano].map((x) => {
@@ -143,7 +151,7 @@ async function onSubmit(values) {
 
 async function checkDelete(id) {
   alertStore.confirmAction('Deseja mesmo remover esse item?', async () => {
-    if (await OrcamentosStore.deleteOrcamentoCusteio(id, route.params.projetoId)) {
+    if (await OrcamentosStore.deleteOrcamentoCusteio(id, route.params)) {
       if (parentlink) {
         router.push({
           path: `${parentlink}/orcamento/custo`,
@@ -466,13 +474,7 @@ function montaDotacao(a) {
         </div>
       </template>
 
-      <Field
-        v-if="$route.params.projetoId"
-        name="projeto_id"
-        type="hidden"
-        :value="$route.params.projetoId"
-      />
-      <div v-else>
+      <div v-if="$route.meta.entidadeMãe === 'meta'">
         <hr class="mt2 mb2">
         <label class="label">Vincular dotação <span class="tvermelho">*</span></label>
 
@@ -582,10 +584,10 @@ function montaDotacao(a) {
   <template v-if="OrcamentoCusteio[ano]?.loading">
     <span class="spinner">Carregando</span>
   </template>
-  <template v-if="OrcamentoCusteio[ano]?.error || error">
+  <template v-if="OrcamentoCusteio[ano]?.error">
     <div class="error p1">
       <div class="error-msg">
-        {{ OrcamentoCusteio[ano].error ?? error }}
+        {{ OrcamentoCusteio[ano].error }}
       </div>
     </div>
   </template>

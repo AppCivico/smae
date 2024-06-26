@@ -2,7 +2,7 @@ import { defineStore } from 'pinia';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
-export const useTagsPsStore = defineStore('tagsPsStore', {
+export const useEtiquetasStore = defineStore('etiquetasStore', {
   state: () => ({
     lista: [],
     emFoco: null,
@@ -19,7 +19,7 @@ export const useTagsPsStore = defineStore('tagsPsStore', {
       this.erro = null;
 
       try {
-        const resposta = await this.requestS.get(`${baseUrl}/plano-setorial-tag/${id}`, params);
+        const resposta = await this.requestS.get(`${baseUrl}/projeto-tag-mdo/${id}`, params);
         this.emFoco = {
           ...resposta,
         };
@@ -32,8 +32,9 @@ export const useTagsPsStore = defineStore('tagsPsStore', {
     async buscarTudo(params = {}) {
       this.chamadasPendentes.lista = true;
       this.erro = null;
+
       try {
-        const { linhas } = await this.requestS.get(`${baseUrl}/plano-setorial-tag`, params);
+        const { linhas } = await this.requestS.get(`${baseUrl}/projeto-tag-mdo`, params);
         this.lista = linhas;
       } catch (erro) {
         this.erro = erro;
@@ -46,7 +47,7 @@ export const useTagsPsStore = defineStore('tagsPsStore', {
       this.erro = null;
 
       try {
-        await this.requestS.delete(`${baseUrl}/plano-setorial-tag/${id}`);
+        await this.requestS.delete(`${baseUrl}/projeto-tag-mdo/${id}`);
         this.chamadasPendentes.lista = false;
         return true;
       } catch (erro) {
@@ -62,9 +63,9 @@ export const useTagsPsStore = defineStore('tagsPsStore', {
 
       try {
         if (id) {
-          await this.requestS.patch(`${baseUrl}/plano-setorial-tag/${id}`, params);
+          await this.requestS.patch(`${baseUrl}/projeto-tag-mdo/${id}`, params);
         } else {
-          await this.requestS.post(`${baseUrl}/plano-setorial-tag`, params);
+          await this.requestS.post(`${baseUrl}/projeto-tag-mdo`, params);
         }
 
         this.chamadasPendentes.emFoco = false;
@@ -76,12 +77,10 @@ export const useTagsPsStore = defineStore('tagsPsStore', {
       }
     },
   },
-
   getters: {
     itemParaEdição({ emFoco }) {
       return {
         ...emFoco,
-        upload_icone: emFoco?.icone,
       };
     },
   },

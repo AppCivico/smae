@@ -223,7 +223,7 @@ function limparFormulário() {
 
     <form
       id="form"
-      @submit="onSubmit"
+      @submit.prevent="onSubmit"
     >
       <div
         v-if="Valores[var_id]?.linhas"

@@ -3,22 +3,22 @@ import SimpleOrcamentoCusteio from '@/components/orcamento/SimpleOrcamentoCustei
 import SimpleOrcamentoPlanejado from '@/components/orcamento/SimpleOrcamentoPlanejado.vue';
 import SimpleOrcamentoRealizado from '@/components/orcamento/SimpleOrcamentoRealizado.vue';
 import { useAlertStore } from '@/stores/alert.store';
+import { useObrasStore } from '@/stores/obras.store';
 import { useOrcamentosStore } from '@/stores/orcamentos.store';
-import { useProjetosStore } from '@/stores/projetos.store.ts';
 import { computed, defineOptions, watch } from 'vue';
 import { useRoute } from 'vue-router';
 
-// PRA-FAZER: esse arquivo é quase igual ao de obras. Pode-se melhorar.
+// PRA-FAZER: esse arquivo é quase igual ao de projetos. Pode-se melhorar.
 
 defineOptions({ inheritAttrs: false });
 
 const alertStore = useAlertStore();
-const ProjetosStore = useProjetosStore();
+const ObrasStore = useObrasStore();
 const OrcamentosStore = useOrcamentosStore();
 OrcamentosStore.clear();
 const route = useRoute();
 defineProps({
-  projetoId: {
+  obraId: {
     type: Number,
     default: 0,
   },
@@ -26,18 +26,25 @@ defineProps({
 
 const { area } = route.meta;
 
-const portfolioId = computed(() => ProjetosStore?.emFoco?.portfolio_id);
+const portfolioId = computed(() => ObrasStore?.emFoco?.portfolio_id);
 const rotaParaAdição = { name: '' };
 
-const SimpleOrcamento = area === 'Realizado'
-  ? SimpleOrcamentoRealizado
-  : area === 'Planejado'
-    ? SimpleOrcamentoPlanejado
-    : SimpleOrcamentoCusteio;
+let SimpleOrcamento;
 
-const anosNaDuraçãoDoProjeto = computed(() => ProjetosStore.emFoco?.ano_orcamento || []);
+switch (area) {
+  case 'Realizado':
+    SimpleOrcamento = SimpleOrcamentoRealizado;
+    break;
+  case 'Planejado':
+    SimpleOrcamento = SimpleOrcamentoPlanejado;
+    break;
+  default:
+    SimpleOrcamento = SimpleOrcamentoCusteio;
+}
 
-const configuraçãoDeOrçamentosPorAno = computed(() => anosNaDuraçãoDoProjeto.value.map((x) => ({
+const anosNaDuraçãoDoObra = computed(() => ObrasStore.emFoco?.ano_orcamento || []);
+
+const configuraçãoDeOrçamentosPorAno = computed(() => anosNaDuraçãoDoObra.value.map((x) => ({
   ano_referencia: x,
   portfolio_id: portfolioId.value,
   previsao_custo_disponivel: true,
@@ -76,8 +83,8 @@ function iniciar() {
   });
 }
 // caso a rota seja carregada diretamente, é possível que ainda não tenhamos os
-// dados de projetos prontos. Portanto, vamos ficar de olho neles.
-watch(() => ProjetosStore?.emFoco, iniciar);
+// dados de obras prontos. Portanto, vamos ficar de olho neles.
+watch(() => ObrasStore?.emFoco, iniciar);
 
 iniciar();
 </script>
@@ -93,7 +100,7 @@ iniciar();
   <div class="boards">
     <template v-if="portfolioId">
       <p
-        v-if="!anosNaDuraçãoDoProjeto.length"
+        v-if="!anosNaDuraçãoDoObra.length"
         class="error p1"
       >
         <strong>Não</strong> há anos disponíveis para preenchimento do orçamento.
@@ -109,7 +116,7 @@ iniciar();
         >
           <component
             :is="SimpleOrcamento"
-            :projeto-id="projetoId"
+            :obra-id="obraId"
             :config="orc"
             :rota-para-adição="rotaParaAdição"
             @apagar="iniciar"
@@ -127,7 +134,7 @@ iniciar();
         >
           <component
             :is="SimpleOrcamento"
-            :projeto-id="projetoId"
+            :obra-id="obraId"
             :config="orc"
             :rota-para-adição="rotaParaAdição"
           />
@@ -143,14 +150,14 @@ iniciar();
         >
           <component
             :is="SimpleOrcamento"
-            :projeto-id="projetoId"
+            :obra-id="obraId"
             :config="orc"
             :rota-para-adição="rotaParaAdição"
           />
         </template>
       </template>
     </template>
-    <template v-else-if="ProjetosStore.chamadasPendentes.emFoco">
+    <template v-else-if="ObrasStore.chamadasPendentes.emFoco">
       <div class="p1">
         <span>Carregando</span> <svg
           class="ml1 ib"
@@ -159,10 +166,10 @@ iniciar();
         ><use xlink:href="#i_spin" /></svg>
       </div>
     </template>
-    <template v-else-if="ProjetosStore.erro">
+    <template v-else-if="ObrasStore.erro">
       <div class="error p1">
         <p class="error-msg">
-          Error: {{ ProjetosStore.erro }}
+          Error: {{ ObrasStore.erro }}
         </p>
       </div>
     </template>

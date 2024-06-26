@@ -4,7 +4,6 @@
     <hr class="ml2 f1">
     <CheckClose />
   </div>
-
   <Form
     v-slot="{ errors, isSubmitting, values }"
     :validation-schema="schema"
@@ -59,7 +58,7 @@
       />
       <CampoDeArquivo
         id="icone"
-        v-model="values.upload_icone"
+        v-model="values.icone"
         accept=".svg,.png"
         name="upload_icone"
         tipo="LOGO_PDM"

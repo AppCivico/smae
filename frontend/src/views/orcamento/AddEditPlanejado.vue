@@ -2,15 +2,24 @@
 import dinheiro from '@/helpers/dinheiro';
 import toFloat from '@/helpers/toFloat';
 import { useAlertStore } from '@/stores/alert.store';
+import { useDotaçãoStore } from '@/stores/dotacao.store.ts';
 import { useMetasStore } from '@/stores/metas.store';
 import { useOrcamentosStore } from '@/stores/orcamentos.store';
-import { useDotaçãoStore } from '@/stores/dotacao.store.ts';
 import { useProjetosStore } from '@/stores/projetos.store.ts';
 import { storeToRefs } from 'pinia';
-import { Field, Form } from 'vee-validate';
-import { ref } from 'vue';
+import { ErrorMessage, Field, useForm } from 'vee-validate';
+import { defineOptions, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import * as Yup from 'yup';
+
+defineOptions({ inheritAttrs: false });
+
+const props = defineProps({
+  parametrosParaValidacao: {
+    type: Object,
+    required: true,
+  },
+});
 
 const DotaçãoStore = useDotaçãoStore();
 const ProjetoStore = useProjetosStore();
@@ -25,11 +34,6 @@ const { id } = route.params;
 const MetasStore = useMetasStore();
 const { singleMeta, activePdm } = storeToRefs(MetasStore);
 
-if (!route.params.projetoId) {
-  MetasStore.getPdM();
-  MetasStore.getChildren(meta_id);
-}
-
 const parentlink = `${meta_id ? `/metas/${meta_id}` : ''}`;
 const parent_item = ref(meta_id ? singleMeta : false);
 
@@ -39,6 +43,7 @@ const { DotaçãoSegmentos } = storeToRefs(DotaçãoStore);
 const currentEdit = ref({});
 const dota = ref('');
 const respostasof = ref({});
+const validando = ref(false);
 
 const d_orgao = ref('');
 const d_unidade = ref('');
@@ -50,13 +55,23 @@ const d_contadespesa = ref('');
 const d_fonte = ref('');
 
 (async () => {
-  /* await */ DotaçãoStore.getDotaçãoSegmentos(ano);
+  DotaçãoStore.getDotaçãoSegmentos(ano);
   if (id) {
-    if (route.params.projetoId) {
-      await OrcamentosStore.buscarOrçamentosPlanejadosParaProjeto();
-    } else {
-      await OrcamentosStore.getOrcamentoPlanejadoById(meta_id, ano);
+    switch (route.meta.entidadeMãe) {
+      case 'projeto':
+      case 'obras':
+        await OrcamentosStore.buscarOrçamentosPlanejadosParaAno();
+        break;
+
+      case 'meta':
+        await OrcamentosStore.getOrcamentoPlanejadoById(meta_id, ano);
+        break;
+
+      default:
+        console.trace('Módulo para busca de orçamentos não pôde ser identificado:', route.meta);
+        throw new Error('Módulo para busca de orçamentos não pôde ser identificado');
     }
+
     currentEdit.value = OrcamentoPlanejado.value[ano].find((x) => x.id == id);
     currentEdit.value.valor_planejado = dinheiro(currentEdit.value.valor_planejado);
 
@@ -96,7 +111,14 @@ const schema = Yup.object().shape({
   dotacao: Yup.string().required('Preencha a dotação.').matches(regdota, 'Formato inválido'),
 });
 
-async function onSubmit(values) {
+const {
+  errors, handleSubmit, isSubmitting, values, validateField,
+} = useForm({
+  initialValues: currentEdit.value,
+  validationSchema: schema,
+});
+
+const onSubmit = handleSubmit(async () => {
   try {
     let msg;
     let r;
@@ -146,11 +168,11 @@ async function onSubmit(values) {
   } catch (error) {
     alertStore.error(error);
   }
-}
+});
 
 async function checkDelete(id) {
   alertStore.confirmAction('Deseja mesmo remover esse item?', async () => {
-    if (await OrcamentosStore.deleteOrcamentoPlanejado(id, route.params.projetoId)) {
+    if (await OrcamentosStore.deleteOrcamentoPlanejado(id, route.params)) {
       if (parentlink) {
         router.push({
           path: `${parentlink}/orcamento`,
@@ -171,7 +193,6 @@ function maskFloat(el) {
 }
 
 function maskDotacao(el) {
-  // caret.value = el.target.selectionStart;
   const kC = event.keyCode;
   const f = formatDota(el.target.value);
   el.target.value = f;
@@ -218,22 +239,25 @@ function montaDotacao(a) {
   dota.value = o;
 }
 async function validarDota() {
+  validando.value = true;
   try {
     respostasof.value = { loading: true };
-    const val = await schema.validate({ dotacao: dota.value, valor_planejado: 1 });
-    if (val) {
-      const params = route.params.projetoId
-        ? { portfolio_id: ProjetoStore.emFoco.portfolio_id }
-        : { pdm_id: activePdm.value.id };
+
+    const { valid } = await validateField('dotacao');
+    if (valid) {
       const r = await DotaçãoStore
-        .getDotaçãoPlanejado(dota.value, ano, params);
+        .getDotaçãoPlanejado(dota.value, ano, props.parametrosParaValidacao);
       respostasof.value = r;
       if (id) {
         respostasof.value.smae_soma_valor_planejado -= toFloat(currentEdit.value.valor_planejado);
       }
+    } else {
+      respostasof.value = {};
     }
   } catch (error) {
     respostasof.value = error;
+  } finally {
+    validando.value = false;
   }
 }
 </script>
@@ -254,13 +278,10 @@ export default {
     <strong>{{ ano }}</strong> - {{ parent_item.codigo }} - {{ parent_item.titulo }}
   </h3>
   <template v-if="!(OrcamentoPlanejado[ano]?.loading || OrcamentoPlanejado[ano]?.error)">
-    <Form
-      v-slot="{ errors, isSubmitting, values }"
-      :validation-schema="schema"
-      :initial-values="currentEdit"
-      @submit="onSubmit"
+    <form
+      @submit.prevent="onSubmit"
     >
-      <div class="flex center g2">
+      <div class="flex center g2 mb1">
         <div class="f1">
           <label class="label">Dotação <span class="tvermelho">*</span></label>
           <Field
@@ -270,13 +291,11 @@ export default {
             class="inputtext light mb1"
             :class="{
               error: errors.dotacao || respostasof.informacao_valida === false,
-              loading: respostasof.loading
             }"
+            :aria-busy="validando"
             @keyup="maskDotacao"
           />
-          <div class="error-msg">
-            {{ errors.dotacao }}
-          </div>
+          <ErrorMessage name="dotacao" />
           <div
             v-if="respostasof.loading"
             class="t13 mb1 tc300"
@@ -506,10 +525,15 @@ export default {
       </template>
 
       <div class="tc mb2">
-        <a
+        <button
+          type="button"
+          :aria-busy="validando"
+          :aria-disabled="validando"
           class="btn outline bgnone tcprimary"
           @click="validarDota()"
-        >Validar via SOF</a>
+        >
+          Validar via SOF
+        </button>
       </div>
 
       <table
@@ -544,13 +568,7 @@ export default {
         </tbody>
       </table>
 
-      <Field
-        v-if="$route.params.projetoId"
-        name="projeto_id"
-        type="hidden"
-        :value="$route.params.projetoId"
-      />
-      <div v-else>
+      <div v-if="$route.meta.entidadeMãe === 'meta'">
         <label class="label">Vincular dotação<span class="tvermelho">*</span></label>
 
         <div
@@ -656,7 +674,7 @@ export default {
         </button>
         <hr class="ml2 f1">
       </div>
-    </Form>
+    </form>
   </template>
   <template v-if="currentEdit && currentEdit?.id">
     <button
@@ -669,10 +687,10 @@ export default {
   <template v-if="OrcamentoPlanejado[ano]?.loading">
     <span class="spinner">Carregando</span>
   </template>
-  <template v-if="OrcamentoPlanejado[ano]?.error || error">
+  <template v-if="OrcamentoPlanejado[ano]?.error">
     <div class="error p1">
       <div class="error-msg">
-        {{ OrcamentoPlanejado[ano].error ?? error }}
+        {{ OrcamentoPlanejado[ano].error }}
       </div>
     </div>
   </template>
