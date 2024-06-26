@@ -67,7 +67,7 @@ const complemento = computed(() => {
 });
 
 (async () => {
-  /* await */ DotaçãoStore.getDotaçãoSegmentos(ano);
+  DotaçãoStore.getDotaçãoSegmentos(ano);
   if (id) {
     if (route.params.projetoId) {
       await OrcamentosStore.buscarOrçamentosRealizadosParaAno();
@@ -220,8 +220,6 @@ export default {
   </h3>
   <template v-if="!(OrcamentoRealizado[ano]?.loading || OrcamentoRealizado[ano]?.error)">
     <form
-      :validation-schema="schema"
-      :initial-values="currentEdit"
       @submit.prevent="onSubmit"
     >
       <div v-if="currentEdit.processo">

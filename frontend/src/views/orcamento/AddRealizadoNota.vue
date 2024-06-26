@@ -138,10 +138,6 @@ async function checkDelete(id) {
     }
   }, 'Remover');
 }
-function maskFloat(el) {
-  el.target.value = dinheiro(Number(el.target.value.replace(/[\D]/g, '')) / 100);
-  el.target?._vei?.onChange(el);
-}
 function dinheiro(v) {
   return new Intl.NumberFormat('pt-BR', { minimumFractionDigits: 2 }).format(Number(v));
 }
@@ -203,8 +199,6 @@ watch(currentEdit, (novosValores) => {
   </h3>
   <template v-if="!(OrcamentoRealizado[ano]?.loading || OrcamentoRealizado[ano]?.error)">
     <form
-      :validation-schema="schema"
-      :initial-values="currentEdit"
       @submit.prevent="onSubmit"
     >
       <div class="flex center g2">
