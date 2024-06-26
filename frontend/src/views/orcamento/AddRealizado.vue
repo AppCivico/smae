@@ -10,9 +10,16 @@ import { useProjetosStore } from '@/stores/projetos.store.ts';
 import { storeToRefs } from 'pinia';
 import { Field, useForm } from 'vee-validate';
 import {
-  computed, ref, toRaw, watch,
+  defineProps, ref, toRaw, watch,
 } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+
+defineProps({
+  parametrosParaValidacao: {
+    type: Object,
+    required: true,
+  },
+});
 
 const alertStore = useAlertStore();
 const ProjetoStore = useProjetosStore();
@@ -49,20 +56,6 @@ const {
 } = useForm({
   initialValues: currentEdit.value,
   validationSchema: schema,
-});
-
-const parametrosParaValidacao = computed(() => {
-  switch (route.meta.entidadeMãe) {
-    case 'projeto':
-      return { portfolio_id: ProjetoStore.emFoco?.portfolio_id };
-
-    case 'meta':
-      return { pdm_id: activePdm.value?.id };
-
-    default:
-      console.error('Id identificado da entidade mãe não foi provido como esperado', route.meta);
-      throw new Error('Id identificado da entidade mãe não foi provido como esperado');
-  }
 });
 
 const onSubmit = handleSubmit.withControlled(async () => {

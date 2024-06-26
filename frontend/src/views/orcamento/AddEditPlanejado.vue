@@ -14,6 +14,13 @@ import * as Yup from 'yup';
 
 defineOptions({ inheritAttrs: false });
 
+const props = defineProps({
+  parametrosParaValidacao: {
+    type: Object,
+    required: true,
+  },
+});
+
 const DotaçãoStore = useDotaçãoStore();
 const ProjetoStore = useProjetosStore();
 
@@ -226,13 +233,11 @@ async function validarDota() {
   validando.value = true;
   try {
     respostasof.value = { loading: true };
-      const params = route.params.projetoId
-        ? { portfolio_id: ProjetoStore.emFoco.portfolio_id }
-        : { pdm_id: activePdm.value.id };
+
     const { valid } = await validateField('dotacao');
     if (valid) {
       const r = await DotaçãoStore
-        .getDotaçãoPlanejado(dota.value, ano, params);
+        .getDotaçãoPlanejado(dota.value, ano, props.parametrosParaValidacao);
       respostasof.value = r;
       if (id) {
         respostasof.value.smae_soma_valor_planejado -= toFloat(currentEdit.value.valor_planejado);
