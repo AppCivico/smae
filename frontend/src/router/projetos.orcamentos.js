@@ -44,7 +44,6 @@ export default {
         rotasParaMigalhasDePão: [
           'projetosListar',
           'projetosResumo',
-          'ProjetoOrçamentoCusto',
         ],
       },
     },
@@ -90,7 +89,6 @@ export default {
         rotasParaMigalhasDePão: [
           'projetosListar',
           'projetosResumo',
-          'ProjetoOrçamentoPlanejado',
         ],
       },
     },
@@ -149,7 +147,6 @@ export default {
         rotasParaMigalhasDePão: [
           'projetosListar',
           'projetosResumo',
-          'ProjetoOrçamentoRealizado',
         ],
       },
     },
