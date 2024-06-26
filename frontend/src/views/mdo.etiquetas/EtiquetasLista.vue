@@ -8,7 +8,6 @@
     >
       Nova etiqueta
     </router-link>
-    lista: {{ lista }}
   </div>
   <table class="tablemain">
     <col>
@@ -26,10 +25,10 @@
         v-for="item in lista"
         :key="item.id"
       >
-        <td>{{ item.nome }}</td>
+        <td>{{ item.descricao }}</td>
         <td>
           <router-link
-            :to="{ name: 'etiquetaEditar', params: { etiquetaId: item.id } }"
+            :to="{ name: 'mdoEtiquetasEditar', params: { etiquetaId: item.id } }"
             class="tprimary"
           >
             <svg
