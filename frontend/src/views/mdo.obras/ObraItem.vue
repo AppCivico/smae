@@ -1,11 +1,11 @@
 <script setup>
+import { storeToRefs } from 'pinia';
+import { onUnmounted, watch } from 'vue';
 import { useDotaçãoStore } from '@/stores/dotacao.store.ts';
 import { useObrasStore } from '@/stores/obras.store';
 import { usePortfolioObraStore } from '@/stores/portfoliosMdo.store.ts';
 import { useRegionsStore } from '@/stores/regions.store';
 import { useTarefasStore } from '@/stores/tarefas.store.ts';
-import { storeToRefs } from 'pinia';
-import { onUnmounted, watch } from 'vue';
 
 const DotaçãoStore = useDotaçãoStore();
 const portfolioMdoStore = usePortfolioObraStore();
@@ -68,5 +68,12 @@ onUnmounted(() => {
 });
 </script>
 <template>
+  <div
+    v-bind="$attrs"
+    class="t12 uc w700 tamarelo"
+  >
+    <small class="lc">Portfolio</small>
+    {{ portfolioMdoStore.portfoliosPorId[obrasStore?.emFoco?.portfolio_id]?.titulo }}
+  </div>
   <router-view />
 </template>
