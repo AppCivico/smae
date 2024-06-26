@@ -27,6 +27,7 @@ export class ProjetoTagService {
                 criado_por: user.id,
                 criado_em: new Date(Date.now()),
                 descricao: createTagDto.descricao,
+                tipo_projeto: tipo,
             },
             select: { id: true },
         });
