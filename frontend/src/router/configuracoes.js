@@ -88,6 +88,7 @@ const rotasParaMenuPrincipal = [
   'portfoliosListar',
   'mdoPortfoliosListar',
   'gerenciarPainéisDeMetas',
+  'mdoEtiquetasListar',
   'parlamentaresListar',
   'paineisExternosListar',
   'planosSetoriaisListar',
@@ -269,6 +270,59 @@ export default [
 
             meta: {
               título: 'Editar painel externo',
+            },
+          },
+        ],
+      },
+      {
+        path: 'mdo/etiquetas',
+        component: () => import('@/views/mdo.etiquetas/EtiquetasRaiz.vue'),
+        meta: {
+          título: 'Etiquetas',
+          entidadeMãe: 'mdo',
+          rotaPrescindeDeChave: true,
+          limitarÀsPermissões: [
+            'ProjetoTagMDO.inserir',
+          ],
+          presenteNoMenu: true,
+          rotasParaMenuSecundário: [
+            'mdoEtiquetasListar',
+          ],
+        },
+        children: [
+          {
+            name: 'mdoEtiquetasListar',
+            path: '',
+            component: () => import('@/views/mdo.etiquetas/EtiquetasLista.vue'),
+            meta: {
+              título: 'Etiquetas',
+            },
+          },
+          {
+            name: 'mdoEtiquetasCriar',
+            path: 'novo',
+            component: () => import('@/views/mdo.etiquetas/EtiquetasCriarEditar.vue'),
+            meta: {
+              título: 'Nova etiqueta',
+              rotasParaMigalhasDePão: [
+                'mdoEtiquetasListar',
+              ],
+            },
+          },
+          {
+            path: ':etiquetaId',
+            name: 'mdoEtiquetasEditar',
+            component: () => import('@/views/mdo.etiquetas/EtiquetasCriarEditar.vue'),
+            props: ({ params }) => ({
+              ...params,
+              ...{ etiquetaId: Number.parseInt(params.etiquetaId, 10) || undefined },
+            }),
+
+            meta: {
+              título: 'Editar etiqueta',
+              rotasParaMigalhasDePão: [
+                'mdoEtiquetasListar',
+              ],
             },
           },
         ],
