@@ -6,7 +6,6 @@ import { orçamentoRealizado as schema } from '@/consts/formSchemas';
 import { useAlertStore } from '@/stores/alert.store';
 import { useMetasStore } from '@/stores/metas.store';
 import { useOrcamentosStore } from '@/stores/orcamentos.store';
-import { useProjetosStore } from '@/stores/projetos.store.ts';
 import { storeToRefs } from 'pinia';
 import { Field, useForm } from 'vee-validate';
 import {
@@ -22,7 +21,6 @@ defineProps({
 });
 
 const alertStore = useAlertStore();
-const ProjetoStore = useProjetosStore();
 
 const route = useRoute();
 const router = useRouter();
@@ -58,7 +56,7 @@ const {
   validationSchema: schema,
 });
 
-const onSubmit = handleSubmit.withControlled(async () => {
+const onSubmit = handleSubmit(async () => {
   try {
     const carga = { ...values };
 
