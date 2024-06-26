@@ -110,7 +110,7 @@ complemento: 1.111.1111.1
 
 async function checkDelete(id) {
   alertStore.confirmAction('Deseja mesmo remover esse item?', async () => {
-    if (await OrcamentosStore.deleteOrcamentoRealizado(id, route.params.projetoId)) {
+    if (await OrcamentosStore.deleteOrcamentoRealizado(id, route.params)) {
       if (parentlink) {
         router.push({
           path: `${parentlink}/orcamento`,
@@ -187,14 +187,8 @@ export default {
         class="mb1"
       />
 
-      <Field
-        v-if="$route.params.projetoId"
-        name="projeto_id"
-        type="hidden"
-        :value="$route.params.projetoId"
-      />
       <div
-        v-else-if="Object.keys(respostasof).length
+        v-if="$route.meta.entidadeMãe === 'meta' && Object.keys(respostasof).length
           && !respostasof.error
           && !respostasof.loading"
       >

@@ -116,7 +116,7 @@ const onSubmit = handleSubmit.withControlled(async () => {
 
 async function checkDelete(id) {
   alertStore.confirmAction('Deseja mesmo remover esse item?', async () => {
-    if (await OrcamentosStore.deleteOrcamentoRealizado(id, route.params.projetoId)) {
+    if (await OrcamentosStore.deleteOrcamentoRealizado(id, route.params)) {
       if (parentlink) {
         router.push({
           path: `${parentlink}/orcamento`,
@@ -278,13 +278,6 @@ watch(currentEdit, (novosValores) => {
         </label>
       </div>
 
-      <Field
-        v-if="$route.params.projetoId"
-        name="projeto_id"
-        type="hidden"
-        :value="$route.params.projetoId"
-      />
-
       <ListaDeCompartilhamentos
         v-if="$route.meta.entidadeMãe === 'meta' && respostasof.length && values.dotacao"
         :ano="ano"
@@ -295,7 +288,7 @@ watch(currentEdit, (novosValores) => {
       />
 
       <template v-if="respostasof.length && values.dotacao">
-        <div v-if="!$route.params.projetoId">
+        <div v-if="$route.meta.entidadeMãe === 'meta'">
           <label class="label">Vincular dotação<span class="tvermelho">*</span></label>
 
           <div
