@@ -915,7 +915,7 @@ const PerfilAcessoConfig: {
 async function main() {
     if (atualizacoesPerfil.length) await Promise.all(atualizacoesPerfil);
 
-    await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient) => {
+    await prisma.$transaction(async (prismaTx: Prisma.TransactionClient) => {
         const locked: { locked: boolean }[] =
             await prismaTx.$queryRaw`SELECT pg_try_advisory_xact_lock(${JOB_LOCK_NUMBER}) as locked`;
 
