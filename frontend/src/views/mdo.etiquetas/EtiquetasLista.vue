@@ -42,7 +42,7 @@
             class="like-a__text"
             arial-label="excluir"
             title="excluir"
-            @click="excluirEtiqueta(item.id)"
+            @click="excluirEtiqueta(item.id, item.descricao)"
           >
             <svg
               width="20"
@@ -81,14 +81,14 @@ const alertStore = useAlertStore();
 const etiquetasStore = useEtiquetasStore();
 const { lista, chamadasPendentes, erro } = storeToRefs(etiquetasStore);
 
-async function excluirEtiqueta(id) {
+async function excluirEtiqueta(id, descricao) {
   alertStore.confirmAction(
-    'Deseja mesmo remover esse item?',
+    `Deseja mesmo remover "${descricao}"?`,
     async () => {
       if (await etiquetasStore.excluirItem(id)) {
         etiquetasStore.$reset();
-        etiquetasStore.buscarTudo();
-        alertStore.success('Etiqueta removido.');
+        etiquetasStore.buscarTudo({ pdm_id: route.params.planoSetorialId });
+        alertStore.success(`"${descricao}" removida.`);
       }
     },
     'Remover',
