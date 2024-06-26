@@ -145,7 +145,8 @@ export default {
       #[orc.chave]
       :key="orc.chave"
     >
-      <SimpleOrcamento
+      <component
+        :is="SimpleOrcamento"
         :meta_id="meta_id"
         :config="orc"
         :parentlink="parentlink"
@@ -201,7 +202,7 @@ export default {
             Conclusão por órgãos
           </button>
         </template>
-      </SimpleOrcamento>
+      </component>
     </template>
   </EnvelopeDeAbas>
 

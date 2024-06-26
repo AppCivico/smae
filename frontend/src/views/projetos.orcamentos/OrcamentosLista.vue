@@ -103,7 +103,8 @@ iniciar();
           v-for="orc in orçamentosDoAnoCorrente"
           :key="orc.id"
         >
-          <SimpleOrcamento
+          <component
+            :is="SimpleOrcamento"
             :projeto-id="projetoId"
             :config="orc"
             :rota-para-adição="rotaParaAdição"
@@ -120,7 +121,8 @@ iniciar();
           v-for="orc in orçamentosDosAnosFuturos"
           :key="orc.id"
         >
-          <SimpleOrcamento
+          <component
+            :is="SimpleOrcamento"
             :projeto-id="projetoId"
             :config="orc"
             :rota-para-adição="rotaParaAdição"
@@ -135,7 +137,8 @@ iniciar();
           v-for="orc in orçamentosDosAnosPassados"
           :key="orc.id"
         >
-          <SimpleOrcamento
+          <component
+            :is="SimpleOrcamento"
             :projeto-id="projetoId"
             :config="orc"
             :rota-para-adição="rotaParaAdição"
