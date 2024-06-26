@@ -42,7 +42,7 @@
             class="like-a__text"
             arial-label="excluir"
             title="excluir"
-            @click="excluirEquipamento(item.id)"
+            @click="excluirEquipamento(item.id, item.nome)"
           >
             <svg
               width="20"
@@ -81,14 +81,14 @@ const alertStore = useAlertStore();
 const equipamentosStore = useEquipamentosStore();
 const { lista, chamadasPendentes, erro } = storeToRefs(equipamentosStore);
 
-async function excluirEquipamento(id) {
+async function excluirEquipamento(id, descricao) {
   alertStore.confirmAction(
-    'Deseja mesmo remover esse item?',
+    `Deseja mesmo remover "${descricao}"?`,
     async () => {
       if (await equipamentosStore.excluirItem(id)) {
         equipamentosStore.$reset();
         equipamentosStore.buscarTudo();
-        alertStore.success('Equipamento removido.');
+        alertStore.success(`"${descricao}" removido.`);
       }
     },
     'Remover',
