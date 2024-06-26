@@ -415,6 +415,14 @@ export const etapaDeMonitoramento = object()
       .matches(regEx['day/month/year'], 'Formato inválido'),
   });
 
+export const etiqueta = object({
+  descricao: string()
+    .label('Descrição')
+    .min(3)
+    .max(250)
+    .required(),
+});
+
 export const execuçãoOrçamentária = object()
   .shape({
     itens: array()
