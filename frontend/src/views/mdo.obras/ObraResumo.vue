@@ -1,15 +1,15 @@
 <script setup>
-import { storeToRefs } from 'pinia';
-import { computed } from 'vue';
 import MapaExibir from '@/components/geo/MapaExibir.vue';
 import MenuDeMudançaDeStatusDeProjeto from '@/components/projetos/MenuDeMudançaDeStatusDeProjeto.vue';
 import { obra as schema } from '@/consts/formSchemas';
-import statusesObras from '@/consts/statusObras.js'
+import statusesObras from '@/consts/statusObras';
 import dateToField from '@/helpers/dateToField';
 import dinheiro from '@/helpers/dinheiro';
 import subtractDates from '@/helpers/subtractDates';
-import { useOrgansStore } from '@/stores/organs.store';
 import { useObrasStore } from '@/stores/obras.store';
+import { useOrgansStore } from '@/stores/organs.store';
+import { storeToRefs } from 'pinia';
+import { computed } from 'vue';
 
 const ÓrgãosStore = useOrgansStore();
 const obrasStore = useObrasStore();
