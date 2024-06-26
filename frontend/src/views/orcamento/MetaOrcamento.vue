@@ -5,7 +5,7 @@ import { default as SimpleOrcamentoCusteio } from '@/components/orcamento/Simple
 import { default as SimpleOrcamentoPlanejado } from '@/components/orcamento/SimpleOrcamentoPlanejado.vue';
 import { default as SimpleOrcamentoRealizado } from '@/components/orcamento/SimpleOrcamentoRealizado.vue';
 import { storeToRefs } from 'pinia';
-import { computed, ref } from 'vue';
+import { computed, defineOptions, ref } from 'vue';
 import { useRoute } from 'vue-router';
 
 import { useAlertStore } from '@/stores/alert.store';
@@ -13,6 +13,8 @@ import { useAuthStore } from '@/stores/auth.store';
 import { useEditModalStore } from '@/stores/editModal.store';
 import { useMetasStore } from '@/stores/metas.store';
 import { useOrcamentosStore } from '@/stores/orcamentos.store';
+
+defineOptions({ inheritAttrs: false });
 
 const alertStore = useAlertStore();
 const authStore = useAuthStore();

@@ -10,8 +10,10 @@ import { useOrcamentosStore } from '@/stores/orcamentos.store';
 import { useDotaçãoStore } from '@/stores/dotacao.store.ts';
 import { storeToRefs } from 'pinia';
 import { Field, Form } from 'vee-validate';
-import { ref } from 'vue';
+import { defineOptions, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+
+defineOptions({ inheritAttrs: false });
 
 const DotaçãoStore = useDotaçãoStore();
 
