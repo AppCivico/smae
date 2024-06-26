@@ -57,11 +57,21 @@ const d_fonte = ref('');
 (async () => {
   DotaçãoStore.getDotaçãoSegmentos(ano);
   if (id) {
-    if (route.params.projetoId) {
-      await OrcamentosStore.buscarOrçamentosPlanejadosParaAno();
-    } else {
-      await OrcamentosStore.getOrcamentoPlanejadoById(meta_id, ano);
+    switch (route.meta.entidadeMãe) {
+      case 'projeto':
+      case 'obras':
+        await OrcamentosStore.buscarOrçamentosPlanejadosParaAno();
+        break;
+
+      case 'meta':
+        await OrcamentosStore.getOrcamentoPlanejadoById(meta_id, ano);
+        break;
+
+      default:
+        console.trace('Módulo para busca de orçamentos não pôde ser identificado:', route.meta);
+        throw new Error('Módulo para busca de orçamentos não pôde ser identificado');
     }
+
     currentEdit.value = OrcamentoPlanejado.value[ano].find((x) => x.id == id);
     currentEdit.value.valor_planejado = dinheiro(currentEdit.value.valor_planejado);
 
@@ -183,7 +193,6 @@ function maskFloat(el) {
 }
 
 function maskDotacao(el) {
-  // caret.value = el.target.selectionStart;
   const kC = event.keyCode;
   const f = formatDota(el.target.value);
   el.target.value = f;
