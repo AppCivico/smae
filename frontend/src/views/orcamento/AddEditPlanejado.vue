@@ -7,7 +7,7 @@ import { useOrcamentosStore } from '@/stores/orcamentos.store';
 import { useDotaçãoStore } from '@/stores/dotacao.store.ts';
 import { useProjetosStore } from '@/stores/projetos.store.ts';
 import { storeToRefs } from 'pinia';
-import { Field, Form } from 'vee-validate';
+import { ErrorMessage, Field, useForm } from 'vee-validate';
 import { defineOptions, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import * as Yup from 'yup';
@@ -36,6 +36,7 @@ const { DotaçãoSegmentos } = storeToRefs(DotaçãoStore);
 const currentEdit = ref({});
 const dota = ref('');
 const respostasof = ref({});
+const validando = ref(false);
 
 const d_orgao = ref('');
 const d_unidade = ref('');
@@ -93,7 +94,14 @@ const schema = Yup.object().shape({
   dotacao: Yup.string().required('Preencha a dotação.').matches(regdota, 'Formato inválido'),
 });
 
-async function onSubmit(values) {
+const {
+  errors, handleSubmit, isSubmitting, values, validateField,
+} = useForm({
+  initialValues: currentEdit.value,
+  validationSchema: schema,
+});
+
+const onSubmit = handleSubmit(async () => {
   try {
     let msg;
     let r;
@@ -143,7 +151,7 @@ async function onSubmit(values) {
   } catch (error) {
     alertStore.error(error);
   }
-}
+});
 
 async function checkDelete(id) {
   alertStore.confirmAction('Deseja mesmo remover esse item?', async () => {
@@ -215,22 +223,27 @@ function montaDotacao(a) {
   dota.value = o;
 }
 async function validarDota() {
+  validando.value = true;
   try {
     respostasof.value = { loading: true };
-    const val = await schema.validate({ dotacao: dota.value, valor_planejado: 1 });
-    if (val) {
       const params = route.params.projetoId
         ? { portfolio_id: ProjetoStore.emFoco.portfolio_id }
         : { pdm_id: activePdm.value.id };
+    const { valid } = await validateField('dotacao');
+    if (valid) {
       const r = await DotaçãoStore
         .getDotaçãoPlanejado(dota.value, ano, params);
       respostasof.value = r;
       if (id) {
         respostasof.value.smae_soma_valor_planejado -= toFloat(currentEdit.value.valor_planejado);
       }
+    } else {
+      respostasof.value = {};
     }
   } catch (error) {
     respostasof.value = error;
+  } finally {
+    validando.value = false;
   }
 }
 </script>
@@ -251,13 +264,10 @@ export default {
     <strong>{{ ano }}</strong> - {{ parent_item.codigo }} - {{ parent_item.titulo }}
   </h3>
   <template v-if="!(OrcamentoPlanejado[ano]?.loading || OrcamentoPlanejado[ano]?.error)">
-    <Form
-      v-slot="{ errors, isSubmitting, values }"
-      :validation-schema="schema"
-      :initial-values="currentEdit"
-      @submit="onSubmit"
+    <form
+      @submit.prevent="onSubmit"
     >
-      <div class="flex center g2">
+      <div class="flex center g2 mb1">
         <div class="f1">
           <label class="label">Dotação <span class="tvermelho">*</span></label>
           <Field
@@ -267,13 +277,11 @@ export default {
             class="inputtext light mb1"
             :class="{
               error: errors.dotacao || respostasof.informacao_valida === false,
-              loading: respostasof.loading
             }"
+            :aria-busy="validando"
             @keyup="maskDotacao"
           />
-          <div class="error-msg">
-            {{ errors.dotacao }}
-          </div>
+          <ErrorMessage name="dotacao" />
           <div
             v-if="respostasof.loading"
             class="t13 mb1 tc300"
@@ -503,10 +511,15 @@ export default {
       </template>
 
       <div class="tc mb2">
-        <a
+        <button
+          type="button"
+          :aria-busy="validando"
+          :aria-disabled="validando"
           class="btn outline bgnone tcprimary"
           @click="validarDota()"
-        >Validar via SOF</a>
+        >
+          Validar via SOF
+        </button>
       </div>
 
       <table
@@ -653,7 +666,7 @@ export default {
         </button>
         <hr class="ml2 f1">
       </div>
-    </Form>
+    </form>
   </template>
   <template v-if="currentEdit && currentEdit?.id">
     <button
