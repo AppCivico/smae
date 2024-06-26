@@ -74,6 +74,7 @@ function removerArquivo() {
 }
 
 async function enviarArquivo(e) {
+  console.log('enviar arquivo');
   pendente.value = true;
 
   const { files } = (e.dataTransfer || e.target);
@@ -175,8 +176,8 @@ async function enviarArquivo(e) {
           @click="removerArquivo"
         >
           <svg
-            width="20"
-            height="20"
+            width="25"
+            height="25"
           >
             <use xlink:href="#i_remove" />
           </svg>
@@ -244,5 +245,8 @@ async function enviarArquivo(e) {
   text-overflow: ellipsis;
   overflow: hidden;
 }
-.campo-de-arquivo__botao-de-remoção {}
+.campo-de-arquivo__botao-de-remoção {
+  position: relative;
+  z-index: 1;
+}
 </style>
