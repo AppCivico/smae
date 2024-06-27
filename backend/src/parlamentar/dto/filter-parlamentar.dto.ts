@@ -42,5 +42,6 @@ export class FilterParlamentarDto {
 
     @IsOptional()
     @IsBoolean()
+    @Transform(({ value }: any) => value === 'true')
     possui_mandatos?: boolean;
 }
