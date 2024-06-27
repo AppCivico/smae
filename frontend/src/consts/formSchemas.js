@@ -1621,10 +1621,6 @@ export const statusDistribuicao = object({
     .label('Tipo')
     .required()
     .oneOf(Object.keys(tiposStatusDistribuicao)),
-  tipo_transferencia_id: number()
-    .label('Tipo de transferência')
-    .min(1, 'Selecione um tipo de transferência')
-    .required(),
 });
 
 export const transferenciaDistribuicaoDeRecursos = object({
