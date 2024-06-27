@@ -106,14 +106,16 @@ export const useObrasStore = defineStore('obrasStore', {
       this.erro = null;
 
       try {
+        let resposta;
+
         if (id) {
-          await this.requestS.patch(`${baseUrl}/projeto-mdo/${id}`, params);
+          resposta = await this.requestS.patch(`${baseUrl}/projeto-mdo/${id}`, params);
         } else {
-          await this.requestS.post(`${baseUrl}/projeto-mdo`, params);
+          resposta = await this.requestS.post(`${baseUrl}/projeto-mdo`, params);
         }
 
         this.chamadasPendentes.emFoco = false;
-        return true;
+        return resposta;
       } catch (erro) {
         this.erro = erro;
         this.chamadasPendentes.emFoco = false;
