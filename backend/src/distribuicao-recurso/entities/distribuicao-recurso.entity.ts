@@ -72,3 +72,7 @@ export class StatusDistListDto {
     tipo: DistribuicaoStatusTipo;
     status_base: boolean;
 }
+
+export class ListDistribuicaoStatusHistoricoDto {
+    linhas: DistribuicaoHistoricoStatusDto[];
+}
