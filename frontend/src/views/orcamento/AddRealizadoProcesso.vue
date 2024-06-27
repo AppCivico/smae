@@ -139,6 +139,8 @@ async function validarProcesso() {
       const r = await DotaçãoStore
         .getDotaçãoRealizadoProcesso(dota.value, ano, props.parametrosParaValidacao);
       respostasof.value = r;
+    } else {
+      respostasof.value = {};
     }
   } catch (error) {
     respostasof.value = error;
@@ -173,10 +175,8 @@ watch(currentEdit, (novosValores) => {
             name="processo"
             type="text"
             class="inputtext light mb1"
-            :class="{
-              'error': errors.processo, 'loading':
-                respostasof.loading
-            }"
+            :class="{ 'error': errors.processo }"
+            :aria-busy="respostasof.loading || validando"
             placeholder="DDDD.DDDD/DDDDDDD-D (SEI) ou AAAA-D.DDD.DDD-D (SINPROC)"
             @keyup="maskProcesso"
           />
