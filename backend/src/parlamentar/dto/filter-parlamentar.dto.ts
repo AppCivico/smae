@@ -1,7 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { ParlamentarCargo } from '@prisma/client';
 import { Transform, TransformFnParams } from 'class-transformer';
-import { IsEnum, IsInt, IsNumber, IsOptional, IsString, Max, MaxLength, Min } from 'class-validator';
+import { IsBoolean, IsEnum, IsInt, IsNumber, IsOptional, IsString, Max, MaxLength, Min } from 'class-validator';
 
 export class FilterParlamentarDto {
     @IsOptional()
@@ -39,4 +39,8 @@ export class FilterParlamentarDto {
     @IsNumber()
     @Transform((a: TransformFnParams) => (a.value === '' ? undefined : +a.value))
     disponivel_para_suplente_parlamentar_id?: number;
+
+    @IsOptional()
+    @IsBoolean()
+    possui_mandatos?: boolean;
 }
