@@ -143,6 +143,7 @@ export class DistribuicaoRecursoService {
                 }
 
                 console.log('===============');
+                console.log(outrasDistribuicoes.length);
                 console.log(sumCusteio);
                 console.log(sumContrapartida);
                 console.log(sumInvestimento);
