@@ -114,6 +114,7 @@ export class CompletarTransferenciaDto {
 
     @IsOptional()
     @IsBoolean()
+    @Transform(({ value }: any) => value === 'true')
     empenho?: boolean;
 }
 
