@@ -121,6 +121,7 @@ export class DistribuicaoRecursoService {
                 });
 
                 const outrasDistribuicoesFiltradas = outrasDistribuicoes.filter((distribuicao) => {
+                    console.log(distribuicao.status);
                     const statusAtual = distribuicao.status.length ? distribuicao.status[0] : null;
 
                     if (statusAtual) {
@@ -152,6 +153,7 @@ export class DistribuicaoRecursoService {
                 }
 
                 console.log('===============');
+                console.log(outrasDistribuicoes.length);
                 console.log(outrasDistribuicoesFiltradas.length);
                 console.log(sumCusteio);
                 console.log(sumContrapartida);
