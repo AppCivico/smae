@@ -111,6 +111,16 @@ export class EquipamentoService {
     }
 
     async remove(id: number, user: PessoaFromJwt) {
+        const emUso = await this.prisma.projeto.count({
+            where: {
+                removido_em: null,
+                equipamento_id: id,
+            },
+        });
+        if (emUso > 0) {
+            throw new HttpException('Equipamento em uso, não pode ser removido', 400);
+        }
+
         await this.prisma.equipamento.findFirstOrThrow({
             where: {
                 id,
