@@ -58,20 +58,13 @@ const parlamentarSelecionado = ref(0);
 
 const cargosDisponíveis = computed(() => (!values.parlamentar_id
   ? []
-  : parlamentaresPorId.value[
-    values.parlamentar_id
-  ]?.mandatos?.map((x) => cargosDeParlamentar[x.cargo]) || []
+  : cargosDeParlamentar || []
 ));
 
-const partidosDisponíveis = computed(() => (!values.parlamentar_id
-  ? []
-  : parlamentaresPorId
-    .value[values.parlamentar_id]?.mandatos?.map((x) => x.partido_atual) || []
-));
-
-const outrosPartidos = computed(() => (
+// const partidosDisponíveis = computed(() => (partidoComoLista));
+/* const outrosPartidos = computed(() => (
   partidoComoLista.value.filter((x) => !partidosDisponíveis.value.find((y) => y.id === x.id)) || []
-));
+)); */
 
 const tiposDisponíveis = computed(() => (values.esfera
   ? tipoTransferenciaComoLista.value.filter((x) => x.esfera === values.esfera)
@@ -117,7 +110,7 @@ function iniciar() {
 
   ÓrgãosStore.getAll();
   // Discutir uma implementação melhor
-  ParlamentaresStore.buscarTudo({ ipp: 500 });
+  ParlamentaresStore.buscarTudo({ ipp: 500, possui_mandatos: true });
   TipoDeTransferenciaStore.buscarTudo();
   partidoStore.buscarTudo();
 }
@@ -397,8 +390,8 @@ watch(itemParaEdição, (novosValores) => {
           }"
           :disabled="!parlamentarComoLista?.length"
           @change="($e) => {
-            setFieldValue('partido_id', parlamentaresPorId[$e.target.value]?.partido?.id || null);
-            setFieldValue('cargo', parlamentaresPorId[$e.target.value]?.cargo || null);
+            setFieldValue('partido_id', partidoComoLista.find((e) => e.sigla == parlamentaresPorId[$e.target.value]?.partido_mais_recente).id || null);
+            setFieldValue('cargo', parlamentaresPorId[$e.target.value]?.cargo_mais_recente || null);
           }"
         >
           <option value="">
@@ -469,22 +462,12 @@ watch(itemParaEdição, (novosValores) => {
           </option>
 
           <option
-            v-for="item in partidosDisponíveis"
+            v-for="item in partidoComoLista"
             :key="item"
             :value="item.id"
           >
             {{ item.nome }}
           </option>
-
-          <optgroup label="todos os partidos">
-            <option
-              v-for="item in outrosPartidos"
-              :key="item"
-              :value="item.id"
-            >
-              {{ item.nome }}
-            </option>
-          </optgroup>
         </Field>
         <ErrorMessage
           name="partido_id"
@@ -501,7 +484,6 @@ watch(itemParaEdição, (novosValores) => {
           as="select"
           class="inputtext light mb1"
           :class="{ 'error': errors.cargo }"
-          :disabled="!cargosDisponíveis.length"
         >
           <option value="">
             Selecionar
