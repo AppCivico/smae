@@ -1584,10 +1584,6 @@ export const statusDistribuicaoWorkflow = object({
     .label('Tipo')
     .required()
     .oneOf(Object.keys(tiposStatusDistribuicao)),
-  tipo_transferencia_id: number()
-    .label('Tipo de transferência')
-    .min(1, 'Selecione um tipo de transferência')
-    .required(),
 });
 
 export const subtema = object({
@@ -1625,16 +1621,6 @@ export const tipoDeTransferencia = object({
     .label('Esfera')
     .required()
     .oneOf(Object.keys(esferasDeTransferencia)),
-});
-
-export const statusDistribuicao = object({
-  nome: string()
-    .label('Nome')
-    .required(),
-  tipo: mixed()
-    .label('Tipo')
-    .required()
-    .oneOf(Object.keys(tiposStatusDistribuicao)),
 });
 
 export const transferenciaDistribuicaoDeRecursos = object({
