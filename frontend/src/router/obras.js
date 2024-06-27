@@ -113,8 +113,8 @@ export default {
             obraId: Number.parseInt(params.obraId, 10) || undefined,
           }),
           meta: {
-            título: 'Resumo da Obra',
-            títuloParaMenu: 'Resumo',
+            título: 'Escopo da Obra',
+            títuloParaMenu: 'Escopo',
           },
         },
         {
