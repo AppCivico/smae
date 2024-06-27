@@ -120,7 +120,7 @@ if (!Array.isArray(organs.value) || !organs.value.length) {
         </dt>
         <dd
           class="t13"
-          v-html="emFoco?.grupo_tematico.nome || '-'"
+          v-html="emFoco?.grupo_tematico?.nome || '-'"
         />
       </dl>
     </div>
@@ -131,7 +131,7 @@ if (!Array.isArray(organs.value) || !organs.value.length) {
         </dt>
         <dd
           class="t13"
-          v-html="emFoco?.tipo_intervencao.nome || '-'"
+          v-html="emFoco?.tipo_intervencao?.nome || '-'"
         />
       </dl>
     </div>
