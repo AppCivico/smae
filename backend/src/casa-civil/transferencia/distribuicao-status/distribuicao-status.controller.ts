@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Patch, Param, Get, Delete, HttpCode, HttpStatus, Query } from '@nestjs/common';
+import { Controller, Post, Body, Patch, Param, Get, Delete, HttpCode, HttpStatus } from '@nestjs/common';
 import { ApiTags, ApiBearerAuth, ApiNoContentResponse } from '@nestjs/swagger';
 import { CurrentUser } from 'src/auth/decorators/current-user.decorator';
 import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
@@ -9,7 +9,6 @@ import { FindOneParams } from 'src/common/decorators/find-params';
 import { DistribuicaoStatusDto, ListDistribuicaoStatusDto } from './entities/distribuicao-status.dto';
 import { Roles } from 'src/auth/decorators/roles.decorator';
 import { DistribuicaoStatusService } from './distribuicao-status.service';
-import { FilterDistribuicaoStatusDto } from './dto/filter-distribuicao-status.dto';
 
 @ApiTags('Status de Distribuição')
 @Controller('distribuicao-status')
@@ -26,8 +25,8 @@ export class DistribuicaoStatusController {
     @ApiBearerAuth('access-token')
     @Roles(['CadastroTransferencia.listar'])
     @Get('')
-    async findAll(@Query() filters: FilterDistribuicaoStatusDto): Promise<ListDistribuicaoStatusDto> {
-        return await this.distribuicaoStatusService.findAllDistribuicaoStatus(filters);
+    async findAll(): Promise<ListDistribuicaoStatusDto> {
+        return await this.distribuicaoStatusService.findAllDistribuicaoStatus();
     }
 
     @Get(':id')
