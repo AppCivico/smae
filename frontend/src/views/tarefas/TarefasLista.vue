@@ -5,6 +5,7 @@ import CabecalhoResumo from '@/components/tarefas/CabecalhoResumo.vue';
 import { useAlertStore } from '@/stores/alert.store';
 import { useEmailsStore } from '@/stores/envioEmail.store';
 import { useEtapasProjetosStore } from '@/stores/etapasProjeto.store';
+import { useObrasStore } from '@/stores/obras.store';
 import { useProjetosStore } from '@/stores/projetos.store.ts';
 import { useTarefasStore } from '@/stores/tarefas.store.ts';
 import { storeToRefs } from 'pinia';
@@ -23,6 +24,8 @@ const etapasProjetosStore = useEtapasProjetosStore();
 const { árvoreDeTarefas, chamadasPendentes, erro } = storeToRefs(tarefasStore);
 const alertStore = useAlertStore();
 const projetosStore = useProjetosStore();
+const obrasStore = useObrasStore();
+
 const projetoEmFoco = computed(
   () => tarefasStore?.extra?.projeto || tarefasStore?.extra?.cabecalho || {},
 );
@@ -44,9 +47,18 @@ const nivelMáximoDisponível = computed(() => Math.max(
   nívelMáximoEmUso.value,
 ));
 
-const podeMudarDeEtapaProjeto = computed(() => projetoEmFoco.value?.eh_prioritario
-  && !apenasLeitura.value
-  && route.meta.entidadeMãe === 'projeto');
+const podeMudarDeEtapaProjeto = computed(() => {
+  if (!apenasLeitura.value) {
+    if (route.meta.entidadeMãe === 'projeto' && projetoEmFoco.value?.eh_prioritario) {
+      return true;
+    }
+    if (route.meta.entidadeMãe === 'obras') {
+      return true;
+    }
+    return false;
+  }
+  return false;
+});
 
 const nívelMáximoVisível = ref(0);
 
@@ -66,9 +78,27 @@ async function mudarEtapa(idEtapa) {
   const carga = {
     projeto_etapa_id: idEtapa,
   };
+
+  const msg = 'Etapa salva com sucesso!';
+
+  let resposta;
+
   try {
-    const msg = 'Etapa salva com sucesso!';
-    const resposta = await projetosStore.salvarItem(carga, projetoEmFoco.value.id);
+    switch (route.meta.entidadeMãe) {
+      case 'obras':
+        resposta = await projetosStore.salvarItem(carga, projetoEmFoco.value.id);
+
+        break;
+      case 'projeto':
+        resposta = await obrasStore.salvarItem(carga, projetoEmFoco.value.id);
+
+        break;
+
+      default:
+        console.trace('Não foi possível identificar o módulo');
+        throw new Error('Não foi possível identificar o módulo');
+    }
+
     if (resposta) {
       alertStore.success(msg);
       tarefasStore.buscarTudo();
@@ -99,7 +129,7 @@ export default {
     <hr class="f1">
     <nav class="flex g1">
       <div
-        v-if="podeMudarDeEtapaProjeto"
+        v-if="podeMudarDeEtapaProjeto && listaDeEtapas.length"
         class="dropbtn"
       >
         <span class="btn">Mudar etapa</span>
