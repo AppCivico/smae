@@ -1576,7 +1576,7 @@ export const situacao = object({
     .required(),
 });
 
-export const statusDistribuicao = object({
+export const statusDistribuicaoWorkflow = object({
   nome: string()
     .label('Nome')
     .required(),
