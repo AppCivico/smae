@@ -5,10 +5,80 @@ import { PrismaService } from 'src/prisma/prisma.service';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
 import { CreateDistribuicaoRecursoStatusDto } from './dto/create-distribuicao-recurso-status.dto';
 import { UpdateDistribuicaoRecursoStatusDto } from './dto/update-distribuicao-recurso-status.dto';
+import { DateTime } from 'luxon';
+import { DistribuicaoHistoricoStatusDto } from './entities/distribuicao-recurso.entity';
 
 @Injectable()
 export class DistribuicaoRecursoStatusService {
     constructor(private readonly prisma: PrismaService) {}
+
+    async findAll(distribuicao_id: number, user: PessoaFromJwt): Promise<DistribuicaoHistoricoStatusDto[]> {
+        const rows = await this.prisma.distribuicaoRecursoStatus.findMany({
+            where: {
+                distribuicao_id: distribuicao_id,
+                removido_em: null,
+            },
+            orderBy: { data_troca: 'desc' },
+            select: {
+                id: true,
+                data_troca: true,
+                motivo: true,
+                nome_responsavel: true,
+                orgao_responsavel: {
+                    select: {
+                        id: true,
+                        sigla: true,
+                    },
+                },
+                status: {
+                    select: {
+                        id: true,
+                        nome: true,
+                        tipo: true,
+                        permite_novos_registros: true,
+                    },
+                },
+                status_base: {
+                    select: {
+                        id: true,
+                        nome: true,
+                        tipo: true,
+                        permite_novos_registros: true,
+                    },
+                },
+            },
+        });
+
+        return rows.map((r) => {
+            return {
+                id: r.id,
+                data_troca: r.data_troca,
+                dias_no_status: Math.abs(Math.round(DateTime.fromJSDate(r.data_troca).diffNow('days').days)),
+                motivo: r.motivo,
+                nome_responsavel: r.nome_responsavel,
+                orgao_responsavel: {
+                    id: r.orgao_responsavel.id,
+                    sigla: r.orgao_responsavel.sigla,
+                },
+                status_customizado: r.status
+                    ? {
+                          id: r.status.id,
+                          nome: r.status.nome,
+                          tipo: r.status.tipo,
+                          status_base: false,
+                      }
+                    : null,
+                status_base: r.status_base
+                    ? {
+                          id: r.status_base.id,
+                          nome: r.status_base.nome,
+                          tipo: r.status_base.tipo,
+                          status_base: true,
+                      }
+                    : null,
+            };
+        });
+    }
 
     async create(
         distribuicao_id: number,
