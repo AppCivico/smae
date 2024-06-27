@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, HttpCode, HttpStatus, Param, Patch, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post } from '@nestjs/common';
 import { ApiBearerAuth, ApiNoContentResponse, ApiTags } from '@nestjs/swagger';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { Roles } from '../auth/decorators/roles.decorator';
@@ -8,11 +8,22 @@ import { RecordWithId } from '../common/dto/record-with-id.dto';
 import { DistribuicaoRecursoStatusService } from './distribuicao-recurso-status.service';
 import { CreateDistribuicaoRecursoStatusDto } from './dto/create-distribuicao-recurso-status.dto';
 import { UpdateDistribuicaoRecursoStatusDto } from './dto/update-distribuicao-recurso-status.dto';
+import { ListDistribuicaoStatusHistoricoDto } from './entities/distribuicao-recurso.entity';
 
 @ApiTags('Transferência - Distribuição de Recursos')
 @Controller('distribuicao-recurso')
 export class DistribuicaoRecursoStatusController {
     constructor(private readonly distribuicaoRecursoStatusService: DistribuicaoRecursoStatusService) {}
+
+    @Get(':id/status')
+    @ApiBearerAuth('access-token')
+    @Roles(['CadastroTransferencia.inserir'])
+    async get(
+        @Param() params: FindOneParams,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<ListDistribuicaoStatusHistoricoDto> {
+        return { linhas: await this.distribuicaoRecursoStatusService.findAll(+params.id, user) };
+    }
 
     @Post(':id/status')
     @ApiBearerAuth('access-token')
