@@ -111,6 +111,16 @@ export class TipoIntervencaoService {
     }
 
     async remove(id: number, user: PessoaFromJwt) {
+        const emUso = await this.prisma.projeto.count({
+            where: {
+                removido_em: null,
+                tipo_intervencao_id: id,
+            },
+        });
+        if (emUso > 0) {
+            throw new HttpException('Tipo de intervenção em uso em projeto(s)', 400);
+        }
+
         await this.prisma.tipoIntervencao.findFirstOrThrow({
             where: {
                 id,
