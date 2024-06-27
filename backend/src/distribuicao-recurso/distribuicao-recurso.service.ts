@@ -152,19 +152,6 @@ export class DistribuicaoRecursoService {
                     sumTotal = sumTotal + +distRow.valor_total;
                 }
 
-                console.log('===============');
-                console.log(outrasDistribuicoes.length);
-                console.log(outrasDistribuicoesFiltradas.length);
-                console.log(sumCusteio);
-                console.log(sumContrapartida);
-                console.log(sumInvestimento);
-                console.log(sumTotal);
-                console.log(transferencia_custeio);
-                console.log(transferencia_investimento);
-                console.log(transferencia_contrapartida);
-                console.log(transferencia_valor_total);
-                console.log('===============');
-
                 if (transferencia.custeio && sumCusteio && sumCusteio > transferencia_custeio)
                     throw new HttpException(
                         'Soma de custeio de todas as distribuições não pode ser superior ao valor de custeio da transferência.',
@@ -771,31 +758,41 @@ export class DistribuicaoRecursoService {
                         id: { not: id },
                         transferencia_id: transferencia.id,
                         removido_em: null,
-                        status: {
-                            some: {
-                                OR: [
-                                    {
-                                        AND: [
-                                            { NOT: { status_base: { tipo: DistribuicaoStatusTipo.Declinada } } },
-                                            { NOT: { status_base: { tipo: DistribuicaoStatusTipo.Redirecionada } } },
-                                        ],
-                                    },
-                                    {
-                                        AND: [
-                                            { NOT: { status: { tipo: DistribuicaoStatusTipo.Declinada } } },
-                                            { NOT: { status: { tipo: DistribuicaoStatusTipo.Redirecionada } } },
-                                        ],
-                                    },
-                                ],
-                            },
-                        },
                     },
                     select: {
                         custeio: true,
                         investimento: true,
                         valor_contrapartida: true,
                         valor_total: true,
+                        status: {
+                            orderBy: { data_troca: 'desc' },
+                            take: 1,
+                            select: {
+                                status_base: {
+                                    select: {
+                                        tipo: true,
+                                    },
+                                },
+                                status: {
+                                    select: {
+                                        tipo: true,
+                                    },
+                                },
+                            },
+                        },
                     },
+                });
+
+                const outrasDistribuicoesFiltradas = outrasDistribuicoes.filter((distribuicao) => {
+                    console.log(distribuicao.status);
+                    const statusAtual = distribuicao.status.length ? distribuicao.status[0] : null;
+
+                    if (statusAtual) {
+                        const statusConfig = statusAtual.status_base ?? statusAtual.status;
+
+                        return statusConfig?.tipo != DistribuicaoStatusTipo.Terminal;
+                    }
+                    return true;
                 });
 
                 let sumCusteio: number = dto.custeio ?? 0;
@@ -803,7 +800,7 @@ export class DistribuicaoRecursoService {
                 let sumContrapartida: number = dto.valor_contrapartida ?? 0;
                 let sumTotal: number = dto.valor_total ?? 0;
 
-                for (const distRow of outrasDistribuicoes) {
+                for (const distRow of outrasDistribuicoesFiltradas) {
                     sumCusteio += +distRow.custeio.toNumber();
                     sumContrapartida += +distRow.valor_contrapartida.toNumber();
                     sumInvestimento += +distRow.investimento.toNumber();
