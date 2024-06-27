@@ -451,7 +451,7 @@ const isSomaCorreta = computed(() => {
           name="valor_contrapartida"
           type="text"
           class="inputtext light mb2"
-          :value="values.valor_contrapartida"
+          :value="values.valor_contrapartida || 0"
           converter-para="string"
           @update:model-value="(newValue) => {
             atualizarValorTotal('valor_contrapartida', newValue, setFieldValue);
