@@ -95,33 +95,39 @@ export class DistribuicaoRecursoService {
                     where: {
                         transferencia_id: dto.transferencia_id,
                         removido_em: null,
-                        status: {
-                            some: {
-                                NOT: {
-                                    OR: [
-                                        {
-                                            AND: [
-                                                { status_base: { tipo: DistribuicaoStatusTipo.Declinada } },
-                                                { status_base: { tipo: DistribuicaoStatusTipo.Redirecionada } },
-                                            ],
-                                        },
-                                        {
-                                            AND: [
-                                                { status: { tipo: DistribuicaoStatusTipo.Declinada } },
-                                                { status: { tipo: DistribuicaoStatusTipo.Redirecionada } },
-                                            ],
-                                        },
-                                    ],
-                                },
-                            },
-                        },
                     },
                     select: {
                         custeio: true,
                         investimento: true,
                         valor_contrapartida: true,
                         valor_total: true,
+                        status: {
+                            orderBy: { data_troca: 'desc' },
+                            take: 1,
+                            select: {
+                                status_base: {
+                                    select: {
+                                        tipo: true,
+                                    },
+                                },
+                                status: {
+                                    select: {
+                                        tipo: true,
+                                    },
+                                },
+                            },
+                        },
                     },
+                });
+
+                const outrasDistribuicoesFiltradas = outrasDistribuicoes.filter((distribuicao) => {
+                    const statusAtual = distribuicao.status.length ? distribuicao.status[0] : null;
+
+                    if (statusAtual) {
+                        const statusConfig = statusAtual.status_base ?? statusAtual.status;
+
+                        if (statusConfig?.tipo != DistribuicaoStatusTipo.Terminal) return distribuicao;
+                    }
                 });
 
                 const transferencia_custeio = distribuicao_automatica == true ? dto.custeio : +transferencia.custeio!;
@@ -137,7 +143,7 @@ export class DistribuicaoRecursoService {
                 let sumContrapartida: number = +dto.valor_contrapartida ?? 0;
                 let sumTotal: number = +dto.valor_total ?? 0;
 
-                for (const distRow of outrasDistribuicoes) {
+                for (const distRow of outrasDistribuicoesFiltradas) {
                     sumCusteio += +distRow.custeio;
                     sumContrapartida += +distRow.valor_contrapartida;
                     sumInvestimento += +distRow.investimento;
@@ -145,7 +151,7 @@ export class DistribuicaoRecursoService {
                 }
 
                 console.log('===============');
-                console.log(outrasDistribuicoes.length);
+                console.log(outrasDistribuicoesFiltradas.length);
                 console.log(sumCusteio);
                 console.log(sumContrapartida);
                 console.log(sumInvestimento);
