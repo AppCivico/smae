@@ -28,6 +28,7 @@ import {
     CONST_PROC_SEI_SINPROC_REGEXP,
 } from '../../../dotacao/dto/dotacao.dto';
 import { IsOptionalNonNullable } from '../../../common/helpers/IsOptionalNonNullable';
+import { NumberTransform } from '../../../auth/transforms/number.transform';
 
 export class PPfonteRecursoDto {
     /**
@@ -150,11 +151,13 @@ export class CreateProjetoDto {
     @IsOptional()
     @IsInt({ message: '$property| mdo_n_unidades_habitacionais precisa ser inteiro' })
     @ValidateIf((object, value) => value !== null)
+    @Transform(NumberTransform)
     mdo_n_unidades_habitacionais?: number | null;
 
     @IsOptional()
     @IsInt({ message: '$property| mdo_n_familias_beneficiadas precisa ser inteiro' })
     @ValidateIf((object, value) => value !== null)
+    @Transform(NumberTransform)
     mdo_n_familias_beneficiadas?: number | null;
 
     /**
