@@ -850,7 +850,7 @@ export class ProjetoService {
     async findAllMDO(filters: FilterProjetoMDODto, user: PessoaFromJwt): Promise<PaginatedWithPagesDto<ProjetoMdoDto>> {
         let token_paginacao = filters.token_paginacao;
 
-        let ipp = filters.ipp ?? 25;
+        let ipp = filters.ipp ?? 50;
         const page = filters.pagina ?? 1;
         let total_registros = 0;
         let tem_mais = false;
