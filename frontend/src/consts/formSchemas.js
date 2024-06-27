@@ -1673,7 +1673,7 @@ export const transferenciaDistribuicaoDeRecursos = object({
     .nullable(),
   empenho: boolean()
     .label('Empenho')
-    .required(),
+    .nullable(),
   // historico_status: array()
   //   .label('Registro status da distribuição de recursos')
   //   .of(object({
