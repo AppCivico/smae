@@ -129,7 +129,7 @@ export class DistribuicaoRecursoService {
 
                         return statusConfig?.tipo != DistribuicaoStatusTipo.Terminal;
                     }
-                    return false;
+                    return true;
                 });
 
                 const transferencia_custeio = distribuicao_automatica == true ? dto.custeio : +transferencia.custeio!;
