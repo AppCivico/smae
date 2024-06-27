@@ -145,7 +145,7 @@ export default {
                 {
                   name: 'obrasTarefasClonar',
                   path: 'clonar',
-                  component: () => import('@/views/tarefas/TarefasClonar.vue'),
+                  component: () => import('@/views/mdo.tarefas/TarefasClonar.vue'),
                   meta: {
                     título: 'Clonar tarefas',
                     títuloParaMenu: 'Clonar tarefas',
