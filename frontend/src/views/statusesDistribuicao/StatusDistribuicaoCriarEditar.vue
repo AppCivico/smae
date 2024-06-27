@@ -30,38 +30,6 @@
     <div class="flex g2 mb1">
       <div class="f1">
         <LabelFromYup
-          name="tipo_transferencia_id"
-          :schema="schema"
-        />
-        <Field
-          name="tipo_transferencia_id"
-          as="select"
-          class="inputtext light mb1"
-          :class="{
-            error: errors.tipo_transferencia_id,
-            loading: TipoDeTransferenciaStore.chamadasPendentes?.lista,
-          }"
-          :disabled="!tiposDisponíveis.length"
-        >
-          <option value="">
-            Selecionar
-          </option>
-
-          <option
-            v-for="item in tiposDisponíveis"
-            :key="item"
-            :value="item.id"
-          >
-            {{ item.nome }}
-          </option>
-        </Field>
-        <ErrorMessage
-          name="tipo_id"
-          class="error-msg"
-        />
-      </div>
-      <div class="f1">
-        <LabelFromYup
           name="tipo"
           :schema="schema"
         />
