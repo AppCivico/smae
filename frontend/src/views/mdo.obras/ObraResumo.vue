@@ -142,7 +142,7 @@ if (!Array.isArray(organs.value) || !organs.value.length) {
         </dt>
         <dd
           class="t13"
-          v-html="emFoco?.equipamento.nome || '-'"
+          v-html="emFoco?.equipamento?.nome || '-'"
         />
       </dl>
     </div>
