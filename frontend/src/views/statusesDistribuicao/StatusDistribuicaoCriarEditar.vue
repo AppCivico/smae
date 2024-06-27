@@ -98,7 +98,7 @@ import { ErrorMessage, Field, Form, useForm } from 'vee-validate';
 import { computed, ref } from 'vue';
 import { useStatusDistribuicaoStore } from '@/stores/statusDistribuicao.store';
 import { useAlertStore } from '@/stores/alert.store';
-import { statusDistribuicao as schema } from '@/consts/formSchemas';
+import { statusDistribuicaoWorkflow as schema } from '@/consts/formSchemas';
 import { useTipoDeTransferenciaStore } from '@/stores/tipoDeTransferencia.store';
 import tiposStatusDistribuicao from '@/consts/tiposStatusDistribuicao';
 
