@@ -1,10 +1,14 @@
-import { Body, Controller, Get, Post, Query } from '@nestjs/common';
+import { Body, Controller, Get, HttpException, Post, Query } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { GeoJsonObject } from 'geojson';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
+import { IsPublic } from '../auth/decorators/is-public.decorator';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
+import { SmaeConfigService } from '../common/services/smae-config.service';
 import {
     CreateEnderecoDto,
     FilterCamadasDto,
+    FilterGeoJsonDto,
     GeoLocDto,
     GeoLocDtoByLatLong,
     RetornoCreateEnderecoDto,
@@ -16,7 +20,15 @@ import { GeoLocService } from './geo-loc.service';
 @Controller('')
 @ApiTags('GeoLocation')
 export class GeoLocController {
-    constructor(private readonly geoService: GeoLocService) {}
+    private secret: string;
+    constructor(
+        private readonly geoService: GeoLocService,
+        private readonly smaeConfig: SmaeConfigService
+    ) {}
+
+    async onModuleInit() {
+        this.secret = (await this.smaeConfig.getConfig('GEOJSON_SECRET')) ?? '';
+    }
 
     @Post('geolocalizar')
     @ApiBearerAuth('access-token')
@@ -43,5 +55,17 @@ export class GeoLocController {
         @CurrentUser() user: PessoaFromJwt
     ): Promise<RetornoCreateEnderecoDto> {
         return await this.geoService.createEndereco(dto, user);
+    }
+
+    @IsPublic()
+    @Get('geojson-collection')
+    async geoGeoJsonCollection(
+        @Query() filter: FilterGeoJsonDto,
+        @Query('secret') secret: string
+    ): Promise<GeoJsonObject> {
+        if (!secret || !this.secret || secret !== this.secret) {
+            throw new HttpException('Invalid Secret', 403);
+        }
+        return await this.geoService.geoJsonCollection(filter);
     }
 }

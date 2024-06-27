@@ -1,7 +1,7 @@
 import { BadRequestException, Injectable, InternalServerErrorException, Logger } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { GeoCamadaConfig, Prisma } from '@prisma/client';
-import { Feature, GeoJSON } from 'geojson';
+import { Feature, GeoJSON, GeoJsonObject } from 'geojson';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { GeoApiService } from '../geo-api/geo-api.service';
 import { PrismaService } from '../prisma/prisma.service';
@@ -9,6 +9,7 @@ import {
     CreateEnderecoDto,
     CreateGeoEnderecoReferenciaDto,
     FilterCamadasDto,
+    FilterGeoJsonDto,
     FindGeoEnderecoReferenciaDto,
     GeoLocCamadaFullDto,
     GeoLocCamadaSimplesDto,
@@ -610,5 +611,53 @@ export class GeoLocService {
         }
 
         return ret;
+    }
+
+    async geoJsonCollection(filter: FilterGeoJsonDto): Promise<GeoJsonObject> {
+        const geoCamada = await this.prisma.geoCamada.findMany({
+            where: {
+                tipo_camada: filter.tipo_camada,
+
+                GeoCamadaRegiao: {
+                    some: {
+                        regiao: {
+                            removido_em: null,
+                            nivel: filter.nivel ? { in: filter.nivel } : undefined,
+                            id: filter.regiao_ids ? { in: filter.regiao_ids } : undefined,
+                        },
+                    },
+                },
+            },
+            select: { id: true },
+        });
+        const geoCamadaIds = geoCamada.map((r) => r.id);
+
+        const geoJson: { geojson: GeoJsonObject }[] = await this.prisma.$queryRaw`WITH geo_data AS (
+            SELECT
+                a.id,
+                a.pdm_codigo_sufixo,
+                c.geom_geojson
+            FROM regiao a
+                JOIN geo_camada_regiao b ON b.regiao_id = a.id
+                JOIN geo_camada c ON c.id = b.geo_camada_id
+            WHERE a.removido_em IS NULL
+            AND c.id = ANY(${geoCamadaIds})
+        )
+        SELECT jsonb_build_object(
+            'type', 'FeatureCollection',
+            'features', jsonb_agg(
+                jsonb_build_object(
+                    'type', 'Feature',
+                    'geometry', g.geom_geojson->'geometry',
+                    'properties', g.geom_geojson->'properties' || jsonb_build_object(
+                        'regiao_id', g.id,
+                        'pdm_codigo_sufixo', coalesce(g.pdm_codigo_sufixo, '')
+                    )
+                )
+            )
+        ) AS geojson FROM geo_data g
+        `;
+
+        return geoJson[0].geojson;
     }
 }

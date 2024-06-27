@@ -6156,3 +6156,11 @@ model ProjetoTag {
 
     @@map("projeto_tag")
 }
+
+model SmaeConfig {
+    key       String   @id
+    value     String
+    criado_em DateTime @default(now()) @db.Timestamptz(6)
+
+    @@map("smae_config")
+}
