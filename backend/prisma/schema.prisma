@@ -5158,7 +5158,7 @@ model DistribuicaoRecurso {
     valor_contrapartida             Decimal   @default(0) @db.Decimal(15, 2)
     custeio                         Decimal   @default(0) @db.Decimal(15, 2)
     investimento                    Decimal   @default(0) @db.Decimal(15, 2)
-    empenho                         Boolean
+    empenho                         Boolean?
     data_empenho                    DateTime? @db.Date()
     programa_orcamentario_estadual  String?
     programa_orcamentario_municipal String?
