@@ -63,8 +63,13 @@ export default {
           'obrasListar',
         ],
         rotasParaMenuSecundário: [
-          'obrasResumo',
-          'obrasTarefasListar',
+          {
+            título: 'Plano da obra',
+            rotas: [
+              'obrasResumo',
+              'obrasTarefasListar',
+            ],
+          },
           {
             título: 'Acompanhamento',
             rotas: [
