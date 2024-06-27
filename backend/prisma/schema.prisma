@@ -398,9 +398,9 @@ model Pessoa {
     EquipamentosQueRemovi    Equipamento[] @relation("Removedor")
     EquipamentosQueAtualizei Equipamento[] @relation("Atualizador")
 
-    StatusesDistribuicaoQueCriei     TransferenciaTipoDistribuicaoStatus[] @relation("Criador")
-    StatusesDistribuicaoQueRemovi    TransferenciaTipoDistribuicaoStatus[] @relation("Removedor")
-    StatusesDistribuicaoQueAtualizei TransferenciaTipoDistribuicaoStatus[] @relation("Atualizador")
+    StatusesDistribuicaoQueCriei     DistribuicaoStatus[] @relation("Criador")
+    StatusesDistribuicaoQueRemovi    DistribuicaoStatus[] @relation("Removedor")
+    StatusesDistribuicaoQueAtualizei DistribuicaoStatus[] @relation("Atualizador")
 
     view_atividade_pessoa_responsavel  view_atividade_pessoa_responsavel[]
     view_iniciativa_pessoa_responsavel view_iniciativa_pessoa_responsavel[]
@@ -5010,7 +5010,7 @@ model TransferenciaTipo {
     atualizador Pessoa? @relation("Atualizador", fields: [atualizado_por], references: [id])
     removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
 
-    statuses_distribuicao TransferenciaTipoDistribuicaoStatus[]
+    statuses_distribuicao DistribuicaoStatus[]
 
     @@map("transferencia_tipo")
 }
@@ -6056,11 +6056,8 @@ model DistribuicaoStatusBase {
     @@map("distribuicao_status_base")
 }
 
-model TransferenciaTipoDistribuicaoStatus {
+model DistribuicaoStatus {
     id Int @id @default(autoincrement())
-
-    transferencia_tipo_id Int
-    transferencia_tipo    TransferenciaTipo @relation(fields: [transferencia_tipo_id], references: [id])
 
     nome                             String
     tipo                             DistribuicaoStatusTipo
@@ -6080,10 +6077,12 @@ model TransferenciaTipoDistribuicaoStatus {
     atualizador Pessoa? @relation("Atualizador", fields: [atualizado_por], references: [id])
     removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
 
-    configWorflow WorkflowDistribuicaoStatus[]
-    distribuicoes DistribuicaoRecursoStatus[]
+    configWorflow       WorkflowDistribuicaoStatus[]
+    distribuicoes       DistribuicaoRecursoStatus[]
+    TransferenciaTipo   TransferenciaTipo?           @relation(fields: [transferenciaTipoId], references: [id])
+    transferenciaTipoId Int?
 
-    @@map("transferencia_tipo_distribuicao_status")
+    @@map("distribuicao_status")
 }
 
 model WorkflowDistribuicaoStatus {
@@ -6096,7 +6095,7 @@ model WorkflowDistribuicaoStatus {
     status_base    DistribuicaoStatusBase? @relation(fields: [status_base_id], references: [id])
 
     status_id Int?
-    status    TransferenciaTipoDistribuicaoStatus? @relation(fields: [status_id], references: [id])
+    status    DistribuicaoStatus? @relation(fields: [status_id], references: [id])
 
     @@map("workflow_distribuicao_status")
 }
@@ -6111,7 +6110,7 @@ model DistribuicaoRecursoStatus {
     status_base    DistribuicaoStatusBase? @relation(fields: [status_base_id], references: [id])
 
     status_id Int?
-    status    TransferenciaTipoDistribuicaoStatus? @relation(fields: [status_id], references: [id])
+    status    DistribuicaoStatus? @relation(fields: [status_id], references: [id])
 
     orgao_responsavel_id Int
     orgao_responsavel    Orgao @relation(fields: [orgao_responsavel_id], references: [id])

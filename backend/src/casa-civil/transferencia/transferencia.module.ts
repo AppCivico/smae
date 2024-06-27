@@ -11,8 +11,8 @@ import { BlocoNotaModule } from '../../bloco-nota/bloco-nota/bloco-nota.module';
 import { WorkflowModule } from 'src/workflow/configuracao/workflow.module';
 import { DistribuicaoRecursoModule } from 'src/distribuicao-recurso/distribuicao-recurso.module';
 import { TransferenciaTipoService } from './tipo/transferencia-tipo.service';
-import { DistribuicaoStatusController } from './tipo/distribuicao-status/distribuicao-status.controller';
-import { DistribuicaoStatusService } from './tipo/distribuicao-status/distribuicao-status.service';
+import { DistribuicaoStatusController } from './distribuicao-status/distribuicao-status.controller';
+import { DistribuicaoStatusService } from './distribuicao-status/distribuicao-status.service';
 
 @Module({
     imports: [

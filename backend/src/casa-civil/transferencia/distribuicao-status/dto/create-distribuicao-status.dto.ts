@@ -1,14 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { DistribuicaoStatusTipo } from '@prisma/client';
-import { Type } from 'class-transformer';
-import { IsBoolean, IsEnum, IsInt, IsOptional, IsString, MaxLength, MinLength, ValidateIf } from 'class-validator';
+import { IsBoolean, IsEnum, IsOptional, IsString, MaxLength, MinLength } from 'class-validator';
 
 export class CreateDistribuicaoStatusDto {
-    @IsInt()
-    @Type(() => Number)
-    @ValidateIf((object, value) => value !== null)
-    tipo_transferencia_id: number;
-
     @IsString()
     @MaxLength(250, { message: '$property| nome: Máximo 250 caracteres' })
     @MinLength(1, { message: '$property| nome: Mínimo 1 caractere' })
