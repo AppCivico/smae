@@ -112,8 +112,9 @@ export class CompletarTransferenciaDto {
     @MaxLength(250)
     banco_fim?: string;
 
+    @IsOptional()
     @IsBoolean()
-    empenho: boolean;
+    empenho?: boolean;
 }
 
 export class UpdateTransferenciaAnexoDto {
