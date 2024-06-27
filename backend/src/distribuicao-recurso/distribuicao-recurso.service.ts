@@ -126,8 +126,9 @@ export class DistribuicaoRecursoService {
                     if (statusAtual) {
                         const statusConfig = statusAtual.status_base ?? statusAtual.status;
 
-                        if (statusConfig?.tipo != DistribuicaoStatusTipo.Terminal) return distribuicao;
+                        return statusConfig?.tipo != DistribuicaoStatusTipo.Terminal;
                     }
+                    return false;
                 });
 
                 const transferencia_custeio = distribuicao_automatica == true ? dto.custeio : +transferencia.custeio!;
