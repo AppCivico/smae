@@ -4,7 +4,7 @@ import { ApiProperty, OmitType, PartialType } from '@nestjs/swagger';
 import { WorkflowfluxoFaseDto } from '../fluxo-fase/entities/workflow-fluxo-fase.entity';
 import { WorkflowFluxoTarefaDto } from '../fluxo-tarefa/entities/workflow-fluxo-tarefa.entity';
 import { WorkflowSituacaoDto } from '../situacao/entities/workflow-situacao.entity';
-import { DistribuicaoStatusDto } from 'src/casa-civil/transferencia/tipo/distribuicao-status/entities/distribuicao-status.dto';
+import { DistribuicaoStatusDto } from 'src/casa-civil/transferencia/distribuicao-status/entities/distribuicao-status.dto';
 
 export class WorkflowDto {
     id: number;
