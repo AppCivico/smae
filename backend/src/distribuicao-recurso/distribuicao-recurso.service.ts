@@ -139,7 +139,7 @@ export class DistribuicaoRecursoService {
                     sumCusteio += +distRow.custeio;
                     sumContrapartida += +distRow.valor_contrapartida;
                     sumInvestimento += +distRow.investimento;
-                    sumTotal += +distRow.valor_total;
+                    sumTotal = sumTotal + +distRow.valor_total;
                 }
 
                 console.log('===============');
