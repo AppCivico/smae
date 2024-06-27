@@ -97,20 +97,22 @@ export class DistribuicaoRecursoService {
                         removido_em: null,
                         status: {
                             some: {
-                                OR: [
-                                    {
-                                        AND: [
-                                            { NOT: { status_base: { tipo: DistribuicaoStatusTipo.Declinada } } },
-                                            { NOT: { status_base: { tipo: DistribuicaoStatusTipo.Redirecionada } } },
-                                        ],
-                                    },
-                                    {
-                                        AND: [
-                                            { NOT: { status: { tipo: DistribuicaoStatusTipo.Declinada } } },
-                                            { NOT: { status: { tipo: DistribuicaoStatusTipo.Redirecionada } } },
-                                        ],
-                                    },
-                                ],
+                                NOT: {
+                                    OR: [
+                                        {
+                                            AND: [
+                                                { status_base: { tipo: DistribuicaoStatusTipo.Declinada } },
+                                                { status_base: { tipo: DistribuicaoStatusTipo.Redirecionada } },
+                                            ],
+                                        },
+                                        {
+                                            AND: [
+                                                { status: { tipo: DistribuicaoStatusTipo.Declinada } },
+                                                { status: { tipo: DistribuicaoStatusTipo.Redirecionada } },
+                                            ],
+                                        },
+                                    ],
+                                },
                             },
                         },
                     },
