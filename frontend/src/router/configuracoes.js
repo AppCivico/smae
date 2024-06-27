@@ -43,6 +43,10 @@ import TarefasCriarEditar from '@/views/tv.tarefas/TarefasCriarEditar.vue';
 import TarefasLista from '@/views/tv.tarefas/TarefasLista.vue';
 import TarefasRaiz from '@/views/tv.tarefas/TarefasRaiz.vue';
 
+import StatusDistribuicaoCriarEditar from '@/views/statusesDistribuicao/StatusDistribuicaoCriarEditar.vue';
+import StatusDistribuicaoLista from '@/views/statusesDistribuicao/StatusDistribuicaoLista.vue';
+import StatusDistribuicaoRaiz from '@/views/statusesDistribuicao/StatusDistribuicaoRaiz.vue';
+
 const PortfoliosCriarEditar = defineAsyncComponent({
   loader: () => import('@/views/portfolios/PortfoliosCriarEditar.vue'),
   loadingComponent: LoadingComponent,
@@ -342,6 +346,7 @@ export default [
             'fasesListar',
             'tarefasListar',
             'situacaoListar',
+            'statusDistribuicaoListar',
           ],
         },
         children: [
@@ -545,6 +550,46 @@ export default [
 
                 meta: {
                   título: 'Editar situação',
+                },
+              },
+            ],
+          },
+          {
+            path: 'status-distribuicao',
+            component: StatusDistribuicaoRaiz,
+            meta: {
+              título: 'Status de Distribuição',
+              rotaPrescindeDeChave: true,
+            },
+            children: [
+              {
+                name: 'statusDistribuicaoListar',
+                path: '',
+                component: StatusDistribuicaoLista,
+                meta: {
+                  título: 'Status de Distribuição',
+                },
+              },
+              {
+                name: 'statusDistribuicaoCriar',
+                path: 'novo',
+                component: StatusDistribuicaoCriarEditar,
+                meta: {
+                  título: 'Novo Status de Distribuição',
+                },
+              },
+              {
+                path: ':statusDistribuicaoId',
+                name: 'statusDistribuicaoEditar',
+                component: StatusDistribuicaoCriarEditar,
+                props: ({ params }) => ({
+                  ...params,
+                  // eslint-disable-next-line max-len
+                  ...{ statusDistribuicaoId: Number.parseInt(params.statusDistribuicaoId, 10) || undefined },
+                }),
+
+                meta: {
+                  título: 'Editar Status de Distribuição',
                 },
               },
             ],
