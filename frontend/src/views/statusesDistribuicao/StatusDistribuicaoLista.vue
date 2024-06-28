@@ -51,7 +51,7 @@
             class="like-a__text"
             arial-label="excluir"
             title="excluir"
-            @click="excluirStatusDistribuicao(item.id, item.descricao)"
+            @click="excluirStatusDistribuicao(item.id, item.nome)"
           >
             <svg
               width="20"
@@ -95,7 +95,7 @@ const alertStore = useAlertStore();
 const statusDistribuicaoStore = useStatusDistribuicaoWorflowStore();
 const { lista, chamadasPendentes, erro } = storeToRefs(statusDistribuicaoStore);
 
-async function excluirTema(id, descricao) {
+async function excluirStatusDistribuicao(id, descricao) {
   alertStore.confirmAction(
     `Deseja mesmo remover "${descricao}"?`,
     async () => {
