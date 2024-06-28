@@ -2569,6 +2569,8 @@ export const workflow = object({
     .label('Tipo de transferência')
     .nullable()
     .required(),
+  distribuicao_status: array()
+    .label('Statuses de Distribuição'),
   distribuicao_statuses_base: array()
     .label('Statuses Base Atrelados ao Workflow')
     .nullable(),
