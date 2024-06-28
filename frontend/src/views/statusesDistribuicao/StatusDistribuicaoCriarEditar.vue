@@ -94,13 +94,15 @@
 <script setup>
 import { storeToRefs } from 'pinia';
 import { useRoute, useRouter } from 'vue-router';
-import { ErrorMessage, Field, Form, useForm } from 'vee-validate';
+import {
+  ErrorMessage, Field, Form, useForm,
+} from 'vee-validate';
 import { computed, ref } from 'vue';
-import { useStatusDistribuicaoStore } from '@/stores/statusDistribuicao.store';
 import { useAlertStore } from '@/stores/alert.store';
 import { statusDistribuicaoWorkflow as schema } from '@/consts/formSchemas';
 import { useTipoDeTransferenciaStore } from '@/stores/tipoDeTransferencia.store';
 import tiposStatusDistribuicao from '@/consts/tiposStatusDistribuicao';
+import { useStatusDistribuicaoWorflowStore } from '@/stores/statusDistribuicaoWorkflow.store';
 
 const router = useRouter();
 const route = useRoute();
@@ -116,7 +118,7 @@ const titulo = typeof route?.meta?.título === 'function'
   : route?.meta?.título;
 
 const alertStore = useAlertStore();
-const statusDistribuicaoStore = useStatusDistribuicaoStore();
+const statusDistribuicaoStore = useStatusDistribuicaoWorflowStore();
 const TipoDeTransferenciaStore = useTipoDeTransferenciaStore();
 const { chamadasPendentes, erro, itemParaEdição } = storeToRefs(statusDistribuicaoStore);
 
