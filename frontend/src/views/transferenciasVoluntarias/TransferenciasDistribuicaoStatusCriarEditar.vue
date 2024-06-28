@@ -29,9 +29,8 @@
               <option value="">
                 Selecionar
               </option>
-              <!-- fluxoProjetoEmFoco.statuses_distribuicao pode vir zerado? pois vem em alguns casos  -->
               <option
-                v-for="status in fluxoProjetoEmFoco.statuses_distribuicao "
+                v-for="status in fluxoProjetoEmFoco?.statuses_distribuicao "
                 :key="status.id"
                 :value="status.id"
               >
