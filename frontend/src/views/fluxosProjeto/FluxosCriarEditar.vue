@@ -3,7 +3,7 @@
 import { storeToRefs } from 'pinia';
 import { ErrorMessage, Field, useForm } from 'vee-validate';
 import {
-  computed, onUnmounted, ref, watch,
+  computed, onUnmounted, ref, watch, watchEffect,
 } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import esferasDeTransferencia from '@/consts/esferasDeTransferencia';
@@ -75,17 +75,32 @@ const tiposDisponíveis = computed(() => (esferaSelecionada.value
   : []));
 
 statusesDistribuicaoSelecionados.value = [];
-console.log(statusesDistribuicaoComoLista);
 
-const statusesBaseSelecionados = computed(() => statusesDistribuicaoSelecionados.value.filter((id) => {
-  const status = statusesDistribuicaoComoLista.value.find((s) => s.id === id);
-  return status && status.status_base;
-}));
+// eslint-disable-next-line max-len
+// const statusesBaseSelecionados = computed(() => statusesDistribuicaoSelecionados.value.filter((id) => {
+//   const status = statusesDistribuicaoComoLista.value.find((s) => s.id === id);
+//   return status && status.status_base;
+// }));
 
-const statusesCustomizadosSelecionados = computed(() => statusesDistribuicaoSelecionados.value.filter((id) => {
-  const status = statusesDistribuicaoComoLista.value.find((s) => s.id === id);
-  return status && !status.status_base;
-}));
+// // eslint-disable-next-line max-len
+// const statusesCustomizadosSelecionados = computed(() => statusesDistribuicaoSelecionados.value.filter((id) => {
+//   const status = statusesDistribuicaoComoLista.value.find((s) => s.id === id);
+//   return status && !status.status_base;
+// }));
+
+const statusesBaseSelecionados = computed(() => (statusesDistribuicaoSelecionados.value ? statusesDistribuicaoSelecionados.value
+  .filter((status) => status?.status_base)
+  .map((status) => status.id) : []));
+
+const statusesCustomizadosSelecionados = computed(() => (statusesDistribuicaoSelecionados.value ? statusesDistribuicaoSelecionados.value
+  .filter((status) => !status?.status_base)
+  .map((status) => status?.id) : []));
+
+watchEffect(() => {
+  setFieldValue('statuses', statusesDistribuicaoSelecionados.value);
+  setFieldValue('statusesBaseSelecionados', statusesBaseSelecionados.value);
+  setFieldValue('statusesCustomizadosSelecionados', statusesCustomizadosSelecionados.value);
+});
 
 const onSubmit = handleSubmit(async (values) => {
   try {
@@ -112,12 +127,13 @@ const onSubmit = handleSubmit(async (values) => {
 });
 
 function markCheckboxesWithSavedValues() {
-  if (emFoco.statuses_distribuicao && emFoco.statuses_distribuicao.length > 0) {
-    // eslint-disable-next-line max-len
-    statusesDistribuicaoSelecionados.value = emFoco.statuses_distribuicao.map((status) => status.id);
+  if (emFoco?.value.statuses_distribuicao && emFoco?.value.statuses_distribuicao.length > 0) {
+    statusesDistribuicaoSelecionados.value = emFoco?.value.statuses_distribuicao.map((status) => ({
+      id: status.id,
+      status_base: status.status_base,
+    }));
   }
 }
-markCheckboxesWithSavedValues();
 
 async function carregarFluxo() {
   if (props.fluxoId) {
@@ -128,7 +144,8 @@ async function carregarFluxo() {
 
 async function iniciar() {
   await tipoDeTransferenciaStore.buscarTudo();
-  carregarFluxo();
+  await carregarFluxo();
+  markCheckboxesWithSavedValues();
 }
 
 function excluirFase(idDaFase) {
@@ -166,12 +183,14 @@ onUnmounted(() => {
 watch(itemParaEdição, (novoValor) => {
   if (novoValor.transferencia_tipo?.id) {
     tipoTransferenciaSelecionado.value = novoValor.transferencia_tipo.id;
-    statusesDistribuicaoStore.buscarTudo(
-      { tipo_transferencia_id: novoValor.transferencia_tipo.id },
-    );
+    statusesDistribuicaoStore.buscarTudo();
     esferaSelecionada.value = tipoTransferenciaComoLista.value
       .find((x) => x.id === novoValor.transferencia_tipo.id)?.esfera || '';
   }
+}, { immediate: true });
+
+watch(statusesDistribuicaoSelecionados, (newValue) => {
+  setFieldValue('statuses', newValue);
 }, { immediate: true });
 
 </script>
@@ -181,7 +200,6 @@ watch(itemParaEdição, (novoValor) => {
     <h1>{{ route?.meta?.título || 'Cadastro de Fluxo' }}</h1>
     <hr class="ml2 f1">
   </div>
-
   <EtapaFluxo
     v-if="idDaEtapaEmFoco > -1"
     :ordem="item?.ordem || null"
@@ -374,17 +392,26 @@ watch(itemParaEdição, (novoValor) => {
           name="ativo"
         />
       </div>
+      <FormErrorsList :errors="errors" />
+    </div>
 
+    <div class="flex g2 mb1 center">
+      <LabelFromYup
+        name="distribuicao_status"
+        :schema="schema"
+      />
+    </div>
+    <div class="flex g2 mb1 center">
       <div class="flex flexwrap g1 lista-de-opções">
         <label
           v-for="s in statusesDistribuicaoComoLista"
-          :key="s.id"
+          :key="`${s.id}-${s.status_base}`"
           class="tc600 lista-de-opções__item"
         >
           <Field
             v-model="statusesDistribuicaoSelecionados"
             name="statuses"
-            :value="s.id"
+            :value="{ id: s.id, status_base: s.status_base }"
             type="checkbox"
             class="inputcheckbox"
             :class="{ 'error': errors['parametros.tipo'] }"
@@ -394,7 +421,6 @@ watch(itemParaEdição, (novoValor) => {
           </span>
         </label>
       </div>
-      <FormErrorsList :errors="errors" />
     </div>
     <FormErrorsList :errors="errors" />
 
