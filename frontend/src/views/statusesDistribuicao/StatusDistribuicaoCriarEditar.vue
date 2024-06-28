@@ -38,7 +38,7 @@
           name="tipo"
           as="select"
           class="inputtext light mb1"
-          :class="{ 'error': errors.tipo }"
+          :class="{ error: errors.tipo }"
           @change="setFieldValue('tipo_id', null)"
         >
           <option value="">
@@ -139,6 +139,7 @@ function iniciar() {
 
 iniciar();
 
+// TODO: refatorar
 async function onSubmit(values) {
   try {
     let response;
