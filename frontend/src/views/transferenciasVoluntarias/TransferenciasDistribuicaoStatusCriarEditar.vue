@@ -186,13 +186,10 @@ const onSubmit = handleSubmit.withControlled(async (controlledValues) => {
     motivo: controlledValues.motivo,
     nome_responsavel: controlledValues.nome_responsavel,
     orgao_responsavel_id: controlledValues.orgao_responsavel_id,
+    ...(controlledValues.status_id.status_base
+      ? { status_base_id: controlledValues.status_id.id }
+      : { status_id: controlledValues.status_id.id }),
   };
-
-  if (controlledValues.status_id.status_base) {
-    cargaManipulada.status_base_id = controlledValues.status_id.id;
-  } else {
-    cargaManipulada.status_id = controlledValues.status_id.id;
-  }
 
   try {
     let response;
