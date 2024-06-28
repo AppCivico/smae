@@ -207,6 +207,7 @@ const onSubmit = handleSubmit.withControlled(async (controlledValues) => {
     }
     if (response) {
       alertStore.success(msg);
+      emit('fecharModal');
     }
   } catch (error) {
     alertStore.error(error);
