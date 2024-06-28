@@ -131,6 +131,11 @@ async function iniciar() {
   ÓrgãosStore.getAll();
 }
 
+function handleSalvouStatus() {
+  exibirModalStatus.value = false;
+  distribuicaoRecursos.$reset(); // como limpar direito
+}
+
 iniciar();
 
 watch(itemParaEdição, (novosValores) => {
@@ -986,6 +991,8 @@ const isSomaCorreta = computed(() => {
   <TransferenciasDistribuicaoStatusCriarEditar
     v-if="exibirModalStatus"
     :transferencia-workflow-id="transferenciasVoluntariaEmFoco?.workflow_id"
+    :distribuicao-id="distribuiçãoEmFoco?.id"
     @fechar-modal="exibirModalStatus = false"
+    @salvou-status="handleSalvouStatus"
   />
 </template>
