@@ -1576,6 +1576,27 @@ export const situacao = object({
     .required(),
 });
 
+export const statusDistribuicao = object({
+  status_id: number()
+    .label('Status')
+    .required(),
+  data_troca: date()
+    .label('Data')
+    .max(dataMax)
+    .min(new Date(2003, 0, 1))
+    .required()
+    .transform((v) => (!v ? null : v)),
+  orgao_responsavel_id: number()
+    .label('Órgão Responsável')
+    .required(),
+  nome_responsavel: string()
+    .label('Responsável')
+    .required(),
+  motivo: string()
+    .label('Motivo')
+    .required(),
+});
+
 export const statusDistribuicaoWorkflow = object({
   nome: string()
     .label('Nome')
@@ -1670,26 +1691,6 @@ export const transferenciaDistribuicaoDeRecursos = object({
   empenho: boolean()
     .label('Empenho')
     .nullable(),
-  // historico_status: array()
-  //   .label('Registro status da distribuição de recursos')
-  //   .of(object({
-  //     data_troca: date()
-  //       .label('Data')
-  //       .max(dataMax)
-  //       .min(new Date(2003, 0, 1))
-  //       .required()
-  //       .transform((v) => (!v ? null : v)),
-  //     orgao_responsavel_id: number()
-  //       .lavel('')
-  //       .required(),
-  //     nome_responsavel: string()
-  //       .lavel('')
-  //       .required(),
-  //     motivo: string()
-  //       .lavel('')
-  //       .required(),
-  //   }))
-  //   .strict(),
   investimento: number()
     .label('Investimento')
     .min(0)
