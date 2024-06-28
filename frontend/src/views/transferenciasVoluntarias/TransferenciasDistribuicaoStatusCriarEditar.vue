@@ -161,7 +161,11 @@ const { emFoco: fluxoProjetoEmFoco } = storeToRefs(fluxosProjetosStore);
 const props = defineProps({
   transferenciaWorkflowId: {
     type: Number,
-    default: 0,
+    required: true,
+  },
+  distribuicaoId: {
+    type: Number,
+    required: true,
   },
   statusId: {
     type: Number,
@@ -169,7 +173,7 @@ const props = defineProps({
   },
 });
 
-const emit = defineEmits(['fecharModal']);
+const emit = defineEmits(['fecharModal', 'salvouStatus']);
 
 const alertStore = useAlertStore();
 
@@ -198,13 +202,14 @@ const onSubmit = handleSubmit.withControlled(async (controlledValues) => {
       : 'Item adicionado com sucesso!';
 
     if (itemParaEdição.value.id) {
-      response = await statusDistribuicaoStore.salvarItem(cargaManipulada, props.transferenciaWorkflowId, statusId);
+      response = await statusDistribuicaoStore.salvarItem(cargaManipulada, props.distribuicaoId, statusId);
     } else {
-      response = await statusDistribuicaoStore.salvarItem(cargaManipulada, props.transferenciaWorkflowId);
+      response = await statusDistribuicaoStore.salvarItem(cargaManipulada, props.distribuicaoId);
     }
     if (response) {
       alertStore.success(msg);
-      emit('fecharModal');
+      statusDistribuicaoStore.$reset();
+      emit('salvouStatus');
     }
   } catch (error) {
     alertStore.error(error);
