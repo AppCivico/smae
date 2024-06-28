@@ -1577,7 +1577,7 @@ export const situacao = object({
 });
 
 export const statusDistribuicao = object({
-  status_id: number()
+  status_id: object()
     .label('Status')
     .required(),
   data_troca: date()
