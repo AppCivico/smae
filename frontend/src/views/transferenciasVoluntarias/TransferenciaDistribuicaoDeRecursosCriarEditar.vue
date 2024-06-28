@@ -963,7 +963,7 @@ const isSomaCorreta = computed(() => {
           :key="item.id"
         >
           <td> {{ item.data_troca ? item.data_troca.split('T')[0].split('-').reverse().join('/') : '' }}</td>
-          <td>{{ item.status_base?.tipo }}</td>
+          <td>{{ item.status_base?.tipo || item.status_customizado?.tipo }}</td>
           <td>{{ item.orgao_responsavel?.sigla }}</td>
           <td>{{ item.nome_responsavel }}</td>
           <td>{{ item.motivo }}</td>
