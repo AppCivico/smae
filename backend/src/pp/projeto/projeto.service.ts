@@ -2799,6 +2799,7 @@ export class ProjetoService {
         if (dto.diretorio_caminho)
             await this.uploadService.updateDir({ caminho: dto.diretorio_caminho }, dto.upload_token);
 
+        const now = new Date(Date.now());
         const documento = await this.prisma.$transaction(
             async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
                 const arquivo = await prismaTx.arquivo.findFirstOrThrow({
@@ -2808,11 +2809,11 @@ export class ProjetoService {
 
                 return await prismaTx.projetoDocumento.create({
                     data: {
-                        criado_em: new Date(Date.now()),
+                        criado_em: now,
                         criado_por: user.id,
                         arquivo_id: arquivoId,
                         projeto_id: projetoId,
-                        descricao: dto.descricao || arquivo.descricao,
+                        descricao: dto.descricao ?? arquivo.descricao,
                         data: dto.data,
                     },
                     select: {
