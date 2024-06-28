@@ -52,6 +52,11 @@ export class WorkflowService {
                     ativo = !workflowAtivo ?? true;
                 }
 
+                // Populando com todos statuses base de distribuição.
+                const statuses_base = await prismaTxn.distribuicaoStatusBase.findMany({
+                    select: { id: true },
+                });
+
                 const workflow = await prismaTxn.workflow.create({
                     data: {
                         nome: dto.nome,
@@ -61,6 +66,15 @@ export class WorkflowService {
                         termino: dto.termino,
                         criado_por: user.id,
                         criado_em: new Date(Date.now()),
+                        statusesDistribuicao: {
+                            createMany: {
+                                data: statuses_base.map((s) => {
+                                    return {
+                                        status_base_id: s.id,
+                                    };
+                                }),
+                            },
+                        },
                     },
                     select: { id: true },
                 });
@@ -106,7 +120,9 @@ export class WorkflowService {
                     dto.distribuicao_statuses_base != undefined &&
                     dto.distribuicao_statuses_base.length != currentStatusesBase.length
                 ) {
-                    await prismaTxn.workflowDistribuicaoStatus.deleteMany({ where: { workflow_id: id } });
+                    await prismaTxn.workflowDistribuicaoStatus.deleteMany({
+                        where: { workflow_id: id, status_base_id: { not: null } },
+                    });
                     await prismaTxn.workflowDistribuicaoStatus.createMany({
                         data: dto.distribuicao_statuses_base.map((status_base_id) => {
                             return {
@@ -125,7 +141,9 @@ export class WorkflowService {
                     dto.distribuicao_statuses_customizados != undefined &&
                     dto.distribuicao_statuses_customizados.length != currentStatusesCustomizados.length
                 ) {
-                    await prismaTxn.workflowDistribuicaoStatus.deleteMany({ where: { workflow_id: id } });
+                    await prismaTxn.workflowDistribuicaoStatus.deleteMany({
+                        where: { workflow_id: id, status_id: { not: null } },
+                    });
                     await prismaTxn.workflowDistribuicaoStatus.createMany({
                         data: dto.distribuicao_statuses_customizados.map((status_id) => {
                             return {
