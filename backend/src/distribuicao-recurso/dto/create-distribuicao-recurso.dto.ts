@@ -84,8 +84,7 @@ export class CreateDistribuicaoRecursoDto {
 
     @IsOptional()
     @IsBoolean()
-    @Transform(({ value }: any) => value === 'true')
-    empenho: boolean;
+    empenho?: boolean;
 
     @IsOptional()
     /**
