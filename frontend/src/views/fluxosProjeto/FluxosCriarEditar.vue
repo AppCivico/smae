@@ -18,14 +18,14 @@ import { useTipoDeTransferenciaStore } from '@/stores/tipoDeTransferencia.store'
 import EtapaFluxo from '@/views/fluxosProjeto/EtapaFluxo.vue';
 import FaseFluxo from '@/views/fluxosProjeto/FaseFluxo.vue';
 import TarefaFluxo from '@/views/fluxosProjeto/TarefaFluxo.vue';
-import { useStatusDistribuicaoStore } from '@/stores/statusDistribuicao.store';
+import { useStatusDistribuicaoWorflowStore } from '@/stores/statusDistribuicaoWorkflow.store';
 
 const fluxosEtapasProjetos = useFluxosEtapasProjetosStore();
 const tipoDeTransferenciaStore = useTipoDeTransferenciaStore();
 const fluxosProjetoStore = useFluxosProjetosStore();
 const fluxosFasesProjetos = useFluxosFasesProjetosStore();
 const fluxosTarefasProjetos = useFluxosTarefasProjetosStore();
-const statusesDistribuicaoStore = useStatusDistribuicaoStore();
+const statusesDistribuicaoStore = useStatusDistribuicaoWorflowStore();
 const alertStore = useAlertStore();
 const router = useRouter();
 const route = useRoute();
