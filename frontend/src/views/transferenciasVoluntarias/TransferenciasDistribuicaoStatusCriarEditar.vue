@@ -1,7 +1,5 @@
 <template>
   <SmallModal>
-    <!-- props.transferenciaWorkflowId: {{ props.transferenciaWorkflowId }} -->
-    <!-- fluxoProjetoEmFoco: <pre> {{ fluxoProjetoEmFoco }}</pre> -->
     <div class="flex spacebetween center mb2">
       <h2>Status</h2>
       <hr class="ml2 f1">
@@ -32,7 +30,7 @@
               <option
                 v-for="status in fluxoProjetoEmFoco?.statuses_distribuicao "
                 :key="status.id"
-                :value="status.id"
+                :value="status"
               >
                 {{ status.nome }}
               </option>
@@ -138,42 +136,25 @@
 <script setup>
 import SmallModal from '@/components/SmallModal.vue';
 import { statusDistribuicao as schema } from '@/consts/formSchemas';
-import dateToField from '@/helpers/dateToField';
-import nulificadorTotal from '@/helpers/nulificadorTotal.ts';
-import truncate from '@/helpers/truncate';
 import { useAlertStore } from '@/stores/alert.store';
 import { useOrgansStore } from '@/stores/organs.store';
-import { useDistribuicaoRecursosStore } from '@/stores/transferenciasDistribuicaoRecursos.store';
-import { useTransferenciasVoluntariasStore } from '@/stores/transferenciasVoluntarias.store';
-import { useStatusStore } from '@/stores/statusDistribuicao.store';
+import { useStatusDistribuicaoStore } from '@/stores/statusDistribuicao.store';
 import { useFluxosProjetosStore } from '@/stores/fluxosProjeto.store';
-import { vMaska } from 'maska';
 import { storeToRefs } from 'pinia';
 import {
   ErrorMessage,
   Field,
-  FieldArray,
   useForm,
-  useIsFormDirty,
 } from 'vee-validate';
-import {
-  computed,
-  nextTick,
-  onUnmounted,
-  ref,
-  watch,
-} from 'vue';
+import { watch } from 'vue';
 
-const distribuicaoRecursos = useDistribuicaoRecursosStore();
-// const TransferenciasVoluntarias = useTransferenciasVoluntariasStore();
 const ÓrgãosStore = useOrgansStore();
 const fluxosProjetosStore = useFluxosProjetosStore();
-const statusStore = useStatusStore();
+const statusDistribuicaoStore = useStatusDistribuicaoStore();
 
 const {
-  chamadasPendentes, erro, lista, itemParaEdição, emFoco: distribuiçãoEmFoco,
-} = storeToRefs(distribuicaoRecursos);
-// const { emFoco: transferenciasVoluntariaEmFoco } = storeToRefs(TransferenciasVoluntarias);
+  chamadasPendentes, erro, itemParaEdição,
+} = storeToRefs(statusDistribuicaoStore);
 const { órgãosComoLista } = storeToRefs(ÓrgãosStore);
 const { emFoco: fluxoProjetoEmFoco } = storeToRefs(fluxosProjetosStore);
 
@@ -182,7 +163,10 @@ const props = defineProps({
     type: Number,
     default: 0,
   },
-
+  statusId: {
+    type: Number,
+    default: null,
+  },
 });
 
 const emit = defineEmits(['fecharModal']);
@@ -196,40 +180,46 @@ const {
   validationSchema: schema,
 });
 
-const formulárioSujo = useIsFormDirty();
-
 const onSubmit = handleSubmit.withControlled(async (controlledValues) => {
-  // necessário por causa de 🤬
-  const cargaManipulada = nulificadorTotal(controlledValues);
-  console.log('onSubmit, controlledValues: ', controlledValues);
-  console.log('cargaManipulada: ', cargaManipulada);
-  // try {
-  //   let r;
-  //   const msg = itemParaEdição.value.id
-  //     ? 'Dados salvos com sucesso!'
-  //     : 'Item adicionado com sucesso!';
+  const cargaManipulada = {
+    data_troca: controlledValues.data_troca,
+    motivo: controlledValues.motivo,
+    nome_responsavel: controlledValues.nome_responsavel,
+    orgao_responsavel_id: controlledValues.orgao_responsavel_id,
+  };
 
-  //   if (itemParaEdição.value.id) {
-  //     r = await distribuicaoRecursos.salvarItem(cargaManipulada, itemParaEdição.value.id);
-  //   } else {
-  //     r = await distribuicaoRecursos.salvarItem(cargaManipulada);
-  //   }
-  //   if (r) {
-  //     alertStore.success(msg);
+  if (controlledValues.status_id.status_base) {
+    cargaManipulada.status_base_id = controlledValues.status_id.id;
+  } else {
+    cargaManipulada.status_id = controlledValues.status_id.id;
+  }
 
-  //     mostrarDistribuicaoRegistroForm.value = false;
+  try {
+    let response;
+    const msg = itemParaEdição.value.id
+      ? 'Dados salvos com sucesso!'
+      : 'Item adicionado com sucesso!';
 
-  //     if (itemParaEdição.value.id) {
-  //       distribuiçãoEmFoco.value = null;
-  //     }
-
-  //     distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
-  //   }
-  // } catch (error) {
-  //   alertStore.error(error);
-  // }
+    if (itemParaEdição.value.id) {
+      response = await statusDistribuicaoStore.salvarItem(cargaManipulada, props.transferenciaWorkflowId, statusId);
+    } else {
+      response = await statusDistribuicaoStore.salvarItem(cargaManipulada, props.transferenciaWorkflowId);
+    }
+    if (response) {
+      alertStore.success(msg);
+    }
+  } catch (error) {
+    alertStore.error(error);
+  }
 });
 
+watch(itemParaEdição, (novosValores) => {
+  resetForm({ values: novosValores });
+});
+
+if (props.statusId) {
+  statusDistribuicaoStore.buscarItem(props.statusId);
+}
 fluxosProjetosStore.buscarItem(props.transferenciaWorkflowId);
 </script>
 

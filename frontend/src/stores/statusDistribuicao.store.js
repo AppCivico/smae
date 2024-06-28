@@ -2,7 +2,7 @@ import { defineStore } from 'pinia';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 
-export const useStatusStore = defineStore('statusStore', {
+export const useStatusDistribuicaoStore = defineStore('statusDistribuicaoStore', {
   state: () => ({
     lista: [],
     emFoco: null,
@@ -28,10 +28,9 @@ export const useStatusStore = defineStore('statusStore', {
       }
       this.chamadasPendentes.emFoco = false;
     },
-    async salvarItem(idStatus, idDistribuicao = this.route.params.distribuicaoId, params = {}) {
+    async salvarItem(params = {}, idDistribuicao = 0, idStatus = 0) {
       this.chamadasPendentes.emFoco = true;
       this.erro = null;
-
       try {
         if (idStatus) {
           await this.requestS.patch(`${baseUrl}/distribuicao-recurso/${idDistribuicao}/status/${idStatus}`, params);
