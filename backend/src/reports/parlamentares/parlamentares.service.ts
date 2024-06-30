@@ -7,11 +7,12 @@ import { ParlamentaresRelatorioDto, RelParlamentaresDto } from './entities/parla
 import { ParlamentarService } from 'src/parlamentar/parlamentar.service';
 import { Prisma } from '@prisma/client';
 
-const {
-    Parser,
-    transforms: { flatten },
-} = require('json2csv');
-const defaultTransform = [flatten({ paths: [] })];
+import { StreamParser } from '@json2csv/plainjs';
+import { flatten } from '@json2csv/transforms';
+import { createWriteStream } from 'fs';
+import { resolve } from 'path';
+
+const defaultTransform = flatten({});
 
 @Injectable()
 export class ParlamentaresService implements ReportableService {
@@ -87,9 +88,11 @@ export class ParlamentaresService implements ReportableService {
         const out: FileOutput[] = [];
 
         if (linhas.length) {
-            const json2csvParser = new Parser({
-                ...DefaultCsvOptions,
-                transforms: defaultTransform,
+            const csvFilePath = resolve('/tmp', 'parlamentares.csv');
+            const fileStream = createWriteStream(csvFilePath); // Create a writable file stream
+
+            const json2csvParser = new StreamParser({
+                transforms: [defaultTransform],
                 fields: [
                     { value: 'id', label: 'ID do Parlamentar' },
                     { value: 'nome_civil', label: 'Nome Civil' },
@@ -106,15 +109,52 @@ export class ParlamentaresService implements ReportableService {
                     { value: 'mes_aniversario', label: 'Mês Aniversário' },
                     { value: 'email', label: 'E-mail' },
                 ],
+                ...DefaultCsvOptions,
             });
-            const linhasBuff = json2csvParser.parse(
-                linhas.map((r) => {
-                    return { ...r };
-                })
-            );
+
+            json2csvParser.onHeader = (header) => console.log(header);
+            json2csvParser.onLine = (line) => console.log(line);
+
+            await new Promise<void>((resolve, reject) => {
+                try {
+                    // Listen to data and end events
+                    json2csvParser.onData = (chunk: string) => {
+                        // Write each chunk to the file stream
+                        fileStream.write(chunk);
+                    };
+
+                    json2csvParser.onEnd = () => {
+                        // Close the file stream after all data is written
+                        fileStream.end(() => {
+                            resolve();
+                            console.log('CSV file written successfully!');
+                        });
+                    };
+
+                    json2csvParser.onError = (err: any) => {
+                        // Handle errors
+                        console.error('Error writing CSV:', err);
+                        // Consider rejecting the promise or other error handling
+                    };
+                    json2csvParser.write('[');
+                    // Start writing data to the parser
+                    linhas.forEach((item) => {
+                        console.log(item);
+                        json2csvParser.write(JSON.stringify(item));
+                        // if it's not the last item, write a comma
+                        if (linhas.indexOf(item) !== linhas.length - 1) {
+                            json2csvParser.write(',');
+                        }
+                    });
+                    json2csvParser.write(']');
+                    json2csvParser.end(); // Signal the end of the data
+                } catch (error) {
+                    reject(error);
+                }
+            });
             out.push({
                 name: 'parlamentares.csv',
-                buffer: Buffer.from(linhasBuff, 'utf8'),
+                localFile: csvFilePath, // Return the path to the tmp file
             });
         }
         await ctx.progress(99);

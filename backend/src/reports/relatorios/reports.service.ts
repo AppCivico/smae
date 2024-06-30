@@ -81,12 +81,12 @@ export class ReportsService {
             if (file.buffer) {
                 zip.addFile(file.name, file.buffer);
             } else if (file.localFile) {
-                zip.addLocalFile(file.localFile, file.name);
+                zip.addLocalFile(file.localFile, file.name, '');
             } else {
                 throw new HttpException(`Falta buffer ou localFile no arquivo ${file.name}`, 500);
             }
 
-            if (file.name.endsWith('.csv')) {
+            if (file.name.endsWith('.csvx')) {
                 const readCsv: any[] = await new Promise((resolve, reject) => {
                     parse(file.buffer, { columns: true }, (err: any, data: any) => {
                         if (err) throw reject(err);
