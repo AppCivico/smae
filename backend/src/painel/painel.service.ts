@@ -23,6 +23,7 @@ import {
     UpdatePainelConteudoVisualizacaoDto,
 } from './dto/update-painel-conteudo.dto';
 import { UpdatePainelDto } from './dto/update-painel.dto';
+import { IdTituloPeriodicidade } from '../reports/monitoramento-mensal/entities/monitoramento-mensal.entity';
 
 export class PainelConteudoForSync {
     id: number;
@@ -384,9 +385,9 @@ export class PainelService {
         return ret;
     }
 
-    async getPainelShortData(opts: { painel_id: number }) {
+    async getPainelShortData(opts: { painel_id: number }): Promise<IdTituloPeriodicidade | null> {
         return await this.prisma.painel.findFirst({
-            where: { id: opts.painel_id },
+            where: { id: opts.painel_id, removido_em: null },
             select: {
                 id: true,
                 nome: true,

@@ -88,6 +88,10 @@ const ModuloDescricao: Record<string, [string, ModuloSistema | null]> = {
     ProjetoTagMDO: ['Tags', 'MDO'],
     ProjetoTag: ['Tags', 'Projetos'],
 
+    ModalidadeContratacaoMDO: ['Modalidade de Contratação', 'MDO'],
+    ProjetoProgramaMDO: ['Programas', 'MDO'],
+    TipoAditivoMDO: ['Tipo Aditivo', 'MDO'],
+
     CadastroCargo: ['', null],
     CadastroCoordenadoria: ['', null],
     CadastroDepartamento: ['', null],
@@ -109,6 +113,22 @@ const PrivConfig: Record<string, false | [ListaDePrivilegios, string | false][]>
     CadastroObjetivoEstrategico: false,
     CadastroEtapa: false,
     CadastroGrupoPaineisExternas: false,
+
+    ModalidadeContratacaoMDO: [
+        ['ModalidadeContratacaoMDO.inserir', 'Inserir Modalidade de Contratação'],
+        ['ModalidadeContratacaoMDO.editar', 'Editar Modalidade de Contratação'],
+        ['ModalidadeContratacaoMDO.remover', 'Remover Modalidade de Contratação'],
+    ],
+    ProjetoProgramaMDO: [
+        ['ProjetoProgramaMDO.inserir', 'Inserir Programa'],
+        ['ProjetoProgramaMDO.editar', 'Editar Programa'],
+        ['ProjetoProgramaMDO.remover', 'Remover Programa'],
+    ],
+    TipoAditivoMDO: [
+        ['TipoAditivoMDO.inserir', 'Inserir Tipo de Aditivo'],
+        ['TipoAditivoMDO.editar', 'Editar Tipo de Aditivo'],
+        ['TipoAditivoMDO.remover', 'Remover Tipo de Aditivo'],
+    ],
 
     CadastroGrupoPortfolio: [
         ['CadastroGrupoPortfolio.administrador', 'Gerenciar Grupos de Portfólio de qualquer órgão'],
@@ -769,9 +789,20 @@ const PerfilAcessoConfig: {
             'Reports.dashboard_mdo',
             'ProjetoMDO.administrar_portfolios_no_orgao',
             'CadastroGrupoPortfolioMDO.administrador_no_orgao',
+
+            // not really, isso aqui ta mais pra ADMINISTRADOR, que ainda não colocamos esse perfil
             'CadastroProjetoEtapaMDO.inserir',
             'CadastroProjetoEtapaMDO.editar',
             'CadastroProjetoEtapaMDO.remover',
+            'ModalidadeContratacaoMDO.inserir',
+            'ModalidadeContratacaoMDO.editar',
+            'ModalidadeContratacaoMDO.remover',
+            'ProjetoProgramaMDO.inserir',
+            'ProjetoProgramaMDO.editar',
+            'ProjetoProgramaMDO.remover',
+            'TipoAditivoMDO.inserir',
+            'TipoAditivoMDO.editar',
+            'TipoAditivoMDO.remover',
         ],
     },
     {

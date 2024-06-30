@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { Date2YMD } from '../../common/date2ymd';
 import { PainelService } from '../../painel/painel.service';
 import { PrismaService } from '../../prisma/prisma.service';
-import { DefaultCsvOptions, FileOutput, ReportableService, UtilsService } from '../utils/utils.service';
+import { DefaultCsvOptions, FileOutput, ReportContext, ReportableService, UtilsService } from '../utils/utils.service';
 import { CreateRelMonitoramentoMensalDto } from './dto/create-monitoramento-mensal.dto';
 import {
     RelPainelDetalhe,
@@ -26,59 +26,26 @@ export class MonitoramentoMensalService implements ReportableService {
         private readonly mmMf: MonitoramentoMensalMfService
     ) {}
 
-    async create(dto: CreateRelMonitoramentoMensalDto): Promise<RetMonitoramentoMensal> {
+    async asJSON(dto: CreateRelMonitoramentoMensalDto): Promise<RetMonitoramentoMensal> {
         dto.paineis = Array.isArray(dto.paineis) ? dto.paineis : [];
 
         const { metas } = await this.utils.applyFilter(dto, { iniciativas: false, atividades: false });
-
-        console.log(metas);
-
         const metasArr = metas.map((r) => r.id);
+        // um dia aqui é capaz que fiquem muitas metas e o retorno fique muito grande e cause OOM no asJSON
+        if (metasArr.length > 100)
+            throw new Error(
+                'Mais de 100 indicadores encontrados, por favor refine a busca ou utilize o relatório em CSV'
+            );
 
         const paineis_ret: RelPainelDetalhe[] = [];
+
         for (const painel of dto.paineis) {
             const painel_data = await this.painel.getPainelShortData({ painel_id: painel });
             if (!painel_data) continue;
 
-            const ret = await this.painel.getSimplifiedPainelSeries({ painel_id: painel, metas_ids: metasArr });
-            console.dir(ret, { depth: 6 });
-
-            const linhas: RelVarlSimplifiedSeries[] = [];
-
-            for (const r of ret) {
-                if (r.series) {
-                    console.log(r);
-                    for (const s of r.series) {
-                        if (!s.Previsto && !s.PrevistoAcumulado && !s.Realizado && !s.RealizadoAcumulado) continue;
-
-                        linhas.push({
-                            meta_id: r.meta_id,
-                            meta_codigo: r.meta_codigo,
-                            meta_titulo: r.meta_titulo,
-                            iniciativa_id: r.iniciativa_id,
-                            iniciativa_codigo: r.iniciativa_codigo,
-                            iniciativa_titulo: r.indicador_titulo,
-                            atividade_id: r.atividade_id,
-                            atividade_codigo: r.atividade_codigo,
-                            atividade_titulo: r.atividade_titulo,
-                            indicador_id: r.indicador_id,
-                            indicador_titulo: r.indicador_titulo,
-                            indicador_codigo: r.indicador_codigo,
-                            variavel_id: r.variavel_id,
-                            variavel_codigo: r.variavel_codigo,
-                            variavel_titulo: r.variavel_titulo,
-                            data: s.data,
-                            Previsto: s.Previsto,
-                            PrevistoAcumulado: s.PrevistoAcumulado,
-                            Realizado: s.Realizado,
-                            RealizadoAcumulado: s.RealizadoAcumulado,
-                        });
-                    }
-                }
-            }
-
+            const linhas = await this.runPainelReport(painel, metasArr);
             paineis_ret.push({
-                painel: { ...painel_data },
+                painel: painel_data,
                 linhas: linhas,
             });
         }
@@ -87,19 +54,62 @@ export class MonitoramentoMensalService implements ReportableService {
 
         return {
             monitoramento_fisico,
-
             paineis: paineis_ret,
         };
     }
 
-    async getFiles(myInput: any, pdm_id: number, params: any): Promise<FileOutput[]> {
-        const dados = myInput as RetMonitoramentoMensal;
+    private async runPainelReport(painel: number, metasArr: number[]): Promise<RelVarlSimplifiedSeries[]> {
+        const ret = await this.painel.getSimplifiedPainelSeries({ painel_id: painel, metas_ids: metasArr });
 
-        const pdm = await this.prisma.pdm.findUniqueOrThrow({ where: { id: pdm_id } });
+        const linhas: RelVarlSimplifiedSeries[] = [];
+
+        for (const r of ret) {
+            if (r.series) {
+                for (const s of r.series) {
+                    if (!s.Previsto && !s.PrevistoAcumulado && !s.Realizado && !s.RealizadoAcumulado) continue;
+
+                    linhas.push({
+                        meta_id: r.meta_id,
+                        meta_codigo: r.meta_codigo,
+                        meta_titulo: r.meta_titulo,
+                        iniciativa_id: r.iniciativa_id,
+                        iniciativa_codigo: r.iniciativa_codigo,
+                        iniciativa_titulo: r.indicador_titulo,
+                        atividade_id: r.atividade_id,
+                        atividade_codigo: r.atividade_codigo,
+                        atividade_titulo: r.atividade_titulo,
+                        indicador_id: r.indicador_id,
+                        indicador_titulo: r.indicador_titulo,
+                        indicador_codigo: r.indicador_codigo,
+                        variavel_id: r.variavel_id,
+                        variavel_codigo: r.variavel_codigo,
+                        variavel_titulo: r.variavel_titulo,
+                        data: s.data,
+                        Previsto: s.Previsto,
+                        PrevistoAcumulado: s.PrevistoAcumulado,
+                        Realizado: s.Realizado,
+                        RealizadoAcumulado: s.RealizadoAcumulado,
+                    });
+                }
+            }
+        }
+        return linhas;
+    }
+
+    async toFileOutput(params: CreateRelMonitoramentoMensalDto, ctx: ReportContext): Promise<FileOutput[]> {
+        const pdm = await this.prisma.pdm.findUniqueOrThrow({ where: { id: params.pdm_id } });
+        params.paineis = Array.isArray(params.paineis) ? params.paineis : [];
+
+        const { metas } = await this.utils.applyFilter(params, { iniciativas: false, atividades: false });
+        const metasArr = metas.map((r) => r.id);
+        await ctx.progress(1);
+
+        let monitoramento_fisico = await this.mmMf.create_mf(params, metasArr);
 
         const out: FileOutput[] = [];
 
-        out.push(...(await this.mmMf.getFiles(dados, pdm)));
+        out.push(...(await this.mmMf.getFiles({ monitoramento_fisico, paineis: [] }, pdm)));
+        monitoramento_fisico = null; // libera memória
 
         const fieldsCSV = [
             { value: 'meta_codigo', label: 'Código da Meta' },
@@ -122,8 +132,29 @@ export class MonitoramentoMensalService implements ReportableService {
             { value: 'RealizadoAcumulado', label: 'RealizadoAcumulado' },
         ];
 
-        for (const painel of dados.paineis) {
-            if (painel.linhas.length == 0) continue;
+        await ctx.progress(40);
+
+        const totalPainel = params.paineis.length;
+        let curPainel = 0;
+        for (const painelId of params.paineis) {
+            curPainel++;
+
+            await ctx.progress(50 + 50 * (curPainel / totalPainel));
+            const painel = await this.painel.getPainelShortData({ painel_id: painelId });
+            if (!painel) continue;
+
+            const linhas = await this.runPainelReport(painelId, metasArr);
+            if (linhas.length === 0) continue;
+
+            out.push(
+                ...(await this.mmMf.getFiles(
+                    {
+                        monitoramento_fisico: null,
+                        paineis: [{ painel, linhas }],
+                    },
+                    pdm
+                ))
+            );
 
             const json2csvParser = new Parser({
                 ...DefaultCsvOptions,
@@ -131,19 +162,20 @@ export class MonitoramentoMensalService implements ReportableService {
                 fields: [...fieldsCSV],
             });
 
-            const linhas = json2csvParser.parse(painel.linhas);
+            const linhasBuff = json2csvParser.parse(linhas);
             out.push({
                 name:
                     'painel-' +
-                    painel.painel.nome.replace(/\s/g, '-').replace(/[^a-z0-9-\._]/g, '') +
+                    painel.nome.replace(/\s/g, '-').replace(/[^a-z0-9-\._]/g, '') +
                     '.' +
-                    painel.painel.id +
+                    painel.id +
                     '.' +
-                    painel.painel.periodicidade +
+                    painel.periodicidade +
                     '.csv',
-                buffer: Buffer.from(linhas, 'utf8'),
+                buffer: Buffer.from(linhasBuff, 'utf8'),
             });
         }
+        await ctx.progress(99);
 
         return [
             {

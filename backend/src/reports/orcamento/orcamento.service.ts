@@ -3,7 +3,7 @@ import { Date2YMD } from '../../common/date2ymd';
 import { DotacaoService } from '../../dotacao/dotacao.service';
 import { PrismaService } from '../../prisma/prisma.service';
 import { PrevisaoCustoService } from '../previsao-custo/previsao-custo.service';
-import { DefaultCsvOptions, FileOutput, ReportableService, UtilsService } from '../utils/utils.service';
+import { DefaultCsvOptions, FileOutput, ReportContext, ReportableService, UtilsService } from '../utils/utils.service';
 import { SuperCreateOrcamentoExecutadoDto } from './dto/create-orcamento-executado.dto';
 import {
     ListOrcamentoExecutadoDto,
@@ -94,9 +94,45 @@ export class OrcamentoService implements ReportableService {
         private readonly prevCustoService: PrevisaoCustoService
     ) {}
 
-    async create(dto: SuperCreateOrcamentoExecutadoDto): Promise<ListOrcamentoExecutadoDto> {
-        console.log(dto);
+    async asJSON(dto: SuperCreateOrcamentoExecutadoDto): Promise<ListOrcamentoExecutadoDto> {
+        const { orcExec, anoIni, anoFim, orcPlan } = await this.buscaIds(dto);
 
+        const retExecutado: OrcamentoExecutadoSaidaDto[] = [];
+        const retPlanejado: OrcamentoPlanejadoSaidaDto[] = [];
+
+        if (dto.tipo == 'Analitico' && orcExec.length > 0) {
+            const resultadosRealizado: RetornoRealizadoDb[] = await this.queryAnaliticoExecutado(orcExec);
+            for (const r of resultadosRealizado) {
+                retExecutado.push(this.convertRealizadoRow(r));
+            }
+
+            const resultadosPlanejados = await this.queryAnaliticoPlanejado(anoIni, anoFim, orcPlan);
+            for (const r of resultadosPlanejados) {
+                retPlanejado.push(this.convertPlanejadoRow(r));
+            }
+        } else if (dto.tipo == 'Consolidado' && orcExec.length > 0) {
+            const resultados: RetornoRealizadoDb[] = await this.queryConsolidadoExecutado(orcExec);
+
+            for (const r of resultados) {
+                retExecutado.push(this.convertRealizadoRow(r));
+            }
+
+            const resultadosPlanejados = await this.queryConsolidadoPlanejado(anoIni, anoFim, orcPlan);
+            for (const r of resultadosPlanejados) {
+                retPlanejado.push(this.convertPlanejadoRow(r));
+            }
+        }
+
+        await this.dotacaoService.setManyOrgaoUnidadeFonte(retExecutado);
+        await this.dotacaoService.setManyOrgaoUnidadeFonte(retPlanejado);
+
+        return {
+            linhas: retExecutado,
+            linhas_planejado: retPlanejado,
+        };
+    }
+
+    private async buscaIds(dto: SuperCreateOrcamentoExecutadoDto) {
         const anoIni = Date2YMD.toString(dto.inicio).substring(0, 4);
         const anoFim = Date2YMD.toString(dto.fim).substring(0, 4);
 
@@ -118,7 +154,7 @@ export class OrcamentoService implements ReportableService {
                 });
             }
 
-        const search = await this.prisma.orcamentoRealizadoItem.findMany({
+        const orcExec = await this.prisma.orcamentoRealizadoItem.findMany({
             where: {
                 sobrescrito_em: null,
                 OrcamentoRealizado: {
@@ -136,7 +172,7 @@ export class OrcamentoService implements ReportableService {
             select: { id: true },
         });
 
-        const searchPlanejado = await this.prisma.orcamentoPlanejado.findMany({
+        const orcPlan = await this.prisma.orcamentoPlanejado.findMany({
             where: {
                 meta_id: filtroMetas ? { in: filtroMetas } : undefined,
                 projeto_id: dto.projeto_id ? dto.projeto_id : undefined,
@@ -151,40 +187,7 @@ export class OrcamentoService implements ReportableService {
             },
             select: { id: true },
         });
-
-        const retExecutado: OrcamentoExecutadoSaidaDto[] = [];
-        const retPlanejado: OrcamentoPlanejadoSaidaDto[] = [];
-
-        if (dto.tipo == 'Analitico' && search.length > 0) {
-            const resultadosRealizado: RetornoRealizadoDb[] = await this.queryAnaliticoExecutado(search);
-            for (const r of resultadosRealizado) {
-                retExecutado.push(this.convertRealizadoRow(r));
-            }
-
-            const resultadosPlanejados = await this.queryAnaliticoPlanejado(anoIni, anoFim, searchPlanejado);
-            for (const r of resultadosPlanejados) {
-                retPlanejado.push(this.convertPlanejadoRow(r));
-            }
-        } else if (dto.tipo == 'Consolidado' && search.length > 0) {
-            const resultados: RetornoRealizadoDb[] = await this.queryConsolidadoExecutado(search);
-
-            for (const r of resultados) {
-                retExecutado.push(this.convertRealizadoRow(r));
-            }
-
-            const resultadosPlanejados = await this.queryConsolidadoPlanejado(anoIni, anoFim, searchPlanejado);
-            for (const r of resultadosPlanejados) {
-                retPlanejado.push(this.convertPlanejadoRow(r));
-            }
-        }
-
-        await this.dotacaoService.setManyOrgaoUnidadeFonte(retExecutado);
-        await this.dotacaoService.setManyOrgaoUnidadeFonte(retPlanejado);
-
-        return {
-            linhas: retExecutado,
-            linhas_planejado: retPlanejado,
-        };
+        return { orcExec, anoIni, anoFim, orcPlan };
     }
 
     private async queryConsolidadoPlanejado(
@@ -610,17 +613,32 @@ export class OrcamentoService implements ReportableService {
         };
     }
 
-    async getFiles(myInput: any, pdm_id: number | null, params: any): Promise<FileOutput[]> {
-        const dados = myInput as ListOrcamentoExecutadoDto;
-        const dto = params as SuperCreateOrcamentoExecutadoDto;
+    async toFileOutput(params: SuperCreateOrcamentoExecutadoDto, ctx: ReportContext): Promise<FileOutput[]> {
+        const { orcExec, anoIni, anoFim, orcPlan } = await this.buscaIds(params);
+        const pdm = await this.prisma.pdm.findUnique({ where: { id: params.pdm_id } });
+        await ctx.progress(1);
 
-        const pdm = pdm_id ? await this.prisma.pdm.findUniqueOrThrow({ where: { id: pdm_id } }) : null;
+        const retExecutado: OrcamentoExecutadoSaidaDto[] = [];
+        if (params.tipo == 'Analitico' && orcExec.length > 0) {
+            const resultadosRealizado: RetornoRealizadoDb[] = await this.queryAnaliticoExecutado(orcExec);
+            for (const r of resultadosRealizado) {
+                retExecutado.push(this.convertRealizadoRow(r));
+            }
+        } else if (params.tipo == 'Consolidado' && orcExec.length > 0) {
+            const resultados: RetornoRealizadoDb[] = await this.queryConsolidadoExecutado(orcExec);
+
+            for (const r of resultados) {
+                retExecutado.push(this.convertRealizadoRow(r));
+            }
+        }
+
+        await ctx.progress(30);
 
         const out: FileOutput[] = [];
 
         let camposAnoMes: any[] = [];
         const camposAno: any[] = [];
-        if (dto.tipo == 'Analitico') {
+        if (params.tipo == 'Analitico') {
             camposAnoMes = [
                 { value: 'mes', label: 'mês' },
                 'ano',
@@ -634,6 +652,7 @@ export class OrcamentoService implements ReportableService {
             camposAno[0] = camposAnoMes[0];
         }
 
+        // TODO: talvez para obras seja necessário verificar o tipo do portfolio
         const camposProjeto = [
             { value: 'projeto.codigo', label: 'Código Projeto' },
             { value: 'projeto.nome', label: 'Nome do Projeto' },
@@ -654,7 +673,9 @@ export class OrcamentoService implements ReportableService {
               ]
             : camposProjeto;
 
-        if (dados.linhas.length) {
+        if (retExecutado.length) {
+            await this.dotacaoService.setManyOrgaoUnidadeFonte(retExecutado);
+
             const json2csvParser = new Parser({
                 ...DefaultCsvOptions,
                 transforms: defaultTransform,
@@ -690,7 +711,7 @@ export class OrcamentoService implements ReportableService {
                 ],
             });
             const linhas = json2csvParser.parse(
-                dados.linhas.map((r) => {
+                retExecutado.map((r) => {
                     return { ...r, logs: r.logs.join('\r\n') };
                 })
             );
@@ -699,8 +720,24 @@ export class OrcamentoService implements ReportableService {
                 buffer: Buffer.from(linhas, 'utf8'),
             });
         }
+        await ctx.progress(50);
 
-        if (dados.linhas_planejado.length) {
+        const retPlanejado: OrcamentoPlanejadoSaidaDto[] = [];
+        if (params.tipo == 'Analitico' && orcExec.length > 0) {
+            const resultadosPlanejados = await this.queryAnaliticoPlanejado(anoIni, anoFim, orcPlan);
+            for (const r of resultadosPlanejados) {
+                retPlanejado.push(this.convertPlanejadoRow(r));
+            }
+        } else if (params.tipo == 'Consolidado' && orcExec.length > 0) {
+            const resultadosPlanejados = await this.queryConsolidadoPlanejado(anoIni, anoFim, orcPlan);
+            for (const r of resultadosPlanejados) {
+                retPlanejado.push(this.convertPlanejadoRow(r));
+            }
+        }
+
+        await ctx.progress(70);
+        if (retPlanejado.length) {
+            await this.dotacaoService.setManyOrgaoUnidadeFonte(retPlanejado);
             const json2csvParser = new Parser({
                 ...DefaultCsvOptions,
                 transforms: defaultTransform,
@@ -724,7 +761,7 @@ export class OrcamentoService implements ReportableService {
                 ],
             });
             const linhas = json2csvParser.parse(
-                dados.linhas_planejado.map((r) => {
+                retPlanejado.map((r) => {
                     return { ...r, logs: r.logs.join('\r\n') };
                 })
             );
@@ -733,34 +770,7 @@ export class OrcamentoService implements ReportableService {
                 buffer: Buffer.from(linhas, 'utf8'),
             });
         }
-
-        // n precisa mais pq já tem o report no front da
-        // gambiarra pra puxar o relatório de previsao-custo aqui dentro do export
-
-        // let anoCorrente = new Date(dto.inicio).getFullYear();
-        // const anoCorrenteFim = new Date(dto.fim).getFullYear();
-        // o dto foi encoded como json, perdeu os tipos
-        //        while (anoCorrente <= anoCorrenteFim) {
-        //            this.logger.debug(`Adicionando relatório de previsão de custo para o ano ${anoCorrente}`);
-        //
-        //            const p: CreateRelPrevisaoCustoDto = {
-        //                periodo_ano: 'Anterior',
-        //                ano: anoCorrente,
-        //            };
-        //            const r = await this.prevCustoService.create(p);
-        //
-        //            this.logger.debug(`Gerando arquivos relatório de previsão de custo para o ano ${anoCorrente}`);
-        //            const reportFiles = await this.prevCustoService.getFiles(r, pdm_id, r);
-        //
-        //            for (const file of reportFiles) {
-        //                out.push({
-        //                    name: `${anoCorrente}-${file.name}`,
-        //                    buffer: file.buffer
-        //                });
-        //            }
-        //
-        //            anoCorrente++;
-        //}
+        await ctx.progress(99);
 
         return [
             {

@@ -6,7 +6,7 @@ export class RelParlamentaresDto {
     nome_parlamentar: string | null;
     partido_sigla: string;
     uf: string;
-    titular_suplente: string;
+    titular_suplente: string | null; // tava sem poder ser null, eu acho que pode ser null
     endereco: string | null;
     gabinete: string | null;
     telefone: string | null;
@@ -14,7 +14,7 @@ export class RelParlamentaresDto {
     mes_aniversario: number | null;
     email: string | null;
     cargo: ParlamentarCargo | null;
-    ano_eleicao: number;
+    ano_eleicao: number | null; // aqui tbm
 }
 
 export class ParlamentaresRelatorioDto {

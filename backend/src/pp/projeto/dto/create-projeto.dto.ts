@@ -145,6 +145,7 @@ export class CreateProjetoDto {
     @IsString()
     @MaxLength(1024)
     @ValidateIf((object, value) => value !== null)
+    @ApiProperty({ deprecated: true })
     mdo_programa_habitacional?: string | null;
 
     @IsOptional()
@@ -455,6 +456,34 @@ export class CreateProjetoDto {
     @ValidateIf((object, value) => value !== null)
     @Transform(NumberArrayTransformOrEmpty)
     tags?: number[] | null;
+
+    /**
+     * tipo de aditivo MDO
+     */
+    @IsOptional()
+    @IsInt({ message: '$property| tipo_aditivo_id precisa ser inteiro' })
+    @Transform((a: TransformFnParams) => (a.value === null ? null : +a.value))
+    @ValidateIf((object, value) => value !== null)
+    tipo_aditivo_id?: number | null;
+
+    /**
+     * Programa (coluna que antes era texto livre, antigo campo mdo_programa_habitacional)
+     * agora vem do cadastro do `/api/projeto-programa-mdo`
+     */
+    @IsOptional()
+    @IsInt({ message: '$property| projeto_programa_id precisa ser inteiro' })
+    @Transform((a: TransformFnParams) => (a.value === null ? null : +a.value))
+    @ValidateIf((object, value) => value !== null)
+    programa_id?: number | null;
+
+    /**
+     * modalidade de contratação MDO
+     */
+    @IsOptional()
+    @IsInt({ message: '$property| modalidade_contratacao_id precisa ser inteiro' })
+    @Transform((a: TransformFnParams) => (a.value === null ? null : +a.value))
+    @ValidateIf((object, value) => value !== null)
+    modalidade_contratacao_id?: number | null;
 }
 
 export class CreateProjetoDocumentDto {

@@ -452,6 +452,9 @@ export class ProjetoService {
                         mdo_observacoes: dto.mdo_observacoes,
                         secretario_executivo: dto.secretario_executivo,
                         secretario_responsavel: dto.secretario_responsavel,
+                        modalidade_contratacao_id: dto.modalidade_contratacao_id,
+                        tipo_aditivo_id: dto.tipo_aditivo_id,
+                        projeto_programa_id: dto.programa_id,
 
                         colaboradores_no_orgao: dto.colaboradores_no_orgao ?? [],
                         orgao_colaborador_id: dto.orgao_colaborador_id,
@@ -601,11 +604,11 @@ export class ProjetoService {
             where: { id: dto.grupo_tematico_id },
         });
         if (grupo_tematico.familias_beneficiadas && !dto.mdo_n_familias_beneficiadas)
-            throw new HttpException('mdo_n_familias_beneficiadas| Campo obrigatório para obras', 400);
+            throw new HttpException('número de famílias beneficiadas: Campo obrigatório para obras', 400);
         if (grupo_tematico.unidades_habitacionais && !dto.mdo_n_unidades_habitacionais)
-            throw new HttpException('mdo_n_unidades_habitacionais| Campo obrigatório para obras', 400);
-        if (grupo_tematico.programa_habitacional && !dto.mdo_programa_habitacional)
-            throw new HttpException('mdo_programa_habitacional| Campo obrigatório para obras', 400);
+            throw new HttpException('número de unidades habitacionais: Campo obrigatório para obras', 400);
+        if (grupo_tematico.programa_habitacional && !dto.programa_id)
+            throw new HttpException('programa habitacional: Campo obrigatório para obras', 400);
     }
 
     private removeCampos(tipo: string, dto: CreateProjetoDto | UpdateProjetoDto, op: 'create' | 'update') {
@@ -641,6 +644,16 @@ export class ProjetoService {
             if (dto.status && op == 'create') {
                 delete dto.status;
             }
+
+            delete dto.mdo_observacoes;
+            delete dto.mdo_detalhamento;
+            delete dto.mdo_n_familias_beneficiadas;
+            delete dto.mdo_n_unidades_habitacionais;
+            delete dto.mdo_previsao_inauguracao;
+            delete dto.mdo_programa_habitacional;
+            delete dto.modalidade_contratacao_id;
+            delete dto.tipo_aditivo_id;
+            delete dto.programa_id;
 
             const liberados: ProjetoStatus[] = [
                 'EmAcompanhamento',
@@ -1413,6 +1426,9 @@ export class ProjetoService {
                 mdo_n_familias_beneficiadas: true,
                 mdo_previsao_inauguracao: true,
                 mdo_observacoes: true,
+                modalidade_contratacao: { select: { id: true, nome: true } },
+                programa: { select: { id: true, nome: true } },
+                tipo_aditivo: { select: { id: true, nome: true } },
             },
         });
         if (!projeto) throw new HttpException('Projeto não encontrado ou sem permissão para acesso', 400);
@@ -1611,6 +1627,9 @@ export class ProjetoService {
                 mdo_n_familias_beneficiadas: projeto.mdo_n_familias_beneficiadas,
                 mdo_previsao_inauguracao: projeto.mdo_previsao_inauguracao,
                 mdo_observacoes: projeto.mdo_observacoes,
+                modalidade_contratacao: projeto.modalidade_contratacao,
+                programa: projeto.programa,
+                tipo_aditivo: projeto.tipo_aditivo,
             };
 
             ret = {
@@ -2221,6 +2240,9 @@ export class ProjetoService {
                     mdo_n_familias_beneficiadas: dto.mdo_n_familias_beneficiadas,
                     mdo_previsao_inauguracao: dto.mdo_previsao_inauguracao,
                     mdo_observacoes: dto.mdo_observacoes,
+                    modalidade_contratacao_id: dto.modalidade_contratacao_id,
+                    tipo_aditivo_id: dto.tipo_aditivo_id,
+                    projeto_programa_id: dto.programa_id,
 
                     // TODO validar as permissoes
                     colaboradores_no_orgao: dto.colaboradores_no_orgao ?? [],
