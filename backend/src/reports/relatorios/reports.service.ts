@@ -1,8 +1,16 @@
-import { forwardRef, HttpException, Inject, Injectable, Logger } from '@nestjs/common';
+import { forwardRef, HttpException, Inject, Injectable, InternalServerErrorException, Logger } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { Cron } from '@nestjs/schedule';
 import { Prisma } from '@prisma/client';
+import { fork } from 'child_process';
+import * as crypto from 'crypto';
+import * as fs from 'fs';
+import { createWriteStream, WriteStream } from 'fs';
 import { DateTime } from 'luxon';
+import * as os from 'os';
+import { tmpdir } from 'os';
+import * as path from 'path';
+import { resolve as resolvePath } from 'path';
 import { PessoaFromJwt } from '../../auth/models/PessoaFromJwt';
 import { SYSTEM_TIMEZONE } from '../../common/date2ymd';
 import { JOB_PP_REPORT_LOCK } from '../../common/dto/locks';
@@ -13,17 +21,25 @@ import { UploadService } from '../../upload/upload.service';
 import { IndicadoresService } from '../indicadores/indicadores.service';
 import { MonitoramentoMensalService } from '../monitoramento-mensal/monitoramento-mensal.service';
 import { OrcamentoService } from '../orcamento/orcamento.service';
+import { ParlamentaresService } from '../parlamentares/parlamentares.service';
 import { CreateRelProjetoDto } from '../pp-projeto/dto/create-previsao-custo.dto';
 import { PPProjetoService } from '../pp-projeto/pp-projeto.service';
+import { PPProjetosService } from '../pp-projetos/pp-projetos.service';
+import { PPStatusService } from '../pp-status/pp-status.service';
 import { PrevisaoCustoService } from '../previsao-custo/previsao-custo.service';
+import { TransferenciasService } from '../transferencias/transferencias.service';
 import { FileOutput, ParseParametrosDaFonte, ReportableService, ReportContext } from '../utils/utils.service';
 import { CreateReportDto } from './dto/create-report.dto';
 import { FilterRelatorioDto } from './dto/filter-relatorio.dto';
 import { RelatorioDto } from './entities/report.entity';
-import { PPProjetosService } from '../pp-projetos/pp-projetos.service';
-import { PPStatusService } from '../pp-status/pp-status.service';
-import { ParlamentaresService } from '../parlamentares/parlamentares.service';
-import { TransferenciasService } from '../transferencias/transferencias.service';
+
+export const GetTempFileName = function (prefix?: string, suffix?: string) {
+    prefix = typeof prefix !== 'undefined' ? prefix : 'tmp.';
+    suffix = typeof suffix !== 'undefined' ? suffix : '';
+
+    return path.join(tmpdir(), prefix + '-' + crypto.randomBytes(16).toString('hex') + suffix);
+};
+
 const AdmZip = require('adm-zip');
 const XLSX = require('xlsx');
 const { parse } = require('csv-parse');
@@ -69,6 +85,11 @@ export class ReportsService {
             cancel: () => {},
             isCancelled: () => false,
             progress: async () => {},
+            getTmpFile: (prefix: string): { path: string; stream: WriteStream } => {
+                const path = GetTempFileName(prefix);
+                const stream = createWriteStream(path);
+                return { path, stream };
+            },
         };
 
         return await service.toFileOutput(dto.parametros, mockContext);
@@ -78,46 +99,79 @@ export class ReportsService {
         const zip = new AdmZip();
 
         for (const file of files) {
+            let csvFile: string | undefined = undefined;
+            let tmpDir: string | undefined = undefined;
+
             if (file.buffer) {
                 zip.addFile(file.name, file.buffer);
+
+                // write buffer to a temporary file
+                const tmpFilePath = GetTempFileName(file.name);
+                fs.writeFileSync(tmpFilePath, file.buffer);
+                csvFile = tmpFilePath;
             } else if (file.localFile) {
-                zip.addLocalFile(file.localFile, file.name, '');
+                // move o arquivo para a pasta temporária, renomeia para file.name e adiciona ao zip (bug conhecido)
+                // se não o nome do arquivo no zip será o nome do arquivo temporário e o file.name sera um diretório
+                tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'my-tmp-'));
+
+                const fileName = path.basename(file.name);
+                const tmpFilePath = path.join(tmpDir, fileName);
+
+                fs.renameSync(file.localFile, tmpFilePath);
+                zip.addLocalFile(tmpFilePath);
+                csvFile = tmpFilePath;
             } else {
                 throw new HttpException(`Falta buffer ou localFile no arquivo ${file.name}`, 500);
             }
 
-            if (file.name.endsWith('.csvx')) {
-                const readCsv: any[] = await new Promise((resolve, reject) => {
-                    parse(file.buffer, { columns: true }, (err: any, data: any) => {
-                        if (err) throw reject(err);
-                        resolve(data);
+            if (file.name.endsWith('.csv') && csvFile) {
+                const xlsx = GetTempFileName(file.name, '.xlsx');
+
+                let success: boolean = false;
+                let error: any | undefined = undefined;
+                await new Promise<void>((resolve, reject) => {
+                    const child = fork(resolvePath(__dirname, '../../../src/bin/') + '/duckdb-csv2xlsx.js', [
+                        csvFile,
+                        xlsx,
+                    ]);
+
+                    child.on('error', (err: any) => {
+                        this.logger.error(`error: ${err} converting ${csvFile} to ${xlsx}`);
+                    });
+
+                    child.on('message', (msg: any) => {
+                        if (msg.event == 'success') {
+                            success = true;
+                        } else if (msg.event == 'error') {
+                            error = msg.error;
+                        }
+                    });
+
+                    child.on('exit', (code: number, signal: string) => {
+                        if (error) reject(error);
+                        if (success) resolve();
+
+                        if (code !== null) reject(`process exited with code ${code}`);
+                        if (signal !== null) reject(`process was killed with signal ${signal}`);
                     });
                 });
 
-                // converte o que se parece com números automaticamente
-                for (let i = 0; i < readCsv.length; i++) {
-                    const element = readCsv[i];
-                    for (const k in element) {
-                        if (/^\d+(:?\.\d+)?$/.test(element[k])) {
-                            element[k] *= 1;
-                        }
-                    }
-                }
+                if (!success)
+                    throw new InternalServerErrorException(`process did not finished successfully, check logs`);
 
-                const csvDataArray = XLSX.utils.json_to_sheet(readCsv);
-                const workbook = XLSX.utils.book_new();
-                XLSX.utils.book_append_sheet(workbook, csvDataArray, 'Folha1');
+                // já pode apagar o do csv
+                if (tmpDir) fs.rmSync(tmpDir, { recursive: true, force: true });
 
-                zip.addFile(
-                    file.name.replace(/\.csv$/, '.xlsx'),
-                    XLSX.write(workbook, {
-                        type: 'buffer',
-                        bookType: 'xlsx',
-                        numbers: XLSX_ZAHL_PAYLOAD,
-                        compression: true,
-                    })
-                );
+                tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'my-tmp-'));
+
+                const fileName = path.basename(xlsx);
+                const tmpFilePath = path.join(tmpDir, fileName);
+
+                fs.renameSync(xlsx, tmpFilePath);
+                zip.addLocalFile(tmpFilePath);
             }
+
+            if (tmpDir) fs.rmSync(tmpDir, { recursive: true });
         }
         const zipBuffer = zip.toBuffer();
         return zipBuffer;

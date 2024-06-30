@@ -2,20 +2,11 @@ import { Injectable } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { ParlamentarService } from 'src/parlamentar/parlamentar.service';
 import { Date2YMD } from '../../common/date2ymd';
+import { CsvWriterOptions, WriteCsvToFile } from '../../common/helpers/CsvWriter';
 import { PrismaService } from '../../prisma/prisma.service';
 import { DefaultCsvOptions, FileOutput, ReportContext, ReportableService } from '../utils/utils.service';
 import { CreateRelParlamentaresDto } from './dto/create-parlamentares.dto';
 import { ParlamentaresRelatorioDto, RelParlamentaresDto } from './entities/parlamentares.entity';
-
-import { Parser } from '@json2csv/plainjs';
-import { flatten } from '@json2csv/transforms';
-import { createWriteStream } from 'fs';
-import { resolve } from 'path';
-import { Readable } from 'stream';
-
-import { Transform } from 'stream';
-
-const defaultTransform = flatten({});
 
 @Injectable()
 export class ParlamentaresService implements ReportableService {
@@ -91,72 +82,34 @@ export class ParlamentaresService implements ReportableService {
         const out: FileOutput[] = [];
 
         if (linhas.length) {
-            const csvFilePath = resolve('/tmp', 'parlamentares.csv'); // this should be a tmp file
-            const fileStream = createWriteStream(csvFilePath);
+            const file = ctx.getTmpFile('parlamentares');
 
-            // Create a Node.js Transform stream from json2csv
-            const json2csvParser = new Transform({
-                objectMode: true,
-                transform(chunk, encoding, callback) {
-                    try {
-                        const csv = new Parser({
-                            ...DefaultCsvOptions,  // should be argument to the constructor
-                            header: linhas.indexOf(chunk) === 0, // This will not be possible in streaming, but maybe if the helper function be a HOF/class constructor with a private variable to control the header
-                            transforms: [defaultTransform], // also should be argument to the constructor
-                            fields: [
-                                { value: 'id', label: 'ID do Parlamentar' },
-                                { value: 'nome_civil', label: 'Nome Civil' },
-                                { value: 'nome_parlamentar', label: 'Nome Parlamentar' },
-                                { value: 'partido_sigla', label: 'Sigla do Partido' },
-                                { value: 'ano_eleicao', label: 'Ano da Eleição' },
-                                { value: 'cargo', label: 'Cargo' },
-                                { value: 'uf', label: 'UF' },
-                                { value: 'titular_suplente', label: 'Titular/Suplente/Efetivado' },
-                                { value: 'endereco', label: 'Endereço' },
-                                { value: 'gabinete', label: 'Gabinete' },
-                                { value: 'telefone', label: 'Telefone' },
-                                { value: 'dia_aniversario', label: 'Dia Aniversário' },
-                                { value: 'mes_aniversario', label: 'Mês Aniversário' },
-                                { value: 'email', label: 'E-mail' },
-                            ],
-                        }).parse(chunk);
+            // Define CSV writer options
+            const csvWriterOptions: CsvWriterOptions<RelParlamentaresDto> = {
+                csvOptions: DefaultCsvOptions,
+                fields: [
+                    { value: 'id', label: 'ID do Parlamentar' },
+                    { value: 'nome_civil', label: 'Nome Civil' },
+                    { value: 'nome_parlamentar', label: 'Nome Parlamentar' },
+                    { value: 'partido_sigla', label: 'Sigla do Partido' },
+                    { value: 'ano_eleicao', label: 'Ano da Eleição' },
+                    { value: 'cargo', label: 'Cargo' },
+                    { value: 'uf', label: 'UF' },
+                    { value: 'titular_suplente', label: 'Titular/Suplente/Efetivado' },
+                    { value: 'endereco', label: 'Endereço' },
+                    { value: 'gabinete', label: 'Gabinete' },
+                    { value: 'telefone', label: 'Telefone' },
+                    { value: 'dia_aniversario', label: 'Dia Aniversário' },
+                    { value: 'mes_aniversario', label: 'Mês Aniversário' },
+                    { value: 'email', label: 'E-mail' },
+                ],
+            };
 
-                        // Push the CSV data to the stream
-                        this.push(csv + DefaultCsvOptions.eol);
-                        callback();
-                    } catch (err) {
-                        callback(err); // Pass errors to the stream
-                    }
-                },
-            });
-
-            // I think this is what the function will return
-            const readableStream = new Readable({ objectMode: true });
-            const wip = new Promise<void>((resolve, reject) => {
-                readableStream
-                    .pipe(json2csvParser)
-                    .pipe(fileStream)
-                    .on('finish', () => {
-                        console.log('CSV file written successfully!');
-                        resolve();
-                    })
-                    .on('error', (err) => {
-                        console.error('Error writing CSV:', err);
-                        reject(err);
-                    });
-            });
-
-            for (const record of linhas) {
-                readableStream.push(record);
-            }
-
-            // Signal the end of the data
-            readableStream.push(null);
-            await wip;
+            await WriteCsvToFile(linhas, file.stream, csvWriterOptions);
 
             out.push({
-                name: '',
-                localFile: csvFilePath, // Return the path to the tmp file
+                name: 'parlamentares.csv',
+                localFile: file.path,
             });
         }
         await ctx.progress(99);

@@ -2,8 +2,6 @@ import { Database } from 'duckdb-async';
 import * as fs from 'fs';
 
 async function bootstrap() {
-    if (process.send) process.send({ x: 'started' });
-
     const csvFile = process.argv[2];
     const outputXlsx = process.argv[3];
 
@@ -14,6 +12,7 @@ async function bootstrap() {
 
     try {
         await processCsvToXlsx(csvFile, outputXlsx);
+        if (process.send) process.send({ event: 'success' });
     } catch (error) {
         const ev = { event: 'error', error };
         if (process.send) {
