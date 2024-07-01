@@ -86,11 +86,11 @@ async function mudarEtapa(idEtapa) {
   try {
     switch (route.meta.entidadeMãe) {
       case 'obras':
-        resposta = await projetosStore.salvarItem(carga, projetoEmFoco.value.id);
+        resposta = await obrasStore.salvarItem(carga, projetoEmFoco.value.id);
 
         break;
       case 'projeto':
-        resposta = await obrasStore.salvarItem(carga, projetoEmFoco.value.id);
+        resposta = await projetosStore.salvarItem(carga, projetoEmFoco.value.id);
 
         break;
 
