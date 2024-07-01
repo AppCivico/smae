@@ -155,7 +155,7 @@ export class ParlamentarService {
                 partido_mais_recente: true,
                 tem_mandato: true,
             },
-            orderBy: [{ nome_popular: 'asc' }],
+            orderBy: [{ nome_popular: 'asc' }, { id: 'asc' }],
             skip: offset,
             take: ipp + 1,
         });
