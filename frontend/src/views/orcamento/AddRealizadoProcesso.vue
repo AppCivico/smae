@@ -62,6 +62,8 @@ const {
 });
 
 const onSubmit = handleSubmit(async () => {
+  if (validando.value) return;
+
   try {
     let msg;
     let r;
@@ -139,6 +141,8 @@ async function validarProcesso() {
       const r = await DotaçãoStore
         .getDotaçãoRealizadoProcesso(dota.value, ano, props.parametrosParaValidacao);
       respostasof.value = r;
+    } else {
+      respostasof.value = {};
     }
   } catch (error) {
     respostasof.value = error;
@@ -164,6 +168,7 @@ watch(currentEdit, (novosValores) => {
   <template v-if="!(OrcamentoRealizado[ano]?.loading || OrcamentoRealizado[ano]?.error)">
     <form
       @submit.prevent="onSubmit"
+      @keyup.enter.stop.prevent
     >
       <div class="flex center g2 mb2">
         <div class="f1">
@@ -173,12 +178,11 @@ watch(currentEdit, (novosValores) => {
             name="processo"
             type="text"
             class="inputtext light mb1"
-            :class="{
-              'error': errors.processo, 'loading':
-                respostasof.loading
-            }"
+            :class="{ 'error': errors.processo }"
+            :aria-busy="respostasof.loading || validando"
             placeholder="DDDD.DDDD/DDDDDDD-D (SEI) ou AAAA-D.DDD.DDD-D (SINPROC)"
-            @keyup="maskProcesso"
+            @keyup.stop.prevent="maskProcesso"
+            @keyup.enter.stop.prevent="validarProcesso"
           />
 
           <ErrorMessage name="processo" />

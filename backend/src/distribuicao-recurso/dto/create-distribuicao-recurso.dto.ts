@@ -82,8 +82,9 @@ export class CreateDistribuicaoRecursoDto {
     @ValidateIf((object, value) => value !== null)
     investimento: number;
 
+    @IsOptional()
     @IsBoolean()
-    empenho: boolean;
+    empenho?: boolean;
 
     @IsOptional()
     /**

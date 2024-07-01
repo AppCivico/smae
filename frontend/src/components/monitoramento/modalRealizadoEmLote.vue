@@ -527,7 +527,7 @@ watch(variáveisComSuasDatas, (novoValor) => {
                 type="number"
                 :value="field.value.valor_realizado"
                 :step="geradorDeAtributoStep(
-                  dadosExtrasPorVariávelId.value?.[field.value.variavel_id]?.variavel.casas_decimais
+                  dadosExtrasPorVariávelId?.[field.value.variavel_id]?.variavel.casas_decimais
                 )"
                 class="inputtext light"
                 :class="{ 'error': errors[`linhas[${idx}].valor_realizado`] }"
@@ -555,7 +555,7 @@ watch(variáveisComSuasDatas, (novoValor) => {
                 type="number"
                 :value="field.valor_realizado_acumulado"
                 :step="geradorDeAtributoStep(
-                  dadosExtrasPorVariávelId.value?.[field.value.variavel_id]?.variavel.casas_decimais
+                  dadosExtrasPorVariávelId?.[field.value.variavel_id]?.variavel.casas_decimais
                 )"
                 class="inputtext light"
                 :class="{ 'error': errors[`linhas[${idx}].valor_realizado_acumulado`] }"

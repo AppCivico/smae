@@ -66,7 +66,7 @@ const {
 
 const dependênciasValidadas = ref([]);
 
-const irmãs = computed(() => tarefasAgrupadasPorMãe[values.tarefa_pai_id || 0]
+const irmãs = computed(() => tarefasAgrupadasPorMãe.value[values.tarefa_pai_id || 0]
   ?.filter((x) => x.id !== Number(props.tarefaId))
   || []);
 

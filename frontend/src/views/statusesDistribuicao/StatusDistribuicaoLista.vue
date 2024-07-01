@@ -51,7 +51,7 @@
             class="like-a__text"
             arial-label="excluir"
             title="excluir"
-            @click="excluirStatusDistribuicao(item.id, item.descricao)"
+            @click="excluirStatusDistribuicao(item.id, item.nome)"
           >
             <svg
               width="20"
@@ -85,17 +85,17 @@ import { storeToRefs } from 'pinia';
 import { computed } from 'vue';
 import { useRoute } from 'vue-router';
 
-import { useStatusDistribuicaoStore } from '@/stores/statusDistribuicao.store';
+import { useStatusDistribuicaoWorflowStore } from '@/stores/statusDistribuicaoWorkflow.store';
 
 const route = useRoute();
 const titulo = typeof route?.meta?.título === 'function'
   ? computed(() => route.meta.título())
   : route?.meta?.título;
 const alertStore = useAlertStore();
-const statusDistribuicaoStore = useStatusDistribuicaoStore();
+const statusDistribuicaoStore = useStatusDistribuicaoWorflowStore();
 const { lista, chamadasPendentes, erro } = storeToRefs(statusDistribuicaoStore);
 
-async function excluirTema(id, descricao) {
+async function excluirStatusDistribuicao(id, descricao) {
   alertStore.confirmAction(
     `Deseja mesmo remover "${descricao}"?`,
     async () => {

@@ -106,14 +106,16 @@ export const useObrasStore = defineStore('obrasStore', {
       this.erro = null;
 
       try {
+        let resposta;
+
         if (id) {
-          await this.requestS.patch(`${baseUrl}/projeto-mdo/${id}`, params);
+          resposta = await this.requestS.patch(`${baseUrl}/projeto-mdo/${id}`, params);
         } else {
-          await this.requestS.post(`${baseUrl}/projeto-mdo`, params);
+          resposta = await this.requestS.post(`${baseUrl}/projeto-mdo`, params);
         }
 
         this.chamadasPendentes.emFoco = false;
-        return true;
+        return resposta;
       } catch (erro) {
         this.erro = erro;
         this.chamadasPendentes.emFoco = false;
@@ -189,6 +191,7 @@ export const useObrasStore = defineStore('obrasStore', {
         orgao_origem_id: emFoco?.orgao_origem ? emFoco?.orgao_origem.id : null, // não editável
         orgao_colaborador_id: emFoco?.orgao_colaborador?.id || null,
         orgao_responsavel_id: emFoco?.orgao_responsavel?.id || null,
+        pdm_escolhido: emFoco?.meta?.pdm_id || null,
         portfolio_id: emFoco?.portfolio_id || route.query.portfolio_id || null,
         previsao_inicio: dateTimeToDate(emFoco?.previsao_inicio) || null,
         previsao_termino: dateTimeToDate(emFoco?.previsao_termino) || null,

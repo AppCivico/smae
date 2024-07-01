@@ -1576,6 +1576,37 @@ export const situacao = object({
     .required(),
 });
 
+export const statusDistribuicao = object({
+  status_id: object()
+    .label('Status')
+    .required(),
+  data_troca: date()
+    .label('Data')
+    .max(dataMax)
+    .min(new Date(2003, 0, 1))
+    .required()
+    .transform((v) => (!v ? null : v)),
+  orgao_responsavel_id: number()
+    .label('Órgão Responsável')
+    .required(),
+  nome_responsavel: string()
+    .label('Responsável')
+    .required(),
+  motivo: string()
+    .label('Motivo')
+    .required(),
+});
+
+export const statusDistribuicaoWorkflow = object({
+  nome: string()
+    .label('Nome')
+    .required(),
+  tipo: mixed()
+    .label('Tipo')
+    .required()
+    .oneOf(Object.keys(tiposStatusDistribuicao)),
+});
+
 export const subtema = object({
   descricao: string()
     .label('Nome')
@@ -1611,20 +1642,6 @@ export const tipoDeTransferencia = object({
     .label('Esfera')
     .required()
     .oneOf(Object.keys(esferasDeTransferencia)),
-});
-
-export const statusDistribuicao = object({
-  nome: string()
-    .label('Nome')
-    .required(),
-  tipo: mixed()
-    .label('Tipo')
-    .required()
-    .oneOf(Object.keys(tiposStatusDistribuicao)),
-  tipo_transferencia_id: number()
-    .label('Tipo de transferência')
-    .min(1, 'Selecione um tipo de transferência')
-    .required(),
 });
 
 export const transferenciaDistribuicaoDeRecursos = object({
@@ -1673,27 +1690,7 @@ export const transferenciaDistribuicaoDeRecursos = object({
     .nullable(),
   empenho: boolean()
     .label('Empenho')
-    .required(),
-  // historico_status: array()
-  //   .label('Registro status da distribuição de recursos')
-  //   .of(object({
-  //     data_troca: date()
-  //       .label('Data')
-  //       .max(dataMax)
-  //       .min(new Date(2003, 0, 1))
-  //       .required()
-  //       .transform((v) => (!v ? null : v)),
-  //     orgao_responsavel_id: number()
-  //       .lavel('')
-  //       .required(),
-  //     nome_responsavel: string()
-  //       .lavel('')
-  //       .required(),
-  //     motivo: string()
-  //       .lavel('')
-  //       .required(),
-  //   }))
-  //   .strict(),
+    .nullable(),
   investimento: number()
     .label('Investimento')
     .min(0)
@@ -2572,6 +2569,8 @@ export const workflow = object({
     .label('Tipo de transferência')
     .nullable()
     .required(),
+  distribuicao_status: array()
+    .label('Statuses de Distribuição'),
   distribuicao_statuses_base: array()
     .label('Statuses Base Atrelados ao Workflow')
     .nullable(),

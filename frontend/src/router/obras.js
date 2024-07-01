@@ -44,7 +44,7 @@ export default {
         limitarÀsPermissões: [
           'ProjetoMDO.administrador_no_orgao',
         ],
-        rotaDeEscape: 'obrasListar',
+        rotaDeEscape: 'obrasResumo',
         rotasParaMigalhasDePão: [
           'obrasListar',
         ],
@@ -63,8 +63,13 @@ export default {
           'obrasListar',
         ],
         rotasParaMenuSecundário: [
-          'obrasResumo',
-          'obrasTarefasListar',
+          {
+            título: 'Plano da obra',
+            rotas: [
+              'obrasResumo',
+              'obrasTarefasListar',
+            ],
+          },
           {
             título: 'Acompanhamento',
             rotas: [
@@ -100,7 +105,7 @@ export default {
               'MDO.colaborador_de_projeto',
               'MDO.espectador_de_projeto',
             ],
-            rotaDeEscape: 'obrasListar',
+            rotaDeEscape: 'obrasResumo',
             título: 'Editar Obra',
           },
         },
@@ -113,8 +118,8 @@ export default {
             obraId: Number.parseInt(params.obraId, 10) || undefined,
           }),
           meta: {
-            título: 'Resumo da Obra',
-            títuloParaMenu: 'Resumo',
+            título: 'Escopo da Obra',
+            títuloParaMenu: 'Escopo',
           },
         },
         {
@@ -145,7 +150,7 @@ export default {
                 {
                   name: 'obrasTarefasClonar',
                   path: 'clonar',
-                  component: () => import('@/views/tarefas/TarefasClonar.vue'),
+                  component: () => import('@/views/mdo.tarefas/TarefasClonar.vue'),
                   meta: {
                     título: 'Clonar tarefas',
                     títuloParaMenu: 'Clonar tarefas',

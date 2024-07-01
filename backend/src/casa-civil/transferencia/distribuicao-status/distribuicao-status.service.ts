@@ -1,12 +1,11 @@
 import { HttpException, Injectable } from '@nestjs/common';
 import { DistribuicaoStatusTipo, Prisma } from '@prisma/client';
-import { RecordWithId } from '../../../../common/dto/record-with-id.dto';
-import { PessoaFromJwt } from '../../../../auth/models/PessoaFromJwt';
-import { PrismaService } from '../../../../prisma/prisma.service';
+import { RecordWithId } from '../../../common/dto/record-with-id.dto';
+import { PessoaFromJwt } from '../../../auth/models/PessoaFromJwt';
+import { PrismaService } from '../../../prisma/prisma.service';
 import { CreateDistribuicaoStatusDto } from './dto/create-distribuicao-status.dto';
 import { UpdateDistribuicaoStatusDto } from './dto/update-distribuicao-status.dto';
 import { DistribuicaoStatusDto, ListDistribuicaoStatusDto } from './entities/distribuicao-status.dto';
-import { FilterDistribuicaoStatusDto } from './dto/filter-distribuicao-status.dto';
 
 @Injectable()
 export class DistribuicaoStatusService {
@@ -15,7 +14,7 @@ export class DistribuicaoStatusService {
     async create(dto: CreateDistribuicaoStatusDto, user: PessoaFromJwt): Promise<RecordWithId> {
         const created = await this.prisma.$transaction(
             async (prismaTxn: Prisma.TransactionClient): Promise<RecordWithId> => {
-                const similarExists = await this.prisma.transferenciaTipoDistribuicaoStatus.count({
+                const similarExists = await this.prisma.distribuicaoStatus.count({
                     where: {
                         nome: { endsWith: dto.nome, mode: 'insensitive' },
                         tipo: dto.tipo,
@@ -50,9 +49,8 @@ export class DistribuicaoStatusService {
                     permite_novos_registros = dto.permite_novos_registros;
                 }
 
-                const transferenciaTipoDistribuicaoStatus = await prismaTxn.transferenciaTipoDistribuicaoStatus.create({
+                const transferenciaTipoDistribuicaoStatus = await prismaTxn.distribuicaoStatus.create({
                     data: {
-                        transferencia_tipo_id: dto.tipo_transferencia_id,
                         nome: dto.nome,
                         tipo: dto.tipo,
                         valor_distribuicao_contabilizado: valor_contabilizado_calc,
@@ -71,7 +69,7 @@ export class DistribuicaoStatusService {
     }
 
     async findOne(id: number, user: PessoaFromJwt): Promise<DistribuicaoStatusDto> {
-        const row = await this.prisma.transferenciaTipoDistribuicaoStatus.findFirstOrThrow({
+        const row = await this.prisma.distribuicaoStatus.findFirstOrThrow({
             where: {
                 id,
                 removido_em: null,
@@ -96,10 +94,9 @@ export class DistribuicaoStatusService {
         };
     }
 
-    async findAllDistribuicaoStatus(filters: FilterDistribuicaoStatusDto): Promise<ListDistribuicaoStatusDto> {
-        const rows = await this.prisma.transferenciaTipoDistribuicaoStatus.findMany({
+    async findAllDistribuicaoStatus(): Promise<ListDistribuicaoStatusDto> {
+        const rows = await this.prisma.distribuicaoStatus.findMany({
             where: {
-                transferencia_tipo_id: filters.tipo_transferencia_id,
                 removido_em: null,
             },
             orderBy: { nome: 'asc' },
@@ -166,7 +163,7 @@ export class DistribuicaoStatusService {
                 });
                 if (emUso) throw new HttpException('Edição indisponível, pois tipo de status já está em uso', 400);
 
-                const transferenciaTipoDistribuicaoStatus = await prismaTxn.transferenciaTipoDistribuicaoStatus.update({
+                const transferenciaTipoDistribuicaoStatus = await prismaTxn.distribuicaoStatus.update({
                     where: { id },
                     data: {
                         nome: dto.nome,
@@ -182,7 +179,7 @@ export class DistribuicaoStatusService {
                     },
                 });
 
-                const similarExists = await this.prisma.transferenciaTipoDistribuicaoStatus.count({
+                const similarExists = await this.prisma.distribuicaoStatus.count({
                     where: {
                         nome: { endsWith: transferenciaTipoDistribuicaoStatus.nome, mode: 'insensitive' },
                         tipo: transferenciaTipoDistribuicaoStatus.tipo,
@@ -208,7 +205,7 @@ export class DistribuicaoStatusService {
         });
         if (emUso) throw new HttpException('Remoção indisponível, pois tipo de status já está em uso', 400);
 
-        await this.prisma.transferenciaTipoDistribuicaoStatus.update({
+        await this.prisma.distribuicaoStatus.update({
             where: { id },
             data: {
                 removido_por: user.id,

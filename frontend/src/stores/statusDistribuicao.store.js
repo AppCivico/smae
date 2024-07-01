@@ -14,12 +14,12 @@ export const useStatusDistribuicaoStore = defineStore('statusDistribuicaoStore',
     erro: null,
   }),
   actions: {
-    async buscarItem(id = 0, params = {}) {
+    async buscarItem(idStatus, idDistribuicao = this.route.params.distribuicaoId, params = {}) {
       this.chamadasPendentes.emFoco = true;
       this.erro = null;
 
       try {
-        const resposta = await this.requestS.get(`${baseUrl}/distribuicao-status/${id}`, params);
+        const resposta = await this.requestS.get(`${baseUrl}/distribuicao-recurso/${idDistribuicao}/status/${idStatus}`, params);
         this.emFoco = {
           ...resposta,
         };
@@ -28,43 +28,14 @@ export const useStatusDistribuicaoStore = defineStore('statusDistribuicaoStore',
       }
       this.chamadasPendentes.emFoco = false;
     },
-
-    async buscarTudo(params = {}) {
-      this.chamadasPendentes.lista = true;
-      this.erro = null;
-      try {
-        const { linhas_base, linhas_customizadas } = await this.requestS.get(`${baseUrl}/distribuicao-status`, params);
-        this.lista = linhas_base.concat(linhas_customizadas);
-      } catch (erro) {
-        this.erro = erro;
-      }
-      this.chamadasPendentes.lista = false;
-    },
-
-    async excluirItem(id) {
-      this.chamadasPendentes.lista = true;
-      this.erro = null;
-
-      try {
-        await this.requestS.delete(`${baseUrl}/distribuicao-status/${id}`);
-        this.chamadasPendentes.lista = false;
-        return true;
-      } catch (erro) {
-        this.erro = erro;
-        this.chamadasPendentes.lista = false;
-        return false;
-      }
-    },
-
-    async salvarItem(params = {}, id = 0) {
+    async salvarItem(params = {}, idDistribuicao = 0, idStatus = 0) {
       this.chamadasPendentes.emFoco = true;
       this.erro = null;
-
       try {
-        if (id) {
-          await this.requestS.patch(`${baseUrl}/distribuicao-status/${id}`, params);
+        if (idStatus) {
+          await this.requestS.patch(`${baseUrl}/distribuicao-recurso/${idDistribuicao}/status/${idStatus}`, params);
         } else {
-          await this.requestS.post(`${baseUrl}/distribuicao-status`, params);
+          await this.requestS.post(`${baseUrl}/distribuicao-recurso/${idDistribuicao}/status/`, params);
         }
 
         this.chamadasPendentes.emFoco = false;
@@ -76,7 +47,6 @@ export const useStatusDistribuicaoStore = defineStore('statusDistribuicaoStore',
       }
     },
   },
-
   getters: {
     itemParaEdição({ emFoco }) {
       return {

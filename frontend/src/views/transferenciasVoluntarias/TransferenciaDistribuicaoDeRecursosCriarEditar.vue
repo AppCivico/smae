@@ -25,6 +25,7 @@ import {
   ref,
   watch,
 } from 'vue';
+import TransferenciasDistribuicaoStatusCriarEditar from './TransferenciasDistribuicaoStatusCriarEditar.vue';
 
 const distribuicaoRecursos = useDistribuicaoRecursosStore();
 const TransferenciasVoluntarias = useTransferenciasVoluntariasStore();
@@ -46,6 +47,7 @@ const props = defineProps({
 const alertStore = useAlertStore();
 const mostrarDistribuicaoRegistroForm = ref(false);
 const camposModificados = ref(false);
+const exibirModalStatus = ref(false);
 
 const {
   errors, handleSubmit, isSubmitting, resetForm, setFieldValue, values,
@@ -119,15 +121,19 @@ async function registrarNovaDistribuicaoRecursos() {
   }
 }
 
-function iniciar() {
+async function iniciar() {
   distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
 
   if (transferenciasVoluntariaEmFoco.value?.id !== Number(props.transferenciaId)) {
-    TransferenciasVoluntarias
-      .buscarItem(props.transferenciaId);
+    await TransferenciasVoluntarias.buscarItem(props.transferenciaId);
   }
 
   ÓrgãosStore.getAll();
+}
+
+function handleSalvouStatus() {
+  exibirModalStatus.value = false;
+  distribuicaoRecursos.$reset(); // como limpar direito
 }
 
 iniciar();
@@ -451,7 +457,7 @@ const isSomaCorreta = computed(() => {
           name="valor_contrapartida"
           type="text"
           class="inputtext light mb2"
-          :value="values.valor_contrapartida"
+          :value="values.valor_contrapartida || 0"
           converter-para="string"
           @update:model-value="(newValue) => {
             atualizarValorTotal('valor_contrapartida', newValue, setFieldValue);
@@ -929,7 +935,10 @@ const isSomaCorreta = computed(() => {
     </table>
   </details>
 
-  <details v-if="distribuiçãoEmFoco?.historico_status.length">
+  <details
+    v-if="distribuiçãoEmFoco?.historico_status.length"
+    class="mb1"
+  >
     <summary
       class="label mb0"
       style="line-height: 1.5rem;"
@@ -959,8 +968,8 @@ const isSomaCorreta = computed(() => {
           :key="item.id"
         >
           <td> {{ item.data_troca ? item.data_troca.split('T')[0].split('-').reverse().join('/') : '' }}</td>
-          <td>{{ item.status_base.tipo }}</td>
-          <td>{{ item.orgao_responsavel.sigla }}</td>
+          <td>{{ item.status_base?.tipo || item.status_customizado?.tipo }}</td>
+          <td>{{ item.orgao_responsavel?.sigla }}</td>
           <td>{{ item.nome_responsavel }}</td>
           <td>{{ item.motivo }}</td>
           <td>{{ item.dias_no_status }}</td>
@@ -968,17 +977,22 @@ const isSomaCorreta = computed(() => {
       </tbody>
     </table>
   </details>
-  <router-link
+  <button
     v-if="distribuiçãoEmFoco"
-    to=""
-    class="addlink mt1"
+    class="like-a__text addlink"
+    type="button"
+    @click="exibirModalStatus = true"
   >
     <svg
       width="20"
       height="20"
-    >
-      <use xlink:href="#i_+" />
-    </svg>
-    Adicionar status
-  </router-link>
+    ><use xlink:href="#i_+" /></svg>Adicionar status
+  </button>
+  <TransferenciasDistribuicaoStatusCriarEditar
+    v-if="exibirModalStatus"
+    :transferencia-workflow-id="transferenciasVoluntariaEmFoco?.workflow_id"
+    :distribuicao-id="distribuiçãoEmFoco?.id"
+    @fechar-modal="exibirModalStatus = false"
+    @salvou-status="handleSalvouStatus"
+  />
 </template>

@@ -264,8 +264,10 @@ const onSubmit = handleSubmit(async () => {
     if (resposta) {
       alertStore.success(msg);
       emFoco.value = null;
-      obrasStore.buscarItem(props.obraId || resposta.id);
-      router.push({ name: route.meta.rotaDeEscape });
+      if (resposta.id) {
+        obrasStore.buscarItem(props.obraId || resposta.id);
+        router.push({ name: route.meta.rotaDeEscape });
+      }
     }
   } catch (error) {
     alertStore.error(error);

@@ -30,38 +30,6 @@
     <div class="flex g2 mb1">
       <div class="f1">
         <LabelFromYup
-          name="tipo_transferencia_id"
-          :schema="schema"
-        />
-        <Field
-          name="tipo_transferencia_id"
-          as="select"
-          class="inputtext light mb1"
-          :class="{
-            error: errors.tipo_transferencia_id,
-            loading: TipoDeTransferenciaStore.chamadasPendentes?.lista,
-          }"
-          :disabled="!tiposDisponíveis.length"
-        >
-          <option value="">
-            Selecionar
-          </option>
-
-          <option
-            v-for="item in tiposDisponíveis"
-            :key="item"
-            :value="item.id"
-          >
-            {{ item.nome }}
-          </option>
-        </Field>
-        <ErrorMessage
-          name="tipo_id"
-          class="error-msg"
-        />
-      </div>
-      <div class="f1">
-        <LabelFromYup
           name="tipo"
           :schema="schema"
         />
@@ -70,7 +38,7 @@
           name="tipo"
           as="select"
           class="inputtext light mb1"
-          :class="{ 'error': errors.tipo }"
+          :class="{ error: errors.tipo }"
           @change="setFieldValue('tipo_id', null)"
         >
           <option value="">
@@ -126,13 +94,15 @@
 <script setup>
 import { storeToRefs } from 'pinia';
 import { useRoute, useRouter } from 'vue-router';
-import { ErrorMessage, Field, Form, useForm } from 'vee-validate';
+import {
+  ErrorMessage, Field, Form, useForm,
+} from 'vee-validate';
 import { computed, ref } from 'vue';
-import { useStatusDistribuicaoStore } from '@/stores/statusDistribuicao.store';
 import { useAlertStore } from '@/stores/alert.store';
-import { statusDistribuicao as schema } from '@/consts/formSchemas';
+import { statusDistribuicaoWorkflow as schema } from '@/consts/formSchemas';
 import { useTipoDeTransferenciaStore } from '@/stores/tipoDeTransferencia.store';
 import tiposStatusDistribuicao from '@/consts/tiposStatusDistribuicao';
+import { useStatusDistribuicaoWorflowStore } from '@/stores/statusDistribuicaoWorkflow.store';
 
 const router = useRouter();
 const route = useRoute();
@@ -148,7 +118,7 @@ const titulo = typeof route?.meta?.título === 'function'
   : route?.meta?.título;
 
 const alertStore = useAlertStore();
-const statusDistribuicaoStore = useStatusDistribuicaoStore();
+const statusDistribuicaoStore = useStatusDistribuicaoWorflowStore();
 const TipoDeTransferenciaStore = useTipoDeTransferenciaStore();
 const { chamadasPendentes, erro, itemParaEdição } = storeToRefs(statusDistribuicaoStore);
 
@@ -169,6 +139,7 @@ function iniciar() {
 
 iniciar();
 
+// TODO: refatorar
 async function onSubmit(values) {
   try {
     let response;

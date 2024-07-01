@@ -141,6 +141,7 @@ export class ParlamentarService {
         const listActive = await this.prisma.parlamentar.findMany({
             where: {
                 removido_em: null,
+                tem_mandato: filters.possui_mandatos,
                 mandatos: {
                     some: filterSuplente ? { ...filterSuplente } : undefined,
                 },

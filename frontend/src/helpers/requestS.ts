@@ -6,6 +6,14 @@ import qs from 'qs';
 
 type Method = 'GET' | 'POST' | 'UPLOAD' | 'PUT' | 'PATCH' | 'DELETE';
 
+type Alerta = {
+  message: string;
+  callback?: Function;
+  fallback?: Function;
+  type: 'alert-success' | 'alert-danger' | 'confirm' | 'confirmAction';
+  label?: string;
+};
+
 function listErrors(r: String[]) {
   let o = '';
   if (typeof r === 'object') {
@@ -39,7 +47,9 @@ async function handleResponse(response: Response, alertarErros = true):Promise<o
       ?? response.status;
 
     if (alertarErros) {
-      alertStore.error(error);
+      if (!alertStore.alertas.some((alerta:Alerta) => alerta.message === error)) {
+        alertStore.error(error);
+      }
     }
     return Promise.reject(error);
   }

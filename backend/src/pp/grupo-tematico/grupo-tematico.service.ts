@@ -164,14 +164,13 @@ export class GrupoTematicoService {
             select: { id: true },
         });
 
-        // TODO ativar:
-        //        const emUso = await this.prisma.projeto.count({
-        //            where: {
-        //                grupo_tematico_id: id,
-        //                removido_em: null,
-        //            },
-        //        });
-        //        if (emUso > 0) throw new HttpException('Grupo temático tem obras vinculadas.', 400);
+        const emUso = await this.prisma.projeto.count({
+            where: {
+                grupo_tematico_id: id,
+                removido_em: null,
+            },
+        });
+        if (emUso > 0) throw new HttpException('Grupo temático tem obras vinculadas.', 400);
 
         return await this.prisma.grupoTematico.updateMany({
             where: {

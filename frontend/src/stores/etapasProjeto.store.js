@@ -9,11 +9,18 @@ function caminhoParaApi(rotaMeta) {
   ) {
     return 'workflow-etapa';
   }
+
   if (
     rotaMeta.prefixoParaFilhas === 'projeto'
     || rotaMeta.entidadeMãe === 'projeto'
   ) {
     return 'projeto-etapa';
+  }
+
+  if (
+    rotaMeta.entidadeMãe === 'obras'
+  ) {
+    return 'projeto-etapa-mdo';
   }
 
   throw new Error('Você precisa estar em algum módulo para executar essa ação.');
