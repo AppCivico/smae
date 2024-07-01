@@ -715,6 +715,9 @@ export class DistribuicaoRecursoService {
             }
             delete dto.registros_sei;
 
+            if (self.empenho == false && dto.empenho && dto.empenho == true && dto.data_empenho == undefined)
+                throw new HttpException('data_empenho| Obrigatório quando for empenho.', 400);
+
             if (dto.nome && dto.nome != self.nome) {
                 const similarExists = await prismaTx.distribuicaoRecurso.count({
                     where: {
