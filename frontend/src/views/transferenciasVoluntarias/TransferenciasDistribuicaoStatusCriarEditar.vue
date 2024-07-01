@@ -30,7 +30,7 @@
               <option
                 v-for="status in fluxoProjetoEmFoco?.statuses_distribuicao "
                 :key="status.id"
-                :value="status"
+                :value="status.id"
               >
                 {{ status.nome }}
               </option>
@@ -134,26 +134,27 @@
 </template>
 
 <script setup>
-import SmallModal from '@/components/SmallModal.vue';
-import { statusDistribuicao as schema } from '@/consts/formSchemas';
-import { useAlertStore } from '@/stores/alert.store';
-import { useOrgansStore } from '@/stores/organs.store';
-import { useStatusDistribuicaoStore } from '@/stores/statusDistribuicao.store';
-import { useFluxosProjetosStore } from '@/stores/fluxosProjeto.store';
 import { storeToRefs } from 'pinia';
 import {
   ErrorMessage,
   Field,
   useForm,
 } from 'vee-validate';
-import { watch } from 'vue';
+import { computed, watch } from 'vue';
+import SmallModal from '@/components/SmallModal.vue';
+import { statusDistribuicao as schema } from '@/consts/formSchemas';
+import { useAlertStore } from '@/stores/alert.store';
+import { useOrgansStore } from '@/stores/organs.store';
+import { useStatusDistribuicaoStore } from '@/stores/statusDistribuicao.store';
+import { useFluxosProjetosStore } from '@/stores/fluxosProjeto.store';
+import dateTimeToDate from '@/helpers/dateTimeToDate';
 
 const ÓrgãosStore = useOrgansStore();
 const fluxosProjetosStore = useFluxosProjetosStore();
 const statusDistribuicaoStore = useStatusDistribuicaoStore();
 
 const {
-  chamadasPendentes, erro, itemParaEdição,
+  chamadasPendentes, erro,
 } = storeToRefs(statusDistribuicaoStore);
 const { órgãosComoLista } = storeToRefs(ÓrgãosStore);
 const { emFoco: fluxoProjetoEmFoco } = storeToRefs(fluxosProjetosStore);
@@ -167,8 +168,8 @@ const props = defineProps({
     type: Number,
     required: true,
   },
-  statusId: {
-    type: Number,
+  statusEmFoco: {
+    type: Object,
     default: null,
   },
 });
@@ -177,10 +178,19 @@ const emit = defineEmits(['fecharModal', 'salvouStatus']);
 
 const alertStore = useAlertStore();
 
+const itemParaEdição = computed(() => ({
+  ...props.statusEmFoco,
+  status_id: props.statusEmFoco?.status_base
+    ? props.statusEmFoco.status_base.id
+    : props.statusEmFoco?.status_customizado.id,
+  data_troca: dateTimeToDate(props.statusEmFoco?.data_troca) || null,
+  orgao_responsavel_id: props.statusEmFoco?.orgao_responsavel.id,
+}));
+
 const {
-  errors, handleSubmit, isSubmitting, resetForm, setFieldValue, values,
+  errors, handleSubmit, isSubmitting, resetForm, setFieldValue,
 } = useForm({
-  initialValues: itemParaEdição,
+  initialValues: itemParaEdição.value,
   validationSchema: schema,
 });
 
@@ -197,12 +207,12 @@ const onSubmit = handleSubmit.withControlled(async (controlledValues) => {
 
   try {
     let response;
-    const msg = itemParaEdição.value.id
+    const msg = props.statusEmFoco.id
       ? 'Dados salvos com sucesso!'
       : 'Item adicionado com sucesso!';
 
-    if (itemParaEdição.value.id) {
-      response = await statusDistribuicaoStore.salvarItem(cargaManipulada, props.distribuicaoId, statusId);
+    if (props.statusEmFoco.id) {
+      response = await statusDistribuicaoStore.salvarItem(cargaManipulada, props.distribuicaoId, props.statusEmFoco.id);
     } else {
       response = await statusDistribuicaoStore.salvarItem(cargaManipulada, props.distribuicaoId);
     }
@@ -216,13 +226,10 @@ const onSubmit = handleSubmit.withControlled(async (controlledValues) => {
   }
 });
 
-watch(itemParaEdição, (novosValores) => {
+watch(props.statusEmFoco, (novosValores) => {
   resetForm({ values: novosValores });
 });
 
-if (props.statusId) {
-  statusDistribuicaoStore.buscarItem(props.statusId);
-}
 fluxosProjetosStore.buscarItem(props.transferenciaWorkflowId);
 </script>
 

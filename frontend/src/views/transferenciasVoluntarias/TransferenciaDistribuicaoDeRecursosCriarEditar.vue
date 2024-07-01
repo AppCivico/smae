@@ -1,14 +1,4 @@
 <script setup>
-import MaskedFloatInput from '@/components/MaskedFloatInput.vue';
-import { transferenciaDistribuicaoDeRecursos as schema } from '@/consts/formSchemas';
-import dateToField from '@/helpers/dateToField';
-import dinheiro from '@/helpers/dinheiro';
-import nulificadorTotal from '@/helpers/nulificadorTotal.ts';
-import truncate from '@/helpers/truncate';
-import { useAlertStore } from '@/stores/alert.store';
-import { useOrgansStore } from '@/stores/organs.store';
-import { useDistribuicaoRecursosStore } from '@/stores/transferenciasDistribuicaoRecursos.store';
-import { useTransferenciasVoluntariasStore } from '@/stores/transferenciasVoluntarias.store';
 import { vMaska } from 'maska';
 import { storeToRefs } from 'pinia';
 import {
@@ -25,6 +15,16 @@ import {
   ref,
   watch,
 } from 'vue';
+import MaskedFloatInput from '@/components/MaskedFloatInput.vue';
+import { transferenciaDistribuicaoDeRecursos as schema } from '@/consts/formSchemas';
+import dateToField from '@/helpers/dateToField';
+import dinheiro from '@/helpers/dinheiro';
+import nulificadorTotal from '@/helpers/nulificadorTotal.ts';
+import truncate from '@/helpers/truncate';
+import { useAlertStore } from '@/stores/alert.store';
+import { useOrgansStore } from '@/stores/organs.store';
+import { useDistribuicaoRecursosStore } from '@/stores/transferenciasDistribuicaoRecursos.store';
+import { useTransferenciasVoluntariasStore } from '@/stores/transferenciasVoluntarias.store';
 import TransferenciasDistribuicaoStatusCriarEditar from './TransferenciasDistribuicaoStatusCriarEditar.vue';
 
 const distribuicaoRecursos = useDistribuicaoRecursosStore();
@@ -48,6 +48,7 @@ const alertStore = useAlertStore();
 const mostrarDistribuicaoRegistroForm = ref(false);
 const camposModificados = ref(false);
 const exibirModalStatus = ref(false);
+const statusEmFoco = ref(null);
 
 const {
   errors, handleSubmit, isSubmitting, resetForm, setFieldValue, values,
@@ -134,6 +135,11 @@ async function iniciar() {
 function handleSalvouStatus() {
   exibirModalStatus.value = false;
   distribuicaoRecursos.$reset(); // como limpar direito
+}
+
+function abrirModalStatus(status = null) {
+  statusEmFoco.value = status;
+  exibirModalStatus.value = true;
 }
 
 iniciar();
@@ -952,6 +958,7 @@ const isSomaCorreta = computed(() => {
       <col>
       <col>
       <col>
+      <col>
       <thead>
         <tr>
           <th>DATA</th>
@@ -960,6 +967,7 @@ const isSomaCorreta = computed(() => {
           <th>RESPONSÁVEL</th>
           <th>MOTIVO</th>
           <th>TOTAL DE DIAS NO STATUS</th>
+          <th />
         </tr>
       </thead>
       <tbody>
@@ -973,6 +981,21 @@ const isSomaCorreta = computed(() => {
           <td>{{ item.nome_responsavel }}</td>
           <td>{{ item.motivo }}</td>
           <td>{{ item.dias_no_status }}</td>
+          <td>
+            <button
+              v-if="item.id === distribuiçãoEmFoco.historico_status[0].id"
+              class="like-a__text"
+              arial-label="editar"
+              title="editar"
+              type="button"
+              @click="abrirModalStatus(item)"
+            >
+              <svg
+                width="20"
+                height="20"
+              ><use xlink:href="#i_edit" /></svg>
+            </button>
+          </td>
         </tr>
       </tbody>
     </table>
@@ -981,7 +1004,7 @@ const isSomaCorreta = computed(() => {
     v-if="distribuiçãoEmFoco"
     class="like-a__text addlink"
     type="button"
-    @click="exibirModalStatus = true"
+    @click="abrirModalStatus(null)"
   >
     <svg
       width="20"
@@ -992,6 +1015,7 @@ const isSomaCorreta = computed(() => {
     v-if="exibirModalStatus"
     :transferencia-workflow-id="transferenciasVoluntariaEmFoco?.workflow_id"
     :distribuicao-id="distribuiçãoEmFoco?.id"
+    :status-em-foco="statusEmFoco"
     @fechar-modal="exibirModalStatus = false"
     @salvou-status="handleSalvouStatus"
   />
