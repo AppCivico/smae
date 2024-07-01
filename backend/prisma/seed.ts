@@ -933,9 +933,8 @@ async function main() {
         await ensure_tiponota_dist_recurso();
 
         await populateEleicao();
+        await populateDistribuicaoStatusBase();
     });
-
-    //await populateDistribuicaoStatusBase();
 }
 
 async function ensure_tiponota_dist_recurso() {
@@ -1419,33 +1418,53 @@ async function populateEleicao() {
     }
 }
 
-async function _populateDistribuicaoStatusBase() {
-    const rows = (Object.keys(DistribuicaoStatusTipo) as Array<keyof typeof DistribuicaoStatusTipo>).map((tipo) => {
-        const nome: string =
-            tipo == DistribuicaoStatusTipo.ImpedidaTecnicamente ? 'Impedida Tecnicamente' : tipo.toString();
+async function populateDistribuicaoStatusBase() {
+    const rowsStatusesBase = [
+        {
+            'nome': 'Finalizada',
+            'tipo': DistribuicaoStatusTipo.ConcluidoComSucesso,
+            'valor_distribuicao_contabilizado': true,
+            'permite_novos_registros': false,
+        },
+        {
+            'nome': 'Em Andamento',
+            'tipo': DistribuicaoStatusTipo.EmAndamento,
+            'valor_distribuicao_contabilizado': true,
+            'permite_novos_registros': true,
+        },
+        {
+            'nome': 'Registrada',
+            'tipo': DistribuicaoStatusTipo.NaoIniciado,
+            'valor_distribuicao_contabilizado': true,
+            'permite_novos_registros': true,
+        },
+        {
+            'nome': 'Cancelada',
+            'tipo': DistribuicaoStatusTipo.Terminal,
+            'valor_distribuicao_contabilizado': false,
+            'permite_novos_registros': false,
+        },
+        {
+            'nome': 'Impedida Tecnicamente',
+            'tipo': DistribuicaoStatusTipo.Terminal,
+            'valor_distribuicao_contabilizado': false,
+            'permite_novos_registros': false,
+        },
+        {
+            'nome': 'Declinada',
+            'tipo': DistribuicaoStatusTipo.Terminal,
+            'valor_distribuicao_contabilizado': true,
+            'permite_novos_registros': false,
+        },
+        {
+            'nome': 'Redirecionada',
+            'tipo': DistribuicaoStatusTipo.Terminal,
+            'valor_distribuicao_contabilizado': false,
+            'permite_novos_registros': false,
+        },
+    ];
 
-        return {
-            nome,
-            tipo,
-        };
-    });
-
-    for (const row of rows) {
-        let permite_novos_registros: boolean = true;
-        let valor_distribuicao_contabilizado: boolean = true;
-
-        if (
-            row.tipo == DistribuicaoStatusTipo.Cancelada ||
-            row.tipo == DistribuicaoStatusTipo.ImpedidaTecnicamente ||
-            row.tipo == DistribuicaoStatusTipo.Finalizada
-        ) {
-            permite_novos_registros = false;
-        }
-
-        if (row.tipo == DistribuicaoStatusTipo.Cancelada || row.tipo == DistribuicaoStatusTipo.ImpedidaTecnicamente) {
-            valor_distribuicao_contabilizado = false;
-        }
-
+    for (const row of rowsStatusesBase) {
         await prisma.distribuicaoStatusBase.upsert({
             where: {
                 nome_tipo: {
@@ -1456,14 +1475,14 @@ async function _populateDistribuicaoStatusBase() {
             create: {
                 nome: row.nome,
                 tipo: row.tipo,
-                valor_distribuicao_contabilizado,
-                permite_novos_registros,
+                valor_distribuicao_contabilizado: row.valor_distribuicao_contabilizado,
+                permite_novos_registros: row.permite_novos_registros,
             },
             update: {
                 nome: row.nome,
                 tipo: row.tipo,
-                valor_distribuicao_contabilizado,
-                permite_novos_registros,
+                valor_distribuicao_contabilizado: row.valor_distribuicao_contabilizado,
+                permite_novos_registros: row.permite_novos_registros,
             },
         });
     }
