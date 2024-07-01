@@ -19,9 +19,11 @@ if (authStore.estouAutenticada) {
 
 const erro = ref(null);
 
-onErrorCaptured((err) => {
-  erro.value = err;
-});
+// onErrorCaptured((err) => {
+//   erro.value = err;
+
+//   return false;
+// });
 </script>
 <template>
   <ErrorComponent
