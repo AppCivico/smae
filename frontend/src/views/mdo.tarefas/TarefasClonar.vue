@@ -117,8 +117,6 @@ export default {
       />
     </div>
 
-    <pre>obraEmFoco?.portfolio_id:{{ obraEmFoco?.portfolio_id }}</pre>
-
     <form
       :disabled="isSubmitting"
       @submit="onSubmit"
