@@ -14,20 +14,6 @@ export const useStatusDistribuicaoStore = defineStore('statusDistribuicaoStore',
     erro: null,
   }),
   actions: {
-    async buscarItem(idStatus, idDistribuicao = this.route.params.distribuicaoId, params = {}) {
-      this.chamadasPendentes.emFoco = true;
-      this.erro = null;
-
-      try {
-        const resposta = await this.requestS.get(`${baseUrl}/distribuicao-recurso/${idDistribuicao}/status/${idStatus}`, params);
-        this.emFoco = {
-          ...resposta,
-        };
-      } catch (erro) {
-        this.erro = erro;
-      }
-      this.chamadasPendentes.emFoco = false;
-    },
     async salvarItem(params = {}, idDistribuicao = 0, idStatus = 0) {
       this.chamadasPendentes.emFoco = true;
       this.erro = null;
@@ -48,10 +34,6 @@ export const useStatusDistribuicaoStore = defineStore('statusDistribuicaoStore',
     },
   },
   getters: {
-    itemParaEdição({ emFoco }) {
-      return {
-        ...emFoco,
-      };
-    },
+
   },
 });

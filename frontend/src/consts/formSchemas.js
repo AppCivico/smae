@@ -1579,7 +1579,7 @@ export const situacao = object({
 export const statusDistribuicao = object({
   status_id: object()
     .label('Status')
-    .required(),
+    .nullable(),
   data_troca: date()
     .label('Data')
     .max(dataMax)
