@@ -148,6 +148,7 @@ export class ParlamentarService {
             where: {
                 removido_em: null,
                 tem_mandato: filters.possui_mandatos,
+                cpf: filters.cpf,
                 mandatos: {
                     some: filterSuplente ? { ...filterSuplente } : undefined,
                 },
