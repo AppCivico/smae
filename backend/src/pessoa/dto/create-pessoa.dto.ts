@@ -9,7 +9,9 @@ import {
     IsString,
     MaxLength,
     MinLength,
+    ValidateIf,
 } from 'class-validator';
+import { IsValidCPF } from '../../common/decorators/IsValidCPF';
 
 export class CreatePessoaDto {
     /**
@@ -87,8 +89,8 @@ export class CreatePessoaDto {
      * @example xxx.xxx.xxx-xx
      */
     @IsOptional()
-    @IsString({ message: '$property| cpf: Precisa ser alfanumérico' })
-    @MaxLength(14, { message: '$property| cpf: Máximo 14 caracteres' })
+    @IsValidCPF()
+    @ValidateIf((object, value) => value)
     cpf?: string;
 
     @IsArray()
