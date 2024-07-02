@@ -154,6 +154,7 @@ export class ParlamentarService {
                 cargo_mais_recente: true,
                 partido_mais_recente: true,
                 tem_mandato: true,
+                cpf: true,
             },
             orderBy: [{ nome_popular: 'asc' }],
             skip: offset,
@@ -177,6 +178,7 @@ export class ParlamentarService {
                 //TODO: combinar com o front para usar o boolean e não essa arr hardcoded.
                 tem_mandato: p.tem_mandato,
                 mandatos: p.tem_mandato ? ['2022'] : null,
+                cpf: p.cpf ?? '000.000.000-00',
             };
         });
 

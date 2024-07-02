@@ -33,6 +33,7 @@ export class ParlamentarDto {
     nome_popular: string | null;
     em_atividade: boolean;
 
+    cpf: string;
     partido: PartidoDto | null;
     cargo: ParlamentarCargo | null;
     eleicoes: number[] | null;
