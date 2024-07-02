@@ -6,7 +6,6 @@ async function bootstrap() {
     // desliga os crontab do 'fork'
     process.env.ENABLED_CRONTABS = '';
 
-    if (process.send) process.send({ x: 'started' });
     const app = await NestFactory.createApplicationContext(AppModule);
 
     const taskService = app.get(TaskService);

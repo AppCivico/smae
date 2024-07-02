@@ -34,6 +34,7 @@
   },
   "dependencies": {
     "@dagrejs/graphlib": "^2.1.13",
+    "@json2csv/plainjs": "^7.0.6",
     "@nestjs/common": "^10.3.9",
     "@nestjs/config": "^3.2.2",
     "@nestjs/core": "^10.3.9",
