@@ -23,6 +23,7 @@
               as="select"
               class="inputtext light mb1"
               :class="{ error: errors.status_id }"
+              :disabled="itemParaEdição.id"
             >
               <option value="">
                 Selecionar
