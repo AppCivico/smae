@@ -11,6 +11,7 @@ import { Transform, TransformFnParams } from 'class-transformer';
 import { IsBoolean, IsEnum, IsNumber, IsOptional, IsString, MaxLength, MinLength, ValidateIf } from 'class-validator';
 import { IsOnlyDate } from 'src/common/decorators/IsDateOnly';
 import { DateTransform } from '../../auth/transforms/date.transform';
+import { IsValidCPF } from '../../common/decorators/IsValidCPF';
 
 export class CreateParlamentarDto {
     @IsString({ message: '$property| nome: Precisa ser alfanumérico' })
@@ -53,6 +54,9 @@ export class CreateParlamentarDto {
     @ValidateIf((object, value) => value !== null)
     @IsString({ message: '$property| upload_token de um arquivo de foto' })
     upload_foto?: string | null;
+
+    @IsValidCPF()
+    cpf: string;
 }
 
 export class CreateEquipeDto {
