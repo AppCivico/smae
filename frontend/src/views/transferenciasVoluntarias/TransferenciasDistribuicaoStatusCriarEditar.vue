@@ -198,9 +198,9 @@ const {
 const onSubmit = handleSubmit.withControlled(async (controlledValues) => {
   const cargaManipulada = {
     ...controlledValues,
-    ...(controlledValues.status_id.status_base
-      ? { status_base_id: controlledValues.status_id }
-      : { status_id: controlledValues.status_id }),
+    ...(controlledValues.status_id < 1000000
+      ? { status_base_id: controlledValues.status_id, status_id: null }
+      : { status_id: controlledValues.status_id, status_base_id: null }),
   };
 
   try {
