@@ -132,9 +132,9 @@ async function iniciar() {
   ÓrgãosStore.getAll();
 }
 
-function handleSalvouStatus() {
+async function handleSalvouStatus() {
   exibirModalStatus.value = false;
-  distribuicaoRecursos.buscarItem(distribuiçãoEmFoco.value.id);
+  await distribuicaoRecursos.buscarItem(distribuiçãoEmFoco.value.id);
 }
 
 function abrirModalStatus(status = null) {
