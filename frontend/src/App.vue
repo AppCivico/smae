@@ -2,6 +2,7 @@
 import { Alert, EditModal, SideBar } from '@/components';
 import { useAuthStore } from '@/stores/auth.store';
 import { onErrorCaptured, provide, ref } from 'vue';
+import { onBeforeRouteUpdate } from 'vue-router';
 import BarraDePendência from './components/BarraDeChamadaPendente.vue';
 
 const gblLimiteDeSeleçãoSimultânea = Number.parseInt(
@@ -19,11 +20,17 @@ if (authStore.estouAutenticada) {
 
 const erro = ref(null);
 
-// onErrorCaptured((err) => {
-//   erro.value = err;
-
-//   return false;
-// });
+if (import.meta.env.VITE_EXPOR_ERROS === 'true' || import.meta.env.DEV) {
+  onErrorCaptured((err) => {
+    erro.value = err;
+    return false;
+  });
+  onBeforeRouteUpdate(() => {
+    if (erro.value) {
+      erro.value = null;
+    }
+  });
+}
 </script>
 <template>
   <ErrorComponent
