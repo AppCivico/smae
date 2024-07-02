@@ -4783,8 +4783,6 @@ model Parlamentar {
     foto_upload_id Int?
     foto           Arquivo? @relation(fields: [foto_upload_id], references: [id])
 
-    cpf                  String?
-
     cargo_mais_recente   ParlamentarCargo?
     partido_mais_recente String?
     tem_mandato          Boolean?
