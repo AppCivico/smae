@@ -197,22 +197,19 @@ const {
 
 const onSubmit = handleSubmit.withControlled(async (controlledValues) => {
   const cargaManipulada = {
-    data_troca: controlledValues.data_troca,
-    motivo: controlledValues.motivo,
-    nome_responsavel: controlledValues.nome_responsavel,
-    orgao_responsavel_id: controlledValues.orgao_responsavel_id,
+    ...controlledValues,
     ...(controlledValues.status_id.status_base
-      ? { status_base_id: controlledValues.status_id.id }
-      : { status_id: controlledValues.status_id.id }),
+      ? { status_base_id: controlledValues.status_id }
+      : { status_id: controlledValues.status_id }),
   };
 
   try {
     let response;
-    const msg = props.statusEmFoco.id
+    const msg = props.statusEmFoco?.id
       ? 'Dados salvos com sucesso!'
       : 'Item adicionado com sucesso!';
 
-    if (props.statusEmFoco.id) {
+    if (props.statusEmFoco?.id) {
       response = await statusDistribuicaoStore.salvarItem(cargaManipulada, props.distribuicaoId, props.statusEmFoco.id);
     } else {
       response = await statusDistribuicaoStore.salvarItem(cargaManipulada, props.distribuicaoId);
