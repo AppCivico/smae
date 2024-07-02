@@ -8,6 +8,7 @@ import { AppModuleCommon } from './app.module.common';
 import { INestApplication } from '@nestjs/common';
 import { AppModulePdm } from './app.module.pdm';
 import { BlocoNotasModule } from './bloco-nota/bloco-notas.module';
+import { Request, Response } from 'express';
 
 const winston = require('winston'),
     expressWinston = require('express-winston');
@@ -75,6 +76,14 @@ Usar o link do do swagger + "-json"
             ],
             meta: true,
             msg: 'HTTP_DEBUG {{res.statusCode}} {{req.method}} {{res.responseTime}}ms {{req.url}}',
+            ignoreRoute: (req: Request, _res: Response) => {
+                if (req.url.startsWith('/api/relatorio/')) return true;
+
+                return false;
+            },
+            skip: (_req: Request, res: Response) => {
+                return res.statusCode < 400;
+            },
         })
     );
     expressWinston.requestWhitelist.push('body');

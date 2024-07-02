@@ -14,6 +14,6 @@ export class ProjetoOrcamentoController {
     @ApiBearerAuth('access-token')
     @Roles(['Reports.executar.Projetos'])
     async create(@Body() createPrevisaoCustDto: CreateRelProjetoOrcamentoDto): Promise<ListOrcamentoExecutadoDto> {
-        return await this.orcamentoExecutadoService.create(createPrevisaoCustDto);
+        return await this.orcamentoExecutadoService.asJSON(createPrevisaoCustDto);
     }
 }

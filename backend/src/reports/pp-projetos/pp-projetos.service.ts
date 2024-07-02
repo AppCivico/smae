@@ -9,7 +9,7 @@ import { RiscoCalc } from 'src/common/RiscoCalc';
 import { TarefaService } from 'src/pp/tarefa/tarefa.service';
 import { TarefaUtilsService } from 'src/pp/tarefa/tarefa.service.utils';
 import { ProjetoRiscoStatus } from '../../pp/risco/entities/risco.entity';
-import { DefaultCsvOptions, FileOutput, ReportableService } from '../utils/utils.service';
+import { DefaultCsvOptions, FileOutput, ReportContext, ReportableService } from '../utils/utils.service';
 import { CreateRelProjetosDto } from './dto/create-projetos.dto';
 import {
     PPProjetosRelatorioDto,
@@ -194,7 +194,7 @@ export class PPProjetosService implements ReportableService {
         @Inject(forwardRef(() => TarefaUtilsService)) private readonly tarefasUtilsService: TarefaUtilsService
     ) {}
 
-    async create(dto: CreateRelProjetosDto): Promise<PPProjetosRelatorioDto> {
+    async asJSON(dto: CreateRelProjetosDto): Promise<PPProjetosRelatorioDto> {
         const out_projetos: RelProjetosDto[] = [];
         const out_cronogramas: RelProjetosCronogramaDto[] = [];
         const out_riscos: RelProjetosRiscosDto[] = [];
@@ -224,8 +224,9 @@ export class PPProjetosService implements ReportableService {
         };
     }
 
-    async getFiles(myInput: any, pdm_id: number, params: any): Promise<FileOutput[]> {
-        const dados = myInput as PPProjetosRelatorioDto;
+    async toFileOutput(params: CreateRelProjetosDto, ctx: ReportContext): Promise<FileOutput[]> {
+        const dados = await this.asJSON(params);
+        await ctx.progress(50);
 
         const out: FileOutput[] = [];
 

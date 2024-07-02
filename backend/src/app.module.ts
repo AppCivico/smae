@@ -19,6 +19,7 @@ import { DashTransferenciaModule } from './casa-civil/dash/transferencia.module'
 import { TransferenciaModule } from './casa-civil/transferencia/transferencia.module';
 import { LoggerMiddleware } from './common/middleware/logger.middleware';
 import { TrimPipe } from './common/pipes/trim-pipe';
+import { CommonBaseModule } from './common/services/base.module';
 import { ContentInterceptor } from './content.interceptor';
 import { CronogramaEtapaModule } from './cronograma-etapas/cronograma-etapas.module';
 import { CTPConfigModule } from './cronograma-termino-planejado-config/ctp-config.module';
@@ -99,7 +100,8 @@ import { WorkflowModule } from './workflow/configuracao/workflow.module';
         WorkflowAndamentoFaseModule,
         BlocoNotasModule,
         DashTransferenciaModule,
-        PessoaPrivilegioModule
+        PessoaPrivilegioModule,
+        CommonBaseModule
     ],
     controllers: [AppController],
     providers: [

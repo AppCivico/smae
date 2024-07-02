@@ -14,6 +14,6 @@ export class ParlamentaresController {
     @ApiBearerAuth('access-token')
     @Roles(['Reports.executar.CasaCivil'])
     async create(@Body() createParlamentaresDto: CreateRelParlamentaresDto): Promise<ParlamentaresRelatorioDto> {
-        return await this.parlamentares.create(createParlamentaresDto);
+        return await this.parlamentares.asJSON(createParlamentaresDto);
     }
 }

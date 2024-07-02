@@ -3,6 +3,12 @@ import { Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { DiretorioDto, DiretorioItemDto, FilterDiretorioDto } from './dto/diretorio.dto';
 
+type DiretorioFields = {
+    projeto_id?: number | null;
+    transferencia_id?: number | null;
+    pdm_id?: number | null;
+};
+
 @Injectable()
 export class UploadDiretorioService {
     constructor(private readonly prisma: PrismaService) {}
@@ -28,6 +34,8 @@ export class UploadDiretorioService {
     }
 
     async create(dto: DiretorioDto): Promise<void> {
+        this.verificaMutualidade(dto);
+
         await this.prisma.$transaction(
             async (prismaTx: Prisma.TransactionClient) => {
                 const dirExiting = new Set<string>();
@@ -35,6 +43,8 @@ export class UploadDiretorioService {
                 const dbRows = await prismaTx.diretorio.findMany({
                     where: {
                         projeto_id: dto.projeto_id,
+                        transferencia_id: dto.transferencia_id,
+                        pdm_id: dto.pdm_id,
                     },
                     select: {
                         caminho: true,
@@ -61,6 +71,23 @@ export class UploadDiretorioService {
         );
     }
 
+    private verificaMutualidade(dto: DiretorioFields) {
+        if (
+            (dto.projeto_id && dto.transferencia_id) ||
+            (dto.projeto_id && dto.pdm_id) ||
+            (dto.transferencia_id && dto.pdm_id)
+        ) {
+            throw new HttpException('Os campos projeto_id, transferencia_id e pdm_id são mutuamente exclusivos', 400);
+        }
+
+        // at least one of the fields must be filled
+        if (!dto.projeto_id && !dto.transferencia_id && !dto.pdm_id)
+            throw new HttpException(
+                'Pelo menos um dos campos projeto_id, transferencia_id ou pdm_id deve ser preenchido',
+                400
+            );
+    }
+
     normalizaCaminho(caminho: string): string {
         // Replace non-standard spaces with standard space (0x20)
         let cleanedPath = caminho.replace(/\s+/g, ' ');
@@ -79,6 +106,8 @@ export class UploadDiretorioService {
     }
 
     async listAll(filters: FilterDiretorioDto): Promise<DiretorioItemDto[]> {
+        this.verificaMutualidade(filters);
+
         const linhas = await this.prisma.diretorio.findMany({
             where: {
                 projeto_id: filters.projeto_id,
@@ -104,7 +133,11 @@ export class UploadDiretorioService {
                 if (!self)
                     throw new HttpException(`Diretório não encontrado, atualize a página e tente novamente.`, 404);
 
-                await this.removeFilhos(prismaTx, self.caminho);
+                await this.removeFilhos(prismaTx, self.caminho, {
+                    projeto_id: self.projeto_id,
+                    transferencia_id: self.transferencia_id,
+                    pdm_id: self.pdm_id,
+                });
             },
             {
                 isolationLevel: 'Serializable',
@@ -112,9 +145,12 @@ export class UploadDiretorioService {
         );
     }
 
-    private async removeFilhos(prismaTx: Prisma.TransactionClient, path: string): Promise<void> {
+    private async removeFilhos(prismaTx: Prisma.TransactionClient, path: string, dto: DiretorioFields): Promise<void> {
         const dirToRemove = await prismaTx.diretorio.findMany({
             where: {
+                projeto_id: dto.projeto_id,
+                transferencia_id: dto.transferencia_id,
+                pdm_id: dto.pdm_id,
                 caminho: {
                     startsWith: path,
                 },

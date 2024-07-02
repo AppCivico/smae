@@ -1,11 +1,11 @@
 import { Module } from '@nestjs/common';
 import { PrismaModule } from '../../prisma/prisma.module';
-import { PPStatusController } from './pp-status.controller';
+import { MDOStatusController, PPStatusController } from './pp-status.controller';
 import { PPStatusService } from './pp-status.service';
 
 @Module({
     imports: [PrismaModule],
-    controllers: [PPStatusController],
+    controllers: [PPStatusController, MDOStatusController],
     providers: [PPStatusService],
     exports: [PPStatusService],
 })

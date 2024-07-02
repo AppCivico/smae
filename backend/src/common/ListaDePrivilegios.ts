@@ -200,4 +200,13 @@ export type ListaDePrivilegios =
     | 'ProjetoMDO.orcamento'
     | 'MDO.gestor_de_projeto'
     | 'MDO.colaborador_de_projeto'
-    | 'MDO.espectador_de_projeto';
+    | 'MDO.espectador_de_projeto'
+    | 'ModalidadeContratacaoMDO.inserir'
+    | 'ModalidadeContratacaoMDO.editar'
+    | 'ModalidadeContratacaoMDO.remover'
+    | 'ProjetoProgramaMDO.inserir'
+    | 'ProjetoProgramaMDO.editar'
+    | 'ProjetoProgramaMDO.remover'
+    | 'TipoAditivoMDO.inserir'
+    | 'TipoAditivoMDO.editar'
+    | 'TipoAditivoMDO.remover';
