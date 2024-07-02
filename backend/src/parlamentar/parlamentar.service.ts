@@ -49,6 +49,11 @@ export class ParlamentarService {
 
         const created = await this.prisma.$transaction(
             async (prismaTxn: Prisma.TransactionClient): Promise<RecordWithId> => {
+                const cpfExists = await prismaTxn.parlamentar.count({
+                    where: { cpf: dto.cpf, removido_em: null },
+                });
+                if (cpfExists) throw new HttpException('cpf| CPF já cadastrado.', 400);
+
                 const parlamentar = await prismaTxn.parlamentar.create({
                     data: {
                         nome: dto.nome,
@@ -66,7 +71,8 @@ export class ParlamentarService {
                 });
 
                 return parlamentar;
-            }
+            },
+            { isolationLevel: 'Serializable' }
         );
 
         return created;
@@ -418,6 +424,13 @@ export class ParlamentarService {
         const now = new Date(Date.now());
         const updated = await this.prisma.$transaction(
             async (prismaTxn: Prisma.TransactionClient): Promise<RecordWithId> => {
+                if (dto.cpf) {
+                    const cpfExists = await prismaTxn.parlamentar.count({
+                        where: { cpf: dto.cpf, removido_em: null, id: { not: id } },
+                    });
+                    if (cpfExists) throw new HttpException('cpf| CPF já cadastrado.', 400);
+                }
+
                 const parlamentar = await prismaTxn.parlamentar.update({
                     where: { id: id },
                     data: {
@@ -436,7 +449,8 @@ export class ParlamentarService {
                 });
 
                 return parlamentar;
-            }
+            },
+            { isolationLevel: 'Serializable' }
         );
 
         return updated;
