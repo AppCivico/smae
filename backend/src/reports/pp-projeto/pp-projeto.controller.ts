@@ -14,6 +14,6 @@ export class PPProjetoController {
     @ApiBearerAuth('access-token')
     @Roles(['Reports.executar.Projetos'])
     async create(@Body() createPrevisaoCustDto: CreateRelProjetoDto): Promise<PPProjetoRelatorioDto> {
-        return await this.projeto.create(createPrevisaoCustDto);
+        return await this.projeto.asJSON(createPrevisaoCustDto);
     }
 }

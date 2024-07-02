@@ -4,10 +4,11 @@ import { Readable } from 'stream';
 import { Date2YMD } from '../../common/date2ymd';
 import { PrismaService } from '../../prisma/prisma.service';
 import { RegiaoBasica as RegiaoDto } from '../../regiao/entities/regiao.entity';
-import { DefaultCsvOptions, FileOutput, ReportableService, UtilsService } from '../utils/utils.service';
+import { DefaultCsvOptions, FileOutput, ReportContext, ReportableService, UtilsService } from '../utils/utils.service';
 import { CreateRelIndicadorDto, CreateRelIndicadorRegioesDto } from './dto/create-indicadores.dto';
 import { ListIndicadoresDto, RelIndicadoresDto, RelIndicadoresVariaveisDto } from './entities/indicadores.entity';
 import { DateTime } from 'luxon';
+import { EmitErrorAndDestroyStream, Stream2PromiseIntoArray } from '../../common/helpers/Streaming';
 const BATCH_SIZE = 500;
 const CREATE_TEMP_TABLE = 'CREATE TEMP TABLE _report_data ON COMMIT DROP AS';
 class RetornoDb {
@@ -48,25 +49,6 @@ class RetornoDbRegiao extends RetornoDb {
     regiao_id: number;
 }
 
-function errStream(stream: Readable): ((reason: any) => void | PromiseLike<void>) | null | undefined {
-    return (err) => {
-        stream.emit('error', { err });
-        stream.destroy();
-    };
-}
-const readStreamPromise = (queryStream: Readable, outputArray: any[]) => {
-    return new Promise((resolve, reject) => {
-        queryStream
-            .on('data', (chunk) => {
-                outputArray.push(chunk);
-            })
-            .on('end', () => {
-                resolve(true);
-            })
-            .on('error', reject);
-    });
-};
-
 const {
     Parser,
     transforms: { flatten },
@@ -83,8 +65,14 @@ export class IndicadoresService implements ReportableService {
         private readonly utils: UtilsService
     ) {}
 
-    async create(dto: CreateRelIndicadorDto): Promise<ListIndicadoresDto> {
+    async asJSON(dto: CreateRelIndicadorDto): Promise<ListIndicadoresDto> {
         const indicadores = await this.filtraIndicadores(dto);
+
+        if (indicadores.length >= 100)
+            throw new HttpException(
+                `Mais de 100 indicadores encontrados, por favor, refine sua busca ou utilize os endpoints streaming.`,
+                400
+            );
 
         const out: RelIndicadoresDto[] = [];
         const out_regioes: RelIndicadoresVariaveisDto[] = [];
@@ -97,7 +85,7 @@ export class IndicadoresService implements ReportableService {
                 dto,
                 linhasDataStream
             ),
-            readStreamPromise(linhasDataStream, out),
+            Stream2PromiseIntoArray(linhasDataStream, out),
         ]);
 
         const regioesDataStream = new Readable({ objectMode: true, read() {} });
@@ -108,7 +96,7 @@ export class IndicadoresService implements ReportableService {
                 dto,
                 regioesDataStream
             ),
-            readStreamPromise(regioesDataStream, out_regioes),
+            Stream2PromiseIntoArray(regioesDataStream, out_regioes),
         ]);
 
         return {
@@ -126,9 +114,9 @@ export class IndicadoresService implements ReportableService {
                     indicadores.map((r) => r.id),
                     dto,
                     stream
-                ).catch(errStream(stream));
+                ).catch(EmitErrorAndDestroyStream(stream));
             })
-            .catch(errStream(stream));
+            .catch(EmitErrorAndDestroyStream(stream));
 
         return stream;
     }
@@ -142,9 +130,9 @@ export class IndicadoresService implements ReportableService {
                     indicadores.map((r) => r.id),
                     dto,
                     stream
-                ).catch(errStream(stream));
+                ).catch(EmitErrorAndDestroyStream(stream));
             })
-            .catch(errStream(stream));
+            .catch(EmitErrorAndDestroyStream(stream));
 
         return stream;
     }
@@ -477,9 +465,26 @@ export class IndicadoresService implements ReportableService {
         });
     }
 
-    async getFiles(myInput: any, pdm_id: number, params: any): Promise<FileOutput[]> {
-        const dados = myInput as ListIndicadoresDto;
-        const pdm = await this.prisma.pdm.findUniqueOrThrow({ where: { id: pdm_id } });
+    async toFileOutput(params: CreateRelIndicadorDto, ctx: ReportContext): Promise<FileOutput[]> {
+        // no atual momento, tudo aqui é uma reimplementação completa do método asJSON
+        // porém, desta nova forma é possível gerar arquivos CSV a partir dos dados do streaming
+        // sem a necessidade de armazenar todos os dados em memória duma vez
+        const indicadores = await this.filtraIndicadores(params);
+        await ctx.progress(1);
+
+        let linhas: RelIndicadoresDto[] = [];
+
+        const linhasDataStream = new Readable({ objectMode: true, read() {} });
+        await Promise.all([
+            this.queryData(
+                indicadores.map((r) => r.id),
+                params,
+                linhasDataStream
+            ),
+            Stream2PromiseIntoArray(linhasDataStream, linhas),
+        ]);
+
+        const pdm = await this.prisma.pdm.findUniqueOrThrow({ where: { id: params.pdm_id } });
         const out: FileOutput[] = [];
 
         const camposMetaIniAtv = [
@@ -514,7 +519,7 @@ export class IndicadoresService implements ReportableService {
             { value: 'indicador.id', label: 'ID do Indicador' },
         ];
 
-        if (dados.linhas.length) {
+        if (linhas.length) {
             const json2csvParser = new Parser({
                 ...DefaultCsvOptions,
                 transforms: defaultTransform,
@@ -526,14 +531,29 @@ export class IndicadoresService implements ReportableService {
                     'valor',
                 ],
             });
-            const linhas = json2csvParser.parse(dados.linhas);
+            const linhasBuff = json2csvParser.parse(linhas);
             out.push({
                 name: 'indicadores.csv',
-                buffer: Buffer.from(linhas, 'utf8'),
+                buffer: Buffer.from(linhasBuff, 'utf8'),
             });
-        }
 
-        if (dados.regioes.length) {
+            linhas = [];
+        }
+        await ctx.progress(50);
+
+        let regioes: RelIndicadoresVariaveisDto[] = [];
+        const regioesDataStream = new Readable({ objectMode: true, read() {} });
+
+        await Promise.all([
+            this.queryDataRegiao(
+                indicadores.map((r) => r.id),
+                params,
+                regioesDataStream
+            ),
+            Stream2PromiseIntoArray(regioesDataStream, regioes),
+        ]);
+
+        if (regioes.length) {
             const json2csvParser = new Parser({
                 ...DefaultCsvOptions,
                 transforms: defaultTransform,
@@ -566,13 +586,15 @@ export class IndicadoresService implements ReportableService {
                     'valor',
                 ],
             });
-            const linhas = json2csvParser.parse(dados.regioes);
+            const linhasBuff = json2csvParser.parse(regioes);
             out.push({
                 name: 'regioes.csv',
-                buffer: Buffer.from(linhas, 'utf8'),
+                buffer: Buffer.from(linhasBuff, 'utf8'),
             });
+            regioes = [];
         }
 
+        await ctx.progress(99);
         return [
             {
                 name: 'info.json',

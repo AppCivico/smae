@@ -3,7 +3,7 @@ import { DateTime } from 'luxon';
 import { Date2YMD, SYSTEM_TIMEZONE } from '../../common/date2ymd';
 import { DotacaoService } from '../../dotacao/dotacao.service';
 import { PrismaService } from '../../prisma/prisma.service';
-import { DefaultCsvOptions, FileOutput, ReportableService, UtilsService } from '../utils/utils.service';
+import { DefaultCsvOptions, FileOutput, ReportContext, ReportableService, UtilsService } from '../utils/utils.service';
 import { PeriodoRelatorioPrevisaoCustoDto, SuperCreateRelPrevisaoCustoDto } from './dto/create-previsao-custo.dto';
 import { ListPrevisaoCustoDto } from './entities/previsao-custo.entity';
 
@@ -21,9 +21,8 @@ export class PrevisaoCustoService implements ReportableService {
         private readonly dotacaoService: DotacaoService
     ) {}
 
-    async create(dto: SuperCreateRelPrevisaoCustoDto): Promise<ListPrevisaoCustoDto> {
+    async asJSON(dto: SuperCreateRelPrevisaoCustoDto): Promise<ListPrevisaoCustoDto> {
         let ano: number;
-
         let filtroMetas: number[] | undefined = undefined;
 
         // sem portfolio_id e sem projeto_id = filtra por meta
@@ -89,10 +88,12 @@ export class PrevisaoCustoService implements ReportableService {
         return partes.join('.');
     }
 
-    async getFiles(myInput: any, pdm_id: number | null, params: any): Promise<FileOutput[]> {
-        const dados = myInput as ListPrevisaoCustoDto;
+    async toFileOutput(params: SuperCreateRelPrevisaoCustoDto, ctx: ReportContext): Promise<FileOutput[]> {
+        // em teoria custo previsto pode ficar pesado, mas por enquanto não temos muitos registros
+        const dados = await this.asJSON(params);
+        await ctx.progress(50);
 
-        const pdm = pdm_id ? await this.prisma.pdm.findUniqueOrThrow({ where: { id: pdm_id } }) : null;
+        const pdm = await this.prisma.pdm.findUnique({ where: { id: params.pdm_id } });
 
         const out: FileOutput[] = [];
 
@@ -142,6 +143,7 @@ export class PrevisaoCustoService implements ReportableService {
                 buffer: Buffer.from(linhas, 'utf8'),
             });
         }
+        await ctx.progress(99);
 
         return [
             {

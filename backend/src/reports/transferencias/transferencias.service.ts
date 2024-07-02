@@ -98,7 +98,7 @@ export class TransferenciasService implements ReportableService {
         private readonly tarefaService: TarefaService
     ) {}
 
-    async create(dto: CreateRelTransferenciasDto): Promise<TransferenciasRelatorioDto> {
+    async asJSON(dto: CreateRelTransferenciasDto): Promise<TransferenciasRelatorioDto> {
         const whereCond = await this.buildFilteredWhereStr(dto);
 
         const out_transferencias: RelTransferenciasDto[] = [];
@@ -369,7 +369,7 @@ export class TransferenciasService implements ReportableService {
         }
     }
 
-    async getFiles(myInput: any, params: any): Promise<FileOutput[]> {
+    async toFileOutput(myInput: any, params: any): Promise<FileOutput[]> {
         const dados = myInput as TransferenciasRelatorioDto;
 
         const out: FileOutput[] = [];

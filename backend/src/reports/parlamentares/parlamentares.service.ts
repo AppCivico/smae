@@ -1,10 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { Date2YMD } from '../../common/date2ymd';
 import { PrismaService } from '../../prisma/prisma.service';
-import { DefaultCsvOptions, FileOutput, ReportableService } from '../utils/utils.service';
+import { DefaultCsvOptions, FileOutput, ReportContext, ReportableService } from '../utils/utils.service';
 import { CreateRelParlamentaresDto } from './dto/create-parlamentares.dto';
 import { ParlamentaresRelatorioDto, RelParlamentaresDto } from './entities/parlamentares.entity';
 import { ParlamentarService } from 'src/parlamentar/parlamentar.service';
+import { Prisma } from '@prisma/client';
 
 const {
     Parser,
@@ -19,86 +20,73 @@ export class ParlamentaresService implements ReportableService {
         private readonly parlamentarService: ParlamentarService
     ) {}
 
-    async create(dto: CreateRelParlamentaresDto): Promise<ParlamentaresRelatorioDto> {
-        if (dto.cargo === null) dto.cargo = undefined;
-        if (dto.partido_id == 0) dto.partido_id = undefined;
-        if (dto.eleicao_id == 0) dto.eleicao_id = undefined;
+    async asJSON(dto: CreateRelParlamentaresDto): Promise<ParlamentaresRelatorioDto> {
+        this.ajustaParams(dto);
 
-        const parlamentares = await this.prisma.parlamentar.findMany({
-            where: {
-                removido_em: null,
-            },
-            select: {
-                id: true,
-                nascimento: true,
-                nome: true,
-                nome_popular: true,
-                mandatos: {
-                    where: {
-                        removido_em: null,
-                        partido_atual_id: dto.partido_id,
-                        eleicao: {
-                            id: dto.eleicao_id,
-                        },
-                        cargo: dto.cargo,
-                    },
-                    select: {
-                        id: true,
-                        cargo: true,
-                        endereco: true,
-                        gabinete: true,
-                        telefone: true,
-                        email: true,
-                        suplencia: true,
-                        uf: true,
-                        partido_atual: {
-                            select: {
-                                sigla: true,
-                            },
-                        },
-                        eleicao: {
-                            select: {
-                                ano: true,
-                                tipo: true,
-                            },
-                        },
-                    },
-                },
-            },
-        });
+        // a base tende a ser grande, então aqui provavelmente tbm seria bom ter o streaming
+        const parlamentaresOut: RelParlamentaresDto[] = await this.buscaParlamentar(dto);
 
-        const parlamentaresOut: RelParlamentaresDto[] = [];
-        for (const parlamentar of parlamentares) {
-            for (const mandato of parlamentar.mandatos) {
-                parlamentaresOut.push({
-                    id: parlamentar.id,
-                    nome_civil: parlamentar.nome,
-                    nome_parlamentar: parlamentar.nome_popular,
-                    partido_sigla: mandato.partido_atual.sigla,
-                    cargo: mandato.cargo,
-                    uf: mandato.uf,
-                    titular_suplente: mandato.suplencia ? 'S' : 'T',
-                    endereco: mandato.endereco,
-                    gabinete: mandato.gabinete,
-                    telefone: mandato.telefone,
-                    dia_aniversario: parlamentar.nascimento ? parlamentar.nascimento.getDate() : null,
-                    mes_aniversario: parlamentar.nascimento ? parlamentar.nascimento.getMonth() : null,
-                    email: mandato.email,
-                    ano_eleicao: mandato.eleicao.ano,
-                });
-            }
-        }
         return {
             linhas: parlamentaresOut,
         };
     }
 
-    async getFiles(myInput: any, params: any): Promise<FileOutput[]> {
-        const dados = myInput as ParlamentaresRelatorioDto;
+    private async buscaParlamentar(
+        dto: CreateRelParlamentaresDto,
+        prismaCtx?: PrismaService | Prisma.TransactionClient
+    ): Promise<RelParlamentaresDto[]> {
+        const prismaTx = prismaCtx || this.prisma;
+
+        const parlamentares = await prismaTx.view_parlamentares_mandatos_part_atual.findMany({
+            where: {
+                eleicao_id: dto.eleicao_id,
+                partido_atual_id: dto.partido_id,
+                cargo: dto.cargo,
+            },
+            orderBy: {
+                id: 'asc',
+            },
+        });
+
+        const parlamentaresOut: RelParlamentaresDto[] = [];
+        for (const r of parlamentares) {
+            parlamentaresOut.push({
+                id: r.id,
+                nome_civil: r.nome_civil,
+                nome_parlamentar: r.nome_parlamentar,
+                partido_sigla: r.partido_sigla,
+                cargo: r.cargo,
+                uf: r.uf,
+                titular_suplente: r.titular_suplente,
+                endereco: r.endereco,
+                gabinete: r.gabinete,
+                telefone: r.telefone,
+                dia_aniversario: r.dia_aniversario,
+                mes_aniversario: r.mes_aniversario,
+                email: r.email,
+                ano_eleicao: r.ano_eleicao,
+            });
+        }
+        return parlamentaresOut;
+    }
+
+    private ajustaParams(dto: CreateRelParlamentaresDto) {
+        if (dto.cargo === null) dto.cargo = undefined;
+        if (dto.partido_id == 0) dto.partido_id = undefined;
+        if (dto.eleicao_id == 0) dto.eleicao_id = undefined;
+    }
+
+    async toFileOutput(params: CreateRelParlamentaresDto, ctx: ReportContext): Promise<FileOutput[]> {
+        this.ajustaParams(params);
+
+        // a base tende a ser grande, então aqui provavelmente tbm seria bom ter o streaming
+        // ai usa o tx+cursor pra paginar sobre o set todo
+        const linhas: RelParlamentaresDto[] = await this.buscaParlamentar(params);
+        await ctx.progress(50);
 
         const out: FileOutput[] = [];
 
-        if (dados.linhas.length) {
+        if (linhas.length) {
             const json2csvParser = new Parser({
                 ...DefaultCsvOptions,
                 transforms: defaultTransform,
@@ -119,16 +107,17 @@ export class ParlamentaresService implements ReportableService {
                     { value: 'email', label: 'E-mail' },
                 ],
             });
-            const linhas = json2csvParser.parse(
-                dados.linhas.map((r) => {
+            const linhasBuff = json2csvParser.parse(
+                linhas.map((r) => {
                     return { ...r };
                 })
             );
             out.push({
                 name: 'parlamentares.csv',
-                buffer: Buffer.from(linhas, 'utf8'),
+                buffer: Buffer.from(linhasBuff, 'utf8'),
             });
         }
+        await ctx.progress(99);
 
         return [
             {

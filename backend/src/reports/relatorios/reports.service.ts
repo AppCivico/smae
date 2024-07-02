@@ -16,7 +16,7 @@ import { OrcamentoService } from '../orcamento/orcamento.service';
 import { CreateRelProjetoDto } from '../pp-projeto/dto/create-previsao-custo.dto';
 import { PPProjetoService } from '../pp-projeto/pp-projeto.service';
 import { PrevisaoCustoService } from '../previsao-custo/previsao-custo.service';
-import { FileOutput, ParseParametrosDaFonte, ReportableService } from '../utils/utils.service';
+import { FileOutput, ParseParametrosDaFonte, ReportableService, ReportContext } from '../utils/utils.service';
 import { CreateReportDto } from './dto/create-report.dto';
 import { FilterRelatorioDto } from './dto/filter-relatorio.dto';
 import { RelatorioDto } from './entities/report.entity';
@@ -60,25 +60,31 @@ export class ReportsService {
         // acaba sendo chamado 2x a cada request, pq já rodou 1x na validação, mas blz.
         const parametros = ParseParametrosDaFonte(dto.fonte, dto.parametros);
 
-        console.log(parametros)
         // Ajusta o tipo de relatório para MDO, se for de status de obra
         if (dto.fonte == 'ObraStatus') {
             parametros.tipo = 'MDO';
         }
-        console.log(parametros)
 
-        const pdmId = parametros.pdm_id !== undefined ? parametros.pdm_id : null;
+        const mockContext: ReportContext = {
+            cancel: () => {},
+            isCancelled: () => false,
+            progress: async () => {},
+        };
 
-        const result = await service.create(parametros);
-
-        return await service.getFiles(result, pdmId, dto.parametros);
+        return await service.toFileOutput(dto.parametros, mockContext);
     }
 
     async zipFiles(files: FileOutput[]) {
         const zip = new AdmZip();
 
         for (const file of files) {
-            zip.addFile(file.name, file.buffer);
+            if (file.buffer) {
+                zip.addFile(file.name, file.buffer);
+            } else if (file.localFile) {
+                zip.addLocalFile(file.localFile, file.name);
+            } else {
+                throw new HttpException(`Falta buffer ou localFile no arquivo ${file.name}`, 500);
+            }
 
             if (file.name.endsWith('.csv')) {
                 const readCsv: any[] = await new Promise((resolve, reject) => {

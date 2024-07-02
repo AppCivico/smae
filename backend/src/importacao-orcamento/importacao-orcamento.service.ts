@@ -9,7 +9,6 @@ import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
 import { PrismaHelpers } from 'src/common/PrismaHelpers';
 import { JOB_IMPORTACAO_ORCAMENTO_LOCK } from 'src/common/dto/locks';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
-import { Stream2Buffer } from 'src/common/helpers/Stream2Buffer';
 import { DotacaoProcessoNotaService } from 'src/dotacao/dotacao-processo-nota.service';
 import { DotacaoProcessoService } from 'src/dotacao/dotacao-processo.service';
 import { DotacaoService } from 'src/dotacao/dotacao.service';
@@ -29,6 +28,7 @@ import { PaginatedDto } from '../common/dto/paginated.dto';
 import { JwtService } from '@nestjs/jwt';
 import { PortfolioDto } from '../pp/portfolio/entities/portfolio.entity';
 import { ExtraiComplementoDotacao, TrataDotacaoGrande } from '../sof-api/sof-api.service';
+import { Stream2Buffer } from '../common/helpers/Streaming';
 const XLSX_ZAHL_PAYLOAD = require('xlsx/dist/xlsx.zahl');
 
 function Str2NumberOrNull(str: string | null): number | null {

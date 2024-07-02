@@ -279,11 +279,16 @@ export class ProjetoDetailBaseMdo {
 
     orgao_executor: IdSiglaDescricao | null;
     mdo_detalhamento: string | null;
-    mdo_programa_habitacional: string | null;
     mdo_n_unidades_habitacionais: number | null;
     mdo_n_familias_beneficiadas: number | null;
     mdo_previsao_inauguracao: Date | null;
     mdo_observacoes: string | null;
+    tipo_aditivo: IdNomeDto | null;
+    modalidade_contratacao: IdNomeDto | null;
+    programa: IdNomeDto | null;
+
+    @ApiProperty({ deprecated: true })
+    mdo_programa_habitacional: string | null;
 }
 export class ProjetoDetailMdoDto extends IntersectionType(ProjetoDetailBaseMdo, ProjetoDetailDto) {}
 

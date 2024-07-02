@@ -14,6 +14,6 @@ export class PrevisaoCustoController {
     @ApiBearerAuth('access-token')
     @Roles(['Reports.executar.PDM'])
     async create(@Body() createPrevisaoCustDto: CreateRelPrevisaoCustoDto): Promise<ListPrevisaoCustoDto> {
-        return await this.previsaoCustoService.create(createPrevisaoCustDto);
+        return await this.previsaoCustoService.asJSON(createPrevisaoCustDto);
     }
 }

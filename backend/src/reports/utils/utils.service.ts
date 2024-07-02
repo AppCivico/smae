@@ -70,12 +70,19 @@ export class UtilsService {
 
 export class FileOutput {
     name: string;
-    buffer: Buffer;
+    buffer?: Buffer;
+    localFile?: string;
+}
+
+export interface ReportContext {
+    progress: (progress: number) => Promise<void>;
+    cancel: () => void;
+    isCancelled: () => boolean;
 }
 
 export interface ReportableService {
-    getFiles(output: any, pdm_id: number | null, params: any): Promise<FileOutput[]>;
-    create(params: any): Promise<any>;
+    toFileOutput(params: any, ctx: ReportContext): Promise<FileOutput[]>;
+    asJSON(params: any): Promise<any>;
 }
 
 export function ParseParametrosDaFonte(fonte: FonteRelatorio, value: any): any {

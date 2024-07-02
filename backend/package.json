@@ -9,7 +9,7 @@
     "db:migrate:gen": "./bin/db-migrate-gen",
     "db:migrate:up": "prisma migrate dev",
     "db:migrate:down": "./bin/db-migrate-down",
-    "db:reset": "prisma migrate reset",
+    "db:reset": "prisma migrate reset --skip-generate",
     "db:seed": "prisma db seed",
     "db:generate": "prisma generate",
     "db:prod:deploy": "prisma migrate deploy",

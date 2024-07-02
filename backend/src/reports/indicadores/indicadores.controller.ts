@@ -24,7 +24,7 @@ export class IndicadoresController {
     @ApiBearerAuth('access-token')
     @Roles(['Reports.executar.PDM'])
     async create(@Body() dto: CreateRelIndicadorDto): Promise<ListIndicadoresDto> {
-        return await this.indicadoresService.create(dto);
+        return await this.indicadoresService.asJSON(dto);
     }
 
     @Post('/stream-linhas')
