@@ -1519,6 +1519,11 @@ export const parlamentar = object({
     .min(1)
     .max(250)
     .required(),
+  cpf: string()
+    .label('CPF')
+    .min(11)
+    .max(11)
+    .required(),
   nascimento: date()
     .max(new Date(new Date().setFullYear(new Date().getFullYear() - 18)), 'Data inválida, o parlamentar precisa ter no mínimo 18 anos')
     .min(new Date(new Date().setFullYear(new Date().getFullYear() - 100)), 'Data inválida')

@@ -1,4 +1,13 @@
 <script setup>
+import { vMaska } from 'maska';
+import { storeToRefs } from 'pinia';
+import {
+  ErrorMessage,
+  Field,
+  Form,
+} from 'vee-validate';
+import { computed, ref } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 import InputImageProfile from '@/components/InputImageProfile.vue';
 import ParlamentaresExibirRepresentatividade from '@/components/parlamentares/ParlamentaresExibirRepresentatividade.vue';
 import { parlamentar as schema } from '@/consts/formSchemas';
@@ -7,16 +16,6 @@ import requestS from '@/helpers/requestS.ts';
 import { useAlertStore } from '@/stores/alert.store';
 import { useAuthStore } from '@/stores/auth.store';
 import { useParlamentaresStore } from '@/stores/parlamentares.store';
-import { vMaska } from 'maska';
-import { storeToRefs } from 'pinia';
-
-import {
-  ErrorMessage,
-  Field,
-  Form,
-} from 'vee-validate';
-import { computed, ref } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
 const router = useRouter();
@@ -172,6 +171,25 @@ iniciar();
               name="nome_popular"
             />
           </div>
+        </div>
+        <div>
+          <LabelFromYup
+            name="cpf"
+            :schema="schema"
+          />
+          <Field
+            v-maska
+            name="cpf"
+            type="text"
+            class="inputtext light mb1"
+            minlength="11"
+            maxlength="11"
+            data-maska="###.###.###.##"
+          />
+          <ErrorMessage
+            class="error-msg mb1"
+            name="cpf"
+          />
         </div>
 
         <div class="f1 small-input">
