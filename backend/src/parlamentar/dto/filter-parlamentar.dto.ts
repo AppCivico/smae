@@ -1,7 +1,19 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { ParlamentarCargo } from '@prisma/client';
 import { Transform, TransformFnParams } from 'class-transformer';
-import { IsBoolean, IsEnum, IsInt, IsNumber, IsOptional, IsString, Max, MaxLength, Min } from 'class-validator';
+import {
+    IsBoolean,
+    IsEnum,
+    IsInt,
+    IsNumber,
+    IsOptional,
+    IsString,
+    Max,
+    MaxLength,
+    Min,
+    ValidateIf,
+} from 'class-validator';
+import { IsValidCPF } from '../../common/decorators/IsValidCPF';
 
 export class FilterParlamentarDto {
     @IsOptional()
@@ -44,4 +56,9 @@ export class FilterParlamentarDto {
     @IsBoolean()
     @Transform(({ value }: any) => value === 'true')
     possui_mandatos?: boolean;
+
+    @IsOptional()
+    @IsValidCPF()
+    @ValidateIf((object, value) => value)
+    cpf?: string;
 }
