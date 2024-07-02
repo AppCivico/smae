@@ -271,7 +271,7 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
           class="resumo-da-distribuicao-de-recursos__status-item fb100 mb1"
         >
           <dt class="w700 t16">
-            {{ status.status_customizado || status.status_base?.nome }}
+            {{ status.status_customizado?.nome || status.status_base?.nome }}
           </dt>
           <dd
             v-if="status.dias_no_status"
