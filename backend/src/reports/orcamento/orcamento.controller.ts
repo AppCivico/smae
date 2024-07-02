@@ -16,6 +16,6 @@ export class OrcamentoController {
     async create(
         @Body() createOrcamentoExecutadoDto: PdmCreateOrcamentoExecutadoDto
     ): Promise<ListOrcamentoExecutadoDto> {
-        return await this.orcamentoExecutadoService.create(createOrcamentoExecutadoDto);
+        return await this.orcamentoExecutadoService.asJSON(createOrcamentoExecutadoDto);
     }
 }

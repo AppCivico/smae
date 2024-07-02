@@ -417,13 +417,25 @@ model Pessoa {
     ProjetoRegiaoQRemovi    ProjetoRegiao[] @relation("Removedor")
 
     // comentado, verificar comentario em DistribuicaoRecursoStatus
-    //RegistroStatusDistribuicaoQueCriei     DistribuicaoRecursoStatus[] @relation("Criador")
-    //RegistroStatusDistribuicaoQueRemovi    DistribuicaoRecursoStatus[] @relation("Removedor")
-    //RegistroStatusDistribuicaoQueAtualizei DistribuicaoRecursoStatus[] @relation("Atualizador")
+    RegistroStatusDistribuicaoQueCriei     DistribuicaoRecursoStatus[] @relation("Criador")
+    RegistroStatusDistribuicaoQueRemovi    DistribuicaoRecursoStatus[] @relation("Removedor")
+    RegistroStatusDistribuicaoQueAtualizei DistribuicaoRecursoStatus[] @relation("Atualizador")
 
-    // ProjetoTagQCriei     ProjetoTag[] @relation("Criador")
-    // ProjetoTagQAtualizei ProjetoTag[] @relation("Atualizador")
-    // ProjetoTagQRemovi    ProjetoTag[] @relation("Removedor")
+    ProjetoTagQCriei     ProjetoTag[] @relation("Criador")
+    ProjetoTagQAtualizei ProjetoTag[] @relation("Atualizador")
+    ProjetoTagQRemovi    ProjetoTag[] @relation("Removedor")
+
+    TipoAditivoQCriei     TipoAditivo[] @relation("Criador")
+    TipoAditivoQAtualizei TipoAditivo[] @relation("Atualizador")
+    TipoAditivoQRemovi    TipoAditivo[] @relation("Removedor")
+
+    ModalidadeContratacaoQCriei     ModalidadeContratacao[] @relation("Criador")
+    ModalidadeContratacaoQAtualizei ModalidadeContratacao[] @relation("Atualizador")
+    ModalidadeContratacaoQRemovi    ModalidadeContratacao[] @relation("Removedor")
+
+    ProjetoProgramaQCriei     ProjetoPrograma[] @relation("Criador")
+    ProjetoProgramaQAtualizei ProjetoPrograma[] @relation("Atualizador")
+    ProjetoProgramaQRemovi    ProjetoPrograma[] @relation("Removedor")
 
     @@index([email])
     @@map("pessoa")
@@ -3181,19 +3193,22 @@ model Projeto {
     logradouro_numero String?
     logradouro_cep    String?
 
-    codigo           String? // abre apenas depois de priorizado
-    previsao_custo   Float?
-    nome             String
-    objeto           String /// HTML
-    objetivo         String /// HTML
-    origem_tipo      ProjetoOrigemTipo @default(Outro)
-    origem_eh_pdm    Boolean           @default(false)
-    origem_outro     String?
-    meta_codigo      String?
-    publico_alvo     String /// HTML
-    previsao_inicio  DateTime?         @db.Date() // data de inicio é o ponto fixo, entao se mudar a duracao no frontend, ajusta o final
-    previsao_termino DateTime?         @db.Date()
-    previsao_duracao Int?
+    codigo                    String? // abre apenas depois de priorizado
+    previsao_custo            Float?
+    nome                      String
+    objeto                    String /// HTML
+    objetivo                  String /// HTML
+    origem_tipo               ProjetoOrigemTipo @default(Outro)
+    origem_eh_pdm             Boolean           @default(false)
+    origem_outro              String?
+    meta_codigo               String?
+    publico_alvo              String /// HTML
+    previsao_inicio           DateTime?         @db.Date() // data de inicio é o ponto fixo, entao se mudar a duracao no frontend, ajusta o final
+    previsao_termino          DateTime?         @db.Date()
+    previsao_duracao          Int?
+    tipo_aditivo_id           Int?
+    modalidade_contratacao_id Int?
+    projeto_programa_id       Int?
 
     ano_orcamento Int[] @default([])
 
@@ -3212,6 +3227,10 @@ model Projeto {
     tipo_intervencao             TipoIntervencao? @relation(fields: [tipo_intervencao_id], references: [id])
     equipamento_id               Int?
     equipamento                  Equipamento?     @relation(fields: [equipamento_id], references: [id])
+
+    tipo_aditivo           TipoAditivo?           @relation(fields: [tipo_aditivo_id], references: [id])
+    modalidade_contratacao ModalidadeContratacao? @relation(fields: [modalidade_contratacao_id], references: [id])
+    programa               ProjetoPrograma?       @relation(fields: [projeto_programa_id], references: [id])
 
     secretario_colaborador String?
     orgao_colaborador_id   Int?
@@ -6131,9 +6150,9 @@ model DistribuicaoRecursoStatus {
     removido_em  DateTime? @db.Timestamptz(6)
 
     // comentado pq isso deixa o generate lento pra diabos, mas as FK's já estão no banco
-    //criador     Pessoa  @relation("Criador", fields: [criado_por], references: [id])
-    //atualizador Pessoa? @relation("Atualizador", fields: [atualizado_por], references: [id])
-    //removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
+    criador     Pessoa  @relation("Criador", fields: [criado_por], references: [id])
+    atualizador Pessoa? @relation("Atualizador", fields: [atualizado_por], references: [id])
+    removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
 
     @@map("distribuicao_recurso_status")
 }
@@ -6151,9 +6170,111 @@ model ProjetoTag {
     removido_por   Int?
     removido_em    DateTime? @db.Timestamptz(6)
 
-    //atualizador Pessoa? @relation("Atualizador", fields: [atualizado_por], references: [id])
-    //criador     Pessoa? @relation("Criador", fields: [criado_por], references: [id])
-    //removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
+    atualizador Pessoa? @relation("Atualizador", fields: [atualizado_por], references: [id])
+    criador     Pessoa? @relation("Criador", fields: [criado_por], references: [id])
+    removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
 
     @@map("projeto_tag")
+}
+
+model SmaeConfig {
+    key       String   @id
+    value     String
+    criado_em DateTime @default(now()) @db.Timestamptz(6)
+
+    @@map("smae_config")
+}
+
+model TipoAditivo {
+    id Int @id @default(autoincrement())
+
+    nome String
+
+    habilita_valor              Boolean @default(false)
+    habilita_valor_data_termino Boolean @default(false)
+
+    criado_por Int
+    criado_em  DateTime @default(now()) @db.Timestamptz(6)
+
+    atualizado_por Int?
+    atualizado_em  DateTime? @db.Timestamptz(6)
+
+    removido_por Int?
+    removido_em  DateTime? @db.Timestamptz(6)
+
+    criador     Pessoa  @relation("Criador", fields: [criado_por], references: [id])
+    atualizador Pessoa? @relation("Atualizador", fields: [atualizado_por], references: [id])
+    removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
+
+    Projeto Projeto[]
+
+    @@map("tipo_aditivo")
+}
+
+model ModalidadeContratacao {
+    id Int @id @default(autoincrement())
+
+    nome String
+
+    criado_por Int
+    criado_em  DateTime @default(now()) @db.Timestamptz(6)
+
+    atualizado_por Int?
+    atualizado_em  DateTime? @db.Timestamptz(6)
+
+    removido_por Int?
+    removido_em  DateTime? @db.Timestamptz(6)
+
+    criador     Pessoa  @relation("Criador", fields: [criado_por], references: [id])
+    atualizador Pessoa? @relation("Atualizador", fields: [atualizado_por], references: [id])
+    removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
+
+    Projeto Projeto[]
+
+    @@map("modalidade_contratacao")
+}
+
+model ProjetoPrograma {
+    id Int @id @default(autoincrement())
+
+    nome String
+
+    criado_por Int
+    criado_em  DateTime @default(now()) @db.Timestamptz(6)
+
+    atualizado_por Int?
+    atualizado_em  DateTime? @db.Timestamptz(6)
+
+    removido_por Int?
+    removido_em  DateTime? @db.Timestamptz(6)
+
+    criador     Pessoa  @relation("Criador", fields: [criado_por], references: [id])
+    atualizador Pessoa? @relation("Atualizador", fields: [atualizado_por], references: [id])
+    removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
+
+    Projeto Projeto[]
+
+    @@map("projeto_programa")
+}
+
+view view_parlamentares_mandatos_part_atual {
+    virtual_id       String           @unique
+    id               Int
+    nome_civil       String
+    nome_parlamentar String
+    partido_sigla    String
+    cargo            ParlamentarCargo
+    uf               ParlamentarUF
+    titular_suplente String?
+    endereco         String?
+    gabinete         String?
+    telefone         String?
+    dia_aniversario  Int?
+    mes_aniversario  Int?
+    email            String?
+    ano_eleicao      Int?
+    eleicao_id       Int?
+    partido_atual_id Int?
+
+    @@map("view_parlamentares_mandatos_part_atual")
 }

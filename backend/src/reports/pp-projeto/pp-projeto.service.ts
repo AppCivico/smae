@@ -1,6 +1,5 @@
 import { Inject, Injectable, forwardRef } from '@nestjs/common';
 import { DateTime } from 'luxon';
-import { Stream2Buffer } from 'src/common/helpers/Stream2Buffer';
 import { AcompanhamentoService } from 'src/pp/acompanhamento/acompanhamento.service';
 import { PlanoAcaoService } from 'src/pp/plano-de-acao/plano-de-acao.service';
 import { ProjetoDetailDto } from 'src/pp/projeto/entities/projeto.entity';
@@ -10,7 +9,7 @@ import { Date2YMD, SYSTEM_TIMEZONE } from '../../common/date2ymd';
 import { ProjetoService, ProjetoStatusParaExibicao } from '../../pp/projeto/projeto.service';
 import { ProjetoRiscoStatus } from '../../pp/risco/entities/risco.entity';
 import { PrismaService } from '../../prisma/prisma.service';
-import { DefaultCsvOptions, FileOutput, ReportableService } from '../utils/utils.service';
+import { DefaultCsvOptions, FileOutput, ReportContext, ReportableService } from '../utils/utils.service';
 import { CreateRelProjetoDto } from './dto/create-previsao-custo.dto';
 import {
     PPProjetoRelatorioDto,
@@ -21,6 +20,7 @@ import {
     RelProjetoRelatorioDto,
     RelProjetoRiscoDto,
 } from './entities/previsao-custo.entity';
+import { Stream2Buffer } from '../../common/helpers/Streaming';
 
 const {
     Parser,
@@ -39,7 +39,7 @@ export class PPProjetoService implements ReportableService {
         @Inject(forwardRef(() => AcompanhamentoService)) private readonly acompanhamentoService: AcompanhamentoService
     ) {}
 
-    async create(dto: CreateRelProjetoDto): Promise<PPProjetoRelatorioDto> {
+    async asJSON(dto: CreateRelProjetoDto): Promise<PPProjetoRelatorioDto> {
         const projetoRow: ProjetoDetailDto = await this.projetoService.findOne(
             'PP',
             dto.projeto_id,
@@ -234,8 +234,12 @@ export class PPProjetoService implements ReportableService {
         };
     }
 
-    async getFiles(myInput: any, pdm_id: number, params: any): Promise<FileOutput[]> {
-        const dados = myInput as PPProjetoRelatorioDto;
+    async toFileOutput(params: CreateRelProjetoDto, ctx: ReportContext): Promise<FileOutput[]> {
+        await ctx.progress(1);
+        // relatório de apenas 1 item, por enquanto não há problemas de performance / memória
+        const dados = await this.asJSON(params);
+
+        await ctx.progress(40);
 
         const out: FileOutput[] = [];
 
@@ -253,6 +257,7 @@ export class PPProjetoService implements ReportableService {
             name: 'detalhes-do-projeto.csv',
             buffer: Buffer.from(linhas, 'utf8'),
         });
+        await ctx.progress(50);
 
         if (dados.cronograma.length) {
             const json2csvParser = new Parser({
@@ -265,6 +270,7 @@ export class PPProjetoService implements ReportableService {
                 buffer: Buffer.from(linhas, 'utf8'),
             });
         }
+        await ctx.progress(55);
 
         if (dados.acompanhamentos.length) {
             const json2csvParser = new Parser({
@@ -277,6 +283,7 @@ export class PPProjetoService implements ReportableService {
                 buffer: Buffer.from(linhas, 'utf8'),
             });
         }
+        await ctx.progress(60);
 
         if (dados.encaminhamentos.length) {
             const json2csvParser = new Parser({
@@ -289,6 +296,7 @@ export class PPProjetoService implements ReportableService {
                 buffer: Buffer.from(linhas, 'utf8'),
             });
         }
+        await ctx.progress(65);
 
         if (dados.planos_acao.length) {
             const json2csvParser = new Parser({
@@ -308,6 +316,7 @@ export class PPProjetoService implements ReportableService {
                 buffer: Buffer.from(linhas, 'utf8'),
             });
         }
+        await ctx.progress(70);
 
         if (dados.riscos.length) {
             const json2csvParser = new Parser({
@@ -320,6 +329,7 @@ export class PPProjetoService implements ReportableService {
                 buffer: Buffer.from(linhas, 'utf8'),
             });
         }
+        await ctx.progress(80);
 
         const uploads = await this.prisma.projetoDocumento.findMany({
             where: {
@@ -363,6 +373,7 @@ export class PPProjetoService implements ReportableService {
                 buffer: Buffer.from(linhas, 'utf8'),
             });
         }
+        await ctx.progress(90);
 
         if (dados.detail && dados.detail.id) {
             const tarefaCronoId = await this.prisma.tarefaCronograma.findFirst({
@@ -382,6 +393,8 @@ export class PPProjetoService implements ReportableService {
                 });
             }
         }
+        await ctx.progress(99);
+
         return [
             {
                 name: 'info.json',

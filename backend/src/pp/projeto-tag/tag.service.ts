@@ -97,7 +97,7 @@ export class ProjetoTagService {
                 },
             },
         });
-        if (emUso > 0) throw new HttpException('Tag em uso em Metas.', 400);
+        if (emUso > 0) throw new HttpException('Tag em uso em um ou mais obras.', 400);
 
         const created = await this.prisma.projetoTag.updateMany({
             where: { id: id, tipo_projeto: tipo },

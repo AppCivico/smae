@@ -16,6 +16,6 @@ export class MonitoramentoMensalController {
     async create(
         @Body() createOrcamentoExecutadoDto: CreateRelMonitoramentoMensalDto
     ): Promise<RetMonitoramentoMensal> {
-        return await this.monitoramentoMensalService.create(createOrcamentoExecutadoDto);
+        return await this.monitoramentoMensalService.asJSON(createOrcamentoExecutadoDto);
     }
 }

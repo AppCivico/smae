@@ -139,3 +139,21 @@ export class CreateGeoEnderecoReferenciaDto extends ReferenciasValidasBase {
 }
 
 export class FindGeoEnderecoReferenciaDto extends ReferenciasValidasBase {}
+
+export class FilterGeoJsonDto {
+    @IsOptional()
+    @IsArray()
+    @IsInt({ each: true })
+    @Transform(NumberArrayTransformOrUndef)
+    regiao_ids?: number[];
+
+    @IsOptional()
+    @IsArray()
+    @IsInt({ each: true })
+    @Transform(NumberArrayTransformOrUndef)
+    nivel?: number[];
+
+    @IsString()
+    @MaxLength(100)
+    tipo_camada: string;
+}

@@ -14,6 +14,6 @@ export class TransferenciasController {
     @ApiBearerAuth('access-token')
     @Roles(['Reports.executar.CasaCivil'])
     async create(@Body() createTransferenciasDto: CreateRelTransferenciasDto): Promise<TransferenciasRelatorioDto> {
-        return await this.transferencias.create(createTransferenciasDto);
+        return await this.transferencias.asJSON(createTransferenciasDto);
     }
 }
