@@ -134,7 +134,7 @@ async function iniciar() {
 
 function handleSalvouStatus() {
   exibirModalStatus.value = false;
-  distribuicaoRecursos.$reset(); // como limpar direito
+  distribuicaoRecursos.buscarItem(distribuiçãoEmFoco.value.id);
 }
 
 function abrirModalStatus(status = null) {
