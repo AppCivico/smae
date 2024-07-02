@@ -4778,6 +4778,8 @@ model Parlamentar {
     em_atividade  Boolean        @default(false)
     uf_nascimento ParlamentarUF?
 
+    cpf         String?
+
     foto_upload_id Int?
     foto           Arquivo? @relation(fields: [foto_upload_id], references: [id])
 

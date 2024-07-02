@@ -51,7 +51,13 @@ export class ParlamentarService {
             async (prismaTxn: Prisma.TransactionClient): Promise<RecordWithId> => {
                 const parlamentar = await prismaTxn.parlamentar.create({
                     data: {
-                        ...dto,
+                        nome: dto.nome,
+                        nome_popular: dto.nome_popular,
+                        nascimento: dto.nascimento,
+                        telefone: dto.telefone,
+                        email: dto.email,
+                        em_atividade: dto.em_atividade,
+                        cpf: dto.cpf,
                         foto_upload_id: uploadId,
                         criado_por: user ? user.id : undefined,
                         criado_em: new Date(Date.now()),
@@ -408,15 +414,23 @@ export class ParlamentarService {
         }
         delete dto.upload_foto;
 
+        const now = new Date(Date.now());
         const updated = await this.prisma.$transaction(
             async (prismaTxn: Prisma.TransactionClient): Promise<RecordWithId> => {
                 const parlamentar = await prismaTxn.parlamentar.update({
                     where: { id: id },
                     data: {
                         atualizado_por: user.id,
-                        atualizado_em: new Date(Date.now()),
+                        atualizado_em: now,
                         foto_upload_id: uploadId,
-                        ...dto,
+
+                        nome: dto.nome,
+                        nome_popular: dto.nome_popular,
+                        nascimento: dto.nascimento,
+                        telefone: dto.telefone,
+                        email: dto.email,
+                        em_atividade: dto.em_atividade,
+                        cpf: dto.cpf,
                     },
                 });
 
