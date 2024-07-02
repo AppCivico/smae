@@ -231,7 +231,7 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
     <div
       v-for="distribuição in listaDeDistribuição"
       :key="distribuição.id"
-      class="resumo-da-distribuicao-de-recursos__item mb2 flex flexwrap g2"
+      class="resumo-da-distribuicao-de-recursos__item mb2"
     >
       <div class="resumo-da-distribuicao-de-recursos__descricao f1 fb75 mb2">
         <hgroup class="resumo-da-distribuicao-de-recursos__titulo flex g1">
@@ -263,12 +263,12 @@ distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
 
       <dl
         class="resumo-da-distribuicao-de-recursos__lista-de-status f0 fg999 fb10em
-      flex g2 align-end pl1"
+      flex flexwrap g2 align-end"
       >
         <div
           v-for="status in distribuição.historico_status"
           :key="status.id"
-          class="resumo-da-distribuicao-de-recursos__status-item fb100 mb1"
+          class="resumo-da-distribuicao-de-recursos__status-item f1 mb1"
         >
           <dt class="w700 t16">
             {{ status.status_customizado?.nome || status.status_base?.nome }}
@@ -793,14 +793,8 @@ section + section {
 .resumo-da-distribuicao-de-recursos__objeto {}
 
 .resumo-da-distribuicao-de-recursos__lista-de-status {
-  .rolavel-horizontalmente;
-
-  flex-direction: row-reverse
 }
 
 .resumo-da-distribuicao-de-recursos__status-item {
-  &:first-child {
-    min-width: 100%;
-  }
 }
 </style>
