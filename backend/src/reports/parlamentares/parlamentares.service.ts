@@ -1,17 +1,12 @@
 import { Injectable } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
+import { ParlamentarService } from 'src/parlamentar/parlamentar.service';
 import { Date2YMD } from '../../common/date2ymd';
+import { CsvWriterOptions, WriteCsvToFile } from '../../common/helpers/CsvWriter';
 import { PrismaService } from '../../prisma/prisma.service';
 import { DefaultCsvOptions, FileOutput, ReportContext, ReportableService } from '../utils/utils.service';
 import { CreateRelParlamentaresDto } from './dto/create-parlamentares.dto';
 import { ParlamentaresRelatorioDto, RelParlamentaresDto } from './entities/parlamentares.entity';
-import { ParlamentarService } from 'src/parlamentar/parlamentar.service';
-import { Prisma } from '@prisma/client';
-
-const {
-    Parser,
-    transforms: { flatten },
-} = require('json2csv');
-const defaultTransform = [flatten({ paths: [] })];
 
 @Injectable()
 export class ParlamentaresService implements ReportableService {
@@ -87,9 +82,11 @@ export class ParlamentaresService implements ReportableService {
         const out: FileOutput[] = [];
 
         if (linhas.length) {
-            const json2csvParser = new Parser({
-                ...DefaultCsvOptions,
-                transforms: defaultTransform,
+            const file = ctx.getTmpFile('parlamentares');
+
+            // Define CSV writer options
+            const csvWriterOptions: CsvWriterOptions<RelParlamentaresDto> = {
+                csvOptions: DefaultCsvOptions,
                 fields: [
                     { value: 'id', label: 'ID do Parlamentar' },
                     { value: 'nome_civil', label: 'Nome Civil' },
@@ -106,15 +103,13 @@ export class ParlamentaresService implements ReportableService {
                     { value: 'mes_aniversario', label: 'Mês Aniversário' },
                     { value: 'email', label: 'E-mail' },
                 ],
-            });
-            const linhasBuff = json2csvParser.parse(
-                linhas.map((r) => {
-                    return { ...r };
-                })
-            );
+            };
+
+            await WriteCsvToFile(linhas, file.stream, csvWriterOptions);
+
             out.push({
                 name: 'parlamentares.csv',
-                buffer: Buffer.from(linhasBuff, 'utf8'),
+                localFile: file.path,
             });
         }
         await ctx.progress(99);

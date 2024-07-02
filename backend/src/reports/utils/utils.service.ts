@@ -14,6 +14,7 @@ import { CreateRelProjetoPrevisaoCustoDto } from '../projeto-previsao-custo/dto/
 import { FiltroMetasIniAtividadeDto } from '../relatorios/dto/filtros.dto';
 import { CreateRelParlamentaresDto } from '../parlamentares/dto/create-parlamentares.dto';
 import { CreateRelTransferenciasDto } from '../transferencias/dto/create-transferencias.dto';
+import { WriteStream } from 'fs';
 
 @Injectable()
 export class UtilsService {
@@ -78,6 +79,7 @@ export interface ReportContext {
     progress: (progress: number) => Promise<void>;
     cancel: () => void;
     isCancelled: () => boolean;
+    getTmpFile: (prefix: string) => { path: string; stream: WriteStream };
 }
 
 export interface ReportableService {
