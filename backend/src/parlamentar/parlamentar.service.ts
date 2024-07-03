@@ -169,7 +169,7 @@ export class ParlamentarService {
                 tem_mandato: true,
                 cpf: true,
             },
-            orderBy: [{ nome_popular: 'asc' }],
+            orderBy: [{ nome_popular: 'asc' }, { id: 'asc' }],
             skip: offset,
             take: ipp + 1,
         });
