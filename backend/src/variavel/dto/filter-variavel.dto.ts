@@ -1,5 +1,6 @@
 import { Transform, Type } from 'class-transformer';
-import { IsBoolean, IsInt, IsOptional } from 'class-validator';
+import { ArrayMaxSize, IsArray, IsBoolean, IsInt, IsOptional } from 'class-validator';
+import { NumberArrayTransformOrUndef } from '../../auth/transforms/number-array.transform';
 
 export class FilterVariavelDto {
     /**
@@ -51,4 +52,11 @@ export class FilterVariavelDto {
     @IsInt({ message: '$property| id' })
     @Type(() => Number)
     id?: number;
+
+    @IsOptional()
+    @IsArray({ message: '$property| assuntos(s): precisa ser uma array.' })
+    @ArrayMaxSize(1000, { message: '$property| assuntos(s): precisa ter no máximo 1000 items' })
+    @IsInt({ each: true, message: '$property| Cada item precisa ser um número inteiro' })
+    @Transform(NumberArrayTransformOrUndef)
+    assuntos?: number[];
 }
