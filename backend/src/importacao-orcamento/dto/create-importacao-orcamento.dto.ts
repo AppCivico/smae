@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { TipoProjeto } from '@prisma/client';
+import { TipoPdm, TipoProjeto } from '@prisma/client';
 import { Transform, TransformFnParams, Type } from 'class-transformer';
 import { IsBoolean, IsEnum, IsInt, IsOptional, IsString, Max, MaxLength, Min, Validate } from 'class-validator';
 import { EitherPdmOrPortfolio } from 'src/common/dto/EitherPdmOrPortfolio';
@@ -23,6 +23,11 @@ export class CreateImportacaoOrcamentoDto {
     @IsEnum(TipoProjeto)
     @ApiProperty({ enum: TipoProjeto, enumName: 'TipoProjeto', default: TipoProjeto.PP })
     tipo_projeto?: TipoProjeto;
+
+    @IsOptional()
+    @IsEnum(TipoPdm)
+    @ApiProperty({ enum: TipoPdm, enumName: 'TipoPdm', default: TipoPdm.PDM })
+    tipo_pdm?: TipoPdm;
 
     @ApiProperty({ example: 0 })
     @Validate(EitherPdmOrPortfolio)
