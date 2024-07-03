@@ -437,9 +437,10 @@ model Pessoa {
     ProjetoProgramaQAtualizei ProjetoPrograma[] @relation("Atualizador")
     ProjetoProgramaQRemovi    ProjetoPrograma[] @relation("Removedor")
 
-    AssuntoVariavelQCriei     AssuntoVariavel[] @relation("Criador")
-    AssuntoVariavelQAtualizei AssuntoVariavel[] @relation("Atualizador")
-    AssuntoVariavelQRemovi    AssuntoVariavel[] @relation("Removedor")
+    AssuntoVariavelQCriei          AssuntoVariavel[]                @relation("Criador")
+    AssuntoVariavelQAtualizei      AssuntoVariavel[]                @relation("Atualizador")
+    AssuntoVariavelQRemovi         AssuntoVariavel[]                @relation("Removedor")
+    GrupoResponsavelVariavelPessoa GrupoResponsavelVariavelPessoa[]
 
     @@index([email])
     @@map("pessoa")
@@ -534,6 +535,7 @@ model Orgao {
     Pdm                          Pdm[]
     statusDistribuicaoRecusro    DistribuicaoRecursoStatus[]
     ViewProjetoMDO               ViewProjetoMDO[]
+    VariavelProprietario         Variavel[]                     @relation("proprietario")
 
     @@map("orgao")
 }
@@ -1438,6 +1440,12 @@ model FormulaCompostaVariavel {
     @@map("formula_composta_variavel")
 }
 
+enum TipoVariavel {
+    PDM
+    Global
+    Composta
+}
+
 model Variavel {
     id                Int           @id @default(autoincrement())
     orgao_id          Int
@@ -1456,6 +1464,8 @@ model Variavel {
     variavel_categorica_id Int?
     variavel_categorica    VariavelCategorica? @relation(fields: [variavel_categorica_id], references: [id])
 
+    tipo TipoVariavel @default(PDM)
+
     codigo String
 
     supraregional Boolean @default(false)
@@ -1463,18 +1473,36 @@ model Variavel {
     mostrar_monitoramento Boolean   @default(true)
     suspendida_em         DateTime? @db.Timestamptz(6)
 
-    // ficam null quando a Periodicidade é a mesma do indicador
-    // quando for diferente, é necessário preencher para saber qual é o mês de base
+    // Para PDM:
+    // - inicio e fim ficam null quando a Periodicidade é a mesma do indicador
+    // - Quando periodidade é diferente, é obrigatório preenchemento de ambos.
+    // Para GLOBAL:
+    // - inicio_medicao é obrigatório, fim_medicao pode ser null
+    // - quando null, será considerado o periodo corrente do ambiente
     inicio_medicao DateTime? @db.Date()
     fim_medicao    DateTime? @db.Date()
 
-    casas_decimais             Int                         @default(0) @db.SmallInt
+    casas_decimais Int     @default(0) @db.SmallInt
     // usar para calculcar as agregações, por exemplo na média ponderada
     // acho que pode ser um valor e não uma porcentagem, e ai o sistema calcula a porcentagem sozinho
     // de acordo com o numero de variaveis
-    acumulativa                Boolean                     @default(false)
+    acumulativa    Boolean @default(false)
     // quando true, o sistema vai calcular automaticamente a serie acumulativa
-    // quando false, o usuario precisa preencher, mas sempre via ter as 4 series, correto?
+    // quando false, o usuario precisa preencher
+
+    orgao_proprietario_id Int?
+    orgao_proprietario    Orgao?         @relation("proprietario", fields: [orgao_proprietario_id], references: [id])
+    metodologia           String?
+    descricao             String?
+    fonte_id              Int?
+    fonte                 FonteVariavel? @relation(fields: [fonte_id], references: [id])
+
+    periodo_preenchimento Int[]   @default([]) @db.SmallInt
+    periodo_validacao     Int[]   @default([]) @db.SmallInt
+    periodo_liberacao     Int[]   @default([]) @db.SmallInt
+    nivel_regionalizacao  Int?
+    dado_aberto           Boolean @default(false) // default false para PDM, true para Plano Setorial
+
     serie_variavel             SerieVariavel[]
     variavel_responsavel       VariavelResponsavel[]
     indicador_variavel         IndicadorVariavel[]
@@ -1493,14 +1521,82 @@ model Variavel {
     removido_em             DateTime?                 @db.Timestamptz(6)
     FormulaCompostaVariavel FormulaCompostaVariavel[]
 
-    suspensao_log            VariavelSuspensaoLog[]
-    suspensao_controle       VariavelSuspensaControle[]
-    MetaStatusAtrasoVariavel MetaStatusAtrasoVariavel[]
-    Etapa                    Etapa[]
-    VariavelAssuntoVariavel  VariavelAssuntoVariavel[]
+    suspensao_log                    VariavelSuspensaoLog[]
+    suspensao_controle               VariavelSuspensaControle[]
+    MetaStatusAtrasoVariavel         MetaStatusAtrasoVariavel[]
+    Etapa                            Etapa[]
+    VariavelAssuntoVariavel          VariavelAssuntoVariavel[]
+    VariavelGrupoResponsavelVariavel VariavelGrupoResponsavelVariavel[]
 
     @@index([regiao_id])
     @@map("variavel")
+}
+
+model FonteVariavel {
+    id Int @id @default(autoincrement())
+
+    nome String
+
+    criado_em DateTime @default(now()) @db.Timestamptz(6)
+
+    atualizado_em DateTime? @db.Timestamptz(6)
+
+    removido_em DateTime?  @db.Timestamptz(6)
+    Variavel    Variavel[]
+
+    @@map("fonte_variavel")
+}
+
+enum PerfilResponsavelVariavel {
+    Medicao
+    Validacao
+    Liberacao
+}
+
+model GrupoResponsavelVariavel {
+    id Int @id @default(autoincrement())
+
+    descricao String
+
+    perfil PerfilResponsavelVariavel
+
+    criado_em                        DateTime                           @default(now()) @db.Timestamptz(6)
+    atualizado_em                    DateTime?                          @db.Timestamptz(6)
+    removido_em                      DateTime?                          @db.Timestamptz(6)
+    GrupoResponsavelVariavelPessoa   GrupoResponsavelVariavelPessoa[]
+    VariavelGrupoResponsavelVariavel VariavelGrupoResponsavelVariavel[]
+
+    @@map("grupo_responsavel_variavel")
+}
+
+model GrupoResponsavelVariavelPessoa {
+    id Int @id @default(autoincrement())
+
+    grupo_responsavel_variavel_id Int
+    grupo_responsavel_variavel    GrupoResponsavelVariavel @relation(fields: [grupo_responsavel_variavel_id], references: [id])
+
+    pessoa_id Int
+    pessoa    Pessoa @relation(fields: [pessoa_id], references: [id])
+
+    criado_em   DateTime  @default(now()) @db.Timestamptz(6)
+    removido_em DateTime? @db.Timestamptz(6)
+
+    @@map("grupo_responsavel_variavel_pessoa")
+}
+
+model VariavelGrupoResponsavelVariavel {
+    id Int @id @default(autoincrement())
+
+    variavel_id Int
+    variavel    Variavel @relation(fields: [variavel_id], references: [id])
+
+    grupo_responsavel_variavel_id Int
+    grupo_responsavel_variavel    GrupoResponsavelVariavel @relation(fields: [grupo_responsavel_variavel_id], references: [id])
+
+    criado_em   DateTime  @default(now()) @db.Timestamptz(6)
+    removido_em DateTime? @db.Timestamptz(6)
+
+    @@map("variavel_grupo_responsavel_variavel")
 }
 
 model VariavelAssuntoVariavel {
