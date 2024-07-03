@@ -1,4 +1,5 @@
 <template>
+  <MigalhasDePão class="mb1" />
   <div class="flex spacebetween center mb2">
     <h1> <span v-if="!assuntoId">Novo</span> Assunto</h1>
     <hr class="ml2 f1">
