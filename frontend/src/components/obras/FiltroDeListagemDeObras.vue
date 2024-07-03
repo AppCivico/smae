@@ -246,7 +246,7 @@ import { useOrgansStore } from '@/stores/organs.store';
 import { usePortfolioObraStore } from '@/stores/portfoliosMdo.store.ts';
 import { useRegionsStore } from '@/stores/regions.store';
 import { storeToRefs } from 'pinia';
-import { ref } from 'vue';
+import { onUnmounted, ref } from 'vue';
 
 const props = defineProps({
   ariaBusy: {
@@ -358,4 +358,12 @@ function iniciar() {
 }
 
 iniciar();
+
+onUnmounted(() => {
+  ÓrgãosStore.$reset();
+  equipamentosStore.$reset();
+  gruposTematicosStore.$reset();
+  portfolioMdoStore.$reset();
+  regionsStore.$reset();
+});
 </script>
