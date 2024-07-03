@@ -861,16 +861,16 @@ export class ProjetoService {
     }
 
     async findAllMDO(filters: FilterProjetoMDODto, user: PessoaFromJwt): Promise<PaginatedWithPagesDto<ProjetoMdoDto>> {
-        let token_paginacao = filters.token_paginacao;
+        let retToken = filters.token_paginacao;
 
         let ipp = filters.ipp ?? 50;
         const page = filters.pagina ?? 1;
         let total_registros = 0;
         let tem_mais = false;
 
-        if (page > 1 && !token_paginacao) throw new HttpException('Campo obrigatório para paginação', 400);
+        if (page > 1 && !retToken) throw new HttpException('Campo obrigatório para paginação', 400);
 
-        const tokenPaginacao = filters.token_paginacao;
+        const filterToken = filters.token_paginacao;
         // para não atrapalhar no hash, remove o campo pagina
         delete filters.pagina;
         delete filters.token_paginacao;
@@ -878,8 +878,8 @@ export class ProjetoService {
         const palavrasChave = await this.buscaIdsPalavraChave(filters.palavra_chave);
 
         let now = new Date(Date.now());
-        if (tokenPaginacao) {
-            const decoded = this.decodeNextPageToken(tokenPaginacao, filters);
+        if (filterToken) {
+            const decoded = this.decodeNextPageToken(filterToken, filters);
             total_registros = decoded.total_rows;
             ipp = decoded.ipp;
             now = new Date(decoded.issued_at);
@@ -909,12 +909,12 @@ export class ProjetoService {
             take: ipp,
         });
 
-        if (tokenPaginacao) {
-            token_paginacao = filters.token_paginacao;
+        if (filterToken) {
+            retToken = filterToken;
             tem_mais = offset + linhas.length < total_registros;
         } else {
             const info = await this.encodeNextPageToken(filters, now, user);
-            token_paginacao = info.jwt;
+            retToken = info.jwt;
             total_registros = info.body.total_rows;
             tem_mais = offset + linhas.length < total_registros;
         }
@@ -923,7 +923,7 @@ export class ProjetoService {
         return {
             tem_mais,
             total_registros: total_registros,
-            token_paginacao: token_paginacao!,
+            token_paginacao: retToken,
             paginas,
             pagina_corrente: page,
             linhas: linhas.map((r): ProjetoMdoDto => {
