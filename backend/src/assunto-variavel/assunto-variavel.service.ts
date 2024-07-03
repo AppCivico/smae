@@ -8,7 +8,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 
 @Injectable()
-export class ProjetoAssuntoVariavelService {
+export class AssuntoVariavelService {
     constructor(private readonly prisma: PrismaService) {}
 
     async create(dto: CreateAssuntoVariavelDto, user: PessoaFromJwt) {

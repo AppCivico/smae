@@ -17,6 +17,8 @@ import { IndicadoresModule } from './reports/indicadores/indicadores.module';
 import { MonitoramentoMensalModule } from './reports/monitoramento-mensal/monitoramento-mensal.module';
 import { VariavelCategoricaModule } from './variavel-categorica/variavel-categorica.module';
 import { VariavelModule } from './variavel/variavel.module';
+import { FonteVariavelModule } from './fonte-variavel/fonte-variavel.module';
+import { AssuntoVariavelModule } from './assunto-variavel/assunto-variavel.module';
 
 @Module({
     imports: [
@@ -32,6 +34,8 @@ import { VariavelModule } from './variavel/variavel.module';
         PainelModule,
         MfMetasModule,
         GrupoPaineisModule,
+        FonteVariavelModule,
+        AssuntoVariavelModule,
         RouterModule.register([
             {
                 path: 'mf',
