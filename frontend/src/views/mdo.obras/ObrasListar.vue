@@ -131,9 +131,14 @@
         </tbody>
       </table>
     </div>
+
+    <MenuPaginacao
+      v-bind="paginacao"
+    />
   </div>
 </template>
 <script setup>
+import MenuPaginacao from '@/components/MenuPaginacao.vue';
 import FiltroDeListagemDeObras from '@/components/obras/FiltroDeListagemDeObras.vue';
 import { obras as schema } from '@/consts/formSchemas';
 import statusObras from '@/consts/statusObras';
@@ -148,7 +153,7 @@ const route = useRoute();
 const obrasStore = useObrasStore();
 
 const {
-  lista, chamadasPendentes, erro,
+  lista, chamadasPendentes, erro, paginacao,
 } = storeToRefs(obrasStore);
 const alertStore = useAlertStore();
 
@@ -178,6 +183,7 @@ watchEffect(() => {
     regioes: route.query.regioes,
     status: route.query.status,
     tipo_intervencao_id: route.query.tipo_intervencao_id,
+    token_paginacao: route.query.token_paginacao,
   });
 });
 </script>
