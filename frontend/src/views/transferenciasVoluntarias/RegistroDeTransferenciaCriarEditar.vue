@@ -6,7 +6,7 @@ import { useAlertStore } from '@/stores/alert.store';
 import { useTransferenciasVoluntariasStore } from '@/stores/transferenciasVoluntarias.store';
 import { storeToRefs } from 'pinia';
 import { ErrorMessage, Field, useForm } from 'vee-validate';
-import { computed } from 'vue';
+import { computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 
 const TransferenciasVoluntarias = useTransferenciasVoluntariasStore();
@@ -63,7 +63,31 @@ const updateValorTotal = (fieldName, newValue, setFieldValue) => {
   const valorContraPartida = fieldName === 'valor_contrapartida' ? parseFloat(newValue) || 0 : parseFloat(values.valor_contrapartida) || 0;
   const total = (valor + valorContraPartida).toFixed(2);
   setFieldValue('valor_total', total);
+  calcularValorCusteio(fieldName);
+  calcularValorInvestimento(fieldName);
 };
+
+const calcularValorCusteio = (fieldName) => {
+  const valor = parseFloat(values.valor) || 0;
+  const custeio = parseFloat(values.custeio) || 0;
+  const percentagemCusteio = parseFloat(values.percentagem_custeio) || 0;
+  if(fieldName == 'percentagem_custeio' || fieldName == 'valor') {
+    setFieldValue('custeio', (valor * percentagemCusteio) / 100);
+  } else if(fieldName == 'custeio') {
+    setFieldValue('percentagem_custeio', (custeio / valor) * 100);
+  }
+}
+
+const calcularValorInvestimento = (fieldName) => {
+  const valor = parseFloat(values.valor) || 0;
+  const investimento = parseFloat(values.investimento) || 0;
+  const percentagemInvestimento = parseFloat(values.percentagem_investimento) || 0;
+  if(fieldName == 'percentagem_investimento' || fieldName == 'valor') {
+    setFieldValue('investimento', (valor * percentagemInvestimento) / 100);
+  } else if(fieldName == 'investimento') {
+    setFieldValue('percentagem_investimento', (investimento / valor) * 100);
+  }
+}
 
 const isSomaCorreta = computed(() => {
   const soma = parseFloat(values.valor || 0) + parseFloat(values.valor_contrapartida || 0);
@@ -71,6 +95,11 @@ const isSomaCorreta = computed(() => {
 });
 
 TransferenciasVoluntarias.buscarItem(props.transferenciaId);
+
+onMounted(() => {
+  calcularValorCusteio('custeio');
+  calcularValorInvestimento('investimento');
+})
 </script>
 
 <template>
@@ -93,7 +122,8 @@ TransferenciasVoluntarias.buscarItem(props.transferenciaId);
   <form
     @submit.prevent="onSubmit"
   >
-    <div class="flex g2 mb1">
+  <fieldset>
+    <div class="flex g2">
       <div class="f1">
         <LabelFromYup
           name="valor"
@@ -140,46 +170,91 @@ TransferenciasVoluntarias.buscarItem(props.transferenciaId);
         />
       </div>
     </div>
-    <div class="flex g2 mb1">
-      <div class="f1">
+  </fieldset>
+    
+    
+  <fieldset class="padding-sm mb2 flex">
+    <LabelFromYup as="legend">Custeio</LabelFromYup>
+    <div class="flex f1 g2 center">
+      <div class="fb20em">
         <LabelFromYup
-          name="custeio"
+          name="percentagem_investimento"
           :schema="schema"
         />
         <MaskedFloatInput
-          name="custeio"
+          name="percentagem_custeio"
           type="text"
-          class="inputtext light mb1"
-          :value="values.custeio"
+          class="inputtext light"
+          :value="values.percentagem_custeio"
           converter-para="string"
-          @update:model-value="(newValue) =>
-            updateValorTotal('custeio', newValue, setFieldValue)"
-        />
-        <ErrorMessage
-          class="error-msg mb1"
-          name="custeio"
+          @update:model-value="(newValue) => {
+            setFieldValue('percentagem_custeio', newValue);
+            calcularValorCusteio('percentagem_custeio');
+          }"
         />
       </div>
-      <div class="f1">
+      <small class="addlink mt2 fb3em text-center" style="cursor: default;">OU</small>
+      <div class="fb50em">
         <LabelFromYup
           name="investimento"
           :schema="schema"
         />
         <MaskedFloatInput
-          name="investimento"
+          name="custeio"
           type="text"
-          class="inputtext light mb1"
-          :value="values.investimento"
+          class="inputtext light"
+          :value="values.custeio"
           converter-para="string"
-          @update:model-value="(newValue) =>
-            updateValorTotal('investimento', newValue, setFieldValue)"
-        />
-        <ErrorMessage
-          class="error-msg mb1"
-          name="investimento"
+          @update:model-value="(newValue) => {
+            updateValorTotal('custeio', newValue, setFieldValue);
+            calcularValorCusteio('custeio')
+          }"
         />
       </div>
     </div>
+  </fieldset>
+
+  <fieldset class="padding-sm mb2 flex">
+    <LabelFromYup as="legend">Investimento</LabelFromYup>
+    <div class="flex f1 g2 center">
+      <div class="fb20em">
+        <LabelFromYup
+          name="percentagem_investimento"
+          :schema="schema"
+        />
+        <MaskedFloatInput
+          name="percentagem_investimento"
+          type="text"
+          class="inputtext light"
+          :value="values.percentagem_investimento"
+          converter-para="string"
+          @update:model-value="(newValue) => {
+            setFieldValue('percentagem_investimento', newValue);
+            calcularValorInvestimento('percentagem_investimento');
+          }"
+        />
+      </div>
+      <small class="addlink mt2 fb3em text-center" style="cursor: default;">OU</small>
+      <div class="fb50em">
+        <LabelFromYup
+          name="investimento"
+          :schema="schema"
+        />
+        <MaskedFloatInput
+          name="investimento"
+          type="text"
+          class="inputtext light"
+          :value="values.investimento"
+          converter-para="string"
+          @update:model-value="(newValue) => {
+            updateValorTotal('investimento', newValue, setFieldValue);
+            calcularValorInvestimento('investimento')
+          }"
+        />  
+      </div>
+    </div>
+  </fieldset>
+
     <div class="flex g2 mb1">
       <div class="f1">
         <LabelFromYup

@@ -12,6 +12,7 @@ import {
   computed,
   nextTick,
   onUnmounted,
+  onMounted,
   ref,
   watch,
 } from 'vue';
@@ -122,6 +123,29 @@ async function registrarNovaDistribuicaoRecursos() {
   }
 }
 
+const calcularValorCusteio = (fieldName) => {
+  const valor = parseFloat(values.valor) || 0;
+  const custeio = parseFloat(values.custeio) || 0;
+  const percentagemCusteio = parseFloat(values.percentagem_custeio) || 0;
+  console.log(custeio)
+  if(fieldName == 'percentagem_custeio' || fieldName == 'valor') {
+    setFieldValue('custeio', (valor * percentagemCusteio) / 100);
+  } else if(fieldName == 'custeio') {
+    setFieldValue('percentagem_custeio', (custeio / valor) * 100);
+  }
+}
+
+const calcularValorInvestimento = (fieldName) => {
+  const valor = parseFloat(values.valor) || 0;
+  const investimento = parseFloat(values.investimento) || 0;
+  const percentagemInvestimento = parseFloat(values.percentagem_investimento) || 0;
+  if(fieldName == 'percentagem_investimento' || fieldName == 'valor') {
+    setFieldValue('investimento', (valor * percentagemInvestimento) / 100);
+  } else if(fieldName == 'investimento') {
+    setFieldValue('percentagem_investimento', (investimento / valor) * 100);
+  }
+}
+
 async function iniciar() {
   distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
 
@@ -146,6 +170,8 @@ iniciar();
 
 watch(itemParaEdição, (novosValores) => {
   resetForm({ values: novosValores });
+  calcularValorCusteio('custeio');
+  calcularValorInvestimento('investimento');
 });
 
 watch(() => values.vigencia, (novoValor) => {
@@ -168,6 +194,8 @@ const atualizarValorTotal = (fieldName, newValue) => {
   const valorContraPartida = fieldName === 'valor_contrapartida' ? parseFloat(newValue) || 0 : parseFloat(values.valor_contrapartida) || 0;
   const total = (valor + valorContraPartida).toFixed(2);
   setFieldValue('valor_total', total);
+  calcularValorCusteio(fieldName);
+  calcularValorInvestimento(fieldName);
 };
 
 const isSomaCorreta = computed(() => {
@@ -393,7 +421,8 @@ const isSomaCorreta = computed(() => {
     </div>
 
     <div class="mb2">
-      <div class="halfInput">
+      <fieldset>
+        <div class="halfInput">
         <LabelFromYup
           name="valor"
           :schema="schema"
@@ -413,47 +442,86 @@ const isSomaCorreta = computed(() => {
           name="valor"
         />
       </div>
+    </fieldset>
+      
+    <fieldset class="padding-sm mb2 flex">
+      <LabelFromYup as="legend">Custeio</LabelFromYup>
+      <div class="flex f1 g2 center">
+        <div class="fb20em">
+          <LabelFromYup
+            name="percentagem_custeio"
+            :schema="schema"
+          />
+          <MaskedFloatInput
+            name="percentagem_custeio"
+            type="text"
+            class="inputtext light"
+            :value="values.percentagem_custeio"
+            converter-para="string"
+            @update:model-value="(newValue) => {
+              atualizarValorTotal('percentagem_custeio', newValue, setFieldValue);
+            }"
+          />
+        </div>
+        <small class="addlink mt2 text-center" style="cursor: default;">OU</small>
+        <div class="fb50em">
+          <LabelFromYup
+            name="custeio"
+            :schema="schema"
+          />
+          <MaskedFloatInput
+            name="custeio"
+            type="text"
+            class="inputtext light"
+            :value="values.custeio"
+            converter-para="string"
+            @update:model-value="(newValue) => {
+              atualizarValorTotal('custeio', newValue, setFieldValue);
+            }"
+          />
+        </div>
+      </div>
+    </fieldset>
 
-      <div class="halfInput">
-        <LabelFromYup
-          name="custeio"
-          :schema="schema"
-        />
-        <MaskedFloatInput
-          name="custeio"
-          type="text"
-          class="inputtext light mb2"
-          :value="values.custeio"
-          converter-para="string"
-          @update:model-value="(newValue) => {
-            atualizarValorTotal('custeio', newValue, setFieldValue);
-          }"
-        />
-        <ErrorMessage
-          class="error-msg mb2"
-          name="custeio"
-        />
+    <fieldset class="padding-sm mb2 flex">
+      <LabelFromYup as="legend">Investimento</LabelFromYup>
+      <div class="flex f1 g2 center">
+        <div class="fb20em">
+          <LabelFromYup
+            name="percentagem_investimento"
+            :schema="schema"
+          />
+          <MaskedFloatInput
+            name="percentagem_investimento"
+            type="text"
+            class="inputtext light"
+            :value="values.percentagem_investimento"
+            converter-para="string"
+            @update:model-value="(newValue) => {
+              atualizarValorTotal('percentagem_investimento', newValue, setFieldValue);
+            }"
+          />
+        </div>
+        <small class="addlink mt2 text-center" style="cursor: default;">OU</small>
+        <div class="fb50em">
+          <LabelFromYup
+            name="investimento"
+            :schema="schema"
+          />
+          <MaskedFloatInput
+            name="investimento"
+            type="text"
+            class="inputtext light"
+            :value="values.investimento"
+            converter-para="string"
+            @update:model-value="(newValue) => {
+              atualizarValorTotal('investimento', newValue, setFieldValue);
+            }"
+          />  
+        </div>
       </div>
-      <div class="halfInput">
-        <LabelFromYup
-          name="investimento"
-          :schema="schema"
-        />
-        <MaskedFloatInput
-          name="investimento"
-          type="text"
-          class="inputtext light mb2"
-          :value="values.investimento"
-          converter-para="string"
-          @update:model-value="(newValue) => {
-            atualizarValorTotal('custeio', newValue, setFieldValue);
-          }"
-        />
-        <ErrorMessage
-          class="error-msg mb2"
-          name="investimento"
-        />
-      </div>
+    </fieldset>
+
       <div class="halfInput">
         <LabelFromYup
           name="valor_contrapartida"
