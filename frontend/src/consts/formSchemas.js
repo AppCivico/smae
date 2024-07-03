@@ -278,8 +278,8 @@ export const arquivoSimples = object()
 
 export const assunto = object()
   .shape({
-    descricao: string()
-      .label('Descrição')
+    nome: string()
+      .label('Nome')
       .required(),
   });
 
