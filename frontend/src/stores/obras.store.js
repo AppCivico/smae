@@ -28,6 +28,13 @@ export const useObrasStore = defineStore('obrasStore', {
       pdmsSimplificados: null,
       metaSimplificada: null,
     },
+    paginacao: {
+      tokenPaginacao: '',
+      paginas: 0,
+      paginaCorrente: 0,
+      temMais: true,
+      total_registros: 0,
+    },
   }),
   actions: {
     async buscarItem(id = 0, params = {}) {
@@ -78,8 +85,22 @@ export const useObrasStore = defineStore('obrasStore', {
       this.erro = null;
 
       try {
-        const { linhas } = await this.requestS.get(`${baseUrl}/projeto-mdo`, params);
+        const {
+          linhas,
+          token_paginacao: tokenPaginacao,
+          paginas,
+          pagina_corrente: paginaCorrente,
+          tem_mais: temMais,
+          total_registros: totalRegistros,
+        } = await this.requestS.get(`${baseUrl}/projeto-mdo`, params);
+
         this.lista = linhas;
+
+        this.paginacao.tokenPaginacao = tokenPaginacao;
+        this.paginacao.paginas = paginas;
+        this.paginacao.paginaCorrente = paginaCorrente;
+        this.paginacao.temMais = temMais;
+        this.paginacao.totalRegistros = totalRegistros;
       } catch (erro) {
         this.erro = erro;
       }
