@@ -182,9 +182,9 @@ iniciar();
             name="cpf"
             type="text"
             class="inputtext light mb1"
-            minlength="11"
-            maxlength="11"
-            data-maska="###.###.###.##"
+            minlength="14"
+            maxlength="14"
+            data-maska="###.###.###-##"
           />
           <ErrorMessage
             class="error-msg mb1"

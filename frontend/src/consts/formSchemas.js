@@ -276,6 +276,13 @@ export const arquivoSimples = object()
       .nullable(),
   });
 
+export const assunto = object()
+  .shape({
+    descricao: string()
+      .label('Descrição')
+      .required(),
+  });
+
 export const autenticação = object()
   .shape({
     email: string()
@@ -1521,8 +1528,8 @@ export const parlamentar = object({
     .required(),
   cpf: string()
     .label('CPF')
-    .min(11)
-    .max(11)
+    .min(14)
+    .max(14)
     .required(),
   nascimento: date()
     .max(new Date(new Date().setFullYear(new Date().getFullYear() - 18)), 'Data inválida, o parlamentar precisa ter no mínimo 18 anos')
