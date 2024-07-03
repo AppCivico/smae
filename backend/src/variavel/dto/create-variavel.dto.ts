@@ -1,4 +1,4 @@
-import { ApiProperty, OmitType, PickType } from '@nestjs/swagger';
+import { ApiProperty, IntersectionType, OmitType, PickType } from '@nestjs/swagger';
 import { Periodicidade } from '@prisma/client';
 import { Transform, TransformFnParams, Type } from 'class-transformer';
 import {
@@ -17,6 +17,7 @@ import {
     Min,
     MinLength,
     ValidateIf,
+    ValidateNested,
 } from 'class-validator';
 import { DateTransform } from '../../auth/transforms/date.transform';
 import { IsOnlyDate } from '../../common/decorators/IsDateOnly';
@@ -25,14 +26,34 @@ import { IsOnlyDate } from '../../common/decorators/IsDateOnly';
 // precisa mudar o js pra usar Decimail.js ou Math.js pra usar mais casas se precisar
 export const MAX_CASAS_DECIMAIS = 12;
 
-export class CreateVariavelDto {
-    /**
-     * ID do indicador (é required para criar já o relacionamento)
-     */
-    @IsInt({ message: '$property| indicador precisa existir' })
-    @Type(() => Number)
-    indicador_id: number; // manter undefined pq precisamos apagar antes do insert
+export class VariaveisPeriodosDto {
+    @IsInt()
+    @Min(1)
+    @Max(31)
+    preenchimento_inicio: number;
+    @IsInt()
+    @Min(1)
+    @Max(31)
+    preenchimento_fim: number;
+    @IsInt()
+    @Min(1)
+    @Max(31)
+    validacao_inicio: number;
+    @IsInt()
+    @Min(1)
+    @Max(31)
+    validacao_fim: number;
+    @IsInt()
+    @Min(1)
+    @Max(31)
+    liberacao_inicio: number;
+    @IsInt()
+    @Min(1)
+    @Max(31)
+    liberacao_fim: number;
+}
 
+export class CreateVariavelBaseDto {
     /**
      * lista dos responsáveis pelo preenchimento? pelo menos uma pessoa
      * @example "[4, 5, 6]"
@@ -159,14 +180,71 @@ export class CreateVariavelDto {
     @ArrayMaxSize(1000, { message: '$property| assuntos(s): precisa ter no máximo 1000 items' })
     @IsInt({ each: true, message: '$property| Cada item precisa ser um número inteiro' })
     assuntos?: number[];
+
+    @ValidateNested()
+    @Type(() => VariaveisPeriodosDto)
+    periodos: VariaveisPeriodosDto;
+
+    @IsOptional()
+    @IsBoolean()
+    dado_aberto?: boolean;
+
+    @IsString()
+    @IsOptional()
+    metodologia?: string | null;
+
+    @IsString()
+    @IsOptional()
+    descricao?: string | null;
+
+    @IsOptional()
+    @IsInt()
+    fonte_id?: number | null;
+
+    @IsOptional()
+    @IsInt()
+    orgao_proprietario_id?: number | null;
+
+    @IsOptional()
+    @IsInt({ each: true })
+    @IsArray()
+    @ArrayMaxSize(1000)
+    medicao_grupo_ids?: number[] | null;
+
+    @IsOptional()
+    @IsInt({ each: true })
+    @IsArray()
+    @ArrayMaxSize(1000)
+    validacao_grupo_ids?: number[] | null;
+
+    @IsOptional()
+    @IsInt({ each: true })
+    @IsArray()
+    @ArrayMaxSize(1000)
+    liberacao_grupo_ids?: number[] | null;
+
+    @IsOptional()
+    @IsInt()
+    @Min(1)
+    @Max(4)
+    nivel_regionalizacao?: number | null;
 }
 
-export class CreatePeloIndicadorDto extends PickType(CreateVariavelDto, ['codigo', 'titulo', 'orgao_id']) {
+export class CreateVariavelPDMDto extends CreateVariavelBaseDto {
+    /**
+     * ID do indicador (é required para criar já o relacionamento)
+     */
+    @IsInt({ message: '$property| indicador precisa existir' })
+    @Type(() => Number)
+    indicador_id: number; // manter undefined pq precisamos apagar antes do insert
+}
+
+export class CreatePeloIndicadorDto extends PickType(CreateVariavelBaseDto, ['codigo', 'titulo', 'orgao_id']) {
     @IsInt()
     indicador_id: number;
 }
 
-export class CreateGeradorVariavelDto extends OmitType(CreateVariavelDto, ['codigo']) {
+export class CreateGeradorVariaveBaselDto extends OmitType(CreateVariavelBaseDto, ['codigo']) {
     /**
      * prefixo que será adicionado em vários
      */
@@ -180,3 +258,7 @@ export class CreateGeradorVariavelDto extends OmitType(CreateVariavelDto, ['codi
     @IsInt({ each: true, message: '$property| Cada item precisa ser um número inteiro' })
     regioes: number[];
 }
+
+export class CreateGeradorVariavelPDMDto extends IntersectionType(CreateGeradorVariaveBaselDto, CreateVariavelPDMDto) {}
+
+export class CreateGeradorVariavePDMlDto extends IntersectionType(CreateGeradorVariaveBaselDto, CreateVariavelPDMDto) {}

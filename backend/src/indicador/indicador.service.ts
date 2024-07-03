@@ -167,33 +167,19 @@ export class IndicadorService {
                     for (const iniciativa of indicador.meta.iniciativa) {
                         for (const indicador of iniciativa.Indicador) {
                             for (const variavel of indicador.IndicadorVariavel) {
-                                const indicador_for_sync = {
-                                    id: indicador.id,
-                                    iniciativa_id: indicador.iniciativa_id,
-                                    meta_id: null,
-                                    atividade_id: null,
-                                };
+                                const info = await this.variavelService.buscaIndicadorParaVariavel(indicador.id);
 
-                                await this.variavelService.resyncIndicadorVariavel(
-                                    indicador_for_sync,
-                                    variavel.variavel_id,
-                                    prisma
-                                );
+                                await this.variavelService.resyncIndicadorVariavel(info, variavel.variavel_id, prisma);
                             }
                         }
 
                         for (const atividade of iniciativa.atividade) {
                             for (const indicador of atividade.Indicador) {
                                 for (const variavel of indicador.IndicadorVariavel) {
-                                    const indicador_for_sync = {
-                                        id: indicador.id,
-                                        atividade_id: indicador.atividade_id,
-                                        meta_id: null,
-                                        iniciativa_id: null,
-                                    };
+                                    const info = await this.variavelService.buscaIndicadorParaVariavel(indicador.id);
 
                                     await this.variavelService.resyncIndicadorVariavel(
-                                        indicador_for_sync,
+                                        info,
                                         variavel.variavel_id,
                                         prisma
                                     );
@@ -205,18 +191,9 @@ export class IndicadorService {
                     for (const atividade of indicador.iniciativa.atividade) {
                         for (const indicador of atividade.Indicador) {
                             for (const variavel of indicador.IndicadorVariavel) {
-                                const indicador_for_sync = {
-                                    id: indicador.id,
-                                    atividade_id: indicador.atividade_id,
-                                    meta_id: null,
-                                    iniciativa_id: null,
-                                };
+                                const info = await this.variavelService.buscaIndicadorParaVariavel(indicador.id);
 
-                                await this.variavelService.resyncIndicadorVariavel(
-                                    indicador_for_sync,
-                                    variavel.variavel_id,
-                                    prisma
-                                );
+                                await this.variavelService.resyncIndicadorVariavel(info, variavel.variavel_id, prisma);
                             }
                         }
                     }
@@ -257,7 +234,7 @@ export class IndicadorService {
     }
 
     private extractFormulaCompostaFromFormula(formula_compilada: string, neededFCs: Record<number, number>) {
-        for (const match of formula_compilada.matchAll(/\@_\d+\b/g)) {
+        for (const match of formula_compilada.matchAll(/@_\d+\b/g)) {
             const referencia = +match[0].replace('@_', '');
             if (!neededFCs[referencia]) neededFCs[referencia] = 0;
             neededFCs[referencia]++;
