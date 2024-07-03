@@ -536,7 +536,11 @@ export class VariavelService {
         const listActive = await this.prisma.variavel.findMany({
             where: {
                 removido_em: null,
+                VariavelAssuntoVariavel: Array.isArray(filters?.assuntos)
+                    ? { some: { assunto_variavel: { id: { in: filters.assuntos } } } }
+                    : undefined,
                 id: filters?.id,
+
                 ...filterQuery,
             },
             select: {
@@ -576,6 +580,9 @@ export class VariavelService {
                         codigo: true,
                         pdm_codigo_sufixo: true,
                     },
+                },
+                VariavelAssuntoVariavel: {
+                    select: { assunto_variavel: { select: { id: true, nome: true } } },
                 },
                 indicador_variavel: {
                     select: {
@@ -685,6 +692,7 @@ export class VariavelService {
 
             return {
                 ...row,
+                assunto_variavel: row.VariavelAssuntoVariavel.map((v) => v.assunto_variavel),
                 etapa: row.variavel_categorica_id === CONST_CRONO_VAR_CATEGORICA_ID ? mapEtapa[row.id] : null,
                 inicio_medicao: Date2YMD.toStringOrNull(row.inicio_medicao),
                 fim_medicao: Date2YMD.toStringOrNull(row.fim_medicao),

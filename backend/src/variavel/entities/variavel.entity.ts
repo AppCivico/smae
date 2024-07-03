@@ -9,6 +9,7 @@ import { OrgaoResumo } from '../../orgao/entities/orgao.entity';
 import { Regiao } from '../../regiao/entities/regiao.entity';
 import { UnidadeMedida } from '../../unidade-medida/entities/unidade-medida.entity';
 import { VariavelResumo } from '../dto/list-variavel.dto';
+import { IdNomeDto } from '../../common/dto/IdNome.dto';
 
 export class IndicadorVariavelOrigemDto {
     id: number;
@@ -40,6 +41,7 @@ export class VariavelItemDto {
     regiao: Regiao | null;
     indicador_variavel: IndicadorVariavel[];
     responsaveis?: IdNomeExibicaoDto[];
+    assunto_variavel?: IdNomeDto[];
     ano_base?: number | null;
     codigo: string;
     atraso_meses: number;
