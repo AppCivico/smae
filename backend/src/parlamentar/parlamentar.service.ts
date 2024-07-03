@@ -558,10 +558,52 @@ export class ParlamentarService {
                         criado_por: user ? user.id : undefined,
                         criado_em: new Date(Date.now()),
                     },
-                    select: { id: true },
+                    select: {
+                        id: true,
+                        partido_atual: {
+                            select: {
+                                sigla: true,
+                            },
+                        },
+                        eleicao: {
+                            select: {
+                                ano: true,
+                            },
+                        },
+                    },
                 });
 
-                return mandato;
+                // Caso o mandato seja mais novo que um possível mandato anterior, atualizar cols de controle.
+                const mandatoAnterior = await prismaTxn.parlamentarMandato.findFirst({
+                    where: {
+                        parlamentar_id: parlamentarId,
+                        removido_em: null,
+                        id: { not: mandato.id },
+                    },
+                    orderBy: {
+                        eleicao: { ano: 'desc' },
+                    },
+                    select: {
+                        eleicao: {
+                            select: {
+                                ano: true,
+                            },
+                        },
+                    },
+                });
+                if (mandatoAnterior && mandatoAnterior.eleicao.ano < mandato.eleicao.ano)
+                    await prismaTxn.parlamentar.update({
+                        where: {
+                            id: parlamentarId,
+                        },
+                        data: {
+                            cargo_mais_recente: dto.cargo,
+                            partido_mais_recente: mandato.partido_atual.sigla,
+                            tem_mandato: true,
+                        },
+                    });
+
+                return { id: mandato.id };
             }
         );
 
@@ -598,6 +640,48 @@ export class ParlamentarService {
                 atualizado_em: new Date(Date.now()),
             },
         });
+
+        // Verificando se é o mandato atual, e caso seja. Deve atualizar as cols de controle.
+        if (
+            (dto.cargo && self.cargo != dto.cargo) ||
+            (dto.partido_atual_id && self.partido_atual_id != dto.partido_atual_id)
+        ) {
+            const mandatoAtual = await this.prisma.parlamentarMandato.findFirstOrThrow({
+                where: {
+                    parlamentar_id: self.parlamentar_id,
+                    removido_em: null,
+                    eleicao: {
+                        atual_para_mandatos: true,
+                    },
+                },
+                orderBy: { eleicao: { ano: 'desc' } },
+                select: {
+                    id: true,
+                    eleicao: {
+                        select: {
+                            ano: true,
+                            atual_para_mandatos: true,
+                        },
+                    },
+                    partido_atual: {
+                        select: {
+                            sigla: true,
+                        },
+                    },
+                },
+            });
+            if (self.id == mandatoAtual.id) {
+                await this.prisma.parlamentar.update({
+                    where: {
+                        id: self.parlamentar_id,
+                    },
+                    data: {
+                        cargo_mais_recente: dto.cargo,
+                        partido_mais_recente: mandatoAtual.partido_atual.sigla,
+                    },
+                });
+            }
+        }
 
         return { id };
     }
