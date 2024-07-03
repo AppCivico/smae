@@ -139,6 +139,11 @@ const PrivConfig: Record<string, false | [ListaDePrivilegios, string | false][]>
         ['AssuntoVariavel.editar', 'Editar Assunto de Variável'],
         ['AssuntoVariavel.remover', 'Remover Assunto de Variável'],
     ],
+    FonteVariavel: [
+        ['FonteVariavel.inserir', 'Inserir Fonte de Variável'],
+        ['FonteVariavel.editar', 'Editar Fonte de Variável'],
+        ['FonteVariavel.remover', 'Remover Fonte de Variável'],
+    ],
 
     CadastroGrupoPortfolio: [
         ['CadastroGrupoPortfolio.administrador', 'Gerenciar Grupos de Portfólio de qualquer órgão'],

@@ -212,4 +212,7 @@ export type ListaDePrivilegios =
     | 'TipoAditivoMDO.remover'
     | 'AssuntoVariavel.inserir'
     | 'AssuntoVariavel.editar'
-    | 'AssuntoVariavel.remover';
+    | 'AssuntoVariavel.remover'
+    | 'FonteVariavel.inserir'
+    | 'FonteVariavel.editar'
+    | 'FonteVariavel.remover';
