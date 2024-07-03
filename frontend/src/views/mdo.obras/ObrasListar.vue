@@ -1,6 +1,6 @@
 <template>
   <div>
-    <div class="flex spacebetween center mb2 g2">
+    <header class="flex spacebetween center mb2 g2">
       <TítuloDePágina id="titulo-da-pagina" />
       <hr class="f1">
       <router-link
@@ -9,9 +9,9 @@
       >
         Nova obra
       </router-link>
-    </div>
+    </header>
 
-    <FiltroDeListagemDeObras />
+    <FiltroDeListagemDeObras :aria-busy="chamadasPendentes.lista" />
 
     <div
       role="region"
