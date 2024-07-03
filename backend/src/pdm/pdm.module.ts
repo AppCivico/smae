@@ -9,6 +9,7 @@ import { VariavelModule } from '../variavel/variavel.module';
 import { PdmController, PlanoSetorialController } from './pdm.controller';
 import { PdmService } from './pdm.service';
 import { PessoaPrivilegioModule } from '../auth/pessoaPrivilegio.module';
+import { ProjetoAssuntoVariavelModule } from '../assunto-variavel/assunto-variavel.module';
 
 @Module({
     imports: [
@@ -20,6 +21,7 @@ import { PessoaPrivilegioModule } from '../auth/pessoaPrivilegio.module';
         VariavelModule,
         UploadModule,
         PessoaPrivilegioModule,
+        ProjetoAssuntoVariavelModule
     ],
     controllers: [PdmController, PlanoSetorialController],
     providers: [PdmService],
