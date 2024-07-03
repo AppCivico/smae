@@ -161,7 +161,7 @@ export class DistribuicaoStatusService {
                         status_id: id,
                     },
                 });
-                if (emUso) throw new HttpException('Edição indisponível, pois tipo de status já está em uso', 400);
+                if (emUso) throw new HttpException('Edição indisponível, pois status já está em uso em histórico', 400);
 
                 const transferenciaTipoDistribuicaoStatus = await prismaTxn.distribuicaoStatus.update({
                     where: { id },
