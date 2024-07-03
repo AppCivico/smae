@@ -11,11 +11,8 @@
       </router-link>
     </div>
 
-    <LocalFilter
-      v-model="listaFiltradaPorTermoDeBusca"
-      class="mb2"
-      :lista="lista"
-    />
+    <FiltroDeListagemDeObras />
+
     <div
       role="region"
       aria-labelledby="titulo-da-pagina"
@@ -65,7 +62,7 @@
         </thead>
         <tbody>
           <tr
-            v-for="item in listaFiltradaPorTermoDeBusca"
+            v-for="item in lista"
             :key="item.id"
           >
             <td>{{ item.orgao_origem.sigla }}</td>
@@ -137,30 +134,50 @@
   </div>
 </template>
 <script setup>
-import { storeToRefs } from 'pinia';
-import { ref } from 'vue';
-import LocalFilter from '@/components/LocalFilter.vue';
+import FiltroDeListagemDeObras from '@/components/obras/FiltroDeListagemDeObras.vue';
 import { obras as schema } from '@/consts/formSchemas';
 import statusObras from '@/consts/statusObras';
 import { useAlertStore } from '@/stores/alert.store';
 import { useObrasStore } from '@/stores/obras.store';
+import { storeToRefs } from 'pinia';
+import { watchEffect } from 'vue';
+import { useRoute } from 'vue-router';
+
+const route = useRoute();
 
 const obrasStore = useObrasStore();
+
 const {
   lista, chamadasPendentes, erro,
 } = storeToRefs(obrasStore);
 const alertStore = useAlertStore();
 
-const listaFiltradaPorTermoDeBusca = ref([]);
-
 async function excluirObra(id, nome) {
   alertStore.confirmAction(`Deseja mesmo remover "${nome}"?`, async () => {
     if (await obrasStore.excluirItem(id)) {
-      obrasStore.buscarTudo({ ipp: 5000 });
+      obrasStore.buscarTudo();
       alertStore.success('Obra removida.');
     }
   }, 'Remover');
 }
 
-obrasStore.buscarTudo({ ipp: 5000 });
+watchEffect(() => {
+  obrasStore.buscarTudo({
+    codigo: route.query.codigo,
+    equipamento_id: route.query.equipamento_id,
+    grupo_tematico_id: route.query.grupo_tematico_id,
+    ipp: route.query.ipp,
+    nome: route.query.nome,
+    ordem_coluna: route.query.ordem_coluna,
+    ordem_direcao: route.query.ordem_direcao,
+    orgao_origem_id: route.query.orgao_origem_id,
+    orgao_responsavel_id: route.query.orgao_responsavel_id,
+    pagina: route.query.pagina,
+    palavra_chave: route.query.palavra_chave,
+    portfolio_id: route.query.portfolio_id,
+    regioes: route.query.regioes,
+    status: route.query.status,
+    tipo_intervencao_id: route.query.tipo_intervencao_id,
+  });
+});
 </script>

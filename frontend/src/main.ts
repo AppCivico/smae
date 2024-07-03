@@ -31,6 +31,7 @@ app.config.errorHandler = (err, instance, info) => {
 };
 
 app.config.globalProperties.gblHabilitarBeta = import.meta.env.VITE_HABILITAR_BETA || false;
+app.config.globalProperties.gblIpp = Number.parseInt(import.meta.env.VITE_PAGINACAO, 10) || 100;
 app.config.globalProperties.gblLimiteDeSeleçãoSimultânea = Number.parseInt(
   import.meta.env.VITE_LIMITE_SELECAO,
   10,
