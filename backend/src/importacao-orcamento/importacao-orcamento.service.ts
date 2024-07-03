@@ -1,4 +1,5 @@
 import { BadRequestException, HttpException, Inject, Injectable, Logger, forwardRef } from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
 import { Cron } from '@nestjs/schedule';
 import { Prisma, TipoPdm, TipoProjeto } from '@prisma/client';
 import { plainToInstance } from 'class-transformer';
@@ -9,6 +10,7 @@ import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
 import { PrismaHelpers } from 'src/common/PrismaHelpers';
 import { JOB_IMPORTACAO_ORCAMENTO_LOCK } from 'src/common/dto/locks';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
+import { RetryPromise } from 'src/common/retryPromise';
 import { DotacaoProcessoNotaService } from 'src/dotacao/dotacao-processo-nota.service';
 import { DotacaoProcessoService } from 'src/dotacao/dotacao-processo.service';
 import { DotacaoService } from 'src/dotacao/dotacao.service';
@@ -20,15 +22,13 @@ import { ProjetoService } from 'src/pp/projeto/projeto.service';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { UploadService } from 'src/upload/upload.service';
 import { read, utils, writeXLSX } from 'xlsx';
+import { PaginatedDto } from '../common/dto/paginated.dto';
+import { Stream2Buffer } from '../common/helpers/Streaming';
+import { PortfolioDto } from '../pp/portfolio/entities/portfolio.entity';
+import { ExtraiComplementoDotacao, TrataDotacaoGrande } from '../sof-api/sof-api.service';
 import { CreateImportacaoOrcamentoDto, FilterImportacaoOrcamentoDto } from './dto/create-importacao-orcamento.dto';
 import { ImportacaoOrcamentoDto, LinhaCsvInputDto } from './entities/importacao-orcamento.entity';
 import { ColunasNecessarias, OrcamentoImportacaoHelpers, OutrasColumns } from './importacao-orcamento.common';
-import { RetryPromise } from 'src/common/retryPromise';
-import { PaginatedDto } from '../common/dto/paginated.dto';
-import { JwtService } from '@nestjs/jwt';
-import { PortfolioDto } from '../pp/portfolio/entities/portfolio.entity';
-import { ExtraiComplementoDotacao, TrataDotacaoGrande } from '../sof-api/sof-api.service';
-import { Stream2Buffer } from '../common/helpers/Streaming';
 const XLSX_ZAHL_PAYLOAD = require('xlsx/dist/xlsx.zahl');
 
 function Str2NumberOrNull(str: string | null): number | null {
@@ -100,20 +100,49 @@ export class ImportacaoOrcamentoService {
     async create(dto: CreateImportacaoOrcamentoDto, user: PessoaFromJwt): Promise<RecordWithId> {
         const arquivo_id = this.uploadService.checkUploadOrDownloadToken(dto.upload);
 
-        if (!dto.tipo_projeto) dto.tipo_projeto = 'PP';
+        if (!dto.tipo_projeto && dto.tipo_pdm) {
+            const sistema = user.assertOneModuloSistema('criar', 'importações');
 
-        if (dto.pdm_id !== undefined)
-            if (!user.hasSomeRoles(['CadastroMeta.orcamento']))
+            if (sistema == 'MDO') {
+                dto.tipo_projeto = 'MDO';
+            } else if (sistema == 'Projetos') {
+                dto.tipo_projeto = 'PP';
+            } else if (sistema == 'PDM') {
+                dto.tipo_pdm = 'PDM';
+            } else if (sistema == 'PlanoSetorial') {
+                dto.tipo_pdm = 'PS';
+            }
+        } else {
+            if (dto.tipo_pdm && dto.tipo_projeto)
+                throw new BadRequestException('Você deve informar apenas um tipo, não ambos.');
+
+            if (!dto.tipo_pdm && dto.pdm_id)
+                throw new BadRequestException('Você deve informar o tipo de PDM ou Plano Setorial');
+
+            if (!dto.tipo_projeto && dto.portfolio_id)
+                throw new BadRequestException('Você deve informar o tipo de Projeto ou Obras');
+        }
+
+        if (dto.pdm_id !== undefined) {
+            if (dto.tipo_pdm == 'PDM' && !user.hasSomeRoles(['CadastroMeta.orcamento']))
                 throw new BadRequestException('Você não tem permissão para Meta');
-        if (dto.portfolio_id !== undefined && dto.tipo_projeto == 'PP')
-            if (!user.hasSomeRoles(['Projeto.orcamento']))
-                throw new BadRequestException('Você não tem permissão para PP');
-        if (dto.portfolio_id !== undefined && dto.tipo_projeto == 'MDO')
-            if (!user.hasSomeRoles(['ProjetoMDO.orcamento']))
-                throw new BadRequestException('Você não tem permissão para MDO');
+
+            if (dto.tipo_pdm == 'PS' && !user.hasSomeRoles(['CadastroMetaPS.orcamento']))
+                throw new BadRequestException('Você não tem permissão para Meta do Plano Setorial');
+        }
+
+        if (dto.portfolio_id !== undefined) {
+            if (dto.tipo_projeto == 'PP' && !user.hasSomeRoles(['Projeto.orcamento']))
+                throw new BadRequestException('Você não tem permissão para Projetos');
+
+            if (dto.tipo_projeto == 'MDO' && !user.hasSomeRoles(['ProjetoMDO.orcamento']))
+                throw new BadRequestException('Você não tem permissão para Obras');
+        }
 
         if (!dto.portfolio_id && !dto.pdm_id)
             throw new BadRequestException('Você deve informar um portfolio ou um pdm para importar o orçamento.');
+
+        // TODO verificar quais Metas as pessoa pode ver, e assim por diante em cada um dos casos acima
 
         const created = await this.prisma.$transaction(
             async (prismaTxn: Prisma.TransactionClient): Promise<RecordWithId> => {
@@ -429,7 +458,7 @@ export class ImportacaoOrcamentoService {
 
     @Cron('* * * * *')
     async handleCron() {
-        if (Boolean(process.env['DISABLE_IMPORTACAO_ORCAMENTO_CRONTAB'])) return;
+        if (process.env['DISABLE_IMPORTACAO_ORCAMENTO_CRONTAB']) return;
 
         await this.prisma.$transaction(
             async (prisma: Prisma.TransactionClient) => {
@@ -540,7 +569,7 @@ export class ImportacaoOrcamentoService {
             },
         });
 
-        const nome_arquivo = job.arquivo.nome_original.replace(/[^A-Za-z0-9\.]/g, '-');
+        const nome_arquivo = job.arquivo.nome_original.replace(/[^A-Za-z0-9.]/g, '-');
 
         const inputBuffer = await Stream2Buffer(
             (await this.uploadService.getReadableStreamById(job.arquivo_id)).stream
