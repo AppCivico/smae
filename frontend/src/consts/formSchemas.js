@@ -1690,9 +1690,12 @@ export const transferenciaDistribuicaoDeRecursos = object({
     .label('Número convênio/pré-convênio')
     .nullable(),
   custeio: number()
-    .label('Custeio')
+    .label('Valor')
     .min(0)
     .required(),
+  percentagem_custeio: number()
+    .label('Porcentagem')
+    .min(0),
   data_empenho: date()
     .label('Data do empenho')
     .max(dataMax)
@@ -1706,9 +1709,12 @@ export const transferenciaDistribuicaoDeRecursos = object({
     .label('Empenho')
     .nullable(),
   investimento: number()
-    .label('Investimento')
+    .label('Valor')
     .min(0)
     .required(),
+  percentagem_investimento: number()
+    .label('Porcentagem')
+    .min(0),
   justificativa_aditamento: string()
     .label('Justificativa para aditamento')
     .max(250)
@@ -1795,6 +1801,8 @@ export const registroDeTransferencia = object({
     .label('Custeio')
     .min(0)
     .required(),
+  percentagem_custeio: number()
+    .min(0),
   dotacao: string()
     .label('Dotação')
     .nullable(),
@@ -1820,9 +1828,12 @@ export const registroDeTransferencia = object({
     .label('Gestor do Contrato')
     .nullable(),
   investimento: number()
-    .label('Investimento')
+    .label('Valor')
     .min(0)
     .required(),
+  percentagem_investimento: number()
+    .label('Porcentagem')
+    .min(0)
 });
 
 export const transferenciasVoluntarias = object({
