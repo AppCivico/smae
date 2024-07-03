@@ -437,6 +437,10 @@ model Pessoa {
     ProjetoProgramaQAtualizei ProjetoPrograma[] @relation("Atualizador")
     ProjetoProgramaQRemovi    ProjetoPrograma[] @relation("Removedor")
 
+    AssuntoVariavelQCriei     AssuntoVariavel[] @relation("Criador")
+    AssuntoVariavelQAtualizei AssuntoVariavel[] @relation("Atualizador")
+    AssuntoVariavelQRemovi    AssuntoVariavel[] @relation("Removedor")
+
     @@index([email])
     @@map("pessoa")
 }
@@ -1493,9 +1497,46 @@ model Variavel {
     suspensao_controle       VariavelSuspensaControle[]
     MetaStatusAtrasoVariavel MetaStatusAtrasoVariavel[]
     Etapa                    Etapa[]
+    VariavelAssuntoVariavel  VariavelAssuntoVariavel[]
 
     @@index([regiao_id])
     @@map("variavel")
+}
+
+model VariavelAssuntoVariavel {
+    id Int @id @default(autoincrement())
+
+    variavel_id Int
+    variavel    Variavel @relation(fields: [variavel_id], references: [id])
+
+    assunto_variavel_id Int
+    assunto_variavel    AssuntoVariavel @relation(fields: [assunto_variavel_id], references: [id])
+
+    @@index([variavel_id])
+    @@index([assunto_variavel_id])
+    @@map("variavel_assunto_variavel")
+}
+
+model AssuntoVariavel {
+    id Int @id @default(autoincrement())
+
+    nome String
+
+    criado_por Int
+    criado_em  DateTime @default(now()) @db.Timestamptz(6)
+
+    atualizado_por Int?
+    atualizado_em  DateTime? @db.Timestamptz(6)
+
+    removido_por Int?
+    removido_em  DateTime? @db.Timestamptz(6)
+
+    criador                 Pessoa                    @relation("Criador", fields: [criado_por], references: [id])
+    atualizador             Pessoa?                   @relation("Atualizador", fields: [atualizado_por], references: [id])
+    removedor               Pessoa?                   @relation("Removedor", fields: [removido_por], references: [id])
+    VariavelAssuntoVariavel VariavelAssuntoVariavel[]
+
+    @@map("assunto_variavel")
 }
 
 model VariavelSuspensaoLog {
@@ -4797,7 +4838,7 @@ model Parlamentar {
     em_atividade  Boolean        @default(false)
     uf_nascimento ParlamentarUF?
 
-    cpf         String?
+    cpf String?
 
     foto_upload_id Int?
     foto           Arquivo? @relation(fields: [foto_upload_id], references: [id])
