@@ -6,39 +6,40 @@ import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { FindOneParams } from '../common/decorators/find-params';
 import { BatchRecordWithId, RecordWithId } from '../common/dto/record-with-id.dto';
 import { BatchSerieUpsert } from './dto/batch-serie-upsert.dto';
-import { CreateGeradorVariavelDto, CreateVariavelDto } from './dto/create-variavel.dto';
+import { CreateGeradorVariaveBaselDto, CreateVariavelBaseDto, CreateVariavelPDMDto } from './dto/create-variavel.dto';
 import { FilterVariavelDto } from './dto/filter-variavel.dto';
 import { ListSeriesAgrupadas, ListVariavelDto } from './dto/list-variavel.dto';
 import { UpdateVariavelDto } from './dto/update-variavel.dto';
 import { SerieIndicadorValorNominal, SerieValorNomimal } from './entities/variavel.entity';
 import { VariavelService } from './variavel.service';
 import { ListaDePrivilegios } from '../common/ListaDePrivilegios';
+import { TipoVariavel } from '@prisma/client';
 
-export const ROLES_ACESSO_VARIAVEL: ListaDePrivilegios[] = [
+export const ROLES_ACESSO_VARIAVEL_PDM: ListaDePrivilegios[] = [
     'CadastroIndicador.inserir',
     'CadastroIndicador.editar',
     'CadastroMeta.listar',
 ];
+
 @ApiTags('Indicador')
 @Controller('')
-export class VariavelController {
+export class IndicadorVariavelPDMController {
+    private tipo: TipoVariavel = 'PDM';
+
     constructor(private readonly variavelService: VariavelService) {}
 
     @Post('indicador-variavel')
     @ApiBearerAuth('access-token')
     @Roles(['CadastroIndicador.inserir'])
-    async create(
-        @Body() createVariavelDto: CreateVariavelDto,
-        @CurrentUser() user: PessoaFromJwt
-    ): Promise<RecordWithId> {
-        return await this.variavelService.create(createVariavelDto, user);
+    async create(@Body() dto: CreateVariavelPDMDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
+        return await this.variavelService.create(this.tipo, dto, user);
     }
 
     @Get('indicador-variavel')
     @ApiBearerAuth('access-token')
-    @Roles([...ROLES_ACESSO_VARIAVEL])
+    @Roles([...ROLES_ACESSO_VARIAVEL_PDM])
     async listAll(@Query() filters: FilterVariavelDto, @CurrentUser() user: PessoaFromJwt): Promise<ListVariavelDto> {
-        return { linhas: await this.variavelService.findAll(filters) };
+        return { linhas: await this.variavelService.findAll(this.tipo, filters) };
     }
 
     @Patch('indicador-variavel/:id')
@@ -46,10 +47,10 @@ export class VariavelController {
     @Roles(['CadastroIndicador.editar'])
     async update(
         @Param() params: FindOneParams,
-        @Body() updateUnidadeMedidaDto: UpdateVariavelDto,
+        @Body() dto: UpdateVariavelDto,
         @CurrentUser() user: PessoaFromJwt
     ): Promise<RecordWithId> {
-        return await this.variavelService.update(+params.id, updateUnidadeMedidaDto, user);
+        return await this.variavelService.update(this.tipo, +params.id, dto, user);
     }
 
     @Delete('indicador-variavel/:id')
@@ -58,7 +59,7 @@ export class VariavelController {
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.ACCEPTED)
     async remove(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt) {
-        await this.variavelService.remove(+params.id, user);
+        await this.variavelService.remove(this.tipo, +params.id, user);
         return '';
     }
 
@@ -69,7 +70,7 @@ export class VariavelController {
     @HttpCode(HttpStatus.NO_CONTENT)
     @Roles(['CadastroIndicador.inserir'])
     async patchSeriePrevisto(@Body() series: BatchSerieUpsert, @CurrentUser() user: PessoaFromJwt) {
-        await this.variavelService.batchUpsertSerie(series.valores, user);
+        await this.variavelService.batchUpsertSerie(this.tipo, series.valores, user);
 
         return;
     }
@@ -79,14 +80,13 @@ export class VariavelController {
     @ApiBearerAuth('access-token')
     @Roles(['CadastroIndicador.inserir'])
     async create_generated(
-        @Body() dto: CreateGeradorVariavelDto,
+        @Body() dto: CreateGeradorVariaveBaselDto,
         @CurrentUser() user: PessoaFromJwt
     ): Promise<BatchRecordWithId> {
-        return { ids: await this.variavelService.create_region_generated(dto, user) };
+        return { ids: await this.variavelService.create_region_generated(this.tipo, dto, user) };
     }
 
     @ApiExtraModels(SerieValorNomimal, SerieIndicadorValorNominal)
-    @ApiTags('Indicador')
     @Get('indicador-variavel/:id/serie')
     @ApiBearerAuth('access-token')
     @Roles(['CadastroIndicador.editar', 'CadastroIndicador.inserir', 'CadastroMeta.listar'])
@@ -94,6 +94,89 @@ export class VariavelController {
         @Param() params: FindOneParams,
         @CurrentUser() user: PessoaFromJwt
     ): Promise<ListSeriesAgrupadas> {
-        return await this.variavelService.getSeriePrevistoRealizado(params.id);
+        return await this.variavelService.getSeriePrevistoRealizado(this.tipo, params.id);
+    }
+}
+export const ROLES_ACESSO_VARIAVEL_PS: ListaDePrivilegios[] = [
+    'CadastroIndicadorPS.inserir',
+    'CadastroIndicadorPS.editar',
+    'CadastroMetaPS.listar',
+    ...ROLES_ACESSO_VARIAVEL_PDM,
+];
+
+@ApiTags('Variável Global')
+@Controller('')
+export class VariavelGlobalController {
+    private tipo: TipoVariavel = 'Global';
+
+    constructor(private readonly variavelService: VariavelService) {}
+
+    @Post('variavel')
+    @ApiBearerAuth('access-token')
+    @Roles(['CadastroIndicadorPS.inserir'])
+    async create(@Body() dto: CreateVariavelBaseDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
+        return await this.variavelService.create(this.tipo, dto, user);
+    }
+
+    @Get('variavel')
+    @ApiBearerAuth('access-token')
+    @Roles([...ROLES_ACESSO_VARIAVEL_PDM])
+    async listAll(@Query() filters: FilterVariavelDto, @CurrentUser() user: PessoaFromJwt): Promise<ListVariavelDto> {
+        return { linhas: await this.variavelService.findAll(this.tipo, filters) };
+    }
+
+    @Patch('variavel/:id')
+    @ApiBearerAuth('access-token')
+    @Roles(['CadastroIndicadorPS.editar'])
+    async update(
+        @Param() params: FindOneParams,
+        @Body() dto: UpdateVariavelDto,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<RecordWithId> {
+        return await this.variavelService.update(this.tipo, +params.id, dto, user);
+    }
+
+    @Delete('variavel/:id')
+    @ApiBearerAuth('access-token')
+    @Roles(['CadastroIndicadorPS.editar'])
+    @ApiNoContentResponse()
+    @HttpCode(HttpStatus.ACCEPTED)
+    async remove(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt) {
+        await this.variavelService.remove(this.tipo, +params.id, user);
+        return '';
+    }
+
+    // patch precisa ficar antes da rota do :id/serie-previsto
+    @Patch('variavel-serie')
+    @ApiBearerAuth('access-token')
+    @ApiNoContentResponse()
+    @HttpCode(HttpStatus.NO_CONTENT)
+    @Roles(['CadastroIndicadorPS.inserir'])
+    async patchSeriePrevisto(@Body() series: BatchSerieUpsert, @CurrentUser() user: PessoaFromJwt) {
+        await this.variavelService.batchUpsertSerie(this.tipo, series.valores, user);
+
+        return;
+    }
+
+    // manter antes da proxima rota
+    @Post('variavel/gerador-regionalizado')
+    @ApiBearerAuth('access-token')
+    @Roles(['CadastroIndicadorPS.inserir'])
+    async create_generated(
+        @Body() dto: CreateGeradorVariaveBaselDto,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<BatchRecordWithId> {
+        return { ids: await this.variavelService.create_region_generated(this.tipo, dto, user) };
+    }
+
+    @ApiExtraModels(SerieValorNomimal, SerieIndicadorValorNominal)
+    @Get('variavel/:id/serie')
+    @ApiBearerAuth('access-token')
+    @Roles(['CadastroIndicadorPS.editar', 'CadastroIndicadorPS.inserir', 'CadastroMetaPS.listar'])
+    async getSeriePrevistoRealizado(
+        @Param() params: FindOneParams,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<ListSeriesAgrupadas> {
+        return await this.variavelService.getSeriePrevistoRealizado(this.tipo, params.id);
     }
 }

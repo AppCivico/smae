@@ -18,9 +18,9 @@ import {
 import { IsOnlyDate } from '../../common/decorators/IsDateOnly';
 import { DateTransform } from '../../auth/transforms/date.transform';
 import { PartialType, PickType } from '@nestjs/swagger';
-import { CreateVariavelDto } from '../../variavel/dto/create-variavel.dto';
+import { CreateVariavelBaseDto } from '../../variavel/dto/create-variavel.dto';
 
-export class UpsertEtapaVariavelDto extends PartialType(PickType(CreateVariavelDto, ['codigo', 'titulo'])) {}
+export class UpsertEtapaVariavelDto extends PartialType(PickType(CreateVariavelBaseDto, ['codigo', 'titulo'])) {}
 
 export class CreateEtapaDto {
     /**

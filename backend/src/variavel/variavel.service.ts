@@ -1,6 +1,13 @@
 import { BadRequestException, HttpException, Injectable, Logger } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { Periodicidade, Prisma, Serie, TipoVariavelCategorica, VariavelCategoricaValor } from '@prisma/client';
+import {
+    Periodicidade,
+    Prisma,
+    Serie,
+    TipoVariavel,
+    TipoVariavelCategorica,
+    VariavelCategoricaValor,
+} from '@prisma/client';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { CONST_CRONO_VAR_CATEGORICA_ID } from '../common/consts';
 import { Date2YMD, DateYMD } from '../common/date2ymd';
@@ -13,7 +20,15 @@ import {
     SerieUpsert,
     ValidatedUpsert,
 } from './dto/batch-serie-upsert.dto';
-import { CreateGeradorVariavelDto, CreatePeloIndicadorDto, CreateVariavelDto } from './dto/create-variavel.dto';
+import {
+    CreateGeradorVariaveBaselDto,
+    CreateGeradorVariavePDMlDto,
+    CreateGeradorVariavelPDMDto,
+    CreatePeloIndicadorDto,
+    CreateVariavelBaseDto,
+    CreateVariavelPDMDto,
+    VariaveisPeriodosDto,
+} from './dto/create-variavel.dto';
 import { FilterVariavelDto } from './dto/filter-variavel.dto';
 import { ListSeriesAgrupadas } from './dto/list-variavel.dto';
 import { UpdateVariavelDto } from './dto/update-variavel.dto';
@@ -36,6 +51,8 @@ type IndicadorInfo = {
     id: number;
     iniciativa_id: number | null;
     atividade_id: number | null;
+    regionalizavel: boolean;
+    nivel_regionalizacao: number | null;
     meta_id: number | null;
     periodicidade?: Periodicidade;
 };
@@ -108,17 +125,27 @@ export class VariavelService {
         return arr;
     }
 
-    async create(dto: CreateVariavelDto, user: PessoaFromJwt) {
+    async create(tipo: TipoVariavel, dto: CreateVariavelBaseDto | CreateVariavelPDMDto, user: PessoaFromJwt) {
         // TODO: verificar se todos os membros de createVariavelDto.responsaveis estão ativos
         // e sao realmente do órgão createVariavelDto.orgao_id
 
         if (dto.supraregional === null) delete dto.supraregional;
 
-        await this.checkPermissions(dto, user);
+        let indicador: IndicadorInfo | undefined = undefined;
+        if (tipo == 'PDM') {
+            if (!('indicador_id' in dto) || !dto.indicador_id)
+                throw new BadRequestException('Indicador é obrigatório para variáveis do PDM');
 
-        const indicador = await this.loadIndicador(dto.indicador_id);
+            indicador = await this.buscaIndicadorParaVariavel(dto.indicador_id);
 
-        this.fixIndicadorInicioFim(dto, indicador);
+            this.fixIndicadorInicioFim(dto, indicador);
+
+            await this.checkPermissionsPDM(dto, user);
+        } else if (tipo == 'Global') {
+            // Dunno yet
+        } else {
+            throw new BadRequestException('Tipo de variável inválido para criação manual');
+        }
 
         const created = await this.prisma.$transaction(
             async (prismaTxn: Prisma.TransactionClient): Promise<RecordWithId> => {
@@ -126,22 +153,24 @@ export class VariavelService {
                     await this.carregaVariavelCategorica(prismaTxn, dto.variavel_categorica_id);
                 }
 
-                if (indicador.regionalizavel && dto.regiao_id) {
-                    const regiao = await this.prisma.regiao.findFirstOrThrow({
-                        where: { id: dto.regiao_id },
-                        select: { nivel: true },
-                    });
+                if (indicador) {
+                    if (indicador.regionalizavel && dto.regiao_id) {
+                        const regiao = await this.prisma.regiao.findFirstOrThrow({
+                            where: { id: dto.regiao_id },
+                            select: { nivel: true },
+                        });
 
-                    if (regiao.nivel != indicador.nivel_regionalizacao)
-                        throw new BadRequestException(
-                            `O nível da região (${regiao.nivel}) precisa ser igual ao do indicador (${indicador.nivel_regionalizacao})`
-                        );
+                        if (regiao.nivel != indicador.nivel_regionalizacao)
+                            throw new BadRequestException(
+                                `O nível da região (${regiao.nivel}) precisa ser igual ao do indicador (${indicador.nivel_regionalizacao})`
+                            );
+                    }
+
+                    if (!indicador.regionalizavel && dto.regiao_id)
+                        throw new BadRequestException(`Indicador sem regionalização, não é possível enviar região.`);
                 }
 
-                if (!indicador.regionalizavel && dto.regiao_id)
-                    throw new BadRequestException(`Indicador sem regionalização, não é possível enviar região.`);
-
-                return await this.performVariavelSave(prismaTxn, dto, dto.indicador_id, indicador, dto.responsaveis);
+                return await this.performVariavelSave(tipo, prismaTxn, dto, indicador, dto.responsaveis);
             },
             {
                 isolationLevel: 'Serializable',
@@ -153,7 +182,11 @@ export class VariavelService {
         return { id: created.id };
     }
 
-    async create_region_generated(dto: CreateGeradorVariavelDto, user: PessoaFromJwt): Promise<RecordWithId[]> {
+    async create_region_generated(
+        tipo: TipoVariavel,
+        dto: CreateGeradorVariaveBaselDto | CreateGeradorVariavelPDMDto,
+        user: PessoaFromJwt
+    ): Promise<RecordWithId[]> {
         const regioesDb = await this.prisma.regiao.findMany({
             where: { id: { in: dto.regioes }, pdm_codigo_sufixo: { not: null }, removido_em: null },
             select: { nivel: true },
@@ -169,14 +202,21 @@ export class VariavelService {
         if (Object.keys(porNivel).length != 1)
             throw new HttpException('Todas as regiões precisam ser do mesmo nível', 400);
 
-        await this.checkPermissions(dto, user);
+        let indicador_id: number | undefined = undefined;
+        if (tipo == 'PDM') {
+            if (!('indicador_id' in dto))
+                throw new BadRequestException('Indicador é obrigatório para variáveis do PDM');
+
+            await this.checkPermissionsPDM(dto, user);
+            indicador_id = dto.indicador_id;
+        }
 
         const responsaveis = dto.responsaveis;
-        const indicador_id = dto.indicador_id;
 
-        const indicador = await this.loadIndicador(indicador_id);
+        const indicador = indicador_id ? await this.buscaIndicadorParaVariavel(indicador_id) : undefined;
 
-        this.fixIndicadorInicioFim(dto, indicador);
+        if (indicador) this.fixIndicadorInicioFim(dto, indicador);
+        // TODO para Global: aqui precisa calcular o inicio/fim da variavel de alguma forma, ou obrigar a passar
 
         const created = await this.prisma.$transaction(
             async (prismaTxn: Prisma.TransactionClient): Promise<RecordWithId[]> => {
@@ -192,14 +232,14 @@ export class VariavelService {
                 delete (dto as any).codigo;
                 for (const regiao of regions) {
                     const variavel = await this.performVariavelSave(
+                        tipo,
                         prismaTxn,
                         {
-                            ...dto, // aqui eu passo tudo
+                            ...dto, // aqui eu passo tudo, pq no performVariavelSave eu deixo só o que é necessário
                             titulo: dto.titulo + ' ' + regiao.descricao,
                             codigo: prefixo + regiao.pdm_codigo_sufixo,
                             regiao_id: regiao.id,
                         },
-                        indicador_id,
                         indicador,
                         responsaveis
                     );
@@ -208,13 +248,13 @@ export class VariavelService {
 
                 if (dto.supraregional) {
                     await this.performVariavelSave(
+                        tipo,
                         prismaTxn,
                         {
                             ...dto, // aqui eu deixo tudo tbm, só pra não duplicar 100%
                             titulo: dto.titulo,
                             codigo: prefixo,
                         },
-                        indicador_id,
                         indicador,
                         responsaveis
                     );
@@ -233,27 +273,48 @@ export class VariavelService {
     }
 
     private async performVariavelSave(
+        tipo: TipoVariavel,
         prismaTxn: Prisma.TransactionClient,
-        dto: CreateVariavelDto,
-        indicador_id: number,
-        indicador: IndicadorInfo,
+        dto: CreateVariavelBaseDto,
+        indicador: IndicadorInfo | undefined,
         responsaveis: number[]
     ) {
+        const indicador_id = indicador?.id;
         const jaEmUso = await prismaTxn.variavel.count({
             where: {
                 removido_em: null,
                 codigo: dto.codigo,
-                indicador_variavel: {
-                    some: {
-                        indicador_id: indicador_id,
+
+                OR: [
+                    indicador_id
+                        ? {
+                              tipo: 'PDM',
+                              indicador_variavel: {
+                                  some: {
+                                      indicador_id: indicador_id,
+                                  },
+                              },
+                          }
+                        : {},
+                    {
+                        tipo: 'Global',
                     },
-                },
+                ],
             },
         });
-        if (jaEmUso > 0) throw new HttpException(`Código ${dto.codigo} já está em uso no indicador.`, 400);
+        if (jaEmUso > 0 && tipo == 'PDM')
+            throw new BadRequestException(`Código ${dto.codigo} já está em uso no indicador.`);
+        if (jaEmUso > 0 && tipo == 'Global')
+            throw new BadRequestException(`Código ${dto.codigo} já está em uso no sistema.`);
+
+        // TODO verificar quem pode usar o orgao_proprietario_id
+        // TODO orgao_proprietario_id, validacao_grupo_ids, liberacao_grupo_ids
+
+        const periodos = this.getPeriodTuples(dto.periodos);
 
         const variavel = await prismaTxn.variavel.create({
             data: {
+                tipo,
                 titulo: dto.titulo,
                 codigo: dto.codigo,
                 acumulativa: dto.acumulativa,
@@ -271,11 +332,16 @@ export class VariavelService {
                 fim_medicao: dto.fim_medicao,
                 supraregional: dto.supraregional,
 
-                indicador_variavel: {
-                    create: {
-                        indicador_id: indicador_id,
-                    },
-                },
+                dado_aberto: dto.dado_aberto,
+                metodologia: dto.metodologia,
+                descricao: dto.descricao,
+                fonte_id: dto.fonte_id,
+                orgao_proprietario_id: dto.orgao_proprietario_id,
+                nivel_regionalizacao: dto.nivel_regionalizacao,
+
+                ...periodos,
+
+                indicador_variavel: indicador_id ? { create: { indicador_id: indicador_id } } : undefined,
                 VariavelAssuntoVariavel: {
                     createMany:
                         Array.isArray(dto.assuntos) && dto.assuntos.length > 0
@@ -286,7 +352,7 @@ export class VariavelService {
             select: { id: true },
         });
 
-        await this.resyncIndicadorVariavel(indicador, variavel.id, prismaTxn);
+        if (indicador) await this.resyncIndicadorVariavel(indicador, variavel.id, prismaTxn);
 
         await prismaTxn.variavelResponsavel.createMany({
             data: await this.buildVarResponsaveis(variavel.id, responsaveis),
@@ -297,8 +363,45 @@ export class VariavelService {
         return variavel;
     }
 
+    private getPeriodTuples(p: VariaveisPeriodosDto | null): {
+        periodo_preenchimento: number[];
+        periodo_validacao: number[];
+        periodo_liberacao: number[];
+    } {
+        const periodo_preenchimento: number[] = [];
+        const periodo_validacao: number[] = [];
+        const periodo_liberacao: number[] = [];
+
+        // se caiu nessa função é pq quer atualizar
+        if (!p || !Array.isArray(p)) return { periodo_preenchimento, periodo_validacao, periodo_liberacao };
+
+        if (p.preenchimento_inicio >= p.preenchimento_fim) {
+            throw new Error('Preenchimento: Início deve ser menor que fim');
+        }
+        if (p.validacao_inicio >= p.validacao_fim) {
+            throw new Error('Validação: Início deve ser menor que fim');
+        }
+        if (p.liberacao_inicio >= p.liberacao_fim) {
+            throw new Error('Liberação: Início deve ser menor que fim');
+        }
+
+        // Cada período de preenchimento deve ser menor que o próximo
+        if (p.preenchimento_fim >= p.validacao_inicio) {
+            throw new Error('Preenchimento fim deve ser menor que Validação início');
+        }
+        if (p.validacao_fim >= p.liberacao_inicio) {
+            throw new Error('Validação fim deve ser menor que Liberação início');
+        }
+
+        return {
+            periodo_preenchimento: [p.preenchimento_inicio, p.preenchimento_inicio],
+            periodo_liberacao: [p.liberacao_inicio, p.liberacao_fim],
+            periodo_validacao: [p.validacao_inicio, p.validacao_fim],
+        };
+    }
+
     private async fixIndicadorInicioFim(
-        createVariavelDto: CreateVariavelDto | CreateGeradorVariavelDto,
+        createVariavelDto: CreateVariavelBaseDto | CreateGeradorVariaveBaselDto,
         indicador: IndicadorInfo
     ) {
         if (createVariavelDto.atraso_meses === undefined) createVariavelDto.atraso_meses = 1;
@@ -314,7 +417,7 @@ export class VariavelService {
         }
     }
 
-    private async loadIndicador(indicador_id: number) {
+    async buscaIndicadorParaVariavel(indicador_id: number) {
         const indicador = await this.prisma.indicador.findFirst({
             where: { id: indicador_id, removido_em: null },
             select: {
@@ -331,11 +434,11 @@ export class VariavelService {
         return indicador;
     }
 
-    private async checkPermissions(
-        createVariavelDto: CreateVariavelDto | CreateGeradorVariavelDto,
+    private async checkPermissionsPDM(
+        createVariavelDto: CreateVariavelPDMDto | CreateGeradorVariavePDMlDto,
         user: PessoaFromJwt
     ) {
-        const meta_id = await this.getMetaIdDoIndicador(createVariavelDto.indicador_id!, this.prisma);
+        const meta_id = await this.getMetaIdDoIndicador(createVariavelDto.indicador_id, this.prisma);
         if (!user.hasSomeRoles(['CadastroIndicador.inserir', 'PDM.admin_cp'])) {
             const filterIdIn = await user.getMetaIdsFromAnyModel(this.prisma.view_meta_pessoa_responsavel);
             if (filterIdIn.includes(meta_id) === false)
@@ -473,7 +576,7 @@ export class VariavelService {
         }
     }
 
-    async findAll(filters: FilterVariavelDto | undefined = undefined): Promise<VariavelItemDto[]> {
+    async findAll(tipo: TipoVariavel, filters: FilterVariavelDto | undefined = undefined): Promise<VariavelItemDto[]> {
         let filterQuery: any = {};
 
         const removidoStatus = filters?.remover_desativados == true ? false : undefined;
@@ -706,35 +809,43 @@ export class VariavelService {
         return ret;
     }
 
-    async update(variavelId: number, dto: UpdateVariavelDto, user: PessoaFromJwt) {
+    async update(tipo: TipoVariavel, variavelId: number, dto: UpdateVariavelDto, user: PessoaFromJwt) {
         // TODO: verificar se todos os membros de createVariavelDto.responsaveis estão ativos e sao realmente do orgão createVariavelDto.orgao_id
 
-        // buscando apenas pelo indicador pai verdadeiro desta variavel
-        const selfIndicadorVariavel = await this.prisma.indicadorVariavel.findFirst({
-            where: { variavel_id: variavelId, indicador_origem_id: null },
+        const selfBefUpdate = await this.prisma.variavel.findFirstOrThrow({
+            where: { id: variavelId, tipo, removido_em: null },
             select: {
-                indicador_id: true,
-                variavel: {
-                    select: {
-                        periodicidade: true,
-                        supraregional: true,
-                        variavel_categorica_id: true,
-                    },
-                },
+                periodicidade: true,
+                supraregional: true,
+                variavel_categorica_id: true,
             },
         });
-        if (!selfIndicadorVariavel)
-            throw new HttpException('Variavel não encontrada, confira se você está no indicador base', 400);
-
-        if (selfIndicadorVariavel.variavel.variavel_categorica_id === CONST_CRONO_VAR_CATEGORICA_ID)
+        if (selfBefUpdate.variavel_categorica_id === CONST_CRONO_VAR_CATEGORICA_ID)
             throw new HttpException('Variável do tipo Cronograma não pode ser atualizada', 400);
 
-        const meta_id = await this.getMetaIdDoIndicador(selfIndicadorVariavel.indicador_id, this.prisma);
-        // OBS: como que chega aqui sem ser pela controller? na controller pede pelo [CadastroIndicador.editar]
-        if (!user.hasSomeRoles(['CadastroIndicador.editar', 'PDM.admin_cp'])) {
-            const filterIdIn = await user.getMetaIdsFromAnyModel(this.prisma.view_meta_pessoa_responsavel);
-            if (filterIdIn.includes(meta_id) === false)
-                throw new HttpException('Sem permissão para criar variável nesta meta', 400);
+        let indicador_id: number | undefined = undefined;
+        if (tipo == 'PDM') {
+            // buscando apenas pelo indicador pai verdadeiro desta variavel
+            const selfIndicadorVariavel = await this.prisma.indicadorVariavel.findFirst({
+                where: { variavel_id: variavelId, indicador_origem_id: null },
+                select: {
+                    indicador_id: true,
+                },
+            });
+
+            if (!selfIndicadorVariavel)
+                throw new HttpException('Variavel não encontrada, confira se você está no indicador base', 400);
+
+            // check de permissões
+            const meta_id = await this.getMetaIdDoIndicador(selfIndicadorVariavel.indicador_id, this.prisma);
+            // OBS: como que chega aqui sem ser pela controller? na controller pede pelo [CadastroIndicador.editar]
+            if (!user.hasSomeRoles(['CadastroIndicador.editar', 'PDM.admin_cp'])) {
+                const filterIdIn = await user.getMetaIdsFromAnyModel(this.prisma.view_meta_pessoa_responsavel);
+                if (filterIdIn.includes(meta_id) === false)
+                    throw new HttpException('Sem permissão para criar variável nesta meta', 400);
+            }
+
+            indicador_id = selfIndicadorVariavel.indicador_id;
         }
 
         if (dto.codigo !== undefined) {
@@ -743,46 +854,48 @@ export class VariavelService {
                     removido_em: null,
                     codigo: dto.codigo,
                     NOT: { id: variavelId },
-                    indicador_variavel: {
-                        some: {
-                            indicador_id: selfIndicadorVariavel.indicador_id,
+
+                    OR: [
+                        {
+                            tipo: 'Global',
                         },
-                    },
+                        indicador_id
+                            ? {
+                                  tipo: 'PDM',
+                                  indicador_variavel: { some: { indicador_id: indicador_id } },
+                              }
+                            : {},
+                    ],
                 },
             });
             if (jaEmUso > 0) throw new HttpException(`Código ${dto.codigo} já está em uso no indicador.`, 400);
         }
 
-        // e com o indicador verdadeiro, temos os dados para recalcular os niveis
-        const indicador = await this.prisma.indicador.findFirst({
-            where: { id: selfIndicadorVariavel.indicador_id },
-            select: {
-                id: true,
-                iniciativa_id: true,
-                atividade_id: true,
-                meta_id: true,
-                periodicidade: true,
-            },
-        });
-        if (!indicador) throw new HttpException('Indicador não encontrado.', 400);
+        // e com o indicador verdadeiro, temos os dados para recalcular os níveis
+        const indicador = indicador_id ? await this.buscaIndicadorParaVariavel(indicador_id) : undefined;
 
-        let oldValue = selfIndicadorVariavel.variavel.periodicidade;
+        let oldValue = selfBefUpdate.periodicidade;
         if (dto.periodicidade) oldValue = dto.periodicidade;
 
-        if (oldValue === indicador.periodicidade) {
-            dto.fim_medicao = null;
-            dto.inicio_medicao = null;
-        } else {
-            ['inicio_medicao', 'fim_medicao'].forEach((e: 'inicio_medicao' | 'fim_medicao') => {
-                if (dto[e] === null) {
-                    throw new HttpException(`${e}| ${InicioFimErrMsg}`, 400);
-                }
-            });
+        if (tipo == 'PDM') {
+            if (!indicador) throw new BadRequestException('Indicador é necessário para variáveis do PDM');
+            if (oldValue === indicador.periodicidade) {
+                dto.fim_medicao = null;
+                dto.inicio_medicao = null;
+            } else {
+                ['inicio_medicao', 'fim_medicao'].forEach((e: 'inicio_medicao' | 'fim_medicao') => {
+                    if (dto[e] === null) {
+                        throw new HttpException(`${e}| ${InicioFimErrMsg}`, 400);
+                    }
+                });
+            }
+        } else if (tipo == 'Global') {
+            //
         }
 
         // Quando a variável é supraregional, está sendo enviado regiao_id = 0
         // Portanto tratando para não dar problema com a FK no Prisma.
-        if (dto.regiao_id == 0 && selfIndicadorVariavel.variavel.supraregional == true) delete dto.regiao_id;
+        if (dto.regiao_id == 0 && selfBefUpdate.supraregional == true) delete dto.regiao_id;
 
         const now = new Date(Date.now());
         await this.prisma.$transaction(async (prismaTxn: Prisma.TransactionClient) => {
@@ -818,7 +931,7 @@ export class VariavelService {
                 dto.mostrar_monitoramento = prevDesativado?.previo_status_mostrar_monitoramento ?? true;
             }
 
-            const old_variavel_categorica_id = selfIndicadorVariavel.variavel.variavel_categorica_id;
+            const old_variavel_categorica_id = selfBefUpdate.variavel_categorica_id;
 
             if (dto.variavel_categorica_id !== null && dto.variavel_categorica_id) {
                 const variavelCategorica = await this.carregaVariavelCategorica(prismaTxn, dto.variavel_categorica_id);
@@ -917,6 +1030,9 @@ export class VariavelService {
                 });
             }
 
+            // TODO: mesmos TODO do create, verificar quem pode usar o orgao_proprietario_id
+            // TODO orgao_proprietario_id, validacao_grupo_ids, liberacao_grupo
+
             const updated = await prismaTxn.variavel.update({
                 where: { id: variavelId },
                 data: {
@@ -935,6 +1051,15 @@ export class VariavelService {
                     atraso_meses: dto.atraso_meses,
                     inicio_medicao: dto.inicio_medicao,
                     fim_medicao: dto.fim_medicao,
+
+                    dado_aberto: dto.dado_aberto,
+                    metodologia: dto.metodologia,
+                    descricao: dto.descricao,
+                    fonte_id: dto.fonte_id,
+                    orgao_proprietario_id: dto.orgao_proprietario_id,
+                    nivel_regionalizacao: dto.nivel_regionalizacao,
+
+                    ...(dto.periodos ? this.getPeriodTuples(dto.periodos) : {}),
 
                     suspendida_em: suspendida ? now : null,
                 },
@@ -956,7 +1081,7 @@ export class VariavelService {
             }
 
             if (Array.isArray(responsaveis)) {
-                await this.resyncIndicadorVariavel(indicador, variavelId, prismaTxn);
+                if (indicador) await this.resyncIndicadorVariavel(indicador, variavelId, prismaTxn);
                 await prismaTxn.variavelResponsavel.deleteMany({
                     where: { variavel_id: variavelId },
                 });
@@ -1104,7 +1229,7 @@ export class VariavelService {
         return [];
     }
 
-    async remove(variavelId: number, user: PessoaFromJwt) {
+    async remove(tipo: TipoVariavel, variavelId: number, user: PessoaFromJwt) {
         // buscando apenas pelo indicador pai verdadeiro desta variavel
         const selfIdicadorVariavel = await this.prisma.indicadorVariavel.findFirst({
             where: { variavel_id: variavelId, indicador_origem_id: null },
@@ -1262,7 +1387,7 @@ export class VariavelService {
         return porPeriodo;
     }
 
-    async getSeriePrevistoRealizado(variavelId: number) {
+    async getSeriePrevistoRealizado(tipo: TipoVariavel, variavelId: number) {
         const indicador = await this.getIndicadorViaVariavel(variavelId);
         const indicadorVariavelRelList = indicador.IndicadorVariavel.filter((v) => {
             return v.variavel.id === variavelId;
@@ -1441,7 +1566,7 @@ export class VariavelService {
         return valids;
     }
 
-    async batchUpsertSerie(valores: SerieUpsert[], user: PessoaFromJwt) {
+    async batchUpsertSerie(tipo: TipoVariavel, valores: SerieUpsert[], user: PessoaFromJwt) {
         // TODO opcionalmente verificar se o modificado_em de todas as variáveis ainda é igual
         // em relação ao momento JWT foi assinado, pra evitar sobrescrita da informação sem aviso para o usuário
         // da mesma forma, ao buscar os que não tem ID, não deve existir outro valor já existente no periodo
