@@ -27,8 +27,8 @@ import { RecordWithId } from '../common/dto/record-with-id.dto';
 import { FindOneParams } from '../common/decorators/find-params';
 import { Roles } from '../auth/decorators/roles.decorator';
 
-@ApiTags('Modalidade de Contratação (Exclusivo para Obras)')
-@Controller('modalidade-contratacao-mdo')
+@ApiTags('Assunto Variável (análogo Categoria/Tags)')
+@Controller('assunto-variavel')
 export class ProjetoAssuntoVariavelController {
     constructor(private readonly assuntoService: ProjetoAssuntoVariavelService) {}
 
