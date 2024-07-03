@@ -20,10 +20,10 @@ export class FilterAssuntoVariavelDto {
     id?: number;
 }
 
-export class ProjetoAssuntoVariavelDto {
+export class AssuntoVariavelDto {
     nome: string;
 }
 
 export class ListAssuntoVariavelDto {
-    linhas: ProjetoAssuntoVariavelDto[];
+    linhas: AssuntoVariavelDto[];
 }
