@@ -276,6 +276,12 @@ export class VariavelService {
                         indicador_id: indicador_id,
                     },
                 },
+                VariavelAssuntoVariavel: {
+                    createMany:
+                        Array.isArray(dto.assuntos) && dto.assuntos.length > 0
+                            ? { data: dto.assuntos.map((assunto_id) => ({ assunto_variavel_id: assunto_id })) }
+                            : undefined,
+                },
             },
             select: { id: true },
         });
@@ -781,6 +787,11 @@ export class VariavelService {
                     mostrar_monitoramento: true,
                     suspendida_em: true,
                     valor_base: true,
+                    VariavelAssuntoVariavel: {
+                        select: {
+                            assunto_variavel_id: true,
+                        },
+                    },
                 },
             });
             const currentSuspendida = self.suspendida_em !== null;
@@ -874,6 +885,28 @@ export class VariavelService {
                 });
 
                 this.logger.debug(`variavel_categorica_id foi removido, valores em serie-variavel mantidos`);
+            }
+
+            if (Array.isArray(dto.assuntos)) {
+                const assuntoSorted = dto.assuntos.sort();
+                const currentAssuntos = self.VariavelAssuntoVariavel.map((v) => v.assunto_variavel_id).sort();
+
+                if (assuntoSorted.join(',') !== currentAssuntos.join(',')) {
+                    this.logger.debug(`Assuntos diferentes, atualizando`);
+                    await prismaTxn.variavelAssuntoVariavel.deleteMany({
+                        where: { variavel_id: variavelId },
+                    });
+                    await prismaTxn.variavelAssuntoVariavel.createMany({
+                        data: assuntoSorted.map((assunto_id) => ({
+                            variavel_id: variavelId,
+                            assunto_variavel_id: assunto_id,
+                        })),
+                    });
+                }
+            } else if (dto.assuntos == null) {
+                await prismaTxn.variavelAssuntoVariavel.deleteMany({
+                    where: { variavel_id: variavelId },
+                });
             }
 
             const updated = await prismaTxn.variavel.update({

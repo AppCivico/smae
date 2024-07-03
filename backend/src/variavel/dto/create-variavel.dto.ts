@@ -152,6 +152,13 @@ export class CreateVariavelDto {
     @IsNumber()
     @ValidateIf((object, value) => value !== null)
     variavel_categorica_id?: number | null;
+
+    @IsOptional()
+    @ValidateIf((object, value) => value !== null)
+    @IsArray({ message: '$property| assuntos(s): precisa ser uma array.' })
+    @ArrayMaxSize(1000, { message: '$property| assuntos(s): precisa ter no máximo 1000 items' })
+    @IsInt({ each: true, message: '$property| Cada item precisa ser um número inteiro' })
+    assuntos?: number[];
 }
 
 export class CreatePeloIndicadorDto extends PickType(CreateVariavelDto, ['codigo', 'titulo', 'orgao_id']) {
