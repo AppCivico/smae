@@ -97,6 +97,7 @@ const rotasParaMenuPrincipal = [
   'paineisExternosListar',
   'planosSetoriaisListar',
   'Workflow',
+  'programasPs',
 ];
 
 export default [
@@ -230,6 +231,62 @@ export default [
                 'mdoPortfoliosListar',
               ],
             },
+          },
+        ],
+      },
+      {
+        path: 'programas',
+        name: 'programasPs',
+        component: () => import('@/views/RaizGenerica.vue'),
+        meta: {
+          título: 'Programas',
+          rotaPrescindeDeChave: true,
+          limitarÀsPermissões: '',
+          rotasParaMenuSecundário: [
+            'assuntosListar',
+          ],
+        },
+        children: [
+          {
+            path: 'assuntos',
+            component: () => import('@/views/ps.assuntos/AssuntosRaiz.vue'),
+            children: [
+              {
+                name: 'assuntosListar',
+                path: '',
+                component: () => import('@/views/ps.assuntos/AssuntosLista.vue'),
+                meta: {
+                  título: 'Assuntos',
+                },
+              },
+              {
+                name: 'assuntosCriar',
+                path: 'novo',
+                component: () => import('@/views/ps.assuntos/AssuntosCriarEditar.vue'),
+                meta: {
+                  título: 'Novo assunto',
+                  rotasParaMigalhasDePão: [
+                    'assuntosListar',
+                  ],
+                },
+              },
+              {
+                path: ':assuntoId',
+                name: 'assuntosEditar',
+                component: () => import('@/views/ps.assuntos/AssuntosCriarEditar.vue'),
+                props: ({ params }) => ({
+                  ...params,
+                  ...{ assuntoId: Number.parseInt(params.assuntoId, 10) || undefined },
+                }),
+
+                meta: {
+                  título: 'Editar assunto',
+                  rotasParaMigalhasDePão: [
+                    'assuntosListar',
+                  ],
+                },
+              },
+            ],
           },
         ],
       },
