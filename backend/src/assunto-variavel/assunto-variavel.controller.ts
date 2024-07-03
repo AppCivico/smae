@@ -17,10 +17,10 @@ import {
     CreateAssuntoVariavelDto,
     FilterAssuntoVariavelDto,
     ListAssuntoVariavelDto,
-    ProjetoAssuntoVariavelDto,
+    AssuntoVariavelDto,
     UpdateAssuntoVariavelDto,
 } from './dto/assunto-variavel.dto';
-import { ProjetoAssuntoVariavelService } from './assunto-variavel.service';
+import { AssuntoVariavelService } from './assunto-variavel.service';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { RecordWithId } from '../common/dto/record-with-id.dto';
@@ -29,8 +29,8 @@ import { Roles } from '../auth/decorators/roles.decorator';
 
 @ApiTags('Assunto Variável (análogo Categoria/Tags)')
 @Controller('assunto-variavel')
-export class ProjetoAssuntoVariavelController {
-    constructor(private readonly assuntoService: ProjetoAssuntoVariavelService) {}
+export class AssuntoVariavelController {
+    constructor(private readonly assuntoService: AssuntoVariavelService) {}
 
     @Post()
     @ApiBearerAuth('access-token')
@@ -47,7 +47,7 @@ export class ProjetoAssuntoVariavelController {
 
     @ApiBearerAuth('access-token')
     @Get(':id')
-    async findOne(@Param() params: FindOneParams): Promise<ProjetoAssuntoVariavelDto> {
+    async findOne(@Param() params: FindOneParams): Promise<AssuntoVariavelDto> {
         const linhas = await this.assuntoService.findAll({ id: +params.id });
         if (linhas.length === 0) throw new NotFoundException('Registro não encontrado');
         return linhas[0];
