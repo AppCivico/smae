@@ -3402,10 +3402,7 @@ model Projeto {
     GeoEnderecoReferencia    GeoLocalizacaoReferencia[]
 
     // Módulo de gestão de obras
-    gruposTematicos  ProjetoGrupoTematico[]
-    tiposIntervencao ProjetoTipoIntervencao[]
-    equipamentos     ProjetoEquipamento[]
-    ProjetoRegiao    ProjetoRegiao[]
+    ProjetoRegiao ProjetoRegiao[]
 
     vetores_busca  Unsupported("tsvector")? @default(dbgenerated())
     ViewProjetoMDO ViewProjetoMDO[]
@@ -6000,8 +5997,7 @@ model GrupoTematico {
     atualizador Pessoa? @relation("Atualizador", fields: [atualizado_por], references: [id])
     removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
 
-    projetos ProjetoGrupoTematico[]
-    Projeto  Projeto[]
+    Projeto Projeto[]
 
     @@map("grupo_tematico")
 }
@@ -6024,8 +6020,7 @@ model TipoIntervencao {
     atualizador Pessoa? @relation("Atualizador", fields: [atualizado_por], references: [id])
     removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
 
-    projetos ProjetoTipoIntervencao[]
-    Projeto  Projeto[]
+    Projeto Projeto[]
 
     @@map("tipo_intervencao")
 }
@@ -6048,43 +6043,9 @@ model Equipamento {
     atualizador Pessoa? @relation("Atualizador", fields: [atualizado_por], references: [id])
     removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
 
-    projetos ProjetoEquipamento[]
-    Projeto  Projeto[]
+    Projeto Projeto[]
 
     @@map("equipamento")
-}
-
-model ProjetoEquipamento {
-    projeto_id Int
-    projeto    Projeto @relation(fields: [projeto_id], references: [id])
-
-    equipamento_id Int
-    equipamento    Equipamento @relation(fields: [equipamento_id], references: [id])
-
-    @@unique([projeto_id, equipamento_id])
-    @@map("projeto_equipamento")
-}
-
-model ProjetoTipoIntervencao {
-    projeto_id Int
-    projeto    Projeto @relation(fields: [projeto_id], references: [id])
-
-    tipo_intervencao_id Int
-    tipo_intervencao    TipoIntervencao @relation(fields: [tipo_intervencao_id], references: [id])
-
-    @@unique([projeto_id, tipo_intervencao_id])
-    @@map("projeto_tipo_intervencao")
-}
-
-model ProjetoGrupoTematico {
-    projeto_id Int
-    projeto    Projeto @relation(fields: [projeto_id], references: [id])
-
-    grupo_tematico_id Int
-    grupo_tematico    GrupoTematico @relation(fields: [grupo_tematico_id], references: [id])
-
-    @@unique([projeto_id, grupo_tematico_id])
-    @@map("projeto_grupo_tematico")
 }
 
 enum DistribuicaoStatusTipo {
