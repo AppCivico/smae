@@ -209,4 +209,7 @@ export type ListaDePrivilegios =
     | 'ProjetoProgramaMDO.remover'
     | 'TipoAditivoMDO.inserir'
     | 'TipoAditivoMDO.editar'
-    | 'TipoAditivoMDO.remover';
+    | 'TipoAditivoMDO.remover'
+    | 'AssuntoVariavel.inserir'
+    | 'AssuntoVariavel.editar'
+    | 'AssuntoVariavel.remover';

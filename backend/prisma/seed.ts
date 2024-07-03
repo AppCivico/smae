@@ -33,6 +33,8 @@ const ModuloDescricao: Record<string, [string, ModuloSistema | null]> = {
     // migração de PDM
     CadastroUnidadeMedida: ['Unidades de Medida', 'SMAE'],
 
+
+
     CadastroPdm: ['Programa de Metas', 'PDM'],
     CadastroOds: ['Categorias', 'PDM'],
     CadastroTag: ['Tags', 'PDM'],
@@ -68,6 +70,8 @@ const ModuloDescricao: Record<string, [string, ModuloSistema | null]> = {
     CadastroGrupoPaineisPS: ['Grupos de Painéis', 'PlanoSetorial'],
     PS: ['Regras de Negócio do Plano Setorial', 'PlanoSetorial'],
     ReportsPS: ['Relatórios de Plano Setorial', 'PlanoSetorial'],
+
+    AssuntoVariavel: ['Assuntos de Variáveis', 'PlanoSetorial'],
 
     CadastroGrupoPortfolio: ['Grupos de Portfólio', 'Projetos'],
     CadastroGrupoPortfolioMDO: ['Grupos de Portfólio de MdO', 'MDO'],
@@ -128,6 +132,12 @@ const PrivConfig: Record<string, false | [ListaDePrivilegios, string | false][]>
         ['TipoAditivoMDO.inserir', 'Inserir Tipo de Aditivo'],
         ['TipoAditivoMDO.editar', 'Editar Tipo de Aditivo'],
         ['TipoAditivoMDO.remover', 'Remover Tipo de Aditivo'],
+    ],
+
+    AssuntoVariavel: [
+        ['AssuntoVariavel.inserir', 'Inserir Assunto de Variável'],
+        ['AssuntoVariavel.editar', 'Editar Assunto de Variável'],
+        ['AssuntoVariavel.remover', 'Remover Assunto de Variável'],
     ],
 
     CadastroGrupoPortfolio: [
