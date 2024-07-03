@@ -439,9 +439,6 @@ export class AtividadeService {
                 },
                 select: {
                     id: true,
-                    iniciativa_id: true,
-                    atividade_id: true,
-                    meta_id: true,
                     IndicadorVariavel: {
                         where: { desativado: false },
                         select: { variavel_id: true },
@@ -453,7 +450,8 @@ export class AtividadeService {
                 this.logger.log('não há indicador para a atividade');
             } else {
                 for (const variavel of indicador.IndicadorVariavel) {
-                    await this.variavelService.resyncIndicadorVariavel(indicador, variavel.variavel_id, prismaTx);
+                    const info = await this.variavelService.buscaIndicadorParaVariavel(indicador.id);
+                    await this.variavelService.resyncIndicadorVariavel(info, variavel.variavel_id, prismaTx);
                 }
             }
 
