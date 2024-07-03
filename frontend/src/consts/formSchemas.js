@@ -2099,7 +2099,7 @@ export const projeto = object()
       .required('O projeto precisa de uma origem de recursos.')
       .oneOf(Object.keys(tiposDeOrigens), 'A origem escolhida é inválida'),
     portfolios_compartilhados: array()
-      .label('Compartilhar no portfolios')
+      .label('Compartilhar com portfolios')
       .nullable(),
     publico_alvo: string()
       .label('Público alvo')
