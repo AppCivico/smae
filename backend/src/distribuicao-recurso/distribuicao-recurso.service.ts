@@ -1,4 +1,4 @@
-import { HttpException, Injectable } from '@nestjs/common';
+import { forwardRef, HttpException, Inject, Injectable } from '@nestjs/common';
 import { DistribuicaoStatusTipo, Prisma, WorkflowResponsabilidade } from '@prisma/client';
 import { CreateDistribuicaoRecursoDto } from './dto/create-distribuicao-recurso.dto';
 import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
@@ -16,6 +16,8 @@ import { BlocoNotaService } from '../bloco-nota/bloco-nota/bloco-nota.service';
 import { NotaService } from '../bloco-nota/nota/nota.service';
 import { AvisoEmailService } from '../aviso-email/aviso-email.service';
 import { DateTime } from 'luxon';
+import { UpdateTarefaDto } from 'src/pp/tarefa/dto/update-tarefa.dto';
+import { TarefaService } from 'src/pp/tarefa/tarefa.service';
 
 type OperationsRegistroSEI = {
     id?: number;
@@ -29,7 +31,9 @@ export class DistribuicaoRecursoService {
         private readonly prisma: PrismaService,
         private readonly blocoNotaService: BlocoNotaService,
         private readonly notaService: NotaService,
-        private readonly avisoEmailService: AvisoEmailService
+        private readonly avisoEmailService: AvisoEmailService,
+        @Inject(forwardRef(() => TarefaService))
+        private readonly tarefaService: TarefaService
     ) {}
 
     async create(
@@ -242,7 +246,7 @@ export class DistribuicaoRecursoService {
                 // Devem ser criadas tarefas no cronograma
                 // Para cada linha de tarefa do workflow que é de responsabilidade de outro órgão.
                 if (distribuicao_automatica != true) {
-                    await this._createTarefasOutroOrgao(prismaTx, distribuicaoRecurso.id);
+                    await this._createTarefasOutroOrgao(prismaTx, distribuicaoRecurso.id, user);
                 }
 
                 return { id: distribuicaoRecurso.id };
@@ -838,7 +842,7 @@ export class DistribuicaoRecursoService {
                         WHERE distribuicao_recurso_id = ${id} AND removido_em IS NULL;
                     `;
                 } else {
-                    await this._createTarefasOutroOrgao(prismaTx, id);
+                    await this._createTarefasOutroOrgao(prismaTx, id, user);
                 }
             }
 
@@ -1085,7 +1089,11 @@ export class DistribuicaoRecursoService {
         await Promise.all(operations);
     }
 
-    async _createTarefasOutroOrgao(prismaTx: Prisma.TransactionClient, distribuicao_id: number) {
+    private async _createTarefasOutroOrgao(
+        prismaTx: Prisma.TransactionClient,
+        distribuicao_id: number,
+        user: PessoaFromJwt
+    ) {
         const distribuicaoRecurso = await prismaTx.distribuicaoRecurso.findFirstOrThrow({
             where: {
                 id: distribuicao_id,
@@ -1194,5 +1202,141 @@ export class DistribuicaoRecursoService {
         }
 
         await Promise.all(operations);
+        await this._validarTopologia(prismaTx, distribuicao_id, user);
+    }
+
+    private async _validarTopologia(prismaTxn: Prisma.TransactionClient, distribuicao_id: number, user: PessoaFromJwt) {
+        const distribuicaoRecurso = await prismaTxn.distribuicaoRecurso.findFirstOrThrow({
+            where: {
+                id: distribuicao_id,
+                removido_em: null,
+            },
+            select: {
+                id: true,
+                transferencia_id: true,
+            },
+        });
+
+        const tarefas = await prismaTxn.tarefa.findMany({
+            where: {
+                tarefa_cronograma: {
+                    transferencia_id: distribuicaoRecurso.transferencia_id,
+                },
+            },
+            select: {
+                id: true,
+                dependencias: {
+                    select: {
+                        id: true,
+                        tarefa_id: true,
+                        dependencia_tarefa_id: true,
+                        tipo: true,
+                        latencia: true,
+                    },
+                },
+            },
+        });
+
+        for (const tarefa of tarefas) {
+            let dto: UpdateTarefaDto = {};
+
+            if (tarefa.dependencias.length) {
+                dto = {
+                    dependencias: tarefa.dependencias.map((e) => {
+                        return {
+                            dependencia_tarefa_id: e.dependencia_tarefa_id,
+                            tipo: e.tipo,
+                            latencia: e.latencia,
+                        };
+                    }),
+                };
+
+                await this.tarefaService.update(
+                    { transferencia_id: distribuicaoRecurso.transferencia_id },
+                    tarefa.id,
+                    dto,
+                    user
+                );
+            }
+        }
+
+        // Atualizando previsão de término para tarefas de fase de etapa e tarefas de acompanhamento da etapa.
+        const tarefaEtapasAcompanhamentos = await prismaTxn.tarefa.findMany({
+            where: {
+                tarefa_cronograma: {
+                    transferencia_id: distribuicaoRecurso.transferencia_id,
+                },
+                termino_planejado: null,
+                db_projecao_termino: null,
+            },
+            select: {
+                id: true,
+                tarefa_pai_id: true,
+                nivel: true,
+                numero: true,
+                tarefa: true,
+            },
+        });
+
+        const updates = [];
+        for (const row of tarefaEtapasAcompanhamentos) {
+            console.log(row);
+            if (row.nivel == 1 && row.tarefa_pai_id == null) {
+                // Tarefa referente à própia etapa.
+                // Buscando tarefa filha de maior número.
+                const tarefaFilha = await prismaTxn.tarefa.findFirst({
+                    where: {
+                        tarefa_pai_id: row.id,
+                        removido_em: null,
+                    },
+                    orderBy: { numero: 'desc' },
+                    select: {
+                        termino_planejado: true,
+                        db_projecao_termino: true,
+                    },
+                });
+
+                if (!tarefaFilha) throw new Error('Erro ao encontrar tarefa filha para base de projeção.');
+
+                updates.push(
+                    prismaTxn.tarefa.update({
+                        where: { id: row.id },
+                        data: {
+                            termino_planejado: tarefaFilha.termino_planejado,
+                            db_projecao_termino: tarefaFilha.db_projecao_termino,
+                        },
+                    })
+                );
+            } else if (row.nivel == 2 && row.tarefa_pai_id != null) {
+                // Buscando tarefa irmã de maior número.
+
+                const tarefaIrma = await prismaTxn.tarefa.findFirst({
+                    where: {
+                        tarefa_pai_id: row.tarefa_pai_id,
+
+                        removido_em: null,
+                    },
+                    orderBy: { numero: 'desc' },
+                    select: {
+                        termino_planejado: true,
+                        db_projecao_termino: true,
+                    },
+                });
+                if (!tarefaIrma) throw new Error('Erro ao encontrar tarefa filha para base de projeção.');
+
+                updates.push(
+                    prismaTxn.tarefa.update({
+                        where: { id: row.id },
+                        data: {
+                            termino_planejado: tarefaIrma.termino_planejado,
+                            db_projecao_termino: tarefaIrma.db_projecao_termino,
+                        },
+                    })
+                );
+            } else {
+                // Nada, pois não deveria cair aqui se tudo ocorreu ok.
+            }
+        }
+        await Promise.all(updates);
     }
 }
