@@ -16,6 +16,7 @@
         <LabelFromYup
           name="nome"
           :schema="schema"
+          class="mb0"
         />
         <Field
           name="nome"
@@ -30,56 +31,58 @@
         />
       </div>
     </div>
-    <div>
-      <LabelFromYup
-        name="habilita_valor"
-        :schema="schema"
-      />
+    <div class="f1 flex center f1 mb1">
       <Field
         name="habilita_valor"
         type="checkbox"
         :value="true"
         :unchecked-value="false"
-        class="inputcheckbox"
+        class="inputcheckbox mr1"
+      />
+      <LabelFromYup
+        name="habilita_valor"
+        :schema="schema"
+        class="mb0"
       />
       <ErrorMessage
         class="error-msg mb1"
         name="habilita_valor"
       />
     </div>
-    <div>
-      <LabelFromYup
-        name="habilita_valor_data_termino"
-        :schema="schema"
-      />
+    <div class="f1 flex center">
       <Field
         name="habilita_valor_data_termino"
         type="checkbox"
         :value="true"
         :unchecked-value="false"
-        class="inputcheckbox"
+        class="inputcheckbox mr1"
+      />
+      <LabelFromYup
+        name="habilita_valor_data_termino"
+        :schema="schema"
       />
       <ErrorMessage
         class="error-msg mb1"
         name="habilita_valor_data_termino"
       />
     </div>
-    <FormErrorsList :errors="errors" />
-
-    <div class="flex spacebetween center mb2">
-      <hr class="mr2 f1">
-      <button
-        class="btn big"
-        :disabled="isSubmitting || Object.keys(errors)?.length"
-        :title="
-          Object.keys(errors)?.length
-            ? `Erros de preenchimento: ${Object.keys(errors)?.length}`
-            : null
-        "
-      >
-        Salvar
-      </button>
-      <hr class="ml2 f1">
+    <div>
+      <FormErrorsList :errors="errors" />
+      <div class="flex spacebetween center mb2">
+        <hr class="mr2 f1">
+        <button
+          class="btn big"
+          :disabled="isSubmitting || Object.keys(errors)?.length"
+          :title="
+            Object.keys(errors)?.length
+              ? `Erros de preenchimento: ${Object.keys(errors)?.length}`
+              : null
+          "
+        >
+          Salvar
+        </button>
+        <hr class="ml2 f1">
+      </div>
     </div>
   </Form>
 
@@ -120,7 +123,6 @@ const aditivosStore = useTipoDeAditivosStore();
 const { chamadasPendentes, erro, itemParaEdição } = storeToRefs(aditivosStore);
 
 async function onSubmit(values) {
-  console.log('values', values);
   try {
     let response;
     const msg = props.aditivoId
