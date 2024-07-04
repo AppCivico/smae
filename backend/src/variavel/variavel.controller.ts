@@ -120,7 +120,7 @@ export class VariavelGlobalController {
 
     @Get('variavel')
     @ApiBearerAuth('access-token')
-    @Roles([...ROLES_ACESSO_VARIAVEL_PDM])
+    @Roles([...ROLES_ACESSO_VARIAVEL_PS])
     async listAll(@Query() filters: FilterVariavelDto, @CurrentUser() user: PessoaFromJwt): Promise<ListVariavelDto> {
         return { linhas: await this.variavelService.findAll(this.tipo, filters) };
     }
