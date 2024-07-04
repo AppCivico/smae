@@ -27,7 +27,7 @@ import {
 import { ProjetoTipoAditivoService } from './tipo-aditivo.service';
 
 @ApiTags('Tipo de Aditivo (SMAE, porém apenas Projeto e Obras)')
-@Controller('tipo-aditivo-mdo')
+@Controller('tipo-aditivo')
 export class ProjetoTipoAditivoController {
     constructor(private readonly tipoAditivoService: ProjetoTipoAditivoService) {}
 
