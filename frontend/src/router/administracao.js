@@ -77,6 +77,8 @@ const rotasParaMenuSecundário = [
       'gruposTematicosObras',
       'tiposDeIntervencao',
       'equipamentosLista',
+      'tipoDeAditivosListar',
+      'assuntosListar',
     ],
   },
   {
@@ -725,6 +727,91 @@ export default [
         name: 'editarRegião4',
         props: {
           type: 'editar',
+        },
+      },
+    ],
+  },
+
+  {
+    path: '/tipo-de-aditivos',
+    component: import('@/views/tipoDeAditivo/AditivosRaiz.vue'),
+    meta: {
+      limitarÀsPermissões: '',
+      título: 'Tipo de aditivos',
+      rotasParaMenuSecundário,
+    },
+    children: [
+      {
+        path: '',
+        name: 'tipoDeAditivosListar',
+        component: import('@/views/tipoDeAditivo/AditivosLista.vue'),
+      },
+      {
+        path: 'novo',
+        component: import('@/views/tipoDeAditivo/AditivosCriarEditar.vue'),
+        name: 'tipoDeAditivosCriar',
+        meta: {
+          título: 'Novo tipo de aditivo',
+          rotasParaMigalhasDePão: [
+            'tipoDeAditivosListar',
+          ],
+        },
+      },
+      {
+        path: ':aditivoId',
+        component: import('@/views/tipoDeAditivo/AditivosCriarEditar.vue'),
+        name: 'tipoDeAditivosEditar',
+        meta: {
+          título: 'Editar tipo de aditivo',
+          rotasParaMigalhasDePão: [
+            'tipoDeAditivosListar',
+          ],
+        },
+      },
+    ],
+  },
+  {
+    path: '/assuntos',
+    component: () => import('@/views/ps.assuntos/AssuntosRaiz.vue'),
+    meta: {
+      limitarÀsPermissões: '',
+      título: 'Assuntos',
+      rotasParaMenuSecundário,
+    },
+    children: [
+      {
+        name: 'assuntosListar',
+        path: '',
+        component: () => import('@/views/ps.assuntos/AssuntosLista.vue'),
+        meta: {
+          título: 'Assuntos',
+        },
+      },
+      {
+        name: 'assuntosCriar',
+        path: 'novo',
+        component: () => import('@/views/ps.assuntos/AssuntosCriarEditar.vue'),
+        meta: {
+          título: 'Novo assunto',
+          rotasParaMigalhasDePão: [
+            'assuntosListar',
+          ],
+        },
+      },
+      {
+        path: ':assuntoId',
+        name: 'assuntosEditar',
+        component: () => import('@/views/ps.assuntos/AssuntosCriarEditar.vue'),
+        props: ({ params }) => ({
+          ...params,
+          ...{ assuntoId: Number.parseInt(params.assuntoId, 10) || undefined },
+        }),
+
+        meta: {
+          título: 'Editar assunto',
+          rotasParaMigalhasDePão: [
+            'assuntosListar',
+          ],
         },
       },
     ],
