@@ -1,5 +1,5 @@
 import { HttpException, Injectable } from '@nestjs/common';
-import { Prisma } from '@prisma/client';
+import { DistribuicaoStatusTipo, Prisma } from '@prisma/client';
 import { PessoaFromJwt } from 'src/auth/models/PessoaFromJwt';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
@@ -125,8 +125,53 @@ export class DistribuicaoRecursoStatusService {
                     },
                     select: {
                         id: true,
+                        distribuicao: {
+                            select: {
+                                transferencia_id: true,
+                                tarefas: {
+                                    select: {
+                                        id: true,
+                                    },
+                                },
+                            },
+                        },
                     },
                 });
+
+                // Caso o status seja do tipo "ConcluidoComSucesso"
+                // Então é necessário atualizar a tarefa no cronograma.
+                let statusNovo;
+                if (dto.status_id) {
+                    statusNovo = await prismaTx.distribuicaoStatus.findFirstOrThrow({
+                        where: { id: dto.status_id },
+                        select: { tipo: true },
+                    });
+                } else {
+                    statusNovo = await prismaTx.distribuicaoStatusBase.findFirstOrThrow({
+                        where: { id: dto.status_base_id },
+                        select: { tipo: true },
+                    });
+                }
+
+                if (statusNovo.tipo == DistribuicaoStatusTipo.ConcluidoComSucesso) {
+                    await prismaTx.tarefa.updateMany({
+                        where: { distribuicao_recurso_id: distribuicao_id },
+                        data: {
+                            termino_real: new Date(Date.now()),
+                            atualizado_em: new Date(Date.now()),
+                        },
+                    });
+                }
+
+                if (statusNovo.tipo == DistribuicaoStatusTipo.Terminal) {
+                    await prismaTx.tarefa.updateMany({
+                        where: { distribuicao_recurso_id: distribuicao_id },
+                        data: {
+                            removido_em: new Date(Date.now()),
+                            removido_por: user.id,
+                        },
+                    });
+                }
 
                 return { id: distribuicaoRecursoStatus.id };
             }
