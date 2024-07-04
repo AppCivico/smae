@@ -1,0 +1,31 @@
+import { ApiProperty } from '@nestjs/swagger';
+import { PerfilResponsavelVariavel } from '@prisma/client';
+import { ArrayMaxSize, IsArray, IsEnum, IsInt, IsOptional, IsString, MaxLength } from 'class-validator';
+
+export class CreateGrupoRespVariavelDto {
+    @IsString()
+    @MaxLength(120)
+    titulo: string;
+
+    @IsEnum(PerfilResponsavelVariavel)
+    @ApiProperty({ enum: PerfilResponsavelVariavel, enumName: 'PerfilResponsavelVariavel' })
+    perfil: PerfilResponsavelVariavel;
+
+    @IsOptional()
+    @ApiProperty({
+        description:
+            'Se não foi enviado, será associado automaticamente com o órgão do criador. Necessário `CadastroGrupoVariavel.administrador` para utilizar um órgão diferente.',
+    })
+    @IsInt()
+    orgao_id?: number;
+
+    /**
+     * lista dos participantes do grupo? pode ficar vazio
+     * cada pessoa precisa ter o privilégio "SMAE.espectador_de_projeto"
+     * @example "[4, 5, 6]"
+     */
+    @IsArray({ message: '$property| precisa ser um array' })
+    @ArrayMaxSize(10000, { message: '$property| precisa ter no máximo 10000 items' })
+    @IsInt({ each: true, message: '$property| Cada item precisa ser um número inteiro' })
+    participantes: number[];
+}

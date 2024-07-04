@@ -35,5 +35,6 @@
         "Variaveis",
         "variavel",
         "visao"
-    ]
+    ],
+    "typescript.tsdk": "node_modules/typescript/lib"
 }

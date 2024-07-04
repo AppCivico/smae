@@ -215,4 +215,7 @@ export type ListaDePrivilegios =
     | 'AssuntoVariavel.remover'
     | 'FonteVariavel.inserir'
     | 'FonteVariavel.editar'
-    | 'FonteVariavel.remover';
+    | 'FonteVariavel.remover'
+    | 'CadastroGrupoVariavel.administrador'
+    | 'CadastroGrupoVariavel.administrador_no_orgao'
+    | 'SMAE.GrupoVariavel.colaborador';
