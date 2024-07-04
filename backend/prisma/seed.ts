@@ -71,6 +71,7 @@ const ModuloDescricao: Record<string, [string, ModuloSistema | null]> = {
     PS: ['Regras de Negócio do Plano Setorial', 'PlanoSetorial'],
     ReportsPS: ['Relatórios de Plano Setorial', 'PlanoSetorial'],
 
+    FonteVariavel: ['Fontes de Variáveis', 'PlanoSetorial'],
     AssuntoVariavel: ['Assuntos de Variáveis', 'PlanoSetorial'],
 
     CadastroGrupoPortfolio: ['Grupos de Portfólio', 'Projetos'],
@@ -1078,6 +1079,8 @@ async function atualizar_modulos_e_privilegios() {
 
     async function upsertModulo(codModulo: string, privilegio: [ListaDePrivilegios, string | false][]) {
         const modConfig = ModuloDescricao[codModulo];
+
+        if (!modConfig) throw new Error(`Modulo ${codModulo} não encontrado`);
 
         if (!modConfig[1]) return;
 
