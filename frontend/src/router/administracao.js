@@ -734,7 +734,7 @@ export default [
 
   {
     path: '/tipo-de-aditivos',
-    component: import('@/views/tipoDeAditivo/AditivosRaiz.vue'),
+    component: () => import('@/views/tipoDeAditivo/AditivosRaiz.vue'),
     meta: {
       limitarÀsPermissões: '',
       título: 'Tipo de aditivos',
@@ -744,11 +744,11 @@ export default [
       {
         path: '',
         name: 'tipoDeAditivosListar',
-        component: import('@/views/tipoDeAditivo/AditivosLista.vue'),
+        component: () => import('@/views/tipoDeAditivo/AditivosLista.vue'),
       },
       {
         path: 'novo',
-        component: import('@/views/tipoDeAditivo/AditivosCriarEditar.vue'),
+        component: () => import('@/views/tipoDeAditivo/AditivosCriarEditar.vue'),
         name: 'tipoDeAditivosCriar',
         meta: {
           título: 'Novo tipo de aditivo',
@@ -759,7 +759,7 @@ export default [
       },
       {
         path: ':aditivoId',
-        component: import('@/views/tipoDeAditivo/AditivosCriarEditar.vue'),
+        component: () => import('@/views/tipoDeAditivo/AditivosCriarEditar.vue'),
         name: 'tipoDeAditivosEditar',
         meta: {
           título: 'Editar tipo de aditivo',
