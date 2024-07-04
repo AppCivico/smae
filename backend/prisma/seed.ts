@@ -33,8 +33,6 @@ const ModuloDescricao: Record<string, [string, ModuloSistema | null]> = {
     // migração de PDM
     CadastroUnidadeMedida: ['Unidades de Medida', 'SMAE'],
 
-
-
     CadastroPdm: ['Programa de Metas', 'PDM'],
     CadastroOds: ['Categorias', 'PDM'],
     CadastroTag: ['Tags', 'PDM'],
@@ -95,7 +93,8 @@ const ModuloDescricao: Record<string, [string, ModuloSistema | null]> = {
 
     ModalidadeContratacaoMDO: ['Modalidade de Contratação', 'MDO'],
     ProjetoProgramaMDO: ['Programas', 'MDO'],
-    TipoAditivoMDO: ['Tipo Aditivo', 'MDO'],
+
+    TipoAditivo: ['Tipo Aditivo', 'SMAE'],
 
     CadastroCargo: ['', null],
     CadastroCoordenadoria: ['', null],
@@ -118,6 +117,7 @@ const PrivConfig: Record<string, false | [ListaDePrivilegios, string | false][]>
     CadastroObjetivoEstrategico: false,
     CadastroEtapa: false,
     CadastroGrupoPaineisExternas: false,
+    TipoAditivoMDO: false,
 
     ModalidadeContratacaoMDO: [
         ['ModalidadeContratacaoMDO.inserir', 'Inserir Modalidade de Contratação'],
@@ -129,10 +129,10 @@ const PrivConfig: Record<string, false | [ListaDePrivilegios, string | false][]>
         ['ProjetoProgramaMDO.editar', 'Editar Programa'],
         ['ProjetoProgramaMDO.remover', 'Remover Programa'],
     ],
-    TipoAditivoMDO: [
-        ['TipoAditivoMDO.inserir', 'Inserir Tipo de Aditivo'],
-        ['TipoAditivoMDO.editar', 'Editar Tipo de Aditivo'],
-        ['TipoAditivoMDO.remover', 'Remover Tipo de Aditivo'],
+    TipoAditivo: [
+        ['TipoAditivo.inserir', 'Inserir Tipo de Aditivo'],
+        ['TipoAditivo.editar', 'Editar Tipo de Aditivo'],
+        ['TipoAditivo.remover', 'Remover Tipo de Aditivo'],
     ],
 
     AssuntoVariavel: [
@@ -590,9 +590,13 @@ const PerfilAcessoConfig: {
     // toda vez que mudar o nome de algum item, é necessário adicionar o label antigo usando o
     // metodo atualizarNomePerfil e depois jogar no final aqui o removerNomePerfil
     {
+        // o TipoAditivo vai ficar fora do "todos os privilégios"
         nome: atualizarNomePerfil('Administrador Geral do SMAE', ['Administrador Geral']),
         descricao: 'Administrador Geral - Todas as permissões do sistema, exceto monitoramento e gerência de projeto',
-        privilegios: ['SMAE.superadmin', ...todosPrivilegios.filter((e) => /^(PDM|SMAE|PS|MDO)\./.test(e) === false)],
+        privilegios: [
+            'SMAE.superadmin',
+            ...todosPrivilegios.filter((e) => /^(PDM|SMAE|PS|MDO|TipoAditivo)\./.test(e) === false),
+        ],
     },
     {
         nome: atualizarNomePerfil('Administrador Coordenadoria de Planejamento', ['Administrador CP']),
@@ -763,7 +767,14 @@ const PerfilAcessoConfig: {
     {
         nome: 'Administrador de Portfólio',
         descricao: 'Gerenciar os Portfólios',
-        privilegios: ['Projeto.administrar_portfolios', 'CadastroGrupoPortfolio.administrador'],
+        privilegios: [
+            'Projeto.administrar_portfolios',
+            'CadastroGrupoPortfolio.administrador',
+
+            'TipoAditivo.inserir',
+            'TipoAditivo.editar',
+            'TipoAditivo.remover',
+        ],
     },
     {
         nome: 'Administrador de Portfólio do MdO',
@@ -771,6 +782,9 @@ const PerfilAcessoConfig: {
         privilegios: [
             'ProjetoMDO.administrar_portfolios',
             'CadastroGrupoPortfolioMDO.administrador',
+            'TipoAditivo.inserir',
+            'TipoAditivo.editar',
+            'TipoAditivo.remover',
             // ...
         ],
     },
@@ -786,12 +800,23 @@ const PerfilAcessoConfig: {
             'CadastroProjetoEtapa.inserir',
             'CadastroProjetoEtapa.editar',
             'CadastroProjetoEtapa.remover',
+
+            'TipoAditivo.inserir',
+            'TipoAditivo.editar',
+            'TipoAditivo.remover',
         ],
     },
     {
         nome: 'Administrador do Módulo de Obras',
         descricao: 'Gerenciar cadastros básicos e acesso irrestrito às obras',
-        privilegios: ['ProjetoMDO.administrador', 'CadastroPessoa.administrador'],
+        privilegios: [
+            'ProjetoMDO.administrador',
+            'CadastroPessoa.administrador',
+
+            'TipoAditivo.inserir',
+            'TipoAditivo.editar',
+            'TipoAditivo.remover',
+        ],
     },
     {
         nome: 'Gestor de Obras no Órgão',
@@ -816,9 +841,10 @@ const PerfilAcessoConfig: {
             'ProjetoProgramaMDO.inserir',
             'ProjetoProgramaMDO.editar',
             'ProjetoProgramaMDO.remover',
-            'TipoAditivoMDO.inserir',
-            'TipoAditivoMDO.editar',
-            'TipoAditivoMDO.remover',
+
+            'TipoAditivo.inserir',
+            'TipoAditivo.editar',
+            'TipoAditivo.remover',
         ],
     },
     {
@@ -831,6 +857,10 @@ const PerfilAcessoConfig: {
             'CadastroProjetoEtapa.inserir',
             'CadastroProjetoEtapa.editar',
             'CadastroProjetoEtapa.remover',
+
+            'TipoAditivo.inserir',
+            'TipoAditivo.editar',
+            'TipoAditivo.remover',
         ],
     },
     {
@@ -846,6 +876,10 @@ const PerfilAcessoConfig: {
             'CadastroProjetoEtapaMDO.inserir',
             'CadastroProjetoEtapaMDO.editar',
             'CadastroProjetoEtapaMDO.remover',
+
+            'TipoAditivo.inserir',
+            'TipoAditivo.editar',
+            'TipoAditivo.remover',
         ],
     },
     {
