@@ -70,7 +70,6 @@
     </tbody>
   </table>
 </template>
-
 <script setup>
 import { storeToRefs } from 'pinia';
 import { useRoute } from 'vue-router';
@@ -100,5 +99,3 @@ async function excluirAditivo(id, descricao) {
 aditivosStore.$reset();
 aditivosStore.buscarTudo();
 </script>
-
-<style></style>
