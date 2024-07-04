@@ -3864,6 +3864,11 @@ model Tarefa {
     transferencia_tarefa_id Int?
     transferencia_tarefa    TransferenciaAndamentoTarefa? @relation(fields: [transferencia_tarefa_id], references: [id])
 
+    // Sprint 13: Agora cada distribuição de recurso de uma transferência.
+    // Tem suas próprias tarefas do cronograma.
+    distribuicao_recurso_id Int?
+    distribuicao_recurso    DistribuicaoRecurso? @relation(fields: [distribuicao_recurso_id], references: [id])
+
     @@unique([transferencia_fase_id])
     @@unique([transferencia_tarefa_id])
     @@index([tarefa_pai_id])
@@ -5348,6 +5353,7 @@ model DistribuicaoRecurso {
     registros_sei DistribuicaoRecursoSei[]
     aditamentos   DistribuicaoRecursoAditamento[]
     status        DistribuicaoRecursoStatus[]
+    tarefas       Tarefa[]
 
     @@map("distribuicao_recurso")
 }
