@@ -1,4 +1,9 @@
-<script setup></script>
+<script setup>
+import { Dashboard } from '@/components';
+</script>
+
 <template>
-  <router-view />
+  <Dashboard>
+    <router-view />
+  </Dashboard>
 </template>
