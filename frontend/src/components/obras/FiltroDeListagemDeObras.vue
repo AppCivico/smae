@@ -334,7 +334,7 @@ const {
 const {
   lista: listaDePortfolios,
   chamadasPendentes: chamadasPendentesDePortfolios,
-  erros: errosDePortfolios,
+  erro: errosDePortfolios,
 } = storeToRefs(portfolioMdoStore);
 const {
   regions, regiõesPorNível,
