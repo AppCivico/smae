@@ -1,6 +1,6 @@
 import { HttpException, Injectable } from '@nestjs/common';
-import { PessoaFromJwt } from '../../../auth/models/PessoaFromJwt';
-import { PrismaService } from '../../../prisma/prisma.service';
+import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
+import { PrismaService } from '../prisma/prisma.service';
 import { CreateTipoAditivoDto, FilterTipoAditivoDto, UpdateTipoAditivoDto } from './dto/tipo-aditivo.dto';
 
 @Injectable()
