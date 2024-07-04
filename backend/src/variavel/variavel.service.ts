@@ -639,6 +639,7 @@ export class VariavelService {
         const listActive = await this.prisma.variavel.findMany({
             where: {
                 removido_em: null,
+                tipo: tipo,
                 VariavelAssuntoVariavel: Array.isArray(filters?.assuntos)
                     ? { some: { assunto_variavel: { id: { in: filters.assuntos } } } }
                     : undefined,
