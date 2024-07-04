@@ -1659,10 +1659,10 @@ export const tipoDeAditivo = object({
     .required(),
   habilita_valor: boolean()
     .label('Habilita valor')
-    .nullable(),
+    .required(),
   habilita_valor_data_termino: boolean()
     .label('Habilita valor e data de término')
-    .nullable(),
+    .required(),
 });
 
 export const tipoDeTransferencia = object({
@@ -1854,7 +1854,7 @@ export const registroDeTransferencia = object({
     .required(),
   percentagem_investimento: number()
     .label('Porcentagem')
-    .min(0)
+    .min(0),
 });
 
 export const transferenciasVoluntarias = object({
