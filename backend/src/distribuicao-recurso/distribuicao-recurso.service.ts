@@ -818,16 +818,28 @@ export class DistribuicaoRecursoService {
                             sigla: true,
                         },
                     },
+                    tarefas: {
+                        where: {
+                            removido_em: null,
+                        },
+                        select: {
+                            id: true,
+                        },
+                    },
                 },
             });
 
             if (self.orgao_gestor.id != dto.orgao_gestor_id) {
-                await prismaTx.$executeRaw`
-                    UPDATE tarefa SET
-                        tarefa = regexp_replace(tarefa, ' - .*', ' - ' || ${updated.orgao_gestor.sigla}),
-                        orgao_id = ${updated.orgao_gestor.id}
-                    WHERE distribuicao_recurso_id = ${id} AND removido_em IS NULL;
-                `;
+                if (updated.tarefas.length > 0) {
+                    await prismaTx.$executeRaw`
+                        UPDATE tarefa SET
+                            tarefa = regexp_replace(tarefa, ' - .*', ' - ' || ${updated.orgao_gestor.sigla}),
+                            orgao_id = ${updated.orgao_gestor.id}
+                        WHERE distribuicao_recurso_id = ${id} AND removido_em IS NULL;
+                    `;
+                } else {
+                    await this._createTarefasOutroOrgao(prismaTx, id);
+                }
             }
 
             const updatedSelf = await this.findOne(id, user);
