@@ -1,11 +1,5 @@
 <script setup>
 // Não finalizado
-import { storeToRefs } from 'pinia';
-import { ErrorMessage, Field, useForm } from 'vee-validate';
-import {
-  computed, onUnmounted, ref, watch, watchEffect,
-} from 'vue';
-import { useRoute, useRouter } from 'vue-router';
 import esferasDeTransferencia from '@/consts/esferasDeTransferencia';
 import { workflow as schema } from '@/consts/formSchemas';
 import responsabilidadeEtapaFluxo from '@/consts/responsabilidadeEtapaFluxo';
@@ -14,11 +8,17 @@ import { useFluxosEtapasProjetosStore } from '@/stores/fluxosEtapasProjeto.store
 import { useFluxosFasesProjetosStore } from '@/stores/fluxosFasesProjeto.store';
 import { useFluxosProjetosStore } from '@/stores/fluxosProjeto.store';
 import { useFluxosTarefasProjetosStore } from '@/stores/fluxosTarefaProjeto.store';
+import { useStatusDistribuicaoWorflowStore } from '@/stores/statusDistribuicaoWorkflow.store';
 import { useTipoDeTransferenciaStore } from '@/stores/tipoDeTransferencia.store';
 import EtapaFluxo from '@/views/fluxosProjeto/EtapaFluxo.vue';
 import FaseFluxo from '@/views/fluxosProjeto/FaseFluxo.vue';
 import TarefaFluxo from '@/views/fluxosProjeto/TarefaFluxo.vue';
-import { useStatusDistribuicaoWorflowStore } from '@/stores/statusDistribuicaoWorkflow.store';
+import { storeToRefs } from 'pinia';
+import { ErrorMessage, Field, useForm } from 'vee-validate';
+import {
+  computed, onUnmounted, ref, watch, watchEffect,
+} from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 
 const fluxosEtapasProjetos = useFluxosEtapasProjetosStore();
 const tipoDeTransferenciaStore = useTipoDeTransferenciaStore();
