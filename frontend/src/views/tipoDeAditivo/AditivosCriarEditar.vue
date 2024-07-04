@@ -102,7 +102,7 @@
 import { storeToRefs } from 'pinia';
 import { useRoute, useRouter } from 'vue-router';
 import { ErrorMessage, Field, Form } from 'vee-validate';
-import { useTipoDeAditivosStore } from '@/stores/tipoDeAditivosPs.store';
+import { useTipoDeAditivosStore } from '@/stores/tipoDeAditivos.store';
 import { useAlertStore } from '@/stores/alert.store';
 import { tipoDeAditivo as schema } from '@/consts/formSchemas';
 
