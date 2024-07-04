@@ -133,6 +133,7 @@
     </div>
 
     <MenuPaginacao
+      class="mt2"
       v-bind="paginacao"
     />
   </div>
