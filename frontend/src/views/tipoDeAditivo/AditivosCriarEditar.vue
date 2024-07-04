@@ -138,7 +138,7 @@ async function onSubmit(values) {
     if (response) {
       alertStore.success(msg);
       aditivosStore.$reset();
-      router.push({ name: 'aditivosListar' });
+      router.push({ name: 'tipoDeAditivosListar' });
     }
   } catch (error) {
     alertStore.error(error);
