@@ -220,6 +220,9 @@ export const useObrasStore = defineStore('obrasStore', {
         responsaveis_no_orgao_gestor: Array.isArray(emFoco?.responsaveis_no_orgao_gestor)
           ? emFoco.responsaveis_no_orgao_gestor.map((x) => x.id)
           : [],
+        tags: Array.isArray(emFoco?.tags)
+          ? emFoco.tags.map((x) => x.id)
+          : [],
         tipo_intervencao_id: emFoco?.tipo_intervencao?.id || null,
         regiao_ids: Array.isArray(emFoco?.regioes) ? emFoco.regioes.map((x) => x.id) : [],
       };

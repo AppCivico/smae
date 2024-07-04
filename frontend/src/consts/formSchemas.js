@@ -1063,6 +1063,13 @@ export const obras = object({
     .label('Status')
     .oneOf(Object.keys(statusObras))
     .required(),
+  tags: array()
+    .label('Etiquetas')
+    .of(
+      number()
+        .min(1),
+    )
+    .nullable(),
   tipo_intervencao_id: number()
     .label('Tipo de obra/intervenção')
     .min(1, 'Tipo de obra/intervenção inválido')
