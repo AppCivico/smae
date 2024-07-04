@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
 import { PrismaModule } from '../prisma/prisma.module';
-import { IndicadorVariavelPDMController } from './variavel.controller';
+import { IndicadorVariavelPDMController, VariavelGlobalController } from './variavel.controller';
 import { VariavelService } from './variavel.service';
 import { VariavelFormulaCompostaController } from './variavel.formula-composta.controller';
 import { VariavelFormulaCompostaService } from './variavel.formula-composta.service';
@@ -14,7 +14,7 @@ import { VariavelFormulaCompostaService } from './variavel.formula-composta.serv
             signOptions: { expiresIn: '1d' },
         }),
     ],
-    controllers: [IndicadorVariavelPDMController, VariavelFormulaCompostaController],
+    controllers: [IndicadorVariavelPDMController, VariavelFormulaCompostaController, VariavelGlobalController],
     providers: [VariavelService, VariavelFormulaCompostaService],
     exports: [VariavelService],
 })
