@@ -459,6 +459,8 @@ const PrivConfig: Record<string, false | [ListaDePrivilegios, string | false][]>
         ['SMAE.espectador_de_painel_externo', 'Visualizador de painel externo'],
         ['SMAE.GrupoVariavel.colaborador', 'Pode participar de grupos de variáveis'],
         ['PerfilAcesso.administrador', 'Gerenciar Perfil de Acesso'],
+        ['CadastroGrupoVariavel.administrador', 'Gerenciar Grupos de Variáveis'],
+        ['CadastroGrupoVariavel.administrador_no_orgao', 'Gerenciar Grupos de Variáveis do órgão ao qual pertence'],
     ],
     Projeto: [
         ['Projeto.administrar_portfolios', 'Administrar todos os portfólios, sem acesso aos projetos'],
