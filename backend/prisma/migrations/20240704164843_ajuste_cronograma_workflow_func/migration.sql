@@ -1,4 +1,3 @@
-DROP PROCEDURE create_workflow_cronograma;
 CREATE OR REPLACE PROCEDURE create_workflow_cronograma (_transferencia_id INTEGER, _workflow_id INTEGER)
 LANGUAGE plpgsql
 AS $$

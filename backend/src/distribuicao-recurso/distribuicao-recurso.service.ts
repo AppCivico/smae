@@ -230,87 +230,19 @@ export class DistribuicaoRecursoService {
                                 workflow_id: true,
                             },
                         },
+                        orgao_gestor: {
+                            select: {
+                                sigla: true,
+                            },
+                        },
                     },
                 });
 
-                // Caso seja a primeira row de distribuição de recurso.
-                // É necessário verificar as fases e tarefas do workflow
-                // Cuja responsabilidade é "OutroOrgao" e setar o orgao_id da tarefa do cronograma.
-                const countLinhas = await prismaTx.distribuicaoRecurso.count({
-                    where: {
-                        transferencia_id: dto.transferencia_id,
-                        removido_em: null,
-                    },
-                });
-
-                if (countLinhas == 1 && distribuicaoRecurso.transferencia.workflow_id != null) {
-                    const rows = await prismaTx.transferenciaAndamento.findMany({
-                        where: {
-                            transferencia_id: dto.transferencia_id,
-                            transferencia: {
-                                workflow_id: distribuicaoRecurso.transferencia.workflow_id,
-                            },
-
-                            workflow_fase: {
-                                fluxos: {
-                                    some: {
-                                        responsabilidade: WorkflowResponsabilidade.OutroOrgao,
-                                    },
-                                },
-                            },
-                        },
-                        select: {
-                            tarefaEspelhada: {
-                                select: { id: true },
-                            },
-
-                            tarefas: {
-                                where: {
-                                    workflow_tarefa: {
-                                        fluxoTarefas: {
-                                            some: { responsabilidade: WorkflowResponsabilidade.OutroOrgao },
-                                        },
-                                    },
-                                },
-                                select: {
-                                    tarefaEspelhada: {
-                                        select: { id: true },
-                                    },
-                                },
-                            },
-                        },
-                    });
-
-                    const operations = [];
-                    for (const fase of rows) {
-                        for (const tarefaEspelhada of fase.tarefaEspelhada) {
-                            operations.push(
-                                prismaTx.tarefa.update({
-                                    where: { id: tarefaEspelhada.id },
-                                    data: {
-                                        orgao_id: dto.orgao_gestor_id,
-                                        atualizado_em: new Date(Date.now()),
-                                    },
-                                })
-                            );
-                        }
-
-                        for (const tarefa of fase.tarefas) {
-                            for (const tarefaEspelhada of tarefa.tarefaEspelhada) {
-                                operations.push(
-                                    prismaTx.tarefa.update({
-                                        where: { id: tarefaEspelhada.id },
-                                        data: {
-                                            orgao_id: dto.orgao_gestor_id,
-                                            atualizado_em: new Date(Date.now()),
-                                        },
-                                    })
-                                );
-                            }
-                        }
-                    }
-
-                    await Promise.all(operations);
+                // Sprint 13: Quando uma distribuição é criada.
+                // Devem ser criadas tarefas no cronograma
+                // Para cada linha de tarefa do workflow que é de responsabilidade de outro órgão.
+                if (distribuicao_automatica != true) {
+                    await this._createTarefasOutroOrgao(prismaTx, distribuicaoRecurso.id);
                 }
 
                 return { id: distribuicaoRecurso.id };
@@ -851,7 +783,7 @@ export class DistribuicaoRecursoService {
                 }
             }
 
-            await prismaTx.distribuicaoRecurso.update({
+            const updated = await prismaTx.distribuicaoRecurso.update({
                 where: { id },
                 data: {
                     orgao_gestor_id: dto.orgao_gestor_id,
@@ -880,31 +812,22 @@ export class DistribuicaoRecursoService {
                 },
                 select: {
                     id: true,
-                },
-            });
-
-            // Caso seja a única distribuição.
-            // E o órgão for atualizado, a atualização deve refletir no cronograma.
-            const countDistribuicoes = await prismaTx.distribuicaoRecurso.count({
-                where: {
-                    removido_em: null,
-                    transferencia_id: self.transferencia_id,
-                },
-            });
-
-            if (self.orgao_gestor.id != dto.orgao_gestor_id && countDistribuicoes == 1) {
-                await prismaTx.tarefa.updateMany({
-                    where: {
-                        tarefa_cronograma: {
-                            transferencia_id: self.transferencia_id,
-                            removido_em: null,
+                    orgao_gestor: {
+                        select: {
+                            id: true,
+                            sigla: true,
                         },
-                        removido_em: null,
                     },
-                    data: {
-                        orgao_id: dto.orgao_gestor_id,
-                    },
-                });
+                },
+            });
+
+            if (self.orgao_gestor.id != dto.orgao_gestor_id) {
+                await prismaTx.$executeRaw`
+                    UPDATE tarefa SET
+                        tarefa = regexp_replace(tarefa, ' - .*', ' - ' || ${updated.orgao_gestor.sigla}),
+                        orgao_id = ${updated.orgao_gestor.id}
+                    WHERE distribuicao_recurso_id = ${id} AND removido_em IS NULL;
+                `;
             }
 
             const updatedSelf = await this.findOne(id, user);
@@ -1050,24 +973,27 @@ export class DistribuicaoRecursoService {
     }
 
     async remove(id: number, user: PessoaFromJwt) {
-        const exists = await this.prisma.distribuicaoRecurso.findFirst({
-            where: {
-                id,
-                removido_em: null,
-            },
-            select: { id: true },
-        });
-        if (!exists) return;
+        await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient) => {
+            await prismaTx.distribuicaoRecurso.updateMany({
+                where: {
+                    id,
+                    removido_em: null,
+                },
+                data: {
+                    removido_em: new Date(Date.now()),
+                    removido_por: user.id,
+                },
+            });
 
-        await this.prisma.distribuicaoRecurso.updateMany({
-            where: {
-                id,
-                removido_em: null,
-            },
-            data: {
-                removido_em: new Date(Date.now()),
-                removido_por: user.id,
-            },
+            await prismaTx.tarefa.updateMany({
+                where: {
+                    distribuicao_recurso_id: id,
+                },
+                data: {
+                    removido_em: new Date(Date.now()),
+                    removido_por: user.id,
+                },
+            });
         });
 
         return;
@@ -1142,6 +1068,117 @@ export class DistribuicaoRecursoService {
                     },
                 })
             );
+        }
+
+        await Promise.all(operations);
+    }
+
+    async _createTarefasOutroOrgao(prismaTx: Prisma.TransactionClient, distribuicao_id: number) {
+        const distribuicaoRecurso = await prismaTx.distribuicaoRecurso.findFirstOrThrow({
+            where: {
+                id: distribuicao_id,
+                removido_em: null,
+            },
+            select: {
+                id: true,
+                transferencia_id: true,
+                orgao_gestor: {
+                    select: {
+                        id: true,
+                        sigla: true,
+                    },
+                },
+            },
+        });
+
+        const andamentoTarefas = await prismaTx.transferenciaAndamentoTarefa.findMany({
+            where: {
+                transferencia_andamento: {
+                    transferencia_id: distribuicaoRecurso.transferencia_id,
+                },
+                workflow_tarefa: {
+                    fluxoTarefas: {
+                        some: {
+                            responsabilidade: WorkflowResponsabilidade.OutroOrgao,
+                        },
+                    },
+                },
+            },
+            select: {
+                id: true,
+                transferencia_andamento: {
+                    select: {
+                        tarefaEspelhada: {
+                            select: {
+                                id: true,
+                            },
+                        },
+                    },
+                },
+                workflow_tarefa: {
+                    select: {
+                        tarefa_fluxo: true,
+                    },
+                },
+            },
+        });
+
+        const operations = [];
+        if (andamentoTarefas.length) {
+            const tarefaCronograma = await prismaTx.tarefaCronograma.findFirstOrThrow({
+                where: {
+                    transferencia_id: distribuicaoRecurso.transferencia_id,
+                    removido_em: null,
+                },
+                select: { id: true },
+            });
+
+            const tarefasExistentes = await prismaTx.tarefa.findMany({
+                where: {
+                    removido_em: null,
+                    tarefa_cronograma_id: tarefaCronograma.id,
+                    nivel: 3,
+                },
+                orderBy: [{ tarefa_pai_id: 'asc' }, { numero: 'desc' }],
+                select: {
+                    tarefa_pai_id: true,
+                    numero: true,
+                },
+            });
+
+            let tarefa_pai_id: number | undefined;
+            let numero: number = 1;
+            for (const andamentoTarefa of andamentoTarefas) {
+                if (!andamentoTarefa.transferencia_andamento.tarefaEspelhada[0])
+                    throw new Error('Erro interno! Tarefa espelhada não encontrada.');
+
+                if (tarefa_pai_id != andamentoTarefa.transferencia_andamento.tarefaEspelhada[0].id) {
+                    tarefa_pai_id = andamentoTarefa.transferencia_andamento.tarefaEspelhada[0].id;
+                    numero = tarefasExistentes.filter((t) => t.tarefa_pai_id == tarefa_pai_id)[0].numero + 1;
+                } else {
+                    numero++;
+                }
+
+                operations.push(
+                    prismaTx.tarefa.create({
+                        data: {
+                            tarefa_cronograma_id: tarefaCronograma.id,
+                            tarefa_pai_id: tarefa_pai_id,
+                            nivel: 3,
+                            numero: numero,
+                            tarefa:
+                                andamentoTarefa.workflow_tarefa.tarefa_fluxo +
+                                ` - ${distribuicaoRecurso.orgao_gestor.sigla}`,
+                            descricao:
+                                andamentoTarefa.workflow_tarefa.tarefa_fluxo +
+                                ` - ${distribuicaoRecurso.orgao_gestor.sigla}`,
+                            distribuicao_recurso_id: distribuicaoRecurso.id,
+                            recursos: distribuicaoRecurso.orgao_gestor.sigla,
+                            orgao_id: distribuicaoRecurso.orgao_gestor.id,
+                        },
+                    })
+                );
+            }
         }
 
         await Promise.all(operations);
