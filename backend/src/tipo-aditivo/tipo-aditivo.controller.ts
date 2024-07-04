@@ -12,11 +12,11 @@ import {
     Query,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiNoContentResponse, ApiTags } from '@nestjs/swagger';
-import { CurrentUser } from '../../../auth/decorators/current-user.decorator';
-import { Roles } from '../../../auth/decorators/roles.decorator';
-import { PessoaFromJwt } from '../../../auth/models/PessoaFromJwt';
-import { FindOneParams } from '../../../common/decorators/find-params';
-import { RecordWithId } from '../../../common/dto/record-with-id.dto';
+import { CurrentUser } from '../auth/decorators/current-user.decorator';
+import { Roles } from '../auth/decorators/roles.decorator';
+import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
+import { FindOneParams } from '../common/decorators/find-params';
+import { RecordWithId } from '../common/dto/record-with-id.dto';
 import {
     CreateTipoAditivoDto,
     FilterTipoAditivoDto,
@@ -26,14 +26,14 @@ import {
 } from './dto/tipo-aditivo.dto';
 import { ProjetoTipoAditivoService } from './tipo-aditivo.service';
 
-@ApiTags('Tipo de Aditivo (Exclusivo para Obras)')
+@ApiTags('Tipo de Aditivo (SMAE, porém apenas Projeto e Obras)')
 @Controller('tipo-aditivo-mdo')
 export class ProjetoTipoAditivoController {
     constructor(private readonly tipoAditivoService: ProjetoTipoAditivoService) {}
 
     @Post()
     @ApiBearerAuth('access-token')
-    @Roles(['TipoAditivoMDO.inserir'])
+    @Roles(['TipoAditivo.inserir'])
     async create(@Body() dto: CreateTipoAditivoDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
         return await this.tipoAditivoService.create(dto, user);
     }
@@ -54,7 +54,7 @@ export class ProjetoTipoAditivoController {
 
     @Patch(':id')
     @ApiBearerAuth('access-token')
-    @Roles(['TipoAditivoMDO.editar'])
+    @Roles(['TipoAditivo.editar'])
     async update(
         @Param() params: FindOneParams,
         @Body() dto: UpdateTipoAditivoDto,
@@ -65,7 +65,7 @@ export class ProjetoTipoAditivoController {
 
     @Delete(':id')
     @ApiBearerAuth('access-token')
-    @Roles(['TipoAditivoMDO.remover'])
+    @Roles(['TipoAditivo.remover'])
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.ACCEPTED)
     async remove(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt) {

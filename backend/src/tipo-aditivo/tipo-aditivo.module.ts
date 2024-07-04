@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ProjetoTipoAditivoService } from './tipo-aditivo.service';
-import { PrismaModule } from '../../../prisma/prisma.module';
+import { PrismaModule } from '../prisma/prisma.module';
 import { ProjetoTipoAditivoController } from './tipo-aditivo.controller';
 
 @Module({

@@ -23,7 +23,7 @@ import { GrupoTematicoModule } from './pp/grupo-tematico/grupo-tematico.module';
 import { TipoIntervencaoModule } from './pp/tipo-intervencao/tipo-intervencao.module';
 import { OrcamentoPrevistoModule } from './pp/orcamento-previsto/orcamento-previsto.module';
 import { ProjetoTagModule } from './pp/projeto-tag/tag.module';
-import { ProjetoTipoAditivoModule } from './pp/_mdo/tipo-aditivo/tipo-aditivo.module';
+import { ProjetoTipoAditivoModule } from './tipo-aditivo/tipo-aditivo.module';
 import { ProjetoProgramaModule } from './pp/_mdo/projeto-programa/programa.module';
 import { ProjetoModalidadeContratacaoModule } from './pp/_mdo/modalidade-contratacao/mod-contratacao.module';
 
