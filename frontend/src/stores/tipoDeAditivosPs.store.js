@@ -19,7 +19,7 @@ export const useTipoDeAditivosStore = defineStore('tipoDeAditivosStore', {
       this.erro = null;
 
       try {
-        const resposta = await this.requestS.get(`${baseUrl}/tipo-aditivo-mdo/${id}`, params);
+        const resposta = await this.requestS.get(`${baseUrl}/tipo-aditivo/${id}`, params);
         this.emFoco = {
           ...resposta,
         };
@@ -34,7 +34,7 @@ export const useTipoDeAditivosStore = defineStore('tipoDeAditivosStore', {
       this.erro = null;
 
       try {
-        const { linhas } = await this.requestS.get(`${baseUrl}/tipo-aditivo-mdo`, params);
+        const { linhas } = await this.requestS.get(`${baseUrl}/tipo-aditivo`, params);
         this.lista = linhas;
       } catch (erro) {
         this.erro = erro;
@@ -47,7 +47,7 @@ export const useTipoDeAditivosStore = defineStore('tipoDeAditivosStore', {
       this.erro = null;
 
       try {
-        await this.requestS.delete(`${baseUrl}/tipo-aditivo-mdo/${id}`);
+        await this.requestS.delete(`${baseUrl}/tipo-aditivo/${id}`);
         this.chamadasPendentes.lista = false;
         return true;
       } catch (erro) {
@@ -63,9 +63,9 @@ export const useTipoDeAditivosStore = defineStore('tipoDeAditivosStore', {
 
       try {
         if (id) {
-          await this.requestS.patch(`${baseUrl}/tipo-aditivo-mdo/${id}`, params);
+          await this.requestS.patch(`${baseUrl}/tipo-aditivo/${id}`, params);
         } else {
-          await this.requestS.post(`${baseUrl}/tipo-aditivo-mdo`, params);
+          await this.requestS.post(`${baseUrl}/tipo-aditivo`, params);
         }
 
         this.chamadasPendentes.emFoco = false;
