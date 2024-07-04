@@ -75,6 +75,9 @@ export class ProjetoTipoAditivoService {
             data: {
                 atualizado_por: user.id,
                 atualizado_em: new Date(Date.now()),
+
+                habilita_valor: dto.habilita_valor,
+                habilita_valor_data_termino: dto.habilita_valor_data_termino,
                 nome: dto.nome,
             },
         });
