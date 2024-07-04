@@ -74,6 +74,9 @@ const tiposDisponíveis = computed(() => (esferaSelecionada.value
     .filter((x) => x.esfera === esferaSelecionada.value)
   : []));
 
+// =============================================================================
+// Lucas 23:34
+// =============================================================================
 statusesDistribuicaoSelecionados.value = [];
 
 const statusesBaseSelecionados = computed(() => (statusesDistribuicaoSelecionados.value
@@ -83,7 +86,7 @@ const statusesBaseSelecionados = computed(() => (statusesDistribuicaoSelecionado
 
 const statusesCustomizadosSelecionados = computed(() => (statusesDistribuicaoSelecionados.value
   ? statusesDistribuicaoSelecionados.value
-    .filter((status) => !status?.status_base)
+    .filter((status) => !!status && !status?.status_base)
     .map((status) => status?.id) : []));
 
 watchEffect(() => {
