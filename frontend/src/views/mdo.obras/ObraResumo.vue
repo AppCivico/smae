@@ -76,8 +76,8 @@ if (!Array.isArray(organs.value) || !organs.value.length) {
     v-if="emFoco"
     class="boards"
   >
-    <div class="flex g2 mb1 flexwrap">
-      <dl
+    <dl class="flex g2 mb1 flexwrap">
+      <div
         v-if="emFoco?.codigo"
         class="f1 mb1"
       >
@@ -87,16 +87,34 @@ if (!Array.isArray(organs.value) || !organs.value.length) {
         <dd class="t13">
           {{ emFoco?.codigo }}
         </dd>
-      </dl>
-      <dl class="f1 mb1">
+      </div>
+      <div class="f1 mb1">
         <dt class="t12 uc w700 mb05 tamarelo">
           {{ schema.fields.status.spec.label }}
         </dt>
         <dd class="t13">
           {{ statusesObras[emFoco?.status]?.nome || emFoco?.status }}
         </dd>
-      </dl>
-    </div>
+      </div>
+      <div class="f1 mb1">
+        <dt class="t12 uc w700 mb05 tamarelo">
+          {{ schema.fields.tags.spec.label }}
+        </dt>
+        <dd class="t13">
+          <ul class="listaComoTexto">
+            <li v-if="!emFoco?.tags?.length">
+              {{ '-' }}
+            </li>
+            <li
+              v-for="item in emFoco?.tags"
+              :key="item.id"
+            >
+              {{ item.descricao }}
+            </li>
+          </ul>
+        </dd>
+      </div>
+    </dl>
 
     <hr class="mb1 f1">
 

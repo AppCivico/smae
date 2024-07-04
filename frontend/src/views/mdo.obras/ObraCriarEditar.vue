@@ -12,6 +12,7 @@ import truncate from '@/helpers/truncate';
 import { useAlertStore } from '@/stores/alert.store';
 import { useDotaçãoStore } from '@/stores/dotacao.store.ts';
 import { useEquipamentosStore } from '@/stores/equipamentos.store';
+import { useEtiquetasStore } from '@/stores/etiquetaMdo.store';
 import { useGruposTematicosStore } from '@/stores/gruposTematicos.store';
 import { useObrasStore } from '@/stores/obras.store';
 import { useObservadoresStore } from '@/stores/observadores.store.ts';
@@ -40,12 +41,19 @@ const observadoresStore = useObservadoresStore();
 const portfolioMdoStore = usePortfolioObraStore();
 const obrasStore = useObrasStore();
 const equipamentosStore = useEquipamentosStore();
+const etiquetasStore = useEtiquetasStore();
 
 const {
   lista: listaDeEquipamentos,
   chamadasPendentes: chamadasPendentesDeEquipamentos,
   erro: erroDeEquipamentos,
 } = storeToRefs(equipamentosStore);
+
+const {
+  lista: listaDeEtiquetas,
+  chamadasPendentes: chamadasPendentesDeEtiquetas,
+  erro: erroDeEtiquetas,
+} = storeToRefs(etiquetasStore);
 
 const {
   lista: listaDeGruposTemáticos,
@@ -280,6 +288,7 @@ function iniciar() {
 
   portfolioMdoStore.buscarTudo();
   equipamentosStore.buscarTudo();
+  etiquetasStore.buscarTudo();
   gruposTematicosStore.buscarTudo();
   tiposDeIntervencaoStore.buscarTudo();
 
@@ -496,6 +505,31 @@ watch(itemParaEdição, (novoValor) => {
     </div>
 
     <div class="flex flexwrap g2 mb1">
+      <div class="f2 mb1 fb15em">
+        <LabelFromYup
+          name="tags"
+          :schema="schema"
+        />
+
+        <AutocompleteField
+          name="tags"
+          :controlador="{
+            busca: '',
+            participantes: values.tags || []
+          }"
+          :grupo="listaDeEtiquetas || []"
+          :aria-busy="etiquetasStore.chamadasPendentes.lista"
+          :class="{
+            error: errors.tags,
+          }"
+          label="descricao"
+        />
+        <ErrorMessage
+          name="tags"
+          class="error-msg"
+        />
+      </div>
+
       <div class="f1 mb1 fb15em">
         <LabelFromYup
           name="grupo_tematico_id"
