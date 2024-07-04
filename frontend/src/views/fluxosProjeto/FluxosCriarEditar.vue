@@ -76,25 +76,15 @@ const tiposDisponíveis = computed(() => (esferaSelecionada.value
 
 statusesDistribuicaoSelecionados.value = [];
 
-// eslint-disable-next-line max-len
-// const statusesBaseSelecionados = computed(() => statusesDistribuicaoSelecionados.value.filter((id) => {
-//   const status = statusesDistribuicaoComoLista.value.find((s) => s.id === id);
-//   return status && status.status_base;
-// }));
+const statusesBaseSelecionados = computed(() => (statusesDistribuicaoSelecionados.value
+  ? statusesDistribuicaoSelecionados.value
+    .filter((status) => status?.status_base)
+    .map((status) => status.id) : []));
 
-// // eslint-disable-next-line max-len
-// const statusesCustomizadosSelecionados = computed(() => statusesDistribuicaoSelecionados.value.filter((id) => {
-//   const status = statusesDistribuicaoComoLista.value.find((s) => s.id === id);
-//   return status && !status.status_base;
-// }));
-
-const statusesBaseSelecionados = computed(() => (statusesDistribuicaoSelecionados.value ? statusesDistribuicaoSelecionados.value
-  .filter((status) => status?.status_base)
-  .map((status) => status.id) : []));
-
-const statusesCustomizadosSelecionados = computed(() => (statusesDistribuicaoSelecionados.value ? statusesDistribuicaoSelecionados.value
-  .filter((status) => !status?.status_base)
-  .map((status) => status?.id) : []));
+const statusesCustomizadosSelecionados = computed(() => (statusesDistribuicaoSelecionados.value
+  ? statusesDistribuicaoSelecionados.value
+    .filter((status) => !status?.status_base)
+    .map((status) => status?.id) : []));
 
 watchEffect(() => {
   setFieldValue('statuses', statusesDistribuicaoSelecionados.value);
