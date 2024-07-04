@@ -1651,6 +1651,20 @@ export const tema = object({
     .required(),
 });
 
+export const tipoDeAditivo = object({
+  nome: string()
+    .label('Nome')
+    .max(250)
+    .min(3)
+    .required(),
+  habilita_valor: boolean()
+    .label('Habilita valor')
+    .nullable(),
+  habilita_valor_data_termino: boolean()
+    .label('Habilita valor e data de término')
+    .nullable(),
+});
+
 export const tipoDeTransferencia = object({
   nome: string()
     .label('Nome')
