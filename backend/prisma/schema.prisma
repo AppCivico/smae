@@ -511,31 +511,33 @@ model Orgao {
     PlanoAcao              PlanoAcao[]
     projetos_participando  ProjetoOrgaoParticipante[]
 
-    PortifolioOrgao              PortfolioOrgao[]
-    orgao_responsavel            Projeto[]                      @relation("orgao_responsavel")
-    orgao_origem                 Projeto[]                      @relation("orgao_origem")
-    orgao_executor               Projeto[]                      @relation("orgao_executor")
-    projetos_geridos             Projeto[]                      @relation("orgao_gestor")
-    projeto_colaborados          Projeto[]                      @relation("orgao_colaborador")
-    GrupoPortfolio               GrupoPortfolio[]
-    GrupoPortfolioPessoa         GrupoPortfolioPessoa[]
-    ProjetoEquipe                ProjetoEquipe[]
-    GrupoPainelExterno           GrupoPainelExterno[]
-    GrupoPainelExternoPessoa     GrupoPainelExternoPessoa[]
-    TransferenciasOrgao          Transferencia[]                @relation("orgao_concedente")
-    TransferenciasSecretaria     Transferencia[]                @relation("secretaria_concedente")
-    distribuicao_recursos        DistribuicaoRecurso[]
-    Nota                         Nota[]
-    NotaEnderecamento            NotaEnderecamento[]
-    transferenciaAndamento       TransferenciaAndamento[]
-    transferenciaAndamentoTarefa TransferenciaAndamentoTarefa[]
-    PdmOrcamentoRealizadoConfig  PdmOrcamentoRealizadoConfig[]
-    ViewNotaComOrdem             ViewNotas[]
-    PdmPerfil                    PdmPerfil[]
-    Pdm                          Pdm[]
-    statusDistribuicaoRecusro    DistribuicaoRecursoStatus[]
-    ViewProjetoMDO               ViewProjetoMDO[]
-    VariavelProprietario         Variavel[]                     @relation("proprietario")
+    PortifolioOrgao                PortfolioOrgao[]
+    orgao_responsavel              Projeto[]                        @relation("orgao_responsavel")
+    orgao_origem                   Projeto[]                        @relation("orgao_origem")
+    orgao_executor                 Projeto[]                        @relation("orgao_executor")
+    projetos_geridos               Projeto[]                        @relation("orgao_gestor")
+    projeto_colaborados            Projeto[]                        @relation("orgao_colaborador")
+    GrupoPortfolio                 GrupoPortfolio[]
+    GrupoPortfolioPessoa           GrupoPortfolioPessoa[]
+    ProjetoEquipe                  ProjetoEquipe[]
+    GrupoPainelExterno             GrupoPainelExterno[]
+    GrupoPainelExternoPessoa       GrupoPainelExternoPessoa[]
+    TransferenciasOrgao            Transferencia[]                  @relation("orgao_concedente")
+    TransferenciasSecretaria       Transferencia[]                  @relation("secretaria_concedente")
+    distribuicao_recursos          DistribuicaoRecurso[]
+    Nota                           Nota[]
+    NotaEnderecamento              NotaEnderecamento[]
+    transferenciaAndamento         TransferenciaAndamento[]
+    transferenciaAndamentoTarefa   TransferenciaAndamentoTarefa[]
+    PdmOrcamentoRealizadoConfig    PdmOrcamentoRealizadoConfig[]
+    ViewNotaComOrdem               ViewNotas[]
+    PdmPerfil                      PdmPerfil[]
+    Pdm                            Pdm[]
+    statusDistribuicaoRecusro      DistribuicaoRecursoStatus[]
+    ViewProjetoMDO                 ViewProjetoMDO[]
+    VariavelProprietario           Variavel[]                       @relation("proprietario")
+    GrupoResponsavelVariavel       GrupoResponsavelVariavel[]
+    GrupoResponsavelVariavelPessoa GrupoResponsavelVariavelPessoa[]
 
     @@map("orgao")
 }
@@ -1556,7 +1558,9 @@ enum PerfilResponsavelVariavel {
 model GrupoResponsavelVariavel {
     id Int @id @default(autoincrement())
 
-    descricao String
+    orgao_id Int
+    orgao    Orgao  @relation(fields: [orgao_id], references: [id])
+    titulo   String
 
     perfil PerfilResponsavelVariavel
 
@@ -1574,6 +1578,9 @@ model GrupoResponsavelVariavelPessoa {
 
     grupo_responsavel_variavel_id Int
     grupo_responsavel_variavel    GrupoResponsavelVariavel @relation(fields: [grupo_responsavel_variavel_id], references: [id])
+
+    orgao_id Int
+    orgao    Orgao @relation(fields: [orgao_id], references: [id])
 
     pessoa_id Int
     pessoa    Pessoa @relation(fields: [pessoa_id], references: [id])

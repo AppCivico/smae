@@ -30,7 +30,7 @@ CREATE TABLE "fonte_variavel" (
 -- CreateTable
 CREATE TABLE "grupo_responsavel_variavel" (
     "id" SERIAL NOT NULL,
-    "descricao" TEXT NOT NULL,
+    "titulo" TEXT NOT NULL,
     "perfil" "PerfilResponsavelVariavel" NOT NULL,
     "criado_em" TIMESTAMPTZ(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "atualizado_em" TIMESTAMPTZ(6),

@@ -95,7 +95,9 @@ const ModuloDescricao: Record<string, [string, ModuloSistema | null]> = {
     ProjetoProgramaMDO: ['Programas', 'MDO'],
 
     TipoAditivo: ['Tipo Aditivo', 'SMAE'],
+    CadastroGrupoVariavel: ['Grupos de Variáveis', 'SMAE'],
 
+    TipoAditivoMDO: ['', null],
     CadastroCargo: ['', null],
     CadastroCoordenadoria: ['', null],
     CadastroDepartamento: ['', null],
@@ -455,6 +457,7 @@ const PrivConfig: Record<string, false | [ListaDePrivilegios, string | false][]>
         ['SMAE.loga_direto_na_analise', 'Acesso direto à parte de análise ao fazer login'],
         ['SMAE.acesso_bi', 'Acesso total aos Business Intelligence (BI) de projetos/metas'],
         ['SMAE.espectador_de_painel_externo', 'Visualizador de painel externo'],
+        ['SMAE.GrupoVariavel.colaborador', 'Pode participar de grupos de variáveis'],
         ['PerfilAcesso.administrador', 'Gerenciar Perfil de Acesso'],
     ],
     Projeto: [
@@ -592,10 +595,13 @@ const PerfilAcessoConfig: {
     {
         // o TipoAditivo vai ficar fora do "todos os privilégios"
         nome: atualizarNomePerfil('Administrador Geral do SMAE', ['Administrador Geral']),
-        descricao: 'Administrador Geral - Todas as permissões do sistema, exceto monitoramento e gerência de projeto',
+        descricao:
+            'Administrador Geral - Todas as permissões do sistema, exceto ciclo de monitoramento, gerência de projeto, tipo de aditivo e grupo de variáveis.',
         privilegios: [
             'SMAE.superadmin',
-            ...todosPrivilegios.filter((e) => /^(PDM|SMAE|PS|MDO|TipoAditivo)\./.test(e) === false),
+            ...todosPrivilegios.filter(
+                (e) => /^(PDM|SMAE|PS|MDO|TipoAditivo|CadastroGrupoVariavel)\./.test(e) === false
+            ),
         ],
     },
     {
@@ -788,6 +794,18 @@ const PerfilAcessoConfig: {
             // ...
         ],
     },
+
+    {
+        nome: 'Administrador de Grupo de Variáveis',
+        descricao: 'Gerenciar todos os Grupos de Variáveis',
+        privilegios: ['CadastroGrupoVariavel.administrador'],
+    },
+    {
+        nome: 'Administrador de Grupo de Variáveis no Órgão',
+        descricao: 'Gerenciar todos os Grupos de Variáveis no órgão em qual faz parte',
+        privilegios: ['CadastroGrupoVariavel.administrador_no_orgao'],
+    },
+
     {
         nome: 'Gestor de Projetos no Órgão',
         descricao: 'Gerenciar todos os projetos no órgão em qual faz parte',

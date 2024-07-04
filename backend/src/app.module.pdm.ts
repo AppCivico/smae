@@ -19,6 +19,7 @@ import { VariavelCategoricaModule } from './variavel-categorica/variavel-categor
 import { VariavelModule } from './variavel/variavel.module';
 import { FonteVariavelModule } from './fonte-variavel/fonte-variavel.module';
 import { AssuntoVariavelModule } from './assunto-variavel/assunto-variavel.module';
+import { GrupoRespVariavelModule } from './grupo-resp-variavel/grupo-resp-variavel.module';
 
 @Module({
     imports: [
@@ -47,6 +48,7 @@ import { AssuntoVariavelModule } from './assunto-variavel/assunto-variavel.modul
         IndicadoresModule,
         MonitoramentoMensalModule,
         VariavelCategoricaModule,
+        GrupoRespVariavelModule,
     ],
     controllers: [],
     providers: [],

@@ -552,6 +552,7 @@ export class PessoaService {
                         'SMAE.colaborador_de_projeto',
                         'SMAE.espectador_de_painel_externo',
                         'SMAE.espectador_de_projeto',
+                        'SMAE.GrupoVariavel.colaborador',
                     ] as const;
                     const privAntesUpdate = await this.carregaPrivPessoa(prismaTx, perfilDeInteresse, pessoaId);
 
@@ -839,6 +840,36 @@ export class PessoaService {
                     `Não é possível mudar de órgão, pois ainda é gestor em: ${projetosSouGestor
                         .map((r) => {
                             return `${r.tipo == 'PP' ? 'Projeto' : 'Obra'} ${r.nome}`;
+                        })
+                        .join('\n')}`
+                );
+            }
+        }
+
+        {
+            logger.log(
+                `Trocou de órgão: verificando o ${orgaoAntigoStr} se há responsabilidades em grupos de variaveis`
+            );
+
+            const grupoQSouResp = await prismaTx.grupoResponsavelVariavelPessoa.findMany({
+                where: {
+                    removido_em: null,
+                    pessoa_id: self.id,
+                },
+                select: {
+                    grupo_responsavel_variavel: {
+                        select: {
+                            titulo: true,
+                        },
+                    },
+                },
+            });
+
+            if (grupoQSouResp.length) {
+                throw new BadRequestException(
+                    `Não é possível mudar de órgão, pois ainda é responsável no grupo de variáveis: ${grupoQSouResp
+                        .map((r) => {
+                            return `${r.grupo_responsavel_variavel.titulo}`;
                         })
                         .join('\n')}`
                 );
