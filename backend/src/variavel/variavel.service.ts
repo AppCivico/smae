@@ -9,8 +9,10 @@ import {
     VariavelCategoricaValor,
 } from '@prisma/client';
 import { PessoaFromJwt } from '../auth/models/PessoaFromJwt';
+import { LoggerWithLog } from '../common/LoggerWithLog';
 import { CONST_CRONO_VAR_CATEGORICA_ID } from '../common/consts';
 import { Date2YMD, DateYMD } from '../common/date2ymd';
+import { MIN_DTO_SAFE_NUM } from '../common/dto/consts';
 import { RecordWithId } from '../common/dto/record-with-id.dto';
 import { PrismaService } from '../prisma/prisma.service';
 import {
@@ -37,8 +39,6 @@ import {
     ValorSerieExistente,
     VariavelItemDto,
 } from './entities/variavel.entity';
-import { LoggerWithLog } from '../common/LoggerWithLog';
-import { MIN_DTO_SAFE_NUM } from '../common/dto/consts';
 
 /**
  * ordem que é populado na função populaSeriesExistentes, usada no serviço do VariavelFormulaCompostaService
@@ -382,10 +382,25 @@ export class VariavelService {
         });
         logger.verbose(`Responsáveis adicionados: ${responsaveis.join(', ')}`);
 
+        const variavelId = variavel.id;
+
+        await this.insertVariavelResponsavel(dto, prismaTxn, variavelId, logger);
+
+        await this.recalc_variaveis_acumulada([variavel.id], prismaTxn);
+
+        return variavel;
+    }
+
+    private async insertVariavelResponsavel(
+        dto: UpdateVariavelDto,
+        prismaTxn: Prisma.TransactionClient,
+        variavelId: number,
+        logger: LoggerWithLog
+    ) {
         if (Array.isArray(dto.medicao_grupo_ids)) {
             await prismaTxn.variavelGrupoResponsavelVariavel.createMany({
                 data: dto.medicao_grupo_ids.map((grupo_id) => ({
-                    variavel_id: variavel.id,
+                    variavel_id: variavelId,
                     grupo_responsavel_variavel_id: grupo_id,
                 })),
             });
@@ -395,7 +410,7 @@ export class VariavelService {
         if (Array.isArray(dto.validacao_grupo_ids)) {
             await prismaTxn.variavelGrupoResponsavelVariavel.createMany({
                 data: dto.validacao_grupo_ids.map((grupo_id) => ({
-                    variavel_id: variavel.id,
+                    variavel_id: variavelId,
                     grupo_responsavel_variavel_id: grupo_id,
                 })),
             });
@@ -405,16 +420,12 @@ export class VariavelService {
         if (Array.isArray(dto.liberacao_grupo_ids)) {
             await prismaTxn.variavelGrupoResponsavelVariavel.createMany({
                 data: dto.liberacao_grupo_ids.map((grupo_id) => ({
-                    variavel_id: variavel.id,
+                    variavel_id: variavelId,
                     grupo_responsavel_variavel_id: grupo_id,
                 })),
             });
             logger.verbose(`Grupos de liberação adicionados: ${dto.liberacao_grupo_ids.join(', ')}`);
         }
-
-        await this.recalc_variaveis_acumulada([variavel.id], prismaTxn);
-
-        return variavel;
     }
 
     private getPeriodTuples(p: VariaveisPeriodosDto | null): {
@@ -864,6 +875,8 @@ export class VariavelService {
     }
 
     async update(tipo: TipoVariavel, variavelId: number, dto: UpdateVariavelDto, user: PessoaFromJwt) {
+        const logger = LoggerWithLog('Atualização de variável');
+        logger.log(`Dados recebidos: ${JSON.stringify(dto)}`);
         // TODO: verificar se todos os membros de createVariavelDto.responsaveis estão ativos e sao realmente do orgão createVariavelDto.orgao_id
 
         const selfBefUpdate = await this.prisma.variavel.findFirstOrThrow({
@@ -970,6 +983,12 @@ export class VariavelService {
                             assunto_variavel_id: true,
                         },
                     },
+                    VariavelGrupoResponsavelVariavel: {
+                        where: { removido_em: null },
+                        select: {
+                            grupo_responsavel_variavel_id: true,
+                        },
+                    },
                 },
             });
             const currentSuspendida = self.suspendida_em !== null;
@@ -989,6 +1008,32 @@ export class VariavelService {
             }
 
             await this.updateCategorica(selfBefUpdate.variavel_categorica_id, dto, prismaTxn, variavelId, self);
+
+            const gruposRecebidosSorted = [
+                ...(dto.medicao_grupo_ids ?? []),
+                ...(dto.validacao_grupo_ids ?? []),
+                ...(dto.liberacao_grupo_ids ?? []),
+            ]
+                .sort()
+                .join(',');
+            const gruposAtuais = self.VariavelGrupoResponsavelVariavel.map((v) => v.grupo_responsavel_variavel_id)
+                .sort()
+                .join(',');
+
+            if (
+                gruposRecebidosSorted !== gruposAtuais &&
+                (Array.isArray(dto.medicao_grupo_ids) ||
+                    Array.isArray(dto.validacao_grupo_ids) ||
+                    Array.isArray(dto.liberacao_grupo_ids))
+            ) {
+                logger.log('Grupos de responsáveis alterados...');
+
+                await prismaTxn.variavelGrupoResponsavelVariavel.updateMany({
+                    where: { variavel_id: variavelId, removido_em: null },
+                    data: { removido_em: now },
+                });
+                await this.insertVariavelResponsavel(dto, prismaTxn, variavelId, logger);
+            }
 
             this.checkOrgaoProprietario(tipo, dto, user);
 
@@ -1028,6 +1073,7 @@ export class VariavelService {
             });
 
             if (suspendida !== undefined && suspendida !== currentSuspendida) {
+                logger.log(`Suspensão alterada para ${suspendida}`);
                 await prismaTxn.variavelSuspensaoLog.create({
                     data: {
                         variavel_id: variavelId,
@@ -1040,19 +1086,26 @@ export class VariavelService {
             }
 
             if (Array.isArray(responsaveis)) {
-                if (indicador) await this.resyncIndicadorVariavel(indicador, variavelId, prismaTxn);
-                await prismaTxn.variavelResponsavel.deleteMany({
-                    where: { variavel_id: variavelId },
-                });
+                logger.log('Responsáveis alterados...');
+                if (indicador) {
+                    logger.log(`Resync indicador variável: ${JSON.stringify(indicador)}`);
+                    await this.resyncIndicadorVariavel(indicador, variavelId, prismaTxn);
+                }
+
+                await prismaTxn.variavelResponsavel.deleteMany({ where: { variavel_id: variavelId } });
 
                 await prismaTxn.variavelResponsavel.createMany({
                     data: await this.buildVarResponsaveis(variavelId, responsaveis),
                 });
+                logger.verbose(`Responsáveis adicionados: ${responsaveis.join(', ')}`);
             }
 
             if (Number(self.valor_base).toString() !== Number(updated.valor_base).toString()) {
+                logger.log(`Valor base alterado de ${self.valor_base} para ${updated.valor_base}`);
                 await this.recalc_variaveis_acumulada([variavelId], prismaTxn);
             }
+
+            await logger.saveLogs(prismaTxn, user.getLogData());
         });
 
         return { id: variavelId };
