@@ -441,6 +441,8 @@ model Pessoa {
     AssuntoVariavelQAtualizei      AssuntoVariavel[]                @relation("Atualizador")
     AssuntoVariavelQRemovi         AssuntoVariavel[]                @relation("Removedor")
     GrupoResponsavelVariavelPessoa GrupoResponsavelVariavelPessoa[]
+    VariavelQCriei                 Variavel[]                       @relation("Criador")
+    VariavelQAtualizei             Variavel[]                       @relation("Atualizador")
 
     @@index([email])
     @@map("pessoa")
@@ -1474,6 +1476,16 @@ model Variavel {
 
     mostrar_monitoramento Boolean   @default(true)
     suspendida_em         DateTime? @db.Timestamptz(6)
+
+    criado_por Int?
+    criado_em  DateTime @default(now()) @db.Timestamptz(6)
+    criador    Pessoa?  @relation("Criador", fields: [criado_por], references: [id])
+
+    atualizado_por Int?
+    atualizado_em  DateTime @default(now()) @db.Timestamptz(6)
+    atualizador    Pessoa?  @relation("Atualizador", fields: [atualizado_por], references: [id])
+
+    vetores_busca  Unsupported("tsvector")? @default(dbgenerated())
 
     // Para PDM:
     // - inicio e fim ficam null quando a Periodicidade é a mesma do indicador
