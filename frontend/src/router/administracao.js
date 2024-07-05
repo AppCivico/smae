@@ -80,6 +80,7 @@ const rotasParaMenuSecundário = [
       'tipoDeAditivosListar',
       'assuntosListar',
       'modalidadesListar',
+      'fontesListar',
     ],
   },
   {
@@ -812,6 +813,52 @@ export default [
           título: 'Editar assunto',
           rotasParaMigalhasDePão: [
             'assuntosListar',
+          ],
+        },
+      },
+    ],
+  },
+  {
+    path: '/fontes',
+    component: () => import('@/views/ps.fontes/FontesRaiz.vue'),
+    meta: {
+      limitarÀsPermissões: '',
+      título: 'Fontes',
+      rotasParaMenuSecundário,
+    },
+    children: [
+      {
+        name: 'fontesListar',
+        path: '',
+        component: () => import('@/views/ps.fontes/FontesLista.vue'),
+        meta: {
+          título: 'Fontes',
+        },
+      },
+      {
+        name: 'fontesCriar',
+        path: 'novo',
+        component: () => import('@/views/ps.fontes/FontesCriarEditar.vue'),
+        meta: {
+          título: 'Nova fonte',
+          rotasParaMigalhasDePão: [
+            'fontesListar',
+          ],
+        },
+      },
+      {
+        path: ':fonteId',
+        name: 'fontesEditar',
+        component: () => import('@/views/ps.fontes/FontesCriarEditar.vue'),
+        props: ({ params }) => ({
+          ...params,
+          ...{ fonteId: Number.parseInt(params.fonteId, 10) || undefined },
+        }),
+
+        meta: {
+          título: 'Editar fonte',
+          rotasParaMigalhasDePão: [
+            'fontesListar',
           ],
         },
       },
