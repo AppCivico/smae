@@ -33,7 +33,7 @@ export const useObrasStore = defineStore('obrasStore', {
       paginas: 0,
       paginaCorrente: 0,
       temMais: true,
-      total_registros: 0,
+      totalRegistros: 0,
     },
   }),
   actions: {
