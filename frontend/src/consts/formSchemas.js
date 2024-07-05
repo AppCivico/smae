@@ -1659,10 +1659,10 @@ export const tipoDeAditivo = object({
     .required(),
   habilita_valor: boolean()
     .label('Habilita valor')
-    .required(),
+    .nullable(),
   habilita_valor_data_termino: boolean()
     .label('Habilita valor e data de término')
-    .required(),
+    .nullable(),
 });
 
 export const tipoDeTransferencia = object({
