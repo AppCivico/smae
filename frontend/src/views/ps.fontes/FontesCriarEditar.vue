@@ -114,8 +114,10 @@ async function onSubmit(values) {
   }
 }
 onMounted(() => {
-  fontesStore.$reset();
-  fontesStore.buscarItem(props.fonteId);
+  if (props.fonteId) {
+    fontesStore.$reset();
+    fontesStore.buscarItem(props.fonteId);
+  }
 });
 </script>
 
