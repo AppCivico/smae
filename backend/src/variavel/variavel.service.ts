@@ -38,6 +38,7 @@ import {
     ValorSerieExistente,
     VariavelItemDto,
 } from './entities/variavel.entity';
+import { LoggerWithLog } from '../common/LoggerWithLog';
 
 /**
  * ordem que é populado na função populaSeriesExistentes, usada no serviço do VariavelFormulaCompostaService
@@ -126,9 +127,11 @@ export class VariavelService {
     }
 
     async create(tipo: TipoVariavel, dto: CreateVariavelBaseDto | CreateVariavelPDMDto, user: PessoaFromJwt) {
+        const logger = LoggerWithLog('Criação de variável');
         // TODO: verificar se todos os membros de createVariavelDto.responsaveis estão ativos
         // e sao realmente do órgão createVariavelDto.orgao_id
 
+        logger.log(`Dados recebidos: ${JSON.stringify(dto)}`);
         if (dto.supraregional === null) delete dto.supraregional;
 
         let indicador: IndicadorInfo | undefined = undefined;
@@ -147,10 +150,12 @@ export class VariavelService {
             throw new BadRequestException('Tipo de variável inválido para criação manual');
         }
 
+        this.checkOrgaoProprietario(tipo, dto, user);
+
         const created = await this.prisma.$transaction(
-            async (prismaTxn: Prisma.TransactionClient): Promise<RecordWithId> => {
+            async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
                 if (dto.variavel_categorica_id !== null && dto.variavel_categorica_id) {
-                    await this.carregaVariavelCategorica(prismaTxn, dto.variavel_categorica_id);
+                    await this.carregaVariavelCategorica(prismaTx, dto.variavel_categorica_id);
                 }
 
                 if (indicador) {
@@ -170,7 +175,9 @@ export class VariavelService {
                         throw new BadRequestException(`Indicador sem regionalização, não é possível enviar região.`);
                 }
 
-                return await this.performVariavelSave(tipo, prismaTxn, dto, indicador, dto.responsaveis);
+                const ret = await this.performVariavelSave(tipo, prismaTx, dto, indicador, dto.responsaveis, logger);
+                await logger.saveLogs(prismaTx, user.getLogData());
+                return ret;
             },
             {
                 isolationLevel: 'Serializable',
@@ -187,6 +194,9 @@ export class VariavelService {
         dto: CreateGeradorVariaveBaselDto | CreateGeradorVariavelPDMDto,
         user: PessoaFromJwt
     ): Promise<RecordWithId[]> {
+        const logger = LoggerWithLog('Geração de variáveis regionais');
+        logger.verbose(`Dados recebidos: ${JSON.stringify(dto)}`);
+
         const regioesDb = await this.prisma.regiao.findMany({
             where: { id: { in: dto.regioes }, pdm_codigo_sufixo: { not: null }, removido_em: null },
             select: { nivel: true },
@@ -241,12 +251,14 @@ export class VariavelService {
                             regiao_id: regiao.id,
                         },
                         indicador,
-                        responsaveis
+                        responsaveis,
+                        logger
                     );
                     ids.push(variavel.id);
                 }
 
                 if (dto.supraregional) {
+                    logger.log('Criando variável supraregional');
                     await this.performVariavelSave(
                         tipo,
                         prismaTxn,
@@ -256,10 +268,12 @@ export class VariavelService {
                             codigo: prefixo,
                         },
                         indicador,
-                        responsaveis
+                        responsaveis,
+                        logger
                     );
                 }
 
+                await logger.saveLogs(prismaTxn, user.getLogData());
                 return ids.map((n) => ({ id: n }));
             },
             {
@@ -277,8 +291,11 @@ export class VariavelService {
         prismaTxn: Prisma.TransactionClient,
         dto: CreateVariavelBaseDto,
         indicador: IndicadorInfo | undefined,
-        responsaveis: number[]
+        responsaveis: number[],
+        logger: LoggerWithLog | undefined
     ) {
+        logger = logger ?? LoggerWithLog('Criação de variável');
+
         const indicador_id = indicador?.id;
         const jaEmUso = await prismaTxn.variavel.count({
             where: {
@@ -351,12 +368,17 @@ export class VariavelService {
             },
             select: { id: true },
         });
+        logger.log(`Variável criada: ${variavel.id}`);
 
-        if (indicador) await this.resyncIndicadorVariavel(indicador, variavel.id, prismaTxn);
+        if (indicador) {
+            logger.log(`Resync indicador variável: ${JSON.stringify(indicador)}`);
+            await this.resyncIndicadorVariavel(indicador, variavel.id, prismaTxn);
+        }
 
         await prismaTxn.variavelResponsavel.createMany({
             data: await this.buildVarResponsaveis(variavel.id, responsaveis),
         });
+        logger.verbose(`Responsáveis adicionados: ${responsaveis.join(', ')}`);
 
         await this.recalc_variaveis_acumulada([variavel.id], prismaTxn);
 
@@ -576,14 +598,55 @@ export class VariavelService {
         }
     }
 
-    async findAll(tipo: TipoVariavel, filters: FilterVariavelDto | undefined = undefined): Promise<VariavelItemDto[]> {
-        let filterQuery: any = {};
+    async findAll(tipo: TipoVariavel, filters: FilterVariavelDto): Promise<VariavelItemDto[]> {
+        const whereSet: Prisma.VariavelWhereInput[] = [];
 
-        const removidoStatus = filters?.remover_desativados == true ? false : undefined;
-
-        // TODO alterar pra testar todos os casos de exclusividade
-        if (filters?.indicador_id && filters?.meta_id) {
-            throw new HttpException('Apenas filtrar por meta_id ou indicador_id por vez', 400);
+        if (filters.remover_desativados) {
+            // não acredito que sirva de nada, mas vou manter pois já estava assim
+            // da na mesma colocar o else-if ou não, pois o banco vai gerar 0 resultados no caso de combinações
+            // impossíveis
+            if (filters.indicador_id)
+                whereSet.push({
+                    indicador_variavel: {
+                        some: {
+                            desativado: false,
+                            indicador_id: filters.indicador_id,
+                        },
+                    },
+                });
+            if (filters.meta_id)
+                whereSet.push({
+                    indicador_variavel: {
+                        some: {
+                            desativado: false,
+                            indicador: {
+                                meta_id: filters.meta_id,
+                            },
+                        },
+                    },
+                });
+            if (filters.iniciativa_id)
+                whereSet.push({
+                    indicador_variavel: {
+                        some: {
+                            desativado: false,
+                            indicador: {
+                                iniciativa_id: filters.iniciativa_id,
+                            },
+                        },
+                    },
+                });
+            if (filters.atividade_id)
+                whereSet.push({
+                    indicador_variavel: {
+                        some: {
+                            desativado: false,
+                            indicador: {
+                                atividade_id: filters.atividade_id,
+                            },
+                        },
+                    },
+                });
         }
 
         // TODO seria bom verificar permissões do usuário, se realmente poderia visualizar [logo fazer batch edit dos valores] de todas as variaveis
@@ -592,60 +655,16 @@ export class VariavelService {
         // e o endpoint de metas já aplica o filtro
         // já que nessa listagem é retornado o token usado no batch
 
-        if (filters?.indicador_id) {
-            filterQuery = {
-                indicador_variavel: {
-                    some: {
-                        desativado: removidoStatus,
-                        indicador_id: filters?.indicador_id,
-                    },
-                },
-            };
-        } else if (filters?.meta_id) {
-            filterQuery = {
-                indicador_variavel: {
-                    some: {
-                        desativado: removidoStatus,
-                        indicador: {
-                            meta_id: filters?.meta_id,
-                        },
-                    },
-                },
-            };
-        } else if (filters?.iniciativa_id) {
-            filterQuery = {
-                indicador_variavel: {
-                    some: {
-                        desativado: removidoStatus,
-                        indicador: {
-                            iniciativa_id: filters?.iniciativa_id,
-                        },
-                    },
-                },
-            };
-        } else if (filters?.atividade_id) {
-            filterQuery = {
-                indicador_variavel: {
-                    some: {
-                        desativado: removidoStatus,
-                        indicador: {
-                            atividade_id: filters?.atividade_id,
-                        },
-                    },
-                },
-            };
-        }
-
         const listActive = await this.prisma.variavel.findMany({
             where: {
                 removido_em: null,
                 tipo: tipo,
-                VariavelAssuntoVariavel: Array.isArray(filters?.assuntos)
+                VariavelAssuntoVariavel: Array.isArray(filters.assuntos)
                     ? { some: { assunto_variavel: { id: { in: filters.assuntos } } } }
                     : undefined,
-                id: filters?.id,
+                id: filters.id,
 
-                ...filterQuery,
+                AND: whereSet,
             },
             select: {
                 id: true,
@@ -762,6 +781,7 @@ export class VariavelService {
                 titulo: true,
             },
         });
+
         const mapEtapa = etapaDoCrono.reduce((acc: Record<string, any>, etapa: any) => {
             acc[etapa.variavel_id!] = {
                 id: etapa.id,
@@ -780,13 +800,13 @@ export class VariavelService {
 
             let indicador_variavel: typeof row.indicador_variavel = [];
             // filtra as variaveis novamente caso tiver filtros por indicador ou atividade
-            if (filters?.indicador_id || filters?.iniciativa_id || filters?.atividade_id) {
+            if (filters.indicador_id || filters.iniciativa_id || filters.atividade_id) {
                 for (const iv of row.indicador_variavel) {
-                    if (filters?.atividade_id && filters?.atividade_id === iv.indicador.atividade?.id) {
+                    if (filters.atividade_id && filters.atividade_id === iv.indicador.atividade?.id) {
                         indicador_variavel.push(iv);
-                    } else if (filters?.indicador_id && filters?.indicador_id === iv.indicador.id) {
+                    } else if (filters.indicador_id && filters.indicador_id === iv.indicador.id) {
                         indicador_variavel.push(iv);
-                    } else if (filters?.iniciativa_id && filters?.iniciativa_id === iv.indicador.iniciativa?.id) {
+                    } else if (filters.iniciativa_id && filters.iniciativa_id === iv.indicador.iniciativa?.id) {
                         indicador_variavel.push(iv);
                     }
                 }
@@ -1031,8 +1051,9 @@ export class VariavelService {
                 });
             }
 
-            // TODO: mesmos TODO do create, verificar quem pode usar o orgao_proprietario_id
-            // TODO orgao_proprietario_id, validacao_grupo_ids, liberacao_grupo
+            // TODO validacao_grupo_ids, liberacao_grupo
+
+            this.checkOrgaoProprietario(tipo, dto, user);
 
             const updated = await prismaTxn.variavel.update({
                 where: { id: variavelId },
@@ -1098,6 +1119,21 @@ export class VariavelService {
         });
 
         return { id: variavelId };
+    }
+
+    private checkOrgaoProprietario(tipo: string, dto: UpdateVariavelDto | CreateVariavelBaseDto, user: PessoaFromJwt) {
+        if (tipo == 'PDM') {
+            dto.orgao_proprietario_id = null;
+        } else {
+            if (!dto.orgao_proprietario_id)
+                throw new BadRequestException('Órgão proprietário é obrigatório para variáveis globais');
+            if (!user.orgao_id) throw new BadRequestException('Usuário sem órgão');
+
+            if (!user.hasSomeRoles(['CadastroIndicadorPS.administrador'])) {
+                if (dto.orgao_proprietario_id !== user.orgao_id)
+                    throw new HttpException('Você só pode criar variáveis globais em seu próprio órgão.', 400);
+            }
+        }
     }
 
     private async carregaVariavelCategorica(prismaTxn: Prisma.TransactionClient, variavel_categorica_id: number) {
@@ -1231,9 +1267,15 @@ export class VariavelService {
     }
 
     async remove(tipo: TipoVariavel, variavelId: number, user: PessoaFromJwt) {
+        const logger = LoggerWithLog('Remoção de variável');
+        logger.debug(`Removendo variável ${variavelId}`);
         // buscando apenas pelo indicador pai verdadeiro desta variavel
         const selfIdicadorVariavel = await this.prisma.indicadorVariavel.findFirst({
-            where: { variavel_id: variavelId, indicador_origem_id: null },
+            where: {
+                variavel_id: variavelId,
+                variavel: { tipo },
+                indicador_origem_id: null,
+            },
             select: {
                 indicador_id: true,
                 variavel: {
@@ -1253,8 +1295,8 @@ export class VariavelService {
             );
 
         await this.prisma.$transaction(
-            async (prismaTxn: Prisma.TransactionClient) => {
-                const refEmUso = await prismaTxn.indicadorFormulaVariavel.findMany({
+            async (prismaTx: Prisma.TransactionClient) => {
+                const refEmUso = await prismaTx.indicadorFormulaVariavel.findMany({
                     where: { variavel_id: variavelId },
                     select: {
                         indicador: { select: { codigo: true, titulo: true } },
@@ -1267,7 +1309,7 @@ export class VariavelService {
                     );
                 }
 
-                const refFormulaComposta = await prismaTxn.formulaComposta.findMany({
+                const refFormulaComposta = await prismaTx.formulaComposta.findMany({
                     where: {
                         removido_em: null,
                         FormulaCompostaVariavel: {
@@ -1284,7 +1326,7 @@ export class VariavelService {
                     );
                 }
 
-                await prismaTxn.variavel.update({
+                await prismaTx.variavel.update({
                     where: { id: variavelId },
                     data: {
                         removido_em: new Date(Date.now()),
@@ -1293,9 +1335,11 @@ export class VariavelService {
                     select: { id: true },
                 });
 
-                await prismaTxn.indicadorVariavel.deleteMany({
+                await prismaTx.indicadorVariavel.deleteMany({
                     where: { variavel_id: variavelId },
                 });
+
+                await logger.saveLogs(prismaTx, user.getLogData());
             },
             {
                 isolationLevel: 'Serializable',

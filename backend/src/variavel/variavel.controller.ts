@@ -101,6 +101,7 @@ export const ROLES_ACESSO_VARIAVEL_PS: ListaDePrivilegios[] = [
     'CadastroIndicadorPS.inserir',
     'CadastroIndicadorPS.editar',
     'CadastroMetaPS.listar',
+    'CadastroIndicadorPS.administrador',
     ...ROLES_ACESSO_VARIAVEL_PDM,
 ];
 
@@ -113,7 +114,7 @@ export class VariavelGlobalController {
 
     @Post('variavel')
     @ApiBearerAuth('access-token')
-    @Roles(['CadastroIndicadorPS.inserir'])
+    @Roles(['CadastroIndicadorPS.inserir', 'CadastroIndicadorPS.administrador'])
     async create(@Body() dto: CreateVariavelBaseDto, @CurrentUser() user: PessoaFromJwt): Promise<RecordWithId> {
         return await this.variavelService.create(this.tipo, dto, user);
     }
@@ -127,7 +128,7 @@ export class VariavelGlobalController {
 
     @Patch('variavel/:id')
     @ApiBearerAuth('access-token')
-    @Roles(['CadastroIndicadorPS.editar'])
+    @Roles(['CadastroIndicadorPS.editar', 'CadastroIndicadorPS.administrador'])
     async update(
         @Param() params: FindOneParams,
         @Body() dto: UpdateVariavelDto,
@@ -138,7 +139,7 @@ export class VariavelGlobalController {
 
     @Delete('variavel/:id')
     @ApiBearerAuth('access-token')
-    @Roles(['CadastroIndicadorPS.editar'])
+    @Roles(['CadastroIndicadorPS.editar', 'CadastroIndicadorPS.administrador'])
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.ACCEPTED)
     async remove(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt) {
@@ -151,7 +152,7 @@ export class VariavelGlobalController {
     @ApiBearerAuth('access-token')
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.NO_CONTENT)
-    @Roles(['CadastroIndicadorPS.inserir'])
+    @Roles(['CadastroIndicadorPS.inserir', 'CadastroIndicadorPS.administrador'])
     async patchSeriePrevisto(@Body() series: BatchSerieUpsert, @CurrentUser() user: PessoaFromJwt) {
         await this.variavelService.batchUpsertSerie(this.tipo, series.valores, user);
 
@@ -161,7 +162,7 @@ export class VariavelGlobalController {
     // manter antes da proxima rota
     @Post('variavel/gerador-regionalizado')
     @ApiBearerAuth('access-token')
-    @Roles(['CadastroIndicadorPS.inserir'])
+    @Roles(['CadastroIndicadorPS.inserir', 'CadastroIndicadorPS.administrador'])
     async create_generated(
         @Body() dto: CreateGeradorVariaveBaselDto,
         @CurrentUser() user: PessoaFromJwt
@@ -172,7 +173,12 @@ export class VariavelGlobalController {
     @ApiExtraModels(SerieValorNomimal, SerieIndicadorValorNominal)
     @Get('variavel/:id/serie')
     @ApiBearerAuth('access-token')
-    @Roles(['CadastroIndicadorPS.editar', 'CadastroIndicadorPS.inserir', 'CadastroMetaPS.listar'])
+    @Roles([
+        'CadastroIndicadorPS.editar',
+        'CadastroIndicadorPS.inserir',
+        'CadastroMetaPS.listar',
+        'CadastroIndicadorPS.administrador',
+    ])
     async getSeriePrevistoRealizado(
         @Param() params: FindOneParams,
         @CurrentUser() user: PessoaFromJwt

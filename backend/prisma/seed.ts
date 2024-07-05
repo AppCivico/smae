@@ -325,6 +325,7 @@ const PrivConfig: Record<string, false | [ListaDePrivilegios, string | false][]>
         ['CadastroIndicador.remover', 'Remover Indicadores e variáveis quando for responsável'],
     ],
     CadastroIndicadorPS: [
+        ['CadastroIndicadorPS.administrador', 'Gerenciar variáveis globais para qualquer grupo de variável.'],
         ['CadastroIndicadorPS.inserir', 'Inserir Indicadores e variáveis quando for responsável'],
         ['CadastroIndicadorPS.editar', 'Editar Indicadores e variáveis quando for responsável'],
         ['CadastroIndicadorPS.remover', 'Remover Indicadores e variáveis quando for responsável'],

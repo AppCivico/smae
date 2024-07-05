@@ -218,4 +218,5 @@ export type ListaDePrivilegios =
     | 'FonteVariavel.remover'
     | 'CadastroGrupoVariavel.administrador'
     | 'CadastroGrupoVariavel.administrador_no_orgao'
-    | 'SMAE.GrupoVariavel.colaborador';
+    | 'SMAE.GrupoVariavel.colaborador'
+    | 'CadastroIndicadorPS.administrador';
