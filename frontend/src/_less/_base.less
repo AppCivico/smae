@@ -2226,7 +2226,7 @@ progress,
   .tzaccordeon {
     cursor: pointer;
 
-    >td:first-child {
+    > td:first-child {
       vertical-align: middle;
 
       span {
@@ -2249,9 +2249,8 @@ progress,
     }
 
     &:not(.active) {
-
-      +tz,
-      +tbody {
+      + tz,
+      + tbody {
         display: none !important;
       }
 
@@ -2317,7 +2316,6 @@ progress,
 
   .tablemain {
     border-left: 1px solid @c100;
-
   }
 
   .tlink {
@@ -2334,12 +2332,12 @@ progress,
   }
 
   &.pl0 {
-
     th:first-child,
     td:first-child {
       padding-left: 0;
     }
   }
+  
   &.tbody-zebra {
     tbody:nth-of-type(odd) tr{
       background: @c50 !important;
