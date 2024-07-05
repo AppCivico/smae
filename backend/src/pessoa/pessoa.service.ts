@@ -143,7 +143,7 @@ export class PessoaService {
         };
 
         this.logger.log(`escreverNovaSenhaById: ${pessoaId}`);
-        const updated = await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient): Promise<any> => {
+        const updated = await this.prisma.$transaction(async (prismaTx: Prisma.TransactionClient): Promise<boolean> => {
             const updatePassword = await prismaTx.pessoa.updateMany({
                 where: { id: pessoaId },
                 data: data,
