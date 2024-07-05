@@ -8,6 +8,7 @@ import { storeToRefs } from 'pinia';
 import { ErrorMessage, Field, useForm } from 'vee-validate';
 import { computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
+import Big from 'big.js';
 
 const TransferenciasVoluntarias = useTransferenciasVoluntariasStore();
 const {
@@ -34,6 +35,7 @@ const alertStore = useAlertStore();
 const onSubmit = handleSubmit.withControlled(async (controlledValues) => {
   // necessário por causa de 🤬
   const cargaManipulada = nulificadorTotal(controlledValues);
+
   try {
     let id;
     if (props.transferenciaId) {
@@ -58,48 +60,62 @@ const onSubmit = handleSubmit.withControlled(async (controlledValues) => {
   }
 });
 
-const updateValorTotal = (fieldName, newValue, setFieldValue) => {
-  const valor = fieldName === 'valor' ? parseFloat(newValue) || 0 : parseFloat(values.valor) || 0;
-  const valorContraPartida = fieldName === 'valor_contrapartida' ? parseFloat(newValue) || 0 : parseFloat(values.valor_contrapartida) || 0;
-  const total = (valor + valorContraPartida).toFixed(2);
-  setFieldValue('valor_total', total);
-  calcularValorCusteio(fieldName);
-  calcularValorInvestimento(fieldName);
-};
+const isSomaCorreta = computed(() => {
+  const soma = parseFloat(values.valor || 0) + parseFloat(values.valor_contrapartida || 0);
+  return soma === parseFloat(values.valor_total);
+});
 
 const calcularValorCusteio = (fieldName) => {
   const valor = parseFloat(values.valor) || 0;
   const custeio = parseFloat(values.custeio) || 0;
   const percentagemCusteio = parseFloat(values.percentagem_custeio) || 0;
-  if(fieldName == 'percentagem_custeio' || fieldName == 'valor') {
-    setFieldValue('custeio', (valor * percentagemCusteio) / 100);
-  } else if(fieldName == 'custeio') {
-    setFieldValue('percentagem_custeio', (custeio / valor) * 100);
+  if (fieldName === 'percentagem_custeio' || fieldName === 'valor') {
+    const valorArredondado = new Big(valor)
+      .times(percentagemCusteio).div(100).round(2, Big.roundHalfUp);
+    setFieldValue('custeio', valorArredondado.toString());
+  } else if (fieldName === 'custeio') {
+    const porcentagemCusteio = ((custeio / valor) * 100);
+    setFieldValue('percentagem_custeio', porcentagemCusteio.toFixed(2));
+    setFieldValue('percentagem_investimento', (100 - porcentagemCusteio).toFixed(2));
   }
-}
+};
 
 const calcularValorInvestimento = (fieldName) => {
   const valor = parseFloat(values.valor) || 0;
   const investimento = parseFloat(values.investimento) || 0;
+  const custeio = parseFloat(values.custeio) || 0;
   const percentagemInvestimento = parseFloat(values.percentagem_investimento) || 0;
-  if(fieldName == 'percentagem_investimento' || fieldName == 'valor') {
-    setFieldValue('investimento', (valor * percentagemInvestimento) / 100);
-  } else if(fieldName == 'investimento') {
-    setFieldValue('percentagem_investimento', (investimento / valor) * 100);
+  if (fieldName === 'percentagem_investimento' || fieldName === 'valor') {
+    const valorArredondado = new Big(valor)
+      .times(percentagemInvestimento).div(100).round(2);
+    let valorArredondadoConvertido = parseFloat(valorArredondado.toString());
+    if (custeio > 0) {
+      valorArredondadoConvertido = valor - custeio;
+    }
+    const valorFinal = new Big(valorArredondadoConvertido).round(2, Big.roundHalfUp);
+    setFieldValue('investimento', valorFinal.toString());
+  } else if (fieldName === 'investimento') {
+    const porcentagemInvestimento = ((investimento / valor) * 100);
+    setFieldValue('percentagem_investimento', porcentagemInvestimento.toFixed(2));
+    setFieldValue('percentagem_custeio', (100 - porcentagemInvestimento).toFixed(2));
   }
-}
+};
 
-const isSomaCorreta = computed(() => {
-  const soma = parseFloat(values.valor || 0) + parseFloat(values.valor_contrapartida || 0);
-  return soma === parseFloat(values.valor_total);
-});
+const updateValorTotal = (fieldName, newValue) => {
+  const valor = fieldName === 'valor' ? parseFloat(newValue) || 0 : parseFloat(values.valor) || 0;
+  const valorContraPartida = fieldName === 'valor_contrapartida' ? parseFloat(newValue) || 0 : parseFloat(values.valor_contrapartida) || 0;
+  const valorArredondado = new Big((valor + valorContraPartida)).round(2);
+  setFieldValue('valor_total', valorArredondado.toString());
+  calcularValorCusteio(fieldName);
+  calcularValorInvestimento(fieldName);
+};
 
 TransferenciasVoluntarias.buscarItem(props.transferenciaId);
 
 onMounted(() => {
   calcularValorCusteio('custeio');
   calcularValorInvestimento('investimento');
-})
+});
 </script>
 
 <template>
@@ -122,138 +138,151 @@ onMounted(() => {
   <form
     @submit.prevent="onSubmit"
   >
-  <fieldset>
-    <div class="flex g2">
-      <div class="f1">
-        <LabelFromYup
-          name="valor"
-          :schema="schema"
-        />
-        <MaskedFloatInput
-          name="valor"
-          type="text"
-          class="inputtext light mb1"
-          :value="values.valor"
-          converter-para="string"
-          @update:model-value="(newValue) =>
-            updateValorTotal('valor', newValue, setFieldValue)"
-        />
-        <ErrorMessage
-          class="error-msg mb1"
-          name="valor"
-        />
+    <fieldset>
+      <div class="flex g2">
+        <div class="f1">
+          <LabelFromYup
+            name="valor"
+            :schema="schema"
+          />
+          <MaskedFloatInput
+            name="valor"
+            type="text"
+            class="inputtext light mb1"
+            :value="values.valor"
+            converter-para="string"
+            @update:model-value="(newValue) =>
+              updateValorTotal('valor', newValue, setFieldValue)"
+          />
+          <ErrorMessage
+            class="error-msg mb1"
+            name="valor"
+          />
+        </div>
+        <div class="f1">
+          <LabelFromYup
+            name="empenho"
+            :schema="schema"
+          />
+          <Field
+            name="empenho"
+            as="select"
+            class="inputtext light mb1"
+            :class="{ error: errors.empenho }"
+          >
+            <option value="">
+              Selecionar
+            </option>
+            <option :value="true">
+              Sim
+            </option>
+            <option :value="false ">
+              Não
+            </option>
+          </Field>
+          <ErrorMessage
+            class="error-msg mb1"
+            name="empenho"
+          />
+        </div>
       </div>
-      <div class="f1">
-        <LabelFromYup
-          name="empenho"
-          :schema="schema"
-        />
-        <Field
-          name="empenho"
-          as="select"
-          class="inputtext light mb1"
-          :class="{ error: errors.empenho }"
-        >
-          <option value="">
-            Selecionar
-          </option>
-          <option :value="true">
-            Sim
-          </option>
-          <option :value="false ">
-            Não
-          </option>
-        </Field>
-        <ErrorMessage
-          class="error-msg mb1"
-          name="empenho"
-        />
-      </div>
-    </div>
-  </fieldset>
-    
-    
-  <fieldset class="padding-sm mb2 flex">
-    <LabelFromYup as="legend">Custeio</LabelFromYup>
-    <div class="flex f1 g2 center">
-      <div class="fb20em">
-        <LabelFromYup
-          name="percentagem_investimento"
-          :schema="schema"
-        />
-        <MaskedFloatInput
-          name="percentagem_custeio"
-          type="text"
-          class="inputtext light"
-          :value="values.percentagem_custeio"
-          converter-para="string"
-          @update:model-value="(newValue) => {
-            setFieldValue('percentagem_custeio', newValue);
-            calcularValorCusteio('percentagem_custeio');
-          }"
-        />
-      </div>
-      <small class="addlink mt2 fb3em text-center" style="cursor: default;">OU</small>
-      <div class="fb50em">
-        <LabelFromYup
-          name="investimento"
-          :schema="schema"
-        />
-        <MaskedFloatInput
-          name="custeio"
-          type="text"
-          class="inputtext light"
-          :value="values.custeio"
-          converter-para="string"
-          @update:model-value="(newValue) => {
-            updateValorTotal('custeio', newValue, setFieldValue);
-            calcularValorCusteio('custeio')
-          }"
-        />
-      </div>
-    </div>
-  </fieldset>
+    </fieldset>
 
-  <fieldset class="padding-sm mb2 flex">
-    <LabelFromYup as="legend">Investimento</LabelFromYup>
-    <div class="flex f1 g2 center">
-      <div class="fb20em">
-        <LabelFromYup
-          name="percentagem_investimento"
-          :schema="schema"
-        />
-        <MaskedFloatInput
-          name="percentagem_investimento"
-          type="text"
-          class="inputtext light"
-          :value="values.percentagem_investimento"
-          converter-para="string"
-          @update:model-value="(newValue) => {
-            setFieldValue('percentagem_investimento', newValue);
-            calcularValorInvestimento('percentagem_investimento');
-          }"
-        />
+    <fieldset class="padding-sm mb2 flex">
+      <LabelFromYup as="legend">
+        Custeio
+      </LabelFromYup>
+      <div class="flex f1 g2 center">
+        <div class="fb20em">
+          <LabelFromYup
+            name="percentagem_investimento"
+            :schema="schema"
+          />
+          <MaskedFloatInput
+            name="percentagem_custeio"
+            type="text"
+            class="inputtext light"
+            :value="values.percentagem_custeio"
+            converter-para="string"
+            :max="100"
+            maxlength="6"
+            @update:model-value="(newValue) => {
+              setFieldValue('percentagem_custeio', newValue);
+              calcularValorCusteio('percentagem_custeio');
+            }"
+          />
+        </div>
+        <small
+          class="addlink mt2 fb3em text-center"
+          style="cursor: default;"
+        >OU</small>
+        <div class="fb50em">
+          <LabelFromYup
+            name="investimento"
+            :schema="schema"
+          />
+          <MaskedFloatInput
+            name="custeio"
+            type="text"
+            class="inputtext light"
+            :value="values.custeio"
+            converter-para="string"
+            @update:model-value="(newValue) => {
+              updateValorTotal('custeio', newValue, setFieldValue);
+              calcularValorCusteio('custeio')
+            }"
+          />
+        </div>
       </div>
-      <small class="addlink mt2 fb3em text-center" style="cursor: default;">OU</small>
-      <div class="fb50em">
-        <LabelFromYup
-          name="investimento"
-          :schema="schema"
-        />
-        <MaskedFloatInput
-          name="investimento"
-          type="text"
-          class="inputtext light"
-          :value="values.investimento"
-          converter-para="string"
-          @update:model-value="(newValue) => {
-            updateValorTotal('investimento', newValue, setFieldValue);
-            calcularValorInvestimento('investimento')
-          }"
-        />  
+    </fieldset>
+
+    <fieldset class="padding-sm mb2 flex">
+      <LabelFromYup as="legend">
+        Investimento
+      </LabelFromYup>
+      <div class="flex f1 g2 center">
+        <div class="fb20em">
+          <LabelFromYup
+            name="percentagem_investimento"
+            :schema="schema"
+          />
+          <MaskedFloatInput
+            name="percentagem_investimento"
+            type="text"
+            class="inputtext light"
+            :value="values.percentagem_investimento"
+            converter-para="string"
+            :max="100"
+            maxlength="6"
+            @update:model-value="(newValue) => {
+              setFieldValue('percentagem_investimento', newValue);
+              calcularValorInvestimento('percentagem_investimento');
+            }"
+          />
+        </div>
+        <small
+          class="addlink mt2 fb3em text-center"
+          style="cursor: default;"
+        >OU</small>
+        <div class="fb50em">
+          <LabelFromYup
+            name="investimento"
+            :schema="schema"
+          />
+          <MaskedFloatInput
+            name="investimento"
+            type="text"
+            class="inputtext light"
+            :value="values.investimento"
+            converter-para="string"
+            @update:model-value="(newValue) => {
+              updateValorTotal('investimento', newValue, setFieldValue);
+              calcularValorInvestimento('investimento')
+            }"
+          />
+        </div>
       </div>
-    </div>
-  </fieldset>
+    </fieldset>
 
     <div class="flex g2 mb1">
       <div class="f1">
