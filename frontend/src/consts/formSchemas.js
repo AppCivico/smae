@@ -1661,7 +1661,7 @@ export const tipoDeAditivo = object({
     .label('Habilita valor')
     .nullable(),
   habilita_valor_data_termino: boolean()
-    .label('Habilita valor e data de término')
+    .label('Habilita data de término')
     .nullable(),
 });
 
