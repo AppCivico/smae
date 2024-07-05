@@ -30,3 +30,10 @@ export class PaginatedWithPagesDto<TData> {
     @ApiHideProperty()
     linhas: TData[];
 }
+
+export class AnyPageTokenJwtBody {
+    search_hash: string;
+    total_rows: number;
+    issued_at: number;
+    ipp: number;
+}

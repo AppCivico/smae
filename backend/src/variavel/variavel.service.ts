@@ -13,7 +13,9 @@ import { LoggerWithLog } from '../common/LoggerWithLog';
 import { CONST_CRONO_VAR_CATEGORICA_ID } from '../common/consts';
 import { Date2YMD, DateYMD } from '../common/date2ymd';
 import { MIN_DTO_SAFE_NUM } from '../common/dto/consts';
+import { AnyPageTokenJwtBody, PaginatedWithPagesDto } from '../common/dto/paginated.dto';
 import { RecordWithId } from '../common/dto/record-with-id.dto';
+import { Object2Hash } from '../common/object2hash';
 import { PrismaService } from '../prisma/prisma.service';
 import {
     ExistingSerieJwt,
@@ -30,13 +32,14 @@ import {
     CreateVariavelPDMDto,
     VariaveisPeriodosDto,
 } from './dto/create-variavel.dto';
-import { FilterVariavelDto } from './dto/filter-variavel.dto';
+import { FilterVariavelDto, FilterVariavelGlobalDto } from './dto/filter-variavel.dto';
 import { ListSeriesAgrupadas } from './dto/list-variavel.dto';
 import { UpdateVariavelDto } from './dto/update-variavel.dto';
 import {
     SerieValorNomimal,
     SerieValorPorPeriodo,
     ValorSerieExistente,
+    VariavelGlobalItemDto,
     VariavelItemDto,
 } from './entities/variavel.entity';
 
@@ -645,55 +648,7 @@ export class VariavelService {
     }
 
     async findAll(tipo: TipoVariavel, filters: FilterVariavelDto): Promise<VariavelItemDto[]> {
-        const whereSet: Prisma.VariavelWhereInput[] = [];
-
-        if (filters.remover_desativados) {
-            // não acredito que sirva de nada, mas vou manter pois já estava assim
-            // da na mesma colocar o else-if ou não, pois o banco vai gerar 0 resultados no caso de combinações
-            // impossíveis
-            if (filters.indicador_id)
-                whereSet.push({
-                    indicador_variavel: {
-                        some: {
-                            desativado: false,
-                            indicador_id: filters.indicador_id,
-                        },
-                    },
-                });
-            if (filters.meta_id)
-                whereSet.push({
-                    indicador_variavel: {
-                        some: {
-                            desativado: false,
-                            indicador: {
-                                meta_id: filters.meta_id,
-                            },
-                        },
-                    },
-                });
-            if (filters.iniciativa_id)
-                whereSet.push({
-                    indicador_variavel: {
-                        some: {
-                            desativado: false,
-                            indicador: {
-                                iniciativa_id: filters.iniciativa_id,
-                            },
-                        },
-                    },
-                });
-            if (filters.atividade_id)
-                whereSet.push({
-                    indicador_variavel: {
-                        some: {
-                            desativado: false,
-                            indicador: {
-                                atividade_id: filters.atividade_id,
-                            },
-                        },
-                    },
-                });
-        }
+        const whereSet = this.getVariavelWhereSet(filters);
 
         // TODO seria bom verificar permissões do usuário, se realmente poderia visualizar [logo fazer batch edit dos valores] de todas as variaveis
         // do indicados, puxando as metas
@@ -703,14 +658,8 @@ export class VariavelService {
 
         const listActive = await this.prisma.variavel.findMany({
             where: {
-                removido_em: null,
-                tipo: tipo,
-                VariavelAssuntoVariavel: Array.isArray(filters.assuntos)
-                    ? { some: { assunto_variavel: { id: { in: filters.assuntos } } } }
-                    : undefined,
-                id: filters.id,
-
                 AND: whereSet,
+                tipo: tipo,
             },
             select: {
                 id: true,
@@ -874,6 +823,228 @@ export class VariavelService {
         });
 
         return ret;
+    }
+
+    async findAllGlobal(
+        filters: FilterVariavelGlobalDto,
+        user: PessoaFromJwt
+    ): Promise<PaginatedWithPagesDto<VariavelGlobalItemDto>> {
+        let retToken = filters.token_paginacao;
+
+        let ipp = filters.ipp ?? 50;
+        const page = filters.pagina ?? 1;
+        let total_registros = 0;
+        let tem_mais = false;
+
+        if (page > 1 && !retToken) throw new HttpException('Campo obrigatório para paginação', 400);
+
+        const filterToken = filters.token_paginacao;
+        // para não atrapalhar no hash, remove o campo pagina
+        delete filters.pagina;
+        delete filters.token_paginacao;
+
+        const palavrasChave = await this.buscaIdsPalavraChave(filters.palavra_chave);
+
+        let now = new Date(Date.now());
+        if (filterToken) {
+            const decoded = this.decodeNextPageToken(filterToken, filters);
+            total_registros = decoded.total_rows;
+            ipp = decoded.ipp;
+            now = new Date(decoded.issued_at);
+        }
+
+        const offset = (page - 1) * ipp;
+
+        //const permissionsSet: TODO: filtrar por plano do user? etc
+        const filterSet = this.getVariavelGlobalWhereSet(filters, palavrasChave);
+        const linhas = await this.prisma.viewVariavelGlobal.findMany({
+            where: {
+                AND: filterSet,
+            },
+            include: {
+                orgao: { select: { id: true, sigla: true, descricao: true } },
+                orgao_proprietario: { select: { id: true, sigla: true, descricao: true } },
+            },
+            orderBy: [{ [filters.ordem_coluna]: filters.ordem_direcao === 'asc' ? 'asc' : 'desc' }, { codigo: 'asc' }],
+            skip: offset,
+            take: ipp,
+        });
+
+        if (filterToken) {
+            retToken = filterToken;
+            tem_mais = offset + linhas.length < total_registros;
+        } else {
+            const info = await this.encodeNextPageToken(filters, now, user, palavrasChave);
+            retToken = info.jwt;
+            total_registros = info.body.total_rows;
+            tem_mais = offset + linhas.length < total_registros;
+        }
+
+        const paginas = Math.ceil(total_registros / ipp);
+        return {
+            tem_mais,
+            total_registros: total_registros,
+            token_paginacao: retToken,
+            paginas,
+            pagina_corrente: page,
+            linhas: linhas.map((r): VariavelGlobalItemDto => {
+                return {
+                    id: r.id,
+                    codigo: r.codigo,
+                    titulo: r.titulo,
+                    orgao: r.orgao ?? { descricao: 'Sem órgão', id: MIN_DTO_SAFE_NUM, sigla: 'SEM' },
+                    orgao_proprietario: r.orgao_proprietario ?? {
+                        descricao: 'Sem órgão',
+                        id: MIN_DTO_SAFE_NUM,
+                        sigla: 'SEM',
+                    },
+                    fim_medicao: Date2YMD.toStringOrNull(r.fim_medicao),
+                    inicio_medicao: Date2YMD.toStringOrNull(r.inicio_medicao),
+                    periodicidade: r.periodicidade,
+                };
+            }),
+        };
+    }
+
+    private decodeNextPageToken(jwt: string | undefined, filters: FilterVariavelGlobalDto): AnyPageTokenJwtBody {
+        let tmp: AnyPageTokenJwtBody | null = null;
+
+        try {
+            if (jwt) tmp = this.jwtService.verify(jwt) as AnyPageTokenJwtBody;
+        } catch {
+            throw new HttpException('token_paginacao invalido', 400);
+        }
+        if (!tmp) throw new HttpException('token_paginacao invalido ou faltando', 400);
+
+        if (tmp.search_hash != Object2Hash(filters))
+            throw new HttpException(
+                'Parâmetros da busca não podem ser diferente da busca inicial para avançar na paginação.',
+                400
+            );
+        return tmp;
+    }
+
+    private getVariavelWhereSet(filters: FilterVariavelDto) {
+        const firstSet: Prisma.Enumerable<Prisma.VariavelWhereInput> = [];
+        if (filters.remover_desativados) {
+            // não acredito que sirva de nada, mas vou manter pois já estava assim
+            // da na mesma colocar o else-if ou não, pois o banco vai gerar 0 resultados no caso de combinações
+            // impossíveis
+            if (filters.indicador_id)
+                firstSet.push({
+                    indicador_variavel: {
+                        some: {
+                            desativado: false,
+                            indicador_id: filters.indicador_id,
+                        },
+                    },
+                });
+            if (filters.meta_id)
+                firstSet.push({
+                    indicador_variavel: {
+                        some: {
+                            desativado: false,
+                            indicador: {
+                                meta_id: filters.meta_id,
+                            },
+                        },
+                    },
+                });
+            if (filters.iniciativa_id)
+                firstSet.push({
+                    indicador_variavel: {
+                        some: {
+                            desativado: false,
+                            indicador: {
+                                iniciativa_id: filters.iniciativa_id,
+                            },
+                        },
+                    },
+                });
+            if (filters.atividade_id)
+                firstSet.push({
+                    indicador_variavel: {
+                        some: {
+                            desativado: false,
+                            indicador: {
+                                atividade_id: filters.atividade_id,
+                            },
+                        },
+                    },
+                });
+        }
+
+        const permissionsBaseSet: Prisma.Enumerable<Prisma.VariavelWhereInput> = [
+            {
+                AND: firstSet,
+                removido_em: null,
+                VariavelAssuntoVariavel: Array.isArray(filters.assuntos)
+                    ? { some: { assunto_variavel: { id: { in: filters.assuntos } } } }
+                    : undefined,
+                id: filters.id,
+                orgao_id: filters.orgao_id,
+                orgao_proprietario_id: filters.orgao_proprietario_id,
+                periodicidade: filters.periodicidade,
+            },
+        ];
+
+        return permissionsBaseSet;
+    }
+
+    private getVariavelGlobalWhereSet(filters: FilterVariavelGlobalDto, ids: number[] | undefined) {
+        const globalSet: Prisma.Enumerable<Prisma.ViewVariavelGlobalWhereInput> = [];
+
+        globalSet.push({
+            // Filtro por palavras-chave com tsvector
+            id: {
+                in: ids != undefined ? ids : undefined,
+            },
+            planos: filters.plano_setorial_id ? { has: filters.plano_setorial_id } : undefined,
+
+            variavel: {
+                AND: this.getVariavelWhereSet(filters),
+            },
+        });
+
+        return globalSet;
+    }
+
+    private async encodeNextPageToken(
+        filters: FilterVariavelGlobalDto,
+        issued_at: Date,
+        user: PessoaFromJwt,
+        ids: number[] | undefined
+    ): Promise<{
+        jwt: string;
+        body: AnyPageTokenJwtBody;
+    }> {
+        const filterSet = this.getVariavelGlobalWhereSet(filters, ids);
+        const total_rows = await this.prisma.viewVariavelGlobal.count({
+            where: {
+                AND: filterSet,
+            },
+        });
+
+        const body = {
+            search_hash: Object2Hash(filters),
+            ipp: filters.ipp!,
+            issued_at: issued_at.valueOf(),
+            total_rows,
+        } satisfies AnyPageTokenJwtBody;
+
+        return {
+            jwt: this.jwtService.sign(body),
+            body,
+        };
+    }
+    async buscaIdsPalavraChave(input: string | undefined): Promise<number[] | undefined> {
+        let palavrasChave: number[] | undefined = undefined;
+        if (input) {
+            const rows: { id: number }[] = await this.prisma
+                .$queryRaw`SELECT id FROM variavel WHERE vetores_busca @@ plainto_tsquery('simple', ${input})`;
+            palavrasChave = rows.map((row) => row.id);
+        }
+        return palavrasChave;
     }
 
     async update(tipo: TipoVariavel, variavelId: number, dto: UpdateVariavelDto, user: PessoaFromJwt) {

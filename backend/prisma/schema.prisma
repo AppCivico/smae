@@ -540,6 +540,8 @@ model Orgao {
     VariavelProprietario           Variavel[]                       @relation("proprietario")
     GrupoResponsavelVariavel       GrupoResponsavelVariavel[]
     GrupoResponsavelVariavelPessoa GrupoResponsavelVariavelPessoa[]
+    ViewVariavelGlobalQSouResp     ViewVariavelGlobal[]             @relation("resp")
+    ViewVariavelGlobalQSouProp     ViewVariavelGlobal[]             @relation("prop")
 
     @@map("orgao")
 }
@@ -1485,7 +1487,7 @@ model Variavel {
     atualizado_em  DateTime @default(now()) @db.Timestamptz(6)
     atualizador    Pessoa?  @relation("Atualizador", fields: [atualizado_por], references: [id])
 
-    vetores_busca  Unsupported("tsvector")? @default(dbgenerated())
+    vetores_busca Unsupported("tsvector")? @default(dbgenerated())
 
     // Para PDM:
     // - inicio e fim ficam null quando a Periodicidade é a mesma do indicador
@@ -1541,6 +1543,7 @@ model Variavel {
     Etapa                            Etapa[]
     VariavelAssuntoVariavel          VariavelAssuntoVariavel[]
     VariavelGrupoResponsavelVariavel VariavelGrupoResponsavelVariavel[]
+    ViewVariavelGlobal               ViewVariavelGlobal[]
 
     @@index([regiao_id])
     @@map("variavel")
@@ -3557,6 +3560,26 @@ view ViewProjetoMDO {
     status ProjetoStatus
 
     @@map("view_projeto_mdo")
+}
+
+view ViewVariavelGlobal {
+    id                    Int           @id
+    variavel              Variavel      @relation(fields: [id], references: [id])
+    titulo                String
+    codigo                String
+    orgao_id              Int?
+    orgao                 Orgao?        @relation("resp", fields: [orgao_id], references: [id])
+    orgao_proprietario_id Int?
+    orgao_proprietario    Orgao?        @relation("prop", fields: [orgao_proprietario_id], references: [id])
+    planos                Int[]
+    periodicidade         Periodicidade
+    inicio_medicao        DateTime?
+    fim_medicao           DateTime?
+    criado_em             DateTime
+    assunto_ids           Int[]
+    tipo                  TipoVariavel
+
+    @@map("view_variavel_global")
 }
 
 model ProjetoRegiao {

@@ -34,7 +34,7 @@ import {
 
 import { PessoaPrivilegioService } from '../../auth/pessoaPrivilegio.service';
 import { BlocoNotaService } from '../../bloco-nota/bloco-nota/bloco-nota.service';
-import { PaginatedWithPagesDto } from '../../common/dto/paginated.dto';
+import { AnyPageTokenJwtBody, PaginatedWithPagesDto } from '../../common/dto/paginated.dto';
 import { HtmlSanitizer } from '../../common/html-sanitizer';
 import { CreateGeoEnderecoReferenciaDto, ReferenciasValidasBase } from '../../geo-loc/entities/geo-loc.entity';
 import { GeoLocService, UpsertEnderecoDto } from '../../geo-loc/geo-loc.service';
@@ -113,12 +113,6 @@ type ProjetoResumoPermisao = {
     tipo: TipoProjeto;
 };
 
-class AnyPageTokenJwtBody {
-    search_hash: string;
-    total_rows: number;
-    issued_at: number;
-    ipp: number;
-}
 
 @Injectable()
 export class ProjetoService {
