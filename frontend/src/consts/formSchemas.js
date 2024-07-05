@@ -2011,6 +2011,14 @@ export const processoDeObras = object()
       .required(),
   });
 
+export const programaHabitacional = object({
+  nome: string()
+    .label('Nome')
+    .min(3)
+    .max(250)
+    .required(),
+});
+
 export const projeto = object()
   .shape({
     atividade_id: number()
