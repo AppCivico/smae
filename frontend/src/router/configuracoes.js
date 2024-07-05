@@ -342,6 +342,9 @@ export default [
           limitarÀsPermissões: [
             'ProjetoProgramaMDO.',
           ],
+          rotasParaMenuSecundário: [
+            'mdoProgramaHabitacionalListar',
+          ],
           presenteNoMenu: true,
         },
         children: [
