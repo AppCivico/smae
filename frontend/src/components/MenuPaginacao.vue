@@ -2,6 +2,7 @@
   <nav class="menu-de-paginacao">
     <ul class="menu-de-paginacao__lista">
       <li
+        v-if="paginas > 1"
         class="menu-de-paginacao__item menu-de-paginacao__item--anterior"
         :class="{
           'menu-de-paginacao__item--desabilitado': paginaCorrente === 1
