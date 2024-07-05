@@ -89,7 +89,7 @@ async function excluirModalidade(id, descricao) {
     async () => {
       if (await modalidadesStore.excluirItem(id)) {
         modalidadesStore.$reset();
-        modalidadesStore.buscarTudo({ pdm_id: route.params.modalidadeIdId });
+        modalidadesStore.buscarTudo();
         alertStore.success(`"${descricao}" removido.`);
       }
     },
