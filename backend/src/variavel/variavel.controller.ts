@@ -7,13 +7,15 @@ import { FindOneParams } from '../common/decorators/find-params';
 import { BatchRecordWithId, RecordWithId } from '../common/dto/record-with-id.dto';
 import { BatchSerieUpsert } from './dto/batch-serie-upsert.dto';
 import { CreateGeradorVariaveBaselDto, CreateVariavelBaseDto, CreateVariavelPDMDto } from './dto/create-variavel.dto';
-import { FilterVariavelDto } from './dto/filter-variavel.dto';
+import { FilterVariavelDto, FilterVariavelGlobalDto } from './dto/filter-variavel.dto';
 import { ListSeriesAgrupadas, ListVariavelDto } from './dto/list-variavel.dto';
 import { UpdateVariavelDto } from './dto/update-variavel.dto';
-import { SerieIndicadorValorNominal, SerieValorNomimal } from './entities/variavel.entity';
+import { SerieIndicadorValorNominal, SerieValorNomimal, VariavelGlobalItemDto } from './entities/variavel.entity';
 import { VariavelService } from './variavel.service';
 import { ListaDePrivilegios } from '../common/ListaDePrivilegios';
 import { TipoVariavel } from '@prisma/client';
+import { PaginatedWithPagesDto } from '../common/dto/paginated.dto';
+import { ApiPaginatedWithPagesResponse } from '../auth/decorators/paginated.decorator';
 
 export const ROLES_ACESSO_VARIAVEL_PDM: ListaDePrivilegios[] = [
     'CadastroIndicador.inserir',
@@ -122,8 +124,12 @@ export class VariavelGlobalController {
     @Get('variavel')
     @ApiBearerAuth('access-token')
     @Roles([...ROLES_ACESSO_VARIAVEL_PS])
-    async listAll(@Query() filters: FilterVariavelDto, @CurrentUser() user: PessoaFromJwt): Promise<ListVariavelDto> {
-        return { linhas: await this.variavelService.findAll(this.tipo, filters) };
+    @ApiPaginatedWithPagesResponse(VariavelGlobalItemDto)
+    async listAll(
+        @Query() filters: FilterVariavelGlobalDto,
+        @CurrentUser() user: PessoaFromJwt
+    ): Promise<PaginatedWithPagesDto<VariavelGlobalItemDto>> {
+        return await this.variavelService.findAllGlobal(filters, user);
     }
 
     @Patch('variavel/:id')
