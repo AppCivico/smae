@@ -22,7 +22,6 @@ import {
 } from './dto/batch-serie-upsert.dto';
 import {
     CreateGeradorVariaveBaselDto,
-    CreateGeradorVariavePDMlDto,
     CreateGeradorVariavelPDMDto,
     CreatePeloIndicadorDto,
     CreateVariavelBaseDto,
@@ -39,6 +38,7 @@ import {
     VariavelItemDto,
 } from './entities/variavel.entity';
 import { LoggerWithLog } from '../common/LoggerWithLog';
+import { MIN_DTO_SAFE_NUM } from '../common/dto/consts';
 
 /**
  * ordem que é populado na função populaSeriesExistentes, usada no serviço do VariavelFormulaCompostaService
@@ -149,6 +149,8 @@ export class VariavelService {
         } else {
             throw new BadRequestException('Tipo de variável inválido para criação manual');
         }
+
+        await this.validaGruposResponsavel(dto, MIN_DTO_SAFE_NUM);
 
         this.checkOrgaoProprietario(tipo, dto, user);
 
@@ -407,13 +409,14 @@ export class VariavelService {
             throw new Error('Liberação: Início deve ser menor que fim');
         }
 
+        // desativando regra por enquanto
         // Cada período de preenchimento deve ser menor que o próximo
-        if (p.preenchimento_fim >= p.validacao_inicio) {
-            throw new Error('Preenchimento fim deve ser menor que Validação início');
-        }
-        if (p.validacao_fim >= p.liberacao_inicio) {
-            throw new Error('Validação fim deve ser menor que Liberação início');
-        }
+        //        if (p.preenchimento_fim >= p.validacao_inicio) {
+        //            throw new Error('Preenchimento fim deve ser menor que Validação início');
+        //        }
+        //        if (p.validacao_fim >= p.liberacao_inicio) {
+        //            throw new Error('Validação fim deve ser menor que Liberação início');
+        //        }
 
         return {
             periodo_preenchimento: [p.preenchimento_inicio, p.preenchimento_inicio],
@@ -457,7 +460,7 @@ export class VariavelService {
     }
 
     private async checkPermissionsPDM(
-        createVariavelDto: CreateVariavelPDMDto | CreateGeradorVariavePDMlDto,
+        createVariavelDto: CreateVariavelPDMDto | CreateGeradorVariavelPDMDto,
         user: PessoaFromJwt
     ) {
         const meta_id = await this.getMetaIdDoIndicador(createVariavelDto.indicador_id, this.prisma);
@@ -839,10 +842,13 @@ export class VariavelService {
                 periodicidade: true,
                 supraregional: true,
                 variavel_categorica_id: true,
+                orgao_proprietario_id: true,
             },
         });
         if (selfBefUpdate.variavel_categorica_id === CONST_CRONO_VAR_CATEGORICA_ID)
             throw new HttpException('Variável do tipo Cronograma não pode ser atualizada', 400);
+
+        await this.validaGruposResponsavel(dto, selfBefUpdate.orgao_proprietario_id ?? MIN_DTO_SAFE_NUM);
 
         let indicador_id: number | undefined = undefined;
         if (tipo == 'PDM') {
@@ -1119,6 +1125,63 @@ export class VariavelService {
         });
 
         return { id: variavelId };
+    }
+
+    private async validaGruposResponsavel(dto: UpdateVariavelDto, current_orgao_proprietario_id: number | undefined) {
+        const orgao_id = dto.orgao_proprietario_id ?? current_orgao_proprietario_id;
+
+        const grupoPrefetch = await this.prisma.grupoResponsavelVariavel.findMany({
+            where: {
+                orgao_id: orgao_id,
+                id: {
+                    in: [
+                        ...(dto.medicao_grupo_ids ?? []),
+                        ...(dto.validacao_grupo_ids ?? []),
+                        ...(dto.liberacao_grupo_ids ?? []),
+                    ],
+                },
+            },
+            select: {
+                id: true,
+                perfil: true,
+            },
+        });
+
+        if (Array.isArray(dto.medicao_grupo_ids)) {
+            for (const grupoId of dto.medicao_grupo_ids) {
+                const grupo = grupoPrefetch.find((g) => g.id === grupoId);
+                if (!grupo) {
+                    throw new HttpException(`Grupo ${grupoId} não encontrado. Verifique o Órgão Proprietário.`, 400);
+                }
+                if (grupo.perfil !== 'Medicao') {
+                    throw new HttpException(`Grupo ${grupoId} não é de medição.`, 400);
+                }
+            }
+        }
+
+        if (Array.isArray(dto.validacao_grupo_ids)) {
+            for (const grupoId of dto.validacao_grupo_ids) {
+                const grupo = grupoPrefetch.find((g) => g.id === grupoId);
+                if (!grupo) {
+                    throw new HttpException(`Grupo ${grupoId} não encontrado. Verifique o Órgão Proprietário.`, 400);
+                }
+                if (grupo.perfil !== 'Validacao') {
+                    throw new HttpException(`Grupo ${grupoId} não é de validação`, 400);
+                }
+            }
+        }
+
+        if (Array.isArray(dto.liberacao_grupo_ids)) {
+            for (const grupoId of dto.liberacao_grupo_ids) {
+                const grupo = grupoPrefetch.find((g) => g.id === grupoId);
+                if (!grupo) {
+                    throw new HttpException(`Grupo ${grupoId} não encontrado. Verifique o Órgão Proprietário.`, 400);
+                }
+                if (grupo.perfil !== 'Liberacao') {
+                    throw new HttpException(`Grupo ${grupoId} não é de liberação`, 400);
+                }
+            }
+        }
     }
 
     private checkOrgaoProprietario(tipo: string, dto: UpdateVariavelDto | CreateVariavelBaseDto, user: PessoaFromJwt) {
