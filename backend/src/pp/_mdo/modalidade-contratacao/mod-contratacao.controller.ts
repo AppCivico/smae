@@ -33,7 +33,7 @@ export class ProjetoModalidadeContratacaoController {
 
     @Post()
     @ApiBearerAuth('access-token')
-    @Roles(['ModalidadeContratacaoMDO.inserir'])
+    @Roles(['ModalidadeContratacao.inserir'])
     async create(
         @Body() dto: CreateModalidadeContratacaoDto,
         @CurrentUser() user: PessoaFromJwt
@@ -57,7 +57,7 @@ export class ProjetoModalidadeContratacaoController {
 
     @Patch(':id')
     @ApiBearerAuth('access-token')
-    @Roles(['ModalidadeContratacaoMDO.editar'])
+    @Roles(['ModalidadeContratacao.editar'])
     async update(
         @Param() params: FindOneParams,
         @Body() dto: UpdateModalidadeContratacaoDto,
@@ -68,7 +68,7 @@ export class ProjetoModalidadeContratacaoController {
 
     @Delete(':id')
     @ApiBearerAuth('access-token')
-    @Roles(['ModalidadeContratacaoMDO.remover'])
+    @Roles(['ModalidadeContratacao.remover'])
     @ApiNoContentResponse()
     @HttpCode(HttpStatus.ACCEPTED)
     async remove(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt) {
