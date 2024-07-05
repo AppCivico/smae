@@ -437,6 +437,14 @@ model Pessoa {
     ProjetoProgramaQAtualizei ProjetoPrograma[] @relation("Atualizador")
     ProjetoProgramaQRemovi    ProjetoPrograma[] @relation("Removedor")
 
+    ContratosQCriei     Contrato[] @relation("Criador")
+    ContratosQAtualizei Contrato[] @relation("Atualizador")
+    ContratosQRemovi    Contrato[] @relation("Removedor")
+
+    AditivosQCriei     ContratoAditivo[] @relation("Criador")
+    AditivosQAtualizei ContratoAditivo[] @relation("Atualizador")
+    AditivosQRemovi    ContratoAditivo[] @relation("Removedor")
+
     AssuntoVariavelQCriei          AssuntoVariavel[]                @relation("Criador")
     AssuntoVariavelQAtualizei      AssuntoVariavel[]                @relation("Atualizador")
     AssuntoVariavelQRemovi         AssuntoVariavel[]                @relation("Removedor")
@@ -540,6 +548,7 @@ model Orgao {
     VariavelProprietario           Variavel[]                       @relation("proprietario")
     GrupoResponsavelVariavel       GrupoResponsavelVariavel[]
     GrupoResponsavelVariavelPessoa GrupoResponsavelVariavelPessoa[]
+    contratos                      Contrato[]
     ViewVariavelGlobalQSouResp     ViewVariavelGlobal[]             @relation("resp")
     ViewVariavelGlobalQSouProp     ViewVariavelGlobal[]             @relation("prop")
 
@@ -3518,6 +3527,7 @@ model Projeto {
     ProjetoGrupoPortfolio    ProjetoGrupoPortfolio[]
     equipe                   ProjetoEquipe[]
     GeoEnderecoReferencia    GeoLocalizacaoReferencia[]
+    contratos                Contrato[]
 
     // Módulo de gestão de obras
     ProjetoRegiao ProjetoRegiao[]
@@ -3787,6 +3797,8 @@ model ProjetoFonteRecurso {
     requer_revisao_sof Boolean  @default(false)
     criado_em          DateTime @default(now())
     atualizado_em      DateTime @default(now())
+
+    contratos ContratoFonteRecurso[]
 
     @@index([projeto_id])
     @@map("projeto_fonte_recurso")
@@ -6352,7 +6364,8 @@ model TipoAditivo {
     atualizador Pessoa? @relation("Atualizador", fields: [atualizado_por], references: [id])
     removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
 
-    Projeto Projeto[]
+    Projeto  Projeto[]
+    aditivos ContratoAditivo[]
 
     @@map("tipo_aditivo")
 }
@@ -6375,7 +6388,8 @@ model ModalidadeContratacao {
     atualizador Pessoa? @relation("Atualizador", fields: [atualizado_por], references: [id])
     removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
 
-    Projeto Projeto[]
+    Projeto   Projeto[]
+    contratos Contrato[]
 
     @@map("modalidade_contratacao")
 }
@@ -6423,4 +6437,119 @@ view view_parlamentares_mandatos_part_atual {
     partido_atual_id Int?
 
     @@map("view_parlamentares_mandatos_part_atual")
+}
+
+enum StatusContrato {
+    Assinado
+    Vigente
+    Suspenso
+    Rescindido
+    ConcluidoTermoRecebimentoProvisorio
+    ConcluidoTermoRecebimentoDefinitivo
+}
+
+enum ContratoPrazoUnidade {
+    Dias
+    Meses
+}
+
+model Contrato {
+    id Int @id @default(autoincrement())
+
+    projeto_id Int
+    projeto    Projeto @relation(fields: [projeto_id], references: [id])
+
+    modalidade_contratacao_id Int?
+    modalidade_contratacao    ModalidadeContratacao? @relation(fields: [modalidade_contratacao_id], references: [id])
+
+    orgao_id Int?
+    orgao    Orgao? @relation(fields: [orgao_id], references: [id])
+
+    numero             String
+    contrato_exclusivo Boolean
+    status             StatusContrato
+    objeto_resumo      String?
+    objeto_detalhado   String?
+    contratante        String?
+    empresa_contratada String?
+    cnpj_contratada    String?
+    observacoes        String?
+    data_assinatura    DateTime?             @db.Date()
+    data_inicio        DateTime?             @db.Date()
+    prazo_numero       Int?
+    prazo_unidade      ContratoPrazoUnidade?
+    data_base_mes      Int?
+    data_base_ano      Int?
+    valor              Decimal?              @db.Decimal(15, 2)
+
+    criado_por Int
+    criado_em  DateTime @default(now()) @db.Timestamptz(6)
+
+    atualizado_por Int?
+    atualizado_em  DateTime? @db.Timestamptz(6)
+
+    removido_por Int?
+    removido_em  DateTime? @db.Timestamptz(6)
+
+    criador     Pessoa  @relation("Criador", fields: [criado_por], references: [id])
+    atualizador Pessoa? @relation("Atualizador", fields: [atualizado_por], references: [id])
+    removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
+
+    aditivos      ContratoAditivo[]
+    processosSei  ContratoSei[]
+    fontesRecurso ContratoFonteRecurso[]
+
+    @@map("contrato")
+}
+
+model ContratoSei {
+    id Int @id @default(autoincrement())
+
+    contrato_id Int
+    contrato    Contrato @relation(fields: [contrato_id], references: [id])
+
+    numero_sei String
+
+    @@map("contrato_sei")
+}
+
+model ContratoFonteRecurso {
+    contrato_id Int
+    contrato    Contrato @relation(fields: [contrato_id], references: [id])
+
+    projeto_fonte_recurso_id Int
+    projeto_fonte_recurso    ProjetoFonteRecurso @relation(fields: [projeto_fonte_recurso_id], references: [id])
+
+    @@id([contrato_id, projeto_fonte_recurso_id])
+}
+
+model ContratoAditivo {
+    id Int @id @default(autoincrement())
+
+    contrato_id Int
+    contrato    Contrato @relation(fields: [contrato_id], references: [id])
+
+    tipo_aditivo_id Int
+    tipo_aditivo    TipoAditivo @relation(fields: [tipo_aditivo_id], references: [id])
+
+    numero                  Int
+    data                    DateTime  @db.Date()
+    data_termino_atualizada DateTime? @db.Date()
+    valor                   Decimal   @db.Decimal(15, 2)
+    percentual_medido       Decimal   @db.Decimal(7, 4)
+
+    criado_por Int
+    criado_em  DateTime @default(now()) @db.Timestamptz(6)
+
+    atualizado_por Int?
+    atualizado_em  DateTime? @db.Timestamptz(6)
+
+    removido_por Int?
+    removido_em  DateTime? @db.Timestamptz(6)
+
+    criador     Pessoa  @relation("Criador", fields: [criado_por], references: [id])
+    atualizador Pessoa? @relation("Atualizador", fields: [atualizado_por], references: [id])
+    removedor   Pessoa? @relation("Removedor", fields: [removido_por], references: [id])
+
+    @@map("contrato_aditivo")
 }
