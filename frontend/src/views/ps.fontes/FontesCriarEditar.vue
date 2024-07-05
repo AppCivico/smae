@@ -18,6 +18,7 @@
           :schema="schema"
         />
         <Field
+          v-model="itemParaEdição.nome"
           name="nome"
           type="text"
           min="3"
@@ -65,12 +66,13 @@
 </template>
 
 <script setup>
+import { onMounted } from 'vue';
 import { storeToRefs } from 'pinia';
 import { useRoute, useRouter } from 'vue-router';
 import { ErrorMessage, Field, Form } from 'vee-validate';
 import { useFontesStore } from '@/stores/fontesPs.store';
 import { useAlertStore } from '@/stores/alert.store';
-import { assunto as schema } from '@/consts/formSchemas';
+import { fonte as schema } from '@/consts/formSchemas';
 
 const router = useRouter();
 const route = useRoute();
@@ -82,8 +84,8 @@ const props = defineProps({
 });
 
 const alertStore = useAlertStore();
-const assuntosStore = useFontesStore();
-const { chamadasPendentes, erro, itemParaEdição } = storeToRefs(assuntosStore);
+const fontesStore = useFontesStore();
+const { chamadasPendentes, erro, itemParaEdição } = storeToRefs(fontesStore);
 
 async function onSubmit(values) {
   try {
@@ -95,28 +97,26 @@ async function onSubmit(values) {
     const dataToSend = { ...values };
 
     if (route.params?.fonteId) {
-      response = await assuntosStore.salvarItem(
+      response = await fontesStore.salvarItem(
         dataToSend,
         route.params.fonteId,
       );
     } else {
-      response = await assuntosStore.salvarItem(dataToSend);
+      response = await fontesStore.salvarItem(dataToSend);
     }
     if (response) {
       alertStore.success(msg);
-      assuntosStore.$reset();
+      fontesStore.$reset();
       router.push({ name: 'fontesListar' });
     }
   } catch (error) {
     alertStore.error(error);
   }
 }
-
-assuntosStore.$reset();
-// não foi usada a prop.assuntoId pois estava vazando do edit na hora de criar uma nova
-if (route.params?.assuntoId) {
-  assuntosStore.buscarItem(route.params?.assuntoId);
-}
+onMounted(() => {
+  fontesStore.$reset();
+  fontesStore.buscarItem(props.fonteId);
+});
 </script>
 
 <style></style>

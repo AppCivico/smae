@@ -536,6 +536,15 @@ export const fase = object()
       .nullable(),
   });
 
+export const fonte = object()
+  .shape({
+    nome: string()
+      .max(250)
+      .min(3)
+      .label('Nome')
+      .required(),
+  });
+
 export const geoLocalização = object()
 // shape() necessário para não cair num ciclo infinito na validação de coordenadas
   .shape({

@@ -3,7 +3,7 @@
     <TítuloDePágina />
     <hr class="ml2 f1">
     <router-link
-      :to="{ name: 'fonteCriar' }"
+      :to="{ name: 'fontesCriar' }"
       class="btn big ml1"
     >
       Nova fonte
@@ -29,7 +29,7 @@
         <td>{{ item.nome }}</td>
         <td>
           <router-link
-            :to="{ name: 'fonteEditar', params: { fonteId: item.id } }"
+            :to="{ name: 'fontesEditar', params: { fonteId: item.id } }"
             class="tprimary"
           >
             <svg
