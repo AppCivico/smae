@@ -104,3 +104,22 @@ export class MetaController {
         return '';
     }
 }
+
+@ApiTags('Meta Para Plano Setorial')
+@Controller('meta-setorial')
+export class MetaSetorialController {
+    constructor(private readonly metaService: MetaService) {}
+
+    @ApiBearerAuth('access-token')
+    @Get()
+    @ApiProduces(
+        'application/json',
+        'text/csv',
+        'text/csv; unwind-all',
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    )
+    @Roles(['CadastroMetaPS.listar'])
+    async findAll(@Query() filters: FilterMetaDto, @CurrentUser() user: PessoaFromJwt): Promise<ListMetaDto> {
+        return { linhas: await this.metaService.findAll(filters, user) };
+    }
+}
