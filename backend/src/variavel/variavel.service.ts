@@ -1434,30 +1434,25 @@ export class VariavelService {
         const logger = LoggerWithLog('Remoção de variável');
         logger.debug(`Removendo variável ${variavelId}`);
         // buscando apenas pelo indicador pai verdadeiro desta variavel
-        const selfIdicadorVariavel = await this.prisma.indicadorVariavel.findFirst({
+        const selfVariavel = await this.prisma.variavel.findFirst({
             where: {
-                variavel_id: variavelId,
-                variavel: { tipo },
-                indicador_origem_id: null,
+                id: variavelId,
+                tipo,
             },
             select: {
-                indicador_id: true,
-                variavel: {
-                    select: {
-                        valor_base: true,
-                        periodicidade: true,
-                        variavel_categorica_id: true,
-                    },
-                },
+                valor_base: true,
+                periodicidade: true,
+                variavel_categorica_id: true,
             },
         });
-        if (!selfIdicadorVariavel)
-            throw new BadRequestException('Variavel não encontrada, confira se você está no indicador base');
-        if (selfIdicadorVariavel.variavel.variavel_categorica_id === CONST_CRONO_VAR_CATEGORICA_ID)
+        if (!selfVariavel)
+            throw new BadRequestException('Variavel não encontrada, confira se você está no indicador base.');
+        if (selfVariavel.variavel_categorica_id === CONST_CRONO_VAR_CATEGORICA_ID)
             throw new BadRequestException(
-                'Variável do tipo Cronograma não pode ser removida pela variável, remova pela etapa'
+                'Variável do tipo Cronograma não pode ser removida pela variável, remova pela etapa.'
             );
 
+        const now = new Date(Date.now());
         await this.prisma.$transaction(
             async (prismaTx: Prisma.TransactionClient) => {
                 const refEmUso = await prismaTx.indicadorFormulaVariavel.findMany({
@@ -1490,10 +1485,20 @@ export class VariavelService {
                     );
                 }
 
+                await prismaTx.variavelGrupoResponsavelVariavel.updateMany({
+                    where: {
+                        removido_em: null,
+                        variavel: { id: variavelId },
+                    },
+                    data: {
+                        removido_em: now,
+                    },
+                });
+
                 await prismaTx.variavel.update({
                     where: { id: variavelId },
                     data: {
-                        removido_em: new Date(Date.now()),
+                        removido_em: now,
                         removido_por: user.id,
                     },
                     select: { id: true },
