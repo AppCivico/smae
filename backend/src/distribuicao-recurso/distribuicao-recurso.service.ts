@@ -81,14 +81,14 @@ export class DistribuicaoRecursoService {
                 }
 
                 // “VALOR DO REPASSE”  é a soma de “Custeio” + Investimento”
-                if (+dto.valor != +dto.custeio + +dto.investimento)
+                if (Number(dto.valor).toFixed(2) != (+dto.custeio + +dto.investimento).toFixed(2))
                     throw new HttpException(
                         'valor| Valor do repasse deve ser a soma dos valores de custeio e investimento.',
                         400
                     );
 
                 // “VALOR TOTAL”  é a soma de “Custeio” + Investimento” + “Contrapartida”
-                if (+dto.valor_total != +dto.valor + +dto.valor_contrapartida)
+                if (Number(dto.valor_total).toFixed(2) != (+dto.valor + +dto.valor_contrapartida).toFixed(2))
                     throw new HttpException(
                         'valor| Valor total deve ser a soma dos valores de repasse e contrapartida.',
                         400
