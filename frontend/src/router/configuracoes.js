@@ -93,6 +93,7 @@ const rotasParaMenuPrincipal = [
   'mdoPortfoliosListar',
   'gerenciarPainéisDeMetas',
   'mdoEtiquetasListar',
+  'mdoProgramaHabitacionalListar',
   'parlamentaresListar',
   'paineisExternosListar',
   'planosSetoriaisListar',
@@ -326,6 +327,59 @@ export default [
               título: 'Editar etiqueta',
               rotasParaMigalhasDePão: [
                 'mdoEtiquetasListar',
+              ],
+            },
+          },
+        ],
+      },
+      {
+        path: 'programa-habitacional',
+        component: () => import('@/views/mdo.programasHabitacionais/ProgramaHabitacionalRaiz.vue'),
+        meta: {
+          título: 'Programas habitacionais',
+          entidadeMãe: 'mdo',
+          rotaPrescindeDeChave: true,
+          limitarÀsPermissões: [
+            'ProjetoProgramaMDO.',
+          ],
+          presenteNoMenu: true,
+        },
+        children: [
+          {
+            name: 'mdoProgramaHabitacionalListar',
+            path: '',
+            component: () => import('@/views/mdo.programasHabitacionais/ProgramaHabitacionalLista.vue'),
+          },
+          {
+            name: 'mdoProgramaHabitacionalCriar',
+            path: 'novo',
+            component: () => import('@/views/mdo.programasHabitacionais/ProgramaHabitacionalCriarEditar.vue'),
+            meta: {
+              título: 'Novo programa habitacional',
+              rotasParaMigalhasDePão: [
+                'mdoProgramaHabitacionalListar',
+              ],
+              limitarÀsPermissões: [
+                'ProjetoProgramaMDO.inserir',
+              ],
+            },
+          },
+          {
+            path: ':programaHabitacionalId',
+            name: 'mdoProgramaHabitacionalEditar',
+            component: () => import('@/views/mdo.programasHabitacionais/ProgramaHabitacionalCriarEditar.vue'),
+            props: ({ params }) => ({
+              ...params,
+              ...{ programaHabitacionalId: Number.parseInt(params.programaHabitacionalId, 10) || undefined },
+            }),
+
+            meta: {
+              título: 'Editar programa habitacional',
+              rotasParaMigalhasDePão: [
+                'mdoProgramaHabitacionalListar',
+              ],
+              limitarÀsPermissões: [
+                'ProjetoProgramaMDO.editar',
               ],
             },
           },
