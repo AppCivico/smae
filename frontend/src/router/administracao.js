@@ -821,7 +821,7 @@ export default [
     path: '/modalidade-de-contratacao',
     component: () => import('@/views/modalidadeDeContratacao/ModalidadesRaiz.vue'),
     meta: {
-      limitarÀsPermissões: '',
+      limitarÀsPermissões: 'ModalidadeContratacaoMDO',
       título: 'Modalidades de contratação',
       rotasParaMenuSecundário,
     },
