@@ -31,10 +31,20 @@ const props = defineProps({
       ].indexOf(valor) > -1;
     },
   },
+  max: {
+    type: Number,
+    default: 0,
+  },
 });
 
 const emit = defineEmits(['update:modelValue']);
 const name = toRef(props, 'name');
+const validarValorMaximo = (max, value) => {
+  if (max > 0) {
+    return value >= max ? max : value;
+  }
+  return value;
+};
 const { handleChange } = useField(name, undefined, {
   // eslint-disable-next-line no-nested-ternary
   initialValue: props.value
@@ -63,6 +73,7 @@ const typedValue = computed({
 
       default:
         cleanValue = Number(newValue.replace(/[\D]/g, '')) / 100;
+        cleanValue = validarValorMaximo(Number(props.max), cleanValue);
 
         if (['string', 'text'].indexOf(props.converterPara.toLowerCase()) !== -1) {
           cleanValue = String(cleanValue);

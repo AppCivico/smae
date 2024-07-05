@@ -1,4 +1,5 @@
 <script setup>
+import Big from 'big.js';
 import { vMaska } from 'maska';
 import { storeToRefs } from 'pinia';
 import {
@@ -127,20 +128,34 @@ const calcularValorCusteio = (fieldName) => {
   const custeio = parseFloat(values.custeio) || 0;
   const percentagemCusteio = parseFloat(values.percentagem_custeio) || 0;
   if (fieldName === 'percentagem_custeio' || fieldName === 'valor') {
-    setFieldValue('custeio', (valor * percentagemCusteio) / 100);
+    const valorArredondado = new Big(valor)
+      .times(percentagemCusteio).div(100).round(2, Big.roundHalfUp);
+    setFieldValue('custeio', valorArredondado.toString());
   } else if (fieldName === 'custeio') {
-    setFieldValue('percentagem_custeio', (custeio / valor) * 100);
+    const porcentagemCusteio = ((custeio / valor) * 100);
+    setFieldValue('percentagem_custeio', porcentagemCusteio.toFixed(2));
+    setFieldValue('percentagem_investimento', (100 - porcentagemCusteio).toFixed(2));
   }
 };
 
 const calcularValorInvestimento = (fieldName) => {
   const valor = parseFloat(values.valor) || 0;
   const investimento = parseFloat(values.investimento) || 0;
+  const custeio = parseFloat(values.custeio) || 0;
   const percentagemInvestimento = parseFloat(values.percentagem_investimento) || 0;
   if (fieldName === 'percentagem_investimento' || fieldName === 'valor') {
-    setFieldValue('investimento', (valor * percentagemInvestimento) / 100);
+    const valorArredondado = new Big(valor)
+      .times(percentagemInvestimento).div(100).round(2);
+    let valorArredondadoConvertido = parseFloat(valorArredondado.toString());
+    if (custeio > 0) {
+      valorArredondadoConvertido = valor - custeio;
+    }
+    const valorFinal = new Big(valorArredondadoConvertido).round(2, Big.roundHalfUp);
+    setFieldValue('investimento', valorFinal.toString());
   } else if (fieldName === 'investimento') {
-    setFieldValue('percentagem_investimento', (investimento / valor) * 100);
+    const porcentagemInvestimento = ((investimento / valor) * 100);
+    setFieldValue('percentagem_investimento', porcentagemInvestimento.toFixed(2));
+    setFieldValue('percentagem_custeio', (100 - porcentagemInvestimento).toFixed(2));
   }
 };
 
@@ -443,7 +458,9 @@ const isSomaCorreta = computed(() => {
       </fieldset>
 
       <fieldset class="padding-sm mb2 flex">
-        <LabelFromYup as="legend">Custeio</LabelFromYup>
+        <LabelFromYup as="legend">
+          Custeio
+        </LabelFromYup>
         <div class="flex f1 g2 center">
           <div class="fb20em">
             <LabelFromYup
@@ -455,13 +472,18 @@ const isSomaCorreta = computed(() => {
               type="text"
               class="inputtext light"
               :value="values.percentagem_custeio"
+              :max="100"
+              maxlength="6"
               converter-para="string"
               @update:model-value="(newValue) => {
                 atualizarValorTotal('percentagem_custeio', newValue, setFieldValue);
               }"
             />
           </div>
-          <small class="addlink mt2 text-center" style="cursor: default;">OU</small>
+          <small
+            class="addlink mt2 text-center"
+            style="cursor: default;"
+          >OU</small>
           <div class="fb50em">
             <LabelFromYup
               name="custeio"
@@ -482,7 +504,9 @@ const isSomaCorreta = computed(() => {
       </fieldset>
 
       <fieldset class="padding-sm mb2 flex">
-        <LabelFromYup as="legend">Investimento</LabelFromYup>
+        <LabelFromYup as="legend">
+          Investimento
+        </LabelFromYup>
         <div class="flex f1 g2 center">
           <div class="fb20em">
             <LabelFromYup
@@ -495,12 +519,17 @@ const isSomaCorreta = computed(() => {
               class="inputtext light"
               :value="values.percentagem_investimento"
               converter-para="string"
+              :max="100"
+              maxlength="6"
               @update:model-value="(newValue) => {
                 atualizarValorTotal('percentagem_investimento', newValue, setFieldValue);
               }"
             />
           </div>
-          <small class="addlink mt2 text-center" style="cursor: default;">OU</small>
+          <small
+            class="addlink mt2 text-center"
+            style="cursor: default;"
+          >OU</small>
           <div class="fb50em">
             <LabelFromYup
               name="investimento"
