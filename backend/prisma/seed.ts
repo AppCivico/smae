@@ -91,12 +91,14 @@ const ModuloDescricao: Record<string, [string, ModuloSistema | null]> = {
     ProjetoTagMDO: ['Tags', 'MDO'],
     ProjetoTag: ['Tags', 'Projetos'],
 
-    ModalidadeContratacaoMDO: ['Modalidade de Contratação', 'MDO'],
+    ModalidadeContratacao: ['Modalidade de Contratação', 'MDO'],
+
     ProjetoProgramaMDO: ['Programas', 'MDO'],
 
     TipoAditivo: ['Tipo Aditivo', 'SMAE'],
     CadastroGrupoVariavel: ['Grupos de Variáveis', 'SMAE'],
 
+    ModalidadeContratacaoMDO: ['', null],
     TipoAditivoMDO: ['', null],
     CadastroCargo: ['', null],
     CadastroCoordenadoria: ['', null],
@@ -120,11 +122,12 @@ const PrivConfig: Record<string, false | [ListaDePrivilegios, string | false][]>
     CadastroEtapa: false,
     CadastroGrupoPaineisExternas: false,
     TipoAditivoMDO: false,
+    ModalidadeContratacaoMDO: false,
 
-    ModalidadeContratacaoMDO: [
-        ['ModalidadeContratacaoMDO.inserir', 'Inserir Modalidade de Contratação'],
-        ['ModalidadeContratacaoMDO.editar', 'Editar Modalidade de Contratação'],
-        ['ModalidadeContratacaoMDO.remover', 'Remover Modalidade de Contratação'],
+    ModalidadeContratacao: [
+        ['ModalidadeContratacao.inserir', 'Inserir Modalidade de Contratação'],
+        ['ModalidadeContratacao.editar', 'Editar Modalidade de Contratação'],
+        ['ModalidadeContratacao.remover', 'Remover Modalidade de Contratação'],
     ],
     ProjetoProgramaMDO: [
         ['ProjetoProgramaMDO.inserir', 'Inserir Programa'],
@@ -599,11 +602,11 @@ const PerfilAcessoConfig: {
         // o TipoAditivo vai ficar fora do "todos os privilégios"
         nome: atualizarNomePerfil('Administrador Geral do SMAE', ['Administrador Geral']),
         descricao:
-            'Administrador Geral - Todas as permissões do sistema, exceto ciclo de monitoramento, gerência de projeto, tipo de aditivo e grupo de variáveis.',
+            'Administrador Geral - Todas as permissões do sistema, exceto ciclo de monitoramento, gerência de projeto, tipo de aditivo, modalidade de contratação e grupo de variáveis.',
         privilegios: [
             'SMAE.superadmin',
             ...todosPrivilegios.filter(
-                (e) => /^(PDM|SMAE|PS|MDO|TipoAditivo|CadastroGrupoVariavel)\./.test(e) === false
+                (e) => /^(PDM|SMAE|PS|MDO|TipoAditivo|CadastroGrupoVariavel|ModalidadeContratacao)\./.test(e) === false
             ),
         ],
     },
@@ -780,6 +783,10 @@ const PerfilAcessoConfig: {
             'Projeto.administrar_portfolios',
             'CadastroGrupoPortfolio.administrador',
 
+            'ModalidadeContratacao.inserir',
+            'ModalidadeContratacao.editar',
+            'ModalidadeContratacao.remover',
+
             'TipoAditivo.inserir',
             'TipoAditivo.editar',
             'TipoAditivo.remover',
@@ -791,6 +798,10 @@ const PerfilAcessoConfig: {
         privilegios: [
             'ProjetoMDO.administrar_portfolios',
             'CadastroGrupoPortfolioMDO.administrador',
+
+            'ModalidadeContratacao.inserir',
+            'ModalidadeContratacao.editar',
+            'ModalidadeContratacao.remover',
             'TipoAditivo.inserir',
             'TipoAditivo.editar',
             'TipoAditivo.remover',
@@ -822,6 +833,10 @@ const PerfilAcessoConfig: {
             'CadastroProjetoEtapa.editar',
             'CadastroProjetoEtapa.remover',
 
+            'ModalidadeContratacao.inserir',
+            'ModalidadeContratacao.editar',
+            'ModalidadeContratacao.remover',
+
             'TipoAditivo.inserir',
             'TipoAditivo.editar',
             'TipoAditivo.remover',
@@ -833,6 +848,10 @@ const PerfilAcessoConfig: {
         privilegios: [
             'ProjetoMDO.administrador',
             'CadastroPessoa.administrador',
+
+            'ModalidadeContratacao.inserir',
+            'ModalidadeContratacao.editar',
+            'ModalidadeContratacao.remover',
 
             'TipoAditivo.inserir',
             'TipoAditivo.editar',
@@ -856,9 +875,9 @@ const PerfilAcessoConfig: {
             'CadastroProjetoEtapaMDO.inserir',
             'CadastroProjetoEtapaMDO.editar',
             'CadastroProjetoEtapaMDO.remover',
-            'ModalidadeContratacaoMDO.inserir',
-            'ModalidadeContratacaoMDO.editar',
-            'ModalidadeContratacaoMDO.remover',
+            'ModalidadeContratacao.inserir',
+            'ModalidadeContratacao.editar',
+            'ModalidadeContratacao.remover',
             'ProjetoProgramaMDO.inserir',
             'ProjetoProgramaMDO.editar',
             'ProjetoProgramaMDO.remover',
@@ -879,6 +898,9 @@ const PerfilAcessoConfig: {
             'CadastroProjetoEtapa.editar',
             'CadastroProjetoEtapa.remover',
 
+            'ModalidadeContratacao.inserir',
+            'ModalidadeContratacao.editar',
+            'ModalidadeContratacao.remover',
             'TipoAditivo.inserir',
             'TipoAditivo.editar',
             'TipoAditivo.remover',
@@ -897,6 +919,10 @@ const PerfilAcessoConfig: {
             'CadastroProjetoEtapaMDO.inserir',
             'CadastroProjetoEtapaMDO.editar',
             'CadastroProjetoEtapaMDO.remover',
+
+            'ModalidadeContratacao.inserir',
+            'ModalidadeContratacao.editar',
+            'ModalidadeContratacao.remover',
 
             'TipoAditivo.inserir',
             'TipoAditivo.editar',
