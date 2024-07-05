@@ -830,6 +830,11 @@ export class DistribuicaoRecursoService {
                             id: true,
                         },
                     },
+                    valor: true,
+                    custeio: true,
+                    valor_contrapartida: true,
+                    investimento: true,
+                    valor_total: true,
                 },
             });
 
@@ -846,24 +851,19 @@ export class DistribuicaoRecursoService {
                 }
             }
 
-            const updatedSelf = await this.findOne(id, user);
-
             console.log('==================');
-            console.log(Number(updatedSelf.valor).toFixed(2));
-            console.log((+updatedSelf.custeio + +updatedSelf.investimento).toFixed(2));
+            console.log(Number(updated.valor).toFixed(2));
+            console.log((+updated.custeio + +updated.investimento).toFixed(2));
             console.log('==================');
             // “VALOR DO REPASSE”  é a soma de “Custeio” + Investimento”
-            if (Number(updatedSelf.valor).toFixed(2) != (+updatedSelf.custeio + +updatedSelf.investimento).toFixed(2))
+            if (Number(updated.valor).toFixed(2) != (+updated.custeio + +updated.investimento).toFixed(2))
                 throw new HttpException(
                     'valor| Valor do repasse deve ser a soma dos valores de custeio e investimento.',
                     400
                 );
 
             // “VALOR TOTAL”  é a soma de “Custeio” + Investimento” + “Contrapartida”
-            if (
-                Number(updatedSelf.valor_total).toFixed(2) !=
-                (+updatedSelf.valor + +updatedSelf.valor_contrapartida).toFixed(2)
-            )
+            if (Number(updated.valor_total).toFixed(2) != (+updated.valor + +updated.valor_contrapartida).toFixed(2))
                 throw new HttpException(
                     'valor| Valor total deve ser a soma dos valores de repasse e contrapartida.',
                     400
