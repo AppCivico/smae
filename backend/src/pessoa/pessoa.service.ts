@@ -924,6 +924,8 @@ export class PessoaService {
     }
 
     async criarPessoa(createPessoaDto: CreatePessoaDto, user?: PessoaFromJwt) {
+        const logger = LoggerWithLog('Pessoa: Criar');
+
         const visiblePriv: number[] = [];
         if (user) {
             visiblePriv.push(...(await this.buscaPerfisVisiveis(user)));
@@ -937,9 +939,9 @@ export class PessoaService {
         this.verificarCPFObrigatorio(createPessoaDto);
         this.verificarRFObrigatorio(createPessoaDto);
 
-        this.logger.log(`criarPessoa: ${JSON.stringify(createPessoaDto)}`);
+        logger.log(`criarPessoa: ${JSON.stringify(createPessoaDto)}`);
         const newPass = this.#generateRndPass(10);
-        this.logger.log(`senha gerada: ${newPass}`);
+        this.logger.verbose(`senha gerada: ${newPass}`);
 
         createPessoaDto.email = createPessoaDto.email.toLocaleLowerCase();
 
@@ -1027,6 +1029,7 @@ export class PessoaService {
                 this.logger.log(`calculando pessoa_acesso_pdm...`);
                 await prismaTx.$queryRaw`select pessoa_acesso_pdm(${created.id}::int)`;
 
+                if (user) await logger.saveLogs(prismaTx, user.getLogData());
                 return created;
             },
             {
@@ -1343,7 +1346,6 @@ export class PessoaService {
         filterModulos: ModuloSistema[] | undefined
     ): Promise<ListaPrivilegiosModulos> {
         if (!filterModulos) filterModulos = Object.keys(ModuloSistema) as ModuloSistema[];
-        console.log(filterModulos);
 
         const dados: ListaPrivilegiosModulos[] = await this.prisma.$queryRaw`
             with perms as (
@@ -1366,17 +1368,6 @@ export class PessoaService {
         `;
         if (!dados[0] || dados[0].modulos === null || !Array.isArray(dados[0].modulos)) {
             throw new BadRequestException(`Seu usuário não tem mais permissões. Entre em contato com o administrador.`);
-        }
-
-        if (filterModulos.length == 2 && filterModulos.includes('SMAE') && filterModulos.includes('MDO')) {
-            dados[0].privilegios = dados[0].privilegios.filter(
-                (v) =>
-                    v != 'CadastroPainelExterno.editar' &&
-                    v != 'CadastroPainelExterno.inserir' &&
-                    v != 'CadastroPainelExterno.remover' &&
-                    v != 'CadastroGrupoPainelExterno.administrador' &&
-                    v != 'CadastroGrupoPainelExterno.administrador_no_orgao'
-            );
         }
 
         return dados[0];
