@@ -145,7 +145,9 @@ export class VariavelService {
 
             await this.checkPermissionsPDM(dto, user);
         } else if (tipo == 'Global') {
-            // Dunno yet
+            this.checkPeriodoVariavelGlobal(dto);
+
+            // Verificar: todo mundo pode criar pra qualquer órgão (responsavel, além do orgao_proprietario_id que é usado no grupo)
         } else {
             throw new BadRequestException('Tipo de variável inválido para criação manual');
         }
@@ -960,7 +962,7 @@ export class VariavelService {
                 });
             }
         } else if (tipo == 'Global') {
-            //
+            this.checkPeriodoVariavelGlobal(dto);
         }
 
         // Quando a variável é supraregional, está sendo enviado regiao_id = 0
@@ -1109,6 +1111,13 @@ export class VariavelService {
         });
 
         return { id: variavelId };
+    }
+
+    private checkPeriodoVariavelGlobal(dto: UpdateVariavelDto) {
+        if (!dto.inicio_medicao)
+            throw new HttpException('inicio_medicao| Início da medição é obrigatório para variáveis globais', 400);
+        if (dto.fim_medicao && dto.fim_medicao < dto.inicio_medicao)
+            throw new HttpException('fim_medicao| Fim da medição deve ser maior que o início', 400);
     }
 
     private async updateCategorica(
