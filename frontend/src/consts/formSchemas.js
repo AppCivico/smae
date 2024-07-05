@@ -837,6 +837,14 @@ export const meta = (activePdm) => object().shape({
     .label('Título'),
 });
 
+export const modalidadeContratacao = object({
+  nome: string()
+    .label('Nome')
+    .min(3)
+    .max(250)
+    .required(),
+});
+
 export const monitoramentoDePlanoDeAção = object()
   .shape({
     descricao: string()
