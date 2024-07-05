@@ -848,6 +848,10 @@ export class DistribuicaoRecursoService {
 
             const updatedSelf = await this.findOne(id, user);
 
+            console.log('==================');
+            console.log(Number(updatedSelf.valor).toFixed(2));
+            console.log((+updatedSelf.custeio + +updatedSelf.investimento).toFixed(2));
+            console.log('==================');
             // “VALOR DO REPASSE”  é a soma de “Custeio” + Investimento”
             if (Number(updatedSelf.valor).toFixed(2) != (+updatedSelf.custeio + +updatedSelf.investimento).toFixed(2))
                 throw new HttpException(
