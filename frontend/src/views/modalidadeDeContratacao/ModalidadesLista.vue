@@ -6,7 +6,7 @@
       :to="{ name: 'modalidadesCriar' }"
       class="btn big ml1"
     >
-      Nova modaliade
+      Nova modalidade
     </router-link>
   </div>
 
