@@ -79,6 +79,7 @@ const rotasParaMenuSecundário = [
       'equipamentosLista',
       'tipoDeAditivosListar',
       'assuntosListar',
+      'modalidadesListar',
     ],
   },
   {
@@ -811,6 +812,52 @@ export default [
           título: 'Editar assunto',
           rotasParaMigalhasDePão: [
             'assuntosListar',
+          ],
+        },
+      },
+    ],
+  },
+  {
+    path: '/modalidade-de-contratacao',
+    component: () => import('@/views/modalidadeDeContratacao/ModalidadesRaiz.vue'),
+    meta: {
+      limitarÀsPermissões: '',
+      título: 'Modalidades de contratação',
+      rotasParaMenuSecundário,
+    },
+    children: [
+      {
+        name: 'modalidadesListar',
+        path: '',
+        component: () => import('@/views/modalidadeDeContratacao/ModalidadesLista.vue'),
+        meta: {
+          título: 'Modalidades de contratação',
+        },
+      },
+      {
+        name: 'modalidadesCriar',
+        path: 'nova',
+        component: () => import('@/views/modalidadeDeContratacao/ModalidadesCriarEditar.vue'),
+        meta: {
+          título: 'Nova modalidade de contratação',
+          rotasParaMigalhasDePão: [
+            'modalidadesListar',
+          ],
+        },
+      },
+      {
+        path: ':modalidadeId',
+        name: 'modalidadesEditar',
+        component: () => import('@/views/modalidadeDeContratacao/ModalidadesCriarEditar.vue'),
+        props: ({ params }) => ({
+          ...params,
+          ...{ modalidadeId: Number.parseInt(params.modalidadeId, 10) || undefined },
+        }),
+
+        meta: {
+          título: 'Editar modalidade',
+          rotasParaMigalhasDePão: [
+            'modalidadesListar',
           ],
         },
       },
