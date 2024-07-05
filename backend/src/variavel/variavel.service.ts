@@ -382,6 +382,36 @@ export class VariavelService {
         });
         logger.verbose(`Responsáveis adicionados: ${responsaveis.join(', ')}`);
 
+        if (Array.isArray(dto.medicao_grupo_ids)) {
+            await prismaTxn.variavelGrupoResponsavelVariavel.createMany({
+                data: dto.medicao_grupo_ids.map((grupo_id) => ({
+                    variavel_id: variavel.id,
+                    grupo_responsavel_variavel_id: grupo_id,
+                })),
+            });
+            logger.verbose(`Grupos de medição adicionados: ${dto.medicao_grupo_ids.join(', ')}`);
+        }
+
+        if (Array.isArray(dto.validacao_grupo_ids)) {
+            await prismaTxn.variavelGrupoResponsavelVariavel.createMany({
+                data: dto.validacao_grupo_ids.map((grupo_id) => ({
+                    variavel_id: variavel.id,
+                    grupo_responsavel_variavel_id: grupo_id,
+                })),
+            });
+            logger.verbose(`Grupos de validação adicionados: ${dto.validacao_grupo_ids.join(', ')}`);
+        }
+
+        if (Array.isArray(dto.liberacao_grupo_ids)) {
+            await prismaTxn.variavelGrupoResponsavelVariavel.createMany({
+                data: dto.liberacao_grupo_ids.map((grupo_id) => ({
+                    variavel_id: variavel.id,
+                    grupo_responsavel_variavel_id: grupo_id,
+                })),
+            });
+            logger.verbose(`Grupos de liberação adicionados: ${dto.liberacao_grupo_ids.join(', ')}`);
+        }
+
         await this.recalc_variaveis_acumulada([variavel.id], prismaTxn);
 
         return variavel;
@@ -958,106 +988,7 @@ export class VariavelService {
                 dto.mostrar_monitoramento = prevDesativado?.previo_status_mostrar_monitoramento ?? true;
             }
 
-            const old_variavel_categorica_id = selfBefUpdate.variavel_categorica_id;
-
-            if (dto.variavel_categorica_id !== null && dto.variavel_categorica_id) {
-                const variavelCategorica = await this.carregaVariavelCategorica(prismaTxn, dto.variavel_categorica_id);
-
-                if (old_variavel_categorica_id == variavelCategorica.id) {
-                    this.logger.debug(`variavel_categorica_id já é igual, não há necessidade de alterar`);
-
-                    dto.variavel_categorica_id = undefined;
-                }
-
-                if (dto.variavel_categorica_id) {
-                    const existentes = await prismaTxn.serieVariavel.count({
-                        where: { variavel_id: variavelId, variavel_categorica_id: dto.variavel_categorica_id },
-                    });
-                    if (existentes > 0)
-                        throw new BadRequestException(
-                            'Não é possível alterar a variável categórica de uma variável que já possui valores salvos como variável categórica.'
-                        );
-
-                    const categoriaValores = await prismaTxn.variavelCategoricaValor.findMany({
-                        where: { id: dto.variavel_categorica_id },
-                    });
-
-                    const serieValores = await prismaTxn.serieVariavel.groupBy({
-                        where: {
-                            variavel_id: variavelId,
-                            serie: { in: ['Realizado', 'Previsto'] },
-                        },
-                        by: ['valor_nominal'],
-                    });
-
-                    const promises: Promise<unknown>[] = [];
-                    for (const sv of serieValores) {
-                        const catValor = categoriaValores.find(
-                            (cv) => cv.valor_variavel == +sv.valor_nominal.toString()
-                        );
-                        if (!catValor)
-                            throw new BadRequestException(
-                                'Não é possível adicionar classificação da categórica, pois há valores salvos incompatíveis. Valores encontrados: ' +
-                                    serieValores
-                                        .slice(0, 10)
-                                        .map((v) => v.valor_nominal)
-                                        .join(', ')
-                            );
-
-                        promises.push(
-                            prismaTxn.serieVariavel.updateMany({
-                                where: {
-                                    variavel_id: variavelId,
-                                    serie: { in: ['Realizado', 'Previsto'] },
-                                    valor_nominal: sv.valor_nominal,
-                                },
-                                data: {
-                                    variavel_categorica_id: dto.variavel_categorica_id,
-                                    variavel_categorica_valor_id: catValor.id,
-                                },
-                            })
-                        );
-                    }
-                    await Promise.all(promises);
-                }
-            } else if (dto.variavel_categorica_id === null && old_variavel_categorica_id !== null) {
-                await prismaTxn.serieVariavel.updateMany({
-                    where: {
-                        variavel_id: variavelId,
-                        variavel_categorica_id: old_variavel_categorica_id,
-                    },
-                    data: {
-                        variavel_categorica_id: null,
-                        variavel_categorica_valor_id: null,
-                    },
-                });
-
-                this.logger.debug(`variavel_categorica_id foi removido, valores em serie-variavel mantidos`);
-            }
-
-            if (Array.isArray(dto.assuntos)) {
-                const assuntoSorted = dto.assuntos.sort();
-                const currentAssuntos = self.VariavelAssuntoVariavel.map((v) => v.assunto_variavel_id).sort();
-
-                if (assuntoSorted.join(',') !== currentAssuntos.join(',')) {
-                    this.logger.debug(`Assuntos diferentes, atualizando`);
-                    await prismaTxn.variavelAssuntoVariavel.deleteMany({
-                        where: { variavel_id: variavelId },
-                    });
-                    await prismaTxn.variavelAssuntoVariavel.createMany({
-                        data: assuntoSorted.map((assunto_id) => ({
-                            variavel_id: variavelId,
-                            assunto_variavel_id: assunto_id,
-                        })),
-                    });
-                }
-            } else if (dto.assuntos == null) {
-                await prismaTxn.variavelAssuntoVariavel.deleteMany({
-                    where: { variavel_id: variavelId },
-                });
-            }
-
-            // TODO validacao_grupo_ids, liberacao_grupo
+            await this.updateCategorica(selfBefUpdate.variavel_categorica_id, dto, prismaTxn, variavelId, self);
 
             this.checkOrgaoProprietario(tipo, dto, user);
 
@@ -1125,6 +1056,114 @@ export class VariavelService {
         });
 
         return { id: variavelId };
+    }
+
+    private async updateCategorica(
+        old_variavel_categorica_id: number | null,
+        dto: UpdateVariavelDto,
+        prismaTxn: Prisma.TransactionClient,
+        variavelId: number,
+        self: {
+            valor_base: Prisma.Decimal;
+            mostrar_monitoramento: boolean;
+            suspendida_em: Date | null;
+            VariavelAssuntoVariavel: { assunto_variavel_id: number }[];
+        }
+    ) {
+        if (dto.variavel_categorica_id !== null && dto.variavel_categorica_id) {
+            const variavelCategorica = await this.carregaVariavelCategorica(prismaTxn, dto.variavel_categorica_id);
+
+            if (old_variavel_categorica_id == variavelCategorica.id) {
+                this.logger.debug(`variavel_categorica_id já é igual, não há necessidade de alterar`);
+
+                dto.variavel_categorica_id = undefined;
+            }
+
+            if (dto.variavel_categorica_id) {
+                const existentes = await prismaTxn.serieVariavel.count({
+                    where: { variavel_id: variavelId, variavel_categorica_id: dto.variavel_categorica_id },
+                });
+                if (existentes > 0)
+                    throw new BadRequestException(
+                        'Não é possível alterar a variável categórica de uma variável que já possui valores salvos como variável categórica.'
+                    );
+
+                const categoriaValores = await prismaTxn.variavelCategoricaValor.findMany({
+                    where: { id: dto.variavel_categorica_id },
+                });
+
+                const serieValores = await prismaTxn.serieVariavel.groupBy({
+                    where: {
+                        variavel_id: variavelId,
+                        serie: { in: ['Realizado', 'Previsto'] },
+                    },
+                    by: ['valor_nominal'],
+                });
+
+                const promises: Promise<unknown>[] = [];
+                for (const sv of serieValores) {
+                    const catValor = categoriaValores.find((cv) => cv.valor_variavel == +sv.valor_nominal.toString());
+                    if (!catValor)
+                        throw new BadRequestException(
+                            'Não é possível adicionar classificação da categórica, pois há valores salvos incompatíveis. Valores encontrados: ' +
+                                serieValores
+                                    .slice(0, 10)
+                                    .map((v) => v.valor_nominal)
+                                    .join(', ')
+                        );
+
+                    promises.push(
+                        prismaTxn.serieVariavel.updateMany({
+                            where: {
+                                variavel_id: variavelId,
+                                serie: { in: ['Realizado', 'Previsto'] },
+                                valor_nominal: sv.valor_nominal,
+                            },
+                            data: {
+                                variavel_categorica_id: dto.variavel_categorica_id,
+                                variavel_categorica_valor_id: catValor.id,
+                            },
+                        })
+                    );
+                }
+                await Promise.all(promises);
+            }
+        } else if (dto.variavel_categorica_id === null && old_variavel_categorica_id !== null) {
+            await prismaTxn.serieVariavel.updateMany({
+                where: {
+                    variavel_id: variavelId,
+                    variavel_categorica_id: old_variavel_categorica_id,
+                },
+                data: {
+                    variavel_categorica_id: null,
+                    variavel_categorica_valor_id: null,
+                },
+            });
+
+            this.logger.debug(`variavel_categorica_id foi removido, valores em serie-variavel mantidos`);
+        }
+
+        if (Array.isArray(dto.assuntos)) {
+            const assuntoSorted = dto.assuntos.sort();
+            const currentAssuntos = self.VariavelAssuntoVariavel.map((v) => v.assunto_variavel_id).sort();
+
+            if (assuntoSorted.join(',') !== currentAssuntos.join(',')) {
+                this.logger.debug(`Assuntos diferentes, atualizando`);
+                await prismaTxn.variavelAssuntoVariavel.deleteMany({
+                    where: { variavel_id: variavelId },
+                });
+                await prismaTxn.variavelAssuntoVariavel.createMany({
+                    data: assuntoSorted.map((assunto_id) => ({
+                        variavel_id: variavelId,
+                        assunto_variavel_id: assunto_id,
+                    })),
+                });
+            }
+        } else if (dto.assuntos == null) {
+            await prismaTxn.variavelAssuntoVariavel.deleteMany({
+                where: { variavel_id: variavelId },
+            });
+        }
     }
 
     private async validaGruposResponsavel(dto: UpdateVariavelDto, current_orgao_proprietario_id: number | undefined) {
