@@ -260,5 +260,3 @@ export class CreateGeradorVariaveBaselDto extends OmitType(CreateVariavelBaseDto
 }
 
 export class CreateGeradorVariavelPDMDto extends IntersectionType(CreateGeradorVariaveBaselDto, CreateVariavelPDMDto) {}
-
-export class CreateGeradorVariavePDMlDto extends IntersectionType(CreateGeradorVariaveBaselDto, CreateVariavelPDMDto) {}
