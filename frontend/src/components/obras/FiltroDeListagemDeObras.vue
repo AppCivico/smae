@@ -118,7 +118,7 @@
         </label>
         <select
           id="regiao-ids"
-          name="regiao_ids"
+          name="regioes"
           class="inputtext light"
           :aria-busy="regions.loading"
         >
