@@ -19,13 +19,14 @@ import envios from './envios';
 import graficos from './graficos';
 import metas from './metas';
 import monitoramento from './monitoramento';
+import obras from './obras';
 import panoramaTransferencias from './panoramaTransferencias';
 import parlamentares from './parlamentares';
 import planosSetoriais from './planosSetoriais';
 import projetos from './projetos';
 import relatorios from './relatorios';
 import transferenciasVoluntarias from './transferenciasVoluntarias';
-import obras from './obras';
+import variaveis from './variaveis';
 
 // eslint-disable-next-line import/prefer-default-export
 export const router = createRouter({
@@ -64,6 +65,7 @@ export const router = createRouter({
     envios,
     transferenciasVoluntarias,
     panoramaTransferencias,
+    variaveis,
 
     { path: '/:pathMatch(.*)*', redirect: '/' },
   ],
