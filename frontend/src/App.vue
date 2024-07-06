@@ -23,7 +23,6 @@ const erro = ref(null);
 if (import.meta.env.VITE_EXPOR_ERROS === 'true' || import.meta.env.DEV) {
   onErrorCaptured((err) => {
     erro.value = err;
-    return false;
   });
   onBeforeRouteUpdate(() => {
     if (erro.value) {
