@@ -2968,30 +2968,38 @@ export const variável = (singleIndicadores) => object()
       .min(0)
       .integer(),
     casas_decimais: string()
+      .label('Casas decimais')
       .nullable(),
     codigo: string()
+      .label('Código')
       .required('Preencha o código'),
     fim_medicao: string()
+      .label('Fim da medição')
       .nullable()
       .matches(regEx['month/year'], 'Formato inválido')
       .when('periodicidade', (periodicidade, schema) => (singleIndicadores?.value?.periodicidade !== periodicidade
         ? schema.required('Selecione a data')
         : schema)),
     inicio_medicao: string()
+      .label('Início da medição')
       .nullable()
       .matches(regEx['month/year'], 'Formato inválido')
       .when('periodicidade', (periodicidade, schema) => (singleIndicadores?.value?.periodicidade !== periodicidade
         ? schema.required('Selecione a data')
         : schema)),
     orgao_id: string()
+      .label('Órgão responsável')
       .required('Selecione um orgão'),
     periodicidade: string()
+      .label('Periodicidade')
       .required('Preencha a periodicidade'),
     regiao_id: string()
+      .label('Região')
       .nullable(),
     regioes: array()
       .label('Regiões'),
     responsaveis: array()
+      .label('Responsáveis')
       .nullable(),
     supraregional: boolean()
       .label('Incluir variável supra regional')
@@ -3000,10 +3008,13 @@ export const variável = (singleIndicadores) => object()
       .label('Suspender variável e retirar do monitoramento físico')
       .nullable(),
     titulo: string()
+      .label('Nome')
       .required('Preencha o título'),
     unidade_medida_id: string()
+      .label('Unidade de medida')
       .required('Selecione uma unidade'),
     valor_base: string()
+      .label('Valor base')
       .required('Preencha o valor base'),
   });
 
