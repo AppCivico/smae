@@ -57,7 +57,7 @@ export class ContratoMDOController {
         return await this.contratoService.findOne(+params.id, +params.id2, user);
     }
 
-    @Patch(':id/acompanhamento/:id2')
+    @Patch(':id/contrato/:id2')
     @ApiBearerAuth('access-token')
     @Roles([...rolesMDO])
     async update(
@@ -69,7 +69,7 @@ export class ContratoMDOController {
         return await this.contratoService.update(+params.id, +params.id2, dto, user);
     }
 
-    @Delete(':id/acompanhamento/:id2')
+    @Delete(':id/contrato/:id2')
     @ApiBearerAuth('access-token')
     @Roles([...rolesMDO])
     @ApiNoContentResponse()

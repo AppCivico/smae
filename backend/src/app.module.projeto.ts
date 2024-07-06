@@ -26,6 +26,7 @@ import { ProjetoTagModule } from './pp/projeto-tag/tag.module';
 import { ProjetoTipoAditivoModule } from './tipo-aditivo/tipo-aditivo.module';
 import { ProjetoProgramaModule } from './pp/_mdo/projeto-programa/programa.module';
 import { ProjetoModalidadeContratacaoModule } from './pp/_mdo/modalidade-contratacao/mod-contratacao.module';
+import { ContratoModule } from './pp/contrato/contrato.module';
 
 @Module({
     imports: [
@@ -56,6 +57,7 @@ import { ProjetoModalidadeContratacaoModule } from './pp/_mdo/modalidade-contrat
         ProjetoTipoAditivoModule,
         ProjetoProgramaModule,
         ProjetoModalidadeContratacaoModule,
+        ContratoModule,
     ],
     controllers: [],
     providers: [],
