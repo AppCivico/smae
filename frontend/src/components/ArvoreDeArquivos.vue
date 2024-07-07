@@ -136,7 +136,10 @@ const éPossívelAbrir = (item) => !item.children?.length
                   class="arvore-de-arquivos__descricao"
                   :title="`${arquivo?.arquivo?.nome_original} -- ${arquivo?.descricao}`"
                 >
-                  {{ truncate((arquivo?.descricao || arquivo?.arquivo?.nome_original), 300) }}
+                  {{ truncate((arquivo?.arquivo?.nome_original), 150) }}
+                  {{ arquivo?.arquivo?.descricao
+                    ? ` -- ` + truncate(arquivo?.arquivo?.descricao, 150)
+                    : '' }}
                 </component>
 
                 <small
