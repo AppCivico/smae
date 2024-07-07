@@ -134,12 +134,13 @@ const éPossívelAbrir = (item) => !item.children?.length
                     : undefined"
                   download
                   class="arvore-de-arquivos__descricao"
-                  :title="`${arquivo?.arquivo?.nome_original} -- ${arquivo?.descricao}`"
                 >
-                  {{ truncate((arquivo?.arquivo?.nome_original), 150) }}
-                  {{ arquivo?.arquivo?.descricao
-                    ? ` -- ` + truncate(arquivo?.arquivo?.descricao, 150)
-                    : '' }}
+                  <span>
+                    {{ truncate((arquivo?.arquivo?.nome_original), 16) }}
+                  </span>
+                  <span v-if="arquivo?.arquivo?.descricao">
+                    -- {{ truncate(arquivo?.arquivo?.descricao, 300) }}
+                  </span>
                 </component>
 
                 <small
