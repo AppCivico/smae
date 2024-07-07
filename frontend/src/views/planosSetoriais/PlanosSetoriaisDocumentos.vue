@@ -70,6 +70,9 @@ iniciar();
     :rota-de-adição="{
       name: 'planosSetoriaisNovoDocumento'
     }"
+    :rota-de-edição="{
+      name: 'planosSetoriaisEditarDocumento'
+    }"
     @apagar="($params) => excluirArquivo($params)"
   />
 
