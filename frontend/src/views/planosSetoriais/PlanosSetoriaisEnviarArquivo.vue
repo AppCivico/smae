@@ -127,7 +127,6 @@ watch(arquivoParaEdição, (novosValores) => {
             :schema="schema"
           />
           <Field
-            v-focus
             name="descricao"
             as="textarea"
             class="inputtext light mb1"
