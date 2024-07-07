@@ -120,6 +120,19 @@ export default {
                 títuloParaMenu: 'Novo documento',
               },
             },
+            {
+              path: ':arquivoId',
+              name: 'planosSetoriaisEditarDocumento',
+              component: () => import('@/views/planosSetoriais/PlanosSetoriaisEnviarArquivo.vue'),
+              props: ({ params }) => ({
+                ...params,
+                ...{ arquivoId: Number.parseInt(params.arquivoId, 10) || undefined },
+              }),
+              meta: {
+                rotaDeEscape: 'planosSetoriaisDocumentos',
+                títuloParaMenu: 'Editar documento',
+              },
+            },
           ],
         },
         {
