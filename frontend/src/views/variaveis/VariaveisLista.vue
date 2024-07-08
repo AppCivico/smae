@@ -1,7 +1,7 @@
 <script setup>
 import MenuPaginacao from '@/components/MenuPaginacao.vue';
 import FiltroDeDeVariaveis from '@/components/variaveis/FiltroDeDeVariaveis.vue';
-import { variável } from '@/consts/formSchemas';
+import { variavelGlobal as schema } from '@/consts/formSchemas';
 import { useAlertStore } from '@/stores/alert.store';
 import { usePsVariaveisStore } from '@/stores/ps.variaveis.store.ts';
 import { storeToRefs } from 'pinia';
@@ -17,9 +17,7 @@ const {
   lista, chamadasPendentes, erros, paginacao,
 } = storeToRefs(psVariaveisStore);
 
-const schema = variável();
-
-async function excluirPlano(id, nome) {
+async function excluirVariavel(id, nome) {
   alertStore.confirmAction(`Deseja mesmo remover a variável "${nome}"?`, async () => {
     if (await psVariaveisStore.excluirItem(id)) {
       psVariaveisStore.buscarTudo();
@@ -77,16 +75,16 @@ watchEffect(() => {
       <thead>
         <tr>
           <th>
-            {{ schema.fields.titulo?.spec.label || 'Campo faltando no schema' }}
+            {{ schema.fields.titulo?.spec.label }}
           </th>
           <th>
-            {{ schema.fields.fonte?.spec.label || 'Campo faltando no schema' }}
+            {{ schema.fields.fonte_id?.spec.label }}
           </th>
           <th class="cell--nowrap">
-            {{ schema.fields.periodicidade?.spec.label || 'Campo faltando no schema' }}
+            {{ schema.fields.periodicidade?.spec.label }}
           </th>
           <th class="cell--nowrap">
-            {{ schema.fields.orgao_id?.spec.label || 'Campo faltando no schema' }}
+            {{ schema.fields.orgao_id?.spec.label }}
           </th>
           <th>
             {{ schema.fields.uso?.spec.label || 'Campo faltando no schema' }}
@@ -104,7 +102,7 @@ watchEffect(() => {
       >
         <tr>
           <th>
-              {{ item.titulo }}
+            {{ item.titulo }}
           </th>
           <td>
             {{ item.fonte }}
@@ -127,18 +125,16 @@ watchEffect(() => {
             {{ item.planos }}
           </td>
           <td>
-              <svg
-                width="20"
-                height="20"
-              ><use xlink:href="#i_edit" /></svg>
+            <svg
+              width="20"
+              height="20"
+            ><use xlink:href="#i_edit" /></svg>
           </td>
           <td>
-
-              <svg
-                width="20"
-                height="20"
-              ><use xlink:href="#i_remove" /></svg>
-
+            <svg
+              width="20"
+              height="20"
+            ><use xlink:href="#i_remove" /></svg>
           </td>
         </tr>
         <tr v-if="item.metodologia">
