@@ -65,6 +65,8 @@ export class VariavelGlobalItemDto extends PickType(VariavelItemDto, [
     orgao_proprietario: OrgaoResumo;
     fonte: IdNomeDto | null;
     planos: IdNomeDto[];
+    pode_editar: boolean;
+    pode_excluir: boolean;
 }
 
 export class SerieValorNomimal {

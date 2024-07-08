@@ -894,6 +894,7 @@ export class VariavelService {
             return plano;
         };
 
+        const perm = user.hasSomeRoles(['CadastroIndicadorPS.editar', 'CadastroGrupoVariavel.administrador']);
         const paginas = Math.ceil(total_registros / ipp);
         return {
             tem_mais,
@@ -917,6 +918,8 @@ export class VariavelService {
                     fim_medicao: Date2YMD.toStringOrNull(r.fim_medicao),
                     inicio_medicao: Date2YMD.toStringOrNull(r.inicio_medicao),
                     periodicidade: r.periodicidade,
+                    pode_editar: perm,
+                    pode_excluir: perm && r.planos.length == 0,
                 };
             }),
         };
