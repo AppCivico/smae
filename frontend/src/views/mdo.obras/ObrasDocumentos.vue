@@ -70,6 +70,9 @@ iniciar();
     :rota-de-adição="{
       name: 'obrasNovoDocumento'
     }"
+    :rota-de-edição="{
+      name: 'obrasEditarDocumento',
+    }"
     @apagar="($params) => excluirArquivo($params)"
   />
 
