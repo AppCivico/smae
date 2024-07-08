@@ -907,7 +907,7 @@ export class VariavelService {
                     id: r.id,
                     codigo: r.codigo,
                     titulo: r.titulo,
-                    planos: r.planos.map(planoById),
+                    planos: r.planos.map(planoById).sort((a, b) => a.nome.localeCompare(b.nome)),
                     orgao: r.orgao ?? { descricao: 'Sem órgão', id: MIN_DTO_SAFE_NUM, sigla: 'SEM' },
                     orgao_proprietario: r.orgao_proprietario ?? {
                         descricao: 'Sem órgão',
