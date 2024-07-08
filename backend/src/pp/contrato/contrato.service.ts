@@ -249,9 +249,42 @@ export class ContratoService {
     }
 
     async update(projeto_id: number, id: number, dto: UpdateContratoDto, user: PessoaFromJwt) {
+        const now = new Date(Date.now());
         const updated = await this.prisma.$transaction(
             async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
-                const now = new Date(Date.now());
+                //const self = await this.findOne(projeto_id, id, user);
+
+                if (dto.processos_sei != undefined) {
+                    await prismaTx.contratoSei.deleteMany({
+                        where: {
+                            contrato_id: id,
+                        },
+                    });
+
+                    await prismaTx.contratoSei.createMany({
+                        data: dto.processos_sei.map((processo_sei) => {
+                            return {
+                                contrato_id: id,
+                                numero_sei: processo_sei,
+                            };
+                        }),
+                    });
+                }
+
+                if (dto.fontes_recurso_ids != undefined) {
+                    await prismaTx.contratoFonteRecurso.deleteMany({
+                        where: { contrato_id: id },
+                    });
+
+                    await prismaTx.contratoFonteRecurso.createMany({
+                        data: dto.fontes_recurso_ids.map((fonte_recurso_id) => {
+                            return {
+                                contrato_id: id,
+                                projeto_fonte_recurso_id: fonte_recurso_id,
+                            };
+                        }),
+                    });
+                }
 
                 return await prismaTx.contrato.update({
                     where: {
