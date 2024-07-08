@@ -1,4 +1,16 @@
-import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Param, Patch, Post, Query } from '@nestjs/common';
+import {
+    Body,
+    Controller,
+    Delete,
+    Get,
+    HttpCode,
+    HttpStatus,
+    NotFoundException,
+    Param,
+    Patch,
+    Post,
+    Query,
+} from '@nestjs/common';
 import { ApiBearerAuth, ApiExtraModels, ApiNoContentResponse, ApiTags } from '@nestjs/swagger';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { Roles } from '../auth/decorators/roles.decorator';
@@ -10,7 +22,12 @@ import { CreateGeradorVariaveBaselDto, CreateVariavelBaseDto, CreateVariavelPDMD
 import { FilterVariavelDto, FilterVariavelGlobalDto } from './dto/filter-variavel.dto';
 import { ListSeriesAgrupadas, ListVariavelDto } from './dto/list-variavel.dto';
 import { UpdateVariavelDto } from './dto/update-variavel.dto';
-import { SerieIndicadorValorNominal, SerieValorNomimal, VariavelGlobalItemDto } from './entities/variavel.entity';
+import {
+    SerieIndicadorValorNominal,
+    SerieValorNomimal,
+    VariavelGlobalItemDto,
+    VariavelItemDto,
+} from './entities/variavel.entity';
 import { VariavelService } from './variavel.service';
 import { ListaDePrivilegios } from '../common/ListaDePrivilegios';
 import { TipoVariavel } from '@prisma/client';
@@ -130,6 +147,16 @@ export class VariavelGlobalController {
         @CurrentUser() user: PessoaFromJwt
     ): Promise<PaginatedWithPagesDto<VariavelGlobalItemDto>> {
         return await this.variavelService.findAllGlobal(filters, user);
+    }
+
+    @Get('variavel/:id')
+    @ApiBearerAuth('access-token')
+    @Roles([...ROLES_ACESSO_VARIAVEL_PS])
+    @ApiPaginatedWithPagesResponse(VariavelGlobalItemDto)
+    async findOne(@Param() params: FindOneParams, @CurrentUser() user: PessoaFromJwt): Promise<VariavelItemDto> {
+        const variavel = await this.variavelService.findAll('Global', { id: params.id });
+        if (!variavel[0]) throw new NotFoundException('Registro não encontrado');
+        return variavel[0];
     }
 
     @Patch('variavel/:id')
