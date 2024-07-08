@@ -914,6 +914,7 @@ export class VariavelService {
                         id: MIN_DTO_SAFE_NUM,
                         sigla: 'SEM',
                     },
+                    fonte: r.fonte_id ? { id: r.fonte_id, nome: r.fonte_nome ?? '' } : null,
                     fim_medicao: Date2YMD.toStringOrNull(r.fim_medicao),
                     inicio_medicao: Date2YMD.toStringOrNull(r.inicio_medicao),
                     periodicidade: r.periodicidade,
