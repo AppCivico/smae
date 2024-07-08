@@ -3588,6 +3588,8 @@ view ViewVariavelGlobal {
     criado_em             DateTime
     assunto_ids           Int[]
     tipo                  TipoVariavel
+    fonte_id              Int?
+    fonte_nome            String?
 
     @@map("view_variavel_global")
 }
