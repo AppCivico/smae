@@ -1484,7 +1484,7 @@ export class OrcamentoRealizadoService {
 
     @Cron(CronExpression.EVERY_6_HOURS)
     async handleCron() {
-        if (Boolean(process.env['DISABLE_PDM_CRONTAB'])) return;
+        if (process.env['DISABLE_PDM_CRONTAB']) return;
 
         await this.prisma.$transaction(
             async (prismaTx: Prisma.TransactionClient) => {
@@ -1547,10 +1547,6 @@ export class OrcamentoRealizadoService {
                 ano_referencia: anoAtual,
             },
         });
-        if (!configOrcamentoCorrente) {
-            this.logger.warn(`Não encontrado configuração para o ano ${anoAtual}`);
-            return;
-        }
 
         const configOrcamentoAbertura =
             mesAtual == 1
@@ -1561,6 +1557,11 @@ export class OrcamentoRealizadoService {
                       },
                   })
                 : configOrcamentoCorrente;
+
+        if (!configOrcamentoAbertura) {
+            this.logger.warn(`Não encontrado configuração para o ano ${anoAtual}`);
+            return;
+        }
 
         for (const meta of metas) {
             // Obter o último registro de controle de conclusão
