@@ -880,6 +880,21 @@ export class VariavelService {
             tem_mais = offset + linhas.length < total_registros;
         }
 
+        const planos = await this.prisma.pdm.findMany({
+            where: {
+                id: { in: linhas.map((r) => r.planos).flat() },
+            },
+            select: {
+                id: true,
+                nome: true,
+            },
+        });
+        const planoById = (pId: number): { id: number; nome: string } => {
+            const plano = planos.find((p) => p.id === pId);
+            if (!plano) return { id: MIN_DTO_SAFE_NUM, nome: 'Sem plano' };
+            return plano;
+        };
+
         const paginas = Math.ceil(total_registros / ipp);
         return {
             tem_mais,
@@ -892,6 +907,7 @@ export class VariavelService {
                     id: r.id,
                     codigo: r.codigo,
                     titulo: r.titulo,
+                    planos: r.planos.map(planoById),
                     orgao: r.orgao ?? { descricao: 'Sem órgão', id: MIN_DTO_SAFE_NUM, sigla: 'SEM' },
                     orgao_proprietario: r.orgao_proprietario ?? {
                         descricao: 'Sem órgão',
