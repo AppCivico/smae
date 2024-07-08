@@ -59,12 +59,14 @@ SELECT
     v.fim_medicao,
     v.criado_em,
     coalesce(av.assunto_ids, '{}'::int[]) AS assunto_ids,
-    tipo
+    tipo,
+    fonte.id AS fonte_id,
+    fonte.nome AS fonte_nome
 FROM
     variavel AS v
     LEFT JOIN PlanoSetorial ps ON v.id = ps.variavel_id
     LEFT JOIN AssuntoVariavel av ON v.id = av.variavel_id
+    LEFT JOIN fonte_variavel fonte ON v.fonte_id = fonte.id
 WHERE
     v.removido_em IS NULL;
-
 

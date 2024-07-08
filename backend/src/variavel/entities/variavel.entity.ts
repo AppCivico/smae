@@ -63,6 +63,7 @@ export class VariavelGlobalItemDto extends PickType(VariavelItemDto, [
     'orgao',
 ]) {
     orgao_proprietario: OrgaoResumo;
+    fonte: IdNomeDto | null;
     planos: IdNomeDto[];
 }
 
