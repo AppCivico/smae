@@ -2,7 +2,6 @@
 import { ListVariavelDto } from '@/../../backend/src/variavel/dto/list-variavel.dto';
 /* eslint-disable import/no-extraneous-dependencies */
 import { VariavelItemDto } from '@/../../backend/src/variavel/entities/variavel.entity';
-
 import { defineStore } from 'pinia';
 
 const baseUrl = `${import.meta.env.VITE_API_URL}`;
@@ -35,7 +34,7 @@ interface Estado {
   };
 }
 
-export const useVariaveisGlobaisStore = defineStore('variareis', {
+export const useVariaveisGlobaisStore = defineStore('variareisGlobais', {
   state: (): Estado => ({
     lista: [],
     emFoco: null,

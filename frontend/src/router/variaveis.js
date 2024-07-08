@@ -1,4 +1,4 @@
-import { usePsVariaveisStore } from '@/stores/ps.variaveis.store';
+import { useVariaveisGlobaisStore } from '@/stores/variaveisGlobais.store.ts';
 
 export default {
   path: '/variaveis',
