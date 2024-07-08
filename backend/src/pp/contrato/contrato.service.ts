@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { HttpException, Injectable, NotFoundException } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { RecordWithId } from 'src/common/dto/record-with-id.dto';
 
@@ -17,6 +17,26 @@ export class ContratoService {
         const now = new Date(Date.now());
         const created = await this.prisma.$transaction(
             async (prismaTx: Prisma.TransactionClient): Promise<RecordWithId> => {
+                // Caso enviem fonte de recurso, verificar se a fonte de recurso pertence ao projeto.
+                if (dto.fontes_recurso_ids != undefined && dto.fontes_recurso_ids.length) {
+                    const fontesRecurso = await prismaTx.projetoFonteRecurso.findMany({
+                        where: {
+                            projeto_id: projeto_id,
+                            id: {
+                                in: dto.fontes_recurso_ids,
+                            },
+                        },
+                        select: { id: true },
+                    });
+
+                    if (fontesRecurso.length != dto.fontes_recurso_ids.length) {
+                        throw new HttpException(
+                            'Fontes de recurso inválidas. Todas as fontes devem pertencer ao projeto.',
+                            400
+                        );
+                    }
+                }
+
                 const contrato = await prismaTx.contrato.create({
                     data: {
                         projeto_id: projeto_id,
@@ -39,7 +59,6 @@ export class ContratoService {
                         data_base_ano: dto.data_base_ano,
                         valor: dto.valor,
                         fontesRecurso: {
-                            // TODO: Verificar se as fontes de recurso são do mesmo projeto.
                             createMany: {
                                 data: dto.fontes_recurso_ids.map((fonte_recurso_id) => {
                                     return {
