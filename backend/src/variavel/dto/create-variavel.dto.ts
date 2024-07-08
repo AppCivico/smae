@@ -222,12 +222,6 @@ export class CreateVariavelBaseDto {
     @IsArray()
     @ArrayMaxSize(1000)
     liberacao_grupo_ids?: number[] | null;
-
-    @IsOptional()
-    @IsInt()
-    @Min(1)
-    @Max(4)
-    nivel_regionalizacao?: number | null;
 }
 
 export class CreateVariavelPDMDto extends CreateVariavelBaseDto {
