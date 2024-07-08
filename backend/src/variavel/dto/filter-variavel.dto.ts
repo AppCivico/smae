@@ -1,10 +1,10 @@
-import { Transform, Type } from 'class-transformer';
+import { ApiProperty, IntersectionType } from '@nestjs/swagger';
+import { Periodicidade } from '@prisma/client';
+import { Transform } from 'class-transformer';
 import { ArrayMaxSize, IsArray, IsBoolean, IsEnum, IsInt, IsOptional, IsString, MaxLength } from 'class-validator';
 import { NumberArrayTransformOrUndef } from '../../auth/transforms/number-array.transform';
-import { ApiProperty, IntersectionType } from '@nestjs/swagger';
 import { NumberTransform } from '../../auth/transforms/number.transform';
 import { AscDescEnum } from '../../pp/projeto/dto/filter-projeto.dto';
-import { Periodicidade } from '@prisma/client';
 
 export class FilterVariavelDto {
     /**
@@ -13,7 +13,7 @@ export class FilterVariavelDto {
      */
     @IsOptional()
     @IsInt({ message: 'meta_id' })
-    @Type(() => Number)
+    @Transform(NumberTransform)
     meta_id?: number;
 
     /**
@@ -22,7 +22,7 @@ export class FilterVariavelDto {
      */
     @IsOptional()
     @IsInt({ message: 'iniciativa_id' })
-    @Type(() => Number)
+    @Transform(NumberTransform)
     iniciativa_id?: number;
 
     /**
@@ -31,7 +31,7 @@ export class FilterVariavelDto {
      */
     @IsOptional()
     @IsInt({ message: 'atividade_id' })
-    @Type(() => Number)
+    @Transform(NumberTransform)
     atividade_id?: number;
 
     /**
@@ -40,7 +40,7 @@ export class FilterVariavelDto {
      */
     @IsOptional()
     @IsInt({ message: 'indicador_id' })
-    @Type(() => Number)
+    @Transform(NumberTransform)
     indicador_id?: number;
 
     /**
@@ -54,7 +54,7 @@ export class FilterVariavelDto {
 
     @IsOptional()
     @IsInt({ message: 'id' })
-    @Type(() => Number)
+    @Transform(NumberTransform)
     id?: number;
 
     @IsOptional()
@@ -66,12 +66,12 @@ export class FilterVariavelDto {
 
     @IsOptional()
     @IsInt({ message: 'Órgão precisa ser um número inteiro' })
-    @Type(() => Number)
+    @Transform(NumberTransform)
     orgao_id?: number;
 
     @IsOptional()
     @IsInt({ message: 'Órgão proprietário precisa ser um número inteiro' })
-    @Type(() => Number)
+    @Transform(NumberTransform)
     orgao_proprietario_id?: number;
 
     @IsOptional()
@@ -85,6 +85,16 @@ export class FilterVariavelDto {
         message: '$property| Precisa ser um dos seguintes valores: ' + Object.values(Periodicidade).join(', '),
     })
     periodicidade?: Periodicidade;
+
+    @IsOptional()
+    @IsInt()
+    @Transform(NumberTransform)
+    regiao_id?: number;
+
+    @IsOptional()
+    @IsInt()
+    @Transform(NumberTransform)
+    nivel_regionalizacao?: number;
 }
 
 export const VariavelOrderEnum = {
@@ -108,7 +118,7 @@ export class VariavelOrderByDto {
 export class FilterVariavelGlobalDto extends IntersectionType(FilterVariavelDto, VariavelOrderByDto) {
     @IsOptional()
     @IsInt({ message: '$property| plano_setorial_id' })
-    @Type(() => Number)
+    @Transform(NumberTransform)
     plano_setorial_id?: number;
 
     @IsOptional()

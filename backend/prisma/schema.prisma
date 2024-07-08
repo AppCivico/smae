@@ -1525,8 +1525,9 @@ model Variavel {
     periodo_preenchimento Int[]   @default([]) @db.SmallInt
     periodo_validacao     Int[]   @default([]) @db.SmallInt
     periodo_liberacao     Int[]   @default([]) @db.SmallInt
-    nivel_regionalizacao  Int?
     dado_aberto           Boolean @default(false) // default false para PDM, true para Plano Setorial
+
+    nivel_regionalizacao Int? @ignore // não vamos usar por enquanto
 
     serie_variavel             SerieVariavel[]
     variavel_responsavel       VariavelResponsavel[]

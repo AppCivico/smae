@@ -361,7 +361,6 @@ export class VariavelService {
                 descricao: dto.descricao,
                 fonte_id: dto.fonte_id,
                 orgao_proprietario_id: dto.orgao_proprietario_id,
-                nivel_regionalizacao: dto.nivel_regionalizacao,
 
                 ...periodos,
 
@@ -1002,8 +1001,15 @@ export class VariavelService {
                 orgao_id: filters.orgao_id,
                 orgao_proprietario_id: filters.orgao_proprietario_id,
                 periodicidade: filters.periodicidade,
+                regiao: filters.regiao_id ? { id: filters.regiao_id } : undefined,
             },
         ];
+
+        if (filters.nivel_regionalizacao && !filters.regiao_id) {
+            firstSet.push({
+                regiao: { nivel: filters.nivel_regionalizacao },
+            });
+        }
 
         return permissionsBaseSet;
     }
@@ -1017,7 +1023,7 @@ export class VariavelService {
                 in: ids != undefined ? ids : undefined,
             },
             planos: filters.plano_setorial_id ? { has: filters.plano_setorial_id } : undefined,
-            tipo: {in: ['Composta','Global']},
+            tipo: { in: ['Composta', 'Global'] },
 
             variavel: {
                 AND: this.getVariavelWhereSet(filters),
@@ -1252,7 +1258,6 @@ export class VariavelService {
                     descricao: dto.descricao,
                     fonte_id: dto.fonte_id,
                     orgao_proprietario_id: dto.orgao_proprietario_id,
-                    nivel_regionalizacao: dto.nivel_regionalizacao,
 
                     ...(dto.periodos ? this.getPeriodTuples(dto.periodos) : {}),
 
