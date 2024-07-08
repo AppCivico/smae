@@ -1016,6 +1016,7 @@ export class VariavelService {
                 in: ids != undefined ? ids : undefined,
             },
             planos: filters.plano_setorial_id ? { has: filters.plano_setorial_id } : undefined,
+            tipo: {in: ['Composta','Global']},
 
             variavel: {
                 AND: this.getVariavelWhereSet(filters),
