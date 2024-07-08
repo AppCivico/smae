@@ -178,12 +178,18 @@ export const useObrasStore = defineStore('obrasStore', {
       }
     },
 
-    async associarArquivo(params = {}, idDaObra = 0) {
+    async associarArquivo(params = {}, id = 0, idDaObra = 0) {
       this.chamadasPendentes.arquivos = true;
       this.erros.arquivos = null;
 
       try {
-        const resposta = await this.requestS.post(`${baseUrl}/projeto-mdo/${idDaObra || this.route.params.obraId}/documento`, params);
+        let resposta;
+
+        if (id) {
+          resposta = await this.requestS.patch(`${baseUrl}/projeto-mdo/${idDaObra || this.route.params.projetoId}/documento/${id}`, params);
+        } else {
+          resposta = await this.requestS.post(`${baseUrl}/projeto-mdo/${idDaObra || this.route.params.projetoId}/documento`, params);
+        }
 
         this.chamadasPendentes.arquivos = false;
         return resposta;
