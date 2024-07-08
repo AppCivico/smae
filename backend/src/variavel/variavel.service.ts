@@ -809,16 +809,32 @@ export class VariavelService {
             }
 
             return {
-                ...row,
+                acumulativa: row.acumulativa,
+                atraso_meses: row.atraso_meses,
+                casas_decimais: row.casas_decimais,
+                codigo: row.codigo,
+                id: row.id,
+                mostrar_monitoramento: row.mostrar_monitoramento,
+                unidade_medida: {
+                    descricao: row.unidade_medida.descricao,
+                    id: row.unidade_medida.id,
+                    sigla: row.unidade_medida.sigla,
+                },
+                titulo: row.titulo,
+                ano_base: row.ano_base,
+                valor_base: row.valor_base,
+                periodicidade: row.periodicidade,
+                orgao: row.orgao,
+                regiao: row.regiao,
+                variavel_categorica_id: row.variavel_categorica_id,
                 assunto_variavel: row.VariavelAssuntoVariavel.map((v) => v.assunto_variavel),
                 etapa: row.variavel_categorica_id === CONST_CRONO_VAR_CATEGORICA_ID ? mapEtapa[row.id] : null,
                 inicio_medicao: Date2YMD.toStringOrNull(row.inicio_medicao),
                 fim_medicao: Date2YMD.toStringOrNull(row.fim_medicao),
-                variavel_responsavel: undefined,
                 indicador_variavel: indicador_variavel,
                 responsaveis: responsaveis,
                 suspendida: row.suspendida_em ? true : false,
-            };
+            } satisfies VariavelItemDto;
         });
 
         return ret;
