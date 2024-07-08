@@ -16,15 +16,17 @@ export class CreateContratoAditivoDto {
     @Type(() => Number)
     numero: number;
 
+    @IsOptional()
     @Transform(DateTransform)
     @IsOnlyDate()
-    data: Date;
+    data?: Date;
 
     @IsOptional()
     @Transform(DateTransform)
     @IsOnlyDate()
     data_termino_atualizada?: Date;
 
+    @IsOptional()
     @IsNumberString(
         {},
         {
@@ -33,7 +35,7 @@ export class CreateContratoAditivoDto {
         }
     )
     @ValidateIf((object, value) => value !== null)
-    valor: number;
+    valor?: number;
 
     @IsNumber(
         { maxDecimalPlaces: 2, allowInfinity: false, allowNaN: false },
@@ -43,5 +45,5 @@ export class CreateContratoAditivoDto {
     @ValidateIf((object, value) => value !== null)
     @Min(0, { message: '$property| precisa ser positivo ou zero' })
     @Max(100, { message: '$property| Máximo é 100' })
-    percentual_medido: number;
+    percentual_medido?: number;
 }
