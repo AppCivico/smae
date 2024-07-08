@@ -2,7 +2,7 @@
   <FormularioQueryString
     :aria-busy="props.ariaBusy || !pronto"
     :valores-padrao="{
-      ordem_coluna: 'id',
+      ordem_coluna: 'codigo',
       ordem_direcao: 'asc',
       ipp: gblIpp,
       pagina: 1,
@@ -263,7 +263,7 @@
           v-for="coluna in colunasParaOrdenacao"
           :key="coluna.valor"
           :value="coluna.valor"
-          :selected="Number($route.query.ordem_coluna) === coluna.valor"
+          :selected="$route.query.ordem_coluna === coluna.valor"
         >
           {{ coluna.nome }}
         </option>
