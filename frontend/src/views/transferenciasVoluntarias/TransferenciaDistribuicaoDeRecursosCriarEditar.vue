@@ -91,38 +91,6 @@ const onSubmit = handleSubmit.withControlled(async (controlledValues) => {
   }
 });
 
-async function editarDistribuicaoRecursos(id) {
-  await distribuicaoRecursos.buscarItem(id);
-  mostrarDistribuicaoRegistroForm.value = true;
-}
-
-async function excluirDistribuição(id) {
-  alertStore.confirmAction('Deseja mesmo remover esse item?', async () => {
-    if (await distribuicaoRecursos.excluirItem(id)) {
-      distribuicaoRecursos.$reset();
-      distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
-      alertStore.success('Distribuição removida.');
-    }
-  }, 'Remover');
-}
-
-async function registrarNovaDistribuicaoRecursos() {
-  if (mostrarDistribuicaoRegistroForm.value) {
-    mostrarDistribuicaoRegistroForm.value = false;
-  } else {
-    distribuiçãoEmFoco.value = null;
-    // aguardando o watcher causado pela linha anterior
-    await nextTick();
-    resetForm({
-      values: {
-        objeto: transferenciasVoluntariaEmFoco.value.objeto,
-        nome: truncate(transferenciasVoluntariaEmFoco.value.objeto, 100),
-      },
-    });
-    mostrarDistribuicaoRegistroForm.value = true;
-  }
-}
-
 const calcularValorCusteio = (fieldName) => {
   const valor = parseFloat(values.valor) || 0;
   const custeio = parseFloat(values.custeio) || 0;
@@ -158,6 +126,40 @@ const calcularValorInvestimento = (fieldName) => {
     setFieldValue('percentagem_custeio', (100 - porcentagemInvestimento).toFixed(2));
   }
 };
+
+async function editarDistribuicaoRecursos(id) {
+  await distribuicaoRecursos.buscarItem(id);
+  mostrarDistribuicaoRegistroForm.value = true;
+  calcularValorCusteio('custeio');
+  calcularValorInvestimento('investimento');
+}
+
+async function excluirDistribuição(id) {
+  alertStore.confirmAction('Deseja mesmo remover esse item?', async () => {
+    if (await distribuicaoRecursos.excluirItem(id)) {
+      distribuicaoRecursos.$reset();
+      distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
+      alertStore.success('Distribuição removida.');
+    }
+  }, 'Remover');
+}
+
+async function registrarNovaDistribuicaoRecursos() {
+  if (mostrarDistribuicaoRegistroForm.value) {
+    mostrarDistribuicaoRegistroForm.value = false;
+  } else {
+    distribuiçãoEmFoco.value = null;
+    // aguardando o watcher causado pela linha anterior
+    await nextTick();
+    resetForm({
+      values: {
+        objeto: transferenciasVoluntariaEmFoco.value.objeto,
+        nome: truncate(transferenciasVoluntariaEmFoco.value.objeto, 100),
+      },
+    });
+    mostrarDistribuicaoRegistroForm.value = true;
+  }
+}
 
 async function iniciar() {
   distribuicaoRecursos.buscarTudo({ transferencia_id: props.transferenciaId });
